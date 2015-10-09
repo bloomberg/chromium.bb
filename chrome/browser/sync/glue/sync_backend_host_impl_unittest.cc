@@ -70,7 +70,7 @@ ACTION_P(Signal, event) {
 }
 
 void QuitMessageLoop() {
-  base::MessageLoop::current()->Quit();
+  base::MessageLoop::current()->QuitWhenIdle();
 }
 
 class MockSyncFrontend : public sync_driver::SyncFrontend {
@@ -274,7 +274,7 @@ class SyncBackendHostTest : public testing::Test {
  protected:
   void DownloadReady(syncer::ModelTypeSet succeeded_types,
                      syncer::ModelTypeSet failed_types) {
-    base::MessageLoop::current()->Quit();
+    base::MessageLoop::current()->QuitWhenIdle();
   }
 
   void OnDownloadRetry() {

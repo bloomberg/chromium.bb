@@ -95,7 +95,9 @@ class QuittingHistoryDBTask : public history::HistoryDBTask {
     return true;
   }
 
-  void DoneRunOnMainThread() override { base::MessageLoop::current()->Quit(); }
+  void DoneRunOnMainThread() override {
+    base::MessageLoop::current()->QuitWhenIdle();
+  }
 
  private:
   ~QuittingHistoryDBTask() override {}

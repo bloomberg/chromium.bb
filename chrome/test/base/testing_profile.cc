@@ -141,7 +141,9 @@ class QuittingHistoryDBTask : public history::HistoryDBTask {
     return true;
   }
 
-  void DoneRunOnMainThread() override { base::MessageLoop::current()->Quit(); }
+  void DoneRunOnMainThread() override {
+    base::MessageLoop::current()->QuitWhenIdle();
+  }
 
  private:
   ~QuittingHistoryDBTask() override {}
@@ -560,7 +562,8 @@ void TestingProfile::DestroyHistoryService() {
     return;
 
   history_service->ClearCachedDataForContextID(0);
-  history_service->SetOnBackendDestroyTask(base::MessageLoop::QuitClosure());
+  history_service->SetOnBackendDestroyTask(
+      base::MessageLoop::QuitWhenIdleClosure());
   history_service->Cleanup();
   HistoryServiceFactory::ShutdownForProfile(this);
 
@@ -573,7 +576,7 @@ void TestingProfile::DestroyHistoryService() {
   // Make sure we don't have any event pending that could disrupt the next
   // test.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::MessageLoop::QuitClosure());
+      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
   base::MessageLoop::current()->Run();
 }
 

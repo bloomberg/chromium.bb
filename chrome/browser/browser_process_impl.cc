@@ -401,7 +401,7 @@ unsigned int BrowserProcessImpl::ReleaseModule() {
         FROM_HERE,
         base::Bind(ChromeBrowserMainPartsMac::DidEndMainMessageLoop));
 #endif
-    base::MessageLoop::current()->Quit();
+    base::MessageLoop::current()->QuitWhenIdle();
   }
   return module_ref_count_;
 }

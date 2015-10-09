@@ -76,7 +76,7 @@ void TextInputTestHelper::OnTextInputTypeChanged(
   latest_text_input_type_ =
       client ? client->GetTextInputType() : ui::TEXT_INPUT_TYPE_NONE;
   if (waiting_type_ == WAIT_ON_TEXT_INPUT_TYPE_CHANGED)
-    base::MessageLoop::current()->Quit();
+    base::MessageLoop::current()->QuitWhenIdle();
 }
 
 void TextInputTestHelper::OnShowImeIfNeeded() {
@@ -89,13 +89,13 @@ void TextInputTestHelper::OnInputMethodDestroyed(
 void TextInputTestHelper::OnFocus() {
   focus_state_ = true;
   if (waiting_type_ == WAIT_ON_FOCUS)
-    base::MessageLoop::current()->Quit();
+    base::MessageLoop::current()->QuitWhenIdle();
 }
 
 void TextInputTestHelper::OnBlur() {
   focus_state_ = false;
   if (waiting_type_ == WAIT_ON_BLUR)
-    base::MessageLoop::current()->Quit();
+    base::MessageLoop::current()->QuitWhenIdle();
 }
 
 void TextInputTestHelper::OnCaretBoundsChanged(
@@ -109,7 +109,7 @@ void TextInputTestHelper::OnCaretBoundsChanged(
       return;
   }
   if (waiting_type_ == WAIT_ON_CARET_BOUNDS_CHANGED)
-    base::MessageLoop::current()->Quit();
+    base::MessageLoop::current()->QuitWhenIdle();
 }
 
 void TextInputTestHelper::OnTextInputStateChanged(

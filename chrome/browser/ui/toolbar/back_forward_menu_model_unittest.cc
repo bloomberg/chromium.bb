@@ -46,7 +46,7 @@ class FaviconDelegate : public ui::MenuModelDelegate {
 
   void OnIconChanged(int model_index) override {
     was_called_ = true;
-    base::MessageLoop::current()->Quit();
+    base::MessageLoop::current()->QuitWhenIdle();
   }
 
   bool was_called() const { return was_called_; }

@@ -99,8 +99,8 @@ void GeolocationAccessTokenStoreTest::OnAccessTokenStoresLoaded(
     scoped_refptr<AccessTokenStore> store(new ChromeAccessTokenStore());
     store->SaveAccessToken(ref_url_, *token_to_set_);
   }
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE, base::MessageLoop::QuitClosure());
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::MessageLoop::QuitWhenIdleClosure());
 }
 
 IN_PROC_BROWSER_TEST_F(GeolocationAccessTokenStoreTest, SetAcrossInstances) {

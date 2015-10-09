@@ -68,7 +68,7 @@ class UserGestureCatcher : public content::NotificationObserver {
             .ptr()
             ->user_gesture());
     if (waiting_)
-      base::MessageLoopForUI::current()->Quit();
+      base::MessageLoopForUI::current()->QuitWhenIdle();
   }
 
   content::NotificationRegistrar registrar_;

@@ -116,7 +116,7 @@ class SyncServerStatusChecker : public net::URLFetcherDelegate {
     running_ =
         (source->GetStatus().status() == net::URLRequestStatus::SUCCESS &&
         source->GetResponseCode() == 200 && data.find("ok") == 0);
-    base::MessageLoop::current()->Quit();
+    base::MessageLoop::current()->QuitWhenIdle();
   }
 
   bool running() const { return running_; }

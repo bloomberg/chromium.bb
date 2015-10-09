@@ -125,11 +125,10 @@ class DeviceManagementServiceIntegrationTest
   void PerformRegistration() {
     ExpectRequest();
     EXPECT_CALL(*this, OnJobDone(DM_STATUS_SUCCESS, _, _))
-        .WillOnce(
-            DoAll(Invoke(this,
-                         &DeviceManagementServiceIntegrationTest::RecordToken),
-                  InvokeWithoutArgs(base::MessageLoop::current(),
-                                    &base::MessageLoop::Quit)));
+        .WillOnce(DoAll(
+            Invoke(this, &DeviceManagementServiceIntegrationTest::RecordToken),
+            InvokeWithoutArgs(base::MessageLoop::current(),
+                              &base::MessageLoop::QuitWhenIdle)));
     scoped_ptr<DeviceManagementRequestJob> job(
         service_->CreateJob(DeviceManagementRequestJob::TYPE_REGISTRATION,
                             g_browser_process->system_request_context()));
@@ -186,11 +185,10 @@ IN_PROC_BROWSER_TEST_P(DeviceManagementServiceIntegrationTest,
 
   ExpectRequest();
   EXPECT_CALL(*this, OnJobDone(DM_STATUS_SUCCESS, _, _))
-      .WillOnce(
-          DoAll(Invoke(this,
-                       &DeviceManagementServiceIntegrationTest::RecordAuthCode),
-                InvokeWithoutArgs(base::MessageLoop::current(),
-                                  &base::MessageLoop::Quit)));
+      .WillOnce(DoAll(
+          Invoke(this, &DeviceManagementServiceIntegrationTest::RecordAuthCode),
+          InvokeWithoutArgs(base::MessageLoop::current(),
+                            &base::MessageLoop::QuitWhenIdle)));
   scoped_ptr<DeviceManagementRequestJob> job(service_->CreateJob(
       DeviceManagementRequestJob::TYPE_API_AUTH_CODE_FETCH,
       g_browser_process->system_request_context()));
@@ -212,7 +210,7 @@ IN_PROC_BROWSER_TEST_P(DeviceManagementServiceIntegrationTest, PolicyFetch) {
   ExpectRequest();
   EXPECT_CALL(*this, OnJobDone(DM_STATUS_SUCCESS, _, _))
       .WillOnce(InvokeWithoutArgs(base::MessageLoop::current(),
-                                  &base::MessageLoop::Quit));
+                                  &base::MessageLoop::QuitWhenIdle));
   scoped_ptr<DeviceManagementRequestJob> job(
       service_->CreateJob(DeviceManagementRequestJob::TYPE_POLICY_FETCH,
                           g_browser_process->system_request_context()));
@@ -232,7 +230,7 @@ IN_PROC_BROWSER_TEST_P(DeviceManagementServiceIntegrationTest, Unregistration) {
   ExpectRequest();
   EXPECT_CALL(*this, OnJobDone(DM_STATUS_SUCCESS, _, _))
       .WillOnce(InvokeWithoutArgs(base::MessageLoop::current(),
-                                  &base::MessageLoop::Quit));
+                                  &base::MessageLoop::QuitWhenIdle));
   scoped_ptr<DeviceManagementRequestJob> job(
       service_->CreateJob(DeviceManagementRequestJob::TYPE_UNREGISTRATION,
                           g_browser_process->system_request_context()));
@@ -248,7 +246,7 @@ IN_PROC_BROWSER_TEST_P(DeviceManagementServiceIntegrationTest, AutoEnrollment) {
   ExpectRequest();
   EXPECT_CALL(*this, OnJobDone(DM_STATUS_SUCCESS, _, _))
       .WillOnce(InvokeWithoutArgs(base::MessageLoop::current(),
-                                  &base::MessageLoop::Quit));
+                                  &base::MessageLoop::QuitWhenIdle));
   scoped_ptr<DeviceManagementRequestJob> job(
       service_->CreateJob(DeviceManagementRequestJob::TYPE_AUTO_ENROLLMENT,
                           g_browser_process->system_request_context()));

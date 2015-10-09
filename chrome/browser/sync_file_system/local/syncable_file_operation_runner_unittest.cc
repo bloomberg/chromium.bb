@@ -132,7 +132,7 @@ class SyncableFileOperationRunnerTest : public testing::Test {
     SCOPED_TRACE(testing::Message() << location.ToString());
     EXPECT_EQ(expect, status);
     ++callback_count_;
-    base::MessageLoop::current()->Quit();
+    base::MessageLoop::current()->QuitWhenIdle();
   }
 
   bool CreateTempFile(base::FilePath* path) {

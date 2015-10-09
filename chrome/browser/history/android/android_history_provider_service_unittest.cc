@@ -106,30 +106,30 @@ class CallbackHelper : public base::RefCountedThreadSafe<CallbackHelper> {
 
   void OnInserted(int64 id) {
     success_ = id != 0;
-    base::MessageLoop::current()->Quit();
+    base::MessageLoop::current()->QuitWhenIdle();
   }
 
   void OnQueryResult(AndroidStatement* statement) {
     success_ = statement != NULL;
     statement_ = statement;
-    base::MessageLoop::current()->Quit();
+    base::MessageLoop::current()->QuitWhenIdle();
   }
 
   void OnUpdated(int count) {
     success_ = count != 0;
     count_ = count;
-    base::MessageLoop::current()->Quit();
+    base::MessageLoop::current()->QuitWhenIdle();
   }
 
   void OnDeleted(int count) {
     success_ = count != 0;
     count_ = count;
-    base::MessageLoop::current()->Quit();
+    base::MessageLoop::current()->QuitWhenIdle();
   }
 
   void OnStatementMoved(int cursor_position) {
     cursor_position_ = cursor_position;
-    base::MessageLoop::current()->Quit();
+    base::MessageLoop::current()->QuitWhenIdle();
   }
 
  private:

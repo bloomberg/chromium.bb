@@ -223,9 +223,7 @@ class ServiceDiscoveryTest : public ::testing::Test {
     callback.Cancel();
   }
 
-  void Stop() {
-    base::MessageLoop::current()->Quit();
-  }
+  void Stop() { base::MessageLoop::current()->QuitWhenIdle(); }
 
   net::MockMDnsSocketFactory socket_factory_;
   net::MDnsClientImpl mdns_client_;

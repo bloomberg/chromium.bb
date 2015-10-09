@@ -85,7 +85,7 @@ class FakeExternalProtocolHandlerDelegate
   }
 
   void FinishedProcessingCheck() override {
-    base::MessageLoop::current()->Quit();
+    base::MessageLoop::current()->QuitWhenIdle();
   }
 
   void set_os_state(ShellIntegration::DefaultWebClientState value) {

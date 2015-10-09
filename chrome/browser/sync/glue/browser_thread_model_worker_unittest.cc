@@ -60,8 +60,8 @@ class SyncBrowserThreadModelWorkerTest : public testing::Test {
   syncer::SyncerError DoWork() {
     EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::DB));
     timer_.Stop();  // Stop the failure timer so the test succeeds.
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE, base::MessageLoop::QuitClosure());
+    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                            base::MessageLoop::QuitWhenIdleClosure());
     did_do_work_ = true;
     return syncer::SYNCER_OK;
   }
@@ -70,8 +70,8 @@ class SyncBrowserThreadModelWorkerTest : public testing::Test {
   // DoWork is called first.
   void Timeout() {
     ADD_FAILURE() << "Timed out waiting for work to be done on the DB thread.";
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE, base::MessageLoop::QuitClosure());
+    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                            base::MessageLoop::QuitWhenIdleClosure());
   }
 
  protected:

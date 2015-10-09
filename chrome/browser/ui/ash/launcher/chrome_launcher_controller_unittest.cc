@@ -800,8 +800,8 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest
 
     // A Task is leaked if we don't destroy everything, then run the message
     // loop.
-    base::MessageLoop::current()->PostTask(FROM_HERE,
-                                           base::MessageLoop::QuitClosure());
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
     base::MessageLoop::current()->Run();
   }
 

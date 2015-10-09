@@ -105,7 +105,7 @@ class SendResponseDelegate
     response_.reset(new bool);
     *response_ = success;
     if (should_post_quit_) {
-      base::MessageLoopForUI::current()->Quit();
+      base::MessageLoopForUI::current()->QuitWhenIdle();
     }
   }
 

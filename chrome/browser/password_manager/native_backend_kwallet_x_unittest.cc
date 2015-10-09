@@ -388,7 +388,7 @@ void NativeBackendKWalletTest::SetUp() {
 
 void NativeBackendKWalletTest::TearDown() {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::MessageLoop::QuitClosure());
+      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
   base::MessageLoop::current()->Run();
   db_thread_.Stop();
 }

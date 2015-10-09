@@ -316,7 +316,7 @@ class DevToolsUnresponsiveBeforeUnloadTest: public DevToolsBeforeUnloadTest {
 
 void TimeoutCallback(const std::string& timeout_message) {
   ADD_FAILURE() << timeout_message;
-  base::MessageLoop::current()->Quit();
+  base::MessageLoop::current()->QuitWhenIdle();
 }
 
 // Base class for DevTools tests that test devtools functionality for
@@ -400,7 +400,7 @@ class DevToolsExtensionTest : public DevToolsSanityTest,
     switch (type) {
       case extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED:
       case extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_FIRST_LOAD:
-        base::MessageLoopForUI::current()->Quit();
+        base::MessageLoopForUI::current()->QuitWhenIdle();
         break;
       default:
         NOTREACHED();
@@ -454,7 +454,7 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
       worker_data_->worker_route_id = route_id;
       WorkerService::GetInstance()->RemoveObserver(this);
       BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-          base::MessageLoop::QuitClosure());
+                              base::MessageLoop::QuitWhenIdleClosure());
       delete this;
     }
     std::string path_;
@@ -475,7 +475,7 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
       ASSERT_EQ(worker_data_->worker_route_id, route_id);
       WorkerService::GetInstance()->RemoveObserver(this);
       BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-          base::MessageLoop::QuitClosure());
+                              base::MessageLoop::QuitWhenIdleClosure());
       delete this;
     }
     scoped_refptr<WorkerData> worker_data_;
@@ -521,7 +521,7 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
       worker_data->worker_process_id = worker_info[0].process_id;
       worker_data->worker_route_id = worker_info[0].route_id;
       BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-          base::MessageLoop::QuitClosure());
+                              base::MessageLoop::QuitWhenIdleClosure());
       return;
     }
 

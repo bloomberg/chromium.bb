@@ -77,7 +77,7 @@ class ConstrainedWebDialogBrowserTest : public InProcessBrowserTest {
       }
 
       base::MessageLoop::current()->task_runner()->PostDelayedTask(
-          FROM_HERE, base::MessageLoop::QuitClosure(),
+          FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
           base::TimeDelta::FromMilliseconds(20));
       content::RunMessageLoop();
     }

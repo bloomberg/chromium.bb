@@ -92,15 +92,9 @@ class FullStreamUIPolicyTest : public testing::Test {
     // checker function when results are available.  This will happen on the
     // database thread.
     policy->ReadFilteredData(
-        extension_id,
-        type,
-        api_name,
-        page_url,
-        arg_url,
-        days_ago,
-        base::Bind(&FullStreamUIPolicyTest::CheckWrapper,
-                   checker,
-                   base::MessageLoop::current()->QuitClosure()));
+        extension_id, type, api_name, page_url, arg_url, days_ago,
+        base::Bind(&FullStreamUIPolicyTest::CheckWrapper, checker,
+                   base::MessageLoop::current()->QuitWhenIdleClosure()));
 
     // Set up a timeout for receiving results; if we haven't received anything
     // when the timeout triggers then assume that the test is broken.
@@ -935,10 +929,8 @@ TEST_F(FullStreamUIPolicyTest, CapReturns) {
 
   policy->Flush();
   BrowserThread::PostTaskAndReply(
-      BrowserThread::DB,
-      FROM_HERE,
-      base::Bind(&base::DoNothing),
-      base::MessageLoop::current()->QuitClosure());
+      BrowserThread::DB, FROM_HERE, base::Bind(&base::DoNothing),
+      base::MessageLoop::current()->QuitWhenIdleClosure());
   base::MessageLoop::current()->Run();
 
   CheckReadFilteredData(

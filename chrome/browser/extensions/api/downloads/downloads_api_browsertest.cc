@@ -185,7 +185,7 @@ class DownloadsEventsListener : public content::NotificationObserver {
               waiting_for_.get() &&
               new_event->Satisfies(*waiting_for_)) {
             waiting_ = false;
-            base::MessageLoopForUI::current()->Quit();
+            base::MessageLoopForUI::current()->QuitWhenIdle();
           }
           break;
         }

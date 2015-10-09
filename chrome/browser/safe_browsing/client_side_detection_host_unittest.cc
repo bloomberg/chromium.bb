@@ -90,7 +90,7 @@ MATCHER(CallbackIsNull, "") {
 
 ACTION(QuitUIMessageLoop) {
   EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  base::MessageLoopForUI::current()->Quit();
+  base::MessageLoopForUI::current()->QuitWhenIdle();
 }
 
 ACTION_P(InvokeDoneCallback, verdict) {

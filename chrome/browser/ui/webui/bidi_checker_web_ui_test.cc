@@ -69,10 +69,9 @@ void ReloadLocaleResourcesOnIOThread(const std::string& new_locale) {
 // crbug.com/95425, crbug.com/132752
 void ReloadLocaleResources(const std::string& new_locale) {
   content::BrowserThread::PostTaskAndReply(
-      content::BrowserThread::IO,
-      FROM_HERE,
+      content::BrowserThread::IO, FROM_HERE,
       base::Bind(&ReloadLocaleResourcesOnIOThread, base::ConstRef(new_locale)),
-      base::MessageLoop::QuitClosure());
+      base::MessageLoop::QuitWhenIdleClosure());
   content::RunMessageLoop();
 }
 

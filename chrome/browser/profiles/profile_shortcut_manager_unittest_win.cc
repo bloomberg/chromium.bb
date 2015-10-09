@@ -87,8 +87,8 @@ class ProfileShortcutManagerTest : public testing::Test {
   }
 
   void RunPendingTasks() {
-    base::MessageLoop::current()->PostTask(FROM_HERE,
-                                           base::MessageLoop::QuitClosure());
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
     base::MessageLoop::current()->Run();
   }
 

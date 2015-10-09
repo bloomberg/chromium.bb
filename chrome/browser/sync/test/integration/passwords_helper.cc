@@ -48,7 +48,7 @@ class PasswordStoreConsumerHelper
   void OnGetPasswordStoreResults(ScopedVector<PasswordForm> results) override {
     result_.swap(results);
     // Quit the message loop to wake up passwords_helper::GetLogins.
-    base::MessageLoopForUI::current()->Quit();
+    base::MessageLoopForUI::current()->QuitWhenIdle();
   }
 
   ScopedVector<PasswordForm> result() { return result_.Pass(); }

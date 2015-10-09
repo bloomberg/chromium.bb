@@ -45,8 +45,8 @@ class SQLiteCursor {
   // give unit tests a chance to run the message loop before event_.Wait is
   // invoked, The OnGetMoveToResult() and OnGetFaviconResult() is used to notify
   // the test observer in the UI thread when the task's result comes back, it
-  // calls MessageLoop::Quit() to exit the loop, then the event.Wait() is
-  // called. Basically, Two threads are used to simulate 3 threads' behavior
+  // calls MessageLoop::QuitWhenIdle() to exit the loop, then the event.Wait()
+  // is called. Basically, Two threads are used to simulate 3 threads' behavior
   // here.
   // The whole observer design is only for test purpose and should only be used
   // in unit test.

@@ -641,7 +641,7 @@ class MockCountListener : public DevToolsAndroidBridge::DeviceCountListener {
     Shutdown();
   }
 
-  void Shutdown() { base::MessageLoop::current()->Quit(); }
+  void Shutdown() { base::MessageLoop::current()->QuitWhenIdle(); }
 
   DevToolsAndroidBridge* adb_bridge_;
   int invoked_;

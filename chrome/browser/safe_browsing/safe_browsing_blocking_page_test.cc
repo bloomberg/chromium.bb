@@ -266,7 +266,7 @@ class FakeMalwareDetails : public MalwareDetails {
   void OnDOMDetailsDone() {
     got_dom_ = true;
     if (waiting_) {
-      base::MessageLoopForUI::current()->Quit();
+      base::MessageLoopForUI::current()->QuitWhenIdle();
     }
   }
 
@@ -315,7 +315,7 @@ class TestSafeBrowsingBlockingPage : public SafeBrowsingBlockingPage {
       return;
 
     // Notify that we are gone
-    base::MessageLoopForUI::current()->Quit();
+    base::MessageLoopForUI::current()->QuitWhenIdle();
     wait_for_delete_ = false;
   }
 

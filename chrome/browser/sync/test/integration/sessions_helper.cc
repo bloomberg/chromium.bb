@@ -156,9 +156,7 @@ class TabEventHandler : public browser_sync::LocalSessionEventHandler {
   }
 
  private:
-  void QuitLoop() {
-    base::MessageLoop::current()->Quit();
-  }
+  void QuitLoop() { base::MessageLoop::current()->QuitWhenIdle(); }
 
   base::WeakPtrFactory<TabEventHandler> weak_factory_;
 };

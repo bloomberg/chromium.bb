@@ -155,7 +155,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
   // history::HisoryServiceObserver
   void OnHistoryServiceLoaded(
       history::HistoryService* history_service) override {
-    base::MessageLoop::current()->Quit();
+    base::MessageLoop::current()->QuitWhenIdle();
   }
 
  protected:
@@ -369,12 +369,12 @@ class OmniboxViewTest : public InProcessBrowserTest,
       default:
         FAIL() << "Unexpected notification type";
     }
-    base::MessageLoop::current()->Quit();
+    base::MessageLoop::current()->QuitWhenIdle();
   }
 
   void OnURLsModified(history::HistoryService* history_service,
                       const history::URLRows& changed_urls) override {
-    base::MessageLoop::current()->Quit();
+    base::MessageLoop::current()->QuitWhenIdle();
   }
 
  private:

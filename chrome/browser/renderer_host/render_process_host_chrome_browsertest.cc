@@ -119,7 +119,7 @@ class ChromeRenderProcessHostTest : public InProcessBrowserTest {
   void WaitForLauncherThread() {
     content::BrowserThread::PostTaskAndReply(
         content::BrowserThread::PROCESS_LAUNCHER, FROM_HERE,
-        base::Bind(&base::DoNothing), base::MessageLoop::QuitClosure());
+        base::Bind(&base::DoNothing), base::MessageLoop::QuitWhenIdleClosure());
     base::MessageLoop::current()->Run();
   }
 

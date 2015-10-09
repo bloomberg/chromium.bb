@@ -125,7 +125,7 @@ class ProvisionalLoadWaiter : public content::WebContentsObserver {
       bool was_ignored_by_handler) override {
     seen_ = true;
     if (waiting_)
-      base::MessageLoopForUI::current()->Quit();
+      base::MessageLoopForUI::current()->QuitWhenIdle();
   }
 
  private:
@@ -336,7 +336,7 @@ class SSLUITest
 
       // Wait a bit.
       base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-          FROM_HERE, base::MessageLoop::QuitClosure(),
+          FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
           base::TimeDelta::FromMilliseconds(kTimeoutMS));
       content::RunMessageLoop();
     }
@@ -1760,7 +1760,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestCloseTabWithUnsafePopup) {
     if (IsShowingWebContentsModalDialog())
       break;
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, base::MessageLoop::QuitClosure(),
+        FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
         base::TimeDelta::FromSeconds(1));
     content::RunMessageLoop();
   }

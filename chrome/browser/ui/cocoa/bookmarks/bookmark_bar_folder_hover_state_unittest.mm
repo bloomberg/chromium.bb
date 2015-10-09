@@ -47,7 +47,7 @@ TEST_F(BookmarkBarFolderHoverStateTest, HoverState) {
   // Test transition from opening to opened.
   message_loop.PostDelayedTask(
       FROM_HERE,
-      base::MessageLoop::QuitClosure(),
+      base::MessageLoop::QuitWhenIdleClosure(),
       base::TimeDelta::FromMilliseconds(
           bookmarks::kDragHoverOpenDelay * 1000.0 * 1.5));
   message_loop.Run();
@@ -68,7 +68,7 @@ TEST_F(BookmarkBarFolderHoverStateTest, HoverState) {
   ASSERT_EQ(kHoverStateClosing, [bbfhs hoverState]);
   message_loop.PostDelayedTask(
       FROM_HERE,
-      base::MessageLoop::QuitClosure(),
+      base::MessageLoop::QuitWhenIdleClosure(),
       base::TimeDelta::FromMilliseconds(
           bookmarks::kDragHoverCloseDelay * 1000.0 * 1.5));
   message_loop.Run();

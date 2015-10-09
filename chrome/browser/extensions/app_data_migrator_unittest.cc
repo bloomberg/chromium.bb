@@ -105,7 +105,7 @@ void MigrationCallback() {
 }
 
 void DidWrite(base::File::Error status, int64 bytes, bool complete) {
-  base::MessageLoop::current()->Quit();
+  base::MessageLoop::current()->QuitWhenIdle();
 }
 
 void DidCreate(base::File::Error status) {
@@ -183,7 +183,7 @@ void VerifyFileContents(base::File file,
   file.Close();
   if (!on_close_callback.is_null())
     on_close_callback.Run();
-  base::MessageLoop::current()->Quit();
+  base::MessageLoop::current()->QuitWhenIdle();
 }
 
 void VerifyTestFilesMigrated(content::StoragePartition* new_partition,

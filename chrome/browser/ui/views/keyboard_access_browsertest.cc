@@ -68,8 +68,8 @@ class ViewFocusChangeWaiter : public views::FocusChangeListener {
   void OnDidChangeFocus(views::View* focused_before,
                         views::View* focused_now) override {
     if (focused_now && focused_now->id() != previous_view_id_) {
-      base::MessageLoop::current()->PostTask(FROM_HERE,
-                                             base::MessageLoop::QuitClosure());
+      base::MessageLoop::current()->PostTask(
+          FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
     }
   }
 
@@ -113,8 +113,7 @@ class SendKeysMenuListener : public views::MenuListener {
     } else {
       SendKeyPress(browser_, ui::VKEY_ESCAPE);
       base::MessageLoop::current()->PostDelayedTask(
-          FROM_HERE,
-          base::MessageLoop::QuitClosure(),
+          FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
           base::TimeDelta::FromMilliseconds(200));
     }
   }

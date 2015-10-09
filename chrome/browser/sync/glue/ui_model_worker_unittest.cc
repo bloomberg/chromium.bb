@@ -31,7 +31,7 @@ class UIModelWorkerVisitor {
     EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::UI));
     was_run_->Signal();
     if (quit_loop_when_run_)
-      base::MessageLoop::current()->Quit();
+      base::MessageLoop::current()->QuitWhenIdle();
     return syncer::SYNCER_OK;
   }
 

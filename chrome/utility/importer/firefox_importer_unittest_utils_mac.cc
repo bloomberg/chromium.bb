@@ -78,14 +78,14 @@ class FFDecryptorServerChannelListener : public IPC::Listener {
     DCHECK(!got_result);
     result_bool = result;
     got_result = true;
-    base::MessageLoop::current()->Quit();
+    base::MessageLoop::current()->QuitWhenIdle();
   }
 
   void OnDecryptedTextResponse(const base::string16& decrypted_text) {
     DCHECK(!got_result);
     result_string = decrypted_text;
     got_result = true;
-    base::MessageLoop::current()->Quit();
+    base::MessageLoop::current()->QuitWhenIdle();
   }
 
   void OnParseSignonsResponse(
@@ -93,7 +93,7 @@ class FFDecryptorServerChannelListener : public IPC::Listener {
     DCHECK(!got_result);
     result_vector = parsed_vector;
     got_result = true;
-    base::MessageLoop::current()->Quit();
+    base::MessageLoop::current()->QuitWhenIdle();
   }
 
   void QuitClient() {
@@ -115,7 +115,7 @@ class FFDecryptorServerChannelListener : public IPC::Listener {
   // If an error occured, just kill the message Loop.
   void OnChannelError() override {
     got_result = false;
-    base::MessageLoop::current()->Quit();
+    base::MessageLoop::current()->QuitWhenIdle();
   }
 
   // Results of IPC calls.
@@ -164,7 +164,7 @@ class CancellableQuitMsgLoop : public base::RefCounted<CancellableQuitMsgLoop> {
   CancellableQuitMsgLoop() : cancelled_(false) {}
   void QuitNow() {
     if (!cancelled_)
-      base::MessageLoop::current()->Quit();
+      base::MessageLoop::current()->QuitWhenIdle();
   }
   bool cancelled_;
 
@@ -256,9 +256,7 @@ class FFDecryptorClientChannelListener : public IPC::Listener {
     sender_->Send(new Msg_ParseSignons_Response(forms));
   }
 
-  void OnQuitRequest() {
-    base::MessageLoop::current()->Quit();
-  }
+  void OnQuitRequest() { base::MessageLoop::current()->QuitWhenIdle(); }
 
   bool OnMessageReceived(const IPC::Message& msg) override {
     bool handled = true;
@@ -272,7 +270,9 @@ class FFDecryptorClientChannelListener : public IPC::Listener {
     return handled;
   }
 
-  void OnChannelError() override { base::MessageLoop::current()->Quit(); }
+  void OnChannelError() override {
+    base::MessageLoop::current()->QuitWhenIdle();
+  }
 
  private:
   NSSDecryptor decryptor_;

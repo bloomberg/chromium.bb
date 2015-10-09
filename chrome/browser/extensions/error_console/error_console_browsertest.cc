@@ -158,7 +158,7 @@ class ErrorConsoleBrowserTest : public ExtensionBrowserTest {
       ++errors_observed_;
       if (errors_observed_ >= errors_expected_) {
         if (waiting_)
-          base::MessageLoopForUI::current()->Quit();
+          base::MessageLoopForUI::current()->QuitWhenIdle();
       }
     }
 

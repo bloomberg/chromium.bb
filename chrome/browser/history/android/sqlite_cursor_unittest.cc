@@ -80,11 +80,15 @@ class SQLiteCursorTest : public testing::Test,
   // Override SQLiteCursor::TestObserver.
   void OnPostMoveToTask() override { base::MessageLoop::current()->Run(); }
 
-  void OnGetMoveToResult() override { base::MessageLoop::current()->Quit(); }
+  void OnGetMoveToResult() override {
+    base::MessageLoop::current()->QuitWhenIdle();
+  }
 
   void OnPostGetFaviconTask() override { base::MessageLoop::current()->Run(); }
 
-  void OnGetFaviconResult() override { base::MessageLoop::current()->Quit(); }
+  void OnGetFaviconResult() override {
+    base::MessageLoop::current()->QuitWhenIdle();
+  }
 
  protected:
   TestingProfileManager profile_manager_;
@@ -117,13 +121,13 @@ class CallbackHelper : public base::RefCountedThreadSafe<CallbackHelper> {
 
   void OnInserted(int64 id) {
     success_ = id != 0;
-    base::MessageLoop::current()->Quit();
+    base::MessageLoop::current()->QuitWhenIdle();
   }
 
   void OnQueryResult(AndroidStatement* statement) {
     success_ = statement != NULL;
     statement_ = statement;
-    base::MessageLoop::current()->Quit();
+    base::MessageLoop::current()->QuitWhenIdle();
   }
 
  private:

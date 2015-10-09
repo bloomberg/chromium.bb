@@ -232,7 +232,7 @@ class FileManagerTestListener : public content::NotificationObserver {
             ? content::Source<extensions::TestSendMessageFunction>(source).ptr()
             : NULL;
     messages_.push_back(entry);
-    base::MessageLoopForUI::current()->Quit();
+    base::MessageLoopForUI::current()->QuitWhenIdle();
   }
 
  private:

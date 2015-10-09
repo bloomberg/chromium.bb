@@ -54,7 +54,7 @@ void MockPermissionBubbleView::Show(
   permission_requests_ = requests;
   permission_states_ = accept_state;
   if (browser_test_)
-    base::MessageLoopForUI::current()->Quit();
+    base::MessageLoopForUI::current()->QuitWhenIdle();
 }
 
 void MockPermissionBubbleView::Hide() {

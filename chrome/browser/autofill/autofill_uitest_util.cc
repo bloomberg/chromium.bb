@@ -43,7 +43,7 @@ class PdmChangeWaiter
   // PersonalDataManagerObserver:
   void OnPersonalDataChanged() override {
     if (has_run_message_loop_) {
-      base::MessageLoopForUI::current()->Quit();
+      base::MessageLoopForUI::current()->QuitWhenIdle();
       has_run_message_loop_ = false;
     }
     alerted_ = true;

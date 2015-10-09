@@ -666,7 +666,7 @@ void DnsProbeBrowserTest::OnDnsProbeStatusSent(
     DnsProbeStatus dns_probe_status) {
   dns_probe_status_queue_.push_back(dns_probe_status);
   if (awaiting_dns_probe_status_)
-    MessageLoop::current()->Quit();
+    MessageLoop::current()->QuitWhenIdle();
 }
 
 // Make sure probes don't break non-DNS error pages when corrections load.

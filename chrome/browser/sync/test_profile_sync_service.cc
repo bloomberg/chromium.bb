@@ -181,7 +181,7 @@ TestProfileSyncService::GetSyncApiComponentFactoryMock() {
 void TestProfileSyncService::OnConfigureDone(
     const sync_driver::DataTypeManager::ConfigureResult& result) {
   ProfileSyncService::OnConfigureDone(result);
-  base::MessageLoop::current()->Quit();
+  base::MessageLoop::current()->QuitWhenIdle();
 }
 
 UserShare* TestProfileSyncService::GetUserShare() const {

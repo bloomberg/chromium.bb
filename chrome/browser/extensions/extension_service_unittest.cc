@@ -1240,7 +1240,7 @@ void PackExtensionTestClient::OnPackSuccess(
   // on with the rest of the test.
   // This call to |Quit()| matches the call to |Run()| in the
   // |PackPunctuatedExtension| test.
-  base::MessageLoop::current()->Quit();
+  base::MessageLoop::current()->QuitWhenIdle();
   EXPECT_EQ(expected_crx_path_.value(), crx_path.value());
   EXPECT_EQ(expected_private_key_path_.value(), private_key_path.value());
   ASSERT_TRUE(base::PathExists(private_key_path));
@@ -4715,15 +4715,15 @@ class ExtensionCookieCallback {
 
   void SetCookieCallback(bool result) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(&base::MessageLoop::Quit, weak_factory_.GetWeakPtr()));
+        FROM_HERE, base::Bind(&base::MessageLoop::QuitWhenIdle,
+                              weak_factory_.GetWeakPtr()));
     result_ = result;
   }
 
   void GetAllCookiesCallback(const net::CookieList& list) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(&base::MessageLoop::Quit, weak_factory_.GetWeakPtr()));
+        FROM_HERE, base::Bind(&base::MessageLoop::QuitWhenIdle,
+                              weak_factory_.GetWeakPtr()));
     list_ = list;
   }
   net::CookieList list_;

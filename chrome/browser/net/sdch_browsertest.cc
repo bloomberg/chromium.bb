@@ -640,7 +640,7 @@ class SdchBrowserTest : public InProcessBrowserTest,
   void OnURLFetchComplete(const net::URLFetcher* source) override {
     url_fetch_complete_ = true;
     if (waiting_)
-      base::MessageLoopForUI::current()->Quit();
+      base::MessageLoopForUI::current()->QuitWhenIdle();
   }
 
   SdchResponseHandler response_handler_;

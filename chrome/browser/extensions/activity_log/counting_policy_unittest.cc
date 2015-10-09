@@ -69,10 +69,8 @@ class CountingPolicyTest : public testing::Test {
   // Wait for the task queue for the specified thread to empty.
   void WaitOnThread(const BrowserThread::ID& thread) {
     BrowserThread::PostTaskAndReply(
-        thread,
-        FROM_HERE,
-        base::Bind(&base::DoNothing),
-        base::MessageLoop::current()->QuitClosure());
+        thread, FROM_HERE, base::Bind(&base::DoNothing),
+        base::MessageLoop::current()->QuitWhenIdleClosure());
     base::MessageLoop::current()->Run();
   }
 
@@ -102,15 +100,9 @@ class CountingPolicyTest : public testing::Test {
     // checker function when results are available.  This will happen on the
     // database thread.
     policy->ReadFilteredData(
-        extension_id,
-        type,
-        api_name,
-        page_url,
-        arg_url,
-        day,
-        base::Bind(&CountingPolicyTest::CheckWrapper,
-                   checker,
-                   base::MessageLoop::current()->QuitClosure()));
+        extension_id, type, api_name, page_url, arg_url, day,
+        base::Bind(&CountingPolicyTest::CheckWrapper, checker,
+                   base::MessageLoop::current()->QuitWhenIdleClosure()));
 
     // Set up a timeout for receiving results; if we haven't received anything
     // when the timeout triggers then assume that the test is broken.

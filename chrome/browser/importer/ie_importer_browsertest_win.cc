@@ -240,7 +240,7 @@ class TestObserver : public ProfileWriter,
   void ImportItemStarted(importer::ImportItem item) override {}
   void ImportItemEnded(importer::ImportItem item) override {}
   void ImportEnded() override {
-    base::MessageLoop::current()->Quit();
+    base::MessageLoop::current()->QuitWhenIdle();
     if (importer_items_ & importer::FAVORITES) {
       EXPECT_EQ(arraysize(kIEBookmarks), bookmark_count_);
       EXPECT_EQ(arraysize(kIEFaviconGroup), favicon_count_);
@@ -388,7 +388,7 @@ class MalformedFavoritesRegistryTestObserver
   void ImportItemStarted(importer::ImportItem item) override {}
   void ImportItemEnded(importer::ImportItem item) override {}
   void ImportEnded() override {
-    base::MessageLoop::current()->Quit();
+    base::MessageLoop::current()->QuitWhenIdle();
     EXPECT_EQ(arraysize(kIESortedBookmarks), bookmark_count_);
   }
 

@@ -42,7 +42,7 @@ class ActivityLogPrerenderTest : public ExtensionApiTest {
       scoped_ptr<std::vector<scoped_refptr<Action> > > i) {
     // This is to exit RunLoop (base::MessageLoop::current()->Run()) below
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::MessageLoop::QuitClosure());
+        FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
 
     ASSERT_TRUE(i->size());
     scoped_refptr<Action> last = i->front();

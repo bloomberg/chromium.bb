@@ -220,7 +220,7 @@ class BrowserFeatureExtractorTest : public ChromeRenderViewHostTestHarness {
     // the test case which passed it to ExtractFeatures above.
     success_[request.release()] = success;
     if (--num_pending_ == 0) {
-      base::MessageLoop::current()->Quit();
+      base::MessageLoop::current()->QuitWhenIdle();
     }
   }
 
@@ -233,7 +233,7 @@ class BrowserFeatureExtractorTest : public ChromeRenderViewHostTestHarness {
     // the test case which passed it to ExtractMalwareFeatures above.
     success_[request.release()] = success;
     if (--num_pending_ == 0) {
-      base::MessageLoopForUI::current()->Quit();
+      base::MessageLoopForUI::current()->QuitWhenIdle();
     }
   }
 };

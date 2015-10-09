@@ -133,8 +133,8 @@ ACTION_P2(CheckListSize, model, expected_list_size) {
 }
 
 ACTION_P(QuitMessageLoop, message_loop) {
-  message_loop->task_runner()->PostTask(FROM_HERE,
-                                        base::MessageLoop::QuitClosure());
+  message_loop->task_runner()->PostTask(
+      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
 }
 
 class DesktopMediaListTest : public testing::Test {

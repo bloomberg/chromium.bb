@@ -37,7 +37,7 @@ bool RunLoopUntil(const base::Callback<bool()>& condition) {
     }
 
     base::MessageLoop::current()->task_runner()->PostDelayedTask(
-        FROM_HERE, base::MessageLoop::QuitClosure(),
+        FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
         base::TimeDelta::FromMilliseconds(20));
     content::RunMessageLoop();
   }
@@ -228,13 +228,11 @@ class FlashFullscreenInteractiveBrowserTest : public OutOfProcessPPAPITest {
     // |expected_color|.
     bool is_expected_color = false;
     flash_fs_host->CopyFromBackingStore(
-        gfx::Rect(0, 0, 1, 1),
-        gfx::Size(1, 1),
+        gfx::Rect(0, 0, 1, 1), gfx::Size(1, 1),
         base::Bind(
             &FlashFullscreenInteractiveBrowserTest::CheckBitmapForFillColor,
-            expected_color,
-            &is_expected_color,
-            base::MessageLoop::QuitClosure()),
+            expected_color, &is_expected_color,
+            base::MessageLoop::QuitWhenIdleClosure()),
         kN32_SkColorType);
     content::RunMessageLoop();
 

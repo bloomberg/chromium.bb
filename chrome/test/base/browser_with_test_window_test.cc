@@ -105,7 +105,7 @@ void BrowserWithTestWindowTest::TearDown() {
   // A Task is leaked if we don't destroy everything, then run the message
   // loop.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::MessageLoop::QuitClosure());
+      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
   base::MessageLoop::current()->Run();
 }
 

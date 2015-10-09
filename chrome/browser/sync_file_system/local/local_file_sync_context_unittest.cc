@@ -132,7 +132,7 @@ class LocalFileSyncContextTest : public testing::Test {
     *changes_out = sync_file_info.changes;
     if (snapshot_out)
       *snapshot_out = snapshot.Pass();
-    base::MessageLoop::current()->Quit();
+    base::MessageLoop::current()->QuitWhenIdle();
   }
 
   SyncStatusCode ApplyRemoteChange(FileSystemContext* file_system_context,
@@ -169,7 +169,7 @@ class LocalFileSyncContextTest : public testing::Test {
     sync_context_->FinalizeExclusiveSync(
         file_system_context, url,
         status == SYNC_STATUS_OK /* clear_local_changes */,
-        base::MessageLoop::QuitClosure());
+        base::MessageLoop::QuitWhenIdleClosure());
   }
 
   void StartModifyFileOnIOThread(CannedSyncableFileSystem* file_system,

@@ -50,7 +50,7 @@ namespace {
 
 ACTION(QuitUIMessageLoop) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  base::MessageLoop::current()->Quit();
+  base::MessageLoop::current()->QuitWhenIdle();
 }
 
 // From the mock's argument #0 of type const std::vector<PasswordForm*>& takes

@@ -54,7 +54,8 @@ void ShutdownTask(base::MessageLoop* loop) {
   // Quit the main message loop.
   ASSERT_FALSE(g_good_shutdown);
   g_good_shutdown = true;
-  loop->task_runner()->PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
+  loop->task_runner()->PostTask(FROM_HERE,
+                                base::MessageLoop::QuitWhenIdleClosure());
 }
 
 }  // namespace
@@ -235,7 +236,7 @@ MULTIPROCESS_TEST_MAIN(ServiceProcessStateTestShutdown) {
       io_thread_.task_runner().get(),
       base::Bind(&ShutdownTask, base::MessageLoop::current())));
   message_loop.task_runner()->PostDelayedTask(
-      FROM_HERE, base::MessageLoop::QuitClosure(),
+      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
       TestTimeouts::action_max_timeout());
   EXPECT_FALSE(g_good_shutdown);
   message_loop.Run();
@@ -279,8 +280,7 @@ class ServiceProcessStateFileManipulationTest : public ::testing::Test {
     ASSERT_TRUE(service_process_state_.Initialize());
     ASSERT_TRUE(service_process_state_.SignalReady(
         io_thread_.task_runner().get(), base::Closure()));
-    loop_.PostDelayedTask(FROM_HERE,
-                          base::MessageLoop::QuitClosure(),
+    loop_.PostDelayedTask(FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
                           TestTimeouts::action_max_timeout());
   }
 

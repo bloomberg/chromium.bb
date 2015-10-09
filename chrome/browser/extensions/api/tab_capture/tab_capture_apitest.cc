@@ -437,7 +437,7 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_TabIndicator) {
       last_media_state_ = media_state;
       if (has_changed) {
         base::ThreadTaskRunnerHandle::Get()->PostTask(
-            FROM_HERE, base::MessageLoop::QuitClosure());
+            FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
       }
     }
 

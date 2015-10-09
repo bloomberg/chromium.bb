@@ -913,7 +913,7 @@ void LoginDisplayHostImpl::ShutdownDisplayHost(bool post_quit_task) {
   registrar_.RemoveAll();
   base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
   if (post_quit_task)
-    base::MessageLoop::current()->Quit();
+    base::MessageLoop::current()->QuitWhenIdle();
 
   if (!completion_callback_.is_null())
     base::MessageLoop::current()->PostTask(FROM_HERE, completion_callback_);

@@ -57,7 +57,7 @@ class TestWebDialogView : public views::WebDialogView {
       // loop.
       base::MessageLoop::current()->task_runner()->PostTask(
           FROM_HERE,
-          base::Bind(&base::MessageLoop::Quit,
+          base::Bind(&base::MessageLoop::QuitWhenIdle,
                      base::Unretained(base::MessageLoop::current())));
     }
 

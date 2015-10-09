@@ -507,7 +507,7 @@ void AutocompleteProviderTest::Observe(
     const content::NotificationDetails& details) {
   if (controller_->done()) {
     CopyResults();
-    base::MessageLoop::current()->Quit();
+    base::MessageLoop::current()->QuitWhenIdle();
   }
 }
 

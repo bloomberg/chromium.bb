@@ -465,8 +465,8 @@ TEST_F(ExtensionWebRequestTest, SimulateChancelWhileBlocked) {
   // Extension response for OnErrorOccurred: Terminate the message loop.
   ipc_sender_.PushTask(
       base::Bind(&base::MessageLoop::PostTask,
-                 base::Unretained(base::MessageLoop::current()),
-                 FROM_HERE, base::MessageLoop::QuitClosure()));
+                 base::Unretained(base::MessageLoop::current()), FROM_HERE,
+                 base::MessageLoop::QuitWhenIdleClosure()));
 
   request->Start();
   // request->Start() will have submitted OnBeforeRequest by the time we cancel.

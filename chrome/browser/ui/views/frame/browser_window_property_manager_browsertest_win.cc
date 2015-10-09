@@ -48,7 +48,7 @@ namespace {
 void UnblockOnProfileCreation(Profile* profile,
                               Profile::CreateStatus status) {
   if (status == Profile::CREATE_STATUS_INITIALIZED)
-    base::MessageLoop::current()->Quit();
+    base::MessageLoop::current()->QuitWhenIdle();
 }
 
 // Checks that the relaunch name, relaunch command and app icon for the given
@@ -95,7 +95,7 @@ void ValidateBrowserWindowProperties(
                 browser->profile()->GetPath()).value(),
             prop_var.get().pwszVal);
   prop_var.Reset();
-  base::MessageLoop::current()->Quit();
+  base::MessageLoop::current()->QuitWhenIdle();
 }
 
 void ValidateHostedAppWindowProperties(const Browser* browser,
@@ -140,7 +140,7 @@ void ValidateHostedAppWindowProperties(const Browser* browser,
                 web_app_dir, base::UTF8ToUTF16(extension->name())).value(),
             prop_var.get().pwszVal);
   prop_var.Reset();
-  base::MessageLoop::current()->Quit();
+  base::MessageLoop::current()->QuitWhenIdle();
 }
 
 void PostValidationTaskToUIThread(const base::Closure& validation_task) {

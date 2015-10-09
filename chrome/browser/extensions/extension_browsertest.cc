@@ -389,7 +389,7 @@ class MockAbortExtensionInstallPrompt : public ExtensionInstallPrompt {
                       const Extension* extension,
                       const ShowDialogCallback& show_dialog_callback) override {
     delegate->InstallUIAbort(true);
-    base::MessageLoopForUI::current()->Quit();
+    base::MessageLoopForUI::current()->QuitWhenIdle();
   }
 
   void OnInstallSuccess(const Extension* extension, SkBitmap* icon) override {}

@@ -136,7 +136,7 @@ void ShortcutsBackendTest::TearDown() {
 
 void ShortcutsBackendTest::OnShortcutsLoaded() {
   load_notified_ = true;
-  base::MessageLoop::current()->Quit();
+  base::MessageLoop::current()->QuitWhenIdle();
 }
 
 void ShortcutsBackendTest::OnShortcutsChanged() {

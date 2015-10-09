@@ -69,7 +69,7 @@ class TestWallpaperObserver : public WallpaperManager::Observer {
 
   void OnWallpaperAnimationFinished(const std::string&) override {
     finished_ = true;
-    base::MessageLoop::current()->Quit();
+    base::MessageLoop::current()->QuitWhenIdle();
   }
 
   void WaitForWallpaperAnimationFinished() {

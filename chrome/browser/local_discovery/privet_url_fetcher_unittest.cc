@@ -115,9 +115,7 @@ class PrivetURLFetcherTest : public ::testing::Test {
     callback.Cancel();
   }
 
-  void Stop() {
-    base::MessageLoop::current()->Quit();
-  }
+  void Stop() { base::MessageLoop::current()->QuitWhenIdle(); }
 
  protected:
   base::MessageLoop loop_;

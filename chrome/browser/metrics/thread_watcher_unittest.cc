@@ -701,7 +701,7 @@ TEST_F(ThreadWatcherListTest, Restart) {
   ThreadWatcherList::StartWatchingAll(*base::CommandLine::ForCurrentProcess());
   ThreadWatcherList::StopWatchingAll();
   message_loop_for_ui.task_runner()->PostDelayedTask(
-      FROM_HERE, message_loop_for_ui.QuitClosure(),
+      FROM_HERE, message_loop_for_ui.QuitWhenIdleClosure(),
       base::TimeDelta::FromSeconds(
           ThreadWatcherList::g_initialize_delay_seconds));
   message_loop_for_ui.Run();
@@ -713,7 +713,7 @@ TEST_F(ThreadWatcherListTest, Restart) {
   // Proceed with just |StartWatchingAll| and ensure it'll be started.
   ThreadWatcherList::StartWatchingAll(*base::CommandLine::ForCurrentProcess());
   message_loop_for_ui.task_runner()->PostDelayedTask(
-      FROM_HERE, message_loop_for_ui.QuitClosure(),
+      FROM_HERE, message_loop_for_ui.QuitWhenIdleClosure(),
       base::TimeDelta::FromSeconds(
           ThreadWatcherList::g_initialize_delay_seconds + 1));
   message_loop_for_ui.Run();
@@ -725,7 +725,7 @@ TEST_F(ThreadWatcherListTest, Restart) {
   // Finally, StopWatchingAll() must stop.
   ThreadWatcherList::StopWatchingAll();
   message_loop_for_ui.task_runner()->PostDelayedTask(
-      FROM_HERE, message_loop_for_ui.QuitClosure(),
+      FROM_HERE, message_loop_for_ui.QuitWhenIdleClosure(),
       base::TimeDelta::FromSeconds(
           ThreadWatcherList::g_initialize_delay_seconds));
   message_loop_for_ui.Run();

@@ -206,7 +206,7 @@ class FakeClientObserver
       delegate_->FakeRegisterWithOS(worker_->protocol());
     }
     if (state != ShellIntegration::STATE_PROCESSING) {
-      base::MessageLoop::current()->Quit();
+      base::MessageLoop::current()->QuitWhenIdle();
     }
   }
 

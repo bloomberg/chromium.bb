@@ -255,7 +255,8 @@ CloudPrintURLFetcherBasicTest::HandleRawResponse(
   if (handle_raw_response_) {
     // If the current message loop is not the IO loop, it will be shut down when
     // the main loop returns and this thread subsequently goes out of scope.
-    io_task_runner()->PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
+    io_task_runner()->PostTask(FROM_HERE,
+                               base::MessageLoop::QuitWhenIdleClosure());
     return CloudPrintURLFetcher::STOP_PROCESSING;
   }
   return CloudPrintURLFetcher::CONTINUE_PROCESSING;
@@ -269,7 +270,8 @@ CloudPrintURLFetcherBasicTest::HandleRawData(
   // We should never get here if we returned true in HandleRawResponse
   EXPECT_FALSE(handle_raw_response_);
   if (handle_raw_data_) {
-    io_task_runner()->PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
+    io_task_runner()->PostTask(FROM_HERE,
+                               base::MessageLoop::QuitWhenIdleClosure());
     return CloudPrintURLFetcher::STOP_PROCESSING;
   }
   return CloudPrintURLFetcher::CONTINUE_PROCESSING;
@@ -284,7 +286,8 @@ CloudPrintURLFetcherBasicTest::HandleJSONData(
   // We should never get here if we returned true in one of the above methods.
   EXPECT_FALSE(handle_raw_response_);
   EXPECT_FALSE(handle_raw_data_);
-  io_task_runner()->PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
+  io_task_runner()->PostTask(FROM_HERE,
+                             base::MessageLoop::QuitWhenIdleClosure());
   return CloudPrintURLFetcher::STOP_PROCESSING;
 }
 
@@ -302,7 +305,8 @@ CloudPrintURLFetcherOverloadTest::HandleRawData(
     // We have already sent 20 requests continuously. And we expect that
     // it takes more than 1 second due to the overload protection settings.
     EXPECT_TRUE(Time::Now() - start_time_ >= one_second);
-    io_task_runner()->PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
+    io_task_runner()->PostTask(FROM_HERE,
+                               base::MessageLoop::QuitWhenIdleClosure());
   }
   return CloudPrintURLFetcher::STOP_PROCESSING;
 }
@@ -321,7 +325,8 @@ CloudPrintURLFetcherRetryBackoffTest::HandleRawData(
 void CloudPrintURLFetcherRetryBackoffTest::OnRequestGiveUp() {
   // It takes more than 200 ms to finish all 11 requests.
   EXPECT_TRUE(Time::Now() - start_time_ >= TimeDelta::FromMilliseconds(200));
-  io_task_runner()->PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
+  io_task_runner()->PostTask(FROM_HERE,
+                             base::MessageLoop::QuitWhenIdleClosure());
 }
 
 TEST_F(CloudPrintURLFetcherBasicTest, HandleRawResponse) {

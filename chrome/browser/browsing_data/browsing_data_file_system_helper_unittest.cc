@@ -87,9 +87,7 @@ class BrowsingDataFileSystemHelperTest : public testing::Test {
 
   // Unblocks the current MessageLoop. Should be called in response to some sort
   // of async activity in a callback method.
-  void Notify() {
-    base::MessageLoop::current()->Quit();
-  }
+  void Notify() { base::MessageLoop::current()->QuitWhenIdle(); }
 
   // Callback that should be executed in response to
   // storage::FileSystemContext::OpenFileSystem.

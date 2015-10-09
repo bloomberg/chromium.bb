@@ -41,7 +41,7 @@ class TestWallpaperObserverPendingListEmpty
 
   void OnPendingListEmptyForTesting() override {
     empty_ = true;
-    base::MessageLoop::current()->Quit();
+    base::MessageLoop::current()->QuitWhenIdle();
   }
 
   void WaitForPendingListEmpty() {

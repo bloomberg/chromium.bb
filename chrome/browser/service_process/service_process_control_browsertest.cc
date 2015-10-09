@@ -55,7 +55,7 @@ class ServiceProcessControlBrowserTest
   }
 
   static void QuitMessageLoop() {
-    base::MessageLoop::current()->Quit();
+    base::MessageLoop::current()->QuitWhenIdle();
   }
 
   static void CloudPrintInfoCallback(
@@ -111,14 +111,14 @@ class ServiceProcessControlBrowserTest
     // because this can get invoked in the context of a Launch() call and we
     // may not be in Run() yet.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::MessageLoop::QuitClosure());
+        FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
   }
 
   void ProcessControlLaunchFailed() {
     ADD_FAILURE();
     // Quit the current message.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::MessageLoop::QuitClosure());
+        FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
   }
 
  private:
@@ -200,7 +200,7 @@ static void DecrementUntilZero(int* count) {
   (*count)--;
   if (!(*count))
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::MessageLoop::QuitClosure());
+        FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
 }
 
 // Flaky on Mac. http://crbug.com/517420
@@ -218,7 +218,7 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest,
   for (int i = 0; i < launch_count; i++) {
     // Launch the process asynchronously.
     process->Launch(base::Bind(&DecrementUntilZero, &launch_count),
-                    base::MessageLoop::QuitClosure());
+                    base::MessageLoop::QuitWhenIdleClosure());
   }
   // Then run the message loop to keep things running.
   content::RunMessageLoop();

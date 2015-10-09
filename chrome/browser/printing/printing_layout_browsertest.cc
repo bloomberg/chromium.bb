@@ -80,7 +80,7 @@ class PrintingLayoutTest : public PrintingTest<InProcessBrowserTest>,
       case printing::JobEventDetails::JOB_DONE: {
         // Succeeded.
         base::MessageLoop::current()->PostTask(
-            FROM_HERE, base::MessageLoop::QuitClosure());
+            FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
         break;
       }
       case printing::JobEventDetails::USER_INIT_CANCELED:
@@ -88,7 +88,7 @@ class PrintingLayoutTest : public PrintingTest<InProcessBrowserTest>,
         // Failed.
         ASSERT_TRUE(false);
         base::MessageLoop::current()->PostTask(
-            FROM_HERE, base::MessageLoop::QuitClosure());
+            FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
         break;
       }
       case printing::JobEventDetails::NEW_DOC:

@@ -832,7 +832,7 @@ class ExtensionWindowLastFocusedTest : public ExtensionTabsTest {
     // AppWindowRegistry::Observer:
     void OnAppWindowActivated(AppWindow* app_window) override {
       if (app_window_ == app_window && waiting_) {
-        base::MessageLoopForUI::current()->Quit();
+        base::MessageLoopForUI::current()->QuitWhenIdle();
         waiting_ = false;
       }
     }
@@ -864,7 +864,7 @@ class ExtensionWindowLastFocusedTest : public ExtensionTabsTest {
     void OnWidgetActivationChanged(views::Widget* widget,
                                    bool active) override {
       if (widget_ == widget && waiting_) {
-        base::MessageLoopForUI::current()->Quit();
+        base::MessageLoopForUI::current()->QuitWhenIdle();
         waiting_ = false;
       }
     }

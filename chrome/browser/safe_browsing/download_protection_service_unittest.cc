@@ -343,9 +343,7 @@ class DownloadProtectionServiceTest : public testing::Test {
                    base::Unretained(this)));
   }
 
-  void QuitMessageLoop() {
-    base::MessageLoop::current()->Quit();
-  }
+  void QuitMessageLoop() { base::MessageLoop::current()->QuitWhenIdle(); }
 
   void PostRunMessageLoopTask(BrowserThread::ID thread) {
     BrowserThread::PostTask(
@@ -377,7 +375,7 @@ class DownloadProtectionServiceTest : public testing::Test {
       DownloadProtectionService::DownloadCheckResult result) {
     result_ = result;
     has_result_ = true;
-    MessageLoop::current()->Quit();
+    MessageLoop::current()->QuitWhenIdle();
   }
 
   void SyncCheckDoneCallback(

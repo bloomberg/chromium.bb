@@ -181,7 +181,7 @@ class HostResolutionRequestRecorder : public net::HostResolverProc {
     if (is_waiting_for_hostname_ && waiting_for_hostname_ == hostname) {
       is_waiting_for_hostname_ = false;
       waiting_for_hostname_.clear();
-      base::MessageLoop::current()->Quit();
+      base::MessageLoop::current()->QuitWhenIdle();
     }
   }
 

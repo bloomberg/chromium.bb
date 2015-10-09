@@ -264,8 +264,8 @@ void ServiceProcess::Shutdown() {
 }
 
 void ServiceProcess::Terminate() {
-  main_message_loop_->task_runner()->PostTask(FROM_HERE,
-                                              base::MessageLoop::QuitClosure());
+  main_message_loop_->task_runner()->PostTask(
+      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
 }
 
 void ServiceProcess::OnShutdown() {

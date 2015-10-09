@@ -876,9 +876,7 @@ class TestSBClient
                             base::Bind(&TestSBClient::CheckDone, this));
   }
 
-  void CheckDone() {
-    base::MessageLoopForUI::current()->Quit();
-  }
+  void CheckDone() { base::MessageLoopForUI::current()->QuitWhenIdle(); }
 
   SBThreatType threat_type_;
   SafeBrowsingService* safe_browsing_service_;
@@ -1149,7 +1147,7 @@ class SafeBrowsingServiceShutdownTest : public SafeBrowsingServiceTest {
                                   Profile::CreateStatus status) {
     if (status == Profile::CREATE_STATUS_INITIALIZED) {
       profile2_ = profile;
-      base::MessageLoop::current()->Quit();
+      base::MessageLoop::current()->QuitWhenIdle();
     }
   }
 

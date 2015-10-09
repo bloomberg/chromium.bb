@@ -91,18 +91,18 @@ class MockDownloadsDOMHandler : public DownloadsDOMHandler {
   void CallUpdateAll(const base::ListValue& list) override {
     downloads_list_.reset(list.DeepCopy());
     if (waiting_list_) {
-      content::BrowserThread::PostTask(content::BrowserThread::UI,
-                                       FROM_HERE,
-                                       base::MessageLoop::QuitClosure());
+      content::BrowserThread::PostTask(
+          content::BrowserThread::UI, FROM_HERE,
+          base::MessageLoop::QuitWhenIdleClosure());
     }
   }
 
   void CallUpdateItem(const base::DictionaryValue& item) override {
     download_updated_.reset(item.DeepCopy());
     if (waiting_updated_) {
-      content::BrowserThread::PostTask(content::BrowserThread::UI,
-                                       FROM_HERE,
-                                       base::MessageLoop::QuitClosure());
+      content::BrowserThread::PostTask(
+          content::BrowserThread::UI, FROM_HERE,
+          base::MessageLoop::QuitWhenIdleClosure());
     }
   }
 

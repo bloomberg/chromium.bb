@@ -295,17 +295,15 @@ class MakeRequestFail {
  public:
   // Sets up the filter on IO thread such that requests to |host| fail.
   explicit MakeRequestFail(const std::string& host) : host_(host) {
-    BrowserThread::PostTaskAndReply(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(MakeRequestFailOnIO, host_),
-        base::MessageLoop::QuitClosure());
+    BrowserThread::PostTaskAndReply(BrowserThread::IO, FROM_HERE,
+                                    base::Bind(MakeRequestFailOnIO, host_),
+                                    base::MessageLoop::QuitWhenIdleClosure());
     content::RunMessageLoop();
   }
   ~MakeRequestFail() {
-    BrowserThread::PostTaskAndReply(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(UndoMakeRequestFailOnIO, host_),
-        base::MessageLoop::QuitClosure());
+    BrowserThread::PostTaskAndReply(BrowserThread::IO, FROM_HERE,
+                                    base::Bind(UndoMakeRequestFailOnIO, host_),
+                                    base::MessageLoop::QuitWhenIdleClosure());
     content::RunMessageLoop();
   }
 
@@ -688,10 +686,9 @@ class PolicyTest : public InProcessBrowserTest {
     void OnScreenshotCompleted(
         ScreenshotGrabberObserver::Result screenshot_result,
         const base::FilePath& screenshot_path) override {
-      BrowserThread::PostTaskAndReply(BrowserThread::IO,
-                                      FROM_HERE,
+      BrowserThread::PostTaskAndReply(BrowserThread::IO, FROM_HERE,
                                       base::Bind(base::DoNothing),
-                                      base::MessageLoop::QuitClosure());
+                                      base::MessageLoop::QuitWhenIdleClosure());
     }
 
     ~QuitMessageLoopAfterScreenshot() override {}

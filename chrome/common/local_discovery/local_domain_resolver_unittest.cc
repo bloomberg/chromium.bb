@@ -81,9 +81,9 @@ class LocalDomainResolverTest : public testing::Test {
   }
 
   void RunFor(base::TimeDelta time_period) {
-    base::CancelableCallback<void()> callback(base::Bind(
-        &base::MessageLoop::Quit,
-        base::Unretained(base::MessageLoop::current())));
+    base::CancelableCallback<void()> callback(
+        base::Bind(&base::MessageLoop::QuitWhenIdle,
+                   base::Unretained(base::MessageLoop::current())));
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, callback.callback(), time_period);
 

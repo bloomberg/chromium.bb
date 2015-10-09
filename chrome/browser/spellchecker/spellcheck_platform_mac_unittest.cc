@@ -32,7 +32,7 @@ class SpellcheckPlatformMacTest: public testing::Test {
  private:
   void QuitMessageLoop() {
     CHECK(base::MessageLoop::current() == &message_loop_);
-    base::MessageLoop::current()->Quit();
+    base::MessageLoop::current()->QuitWhenIdle();
   }
 
   void CompletionCallback(const std::vector<SpellCheckResult>& results) {

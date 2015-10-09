@@ -24,7 +24,7 @@ class TestingSpellCheckMessageFilter : public SpellCheckMessageFilterPlatform {
 
   bool Send(IPC::Message* message) override {
     sent_messages_.push_back(message);
-    loop_->PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
+    loop_->PostTask(FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
     return true;
   }
 

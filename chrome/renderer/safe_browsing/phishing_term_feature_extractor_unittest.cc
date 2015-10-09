@@ -121,12 +121,12 @@ class PhishingTermFeatureExtractorTest : public ::testing::Test {
   // Completion callback for feature extraction.
   void ExtractionDone(bool success) {
     success_ = success;
-    msg_loop_.Quit();
+    msg_loop_.QuitWhenIdle();
   }
 
   void QuitExtraction() {
     extractor_->CancelPendingExtraction();
-    msg_loop_.Quit();
+    msg_loop_.QuitWhenIdle();
   }
 
   base::MessageLoop msg_loop_;

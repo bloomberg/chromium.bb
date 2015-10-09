@@ -61,7 +61,7 @@ class WaitForResolutionHelper {
     // When all hostnames have been resolved, or we've hit the limit,
     // exit the loop.
     timer_->Stop();
-    base::MessageLoop::current()->Quit();
+    base::MessageLoop::current()->QuitWhenIdle();
     delete timer_;
     delete this;
   }
@@ -151,7 +151,7 @@ TEST_F(PredictorTest, ShutdownWhenResolutionIsPendingTest) {
   testing_master.ResolveList(names, UrlInfo::PAGE_SCAN_MOTIVATED);
 
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::MessageLoop::QuitClosure(),
+      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
       base::TimeDelta::FromMilliseconds(500));
   base::MessageLoop::current()->Run();
 

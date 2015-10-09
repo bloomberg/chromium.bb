@@ -364,7 +364,7 @@ class CloudPrintProxyPolicyStartupTest : public base::MultiProcessTest,
     void Notify() {
       seen_ = true;
       if (running_)
-        base::MessageLoopForUI::current()->Quit();
+        base::MessageLoopForUI::current()->QuitWhenIdle();
     }
 
    private:

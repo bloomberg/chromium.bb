@@ -22,7 +22,7 @@
 namespace {
 
 void StopMessageLoopCallback() {
-  base::MessageLoopForUI::current()->Quit();
+  base::MessageLoopForUI::current()->QuitWhenIdle();
 }
 
 }  // namespace
