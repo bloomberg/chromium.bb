@@ -24,9 +24,11 @@ void AddRouteDetailsStrings(content::WebUIDataSource* html_source) {
       IDS_MEDIA_ROUTER_STOP_CASTING_BUTTON);
 }
 
-void AddIssuesActionsStrings(content::WebUIDataSource* html_source) {
+void AddIssuesStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString("dismissButton",
                                   IDS_MEDIA_ROUTER_DISMISS_BUTTON);
+  html_source->AddLocalizedString("issueHeader",
+                                  IDS_MEDIA_ROUTER_ISSUE_HEADER);
   html_source->AddLocalizedString("learnMoreButton",
                                   IDS_MEDIA_ROUTER_LEARN_MORE_BUTTON);
 }
@@ -47,7 +49,7 @@ namespace media_router {
 void AddLocalizedStrings(content::WebUIDataSource* html_source) {
   AddMediaRouterStrings(html_source);
   AddRouteDetailsStrings(html_source);
-  AddIssuesActionsStrings(html_source);
+  AddIssuesStrings(html_source);
   AddMediaRouterContainerStrings(html_source);
   html_source->SetJsonPath(kLocalizedStringsFile);
 }

@@ -54,6 +54,9 @@
   </message>
 
   <!-- Issue Messaging -->
+  <message name="IDS_MEDIA_ROUTER_ISSUE_HEADER" desc="Title of the header in the dialog when there is a user action blocking issue surfaced.">
+    Error
+  </message>
   <message name="IDS_MEDIA_ROUTER_ISSUE_CREATE_ROUTE_TIMEOUT" desc="Title of an issue to show when the user attempts to create a route and the Media Router times out while waiting for a route creation response.">
     <ph name="HOST_NAME">$1<ex>youtube.com</ex></ph> not responding. Unable to cast.
   </message>

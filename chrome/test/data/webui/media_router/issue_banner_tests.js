@@ -163,6 +163,15 @@ cr.define('issue_banner', function() {
         MockInteractions.tap(banner.$['opt-button']);
       });
 
+      // Tests for 'close-button-click' event firing when the close button
+      // is clicked.
+      test('close button click', function(done) {
+        banner.addEventListener('close-button-click', function() {
+          done();
+        });
+        MockInteractions.tap(banner.$['close-button']);
+      });
+
       // Tests the issue text. While the UI will show only the blocking or
       // non-blocking interface, the issue's info will be set if specified.
       test('issue text', function() {
@@ -186,18 +195,22 @@ cr.define('issue_banner', function() {
         // The blocking UI should be shown along with an optional action.
         banner.issue = fakeBlockingIssueOne;
         checkButtonVisibility(fakeBlockingIssueOne.secondaryActionType);
+        assertFalse(banner.$['issue-header'].hasAttribute('hidden'));
 
         // The blocking UI should be shown without an optional action.
         banner.issue = fakeBlockingIssueTwo;
         checkButtonVisibility(fakeBlockingIssueTwo.secondaryActionType);
+        assertFalse(banner.$['issue-header'].hasAttribute('hidden'));
 
         // The non-blocking UI should be shown along with an optional action.
         banner.issue = fakeNonBlockingIssueOne;
         checkButtonVisibility(fakeNonBlockingIssueOne.secondaryActionType);
+        assertTrue(banner.$['issue-header'].hasAttribute('hidden'));
 
         // The non-blocking UI should be shown without an optional action.
         banner.issue = fakeNonBlockingIssueTwo;
         checkButtonVisibility(fakeNonBlockingIssueTwo.secondaryActionType);
+        assertTrue(banner.$['issue-header'].hasAttribute('hidden'));
       });
     });
   }

@@ -9,6 +9,24 @@ Polymer({
 
   properties: {
     /**
+     * The text shown in the default action button.
+     * @private {string}
+     */
+    defaultActionButtonText_: {
+      type: String,
+      value: '',
+    },
+
+    /**
+     * The header text.
+     * @private {string}
+     */
+    headerText_: {
+      type: String,
+      value: loadTimeData.getString('issueHeader'),
+    },
+
+    /**
      * The issue to show.
      * @type {?media_router.Issue}
      */
@@ -29,15 +47,6 @@ Polymer({
       value: function() {
         return ['dismissButton', 'learnMoreButton'];
       },
-    },
-
-    /**
-     * The text shown in the default action button.
-     * @private {string}
-     */
-    defaultActionButtonText_: {
-      type: String,
-      value: '',
     },
 
     /**
@@ -122,6 +131,15 @@ Polymer({
    */
   onClickOptAction_: function(event) {
     this.fireIssueActionClick_(this.issue.secondaryActionType);
+  },
+
+  /**
+   * Handles a click on the close button by firing a close-button-click event.
+   *
+   * @private
+   */
+  onCloseButtonClick_: function() {
+    this.fire('close-button-click');
   },
 
   /**
