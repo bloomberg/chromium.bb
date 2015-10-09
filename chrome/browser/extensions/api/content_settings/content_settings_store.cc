@@ -271,9 +271,12 @@ base::ListValue* ContentSettingsStore::GetSettingsForExtension(
                               it->first.resource_identifier);
       ContentSetting content_setting = ValueToContentSetting(rule.value.get());
       DCHECK_NE(CONTENT_SETTING_DEFAULT, content_setting);
-      setting_dict->SetString(
-          keys::kContentSettingKey,
-          helpers::ContentSettingToString(content_setting));
+
+      std::string setting_string =
+          content_settings::ContentSettingToString(content_setting);
+      DCHECK(!setting_string.empty());
+
+      setting_dict->SetString(keys::kContentSettingKey, setting_string);
       settings->Append(setting_dict);
     }
   }
@@ -314,9 +317,9 @@ void ContentSettingsStore::SetExtensionContentSettingFromList(
 
     std::string content_setting_string;
     dict->GetString(keys::kContentSettingKey, &content_setting_string);
-    ContentSetting setting = CONTENT_SETTING_DEFAULT;
-    bool result =
-        helpers::StringToContentSetting(content_setting_string, &setting);
+    ContentSetting setting;
+    bool result = content_settings::ContentSettingFromString(
+        content_setting_string, &setting);
     DCHECK(result);
 
     SetExtensionContentSetting(extension_id,

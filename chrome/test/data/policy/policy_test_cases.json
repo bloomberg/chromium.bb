@@ -948,7 +948,7 @@
           { "policy": { "DefaultCookiesSetting": 2 },
             "value": "block"},
           { "policy": { "DefaultCookiesSetting": 4 },
-            "value": "session"}
+            "value": "session_only"}
         ]
       }
     ],

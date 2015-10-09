@@ -86,14 +86,14 @@ cr.define('options.contentSettings', function() {
       if (this.contentType == 'plugins') {
         var optionDetect = cr.doc.createElement('option');
         optionDetect.textContent = loadTimeData.getString('detectException');
-        optionDetect.value = 'detect';
+        optionDetect.value = 'detect_important_content';
         select.appendChild(optionDetect);
       }
 
       if (this.contentType == 'cookies') {
         var optionSession = cr.doc.createElement('option');
         optionSession.textContent = loadTimeData.getString('sessionException');
-        optionSession.value = 'session';
+        optionSession.value = 'session_only';
         select.appendChild(optionSession);
       }
 
@@ -265,9 +265,9 @@ cr.define('options.contentSettings', function() {
         return loadTimeData.getString('blockException');
       else if (setting == 'ask')
         return loadTimeData.getString('askException');
-      else if (setting == 'session')
+      else if (setting == 'session_only')
         return loadTimeData.getString('sessionException');
-      else if (setting == 'detect')
+      else if (setting == 'detect_important_content')
         return loadTimeData.getString('detectException');
       else if (setting == 'default')
         return '';

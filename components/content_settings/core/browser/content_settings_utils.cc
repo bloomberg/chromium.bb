@@ -25,45 +25,47 @@ namespace {
 
 const char kPatternSeparator[] = ",";
 
+struct ContentSettingsStringMapping {
+  ContentSetting content_setting;
+  const char* content_setting_str;
+};
+const ContentSettingsStringMapping kContentSettingsStringMapping[] = {
+    {CONTENT_SETTING_DEFAULT, "default"},
+    {CONTENT_SETTING_ALLOW, "allow"},
+    {CONTENT_SETTING_BLOCK, "block"},
+    {CONTENT_SETTING_ASK, "ask"},
+    {CONTENT_SETTING_SESSION_ONLY, "session_only"},
+    {CONTENT_SETTING_DETECT_IMPORTANT_CONTENT, "detect_important_content"},
+};
+static_assert(arraysize(kContentSettingsStringMapping) ==
+                  CONTENT_SETTING_NUM_SETTINGS,
+              "kContentSettingsToFromString should have "
+              "CONTENT_SETTING_NUM_SETTINGS elements");
+
 }  // namespace
 
 namespace content_settings {
 
 std::string ContentSettingToString(ContentSetting setting) {
-  switch (setting) {
-    case CONTENT_SETTING_ALLOW:
-      return "allow";
-    case CONTENT_SETTING_ASK:
-      return "ask";
-    case CONTENT_SETTING_BLOCK:
-      return "block";
-    case CONTENT_SETTING_SESSION_ONLY:
-      return "session";
-    case CONTENT_SETTING_DETECT_IMPORTANT_CONTENT:
-      return "detect";
-    case CONTENT_SETTING_DEFAULT:
-      return "default";
-    case CONTENT_SETTING_NUM_SETTINGS:
-      NOTREACHED();
+  if (setting >= CONTENT_SETTING_DEFAULT &&
+      setting < CONTENT_SETTING_NUM_SETTINGS) {
+    return kContentSettingsStringMapping[setting].content_setting_str;
   }
-
-  return ResourceIdentifier();
+  return std::string();
 }
 
-ContentSetting ContentSettingFromString(const std::string& name) {
-  if (name == "allow")
-    return CONTENT_SETTING_ALLOW;
-  if (name == "ask")
-    return CONTENT_SETTING_ASK;
-  if (name == "block")
-    return CONTENT_SETTING_BLOCK;
-  if (name == "session")
-    return CONTENT_SETTING_SESSION_ONLY;
-  if (name == "detect")
-    return CONTENT_SETTING_DETECT_IMPORTANT_CONTENT;
-
-  NOTREACHED() << name << " is not a recognized content setting.";
-  return CONTENT_SETTING_DEFAULT;
+bool ContentSettingFromString(const std::string& name,
+                              ContentSetting* setting) {
+  // We are starting the index from 1, as |CONTENT_SETTING_DEFAULT| is not
+  // a recognized content setting.
+  for (size_t i = 1; i < arraysize(kContentSettingsStringMapping); ++i) {
+    if (name == kContentSettingsStringMapping[i].content_setting_str) {
+      *setting = kContentSettingsStringMapping[i].content_setting;
+      return true;
+    }
+  }
+  *setting = CONTENT_SETTING_DEFAULT;
+  return false;
 }
 
 std::string CreatePatternString(

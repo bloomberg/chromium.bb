@@ -19,18 +19,6 @@ const char kNoPathWildcardsError[] =
 const char kNoPathsError[] = "Specific paths are not allowed.";
 const char kInvalidPatternError[] = "The pattern \"*\" is invalid.";
 
-const char* const kContentSettingNames[] = {
-  "default",
-  "allow",
-  "block",
-  "ask",
-  "session_only",
-  "detect_important_content"
-};
-static_assert(arraysize(kContentSettingNames) <=
-              CONTENT_SETTING_NUM_SETTINGS,
-              "kContentSettingNames has an unexpected number of elements");
-
 // TODO(bauerb): Move this someplace where it can be reused.
 std::string GetDefaultPort(const std::string& scheme) {
   if (scheme == url::kHttpScheme)
@@ -118,23 +106,6 @@ std::string ContentSettingsTypeToString(ContentSettingsType type) {
   return content_settings::WebsiteSettingsRegistry::GetInstance()
       ->Get(type)
       ->name();
-}
-
-bool StringToContentSetting(const std::string& setting_str,
-                            ContentSetting* setting) {
-  for (size_t type = 0; type < arraysize(kContentSettingNames); ++type) {
-    if (setting_str == kContentSettingNames[type]) {
-      *setting = static_cast<ContentSetting>(type);
-      return true;
-    }
-  }
-  return false;
-}
-
-const char* ContentSettingToString(ContentSetting setting) {
-  size_t index = static_cast<size_t>(setting);
-  DCHECK_LT(index, arraysize(kContentSettingNames));
-  return kContentSettingNames[index];
 }
 
 }  // namespace content_settings_helpers

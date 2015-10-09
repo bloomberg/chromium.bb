@@ -186,7 +186,12 @@ scoped_ptr<base::DictionaryValue> GetExceptionForPage(
                        secondary_pattern == ContentSettingsPattern::Wildcard() ?
                            std::string() :
                            secondary_pattern.ToString());
-  exception->SetString(kSetting, ContentSettingToString(setting));
+
+  std::string setting_string =
+      content_settings::ContentSettingToString(setting);
+  DCHECK(!setting_string.empty());
+
+  exception->SetString(kSetting, setting_string);
   exception->SetString(kSource, provider_name);
   return make_scoped_ptr(exception);
 }
@@ -198,7 +203,12 @@ scoped_ptr<base::DictionaryValue> GetGeolocationExceptionForPage(
     const ContentSettingsPattern& embedding_origin,
     ContentSetting setting) {
   base::DictionaryValue* exception = new base::DictionaryValue();
-  exception->SetString(kSetting, ContentSettingToString(setting));
+
+  std::string setting_string =
+      content_settings::ContentSettingToString(setting);
+  DCHECK(!setting_string.empty());
+
+  exception->SetString(kSetting, setting_string);
   exception->SetString(kOrigin, origin.ToString());
   exception->SetString(kEmbeddingOrigin, embedding_origin.ToString());
   return make_scoped_ptr(exception);
@@ -216,7 +226,12 @@ scoped_ptr<base::DictionaryValue> GetNotificationExceptionForPage(
     embedding_origin = secondary_pattern.ToString();
 
   base::DictionaryValue* exception = new base::DictionaryValue();
-  exception->SetString(kSetting, ContentSettingToString(setting));
+
+  std::string setting_string =
+      content_settings::ContentSettingToString(setting);
+  DCHECK(!setting_string.empty());
+
+  exception->SetString(kSetting, setting_string);
   exception->SetString(kOrigin, primary_pattern.ToString());
   exception->SetString(kEmbeddingOrigin, embedding_origin);
   exception->SetString(kSource, provider_name);
@@ -237,7 +252,12 @@ bool HostedAppHasPermission(const extensions::Extension& extension,
 void AddExceptionForHostedApp(const std::string& url_pattern,
     const extensions::Extension& app, base::ListValue* exceptions) {
   base::DictionaryValue* exception = new base::DictionaryValue();
-  exception->SetString(kSetting, ContentSettingToString(CONTENT_SETTING_ALLOW));
+
+  std::string setting_string =
+      content_settings::ContentSettingToString(CONTENT_SETTING_ALLOW);
+  DCHECK(!setting_string.empty());
+
+  exception->SetString(kSetting, setting_string);
   exception->SetString(kOrigin, url_pattern);
   exception->SetString(kEmbeddingOrigin, url_pattern);
   exception->SetString(kSource, "HostedApp");
@@ -352,7 +372,7 @@ void ContentSettingsHandler::GetLocalizedValues(
     {"cookiesHeader", IDS_COOKIES_HEADER},
     {"cookiesAllow", IDS_COOKIES_ALLOW_RADIO},
     {"cookiesBlock", IDS_COOKIES_BLOCK_RADIO},
-    {"cookiesSession", IDS_COOKIES_SESSION_ONLY_RADIO},
+    {"cookiesSessionOnly", IDS_COOKIES_SESSION_ONLY_RADIO},
     {"cookiesBlock3rdParty", IDS_COOKIES_BLOCK_3RDPARTY_CHKBOX},
     {"cookiesShowCookies", IDS_COOKIES_SHOW_COOKIES_BUTTON},
     {"flashStorageSettings", IDS_FLASH_STORAGE_SETTINGS},
@@ -474,7 +494,7 @@ void ContentSettingsHandler::GetLocalizedValues(
 
   int plugin_ids = default_value == CONTENT_SETTING_DETECT_IMPORTANT_CONTENT ?
       IDS_PLUGIN_DETECT_RECOMMENDED_RADIO : IDS_PLUGIN_DETECT_RADIO;
-  localized_strings->SetString("pluginsDetect",
+  localized_strings->SetString("pluginsDetectImportantContent",
                                l10n_util::GetStringUTF16(plugin_ids));
 
   RegisterTitle(localized_strings, "contentSettingsPage",
@@ -715,8 +735,13 @@ void ContentSettingsHandler::UpdateSettingDefaultFromModel(
   }
 
   base::DictionaryValue filter_settings;
+
+  std::string setting_string =
+      content_settings::ContentSettingToString(default_setting);
+  DCHECK(!setting_string.empty());
+
   filter_settings.SetString(ContentSettingsTypeToGroupName(type) + ".value",
-                            ContentSettingToString(default_setting));
+                            setting_string);
   filter_settings.SetString(
       ContentSettingsTypeToGroupName(type) + ".managedBy", provider_id);
 
@@ -919,9 +944,14 @@ void ContentSettingsHandler::CompareMediaExceptionsWithFlash(
     dict->GetString(kOrigin, &origin);
     dict->GetString(kSetting, &setting);
 
+    ContentSetting setting_type;
+    bool result =
+        content_settings::ContentSettingFromString(setting, &setting_type);
+    DCHECK(result);
+
     settings.exceptions.push_back(MediaException(
         ContentSettingsPattern::FromString(origin),
-        ContentSettingFromString(setting)));
+        setting_type));
   }
 
   PepperFlashContentSettingsUtils::SortMediaExceptions(
@@ -1017,8 +1047,12 @@ void ContentSettingsHandler::UpdateZoomLevelsExceptionsView() {
       case content::HostZoomMap::ZOOM_CHANGED_TEMPORARY_ZOOM:
         NOTREACHED();
     }
-    exception->SetString(kSetting,
-                         ContentSettingToString(CONTENT_SETTING_DEFAULT));
+
+    std::string setting_string =
+        content_settings::ContentSettingToString(CONTENT_SETTING_DEFAULT);
+    DCHECK(!setting_string.empty());
+
+    exception->SetString(kSetting, setting_string);
 
     // Calculate the zoom percent from the factor. Round up to the nearest whole
     // number.
@@ -1321,7 +1355,11 @@ void ContentSettingsHandler::SetContentFilter(const base::ListValue* args) {
     return;
   }
 
-  ContentSetting default_setting = ContentSettingFromString(setting);
+  ContentSetting default_setting;
+  bool result =
+      content_settings::ContentSettingFromString(setting, &default_setting);
+  DCHECK(result);
+
   ContentSettingsType content_type = ContentSettingsTypeFromGroupName(group);
   Profile* profile = Profile::FromWebUI(web_ui());
 
@@ -1444,11 +1482,17 @@ void ContentSettingsHandler::SetException(const base::ListValue* args) {
     // got destroyed before we received this message.
     if (!settings_map)
       return;
+
+    ContentSetting setting_type;
+    bool result =
+        content_settings::ContentSettingFromString(setting, &setting_type);
+    DCHECK(result);
+
     settings_map->SetContentSetting(ContentSettingsPattern::FromString(pattern),
                                     ContentSettingsPattern::Wildcard(),
                                     type,
                                     std::string(),
-                                    ContentSettingFromString(setting));
+                                    setting_type);
   }
 }
 

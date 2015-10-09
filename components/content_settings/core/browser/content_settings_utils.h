@@ -61,7 +61,9 @@ const char kExtensionScheme[] = "chrome-extension";
 
 std::string ContentSettingToString(ContentSetting setting);
 
-ContentSetting ContentSettingFromString(const std::string& name);
+// Converts a content setting string to the corresponding ContentSetting.
+// Returns true if |name| specifies a valid content setting, false otherwise.
+bool ContentSettingFromString(const std::string& name, ContentSetting* setting);
 
 // Converts |Value| to |ContentSetting|.
 ContentSetting ValueToContentSetting(const base::Value* value);

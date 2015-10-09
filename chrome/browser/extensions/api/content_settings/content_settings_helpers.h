@@ -30,14 +30,6 @@ ContentSettingsType StringToContentSettingsType(
 // Returns a string representation of a ContentSettingsType.
 std::string ContentSettingsTypeToString(ContentSettingsType type);
 
-// Converts a content setting string to the corresponding ContentSetting.
-// Returns true if |setting_str| specifies a valid content setting,
-// false otherwise.
-bool StringToContentSetting(const std::string& setting_str,
-                            ContentSetting* setting);
-// Returns a string representation of a ContentSetting.
-const char* ContentSettingToString(ContentSetting setting);
-
 }  // namespace content_settings_helpers
 }  // namespace extensions
 
