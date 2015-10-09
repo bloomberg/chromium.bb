@@ -1604,3 +1604,5 @@ crbug.com/541357 [ XP ] svg/text/text-selection-align-06-b.svg [ NeedsRebaseline
 crbug.com/541357 [ XP ] svg/W3C-SVG-1.1/text-align-06-b.svg [ NeedsRebaseline ]
 crbug.com/521730 [ XP ] svg/batik/text/verticalText.svg [ NeedsRebaseline ]
 crbug.com/541357 [ XP ] svg/batik/text/verticalTextOnPath.svg [ NeedsRebaseline ]
+
+crbug.com/541601 svg/overflow/overflow-on-outermost-svg-element-in-xhtml-defaults.xhtml [ ImageOnlyFailure ]
