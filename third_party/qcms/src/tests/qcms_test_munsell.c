@@ -4,12 +4,12 @@
 
 #include "qcms.h"
 #include "qcms_test_util.h"
-#include "timing.h"
 
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 struct color_checker_chart {
     char* name;
@@ -79,6 +79,20 @@ extern void qcms_transform_data_rgba_out_lut_precache(qcms_transform *transform,
         size_t length,
         qcms_format_type output_format);
 
+static qcms_bool invalid_rgb_color_profile(qcms_profile *profile)
+{
+    return rgbData != qcms_profile_get_color_space(profile) || qcms_profile_is_bogus(profile);
+}
+
+static int color_error(struct color_checker_chart cx, struct color_checker_chart cy)
+{
+    int dr = cx.r - cy.r;
+    int dg = cx.g - cy.g;
+    int db = cx.b - cy.b;
+
+    return round(sqrt((dr * dr) + (dg * dg) + (db * db)));
+}
+
 static int qcms_test_munsell(size_t width,
         size_t height,
         int iterations,
@@ -86,36 +100,37 @@ static int qcms_test_munsell(size_t width,
         const char *out_path,
         const int force_software)
 {
-    qcms_profile *in_profile = NULL, *out_profile = NULL;
+    qcms_profile *in_profile = NULL;
+    qcms_profile *out_profile = NULL;
+    qcms_format_type format = {0, 2}; // RGBA
     qcms_transform *transform;
-    qcms_format_type format = {0, 2};
-    struct color_checker_chart *source_munsell = srgb_munsell;
-    struct color_checker_chart *reference_munsell = srgb_munsell;
-    float rmse = 0.0f;
-    int diff[24] = {0,};
-    struct color_checker_chart destination_munsell[24];
-    char file_name[256];
 
+    struct color_checker_chart *source_munsell = NULL;
+    struct color_checker_chart *reference_munsell = NULL;
+    struct color_checker_chart destination_munsell[24];
+
+    char file_name[256];
     FILE *output;
+    int dE[24];
+    float rmse;
 
     int i;
 
-    printf("Test qcms data transforms accuracy using Munsell colours\n");
+    printf("Test qcms data transform accuracy using Munsell colors\n");
     fflush(stdout);
 
-    seconds();
-
     if (in_path == NULL || out_path == NULL) {
-        fprintf(stderr, "%s:Please provide valid icc profiles via -i/o option\n", __FUNCTION__);
+        fprintf(stderr, "%s: please provide valid ICC profiles via -i/o options\n", __FUNCTION__);
         return EXIT_FAILURE;
     }
 
     in_profile = qcms_profile_from_path(in_path);
-    if (!in_profile || qcms_profile_is_bogus(in_profile)) {
+    if (!in_profile || invalid_rgb_color_profile(in_profile)) {
         fprintf(stderr, "Invalid input profile\n");
         return EXIT_FAILURE;
     }
 
+    source_munsell = srgb_munsell;
     if (strstr(in_profile->description, "Adobe") != NULL) {
         source_munsell = adobe_munsell;
     }
@@ -123,63 +138,61 @@ static int qcms_test_munsell(size_t width,
     printf("Input profile %s\n", in_profile->description);
 
     out_profile = qcms_profile_from_path(out_path);
-    if (!out_profile || qcms_profile_is_bogus(out_profile)) {
+    if (!out_profile || invalid_rgb_color_profile(out_profile)) {
         fprintf(stderr, "Invalid output profile\n");
         return EXIT_FAILURE;
     }
 
+    reference_munsell = srgb_munsell;
     if (strstr(out_profile->description, "Adobe") != NULL) {
         reference_munsell = adobe_munsell;
     }
 
-    printf("Output profile %s\n", out_profile->description);
-
+    printf("Output profile %s (using qcms precache)\n", out_profile->description);
     qcms_profile_precache_output_transform(out_profile);
+
     transform = qcms_transform_create(in_profile, QCMS_DATA_RGBA_8, out_profile, QCMS_DATA_RGBA_8, QCMS_INTENT_DEFAULT);
     if (!transform) {
-        fprintf(stderr, "Unable to create transform\n");
+        fprintf(stderr, "Failed to create color transform\n");
         return EXIT_FAILURE;
-    }
-    
-    if (force_software)
+    } else if (force_software) {
         transform->transform_fn = qcms_transform_data_rgba_out_lut_precache;
+    }
+
+    rmse = 0.0f;
 
     for (i = 0; i < 24; i++) {
         transform->transform_fn(transform, &source_munsell[i].r, &destination_munsell[i].r, 1, format);
-        int r_diff = reference_munsell[i].r - destination_munsell[i].r;
-        int g_diff = reference_munsell[i].g - destination_munsell[i].g;
-        int b_diff = reference_munsell[i].b - destination_munsell[i].b;
-        diff[i] = abs(r_diff) + abs(g_diff) + abs(b_diff);
-        rmse += sqrt(r_diff * r_diff + g_diff * g_diff + b_diff * b_diff);
+        dE[i] = color_error(reference_munsell[i], destination_munsell[i]);
+        rmse += dE[i] * dE[i];
     }
 
-    rmse = rmse / 24;
-    printf("Transform RMSE %.3f\n", rmse);
+    rmse = sqrt(rmse / 24);
+    printf("RMS color error %.2f\n", rmse);
 
-    // Name and open file.
-    sprintf(file_name, "qcms_test_munsell_%ld_RMS_%.3f.csv", (long int)time(NULL), rmse);
+    // Name and open test result file.
+    sprintf(file_name, "qcms-test-%ld-munsell-%s-to-%s-rms-%.3f.csv", (long int)time(NULL), in_profile->description, out_profile->description, rmse);
+    // FIXME: remove spaces from the file name?
     output = fopen(file_name, "w");
-    
-    // Print header.
+
+    // Print headers.
     if (force_software)
         fprintf(output, "Report for: qcms_transform_data_rgba_out_lut_precache\n\n");
     else
         fprintf(output, "Report for: qcms_transform_data_rgba_out_lut_sse2\n\n");
 
-    fprintf(output, "color name,"
-            "Output %s[R],Output %s[G], Output %s[B],"
-            "Reference %s[R],Reference %s[G],Reference %s[B],diff\n",
-            out_profile->description, out_profile->description, out_profile->description,
-            out_profile->description, out_profile->description, out_profile->description);
+    fprintf(output, "%14s,\t%s,\t%s,\t%s\n\n", "Color,", "Actual,,", "Expected,", "dE");
 
     // Print results.
     for (i = 0; i < 24; i++) {
-        fprintf(output, "%s,%d,%d,%d,%d,%d,%d,%d\n",
+        fprintf(output, "%14s,\t%d,%d,%d,\t%d,%d,%d,\t%d\n",
                 source_munsell[i].name,
                 destination_munsell[i].r, destination_munsell[i].g, destination_munsell[i].b,
-                reference_munsell[i].r, reference_munsell[i].g, reference_munsell[i].b, diff[i]);
+                reference_munsell[i].r, reference_munsell[i].g, reference_munsell[i].b,
+                dE[i]);
     }
-    fprintf(output, "\nRMSE = %.4f\n", rmse);
+
+    fprintf(output, "\nRMS color error = %.2f\n", rmse);
     fclose(output);
 
     printf("Output written to %s\n", file_name);
