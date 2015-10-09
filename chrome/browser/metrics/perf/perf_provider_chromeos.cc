@@ -17,44 +17,19 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon_client.h"
 
+namespace metrics {
+
 namespace {
-
-// Partition time since login into successive intervals of this size. In each
-// interval, pick a random time to collect a profile.
-const size_t kPerfProfilingIntervalMs = 3 * 60 * 60 * 1000;
-
-// Default time in seconds perf is run for.
-const size_t kPerfCommandDurationDefaultSeconds = 2;
 
 // Limit the total size of protobufs that can be cached, so they don't take up
 // too much memory. If the size of cached protobufs exceeds this value, stop
 // collecting further perf data. The current value is 4 MB.
 const size_t kCachedPerfDataProtobufSizeThreshold = 4 * 1024 * 1024;
 
-// There may be too many suspends to collect a profile each time there is a
-// resume. To limit the number of profiles, collect one for 1 in 10 resumes.
-// Adjust this number as needed.
-const int kResumeSamplingFactor = 10;
-
-// There may be too many session restores to collect a profile each time. Limit
-// the collection rate by collecting one per 10 restores. Adjust this number as
-// needed.
-const int kRestoreSessionSamplingFactor = 10;
-
 // This is used to space out session restore collections in the face of several
 // notifications in a short period of time. There should be no less than this
-// much time between collections. The current value is 30 seconds.
-const int kMinIntervalBetweenSessionRestoreCollectionsMs = 30 * 1000;
-
-// If collecting after a resume, add a random delay before collecting. The delay
-// should be randomly selected between 0 and this value. Currently the value is
-// equal to 5 seconds.
-const int kMaxResumeCollectionDelayMs = 5 * 1000;
-
-// If collecting after a session restore, add a random delay before collecting.
-// The delay should be randomly selected between 0 and this value. Currently the
-// value is equal to 10 seconds.
-const int kMaxRestoreSessionCollectionDelayMs = 10 * 1000;
+// much time between collections.
+const int kMinIntervalBetweenSessionRestoreCollectionsInSec = 30;
 
 // Enumeration representing success and various failure modes for collecting and
 // sending perf data.
@@ -85,14 +60,47 @@ bool IsNormalUserLoggedIn() {
   return chromeos::LoginState::Get()->IsUserAuthenticated();
 }
 
+// Returns a random TimeDelta between zero and |max|.
+base::TimeDelta RandomTimeDelta(base::TimeDelta max) {
+  return base::TimeDelta::FromMicroseconds(
+      base::RandGenerator(max.InMicroseconds()));
+}
+
 }  // namespace
 
-namespace metrics {
+PerfProvider::CollectionParams::CollectionParams(
+    base::TimeDelta collection_duration,
+    base::TimeDelta periodic_interval,
+    TriggerParams resume_from_suspend,
+    TriggerParams restore_session)
+    : collection_duration_(collection_duration.ToInternalValue()),
+      periodic_interval_(periodic_interval.ToInternalValue()),
+      resume_from_suspend_(resume_from_suspend),
+      restore_session_(restore_session) {
+}
+
+PerfProvider::CollectionParams::TriggerParams::TriggerParams(
+    int64 sampling_factor,
+    base::TimeDelta max_collection_delay)
+    : sampling_factor_(sampling_factor),
+      max_collection_delay_(max_collection_delay.ToInternalValue()) {
+}
+
+const PerfProvider::CollectionParams PerfProvider::kDefaultParameters(
+  /* collection_duration = */ base::TimeDelta::FromSeconds(2),
+  /* periodic_interval = */ base::TimeDelta::FromHours(3),
+  /* resume_from_suspend = */ PerfProvider::CollectionParams::TriggerParams(
+      /* sampling_factor = */ 10,
+      /* max_collection_delay = */ base::TimeDelta::FromSeconds(5)),
+  /* restore_session = */ PerfProvider::CollectionParams::TriggerParams(
+      /* sampling_factor = */ 10,
+      /* max_collection_delay = */ base::TimeDelta::FromSeconds(10)));
 
 PerfProvider::PerfProvider()
-      : login_observer_(this),
-        next_profiling_interval_start_(base::TimeTicks::Now()),
-        weak_factory_(this) {
+    : collection_params_(kDefaultParameters),
+      login_observer_(this),
+      next_profiling_interval_start_(base::TimeTicks::Now()),
+      weak_factory_(this) {
   // Register the login observer with LoginState.
   chromeos::LoginState::Get()->AddObserver(&login_observer_);
 
@@ -206,9 +214,10 @@ void PerfProvider::SuspendDone(const base::TimeDelta& sleep_duration) {
   if (!IsNormalUserLoggedIn())
     return;
 
-  // Collect a profile only 1/|kResumeSamplingFactor| of the time, to avoid
+  // Collect a profile only 1/|sampling_factor| of the time, to avoid
   // collecting too much data.
-  if (base::RandGenerator(kResumeSamplingFactor) != 0)
+  const auto& resume_params = collection_params_.resume_from_suspend();
+  if (base::RandGenerator(resume_params.sampling_factor()) != 0)
     return;
 
   // Override any existing profiling.
@@ -216,9 +225,8 @@ void PerfProvider::SuspendDone(const base::TimeDelta& sleep_duration) {
     timer_.Stop();
 
   // Randomly pick a delay before doing the collection.
-  base::TimeDelta collection_delay =
-      base::TimeDelta::FromMilliseconds(
-          base::RandGenerator(kMaxResumeCollectionDelayMs));
+  base::TimeDelta collection_delay = RandomTimeDelta(
+      resume_params.max_collection_delay());
   timer_.Start(FROM_HERE,
                collection_delay,
                base::Bind(&PerfProvider::CollectPerfDataAfterResume,
@@ -232,14 +240,14 @@ void PerfProvider::OnSessionRestoreDone(int num_tabs_restored) {
   if (!IsNormalUserLoggedIn())
     return;
 
-  // Collect a profile only 1/|kRestoreSessionSamplingFactor| of the time, to
+  // Collect a profile only 1/|sampling_factor| of the time, to
   // avoid collecting too much data and potentially causing UI latency.
-  if (base::RandGenerator(kRestoreSessionSamplingFactor) != 0)
+  const auto& restore_params = collection_params_.restore_session();
+  if (base::RandGenerator(restore_params.sampling_factor()) != 0)
     return;
 
-  const base::TimeDelta min_interval =
-      base::TimeDelta::FromMilliseconds(
-          kMinIntervalBetweenSessionRestoreCollectionsMs);
+  const auto min_interval = base::TimeDelta::FromSeconds(
+      kMinIntervalBetweenSessionRestoreCollectionsInSec);
   const base::TimeDelta time_since_last_collection =
       (base::TimeTicks::Now() - last_session_restore_collection_time_);
   // Do not collect if there hasn't been enough elapsed time since the last
@@ -254,9 +262,8 @@ void PerfProvider::OnSessionRestoreDone(int num_tabs_restored) {
     timer_.Stop();
 
   // Randomly pick a delay before doing the collection.
-  base::TimeDelta collection_delay =
-      base::TimeDelta::FromMilliseconds(
-          base::RandGenerator(kMaxRestoreSessionCollectionDelayMs));
+  base::TimeDelta collection_delay = RandomTimeDelta(
+      restore_params.max_collection_delay());
   timer_.Start(
       FROM_HERE,
       collection_delay,
@@ -284,8 +291,7 @@ void PerfProvider::ScheduleIntervalCollection() {
   // Pick a random time in the current interval.
   base::TimeTicks scheduled_time =
       next_profiling_interval_start_ +
-      base::TimeDelta::FromMilliseconds(
-          base::RandGenerator(kPerfProfilingIntervalMs));
+      RandomTimeDelta(collection_params_.periodic_interval());
 
   // If the scheduled time has already passed in the time it took to make the
   // above calculations, trigger the collection event immediately.
@@ -297,8 +303,7 @@ void PerfProvider::ScheduleIntervalCollection() {
                &PerfProvider::DoPeriodicCollection);
 
   // Update the profiling interval tracker to the start of the next interval.
-  next_profiling_interval_start_ +=
-      base::TimeDelta::FromMilliseconds(kPerfProfilingIntervalMs);
+  next_profiling_interval_start_ += collection_params_.periodic_interval();
 }
 
 void PerfProvider::CollectIfNecessary(
@@ -335,11 +340,8 @@ void PerfProvider::CollectIfNecessary(
   chromeos::DebugDaemonClient* client =
       chromeos::DBusThreadManager::Get()->GetDebugDaemonClient();
 
-  base::TimeDelta collection_duration = base::TimeDelta::FromSeconds(
-      kPerfCommandDurationDefaultSeconds);
-
   client->GetPerfOutput(
-      collection_duration.InSeconds(),
+      collection_params_.collection_duration().InSeconds(),
       base::Bind(&PerfProvider::ParseOutputProtoIfValid,
                  weak_factory_.GetWeakPtr(), base::Passed(&incognito_observer),
                  base::Passed(&sampled_profile)));
