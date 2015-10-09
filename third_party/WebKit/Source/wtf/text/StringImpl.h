@@ -218,11 +218,6 @@ public:
     static PassRefPtr<StringImpl> createUninitialized(unsigned length, LChar*& data);
     static PassRefPtr<StringImpl> createUninitialized(unsigned length, UChar*& data);
 
-    // Reallocate the StringImpl. The originalString must be only owned by the
-    // PassRefPtr.  Just like the input pointer of realloc(), the originalString
-    // can't be used after this function.
-    static PassRefPtr<StringImpl> reallocate(PassRefPtr<StringImpl> originalString, unsigned length);
-
     // If this StringImpl has only one reference, we can truncate the string by
     // updating its m_length property without actually re-allocating its buffer.
     void truncateAssumingIsolated(unsigned length)
