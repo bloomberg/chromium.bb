@@ -259,7 +259,7 @@
         <message desc="Error displayed if authentication fails. This can be caused by stale credentials, in which logging out of the web-app and retrying can fix the problem." name="IDS_ERROR_AUTHENTICATION_FAILED" formatter_data="android_java">
           Authentication failed. Please sign in to Chrome again.
         </message>
-        <message desc="Error displayed when the computer has a policy that only users in a particular domain may use it as a Chrome Remote Desktop host, and a user in a different domain is trying to use it as a Chrome Remote Desktop host." name="IDS_ERROR_INVALID_HOST_DOMAIN">
+        <message desc="Error displayed when the computer has a policy that only users in a particular domain may use it as a Chrome Remote Desktop host, but a user in a different domain is trying to use it as a Chrome Remote Desktop host. The Chrome Remote Desktop host allows a user to connect to their computer remotely (it 'hosts' a connection from a remote computer)." name="IDS_ERROR_INVALID_HOST_DOMAIN">
           Policy settings do not permit sharing this computer as a Chrome Remote Desktop host. Contact your system administrator for assistance.
         </message>
         <message desc="Error displayed when an operation is attempted that requires a signed-in user, but no-one is currently signed in." name="IDS_ERROR_NOT_AUTHENTICATED">
@@ -283,13 +283,13 @@
         <message desc="Message displayed next to the checkbox that the user can select to allow crash dump collection and reporting." name="IDS_HOST_SETUP_CRASH_REPORTING_MESSAGE">
           Help us improve Chrome Remote Desktop by allowing us to collect usage statistics and crash reports.
         </message>
-        <message desc="Title of the dialog used to download and install the Chrome Remote Desktop host component." name="IDS_INSTALLER_DOWNLOAD">
+        <message desc="Title of the dialog used to download and install the Chrome Remote Desktop host component. The Chrome Remote Desktop host allows a user to connect to their computer remotely (it 'hosts' a connection from a remote computer)." name="IDS_INSTALLER_DOWNLOAD">
           Download Chrome Remote Desktop Host Installer
         </message>
-        <message desc="Message shown to inform the user that the product is governed by Google's terms of service and to include a link to view them." name="IDS_HOST_SETUP_TERMS_OF_SERVICE">
+        <message desc="Message shown to inform the user that the product is governed by Google's terms of service and to include a link to view them. The Chrome Remote Desktop host allows a user to connect to their computer remotely (it 'hosts' a connection from a remote computer)." name="IDS_HOST_SETUP_TERMS_OF_SERVICE">
           By downloading the Chrome Remote Desktop Host Installer, you are agreeing to the Google <ph name="LINK_BEGIN">$1<ex>&lt;a href="http://www.google.com/intl/en/policies/terms"&gt;</ex></ph>Terms of Service<ph name="LINK_END">$4<ex>&lt;/a&gt;</ex></ph>.
         </message>
-        <message desc="Message shown when user is asked to manually install the Host components." name="IDS_HOST_SETUP_INSTALL">
+        <message desc="Message shown when user is asked to manually install the Host components. The Chrome Remote Desktop host allows a user to connect to their computer remotely (it 'hosts' a connection from a remote computer)." name="IDS_HOST_SETUP_INSTALL">
           Chrome is downloading the Chrome Remote Desktop Host installer.  Once the download is complete, please run the installer before continuing.
         </message>
         <message desc="Message displayed when the client or host has disconnected." name="IDS_MESSAGE_SESSION_FINISHED">
@@ -322,19 +322,19 @@
         <message name="IDS_SERVICE_DESCRIPTION" desc="The description of the Windows service installed by Chrome Remote Desktop.">
           This service enables incoming connections from Chrome Remote Desktop clients.
         </message>
-        <message name="IDS_CONTROLLER_NAME" desc="The name of the component to be elevated shown on the UAC prompt when enabling or disabling Chrome Remote Desktop Host.">
+        <message name="IDS_CONTROLLER_NAME" desc="The name of the component to be elevated shown on the UAC prompt when enabling or disabling Chrome Remote Desktop Host. The Chrome Remote Desktop host allows a user to connect to their computer remotely (it 'hosts' a connection from a remote computer).">
           Chrome Remote Desktop Host Controller
         </message>
         <message name="IDS_VERIFY_PIN_DIALOG_MESSAGE" desc="The message displayed by the PIN verification dialog.">
           Please confirm your account and PIN below to allow access by Chrome Remote Desktop.
         </message>
-        <message name="IDS_MAC_PREFPANE_BUNDLE_NAME" desc="The bundle name specified in the property list of Chrome Remote Desktop Host Preferences bundle on MacOS.">
+        <message name="IDS_MAC_PREFPANE_BUNDLE_NAME" desc="The bundle name specified in the property list of Chrome Remote Desktop Host Preferences bundle on MacOS. The Chrome Remote Desktop host allows a user to connect to their computer remotely (it 'hosts' a connection from a remote computer).">
           Chrome Remote Desktop Host Preferences
         </message>
-        <message name="IDS_MAC_PREFPANE_ICON_LABEL" desc="The name of Chrome Remote Desktop Host icon in Preference Pane on MacOS. The carriage return makes sure that the label is not truncated.">
+        <message name="IDS_MAC_PREFPANE_ICON_LABEL" desc="The name of Chrome Remote Desktop Host icon in Preference Pane on MacOS. The carriage return makes sure that the label is not truncated. The Chrome Remote Desktop host allows a user to connect to their computer remotely (it 'hosts' a connection from a remote computer).">
           Chrome Remote&#x0a;Desktop Host
         </message>
-        <message name="IDS_MAC_UNINSTALLER_BUNDLE_NAME" desc="The bundle name specified in the property list of Chrome Remote Desktop Host Uninstaller bundle on MacOS.">
+        <message name="IDS_MAC_UNINSTALLER_BUNDLE_NAME" desc="The bundle name specified in the property list of Chrome Remote Desktop Host Uninstaller bundle on MacOS. The Chrome Remote Desktop host allows a user to connect to their computer remotely (it 'hosts' a connection from a remote computer).">
           Chrome Remote Desktop Host Uninstaller
         </message>
       </if>  <!-- _google_chrome -->
@@ -361,7 +361,7 @@
         <message desc="Error displayed if authentication fails. This can be caused by stale credentials, in which logging out of the web-app and retrying can fix the problem." name="IDS_ERROR_AUTHENTICATION_FAILED" formatter_data="android_java">
           Authentication failed. Please sign in to Chromium again.
         </message>
-        <message desc="Error displayed when the computer has a policy that only users in a particular domain may use it as a Chromoting host, and a user in a different domain is trying to use it as a Chromoting host." name="IDS_ERROR_INVALID_HOST_DOMAIN">
+        <message desc="Error displayed when the computer has a policy that only users in a particular domain may use it as a Chromoting host, but a user in a different domain is trying to use it as a Chromoting host. The Chromoting host allows a user to connect to their computer remotely (it 'hosts' a connection from a remote computer)." name="IDS_ERROR_INVALID_HOST_DOMAIN">
           Policy settings do not permit sharing this computer as a Chromoting host. Contact your system administrator for assistance.
         </message>
         <message desc="Error displayed when an operation is attempted that requires a signed-in user, but no-one is currently signed in." name="IDS_ERROR_NOT_AUTHENTICATED">
@@ -385,7 +385,7 @@
         <message desc="Message displayed next to the checkbox that the user can select to allow crash dump collection and reporting." name="IDS_HOST_SETUP_CRASH_REPORTING_MESSAGE">
           Help us improve Chromoting by allowing us to collect usage statistics and crash reports.
         </message>
-        <message desc="Title of the dialog used to download and install the Chromoting host component." name="IDS_INSTALLER_DOWNLOAD">
+        <message desc="Title of the dialog used to download and install the Chromoting host component. The Chromoting host allows a user to connect to their computer remotely (it 'hosts' a connection from a remote computer)." name="IDS_INSTALLER_DOWNLOAD">
           Download Chromoting Host Installer
         </message>
         <message desc="Message shown to inform the user that the product is governed by Google's terms of service and to include a link to view them." name="IDS_HOST_SETUP_TERMS_OF_SERVICE">
@@ -1069,7 +1069,7 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
       <message name="IDS_REMOTING_REMOTE_ASSISTANCE_HOST_DESCRIPTION" desc="The file description specified in the version information of remote_assistance_host.exe.">
         Native messaging host for remote assistance
       </message>
-      <message name="IDS_REMOTING_HOST_COMMAND_DESCRIPTION" desc="The file description specified in the version information of remoting_host_command.exe.">
+      <message name="IDS_REMOTING_HOST_COMMAND_DESCRIPTION" desc="The file description specified in the version information of remoting_host_command.exe. The Chrome Remote Desktop host allows a user to connect to their computer remotely (it 'hosts' a connection from a remote computer).">
         Application to issue commands to Chrome remote desktop host.
       </message>
       <message name="IDS_VERIFY_PIN_DIALOG_EMAIL_LABEL" desc="The message displayed by the PIN verification dialog.">
