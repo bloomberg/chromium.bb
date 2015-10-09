@@ -28,6 +28,7 @@
 #include "components/autofill/core/browser/contact_info.h"
 #include "components/autofill/core/browser/phone_number.h"
 #include "components/autofill/core/browser/phone_number_i18n.h"
+#include "components/autofill/core/browser/state_names.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_l10n_util.h"
 #include "components/autofill/core/common/form_field_data.h"
@@ -606,6 +607,18 @@ bool AutofillProfile::SaveAdditionalInfo(const AutofillProfile& profile,
           return false;
         }
         continue;
+      }
+      // Special case for the state to support abbreviations. Currently only the
+      // US states are supported.
+      if (field_type == ADDRESS_HOME_STATE) {
+        base::string16 full, abbreviation;
+        state_names::GetNameAndAbbreviation(GetRawInfo(ADDRESS_HOME_STATE),
+                                            &full, &abbreviation);
+        if (compare.StringsEqual(profile.GetRawInfo(ADDRESS_HOME_STATE),
+                                 full) ||
+            compare.StringsEqual(profile.GetRawInfo(ADDRESS_HOME_STATE),
+                                 abbreviation))
+          continue;
       }
       if (!compare.StringsEqual(profile.GetRawInfo(field_type),
                                 GetRawInfo(field_type))) {
