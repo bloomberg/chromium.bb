@@ -5,6 +5,7 @@
 #include "sync/test/engine/mock_model_type_processor.h"
 
 #include "base/bind.h"
+#include "sync/engine/commit_queue.h"
 
 namespace syncer_v2 {
 

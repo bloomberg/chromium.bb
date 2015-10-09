@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SYNC_ENGINE_MODEL_TYPE_SYNC_PROXY_IMPL_H_
-#define SYNC_ENGINE_MODEL_TYPE_SYNC_PROXY_IMPL_H_
+#ifndef SYNC_INTERNAL_API_PUBLIC_MODEL_TYPE_SYNC_PROXY_IMPL_H_
+#define SYNC_INTERNAL_API_PUBLIC_MODEL_TYPE_SYNC_PROXY_IMPL_H_
 
 #include "base/containers/scoped_ptr_map.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "sync/base/sync_export.h"
-#include "sync/engine/model_type_processor.h"
 #include "sync/internal_api/public/base/model_type.h"
+#include "sync/internal_api/public/model_type_processor.h"
 #include "sync/internal_api/public/non_blocking_sync_common.h"
 #include "sync/protocol/sync.pb.h"
 
@@ -23,12 +23,12 @@ class ModelTypeStore;
 
 // A sync component embedded on the synced type's thread that helps to handle
 // communication between sync and model type threads.
-class SYNC_EXPORT_PRIVATE ModelTypeProcessorImpl : public ModelTypeProcessor,
-                                                   base::NonThreadSafe {
+class SYNC_EXPORT_PRIVATE SharedModelTypeProcessor : public ModelTypeProcessor,
+                                                     base::NonThreadSafe {
  public:
-  ModelTypeProcessorImpl(syncer::ModelType type,
-                         base::WeakPtr<ModelTypeStore> store);
-  ~ModelTypeProcessorImpl() override;
+  SharedModelTypeProcessor(syncer::ModelType type,
+                           base::WeakPtr<ModelTypeStore> store);
+  ~SharedModelTypeProcessor() override;
 
   typedef base::Callback<void(
       /*syncer::SyncError,*/ scoped_ptr<ActivationContext>)> StartCallback;
@@ -90,7 +90,7 @@ class SYNC_EXPORT_PRIVATE ModelTypeProcessorImpl : public ModelTypeProcessor,
 
   // Returns the long-lived WeakPtr that is intended to be registered with the
   // ProfileSyncService.
-  base::WeakPtr<ModelTypeProcessorImpl> AsWeakPtrForUI();
+  base::WeakPtr<SharedModelTypeProcessor> AsWeakPtrForUI();
 
  private:
   typedef base::ScopedPtrMap<std::string, scoped_ptr<ModelTypeEntity>>
@@ -135,7 +135,7 @@ class SYNC_EXPORT_PRIVATE ModelTypeProcessorImpl : public ModelTypeProcessor,
   // them across restarts, and keep them in sync with our progress markers.
   UpdateMap pending_updates_map_;
 
-  // Store is supplied by model type implementation. ModelTypeProcessorImpl
+  // Store is supplied by model type implementation. SharedModelTypeProcessor
   // uses store for persisting sync related data (entity state and data type
   // state).
   base::WeakPtr<ModelTypeStore> store_;
@@ -145,10 +145,10 @@ class SYNC_EXPORT_PRIVATE ModelTypeProcessorImpl : public ModelTypeProcessor,
   // thread, we want to make sure that no tasks generated as part of the
   // now-obsolete connection to affect us.  But we also want the WeakPtr we
   // sent to the UI thread to remain valid.
-  base::WeakPtrFactory<ModelTypeProcessorImpl> weak_ptr_factory_for_ui_;
-  base::WeakPtrFactory<ModelTypeProcessorImpl> weak_ptr_factory_for_sync_;
+  base::WeakPtrFactory<SharedModelTypeProcessor> weak_ptr_factory_for_ui_;
+  base::WeakPtrFactory<SharedModelTypeProcessor> weak_ptr_factory_for_sync_;
 };
 
 }  // namespace syncer
 
-#endif  // SYNC_ENGINE_MODEL_TYPE_SYNC_PROXY_IMPL_H_
+#endif  // SYNC_INTERNAL_API_PUBLIC_MODEL_TYPE_SYNC_PROXY_IMPL_H_

@@ -7,8 +7,8 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
-#include "sync/engine/model_type_processor_impl.h"
 #include "sync/internal_api/public/activation_context.h"
+#include "sync/internal_api/public/shared_model_type_processor.h"
 
 namespace sync_driver_v2 {
 
@@ -26,7 +26,7 @@ NonBlockingDataTypeController::~NonBlockingDataTypeController() {}
 
 void NonBlockingDataTypeController::InitializeType(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-    const base::WeakPtr<syncer_v2::ModelTypeProcessorImpl>& type_processor) {
+    const base::WeakPtr<syncer_v2::SharedModelTypeProcessor>& type_processor) {
   DCHECK(!IsSyncProxyConnected());
   model_task_runner_ = task_runner;
   type_processor_ = type_processor;
@@ -99,8 +99,8 @@ void NonBlockingDataTypeController::SendDisableSignal() {
   DCHECK_EQ(DISABLED, GetDesiredState());
   DVLOG(1) << "Disabling non-blocking sync type " << ModelTypeToString(type_);
   model_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&syncer_v2::ModelTypeProcessorImpl::Disable, type_processor_));
+      FROM_HERE, base::Bind(&syncer_v2::SharedModelTypeProcessor::Disable,
+                            type_processor_));
   current_state_ = DISABLED;
 }
 

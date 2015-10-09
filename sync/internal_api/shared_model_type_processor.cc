@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sync/engine/model_type_processor_impl.h"
+#include "sync/internal_api/public/shared_model_type_processor.h"
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -14,7 +14,7 @@
 
 namespace syncer_v2 {
 
-ModelTypeProcessorImpl::ModelTypeProcessorImpl(
+SharedModelTypeProcessor::SharedModelTypeProcessor(
     syncer::ModelType type,
     base::WeakPtr<ModelTypeStore> store)
     : type_(type),
@@ -24,10 +24,9 @@ ModelTypeProcessorImpl::ModelTypeProcessorImpl(
       weak_ptr_factory_for_ui_(this),
       weak_ptr_factory_for_sync_(this) {}
 
-ModelTypeProcessorImpl::~ModelTypeProcessorImpl() {
-}
+SharedModelTypeProcessor::~SharedModelTypeProcessor() {}
 
-void ModelTypeProcessorImpl::Start(StartCallback callback) {
+void SharedModelTypeProcessor::Start(StartCallback callback) {
   DCHECK(CalledOnValidThread());
   DVLOG(1) << "Starting " << ModelTypeToString(type_);
 
@@ -47,26 +46,26 @@ void ModelTypeProcessorImpl::Start(StartCallback callback) {
   callback.Run(/*syncer::SyncError(), */ activation_context.Pass());
 }
 
-bool ModelTypeProcessorImpl::IsEnabled() const {
+bool SharedModelTypeProcessor::IsEnabled() const {
   DCHECK(CalledOnValidThread());
   return is_enabled_;
 }
 
-bool ModelTypeProcessorImpl::IsConnected() const {
+bool SharedModelTypeProcessor::IsConnected() const {
   DCHECK(CalledOnValidThread());
   return is_connected_;
 }
 
 // TODO(stanisc): crbug.com/537027: This needs to be called from
 // DataTypeController when the type is disabled
-void ModelTypeProcessorImpl::Disable() {
+void SharedModelTypeProcessor::Disable() {
   DCHECK(CalledOnValidThread());
   is_enabled_ = false;
   Stop();
   ClearSyncState();
 }
 
-void ModelTypeProcessorImpl::Stop() {
+void SharedModelTypeProcessor::Stop() {
   DCHECK(CalledOnValidThread());
   DVLOG(1) << "Stopping " << ModelTypeToString(type_);
   is_connected_ = false;
@@ -76,12 +75,13 @@ void ModelTypeProcessorImpl::Stop() {
   ClearTransientSyncState();
 }
 
-base::WeakPtr<ModelTypeProcessorImpl> ModelTypeProcessorImpl::AsWeakPtrForUI() {
+base::WeakPtr<SharedModelTypeProcessor>
+SharedModelTypeProcessor::AsWeakPtrForUI() {
   DCHECK(CalledOnValidThread());
   return weak_ptr_factory_for_ui_.GetWeakPtr();
 }
 
-void ModelTypeProcessorImpl::OnConnect(scoped_ptr<CommitQueue> worker) {
+void SharedModelTypeProcessor::OnConnect(scoped_ptr<CommitQueue> worker) {
   DCHECK(CalledOnValidThread());
   DVLOG(1) << "Successfully connected " << ModelTypeToString(type_);
 
@@ -91,8 +91,8 @@ void ModelTypeProcessorImpl::OnConnect(scoped_ptr<CommitQueue> worker) {
   FlushPendingCommitRequests();
 }
 
-void ModelTypeProcessorImpl::Put(const std::string& client_tag,
-                                 const sync_pb::EntitySpecifics& specifics) {
+void SharedModelTypeProcessor::Put(const std::string& client_tag,
+                                   const sync_pb::EntitySpecifics& specifics) {
   DCHECK_EQ(type_, syncer::GetModelTypeFromSpecifics(specifics));
 
   const std::string client_tag_hash(
@@ -111,7 +111,7 @@ void ModelTypeProcessorImpl::Put(const std::string& client_tag,
   FlushPendingCommitRequests();
 }
 
-void ModelTypeProcessorImpl::Delete(const std::string& client_tag) {
+void SharedModelTypeProcessor::Delete(const std::string& client_tag) {
   const std::string client_tag_hash(
       syncer::syncable::GenerateSyncableHash(type_, client_tag));
 
@@ -129,7 +129,7 @@ void ModelTypeProcessorImpl::Delete(const std::string& client_tag) {
   FlushPendingCommitRequests();
 }
 
-void ModelTypeProcessorImpl::FlushPendingCommitRequests() {
+void SharedModelTypeProcessor::FlushPendingCommitRequests() {
   CommitRequestDataList commit_requests;
 
   // Don't bother sending anything if there's no one to send to.
@@ -155,7 +155,7 @@ void ModelTypeProcessorImpl::FlushPendingCommitRequests() {
     worker_->EnqueueForCommit(commit_requests);
 }
 
-void ModelTypeProcessorImpl::OnCommitCompleted(
+void SharedModelTypeProcessor::OnCommitCompleted(
     const DataTypeState& type_state,
     const CommitResponseDataList& response_list) {
   data_type_state_ = type_state;
@@ -171,15 +171,14 @@ void ModelTypeProcessorImpl::OnCommitCompleted(
                    << " type: " << type_ << " client_tag: " << client_tag_hash;
       return;
     } else {
-      it->second->ReceiveCommitResponse(response_data.id,
-                                        response_data.sequence_number,
-                                        response_data.response_version,
-                                        data_type_state_.encryption_key_name);
+      it->second->ReceiveCommitResponse(
+          response_data.id, response_data.sequence_number,
+          response_data.response_version, data_type_state_.encryption_key_name);
     }
   }
 }
 
-void ModelTypeProcessorImpl::OnUpdateReceived(
+void SharedModelTypeProcessor::OnUpdateReceived(
     const DataTypeState& data_type_state,
     const UpdateResponseDataList& response_list,
     const UpdateResponseDataList& pending_updates) {
@@ -199,24 +198,18 @@ void ModelTypeProcessorImpl::OnUpdateReceived(
 
     EntityMap::const_iterator it = entities_.find(client_tag_hash);
     if (it == entities_.end()) {
-      scoped_ptr<ModelTypeEntity> entity =
-          ModelTypeEntity::FromServerUpdate(response_data.id,
-                                            response_data.client_tag_hash,
-                                            response_data.non_unique_name,
-                                            response_data.response_version,
-                                            response_data.specifics,
-                                            response_data.deleted,
-                                            response_data.ctime,
-                                            response_data.mtime,
-                                            response_data.encryption_key_name);
+      scoped_ptr<ModelTypeEntity> entity = ModelTypeEntity::FromServerUpdate(
+          response_data.id, response_data.client_tag_hash,
+          response_data.non_unique_name, response_data.response_version,
+          response_data.specifics, response_data.deleted, response_data.ctime,
+          response_data.mtime, response_data.encryption_key_name);
       entities_.insert(client_tag_hash, entity.Pass());
     } else {
       ModelTypeEntity* entity = it->second;
-      entity->ApplyUpdateFromServer(response_data.response_version,
-                                    response_data.deleted,
-                                    response_data.specifics,
-                                    response_data.mtime,
-                                    response_data.encryption_key_name);
+      entity->ApplyUpdateFromServer(
+          response_data.response_version, response_data.deleted,
+          response_data.specifics, response_data.mtime,
+          response_data.encryption_key_name);
 
       // TODO: Do something special when conflicts are detected.
     }
@@ -269,24 +262,23 @@ void ModelTypeProcessorImpl::OnUpdateReceived(
   // TODO: Persist the new data on disk.
 }
 
-UpdateResponseDataList ModelTypeProcessorImpl::GetPendingUpdates() {
+UpdateResponseDataList SharedModelTypeProcessor::GetPendingUpdates() {
   UpdateResponseDataList pending_updates_list;
   for (UpdateMap::const_iterator it = pending_updates_map_.begin();
-       it != pending_updates_map_.end();
-       ++it) {
+       it != pending_updates_map_.end(); ++it) {
     pending_updates_list.push_back(*it->second);
   }
   return pending_updates_list;
 }
 
-void ModelTypeProcessorImpl::ClearTransientSyncState() {
+void SharedModelTypeProcessor::ClearTransientSyncState() {
   for (EntityMap::const_iterator it = entities_.begin(); it != entities_.end();
        ++it) {
     it->second->ClearTransientSyncState();
   }
 }
 
-void ModelTypeProcessorImpl::ClearSyncState() {
+void SharedModelTypeProcessor::ClearSyncState() {
   for (EntityMap::const_iterator it = entities_.begin(); it != entities_.end();
        ++it) {
     it->second->ClearSyncState();

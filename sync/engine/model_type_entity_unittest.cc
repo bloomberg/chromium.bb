@@ -17,12 +17,12 @@ namespace syncer_v2 {
 // Some simple sanity tests for the ModelTypeEntity.
 //
 // A lot of the more complicated sync logic is implemented in the
-// ModelTypeProcessorImpl that owns the ModelTypeEntity.  We can't unit test it
-// here.
+// SharedModelTypeProcessor that owns the ModelTypeEntity.  We can't unit test
+// it here.
 //
 // Instead, we focus on simple tests to make sure that variables are getting
 // properly intialized and flags properly set.  Anything more complicated would
-// be a redundant and incomplete version of the ModelTypeProcessorImpl tests.
+// be a redundant and incomplete version of the SharedModelTypeProcessor tests.
 class ModelTypeEntityTest : public ::testing::Test {
  public:
   ModelTypeEntityTest()

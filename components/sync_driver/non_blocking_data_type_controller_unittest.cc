@@ -14,9 +14,9 @@
 #include "base/thread_task_runner_handle.h"
 #include "components/sync_driver/non_blocking_data_type_controller.h"
 #include "sync/engine/commit_queue.h"
-#include "sync/engine/model_type_processor_impl.h"
 #include "sync/internal_api/public/activation_context.h"
 #include "sync/internal_api/public/base/model_type.h"
+#include "sync/internal_api/public/shared_model_type_processor.h"
 #include "sync/internal_api/public/sync_context_proxy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -191,7 +191,7 @@ class NonBlockingDataTypeControllerTest : public testing::Test {
   }
 
  protected:
-  syncer_v2::ModelTypeProcessorImpl type_processor_;
+  syncer_v2::SharedModelTypeProcessor type_processor_;
   scoped_refptr<base::TestSimpleTaskRunner> model_thread_;
   scoped_refptr<base::TestSimpleTaskRunner> sync_thread_;
 

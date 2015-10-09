@@ -10,10 +10,9 @@
 #include "sync/engine/commit_queue.h"
 #include "sync/engine/directory_commit_contributor.h"
 #include "sync/engine/directory_update_handler.h"
-#include "sync/engine/model_type_processor.h"
-#include "sync/engine/model_type_processor_impl.h"
 #include "sync/engine/model_type_worker.h"
 #include "sync/internal_api/public/activation_context.h"
+#include "sync/internal_api/public/model_type_processor.h"
 #include "sync/sessions/directory_type_debug_info_emitter.h"
 #include "sync/util/cryptographer.h"
 

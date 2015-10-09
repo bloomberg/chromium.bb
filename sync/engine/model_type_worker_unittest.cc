@@ -6,8 +6,8 @@
 
 #include "base/strings/stringprintf.h"
 #include "sync/engine/commit_contribution.h"
-#include "sync/engine/model_type_processor.h"
 #include "sync/internal_api/public/base/model_type.h"
+#include "sync/internal_api/public/model_type_processor.h"
 #include "sync/internal_api/public/non_blocking_sync_common.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/sessions/status_controller.h"

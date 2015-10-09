@@ -14,7 +14,7 @@
 
 namespace syncer_v2 {
 struct ActivationContext;
-class ModelTypeProcessorImpl;
+class SharedModelTypeProcessor;
 }
 
 namespace sync_driver_v2 {
@@ -69,7 +69,7 @@ class NonBlockingDataTypeController
   // will only ever deal with a single type proxy.
   void InitializeType(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-      const base::WeakPtr<syncer_v2::ModelTypeProcessorImpl>& type_processor);
+      const base::WeakPtr<syncer_v2::SharedModelTypeProcessor>& type_processor);
 
   // Initialize the connection to the SyncContextProxy.
   //
@@ -99,19 +99,19 @@ class NonBlockingDataTypeController
   // Figures out which signals need to be sent then send then sends them.
   void UpdateState();
 
-  // Sends an enable signal to the ModelTypeProcessorImpl.
+  // Sends an enable signal to the SharedModelTypeProcessor.
   void SendEnableSignal();
 
-  // Sends a disable signal to the ModelTypeProcessorImpl.
+  // Sends a disable signal to the SharedModelTypeProcessor.
   void SendDisableSignal();
 
-  // Sends a disconnect signal to the ModelTypeProcessorImpl.
+  // Sends a disconnect signal to the SharedModelTypeProcessor.
   void SendDisconnectSignal();
 
   // Returns true if this type should be synced.
   bool IsPreferred() const;
 
-  // Returns true if this object has access to the ModelTypeProcessorImpl.
+  // Returns true if this object has access to the SharedModelTypeProcessor.
   bool IsSyncProxyConnected() const;
 
   // Returns true if this object has access to the SyncContextProxy.
@@ -149,11 +149,11 @@ class NonBlockingDataTypeController
   // Whether or not the user wants to sync this type.
   bool is_preferred_;
 
-  // The ModelTypeProcessorImpl and its associated thread.  May be NULL.
+  // The SharedModelTypeProcessor and its associated thread. May be NULL.
   scoped_refptr<base::SingleThreadTaskRunner> model_task_runner_;
-  base::WeakPtr<syncer_v2::ModelTypeProcessorImpl> type_processor_;
+  base::WeakPtr<syncer_v2::SharedModelTypeProcessor> type_processor_;
 
-  // The SyncContextProxy that connects to the current sync backend.  May be
+  // The SyncContextProxy that connects to the current sync backend. May be
   // NULL.
   scoped_ptr<syncer_v2::SyncContextProxy> sync_context_proxy_;
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sync/engine/model_type_processor_impl.h"
+#include "sync/internal_api/public/shared_model_type_processor.h"
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
@@ -19,9 +19,9 @@ namespace syncer_v2 {
 
 static const syncer::ModelType kModelType = syncer::PREFERENCES;
 
-// Tests the sync engine parts of ModelTypeProcessorImpl.
+// Tests the sync engine parts of SharedModelTypeProcessor.
 //
-// The ModelTypeProcessorImpl contains a non-trivial amount of code dedicated
+// The SharedModelTypeProcessor contains a non-trivial amount of code dedicated
 // to turning the sync engine on and off again.  That code is fairly well
 // tested in the NonBlockingDataTypeController unit tests and it doesn't need
 // to be re-tested here.
@@ -40,22 +40,22 @@ static const syncer::ModelType kModelType = syncer::PREFERENCES;
 // - Writes to permanent storage. (TODO)
 // - Callbacks into the model. (TODO)
 // - Requests to the sync thread.  Tested with MockCommitQueue.
-class ModelTypeProcessorImplTest : public ::testing::Test {
+class SharedModelTypeProcessorTest : public ::testing::Test {
  public:
-  ModelTypeProcessorImplTest();
-  ~ModelTypeProcessorImplTest() override;
+  SharedModelTypeProcessorTest();
+  ~SharedModelTypeProcessorTest() override;
 
   // Initialize to a "ready-to-commit" state.
   void InitializeToReadyState();
 
-  // Start our ModelTypeProcessorImpl, which will be unable to commit until it
+  // Start our SharedModelTypeProcessor, which will be unable to commit until it
   // receives notification that initial sync has completed.
   void Start();
 
-  // Stop and disconnect the CommitQueue from our ModelTypeProcessorImpl.
+  // Stop and disconnect the CommitQueue from our SharedModelTypeProcessor.
   void Stop();
 
-  // Disable sync for this ModelTypeProcessorImpl.  Should cause sync state to
+  // Disable sync for this SharedModelTypeProcessor.  Should cause sync state to
   // be discarded.
   void Disable();
 
@@ -131,24 +131,23 @@ class ModelTypeProcessorImplTest : public ::testing::Test {
   // |type_processor_|.
   MockCommitQueue* mock_queue_;
   scoped_ptr<MockCommitQueue> mock_queue_ptr_;
-  scoped_ptr<ModelTypeProcessorImpl> type_processor_;
+  scoped_ptr<SharedModelTypeProcessor> type_processor_;
 
   DataTypeState data_type_state_;
   // This sets ThreadTaskRunnerHandle on the current thread.
   base::MessageLoop message_loop_;
 };
 
-ModelTypeProcessorImplTest::ModelTypeProcessorImplTest()
+SharedModelTypeProcessorTest::SharedModelTypeProcessorTest()
     : mock_queue_(new MockCommitQueue()),
       mock_queue_ptr_(mock_queue_),
       type_processor_(
-          new ModelTypeProcessorImpl(kModelType,
-                                     base::WeakPtr<ModelTypeStore>())) {}
+          new SharedModelTypeProcessor(kModelType,
+                                       base::WeakPtr<ModelTypeStore>())) {}
 
-ModelTypeProcessorImplTest::~ModelTypeProcessorImplTest() {
-}
+SharedModelTypeProcessorTest::~SharedModelTypeProcessorTest() {}
 
-void ModelTypeProcessorImplTest::InitializeToReadyState() {
+void SharedModelTypeProcessorTest::InitializeToReadyState() {
   // TODO(rlarocque): This should be updated to inject on-disk state.
   // At the time this code was written, there was no support for on-disk
   // state so this was the only way to inject a data_type_state into
@@ -157,24 +156,24 @@ void ModelTypeProcessorImplTest::InitializeToReadyState() {
   OnInitialSyncDone();
 }
 
-void ModelTypeProcessorImplTest::Start() {
-  type_processor_->Start(base::Bind(&ModelTypeProcessorImplTest::StartDone,
+void SharedModelTypeProcessorTest::Start() {
+  type_processor_->Start(base::Bind(&SharedModelTypeProcessorTest::StartDone,
                                     base::Unretained(this)));
 }
 
-void ModelTypeProcessorImplTest::Stop() {
+void SharedModelTypeProcessorTest::Stop() {
   type_processor_->Stop();
   mock_queue_ = NULL;
   mock_queue_ptr_.reset();
 }
 
-void ModelTypeProcessorImplTest::Disable() {
+void SharedModelTypeProcessorTest::Disable() {
   type_processor_->Disable();
   mock_queue_ = NULL;
   mock_queue_ptr_.reset();
 }
 
-void ModelTypeProcessorImplTest::Restart() {
+void SharedModelTypeProcessorTest::Restart() {
   DCHECK(!type_processor_->IsConnected());
 
   // Prepare a new MockCommitQueue instance, just as we would
@@ -185,7 +184,7 @@ void ModelTypeProcessorImplTest::Restart() {
   Start();
 }
 
-void ModelTypeProcessorImplTest::StartDone(
+void SharedModelTypeProcessorTest::StartDone(
     /*syncer::SyncError,*/ scoped_ptr<ActivationContext> context) {
   // Hand off ownership of |mock_queue_ptr_|, while keeping
   // an unsafe pointer to it.  This is why we can only connect once.
@@ -193,17 +192,17 @@ void ModelTypeProcessorImplTest::StartDone(
   context->type_processor->OnConnect(mock_queue_ptr_.Pass());
 }
 
-void ModelTypeProcessorImplTest::WriteItem(const std::string& tag,
-                                           const std::string& value) {
+void SharedModelTypeProcessorTest::WriteItem(const std::string& tag,
+                                             const std::string& value) {
   const std::string tag_hash = GenerateTagHash(tag);
   type_processor_->Put(tag, GenerateSpecifics(tag, value));
 }
 
-void ModelTypeProcessorImplTest::DeleteItem(const std::string& tag) {
+void SharedModelTypeProcessorTest::DeleteItem(const std::string& tag) {
   type_processor_->Delete(tag);
 }
 
-void ModelTypeProcessorImplTest::OnInitialSyncDone() {
+void SharedModelTypeProcessorTest::OnInitialSyncDone() {
   data_type_state_.initial_sync_done = true;
   UpdateResponseDataList empty_update_list;
 
@@ -211,9 +210,9 @@ void ModelTypeProcessorImplTest::OnInitialSyncDone() {
                                     empty_update_list);
 }
 
-void ModelTypeProcessorImplTest::UpdateFromServer(int64 version_offset,
-                                                  const std::string& tag,
-                                                  const std::string& value) {
+void SharedModelTypeProcessorTest::UpdateFromServer(int64 version_offset,
+                                                    const std::string& tag,
+                                                    const std::string& value) {
   const std::string tag_hash = GenerateTagHash(tag);
   UpdateResponseData data = mock_queue_->UpdateFromServer(
       version_offset, tag_hash, GenerateSpecifics(tag, value));
@@ -224,7 +223,7 @@ void ModelTypeProcessorImplTest::UpdateFromServer(int64 version_offset,
                                     UpdateResponseDataList());
 }
 
-void ModelTypeProcessorImplTest::PendingUpdateFromServer(
+void SharedModelTypeProcessorTest::PendingUpdateFromServer(
     int64 version_offset,
     const std::string& tag,
     const std::string& value,
@@ -240,8 +239,8 @@ void ModelTypeProcessorImplTest::PendingUpdateFromServer(
                                     list);
 }
 
-void ModelTypeProcessorImplTest::TombstoneFromServer(int64 version_offset,
-                                                     const std::string& tag) {
+void SharedModelTypeProcessorTest::TombstoneFromServer(int64 version_offset,
+                                                       const std::string& tag) {
   // Overwrite the existing server version if this is the new highest version.
   std::string tag_hash = GenerateTagHash(tag);
 
@@ -254,7 +253,7 @@ void ModelTypeProcessorImplTest::TombstoneFromServer(int64 version_offset,
                                     UpdateResponseDataList());
 }
 
-bool ModelTypeProcessorImplTest::HasPendingUpdate(
+bool SharedModelTypeProcessorTest::HasPendingUpdate(
     const std::string& tag) const {
   const std::string client_tag_hash = GenerateTagHash(tag);
   const UpdateResponseDataList list = type_processor_->GetPendingUpdates();
@@ -266,7 +265,7 @@ bool ModelTypeProcessorImplTest::HasPendingUpdate(
   return false;
 }
 
-UpdateResponseData ModelTypeProcessorImplTest::GetPendingUpdate(
+UpdateResponseData SharedModelTypeProcessorTest::GetPendingUpdate(
     const std::string& tag) const {
   DCHECK(HasPendingUpdate(tag));
   const std::string client_tag_hash = GenerateTagHash(tag);
@@ -280,35 +279,35 @@ UpdateResponseData ModelTypeProcessorImplTest::GetPendingUpdate(
   return UpdateResponseData();
 }
 
-size_t ModelTypeProcessorImplTest::GetNumPendingUpdates() const {
+size_t SharedModelTypeProcessorTest::GetNumPendingUpdates() const {
   return type_processor_->GetPendingUpdates().size();
 }
 
-void ModelTypeProcessorImplTest::SuccessfulCommitResponse(
+void SharedModelTypeProcessorTest::SuccessfulCommitResponse(
     const CommitRequestData& request_data) {
   CommitResponseDataList list;
   list.push_back(mock_queue_->SuccessfulCommitResponse(request_data));
   type_processor_->OnCommitCompleted(data_type_state_, list);
 }
 
-void ModelTypeProcessorImplTest::UpdateDesiredEncryptionKey(
+void SharedModelTypeProcessorTest::UpdateDesiredEncryptionKey(
     const std::string& key_name) {
   data_type_state_.encryption_key_name = key_name;
   type_processor_->OnUpdateReceived(data_type_state_, UpdateResponseDataList(),
                                     UpdateResponseDataList());
 }
 
-void ModelTypeProcessorImplTest::SetServerEncryptionKey(
+void SharedModelTypeProcessorTest::SetServerEncryptionKey(
     const std::string& key_name) {
   mock_queue_->SetServerEncryptionKey(key_name);
 }
 
-std::string ModelTypeProcessorImplTest::GenerateTagHash(
+std::string SharedModelTypeProcessorTest::GenerateTagHash(
     const std::string& tag) {
   return syncer::syncable::GenerateSyncableHash(kModelType, tag);
 }
 
-sync_pb::EntitySpecifics ModelTypeProcessorImplTest::GenerateSpecifics(
+sync_pb::EntitySpecifics SharedModelTypeProcessorTest::GenerateSpecifics(
     const std::string& tag,
     const std::string& value) {
   sync_pb::EntitySpecifics specifics;
@@ -319,7 +318,8 @@ sync_pb::EntitySpecifics ModelTypeProcessorImplTest::GenerateSpecifics(
 
 // These tests never decrypt anything, so we can get away with faking the
 // encryption for now.
-sync_pb::EntitySpecifics ModelTypeProcessorImplTest::GenerateEncryptedSpecifics(
+sync_pb::EntitySpecifics
+SharedModelTypeProcessorTest::GenerateEncryptedSpecifics(
     const std::string& tag,
     const std::string& value,
     const std::string& key_name) {
@@ -330,22 +330,22 @@ sync_pb::EntitySpecifics ModelTypeProcessorImplTest::GenerateEncryptedSpecifics(
   return specifics;
 }
 
-size_t ModelTypeProcessorImplTest::GetNumCommitRequestLists() {
+size_t SharedModelTypeProcessorTest::GetNumCommitRequestLists() {
   return mock_queue_->GetNumCommitRequestLists();
 }
 
-CommitRequestDataList ModelTypeProcessorImplTest::GetNthCommitRequestList(
+CommitRequestDataList SharedModelTypeProcessorTest::GetNthCommitRequestList(
     size_t n) {
   return mock_queue_->GetNthCommitRequestList(n);
 }
 
-bool ModelTypeProcessorImplTest::HasCommitRequestForTag(
+bool SharedModelTypeProcessorTest::HasCommitRequestForTag(
     const std::string& tag) {
   const std::string tag_hash = GenerateTagHash(tag);
   return mock_queue_->HasCommitRequestForTagHash(tag_hash);
 }
 
-CommitRequestData ModelTypeProcessorImplTest::GetLatestCommitRequestForTag(
+CommitRequestData SharedModelTypeProcessorTest::GetLatestCommitRequestForTag(
     const std::string& tag) {
   const std::string tag_hash = GenerateTagHash(tag);
   return mock_queue_->GetLatestCommitRequestForTagHash(tag_hash);
@@ -353,7 +353,7 @@ CommitRequestData ModelTypeProcessorImplTest::GetLatestCommitRequestForTag(
 
 // Creates a new item locally.
 // Thoroughly tests the data generated by a local item creation.
-TEST_F(ModelTypeProcessorImplTest, CreateLocalItem) {
+TEST_F(SharedModelTypeProcessorTest, CreateLocalItem) {
   InitializeToReadyState();
   EXPECT_EQ(0U, GetNumCommitRequestLists());
 
@@ -376,7 +376,7 @@ TEST_F(ModelTypeProcessorImplTest, CreateLocalItem) {
 
 // Creates a new local item then modifies it.
 // Thoroughly tests data generated by modification of server-unknown item.
-TEST_F(ModelTypeProcessorImplTest, CreateAndModifyLocalItem) {
+TEST_F(SharedModelTypeProcessorTest, CreateAndModifyLocalItem) {
   InitializeToReadyState();
   EXPECT_EQ(0U, GetNumCommitRequestLists());
 
@@ -408,7 +408,7 @@ TEST_F(ModelTypeProcessorImplTest, CreateAndModifyLocalItem) {
 
 // Deletes an item we've never seen before.
 // Should have no effect and not crash.
-TEST_F(ModelTypeProcessorImplTest, DeleteUnknown) {
+TEST_F(SharedModelTypeProcessorTest, DeleteUnknown) {
   InitializeToReadyState();
 
   DeleteItem("tag1");
@@ -420,7 +420,7 @@ TEST_F(ModelTypeProcessorImplTest, DeleteUnknown) {
 // In this test, no commit responses are received, so the deleted item is
 // server-unknown as far as the model thread is concerned.  That behavior
 // is race-dependent; other tests are used to test other races.
-TEST_F(ModelTypeProcessorImplTest, DeleteServerUnknown) {
+TEST_F(SharedModelTypeProcessorTest, DeleteServerUnknown) {
   InitializeToReadyState();
 
   WriteItem("tag1", "value1");
@@ -445,7 +445,7 @@ TEST_F(ModelTypeProcessorImplTest, DeleteServerUnknown) {
 // The item is created locally then enqueued for commit.  The sync thread
 // successfully commits it, but, before the commit response is picked up
 // by the model thread, the item is deleted by the model thread.
-TEST_F(ModelTypeProcessorImplTest, DeleteServerUnknown_RacyCommitResponse) {
+TEST_F(SharedModelTypeProcessorTest, DeleteServerUnknown_RacyCommitResponse) {
   InitializeToReadyState();
 
   WriteItem("tag1", "value1");
@@ -469,7 +469,7 @@ TEST_F(ModelTypeProcessorImplTest, DeleteServerUnknown_RacyCommitResponse) {
 
 // Creates two different sync items.
 // Verifies that the second has no effect on the first.
-TEST_F(ModelTypeProcessorImplTest, TwoIndependentItems) {
+TEST_F(SharedModelTypeProcessorTest, TwoIndependentItems) {
   InitializeToReadyState();
   EXPECT_EQ(0U, GetNumCommitRequestLists());
 
@@ -491,7 +491,7 @@ TEST_F(ModelTypeProcessorImplTest, TwoIndependentItems) {
 // Starts the type sync proxy with no local state.
 // Verify that it waits until initial sync is complete before requesting
 // commits.
-TEST_F(ModelTypeProcessorImplTest, NoCommitsUntilInitialSyncDone) {
+TEST_F(SharedModelTypeProcessorTest, NoCommitsUntilInitialSyncDone) {
   Start();
 
   WriteItem("tag1", "value1");
@@ -506,7 +506,7 @@ TEST_F(ModelTypeProcessorImplTest, NoCommitsUntilInitialSyncDone) {
 //
 // Creates items in various states of commit and verifies they re-attempt to
 // commit on reconnect.
-TEST_F(ModelTypeProcessorImplTest, Stop) {
+TEST_F(SharedModelTypeProcessorTest, Stop) {
   InitializeToReadyState();
 
   // The first item is fully committed.
@@ -542,7 +542,7 @@ TEST_F(ModelTypeProcessorImplTest, Stop) {
 //
 // Creates items in various states of commit and verifies they re-attempt to
 // commit on re-enable.
-TEST_F(ModelTypeProcessorImplTest, Disable) {
+TEST_F(SharedModelTypeProcessorTest, Disable) {
   InitializeToReadyState();
 
   // The first item is fully committed.
@@ -577,7 +577,7 @@ TEST_F(ModelTypeProcessorImplTest, Disable) {
 }
 
 // Test receipt of pending updates.
-TEST_F(ModelTypeProcessorImplTest, ReceivePendingUpdates) {
+TEST_F(SharedModelTypeProcessorTest, ReceivePendingUpdates) {
   InitializeToReadyState();
 
   EXPECT_FALSE(HasPendingUpdate("tag1"));
@@ -608,7 +608,7 @@ TEST_F(ModelTypeProcessorImplTest, ReceivePendingUpdates) {
 }
 
 // Test that Disable clears pending update state.
-TEST_F(ModelTypeProcessorImplTest, DisableWithPendingUpdates) {
+TEST_F(SharedModelTypeProcessorTest, DisableWithPendingUpdates) {
   InitializeToReadyState();
 
   PendingUpdateFromServer(5, "tag1", "value1", "key1");
@@ -623,7 +623,7 @@ TEST_F(ModelTypeProcessorImplTest, DisableWithPendingUpdates) {
 }
 
 // Test that Stop does not clear pending update state.
-TEST_F(ModelTypeProcessorImplTest, StopWithPendingUpdates) {
+TEST_F(SharedModelTypeProcessorTest, StopWithPendingUpdates) {
   InitializeToReadyState();
 
   PendingUpdateFromServer(5, "tag1", "value1", "key1");
@@ -638,7 +638,7 @@ TEST_F(ModelTypeProcessorImplTest, StopWithPendingUpdates) {
 }
 
 // Test re-encrypt everything when desired encryption key changes.
-TEST_F(ModelTypeProcessorImplTest, ReEncryptCommitsWithNewKey) {
+TEST_F(SharedModelTypeProcessorTest, ReEncryptCommitsWithNewKey) {
   InitializeToReadyState();
 
   // Commit an item.
@@ -670,7 +670,7 @@ TEST_F(ModelTypeProcessorImplTest, ReEncryptCommitsWithNewKey) {
 }
 
 // Test receipt of updates with new and old keys.
-TEST_F(ModelTypeProcessorImplTest, ReEncryptUpdatesWithNewKey) {
+TEST_F(SharedModelTypeProcessorTest, ReEncryptUpdatesWithNewKey) {
   InitializeToReadyState();
 
   // Receive an unencrpted update.
