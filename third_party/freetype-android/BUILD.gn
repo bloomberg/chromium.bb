@@ -48,6 +48,8 @@ source_set("freetype") {
   ]
 
   public_configs = [ ":freetype_config" ]
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [ "//build/config/compiler:no_chromium_code" ]
 
   deps = [
     "//third_party/libpng",

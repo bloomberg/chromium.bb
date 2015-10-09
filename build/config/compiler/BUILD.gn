@@ -681,28 +681,6 @@ config("default_warnings") {
       cflags += [ "-Wno-psabi" ]
     }
 
-    if (is_android) {
-      # Disable any additional warnings enabled by the Android build system but
-      # which chromium does not build cleanly with (when treating warning as
-      # errors).
-      cflags += [
-        "-Wno-extra",
-        "-Wno-ignored-qualifiers",
-        "-Wno-type-limits",
-      ]
-      cflags_cc += [
-        # Disabling c++0x-compat should be handled in WebKit, but
-        # this currently doesn't work because gcc_version is not set
-        # correctly when building with the Android build system.
-        # TODO(torne): Fix this in WebKit.
-        "-Wno-error=c++0x-compat",
-
-        # Other things unrelated to -Wextra:
-        "-Wno-non-virtual-dtor",
-        "-Wno-sign-promo",
-      ]
-    }
-
     if (gcc_version >= 48) {
       # Don't warn about the "typedef 'foo' locally defined but not used"
       # for gcc 4.8.
