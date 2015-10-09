@@ -148,7 +148,7 @@ deps = {
     Var('chromium_git') + '/external/snappy.git' + '@' + '762bb32f0c9d2f31ba4958c7c0933d22e80c20bf',
 
   'src/tools/grit':
-    Var('chromium_git') + '/external/grit-i18n.git' + '@' + 'f6d8c4ca636a187f4e3e38f41f650040c4e189cb', # from svn revision 199
+    Var('chromium_git') + '/external/grit-i18n.git' + '@' + '4983981a20ff2f1c68a91994cff1eded5b2c494d', # from svn revision 200
 
   'src/tools/gyp':
     Var('chromium_git') + '/external/gyp.git' + '@' + '01528c7244837168a1c80f06ff60fa5a9793c824',
