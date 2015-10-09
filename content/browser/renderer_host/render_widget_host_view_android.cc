@@ -515,7 +515,7 @@ bool RenderWidgetHostViewAndroid::HasFocus() const {
 }
 
 bool RenderWidgetHostViewAndroid::IsSurfaceAvailableForCopy() const {
-  return HasValidFrame();
+  return !using_browser_compositor_ || HasValidFrame();
 }
 
 void RenderWidgetHostViewAndroid::Show() {
@@ -872,7 +872,7 @@ void RenderWidgetHostViewAndroid::CopyFromCompositingSurface(
     return;
   }
   base::TimeTicks start_time = base::TimeTicks::Now();
-  if (using_browser_compositor_ && !IsSurfaceAvailableForCopy()) {
+  if (!IsSurfaceAvailableForCopy()) {
     callback.Run(SkBitmap(), READBACK_SURFACE_UNAVAILABLE);
     return;
   }
@@ -1176,6 +1176,11 @@ void RenderWidgetHostViewAndroid::RetainFrame(
   last_frame_info_.reset(new LastFrameInfo(output_surface_id, frame.Pass()));
 }
 
+SynchronousCompositorImpl*
+RenderWidgetHostViewAndroid::GetSynchronousCompositorImpl() {
+  return sync_compositor_.get();
+}
+
 void RenderWidgetHostViewAndroid::SynchronousFrameMetadata(
     const cc::CompositorFrameMetadata& frame_metadata) {
   if (!content_view_core_)
@@ -1281,10 +1286,7 @@ void RenderWidgetHostViewAndroid::SynchronousCopyContents(
   int output_width = output_size_in_pixel.width();
   int output_height = output_size_in_pixel.height();
 
-  SynchronousCompositor* compositor =
-      SynchronousCompositorImpl::FromID(host_->GetProcess()->GetID(),
-                                        host_->GetRoutingID());
-  if (!compositor) {
+  if (!sync_compositor_) {
     callback.Run(SkBitmap(), READBACK_FAILED);
     return;
   }
@@ -1298,7 +1300,7 @@ void RenderWidgetHostViewAndroid::SynchronousCopyContents(
   canvas.scale(
       (float)output_width / (float)input_size_in_pixel.width(),
       (float)output_height / (float)input_size_in_pixel.height());
-  compositor->DemandDrawSw(&canvas);
+  sync_compositor_->DemandDrawSw(&canvas);
   callback.Run(bitmap, READBACK_SUCCESS);
 }
 
@@ -1482,16 +1484,12 @@ void RenderWidgetHostViewAndroid::SendBeginFrame(base::TimeTicks frame_time,
         host_->GetRoutingID(),
         cc::BeginFrameArgs::Create(BEGINFRAME_FROM_HERE, frame_time, deadline,
                                    vsync_period, cc::BeginFrameArgs::NORMAL)));
-  } else {
-    SynchronousCompositorImpl* compositor = SynchronousCompositorImpl::FromID(
-        host_->GetProcess()->GetID(), host_->GetRoutingID());
-    if (compositor) {
-      // The synchronous compositor synchronously does it's work in this call.
-      // It does not use a deadline.
-      compositor->BeginFrame(cc::BeginFrameArgs::Create(
-          BEGINFRAME_FROM_HERE, frame_time, base::TimeTicks(), vsync_period,
-          cc::BeginFrameArgs::NORMAL));
-    }
+  } else if (sync_compositor_) {
+    // The synchronous compositor synchronously does it's work in this call.
+    // It does not use a deadline.
+    sync_compositor_->BeginFrame(cc::BeginFrameArgs::Create(
+        BEGINFRAME_FROM_HERE, frame_time, base::TimeTicks(), vsync_period,
+        cc::BeginFrameArgs::NORMAL));
   }
 }
 
@@ -1609,11 +1607,8 @@ InputEventAckState RenderWidgetHostViewAndroid::FilterInputEvent(
       shim->Send(new GpuMsg_WakeUpGpu);
   }
 
-  SynchronousCompositorImpl* compositor =
-      SynchronousCompositorImpl::FromID(host_->GetProcess()->GetID(),
-                                          host_->GetRoutingID());
-  if (compositor)
-    return compositor->HandleInputEvent(input_event);
+  if (sync_compositor_)
+    return sync_compositor_->HandleInputEvent(input_event);
   return INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
 }
 
@@ -1745,6 +1740,8 @@ uint32_t RenderWidgetHostViewAndroid::GetSurfaceIdNamespace() {
 
 void RenderWidgetHostViewAndroid::SetContentViewCore(
     ContentViewCoreImpl* content_view_core) {
+  DCHECK(!content_view_core || !content_view_core_ ||
+         (content_view_core_ == content_view_core));
   RemoveLayers();
   StopObservingRootWindow();
 
@@ -1772,9 +1769,10 @@ void RenderWidgetHostViewAndroid::SetContentViewCore(
   }
 
   AttachLayers();
-
-  if (!content_view_core_)
+  if (!content_view_core_) {
+    sync_compositor_.reset();
     return;
+  }
 
   if (is_showing_)
     StartObservingRootWindow();
@@ -1788,6 +1786,11 @@ void RenderWidgetHostViewAndroid::SetContentViewCore(
   if (!overscroll_controller_ &&
       content_view_core_window_android_->GetCompositor()) {
     overscroll_controller_ = CreateOverscrollController(content_view_core_);
+  }
+
+  if (!sync_compositor_) {
+    sync_compositor_ = SynchronousCompositorImpl::Create(
+        this, content_view_core_->GetWebContents());
   }
 }
 

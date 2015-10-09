@@ -185,12 +185,12 @@ AwBrowserPermissionRequestDelegate* AwBrowserPermissionRequestDelegate::FromID(
 }
 
 AwContents::AwContents(scoped_ptr<WebContents> web_contents)
-    : web_contents_(web_contents.Pass()),
-      browser_view_renderer_(
+    : browser_view_renderer_(
           this,
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
           base::CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kDisablePageVisibility)),
+      web_contents_(web_contents.Pass()),
       renderer_manager_key_(GLViewRendererManager::GetInstance()->NullKey()) {
   base::subtle::NoBarrier_AtomicIncrement(&g_instance_count, 1);
   icon_helper_.reset(new IconHelper(web_contents_.get()));
@@ -287,8 +287,6 @@ void AwContents::SetAwAutofillClient(jobject client) {
 
 AwContents::~AwContents() {
   DCHECK_EQ(this, AwContents::FromWebContents(web_contents_.get()));
-  content::SynchronousCompositor::SetClientForWebContents(web_contents_.get(),
-                                                          NULL);
   web_contents_->RemoveUserData(kAwContentsUserDataKey);
   if (find_helper_.get())
     find_helper_->SetListener(NULL);

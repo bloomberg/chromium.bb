@@ -13,7 +13,6 @@
 #include "content/browser/android/in_process/synchronous_compositor_output_surface.h"
 #include "content/common/input/input_event_ack_state.h"
 #include "content/public/browser/android/synchronous_compositor.h"
-#include "content/public/browser/web_contents_user_data.h"
 #include "content/renderer/input/synchronous_input_handler_proxy.h"
 #include "ipc/ipc_message.h"
 
@@ -28,6 +27,7 @@ class WebInputEvent;
 
 namespace content {
 class InputHandlerManager;
+class RenderWidgetHostViewAndroid;
 class SynchronousCompositorExternalBeginFrameSource;
 struct DidOverscrollParams;
 
@@ -38,14 +38,16 @@ struct DidOverscrollParams;
 // from the Compositor thread.
 class SynchronousCompositorImpl
     : public SynchronousInputHandler,
-      public SynchronousCompositor,
-      public WebContentsUserData<SynchronousCompositorImpl> {
+      public SynchronousCompositor {
  public:
-  // When used from browser code, use both |process_id| and |routing_id|.
-  static SynchronousCompositorImpl* FromID(int process_id, int routing_id);
-  // When handling upcalls from renderer code, use this version; the process id
+  // For handling upcalls from renderer code; the process id
   // is implicitly that of the in-process renderer.
   static SynchronousCompositorImpl* FromRoutingID(int routing_id);
+
+  static scoped_ptr<SynchronousCompositorImpl> Create(
+      RenderWidgetHostViewAndroid* rwhva,
+      WebContents* web_contents);
+  ~SynchronousCompositorImpl() override;
 
   InputEventAckState HandleInputEvent(const blink::WebInputEvent& input_event);
 
@@ -94,12 +96,8 @@ class SynchronousCompositorImpl
   void DidStopFlinging();
 
  private:
-  friend class WebContentsUserData<SynchronousCompositorImpl>;
-  friend class SynchronousCompositor;
-  explicit SynchronousCompositorImpl(WebContents* contents);
-  ~SynchronousCompositorImpl() override;
-
-  void SetClient(SynchronousCompositorClient* compositor_client);
+  SynchronousCompositorImpl(RenderWidgetHostViewAndroid* rwhva,
+                            SynchronousCompositorClient* client);
   void RegisterWithClient();
   void UpdateFrameMetaData(const cc::CompositorFrameMetadata& frame_info);
   void DidActivatePendingTree();
@@ -107,11 +105,11 @@ class SynchronousCompositorImpl
   bool CalledOnValidThread() const;
   void UpdateNeedsBeginFrames();
 
-  SynchronousCompositorClient* compositor_client_;
+  RenderWidgetHostViewAndroid* const rwhva_;
+  const int routing_id_;
+  SynchronousCompositorClient* const compositor_client_;
   SynchronousCompositorOutputSurface* output_surface_;
   SynchronousCompositorExternalBeginFrameSource* begin_frame_source_;
-  WebContents* contents_;
-  const int routing_id_;
   SynchronousInputHandlerProxy* synchronous_input_handler_proxy_;
   bool registered_with_client_;
   bool is_active_;

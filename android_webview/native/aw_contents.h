@@ -254,6 +254,7 @@ class AwContents : public FindHelper::Listener,
   void SetDipScaleInternal(float dip_scale);
 
   JavaObjectWeakGlobalRef java_ref_;
+  BrowserViewRenderer browser_view_renderer_;  // Must outlive |web_contents_|.
   scoped_ptr<AwWebContentsDelegate> web_contents_delegate_;
   scoped_ptr<AwContentsClientBridge> contents_client_bridge_;
   scoped_ptr<content::WebContents> web_contents_;
@@ -261,7 +262,6 @@ class AwContents : public FindHelper::Listener,
   scoped_ptr<FindHelper> find_helper_;
   scoped_ptr<IconHelper> icon_helper_;
   scoped_ptr<AwContents> pending_contents_;
-  BrowserViewRenderer browser_view_renderer_;
   scoped_ptr<AwPdfExporter> pdf_exporter_;
   scoped_ptr<PermissionRequestHandler> permission_request_handler_;
   scoped_refptr<AwMessagePortMessageFilter> message_port_message_filter_;
