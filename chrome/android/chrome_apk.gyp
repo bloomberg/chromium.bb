@@ -383,6 +383,27 @@
       ],
     },
   ],
+  'conditions': [
+    ['test_isolation_mode != "noop"',
+      {
+        'targets': [
+          {
+            'target_name': 'chrome_public_test_apk_run',
+            'type': 'none',
+            'dependencies': [
+              'chrome_public_test_apk',
+            ],
+            'includes': [
+              '../../build/isolate.gypi',
+            ],
+            'sources': [
+              'chrome_public_test_apk.isolate',
+            ],
+          },
+        ]
+      }
+    ],
+  ],
 }
 
 # Local Variables:
