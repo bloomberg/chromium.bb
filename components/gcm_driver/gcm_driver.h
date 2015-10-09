@@ -267,6 +267,13 @@ class GCMDriver {
 
   void ClearCallbacks();
 
+  // Dispatches the OnMessage event to the app handler associated with |app_id|.
+  // If |message| has been encrypted, it will be decrypted asynchronously and
+  // dispatched when the decryption operation was successful. Otherwise, the
+  // |message| will be dispatched immediately to the handler for |app_id|.
+  void DispatchMessage(const std::string& app_id,
+                       const IncomingMessage& message);
+
  private:
   // Common code shared by Unregister and UnregisterWithSenderId.
   void UnregisterInternal(const std::string& app_id,

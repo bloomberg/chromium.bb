@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/callback_forward.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 
@@ -20,6 +21,7 @@ class SequencedTaskRunner;
 namespace gcm {
 
 class GCMKeyStore;
+struct IncomingMessage;
 class KeyPair;
 
 // Provider that enables the GCM Driver to deal with encryption key management
@@ -28,6 +30,29 @@ class GCMEncryptionProvider {
  public:
   // Callback to be invoked when the public encryption key is available.
   using PublicKeyCallback = base::Callback<void(const std::string&)>;
+
+  // Callback to be invoked when a message has been decrypted.
+  using MessageDecryptedCallback = base::Callback<void(const IncomingMessage&)>;
+
+  // Reasons why the decryption of an incoming message can fail.
+  enum DecryptionFailure {
+    DECRYPTION_FAILURE_UNKNOWN,
+
+    // The contents of the Encryption HTTP header could not be parsed.
+    DECRYPTION_FAILURE_INVALID_ENCRYPTION_HEADER,
+
+    // The contents of the Encryption-Key HTTP header could not be parsed.
+    DECRYPTION_FAILURE_INVALID_ENCRYPTION_KEY_HEADER,
+
+    // No public/private key-pair was associated with the app_id.
+    DECRYPTION_FAILURE_NO_KEYS,
+
+    // The payload could not be decrypted as AES-128-GCM.
+    DECRYPTION_FAILURE_INVALID_PAYLOAD
+  };
+
+  // Callback to be invoked when a message cannot be decoded.
+  using DecryptionFailedCallback = base::Callback<void(DecryptionFailure)>;
 
   GCMEncryptionProvider();
   ~GCMEncryptionProvider();
@@ -44,13 +69,35 @@ class GCMEncryptionProvider {
   void GetPublicKey(const std::string& app_id,
                     const PublicKeyCallback& callback);
 
+  // Determines whether |message| contains encrypted content.
+  bool IsEncryptedMessage(const IncomingMessage& message) const;
+
+  // Asynchronously decrypts |message|. The |success_callback| will be invoked
+  // the message could be decrypted successfully, accompanied by the decrypted
+  // payload of the message. When decryption failed, the |failure_callback| will
+  // be invoked with the reason that encryption failed.
+  void DecryptMessage(const std::string& app_id,
+                      const IncomingMessage& message,
+                      const MessageDecryptedCallback& success_callback,
+                      const DecryptionFailedCallback& failure_callback);
+
  private:
+  FRIEND_TEST_ALL_PREFIXES(GCMEncryptionProviderTest, EncryptionRoundTrip);
+
   void DidGetPublicKey(const std::string& app_id,
                        const PublicKeyCallback& callback,
                        const KeyPair& pair);
 
   void DidCreatePublicKey(const PublicKeyCallback& callback,
                           const KeyPair& pair);
+
+  void DecryptMessageWithKey(const IncomingMessage& message,
+                             const MessageDecryptedCallback& success_callback,
+                             const DecryptionFailedCallback& failure_callback,
+                             const std::string& salt,
+                             const std::string& dh,
+                             uint64_t rs,
+                             const KeyPair& pair);
 
   scoped_ptr<GCMKeyStore> key_store_;
 

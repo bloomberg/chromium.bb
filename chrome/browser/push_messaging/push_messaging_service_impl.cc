@@ -231,28 +231,9 @@ void PushMessagingServiceImpl::OnMessage(const std::string& app_id,
       "PushMessaging.MessageReceived.Origin",
       app_identifier.origin());
 
-  // The Push API only exposes a single string of data in the push event fired
-  // on the Service Worker. When developers send messages using GCM to the Push
-  // API and want to include a message payload, they must pass a single key-
-  // value pair, where the key is "data" and the value is the string they want
-  // to be passed to their Service Worker. For example, they could send the
-  // following JSON using the HTTPS GCM API:
-  // {
-  //     "registration_ids": ["FOO", "BAR"],
-  //     "data": {
-  //         "data": "BAZ",
-  //     },
-  //     "delay_while_idle": true,
-  // }
-  // TODO(johnme): Make sure this is clearly documented for developers.
   std::string data;
-  // TODO(peter): Message payloads are disabled pending mandatory encryption.
-  // https://crbug.com/449184
-  if (AreMessagePayloadsEnabled()) {
-    gcm::MessageData::const_iterator it = message.data.find("data");
-    if (it != message.data.end())
-      data = it->second;
-  }
+  if (AreMessagePayloadsEnabled() && message.decrypted)
+    data = message.raw_data;
 
   content::BrowserContext::DeliverPushMessage(
       profile_,

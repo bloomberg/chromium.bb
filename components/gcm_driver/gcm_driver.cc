@@ -13,7 +13,16 @@
 
 namespace gcm {
 
+namespace {
+
 const size_t kMaxSenders = 100;
+
+// TODO(peter): Implement an event for GCMAppHandlers that should be called
+// when decryption of an incoming message has failed.
+void DecryptionFailedCallback(
+    GCMEncryptionProvider::DecryptionFailure reason) {}
+
+}  // namespace
 
 InstanceIDHandler::InstanceIDHandler() {
 }
@@ -256,6 +265,20 @@ void GCMDriver::ClearCallbacks() {
   register_callbacks_.clear();
   unregister_callbacks_.clear();
   send_callbacks_.clear();
+}
+
+void GCMDriver::DispatchMessage(const std::string& app_id,
+                                const IncomingMessage& message) {
+  if (!encryption_provider_.IsEncryptedMessage(message)) {
+    GetAppHandler(app_id)->OnMessage(app_id, message);
+    return;
+  }
+
+  encryption_provider_.DecryptMessage(
+      app_id, message,
+      base::Bind(&GCMDriver::DispatchMessage,
+                 weak_ptr_factory_.GetWeakPtr(), app_id),
+      base::Bind(&DecryptionFailedCallback));
 }
 
 void GCMDriver::RegisterAfterUnregister(

@@ -32,6 +32,10 @@ namespace gcm {
 // messages provided that a cryptographically-strong random salt is used.
 class GCMMessageCryptographer {
  public:
+  // Salt size, in bytes, that will be used together with the key to create a
+  // unique content encryption key for a given message.
+  static const size_t kSaltSize;
+
   GCMMessageCryptographer();
   ~GCMMessageCryptographer();
 

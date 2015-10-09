@@ -1195,7 +1195,7 @@ void GCMDriverDesktop::MessageReceived(const std::string& app_id,
   if (!gcm_started_)
     return;
 
-  GetAppHandler(app_id)->OnMessage(app_id, message);
+  DispatchMessage(app_id, message);
 }
 
 void GCMDriverDesktop::MessagesDeleted(const std::string& app_id) {

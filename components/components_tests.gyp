@@ -251,6 +251,7 @@
     ],
     'gcm_driver_crypto_unittest_sources': [
       'gcm_driver/crypto/encryption_header_parsers_unittest.cc',
+      'gcm_driver/crypto/gcm_encryption_provider_unittest.cc',
       'gcm_driver/crypto/gcm_key_store_unittest.cc',
       'gcm_driver/crypto/gcm_message_cryptographer_unittest.cc',
     ],

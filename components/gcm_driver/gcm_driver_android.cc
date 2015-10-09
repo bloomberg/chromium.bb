@@ -88,7 +88,7 @@ void GCMDriverAndroid::OnMessageReceived(JNIEnv* env,
     message.raw_data.assign(raw_data.begin(), raw_data.end());
   }
 
-  GetAppHandler(app_id)->OnMessage(app_id, message);
+  DispatchMessage(app_id, message);
 }
 
 void GCMDriverAndroid::OnMessagesDeleted(JNIEnv* env,

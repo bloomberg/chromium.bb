@@ -23,13 +23,10 @@ const size_t kDefaultRecordSize = 4096;
 // Key size, in bytes, of a valid AEAD_AES_128_GCM key.
 const size_t kContentEncryptionKeySize = 16;
 
-// Salt size, in bytes, that will be used together with the key to create a
-// unique content encryption key for a given message.
-const size_t kSaltSize = 16;
-
 }  // namespace
 
 const size_t GCMMessageCryptographer::kAuthenticationTagBytes = 16;
+const size_t GCMMessageCryptographer::kSaltSize = 16;
 
 GCMMessageCryptographer::GCMMessageCryptographer() {}
 

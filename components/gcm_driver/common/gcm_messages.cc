@@ -15,7 +15,7 @@ OutgoingMessage::OutgoingMessage() : time_to_live(kMaximumTTL) {
 OutgoingMessage::~OutgoingMessage() {
 }
 
-IncomingMessage::IncomingMessage() {
+IncomingMessage::IncomingMessage() : decrypted(false) {
 }
 
 IncomingMessage::~IncomingMessage() {

@@ -39,6 +39,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "encryption_header_parsers_unittest.cc",
+    "gcm_encryption_provider_unittest.cc",
     "gcm_key_store_unittest.cc",
     "gcm_message_cryptographer_unittest.cc",
   ]

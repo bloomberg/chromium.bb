@@ -425,7 +425,8 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, PushEventSuccess) {
 
   gcm::IncomingMessage message;
   message.sender_id = "1234567890";
-  message.data["data"] = "testdata";
+  message.raw_data = "testdata";
+  message.decrypted = true;
   push_service()->OnMessage(app_identifier.app_id(), message);
   ASSERT_TRUE(RunScript("resultQueue.pop()", &script_result));
   EXPECT_EQ("testdata", script_result);
@@ -461,7 +462,8 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, PushEventNoServiceWorker) {
 
   gcm::IncomingMessage message;
   message.sender_id = "1234567890";
-  message.data["data"] = "testdata";
+  message.raw_data = "testdata";
+  message.decrypted = true;
   push_service()->OnMessage(app_identifier.app_id(), message);
 
   callback.WaitUntilSatisfied();
@@ -504,8 +506,9 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   // to be shown. Try it twice, since we allow one mistake per 10 push events.
   gcm::IncomingMessage message;
   message.sender_id = "1234567890";
+  message.decrypted = true;
   for (int n = 0; n < 2; n++) {
-    message.data["data"] = "testdata";
+    message.raw_data = "testdata";
     SendMessageAndWaitUntilHandled(app_identifier, message);
     ASSERT_TRUE(RunScript("resultQueue.pop()", &script_result));
     EXPECT_EQ("testdata", script_result);
@@ -520,12 +523,12 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   // If the Service Worker push event handler does not show a notification, we
   // should show a forced one, but only on the 2nd occurrence since we allow one
   // mistake per 10 push events.
-  message.data["data"] = "testdata";
+  message.raw_data = "testdata";
   SendMessageAndWaitUntilHandled(app_identifier, message);
   ASSERT_TRUE(RunScript("resultQueue.pop()", &script_result, web_contents));
   EXPECT_EQ("testdata", script_result);
   EXPECT_EQ(0u, notification_manager()->GetNotificationCount());
-  message.data["data"] = "testdata";
+  message.raw_data = "testdata";
   SendMessageAndWaitUntilHandled(app_identifier, message);
   ASSERT_TRUE(RunScript("resultQueue.pop()", &script_result, web_contents));
   EXPECT_EQ("testdata", script_result);
@@ -541,7 +544,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
 
   // The notification will be automatically dismissed when the developer shows
   // a new notification themselves at a later point in time.
-  message.data["data"] = "shownotification";
+  message.raw_data = "shownotification";
   SendMessageAndWaitUntilHandled(app_identifier, message);
   ASSERT_TRUE(RunScript("resultQueue.pop()", &script_result, web_contents));
   EXPECT_EQ("shownotification", script_result);
@@ -559,7 +562,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
 
   // However if the Service Worker push event handler shows a notification, we
   // should not show a forced one.
-  message.data["data"] = "shownotification";
+  message.raw_data = "shownotification";
   for (int n = 0; n < 9; n++) {
     SendMessageAndWaitUntilHandled(app_identifier, message);
     ASSERT_TRUE(RunScript("resultQueue.pop()", &script_result, web_contents));
@@ -572,7 +575,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
 
   // Now that 10 push messages in a row have shown notifications, we should
   // allow the next one to mistakenly not show a notification.
-  message.data["data"] = "testdata";
+  message.raw_data = "testdata";
   SendMessageAndWaitUntilHandled(app_identifier, message);
   ASSERT_TRUE(RunScript("resultQueue.pop()", &script_result, web_contents));
   EXPECT_EQ("testdata", script_result);
@@ -607,6 +610,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
 
   gcm::IncomingMessage message;
   message.sender_id = "1234567890";
+  message.decrypted = true;
 
   {
     base::RunLoop run_loop;
@@ -617,10 +621,10 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
                    base::BarrierClosure(2 /* num_closures */,
                                         run_loop.QuitClosure())));
 
-    message.data["data"] = "testdata";
+    message.raw_data = "testdata";
     push_service()->OnMessage(app_identifier.app_id(), message);
 
-    message.data["data"] = "shownotification";
+    message.raw_data = "shownotification";
     push_service()->OnMessage(app_identifier.app_id(), message);
 
     run_loop.Run();
@@ -659,7 +663,8 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
 
   gcm::IncomingMessage message;
   message.sender_id = "1234567890";
-  message.data["data"] = "shownotification-without-waituntil";
+  message.raw_data = "shownotification-without-waituntil";
+  message.decrypted = true;
   push_service()->OnMessage(app_identifier.app_id(), message);
   ASSERT_TRUE(RunScript("resultQueue.pop()", &script_result, web_contents));
   EXPECT_EQ("immediate:shownotification-without-waituntil", script_result);

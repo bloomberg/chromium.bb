@@ -38,6 +38,10 @@ struct GCM_DRIVER_EXPORT IncomingMessage {
   std::string collapse_key;
   std::string sender_id;
   std::string raw_data;
+
+  // Whether the contents of the message have been decrypted, and are
+  // available in |raw_data|.
+  bool decrypted;
 };
 
 }  // namespace gcm
