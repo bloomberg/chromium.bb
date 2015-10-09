@@ -1204,7 +1204,7 @@ crbug.com/521730 [ Win10 ] svg/W3C-I18N/tspan-dirLTR-ubOverride-in-ltr-context.s
 crbug.com/521730 [ Win10 ] svg/W3C-I18N/tspan-dirRTL-ubEmbed-in-default-context.svg [ ImageOnlyFailure ]
 crbug.com/521730 [ Win10 ] svg/W3C-I18N/tspan-dirRTL-ubNone-in-ltr-context.svg [ ImageOnlyFailure ImageOnlyFailure Timeout ImageOnlyFailure ]
 crbug.com/521730 [ Win10 ] svg/W3C-SVG-1.1/text-intro-03-b.svg [ ImageOnlyFailure ImageOnlyFailure Timeout ImageOnlyFailure ]
-crbug.com/521730 [ XP Win10 ] svg/batik/text/verticalText.svg [ Failure ]
+crbug.com/521730 [ Win10 ] svg/batik/text/verticalText.svg [ Failure ]
 crbug.com/521730 [ Win10 ] svg/carto.net/combobox.svg [ ImageOnlyFailure Timeout ImageOnlyFailure ImageOnlyFailure ]
 crbug.com/521730 [ Win10 ] svg/css/text-gradient-shadow.svg [ ImageOnlyFailure ImageOnlyFailure ImageOnlyFailure Timeout ]
 crbug.com/521730 [ Win10 ] compositing/plugins/invalidate_rect.html [ Crash ]
@@ -1604,6 +1604,7 @@ crbug.com/502267 fast/css/image-orientation/image-orientation-default.html [ Nee
 
 crbug.com/499780 fast/css/font_property_normal.html [ NeedsRebaseline ]
 
-crbug.com/541357 [ XP ] svg/text/text-selection-align-06-b.svg [ Failure ]
-crbug.com/541357 [ XP ] svg/W3C-SVG-1.1/text-align-06-b.svg [ Failure ]
-crbug.com/541357 [ XP ] svg/batik/text/verticalTextOnPath.svg [ Failure ]
+crbug.com/541357 [ XP ] svg/text/text-selection-align-06-b.svg [ NeedsRebaseline ]
+crbug.com/541357 [ XP ] svg/W3C-SVG-1.1/text-align-06-b.svg [ NeedsRebaseline ]
+crbug.com/521730 [ XP ] svg/batik/text/verticalText.svg [ NeedsRebaseline ]
+crbug.com/541357 [ XP ] svg/batik/text/verticalTextOnPath.svg [ NeedsRebaseline ]
