@@ -217,6 +217,253 @@ bool CombineAdjacentRects(const gfx::Rect& rect1,
   return false;
 }
 
+GLenum ExtractFormatFromStorageFormat(GLenum internalformat) {
+  switch (internalformat) {
+    case GL_R8:
+    case GL_R8_SNORM:
+    case GL_R16F:
+    case GL_R32F:
+      return GL_RED;
+    case GL_R8UI:
+    case GL_R8I:
+    case GL_R16UI:
+    case GL_R16I:
+    case GL_R32UI:
+    case GL_R32I:
+      return GL_RED_INTEGER;
+    case GL_RG8:
+    case GL_RG8_SNORM:
+    case GL_RG16F:
+    case GL_RG32F:
+      return GL_RG;
+    case GL_RG8UI:
+    case GL_RG8I:
+    case GL_RG16UI:
+    case GL_RG16I:
+    case GL_RG32UI:
+    case GL_RG32I:
+      return GL_RG_INTEGER;
+    case GL_ATC_RGB_AMD:
+    case GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG:
+    case GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG:
+    case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
+    case GL_ETC1_RGB8_OES:
+    case GL_RGB:
+    case GL_RGB8:
+    case GL_SRGB8:
+    case GL_R11F_G11F_B10F:
+    case GL_RGB565:
+    case GL_RGB8_SNORM:
+    case GL_RGB9_E5:
+    case GL_RGB16F:
+    case GL_RGB32F:
+      return GL_RGB;
+    case GL_RGB8UI:
+    case GL_RGB8I:
+    case GL_RGB16UI:
+    case GL_RGB16I:
+    case GL_RGB32UI:
+    case GL_RGB32I:
+      return GL_RGB_INTEGER;
+    case GL_ATC_RGBA_EXPLICIT_ALPHA_AMD:
+    case GL_ATC_RGBA_INTERPOLATED_ALPHA_AMD:
+    case GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG:
+    case GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG:
+    case GL_COMPRESSED_RGBA_S3TC_DXT1_EXT:
+    case GL_COMPRESSED_RGBA_S3TC_DXT3_EXT:
+    case GL_COMPRESSED_RGBA_S3TC_DXT5_EXT:
+    case GL_RGBA:
+    case GL_RGBA8:
+    case GL_SRGB8_ALPHA8:
+    case GL_RGBA8_SNORM:
+    case GL_RGBA4:
+    case GL_RGB5_A1:
+    case GL_RGB10_A2:
+    case GL_RGBA16F:
+    case GL_RGBA32F:
+      return GL_RGBA;
+    case GL_RGBA8UI:
+    case GL_RGBA8I:
+    case GL_RGB10_A2UI:
+    case GL_RGBA16UI:
+    case GL_RGBA16I:
+    case GL_RGBA32UI:
+    case GL_RGBA32I:
+      return GL_RGBA_INTEGER;
+    case GL_DEPTH_COMPONENT16:
+    case GL_DEPTH_COMPONENT24:
+    case GL_DEPTH_COMPONENT32F:
+      return GL_DEPTH_COMPONENT;
+    case GL_DEPTH24_STENCIL8:
+    case GL_DEPTH32F_STENCIL8:
+      return GL_DEPTH_STENCIL;
+    case GL_LUMINANCE_ALPHA:
+    case GL_LUMINANCE8_ALPHA8_EXT:
+      return GL_LUMINANCE_ALPHA;
+    case GL_LUMINANCE:
+    case GL_LUMINANCE8_EXT:
+      return GL_LUMINANCE;
+    case GL_ALPHA:
+    case GL_ALPHA8_EXT:
+      return GL_ALPHA;
+    case GL_ALPHA32F_EXT:
+      return GL_ALPHA;
+    case GL_LUMINANCE32F_EXT:
+      return GL_LUMINANCE;
+    case GL_LUMINANCE_ALPHA32F_EXT:
+      return GL_LUMINANCE_ALPHA;
+    case GL_ALPHA16F_EXT:
+      return GL_ALPHA;
+    case GL_LUMINANCE16F_EXT:
+      return GL_LUMINANCE;
+    case GL_LUMINANCE_ALPHA16F_EXT:
+      return GL_LUMINANCE_ALPHA;
+    case GL_BGRA8_EXT:
+      return GL_BGRA_EXT;
+    default:
+      return GL_NONE;
+  }
+}
+
+GLenum ExtractTypeFromStorageFormat(GLenum internalformat) {
+  switch (internalformat) {
+    case GL_RGB:
+    case GL_RGBA:
+    case GL_LUMINANCE_ALPHA:
+    case GL_LUMINANCE:
+    case GL_ALPHA:
+    case GL_R8:
+      return GL_UNSIGNED_BYTE;
+    case GL_R8_SNORM:
+      return GL_BYTE;
+    case GL_R16F:
+      return GL_HALF_FLOAT;
+    case GL_R32F:
+      return GL_FLOAT;
+    case GL_R8UI:
+      return GL_UNSIGNED_BYTE;
+    case GL_R8I:
+      return GL_BYTE;
+    case GL_R16UI:
+      return GL_UNSIGNED_SHORT;
+    case GL_R16I:
+      return GL_SHORT;
+    case GL_R32UI:
+      return GL_UNSIGNED_INT;
+    case GL_R32I:
+      return GL_INT;
+    case GL_RG8:
+      return GL_UNSIGNED_BYTE;
+    case GL_RG8_SNORM:
+      return GL_BYTE;
+    case GL_RG16F:
+      return GL_HALF_FLOAT;
+    case GL_RG32F:
+      return GL_FLOAT;
+    case GL_RG8UI:
+      return GL_UNSIGNED_BYTE;
+    case GL_RG8I:
+      return GL_BYTE;
+    case GL_RG16UI:
+      return GL_UNSIGNED_SHORT;
+    case GL_RG16I:
+      return GL_SHORT;
+    case GL_RG32UI:
+      return GL_UNSIGNED_INT;
+    case GL_RG32I:
+      return GL_INT;
+    case GL_RGB8:
+    case GL_SRGB8:
+      return GL_UNSIGNED_BYTE;
+    case GL_R11F_G11F_B10F:
+      return GL_UNSIGNED_INT_10F_11F_11F_REV;
+    case GL_RGB565:
+      return GL_UNSIGNED_SHORT_5_6_5;
+    case GL_RGB8_SNORM:
+      return GL_BYTE;
+    case GL_RGB9_E5:
+      return GL_UNSIGNED_INT_5_9_9_9_REV;
+    case GL_RGB16F:
+      return GL_HALF_FLOAT;
+    case GL_RGB32F:
+      return GL_FLOAT;
+    case GL_RGB8UI:
+      return GL_UNSIGNED_BYTE;
+    case GL_RGB8I:
+      return GL_BYTE;
+    case GL_RGB16UI:
+      return GL_UNSIGNED_SHORT;
+    case GL_RGB16I:
+      return GL_SHORT;
+    case GL_RGB32UI:
+      return GL_UNSIGNED_INT;
+    case GL_RGB32I:
+      return GL_INT;
+    case GL_RGBA8:
+      return GL_UNSIGNED_BYTE;
+    case GL_SRGB8_ALPHA8:
+      return GL_UNSIGNED_BYTE;
+    case GL_RGBA8_SNORM:
+      return GL_BYTE;
+    case GL_RGBA4:
+      return GL_UNSIGNED_SHORT_4_4_4_4;
+    case GL_RGB10_A2:
+      return GL_UNSIGNED_INT_2_10_10_10_REV;
+    case GL_RGB5_A1:
+      return GL_UNSIGNED_SHORT_5_5_5_1;
+    case GL_RGBA16F:
+      return GL_HALF_FLOAT;
+    case GL_RGBA32F:
+      return GL_FLOAT;
+    case GL_RGBA8UI:
+      return GL_UNSIGNED_BYTE;
+    case GL_RGBA8I:
+      return GL_BYTE;
+    case GL_RGB10_A2UI:
+      return GL_UNSIGNED_INT_2_10_10_10_REV;
+    case GL_RGBA16UI:
+      return GL_UNSIGNED_SHORT;
+    case GL_RGBA16I:
+      return GL_SHORT;
+    case GL_RGBA32I:
+      return GL_INT;
+    case GL_RGBA32UI:
+      return GL_UNSIGNED_INT;
+    case GL_DEPTH_COMPONENT16:
+      return GL_UNSIGNED_SHORT;
+    case GL_DEPTH_COMPONENT24:
+      return GL_UNSIGNED_INT;
+    case GL_DEPTH_COMPONENT32F:
+      return GL_FLOAT;
+    case GL_DEPTH24_STENCIL8:
+      return GL_UNSIGNED_INT_24_8;
+    case GL_DEPTH32F_STENCIL8:
+      return GL_FLOAT_32_UNSIGNED_INT_24_8_REV;
+    case GL_LUMINANCE8_ALPHA8_EXT:
+      return GL_UNSIGNED_BYTE;
+    case GL_LUMINANCE8_EXT:
+      return GL_UNSIGNED_BYTE;
+    case GL_ALPHA8_EXT:
+      return GL_UNSIGNED_BYTE;
+    case GL_ALPHA32F_EXT:
+      return GL_FLOAT;
+    case GL_LUMINANCE32F_EXT:
+      return GL_FLOAT;
+    case GL_LUMINANCE_ALPHA32F_EXT:
+      return GL_FLOAT;
+    case GL_ALPHA16F_EXT:
+      return GL_HALF_FLOAT_OES;
+    case GL_LUMINANCE16F_EXT:
+      return GL_HALF_FLOAT_OES;
+    case GL_LUMINANCE_ALPHA16F_EXT:
+      return GL_HALF_FLOAT_OES;
+    case GL_BGRA8_EXT:
+      return GL_UNSIGNED_BYTE;
+    default:
+      return GL_NONE;
+  }
+}
+
 }  // namespace
 
 class GLES2DecoderImpl;
@@ -10744,11 +10991,6 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
         GL_INVALID_VALUE, "glCopyTexImage2D", "dimensions out of range");
     return;
   }
-  if (!texture_manager()->ValidateFormatAndTypeCombination(
-      state_.GetErrorState(), "glCopyTexImage2D", internal_format,
-      GL_UNSIGNED_BYTE)) {
-    return;
-  }
 
   // Check we have compatible formats.
   GLenum read_format = GetBoundReadFrameBufferInternalFormat();
@@ -10768,16 +11010,19 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
     return;
   }
 
-  uint32 estimated_size = 0;
+  uint32 pixels_size = 0;
+  GLenum format = ExtractFormatFromStorageFormat(internal_format);
+  GLenum type = ExtractTypeFromStorageFormat(internal_format);
+  // Only target image size is validated here.
   if (!GLES2Util::ComputeImageDataSizes(
-      width, height, 1, internal_format, GL_UNSIGNED_BYTE,
-      state_.unpack_alignment, &estimated_size, NULL, NULL)) {
+      width, height, 1, format, type,
+      state_.unpack_alignment, &pixels_size, NULL, NULL)) {
     LOCAL_SET_GL_ERROR(
         GL_OUT_OF_MEMORY, "glCopyTexImage2D", "dimensions too large");
     return;
   }
 
-  if (!EnsureGPUMemoryAvailable(estimated_size)) {
+  if (!EnsureGPUMemoryAvailable(pixels_size)) {
     LOCAL_SET_GL_ERROR(GL_OUT_OF_MEMORY, "glCopyTexImage2D", "out of memory");
     return;
   }
@@ -10818,19 +11063,11 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
       copyWidth != width ||
       copyHeight != height) {
     // some part was clipped so clear the rect.
-    uint32 pixels_size = 0;
-    if (!GLES2Util::ComputeImageDataSizes(
-            width, height, 1, internal_format, GL_UNSIGNED_BYTE,
-            state_.unpack_alignment, &pixels_size, NULL, NULL)) {
-      LOCAL_SET_GL_ERROR(
-          GL_OUT_OF_MEMORY, "glCopyTexImage2D", "dimensions too big");
-      return;
-    }
     scoped_ptr<char[]> zero(new char[pixels_size]);
     memset(zero.get(), 0, pixels_size);
     ScopedModifyPixels modify(texture_ref);
     glTexImage2D(target, level, internal_format, width, height, border,
-                 internal_format, GL_UNSIGNED_BYTE, zero.get());
+                 format, type, zero.get());
     if (copyHeight > 0 && copyWidth > 0) {
       GLint dx = copyX - x;
       GLint dy = copyY - y;
@@ -10848,8 +11085,8 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
   GLenum error = LOCAL_PEEK_GL_ERROR("glCopyTexImage2D");
   if (error == GL_NO_ERROR) {
     texture_manager()->SetLevelInfo(texture_ref, target, level, internal_format,
-                                    width, height, 1, border, internal_format,
-                                    GL_UNSIGNED_BYTE, gfx::Rect(width, height));
+                                    width, height, 1, border, format,
+                                    type, gfx::Rect(width, height));
   }
 
   // This may be a slow command.  Exit command processing to allow for
@@ -12722,108 +12959,6 @@ void GLES2DecoderImpl::DoTexImageIOSurface2DCHROMIUM(
 #endif
 }
 
-static GLenum ExtractFormatFromStorageFormat(GLenum internalformat) {
-  switch (internalformat) {
-    case GL_R8:
-    case GL_R8_SNORM:
-    case GL_R16F:
-    case GL_R32F:
-      return GL_RED;
-    case GL_R8UI:
-    case GL_R8I:
-    case GL_R16UI:
-    case GL_R16I:
-    case GL_R32UI:
-    case GL_R32I:
-      return GL_RED_INTEGER;
-    case GL_RG8:
-    case GL_RG8_SNORM:
-    case GL_RG16F:
-    case GL_RG32F:
-      return GL_RG;
-    case GL_RG8UI:
-    case GL_RG8I:
-    case GL_RG16UI:
-    case GL_RG16I:
-    case GL_RG32UI:
-    case GL_RG32I:
-      return GL_RG_INTEGER;
-    case GL_ATC_RGB_AMD:
-    case GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG:
-    case GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG:
-    case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
-    case GL_ETC1_RGB8_OES:
-    case GL_RGB8:
-    case GL_R11F_G11F_B10F:
-    case GL_RGB565:
-    case GL_RGB8_SNORM:
-    case GL_RGB9_E5:
-    case GL_RGB16F:
-    case GL_RGB32F:
-      return GL_RGB;
-    case GL_RGB8UI:
-    case GL_RGB8I:
-    case GL_RGB16UI:
-    case GL_RGB16I:
-    case GL_RGB32UI:
-    case GL_RGB32I:
-      return GL_RGB_INTEGER;
-    case GL_ATC_RGBA_EXPLICIT_ALPHA_AMD:
-    case GL_ATC_RGBA_INTERPOLATED_ALPHA_AMD:
-    case GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG:
-    case GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG:
-    case GL_COMPRESSED_RGBA_S3TC_DXT1_EXT:
-    case GL_COMPRESSED_RGBA_S3TC_DXT3_EXT:
-    case GL_COMPRESSED_RGBA_S3TC_DXT5_EXT:
-    case GL_RGBA8:
-    case GL_SRGB8_ALPHA8:
-    case GL_RGBA8_SNORM:
-    case GL_RGBA4:
-    case GL_RGB5_A1:
-    case GL_RGB10_A2:
-    case GL_RGBA16F:
-    case GL_RGBA32F:
-      return GL_RGBA;
-    case GL_RGBA8UI:
-    case GL_RGBA8I:
-    case GL_RGB10_A2UI:
-    case GL_RGBA16UI:
-    case GL_RGBA16I:
-    case GL_RGBA32UI:
-    case GL_RGBA32I:
-      return GL_RGBA_INTEGER;
-    case GL_DEPTH_COMPONENT16:
-    case GL_DEPTH_COMPONENT24:
-    case GL_DEPTH_COMPONENT32F:
-      return GL_DEPTH_COMPONENT;
-    case GL_DEPTH24_STENCIL8:
-    case GL_DEPTH32F_STENCIL8:
-      return GL_DEPTH_STENCIL;
-    case GL_LUMINANCE8_ALPHA8_EXT:
-      return GL_LUMINANCE_ALPHA;
-    case GL_LUMINANCE8_EXT:
-      return GL_LUMINANCE;
-    case GL_ALPHA8_EXT:
-      return GL_ALPHA;
-    case GL_ALPHA32F_EXT:
-      return GL_ALPHA;
-    case GL_LUMINANCE32F_EXT:
-      return GL_LUMINANCE;
-    case GL_LUMINANCE_ALPHA32F_EXT:
-      return GL_LUMINANCE_ALPHA;
-    case GL_ALPHA16F_EXT:
-      return GL_ALPHA;
-    case GL_LUMINANCE16F_EXT:
-      return GL_LUMINANCE;
-    case GL_LUMINANCE_ALPHA16F_EXT:
-      return GL_LUMINANCE_ALPHA;
-    case GL_BGRA8_EXT:
-      return GL_BGRA_EXT;
-    default:
-      return GL_NONE;
-  }
-}
-
 bool GLES2DecoderImpl::ValidateCopyTextureCHROMIUM(
     const char* function_name,
     GLenum target,
@@ -13649,140 +13784,6 @@ void GLES2DecoderImpl::DoCompressedCopySubTextureCHROMIUM(GLenum target,
       source_width, source_height, false, false, false);
 
   DoDidUseTexImageIfNeeded(source_texture, source_texture->target());
-}
-
-static GLenum ExtractTypeFromStorageFormat(GLenum internalformat) {
-  switch (internalformat) {
-    case GL_R8:
-      return GL_UNSIGNED_BYTE;
-    case GL_R8_SNORM:
-      return GL_BYTE;
-    case GL_R16F:
-      return GL_HALF_FLOAT;
-    case GL_R32F:
-      return GL_FLOAT;
-    case GL_R8UI:
-      return GL_UNSIGNED_BYTE;
-    case GL_R8I:
-      return GL_BYTE;
-    case GL_R16UI:
-      return GL_UNSIGNED_SHORT;
-    case GL_R16I:
-      return GL_SHORT;
-    case GL_R32UI:
-      return GL_UNSIGNED_INT;
-    case GL_R32I:
-      return GL_INT;
-    case GL_RG8:
-      return GL_UNSIGNED_BYTE;
-    case GL_RG8_SNORM:
-      return GL_BYTE;
-    case GL_RG16F:
-      return GL_HALF_FLOAT;
-    case GL_RG32F:
-      return GL_FLOAT;
-    case GL_RG8UI:
-      return GL_UNSIGNED_BYTE;
-    case GL_RG8I:
-      return GL_BYTE;
-    case GL_RG16UI:
-      return GL_UNSIGNED_SHORT;
-    case GL_RG16I:
-      return GL_SHORT;
-    case GL_RG32UI:
-      return GL_UNSIGNED_INT;
-    case GL_RG32I:
-      return GL_INT;
-    case GL_RGB8:
-    case GL_SRGB8:
-      return GL_UNSIGNED_BYTE;
-    case GL_R11F_G11F_B10F:
-      return GL_UNSIGNED_INT_10F_11F_11F_REV;
-    case GL_RGB565:
-      return GL_UNSIGNED_SHORT_5_6_5;
-    case GL_RGB8_SNORM:
-      return GL_BYTE;
-    case GL_RGB9_E5:
-      return GL_UNSIGNED_INT_5_9_9_9_REV;
-    case GL_RGB16F:
-      return GL_HALF_FLOAT;
-    case GL_RGB32F:
-      return GL_FLOAT;
-    case GL_RGB8UI:
-      return GL_UNSIGNED_BYTE;
-    case GL_RGB8I:
-      return GL_BYTE;
-    case GL_RGB16UI:
-      return GL_UNSIGNED_SHORT;
-    case GL_RGB16I:
-      return GL_SHORT;
-    case GL_RGB32UI:
-      return GL_UNSIGNED_INT;
-    case GL_RGB32I:
-      return GL_INT;
-    case GL_RGBA8:
-      return GL_UNSIGNED_BYTE;
-    case GL_SRGB8_ALPHA8:
-      return GL_UNSIGNED_BYTE;
-    case GL_RGBA8_SNORM:
-      return GL_BYTE;
-    case GL_RGBA4:
-      return GL_UNSIGNED_SHORT_4_4_4_4;
-    case GL_RGB10_A2:
-      return GL_UNSIGNED_INT_2_10_10_10_REV;
-    case GL_RGB5_A1:
-      return GL_UNSIGNED_SHORT_5_5_5_1;
-    case GL_RGBA16F:
-      return GL_HALF_FLOAT;
-    case GL_RGBA32F:
-      return GL_FLOAT;
-    case GL_RGBA8UI:
-      return GL_UNSIGNED_BYTE;
-    case GL_RGBA8I:
-      return GL_BYTE;
-    case GL_RGB10_A2UI:
-      return GL_UNSIGNED_INT_2_10_10_10_REV;
-    case GL_RGBA16UI:
-      return GL_UNSIGNED_SHORT;
-    case GL_RGBA16I:
-      return GL_SHORT;
-    case GL_RGBA32I:
-      return GL_INT;
-    case GL_RGBA32UI:
-      return GL_UNSIGNED_INT;
-    case GL_DEPTH_COMPONENT16:
-      return GL_UNSIGNED_SHORT;
-    case GL_DEPTH_COMPONENT24:
-      return GL_UNSIGNED_INT;
-    case GL_DEPTH_COMPONENT32F:
-      return GL_FLOAT;
-    case GL_DEPTH24_STENCIL8:
-      return GL_UNSIGNED_INT_24_8;
-    case GL_DEPTH32F_STENCIL8:
-      return GL_FLOAT_32_UNSIGNED_INT_24_8_REV;
-    case GL_LUMINANCE8_ALPHA8_EXT:
-      return GL_UNSIGNED_BYTE;
-    case GL_LUMINANCE8_EXT:
-      return GL_UNSIGNED_BYTE;
-    case GL_ALPHA8_EXT:
-      return GL_UNSIGNED_BYTE;
-    case GL_ALPHA32F_EXT:
-      return GL_FLOAT;
-    case GL_LUMINANCE32F_EXT:
-      return GL_FLOAT;
-    case GL_LUMINANCE_ALPHA32F_EXT:
-      return GL_FLOAT;
-    case GL_ALPHA16F_EXT:
-      return GL_HALF_FLOAT_OES;
-    case GL_LUMINANCE16F_EXT:
-      return GL_HALF_FLOAT_OES;
-    case GL_LUMINANCE_ALPHA16F_EXT:
-      return GL_HALF_FLOAT_OES;
-    case GL_BGRA8_EXT:
-      return GL_UNSIGNED_BYTE;
-    default:
-      return GL_NONE;
-  }
 }
 
 void GLES2DecoderImpl::DoTexStorage2DEXT(

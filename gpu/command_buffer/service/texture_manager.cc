@@ -1814,22 +1814,6 @@ void TextureManager::IncFramebufferStateChangeCount() {
     framebuffer_manager_->IncFramebufferStateChangeCount();
 }
 
-bool TextureManager::ValidateFormatAndTypeCombination(
-    ErrorState* error_state, const char* function_name, GLenum format,
-    GLenum type) {
-  // TODO(zmo): now this is only called by GLES2DecoderImpl::DoCopyTexImage2D
-  // and is incorrect for ES3. Fix this.
-  if (!g_format_type_validator.Get().IsValid(format, format, type)) {
-    ERRORSTATE_SET_GL_ERROR(
-        error_state, GL_INVALID_OPERATION, function_name,
-        (std::string("invalid type ") +
-         GLES2Util::GetStringEnum(type) + " for format " +
-         GLES2Util::GetStringEnum(format)).c_str());
-    return false;
-  }
-  return true;
-}
-
 bool TextureManager::ValidateTextureParameters(
     ErrorState* error_state, const char* function_name,
     GLenum format, GLenum type, GLenum internal_format, GLint level) {
