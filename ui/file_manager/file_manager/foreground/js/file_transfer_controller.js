@@ -586,7 +586,6 @@ FileTransferController.prototype.paste =
                 showMultiProfileShareDialog(shareEntries.length > 1).then(
                     /**
                      * @param {string} dialogResult
-                     * @this {FileTransferController}
                      * @return {!Promise<undefined>|undefined}
                      */
                     function(dialogResult) {
