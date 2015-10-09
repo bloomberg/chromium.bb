@@ -15,7 +15,9 @@ namespace {
 class CallWithEHFrameTest : public testing::Test {
  protected:
   void ThrowException() {
-    [NSArray arrayWithObject:nil];
+    @throw [NSException exceptionWithName:@"TestException"
+                                   reason:@"Testing exceptions"
+                                 userInfo:nil];
   }
 };
 

@@ -9,7 +9,7 @@
 #include "base/mac/scoped_nsobject.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-@interface ScopedSendingEventTestCrApp : NSObject <CrAppControlProtocol> {
+@interface ScopedSendingEventTestCrApp : NSApplication <CrAppControlProtocol> {
  @private
   BOOL handlingSendEvent_;
 }
