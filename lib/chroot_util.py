@@ -148,34 +148,6 @@ def SetupBoard(brick=None, board=None, update_chroot=True,
   cros_build_lib.RunCommand(cmd)
 
 
-def InitializeSysroots(blueprint):
-  """Initialize the sysroots needed by |blueprint|.
-
-  Args:
-    blueprint: a blueprint_lib.Blueprint object.
-  """
-  bsp = brick_lib.Brick(blueprint.GetBSP())
-
-  # Create the brick stack.
-  # Removing duplicates while preserving a sane behaviour is hard:
-  # brbug.com/1029.
-  brick_stack = []
-  for brick_locator in blueprint.GetBricks():
-    brick_stack.extend(brick_lib.Brick(brick_locator).BrickStack())
-
-  # Regenerate the portage configuration for all bricks used by this blueprint.
-  for b in blueprint.GetUsedBricks():
-    b.GeneratePortageConfig()
-
-  sysroot_path = cros_build_lib.GetSysroot(blueprint.FriendlyName())
-
-  sysroot = sysroot_lib.Sysroot(sysroot_path)
-  sysroot.CreateSkeleton()
-  sysroot.WriteConfig(sysroot.GenerateBrickConfig(brick_stack, bsp))
-  sysroot.GeneratePortageConfig()
-  sysroot.UpdateToolchain()
-
-
 def RunUnittests(sysroot, packages, extra_env=None, verbose=False,
                  retries=None):
   """Runs the unit tests for |packages|.

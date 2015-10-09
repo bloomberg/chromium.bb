@@ -29,7 +29,6 @@ import urllib
 
 from chromite.cbuildbot import config_lib
 from chromite.cbuildbot import constants
-from chromite.lib import blueprint_lib
 from chromite.lib import brick_lib
 from chromite.lib import cidb
 from chromite.lib import commandline
@@ -1621,47 +1620,6 @@ class WorkspaceTestCase(MockTempDirTestCase):
       config['dependencies'] = dependencies
 
     return brick_lib.Brick(brick_path, initial_config=config)
-
-  def CreateBlueprint(self, name='theblueprintfoo.json', bsp=None, bricks=None,
-                      buildTargetId=None):
-    """Creates a new blueprint.
-
-    Args:
-      name: Blueprint name/path relative to the workspace root.
-      bsp: Path to BSP or None.
-      bricks: List of paths to bricks or None.
-      buildTargetId: The BuildTargetID to populate the APP_ID with or None.
-
-    Returns:
-      The created Blueprint object.
-    """
-    blueprint_path = os.path.join(self.workspace_path, name)
-
-    config = {}
-    if bricks:
-      config[blueprint_lib.BRICKS_FIELD] = bricks
-    if bsp:
-      config[blueprint_lib.BSP_FIELD] = bsp
-    if buildTargetId:
-      config[blueprint_lib.APP_ID_FIELD] = buildTargetId
-
-    return blueprint_lib.Blueprint(blueprint_path, initial_config=config)
-
-  def AssertBlueprintExists(self, name, bsp=None, bricks=None):
-    """Verifies a blueprint exists with the specified contents.
-
-    Args:
-      name: Blueprint name/path relative to the workspace root.
-      bsp: Expected blueprint BSP or None.
-      bricks: Expected blueprint bricks or None.
-    """
-    blueprint_path = os.path.join(self.workspace_path, name)
-    blueprint = blueprint_lib.Blueprint(blueprint_path)
-
-    if bsp is not None:
-      self.assertEqual(bsp, blueprint.GetBSP())
-    if bricks is not None:
-      self.assertListEqual(bricks, blueprint.GetBricks())
 
 
 @contextlib.contextmanager

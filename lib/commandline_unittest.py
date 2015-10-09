@@ -295,24 +295,16 @@ class NormalizeWorkspacePathTest(cros_test_lib.WorkspaceTestCase):
   def testSpecificPaths(self):
     """Tests normalizing brick/BSP/blueprint paths."""
     self.assertEqual('//bricks/a', commandline.NormalizeBrickPath('a'))
-    self.assertEqual('//bsps/a', commandline.NormalizeBspPath('a'))
-    self.assertEqual('//blueprints/a.json',
-                     commandline.NormalizeBlueprintPath('a'))
 
   def testParser(self):
     """Tests adding these types to a parser."""
     parser = commandline.ArgumentParser()
     parser.add_argument('path', type='workspace_path')
     parser.add_argument('brick', type='brick_path')
-    parser.add_argument('bsp', type='bsp_path')
-    parser.add_argument('blueprint', type='blueprint_path')
 
-    options = parser.parse_args(['my_path', 'my_brick', 'my_bsp',
-                                 'my_blueprint'])
+    options = parser.parse_args(['my_path', 'my_brick'])
     self.assertEqual('//my_path', options.path)
     self.assertEqual('//bricks/my_brick', options.brick)
-    self.assertEqual('//bsps/my_bsp', options.bsp)
-    self.assertEqual('//blueprints/my_blueprint.json', options.blueprint)
 
 
 class CacheTest(cros_test_lib.MockTempDirTestCase):

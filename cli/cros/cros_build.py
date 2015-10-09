@@ -7,7 +7,6 @@
 from __future__ import print_function
 
 from chromite.cli import command
-from chromite.lib import blueprint_lib
 from chromite.lib import brick_lib
 from chromite.lib import chroot_util
 from chromite.lib import commandline
@@ -15,7 +14,6 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import operation
 from chromite.lib import parallel
-from chromite.lib import toolchain
 from chromite.lib import workon_helper
 
 
@@ -51,17 +49,11 @@ To just build a single package:
     self.host = False
     self.board = None
     self.brick = None
-    self.blueprint = None
 
     if self.options.host:
       self.host = True
     elif self.options.board:
       self.board = self.options.board
-    elif self.options.blueprint:
-      self.blueprint = blueprint_lib.Blueprint(self.options.blueprint)
-
-      if not self.build_pkgs:
-        self.build_pkgs = self.blueprint.GetPackages()
     elif self.options.brick or self.curr_brick_locator:
       self.brick = brick_lib.Brick(self.options.brick
                                    or self.curr_brick_locator)
@@ -73,8 +65,7 @@ To just build a single package:
       self.board = cros_build_lib.GetDefaultBoard()
 
     # Set sysroot and friendly name. The latter is None if building for host.
-    self.sysroot = cros_build_lib.GetSysroot(self.blueprint.FriendlyName()
-                                             if self.blueprint else self.board)
+    self.sysroot = cros_build_lib.GetSysroot(self.board)
 
   @classmethod
   def AddParser(cls, parser):
@@ -83,8 +74,6 @@ To just build a single package:
     target.add_argument('--board', help='The board to build packages for.')
     target.add_argument('--brick', type='brick_path',
                         help='The brick to build packages for.')
-    target.add_argument('--blueprint', type='blueprint_path',
-                        help='The blueprint to build packages for.')
     target.add_argument('--host', help='Build packages for the chroot itself.',
                         default=False, action='store_true')
     parser.add_argument('--no-binary', help="Don't use binary packages.",
@@ -134,7 +123,7 @@ To just build a single package:
 
     Only print the output if this step fails or if we're in debug mode.
     """
-    if self.options.deps and not self.host and not self.blueprint:
+    if self.options.deps and not self.host:
       cmd = chroot_util.GetEmergeCommand(sysroot=self.sysroot)
       cmd += ['-pe', '--backtrack=0'] + self.build_pkgs
       try:
@@ -160,7 +149,7 @@ To just build a single package:
     self.options.Freeze()
 
     if not self.host:
-      if not (self.board or self.brick or self.blueprint):
+      if not (self.board or self.brick):
         cros_build_lib.Die('You did not specify a board/brick to build for. '
                            'You need to be in a brick directory or set '
                            '--board/--brick/--host')
@@ -169,11 +158,7 @@ To just build a single package:
         cros_build_lib.Die('--brick should not be used with board names. Use '
                            '--board=%s instead.' % self.brick.config['name'])
 
-    if self.blueprint:
-      chroot_args = ['--toolchains',
-                     ','.join(toolchain.GetToolchainsForBrick(
-                         self.blueprint.GetBSP()).iterkeys())]
-    elif self.board:
+    if self.board:
       chroot_args = ['--board', self.board]
     else:
       chroot_args = None
@@ -184,13 +169,7 @@ To just build a single package:
       cros_build_lib.Die('No packages found, nothing to build.')
 
     # Set up the sysroots if not building for host.
-    if self.blueprint:
-      if self.chroot_update:
-        chroot_util.UpdateChroot(
-            update_host_packages=self.options.host_packages_update,
-            brick=brick_lib.Brick(self.blueprint.GetBSP()))
-      chroot_util.InitializeSysroots(self.blueprint)
-    elif self.brick or self.board:
+    if self.brick or self.board:
       chroot_util.SetupBoard(
           brick=self.brick, board=self.board,
           update_chroot=self.chroot_update,

@@ -373,40 +373,6 @@ def NormalizeBrickPath(path):
   return NormalizeWorkspacePath(path, default_dir='//bricks')
 
 
-def NormalizeBspPath(path):
-  """Normalize a BSP path using some common assumptions.
-
-  Makes the following changes to |path|:
-    1. Put non-paths in //bsps (e.g. foo -> //bsps/foo).
-    2. Convert to a workspace locator.
-
-  Args:
-    path: BSP path.
-
-  Returns:
-    Locator to the BSP.
-  """
-  return NormalizeWorkspacePath(path, default_dir='//bsps')
-
-
-def NormalizeBlueprintPath(path):
-  """Normalize a blueprint path using some common assumptions.
-
-  Makes the following changes to |path|:
-    1. Put non-paths in //blueprints (e.g. foo -> //blueprints/foo).
-    2. Add .json if not already present.
-    3. Convert to a workspace locator.
-
-  Args:
-    path: blueprint path.
-
-  Returns:
-    Locator to the blueprint.
-  """
-  return NormalizeWorkspacePath(path, default_dir='//blueprints',
-                                extension='json')
-
-
 VALID_TYPES = {
     'bool': ParseBool,
     'date': ParseDate,
@@ -414,9 +380,7 @@ VALID_TYPES = {
     'gs_path': NormalizeGSPath,
     'local_or_gs_path': NormalizeLocalOrGSPath,
     'path_or_uri': NormalizeUri,
-    'blueprint_path': NormalizeBlueprintPath,
     'brick_path': NormalizeBrickPath,
-    'bsp_path': NormalizeBspPath,
     'workspace_path': NormalizeWorkspacePath,
 }
 
