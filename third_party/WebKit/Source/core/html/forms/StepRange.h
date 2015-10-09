@@ -21,6 +21,7 @@
 #ifndef StepRange_h
 #define StepRange_h
 
+#include "core/CoreExport.h"
 #include "platform/Decimal.h"
 #include "wtf/Allocator.h"
 #include "wtf/Forward.h"
@@ -29,7 +30,7 @@ namespace blink {
 
 enum AnyStepHandling { RejectAny, AnyIsDefaultStep };
 
-class StepRange {
+class CORE_EXPORT StepRange {
     DISALLOW_ALLOCATION();
 public:
     enum StepValueShouldBe {
