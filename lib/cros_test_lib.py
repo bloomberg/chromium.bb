@@ -30,7 +30,6 @@ import urllib
 from chromite.cbuildbot import config_lib
 from chromite.cbuildbot import constants
 from chromite.lib import blueprint_lib
-from chromite.lib import bootstrap_lib
 from chromite.lib import brick_lib
 from chromite.lib import cidb
 from chromite.lib import commandline
@@ -1574,35 +1573,9 @@ class WorkspaceTestCase(MockTempDirTestCase):
 
   def setUp(self):
     """Define variables populated below, mostly to make lint happy."""
-    self.bootstrap_path = None
-    self.mock_bootstrap_path = None
-
     self.workspace_path = None
     self.workspace_config = None
     self.mock_workspace_path = None
-
-  def CreateBootstrap(self, sdk_version=None):
-    """Create a fake bootstrap directory in self.tempdir.
-
-    self.bootstrap_path points to new workspace path.
-    self.mock_bootstrap_path points to mock of FindBootstrapPath
-
-    Args:
-      sdk_version: Create a fake SDK version that's present in bootstrap.
-    """
-    # Create a bootstrap, inside our tempdir.
-    self.bootstrap_path = os.path.join(self.tempdir, 'bootstrap')
-    osutils.SafeMakedirs(os.path.join(self.bootstrap_path, '.git'))
-
-    # If a version is provided, fake it's existence in the bootstrap.
-    if sdk_version is not None:
-      sdk_path = bootstrap_lib.ComputeSdkPath(self.bootstrap_path, sdk_version)
-      osutils.SafeMakedirs(os.path.join(sdk_path, '.repo'))
-      osutils.SafeMakedirs(os.path.join(sdk_path, 'chromite', '.git'))
-
-    # Fake out bootstrap lookups to find this path.
-    self.mock_bootstrap_path = self.PatchObject(
-        bootstrap_lib, 'FindBootstrapPath', return_value=self.bootstrap_path)
 
   def CreateWorkspace(self, sdk_version=None):
     """Create a fake workspace directory in self.tempdir.

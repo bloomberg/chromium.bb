@@ -12,7 +12,6 @@ import os
 import tempfile
 
 from chromite.cbuildbot import constants
-from chromite.lib import bootstrap_lib
 from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
 from chromite.lib import git
@@ -111,26 +110,6 @@ class DetermineCheckoutTest(cros_test_lib.MockTempDirTestCase):
     self.RunTest(['a/.git/'], 'a', None,
                  path_util.CHECKOUT_TYPE_UNKNOWN, None)
 
-  def testSdkBootstrap(self):
-    """Recognizes an SDK bootstrap case."""
-    self.rc_mock.AddCmdResult(
-        partial_mock.In('config'), output=constants.CHROMITE_URL)
-    dir_struct = [
-        'a/.git/',
-        'a/sdk_checkouts/1.0.0/.repo',
-        'a/sdk_checkouts/1.0.0/chromite/.git',
-    ]
-    self.RunTest(dir_struct, 'a', 'a',
-                 path_util.CHECKOUT_TYPE_SDK_BOOTSTRAP, None)
-    self.RunTest(dir_struct, 'a/b', 'a',
-                 path_util.CHECKOUT_TYPE_SDK_BOOTSTRAP, None)
-    self.RunTest(dir_struct, 'a/sdk_checkouts', 'a',
-                 path_util.CHECKOUT_TYPE_SDK_BOOTSTRAP, None)
-    self.RunTest(dir_struct, 'a/sdk_checkouts/1.0.0', 'a',
-                 path_util.CHECKOUT_TYPE_SDK_BOOTSTRAP, None)
-    self.RunTest(dir_struct, 'a/sdk_checkouts/1.0.0/chromite', 'a',
-                 path_util.CHECKOUT_TYPE_SDK_BOOTSTRAP, None)
-
 
 class FindCacheDirTest(cros_test_lib.WorkspaceTestCase):
   """Test cache dir specification and finding functionality."""
@@ -145,10 +124,6 @@ class FindCacheDirTest(cros_test_lib.WorkspaceTestCase):
     self.repo_root = os.path.join(self.tempdir, 'repo')
     self.gclient_root = os.path.join(self.tempdir, 'gclient')
     self.nocheckout_root = os.path.join(self.tempdir, 'nothing')
-    self.CreateBootstrap('1.0.0')
-    self.bootstrap_cache = os.path.join(
-        self.bootstrap_path, bootstrap_lib.SDK_CHECKOUTS,
-        path_util.GENERAL_CACHE_DIR)
 
     self.rc_mock = self.StartPatcher(cros_build_lib_unittest.RunCommandMock())
     self.cwd_mock = self.PatchObject(os, 'getcwd')
@@ -173,35 +148,6 @@ class FindCacheDirTest(cros_test_lib.WorkspaceTestCase):
     self.assertStartsWith(
         path_util.FindCacheDir(),
         os.path.join(tempfile.gettempdir(), ''))
-
-  def testBootstrap(self):
-    """Test when running from bootstrap."""
-    self.cwd_mock.return_value = self.bootstrap_path
-    self.rc_mock.AddCmdResult(
-        partial_mock.In('config'), output=constants.CHROMITE_URL)
-    self.assertEquals(
-        path_util.FindCacheDir(),
-        self.bootstrap_cache)
-
-  def testSdkCheckoutsInsideBootstrap(self):
-    """Test when in the bootstrap SDK checkout location."""
-    self.cwd_mock.return_value = os.path.join(
-        self.bootstrap_path, bootstrap_lib.SDK_CHECKOUTS)
-    self.rc_mock.AddCmdResult(
-        partial_mock.In('config'), output=constants.CHROMITE_URL)
-    self.assertEquals(
-        path_util.FindCacheDir(),
-        self.bootstrap_cache)
-
-  def testSdkInsideBootstrap(self):
-    """Test when in an SDK checkout inside the bootstrap."""
-    self.cwd_mock.return_value = os.path.join(
-        self.bootstrap_path, bootstrap_lib.SDK_CHECKOUTS, '1.0.0', 'chromite')
-    self.rc_mock.AddCmdResult(
-        partial_mock.In('config'), output=constants.CHROMITE_URL)
-    self.assertEquals(
-        path_util.FindCacheDir(),
-        self.bootstrap_cache)
 
 
 class TestPathResolver(cros_test_lib.MockTestCase):

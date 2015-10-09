@@ -12,7 +12,6 @@ import sys
 import time
 import unittest
 
-from chromite.lib import bootstrap_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_build_lib_unittest
@@ -290,18 +289,6 @@ class WorkspaceTestCaseTest(cros_test_lib.WorkspaceTestCase):
     self.CreateWorkspace(sdk_version='1.2.3')
     self.assertEqual('1.2.3',
                      workspace_lib.GetActiveSdkVersion(self.workspace_path))
-
-  def testCreateBootstrap(self):
-    """Tests CreateBootstrap()."""
-    self.CreateBootstrap()
-    self.assertExists(self.bootstrap_path)
-    self.assertEqual(self.bootstrap_path, bootstrap_lib.FindBootstrapPath())
-
-  def testCreateBootstrapSdk(self):
-    """Tests CreateBootstrap() with an SDK version."""
-    self.CreateBootstrap(sdk_version='1.2.3')
-    self.assertExists(
-        bootstrap_lib.ComputeSdkPath(self.bootstrap_path, '1.2.3'))
 
   def testCreateBrick(self):
     """Tests CreateBrick()."""
