@@ -619,9 +619,8 @@ void ProfileImplIOData::
       chrome_browser_net::GetCookieCryptoDelegate();
   net::CookieStore* extensions_cookie_store =
       content::CreateCookieStore(cookie_config);
-  // Enable cookies for devtools and extension URLs.
+  // Enable cookies for chrome-extension URLs.
   const char* const schemes[] = {
-      content::kChromeDevToolsScheme,
       extensions::kExtensionScheme
   };
   extensions_cookie_store->GetCookieMonster()->SetCookieableSchemes(

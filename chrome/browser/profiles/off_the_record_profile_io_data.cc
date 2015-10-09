@@ -302,9 +302,8 @@ void OffTheRecordProfileIOData::
   net::CookieMonster* extensions_cookie_store =
       content::CreateCookieStore(content::CookieStoreConfig())->
           GetCookieMonster();
-  // Enable cookies for devtools and extension URLs.
+  // Enable cookies for chrome-extension URLs.
   const char* const schemes[] = {
-      content::kChromeDevToolsScheme,
       extensions::kExtensionScheme
   };
   extensions_cookie_store->SetCookieableSchemes(schemes, arraysize(schemes));
