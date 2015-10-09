@@ -1,5 +1,4 @@
-# The rules in this file are only applied at compile time.
-# Because the Chrome buildsystem does not automatically touch the files
-# mentioned here, changing this file requires clobbering all ASan bots.
+# The rules in this file are only applied at compile time. If you can modify the
+# source in question, consider function attributes to disable instrumentation.
 #
 # Please think twice before you add or remove these rules.
