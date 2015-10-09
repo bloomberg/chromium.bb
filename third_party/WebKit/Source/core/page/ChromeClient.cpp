@@ -33,6 +33,7 @@
 #include "platform/geometry/IntRect.h"
 #include "platform/network/NetworkHints.h"
 #include "public/platform/WebScreenInfo.h"
+#include "wtf/Utility.h"
 #include <algorithm>
 
 namespace blink {
@@ -77,14 +78,14 @@ void ChromeClient::setWindowFeatures(const WindowFeatures& features)
     setResizable(features.resizable);
 }
 
-template<typename... Params>
+template<typename... Args>
 bool openJavaScriptDialog(
     ChromeClient* chromeClient,
-    bool(ChromeClient::*function)(LocalFrame*, const String& message, Params&...),
+    bool(ChromeClient::*function)(LocalFrame*, const String& message, Args...),
     LocalFrame& frame,
     const String& message,
     ChromeClient::DialogType dialogType,
-    Params&... parameters)
+    Args&&... args)
 {
     // Defer loads in case the client method runs a new event loop that would
     // otherwise cause the load to continue while we're in the middle of
@@ -92,7 +93,7 @@ bool openJavaScriptDialog(
     ScopedPageLoadDeferrer deferrer;
 
     InspectorInstrumentationCookie cookie = InspectorInstrumentation::willRunJavaScriptDialog(&frame, message, dialogType);
-    bool result = (chromeClient->*function)(&frame, message, parameters...);
+    bool result = (chromeClient->*function)(&frame, message, WTF::forward<Args>(args)...);
     InspectorInstrumentation::didRunJavaScriptDialog(cookie, result);
     return result;
 }
