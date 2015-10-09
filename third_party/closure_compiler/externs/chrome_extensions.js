@@ -6,7 +6,7 @@
 // S:::::S                    T:::::T        O:::::O     O:::::O  P::::P     P:::::P
 //  S::::SSSS                                                     P::::PPPPPP:::::P
 //   SS::::::SSSSS       This file is generated. To update it,    P:::::::::::::PP
-//     SSS::::::::SS          run bump_compiler_version.          P::::PPPPPPPPP
+//     SSS::::::::SS          run roll_compiler_version.          P::::PPPPPPPPP
 //        SSSSSS::::S                                             P::::P
 //             S:::::S        T:::::T        O:::::O     O:::::O  P::::P
 //             S:::::S        T:::::T        O::::::O   O::::::O  P::::P
@@ -2139,7 +2139,7 @@ chrome.runtime.getURL = function(path) {};
  * @param {string} url This may be used to clean up server-side data, do
  *     analytics, and implement surveys. Maximum 255 characters.
  */
-chrome.runtime.setUninstallUrl = function(url) {};
+chrome.runtime.setUninstallURL = function(url) {};
 
 
 /**
@@ -2823,6 +2823,14 @@ chrome.i18n.getMessage = function(messageName, opt_args) {};
  * @return {string}
  */
 chrome.i18n.getUILanguage = function() {};
+
+
+/**
+ * @param {string} text User input string to be detected.
+ * @param {function(!Object)} callback The callback for passing back the
+ *     language detection result.
+ */
+chrome.i18n.detectLanguage = function(text, callback) {};
 
 
 /**
@@ -5321,6 +5329,10 @@ chrome.storage.sync;
 chrome.storage.local;
 
 
+/** @type {!StorageArea} */
+chrome.storage.managed;
+
+
 /** @type {!StorageChangeEvent} */
 chrome.storage.onChanged;
 
@@ -6444,22 +6456,35 @@ function StorageArea() {}
 
 
 /**
- * Removes all items from storage.
- * @param {function(): void=} opt_callback Callback function.
- */
-StorageArea.prototype.clear = function(opt_callback) {};
-
-
-/**
- * @param {(string|!Array<string>|!Object|null)=} opt_keys
+ * @param {(string|!Array<string>|!Object|null|function(!Object))=}
+ * keysOrCallback
  *    A single key to get, list of keys to get, or a dictionary
  *    specifying default values (see description of the
  *    object). An empty list or object will return an empty
  *    result object. Pass in null to get the entire contents of storage.
- * @param {function(Object)=} opt_callback Callback with storage items, or null
+ * @param {function(!Object)=} opt_callback Callback with storage items, or null
  *    on failure.
  */
-StorageArea.prototype.get = function(opt_keys, opt_callback) {};
+StorageArea.prototype.get = function(keysOrCallback, opt_callback) {};
+
+
+/**
+ * @param {(string|!Array<string>|null|function(!Object))=} keysOrCallback
+ *    A single key or list of keys to get the total usage for. An empty list
+ *    will return 0. Pass in null to get the total usage of all of storage.
+ * @param {function(number)=} opt_callback
+ *    Callback with the amount of space being used by storage.
+ */
+StorageArea.prototype.getBytesInUse = function(keysOrCallback, opt_callback) {};
+
+
+/**
+ * @param {!Object<string>} items
+ *    Object specifying items to augment storage
+ *    with. Values that cannot be serialized (functions, etc) will be ignored.
+ * @param {function()=} opt_callback Callback.
+ */
+StorageArea.prototype.set = function(items, opt_callback) { };
 
 
 /**
@@ -6471,22 +6496,10 @@ StorageArea.prototype.remove = function(keys, opt_callback) {};
 
 
 /**
- * @param {!Object<string>} keys
- *    Object specifying items to augment storage
- *    with. Values that cannot be serialized (functions, etc) will be ignored.
- * @param {function()=} opt_callback Callback.
+ * Removes all items from storage.
+ * @param {function(): void=} opt_callback Callback function.
  */
-StorageArea.prototype.set = function(keys, opt_callback) { };
-
-
-/**
- * @param {(string|!Array<string>|null)=} opt_keys
- *    A single key or list of keys to get the total usage for. An empty list
- *    will return 0. Pass in null to get the total usage of all of storage.
- * @param {function(number)=} opt_callback
- *    Callback with the amount of space being used by storage.
- */
-StorageArea.prototype.getBytesInUse = function(opt_keys, opt_callback) { };
+StorageArea.prototype.clear = function(opt_callback) {};
 
 
 
@@ -7060,14 +7073,63 @@ chrome.alarms.AlarmCreateInfo;
 chrome.hid = {};
 
 
+
+/**
+ * @constructor
+ * @see https://developer.chrome.com/apps/hid#type-DeviceFilter
+ */
+chrome.hid.DeviceFilter = function() {};
+
+
+/**
+ * Device vendor ID.
+ * @type {number|undefined}
+ */
+chrome.hid.DeviceFilter.prototype.vendorId;
+
+
+/**
+ * Device product ID, only checked if the vendor ID matches.
+ * @type {number|undefined}
+ */
+chrome.hid.DeviceFilter.prototype.productId;
+
+
+/**
+ * HID usage page identifier.
+ * @type {number|undefined}
+ */
+chrome.hid.DeviceFilter.prototype.usagePage;
+
+
+/**
+ * HID usage identifier, checked only if the HID usage page matches.
+ * @type {number|undefined}
+ */
+chrome.hid.DeviceFilter.prototype.usage;
+
+
 /**
  * @typedef {?{
- *   vendorId: number,
- *   productId: number
+ *   vendorId: (number|undefined),
+ *   productId: (number|undefined),
+ *   filters: (!Array<!chrome.hid.DeviceFilter>|undefined)
  * }}
+ * Deprecated since Chrome 39: vendorId, productId
+ * Since Chrome 39: filters
  * @see https://developer.chrome.com/apps/hid#method-getDevices
  */
 chrome.hid.HidGetDevicesOptions;
+
+
+/**
+ * @typedef {?{
+ *   multiple: (boolean|undefined),
+ *   filters: (!Array<!chrome.hid.DeviceFilter>|undefined)
+ * }}
+ * @see https://developer.chrome.com/apps/hid#method-getUserSelectedDevices
+ */
+chrome.hid.HidGetUserSelectedDevicesOptions;
 
 
 /**
@@ -7081,19 +7143,85 @@ chrome.hid.HidGetDevicesOptions;
 chrome.hid.HidDeviceUsage;
 
 
+
 /**
- * @typedef {?{
- *   deviceId: number,
- *   vendorId: number,
- *   productId: number,
- *   collections: !Array<!chrome.hid.HidDeviceUsage>,
- *   maxInputReportSize: number,
- *   maxOutputReportSize: number,
- *   maxFeatureReportSize: number
- * }}
-* @see https://developer.chrome.com/apps/hid#method-getDevices
-*/
-chrome.hid.HidDeviceInfo;
+ * @constructor
+ * @see https://developer.chrome.com/apps/hid#type-HidDeviceInfo
+ */
+chrome.hid.HidDeviceInfo = function() {};
+
+
+/**
+ * Opaque device ID.
+ * @type {number}
+ */
+chrome.hid.HidDeviceInfo.prototype.deviceId;
+
+
+/**
+ * Vendor ID.
+ * @type {number}
+ */
+chrome.hid.HidDeviceInfo.prototype.vendorId;
+
+
+/**
+ * Product ID.
+ * @type {number}
+ */
+chrome.hid.HidDeviceInfo.prototype.productId;
+
+
+/**
+ * The product name read from the device, if available.
+ * Since Chrome 46.
+ * @type {string}
+ */
+chrome.hid.HidDeviceInfo.prototype.productName;
+
+
+/**
+ * The serial number read from the device, if available.
+ * Since Chrome 46.
+ * @type {string}
+ */
+chrome.hid.HidDeviceInfo.prototype.serialNumber;
+
+
+/**
+ * Top-level collections from this device's report descriptors.
+ * @type {!Array<!chrome.hid.HidDeviceUsage>}
+ */
+chrome.hid.HidDeviceInfo.prototype.collections;
+
+
+/**
+ * Top-level collection's maximum input report size.
+ * @type {number}
+ */
+chrome.hid.HidDeviceInfo.prototype.maxInputReportSize;
+
+
+/**
+ * Top-level collection's maximum output report size.
+ * @type {number}
+ */
+chrome.hid.HidDeviceInfo.prototype.maxOutputReportSize;
+
+
+/**
+ * Top-level collection's maximum feature report size.
+ * @type {number}
+ */
+chrome.hid.HidDeviceInfo.prototype.maxFeatureReportSize;
+
+
+/**
+ * Raw device report descriptor (not available on Windows).
+ * Since Chrome 42.
+ * @type {!ArrayBuffer}
+ */
+chrome.hid.HidDeviceInfo.prototype.reportDescriptor;
 
 
 /**
@@ -7111,10 +7239,24 @@ chrome.hid.HidConnectInfo;
  * vendorId/productId/interfaceId tuple.
  * @param {!chrome.hid.HidGetDevicesOptions} options The properties to search
  *     for on target devices.
- * @param {function(!Array<!Object>)} callback Invoked with a list of
- *     |HidDeviceInfo|s on complete.
+ * @param {function(!Array<!chrome.hid.HidDeviceInfo>)} callback Invoked with a
+ *     list of |HidDeviceInfo|s on complete.
  */
 chrome.hid.getDevices = function(options, callback) {};
+
+
+/**
+ * @see https://developer.chrome.com/apps/hid#method-getUserSelectedDevices
+ * Presents a device picker to the user and returns HidDeviceInfo objects for
+ * the devices selected. If the user cancels the picker devices will be empty. A
+ * user gesture is required for the dialog to display. Without a user gesture,
+ * the callback will run as though the user cancelled. If multiple filters are
+ * provided devices matching any filter will be displayed.
+ * @param {!chrome.hid.HidGetUserSelectedDevicesOptions} options
+ * @param {function(!Array<!chrome.hid.HidDeviceInfo>)} callback Invoked with a
+ *     list of |HidDeviceInfo|s on complete.
+ */
+chrome.hid.getUserSelectedDevices = function(options, callback) {};
 
 
 /**
@@ -7185,6 +7327,50 @@ chrome.hid.receiveFeatureReport =
  */
 chrome.hid.sendFeatureReport =
     function(connectionId, reportId, data, callback) {};
+
+
+
+/**
+ * Event whose listeners take an HidDeviceInfo parameter.
+ * @constructor
+ */
+chrome.hid.DeviceAddedEvent = function() {};
+
+
+/** @param {function(!chrome.hid.HidDeviceInfo): void} callback */
+chrome.hid.DeviceAddedEvent.prototype.addListener =
+    function(callback) {};
+
+
+/** @param {function(!chrome.hid.HidDeviceInfo): void} callback */
+chrome.hid.DeviceAddedEvent.prototype.removeListener =
+    function(callback) {};
+
+
+/**
+ * @param {function(!chrome.hid.HidDeviceInfo): void} callback
+ * @return {boolean}
+ */
+chrome.hid.DeviceAddedEvent.prototype.hasListener =
+    function(callback) {};
+
+
+/** @return {boolean} */
+chrome.hid.DeviceAddedEvent.prototype.hasListeners = function() {};
+
+
+/**
+ * @type {!chrome.hid.DeviceAddedEvent}
+ * @see https://developer.chrome.com/apps/hid#event-onDeviceAdded
+ */
+chrome.hid.onDeviceAdded;
+
+
+/**
+ * @type {!ChromeNumberEvent}
+ * @see https://developer.chrome.com/apps/hid#event-onDeviceRemoved
+ */
+chrome.hid.onDeviceRemoved;
 
 
 /**

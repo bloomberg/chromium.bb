@@ -8,7 +8,6 @@
       '../third_party/closure_compiler/externs/metrics_private.js'],
     'script_args': ['--no-single-file'],
     'closure_args': [
-      'jscomp_error=reportUnknownTypes',
       'jscomp_error=duplicate',
       'jscomp_error=misplacedTypeAnnotation',
     ],

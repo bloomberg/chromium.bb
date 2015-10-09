@@ -12,6 +12,8 @@ readonly TEMP_DIR=$(mktemp -d)
 readonly COMPILER_PATH="${SCRIPT_DIR}/compiler/compiler.jar"
 readonly EXTERNS_PATH="${SCRIPT_DIR}/externs/chrome_extensions.js"
 
+readonly README="${SCRIPT_DIR}/README.chromium"
+
 cleanup() {
   rm -rf "${TEMP_DIR}"
 }
@@ -26,14 +28,27 @@ get_externs_sha1() {
 
 trap cleanup SIGINT SIGHUP SIGTERM
 
-previous_compiler_version=$(get_compiler_version ${COMPILER_PATH})
-previous_externs_sha1=$(get_externs_sha1)
+old_head=$(egrep -o '^Revision: [0-9a-f]{5,40}$' "${README}" | cut -d' ' -f2)
+old_compiler_version=$(get_compiler_version ${COMPILER_PATH})
+old_externs_sha1=$(get_externs_sha1)
 
 cd "${TEMP_DIR}"
+
 echo "Cloning Closure Compiler repo"
-git clone https://github.com/google/closure-compiler.git
+git clone --depth 1 https://github.com/google/closure-compiler.git
 
 cd closure-compiler
+
+new_head=$(git rev-parse HEAD)
+
+if [[ "${new_head}" != "${old_head}" ]]; then
+  head_range=$(cat <<EOT
+Change log:
+https://github.com/google/closure-compiler/compare/${old_head}...${new_head}
+EOT
+)
+fi
+
 echo "Building Closure Compiler"
 ant jar
 
@@ -45,7 +60,7 @@ fi
 
 new_compiler_version=$(get_compiler_version "build/compiler.jar")
 
-if [[ "${new_compiler_version}" != "${previous_compiler_version}" ]]; then
+if [[ "${new_compiler_version}" != "${old_compiler_version}" ]]; then
   cp build/compiler.jar "${COMPILER_PATH}"
 
   echo "Compiler version changed; re-building runner.jar"
@@ -56,7 +71,7 @@ if [[ "${new_compiler_version}" != "${previous_compiler_version}" ]]; then
     exit 1
   fi
 
-  compiler_jar_range="compiler.jar: ${previous_compiler_version} -> ${new_compiler_version}"
+  jar_range="compiler.jar: ${old_compiler_version} -> ${new_compiler_version}"
 fi
 
 (cat <<EOT && cat contrib/externs/chrome_extensions.js) > "${EXTERNS_PATH}"
@@ -68,7 +83,7 @@ fi
 // S:::::S                    T:::::T        O:::::O     O:::::O  P::::P     P:::::P
 //  S::::SSSS                                                     P::::PPPPPP:::::P
 //   SS::::::SSSSS       This file is generated. To update it,    P:::::::::::::PP
-//     SSS::::::::SS          run bump_compiler_version.          P::::PPPPPPPPP
+//     SSS::::::::SS          run roll_compiler_version.          P::::PPPPPPPPP
 //        SSSSSS::::S                                             P::::P
 //             S:::::S        T:::::T        O:::::O     O:::::O  P::::P
 //             S:::::S        T:::::T        O::::::O   O::::::O  P::::P
@@ -80,8 +95,8 @@ EOT
 
 new_externs_sha1=$(get_externs_sha1)
 
-if [[ "${new_externs_sha1}" != "${previous_externs_sha1}" ]]; then
-  chrome_extensions_range="chrome_extensions.js: ${previous_externs_sha1} -> ${new_externs_sha1}"
+if [[ "${new_externs_sha1}" != "${old_externs_sha1}" ]]; then
+  externs_range="chrome_extensions.js: ${old_externs_sha1} -> ${new_externs_sha1}"
 fi
 
 echo
@@ -89,24 +104,34 @@ echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
 echo "@"
 echo "@  ROLL RESULTS:"
 echo "@"
+echo "@  closure-compiler.git HEAD:"
+echo "@    Old: ${old_head}"
+echo "@    New: ${new_head}"
+echo "@"
 echo "@  Compiler version:"
-echo "@    Previous: ${previous_compiler_version}"
+echo "@    Old: ${old_compiler_version}"
 echo "@    New: ${new_compiler_version}"
 echo "@"
 echo "@  Externs SHA1:"
-echo "@    Previous: ${previous_externs_sha1}"
+echo "@    Old: ${old_externs_sha1}"
 echo "@    New: ${new_externs_sha1}"
 echo "@"
 echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
 echo
 
-if [[ -z "${compiler_jar_range}" ]] && [[ -z "${chrome_extensions_range}" ]]; then
+# I assume HEAD is constantly changing, but it may not necessarily affect
+# either the jar or the externs. Only roll when it matters to us.
+if [[ -z "${jar_range}" ]] && [[ -z "${externs_range}" ]]; then
   echo "Nothing to update"
 else
-  echo "git commit -a -m 'Bumping closure compiler:"
+  sed -i "s/^Revision: ${old_head}$/Revision: ${new_head}/" "${README}"
+
+  echo "git commit -a -m 'Roll closure compiler"
   echo
-  if [[ ! -z "${compiler_jar_range}" ]]; then echo "${compiler_jar_range}"; fi
-  if [[ ! -z "${chrome_extensions_range}" ]]; then echo "${chrome_extensions_range}"; fi
+  if [[ ! -z "${head_range}" ]]; then echo "${head_range}"; echo; fi
+  if [[ ! -z "${jar_range}" ]]; then echo "${jar_range}"; fi
+  if [[ ! -z "${externs_range}" ]]; then echo "${externs_range}"; fi
+  echo
   echo "TBR="
   echo "BUG='"
   echo
