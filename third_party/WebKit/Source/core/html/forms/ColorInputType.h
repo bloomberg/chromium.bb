@@ -57,6 +57,7 @@ public:
 
 private:
     ColorInputType(HTMLInputElement& element) : BaseClickableWithKeyInputType(element) { }
+    void valueAttributeChanged() override;
     void countUsage() override;
     const AtomicString& formControlType() const override;
     bool supportsRequired() const override;

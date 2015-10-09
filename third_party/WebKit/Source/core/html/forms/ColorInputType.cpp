@@ -195,6 +195,12 @@ void ColorInputType::warnIfValueIsInvalid(const String& value) const
     }
 }
 
+void ColorInputType::valueAttributeChanged()
+{
+    if (!element().hasDirtyValue())
+        element().updateView();
+}
+
 void ColorInputType::didChooseColor(const Color& color)
 {
     if (element().isDisabledFormControl() || color == valueAsColor())
