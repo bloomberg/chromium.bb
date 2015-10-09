@@ -57,8 +57,8 @@ drm_private void amdgpu_vamgr_init(struct amdgpu_bo_va_mgr *mgr, uint64_t start,
 
 drm_private void amdgpu_vamgr_deinit(struct amdgpu_bo_va_mgr *mgr)
 {
-	struct amdgpu_bo_va_hole *hole;
-	LIST_FOR_EACH_ENTRY(hole, &mgr->va_holes, list) {
+	struct amdgpu_bo_va_hole *hole, *tmp;
+	LIST_FOR_EACH_ENTRY_SAFE(hole, tmp, &mgr->va_holes, list) {
 		list_del(&hole->list);
 		free(hole);
 	}
