@@ -32,8 +32,12 @@ def _ParseArgs(args):
                       default=[])
   parser.add_argument('--android-abi',
                       help='Android architecture to use for native libraries')
+  parser.add_argument('--create-placeholder-lib',
+                      action='store_true',
+                      help='Whether to add a dummy library file')
   options = parser.parse_args(args)
-  if options.native_libs_dir and not options.android_abi:
+  if not options.android_abi and (options.native_libs_dir or
+                                  options.create_placeholder_lib):
     raise Exception('Must specify --android-abi with --native-libs-dir')
   return options
 
@@ -68,6 +72,10 @@ def main(args):
         for path in native_libs:
           basename = os.path.basename(path)
           apk.write(path, 'lib/%s/%s' % (options.android_abi, basename))
+        if options.create_placeholder_lib:
+          # Make it non-empty so that its checksum is non-zero and is not
+          # ignored by md5_check.
+          apk.writestr('lib/%s/libplaceholder.so' % options.android_abi, ':-)')
         if options.dex_file:
           apk.write(options.dex_file, 'classes.dex')
 
@@ -80,6 +88,7 @@ def main(args):
       on_stale_md5,
       options,
       input_paths=input_paths,
+      input_strings=[options.create_placeholder_lib, options.android_abi],
       output_paths=[options.output_apk])
 
 

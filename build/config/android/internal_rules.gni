@@ -479,6 +479,7 @@ template("process_java_prebuilt") {
 #   resource_packaged_apk_path: Path to .ap_ to use.
 #   output_apk_path: Output path for the generated .apk.
 #   native_libs_dir: Directory containing native libraries.
+#   create_placeholder_lib: Whether to add a dummy lib to the apk.
 template("package_apk") {
   action(target_name) {
     forward_variables_from(invoker,
@@ -487,6 +488,9 @@ template("package_apk") {
                              "public_deps",
                              "testonly",
                            ])
+    _create_placeholder_lib = defined(invoker.create_placeholder_lib) &&
+                              invoker.create_placeholder_lib
+
     script = "//build/android/gyp/apkbuilder.py"
     depfile = "$target_gen_dir/$target_name.d"
     data_deps = [
@@ -519,13 +523,16 @@ template("package_apk") {
       _rebased_dex_path = rebase_path(invoker.dex_path, root_build_dir)
       args += [ "--dex-file=$_rebased_dex_path" ]
     }
+    if (defined(invoker.native_libs_dir) || _create_placeholder_lib) {
+      args += [ "--android-abi=$android_app_abi" ]
+    }
     if (defined(invoker.native_libs_dir)) {
       _rebased_native_libs_dir =
           rebase_path(invoker.native_libs_dir, root_build_dir)
-      args += [
-        "--native-libs-dir=$_rebased_native_libs_dir/$android_app_abi",
-        "--android-abi=$android_app_abi",
-      ]
+      args += [ "--native-libs-dir=$_rebased_native_libs_dir/$android_app_abi" ]
+    }
+    if (_create_placeholder_lib) {
+      args += [ "--create-placeholder-lib" ]
     }
   }
 }
@@ -813,7 +820,11 @@ template("create_apk") {
           get_label_info(_dex_target, "target_gen_dir") + "/bootstrap.dex"
     }
 
-    # TODO(agrieve): Add a placeholder .so for http://crbug.com/384638
+    # http://crbug.com/384638
+    if (defined(invoker.native_libs_dir)) {
+      create_placeholder_lib = true
+    }
+
     output_apk_path = _incremental_packaged_apk_path
     resource_packaged_apk_path = _incremental_resource_packaged_apk_path
   }
