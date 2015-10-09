@@ -73,7 +73,7 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
   void PaintRestoredClientEdge(gfx::Canvas* canvas);
 
   // Layout various sub-components of this view.
-  void LayoutAvatar();
+  void LayoutIncognitoIcon();
   void LayoutNewStyleAvatar();
   void LayoutClientView();
 
@@ -90,8 +90,8 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
   // Displays the next throbber frame.
   void DisplayNextThrobberFrame();
 
-  // The layout rect of the avatar icon, if visible.
-  gfx::Rect avatar_bounds_;
+  // The layout rect of the incognito icon, if visible.
+  gfx::Rect incognito_bounds_;
 
   // The bounds of the ClientView.
   gfx::Rect client_view_bounds_;

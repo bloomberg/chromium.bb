@@ -75,31 +75,34 @@ using ui::DropTargetEvent;
 
 namespace {
 
-static const int kTabStripAnimationVSlop = 40;
+const int kNewTabButtonHeight = 18;
+
+const int kTabStripAnimationVSlop = 40;
+
 // Inactive tabs in a native frame are slightly transparent.
-static const uint8_t kGlassFrameInactiveTabAlpha = 200;
+const uint8_t kGlassFrameInactiveTabAlpha = 200;
 // If there are multiple tabs selected then make non-selected inactive tabs
 // even more transparent.
-static const int kGlassFrameInactiveTabAlphaMultiSelection = 150;
+const uint8_t kGlassFrameInactiveTabAlphaMultiSelection = 150;
 
 // Alpha applied to all elements save the selected tabs.
-static const uint8_t kInactiveTabAndNewTabButtonAlphaAsh = 230;
-static const uint8_t kInactiveTabAndNewTabButtonAlpha = 255;
+const uint8_t kInactiveTabAndNewTabButtonAlphaAsh = 230;
+const uint8_t kInactiveTabAndNewTabButtonAlpha = 255;
 
 // Inverse ratio of the width of a tab edge to the width of the tab. When
 // hovering over the left or right edge of a tab, the drop indicator will
 // point between tabs.
-static const int kTabEdgeRatioInverse = 4;
+const int kTabEdgeRatioInverse = 4;
 
 // Size of the drop indicator.
-static int drop_indicator_width;
-static int drop_indicator_height;
+int drop_indicator_width;
+int drop_indicator_height;
 
 // Max number of stacked tabs.
-static const int kMaxStackedCount = 4;
+const int kMaxStackedCount = 4;
 
 // Padding between stacked tabs.
-static const int kStackedPadding = 6;
+const int kStackedPadding = 6;
 
 // See UpdateLayoutTypeFromMouseEvent() for a description of these.
 #if !defined(USE_ASH)
@@ -117,19 +120,16 @@ const int kStackedTabLeftClip = 20;
 const int kStackedTabRightClip = 20;
 
 #if defined(OS_MACOSX)
+const int kNewTabButtonHorizontalOffset = -8;
 const int kPinnedToNonPinnedOffset = 2;
 #else
+const int kNewTabButtonHorizontalOffset = -11;
 const int kPinnedToNonPinnedOffset = 3;
 #endif
 
-base::string16 GetClipboardText() {
-  if (!ui::Clipboard::IsSupportedClipboardType(ui::CLIPBOARD_TYPE_SELECTION))
-    return base::string16();
-  ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
-  CHECK(clipboard);
-  base::string16 clipboard_text;
-  clipboard->ReadText(ui::CLIPBOARD_TYPE_SELECTION, &clipboard_text);
-  return clipboard_text;
+// Returns the width needed for the new tab button (and padding).
+int GetNewTabButtonWidth() {
+  return TabStrip::kNewTabButtonAssetWidth + kNewTabButtonHorizontalOffset;
 }
 
 // Animation delegate used for any automatic tab movement.  Hides the tab if it
@@ -345,32 +345,31 @@ void NewTabButton::OnGestureEvent(ui::GestureEvent* event) {
 bool NewTabButton::GetHitTestMask(gfx::Path* mask) const {
   DCHECK(mask);
 
-  // When the button is sized to the top of the tab strip, we want the hit
-  // test mask to be defined as the complete (rectangular) bounds of the
-  // button.
   if (tab_strip_->SizeTabButtonToTopOfTabStrip()) {
+    // When the button is sized to the top of the tab strip, we want the hit
+    // test mask to be defined as the complete (rectangular) bounds of the
+    // button.
     gfx::Rect button_bounds(GetContentsBounds());
     button_bounds.set_x(GetMirroredXForRect(button_bounds));
     mask->addRect(RectToSkRect(button_bounds));
-    return true;
+  } else {
+    SkScalar w = SkIntToScalar(width());
+    SkScalar v_offset = SkIntToScalar(TabStrip::kNewTabButtonVerticalOffset);
+
+    // These values are defined by the shape of the new tab image. Should that
+    // image ever change, these values will need to be updated. They're so
+    // custom it's not really worth defining constants for.
+    // These values are correct for regular and USE_ASH versions of the image.
+    mask->moveTo(0, v_offset + 1);
+    mask->lineTo(w - 7, v_offset + 1);
+    mask->lineTo(w - 4, v_offset + 4);
+    mask->lineTo(w, v_offset + 16);
+    mask->lineTo(w - 1, v_offset + 17);
+    mask->lineTo(7, v_offset + 17);
+    mask->lineTo(4, v_offset + 13);
+    mask->lineTo(0, v_offset + 1);
+    mask->close();
   }
-
-  SkScalar w = SkIntToScalar(width());
-  SkScalar v_offset = SkIntToScalar(TabStrip::kNewTabButtonVerticalOffset);
-
-  // These values are defined by the shape of the new tab image. Should that
-  // image ever change, these values will need to be updated. They're so
-  // custom it's not really worth defining constants for.
-  // These values are correct for regular and USE_ASH versions of the image.
-  mask->moveTo(0, v_offset + 1);
-  mask->lineTo(w - 7, v_offset + 1);
-  mask->lineTo(w - 4, v_offset + 4);
-  mask->lineTo(w, v_offset + 16);
-  mask->lineTo(w - 1, v_offset + 17);
-  mask->lineTo(7, v_offset + 17);
-  mask->lineTo(4, v_offset + 13);
-  mask->lineTo(0, v_offset + 1);
-  mask->close();
 
   return true;
 }
@@ -536,15 +535,8 @@ void TabStrip::RemoveTabDelegate::AnimationCanceled(
 // TabStrip, public:
 
 // static
-const char TabStrip::kViewClassName[] = "TabStrip";
 const int TabStrip::kNewTabButtonVerticalOffset = 7;
 const int TabStrip::kNewTabButtonAssetWidth = 34;
-const int TabStrip::kNewTabButtonAssetHeight = 18;
-#if defined(OS_MACOSX)
-const int TabStrip::kNewTabButtonHorizontalOffset = -8;
-#else
-const int TabStrip::kNewTabButtonHorizontalOffset = -11;
-#endif
 
 TabStrip::TabStrip(TabStripController* controller)
     : controller_(controller),
@@ -767,7 +759,7 @@ bool TabStrip::ShouldTabBeVisible(const Tab* tab) const {
   // to "pop in" when the button disappears.
   // TODO: Probably doesn't work for RTL
   int right_edge = tab->bounds().right();
-  const int visible_width = tab->dragging() ? width() : tab_area_width();
+  const int visible_width = tab->dragging() ? width() : GetTabAreaWidth();
   if (right_edge > visible_width)
     return false;
 
@@ -797,7 +789,7 @@ bool TabStrip::ShouldTabBeVisible(const Tab* tab) const {
   // We need to check what would happen if the active tab were to move to this
   // tab or before.
   return (right_edge + current_active_width_ - current_inactive_width_) <=
-         tab_area_width();
+          GetTabAreaWidth();
 }
 
 void TabStrip::PrepareForCloseAt(int model_index, CloseTabSource source) {
@@ -1376,6 +1368,7 @@ void TabStrip::PaintChildren(const ui::PaintContext& context) {
 }
 
 const char* TabStrip::GetClassName() const {
+  static const char kViewClassName[] = "TabStrip";
   return kViewClassName;
 }
 
@@ -1408,7 +1401,7 @@ gfx::Size TabStrip::GetPreferredSize() const {
     needed_tab_width = std::min(
         std::max(needed_tab_width, min_selected_width), largest_min_tab_width);
   }
-  return gfx::Size(needed_tab_width + new_tab_button_width(),
+  return gfx::Size(needed_tab_width + GetNewTabButtonWidth(),
                    immersive_style_ ? Tab::GetImmersiveHeight()
                                     : Tab::GetMinimumInactiveSize().height());
 }
@@ -1519,11 +1512,9 @@ void TabStrip::Init() {
   set_id(VIEW_ID_TAB_STRIP);
   // So we get enter/exit on children to switch stacked layout on and off.
   set_notify_enter_exit_on_child(true);
-  newtab_button_bounds_.SetRect(0,
-                                0,
-                                kNewTabButtonAssetWidth,
-                                kNewTabButtonAssetHeight +
-                                    kNewTabButtonVerticalOffset);
+  newtab_button_bounds_.SetRect(
+      0, 0, kNewTabButtonAssetWidth,
+      kNewTabButtonHeight + kNewTabButtonVerticalOffset);
   newtab_button_ = new NewTabButton(this, this);
   newtab_button_->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_TOOLTIP_NEW_TAB));
@@ -1639,7 +1630,7 @@ void TabStrip::DoLayout() {
   SwapLayoutIfNecessary();
 
   if (touch_layout_)
-    touch_layout_->SetWidth(tab_area_width());
+    touch_layout_->SetWidth(GetTabAreaWidth());
 
   GenerateIdealBounds();
 
@@ -1727,7 +1718,7 @@ void TabStrip::StackDraggedTabs(int delta) {
   } else {
     // Drag the tabs to the right, stacking tabs after the active tab.
     const int last_tab_width = ideal_bounds(tab_count() - 1).width();
-    const int last_tab_x = tab_area_width() - last_tab_width;
+    const int last_tab_x = GetTabAreaWidth() - last_tab_width;
     if (active_index == tab_count() - 1 &&
         ideal_bounds(tab_count() - 1).x() == last_tab_x)
       return;
@@ -2314,7 +2305,7 @@ void TabStrip::GenerateIdealBounds() {
 
   if (!touch_layout_) {
     const int available_width = (available_width_for_tabs_ < 0)
-                                    ? tab_area_width()
+                                    ?  GetTabAreaWidth()
                                     : available_width_for_tabs_;
     const std::vector<gfx::Rect> tabs_bounds =
         CalculateBounds(GetTabSizeInfo(), GetPinnedTabCount(), tab_count(),
@@ -2349,6 +2340,10 @@ int TabStrip::GenerateIdealBoundsForPinnedTabs(int* first_non_pinned_index) {
              ? tab_bounds[num_pinned_tabs].x()
              : tab_bounds[num_pinned_tabs - 1].right() -
                    GetLayoutConstant(TABSTRIP_TAB_OVERLAP);
+}
+
+int TabStrip::GetTabAreaWidth() const {
+  return width() - GetNewTabButtonWidth();
 }
 
 void TabStrip::StartResizeLayoutAnimation() {
@@ -2500,7 +2495,7 @@ void TabStrip::SwapLayoutIfNecessary() {
                             kStackedPadding,
                             kMaxStackedCount,
                             &tabs_));
-    touch_layout_->SetWidth(tab_area_width());
+    touch_layout_->SetWidth(GetTabAreaWidth());
     // This has to be after SetWidth() as SetWidth() is going to reset the
     // bounds of the pinned tabs (since StackedTabStripLayout doesn't yet know
     // how many pinned tabs there are).
@@ -2529,7 +2524,7 @@ bool TabStrip::NeedsTouchLayout() const {
     return false;
   const int overlap = GetLayoutConstant(TABSTRIP_TAB_OVERLAP);
   return (Tab::GetTouchWidth() * normal_count - overlap * (normal_count - 1)) >
-      tab_area_width() - GetStartXForNormalTabs();
+      GetTabAreaWidth() - GetStartXForNormalTabs();
 }
 
 void TabStrip::SetResetToShrinkOnExit(bool value) {
@@ -2558,9 +2553,15 @@ void TabStrip::ButtonPressed(views::Button* sender, const ui::Event& event) {
     if (event.IsMouseEvent()) {
       const ui::MouseEvent& mouse = static_cast<const ui::MouseEvent&>(event);
       if (mouse.IsOnlyMiddleMouseButton()) {
-        base::string16 clipboard_text = GetClipboardText();
-        if (!clipboard_text.empty())
-          controller()->CreateNewTabWithLocation(clipboard_text);
+        if (ui::Clipboard::IsSupportedClipboardType(
+            ui::CLIPBOARD_TYPE_SELECTION)) {
+          ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
+          CHECK(clipboard);
+          base::string16 clipboard_text;
+          clipboard->ReadText(ui::CLIPBOARD_TYPE_SELECTION, &clipboard_text);
+          if (!clipboard_text.empty())
+            controller()->CreateNewTabWithLocation(clipboard_text);
+        }
         return;
       }
     }

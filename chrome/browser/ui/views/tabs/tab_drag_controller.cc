@@ -371,7 +371,7 @@ void TabDragController::Drag(const gfx::Point& point_in_screen) {
         // When all tabs in a maximized browser are dragged the browser gets
         // restored during the drag and maximized back when the drag ends.
         views::Widget* widget = GetAttachedBrowserWidget();
-        const int last_tabstrip_width = attached_tabstrip_->tab_area_width();
+        const int last_tabstrip_width = attached_tabstrip_->GetTabAreaWidth();
         std::vector<gfx::Rect> drag_bounds = CalculateBoundsForDraggedTabs();
         OffsetX(GetAttachedDragPoint(point_in_screen).x(), &drag_bounds);
         gfx::Rect new_bounds(CalculateDraggedBrowserBounds(source_tabstrip_,
@@ -1024,7 +1024,7 @@ void TabDragController::DetachIntoNewBrowserAndRunMoveLoop(
     return;
   }
 
-  const int last_tabstrip_width = attached_tabstrip_->tab_area_width();
+  const int last_tabstrip_width = attached_tabstrip_->GetTabAreaWidth();
   std::vector<gfx::Rect> drag_bounds = CalculateBoundsForDraggedTabs();
   OffsetX(GetAttachedDragPoint(point_in_screen).x(), &drag_bounds);
 
@@ -1701,7 +1701,7 @@ void TabDragController::AdjustBrowserAndTabBoundsForDrag(
     std::vector<gfx::Rect>* drag_bounds) {
   attached_tabstrip_->InvalidateLayout();
   attached_tabstrip_->DoLayout();
-  const int dragged_tabstrip_width = attached_tabstrip_->tab_area_width();
+  const int dragged_tabstrip_width = attached_tabstrip_->GetTabAreaWidth();
 
   // If the new tabstrip is smaller than the old resize the tabs.
   if (dragged_tabstrip_width < last_tabstrip_width) {

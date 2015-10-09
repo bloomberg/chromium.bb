@@ -49,14 +49,8 @@ const int kNonClientRestoredExtraThickness = 9;
 // In the window corners, the resize areas don't actually expand bigger, but the
 // 16 px at the end of the top and bottom edges triggers diagonal resizing.
 const int kResizeCornerWidth = 16;
-// The avatar ends 2 px above the bottom of the tabstrip (which, given the
-// way the tabstrip draws its bottom edge, will appear like a 1 px gap to the
-// user).
-const int kAvatarBottomSpacing = 2;
-// Space between the frame border and the left edge of the avatar.
-const int kAvatarLeftSpacing = 2;
-// Space between the right edge of the avatar and the tabstrip.
-const int kAvatarRightSpacing = -2;
+// Space between the right edge of the incognito icon and the tabstrip.
+const int kIncognitoRightSpacing = -2;
 // How far the new avatar button is from the left of the minimize button.
 const int kNewAvatarButtonOffset = 5;
 // The content left/right images have a shadow built into them.
@@ -70,7 +64,7 @@ const int kNewTabCaptionRestoredSpacing = 5;
 // looking too cluttered.
 const int kNewTabCaptionMaximizedSpacing = 16;
 // How far to indent the tabstrip from the left side of the screen when there
-// is no avatar icon.
+// is no incognito icon.
 const int kTabStripIndent = -6;
 
 // Converts the |image| to a Windows icon and returns the corresponding HICON
@@ -108,25 +102,23 @@ GlassBrowserFrameView::~GlassBrowserFrameView() {
 
 gfx::Rect GlassBrowserFrameView::GetBoundsForTabStrip(
     views::View* tabstrip) const {
-  int minimize_button_offset =
-      std::min(frame()->GetMinimizeButtonOffset(), width());
+  int end_x = std::min(frame()->GetMinimizeButtonOffset(), width());
 
   // The new avatar button is optionally displayed to the left of the
   // minimize button.
   if (new_avatar_button()) {
-    minimize_button_offset -=
-        new_avatar_button()->width() + kNewAvatarButtonOffset;
+    end_x -= new_avatar_button()->width() + kNewAvatarButtonOffset;
 
-    // In non-maximized mode, allow the new tab button to completely slide under
+    // In non-maximized mode, allow the new tab button to slide completely under
     // the avatar button.
     if (!frame()->IsMaximized() && !base::i18n::IsRTL()) {
-      minimize_button_offset +=
+      end_x +=
           TabStrip::kNewTabButtonAssetWidth + kNewTabCaptionRestoredSpacing;
     }
   }
 
-  int tabstrip_x = browser_view()->ShouldShowAvatar() ?
-      (avatar_bounds_.right() + kAvatarRightSpacing) :
+  int x = browser_view()->ShouldShowAvatar() ?
+      (incognito_bounds_.right() + kIncognitoRightSpacing) :
       NonClientBorderThickness() + kTabStripIndent;
   // In RTL languages, we have moved an avatar icon left by the size of window
   // controls to prevent it from being rendered over them. So, we use its x
@@ -135,18 +127,17 @@ gfx::Rect GlassBrowserFrameView::GetBoundsForTabStrip(
   // of window controls in RTL languages.
   if (base::i18n::IsRTL()) {
     if (!browser_view()->ShouldShowAvatar() && frame()->IsMaximized()) {
-      tabstrip_x += avatar_bounds_.x();
+      x += incognito_bounds_.x();
     } else if (browser_view()->IsRegularOrGuestSession()) {
-      tabstrip_x = width() - minimize_button_offset;
+      x = width() - end_x;
     }
 
-    minimize_button_offset = width();
+    end_x = width();
   }
-  int tabstrip_width = minimize_button_offset - tabstrip_x -
+  int tabstrip_width = end_x - x -
       (frame()->IsMaximized() ?
           kNewTabCaptionMaximizedSpacing : kNewTabCaptionRestoredSpacing);
-  return gfx::Rect(tabstrip_x, NonClientTopBorderHeight(),
-                   std::max(0, tabstrip_width),
+  return gfx::Rect(x, NonClientTopBorderHeight(), std::max(0, tabstrip_width),
                    tabstrip->GetPreferredSize().height());
 }
 
@@ -228,13 +219,11 @@ int GlassBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
   if (!browser_view()->IsBrowserTypeNormal() || !bounds().Contains(point))
     return HTNOWHERE;
 
-  // See if the point is within the avatar menu button or within the avatar
-  // label.
-  if (avatar_button() && avatar_button()->GetMirroredBounds().Contains(point))
-    return HTCLIENT;
-
-  if (new_avatar_button() &&
-     new_avatar_button()->GetMirroredBounds().Contains(point))
+  // See if the point is within the incognito icon or the new avatar menu.
+  if ((avatar_button() &&
+       avatar_button()->GetMirroredBounds().Contains(point)) ||
+      (new_avatar_button() &&
+       new_avatar_button()->GetMirroredBounds().Contains(point)))
    return HTCLIENT;
 
   int frame_component = frame()->client_view()->NonClientHitTest(point);
@@ -281,7 +270,7 @@ void GlassBrowserFrameView::Layout() {
   if (browser_view()->IsRegularOrGuestSession())
     LayoutNewStyleAvatar();
   else
-    LayoutAvatar();
+    LayoutIncognitoIcon();
 
   LayoutClientView();
 }
@@ -318,11 +307,11 @@ void GlassBrowserFrameView::UpdateNewAvatarButtonImpl() {
 bool GlassBrowserFrameView::DoesIntersectRect(const views::View* target,
                                               const gfx::Rect& rect) const {
   CHECK_EQ(target, this);
-  bool hit_avatar_button = avatar_button() &&
+  bool hit_incognito_icon = avatar_button() &&
       avatar_button()->GetMirroredBounds().Intersects(rect);
   bool hit_new_avatar_button = new_avatar_button() &&
       new_avatar_button()->GetMirroredBounds().Intersects(rect);
-  return hit_avatar_button || hit_new_avatar_button ||
+  return hit_incognito_icon || hit_new_avatar_button ||
          !frame()->client_view()->bounds().Intersects(rect);
 }
 
@@ -387,8 +376,6 @@ void GlassBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
                        dest_y, w, theme_toolbar->height());
 
   if (browser_view()->IsTabStripVisible()) {
-    // On Windows 10, we don't draw our own window border but rather go right to
-    // the system border, so we don't need to draw the toolbar edges.
     if (base::win::GetVersion() < base::win::VERSION_WIN10) {
       int left_x = x - kContentEdgeShadowThickness;
       // Draw rounded corners for the tab.
@@ -425,6 +412,8 @@ void GlassBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
       canvas->DrawImageInt(*tp->GetImageSkiaNamed(IDR_CONTENT_TOP_RIGHT_CORNER),
                            right_x, y);
     } else {
+      // On Windows 10, we don't draw our own window border but rather go right
+      // to the system border, so we don't need to draw the toolbar edges.
       canvas->TileImageInt(*toolbar_center, x, y, w, toolbar_center->height());
     }
   }
@@ -531,25 +520,21 @@ void GlassBrowserFrameView::LayoutNewStyleAvatar() {
       gfx::win::GetSystemMetricsInDIP(SM_CYMENUSIZE) + 1);
 }
 
-void GlassBrowserFrameView::LayoutAvatar() {
-  gfx::ImageSkia incognito_icon = browser_view()->GetOTRAvatarIcon();
-
-  int avatar_x = NonClientBorderThickness() + kAvatarLeftSpacing;
-  // Move this avatar icon by the size of window controls to prevent it from
-  // being rendered over them in RTL languages. This code also needs to adjust
-  // the width of a tab strip to avoid decreasing this size twice. (See the
-  // comment in GetBoundsForTabStrip().)
+void GlassBrowserFrameView::LayoutIncognitoIcon() {
+  const gfx::Insets insets(GetLayoutInsets(AVATAR_ICON));
+  const gfx::Size size(browser_view()->GetOTRAvatarIcon().size());
+  int x = NonClientBorderThickness();
+  // In RTL, the icon needs to start after the caption buttons.
   if (base::i18n::IsRTL())
-    avatar_x += width() - frame()->GetMinimizeButtonOffset();
-
-  int avatar_bottom = GetTopInset() +
-      browser_view()->GetTabStripHeight() - kAvatarBottomSpacing;
-  int avatar_y = frame()->IsMaximized() ?
-      FrameTopBorderHeight() : (avatar_bottom - incognito_icon.height());
-  avatar_bounds_.SetRect(avatar_x, avatar_y, incognito_icon.width(),
-      browser_view()->ShouldShowAvatar() ? (avatar_bottom - avatar_y) : 0);
+    x += width() - frame()->GetMinimizeButtonOffset();
+  const int bottom =
+      GetTopInset() + browser_view()->GetTabStripHeight() - insets.bottom();
+  const int y = frame()->IsMaximized() ?
+      FrameTopBorderHeight() : (bottom - size.height());
+  incognito_bounds_.SetRect(x + insets.left(), y, size.width(),
+      browser_view()->ShouldShowAvatar() ? (bottom - y) : 0);
   if (avatar_button())
-    avatar_button()->SetBoundsRect(avatar_bounds_);
+    avatar_button()->SetBoundsRect(incognito_bounds_);
 }
 
 void GlassBrowserFrameView::LayoutClientView() {

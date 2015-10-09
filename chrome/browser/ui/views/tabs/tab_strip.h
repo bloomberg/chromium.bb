@@ -57,12 +57,6 @@ class TabStrip : public views::View,
                  public views::ViewTargeterDelegate,
                  public TabController {
  public:
-  static const char kViewClassName[];
-
-  // Horizontal offset for the new tab button to bring it closer to the
-  // rightmost tab.
-  static const int kNewTabButtonHorizontalOffset;
-
   // The vertical offset of the tab strip button. This offset applies only to
   // restored windows.
   static const int kNewTabButtonVerticalOffset;
@@ -72,7 +66,6 @@ class TabStrip : public views::View,
   // ui::ThemeProvider.  It also makes sense to do this, because the size of the
   // new tab button should not need to be calculated dynamically.
   static const int kNewTabButtonAssetWidth;
-  static const int kNewTabButtonAssetHeight;
 
   explicit TabStrip(TabStripController* controller);
   ~TabStrip() override;
@@ -497,14 +490,9 @@ class TabStrip : public views::View,
   // index of the first non-pinned tab.
   int GenerateIdealBoundsForPinnedTabs(int* first_non_pinned_index);
 
-  // Returns the width needed for the new tab button (and padding).
-  static int new_tab_button_width() {
-    return kNewTabButtonAssetWidth + kNewTabButtonHorizontalOffset;
-  }
-
   // Returns the width of the area that contains tabs. This does not include
   // the width of the new tab button.
-  int tab_area_width() const { return width() - new_tab_button_width(); }
+  int GetTabAreaWidth() const;
 
   // Starts various types of TabStrip animations.
   void StartResizeLayoutAnimation();
