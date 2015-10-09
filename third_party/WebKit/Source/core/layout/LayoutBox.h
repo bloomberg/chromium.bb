@@ -700,6 +700,7 @@ public:
     virtual void paintBoxDecorationBackground(const PaintInfo&, const LayoutPoint&) const;
     virtual void paintMask(const PaintInfo&, const LayoutPoint&) const;
     void imageChanged(WrappedImagePtr, const IntRect* = nullptr) override;
+    ResourcePriority computeResourcePriority() const final;
 
     void logicalExtentAfterUpdatingLogicalWidth(const LayoutUnit& logicalTop, LogicalExtentComputedValues&);
 

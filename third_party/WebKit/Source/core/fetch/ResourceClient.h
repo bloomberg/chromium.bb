@@ -26,6 +26,7 @@
 #define ResourceClient_h
 
 #include "core/CoreExport.h"
+#include "platform/network/ResourceLoadPriority.h"
 #include "wtf/FastAllocBase.h"
 #include "wtf/Forward.h"
 
@@ -49,6 +50,8 @@ public:
 
     static ResourceClientType expectedType() { return BaseResourceType; }
     virtual ResourceClientType resourceClientType() const { return expectedType(); }
+
+    virtual ResourcePriority computeResourcePriority() const { return ResourcePriority(); }
 
 protected:
     ResourceClient() { }

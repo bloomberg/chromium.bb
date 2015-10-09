@@ -678,12 +678,7 @@ void FrameFetchContext::countClientHintsViewportWidth()
     UseCounter::count(frame(), UseCounter::ClientHintsViewportWidth);
 }
 
-bool FrameFetchContext::fetchIncreasePriorities() const
-{
-    return frame()->settings() && frame()->settings()->fetchIncreasePriorities();
-}
-
-ResourceLoadPriority FrameFetchContext::modifyPriorityForExperiments(ResourceLoadPriority priority, Resource::Type type, const FetchRequest& request)
+ResourceLoadPriority FrameFetchContext::modifyPriorityForExperiments(ResourceLoadPriority priority, Resource::Type type, const FetchRequest& request, ResourcePriority::VisibilityStatus visibility)
 {
     // An image fetch is used to distinguish between "early" and "late" scripts in a document
     if (type == Resource::Image)
@@ -712,8 +707,15 @@ ResourceLoadPriority FrameFetchContext::modifyPriorityForExperiments(ResourceLoa
     // of "layout-blocking" resources and provide a boost to resources that are needed
     // as soon as possible for something currently on the screen.
     int modifiedPriority = static_cast<int>(priority);
-    if (fetchIncreasePriorities()) {
+    if (frame()->settings()->fetchIncreasePriorities()) {
         if (type == Resource::CSSStyleSheet || type == Resource::Script || type == Resource::Font || type == Resource::Image)
+            modifiedPriority++;
+    }
+
+    // Always give visible resources a bump, and an additional bump if generally increasing priorities.
+    if (visibility == ResourcePriority::Visible) {
+        modifiedPriority++;
+        if (frame()->settings()->fetchIncreasePriorities())
             modifiedPriority++;
     }
 
@@ -725,7 +727,7 @@ ResourceLoadPriority FrameFetchContext::modifyPriorityForExperiments(ResourceLoa
         if (frame()->settings()->fetchDeferLateScripts() && request.forPreload() && m_imageFetched)
             modifiedPriority--;
         // Parser-blocking scripts.
-        if (fetchIncreasePriorities() && !request.forPreload())
+        if (frame()->settings()->fetchIncreasePriorities() && !request.forPreload())
             modifiedPriority++;
     }
 

@@ -1356,6 +1356,31 @@ void LayoutBox::imageChanged(WrappedImagePtr image, const IntRect*)
         invalidatePaintOfLayerRectsForImage(image, style()->maskLayers(), false);
 }
 
+ResourcePriority LayoutBox::computeResourcePriority() const
+{
+    LayoutRect viewBounds = viewRect();
+    LayoutRect objectBounds = LayoutRect(absoluteContentBox());
+
+    // The object bounds might be empty right now, so intersects will fail since it doesn't deal
+    // with empty rects. Use LayoutRect::contains in that case.
+    bool isVisible;
+    if (!objectBounds.isEmpty())
+        isVisible =  viewBounds.intersects(objectBounds);
+    else
+        isVisible = viewBounds.contains(objectBounds);
+
+    LayoutRect screenRect;
+    if (!objectBounds.isEmpty()) {
+        screenRect = viewBounds;
+        screenRect.intersect(objectBounds);
+    }
+
+    int screenArea = 0;
+    if (!screenRect.isEmpty() && isVisible)
+        screenArea = static_cast<uint32_t>(screenRect.width() * screenRect.height());
+    return ResourcePriority(isVisible ? ResourcePriority::Visible : ResourcePriority::NotVisible, screenArea);
+}
+
 bool LayoutBox::invalidatePaintOfLayerRectsForImage(WrappedImagePtr image, const FillLayer& layers, bool drawingBackground)
 {
     if (drawingBackground && (isDocumentElement() || backgroundStolenForBeingBody()))

@@ -34,7 +34,6 @@
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
-#include "core/fetch/ResourceLoadPriorityOptimizer.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
@@ -157,38 +156,6 @@ static void removeBlockFromDescendantAndContainerMaps(LayoutBlock* block, Tracke
                 containerMap->remove(it);
         }
     }
-}
-
-static void appendImageIfNotNull(WillBeHeapVector<RawPtrWillBeMember<ImageResource>>& imageResources, const StyleImage* styleImage)
-{
-    if (styleImage && styleImage->cachedImage()) {
-        ImageResource* imageResource = styleImage->cachedImage();
-        if (imageResource && !imageResource->isLoaded())
-            imageResources.append(styleImage->cachedImage());
-    }
-}
-
-static void appendLayers(WillBeHeapVector<RawPtrWillBeMember<ImageResource>>& images, const FillLayer& styleLayer)
-{
-    for (const FillLayer* layer = &styleLayer; layer; layer = layer->next())
-        appendImageIfNotNull(images, layer->image());
-}
-
-static void appendImagesFromStyle(WillBeHeapVector<RawPtrWillBeMember<ImageResource>>& images, const ComputedStyle& blockStyle)
-{
-    appendLayers(images, blockStyle.backgroundLayers());
-    appendLayers(images, blockStyle.maskLayers());
-
-    const ContentData* contentData = blockStyle.contentData();
-    if (contentData && contentData->isImage())
-        appendImageIfNotNull(images, toImageContentData(contentData)->image());
-    if (blockStyle.boxReflect())
-        appendImageIfNotNull(images, blockStyle.boxReflect()->mask().image());
-    appendImageIfNotNull(images, blockStyle.listStyleImage());
-    appendImageIfNotNull(images, blockStyle.borderImageSource());
-    appendImageIfNotNull(images, blockStyle.maskBoxImageSource());
-    if (blockStyle.shapeOutside())
-        appendImageIfNotNull(images, blockStyle.shapeOutside()->image());
 }
 
 void LayoutBlock::removeFromGlobalMaps()
@@ -330,15 +297,6 @@ void LayoutBlock::styleDidChange(StyleDifference diff, const ComputedStyle* oldS
     // It's possible for our border/padding to change, but for the overall logical width of the block to
     // end up being the same. We keep track of this change so in layoutBlock, we can know to set relayoutChildren=true.
     m_widthAvailableToChildrenChanged |= oldStyle && diff.needsFullLayout() && needsLayout() && borderOrPaddingLogicalWidthChanged(*oldStyle, newStyle);
-
-    // If the style has unloaded images, want to notify the ResourceLoadPriorityOptimizer so that
-    // network priorities can be set.
-    WillBeHeapVector<RawPtrWillBeMember<ImageResource>> images;
-    appendImagesFromStyle(images, newStyle);
-    if (images.isEmpty())
-        ResourceLoadPriorityOptimizer::resourceLoadPriorityOptimizer()->removeLayoutObject(this);
-    else
-        ResourceLoadPriorityOptimizer::resourceLoadPriorityOptimizer()->addLayoutObject(this);
 }
 
 void LayoutBlock::invalidatePaintOfSubtreesIfNeeded(PaintInvalidationState& childPaintInvalidationState)
@@ -945,39 +903,6 @@ void LayoutBlock::layout()
         clearLayoutOverflow();
 
     invalidateBackgroundObscurationStatus();
-}
-
-bool LayoutBlock::updateImageLoadingPriorities()
-{
-    WillBeHeapVector<RawPtrWillBeMember<ImageResource>> images;
-    appendImagesFromStyle(images, styleRef());
-
-    if (images.isEmpty())
-        return false;
-
-    LayoutRect viewBounds = viewRect();
-    LayoutRect objectBounds(absoluteContentBox());
-    // The object bounds might be empty right now, so intersects will fail since it doesn't deal
-    // with empty rects. Use LayoutRect::contains in that case.
-    bool isVisible;
-    if (!objectBounds.isEmpty())
-        isVisible =  viewBounds.intersects(objectBounds);
-    else
-        isVisible = viewBounds.contains(objectBounds);
-
-    ResourceLoadPriorityOptimizer::VisibilityStatus status = isVisible ?
-        ResourceLoadPriorityOptimizer::Visible : ResourceLoadPriorityOptimizer::NotVisible;
-
-    LayoutRect screenArea;
-    if (!objectBounds.isEmpty()) {
-        screenArea = viewBounds;
-        screenArea.intersect(objectBounds);
-    }
-
-    for (auto imageResource : images)
-        ResourceLoadPriorityOptimizer::resourceLoadPriorityOptimizer()->notifyImageResourceVisibility(imageResource, status, screenArea);
-
-    return true;
 }
 
 bool LayoutBlock::widthAvailableToChildrenHasChanged()

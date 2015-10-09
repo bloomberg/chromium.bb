@@ -39,7 +39,6 @@
 #include "core/editing/RenderedPosition.h"
 #include "core/editing/markers/DocumentMarkerController.h"
 #include "core/fetch/ResourceFetcher.h"
-#include "core/fetch/ResourceLoadPriorityOptimizer.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
@@ -838,7 +837,7 @@ void FrameView::performLayout(bool inSubtreeLayout)
         layoutFromRootObject(*layoutView());
     }
 
-    ResourceLoadPriorityOptimizer::resourceLoadPriorityOptimizer()->updateAllImageResourcePriorities();
+    m_frame->document()->fetcher()->updateAllImageResourcePriorities();
 
     lifecycle().advanceTo(DocumentLifecycle::AfterPerformLayout);
 
@@ -1526,9 +1525,8 @@ void FrameView::scrollPositionChanged()
 
 void FrameView::didScrollTimerFired(Timer<FrameView>*)
 {
-    if (m_frame->document() && m_frame->document()->layoutView()) {
-        ResourceLoadPriorityOptimizer::resourceLoadPriorityOptimizer()->updateAllImageResourcePriorities();
-    }
+    if (m_frame->document() && m_frame->document()->layoutView())
+        m_frame->document()->fetcher()->updateAllImageResourcePriorities();
 }
 
 void FrameView::updateLayersAndCompositingAfterScrollIfNeeded()

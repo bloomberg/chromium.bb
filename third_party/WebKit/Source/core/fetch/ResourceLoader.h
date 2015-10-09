@@ -69,7 +69,6 @@ public:
     void releaseResources();
 
     void didChangePriority(ResourceLoadPriority, int intraPriorityValue);
-    bool shouldUseIncreasedPriorities();
 
     // WebURLLoaderClient
     void willFollowRedirect(WebURLLoader*, WebURLRequest&, const WebURLResponse& redirectResponse) override;

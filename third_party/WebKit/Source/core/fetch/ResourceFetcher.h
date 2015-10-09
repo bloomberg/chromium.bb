@@ -110,7 +110,6 @@ public:
     void didLoadResource();
     void redirectReceived(Resource*, const ResourceResponse&);
     void didFinishLoading(Resource*, double finishTime, int64_t encodedDataLength);
-    void didChangeLoadingPriority(const Resource*, ResourceLoadPriority, int intraPriorityValue);
     void didFailLoading(const Resource*, const ResourceError&);
     void willSendRequest(unsigned long identifier, ResourceRequest&, const ResourceResponse& redirectResponse, const FetchInitiatorInfo&);
     void didReceiveResponse(const Resource*, const ResourceResponse&);
@@ -132,7 +131,7 @@ public:
 
     void acceptDataFromThreadedReceiver(unsigned long identifier, const char* data, int dataLength, int encodedDataLength);
 
-    ResourceLoadPriority loadPriority(Resource::Type, const FetchRequest&);
+    ResourceLoadPriority loadPriority(Resource::Type, const FetchRequest&, ResourcePriority::VisibilityStatus = ResourcePriority::NotVisible);
 
     enum ResourceLoadStartType {
         ResourceLoadingFromNetwork,
@@ -148,6 +147,8 @@ public:
     void determineRequestContext(ResourceRequest&, Resource::Type);
 
     WebTaskRunner* loadingTaskRunner();
+
+    void updateAllImageResourcePriorities();
 
 private:
     friend class ResourceCacheValidationSuppressor;

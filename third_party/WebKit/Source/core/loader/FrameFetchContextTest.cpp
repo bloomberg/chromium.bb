@@ -436,57 +436,63 @@ TEST_F(FrameFetchContextTest, ModifyPriorityForExperiments)
     settings->setFEtchIncreasePriorities(false);
 
     // Base case, no priority change. Note that this triggers m_imageFetched, which will matter for setFetchDeferLateScripts() case below.
-    EXPECT_EQ(ResourceLoadPriorityLow, fetchContext->modifyPriorityForExperiments(ResourceLoadPriorityLow, Resource::Image, request));
+    EXPECT_EQ(ResourceLoadPriorityVeryLow, fetchContext->modifyPriorityForExperiments(ResourceLoadPriorityVeryLow, Resource::Image, request, ResourcePriority::NotVisible));
+
+    // Image visibility should increase priority
+    EXPECT_EQ(ResourceLoadPriorityLow, fetchContext->modifyPriorityForExperiments(ResourceLoadPriorityVeryLow, Resource::Image, request, ResourcePriority::Visible));
 
     // Font priority with and without fetchIncreaseFontPriority()
-    EXPECT_EQ(ResourceLoadPriorityMedium, fetchContext->modifyPriorityForExperiments(ResourceLoadPriorityMedium, Resource::Font, request));
+    EXPECT_EQ(ResourceLoadPriorityMedium, fetchContext->modifyPriorityForExperiments(ResourceLoadPriorityMedium, Resource::Font, request, ResourcePriority::NotVisible));
     settings->setFEtchIncreaseFontPriority(true);
-    EXPECT_EQ(ResourceLoadPriorityHigh, fetchContext->modifyPriorityForExperiments(ResourceLoadPriorityMedium, Resource::Font, request));
+    EXPECT_EQ(ResourceLoadPriorityHigh, fetchContext->modifyPriorityForExperiments(ResourceLoadPriorityMedium, Resource::Font, request, ResourcePriority::NotVisible));
 
     // Basic script cases
-    EXPECT_EQ(ResourceLoadPriorityMedium, fetchContext->modifyPriorityForExperiments(ResourceLoadPriorityMedium, Resource::Script, request));
-    EXPECT_EQ(ResourceLoadPriorityMedium, fetchContext->modifyPriorityForExperiments(ResourceLoadPriorityMedium, Resource::Script, preloadRequest));
+    EXPECT_EQ(ResourceLoadPriorityMedium, fetchContext->modifyPriorityForExperiments(ResourceLoadPriorityMedium, Resource::Script, request, ResourcePriority::NotVisible));
+    EXPECT_EQ(ResourceLoadPriorityMedium, fetchContext->modifyPriorityForExperiments(ResourceLoadPriorityMedium, Resource::Script, preloadRequest, ResourcePriority::NotVisible));
 
     // Enable deferring late scripts. Preload priority should drop.
     settings->setFEtchDeferLateScripts(true);
-    EXPECT_EQ(ResourceLoadPriorityLow, fetchContext->modifyPriorityForExperiments(ResourceLoadPriorityMedium, Resource::Script, preloadRequest));
+    EXPECT_EQ(ResourceLoadPriorityLow, fetchContext->modifyPriorityForExperiments(ResourceLoadPriorityMedium, Resource::Script, preloadRequest, ResourcePriority::NotVisible));
 
     // Enable increasing priority of async scripts.
-    EXPECT_EQ(ResourceLoadPriorityLow, fetchContext->modifyPriorityForExperiments(ResourceLoadPriorityMedium, Resource::Script, deferredRequest));
+    EXPECT_EQ(ResourceLoadPriorityLow, fetchContext->modifyPriorityForExperiments(ResourceLoadPriorityMedium, Resource::Script, deferredRequest, ResourcePriority::NotVisible));
     settings->setFEtchIncreaseAsyncScriptPriority(true);
-    EXPECT_EQ(ResourceLoadPriorityMedium, fetchContext->modifyPriorityForExperiments(ResourceLoadPriorityMedium, Resource::Script, deferredRequest));
+    EXPECT_EQ(ResourceLoadPriorityMedium, fetchContext->modifyPriorityForExperiments(ResourceLoadPriorityMedium, Resource::Script, deferredRequest, ResourcePriority::NotVisible));
 
     // Enable increased priorities for the remainder.
     settings->setFEtchIncreasePriorities(true);
 
+    // Re-test image priority based on visibility with increased priorities
+    EXPECT_EQ(ResourceLoadPriorityLow, fetchContext->modifyPriorityForExperiments(ResourceLoadPriorityVeryLow, Resource::Image, request, ResourcePriority::NotVisible));
+    EXPECT_EQ(ResourceLoadPriorityHigh, fetchContext->modifyPriorityForExperiments(ResourceLoadPriorityVeryLow, Resource::Image, request, ResourcePriority::Visible));
+
     // Re-test font priority with increased prioriries
     settings->setFEtchIncreaseFontPriority(false);
-    EXPECT_EQ(ResourceLoadPriorityHigh, fetchContext->modifyPriorityForExperiments(ResourceLoadPriorityMedium, Resource::Font, request));
+    EXPECT_EQ(ResourceLoadPriorityHigh, fetchContext->modifyPriorityForExperiments(ResourceLoadPriorityMedium, Resource::Font, request, ResourcePriority::NotVisible));
     settings->setFEtchIncreaseFontPriority(true);
-    EXPECT_EQ(ResourceLoadPriorityVeryHigh, fetchContext->modifyPriorityForExperiments(ResourceLoadPriorityMedium, Resource::Font, request));
+    EXPECT_EQ(ResourceLoadPriorityVeryHigh, fetchContext->modifyPriorityForExperiments(ResourceLoadPriorityMedium, Resource::Font, request, ResourcePriority::NotVisible));
 
     // Re-test basic script cases and deferring late script case with increased prioriries
-    settings->setFEtchIncreasePriorities(true);
     settings->setFEtchDeferLateScripts(false);
-    EXPECT_EQ(ResourceLoadPriorityVeryHigh, fetchContext->modifyPriorityForExperiments(ResourceLoadPriorityMedium, Resource::Script, request));
-    EXPECT_EQ(ResourceLoadPriorityHigh, fetchContext->modifyPriorityForExperiments(ResourceLoadPriorityMedium, Resource::Script, preloadRequest));
+    EXPECT_EQ(ResourceLoadPriorityVeryHigh, fetchContext->modifyPriorityForExperiments(ResourceLoadPriorityMedium, Resource::Script, request, ResourcePriority::NotVisible));
+    EXPECT_EQ(ResourceLoadPriorityHigh, fetchContext->modifyPriorityForExperiments(ResourceLoadPriorityMedium, Resource::Script, preloadRequest, ResourcePriority::NotVisible));
 
     // Re-test deferring late scripts.
     settings->setFEtchDeferLateScripts(true);
-    EXPECT_EQ(ResourceLoadPriorityMedium, fetchContext->modifyPriorityForExperiments(ResourceLoadPriorityMedium, Resource::Script, preloadRequest));
+    EXPECT_EQ(ResourceLoadPriorityMedium, fetchContext->modifyPriorityForExperiments(ResourceLoadPriorityMedium, Resource::Script, preloadRequest, ResourcePriority::NotVisible));
 
     // Re-test increasing priority of async scripts. Should ignore general incraesed priorities.
     settings->setFEtchIncreaseAsyncScriptPriority(false);
-    EXPECT_EQ(ResourceLoadPriorityLow, fetchContext->modifyPriorityForExperiments(ResourceLoadPriorityMedium, Resource::Script, deferredRequest));
+    EXPECT_EQ(ResourceLoadPriorityLow, fetchContext->modifyPriorityForExperiments(ResourceLoadPriorityMedium, Resource::Script, deferredRequest, ResourcePriority::NotVisible));
     settings->setFEtchIncreaseAsyncScriptPriority(true);
-    EXPECT_EQ(ResourceLoadPriorityMedium, fetchContext->modifyPriorityForExperiments(ResourceLoadPriorityMedium, Resource::Script, deferredRequest));
+    EXPECT_EQ(ResourceLoadPriorityMedium, fetchContext->modifyPriorityForExperiments(ResourceLoadPriorityMedium, Resource::Script, deferredRequest, ResourcePriority::NotVisible));
 
     // Ensure we don't go out of bounds
     settings->setFEtchIncreasePriorities(true);
-    EXPECT_EQ(ResourceLoadPriorityVeryHigh, fetchContext->modifyPriorityForExperiments(ResourceLoadPriorityVeryHigh, Resource::Script, request));
+    EXPECT_EQ(ResourceLoadPriorityVeryHigh, fetchContext->modifyPriorityForExperiments(ResourceLoadPriorityVeryHigh, Resource::Script, request, ResourcePriority::NotVisible));
     settings->setFEtchIncreasePriorities(false);
     settings->setFEtchDeferLateScripts(true);
-    EXPECT_EQ(ResourceLoadPriorityVeryLow, fetchContext->modifyPriorityForExperiments(ResourceLoadPriorityVeryLow, Resource::Script, preloadRequest));
+    EXPECT_EQ(ResourceLoadPriorityVeryLow, fetchContext->modifyPriorityForExperiments(ResourceLoadPriorityVeryLow, Resource::Script, preloadRequest, ResourcePriority::NotVisible));
 }
 
 TEST_F(FrameFetchContextTest, ModifyPriorityForLowPriorityIframes)
@@ -497,13 +503,13 @@ TEST_F(FrameFetchContextTest, ModifyPriorityForLowPriorityIframes)
     FrameFetchContext* childFetchContext = createChildFrame();
 
     // No low priority iframes, expect default values.
-    EXPECT_EQ(ResourceLoadPriorityVeryHigh, childFetchContext->modifyPriorityForExperiments(ResourceLoadPriorityVeryHigh, Resource::MainResource, request));
-    EXPECT_EQ(ResourceLoadPriorityMedium, childFetchContext->modifyPriorityForExperiments(ResourceLoadPriorityMedium, Resource::Script, request));
+    EXPECT_EQ(ResourceLoadPriorityVeryHigh, childFetchContext->modifyPriorityForExperiments(ResourceLoadPriorityVeryHigh, Resource::MainResource, request, ResourcePriority::NotVisible));
+    EXPECT_EQ(ResourceLoadPriorityMedium, childFetchContext->modifyPriorityForExperiments(ResourceLoadPriorityMedium, Resource::Script, request, ResourcePriority::NotVisible));
 
     // Low priority iframes enabled, everything should be low priority
     settings->setLowPriorityIframes(true);
-    EXPECT_EQ(ResourceLoadPriorityVeryLow, childFetchContext->modifyPriorityForExperiments(ResourceLoadPriorityVeryHigh, Resource::MainResource, request));
-    EXPECT_EQ(ResourceLoadPriorityVeryLow, childFetchContext->modifyPriorityForExperiments(ResourceLoadPriorityMedium, Resource::Script, request));
+    EXPECT_EQ(ResourceLoadPriorityVeryLow, childFetchContext->modifyPriorityForExperiments(ResourceLoadPriorityVeryHigh, Resource::MainResource, request, ResourcePriority::NotVisible));
+    EXPECT_EQ(ResourceLoadPriorityVeryLow, childFetchContext->modifyPriorityForExperiments(ResourceLoadPriorityMedium, Resource::Script, request, ResourcePriority::NotVisible));
 }
 
 } // namespace

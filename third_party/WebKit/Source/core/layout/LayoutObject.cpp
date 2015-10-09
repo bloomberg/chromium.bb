@@ -37,7 +37,6 @@
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/TextAffinity.h"
-#include "core/fetch/ResourceLoadPriorityOptimizer.h"
 #include "core/fetch/ResourceLoader.h"
 #include "core/frame/DeprecatedScheduleStyleRecalcDuringLayout.h"
 #include "core/frame/EventHandlerRegistry.h"
@@ -2541,7 +2540,6 @@ void LayoutObject::willBeDestroyed()
 
         removeShapeImageClient(m_style->shapeOutside());
     }
-    ResourceLoadPriorityOptimizer::resourceLoadPriorityOptimizer()->removeLayoutObject(this);
 
     if (frameView())
         setIsSlowRepaintObject(false);

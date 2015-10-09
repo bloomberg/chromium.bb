@@ -41,6 +41,24 @@ enum ResourceLoadPriority {
     ResourceLoadPriorityHighest = ResourceLoadPriorityVeryHigh,
 };
 
+struct ResourcePriority {
+public:
+    enum VisibilityStatus {
+        NotVisible,
+        Visible,
+    };
+
+    ResourcePriority() : ResourcePriority(NotVisible, 0) { }
+    ResourcePriority(VisibilityStatus status, int intraValue)
+        : visibility(status)
+        , intraPriorityValue(intraValue)
+    {
+    }
+
+    VisibilityStatus visibility;
+    int intraPriorityValue;
+};
+
 }
 
 #endif

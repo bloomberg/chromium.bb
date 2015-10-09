@@ -102,8 +102,7 @@ public:
     void addClientHintsIfNecessary(FetchRequest&) override;
     void addCSPHeaderIfNecessary(Resource::Type, FetchRequest&) override;
 
-    bool fetchIncreasePriorities() const override;
-    ResourceLoadPriority modifyPriorityForExperiments(ResourceLoadPriority, Resource::Type, const FetchRequest&) override;
+    ResourceLoadPriority modifyPriorityForExperiments(ResourceLoadPriority, Resource::Type, const FetchRequest&, ResourcePriority::VisibilityStatus) override;
 
     void countClientHintsDPR() override;
     void countClientHintsResourceWidth() override;

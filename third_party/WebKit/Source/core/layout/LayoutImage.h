@@ -88,7 +88,6 @@ protected:
     void paint(const PaintInfo&, const LayoutPoint&) const final;
 
     void layout() override;
-    bool updateImageLoadingPriorities() final;
 
     bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectLayoutImage || LayoutReplaced::isOfType(type); }
 

@@ -31,7 +31,6 @@
 #include "core/HTMLNames.h"
 #include "core/editing/FrameSelection.h"
 #include "core/fetch/ImageResource.h"
-#include "core/fetch/ResourceLoadPriorityOptimizer.h"
 #include "core/fetch/ResourceLoader.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLAreaElement.h"
@@ -57,7 +56,6 @@ LayoutImage::LayoutImage(Element* element)
     , m_isGeneratedContent(false)
     , m_imageDevicePixelRatio(1.0f)
 {
-    ResourceLoadPriorityOptimizer::resourceLoadPriorityOptimizer()->addLayoutObject(this);
 }
 
 LayoutImage* LayoutImage::createAnonymous(Document* document)
@@ -305,36 +303,6 @@ void LayoutImage::layout()
 {
     LayoutReplaced::layout();
     updateInnerContentRect();
-}
-
-bool LayoutImage::updateImageLoadingPriorities()
-{
-    if (!m_imageResource || !m_imageResource->cachedImage() || m_imageResource->cachedImage()->isLoaded())
-        return false;
-
-    LayoutRect viewBounds = viewRect();
-    LayoutRect objectBounds = LayoutRect(absoluteContentBox());
-
-    // The object bounds might be empty right now, so intersects will fail since it doesn't deal
-    // with empty rects. Use LayoutRect::contains in that case.
-    bool isVisible;
-    if (!objectBounds.isEmpty())
-        isVisible =  viewBounds.intersects(objectBounds);
-    else
-        isVisible = viewBounds.contains(objectBounds);
-
-    ResourceLoadPriorityOptimizer::VisibilityStatus status = isVisible ?
-        ResourceLoadPriorityOptimizer::Visible : ResourceLoadPriorityOptimizer::NotVisible;
-
-    LayoutRect screenArea;
-    if (!objectBounds.isEmpty()) {
-        screenArea = viewBounds;
-        screenArea.intersect(objectBounds);
-    }
-
-    ResourceLoadPriorityOptimizer::resourceLoadPriorityOptimizer()->notifyImageResourceVisibility(m_imageResource->cachedImage(), status, screenArea);
-
-    return true;
 }
 
 void LayoutImage::computeIntrinsicRatioInformation(FloatSize& intrinsicSize, double& intrinsicRatio) const

@@ -105,8 +105,8 @@ public:
     virtual void addClientHintsIfNecessary(FetchRequest&);
     virtual void addCSPHeaderIfNecessary(Resource::Type, FetchRequest&);
 
-    virtual bool fetchIncreasePriorities() const { return false; }
-    virtual ResourceLoadPriority modifyPriorityForExperiments(ResourceLoadPriority priority, Resource::Type, const FetchRequest&) { return priority; }
+    virtual ResourceLoadPriority modifyPriorityForExperiments(ResourceLoadPriority priority, Resource::Type, const FetchRequest&, ResourcePriority::VisibilityStatus) { return priority; }
+
     virtual WebTaskRunner* loadingTaskRunner() const { return nullptr; }
 
 protected:

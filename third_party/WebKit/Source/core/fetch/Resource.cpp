@@ -941,8 +941,23 @@ size_t Resource::overheadSize() const
 
 void Resource::didChangePriority(ResourceLoadPriority loadPriority, int intraPriorityValue)
 {
+    m_resourceRequest.setPriority(loadPriority, intraPriorityValue);
     if (m_loader)
         m_loader->didChangePriority(loadPriority, intraPriorityValue);
+}
+
+ResourcePriority Resource::priorityFromClients()
+{
+    ResourcePriority priority;
+    ResourceClientWalker<ResourceClient> walker(m_clients);
+    while (ResourceClient* c = walker.next()) {
+        ResourcePriority nextPriority = c->computeResourcePriority();
+        if (nextPriority.visibility == ResourcePriority::NotVisible)
+            continue;
+        priority.visibility = ResourcePriority::Visible;
+        priority.intraPriorityValue += nextPriority.intraPriorityValue;
+    }
+    return priority;
 }
 
 Resource::ResourceCallback* Resource::ResourceCallback::callbackHandler()

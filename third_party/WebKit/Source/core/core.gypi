@@ -1488,8 +1488,6 @@
             'fetch/ResourceClientWalker.h',
             'fetch/ResourceFetcher.cpp',
             'fetch/ResourceFetcher.h',
-            'fetch/ResourceLoadPriorityOptimizer.cpp',
-            'fetch/ResourceLoadPriorityOptimizer.h',
             'fetch/ResourceLoader.cpp',
             'fetch/ResourceLoader.h',
             'fetch/ResourceLoaderOptions.h',

@@ -86,7 +86,7 @@ static ResourceLoadPriority typeToPriority(Resource::Type type)
     return ResourceLoadPriorityUnresolved;
 }
 
-ResourceLoadPriority ResourceFetcher::loadPriority(Resource::Type type, const FetchRequest& request)
+ResourceLoadPriority ResourceFetcher::loadPriority(Resource::Type type, const FetchRequest& request, ResourcePriority::VisibilityStatus visibility)
 {
     // TODO(yoav): Change it here so that priority can be changed even after it was resolved.
     if (request.priority() != ResourceLoadPriorityUnresolved)
@@ -96,7 +96,7 @@ ResourceLoadPriority ResourceFetcher::loadPriority(Resource::Type type, const Fe
     if (request.options().synchronousPolicy == RequestSynchronously)
         return ResourceLoadPriorityHighest;
 
-    return context().modifyPriorityForExperiments(typeToPriority(type), type, request);
+    return context().modifyPriorityForExperiments(typeToPriority(type), type, request, visibility);
 }
 
 static void populateResourceTiming(ResourceTimingInfo* info, Resource* resource, bool clearLoadTimings)
@@ -380,16 +380,14 @@ ResourcePtr<Resource> ResourceFetcher::requestResource(FetchRequest& request, co
         resource->setIdentifier(createUniqueIdentifier());
 
     if (!request.forPreload() || policy != Use) {
-        ResourceLoadPriority priority = loadPriority(factory.type(), request);
+        ResourceLoadPriority priority = loadPriority(factory.type(), request, ResourcePriority::NotVisible);
         // When issuing another request for a resource that is already in-flight make
         // sure to not demote the priority of the in-flight request. If the new request
         // isn't at the same priority as the in-flight request, only allow promotions.
         // This can happen when a visible image's priority is increased and then another
         // reference to the image is parsed (which would be at a lower priority).
-        if (priority > resource->resourceRequest().priority()) {
-            resource->mutableResourceRequest().setPriority(priority);
+        if (priority > resource->resourceRequest().priority())
             resource->didChangePriority(priority, 0);
-        }
     }
 
     if (resourceNeedsLoad(resource.get(), request, policy)) {
@@ -868,12 +866,6 @@ void ResourceFetcher::didFinishLoading(Resource* resource, double finishTime, in
     context().dispatchDidFinishLoading(resource->identifier(), finishTime, encodedDataLength);
 }
 
-void ResourceFetcher::didChangeLoadingPriority(const Resource* resource, ResourceLoadPriority loadPriority, int intraPriorityValue)
-{
-    TRACE_EVENT_ASYNC_STEP_INTO1("blink.net", "Resource", resource, "ChangePriority", "priority", loadPriority);
-    context().dispatchDidChangeResourcePriority(resource->identifier(), loadPriority, intraPriorityValue);
-}
-
 void ResourceFetcher::didFailLoading(const Resource* resource, const ResourceError& error)
 {
     TRACE_EVENT_ASYNC_END0("blink.net", "Resource", resource);
@@ -1009,6 +1001,28 @@ bool ResourceFetcher::canAccessRedirect(Resource* resource, ResourceRequest& new
     if (resource->type() == Resource::Image && shouldDeferImageLoad(newRequest.url()))
         return false;
     return true;
+}
+
+void ResourceFetcher::updateAllImageResourcePriorities()
+{
+    if (!m_loaders)
+        return;
+
+    TRACE_EVENT0("blink", "ResourceLoadPriorityOptimizer::updateAllImageResourcePriorities");
+    for (const auto& loader : m_loaders->hashSet()) {
+        Resource* resource = loader->cachedResource();
+        if (!resource->isImage())
+            continue;
+
+        ResourcePriority resourcePriority = resource->priorityFromClients();
+        ResourceLoadPriority resourceLoadPriority = loadPriority(Resource::Image, FetchRequest(resource->resourceRequest(), FetchInitiatorInfo()), resourcePriority.visibility);
+        if (resourceLoadPriority == resource->resourceRequest().priority())
+            continue;
+
+        resource->didChangePriority(resourceLoadPriority, resourcePriority.intraPriorityValue);
+        TRACE_EVENT_ASYNC_STEP_INTO1("blink.net", "Resource", resource, "ChangePriority", "priority", resourceLoadPriority);
+        context().dispatchDidChangeResourcePriority(resource->identifier(), resourceLoadPriority, resourcePriority.intraPriorityValue);
+    }
 }
 
 #if PRELOAD_DEBUG

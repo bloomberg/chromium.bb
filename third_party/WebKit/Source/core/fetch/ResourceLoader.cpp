@@ -207,16 +207,9 @@ void ResourceLoader::didFinishLoadingOnePart(double finishTime, int64_t encodedD
 
 void ResourceLoader::didChangePriority(ResourceLoadPriority loadPriority, int intraPriorityValue)
 {
-    if (m_loader) {
-        m_fetcher->didChangeLoadingPriority(m_resource, loadPriority, intraPriorityValue);
-        ASSERT(m_state != Terminated);
+    ASSERT(m_state != Terminated);
+    if (m_loader)
         m_loader->didChangePriority(static_cast<WebURLRequest::Priority>(loadPriority), intraPriorityValue);
-    }
-}
-
-bool ResourceLoader::shouldUseIncreasedPriorities()
-{
-    return m_fetcher->context().fetchIncreasePriorities();
 }
 
 void ResourceLoader::cancelIfNotFinishing()

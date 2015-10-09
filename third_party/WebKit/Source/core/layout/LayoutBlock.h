@@ -279,7 +279,6 @@ protected:
     void dirtyForLayoutFromPercentageHeightDescendants(SubtreeLayoutScope&);
 
     void layout() override;
-    bool updateImageLoadingPriorities() final;
 
     enum PositionedLayoutBehavior {
         DefaultLayout,

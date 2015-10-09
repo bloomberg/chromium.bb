@@ -129,6 +129,7 @@ public:
     void setOptions(const ResourceLoaderOptions& options) { m_options = options; }
 
     void didChangePriority(ResourceLoadPriority, int intraPriorityValue);
+    ResourcePriority priorityFromClients();
 
     void addClient(ResourceClient*);
     void removeClient(ResourceClient*);
