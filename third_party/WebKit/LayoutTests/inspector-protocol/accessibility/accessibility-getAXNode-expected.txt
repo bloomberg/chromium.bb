@@ -36,7 +36,33 @@ result: {
           "value": false
         }
       }
-    ]
+    ],
+    "name": {
+      "type": "computedString",
+      "value": "",
+      "sources": [
+        {
+          "type": "relatedElement",
+          "attribute": "aria-labelledby"
+        },
+        {
+          "type": "attribute",
+          "attribute": "aria-label"
+        },
+        {
+          "type": "relatedElement",
+          "nativeSource": "label"
+        },
+        {
+          "type": "placeholder",
+          "attribute": "placeholder"
+        },
+        {
+          "type": "attribute",
+          "attribute": "title"
+        }
+      ]
+    }
   }
 }
 

@@ -385,7 +385,24 @@ public:
     }
 };
 
-typedef HeapVector<Member<AXObject>> AXObjectVector;
+class NameSourceRelatedObject : public GarbageCollectedFinalized<NameSourceRelatedObject> {
+public:
+    WeakMember<AXObject> object;
+    String text;
+
+    NameSourceRelatedObject(AXObject* object, String text)
+        : object(object)
+        , text(text)
+    {
+    }
+
+    DEFINE_INLINE_TRACE()
+    {
+        visitor->trace(object);
+    }
+};
+
+typedef HeapVector<Member<NameSourceRelatedObject>> AXRelatedObjectVector;
 class NameSource {
     ALLOW_ONLY_INLINE_ALLOCATION();
 public:
@@ -396,9 +413,9 @@ public:
     const QualifiedName& attribute;
     AtomicString attributeValue;
     AXTextFromNativeHTML nativeSource = AXTextFromNativeHTMLUninitialized;
-    AXObjectVector nameObjects;
+    AXRelatedObjectVector relatedObjects;
 
-    explicit NameSource(bool superseded, const QualifiedName& attr)
+    NameSource(bool superseded, const QualifiedName& attr)
         : superseded(superseded)
         , attribute(attr)
     {
@@ -412,7 +429,7 @@ public:
 
     DEFINE_INLINE_TRACE()
     {
-        visitor->trace(nameObjects);
+        visitor->trace(relatedObjects);
     }
 };
 
@@ -634,7 +651,7 @@ public:
 
     // Retrieves the accessible name of the object, an enum indicating where the name
     // was derived from, and a list of objects that were used to derive the name, if any.
-    virtual String name(AXNameFrom&, AXObjectVector* nameObjects) const;
+    virtual String name(AXNameFrom&, AccessibilityChildrenVector* nameObjects) const;
 
     typedef HeapVector<NameSource> NameSources;
     // Retrieves the accessible name of the object and a list of all potential sources
@@ -645,7 +662,7 @@ public:
     // accessible description of the object, which is secondary to |name|, an enum indicating
     // where the description was derived from, and a list of objects that were used to
     // derive the description, if any.
-    virtual String description(AXNameFrom, AXDescriptionFrom&, AXObjectVector* descriptionObjects) { return String(); }
+    virtual String description(AXNameFrom, AXDescriptionFrom&, AccessibilityChildrenVector* descriptionObjects) { return String(); }
 
     // Takes the result of nameFrom and descriptionFrom from calling |name| and |description|,
     // above, and retrieves the placeholder of the object, if present and if it wasn't already
@@ -654,7 +671,7 @@ public:
 
     // Internal function used by name and description, above.
     typedef HeapHashSet<Member<const AXObject>> AXObjectSet;
-    virtual String textAlternative(bool recursive, bool inAriaLabelledByTraversal, AXObjectSet& visited, AXNameFrom& nameFrom, AXObjectVector* nameObjects, NameSources* nameSources) const { return String(); }
+    virtual String textAlternative(bool recursive, bool inAriaLabelledByTraversal, AXObjectSet& visited, AXNameFrom& nameFrom, AXRelatedObjectVector* relatedObjects, NameSources* nameSources) const { return String(); }
 
     // Returns result of Accessible Name Calculation algorithm.
     // This is a simpler high-level interface to |name| used by Inspector.

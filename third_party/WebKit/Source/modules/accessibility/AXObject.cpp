@@ -673,18 +673,23 @@ bool AXObject::isPresentationalChild() const
     return m_cachedIsPresentationalChild;
 }
 
-String AXObject::name(AXNameFrom& nameFrom, AXObjectVector* nameObjects) const
+String AXObject::name(AXNameFrom& nameFrom, AXObject::AccessibilityChildrenVector* nameObjects) const
 {
     HeapHashSet<Member<const AXObject>> visited;
-    return textAlternative(false, false, visited, nameFrom, nameObjects, nullptr);
+    AXRelatedObjectVector relatedObjects;
+    String text = textAlternative(false, false, visited, nameFrom, &relatedObjects, nullptr);
+    nameObjects->clear();
+    for (size_t i = 0; i < relatedObjects.size(); i++)
+        nameObjects->append(relatedObjects[i]->object);
+    return text;
 }
 
 String AXObject::name(NameSources* nameSources) const
 {
     AXObjectSet visited;
     AXNameFrom tmpNameFrom;
-    AXObjectVector tmpNameObjects;
-    return textAlternative(false, false, visited, tmpNameFrom, &tmpNameObjects, nameSources);
+    AXRelatedObjectVector tmpRelatedObjects;
+    return textAlternative(false, false, visited, tmpNameFrom, &tmpRelatedObjects, nameSources);
 }
 
 String AXObject::recursiveTextAlternative(const AXObject& axObj, bool inAriaLabelledByTraversal, AXObjectSet& visited)
