@@ -88,12 +88,6 @@ bool HeapAllocator::expandHashTableBacking(void* address, size_t newSize)
 
 bool HeapAllocator::backingShrink(void* address, size_t quantizedCurrentSize, size_t quantizedShrunkSize)
 {
-    // We shrink the object only if the shrinking will make a non-small
-    // prompt-free block.
-    // FIXME: Optimize the threshold size.
-    if (quantizedCurrentSize <= quantizedShrunkSize + sizeof(HeapObjectHeader) + sizeof(void*) * 32)
-        return true;
-
     if (!address)
         return true;
 
@@ -112,6 +106,12 @@ bool HeapAllocator::backingShrink(void* address, size_t quantizedCurrentSize, si
     HeapObjectHeader* header = HeapObjectHeader::fromPayload(address);
     ASSERT(header->checkHeader());
     NormalPageHeap* heap = static_cast<NormalPage*>(page)->heapForNormalPage();
+    // We shrink the object only if the shrinking will make a non-small
+    // prompt-free block.
+    // FIXME: Optimize the threshold size.
+    if (quantizedCurrentSize <= quantizedShrunkSize + sizeof(HeapObjectHeader) + sizeof(void*) * 32 && !heap->isObjectAllocatedAtAllocationPoint(header))
+        return true;
+
     bool succeededAtAllocationPoint = heap->shrinkObject(header, quantizedShrunkSize);
     if (succeededAtAllocationPoint)
         state->allocationPointAdjusted(heap->heapIndex());
