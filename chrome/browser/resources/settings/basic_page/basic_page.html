@@ -1,5 +1,6 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 <link rel="import" href="chrome://md-settings/appearance_page/appearance_page.html">
+<link rel="import" href="chrome://md-settings/default_browser_page/default_browser_page.html">
 <link rel="import" href="chrome://md-settings/search_page/search_page.html">
 <link rel="import" href="chrome://md-settings/settings_page/settings_section.html">
 <link rel="import" href="chrome://md-settings/on_startup_page/on_startup_page.html">
@@ -55,6 +56,13 @@
       <settings-users-page prefs="{{prefs}}"></settings-users-page>
     </settings-section>
 </if>
+
+    <settings-section i18n-values="page-title:defaultBrowser"
+        expand-container="{{expandContainer}}"
+        current-route="[[currentRoute]]" section="defaultBrowser">
+      <settings-default-browser-page>
+      </settings-default-browser-page>
+    </settings-section>
   </template>
   <script src="basic_page.js"></script>
 </dom-module>
