@@ -105,6 +105,14 @@ IPC_STRUCT_BEGIN(GpuMsg_CreateGpuMemoryBuffer_Params)
   IPC_STRUCT_MEMBER(gfx::PluginWindowHandle, surface_handle)
 IPC_STRUCT_END()
 
+IPC_STRUCT_BEGIN(GpuMsg_CreateGpuMemoryBufferFromHandle_Params)
+  IPC_STRUCT_MEMBER(gfx::GpuMemoryBufferHandle, handle)
+  IPC_STRUCT_MEMBER(gfx::GpuMemoryBufferId, id)
+  IPC_STRUCT_MEMBER(gfx::Size, size)
+  IPC_STRUCT_MEMBER(gfx::BufferFormat, format)
+  IPC_STRUCT_MEMBER(int32, client_id)
+IPC_STRUCT_END()
+
 #if defined(OS_MACOSX)
 IPC_STRUCT_BEGIN(GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params)
   IPC_STRUCT_MEMBER(int32, surface_id)
@@ -306,6 +314,11 @@ IPC_MESSAGE_CONTROL4(GpuMsg_CreateViewCommandBuffer,
 // Tells the GPU process to create a new gpu memory buffer.
 IPC_MESSAGE_CONTROL1(GpuMsg_CreateGpuMemoryBuffer,
                      GpuMsg_CreateGpuMemoryBuffer_Params)
+
+// Tells the GPU process to create a new gpu memory buffer from an existing
+// handle.
+IPC_MESSAGE_CONTROL1(GpuMsg_CreateGpuMemoryBufferFromHandle,
+                     GpuMsg_CreateGpuMemoryBufferFromHandle_Params)
 
 // Tells the GPU process to destroy buffer.
 IPC_MESSAGE_CONTROL3(GpuMsg_DestroyGpuMemoryBuffer,
