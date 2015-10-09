@@ -133,11 +133,7 @@ function createPlugin(container, capabilities) {
  */
 function toConnectionError(/** Error */ e) {
   if (e instanceof remoting.Error) {
-    if (e.getTag() == remoting.Error.Tag.MISSING_PLUGIN) {
-      return remoting.ChromotingEvent.ConnectionError.MISSING_PLUGIN;
-    } else if (e.getTag() == remoting.Error.Tag.NACL_DISABLED) {
-      return remoting.ChromotingEvent.ConnectionError.NACL_DISABLED;
-    }
+    return e.toConnectionError();
   }
   return remoting.ChromotingEvent.ConnectionError.UNEXPECTED;
 }

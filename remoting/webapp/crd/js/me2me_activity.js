@@ -57,15 +57,29 @@ remoting.Me2MeActivity.prototype.start = function() {
   this.logger_.logSessionStateChange(Event.SessionState.STARTED,
                                      Event.ConnectionError.NONE);
 
+  var errorTag = Event.ConnectionError.NONE;
+
+  function handleError(/** remoting.Error */ error) {
+    if (error.isCancel()) {
+      remoting.setMode(remoting.AppMode.HOME);
+      that.logger_.logSessionStateChange(Event.SessionState.CONNECTION_CANCELED,
+                                         errorTag);
+    } else {
+      that.logger_.logSessionStateChange(Event.SessionState.CONNECTION_FAILED,
+                                         error.toConnectionError());
+      that.showErrorMessage_(error);
+    }
+  }
+
   this.hostUpdateDialog_.showIfNecessary(webappVersion).then(function() {
     return that.host_.options.load();
-  }).then(function() {
-    that.connect_();
   }).catch(remoting.Error.handler(function(/** remoting.Error */ error) {
-    if (error.hasTag(remoting.Error.Tag.CANCELLED)) {
-      remoting.setMode(remoting.AppMode.HOME);
-    }
-  }));
+    // User cancels out of the Host upgrade dialog.  Report it as bad version.
+    errorTag = Event.ConnectionError.BAD_VERSION;
+    throw error;
+  })).then(
+    this.connect_.bind(this)
+  ).catch(remoting.Error.handler(handleError));
 };
 
 remoting.Me2MeActivity.prototype.stop = function() {

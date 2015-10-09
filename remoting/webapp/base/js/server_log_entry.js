@@ -106,7 +106,7 @@ remoting.ServerLogEntry.getValueForError_ = function(connectionError) {
       return 'host-is-offline';
     case remoting.Error.Tag.INCOMPATIBLE_PROTOCOL:
       return 'incompatible-protocol';
-    case remoting.Error.Tag.BAD_PLUGIN_VERSION:
+    case remoting.Error.Tag.BAD_VERSION:
       return 'bad-plugin-version';
     case remoting.Error.Tag.NETWORK_FAILURE:
       return 'network-failure';
