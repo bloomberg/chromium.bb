@@ -192,7 +192,7 @@ static void replaceColorHintsWithColorStops(Vector<GradientStop>& stops, const W
     }
 }
 
-static Color resolveStopColor(CSSPrimitiveValue* stopColor, const LayoutObject& object)
+static Color resolveStopColor(const CSSPrimitiveValue& stopColor, const LayoutObject& object)
 {
     return object.document().textLinkColors().colorFromPrimitiveValue(stopColor, object.resolveColor(CSSPropertyColor));
 }
@@ -214,7 +214,7 @@ void CSSGradientValue::addDeprecatedStops(Gradient* gradient, const LayoutObject
         else
             offset = stop.m_position->getFloatValue();
 
-        gradient->addColorStop(offset, resolveStopColor(stop.m_color.get(), object));
+        gradient->addColorStop(offset, resolveStopColor(*stop.m_color, object));
     }
 }
 
@@ -376,7 +376,7 @@ void CSSGradientValue::addStops(Gradient* gradient, const CSSToLengthConversionD
         if (stop.isHint())
             hasHints = true;
         else
-            stops[i].color = resolveStopColor(stop.m_color.get(), object);
+            stops[i].color = resolveStopColor(*stop.m_color, object);
 
         if (stop.m_position) {
             if (stop.m_position->isPercentage())
@@ -566,7 +566,7 @@ bool CSSGradientValue::knownToBeOpaque(const LayoutObject* object) const
 {
     ASSERT(object);
     for (auto& stop : m_stops) {
-        if (!stop.isHint() && resolveStopColor(stop.m_color.get(), *object).hasAlpha())
+        if (!stop.isHint() && resolveStopColor(*stop.m_color, *object).hasAlpha())
             return false;
     }
     return true;

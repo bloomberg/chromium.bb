@@ -196,12 +196,11 @@ void CSSToStyleMap::mapFillSize(StyleResolverState& state, FillLayer* layer, con
 
     if (value.isValuePair()) {
         const CSSValuePair& pair = toCSSValuePair(value);
-        // TODO(sashab): Make StyleBuilderConverter take const&s and remove these const_casts.
-        firstLength = StyleBuilderConverter::convertLengthOrAuto(state, const_cast<CSSValue*>(&pair.first()));
-        secondLength = StyleBuilderConverter::convertLengthOrAuto(state, const_cast<CSSValue*>(&pair.second()));
+        firstLength = StyleBuilderConverter::convertLengthOrAuto(state, pair.first());
+        secondLength = StyleBuilderConverter::convertLengthOrAuto(state, pair.second());
     } else {
         ASSERT(value.isPrimitiveValue());
-        firstLength = StyleBuilderConverter::convertLengthOrAuto(state, const_cast<CSSValue*>(&value));
+        firstLength = StyleBuilderConverter::convertLengthOrAuto(state, value);
         secondLength = Length();
     }
 

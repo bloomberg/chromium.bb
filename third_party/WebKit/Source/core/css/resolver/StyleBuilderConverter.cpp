@@ -50,66 +50,66 @@ namespace blink {
 
 namespace {
 
-static GridLength convertGridTrackBreadth(const StyleResolverState& state, CSSPrimitiveValue* primitiveValue)
+static GridLength convertGridTrackBreadth(const StyleResolverState& state, const CSSPrimitiveValue& primitiveValue)
 {
-    if (primitiveValue->getValueID() == CSSValueMinContent)
+    if (primitiveValue.getValueID() == CSSValueMinContent)
         return Length(MinContent);
 
-    if (primitiveValue->getValueID() == CSSValueMaxContent)
+    if (primitiveValue.getValueID() == CSSValueMaxContent)
         return Length(MaxContent);
 
     // Fractional unit.
-    if (primitiveValue->isFlex())
-        return GridLength(primitiveValue->getDoubleValue());
+    if (primitiveValue.isFlex())
+        return GridLength(primitiveValue.getDoubleValue());
 
     return StyleBuilderConverter::convertLengthOrAuto(state, primitiveValue);
 }
 
 } // namespace
 
-PassRefPtr<StyleReflection> StyleBuilderConverter::convertBoxReflect(StyleResolverState& state, CSSValue* value)
+PassRefPtr<StyleReflection> StyleBuilderConverter::convertBoxReflect(StyleResolverState& state, const CSSValue& value)
 {
-    if (value->isPrimitiveValue()) {
-        ASSERT(toCSSPrimitiveValue(value)->getValueID() == CSSValueNone);
+    if (value.isPrimitiveValue()) {
+        ASSERT(toCSSPrimitiveValue(value).getValueID() == CSSValueNone);
         return ComputedStyle::initialBoxReflect();
     }
 
-    CSSReflectValue* reflectValue = toCSSReflectValue(value);
+    const CSSReflectValue& reflectValue = toCSSReflectValue(value);
     RefPtr<StyleReflection> reflection = StyleReflection::create();
-    reflection->setDirection(*reflectValue->direction());
-    if (reflectValue->offset())
-        reflection->setOffset(reflectValue->offset()->convertToLength(state.cssToLengthConversionData()));
-    if (reflectValue->mask()) {
+    reflection->setDirection(*reflectValue.direction());
+    if (reflectValue.offset())
+        reflection->setOffset(reflectValue.offset()->convertToLength(state.cssToLengthConversionData()));
+    if (reflectValue.mask()) {
         NinePieceImage mask;
         mask.setMaskDefaults();
-        CSSToStyleMap::mapNinePieceImage(state, CSSPropertyWebkitBoxReflect, *reflectValue->mask(), mask);
+        CSSToStyleMap::mapNinePieceImage(state, CSSPropertyWebkitBoxReflect, *reflectValue.mask(), mask);
         reflection->setMask(mask);
     }
 
     return reflection.release();
 }
 
-Color StyleBuilderConverter::convertColor(StyleResolverState& state, CSSValue* value, bool forVisitedLink)
+Color StyleBuilderConverter::convertColor(StyleResolverState& state, const CSSValue& value, bool forVisitedLink)
 {
-    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
+    const CSSPrimitiveValue& primitiveValue = toCSSPrimitiveValue(value);
     return state.document().textLinkColors().colorFromPrimitiveValue(primitiveValue, state.style()->color(), forVisitedLink);
 }
 
-AtomicString StyleBuilderConverter::convertFragmentIdentifier(StyleResolverState& state, CSSValue* value)
+AtomicString StyleBuilderConverter::convertFragmentIdentifier(StyleResolverState& state, const CSSValue& value)
 {
-    if (value->isURIValue())
-        return SVGURIReference::fragmentIdentifierFromIRIString(toCSSURIValue(value)->value(), state.element()->treeScope());
+    if (value.isURIValue())
+        return SVGURIReference::fragmentIdentifierFromIRIString(toCSSURIValue(value).value(), state.element()->treeScope());
     return nullAtom;
 }
 
-LengthBox StyleBuilderConverter::convertClip(StyleResolverState& state, CSSValue* value)
+LengthBox StyleBuilderConverter::convertClip(StyleResolverState& state, const CSSValue& value)
 {
-    RefPtrWillBeRawPtr<CSSQuadValue> rect = toCSSQuadValue(value);
+    const CSSQuadValue& rect = toCSSQuadValue(value);
 
-    return LengthBox(convertLengthOrAuto(state, rect->top()),
-        convertLengthOrAuto(state, rect->right()),
-        convertLengthOrAuto(state, rect->bottom()),
-        convertLengthOrAuto(state, rect->left()));
+    return LengthBox(convertLengthOrAuto(state, *rect.top()),
+        convertLengthOrAuto(state, *rect.right()),
+        convertLengthOrAuto(state, *rect.bottom()),
+        convertLengthOrAuto(state, *rect.left()));
 }
 
 static FontDescription::GenericFamilyType convertGenericFamily(CSSValueID valueID)
@@ -148,14 +148,14 @@ static bool convertFontFamilyName(StyleResolverState& state, CSSValue& value,
     return !familyName.isEmpty();
 }
 
-FontDescription::FamilyDescription StyleBuilderConverter::convertFontFamily(StyleResolverState& state, CSSValue* value)
+FontDescription::FamilyDescription StyleBuilderConverter::convertFontFamily(StyleResolverState& state, const CSSValue& value)
 {
-    ASSERT(value->isValueList());
+    ASSERT(value.isValueList());
 
     FontDescription::FamilyDescription desc(FontDescription::NoFamily);
     FontFamily* currFamily = nullptr;
 
-    for (auto& family : toCSSValueList(*value)) {
+    for (auto& family : toCSSValueList(value)) {
         FontDescription::GenericFamilyType genericFamily = FontDescription::NoFamily;
         AtomicString familyName;
 
@@ -179,22 +179,22 @@ FontDescription::FamilyDescription StyleBuilderConverter::convertFontFamily(Styl
     return desc;
 }
 
-PassRefPtr<FontFeatureSettings> StyleBuilderConverter::convertFontFeatureSettings(StyleResolverState& state, CSSValue* value)
+PassRefPtr<FontFeatureSettings> StyleBuilderConverter::convertFontFeatureSettings(StyleResolverState& state, const CSSValue& value)
 {
-    if (value->isPrimitiveValue() && toCSSPrimitiveValue(value)->getValueID() == CSSValueNormal)
+    if (value.isPrimitiveValue() && toCSSPrimitiveValue(value).getValueID() == CSSValueNormal)
         return FontBuilder::initialFeatureSettings();
 
-    CSSValueList* list = toCSSValueList(value);
+    const CSSValueList& list = toCSSValueList(value);
     RefPtr<FontFeatureSettings> settings = FontFeatureSettings::create();
-    int len = list->length();
+    int len = list.length();
     for (int i = 0; i < len; ++i) {
-        CSSFontFeatureValue* feature = toCSSFontFeatureValue(list->item(i));
-        settings->append(FontFeature(feature->tag(), feature->value()));
+        const CSSFontFeatureValue& feature = toCSSFontFeatureValue(*list.item(i));
+        settings->append(FontFeature(feature.tag(), feature.value()));
     }
     return settings;
 }
 
-static float computeFontSize(StyleResolverState& state, CSSPrimitiveValue* primitiveValue, const FontDescription::Size& parentSize)
+static float computeFontSize(StyleResolverState& state, const CSSPrimitiveValue& primitiveValue, const FontDescription::Size& parentSize)
 {
     float em = state.parentStyle()->specifiedFontSize();
     float rem = state.rootElementStyle() ? state.rootElementStyle()->specifiedFontSize() : 1.0f;
@@ -202,18 +202,18 @@ static float computeFontSize(StyleResolverState& state, CSSPrimitiveValue* primi
     CSSToLengthConversionData::ViewportSize viewportSize(state.document().layoutView());
 
     CSSToLengthConversionData conversionData(state.style(), fontSizes, viewportSize, 1.0f);
-    if (primitiveValue->isLength())
-        return primitiveValue->computeLength<float>(conversionData);
-    if (primitiveValue->isCalculatedPercentageWithLength())
-        return primitiveValue->cssCalcValue()->toCalcValue(conversionData)->evaluate(parentSize.value);
+    if (primitiveValue.isLength())
+        return primitiveValue.computeLength<float>(conversionData);
+    if (primitiveValue.isCalculatedPercentageWithLength())
+        return primitiveValue.cssCalcValue()->toCalcValue(conversionData)->evaluate(parentSize.value);
 
     ASSERT_NOT_REACHED();
     return 0;
 }
 
-FontDescription::Size StyleBuilderConverter::convertFontSize(StyleResolverState& state, CSSValue* value)
+FontDescription::Size StyleBuilderConverter::convertFontSize(StyleResolverState& state, const CSSValue& value)
 {
-    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
+    const CSSPrimitiveValue& primitiveValue = toCSSPrimitiveValue(value);
 
     FontDescription::Size parentSize(0, 0.0f, false);
 
@@ -221,7 +221,7 @@ FontDescription::Size StyleBuilderConverter::convertFontSize(StyleResolverState&
     if (state.parentStyle())
         parentSize = state.parentFontDescription().size();
 
-    if (CSSValueID valueID = primitiveValue->getValueID()) {
+    if (CSSValueID valueID = primitiveValue.getValueID()) {
         switch (valueID) {
         case CSSValueXxSmall:
         case CSSValueXSmall:
@@ -244,44 +244,44 @@ FontDescription::Size StyleBuilderConverter::convertFontSize(StyleResolverState&
 
     bool parentIsAbsoluteSize = state.parentFontDescription().isAbsoluteSize();
 
-    if (primitiveValue->isPercentage())
-        return FontDescription::Size(0, (primitiveValue->getFloatValue() * parentSize.value / 100.0f), parentIsAbsoluteSize);
+    if (primitiveValue.isPercentage())
+        return FontDescription::Size(0, (primitiveValue.getFloatValue() * parentSize.value / 100.0f), parentIsAbsoluteSize);
 
-    return FontDescription::Size(0, computeFontSize(state, primitiveValue, parentSize), parentIsAbsoluteSize || !primitiveValue->isFontRelativeLength());
+    return FontDescription::Size(0, computeFontSize(state, primitiveValue, parentSize), parentIsAbsoluteSize || !primitiveValue.isFontRelativeLength());
 }
 
-float StyleBuilderConverter::convertFontSizeAdjust(StyleResolverState& state, CSSValue* value)
+float StyleBuilderConverter::convertFontSizeAdjust(StyleResolverState& state, const CSSValue& value)
 {
-    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-    if (primitiveValue->getValueID() == CSSValueNone)
+    const CSSPrimitiveValue& primitiveValue = toCSSPrimitiveValue(value);
+    if (primitiveValue.getValueID() == CSSValueNone)
         return FontBuilder::initialSizeAdjust();
 
-    ASSERT(primitiveValue->isNumber());
-    return primitiveValue->getFloatValue();
+    ASSERT(primitiveValue.isNumber());
+    return primitiveValue.getFloatValue();
 }
 
-FontWeight StyleBuilderConverter::convertFontWeight(StyleResolverState& state, CSSValue* value)
+FontWeight StyleBuilderConverter::convertFontWeight(StyleResolverState& state, const CSSValue& value)
 {
-    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-    switch (primitiveValue->getValueID()) {
+    const CSSPrimitiveValue& primitiveValue = toCSSPrimitiveValue(value);
+    switch (primitiveValue.getValueID()) {
     case CSSValueBolder:
         return FontDescription::bolderWeight(state.parentStyle()->fontDescription().weight());
     case CSSValueLighter:
         return FontDescription::lighterWeight(state.parentStyle()->fontDescription().weight());
     default:
-        return *primitiveValue;
+        return primitiveValue;
     }
 }
 
-FontDescription::VariantLigatures StyleBuilderConverter::convertFontVariantLigatures(StyleResolverState&, CSSValue* value)
+FontDescription::VariantLigatures StyleBuilderConverter::convertFontVariantLigatures(StyleResolverState&, const CSSValue& value)
 {
-    if (value->isValueList()) {
+    if (value.isValueList()) {
         FontDescription::VariantLigatures ligatures;
-        CSSValueList* valueList = toCSSValueList(value);
-        for (size_t i = 0; i < valueList->length(); ++i) {
-            CSSValue* item = valueList->item(i);
-            CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(item);
-            switch (primitiveValue->getValueID()) {
+        const CSSValueList& valueList = toCSSValueList(value);
+        for (size_t i = 0; i < valueList.length(); ++i) {
+            const CSSValue& item = *valueList.item(i);
+            const CSSPrimitiveValue& primitiveValue = toCSSPrimitiveValue(item);
+            switch (primitiveValue.getValueID()) {
             case CSSValueNoCommonLigatures:
                 ligatures.common = FontDescription::DisabledLigaturesState;
                 break;
@@ -314,18 +314,18 @@ FontDescription::VariantLigatures StyleBuilderConverter::convertFontVariantLigat
         return ligatures;
     }
 
-    ASSERT_WITH_SECURITY_IMPLICATION(value->isPrimitiveValue());
-    ASSERT(toCSSPrimitiveValue(value)->getValueID() == CSSValueNormal);
+    ASSERT_WITH_SECURITY_IMPLICATION(value.isPrimitiveValue());
+    ASSERT(toCSSPrimitiveValue(value).getValueID() == CSSValueNormal);
     return FontDescription::VariantLigatures();
 }
 
-EGlyphOrientation StyleBuilderConverter::convertGlyphOrientation(StyleResolverState&, CSSValue* value)
+EGlyphOrientation StyleBuilderConverter::convertGlyphOrientation(StyleResolverState&, const CSSValue& value)
 {
-    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-    if (primitiveValue->typeWithCalcResolved() != CSSPrimitiveValue::UnitType::Degrees)
+    const CSSPrimitiveValue& primitiveValue = toCSSPrimitiveValue(value);
+    if (primitiveValue.typeWithCalcResolved() != CSSPrimitiveValue::UnitType::Degrees)
         return GO_0DEG;
 
-    float angle = fabsf(fmodf(primitiveValue->getFloatValue(), 360.0f));
+    float angle = fabsf(fmodf(primitiveValue.getFloatValue(), 360.0f));
 
     if (angle <= 45.0f || angle > 315.0f)
         return GO_0DEG;
@@ -336,64 +336,64 @@ EGlyphOrientation StyleBuilderConverter::convertGlyphOrientation(StyleResolverSt
     return GO_270DEG;
 }
 
-StyleSelfAlignmentData StyleBuilderConverter::convertSelfOrDefaultAlignmentData(StyleResolverState&, CSSValue* value)
+StyleSelfAlignmentData StyleBuilderConverter::convertSelfOrDefaultAlignmentData(StyleResolverState&, const CSSValue& value)
 {
     StyleSelfAlignmentData alignmentData = ComputedStyle::initialSelfAlignment();
-    if (value->isValuePair()) {
-        const CSSValuePair* pair = toCSSValuePair(value);
-        if (toCSSPrimitiveValue(pair->first()).getValueID() == CSSValueLegacy) {
+    if (value.isValuePair()) {
+        const CSSValuePair& pair = toCSSValuePair(value);
+        if (toCSSPrimitiveValue(pair.first()).getValueID() == CSSValueLegacy) {
             alignmentData.setPositionType(LegacyPosition);
-            alignmentData.setPosition(toCSSPrimitiveValue(pair->second()));
+            alignmentData.setPosition(toCSSPrimitiveValue(pair.second()));
         } else {
-            alignmentData.setPosition(toCSSPrimitiveValue(pair->first()));
-            alignmentData.setOverflow(toCSSPrimitiveValue(pair->second()));
+            alignmentData.setPosition(toCSSPrimitiveValue(pair.first()));
+            alignmentData.setOverflow(toCSSPrimitiveValue(pair.second()));
         }
     } else {
-        alignmentData.setPosition(*toCSSPrimitiveValue(value));
+        alignmentData.setPosition(toCSSPrimitiveValue(value));
     }
     return alignmentData;
 }
 
-StyleContentAlignmentData StyleBuilderConverter::convertContentAlignmentData(StyleResolverState&, CSSValue* value)
+StyleContentAlignmentData StyleBuilderConverter::convertContentAlignmentData(StyleResolverState&, const CSSValue& value)
 {
     StyleContentAlignmentData alignmentData = ComputedStyle::initialContentAlignment();
     if (!RuntimeEnabledFeatures::cssGridLayoutEnabled()) {
-        CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-        switch (primitiveValue->getValueID()) {
+        const CSSPrimitiveValue& primitiveValue = toCSSPrimitiveValue(value);
+        switch (primitiveValue.getValueID()) {
         case CSSValueStretch:
         case CSSValueSpaceBetween:
         case CSSValueSpaceAround:
-            alignmentData.setDistribution(*primitiveValue);
+            alignmentData.setDistribution(primitiveValue);
             break;
         case CSSValueFlexStart:
         case CSSValueFlexEnd:
         case CSSValueCenter:
-            alignmentData.setPosition(*primitiveValue);
+            alignmentData.setPosition(primitiveValue);
             break;
         default:
             ASSERT_NOT_REACHED();
         }
         return alignmentData;
     }
-    CSSContentDistributionValue* contentValue = toCSSContentDistributionValue(value);
-    if (contentValue->distribution()->getValueID() != CSSValueInvalid)
-        alignmentData.setDistribution(*contentValue->distribution());
-    if (contentValue->position()->getValueID() != CSSValueInvalid)
-        alignmentData.setPosition(*contentValue->position());
-    if (contentValue->overflow()->getValueID() != CSSValueInvalid)
-        alignmentData.setOverflow(*contentValue->overflow());
+    const CSSContentDistributionValue& contentValue = toCSSContentDistributionValue(value);
+    if (contentValue.distribution()->getValueID() != CSSValueInvalid)
+        alignmentData.setDistribution(*contentValue.distribution());
+    if (contentValue.position()->getValueID() != CSSValueInvalid)
+        alignmentData.setPosition(*contentValue.position());
+    if (contentValue.overflow()->getValueID() != CSSValueInvalid)
+        alignmentData.setOverflow(*contentValue.overflow());
     return alignmentData;
 }
 
-GridAutoFlow StyleBuilderConverter::convertGridAutoFlow(StyleResolverState&, CSSValue* value)
+GridAutoFlow StyleBuilderConverter::convertGridAutoFlow(StyleResolverState&, const CSSValue& value)
 {
-    CSSValueList* list = toCSSValueList(value);
+    const CSSValueList& list = toCSSValueList(value);
 
-    ASSERT(list->length() >= 1);
-    CSSPrimitiveValue* first = toCSSPrimitiveValue(list->item(0));
-    CSSPrimitiveValue* second = list->length() == 2 ? toCSSPrimitiveValue(list->item(1)) : nullptr;
+    ASSERT(list.length() >= 1);
+    const CSSPrimitiveValue& first = *toCSSPrimitiveValue(list.item(0));
+    const CSSPrimitiveValue* second = list.length() == 2 ? toCSSPrimitiveValue(list.item(1)) : nullptr;
 
-    switch (first->getValueID()) {
+    switch (first.getValueID()) {
     case CSSValueRow:
         if (second && second->getValueID() == CSSValueDense)
             return AutoFlowRowDense;
@@ -412,45 +412,45 @@ GridAutoFlow StyleBuilderConverter::convertGridAutoFlow(StyleResolverState&, CSS
     }
 }
 
-GridPosition StyleBuilderConverter::convertGridPosition(StyleResolverState&, CSSValue* value)
+GridPosition StyleBuilderConverter::convertGridPosition(StyleResolverState&, const CSSValue& value)
 {
     // We accept the specification's grammar:
     // 'auto' | [ <integer> || <custom-ident> ] | [ span && [ <integer> || <custom-ident> ] ] | <custom-ident>
 
     GridPosition position;
 
-    if (value->isCustomIdentValue()) {
+    if (value.isCustomIdentValue()) {
         // We translate <custom-ident> to <string> during parsing as it
         // makes handling it more simple.
-        position.setNamedGridArea(toCSSCustomIdentValue(value)->value());
+        position.setNamedGridArea(toCSSCustomIdentValue(value).value());
         return position;
     }
 
-    if (value->isPrimitiveValue()) {
-        ASSERT(toCSSPrimitiveValue(value)->getValueID() == CSSValueAuto);
+    if (value.isPrimitiveValue()) {
+        ASSERT(toCSSPrimitiveValue(value).getValueID() == CSSValueAuto);
         return position;
     }
 
-    CSSValueList* values = toCSSValueList(value);
-    ASSERT(values->length());
+    const CSSValueList& values = toCSSValueList(value);
+    ASSERT(values.length());
 
     bool isSpanPosition = false;
     // The specification makes the <integer> optional, in which case it default to '1'.
     int gridLineNumber = 1;
     String gridLineName;
 
-    auto it = values->begin();
+    auto it = values.begin();
     CSSValue* currentValue = it->get();
     if (currentValue->isPrimitiveValue() && toCSSPrimitiveValue(currentValue)->getValueID() == CSSValueSpan) {
         isSpanPosition = true;
         ++it;
-        currentValue = it != values->end() ? it->get() : nullptr;
+        currentValue = it != values.end() ? it->get() : nullptr;
     }
 
     if (currentValue && currentValue->isPrimitiveValue() && toCSSPrimitiveValue(currentValue)->isNumber()) {
         gridLineNumber = toCSSPrimitiveValue(currentValue)->getIntValue();
         ++it;
-        currentValue = it != values->end() ? it->get() : nullptr;
+        currentValue = it != values.end() ? it->get() : nullptr;
     }
 
     if (currentValue && currentValue->isCustomIdentValue()) {
@@ -458,7 +458,7 @@ GridPosition StyleBuilderConverter::convertGridPosition(StyleResolverState&, CSS
         ++it;
     }
 
-    ASSERT(it == values->end());
+    ASSERT(it == values.end());
     if (isSpanPosition)
         position.setSpanPosition(gridLineNumber, gridLineName);
     else
@@ -467,27 +467,27 @@ GridPosition StyleBuilderConverter::convertGridPosition(StyleResolverState&, CSS
     return position;
 }
 
-GridTrackSize StyleBuilderConverter::convertGridTrackSize(StyleResolverState& state, CSSValue* value)
+GridTrackSize StyleBuilderConverter::convertGridTrackSize(StyleResolverState& state, const CSSValue& value)
 {
-    if (value->isPrimitiveValue())
+    if (value.isPrimitiveValue())
         return GridTrackSize(convertGridTrackBreadth(state, toCSSPrimitiveValue(value)));
 
-    CSSFunctionValue* minmaxFunction = toCSSFunctionValue(value);
-    ASSERT_WITH_SECURITY_IMPLICATION(minmaxFunction->length() == 2);
-    GridLength minTrackBreadth(convertGridTrackBreadth(state, toCSSPrimitiveValue(minmaxFunction->item(0))));
-    GridLength maxTrackBreadth(convertGridTrackBreadth(state, toCSSPrimitiveValue(minmaxFunction->item(1))));
+    const CSSFunctionValue& minmaxFunction = toCSSFunctionValue(value);
+    ASSERT_WITH_SECURITY_IMPLICATION(minmaxFunction.length() == 2);
+    GridLength minTrackBreadth(convertGridTrackBreadth(state, *toCSSPrimitiveValue(minmaxFunction.item(0))));
+    GridLength maxTrackBreadth(convertGridTrackBreadth(state, *toCSSPrimitiveValue(minmaxFunction.item(1))));
     return GridTrackSize(minTrackBreadth, maxTrackBreadth);
 }
 
-void StyleBuilderConverter::convertGridTrackList(CSSValue* value, Vector<GridTrackSize>& trackSizes, NamedGridLinesMap& namedGridLines, OrderedNamedGridLines& orderedNamedGridLines, StyleResolverState& state)
+void StyleBuilderConverter::convertGridTrackList(const CSSValue& value, Vector<GridTrackSize>& trackSizes, NamedGridLinesMap& namedGridLines, OrderedNamedGridLines& orderedNamedGridLines, StyleResolverState& state)
 {
-    if (value->isPrimitiveValue()) {
-        ASSERT(toCSSPrimitiveValue(value)->getValueID() == CSSValueNone);
+    if (value.isPrimitiveValue()) {
+        ASSERT(toCSSPrimitiveValue(value).getValueID() == CSSValueNone);
         return;
     }
 
     size_t currentNamedGridLine = 0;
-    for (auto& currValue : *toCSSValueList(value)) {
+    for (auto& currValue : toCSSValueList(value)) {
         if (currValue->isGridLineNamesValue()) {
             for (auto& namedGridLineValue : toCSSGridLineNamesValue(*currValue)) {
                 String namedGridLine = toCSSCustomIdentValue(*namedGridLineValue).value();
@@ -500,7 +500,7 @@ void StyleBuilderConverter::convertGridTrackList(CSSValue* value, Vector<GridTra
         }
 
         ++currentNamedGridLine;
-        trackSizes.append(convertGridTrackSize(state, currValue.get()));
+        trackSizes.append(convertGridTrackSize(state, *currValue));
     }
 
     // The parser should have rejected any <track-list> without any <track-size> as
@@ -545,28 +545,28 @@ void StyleBuilderConverter::createImplicitNamedGridLinesFromGridArea(const Named
     }
 }
 
-Length StyleBuilderConverter::convertLength(const StyleResolverState& state, CSSValue* value)
+Length StyleBuilderConverter::convertLength(const StyleResolverState& state, const CSSValue& value)
 {
-    return toCSSPrimitiveValue(value)->convertToLength(state.cssToLengthConversionData());
+    return toCSSPrimitiveValue(value).convertToLength(state.cssToLengthConversionData());
 }
 
-UnzoomedLength StyleBuilderConverter::convertUnzoomedLength(const StyleResolverState& state, CSSValue* value)
+UnzoomedLength StyleBuilderConverter::convertUnzoomedLength(const StyleResolverState& state, const CSSValue& value)
 {
-    return UnzoomedLength(toCSSPrimitiveValue(value)->convertToLength(state.cssToLengthConversionData().copyWithAdjustedZoom(1.0f)));
+    return UnzoomedLength(toCSSPrimitiveValue(value).convertToLength(state.cssToLengthConversionData().copyWithAdjustedZoom(1.0f)));
 }
 
-Length StyleBuilderConverter::convertLengthOrAuto(const StyleResolverState& state, CSSValue* value)
+Length StyleBuilderConverter::convertLengthOrAuto(const StyleResolverState& state, const CSSValue& value)
 {
-    const CSSPrimitiveValue& primitiveValue = toCSSPrimitiveValue(*value);
+    const CSSPrimitiveValue& primitiveValue = toCSSPrimitiveValue(value);
     if (primitiveValue.getValueID() == CSSValueAuto)
         return Length(Auto);
     return primitiveValue.convertToLength(state.cssToLengthConversionData());
 }
 
-Length StyleBuilderConverter::convertLengthSizing(StyleResolverState& state, CSSValue* value)
+Length StyleBuilderConverter::convertLengthSizing(StyleResolverState& state, const CSSValue& value)
 {
-    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-    switch (primitiveValue->getValueID()) {
+    const CSSPrimitiveValue& primitiveValue = toCSSPrimitiveValue(value);
+    switch (primitiveValue.getValueID()) {
     case CSSValueInvalid:
         return convertLength(state, value);
     case CSSValueIntrinsic:
@@ -592,20 +592,20 @@ Length StyleBuilderConverter::convertLengthSizing(StyleResolverState& state, CSS
     }
 }
 
-Length StyleBuilderConverter::convertLengthMaxSizing(StyleResolverState& state, CSSValue* value)
+Length StyleBuilderConverter::convertLengthMaxSizing(StyleResolverState& state, const CSSValue& value)
 {
-    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-    if (primitiveValue->getValueID() == CSSValueNone)
+    const CSSPrimitiveValue& primitiveValue = toCSSPrimitiveValue(value);
+    if (primitiveValue.getValueID() == CSSValueNone)
         return Length(MaxSizeNone);
     return convertLengthSizing(state, value);
 }
 
-TabSize StyleBuilderConverter::convertLengthOrTabSpaces(StyleResolverState& state, CSSValue* value)
+TabSize StyleBuilderConverter::convertLengthOrTabSpaces(StyleResolverState& state, const CSSValue& value)
 {
-    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-    if (primitiveValue->isNumber())
-        return TabSize(primitiveValue->getIntValue());
-    return TabSize(primitiveValue->computeLength<float>(state.cssToLengthConversionData()));
+    const CSSPrimitiveValue& primitiveValue = toCSSPrimitiveValue(value);
+    if (primitiveValue.isNumber())
+        return TabSize(primitiveValue.getIntValue());
+    return TabSize(primitiveValue.computeLength<float>(state.cssToLengthConversionData()));
 }
 
 static CSSToLengthConversionData lineHeightToLengthConversionData(StyleResolverState& state)
@@ -616,77 +616,77 @@ static CSSToLengthConversionData lineHeightToLengthConversionData(StyleResolverS
     return state.cssToLengthConversionData().copyWithAdjustedZoom(multiplier);
 }
 
-Length StyleBuilderConverter::convertLineHeight(StyleResolverState& state, CSSValue* value)
+Length StyleBuilderConverter::convertLineHeight(StyleResolverState& state, const CSSValue& value)
 {
-    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
+    const CSSPrimitiveValue& primitiveValue = toCSSPrimitiveValue(value);
 
-    if (primitiveValue->isLength())
-        return primitiveValue->computeLength<Length>(lineHeightToLengthConversionData(state));
-    if (primitiveValue->isPercentage())
-        return Length((state.style()->computedFontSize() * primitiveValue->getIntValue()) / 100.0, Fixed);
-    if (primitiveValue->isNumber())
-        return Length(primitiveValue->getDoubleValue() * 100.0, Percent);
-    if (primitiveValue->isCalculated()) {
-        Length zoomedLength = Length(primitiveValue->cssCalcValue()->toCalcValue(lineHeightToLengthConversionData(state)));
+    if (primitiveValue.isLength())
+        return primitiveValue.computeLength<Length>(lineHeightToLengthConversionData(state));
+    if (primitiveValue.isPercentage())
+        return Length((state.style()->computedFontSize() * primitiveValue.getIntValue()) / 100.0, Fixed);
+    if (primitiveValue.isNumber())
+        return Length(primitiveValue.getDoubleValue() * 100.0, Percent);
+    if (primitiveValue.isCalculated()) {
+        Length zoomedLength = Length(primitiveValue.cssCalcValue()->toCalcValue(lineHeightToLengthConversionData(state)));
         return Length(valueForLength(zoomedLength, state.style()->fontSize()), Fixed);
     }
 
-    ASSERT(primitiveValue->getValueID() == CSSValueNormal);
+    ASSERT(primitiveValue.getValueID() == CSSValueNormal);
     return ComputedStyle::initialLineHeight();
 }
 
-float StyleBuilderConverter::convertNumberOrPercentage(StyleResolverState& state, CSSValue* value)
+float StyleBuilderConverter::convertNumberOrPercentage(StyleResolverState& state, const CSSValue& value)
 {
-    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-    ASSERT(primitiveValue->isNumber() || primitiveValue->isPercentage());
-    if (primitiveValue->isNumber())
-        return primitiveValue->getFloatValue();
-    return primitiveValue->getFloatValue() / 100.0f;
+    const CSSPrimitiveValue& primitiveValue = toCSSPrimitiveValue(value);
+    ASSERT(primitiveValue.isNumber() || primitiveValue.isPercentage());
+    if (primitiveValue.isNumber())
+        return primitiveValue.getFloatValue();
+    return primitiveValue.getFloatValue() / 100.0f;
 }
 
 template <CSSValueID cssValueFor0, CSSValueID cssValueFor100>
-static Length convertPositionLength(StyleResolverState& state, CSSValue* value)
+static Length convertPositionLength(StyleResolverState& state, const CSSValue& value)
 {
-    if (value->isValuePair()) {
-        CSSValuePair* pair = toCSSValuePair(value);
-        Length length = StyleBuilderConverter::convertLength(state, &pair->second());
-        if (toCSSPrimitiveValue(pair->first()).getValueID() == cssValueFor0)
+    if (value.isValuePair()) {
+        const CSSValuePair& pair = toCSSValuePair(value);
+        Length length = StyleBuilderConverter::convertLength(state, pair.second());
+        if (toCSSPrimitiveValue(pair.first()).getValueID() == cssValueFor0)
             return length;
-        ASSERT(toCSSPrimitiveValue(pair->first()).getValueID() == cssValueFor100);
+        ASSERT(toCSSPrimitiveValue(pair.first()).getValueID() == cssValueFor100);
         return length.subtractFromOneHundredPercent();
     }
 
     return StyleBuilderConverter::convertLength(state, value);
 }
 
-LengthPoint StyleBuilderConverter::convertPosition(StyleResolverState& state, CSSValue* value)
+LengthPoint StyleBuilderConverter::convertPosition(StyleResolverState& state, const CSSValue& value)
 {
-    CSSValuePair* pair = toCSSValuePair(value);
+    const CSSValuePair& pair = toCSSValuePair(value);
     return LengthPoint(
-        convertPositionLength<CSSValueLeft, CSSValueRight>(state, &pair->first()),
-        convertPositionLength<CSSValueTop, CSSValueBottom>(state, &pair->second())
+        convertPositionLength<CSSValueLeft, CSSValueRight>(state, pair.first()),
+        convertPositionLength<CSSValueTop, CSSValueBottom>(state, pair.second())
     );
 }
 
-static float convertPerspectiveLength(StyleResolverState& state, CSSPrimitiveValue* primitiveValue)
+static float convertPerspectiveLength(StyleResolverState& state, const CSSPrimitiveValue& primitiveValue)
 {
-    return std::max(primitiveValue->computeLength<float>(state.cssToLengthConversionData()), 0.0f);
+    return std::max(primitiveValue.computeLength<float>(state.cssToLengthConversionData()), 0.0f);
 }
 
-float StyleBuilderConverter::convertPerspective(StyleResolverState& state, CSSValue* value)
+float StyleBuilderConverter::convertPerspective(StyleResolverState& state, const CSSValue& value)
 {
-    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
+    const CSSPrimitiveValue& primitiveValue = toCSSPrimitiveValue(value);
 
-    if (primitiveValue->getValueID() == CSSValueNone)
+    if (primitiveValue.getValueID() == CSSValueNone)
         return ComputedStyle::initialPerspective();
     return convertPerspectiveLength(state, primitiveValue);
 }
 
 template <CSSValueID cssValueFor0, CSSValueID cssValueFor100>
-static Length convertOriginLength(StyleResolverState& state, CSSPrimitiveValue* primitiveValue)
+static Length convertOriginLength(StyleResolverState& state, const CSSPrimitiveValue& primitiveValue)
 {
-    if (primitiveValue->isValueID()) {
-        switch (primitiveValue->getValueID()) {
+    if (primitiveValue.isValueID()) {
+        switch (primitiveValue.getValueID()) {
         case cssValueFor0:
             return Length(0, Percent);
         case cssValueFor100:
@@ -701,13 +701,13 @@ static Length convertOriginLength(StyleResolverState& state, CSSPrimitiveValue* 
     return StyleBuilderConverter::convertLength(state, primitiveValue);
 }
 
-LengthPoint StyleBuilderConverter::convertPerspectiveOrigin(StyleResolverState& state, CSSValue* value)
+LengthPoint StyleBuilderConverter::convertPerspectiveOrigin(StyleResolverState& state, const CSSValue& value)
 {
-    CSSValueList* list = toCSSValueList(value);
-    ASSERT(list->length() == 2);
+    const CSSValueList& list = toCSSValueList(value);
+    ASSERT(list.length() == 2);
 
-    CSSPrimitiveValue* primitiveValueX = toCSSPrimitiveValue(list->item(0));
-    CSSPrimitiveValue* primitiveValueY = toCSSPrimitiveValue(list->item(1));
+    const CSSPrimitiveValue& primitiveValueX = toCSSPrimitiveValue(*list.item(0));
+    const CSSPrimitiveValue& primitiveValueY = toCSSPrimitiveValue(*list.item(1));
 
     return LengthPoint(
         convertOriginLength<CSSValueLeft, CSSValueRight>(state, primitiveValueX),
@@ -715,10 +715,10 @@ LengthPoint StyleBuilderConverter::convertPerspectiveOrigin(StyleResolverState& 
     );
 }
 
-EPaintOrder StyleBuilderConverter::convertPaintOrder(StyleResolverState&, CSSValue* cssPaintOrder)
+EPaintOrder StyleBuilderConverter::convertPaintOrder(StyleResolverState&, const CSSValue& cssPaintOrder)
 {
-    if (cssPaintOrder->isValueList()) {
-        const CSSValueList& orderTypeList = *toCSSValueList(cssPaintOrder);
+    if (cssPaintOrder.isValueList()) {
+        const CSSValueList& orderTypeList = toCSSValueList(cssPaintOrder);
         switch (toCSSPrimitiveValue(orderTypeList.item(0))->getValueID()) {
         case CSSValueFill:
             return orderTypeList.length() > 1 ? PaintOrderFillMarkersStroke : PaintOrderFillStrokeMarkers;
@@ -735,35 +735,35 @@ EPaintOrder StyleBuilderConverter::convertPaintOrder(StyleResolverState&, CSSVal
     return PaintOrderNormal;
 }
 
-Length StyleBuilderConverter::convertQuirkyLength(StyleResolverState& state, CSSValue* value)
+Length StyleBuilderConverter::convertQuirkyLength(StyleResolverState& state, const CSSValue& value)
 {
     Length length = convertLengthOrAuto(state, value);
     // This is only for margins which use __qem
-    length.setQuirk(toCSSPrimitiveValue(value)->isQuirkyEms());
+    length.setQuirk(toCSSPrimitiveValue(value).isQuirkyEms());
     return length;
 }
 
-PassRefPtr<QuotesData> StyleBuilderConverter::convertQuotes(StyleResolverState&, CSSValue* value)
+PassRefPtr<QuotesData> StyleBuilderConverter::convertQuotes(StyleResolverState&, const CSSValue& value)
 {
-    if (value->isValueList()) {
-        CSSValueList* list = toCSSValueList(value);
+    if (value.isValueList()) {
+        const CSSValueList& list = toCSSValueList(value);
         RefPtr<QuotesData> quotes = QuotesData::create();
-        for (size_t i = 0; i < list->length(); i += 2) {
-            String startQuote = toCSSStringValue(list->item(i))->value();
-            String endQuote = toCSSStringValue(list->item(i + 1))->value();
+        for (size_t i = 0; i < list.length(); i += 2) {
+            String startQuote = toCSSStringValue(list.item(i))->value();
+            String endQuote = toCSSStringValue(list.item(i + 1))->value();
             quotes->addPair(std::make_pair(startQuote, endQuote));
         }
         return quotes.release();
     }
-    ASSERT(value->isPrimitiveValue() && toCSSPrimitiveValue(value)->getValueID() == CSSValueNone);
+    ASSERT(value.isPrimitiveValue() && toCSSPrimitiveValue(value).getValueID() == CSSValueNone);
     return QuotesData::create();
 }
 
-LengthSize StyleBuilderConverter::convertRadius(StyleResolverState& state, CSSValue* value)
+LengthSize StyleBuilderConverter::convertRadius(StyleResolverState& state, const CSSValue& value)
 {
-    const CSSValuePair* pair = toCSSValuePair(value);
-    Length radiusWidth = toCSSPrimitiveValue(pair->first()).convertToLength(state.cssToLengthConversionData());
-    Length radiusHeight = toCSSPrimitiveValue(pair->second()).convertToLength(state.cssToLengthConversionData());
+    const CSSValuePair& pair = toCSSValuePair(value);
+    Length radiusWidth = toCSSPrimitiveValue(pair.first()).convertToLength(state.cssToLengthConversionData());
+    Length radiusHeight = toCSSPrimitiveValue(pair.second()).convertToLength(state.cssToLengthConversionData());
     float width = radiusWidth.value();
     float height = radiusHeight.value();
     ASSERT(width >= 0 && height >= 0);
@@ -772,46 +772,46 @@ LengthSize StyleBuilderConverter::convertRadius(StyleResolverState& state, CSSVa
     return LengthSize(radiusWidth, radiusHeight);
 }
 
-PassRefPtr<ShadowList> StyleBuilderConverter::convertShadow(StyleResolverState& state, CSSValue* value)
+PassRefPtr<ShadowList> StyleBuilderConverter::convertShadow(StyleResolverState& state, const CSSValue& value)
 {
-    if (value->isPrimitiveValue()) {
-        ASSERT(toCSSPrimitiveValue(value)->getValueID() == CSSValueNone);
+    if (value.isPrimitiveValue()) {
+        ASSERT(toCSSPrimitiveValue(value).getValueID() == CSSValueNone);
         return PassRefPtr<ShadowList>();
     }
 
-    const CSSValueList* valueList = toCSSValueList(value);
-    size_t shadowCount = valueList->length();
+    const CSSValueList& valueList = toCSSValueList(value);
+    size_t shadowCount = valueList.length();
     ShadowDataVector shadows;
     for (size_t i = 0; i < shadowCount; ++i) {
-        const CSSShadowValue* item = toCSSShadowValue(valueList->item(i));
-        float x = item->x->computeLength<float>(state.cssToLengthConversionData());
-        float y = item->y->computeLength<float>(state.cssToLengthConversionData());
-        float blur = item->blur ? item->blur->computeLength<float>(state.cssToLengthConversionData()) : 0;
-        float spread = item->spread ? item->spread->computeLength<float>(state.cssToLengthConversionData()) : 0;
-        ShadowStyle shadowStyle = item->style && item->style->getValueID() == CSSValueInset ? Inset : Normal;
+        const CSSShadowValue& item = toCSSShadowValue(*valueList.item(i));
+        float x = item.x->computeLength<float>(state.cssToLengthConversionData());
+        float y = item.y->computeLength<float>(state.cssToLengthConversionData());
+        float blur = item.blur ? item.blur->computeLength<float>(state.cssToLengthConversionData()) : 0;
+        float spread = item.spread ? item.spread->computeLength<float>(state.cssToLengthConversionData()) : 0;
+        ShadowStyle shadowStyle = item.style && item.style->getValueID() == CSSValueInset ? Inset : Normal;
         StyleColor color = StyleColor::currentColor();
-        if (item->color)
-            color = convertStyleColor(state, item->color.get());
+        if (item.color)
+            color = convertStyleColor(state, *item.color);
         shadows.append(ShadowData(FloatPoint(x, y), blur, spread, shadowStyle, color));
     }
     return ShadowList::adopt(shadows);
 }
 
-PassRefPtrWillBeRawPtr<ShapeValue> StyleBuilderConverter::convertShapeValue(StyleResolverState& state, CSSValue* value)
+PassRefPtrWillBeRawPtr<ShapeValue> StyleBuilderConverter::convertShapeValue(StyleResolverState& state, const CSSValue& value)
 {
-    if (value->isPrimitiveValue()) {
-        ASSERT(toCSSPrimitiveValue(value)->getValueID() == CSSValueNone);
+    if (value.isPrimitiveValue()) {
+        ASSERT(toCSSPrimitiveValue(value).getValueID() == CSSValueNone);
         return nullptr;
     }
 
-    if (value->isImageValue() || value->isImageGeneratorValue() || value->isImageSetValue())
-        return ShapeValue::createImageValue(state.styleImage(CSSPropertyShapeOutside, *value));
+    if (value.isImageValue() || value.isImageGeneratorValue() || value.isImageSetValue())
+        return ShapeValue::createImageValue(state.styleImage(CSSPropertyShapeOutside, value));
 
     RefPtr<BasicShape> shape;
     CSSBoxType cssBox = BoxMissing;
-    CSSValueList* valueList = toCSSValueList(value);
-    for (unsigned i = 0; i < valueList->length(); ++i) {
-        const CSSValue& value = *valueList->item(i);
+    const CSSValueList& valueList = toCSSValueList(value);
+    for (unsigned i = 0; i < valueList.length(); ++i) {
+        const CSSValue& value = *valueList.item(i);
         if (value.isBasicShapeValue()) {
             shape = basicShapeForValue(state, value);
         } else {
@@ -826,56 +826,56 @@ PassRefPtrWillBeRawPtr<ShapeValue> StyleBuilderConverter::convertShapeValue(Styl
     return ShapeValue::createBoxShapeValue(cssBox);
 }
 
-float StyleBuilderConverter::convertSpacing(StyleResolverState& state, CSSValue* value)
+float StyleBuilderConverter::convertSpacing(StyleResolverState& state, const CSSValue& value)
 {
-    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-    if (primitiveValue->getValueID() == CSSValueNormal)
+    const CSSPrimitiveValue& primitiveValue = toCSSPrimitiveValue(value);
+    if (primitiveValue.getValueID() == CSSValueNormal)
         return 0;
-    return primitiveValue->computeLength<float>(state.cssToLengthConversionData());
+    return primitiveValue.computeLength<float>(state.cssToLengthConversionData());
 }
 
-PassRefPtr<SVGDashArray> StyleBuilderConverter::convertStrokeDasharray(StyleResolverState& state, CSSValue* value)
+PassRefPtr<SVGDashArray> StyleBuilderConverter::convertStrokeDasharray(StyleResolverState& state, const CSSValue& value)
 {
-    if (!value->isValueList())
+    if (!value.isValueList())
         return SVGComputedStyle::initialStrokeDashArray();
 
-    CSSValueList* dashes = toCSSValueList(value);
+    const CSSValueList& dashes = toCSSValueList(value);
 
     RefPtr<SVGDashArray> array = SVGDashArray::create();
-    size_t length = dashes->length();
+    size_t length = dashes.length();
     for (size_t i = 0; i < length; ++i) {
-        array->append(convertLength(state, toCSSPrimitiveValue(dashes->item(i))));
+        array->append(convertLength(state, *toCSSPrimitiveValue(dashes.item(i))));
     }
 
     return array.release();
 }
 
-StyleColor StyleBuilderConverter::convertStyleColor(StyleResolverState& state, CSSValue* value, bool forVisitedLink)
+StyleColor StyleBuilderConverter::convertStyleColor(StyleResolverState& state, const CSSValue& value, bool forVisitedLink)
 {
-    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-    if (primitiveValue->getValueID() == CSSValueCurrentcolor)
+    const CSSPrimitiveValue& primitiveValue = toCSSPrimitiveValue(value);
+    if (primitiveValue.getValueID() == CSSValueCurrentcolor)
         return StyleColor::currentColor();
     return state.document().textLinkColors().colorFromPrimitiveValue(primitiveValue, Color(), forVisitedLink);
 }
 
-float StyleBuilderConverter::convertTextStrokeWidth(StyleResolverState& state, CSSValue* value)
+float StyleBuilderConverter::convertTextStrokeWidth(StyleResolverState& state, const CSSValue& value)
 {
-    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-    if (primitiveValue->getValueID()) {
+    const CSSPrimitiveValue& primitiveValue = toCSSPrimitiveValue(value);
+    if (primitiveValue.getValueID()) {
         float multiplier = convertLineWidth<float>(state, value);
         return CSSPrimitiveValue::create(multiplier / 48, CSSPrimitiveValue::UnitType::Ems)->computeLength<float>(state.cssToLengthConversionData());
     }
-    return primitiveValue->computeLength<float>(state.cssToLengthConversionData());
+    return primitiveValue.computeLength<float>(state.cssToLengthConversionData());
 }
 
-TransformOrigin StyleBuilderConverter::convertTransformOrigin(StyleResolverState& state, CSSValue* value)
+TransformOrigin StyleBuilderConverter::convertTransformOrigin(StyleResolverState& state, const CSSValue& value)
 {
-    CSSValueList* list = toCSSValueList(value);
-    ASSERT(list->length() == 3);
+    const CSSValueList& list = toCSSValueList(value);
+    ASSERT(list.length() == 3);
 
-    CSSPrimitiveValue* primitiveValueX = toCSSPrimitiveValue(list->item(0));
-    CSSPrimitiveValue* primitiveValueY = toCSSPrimitiveValue(list->item(1));
-    CSSPrimitiveValue* primitiveValueZ = toCSSPrimitiveValue(list->item(2));
+    const CSSPrimitiveValue& primitiveValueX = toCSSPrimitiveValue(*list.item(0));
+    const CSSPrimitiveValue& primitiveValueY = toCSSPrimitiveValue(*list.item(1));
+    const CSSPrimitiveValue& primitiveValueZ = toCSSPrimitiveValue(*list.item(2));
 
     return TransformOrigin(
         convertOriginLength<CSSValueLeft, CSSValueRight>(state, primitiveValueX),
@@ -884,58 +884,58 @@ TransformOrigin StyleBuilderConverter::convertTransformOrigin(StyleResolverState
     );
 }
 
-ScrollSnapPoints StyleBuilderConverter::convertSnapPoints(StyleResolverState& state, CSSValue* value)
+ScrollSnapPoints StyleBuilderConverter::convertSnapPoints(StyleResolverState& state, const CSSValue& value)
 {
     // Handles: none | repeat(<length>)
     ScrollSnapPoints points;
     points.hasRepeat = false;
 
-    if (!value->isFunctionValue())
+    if (!value.isFunctionValue())
         return points;
 
-    CSSFunctionValue* repeatFunction = toCSSFunctionValue(value);
-    ASSERT_WITH_SECURITY_IMPLICATION(repeatFunction->length() == 1);
-    points.repeatOffset = convertLength(state, toCSSPrimitiveValue(repeatFunction->item(0)));
+    const CSSFunctionValue& repeatFunction = toCSSFunctionValue(value);
+    ASSERT_WITH_SECURITY_IMPLICATION(repeatFunction.length() == 1);
+    points.repeatOffset = convertLength(state, *toCSSPrimitiveValue(repeatFunction.item(0)));
     points.hasRepeat = true;
 
     return points;
 }
 
-Vector<LengthPoint> StyleBuilderConverter::convertSnapCoordinates(StyleResolverState& state, CSSValue* value)
+Vector<LengthPoint> StyleBuilderConverter::convertSnapCoordinates(StyleResolverState& state, const CSSValue& value)
 {
     // Handles: none | <position>#
     Vector<LengthPoint> coordinates;
 
-    if (!value->isValueList())
+    if (!value.isValueList())
         return coordinates;
 
-    CSSValueList* valueList = toCSSValueList(value);
-    coordinates.reserveInitialCapacity(valueList->length());
-    for (auto& snapCoordinate : *valueList) {
-        coordinates.uncheckedAppend(convertPosition(state, snapCoordinate.get()));
+    const CSSValueList& valueList = toCSSValueList(value);
+    coordinates.reserveInitialCapacity(valueList.length());
+    for (auto& snapCoordinate : valueList) {
+        coordinates.uncheckedAppend(convertPosition(state, *snapCoordinate));
     }
 
     return coordinates;
 }
 
-PassRefPtr<TranslateTransformOperation> StyleBuilderConverter::convertTranslate(StyleResolverState& state, CSSValue* value)
+PassRefPtr<TranslateTransformOperation> StyleBuilderConverter::convertTranslate(StyleResolverState& state, const CSSValue& value)
 {
-    CSSValueList& list = *toCSSValueList(value);
+    const CSSValueList& list = toCSSValueList(value);
     ASSERT(list.length() <= 3);
-    Length tx = convertLength(state, list.item(0));
+    Length tx = convertLength(state, *list.item(0));
     Length ty(0, Fixed);
     double tz = 0;
     if (list.length() >= 2)
-        ty = convertLength(state, list.item(1));
+        ty = convertLength(state, *list.item(1));
     if (list.length() == 3)
         tz = toCSSPrimitiveValue(list.item(2))->getDoubleValue();
 
     return TranslateTransformOperation::create(tx, ty, tz, TransformOperation::Translate3D);
 }
 
-PassRefPtr<RotateTransformOperation> StyleBuilderConverter::convertRotate(StyleResolverState& state, CSSValue* value)
+PassRefPtr<RotateTransformOperation> StyleBuilderConverter::convertRotate(StyleResolverState& state, const CSSValue& value)
 {
-    CSSValueList& list = *toCSSValueList(value);
+    const CSSValueList& list = toCSSValueList(value);
     ASSERT(list.length() == 1 || list.length() == 4);
     double angle = toCSSPrimitiveValue(list.item(0))->computeDegrees();
     double x = 0;
@@ -950,9 +950,9 @@ PassRefPtr<RotateTransformOperation> StyleBuilderConverter::convertRotate(StyleR
     return RotateTransformOperation::create(x, y, z, angle, TransformOperation::Rotate3D);
 }
 
-PassRefPtr<ScaleTransformOperation> StyleBuilderConverter::convertScale(StyleResolverState& state, CSSValue* value)
+PassRefPtr<ScaleTransformOperation> StyleBuilderConverter::convertScale(StyleResolverState& state, const CSSValue& value)
 {
-    CSSValueList& list = *toCSSValueList(value);
+    const CSSValueList& list = toCSSValueList(value);
     ASSERT(list.length() <= 3);
     double sx = toCSSPrimitiveValue(list.item(0))->getDoubleValue();
     double sy = sx;
@@ -965,10 +965,10 @@ PassRefPtr<ScaleTransformOperation> StyleBuilderConverter::convertScale(StyleRes
     return ScaleTransformOperation::create(sx, sy, sz, TransformOperation::Scale3D);
 }
 
-RespectImageOrientationEnum StyleBuilderConverter::convertImageOrientation(StyleResolverState& state, CSSValue* value)
+RespectImageOrientationEnum StyleBuilderConverter::convertImageOrientation(StyleResolverState& state, const CSSValue& value)
 {
-    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-    return primitiveValue->getValueID() == CSSValueFromImage ? RespectImageOrientation : DoNotRespectImageOrientation;
+    const CSSPrimitiveValue& primitiveValue = toCSSPrimitiveValue(value);
+    return primitiveValue.getValueID() == CSSValueFromImage ? RespectImageOrientation : DoNotRespectImageOrientation;
 }
 
 } // namespace blink

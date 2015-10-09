@@ -58,12 +58,12 @@ void TextLinkColors::resetActiveLinkColor()
     m_activeLinkColor = Color(255, 0, 0);
 }
 
-Color TextLinkColors::colorFromPrimitiveValue(const CSSPrimitiveValue* value, Color currentColor, bool forVisitedLink) const
+Color TextLinkColors::colorFromPrimitiveValue(const CSSPrimitiveValue& value, Color currentColor, bool forVisitedLink) const
 {
-    if (value->isRGBColor())
-        return Color(value->getRGBA32Value());
+    if (value.isRGBColor())
+        return Color(value.getRGBA32Value());
 
-    CSSValueID valueID = value->getValueID();
+    CSSValueID valueID = value.getValueID();
     switch (valueID) {
     case 0:
         return Color();

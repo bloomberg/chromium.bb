@@ -54,7 +54,7 @@ public:
     void resetLinkColor();
     void resetVisitedLinkColor();
     void resetActiveLinkColor();
-    Color colorFromPrimitiveValue(const CSSPrimitiveValue*, Color currentColor, bool forVisitedLink = false) const;
+    Color colorFromPrimitiveValue(const CSSPrimitiveValue&, Color currentColor, bool forVisitedLink = false) const;
 private:
 
     Color m_textColor;

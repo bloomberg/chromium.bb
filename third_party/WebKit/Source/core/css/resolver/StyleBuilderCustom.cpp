@@ -162,9 +162,9 @@ void StyleBuilderFunctions::applyValueCSSPropertyColor(StyleResolverState& state
     }
 
     if (state.applyPropertyToRegularStyle())
-        state.style()->setColor(StyleBuilderConverter::convertColor(state, value));
+        state.style()->setColor(StyleBuilderConverter::convertColor(state, *value));
     if (state.applyPropertyToVisitedLinkStyle())
-        state.style()->setVisitedLinkColor(StyleBuilderConverter::convertColor(state, value, true));
+        state.style()->setVisitedLinkColor(StyleBuilderConverter::convertColor(state, *value, true));
 }
 
 void StyleBuilderFunctions::applyInitialCSSPropertyCursor(StyleResolverState& state)
@@ -212,7 +212,7 @@ void StyleBuilderFunctions::applyValueCSSPropertyGlyphOrientationVertical(StyleR
     if (value->isPrimitiveValue() && toCSSPrimitiveValue(value)->getValueID() == CSSValueAuto)
         state.style()->accessSVGStyle().setGlyphOrientationVertical(GO_AUTO);
     else
-        state.style()->accessSVGStyle().setGlyphOrientationVertical(StyleBuilderConverter::convertGlyphOrientation(state, value));
+        state.style()->accessSVGStyle().setGlyphOrientationVertical(StyleBuilderConverter::convertGlyphOrientation(state, *value));
 }
 
 void StyleBuilderFunctions::applyInitialCSSPropertyGridTemplateAreas(StyleResolverState& state)
@@ -839,7 +839,7 @@ void StyleBuilderFunctions::applyValueCSSPropertyBaselineShift(StyleResolverStat
     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
     if (!primitiveValue->isValueID()) {
         svgStyle.setBaselineShift(BS_LENGTH);
-        svgStyle.setBaselineShiftValue(StyleBuilderConverter::convertLength(state, primitiveValue));
+        svgStyle.setBaselineShiftValue(StyleBuilderConverter::convertLength(state, *primitiveValue));
         return;
     }
     switch (primitiveValue->getValueID()) {
