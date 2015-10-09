@@ -39,6 +39,8 @@
 490149 WIN OPENGL INTEL : GL2Tests_three_uniforms_input_run = FAIL
 490149 WIN OPENGL INTEL : GL_build_input_run = FAIL
 
+540538 WIN D3D9 INTEL : GLES2ConformTest.GL_cos_input_run = FAIL
+
 253674 LION INTEL : GL2ExtensionTests_dFdy_input_run = FAIL
 253674 LION INTEL : GL2FixedTests_point_sprites_input_run = FAIL
 253674 LION INTEL : GL_control_flow_input_run = FAIL

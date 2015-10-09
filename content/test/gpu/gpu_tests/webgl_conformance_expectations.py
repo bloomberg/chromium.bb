@@ -86,6 +86,10 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Skip('conformance/extensions/oes-texture-half-float-with-canvas.html',
         ['win', 'd3d9'], bug=896) # angle bug ID
 
+    # WIN / D3D9 / Intel failures
+    self.Fail('conformance/ogles/GL/cos/cos_001_to_006.html',
+        ['win', 'intel', 'd3d9'], bug=540538)
+
     # Win / OpenGL failures
     self.Fail('conformance/context/'+
         'context-attributes-alpha-depth-stencil-antialias.html',
