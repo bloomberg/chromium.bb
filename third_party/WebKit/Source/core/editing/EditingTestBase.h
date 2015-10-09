@@ -22,6 +22,7 @@ protected:
     void SetUp() override;
 
     Document& document() const;
+    DummyPageHolder& dummyPageHolder() const { return *m_dummyPageHolder; }
 
     static PassRefPtrWillBeRawPtr<ShadowRoot> createShadowRootForElementWithIDAndSetInnerHTML(TreeScope&, const char* hostElementID, const char* shadowRootContent);
 

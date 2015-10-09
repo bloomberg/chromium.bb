@@ -107,10 +107,10 @@ void SelectionEditor::adjustVisibleSelectionInCompsoedTree()
     position1.anchorNode()->updateDistribution();
     position2.anchorNode()->updateDistribution();
     if (position1.compareTo(position2) <= 0) {
-        m_selectionInComposedTree = VisibleSelectionInComposedTree::createWithoutValidation(base, position1, extent, position2, m_selection.affinity(), m_selection.isDirectional());
+        m_selectionInComposedTree = VisibleSelectionInComposedTree::createWithoutValidation(base, extent, position1, position2, m_selection.affinity(), m_selection.isDirectional());
         return;
     }
-    m_selectionInComposedTree = VisibleSelectionInComposedTree::createWithoutValidation(base, position2, extent, position1, m_selection.affinity(), m_selection.isDirectional());
+    m_selectionInComposedTree = VisibleSelectionInComposedTree::createWithoutValidation(base, extent, position2, position1, m_selection.affinity(), m_selection.isDirectional());
 }
 
 static bool isCrossingShadowBoundaries(const VisibleSelectionInComposedTree& selection)
@@ -143,10 +143,10 @@ void SelectionEditor::adjustVisibleSelectionInDOMTree()
     const TextAffinity affinity = m_selectionInComposedTree.affinity();
     const bool isDirectional = m_selectionInComposedTree.isDirectional();
     if (start.compareTo(end) <= 0) {
-        m_selection = VisibleSelection::createWithoutValidation(base, start, extent, end, affinity, isDirectional);
+        m_selection = VisibleSelection::createWithoutValidation(base, extent, start, end, affinity, isDirectional);
         return;
     }
-    m_selection = VisibleSelection::createWithoutValidation(base, end, extent, start, affinity, isDirectional);
+    m_selection = VisibleSelection::createWithoutValidation(base, extent, end, start, affinity, isDirectional);
 }
 
 void SelectionEditor::resetXPosForVerticalArrowNavigation()

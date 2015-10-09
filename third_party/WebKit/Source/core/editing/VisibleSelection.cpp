@@ -169,7 +169,7 @@ VisibleSelectionTemplate<Strategy>& VisibleSelectionTemplate<Strategy>::operator
 template <typename Strategy>
 VisibleSelectionTemplate<Strategy> VisibleSelectionTemplate<Strategy>::createWithoutValidation(const PositionTemplate<Strategy>& base, const PositionTemplate<Strategy>& extent, const PositionTemplate<Strategy>& start, const PositionTemplate<Strategy>& end, TextAffinity affinity, bool isDirectional)
 {
-    return VisibleSelectionTemplate<Strategy>(base, start, extent, end, affinity, isDirectional);
+    return VisibleSelectionTemplate<Strategy>(base, extent, start, end, affinity, isDirectional);
 }
 
 #if !ENABLE(OILPAN)
@@ -774,7 +774,7 @@ static VisibleSelectionInComposedTree computeSelectionToAvoidCrossingShadowBound
     if (selection.isBaseFirst()) {
         Node* shadowHost = shadowHostStart ? shadowHostStart : shadowHostEnd;
         const PositionInComposedTree newEnd = adjustPositionInComposedTreeForEnd(selection.end(), shadowHost);
-        return VisibleSelectionInComposedTree::createWithoutValidation(selection.base(), selection.start(), newEnd, newEnd, selection.affinity(), selection.isDirectional());
+        return VisibleSelectionInComposedTree::createWithoutValidation(selection.base(), newEnd, selection.start(), newEnd, selection.affinity(), selection.isDirectional());
     }
     Node* shadowHost = shadowHostEnd ? shadowHostEnd : shadowHostStart;
     const PositionInComposedTree newStart = adjustPositionInComposedTreeForStart(selection.start(), shadowHost);

@@ -241,7 +241,13 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
+    friend class FrameSelectionTest;
+
     explicit FrameSelection(LocalFrame*);
+
+    // Note: We have |selectionInComposedTree()| for unit tests, we should
+    // use |visibleSelection<EditingInComposedTreeStrategy>()|.
+    const VisibleSelectionInComposedTree& selectionInComposedTree() const;
 
     template <typename Strategy>
     VisiblePositionTemplate<Strategy> originalBase() const;
