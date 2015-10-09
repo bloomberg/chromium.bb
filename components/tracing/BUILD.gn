@@ -37,16 +37,18 @@ component("startup_tracing") {
   ]
 }
 
-source_set("unit_tests") {
-  testonly = true
+if (!is_android) {
+  source_set("unit_tests") {
+    testonly = true
 
-  sources = [
-    "trace_config_file_unittest.cc",
-  ]
+    sources = [
+      "trace_config_file_unittest.cc",
+    ]
 
-  deps = [
-    ":startup_tracing",
-    "//base/test:test_support",
-    "//testing/gtest",
-  ]
+    deps = [
+      ":startup_tracing",
+      "//base/test:test_support",
+      "//testing/gtest",
+    ]
+  }
 }

@@ -341,11 +341,13 @@ group("angle_unittests_run") {
   ]
 }
 
-# TODO(GYP): Delete this after we've converted everything to GN.
-# The _run targets exist only for compatibility w/ GYP.
-group("angle_end2end_tests_run") {
-  testonly = true
-  deps = [
-    "//third_party/angle/src/tests:angle_end2end_tests",
-  ]
+if (is_win || is_linux || is_mac) {
+  # TODO(GYP): Delete this after we've converted everything to GN.
+  # The _run targets exist only for compatibility w/ GYP.
+  group("angle_end2end_tests_run") {
+    testonly = true
+    deps = [
+      "//third_party/angle/src/tests:angle_end2end_tests",
+    ]
+  }
 }
