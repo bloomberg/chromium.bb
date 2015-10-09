@@ -354,10 +354,18 @@ MessageCenterImpl::MessageCenterImpl()
       settings_provider_(NULL) {
   notification_list_.reset(new NotificationList());
 
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableMessageCenterChangesWhileOpen)) {
-    notification_queue_.reset(new internal::ChangeQueue());
+  bool enable_message_center_changes_while_open = true;  // enable by default
+  std::string arg = base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+      switches::kMessageCenterChangesWhileOpen);
+  if (!arg.empty()) {
+    if (arg == "enabled")
+      enable_message_center_changes_while_open = true;
+    else if (arg == "disabled")
+      enable_message_center_changes_while_open = false;
   }
+
+  if (!enable_message_center_changes_while_open)
+    notification_queue_.reset(new internal::ChangeQueue());
 }
 
 MessageCenterImpl::~MessageCenterImpl() {
@@ -869,8 +877,11 @@ void MessageCenterImpl::DisableTimersForTest() {
   popup_timers_controller_.reset();
 }
 
-void MessageCenterImpl::DisableChangeQueueForTest() {
-  notification_queue_.reset();
+void MessageCenterImpl::EnableChangeQueueForTest(bool enable) {
+  if (enable)
+    notification_queue_.reset(new internal::ChangeQueue());
+  else
+    notification_queue_.reset();
 }
 
 }  // namespace message_center

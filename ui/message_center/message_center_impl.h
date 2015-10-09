@@ -100,7 +100,7 @@ class MessageCenterImpl : public MessageCenter,
 
  protected:
   void DisableTimersForTest() override;
-  void DisableChangeQueueForTest() override;
+  void EnableChangeQueueForTest(bool enable) override;
 
  private:
   struct NotificationCache {

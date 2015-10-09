@@ -100,6 +100,20 @@ class MessageCenterImplTest : public testing::Test,
   DISALLOW_COPY_AND_ASSIGN(MessageCenterImplTest);
 };
 
+class MessageCenterImplTestWithChangeQueue : public MessageCenterImplTest {
+ public:
+  MessageCenterImplTestWithChangeQueue() {}
+  ~MessageCenterImplTestWithChangeQueue() override {}
+
+  void SetUp() override {
+    MessageCenterImplTest::SetUp();
+    message_center()->EnableChangeQueueForTest(true);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MessageCenterImplTestWithChangeQueue);
+};
+
 class MessageCenterImplTestWithoutChangeQueue : public MessageCenterImplTest {
  public:
   MessageCenterImplTestWithoutChangeQueue() {}
@@ -107,7 +121,7 @@ class MessageCenterImplTestWithoutChangeQueue : public MessageCenterImplTest {
 
   void SetUp() override {
     MessageCenterImplTest::SetUp();
-    message_center()->DisableChangeQueueForTest();
+    message_center()->EnableChangeQueueForTest(false);
   }
 
  private:
@@ -559,7 +573,154 @@ TEST_F(MessageCenterImplTest, TotalNotificationBlocker) {
   EXPECT_EQ(0u, message_center()->NotificationCount());
 }
 
-TEST_F(MessageCenterImplTest, QueueUpdatesWithCenterVisible) {
+#if defined(OS_CHROMEOS)
+TEST_F(MessageCenterImplTest, CachedUnreadCount) {
+  message_center()->AddNotification(
+      scoped_ptr<Notification>(CreateSimpleNotification("id1")));
+  message_center()->AddNotification(
+      scoped_ptr<Notification>(CreateSimpleNotification("id2")));
+  message_center()->AddNotification(
+      scoped_ptr<Notification>(CreateSimpleNotification("id3")));
+  ASSERT_EQ(3u, message_center()->UnreadNotificationCount());
+
+  // Mark 'displayed' on all notifications by using for-loop. This shouldn't
+  // recreate |notifications| inside of the loop.
+  const NotificationList::Notifications& notifications =
+      message_center()->GetVisibleNotifications();
+  for (NotificationList::Notifications::const_iterator iter =
+           notifications.begin(); iter != notifications.end(); ++iter) {
+    message_center()->DisplayedNotification(
+        (*iter)->id(), message_center::DISPLAY_SOURCE_MESSAGE_CENTER);
+  }
+  EXPECT_EQ(0u, message_center()->UnreadNotificationCount());
+
+  // Imitate the timeout, which recovers the unread count. Again, this shouldn't
+  // recreate |notifications| inside of the loop.
+  for (NotificationList::Notifications::const_iterator iter =
+           notifications.begin(); iter != notifications.end(); ++iter) {
+    message_center()->MarkSinglePopupAsShown((*iter)->id(), false);
+  }
+  EXPECT_EQ(3u, message_center()->UnreadNotificationCount());
+
+  // Opening the message center will reset the unread count.
+  message_center()->SetVisibility(VISIBILITY_MESSAGE_CENTER);
+  EXPECT_EQ(0u, message_center()->UnreadNotificationCount());
+}
+#endif  // OS_CHROMEOS
+
+TEST_F(MessageCenterImplTest, ForceNotificationFlush_InconsistentUpdate) {
+  std::string id1("id1");
+  std::string id2("id2");
+  std::string id3("id3");
+
+  message_center()->SetVisibility(VISIBILITY_MESSAGE_CENTER);
+
+  // Add -> Update (with ID change)
+  scoped_ptr<Notification> notification(CreateSimpleNotification(id1));
+  message_center()->AddNotification(notification.Pass());
+  notification.reset(CreateSimpleNotification(id2));
+  message_center()->UpdateNotification(id1, notification.Pass());
+
+  // Add (although the same ID exists) -> Update (with ID change) -> Remove
+  notification.reset(CreateSimpleNotification(id2));
+  message_center()->AddNotification(notification.Pass());
+  notification.reset(CreateSimpleNotification(id3));
+  message_center()->UpdateNotification(id2, notification.Pass());
+  message_center()->RemoveNotification(id3, false);
+
+  // Remove (although the ID has already removed)
+  message_center()->RemoveNotification(id3, false);
+
+  // Notification is not added since the message center has opened.
+  ASSERT_EQ(0u, message_center()->NotificationCount());
+
+  // Forced to update.
+  ForceNotificationFlush(id3);
+
+  // Confirms the chagnes are applied.
+  ASSERT_EQ(0u, message_center()->NotificationCount());
+}
+
+TEST_F(MessageCenterImplTest, DisableNotificationsByNotifier) {
+  ASSERT_EQ(0u, message_center()->NotificationCount());
+  message_center()->AddNotification(
+      scoped_ptr<Notification>(
+          CreateSimpleNotificationWithNotifierId("id1-1", "app1")));
+  message_center()->AddNotification(
+      scoped_ptr<Notification>(
+          CreateSimpleNotificationWithNotifierId("id1-2", "app1")));
+  message_center()->AddNotification(
+      scoped_ptr<Notification>(
+          CreateSimpleNotificationWithNotifierId("id2-1", "app2")));
+  message_center()->AddNotification(
+      scoped_ptr<Notification>(
+          CreateSimpleNotificationWithNotifierId("id2-2", "app2")));
+  message_center()->AddNotification(
+      scoped_ptr<Notification>(
+          CreateSimpleNotificationWithNotifierId("id2-3", "app2")));
+  ASSERT_EQ(5u, message_center()->NotificationCount());
+
+  // Removing all of app1's notifications should only leave app2's.
+  message_center()->DisableNotificationsByNotifier(
+      NotifierId(NotifierId::APPLICATION, "app1"));
+  ASSERT_EQ(3u, message_center()->NotificationCount());
+
+  // Now we remove the remaining notifications.
+  message_center()->DisableNotificationsByNotifier(
+      NotifierId(NotifierId::APPLICATION, "app2"));
+  ASSERT_EQ(0u, message_center()->NotificationCount());
+}
+
+TEST_F(MessageCenterImplTest, NotifierEnabledChanged) {
+  ASSERT_EQ(0u, message_center()->NotificationCount());
+  message_center()->AddNotification(
+      scoped_ptr<Notification>(
+          CreateSimpleNotificationWithNotifierId("id1-1", "app1")));
+  message_center()->AddNotification(
+      scoped_ptr<Notification>(
+          CreateSimpleNotificationWithNotifierId("id1-2", "app1")));
+  message_center()->AddNotification(
+      scoped_ptr<Notification>(
+          CreateSimpleNotificationWithNotifierId("id1-3", "app1")));
+  message_center()->AddNotification(
+      scoped_ptr<Notification>(
+          CreateSimpleNotificationWithNotifierId("id2-1", "app2")));
+  message_center()->AddNotification(
+      scoped_ptr<Notification>(
+          CreateSimpleNotificationWithNotifierId("id2-2", "app2")));
+  message_center()->AddNotification(
+      scoped_ptr<Notification>(
+          CreateSimpleNotificationWithNotifierId("id2-3", "app2")));
+  message_center()->AddNotification(
+      scoped_ptr<Notification>(
+          CreateSimpleNotificationWithNotifierId("id2-4", "app2")));
+  message_center()->AddNotification(
+      scoped_ptr<Notification>(
+          CreateSimpleNotificationWithNotifierId("id2-5", "app2")));
+  ASSERT_EQ(8u, message_center()->NotificationCount());
+
+  // Enabling an extension should have no effect on the count.
+  notifier_settings_observer()->NotifierEnabledChanged(
+      NotifierId(NotifierId::APPLICATION, "app1"), true);
+  ASSERT_EQ(8u, message_center()->NotificationCount());
+
+  // Removing all of app2's notifications should only leave app1's.
+  notifier_settings_observer()->NotifierEnabledChanged(
+      NotifierId(NotifierId::APPLICATION, "app2"), false);
+  ASSERT_EQ(3u, message_center()->NotificationCount());
+
+  // Removal operations should be idempotent.
+  notifier_settings_observer()->NotifierEnabledChanged(
+      NotifierId(NotifierId::APPLICATION, "app2"), false);
+  ASSERT_EQ(3u, message_center()->NotificationCount());
+
+  // Now we remove the remaining notifications.
+  notifier_settings_observer()->NotifierEnabledChanged(
+      NotifierId(NotifierId::APPLICATION, "app1"), false);
+  ASSERT_EQ(0u, message_center()->NotificationCount());
+}
+
+TEST_F(MessageCenterImplTestWithChangeQueue, QueueUpdatesWithCenterVisible) {
   std::string id("id1");
   std::string id2("id2");
   NotifierId notifier_id1(NotifierId::APPLICATION, "app1");
@@ -588,7 +749,7 @@ TEST_F(MessageCenterImplTest, QueueUpdatesWithCenterVisible) {
   EXPECT_TRUE(message_center()->FindVisibleNotificationById(id));
 }
 
-TEST_F(MessageCenterImplTest, ComplexQueueing) {
+TEST_F(MessageCenterImplTestWithChangeQueue, ComplexQueueing) {
   std::string ids[6] = {"0", "1", "2", "3", "4p", "5"};
   NotifierId notifier_id1(NotifierId::APPLICATION, "app1");
 
@@ -654,7 +815,7 @@ TEST_F(MessageCenterImplTest, ComplexQueueing) {
   EXPECT_EQ(message_center()->GetVisibleNotifications().size(), 5u);
 }
 
-TEST_F(MessageCenterImplTest, UpdateWhileQueueing) {
+TEST_F(MessageCenterImplTestWithChangeQueue, UpdateWhileQueueing) {
   std::string ids[11] =
       {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10p"};
   NotifierId notifier_id1(NotifierId::APPLICATION, "app1");
@@ -803,7 +964,7 @@ TEST_F(MessageCenterImplTest, UpdateWhileQueueing) {
   EXPECT_EQ(message_center()->GetVisibleNotifications().size(), 5u);
 }
 
-TEST_F(MessageCenterImplTest, QueuedDirectUpdates) {
+TEST_F(MessageCenterImplTestWithChangeQueue, QueuedDirectUpdates) {
   std::string id("id1");
   std::string id2("id2");
   NotifierId notifier_id1(NotifierId::APPLICATION, "app1");
@@ -861,42 +1022,7 @@ TEST_F(MessageCenterImplTest, QueuedDirectUpdates) {
   EXPECT_EQ(new_size, buttons[1].icon.Size());
 }
 
-#if defined(OS_CHROMEOS)
-TEST_F(MessageCenterImplTest, CachedUnreadCount) {
-  message_center()->AddNotification(
-      scoped_ptr<Notification>(CreateSimpleNotification("id1")));
-  message_center()->AddNotification(
-      scoped_ptr<Notification>(CreateSimpleNotification("id2")));
-  message_center()->AddNotification(
-      scoped_ptr<Notification>(CreateSimpleNotification("id3")));
-  ASSERT_EQ(3u, message_center()->UnreadNotificationCount());
-
-  // Mark 'displayed' on all notifications by using for-loop. This shouldn't
-  // recreate |notifications| inside of the loop.
-  const NotificationList::Notifications& notifications =
-      message_center()->GetVisibleNotifications();
-  for (NotificationList::Notifications::const_iterator iter =
-           notifications.begin(); iter != notifications.end(); ++iter) {
-    message_center()->DisplayedNotification(
-        (*iter)->id(), message_center::DISPLAY_SOURCE_MESSAGE_CENTER);
-  }
-  EXPECT_EQ(0u, message_center()->UnreadNotificationCount());
-
-  // Imitate the timeout, which recovers the unread count. Again, this shouldn't
-  // recreate |notifications| inside of the loop.
-  for (NotificationList::Notifications::const_iterator iter =
-           notifications.begin(); iter != notifications.end(); ++iter) {
-    message_center()->MarkSinglePopupAsShown((*iter)->id(), false);
-  }
-  EXPECT_EQ(3u, message_center()->UnreadNotificationCount());
-
-  // Opening the message center will reset the unread count.
-  message_center()->SetVisibility(VISIBILITY_MESSAGE_CENTER);
-  EXPECT_EQ(0u, message_center()->UnreadNotificationCount());
-}
-#endif  // OS_CHROMEOS
-
-TEST_F(MessageCenterImplTest, ForceNotificationFlushAdd) {
+TEST_F(MessageCenterImplTestWithChangeQueue, ForceNotificationFlushAdd) {
   std::string id("id1");
 
   message_center()->SetVisibility(VISIBILITY_MESSAGE_CENTER);
@@ -912,7 +1038,7 @@ TEST_F(MessageCenterImplTest, ForceNotificationFlushAdd) {
 }
 
 
-TEST_F(MessageCenterImplTest, ForceNotificationFlushUpdate) {
+TEST_F(MessageCenterImplTestWithChangeQueue, ForceNotificationFlushUpdate) {
   std::string id("id1");
   std::string id2("id2");
 
@@ -946,7 +1072,7 @@ TEST_F(MessageCenterImplTest, ForceNotificationFlushUpdate) {
   ASSERT_EQ(1u, message_center()->NotificationCount());
 }
 
-TEST_F(MessageCenterImplTest, ForceNotificationFlushRemove) {
+TEST_F(MessageCenterImplTestWithChangeQueue, ForceNotificationFlushRemove) {
   std::string id("id1");
 
   scoped_ptr<Notification> notification(CreateSimpleNotification(id));
@@ -965,7 +1091,8 @@ TEST_F(MessageCenterImplTest, ForceNotificationFlushRemove) {
   ASSERT_EQ(0u, message_center()->NotificationCount());
 }
 
-TEST_F(MessageCenterImplTest, ForceNotificationFlush_ComplexUpdate) {
+TEST_F(MessageCenterImplTestWithChangeQueue,
+       ForceNotificationFlush_ComplexUpdate) {
   std::string id1("id1");
   std::string id2("id2");
   std::string id3("id3");
@@ -993,118 +1120,6 @@ TEST_F(MessageCenterImplTest, ForceNotificationFlush_ComplexUpdate) {
 
   // Confirms the chagnes are applied.
   ASSERT_EQ(1u, message_center()->NotificationCount());
-}
-
-TEST_F(MessageCenterImplTest, ForceNotificationFlush_InconsistentUpdate) {
-  std::string id1("id1");
-  std::string id2("id2");
-  std::string id3("id3");
-
-  message_center()->SetVisibility(VISIBILITY_MESSAGE_CENTER);
-
-  // Add -> Update (with ID change)
-  scoped_ptr<Notification> notification(CreateSimpleNotification(id1));
-  message_center()->AddNotification(notification.Pass());
-  notification.reset(CreateSimpleNotification(id2));
-  message_center()->UpdateNotification(id1, notification.Pass());
-
-  // Add (although the same ID exists) -> Update (with ID change) -> Remove
-  notification.reset(CreateSimpleNotification(id2));
-  message_center()->AddNotification(notification.Pass());
-  notification.reset(CreateSimpleNotification(id3));
-  message_center()->UpdateNotification(id2, notification.Pass());
-  message_center()->RemoveNotification(id3, false);
-
-  // Remove (although the ID has already removed)
-  message_center()->RemoveNotification(id3, false);
-
-  // Notification is not added since the message center has opened.
-  ASSERT_EQ(0u, message_center()->NotificationCount());
-
-  // Forced to update.
-  ForceNotificationFlush(id3);
-
-  // Confirms the chagnes are applied.
-  ASSERT_EQ(0u, message_center()->NotificationCount());
-}
-
-TEST_F(MessageCenterImplTest, DisableNotificationsByNotifier) {
-  ASSERT_EQ(0u, message_center()->NotificationCount());
-  message_center()->AddNotification(
-      scoped_ptr<Notification>(
-          CreateSimpleNotificationWithNotifierId("id1-1", "app1")));
-  message_center()->AddNotification(
-      scoped_ptr<Notification>(
-          CreateSimpleNotificationWithNotifierId("id1-2", "app1")));
-  message_center()->AddNotification(
-      scoped_ptr<Notification>(
-          CreateSimpleNotificationWithNotifierId("id2-1", "app2")));
-  message_center()->AddNotification(
-      scoped_ptr<Notification>(
-          CreateSimpleNotificationWithNotifierId("id2-2", "app2")));
-  message_center()->AddNotification(
-      scoped_ptr<Notification>(
-          CreateSimpleNotificationWithNotifierId("id2-3", "app2")));
-  ASSERT_EQ(5u, message_center()->NotificationCount());
-
-  // Removing all of app1's notifications should only leave app2's.
-  message_center()->DisableNotificationsByNotifier(
-      NotifierId(NotifierId::APPLICATION, "app1"));
-  ASSERT_EQ(3u, message_center()->NotificationCount());
-
-  // Now we remove the remaining notifications.
-  message_center()->DisableNotificationsByNotifier(
-      NotifierId(NotifierId::APPLICATION, "app2"));
-  ASSERT_EQ(0u, message_center()->NotificationCount());
-}
-
-TEST_F(MessageCenterImplTest, NotifierEnabledChanged) {
-  ASSERT_EQ(0u, message_center()->NotificationCount());
-  message_center()->AddNotification(
-      scoped_ptr<Notification>(
-          CreateSimpleNotificationWithNotifierId("id1-1", "app1")));
-  message_center()->AddNotification(
-      scoped_ptr<Notification>(
-          CreateSimpleNotificationWithNotifierId("id1-2", "app1")));
-  message_center()->AddNotification(
-      scoped_ptr<Notification>(
-          CreateSimpleNotificationWithNotifierId("id1-3", "app1")));
-  message_center()->AddNotification(
-      scoped_ptr<Notification>(
-          CreateSimpleNotificationWithNotifierId("id2-1", "app2")));
-  message_center()->AddNotification(
-      scoped_ptr<Notification>(
-          CreateSimpleNotificationWithNotifierId("id2-2", "app2")));
-  message_center()->AddNotification(
-      scoped_ptr<Notification>(
-          CreateSimpleNotificationWithNotifierId("id2-3", "app2")));
-  message_center()->AddNotification(
-      scoped_ptr<Notification>(
-          CreateSimpleNotificationWithNotifierId("id2-4", "app2")));
-  message_center()->AddNotification(
-      scoped_ptr<Notification>(
-          CreateSimpleNotificationWithNotifierId("id2-5", "app2")));
-  ASSERT_EQ(8u, message_center()->NotificationCount());
-
-  // Enabling an extension should have no effect on the count.
-  notifier_settings_observer()->NotifierEnabledChanged(
-      NotifierId(NotifierId::APPLICATION, "app1"), true);
-  ASSERT_EQ(8u, message_center()->NotificationCount());
-
-  // Removing all of app2's notifications should only leave app1's.
-  notifier_settings_observer()->NotifierEnabledChanged(
-      NotifierId(NotifierId::APPLICATION, "app2"), false);
-  ASSERT_EQ(3u, message_center()->NotificationCount());
-
-  // Removal operations should be idempotent.
-  notifier_settings_observer()->NotifierEnabledChanged(
-      NotifierId(NotifierId::APPLICATION, "app2"), false);
-  ASSERT_EQ(3u, message_center()->NotificationCount());
-
-  // Now we remove the remaining notifications.
-  notifier_settings_observer()->NotifierEnabledChanged(
-      NotifierId(NotifierId::APPLICATION, "app1"), false);
-  ASSERT_EQ(0u, message_center()->NotificationCount());
 }
 
 TEST_F(MessageCenterImplTestWithoutChangeQueue,
