@@ -1934,10 +1934,10 @@ seat_get_touch(struct wl_client *client, struct wl_resource *resource,
 
 	if (touch->focus &&
 	    wl_resource_get_client(touch->focus->surface->resource) == client) {
-		wl_list_insert(&touch->resource_list,
+		wl_list_insert(&touch->focus_resource_list,
 			       wl_resource_get_link(cr));
 	} else {
-		wl_list_insert(&touch->focus_resource_list,
+		wl_list_insert(&touch->resource_list,
 			       wl_resource_get_link(cr));
 	}
 	wl_resource_set_implementation(cr, &touch_interface,
