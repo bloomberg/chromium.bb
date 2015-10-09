@@ -36,6 +36,7 @@ class ResourceFetcher;
 
 class XSLStyleSheetResource final : public StyleSheetResource {
 public:
+    static ResourcePtr<XSLStyleSheetResource> fetchSynchronously(FetchRequest&, ResourceFetcher*);
     static ResourcePtr<XSLStyleSheetResource> fetch(FetchRequest&, ResourceFetcher*);
 
     const String& sheet() const { return m_sheet; }

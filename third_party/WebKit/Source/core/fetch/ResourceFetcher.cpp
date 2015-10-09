@@ -308,7 +308,7 @@ void ResourceFetcher::preCacheData(const FetchRequest& request, const ResourceFa
 
 ResourcePtr<Resource> ResourceFetcher::requestResource(FetchRequest& request, const ResourceFactory& factory, const SubstituteData& substituteData)
 {
-    ASSERT(request.options().synchronousPolicy == RequestAsynchronously || factory.type() == Resource::Raw);
+    ASSERT(request.options().synchronousPolicy == RequestAsynchronously || factory.type() == Resource::Raw || factory.type() == Resource::XSLStyleSheet);
 
     context().upgradeInsecureRequest(request);
     context().addClientHintsIfNecessary(request);

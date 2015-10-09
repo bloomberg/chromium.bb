@@ -101,13 +101,12 @@ void XSLImportRule::loadSheet()
     ResourceLoaderOptions fetchOptions(ResourceFetcher::defaultResourceOptions());
     FetchRequest request(ResourceRequest(ownerDocument->completeURL(absHref)), FetchInitiatorTypeNames::xml, fetchOptions);
     request.setOriginRestriction(FetchRequest::RestrictToSameOrigin);
-    ResourcePtr<Resource> resource = RawResource::fetchSynchronously(request, ownerDocument->fetcher());
-    if (!resource)
+    ResourcePtr<XSLStyleSheetResource> resource = XSLStyleSheetResource::fetchSynchronously(request, ownerDocument->fetcher());
+    if (!resource || !resource->sheet())
         return;
 
     ASSERT(!m_styleSheet);
-    if (SharedBuffer* data = resource->resourceBuffer())
-        setXSLStyleSheet(absHref, resource->response().url(), UTF8Encoding().decode(data->data(), data->size()));
+    setXSLStyleSheet(absHref, resource->response().url(), resource->sheet());
 }
 
 DEFINE_TRACE(XSLImportRule)

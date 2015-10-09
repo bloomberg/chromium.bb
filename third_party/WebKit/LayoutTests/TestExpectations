@@ -853,7 +853,6 @@ crbug.com/466200 svg/custom/repaint-on-constant-size-change.svg [ Failure ]
 
 # Temporary until we start generating Trusty baselines.
 crbug.com/498021 [ Linux ] fast/text/unicode-fallback-font.html [ Failure ]
-crbug.com/498021 [ Linux ] http/tests/misc/xslt-bad-import.html [ Failure ]
 crbug.com/498021 [ Linux ] http/tests/security/contentTypeOptions/nosniff-script-without-content-type-blocked.html [ Failure ]
 crbug.com/498021 [ Linux ] svg/custom/use-on-symbol-inside-pattern.svg [ Failure ]
 crbug.com/498021 [ Linux ] fast/forms/month/month-appearance-l10n.html [ ImageOnlyFailure ]
@@ -957,6 +956,9 @@ crbug.com/240827 css3/filters/filterRegions.html [ ImageOnlyFailure ]
 
 crbug.com/501659 fast/xsl/xslt-missing-namespace-in-xslt.xml [ Failure ]
 crbug.com/501659 http/tests/xmlviewer/dumpAsText/svg.xml [ Failure ]
+
+crbug.com/434633 fast/xsl/xslt-import-enc16.xml [ NeedsRebaseline ]
+crbug.com/434633 http/tests/misc/xslt-bad-import.html [ NeedsRebaseline ]
 
 crbug.com/501659 http/tests/security/xss-DENIED-xml-external-entity.xhtml [ Failure ]
 crbug.com/501659 fast/css/stylesheet-candidate-nodes-crash.xhtml [ Failure ]
