@@ -276,14 +276,9 @@ class Tab : public gfx::AnimationDelegate,
   // animation.
   void SetFaviconHidingOffset(int offset);
 
-  void DisplayCrashedFavicon();
-  void ResetCrashedFavicon();
-
-  void StopCrashAnimation();
-  void StartCrashAnimation();
-
-  // Returns true if the crash animation is currently running.
-  bool IsPerformingCrashAnimation() const;
+  void set_should_display_crashed_favicon() {
+    should_display_crashed_favicon_ = true;
+  }
 
   // Recalculates the correct |button_color_| and resets the title, media
   // indicator, and close button colors if necessary.  This should be called any

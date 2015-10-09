@@ -165,7 +165,8 @@ class Tab::FaviconCrashAnimation : public gfx::LinearAnimation,
 
   // gfx::Animation overrides:
   void AnimateToState(double state) override {
-    const double kHidingOffset = 27;
+    const double kHidingOffset =
+        Tab::GetMinimumInactiveSize().height() - GetLayoutInsets(TAB).height();
 
     if (state < .5) {
       // Animate the normal icon down.
@@ -173,16 +174,11 @@ class Tab::FaviconCrashAnimation : public gfx::LinearAnimation,
           static_cast<int>(floor(kHidingOffset * 2.0 * state)));
     } else {
       // Animate the crashed icon up.
-      target_->DisplayCrashedFavicon();
+      target_->set_should_display_crashed_favicon();
       target_->SetFaviconHidingOffset(
           static_cast<int>(
               floor(kHidingOffset - ((state - .5) * 2.0 * kHidingOffset))));
     }
-  }
-
-  // gfx::AnimationDelegate overrides:
-  void AnimationCanceled(const gfx::Animation* animation) override {
-    target_->SetFaviconHidingOffset(0);
   }
 
  private:
@@ -471,36 +467,37 @@ void Tab::SetData(const TabRendererData& data) {
   title_->SetText(title);
 
   if (data_.IsCrashed()) {
-    if (!should_display_crashed_favicon_ && !IsPerformingCrashAnimation()) {
+    if (!should_display_crashed_favicon_ && !crash_icon_animation_) {
       data_.media_state = TAB_MEDIA_STATE_NONE;
+      bool start_crash_animation = true;
 #if defined(OS_CHROMEOS)
       // On Chrome OS, we reload killed tabs automatically when the user
       // switches to them.  Don't display animations for these unless they're
       // selected (i.e. in the foreground) -- we won't reload these
       // automatically since we don't want to get into a crash loop.
-      if (IsSelected() ||
-          (data_.crashed_status
-           != base::TERMINATION_STATUS_PROCESS_WAS_KILLED &&
-           data_.crashed_status
-           != base::TERMINATION_STATUS_PROCESS_WAS_KILLED_BY_OOM)) {
-        StartCrashAnimation();
-      }
-#else
-      StartCrashAnimation();
+      start_crash_animation = IsSelected() ||
+          (data_.crashed_status !=
+              base::TERMINATION_STATUS_PROCESS_WAS_KILLED &&
+           data_.crashed_status !=
+              base::TERMINATION_STATUS_PROCESS_WAS_KILLED_BY_OOM);
 #endif
+      if (start_crash_animation) {
+        crash_icon_animation_.reset(new FaviconCrashAnimation(this));
+        crash_icon_animation_->Start();
+      }
     }
   } else {
-    if (IsPerformingCrashAnimation())
-      StopCrashAnimation();
-    ResetCrashedFavicon();
+    if (crash_icon_animation_)
+        crash_icon_animation_.reset();
+    should_display_crashed_favicon_ = false;
+    favicon_hiding_offset_ = 0;
   }
 
   if (data_.media_state != old.media_state)
     media_indicator_button_->TransitionToMediaState(data_.media_state);
 
-  if (old.pinned != data_.pinned) {
-    StopAndDeleteAnimation(pinned_title_change_animation_.Pass());
-  }
+  if (old.pinned != data_.pinned)
+    StopPinnedTabTitleAnimation();
 
   DataChanged(old);
 
@@ -1347,10 +1344,11 @@ void Tab::PaintActiveTabBackground(gfx::Canvas* canvas) {
 
 void Tab::PaintIcon(gfx::Canvas* canvas) {
   gfx::Rect bounds = favicon_bounds_;
+  bounds.set_x(GetMirroredXForRect(bounds));
+  bounds.Offset(0, favicon_hiding_offset_);
+  bounds.Intersect(GetInteriorBounds());
   if (bounds.IsEmpty())
     return;
-
-  bounds.set_x(GetMirroredXForRect(bounds));
 
   if (data().network_state != TabRendererData::NETWORK_STATE_NONE) {
     // Paint network activity (aka throbber) animation frame.
@@ -1488,27 +1486,6 @@ void Tab::SetFaviconHidingOffset(int offset) {
   ScheduleIconPaint();
 }
 
-void Tab::DisplayCrashedFavicon() {
-  should_display_crashed_favicon_ = true;
-}
-
-void Tab::ResetCrashedFavicon() {
-  should_display_crashed_favicon_ = false;
-}
-
-void Tab::StopCrashAnimation() {
-  crash_icon_animation_.reset();
-}
-
-void Tab::StartCrashAnimation() {
-  crash_icon_animation_.reset(new FaviconCrashAnimation(this));
-  crash_icon_animation_->Start();
-}
-
-bool Tab::IsPerformingCrashAnimation() const {
-  return crash_icon_animation_.get() && data_.IsCrashed();
-}
-
 void Tab::OnButtonColorMaybeChanged() {
   // The theme provider may be null if we're not currently in a widget
   // hierarchy.
@@ -1537,8 +1514,8 @@ void Tab::ScheduleIconPaint() {
   if (bounds.IsEmpty())
     return;
 
-  // Extends the area to the bottom when sad_favicon is animating.
-  if (IsPerformingCrashAnimation())
+  // Extends the area to the bottom when the crash animation is in progress.
+  if (crash_icon_animation_)
     bounds.set_height(height() - bounds.y());
   bounds.set_x(GetMirroredXForRect(bounds));
   SchedulePaintInRect(bounds);
