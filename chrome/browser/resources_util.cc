@@ -8,6 +8,7 @@
 
 #include "base/containers/hash_tables.h"
 #include "base/lazy_instance.h"
+#include "grit/components_scaled_resources_map.h"
 #include "grit/theme_resources_map.h"
 #include "grit/ui_resources_map.h"
 
@@ -25,6 +26,10 @@ class ThemeMap {
   typedef base::hash_map<std::string, int> StringIntMap;
 
   ThemeMap() {
+    for (size_t i = 0; i < kComponentsScaledResourcesSize; ++i) {
+      id_map_[kComponentsScaledResources[i].name] =
+          kComponentsScaledResources[i].value;
+    }
     for (size_t i = 0; i < kThemeResourcesSize; ++i)
       id_map_[kThemeResources[i].name] = kThemeResources[i].value;
     for (size_t i = 0; i < kUiResourcesSize; ++i)

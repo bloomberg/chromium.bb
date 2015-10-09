@@ -32,6 +32,7 @@
 #include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
+#include "grit/components_scaled_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/material_design/material_design_controller.h"

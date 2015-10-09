@@ -14,6 +14,7 @@
       'dependencies': [
         'about_credits',
       ],
+      'hard_dependency': 1,
       'variables': {
         'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/components',
       },
