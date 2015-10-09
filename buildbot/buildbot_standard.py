@@ -256,43 +256,25 @@ def BuildScript(status, context):
       CommandGclientRunhooks(context)
 
   # Make sure our GN build is working.
-  # TODO(mcgrathr): Make this work on Linux bots again.
-  # can_use_gn = context.Linux() and context['arch'] != 'arm'
-  buildername = os.environ.get('BUILDBOT_BUILDERNAME', '')
-  can_use_gn = (buildername == 'nacl-precise64_newlib_opt' or
-                buildername == 'nacl-precise64-newlib-opt')
-
+  can_use_gn = context.Linux()
   gn_out = '../out'
 
   if can_use_gn:
     def BoolFlag(cond):
       return 'true' if cond else 'false'
 
-    gn_x86 = 'false'
-    gn_x64 = 'false'
-    gn_arm = 'false'
-
-    if context['arch'] == '32':
-      gn_x86 = 'true'
-    elif context['arch'] == '64':
-      gn_x64 = 'true'
-    elif context['arch'] == 'arm':
-      gn_arm = 'true'
-    else:
-      raise Exception("Unexpected arch: " + context['arch'])
-
     gn_newlib = BoolFlag(not context['use_glibc'])
     gn_glibc = BoolFlag(context['use_glibc'])
 
+    gn_arch_name = {
+        'arm': 'arm',
+        '32': 'x86',
+        '64': 'x64'
+        }[context['arch']]
+
     gn_gen_args = [
+      'target_cpu="%s"' % gn_arch_name,
       'is_debug=' + context['gn_is_debug'],
-      'use_trusted_x86=' + gn_x86,
-      'use_nacl_x86=' + gn_x86,
-      'use_trusted_x64=' + gn_x64,
-      'use_nacl_x64=' + gn_x64,
-      'use_trusted_arm=' + gn_arm,
-      'use_nacl_arm=' + gn_arm,
-      'use_gcc_newlib=' + gn_newlib,
       'use_gcc_glibc=' + gn_glibc,
       'use_clang_newlib=' + gn_newlib,
     ]
@@ -301,6 +283,9 @@ def BuildScript(status, context):
     # then gn will set host_cpu=x64 when we want host_cpu=x86.
     if context['arch'] == '32':
       gn_gen_args.append('host_cpu="x86"')
+
+    gn_out_trusted = gn_out
+    gn_out_irt = os.path.join(gn_out, 'irt_' + gn_arch_name)
 
     gn_cmd = [
       'gn',
@@ -425,27 +410,22 @@ def BuildScript(status, context):
 
   ### BEGIN GN tests ###
   if can_use_gn:
-    arch_name = {
-      'arm': 'arm',
-      '32': 'x86',
-      '64': 'x64'
-    }[context['arch']]
-    gn_sel_ldr = os.path.join(gn_out, 'sel_ldr')
-    gn_irt = os.path.join(gn_out, 'irt_' + arch_name, 'irt_core.nexe')
     gn_extra = [
-        'force_sel_ldr=' + gn_sel_ldr,
-        'force_irt=' + gn_irt,
+        'force_sel_ldr=' + os.path.join(gn_out_trusted, 'sel_ldr'),
+        'force_bootstrap=' + os.path.join(gn_out_trusted,
+                                          'nacl_helper_bootstrap'),
+        'force_irt=' + os.path.join(gn_out_irt, 'irt_core.nexe'),
         'perf_prefix=gn_',
     ]
-    for step_suffix, extra_scons_modes, suite_suffix in [
-        ('', [], ''),
-        (' under IRT', ['nacl_irt_test'], '_irt')
-        ]:
+    def RunGNTests(step_suffix, extra_scons_modes, suite_suffix):
       for suite in ['small_tests', 'medium_tests', 'large_tests']:
         with Step(suite + step_suffix + ' (GN)', status, halt_on_fail=False):
           SCons(context,
                 mode=context['default_scons_mode'] + extra_scons_modes,
                 args=[suite + suite_suffix] + gn_extra)
+    if not context['use_glibc']:
+      RunGNTests('', [], '')
+    RunGNTests(' under IRT', ['nacl_irt_test'], '_irt')
   ### END GN tests ###
 
 

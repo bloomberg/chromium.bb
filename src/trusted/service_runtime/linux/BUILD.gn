@@ -2,13 +2,23 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-#  Generated from GYP
+# We use a special toolchain to build nacl_helper_bootstrap.  This
+# seems a bit excessive for compiling one source file.  But it is
+# the most reasonable way to instantiate the configs with different
+# settings such as use_gold=false.  The minimal set of configs used
+# for that file (see below) will sometimes try to use the switch
+# -gsplit-dwarf under use_gold=true.  But without some other configs
+# that add a -B option pointing at a custom-built binutils, on some
+# builders (e.g. on older bots) Clang will fail with -gsplit-dwarf.
+# Fortunately, -gsplit-dwarf is pointless for this build anyway
+# since there is just one small file.  And we're not actually using
+# Gold for the link, so use_gold=true is a false statement and might
+# cause other problems.
 
-if (is_linux) {
-  if (current_cpu == "arm") {
-    import("//build/config/arm.gni")
-  }
+here = get_label_info(".", "dir")
+bootstrap_toolchain = here + "/toolchain:nacl_bootstrap_" + target_cpu
 
+if (current_toolchain == bootstrap_toolchain) {
   bootstrap_lib_path = "$target_out_dir/libnacl_bootstrap_lib.a"
   bootstrap_raw_path = "$target_out_dir/nacl_bootstrap_raw"
   bootstrap_exe_path = "$root_out_dir/nacl_helper_bootstrap"
@@ -41,55 +51,35 @@ if (is_linux) {
   }
 
   static_library("nacl_bootstrap_lib") {
+    # This code has very specific requirements related to its static
+    # linking and minimal libc use.  It cannot support the normal variety
+    # of build configs that the rest of the code is built with.  So it
+    # resets the list of configsto empty, and then builds up from scratch
+    # using only the basics that work here.
     configs = []
-    cflags = []
-    ldflags = []
-
-    if (current_cpu == "x86") {
-      cflags += [ "-m32" ]
-      ldflags += [ "-m32" ]
-    }
-    if (current_cpu == "x64") {
-      cflags += [ "-m64" ]
-      ldflags += [ "-m64" ]
-    }
-    if (current_cpu == "arm") {
-      cflags += [
-        "-march=$arm_arch",
-        "-mfpu=$arm_fpu",
-        "-mfloat-abi=$arm_float_abi",
-      ]
-      if (arm_tune != "") {
-        cflags += [ "-mtune=$arm_tune" ]
-      }
-      if (arm_use_thumb) {
-        cflags += [ "-mthumb" ]
-        if (is_android && !is_clang) {  # Clang doesn't support this option.
-          cflags += [ "-mthumb-interwork" ]
-        }
-      }
-    }
-
-    if (!defined(include_dirs)) {
-      include_dirs = []
-    }
-    include_dirs += [
-      "//native_client",
-      "//",
+    configs += [
+      "//build/config/compiler:compiler_cpu_abi",
+      "//build/config/compiler:runtime_library",
+      "//build/config/compiler:chromium_code",
+      "//build/config/compiler:default_optimization",
+      "//build/config/compiler:default_symbols",
     ]
-    if (is_clang) {
-      cflags += [ "-Qunused-arguments" ]
-    }
-    sources = [
-      "nacl_bootstrap.c",
-    ]
-    cflags += [
+
+    include_dirs = [ "//" ]
+
+    cflags = [
       "-fno-builtin",
+      # These might be the defaults in the compiler configuration,
+      # but we want them all disabled for this build.
       "-fno-stack-protector",
       "-fno-pic",
       "-fno-PIC",
       "-fno-pie",
       "-fno-PIE",
+    ]
+
+    sources = [
+      "nacl_bootstrap.c",
     ]
 
     deps = [
@@ -158,5 +148,15 @@ if (is_linux) {
       bootstrap_exe_path,
     ]
     args = rebase_path(inputs + outputs)
+  }
+} else if (is_linux) {
+  copy("bootstrap") {
+    bootstrap = ":munge_nacl_helper_bootstrap($bootstrap_toolchain)"
+
+    bootstrap_out_dir = get_label_info(bootstrap, "root_out_dir")
+
+    deps = [ bootstrap ]
+    sources = [ "$bootstrap_out_dir/nacl_helper_bootstrap" ]
+    outputs = [ "$root_out_dir/nacl_helper_bootstrap" ]
   }
 }

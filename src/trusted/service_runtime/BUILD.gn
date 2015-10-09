@@ -230,8 +230,6 @@ executable("sel_ldr") {
     ldflags = [ "-pie" ]
   }
   if (is_linux) {
-    datadeps = [
-      "//native_client/src/trusted/service_runtime/linux:munge_nacl_helper_bootstrap",
-    ]
+    data_deps = [ "linux:bootstrap" ]
   }
 }

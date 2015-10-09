@@ -45,11 +45,10 @@
 
 /*
  * ARM requires .type XXX, %function to ensure proper switching between
- * Thumb and ARM instruction sets.  We do not use '.type' globally because
- * OSX builds use llvm which does not support '.type', and neither does
- * the assembler under Windows.
+ * Thumb and ARM instruction sets on ELF-based platforms.  We do not use
+ * '.type' globally because OSX and Windows are not ELF and do not support it.
  */
-#if !defined(__llvm__) && !NACL_WINDOWS
+#if defined(__ELF__)
 
 #define DEFINE_GLOBAL_HIDDEN_DATA(n) \
   .globl IDENTIFIER(n); HIDDEN(n); .type IDENTIFIER(n), %object; IDENTIFIER(n)

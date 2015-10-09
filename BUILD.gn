@@ -15,71 +15,20 @@
 #
 
 declare_args() {
-  # Trusted architecture
-  use_trusted_x86 = target_cpu == "x86"
-  use_trusted_x64 = target_cpu == "x64" || target_os == "win"
-  use_trusted_arm = target_cpu == "arm"
-
   # Untrusted architecture
   use_nacl_x86 = target_cpu == "x86"
   use_nacl_x64 = target_cpu == "x64" || target_os == "win"
   use_nacl_arm = target_cpu == "arm"
 
   # Untrusted libc
-  use_gcc_newlib = true
   use_gcc_glibc = false
-  use_clang_newlib = false
-}
-
-trusted_deps = []
-
-if (use_trusted_x86) {
-  group("trusted_x86") {
-    if (is_linux) {
-      toolchain = "//build/toolchain/linux:clang_x86"
-    } else if (is_win) {
-      toolchain = "//build/toolchain/win:x86"
-    } else {
-      assert(False, "unsupported OS for a trusted x86 build")
-    }
-    deps = [
-      "//native_client/src:trusted_targets($toolchain)",
-    ]
-  }
-  trusted_deps += [ ":trusted_x86" ]
-}
-
-if (use_trusted_x64) {
-  group("trusted_x64") {
-    if (is_linux) {
-      toolchain = "//build/toolchain/linux:clang_x64"
-    } else if (is_mac) {
-      toolchain = "//build/toolchain/mac:clang_x64"
-    } else if (is_win) {
-      toolchain = "//build/toolchain/win:x64"
-    } else {
-      assert(False, "unsupported OS for a trusted x64 build")
-    }
-    deps = [
-      "//native_client/src:trusted_targets($toolchain)",
-    ]
-  }
-  trusted_deps += [ ":trusted_x64" ]
-}
-
-if (use_trusted_arm) {
-  group("trusted_arm") {
-    assert(is_linux)
-    toolchain = "//build/toolchain/linux:arm"
-    deps = [
-      "//native_client/src:trusted_targets($toolchain)",
-    ]
-  }
-  trusted_deps += [ ":trusted_arm" ]
+  use_clang_newlib = true
 }
 
 group("trusted") {
-  deps = trusted_deps
+  deps = [
+    "//native_client/src:trusted_targets",
+  ]
 }
 
 
@@ -89,9 +38,6 @@ group("trusted") {
 group("untrusted") {
   deps = []
   if (use_nacl_x86) {
-    if (use_gcc_newlib) {
-      deps += [ "//native_client/src/:untrusted_targets(//build/toolchain/nacl:newlib_x86)" ]
-    }
     if (use_gcc_glibc) {
       deps += [ "//native_client/src/:untrusted_targets(//build/toolchain/nacl:glibc_x86)" ]
     }
@@ -101,9 +47,6 @@ group("untrusted") {
     deps += [ "//native_client/src/:irt_targets(//build/toolchain/nacl:irt_x86)" ]
   }
   if (use_nacl_x64) {
-    if (use_gcc_newlib) {
-      deps += [ "//native_client/src/:untrusted_targets(//build/toolchain/nacl:newlib_x64)" ]
-    }
     if (use_gcc_glibc) {
       deps += [ "//native_client/src/:untrusted_targets(//build/toolchain/nacl:glibc_x64)" ]
     }
@@ -113,11 +56,12 @@ group("untrusted") {
     deps += [ "//native_client/src/:irt_targets(//build/toolchain/nacl:irt_x64)" ]
   }
   if (use_nacl_arm) {
-    if (use_gcc_newlib) {
-      deps += [ "//native_client/src/:untrusted_targets(//build/toolchain/nacl:newlib_arm)" ]
+    if (use_clang_newlib) {
+      deps += [ "//native_client/src/:untrusted_targets(//build/toolchain/nacl:clang_newlib_arm)" ]
     }
 
-    # No gcc build, yet.
+    # No glibc build, yet.
+
     deps += [ "//native_client/src/:irt_targets(//build/toolchain/nacl:irt_arm)" ]
   }
 }

@@ -124,6 +124,8 @@ ACCEPTABLE_ARGUMENTS = set([
     'force_emulator',
     # force sel_ldr use by tests
     'force_sel_ldr',
+    # force nacl_helper_bootstrap used by tests
+    'force_bootstrap',
     # force irt image used by tests
     'force_irt',
     # generate_ninja=FILE enables a Ninja backend for SCons.  This writes a
@@ -1316,13 +1318,19 @@ def GetBootstrap(env):
     # Bootstrap doens't currently work with MSan. However, MSan is only
     # available on x86_64 where we don't need bootstrap anyway.
     return None, None
-  if 'TRUSTED_ENV' in env:
-    trusted_env = env['TRUSTED_ENV']
-    if trusted_env.Bit('linux'):
-      template_digits = 'X' * 16
-      return (trusted_env.File('${STAGING_DIR}/nacl_helper_bootstrap'),
-              ['--r_debug=0x' + template_digits,
-               '--reserved_at_zero=0x' + template_digits])
+  bootstrap = ARGUMENTS.get('force_bootstrap')
+  if bootstrap:
+    bootstrap = env.File(env.SConstructAbsPath(bootstrap))
+  else:
+    if 'TRUSTED_ENV' in env:
+      trusted_env = env['TRUSTED_ENV']
+      if trusted_env.Bit('linux'):
+        bootstrap = trusted_env.File('${STAGING_DIR}/nacl_helper_bootstrap')
+  if bootstrap:
+    template_digits = 'X' * 16
+    return (bootstrap,
+            ['--r_debug=0x' + template_digits,
+             '--reserved_at_zero=0x' + template_digits])
   return None, None
 
 pre_base_env.AddMethod(GetBootstrap)
