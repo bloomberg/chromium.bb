@@ -8,7 +8,6 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread.h"
-#include "components/html_viewer/blink_settings.h"
 #include "components/html_viewer/discardable_memory_allocator.h"
 #include "components/mus/gles2/mojo_gpu_memory_buffer_manager.h"
 #include "components/mus/gles2/raster_thread_helper.h"
@@ -84,8 +83,6 @@ class GlobalState {
 
   MediaFactory* media_factory() { return media_factory_.get(); }
 
-  BlinkSettings* blink_settings() { return &blink_settings_; }
-
  private:
   // Callback for |gpu_service_|->GetGpuInfo().
   void GetGpuInfoCallback(mojo::GpuInfoPtr gpu_info);
@@ -122,8 +119,6 @@ class GlobalState {
   mojo::GpuPtr gpu_service_;
   mojo::GpuInfoPtr gpu_info_;
   scoped_ptr<MediaFactory> media_factory_;
-
-  BlinkSettings blink_settings_;
 
 #if defined(OS_LINUX) && !defined(OS_ANDROID)
   skia::RefPtr<font_service::FontLoader> font_loader_;
