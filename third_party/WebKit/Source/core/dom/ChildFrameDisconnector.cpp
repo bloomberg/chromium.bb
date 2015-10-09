@@ -12,18 +12,16 @@
 
 namespace blink {
 
-// TODO(bokan): Enabling these asserts in release temporarily to track down
-// crbug.com/519752. Leaving the #if's commented in case I get hit by a bus
-// before reverting.
-// #if ENABLE(ASSERT)
+#if ENABLE(ASSERT)
 static unsigned checkConnectedSubframeCountIsConsistent(Node&);
-// #endif
+#endif
 
 void ChildFrameDisconnector::disconnect(DisconnectPolicy policy)
 {
-// #if ENABLE(ASSERT)
+#if ENABLE(ASSERT)
     checkConnectedSubframeCountIsConsistent(root());
-// #endif
+#endif
+
     if (!root().connectedSubframeCount())
         return;
 
@@ -74,7 +72,7 @@ void ChildFrameDisconnector::collectFrameOwners(ElementShadow& shadow)
         collectFrameOwners(*root);
 }
 
-// #if ENABLE(ASSERT)
+#if ENABLE(ASSERT)
 static unsigned checkConnectedSubframeCountIsConsistent(Node& node)
 {
     unsigned count = 0;
@@ -94,15 +92,15 @@ static unsigned checkConnectedSubframeCountIsConsistent(Node& node)
 
     // If we undercount there's possibly a security bug since we'd leave frames
     // in subtrees outside the document.
-    RELEASE_ASSERT(node.connectedSubframeCount() >= count);
+    ASSERT(node.connectedSubframeCount() >= count);
 
     // If we overcount it's safe, but not optimal because it means we'll traverse
     // through the document in ChildFrameDisconnector looking for frames that have
     // already been disconnected.
-    RELEASE_ASSERT(node.connectedSubframeCount() == count);
+    ASSERT(node.connectedSubframeCount() == count);
 
     return count;
 }
-// #endif
+#endif
 
 }

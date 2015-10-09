@@ -2190,8 +2190,7 @@ unsigned Node::connectedSubframeCount() const
 
 void Node::incrementConnectedSubframeCount(unsigned amount)
 {
-    // TODO(bokan): Temporarily made RELEASE_ASSERT to trackdown crbug.com/519752.
-    RELEASE_ASSERT(isContainerNode());
+    ASSERT(isContainerNode());
     ensureRareData().incrementConnectedSubframeCount(amount);
 }
 
