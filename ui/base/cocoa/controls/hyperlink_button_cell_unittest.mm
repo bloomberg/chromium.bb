@@ -11,6 +11,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
+#include "ui/events/test/cocoa_test_event_utils.h"
 #import "ui/gfx/test/ui_cocoa_test_helper.h"
 
 namespace ui {
@@ -75,13 +76,11 @@ TEST_F(HyperlinkButtonCellTest, SetTextColor) {
 }
 
 // Test mouse events.
-// TODO(rsesek): See if we can synthesize mouse events to more accurately
-// test this.
 TEST_F(HyperlinkButtonCellTest, MouseHover) {
   [[NSCursor disappearingItemCursor] push];  // Set a known state.
-  [cell_ mouseEntered:nil];
+  [cell_ mouseEntered:cocoa_test_event_utils::EnterEvent()];
   EXPECT_EQ([NSCursor pointingHandCursor], [NSCursor currentCursor]);
-  [cell_ mouseExited:nil];
+  [cell_ mouseExited:cocoa_test_event_utils::ExitEvent()];
   EXPECT_EQ([NSCursor disappearingItemCursor], [NSCursor currentCursor]);
   [NSCursor pop];
 }
@@ -91,10 +90,10 @@ TEST_F(HyperlinkButtonCellTest, MouseHoverWhenDisabled) {
   [cell_ setEnabled:NO];
 
   [[NSCursor disappearingItemCursor] push];  // Set a known state.
-  [cell_ mouseEntered:nil];
+  [cell_ mouseEntered:cocoa_test_event_utils::EnterEvent()];
   EXPECT_EQ([NSCursor disappearingItemCursor], [NSCursor currentCursor]);
 
-  [cell_ mouseExited:nil];
+  [cell_ mouseExited:cocoa_test_event_utils::ExitEvent()];
   EXPECT_EQ([NSCursor disappearingItemCursor], [NSCursor currentCursor]);
   [NSCursor pop];
   [NSCursor pop];
@@ -103,16 +102,16 @@ TEST_F(HyperlinkButtonCellTest, MouseHoverWhenDisabled) {
 // Test underline on hover.
 TEST_F(HyperlinkButtonCellTest, UnderlineOnHover) {
   EXPECT_TRUE(HasUnderlineAttribute([cell_ linkAttributes]));
-  [cell_ mouseEntered:nil];
+  [cell_ mouseEntered:cocoa_test_event_utils::EnterEvent()];
   EXPECT_TRUE(HasUnderlineAttribute([cell_ linkAttributes]));
-  [cell_ mouseExited:nil];
+  [cell_ mouseExited:cocoa_test_event_utils::ExitEvent()];
   EXPECT_TRUE(HasUnderlineAttribute([cell_ linkAttributes]));
 
   [cell_ setUnderlineOnHover:YES];
   EXPECT_FALSE(HasUnderlineAttribute([cell_ linkAttributes]));
-  [cell_ mouseEntered:nil];
+  [cell_ mouseEntered:cocoa_test_event_utils::EnterEvent()];
   EXPECT_TRUE(HasUnderlineAttribute([cell_ linkAttributes]));
-  [cell_ mouseExited:nil];
+  [cell_ mouseExited:cocoa_test_event_utils::ExitEvent()];
   EXPECT_FALSE(HasUnderlineAttribute([cell_ linkAttributes]));
 }
 

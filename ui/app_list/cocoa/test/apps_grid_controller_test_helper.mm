@@ -41,13 +41,13 @@ void AppsGridControllerTestHelper::SimulateKeyAction(SEL c) {
 }
 
 void AppsGridControllerTestHelper::SimulateMouseEnterItemAt(size_t index) {
-  [[apps_grid_controller_ itemAtIndex:index] mouseEntered:
-      cocoa_test_event_utils::EnterExitEventWithType(NSMouseEntered)];
+  [[apps_grid_controller_ itemAtIndex:index]
+      mouseEntered:cocoa_test_event_utils::EnterEvent()];
 }
 
 void AppsGridControllerTestHelper::SimulateMouseExitItemAt(size_t index) {
-  [[apps_grid_controller_ itemAtIndex:index] mouseExited:
-      cocoa_test_event_utils::EnterExitEventWithType(NSMouseExited)];
+  [[apps_grid_controller_ itemAtIndex:index]
+      mouseExited:cocoa_test_event_utils::ExitEvent()];
 }
 
 std::string AppsGridControllerTestHelper::GetViewContent() const {

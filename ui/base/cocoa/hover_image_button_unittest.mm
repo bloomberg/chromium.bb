@@ -5,6 +5,7 @@
 #import "ui/base/cocoa/hover_image_button.h"
 
 #import "base/mac/scoped_nsobject.h"
+#include "ui/events/test/cocoa_test_event_utils.h"
 #import "ui/gfx/test/ui_cocoa_test_helper.h"
 
 namespace {
@@ -35,10 +36,10 @@ TEST_F(HoverImageButtonTest, ImageSwap) {
   [button_ setDefaultImage:image];
   [button_ setHoverImage:hover];
 
-  [button_ mouseEntered:nil];
+  [button_ mouseEntered:cocoa_test_event_utils::EnterEvent()];
   DrawRect();
   EXPECT_EQ([button_ image], hover);
-  [button_ mouseExited:nil];
+  [button_ mouseExited:cocoa_test_event_utils::ExitEvent()];
   DrawRect();
   EXPECT_NE([button_ image], hover);
   EXPECT_EQ([button_ image], image);

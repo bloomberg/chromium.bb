@@ -305,9 +305,9 @@ TEST_F(EventsMacTest, EventTypeFromNative) {
   event = cocoa_test_event_utils::MouseEventWithType(NSMouseMoved, 0);
   EXPECT_EQ(ui::ET_MOUSE_MOVED, ui::EventTypeFromNative(event));
 
-  event = cocoa_test_event_utils::EnterExitEventWithType(NSMouseEntered);
+  event = cocoa_test_event_utils::EnterEvent();
   EXPECT_EQ(ui::ET_MOUSE_ENTERED, ui::EventTypeFromNative(event));
-  event = cocoa_test_event_utils::EnterExitEventWithType(NSMouseExited);
+  event = cocoa_test_event_utils::ExitEvent();
   EXPECT_EQ(ui::ET_MOUSE_EXITED, ui::EventTypeFromNative(event));
 }
 

@@ -150,7 +150,7 @@ NSEvent* KeyEventWithKeyCode(unsigned short key_code,
                            keyCode:key_code];
 }
 
-NSEvent* EnterExitEventWithType(NSEventType event_type) {
+static NSEvent* EnterExitEventWithType(NSEventType event_type) {
   return [NSEvent enterExitEventWithType:event_type
                                 location:NSZeroPoint
                            modifierFlags:0
@@ -160,6 +160,14 @@ NSEvent* EnterExitEventWithType(NSEventType event_type) {
                              eventNumber:0
                           trackingNumber:0
                                 userData:NULL];
+}
+
+NSEvent* EnterEvent() {
+  return EnterExitEventWithType(NSMouseEntered);
+}
+
+NSEvent* ExitEvent() {
+  return EnterExitEventWithType(NSMouseExited);
 }
 
 NSEvent* OtherEventWithType(NSEventType event_type) {
