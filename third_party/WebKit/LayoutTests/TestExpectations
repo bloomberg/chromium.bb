@@ -955,9 +955,6 @@ crbug.com/240827 css3/filters/filterRegions.html [ ImageOnlyFailure ]
 crbug.com/501659 fast/xsl/xslt-missing-namespace-in-xslt.xml [ Failure ]
 crbug.com/501659 http/tests/xmlviewer/dumpAsText/svg.xml [ Failure ]
 
-crbug.com/434633 fast/xsl/xslt-import-enc16.xml [ NeedsRebaseline ]
-crbug.com/434633 http/tests/misc/xslt-bad-import.html [ NeedsRebaseline ]
-
 crbug.com/501659 http/tests/security/xss-DENIED-xml-external-entity.xhtml [ Failure ]
 crbug.com/501659 fast/css/stylesheet-candidate-nodes-crash.xhtml [ Failure ]
 crbug.com/504703 inspector-protocol/debugger/debugger-step-into-dedicated-worker.html [ Slow ]
