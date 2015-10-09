@@ -66,7 +66,14 @@ unsigned __stdcall RolloverTestThreadMain(void* param) {
 
 }  // namespace
 
-TEST(TimeTicks, WinRollover) {
+// This test spawns many threads, and can occasionally fail due to resource
+// exhaustion in the presence of ASan.
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_WinRollover DISABLED_WinRollover
+#else
+#define MAYBE_WinRollover WinRollover
+#endif
+TEST(TimeTicks, MAYBE_WinRollover) {
   // The internal counter rolls over at ~49days.  We'll use a mock
   // timer to test this case.
   // Basic test algorithm:
