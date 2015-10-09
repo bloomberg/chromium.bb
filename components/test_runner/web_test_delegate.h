@@ -145,6 +145,10 @@ class WebTestDelegate {
   virtual void EvaluateInWebInspector(long call_id,
                                       const std::string& script) = 0;
 
+  // Evaluate the given script in the inspector overlay page.
+  virtual std::string EvaluateInWebInspectorOverlay(
+      const std::string& script) = 0;
+
   // Controls WebSQL databases.
   virtual void ClearAllDatabases() = 0;
   virtual void SetDatabaseQuota(int quota) = 0;

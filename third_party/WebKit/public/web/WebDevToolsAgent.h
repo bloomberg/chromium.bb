@@ -55,6 +55,7 @@ public:
 
     // Exposed for TestRunner.
     virtual void evaluateInWebInspector(long callId, const WebString& script) = 0;
+    virtual WebString evaluateInWebInspectorOverlay(const WebString& script) = 0;
 
     class MessageDescriptor {
     public:

@@ -55,6 +55,18 @@ InspectorTest.evaluateInPageWithTimeout = function(code)
     InspectorTest.evaluateInPage("setTimeout(unescape('" + escape(code) + "'), 1)");
 }
 
+InspectorTest.evaluateFunctionInOverlay = function(func, callback)
+{
+    var expression = "testRunner.evaluateInWebInspectorOverlay(\"(\" + " + func + " + \")()\")";
+    var mainContext = InspectorTest.runtimeModel.executionContexts()[0];
+    mainContext.evaluate(expression, "", false, false, true, false, wrapCallback);
+
+    function wrapCallback(val, err, result)
+    {
+        callback(result.value)
+    }
+}
+
 var lastEvalId = 0;
 var pendingEvalRequests = {};
 

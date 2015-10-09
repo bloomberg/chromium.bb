@@ -91,6 +91,7 @@ class BlinkTestRunner : public RenderViewObserver,
                     const std::string& frontend_url) override;
   void CloseDevTools() override;
   void EvaluateInWebInspector(long call_id, const std::string& script) override;
+  std::string EvaluateInWebInspectorOverlay(const std::string& script) override;
   void ClearAllDatabases() override;
   void SetDatabaseQuota(int quota) override;
   void SimulateWebNotificationClick(const std::string& title,

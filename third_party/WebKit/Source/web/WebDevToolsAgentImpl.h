@@ -104,6 +104,7 @@ public:
     void dispatchOnInspectorBackend(const WebString& message) override;
     void inspectElementAt(const WebPoint&) override;
     void evaluateInWebInspector(long callId, const WebString& script) override;
+    WebString evaluateInWebInspectorOverlay(const WebString& script) override;
 
 private:
     WebDevToolsAgentImpl(WebLocalFrameImpl*, WebDevToolsAgentClient*, PassOwnPtrWillBeRawPtr<InspectorOverlay>);

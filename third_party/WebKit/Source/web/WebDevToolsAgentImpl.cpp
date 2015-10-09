@@ -663,6 +663,14 @@ void WebDevToolsAgentImpl::evaluateInWebInspector(long callId, const WebString& 
     m_inspectorAgent->evaluateForTestInFrontend(callId, script);
 }
 
+WebString WebDevToolsAgentImpl::evaluateInWebInspectorOverlay(const WebString& script)
+{
+    if (!m_overlay)
+        return WebString();
+
+    return m_overlay->evaluateInOverlayForTest(script);
+}
+
 void WebDevToolsAgentImpl::flushPendingProtocolNotifications()
 {
     if (!m_attached)

@@ -264,6 +264,7 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void CloseWebInspector();
   bool IsChooserShown();
   void EvaluateInWebInspector(int call_id, const std::string& script);
+  std::string EvaluateInWebInspectorOverlay(const std::string& script);
   void ClearAllDatabases();
   void SetDatabaseQuota(int quota);
   void SetAlwaysAcceptCookies(bool accept);
@@ -532,6 +533,8 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
       .SetMethod("isChooserShown", &TestRunnerBindings::IsChooserShown)
       .SetMethod("evaluateInWebInspector",
                  &TestRunnerBindings::EvaluateInWebInspector)
+      .SetMethod("evaluateInWebInspectorOverlay",
+                 &TestRunnerBindings::EvaluateInWebInspectorOverlay)
       .SetMethod("clearAllDatabases", &TestRunnerBindings::ClearAllDatabases)
       .SetMethod("setDatabaseQuota", &TestRunnerBindings::SetDatabaseQuota)
       .SetMethod("setAlwaysAcceptCookies",
@@ -1301,6 +1304,14 @@ void TestRunnerBindings::EvaluateInWebInspector(int call_id,
                                                 const std::string& script) {
   if (runner_)
     runner_->EvaluateInWebInspector(call_id, script);
+}
+
+std::string TestRunnerBindings::EvaluateInWebInspectorOverlay(
+    const std::string& script) {
+  if (runner_)
+    return runner_->EvaluateInWebInspectorOverlay(script);
+
+  return std::string();
 }
 
 void TestRunnerBindings::ClearAllDatabases() {
@@ -2805,6 +2816,11 @@ bool TestRunner::IsChooserShown() {
 void TestRunner::EvaluateInWebInspector(int call_id,
                                         const std::string& script) {
   delegate_->EvaluateInWebInspector(call_id, script);
+}
+
+std::string TestRunner::EvaluateInWebInspectorOverlay(
+    const std::string& script) {
+  return delegate_->EvaluateInWebInspectorOverlay(script);
 }
 
 void TestRunner::ClearAllDatabases() {

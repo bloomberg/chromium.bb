@@ -84,6 +84,7 @@ public:
     bool handleInputEvent(const WebInputEvent&);
     void layout();
     PageOverlay* pageOverlay() { return m_pageOverlay.get(); };
+    String evaluateInOverlayForTest(const String&);
 
 private:
     explicit InspectorOverlay(WebViewImpl*);

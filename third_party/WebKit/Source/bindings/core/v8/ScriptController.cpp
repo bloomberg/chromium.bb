@@ -539,9 +539,9 @@ void ScriptController::executeScriptInMainWorld(const ScriptSourceCode& sourceCo
     evaluateScriptInMainWorld(sourceCode, accessControlStatus, DoNotExecuteScriptWhenScriptsDisabled, compilationFinishTime);
 }
 
-v8::Local<v8::Value> ScriptController::executeScriptInMainWorldAndReturnValue(const ScriptSourceCode& sourceCode)
+v8::Local<v8::Value> ScriptController::executeScriptInMainWorldAndReturnValue(const ScriptSourceCode& sourceCode, ExecuteScriptPolicy policy)
 {
-    return evaluateScriptInMainWorld(sourceCode, NotSharableCrossOrigin, DoNotExecuteScriptWhenScriptsDisabled);
+    return evaluateScriptInMainWorld(sourceCode, NotSharableCrossOrigin, policy);
 }
 
 v8::Local<v8::Value> ScriptController::evaluateScriptInMainWorld(const ScriptSourceCode& sourceCode, AccessControlStatus accessControlStatus, ExecuteScriptPolicy policy, double* compilationFinishTime)

@@ -30,6 +30,7 @@
 #include "web/InspectorOverlay.h"
 
 #include "bindings/core/v8/ScriptController.h"
+#include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/V8InspectorOverlayHost.h"
 #include "core/dom/Node.h"
 #include "core/frame/FrameHost.h"
@@ -536,6 +537,14 @@ void InspectorOverlay::evaluateInOverlay(const String& method, PassRefPtr<JSONVa
     command->pushString(method);
     command->pushValue(argument);
     toLocalFrame(overlayPage()->mainFrame())->script().executeScriptInMainWorld("dispatch(" + command->toJSONString() + ")", ScriptController::ExecuteScriptWhenScriptsDisabled);
+}
+
+String InspectorOverlay::evaluateInOverlayForTest(const String& script)
+{
+    ScriptForbiddenScope::AllowUserAgentScript allowScript;
+    v8::HandleScope handleScope(toIsolate(overlayMainFrame()));
+    v8::Local<v8::Value> string = toLocalFrame(overlayPage()->mainFrame())->script().executeScriptInMainWorldAndReturnValue(ScriptSourceCode(script), ScriptController::ExecuteScriptWhenScriptsDisabled);
+    return toCoreStringWithUndefinedOrNullCheck(string);
 }
 
 void InspectorOverlay::onTimer(Timer<InspectorOverlay>*)

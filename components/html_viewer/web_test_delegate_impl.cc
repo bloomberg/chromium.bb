@@ -172,6 +172,12 @@ void WebTestDelegateImpl::EvaluateInWebInspector(long call_id,
   NOTIMPLEMENTED();
 }
 
+std::string WebTestDelegateImpl::EvaluateInWebInspectorOverlay(
+    const std::string& script) {
+  NOTIMPLEMENTED();
+  return std::string();
+}
+
 void WebTestDelegateImpl::ClearAllDatabases() {
   NOTIMPLEMENTED();
 }
