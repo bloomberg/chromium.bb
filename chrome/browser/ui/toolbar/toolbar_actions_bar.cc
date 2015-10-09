@@ -161,12 +161,12 @@ void ToolbarActionsBar::RegisterProfilePrefs(
 }
 
 gfx::Size ToolbarActionsBar::GetPreferredSize() const {
-  int icon_count = GetIconCount();
   if (in_overflow_mode()) {
     // In overflow, we always have a preferred size of a full row (even if we
     // don't use it), and always of at least one row. The parent may decide to
     // show us even when empty, e.g. as a drag target for dragging in icons from
     // the main container.
+    int icon_count = GetEndIndexInBounds() - GetStartIndexInBounds();
     int row_count = ((std::max(0, icon_count - 1)) /
         platform_settings_.icons_per_overflow_menu_row) + 1;
     return gfx::Size(
@@ -179,7 +179,7 @@ gfx::Size ToolbarActionsBar::GetPreferredSize() const {
   if (toolbar_actions_.empty())
     return gfx::Size();
 
-  return gfx::Size(IconCountToWidth(icon_count), IconHeight());
+  return gfx::Size(IconCountToWidth(GetIconCount()), IconHeight());
 }
 
 int ToolbarActionsBar::GetMinimumWidth() const {
@@ -466,7 +466,8 @@ void ToolbarActionsBar::OnDragDrop(int dragged_index,
   int delta = 0;
   if (drag_type == DRAG_TO_OVERFLOW)
     delta = -1;
-  else if (drag_type == DRAG_TO_MAIN)
+  else if (drag_type == DRAG_TO_MAIN &&
+           dragged_index >= static_cast<int>(model_->visible_icon_count()))
     delta = 1;
   model_->MoveActionIcon(toolbar_actions_[dragged_index]->GetId(),
                          dropped_index);

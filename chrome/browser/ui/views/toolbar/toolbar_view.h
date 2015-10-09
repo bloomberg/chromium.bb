@@ -81,6 +81,8 @@ class ToolbarView : public views::AccessiblePaneView,
   void ExecuteExtensionCommand(const extensions::Extension* extension,
                                const extensions::Command& command);
 
+  // Returns the maximum width the browser actions container can have.
+  int GetMaxBrowserActionsWidth() const;
 
   // Accessors.
   Browser* browser() const { return browser_; }

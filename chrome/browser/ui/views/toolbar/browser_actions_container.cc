@@ -47,6 +47,11 @@ namespace {
 // Horizontal spacing before the chevron (if visible).
 const int kChevronSpacing = ToolbarView::kStandardSpacing - 2;
 
+// Returns the ToolbarView for the given |browser|.
+ToolbarView* GetToolbarView(Browser* browser) {
+  return BrowserView::GetBrowserViewForBrowser(browser)->toolbar();
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -80,12 +85,12 @@ BrowserActionsContainer::BrowserActionsContainer(
               main_container->toolbar_actions_bar_.get() : nullptr)),
       browser_(browser),
       main_container_(main_container),
-      container_width_(0),
       resize_area_(NULL),
       chevron_(NULL),
       suppress_chevron_(false),
       added_to_view_(false),
       shown_bubble_(false),
+      resize_starting_width_(-1),
       resize_amount_(0),
       animation_target_size_(0),
       active_bubble_(nullptr) {
@@ -133,10 +138,6 @@ BrowserActionsContainer::~BrowserActionsContainer() {
 
 void BrowserActionsContainer::Init() {
   LoadImages();
-
-  // We wait to set the container width until now so that the chevron images
-  // will be loaded.  The width calculation needs to know the chevron size.
-  container_width_ = toolbar_actions_bar_->GetPreferredSize().width();
 }
 
 std::string BrowserActionsContainer::GetIdAt(size_t index) const {
@@ -198,9 +199,7 @@ views::MenuButton* BrowserActionsContainer::GetOverflowReferenceView() {
   // we use the app menu instead.
   return chevron_ ? static_cast<views::MenuButton*>(chevron_)
                   : static_cast<views::MenuButton*>(
-                        BrowserView::GetBrowserViewForBrowser(browser_)
-                            ->toolbar()
-                            ->app_menu_button());
+                        GetToolbarView(browser_)->app_menu_button());
 }
 
 void BrowserActionsContainer::OnMouseEnteredToolbarActionView() {
@@ -287,9 +286,16 @@ void BrowserActionsContainer::ResizeAndAnimate(
     int target_width,
     bool suppress_chevron) {
   if (resize_animation_ && !toolbar_actions_bar_->suppress_animation()) {
+    if (!in_overflow_mode()) {
+      // Make sure we don't try to animate to wider than the allowed width.
+      int max_width = GetToolbarView(browser_)->GetMaxBrowserActionsWidth();
+      if (target_width > max_width)
+        target_width = GetWidthForMaxWidth(max_width);
+    }
     // Animate! We have to set the animation_target_size_ after calling Reset(),
     // because that could end up calling AnimationEnded which clears the value.
     resize_animation_->Reset();
+    resize_starting_width_ = width();
     suppress_chevron_ = suppress_chevron;
     resize_animation_->SetTweenType(tween_type);
     animation_target_size_ = target_width;
@@ -317,7 +323,7 @@ bool BrowserActionsContainer::IsAnimating() const {
 }
 
 void BrowserActionsContainer::StopAnimating() {
-  animation_target_size_ = container_width_;
+  animation_target_size_ = width();
   resize_animation_->Reset();
 }
 
@@ -359,6 +365,19 @@ void BrowserActionsContainer::OnWidgetDestroying(views::Widget* widget) {
   ClearActiveBubble(widget);
 }
 
+int BrowserActionsContainer::GetWidthForMaxWidth(int max_width) const {
+  int preferred_width = GetPreferredSize().width();
+  if (preferred_width > max_width) {
+    // If we can't even show the minimum width, just throw in the towel (and
+    // show nothing).
+    if (max_width < toolbar_actions_bar_->GetMinimumWidth())
+      return 0;
+    preferred_width = toolbar_actions_bar_->IconCountToWidth(
+        toolbar_actions_bar_->WidthToIconCount(max_width));
+  }
+  return preferred_width;
+}
+
 void BrowserActionsContainer::AddObserver(
     BrowserActionsContainerObserver* observer) {
   observers_.AddObserver(observer);
@@ -377,15 +396,14 @@ gfx::Size BrowserActionsContainer::GetPreferredSize() const {
   if (toolbar_action_views_.empty())
     return gfx::Size();
 
-  // We calculate the size of the view by taking the current width and
-  // subtracting resize_amount_ (the latter represents how far the user is
-  // resizing the view or, if animating the snapping, how far to animate it).
-  // But we also clamp it to a minimum size and the maximum size, so that the
-  // container can never shrink too far or take up more space than it needs.
-  // In other words: minimum_width < width - resize < max_width.
-  int preferred_width = std::min(
-      std::max(toolbar_actions_bar_->GetMinimumWidth(),
-               container_width_ - resize_amount_),
+  // When resizing, preferred width is the starting width - resize amount.
+  // Otherwise, use the normal preferred width.
+  int preferred_width = resize_starting_width_ == -1 ?
+      toolbar_actions_bar_->GetPreferredSize().width() :
+      resize_starting_width_ - resize_amount_;
+  // In either case, clamp it within the max/min bounds.
+  preferred_width = std::min(
+      std::max(toolbar_actions_bar_->GetMinimumWidth(), preferred_width),
       toolbar_actions_bar_->GetMaximumWidth());
   return gfx::Size(preferred_width, ToolbarActionsBar::IconHeight());
 }
@@ -631,14 +649,12 @@ void BrowserActionsContainer::OnResize(int resize_amount, bool done_resizing) {
   if (toolbar_actions_bar_->is_highlighting() || animating())
     return;
 
-  if (!done_resizing) {
-    // If this is the start of the resize gesture, then set |container_width_|
-    // to be the current width. It might not have been if the container was
-    // shrunk to give room to the omnibox, but to adjust the size, it needs to
-    // be accurate.
-    if (!resize_amount_)
-      container_width_ = width();
+  // If this is the start of the resize gesture, initialize the starting
+  // width.
+  if (resize_starting_width_ == -1)
+    resize_starting_width_ = width();
 
+  if (!done_resizing) {
     resize_amount_ = resize_amount;
     Redraw(false);
     return;
@@ -647,18 +663,19 @@ void BrowserActionsContainer::OnResize(int resize_amount, bool done_resizing) {
   // Up until now we've only been modifying the resize_amount, but now it is
   // time to set the container size to the size we have resized to, and then
   // animate to the nearest icon count size if necessary (which may be 0).
-  container_width_ =
+  int ending_width =
       std::min(std::max(toolbar_actions_bar_->GetMinimumWidth(),
-                        container_width_ - resize_amount),
+                        resize_starting_width_ - resize_amount),
                toolbar_actions_bar_->GetMaximumWidth());
-  toolbar_actions_bar_->OnResizeComplete(container_width_);
+  resize_starting_width_ = -1;
+  toolbar_actions_bar_->OnResizeComplete(ending_width);
 }
 
 void BrowserActionsContainer::AnimationProgressed(
     const gfx::Animation* animation) {
   DCHECK_EQ(resize_animation_.get(), animation);
   resize_amount_ = static_cast<int>(resize_animation_->GetCurrentValue() *
-      (container_width_ - animation_target_size_));
+      (resize_starting_width_ - animation_target_size_));
   Redraw(false);
 }
 
@@ -668,9 +685,9 @@ void BrowserActionsContainer::AnimationCanceled(
 }
 
 void BrowserActionsContainer::AnimationEnded(const gfx::Animation* animation) {
-  container_width_ = animation_target_size_;
   animation_target_size_ = 0;
   resize_amount_ = 0;
+  resize_starting_width_ = -1;
   suppress_chevron_ = false;
   Redraw(false);
   FOR_EACH_OBSERVER(BrowserActionsContainerObserver,

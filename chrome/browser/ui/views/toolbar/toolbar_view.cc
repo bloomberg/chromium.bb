@@ -321,6 +321,14 @@ void ToolbarView::ExecuteExtensionCommand(
   browser_actions_->ExecuteExtensionCommand(extension, command);
 }
 
+int ToolbarView::GetMaxBrowserActionsWidth() const {
+  // The browser actions container is allowed to grow, but only up until the
+  // omnibox reaches its minimum size. So its maximum allowed width is its
+  // current size, plus any that the omnibox could give up.
+  return browser_actions_->width() +
+         (location_bar_->width() - location_bar_->GetMinimumSize().width());
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // ToolbarView, AccessiblePaneView overrides:
 
@@ -576,9 +584,8 @@ void ToolbarView::Layout() {
   // Don't allow the omnibox to shrink to the point of non-existence, so
   // subtract its minimum width from the available width to reserve it.
   int minimum_location_bar_width = location_bar_->GetMinimumSize().width();
-  int browser_actions_width =
-      std::min(std::max(available_width - minimum_location_bar_width, 0),
-               browser_actions_desired_width);
+  int browser_actions_width = browser_actions_->GetWidthForMaxWidth(
+      available_width - minimum_location_bar_width);
   available_width -= browser_actions_width;
   int location_bar_width = available_width;
 

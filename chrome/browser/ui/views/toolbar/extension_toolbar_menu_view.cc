@@ -100,6 +100,13 @@ void ExtensionToolbarMenuView::OnBrowserActionsContainerDestroyed(
 }
 
 void ExtensionToolbarMenuView::OnBrowserActionDragDone() {
+  // In the case of a drag-and-drop, the bounds of the container may have
+  // changed (in the case of removing an icon that was the last in a row). We
+  // need to re-layout the menu in order to shrink down the view (calling
+  // Layout() on this is insufficient because other items may need to shift
+  // upwards).
+  parent()->parent()->Layout();
+
   // We need to close the app menu if it was just opened for the drag and drop,
   // or if there are no more extensions in the overflow menu after a drag and
   // drop.

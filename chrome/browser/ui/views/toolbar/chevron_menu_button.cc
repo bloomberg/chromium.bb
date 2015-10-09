@@ -364,6 +364,9 @@ ChevronMenuButton::ChevronMenuButton(
     : views::MenuButton(NULL, base::string16(), this, false),
       browser_actions_container_(browser_actions_container),
       weak_factory_(this) {
+  // Set the border explicitly, because otherwise the native theme manager takes
+  // over and reassigns the insets we set in CreateDefaultBorder().
+  SetBorder(CreateDefaultBorder());
 }
 
 ChevronMenuButton::~ChevronMenuButton() {
