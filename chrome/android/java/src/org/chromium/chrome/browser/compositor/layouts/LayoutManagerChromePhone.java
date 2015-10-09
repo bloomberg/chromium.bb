@@ -89,7 +89,7 @@ public class LayoutManagerChromePhone extends LayoutManagerChrome {
             // The user is currently interacting with the {@code LayoutHost}.
             // Allow the foreground layout to animate the tab closing.
             getActiveLayout().onTabClosing(time(), id);
-        } else if (mEnableAnimations) {
+        } else if (animationsEnabled()) {
             startShowing(mSimpleAnimationLayout, false);
             getActiveLayout().onTabClosing(time(), id);
         }
@@ -107,7 +107,7 @@ public class LayoutManagerChromePhone extends LayoutManagerChrome {
         getActiveLayout().onTabClosed(time(), id, nextId, incognito);
         Tab nextTab = getTabById(nextId);
         if (nextTab != null) nextTab.requestFocus();
-        if (getActiveLayout() != overviewLayout && showOverview && !mEnableAnimations) {
+        if (getActiveLayout() != overviewLayout && showOverview && !animationsEnabled()) {
             startShowing(overviewLayout, false);
         }
     }
@@ -119,7 +119,7 @@ public class LayoutManagerChromePhone extends LayoutManagerChrome {
             // This check allows us to switch from the StackLayout to the SimpleAnimationLayout
             // smoothly.
             getActiveLayout().onTabCreating(sourceId);
-        } else if (mEnableAnimations) {
+        } else if (animationsEnabled()) {
             if (getActiveLayout() != null && getActiveLayout().isHiding()) {
                 setNextLayout(mSimpleAnimationLayout);
                 // The method Layout#doneHiding() will automatically show the next layout.

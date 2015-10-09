@@ -77,7 +77,7 @@ public class LayoutManagerChrome
     /** Responsible for building all incognito titles. */
     protected TitleBitmapFactory mIncognitoTitleBitmapFactory;
     /** Whether or not animations are enabled.  This can disable certain layouts or effects. */
-    protected boolean mEnableAnimations = true;
+    private boolean mEnableAnimations = true;
     private boolean mCreatingNtp;
     private final ObserverList<OverviewModeObserver> mOverviewModeObservers;
     private TabModelSelectorObserver mTabModelSelectorObserver;
@@ -676,6 +676,14 @@ public class LayoutManagerChrome
      */
     public void setEnableAnimations(boolean enabled) {
         mEnableAnimations = enabled;
+    }
+
+    /**
+     * @return Whether animations should be done for model changes.
+     */
+    @VisibleForTesting
+    public boolean animationsEnabled() {
+        return mEnableAnimations;
     }
 
     @Override

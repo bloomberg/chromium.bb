@@ -408,7 +408,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
                 mLayoutManager = new LayoutManagerChromePhone(compositorViewHolder,
                         new StackLayoutFactory());
             }
-
+            mLayoutManager.setEnableAnimations(DeviceClassManager.enableAnimations(this));
             mLayoutManager.addOverviewModeObserver(this);
 
             // TODO(yusufo): get rid of findViewById(R.id.url_bar).

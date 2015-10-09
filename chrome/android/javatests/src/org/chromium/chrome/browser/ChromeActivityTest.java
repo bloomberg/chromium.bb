@@ -5,14 +5,18 @@
 package org.chromium.chrome.browser;
 
 import android.test.suitebuilder.annotation.MediumTest;
+import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.ChromeTabCreator;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
 import org.chromium.chrome.test.util.TestHttpServerClient;
 import org.chromium.content_public.browser.LoadUrlParams;
+
+import java.util.concurrent.Callable;
 
 /**
  * Instrumentation tests for ChromeActivity.
@@ -83,6 +87,18 @@ public class ChromeActivityTest extends ChromeTabbedActivityTestBase {
         // Verify that the front tab is in the 'visible' state.
         assertFalse(tabs[0].isHidden());
         assertTrue(tabs[1].isHidden());
+    }
+
+    @SmallTest
+    public void testTabAnimationsCorrectlyEnabled() {
+        boolean animationsEnabled = ThreadUtils.runOnUiThreadBlockingNoException(
+                new Callable<Boolean>() {
+                    @Override
+                    public Boolean call() throws Exception {
+                        return getActivity().getLayoutManager().animationsEnabled();
+                    }
+                });
+        assertEquals(animationsEnabled, DeviceClassManager.enableAnimations(getActivity()));
     }
 
     @Override
