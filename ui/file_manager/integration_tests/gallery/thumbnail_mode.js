@@ -49,23 +49,47 @@ function renameImageInThumbnailMode(testVolumeName, volumeType) {
     chrome.test.assertEq('New Image Name.jpg',
         result[0].attributes['title']);
   });
-};
+}
 
 /**
  * Delete all images in thumbnail mode and confirm that no-images error banner
  * is shown.
  * @param {string} testVolumeName Test volume name.
  * @param {VolumeManagerCommon.VolumeType} volumeType Volume type.
+ * @param {string} operation How the test do delete operation.
  * @return {!Promise} Promise to be fulfilled with on success.
  */
-function deleteAllImagesInThumbnailMode(testVolumeName, volumeType) {
+function deleteAllImagesInThumbnailMode(testVolumeName, volumeType, operation) {
   var launchedPromise = launch(testVolumeName, volumeType,
       [ENTRIES.desktop, ENTRIES.image3]);
   var appId;
   return launchedPromise.then(function(result) {
     appId = result.appId;
-    // Click delete button.
-    return gallery.waitAndClickElement(appId, 'paper-button.delete');
+    // Wait until current mode is set to thumbnail mode.
+    return gallery.waitForElement(appId, '.gallery[mode="thumbnail"]');
+  }).then(function() {
+    switch (operation) {
+      case 'mouse':
+        // Click delete button.
+        return gallery.waitAndClickElement(appId, 'paper-button.delete');
+        break;
+      case 'enter-key':
+        // Press enter key on delete button.
+        return gallery.waitForElement(
+            appId, 'paper-button.delete').then(function() {
+          return gallery.callRemoteTestUtil(
+              'focus', appId, ['paper-button.delete']);
+        }).then(function() {
+          return gallery.callRemoteTestUtil(
+              'fakeKeyDown', appId, ['paper-button.delete', 'Enter', false]);
+        });
+        break;
+      case 'delete-key':
+        // Press delete key.
+        return gallery.callRemoteTestUtil(
+            'fakeKeyDown', appId, ['body', 'U+007F' /* Delete */, false]);
+        break;
+    }
   }).then(function(result) {
     chrome.test.assertTrue(!!result);
     // Wait and click delete button of confirmation dialog.
@@ -146,7 +170,7 @@ testcase.renameImageInThumbnailModeOnDrive = function() {
  * @return {!Promise} Promise to be fulfilled with on success.
  */
 testcase.deleteAllImagesInThumbnailModeOnDownloads = function() {
-  return deleteAllImagesInThumbnailMode('local', 'downloads');
+  return deleteAllImagesInThumbnailMode('local', 'downloads', 'mouse');
 };
 
 /**
@@ -154,7 +178,24 @@ testcase.deleteAllImagesInThumbnailModeOnDownloads = function() {
  * @return {!Promise} Promise to be fulfilled with on success.
  */
 testcase.deleteAllImagesInThumbnailModeOnDrive = function() {
-  return deleteAllImagesInThumbnailMode('drive', 'drive');
+  return deleteAllImagesInThumbnailMode('drive', 'drive', 'mouse');
+};
+
+/**
+ * Delete all images test in thumbnail mode by pressing Enter key on Delete
+ * button.
+ * @return {!Promise} Promise to be fulfilled with on success.
+ */
+testcase.deleteAllImagesInThumbnailModeWithEnterKey = function() {
+  return deleteAllImagesInThumbnailMode('local', 'downloads', 'enter-key');
+};
+
+/**
+ * Delete all images test in thumbnail mode with Delete key.
+ * @return {!Promise} Promise to be fulfilled with on success.
+ */
+testcase.deleteAllImagesInThumbnailModeWithDeleteKey = function() {
+  return deleteAllImagesInThumbnailMode('local', 'downloads', 'delete-key');
 };
 
 /**

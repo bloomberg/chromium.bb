@@ -85,8 +85,11 @@ ThumbnailMode.prototype.hasActiveTool = function() { return true; };
 ThumbnailMode.prototype.onKeyDown = function(event) {
   switch (event.keyIdentifier) {
     case 'Enter':
-      this.changeToSlideModeCallback_();
-      return true;
+      if (event.target.matches('li.thumbnail')) {
+        this.changeToSlideModeCallback_();
+        return true;
+      }
+      break;
   }
 
   return false;

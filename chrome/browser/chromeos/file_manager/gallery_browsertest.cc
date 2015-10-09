@@ -323,6 +323,32 @@ IN_PROC_BROWSER_TEST_F(GalleryBrowserTest,
 }
 
 #if defined(DISABLE_SLOW_FILESAPP_TESTS)
+#define MAYBE_DeleteAllImagesInThumbnailModeWithEnterKey \
+  DISABLED_DeleteAllImagesInThumbnailModeWithEnterKey
+#else
+#define MAYBE_DeleteAllImagesInThumbnailModeWithEnterKey \
+  DeleteAllImagesInThumbnailModeWithEnterKey
+#endif
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTest,
+                       MAYBE_DeleteAllImagesInThumbnailModeWithEnterKey) {
+  set_test_case_name("deleteAllImagesInThumbnailModeWithEnterKey");
+  StartTest();
+}
+
+#if defined(DISABLE_SLOW_FILESAPP_TESTS)
+#define MAYBE_DeleteAllImagesInThumbnailModeWithDeleteKey \
+  DISABLED_DeleteAllImagesInThumbnailModeWithDeleteKey
+#else
+#define MAYBE_DeleteAllImagesInThumbnailModeWithDeleteKey \
+  DeleteAllImagesInThumbnailModeWithDeleteKey
+#endif
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTest,
+                       MAYBE_DeleteAllImagesInThumbnailModeWithDeleteKey) {
+  set_test_case_name("deleteAllImagesInThumbnailModeWithDeleteKey");
+  StartTest();
+}
+
+#if defined(DISABLE_SLOW_FILESAPP_TESTS)
 #define MAYBE_EmptySpaceClickUnselectsInThumbnailModeOnDownloads \
   DISABLED_EmptySpaceClickUnselectsInThumbnailModeOnDownloads
 #else
