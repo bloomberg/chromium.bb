@@ -1380,13 +1380,14 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
                                  arraysize(kIpcFuzzerSwitches));
 #endif
 
-#if defined(OS_CHROMEOS)
-  static const char* const kChromeOSSwitches[] = {
+  static const char* const kDinosaurEasterEggSwitches[] = {
     switches::kDisableDinosaurEasterEgg,
   };
-  command_line->CopySwitchesFrom(browser_command_line, kChromeOSSwitches,
-                                 arraysize(kChromeOSSwitches));
+  command_line->CopySwitchesFrom(browser_command_line,
+                                 kDinosaurEasterEggSwitches,
+                                 arraysize(kDinosaurEasterEggSwitches));
 
+#if defined(OS_CHROMEOS)
   // On Chrome OS need to pass primary user homedir (in multi-profiles session).
   base::FilePath homedir;
   PathService::Get(base::DIR_HOME, &homedir);
