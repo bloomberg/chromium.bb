@@ -35,7 +35,6 @@ class Path;
 
 class CORE_EXPORT HTMLAreaElement final : public HTMLAnchorElement {
     DEFINE_WRAPPERTYPEINFO();
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(HTMLAreaElement);
 public:
     DECLARE_NODE_FACTORY(HTMLAreaElement);
 
@@ -48,8 +47,6 @@ public:
 
     // The parent map's image.
     HTMLImageElement* imageElement() const;
-
-    DEFINE_INLINE_VIRTUAL_TRACE() { HTMLAnchorElement::trace(visitor); }
 
 private:
     explicit HTMLAreaElement(Document&);

@@ -59,8 +59,8 @@ enum {
 
 class CORE_EXPORT HTMLAnchorElement : public HTMLElement, public DOMURLUtils, public DOMSettableTokenListObserver {
     DEFINE_WRAPPERTYPEINFO();
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(HTMLAnchorElement);
 public:
-    DECLARE_VIRTUAL_TRACE();
     static PassRefPtrWillBeRawPtr<HTMLAnchorElement> create(Document&);
 
     ~HTMLAnchorElement() override;
@@ -89,6 +89,8 @@ public:
     void sendPings(const KURL& destinationURL) const;
 
     DOMSettableTokenList* ping();
+
+    DECLARE_VIRTUAL_TRACE();
 
 protected:
     HTMLAnchorElement(const QualifiedName&, Document&);
