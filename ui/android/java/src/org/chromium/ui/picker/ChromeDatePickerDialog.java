@@ -4,8 +4,10 @@
 
 package org.chromium.ui.picker;
 
+import android.app.DatePickerDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.os.Build;
 import android.widget.DatePicker;
 
 /**
@@ -14,7 +16,7 @@ import android.widget.DatePicker;
  * outside). This class will call the listener instead of the DatePickerDialog only when the
  * BUTTON_POSITIVE has been clicked.
  */
-class ChromeDatePickerDialog extends android.app.DatePickerDialog {
+class ChromeDatePickerDialog extends DatePickerDialog {
     private final OnDateSetListener mCallBack;
 
     public ChromeDatePickerDialog(Context context,
@@ -22,7 +24,8 @@ class ChromeDatePickerDialog extends android.app.DatePickerDialog {
             int year,
             int monthOfYear,
             int dayOfMonth) {
-        super(context, 0, callBack, year, monthOfYear, dayOfMonth);
+        super(context, callBack, year, monthOfYear, dayOfMonth);
+
         mCallBack = callBack;
     }
 
@@ -38,5 +41,16 @@ class ChromeDatePickerDialog extends android.app.DatePickerDialog {
             mCallBack.onDateSet(datePicker, datePicker.getYear(),
                     datePicker.getMonth(), datePicker.getDayOfMonth());
         }
+    }
+
+    @Override
+    public void setTitle(CharSequence title) {
+        // On Android L+, the dialog shouldn't have a title. This works around a bug in
+        // DatePickerDialog where calling updateDate() before the dialog has been shown causes
+        // a title to appear. http://crbug.com/541350
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            title = "";
+        }
+        super.setTitle(title);
     }
 }
