@@ -7,7 +7,6 @@
 
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
-#include "modules/EventTargetModules.h"
 #include "modules/presentation/PresentationController.h"
 #include "modules/presentation/PresentationRequest.h"
 
@@ -30,22 +29,9 @@ Presentation* Presentation::create(LocalFrame* frame)
     return presentation;
 }
 
-const AtomicString& Presentation::interfaceName() const
-{
-    return EventTargetNames::Presentation;
-}
-
-ExecutionContext* Presentation::executionContext() const
-{
-    if (!frame())
-        return nullptr;
-    return frame()->document();
-}
-
 DEFINE_TRACE(Presentation)
 {
     visitor->trace(m_defaultRequest);
-    RefCountedGarbageCollectedEventTargetWithInlineData<Presentation>::trace(visitor);
     DOMWindowProperty::trace(visitor);
 }
 

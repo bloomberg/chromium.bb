@@ -23,7 +23,6 @@ modules/navigatorconnect/ServicePortCollection
 modules/netinfo/NetworkInformation
 modules/notifications/Notification
 modules/permissions/PermissionStatus
-modules/presentation/Presentation
 modules/presentation/PresentationAvailability
 modules/presentation/PresentationConnection
 modules/presentation/PresentationRequest

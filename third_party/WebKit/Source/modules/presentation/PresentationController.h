@@ -17,6 +17,7 @@
 namespace blink {
 
 class LocalFrame;
+class PresentationConnection;
 class WebPresentationAvailabilityCallback;
 class WebPresentationConnectionClient;
 enum class WebPresentationConnectionState;
