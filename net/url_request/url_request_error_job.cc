@@ -28,6 +28,11 @@ void URLRequestErrorJob::Start() {
       base::Bind(&URLRequestErrorJob::StartAsync, weak_factory_.GetWeakPtr()));
 }
 
+void URLRequestErrorJob::Kill() {
+  weak_factory_.InvalidateWeakPtrs();
+  URLRequestJob::Kill();
+}
+
 void URLRequestErrorJob::StartAsync() {
   NotifyStartError(URLRequestStatus(URLRequestStatus::FAILED, error_));
 }

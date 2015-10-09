@@ -21,6 +21,7 @@ class NET_EXPORT URLRequestErrorJob : public URLRequestJob {
                      int error);
 
   void Start() override;
+  void Kill() override;
 
  private:
   ~URLRequestErrorJob() override;

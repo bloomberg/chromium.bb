@@ -30,6 +30,11 @@ void URLRequestAboutJob::Start() {
       base::Bind(&URLRequestAboutJob::StartAsync, weak_factory_.GetWeakPtr()));
 }
 
+void URLRequestAboutJob::Kill() {
+  weak_factory_.InvalidateWeakPtrs();
+  URLRequestJob::Kill();
+}
+
 bool URLRequestAboutJob::GetMimeType(std::string* mime_type) const {
   *mime_type = "text/html";
   return true;

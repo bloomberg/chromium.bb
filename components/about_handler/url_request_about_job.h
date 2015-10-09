@@ -20,6 +20,7 @@ class URLRequestAboutJob : public net::URLRequestJob {
 
   // URLRequestJob:
   void Start() override;
+  void Kill() override;
   bool GetMimeType(std::string* mime_type) const override;
 
  private:
