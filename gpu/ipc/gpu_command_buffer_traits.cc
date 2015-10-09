@@ -139,11 +139,11 @@ bool ParamTraits<gpu::ValueState> ::Read(const Message* m,
 
 void ParamTraits<gpu::ValueState>::Log(const param_type& p, std::string* l) {
   l->append("<ValueState (");
-  for (size_t i = 0; i < sizeof(p.int_value); ++i)
-    *l += base::StringPrintf("%i ", p.int_value[i]);
+  for (int value : p.int_value)
+    *l += base::StringPrintf("%i ", value);
   l->append(" int values ");
-  for (size_t i = 0; i < sizeof(p.float_value); ++i)
-    *l += base::StringPrintf("%f ", p.float_value[i]);
+  for (float value : p.float_value)
+    *l += base::StringPrintf("%f ", value);
   l->append(" float values)>");
 }
 
