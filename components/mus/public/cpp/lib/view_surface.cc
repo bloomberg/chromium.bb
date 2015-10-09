@@ -15,7 +15,8 @@ void ViewSurface::BindToThread() {
   DCHECK(!bound_to_thread_);
   bound_to_thread_ = true;
   surface_.Bind(surface_info_.Pass());
-  client_binding_.Bind(client_request_.Pass());
+  client_binding_.reset(
+      new mojo::Binding<mojo::SurfaceClient>(this, client_request_.Pass()));
 }
 
 void ViewSurface::SubmitCompositorFrame(mojo::CompositorFramePtr frame,
@@ -32,7 +33,6 @@ ViewSurface::ViewSurface(
     : client_(nullptr),
       surface_info_(surface_info.Pass()),
       client_request_(client_request.Pass()),
-      client_binding_(this),
       bound_to_thread_(false) {}
 
 void ViewSurface::ReturnResources(

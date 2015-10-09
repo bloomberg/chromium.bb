@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_MUS_PUBLIC_CPP_VIEW_SURFACE_H_
 #define COMPONENTS_MUS_PUBLIC_CPP_VIEW_SURFACE_H_
 
+#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "components/mus/public/interfaces/compositor_frame.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
@@ -44,7 +45,7 @@ class ViewSurface : public mojo::SurfaceClient {
   mojo::InterfacePtrInfo<mojo::Surface> surface_info_;
   mojo::InterfaceRequest<mojo::SurfaceClient> client_request_;
   mojo::SurfacePtr surface_;
-  mojo::Binding<mojo::SurfaceClient> client_binding_;
+  scoped_ptr<mojo::Binding<mojo::SurfaceClient>> client_binding_;
   bool bound_to_thread_;
 };
 
