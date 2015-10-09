@@ -19,7 +19,7 @@
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/test_completion_callback.h"
-#include "net/cookies/cookie_monster.h"
+#include "net/cookies/cookie_store.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "storage/browser/quota/quota_manager.h"
@@ -101,15 +101,15 @@ class AwaitCompletionHelper {
 class RemoveCookieTester {
  public:
   explicit RemoveCookieTester(TestBrowserContext* context)
-      : get_cookie_success_(false), monster_(NULL) {
-    SetMonster(context->GetRequestContext()->GetURLRequestContext()->
-                   cookie_store()->GetCookieMonster());
-  }
+      : get_cookie_success_(false),
+        cookie_store_(context->GetRequestContext()
+                          ->GetURLRequestContext()
+                          ->cookie_store()) {}
 
   // Returns true, if the given cookie exists in the cookie store.
   bool ContainsCookie() {
     get_cookie_success_ = false;
-    monster_->GetCookiesWithOptionsAsync(
+    cookie_store_->GetCookiesWithOptionsAsync(
         kOrigin1, net::CookieOptions(),
         base::Bind(&RemoveCookieTester::GetCookieCallback,
                    base::Unretained(this)));
@@ -118,16 +118,11 @@ class RemoveCookieTester {
   }
 
   void AddCookie() {
-    monster_->SetCookieWithOptionsAsync(
+    cookie_store_->SetCookieWithOptionsAsync(
         kOrigin1, "A=1", net::CookieOptions(),
         base::Bind(&RemoveCookieTester::SetCookieCallback,
                    base::Unretained(this)));
     await_completion_.BlockUntilNotified();
-  }
-
- protected:
-  void SetMonster(net::CookieStore* monster) {
-    monster_ = monster;
   }
 
  private:
@@ -148,7 +143,7 @@ class RemoveCookieTester {
 
   bool get_cookie_success_;
   AwaitCompletionHelper await_completion_;
-  net::CookieStore* monster_;
+  net::CookieStore* cookie_store_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoveCookieTester);
 };
