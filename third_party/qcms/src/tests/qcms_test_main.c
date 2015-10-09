@@ -92,6 +92,7 @@ int main(int argc, const char **argv)
     int i;
 
     initialize_tests();
+    seconds();
 
     if (argc == 1) {
         print_usage();
