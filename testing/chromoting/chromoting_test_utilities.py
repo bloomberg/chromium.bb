@@ -4,10 +4,10 @@
 
 """Utility script to run tests on the Chromoting bot."""
 
-import glob
 import hashlib
 import os
 from os.path import expanduser
+import re
 import shutil
 import socket
 import subprocess
@@ -16,7 +16,6 @@ import psutil
 
 PROD_DIR_ID = '#PROD_DIR#'
 CRD_ID = 'chrome-remote-desktop'  # Used in a few file/folder names
-CHROMOTING_HOST_PATH = './remoting/host/linux/linux_me2me_host.py'
 HOST_READY_INDICATOR = 'Host ready to receive connections.'
 BROWSER_TEST_ID = 'browser_tests'
 HOST_HASH_VALUE = hashlib.md5(socket.gethostname()).hexdigest()
@@ -26,7 +25,14 @@ NATIVE_MESSAGING_DIR = 'NativeMessagingHosts'
 # has a random name, which we'll store here for use later.
 # Note that the test-execution always starts from the testing/chromoting folder
 # under the temp folder.
+ISOLATE_CHROMOTING_HOST_PATH = 'remoting/host/linux/linux_me2me_host.py'
 ISOLATE_TEMP_FOLDER = os.path.abspath(os.path.join(os.getcwd(), '../..'))
+CHROMOTING_HOST_PATH = os.path.join(ISOLATE_TEMP_FOLDER,
+                                    ISOLATE_CHROMOTING_HOST_PATH)
+
+
+class HostOperationFailedException(Exception):
+  pass
 
 
 def RunCommandInSubProcess(command):
@@ -49,17 +55,20 @@ def RunCommandInSubProcess(command):
   return results
 
 
-def TestMachineCleanup(user_profile_dir):
+def TestMachineCleanup(user_profile_dir, host_logs=None):
   """Cleans up test machine so as not to impact other tests.
 
   Args:
     user_profile_dir: the user-profile folder used by Chromoting tests.
+    host_logs: List of me2me host logs; these will be deleted.
   """
+
   # Stop the host service.
   RunCommandInSubProcess(CHROMOTING_HOST_PATH + ' --stop')
 
   # Cleanup any host logs.
-  RunCommandInSubProcess('rm /tmp/chrome_remote_desktop_*')
+  for host_log in host_logs:
+    RunCommandInSubProcess('rm %s' % host_log)
 
   # Remove the user-profile dir
   if os.path.exists(user_profile_dir):
@@ -97,19 +106,20 @@ def InitialiseTestMachineForLinux(cfg_file):
       os.path.join(default_config_file_location, default_config_file_name))
 
   # Make sure chromoting host is running.
-  if not RestartMe2MeHost():
-    # Host start failed. Don't run any tests.
-    raise Exception('Host restart failed.')
+  RestartMe2MeHost()
 
 
 def RestartMe2MeHost():
   """Stops and starts the Me2Me host on the test machine.
 
-  Waits to confirm that host is ready to receive connections before returning.
+  Launches the me2me start-host command, and parses the stdout of the execution
+  to obtain the host log-file name.
 
   Returns:
-    True: if HOST_READY_INDICATOR is found in stdout, indicating host is ready.
-    False: if HOST_READY_INDICATOR not found in stdout.
+    log_file: Host log file.
+
+  Raises:
+    Exception: If host-log does not contain string indicating host is ready.
   """
 
   # To start the host, we want to be in the temp-folder for this test execution.
@@ -120,14 +130,25 @@ def RestartMe2MeHost():
   # Stop chromoting host.
   RunCommandInSubProcess(CHROMOTING_HOST_PATH + ' --stop')
   # Start chromoting host.
+  print 'Starting chromoting host from %s' % CHROMOTING_HOST_PATH
   results = RunCommandInSubProcess(CHROMOTING_HOST_PATH + ' --start')
 
   os.chdir(previous_directory)
+
+  # Get log file from results of above command printed to stdout. Example:
+  # Log file: /tmp/tmp0c3EcP/chrome_remote_desktop_20150929_101525_B0o89t
+  start_of_host_log = results.index('Log file: ') + len('Log file: ')
+  log_file = results[start_of_host_log:].rstrip()
+
   # Confirm that the start process completed, and we got:
   # "Host ready to receive connections." in the log.
   if HOST_READY_INDICATOR not in results:
-    return False
-  return True
+    # Host start failed. Print out host-log. Don't run any tests.
+    with open(log_file, 'r') as f:
+      print f.read()
+    raise HostOperationFailedException('Host restart failed.')
+
+  return log_file
 
 
 def SetupUserProfileDir(me2me_manifest_file, it2me_manifest_file,
@@ -170,9 +191,9 @@ def PrintRunningProcesses():
     print process.name
 
 
-def PrintHostLogContents():
+def PrintHostLogContents(host_log_files=None):
   host_log_contents = ''
-  for log_file in sorted(glob.glob('/tmp/chrome_remote_desktop_*')):
+  for log_file in sorted(host_log_files):
     with open(log_file, 'r') as log:
       host_log_contents += '\nHOST LOG %s\n CONTENTS:\n%s' % (
           log_file, log.read())
@@ -181,10 +202,32 @@ def PrintHostLogContents():
 
 def TestCaseSetup(args):
   # Stop+start me2me host process.
-  if not RestartMe2MeHost():
-    # Host restart failed. Don't run any more tests.
-    raise Exception('Host restart failed.')
+  host_log_file = RestartMe2MeHost()
 
   # Reset the user profile directory to start each test with a clean slate.
   SetupUserProfileDir(args.me2me_manifest_file, args.it2me_manifest_file,
                       args.user_profile_dir)
+  return host_log_file
+
+
+def GetJidListFromTestResults(results):
+  """Parse the output of a test execution to obtain the JID used by the test.
+
+  Args:
+    results: stdio contents of test execution.
+
+  Returns:
+    jids_used: List of JIDs used by test; empty list if not found.
+  """
+
+  # Reg-ex defining the JID information in the string being parsed.
+  jid_re = '(Connecting to .*.gserviceaccount.com/)(chromoting.*)(. Local.*)'
+  jids_used = []
+  for line in results.split('\n'):
+    match = re.search(jid_re, line)
+    if match:
+      jid_used = match.group(2)
+      if jid_used not in jids_used:
+        jids_used.append(jid_used)
+
+  return jids_used

@@ -5,7 +5,9 @@
 
 """Utility script to launch browser-tests on the Chromoting bot."""
 import argparse
+import time
 
+from chromoting_test_utilities import GetJidListFromTestResults
 from chromoting_test_utilities import InitialiseTestMachineForLinux
 from chromoting_test_utilities import PrintHostLogContents
 from chromoting_test_utilities import PROD_DIR_ID
@@ -25,21 +27,73 @@ MAX_RETRIES = 1
 def LaunchBTCommand(args, command):
   """Launches the specified browser-test command.
 
-      If the execution failed because a browser-instance was not launched, retry
-      once.
+    Retry if the execution failed because a browser-instance was not launched or
+    because the JID used did not match the host-JID.
   Args:
     args: Command line args, used for test-case startup tasks.
     command: Browser-test command line.
+
+  Returns:
+    host_log_file_names: Array of host logs created for this command, including
+         retries.
   """
   global TEST_FAILURE, FAILING_TESTS
+  host_log_file_names = []
 
   retries = 0
+  host_jid_mismatch = False
+  host_jid = None
   while retries <= MAX_RETRIES:
-    TestCaseSetup(args)
+    # TestCaseSetup restarts the me2me host, and sets up user-profile dir.
+    # It returns the file-name of the me2me host log.
+    # If we are attempting to run this test because of a JID-mismatch, don't
+    # restart host.
+    if not host_jid_mismatch:
+      host_log_file_names.append(TestCaseSetup(args))
+      # Parse the me2me host log to obtain the JID that the host registered.
+      host_jid = None
+      with open(host_log_file_names[retries], 'r') as host_log_file:
+        for line in host_log_file:
+          # The host JID will be recorded in a line saying 'Signaling
+          # connected'.
+          if 'Signaling connected. ' in line:
+            components = line.split('/')
+            host_jid = components[-1]
+            break
+
     results = RunCommandInSubProcess(command)
 
+    # Get the JID used by this test to connect a remote-host, if any.
+    jids_used = GetJidListFromTestResults(results)
+
+    # Check for JID mismatch before checking for test success, so that we may
+    # record instances where a test passed despite a JID mismatch.
+    if jids_used and host_jid.rstrip() not in jids_used:
+      host_jid_mismatch = True
+      print 'Host JID mismatch. JID in host log = %s.' % host_jid.rstrip()
+      print 'Host JIDs used by test:'
+      for jid in jids_used:
+        print jid
+
+    if host_jid_mismatch:
+      # The JID for the remote-host did not match the JID that was used for this
+      # execution of the test. This happens because of a replication delay in
+      # updating all instances of the Chromoting Directory Server. To
+      # work-around this, sleep for 30s, which, based off a recent (08/2015)
+      # query for average replication delay for Chromoting, should be sufficient
+      # for the current JID value to have fully propagated.
+      retries += 1
+      time.sleep(30)
+      continue
+    elif jids_used:
+      print 'JID used by test matched me2me host JID: %s' % host_jid
+    else:
+      # There wasn't a mismatch and no JIDs were returned. If no JIDs were
+      # returned, that means the test didn't use any JIDs, so there is nothing
+      # further for us to do.
+      pass
+
     if SUCCESS_INDICATOR in results:
-      # Test passed.
       break
 
     # Sometimes, during execution of browser-tests, a browser instance is
@@ -62,27 +116,32 @@ def LaunchBTCommand(args, command):
     # Add this command-line to list of tests that failed.
     FAILING_TESTS += command
 
+  return host_log_file_names
+
 
 def main(args):
 
   InitialiseTestMachineForLinux(args.cfg_file)
 
+  host_log_files = []
   with open(args.commands_file) as f:
     for line in f:
       # Replace the PROD_DIR value in the command-line with
       # the passed in value.
       line = line.replace(PROD_DIR_ID, args.prod_dir)
       # Launch specified command line for test.
-      LaunchBTCommand(args, line)
+      host_log_files.extend(LaunchBTCommand(args, line))
 
   # All tests completed. Include host-logs in the test results.
-  PrintHostLogContents()
+  PrintHostLogContents(host_log_files)
 
   if TEST_FAILURE:
     print '++++++++++AT LEAST 1 TEST FAILED++++++++++'
     print FAILING_TESTS.rstrip('\n')
     print '++++++++++++++++++++++++++++++++++++++++++'
     raise Exception('At least one test failed.')
+
+  return host_log_files
 
 if __name__ == '__main__':
 
@@ -101,8 +160,9 @@ if __name__ == '__main__':
       '-u', '--user_profile_dir',
       help='path to user-profile-dir, used by connect-to-host tests.')
   command_line_args = parser.parse_args()
+  host_logs = ''
   try:
-    main(command_line_args)
+    host_logs = main(command_line_args)
   finally:
     # Stop host and cleanup user-profile-dir.
-    TestMachineCleanup(command_line_args.user_profile_dir)
+    TestMachineCleanup(command_line_args.user_profile_dir, host_logs)
