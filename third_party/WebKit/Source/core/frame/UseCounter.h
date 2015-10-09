@@ -839,6 +839,8 @@ public:
         CredentialManagerStore = 963,
         CredentialManagerRequireUserMediation = 964,
         RequestAutocomplete = 965,
+        CastOverlayClicked = 966,
+        CastOverlayShown = 967,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

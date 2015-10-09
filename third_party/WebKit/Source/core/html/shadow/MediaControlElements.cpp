@@ -32,6 +32,7 @@
 
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/InputTypeNames.h"
+#include "core/dom/ClientRect.h"
 #include "core/dom/DOMTokenList.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/events/MouseEvent.h"
@@ -50,10 +51,12 @@ namespace blink {
 
 using namespace HTMLNames;
 
-// This is the duration from mediaControls.css
-static const double fadeOutDuration = 0.3;
+namespace {
 
-static bool isUserInteractionEvent(Event* event)
+// This is the duration from mediaControls.css
+const double fadeOutDuration = 0.3;
+
+bool isUserInteractionEvent(Event* event)
 {
     const AtomicString& type = event->type();
     return type == EventTypeNames::mousedown
@@ -65,7 +68,7 @@ static bool isUserInteractionEvent(Event* event)
 }
 
 // Sliders (the volume control and timeline) need to capture some additional events used when dragging the thumb.
-static bool isUserInteractionEventForSlider(Event* event, LayoutObject* layoutObject)
+bool isUserInteractionEventForSlider(Event* event, LayoutObject* layoutObject)
 {
     // It is unclear if this can be converted to isUserInteractionEvent(), since
     // mouse* events seem to be eaten during a drag anyway.  crbug.com/516416 .
@@ -83,6 +86,16 @@ static bool isUserInteractionEventForSlider(Event* event, LayoutObject* layoutOb
         || type == EventTypeNames::mousemove;
 }
 
+Element* elementFromCenter(Element& element)
+{
+    ClientRect* clientRect = element.getBoundingClientRect();
+    int centerX = static_cast<int>((clientRect->left() + clientRect->right()) / 2);
+    int centerY = static_cast<int>((clientRect->top() + clientRect->bottom()) / 2);
+
+    return element.document().elementFromPoint(centerX , centerY);
+}
+
+} // anonymous namespace
 
 MediaControlPanelElement::MediaControlPanelElement(MediaControls& mediaControls)
     : MediaControlDivElement(mediaControls, MediaControlsPanel)
@@ -552,6 +565,10 @@ PassRefPtrWillBeRawPtr<MediaControlCastButtonElement> MediaControlCastButtonElem
 void MediaControlCastButtonElement::defaultEventHandler(Event* event)
 {
     if (event->type() == EventTypeNames::click) {
+        if (m_isOverlayButton && !m_clickUseCounted) {
+            m_clickUseCounted = true;
+            UseCounter::count(document(), UseCounter::CastOverlayClicked);
+        }
         if (mediaElement().isPlayingRemotely()) {
             mediaElement().requestRemotePlaybackControl();
         } else {
@@ -582,6 +599,23 @@ void MediaControlCastButtonElement::setIsPlayingRemotely(bool isPlayingRemotely)
         } else {
             setDisplayType(MediaCastOffButton);
         }
+    }
+}
+
+void MediaControlCastButtonElement::tryShowOverlay()
+{
+    ASSERT(m_isOverlayButton);
+
+    setIsWanted(true);
+    if (elementFromCenter(*this) != &mediaElement()) {
+        setIsWanted(false);
+        return;
+    }
+
+    ASSERT(isWanted());
+    if (!m_showUseCounted) {
+        m_showUseCounted = true;
+        UseCounter::count(document(), UseCounter::CastOverlayShown);
     }
 }
 

@@ -109,10 +109,6 @@ private:
     void stopHideMediaControlsTimer();
     void resetHideMediaControlsTimer();
 
-    // Attempts to show the overlay cast button. If it is covered by another
-    // element in the page, it will be hidden.
-    void tryShowOverlayCastButton();
-
     void panelWidthChangedTimerFired(Timer<MediaControls>*);
 
     // Hide elements that don't fit, and show those things that we want which
