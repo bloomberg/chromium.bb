@@ -1166,14 +1166,13 @@ LayoutRect FrameSelection::bounds() const
 
 LayoutRect FrameSelection::unclippedBounds() const
 {
-    m_frame->document()->updateLayoutTreeIfNeeded();
-
     FrameView* view = m_frame->view();
     LayoutView* layoutView = m_frame->contentLayoutObject();
 
     if (!view || !layoutView)
         return LayoutRect();
 
+    view->updateLifecycleToLayoutClean();
     return LayoutRect(layoutView->selectionBounds());
 }
 

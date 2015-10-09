@@ -232,6 +232,10 @@ public:
     // state >= CompositingClean, and scrolling has been updated.
     void updateLifecycleToCompositingCleanPlusScrolling();
 
+    // Computes only the style and layout lifecycle stages.
+    // After calling this method, all frames will be in a lifecycle state >= LayoutClean.
+    void updateLifecycleToLayoutClean();
+
     bool invalidateViewportConstrainedObjects();
 
     void incrementVisuallyNonEmptyCharacterCount(unsigned);
@@ -601,8 +605,9 @@ private:
     void setScrollOffset(const DoublePoint&, ScrollType) override;
 
     enum LifeCycleUpdateOption {
-        AllPhases,
+        OnlyUpToLayoutClean,
         OnlyUpToCompositingCleanPlusScrolling,
+        AllPhases,
     };
 
     void updateLifecyclePhasesInternal(LifeCycleUpdateOption, const LayoutRect& interestRect = LayoutRect::infiniteRect());

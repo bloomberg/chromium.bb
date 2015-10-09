@@ -2391,6 +2391,11 @@ void FrameView::updateLifecycleToCompositingCleanPlusScrolling()
     frame().localFrameRoot()->view()->updateLifecyclePhasesInternal(OnlyUpToCompositingCleanPlusScrolling);
 }
 
+void FrameView::updateLifecycleToLayoutClean()
+{
+    frame().localFrameRoot()->view()->updateLifecyclePhasesInternal(OnlyUpToLayoutClean);
+}
+
 void FrameView::updateLifecyclePhasesInternal(LifeCycleUpdateOption phases, const LayoutRect& interestRect)
 {
     // This must be called from the root frame, since it recurses down, not up.
@@ -2401,6 +2406,10 @@ void FrameView::updateLifecyclePhasesInternal(LifeCycleUpdateOption phases, cons
     RefPtrWillBeRawPtr<FrameView> protector(this);
 
     updateStyleAndLayoutIfNeededRecursive();
+    ASSERT(lifecycle().state() >= DocumentLifecycle::LayoutClean);
+
+    if (phases == OnlyUpToLayoutClean)
+        return;
 
     if (LayoutView* view = layoutView()) {
         TRACE_EVENT1("devtools.timeline", "UpdateLayerTree", "data", InspectorUpdateLayerTreeEvent::data(m_frame.get()));
@@ -2567,6 +2576,9 @@ void FrameView::updateStyleAndLayoutIfNeededRecursive()
 #endif
 
     updateWidgetPositionsIfNeeded();
+
+    if (lifecycle().state() < DocumentLifecycle::LayoutClean)
+        lifecycle().advanceTo(DocumentLifecycle::LayoutClean);
 }
 
 void FrameView::invalidateTreeIfNeededRecursive()
