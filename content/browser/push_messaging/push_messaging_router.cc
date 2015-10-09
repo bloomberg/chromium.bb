@@ -63,7 +63,7 @@ void PushMessagingRouter::FindServiceWorkerRegistration(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // Try to acquire the registration from storage. If it's already live we'll
   // receive it right away. If not, it will be revived from storage.
-  service_worker_context->FindRegistrationForId(
+  service_worker_context->FindReadyRegistrationForId(
       service_worker_registration_id,
       origin,
       base::Bind(&PushMessagingRouter::FindServiceWorkerRegistrationCallback,
@@ -82,27 +82,12 @@ void PushMessagingRouter::FindServiceWorkerRegistrationCallback(
   // TODO(mvanouwerkerk): UMA logging.
   if (service_worker_status != SERVICE_WORKER_OK) {
     RunDeliverCallback(deliver_message_callback,
-                PUSH_DELIVERY_STATUS_NO_SERVICE_WORKER);
+                       PUSH_DELIVERY_STATUS_NO_SERVICE_WORKER);
     return;
   }
 
   ServiceWorkerVersion* version = service_worker_registration->active_version();
-  if (!version) {
-    // Using NO_SERVICE_WORKER status will unsubscribe with GCM, so don't use it
-    // if we have a waiting version in the hopper. On the other hand, if there
-    // is no waiting version, it's an unexpected error case: we should have been
-    // informed the registration went away (but we may not have been:
-    // crbug.com/402458)
-    // TODO(falken): Promote the waiting version instead of returning error.
-    if (service_worker_registration->waiting_version()) {
-      RunDeliverCallback(deliver_message_callback,
-                  PUSH_DELIVERY_STATUS_SERVICE_WORKER_ERROR);
-    } else {
-      RunDeliverCallback(deliver_message_callback,
-                  PUSH_DELIVERY_STATUS_NO_SERVICE_WORKER);
-    }
-    return;
-  }
+  DCHECK(version);
 
   // Hold on to the service worker registration in the callback to keep it
   // alive until the callback dies. Otherwise the registration could be
@@ -111,6 +96,7 @@ void PushMessagingRouter::FindServiceWorkerRegistrationCallback(
   base::Callback<void(ServiceWorkerStatusCode)> dispatch_event_callback =
       base::Bind(&PushMessagingRouter::DeliverMessageEnd,
                  deliver_message_callback, service_worker_registration);
+
   version->DispatchPushEvent(dispatch_event_callback, data);
 }
 
