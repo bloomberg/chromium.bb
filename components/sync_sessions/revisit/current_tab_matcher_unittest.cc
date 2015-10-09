@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sync_driver/revisit/current_tab_matcher.h"
+#include "components/sync_sessions/revisit/current_tab_matcher.h"
 
 #include "base/memory/scoped_ptr.h"
 #include "base/test/histogram_tester.h"
@@ -10,13 +10,14 @@
 #include "components/sessions/core/serialized_navigation_entry.h"
 #include "components/sessions/core/serialized_navigation_entry_test_helper.h"
 #include "components/sessions/core/session_types.h"
-#include "components/sync_driver/revisit/page_equality.h"
+#include "components/sync_sessions/revisit/page_equality.h"
+#include "components/sync_sessions/revisit/page_visit_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
 using sessions::SessionTab;
 
-namespace sync_driver {
+namespace sync_sessions {
 
 namespace {
 
@@ -111,4 +112,4 @@ TEST(CurrentTabMatcherTest, Timestamp) {
   ASSERT_EQ(tab2.get(), matcher2.most_recent_match_);
 }
 
-}  // namespace sync_driver
+}  // namespace sync_sessions

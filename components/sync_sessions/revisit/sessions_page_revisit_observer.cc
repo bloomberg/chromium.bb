@@ -2,17 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sync_driver/revisit/sessions_page_revisit_observer.h"
+#include "components/sync_sessions/revisit/sessions_page_revisit_observer.h"
+
+#include <utility>
 
 #include "base/metrics/histogram_macros.h"
 #include "base/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "components/sessions/core/session_types.h"
 #include "components/sync_driver/glue/synced_session.h"
-#include "components/sync_driver/revisit/current_tab_matcher.h"
-#include "components/sync_driver/revisit/offset_tab_matcher.h"
-#include "components/sync_driver/revisit/page_equality.h"
+#include "components/sync_sessions/revisit/current_tab_matcher.h"
+#include "components/sync_sessions/revisit/offset_tab_matcher.h"
+#include "components/sync_sessions/revisit/page_equality.h"
 
-namespace sync_driver {
+namespace sync_sessions {
 
 SessionsPageRevisitObserver::SessionsPageRevisitObserver(
     scoped_ptr<ForeignSessionsProvider> provider)
@@ -20,8 +23,9 @@ SessionsPageRevisitObserver::SessionsPageRevisitObserver(
 
 SessionsPageRevisitObserver::~SessionsPageRevisitObserver() {}
 
-void SessionsPageRevisitObserver::OnPageVisit(const GURL& url,
-                                              const TransitionType transition) {
+void SessionsPageRevisitObserver::OnPageVisit(
+    const GURL& url,
+    const PageVisitObserver::TransitionType transition) {
   // We need to be invoked and eventually execute on the thread which owns the
   // session objects the provider will give us. However, this work is not
   // especially time sensitive, and so we post a task to perform this to get out
@@ -36,7 +40,7 @@ void SessionsPageRevisitObserver::OnPageVisit(const GURL& url,
 
 void SessionsPageRevisitObserver::CheckForRevisit(
     const GURL& url,
-    const TransitionType transition) {
+    const PageVisitObserver::TransitionType transition) {
   base::TimeTicks start(base::TimeTicks::Now());
 
   // We want to match tabs/navigation entries in two slightly different ways. We
@@ -75,4 +79,4 @@ void SessionsPageRevisitObserver::CheckForRevisit(
   UMA_HISTOGRAM_TIMES("Sync.PageRevisitSessionDuration", duration);
 }
 
-}  // namespace sync_driver
+}  // namespace sync_sessions

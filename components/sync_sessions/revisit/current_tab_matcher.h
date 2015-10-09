@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SYNC_DRIVER_CURRENT_TAB_MATCHER_H_
-#define COMPONENTS_SYNC_DRIVER_CURRENT_TAB_MATCHER_H_
+#ifndef COMPONENTS_SYNC_SESSIONS_REVISIT_CURRENT_TAB_MATCHER_H_
+#define COMPONENTS_SYNC_SESSIONS_REVISIT_CURRENT_TAB_MATCHER_H_
 
 #include "base/gtest_prod_util.h"
 #include "components/sessions/core/session_types.h"
-#include "components/sync_driver/revisit/page_equality.h"
-#include "components/sync_driver/revisit/page_visit_observer.h"
+#include "components/sync_sessions/revisit/page_equality.h"
+#include "components/sync_sessions/revisit/page_visit_observer.h"
 
-namespace sync_driver {
+namespace sync_sessions {
 
 // This class checks the current navigation entry for the given tabs to see if
 // they correspond to the same page we were constructed to look for. Upon
@@ -30,6 +30,6 @@ class CurrentTabMatcher {
   DISALLOW_COPY_AND_ASSIGN(CurrentTabMatcher);
 };
 
-}  // namespace sync_driver
+}  // namespace sync_sessions
 
-#endif  // COMPONENTS_SYNC_DRIVER_CURRENT_TAB_MATCHER_H_
+#endif  // COMPONENTS_SYNC_SESSIONS_REVISIT_CURRENT_TAB_MATCHER_H_

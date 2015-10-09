@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SYNC_DRIVER_PAGE_EQUALITY_H_
-#define COMPONENTS_SYNC_DRIVER_PAGE_EQUALITY_H_
+#ifndef COMPONENTS_SYNC_SESSIONS_REVISIT_PAGE_EQUALITY_H_
+#define COMPONENTS_SYNC_SESSIONS_REVISIT_PAGE_EQUALITY_H_
 
-namespace sync_driver {
+namespace sync_sessions {
 
 // An extremely simplistic approach to determining page equality, given two
 // URLs. Some of the notable examples this fails to accommodate are varying
@@ -21,6 +21,6 @@ class PageEquality {
   const GURL url_;
 };
 
-}  // namespace sync_driver
+}  // namespace sync_sessions
 
-#endif  // COMPONENTS_SYNC_DRIVER_PAGE_EQUALITY_H_
+#endif  // COMPONENTS_SYNC_SESSIONS_REVISIT_PAGE_EQUALITY_H_

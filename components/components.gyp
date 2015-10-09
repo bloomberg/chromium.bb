@@ -80,6 +80,7 @@
     'suggestions.gypi',
     'sync_bookmarks.gypi',
     'sync_driver.gypi',
+    'sync_sessions.gypi',
     'syncable_prefs.gypi',
     'toolbar.gypi',
     'translate.gypi',

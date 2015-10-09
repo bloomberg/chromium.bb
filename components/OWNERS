@@ -279,6 +279,10 @@ per-file sync_driver*=pavely@chromium.org
 per-file sync_driver*=stanisc@chromium.org
 per-file sync_driver*=zea@chromium.org
 
+per-file sync_sessions.gypi=pavely@chromium.org
+per-file sync_sessions.gypi=stanisc@chromium.org
+per-file sync_sessions.gypi=zea@chromium.org
+
 per-file timers*=chirantan@chromium.org
 per-file timers*=derat@chromium.org
 

@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sync_driver/revisit/offset_tab_matcher.h"
+#include "components/sync_sessions/revisit/offset_tab_matcher.h"
+
+#include <algorithm>
 
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "components/sessions/core/serialized_navigation_entry.h"
 
-namespace sync_driver {
+namespace sync_sessions {
 
 namespace {
 
@@ -76,4 +78,4 @@ int OffsetTabMatcher::Clamp(const int input, const int lower, const int upper) {
   return std::max(lower, std::min(upper, input));
 }
 
-}  // namespace sync_driver
+}  // namespace sync_sessions

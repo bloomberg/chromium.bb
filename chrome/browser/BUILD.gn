@@ -158,6 +158,7 @@ source_set("browser") {
     "//components/suggestions",
     "//components/sync_bookmarks",
     "//components/sync_driver",
+    "//components/sync_sessions",
     "//components/tracing:startup_tracing",
     "//components/translate/core/browser",
     "//components/translate/core/common",

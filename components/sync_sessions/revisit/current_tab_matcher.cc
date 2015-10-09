@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sync_driver/revisit/current_tab_matcher.h"
+#include "components/sync_sessions/revisit/current_tab_matcher.h"
 
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "components/sessions/core/serialized_navigation_entry.h"
 
-namespace sync_driver {
+namespace sync_sessions {
 
 CurrentTabMatcher::CurrentTabMatcher(const PageEquality& page_equality)
     : page_equality_(page_equality) {}
@@ -43,4 +43,4 @@ void CurrentTabMatcher::Emit(
   }
 }
 
-}  // namespace sync_driver
+}  // namespace sync_sessions

@@ -2,12 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SYNC_DRIVER_REVISIT_PAGE_VISIT_OBSERVERE_H_
-#define COMPONENTS_SYNC_DRIVER_REVISIT_PAGE_VISIT_OBSERVERE_H_
+#ifndef COMPONENTS_SYNC_SESSIONS_REVISIT_PAGE_VISIT_OBSERVER_H_
+#define COMPONENTS_SYNC_SESSIONS_REVISIT_PAGE_VISIT_OBSERVER_H_
 
-#include "url/gurl.h"
+#include <string>
 
-namespace sync_driver {
+#include "base/time/time.h"
+
+class GURL;
+
+namespace sync_sessions {
 
 // An interface that allows observers to be notified when a page is visited.
 class PageVisitObserver {
@@ -31,6 +35,6 @@ class PageVisitObserver {
                            const TransitionType transition) = 0;
 };
 
-}  // namespace sync_driver
+}  // namespace sync_sessions
 
-#endif  // COMPONENTS_SYNC_DRIVER_REVISIT_PAGE_VISIT_OBSERVERE_H_
+#endif  // COMPONENTS_SYNC_SESSIONS_REVISIT_PAGE_VISIT_OBSERVER_H_

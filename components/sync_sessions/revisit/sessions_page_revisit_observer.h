@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SYNC_DRIVER_REVISIT_SESSIONS_PAGE_REVISIT_OBSERVER_H_
-#define COMPONENTS_SYNC_DRIVER_REVISIT_SESSIONS_PAGE_REVISIT_OBSERVER_H_
+#ifndef COMPONENTS_SYNC_SESSIONS_REVISIT_SESSIONS_PAGE_REVISIT_OBSERVER_H_
+#define COMPONENTS_SYNC_SESSIONS_REVISIT_SESSIONS_PAGE_REVISIT_OBSERVER_H_
 
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "components/sync_driver/revisit/page_visit_observer.h"
+#include "components/sync_sessions/revisit/page_visit_observer.h"
 #include "url/gurl.h"
 
 namespace sessions {
@@ -17,8 +17,10 @@ struct SessionTab;
 }  // namespace sessions
 
 namespace sync_driver {
-
 struct SyncedSession;
+}  // namespace sync_driver
+
+namespace sync_sessions {
 
 class CurrentTabMatcher;
 class OffsetTabMatcher;
@@ -60,6 +62,6 @@ class SessionsPageRevisitObserver
   DISALLOW_COPY_AND_ASSIGN(SessionsPageRevisitObserver);
 };
 
-}  // namespace sync_driver
+}  // namespace sync_sessions
 
-#endif  // COMPONENTS_SYNC_DRIVER_REVISIT_SESSIONS_PAGE_REVISIT_OBSERVER_H_
+#endif  // COMPONENTS_SYNC_SESSIONS_REVISIT_SESSIONS_PAGE_REVISIT_OBSERVER_H_

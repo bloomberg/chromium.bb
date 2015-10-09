@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_SYNC_SESSIONS_PAGE_REVISIT_BROADCASTER_H_
 
 #include "base/memory/scoped_vector.h"
-#include "components/sync_driver/revisit/page_visit_observer.h"
+#include "components/sync_sessions/revisit/page_visit_observer.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
@@ -36,10 +36,10 @@ class PageRevisitBroadcaster {
   // observers to depend on ui/, and the high bit masks don't work for emitting
   // histograms. Some of the high bit masks correspond to cases we're
   // particularly interested in and want to treat as first class values.
-  static sync_driver::PageVisitObserver::TransitionType ConvertTransitionEnum(
+  static sync_sessions::PageVisitObserver::TransitionType ConvertTransitionEnum(
       const ui::PageTransition original);
 
-  ScopedVector<sync_driver::PageVisitObserver> revisit_observers_;
+  ScopedVector<sync_sessions::PageVisitObserver> revisit_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(PageRevisitBroadcaster);
 };

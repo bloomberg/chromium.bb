@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SYNC_DRIVER_OFFSET_TAB_MATCHER_H_
-#define COMPONENTS_SYNC_DRIVER_OFFSET_TAB_MATCHER_H_
+#ifndef COMPONENTS_SYNC_SESSIONS_REVISIT_OFFSET_TAB_MATCHER_H_
+#define COMPONENTS_SYNC_SESSIONS_REVISIT_OFFSET_TAB_MATCHER_H_
 
 #include "components/sessions/core/session_types.h"
-#include "components/sync_driver/revisit/page_equality.h"
-#include "components/sync_driver/revisit/page_visit_observer.h"
+#include "components/sync_sessions/revisit/page_equality.h"
+#include "components/sync_sessions/revisit/page_visit_observer.h"
 
-namespace sync_driver {
+namespace sync_sessions {
 
 // This class looks for tabs that have matching pages that are not the current
 // navigation entry. This corresponds to the pages you would arrive at if you
@@ -35,6 +35,6 @@ class OffsetTabMatcher {
   DISALLOW_COPY_AND_ASSIGN(OffsetTabMatcher);
 };
 
-}  // namespace sync_driver
+}  // namespace sync_sessions
 
-#endif  // COMPONENTS_SYNC_DRIVER_OFFSET_TAB_MATCHER_H_
+#endif  // COMPONENTS_SYNC_SESSIONS_REVISIT_OFFSET_TAB_MATCHER_H_
