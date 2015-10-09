@@ -68,17 +68,10 @@ InkDropAnimationControllerFactory::~InkDropAnimationControllerFactory() {}
 scoped_ptr<InkDropAnimationController>
 InkDropAnimationControllerFactory::CreateInkDropAnimationController(
     InkDropHost* ink_drop_host) {
-#if defined(OS_CHROMEOS)
-  // The ink drop animation is only targeted at ChromeOS because there is
-  // concern it will conflict with OS level touch feedback in a bad way.
   if (ui::MaterialDesignController::IsModeMaterial()) {
     return scoped_ptr<InkDropAnimationController>(
         new InkDropAnimationControllerImpl(ink_drop_host));
-  } else {
-    return scoped_ptr<InkDropAnimationController>(
-        new InkDropAnimationControllerStub());
   }
-#endif  // defined(OS_CHROMEOS)
 
   return scoped_ptr<InkDropAnimationController>(
       new InkDropAnimationControllerStub());

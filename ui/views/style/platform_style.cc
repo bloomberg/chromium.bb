@@ -10,7 +10,7 @@
 
 namespace views {
 
-#if defined(OS_CHROMEOS)
+#if !defined(OS_MACOSX)
 // static
 scoped_ptr<LabelButtonBorder> PlatformStyle::CreateLabelButtonBorder(
     Button::ButtonStyle style) {
@@ -19,23 +19,9 @@ scoped_ptr<LabelButtonBorder> PlatformStyle::CreateLabelButtonBorder(
     return make_scoped_ptr(new LabelButtonAssetBorder(style));
   }
 
-  // The material design spec for Chrome OS includes no visual effects for
-  // button states, so a non-asset border with insets is used.
   scoped_ptr<LabelButtonBorder> border(new views::LabelButtonBorder());
   border->set_insets(views::LabelButtonAssetBorder::GetDefaultInsetsForStyle(
       Button::STYLE_TEXTBUTTON));
-  return border.Pass();
-}
-#elif !defined(OS_MACOSX)
-// static
-scoped_ptr<LabelButtonBorder> PlatformStyle::CreateLabelButtonBorder(
-    Button::ButtonStyle style) {
-  scoped_ptr<LabelButtonAssetBorder> border(new LabelButtonAssetBorder(style));
-  // The material design spec does not include a visual effect for the
-  // STATE_HOVERED button state so we have to remove the default one added by
-  // LabelButtonAssetBorder.
-  if (ui::MaterialDesignController::IsModeMaterial())
-    border->SetPainter(false, Button::STATE_HOVERED, nullptr);
   return border.Pass();
 }
 #endif
