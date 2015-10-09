@@ -61,7 +61,7 @@ void GraphicsContextState::copy(const GraphicsContextState& source)
 const SkPaint& GraphicsContextState::strokePaint(int strokedPathLength) const
 {
     if (m_strokeGradient && m_strokeGradient->shaderChanged())
-        m_strokePaint.setShader(m_strokeGradient->shader());
+        m_strokeGradient->applyToPaint(m_strokePaint);
     m_strokeData.setupPaintDashPathEffect(&m_strokePaint, strokedPathLength);
     return m_strokePaint;
 }
@@ -69,7 +69,7 @@ const SkPaint& GraphicsContextState::strokePaint(int strokedPathLength) const
 const SkPaint& GraphicsContextState::fillPaint() const
 {
     if (m_fillGradient && m_fillGradient->shaderChanged())
-        m_fillPaint.setShader(m_fillGradient->shader());
+        m_fillGradient->applyToPaint(m_fillPaint);
     return m_fillPaint;
 }
 
@@ -97,7 +97,7 @@ void GraphicsContextState::setStrokeGradient(const PassRefPtr<Gradient> gradient
     m_strokeColor = Color::black;
     m_strokeGradient = gradient;
     m_strokePaint.setColor(scaleAlpha(SK_ColorBLACK, alpha));
-    m_strokePaint.setShader(m_strokeGradient->shader());
+    m_strokeGradient->applyToPaint(m_strokePaint);
 }
 
 void GraphicsContextState::setLineCap(LineCap cap)
@@ -131,7 +131,7 @@ void GraphicsContextState::setFillGradient(const PassRefPtr<Gradient> gradient, 
     m_fillColor = Color::black;
     m_fillGradient = gradient;
     m_fillPaint.setColor(scaleAlpha(SK_ColorBLACK, alpha));
-    m_fillPaint.setShader(m_fillGradient->shader());
+    m_fillGradient->applyToPaint(m_fillPaint);
 }
 
 // Shadow. (This will need tweaking if we use draw loopers for other things.)

@@ -52,12 +52,13 @@ void SVGPaintServer::applyToSkPaint(SkPaint& paint, float paintAlpha)
 {
     SkColor baseColor = m_gradient || m_pattern ? SK_ColorBLACK : m_color.rgb();
     paint.setColor(scaleAlpha(baseColor, paintAlpha));
-    if (m_pattern)
-        paint.setShader(m_pattern->shader());
-    else if (m_gradient)
-        paint.setShader(m_gradient->shader());
-    else
+    if (m_pattern) {
+        m_pattern->applyToPaint(paint);
+    } else if (m_gradient) {
+        m_gradient->applyToPaint(paint);
+    } else {
         paint.setShader(nullptr);
+    }
 }
 
 void SVGPaintServer::prependTransform(const AffineTransform& transform)

@@ -65,7 +65,7 @@ void GeneratedImage::drawPattern(GraphicsContext* destContext, const FloatRect& 
     picturePattern->setPatternSpaceTransform(patternTransform);
 
     SkPaint fillPaint = destContext->fillPaint();
-    fillPaint.setShader(picturePattern->shader());
+    picturePattern->applyToPaint(fillPaint);
     fillPaint.setColor(SK_ColorBLACK);
     fillPaint.setXfermodeMode(compositeOp);
 

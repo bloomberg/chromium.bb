@@ -242,7 +242,7 @@ void CanvasRenderingContext2DState::updateStrokeStyle() const
 
     int clampedAlpha = clampedAlphaForBlending(m_globalAlpha);
     ASSERT(m_strokeStyle);
-    m_strokePaint.setShader(m_strokeStyle->shader());
+    m_strokeStyle->applyToPaint(m_strokePaint);
     m_strokePaint.setColor(scaleAlpha(m_strokeStyle->paintColor(), clampedAlpha));
     m_strokeStyleDirty = false;
 }
@@ -254,7 +254,7 @@ void CanvasRenderingContext2DState::updateFillStyle() const
 
     int clampedAlpha = clampedAlphaForBlending(m_globalAlpha);
     ASSERT(m_fillStyle);
-    m_fillPaint.setShader(m_fillStyle->shader());
+    m_fillStyle->applyToPaint(m_fillPaint);
     m_fillPaint.setColor(scaleAlpha(m_fillStyle->paintColor(), clampedAlpha));
     m_fillStyleDirty = false;
 }

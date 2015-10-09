@@ -110,19 +110,21 @@ CanvasStyle* CanvasStyle::createFromPattern(CanvasPattern* pattern)
     return new CanvasStyle(pattern);
 }
 
-SkShader* CanvasStyle::shader() const
+void CanvasStyle::applyToPaint(SkPaint& paint) const
 {
     switch (m_type) {
     case ColorRGBA:
-        return nullptr;
+        paint.setShader(nullptr);
+        break;
     case Gradient:
-        return canvasGradient()->gradient()->shader();
+        canvasGradient()->gradient()->applyToPaint(paint);
+        break;
     case ImagePattern:
-        return canvasPattern()->pattern()->shader();
+        canvasPattern()->pattern()->applyToPaint(paint);
+        break;
     default:
         ASSERT_NOT_REACHED();
     }
-    return nullptr;
 }
 
 RGBA32 CanvasStyle::paintColor() const

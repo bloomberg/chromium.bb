@@ -60,13 +60,13 @@ Pattern::~Pattern()
     adjustExternalMemoryAllocated(-m_externalMemoryAllocated);
 }
 
-SkShader* Pattern::shader()
+void Pattern::applyToPaint(SkPaint& paint)
 {
     if (!m_pattern) {
         m_pattern = createShader();
     }
 
-    return m_pattern.get();
+    paint.setShader(m_pattern.get());
 }
 
 void Pattern::setPatternSpaceTransform(const AffineTransform& patternSpaceTransformation)

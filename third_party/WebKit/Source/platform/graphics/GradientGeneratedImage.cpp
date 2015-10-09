@@ -40,7 +40,7 @@ void GradientGeneratedImage::draw(SkCanvas* canvas, const SkPaint& paint, const 
         canvas->scale(destRect.width() / srcRect.width(), destRect.height() / srcRect.height());
     canvas->translate(-srcRect.x(), -srcRect.y());
     SkPaint gradientPaint(paint);
-    gradientPaint.setShader(m_gradient->shader());
+    m_gradient->applyToPaint(gradientPaint);
     canvas->drawRect(SkRect::MakeWH(m_size.width(), m_size.height()), gradientPaint);
 }
 

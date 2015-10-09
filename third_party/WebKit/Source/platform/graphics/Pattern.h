@@ -37,8 +37,8 @@
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 
+class SkPaint;
 class SkPicture;
-class SkShader;
 
 namespace blink {
 
@@ -57,7 +57,7 @@ public:
         RepeatMode = RepeatModeXY);
     virtual ~Pattern();
 
-    SkShader* shader();
+    void applyToPaint(SkPaint&);
 
     void setPatternSpaceTransform(const AffineTransform& patternSpaceTransformation);
     const AffineTransform& patternSpaceTransform() const { return m_patternSpaceTransformation; }
