@@ -313,7 +313,8 @@ cr.define('cr.login', function() {
   Authenticator.prototype.onRequestCompleted_ = function(details) {
     var currentUrl = details.url;
 
-    if (currentUrl.lastIndexOf(this.continueUrlWithoutParams_, 0) == 0) {
+    if (!this.isNewGaiaFlow &&
+        currentUrl.lastIndexOf(this.continueUrlWithoutParams_, 0) == 0) {
       if (currentUrl.indexOf('ntp=1') >= 0)
         this.skipForNow_ = true;
 

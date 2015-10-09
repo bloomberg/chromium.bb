@@ -66,6 +66,8 @@ const char kAuthHeaderOAuth[] = "OAuth ";
 const char kListAccountsResponseFormat[] =
     "[\"gaia.l.a.r\",[[\"gaia.l.a\",1,\"\",\"%s\",\"\",1,1,0,0,1,\"12345\"]]]";
 
+const char kDummySAMLContinuePath[] = "DummySAMLContinue";
+
 typedef std::map<std::string, std::string> CookieMap;
 
 // Parses cookie name-value map our of |request|.
@@ -262,6 +264,10 @@ void FakeGaia::Initialize() {
 
   // Handles /SSO GAIA call (not GAIA, made up for SAML tests).
   REGISTER_PATH_RESPONSE_HANDLER("/SSO", HandleSSO);
+
+  REGISTER_RESPONSE_HANDLER(
+      gaia_urls->gaia_url().Resolve(kDummySAMLContinuePath),
+      HandleDummySAMLContinue);
 
   // Handles /oauth2/v4/token GAIA call.
   REGISTER_RESPONSE_HANDLER(
@@ -580,9 +586,11 @@ void FakeGaia::HandleEmbeddedLookupAccountLookup(
 
   GURL url(saml_account_idp_map_[email]);
   url = net::AppendQueryParameter(url, "SAMLRequest", "fake_request");
-  url = net::AppendQueryParameter(
-      url, "RelayState",
-      GaiaUrls::GetInstance()->signin_completed_continue_url().spec());
+  url = net::AppendQueryParameter(url, "RelayState",
+                                  GaiaUrls::GetInstance()
+                                      ->gaia_url()
+                                      .Resolve(kDummySAMLContinuePath)
+                                      .spec());
   std::string redirect_url = url.spec();
   http_response->AddCustomHeader("Google-Accounts-SAML", "Start");
 
@@ -626,6 +634,12 @@ void FakeGaia::HandleSSO(const HttpRequest& request,
 
   if (issue_oauth_code_cookie_)
     SetOAuthCodeCookie(http_response);
+}
+
+void FakeGaia::HandleDummySAMLContinue(const HttpRequest& request,
+                                       BasicHttpResponse* http_response) {
+  http_response->set_content("");
+  http_response->set_code(net::HTTP_OK);
 }
 
 void FakeGaia::HandleAuthToken(const HttpRequest& request,

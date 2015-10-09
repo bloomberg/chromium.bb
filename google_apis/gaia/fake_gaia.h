@@ -192,6 +192,9 @@ class FakeGaia {
       net::test_server::BasicHttpResponse* http_response);
   void HandleSSO(const net::test_server::HttpRequest& request,
                  net::test_server::BasicHttpResponse* http_response);
+  void HandleDummySAMLContinue(
+      const net::test_server::HttpRequest& request,
+      net::test_server::BasicHttpResponse* http_response);
   void HandleAuthToken(const net::test_server::HttpRequest& request,
                        net::test_server::BasicHttpResponse* http_response);
   void HandleTokenInfo(const net::test_server::HttpRequest& request,
