@@ -1036,10 +1036,6 @@ crbug.com/509025 [ Yosemite ] compositing/overflow/do-not-paint-outline-into-com
 crbug.com/509025 [ Yosemite ] compositing/overflow/update-widget-positions-on-nested-frames-and-scrollers.html [ ImageOnlyFailure Failure Timeout ]
 crbug.com/509025 [ Yosemite ] compositing/plugins/composited-plugin.html [ ImageOnlyFailure ]
 crbug.com/509025 [ Yosemite ] compositing/visibility/visibility-image-layers.html [ ImageOnlyFailure ]
-# Uncomment this once rebaseline goes in for crbug.com/505086
-# crbug.com/509025 [ Yosemite ] css3/filters/effect-brightness-clamping-hw.html [ ImageOnlyFailure ]
-# Uncomment this once rebaseline goes in for crbug.com/505086
-# crbug.com/509025 [ Yosemite ] css3/filters/effect-combined-hw.html [ ImageOnlyFailure ]
 crbug.com/509025 [ Yosemite ] fonts/cursive.html [ ImageOnlyFailure ]
 crbug.com/509025 [ Yosemite ] fonts/default.html [ ImageOnlyFailure ]
 crbug.com/509025 [ Yosemite ] fonts/fantasy.html [ ImageOnlyFailure ]
@@ -1593,8 +1589,6 @@ crbug.com/527743 [ Win10 ] paint/masks/table-cell-masks.html [ Pass Timeout ]
 crbug.com/531286 virtual/gpu/fast/canvas/yuv-video-on-accelerated-canvas.html [ ImageOnlyFailure ]
 
 crbug.com/535478 [ Win ] virtual/threaded/inspector/tracing/decode-resize.html [ Slow Pass Failure ]
-
-crbug.com/538522 css3/filters/effect-reference-colorspace-hw.html [ Crash ImageOnlyFailure ]
 
 crbug.com/524646 [ Yosemite ] fast/dom/shadow/shadowdom-for-button.html [ ImageOnlyFailure ]
 
