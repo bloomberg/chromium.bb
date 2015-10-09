@@ -2028,10 +2028,6 @@ interface HTMLMediaElement
     getter muted
     getter networkState
     getter onencrypted
-    getter onwebkitkeyadded
-    getter onwebkitkeyerror
-    getter onwebkitkeymessage
-    getter onwebkitneedkey
     getter paused
     getter playbackRate
     getter played
@@ -2051,9 +2047,6 @@ interface HTMLMediaElement
     method pause
     method play
     method setMediaKeys
-    method webkitAddKey
-    method webkitCancelKeyRequest
-    method webkitGenerateKeyRequest
     setter autoplay
     setter controls
     setter crossOrigin
@@ -2063,10 +2056,6 @@ interface HTMLMediaElement
     setter loop
     setter muted
     setter onencrypted
-    setter onwebkitkeyadded
-    setter onwebkitkeyerror
-    setter onwebkitkeymessage
-    setter onwebkitneedkey
     setter playbackRate
     setter preload
     setter src
@@ -2546,7 +2535,6 @@ interface HashChangeEvent
     getter newURL
     getter oldURL
     method constructor
-    method initHashChangeEvent
 interface Headers
     method append
     method constructor
@@ -2783,25 +2771,6 @@ interface MediaError
     attribute MEDIA_ERR_NETWORK
     attribute MEDIA_ERR_SRC_NOT_SUPPORTED
     getter code
-    method constructor
-interface MediaKeyError
-    attribute MEDIA_KEYERR_CLIENT
-    attribute MEDIA_KEYERR_DOMAIN
-    attribute MEDIA_KEYERR_HARDWARECHANGE
-    attribute MEDIA_KEYERR_OUTPUT
-    attribute MEDIA_KEYERR_SERVICE
-    attribute MEDIA_KEYERR_UNKNOWN
-    getter code
-    getter systemCode
-    method constructor
-interface MediaKeyEvent
-    getter defaultURL
-    getter errorCode
-    getter initData
-    getter keySystem
-    getter message
-    getter sessionId
-    getter systemCode
     method constructor
 interface MediaKeyMessageEvent
     getter message
@@ -3444,7 +3413,6 @@ interface SVGAnimationElement
     method getCurrentTime
     method getSimpleDuration
     method getStartTime
-    method hasExtension
     setter onbegin
     setter onend
     setter onrepeat
@@ -3479,7 +3447,6 @@ interface SVGCursorElement
     getter x
     getter y
     method constructor
-    method hasExtension
 interface SVGDefsElement
     method constructor
 interface SVGDescElement
@@ -3921,7 +3888,6 @@ interface SVGGraphicsElement
     method getCTM
     method getScreenCTM
     method getTransformToElement
-    method hasExtension
 interface SVGImageElement
     getter height
     getter href
@@ -4008,7 +3974,6 @@ interface SVGMaskElement
     getter x
     getter y
     method constructor
-    method hasExtension
 interface SVGMatrix
     getter a
     getter b
@@ -4284,7 +4249,6 @@ interface SVGPatternElement
     getter x
     getter y
     method constructor
-    method hasExtension
 interface SVGPoint
     getter x
     getter y
@@ -4785,10 +4749,6 @@ interface Touch
     getter screenX
     getter screenY
     getter target
-    getter webkitForce
-    getter webkitRadiusX
-    getter webkitRadiusY
-    getter webkitRotationAngle
     method constructor
 interface TouchEvent
     getter altKey
@@ -5466,133 +5426,8 @@ interface WheelEvent
 interface Window
     attribute PERSISTENT
     attribute TEMPORARY
-    attribute onabort
-    attribute onanimationend
-    attribute onanimationiteration
-    attribute onanimationstart
-    attribute onbeforeunload
-    attribute onblur
-    attribute oncancel
-    attribute oncanplay
-    attribute oncanplaythrough
-    attribute onchange
-    attribute onclick
-    attribute onclose
-    attribute oncontextmenu
-    attribute oncuechange
-    attribute ondblclick
-    attribute ondevicemotion
-    attribute ondeviceorientation
-    attribute ondrag
-    attribute ondragend
-    attribute ondragenter
-    attribute ondragleave
-    attribute ondragover
-    attribute ondragstart
-    attribute ondrop
-    attribute ondurationchange
-    attribute onemptied
-    attribute onended
-    attribute onerror
-    attribute onfocus
-    attribute onhashchange
-    attribute oninput
-    attribute oninvalid
-    attribute onkeydown
-    attribute onkeypress
-    attribute onkeyup
-    attribute onlanguagechange
-    attribute onload
-    attribute onloadeddata
-    attribute onloadedmetadata
-    attribute onloadstart
-    attribute onmessage
-    attribute onmousedown
-    attribute onmouseenter
-    attribute onmouseleave
-    attribute onmousemove
-    attribute onmouseout
-    attribute onmouseover
-    attribute onmouseup
-    attribute onmousewheel
-    attribute onoffline
-    attribute ononline
-    attribute onorientationchange
-    attribute onpagehide
-    attribute onpageshow
-    attribute onpause
-    attribute onplay
-    attribute onplaying
-    attribute onpopstate
-    attribute onprogress
-    attribute onratechange
-    attribute onreset
-    attribute onresize
-    attribute onscroll
-    attribute onsearch
-    attribute onseeked
-    attribute onseeking
-    attribute onselect
-    attribute onshow
-    attribute onstalled
-    attribute onstorage
-    attribute onsubmit
-    attribute onsuspend
-    attribute ontimeupdate
-    attribute ontoggle
-    attribute ontouchcancel
-    attribute ontouchend
-    attribute ontouchmove
-    attribute ontouchstart
-    attribute ontransitionend
-    attribute onunload
-    attribute onvolumechange
-    attribute onwaiting
-    attribute onwebkitanimationend
-    attribute onwebkitanimationiteration
-    attribute onwebkitanimationstart
-    attribute onwebkittransitionend
-    attribute onwheel
-    method alert
-    method atob
-    method blur
-    method btoa
-    method cancelAnimationFrame
-    method cancelIdleCallback
-    method captureEvents
-    method clearInterval
-    method clearTimeout
-    method close
-    method confirm
     method constructor
-    method fetch
-    method find
-    method focus
-    method getComputedStyle
-    method getMatchedCSSRules
-    method getSelection
-    method matchMedia
-    method moveBy
-    method moveTo
-    method open
-    method postMessage
-    method print
-    method prompt
-    method releaseEvents
-    method requestAnimationFrame
-    method requestIdleCallback
-    method resizeBy
-    method resizeTo
-    method scroll
-    method scrollBy
-    method scrollTo
-    method setInterval
-    method setTimeout
-    method stop
     method toString
-    method webkitCancelAnimationFrame
-    method webkitCancelRequestAnimationFrame
-    method webkitRequestAnimationFrame
 interface Worker
     getter onerror
     getter onmessage
@@ -5823,9 +5658,7 @@ interface webkitIDBTransaction
     setter onerror
 interface webkitMediaStream
     getter active
-    getter ended
     getter id
-    getter label
     getter onactive
     getter onaddtrack
     getter onended
@@ -5839,7 +5672,6 @@ interface webkitMediaStream
     method getTracks
     method getVideoTracks
     method removeTrack
-    method stop
     setter onactive
     setter onaddtrack
     setter onended
@@ -5910,5 +5742,185 @@ interface webkitURL
     setter protocol
     setter search
     setter username
+[GLOBAL OBJECT]
+    attribute applicationCache
+    attribute caches
+    attribute clientInformation
+    attribute closed
+    attribute console
+    attribute crypto
+    attribute defaultStatus
+    attribute defaultstatus
+    attribute devicePixelRatio
+    attribute document
+    attribute event
+    attribute frameElement
+    attribute frames
+    attribute history
+    attribute indexedDB
+    attribute innerHeight
+    attribute innerWidth
+    attribute isSecureContext
+    attribute length
+    attribute localStorage
+    attribute location
+    attribute locationbar
+    attribute menubar
+    attribute name
+    attribute navigator
+    attribute offscreenBuffering
+    attribute onabort
+    attribute onanimationend
+    attribute onanimationiteration
+    attribute onanimationstart
+    attribute onbeforeunload
+    attribute onblur
+    attribute oncancel
+    attribute oncanplay
+    attribute oncanplaythrough
+    attribute onchange
+    attribute onclick
+    attribute onclose
+    attribute oncontextmenu
+    attribute oncuechange
+    attribute ondblclick
+    attribute ondevicemotion
+    attribute ondeviceorientation
+    attribute ondrag
+    attribute ondragend
+    attribute ondragenter
+    attribute ondragleave
+    attribute ondragover
+    attribute ondragstart
+    attribute ondrop
+    attribute ondurationchange
+    attribute onemptied
+    attribute onended
+    attribute onerror
+    attribute onfocus
+    attribute onhashchange
+    attribute oninput
+    attribute oninvalid
+    attribute onkeydown
+    attribute onkeypress
+    attribute onkeyup
+    attribute onlanguagechange
+    attribute onload
+    attribute onloadeddata
+    attribute onloadedmetadata
+    attribute onloadstart
+    attribute onmessage
+    attribute onmousedown
+    attribute onmouseenter
+    attribute onmouseleave
+    attribute onmousemove
+    attribute onmouseout
+    attribute onmouseover
+    attribute onmouseup
+    attribute onmousewheel
+    attribute onoffline
+    attribute ononline
+    attribute onorientationchange
+    attribute onpagehide
+    attribute onpageshow
+    attribute onpause
+    attribute onplay
+    attribute onplaying
+    attribute onpopstate
+    attribute onprogress
+    attribute onratechange
+    attribute onreset
+    attribute onresize
+    attribute onscroll
+    attribute onsearch
+    attribute onseeked
+    attribute onseeking
+    attribute onselect
+    attribute onshow
+    attribute onstalled
+    attribute onstorage
+    attribute onsubmit
+    attribute onsuspend
+    attribute ontimeupdate
+    attribute ontoggle
+    attribute ontouchcancel
+    attribute ontouchend
+    attribute ontouchmove
+    attribute ontouchstart
+    attribute ontransitionend
+    attribute onunload
+    attribute onvolumechange
+    attribute onwaiting
+    attribute onwebkitanimationend
+    attribute onwebkitanimationiteration
+    attribute onwebkitanimationstart
+    attribute onwebkittransitionend
+    attribute onwheel
+    attribute opener
+    attribute orientation
+    attribute outerHeight
+    attribute outerWidth
+    attribute pageXOffset
+    attribute pageYOffset
+    attribute parent
+    attribute performance
+    attribute personalbar
+    attribute propertyNamesInGlobal
+    attribute screen
+    attribute screenLeft
+    attribute screenTop
+    attribute screenX
+    attribute screenY
+    attribute scrollX
+    attribute scrollY
+    attribute scrollbars
+    attribute self
+    attribute sessionStorage
+    attribute status
+    attribute statusbar
+    attribute styleMedia
+    attribute toolbar
+    attribute top
+    attribute webkitIndexedDB
+    attribute webkitStorageInfo
+    attribute window
+    method alert
+    method atob
+    method blur
+    method btoa
+    method cancelAnimationFrame
+    method cancelIdleCallback
+    method captureEvents
+    method clearInterval
+    method clearTimeout
+    method close
+    method confirm
+    method fetch
+    method find
+    method focus
+    method getComputedStyle
+    method getMatchedCSSRules
+    method getSelection
+    method matchMedia
+    method moveBy
+    method moveTo
+    method open
+    method postMessage
+    method print
+    method prompt
+    method releaseEvents
+    method requestAnimationFrame
+    method requestIdleCallback
+    method resizeBy
+    method resizeTo
+    method scroll
+    method scrollBy
+    method scrollTo
+    method setInterval
+    method setTimeout
+    method stop
+    method webkitCancelAnimationFrame
+    method webkitCancelRequestAnimationFrame
+    method webkitRequestAnimationFrame
 This test documents all interface attributes and methods on the global window object and element instances.
 TEST FINISHED
