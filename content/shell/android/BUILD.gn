@@ -111,7 +111,6 @@ copy_ex("copy_content_shell_assets") {
 }
 
 android_apk("content_shell_apk") {
-  use_chromium_linker = true
   testonly = true
   data_deps = [
     # "//tools/android/forwarder",
@@ -160,7 +159,9 @@ instrumentation_test_apk("content_shell_test_apk") {
     "//base:base_javatests",
     "//net/android:net_javatests",
   ]
-  data_deps = [ ":content_shell_apk" ]
+  data_deps = [
+    ":content_shell_apk",
+  ]
   apk_under_test = ":content_shell_apk"
   apk_name = "ContentShellTest"
   android_manifest = "javatests/AndroidManifest.xml"
