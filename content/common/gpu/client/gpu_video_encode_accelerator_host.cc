@@ -4,6 +4,7 @@
 
 #include "content/common/gpu/client/gpu_video_encode_accelerator_host.h"
 
+#include "base/location.h"
 #include "base/logging.h"
 #include "content/common/gpu/client/gpu_channel_host.h"
 #include "content/common/gpu/gpu_messages.h"
@@ -11,10 +12,6 @@
 #include "media/base/video_frame.h"
 
 namespace content {
-
-#define NOTIFY_ERROR(error) \
-  PostNotifyError(error);   \
-  DLOG(ERROR)
 
 GpuVideoEncodeAcceleratorHost::GpuVideoEncodeAcceleratorHost(
     GpuChannelHost* channel,
@@ -65,7 +62,7 @@ void GpuVideoEncodeAcceleratorHost::OnChannelError() {
       channel_->RemoveRoute(encoder_route_id_);
     channel_ = NULL;
   }
-  NOTIFY_ERROR(kPlatformFailureError) << "OnChannelError()";
+  PostNotifyError(FROM_HERE, kPlatformFailureError, "OnChannelError()");
 }
 
 media::VideoEncodeAccelerator::SupportedProfiles
@@ -114,9 +111,9 @@ void GpuVideoEncodeAcceleratorHost::Encode(
     return;
 
   if (!base::SharedMemory::IsHandleValid(frame->shared_memory_handle())) {
-    NOTIFY_ERROR(kPlatformFailureError) << "EncodeSharedMemory(): cannot "
-                                           "encode frame with invalid shared "
-                                           "memory handle";
+    PostNotifyError(FROM_HERE, kPlatformFailureError,
+                    "EncodeSharedMemory(): cannot encode frame with "
+                    "invalid shared memory handle");
     return;
   }
 
@@ -125,9 +122,9 @@ void GpuVideoEncodeAcceleratorHost::Encode(
   params.buffer_handle =
       channel_->ShareToGpuProcess(frame->shared_memory_handle());
   if (!base::SharedMemory::IsHandleValid(params.buffer_handle)) {
-    NOTIFY_ERROR(kPlatformFailureError) << "EncodeSharedMemory(): failed to "
-                                           "duplicate buffer handle for GPU "
-                                           "process";
+    PostNotifyError(FROM_HERE, kPlatformFailureError,
+                    "EncodeSharedMemory(): failed to duplicate buffer handle "
+                    "for GPU process");
     return;
   }
   params.buffer_offset =
@@ -162,9 +159,11 @@ void GpuVideoEncodeAcceleratorHost::UseOutputBitstreamBuffer(
   base::SharedMemoryHandle handle =
       channel_->ShareToGpuProcess(buffer.handle());
   if (!base::SharedMemory::IsHandleValid(handle)) {
-    NOTIFY_ERROR(kPlatformFailureError)
-        << "UseOutputBitstreamBuffer(): failed to duplicate buffer handle "
-           "for GPU process: buffer.id()=" << buffer.id();
+    PostNotifyError(
+        FROM_HERE, kPlatformFailureError,
+        base::StringPrintf("UseOutputBitstreamBuffer(): failed to duplicate "
+                           "buffer handle for GPU process: buffer.id()=%d",
+                           buffer.id()));
     return;
   }
   Send(new AcceleratedVideoEncoderMsg_UseOutputBitstreamBuffer(
@@ -198,9 +197,14 @@ void GpuVideoEncodeAcceleratorHost::OnWillDeleteImpl() {
   OnChannelError();
 }
 
-void GpuVideoEncodeAcceleratorHost::PostNotifyError(Error error) {
+void GpuVideoEncodeAcceleratorHost::PostNotifyError(
+    const tracked_objects::Location& location, Error error,
+    const std::string& message) {
   DCHECK(CalledOnValidThread());
-  DVLOG(2) << "PostNotifyError(): error=" << error;
+  DLOG(ERROR) << "Error from " << location.function_name()
+              << "(" << location.file_name() << ":"
+              << location.line_number() << ") "
+              << message << " (error = " << error << ")";
   // Post the error notification back to this thread, to avoid re-entrancy.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&GpuVideoEncodeAcceleratorHost::OnNotifyError,
@@ -211,8 +215,8 @@ void GpuVideoEncodeAcceleratorHost::Send(IPC::Message* message) {
   DCHECK(CalledOnValidThread());
   uint32 message_type = message->type();
   if (!channel_->Send(message)) {
-    NOTIFY_ERROR(kPlatformFailureError) << "Send(" << message_type
-                                        << ") failed";
+    PostNotifyError(FROM_HERE, kPlatformFailureError,
+                    base::StringPrintf("Send(%d) failed", message_type));
   }
 }
 

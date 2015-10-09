@@ -24,6 +24,10 @@ namespace media {
 class VideoFrame;
 }  // namespace media
 
+namespace tracked_objects {
+class Location;
+}  // namespace tracked_objects
+
 namespace content {
 class GpuChannelHost;
 
@@ -66,7 +70,8 @@ class GpuVideoEncodeAcceleratorHost
   ~GpuVideoEncodeAcceleratorHost() override;
 
   // Notify |client_| of an error.  Posts a task to avoid re-entrancy.
-  void PostNotifyError(Error);
+  void PostNotifyError(const tracked_objects::Location& location,
+                       Error error, const std::string& message);
 
   void Send(IPC::Message* message);
 
