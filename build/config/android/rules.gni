@@ -1609,7 +1609,7 @@ template("android_apk") {
     ]
 
     _generated_script_path =
-        "${root_out_dir}/bin/install_incremental_${_template_name}"
+        "${root_out_dir}/bin/install_${_template_name}_incremental"
     outputs = [
       depfile,
       _generated_script_path,
