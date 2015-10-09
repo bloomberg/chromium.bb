@@ -48,8 +48,8 @@
       ],
     },
     {
-      'target_name': 'qcms_test',
-      'product_name': 'qcms_test',
+      'target_name': 'qcms_tests',
+      'product_name': 'qcms_tests',
       'type': 'executable',
       'conditions': [
         ['target_arch=="ia32" or target_arch=="x64"', {
@@ -58,6 +58,8 @@
           ],
           'sources': [
             'src/tests/qcms_test_tetra_clut_rgba.c',
+            'src/tests/qcms_test_main.c',
+            'src/tests/qcms_test_munsell.c',
           ],
           'dependencies': [
             'qcms',
