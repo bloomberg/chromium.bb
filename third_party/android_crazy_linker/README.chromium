@@ -1,6 +1,7 @@
 Name: Android Crazy Linker
-URL: https://android.googlesource.com/platform/ndk/+/master/sources/android/crazy_linker/
-Version: 681f1b744aec1b0888f4c7a68165720db9670300
+URL: https://chromium.googlesource.com/chromium/src.git/+/master/third_party/android_crazy_linker/
+Version: 0
+Revision: Forked from https://android.googlesource.com/platform/ndk/+/681f1b744aec1b0888f4c7a68165720db9670300/sources/android/crazy_linker/
 Security Critical: no
 License: Apache Version 2.0
 
