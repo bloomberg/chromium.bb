@@ -921,30 +921,28 @@ def RunTestsCommand(args, parser): # pylint: disable=too-many-return-statements
   if args.enable_platform_mode:
     return RunTestsInPlatformMode(args, parser)
 
-  if command in constants.LOCAL_MACHINE_TESTS:
-    devices = []
-  else:
-    devices = _GetAttachedDevices(args.blacklist_file, args.test_device,
-                                  args.enable_device_cache)
-
   forwarder.Forwarder.RemoveHostLog()
   if not ports.ResetTestServerPortAllocation():
     raise Exception('Failed to reset test server port.')
 
+  def get_devices():
+    return _GetAttachedDevices(args.blacklist_file, args.test_device,
+                               args.enable_device_cache)
+
   if command == 'gtest':
     return RunTestsInPlatformMode(args, parser)
   elif command == 'linker':
-    return _RunLinkerTests(args, devices)
+    return _RunLinkerTests(args, get_devices())
   elif command == 'instrumentation':
-    return _RunInstrumentationTests(args, devices)
+    return _RunInstrumentationTests(args, get_devices())
   elif command == 'uiautomator':
-    return _RunUIAutomatorTests(args, devices)
+    return _RunUIAutomatorTests(args, get_devices())
   elif command == 'junit':
     return _RunJUnitTests(args)
   elif command == 'monkey':
-    return _RunMonkeyTests(args, devices)
+    return _RunMonkeyTests(args, get_devices())
   elif command == 'perf':
-    return _RunPerfTests(args, devices)
+    return _RunPerfTests(args, get_devices())
   elif command == 'python':
     return _RunPythonTests(args)
   else:
