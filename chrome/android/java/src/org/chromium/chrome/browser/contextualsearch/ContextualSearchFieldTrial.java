@@ -28,8 +28,6 @@ public class ContextualSearchFieldTrial {
     private static final String DISABLE_FOR_JAPANESE = "disable_for_japanese";
     private static final String DISABLE_FOR_KOREAN = "disable_for_korean";
 
-    // TODO(pedrosimonetti): Confirm if we can delete promo_on_longpress_only now.
-    private static final String PROMO_ON_LONGPRESS_ONLY = "promo_on_longpress_only";
     static final String PROMO_ON_LIMITED_TAPS = "promo_on_limited_taps";
     static final String TAP_TRIGGERED_PROMO_LIMIT = "tap_triggered_promo_limit";
     static final String TAP_RESOLVE_LIMIT_FOR_DECIDED = "tap_resolve_limit_for_decided";
@@ -135,14 +133,6 @@ public class ContextualSearchFieldTrial {
         }
 
         return true;
-    }
-
-    /**
-     * Gets whether the promo should be triggered on longpress only.
-     * @return {@code true} iff Finch says we should trigger the promo only on touch-and-hold.
-     */
-    static boolean isPromoLongpressTriggeredOnly() {
-        return getBooleanParam(PROMO_ON_LONGPRESS_ONLY);
     }
 
     /**
@@ -303,17 +293,5 @@ public class ContextualSearchFieldTrial {
         }
 
         return defaultValue;
-    }
-
-    /**
-     * Returns a string value for a Finch parameter. Also checks for a command-line switch.
-     * @param paramName The name of the Finch parameter (or command-line switch) to get a value for.
-     * @return The command-line value, if present, or the finch parameter value.
-     */
-    private static String getStringParam(String paramName) {
-        if (CommandLine.getInstance().hasSwitch(paramName)) {
-            return CommandLine.getInstance().getSwitchValue(paramName);
-        }
-        return VariationsAssociatedData.getVariationParamValue(FIELD_TRIAL_NAME, paramName);
     }
 }

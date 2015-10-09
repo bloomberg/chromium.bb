@@ -85,9 +85,6 @@ class ContextualSearchPolicy {
      */
     boolean isTapSupported() {
         if (!isUserUndecided()) return true;
-
-        if (ContextualSearchFieldTrial.isPromoLongpressTriggeredOnly()) return false;
-
         return !ContextualSearchFieldTrial.isPromoLimitedByTapCounts()
                 || getPromoTapsRemaining() != 0;
     }
