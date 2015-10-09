@@ -28,10 +28,6 @@
         {
             "group_name": "OptOut",
             "params": {
-                "contextual_search_arrow_icon_enabled": "true",
-                "contextual_search_narrow_panel_supported": "true",
-                "contextual_search_side_search_provider_icon_enabled": "true",
-                "disable_for_cjk": "true",
                 "enabled": "true",
                 "promo_on_limited_taps": "true",
                 "promo_opt_out": "true",
