@@ -1,8 +1,11 @@
 <!DOCTYPE html>
 <style>
+body {
+    font: 10px/1 Ahem;
+}
+
 #inlineBlock {
     display: inline-block;
-    font: 10px/1 sans-serif;
 }
 
 #verticalTextWithOverflowClip {
@@ -15,7 +18,5 @@
     visibility: hidden;
 }
 </style>
-<div style="position: relative">
-    <div>This test checks baselines on writing mode boundaries with an overflow clip.</div>
-    <div id="inlineBlock" data-offset-y="107">There should be about 100px (#verticalTextWithOverflowClip margin-bottom) above this line.<span id="verticalTextWithOverflowClip">Text.</span></div>
-</div>
+<div>This test checks baselines on writing mode boundaries with an overflow clip.</div>
+<div id="inlineBlock">There should be about 100px above this line.<span id="verticalTextWithOverflowClip">Text.</span></div>
