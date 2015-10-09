@@ -45,7 +45,7 @@ const char* const kDefaultAppOrder[] = {
     extension_misc::kGoogleSheetsAppId,
     extension_misc::kGoogleSlidesAppId,
     "dlppkpafhbajpcmmoheippocdidnckmm",  // Google+
-    "kbpgddbgniojgndnhlkjbkpknjhppkbk",  // Google+ Hangouts
+    "kbpgddbgniojgndnhlkjbkpknjhppkbk",  // Google Hangouts
     "hhaomjibdihmijegdhdafkllkbggdgoj",  // Files
     extension_misc::kGooglePlayMusicAppId,
     "mmimngoggfoobjdlefbcabngfnmieonb",  // Play Books
