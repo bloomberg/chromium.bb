@@ -7,13 +7,13 @@
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/sync/profile_sync_components_factory_mock.h"
 #include "chrome/browser/sync/sessions/session_data_type_controller.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/sync_driver/fake_sync_client.h"
 #include "components/sync_driver/glue/synced_window_delegate.h"
 #include "components/sync_driver/local_device_info_provider_mock.h"
 #include "components/sync_driver/sessions/synced_window_delegates_getter.h"
+#include "components/sync_driver/sync_api_component_factory_mock.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -171,7 +171,7 @@ class SessionDataTypeControllerTest
 
  private:
   content::TestBrowserThreadBundle thread_bundle_;
-  ProfileSyncComponentsFactoryMock profile_sync_factory_;
+  SyncApiComponentFactoryMock profile_sync_factory_;
   TestingProfile profile_;
   syncer::ModelType last_type_;
   syncer::SyncError last_error_;

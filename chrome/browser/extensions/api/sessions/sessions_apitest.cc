@@ -13,7 +13,6 @@
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync/chrome_sync_client.h"
-#include "chrome/browser/sync/profile_sync_components_factory_mock.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
@@ -23,6 +22,7 @@
 #include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "components/sync_driver/local_device_info_provider_mock.h"
+#include "components/sync_driver/sync_api_component_factory_mock.h"
 #include "extensions/browser/api_test_utils.h"
 #include "sync/api/attachments/attachment_id.h"
 #include "sync/api/fake_sync_change_processor.h"
@@ -124,8 +124,8 @@ void ExtensionSessionsTest::SetUpOnMainThread() {
 
 scoped_ptr<KeyedService> ExtensionSessionsTest::BuildProfileSyncService(
     content::BrowserContext* context) {
-  scoped_ptr<ProfileSyncComponentsFactoryMock> factory(
-      new ProfileSyncComponentsFactoryMock());
+  scoped_ptr<SyncApiComponentFactoryMock> factory(
+      new SyncApiComponentFactoryMock());
 
   factory->SetLocalDeviceInfoProvider(
       scoped_ptr<sync_driver::LocalDeviceInfoProvider>(

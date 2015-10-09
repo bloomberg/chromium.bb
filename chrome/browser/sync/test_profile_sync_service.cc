@@ -16,12 +16,12 @@
 #include "chrome/browser/sync/chrome_sync_client.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/glue/sync_backend_host_core.h"
-#include "chrome/browser/sync/profile_sync_components_factory_mock.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/test/test_http_bridge_factory.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/sync_driver/signin_manager_wrapper.h"
+#include "components/sync_driver/sync_api_component_factory_mock.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "sync/internal_api/public/test/sync_manager_factory_for_profile_sync_test.h"
@@ -126,7 +126,7 @@ TestProfileSyncService::TestProfileSyncService(
     : ProfileSyncService(
           make_scoped_ptr(new browser_sync::ChromeSyncClient(
               profile,
-              make_scoped_ptr(new ProfileSyncComponentsFactoryMock))),
+              make_scoped_ptr(new SyncApiComponentFactoryMock))),
           profile,
           make_scoped_ptr(new SigninManagerWrapper(signin)),
           oauth2_token_service,
@@ -155,7 +155,7 @@ TestProfileSyncService* TestProfileSyncService::BuildAutoStartAsyncInit(
   TestProfileSyncService* sync_service = static_cast<TestProfileSyncService*>(
         ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
             profile, &TestProfileSyncService::TestFactoryFunction));
-  ProfileSyncComponentsFactoryMock* components =
+  SyncApiComponentFactoryMock* components =
       sync_service->GetSyncApiComponentFactoryMock();
   // TODO(tim): Convert to a fake instead of mock.
   EXPECT_CALL(*components, CreateSyncBackendHost(testing::_, testing::_,
@@ -171,10 +171,10 @@ TestProfileSyncService* TestProfileSyncService::BuildAutoStartAsyncInit(
   return sync_service;
 }
 
-ProfileSyncComponentsFactoryMock*
+SyncApiComponentFactoryMock*
 TestProfileSyncService::GetSyncApiComponentFactoryMock() {
   // We always create a mock factory, see Build* routines.
-  return static_cast<ProfileSyncComponentsFactoryMock*>(
+  return static_cast<SyncApiComponentFactoryMock*>(
       GetSyncClient()->GetSyncApiComponentFactory());
 }
 

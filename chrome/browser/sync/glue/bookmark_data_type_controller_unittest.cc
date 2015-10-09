@@ -17,7 +17,6 @@
 #include "chrome/browser/bookmarks/managed_bookmark_service_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/profile_sync_components_factory_mock.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -28,6 +27,7 @@
 #include "components/sync_driver/data_type_controller_mock.h"
 #include "components/sync_driver/fake_sync_client.h"
 #include "components/sync_driver/model_associator_mock.h"
+#include "components/sync_driver/sync_api_component_factory_mock.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "sync/api/sync_error.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -111,7 +111,7 @@ class SyncBookmarkDataTypeControllerTest : public testing::Test,
         HistoryServiceFactory::GetInstance()->SetTestingFactoryAndUse(
             &profile_, BuildHistoryService));
     profile_sync_factory_.reset(
-        new ProfileSyncComponentsFactoryMock(model_associator_,
+        new SyncApiComponentFactoryMock(model_associator_,
                                              change_processor_));
     bookmark_dtc_ =
         new BookmarkDataTypeController(base::ThreadTaskRunnerHandle::Get(),
@@ -178,7 +178,7 @@ class SyncBookmarkDataTypeControllerTest : public testing::Test,
 
   content::TestBrowserThreadBundle thread_bundle_;
   scoped_refptr<BookmarkDataTypeController> bookmark_dtc_;
-  scoped_ptr<ProfileSyncComponentsFactoryMock> profile_sync_factory_;
+  scoped_ptr<SyncApiComponentFactoryMock> profile_sync_factory_;
   TestingProfile profile_;
   BookmarkModel* bookmark_model_;
   HistoryMock* history_service_;

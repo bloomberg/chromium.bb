@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_PROFILE_SYNC_COMPONENTS_FACTORY_MOCK_H__
-#define CHROME_BROWSER_SYNC_PROFILE_SYNC_COMPONENTS_FACTORY_MOCK_H__
+#ifndef COMPONENTS_SYNC_DRIVER_SYNC_API_COMPONENT_FACTORY_MOCK_H__
+#define COMPONENTS_SYNC_DRIVER_SYNC_API_COMPONENT_FACTORY_MOCK_H__
 
 #include "base/memory/scoped_ptr.h"
 #include "components/sync_driver/data_type_controller.h"
@@ -19,14 +19,14 @@ class DataTypeEncryptionHandler;
 class DataTypeStatusTable;
 }
 
-class ProfileSyncComponentsFactoryMock
+class SyncApiComponentFactoryMock
     : public sync_driver::SyncApiComponentFactory {
  public:
-  ProfileSyncComponentsFactoryMock();
-  ProfileSyncComponentsFactoryMock(
+  SyncApiComponentFactoryMock();
+  SyncApiComponentFactoryMock(
       sync_driver::AssociatorInterface* model_associator,
       sync_driver::ChangeProcessor* change_processor);
-  ~ProfileSyncComponentsFactoryMock() override;
+  ~SyncApiComponentFactoryMock() override;
 
   MOCK_METHOD1(RegisterDataTypes, void(sync_driver::SyncClient*));
   MOCK_METHOD5(CreateDataTypeManager,
@@ -73,4 +73,4 @@ class ProfileSyncComponentsFactoryMock
   scoped_ptr<sync_driver::LocalDeviceInfoProvider> local_device_;
 };
 
-#endif  // CHROME_BROWSER_SYNC_PROFILE_SYNC_COMPONENTS_FACTORY_MOCK_H__
+#endif  // COMPONENTS_SYNC_DRIVER_SYNC_API_COMPONENT_FACTORY_MOCK_H__

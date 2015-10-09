@@ -50,6 +50,7 @@
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/sync_driver/data_type_controller.h"
 #include "components/sync_driver/fake_sync_client.h"
+#include "components/sync_driver/sync_api_component_factory_mock.h"
 #include "components/syncable_prefs/pref_service_syncable.h"
 #include "components/webdata/common/web_database.h"
 #include "components/webdata_services/web_data_service_test_util.h"
@@ -510,7 +511,7 @@ class ProfileSyncServiceAutofillTest
                                                                     callback);
     sync_client_->SetSyncService(sync_service_);
 
-    ProfileSyncComponentsFactoryMock* components =
+    SyncApiComponentFactoryMock* components =
         sync_service_->GetSyncApiComponentFactoryMock();
 
     EXPECT_CALL(*components, CreateDataTypeManager(_, _, _, _, _)).

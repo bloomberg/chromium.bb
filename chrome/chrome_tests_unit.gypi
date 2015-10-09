@@ -1761,8 +1761,6 @@
         'browser/signin/fake_signin_manager_builder.h',
         'browser/ssl/ssl_client_auth_requestor_mock.cc',
         'browser/ssl/ssl_client_auth_requestor_mock.h',
-        'browser/sync/profile_sync_components_factory_mock.cc',
-        'browser/sync/profile_sync_components_factory_mock.h',
         'browser/sync/profile_sync_service_mock.cc',
         'browser/sync/profile_sync_service_mock.h',
         'browser/ui/browser.h',

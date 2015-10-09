@@ -13,7 +13,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/tracked_objects.h"
-#include "chrome/browser/sync/profile_sync_components_factory_mock.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/test/base/profile_mock.h"
 #include "components/sync_driver/change_processor_mock.h"
@@ -22,6 +21,7 @@
 #include "components/sync_driver/frontend_data_type_controller.h"
 #include "components/sync_driver/frontend_data_type_controller_mock.h"
 #include "components/sync_driver/model_associator_mock.h"
+#include "components/sync_driver/sync_api_component_factory_mock.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 
 using browser_sync::FrontendDataTypeController;
@@ -155,7 +155,7 @@ class SyncFrontendDataTypeControllerTest : public testing::Test,
 
   content::TestBrowserThreadBundle thread_bundle_;
   scoped_refptr<FrontendDataTypeControllerFake> frontend_dtc_;
-  ProfileSyncComponentsFactoryMock profile_sync_factory_;
+  SyncApiComponentFactoryMock profile_sync_factory_;
   scoped_refptr<FrontendDataTypeControllerMock> dtc_mock_;
   ProfileMock profile_;
   ProfileSyncServiceMock service_;

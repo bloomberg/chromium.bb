@@ -185,6 +185,8 @@ source_set("test_support") {
     "non_frontend_data_type_controller_mock.h",
     "non_ui_data_type_controller_mock.cc",
     "non_ui_data_type_controller_mock.h",
+    "sync_api_component_factory_mock.cc",
+    "sync_api_component_factory_mock.h",
   ]
 
   public_deps = [

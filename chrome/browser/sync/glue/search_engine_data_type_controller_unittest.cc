@@ -11,12 +11,12 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/search_engines/template_url_service_factory_test_util.h"
 #include "chrome/browser/sync/glue/search_engine_data_type_controller.h"
-#include "chrome/browser/sync/profile_sync_components_factory_mock.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/test/base/profile_mock.h"
 #include "components/sync_driver/data_type_controller_mock.h"
 #include "components/sync_driver/fake_generic_change_processor.h"
 #include "components/sync_driver/fake_sync_client.h"
+#include "components/sync_driver/sync_api_component_factory_mock.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "sync/api/fake_syncable_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -88,7 +88,7 @@ class SyncSearchEngineDataTypeControllerTest
   TestingProfile profile_;
   TemplateURLServiceFactoryTestUtil test_util_;
   scoped_refptr<SearchEngineDataTypeController> search_engine_dtc_;
-  ProfileSyncComponentsFactoryMock profile_sync_factory_;
+  SyncApiComponentFactoryMock profile_sync_factory_;
   scoped_ptr<ProfileSyncServiceMock> service_;
   syncer::FakeSyncableService syncable_service_;
   sync_driver::StartCallbackMock start_callback_;

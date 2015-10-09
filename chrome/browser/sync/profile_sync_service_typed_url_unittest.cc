@@ -31,7 +31,6 @@
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/glue/typed_url_change_processor.h"
 #include "chrome/browser/sync/glue/typed_url_data_type_controller.h"
-#include "chrome/browser/sync/profile_sync_components_factory_mock.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
@@ -53,6 +52,7 @@
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/sync_driver/data_type_error_handler_mock.h"
 #include "components/sync_driver/glue/typed_url_model_associator.h"
+#include "components/sync_driver/sync_api_component_factory_mock.h"
 #include "components/syncable_prefs/pref_service_syncable.h"
 #include "content/public/browser/notification_service.h"
 #include "google_apis/gaia/gaia_constants.h"
@@ -271,7 +271,7 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
       TypedUrlDataTypeController* data_type_controller =
           new TypedUrlDataTypeController(base::Bind(&base::DoNothing),
                                          sync_service_->GetSyncClient());
-      ProfileSyncComponentsFactoryMock* components =
+      SyncApiComponentFactoryMock* components =
           sync_service_->GetSyncApiComponentFactoryMock();
       EXPECT_CALL(*components, CreateTypedUrlSyncComponents(_, _, _)).
           WillOnce(MakeTypedUrlSyncComponents(profile_,

@@ -20,7 +20,7 @@
 
 class Profile;
 class ProfileOAuth2TokenService;
-class ProfileSyncComponentsFactoryMock;
+class SyncApiComponentFactoryMock;
 
 ACTION(ReturnNewDataTypeManager) {
   return new sync_driver::DataTypeManagerImpl(arg0, arg1, arg2, arg3, arg4);
@@ -83,7 +83,7 @@ class TestProfileSyncService : public ProfileSyncService {
   static TestProfileSyncService* BuildAutoStartAsyncInit(
       Profile* profile, base::Closure callback);
 
-  ProfileSyncComponentsFactoryMock* GetSyncApiComponentFactoryMock();
+  SyncApiComponentFactoryMock* GetSyncApiComponentFactoryMock();
 
   syncer::TestIdFactory* id_factory();
 

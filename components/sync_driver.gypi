@@ -211,6 +211,8 @@
         'sync_driver/non_frontend_data_type_controller_mock.h',
         'sync_driver/non_ui_data_type_controller_mock.cc',
         'sync_driver/non_ui_data_type_controller_mock.h',
+        'sync_driver/sync_api_component_factory_mock.cc',
+        'sync_driver/sync_api_component_factory_mock.h',
       ],
     },
   ],
