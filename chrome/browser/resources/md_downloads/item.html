@@ -2,6 +2,8 @@
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/load_time_data.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-material/paper-material.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-progress/paper-progress.html">
@@ -19,7 +21,9 @@
         class$="[[computeClass_(isActive_, isDangerous_, showProgress_)]]">
       <div id="file-icon-wrapper" class="icon-wrapper">
         <img class="icon" id="file-icon" alt="" hidden="[[isDangerous_]]">
-        <div class="icon" id="warning" hidden="[[!isDangerous_]]"></div>
+        <iron-icon id="danger-icon"
+            icon$="[[computeDangerIcon_(isDangerous_, data.danger_type)]]"
+            hidden="[[!isDangerous_]]"></iron-icon>
       </div>
 
       <div id="details">

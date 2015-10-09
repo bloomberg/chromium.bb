@@ -78,11 +78,17 @@
   opacity: .5;
 }
 
-#warning {
-  -webkit-mask-image: url(chrome://resources/images/warning.svg);
-  -webkit-mask-repeat: no-repeat;
-  -webkit-mask-size: 100%;
-  background: rgb(255, 193, 7);
+#danger-icon {
+  height: 32px;
+  width: 32px;
+}
+
+#danger-icon[icon='warning'] {
+  color: rgb(255, 193, 7);
+}
+
+#danger-icon[icon='remove-circle'] {
+  color: rgb(244, 67, 54);
 }
 
 #name,
