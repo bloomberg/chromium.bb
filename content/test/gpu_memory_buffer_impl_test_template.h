@@ -84,7 +84,6 @@ TYPED_TEST_P(GpuMemoryBufferImplTest, Map) {
     scoped_ptr<TypeParam> buffer(TypeParam::CreateFromHandle(
         handle, buffer_size, format, gfx::BufferUsage::MAP, destroy_callback));
     ASSERT_TRUE(buffer);
-    EXPECT_FALSE(buffer->IsMapped());
 
     size_t num_planes = gfx::NumberOfPlanesForBufferFormat(format);
 
@@ -92,7 +91,6 @@ TYPED_TEST_P(GpuMemoryBufferImplTest, Map) {
     scoped_ptr<void* []> mapped_buffers(new void*[num_planes]);
     bool rv = buffer->Map(mapped_buffers.get());
     ASSERT_TRUE(rv);
-    EXPECT_TRUE(buffer->IsMapped());
 
     // Get strides.
     scoped_ptr<int[]> strides(new int[num_planes]);
@@ -121,7 +119,6 @@ TYPED_TEST_P(GpuMemoryBufferImplTest, Map) {
     }
 
     buffer->Unmap();
-    EXPECT_FALSE(buffer->IsMapped());
   }
 }
 
@@ -144,7 +141,6 @@ TYPED_TEST_P(GpuMemoryBufferImplTest, PersistentMap) {
         handle, buffer_size, format, gfx::BufferUsage::PERSISTENT_MAP,
         destroy_callback));
     ASSERT_TRUE(buffer);
-    EXPECT_FALSE(buffer->IsMapped());
 
     size_t num_planes = gfx::NumberOfPlanesForBufferFormat(format);
 
@@ -152,7 +148,6 @@ TYPED_TEST_P(GpuMemoryBufferImplTest, PersistentMap) {
     scoped_ptr<void* []> mapped_buffers(new void*[num_planes]);
     bool rv = buffer->Map(mapped_buffers.get());
     ASSERT_TRUE(rv);
-    EXPECT_TRUE(buffer->IsMapped());
 
     // Get strides.
     scoped_ptr<int[]> strides(new int[num_planes]);
@@ -181,12 +176,10 @@ TYPED_TEST_P(GpuMemoryBufferImplTest, PersistentMap) {
     }
 
     buffer->Unmap();
-    EXPECT_FALSE(buffer->IsMapped());
 
     // Remap the buffer, and compare again. It should contain the same data.
     rv = buffer->Map(mapped_buffers.get());
     ASSERT_TRUE(rv);
-    EXPECT_TRUE(buffer->IsMapped());
 
     buffer->GetStride(strides.get());
 
@@ -209,7 +202,6 @@ TYPED_TEST_P(GpuMemoryBufferImplTest, PersistentMap) {
     }
 
     buffer->Unmap();
-    EXPECT_FALSE(buffer->IsMapped());
   }
 }
 

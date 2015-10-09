@@ -66,8 +66,8 @@ void MojoGpuMemoryBufferImpl::Unmap() {
   mapped_ = false;
 }
 
-bool MojoGpuMemoryBufferImpl::IsMapped() const {
-  return mapped_;
+gfx::Size MojoGpuMemoryBufferImpl::GetSize() const {
+  return size_;
 }
 
 gfx::BufferFormat MojoGpuMemoryBufferImpl::GetFormat() const {

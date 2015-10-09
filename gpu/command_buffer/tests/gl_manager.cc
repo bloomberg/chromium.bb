@@ -49,7 +49,7 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
   GpuMemoryBufferImpl(base::RefCountedBytes* bytes,
                       const gfx::Size& size,
                       gfx::BufferFormat format)
-      : bytes_(bytes), size_(size), format_(format), mapped_(false) {}
+      : bytes_(bytes), size_(size), format_(format) {}
 
   static GpuMemoryBufferImpl* FromClientBuffer(ClientBuffer buffer) {
     return reinterpret_cast<GpuMemoryBufferImpl*>(buffer);
@@ -65,11 +65,10 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
           gfx::RowSizeForBufferFormat(size_.width(), format_, i) *
           (size_.height() / gfx::SubsamplingFactorForBufferFormat(format_, i));
     }
-    mapped_ = true;
     return true;
   }
-  void Unmap() override { mapped_ = false; }
-  bool IsMapped() const override { return mapped_; }
+  void Unmap() override {}
+  gfx::Size GetSize() const override { return size_; }
   gfx::BufferFormat GetFormat() const override { return format_; }
   void GetStride(int* stride) const override {
     size_t num_planes = gfx::NumberOfPlanesForBufferFormat(format_);
@@ -94,7 +93,6 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
   scoped_refptr<base::RefCountedBytes> bytes_;
   const gfx::Size size_;
   gfx::BufferFormat format_;
-  bool mapped_;
 };
 
 }  // namespace

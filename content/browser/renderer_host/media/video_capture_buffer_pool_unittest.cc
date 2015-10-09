@@ -61,7 +61,7 @@ class VideoCaptureBufferPoolTest
       EXPECT_EQ(mapped_, true);
       mapped_ = false;
     }
-    bool IsMapped() const override { return mapped_; }
+    gfx::Size GetSize() const override { return size_; }
     gfx::BufferFormat GetFormat() const override {
       return gfx::BufferFormat::BGRA_8888;
     }

@@ -33,11 +33,8 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
       data[plane] = &bytes_[plane][0];
     return true;
   }
-  void Unmap() override{};
-  bool IsMapped() const override {
-    NOTREACHED();
-    return false;
-  }
+  void Unmap() override {}
+  gfx::Size GetSize() const override { return size_; }
   gfx::BufferFormat GetFormat() const override {
     return format_;
   }

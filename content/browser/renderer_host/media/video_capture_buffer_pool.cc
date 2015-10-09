@@ -75,7 +75,7 @@ class GpuMemoryBufferBufferHandle final
 #ifndef NDEBUG
     DCHECK_EQ(data->size(), gmbs->size());
     for (const auto& gmb : *gmbs)
-      DCHECK(gmb && gmb->IsMapped());
+      DCHECK(gmb);
     for (const auto& data_ptr : *data)
       DCHECK(data_ptr);
 #endif
@@ -190,10 +190,8 @@ VideoCaptureBufferPool::GpuMemoryBufferTracker::GpuMemoryBufferTracker()
 }
 
 VideoCaptureBufferPool::GpuMemoryBufferTracker::~GpuMemoryBufferTracker() {
-  for (const auto& gmb : gpu_memory_buffers_) {
-    if (gmb->IsMapped())
-      gmb->Unmap();
-  }
+  for (const auto& gmb : gpu_memory_buffers_)
+    gmb->Unmap();
 }
 
 bool VideoCaptureBufferPool::GpuMemoryBufferTracker::Init(

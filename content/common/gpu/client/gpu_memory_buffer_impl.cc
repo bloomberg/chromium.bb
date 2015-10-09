@@ -75,12 +75,12 @@ GpuMemoryBufferImpl* GpuMemoryBufferImpl::FromClientBuffer(
   return reinterpret_cast<GpuMemoryBufferImpl*>(buffer);
 }
 
-gfx::BufferFormat GpuMemoryBufferImpl::GetFormat() const {
-  return format_;
+gfx::Size GpuMemoryBufferImpl::GetSize() const {
+  return size_;
 }
 
-bool GpuMemoryBufferImpl::IsMapped() const {
-  return mapped_;
+gfx::BufferFormat GpuMemoryBufferImpl::GetFormat() const {
+  return format_;
 }
 
 gfx::GpuMemoryBufferId GpuMemoryBufferImpl::GetId() const {

@@ -29,7 +29,7 @@ class MojoGpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
   // Overridden from gfx::GpuMemoryBuffer:
   bool Map(void** data) override;
   void Unmap() override;
-  bool IsMapped() const override;
+  gfx::Size GetSize() const override;
   gfx::BufferFormat GetFormat() const override;
   void GetStride(int* stride) const override;
   gfx::GpuMemoryBufferId GetId() const override;

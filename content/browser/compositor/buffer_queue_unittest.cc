@@ -29,7 +29,7 @@ class StubGpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
   // Overridden from gfx::GpuMemoryBuffer:
   bool Map(void** data) override { return false; }
   void Unmap() override {}
-  bool IsMapped() const override { return false; }
+  gfx::Size GetSize() const override { return gfx::Size(); }
   gfx::BufferFormat GetFormat() const override {
     return gfx::BufferFormat::BGRX_8888;
   }

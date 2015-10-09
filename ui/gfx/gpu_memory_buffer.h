@@ -10,6 +10,7 @@
 #include "build/build_config.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/generic_shared_memory_id.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/gfx_export.h"
 
 #if defined(USE_OZONE)
@@ -64,8 +65,8 @@ class GFX_EXPORT GpuMemoryBuffer {
   // this has been called.
   virtual void Unmap() = 0;
 
-  // Returns true iff the buffer is mapped.
-  virtual bool IsMapped() const = 0;
+  // Returns the size for the buffer.
+  virtual gfx::Size GetSize() const = 0;
 
   // Returns the format for the buffer.
   virtual BufferFormat GetFormat() const = 0;

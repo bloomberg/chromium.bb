@@ -164,7 +164,6 @@ IN_PROC_BROWSER_TEST_P(ChildThreadImplGpuMemoryBufferBrowserTest,
   scoped_ptr<void* []> planes(new void* [num_planes]);
   bool rv = buffer->Map(planes.get());
   ASSERT_TRUE(rv);
-  EXPECT_TRUE(buffer->IsMapped());
 
   // Get strides.
   scoped_ptr<int[]> strides(new int[num_planes]);
@@ -191,7 +190,6 @@ IN_PROC_BROWSER_TEST_P(ChildThreadImplGpuMemoryBufferBrowserTest,
   }
 
   buffer->Unmap();
-  EXPECT_FALSE(buffer->IsMapped());
 }
 
 INSTANTIATE_TEST_CASE_P(

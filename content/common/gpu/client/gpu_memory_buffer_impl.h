@@ -35,7 +35,7 @@ class CONTENT_EXPORT GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
   static GpuMemoryBufferImpl* FromClientBuffer(ClientBuffer buffer);
 
   // Overridden from gfx::GpuMemoryBuffer:
-  bool IsMapped() const override;
+  gfx::Size GetSize() const override;
   gfx::BufferFormat GetFormat() const override;
   gfx::GpuMemoryBufferId GetId() const override;
   ClientBuffer AsClientBuffer() override;

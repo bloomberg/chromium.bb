@@ -44,7 +44,7 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
     shared_memory_->Unmap();
     mapped_ = false;
   }
-  bool IsMapped() const override { return mapped_; }
+  gfx::Size GetSize() const override { return size_; }
   gfx::BufferFormat GetFormat() const override { return format_; }
   void GetStride(int* stride) const override {
     int num_planes =
