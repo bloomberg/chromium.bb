@@ -186,6 +186,8 @@ def AddDeviceOptions(parser):
                      help=('Target device for the test suite '
                            'to run on.'))
   group.add_argument('--blacklist-file', help='Device blacklist file.')
+  group.add_argument('--enable-device-cache', action='store_true',
+                     help='Cache device state to disk between runs')
 
 
 def AddGTestOptions(parser):
@@ -867,11 +869,13 @@ def _RunPythonTests(args):
     sys.path = sys.path[1:]
 
 
-def _GetAttachedDevices(blacklist_file, test_device):
+def _GetAttachedDevices(blacklist_file, test_device, enable_cache):
   """Get all attached devices.
 
   Args:
+    blacklist_file: Path to device blacklist.
     test_device: Name of a specific device to use.
+    enable_cache: Whether to enable checksum caching.
 
   Returns:
     A list of attached devices.
@@ -880,7 +884,8 @@ def _GetAttachedDevices(blacklist_file, test_device):
                if blacklist_file
                else None)
 
-  attached_devices = device_utils.DeviceUtils.HealthyDevices(blacklist)
+  attached_devices = device_utils.DeviceUtils.HealthyDevices(
+      blacklist, enable_device_files_cache=enable_cache)
   if test_device:
     test_device = [d for d in attached_devices if d == test_device]
     if not test_device:
@@ -919,7 +924,8 @@ def RunTestsCommand(args, parser): # pylint: disable=too-many-return-statements
   if command in constants.LOCAL_MACHINE_TESTS:
     devices = []
   else:
-    devices = _GetAttachedDevices(args.blacklist_file, args.test_device)
+    devices = _GetAttachedDevices(args.blacklist_file, args.test_device,
+                                  args.enable_device_cache)
 
   forwarder.Forwarder.RemoveHostLog()
   if not ports.ResetTestServerPortAllocation():
