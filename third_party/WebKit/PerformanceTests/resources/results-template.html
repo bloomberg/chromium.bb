@@ -213,7 +213,7 @@ function TestResult(metric, values, associatedRun) {
 
 function TestRun(entry) {
     this.description = function () { return entry['description']; }
-    this.webkitRevision = function () { return entry['revisions']['blink']['revision']; }
+    this.webkitRevision = function () { return entry['revisions']['chromium']['revision']; }
     this.label = function () {
         var label = 'r' + this.webkitRevision();
         if (this.description())
