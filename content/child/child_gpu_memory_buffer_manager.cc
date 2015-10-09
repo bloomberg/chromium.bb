@@ -59,6 +59,15 @@ ChildGpuMemoryBufferManager::AllocateGpuMemoryBuffer(const gfx::Size& size,
   return buffer.Pass();
 }
 
+scoped_ptr<gfx::GpuMemoryBuffer>
+ChildGpuMemoryBufferManager::CreateGpuMemoryBufferFromHandle(
+    const gfx::GpuMemoryBufferHandle& handle,
+    const gfx::Size& size,
+    gfx::BufferFormat format) {
+  NOTIMPLEMENTED();
+  return nullptr;
+}
+
 gfx::GpuMemoryBuffer*
 ChildGpuMemoryBufferManager::GpuMemoryBufferFromClientBuffer(
     ClientBuffer buffer) {

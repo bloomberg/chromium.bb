@@ -94,6 +94,15 @@ TestGpuMemoryBufferManager::AllocateGpuMemoryBuffer(const gfx::Size& size,
       new GpuMemoryBufferImpl(size, format, shared_memory.Pass()));
 }
 
+scoped_ptr<gfx::GpuMemoryBuffer>
+TestGpuMemoryBufferManager::CreateGpuMemoryBufferFromHandle(
+    const gfx::GpuMemoryBufferHandle& handle,
+    const gfx::Size& size,
+    gfx::BufferFormat format) {
+  NOTREACHED();
+  return nullptr;
+}
+
 gfx::GpuMemoryBuffer*
 TestGpuMemoryBufferManager::GpuMemoryBufferFromClientBuffer(
     ClientBuffer buffer) {

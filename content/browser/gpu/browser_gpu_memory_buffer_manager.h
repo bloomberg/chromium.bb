@@ -35,13 +35,15 @@ struct hash<content::GpuMemoryBufferConfigurationKey> {
 }  // namespace BASE_HASH_NAMESPACE
 
 namespace content {
+class GpuProcessHost;
 
 class CONTENT_EXPORT BrowserGpuMemoryBufferManager
     : public gpu::GpuMemoryBufferManager,
       public base::trace_event::MemoryDumpProvider {
  public:
-  typedef base::Callback<void(const gfx::GpuMemoryBufferHandle& handle)>
-      AllocationCallback;
+  using CreateCallback =
+      base::Callback<void(const gfx::GpuMemoryBufferHandle& handle)>;
+  using AllocationCallback = CreateCallback;
 
   BrowserGpuMemoryBufferManager(int gpu_client_id,
                                 uint64_t gpu_client_tracing_id);
@@ -57,6 +59,10 @@ class CONTENT_EXPORT BrowserGpuMemoryBufferManager
       const gfx::Size& size,
       gfx::BufferFormat format,
       gfx::BufferUsage usage) override;
+  scoped_ptr<gfx::GpuMemoryBuffer> CreateGpuMemoryBufferFromHandle(
+      const gfx::GpuMemoryBufferHandle& handle,
+      const gfx::Size& size,
+      gfx::BufferFormat format) override;
   gfx::GpuMemoryBuffer* GpuMemoryBufferFromClientBuffer(
       ClientBuffer buffer) override;
   void SetDestructionSyncPoint(gfx::GpuMemoryBuffer* buffer,
@@ -111,35 +117,51 @@ class CONTENT_EXPORT BrowserGpuMemoryBufferManager
     gfx::BufferUsage usage;
     int gpu_host_id;
   };
-  struct AllocateGpuMemoryBufferRequest;
+
+  struct CreateGpuMemoryBufferRequest;
+  struct CreateGpuMemoryBufferFromHandleRequest;
+
+  using CreateDelegate = base::Callback<void(GpuProcessHost* host,
+                                             gfx::GpuMemoryBufferId id,
+                                             const gfx::Size& size,
+                                             gfx::BufferFormat format,
+                                             gfx::BufferUsage usage,
+                                             int client_id,
+                                             const CreateCallback& callback)>;
 
   scoped_ptr<gfx::GpuMemoryBuffer> AllocateGpuMemoryBufferForSurface(
       const gfx::Size& size,
       gfx::BufferFormat format,
       gfx::BufferUsage usage,
       int32 surface_id);
+
   bool IsNativeGpuMemoryBufferConfiguration(gfx::BufferFormat format,
                                             gfx::BufferUsage usage) const;
-  void AllocateGpuMemoryBufferForSurfaceOnIO(
-      AllocateGpuMemoryBufferRequest* request);
-  void GpuMemoryBufferAllocatedForSurfaceOnIO(
-      AllocateGpuMemoryBufferRequest* request,
+
+  // Functions that handle synchronous buffer creation requests.
+  void HandleCreateGpuMemoryBufferOnIO(CreateGpuMemoryBufferRequest* request);
+  void HandleCreateGpuMemoryBufferFromHandleOnIO(
+      CreateGpuMemoryBufferFromHandleRequest* request);
+  void HandleGpuMemoryBufferCreatedOnIO(
+      CreateGpuMemoryBufferRequest* request,
       const gfx::GpuMemoryBufferHandle& handle);
-  void AllocateGpuMemoryBufferOnIO(gfx::GpuMemoryBufferId id,
-                                   const gfx::Size& size,
-                                   gfx::BufferFormat format,
-                                   gfx::BufferUsage usage,
-                                   int client_id,
-                                   int surface_id,
-                                   bool reused_gpu_process,
-                                   const AllocationCallback& callback);
-  void GpuMemoryBufferAllocatedOnIO(gfx::GpuMemoryBufferId id,
-                                    int client_id,
-                                    int surface_id,
-                                    int gpu_host_id,
-                                    bool reused_gpu_process,
-                                    const AllocationCallback& callback,
-                                    const gfx::GpuMemoryBufferHandle& handle);
+
+  // Functions that implement asynchronous buffer creation.
+  void CreateGpuMemoryBufferOnIO(const CreateDelegate& create_delegate,
+                                 gfx::GpuMemoryBufferId id,
+                                 const gfx::Size& size,
+                                 gfx::BufferFormat format,
+                                 gfx::BufferUsage usage,
+                                 int client_id,
+                                 bool reused_gpu_process,
+                                 const CreateCallback& callback);
+  void GpuMemoryBufferCreatedOnIO(const CreateDelegate& create_delegate,
+                                  gfx::GpuMemoryBufferId id,
+                                  int client_id,
+                                  int gpu_host_id,
+                                  bool reused_gpu_process,
+                                  const CreateCallback& callback,
+                                  const gfx::GpuMemoryBufferHandle& handle);
   void DestroyGpuMemoryBufferOnIO(gfx::GpuMemoryBufferId id,
                                   int client_id,
                                   uint32 sync_point);

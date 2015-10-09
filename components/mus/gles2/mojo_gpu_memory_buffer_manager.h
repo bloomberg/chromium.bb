@@ -19,6 +19,10 @@ class MojoGpuMemoryBufferManager : public gpu::GpuMemoryBufferManager {
       const gfx::Size& size,
       gfx::BufferFormat format,
       gfx::BufferUsage usage) override;
+  scoped_ptr<gfx::GpuMemoryBuffer> CreateGpuMemoryBufferFromHandle(
+      const gfx::GpuMemoryBufferHandle& handle,
+      const gfx::Size& size,
+      gfx::BufferFormat format) override;
   gfx::GpuMemoryBuffer* GpuMemoryBufferFromClientBuffer(
       ClientBuffer buffer) override;
   void SetDestructionSyncPoint(gfx::GpuMemoryBuffer* buffer,

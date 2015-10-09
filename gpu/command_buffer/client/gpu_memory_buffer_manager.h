@@ -22,6 +22,12 @@ class GPU_EXPORT GpuMemoryBufferManager {
       gfx::BufferFormat format,
       gfx::BufferUsage usage) = 0;
 
+  // Creates a GpuMemoryBuffer from existing handle.
+  virtual scoped_ptr<gfx::GpuMemoryBuffer> CreateGpuMemoryBufferFromHandle(
+      const gfx::GpuMemoryBufferHandle& handle,
+      const gfx::Size& size,
+      gfx::BufferFormat format) = 0;
+
   // Returns a GpuMemoryBuffer instance given a ClientBuffer. Returns NULL on
   // failure.
   virtual gfx::GpuMemoryBuffer* GpuMemoryBufferFromClientBuffer(

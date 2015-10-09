@@ -20,6 +20,15 @@ MojoGpuMemoryBufferManager::AllocateGpuMemoryBuffer(const gfx::Size& size,
   return MojoGpuMemoryBufferImpl::Create(size, format, usage);
 }
 
+scoped_ptr<gfx::GpuMemoryBuffer>
+MojoGpuMemoryBufferManager::CreateGpuMemoryBufferFromHandle(
+    const gfx::GpuMemoryBufferHandle& handle,
+    const gfx::Size& size,
+    gfx::BufferFormat format) {
+  NOTIMPLEMENTED();
+  return nullptr;
+}
+
 gfx::GpuMemoryBuffer*
 MojoGpuMemoryBufferManager::GpuMemoryBufferFromClientBuffer(
     ClientBuffer buffer) {
