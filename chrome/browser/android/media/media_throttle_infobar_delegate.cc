@@ -52,6 +52,10 @@ base::string16 MediaThrottleInfoBarDelegate::GetMessageText() const {
   return l10n_util::GetStringUTF16(IDS_MEDIA_THROTTLE_INFOBAR_TEXT);
 }
 
+int MediaThrottleInfoBarDelegate::GetIconId() const {
+  return IDR_INFOBAR_WARNING;
+}
+
 base::string16 MediaThrottleInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
   return l10n_util::GetStringUTF16((button == BUTTON_OK) ?
