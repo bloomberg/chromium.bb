@@ -43,6 +43,7 @@ template("nacl_toolchain") {
                              "ld",
                              "link_outputs",
                              "postlink",
+                             "symbol_level",
                              "toolchain_cpu",
                            ])
 

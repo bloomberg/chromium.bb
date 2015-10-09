@@ -10,3 +10,6 @@ declare_args() {
 }
 
 nacl_toolchain_dir = "//native_client/toolchain/${host_os}_x86"
+
+nacl_irt_toolchain = "//build/toolchain/nacl:irt_" + target_cpu
+is_nacl_irt = current_toolchain == nacl_irt_toolchain

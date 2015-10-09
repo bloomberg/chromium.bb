@@ -5,6 +5,7 @@
 import("//build/config/android/config.gni")
 import("//build/config/chrome_build.gni")
 import("//build/config/compiler/compiler.gni")
+import("//build/config/nacl/config.gni")
 import("//build/toolchain/ccache.gni")
 
 if (current_cpu == "arm") {
@@ -127,6 +128,8 @@ config("compiler") {
     configs += [ "//build/config/android:compiler" ]
   } else if (is_linux) {
     configs += [ "//build/config/linux:compiler" ]
+  } else if (is_nacl) {
+    configs += [ "//build/config/nacl:compiler" ]
   } else if (is_ios || is_mac) {
     configs += [ "//build/config/mac:compiler" ]
   }
@@ -228,16 +231,18 @@ config("compiler") {
       ]
     }
 
-    # Omit unwind support in official builds to save space. We can use breakpad
-    # for these builds.
-    if (is_chrome_branded && is_official_build) {
-      cflags += [
-        "-fno-unwind-tables",
-        "-fno-asynchronous-unwind-tables",
-      ]
-      defines += [ "NO_UNWIND_TABLES" ]
-    } else {
-      cflags += [ "-funwind-tables" ]
+    if (!is_nacl) {
+      # Omit unwind support in official builds to save space.
+      # We can use breakpad for these builds.
+      if (is_chrome_branded && is_official_build) {
+        cflags += [
+          "-fno-unwind-tables",
+          "-fno-asynchronous-unwind-tables",
+        ]
+        defines += [ "NO_UNWIND_TABLES" ]
+      } else {
+        cflags += [ "-funwind-tables" ]
+      }
     }
   }
 
@@ -440,9 +445,12 @@ config("compiler_cpu_abi") {
 # for particular Chromium code or for working around particular
 # compiler bugs (or the combination of the two).
 config("compiler_codegen") {
+  configs = []
   cflags = []
 
-  if (is_posix && !is_mac && !is_ios && !is_nacl) {
+  if (is_nacl) {
+    configs += [ "//build/config/nacl:compiler_codegen" ]
+  } else if (is_posix && !is_mac && !is_ios) {
     if (current_cpu == "x86") {
       if (is_clang) {
         cflags += [
@@ -1055,34 +1063,50 @@ config("no_optimize") {
 # optimization and link-time code generation which is very expensive and should
 # be used sparingly.
 config("optimize_max") {
-  ldflags = common_optimize_on_ldflags
-  if (is_win) {
-    # Favor speed over size, /O2 must be before the common flags. The GYP
-    # build also specifies /Ot, /Oi, and /GF, but these are implied by /O2.
-    cflags = [ "/O2" ] + common_optimize_on_cflags
-    if (is_official_build) {
-      # TODO(GYP): TODO(dpranke): Should these only be on in an official
-      # build, or on all the time? For now we'll require official build so
-      # that the compile is clean.
-      cflags += [
-        "/GL",  # Whole program optimization.
-
-        # Disable Warning 4702 ("Unreachable code") for the WPO/PGO builds.
-        # Probably anything that this would catch that wouldn't be caught in a
-        # normal build isn't going to actually be a bug, so the incremental
-        # value of C4702 for PGO builds is likely very small.
-        "/wd4702",
-      ]
-    }
+  if (is_nacl_irt) {
+    # The NaCl IRT is a special case and always wants its own config.
+    # Various components do:
+    #   if (!is_debug) {
+    #     configs -= [ "//build/config/compiler:default_optimization" ]
+    #     configs += [ "//build/config/compiler:optimize_max" ]
+    #   }
+    # So this config has to have the selection logic just like
+    # "default_optimization", below.
+    configs = [ "//build/config/nacl:irt_optimize" ]
   } else {
-    cflags = [ "-O2" ] + common_optimize_on_cflags
+    ldflags = common_optimize_on_ldflags
+    if (is_win) {
+      # Favor speed over size, /O2 must be before the common flags. The GYP
+      # build also specifies /Ot, /Oi, and /GF, but these are implied by /O2.
+      cflags = [ "/O2" ] + common_optimize_on_cflags
+      if (is_official_build) {
+        # TODO(GYP): TODO(dpranke): Should these only be on in an official
+        # build, or on all the time? For now we'll require official build so
+        # that the compile is clean.
+        cflags += [
+          "/GL",  # Whole program optimization.
+
+          # Disable Warning 4702 ("Unreachable code") for the WPO/PGO builds.
+          # Probably anything that this would catch that wouldn't be caught in a
+          # normal build isn't going to actually be a bug, so the incremental
+          # value of C4702 for PGO builds is likely very small.
+          "/wd4702",
+        ]
+      }
+    } else {
+      cflags = [ "-O2" ] + common_optimize_on_cflags
+    }
   }
 }
 
 # The default optimization applied to all targets. This will be equivalent to
 # either "optimize" or "no_optimize", depending on the build flags.
 config("default_optimization") {
-  if (is_debug) {
+  if (is_nacl_irt) {
+    # The NaCl IRT is a special case and always wants its own config.
+    # It gets optimized the same way regardless of the type of build.
+    configs = [ "//build/config/nacl:irt_optimize" ]
+  } else if (is_debug) {
     configs = [ ":no_optimize" ]
   } else {
     configs = [ ":optimize" ]

@@ -121,6 +121,10 @@ template("nacl_irt_toolchain") {
     ar = toolprefix + "ar"
     readelf = toolprefix + "readelf"
 
+    # Always build the IRT with full debugging symbols, regardless of
+    # how Chromium itself is being built (or other NaCl executables).
+    symbol_level = 2
+
     # Some IRT implementations (notably, Chromium's) contain C++ code,
     # so we need to link w/ the C++ linker.
     ld = "${python_path} ${link_irt} --tls-edit=${tls_edit} --link-cmd=${cxx} --readelf-cmd=${readelf}"
