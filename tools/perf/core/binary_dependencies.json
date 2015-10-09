@@ -10,6 +10,15 @@
           ]
         }
       }
+    },
+    "generate_breakpad_symbols": {
+      "file_info": {
+        "win_AMD64": {
+          "local_paths": [
+            "../../../components/crash/content/tools/generate_breakpad_symbols.py"
+          ]
+        }
+      }
     }
   }
 }

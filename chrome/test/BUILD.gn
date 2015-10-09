@@ -257,13 +257,14 @@ source_set("test_support_ui") {
 group("telemetry_binary_deps") {
   data_deps = []
 
-  if (is_win) {
-    data_deps += [ "//content/shell:crash_service" ]
-  }
-
   data = [
     "//tools/perf/core/binary_dependencies.json",
   ]
+
+  if (is_win) {
+    data_deps += [ "//content/shell:crash_service" ]
+    data += [ "//components/crash/content/tools/generate_breakpad_symbols.py" ]
+  }
 }
 
 if (!is_android) {
@@ -786,9 +787,7 @@ if (!is_android) {
   # The _run targets exist only for compatibility w/ GYP.
   group("browser_tests_run") {
     testonly = true
-    data_deps = [
-      ":browser_tests",
-    ]
+    data_deps = [ ":browser_tests" ]
   }
 
   test("browser_tests") {
@@ -1337,9 +1336,7 @@ if (!is_android) {
       "//third_party/WebKit/public:blink",
     ]
 
-    data_deps = [
-      "//third_party/mesa:osmesa",
-    ]
+    data_deps = [ "//third_party/mesa:osmesa" ]
 
     if (cld_version == 2) {
       # Language detection is irrelevant to sync, so it can depend on any
