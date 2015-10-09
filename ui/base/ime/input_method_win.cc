@@ -115,8 +115,8 @@ void InputMethodWin::DispatchKeyEvent(ui::KeyEvent* event) {
   }
 
   std::vector<MSG> char_msgs;
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableMergeKeyCharEvents)) {
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableMergeKeyCharEvents)) {
     // Combines the WM_KEY* and WM_CHAR messages in the event processing flow
     // which is necessary to let Chrome IME extension to process the key event
     // and perform corresponding IME actions.
