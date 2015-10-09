@@ -340,9 +340,12 @@ class _Metadata(object):
   def IterSubpaths(self, path):
     """Returns a generator for all subpaths in the given zip.
 
-    If the given path is not a zip file, returns an empty generator.
+    If the given path is not a zip file or doesn't exist, returns an empty
+    iterable.
     """
     outer_entry = self._GetEntry(path)
+    if not outer_entry:
+      return ()
     subentries = outer_entry.get('entries', [])
     return (entry['path'] for entry in subentries)
 
