@@ -46,6 +46,7 @@ public:
     bool lock() override;
     void* data() override;
     void unlock() override;
+    WebMemoryAllocatorDump* createMemoryAllocatorDump(const WebString& name, WebProcessMemoryDump*) const override;
 
 private:
     Vector<char> m_data;

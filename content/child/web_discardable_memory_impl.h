@@ -27,6 +27,9 @@ class WebDiscardableMemoryImpl : public blink::WebDiscardableMemory {
   bool lock() override;
   void unlock() override;
   void* data() override;
+  blink::WebMemoryAllocatorDump* createMemoryAllocatorDump(
+      const blink::WebString& name,
+      blink::WebProcessMemoryDump* wpmd) const override;
 
  private:
   WebDiscardableMemoryImpl(scoped_ptr<base::DiscardableMemory> memory);

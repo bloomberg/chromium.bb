@@ -14,6 +14,7 @@
 #include "third_party/WebKit/public/platform/WebProcessMemoryDump.h"
 
 namespace base {
+class DiscardableMemory;
 namespace trace_event {
 class MemoryAllocatorDump;
 class ProcessMemoryDump;
@@ -68,6 +69,10 @@ class CONTENT_EXPORT WebProcessMemoryDumpImpl final
   const base::trace_event::ProcessMemoryDump* process_memory_dump() const {
     return process_memory_dump_;
   }
+
+  blink::WebMemoryAllocatorDump* CreateDiscardableMemoryAllocatorDump(
+      const std::string& name,
+      base::DiscardableMemory* discardable);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(WebProcessMemoryDumpImplTest, IntegrationTest);

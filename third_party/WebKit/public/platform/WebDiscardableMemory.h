@@ -28,6 +28,10 @@
 
 namespace blink {
 
+class WebMemoryAllocatorDump;
+class WebProcessMemoryDump;
+class WebString;
+
 // A memory allocation that can be automatically discarded by the operating
 // system under memory pressure.
 //
@@ -68,6 +72,13 @@ public:
     // Unlock the memory so that it can be purged by the system. Must be called
     // after every successful lock call.
     virtual void unlock() = 0;
+
+    // Used for tracing the statistics of discardable memory allocated. Returns
+    // a new MemoryAllocatorDump in the WebProcessMemoryDump object provided,
+    // with the size of the discardable memory. The MemoryAllocatorDump created
+    // is owned by the WebProcessMemoryDump object.
+    // See WebProcessMemoryDump::createMemoryAllocatorDump.
+    virtual WebMemoryAllocatorDump* createMemoryAllocatorDump(const WebString& name, WebProcessMemoryDump*) const = 0;
 };
 
 } // namespace blink

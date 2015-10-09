@@ -63,6 +63,12 @@ void TestingDiscardableMemory::unlock()
     memset(m_data.data(), 0, m_data.size());
 }
 
+WebMemoryAllocatorDump* TestingDiscardableMemory::createMemoryAllocatorDump(const WebString& name, WebProcessMemoryDump* dump) const
+{
+    ASSERT_NOT_REACHED();
+    return nullptr;
+}
+
 TestingPlatformSupport::TestingPlatformSupport(const Config& config)
     : m_config(config)
     , m_oldPlatform(Platform::current())

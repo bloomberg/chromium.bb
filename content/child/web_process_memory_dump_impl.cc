@@ -4,6 +4,7 @@
 
 #include "content/child/web_process_memory_dump_impl.h"
 
+#include "base/memory/discardable_memory.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "content/child/web_memory_allocator_dump_impl.h"
 #include "skia/ext/skia_trace_memory_dump_impl.h"
@@ -147,6 +148,16 @@ SkTraceMemoryDump* WebProcessMemoryDumpImpl::CreateDumpAdapterForSkia(
   sk_trace_dump_list_.push_back(new skia::SkiaTraceMemoryDumpImpl(
       dumpNamePrefix.utf8(), level_of_detail_, process_memory_dump_));
   return sk_trace_dump_list_.back();
+}
+
+blink::WebMemoryAllocatorDump*
+WebProcessMemoryDumpImpl::CreateDiscardableMemoryAllocatorDump(
+    const std::string& name,
+    base::DiscardableMemory* discardable) {
+  base::trace_event::MemoryAllocatorDump* dump =
+      discardable->CreateMemoryAllocatorDump(name.c_str(),
+                                             process_memory_dump_);
+  return createWebMemoryAllocatorDump(dump);
 }
 
 }  // namespace content
