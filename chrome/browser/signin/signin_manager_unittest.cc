@@ -37,6 +37,7 @@
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/test_signin_client.h"
+#include "components/signin/core/common/signin_pref_names.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/test/test_browser_thread_bundle.h"

@@ -15,6 +15,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_metrics.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_store.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "jni/DataReductionProxySettings_jni.h"
 #include "net/proxy/proxy_server.h"
 #include "url/gurl.h"

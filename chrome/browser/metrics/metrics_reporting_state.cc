@@ -9,8 +9,8 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/installer/util/google_update_settings.h"
+#include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_service.h"
 #include "content/public/browser/browser_thread.h"
 

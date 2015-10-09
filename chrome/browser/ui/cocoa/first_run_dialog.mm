@@ -17,6 +17,7 @@
 #include "chrome/browser/shell_integration.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/url_constants.h"
+#include "components/metrics/metrics_pref_names.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/version_info/version_info.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMUILocalizerAndLayoutTweaker.h"

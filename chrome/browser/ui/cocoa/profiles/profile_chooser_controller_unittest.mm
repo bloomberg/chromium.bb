@@ -30,6 +30,7 @@
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/common/profile_management_switches.h"
+#include "components/signin/core/common/signin_pref_names.h"
 #include "components/syncable_prefs/pref_service_syncable.h"
 
 const std::string kGaiaId = "gaiaid-user@gmail.com";

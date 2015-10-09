@@ -11,14 +11,6 @@
 
 #include "build/build_config.h"
 
-#include "components/autofill/core/common/autofill_pref_names.h"
-#include "components/bookmarks/common/bookmark_pref_names.h"
-#include "components/content_settings/core/common/pref_names.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
-#include "components/metrics/metrics_pref_names.h"
-#include "components/password_manager/core/common/password_manager_pref_names.h"
-#include "components/signin/core/common/signin_pref_names.h"
-
 namespace prefs {
 
 // Profile prefs. Please add Local State prefs below instead.

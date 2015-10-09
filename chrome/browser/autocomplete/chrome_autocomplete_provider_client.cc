@@ -21,6 +21,7 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/omnibox/browser/autocomplete_classifier.h"
 #include "components/sync_driver/sync_service_utils.h"

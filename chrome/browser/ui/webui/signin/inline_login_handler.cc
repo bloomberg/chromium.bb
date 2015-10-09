@@ -16,6 +16,8 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/common/pref_names.h"
+#include "components/metrics/metrics_pref_names.h"
+#include "components/signin/core/common/signin_pref_names.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "google_apis/gaia/gaia_urls.h"

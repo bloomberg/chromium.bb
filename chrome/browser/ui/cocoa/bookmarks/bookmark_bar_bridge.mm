@@ -8,8 +8,8 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_controller.h"
-#include "chrome/common/pref_names.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "components/bookmarks/common/bookmark_pref_names.h"
 
 using bookmarks::BookmarkModel;
 using bookmarks::BookmarkNode;

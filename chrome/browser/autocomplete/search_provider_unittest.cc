@@ -29,6 +29,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/google/core/browser/google_switches.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/metrics/proto/omnibox_event.pb.h"

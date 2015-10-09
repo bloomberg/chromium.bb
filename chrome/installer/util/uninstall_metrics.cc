@@ -13,6 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/installer/util/util_constants.h"
+#include "components/metrics/metrics_pref_names.h"
 
 namespace installer {
 

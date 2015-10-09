@@ -53,6 +53,7 @@
 #include "chrome/browser/ui/toolbar/chrome_toolbar_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "components/bookmarks/common/bookmark_pref_names.h"
 #import "components/omnibox/browser/omnibox_popup_model.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"

@@ -90,6 +90,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/proxy_config/pref_proxy_config_tracker.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "components/signin/core/common/signin_pref_names.h"
 #include "components/syncable_prefs/pref_service_syncable.h"
 #include "components/ui/zoom/zoom_event_manager.h"
 #include "components/url_formatter/url_fixer.h"

@@ -18,6 +18,7 @@
 #include "chrome/common/crash_keys.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/installer/util/google_update_settings.h"
+#include "components/metrics/metrics_pref_names.h"
 
 #if defined(OS_WIN)
 #include <windows.h>

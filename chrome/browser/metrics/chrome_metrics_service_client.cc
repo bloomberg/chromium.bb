@@ -32,6 +32,7 @@
 #include "components/metrics/call_stack_profile_metrics_provider.h"
 #include "components/metrics/drive_metrics_provider.h"
 #include "components/metrics/gpu/gpu_metrics_provider.h"
+#include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_service.h"
 #include "components/metrics/net/net_metrics_log_uploader.h"
 #include "components/metrics/net/network_metrics_provider.h"

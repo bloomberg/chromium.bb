@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/bookmarks/common/bookmark_pref_names.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"

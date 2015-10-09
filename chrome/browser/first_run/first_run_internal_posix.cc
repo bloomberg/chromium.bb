@@ -13,9 +13,9 @@
 #include "chrome/browser/first_run/first_run_dialog.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/master_preferences.h"
+#include "components/metrics/metrics_pref_names.h"
 #include "components/startup_metric_utils/startup_metric_utils.h"
 
 namespace first_run {

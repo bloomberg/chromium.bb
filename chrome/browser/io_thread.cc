@@ -40,6 +40,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_prefs.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "components/data_usage/core/data_use_aggregator.h"
 #include "components/net_log/chrome_net_log.h"
 #include "components/policy/core/common/policy_service.h"

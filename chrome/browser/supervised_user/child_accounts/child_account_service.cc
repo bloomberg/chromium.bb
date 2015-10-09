@@ -26,6 +26,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "components/signin/core/common/signin_pref_names.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/profiles/profile_helper.h"

@@ -26,6 +26,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "components/signin/core/common/signin_pref_names.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_ui.h"
 #include "net/cookies/cookie_monster.h"

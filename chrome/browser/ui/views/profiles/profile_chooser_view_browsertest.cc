@@ -25,6 +25,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/signin/core/common/profile_management_switches.h"
+#include "components/signin/core/common/signin_pref_names.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_registry.h"
 #include "ui/events/event_utils.h"

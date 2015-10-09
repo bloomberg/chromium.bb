@@ -41,6 +41,7 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/locale_settings.h"
+#include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/web_resource/notification_promo.h"

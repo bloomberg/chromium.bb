@@ -19,6 +19,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
+#include "components/signin/core/common/signin_pref_names.h"
 #include "content/public/browser/notification_source.h"
 
 namespace {

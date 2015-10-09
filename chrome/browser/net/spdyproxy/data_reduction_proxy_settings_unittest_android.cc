@@ -21,6 +21,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "components/proxy_config/proxy_prefs.h"
 #include "net/proxy/proxy_server.h"
 #include "testing/gmock/include/gmock/gmock.h"

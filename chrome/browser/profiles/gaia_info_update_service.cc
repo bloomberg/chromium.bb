@@ -16,6 +16,7 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/pref_names.h"
 #include "components/signin/core/common/profile_management_switches.h"
+#include "components/signin/core/common/signin_pref_names.h"
 #include "content/public/browser/notification_details.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image/image.h"

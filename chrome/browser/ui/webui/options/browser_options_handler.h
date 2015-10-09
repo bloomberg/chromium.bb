@@ -24,6 +24,7 @@
 #include "components/policy/core/common/policy_service.h"
 #include "components/search_engines/template_url_service_observer.h"
 #include "components/signin/core/browser/signin_manager_base.h"
+#include "components/signin/core/common/signin_pref_names.h"
 #include "components/sync_driver/sync_service_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "extensions/browser/extension_registry_observer.h"

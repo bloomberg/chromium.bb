@@ -41,6 +41,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/metrics/metrics_pref_names.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_system.h"
