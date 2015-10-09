@@ -23,6 +23,7 @@ component("ipc") {
     "attachment_broker_unprivileged_win.h",
     "brokerable_attachment.cc",
     "brokerable_attachment.h",
+    "brokerable_attachment_mac.cc",
     "brokerable_attachment_win.cc",
     "handle_attachment_win.cc",
     "handle_attachment_win.h",
@@ -125,8 +126,9 @@ component("ipc") {
     "//base/third_party/dynamic_annotations",
   ]
 
-  if (is_win) {
-    # On windows HandleAttachmentWin needs to generate random IDs.
+  if (is_win || is_mac) {
+    # On Windows HandleAttachmentWin needs to generate random IDs.
+    # On Mac MachPortAttachmentMac needs to generate random IDs.
     deps += [ "//crypto" ]
   }
 }

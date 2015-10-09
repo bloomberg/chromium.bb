@@ -16,7 +16,7 @@
 // compile any code that calls member functions of AttachmentBroker. This
 // prevents symbols only used by AttachmentBroker and its subclasses from
 // making it into the binary.
-#if defined(OS_WIN)
+#if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS))
 #define USE_ATTACHMENT_BROKER 1
 #else
 #define USE_ATTACHMENT_BROKER 0

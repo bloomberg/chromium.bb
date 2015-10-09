@@ -13,6 +13,10 @@
 #include "ipc/attachment_broker_privileged_win.h"
 #endif
 
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+#include "ipc/attachment_broker_privileged_mac.h"
+#endif
+
 namespace IPC {
 
 AttachmentBrokerPrivileged::AttachmentBrokerPrivileged() {
@@ -29,6 +33,9 @@ AttachmentBrokerPrivileged::CreateBroker() {
 #if defined(OS_WIN)
   return scoped_ptr<AttachmentBrokerPrivileged>(
       new IPC::AttachmentBrokerPrivilegedWin);
+#elif defined(OS_MACOSX) && !defined(OS_IOS)
+  return scoped_ptr<AttachmentBrokerPrivileged>(
+      new IPC::AttachmentBrokerPrivilegedMac);
 #else
   return nullptr;
 #endif

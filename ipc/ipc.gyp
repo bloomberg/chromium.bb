@@ -29,7 +29,7 @@
         ],
       },
       'conditions': [
-        ['OS == "win"', {
+        ['OS == "win" or OS == "mac"', {
           'dependencies': [
             '../crypto/crypto.gyp:crypto',
           ],
