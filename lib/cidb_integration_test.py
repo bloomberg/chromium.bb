@@ -201,7 +201,7 @@ class CIDBAPITest(CIDBIntegrationTest):
     self.assertEqual(type(current_db_time), datetime.datetime)
 
   def testBuildMessages(self):
-    db = self._PrepareFreshDatabase(43)
+    db = self._PrepareFreshDatabase(45)
     self.assertEqual([], db.GetBuildMessages(1))
     master_build_id = db.InsertBuild('builder name',
                                      constants.WATERFALL_TRYBOT,
@@ -216,10 +216,10 @@ class CIDBAPITest(CIDBIntegrationTest):
                                     master_build_id=master_build_id)
     db.InsertBuildMessage(master_build_id)
     db.InsertBuildMessage(master_build_id, 'message_type', 'message_subtype',
-                          'message_value')
+                          'message_value', 'board')
     for i in range(10):
       db.InsertBuildMessage(slave_build_id,
-                            'message_type', 'message_subtype', str(i))
+                            'message_type', 'message_subtype', str(i), 'board')
 
     master_messages = db.GetBuildMessages(master_build_id)
     slave_messages = db.GetSlaveBuildMessages(master_build_id)
@@ -236,7 +236,8 @@ class CIDBAPITest(CIDBIntegrationTest):
                       'build_number': 1L,
                       'message_type': 'message_type',
                       'message_subtype': 'message_subtype',
-                      'message_value': 'message_value'},
+                      'message_value': 'message_value',
+                      'board': 'board'},
                      mm2)
     sm10 = slave_messages[9]
     sm10.pop('timestamp')
@@ -247,7 +248,8 @@ class CIDBAPITest(CIDBIntegrationTest):
                       'build_number': 2L,
                       'message_type': 'message_type',
                       'message_subtype': 'message_subtype',
-                      'message_value': '9'},
+                      'message_value': '9',
+                      'board': 'board'},
                      sm10)
 
   def testGetKeyVals(self):

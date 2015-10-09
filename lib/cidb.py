@@ -582,7 +582,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
       'clActionTable c JOIN buildTable b ON build_id = b.id ')
   _SQL_FETCH_MESSAGES = (
       'SELECT build_id, build_config, waterfall, builder_name, build_number, '
-      'message_type, message_subtype, message_value, timestamp FROM '
+      'message_type, message_subtype, message_value, timestamp, board FROM '
       'buildMessageTable c JOIN buildTable b ON build_id = b.id ')
   _DATE_FORMAT = '%Y-%m-%d'
 
@@ -754,7 +754,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
 
   @minimum_schema(42)
   def InsertBuildMessage(self, build_id, message_type=None,
-                         message_subtype=None, message_value=None):
+                         message_subtype=None, message_value=None, board=None):
     """Insert a build message into database.
 
     Args:
@@ -762,6 +762,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
       message_type: Optional str name of message type.
       message_subtype: Optional str name of message subtype.
       message_value: Optional value of message.
+      board: Optional str name of the board.
     """
     if message_type:
       message_type = message_type[:240]
@@ -769,11 +770,14 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
       message_subtype = message_subtype[:240]
     if message_value:
       message_value = message_value[:480]
+    if board:
+      board = board[:240]
 
     values = {'build_id': build_id,
               'message_type': message_type,
               'message_subtype': message_subtype,
-              'message_value': message_value}
+              'message_value': message_value,
+              'board': board}
     return self._Insert('buildMessageTable', values)
 
   @minimum_schema(2)
@@ -1233,7 +1237,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     Returns:
       A list of build message dictionaries, where each dictionary contains
       keys build_id, build_config, builder_name, build_number, message_type,
-      message_subtype, message_value, timestamp.
+      message_subtype, message_value, timestamp, board.
     """
     return self._GetBuildMessagesWithClause('build_id = %s' % build_id)
 
@@ -1247,7 +1251,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     Returns:
       A list of build message dictionaries, where each dictionary contains
       keys build_id, build_config, waterfall, builder_name, build_number,
-      message_type, message_subtype, message_value, timestamp.
+      message_type, message_subtype, message_value, timestamp, board.
     """
     return self._GetBuildMessagesWithClause(
         'master_build_id = %s' % master_build_id)
@@ -1256,7 +1260,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     """Private helper method for fetching build messages."""
     columns = ['build_id', 'build_config', 'waterfall', 'builder_name',
                'build_number', 'message_type', 'message_subtype',
-               'message_value', 'timestamp']
+               'message_value', 'timestamp', 'board']
     results = self._Execute('%s WHERE %s' % (self._SQL_FETCH_MESSAGES,
                                              clause)).fetchall()
     return [dict(zip(columns, values)) for values in results]
