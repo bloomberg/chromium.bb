@@ -233,6 +233,31 @@ class ServiceWorkerFailToStartTest : public ServiceWorkerVersionTest {
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerFailToStartTest);
 };
 
+class MessageReceiverDisallowStop : public MessageReceiver {
+ public:
+  MessageReceiverDisallowStop() : MessageReceiver() {}
+  ~MessageReceiverDisallowStop() override {}
+
+  void OnStopWorker(int embedded_worker_id) override {
+    // Do nothing.
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MessageReceiverDisallowStop);
+};
+
+class ServiceWorkerStallInStoppingTest : public ServiceWorkerVersionTest {
+ protected:
+  ServiceWorkerStallInStoppingTest() : ServiceWorkerVersionTest() {}
+
+  scoped_ptr<MessageReceiver> GetMessageReceiver() override {
+    return make_scoped_ptr(new MessageReceiverDisallowStop());
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerStallInStoppingTest);
+};
+
 class MessageReceiverDisallowFetch : public MessageReceiver {
  public:
   MessageReceiverDisallowFetch() : MessageReceiver() {}
@@ -763,6 +788,84 @@ TEST_F(ServiceWorkerFailToStartTest, Timeout) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(SERVICE_WORKER_ERROR_TIMEOUT, status);
   EXPECT_EQ(ServiceWorkerVersion::STOPPED, version_->running_status());
+}
+
+// Test that a service worker stalled in stopping will timeout and not get in a
+// sticky error state.
+TEST_F(ServiceWorkerStallInStoppingTest, DetachThenStart) {
+  // Start a worker.
+  ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
+  version_->StartWorker(CreateReceiverOnCurrentThread(&status));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(SERVICE_WORKER_OK, status);
+  EXPECT_EQ(ServiceWorkerVersion::RUNNING, version_->running_status());
+
+  // Try to stop the worker.
+  status = SERVICE_WORKER_ERROR_FAILED;
+  version_->StopWorker(CreateReceiverOnCurrentThread(&status));
+  EXPECT_EQ(ServiceWorkerVersion::STOPPING, version_->running_status());
+  base::RunLoop().RunUntilIdle();
+
+  // Worker is now stalled in stopping. Verify a fast timeout is in place.
+  EXPECT_TRUE(version_->timeout_timer_.IsRunning());
+  EXPECT_EQ(base::TimeDelta::FromSeconds(
+                ServiceWorkerVersion::kStopWorkerTimeoutSeconds),
+            version_->timeout_timer_.GetCurrentDelay());
+
+  // Simulate timeout.
+  version_->stop_time_ =
+      base::TimeTicks::Now() -
+      base::TimeDelta::FromSeconds(
+          ServiceWorkerVersion::kStopWorkerTimeoutSeconds + 1);
+  version_->timeout_timer_.user_task().Run();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(SERVICE_WORKER_OK, status);
+  EXPECT_EQ(ServiceWorkerVersion::STOPPED, version_->running_status());
+
+  // Try to start the worker again. It should work.
+  status = SERVICE_WORKER_ERROR_FAILED;
+  version_->StartWorker(CreateReceiverOnCurrentThread(&status));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(SERVICE_WORKER_OK, status);
+  EXPECT_EQ(ServiceWorkerVersion::RUNNING, version_->running_status());
+
+  // The timeout interval should be reset to normal.
+  EXPECT_TRUE(version_->timeout_timer_.IsRunning());
+  EXPECT_EQ(base::TimeDelta::FromSeconds(
+                ServiceWorkerVersion::kTimeoutTimerDelaySeconds),
+            version_->timeout_timer_.GetCurrentDelay());
+}
+
+// Test that a service worker stalled in stopping with a start worker
+// request queued up will timeout and restart.
+TEST_F(ServiceWorkerStallInStoppingTest, DetachThenRestart) {
+  // Start a worker.
+  ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
+  version_->StartWorker(CreateReceiverOnCurrentThread(&status));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(SERVICE_WORKER_OK, status);
+  EXPECT_EQ(ServiceWorkerVersion::RUNNING, version_->running_status());
+
+  // Try to stop the worker.
+  status = SERVICE_WORKER_ERROR_FAILED;
+  version_->StopWorker(CreateReceiverOnCurrentThread(&status));
+  EXPECT_EQ(ServiceWorkerVersion::STOPPING, version_->running_status());
+
+  // Worker is now stalled in stopping. Add a start worker requset.
+  ServiceWorkerStatusCode start_status = SERVICE_WORKER_ERROR_FAILED;
+  version_->StartWorker(CreateReceiverOnCurrentThread(&start_status));
+
+  // Simulate timeout. The worker should stop and get restarted.
+  EXPECT_TRUE(version_->timeout_timer_.IsRunning());
+  version_->stop_time_ =
+      base::TimeTicks::Now() -
+      base::TimeDelta::FromSeconds(
+          ServiceWorkerVersion::kStopWorkerTimeoutSeconds + 1);
+  version_->timeout_timer_.user_task().Run();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(SERVICE_WORKER_OK, status);
+  EXPECT_EQ(SERVICE_WORKER_OK, start_status);
+  EXPECT_EQ(ServiceWorkerVersion::RUNNING, version_->running_status());
 }
 
 }  // namespace content

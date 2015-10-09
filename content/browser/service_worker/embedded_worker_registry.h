@@ -130,6 +130,9 @@ class CONTENT_EXPORT EmbeddedWorkerRegistry
   // |process_id| could be invalid (i.e. -1) if it's not running.
   void RemoveWorker(int process_id, int embedded_worker_id);
 
+  EmbeddedWorkerInstance* GetWorkerForMessage(int process_id,
+                                              int embedded_worker_id);
+
   base::WeakPtr<ServiceWorkerContextCore> context_;
 
   WorkerInstanceMap worker_map_;

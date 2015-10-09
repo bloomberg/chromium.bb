@@ -61,14 +61,8 @@ using GetClientsCallback =
 
 namespace {
 
-// Delay between the timeout timer firing.
-const int kTimeoutTimerDelaySeconds = 30;
-
 // Time to wait until stopping an idle worker.
 const int kIdleWorkerTimeoutSeconds = 30;
-
-// Time until a stopping worker is considered stalled.
-const int kStopWorkerTimeoutSeconds = 30;
 
 // Default delay for scheduled update.
 const int kUpdateDelaySeconds = 1;
@@ -426,8 +420,10 @@ struct ServiceWorkerClientInfoSortMRU {
 
 }  // namespace
 
+const int ServiceWorkerVersion::kTimeoutTimerDelaySeconds = 30;
 const int ServiceWorkerVersion::kStartWorkerTimeoutMinutes = 5;
 const int ServiceWorkerVersion::kRequestTimeoutMinutes = 5;
+const int ServiceWorkerVersion::kStopWorkerTimeoutSeconds = 5;
 
 class ServiceWorkerVersion::Metrics {
  public:
@@ -448,37 +444,6 @@ class ServiceWorkerVersion::Metrics {
       event_stats_[event].handled_events++;
   }
 
-  void NotifyStopping() {
-    stop_status_ = ServiceWorkerMetrics::STOP_STATUS_STOPPING;
-  }
-
-  void NotifyStopped() {
-    switch (stop_status_) {
-      case ServiceWorkerMetrics::STOP_STATUS_STOPPED:
-      case ServiceWorkerMetrics::STOP_STATUS_STALLED_THEN_STOPPED:
-        return;
-      case ServiceWorkerMetrics::STOP_STATUS_STOPPING:
-        stop_status_ = ServiceWorkerMetrics::STOP_STATUS_STOPPED;
-        break;
-      case ServiceWorkerMetrics::STOP_STATUS_STALLED:
-        stop_status_ = ServiceWorkerMetrics::STOP_STATUS_STALLED_THEN_STOPPED;
-        break;
-      case ServiceWorkerMetrics::NUM_STOP_STATUS_TYPES:
-        NOTREACHED();
-        return;
-    }
-    if (IsInstalled(owner_->status()))
-      ServiceWorkerMetrics::RecordStopWorkerStatus(stop_status_);
-  }
-
-  void NotifyStalledInStopping() {
-    if (stop_status_ != ServiceWorkerMetrics::STOP_STATUS_STOPPING)
-      return;
-    stop_status_ = ServiceWorkerMetrics::STOP_STATUS_STALLED;
-    if (IsInstalled(owner_->status()))
-      ServiceWorkerMetrics::RecordStopWorkerStatus(stop_status_);
-  }
-
  private:
   struct EventStat {
     size_t fired_events = 0;
@@ -487,8 +452,6 @@ class ServiceWorkerVersion::Metrics {
 
   ServiceWorkerVersion* owner_;
   std::map<EventType, EventStat> event_stats_;
-  ServiceWorkerMetrics::StopWorkerStatus stop_status_ =
-      ServiceWorkerMetrics::STOP_STATUS_STOPPING;
 
   DISALLOW_COPY_AND_ASSIGN(Metrics);
 };
@@ -582,12 +545,6 @@ ServiceWorkerVersion::~ServiceWorkerVersion() {
     DCHECK(timeout_timer_.IsRunning());
     DCHECK(!embedded_worker_->devtools_attached());
     RecordStartWorkerResult(SERVICE_WORKER_ERROR_TIMEOUT);
-  }
-
-  // Same with stopping.
-  if (GetTickDuration(stop_time_) >
-      base::TimeDelta::FromSeconds(kStopWorkerTimeoutSeconds)) {
-    metrics_->NotifyStalledInStopping();
   }
 
   if (context_)
@@ -1196,14 +1153,30 @@ void ServiceWorkerVersion::OnStarted() {
 }
 
 void ServiceWorkerVersion::OnStopping() {
-  metrics_->NotifyStopping();
+  DCHECK(stop_time_.is_null());
   RestartTick(&stop_time_);
+
+  // Shorten the interval so stalling in stopped can be fixed quickly. Once the
+  // worker stops, the timer is disabled. The interval will be reset to normal
+  // when the worker starts up again.
+  DCHECK(timeout_timer_.IsRunning());
+  base::TimeDelta delay =
+      base::TimeDelta::FromSeconds(kStopWorkerTimeoutSeconds);
+  if (timeout_timer_.GetCurrentDelay() != delay) {
+    timeout_timer_.Stop();
+    timeout_timer_.Start(FROM_HERE, delay, this,
+                         &ServiceWorkerVersion::OnTimeoutTimer);
+  }
+
   FOR_EACH_OBSERVER(Listener, listeners_, OnRunningStateChanged(this));
 }
 
 void ServiceWorkerVersion::OnStopped(
     EmbeddedWorkerInstance::Status old_status) {
-  metrics_->NotifyStopped();
+  if (IsInstalled(status())) {
+    ServiceWorkerMetrics::RecordWorkerStopped(
+        ServiceWorkerMetrics::StopStatus::NORMAL);
+  }
   if (!stop_time_.is_null())
     ServiceWorkerMetrics::RecordStopWorkerTime(GetTickDuration(stop_time_));
 
@@ -1212,6 +1185,10 @@ void ServiceWorkerVersion::OnStopped(
 
 void ServiceWorkerVersion::OnDetached(
     EmbeddedWorkerInstance::Status old_status) {
+  if (IsInstalled(status())) {
+    ServiceWorkerMetrics::RecordWorkerStopped(
+        ServiceWorkerMetrics::StopStatus::DETACH_BY_REGISTRY);
+  }
   OnStoppedInternal(old_status);
 }
 
@@ -2044,9 +2021,27 @@ void ServiceWorkerVersion::OnTimeoutTimer() {
 
   MarkIfStale();
 
+  // Stopping the worker hasn't finished within a certain period.
   if (GetTickDuration(stop_time_) >
       base::TimeDelta::FromSeconds(kStopWorkerTimeoutSeconds)) {
-    metrics_->NotifyStalledInStopping();
+    DCHECK_EQ(STOPPING, running_status());
+    if (IsInstalled(status())) {
+      ServiceWorkerMetrics::RecordWorkerStopped(
+          ServiceWorkerMetrics::StopStatus::TIMEOUT);
+    }
+    ReportError(SERVICE_WORKER_ERROR_TIMEOUT, "DETACH_STALLED_IN_STOPPING");
+
+    // Detach the worker. Remove |this| as a listener first; otherwise
+    // OnStoppedInternal might try to restart before the new worker
+    // is created.
+    embedded_worker_->RemoveListener(this);
+    embedded_worker_->Detach();
+    embedded_worker_ = context_->embedded_worker_registry()->CreateWorker();
+    embedded_worker_->AddListener(this);
+
+    // Call OnStoppedInternal to fail callbacks and possibly restart.
+    OnStoppedInternal(EmbeddedWorkerInstance::STOPPING);
+    return;
   }
 
   // Trigger update if worker is stale and we waited long enough for it to go
@@ -2124,9 +2119,6 @@ void ServiceWorkerVersion::StopWorkerIfIdle() {
     return;
   }
 
-  // TODO(falken): We may need to handle StopIfIdle failure and
-  // forcibly fail pending callbacks so no one is stuck waiting
-  // for the worker.
   embedded_worker_->StopIfIdle();
 }
 
@@ -2356,6 +2348,7 @@ void ServiceWorkerVersion::OnStoppedInternal(
 
   OnBackgroundSyncDispatcherConnectionError();
 
+  // TODO(falken): Call SWURLRequestJob::ClearStream here?
   streaming_url_request_jobs_.clear();
 
   FOR_EACH_OBSERVER(Listener, listeners_, OnRunningStateChanged(this));

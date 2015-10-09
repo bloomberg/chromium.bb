@@ -337,6 +337,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   friend class base::RefCounted<ServiceWorkerVersion>;
   friend class ServiceWorkerMetrics;
   friend class ServiceWorkerURLRequestJobTest;
+  friend class ServiceWorkerStallInStoppingTest;
   friend class ServiceWorkerVersionBrowserTest;
 
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerControlleeRequestHandlerTest,
@@ -357,6 +358,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionBrowserTest,
                            TimeoutWorkerInEvent);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTest, StayAliveAfterPush);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerStallInStoppingTest, DetachThenStart);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerStallInStoppingTest, DetachThenRestart);
 
   class Metrics;
   class PingController;
@@ -394,10 +397,14 @@ class CONTENT_EXPORT ServiceWorkerVersion
     base::TimeTicks start_time;
   };
 
+  // The timeout timer interval.
+  static const int kTimeoutTimerDelaySeconds;
   // Timeout for the worker to start.
   static const int kStartWorkerTimeoutMinutes;
   // Timeout for a request to be handled.
   static const int kRequestTimeoutMinutes;
+  // Timeout for the worker to stop.
+  static const int kStopWorkerTimeoutSeconds;
 
   ~ServiceWorkerVersion() override;
 

@@ -131,11 +131,12 @@ class EmbeddedWorkerInstance::DevToolsProxy : public base::NonThreadSafe {
 };
 
 EmbeddedWorkerInstance::~EmbeddedWorkerInstance() {
-  DCHECK(status_ == STOPPING || status_ == STOPPED);
+  DCHECK(status_ == STOPPING || status_ == STOPPED) << status_;
   devtools_proxy_.reset();
   if (context_ && process_id_ != -1)
     context_->process_manager()->ReleaseWorkerProcess(embedded_worker_id_);
-  registry_->RemoveWorker(process_id_, embedded_worker_id_);
+  if (registry_->GetWorker(embedded_worker_id_))
+    registry_->RemoveWorker(process_id_, embedded_worker_id_);
 }
 
 void EmbeddedWorkerInstance::Start(int64 service_worker_version_id,
@@ -435,6 +436,11 @@ void EmbeddedWorkerInstance::OnDetached() {
   Status old_status = status_;
   ReleaseProcess();
   FOR_EACH_OBSERVER(Listener, listener_list_, OnDetached(old_status));
+}
+
+void EmbeddedWorkerInstance::Detach() {
+  registry_->RemoveWorker(process_id_, embedded_worker_id_);
+  OnDetached();
 }
 
 bool EmbeddedWorkerInstance::OnMessageReceived(const IPC::Message& message) {

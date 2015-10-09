@@ -155,6 +155,8 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
   static std::string StatusToString(Status status);
   static std::string StartingPhaseToString(StartingPhase phase);
 
+  void Detach();
+
  private:
   typedef base::ObserverList<Listener> ListenerList;
   class DevToolsProxy;

@@ -68,12 +68,13 @@ class ServiceWorkerMetrics {
     NUM_REQUEST_JOB_RESULT_TYPES,
   };
 
-  enum StopWorkerStatus {
-    STOP_STATUS_STOPPING,
-    STOP_STATUS_STOPPED,
-    STOP_STATUS_STALLED,
-    STOP_STATUS_STALLED_THEN_STOPPED,
-    NUM_STOP_STATUS_TYPES
+  // Used for UMA. Append-only.
+  enum class StopStatus {
+    NORMAL,
+    DETACH_BY_REGISTRY,
+    TIMEOUT,
+    // Add new types here.
+    NUM_TYPES
   };
 
   enum EventType {
@@ -122,7 +123,7 @@ class ServiceWorkerMetrics {
                                     bool is_installed);
 
   // Records the result of trying to stop a worker.
-  static void RecordStopWorkerStatus(StopWorkerStatus status);
+  static void RecordWorkerStopped(StopStatus status);
 
   // Records the time taken to successfully stop a worker.
   static void RecordStopWorkerTime(const base::TimeDelta& time);

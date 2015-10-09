@@ -301,6 +301,35 @@ TEST_F(EmbeddedWorkerInstanceTest, StopDuringStart) {
   EXPECT_EQ(EmbeddedWorkerInstance::STARTING, detached_old_status_);
 }
 
+TEST_F(EmbeddedWorkerInstanceTest, Detach) {
+  const int64 version_id = 55L;
+  const GURL pattern("http://example.com/");
+  const GURL url("http://example.com/worker.js");
+  scoped_ptr<EmbeddedWorkerInstance> worker =
+      embedded_worker_registry()->CreateWorker();
+  helper_->SimulateAddProcessToPattern(pattern, kRenderProcessId);
+  ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
+  worker->AddListener(this);
+
+  // Start the worker.
+  base::RunLoop run_loop;
+  worker->Start(
+      version_id, pattern, url,
+      base::Bind(&SaveStatusAndCall, &status, run_loop.QuitClosure()));
+  run_loop.Run();
+
+  // Detach.
+  int process_id = worker->process_id();
+  worker->Detach();
+  EXPECT_EQ(EmbeddedWorkerInstance::STOPPED, worker->status());
+
+  // Send the registry a message from the detached worker. Nothing should
+  // happen.
+  embedded_worker_registry()->OnWorkerStarted(process_id,
+                                              worker->embedded_worker_id());
+  EXPECT_EQ(EmbeddedWorkerInstance::STOPPED, worker->status());
+}
+
 // Test for when sending the start IPC failed.
 TEST_F(EmbeddedWorkerInstanceTest, FailToSendStartIPC) {
   helper_.reset(new FailToSendIPCHelper());
