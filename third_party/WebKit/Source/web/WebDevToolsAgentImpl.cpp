@@ -289,8 +289,11 @@ PassOwnPtrWillBeRawPtr<WebDevToolsAgentImpl> WebDevToolsAgentImpl::create(WebLoc
     }
 
     WebDevToolsAgentImpl* agent = new WebDevToolsAgentImpl(frame, client, InspectorOverlay::create(view));
-    agent->registerAgent(InspectorRenderingAgent::create(view));
-    agent->registerAgent(InspectorEmulationAgent::create(view));
+    // TODO(dgozman): we should actually pass the view instead of frame, but during
+    // remote->local transition we cannot access mainFrameImpl() yet, so we have to store the
+    // frame which will become the main frame later.
+    agent->registerAgent(InspectorRenderingAgent::create(frame));
+    agent->registerAgent(InspectorEmulationAgent::create(frame));
     // TODO(dgozman): migrate each of the following agents to frame once module is ready.
     agent->registerAgent(InspectorDatabaseAgent::create(view->page()));
     agent->registerAgent(DeviceOrientationInspectorAgent::create(view->page()));

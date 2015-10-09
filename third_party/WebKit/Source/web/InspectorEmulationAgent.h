@@ -10,6 +10,7 @@
 
 namespace blink {
 
+class WebLocalFrameImpl;
 class WebViewImpl;
 
 using ErrorString = String;
@@ -17,7 +18,7 @@ using ErrorString = String;
 class InspectorEmulationAgent final : public InspectorBaseAgent<InspectorEmulationAgent, InspectorFrontend::Emulation>, public InspectorBackendDispatcher::EmulationCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorEmulationAgent);
 public:
-    static PassOwnPtrWillBeRawPtr<InspectorEmulationAgent> create(WebViewImpl*);
+    static PassOwnPtrWillBeRawPtr<InspectorEmulationAgent> create(WebLocalFrameImpl*);
     ~InspectorEmulationAgent() override;
 
     void viewportChanged();
@@ -38,9 +39,10 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    explicit InspectorEmulationAgent(WebViewImpl*);
+    explicit InspectorEmulationAgent(WebLocalFrameImpl*);
+    WebViewImpl* webViewImpl();
 
-    WebViewImpl* m_webViewImpl;
+    WebLocalFrameImpl* m_webLocalFrameImpl;
 };
 
 

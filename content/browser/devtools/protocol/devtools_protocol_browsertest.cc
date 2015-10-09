@@ -414,8 +414,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, CrossSitePauseInBeforeUnload) {
   observer.Wait();
 }
 
-IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest,
-                       InspectDuringLocalToRemoteFrameSwap) {
+IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, InspectDuringFrameSwap) {
   host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   content::SetupCrossSiteRedirector(embedded_test_server());
@@ -449,6 +448,21 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest,
   // should be fixed to support waiting on both WATCH_FOR_PROCESS_EXIT and
   // WATCH_FOR_HOST_DESTRUCTION, and then used here.
   bool success = false;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(shell()->web_contents(),
+                                          "window.domAutomationController.send("
+                                          "    !!window.open('', 'foo'));",
+                                          &success));
+  EXPECT_TRUE(success);
+
+  GURL test_url3 =
+      embedded_test_server()->GetURL("A.com", "/devtools/navigation.html");
+
+  // After this navigation, if the bug exists, the process will crash.
+  NavigateToURLBlockUntilNavigationsComplete(new_shell, test_url3, 1);
+
+  // Ensure that the A.com process is still alive by executing a script in the
+  // original tab.
+  success = false;
   EXPECT_TRUE(ExecuteScriptAndExtractBool(shell()->web_contents(),
                                           "window.domAutomationController.send("
                                           "    !!window.open('', 'foo'));",

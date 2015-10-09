@@ -21,15 +21,20 @@ static const char showPaintRects[] = "showPaintRects";
 static const char showScrollBottleneckRects[] = "showScrollBottleneckRects";
 }
 
-PassOwnPtrWillBeRawPtr<InspectorRenderingAgent> InspectorRenderingAgent::create(WebViewImpl* webViewImpl)
+PassOwnPtrWillBeRawPtr<InspectorRenderingAgent> InspectorRenderingAgent::create(WebLocalFrameImpl* webLocalFrameImpl)
 {
-    return adoptPtrWillBeNoop(new InspectorRenderingAgent(webViewImpl));
+    return adoptPtrWillBeNoop(new InspectorRenderingAgent(webLocalFrameImpl));
 }
 
-InspectorRenderingAgent::InspectorRenderingAgent(WebViewImpl* webViewImpl)
+InspectorRenderingAgent::InspectorRenderingAgent(WebLocalFrameImpl* webLocalFrameImpl)
     : InspectorBaseAgent<InspectorRenderingAgent, InspectorFrontend::Rendering>("Rendering")
-    , m_webViewImpl(webViewImpl)
+    , m_webLocalFrameImpl(webLocalFrameImpl)
 {
+}
+
+WebViewImpl* InspectorRenderingAgent::webViewImpl()
+{
+    return m_webLocalFrameImpl->viewImpl();
 }
 
 void InspectorRenderingAgent::restore()
@@ -55,7 +60,7 @@ void InspectorRenderingAgent::setShowDebugBorders(ErrorString* errorString, bool
     m_state->setBoolean(RenderingAgentState::showDebugBorders, show);
     if (show && !compositingEnabled(errorString))
         return;
-    m_webViewImpl->setShowDebugBorders(show);
+    webViewImpl()->setShowDebugBorders(show);
 }
 
 void InspectorRenderingAgent::setShowFPSCounter(ErrorString* errorString, bool show)
@@ -63,15 +68,15 @@ void InspectorRenderingAgent::setShowFPSCounter(ErrorString* errorString, bool s
     m_state->setBoolean(RenderingAgentState::showFPSCounter, show);
     if (show && !compositingEnabled(errorString))
         return;
-    m_webViewImpl->setShowFPSCounter(show);
+    webViewImpl()->setShowFPSCounter(show);
 }
 
 void InspectorRenderingAgent::setShowPaintRects(ErrorString*, bool show)
 {
     m_state->setBoolean(RenderingAgentState::showPaintRects, show);
-    m_webViewImpl->setShowPaintRects(show);
-    if (!show && m_webViewImpl->mainFrameImpl()->frameView())
-        m_webViewImpl->mainFrameImpl()->frameView()->invalidate();
+    webViewImpl()->setShowPaintRects(show);
+    if (!show && m_webLocalFrameImpl->frameView())
+        m_webLocalFrameImpl->frameView()->invalidate();
 }
 
 void InspectorRenderingAgent::setShowScrollBottleneckRects(ErrorString* errorString, bool show)
@@ -79,12 +84,12 @@ void InspectorRenderingAgent::setShowScrollBottleneckRects(ErrorString* errorStr
     m_state->setBoolean(RenderingAgentState::showScrollBottleneckRects, show);
     if (show && !compositingEnabled(errorString))
         return;
-    m_webViewImpl->setShowScrollBottleneckRects(show);
+    webViewImpl()->setShowScrollBottleneckRects(show);
 }
 
 bool InspectorRenderingAgent::compositingEnabled(ErrorString* errorString)
 {
-    if (!m_webViewImpl->page()->settings().acceleratedCompositingEnabled()) {
+    if (!webViewImpl()->page()->settings().acceleratedCompositingEnabled()) {
         if (errorString)
             *errorString = "Compositing mode is not supported";
         return false;

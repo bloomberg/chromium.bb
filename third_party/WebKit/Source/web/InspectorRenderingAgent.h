@@ -10,6 +10,7 @@
 
 namespace blink {
 
+class WebLocalFrameImpl;
 class WebViewImpl;
 
 using ErrorString = String;
@@ -17,7 +18,7 @@ using ErrorString = String;
 class InspectorRenderingAgent final : public InspectorBaseAgent<InspectorRenderingAgent, InspectorFrontend::Rendering>, public InspectorBackendDispatcher::RenderingCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorRenderingAgent);
 public:
-    static PassOwnPtrWillBeRawPtr<InspectorRenderingAgent> create(WebViewImpl*);
+    static PassOwnPtrWillBeRawPtr<InspectorRenderingAgent> create(WebLocalFrameImpl*);
 
     // InspectorBackendDispatcher::PageCommandHandler implementation.
     void setShowPaintRects(ErrorString*, bool show) override;
@@ -32,10 +33,11 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    explicit InspectorRenderingAgent(WebViewImpl*);
+    explicit InspectorRenderingAgent(WebLocalFrameImpl*);
     bool compositingEnabled(ErrorString*);
+    WebViewImpl* webViewImpl();
 
-    WebViewImpl* m_webViewImpl;
+    WebLocalFrameImpl* m_webLocalFrameImpl;
 };
 
 
