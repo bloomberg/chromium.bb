@@ -8,8 +8,6 @@ from __future__ import print_function
 
 import os
 
-from chromite.lib import cros_build_lib
-from chromite.lib import project_sdk
 from chromite.lib import workspace_lib
 
 
@@ -21,7 +19,7 @@ SDK_CHECKOUTS = 'sdk_checkouts'
 BOOTSTRAP_PATH_ENV = 'BRILLO_BOOTSTRAP_PATH'
 
 
-def FindBootstrapPath(save_to_env=False):
+def FindBootstrapPath(_save_to_env=False):
   """Find the bootstrap directory.
 
   This is only possible, if the process was initially launched from a bootstrap
@@ -34,30 +32,7 @@ def FindBootstrapPath(save_to_env=False):
   Returns:
    Path to root of bootstrap, or None.
   """
-  # We never have access to bootstrap if we are inside the chroot.
-  if cros_build_lib.IsInsideChroot():
-    return None
-
-  # See if the path has already been determined, especially in a parent wrapper
-  # process.
-  env_path = os.environ.get(BOOTSTRAP_PATH_ENV)
-  if env_path:
-    return env_path
-
-  # Base the bootstrap location on our current location, and remember it.
-  new_path = os.path.realpath(os.path.join(
-      os.path.abspath(__file__), '..', '..'))
-
-  # No repo checkout is a valid bootstrap environment, because the bootstrap
-  # environment holds repo checkouts inside SDK_CHECKOUTS, and repos cannot
-  # exist inside other repos.
-  if project_sdk.FindRepoRoot(new_path):
-    return None
-
-  if save_to_env:
-    os.environ[BOOTSTRAP_PATH_ENV] = new_path
-
-  return new_path
+  return None
 
 
 def ComputeSdkPath(bootstrap_path, version):
