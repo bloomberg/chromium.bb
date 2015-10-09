@@ -33,11 +33,10 @@ void ShowSettingsApiBubble(SettingsApiOverrideType type,
   if (!settings_api_bubble->ShouldShow())
     return;
 
-  SettingsApiBubbleController* controller = settings_api_bubble.get();
-  ExtensionMessageBubbleView* bubble_delegate = new ExtensionMessageBubbleView(
+  ExtensionMessageBubbleView* bubble = new ExtensionMessageBubbleView(
       anchor_view, arrow, settings_api_bubble.Pass());
-  views::BubbleDelegateView::CreateBubble(bubble_delegate);
-  controller->Show(bubble_delegate);
+  views::BubbleDelegateView::CreateBubble(bubble);
+  bubble->Show();
 }
 
 }  // namespace
@@ -104,14 +103,13 @@ void MaybeShowExtensionControlledNewTabPage(
   if (!ntp_overridden_bubble->ShouldShow())
     return;
 
-  NtpOverriddenBubbleController* controller = ntp_overridden_bubble.get();
-  ExtensionMessageBubbleView* bubble_delegate = new ExtensionMessageBubbleView(
+  ExtensionMessageBubbleView* bubble = new ExtensionMessageBubbleView(
       BrowserView::GetBrowserViewForBrowser(browser)
           ->toolbar()
           ->app_menu_button(),
       views::BubbleBorder::TOP_RIGHT, ntp_overridden_bubble.Pass());
-  views::BubbleDelegateView::CreateBubble(bubble_delegate);
-  controller->Show(bubble_delegate);
+  views::BubbleDelegateView::CreateBubble(bubble);
+  bubble->Show();
 }
 
 }  // namespace extensions

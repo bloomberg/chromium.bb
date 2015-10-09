@@ -344,8 +344,6 @@ void BrowserActionsContainer::ShowExtensionMessageBubble(
                 ->toolbar()
                 ->app_menu_button();
 
-  extensions::ExtensionMessageBubbleController* weak_controller =
-      controller.get();
   extensions::ExtensionMessageBubbleView* bubble =
       new extensions::ExtensionMessageBubbleView(
           reference_view,
@@ -354,7 +352,7 @@ void BrowserActionsContainer::ShowExtensionMessageBubble(
   views::BubbleDelegateView::CreateBubble(bubble);
   active_bubble_ = bubble;
   active_bubble_->GetWidget()->AddObserver(this);
-  weak_controller->Show(bubble);
+  bubble->Show();
 }
 
 void BrowserActionsContainer::OnWidgetClosing(views::Widget* widget) {

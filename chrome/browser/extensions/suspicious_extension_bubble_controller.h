@@ -21,9 +21,6 @@ class SuspiciousExtensionBubbleController
   explicit SuspiciousExtensionBubbleController(Browser* browser);
   ~SuspiciousExtensionBubbleController() override;
 
-  // ExtensionMessageBubbleController:
-  void Show(ExtensionMessageBubble* bubble) override;
-
  private:
   DISALLOW_COPY_AND_ASSIGN(SuspiciousExtensionBubbleController);
 };

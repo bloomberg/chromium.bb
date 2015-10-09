@@ -22,9 +22,6 @@ class DevModeBubbleController : public ExtensionMessageBubbleController {
   explicit DevModeBubbleController(Browser* browser);
   ~DevModeBubbleController() override;
 
-  // ExtensionMessageBubbleController:
-  void Show(ExtensionMessageBubble* bubble) override;
-
  private:
   DISALLOW_COPY_AND_ASSIGN(DevModeBubbleController);
 };

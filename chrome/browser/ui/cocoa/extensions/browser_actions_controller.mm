@@ -277,21 +277,22 @@ int ToolbarActionsBarBridge::GetChevronWidth() const {
 }
 
 void ToolbarActionsBarBridge::ShowExtensionMessageBubble(
-    scoped_ptr<extensions::ExtensionMessageBubbleController> controller,
+    scoped_ptr<extensions::ExtensionMessageBubbleController> bubble_controller,
     ToolbarActionViewController* anchor_action) {
   // This goop is a by-product of needing to wire together abstract classes,
   // C++/Cocoa bridges, and ExtensionMessageBubbleController's somewhat strange
   // Show() interface. It's ugly, but it's pretty confined, so it's probably
   // okay (but if we ever need to expand, it might need to be reconsidered).
+  extensions::ExtensionMessageBubbleController* weak_controller =
+      bubble_controller.get();
   scoped_ptr<ExtensionMessageBubbleBridge> bridge(
-      new ExtensionMessageBubbleBridge(controller.Pass(),
+      new ExtensionMessageBubbleBridge(bubble_controller.Pass(),
                                        anchor_action != nullptr));
-  ExtensionMessageBubbleBridge* weak_bridge = bridge.get();
   ToolbarActionsBarBubbleMac* bubble =
       [controller_ createMessageBubble:bridge.Pass()
                           anchorToSelf:anchor_action != nil];
-  weak_bridge->SetBubble(bubble);
-  weak_bridge->controller()->Show(weak_bridge);
+  weak_controller->OnShown();
+  [bubble showWindow:nil];
 }
 
 }  // namespace

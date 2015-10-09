@@ -40,8 +40,10 @@ void CheckBubbleAndReferenceView(views::BubbleDelegateView* bubble,
   EXPECT_FALSE(bubble_bounds.x() > reference_bounds.right());
   EXPECT_FALSE(reference_bounds.x() > bubble_bounds.right());
 
-  // And, of course, the bubble should be visible.
+  // And, of course, the bubble should be visible...
   EXPECT_TRUE(bubble->visible());
+  // ... as should its Widget.
+  EXPECT_TRUE(bubble->GetWidget()->IsVisible());
 }
 
 }  // namespace
@@ -49,7 +51,10 @@ void CheckBubbleAndReferenceView(views::BubbleDelegateView* bubble,
 class ExtensionMessageBubbleViewBrowserTest
     : public ExtensionMessageBubbleBrowserTest {
  protected:
-  ExtensionMessageBubbleViewBrowserTest() {}
+  ExtensionMessageBubbleViewBrowserTest() {
+    extensions::ExtensionMessageBubbleView::
+        set_bubble_appearance_wait_time_for_testing(0);
+  }
   ~ExtensionMessageBubbleViewBrowserTest() override {}
 
  private:

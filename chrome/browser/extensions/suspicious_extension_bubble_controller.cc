@@ -7,7 +7,6 @@
 #include "base/lazy_instance.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/extensions/extension_message_bubble.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -183,11 +182,6 @@ SuspiciousExtensionBubbleController::SuspiciousExtensionBubbleController(
           browser) {}
 
 SuspiciousExtensionBubbleController::~SuspiciousExtensionBubbleController() {
-}
-
-void SuspiciousExtensionBubbleController::Show(ExtensionMessageBubble* bubble) {
-  g_shown_for_profiles.Get().insert(profile()->GetOriginalProfile());
-  ExtensionMessageBubbleController::Show(bubble);
 }
 
 }  // namespace extensions

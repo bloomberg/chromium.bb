@@ -11,22 +11,10 @@ ExtensionMessageBubbleBridge::ExtensionMessageBubbleBridge(
     scoped_ptr<extensions::ExtensionMessageBubbleController> controller,
     bool anchored_to_extension)
     : controller_(controller.Pass()),
-      anchored_to_extension_(anchored_to_extension),
-      bubble_(nil) {
+      anchored_to_extension_(anchored_to_extension) {
 }
 
 ExtensionMessageBubbleBridge::~ExtensionMessageBubbleBridge() {
-}
-
-void ExtensionMessageBubbleBridge::SetBubble(
-    ToolbarActionsBarBubbleMac* bubble) {
-  DCHECK(!bubble_);
-  bubble_ = bubble;
-}
-
-void ExtensionMessageBubbleBridge::Show() {
-  DCHECK(bubble_);
-  [bubble_ showWindow:nil];
 }
 
 base::string16 ExtensionMessageBubbleBridge::GetHeadingText() {

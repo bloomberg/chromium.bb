@@ -7,7 +7,6 @@
 #include "base/lazy_instance.h"
 #include "base/metrics/histogram.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
-#include "chrome/browser/extensions/extension_message_bubble.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -154,11 +153,6 @@ DevModeBubbleController::DevModeBubbleController(Browser* browser)
           new DevModeBubbleDelegate(browser->profile()), browser) {}
 
 DevModeBubbleController::~DevModeBubbleController() {
-}
-
-void DevModeBubbleController::Show(ExtensionMessageBubble* bubble) {
-  g_shown_for_profiles.Get().insert(profile()->GetOriginalProfile());
-  ExtensionMessageBubbleController::Show(bubble);
 }
 
 }  // namespace extensions

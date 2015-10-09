@@ -9,7 +9,6 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/dev_mode_bubble_controller.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
-#include "chrome/browser/extensions/extension_message_bubble.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/ntp_overridden_bubble_controller.h"
 #include "chrome/browser/extensions/proxy_overridden_bubble_controller.h"
@@ -199,7 +198,7 @@ class TestProxyOverriddenBubbleController
 // A fake bubble used for testing the controller. Takes an action that specifies
 // what should happen when the bubble is "shown" (the bubble is actually not
 // shown, the corresponding action is taken immediately).
-class FakeExtensionMessageBubble : public ExtensionMessageBubble {
+class FakeExtensionMessageBubble {
  public:
   enum ExtensionBubbleAction {
     BUBBLE_ACTION_CLICK_ACTION_BUTTON = 0,
@@ -216,7 +215,8 @@ class FakeExtensionMessageBubble : public ExtensionMessageBubble {
     controller_ = controller;
   }
 
-  void Show() override {
+  void Show() {
+    controller_->OnShown();
     if (action_ == BUBBLE_ACTION_CLICK_ACTION_BUTTON)
       controller_->OnBubbleAction();
     else if (action_ == BUBBLE_ACTION_CLICK_DISMISS_BUTTON)
@@ -459,7 +459,7 @@ TEST_F(ExtensionMessageBubbleTest, WipeoutControllerTest) {
   ASSERT_EQ(1U, suspicious_extensions.size());
   EXPECT_TRUE(base::ASCIIToUTF16("Extension 1") == suspicious_extensions[0]);
   bubble.set_controller(controller.get());
-  controller->Show(&bubble);  // Simulate showing the bubble.
+  bubble.Show();  // Simulate showing the bubble.
   EXPECT_EQ(0U, controller->link_click_count());
   EXPECT_EQ(1U, controller->dismiss_click_count());
   // Now the acknowledge flag should be set only for the first extension.
@@ -483,7 +483,7 @@ TEST_F(ExtensionMessageBubbleTest, WipeoutControllerTest) {
   EXPECT_TRUE(base::ASCIIToUTF16("Extension 1") == suspicious_extensions[1]);
   EXPECT_TRUE(base::ASCIIToUTF16("Extension 2") == suspicious_extensions[0]);
   bubble.set_controller(controller.get());
-  controller->Show(&bubble);  // Simulate showing the bubble.
+  bubble.Show();  // Simulate showing the bubble.
   EXPECT_EQ(1U, controller->link_click_count());
   EXPECT_EQ(0U, controller->dismiss_click_count());
   EXPECT_TRUE(controller->delegate()->HasBubbleInfoBeenAcknowledged(kId1));
@@ -521,7 +521,7 @@ TEST_F(ExtensionMessageBubbleTest, DevModeControllerTest) {
   bubble.set_action_on_show(
       FakeExtensionMessageBubble::BUBBLE_ACTION_CLICK_DISMISS_BUTTON);
   bubble.set_controller(controller.get());
-  controller->Show(&bubble);
+  bubble.Show();
   EXPECT_EQ(0U, controller->link_click_count());
   EXPECT_EQ(0U, controller->action_click_count());
   EXPECT_EQ(1U, controller->dismiss_click_count());
@@ -539,7 +539,7 @@ TEST_F(ExtensionMessageBubbleTest, DevModeControllerTest) {
   dev_mode_extensions = controller->GetExtensionList();
   EXPECT_EQ(2U, dev_mode_extensions.size());
   bubble.set_controller(controller.get());
-  controller->Show(&bubble);  // Simulate showing the bubble.
+  bubble.Show();  // Simulate showing the bubble.
   EXPECT_EQ(0U, controller->link_click_count());
   EXPECT_EQ(1U, controller->action_click_count());
   EXPECT_EQ(0U, controller->dismiss_click_count());
@@ -560,7 +560,7 @@ TEST_F(ExtensionMessageBubbleTest, DevModeControllerTest) {
   dev_mode_extensions = controller->GetExtensionList();
   EXPECT_EQ(2U, dev_mode_extensions.size());
   bubble.set_controller(controller.get());
-  controller->Show(&bubble);  // Simulate showing the bubble.
+  bubble.Show();  // Simulate showing the bubble.
   EXPECT_EQ(1U, controller->link_click_count());
   EXPECT_EQ(0U, controller->action_click_count());
   EXPECT_EQ(0U, controller->dismiss_click_count());
@@ -642,7 +642,7 @@ TEST_F(ExtensionMessageBubbleTest, MAYBE_SettingsApiControllerTest) {
     bubble.set_action_on_show(
         FakeExtensionMessageBubble::BUBBLE_ACTION_CLICK_DISMISS_BUTTON);
     bubble.set_controller(controller.get());
-    controller->Show(&bubble);
+    bubble.Show();
     EXPECT_EQ(0U, controller->link_click_count());
     EXPECT_EQ(0U, controller->action_click_count());
     EXPECT_EQ(1U, controller->dismiss_click_count());
@@ -664,7 +664,7 @@ TEST_F(ExtensionMessageBubbleTest, MAYBE_SettingsApiControllerTest) {
     controller.reset(new TestSettingsApiBubbleController(
         browser(), static_cast<SettingsApiOverrideType>(i)));
     bubble.set_controller(controller.get());
-    controller->Show(&bubble);
+    bubble.Show();
     EXPECT_EQ(1U, controller->link_click_count());
     EXPECT_EQ(0U, controller->action_click_count());
     EXPECT_EQ(0U, controller->dismiss_click_count());
@@ -688,7 +688,7 @@ TEST_F(ExtensionMessageBubbleTest, MAYBE_SettingsApiControllerTest) {
     override_extensions = controller->GetExtensionList();
     EXPECT_EQ(1U, override_extensions.size());
     bubble.set_controller(controller.get());
-    controller->Show(&bubble);  // Simulate showing the bubble.
+    bubble.Show();  // Simulate showing the bubble.
     EXPECT_EQ(0U, controller->link_click_count());
     EXPECT_EQ(1U, controller->action_click_count());
     EXPECT_EQ(0U, controller->dismiss_click_count());
@@ -748,7 +748,7 @@ TEST_F(ExtensionMessageBubbleTest, NtpOverriddenControllerTest) {
       FakeExtensionMessageBubble::BUBBLE_ACTION_CLICK_DISMISS_BUTTON);
   EXPECT_TRUE(controller->ShouldShow());
   bubble.set_controller(controller.get());
-  controller->Show(&bubble);
+  bubble.Show();
   EXPECT_EQ(0U, controller->link_click_count());
   EXPECT_EQ(0U, controller->action_click_count());
   EXPECT_EQ(1U, controller->dismiss_click_count());
@@ -770,7 +770,7 @@ TEST_F(ExtensionMessageBubbleTest, NtpOverriddenControllerTest) {
   controller.reset(new TestNtpOverriddenBubbleController(browser()));
   EXPECT_TRUE(controller->ShouldShow());
   bubble.set_controller(controller.get());
-  controller->Show(&bubble);
+  bubble.Show();
   EXPECT_EQ(1U, controller->link_click_count());
   EXPECT_EQ(0U, controller->action_click_count());
   EXPECT_EQ(0U, controller->dismiss_click_count());
@@ -793,7 +793,7 @@ TEST_F(ExtensionMessageBubbleTest, NtpOverriddenControllerTest) {
   override_extensions = controller->GetExtensionList();
   EXPECT_EQ(1U, override_extensions.size());
   bubble.set_controller(controller.get());
-  controller->Show(&bubble);  // Simulate showing the bubble.
+  bubble.Show();  // Simulate showing the bubble.
   EXPECT_EQ(0U, controller->link_click_count());
   EXPECT_EQ(1U, controller->action_click_count());
   EXPECT_EQ(0U, controller->dismiss_click_count());
@@ -881,7 +881,7 @@ TEST_F(ExtensionMessageBubbleTest, MAYBE_ProxyOverriddenControllerTest) {
   bubble.set_action_on_show(
       FakeExtensionMessageBubble::BUBBLE_ACTION_CLICK_DISMISS_BUTTON);
   bubble.set_controller(controller.get());
-  controller->Show(&bubble);
+  bubble.Show();
   EXPECT_EQ(0U, controller->link_click_count());
   EXPECT_EQ(0U, controller->action_click_count());
   EXPECT_EQ(1U, controller->dismiss_click_count());
@@ -903,7 +903,7 @@ TEST_F(ExtensionMessageBubbleTest, MAYBE_ProxyOverriddenControllerTest) {
   controller.reset(new TestProxyOverriddenBubbleController(browser()));
   EXPECT_TRUE(controller->ShouldShow());
   bubble.set_controller(controller.get());
-  controller->Show(&bubble);
+  bubble.Show();
   EXPECT_EQ(1U, controller->link_click_count());
   EXPECT_EQ(0U, controller->action_click_count());
   EXPECT_EQ(0U, controller->dismiss_click_count());
@@ -926,7 +926,7 @@ TEST_F(ExtensionMessageBubbleTest, MAYBE_ProxyOverriddenControllerTest) {
   override_extensions = controller->GetExtensionList();
   EXPECT_EQ(1U, override_extensions.size());
   bubble.set_controller(controller.get());
-  controller->Show(&bubble);  // Simulate showing the bubble.
+  bubble.Show();  // Simulate showing the bubble.
   EXPECT_EQ(0U, controller->link_click_count());
   EXPECT_EQ(1U, controller->action_click_count());
   EXPECT_EQ(0U, controller->dismiss_click_count());

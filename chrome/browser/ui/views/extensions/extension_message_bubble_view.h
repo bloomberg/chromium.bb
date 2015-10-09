@@ -7,7 +7,6 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/extensions/extension_message_bubble.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/link_listener.h"
@@ -26,8 +25,7 @@ class ExtensionMessageBubbleController;
 
 // This is a class that implements the UI for the bubble showing which
 // extensions look suspicious and have therefore been automatically disabled.
-class ExtensionMessageBubbleView : public ExtensionMessageBubble,
-                                   public views::BubbleDelegateView,
+class ExtensionMessageBubbleView : public views::BubbleDelegateView,
                                    public views::ButtonListener,
                                    public views::LinkListener {
  public:
@@ -36,11 +34,13 @@ class ExtensionMessageBubbleView : public ExtensionMessageBubble,
       views::BubbleBorder::Arrow arrow_location,
       scoped_ptr<ExtensionMessageBubbleController> controller);
 
-  // ExtensionMessageBubble methods.
-  void Show() override;
+  // Shows the bubble after a five-second delay.
+  void Show();
 
   // WidgetObserver methods.
   void OnWidgetDestroying(views::Widget* widget) override;
+
+  static void set_bubble_appearance_wait_time_for_testing(int time_in_seconds);
 
  private:
   ~ExtensionMessageBubbleView() override;

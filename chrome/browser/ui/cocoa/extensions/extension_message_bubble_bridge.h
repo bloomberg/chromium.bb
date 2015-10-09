@@ -7,7 +7,6 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/extensions/extension_message_bubble.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar_bubble_delegate.h"
 
 @class ToolbarActionsBarBubbleMac;
@@ -18,24 +17,14 @@ class ExtensionMessageBubbleController;
 
 // A bridge between an ExtensionMessageBubbleController and a
 // ToolbarActionsBarBubble.
-class ExtensionMessageBubbleBridge : public extensions::ExtensionMessageBubble,
-                                     public ToolbarActionsBarBubbleDelegate {
+class ExtensionMessageBubbleBridge : public ToolbarActionsBarBubbleDelegate {
  public:
   ExtensionMessageBubbleBridge(
       scoped_ptr<extensions::ExtensionMessageBubbleController> controller,
       bool anchored_to_extension);
   ~ExtensionMessageBubbleBridge() override;
 
-  void SetBubble(ToolbarActionsBarBubbleMac* bubble);
-
-  extensions::ExtensionMessageBubbleController* controller() {
-    return controller_.get();
-  }
-
  private:
-  // extensions::ExtensionMessageBubble:
-  void Show() override;
-
   // ToolbarActionsBarBubbleDelegate:
   base::string16 GetHeadingText() override;
   base::string16 GetBodyText() override;
@@ -50,8 +39,6 @@ class ExtensionMessageBubbleBridge : public extensions::ExtensionMessageBubble,
 
   // True if the bubble is anchored to an extension action.
   bool anchored_to_extension_;
-
-  ToolbarActionsBarBubbleMac* bubble_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionMessageBubbleBridge);
 };

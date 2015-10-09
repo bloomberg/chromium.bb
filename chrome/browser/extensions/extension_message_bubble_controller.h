@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_MESSAGE_BUBBLE_CONTROLLER_H_
 
 #include <string>
-#include "chrome/browser/extensions/extension_message_bubble.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/common/extension.h"
 
@@ -133,8 +132,9 @@ class ExtensionMessageBubbleController {
   // times.
   void HighlightExtensionsIfNecessary();
 
-  // Sets up the callbacks and shows the bubble.
-  virtual void Show(ExtensionMessageBubble* bubble);
+  // Called when the bubble is actually shown. Because some bubbles are delayed
+  // (in order to weather the "focus storm"), they are not shown immediately.
+  void OnShown();
 
   // Callbacks from bubble. Declared virtual for testing purposes.
   virtual void OnBubbleAction();
