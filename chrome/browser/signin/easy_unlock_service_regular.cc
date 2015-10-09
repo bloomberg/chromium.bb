@@ -287,10 +287,32 @@ void EasyUnlockServiceRegular::SetRemoteBleDevices(
   DCHECK(devices.GetSize() == 1);
   const base::DictionaryValue* dict = nullptr;
   if (devices.GetDictionary(0, &dict)) {
-    std::string address, public_key;
+    std::string address, b64_public_key;
     if (dict->GetString("bluetoothAddress", &address) &&
-        dict->GetString("psk", &public_key)) {
-      GetProximityAuthPrefManager()->AddOrUpdateDevice(address, public_key);
+        dict->GetString("psk", &b64_public_key)) {
+      GetProximityAuthPrefManager()->AddOrUpdateDevice(address, b64_public_key);
+
+      // The setup is done. Load the remote devices if the device with
+      // |public_key| was already sync from CryptAuth, otherwise re-sync the
+      // devices.
+      if (GetCryptAuthDeviceManager()) {
+        std::string public_key;
+        proximity_auth::Base64UrlDecode(b64_public_key, &public_key);
+        const std::vector<cryptauth::ExternalDeviceInfo> unlock_keys =
+            GetCryptAuthDeviceManager()->unlock_keys();
+        auto iterator = std::find_if(
+            unlock_keys.begin(), unlock_keys.end(),
+            [&public_key](const cryptauth::ExternalDeviceInfo& unlock_key) {
+              return unlock_key.public_key() == public_key;
+            });
+
+        if (iterator != unlock_keys.end()) {
+          LoadRemoteDevices();
+        } else {
+          GetCryptAuthDeviceManager()->ForceSyncNow(
+              cryptauth::INVOCATION_REASON_FEATURE_TOGGLED);
+        }
+      }
     } else {
       PA_LOG(ERROR) << "Missing public key or device address";
     }
