@@ -159,9 +159,7 @@ void SVGFEConvolveMatrixElement::svgAttributeChanged(const QualifiedName& attrNa
 PassRefPtrWillBeRawPtr<FilterEffect> SVGFEConvolveMatrixElement::build(SVGFilterBuilder* filterBuilder, Filter* filter)
 {
     FilterEffect* input1 = filterBuilder->getEffectById(AtomicString(m_in1->currentValue()->value()));
-
-    if (!input1)
-        return nullptr;
+    ASSERT(input1);
 
     int orderXValue = orderX()->currentValue()->value();
     int orderYValue = orderY()->currentValue()->value();

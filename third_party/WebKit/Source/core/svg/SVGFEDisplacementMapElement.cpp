@@ -101,9 +101,7 @@ PassRefPtrWillBeRawPtr<FilterEffect> SVGFEDisplacementMapElement::build(SVGFilte
 {
     FilterEffect* input1 = filterBuilder->getEffectById(AtomicString(m_in1->currentValue()->value()));
     FilterEffect* input2 = filterBuilder->getEffectById(AtomicString(m_in2->currentValue()->value()));
-
-    if (!input1 || !input2)
-        return nullptr;
+    ASSERT(input1 && input2);
 
     RefPtrWillBeRawPtr<FilterEffect> effect = FEDisplacementMap::create(filter, m_xChannelSelector->currentValue()->enumValue(), m_yChannelSelector->currentValue()->enumValue(), m_scale->currentValue()->value());
     FilterEffectVector& inputEffects = effect->inputEffects();

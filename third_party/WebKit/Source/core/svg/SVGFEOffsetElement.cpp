@@ -64,9 +64,7 @@ void SVGFEOffsetElement::svgAttributeChanged(const QualifiedName& attrName)
 PassRefPtrWillBeRawPtr<FilterEffect> SVGFEOffsetElement::build(SVGFilterBuilder* filterBuilder, Filter* filter)
 {
     FilterEffect* input1 = filterBuilder->getEffectById(AtomicString(m_in1->currentValue()->value()));
-
-    if (!input1)
-        return nullptr;
+    ASSERT(input1);
 
     RefPtrWillBeRawPtr<FilterEffect> effect = FEOffset::create(filter, m_dx->currentValue()->value(), m_dy->currentValue()->value());
     effect->inputEffects().append(input1);

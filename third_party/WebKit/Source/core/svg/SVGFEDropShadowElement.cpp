@@ -87,8 +87,7 @@ PassRefPtrWillBeRawPtr<FilterEffect> SVGFEDropShadowElement::build(SVGFilterBuil
     float opacity = svgStyle.floodOpacity();
 
     FilterEffect* input1 = filterBuilder->getEffectById(AtomicString(m_in1->currentValue()->value()));
-    if (!input1)
-        return nullptr;
+    ASSERT(input1);
 
     // Clamp std.dev. to non-negative. (See SVGFEGaussianBlurElement::build)
     float stdDevX = std::max(0.0f, stdDeviationX()->currentValue()->value());
