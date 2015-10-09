@@ -5573,7 +5573,6 @@ set_maximized_position(struct desktop_shell *shell,
 {
 	int32_t surf_x, surf_y;
 	pixman_rectangle32_t area;
-	pixman_box32_t *e;
 
 	get_output_work_area(shell, shsurf->output, &area);
 	if (shsurf->has_set_geometry) {
@@ -5583,11 +5582,10 @@ set_maximized_position(struct desktop_shell *shell,
 		surface_subsurfaces_boundingbox(shsurf->surface,
 						&surf_x, &surf_y, NULL, NULL);
 	}
-	e = pixman_region32_extents(&shsurf->output->region);
 
 	weston_view_set_position(shsurf->view,
-				 e->x1 + area.x - surf_x,
-				 e->y1 + area.y - surf_y);
+				 area.x - surf_x,
+				 area.y - surf_y);
 }
 
 static void
