@@ -23,11 +23,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// http://w3c.github.io/deviceorientation/spec-source-orientation.html#devicemotion
+
+// TODO(philipj): DeviceMotionEvent should have a constructor.
 interface DeviceMotionEvent : Event {
-    readonly attribute DeviceAcceleration acceleration;
-    readonly attribute DeviceAcceleration accelerationIncludingGravity;
-    readonly attribute DeviceRotationRate rotationRate;
+    readonly attribute DeviceAcceleration? acceleration;
+    readonly attribute DeviceAcceleration? accelerationIncludingGravity;
+    readonly attribute DeviceRotationRate? rotationRate;
     readonly attribute double? interval;
+
+    // TODO(philipj): The init*Event() methods are not in the spec:
+    // https://github.com/w3c/deviceorientation/issues/18
     [Custom, Measure] void initDeviceMotionEvent([Default=Undefined] optional DOMString type,
                                                  [Default=Undefined] optional boolean bubbles,
                                                  [Default=Undefined] optional boolean cancelable,
