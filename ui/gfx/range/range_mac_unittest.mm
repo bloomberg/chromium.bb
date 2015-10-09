@@ -38,6 +38,6 @@ TEST(RangeTest, FromNSRangeInvalid) {
 TEST(RangeTest, ToNSRangeInvalid) {
   gfx::Range r(gfx::Range::InvalidRange());
   NSRange nsr = r.ToNSRange();
-  EXPECT_EQ(NSNotFound, nsr.location);
+  EXPECT_EQ(static_cast<NSUInteger>(NSNotFound), nsr.location);
   EXPECT_EQ(0U, nsr.length);
 }
