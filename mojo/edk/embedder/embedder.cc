@@ -53,6 +53,10 @@ base::TaskRunner* g_delegate_thread_task_runner;
 ProcessDelegate* g_process_delegate;
 base::TaskRunner* g_io_thread_task_runner = nullptr;
 
+Core* GetCore() {
+  return g_core;
+}
+
 void ChannelStarted() {
   DCHECK(g_io_thread_task_runner->RunsTasksOnCurrentThread());
   g_channel_count++;

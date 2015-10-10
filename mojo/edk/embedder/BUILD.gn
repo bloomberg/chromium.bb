@@ -133,7 +133,6 @@ mojo_edk_source_set("embedder_unittests2") {
   deps = [
     "//base",
     "//base/test:test_support",
-    "//mojo/edk/system",
     "//mojo/message_pump",
 
     # TODO(use_chrome_edk): temporary since the Mojo wrapper primitives are
@@ -142,5 +141,9 @@ mojo_edk_source_set("embedder_unittests2") {
     "//mojo/edk/system:test_utils",
     "//mojo/edk/test:test_support",
     "//testing/gtest",
+
+    # TODO(use_chrome_edk): temporary since the Mojo wrapper primitives are
+    # declared in third party only for now.
+    "//third_party/mojo/src/mojo/edk/system",
   ]
 }

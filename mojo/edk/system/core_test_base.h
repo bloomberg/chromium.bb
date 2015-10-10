@@ -33,7 +33,7 @@ class CoreTestBase : public MojoSystemTest {
   // |info| must remain alive until the returned handle is closed.
   MojoHandle CreateMockHandle(MockHandleInfo* info);
 
-  Core* core() { return mojo::edk::internal::g_core; }
+  Core* core();
 
  private:
   MOJO_DISALLOW_COPY_AND_ASSIGN(CoreTestBase);

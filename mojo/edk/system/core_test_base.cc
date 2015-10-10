@@ -180,6 +180,10 @@ MojoHandle CoreTestBase::CreateMockHandle(CoreTestBase::MockHandleInfo* info) {
   return core()->AddDispatcher(dispatcher);
 }
 
+Core* CoreTestBase::core() {
+  return mojo::edk::internal::GetCore();
+}
+
 // CoreTestBase_MockHandleInfo -------------------------------------------------
 
 CoreTestBase_MockHandleInfo::CoreTestBase_MockHandleInfo()

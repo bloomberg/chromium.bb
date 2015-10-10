@@ -21,9 +21,12 @@ mojo_edk_source_set("test_support") {
   deps = [
     "//base",
     "//base/test:test_support",
-    "//mojo/edk/system",
     "//testing/gtest",
     "//third_party/mojo/src/mojo/public/cpp/system",
+
+    # TODO(use_chrome_edk): temporary since the Mojo wrapper primitives are
+    # declared in third party only for now.
+    "//third_party/mojo/src/mojo/edk/system",
   ]
 }
 
@@ -38,7 +41,6 @@ mojo_edk_source_set("run_all_unittests") {
     ":test_support_impl",
     "//base",
     "//base/test:test_support",
-    "//mojo/edk/system",
     "//testing/gtest",
     "//third_party/mojo/src/mojo/public/c/test_support",
 
@@ -54,7 +56,6 @@ mojo_edk_source_set("run_all_perftests") {
     ":test_support_impl",
     "//base",
     "//base/test:test_support",
-    "//mojo/edk/system",
 
     # TODO(use_chrome_edk): temporary since the Mojo wrapper primitives are
     # declared in third party only for now.

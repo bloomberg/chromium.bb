@@ -174,8 +174,8 @@ TEST_F(EmbedderTest, SendMessagePipeWithWriteQueue) {
     std::string write_buffer(i, 'A' + (i % 26));
     ASSERT_EQ(MOJO_RESULT_OK,
               MojoWriteMessage(client_mp2, write_buffer.data(),
-                               write_buffer.size(), nullptr, 0,
-                               MOJO_WRITE_MESSAGE_FLAG_NONE));
+                               static_cast<uint32_t>(write_buffer.size()),
+                               nullptr, 0, MOJO_WRITE_MESSAGE_FLAG_NONE));
   }
 
   // Now send client2.
