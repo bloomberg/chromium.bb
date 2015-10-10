@@ -510,9 +510,9 @@ void LinkStyle::setCSSStyleSheet(const String& href, const KURL& baseURL, const 
         return;
     }
 
-    // See the comment in ScriptLoader.cpp about why this check is necessary
-    // here. https://crbug.com/500701.
-    if (!cachedStyleSheet->errorOccurred() && !SubresourceIntegrity::CheckSubresourceIntegrity(*m_owner, cachedStyleSheet->sheetText(), KURL(baseURL, href), *cachedStyleSheet)) {
+    // See the comment in PendingScript.cpp about why this check is necessary
+    // here, instead of in the resource fetcher. https://crbug.com/500701.
+    if (!cachedStyleSheet->errorOccurred() && cachedStyleSheet->resourceBuffer() && !SubresourceIntegrity::CheckSubresourceIntegrity(*m_owner, cachedStyleSheet->resourceBuffer()->data(), cachedStyleSheet->resourceBuffer()->size(), KURL(baseURL, href), *cachedStyleSheet)) {
         m_loading = false;
         removePendingSheet();
         notifyLoadedSheetAndAllCriticalSubresources(Node::ErrorOccurredLoadingSubresource);

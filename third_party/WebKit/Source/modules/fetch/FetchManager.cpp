@@ -111,7 +111,7 @@ public:
             String errorMessage = "Unknown error occurred while trying to verify integrity.";
             m_finished = true;
             if (r == WebDataConsumerHandle::Done) {
-                if (SubresourceIntegrity::CheckSubresourceIntegrity(m_integrityMetadata, String(m_buffer.data(), m_buffer.size()), m_url, *m_loader->document(), errorMessage)) {
+                if (SubresourceIntegrity::CheckSubresourceIntegrity(m_integrityMetadata, m_buffer.data(), m_buffer.size(), m_url, *m_loader->document(), errorMessage)) {
                     m_updater->update(FetchFormDataConsumerHandle::create(m_buffer.data(), m_buffer.size()));
                     m_loader->m_resolver->resolve(m_response);
                     m_loader->m_resolver.clear();

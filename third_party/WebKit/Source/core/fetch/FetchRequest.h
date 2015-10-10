@@ -91,6 +91,8 @@ public:
     void setCrossOriginAccessControl(SecurityOrigin*, const AtomicString& crossOriginMode);
     OriginRestriction originRestriction() const { return m_originRestriction; }
     void setOriginRestriction(OriginRestriction restriction) { m_originRestriction = restriction; }
+    String integrityMetadata() const { return m_integrityMetadata; }
+    void setIntegrityMetadata(const String& metadata) { m_integrityMetadata = metadata; }
 
 private:
     ResourceRequest m_resourceRequest;
@@ -102,6 +104,7 @@ private:
     OriginRestriction m_originRestriction;
     ResourceWidth m_resourceWidth;
     ClientHintsPreferences m_clientHintPreferences;
+    String m_integrityMetadata;
 };
 
 } // namespace blink

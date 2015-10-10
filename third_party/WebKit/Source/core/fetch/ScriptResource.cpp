@@ -44,7 +44,7 @@ ResourcePtr<ScriptResource> ScriptResource::fetch(FetchRequest& request, Resourc
 }
 
 ScriptResource::ScriptResource(const ResourceRequest& resourceRequest, const String& charset)
-    : TextResource(resourceRequest, Script, "application/javascript", charset)
+    : TextResource(resourceRequest, Script, "application/javascript", charset), m_integrityChecked(false)
 {
     DEFINE_STATIC_LOCAL(const AtomicString, acceptScript, ("*/*", AtomicString::ConstructFromLiteral));
 
@@ -98,6 +98,16 @@ const String& ScriptResource::script()
 bool ScriptResource::mimeTypeAllowedByNosniff() const
 {
     return parseContentTypeOptionsHeader(m_response.httpHeaderField("X-Content-Type-Options")) != ContentTypeOptionsNosniff || MIMETypeRegistry::isSupportedJavaScriptMIMEType(mimeType());
+}
+
+bool ScriptResource::mustRefetchDueToIntegrityMetadata(const FetchRequest& request) const
+{
+    if (!m_integrityChecked || request.integrityMetadata().isEmpty())
+        return false;
+
+    // TODO(jww) this integrity metadata should actually be
+    // normalized so that order doesn't matter.
+    return m_integrityMetadata != request.integrityMetadata();
 }
 
 } // namespace blink

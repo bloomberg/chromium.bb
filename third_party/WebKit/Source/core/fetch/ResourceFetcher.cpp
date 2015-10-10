@@ -57,6 +57,23 @@ using blink::WebURLRequest;
 
 namespace blink {
 
+namespace {
+
+// Events for UMA. Do not reorder or delete. Add new events at the end, but
+// before SriResourceIntegrityMismatchEventCount.
+enum SriResourceIntegrityMismatchEvent {
+    CheckingForIntegrityMismatch = 0,
+    RefetchDueToIntegrityMismatch = 1,
+    SriResourceIntegrityMismatchEventCount
+};
+
+}
+
+static void RecordSriResourceIntegrityMismatchEvent(SriResourceIntegrityMismatchEvent event)
+{
+    Platform::current()->histogramEnumeration("sri.resource_integrity_mismatch_event", event, SriResourceIntegrityMismatchEventCount);
+}
+
 static ResourceLoadPriority typeToPriority(Resource::Type type)
 {
     switch (type) {
@@ -537,6 +554,29 @@ ResourceFetcher::RevalidationPolicy ResourceFetcher::determineRevalidationPolicy
 
     if (!existingResource)
         return Load;
+
+    // Checks if the resource has an explicit policy about integrity metadata.
+    // Currently only applies to ScriptResources.
+    //
+    // This is necessary because ScriptResource objects do not keep the raw
+    // data around after the source is accessed once, so if the resource is
+    // accessed from the MemoryCache for a second time, there is no way to redo
+    // an integrity check.
+    //
+    // Thus, Blink implements a scheme where it caches the integrity
+    // information for a ScriptResource after the first time it is checked, and
+    // if there is another request for that resource, with the same integrity
+    // metadata, Blink skips the integrity calculation. However, if the
+    // integrity metadata is a mismatch, the MemoryCache must be skipped here,
+    // and a new request for the resource must be made to get the raw data.
+    // This is expected to be an uncommon case, however, as it implies two
+    // same-origin requests to the same resource, but with different integrity
+    // metadata.
+    RecordSriResourceIntegrityMismatchEvent(CheckingForIntegrityMismatch);
+    if (existingResource->mustRefetchDueToIntegrityMetadata(fetchRequest)) {
+        RecordSriResourceIntegrityMismatchEvent(RefetchDueToIntegrityMismatch);
+        return Reload;
+    }
 
     // Service Worker's CORS fallback message must not be cached.
     if (existingResource->response().wasFallbackRequiredByServiceWorker())

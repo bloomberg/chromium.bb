@@ -101,7 +101,7 @@ HashAlgorithm SubresourceIntegrity::getPrioritizedHashFunction(HashAlgorithm alg
     return algorithm2;
 }
 
-bool SubresourceIntegrity::CheckSubresourceIntegrity(const Element& element, const String& source, const KURL& resourceUrl, const Resource& resource)
+bool SubresourceIntegrity::CheckSubresourceIntegrity(const Element& element, const char* content, size_t size, const KURL& resourceUrl, const Resource& resource)
 {
     Document& document = element.document();
     String attribute = element.fastGetAttribute(HTMLNames::integrityAttr);
@@ -115,13 +115,13 @@ bool SubresourceIntegrity::CheckSubresourceIntegrity(const Element& element, con
     }
 
     String errorMessage;
-    bool result = CheckSubresourceIntegrity(attribute, source, resourceUrl, document, errorMessage);
+    bool result = CheckSubresourceIntegrity(attribute, content, size, resourceUrl, document, errorMessage);
     if (!result)
         logErrorToConsole(errorMessage, document);
     return result;
 }
 
-bool SubresourceIntegrity::CheckSubresourceIntegrity(const String& integrityMetadata, const WTF::String& source, const KURL& resourceUrl, Document& document, String& errorMessage)
+bool SubresourceIntegrity::CheckSubresourceIntegrity(const String& integrityMetadata, const char* content, size_t size, const KURL& resourceUrl, Document& document, String& errorMessage)
 {
     WTF::Vector<IntegrityMetadata> metadataList;
     IntegrityParseResult integrityParseResult = parseIntegrityAttribute(integrityMetadata, metadataList, document);
@@ -129,8 +129,6 @@ bool SubresourceIntegrity::CheckSubresourceIntegrity(const String& integrityMeta
     // parseIntegrityAttribute() will output an appropriate console message.
     if (integrityParseResult != IntegrityParseValidResult)
         return true;
-
-    StringUTF8Adaptor normalizedSource(source, StringUTF8Adaptor::Normalize, WTF::EntitiesForUnencodables);
 
     if (!metadataList.size())
         return true;
@@ -145,7 +143,7 @@ bool SubresourceIntegrity::CheckSubresourceIntegrity(const String& integrityMeta
             continue;
 
         digest.clear();
-        bool digestSuccess = computeDigest(metadata.algorithm, normalizedSource.data(), normalizedSource.length(), digest);
+        bool digestSuccess = computeDigest(metadata.algorithm, content, size, digest);
 
         if (digestSuccess) {
             Vector<char> hashVector;
@@ -161,7 +159,7 @@ bool SubresourceIntegrity::CheckSubresourceIntegrity(const String& integrityMeta
     }
 
     digest.clear();
-    if (computeDigest(HashAlgorithmSha256, normalizedSource.data(), normalizedSource.length(), digest)) {
+    if (computeDigest(HashAlgorithmSha256, content, size, digest)) {
         // This message exposes the digest of the resource to the console.
         // Because this is only to the console, that's okay for now, but we
         // need to be very careful not to expose this in exceptions or
@@ -174,6 +172,7 @@ bool SubresourceIntegrity::CheckSubresourceIntegrity(const String& integrityMeta
     UseCounter::count(document, UseCounter::SRIElementWithNonMatchingIntegrityAttribute);
     return false;
 }
+
 
 // Before:
 //

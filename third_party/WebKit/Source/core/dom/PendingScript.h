@@ -88,6 +88,7 @@ private:
     bool m_watchingForLoad;
     RefPtrWillBeMember<Element> m_element;
     TextPosition m_startingPosition; // Only used for inline script tags.
+    bool m_integrityFailure;
 
     RefPtrWillBeMember<ScriptStreamer> m_streamer;
 };

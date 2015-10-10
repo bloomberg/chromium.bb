@@ -43591,6 +43591,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Error codes returned by sqlite the web db.</summary>
 </histogram>
 
+<histogram name="sri.resource_integrity_mismatch_event"
+    enum="SRIResourceIntegrityMismatchEvent">
+  <owner>jww@chromium.org</owner>
+  <summary>
+    When resources are checked for mismatching integrity and whether the
+    mismatch forces a refetch.
+  </summary>
+</histogram>
+
 <histogram name="SSL.InsecureContent" enum="InsecureContentType">
   <owner>lgarron@chromium.org</owner>
   <summary>
@@ -71987,6 +71996,11 @@ To add a new entry, add it with any value and run test to compute valid value.
   </int>
   <int value="4" label="DEPRECATION_RAZED">Raze succeeded.</int>
   <int value="5" label="DEPRECATION_RAZE_FAILED">Raze failed.</int>
+</enum>
+
+<enum name="SRIResourceIntegrityMismatchEvent" type="int">
+  <int value="0" label="CHECKING_FOR_INTEGRITY_MISMATCH"/>
+  <int value="1" label="REFETCH_DUE_TO_INTEGRITY_MISMATCH"/>
 </enum>
 
 <enum name="SRTCompleted" type="int">

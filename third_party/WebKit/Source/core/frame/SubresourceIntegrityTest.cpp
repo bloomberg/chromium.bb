@@ -151,16 +151,16 @@ protected:
         NoCors
     };
 
-    void expectIntegrity(const char* integrity, const char* script, const KURL& url, const KURL& requestorUrl, CorsStatus corsStatus = WithCors)
+    void expectIntegrity(const char* integrity, const char* script, size_t size, const KURL& url, const KURL& requestorUrl, CorsStatus corsStatus = WithCors)
     {
         scriptElement->setAttribute(HTMLNames::integrityAttr, integrity);
-        EXPECT_TRUE(SubresourceIntegrity::CheckSubresourceIntegrity(*scriptElement, script, url, *createTestResource(url, requestorUrl, corsStatus).get()));
+        EXPECT_TRUE(SubresourceIntegrity::CheckSubresourceIntegrity(*scriptElement, script, size, url, *createTestResource(url, requestorUrl, corsStatus).get()));
     }
 
-    void expectIntegrityFailure(const char* integrity, const char* script, const KURL& url, const KURL& requestorUrl, CorsStatus corsStatus = WithCors)
+    void expectIntegrityFailure(const char* integrity, const char* script, size_t size, const KURL& url, const KURL& requestorUrl, CorsStatus corsStatus = WithCors)
     {
         scriptElement->setAttribute(HTMLNames::integrityAttr, integrity);
-        EXPECT_FALSE(SubresourceIntegrity::CheckSubresourceIntegrity(*scriptElement, script, url, *createTestResource(url, requestorUrl, corsStatus).get()));
+        EXPECT_FALSE(SubresourceIntegrity::CheckSubresourceIntegrity(*scriptElement, script, size, url, *createTestResource(url, requestorUrl, corsStatus).get()));
     }
 
     ResourcePtr<Resource> createTestResource(const KURL& url, const KURL& allowOriginUrl, CorsStatus corsStatus)
@@ -392,35 +392,35 @@ TEST_F(SubresourceIntegrityTest, CheckSubresourceIntegrityInSecureOrigin)
     document->updateSecurityOrigin(secureOrigin->isolatedCopy());
 
     // Verify basic sha256, sha384, and sha512 integrity checks.
-    expectIntegrity(kSha256Integrity, kBasicScript, secureURL, secureURL);
-    expectIntegrity(kSha256IntegrityLenientSyntax, kBasicScript, secureURL, secureURL);
-    expectIntegrity(kSha384Integrity, kBasicScript, secureURL, secureURL);
-    expectIntegrity(kSha512Integrity, kBasicScript, secureURL, secureURL);
+    expectIntegrity(kSha256Integrity, kBasicScript, strlen(kBasicScript), secureURL, secureURL);
+    expectIntegrity(kSha256IntegrityLenientSyntax, kBasicScript, strlen(kBasicScript), secureURL, secureURL);
+    expectIntegrity(kSha384Integrity, kBasicScript, strlen(kBasicScript), secureURL, secureURL);
+    expectIntegrity(kSha512Integrity, kBasicScript, strlen(kBasicScript), secureURL, secureURL);
 
     // Verify multiple hashes in an attribute.
-    expectIntegrity(kSha256AndSha384Integrities, kBasicScript, secureURL, secureURL);
-    expectIntegrity(kBadSha256AndGoodSha384Integrities, kBasicScript, secureURL, secureURL);
+    expectIntegrity(kSha256AndSha384Integrities, kBasicScript, strlen(kBasicScript), secureURL, secureURL);
+    expectIntegrity(kBadSha256AndGoodSha384Integrities, kBasicScript, strlen(kBasicScript), secureURL, secureURL);
 
     // The hash label must match the hash value.
-    expectIntegrityFailure(kSha384IntegrityLabeledAs256, kBasicScript, secureURL, secureURL);
+    expectIntegrityFailure(kSha384IntegrityLabeledAs256, kBasicScript, strlen(kBasicScript), secureURL, secureURL);
 
     // With multiple values, at least one must match, and it must be the
     // strongest hash algorithm.
-    expectIntegrityFailure(kGoodSha256AndBadSha384Integrities, kBasicScript, secureURL, secureURL);
-    expectIntegrityFailure(kBadSha256AndBadSha384Integrities, kBasicScript, secureURL, secureURL);
+    expectIntegrityFailure(kGoodSha256AndBadSha384Integrities, kBasicScript, strlen(kBasicScript), secureURL, secureURL);
+    expectIntegrityFailure(kBadSha256AndBadSha384Integrities, kBasicScript, strlen(kBasicScript), secureURL, secureURL);
 
     // Unsupported hash functions should succeed.
-    expectIntegrity(kUnsupportedHashFunctionIntegrity, kBasicScript, secureURL, secureURL);
+    expectIntegrity(kUnsupportedHashFunctionIntegrity, kBasicScript, strlen(kBasicScript), secureURL, secureURL);
 
     // All parameters are fine, and because this is not cross origin, CORS is
     // not needed.
-    expectIntegrity(kSha256Integrity, kBasicScript, secureURL, secureURL, NoCors);
+    expectIntegrity(kSha256Integrity, kBasicScript, strlen(kBasicScript), secureURL, secureURL, NoCors);
 
     // Options should be ignored
-    expectIntegrity(kSha256IntegrityWithEmptyOption, kBasicScript, secureURL, secureURL, NoCors);
-    expectIntegrity(kSha256IntegrityWithOption, kBasicScript, secureURL, secureURL, NoCors);
-    expectIntegrity(kSha256IntegrityWithOptions, kBasicScript, secureURL, secureURL, NoCors);
-    expectIntegrity(kSha256IntegrityWithMimeOption, kBasicScript, secureURL, secureURL, NoCors);
+    expectIntegrity(kSha256IntegrityWithEmptyOption, kBasicScript, strlen(kBasicScript), secureURL, secureURL, NoCors);
+    expectIntegrity(kSha256IntegrityWithOption, kBasicScript, strlen(kBasicScript), secureURL, secureURL, NoCors);
+    expectIntegrity(kSha256IntegrityWithOptions, kBasicScript, strlen(kBasicScript), secureURL, secureURL, NoCors);
+    expectIntegrity(kSha256IntegrityWithMimeOption, kBasicScript, strlen(kBasicScript), secureURL, secureURL, NoCors);
 }
 
 TEST_F(SubresourceIntegrityTest, CheckSubresourceIntegrityInInsecureOrigin)
@@ -429,18 +429,18 @@ TEST_F(SubresourceIntegrityTest, CheckSubresourceIntegrityInInsecureOrigin)
     // here, with the expection of the NoCors check at the end.
     document->updateSecurityOrigin(insecureOrigin->isolatedCopy());
 
-    expectIntegrity(kSha256Integrity, kBasicScript, secureURL, insecureURL);
-    expectIntegrity(kSha256IntegrityLenientSyntax, kBasicScript, secureURL, insecureURL);
-    expectIntegrity(kSha384Integrity, kBasicScript, secureURL, insecureURL);
-    expectIntegrity(kSha512Integrity, kBasicScript, secureURL, insecureURL);
-    expectIntegrityFailure(kSha384IntegrityLabeledAs256, kBasicScript, secureURL, insecureURL);
-    expectIntegrity(kUnsupportedHashFunctionIntegrity, kBasicScript, secureURL, insecureURL);
+    expectIntegrity(kSha256Integrity, kBasicScript, strlen(kBasicScript), secureURL, insecureURL);
+    expectIntegrity(kSha256IntegrityLenientSyntax, kBasicScript, strlen(kBasicScript), secureURL, insecureURL);
+    expectIntegrity(kSha384Integrity, kBasicScript, strlen(kBasicScript), secureURL, insecureURL);
+    expectIntegrity(kSha512Integrity, kBasicScript, strlen(kBasicScript), secureURL, insecureURL);
+    expectIntegrityFailure(kSha384IntegrityLabeledAs256, kBasicScript, strlen(kBasicScript), secureURL, insecureURL);
+    expectIntegrity(kUnsupportedHashFunctionIntegrity, kBasicScript, strlen(kBasicScript), secureURL, insecureURL);
 
-    expectIntegrity(kSha256AndSha384Integrities, kBasicScript, secureURL, insecureURL);
-    expectIntegrity(kBadSha256AndGoodSha384Integrities, kBasicScript, secureURL, insecureURL);
+    expectIntegrity(kSha256AndSha384Integrities, kBasicScript, strlen(kBasicScript), secureURL, insecureURL);
+    expectIntegrity(kBadSha256AndGoodSha384Integrities, kBasicScript, strlen(kBasicScript), secureURL, insecureURL);
 
-    expectIntegrityFailure(kSha256Integrity, kBasicScript, secureURL, insecureURL, NoCors);
-    expectIntegrityFailure(kGoodSha256AndBadSha384Integrities, kBasicScript, secureURL, insecureURL);
+    expectIntegrityFailure(kSha256Integrity, kBasicScript, strlen(kBasicScript), secureURL, insecureURL, NoCors);
+    expectIntegrityFailure(kGoodSha256AndBadSha384Integrities, kBasicScript, strlen(kBasicScript), secureURL, insecureURL);
 }
 
 } // namespace blink

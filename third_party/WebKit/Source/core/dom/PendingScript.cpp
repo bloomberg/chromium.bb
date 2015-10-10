@@ -30,18 +30,22 @@
 #include "bindings/core/v8/ScriptStreamer.h"
 #include "core/dom/Element.h"
 #include "core/fetch/ScriptResource.h"
+#include "core/frame/SubresourceIntegrity.h"
+#include "platform/SharedBuffer.h"
 
 namespace blink {
 
 PendingScript::PendingScript()
     : m_watchingForLoad(false)
     , m_startingPosition(TextPosition::belowRangePosition())
+    , m_integrityFailure(false)
 {
 }
 
 PendingScript::PendingScript(Element* element, ScriptResource* resource)
     : m_watchingForLoad(false)
     , m_element(element)
+    , m_integrityFailure(false)
 {
     setScriptResource(resource);
 }
@@ -51,6 +55,7 @@ PendingScript::PendingScript(const PendingScript& other)
     , m_watchingForLoad(other.m_watchingForLoad)
     , m_element(other.m_element)
     , m_startingPosition(other.m_startingPosition)
+    , m_integrityFailure(other.m_integrityFailure)
     , m_streamer(other.m_streamer)
 {
     setScriptResource(other.resource());
@@ -68,6 +73,7 @@ PendingScript& PendingScript::operator=(const PendingScript& other)
     m_watchingForLoad = other.m_watchingForLoad;
     m_element = other.m_element;
     m_startingPosition = other.m_startingPosition;
+    m_integrityFailure = other.m_integrityFailure;
     m_streamer = other.m_streamer;
     this->ResourceOwner<ScriptResource, ScriptResourceClient>::operator=(other);
     return *this;
@@ -125,6 +131,44 @@ void PendingScript::setScriptResource(ScriptResource* resource)
 
 void PendingScript::notifyFinished(Resource* resource)
 {
+    // The following SRI checks need to be here because, unfortunately, fetches
+    // are not done purely according to the Fetch spec. In particular,
+    // different requests for the same resource do not have different
+    // responses; the memory cache can (and will) return the exact same
+    // Resource object.
+    //
+    // For different requests, the same Resource object will be returned and
+    // will not be associated with the particular request.  Therefore, when the
+    // body of the response comes in, there's no way to validate the integrity
+    // of the Resource object against a particular request (since there may be
+    // several pending requests all tied to the identical object, and the
+    // actual requests are not stored).
+    //
+    // In order to simulate the correct behavior, Blink explicitly does the SRI
+    // checks here, when a PendingScript tied to a particular request is
+    // finished (and in the case of a StyleSheet, at the point of execution),
+    // while having proper Fetch checks in the fetch module for use in the
+    // fetch JavaScript API. In a future world where the ResourceFetcher uses
+    // the Fetch algorithm, this should be fixed by having separate Response
+    // objects (perhaps attached to identical Resource objects) per request.
+    //
+    // See https://crbug.com/500701 for more information.
+    if (m_element) {
+        ASSERT(resource->type() == Resource::Script);
+        ScriptResource* scriptResource = toScriptResource(resource);
+        String integrityAttr = m_element->fastGetAttribute(HTMLNames::integrityAttr);
+        if (scriptResource->integrityAlreadyChecked()) {
+            if (scriptResource->integrityMetadata() != integrityAttr)
+                m_integrityFailure = true;
+        } else if (resource->resourceBuffer()) {
+            scriptResource->setIntegrityAlreadyChecked(true);
+            m_integrityFailure = !SubresourceIntegrity::CheckSubresourceIntegrity(*m_element, resource->resourceBuffer()->data(), resource->resourceBuffer()->size(), resource->url(), *resource);
+            // TODO(jww) this integrity metadata should actually be
+            // normalized so that order doesn't matter.
+            scriptResource->setIntegrityMetadata(integrityAttr);
+        }
+    }
+
     if (m_streamer)
         m_streamer->notifyFinished(resource);
 }
@@ -144,7 +188,7 @@ DEFINE_TRACE(PendingScript)
 ScriptSourceCode PendingScript::getSource(const KURL& documentURL, bool& errorOccurred) const
 {
     if (resource()) {
-        errorOccurred = resource()->errorOccurred();
+        errorOccurred = resource()->errorOccurred() || m_integrityFailure;
         ASSERT(resource()->isLoaded());
         if (m_streamer && !m_streamer->streamingSuppressed())
             return ScriptSourceCode(m_streamer, resource());

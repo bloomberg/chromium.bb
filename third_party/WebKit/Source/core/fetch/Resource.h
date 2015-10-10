@@ -46,6 +46,7 @@ namespace blink {
 
 struct FetchInitiatorInfo;
 class CachedMetadata;
+class FetchRequest;
 class ResourceClient;
 class ResourcePtrBase;
 class ResourceFetcher;
@@ -238,6 +239,7 @@ public:
     void setResourceToRevalidate(Resource*);
     bool hasCacheControlNoStoreHeader();
     bool hasVaryHeader() const;
+    virtual bool mustRefetchDueToIntegrityMetadata(const FetchRequest& request) const { return false; }
 
     double currentAge() const;
     double freshnessLifetime();
