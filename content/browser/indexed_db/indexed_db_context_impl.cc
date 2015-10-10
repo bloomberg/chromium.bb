@@ -18,6 +18,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_event.h"
 #include "base/values.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/indexed_db/indexed_db_connection.h"
@@ -597,6 +598,10 @@ void IndexedDBContextImpl::QueryAvailableQuota(const GURL& origin_url) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!quota_manager_proxy() || !quota_manager_proxy()->quota_manager())
     return;
+
+  // crbug.com/349708
+  TRACE_EVENT0("io", "IndexedDBContextImpl::QueryAvailableQuota");
+
   quota_manager_proxy()->quota_manager()->GetUsageAndQuota(
       origin_url,
       storage::kStorageTypeTemporary,

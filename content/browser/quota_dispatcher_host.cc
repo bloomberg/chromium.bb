@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/trace_event/trace_event.h"
 #include "content/common/quota_messages.h"
 #include "content/public/browser/quota_permission_context.h"
 #include "net/base/net_util.h"
@@ -71,6 +72,11 @@ class QuotaDispatcherHost::QueryUsageAndQuotaDispatcher
   ~QueryUsageAndQuotaDispatcher() override {}
 
   void QueryStorageUsageAndQuota(const GURL& origin, StorageType type) {
+    // crbug.com/349708
+    TRACE_EVENT0("io",
+                 "QuotaDispatcherHost::QueryUsageAndQuotaDispatcher"
+                 "::QueryStorageUsageAndQuota");
+
     quota_manager()->GetUsageAndQuotaForWebApps(
         origin, type,
         base::Bind(&QueryUsageAndQuotaDispatcher::DidQueryStorageUsageAndQuota,
@@ -82,6 +88,10 @@ class QuotaDispatcherHost::QueryUsageAndQuotaDispatcher
       QuotaStatusCode status, int64 usage, int64 quota) {
     if (!dispatcher_host())
       return;
+    // crbug.com/349708
+    TRACE_EVENT0("io", "QuotaDispatcherHost::RequestQuotaDispatcher"
+                 "::DidQueryStorageUsageAndQuota");
+
     if (status != storage::kQuotaStatusOk) {
       dispatcher_host()->Send(new QuotaMsg_DidFail(request_id(), status));
     } else {
@@ -116,6 +126,8 @@ class QuotaDispatcherHost::RequestQuotaDispatcher
 
   void Start() {
     DCHECK(dispatcher_host());
+    // crbug.com/349708
+    TRACE_EVENT0("io", "QuotaDispatcherHost::RequestQuotaDispatcher::Start");
 
     DCHECK(params_.storage_type == storage::kStorageTypeTemporary ||
            params_.storage_type == storage::kStorageTypePersistent);

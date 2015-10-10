@@ -60,6 +60,10 @@ class CallbackQueue {
     callbacks_.swap(other->callbacks_);
   }
 
+  size_t size() const {
+    return callbacks_.size();
+  }
+
  private:
   std::vector<CallbackType> callbacks_;
 };

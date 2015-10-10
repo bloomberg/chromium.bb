@@ -11,6 +11,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread.h"
+#include "base/trace_event/trace_event.h"
 #include "content/browser/bad_message.h"
 #include "content/common/database_messages.h"
 #include "content/public/browser/user_metrics.h"
@@ -260,6 +261,9 @@ void DatabaseMessageFilter::OnDatabaseGetSpaceAvailable(
     Send(reply_msg);
     return;
   }
+
+  // crbug.com/349708
+  TRACE_EVENT0("io", "DatabaseMessageFilter::OnDatabaseGetSpaceAvailable");
 
   quota_manager->GetUsageAndQuota(
       storage::GetOriginFromIdentifier(origin_identifier),

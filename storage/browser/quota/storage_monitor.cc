@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/stl_util.h"
+#include "base/trace_event/trace_event.h"
 #include "net/base/net_util.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "storage/common/quota/quota_status_code.h"
@@ -39,6 +40,10 @@ int StorageObserverList::ObserverCount() const {
 }
 
 void StorageObserverList::OnStorageChange(const StorageObserver::Event& event) {
+  // crbug.com/349708
+  TRACE_EVENT0("io",
+               "HostStorageObserversStorageObserverList::OnStorageChange");
+
   for (StorageObserverStateMap::iterator it = observers_.begin();
        it != observers_.end(); ++it) {
     it->second.requires_update = true;
@@ -49,6 +54,9 @@ void StorageObserverList::OnStorageChange(const StorageObserver::Event& event) {
 
 void StorageObserverList::MaybeDispatchEvent(
     const StorageObserver::Event& event) {
+  // crbug.com/349708
+  TRACE_EVENT0("io", "StorageObserverList::MaybeDispatchEvent");
+
   notification_timer_.Stop();
   base::TimeDelta min_delay = base::TimeDelta::Max();
   bool all_observers_notified = true;
@@ -66,6 +74,10 @@ void StorageObserverList::MaybeDispatchEvent(
       it->second.last_notification_time = current_time;
 
       if (it->second.origin == event.filter.origin) {
+        // crbug.com/349708
+        TRACE_EVENT0("io",
+                     "StorageObserverList::MaybeDispatchEvent OnStorageEvent1");
+
         it->first->OnStorageEvent(event);
       } else {
         // When the quota and usage of an origin is requested, QuotaManager
@@ -75,6 +87,11 @@ void StorageObserverList::MaybeDispatchEvent(
         // registered.
         StorageObserver::Event dispatch_event(event);
         dispatch_event.filter.origin = it->second.origin;
+
+        // crbug.com/349708
+        TRACE_EVENT0("io",
+                     "StorageObserverList::MaybeDispatchEvent OnStorageEvent2");
+
         it->first->OnStorageEvent(dispatch_event);
       }
     } else {
@@ -183,6 +200,8 @@ void HostStorageObservers::StartInitialization(
     const StorageObserver::Filter& filter) {
   if (initialized_ || initializing_)
     return;
+  // crbug.com/349708
+  TRACE_EVENT0("io", "HostStorageObservers::StartInitialization");
 
   initializing_ = true;
   quota_manager_->GetUsageAndQuotaForWebApps(
@@ -201,7 +220,6 @@ void HostStorageObservers::GotHostUsageAndQuota(
   initializing_ = false;
   if (status != kQuotaStatusOk)
     return;
-
   initialized_ = true;
   cached_quota_ = quota;
   cached_usage_ = usage + usage_deltas_during_init_;

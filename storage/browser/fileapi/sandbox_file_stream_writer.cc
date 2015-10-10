@@ -6,6 +6,7 @@
 
 #include "base/files/file_util_proxy.h"
 #include "base/sequenced_task_runner.h"
+#include "base/trace_event/trace_event.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "storage/browser/fileapi/file_observers.h"
@@ -151,6 +152,9 @@ void SandboxFileStreamWriter::DidCreateSnapshotFile(
     return;
   }
 
+  // crbug.com/349708
+  TRACE_EVENT0("io", "SandboxFileStreamWriter::DidCreateSnapshotFile");
+
   DCHECK(quota_manager_proxy->quota_manager());
   quota_manager_proxy->quota_manager()->GetUsageAndQuota(
       url_.origin(),
@@ -168,9 +172,16 @@ void SandboxFileStreamWriter::DidGetUsageAndQuota(
     return;
   if (status != storage::kQuotaStatusOk) {
     LOG(WARNING) << "Got unexpected quota error : " << status;
+
+    // crbug.com/349708
+    TRACE_EVENT0("io", "SandboxFileStreamWriter::DidGetUsageAndQuota FAILED");
+
     callback.Run(net::ERR_FAILED);
     return;
   }
+
+  // crbug.com/349708
+  TRACE_EVENT0("io", "SandboxFileStreamWriter::DidGetUsageAndQuota OK");
 
   allowed_bytes_to_write_ = quota - usage;
   callback.Run(net::OK);

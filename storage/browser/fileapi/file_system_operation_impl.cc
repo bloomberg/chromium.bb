@@ -8,6 +8,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_event.h"
 #include "net/base/escape.h"
 #include "net/url_request/url_request.h"
 #include "storage/browser/blob/shareable_file_reference.h"
@@ -63,7 +64,11 @@ FileSystemOperationImpl::~FileSystemOperationImpl() {
 void FileSystemOperationImpl::CreateFile(const FileSystemURL& url,
                                          bool exclusive,
                                          const StatusCallback& callback) {
+  // crbug.com/349708
+  TRACE_EVENT0("io", "FileSystemOperationImpl::CreateFile");
+
   DCHECK(SetPendingOperationType(kOperationCreateFile));
+
   GetUsageAndQuotaThenRunTask(
       url,
       base::Bind(&FileSystemOperationImpl::DoCreateFile,
@@ -76,6 +81,10 @@ void FileSystemOperationImpl::CreateDirectory(const FileSystemURL& url,
                                               bool recursive,
                                               const StatusCallback& callback) {
   DCHECK(SetPendingOperationType(kOperationCreateDirectory));
+
+  // crbug.com/349708
+  TRACE_EVENT0("io", "FileSystemOperationImpl::CreateDirectory");
+
   GetUsageAndQuotaThenRunTask(
       url,
       base::Bind(&FileSystemOperationImpl::DoCreateDirectory,
@@ -190,6 +199,10 @@ void FileSystemOperationImpl::Write(
 void FileSystemOperationImpl::Truncate(const FileSystemURL& url, int64 length,
                                        const StatusCallback& callback) {
   DCHECK(SetPendingOperationType(kOperationTruncate));
+
+  // crbug.com/349708
+  TRACE_EVENT0("io", "FileSystemOperationImpl::Truncate");
+
   GetUsageAndQuotaThenRunTask(
       url,
       base::Bind(&FileSystemOperationImpl::DoTruncate,
@@ -202,6 +215,10 @@ void FileSystemOperationImpl::TouchFile(const FileSystemURL& url,
                                         const base::Time& last_modified_time,
                                         const StatusCallback& callback) {
   DCHECK(SetPendingOperationType(kOperationTouchFile));
+
+  // crbug.com/349708
+  TRACE_EVENT0("io", "FileSystemOperationImpl::TouchFile");
+
   async_file_util_->Touch(
       operation_context_.Pass(), url,
       last_access_time, last_modified_time,
@@ -220,6 +237,10 @@ void FileSystemOperationImpl::OpenFile(const FileSystemURL& url,
                  base::Closure());
     return;
   }
+
+  // crbug.com/349708
+  TRACE_EVENT0("io", "FileSystemOperationImpl::OpenFile");
+
   GetUsageAndQuotaThenRunTask(
       url,
       base::Bind(&FileSystemOperationImpl::DoOpenFile,
@@ -262,6 +283,10 @@ void FileSystemOperationImpl::CopyInForeignFile(
     const FileSystemURL& dest_url,
     const StatusCallback& callback) {
   DCHECK(SetPendingOperationType(kOperationCopyInForeignFile));
+
+  // crbug.com/349708
+  TRACE_EVENT0("io", "FileSystemOperationImpl::CopyInForeinFile");
+
   GetUsageAndQuotaThenRunTask(
       dest_url,
       base::Bind(&FileSystemOperationImpl::DoCopyInForeignFile,
@@ -299,6 +324,9 @@ void FileSystemOperationImpl::CopyFileLocal(
   DCHECK(SetPendingOperationType(kOperationCopy));
   DCHECK(src_url.IsInSameFileSystem(dest_url));
 
+  // crbug.com/349708
+  TRACE_EVENT0("io", "FileSystemOperationImpl::CopyFileLocal");
+
   GetUsageAndQuotaThenRunTask(
       dest_url,
       base::Bind(&FileSystemOperationImpl::DoCopyFileLocal,
@@ -314,6 +342,10 @@ void FileSystemOperationImpl::MoveFileLocal(
     const StatusCallback& callback) {
   DCHECK(SetPendingOperationType(kOperationMove));
   DCHECK(src_url.IsInSameFileSystem(dest_url));
+
+  // crbug.com/349708
+  TRACE_EVENT0("io", "FileSystemOperationImpl::MoveFileLocal");
+
   GetUsageAndQuotaThenRunTask(
       dest_url,
       base::Bind(&FileSystemOperationImpl::DoMoveFileLocal,

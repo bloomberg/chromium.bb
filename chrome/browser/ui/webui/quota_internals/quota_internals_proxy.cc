@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/trace_event/trace_event.h"
 #include "chrome/browser/ui/webui/quota_internals/quota_internals_handler.h"
 #include "chrome/browser/ui/webui/quota_internals/quota_internals_types.h"
 #include "net/base/net_util.h"
@@ -30,11 +31,15 @@ void QuotaInternalsProxy::RequestInfo(
         base::Bind(&QuotaInternalsProxy::RequestInfo, this, quota_manager));
     return;
   }
-
   quota_manager_ = quota_manager;
-  quota_manager_->GetAvailableSpace(
-      base::Bind(&QuotaInternalsProxy::DidGetAvailableSpace,
-                 weak_factory_.GetWeakPtr()));
+  {
+    // crbug.com/349708
+    TRACE_EVENT0("io", "QuotaInternalsProxy::RequestInfo");
+
+    quota_manager_->GetAvailableSpace(
+        base::Bind(&QuotaInternalsProxy::DidGetAvailableSpace,
+                   weak_factory_.GetWeakPtr()));
+  }
 
   quota_manager_->GetTemporaryGlobalQuota(
       base::Bind(&QuotaInternalsProxy::DidGetGlobalQuota,
@@ -98,6 +103,9 @@ RELAY_TO_HANDLER(ReportStatistics, const Statistics&)
 
 void QuotaInternalsProxy::DidGetAvailableSpace(storage::QuotaStatusCode status,
                                                int64 space) {
+  // crbug.com/349708
+  TRACE_EVENT0("io", "QuotaInternalsProxy::DidGetAvailableSpace");
+
   if (status == storage::kQuotaStatusOk)
     ReportAvailableSpace(space);
 }

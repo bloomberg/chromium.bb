@@ -19,6 +19,7 @@
 #include "base/sys_info.h"
 #include "base/task_runner_util.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_event.h"
 #include "net/base/net_util.h"
 #include "storage/browser/quota/client_usage_tracker.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
@@ -188,6 +189,9 @@ bool UpdateModifiedTimeOnDBThread(const GURL& origin,
 }
 
 int64 CallSystemGetAmountOfFreeDiskSpace(const base::FilePath& profile_path) {
+  // crbug.com/349708
+  TRACE_EVENT0("io", "CallSystemGetAmountOfFreeDiskSpace");
+
   // Ensure the profile path exists.
   if (!base::CreateDirectory(profile_path)) {
     LOG(WARNING) << "Create directory failed for path" << profile_path.value();
@@ -410,6 +414,10 @@ class UsageAndQuotaCallbackDispatcher
   }
 
   void DidGetAvailableSpace(QuotaStatusCode status, int64 space) {
+    // crbug.com/349708
+    TRACE_EVENT0(
+        "io", "UsageAndQuotaCallbackDispatcher::DidGetAvailableSpace");
+
     DCHECK_GE(space, 0);
     if (status_ == kQuotaStatusUnknown || status_ == kQuotaStatusOk)
       status_ = status;
@@ -430,6 +438,9 @@ class UsageAndQuotaCallbackDispatcher
   }
 
   void Completed() override {
+    // crbug.com/349708
+    TRACE_EVENT0("io", "UsageAndQuotaCallbackDispatcher::Completed");
+
     DCHECK(!has_usage_ || usage_and_quota_.usage >= 0);
     DCHECK(!has_global_limited_usage_ ||
            usage_and_quota_.global_limited_usage >= 0);
@@ -472,6 +483,9 @@ class QuotaManager::GetUsageInfoTask : public QuotaTask {
 
  protected:
   void Run() override {
+    // crbug.com/349708
+    TRACE_EVENT0("io", "QuotaManager::GetUsageInfoTask::Run");
+
     remaining_trackers_ = 3;
     // This will populate cached hosts and usage info.
     manager()->GetUsageTracker(kStorageTypeTemporary)->GetGlobalUsage(
@@ -489,6 +503,9 @@ class QuotaManager::GetUsageInfoTask : public QuotaTask {
   }
 
   void Completed() override {
+    // crbug.com/349708
+    TRACE_EVENT0("io", "QuotaManager::GetUsageInfoTask::Completed");
+
     callback_.Run(entries_);
     DeleteSoon();
   }
@@ -566,11 +583,17 @@ class QuotaManager::OriginDataDeleter : public QuotaTask {
 
   void Completed() override {
     if (error_count_ == 0) {
+      // crbug.com/349708
+      TRACE_EVENT0("io", "QuotaManager::OriginDataDeleter::Completed Ok");
+
       // Only remove the entire origin if we didn't skip any client types.
       if (skipped_clients_ == 0)
         manager()->DeleteOriginFromDatabase(origin_, type_);
       callback_.Run(kQuotaStatusOk);
     } else {
+      // crbug.com/349708
+      TRACE_EVENT0("io", "QuotaManager::OriginDataDeleter::Completed Error");
+
       callback_.Run(kQuotaErrorInvalidModification);
     }
     DeleteSoon();
@@ -640,8 +663,14 @@ class QuotaManager::HostDataDeleter : public QuotaTask {
 
   void Completed() override {
     if (error_count_ == 0) {
+      // crbug.com/349708
+      TRACE_EVENT0("io", "QuotaManager::HostDataDeleter::Completed Ok");
+
       callback_.Run(kQuotaStatusOk);
     } else {
+      // crbug.com/349708
+      TRACE_EVENT0("io", "QuotaManager::HostDataDeleter::Completed Error");
+
       callback_.Run(kQuotaErrorInvalidModification);
     }
     DeleteSoon();
@@ -960,6 +989,8 @@ void QuotaManager::DeleteHostData(const std::string& host,
 void QuotaManager::GetAvailableSpace(const AvailableSpaceCallback& callback) {
   if (!available_space_callbacks_.Add(callback))
     return;
+  // crbug.com/349708
+  TRACE_EVENT0("io", "QuotaManager::GetAvailableSpace");
 
   PostTaskAndReplyWithResult(db_thread_.get(),
                              FROM_HERE,
@@ -1462,6 +1493,9 @@ void QuotaManager::EvictOriginData(const GURL& origin,
 
 void QuotaManager::GetUsageAndQuotaForEviction(
     const UsageAndQuotaCallback& callback) {
+  // crbug.com/349708
+  TRACE_EVENT0("io", "QuotaManager::GetUsageAndQuotaForEviction");
+
   DCHECK(io_thread_->BelongsToCurrentThread());
   LazyInitialize();
 
@@ -1602,6 +1636,10 @@ void QuotaManager::DidInitializeTemporaryOriginsInfo(bool success) {
 }
 
 void QuotaManager::DidGetAvailableSpace(int64 space) {
+  // crbug.com/349708
+  TRACE_EVENT1("io", "QuotaManager::DidGetAvailableSpace",
+               "n_callbacks", available_space_callbacks_.size());
+
   available_space_callbacks_.Run(kQuotaStatusOk, space);
 }
 

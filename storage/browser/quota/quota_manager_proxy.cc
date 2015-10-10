@@ -10,6 +10,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task_runner_util.h"
+#include "base/trace_event/trace_event.h"
 
 namespace storage {
 
@@ -27,6 +28,9 @@ void DidGetUsageAndQuota(
                    callback, status, usage, quota));
     return;
   }
+
+  // crbug.com/349708
+  TRACE_EVENT0("io", "QuotaManagerProxy DidGetUsageAndQuota");
   callback.Run(status, usage, quota);
 }
 
@@ -137,6 +141,10 @@ void QuotaManagerProxy::GetUsageAndQuota(
     DidGetUsageAndQuota(original_task_runner, callback, kQuotaErrorAbort, 0, 0);
     return;
   }
+
+  // crbug.com/349708
+  TRACE_EVENT0("io", "QuotaManagerProxy::GetUsageAndQuota");
+
   manager_->GetUsageAndQuota(
       origin, type,
       base::Bind(&DidGetUsageAndQuota,
