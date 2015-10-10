@@ -18,7 +18,7 @@
 #include "ash/shell/toplevel_window.h"
 #include "ash/shell_window_ids.h"
 #include "ash/system/tray/default_system_tray_delegate.h"
-#include "ash/test/content/keyboard_controller_proxy_stub.h"
+#include "ash/test/test_keyboard_ui.h"
 #include "ash/wm/window_state.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -187,9 +187,8 @@ void ShellDelegateImpl::Exit() {
   base::MessageLoopForUI::current()->Quit();
 }
 
-keyboard::KeyboardControllerProxy*
-    ShellDelegateImpl::CreateKeyboardControllerProxy() {
-  return new KeyboardControllerProxyStub();
+keyboard::KeyboardUI* ShellDelegateImpl::CreateKeyboardUI() {
+  return new TestKeyboardUI;
 }
 
 void ShellDelegateImpl::VirtualKeyboardActivated(bool activated) {

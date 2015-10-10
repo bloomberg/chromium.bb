@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/ash/ash_keyboard_controller_proxy.h"
+#include "chrome/browser/ui/ash/chrome_keyboard_ui.h"
 
 #include "ash/shell.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
@@ -107,25 +107,23 @@ class AshKeyboardControllerObserver
 
 }  // namespace
 
-AshKeyboardControllerProxy::AshKeyboardControllerProxy(
-    content::BrowserContext* context)
-    : keyboard::KeyboardControllerProxy(context) {
-}
+ChromeKeyboardUI::ChromeKeyboardUI(content::BrowserContext* context)
+    : keyboard::KeyboardUIContent(context) {}
 
-AshKeyboardControllerProxy::~AshKeyboardControllerProxy() {
+ChromeKeyboardUI::~ChromeKeyboardUI() {
   DCHECK(!keyboard_controller());
 }
 
-ui::InputMethod* AshKeyboardControllerProxy::GetInputMethod() {
+ui::InputMethod* ChromeKeyboardUI::GetInputMethod() {
   aura::Window* root_window = ash::Shell::GetTargetRootWindow();
   DCHECK(root_window);
   return root_window->GetHost()->GetInputMethod();
 }
 
-void AshKeyboardControllerProxy::RequestAudioInput(
-      content::WebContents* web_contents,
-      const content::MediaStreamRequest& request,
-      const content::MediaResponseCallback& callback) {
+void ChromeKeyboardUI::RequestAudioInput(
+    content::WebContents* web_contents,
+    const content::MediaStreamRequest& request,
+    const content::MediaResponseCallback& callback) {
   const extensions::Extension* extension = NULL;
   GURL origin(request.security_origin);
   if (origin.SchemeIs(extensions::kExtensionScheme)) {
@@ -139,29 +137,27 @@ void AshKeyboardControllerProxy::RequestAudioInput(
       web_contents, request, callback, extension);
 }
 
-void AshKeyboardControllerProxy::SetupWebContents(
-    content::WebContents* contents) {
+void ChromeKeyboardUI::SetupWebContents(content::WebContents* contents) {
   extensions::SetViewType(contents, extensions::VIEW_TYPE_VIRTUAL_KEYBOARD);
   extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
       contents);
   Observe(contents);
 }
 
-void AshKeyboardControllerProxy::SetController(
-    keyboard::KeyboardController* controller) {
+void ChromeKeyboardUI::SetController(keyboard::KeyboardController* controller) {
   // During KeyboardController destruction, controller can be set to null.
   if (!controller) {
     DCHECK(keyboard_controller());
     keyboard_controller()->RemoveObserver(observer_.get());
-    KeyboardControllerProxy::SetController(nullptr);
+    KeyboardUIContent::SetController(nullptr);
     return;
   }
-  KeyboardControllerProxy::SetController(controller);
+  KeyboardUIContent::SetController(controller);
   observer_.reset(new AshKeyboardControllerObserver(browser_context()));
   keyboard_controller()->AddObserver(observer_.get());
 }
 
-void AshKeyboardControllerProxy::RenderViewCreated(
+void ChromeKeyboardUI::RenderViewCreated(
     content::RenderViewHost* render_view_host) {
   content::HostZoomMap* zoom_map =
       content::HostZoomMap::GetDefaultForBrowserContext(browser_context());
@@ -171,17 +167,16 @@ void AshKeyboardControllerProxy::RenderViewCreated(
   zoom_map->SetTemporaryZoomLevel(render_process_id, render_view_id, 0);
 }
 
-void AshKeyboardControllerProxy::ShowKeyboardContainer(
-    aura::Window* container) {
+void ChromeKeyboardUI::ShowKeyboardContainer(aura::Window* container) {
   // TODO(bshe): Implement logic to decide which root window should display
   // virtual keyboard. http://crbug.com/303429
   if (container->GetRootWindow() != ash::Shell::GetPrimaryRootWindow())
     NOTIMPLEMENTED();
 
-  KeyboardControllerProxy::ShowKeyboardContainer(container);
+  KeyboardUIContent::ShowKeyboardContainer(container);
 }
 
-void AshKeyboardControllerProxy::SetUpdateInputType(ui::TextInputType type) {
+void ChromeKeyboardUI::SetUpdateInputType(ui::TextInputType type) {
   // TODO(bshe): Need to check the affected window's profile once multi-profile
   // is supported.
   extensions::EventRouter* router =

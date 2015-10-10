@@ -9,10 +9,10 @@
 #include "ui/base/ime/dummy_text_input_client.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/input_method_factory.h"
-#include "ui/keyboard/keyboard_constants.h"
+#include "ui/keyboard/content/keyboard_constants.h"
 #include "ui/keyboard/keyboard_controller.h"
-#include "ui/keyboard/keyboard_controller_proxy.h"
 #include "ui/keyboard/keyboard_switches.h"
+#include "ui/keyboard/keyboard_ui.h"
 #include "ui/keyboard/keyboard_util.h"
 
 namespace {
@@ -35,24 +35,24 @@ class VirtualKeyboardWebContentTest : public InProcessBrowserTest {
         keyboard::switches::kEnableVirtualKeyboard);
   }
 
-  keyboard::KeyboardControllerProxy* proxy() {
-    return keyboard::KeyboardController::GetInstance()->proxy();
+  keyboard::KeyboardUI* ui() {
+    return keyboard::KeyboardController::GetInstance()->ui();
   }
 
  protected:
   void FocusEditableNodeAndShowKeyboard(const gfx::Rect& init_bounds) {
     client.reset(new ui::DummyTextInputClient(ui::TEXT_INPUT_TYPE_TEXT));
-    ui::InputMethod* input_method = proxy()->GetInputMethod();
+    ui::InputMethod* input_method = ui()->GetInputMethod();
     input_method->SetFocusedTextInputClient(client.get());
     input_method->ShowImeIfNeeded();
     // Mock window.resizeTo that is expected to be called after navigate to a
     // new virtual keyboard.
-    proxy()->GetKeyboardWindow()->SetBounds(init_bounds);
+    ui()->GetKeyboardWindow()->SetBounds(init_bounds);
   }
 
   void FocusNonEditableNode() {
     client.reset(new ui::DummyTextInputClient(ui::TEXT_INPUT_TYPE_NONE));
-    ui::InputMethod* input_method = proxy()->GetInputMethod();
+    ui::InputMethod* input_method = ui()->GetInputMethod();
     input_method->SetFocusedTextInputClient(client.get());
   }
 
@@ -62,7 +62,7 @@ class VirtualKeyboardWebContentTest : public InProcessBrowserTest {
     keyboard::KeyboardController::GetInstance()->Reload();
     // Mock window.resizeTo that is expected to be called after navigate to a
     // new virtual keyboard.
-    proxy()->GetKeyboardWindow()->SetBounds(init_bounds);
+    ui()->GetKeyboardWindow()->SetBounds(init_bounds);
   }
 
   bool IsKeyboardVisible() const {
@@ -120,7 +120,7 @@ IN_PROC_BROWSER_TEST_F(VirtualKeyboardWebContentTest,
             keyboard_bounds.height() + keyboard_bounds.y());
   controller->SetKeyboardMode(keyboard::FLOATING);
   // Move keyboard to a random place.
-  proxy()->GetKeyboardWindow()->SetBounds(gfx::Rect(50, 50, 50, 50));
+  ui()->GetKeyboardWindow()->SetBounds(gfx::Rect(50, 50, 50, 50));
   EXPECT_EQ(gfx::Rect(50, 50, 50, 50),
             controller->GetContainerWindow()->bounds());
 

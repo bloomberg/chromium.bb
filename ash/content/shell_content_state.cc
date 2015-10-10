@@ -5,6 +5,7 @@
 #include "ash/content/shell_content_state.h"
 
 #include "base/logging.h"
+#include "ui/keyboard/content/keyboard.h"
 
 namespace ash {
 
@@ -30,7 +31,13 @@ void ShellContentState::DestroyInstance() {
   instance_ = nullptr;
 }
 
-ShellContentState::ShellContentState() {}
+ShellContentState::ShellContentState() {
+// The keyboard system must be initialized before the RootWindowController is
+// created.
+#if defined(OS_CHROMEOS)
+  keyboard::InitializeKeyboard();
+#endif
+}
 ShellContentState::~ShellContentState() {}
 
 }  // namespace ash

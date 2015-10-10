@@ -14,7 +14,6 @@
 #include "ui/base/ime/text_input_type.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/keyboard/keyboard_export.h"
-#include "url/gurl.h"
 
 namespace aura {
 class Window;
@@ -27,9 +26,8 @@ class TextInputClient;
 namespace keyboard {
 
 class CallbackAnimationObserver;
-class WindowBoundsChangeObserver;
 class KeyboardControllerObserver;
-class KeyboardControllerProxy;
+class KeyboardUI;
 
 // Animation distance.
 const int kAnimationDistance = 30;
@@ -58,8 +56,8 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
     HIDE_REASON_MANUAL,
   };
 
-  // Takes ownership of |proxy|.
-  explicit KeyboardController(KeyboardControllerProxy* proxy);
+  // Takes ownership of |ui|.
+  explicit KeyboardController(KeyboardUI* ui);
   ~KeyboardController() override;
 
   // Returns the container for the keyboard, which is owned by
@@ -88,7 +86,7 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   virtual void AddObserver(KeyboardControllerObserver* observer);
   virtual void RemoveObserver(KeyboardControllerObserver* observer);
 
-  KeyboardControllerProxy* proxy() { return proxy_.get(); }
+  KeyboardUI* ui() { return ui_.get(); }
 
   void set_lock_keyboard(bool lock) { lock_keyboard_ = lock; }
 
@@ -119,12 +117,6 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
     return current_keyboard_bounds_;
   }
 
-  // Determines whether a particular window should have insets for overscroll.
-  bool ShouldEnableInsets(aura::Window* window);
-
-  // Updates insets on web content window
-  void UpdateWindowInsets(aura::Window* window);
-
  private:
   // For access to Observer methods for simulation.
   friend class KeyboardControllerTest;
@@ -150,9 +142,6 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   // Show virtual keyboard immediately with animation.
   void ShowKeyboardInternal();
 
-  // Clears any insets on web content windows.
-  void ResetWindowInsets();
-
   // Returns true if keyboard is scheduled to hide.
   bool WillHideKeyboard() const;
 
@@ -161,18 +150,11 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   void ShowAnimationFinished();
   void HideAnimationFinished();
 
-  // Adds an observer for tracking changes to a window size or
-  // position while the keyboard is displayed. Any window repositioning
-  // invalidates insets for overscrolling.
-  void AddBoundsChangedObserver(aura::Window* window);
-
-  scoped_ptr<KeyboardControllerProxy> proxy_;
+  scoped_ptr<KeyboardUI> ui_;
   scoped_ptr<aura::Window> container_;
   // CallbackAnimationObserver should destructed before container_ because it
   // uses container_'s animator.
   scoped_ptr<CallbackAnimationObserver> animation_observer_;
-
-  scoped_ptr<WindowBoundsChangeObserver> window_bounds_observer_;
 
   ui::InputMethod* input_method_;
   bool keyboard_visible_;

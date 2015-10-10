@@ -118,6 +118,7 @@ source_set("extensions") {
   if (use_aura) {
     deps += [
       "//ui/keyboard",
+      "//ui/keyboard:keyboard_with_content",
       "//ui/keyboard:resources",
     ]
   }

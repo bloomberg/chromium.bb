@@ -96,7 +96,6 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/screen.h"
-#include "ui/keyboard/keyboard.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_switches.h"
 #include "ui/keyboard/keyboard_util.h"
@@ -959,12 +958,6 @@ void Shell::Init(const ShellInitParams& init_params) {
   keyboard_metrics_filter_.reset(new KeyboardUMAEventFilter);
   AddPreTargetHandler(keyboard_metrics_filter_.get());
 
-  // The keyboard system must be initialized before the RootWindowController is
-  // created.
-#if defined(OS_CHROMEOS)
-    keyboard::InitializeKeyboard();
-#endif
-
 #if defined(OS_CHROMEOS)
   sticky_keys_controller_.reset(new StickyKeysController);
 #endif
@@ -1105,10 +1098,8 @@ void Shell::InitKeyboard() {
             keyboard::KeyboardController::GetInstance());
       }
     }
-    keyboard::KeyboardControllerProxy* proxy =
-        delegate_->CreateKeyboardControllerProxy();
     keyboard::KeyboardController::ResetInstance(
-        new keyboard::KeyboardController(proxy));
+        new keyboard::KeyboardController(delegate_->CreateKeyboardUI()));
   }
 }
 

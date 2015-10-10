@@ -15,8 +15,8 @@
 #include "ui/aura/window.h"
 #include "ui/gfx/screen.h"
 #include "ui/keyboard/keyboard_controller.h"
-#include "ui/keyboard/keyboard_controller_proxy.h"
 #include "ui/keyboard/keyboard_switches.h"
+#include "ui/keyboard/keyboard_ui.h"
 #include "ui/keyboard/keyboard_util.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -91,8 +91,8 @@ class LockLayoutManagerTest : public AshTestBase {
 
     if (show) {
       keyboard->ShowKeyboard(true);
-      if (keyboard->proxy()->GetKeyboardWindow()->bounds().height() == 0) {
-        keyboard->proxy()->GetKeyboardWindow()->SetBounds(
+      if (keyboard->ui()->GetKeyboardWindow()->bounds().height() == 0) {
+        keyboard->ui()->GetKeyboardWindow()->SetBounds(
             keyboard::FullWidthKeyboardBoundsFromRootBounds(
                 Shell::GetPrimaryRootWindow()->bounds(),
                 kVirtualKeyboardHeight));
@@ -231,8 +231,9 @@ TEST_F(LockLayoutManagerTest, KeyboardBounds) {
   primary_display = Shell::GetScreen()->GetPrimaryDisplay();
   screen_bounds = primary_display.bounds();
   gfx::Rect target_bounds(screen_bounds);
-  target_bounds.set_height(target_bounds.height() -
-      keyboard->proxy()->GetKeyboardWindow()->bounds().height());
+  target_bounds.set_height(
+      target_bounds.height() -
+      keyboard->ui()->GetKeyboardWindow()->bounds().height());
   EXPECT_EQ(target_bounds.ToString(), window->GetBoundsInScreen().ToString());
   ShowKeyboard(false);
 

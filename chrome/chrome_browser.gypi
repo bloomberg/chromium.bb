@@ -3563,6 +3563,7 @@
             '../ui/aura/aura.gyp:aura',
             '../ui/compositor/compositor.gyp:compositor',
             '../ui/keyboard/keyboard.gyp:keyboard',
+            '../ui/keyboard/keyboard.gyp:keyboard_with_content',
           ],
         }],
         ['ui_compositor_image_transport==1', {

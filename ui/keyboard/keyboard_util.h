@@ -7,12 +7,9 @@
 
 #include <string>
 
-#include "base/strings/string16.h"
 // TODO(beng): replace with forward decl once RootWindow is renamed.
 #include "ui/aura/window.h"
 #include "ui/keyboard/keyboard_export.h"
-
-struct GritResourceMap;
 
 namespace aura {
 class WindowTreeHost;
@@ -161,11 +158,6 @@ KEYBOARD_EXPORT void MarkKeyboardLoadStarted();
 // Marks that the keyboard load has ended. This finishes measuring that the
 // keyboard is loaded.
 KEYBOARD_EXPORT void MarkKeyboardLoadFinished();
-
-// Get the list of keyboard resources. |size| is populated with the number of
-// resources in the returned array.
-KEYBOARD_EXPORT const GritResourceMap* GetKeyboardExtensionResources(
-    size_t* size);
 
 // Sets the override content url.
 // This is used by for input view for extension IMEs.

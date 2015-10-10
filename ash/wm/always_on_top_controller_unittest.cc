@@ -11,8 +11,8 @@
 #include "ash/wm/workspace/workspace_layout_manager.h"
 #include "base/command_line.h"
 #include "ui/keyboard/keyboard_controller.h"
-#include "ui/keyboard/keyboard_controller_proxy.h"
 #include "ui/keyboard/keyboard_switches.h"
+#include "ui/keyboard/keyboard_ui.h"
 #include "ui/keyboard/keyboard_util.h"
 
 namespace ash {
@@ -74,8 +74,8 @@ TEST_F(VirtualKeyboardAlwaysOnTopControllerTest, NotifyKeyboardBoundsChanged) {
       Shell::GetContainer(root_window, kShellWindowId_VirtualKeyboardContainer);
   ASSERT_TRUE(keyboard_container);
   keyboard_container->Show();
-  keyboard::KeyboardControllerProxy* proxy = keyboard_controller->proxy();
-  aura::Window* keyboard_window = proxy->GetKeyboardWindow();
+  aura::Window* keyboard_window =
+      keyboard_controller->ui()->GetKeyboardWindow();
   keyboard_container->AddChild(keyboard_window);
   keyboard_window->set_owned_by_parent(false);
   const int kKeyboardHeight = 200;

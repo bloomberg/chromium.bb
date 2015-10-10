@@ -569,6 +569,7 @@ source_set("browser") {
       "//ui/aura",
       "//ui/compositor",
       "//ui/keyboard",
+      "//ui/keyboard:keyboard_with_content",
     ]
   }
   if (ui_compositor_image_transport) {

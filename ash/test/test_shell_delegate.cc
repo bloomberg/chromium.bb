@@ -13,7 +13,7 @@
 #include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
-#include "ash/test/content/keyboard_controller_proxy_stub.h"
+#include "ash/test/test_keyboard_ui.h"
 #include "ash/test/test_session_state_delegate.h"
 #include "ash/test/test_shelf_delegate.h"
 #include "ash/test/test_system_tray_delegate.h"
@@ -130,9 +130,8 @@ void TestShellDelegate::Exit() {
   num_exit_requests_++;
 }
 
-keyboard::KeyboardControllerProxy*
-    TestShellDelegate::CreateKeyboardControllerProxy() {
-  return new KeyboardControllerProxyStub();
+keyboard::KeyboardUI* TestShellDelegate::CreateKeyboardUI() {
+  return new TestKeyboardUI;
 }
 
 void TestShellDelegate::VirtualKeyboardActivated(bool activated) {

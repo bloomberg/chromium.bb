@@ -11,7 +11,7 @@
 #include "base/compiler_specific.h"
 
 namespace keyboard {
-class KeyboardControllerProxy;
+class KeyboardUI;
 }
 
 namespace ash {
@@ -37,7 +37,7 @@ class ShellDelegateImpl : public ash::ShellDelegate {
   void PreInit() override;
   void PreShutdown() override;
   void Exit() override;
-  keyboard::KeyboardControllerProxy* CreateKeyboardControllerProxy() override;
+  keyboard::KeyboardUI* CreateKeyboardUI() override;
   void VirtualKeyboardActivated(bool activated) override;
   void AddVirtualKeyboardStateObserver(
       VirtualKeyboardStateObserver* observer) override;

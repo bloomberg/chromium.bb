@@ -21,7 +21,7 @@
 #include "extensions/common/permissions/api_permission.h"
 
 #if defined(USE_AURA)
-#include "ui/keyboard/keyboard_constants.h"
+#include "ui/keyboard/content/keyboard_constants.h"
 #endif
 
 namespace extensions {

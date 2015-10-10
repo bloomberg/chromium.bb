@@ -17,7 +17,7 @@
 #include "ui/aura/env.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/screen_type_delegate.h"
-#include "ui/keyboard/keyboard.h"
+#include "ui/keyboard/content/keyboard.h"
 #include "ui/keyboard/keyboard_controller.h"
 
 #if defined(OS_CHROMEOS)

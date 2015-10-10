@@ -38,7 +38,7 @@ class Widget;
 }
 
 namespace keyboard {
-class KeyboardControllerProxy;
+class KeyboardUI;
 }
 
 namespace ash {
@@ -107,9 +107,8 @@ class ASH_EXPORT ShellDelegate {
   // Invoked when the user uses Ctrl-Shift-Q to close chrome.
   virtual void Exit() = 0;
 
-  // Create a shell-specific keyboard::KeyboardControllerProxy
-  virtual keyboard::KeyboardControllerProxy*
-      CreateKeyboardControllerProxy() = 0;
+  // Create a shell-specific keyboard::KeyboardUI
+  virtual keyboard::KeyboardUI* CreateKeyboardUI() = 0;
 
   // Called when virtual keyboard has been activated/deactivated.
   virtual void VirtualKeyboardActivated(bool activated) = 0;

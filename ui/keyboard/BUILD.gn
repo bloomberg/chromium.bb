@@ -9,20 +9,16 @@ import("//tools/grit/grit_rule.gni")
 
 component("keyboard") {
   sources = [
-    "keyboard.cc",
-    "keyboard.h",
-    "keyboard_constants.cc",
-    "keyboard_constants.h",
     "keyboard_controller.cc",
     "keyboard_controller.h",
     "keyboard_controller_observer.h",
-    "keyboard_controller_proxy.cc",
-    "keyboard_controller_proxy.h",
     "keyboard_export.h",
     "keyboard_layout_manager.cc",
     "keyboard_layout_manager.h",
     "keyboard_switches.cc",
     "keyboard_switches.h",
+    "keyboard_ui.cc",
+    "keyboard_ui.h",
     "keyboard_util.cc",
     "keyboard_util.h",
   ]
@@ -30,13 +26,48 @@ component("keyboard") {
   defines = [ "KEYBOARD_IMPLEMENTATION" ]
 
   deps = [
+    "//base",
+    "//base/third_party/dynamic_annotations",
+    "//media",
+    "//skia",
+    "//ui/aura",
+    "//ui/base",
+    "//ui/base/ime",
+    "//ui/compositor",
+    "//ui/events",
+    "//ui/events:dom_keycode_converter",
+    "//ui/events:events_base",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
+  ]
+
+  if (use_ozone) {
+    deps += [ "//ui/ozone" ]
+  }
+}
+
+component("keyboard_with_content") {
+  sources = [
+    "content/keyboard.cc",
+    "content/keyboard.h",
+    "content/keyboard_constants.cc",
+    "content/keyboard_constants.h",
+    "content/keyboard_content_util.cc",
+    "content/keyboard_content_util.h",
+    "content/keyboard_ui_content.cc",
+    "content/keyboard_ui_content.h",
+  ]
+
+  defines = [ "KEYBOARD_IMPLEMENTATION" ]
+
+  deps = [
+    ":keyboard",
     ":resources",
     "//base",
     "//base/third_party/dynamic_annotations",
     "//content/public/browser",
     "//content/public/common",
     "//ipc",
-    "//media",
     "//skia",
     "//ui/aura",
     "//ui/base",
@@ -50,10 +81,6 @@ component("keyboard") {
     "//ui/wm",
     "//url",
   ]
-
-  if (use_ozone) {
-    deps += [ "//ui/ozone" ]
-  }
 }
 
 grit("resources_grit") {
@@ -111,8 +138,6 @@ test("keyboard_unittests") {
     "//base",
     "//base/allocator",
     "//base/test:test_support",
-    "//content",
-    "//media",
     "//skia",
     "//testing/gtest",
     "//ui/aura:test_support",
@@ -124,8 +149,6 @@ test("keyboard_unittests") {
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/gl",
-    "//ui/resources:ui_test_pak",
     "//ui/wm",
-    "//url",
   ]
 }

@@ -21,8 +21,8 @@
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/screen.h"
 #include "ui/keyboard/keyboard_controller.h"
-#include "ui/keyboard/keyboard_controller_proxy.h"
 #include "ui/keyboard/keyboard_switches.h"
+#include "ui/keyboard/keyboard_ui.h"
 #include "ui/keyboard/keyboard_util.h"
 #include "ui/views/test/capture_tracking_view.h"
 #include "ui/views/widget/widget.h"
@@ -180,8 +180,8 @@ class SystemModalContainerLayoutManagerTest : public AshTestBase {
 
     if (show) {
       keyboard->ShowKeyboard(true);
-      if (keyboard->proxy()->GetKeyboardWindow()->bounds().height() == 0) {
-        keyboard->proxy()->GetKeyboardWindow()->SetBounds(
+      if (keyboard->ui()->GetKeyboardWindow()->bounds().height() == 0) {
+        keyboard->ui()->GetKeyboardWindow()->SetBounds(
             keyboard::FullWidthKeyboardBoundsFromRootBounds(
                 Shell::GetPrimaryRootWindow()->bounds(), 100));
       }

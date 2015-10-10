@@ -6,7 +6,6 @@
 
 #include "ui/compositor/layer_animator.h"
 #include "ui/keyboard/keyboard_controller.h"
-#include "ui/keyboard/keyboard_controller_proxy.h"
 #include "ui/keyboard/keyboard_util.h"
 
 namespace keyboard {

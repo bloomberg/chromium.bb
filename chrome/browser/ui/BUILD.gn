@@ -263,6 +263,7 @@ source_set("ui") {
       "//ash/resources",
       "//ui/aura",
       "//ui/keyboard",
+      "//ui/keyboard:keyboard_with_content",
       "//ui/keyboard:resources",
       "//ui/wm",
     ]

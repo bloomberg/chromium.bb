@@ -17,7 +17,7 @@
 #endif
 
 #if defined(USE_AURA)
-#include "ui/keyboard/keyboard_util.h"
+#include "ui/keyboard/content/keyboard_content_util.h"
 #endif
 
 namespace extensions {
