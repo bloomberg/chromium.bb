@@ -198,14 +198,6 @@ public class TemplateUrlService {
     }
 
     /**
-     * @return Whether or not the default search engine has search by image support.
-     */
-    public boolean isSearchByImageAvailable() {
-        ThreadUtils.assertOnUiThread();
-        return nativeIsSearchByImageAvailable(mNativeTemplateUrlServiceAndroid);
-    }
-
-    /**
      * @return Whether the default configured search engine is for a Google property.
      */
     public boolean isDefaultSearchEngineGoogle() {
@@ -319,7 +311,6 @@ public class TemplateUrlService {
             long nativeTemplateUrlServiceAndroid, int selectedIndex);
     private native int nativeGetDefaultSearchProvider(long nativeTemplateUrlServiceAndroid);
     private native boolean nativeIsSearchProviderManaged(long nativeTemplateUrlServiceAndroid);
-    private native boolean nativeIsSearchByImageAvailable(long nativeTemplateUrlServiceAndroid);
     private native boolean nativeIsDefaultSearchEngineGoogle(long nativeTemplateUrlServiceAndroid);
     private native String nativeGetUrlForSearchQuery(long nativeTemplateUrlServiceAndroid,
             String query);

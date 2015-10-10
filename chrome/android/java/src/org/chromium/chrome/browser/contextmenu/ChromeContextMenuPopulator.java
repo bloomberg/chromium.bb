@@ -15,7 +15,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.UrlUtilities;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionProxyUma;
-import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 
 /**
  * A {@link ContextMenuPopulator} used for showing the default Chrome context menu.
@@ -38,7 +37,6 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
         static final int ACTION_OPEN_IMAGE_IN_NEW_TAB = 8;
         static final int ACTION_COPY_IMAGE = 9;
         static final int ACTION_COPY_IMAGE_URL = 10;
-        static final int ACTION_SEARCH_BY_IMAGE = 11;
         static final int ACTION_LOAD_IMAGES = 12;
         static final int ACTION_LOAD_ORIGINAL_IMAGE = 13;
         static final int ACTION_SAVE_VIDEO = 14;
@@ -139,7 +137,6 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
             menu.findItem(R.id.contextmenu_save_image).setVisible(false);
             menu.findItem(R.id.contextmenu_open_image).setVisible(false);
             menu.findItem(R.id.contextmenu_open_image_in_new_tab).setVisible(false);
-            menu.findItem(R.id.contextmenu_search_by_image).setVisible(false);
             menu.findItem(R.id.contextmenu_copy_image).setVisible(false);
         } else if (params.isImage() && !params.imageWasFetchedLoFi()) {
             menu.findItem(R.id.contextmenu_load_original_image).setVisible(false);
@@ -156,21 +153,6 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
             // Avoid showing open image option for same image which is already opened.
             if (mDelegate.getPageUrl().equals(params.getSrcUrl())) {
                 menu.findItem(R.id.contextmenu_open_image).setVisible(false);
-            }
-            final TemplateUrlService templateUrlServiceInstance = TemplateUrlService.getInstance();
-            final boolean isSearchByImageAvailable =
-                    UrlUtilities.isDownloadableScheme(params.getSrcUrl())
-                            && templateUrlServiceInstance.isLoaded()
-                            && templateUrlServiceInstance.isSearchByImageAvailable()
-                            && templateUrlServiceInstance.getDefaultSearchEngineTemplateUrl()
-                                    != null;
-
-            menu.findItem(R.id.contextmenu_search_by_image).setVisible(isSearchByImageAvailable);
-            if (isSearchByImageAvailable) {
-                menu.findItem(R.id.contextmenu_search_by_image).setTitle(
-                        context.getString(R.string.contextmenu_search_web_for_image,
-                                TemplateUrlService.getInstance()
-                                        .getDefaultSearchEngineTemplateUrl().getShortName()));
             }
         }
     }
@@ -233,9 +215,6 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
             if (mDelegate.startDownload(params.getUnfilteredLinkUrl(), true)) {
                 helper.startContextMenuDownload(true, false);
             }
-        } else if (itemId == R.id.contextmenu_search_by_image) {
-            ContextMenuUma.record(params, ContextMenuUma.ACTION_SEARCH_BY_IMAGE);
-            mDelegate.onSearchByImageInNewTab();
         } else if (itemId == R.id.contextmenu_copy_image) {
             ContextMenuUma.record(params, ContextMenuUma.ACTION_COPY_IMAGE);
             mDelegate.onSaveImageToClipboard(params.getSrcUrl());

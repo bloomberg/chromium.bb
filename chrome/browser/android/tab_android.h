@@ -201,8 +201,6 @@ class TabAndroid : public CoreTabHelperDelegate,
 
   void LoadOriginalImage(JNIEnv* env, jobject obj);
 
-  void SearchByImageInNewTabAsync(JNIEnv* env, jobject obj);
-
   jlong GetBookmarkId(JNIEnv* env, jobject obj, jboolean only_editable);
 
   jboolean HasOfflineCopy(JNIEnv* env, jobject obj);

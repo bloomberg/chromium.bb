@@ -31,7 +31,6 @@ class TemplateUrlServiceAndroid : public TemplateURLServiceObserver {
   base::android::ScopedJavaLocalRef<jobject>
       GetPrepopulatedTemplateUrlAt(JNIEnv* env, jobject obj, jint index);
   jboolean IsSearchProviderManaged(JNIEnv* env, jobject obj);
-  jboolean IsSearchByImageAvailable(JNIEnv* env, jobject obj);
   jboolean IsDefaultSearchEngineGoogle(JNIEnv* env, jobject obj);
   base::android::ScopedJavaLocalRef<jstring> GetUrlForSearchQuery(
       JNIEnv* env,
