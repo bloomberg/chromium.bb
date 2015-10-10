@@ -168,13 +168,13 @@ typedef void (*logcallback)(int level, const char *message);
 
   typedef enum
   {
-    LOG_ALL = -2147483648,
+    LOG_ALL = 0,
     LOG_DEBUG = 10000,
     LOG_INFO = 20000,
     LOG_WARN = 30000,
     LOG_ERROR = 40000,
     LOG_FATAL = 50000,
-    LOG_OFF = 2147483647
+    LOG_OFF = 60000
   } logLevels;
   void EXPORT_CALL lou_setLogLevel(logLevels level);
 
