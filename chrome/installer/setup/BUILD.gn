@@ -37,6 +37,8 @@ if (is_win) {
       "install.h",
       "install_worker.cc",
       "install_worker.h",
+      "setup_constants.cc",
+      "setup_constants.h",
       "setup_util.cc",
       "setup_util.h",
       "update_active_setup_version_work_item.cc",

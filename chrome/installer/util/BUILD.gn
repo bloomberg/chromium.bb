@@ -221,7 +221,6 @@ if (is_win) {
   test("installer_util_unittests") {
     sources = [
       "../setup/compat_checks_unittest.cc",
-      "../setup/setup_constants.cc",
       "advanced_firewall_manager_win_unittest.cc",
       "beacons_unittest.cc",
       "callback_work_item_unittest.cc",
