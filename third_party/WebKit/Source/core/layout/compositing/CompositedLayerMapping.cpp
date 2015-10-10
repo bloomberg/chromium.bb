@@ -2251,7 +2251,8 @@ void CompositedLayerMapping::notifyAnimationStarted(const GraphicsLayer*, double
 
 void CompositedLayerMapping::notifyTextPainted()
 {
-    layoutObject()->node()->document().markFirstTextPaint();
+    if (Node* node = layoutObject()->node())
+        node->document().markFirstTextPaint();
 }
 
 IntRect CompositedLayerMapping::pixelSnappedCompositedBounds() const
