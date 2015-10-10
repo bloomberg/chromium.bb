@@ -81,9 +81,15 @@ public class ButtonCompat extends Button {
             TypedArray a = getContext().obtainStyledAttributes(null,
                     new int[]{android.R.attr.stateListAnimator}, 0,
                     android.R.style.Widget_Material_Button);
-            setStateListAnimator(AnimatorInflater.loadStateListAnimator(getContext(),
-                    a.getResourceId(0, 0)));
+            int stateListAnimatorId = a.getResourceId(0, 0);
             a.recycle();
+            // stateListAnimatorId could be 0 on custom or future builds of Android, or when using a
+            // framework like Xposed. Handle these cases gracefully by simply not using a
+            // StateListAnimator.
+            if (stateListAnimatorId != 0) {
+                setStateListAnimator(AnimatorInflater.loadStateListAnimator(getContext(),
+                        stateListAnimatorId));
+            }
         }
     }
 
