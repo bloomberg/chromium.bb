@@ -37,8 +37,6 @@
 
 namespace mac_relauncher {
 
-const char* const kRelauncherDMGDeviceArg = "--dmg-device=";
-
 namespace {
 
 // The "magic" file descriptor that the relauncher process' write side of the
@@ -298,6 +296,8 @@ int RelauncherMain(const content::MainFunctionParams& main_parameters) {
   bool seen_relaunch_executable = false;
   std::string relaunch_executable;
   const std::string relauncher_arg_separator(kRelauncherArgSeparator);
+  const std::string relauncher_dmg_device_arg =
+      base::StringPrintf("--%s=", switches::kRelauncherProcessDMGDevice);
   for (int argv_index = 2; argv_index < argc; ++argv_index) {
     const std::string arg(argv[argv_index]);
 
@@ -311,9 +311,11 @@ int RelauncherMain(const content::MainFunctionParams& main_parameters) {
         in_relaunch_args = true;
       } else if (arg == kRelauncherBackgroundArg) {
         background = true;
-      } else if (arg.compare(0, strlen(kRelauncherDMGDeviceArg),
-                             kRelauncherDMGDeviceArg) == 0) {
-        dmg_bsd_device_name.assign(arg.substr(strlen(kRelauncherDMGDeviceArg)));
+      } else if (arg.compare(0,
+                             relauncher_dmg_device_arg.size(),
+                             relauncher_dmg_device_arg) == 0) {
+        dmg_bsd_device_name.assign(
+            arg.substr(relauncher_dmg_device_arg.size()));
       }
     } else {
       if (!seen_relaunch_executable) {

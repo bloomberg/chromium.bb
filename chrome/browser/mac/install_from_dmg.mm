@@ -32,14 +32,15 @@
 #include "base/mac/scoped_ioobject.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/mac/dock.h"
 #import "chrome/browser/mac/keystone_glue.h"
 #include "chrome/browser/mac/relauncher.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
-#include "third_party/crashpad/crashpad/client/crashpad_client.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
@@ -372,8 +373,10 @@ bool LaunchInstalledApp(NSString* installed_path,
 
   std::vector<std::string> relauncher_args;
   if (!dmg_bsd_device_name.empty()) {
-    std::string dmg_arg(mac_relauncher::kRelauncherDMGDeviceArg);
-    dmg_arg.append(dmg_bsd_device_name);
+    std::string dmg_arg =
+        base::StringPrintf("--%s=%s",
+                           switches::kRelauncherProcessDMGDevice,
+                           dmg_bsd_device_name.c_str());
     relauncher_args.push_back(dmg_arg);
   }
 
@@ -657,17 +660,8 @@ void EjectAndTrashDiskImage(const std::string& dmg_bsd_device_name) {
                                                       CFRunLoopGetCurrent(),
                                                       kCFRunLoopCommonModes);
 
-  // Stop talking to Crashpad. This relauncher process inherited the
-  // crashpad_handler of its parent, which resides on the disk image. As long as
-  // it's running, the filesystem that contains it can't be unmounted. Since the
-  // relauncher is expected to be the only thing that's talking to that Crashpad
-  // instance, severing ties here should cause it to exit, provided it's not
-  // busy doing anything else (like uploading a crash report).
-  //
-  // This means that crash coverage is lost from this point on, which is sad.
-  crashpad::CrashpadClient::UseSystemDefaultHandler();
-
-  // Retry the unmount in a loop to give crashpad_handler a chance to exit.
+  // Retry the unmount in a loop to give anything that may have been in use on
+  // the disk image (such as crashpad_handler) a chance to exit.
   int tries = 15;
   while (!SynchronousDADiskUnmount(disk,
                                    kDADiskUnmountOptionWhole,

@@ -12,12 +12,31 @@
 
 namespace crash_reporter {
 
-// Initializes Crashpad in a way that is appropriate for process_type. If
-// process_type is empty, initializes Crashpad for the browser process, which
-// starts crashpad_handler and sets it as the exception handler. Other process
-// types inherit this exception handler from the browser, but still need to
-// perform additional initialization.
-void InitializeCrashpad(const std::string& process_type);
+// Initializes Crashpad in a way that is appropriate for initial_client and
+// process_type.
+//
+// If initial_client is true, this starts crashpad_handler and sets it as the
+// exception handler. Child processes will inherit this exception handler, and
+// should specify false for this parameter. Although they inherit the exception
+// handler, child processes still need to call this function to perform
+// additional initialization.
+//
+// If process_type is empty, initialization will be done for the browser
+// process. The browser process performs additional initialization of the crash
+// report database. The browser process is also the only process type that is
+// eligible to have its crashes forwarded to the system crash report handler (in
+// release mode only). Note that when process_type is empty, initial_client must
+// be true.
+//
+// process_type may be non-empty with initial_client set to true. This indicates
+// that an exception handler has been inherited but should be discarded in favor
+// of a new Crashpad handler. This configuration should be used infrequently. It
+// is provided to allow an install-from-.dmg relauncher process to disassociate
+// from an old Crashpad handler so that after performing an installation from a
+// disk image, the relauncher process may unmount the disk image that contains
+// its inherited crashpad_handler. This is only supported when initial_client is
+// true and process_type is "relauncher".
+void InitializeCrashpad(bool initial_client, const std::string& process_type);
 
 // Enables or disables crash report upload. This is a property of the Crashpad
 // database. In a newly-created database, uploads will be disabled. This

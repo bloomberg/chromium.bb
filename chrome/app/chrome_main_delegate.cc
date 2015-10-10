@@ -605,9 +605,17 @@ void ChromeMainDelegate::InitMacCrashReporter(
   // CommandLine::Init() and chrome::RegisterPathProvider().  Ideally, Crashpad
   // initialization could occur sooner, preferably even before the framework
   // dylib is even loaded, to catch potential early crashes.
-  crash_reporter::InitializeCrashpad(process_type);
 
   const bool browser_process = process_type.empty();
+  const bool install_from_dmg_relauncher_process =
+      process_type == switches::kRelauncherProcess &&
+      command_line.HasSwitch(switches::kRelauncherProcessDMGDevice);
+
+  const bool initial_client =
+      browser_process || install_from_dmg_relauncher_process;
+
+  crash_reporter::InitializeCrashpad(initial_client, process_type);
+
   if (!browser_process) {
     std::string metrics_client_id =
         command_line.GetSwitchValueASCII(switches::kMetricsClientID);

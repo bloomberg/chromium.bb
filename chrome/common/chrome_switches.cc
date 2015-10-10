@@ -1274,6 +1274,12 @@ const char kMetricsClientID[]               = "metrics-client-id";
 // A process type (switches::kProcessType) that relaunches the browser. See
 // chrome/browser/mac/relauncher.h.
 const char kRelauncherProcess[]             = "relauncher";
+
+// When switches::kProcessType is switches::kRelauncherProcess, if this switch
+// is also present, the relauncher process will unmount and eject a mounted disk
+// image and move its disk image file to the trash.  The argument's value must
+// be a BSD device name of the form "diskN" or "diskNsM".
+const char kRelauncherProcessDMGDevice[]    = "dmg-device";
 #endif  // defined(OS_MACOSX)
 
 #if defined(OS_WIN)

@@ -367,6 +367,7 @@ extern const char kEnableSavePasswordBubble[];
 extern const char kEnableTranslateNewUX[];
 extern const char kMetricsClientID[];
 extern const char kRelauncherProcess[];
+extern const char kRelauncherProcessDMGDevice[];
 #endif  // defined(OS_MACOSX)
 
 #if defined(OS_WIN)

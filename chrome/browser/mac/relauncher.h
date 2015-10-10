@@ -38,12 +38,6 @@ struct MainFunctionParams;
 
 namespace mac_relauncher {
 
-// The relauncher process can unmount and eject a mounted disk image and move
-// its disk image file to the trash. This argument may be supplied to
-// RelaunchAppWithHelper to achieve this. The argument's value must be a BSD
-// device name of the form "diskN" or "diskNsM".
-extern const char* const kRelauncherDMGDeviceArg;
-
 // Relaunches the application using the helper application associated with the
 // currently running instance of Chrome in the parent browser process as the
 // executable for the relauncher process. |args| is an argv-style vector of

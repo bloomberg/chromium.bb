@@ -89,7 +89,7 @@ void DumpWithoutCrashing() {
 
 }  // namespace
 
-void InitializeCrashpad(const std::string& process_type) {
+void InitializeCrashpad(bool initial_client, const std::string& process_type) {
   static bool initialized = false;
   DCHECK(!initialized);
   initialized = true;
@@ -97,9 +97,18 @@ void InitializeCrashpad(const std::string& process_type) {
   const bool browser_process = process_type.empty();
   CrashReporterClient* crash_reporter_client = GetCrashReporterClient();
 
+  if (initial_client) {
+    // "relauncher" is hard-coded because it's a Chrome --type, but this
+    // component can't see Chrome's switches. This is only used for argument
+    // sanitization.
+    DCHECK(browser_process || process_type == "relauncher");
+  } else {
+    DCHECK(!browser_process);
+  }
+
   base::FilePath database_path;  // Only valid in the browser process.
 
-  if (browser_process) {
+  if (initial_client) {
     @autoreleasepool {
       base::FilePath framework_bundle_path = base::mac::FrameworkBundlePath();
       base::FilePath handler_path =
@@ -128,10 +137,32 @@ void InitializeCrashpad(const std::string& process_type) {
       process_annotations["plat"] = std::string("OS X");
 
       crashpad::CrashpadClient crashpad_client;
-      if (crashpad_client.StartHandler(handler_path, database_path, url,
-                                       process_annotations,
-                                       std::vector<std::string>())) {
-        crashpad_client.UseHandler();
+
+      std::vector<std::string> arguments;
+      if (!browser_process) {
+        // If this is an initial client that's not the browser process, it's
+        // important that the new Crashpad handler also not be connected to any
+        // existing handler. This argument tells the new Crashpad handler to
+        // sever this connection.
+        arguments.push_back(
+            "--reset-own-crash-exception-port-to-system-default");
+      }
+
+      bool result = crashpad_client.StartHandler(handler_path,
+                                                 database_path,
+                                                 url,
+                                                 process_annotations,
+                                                 arguments);
+      if (result) {
+        result = crashpad_client.UseHandler();
+      }
+
+      // If this is an initial client that's not the browser process, it's
+      // important to sever the connection to any existing handler. If
+      // StartHandler() or UseHandler() failed, call UseSystemDefaultHandler()
+      // in that case to drop the link to the existing handler.
+      if (!result && !browser_process) {
+        crashpad::CrashpadClient::UseSystemDefaultHandler();
       }
     }  // @autoreleasepool
   }
@@ -182,13 +213,13 @@ void InitializeCrashpad(const std::string& process_type) {
 
     bool enable_uploads = false;
     if (!crash_reporter_client->ReportingIsEnforcedByPolicy(&enable_uploads)) {
-      enable_uploads = crash_reporter_client->GetCollectStatsConsent() &&
-                       !crash_reporter_client->IsRunningUnattended();
       // Breakpad provided a --disable-breakpad switch to disable crash dumping
       // (not just uploading) here. Crashpad doesn't need it: dumping is enabled
       // unconditionally and uploading is gated on consent, which tests/bots
-      // shouldn't have. As a precaution, we also force disable uploading on
-      // bots even if consent is present.
+      // shouldn't have. As a precaution, uploading is also disabled on bots
+      // even if consent is present.
+      enable_uploads = crash_reporter_client->GetCollectStatsConsent() &&
+                       !crash_reporter_client->IsRunningUnattended();
     }
 
     SetUploadsEnabled(enable_uploads);
