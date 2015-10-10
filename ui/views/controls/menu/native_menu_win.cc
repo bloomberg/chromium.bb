@@ -4,8 +4,6 @@
 
 #include "ui/views/controls/menu/native_menu_win.h"
 
-#include <Windowsx.h>
-
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"

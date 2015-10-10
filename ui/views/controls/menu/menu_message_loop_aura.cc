@@ -4,10 +4,6 @@
 
 #include "ui/views/controls/menu/menu_message_loop_aura.h"
 
-#if defined(OS_WIN)
-#include <windowsx.h>
-#endif
-
 #include "base/run_loop.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/window.h"

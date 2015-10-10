@@ -4,10 +4,6 @@
 
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 
-#if defined(OS_WIN)
-#include <windowsx.h>
-#endif
-
 #include <algorithm>
 #include <iterator>
 #include <string>
