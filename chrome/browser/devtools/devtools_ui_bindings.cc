@@ -466,7 +466,7 @@ DevToolsUIBindings::DevToolsUIBindings(content::WebContents* web_contents)
   frontend_contents_observer_.reset(new FrontendWebContentsObserver(this));
   web_contents_->GetMutableRendererPrefs()->can_accept_load_drops = false;
 
-  file_helper_.reset(new DevToolsFileHelper(web_contents_, profile_));
+  file_helper_.reset(new DevToolsFileHelper(web_contents_, profile_, this));
   file_system_indexer_ = new DevToolsFileSystemIndexer();
   extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
       web_contents_);
@@ -653,16 +653,19 @@ void DevToolsUIBindings::AppendToFile(const std::string& url,
 
 void DevToolsUIBindings::RequestFileSystems() {
   CHECK(web_contents_->GetURL().SchemeIs(content::kChromeDevToolsScheme));
-  file_helper_->RequestFileSystems(base::Bind(
-      &DevToolsUIBindings::FileSystemsLoaded, weak_factory_.GetWeakPtr()));
+  std::vector<DevToolsFileHelper::FileSystem> file_systems =
+      file_helper_->GetFileSystems();
+  base::ListValue file_systems_value;
+  for (size_t i = 0; i < file_systems.size(); ++i)
+    file_systems_value.Append(CreateFileSystemValue(file_systems[i]));
+  CallClientFunction("DevToolsAPI.fileSystemsLoaded",
+                     &file_systems_value, NULL, NULL);
 }
 
 void DevToolsUIBindings::AddFileSystem(const std::string& file_system_path) {
   CHECK(web_contents_->GetURL().SchemeIs(content::kChromeDevToolsScheme));
   file_helper_->AddFileSystem(
       file_system_path,
-      base::Bind(&DevToolsUIBindings::FileSystemAdded,
-                 weak_factory_.GetWeakPtr()),
       base::Bind(&DevToolsUIBindings::ShowDevToolsConfirmInfoBar,
                  weak_factory_.GetWeakPtr()));
 }
@@ -670,9 +673,6 @@ void DevToolsUIBindings::AddFileSystem(const std::string& file_system_path) {
 void DevToolsUIBindings::RemoveFileSystem(const std::string& file_system_path) {
   CHECK(web_contents_->GetURL().SchemeIs(content::kChromeDevToolsScheme));
   file_helper_->RemoveFileSystem(file_system_path);
-  base::StringValue file_system_path_value(file_system_path);
-  CallClientFunction("DevToolsAPI.fileSystemRemoved",
-                     &file_system_path_value, NULL, NULL);
 }
 
 void DevToolsUIBindings::UpgradeDraggedFileSystemPermissions(
@@ -680,8 +680,6 @@ void DevToolsUIBindings::UpgradeDraggedFileSystemPermissions(
   CHECK(web_contents_->GetURL().SchemeIs(content::kChromeDevToolsScheme));
   file_helper_->UpgradeDraggedFileSystemPermissions(
       file_system_url,
-      base::Bind(&DevToolsUIBindings::FileSystemAdded,
-                 weak_factory_.GetWeakPtr()),
       base::Bind(&DevToolsUIBindings::ShowDevToolsConfirmInfoBar,
                  weak_factory_.GetWeakPtr()));
 }
@@ -962,24 +960,19 @@ void DevToolsUIBindings::AppendedTo(const std::string& url) {
                      NULL);
 }
 
-void DevToolsUIBindings::FileSystemsLoaded(
-    const std::vector<DevToolsFileHelper::FileSystem>& file_systems) {
-  base::ListValue file_systems_value;
-  for (size_t i = 0; i < file_systems.size(); ++i)
-    file_systems_value.Append(CreateFileSystemValue(file_systems[i]));
-  CallClientFunction("DevToolsAPI.fileSystemsLoaded",
-                     &file_systems_value, NULL, NULL);
-}
-
 void DevToolsUIBindings::FileSystemAdded(
     const DevToolsFileHelper::FileSystem& file_system) {
-  scoped_ptr<base::StringValue> error_string_value(
-      new base::StringValue(std::string()));
-  scoped_ptr<base::DictionaryValue> file_system_value;
-  if (!file_system.file_system_path.empty())
-    file_system_value.reset(CreateFileSystemValue(file_system));
+  scoped_ptr<base::DictionaryValue> file_system_value(
+      CreateFileSystemValue(file_system));
   CallClientFunction("DevToolsAPI.fileSystemAdded",
-                     error_string_value.get(), file_system_value.get(), NULL);
+                     file_system_value.get(), NULL, NULL);
+}
+
+void DevToolsUIBindings::FileSystemRemoved(
+    const std::string& file_system_path) {
+  base::StringValue file_system_path_value(file_system_path);
+  CallClientFunction("DevToolsAPI.fileSystemRemoved",
+                     &file_system_path_value, NULL, NULL);
 }
 
 void DevToolsUIBindings::IndexingTotalWorkCalculated(

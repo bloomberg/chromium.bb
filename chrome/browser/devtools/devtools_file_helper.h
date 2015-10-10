@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_DEVTOOLS_DEVTOOLS_FILE_HELPER_H_
 
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -13,6 +14,7 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/prefs/pref_change_registrar.h"
 #include "base/strings/string16.h"
 
 class Profile;
@@ -38,16 +40,19 @@ class DevToolsFileHelper {
     std::string file_system_path;
   };
 
-  DevToolsFileHelper(content::WebContents* web_contents, Profile* profile);
+  class Delegate {
+   public:
+    virtual ~Delegate() {}
+    virtual void FileSystemAdded(const FileSystem& file_system) = 0;
+    virtual void FileSystemRemoved(const std::string& file_system_path) = 0;
+  };
+
+  DevToolsFileHelper(content::WebContents* web_contents, Profile* profile,
+                     Delegate* delegate);
   ~DevToolsFileHelper();
 
   typedef base::Callback<void(void)> SaveCallback;
   typedef base::Callback<void(void)> AppendCallback;
-  typedef base::Callback<
-      void(const std::vector<DevToolsFileHelper::FileSystem>&)>
-      RequestFileSystemsCallback;
-  typedef base::Callback<void(const DevToolsFileHelper::FileSystem&)>
-      AddFileSystemCallback;
   typedef base::Callback<void(const base::string16&,
                               const base::Callback<void(bool)>&)>
       ShowInfoBarCallback;
@@ -83,7 +88,6 @@ class DevToolsFileHelper {
   //    If user denies adding file system in infobar, passes error string to
   //    |callback|.
   void AddFileSystem(const std::string& file_system_path,
-                     const AddFileSystemCallback& callback,
                      const ShowInfoBarCallback& show_info_bar_callback);
 
   // Upgrades dragged file system permissions to a read-write access.
@@ -96,13 +100,12 @@ class DevToolsFileHelper {
   // |callback|.
   void UpgradeDraggedFileSystemPermissions(
       const std::string& file_system_url,
-      const AddFileSystemCallback& callback,
       const ShowInfoBarCallback& show_info_bar_callback);
 
   // Loads file system paths from prefs, grants permissions and registers
   // isolated file system for those of them that contain magic file and passes
   // FileSystem structs for registered file systems to |callback|.
-  void RequestFileSystems(const RequestFileSystemsCallback& callback);
+  std::vector<FileSystem> GetFileSystems();
 
   // Removes isolated file system for given |file_system_path|.
   void RemoveFileSystem(const std::string& file_system_path);
@@ -117,25 +120,23 @@ class DevToolsFileHelper {
                           const SaveCallback& callback,
                           const base::FilePath& path);
   void InnerAddFileSystem(
-      const AddFileSystemCallback& callback,
       const ShowInfoBarCallback& show_info_bar_callback,
       const base::FilePath& path);
   void CheckProjectFileExistsAndAddFileSystem(
-      const AddFileSystemCallback& callback,
       const ShowInfoBarCallback& show_info_bar_callback,
       const base::FilePath& path);
   void AddUserConfirmedFileSystem(
-      const AddFileSystemCallback& callback,
       const base::FilePath& path,
       bool allowed);
-  void RestoreValidatedFileSystems(
-      const RequestFileSystemsCallback& callback,
-      const std::vector<base::FilePath>& file_paths);
+  void FileSystemPathsSettingChanged();
 
   content::WebContents* web_contents_;
   Profile* profile_;
+  DevToolsFileHelper::Delegate* delegate_;
   typedef std::map<std::string, base::FilePath> PathsMap;
   PathsMap saved_files_;
+  PrefChangeRegistrar pref_change_registrar_;
+  std::set<std::string> file_system_paths_;
   base::WeakPtrFactory<DevToolsFileHelper> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(DevToolsFileHelper);
 };

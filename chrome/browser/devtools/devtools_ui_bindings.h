@@ -37,7 +37,8 @@ class DevToolsUIBindings :public content::DevToolsFrontendHost::Delegate,
                            public DevToolsEmbedderMessageDispatcher::Delegate,
                            public DevToolsAndroidBridge::DeviceCountListener,
                            public content::DevToolsAgentHostClient,
-                           public net::URLFetcherDelegate {
+                           public net::URLFetcherDelegate,
+                           public DevToolsFileHelper::Delegate {
  public:
   static DevToolsUIBindings* ForWebContents(
       content::WebContents* web_contents);
@@ -169,13 +170,15 @@ class DevToolsUIBindings :public content::DevToolsFrontendHost::Delegate,
                     const std::string& message);
   void DevicesDiscoveryConfigUpdated();
 
+  // DevToolsFileHelper::Delegate overrides.
+  void FileSystemAdded(
+      const DevToolsFileHelper::FileSystem& file_system) override;
+  void FileSystemRemoved(const std::string& file_system_path) override;
+
   // DevToolsFileHelper callbacks.
   void FileSavedAs(const std::string& url);
   void CanceledFileSaveAs(const std::string& url);
   void AppendedTo(const std::string& url);
-  void FileSystemsLoaded(
-      const std::vector<DevToolsFileHelper::FileSystem>& file_systems);
-  void FileSystemAdded(const DevToolsFileHelper::FileSystem& file_system);
   void IndexingTotalWorkCalculated(int request_id,
                                    const std::string& file_system_path,
                                    int total_work);
