@@ -44,6 +44,7 @@ namespace content {
 class BrowserChildProcessHostImpl;
 class GpuMainThread;
 class InProcessChildThreadParams;
+class MojoApplicationHost;
 class RenderWidgetHostViewFrameSubscriber;
 class ShaderDiskCache;
 
@@ -172,6 +173,9 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
 
   bool Init();
 
+  // Sets up mojo support in GPU process. Returns false upon failure.
+  bool SetupMojo();
+
   // Post an IPC message to the UI shim's message handler on the UI thread.
   void RouteOnUIThread(const IPC::Message& message);
 
@@ -181,6 +185,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   void OnProcessLaunched() override;
   void OnProcessLaunchFailed() override;
   void OnProcessCrashed(int exit_code) override;
+  ServiceRegistry* GetServiceRegistry() override;
 
   // Message handlers.
   void OnInitialized(bool result, const gpu::GPUInfo& gpu_info);
@@ -286,6 +291,10 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   // IOSurfaces.
   IOSurfaceManagerToken io_surface_manager_token_;
 #endif
+
+  // Browser-side Mojo endpoint which sets up a Mojo channel with the child
+  // process and contains the browser's ServiceRegistry.
+  scoped_ptr<MojoApplicationHost> mojo_application_host_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuProcessHost);
 };

@@ -12,6 +12,7 @@
 #include "content/child/thread_safe_sender.h"
 #include "content/common/gpu/gpu_memory_buffer_factory.h"
 #include "content/common/gpu/gpu_messages.h"
+#include "content/gpu/gpu_process_control_impl.h"
 #include "content/gpu/gpu_watchdog_thread.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
@@ -189,6 +190,12 @@ void GpuChildThread::Shutdown() {
 
 void GpuChildThread::Init(const base::Time& process_start_time) {
   process_start_time_ = process_start_time;
+
+  process_control_.reset(new GpuProcessControlImpl());
+  // Use of base::Unretained(this) is safe here because |service_registry()|
+  // will be destroyed before GpuChildThread is destructed.
+  service_registry()->AddService(base::Bind(
+      &GpuChildThread::BindProcessControlRequest, base::Unretained(this)));
 }
 
 bool GpuChildThread::Send(IPC::Message* msg) {
@@ -379,6 +386,13 @@ void GpuChildThread::OnGpuSwitched() {
   DVLOG(1) << "GPU: GPU has switched";
   // Notify observers in the GPU process.
   ui::GpuSwitchingManager::GetInstance()->NotifyGpuSwitched();
+}
+
+void GpuChildThread::BindProcessControlRequest(
+    mojo::InterfaceRequest<ProcessControl> request) {
+  DVLOG(1) << "GPU: Binding ProcessControl request";
+  DCHECK(process_control_);
+  process_control_bindings_.AddBinding(process_control_.get(), request.Pass());
 }
 
 }  // namespace content

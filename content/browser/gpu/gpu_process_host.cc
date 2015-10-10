@@ -23,6 +23,7 @@
 #include "content/browser/gpu/gpu_process_host_ui_shim.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/browser/gpu/shader_disk_cache.h"
+#include "content/browser/mojo/mojo_application_host.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/gpu/gpu_messages.h"
@@ -543,6 +544,9 @@ bool GpuProcessHost::Init() {
   if (channel_id.empty())
     return false;
 
+  if (!SetupMojo())
+    return false;
+
   if (in_process_) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     DCHECK(g_gpu_main_thread_factory);
@@ -573,6 +577,12 @@ bool GpuProcessHost::Init() {
 #endif
 
   return true;
+}
+
+bool GpuProcessHost::SetupMojo() {
+  DCHECK(!mojo_application_host_);
+  mojo_application_host_.reset(new MojoApplicationHost);
+  return mojo_application_host_->Init();
 }
 
 void GpuProcessHost::RouteOnUIThread(const IPC::Message& message) {
@@ -892,6 +902,14 @@ void GpuProcessHost::OnAcceleratedSurfaceBuffersSwapped(
 void GpuProcessHost::OnProcessLaunched() {
   UMA_HISTOGRAM_TIMES("GPU.GPUProcessLaunchTime",
                       base::TimeTicks::Now() - init_start_time_);
+
+  base::ProcessHandle handle;
+  if (in_process_)
+    handle = base::GetCurrentProcessHandle();
+  else
+    handle = process_->GetData().handle;
+
+  mojo_application_host_->Activate(this, handle);
 }
 
 void GpuProcessHost::OnProcessLaunchFailed() {
@@ -903,6 +921,10 @@ void GpuProcessHost::OnProcessCrashed(int exit_code) {
   RecordProcessCrash();
   GpuDataManagerImpl::GetInstance()->ProcessCrashed(
       process_->GetTerminationStatus(true /* known_dead */, NULL));
+}
+
+ServiceRegistry* GpuProcessHost::GetServiceRegistry() {
+  return mojo_application_host_->service_registry();
 }
 
 GpuProcessHost::GpuProcessKind GpuProcessHost::kind() {

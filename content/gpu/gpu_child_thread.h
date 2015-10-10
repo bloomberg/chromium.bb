@@ -20,6 +20,8 @@
 #include "content/common/gpu/gpu_config.h"
 #include "content/common/gpu/x_util.h"
 #include "gpu/config/gpu_info.h"
+#include "mojo/common/weak_binding_set.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/interface_request.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace gpu {
@@ -32,7 +34,9 @@ class TargetServices;
 
 namespace content {
 class GpuMemoryBufferFactory;
+class GpuProcessControlImpl;
 class GpuWatchdogThread;
+class ProcessControl;
 
 // The main thread of the GPU child process. There will only ever be one of
 // these per process. It does process initialization and shutdown. It forwards
@@ -83,6 +87,9 @@ class GpuChildThread : public ChildThreadImpl {
   void OnGetGpuTcmalloc();
 #endif
 
+  void BindProcessControlRequest(
+      mojo::InterfaceRequest<ProcessControl> request);
+
   // Set this flag to true if a fatal error occurred before we receive the
   // OnInitialize message, in which case we just declare ourselves DOA.
   bool dead_on_arrival_;
@@ -110,6 +117,12 @@ class GpuChildThread : public ChildThreadImpl {
 
   // The GpuMemoryBufferFactory instance used to allocate GpuMemoryBuffers.
   GpuMemoryBufferFactory* const gpu_memory_buffer_factory_;
+
+  // Process control for Mojo application hosting.
+  scoped_ptr<GpuProcessControlImpl> process_control_;
+
+  // Bindings to the ProcessControl impl.
+  mojo::WeakBindingSet<ProcessControl> process_control_bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuChildThread);
 };

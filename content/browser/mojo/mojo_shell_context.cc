@@ -9,6 +9,8 @@
 #include "base/path_service.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
+#include "content/browser/gpu/gpu_process_host.h"
+#include "content/common/gpu/gpu_process_launch_causes.h"
 #include "content/common/process_control.mojom.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -37,9 +39,10 @@ namespace {
 // An extra set of apps to register on initialization, if set by a test.
 const MojoShellContext::StaticApplicationMap* g_applications_for_test;
 
-void StartProcessOnIOThread(mojo::InterfaceRequest<ProcessControl> request,
-                            const base::string16& process_name,
-                            bool use_sandbox) {
+void StartUtilityProcessOnIOThread(
+    mojo::InterfaceRequest<ProcessControl> request,
+    const base::string16& process_name,
+    bool use_sandbox) {
   UtilityProcessHost* process_host =
       UtilityProcessHost::Create(nullptr, nullptr);
   process_host->SetName(process_name);
@@ -88,10 +91,10 @@ class UtilityProcessLoader : public mojo::shell::ApplicationLoader {
       mojo::InterfaceRequest<mojo::Application> application_request) override {
     ProcessControlPtr process_control;
     auto process_request = mojo::GetProxy(&process_control);
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(&StartProcessOnIOThread, base::Passed(&process_request),
-                   process_name_, use_sandbox_));
+    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                            base::Bind(&StartUtilityProcessOnIOThread,
+                                       base::Passed(&process_request),
+                                       process_name_, use_sandbox_));
     process_control->LoadApplication(url.spec(), application_request.Pass(),
                                      base::Bind(&OnApplicationLoaded, url));
   }
@@ -100,6 +103,46 @@ class UtilityProcessLoader : public mojo::shell::ApplicationLoader {
   const bool use_sandbox_;
 
   DISALLOW_COPY_AND_ASSIGN(UtilityProcessLoader);
+};
+
+// Request ProcessControl from GPU process host. Must be called on IO thread.
+void RequestGpuProcessControl(mojo::InterfaceRequest<ProcessControl> request) {
+  BrowserChildProcessHostDelegate* process_host =
+      GpuProcessHost::Get(GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
+                          CAUSE_FOR_GPU_LAUNCH_MOJO_SETUP);
+  if (!process_host) {
+    DLOG(ERROR) << "GPU process host not available.";
+    return;
+  }
+
+  // TODO(xhwang): It's possible that |process_host| is non-null, but the actual
+  // process is dead. In that case, |request| will be dropped and application
+  // load requests through ProcessControl will also fail. Make sure we handle
+  // these cases correctly.
+  process_host->GetServiceRegistry()->ConnectToRemoteService(request.Pass());
+}
+
+// Forwards the load request to the GPU process.
+class GpuProcessLoader : public mojo::shell::ApplicationLoader {
+ public:
+  GpuProcessLoader() {}
+  ~GpuProcessLoader() override {}
+
+ private:
+  // mojo::shell::ApplicationLoader:
+  void Load(
+      const GURL& url,
+      mojo::InterfaceRequest<mojo::Application> application_request) override {
+    ProcessControlPtr process_control;
+    auto process_request = mojo::GetProxy(&process_control);
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&RequestGpuProcessControl, base::Passed(&process_request)));
+    process_control->LoadApplication(url.spec(), application_request.Pass(),
+                                     base::Bind(&OnApplicationLoaded, url));
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(GpuProcessLoader);
 };
 
 }  // namespace

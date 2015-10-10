@@ -29,6 +29,8 @@ source_set("gpu_sources") {
     "gpu_main.cc",
     "gpu_process.cc",
     "gpu_process.h",
+    "gpu_process_control_impl.cc",
+    "gpu_process_control_impl.h",
     "gpu_watchdog_thread.cc",
     "gpu_watchdog_thread.h",
     "in_process_gpu_thread.cc",

@@ -14,6 +14,8 @@
     'gpu/gpu_main.cc',
     'gpu/gpu_process.cc',
     'gpu/gpu_process.h',
+    'gpu/gpu_process_control_impl.cc',
+    'gpu/gpu_process_control_impl.h',
     'gpu/gpu_watchdog_thread.cc',
     'gpu/gpu_watchdog_thread.h',
     'gpu/in_process_gpu_thread.cc',
