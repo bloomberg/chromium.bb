@@ -39,7 +39,7 @@ config("compiler") {
   configs = []
   cflags = []
 
-  if (is_clang) {
+  if (is_clang && current_cpu != "pnacl") {
     # -no-integrated-as is the default in nacl-clang for historical
     # compatibility with inline assembly code and so forth.  But there
     # are no such cases in Chromium code, and -integrated-as is nicer in
