@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Settings-specific strings (included from generated_resources.grd). -->
 <grit-part>
+  <!-- Policy Indicators -->
+  <message name="IDS_SETTINGS_CONTROLLED_SETTING_EXTENSION" desc="Text displayed in the controlled settings indicator tooltip when a setting's value is enforced by an extension.">
+    This setting is controlled by extension <ph name="NAME">$1<ex>Settings Extension</ex></ph>
+  </message>
+
   <if expr="chromeos">
     <!-- Accessibility Page -->
     <message name="IDS_SETTINGS_ACCESSIBILITY" desc="Name of the settings page which displays accessibility preferences.">
@@ -562,5 +567,73 @@
   </message>
   <message name="IDS_SETTINGS_USERS_ADD_USERS_LABEL" desc="Label for the input field for adding users.">
     Add users
+  </message>
+
+  <!-- Web Content -->
+  <message name="IDS_SETTINGS_WEB_CONTENT" desc="Title for the web content settings.">
+    Web content
+  </message>
+  <message name="IDS_SETTINGS_PAGE_ZOOM_LABEL" desc="Label for the page zoom dropdown menu in settings.">
+    Page zoom:
+  </message>
+  <message name="IDS_SETTINGS_FONT_SIZE_LABEL" desc="Label for the font size dropdown menu in settings.">
+    Font size:
+  </message>
+  <message name="IDS_SETTINGS_VERY_SMALL_FONT" desc="The very small choice in the font size dropdown menu in settings.">
+    Very small
+  </message>
+  <message name="IDS_SETTINGS_SMALL_FONT" desc="The small choice in the font size dropdown menu in settings.">
+    Small
+  </message>
+  <message name="IDS_SETTINGS_MEDIUM_FONT" desc="The medium choice in the font size dropdown menu in settings.">
+    Medium
+  </message>
+  <message name="IDS_SETTINGS_LARGE_FONT" desc="The large choice in the font size dropdown menu in settings.">
+    Large
+  </message>
+  <message name="IDS_SETTINGS_VERY_LARGE_FONT" desc="The very large choice in the font size dropdown menu in settings.">
+    Very large
+  </message>
+  <message name="IDS_SETTINGS_CUSTOM" desc="Label for the custom font size setting.">
+    Custom
+  </message>
+  <message name="IDS_SETTINGS_CUSTOMIZE_FONTS" desc="Label for the customize fonts button in settings.">
+    Customize fonts
+  </message>
+  <message name="IDS_SETTINGS_FONTS_AND_ENCODING" desc="Title for the customize fonts page in settings.">
+    Fonts and encoding
+  </message>
+  <message name="IDS_SETTINGS_STANDARD_FONT_LABEL" desc="Label for the standard font dropdown menu in settings.">
+    Standard font:
+  </message>
+  <message name="IDS_SETTINGS_SERIF_FONT_LABEL" desc="Label for the serif font dropdown menu in settings.">
+    Serif font:
+  </message>
+  <message name="IDS_SETTINGS_SANS_SERIF_FONT_LABEL" desc="Label for the sans serif font dropdown menu in settings.">
+    Sans-serif font:
+  </message>
+  <message name="IDS_SETTINGS_FIXED_WIDTH_FONT_LABEL" desc="Label for the fixed width font dropdown menu in settings.">
+    Fixed-width font:
+  </message>
+  <message name="IDS_SETTINGS_MINIMUM_FONT_SIZE_LABEL" desc="Label for the minimum font size slider in settings.">
+    Minimum font size:
+  </message>
+  <message name="IDS_SETTINGS_ENCODING_LABEL" desc="Label for the text encoding in settings.">
+    Encoding:
+  </message>
+  <message name="IDS_SETTINGS_TINY_FONT_SIZE" desc="The small end of the minimum font size slider in settings.">
+    Tiny
+  </message>
+  <message name="IDS_SETTINGS_HUGE_FONT_SIZE" desc="The large end of the minimum font size slider in settings.">
+    Huge
+  </message>
+  <message name="IDS_SETTINGS_LOREM_IPSUM" desc="Gibberish example text in settings.">
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+  </message>
+  <message name="IDS_SETTINGS_LOADING" desc="Placeholder text while waiting for font settings to appear, shown only until font settings have loaded.">
+    Loading...
+  </message>
+  <message name="IDS_SETTINGS_ADVANCED_FONT_SETTINGS" desc="Label for advanced font settings.">
+    Advanced font settings
   </message>
 </grit-part>
