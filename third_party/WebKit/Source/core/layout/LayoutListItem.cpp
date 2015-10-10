@@ -29,6 +29,7 @@
 #include "core/html/HTMLOListElement.h"
 #include "core/layout/LayoutListMarker.h"
 #include "core/layout/LayoutView.h"
+#include "core/paint/ListItemPainter.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/StringBuilder.h"
 
@@ -425,10 +426,7 @@ void LayoutListItem::positionListMarker()
 
 void LayoutListItem::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset) const
 {
-    if (!logicalHeight() && hasOverflowClip())
-        return;
-
-    LayoutBlockFlow::paint(paintInfo, paintOffset);
+    ListItemPainter(*this).paint(paintInfo, paintOffset);
 }
 
 const String& LayoutListItem::markerText() const
