@@ -50,11 +50,12 @@ class DataUsageStore {
   // Deletes historical data usage from storage.
   void DeleteBrowsingHistory(const base::Time& start, const base::Time& end);
 
-  // Returns whether |time| is within the current interval. Each hour is
+  // Returns whether |time1| and |time2| are in the same interval. Each hour is
   // divided into |kDataUsageBucketLengthMins| minute long intervals. Returns
-  // true if |time| has NULL time since an uninitialized bucket can be assigned
-  // to any interval.
-  static bool IsInCurrentInterval(const base::Time& time);
+  // true if either |time1| or |time2| has NULL time since an uninitialized
+  // bucket can be assigned to any interval.
+  static bool AreInSameInterval(const base::Time& time1,
+                                const base::Time& time2);
 
   // Returns whether the bucket that was last updated at |bucket_last_updated|
   // overlaps in time with the interval [|start_interval|, |end_interval|].

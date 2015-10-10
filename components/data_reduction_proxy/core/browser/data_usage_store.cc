@@ -211,11 +211,12 @@ int DataUsageStore::ComputeBucketIndex(const base::Time& time) const {
 }
 
 // static
-bool DataUsageStore::IsInCurrentInterval(const base::Time& time) {
-  if (time.is_null())
+bool DataUsageStore::AreInSameInterval(const base::Time& time1,
+                                       const base::Time& time2) {
+  if (time1.is_null() || time2.is_null())
     return true;
 
-  return BucketLowerBoundary(base::Time::Now()) == BucketLowerBoundary(time);
+  return BucketLowerBoundary(time1) == BucketLowerBoundary(time2);
 }
 
 // static

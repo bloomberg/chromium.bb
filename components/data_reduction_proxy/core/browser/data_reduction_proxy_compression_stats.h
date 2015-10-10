@@ -69,10 +69,9 @@ class DataReductionProxyCompressionStats
   // |delay| and stores them in |pref_map_| and |list_pref_map| between writes.
   // If |delay| is zero, writes directly to the PrefService and does not store
   // in the maps.
-  DataReductionProxyCompressionStats(
-      DataReductionProxyService* service,
-      PrefService* pref_service,
-      base::TimeDelta delay);
+  DataReductionProxyCompressionStats(DataReductionProxyService* service,
+                                     PrefService* pref_service,
+                                     const base::TimeDelta& delay);
   ~DataReductionProxyCompressionStats() override;
 
   // Records detailed data usage broken down by connection type and domain. Also
@@ -114,7 +113,8 @@ class DataReductionProxyCompressionStats
   // data usage stats are flushed to storage before querying for full history.
   // An empty vector will be returned if "data_usage_reporting.enabled" pref is
   // not enabled or if called immediately after enabling the pref before
-  // in-memory stats could be initialized from storage.
+  // in-memory stats could be initialized from storage. Data usage is sorted
+  // chronologically with the last entry corresponding to |base::Time::Now()|.
   void GetHistoricalDataUsage(
       const HistoricalDataUsageCallback& get_data_usage_callback);
 
@@ -194,7 +194,7 @@ class DataReductionProxyCompressionStats
                               bool with_data_reduction_proxy_enabled,
                               DataReductionProxyRequestType request_type,
                               const std::string& mime_type,
-                              base::Time now);
+                              const base::Time& now);
 
   void IncrementDailyUmaPrefs(int64_t original_size,
                               int64_t received_size,
@@ -212,9 +212,13 @@ class DataReductionProxyCompressionStats
   // are displayed to users as their data savings.
   void RecordUserVisibleDataSavings();
 
+  // Record data usage and original size of request broken down by host. |time|
+  // is the time at which the data usage occurred. This method should be called
+  // in real time, so |time| is expected to be |Time::Now()|.
   void RecordDataUsage(const std::string& data_usage_host,
                        int64 original_request_size,
-                       int64 data_used);
+                       int64 data_used,
+                       const base::Time& time);
 
   // Persists the in memory data usage information to storage and clears all
   // in-memory data usage. Do not call this method unless |data_usage_loaded_|
@@ -224,6 +228,12 @@ class DataReductionProxyCompressionStats
   // Deletes all historical data usage from storage and memory. This method
   // should not be called when |current_data_usage_load_status_| is |LOADING|.
   void DeleteHistoricalDataUsage();
+
+  // Actual implementation of |GetHistoricalDataUsage|. This helper method
+  // explicitly passes |base::Time::Now()| to make testing easier.
+  void GetHistoricalDataUsageImpl(
+      const HistoricalDataUsageCallback& get_data_usage_callback,
+      const base::Time& now);
 
   // Called when |prefs::kDataUsageReportingEnabled| pref values changes.
   // Initializes data usage statistics in memory when pref is enabled and

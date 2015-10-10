@@ -132,10 +132,6 @@ class DataReductionProxyCompressionStatsTest : public testing::Test {
     now_delta_ += base::TimeDelta::FromHours(hours);
   }
 
-  void SetLastUpdatedTimestamp(const base::Time& time) {
-    compression_stats_->data_usage_map_last_updated_ = time;
-  }
-
   DataReductionProxyCompressionStats::SiteUsageMap* DataUsageMap() {
     return &compression_stats_->data_usage_map_;
   }
@@ -403,14 +399,16 @@ class DataReductionProxyCompressionStatsTest : public testing::Test {
 
   void RecordDataUsage(const std::string& data_usage_host,
                        int64 data_used,
-                       int64 original_size) {
+                       int64 original_size,
+                       const base::Time& time) {
     compression_stats_->RecordDataUsage(data_usage_host, data_used,
-                                        original_size);
+                                        original_size, time);
   }
 
   void GetHistoricalDataUsage(
-      const HistoricalDataUsageCallback& onLoadDataUsage) {
-    compression_stats_->GetHistoricalDataUsage(onLoadDataUsage);
+      const HistoricalDataUsageCallback& onLoadDataUsage,
+      const base::Time& now) {
+    compression_stats_->GetHistoricalDataUsageImpl(onLoadDataUsage, now);
   }
 
   void LoadHistoricalDataUsage(
@@ -996,9 +994,9 @@ TEST_F(DataReductionProxyCompressionStatsTest, BackwardTwoDays) {
 }
 
 TEST_F(DataReductionProxyCompressionStatsTest, NormalizeHostname) {
-  EXPECT_EQ("www.google.com", NormalizeHostname("http://www.google.com"));
-  EXPECT_EQ("google.com", NormalizeHostname("https://google.com"));
-  EXPECT_EQ("bbc.co.uk", NormalizeHostname("http://bbc.co.uk"));
+  EXPECT_EQ("www.foo.com", NormalizeHostname("http://www.foo.com"));
+  EXPECT_EQ("foo.com", NormalizeHostname("https://foo.com"));
+  EXPECT_EQ("bar.co.uk", NormalizeHostname("http://bar.co.uk"));
   EXPECT_EQ("http.www.co.in", NormalizeHostname("http://http.www.co.in"));
 }
 
@@ -1063,7 +1061,8 @@ TEST_F(DataReductionProxyCompressionStatsTest, RecordDataUsageSingleSite) {
   EnableDataUsageReporting();
   base::RunLoop().RunUntilIdle();
 
-  RecordDataUsage("https://www.google.com", 1000, 1250);
+  base::Time now = base::Time::Now();
+  RecordDataUsage("https://www.foo.com", 1000, 1250, now);
 
   auto expected_data_usage =
       make_scoped_ptr(new std::vector<data_reduction_proxy::DataUsageBucket>(
@@ -1072,14 +1071,15 @@ TEST_F(DataReductionProxyCompressionStatsTest, RecordDataUsageSingleSite) {
       expected_data_usage->at(kNumExpectedBuckets - 1).add_connection_usage();
   data_reduction_proxy::PerSiteDataUsage* site_usage =
       connection_usage->add_site_usage();
-  site_usage->set_hostname("www.google.com");
+  site_usage->set_hostname("www.foo.com");
   site_usage->set_data_used(1000);
   site_usage->set_original_size(1250);
 
   DataUsageLoadVerifier verifier(expected_data_usage.Pass());
 
   GetHistoricalDataUsage(base::Bind(&DataUsageLoadVerifier::OnLoadDataUsage,
-                                    base::Unretained(&verifier)));
+                                    base::Unretained(&verifier)),
+                         now);
   base::RunLoop().RunUntilIdle();
 }
 
@@ -1087,9 +1087,10 @@ TEST_F(DataReductionProxyCompressionStatsTest, RecordDataUsageMultipleSites) {
   EnableDataUsageReporting();
   base::RunLoop().RunUntilIdle();
 
-  RecordDataUsage("https://www.google.com", 1000, 1250);
-  RecordDataUsage("https://yahoo.com", 1001, 1251);
-  RecordDataUsage("http://facebook.com", 1002, 1252);
+  base::Time now = base::Time::Now();
+  RecordDataUsage("https://www.foo.com", 1000, 1250, now);
+  RecordDataUsage("https://bar.com", 1001, 1251, now);
+  RecordDataUsage("http://foobar.com", 1002, 1252, now);
 
   auto expected_data_usage =
       make_scoped_ptr(new std::vector<data_reduction_proxy::DataUsageBucket>(
@@ -1098,24 +1099,25 @@ TEST_F(DataReductionProxyCompressionStatsTest, RecordDataUsageMultipleSites) {
       expected_data_usage->at(kNumExpectedBuckets - 1).add_connection_usage();
   data_reduction_proxy::PerSiteDataUsage* site_usage =
       connection_usage->add_site_usage();
-  site_usage->set_hostname("www.google.com");
+  site_usage->set_hostname("www.foo.com");
   site_usage->set_data_used(1000);
   site_usage->set_original_size(1250);
 
   site_usage = connection_usage->add_site_usage();
-  site_usage->set_hostname("yahoo.com");
+  site_usage->set_hostname("bar.com");
   site_usage->set_data_used(1001);
   site_usage->set_original_size(1251);
 
   site_usage = connection_usage->add_site_usage();
-  site_usage->set_hostname("facebook.com");
+  site_usage->set_hostname("foobar.com");
   site_usage->set_data_used(1002);
   site_usage->set_original_size(1252);
 
   DataUsageLoadVerifier verifier(expected_data_usage.Pass());
 
   GetHistoricalDataUsage(base::Bind(&DataUsageLoadVerifier::OnLoadDataUsage,
-                                    base::Unretained(&verifier)));
+                                    base::Unretained(&verifier)),
+                         now);
   base::RunLoop().RunUntilIdle();
 }
 
@@ -1124,12 +1126,12 @@ TEST_F(DataReductionProxyCompressionStatsTest,
   EnableDataUsageReporting();
   base::RunLoop().RunUntilIdle();
 
-  base::Time fifteen_mins_ago = base::Time::Now() - TimeDelta::FromMinutes(15);
+  base::Time now = base::Time::Now();
+  base::Time fifteen_mins_ago = now - TimeDelta::FromMinutes(15);
 
-  RecordDataUsage("https://www.google.com", 1000, 1250);
-  // Fake above record to be from 15 minutes ago.
-  SetLastUpdatedTimestamp(fifteen_mins_ago);
-  RecordDataUsage("https://yahoo.com", 1001, 1251);
+  RecordDataUsage("https://www.foo.com", 1000, 1250, fifteen_mins_ago);
+
+  RecordDataUsage("https://bar.com", 1001, 1251, now);
 
   auto expected_data_usage =
       make_scoped_ptr(new std::vector<data_reduction_proxy::DataUsageBucket>(
@@ -1138,21 +1140,22 @@ TEST_F(DataReductionProxyCompressionStatsTest,
       expected_data_usage->at(kNumExpectedBuckets - 2).add_connection_usage();
   data_reduction_proxy::PerSiteDataUsage* site_usage =
       connection_usage->add_site_usage();
-  site_usage->set_hostname("www.google.com");
+  site_usage->set_hostname("www.foo.com");
   site_usage->set_data_used(1000);
   site_usage->set_original_size(1250);
 
   connection_usage =
       expected_data_usage->at(kNumExpectedBuckets - 1).add_connection_usage();
   site_usage = connection_usage->add_site_usage();
-  site_usage->set_hostname("yahoo.com");
+  site_usage->set_hostname("bar.com");
   site_usage->set_data_used(1001);
   site_usage->set_original_size(1251);
 
   DataUsageLoadVerifier verifier(expected_data_usage.Pass());
 
   GetHistoricalDataUsage(base::Bind(&DataUsageLoadVerifier::OnLoadDataUsage,
-                                    base::Unretained(&verifier)));
+                                    base::Unretained(&verifier)),
+                         now);
   base::RunLoop().RunUntilIdle();
 }
 
@@ -1163,11 +1166,10 @@ TEST_F(DataReductionProxyCompressionStatsTest,
   EnableDataUsageReporting();
   base::RunLoop().RunUntilIdle();
 
-  base::Time fifteen_mins_ago = base::Time::Now() - TimeDelta::FromMinutes(15);
+  base::Time now = base::Time::Now();
+  base::Time fifteen_mins_ago = now - TimeDelta::FromMinutes(15);
 
-  RecordDataUsage("https://www.google.com", 1000, 1250);
-  // Fake above record to be from 15 minutes ago.
-  SetLastUpdatedTimestamp(fifteen_mins_ago);
+  RecordDataUsage("https://www.foo.com", 1000, 1250, fifteen_mins_ago);
 
   auto expected_data_usage =
       make_scoped_ptr(new std::vector<data_reduction_proxy::DataUsageBucket>(
@@ -1176,14 +1178,15 @@ TEST_F(DataReductionProxyCompressionStatsTest,
       expected_data_usage->at(kNumExpectedBuckets - 2).add_connection_usage();
   data_reduction_proxy::PerSiteDataUsage* site_usage =
       connection_usage->add_site_usage();
-  site_usage->set_hostname("www.google.com");
+  site_usage->set_hostname("www.foo.com");
   site_usage->set_data_used(1000);
   site_usage->set_original_size(1250);
 
   DataUsageLoadVerifier verifier(expected_data_usage.Pass());
 
   GetHistoricalDataUsage(base::Bind(&DataUsageLoadVerifier::OnLoadDataUsage,
-                                    base::Unretained(&verifier)));
+                                    base::Unretained(&verifier)),
+                         now);
   base::RunLoop().RunUntilIdle();
 }
 
@@ -1191,14 +1194,12 @@ TEST_F(DataReductionProxyCompressionStatsTest, DeleteHistoricalDataUsage) {
   EnableDataUsageReporting();
   base::RunLoop().RunUntilIdle();
 
-  RecordDataUsage("https://www.yahoo.com", 900, 1100);
-  // Fake above record to be from 15 minutes ago so that it is flushed to
-  // storage.
-  base::Time fifteen_mins_ago = base::Time::Now() - TimeDelta::FromMinutes(15);
-  SetLastUpdatedTimestamp(fifteen_mins_ago);
+  base::Time now = base::Time::Now();
+  base::Time fifteen_mins_ago = now - TimeDelta::FromMinutes(15);
+  // Fake record to be from 15 minutes ago so that it is flushed to storage.
+  RecordDataUsage("https://www.bar.com", 900, 1100, fifteen_mins_ago);
 
-  // This data usage will be in memory.
-  RecordDataUsage("https://www.google.com", 1000, 1250);
+  RecordDataUsage("https://www.foo.com", 1000, 1250, now);
 
   DeleteHistoricalDataUsage();
   base::RunLoop().RunUntilIdle();
@@ -1209,7 +1210,8 @@ TEST_F(DataReductionProxyCompressionStatsTest, DeleteHistoricalDataUsage) {
   DataUsageLoadVerifier verifier(expected_data_usage.Pass());
 
   GetHistoricalDataUsage(base::Bind(&DataUsageLoadVerifier::OnLoadDataUsage,
-                                    base::Unretained(&verifier)));
+                                    base::Unretained(&verifier)),
+                         now);
   base::RunLoop().RunUntilIdle();
 }
 
@@ -1218,15 +1220,13 @@ TEST_F(DataReductionProxyCompressionStatsTest, DeleteBrowsingHistory) {
   base::RunLoop().RunUntilIdle();
 
   base::Time now = base::Time::Now();
-  RecordDataUsage("https://www.yahoo.com", 900, 1100);
-  // Fake above record to be from 15 minutes ago so that it is flushed to
-  // storage.
   base::Time fifteen_mins_ago = now - TimeDelta::FromMinutes(15);
-  SetLastUpdatedTimestamp(fifteen_mins_ago);
 
-  // This data usage will be in memory.
-  RecordDataUsage("https://www.google.com", 1000, 1250);
-  SetLastUpdatedTimestamp(now);
+  // Fake record to be from 15 minutes ago so that it is flushed to storage.
+  RecordDataUsage("https://www.bar.com", 900, 1100, fifteen_mins_ago);
+
+  // This data usage will be in kept in memory.
+  RecordDataUsage("https://www.foo.com", 1000, 1250, now);
 
   // This should only delete in-memory usage.
   DeleteBrowsingHistory(now, now);
@@ -1241,7 +1241,7 @@ TEST_F(DataReductionProxyCompressionStatsTest, DeleteBrowsingHistory) {
       expected_data_usage->at(kNumExpectedBuckets - 1).add_connection_usage();
   data_reduction_proxy::PerSiteDataUsage* site_usage =
       connection_usage->add_site_usage();
-  site_usage->set_hostname("www.yahoo.com");
+  site_usage->set_hostname("www.bar.com");
   site_usage->set_data_used(900);
   site_usage->set_original_size(1100);
   DataUsageLoadVerifier verifier1(expected_data_usage.Pass());

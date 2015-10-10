@@ -18,7 +18,6 @@
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_metrics.h"
@@ -349,7 +348,7 @@ class DailyDataSavingUpdate {
 DataReductionProxyCompressionStats::DataReductionProxyCompressionStats(
     DataReductionProxyService* service,
     PrefService* prefs,
-    base::TimeDelta delay)
+    const base::TimeDelta& delay)
     : service_(service),
       pref_service_(prefs),
       delay_(delay),
@@ -484,7 +483,7 @@ void DataReductionProxyCompressionStats::UpdateContentLengths(
   SetInt64(data_reduction_proxy::prefs::kHttpOriginalContentLength,
            total_original);
 
-  RecordDataUsage(data_usage_host, data_used, original_size);
+  RecordDataUsage(data_usage_host, data_used, original_size, base::Time::Now());
   RecordRequestSizePrefs(data_used, original_size, data_reduction_proxy_enabled,
                          request_type, mime_type, base::Time::Now());
 }
@@ -632,30 +631,7 @@ void DataReductionProxyCompressionStats::GetContentLengths(
 
 void DataReductionProxyCompressionStats::GetHistoricalDataUsage(
     const HistoricalDataUsageCallback& get_data_usage_callback) {
-  if (current_data_usage_load_status_ != LOADED) {
-    // If current data usage has not yet loaded, we return an empty array. The
-    // extension can retry after a slight delay.
-    // This use case is unlikely to occur in practice since current data usage
-    // should have sufficient time to load before user tries to view data usage.
-    get_data_usage_callback.Run(
-        make_scoped_ptr(new std::vector<DataUsageBucket>()));
-    return;
-  }
-
-  PersistDataUsage();
-
-  if (!DataUsageStore::IsInCurrentInterval(data_usage_map_last_updated_)) {
-    data_usage_map_.clear();
-    data_usage_map_last_updated_ = base::Time();
-
-    // Force the last bucket to be for the current interval.
-    scoped_ptr<DataUsageBucket> data_usage_bucket(new DataUsageBucket());
-    data_usage_bucket->set_last_updated_timestamp(
-        base::Time::Now().ToInternalValue());
-    service_->StoreCurrentDataUsageBucket(data_usage_bucket.Pass());
-  }
-
-  service_->LoadHistoricalDataUsage(get_data_usage_callback);
+  GetHistoricalDataUsageImpl(get_data_usage_callback, base::Time::Now());
 }
 
 void DataReductionProxyCompressionStats::DeleteBrowsingHistory(
@@ -777,7 +753,7 @@ void DataReductionProxyCompressionStats::RecordRequestSizePrefs(
     bool with_data_reduction_proxy_enabled,
     DataReductionProxyRequestType request_type,
     const std::string& mime_type,
-    base::Time now) {
+    const base::Time& now) {
   // TODO(bengr): Remove this check once the underlying cause of
   // http://crbug.com/287821 is fixed. For now, only continue if the current
   // year is reported as being between 1972 and 2970.
@@ -1145,11 +1121,12 @@ void DataReductionProxyCompressionStats::RecordUserVisibleDataSavings() {
 void DataReductionProxyCompressionStats::RecordDataUsage(
     const std::string& data_usage_host,
     int64 data_used,
-    int64 original_size) {
+    int64 original_size,
+    const base::Time& time) {
   if (current_data_usage_load_status_ != LOADED)
     return;
 
-  if (!DataUsageStore::IsInCurrentInterval(data_usage_map_last_updated_)) {
+  if (!DataUsageStore::AreInSameInterval(data_usage_map_last_updated_, time)) {
     PersistDataUsage();
     data_usage_map_.clear();
     data_usage_map_last_updated_ = base::Time();
@@ -1165,7 +1142,7 @@ void DataReductionProxyCompressionStats::RecordDataUsage(
                                     original_size);
   per_site_usage->set_data_used(per_site_usage->data_used() + data_used);
 
-  data_usage_map_last_updated_ = base::Time::Now();
+  data_usage_map_last_updated_ = time;
   data_usage_map_is_dirty_ = true;
 }
 
@@ -1204,6 +1181,34 @@ void DataReductionProxyCompressionStats::DeleteHistoricalDataUsage() {
   data_usage_map_is_dirty_ = false;
 
   service_->DeleteHistoricalDataUsage();
+}
+
+void DataReductionProxyCompressionStats::GetHistoricalDataUsageImpl(
+    const HistoricalDataUsageCallback& get_data_usage_callback,
+    const base::Time& now) {
+  if (current_data_usage_load_status_ != LOADED) {
+    // If current data usage has not yet loaded, we return an empty array. The
+    // extension can retry after a slight delay.
+    // This use case is unlikely to occur in practice since current data usage
+    // should have sufficient time to load before user tries to view data usage.
+    get_data_usage_callback.Run(
+        make_scoped_ptr(new std::vector<DataUsageBucket>()));
+    return;
+  }
+
+  PersistDataUsage();
+
+  if (!DataUsageStore::AreInSameInterval(data_usage_map_last_updated_, now)) {
+    data_usage_map_.clear();
+    data_usage_map_last_updated_ = base::Time();
+
+    // Force the last bucket to be for the current interval.
+    scoped_ptr<DataUsageBucket> data_usage_bucket(new DataUsageBucket());
+    data_usage_bucket->set_last_updated_timestamp(now.ToInternalValue());
+    service_->StoreCurrentDataUsageBucket(data_usage_bucket.Pass());
+  }
+
+  service_->LoadHistoricalDataUsage(get_data_usage_callback);
 }
 
 void DataReductionProxyCompressionStats::OnDataUsageReportingPrefChanged() {
