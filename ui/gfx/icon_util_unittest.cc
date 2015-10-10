@@ -29,7 +29,7 @@ class IconUtilTest : public testing::Test {
   void SetUp() override {
     gfx::RegisterPathProvider();
     ASSERT_TRUE(PathService::Get(gfx::DIR_TEST_DATA, &test_data_directory_));
-    temp_directory_.CreateUniqueTempDir();
+    ASSERT_TRUE(temp_directory_.CreateUniqueTempDir());
   }
 
   static const int kSmallIconWidth = 16;

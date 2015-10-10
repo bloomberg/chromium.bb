@@ -56,7 +56,7 @@ class BinaryIntegrityAnalyzerWinTest : public ::testing::Test {
 };
 
 BinaryIntegrityAnalyzerWinTest::BinaryIntegrityAnalyzerWinTest() {
-  temp_dir_.CreateUniqueTempDir();
+  EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
   base::CreateDirectory(temp_dir_.path().AppendASCII(CHROME_VERSION_STRING));
 
   // We retrieve DIR_TEST_DATA here because it is based on DIR_EXE and we are

@@ -27,6 +27,7 @@
 
 #include "base/bind.h"
 #include "base/containers/hash_tables.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
@@ -168,7 +169,7 @@ void SendLongMidiMessageInternal(HMIDIOUT midi_out_handle,
   }
 
   // The ownership of |midi_header| is moved to MOM_DONE event handler.
-  midi_header.release();
+  ignore_result(midi_header.release());
 }
 
 template <size_t array_size>

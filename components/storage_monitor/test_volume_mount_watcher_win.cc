@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/storage_monitor/storage_info.h"
 #include "content/public/browser/browser_thread.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace storage_monitor {
 
@@ -19,7 +20,7 @@ namespace {
 
 base::FilePath GetTempRoot() {
   base::ScopedTempDir temp_dir;
-  temp_dir.CreateUniqueTempDir();
+  EXPECT_TRUE(temp_dir.CreateUniqueTempDir());
   base::FilePath temp_root = temp_dir.path();
   while (temp_root.DirName() != temp_root)
     temp_root = temp_root.DirName();

@@ -10,6 +10,7 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "base/win/scoped_bstr.h"
@@ -81,7 +82,7 @@ bool ReadConfig(const base::FilePath& filename,
     return false;
   }
 
-  value.release();
+  ignore_result(value.release());
   config_out->reset(dictionary);
   return true;
 }

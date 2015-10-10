@@ -7,6 +7,7 @@
 #include <AclAPI.h>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "base/threading/platform_thread.h"
@@ -551,7 +552,7 @@ ResultCode BrokerServicesBase::AddTargetPeer(HANDLE peer_process) {
   }
 
   // Release the pointer since it will be cleaned up by the callback.
-  peer.release();
+  ignore_result(peer.release());
   return SBOX_ALL_OK;
 }
 

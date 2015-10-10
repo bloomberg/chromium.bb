@@ -160,11 +160,20 @@ struct IEOrderBookmarkComparator {
 //   };
 // where each item_id should correspond to a favorites link file (*.url) in
 // the current folder.
-bool ParseFavoritesOrderBlob(
-    const Importer* importer,
-    const std::vector<uint8>& blob,
-    const base::FilePath& path,
-    std::map<base::FilePath, uint32>* sort_index) WARN_UNUSED_RESULT {
+// gcc, in its infinite wisdom, only allows WARN_UNUSED_RESULT for prototypes.
+// Clang, to be compatible with gcc, warns if WARN_UNUSED_RESULT is used in a
+// non-gcc compatible manner (-Wgcc-compat). So even though gcc isn't used to
+// build on Windows, declare some prototypes anyway to satisfy Clang's gcc
+// compatibility warnings.
+bool ParseFavoritesOrderBlob(const Importer* importer,
+                             const std::vector<uint8>& blob,
+                             const base::FilePath& path,
+                             std::map<base::FilePath, uint32>* sort_index)
+    WARN_UNUSED_RESULT;
+bool ParseFavoritesOrderBlob(const Importer* importer,
+                             const std::vector<uint8>& blob,
+                             const base::FilePath& path,
+                             std::map<base::FilePath, uint32>* sort_index) {
   static const int kItemCountOffset = 16;
   static const int kItemListStartOffset = 20;
 
@@ -212,7 +221,12 @@ bool ParseFavoritesOrderRegistryTree(
     const Importer* importer,
     const base::win::RegKey& key,
     const base::FilePath& path,
-    std::map<base::FilePath, uint32>* sort_index) WARN_UNUSED_RESULT {
+    std::map<base::FilePath, uint32>* sort_index) WARN_UNUSED_RESULT;
+bool ParseFavoritesOrderRegistryTree(
+    const Importer* importer,
+    const base::win::RegKey& key,
+    const base::FilePath& path,
+    std::map<base::FilePath, uint32>* sort_index) {
   // Parse the order information of the current folder.
   DWORD blob_length = 0;
   if (key.ReadValue(L"Order", NULL, &blob_length, NULL) == ERROR_SUCCESS) {
@@ -241,9 +255,11 @@ bool ParseFavoritesOrderRegistryTree(
   return true;
 }
 
-bool ParseFavoritesOrderInfo(
-    const Importer* importer,
-    std::map<base::FilePath, uint32>* sort_index) WARN_UNUSED_RESULT {
+bool ParseFavoritesOrderInfo(const Importer* importer,
+                             std::map<base::FilePath, uint32>* sort_index)
+    WARN_UNUSED_RESULT;
+bool ParseFavoritesOrderInfo(const Importer* importer,
+                             std::map<base::FilePath, uint32>* sort_index) {
   base::string16 key_path(importer::GetIEFavoritesOrderKey());
   base::win::RegKey key(HKEY_CURRENT_USER, key_path.c_str(), KEY_READ);
   if (!key.Valid())

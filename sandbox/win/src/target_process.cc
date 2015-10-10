@@ -5,6 +5,7 @@
 #include "sandbox/win/src/target_process.h"
 
 #include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/win/pe_image.h"
 #include "base/win/startup_information.h"
@@ -99,7 +100,7 @@ TargetProcess::~TargetProcess() {
       // that.
       if (shared_section_.IsValid())
         shared_section_.Take();
-      ipc_server_.release();
+      ignore_result(ipc_server_.release());
       sandbox_process_info_.TakeProcessHandle();
       return;
     }

@@ -86,6 +86,7 @@ source_set("storage_monitor") {
 
 # GYP version: components/storage_monitor.gypi:storage_monitor_test_support
 source_set("test_support") {
+  testonly = true
   sources = [
     "mock_removable_storage_observer.cc",
     "mock_removable_storage_observer.h",
@@ -111,6 +112,12 @@ source_set("test_support") {
       "//device/media_transfer_protocol",
       "//device/media_transfer_protocol:mtp_file_entry_proto",
       "//device/media_transfer_protocol:mtp_storage_info_proto",
+    ]
+  }
+
+  if (is_win) {
+    deps = [
+      "//testing/gtest",
     ]
   }
 }

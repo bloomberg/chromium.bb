@@ -67,7 +67,10 @@ bool DeleteTreeWorkItem::Do() {
         PLOG(ERROR) << "Could not back up " << key_file.value()
                     << " to directory " << backup.path().value();
         abort = true;
-        backup.Delete();
+        if (!backup.Delete()) {
+          PLOG(ERROR) << "Could not clean up temp dir in "
+                      << temp_path_.value();
+        }
       }
     }
     if (!abort) {

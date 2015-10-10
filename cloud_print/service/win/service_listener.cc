@@ -96,7 +96,8 @@ void ServiceListener::Connect() {
     // need for an attachment broker.
     channel_ =
         IPC::Channel::CreateClient(IPC::ChannelHandle(handle.Get()), this);
-    channel_->Connect();
+    bool connected = channel_->Connect();
+    DCHECK(connected);
   } else {
     ipc_thread_->message_loop()->PostDelayedTask(
         FROM_HERE,

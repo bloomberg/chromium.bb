@@ -121,6 +121,11 @@
             '../device/media_transfer_protocol/media_transfer_protocol.gyp:mtp_storage_info_proto',
           ],
         }],
+        ['OS=="win"', {
+          'dependencies': [
+            '../testing/gtest.gyp:gtest',
+          ],
+        }],
       ],
     },
   ],

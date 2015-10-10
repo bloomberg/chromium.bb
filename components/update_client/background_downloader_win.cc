@@ -16,6 +16,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/file_util.h"
+#include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
@@ -410,7 +411,7 @@ BackgroundDownloader::~BackgroundDownloader() {
   // is shutting down while a download is in progress, the timer is active and
   // the interface pointers are valid. Releasing the ownership means leaking
   // these objects and their associated resources.
-  timer_.release();
+  ignore_result(timer_.release());
   bits_manager_.Detach();
   job_.Detach();
 }
