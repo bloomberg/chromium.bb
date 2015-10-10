@@ -19,7 +19,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
-#include "gpu/command_buffer/common/sync_token.h"
+#include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/common/value_state.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/command_buffer/service/context_group.h"
@@ -817,7 +817,8 @@ void InProcessCommandBuffer::RetireSyncPointOnGpuThread(uint32 sync_point) {
       // We can simply use the GPUIO namespace with 0 for the command buffer ID
       // (under normal circumstances 0 is  invalid so  will not be used) until
       // the old sync points are replaced.
-      SyncToken sync_token(gpu::CommandBufferNamespace::GPU_IO, 0, sync_point);
+      gles2::SyncToken sync_token = {gpu::CommandBufferNamespace::GPU_IO, 0,
+                                     sync_point};
       mailbox_manager->PushTextureUpdates(sync_token);
     }
   }
@@ -841,7 +842,8 @@ bool InProcessCommandBuffer::WaitSyncPointOnGpuThread(unsigned sync_point) {
   // We can simply use the GPUIO namespace with 0 for the command buffer ID
   // (under normal circumstances 0 is  invalid so  will not be used) until
   // the old sync points are replaced.
-  SyncToken sync_token(gpu::CommandBufferNamespace::GPU_IO, 0, sync_point);
+  gles2::SyncToken sync_token = {gpu::CommandBufferNamespace::GPU_IO, 0,
+                                 sync_point};
   mailbox_manager->PullTextureUpdates(sync_token);
   return true;
 }
@@ -857,7 +859,8 @@ void InProcessCommandBuffer::FenceSyncReleaseOnGpuThread(uint64_t release) {
       make_current_success = MakeCurrent();
     }
     if (make_current_success) {
-      SyncToken sync_token(GetNamespaceID(), GetCommandBufferID(), release);
+      gles2::SyncToken sync_token = {GetNamespaceID(), GetCommandBufferID(),
+                                     release};
       mailbox_manager->PushTextureUpdates(sync_token);
     }
   }
@@ -890,7 +893,7 @@ bool InProcessCommandBuffer::WaitFenceSyncOnGpuThread(
 
   gles2::MailboxManager* mailbox_manager =
       decoder_->GetContextGroup()->mailbox_manager();
-  SyncToken sync_token(namespace_id, command_buffer_id, release);
+  gles2::SyncToken sync_token = {namespace_id, command_buffer_id, release};
   mailbox_manager->PullTextureUpdates(sync_token);
   return true;
 }

@@ -24,8 +24,8 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/common/constants.h"
+#include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/common/mailbox.h"
-#include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/command_buffer/service/gl_context_virtual.h"
 #include "gpu/command_buffer/service/gl_state_restorer_impl.h"
 #include "gpu/command_buffer/service/image_factory.h"
@@ -937,9 +937,8 @@ void GpuCommandBufferStub::OnRetireSyncPoint(uint32 sync_point) {
     // We can simply use the global sync point number as the release count with
     // 0 for the command buffer ID (under normal circumstances 0 is invalid so
     // will not be used) until the old sync points are replaced.
-    gpu::SyncToken sync_token(gpu::CommandBufferNamespace::GPU_IO,
-                              0,
-                              sync_point);
+    gpu::gles2::SyncToken sync_token = {gpu::CommandBufferNamespace::GPU_IO, 0,
+                                        sync_point};
     mailbox_manager->PushTextureUpdates(sync_token);
   }
 
@@ -994,7 +993,8 @@ void GpuCommandBufferStub::PullTextureUpdates(
   gpu::gles2::MailboxManager* mailbox_manager =
       context_group_->mailbox_manager();
   if (mailbox_manager->UsesSync() && MakeCurrent()) {
-    gpu::SyncToken sync_token(namespace_id, command_buffer_id, release);
+    gpu::gles2::SyncToken sync_token = {namespace_id, command_buffer_id,
+                                        release};
     mailbox_manager->PullTextureUpdates(sync_token);
   }
 }
@@ -1039,9 +1039,8 @@ void GpuCommandBufferStub::OnFenceSyncRelease(uint64_t release) {
   gpu::gles2::MailboxManager* mailbox_manager =
       context_group_->mailbox_manager();
   if (mailbox_manager->UsesSync() && MakeCurrent()) {
-    gpu::SyncToken sync_token(gpu::CommandBufferNamespace::GPU_IO,
-                              command_buffer_id_,
-                              release);
+    gpu::gles2::SyncToken sync_token = {gpu::CommandBufferNamespace::GPU_IO,
+                                        command_buffer_id_, release};
     mailbox_manager->PushTextureUpdates(sync_token);
   }
 

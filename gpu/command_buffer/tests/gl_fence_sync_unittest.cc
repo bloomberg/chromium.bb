@@ -7,7 +7,6 @@
 #include <GLES2/gl2extchromium.h>
 
 #include "base/memory/scoped_ptr.h"
-#include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/command_buffer/tests/gl_manager.h"
 #include "gpu/command_buffer/tests/gl_test_utils.h"
@@ -45,9 +44,9 @@ TEST_F(GLFenceSyncTest, SimpleReleaseWait) {
   gl1_.MakeCurrent();
 
   const GLuint64 fence_sync = glInsertFenceSyncCHROMIUM();
-  SyncToken sync_token;
+  GLbyte sync_token[GL_SYNC_TOKEN_SIZE_CHROMIUM];
   glFlush();
-  glGenSyncTokenCHROMIUM(fence_sync, sync_token.data);
+  glGenSyncTokenCHROMIUM(fence_sync, sync_token);
   ASSERT_TRUE(GL_NO_ERROR == glGetError());
 
   // Make sure it is actually released.
@@ -57,7 +56,7 @@ TEST_F(GLFenceSyncTest, SimpleReleaseWait) {
   EXPECT_TRUE(gl1_client_state->IsFenceSyncReleased(fence_sync));
 
   gl2_.MakeCurrent();
-  glWaitSyncTokenCHROMIUM(sync_token.data);
+  glWaitSyncTokenCHROMIUM(sync_token);
   glFinish();
 
   // gl2 should not have released anything.

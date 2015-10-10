@@ -10,12 +10,10 @@
 #include "gpu/gpu_export.h"
 
 namespace gpu {
-
-struct SyncToken;
-
 namespace gles2 {
 
 class Texture;
+struct SyncToken;
 
 // Manages resources scoped beyond the context or context group level.
 class GPU_EXPORT MailboxManager : public base::RefCounted<MailboxManager> {
