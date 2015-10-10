@@ -475,8 +475,9 @@ MojoResult ChannelMojo::ReadFromMessageAttachmentSet(
   // of FDs, so just to dup()-and-own them is the safest option.
   if (message->HasAttachments()) {
     MessageAttachmentSet* set = message->attachment_set();
-    for (unsigned i = 0; i < set->size(); ++i) {
-      scoped_refptr<MessageAttachment> attachment = set->GetAttachmentAt(i);
+    for (unsigned i = 0; i < set->num_non_brokerable_attachments(); ++i) {
+      scoped_refptr<MessageAttachment> attachment =
+          set->GetNonBrokerableAttachmentAt(i);
       switch (attachment->GetType()) {
         case MessageAttachment::TYPE_PLATFORM_FILE:
 #if defined(OS_POSIX) && !defined(OS_NACL)
@@ -486,7 +487,7 @@ MojoResult ChannelMojo::ReadFromMessageAttachmentSet(
                   attachment.get()));
           if (!file.is_valid()) {
             DPLOG(WARNING) << "Failed to dup FD to transmit.";
-            set->CommitAll();
+            set->CommitAllDescriptors();
             return MOJO_RESULT_UNKNOWN;
           }
 
@@ -498,7 +499,7 @@ MojoResult ChannelMojo::ReadFromMessageAttachmentSet(
           if (MOJO_RESULT_OK != wrap_result) {
             LOG(WARNING) << "Pipe failed to wrap handles. Closing: "
                          << wrap_result;
-            set->CommitAll();
+            set->CommitAllDescriptors();
             return wrap_result;
           }
 
@@ -522,7 +523,7 @@ MojoResult ChannelMojo::ReadFromMessageAttachmentSet(
       }
     }
 
-    set->CommitAll();
+    set->CommitAllDescriptors();
   }
 
   return MOJO_RESULT_OK;

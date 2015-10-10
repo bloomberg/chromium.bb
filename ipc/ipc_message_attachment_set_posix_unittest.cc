@@ -49,7 +49,7 @@ TEST(MessageAttachmentSet, BasicAdd) {
 
   // Empties the set and stops a warning about deleting a set with unconsumed
   // descriptors
-  set->CommitAll();
+  set->CommitAllDescriptors();
 }
 
 TEST(MessageAttachmentSet, BasicAddAndClose) {
@@ -63,7 +63,7 @@ TEST(MessageAttachmentSet, BasicAddAndClose) {
   ASSERT_EQ(set->size(), 1u);
   ASSERT_TRUE(!set->empty());
 
-  set->CommitAll();
+  set->CommitAllDescriptors();
 
   ASSERT_TRUE(VerifyClosed(fd));
 }
@@ -77,7 +77,7 @@ TEST(MessageAttachmentSet, MaxSize) {
   ASSERT_TRUE(
       !set->AddAttachment(new internal::PlatformFileAttachment(kFDBase)));
 
-  set->CommitAll();
+  set->CommitAllDescriptors();
 }
 
 #if defined(OS_ANDROID)
@@ -98,7 +98,7 @@ TEST(MessageAttachmentSet, MAYBE_SetDescriptors) {
   ASSERT_TRUE(!set->empty());
   ASSERT_EQ(set->size(), 1u);
 
-  set->CommitAll();
+  set->CommitAllDescriptors();
 
   ASSERT_TRUE(VerifyClosed(fd));
 }
@@ -114,7 +114,7 @@ TEST(MessageAttachmentSet, PeekDescriptors) {
   fds[0] = 0;
   set->PeekDescriptors(fds);
   ASSERT_EQ(fds[0], kFDBase);
-  set->CommitAll();
+  set->CommitAllDescriptors();
   ASSERT_TRUE(set->empty());
 }
 
@@ -130,11 +130,13 @@ TEST(MessageAttachmentSet, WalkInOrder) {
   ASSERT_TRUE(
       set->AddAttachment(new internal::PlatformFileAttachment(kFDBase + 2)));
 
-  ASSERT_EQ(set->GetAttachmentAt(0)->TakePlatformFile(), kFDBase);
-  ASSERT_EQ(set->GetAttachmentAt(1)->TakePlatformFile(), kFDBase + 1);
-  ASSERT_EQ(set->GetAttachmentAt(2)->TakePlatformFile(), kFDBase + 2);
+  ASSERT_EQ(set->GetNonBrokerableAttachmentAt(0)->TakePlatformFile(), kFDBase);
+  ASSERT_EQ(set->GetNonBrokerableAttachmentAt(1)->TakePlatformFile(),
+            kFDBase + 1);
+  ASSERT_EQ(set->GetNonBrokerableAttachmentAt(2)->TakePlatformFile(),
+            kFDBase + 2);
 
-  set->CommitAll();
+  set->CommitAllDescriptors();
 }
 
 TEST(MessageAttachmentSet, WalkWrongOrder) {
@@ -149,10 +151,10 @@ TEST(MessageAttachmentSet, WalkWrongOrder) {
   ASSERT_TRUE(
       set->AddAttachment(new internal::PlatformFileAttachment(kFDBase + 2)));
 
-  ASSERT_EQ(set->GetAttachmentAt(0)->TakePlatformFile(), kFDBase);
-  ASSERT_EQ(set->GetAttachmentAt(2), nullptr);
+  ASSERT_EQ(set->GetNonBrokerableAttachmentAt(0)->TakePlatformFile(), kFDBase);
+  ASSERT_EQ(set->GetNonBrokerableAttachmentAt(2), nullptr);
 
-  set->CommitAll();
+  set->CommitAllDescriptors();
 }
 
 TEST(MessageAttachmentSet, WalkCycle) {
@@ -167,17 +169,23 @@ TEST(MessageAttachmentSet, WalkCycle) {
   ASSERT_TRUE(
       set->AddAttachment(new internal::PlatformFileAttachment(kFDBase + 2)));
 
-  ASSERT_EQ(set->GetAttachmentAt(0)->TakePlatformFile(), kFDBase);
-  ASSERT_EQ(set->GetAttachmentAt(1)->TakePlatformFile(), kFDBase + 1);
-  ASSERT_EQ(set->GetAttachmentAt(2)->TakePlatformFile(), kFDBase + 2);
-  ASSERT_EQ(set->GetAttachmentAt(0)->TakePlatformFile(), kFDBase);
-  ASSERT_EQ(set->GetAttachmentAt(1)->TakePlatformFile(), kFDBase + 1);
-  ASSERT_EQ(set->GetAttachmentAt(2)->TakePlatformFile(), kFDBase + 2);
-  ASSERT_EQ(set->GetAttachmentAt(0)->TakePlatformFile(), kFDBase);
-  ASSERT_EQ(set->GetAttachmentAt(1)->TakePlatformFile(), kFDBase + 1);
-  ASSERT_EQ(set->GetAttachmentAt(2)->TakePlatformFile(), kFDBase + 2);
+  ASSERT_EQ(set->GetNonBrokerableAttachmentAt(0)->TakePlatformFile(), kFDBase);
+  ASSERT_EQ(set->GetNonBrokerableAttachmentAt(1)->TakePlatformFile(),
+            kFDBase + 1);
+  ASSERT_EQ(set->GetNonBrokerableAttachmentAt(2)->TakePlatformFile(),
+            kFDBase + 2);
+  ASSERT_EQ(set->GetNonBrokerableAttachmentAt(0)->TakePlatformFile(), kFDBase);
+  ASSERT_EQ(set->GetNonBrokerableAttachmentAt(1)->TakePlatformFile(),
+            kFDBase + 1);
+  ASSERT_EQ(set->GetNonBrokerableAttachmentAt(2)->TakePlatformFile(),
+            kFDBase + 2);
+  ASSERT_EQ(set->GetNonBrokerableAttachmentAt(0)->TakePlatformFile(), kFDBase);
+  ASSERT_EQ(set->GetNonBrokerableAttachmentAt(1)->TakePlatformFile(),
+            kFDBase + 1);
+  ASSERT_EQ(set->GetNonBrokerableAttachmentAt(2)->TakePlatformFile(),
+            kFDBase + 2);
 
-  set->CommitAll();
+  set->CommitAllDescriptors();
 }
 
 #if defined(OS_ANDROID)
@@ -190,7 +198,7 @@ TEST(MessageAttachmentSet, MAYBE_DontClose) {
 
   const int fd = GetSafeFd();
   ASSERT_TRUE(set->AddAttachment(new internal::PlatformFileAttachment(fd)));
-  set->CommitAll();
+  set->CommitAllDescriptors();
 
   ASSERT_FALSE(VerifyClosed(fd));
 }
@@ -201,7 +209,7 @@ TEST(MessageAttachmentSet, DoClose) {
   const int fd = GetSafeFd();
   ASSERT_TRUE(set->AddAttachment(
       new internal::PlatformFileAttachment(base::ScopedFD(fd))));
-  set->CommitAll();
+  set->CommitAllDescriptors();
 
   ASSERT_TRUE(VerifyClosed(fd));
 }

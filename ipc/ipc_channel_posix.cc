@@ -379,7 +379,7 @@ void ChannelPosix::CloseFileDescriptors(Message* msg) {
     QueueCloseFDMessage(to_close[i], 2);
   }
 #else
-  msg->attachment_set()->CommitAll();
+  msg->attachment_set()->CommitAllDescriptors();
 #endif
 }
 
@@ -415,10 +415,11 @@ bool ChannelPosix::ProcessOutgoingMessages() {
 
     Message* msg = element->get_message();
     if (message_send_bytes_written_ == 0 && msg &&
-        !msg->attachment_set()->empty()) {
+        msg->attachment_set()->num_non_brokerable_attachments()) {
       // This is the first chunk of a message which has descriptors to send
       struct cmsghdr *cmsg;
-      const unsigned num_fds = msg->attachment_set()->size();
+      const unsigned num_fds =
+          msg->attachment_set()->num_non_brokerable_attachments();
 
       DCHECK(num_fds <= MessageAttachmentSet::kMaxDescriptorsPerMessage);
       if (msg->attachment_set()->ContainsDirectoryDescriptor()) {

@@ -21,10 +21,21 @@ class BrokerableAttachment;
 class MessageAttachment;
 
 // -----------------------------------------------------------------------------
-// A MessageAttachmentSet is an ordered set of MessageAttachment objects. These
-// are associated with IPC messages so that attachments, each of which is either
-// a platform file or a mojo handle, can be transmitted over the underlying UNIX
-// domain socket (for ChannelPosix) or Mojo MessagePipe (for ChannelMojo).
+// A MessageAttachmentSet is an ordered set of MessageAttachment objects
+// associated with an IPC message. There are three types of MessageAttachments:
+//   1) TYPE_PLATFORM_FILE is transmitted over the Channel's underlying
+//   UNIX domain socket
+//   2) TYPE_MOJO_HANDLE is transmitted over the Mojo MessagePipe.
+//   3) TYPE_BROKERABLE_ATTACHMENT is transmitted by the Attachment Broker.
+// Any given IPC Message can have attachments of type (1) or (2), but not both.
+// These are stored in |attachments_|. Attachments of type (3) are stored in
+// |brokerable_attachments_|.
+//
+// To produce a deterministic ordering, all attachments in |attachments_| are
+// considered to come before those in |brokerable_attachments_|. These
+// attachments are transmitted across different communication channels, and
+// multiplexed by the receiver, so ordering between them cannot be guaranteed.
+//
 // -----------------------------------------------------------------------------
 class IPC_EXPORT MessageAttachmentSet
     : public base::RefCountedThreadSafe<MessageAttachmentSet> {
@@ -39,24 +50,41 @@ class IPC_EXPORT MessageAttachmentSet
   unsigned num_mojo_handles() const;
   // Return the number of brokerable attachments in the attachment set.
   unsigned num_brokerable_attachments() const;
+  // Return the number of non-brokerable attachments in the attachment set.
+  unsigned num_non_brokerable_attachments() const;
 
   // Return true if no unconsumed descriptors remain
   bool empty() const { return 0 == size(); }
 
+  // Returns whether the attachment was successfully added.
+  // |index| is an output variable. On success, it contains the index of the
+  // newly added attachment.
+  // |brokerable| is an output variable. On success, it describes which vector
+  // the attachment was added to.
+  bool AddAttachment(scoped_refptr<MessageAttachment> attachment,
+                     size_t* index,
+                     bool* brokerable);
+
+  // Similar to the above method, but without output variables.
   bool AddAttachment(scoped_refptr<MessageAttachment> attachment);
 
-  // Take the nth attachment from the beginning of the set, Code using this
-  // /must/ access the attachments in order, and must do it at most once.
+  // Take the nth non-brokerable attachment from the beginning of the vector,
+  // Code using this /must/ access the attachments in order, and must do it at
+  // most once.
   //
   // This interface is designed for the deserialising code as it doesn't
   // support close flags.
   //   returns: an attachment, or nullptr on error
-  scoped_refptr<MessageAttachment> GetAttachmentAt(unsigned index);
+  scoped_refptr<MessageAttachment> GetNonBrokerableAttachmentAt(unsigned index);
+
+  // Similar to GetNonBrokerableAttachmentAt, but there are no ordering
+  // requirements.
+  scoped_refptr<MessageAttachment> GetBrokerableAttachmentAt(unsigned index);
 
   // This must be called after transmitting the descriptors returned by
-  // PeekDescriptors. It marks all the descriptors as consumed and closes those
-  // which are auto-close.
-  void CommitAll();
+  // PeekDescriptors. It marks all the non-brokerable descriptors as consumed
+  // and closes those which are auto-close.
+  void CommitAllDescriptors();
 
   // Returns a vector of all brokerable attachments.
   std::vector<BrokerableAttachment*> GetBrokerableAttachments() const;
@@ -80,15 +108,16 @@ class IPC_EXPORT MessageAttachmentSet
   // ---------------------------------------------------------------------------
   // Interfaces for transmission...
 
-  // Fill an array with file descriptors without 'consuming' them. CommitAll
-  // must be called after these descriptors have been transmitted.
+  // Fill an array with file descriptors without 'consuming' them.
+  // CommitAllDescriptors must be called after these descriptors have been
+  // transmitted.
   //   buffer: (output) a buffer of, at least, size() integers.
   void PeekDescriptors(base::PlatformFile* buffer) const;
   // Returns true if any contained file descriptors appear to be handles to a
   // directory.
   bool ContainsDirectoryDescriptor() const;
-  // Fetch all filedescriptors with the "auto close" property.
-  // Used instead of CommitAll() when closing must be handled manually.
+  // Fetch all filedescriptors with the "auto close" property. Used instead of
+  // CommitAllDescriptors() when closing must be handled manually.
   void ReleaseFDsToClose(std::vector<base::PlatformFile>* fds);
 
   // ---------------------------------------------------------------------------
@@ -110,9 +139,11 @@ class IPC_EXPORT MessageAttachmentSet
 
   ~MessageAttachmentSet();
 
-  // A vector of attachments of the message, which might be |PlatformFile| or
-  // |MessagePipe|.
+  // All elements either have type TYPE_PLATFORM_FILE or TYPE_MOJO_HANDLE.
   std::vector<scoped_refptr<MessageAttachment>> attachments_;
+
+  // All elements have type TYPE_BROKERABLE_ATTACHMENT.
+  std::vector<scoped_refptr<BrokerableAttachment>> brokerable_attachments_;
 
   // This contains the index of the next descriptor which should be consumed.
   // It's used in a couple of ways. Firstly, at destruction we can check that

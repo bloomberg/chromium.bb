@@ -39,7 +39,7 @@ MessageAttachmentSet::MessageAttachmentSet()
 }
 
 MessageAttachmentSet::~MessageAttachmentSet() {
-  if (consumed_descriptor_highwater_ == size())
+  if (consumed_descriptor_highwater_ == num_non_brokerable_attachments())
     return;
 
   // We close all the owning descriptors. If this message should have
@@ -51,7 +51,7 @@ MessageAttachmentSet::~MessageAttachmentSet() {
   // the descriptors have their close flag set and we free all the extra
   // kernel resources.
   LOG(WARNING) << "MessageAttachmentSet destroyed with unconsumed descriptors: "
-               << consumed_descriptor_highwater_ << "/" << size();
+               << consumed_descriptor_highwater_ << "/" << num_descriptors();
 }
 
 unsigned MessageAttachmentSet::num_descriptors() const {
@@ -65,16 +65,22 @@ unsigned MessageAttachmentSet::num_mojo_handles() const {
 }
 
 unsigned MessageAttachmentSet::num_brokerable_attachments() const {
-  return count_attachments_of_type(
-      attachments_, MessageAttachment::TYPE_BROKERABLE_ATTACHMENT);
+  return static_cast<unsigned>(brokerable_attachments_.size());
 }
 
-unsigned MessageAttachmentSet::size() const {
+unsigned MessageAttachmentSet::num_non_brokerable_attachments() const {
   return static_cast<unsigned>(attachments_.size());
 }
 
+unsigned MessageAttachmentSet::size() const {
+  return static_cast<unsigned>(attachments_.size() +
+                               brokerable_attachments_.size());
+}
+
 bool MessageAttachmentSet::AddAttachment(
-    scoped_refptr<MessageAttachment> attachment) {
+    scoped_refptr<MessageAttachment> attachment,
+    size_t* index,
+    bool* brokerable) {
 #if defined(OS_POSIX)
   if (attachment->GetType() == MessageAttachment::TYPE_PLATFORM_FILE &&
       num_descriptors() == kMaxDescriptorsPerMessage) {
@@ -83,14 +89,37 @@ bool MessageAttachmentSet::AddAttachment(
   }
 #endif
 
-  attachments_.push_back(attachment);
-  return true;
+  switch (attachment->GetType()) {
+    case MessageAttachment::TYPE_PLATFORM_FILE:
+    case MessageAttachment::TYPE_MOJO_HANDLE:
+      attachments_.push_back(attachment);
+      *index = attachments_.size() - 1;
+      *brokerable = false;
+      return true;
+    case MessageAttachment::TYPE_BROKERABLE_ATTACHMENT:
+      BrokerableAttachment* brokerable_attachment =
+          static_cast<BrokerableAttachment*>(attachment.get());
+      scoped_refptr<BrokerableAttachment> a(brokerable_attachment);
+      brokerable_attachments_.push_back(a);
+      *index = brokerable_attachments_.size() - 1;
+      *brokerable = true;
+      return true;
+  }
+  return false;
 }
 
-scoped_refptr<MessageAttachment> MessageAttachmentSet::GetAttachmentAt(
-    unsigned index) {
-  if (index >= size()) {
-    DLOG(WARNING) << "Accessing out of bound index:" << index << "/" << size();
+bool MessageAttachmentSet::AddAttachment(
+    scoped_refptr<MessageAttachment> attachment) {
+  bool brokerable;
+  size_t index;
+  return AddAttachment(attachment, &index, &brokerable);
+}
+
+scoped_refptr<MessageAttachment>
+MessageAttachmentSet::GetNonBrokerableAttachmentAt(unsigned index) {
+  if (index >= num_non_brokerable_attachments()) {
+    DLOG(WARNING) << "Accessing out of bound index:" << index << "/"
+                  << num_non_brokerable_attachments();
     return scoped_refptr<MessageAttachment>();
   }
 
@@ -115,8 +144,10 @@ scoped_refptr<MessageAttachment> MessageAttachmentSet::GetAttachmentAt(
   // end of the array and index 0 is requested, we reset the highwater value.
   // TODO(morrita): This is absurd. This "wringle" disallow to introduce clearer
   // ownership model. Only client is NaclIPCAdapter. See crbug.com/415294
-  if (index == 0 && consumed_descriptor_highwater_ == size())
+  if (index == 0 &&
+      consumed_descriptor_highwater_ == num_non_brokerable_attachments()) {
     consumed_descriptor_highwater_ = 0;
+  }
 
   if (index != consumed_descriptor_highwater_)
     return scoped_refptr<MessageAttachment>();
@@ -126,7 +157,20 @@ scoped_refptr<MessageAttachment> MessageAttachmentSet::GetAttachmentAt(
   return attachments_[index];
 }
 
-void MessageAttachmentSet::CommitAll() {
+scoped_refptr<MessageAttachment>
+MessageAttachmentSet::GetBrokerableAttachmentAt(unsigned index) {
+  if (index >= num_brokerable_attachments()) {
+    DLOG(WARNING) << "Accessing out of bound index:" << index << "/"
+                  << num_brokerable_attachments();
+    return scoped_refptr<MessageAttachment>();
+  }
+
+  scoped_refptr<BrokerableAttachment> brokerable_attachment(
+      brokerable_attachments_[index]);
+  return scoped_refptr<MessageAttachment>(brokerable_attachment.get());
+}
+
+void MessageAttachmentSet::CommitAllDescriptors() {
   attachments_.clear();
   consumed_descriptor_highwater_ = 0;
 }
@@ -134,20 +178,17 @@ void MessageAttachmentSet::CommitAll() {
 std::vector<BrokerableAttachment*>
 MessageAttachmentSet::GetBrokerableAttachments() const {
   std::vector<BrokerableAttachment*> output;
-  for (const scoped_refptr<MessageAttachment>& attachment : attachments_) {
-    if (attachment->GetType() ==
-        MessageAttachment::TYPE_BROKERABLE_ATTACHMENT) {
+  for (const scoped_refptr<MessageAttachment>& attachment :
+       brokerable_attachments_) {
       output.push_back(static_cast<BrokerableAttachment*>(attachment.get()));
-    }
   }
   return output;
 }
 
 void MessageAttachmentSet::ReplacePlaceholderWithAttachment(
     const scoped_refptr<BrokerableAttachment>& attachment) {
-  for (auto it = attachments_.begin(); it != attachments_.end(); ++it) {
-    if ((*it)->GetType() != MessageAttachment::TYPE_BROKERABLE_ATTACHMENT)
-      continue;
+  for (auto it = brokerable_attachments_.begin();
+       it != brokerable_attachments_.end(); ++it) {
     BrokerableAttachment* brokerable_attachment =
         static_cast<BrokerableAttachment*>(it->get());
 
@@ -191,7 +232,7 @@ void MessageAttachmentSet::ReleaseFDsToClose(
       fds->push_back(file->TakePlatformFile());
   }
 
-  CommitAll();
+  CommitAllDescriptors();
 }
 
 void MessageAttachmentSet::AddDescriptorsToOwn(const base::PlatformFile* buffer,

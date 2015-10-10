@@ -238,24 +238,46 @@ bool Message::AddPlaceholderBrokerableAttachmentWithId(
 }
 
 bool Message::WriteAttachment(scoped_refptr<MessageAttachment> attachment) {
-  // We write the index of the descriptor so that we don't have to
+  bool brokerable;
+  size_t index;
+  bool success =
+      attachment_set()->AddAttachment(attachment, &index, &brokerable);
+  DCHECK(success);
+
+  // Write the type of descriptor.
+  WriteBool(brokerable);
+
+  // Write the index of the descriptor so that we don't have to
   // keep the current descriptor as extra decoding state when deserialising.
-  WriteInt(attachment_set()->size());
-  return attachment_set()->AddAttachment(attachment);
+  WriteInt(static_cast<int>(index));
+
+#if USE_ATTACHMENT_BROKER && defined(OS_MACOSX) && !defined(OS_IOS)
+  if (brokerable)
+    header()->num_brokered_attachments++;
+#endif
+
+  return success;
 }
 
 bool Message::ReadAttachment(
     base::PickleIterator* iter,
     scoped_refptr<MessageAttachment>* attachment) const {
-  int descriptor_index;
-  if (!iter->ReadInt(&descriptor_index))
+  bool brokerable;
+  if (!iter->ReadBool(&brokerable))
+    return false;
+
+  int index;
+  if (!iter->ReadInt(&index))
     return false;
 
   MessageAttachmentSet* attachment_set = attachment_set_.get();
   if (!attachment_set)
     return false;
 
-  *attachment = attachment_set->GetAttachmentAt(descriptor_index);
+  *attachment = brokerable
+                    ? attachment_set->GetBrokerableAttachmentAt(index)
+                    : attachment_set->GetNonBrokerableAttachmentAt(index);
+
   return nullptr != attachment->get();
 }
 
