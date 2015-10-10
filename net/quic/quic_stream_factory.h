@@ -138,6 +138,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       int threshold_public_resets_post_handshake,
       int socket_receive_buffer_size,
       bool delay_tcp_race,
+      bool store_server_configs_in_properties,
       const QuicTagVector& connection_options);
   ~QuicStreamFactory() override;
 
@@ -249,6 +250,10 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
 
   bool delay_tcp_race() const { return delay_tcp_race_; }
 
+  bool store_server_configs_in_properties() const {
+    return store_server_configs_in_properties_;
+  }
+
  private:
   class Job;
   friend class test::QuicStreamFactoryPeer;
@@ -329,8 +334,9 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       const scoped_ptr<QuicServerInfo>& server_info);
 
   // Initialize |quic_supported_servers_at_startup_| with the list of servers
-  // that supported QUIC at start up.
-  void InitializeQuicSupportedServersAtStartup();
+  // that supported QUIC at start up and also initialize in-memory cache of
+  // QuicServerInfo objects from HttpServerProperties.
+  void MaybeInitialize();
 
   void ProcessGoingAwaySession(QuicChromiumClientSession* session,
                                const QuicServerId& server_id,
@@ -449,6 +455,9 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   int yield_after_packets_;
   QuicTime::Delta yield_after_duration_;
 
+  // Set if server configs are to be stored in HttpServerProperties.
+  bool store_server_configs_in_properties_;
+
   // Each profile will (probably) have a unique port_seed_ value.  This value
   // is used to help seed a pseudo-random number generator (PortSuggester) so
   // that we consistently (within this profile) suggest the same ephemeral
@@ -460,7 +469,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   // Local address of socket that was created in CreateSession.
   IPEndPoint local_address_;
   bool check_persisted_supports_quic_;
-  bool quic_supported_servers_at_startup_initialzied_;
+  bool has_initialized_data_;
   std::set<HostPortPair> quic_supported_servers_at_startup_;
 
   NetworkConnection network_connection_;

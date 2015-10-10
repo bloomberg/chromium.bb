@@ -119,6 +119,7 @@ class NET_EXPORT HttpNetworkSession
     float quic_packet_loss_threshold;
     int quic_socket_receive_buffer_size;
     bool quic_delay_tcp_race;
+    bool quic_store_server_configs_in_properties;
     HostPortPair origin_to_force_quic_on;
     QuicClock* quic_clock;  // Will be owned by QuicStreamFactory.
     QuicRandom* quic_random;

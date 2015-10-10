@@ -17,6 +17,8 @@
 #include "net/http/transport_security_state.h"
 #include "net/quic/crypto/crypto_handshake.h"
 #include "net/quic/crypto/proof_verifier_chromium.h"
+#include "net/quic/crypto/properties_based_quic_server_info.h"
+#include "net/quic/crypto/quic_crypto_client_config.h"
 #include "net/quic/crypto/quic_decrypter.h"
 #include "net/quic/crypto/quic_encrypter.h"
 #include "net/quic/crypto/quic_server_info.h"
@@ -195,20 +197,34 @@ class QuicStreamFactoryPeer {
     return factory->num_public_resets_post_handshake_;
   }
 
-  static void InitializeQuicSupportedServersAtStartup(
-      QuicStreamFactory* factory) {
-    factory->InitializeQuicSupportedServersAtStartup();
+  static void MaybeInitialize(QuicStreamFactory* factory) {
+    factory->MaybeInitialize();
   }
 
-  static bool GetQuicSupportedServersAtStartupInitialzied(
-      QuicStreamFactory* factory) {
-    return factory->quic_supported_servers_at_startup_initialzied_;
+  static bool HasInitializedData(QuicStreamFactory* factory) {
+    return factory->has_initialized_data_;
   }
 
   static bool SupportsQuicAtStartUp(QuicStreamFactory* factory,
                                     HostPortPair host_port_pair) {
     return ContainsKey(factory->quic_supported_servers_at_startup_,
                        host_port_pair);
+  }
+
+  static bool CryptoConfigCacheIsEmpty(QuicStreamFactory* factory,
+                                       QuicServerId& quic_server_id) {
+    return factory->CryptoConfigCacheIsEmpty(quic_server_id);
+  }
+
+  static void EnableStoreServerConfigsInProperties(QuicStreamFactory* factory) {
+    factory->store_server_configs_in_properties_ = true;
+  }
+
+  static void SetQuicServerInfoFactory(
+      QuicStreamFactory* factory,
+      QuicServerInfoFactory* quic_server_info_factory) {
+    DCHECK(!factory->quic_server_info_factory_);
+    factory->quic_server_info_factory_ = quic_server_info_factory;
   }
 };
 
@@ -287,6 +303,7 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<TestParams> {
                  /*threshold_pulic_resets_post_handshake=*/2,
                  /*receive_buffer_size=*/0,
                  /*delay_tcp_race=*/false,
+                 /*store_server_configs_in_properties=*/false,
                  QuicTagVector()),
         host_port_pair_(kDefaultServerHostName, kDefaultServerPort),
         is_https_(false),
@@ -2655,9 +2672,9 @@ TEST_P(QuicStreamFactoryTest, EnableDelayTcpRace) {
   QuicStreamFactoryPeer::SetDelayTcpRace(&factory_, delay_tcp_race);
 }
 
-TEST_P(QuicStreamFactoryTest, QuicSupportedServersAtStartup) {
-  factory_.set_quic_server_info_factory(&quic_server_info_factory_);
+TEST_P(QuicStreamFactoryTest, MaybeInitialize) {
   QuicStreamFactoryPeer::SetTaskRunner(&factory_, runner_.get());
+  QuicStreamFactoryPeer::EnableStoreServerConfigsInProperties(&factory_);
 
   const AlternativeService alternative_service1(QUIC, host_port_pair_.host(),
                                                 host_port_pair_.port());
@@ -2669,12 +2686,64 @@ TEST_P(QuicStreamFactoryTest, QuicSupportedServersAtStartup) {
   http_server_properties_.SetAlternativeServices(
       host_port_pair_, alternative_service_info_vector);
 
-  QuicStreamFactoryPeer::InitializeQuicSupportedServersAtStartup(&factory_);
-  EXPECT_TRUE(
-      QuicStreamFactoryPeer::GetQuicSupportedServersAtStartupInitialzied(
-          &factory_));
+  QuicServerId quic_server_id("www.google.com", 80, false,
+                              PRIVACY_MODE_DISABLED);
+  QuicServerInfoFactory* quic_server_info_factory =
+      new PropertiesBasedQuicServerInfoFactory(
+          http_server_properties_.GetWeakPtr());
+  QuicStreamFactoryPeer::SetQuicServerInfoFactory(&factory_,
+                                                  quic_server_info_factory);
+
+  scoped_ptr<QuicServerInfo> quic_server_info(
+      quic_server_info_factory->GetForServer(quic_server_id));
+
+  // Update quic_server_info's server_config and persist it.
+  QuicServerInfo::State* state = quic_server_info->mutable_state();
+  // Minimum SCFG that passes config validation checks.
+  const char scfg[] = {// SCFG
+                       0x53, 0x43, 0x46, 0x47,
+                       // num entries
+                       0x01, 0x00,
+                       // padding
+                       0x00, 0x00,
+                       // EXPY
+                       0x45, 0x58, 0x50, 0x59,
+                       // EXPY end offset
+                       0x08, 0x00, 0x00, 0x00,
+                       // Value
+                       '1', '2', '3', '4', '5', '6', '7', '8'};
+
+  // Create temporary strings becasue Persist() clears string data in |state|.
+  string server_config(reinterpret_cast<const char*>(&scfg), sizeof(scfg));
+  string source_address_token("test_source_address_token");
+  string signature("test_signature");
+  string test_cert("test_cert");
+  vector<string> certs;
+  certs.push_back(test_cert);
+  state->server_config = server_config;
+  state->source_address_token = source_address_token;
+  state->server_config_sig = signature;
+  state->certs = certs;
+
+  quic_server_info->Persist();
+
+  QuicStreamFactoryPeer::MaybeInitialize(&factory_);
+  EXPECT_TRUE(QuicStreamFactoryPeer::HasInitializedData(&factory_));
   EXPECT_TRUE(
       QuicStreamFactoryPeer::SupportsQuicAtStartUp(&factory_, host_port_pair_));
+  EXPECT_FALSE(QuicStreamFactoryPeer::CryptoConfigCacheIsEmpty(&factory_,
+                                                               quic_server_id));
+  QuicCryptoClientConfig* crypto_config =
+      QuicStreamFactoryPeer::GetCryptoConfig(&factory_);
+  QuicCryptoClientConfig::CachedState* cached =
+      crypto_config->LookupOrCreate(quic_server_id);
+  EXPECT_FALSE(cached->server_config().empty());
+  EXPECT_TRUE(cached->GetServerConfig());
+  EXPECT_EQ(server_config, cached->server_config());
+  EXPECT_EQ(source_address_token, cached->source_address_token());
+  EXPECT_EQ(signature, cached->signature());
+  ASSERT_EQ(1U, cached->certs().size());
+  EXPECT_EQ(test_cert, cached->certs()[0]);
 }
 
 TEST_P(QuicStreamFactoryTest, YieldAfterPackets) {
@@ -2682,7 +2751,7 @@ TEST_P(QuicStreamFactoryTest, YieldAfterPackets) {
 
   scoped_ptr<QuicEncryptedPacket> close_packet(
       ConstructConnectionClosePacket(0));
-  std::vector<MockRead> reads;
+  vector<MockRead> reads;
   reads.push_back(
       MockRead(SYNCHRONOUS, close_packet->data(), close_packet->length(), 0));
   reads.push_back(MockRead(ASYNC, OK, 1));
@@ -2727,7 +2796,7 @@ TEST_P(QuicStreamFactoryTest, YieldAfterDuration) {
 
   scoped_ptr<QuicEncryptedPacket> close_packet(
       ConstructConnectionClosePacket(0));
-  std::vector<MockRead> reads;
+  vector<MockRead> reads;
   reads.push_back(
       MockRead(SYNCHRONOUS, close_packet->data(), close_packet->length(), 0));
   reads.push_back(MockRead(ASYNC, OK, 1));
