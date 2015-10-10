@@ -9,6 +9,7 @@
 #include "base/atomic_sequence_num.h"
 #include "base/logging.h"
 #include "build/build_config.h"
+#include "ipc/attachment_broker.h"
 #include "ipc/ipc_message_attachment.h"
 #include "ipc/ipc_message_attachment_set.h"
 #include "ipc/placeholder_brokerable_attachment.h"
@@ -178,7 +179,7 @@ void Message::FindNext(const char* range_start,
   bool have_entire_pickle =
       static_cast<size_t>(range_end - range_start) >= pickle_size;
 
-#if USE_ATTACHMENT_BROKER
+#if USE_ATTACHMENT_BROKER && defined(OS_MACOSX) && !defined(OS_IOS)
   // TODO(dskiba): determine message_size when entire pickle is not available
 
   if (!have_entire_pickle)
@@ -204,7 +205,7 @@ void Message::FindNext(const char* range_start,
   if (buffer_length < attachment_length + pickle_size)
     return;
 
-  for (int i = 0; i < num_attachments; ++i) {
+  for (size_t i = 0; i < num_attachments; ++i) {
     const char* attachment_start =
         pickle_end + i * BrokerableAttachment::kNonceSize;
     BrokerableAttachment::AttachmentId id(attachment_start,
