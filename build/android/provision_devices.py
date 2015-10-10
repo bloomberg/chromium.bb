@@ -100,7 +100,6 @@ def ProvisionDevice(device, blacklist, options):
       device.adb.WaitForDevice()
 
   try:
-    CheckExternalStorage(device)
     if should_run_phase(_PHASES.WIPE):
       if options.chrome_specific_wipe:
         run_phase(WipeChromeData)
@@ -117,6 +116,8 @@ def ProvisionDevice(device, blacklist, options):
       package = "com.google.android.gms"
       version_name = device.GetApplicationVersion(package)
       logging.info("Version name for %s is %s", package, version_name)
+
+    CheckExternalStorage(device)
 
   except device_errors.CommandTimeoutError:
     logging.exception('Timed out waiting for device %s. Adding to blacklist.',
@@ -142,6 +143,7 @@ def CheckExternalStorage(device):
     logging.info('External storage not writable. Remounting / as RW')
     device.RunShellCommand(['mount', '-o', 'remount,rw', '/'],
                            check_return=True, as_root=True)
+    device.EnableRoot()
     with device_temp_file.DeviceTempFile(
         device.adb, suffix='.sh', dir=device.GetExternalStoragePath()):
       pass
