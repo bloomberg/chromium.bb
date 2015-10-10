@@ -53,6 +53,12 @@ if [[ -z "$LLVM_DOWNLOAD_GOLD_PLUGIN" ]]; then
   LLVM_DOWNLOAD_GOLD_PLUGIN=
 fi
 
+if [[ "${OS}" == "Linux" ]] && \
+   [[ "$GYP_DEFINES" =~ .*buildtype=Official.* ]] && \
+   [[ "$GYP_DEFINES" =~ .*branding=Chrome.* ]] ; then
+  # LLVM Gold plugin is required to build with this configuration.
+  LLVM_DOWNLOAD_GOLD_PLUGIN=1
+fi
 
 # Die if any command dies, error on undefined variable expansions.
 set -eu
@@ -235,7 +241,10 @@ if [[ -f "${STAMP_FILE}" ]]; then
        [[ "${PREVIOUSLY_BUILT_REVISON}" = \
           "${PACKAGE_VERSION}" ]]; then
     echo "Clang already at ${PACKAGE_VERSION}"
-    exit 0
+    if [[ -z "${LLVM_DOWNLOAD_GOLD_PLUGIN}" ]] || \
+       [[ -f "${LLVM_BUILD_DIR}/lib/LLVMgold.so" ]]; then
+      exit 0
+    fi
   fi
 fi
 # To always force a new build if someone interrupts their build half way.
