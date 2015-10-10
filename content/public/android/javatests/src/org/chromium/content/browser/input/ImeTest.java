@@ -18,7 +18,6 @@ import android.view.View;
 import android.view.inputmethod.EditorInfo;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.ContentViewCore;
@@ -392,130 +391,66 @@ public class ImeTest extends ContentShellTestBase {
         waitAndVerifyStatesAndCalls(6, "h\nllo ", 2, 2, -1, -1);
     }
 
-    private int getTypedKeycodeGuess(String before, String after) {
-        KeyEvent ev = ImeAdapter.getTypedKeyEventGuess(before, after);
-        if (ev == null) return -1;
-        return ev.getKeyCode();
-    }
-
-    @SmallTest
-    @Feature({"TextInput", "Main"})
-    public void testGuessedKeyCodeFromTyping() throws Throwable {
-        assertEquals(-1, getTypedKeycodeGuess(null, ""));
-        assertEquals(KeyEvent.KEYCODE_X, getTypedKeycodeGuess(null, "x"));
-        assertEquals(-1, getTypedKeycodeGuess(null, "xyz"));
-
-        assertEquals(-1, getTypedKeycodeGuess("abc", "abc"));
-        assertEquals(KeyEvent.KEYCODE_DEL, getTypedKeycodeGuess("abc", ""));
-
-        assertEquals(KeyEvent.KEYCODE_H, getTypedKeycodeGuess("", "h"));
-        assertEquals(KeyEvent.KEYCODE_DEL, getTypedKeycodeGuess("h", ""));
-        assertEquals(KeyEvent.KEYCODE_E, getTypedKeycodeGuess("h", "he"));
-        assertEquals(KeyEvent.KEYCODE_L, getTypedKeycodeGuess("he", "hel"));
-        assertEquals(KeyEvent.KEYCODE_O, getTypedKeycodeGuess("hel", "helo"));
-        assertEquals(KeyEvent.KEYCODE_DEL, getTypedKeycodeGuess("helo", "hel"));
-        assertEquals(KeyEvent.KEYCODE_L, getTypedKeycodeGuess("hel", "hell"));
-        assertEquals(KeyEvent.KEYCODE_L, getTypedKeycodeGuess("hell", "helll"));
-        assertEquals(KeyEvent.KEYCODE_DEL, getTypedKeycodeGuess("helll", "hell"));
-        assertEquals(KeyEvent.KEYCODE_O, getTypedKeycodeGuess("hell", "hello"));
-
-        assertEquals(KeyEvent.KEYCODE_X, getTypedKeycodeGuess("xxx", "xxxx"));
-        assertEquals(KeyEvent.KEYCODE_X, getTypedKeycodeGuess("xxx", "xxxxx"));
-        assertEquals(KeyEvent.KEYCODE_DEL, getTypedKeycodeGuess("xxx", "xx"));
-        assertEquals(KeyEvent.KEYCODE_DEL, getTypedKeycodeGuess("xxx", "x"));
-
-        assertEquals(KeyEvent.KEYCODE_Y, getTypedKeycodeGuess("xxx", "xxxy"));
-        assertEquals(KeyEvent.KEYCODE_Y, getTypedKeycodeGuess("xxx", "xxxxy"));
-        assertEquals(-1, getTypedKeycodeGuess("xxx", "xy"));
-        assertEquals(-1, getTypedKeycodeGuess("xxx", "y"));
-
-        assertEquals(-1, getTypedKeycodeGuess("foo", "bar"));
-        assertEquals(-1, getTypedKeycodeGuess("foo", "bars"));
-        assertEquals(-1, getTypedKeycodeGuess("foo", "ba"));
-
-        // Some characters also require modifiers so we have to check the full event.
-        KeyEvent ev = ImeAdapter.getTypedKeyEventGuess(null, "!");
-        assertEquals(KeyEvent.KEYCODE_1, ev.getKeyCode());
-        assertTrue(ev.isShiftPressed());
-    }
-
     /*
     @SmallTest
     @Feature({"TextInput", "Main"})
     http://crbug.com/445499
     */
-    @DisabledTest
-    public void testKeyCodesWhileComposingText() throws Throwable {
+    public void testDeleteText() throws Throwable {
         focusElement("textarea");
 
-        // The calls below are a reflection of what the stock Google Keyboard (Android 4.4) sends
-        // when the noted key is touched on screen.  Exercise care when altering to make sure
-        // that the test reflects reality.  If this test breaks, it's possible that code has
-        // changed and different calls need to be made instead.
+        // The calls below are a reflection of what the stock Google Keyboard (Andr
+        // when the noted key is touched on screen.
         // H
         expectUpdateStateCall();
         setComposingText("h", 1);
-        assertEquals(KeyEvent.KEYCODE_H, mImeAdapter.mLastSyntheticKeyCode);
         assertUpdateStateCall(1000);
         assertEquals("h", mConnection.getTextBeforeCursor(9, 0));
 
         // O
         expectUpdateStateCall();
         setComposingText("ho", 1);
-        assertEquals(KeyEvent.KEYCODE_O, mImeAdapter.mLastSyntheticKeyCode);
         assertUpdateStateCall(1000);
         assertEquals("ho", mConnection.getTextBeforeCursor(9, 0));
 
-        // DEL
         expectUpdateStateCall();
         setComposingText("h", 1);
-        assertEquals(KeyEvent.KEYCODE_DEL, mImeAdapter.mLastSyntheticKeyCode);
         assertUpdateStateCall(1000);
-        setComposingRegion(0, 1); // DEL calls cancelComposition() then restarts
+        setComposingRegion(0, 1);
         setComposingText("h", 1);
         assertEquals("h", mConnection.getTextBeforeCursor(9, 0));
 
         // I
         setComposingText("hi", 1);
-        assertEquals(KeyEvent.KEYCODE_I, mImeAdapter.mLastSyntheticKeyCode);
         assertEquals("hi", mConnection.getTextBeforeCursor(9, 0));
 
         // SPACE
         commitText("hi", 1);
-        assertEquals(-1, mImeAdapter.mLastSyntheticKeyCode);
         commitText(" ", 1);
-        assertEquals(KeyEvent.KEYCODE_SPACE, mImeAdapter.mLastSyntheticKeyCode);
         assertEquals("hi ", mConnection.getTextBeforeCursor(9, 0));
 
         // DEL
         deleteSurroundingText(1, 0);
-        assertEquals(KeyEvent.KEYCODE_DEL, mImeAdapter.mLastSyntheticKeyCode);
         setComposingRegion(0, 2);
         assertEquals("hi", mConnection.getTextBeforeCursor(9, 0));
 
-        // DEL
         setComposingText("h", 1);
-        assertEquals(KeyEvent.KEYCODE_DEL, mImeAdapter.mLastSyntheticKeyCode);
         assertEquals("h", mConnection.getTextBeforeCursor(9, 0));
 
-        // DEL
         commitText("", 1);
-        assertEquals(KeyEvent.KEYCODE_DEL, mImeAdapter.mLastSyntheticKeyCode);
         assertEquals("", mConnection.getTextBeforeCursor(9, 0));
 
         // DEL (on empty input)
         deleteSurroundingText(1, 0); // DEL on empty still sends 1,0
-        assertEquals(KeyEvent.KEYCODE_DEL, mImeAdapter.mLastSyntheticKeyCode);
         assertEquals("", mConnection.getTextBeforeCursor(9, 0));
     }
+
 
     /*
     @SmallTest
     @Feature({"TextInput", "Main"})
-    http://crbug.com/445499
     */
-    @DisabledTest
-    public void testKeyCodesWhileSwipingText() throws Throwable {
+    public void testSwipingText() throws Throwable {
         focusElement("textarea");
 
         // The calls below are a reflection of what the stock Google Keyboard (Android 4.4) sends
@@ -525,16 +460,14 @@ public class ImeTest extends ContentShellTestBase {
         // "three"
         expectUpdateStateCall();
         setComposingText("three", 1);
-        assertEquals(KeyEvent.KEYCODE_UNKNOWN, mImeAdapter.mLastSyntheticKeyCode);
         assertUpdateStateCall(1000);
         assertEquals("three", mConnection.getTextBeforeCursor(99, 0));
 
         // "word"
         commitText("three", 1);
         commitText(" ", 1);
-        expectUpdateStateCall();
         setComposingText("word", 1);
-        assertEquals(KeyEvent.KEYCODE_UNKNOWN, mImeAdapter.mLastSyntheticKeyCode);
+        expectUpdateStateCall();
         assertUpdateStateCall(1000);
         assertEquals("three word", mConnection.getTextBeforeCursor(99, 0));
 
@@ -543,7 +476,6 @@ public class ImeTest extends ContentShellTestBase {
         commitText(" ", 1);
         expectUpdateStateCall();
         setComposingText("test", 1);
-        assertEquals(KeyEvent.KEYCODE_UNKNOWN, mImeAdapter.mLastSyntheticKeyCode);
         assertUpdateStateCall(1000);
         assertEquals("three word test", mConnection.getTextBeforeCursor(99, 0));
     }
@@ -578,7 +510,6 @@ public class ImeTest extends ContentShellTestBase {
         // H
         expectUpdateStateCall();
         commitText("h", 1);
-        assertEquals(KeyEvent.KEYCODE_H, mImeAdapter.mLastSyntheticKeyCode);
         assertEquals("h", mConnection.getTextBeforeCursor(9, 0));
         assertUpdateStateCall(1000);
         assertEquals("h", mConnection.getTextBeforeCursor(9, 0));
@@ -586,7 +517,6 @@ public class ImeTest extends ContentShellTestBase {
         // O
         expectUpdateStateCall();
         commitText("o", 1);
-        assertEquals(KeyEvent.KEYCODE_O, mImeAdapter.mLastSyntheticKeyCode);
         assertEquals("ho", mConnection.getTextBeforeCursor(9, 0));
         assertUpdateStateCall(1000);
         assertEquals("ho", mConnection.getTextBeforeCursor(9, 0));
@@ -610,7 +540,6 @@ public class ImeTest extends ContentShellTestBase {
         // H
         expectUpdateStateCall();
         commitText("h", 1);
-        assertEquals(KeyEvent.KEYCODE_H, mImeAdapter.mLastSyntheticKeyCode);
         assertEquals("h", mConnection.getTextBeforeCursor(9, 0));
         assertUpdateStateCall(1000);
         assertEquals("h", mConnection.getTextBeforeCursor(9, 0));
@@ -618,7 +547,6 @@ public class ImeTest extends ContentShellTestBase {
         // O
         expectUpdateStateCall();
         commitText("o", 1);
-        assertEquals(KeyEvent.KEYCODE_O, mImeAdapter.mLastSyntheticKeyCode);
         assertEquals("ho", mConnection.getTextBeforeCursor(9, 0));
         assertUpdateStateCall(1000);
         assertEquals("ho", mConnection.getTextBeforeCursor(9, 0));
@@ -633,84 +561,6 @@ public class ImeTest extends ContentShellTestBase {
         expectUpdateStateCall();
         assertEquals("", mConnection.getTextBeforeCursor(9, 0));
         assertUpdateStateCall(1000);
-        assertEquals("", mConnection.getTextBeforeCursor(9, 0));
-    }
-
-    @SmallTest
-    @Feature({"TextInput", "Main"})
-    public void testKeyCodesWhileTypingText() throws Throwable {
-        focusElement("textarea");
-
-        // The calls below are a reflection of what the Hacker's Keyboard sends when the noted
-        // key is touched on screen.  Exercise care when altering to make sure that the test
-        // reflects reality.
-        // H
-        expectUpdateStateCall();
-        commitText("h", 1);
-        assertEquals(KeyEvent.KEYCODE_H, mImeAdapter.mLastSyntheticKeyCode);
-        assertEquals("h", mConnection.getTextBeforeCursor(9, 0));
-        assertUpdateStateCall(1000);
-        assertEquals("h", mConnection.getTextBeforeCursor(9, 0));
-
-        // O
-        expectUpdateStateCall();
-        commitText("o", 1);
-        assertEquals(KeyEvent.KEYCODE_O, mImeAdapter.mLastSyntheticKeyCode);
-        assertEquals("ho", mConnection.getTextBeforeCursor(9, 0));
-        assertUpdateStateCall(1000);
-        assertEquals("ho", mConnection.getTextBeforeCursor(9, 0));
-
-        // DEL
-        expectUpdateStateCall();
-        deleteSurroundingText(1, 0);
-        assertEquals(KeyEvent.KEYCODE_DEL, mImeAdapter.mLastSyntheticKeyCode);
-        assertEquals("h", mConnection.getTextBeforeCursor(9, 0));
-        assertUpdateStateCall(1000);
-        assertEquals("h", mConnection.getTextBeforeCursor(9, 0));
-
-        // I
-        expectUpdateStateCall();
-        commitText("i", 1);
-        assertEquals(KeyEvent.KEYCODE_I, mImeAdapter.mLastSyntheticKeyCode);
-        assertEquals("hi", mConnection.getTextBeforeCursor(9, 0));
-        assertUpdateStateCall(1000);
-        assertEquals("hi", mConnection.getTextBeforeCursor(9, 0));
-
-        // SPACE
-        expectUpdateStateCall();
-        commitText(" ", 1);
-        assertEquals(KeyEvent.KEYCODE_SPACE, mImeAdapter.mLastSyntheticKeyCode);
-        assertEquals("hi ", mConnection.getTextBeforeCursor(9, 0));
-        assertUpdateStateCall(1000);
-        assertEquals("hi ", mConnection.getTextBeforeCursor(9, 0));
-
-        // DEL
-        expectUpdateStateCall();
-        deleteSurroundingText(1, 0);
-        assertEquals(KeyEvent.KEYCODE_DEL, mImeAdapter.mLastSyntheticKeyCode);
-        assertEquals("hi", mConnection.getTextBeforeCursor(9, 0));
-        assertUpdateStateCall(1000);
-        assertEquals("hi", mConnection.getTextBeforeCursor(9, 0));
-
-        // DEL
-        expectUpdateStateCall();
-        deleteSurroundingText(1, 0);
-        assertEquals(KeyEvent.KEYCODE_DEL, mImeAdapter.mLastSyntheticKeyCode);
-        assertEquals("h", mConnection.getTextBeforeCursor(9, 0));
-        assertUpdateStateCall(1000);
-        assertEquals("h", mConnection.getTextBeforeCursor(9, 0));
-
-        // DEL
-        expectUpdateStateCall();
-        deleteSurroundingText(1, 0);
-        assertEquals(KeyEvent.KEYCODE_DEL, mImeAdapter.mLastSyntheticKeyCode);
-        assertEquals("", mConnection.getTextBeforeCursor(9, 0));
-        assertUpdateStateCall(1000);
-        assertEquals("", mConnection.getTextBeforeCursor(9, 0));
-
-        // DEL (on empty input)
-        deleteSurroundingText(1, 0); // DEL on empty still sends 1,0
-        assertEquals(KeyEvent.KEYCODE_DEL, mImeAdapter.mLastSyntheticKeyCode);
         assertEquals("", mConnection.getTextBeforeCursor(9, 0));
     }
 
@@ -871,47 +721,6 @@ public class ImeTest extends ContentShellTestBase {
         expectUpdateStateCall();
         dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_CENTER));
         assertUpdateStateCall(1000);
-    }
-
-    @SmallTest
-    @Feature({"TextInput", "Main"})
-    public void testTransitionsWhileComposingText() throws Throwable {
-        focusElement("textarea"); // Default with autocomplete="on"
-
-        // H
-        // Since autocomplete="on" by default, COMPOSITION_KEY_CODE is emitted as key code
-        expectUpdateStateCall();
-        setComposingText("h", 1);
-        assertEquals(COMPOSITION_KEY_CODE, mImeAdapter.mLastSyntheticKeyCode);
-
-        // Simulate switch of input fields.
-        finishComposingText();
-
-        // H
-        expectUpdateStateCall();
-        setComposingText("h", 1);
-        assertEquals(COMPOSITION_KEY_CODE, mImeAdapter.mLastSyntheticKeyCode);
-    }
-
-    @SmallTest
-    @Feature({"TextInput", "Main"})
-    public void testTransitionsWhileEmittingKeyCode() throws Throwable {
-        focusElement("textarea2"); // Default with autocomplete="off"
-
-        // H
-        // Although autocomplete="off", we still emit COMPOSITION_KEY_CODE since synthesized
-        // keycodes are disabled.
-        expectUpdateStateCall();
-        setComposingText("h", 1);
-        assertEquals(COMPOSITION_KEY_CODE, mImeAdapter.mLastSyntheticKeyCode);
-
-        // Simulate switch of input fields.
-        finishComposingText();
-
-        // H
-        expectUpdateStateCall();
-        setComposingText("h", 1);
-        assertEquals(COMPOSITION_KEY_CODE, mImeAdapter.mLastSyntheticKeyCode);
     }
 
     @SmallTest

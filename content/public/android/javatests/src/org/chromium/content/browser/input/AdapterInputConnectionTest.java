@@ -10,8 +10,6 @@ import android.os.ResultReceiver;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.text.Editable;
-import android.text.Selection;
-import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.BaseInputConnection;
 import android.view.inputmethod.EditorInfo;
@@ -106,33 +104,6 @@ public class AdapterInputConnectionTest extends ContentShellTestBase {
 
     @MediumTest
     @Feature({"TextInput", "Main"})
-    public void testDeleteSurroundingText() throws Throwable {
-        // Tests back deletion of a single character with empty input.
-        mConnection.deleteSurroundingText(1, 0);
-        assertEquals(0, mImeAdapter.getDeleteSurroundingTextCallCount());
-        Integer[] keyEvents = mImeAdapter.getKeyEvents();
-        assertEquals(1, keyEvents.length);
-        assertEquals(KeyEvent.KEYCODE_DEL, keyEvents[0].intValue());
-
-        // Tests forward deletion of a single character with non-empty input.
-        mEditable.replace(0, mEditable.length(), " hello");
-        Selection.setSelection(mEditable, 0, 0);
-        mConnection.deleteSurroundingText(0, 1);
-        assertEquals(0, mImeAdapter.getDeleteSurroundingTextCallCount());
-        keyEvents = mImeAdapter.getKeyEvents();
-        assertEquals(2, keyEvents.length);
-        assertEquals(KeyEvent.KEYCODE_FORWARD_DEL, keyEvents[1].intValue());
-
-        // Tests back deletion of multiple characters with non-empty input.
-        mEditable.replace(0, mEditable.length(), "hello ");
-        Selection.setSelection(mEditable, mEditable.length(), mEditable.length());
-        mConnection.deleteSurroundingText(2, 0);
-        assertEquals(1, mImeAdapter.getDeleteSurroundingTextCallCount());
-        assertEquals(2, mImeAdapter.getKeyEvents().length);
-    }
-
-    @MediumTest
-    @Feature({"TextInput", "Main"})
     public void testNewConnectionFinishesComposingText() throws Throwable {
         mConnection.setComposingText("abc", 1);
         assertEquals(0, BaseInputConnection.getComposingSpanStart(mEditable));
@@ -162,7 +133,7 @@ public class AdapterInputConnectionTest extends ContentShellTestBase {
         }
 
         @Override
-        public void sendKeyEventWithKeyCode(int keyCode, int flags) {
+        public void sendSyntheticKeyPress(int keyCode, int flags) {
             mKeyEventQueue.add(keyCode);
         }
 

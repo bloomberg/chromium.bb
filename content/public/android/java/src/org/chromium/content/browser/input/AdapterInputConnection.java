@@ -4,7 +4,6 @@
 
 package org.chromium.content.browser.input;
 
-import android.os.SystemClock;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.Selection;
@@ -20,7 +19,6 @@ import android.view.inputmethod.ExtractedTextRequest;
 
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.blink_public.web.WebInputEventType;
 import org.chromium.blink_public.web.WebTextInputFlags;
 import org.chromium.ui.base.ime.TextInputType;
 
@@ -253,7 +251,7 @@ public class AdapterInputConnection extends BaseInputConnection {
         mPendingAccent = 0;
         super.setComposingText(text, newCursorPosition);
         updateSelectionIfRequired();
-        return mImeAdapter.checkCompositionQueueAndCallNative(text, newCursorPosition, false);
+        return mImeAdapter.sendCompositionToNative(text, newCursorPosition, false);
     }
 
     /**
@@ -266,8 +264,7 @@ public class AdapterInputConnection extends BaseInputConnection {
         mPendingAccent = 0;
         super.commitText(text, newCursorPosition);
         updateSelectionIfRequired();
-        return mImeAdapter.checkCompositionQueueAndCallNative(text, newCursorPosition,
-                text.length() > 0);
+        return mImeAdapter.sendCompositionToNative(text, newCursorPosition, text.length() > 0);
     }
 
     /**
@@ -276,18 +273,7 @@ public class AdapterInputConnection extends BaseInputConnection {
     @Override
     public boolean performEditorAction(int actionCode) {
         Log.d(TAG, "performEditorAction [%d]", actionCode);
-        if (actionCode == EditorInfo.IME_ACTION_NEXT) {
-            restartInput();
-            // Send TAB key event
-            long timeStampMs = SystemClock.uptimeMillis();
-            mImeAdapter.sendSyntheticKeyEvent(
-                    WebInputEventType.RawKeyDown, timeStampMs, KeyEvent.KEYCODE_TAB, 0, 0);
-        } else {
-            mImeAdapter.sendKeyEventWithKeyCode(KeyEvent.KEYCODE_ENTER,
-                    KeyEvent.FLAG_SOFT_KEYBOARD | KeyEvent.FLAG_KEEP_TOUCH_MODE
-                    | KeyEvent.FLAG_EDITOR_ACTION);
-        }
-        return true;
+        return mImeAdapter.performEditorAction(actionCode);
     }
 
     /**
@@ -392,28 +378,7 @@ public class AdapterInputConnection extends BaseInputConnection {
             return true;
         }
 
-        // For single-char deletion calls |ImeAdapter.sendKeyEventWithKeyCode| with the real key
-        // code. For multi-character deletion, executes deletion by calling
-        // |ImeAdapter.deleteSurroundingText| and sends synthetic key events with a dummy key code.
-        int keyCode = KeyEvent.KEYCODE_UNKNOWN;
-        if (originalBeforeLength == 1 && originalAfterLength == 0) {
-            keyCode = KeyEvent.KEYCODE_DEL;
-        } else if (originalBeforeLength == 0 && originalAfterLength == 1) {
-            keyCode = KeyEvent.KEYCODE_FORWARD_DEL;
-        }
-
-        boolean result = true;
-        if (keyCode == KeyEvent.KEYCODE_UNKNOWN) {
-            result = mImeAdapter.sendSyntheticKeyEvent(
-                    WebInputEventType.RawKeyDown, SystemClock.uptimeMillis(), keyCode, 0, 0);
-            result &= mImeAdapter.deleteSurroundingText(beforeLength, afterLength);
-            result &= mImeAdapter.sendSyntheticKeyEvent(
-                    WebInputEventType.KeyUp, SystemClock.uptimeMillis(), keyCode, 0, 0);
-        } else {
-            mImeAdapter.sendKeyEventWithKeyCode(
-                    keyCode, KeyEvent.FLAG_SOFT_KEYBOARD | KeyEvent.FLAG_KEEP_TOUCH_MODE);
-        }
-        return result;
+        return mImeAdapter.deleteSurroundingText(beforeLength, afterLength);
     }
 
     /**
@@ -432,7 +397,7 @@ public class AdapterInputConnection extends BaseInputConnection {
         // event through and return. But note that some keys, such as enter, may actually be
         // handled on ACTION_UP in Blink.
         if (action != KeyEvent.ACTION_DOWN) {
-            mImeAdapter.translateAndSendNativeEvents(event);
+            mImeAdapter.sendKeyEvent(event);
             return true;
         }
 
@@ -469,7 +434,7 @@ public class AdapterInputConnection extends BaseInputConnection {
             finishComposingText();
         }
         replaceSelectionWithUnicodeChar(unicodeChar);
-        mImeAdapter.translateAndSendNativeEvents(event);
+        mImeAdapter.sendKeyEvent(event);
         return true;
     }
 
