@@ -170,8 +170,7 @@ class CONTENT_EXPORT RenderWidget
   void didAutoResize(const blink::WebSize& new_size) override;
   void initializeLayerTreeView() override;
   blink::WebLayerTreeView* layerTreeView() override;
-  void didFirstVisuallyNonEmptyLayout() override;
-  void didFirstLayoutAfterFinishedParsing() override;
+  void didMeaningfulLayout(blink::WebMeaningfulLayout layout_type) override;
   void didFocus() override;
   void didBlur() override;
   void didChangeCursor(const blink::WebCursorInfo&) override;

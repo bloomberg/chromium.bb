@@ -421,6 +421,7 @@
       "web/WebLocalFrame.h",
       "web/WebMIDIClient.h",
       "web/WebMIDIPermissionRequest.h",
+      "web/WebMeaningfulLayout.h",
       "web/WebMediaDevicesRequest.h",
       "web/WebMediaPlayerAction.h",
       "web/WebMediaStreamRegistry.h",

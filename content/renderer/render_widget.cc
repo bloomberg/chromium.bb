@@ -1365,14 +1365,14 @@ blink::WebLayerTreeView* RenderWidget::layerTreeView() {
   return compositor_.get();
 }
 
-void RenderWidget::didFirstVisuallyNonEmptyLayout() {
-  QueueMessage(
-      new ViewHostMsg_DidFirstVisuallyNonEmptyPaint(routing_id_),
-      MESSAGE_DELIVERY_POLICY_WITH_VISUAL_STATE);
-}
+void RenderWidget::didMeaningfulLayout(blink::WebMeaningfulLayout layout_type) {
+  if (layout_type == blink::WebMeaningfulLayout::VisuallyNonEmpty) {
+    QueueMessage(new ViewHostMsg_DidFirstVisuallyNonEmptyPaint(routing_id_),
+                 MESSAGE_DELIVERY_POLICY_WITH_VISUAL_STATE);
+  }
 
-void RenderWidget::didFirstLayoutAfterFinishedParsing() {
-  // TODO(dglazkov): Use this hook to drive CapturePageInfo.
+  FOR_EACH_OBSERVER(RenderFrameImpl, render_frames_,
+                    DidMeaningfulLayout(layout_type));
 }
 
 void RenderWidget::WillBeginCompositorFrame() {

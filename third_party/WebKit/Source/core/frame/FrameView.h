@@ -839,7 +839,7 @@ inline void FrameView::incrementVisuallyNonEmptyCharacterCount(unsigned count)
     if (m_isVisuallyNonEmpty)
         return;
     m_visuallyNonEmptyCharacterCount += count;
-    // Use a threshold value to prevent very small amounts of visible content from triggering didFirstVisuallyNonEmptyLayout.
+    // Use a threshold value to prevent very small amounts of visible content from triggering didMeaningfulLayout.
     // The first few hundred characters rarely contain the interesting content of the page.
     static const unsigned visualCharacterThreshold = 200;
     if (m_visuallyNonEmptyCharacterCount > visualCharacterThreshold)
@@ -851,7 +851,7 @@ inline void FrameView::incrementVisuallyNonEmptyPixelCount(const IntSize& size)
     if (m_isVisuallyNonEmpty)
         return;
     m_visuallyNonEmptyPixelCount += size.width() * size.height();
-    // Use a threshold value to prevent very small amounts of visible content from triggering didFirstVisuallyNonEmptyLayout
+    // Use a threshold value to prevent very small amounts of visible content from triggering didMeaningfulLayout.
     static const unsigned visualPixelThreshold = 32 * 32;
     if (m_visuallyNonEmptyPixelCount > visualPixelThreshold)
         setIsVisuallyNonEmpty();

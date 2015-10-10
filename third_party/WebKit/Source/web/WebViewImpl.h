@@ -746,6 +746,7 @@ private:
     bool m_userGestureObserved;
     bool m_shouldDispatchFirstVisuallyNonEmptyLayout;
     bool m_shouldDispatchFirstLayoutAfterFinishedParsing;
+    bool m_shouldDispatchFirstLayoutAfterFinishedLoading;
     WebDisplayMode m_displayMode;
 
     FloatSize m_elasticOverscroll;

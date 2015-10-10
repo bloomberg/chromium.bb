@@ -1857,6 +1857,12 @@ void RenderFrameImpl::LoadNavigationErrorPage(
                          replace);
 }
 
+void RenderFrameImpl::DidMeaningfulLayout(
+    blink::WebMeaningfulLayout layout_type) {
+  FOR_EACH_OBSERVER(RenderFrameObserver, observers_,
+                    DidMeaningfulLayout(layout_type));
+}
+
 void RenderFrameImpl::DidCommitCompositorFrame() {
   if (BrowserPluginManager::Get())
     BrowserPluginManager::Get()->DidCommitCompositorFrame(GetRoutingID());

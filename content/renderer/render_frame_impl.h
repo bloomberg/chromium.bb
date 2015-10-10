@@ -203,6 +203,10 @@ class CONTENT_EXPORT RenderFrameImpl
     render_frame_proxy_ = proxy;
   }
 
+  // Called by RenderWidget when meaningful layout has happened.
+  // See RenderFrameObserver::DidMeaningfulLayout declaration for details.
+  void DidMeaningfulLayout(blink::WebMeaningfulLayout layout_type);
+
   // Out-of-process child frames receive a signal from RenderWidgetCompositor
   // when a compositor frame has committed.
   void DidCommitCompositorFrame();

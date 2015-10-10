@@ -12,6 +12,7 @@
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
+#include "third_party/WebKit/public/web/WebMeaningfulLayout.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -95,6 +96,13 @@ class CONTENT_EXPORT RenderFrameObserver : public IPC::Listener,
                                            const base::string16& stack_trace,
                                            int32 line_number,
                                            int32 severity_level) {}
+
+  // Called when an interesting (from document lifecycle perspective),
+  // compositor-driven layout had happened. This is a reasonable hook to use
+  // to inspect the document and layout information, since it is in a clean
+  // state and you won't accidentally force new layouts.
+  // The interestingness of layouts is explained in WebMeaningfulLayout.h.
+  virtual void DidMeaningfulLayout(blink::WebMeaningfulLayout layout_type) {}
 
   // Called when a compositor frame has committed.
   virtual void DidCommitCompositorFrame() {}

@@ -138,6 +138,7 @@
 #include "public/web/WebGraphicsContext.h"
 #include "public/web/WebHitTestResult.h"
 #include "public/web/WebInputElement.h"
+#include "public/web/WebMeaningfulLayout.h"
 #include "public/web/WebMediaPlayerAction.h"
 #include "public/web/WebNode.h"
 #include "public/web/WebPlugin.h"
@@ -446,6 +447,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     , m_userGestureObserved(false)
     , m_shouldDispatchFirstVisuallyNonEmptyLayout(false)
     , m_shouldDispatchFirstLayoutAfterFinishedParsing(false)
+    , m_shouldDispatchFirstLayoutAfterFinishedLoading(false)
     , m_displayMode(WebDisplayModeBrowser)
     , m_elasticOverscroll(FloatSize())
 {
@@ -1909,12 +1911,17 @@ void WebViewImpl::layout()
             m_shouldDispatchFirstVisuallyNonEmptyLayout = false;
             // TODO(esprehn): Move users of this callback to something
             // better, the heuristic for "visually non-empty" is bad.
-            client()->didFirstVisuallyNonEmptyLayout();
+            client()->didMeaningfulLayout(WebMeaningfulLayout::VisuallyNonEmpty);
         }
 
         if (m_shouldDispatchFirstLayoutAfterFinishedParsing && frame->document()->hasFinishedParsing())  {
             m_shouldDispatchFirstLayoutAfterFinishedParsing = false;
-            client()->didFirstLayoutAfterFinishedParsing();
+            client()->didMeaningfulLayout(WebMeaningfulLayout::FinishedParsing);
+        }
+
+        if (m_shouldDispatchFirstLayoutAfterFinishedLoading && frame->document()->isLoadCompleted()) {
+            m_shouldDispatchFirstLayoutAfterFinishedLoading = false;
+            client()->didMeaningfulLayout(WebMeaningfulLayout::FinishedLoading);
         }
     }
 }
@@ -4124,6 +4131,7 @@ void WebViewImpl::setRootGraphicsLayer(GraphicsLayer* layer)
         m_layerTreeView->clearRootLayer();
         m_shouldDispatchFirstVisuallyNonEmptyLayout = true;
         m_shouldDispatchFirstLayoutAfterFinishedParsing = true;
+        m_shouldDispatchFirstLayoutAfterFinishedLoading = true;
         visualViewport.clearLayersForTreeView(m_layerTreeView);
     }
 }
