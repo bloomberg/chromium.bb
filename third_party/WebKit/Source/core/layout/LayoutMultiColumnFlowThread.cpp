@@ -447,6 +447,15 @@ bool LayoutMultiColumnFlowThread::hasFragmentainerGroupForColumnAt(LayoutUnit of
     // can hold as many columns as we like. We shouldn't even be here in that case.
     ASSERT(enclosingFlowThread());
 
+    if (!isPageLogicalHeightKnown()) {
+        // If we have no clue about the height of the multicol container, bail. This situation
+        // occurs initially when an auto-height multicol container is nested inside another
+        // auto-height multicol container. We need at least an estimated height of the outer
+        // multicol container before we can check what an inner fragmentainer group has room for.
+        // Its height height is indefinite for now.
+        return true;
+    }
+
     LayoutMultiColumnSet* lastColumnSet = lastMultiColumnSet();
     if (!lastColumnSet) {
         ASSERT_NOT_REACHED();
@@ -925,34 +934,32 @@ void LayoutMultiColumnFlowThread::layout()
     m_lastSetWorkedOn = nullptr;
 }
 
-void LayoutMultiColumnFlowThread::setPageBreak(LayoutUnit offset, LayoutUnit spaceShortage)
+void LayoutMultiColumnFlowThread::contentWasLaidOut(LayoutUnit logicalTopInFlowThreadAfterPagination)
 {
-    // Only positive values are interesting (and allowed) here. Zero space shortage may be reported
-    // when we're at the top of a column and the element has zero height. Ignore this, and also
-    // ignore any negative values, which may occur when we set an early break in order to honor
-    // widows in the next column.
-    if (spaceShortage <= 0)
+    // Check if we need another fragmentainer group. If we've run out of columns in the last
+    // fragmentainer group (column row), we need to insert another fragmentainer group to hold more
+    // columns.
+    if (!multiColumnBlockFlow()->isInsideFlowThread())
+        return; // Early bail. We're not nested, so waste no more time on this.
+    if (!isInInitialLayoutPass()) {
+        // We only insert additional fragmentainer groups in the initial layout pass. We only want
+        // to balance columns in the last fragmentainer group (if we need to balance at all), so we
+        // want that last fragmentainer group to be the same one in all layout passes that follow.
         return;
-
-    if (LayoutMultiColumnSet* multicolSet = columnSetAtBlockOffset(offset))
-        multicolSet->recordSpaceShortage(offset, spaceShortage);
+    }
+    LayoutMultiColumnSet* columnSet = columnSetAtBlockOffset(logicalTopInFlowThreadAfterPagination);
+    if (!columnSet)
+        return;
+    MultiColumnFragmentainerGroup& row = columnSet->fragmentainerGroupAtFlowThreadOffset(logicalTopInFlowThreadAfterPagination);
+    if (!row.isLastGroup())
+        return;
+    appendNewFragmentainerGroupIfNeeded(logicalTopInFlowThreadAfterPagination);
 }
 
 void LayoutMultiColumnFlowThread::updateMinimumPageHeight(LayoutUnit offset, LayoutUnit minHeight)
 {
     if (LayoutMultiColumnSet* multicolSet = columnSetAtBlockOffset(offset))
         multicolSet->updateMinimumColumnHeight(offset, minHeight);
-}
-
-bool LayoutMultiColumnFlowThread::addForcedColumnBreak(LayoutUnit offset, LayoutObject* /*breakChild*/, bool /*isBefore*/, LayoutUnit* offsetBreakAdjustment)
-{
-    if (LayoutMultiColumnSet* multicolSet = columnSetAtBlockOffset(offset)) {
-        multicolSet->addContentRun(offset);
-        if (offsetBreakAdjustment)
-            *offsetBreakAdjustment = pageLogicalHeightForOffset(offset) ? pageRemainingLogicalHeightForOffset(offset, AssociateWithFormerPage) : LayoutUnit();
-        return true;
-    }
-    return false;
 }
 
 }

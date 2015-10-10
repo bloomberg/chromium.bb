@@ -2615,10 +2615,10 @@ LayoutUnit LayoutBlock::pageRemainingLogicalHeightForOffset(LayoutUnit offset, P
     return flowThread->pageRemainingLogicalHeightForOffset(offset, pageBoundaryRule);
 }
 
-void LayoutBlock::setPageBreak(LayoutUnit offset, LayoutUnit spaceShortage)
+void LayoutBlock::paginatedContentWasLaidOut(LayoutUnit logicalTopOffsetAfterPagination)
 {
     if (LayoutFlowThread* flowThread = flowThreadContainingBlock())
-        flowThread->setPageBreak(offsetFromLogicalTopOfFirstPage() + offset, spaceShortage);
+        flowThread->contentWasLaidOut(offsetFromLogicalTopOfFirstPage() + logicalTopOffsetAfterPagination);
 }
 
 void LayoutBlock::updateMinimumPageHeight(LayoutUnit offset, LayoutUnit minHeight)

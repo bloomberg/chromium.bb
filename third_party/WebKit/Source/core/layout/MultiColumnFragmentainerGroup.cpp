@@ -6,6 +6,7 @@
 
 #include "core/layout/MultiColumnFragmentainerGroup.h"
 
+#include "core/layout/ColumnBalancer.h"
 #include "core/layout/LayoutMultiColumnSet.h"
 
 namespace blink {
@@ -13,6 +14,11 @@ namespace blink {
 MultiColumnFragmentainerGroup::MultiColumnFragmentainerGroup(LayoutMultiColumnSet& columnSet)
     : m_columnSet(columnSet)
 {
+}
+
+bool MultiColumnFragmentainerGroup::isFirstGroup() const
+{
+    return &m_columnSet.firstFragmentainerGroup() == this;
 }
 
 bool MultiColumnFragmentainerGroup::isLastGroup() const
@@ -65,33 +71,6 @@ void MultiColumnFragmentainerGroup::resetColumnHeight()
 
     if (m_columnHeight != oldColumnHeight)
         m_columnSet.setChildNeedsLayout(MarkOnlyThis);
-
-    // Content runs are only needed in the initial layout pass, in order to find an initial column
-    // height, and should have been deleted afterwards. We're about to rebuild the content runs, so
-    // the list needs to be empty.
-    ASSERT(m_contentRuns.isEmpty());
-}
-
-void MultiColumnFragmentainerGroup::addContentRun(LayoutUnit endOffsetInFlowThread)
-{
-    if (!m_contentRuns.isEmpty() && endOffsetInFlowThread <= m_contentRuns.last().breakOffset())
-        return;
-    // Append another item as long as we haven't exceeded used column count. What ends up in the
-    // overflow area shouldn't affect column balancing.
-    if (m_contentRuns.size() < m_columnSet.usedColumnCount())
-        m_contentRuns.append(ContentRun(endOffsetInFlowThread));
-}
-
-void MultiColumnFragmentainerGroup::recordSpaceShortage(LayoutUnit spaceShortage)
-{
-    if (spaceShortage >= m_minSpaceShortage)
-        return;
-
-    // The space shortage is what we use as our stretch amount. We need a positive number here in
-    // order to get anywhere.
-    ASSERT(spaceShortage > 0);
-
-    m_minSpaceShortage = spaceShortage;
 }
 
 bool MultiColumnFragmentainerGroup::recalculateColumnHeight(BalancedColumnHeightCalculation calculationMode)
@@ -101,10 +80,6 @@ bool MultiColumnFragmentainerGroup::recalculateColumnHeight(BalancedColumnHeight
     m_maxColumnHeight = calculateMaxColumnHeight();
 
     if (heightIsAuto()) {
-        if (calculationMode == GuessFromFlowThreadPortion) {
-            // Post-process the content runs and find out where the implicit breaks will occur.
-            distributeImplicitBreaks();
-        }
         LayoutUnit newColumnHeight = calculateColumnHeight(calculationMode);
         setAndConstrainColumnHeight(newColumnHeight);
         // After having calculated an initial column height, the multicol container typically needs at
@@ -118,15 +93,9 @@ bool MultiColumnFragmentainerGroup::recalculateColumnHeight(BalancedColumnHeight
         setAndConstrainColumnHeight(m_columnHeight);
     }
 
-    // We can get rid of the content runs now, if we haven't already done so. They are only needed
-    // to calculate the initial balanced column height. In fact, we have to get rid of them before
-    // the next layout pass, since each pass will rebuild this.
-    m_contentRuns.clear();
-
     if (m_columnHeight == oldColumnHeight)
         return false; // No change. We're done.
 
-    m_minSpaceShortage = LayoutUnit::max();
     return true; // Need another pass.
 }
 
@@ -374,51 +343,6 @@ void MultiColumnFragmentainerGroup::setAndConstrainColumnHeight(LayoutUnit newHe
         m_columnHeight = m_maxColumnHeight;
 }
 
-unsigned MultiColumnFragmentainerGroup::findRunWithTallestColumns() const
-{
-    unsigned indexWithLargestHeight = 0;
-    LayoutUnit largestHeight;
-    LayoutUnit previousOffset = m_logicalTopInFlowThread;
-    size_t runCount = m_contentRuns.size();
-    ASSERT(runCount);
-    for (size_t i = 0; i < runCount; i++) {
-        const ContentRun& run = m_contentRuns[i];
-        LayoutUnit height = run.columnLogicalHeight(previousOffset);
-        if (largestHeight < height) {
-            largestHeight = height;
-            indexWithLargestHeight = i;
-        }
-        previousOffset = run.breakOffset();
-    }
-    return indexWithLargestHeight;
-}
-
-void MultiColumnFragmentainerGroup::distributeImplicitBreaks()
-{
-#if ENABLE(ASSERT)
-    // There should be no implicit breaks assumed at this point.
-    for (unsigned i = 0; i < m_contentRuns.size(); i++)
-        ASSERT(!m_contentRuns[i].assumedImplicitBreaks());
-#endif // ENABLE(ASSERT)
-
-    // Insert a final content run to encompass all content. This will include overflow if this is
-    // the last set.
-    addContentRun(m_logicalBottomInFlowThread);
-    unsigned columnCount = m_contentRuns.size();
-
-    // If there is room for more breaks (to reach the used value of column-count), imagine that we
-    // insert implicit breaks at suitable locations. At any given time, the content run with the
-    // currently tallest columns will get another implicit break "inserted", which will increase its
-    // column count by one and shrink its columns' height. Repeat until we have the desired total
-    // number of breaks. The largest column height among the runs will then be the initial column
-    // height for the balancer to use.
-    while (columnCount < m_columnSet.usedColumnCount()) {
-        unsigned index = findRunWithTallestColumns();
-        m_contentRuns[index].assumeAnotherImplicitBreak();
-        columnCount++;
-    }
-}
-
 LayoutUnit MultiColumnFragmentainerGroup::calculateColumnHeight(BalancedColumnHeightCalculation calculationMode) const
 {
     if (calculationMode == GuessFromFlowThreadPortion) {
@@ -426,19 +350,11 @@ LayoutUnit MultiColumnFragmentainerGroup::calculateColumnHeight(BalancedColumnHe
         // content run (after having "inserted" implicit breaks), and find its start offset (by
         // looking at the previous run's end offset, or, if there's no previous run, the set's start
         // offset in the flow thread).
-        unsigned index = findRunWithTallestColumns();
-        LayoutUnit startOffset = index > 0 ? m_contentRuns[index - 1].breakOffset() : m_logicalTopInFlowThread;
-        return std::max<LayoutUnit>(m_contentRuns[index].columnLogicalHeight(startOffset), m_minimumColumnHeight);
+        return std::max(InitialColumnHeightFinder::initialMinimalBalancedHeight(*this), m_minimumColumnHeight);
     }
 
     if (actualColumnCount() <= m_columnSet.usedColumnCount()) {
         // With the current column height, the content fits without creating overflowing columns. We're done.
-        return m_columnHeight;
-    }
-
-    if (m_contentRuns.size() >= m_columnSet.usedColumnCount()) {
-        // Too many forced breaks to allow any implicit breaks. Initial balancing should already
-        // have set a good height. There's nothing more we should do.
         return m_columnHeight;
     }
 
@@ -449,15 +365,24 @@ LayoutUnit MultiColumnFragmentainerGroup::calculateColumnHeight(BalancedColumnHe
         return m_columnHeight;
     }
 
-    // If the initial guessed column height wasn't enough, stretch it now. Stretch by the lowest
-    // amount of space shortage found during layout.
+    MinimumSpaceShortageFinder shortageFinder(*this);
 
-    ASSERT(m_minSpaceShortage > 0); // We should never _shrink_ the height!
-    ASSERT(m_minSpaceShortage != LayoutUnit::max()); // If this happens, we probably have a bug.
-    if (m_minSpaceShortage == LayoutUnit::max())
+    if (shortageFinder.forcedBreaksCount() + 1 >= m_columnSet.usedColumnCount()) {
+        // Too many forced breaks to allow any implicit breaks. Initial balancing should already
+        // have set a good height. There's nothing more we should do.
+        return m_columnHeight;
+    }
+
+    // If the initial guessed column height wasn't enough, stretch it now. Stretch by the lowest
+    // amount of space.
+    LayoutUnit minSpaceShortage = shortageFinder.minimumSpaceShortage();
+
+    ASSERT(minSpaceShortage > 0); // We should never _shrink_ the height!
+    ASSERT(minSpaceShortage != LayoutUnit::max()); // If this happens, we probably have a bug.
+    if (minSpaceShortage == LayoutUnit::max())
         return m_columnHeight; // So bail out rather than looping infinitely.
 
-    return m_columnHeight + m_minSpaceShortage;
+    return m_columnHeight + minSpaceShortage;
 }
 
 LayoutRect MultiColumnFragmentainerGroup::columnRectAt(unsigned columnIndex) const

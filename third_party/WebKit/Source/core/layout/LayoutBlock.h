@@ -450,8 +450,10 @@ protected:
 
     bool createsNewFormattingContext() const;
 
-    // A page break is required at some offset due to space shortage in the current fragmentainer.
-    void setPageBreak(LayoutUnit offset, LayoutUnit spaceShortage);
+    // Paginated content inside this block was laid out.
+    // |logicalTopOffsetAfterPagination| is the logical top offset of the child content after
+    // applying any forced or unforced break, if needed.
+    void paginatedContentWasLaidOut(LayoutUnit logicalTopOffsetAfterPagination);
 
     // Update minimum page height required to avoid fragmentation where it shouldn't occur (inside
     // unbreakable content, between orphans and widows, etc.). This will be used as a hint to the

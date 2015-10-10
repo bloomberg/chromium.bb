@@ -113,22 +113,10 @@ public:
 
     void updateMinimumColumnHeight(LayoutUnit offsetInFlowThread, LayoutUnit height);
 
-    // Add a content run, specified by its end position. A content run is appended at every
-    // forced/explicit break and at the end of the column set. The content runs are used to
-    // determine where implicit/soft breaks will occur, in order to calculate an initial column
-    // height.
-    void addContentRun(LayoutUnit endOffsetFromFirstPage);
-
     // (Re-)calculate the column height if it's auto. This is first and foremost needed by sets that
     // are to balance the column height, but even when it isn't to be balanced, this is necessary if
     // the multicol container's height is constrained.
     bool recalculateColumnHeight(BalancedColumnHeightCalculation);
-
-    // Record space shortage (the amount of space that would have been enough to prevent some
-    // element from being moved to the next column) at a column break. The smallest amount of space
-    // shortage we find is the amount with which we will stretch the column height, if it turns out
-    // after layout that the columns weren't tall enough.
-    void recordSpaceShortage(LayoutUnit offsetInFlowThread, LayoutUnit);
 
     // Reset previously calculated column height. Will mark for layout if needed.
     void resetColumnHeight();

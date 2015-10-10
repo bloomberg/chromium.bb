@@ -525,6 +525,8 @@
             'layout/ClipRect.h',
             'layout/ClipRects.h',
             'layout/ClipRectsCache.h',
+            'layout/ColumnBalancer.cpp',
+            'layout/ColumnBalancer.h',
             'layout/CounterNode.cpp',
             'layout/CounterNode.h',
             'layout/FloatingObjects.cpp',

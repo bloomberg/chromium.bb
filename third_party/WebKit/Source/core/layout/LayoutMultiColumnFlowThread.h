@@ -101,12 +101,11 @@ enum BalancedColumnHeightCalculation { GuessFromFlowThreadPortion, StretchBySpac
 // turn out that the calculated height wasn't enough, though. We'll notice this at end of layout. If
 // we end up with too many columns (i.e. columns overflowing the multicol container), it wasn't
 // enough. In this case we need to increase the column heights. We'll increase them by the lowest
-// amount of space that could possibly affect where the breaks occur (see
-// LayoutMultiColumnSet::recordSpaceShortage()). We'll relayout (to find new break points and the
-// new lowest amount of space increase that could affect where they occur, in case we need another
-// round) until we've reached an acceptable height (where everything fits perfectly in the number of
-// columns that we have specified). The rule of thumb is that we shouldn't have to perform more of
-// such iterations than the number of columns that we have.
+// amount of space that could possibly affect where the breaks occur. We'll relayout (to find new
+// break points and the new lowest amount of space increase that could affect where they occur, in
+// case we need another round) until we've reached an acceptable height (where everything fits
+// perfectly in the number of columns that we have specified). The rule of thumb is that we
+// shouldn't have to perform more of such iterations than the number of columns that we have.
 //
 // For each layout iteration done for column balancing, the flow thread will need a deep layout if
 // column heights changed in the previous pass, since column height changes may affect break points
@@ -227,9 +226,8 @@ private:
     void computePreferredLogicalWidths() override;
     void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const override;
     void updateLogicalWidth() override;
-    void setPageBreak(LayoutUnit offset, LayoutUnit spaceShortage) override;
+    void contentWasLaidOut(LayoutUnit logicalTopInFlowThreadAfterPagination) override;
     void updateMinimumPageHeight(LayoutUnit offset, LayoutUnit minHeight) override;
-    bool addForcedColumnBreak(LayoutUnit, LayoutObject* breakChild, bool isBefore, LayoutUnit* offsetBreakAdjustment = nullptr) override;
 
     // The last set we worked on. It's not to be used as the "current set". The concept of a
     // "current set" is difficult, since layout may jump back and forth in the tree, due to wrong

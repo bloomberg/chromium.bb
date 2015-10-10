@@ -219,40 +219,12 @@ LayoutUnit LayoutMultiColumnSet::pageLogicalTopForOffset(LayoutUnit offset) cons
     return fragmentainerGroupAtFlowThreadOffset(offset).columnLogicalTopForOffset(offset);
 }
 
-void LayoutMultiColumnSet::addContentRun(LayoutUnit endOffsetFromFirstPage)
-{
-    if (!heightIsAuto())
-        return;
-    fragmentainerGroupAtFlowThreadOffset(endOffsetFromFirstPage).addContentRun(endOffsetFromFirstPage);
-}
-
 bool LayoutMultiColumnSet::recalculateColumnHeight(BalancedColumnHeightCalculation calculationMode)
 {
     bool changed = false;
     for (auto& group : m_fragmentainerGroups)
         changed = group.recalculateColumnHeight(calculationMode) || changed;
     return changed;
-}
-
-void LayoutMultiColumnSet::recordSpaceShortage(LayoutUnit offsetInFlowThread, LayoutUnit spaceShortage)
-{
-    MultiColumnFragmentainerGroup& row = fragmentainerGroupAtFlowThreadOffset(offsetInFlowThread);
-    row.recordSpaceShortage(spaceShortage);
-
-    // Since we're at a potential break here, take the opportunity to check if we need another
-    // fragmentainer group. If we've run out of columns in the last fragmentainer group (column
-    // row), we need to insert another fragmentainer group to hold more columns.
-    if (!row.isLastGroup())
-        return;
-    LayoutMultiColumnFlowThread* flowThread = multiColumnFlowThread();
-    if (!flowThread->multiColumnBlockFlow()->isInsideFlowThread())
-        return; // Early bail. We're not nested, so waste no more time on this.
-    if (!flowThread->isInInitialLayoutPass())
-        return;
-    // Move the offset to where the next column starts, if we're not there already.
-    offsetInFlowThread += flowThread->pageRemainingLogicalHeightForOffset(offsetInFlowThread, AssociateWithFormerPage);
-
-    flowThread->appendNewFragmentainerGroupIfNeeded(offsetInFlowThread);
 }
 
 void LayoutMultiColumnSet::resetColumnHeight()
