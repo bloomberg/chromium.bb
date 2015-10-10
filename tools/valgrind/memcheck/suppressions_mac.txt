@@ -137,6 +137,24 @@
    obj:/System/Library/Frameworks/ApplicationServices.framework/Versions/A/Frameworks/ImageIO.framework/Versions/A/ImageIO
    obj:/System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation
 }
+{
+   nsapplication_does_not_free_everything_when_dealloced_1
+   Memcheck:Leak
+   fun:-[NSApplication init]
+   fun:_ZN12_GLOBAL__N_122ScopedSendingEventTestC2Ev
+   fun:_ZN12_GLOBAL__N_148ScopedSendingEventTest_SetHandlingSendEvent_TestC2Ev
+   fun:_ZN12_GLOBAL__N_148ScopedSendingEventTest_SetHandlingSendEvent_TestC1Ev
+   fun:_ZN7testing8internal15TestFactoryImplIN12_GLOBAL__N_148ScopedSendingEventTest_SetHandlingSendEvent_TestEE10CreateTestEv
+}
+{
+   nsapplication_does_not_free_everything_when_dealloced_2
+   Memcheck:Leak
+   fun:-[NSApplication init]
+   fun:_ZN12_GLOBAL__N_122ScopedSendingEventTestC2Ev
+   fun:_ZN12_GLOBAL__N_154ScopedSendingEventTest_NestedSetHandlingSendEvent_TestC2Ev
+   fun:_ZN12_GLOBAL__N_154ScopedSendingEventTest_NestedSetHandlingSendEvent_TestC1Ev
+   fun:_ZN7testing8internal15TestFactoryImplIN12_GLOBAL__N_154ScopedSendingEventTest_NestedSetHandlingSendEvent_TestEE10CreateTestEv
+}
 
 # 2. Intentional unit test errors, stuff that is somehow a false positive
 # in our own code, or stuff that is so trivial it's not worth fixing.
