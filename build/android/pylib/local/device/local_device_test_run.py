@@ -19,19 +19,37 @@ def handle_shard_failures(f):
     f: the function being decorated. The function must take at least one
       argument, and that argument must be the device.
   """
-  @functools.wraps(f)
-  def wrapper(dev, *args, **kwargs):
-    try:
-      return f(dev, *args, **kwargs)
-    except device_errors.CommandFailedError:
-      logging.exception('Shard failed: %s(%s)', f.__name__, str(dev))
-    except device_errors.CommandTimeoutError:
-      logging.exception('Shard timed out: %s(%s)', f.__name__, str(dev))
-    except device_errors.DeviceUnreachableError:
-      logging.exception('Shard died: %s(%s)', f.__name__, str(dev))
-    return None
+  return handle_shard_failures_with(None)(f)
 
-  return wrapper
+
+def handle_shard_failures_with(on_failure):
+  """A decorator that handles device failures for per-device functions.
+
+  This calls on_failure in the event of a failure.
+
+  Args:
+    f: the function being decorated. The function must take at least one
+      argument, and that argument must be the device.
+    on_failure: A unary function to call on failure.
+  """
+  def decorator(f):
+    @functools.wraps(f)
+    def wrapper(dev, *args, **kwargs):
+      try:
+        return f(dev, *args, **kwargs)
+      except device_errors.CommandFailedError:
+        logging.exception('Shard failed: %s(%s)', f.__name__, str(dev))
+      except device_errors.CommandTimeoutError:
+        logging.exception('Shard timed out: %s(%s)', f.__name__, str(dev))
+      except device_errors.DeviceUnreachableError:
+        logging.exception('Shard died: %s(%s)', f.__name__, str(dev))
+      if on_failure:
+        on_failure(dev)
+      return None
+
+    return wrapper
+
+  return decorator
 
 
 class LocalDeviceTestRun(test_run.TestRun):

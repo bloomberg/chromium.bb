@@ -221,7 +221,8 @@ class LocalDeviceGtestRun(local_device_test_run.LocalDeviceTestRun):
 
   #override
   def _GetTests(self):
-    @local_device_test_run.handle_shard_failures
+    @local_device_test_run.handle_shard_failures_with(
+        on_failure=self._env.BlacklistDevice)
     def list_tests(dev):
       tests = self._delegate.Run(
           None, dev, flags='--gtest_list_tests', timeout=10)
