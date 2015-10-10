@@ -89,7 +89,7 @@ void logMessage(logLevels level, const char *format, ...)
   if (logCallbackFunction != NULL)
     {
 #ifdef _WIN32
-      float f = 2.3; // Needed to force VC++ runtime floating point support
+      double f = 2.3; // Needed to force VC++ runtime floating point support
 #endif
       char *s;
       size_t len;
