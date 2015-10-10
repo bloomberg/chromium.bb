@@ -91,6 +91,7 @@ const wchar_t kGoogleUpdatePipeName[] = L"\\\\.\\pipe\\GoogleCrashServices\\";
 const wchar_t kSystemPrincipalSid[] = L"S-1-5-18";
 const wchar_t kDisplayVersion[] = L"DisplayVersion";
 const wchar_t kMsiDisplayVersionOverwriteDelay[] = L"10";  // seconds as string
+const wchar_t kMsiProductIdPrefix[] = L"EnterpriseProduct";
 
 // Overwrite an existing DisplayVersion as written by the MSI installer
 // with the real version number of Chrome.
@@ -207,6 +208,32 @@ scoped_ptr<installer::ArchivePatchHelper> CreateChromeArchiveHelper(
                                         compressed_archive,
                                         base::FilePath(),
                                         target));
+}
+
+// Returns the MSI product ID from the ClientState key that is populated for MSI
+// installs.  This property is encoded in a value name whose format is
+// "EnterpriseId<GUID>" where <GUID> is the MSI product id.  <GUID> is in the
+// format XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX.  The id will be returned if
+// found otherwise this method will return an empty string.
+//
+// This format is strange and its provenance is shrouded in mystery but it has
+// the data we need, so use it.
+base::string16 FindMsiProductId(const InstallerState& installer_state,
+                                const Product* product) {
+  HKEY reg_root = installer_state.root_key();
+  BrowserDistribution* dist = product->distribution();
+  DCHECK(dist);
+
+  base::win::RegistryValueIterator value_iter(reg_root,
+                                              dist->GetStateKey().c_str());
+  for (; value_iter.Valid(); ++value_iter) {
+    base::string16 value_name(value_iter.Name());
+    if (base::StartsWith(value_name, kMsiProductIdPrefix,
+                         base::CompareCase::INSENSITIVE_ASCII)) {
+      return value_name.substr(arraysize(kMsiProductIdPrefix) - 1);
+    }
+  }
+  return base::string16();
 }
 
 // Workhorse for producing an uncompressed archive (chrome.7z) given a
@@ -1654,14 +1681,36 @@ InstallStatus InstallProductsHelper(const InstallationState& original_state,
   // If the installation completed successfully...
   if (InstallUtil::GetInstallReturnCode(install_status) == 0) {
     // Update the DisplayVersion created by an MSI-based install.
+    base::FilePath master_preferences_file(
+      installer_state.target_path().AppendASCII(
+          installer::kDefaultMasterPrefs));
     std::string install_id;
     if (prefs.GetString(installer::master_preferences::kMsiProductId,
                         &install_id)) {
+      // A currently active MSI install will have specified the master-
+      // preferences file on the command-line that includes the product-id.
+      // We must delay the setting of the DisplayVersion until after the
+      // grandparent "msiexec" process has exited.
       base::FilePath new_setup =
           installer_state.GetInstallerDirectory(*installer_version)
           .Append(kSetupExe);
       DelayedOverwriteDisplayVersions(
           new_setup, install_id, *installer_version);
+    } else {
+      // Only when called by the MSI installer do we need to delay setting
+      // the DisplayVersion.  In other runs, such as those done by the auto-
+      // update action, we set the value immediately.
+      const Product* chrome = installer_state.FindProduct(
+          BrowserDistribution::CHROME_BROWSER);
+      if (chrome != NULL) {
+        // Get the app's MSI Product-ID from an entry in ClientState.
+        base::string16 app_guid = FindMsiProductId(installer_state, chrome);
+        if (!app_guid.empty()) {
+          OverwriteDisplayVersions(app_guid,
+                                   base::UTF8ToUTF16(
+                                       installer_version->GetString()));
+        }
+      }
     }
     // Return the path to the directory containing the newly installed
     // setup.exe and uncompressed archive if the caller requested it.
