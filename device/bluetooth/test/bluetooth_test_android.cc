@@ -106,6 +106,26 @@ void BluetoothTestAndroid::SimulateGattDisconnection(BluetoothDevice* device) {
       false);  // disconnected
 }
 
+void BluetoothTestAndroid::SimulateGattServicesDiscovered(
+    BluetoothDevice* device) {
+  BluetoothDeviceAndroid* device_android =
+      static_cast<BluetoothDeviceAndroid*>(device);
+
+  Java_FakeBluetoothDevice_servicesDiscovered(
+      AttachCurrentThread(), device_android->GetJavaObject().obj(),
+      0);  // android.bluetooth.BluetoothGatt.GATT_SUCCESS
+}
+
+void BluetoothTestAndroid::SimulateGattServicesDiscoveryError(
+    BluetoothDevice* device) {
+  BluetoothDeviceAndroid* device_android =
+      static_cast<BluetoothDeviceAndroid*>(device);
+
+  Java_FakeBluetoothDevice_servicesDiscovered(
+      AttachCurrentThread(), device_android->GetJavaObject().obj(),
+      0x00000101);  // android.bluetooth.BluetoothGatt.GATT_FAILURE
+}
+
 void BluetoothTestAndroid::OnFakeBluetoothDeviceConnectGattCalled(
     JNIEnv* env,
     jobject caller) {
@@ -115,6 +135,11 @@ void BluetoothTestAndroid::OnFakeBluetoothDeviceConnectGattCalled(
 void BluetoothTestAndroid::OnFakeBluetoothGattDisconnect(JNIEnv* env,
                                                          jobject caller) {
   gatt_disconnection_attempts_++;
+}
+
+void BluetoothTestAndroid::OnFakeBluetoothGattDiscoverServices(JNIEnv* env,
+                                                               jobject caller) {
+  gatt_discovery_attempts_++;
 }
 
 }  // namespace device

@@ -7,11 +7,10 @@
 
 #include "base/android/jni_android.h"
 #include "base/memory/weak_ptr.h"
+#include "device/bluetooth/bluetooth_adapter_android.h"
 #include "device/bluetooth/bluetooth_device.h"
 
 namespace device {
-
-class BluetoothAdapterAndroid;
 
 // BluetoothDeviceAndroid along with the Java class
 // org.chromium.device.bluetooth.ChromeBluetoothDevice implement
@@ -38,6 +37,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceAndroid final
 
   // Returns the associated ChromeBluetoothDevice Java object.
   base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
+
+  // Get owning BluetoothAdapter cast to BluetoothAdapterAndroid.
+  BluetoothAdapterAndroid* GetAdapter() {
+    return static_cast<BluetoothAdapterAndroid*>(adapter_);
+  }
 
   // Updates cached copy of advertised UUIDs discovered during a scan.
   // Returns true if new UUIDs differed from cached values.
@@ -89,6 +93,15 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceAndroid final
                                jobject jcaller,
                                int32_t status,
                                bool connected);
+
+  // Creates Bluetooth GATT service objects and adds them to
+  // BluetoothDevice::gatt_services_ if they are not already there.
+  void CreateGattRemoteService(
+      JNIEnv* env,
+      jobject caller,
+      int32_t instanceId,
+      jobject bluetooth_gatt_service_wrapper);  // Java Type:
+                                                // BluetoothGattServiceWrapper
 
  protected:
   BluetoothDeviceAndroid(BluetoothAdapterAndroid* adapter);

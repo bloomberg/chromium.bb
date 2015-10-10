@@ -105,6 +105,7 @@ void BluetoothTestBase::ResetEventCounts() {
   error_callback_count_ = 0;
   gatt_connection_attempts_ = 0;
   gatt_disconnection_attempts_ = 0;
+  gatt_discovery_attempts_ = 0;
 }
 
 }  // namespace device

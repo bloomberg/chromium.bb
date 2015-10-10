@@ -187,6 +187,7 @@ class Fakes {
         final FakeBluetoothAdapter mAdapter;
         private String mAddress;
         private String mName;
+        private final FakeBluetoothGatt mGatt;
         private Wrappers.BluetoothGattCallbackWrapper mGattCallback;
 
         public FakeBluetoothDevice(FakeBluetoothAdapter adapter, String address, String name) {
@@ -194,6 +195,7 @@ class Fakes {
             mAdapter = adapter;
             mAddress = address;
             mName = name;
+            mGatt = new FakeBluetoothGatt(this);
         }
 
         // Create a call to onConnectionStateChange on the |chrome_device| using parameters
@@ -205,6 +207,23 @@ class Fakes {
             fakeDevice.mGattCallback.onConnectionStateChange(status, connected
                             ? android.bluetooth.BluetoothProfile.STATE_CONNECTED
                             : android.bluetooth.BluetoothProfile.STATE_DISCONNECTED);
+        }
+
+        // Create a call to onServicesDiscovered on the |chrome_device| using parameter
+        // |status|.
+        @CalledByNative("FakeBluetoothDevice")
+        private static void servicesDiscovered(ChromeBluetoothDevice chromeDevice, int status) {
+            FakeBluetoothDevice fakeDevice = (FakeBluetoothDevice) chromeDevice.mDevice;
+
+            // TODO(scheib): Add more control over how many services are created and
+            // their properties. http://crbug.com/541400
+            if (status == android.bluetooth.BluetoothGatt.GATT_SUCCESS) {
+                fakeDevice.mGatt.mServices.clear();
+                fakeDevice.mGatt.mServices.add(new FakeBluetoothGattService(0));
+                fakeDevice.mGatt.mServices.add(new FakeBluetoothGattService(1));
+            }
+
+            fakeDevice.mGattCallback.onServicesDiscovered(status);
         }
 
         // -----------------------------------------------------------------------------------------
@@ -220,7 +239,7 @@ class Fakes {
             }
             nativeOnFakeBluetoothDeviceConnectGattCalled(mAdapter.mNativeBluetoothTestAndroid);
             mGattCallback = callback;
-            return new FakeBluetoothGatt(this);
+            return mGatt;
         }
 
         @Override
@@ -249,15 +268,44 @@ class Fakes {
      */
     static class FakeBluetoothGatt extends Wrappers.BluetoothGattWrapper {
         final FakeBluetoothDevice mDevice;
+        final ArrayList<Wrappers.BluetoothGattServiceWrapper> mServices;
 
         public FakeBluetoothGatt(FakeBluetoothDevice device) {
             super(null);
             mDevice = device;
+            mServices = new ArrayList<Wrappers.BluetoothGattServiceWrapper>();
         }
 
         @Override
         public void disconnect() {
             nativeOnFakeBluetoothGattDisconnect(mDevice.mAdapter.mNativeBluetoothTestAndroid);
+        }
+
+        @Override
+        public void discoverServices() {
+            nativeOnFakeBluetoothGattDiscoverServices(mDevice.mAdapter.mNativeBluetoothTestAndroid);
+        }
+
+        @Override
+        public List<Wrappers.BluetoothGattServiceWrapper> getServices() {
+            return mServices;
+        }
+    }
+
+    /**
+     * Fakes android.bluetooth.BluetoothGattService.
+     */
+    static class FakeBluetoothGattService extends Wrappers.BluetoothGattServiceWrapper {
+        final int mInstanceId;
+
+        public FakeBluetoothGattService(int instanceId) {
+            super(null);
+            mInstanceId = instanceId;
+        }
+
+        @Override
+        public int getInstanceId() {
+            return mInstanceId;
         }
     }
 
@@ -270,4 +318,8 @@ class Fakes {
 
     // Binds to BluetoothAdapterAndroid::OnFakeBluetoothGattDisconnect.
     private static native void nativeOnFakeBluetoothGattDisconnect(long nativeBluetoothTestAndroid);
+
+    // Binds to BluetoothAdapterAndroid::OnFakeBluetoothGattDiscoverServices.
+    private static native void nativeOnFakeBluetoothGattDiscoverServices(
+            long nativeBluetoothTestAndroid);
 }

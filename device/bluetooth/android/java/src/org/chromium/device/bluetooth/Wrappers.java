@@ -10,6 +10,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
+import android.bluetooth.BluetoothGattService;
 import android.bluetooth.le.BluetoothLeScanner;
 import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanFilter;
@@ -264,6 +265,20 @@ class Wrappers {
         public void disconnect() {
             mGatt.disconnect();
         }
+
+        public void discoverServices() {
+            mGatt.discoverServices();
+        }
+
+        public List<BluetoothGattServiceWrapper> getServices() {
+            List<BluetoothGattService> services = mGatt.getServices();
+            ArrayList<BluetoothGattServiceWrapper> servicesWrapped =
+                    new ArrayList<BluetoothGattServiceWrapper>(services.size());
+            for (BluetoothGattService service : services) {
+                servicesWrapped.add(new BluetoothGattServiceWrapper(service));
+            }
+            return servicesWrapped;
+        }
     }
 
     /**
@@ -285,6 +300,11 @@ class Wrappers {
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
             mWrapperCallback.onConnectionStateChange(status, newState);
         }
+
+        @Override
+        public void onServicesDiscovered(BluetoothGatt gatt, int status) {
+            mWrapperCallback.onServicesDiscovered(status);
+        }
     }
 
     /**
@@ -297,5 +317,21 @@ class Wrappers {
      */
     abstract static class BluetoothGattCallbackWrapper {
         public abstract void onConnectionStateChange(int status, int newState);
+        public abstract void onServicesDiscovered(int status);
+    }
+
+    /**
+     * Wraps android.bluetooth.BluetoothGattService.
+     */
+    static class BluetoothGattServiceWrapper {
+        private final BluetoothGattService mService;
+
+        public BluetoothGattServiceWrapper(BluetoothGattService service) {
+            mService = service;
+        }
+
+        public int getInstanceId() {
+            return mService.getInstanceId();
+        }
     }
 }

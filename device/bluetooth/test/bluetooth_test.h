@@ -84,6 +84,14 @@ class BluetoothTestBase : public testing::Test {
   // Simulates GattConnection disconnecting.
   virtual void SimulateGattDisconnection(BluetoothDevice* device) {}
 
+  // Simulates success of discovering services. Two services are created.
+  // TODO(scheib): Add more control over how many services are created and
+  // their properties. http://crbug.com/541400
+  virtual void SimulateGattServicesDiscovered(BluetoothDevice* device) {}
+
+  // Simulates failure to discover services.
+  virtual void SimulateGattServicesDiscoveryError(BluetoothDevice* device) {}
+
   // Remove the device from the adapter and delete it.
   virtual void DeleteDevice(BluetoothDevice* device);
 
@@ -117,6 +125,7 @@ class BluetoothTestBase : public testing::Test {
   int error_callback_count_ = 0;
   int gatt_connection_attempts_ = 0;
   int gatt_disconnection_attempts_ = 0;
+  int gatt_discovery_attempts_ = 0;
   base::WeakPtrFactory<BluetoothTestBase> weak_factory_;
 };
 

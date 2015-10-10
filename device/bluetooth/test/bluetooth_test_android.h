@@ -31,12 +31,17 @@ class BluetoothTestAndroid : public BluetoothTestBase {
   void SimulateGattConnectionError(BluetoothDevice* device,
                                    BluetoothDevice::ConnectErrorCode) override;
   void SimulateGattDisconnection(BluetoothDevice* device) override;
+  void SimulateGattServicesDiscovered(BluetoothDevice* device) override;
+  void SimulateGattServicesDiscoveryError(BluetoothDevice* device) override;
 
   // Records that Java FakeBluetoothDevice connectGatt was called.
   void OnFakeBluetoothDeviceConnectGattCalled(JNIEnv* env, jobject caller);
 
   // Records that Java FakeBluetoothGatt disconnect was called.
   void OnFakeBluetoothGattDisconnect(JNIEnv* env, jobject caller);
+
+  // Records that Java FakeBluetoothGatt discoverServices was called.
+  void OnFakeBluetoothGattDiscoverServices(JNIEnv* env, jobject caller);
 
   base::android::ScopedJavaGlobalRef<jobject> j_fake_bluetooth_adapter_;
 };

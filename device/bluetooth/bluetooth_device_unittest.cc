@@ -425,4 +425,38 @@ TEST_F(BluetoothTest, BluetoothGattConnection_ErrorAfterConnection) {
 }
 #endif  // defined(OS_ANDROID)
 
+#if defined(OS_ANDROID)
+TEST_F(BluetoothTest, SimulateGattServicesDiscovered) {
+  InitWithFakeAdapter();
+  StartDiscoverySession();
+  BluetoothDevice* device = DiscoverLowEnergyDevice(3);
+  device->CreateGattConnection(GetGattConnectionCallback(),
+                               GetConnectErrorCallback());
+  ResetEventCounts();
+  SimulateGattConnection(device);
+  EXPECT_EQ(1, gatt_discovery_attempts_);
+
+  // TODO(scheib): Add more control over how many services are created and
+  // their properties. http://crbug.com/541400
+  SimulateGattServicesDiscovered(device);
+  EXPECT_EQ(2u, device->GetGattServices().size());
+}
+#endif  // defined(OS_ANDROID)
+
+#if defined(OS_ANDROID)
+TEST_F(BluetoothTest, SimulateGattServicesDiscoveryError) {
+  InitWithFakeAdapter();
+  StartDiscoverySession();
+  BluetoothDevice* device = DiscoverLowEnergyDevice(3);
+  device->CreateGattConnection(GetGattConnectionCallback(),
+                               GetConnectErrorCallback());
+  ResetEventCounts();
+  SimulateGattConnection(device);
+  EXPECT_EQ(1, gatt_discovery_attempts_);
+
+  SimulateGattServicesDiscoveryError(device);
+  EXPECT_EQ(0u, device->GetGattServices().size());
+}
+#endif  // defined(OS_ANDROID)
+
 }  // namespace device

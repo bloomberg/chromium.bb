@@ -105,6 +105,8 @@
         'bluetooth_remote_gatt_characteristic_chromeos.h',
         'bluetooth_remote_gatt_descriptor_chromeos.cc',
         'bluetooth_remote_gatt_descriptor_chromeos.h',
+        'bluetooth_remote_gatt_service_android.cc',
+        'bluetooth_remote_gatt_service_android.h',
         'bluetooth_remote_gatt_service_chromeos.cc',
         'bluetooth_remote_gatt_service_chromeos.h',
         'bluetooth_rfcomm_channel_mac.mm',
