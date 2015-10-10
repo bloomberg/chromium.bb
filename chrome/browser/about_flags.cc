@@ -43,6 +43,7 @@
 #include "components/tracing/tracing_switches.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/user_metrics.h"
+#include "content/public/common/content_switches.h"
 #include "media/base/media_switches.h"
 #include "media/midi/midi_switches.h"
 #include "ui/base/l10n/l10n_util.h"

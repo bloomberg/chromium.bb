@@ -12,6 +12,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/common/chrome_switches.h"
+#include "content/public/common/content_switches.h"
 
 namespace {
 

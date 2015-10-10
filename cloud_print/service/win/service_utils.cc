@@ -12,6 +12,7 @@
 #include "base/strings/string_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/cloud_devices/common/cloud_devices_switches.h"
+#include "content/public/common/content_switches.h"
 #include "google_apis/gaia/gaia_switches.h"
 
 base::string16 GetLocalComputerName() {

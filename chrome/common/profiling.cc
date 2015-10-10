@@ -14,6 +14,7 @@
 #include "base/strings/string_util.h"
 #include "base/threading/thread.h"
 #include "chrome/common/chrome_switches.h"
+#include "content/public/common/content_switches.h"
 #include "gin/public/debug.h"
 #include "v8/include/v8.h"
 

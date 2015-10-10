@@ -38,6 +38,7 @@
 #include "components/net_log/chrome_net_log.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/common/content_switches.h"
 #include "extensions/browser/api/generated_api_registration.h"
 #include "extensions/browser/extension_function_registry.h"
 #include "extensions/browser/extension_prefs.h"

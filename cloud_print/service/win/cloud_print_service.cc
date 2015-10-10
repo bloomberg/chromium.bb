@@ -38,6 +38,7 @@
 #include "cloud_print/service/win/service_listener.h"
 #include "cloud_print/service/win/service_utils.h"
 #include "cloud_print/service/win/setup_listener.h"
+#include "content/public/common/content_switches.h"
 
 namespace {
 

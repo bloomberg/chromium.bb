@@ -49,6 +49,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/env_vars.h"
+#include "content/public/common/content_switches.h"
 #include "ipc/ipc_logging.h"
 
 #if defined(OS_CHROMEOS)

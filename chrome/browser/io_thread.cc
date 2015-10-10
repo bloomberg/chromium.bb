@@ -49,6 +49,7 @@
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cookie_store_factory.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/user_agent.h"
 #include "net/base/external_estimate_provider.h"
 #include "net/base/host_mapping_rules.h"

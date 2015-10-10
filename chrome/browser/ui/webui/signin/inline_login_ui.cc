@@ -21,6 +21,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "content/public/common/content_switches.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "grit/browser_resources.h"
 #if defined(OS_CHROMEOS)

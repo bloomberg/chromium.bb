@@ -24,6 +24,7 @@
 #include "base/threading/thread.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/version_info/version_info.h"
+#include "content/public/common/content_switches.h"
 #include "testing/multiprocess_func_list.h"
 
 #if defined(OS_WIN)

@@ -7,6 +7,7 @@
 #include "chrome/browser/extensions/api/page_capture/page_capture_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/common/chrome_switches.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/test_utils.h"
 #include "net/dns/mock_host_resolver.h"
 

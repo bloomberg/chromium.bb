@@ -23,6 +23,7 @@
 #include "components/cloud_devices/common/cloud_devices_switches.h"
 #include "components/version_info/version_info.h"
 #include "content/public/common/content_paths.h"
+#include "content/public/common/content_switches.h"
 #include "google_apis/gaia/gaia_switches.h"
 #include "ui/base/ui_base_switches.h"
 

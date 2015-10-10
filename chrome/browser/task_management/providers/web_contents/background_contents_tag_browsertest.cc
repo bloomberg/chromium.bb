@@ -8,6 +8,7 @@
 #include "chrome/browser/task_management/task_management_browsertest_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/generated_resources.h"
+#include "content/public/common/content_switches.h"
 #include "extensions/common/switches.h"
 #include "ui/base/l10n/l10n_util.h"
 

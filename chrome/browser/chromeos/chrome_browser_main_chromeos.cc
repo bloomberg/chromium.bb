@@ -117,6 +117,7 @@
 #include "components/wallpaper/wallpaper_manager_base.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "media/audio/sounds/sounds_manager.h"

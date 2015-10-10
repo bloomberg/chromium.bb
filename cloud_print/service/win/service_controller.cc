@@ -21,6 +21,7 @@
 #include "cloud_print/service/win/chrome_launcher.h"
 #include "cloud_print/service/win/local_security_policy.h"
 #include "cloud_print/service/win/service_utils.h"
+#include "content/public/common/content_switches.h"
 
 namespace {
 

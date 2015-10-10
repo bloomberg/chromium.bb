@@ -10,6 +10,7 @@
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/generated_resources.h"
+#include "content/public/common/content_switches.h"
 #include "grit/theme_resources.h"
 #include "net/proxy/proxy_resolver_v8.h"
 #include "third_party/sqlite/sqlite3.h"

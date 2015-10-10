@@ -13,6 +13,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/os_crypt/os_crypt_switches.h"
+#include "content/public/common/content_switches.h"
 
 #if defined(USE_AURA)
 #include "ui/wm/core/wm_core_switches.h"

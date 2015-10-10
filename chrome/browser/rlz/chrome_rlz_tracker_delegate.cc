@@ -27,6 +27,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/common/content_switches.h"
 
 #if defined(OS_WIN)
 #include "chrome/installer/util/google_update_settings.h"
