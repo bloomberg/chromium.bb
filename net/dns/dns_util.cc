@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/base/dns_util.h"
+#include "net/dns/dns_util.h"
 
 #include <cstring>
 
@@ -80,15 +80,6 @@ std::string DNSDomainToString(const base::StringPiece& domain) {
     domain.substr(i + 1, domain[i]).AppendToString(&ret);
   }
   return ret;
-}
-
-std::string TrimEndingDot(const base::StringPiece& host) {
-  base::StringPiece host_trimmed = host;
-  size_t len = host_trimmed.length();
-  if (len > 1 && host_trimmed[len - 1] == '.') {
-    host_trimmed.remove_suffix(1);
-  }
-  return host_trimmed.as_string();
 }
 
 }  // namespace net

@@ -14,7 +14,6 @@
 #include "cloud_print/gcp20/prototype/dns_packet_parser.h"
 #include "cloud_print/gcp20/prototype/dns_response_builder.h"
 #include "cloud_print/gcp20/prototype/gcp20_switches.h"
-#include "net/base/dns_util.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "net/dns/dns_protocol.h"

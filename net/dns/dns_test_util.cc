@@ -13,13 +13,13 @@
 #include "base/single_thread_task_runner.h"
 #include "base/sys_byteorder.h"
 #include "base/thread_task_runner_handle.h"
-#include "net/base/dns_util.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/dns/address_sorter.h"
 #include "net/dns/dns_query.h"
 #include "net/dns/dns_response.h"
 #include "net/dns/dns_transaction.h"
+#include "net/dns/dns_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {

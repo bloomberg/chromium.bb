@@ -8,11 +8,11 @@
 #include "base/strings/string_util.h"
 #include "base/sys_byteorder.h"
 #include "net/base/address_list.h"
-#include "net/base/dns_util.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/dns/dns_protocol.h"
 #include "net/dns/dns_query.h"
+#include "net/dns/dns_util.h"
 
 namespace net {
 

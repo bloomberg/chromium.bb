@@ -6,10 +6,10 @@
 
 #include "base/big_endian.h"
 #include "base/logging.h"
-#include "net/base/dns_util.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
 #include "net/dns/dns_response.h"
+#include "net/dns/dns_util.h"
 
 namespace {
 

@@ -9,10 +9,10 @@
 #include "base/logging.h"
 #include "base/sys_byteorder.h"
 #include "net/base/address_list.h"
-#include "net/base/dns_util.h"
 #include "net/base/net_errors.h"
 #include "net/base/sys_addrinfo.h"
 #include "net/dns/dns_reloader.h"
+#include "net/dns/dns_util.h"
 
 #if defined(OS_OPENBSD)
 #define AI_ADDRCONFIG 0

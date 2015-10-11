@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_BASE_DNS_UTIL_H_
-#define NET_BASE_DNS_UTIL_H_
+#ifndef NET_DNS_DNS_UTIL_H_
+#define NET_DNS_DNS_UTIL_H_
 
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/strings/string_piece.h"
 #include "net/base/net_export.h"
 
@@ -26,9 +25,6 @@ NET_EXPORT_PRIVATE bool DNSDomainFromDot(const base::StringPiece& dotted,
 NET_EXPORT_PRIVATE std::string DNSDomainToString(
     const base::StringPiece& domain);
 
-// Returns the hostname by trimming the ending dot, if one exists.
-NET_EXPORT std::string TrimEndingDot(const base::StringPiece& host);
-
 }  // namespace net
 
-#endif  // NET_BASE_DNS_UTIL_H_
+#endif  // NET_DNS_DNS_UTIL_H_

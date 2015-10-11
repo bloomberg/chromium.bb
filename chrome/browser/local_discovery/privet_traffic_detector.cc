@@ -8,7 +8,6 @@
 #include "base/metrics/histogram.h"
 #include "base/single_thread_task_runner.h"
 #include "base/sys_byteorder.h"
-#include "net/base/dns_util.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_interfaces.h"
 #include "net/dns/dns_protocol.h"

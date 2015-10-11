@@ -132,4 +132,13 @@ bool GetValueForKeyInQuery(const GURL& url,
   return false;
 }
 
+std::string TrimEndingDot(const base::StringPiece& host) {
+  base::StringPiece host_trimmed = host;
+  size_t len = host_trimmed.length();
+  if (len > 1 && host_trimmed[len - 1] == '.') {
+    host_trimmed.remove_suffix(1);
+  }
+  return host_trimmed.as_string();
+}
+
 }  // namespace net

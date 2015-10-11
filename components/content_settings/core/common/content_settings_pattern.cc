@@ -10,8 +10,8 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "components/content_settings/core/common/content_settings_pattern_parser.h"
-#include "net/base/dns_util.h"
 #include "net/base/net_util.h"
+#include "net/base/url_util.h"
 #include "url/gurl.h"
 
 namespace {

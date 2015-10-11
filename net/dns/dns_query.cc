@@ -8,9 +8,9 @@
 
 #include "base/big_endian.h"
 #include "base/sys_byteorder.h"
-#include "net/base/dns_util.h"
 #include "net/base/io_buffer.h"
 #include "net/dns/dns_protocol.h"
+#include "net/dns/dns_util.h"
 
 namespace net {
 
