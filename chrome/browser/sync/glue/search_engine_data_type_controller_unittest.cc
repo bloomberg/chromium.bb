@@ -7,20 +7,23 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/tracked_objects.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/search_engines/template_url_service_factory_test_util.h"
-#include "chrome/browser/sync/glue/search_engine_data_type_controller.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/test/base/profile_mock.h"
+#include "components/search_engines/search_engine_data_type_controller.h"
 #include "components/sync_driver/data_type_controller_mock.h"
 #include "components/sync_driver/fake_generic_change_processor.h"
 #include "components/sync_driver/fake_sync_client.h"
 #include "components/sync_driver/sync_api_component_factory_mock.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "sync/api/fake_syncable_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using content::BrowserThread;
 using testing::_;
 using testing::DoAll;
 using testing::InvokeWithoutArgs;
@@ -49,7 +52,9 @@ class SyncSearchEngineDataTypeControllerTest
     // Feed the DTC the profile so it is reused later.
     // This allows us to control the associated TemplateURLService.
     search_engine_dtc_ = new SearchEngineDataTypeController(
-        base::Bind(&base::DoNothing), this, &profile_);
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
+        base::Bind(&base::DoNothing), this,
+        TemplateURLServiceFactory::GetForProfile(&profile_));
   }
 
   void TearDown() override {

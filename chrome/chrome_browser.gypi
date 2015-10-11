@@ -2865,8 +2865,6 @@
       'browser/sync/glue/local_device_info_provider_impl.h',
       'browser/sync/glue/password_data_type_controller.cc',
       'browser/sync/glue/password_data_type_controller.h',
-      'browser/sync/glue/search_engine_data_type_controller.cc',
-      'browser/sync/glue/search_engine_data_type_controller.h',
       'browser/sync/glue/sync_backend_host.cc',
       'browser/sync/glue/sync_backend_host.h',
       'browser/sync/glue/sync_backend_host_core.cc',

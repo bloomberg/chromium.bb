@@ -9,12 +9,12 @@
 #include "build/build_config.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/sync/glue/autofill_data_type_controller.h"
 #include "chrome/browser/sync/glue/autofill_profile_data_type_controller.h"
 #include "chrome/browser/sync/glue/history_delete_directives_data_type_controller.h"
 #include "chrome/browser/sync/glue/local_device_info_provider_impl.h"
 #include "chrome/browser/sync/glue/password_data_type_controller.h"
-#include "chrome/browser/sync/glue/search_engine_data_type_controller.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/glue/sync_backend_host_impl.h"
 #include "chrome/browser/sync/glue/theme_data_type_controller.h"
@@ -29,6 +29,7 @@
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/dom_distiller/core/dom_distiller_features.h"
+#include "components/search_engines/search_engine_data_type_controller.h"
 #include "components/sync_bookmarks/bookmark_change_processor.h"
 #include "components/sync_bookmarks/bookmark_data_type_controller.h"
 #include "components/sync_bookmarks/bookmark_model_associator.h"
@@ -337,7 +338,9 @@ void ProfileSyncComponentsFactoryImpl::RegisterDesktopDataTypes(
   // disabled.
   if (!disabled_types.Has(syncer::SEARCH_ENGINES)) {
     sync_service->RegisterDataTypeController(new SearchEngineDataTypeController(
-        error_callback, sync_client, profile_));
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
+        error_callback, sync_client,
+        TemplateURLServiceFactory::GetForProfile(profile_)));
   }
 
 #if defined(ENABLE_EXTENSIONS)

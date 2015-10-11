@@ -6,6 +6,7 @@ include_rules = [
   "+components/policy/core",
   "+components/pref_registry",
   "+components/rappor",
+  "+components/sync_driver",
   "+components/url_formatter",
   "+components/webdata",
   "+google_apis",
