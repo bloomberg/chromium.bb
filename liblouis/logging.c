@@ -48,7 +48,7 @@ void logWidecharBuf(logLevels level, const char *msg, const widechar *wbuf, int 
     formatString = "0x%04X ";
   else
     formatString = "0x%08X ";
-  for (i = 0; i < strlen(msg); i++)
+  for (i = 0; i < (int) strlen(msg); i++)
     logMsg[i] = msg[i];
   p += strlen(msg);
   for (i = 0; i < wlen; i++)
