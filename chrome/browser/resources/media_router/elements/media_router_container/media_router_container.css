@@ -19,11 +19,6 @@
   width: 16px;
 }
 
-#cast-mode-list {
-  padding-bottom: 12px;
-  padding-top: 4px;
-}
-
 #close-button::shadow #icon {
   height: 15px;
   width: 15px;
@@ -43,13 +38,14 @@
 
 #device-missing {
   align-items: center;
+  background-color: white;
   display: flex;
-  height: 150px;
+  height: 120px;
   justify-content: center;
 }
 
 #device-missing a {
-  color: rgb(33, 150, 243);
+  color: rgba(33, 150, 243, 0.87);
   text-decoration: none;
 }
 
@@ -86,11 +82,15 @@ paper-item:hover {
 paper-menu {
   -webkit-user-select: none;
   color: rgba(0, 0, 0, 0.87);
-  padding: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding-bottom: 12px;
+  padding-top: 4px;
 }
 
 .route {
   color: rgb(150, 150, 150);
+  padding-top: 8px;
 }
 
 #searching-devices-spinner {
@@ -113,11 +113,10 @@ paper-menu {
 
 #sink-list {
   max-height: 200px;
-  overflow-x: hidden;
-  overflow-y: auto;
 }
 
 .sink-text {
+  -webkit-padding-end: 26px;
   line-height: normal;
   overflow: hidden;
   text-overflow: ellipsis;
