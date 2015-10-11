@@ -150,7 +150,7 @@ void AppendFormattedHost(const GURL& url,
 base::string16 IDNToUnicode(const std::string& host,
                             const std::string& languages);
 
-// If text starts with "www." it is removed, otherwise text is returned
+// If |text| starts with "www." it is removed, otherwise |text| is returned
 // unmodified.
 base::string16 StripWWW(const base::string16& text);
 
