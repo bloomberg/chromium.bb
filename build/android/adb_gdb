@@ -691,7 +691,7 @@ if [ "$START" ]; then
 package is installed?"
 fi
 
-# Return the timestamp of a given time, as number of seconds since epoch.
+# Return the timestamp of a given file, as number of seconds since epoch.
 # $1: file path
 # Out: file timestamp
 get_file_timestamp () {
@@ -769,6 +769,7 @@ PULL_LIBS_DIR=${PULL_LIBS_DIR:-$DEFAULT_PULL_LIBS_DIR}
 
 HOST_FINGERPRINT=
 DEVICE_FINGERPRINT=$(adb_shell getprop ro.build.fingerprint)
+[[ "$DEVICE_FINGERPRINT" ]] || panic "Failed to get the device fingerprint"
 log "Device build fingerprint: $DEVICE_FINGERPRINT"
 
 # If --pull-libs-dir is not specified, and this is a platform build, look
@@ -796,11 +797,11 @@ fi
 # fingerprints of the device, and the cached system libraries on the host.
 #
 if [ -z "$NO_PULL_LIBS" -a -z "$PULL_LIBS" ]; then
-  if [ ! -f "$PULL_LIBS_DIR/build.prop" ]; then
+  if [ ! -f "$PULL_LIBS_DIR/build.fingerprint" ]; then
     log "Auto-config: --pull-libs  (no cached libraries)"
     PULL_LIBS=true
   else
-    HOST_FINGERPRINT=$(get_build_fingerprint_from "$PULL_LIBS_DIR/build.prop")
+    HOST_FINGERPRINT=$(< "$PULL_LIBS_DIR/build.fingerprint")
     log "Host build fingerprint:   $HOST_FINGERPRINT"
     if [ "$HOST_FINGERPRINT" == "$DEVICE_FINGERPRINT" ]; then
       log "Auto-config: --no-pull-libs (fingerprint match)"
@@ -899,7 +900,6 @@ log "Command suffix: '$COMMAND_SUFFIX'"
 # we need by looking at /proc/$PID/maps instead
 if [ "$PULL_LIBS" -a -z "$NO_PULL_LIBS" ]; then
   echo "Extracting system libraries into: $PULL_LIBS_DIR"
-  rm -f $PULL_LIBS_DIR/build.prop
   MAPPINGS=$(adb_shell $COMMAND_PREFIX cat /proc/$PID/maps $COMMAND_SUFFIX)
   if [ $? != 0 ]; then
     echo "ERROR: Could not list process's memory mappings."
@@ -909,6 +909,8 @@ if [ "$PULL_LIBS" -a -z "$NO_PULL_LIBS" ]; then
       panic "Use --su-prefix if the application is not debuggable."
     fi
   fi
+  # Remove the fingerprint file in case pulling one of the libs fails.
+  rm -f "$PULL_LIBS_DIR/build.fingerprint"
   SYSTEM_LIBS=$(echo "$MAPPINGS" | \
       awk '$6 ~ /\/system\/.*\.so$/ { print $6; }' | sort -u)
   for SYSLIB in /system/bin/linker $SYSTEM_LIBS; do
@@ -918,9 +920,8 @@ if [ "$PULL_LIBS" -a -z "$NO_PULL_LIBS" ]; then
     mkdir -p "$DST_DIR" && adb pull $SYSLIB "$DST_FILE" 2>/dev/null
     fail_panic "Could not pull $SYSLIB from device !?"
   done
-  echo "Pulling device build.prop"
-  adb pull /system/build.prop $PULL_LIBS_DIR/build.prop
-  fail_panic "Could not pull device build.prop !?"
+  echo "Writing the device fingerprint"
+  echo "$DEVICE_FINGERPRINT" > "$PULL_LIBS_DIR/build.fingerprint"
 fi
 
 # Find all the sub-directories of $PULL_LIBS_DIR, up to depth 4
