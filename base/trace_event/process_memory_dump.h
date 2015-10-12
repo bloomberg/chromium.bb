@@ -18,6 +18,12 @@
 #include "base/trace_event/process_memory_maps.h"
 #include "base/trace_event/process_memory_totals.h"
 
+// Define COUNT_RESIDENT_BYTES_SUPPORTED if platform supports counting of the
+// resident memory.
+#if defined(OS_POSIX) && !defined(OS_NACL)
+#define COUNT_RESIDENT_BYTES_SUPPORTED
+#endif
+
 namespace base {
 namespace trace_event {
 
@@ -40,6 +46,14 @@ class BASE_EXPORT ProcessMemoryDump {
   // MemoryAllocatorDump instances.
   using AllocatorDumpsMap =
       SmallMap<hash_map<std::string, MemoryAllocatorDump*>>;
+
+#if defined(COUNT_RESIDENT_BYTES_SUPPORTED)
+  // Returns the total bytes resident for a virtual address range, with given
+  // |start_address| and |mapped_size|. |mapped_size| is specified in bytes. The
+  // value returned is valid only if the given range is currently mmapped by the
+  // process. The |start_address| must be page-aligned.
+  static size_t CountResidentBytes(void* start_address, size_t mapped_size);
+#endif
 
   ProcessMemoryDump(const scoped_refptr<MemoryDumpSessionState>& session_state);
   ~ProcessMemoryDump();

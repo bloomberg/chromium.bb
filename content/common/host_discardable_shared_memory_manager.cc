@@ -196,6 +196,22 @@ bool HostDiscardableSharedMemoryManager::OnMemoryDump(
               child_tracing_process_id, segment_id);
       pmd->CreateSharedGlobalAllocatorDump(shared_segment_guid);
       pmd->AddOwnershipEdge(dump->guid(), shared_segment_guid);
+
+#if defined(COUNT_RESIDENT_BYTES_SUPPORTED)
+      if (args.level_of_detail ==
+          base::trace_event::MemoryDumpLevelOfDetail::DETAILED) {
+        size_t resident_size =
+            base::trace_event::ProcessMemoryDump::CountResidentBytes(
+                segment->memory()->memory(), segment->memory()->mapped_size());
+
+        // This is added to the global dump since it has to be attributed to
+        // both the allocator dumps involved.
+        pmd->GetSharedGlobalAllocatorDump(shared_segment_guid)
+            ->AddScalar("resident_size",
+                        base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                        static_cast<uint64>(resident_size));
+      }
+#endif  // defined(COUNT_RESIDENT_BYTES_SUPPORTED)
     }
   }
   return true;

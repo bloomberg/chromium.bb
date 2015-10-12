@@ -4,7 +4,8 @@
 
 #include "base/trace_event/process_memory_dump.h"
 
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/aligned_memory.h"
+#include "base/process/process_metrics.h"
 #include "base/trace_event/memory_allocator_dump_guid.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -153,6 +154,29 @@ TEST(ProcessMemoryDumpTest, Suballocations) {
 
   pmd.reset();
 }
+
+#if defined(COUNT_RESIDENT_BYTES_SUPPORTED)
+TEST(ProcessMemoryDumpTest, CountResidentBytes) {
+  const size_t page_size = base::GetPageSize();
+
+  // Allocate few page of dirty memory and check if it is resident.
+  const size_t size1 = 5 * page_size;
+  scoped_ptr<char, base::AlignedFreeDeleter> memory1(
+      static_cast<char*>(base::AlignedAlloc(size1, page_size)));
+  memset(memory1.get(), 0, size1);
+  size_t res1 = ProcessMemoryDump::CountResidentBytes(memory1.get(), size1);
+  ASSERT_EQ(res1, size1);
+
+  // Allocate a large memory segment (>32Mib).
+  const size_t kVeryLargeMemorySize = 34 * 1024 * 1024;
+  scoped_ptr<char, base::AlignedFreeDeleter> memory2(
+      static_cast<char*>(base::AlignedAlloc(kVeryLargeMemorySize, page_size)));
+  memset(memory2.get(), 0, kVeryLargeMemorySize);
+  size_t res2 = ProcessMemoryDump::CountResidentBytes(memory2.get(),
+                                                      kVeryLargeMemorySize);
+  ASSERT_EQ(res2, kVeryLargeMemorySize);
+}
+#endif  // defined(COUNT_RESIDENT_BYTES_SUPPORTED)
 
 }  // namespace trace_event
 }  // namespace base
