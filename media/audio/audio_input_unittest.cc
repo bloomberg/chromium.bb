@@ -219,10 +219,9 @@ TEST_F(AudioInputTest, MAYBE_Record) {
   TestInputCallback test_callback;
   OpenAndStartAudioInputStreamOnAudioThread(&test_callback);
 
-  message_loop_.PostDelayedTask(
-      FROM_HERE,
-      base::MessageLoop::QuitClosure(),
-      base::TimeDelta::FromMilliseconds(500));
+  message_loop_.PostDelayedTask(FROM_HERE,
+                                base::MessageLoop::QuitWhenIdleClosure(),
+                                base::TimeDelta::FromMilliseconds(500));
   message_loop_.Run();
   EXPECT_GE(test_callback.callback_count(), 2);
   EXPECT_FALSE(test_callback.had_error());

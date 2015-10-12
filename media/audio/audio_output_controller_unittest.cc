@@ -224,7 +224,7 @@ class AudioOutputControllerTest : public testing::Test {
   void Close() {
     EXPECT_CALL(mock_sync_reader_, Close());
 
-    controller_->Close(base::MessageLoop::QuitClosure());
+    controller_->Close(base::MessageLoop::QuitWhenIdleClosure());
     base::MessageLoop::current()->Run();
   }
 

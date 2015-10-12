@@ -83,7 +83,7 @@ ACTION_P2(SendPendingBytes, socket, pending_bytes) {
 // Used to terminate a loop from a different thread than the loop belongs to.
 // |task_runner| should be a SingleThreadTaskRunner.
 ACTION_P(QuitLoop, task_runner) {
-  task_runner->PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
+  task_runner->PostTask(FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
 }
 
 }  // namespace.
@@ -234,7 +234,7 @@ void AudioOutputDeviceTest::ExpectRenderCallback() {
 
 void AudioOutputDeviceTest::WaitUntilRenderCallback() {
   // Don't hang the test if we never get the Render() callback.
-  io_loop_.PostDelayedTask(FROM_HERE, base::MessageLoop::QuitClosure(),
+  io_loop_.PostDelayedTask(FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
                            TestTimeouts::action_timeout());
   io_loop_.Run();
 }

@@ -68,7 +68,7 @@ class MockMediaPlayerManager : public MediaPlayerManager {
   void OnPlaybackComplete(int player_id) override {
     playback_completed_ = true;
     if (message_loop_->is_running())
-      message_loop_->Quit();
+      message_loop_->QuitWhenIdle();
   }
   void OnMediaInterrupted(int player_id) override {}
   void OnBufferingUpdate(int player_id, int percentage) override {}
@@ -131,7 +131,7 @@ class MockDemuxerAndroid : public DemuxerAndroid {
   void RequestDemuxerData(DemuxerStream::Type type) override {
     num_data_requests_++;
     if (message_loop_->is_running())
-      message_loop_->Quit();
+      message_loop_->QuitWhenIdle();
   }
   void RequestDemuxerSeek(const base::TimeDelta& time_to_seek,
                           bool is_browser_seek) override {

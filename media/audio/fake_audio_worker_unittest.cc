@@ -76,7 +76,7 @@ class FakeAudioWorkerTest : public testing::Test {
     ASSERT_TRUE(message_loop_.task_runner()->BelongsToCurrentThread());
     fake_worker_.Stop();
     EXPECT_LE(callbacks, seen_callbacks_);
-    message_loop_.PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
+    message_loop_.PostTask(FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
   }
 
  protected:

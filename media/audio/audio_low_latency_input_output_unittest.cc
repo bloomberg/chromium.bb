@@ -419,7 +419,8 @@ TEST_F(AudioLowLatencyInputOutputTest, DISABLED_FullDuplexDelayMeasurement) {
   // in loop back during this time. At the same time, delay recordings are
   // performed and stored in the output text file.
   message_loop()->PostDelayedTask(FROM_HERE,
-      base::MessageLoop::QuitClosure(), TestTimeouts::action_timeout());
+                                  base::MessageLoop::QuitWhenIdleClosure(),
+                                  TestTimeouts::action_timeout());
   message_loop()->Run();
 
   aos->Stop();

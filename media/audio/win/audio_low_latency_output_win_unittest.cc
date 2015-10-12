@@ -59,7 +59,7 @@ MATCHER_P(HasValidDelay, value, "") {
 // Used to terminate a loop from a different thread than the loop belongs to.
 // |task_runner| should be a SingleThreadTaskRunner.
 ACTION_P(QuitLoop, task_runner) {
-  task_runner->PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
+  task_runner->PostTask(FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
 }
 
 // This audio source implementation should be used for manual tests only since
@@ -386,7 +386,7 @@ TEST(WASAPIAudioOutputStreamTest, ValidPacketSize) {
                       Return(aosw.samples_per_packet())));
 
   aos->Start(&source);
-  loop.PostDelayedTask(FROM_HERE, base::MessageLoop::QuitClosure(),
+  loop.PostDelayedTask(FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
                        TestTimeouts::action_timeout());
   loop.Run();
   aos->Stop();
@@ -580,7 +580,7 @@ TEST(WASAPIAudioOutputStreamTest, DISABLED_ExclusiveModeMinBufferSizeAt48kHz) {
       .WillRepeatedly(Return(aosw.samples_per_packet()));
 
   aos->Start(&source);
-  loop.PostDelayedTask(FROM_HERE, base::MessageLoop::QuitClosure(),
+  loop.PostDelayedTask(FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
                        TestTimeouts::action_timeout());
   loop.Run();
   aos->Stop();
@@ -614,8 +614,8 @@ TEST(WASAPIAudioOutputStreamTest, DISABLED_ExclusiveModeMinBufferSizeAt44kHz) {
       .WillRepeatedly(Return(aosw.samples_per_packet()));
 
   aos->Start(&source);
-  loop.PostDelayedTask(FROM_HERE, base::MessageLoop::QuitClosure(),
-                        TestTimeouts::action_timeout());
+  loop.PostDelayedTask(FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
+                       TestTimeouts::action_timeout());
   loop.Run();
   aos->Stop();
   aos->Close();
