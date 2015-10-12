@@ -235,15 +235,11 @@ component("platform") {
       "text/LocaleICU.h",
     ]
 
-    # Some Mac-specific parts of WebKit won't compile without having this
-    # prefix header injected.
-    cflags = [
-      "-include",
-      rebase_path("../build/mac/Prefix.h", root_build_dir),
-    ]
-
     defines += [ "WebFontCache=ChromiumWebCoreObjCWebFontCache" ]
-    configs += [ ":mac_objc_renaming" ]
+    configs += [
+      ":mac_objc_renaming",
+      "//third_party/WebKit/Source:mac_precompiled_headers",
+    ]
     libs = [
       "Accelerate.framework",
       "Carbon.framework",

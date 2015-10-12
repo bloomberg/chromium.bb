@@ -438,7 +438,7 @@ Note that many of the includes are trying to add the root "src"
 directory to the include path. This is always present in GN so you can
 remove these.
 
-GYP also requires you do duplicate these settings, once for the target
+GYP also requires you to duplicate these settings, once for the target
 itself, and once for the direct/all dependent settings. In GN,
 public/all dependent configs also apply to the current target so you
 only need to specify it once.
