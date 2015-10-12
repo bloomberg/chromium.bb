@@ -519,10 +519,10 @@ class AudioEncoder::AppleAacImpl : public AudioEncoder::ImplBase {
     }
 
     if (AudioFileInitializeWithCallbacks(this,
-                                         nullptr,
+                                         &FileReadCallback,
                                          &FileWriteCallback,
-                                         nullptr,
-                                         nullptr,
+                                         &FileGetSizeCallback,
+                                         &FileSetSizeCallback,
                                          kAudioFileAAC_ADTSType,
                                          &out_asbd,
                                          0,
@@ -642,6 +642,17 @@ class AudioEncoder::AppleAacImpl : public AudioEncoder::ImplBase {
     return noErr;
   }
 
+  // The AudioFile read callback function.
+  static OSStatus FileReadCallback(void* in_encoder,
+                                   SInt64 in_position,
+                                   UInt32 in_size,
+                                   void* in_buffer,
+                                   UInt32* out_size) {
+    // This class only does writing.
+    NOTREACHED();
+    return kAudioFileNotOpenError;
+  }
+
   // The AudioFile write callback function. Appends the data to the encoder's
   // current |output_buffer_|.
   static OSStatus FileWriteCallback(void* in_encoder,
@@ -659,6 +670,18 @@ class AudioEncoder::AppleAacImpl : public AudioEncoder::ImplBase {
 
     output_buffer->append(buffer, in_size);
     *out_size = in_size;
+    return noErr;
+  }
+
+  // The AudioFile getsize callback function.
+  static SInt64 FileGetSizeCallback(void* in_encoder) {
+    // This class only does writing.
+    NOTREACHED();
+    return 0;
+  }
+
+  // The AudioFile setsize callback function.
+  static OSStatus FileSetSizeCallback(void* in_encoder, SInt64 in_size) {
     return noErr;
   }
 
