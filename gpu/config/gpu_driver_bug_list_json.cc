@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "8.27",
+  "version": "8.28",
   "entries": [
     {
       "id": 1,
@@ -405,10 +405,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 33,
-      "description": "Share group-related crashes and poor context switching perf on Galaxy Nexus",
-      "os": {
-        "type": "android"
-      },
+      "description": "Share group-related crashes and poor context switching perf on Imagination drivers",
       "gl_vendor": "Imagination.*",
       "features": [
         "use_virtualized_gl_contexts"
