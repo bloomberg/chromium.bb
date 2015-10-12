@@ -34,6 +34,7 @@ namespace blink {
 
 class DocumentLoader;
 class LocalFrame;
+class InspectedFrames;
 
 class CORE_EXPORT IdentifiersFactory {
     STATIC_ONLY(IdentifiersFactory);
@@ -44,10 +45,10 @@ public:
     static String requestId(unsigned long identifier);
 
     static String frameId(LocalFrame*);
-    static LocalFrame* frameById(LocalFrame* inspectedFrame, const String&);
+    static LocalFrame* frameById(InspectedFrames*, const String&);
 
     static String loaderId(DocumentLoader*);
-    static DocumentLoader* loaderById(LocalFrame* inspectedFrame, const String&);
+    static DocumentLoader* loaderById(InspectedFrames*, const String&);
 
 private:
     static String addProcessIdPrefixTo(int id);

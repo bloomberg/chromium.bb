@@ -40,16 +40,15 @@
 #include "core/inspector/InjectedScript.h"
 #include "core/inspector/InjectedScriptManager.h"
 #include "core/inspector/InspectedFrames.h"
-#include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/page/Page.h"
 #include "platform/weborigin/SecurityOrigin.h"
 
 namespace blink {
 
-PageRuntimeAgent::PageRuntimeAgent(InjectedScriptManager* injectedScriptManager, Client* client, V8Debugger* debugger, InspectorPageAgent* pageAgent)
+PageRuntimeAgent::PageRuntimeAgent(InjectedScriptManager* injectedScriptManager, Client* client, V8Debugger* debugger, InspectedFrames* inspectedFrames)
     : InspectorRuntimeAgent(injectedScriptManager, debugger, client)
-    , m_pageAgent(pageAgent)
+    , m_inspectedFrames(inspectedFrames)
     , m_mainWorldContextCreated(false)
 {
 }
@@ -63,7 +62,7 @@ PageRuntimeAgent::~PageRuntimeAgent()
 
 DEFINE_TRACE(PageRuntimeAgent)
 {
-    visitor->trace(m_pageAgent);
+    visitor->trace(m_inspectedFrames);
     InspectorRuntimeAgent::trace(visitor);
 }
 
@@ -130,7 +129,7 @@ void PageRuntimeAgent::willReleaseScriptContext(LocalFrame* frame, ScriptState* 
 
 ScriptState* PageRuntimeAgent::defaultScriptState()
 {
-    return ScriptState::forMainWorld(m_pageAgent->inspectedFrame());
+    return ScriptState::forMainWorld(m_inspectedFrames->root());
 }
 
 void PageRuntimeAgent::muteConsole()
@@ -146,7 +145,7 @@ void PageRuntimeAgent::unmuteConsole()
 void PageRuntimeAgent::reportExecutionContextCreation()
 {
     Vector<std::pair<ScriptState*, SecurityOrigin*>> isolatedContexts;
-    for (LocalFrame* frame : InspectedFrames(m_pageAgent->inspectedFrame())) {
+    for (LocalFrame* frame : *m_inspectedFrames) {
         if (!frame->script().canExecuteScripts(NotAboutToExecuteScript))
             continue;
         String frameId = IdentifiersFactory::frameId(frame);

@@ -37,6 +37,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
+#include "core/inspector/InspectedFrames.h"
 #include "core/inspector/InspectorState.h"
 #include "core/page/Page.h"
 #include "modules/storage/Storage.h"
@@ -193,18 +194,6 @@ void InspectorDOMStorageAgent::didDispatchDOMStorageEvent(const String& key, con
         frontend()->domStorageItemUpdated(id, key, oldValue, newValue);
 }
 
-static LocalFrame* findFrameWithSecurityOrigin(LocalFrame* inspectedFrame, const String& originRawString)
-{
-    for (Frame* frame = inspectedFrame; frame; frame = frame->tree().traverseNext(inspectedFrame)) {
-        if (!frame->isLocalFrame())
-            continue;
-        RefPtr<SecurityOrigin> documentOrigin = toLocalFrame(frame)->document()->securityOrigin();
-        if (documentOrigin->toRawString() == originRawString)
-            return toLocalFrame(frame);
-    }
-    return nullptr;
-}
-
 StorageArea* InspectorDOMStorageAgent::findStorageArea(ErrorString* errorString, const RefPtr<JSONObject>& storageId, LocalFrame*& targetFrame)
 {
     String securityOrigin;
@@ -221,7 +210,7 @@ StorageArea* InspectorDOMStorageAgent::findStorageArea(ErrorString* errorString,
     if (!m_page->mainFrame()->isLocalFrame())
         return nullptr;
 
-    LocalFrame* frame = findFrameWithSecurityOrigin(m_page->deprecatedLocalMainFrame(), securityOrigin);
+    LocalFrame* frame = InspectedFrames(m_page->deprecatedLocalMainFrame()).frameWithSecurityOrigin(securityOrigin);
     if (!frame) {
         if (errorString)
             *errorString = "LocalFrame not found for the given security origin";

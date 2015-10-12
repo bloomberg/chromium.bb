@@ -60,9 +60,9 @@ class EventTarget;
 class ExceptionState;
 class FloatQuad;
 class InsertionPoint;
+class InspectedFrames;
 class InspectorFrontend;
 class InspectorHistory;
-class InspectorPageAgent;
 class Node;
 class QualifiedName;
 class PseudoElement;
@@ -98,9 +98,9 @@ public:
         virtual void setInspectedNode(Node*) { }
     };
 
-    static PassOwnPtrWillBeRawPtr<InspectorDOMAgent> create(InspectorPageAgent* pageAgent, InjectedScriptManager* injectedScriptManager, Client* client)
+    static PassOwnPtrWillBeRawPtr<InspectorDOMAgent> create(InspectedFrames* inspectedFrames, InjectedScriptManager* injectedScriptManager, Client* client)
     {
-        return adoptPtrWillBeNoop(new InspectorDOMAgent(pageAgent, injectedScriptManager, client));
+        return adoptPtrWillBeNoop(new InspectorDOMAgent(inspectedFrames, injectedScriptManager, client));
     }
 
     static String toErrorString(ExceptionState&);
@@ -204,7 +204,7 @@ public:
     Document* assertDocument(ErrorString*, int nodeId);
 
 private:
-    InspectorDOMAgent(InspectorPageAgent*, InjectedScriptManager*, Client*);
+    InspectorDOMAgent(InspectedFrames*, InjectedScriptManager*, Client*);
 
     void setDocument(Document*);
     void innerEnable();
@@ -244,7 +244,7 @@ private:
 
     RawPtrWillBeMember<InspectorRevalidateDOMTask> revalidateTask();
 
-    RawPtrWillBeMember<InspectorPageAgent> m_pageAgent;
+    RawPtrWillBeMember<InspectedFrames> m_inspectedFrames;
     RawPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;
     Client* m_client;
     RawPtrWillBeMember<DOMListener> m_domListener;

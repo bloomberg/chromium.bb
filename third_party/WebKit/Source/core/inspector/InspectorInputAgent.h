@@ -39,7 +39,7 @@
 #include "wtf/text/WTFString.h"
 
 namespace blink {
-class InspectorPageAgent;
+class InspectedFrames;
 class PlatformKeyboardEvent;
 class PlatformMouseEvent;
 
@@ -48,9 +48,9 @@ typedef String ErrorString;
 class CORE_EXPORT InspectorInputAgent final : public InspectorBaseAgent<InspectorInputAgent, InspectorFrontend::Input>, public InspectorBackendDispatcher::InputCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorInputAgent);
 public:
-    static PassOwnPtrWillBeRawPtr<InspectorInputAgent> create(InspectorPageAgent* pageAgent)
+    static PassOwnPtrWillBeRawPtr<InspectorInputAgent> create(InspectedFrames* inspectedFrames)
     {
-        return adoptPtrWillBeNoop(new InspectorInputAgent(pageAgent));
+        return adoptPtrWillBeNoop(new InspectorInputAgent(inspectedFrames));
     }
 
     ~InspectorInputAgent() override;
@@ -59,9 +59,9 @@ public:
     // Methods called from the frontend for simulating input.
     void dispatchTouchEvent(ErrorString*, const String& type, const RefPtr<JSONArray>& touchPoints, const int* modifiers, const double* timestamp) override;
 private:
-    explicit InspectorInputAgent(InspectorPageAgent*);
+    explicit InspectorInputAgent(InspectedFrames*);
 
-    RawPtrWillBeMember<InspectorPageAgent> m_pageAgent;
+    RawPtrWillBeMember<InspectedFrames> m_inspectedFrames;
 };
 
 

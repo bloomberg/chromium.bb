@@ -71,7 +71,6 @@
 #include "core/inspector/InspectedFrames.h"
 #include "core/inspector/InspectorHighlight.h"
 #include "core/inspector/InspectorHistory.h"
-#include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/inspector/RemoteObjectId.h"
@@ -274,9 +273,9 @@ bool InspectorDOMAgent::getPseudoElementType(PseudoId pseudoId, TypeBuilder::DOM
     }
 }
 
-InspectorDOMAgent::InspectorDOMAgent(InspectorPageAgent* pageAgent, InjectedScriptManager* injectedScriptManager, Client* client)
+InspectorDOMAgent::InspectorDOMAgent(InspectedFrames* inspectedFrames, InjectedScriptManager* injectedScriptManager, Client* client)
     : InspectorBaseAgent<InspectorDOMAgent, InspectorFrontend::DOM>("DOM")
-    , m_pageAgent(pageAgent)
+    , m_inspectedFrames(inspectedFrames)
     , m_injectedScriptManager(injectedScriptManager)
     , m_client(client)
     , m_domListener(nullptr)
@@ -305,7 +304,7 @@ WillBeHeapVector<RawPtrWillBeMember<Document> > InspectorDOMAgent::documents()
 {
     WillBeHeapVector<RawPtrWillBeMember<Document> > result;
     if (m_document) {
-        for (LocalFrame* frame : InspectedFrames(m_pageAgent->inspectedFrame())) {
+        for (LocalFrame* frame : *m_inspectedFrames) {
             if (Document* document = frame->document())
                 result.append(document);
         }
@@ -515,7 +514,7 @@ void InspectorDOMAgent::innerEnable()
     m_state->setBoolean(DOMAgentState::domAgentEnabled, true);
     m_history = adoptPtrWillBeNoop(new InspectorHistory());
     m_domEditor = adoptPtrWillBeNoop(new DOMEditor(m_history.get()));
-    m_document = m_pageAgent->inspectedFrame()->document();
+    m_document = m_inspectedFrames->root()->document();
     m_instrumentingAgents->setInspectorDOMAgent(this);
     if (m_backendNodeIdToInspect)
         frontend()->inspectNodeRequested(m_backendNodeIdToInspect);
@@ -1253,7 +1252,7 @@ void InspectorDOMAgent::highlightFrame(
     const RefPtr<JSONObject>* color,
     const RefPtr<JSONObject>* outlineColor)
 {
-    LocalFrame* frame = IdentifiersFactory::frameById(m_pageAgent->inspectedFrame(), frameId);
+    LocalFrame* frame = IdentifiersFactory::frameById(m_inspectedFrames, frameId);
     // FIXME: Inspector doesn't currently work cross process.
     if (frame && frame->deprecatedLocalOwner()) {
         OwnPtr<InspectorHighlightConfig> highlightConfig = adoptPtr(new InspectorHighlightConfig());
@@ -1712,7 +1711,7 @@ bool InspectorDOMAgent::isWhitespace(Node* node)
 
 void InspectorDOMAgent::domContentLoadedEventFired(LocalFrame* frame)
 {
-    if (frame != m_pageAgent->inspectedFrame())
+    if (frame != m_inspectedFrames->root())
         return;
 
     // Re-push document once it is loaded.
@@ -1744,7 +1743,7 @@ void InspectorDOMAgent::invalidateFrameOwnerElement(LocalFrame* frame)
 
 void InspectorDOMAgent::didCommitLoad(LocalFrame*, DocumentLoader* loader)
 {
-    LocalFrame* inspectedFrame = m_pageAgent->inspectedFrame();
+    LocalFrame* inspectedFrame = m_inspectedFrames->root();
     if (loader->frame() != inspectedFrame) {
         invalidateFrameOwnerElement(loader->frame());
         return;
@@ -1935,7 +1934,7 @@ void InspectorDOMAgent::frameDocumentUpdated(LocalFrame* frame)
     if (!document)
         return;
 
-    if (frame != m_pageAgent->inspectedFrame())
+    if (frame != m_inspectedFrames->root())
         return;
 
     // Only update the main frame document, nested frame document updates are not required
@@ -2041,7 +2040,7 @@ void InspectorDOMAgent::pushNodesByBackendIdsToFrontend(ErrorString* errorString
         }
 
         Node* node = DOMNodeIds::nodeForId(backendNodeId);
-        if (node && node->document().frame() && node->document().frame()->instrumentingAgents() == m_pageAgent->inspectedFrame()->instrumentingAgents())
+        if (node && node->document().frame() && m_inspectedFrames->contains(node->document().frame()))
             result->addItem(pushNodePathToFrontend(node));
         else
             result->addItem(0);
@@ -2128,7 +2127,7 @@ bool InspectorDOMAgent::pushDocumentUponHandlelessOperation(ErrorString* errorSt
 DEFINE_TRACE(InspectorDOMAgent)
 {
     visitor->trace(m_domListener);
-    visitor->trace(m_pageAgent);
+    visitor->trace(m_inspectedFrames);
     visitor->trace(m_injectedScriptManager);
 #if ENABLE(OILPAN)
     visitor->trace(m_documentNodeToIdMap);

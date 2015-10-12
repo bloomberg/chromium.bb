@@ -41,7 +41,7 @@ using blink::TypeBuilder::Runtime::RemoteObject;
 namespace blink {
 
 class DocumentLoader;
-class InspectorPageAgent;
+class InspectedFrames;
 class MainThreadDebugger;
 
 class CORE_EXPORT PageDebuggerAgent final
@@ -49,7 +49,7 @@ class CORE_EXPORT PageDebuggerAgent final
     WTF_MAKE_NONCOPYABLE(PageDebuggerAgent);
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(PageDebuggerAgent);
 public:
-    static PassOwnPtrWillBeRawPtr<PageDebuggerAgent> create(MainThreadDebugger*, InspectorPageAgent*, InjectedScriptManager*);
+    static PassOwnPtrWillBeRawPtr<PageDebuggerAgent> create(MainThreadDebugger*, InspectedFrames*, InjectedScriptManager*);
     ~PageDebuggerAgent() override;
     DECLARE_VIRTUAL_TRACE();
 
@@ -63,14 +63,14 @@ public:
     void didClearDocumentOfWindowObject(LocalFrame*);
 
 private:
-    PageDebuggerAgent(MainThreadDebugger*, InspectorPageAgent*, InjectedScriptManager*);
+    PageDebuggerAgent(MainThreadDebugger*, InspectedFrames*, InjectedScriptManager*);
     void muteConsole() override;
     void unmuteConsole() override;
 
     // V8DebuggerAgent::Client implemntation.
     bool canExecuteScripts() const;
 
-    RawPtrWillBeMember<InspectorPageAgent> m_pageAgent;
+    RawPtrWillBeMember<InspectedFrames> m_inspectedFrames;
     RawPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;
     HashMap<String, String> m_compiledScriptURLs;
 };

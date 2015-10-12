@@ -19,16 +19,16 @@ class AnimationNode;
 class AnimationTimeline;
 class Element;
 class InjectedScriptManager;
+class InspectedFrames;
 class InspectorDOMAgent;
-class InspectorPageAgent;
 class TimingFunction;
 
 class CORE_EXPORT InspectorAnimationAgent final : public InspectorBaseAgent<InspectorAnimationAgent, InspectorFrontend::Animation>, public InspectorBackendDispatcher::AnimationCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorAnimationAgent);
 public:
-    static PassOwnPtrWillBeRawPtr<InspectorAnimationAgent> create(InspectorPageAgent* pageAgent, InspectorDOMAgent* domAgent, InjectedScriptManager* injectedScriptManager)
+    static PassOwnPtrWillBeRawPtr<InspectorAnimationAgent> create(InspectedFrames* inspectedFrames, InspectorDOMAgent* domAgent, InjectedScriptManager* injectedScriptManager)
     {
-        return adoptPtrWillBeNoop(new InspectorAnimationAgent(pageAgent, domAgent, injectedScriptManager));
+        return adoptPtrWillBeNoop(new InspectorAnimationAgent(inspectedFrames, domAgent, injectedScriptManager));
     }
 
     // Base agent methods.
@@ -58,7 +58,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    InspectorAnimationAgent(InspectorPageAgent*, InspectorDOMAgent*, InjectedScriptManager*);
+    InspectorAnimationAgent(InspectedFrames*, InspectorDOMAgent*, InjectedScriptManager*);
 
     typedef TypeBuilder::Animation::Animation::Type::Enum AnimationType;
 
@@ -68,7 +68,7 @@ private:
     AnimationTimeline& referenceTimeline();
     Animation* animationClone(Animation*);
 
-    RawPtrWillBeMember<InspectorPageAgent> m_pageAgent;
+    RawPtrWillBeMember<InspectedFrames> m_inspectedFrames;
     RawPtrWillBeMember<InspectorDOMAgent> m_domAgent;
     RawPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;
     PersistentHeapHashMapWillBeHeapHashMap<String, Member<Animation>> m_idToAnimation;

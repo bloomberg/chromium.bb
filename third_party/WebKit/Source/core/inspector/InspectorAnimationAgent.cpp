@@ -22,7 +22,6 @@
 #include "core/inspector/InjectedScriptManager.h"
 #include "core/inspector/InspectedFrames.h"
 #include "core/inspector/InspectorDOMAgent.h"
-#include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InspectorStyleSheet.h"
 #include "platform/Decimal.h"
@@ -34,9 +33,9 @@ static const char animationAgentEnabled[] = "animationAgentEnabled";
 
 namespace blink {
 
-InspectorAnimationAgent::InspectorAnimationAgent(InspectorPageAgent* pageAgent, InspectorDOMAgent* domAgent, InjectedScriptManager* injectedScriptManager)
+InspectorAnimationAgent::InspectorAnimationAgent(InspectedFrames* inspectedFrames, InspectorDOMAgent* domAgent, InjectedScriptManager* injectedScriptManager)
     : InspectorBaseAgent<InspectorAnimationAgent, InspectorFrontend::Animation>("Animation")
-    , m_pageAgent(pageAgent)
+    , m_inspectedFrames(inspectedFrames)
     , m_domAgent(domAgent)
     , m_injectedScriptManager(injectedScriptManager)
     , m_isCloning(false)
@@ -59,7 +58,6 @@ void InspectorAnimationAgent::enable(ErrorString*)
 
 void InspectorAnimationAgent::disable(ErrorString*)
 {
-    ASSERT(m_pageAgent);
     setPlaybackRate(nullptr, 1);
     m_state->setBoolean(AnimationAgentState::animationAgentEnabled, false);
     m_instrumentingAgents->setInspectorAnimationAgent(nullptr);
@@ -70,7 +68,7 @@ void InspectorAnimationAgent::disable(ErrorString*)
 
 void InspectorAnimationAgent::didCommitLoadForLocalFrame(LocalFrame* frame)
 {
-    if (frame == m_pageAgent->inspectedFrame()) {
+    if (frame == m_inspectedFrames->root()) {
         m_idToAnimation.clear();
         m_idToAnimationType.clear();
         m_idToAnimationClone.clear();
@@ -189,7 +187,7 @@ void InspectorAnimationAgent::getPlaybackRate(ErrorString*, double* playbackRate
 
 void InspectorAnimationAgent::setPlaybackRate(ErrorString*, double playbackRate)
 {
-    for (LocalFrame* frame : InspectedFrames(m_pageAgent->inspectedFrame()))
+    for (LocalFrame* frame : *m_inspectedFrames)
         frame->document()->timeline().setPlaybackRate(playbackRate);
 }
 
@@ -329,7 +327,7 @@ Animation* InspectorAnimationAgent::assertAnimation(ErrorString* errorString, co
 
 AnimationTimeline& InspectorAnimationAgent::referenceTimeline()
 {
-    return m_pageAgent->inspectedFrame()->document()->timeline();
+    return m_inspectedFrames->root()->document()->timeline();
 }
 
 double InspectorAnimationAgent::normalizedStartTime(Animation& animation)
@@ -342,7 +340,7 @@ double InspectorAnimationAgent::normalizedStartTime(Animation& animation)
 DEFINE_TRACE(InspectorAnimationAgent)
 {
 #if ENABLE(OILPAN)
-    visitor->trace(m_pageAgent);
+    visitor->trace(m_inspectedFrames);
     visitor->trace(m_domAgent);
     visitor->trace(m_injectedScriptManager);
     visitor->trace(m_idToAnimation);

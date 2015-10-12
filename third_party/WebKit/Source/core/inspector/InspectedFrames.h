@@ -6,6 +6,7 @@
 #define InspectedFrames_h
 
 #include "core/CoreExport.h"
+#include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
 
 namespace blink {
@@ -15,7 +16,7 @@ class LocalFrame;
 class CORE_EXPORT InspectedFrames {
     WTF_MAKE_NONCOPYABLE(InspectedFrames);
 public:
-    class Iterator {
+    class CORE_EXPORT Iterator {
     public:
         Iterator operator++(int);
         Iterator& operator++();
@@ -32,6 +33,8 @@ public:
 
     explicit InspectedFrames(LocalFrame* root);
     LocalFrame* root() { return m_root; }
+    bool contains(LocalFrame*) const;
+    LocalFrame* frameWithSecurityOrigin(const String& originRawString);
     Iterator begin();
     Iterator end();
 

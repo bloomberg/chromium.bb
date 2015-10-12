@@ -38,8 +38,8 @@
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/AsyncCallTracker.h"
 #include "core/inspector/InjectedScript.h"
+#include "core/inspector/InspectedFrames.h"
 #include "core/inspector/InspectorInstrumentation.h"
-#include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/inspector/MainThreadDebugger.h"
@@ -52,14 +52,14 @@ using blink::TypeBuilder::Runtime::RemoteObject;
 
 namespace blink {
 
-PassOwnPtrWillBeRawPtr<PageDebuggerAgent> PageDebuggerAgent::create(MainThreadDebugger* mainThreadDebugger, InspectorPageAgent* pageAgent, InjectedScriptManager* injectedScriptManager)
+PassOwnPtrWillBeRawPtr<PageDebuggerAgent> PageDebuggerAgent::create(MainThreadDebugger* mainThreadDebugger, InspectedFrames* inspectedFrames, InjectedScriptManager* injectedScriptManager)
 {
-    return adoptPtrWillBeNoop(new PageDebuggerAgent(mainThreadDebugger, pageAgent, injectedScriptManager));
+    return adoptPtrWillBeNoop(new PageDebuggerAgent(mainThreadDebugger, inspectedFrames, injectedScriptManager));
 }
 
-PageDebuggerAgent::PageDebuggerAgent(MainThreadDebugger* mainThreadDebugger, InspectorPageAgent* pageAgent, InjectedScriptManager* injectedScriptManager)
-    : InspectorDebuggerAgent(injectedScriptManager, mainThreadDebugger->debugger(), mainThreadDebugger->contextGroupId(pageAgent->inspectedFrame()))
-    , m_pageAgent(pageAgent)
+PageDebuggerAgent::PageDebuggerAgent(MainThreadDebugger* mainThreadDebugger, InspectedFrames* inspectedFrames, InjectedScriptManager* injectedScriptManager)
+    : InspectorDebuggerAgent(injectedScriptManager, mainThreadDebugger->debugger(), mainThreadDebugger->contextGroupId(inspectedFrames->root()))
+    , m_inspectedFrames(inspectedFrames)
     , m_injectedScriptManager(injectedScriptManager)
 {
 }
@@ -70,14 +70,14 @@ PageDebuggerAgent::~PageDebuggerAgent()
 
 DEFINE_TRACE(PageDebuggerAgent)
 {
-    visitor->trace(m_pageAgent);
+    visitor->trace(m_inspectedFrames);
     visitor->trace(m_injectedScriptManager);
     InspectorDebuggerAgent::trace(visitor);
 }
 
 bool PageDebuggerAgent::canExecuteScripts() const
 {
-    ScriptController& scriptController = m_pageAgent->inspectedFrame()->script();
+    ScriptController& scriptController = m_inspectedFrames->root()->script();
     return scriptController.canExecuteScripts(NotAboutToExecuteScript);
 }
 
@@ -117,7 +117,7 @@ void PageDebuggerAgent::unmuteConsole()
 
 void PageDebuggerAgent::didStartProvisionalLoad(LocalFrame* frame)
 {
-    if (frame == m_pageAgent->inspectedFrame()) {
+    if (frame == m_inspectedFrames->root()) {
         ErrorString error;
         resume(&error);
     }
@@ -126,7 +126,7 @@ void PageDebuggerAgent::didStartProvisionalLoad(LocalFrame* frame)
 void PageDebuggerAgent::didClearDocumentOfWindowObject(LocalFrame* frame)
 {
     // FIXME: what about nested objects?
-    if (frame != m_pageAgent->inspectedFrame())
+    if (frame != m_inspectedFrames->root())
         return;
     m_asyncCallTracker->resetAsyncOperations();
     m_v8DebuggerAgent->reset();

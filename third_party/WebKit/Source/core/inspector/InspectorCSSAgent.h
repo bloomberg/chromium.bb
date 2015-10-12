@@ -49,6 +49,7 @@ class CSSStyleRule;
 class CSSStyleSheet;
 class Document;
 class Element;
+class InspectedFrames;
 class InspectorFrontend;
 class InspectorResourceAgent;
 class InspectorResourceContentLoader;
@@ -97,9 +98,9 @@ public:
     static CSSStyleRule* asCSSStyleRule(CSSRule*);
     static CSSMediaRule* asCSSMediaRule(CSSRule*);
 
-    static PassOwnPtrWillBeRawPtr<InspectorCSSAgent> create(InspectorDOMAgent* domAgent, InspectorPageAgent* pageAgent, InspectorResourceAgent* resourceAgent, InspectorResourceContentLoader* resourceContentLoader)
+    static PassOwnPtrWillBeRawPtr<InspectorCSSAgent> create(InspectorDOMAgent* domAgent, InspectedFrames* inspectedFrames, InspectorResourceAgent* resourceAgent, InspectorResourceContentLoader* resourceContentLoader)
     {
-        return adoptPtrWillBeNoop(new InspectorCSSAgent(domAgent, pageAgent, resourceAgent, resourceContentLoader));
+        return adoptPtrWillBeNoop(new InspectorCSSAgent(domAgent, inspectedFrames, resourceAgent, resourceContentLoader));
     }
 
     static void collectAllDocumentStyleSheets(Document*, WillBeHeapVector<RawPtrWillBeMember<CSSStyleSheet> >&);
@@ -158,7 +159,7 @@ private:
 
     static void collectStyleSheets(CSSStyleSheet*, WillBeHeapVector<RawPtrWillBeMember<CSSStyleSheet> >&);
 
-    InspectorCSSAgent(InspectorDOMAgent*, InspectorPageAgent*, InspectorResourceAgent*, InspectorResourceContentLoader*);
+    InspectorCSSAgent(InspectorDOMAgent*, InspectedFrames*, InspectorResourceAgent*, InspectorResourceContentLoader*);
 
     typedef WillBeHeapHashMap<String, RefPtrWillBeMember<InspectorStyleSheet> > IdToInspectorStyleSheet;
     typedef WillBeHeapHashMap<String, RefPtrWillBeMember<InspectorStyleSheetForInlineStyle> > IdToInspectorStyleSheetForInlineStyle;
@@ -203,7 +204,7 @@ private:
     void resetPseudoStates();
 
     RawPtrWillBeMember<InspectorDOMAgent> m_domAgent;
-    RawPtrWillBeMember<InspectorPageAgent> m_pageAgent;
+    RawPtrWillBeMember<InspectedFrames> m_inspectedFrames;
     RawPtrWillBeMember<InspectorResourceAgent> m_resourceAgent;
     RawPtrWillBeMember<InspectorResourceContentLoader> m_resourceContentLoader;
 

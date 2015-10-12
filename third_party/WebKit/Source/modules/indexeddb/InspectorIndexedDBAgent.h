@@ -39,13 +39,13 @@
 
 namespace blink {
 
-class Page;
+class InspectedFrames;
 
 typedef String ErrorString;
 
 class MODULES_EXPORT InspectorIndexedDBAgent final : public InspectorBaseAgent<InspectorIndexedDBAgent, InspectorFrontend::IndexedDB>, public InspectorBackendDispatcher::IndexedDBCommandHandler {
 public:
-    static PassOwnPtrWillBeRawPtr<InspectorIndexedDBAgent> create(Page*);
+    static PassOwnPtrWillBeRawPtr<InspectorIndexedDBAgent> create(InspectedFrames*);
 
     ~InspectorIndexedDBAgent() override;
     DECLARE_VIRTUAL_TRACE();
@@ -61,9 +61,9 @@ public:
     void clearObjectStore(ErrorString*, const String& in_securityOrigin, const String& in_databaseName, const String& in_objectStoreName, PassRefPtrWillBeRawPtr<ClearObjectStoreCallback>) override;
 
 private:
-    explicit InspectorIndexedDBAgent(Page*);
+    explicit InspectorIndexedDBAgent(InspectedFrames*);
 
-    RawPtrWillBeMember<Page> m_page;
+    RawPtrWillBeMember<InspectedFrames> m_inspectedFrames;
 };
 
 } // namespace blink

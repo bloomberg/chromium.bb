@@ -52,8 +52,8 @@ class EncodedFormData;
 class ExecutionContext;
 class LocalFrame;
 class HTTPHeaderMap;
+class InspectedFrames;
 class InspectorFrontend;
-class InspectorPageAgent;
 class JSONObject;
 class KURL;
 class NetworkResourcesData;
@@ -71,9 +71,9 @@ typedef String ErrorString;
 
 class CORE_EXPORT InspectorResourceAgent final : public InspectorBaseAgent<InspectorResourceAgent, InspectorFrontend::Network>, public InspectorBackendDispatcher::NetworkCommandHandler {
 public:
-    static PassOwnPtrWillBeRawPtr<InspectorResourceAgent> create(InspectorPageAgent* pageAgent)
+    static PassOwnPtrWillBeRawPtr<InspectorResourceAgent> create(InspectedFrames* inspectedFrames)
     {
-        return adoptPtrWillBeNoop(new InspectorResourceAgent(pageAgent));
+        return adoptPtrWillBeNoop(new InspectorResourceAgent(inspectedFrames));
     }
 
     void disable(ErrorString*) override;
@@ -155,7 +155,7 @@ public:
     bool shouldBlockRequest(const ResourceRequest&);
 
 private:
-    explicit InspectorResourceAgent(InspectorPageAgent*);
+    explicit InspectorResourceAgent(InspectedFrames*);
 
     void enable();
     void willSendRequestInternal(LocalFrame*, unsigned long identifier, DocumentLoader*, const ResourceRequest&, const ResourceResponse& redirectResponse, const FetchInitiatorInfo&);
@@ -165,7 +165,7 @@ private:
 
     bool getResponseBodyBlob(const String& requestId, PassRefPtrWillBeRawPtr<GetResponseBodyCallback>);
 
-    RawPtrWillBeMember<InspectorPageAgent> m_pageAgent;
+    RawPtrWillBeMember<InspectedFrames> m_inspectedFrames;
     String m_userAgentOverride;
     String m_hostId;
     OwnPtr<NetworkResourcesData> m_resourcesData;

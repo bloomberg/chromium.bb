@@ -45,8 +45,8 @@
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/VoidCallback.h"
 #include "core/html/parser/TextResourceDecoder.h"
+#include "core/inspector/InspectedFrames.h"
 #include "core/inspector/InspectorState.h"
-#include "core/page/Page.h"
 #include "modules/filesystem/DOMFileSystem.h"
 #include "modules/filesystem/DirectoryEntry.h"
 #include "modules/filesystem/DirectoryReader.h"
@@ -641,9 +641,9 @@ bool DeleteEntryRequest::didDeleteEntry()
 } // anonymous namespace
 
 // static
-PassOwnPtrWillBeRawPtr<InspectorFileSystemAgent> InspectorFileSystemAgent::create(Page* page)
+PassOwnPtrWillBeRawPtr<InspectorFileSystemAgent> InspectorFileSystemAgent::create(InspectedFrames* inspectedFrames)
 {
-    return adoptPtrWillBeNoop(new InspectorFileSystemAgent(page));
+    return adoptPtrWillBeNoop(new InspectorFileSystemAgent(inspectedFrames));
 }
 
 InspectorFileSystemAgent::~InspectorFileSystemAgent()
@@ -735,12 +735,12 @@ void InspectorFileSystemAgent::restore()
     m_enabled = m_state->getBoolean(FileSystemAgentState::fileSystemAgentEnabled);
 }
 
-InspectorFileSystemAgent::InspectorFileSystemAgent(Page* page)
+InspectorFileSystemAgent::InspectorFileSystemAgent(InspectedFrames* inspectedFrames)
     : InspectorBaseAgent<InspectorFileSystemAgent, InspectorFrontend::FileSystem>("FileSystem")
-    , m_page(page)
+    , m_inspectedFrames(inspectedFrames)
     , m_enabled(false)
 {
-    ASSERT(m_page);
+    ASSERT(m_inspectedFrames);
 }
 
 bool InspectorFileSystemAgent::assertEnabled(ErrorString* error)
@@ -754,12 +754,9 @@ bool InspectorFileSystemAgent::assertEnabled(ErrorString* error)
 
 ExecutionContext* InspectorFileSystemAgent::assertExecutionContextForOrigin(ErrorString* error, SecurityOrigin* origin)
 {
-    for (Frame* frame = m_page->mainFrame(); frame; frame = frame->tree().traverseNext()) {
-        if (!frame->isLocalFrame())
-            continue;
-        LocalFrame* localFrame = toLocalFrame(frame);
-        if (localFrame->document() && localFrame->document()->securityOrigin()->isSameSchemeHostPort(origin))
-            return localFrame->document();
+    for (LocalFrame* frame : *m_inspectedFrames) {
+        if (frame->document() && frame->document()->securityOrigin()->isSameSchemeHostPort(origin))
+            return frame->document();
     }
 
     *error = "No frame is available for the request";
@@ -768,7 +765,7 @@ ExecutionContext* InspectorFileSystemAgent::assertExecutionContextForOrigin(Erro
 
 DEFINE_TRACE(InspectorFileSystemAgent)
 {
-    visitor->trace(m_page);
+    visitor->trace(m_inspectedFrames);
     InspectorBaseAgent::trace(visitor);
 }
 

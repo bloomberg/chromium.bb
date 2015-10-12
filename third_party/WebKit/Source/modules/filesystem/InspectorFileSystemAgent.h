@@ -40,12 +40,12 @@
 namespace blink {
 
 class ExecutionContext;
-class Page;
+class InspectedFrames;
 class SecurityOrigin;
 
 class MODULES_EXPORT InspectorFileSystemAgent final : public InspectorBaseAgent<InspectorFileSystemAgent, InspectorFrontend::FileSystem>, public InspectorBackendDispatcher::FileSystemCommandHandler {
 public:
-    static PassOwnPtrWillBeRawPtr<InspectorFileSystemAgent> create(Page*);
+    static PassOwnPtrWillBeRawPtr<InspectorFileSystemAgent> create(InspectedFrames*);
     ~InspectorFileSystemAgent() override;
     DECLARE_VIRTUAL_TRACE();
 
@@ -61,11 +61,11 @@ public:
     void restore() override;
 
 private:
-    explicit InspectorFileSystemAgent(Page*);
+    explicit InspectorFileSystemAgent(InspectedFrames*);
     bool assertEnabled(ErrorString*);
     ExecutionContext* assertExecutionContextForOrigin(ErrorString*, SecurityOrigin*);
 
-    RawPtrWillBeMember<Page> m_page;
+    RawPtrWillBeMember<InspectedFrames> m_inspectedFrames;
     bool m_enabled;
 };
 

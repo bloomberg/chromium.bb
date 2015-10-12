@@ -37,18 +37,18 @@
 #include "core/frame/FrameHost.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/ConsoleMessageStorage.h"
+#include "core/inspector/InspectedFrames.h"
 #include "core/inspector/InspectorDOMAgent.h"
-#include "core/inspector/InspectorPageAgent.h"
 #include "core/workers/WorkerInspectorProxy.h"
 
 namespace blink {
 
 int PageConsoleAgent::s_enabledAgentCount = 0;
 
-PageConsoleAgent::PageConsoleAgent(InjectedScriptManager* injectedScriptManager, InspectorDOMAgent* domAgent, InspectorPageAgent* pageAgent)
+PageConsoleAgent::PageConsoleAgent(InjectedScriptManager* injectedScriptManager, InspectorDOMAgent* domAgent, InspectedFrames* inspectedFrames)
     : InspectorConsoleAgent(injectedScriptManager)
     , m_inspectorDOMAgent(domAgent)
-    , m_pageAgent(pageAgent)
+    , m_inspectedFrames(inspectedFrames)
 {
 }
 
@@ -63,7 +63,7 @@ PageConsoleAgent::~PageConsoleAgent()
 DEFINE_TRACE(PageConsoleAgent)
 {
     visitor->trace(m_inspectorDOMAgent);
-    visitor->trace(m_pageAgent);
+    visitor->trace(m_inspectedFrames);
     InspectorConsoleAgent::trace(visitor);
 }
 
@@ -83,7 +83,7 @@ void PageConsoleAgent::disable(ErrorString* errorString)
 void PageConsoleAgent::clearMessages(ErrorString* errorString)
 {
     m_inspectorDOMAgent->releaseDanglingNodes();
-    messageStorage()->clear(m_pageAgent->inspectedFrame()->document());
+    messageStorage()->clear(m_inspectedFrames->root()->document());
 }
 
 void PageConsoleAgent::workerConsoleAgentEnabled(WorkerGlobalScopeProxy* proxy)
@@ -93,7 +93,7 @@ void PageConsoleAgent::workerConsoleAgentEnabled(WorkerGlobalScopeProxy* proxy)
 
 ConsoleMessageStorage* PageConsoleAgent::messageStorage()
 {
-    return &m_pageAgent->frameHost()->consoleMessageStorage();
+    return &m_inspectedFrames->root()->host()->consoleMessageStorage();
 }
 
 void PageConsoleAgent::workerTerminated(WorkerInspectorProxy* workerInspectorProxy)

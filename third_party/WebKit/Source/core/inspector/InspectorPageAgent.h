@@ -44,7 +44,7 @@ namespace blink {
 class Resource;
 class Document;
 class DocumentLoader;
-class FrameHost;
+class InspectedFrames;
 class InspectorCSSAgent;
 class InspectorDebuggerAgent;
 class InspectorResourceContentLoader;
@@ -81,8 +81,7 @@ public:
         OtherResource
     };
 
-    static PassOwnPtrWillBeRawPtr<InspectorPageAgent> create(LocalFrame* inspectedFrame, Client*, InspectorResourceContentLoader*);
-    void setDebuggerAgent(InspectorDebuggerAgent*);
+    static PassOwnPtrWillBeRawPtr<InspectorPageAgent> create(InspectedFrames*, Client*, InspectorResourceContentLoader*, InspectorDebuggerAgent*);
 
     static WillBeHeapVector<RawPtrWillBeMember<Document>> importsForFrame(LocalFrame*);
     static bool cachedResourceContent(Resource*, String* result, bool* base64Encoded);
@@ -130,17 +129,12 @@ public:
     // Inspector Controller API
     void disable(ErrorString*) override;
     void restore() override;
-
-    // Cross-agents API
-    FrameHost* frameHost();
-    LocalFrame* inspectedFrame() const { return m_inspectedFrame.get(); }
-    LocalFrame* findFrameWithSecurityOrigin(const String& originRawString);
     bool screencastEnabled();
 
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    InspectorPageAgent(LocalFrame* inspectedFrame, Client*, InspectorResourceContentLoader*);
+    InspectorPageAgent(InspectedFrames*, Client*, InspectorResourceContentLoader*, InspectorDebuggerAgent*);
 
     void finishReload();
     void getResourceContentAfterResourcesContentLoaded(const String& frameId, const String& url, PassRefPtrWillBeRawPtr<GetResourceContentCallback>);
@@ -149,7 +143,7 @@ private:
 
     PassRefPtr<TypeBuilder::Page::Frame> buildObjectForFrame(LocalFrame*);
     PassRefPtr<TypeBuilder::Page::FrameResourceTree> buildObjectForFrameTree(LocalFrame*);
-    RawPtrWillBeMember<LocalFrame> m_inspectedFrame;
+    RawPtrWillBeMember<InspectedFrames> m_inspectedFrames;
     RawPtrWillBeMember<InspectorDebuggerAgent> m_debuggerAgent;
     Client* m_client;
     long m_lastScriptIdentifier;

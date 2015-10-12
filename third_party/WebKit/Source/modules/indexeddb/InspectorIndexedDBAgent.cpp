@@ -40,8 +40,8 @@
 #include "core/dom/Document.h"
 #include "core/events/EventListener.h"
 #include "core/frame/LocalFrame.h"
+#include "core/inspector/InspectedFrames.h"
 #include "core/inspector/InspectorState.h"
-#include "core/page/Page.h"
 #include "modules/IndexedDBNames.h"
 #include "modules/indexeddb/DOMWindowIndexedDatabase.h"
 #include "modules/indexeddb/IDBCursor.h"
@@ -564,29 +564,17 @@ public:
     unsigned m_pageSize;
 };
 
-LocalFrame* findFrameWithSecurityOrigin(Page* page, const String& securityOrigin)
-{
-    for (Frame* frame = page->mainFrame(); frame; frame = frame->tree().traverseNext()) {
-        if (!frame->isLocalFrame())
-            continue;
-        RefPtr<SecurityOrigin> documentOrigin = toLocalFrame(frame)->document()->securityOrigin();
-        if (documentOrigin->toRawString() == securityOrigin)
-            return toLocalFrame(frame);
-    }
-    return nullptr;
-}
-
 } // namespace
 
 // static
-PassOwnPtrWillBeRawPtr<InspectorIndexedDBAgent> InspectorIndexedDBAgent::create(Page* page)
+PassOwnPtrWillBeRawPtr<InspectorIndexedDBAgent> InspectorIndexedDBAgent::create(InspectedFrames* inspectedFrames)
 {
-    return adoptPtrWillBeNoop(new InspectorIndexedDBAgent(page));
+    return adoptPtrWillBeNoop(new InspectorIndexedDBAgent(inspectedFrames));
 }
 
-InspectorIndexedDBAgent::InspectorIndexedDBAgent(Page* page)
+InspectorIndexedDBAgent::InspectorIndexedDBAgent(InspectedFrames* inspectedFrames)
     : InspectorBaseAgent<InspectorIndexedDBAgent, InspectorFrontend::IndexedDB>("IndexedDB")
-    , m_page(page)
+    , m_inspectedFrames(inspectedFrames)
 {
 }
 
@@ -639,7 +627,7 @@ static IDBFactory* assertIDBFactory(ErrorString* errorString, Document* document
 
 void InspectorIndexedDBAgent::requestDatabaseNames(ErrorString* errorString, const String& securityOrigin, PassRefPtrWillBeRawPtr<RequestDatabaseNamesCallback> requestCallback)
 {
-    LocalFrame* frame = findFrameWithSecurityOrigin(m_page, securityOrigin);
+    LocalFrame* frame = m_inspectedFrames->frameWithSecurityOrigin(securityOrigin);
     Document* document = assertDocument(errorString, frame);
     if (!document)
         return;
@@ -660,7 +648,7 @@ void InspectorIndexedDBAgent::requestDatabaseNames(ErrorString* errorString, con
 
 void InspectorIndexedDBAgent::requestDatabase(ErrorString* errorString, const String& securityOrigin, const String& databaseName, PassRefPtrWillBeRawPtr<RequestDatabaseCallback> requestCallback)
 {
-    LocalFrame* frame = findFrameWithSecurityOrigin(m_page, securityOrigin);
+    LocalFrame* frame = m_inspectedFrames->frameWithSecurityOrigin(securityOrigin);
     Document* document = assertDocument(errorString, frame);
     if (!document)
         return;
@@ -676,7 +664,7 @@ void InspectorIndexedDBAgent::requestDatabase(ErrorString* errorString, const St
 
 void InspectorIndexedDBAgent::requestData(ErrorString* errorString, const String& securityOrigin, const String& databaseName, const String& objectStoreName, const String& indexName, int skipCount, int pageSize, const RefPtr<JSONObject>* keyRange, const PassRefPtrWillBeRawPtr<RequestDataCallback> requestCallback)
 {
-    LocalFrame* frame = findFrameWithSecurityOrigin(m_page, securityOrigin);
+    LocalFrame* frame = m_inspectedFrames->frameWithSecurityOrigin(securityOrigin);
     Document* document = assertDocument(errorString, frame);
     if (!document)
         return;
@@ -788,7 +776,7 @@ private:
 
 void InspectorIndexedDBAgent::clearObjectStore(ErrorString* errorString, const String& securityOrigin, const String& databaseName, const String& objectStoreName, PassRefPtrWillBeRawPtr<ClearObjectStoreCallback> requestCallback)
 {
-    LocalFrame* frame = findFrameWithSecurityOrigin(m_page, securityOrigin);
+    LocalFrame* frame = m_inspectedFrames->frameWithSecurityOrigin(securityOrigin);
     Document* document = assertDocument(errorString, frame);
     if (!document)
         return;
@@ -804,7 +792,7 @@ void InspectorIndexedDBAgent::clearObjectStore(ErrorString* errorString, const S
 
 DEFINE_TRACE(InspectorIndexedDBAgent)
 {
-    visitor->trace(m_page);
+    visitor->trace(m_inspectedFrames);
     InspectorBaseAgent::trace(visitor);
 }
 

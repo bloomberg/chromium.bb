@@ -55,8 +55,8 @@
 #include "core/html/HTMLHeadElement.h"
 #include "core/html/VoidCallback.h"
 #include "core/inspector/IdentifiersFactory.h"
+#include "core/inspector/InspectedFrames.h"
 #include "core/inspector/InspectorHistory.h"
-#include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InspectorResourceAgent.h"
 #include "core/inspector/InspectorResourceContentLoader.h"
 #include "core/inspector/InspectorState.h"
@@ -457,10 +457,10 @@ CSSMediaRule* InspectorCSSAgent::asCSSMediaRule(CSSRule* rule)
     return toCSSMediaRule(rule);
 }
 
-InspectorCSSAgent::InspectorCSSAgent(InspectorDOMAgent* domAgent, InspectorPageAgent* pageAgent, InspectorResourceAgent* resourceAgent, InspectorResourceContentLoader* resourceContentLoader)
+InspectorCSSAgent::InspectorCSSAgent(InspectorDOMAgent* domAgent, InspectedFrames* inspectedFrames, InspectorResourceAgent* resourceAgent, InspectorResourceContentLoader* resourceContentLoader)
     : InspectorBaseAgent<InspectorCSSAgent, InspectorFrontend::CSS>("CSS")
     , m_domAgent(domAgent)
-    , m_pageAgent(pageAgent)
+    , m_inspectedFrames(inspectedFrames)
     , m_resourceAgent(resourceAgent)
     , m_resourceContentLoader(resourceContentLoader)
     , m_creatingViaInspectorStyleSheet(false)
@@ -556,7 +556,7 @@ void InspectorCSSAgent::disable(ErrorString*)
 
 void InspectorCSSAgent::didCommitLoadForLocalFrame(LocalFrame* frame)
 {
-    if (frame == m_pageAgent->inspectedFrame()) {
+    if (frame == m_inspectedFrames->root()) {
         reset();
         m_editedStyleSheets.clear();
         m_editedStyleElements.clear();
@@ -1020,7 +1020,7 @@ void InspectorCSSAgent::setMediaText(ErrorString* errorString, const String& sty
 
 void InspectorCSSAgent::createStyleSheet(ErrorString* errorString, const String& frameId, TypeBuilder::CSS::StyleSheetId* outStyleSheetId)
 {
-    LocalFrame* frame = IdentifiersFactory::frameById(m_pageAgent->inspectedFrame(), frameId);
+    LocalFrame* frame = IdentifiersFactory::frameById(m_inspectedFrames, frameId);
     if (!frame) {
         *errorString = "Frame not found";
         return;
@@ -1742,7 +1742,7 @@ void InspectorCSSAgent::setEffectivePropertyValueForNode(ErrorString* errorStrin
 DEFINE_TRACE(InspectorCSSAgent)
 {
     visitor->trace(m_domAgent);
-    visitor->trace(m_pageAgent);
+    visitor->trace(m_inspectedFrames);
     visitor->trace(m_resourceAgent);
     visitor->trace(m_resourceContentLoader);
 #if ENABLE(OILPAN)

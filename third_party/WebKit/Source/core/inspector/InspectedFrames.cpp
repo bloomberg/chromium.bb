@@ -5,6 +5,7 @@
 #include "config.h"
 #include "core/inspector/InspectedFrames.h"
 
+#include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
 
 namespace blink {
@@ -22,6 +23,20 @@ InspectedFrames::Iterator InspectedFrames::begin()
 InspectedFrames::Iterator InspectedFrames::end()
 {
     return Iterator(m_root, nullptr);
+}
+
+bool InspectedFrames::contains(LocalFrame* frame) const
+{
+    return frame->instrumentingAgents() == m_root->instrumentingAgents();
+}
+
+LocalFrame* InspectedFrames::frameWithSecurityOrigin(const String& originRawString)
+{
+    for (LocalFrame* frame : *this) {
+        if (frame->document()->securityOrigin()->toRawString() == originRawString)
+            return frame;
+    }
+    return nullptr;
 }
 
 InspectedFrames::Iterator::Iterator(LocalFrame* root, LocalFrame* current)
