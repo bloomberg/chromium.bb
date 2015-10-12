@@ -34,11 +34,11 @@ bool MockDataChannel::reliable() const { return reliable_; }
 
 bool MockDataChannel::ordered() const { return config_.ordered; }
 
-unsigned short MockDataChannel::maxRetransmitTime() const {
+uint16_t MockDataChannel::maxRetransmitTime() const {
   return config_.maxRetransmitTime;
 }
 
-unsigned short MockDataChannel::maxRetransmits() const {
+uint16_t MockDataChannel::maxRetransmits() const {
   return config_.maxRetransmits;
 }
 
@@ -60,7 +60,7 @@ void MockDataChannel::changeState(DataState state) {
     observer_->OnStateChange();
 }
 
-uint64 MockDataChannel::buffered_amount() const {
+uint64_t MockDataChannel::buffered_amount() const {
   NOTIMPLEMENTED();
   return 0;
 }

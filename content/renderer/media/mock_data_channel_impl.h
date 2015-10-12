@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/macros.h"
 #include "third_party/libjingle/source/talk/app/webrtc/peerconnectioninterface.h"
 
@@ -23,13 +22,13 @@ class MockDataChannel : public webrtc::DataChannelInterface {
   std::string label() const override;
   bool reliable() const override;
   bool ordered() const override;
-  unsigned short maxRetransmitTime() const override;
-  unsigned short maxRetransmits() const override;
+  uint16_t maxRetransmitTime() const override;
+  uint16_t maxRetransmits() const override;
   std::string protocol() const override;
   bool negotiated() const override;
   int id() const override;
   DataState state() const override;
-  uint64 buffered_amount() const override;
+  uint64_t buffered_amount() const override;
   void Close() override;
   bool Send(const webrtc::DataBuffer& buffer) override;
 
