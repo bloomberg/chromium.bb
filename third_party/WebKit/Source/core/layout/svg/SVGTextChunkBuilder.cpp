@@ -20,6 +20,7 @@
 #include "config.h"
 #include "core/layout/svg/SVGTextChunkBuilder.h"
 
+#include "core/layout/api/LineLayoutSVGInlineText.h"
 #include "core/layout/svg/LayoutSVGInlineText.h"
 #include "core/layout/svg/line/SVGInlineTextBox.h"
 #include "core/svg/SVGLengthContext.h"
@@ -160,7 +161,7 @@ SVGTextPathChunkBuilder::SVGTextPathChunkBuilder()
 
 void SVGTextPathChunkBuilder::handleTextChunk(BoxListConstIterator boxStart, BoxListConstIterator boxEnd)
 {
-    const ComputedStyle& style = (*boxStart)->layoutObject().styleRef();
+    const ComputedStyle& style = (*boxStart)->lineLayoutItem().styleRef();
 
     ChunkLengthAccumulator lengthAccumulator(!style.isHorizontalWritingMode());
     lengthAccumulator.processRange(boxStart, boxEnd);
@@ -188,13 +189,13 @@ void SVGTextChunkBuilder::handleTextChunk(BoxListConstIterator boxStart, BoxList
 {
     ASSERT(*boxStart);
 
-    const LayoutSVGInlineText& textLayoutObject = toLayoutSVGInlineText((*boxStart)->layoutObject());
-    const ComputedStyle& style = textLayoutObject.styleRef();
+    const LineLayoutSVGInlineText textLineLayout = LineLayoutSVGInlineText((*boxStart)->lineLayoutItem());
+    const ComputedStyle& style = textLineLayout.styleRef();
 
     // Handle 'lengthAdjust' property.
     float desiredTextLength = 0;
     SVGLengthAdjustType lengthAdjust = SVGLengthAdjustUnknown;
-    if (SVGTextContentElement* textContentElement = SVGTextContentElement::elementFromLayoutObject(textLayoutObject.parent())) {
+    if (SVGTextContentElement* textContentElement = SVGTextContentElement::elementFromLayoutObject(textLineLayout.parent())) {
         lengthAdjust = textContentElement->lengthAdjust()->currentValue()->enumValue();
 
         SVGLengthContext lengthContext(textContentElement);
