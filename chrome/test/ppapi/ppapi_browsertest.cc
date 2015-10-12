@@ -4,6 +4,7 @@
 
 #include "base/path_service.h"
 #include "base/test/test_timeouts.h"
+#include "base/win/windows_version.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
@@ -545,9 +546,23 @@ TEST_PPAPI_NACL(Var)
 
 TEST_PPAPI_NACL(VarResource)
 
-#if defined(__i386__) && !defined(OS_WIN)
-// TODO(mcgrathr): Why doesn't it work on Windows? (crbug.com/541336)
-TEST_PPAPI_NACL_NATIVE(NaClIRTStackAlignment)
+// This test is only for x86-32 NaCl.
+#if defined(ARCH_CPU_X86)
+IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, NaClIRTStackAlignment) {
+  bool is32 = true;
+#if defined(OS_WIN)
+  // On Windows, we don't know statically if NaCl will actually be 32-bit
+  // NaCl or if it will be 64-bit NaCl.  Even chrome (and browser_tests) is
+  // built for 32-bit Windows, when the system is actually using a 64-bit
+  // Windows kernel, only 64-bit NaCl works.  This test matches the condition
+  // used in //components/nacl/browser/nacl_browser.cc::NaClIrtName to
+  // choose which kind of NaCl nexe to load, so it better be right.
+  is32 = (base::win::OSInfo::GetInstance()->wow64_status() !=
+          base::win::OSInfo::WOW64_ENABLED);
+#endif
+  if (is32)
+    RunTestViaHTTP(STRIP_PREFIXES(NaClIRTStackAlignment));
+}
 #endif
 
 // PostMessage tests.
