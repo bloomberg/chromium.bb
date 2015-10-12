@@ -210,19 +210,16 @@ void TaskQueueManager::ScheduleDelayedWork(internal::TaskQueueImpl* queue,
                               delayed_run_time));
     return;
   }
-  if (delayed_run_time > lazy_now->Now()) {
-    // Make sure there's one (and only one) task posted to |main_task_runner_|
-    // to call |DelayedDoWork| at |delayed_run_time|.
-    if (delayed_wakeup_map_.find(delayed_run_time) ==
-        delayed_wakeup_map_.end()) {
-      base::TimeDelta delay = delayed_run_time - lazy_now->Now();
-      main_task_runner_->PostDelayedTask(FROM_HERE,
-                                         delayed_queue_wakeup_closure_, delay);
-    }
-    delayed_wakeup_map_.insert(std::make_pair(delayed_run_time, queue));
-  } else {
-    WakeupReadyDelayedQueues(lazy_now);
+
+  // Make sure there's one (and only one) task posted to |main_task_runner_|
+  // to call |DelayedDoWork| at |delayed_run_time|.
+  if (delayed_wakeup_map_.find(delayed_run_time) == delayed_wakeup_map_.end()) {
+    base::TimeDelta delay =
+        std::max(base::TimeDelta(), delayed_run_time - lazy_now->Now());
+    main_task_runner_->PostDelayedTask(FROM_HERE, delayed_queue_wakeup_closure_,
+                                       delay);
   }
+  delayed_wakeup_map_.insert(std::make_pair(delayed_run_time, queue));
 }
 
 void TaskQueueManager::DelayedDoWork() {

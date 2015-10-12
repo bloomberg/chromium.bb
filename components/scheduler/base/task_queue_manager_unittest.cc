@@ -1306,4 +1306,18 @@ TEST_F(TaskQueueManagerTest, OnUnregisterTaskQueue) {
   manager_->SetObserver(nullptr);
 }
 
+TEST_F(TaskQueueManagerTest, ScheduleDelayedWorkIsNotReEntrant) {
+  Initialize(1u);
+
+  // Post two tasks into the past. The second one used to trigger a deadlock
+  // because it tried to re-entrantly wake the first task in the same queue.
+  runners_[0]->PostDelayedTaskAt(
+      FROM_HERE, base::Bind(&NullTask),
+      base::TimeTicks() + base::TimeDelta::FromMicroseconds(100));
+  runners_[0]->PostDelayedTaskAt(
+      FROM_HERE, base::Bind(&NullTask),
+      base::TimeTicks() + base::TimeDelta::FromMicroseconds(200));
+  test_task_runner_->RunUntilIdle();
+}
+
 }  // namespace scheduler
