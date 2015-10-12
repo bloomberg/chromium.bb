@@ -1,6 +1,4 @@
-
-
-  /**
+/**
    * @param {!Function} selectCallback
    * @constructor
    */
@@ -99,4 +97,3 @@
     }
 
   };
-

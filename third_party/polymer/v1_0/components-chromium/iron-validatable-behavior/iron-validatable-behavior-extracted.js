@@ -1,6 +1,4 @@
-
-
-  /**
+/**
    * Use `Polymer.IronValidatableBehavior` to implement an element that validates user input.
    *
    * ### Accessibility
@@ -104,4 +102,3 @@
       return true;
     }
   };
-

@@ -1,6 +1,4 @@
-
-
-  /**
+/**
    * Use `Polymer.IronCheckedElementBehavior` to implement a custom element
    * that has a `checked` property, which can be used for validation if the
    * element is also `required`. Element instances implementing this behavior
@@ -88,4 +86,3 @@
     Polymer.IronValidatableBehavior,
     Polymer.IronCheckedElementBehaviorImpl
   ];
-

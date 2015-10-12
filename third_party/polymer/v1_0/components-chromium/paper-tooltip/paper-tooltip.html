@@ -9,7 +9,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../neon-animation/neon-animation-runner-behavior.html">
 <link rel="import" href="../neon-animation/animations/fade-in-animation.html">
 <link rel="import" href="../neon-animation/animations/fade-out-animation.html">
+
 <!--
+Material design: [Tooltips](https://www.google.com/design/spec/components/tooltips.html)
 
 `<paper-tooltip>` is a label that appears on hover and focus when the user
 hovers over an element with the cursor or with the keyboard. It will be centered
@@ -58,6 +60,11 @@ Custom property | Description | Default
         position: absolute;
         outline: none;
         z-index: 1002;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        -webkit-user-select: none;
+        user-select: none;
+        cursor: default;
       }
 
       #tooltip {
@@ -65,6 +72,7 @@ Custom property | Description | Default
         outline: none;
         @apply(--paper-font-common-base);
         font-size: 10px;
+        line-height: 1;
 
         background-color: var(--paper-tooltip-background, #616161);
         opacity: var(--paper-tooltip-opacity, 0.9);

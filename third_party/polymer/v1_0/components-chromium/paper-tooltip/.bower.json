@@ -1,6 +1,6 @@
 {
   "name": "paper-tooltip",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Material design tooltip popup for content",
   "authors": [
     "The Polymer Authors"
@@ -34,11 +34,11 @@
     "iron-test-helpers": "PolymerElements/iron-test-helpers#^1.0.0",
     "paper-icon-button": "PolymerElements/paper-icon-button#^1.0.0"
   },
-  "_release": "1.1.0",
+  "_release": "1.1.1",
   "_resolution": {
     "type": "version",
-    "tag": "v1.1.0",
-    "commit": "a75f8ab09cf8aec079cbb07039c10cd39fcc6788"
+    "tag": "v1.1.1",
+    "commit": "0b274f0ad241877fd316101b43fe48b013a470b6"
   },
   "_source": "git://github.com/PolymerElements/paper-tooltip.git",
   "_target": "^1.0.0",

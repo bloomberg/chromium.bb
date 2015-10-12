@@ -1,5 +1,3 @@
-
-
 (function() {
 
   var IOS = navigator.userAgent.match(/iP(?:hone|ad;(?: U;)? CPU) OS (\d+)/);
@@ -302,7 +300,7 @@
     /**
      * Gets the first visible item in the viewport.
      *
-     * @property firstVisibleIndex
+     * @type {number}
      */
     get firstVisibleIndex() {
       var physicalOffset;
@@ -497,8 +495,7 @@
       this._assignModels(itemSet);
 
       // measure heights
-      // TODO(blasten) pass `recycledTileSet`
-      this._updateMetrics();
+      this._updateMetrics(itemSet);
 
       // adjust offset after measuring
       if (movingUp) {
@@ -506,7 +503,6 @@
           this._physicalTop -= this._physicalSizes[movingUp.pop()];
         }
       }
-
       // update the position of the items
       this._positionItems();
 
@@ -828,28 +824,32 @@
 
     /**
      * Updates the height for a given set of items.
+     *
+     * @param {!Array<number>=} itemSet
      */
-    _updateMetrics: function() {
-      var total = 0;
+     _updateMetrics: function(itemSet) {
+      var newPhysicalSize = 0;
+      var oldPhysicalSize = 0;
       var prevAvgCount = this._physicalAverageCount;
       var prevPhysicalAvg = this._physicalAverage;
-
       // Make sure we distributed all the physical items
       // so we can measure them
       Polymer.dom.flush();
 
-      for (var i = 0; i < this._physicalCount; i++) {
-        this._physicalSizes[i] = this._physicalItems[i].offsetHeight;
-        total += this._physicalSizes[i];
-        this._physicalAverageCount += this._physicalSizes[i] ? 1 : 0;
-      }
+      this._iterateItems(function(pidx, vidx) {
+        oldPhysicalSize += this._physicalSizes[pidx] || 0;
+        this._physicalSizes[pidx] = this._physicalItems[pidx].offsetHeight;
+        newPhysicalSize += this._physicalSizes[pidx];
+        this._physicalAverageCount += this._physicalSizes[pidx] ? 1 : 0;
+      }, itemSet);
 
-      this._physicalSize = total;
+      this._physicalSize = this._physicalSize + newPhysicalSize - oldPhysicalSize;
       this._viewportSize = this._scroller.offsetHeight;
 
+      // update the average if we measured something
       if (this._physicalAverageCount !== prevAvgCount) {
         this._physicalAverage = Math.round(
-            ((prevPhysicalAvg * prevAvgCount) + total) /
+            ((prevPhysicalAvg * prevAvgCount) + newPhysicalSize) /
             this._physicalAverageCount);
       }
     },
@@ -899,6 +899,8 @@
 
     /**
      * Sets the scroll height, that's the height of the content,
+     * 
+     * @param {boolean=} forceUpdate If true, updates the height no matter what.
      */
     _updateScrollerSize: function(forceUpdate) {
       this._estScrollHeight = (this._physicalBottom +
@@ -983,7 +985,7 @@
     },
 
     /**
-     * A handler for the `resize` event triggered by `IronResizableBehavior`
+     * A handler for the `iron-resize` event triggered by `IronResizableBehavior`
      * when the element is resized.
      */
     _resizeHandler: function() {
@@ -1008,23 +1010,30 @@
     },
 
     /**
-     * Select the list item at the given index.
+     * Gets a valid item instance from its index or the object value.
      *
-     * @method selectItem
-     * @param {(Object|number)} item the item object or its index
+     * @param {(Object|number)} item The item object or its index
      */
-    selectItem: function(item) {
+    _getNormalizedItem: function(item) {
       if (typeof item === 'number') {
         item = this.items[item];
         if (!item) {
           throw new RangeError('<item> not found');
         }
-      } else {
-        if (this._collection.getKey(item) === undefined) {
-          throw new TypeError('<item> should be a valid item');
-        }
+      } else if (this._collection.getKey(item) === undefined) {
+        throw new TypeError('<item> should be a valid item');
       }
+      return item;
+    },
 
+    /**
+     * Select the list item at the given index.
+     *
+     * @method selectItem
+     * @param {(Object|number)} item The item object or its index
+     */
+    selectItem: function(item) {
+      item = this._getNormalizedItem(item);
       var model = this._getModelFromItem(item);
 
       if (!this.multiSelection && this.selectedItem) {
@@ -1039,21 +1048,12 @@
     /**
      * Deselects the given item list if it is already selected.
      *
+
      * @method deselect
-     * @param {(Object|number)} item the item object or its index
+     * @param {(Object|number)} item The item object or its index
      */
     deselectItem: function(item) {
-      if (typeof item === 'number') {
-        item = this.items[item];
-        if (!item) {
-          throw new RangeError('<item> not found');
-        }
-      } else {
-        if (this._collection.getKey(item) === undefined) {
-          throw new TypeError('<item> should be a valid item');
-        }
-      }
-
+      item = this._getNormalizedItem(item);
       var model = this._getModelFromItem(item);
 
       if (model) {
@@ -1067,10 +1067,10 @@
      * has already been selected.
      *
      * @method toggleSelectionForItem
-     * @param {(Object|number)} item the item object or its index
+     * @param {(Object|number)} item The item object or its index
      */
     toggleSelectionForItem: function(item) {
-      item = typeof item === 'number' ? this.items[item] : item;
+      item = this._getNormalizedItem(item);
       if (/** @type {!ArraySelectorElement} */ (this.$.selector).isSelected(item)) {
         this.deselectItem(item);
       } else {
@@ -1118,9 +1118,8 @@
      * Select an item from an event object.
      */
     _selectionHandler: function(e) {
-      var ENTER_KEY = 13, model;
-      if (e.type !== 'keypress' || e.keyCode === ENTER_KEY) {
-        model = this.modelForElement(e.target);
+      if (e.type !== 'keypress' || e.keyCode === 13) {
+        var model = this.modelForElement(e.target);
         if (model) {
           this.toggleSelectionForItem(model[this.as]);
         }
@@ -1130,8 +1129,24 @@
     _multiSelectionChanged: function(multiSelection) {
       this.clearSelection();
       this.$.selector.multi = multiSelection;
+    },
+
+    /**
+     * Updates the size of an item.
+     *
+     * @method updateSizeForItem
+     * @param {(Object|number)} item The item object or its index
+     */
+    updateSizeForItem: function(item) {
+      item = this._getNormalizedItem(item);
+      var key = this._collection.getKey(item);
+      var pidx = this._physicalIndexForKey[key];
+
+      if (pidx !== undefined) {
+        this._updateMetrics([pidx]);
+        this._positionItems();
+      }
     }
   });
 
 })();
-

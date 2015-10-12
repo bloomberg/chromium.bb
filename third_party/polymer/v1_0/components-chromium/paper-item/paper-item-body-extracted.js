@@ -1,5 +1,3 @@
-
-    Polymer({
+Polymer({
       is: 'paper-item-body'
     });
-  

@@ -10,9 +10,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../paper-ripple/paper-ripple.html">
 <link rel="import" href="../paper-styles/default-theme.html">
 <link rel="import" href="../paper-styles/color.html">
-<link rel="import" href="../paper-behaviors/paper-inky-focus-behavior.html">
-<link rel="import" href="../iron-checked-element-behavior/iron-checked-element-behavior.html">
+<link rel="import" href="../paper-behaviors/paper-checked-element-behavior.html">
+
 <!--
+Material design: [Checkbox](https://www.google.com/design/spec/components/selection-controls.html#selection-controls-checkbox)
 
 `paper-checkbox` is a button that can be either checked or unchecked.  User
 can tap the checkbox to check or uncheck it.  Usually you use checkboxes
@@ -45,7 +46,7 @@ Custom property | Description | Default
 -->
 
 </head><body><dom-module id="paper-checkbox">
-  <template>
+  <template strip-whitespace="">
     <style>
       :host {
         display: inline-block;
@@ -197,7 +198,6 @@ Custom property | Description | Default
     </style>
 
     <div id="checkboxContainer">
-      <paper-ripple id="ink" class="circle" center="" checked$="[[checked]]"></paper-ripple>
       <div id="checkbox" class$="[[_computeCheckboxClass(checked, invalid)]]">
         <div id="checkmark" class$="[[_computeCheckmarkClass(checked)]]"></div>
       </div>

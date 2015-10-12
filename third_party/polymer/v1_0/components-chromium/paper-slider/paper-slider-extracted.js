@@ -1,6 +1,4 @@
-
-
-  Polymer({
+Polymer({
     is: 'paper-slider',
 
     behaviors: [
@@ -104,8 +102,6 @@
 
     observers: [
       '_updateKnob(value, min, max, snaps, step)',
-      '_minChanged(min)',
-      '_maxChanged(max)',
       '_valueChanged(value)',
       '_immediateValueChanged(immediateValue)'
     ],
@@ -122,7 +118,6 @@
 
     ready: function() {
       // issue polymer/polymer#1305
-
       this.async(function() {
         this._updateKnob(this.value);
       }, 1);
@@ -144,20 +139,15 @@
       this.value = this._clampValue(this.value - this.step);
     },
 
-    _updateKnob: function(value) {
+    _updateKnob: function(value, min, max, snaps, step) {
+      this.setAttribute('aria-valuemin', min);
+      this.setAttribute('aria-valuemax', max);
+      this.setAttribute('aria-valuenow', value);
+
       this._positionKnob(this._calcRatio(value));
     },
 
-    _minChanged: function() {
-      this.setAttribute('aria-valuemin', this.min);
-    },
-
-    _maxChanged: function() {
-      this.setAttribute('aria-valuemax', this.max);
-    },
-
     _valueChanged: function() {
-      this.setAttribute('aria-valuenow', this.value);
       this.fire('value-change');
     },
 
@@ -171,11 +161,6 @@
 
     _secondaryProgressChanged: function() {
       this.secondaryProgress = this._clampValue(this.secondaryProgress);
-    },
-
-    _fixForInput: function(immediateValue) {
-      // paper-input/issues/114
-      return this.immediateValue.toString();
     },
 
     _expandKnob: function() {
@@ -192,11 +177,6 @@
       this._setRatio(this._calcRatio(this.immediateValue));
 
       this.$.sliderKnob.style.left = (this.ratio * 100) + '%';
-    },
-
-    _inputChange: function() {
-      this.value = this.$$('#input').value;
-      this.fire('change');
     },
 
     _calcKnobPosition: function(ratio) {
@@ -225,7 +205,6 @@
       this._minx = - this._startx;
       this._maxx = this._w - this._startx;
       this.$.sliderKnob.classList.add('dragging');
-
       this._setDragging(true);
     },
 
@@ -332,22 +311,60 @@
     },
 
     _incrementKey: function(event) {
-      if (event.detail.key === 'end') {
-        this.value = this.max;
-      } else {
-        this.increment();
+      if (!this.disabled) {
+        if (event.detail.key === 'end') {
+          this.value = this.max;
+        } else {
+          this.increment();
+        }
+        this.fire('change');
       }
-      this.fire('change');
     },
 
     _decrementKey: function(event) {
-      if (event.detail.key === 'home') {
-        this.value = this.min;
-      } else {
-        this.decrement();
+      if (!this.disabled) {
+        if (event.detail.key === 'home') {
+          this.value = this.min;
+        } else {
+          this.decrement();
+        }
+        this.fire('change');
       }
+    },
+
+    _changeValue: function(event) {
+      this.value = event.target.value;
       this.fire('change');
+    },
+
+    _inputKeyDown: function(event) {
+      event.stopPropagation();
+    },
+
+    // create the element ripple inside the `sliderKnob`
+    _createRipple: function() {
+      this._rippleContainer = this.$.sliderKnob;
+      return Polymer.PaperInkyFocusBehaviorImpl._createRipple.call(this);
+    },
+
+    // Hide the ripple when user is not interacting with keyboard.
+    // This behavior is different from other ripple-y controls, but is
+    // according to spec: https://www.google.com/design/spec/components/sliders.html
+    _focusedChanged: function(receivedFocusFromKeyboard) {
+      if (receivedFocusFromKeyboard) {
+        this.ensureRipple();
+      }
+      if (this.hasRipple()) {
+        // note, ripple must be un-hidden prior to setting `holdDown`
+        if (receivedFocusFromKeyboard) {
+          this._ripple.removeAttribute('hidden');
+        } else {
+          this._ripple.setAttribute('hidden', '');
+        }
+        this._ripple.holdDown = receivedFocusFromKeyboard;
+      }
     }
+
   });
 
   /**
@@ -370,4 +387,3 @@
    *
    * @event change
    */
-

@@ -1,5 +1,3 @@
-
-
 /**
 Use `Polymer.PaperDialogBehavior` and `paper-dialog-common.css` to implement a Material Design
 dialog.
@@ -221,4 +219,3 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
 
   /** @polymerBehavior */
   Polymer.PaperDialogBehavior = [Polymer.IronOverlayBehavior, Polymer.PaperDialogBehaviorImpl];
-

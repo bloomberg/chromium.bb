@@ -1,5 +1,4 @@
-
-  Polymer({
+Polymer({
     is: 'paper-fab',
 
     behaviors: [
@@ -46,14 +45,6 @@
         value: false,
         reflectToAttribute: true
       }
-    },
-
-    _computeContentClass: function(receivedFocusFromKeyboard) {
-      var className = 'content';
-      if (receivedFocusFromKeyboard) {
-        className += ' keyboard-focus';
-      }
-      return className;
     }
 
   });

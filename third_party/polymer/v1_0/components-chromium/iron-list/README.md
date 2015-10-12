@@ -65,7 +65,7 @@ bound from the model object provided to the template scope):
 
 ### Resizing
 
-`iron-list` lays out the items when it recives a notification via the `resize` event.
+`iron-list` lays out the items when it recives a notification via the `iron-resize` event.
 This event is fired by any element that implements `IronResizableBehavior`.
 
 By default, elements such as `iron-pages`, `paper-tabs` or `paper-dialog` will trigger
@@ -74,7 +74,19 @@ you might want to implement `IronResizableBehavior` or fire this event manually 
 after the list became visible again. e.g.
 
 ```js
-document.querySelector('iron-list').fire('resize');
+document.querySelector('iron-list').fire('iron-resize');
+```
+
+### Styling
+
+Use the `--iron-list-items-container` mixin to style the container of items, e.g.
+
+```css
+iron-list {
+ --iron-list-items-container: {
+    margin: auto;
+  };
+}
 ```
 
 ### When should `<iron-list>` be used?

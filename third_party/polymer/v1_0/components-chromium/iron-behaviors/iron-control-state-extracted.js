@@ -1,6 +1,4 @@
-
-
-  /**
+/**
    * @demo demo/index.html
    * @polymerBehavior
    */
@@ -91,4 +89,3 @@
     }
 
   };
-

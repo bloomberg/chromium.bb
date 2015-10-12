@@ -1,6 +1,4 @@
-
-
-  Polymer({
+Polymer({
 
     is: 'transform-animation',
 
@@ -35,4 +33,3 @@
     }
 
   });
-

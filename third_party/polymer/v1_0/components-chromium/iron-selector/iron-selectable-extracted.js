@@ -1,6 +1,4 @@
-
-
-  /** @polymerBehavior */
+/** @polymerBehavior */
   Polymer.IronSelectableBehavior = {
 
       /**
@@ -99,7 +97,7 @@
        * @type {object}
        * @default {template: 1}
        */
-      excludedLocalNames: {
+      _excludedLocalNames: {
         type: Object,
         value: function() {
           return {
@@ -116,6 +114,9 @@
     created: function() {
       this._bindFilterItem = this._filterItem.bind(this);
       this._selection = new Polymer.IronSelection(this._applySelection.bind(this));
+      // TODO(cdata): When polymer/polymer#2535 lands, we do not need to do this
+      // book keeping anymore:
+      this.__listeningForActivate = false;
     },
 
     attached: function() {
@@ -124,6 +125,7 @@
       if (!this.selectedItem && this.selected) {
         this._updateSelected(this.attrForSelected,this.selected)
       }
+      this._addListener(this.activateEvent);
     },
 
     detached: function() {
@@ -190,11 +192,17 @@
     },
 
     _addListener: function(eventName) {
+      if (!this.isAttached || this.__listeningForActivate) {
+        return;
+      }
+
+      this.__listeningForActivate = true;
       this.listen(this, eventName, '_activateHandler');
     },
 
     _removeListener: function(eventName) {
       this.unlisten(this, eventName, '_activateHandler');
+      this.__listeningForActivate = false;
     },
 
     _activateEventChanged: function(eventName, old) {
@@ -211,7 +219,7 @@
     },
 
     _filterItem: function(node) {
-      return !this.excludedLocalNames[node.localName];
+      return !this._excludedLocalNames[node.localName];
     },
 
     _valueToItem: function(value) {
@@ -312,4 +320,3 @@
     }
 
   };
-

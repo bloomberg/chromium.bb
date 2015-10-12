@@ -1,6 +1,4 @@
-
-
-  Polymer({
+Polymer({
 
     is: 'paper-tabs',
 
@@ -310,4 +308,3 @@
     }
 
   });
-

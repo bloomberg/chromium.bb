@@ -1,5 +1,4 @@
-
-    Polymer({
+Polymer({
       is: 'paper-icon-item',
 
       hostAttributes: {
@@ -12,4 +11,3 @@
         Polymer.IronButtonState
       ]
     });
-  

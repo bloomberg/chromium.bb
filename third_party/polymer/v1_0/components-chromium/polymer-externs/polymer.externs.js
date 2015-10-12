@@ -290,7 +290,7 @@ PolymerElement.prototype.attributeFollows = function(name, newNode, oldNode) {};
 /**
  * Convenience method to add an event listener on a given element, late bound to
  * a named method on this element.
- * @param {!Element} node Element to add event listener to.
+ * @param {!EventTarget} node Element to add event listener to.
  * @param {string} eventName Name of event to listen for.
  * @param {string} methodName Name of handler method on this to call.
  */
@@ -298,7 +298,7 @@ PolymerElement.prototype.listen = function(node, eventName, methodName) {};
 
 /**
  * Convenience method to remove an event listener from a given element.
- * @param {!Element} node Element to remove event listener from.
+ * @param {!EventTarget} node Element to remove event listener from.
  * @param {string} eventName Name of event to stop listening for.
  * @param {string} methodName Name of handler method on this to remove.
  */
@@ -460,6 +460,11 @@ PolymerElement.prototype.resolveUrl = function(url) {};
 PolymerElement.prototype.updateStyles = function(properties) {};
 
 /**
+ * @type {!Object<string, string|undefined>}
+ */
+PolymerElement.prototype.customStyle;
+
+/**
  * Logs a message to the console.
  *
  * @param {!Array} var_args
@@ -503,6 +508,12 @@ var PolymerDomApi = function() {};
 
 /** @param {!Node} node */
 PolymerDomApi.prototype.appendChild = function(node) {};
+
+/**
+ * @param {!Node} oldNode
+ * @param {!Node} newNode
+ */
+PolymerDomApi.prototype.replaceChild = function(oldNode, newNode) {};
 
 /**
  * @param {!Node} node
@@ -884,3 +895,27 @@ var PolymerKeySplice;
  * }}
  */
 var PolymerSpliceChange;
+
+/**
+ * The interface that iconsets should obey. Iconsets are registered by setting
+ * their name in the IronMeta 'iconset' db, and a value of type Polymer.Iconset.
+ * 
+ * Used by iron-icon but needs to live here since iron-icon, iron-iconset, etc don't
+ * depend on each other at all and talk only through iron-meta.
+ *
+ * @interface
+ */
+Polymer.Iconset = function() {};
+
+/**
+ * Applies an icon to the given element as a css background image. This
+ * method does not size the element, and it's usually necessary to set
+ * the element's height and width so that the background image is visible.
+ *
+ * @param {Element} element The element to which the icon is applied.
+ * @param {string} icon The name of the icon to apply.
+ * @param {string=} theme (optional) The name or index of the icon to apply.
+ * @param {number=} scale (optional, defaults to 1) Icon scaling factor.
+ */
+Polymer.Iconset.prototype.applyIcon = function(
+      element, icon, theme, scale) {};

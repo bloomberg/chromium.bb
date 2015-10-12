@@ -1,6 +1,4 @@
-
-
-  (function() {
+(function() {
 
     // monostate data
     var metaDatas = {};

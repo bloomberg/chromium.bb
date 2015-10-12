@@ -1,5 +1,4 @@
-
-    Polymer({
+Polymer({
       is: 'paper-tooltip',
 
       hostAttributes: {
@@ -57,6 +56,20 @@
           value: 14
         },
 
+        /**
+         * The delay that will be applied before the `entry` animation is
+         * played when showing the tooltip.
+         */
+        animationDelay: {
+          type: Number,
+          value: 500
+        },
+
+        /**
+         * The entry and exit animations that will be played when showing and
+         * hiding the tooltip. If you want to override this, you must ensure
+         * that your animationConfig has the exact format below.
+         */
         animationConfig: {
           type: Object,
           value: function() {
@@ -64,7 +77,7 @@
               'entry': [{
                 name: 'fade-in-animation',
                 node: this,
-                timing: {delay: 500}
+                timing: {delay: 0}
               }],
               'exit': [{
                 name: 'fade-out-animation',
@@ -81,7 +94,8 @@
       },
 
       listeners: {
-        'neon-animation-finish': '_onAnimationFinish'
+        'neon-animation-finish': '_onAnimationFinish',
+        'mouseenter': 'hide'
       },
 
       /**
@@ -112,6 +126,7 @@
         this.listen(this._target, 'focus', 'show');
         this.listen(this._target, 'mouseleave', 'hide');
         this.listen(this._target, 'blur', 'hide');
+        this.listen(this._target, 'tap', 'hide');
       },
 
       detached: function() {
@@ -120,30 +135,46 @@
           this.unlisten(this._target, 'focus', 'show');
           this.unlisten(this._target, 'mouseleave', 'hide');
           this.unlisten(this._target, 'blur', 'hide');
+          this.unlisten(this._target, 'tap', 'hide');
         }
       },
 
       show: function() {
+        // If the tooltip is already showing, there's nothing to do.
         if (this._showing)
           return;
 
         if (Polymer.dom(this).textContent.trim() === '')
           return;
 
-        this.cancelAnimation();
 
+        this.cancelAnimation();
+        this._showing = true;
         this.toggleClass('hidden', false, this.$.tooltip);
         this.updatePosition();
-        this._showing = true;
 
+        this.animationConfig.entry[0].timing.delay = this.animationDelay;
+        this._animationPlaying = true;
         this.playAnimation('entry');
       },
 
       hide: function() {
-        if (!this._showing)
+        // If the tooltip is already hidden, there's nothing to do.
+        if (!this._showing) {
           return;
+        }
+
+        // If the entry animation is still playing, don't try to play the exit
+        // animation since this will reset the opacity to 1. Just end the animation.
+        if (this._animationPlaying) {
+          this.cancelAnimation();
+          this._showing = false;
+          this._onAnimationFinish();
+          return;
+        }
 
         this._showing = false;
+        this._animationPlaying = true;
         this.playAnimation('exit');
       },
 
@@ -218,9 +249,9 @@
       },
 
       _onAnimationFinish: function() {
+        this._animationPlaying = false;
         if (!this._showing) {
           this.toggleClass('hidden', true, this.$.tooltip);
         }
       },
     });
-  

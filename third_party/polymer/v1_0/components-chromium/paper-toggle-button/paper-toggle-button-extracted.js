@@ -1,10 +1,8 @@
-
-    Polymer({
+Polymer({
       is: 'paper-toggle-button',
 
       behaviors: [
-        Polymer.PaperInkyFocusBehavior,
-        Polymer.IronCheckedElementBehavior
+        Polymer.PaperCheckedElementBehavior
       ],
 
       hostAttributes: {
@@ -28,20 +26,6 @@
 
       listeners: {
         track: '_ontrack'
-      },
-
-      ready: function() {
-        this._isReady = true;
-      },
-
-      // button-behavior hook
-      _buttonStateChanged: function() {
-        if (this.disabled) {
-          return;
-        }
-        if (this._isReady) {
-          this.checked = this.active;
-        }
       },
 
       _ontrack: function(event) {
@@ -76,7 +60,16 @@
       _trackEnd: function(track) {
         this.$.toggleButton.classList.remove('dragging');
         this.transform('', this.$.toggleButton);
+      },
+
+      // customize the element's ripple
+      _createRipple: function() {
+        this._rippleContainer = this.$.toggleButton;
+        var ripple = Polymer.PaperRippleBehavior._createRipple();
+        ripple.id = 'ink';
+        ripple.setAttribute('recenters', '');
+        ripple.classList.add('circle', 'toggle-ink');
+        return ripple;
       }
 
     });
-  

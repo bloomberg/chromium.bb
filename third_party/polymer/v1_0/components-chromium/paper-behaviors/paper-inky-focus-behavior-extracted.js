@@ -1,9 +1,7 @@
-
-
-  /**
+/**
    * `Polymer.PaperInkyFocusBehavior` implements a ripple when the element has keyboard focus.
    *
-   * @polymerBehavior Polymer.PaperInkyFocusBehavior
+   * @polymerBehavior Polymer.PaperInkyFocusBehaviorImpl
    */
   Polymer.PaperInkyFocusBehaviorImpl = {
 
@@ -12,11 +10,20 @@
     ],
 
     _focusedChanged: function(receivedFocusFromKeyboard) {
-      if (!this.$.ink) {
-        return;
+      if (receivedFocusFromKeyboard) {
+        this.ensureRipple();
       }
+      if (this.hasRipple()) {
+        this._ripple.holdDown = receivedFocusFromKeyboard;
+      }
+    },
 
-      this.$.ink.holdDown = receivedFocusFromKeyboard;
+    _createRipple: function() {
+      var ripple = Polymer.PaperRippleBehavior._createRipple();
+      ripple.id = 'ink';
+      ripple.setAttribute('center', '');
+      ripple.classList.add('circle');
+      return ripple;
     }
 
   };
@@ -25,6 +32,6 @@
   Polymer.PaperInkyFocusBehavior = [
     Polymer.IronButtonState,
     Polymer.IronControlState,
+    Polymer.PaperRippleBehavior,
     Polymer.PaperInkyFocusBehaviorImpl
   ];
-

@@ -1,5 +1,4 @@
-
-  Polymer({
+Polymer({
 
     is: 'paper-progress',
 
@@ -96,4 +95,3 @@
     }
 
   });
-

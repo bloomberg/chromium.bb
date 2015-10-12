@@ -1,6 +1,6 @@
 {
   "name": "paper-card",
-  "version": "1.0.4",
+  "version": "1.0.6",
   "description": "Material design piece of paper with unique related data",
   "authors": [
     "The Polymer Authors"
@@ -23,7 +23,8 @@
   "ignore": [],
   "dependencies": {
     "polymer": "Polymer/polymer#^1.1.0",
-    "paper-material": "PolymerElements/paper-material#^1.0.0"
+    "paper-material": "PolymerElements/paper-material#^1.0.0",
+    "iron-flex-layout": "PolymerElements/iron-flex-layout#^1.0.0"
   },
   "devDependencies": {
     "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",

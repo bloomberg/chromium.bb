@@ -1,6 +1,4 @@
-
-
-  Polymer({
+Polymer({
 
     is: 'iron-autogrow-textarea',
 
@@ -188,7 +186,14 @@
         return;
       }
 
-      textarea.value = this.bindValue;
+      // If the bindValue changed manually, then we need to also update
+      // the underlying textarea's value. Otherwise this change was probably
+      // generated from the _onInput handler, and the two values are already
+      // the same.
+      if (textarea.value !== this.bindValue) {
+        textarea.value = !(this.bindValue || this.bindValue === 0) ? '' : this.bindValue;
+      }
+
       this.$.mirror.innerHTML = this._valueForMirror();
       // manually notify because we don't want to notify until after setting value
       this.fire('bind-value-changed', {value: this.bindValue});

@@ -1,5 +1,4 @@
-
-  Polymer({
+Polymer({
     is: 'paper-material',
 
     properties: {

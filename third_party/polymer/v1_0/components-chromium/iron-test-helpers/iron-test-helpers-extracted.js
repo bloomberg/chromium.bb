@@ -1,5 +1,4 @@
-
-  (function(global) {
+(function(global) {
     'use strict';
 
     var TestHelpers = global.TestHelpers = global.TestHelpers || {};

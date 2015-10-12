@@ -24,6 +24,12 @@ Example:
 Because the `textarea`'s `value` property is not observable, you should use
 this element's `bind-value` instead for imperative updates.
 
+### Styling
+The following custom properties and mixins are available for styling:
+Custom property | Description | Default
+----------------|-------------|----------
+`--iron-autogrow-textarea` | Mixin applied to the textarea | `{}`
+
 @group Iron Elements
 @hero hero.svg
 @demo demo/index.html
@@ -60,6 +66,7 @@ this element's `bind-value` instead for imperative updates.
       font-size: inherit;
       font-family: inherit;
       line-height: inherit;
+      @apply(--iron-autogrow-textarea);
     }
 
     ::content textarea:invalid {
@@ -73,7 +80,7 @@ this element's `bind-value` instead for imperative updates.
 
     <!-- size the input/textarea with a div, because the textarea has intrinsic size in ff -->
     <div class="textarea-container fit">
-      <textarea id="textarea" autocomplete$="[[autocomplete]]" autofocus$="[[autofocus]]" inputmode$="[[inputmode]]" placeholder$="[[placeholder]]" readonly$="[[readonly]]" required$="[[required]]" rows$="[[rows]]" maxlength$="[[maxlength]]"></textarea>
+      <textarea id="textarea" autocomplete$="[[autocomplete]]" autofocus$="[[autofocus]]" inputmode$="[[inputmode]]" placeholder$="[[placeholder]]" readonly$="[[readonly]]" required$="[[required]]" disabled$="[[disabled]]" rows$="[[rows]]" maxlength$="[[maxlength]]"></textarea>
     </div>
   </template>
 </dom-module>
