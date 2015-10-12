@@ -16,8 +16,11 @@ declare_args() {
   is_tsan = false
 
   # Compile for Undefined Behaviour Sanitizer to find various types of
-  # undefined behaviour.
+  # undefined behaviour (excludes vptr checks).
   is_ubsan = false
+
+  # Compile for Undefined Behaviour Sanitizer's vptr checks.
+  is_ubsan_vptr = false
 
   # Track where uninitialized memory originates from. From fastest to slowest:
   # 0 - no tracking, 1 - track only the initial allocation site, 2 - track the
@@ -57,8 +60,8 @@ declare_args() {
   use_custom_libcxx = (is_asan && is_linux) || is_tsan || is_msan || is_ubsan
 }
 
-# TODO(GYP) bug 527515: is_ubsan, is_ubsan_vptr
-using_sanitizer = is_asan || is_lsan || is_tsan || is_msan || is_ubsan
+using_sanitizer =
+    is_asan || is_lsan || is_tsan || is_msan || is_ubsan || is_ubsan_vptr
 
 assert(!using_sanitizer || is_clang,
        "Sanitizers (is_*san) require setting is_clang = true in 'gn args'")
@@ -76,5 +79,6 @@ assert(!using_sanitizer || is_clang,
 # unsupported or unadvisable configurations.
 #
 # For one-off testing, just comment this assertion out.
-assert(!is_debug || !(is_msan || is_lsan || is_tsan || is_ubsan),
-       "Sanitizers should generally be used in release (set is_debug=false).")
+assert(
+    !is_debug || !(is_msan || is_lsan || is_tsan || is_ubsan || is_ubsan_vptr),
+    "Sanitizers should generally be used in release (set is_debug=false).")

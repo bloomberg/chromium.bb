@@ -848,8 +848,8 @@ config("rtti") {
   }
 }
 config("no_rtti") {
-  # CFI diagnostics require RTTI.
-  if (!use_cfi_diag) {
+  # CFI diagnostics and UBsan vptr require RTTI.
+  if (!use_cfi_diag && !is_ubsan_vptr) {
     if (is_win) {
       cflags_cc = [ "/GR-" ]
     } else {
