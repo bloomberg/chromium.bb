@@ -30,6 +30,7 @@
 #include "gpu/command_buffer/client/vertex_array_object_manager.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/common/id_allocator.h"
+#include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/command_buffer/common/trace_event.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -5385,12 +5386,10 @@ void GLES2Implementation::GenSyncTokenCHROMIUM(GLuint64 fence_sync,
     return;
   }
 
-  SyncToken* sync_token_data = reinterpret_cast<SyncToken*>(sync_token);
-  memset(sync_token_data, 0, sizeof(SyncToken));
-
-  sync_token_data->namespace_id = gpu_control_->GetNamespaceID();
-  sync_token_data->command_buffer_id = gpu_control_->GetCommandBufferID();
-  sync_token_data->release_count = fence_sync;
+  // Copy the data over after setting the data to ensure alignment.
+  SyncToken sync_token_data(gpu_control_->GetNamespaceID(),
+                            gpu_control_->GetCommandBufferID(), fence_sync);
+  memcpy(sync_token, &sync_token_data, sizeof(sync_token_data));
 }
 
 void GLES2Implementation::WaitSyncTokenCHROMIUM(const GLbyte* sync_token) {
@@ -5399,11 +5398,12 @@ void GLES2Implementation::WaitSyncTokenCHROMIUM(const GLbyte* sync_token) {
     return;
   };
 
-  const SyncToken* sync_token_data =
-      reinterpret_cast<const SyncToken*>(sync_token);
-  helper_->WaitSyncTokenCHROMIUM(sync_token_data->namespace_id,
-                                 sync_token_data->command_buffer_id,
-                                 sync_token_data->release_count);
+  // Copy the data over before data access to ensure alignment.
+  SyncToken sync_token_data;
+  memcpy(&sync_token_data, sync_token, sizeof(SyncToken));
+  helper_->WaitSyncTokenCHROMIUM(sync_token_data.namespace_id(),
+                                 sync_token_data.command_buffer_id(),
+                                 sync_token_data.release_count());
 }
 
 namespace {

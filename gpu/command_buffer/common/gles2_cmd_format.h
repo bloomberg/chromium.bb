@@ -203,23 +203,6 @@ struct UniformsES3Header {
   // UniformES3Info uniforms[num_uniforms];
 };
 
-// The format of fence sync tokens.
-struct SyncToken {
-  CommandBufferNamespace namespace_id;
-  uint64_t command_buffer_id;
-  uint64_t release_count;
-
-  bool operator<(const SyncToken& other) const {
-    // TODO(dyen): Once all our compilers support c++11, we can replace this
-    // long list of comparisons with std::tie().
-    return (namespace_id < other.namespace_id) ||
-           ((namespace_id == other.namespace_id) &&
-            ((command_buffer_id < other.command_buffer_id) ||
-             ((command_buffer_id == other.command_buffer_id) &&
-              (release_count < other.release_count))));
-  }
-};
-
 // The format of QuerySync used by EXT_occlusion_query_boolean
 struct QuerySync {
   void Reset() {
@@ -313,9 +296,6 @@ static_assert(sizeof(UniformBlocksHeader) == 4,
               "size of UniformBlocksHeader should be 4");
 static_assert(offsetof(UniformBlocksHeader, num_uniform_blocks) == 0,
               "offset of UniformBlocksHeader.num_uniform_blocks should be 0");
-
-static_assert(sizeof(SyncToken) <= GL_SYNC_TOKEN_SIZE_CHROMIUM,
-              "size of SyncToken must not exceed GL_SYNC_TOKEN_SIZE_CHROMIUM");
 
 namespace cmds {
 

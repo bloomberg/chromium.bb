@@ -44,6 +44,7 @@ source_set("common_sources") {
     "mailbox.h",
     "mailbox_holder.cc",
     "mailbox_holder.h",
+    "sync_token.h",
     "thread_local.h",
     "time.h",
     "value_state.cc",

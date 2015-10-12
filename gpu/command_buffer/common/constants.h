@@ -8,11 +8,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-// From glextchromium.h.
-#ifndef GL_SYNC_TOKEN_SIZE_CHROMIUM
-#define GL_SYNC_TOKEN_SIZE_CHROMIUM 24
-#endif
-
 namespace gpu {
 
 typedef int32_t CommandBufferOffset;

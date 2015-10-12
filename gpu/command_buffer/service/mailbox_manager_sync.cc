@@ -9,7 +9,7 @@
 
 #include "base/memory/linked_ptr.h"
 #include "base/synchronization/lock.h"
-#include "gpu/command_buffer/common/gles2_cmd_format.h"
+#include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "ui/gl/gl_fence.h"
 #include "ui/gl/gl_implementation.h"
@@ -41,7 +41,7 @@ void CreateFenceLocked(const SyncToken& sync_token) {
 
   std::queue<SyncTokenToFenceMap::iterator>& sync_points = g_sync_points.Get();
   SyncTokenToFenceMap& sync_point_to_fence = g_sync_point_to_fence.Get();
-  if (sync_token.release_count) {
+  if (sync_token.release_count()) {
     while (!sync_points.empty() &&
            sync_points.front()->second->HasCompleted()) {
       sync_point_to_fence.erase(sync_points.front());

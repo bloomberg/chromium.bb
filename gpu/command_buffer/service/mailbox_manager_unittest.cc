@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/gpu_service_test.h"
 #include "gpu/command_buffer/service/mailbox_manager_impl.h"
@@ -17,8 +18,9 @@ namespace gles2 {
 
 using namespace ::testing;
 
-static const SyncToken g_sync_token = {gpu::CommandBufferNamespace::GPU_IO, 123,
-                                       0};
+static const SyncToken g_sync_token(gpu::CommandBufferNamespace::GPU_IO,
+                                    123,
+                                    0);
 
 class MailboxManagerTest : public GpuServiceTest {
  public:
