@@ -13,6 +13,7 @@
 #include "base/lazy_instance.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/threading/thread_checker.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "components/metrics/proto/chrome_user_metrics_extension.pb.h"
@@ -51,12 +52,13 @@ class TrackingSynchronizer
   // Contact all processes, and get them to upload to the browser any/all
   // changes to profiler data. It calls |callback_object|'s SetData method with
   // the data received from each sub-process.
-  // This method is accessible on UI thread.
+  // This method is accessible on the UI thread.
   static void FetchProfilerDataAsynchronously(
       const base::WeakPtr<TrackingSynchronizerObserver>& callback_object);
 
   // Called when a profiling phase completes. |profiling_event| is the event
   // that triggered the completion of the current phase, and begins a new phase.
+  // This method is accessible on the UI thread.
   static void OnProfilingPhaseCompleted(
       ProfilerEventProto::ProfilerEvent profiling_event);
 
@@ -124,6 +126,10 @@ class TrackingSynchronizer
   // Get a new sequence number to be sent to processes from browser process.
   // This method is accessible on UI thread.
   int GetNextAvailableSequenceNumber();
+
+  // Used to verify that certain methods are called on the UI thread (the thread
+  // on which this object was created).
+  base::ThreadChecker thread_checker_;
 
   // We don't track the actual processes that are contacted for an update, only
   // the count of the number of processes, and we can sometimes time-out and

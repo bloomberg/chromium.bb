@@ -6,16 +6,15 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "base/tracked_objects.h"
 #include "components/metrics/profiler/tracking_synchronizer_observer.h"
 #include "components/variations/variations_associated_data.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/profiler_controller.h"
 #include "content/public/common/process_type.h"
 
 using base::TimeTicks;
-using content::BrowserThread;
 
 namespace metrics {
 
@@ -55,23 +54,23 @@ class TrackingSynchronizer::RequestContext {
   ~RequestContext() {}
 
   void SetReceivedProcessGroupCount(bool done) {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    DCHECK(thread_checker_.CalledOnValidThread());
     received_process_group_count_ = done;
   }
 
   // Methods for book keeping of processes_pending_.
   void IncrementProcessesPending() {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    DCHECK(thread_checker_.CalledOnValidThread());
     ++processes_pending_;
   }
 
   void AddProcessesPending(int processes_pending) {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    DCHECK(thread_checker_.CalledOnValidThread());
     processes_pending_ += processes_pending;
   }
 
   void DecrementProcessesPending() {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    DCHECK(thread_checker_.CalledOnValidThread());
     --processes_pending_;
   }
 
@@ -80,7 +79,7 @@ class TrackingSynchronizer::RequestContext {
   // |processes_pending_| are zero, then delete the current object by calling
   // Unregister.
   void DeleteIfAllDone() {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    DCHECK(thread_checker_.CalledOnValidThread());
 
     if (processes_pending_ <= 0 && received_process_group_count_)
       RequestContext::Unregister(sequence_number_);
@@ -91,8 +90,6 @@ class TrackingSynchronizer::RequestContext {
   static RequestContext* Register(
       int sequence_number,
       const base::WeakPtr<TrackingSynchronizerObserver>& callback_object) {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
     RequestContext* request = new RequestContext(
         callback_object, sequence_number);
     outstanding_requests_.Get()[sequence_number] = request;
@@ -103,8 +100,6 @@ class TrackingSynchronizer::RequestContext {
   // Find the |RequestContext| in |outstanding_requests_| map for the given
   // |sequence_number|.
   static RequestContext* GetRequestContext(int sequence_number) {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
     RequestContextMap::iterator it =
         outstanding_requests_.Get().find(sequence_number);
     if (it == outstanding_requests_.Get().end())
@@ -119,8 +114,6 @@ class TrackingSynchronizer::RequestContext {
   // |outstanding_requests_| map. This method is called when all changes have
   // been acquired, or when the wait time expires (whichever is sooner).
   static void Unregister(int sequence_number) {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
     RequestContextMap::iterator it =
         outstanding_requests_.Get().find(sequence_number);
     if (it == outstanding_requests_.Get().end())
@@ -152,6 +145,10 @@ class TrackingSynchronizer::RequestContext {
       outstanding_requests_.Get().erase(it);
     }
   }
+
+  // Used to verify that methods are called on the UI thread (the thread on
+  // which this object was created).
+  base::ThreadChecker thread_checker_;
 
   // Requests are made to asynchronously send data to the |callback_object_|.
   base::WeakPtr<TrackingSynchronizerObserver> callback_object_;
@@ -210,8 +207,6 @@ TrackingSynchronizer::~TrackingSynchronizer() {
 // static
 void TrackingSynchronizer::FetchProfilerDataAsynchronously(
     const base::WeakPtr<TrackingSynchronizerObserver>& callback_object) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
   if (!g_tracking_synchronizer) {
     // System teardown is happening.
     return;
@@ -222,8 +217,8 @@ void TrackingSynchronizer::FetchProfilerDataAsynchronously(
 
   // Post a task that would be called after waiting for wait_time.  This acts
   // as a watchdog, to cancel the requests for non-responsive processes.
-  BrowserThread::PostDelayedTask(
-      BrowserThread::UI, FROM_HERE,
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
       base::Bind(&RequestContext::Unregister, sequence_number),
       base::TimeDelta::FromMinutes(1));
 }
@@ -231,8 +226,6 @@ void TrackingSynchronizer::FetchProfilerDataAsynchronously(
 // static
 void TrackingSynchronizer::OnProfilingPhaseCompleted(
     ProfilerEventProto::ProfilerEvent profiling_event) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
   if (!g_tracking_synchronizer) {
     // System teardown is happening.
     return;
@@ -245,7 +238,7 @@ void TrackingSynchronizer::OnProfilingPhaseCompleted(
 void TrackingSynchronizer::OnPendingProcesses(int sequence_number,
                                               int pending_processes,
                                               bool end) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   RequestContext* request = RequestContext::GetRequestContext(sequence_number);
   if (!request)
@@ -259,14 +252,14 @@ void TrackingSynchronizer::OnProfilerDataCollected(
     int sequence_number,
     const tracked_objects::ProcessDataSnapshot& profiler_data,
     content::ProcessType process_type) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
   DecrementPendingProcessesAndSendData(sequence_number, profiler_data,
                                        process_type);
 }
 
 int TrackingSynchronizer::RegisterAndNotifyAllProcesses(
     const base::WeakPtr<TrackingSynchronizerObserver>& callback_object) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   int sequence_number = GetNextAvailableSequenceNumber();
 
@@ -309,7 +302,7 @@ void TrackingSynchronizer::RegisterPhaseCompletion(
 
 void TrackingSynchronizer::NotifyAllProcessesOfProfilingPhaseCompletion(
     ProfilerEventProto::ProfilerEvent profiling_event) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   if (variations::GetVariationParamValue("UMALogPhasedProfiling",
                                          "send_split_profiles") == "false") {
@@ -375,7 +368,7 @@ void TrackingSynchronizer::DecrementPendingProcessesAndSendData(
     int sequence_number,
     const tracked_objects::ProcessDataSnapshot& profiler_data,
     content::ProcessType process_type) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   RequestContext* request = RequestContext::GetRequestContext(sequence_number);
   if (!request)
@@ -391,7 +384,7 @@ void TrackingSynchronizer::DecrementPendingProcessesAndSendData(
 }
 
 int TrackingSynchronizer::GetNextAvailableSequenceNumber() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   ++last_used_sequence_number_;
 
