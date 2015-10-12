@@ -348,7 +348,7 @@ NaClManager.prototype.shutdown = function() {
   this.clearTimeout_();
   this.recognizerState_ = ManagerState_.SHUTDOWN;
   if (this.stream_)
-    this.stream_.stop();
+    this.stream_.getAudioTracks()[0].stop();
   this.stream_ = null;
 };
 
