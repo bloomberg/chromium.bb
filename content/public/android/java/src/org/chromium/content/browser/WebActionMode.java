@@ -60,16 +60,6 @@ public class WebActionMode {
     }
 
     /**
-     * Constructs a SelectActionMode instance wrapping a concrete ActionMode.
-     * TODO(jdduke): Remove when downstream references removed.
-     * @param actionMode the wrapped ActionMode.
-     */
-    @Deprecated
-    public WebActionMode(ActionMode actionMode) {
-        this(actionMode, null);
-    }
-
-    /**
      * @see ActionMode#finish()
      */
     public void finish() {
