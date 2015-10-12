@@ -12,7 +12,6 @@
 namespace blink {
 
 GeoNotifier::GeoNotifier(Geolocation* geolocation, PositionCallback* successCallback, PositionErrorCallback* errorCallback, const PositionOptions& options)
-    // FIXME : m_geolocation should be removed, it makes circular dependancy.
     : m_geolocation(geolocation)
     , m_successCallback(successCallback)
     , m_errorCallback(errorCallback)
