@@ -41,8 +41,8 @@
 #include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_prefs.h"
-#include "extensions/browser/extension_system.h"
-#include "extensions/browser/notification_types.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_registry_observer.h"
 #include "extensions/browser/pref_names.h"
 #include "extensions/common/api/app_runtime.h"
 #include "extensions/common/constants.h"
@@ -954,33 +954,36 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, ReloadRelaunches) {
 
 namespace {
 
-// Simple observer to check for
-// NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED events to ensure
-// installation does or does not occur in certain scenarios.
-class CheckExtensionInstalledObserver : public content::NotificationObserver {
+// Utility class to ensure extension installation does or does not occur in
+// certain scenarios.
+class CheckExtensionInstalledObserver
+    : public extensions::ExtensionRegistryObserver {
  public:
-  CheckExtensionInstalledObserver() : seen_(false) {
-    registrar_.Add(
-        this,
-        extensions::NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED,
-        content::NotificationService::AllSources());
+  explicit CheckExtensionInstalledObserver(Profile* profile)
+      : seen_(false), registry_(extensions::ExtensionRegistry::Get(profile)) {
+    registry_->AddObserver(this);
+  }
+  ~CheckExtensionInstalledObserver() override {
+    registry_->RemoveObserver(this);
   }
 
   bool seen() const {
     return seen_;
   }
 
-  // NotificationObserver:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override {
+  // ExtensionRegistryObserver:
+  void OnExtensionWillBeInstalled(content::BrowserContext* browser_context,
+                                  const extensions::Extension* extension,
+                                  bool is_update,
+                                  bool from_ephemeral,
+                                  const std::string& old_name) override {
     EXPECT_FALSE(seen_);
     seen_ = true;
   }
 
  private:
   bool seen_;
-  content::NotificationRegistrar registrar_;
+  extensions::ExtensionRegistry* registry_;
 };
 
 }  // namespace
@@ -991,7 +994,7 @@ class CheckExtensionInstalledObserver : public content::NotificationObserver {
 // the script resource in the opened app window.
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
                        PRE_PRE_ComponentAppBackgroundPage) {
-  CheckExtensionInstalledObserver should_install;
+  CheckExtensionInstalledObserver should_install(browser()->profile());
 
   // Ensure that we wait until the background page is run (to register the
   // OnLaunched listener) before trying to open the application. This is similar
@@ -1025,7 +1028,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
   // in a different observer (which would timeout if not the app was not
   // previously installed properly) and then check this observer to make sure it
   // never saw the NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED event.
-  CheckExtensionInstalledObserver should_not_install;
+  CheckExtensionInstalledObserver should_not_install(browser()->profile());
   const Extension* extension = LoadExtensionAsComponent(
       test_data_dir_.AppendASCII("platform_apps").AppendASCII("component"));
   ASSERT_TRUE(extension);
@@ -1056,7 +1059,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
 // Component App Test 3 of 3: simulate a component extension upgrade that
 // re-adds the OnLaunched event, and allows the app to be launched.
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, ComponentAppBackgroundPage) {
-  CheckExtensionInstalledObserver should_install;
+  CheckExtensionInstalledObserver should_install(browser()->profile());
   // Since we are forcing an upgrade, we need to wait for the load again.
   content::WindowedNotificationObserver app_loaded_observer(
       content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
