@@ -31,8 +31,11 @@ gin::Handle<WaitingCallback> WaitingCallback::Create(
   gin::Handle<WaitingCallback> waiting_callback = gin::CreateHandle(
       isolate, new WaitingCallback(isolate, callback, handle_wrapper));
   waiting_callback->wait_id_ = Environment::GetDefaultAsyncWaiter()->AsyncWait(
-      3, handle_wrapper->get().value(), signals, MOJO_DEADLINE_INDEFINITE,
-      &WaitingCallback::CallOnHandleReady, waiting_callback.get());
+      handle_wrapper->get().value(),
+      signals,
+      MOJO_DEADLINE_INDEFINITE,
+      &WaitingCallback::CallOnHandleReady,
+      waiting_callback.get());
   return waiting_callback;
 }
 

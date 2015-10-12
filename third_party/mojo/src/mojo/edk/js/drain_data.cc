@@ -42,8 +42,11 @@ DrainData::~DrainData() {
 
 void DrainData::WaitForData() {
   wait_id_ = Environment::GetDefaultAsyncWaiter()->AsyncWait(
-      2, handle_.get().value(), MOJO_HANDLE_SIGNAL_READABLE,
-      MOJO_DEADLINE_INDEFINITE, &DrainData::WaitCompleted, this);
+      handle_.get().value(),
+      MOJO_HANDLE_SIGNAL_READABLE,
+      MOJO_DEADLINE_INDEFINITE,
+      &DrainData::WaitCompleted,
+      this);
 }
 
 void DrainData::DataReady(MojoResult result) {

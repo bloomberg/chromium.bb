@@ -35,7 +35,7 @@ void WebMessagePortChannelImpl::CreatePair(
 
 WebMessagePortChannelImpl::WebMessagePortChannelImpl(
     mojo::ScopedMessagePipeHandle pipe)
-    : client_(nullptr), pipe_(pipe.Pass()), handle_watcher_(13) {
+    : client_(nullptr), pipe_(pipe.Pass()) {
   WaitForNextMessage();
 }
 

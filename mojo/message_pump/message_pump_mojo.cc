@@ -38,10 +38,8 @@ MojoDeadline TimeTicksToMojoDeadline(base::TimeTicks time_ticks,
 // State needed for one iteration of WaitMany. The first handle and flags
 // corresponds to that of the control pipe.
 struct MessagePumpMojo::WaitState {
-  // This uses individual vectors for better use with WaitMany().
   std::vector<Handle> handles;
   std::vector<MojoHandleSignals> wait_signals;
-  std::vector<int> locations;
 };
 
 struct MessagePumpMojo::RunState {
@@ -79,8 +77,7 @@ MessagePumpMojo* MessagePumpMojo::current() {
   return g_tls_current_pump.Pointer()->Get();
 }
 
-void MessagePumpMojo::AddHandler(int location,
-                                 MessagePumpMojoHandler* handler,
+void MessagePumpMojo::AddHandler(MessagePumpMojoHandler* handler,
                                  const Handle& handle,
                                  MojoHandleSignals wait_signals,
                                  base::TimeTicks deadline) {
@@ -89,7 +86,6 @@ void MessagePumpMojo::AddHandler(int location,
   // Assume it's an error if someone tries to reregister an existing handle.
   CHECK_EQ(0u, handlers_.count(handle));
   Handler handler_data;
-  handler_data.location = location;
   handler_data.handler = handler;
   handler_data.wait_signals = wait_signals;
   handler_data.deadline = deadline;
@@ -206,12 +202,6 @@ bool MessagePumpMojo::DoInternalWork(const RunState& run_state, bool block) {
         break;
       default:
         base::debug::Alias(&result);
-        base::debug::Alias(&wait_many_result.index);
-        if (wait_many_result.IsIndexValid()) {
-          const int location = wait_state.locations[wait_many_result.index];
-          base::debug::Alias(&location);
-        }
-
         // Unexpected result is likely fatal, crash so we can determine cause.
         CHECK(false);
     }
@@ -271,13 +261,11 @@ MessagePumpMojo::WaitState MessagePumpMojo::GetWaitState(
   WaitState wait_state;
   wait_state.handles.push_back(run_state.read_handle.get());
   wait_state.wait_signals.push_back(MOJO_HANDLE_SIGNAL_READABLE);
-  wait_state.locations.push_back(6);
 
   for (HandleToHandler::const_iterator i = handlers_.begin();
        i != handlers_.end(); ++i) {
     wait_state.handles.push_back(i->first);
     wait_state.wait_signals.push_back(i->second.wait_signals);
-    wait_state.locations.push_back(i->second.location);
   }
   return wait_state;
 }

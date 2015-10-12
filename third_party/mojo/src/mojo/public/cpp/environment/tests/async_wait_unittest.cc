@@ -42,8 +42,11 @@ MojoAsyncWaitID CallAsyncWait(const Handle& handle,
                               MojoHandleSignals signals,
                               TestAsyncWaitCallback* callback) {
   return Environment::GetDefaultAsyncWaiter()->AsyncWait(
-      0, handle.value(), signals, MOJO_DEADLINE_INDEFINITE,
-      &TestAsyncWaitCallback::OnHandleReady, callback);
+      handle.value(),
+      signals,
+      MOJO_DEADLINE_INDEFINITE,
+      &TestAsyncWaitCallback::OnHandleReady,
+      callback);
 }
 
 void CallCancelWait(MojoAsyncWaitID wait_id) {

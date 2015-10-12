@@ -95,7 +95,6 @@ WebURLLoaderImpl::WebURLLoaderImpl(mojo::URLLoaderFactory* url_loader_factory,
     : client_(NULL),
       web_blob_registry_(web_blob_registry),
       referrer_policy_(blink::WebReferrerPolicyDefault),
-      handle_watcher_(15),
       expected_content_length_(-1),
       current_length_(0),
       weak_factory_(this) {

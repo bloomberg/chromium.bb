@@ -60,7 +60,8 @@ TEST(MessagePumpMojo, RunUntilIdle) {
   base::MessageLoop message_loop(MessagePumpMojo::Create());
   CountingMojoHandler handler;
   MessagePipe handles;
-  MessagePumpMojo::current()->AddHandler(0, &handler, handles.handle0.get(),
+  MessagePumpMojo::current()->AddHandler(&handler,
+                                         handles.handle0.get(),
                                          MOJO_HANDLE_SIGNAL_READABLE,
                                          base::TimeTicks());
   WriteMessageRaw(
@@ -80,7 +81,8 @@ TEST(MessagePumpMojo, Observer) {
 
   CountingMojoHandler handler;
   MessagePipe handles;
-  MessagePumpMojo::current()->AddHandler(0, &handler, handles.handle0.get(),
+  MessagePumpMojo::current()->AddHandler(&handler,
+                                         handles.handle0.get(),
                                          MOJO_HANDLE_SIGNAL_READABLE,
                                          base::TimeTicks());
   WriteMessageRaw(
@@ -106,7 +108,9 @@ TEST(MessagePumpMojo, UnregisterAfterDeadline) {
   CountingMojoHandler handler;
   MessagePipe handles;
   MessagePumpMojo::current()->AddHandler(
-      0, &handler, handles.handle0.get(), MOJO_HANDLE_SIGNAL_READABLE,
+      &handler,
+      handles.handle0.get(),
+      MOJO_HANDLE_SIGNAL_READABLE,
       base::TimeTicks::Now() - base::TimeDelta::FromSeconds(1));
   for (int i = 0; i < 2; ++i) {
     base::RunLoop run_loop;

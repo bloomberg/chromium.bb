@@ -50,8 +50,7 @@ class MOJO_MESSAGE_PUMP_EXPORT MessagePumpMojo : public base::MessagePump {
   // Registers a MessagePumpMojoHandler for the specified handle. Only one
   // handler can be registered for a specified handle.
   // NOTE: a value of 0 for |deadline| indicates an indefinite timeout.
-  void AddHandler(int location,
-                  MessagePumpMojoHandler* handler,
+  void AddHandler(MessagePumpMojoHandler* handler,
                   const Handle& handle,
                   MojoHandleSignals wait_signals,
                   base::TimeTicks deadline);
@@ -73,13 +72,8 @@ class MOJO_MESSAGE_PUMP_EXPORT MessagePumpMojo : public base::MessagePump {
 
   // Contains the data needed to track a request to AddHandler().
   struct Handler {
-    Handler()
-        : location(0),
-          handler(nullptr),
-          wait_signals(MOJO_HANDLE_SIGNAL_NONE),
-          id(0) {}
+    Handler() : handler(NULL), wait_signals(MOJO_HANDLE_SIGNAL_NONE), id(0) {}
 
-    int location;
     MessagePumpMojoHandler* handler;
     MojoHandleSignals wait_signals;
     base::TimeTicks deadline;
