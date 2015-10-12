@@ -4,26 +4,6 @@
 
 #include "chrome/browser/notifications/notification.h"
 
-Notification::Notification(const GURL& origin_url,
-                           const base::string16& title,
-                           const base::string16& body,
-                           const gfx::Image& icon,
-                           const base::string16& display_source,
-                           const std::string& tag,
-                           NotificationDelegate* delegate)
-    : message_center::Notification(message_center::NOTIFICATION_TYPE_SIMPLE,
-                                   delegate->id(),
-                                   title,
-                                   body,
-                                   icon,
-                                   display_source,
-                                   origin_url,
-                                   message_center::NotifierId(origin_url),
-                                   message_center::RichNotificationData(),
-                                   delegate),
-      tag_(tag),
-      delegate_(delegate) {}
-
 Notification::Notification(
     message_center::NotificationType type,
     const base::string16& title,

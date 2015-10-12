@@ -23,14 +23,6 @@ class Image;
 // Representation of a notification to be shown to the user.
 class Notification : public message_center::Notification {
  public:
-  Notification(const GURL& origin_url,
-               const base::string16& title,
-               const base::string16& body,
-               const gfx::Image& icon,
-               const base::string16& display_source,
-               const std::string& tag,
-               NotificationDelegate* delegate);
-
   Notification(
       message_center::NotificationType type,
       const base::string16& title,

@@ -17,6 +17,8 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/message_center/notification_types.h"
+#include "ui/message_center/notifier_settings.h"
 
 namespace {
 
@@ -31,6 +33,7 @@ void CloseBalloon(const std::string& id, ProfileID profile_id) {
 
 // Prefix added to the notification ids.
 const char kNotificationPrefix[] = "desktop_notification_balloon.";
+const char kNotifierId[] = "status-icons.desktop-notification-balloon";
 
 // Timeout for automatically dismissing the notification balloon.
 const size_t kTimeoutSeconds = 6;
@@ -83,8 +86,16 @@ void DesktopNotificationBalloon::DisplayBalloon(
 
   NotificationDelegate* delegate =
       new DummyNotificationDelegate(base::IntToString(id_count_++), profile_);
-  Notification notification(GURL(), title, contents, gfx::Image(icon),
-      base::string16(), std::string(), delegate);
+  // TODO(johnme): In theory the desktop notification balloon class can be used
+  // by lots of other features, which would not fall under a single system
+  // component id. So callers should pass in the notifier_id to be used here,
+  // see https://crbug.com/542232
+  Notification notification(message_center::NOTIFICATION_TYPE_SIMPLE, title,
+      contents, gfx::Image(icon),
+      message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
+                                 kNotifierId),
+      base::string16(), GURL(), std::string(),
+      message_center::RichNotificationData(), delegate);
 
   g_browser_process->notification_ui_manager()->Add(notification, profile);
 

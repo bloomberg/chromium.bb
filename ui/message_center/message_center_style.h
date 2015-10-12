@@ -101,7 +101,7 @@ extern const size_t kNotificationMaximumItems;     // For list notifications.
 // Timing.
 extern const int kAutocloseDefaultDelaySeconds;
 extern const int kAutocloseHighPriorityDelaySeconds;
-extern const int kAutocloseWebNotificationDelaySeconds;
+extern const int kAutocloseWebPageDelaySeconds;
 
 // Buttons.
 const int kButtonHeight = 38;              // In DIPs.

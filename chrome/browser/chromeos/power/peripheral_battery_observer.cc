@@ -40,6 +40,7 @@ const int kLowBatteryLevel = 15;
 const int kNotificationIntervalSec = 60;
 
 const char kNotificationOriginUrl[] = "chrome://peripheral-battery";
+const char kNotifierId[] = "power.peripheral-battery";
 
 // HID Bluetooth device's battery sysfs entry path looks like
 // "/sys/class/power_supply/hid-AA:BB:CC:DD:EE:FF-battery".
@@ -212,7 +213,8 @@ bool PeripheralBatteryObserver::PostNotification(const std::string& address,
       message_center::NOTIFICATION_TYPE_SIMPLE, base::UTF8ToUTF16(battery.name),
       string_text, ui::ResourceBundle::GetSharedInstance().GetImageNamed(
                        IDR_NOTIFICATION_PERIPHERAL_BATTERY_LOW),
-      message_center::NotifierId(GURL(kNotificationOriginUrl)),
+      message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
+                                 kNotifierId),
       base::string16(), GURL(kNotificationOriginUrl), address,
       message_center::RichNotificationData(),
       new PeripheralBatteryNotificationDelegate(address));

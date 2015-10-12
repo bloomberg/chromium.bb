@@ -36,6 +36,7 @@
 #include "content/public/common/platform_notification_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/message_center/notification_types.h"
 #include "ui/message_center/notifier_settings.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "url/url_constants.h"
@@ -355,9 +356,11 @@ Notification PlatformNotificationServiceImpl::CreateNotificationFromData(
   // different pixel density. Be smarter about this when the API gets updated
   // with a way for developers to specify images of different resolutions.
   Notification notification(
-      origin, notification_data.title, notification_data.body,
-      gfx::Image::CreateFrom1xBitmap(icon), base::UTF8ToUTF16(origin.host()),
-      notification_data.tag, delegate);
+      message_center::NOTIFICATION_TYPE_SIMPLE, notification_data.title,
+      notification_data.body, gfx::Image::CreateFrom1xBitmap(icon),
+      message_center::NotifierId(origin), base::UTF8ToUTF16(origin.host()),
+      origin, notification_data.tag, message_center::RichNotificationData(),
+      delegate);
 
   notification.set_context_message(
       DisplayNameForContextMessage(profile, origin));
@@ -386,8 +389,6 @@ Notification PlatformNotificationServiceImpl::CreateNotificationFromData(
 #endif  // !defined(OS_ANDROID)
 
   notification.set_buttons(buttons);
-
-  notification.set_is_web_notification(true);
 
   // On desktop, notifications with require_interaction==true stay on-screen
   // rather than minimizing to the notification center after a timeout.

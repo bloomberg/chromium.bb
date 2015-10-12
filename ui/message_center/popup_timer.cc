@@ -16,10 +16,10 @@ namespace message_center {
 namespace {
 
 base::TimeDelta GetTimeoutForNotification(Notification* notification) {
-  if (notification->priority() > message_center::DEFAULT_PRIORITY)
+  if (notification->priority() > DEFAULT_PRIORITY)
     return base::TimeDelta::FromSeconds(kAutocloseHighPriorityDelaySeconds);
-  if (notification->is_web_notification())
-    return base::TimeDelta::FromSeconds(kAutocloseWebNotificationDelaySeconds);
+  if (notification->notifier_id().type == NotifierId::WEB_PAGE)
+    return base::TimeDelta::FromSeconds(kAutocloseWebPageDelaySeconds);
   return base::TimeDelta::FromSeconds(kAutocloseDefaultDelaySeconds);
 }
 

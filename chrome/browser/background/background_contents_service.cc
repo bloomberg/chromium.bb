@@ -58,6 +58,8 @@
 
 #if defined(ENABLE_NOTIFICATIONS)
 #include "ui/message_center/message_center.h"
+#include "ui/message_center/notification_types.h"
+#include "ui/message_center/notifier_settings.h"
 #endif
 
 using content::SiteInstance;
@@ -69,6 +71,7 @@ using extensions::UnloadedExtensionInfo;
 namespace {
 
 const char kNotificationPrefix[] = "app.background.crashed.";
+const char kNotifierId[] = "app.background.crashed";
 bool g_disable_close_balloon_for_testing = false;
 
 void CloseBalloon(const std::string& balloon_id, ProfileID profile_id) {
@@ -170,12 +173,17 @@ void NotificationImageReady(
   // Origin URL must be different from the crashed extension to avoid the
   // conflict. NotificationSystemObserver will cancel all notifications from
   // the same origin when NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED.
-  Notification notification(GURL("chrome://extension-crash"),
+  Notification notification(message_center::NOTIFICATION_TYPE_SIMPLE,
                             base::string16(),
                             message,
                             notification_icon,
+                            message_center::NotifierId(
+                                message_center::NotifierId::SYSTEM_COMPONENT,
+                                kNotifierId),
                             base::string16(),
+                            GURL("chrome://extension-crash"),
                             delegate->id(),
+                            message_center::RichNotificationData(),
                             delegate.get());
 
   g_browser_process->notification_ui_manager()->Add(notification, profile);

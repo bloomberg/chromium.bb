@@ -22,6 +22,8 @@
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_switches.h"
 #include "ui/message_center/message_center_types.h"
+#include "ui/message_center/notification_types.h"
+#include "ui/message_center/notifier_settings.h"
 
 class TestAddObserver : public message_center::MessageCenterObserver {
  public:
@@ -103,12 +105,15 @@ class MessageCenterNotificationsTest : public InProcessBrowserTest {
       new_delegate->AddRef();
     }
 
-    return Notification(GURL("chrome-test://testing/"),
+    return Notification(message_center::NOTIFICATION_TYPE_SIMPLE,
                         base::ASCIIToUTF16("title"),
                         base::ASCIIToUTF16("message"),
                         gfx::Image(),
+                        message_center::NotifierId(),
                         base::UTF8ToUTF16("chrome-test://testing/"),
+                        GURL("chrome-test://testing/"),
                         "REPLACE-ME",
+                        message_center::RichNotificationData(),
                         new_delegate);
   }
 

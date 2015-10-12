@@ -22,6 +22,7 @@
 #include "ui/message_center/message_center_impl.h"
 #include "ui/message_center/message_center_tray.h"
 #include "ui/message_center/message_center_types.h"
+#include "ui/message_center/notification_types.h"
 #include "ui/message_center/notifier_settings.h"
 
 #if defined(OS_CHROMEOS)
@@ -77,12 +78,15 @@ class MessageCenterNotificationManagerTest : public BrowserWithTestWindowTest {
 
   const ::Notification GetANotification(const std::string& id) {
     return ::Notification(
-        GURL("chrome-extension://adflkjsdflkdsfdsflkjdsflkdjfs"),
+        message_center::NOTIFICATION_TYPE_SIMPLE,
         base::string16(),
         base::string16(),
         gfx::Image(),
+        NotifierId(NotifierId::APPLICATION, "adflkjsdflkdsfdsflkjdsflkdjfs"),
         base::string16(),
+        GURL("chrome-extension://adflkjsdflkdsfdsflkjdsflkdjfs"),
         id,
+        message_center::RichNotificationData(),
         new MockNotificationDelegate(id));
   }
 
