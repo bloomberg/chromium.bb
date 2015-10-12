@@ -215,17 +215,7 @@ MojoResult DataPipeConsumerDispatcher::BeginReadDataImplNoLock(
       (flags & MOJO_READ_DATA_FLAG_PEEK))
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  bool all_or_none = flags & MOJO_READ_DATA_FLAG_ALL_OR_NONE;
-  uint32_t min_num_bytes_to_read = 0;
-  if (all_or_none) {
-    min_num_bytes_to_read = *buffer_num_bytes;
-    if (min_num_bytes_to_read % options_.element_num_bytes != 0)
-      return MOJO_RESULT_INVALID_ARGUMENT;
-  }
-
   uint32_t max_num_bytes_to_read = static_cast<uint32_t>(data_.size());
-  if (min_num_bytes_to_read > max_num_bytes_to_read)
-    return error_ ? MOJO_RESULT_FAILED_PRECONDITION : MOJO_RESULT_OUT_OF_RANGE;
   if (max_num_bytes_to_read == 0)
     return error_ ? MOJO_RESULT_FAILED_PRECONDITION : MOJO_RESULT_SHOULD_WAIT;
 
@@ -243,6 +233,7 @@ MojoResult DataPipeConsumerDispatcher::EndReadDataImplNoLock(
   if (!in_two_phase_read_)
     return MOJO_RESULT_FAILED_PRECONDITION;
 
+  HandleSignalsState old_state = GetHandleSignalsStateImplNoLock();
   MojoResult rv;
   if (num_bytes_read > two_phase_max_bytes_read_ ||
       num_bytes_read % options_.element_num_bytes != 0) {
@@ -255,10 +246,8 @@ MojoResult DataPipeConsumerDispatcher::EndReadDataImplNoLock(
   in_two_phase_read_ = false;
   two_phase_max_bytes_read_ = 0;
 
-  // If we're now readable, we *became* readable (since we weren't readable
-  // during the two-phase read), so awake consumer awakables.
   HandleSignalsState new_state = GetHandleSignalsStateImplNoLock();
-  if (new_state.satisfies(MOJO_HANDLE_SIGNAL_READABLE))
+  if (!new_state.equals(old_state))
     awakable_list_.AwakeForStateChange(new_state);
 
   return rv;

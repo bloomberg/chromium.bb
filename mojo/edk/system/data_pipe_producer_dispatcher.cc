@@ -164,19 +164,6 @@ MojoResult DataPipeProducerDispatcher::BeginWriteDataImplNoLock(
   if (error_)
     return MOJO_RESULT_FAILED_PRECONDITION;
 
-  bool all_or_none = flags & MOJO_WRITE_DATA_FLAG_ALL_OR_NONE;
-  uint32_t min_num_bytes_to_write = 0;
-  if (all_or_none) {
-    min_num_bytes_to_write = *buffer_num_bytes;
-    if (min_num_bytes_to_write % options_.element_num_bytes != 0)
-      return MOJO_RESULT_INVALID_ARGUMENT;
-    if (min_num_bytes_to_write > options_.capacity_num_bytes) {
-      // Don't return "should wait" since you can't wait for a specified amount
-      // of data.
-      return MOJO_RESULT_OUT_OF_RANGE;
-    }
-  }
-
   // See comment in WriteDataImplNoLock about ignoring capacity_num_bytes.
   if (*buffer_num_bytes == 0)
     *buffer_num_bytes = options_.capacity_num_bytes;
