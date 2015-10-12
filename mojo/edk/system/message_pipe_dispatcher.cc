@@ -266,7 +266,7 @@ scoped_refptr<MessagePipeDispatcher> MessagePipeDispatcher::Deserialize(
 
     // TODO(jam): Copied below from RawChannelWin. See commment above
     // GetReadPlatformHandles.
-    ScopedPlatformHandleVectorPtr platform_handles;
+    ScopedPlatformHandleVectorPtr temp_platform_handles;
     if (message_view.transport_data_buffer()) {
       size_t num_platform_handles;
       const void* platform_handle_table;
@@ -275,10 +275,10 @@ scoped_refptr<MessagePipeDispatcher> MessagePipeDispatcher::Deserialize(
           &platform_handle_table);
 
       if (num_platform_handles > 0) {
-        platform_handles =
+        temp_platform_handles =
             GetReadPlatformHandles(num_platform_handles,
                                     platform_handle_table).Pass();
-        if (!platform_handles) {
+        if (!temp_platform_handles) {
           LOG(ERROR) << "Invalid number of platform handles received";
           return nullptr;
         }
@@ -292,7 +292,8 @@ scoped_refptr<MessagePipeDispatcher> MessagePipeDispatcher::Deserialize(
       DCHECK(message_view.transport_data_buffer());
       message->SetDispatchers(TransportData::DeserializeDispatchers(
           message_view.transport_data_buffer(),
-          message_view.transport_data_buffer_size(), platform_handles.Pass()));
+          message_view.transport_data_buffer_size(),
+          temp_platform_handles.Pass()));
     }
 
     rv->message_queue_.AddMessage(message.Pass());

@@ -546,7 +546,7 @@ MojoResult Core::WaitManyInternal(const MojoHandle* handles,
   for (uint32_t i = 0; i < num_handles; i++) {
     scoped_refptr<Dispatcher> dispatcher = GetDispatcher(handles[i]);
     if (!dispatcher) {
-      if (result_index && result_index)
+      if (result_index)
         *result_index = i;
       return MOJO_RESULT_INVALID_ARGUMENT;
     }
