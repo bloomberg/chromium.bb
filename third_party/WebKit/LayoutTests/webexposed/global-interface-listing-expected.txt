@@ -1481,6 +1481,10 @@ interface GamepadButton
 interface GamepadEvent
     getter gamepad
     method constructor
+interface HMDVRDevice
+    method constructor
+    method getEyeParameters
+    method setFieldOfView
 interface HTMLAllCollection
     getter length
     method constructor
@@ -3444,6 +3448,7 @@ interface Navigator
     method getBattery
     method getGamepads
     method getStorageUpdates
+    method getVRDevices
     method isProtocolHandlerRegistered
     method javaEnabled
     method registerProtocolHandler
@@ -3745,6 +3750,11 @@ interface PluginArray
 interface PopStateEvent
     getter state
     method constructor
+interface PositionSensorVRDevice
+    method constructor
+    method getImmediateState
+    method getState
+    method resetSensor
 interface Presentation
     getter defaultRequest
     getter receiver
@@ -5582,6 +5592,38 @@ interface USBInterface
 interface USBOutTransferResult
     getter bytesWritten
     getter status
+    method constructor
+interface VRDevice
+    getter deviceId
+    getter deviceName
+    getter hardwareUnitId
+    method constructor
+interface VREyeParameters
+    getter currentFieldOfView
+    getter eyeTranslation
+    getter maximumFieldOfView
+    getter minimumFieldOfView
+    getter recommendedFieldOfView
+    getter renderRect
+    method constructor
+interface VRFieldOfView
+    getter downDegrees
+    getter leftDegrees
+    getter rightDegrees
+    getter upDegrees
+    method constructor
+    setter downDegrees
+    setter leftDegrees
+    setter rightDegrees
+    setter upDegrees
+interface VRPositionState
+    getter angularAcceleration
+    getter angularVelocity
+    getter linearAcceleration
+    getter linearVelocity
+    getter orientation
+    getter position
+    getter timeStamp
     method constructor
 interface VTTCue
     getter align
