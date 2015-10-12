@@ -155,6 +155,8 @@
         'ipc_test_channel_listener.h',
         'ipc_test_sink.cc',
         'ipc_test_sink.h',
+        'test_util_mac.cc',
+        'test_util_mac.h',
       ],
     },
   ],
