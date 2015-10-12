@@ -75,6 +75,9 @@ class WebRtcAudioDebugRecordingsBrowserTest : public WebRtcContentBrowserTest {
 #elif defined(OS_ANDROID) && defined(ADDRESS_SANITIZER)
 // Renderer crashes under Android ASAN: https://crbug.com/408496.
 #define MAYBE_CallWithAudioDebugRecordings DISABLED_CallWithAudioDebugRecordings
+#elif defined(OS_ANDROID)
+// Renderer crashes on Android M. https://crbug.com/535728.
+#define MAYBE_CallWithAudioDebugRecordings DISABLED_CallWithAudioDebugRecordings
 #else
 #define MAYBE_CallWithAudioDebugRecordings CallWithAudioDebugRecordings
 #endif
