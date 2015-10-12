@@ -21,7 +21,7 @@ struct PaintInfo;
 class BoxBorderPainter {
     STACK_ALLOCATED();
 public:
-    BoxBorderPainter(const LayoutRect& borderRect, const ComputedStyle&, const IntRect& clipRect,
+    BoxBorderPainter(const LayoutRect& borderRect, const ComputedStyle&,
         BackgroundBleedAvoidance, bool includeLogicalLeftEdge, bool includeLogicalRightEdge);
 
     BoxBorderPainter(const ComputedStyle&, const LayoutRect& outer, const LayoutRect& inner,

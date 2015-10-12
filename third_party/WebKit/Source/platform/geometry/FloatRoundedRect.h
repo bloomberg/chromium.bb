@@ -85,7 +85,7 @@ public:
 
 #ifndef NDEBUG
         // Prints debugging information.
-        void show();
+        void show() const;
 #endif
 
     private:
@@ -151,7 +151,7 @@ public:
 
 #ifndef NDEBUG
     // Prints debugging information.
-    void show();
+    void show() const;
 #endif
 
     // Constrains the radii to be no more than the size of rect(); radii outside of this range are not

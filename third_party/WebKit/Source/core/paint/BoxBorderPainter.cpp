@@ -512,7 +512,7 @@ bool BoxBorderPainter::paintBorderFastPath(GraphicsContext* context, const Layou
 }
 
 BoxBorderPainter::BoxBorderPainter(const LayoutRect& borderRect, const ComputedStyle& style,
-    const IntRect& clipRect, BackgroundBleedAvoidance bleedAvoidance, bool includeLogicalLeftEdge,
+    BackgroundBleedAvoidance bleedAvoidance, bool includeLogicalLeftEdge,
     bool includeLogicalRightEdge)
     : m_style(style)
     , m_bleedAvoidance(bleedAvoidance)
@@ -536,15 +536,6 @@ BoxBorderPainter::BoxBorderPainter(const LayoutRect& borderRect, const ComputedS
 
     m_outer = m_style.getRoundedBorderFor(borderRect, includeLogicalLeftEdge, includeLogicalRightEdge);
     m_inner = m_style.getRoundedInnerBorderFor(borderRect, includeLogicalLeftEdge, includeLogicalRightEdge);
-
-    // If no corner intersects the clip region, we can pretend the outer border is
-    // rectangular to improve performance.
-    // FIXME: why is this predicated on uniform style & solid edges?
-    if (m_isUniformStyle
-        && firstEdge().borderStyle() == SOLID
-        && m_outer.isRounded()
-        && BoxPainter::allCornersClippedOut(m_outer, clipRect))
-        m_outer.setRadii(FloatRoundedRect::Radii());
 
     m_isRounded = m_outer.isRounded();
 }

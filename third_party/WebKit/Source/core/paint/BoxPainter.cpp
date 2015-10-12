@@ -575,38 +575,6 @@ bool BoxPainter::paintNinePieceImage(const LayoutBoxModelObject& obj, GraphicsCo
     return ninePieceImagePainter.paint(graphicsContext, rect, style, ninePieceImage, op);
 }
 
-bool BoxPainter::allCornersClippedOut(const FloatRoundedRect& border, const IntRect& intClipRect)
-{
-    LayoutRect boundingRect(border.rect());
-    LayoutRect clipRect(intClipRect);
-    if (clipRect.contains(boundingRect))
-        return false;
-
-    FloatRoundedRect::Radii radii = border.radii();
-
-    LayoutRect topLeftRect(boundingRect.location(), LayoutSize(radii.topLeft()));
-    if (clipRect.intersects(topLeftRect))
-        return false;
-
-    LayoutRect topRightRect(boundingRect.location(), LayoutSize(radii.topRight()));
-    topRightRect.setX(boundingRect.maxX() - topRightRect.width());
-    if (clipRect.intersects(topRightRect))
-        return false;
-
-    LayoutRect bottomLeftRect(boundingRect.location(), LayoutSize(radii.bottomLeft()));
-    bottomLeftRect.setY(boundingRect.maxY() - bottomLeftRect.height());
-    if (clipRect.intersects(bottomLeftRect))
-        return false;
-
-    LayoutRect bottomRightRect(boundingRect.location(), LayoutSize(radii.bottomRight()));
-    bottomRightRect.setX(boundingRect.maxX() - bottomRightRect.width());
-    bottomRightRect.setY(boundingRect.maxY() - bottomRightRect.height());
-    if (clipRect.intersects(bottomRightRect))
-        return false;
-
-    return true;
-}
-
 void BoxPainter::paintBorder(const LayoutBoxModelObject& obj, const PaintInfo& info,
     const LayoutRect& rect, const ComputedStyle& style, BackgroundBleedAvoidance bleedAvoidance,
     bool includeLogicalLeftEdge, bool includeLogicalRightEdge)
@@ -615,7 +583,7 @@ void BoxPainter::paintBorder(const LayoutBoxModelObject& obj, const PaintInfo& i
     if (paintNinePieceImage(obj, info.context, rect, style, style.borderImage()))
         return;
 
-    const BoxBorderPainter borderPainter(rect, style, info.rect, bleedAvoidance,
+    const BoxBorderPainter borderPainter(rect, style, bleedAvoidance,
         includeLogicalLeftEdge, includeLogicalRightEdge);
     borderPainter.paintBorder(info, rect);
 }
@@ -703,22 +671,18 @@ void BoxPainter::paintBoxShadow(const PaintInfo& info, const LayoutRect& paintRe
                 else
                     influenceRect.shrinkRadii(-changeAmount);
 
-                if (allCornersClippedOut(influenceRect, info.rect)) {
-                    context->fillRect(fillRect, Color::black);
-                } else {
-                    // TODO: support non-integer shadows - crbug.com/334829
-                    FloatRoundedRect roundedFillRect = border;
-                    roundedFillRect.inflate(shadowSpread);
+                // TODO: support non-integer shadows - crbug.com/334829
+                FloatRoundedRect roundedFillRect = border;
+                roundedFillRect.inflate(shadowSpread);
 
-                    if (shadowSpread >= 0)
-                        roundedFillRect.expandRadii(shadowSpread);
-                    else
-                        roundedFillRect.shrinkRadii(-shadowSpread);
-                    if (!roundedFillRect.isRenderable())
-                        roundedFillRect.adjustRadii();
-                    roundedFillRect.constrainRadii();
-                    context->fillRoundedRect(roundedFillRect, Color::black);
-                }
+                if (shadowSpread >= 0)
+                    roundedFillRect.expandRadii(shadowSpread);
+                else
+                    roundedFillRect.shrinkRadii(-shadowSpread);
+                if (!roundedFillRect.isRenderable())
+                    roundedFillRect.adjustRadii();
+                roundedFillRect.constrainRadii();
+                context->fillRoundedRect(roundedFillRect, Color::black);
             } else {
                 context->fillRect(fillRect, Color::black);
             }

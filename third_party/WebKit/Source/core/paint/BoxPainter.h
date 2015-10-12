@@ -42,7 +42,6 @@ public:
     static bool paintNinePieceImage(const LayoutBoxModelObject&, GraphicsContext*, const LayoutRect&, const ComputedStyle&, const NinePieceImage&, SkXfermode::Mode = SkXfermode::kSrcOver_Mode);
     static void paintBorder(const LayoutBoxModelObject&, const PaintInfo&, const LayoutRect&, const ComputedStyle&, BackgroundBleedAvoidance = BackgroundBleedNone, bool includeLogicalLeftEdge = true, bool includeLogicalRightEdge = true);
     static void paintBoxShadow(const PaintInfo&, const LayoutRect&, const ComputedStyle&, ShadowStyle, bool includeLogicalLeftEdge = true, bool includeLogicalRightEdge = true);
-    static bool allCornersClippedOut(const FloatRoundedRect& border, const IntRect& clipRect);
     static bool shouldForceWhiteBackgroundForPrintEconomy(const ComputedStyle&, const Document&);
 
 private:

@@ -142,7 +142,7 @@ void FloatRoundedRect::Radii::expand(float topWidth, float bottomWidth, float le
 }
 
 #ifndef NDEBUG
-void FloatRoundedRect::Radii::show()
+void FloatRoundedRect::Radii::show() const
 {
     fprintf(stderr, "topLeft=[%f,%f], topRight=[%f,%f], bottomLeft=[%f,%f], bottomRight=[%f,%f]\n",
         topLeft().width(), topLeft().height(), topRight().width(), topRight().height(),
@@ -351,7 +351,7 @@ void FloatRoundedRect::adjustRadii()
 }
 
 #ifndef NDEBUG
-void FloatRoundedRect::show()
+void FloatRoundedRect::show() const
 {
     fprintf(stderr, "FloatRoundedRect:\n rect: ");
     m_rect.show();
