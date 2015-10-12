@@ -51465,6 +51465,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WebRTC.Video.OnewayDelayInMs" units="ms">
+  <owner>asapersson@chromium.org</owner>
+  <summary>
+    Average delay (network delay (rtt/2) + jitter delay + decode time + render
+    delay) for a received video stream. Recorded when a stream is removed.
+  </summary>
+</histogram>
+
 <histogram name="WebRTC.Video.PaddingBitrateReceivedInKbps" units="kbps">
   <owner>asapersson@chromium.org</owner>
   <summary>
@@ -51548,6 +51556,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     The number of sent frames to the renderer per second for a received video
     stream. Recorded when a stream is removed. The total number of frames is
     divided by the time the video stream exists.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Video.RenderSqrtPixelsPerSecond" units="pps">
+  <owner>asapersson@chromium.org</owner>
+  <summary>
+    The number of pixels (sqrt(width*height)) of sent frames to the renderer per
+    second for a received video stream. Recorded when a stream is removed. The
+    total number of pixels is divided by the time the video stream exists.
   </summary>
 </histogram>
 
