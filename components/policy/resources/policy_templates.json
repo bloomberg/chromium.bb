@@ -35,6 +35,17 @@
 #   'external' - a policy that references external data.
 #     NOTE: This type is currently supported on Chrome OS only.
 #
+# Each policy is tagged with risk tags that indicate potential privacy or
+# security risks. They are defined at the beginning of this file (tag
+# 'risk_tag_definitions').
+# Each risk tag contains the following information:
+#   - name: The name of the risk tag. May not contain spaces.
+#   - description: Description for developers so they know which tags apply to
+#       newly added policies.
+#   - user-description: A text that helps users understand what a policy with
+#       this tag means for their privacy and/or security.
+# TODO(fhorschig|tnagel): Revisit policy tags after reviews.
+#
 # Policy group descriptions, policy captions and similar texts are localized
 # strings taken from the <message> nodes of the .grd file. Their name
 # attributes are generated from the JSON keys.
@@ -144,6 +155,63 @@
 #   is applied as mandatory policy unless a different setting is received from
 #   the cloud.
 #
+  'risk_tag_definitions' : [
+    # All following tags are ordered by severity of their impact.
+    # TODO(fhorschig|tnagel): Revisit user-descriptions after reviews.
+    {
+      'name': 'full-admin-access',
+      'description': '''Policies with this tag enable an administrator to
+      execute arbitrary code or configure a machine in a way that a
+      man-in-the-middle situation can occur.''',
+      'user-description': '''Your administrator has set up certificates or applications that could potentially access all of your data.
+      This could possibly allow inspecting and modifying all data sent and received by Chrome.'''
+    },
+    {
+      'name': 'system-security',
+      'description': '''Policies with this tag can make the user vulnerable
+      against attacks which are not possible when the policies are unset.
+      This includes execution of deprecated code or unsafe configuration of
+      network settings and proxies.''',
+      'user-description': '''Policy set by your administrator could enable functionality that is outdated or that could reduce the security of the system in other ways.'''
+    },
+    {
+      'name': 'website-sharing',
+      'description': '''Setting Policies with this tag will allow sharing
+      information with a server that would normally not be allowed.
+      Those information can include geolocation, audio/video device inputs or
+      data that can be used to identify the user.''',
+      'user-description': '''Policy set by your administrator could enable sharing of data with websites.
+      Some of these data might suffice to identify you or could be used to record private information.'''
+    },
+    {
+      'name': 'admin-sharing',
+      'description': '''Policies with this tag enable an administrator to log
+      the user's activity or traffic.''',
+      'user-description': '''Policy configured by your administrator might allow them to gather general information about your device and your activity.'''
+    },
+    {
+      'name': 'filtering',
+      'description': '''Policies with this tag can restrict the information a
+      user can query from the world-wide web. This includes blocked websites,
+      enforced search settings and partly data synchronization.''',
+      'user-description': '''Your administrator has set up policy that may restrict your access to websites, services or search results.'''
+    },
+    {
+      'name': 'local-data-access',
+      'description': '''Policies with this tag can cause storing data to or
+      reading data from a local file system without the user's knowledge. This
+      includes import of existing settings to the cloud or avoiding clean-up of
+      local history data.''',
+      'user-description': '''Your administrator has set up policy that could cause private data to be imported from your system or could cause private data to be written to an admin-specified place.'''
+    },
+    {
+      'name': 'google-sharing',
+      'description': '''Set policies might enforce sharing data with google,
+      like crash reports or history.''',
+      'user-description': '''There are policies set by your administrator which can affect the communication with Google services.
+      Therefore, some services could either be unreachable or you might not be able to restrict sent data.'''
+    }
+  ],
   'policy_definitions': [
     {
       'name': 'Homepage',
@@ -166,6 +234,7 @@
           'example_value': 'https://www.chromium.org',
           'id': 1,
           'caption': '''Configure the home page URL''',
+          'tags': [],
           'desc': '''Configures the default home page URL in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing it.
 
           The home page is the page opened by the Home button. The pages that open on startup are controlled by the RestoreOnStartup policies.
@@ -193,6 +262,7 @@
           'example_value': True,
           'id': 2,
           'caption': '''Use New Tab Page as homepage''',
+          'tags': [],
           'desc': '''Configures the type of the default home page in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing home page preferences. The home page can either be set to a URL you specify or set to the New Tab Page.
 
           If you enable this setting, the New Tab Page is always used for the home page, and the home page URL location is ignored.
@@ -220,6 +290,7 @@
       'example_value': True,
       'id': 3,
       'caption': '''Set <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> as Default Browser''',
+      'tags': [],
       'desc': '''Configures the default browser checks in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing them.
 
       If you enable this setting, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will always check on startup whether it is the default browser and automatically register itself if possible.
@@ -242,6 +313,7 @@
       'example_value': 'en',
       'id': 4,
       'caption': '''Application locale''',
+      'tags': [],
       'desc': '''Configures the application locale in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing the locale.
 
       If you enable this setting, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> uses the specified locale. If the configured locale is not supported, 'en-US' is used instead.
@@ -266,6 +338,7 @@
       'example_value': True,
       'id': 5,
       'caption': '''Enable alternate error pages''',
+      'tags': [],
       'desc': '''Enables the use of alternate error pages that are built into <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> (such as 'page not found') and prevents users from changing this setting.
 
       If you enable this setting, alternate error pages are used.
@@ -294,6 +367,7 @@
       'example_value': True,
       'id': 6,
       'caption': '''Enable search suggestions''',
+      'tags': [],
       'desc': '''Enables search suggestions in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s omnibox and prevents users from changing this setting.
 
       If you enable this setting, search suggestions are used.
@@ -317,6 +391,7 @@
       'example_value': True,
       'id': 7,
       'caption': '''Enable network prediction''',
+      'tags': [],
       'desc': '''Enables network prediction in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing this setting.
 
       This controls not only DNS prefetching but also TCP and SSL preconnection and prerendering of web pages. The policy name refers to DNS prefetching for historical reasons.
@@ -359,6 +434,7 @@
       'example_value': 1,
       'id': 273,
       'caption': '''Enable network prediction''',
+      'tags': [],
       'desc': '''Enables network prediction in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing this setting.
 
       This controls DNS prefetching, TCP and SSL preconnection and prerendering of web pages.
@@ -379,6 +455,7 @@
       'example_value': True,
       'id': 261,
       'caption': '''Enable WPAD optimization''',
+      'tags': ['system-security'],
       'desc': '''Allows to turn off WPAD (Web Proxy Auto-Discovery) optimization in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
       If this policy is set to false, WPAD optimization is disabled causing <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> to wait longer for DNS-based WPAD servers.  If the policy is not set or is enabled, WPAD optimization is enabled.
@@ -397,6 +474,7 @@
       'example_value': True,
       'id': 8,
       'caption': '''Disable SPDY protocol''',
+      'tags': [],
       'desc': '''Disables use of the SPDY protocol in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
       If this policy is enabled the SPDY protocol will not be available in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
@@ -421,6 +499,7 @@
       'example_value': ['file', 'https'],
       'id': 85,
       'caption': '''Disable URL protocol schemes''',
+      'tags': [],
       'desc': '''This policy is deprecated, please use URLBlacklist instead.
 
       Disables the listed protocol schemes in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
@@ -443,6 +522,7 @@
       'example_value': True,
       'id': 9,
       'caption': '''Enable JavaScript''',
+      'tags': [],
       'desc': '''This policy is deprecated, please use DefaultJavaScriptSetting instead.
 
       Can be used to disabled JavaScript in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
@@ -464,6 +544,7 @@
       'example_value': False,
       'id': 10,
       'caption': '''Enable Incognito mode''',
+      'tags': [],
       'desc': '''This policy is deprecated. Please, use IncognitoModeAvailability instead.
       Enables Incognito mode in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
@@ -509,6 +590,7 @@
       'example_value': 1,
       'id': 93,
       'caption': '''Incognito mode availability''',
+      'tags': ['filtering'],
       'desc': '''Specifies whether the user may open pages in Incognito mode in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
       If 'Enabled' is selected or the policy is left unset, pages may be opened in Incognito mode.
@@ -529,6 +611,7 @@
       'example_value': True,
       'id': 11,
       'caption': '''Disable saving browser history''',
+      'tags': [],
       'desc': '''Disables saving browser history in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing this setting.
 
       If this setting is enabled, browsing history is not saved. This setting also disables tab syncing.
@@ -552,6 +635,7 @@
       'example_value': True,
       'id': 187,
       'caption': '''Enable deleting browser and download history''',
+      'tags': [],
       'desc': '''Enables deleting browser history and download history in <ph name="PRODUCT_NAME">$<ex>Google Chrome</ex></ph> and prevents users from changing this setting.
 
       Note that even with this policy disabled, the browsing and download history are not guaranteed to be retained: users may be able to edit or delete the history database files directly, and the browser itself may expire or archive any or all history items at any time.
@@ -581,6 +665,7 @@
           'example_value': False,
           'id': 94,
           'caption': '''Enable firewall traversal from remote access client''',
+          'tags': [],
           'desc': '''This policy is no longer supported.
           Enables usage of STUN and relay servers when connecting to a remote client.
 
@@ -600,6 +685,7 @@
           'example_value': False,
           'id': 95,
           'caption': '''Enable firewall traversal from remote access host''',
+          'tags': [],
           'desc': '''Enables usage of STUN servers when remote clients are trying to establish a connection to this machine.
 
           If this setting is enabled, then remote clients can discover and connect to this machines even if they are separated by a firewall.
@@ -620,6 +706,7 @@
           'example_value': 'my-awesome-domain.com',
           'id': 154,
           'caption': '''Configure the required domain name for remote access hosts''',
+          'tags': [],
           'desc': '''Configures the required host domain name that will be imposed on remote access hosts and prevents users from changing it.
 
           If this setting is enabled, then hosts can be shared only using accounts registered on the specified domain name.
@@ -640,6 +727,7 @@
           'example_value': False,
           'id': 155,
           'caption': '''Enable two-factor authentication for remote access hosts''',
+          'tags': [],
           'desc': '''Enables two-factor authentication for remote access hosts instead of a user-specified PIN.
 
           If this setting is enabled, then users must provide a valid two-factor code when accessing a host.
@@ -658,6 +746,7 @@
           'example_value': 'chromoting-host',
           'id': 156,
           'caption': '''Configure the TalkGadget prefix for remote access hosts''',
+          'tags': [],
           'desc': '''Configures the TalkGadget prefix that will be used by remote access hosts and prevents users from changing it.
 
           If specified, this prefix is prepended to the base TalkGadget name to create a full domain name for the TalkGadget. The base TalkGadget domain name is '.talkgadget.google.com'.
@@ -680,6 +769,7 @@
           'example_value': False,
           'id': 157,
           'caption': '''Enable curtaining of remote access hosts''',
+          'tags': ['system-security'],
           'desc': '''Enables curtaining of remote access hosts while a connection is in progress.
 
           If this setting is enabled, then hosts' physical input and output devices are disabled while a remote connection is in progress.
@@ -698,6 +788,7 @@
           'example_value': False,
           'id': 234,
           'caption': '''Enable or disable PIN-less authentication for remote access hosts''',
+          'tags': [],
           'desc': '''If this setting is enabled or not configured, then users can opt to pair clients and hosts at connection time, eliminating the need to enter a PIN every time.
 
           If this setting is disabled, then this feature will not be available.''',
@@ -714,6 +805,7 @@
           'example_value': True,
           'id': 257,
           'caption': '''Allow gnubby authentication for remote access hosts''',
+          'tags': [],
           'desc': '''If this setting is enabled, then gnubby authentication requests will be proxied across a remote host connection.
 
           If this setting is disabled or not configured, gnubby authentication requests will not be proxied.''',
@@ -730,6 +822,7 @@
           'example_value': False,
           'id': 263,
           'caption': '''Enable the use of relay servers by the remote access host''',
+          'tags': [],
           'desc': '''Enables usage of relay servers when remote clients are trying to establish a connection to this machine.
 
           If this setting is enabled, then remote clients can use relay servers to connect to this machine when a direct connection is not available (e.g. due to firewall restrictions).
@@ -750,6 +843,7 @@
           'example_value': '12400-12409',
           'id': 264,
           'caption': '''Restrict the UDP port range used by the remote access host''',
+          'tags': [],
           'desc': '''Restricts the UDP port range used by the remote access host in this machine.
 
           If this policy is left not set, or if it is set to an empty string, the remote access host will be allowed to use any available port, unless the policy <ph name="REMOTEACCESSHOSTFIREWALLTRAVERSAL_POLICY_NAME">RemoteAccessHostFirewallTraversal</ph> is disabled, in which case the remote access host will use UDP ports in the 12400-12409 range.''',
@@ -766,6 +860,7 @@
           'example_value': False,
           'id': 285,
           'caption': '''Requires that the name of the local user and the remote access host owner match''',
+          'tags': [],
           'desc': '''Requires that the name of the local user and the remote access host owner match.
 
           If this setting is enabled, then the remote access host compares the name of the local user (that the host is associated with) and the name of the Google account registered as the host owner (i.e. "johndoe" if the host is owned by "johndoe@example.com" Google account).  The remote access host will not start if the name of the host owner is different from the name of the local user that the host is associated with.  RemoteAccessHostMatchUsername policy should be used together with RemoteAccessHostDomain to also enforce that the Google account of the host owner is associated with a specific domain (i.e. "example.com").
@@ -784,6 +879,7 @@
           'example_value': 'https://example.com/issue',
           'id': 286,
           'caption': '''URL where remote access clients should obtain their authentication token''',
+          'tags': ['website-sharing'],
           'desc': '''URL where remote access clients should obtain their authentication token.
 
           If this policy is set, the remote access host will require authenticating clients to obtain an authentication token from this URL in order to connect. Must be used in conjunction with RemoteAccessHostTokenValidationUrl.
@@ -802,6 +898,7 @@
           'example_value': 'https://example.com/validate',
           'id': 287,
           'caption': '''URL for validating remote access client authentication token''',
+          'tags': ['website-sharing'],
           'desc': '''URL for validating remote access client authentication token.
 
           If this policy is set, the remote access host will use this URL to validate authentication tokens from remote access clients, in order to accept connections. Must be used in conjunction with RemoteAccessHostTokenUrl.
@@ -820,6 +917,7 @@
           'example_value': 'Example Certificate Authority',
           'id': 288,
           'caption': '''Client certificate for connecting to RemoteAccessHostTokenValidationUrl''',
+          'tags': [],
           'desc': '''Client certificate for connecting to RemoteAccessHostTokenValidationUrl.
 
           If this policy is set, the host will use a client certificate with the given issuer CN to authenticate to RemoteAccessHostTokenValidationUrl. Set it to "*" to use any available client certificate.
@@ -838,6 +936,7 @@
           'example_value': '{ "RemoteAccessHostMatchUsername": true }',
           'id': 289,
           'caption': '''Policy overrides for Debug builds of the remote access host''',
+          'tags': [],
           'desc': '''Overrides policies on Debug builds of the remote access host.
 
           The value is parsed as a JSON dictionary of policy name to policy value mappings.''',
@@ -856,6 +955,7 @@
       'example_value': True,
       'id': 12,
       'caption': '''Enable printing''',
+      'tags': [],
       'desc': '''Enables printing in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing this setting.
 
       If this setting is enabled or not configured, users can print.
@@ -874,6 +974,7 @@
       'example_value': True,
       'id': 13,
       'caption': '''Enable <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> proxy''',
+      'tags': [],
       'desc': '''Enables <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> to act as a proxy between <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> and legacy printers connected to the machine.
 
       If this setting is enabled or not configured, users can enable the cloud print proxy by authentication with their Google account.
@@ -894,6 +995,7 @@
       'example_value': False,
       'id': 162,
       'caption': '''Force SafeSearch''',
+      'tags': ['filtering'],
       'desc': '''This policy is deprecated, please use ForceGoogleSafeSearch and ForceYouTubeSafetyMode instead. This policy will be ignored if either the ForceGoogleSafeSearch or ForceYouTubeSafetyMode policies are set.
 
       Forces queries in Google Web Search to be done with SafeSearch set to active and prevents users from changing this setting. This setting also forces Safety Mode on YouTube.
@@ -915,6 +1017,7 @@
       'example_value': False,
       'id': 282,
       'caption': '''Force Google SafeSearch''',
+      'tags': ['filtering'],
       'desc': '''Forces queries in Google Web Search to be done with SafeSearch set to active and prevents users from changing this setting.
 
       If you enable this setting, SafeSearch in Google Search is always active.
@@ -934,6 +1037,7 @@
       'example_value': False,
       'id': 283,
       'caption': '''Force YouTube Safety Mode''',
+      'tags': ['filtering'],
       'desc': '''Forces YouTube Safety Mode to active and prevents users from changing this setting.
 
       If you enable this setting, Safety Mode on YouTube is always active.
@@ -953,6 +1057,7 @@
       'example_value': True,
       'id': 14,
       'caption': '''Enable Safe Browsing''',
+      'tags': ['system-security'],
       'desc': '''Enables <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s Safe Browsing feature and prevents users from changing this setting.
 
       If you enable this setting, Safe Browsing is always active.
@@ -976,6 +1081,7 @@
       'example_value': True,
       'id': 15,
       'caption': '''Enable reporting of usage and crash-related data''',
+      'tags': ['google-sharing'],
       'desc': '''Enables anonymous reporting of usage and crash-related data about <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> to Google and prevents users from changing this setting.
 
       If this setting is enabled, anonymous reporting of usage and crash-related
@@ -1012,6 +1118,7 @@
           'example_value': True,
           'id': 16,
           'caption': '''Enable saving passwords to the password manager''',
+          'tags': [],
           'desc': '''
           If this setting is enabled, users can have <ph
           name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> memorize passwords
@@ -1037,6 +1144,7 @@
           'example_value': False,
           'id': 17,
           'caption': '''Allow users to show passwords in Password Manager''',
+          'tags': [],
           'desc': '''Controls whether the user may show passwords in clear text in the password manager.
 
           If you disable this setting, the password manager does not allow showing stored passwords in clear text in the password manager window.
@@ -1063,6 +1171,7 @@
       'example_value': False,
       'id': 18,
       'caption': '''Enable AutoFill''',
+      'tags': [],
       'desc': '''Enables <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s AutoFill feature and allows users to auto complete web forms using previously stored information such as address or credit card information.
 
       If you disable this setting, AutoFill will be inaccessible to users.
@@ -1084,6 +1193,7 @@
       'example_value': ['Java', 'Shockwave Flash', 'Chrome PDF Viewer'],
       'id': 19,
       'caption': '''Specify a list of disabled plugins''',
+      'tags': [],
       'desc': '''Specifies a list of plugins that are disabled in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing this setting.
 
       The wildcard characters '*' and '?' can be used to match sequences of arbitrary characters. '*' matches an arbitrary number of characters while '?' specifies an optional single character, i.e. matches zero or one characters. The escape character is '\\', so to match actual '*', '?', or '\\' characters, you can put a '\\' in front of them.
@@ -1110,6 +1220,7 @@
       'example_value': ['Java', 'Shockwave Flash', 'Chrome PDF Viewer'],
       'id': 78,
       'caption': '''Specify a list of enabled plugins''',
+      'tags': ['system-security'],
       'desc': '''Specifies a list of plugins that are enabled in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing this setting.
 
       The wildcard characters '*' and '?' can be used to match sequences of arbitrary characters. '*' matches an arbitrary number of characters while '?' specifies an optional single character, i.e. matches zero or one characters. The escape character is '\\', so to match actual '*', '?', or '\\' characters, you can put a '\\' in front of them.
@@ -1136,6 +1247,7 @@
       'example_value': ['Java', 'Shockwave Flash', 'Chrome PDF Viewer'],
       'id': 79,
       'caption': '''Specify a list of plugins that the user can enable or disable''',
+      'tags': [],
       'desc': '''Specifies a list of plugins that user can enable or disable in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
       The wildcard characters '*' and '?' can be used to match sequences of arbitrary characters. '*' matches an arbitrary number of characters while '?' specifies an optional single character, i.e. matches zero or one characters. The escape character is '\\', so to match actual '*', '?', or '\\' characters, you can put a '\\' in front of them.
@@ -1161,6 +1273,7 @@
       'example_value': True,
       'id': 66,
       'caption': '''Specify whether the plugin finder should be disabled''',
+      'tags': [],
       'desc': '''If you set this setting to enabled the automatic search and installation of missing plugins will be disabled in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
       Setting this option to disabled or leave it not set the plugin finder will be active.''',
@@ -1178,6 +1291,7 @@
       'example_value': True,
       'id': 20,
       'caption': '''Disable synchronization of data with Google''',
+      'tags': ['filtering', 'google-sharing'],
       'desc': '''Disables data synchronization in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> using Google-hosted synchronization services and prevents users from changing this setting.
 
       If you enable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
@@ -1197,6 +1311,7 @@
       'example_value': True,
       'id': 190,
       'caption': '''Allows sign in to <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>''',
+      'tags': [],
       'desc': '''This policy is deprecated, consider using SyncDisabled instead.
 
       Allows the user to sign in to <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
@@ -1216,6 +1331,7 @@
       'example_value': False,
       'id': 265,
       'caption': '''Enables the old web-based signin''',
+      'tags': [],
       'desc': '''Enables the old web-based signin flow.
 
       This setting was named EnableWebBasedSignin prior to Chrome 42, and support for it will be removed entirely in Chrome 43.
@@ -1238,6 +1354,7 @@
       'example_value': '${users}/${user_name}/Chrome',
       'id': 63,
       'caption': '''Set user data directory''',
+      'tags': ['local-data-access'],
       'desc': '''Configures the directory that <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use for storing user data.
 
       If you set this policy, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use the provided directory regardless whether the user has specified the '--user-data-dir' flag or not.
@@ -1259,6 +1376,7 @@
       'example_value': '${user_home}/Chrome_cache',
       'id': 88,
       'caption': '''Set disk cache directory''',
+      'tags': [],
       'desc': '''Configures the directory that <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use for storing cached files on the disk.
 
       If you set this policy, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use the provided directory regardless whether the user has specified the '--disk-cache-dir' flag or not.
@@ -1280,6 +1398,7 @@
       'example_value': 104857600,
       'id': 110,
       'caption': '''Set disk cache size in bytes''',
+      'tags': [],
       'desc': '''Configures the cache size that <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use for storing cached files on the disk.
 
       If you set this policy, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use the provided cache size regardless whether the user has specified the '--disk-cache-size' flag or not. The value specified in this policy is not a hard boundary but rather a suggestion to the caching system, any value below a few megabytes is too small and will be rounded up to a sane minimum.
@@ -1301,6 +1420,7 @@
       'example_value': 104857600,
       'id': 111,
       'caption': '''Set media disk cache size in bytes''',
+      'tags': [],
       'desc': '''Configures the cache size that <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use for storing cached media files on the disk.
 
       If you set this policy, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use the provided cache size regardless whether the user has specified the '--media-cache-size' flag or not. The value specified in this policy is not a hard boundary but rather a suggestion to the caching system, any value below a few megabytes is too small and will be rounded up to a sane minimum.
@@ -1323,6 +1443,7 @@
       'example_value': '/home/${user_name}/Downloads',
       'id': 64,
       'caption': '''Set download directory''',
+      'tags': ['local-data-access'],
       'desc': '''Configures the directory that <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use for downloading files.
 
       If you set this policy, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use the provided directory regardless whether the user has specified one or enabled the flag to be prompted for download location every time.
@@ -1346,6 +1467,7 @@
       'example_value': True,
       'id': 65,
       'caption': '''Clear site data on browser shutdown (deprecated)''',
+      'tags': [],
       'desc': '''This policy has been retired as of <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> version 29.''',
       'label': '''Clear site data on browser shutdown (deprecated)''',
     },
@@ -1363,6 +1485,7 @@
       'default_for_enterprise_users': False,
       'id': 295,
       'caption': '''Captive portal authentication ignores proxy''',
+      'tags': [],
       'desc': '''This policy allows <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> to bypass any proxy for captive portal authentication.
 
       This policy only takes effect if a proxy is configured (for example through policy, by the user in chrome://settings, or by extensions).
@@ -1441,6 +1564,7 @@
           'example_value': 'direct',
           'id': 21,
           'caption': '''Choose how to specify proxy server settings''',
+          'tags': [],
           'desc': '''Allows you to specify the proxy server used by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing proxy settings.
 
           If you choose to never use a proxy server and always connect directly, all other options are ignored.
@@ -1501,6 +1625,7 @@
           'example_value': 2,
           'id': 22,
           'caption': '''Choose how to specify proxy server settings''',
+          'tags': [],
           'desc': '''This policy is deprecated, use ProxyMode instead.
 
           Allows you to specify the proxy server used by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing proxy settings.
@@ -1535,6 +1660,7 @@
           'example_value': '123.123.123.123:8080',
           'id': 23,
           'caption': '''Address or URL of proxy server''',
+          'tags': [],
           'desc': '''You can specify the URL of the proxy server here.
 
           This policy only takes effect if you have selected manual proxy settings at 'Choose how to specify proxy server settings'.
@@ -1561,6 +1687,7 @@
           'example_value': 'https://internal.site/example.pac',
           'id': 24,
           'caption': '''URL to a proxy .pac file''',
+          'tags': [],
           'desc': '''You can specify a URL to a proxy .pac file here.
 
           This policy only takes effect if you have selected manual proxy settings at 'Choose how to specify proxy server settings'.
@@ -1587,6 +1714,7 @@
           'example_value': 'https://www.example1.com,https://www.example2.com,https://internalsite/',
           'id': 25,
           'caption': '''Proxy bypass rules''',
+          'tags': [],
           'desc': '''<ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will bypass any proxy for the list of hosts given here.
 
           This policy only takes effect if you have selected manual proxy settings at 'Choose how to specify proxy server settings'.
@@ -1630,6 +1758,7 @@
       'example_value': { "ProxyMode": "direct" },
       'id': 116,
       'caption': '''Proxy settings''',
+      'tags': ['system-security'],
       'desc': '''Configures the proxy settings for <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
       This policy isn't ready for usage yet, please don't use it.''',
@@ -1652,6 +1781,7 @@
           'example_value': 'basic,digest,ntlm,negotiate',
           'id': 26,
           'caption': '''Supported authentication schemes''',
+          'tags': [],
           'desc': '''Specifies which HTTP Authentication schemes are supported by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
           Possible values are 'basic', 'digest', 'ntlm' and 'negotiate'. Separate multiple values with commas.
@@ -1670,6 +1800,7 @@
           'example_value': False,
           'id': 27,
           'caption': '''Disable CNAME lookup when negotiating Kerberos authentication''',
+          'tags': [],
           'desc': '''Specifies whether the generated Kerberos SPN is based on the canonical DNS name or the original name entered.
 
           If you enable this setting, CNAME lookup will be skipped and the server name will be used as entered.
@@ -1688,6 +1819,7 @@
           'example_value': False,
           'id': 28,
           'caption': '''Include non-standard port in Kerberos SPN''',
+          'tags': [],
           'desc': '''Specifies whether the generated Kerberos SPN should include a non-standard port.
 
           If you enable this setting, and a non-standard port (i.e., a port other than 80 or 443) is entered, it will be included in the generated Kerberos SPN.
@@ -1706,6 +1838,7 @@
           'example_value': '*example.com,foobar.com,*baz',
           'id': 29,
           'caption': '''Authentication server whitelist''',
+          'tags': [],
           'desc': '''Specifies which servers should be whitelisted for integrated authentication. Integrated authentication is only enabled when <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> receives an authentication challenge from a proxy or from a server which is in this permitted list.
 
           Separate multiple server names with commas. Wildcards (*) are allowed.
@@ -1724,6 +1857,7 @@
           'example_value': 'foobar.example.com',
           'id': 30,
           'caption': '''Kerberos delegation server whitelist''',
+          'tags': [],
           'desc': '''Servers that <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> may delegate to.
 
           Separate multiple server names with commas. Wildcards (*) are allowed.
@@ -1742,6 +1876,7 @@
           'example_value': 'libgssapi_krb5.so.2',
           'id': 31,
           'caption': '''GSSAPI library name''',
+          'tags': [],
           'desc': '''Specifies which GSSAPI library to use for HTTP Authentication. You can set either just a library name, or a full path.
 
           If no setting is provided, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will fall back to using a default library name.''',
@@ -1758,6 +1893,7 @@
           'example_value': 'com.example.spnego',
           'id': 305,
           'caption': '''Account Type for Negotiate Authentication''',
+          'tags': [],
           'desc': '''Specifies the account type of the accounts provided by the Android authentication app that supports HTTP Negotiate authentication (e.g. Kerberos authentication). This information should be available from the supplier of the Authentication app. For more details see https://goo.gl/hajyfN.
 
           If no setting is provided then Negotiate Authentication will be disabled on Android.''',
@@ -1774,6 +1910,7 @@
           'example_value': False,
           'id': 89,
           'caption': '''Cross-origin HTTP Basic Auth prompts''',
+          'tags': ['website-sharing'],
           'desc': '''Controls whether third-party sub-content on a page is allowed to pop-up an HTTP Basic Auth dialog box.
 
           Typically this is disabled as a phishing defense. If this policy is not set, this is disabled and third-party sub-content will not be allowed to pop up a HTTP Basic Auth dialog box.''',
@@ -1801,6 +1938,7 @@
           'example_value': ['extension_id1', 'extension_id2'],
           'id': 32,
           'caption': '''Configure extension installation blacklist''',
+          'tags': [],
           'desc': '''Allows you to specify which extensions the users can NOT install. Extensions already installed will be removed if blacklisted.
 
           A blacklist value of '*' means all extensions are blacklisted unless they are explicitly listed in the whitelist.
@@ -1823,6 +1961,7 @@
           'example_value': ['extension_id1', 'extension_id2'],
           'id': 33,
           'caption': '''Configure extension installation whitelist''',
+          'tags': [],
           'desc': '''Allows you to specify which extensions are not subject to the blacklist.
 
           A blacklist value of * means all extensions are blacklisted and users can only install extensions listed in the whitelist.
@@ -1845,6 +1984,7 @@
           'example_value': ['gbchcmhmhahfdphkhkmpfmihenigjmpp;https://clients2.google.com/service/update2/crx'],
           'id': 34,
           'caption': '''Configure the list of force-installed apps and extensions''',
+          'tags': ['full-admin-access'],
           'desc': '''
           Specifies a list of apps and extensions that are installed silently,
           without user interaction, and which cannot be uninstalled by the
@@ -1911,6 +2051,7 @@
           'example_value': ['https://corp.mycompany.com/*'],
           'id': 148,
           'caption': '''Configure extension, app, and user script install sources''',
+          'tags': ['full-admin-access', 'system-security'],
           'desc': '''Allows you to specify which URLs are allowed to install extensions, apps, and themes.
 
           Starting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> 21, it is more difficult to install extensions, apps, and user scripts from outside the Chrome Web Store. Previously, users could click on a link to a *.crx file, and <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> would offer to install the file after a few warnings. After <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> 21, such files must be downloaded and dragged onto the <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> settings page. This setting allows specific URLs to have the old, easier installation flow.
@@ -1946,6 +2087,7 @@
           'example_value': ['hosted_app'],
           'id': 168,
           'caption': '''Configure allowed app/extension types''',
+          'tags': [],
           'desc': '''Controls which app/extension types are allowed to be installed.
 
           This setting white-lists the allowed types of extension/apps that can be installed in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>. The value is a list of strings, each of which should be one of the following: "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app", "platform_app". See the <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> extensions documentation for more information on these types.
@@ -2054,6 +2196,7 @@
           },
           'id': 278,
           'caption': 'Extension management settings',
+          'tags': [],
           'desc': '''Configures extension management settings for <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
           This policy controls multiple settings, including settings controlled by any existing extension-related policies. This policy will override any legacy policies if both are set.
@@ -2102,6 +2245,7 @@
       'example_value': True,
       'id': 35,
       'caption': '''Show Home button on toolbar''',
+      'tags': [],
       'desc': '''Shows the Home button on <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s toolbar.
 
       If you enable this setting, the Home button is always shown.
@@ -2124,6 +2268,7 @@
       'example_value': False,
       'id': 36,
       'caption': '''Disable Developer Tools''',
+      'tags': [],
       'desc': '''Disables the Developer Tools and the JavaScript console.
 
       If you enable this setting, the Developer Tools can not be accessed and web-site elements can not be inspected anymore. Any keyboard shortcuts and any menu or context menu entries to open the Developer Tools or the JavaScript Console will be disabled.
@@ -2171,6 +2316,7 @@
           'example_value': 4,
           'id': 37,
           'caption': '''Action on startup''',
+          'tags': [],
           'desc': '''Allows you to specify the behavior on startup.
 
           If you choose 'Open New Tab Page' the New Tab Page will always be opened when you start <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
@@ -2203,6 +2349,7 @@
           'example_value': ['https://example.com', 'https://www.chromium.org'],
           'id': 38,
           'caption': '''URLs to open on startup''',
+          'tags': [],
           'desc': '''If 'Open a list of URLs' is selected as the startup action, this allows you to specify the list of URLs that are opened. If left not set no URL will be opened on start up.
 
           This policy only works if the 'RestoreOnStartup' policy is set to 'RestoreOnStartupIsURLs'.
@@ -2225,6 +2372,7 @@
       'example_value': False,
       'id': 39,
       'caption': '''Block third party cookies''',
+      'tags': [],
       'desc': '''Blocks third party cookies.
 
       Enabling this setting prevents cookies from being set by web page elements that are not from the domain that is in the browser's address bar.
@@ -2258,6 +2406,7 @@
           'example_value': True,
           'id': 40,
           'caption': '''Enable the default search provider''',
+          'tags': [],
           'desc': '''Enables the use of a default search provider.
 
           If you enable this setting, a default search is performed when the user types text in the omnibox that is not a URL.
@@ -2290,6 +2439,7 @@
           'example_value': 'My Intranet Search',
           'id': 41,
           'caption': '''Default search provider name''',
+          'tags': ['website-sharing'],
           'desc': '''Specifies the name of the default search provider. If left empty or not set, the host name specified by the search URL will be used.
 
           This policy is only considered if the 'DefaultSearchProviderEnabled' policy is enabled.''',
@@ -2311,6 +2461,7 @@
           'example_value': 'mis',
           'id': 42,
           'caption': '''Default search provider keyword''',
+          'tags': [],
           'desc': '''Specifies the keyword, which is the shortcut used in the omnibox to trigger the search for this provider.
 
           This policy is optional. If not set, no keyword will activate the search provider.
@@ -2334,6 +2485,7 @@
           'example_value': 'https://search.my.company/search?q={searchTerms}',
           'id': 43,
           'caption': '''Default search provider search URL''',
+          'tags': ['website-sharing'],
           'desc': '''Specifies the URL of the search engine used when doing a default search. The URL should contain the string '<ph name="SEARCH_TERM_MARKER">{searchTerms}</ph>', which will be replaced at query time by the terms the user is searching for.
 
           This option must be set when the 'DefaultSearchProviderEnabled' policy is enabled and will only be respected if this is the case.''',
@@ -2350,6 +2502,7 @@
           'example_value': 'https://search.my.company/suggest?q={searchTerms}',
           'id': 44,
           'caption': '''Default search provider suggest URL''',
+          'tags': [],
           'desc': '''Specifies the URL of the search engine used to provide search suggestions. The URL should contain the string '<ph name="SEARCH_TERM_MARKER">{searchTerms}</ph>', which will be replaced at query time by the text the user has entered so far.
 
           This policy is optional. If not set, no suggest URL will be used.
@@ -2368,6 +2521,7 @@
           'example_value': 'https://search.my.company/suggest?q={searchTerms}',
           'id': 45,
           'caption': '''Default search provider instant URL''',
+          'tags': [],
           'desc': '''Specifies the URL of the search engine used to provide instant results. The URL should contain the string <ph name="SEARCH_TERM_MARKER">'{searchTerms}'</ph>, which will be replaced at query time by the text the user has entered so far.
 
           This policy is optional. If not set, no instant search results will be provided.
@@ -2386,6 +2540,7 @@
           'example_value': 'https://search.my.company/favicon.ico',
           'id': 46,
           'caption': '''Default search provider icon''',
+          'tags': [],
           'desc': '''Specifies the favorite icon URL of the default search provider.
 
           This policy is optional. If not set, no icon will be present for the search provider.
@@ -2407,6 +2562,7 @@
           'example_value': ['UTF-8', 'UTF-16', 'GB2312', 'ISO-8859-1'],
           'id': 47,
           'caption': '''Default search provider encodings''',
+          'tags': [],
           'desc': '''Specifies the character encodings supported by the search provider. Encodings are code page names like UTF-8, GB2312, and ISO-8859-1. They are tried in the order provided.
 
           This policy is optional. If not set, the default will be used which is UTF-8.
@@ -2428,6 +2584,7 @@
           'example_value': ['https://search.my.company/suggest#q={searchTerms}', 'https://search.my.company/suggest/search#q={searchTerms}'],
           'id': 161,
           'caption': '''List of alternate URLs for the default search provider''',
+          'tags': [],
           'desc': '''Specifies a list of alternate URLs that can be used to extract search terms from the search engine. The URLs should contain the string <ph name="SEARCH_TERM_MARKER">'{searchTerms}'</ph>, which will be used to extract the search terms.
 
           This policy is optional. If not set, no alternate urls will be used to extract search terms.
@@ -2446,6 +2603,7 @@
           'example_value': 'espv',
           'id': 171,
           'caption': '''Parameter controlling search term placement for the default search provider''',
+          'tags': [],
           'desc': '''If this policy is set and a search URL suggested from the omnibox contains this parameter in the query string or in the fragment identifier, then the suggestion will show the search terms and search provider instead of the raw search URL.
 
           This policy is optional. If not set, no search term replacement will be performed.
@@ -2464,6 +2622,7 @@
           'example_value': 'https://search.my.company/searchbyimage/upload',
           'id': 229,
           'caption': '''Parameter providing search-by-image feature for the default search provider''',
+          'tags': [],
           'desc': '''Specifies the URL of the search engine used to provide image search. Search requests will be sent using the GET method. If the DefaultSearchProviderImageURLPostParams policy is set then image search requests will use the POST method instead.
 
           This policy is optional. If not set, no image search will be used.
@@ -2482,6 +2641,7 @@
           'example_value': 'https://search.my.company/newtab',
           'id': 237,
           'caption': '''Default search provider new tab page URL''',
+          'tags': [],
           'desc': '''Specifies the URL that a search engine uses to provide a new tab page.
 
           This policy is optional. If not set, no new tab page will be provided.
@@ -2500,6 +2660,7 @@
           'example_value': 'q={searchTerms},ie=utf-8,oe=utf-8',
           'id': 230,
           'caption': '''Parameters for search URL which uses POST''',
+          'tags': [],
           'desc': '''Specifies the parameters used when searching a URL with POST. It consists of comma-separated name/value pairs. If a value is a template parameter, like {searchTerms} in above example, it will be replaced with real search terms data.
 
           This policy is optional. If not set, search request will be sent using the GET method.
@@ -2518,6 +2679,7 @@
           'example_value': 'q={searchTerms},ie=utf-8,oe=utf-8',
           'id': 231,
           'caption': '''Parameters for suggest URL which uses POST''',
+          'tags': [],
           'desc': '''Specifies the parameters used when doing suggestion search with POST. It consists of comma-separated name/value pairs. If a value is a template parameter, like {searchTerms} in above example, it will be replaced with real search terms data.
 
           This policy is optional. If not set, suggest search request will be sent using the GET method.
@@ -2536,6 +2698,7 @@
           'example_value': 'q={searchTerms},ie=utf-8,oe=utf-8',
           'id': 232,
           'caption': '''Parameters for instant URL which uses POST''',
+          'tags': [],
           'desc': '''Specifies the parameters used when doing instant search with POST. It consists of comma-separated name/value pairs. If a value is a template parameter, like {searchTerms} in above example, it will be replaced with real search terms data.
 
           This policy is optional. If not set, instant search request will be sent using the GET method.
@@ -2554,6 +2717,7 @@
           'example_value': 'content={imageThumbnail},url={imageURL},sbisrc={SearchSource}',
           'id': 233,
           'caption': '''Parameters for image URL which uses POST''',
+          'tags': [],
           'desc': '''Specifies the parameters used when doing image search with POST. It consists of comma-separated name/value pairs. If a value is a template parameter, like {imageThumbnail} in above example, it will be replaced with real image thumbnail data.
 
           This policy is optional. If not set, image search request will be sent using the GET method.
@@ -2607,6 +2771,7 @@
           'example_value': 1,
           'id': 48,
           'caption': '''Default cookies setting''',
+          'tags': [],
           'desc': '''Allows you to set whether websites are allowed to set local data. Setting local data can be either allowed for all websites or denied for all websites.
 
           If this policy is set to 'Keep cookies for the duration of the session' then cookies will be cleared when the session closes. Note that if <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is running in 'background mode', the session may not close when the last window is closed. Please see the 'BackgroundModeEnabled' policy for more information about configuring this behavior.
@@ -2640,6 +2805,7 @@
           'example_value': 1,
           'id': 49,
           'caption': '''Default images setting''',
+          'tags': [],
           'desc': '''Allows you to set whether websites are allowed to display images. Displaying images can be either allowed for all websites or denied for all websites.
 
           If this policy is left not set, 'AllowImages' will be used and the user will be able to change it.''',
@@ -2671,6 +2837,7 @@
           'example_value': 1,
           'id': 50,
           'caption': '''Default JavaScript setting''',
+          'tags': [],
           'desc': '''Allows you to set whether websites are allowed to run JavaScript. Running JavaScript can be either allowed for all websites or denied for all websites.
 
           If this policy is left not set, 'AllowJavaScript' will be used and the user will be able to change it.''',
@@ -2707,6 +2874,7 @@
           'example_value': 1,
           'id': 51,
           'caption': '''Default plugins setting''',
+          'tags': [],
           'desc': '''Allows you to set whether websites are allowed to automatically run plugins. Automatically running plugins can be either allowed for all websites or denied for all websites.
 
           Click to play allows plugins to run but the user must click them to start their execution.
@@ -2745,6 +2913,7 @@
           'example_value': 1,
           'id': 52,
           'caption': '''Default popups setting''',
+          'tags': [],
           'desc': '''Allows you to set whether websites are allowed to show pop-ups. Showing popups can be either allowed for all websites or denied for all websites.
 
           If this policy is left not set, 'BlockPopups' will be used and the user will be able to change it.''',
@@ -2781,6 +2950,7 @@
           'example_value': 2,
           'id': 53,
           'caption': '''Default notification setting''',
+          'tags': [],
           'desc': '''Allows you to set whether websites are allowed to display desktop notifications. Displaying desktop notifications can be allowed by default, denied by default or the user can be asked every time a website wants to show desktop notifications.
 
           If this policy is left not set, 'AskNotifications' will be used and the user will be able to change it.''',
@@ -2817,6 +2987,7 @@
           'example_value': 0,
           'id': 54,
           'caption': '''Default geolocation setting''',
+          'tags': ['website-sharing'],
           'desc': '''Allows you to set whether websites are allowed to track the users' physical location. Tracking the users' physical location can be allowed by default, denied by default or the user can be asked every time a website requests the physical location.
 
           If this policy is left not set, 'AskGeolocation' will be used and the user will be able to change it.''',
@@ -2849,6 +3020,7 @@
           'example_value': 2,
           'id': 149,
           'caption': '''Default mediastream setting''',
+          'tags': ['website-sharing'],
           'desc': '''Allows you to set whether websites are allowed to get access to media capture devices. Access to media capture devices can be allowed by default, or the user can be asked every time a website wants to get access to media capture devices.
 
           If this policy is left not set, 'PromptOnAccess' will be used and the user will be able to change it.''',
@@ -2868,6 +3040,7 @@
           'example_value': ["{\\\"pattern\\\":\\\"https://www.example.com\\\",\\\"filter\\\":{\\\"ISSUER\\\":{\\\"CN\\\":\\\"certificate issuer name\\\"}}}"],
           'id': 102,
           'caption': '''Automatically select client certificates for these sites''',
+          'tags': ['website-sharing'],
           'desc': '''Allows you to specify a list of url patterns that specify sites for which <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> should automatically select a client certificate, if the site requests a certificate.
 
           The value must be an array of stringified JSON dictionaries. Each dictionary must have the form { "pattern": "$URL_PATTERN", "filter" : $FILTER }, where $URL_PATTERN is a content setting pattern. $FILTER restricts from which client certificates the browser will automatically select. Independent of the filter, only certificates will be selected that match the server's certificate request. If $FILTER has the form { "ISSUER": { "CN": "$ISSUER_CN" } }, additionally only client certificates are selected that are issued by a certificate with the CommonName $ISSUER_CN. If $FILTER is the empty dictionary {}, the selection of client certificates is not additionally restricted.
@@ -2894,6 +3067,7 @@
           'example_value': ['https://www.example.com', '[*.]example.edu'],
           'id': 77,
           'caption': '''Allow cookies on these sites''',
+          'tags': [],
           'desc': '''Allows you to set a list of url patterns that specify sites which are allowed to set cookies.
 
           If this policy is left not set the global default value will be used for all sites either from the 'DefaultCookiesSetting' policy if it is set, or the user's personal configuration otherwise.''',
@@ -2918,6 +3092,7 @@
           'example_value': ['https://www.example.com', '[*.]example.edu'],
           'id': 67,
           'caption': '''Block cookies on these sites''',
+          'tags': [],
           'desc': '''Allows you to set a list of url patterns that specify sites which are not allowed to set cookies.
 
           If this policy is left not set the global default value will be used for all sites either from the 'DefaultCookiesSetting' policy if it is set, or the user's personal configuration otherwise.''',
@@ -2942,6 +3117,7 @@
           'example_value': ['https://www.example.com', '[*.]example.edu'],
           'id': 68,
           'caption': '''Allow session only cookies on these sites''',
+          'tags': [],
           'desc': '''Allows you to set a list of url patterns that specify sites which are allowed to set session only cookies.
 
           If this policy is left not set the global default value will be used for all sites either from the 'DefaultCookiesSetting' policy if it is set, or the user's personal configuration otherwise.
@@ -2965,6 +3141,7 @@
           'example_value': ['https://www.example.com', '[*.]example.edu'],
           'id': 69,
           'caption': '''Allow images on these sites''',
+          'tags': [],
           'desc': '''Allows you to set a list of url patterns that specify sites which are allowed to display images.
 
           If this policy is left not set the global default value will be used for all sites either from the 'DefaultImagesSetting' policy if it is set, or the user's personal configuration otherwise.''',
@@ -2984,6 +3161,7 @@
           'example_value': ['https://www.example.com', '[*.]example.edu'],
           'id': 70,
           'caption': '''Block images on these sites''',
+          'tags': [],
           'desc': '''Allows you to set a list of url patterns that specify sites which are not allowed to display images.
 
           If this policy is left not set the global default value will be used for all sites either from the 'DefaultImagesSetting' policy if it is set, or the user's personal configuration otherwise.''',
@@ -3003,6 +3181,7 @@
           'example_value': ['https://www.example.com', '[*.]example.edu'],
           'id': 71,
           'caption': '''Allow JavaScript on these sites''',
+          'tags': [],
           'desc': '''Allows you to set a list of url patterns that specify sites which are allowed to run JavaScript.
 
           If this policy is left not set the global default value will be used for all sites either from the 'DefaultJavaScriptSetting' policy if it is set, or the user's personal configuration otherwise.''',
@@ -3022,6 +3201,7 @@
           'example_value': ['https://www.example.com', '[*.]example.edu'],
           'id': 72,
           'caption': '''Block JavaScript on these sites''',
+          'tags': [],
           'desc': '''Allows you to set a list of url patterns that specify sites which are not allowed to run JavaScript.
 
           If this policy is left not set the global default value will be used for all sites either from the 'DefaultJavaScriptSetting' policy if it is set, or the user's personal configuration otherwise.''',
@@ -3041,6 +3221,7 @@
           'example_value': ['https://www.example.com', '[*.]example.edu'],
           'id': 73,
           'caption': '''Allow plugins on these sites''',
+          'tags': [],
           'desc': '''Allows you to set a list of url patterns that specify sites which are allowed to run plugins.
 
           If this policy is left not set the global default value will be used for all sites either from the 'DefaultPluginsSetting' policy if it is set, or the user's personal configuration otherwise.''',
@@ -3060,6 +3241,7 @@
           'example_value': ['https://www.example.com', '[*.]example.edu'],
           'id': 74,
           'caption': '''Block plugins on these sites''',
+          'tags': [],
           'desc': '''Allows you to set a list of url patterns that specify sites which are not allowed to run plugins.
 
           If this policy is left not set the global default value will be used for all sites either from the 'DefaultPluginsSetting' policy if it is set, or the user's personal configuration otherwise.''',
@@ -3084,6 +3266,7 @@
           'example_value': ['https://www.example.com', '[*.]example.edu'],
           'id': 75,
           'caption': '''Allow popups on these sites''',
+          'tags': [],
           'desc': '''Allows you to set a list of url patterns that specify sites which are allowed to open popups.
 
           If this policy is left not set the global default value will be used for all sites either from the 'DefaultPopupsSetting' policy if it is set, or the user's personal configuration otherwise.''',
@@ -3122,6 +3305,7 @@
           'example_value': [{'protocol': 'mailto', 'url': 'https://mail.google.com/mail/?extsrc=mailto&url=%s', 'default': True}],
           'id': 268,
           'caption': '''Register protocol handlers''',
+          'tags': [],
           'desc': '''Allows you to register a list of protocol handlers. This can only be a recommended policy. The property |protocol| should be set to the scheme such as 'mailto' and the property |url| should be set to the URL pattern of the application that handles the scheme. The pattern can include a '%s', which if present will be replaced by the handled URL.
 
           The protocol handlers registered by policy are merged with the ones registered by the user and both are available for use. The user can override the protocol handlers installed by policy by installing a new default handler, but cannot remove a protocol handler registered by policy.''',
@@ -3146,6 +3330,7 @@
           'example_value': ['https://www.example.com', '[*.]example.edu'],
           'id': 76,
           'caption': '''Block popups on these sites''',
+          'tags': [],
           'desc': '''Allows you to set a list of url patterns that specify sites which are not allowed to open popups.
 
           If this policy is left not set the global default value will be used for all sites either from the 'DefaultPopupsSetting' policy if it is set, or the user's personal configuration otherwise.''',
@@ -3165,6 +3350,7 @@
           'example_value': ['https://www.example.com', '[*.]example.edu'],
           'id': 105,
           'caption': '''Allow notifications on these sites''',
+          'tags': [],
           'desc': '''Allows you to set a list of url patterns that specify sites which are allowed to display notifications.
 
           If this policy is left not set the global default value will be used for all sites either from the 'DefaultNotificationsSetting' policy if it is set, or the user's personal configuration otherwise.''',
@@ -3184,6 +3370,7 @@
           'example_value': ['https://www.example.com', '[*.]example.edu'],
           'id': 106,
           'caption': '''Block notifications on these sites''',
+          'tags': [],
           'desc': '''Allows you to set a list of url patterns that specify sites which are not allowed to display notifications.
 
           If this policy is left not set the global default value will be used for all sites either from the 'DefaultNotificationsSetting' policy if it is set, or the user's personal configuration otherwise.''',
@@ -3214,6 +3401,7 @@
           ],
           'id': 251,
           'caption': '''Configure native messaging blacklist''',
+          'tags': [],
           'desc': '''Allows you to specify which native messaging hosts that should not be loaded.
 
           A blacklist value of '*' means all native messaging hosts are blacklisted unless they are explicitly listed in the whitelist.
@@ -3239,6 +3427,7 @@
           ],
           'id': 252,
           'caption': '''Configure native messaging whitelist''',
+          'tags': [],
           'desc': '''Allows you to specify which native messaging hosts are not subject to the blacklist.
 
           A blacklist value of * means all native messaging hosts are blacklisted and only native messaging hosts listed in the whitelist will be loaded.
@@ -3258,6 +3447,7 @@
           'example_value': False,
           'id': 253,
           'caption': '''Allow user-level Native Messaging hosts (installed without admin permissions).''',
+          'tags': [],
           'desc': '''Enables user-level installation of Native Messaging hosts.
 
           If this setting is enabled then <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> allows
@@ -3283,6 +3473,7 @@
       'example_value': False,
       'id': 55,
       'caption': '''Disable support for 3D graphics APIs''',
+      'tags': [],
       'desc': '''Disable support for 3D graphics APIs.
 
       Enabling this setting prevents web pages from accessing the graphics processing unit (GPU). Specifically, web pages can not access the WebGL API and plugins can not use the Pepper 3D API.
@@ -3303,6 +3494,7 @@
       'example_value': 3600000,
       'id': 56,
       'caption': '''Refresh rate for user policy''',
+      'tags': [],
       'desc': '''Specifies the period in milliseconds at which the device management service is queried for user policy information.
 
       Setting this policy overrides the default value of 3 hours. Valid values for this policy are in the range from 1800000 (30 minutes) to 86400000 (1 day). Any values not in this range will be clamped to the respective boundary.
@@ -3321,6 +3513,7 @@
       'example_value': 10000,
       'id': 228,
       'caption': '''Maximum fetch delay after a policy invalidation''',
+      'tags': [],
       'desc': '''Specifies the maximum delay in milliseconds between receiving a policy invalidation and fetching the new policy from the device management service.
 
       Setting this policy overrides the default value of 5000 milliseconds. Valid values for this policy are in the range from 1000 (1 second) to 300000 (5 minutes). Any values not in this range will be clamped to the respective boundary.
@@ -3362,6 +3555,7 @@
           'example_value': 1,
           'id': 57,
           'caption': '''Default HTML renderer for <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph>''',
+          'tags': [],
           'desc': '''Allows you to configure the default HTML renderer when <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph> is installed.
           The default setting used when this policy is left not set is to allow the host browser do the rendering, but you can optionally override this and have <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph> render HTML pages by default.''',
         },
@@ -3379,6 +3573,7 @@
           'example_value': ['https://www.example.com', 'https://www.example.edu'],
           'id': 58,
           'caption': '''Always render the following URL patterns in <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph>''',
+          'tags': [],
           'desc': '''Customize the list of URL patterns that should always be rendered by <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph>.
 
           If this policy is not set the default renderer will be used for all sites as specified by the 'ChromeFrameRendererSettings' policy.
@@ -3399,6 +3594,7 @@
           'example_value': ['https://www.example.com', 'https://www.example.edu'],
           'id': 59,
           'caption': '''Always render the following URL patterns in the host browser''',
+          'tags': [],
           'desc': '''Customize the list of URL patterns that should always be rendered by the host browser.
 
           If this policy is not set the default renderer will be used for all sites as specified by the 'ChromeFrameRendererSettings' policy.
@@ -3416,6 +3612,7 @@
           'example_value': '--enable-media-stream --enable-media-source',
           'id': 141,
           'caption': '''Additional command line parameters for <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>''',
+          'tags': [],
           'desc': '''Allows you to specify additional parameters that are used when <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph> launches <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
           If this policy is not set the default command line will be used.''',
@@ -3431,6 +3628,7 @@
           'example_value': False,
           'id': 238,
           'caption': '''Skip the meta tag check in <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph>''',
+          'tags': [],
           'desc': '''Normally pages with X-UA-Compatible set to chrome=1 will be rendered in <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph> regardless of the 'ChromeFrameRendererSettings' policy.
 
           If you enable this setting, pages will not be scanned for meta tags.
@@ -3461,6 +3659,7 @@
           'example_value': ['text/xml', 'application/xml'],
           'id': 60,
           'caption': '''Allow <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph> to handle the listed content types''',
+          'tags': [],
           'desc': '''Allow <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph> to handle the listed content types.
 
           If this policy is not set the default renderer will be used for all sites as specified by the 'ChromeFrameRendererSettings' policy.''',
@@ -3480,6 +3679,7 @@
       'example_value': True,
       'id': 61,
       'caption': '''Enable lock when the device become idle or suspended''',
+      'tags': [],
       'desc': '''Enable lock when <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> devices become idle or suspended.
 
       If you enable this setting, users will be asked for a password to unlock the device from sleep.
@@ -3527,6 +3727,7 @@
       'default_for_enterprise_users': 'primary-only',
       'id': 244,
       'caption': '''Control the user behavior in a multiprofile session''',
+      'tags': [],
       'desc': '''Control the user behavior in a multiprofile session on <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> devices.
 
       If this policy is set to 'MultiProfileUserBehaviorUnrestricted', the user can be either primary or secondary user in a multiprofile session.
@@ -3555,6 +3756,7 @@
       'example_value': True,
       'id': 62,
       'caption': '''Enable Instant''',
+      'tags': [],
       'desc': '''Enables <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s Instant feature and prevents users from changing this setting.
 
       If you enable this setting, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> Instant is enabled.
@@ -3585,6 +3787,7 @@
       'example_value': True,
       'id': 80,
       'caption': '''Enable Translate''',
+      'tags': [],
       'desc': '''Enables the integrated Google Translate service on <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
       If you enable this setting, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will show an integrated toolbar offering to translate the page for the user, when appropriate.
@@ -3607,6 +3810,7 @@
       'example_value': True,
       'id': 81,
       'caption': '''Allow running plugins that are outdated''',
+      'tags': ['system-security'],
       'desc': '''Allows <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> to run plugins that are outdated.
 
       If you enable this setting, outdated plugins are used as normal plugins.
@@ -3627,6 +3831,7 @@
       'example_value': True,
       'id': 86,
       'caption': '''Always runs plugins that require authorization''',
+      'tags': ['system-security'],
       'desc': '''Allows <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> to run plugins that require authorization.
 
       If you enable this setting, plugins that are not outdated always run.
@@ -3646,6 +3851,7 @@
       'example_value': True,
       'id': 82,
       'caption': '''Enable Bookmark Bar''',
+      'tags': [],
       'desc': '''Enables the bookmark bar on <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
       If you enable this setting, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will show a bookmark bar.
@@ -3668,6 +3874,7 @@
       'example_value': False,
       'id': 83,
       'caption': '''Enables or disables bookmark editing''',
+      'tags': [],
       'desc': '''Enables or disables editing bookmarks in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
       If you enable this setting, bookmarks can be added, removed or modified. This is the default also when this policy is not set.
@@ -3686,6 +3893,7 @@
       'example_value': False,
       'id': 267,
       'caption': '''Show the apps shortcut in the bookmark bar''',
+      'tags': [],
       'desc': '''Enables or disables the apps shortcut in the bookmark bar.
 
       If this policy is not set then the user can choose to show or hide the apps shortcut from the bookmark bar context menu.
@@ -3704,6 +3912,7 @@
       'example_value': True,
       'id': 84,
       'caption': '''Allow invocation of file selection dialogs''',
+      'tags': [],
       'desc': '''Allows access to local files on the machine by allowing <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> to display file selection dialogs.
 
       If you enable this setting, users can open file selection dialogs as normal.
@@ -3723,6 +3932,7 @@
       'example_value': '${user_home}/Chrome Frame',
       'id': 87,
       'caption': '''Set <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph> user data directory''',
+      'tags': [],
       'desc': '''Configures the directory that <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph> will use for storing user data.
 
       If you set this policy, <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph> will use the provided directory.
@@ -3744,6 +3954,7 @@
       'example_value': 3600000,
       'id': 90,
       'caption': '''Refresh rate for Device Policy''',
+      'tags': [],
       'desc': '''Specifies the period in milliseconds at which the device management service is queried for device policy information.
 
       Setting this policy overrides the default value of 3 hours. Valid values for this policy are in the range from 1800000 (30 minutes) to 86400000 (1 day). Any values not in this range will be clamped to the respective boundary.
@@ -3763,6 +3974,7 @@
       'example_value': True,
       'id': 97,
       'caption': '''Import bookmarks from default browser on first run''',
+      'tags': ['local-data-access'],
       'desc': '''This policy forces bookmarks to be imported from the current default browser if enabled. If enabled, this policy also affects the import dialog.
 
       If disabled, no bookmarks are imported.
@@ -3783,6 +3995,7 @@
       'example_value': True,
       'id': 98,
       'caption': '''Import browsing history from default browser on first run''',
+      'tags': ['local-data-access'],
       'desc': '''This policy forces the browsing history to be imported from the current default browser if enabled. If enabled, this policy also affects the import dialog.
 
       If disabled, no browsing history is imported.
@@ -3802,6 +4015,7 @@
       'example_value': True,
       'id': 99,
       'caption': '''Import of homepage from default browser on first run''',
+      'tags': ['local-data-access'],
       'desc': '''This policy forces the home page to be imported from the current default browser if enabled.
 
       If disabled, the home page is not imported.
@@ -3822,6 +4036,7 @@
       'example_value': True,
       'id': 100,
       'caption': '''Import search engines from default browser on first run''',
+      'tags': ['local-data-access'],
       'desc': '''This policy forces search engines to be imported from the current default browser if enabled. If enabled, this policy also affects the import dialog.
 
       If disabled, the default search engine is not imported.
@@ -3842,6 +4057,7 @@
       'example_value': True,
       'id': 101,
       'caption': '''Import saved passwords from default browser on first run''',
+      'tags': ['local-data-access'],
       'desc': '''This policy forces the saved passwords to be imported from the previous default browser if enabled. If enabled, this policy also affects the import dialog.
 
       If disabled, the saved passwords are not imported.
@@ -3862,6 +4078,7 @@
       'example_value': True,
       'id': 277,
       'caption': '''Import autofill form data from default browser on first run''',
+      'tags': ['local-data-access'],
       'desc': '''This policy forces the autofill form data to be imported from the previous default browser if enabled. If enabled, this policy also affects the import dialog.
 
       If disabled, the autofill form data is not imported.
@@ -3881,6 +4098,7 @@
       'example_value': 32,
       'id': 92,
       'caption': '''Maximal number of concurrent connections to the proxy server''',
+      'tags': [],
       'desc': '''Specifies the maximal number of simultaneous connections to the proxy server.
 
       Some proxy servers can not handle high number of concurrent connections per client and this can be solved by setting this policy to a lower value.
@@ -3903,6 +4121,7 @@
       'example_value': False,
       'id': 96,
       'caption': '''Prevent app promotions from appearing on the new tab page''',
+      'tags': [],
       'desc': '''When set to True, promotions for Chrome Web Store apps will not appear on the new tab page.
 
       Setting this option to False or leaving it not set will make the promotions for Chrome Web Store apps appear on the new tab page''',
@@ -3927,6 +4146,7 @@
       'example_value': ['example.com', 'https://ssl.server.com', 'hosting.com/bad_path', 'https://server:8080/path', '.exact.hostname.com', 'file://*', '*'],
       'id': 103,
       'caption': '''Block access to a list of URLs''',
+      'tags': ['filtering'],
       'desc': '''Blocks access to the listed URLs.
 
       This policy prevents the user from loading web pages from blacklisted URLs. The blacklist provides a list of URL patterns that specify which URLs will be blacklisted.
@@ -3963,6 +4183,7 @@
       'example_value': ['example.com', 'https://ssl.server.com', 'hosting.com/bad_path', 'https://server:8080/path', '.exact.hostname.com'],
       'id': 104,
       'caption': '''Allows access to a list of URLs''',
+      'tags': [],
       'desc': '''Allows access to the listed URLs, as exceptions to the URL blacklist.
 
       See the description of the URL blacklist policy for the format of entries of this list.
@@ -3987,6 +4208,7 @@
       'example_value': '{ "NetworkConfigurations": [ { "GUID": "{4b224dfd-6849-7a63-5e394343244ae9c9}", "Name": "my WiFi", "Type": "WiFi", "WiFi": { "SSID": "my WiFi", "HiddenSSID": false, "Security": "None", "AutoConnect": true } } ] }',
       'id': 107,
       'caption': '''User-level network configuration''',
+      'tags': ['full-admin-access'],
       'desc': '''Allows pushing network configuration to be applied per-user to a <ph name="PRODUCT_OS_NAME">$2<ex>Chromium OS</ex></ph> device. The network configuration is a JSON-formatted string as defined by the Open Network Configuration format described at <ph name="ONC_SPEC_URL">https://sites.google.com/a/chromium.org/dev/chromium-os/chromiumos-design-docs/open-network-configuration</ph>''',
     },
     {
@@ -4001,6 +4223,7 @@
       'example_value': '{ "NetworkConfigurations": [ { "GUID": "{4b224dfd-6849-7a63-5e394343244ae9c9}", "Name": "my WiFi", "Type": "WiFi", "WiFi": { "SSID": "my WiFi", "HiddenSSID": false, "Security": "None", "AutoConnect": true } } ] }',
       'id': 108,
       'caption': '''Device-level network configuration''',
+      'tags': ['full-admin-access'],
       'desc': '''Allows pushing network configuration to be applied for all users of a <ph name="PRODUCT_OS_NAME">$2<ex>Chromium OS</ex></ph> device. The network configuration is a JSON-formatted string as defined by the Open Network Configuration format described at <ph name="ONC_SPEC_URL">https://sites.google.com/a/chromium.org/dev/chromium-os/chromiumos-design-docs/open-network-configuration</ph>''',
     },
     {
@@ -4015,6 +4238,7 @@
       'example_value': True,
       'id': 109,
       'caption': '''Enable submission of documents to <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph>''',
+      'tags': [],
       'desc': '''Enables <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> to submit documents to <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> for printing.  NOTE: This only affects <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> support in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.  It does not prevent users from submitting print jobs on web sites.
 
       If this setting is enabled or not configured, users can print to <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> from the <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> print dialog.
@@ -4034,6 +4258,7 @@
       'example_value': 'https://company-intranet/chromeapps',
       'id': 112,
       'caption': '''Enterprise web store URL (deprecated)''',
+      'tags': [],
       'desc': '''This setting has been retired as of <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> version 29. The recommended way to set up organization-hosted extension/app collections is to include the site hosting the CRX packages in ExtensionInstallSources and put direct download links to the packages on a web page. A launcher for that web page can be created using the ExtensionInstallForcelist policy.''',
     },
     {
@@ -4049,6 +4274,7 @@
       'example_value': 'WidgCo Chrome Apps',
       'id': 113,
       'caption': '''Enterprise web store name (deprecated)''',
+      'tags': [],
       'desc': '''This setting has been retired as of <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> version 29. The recommended way to set up organization-hosted extension/app collections is to include the site hosting the CRX packages in ExtensionInstallSources and put direct download links to the packages on a web page. A launcher for that web page can be created using the ExtensionInstallForcelist policy.''',
     },
     {
@@ -4065,6 +4291,7 @@
       'example_value': True,
       'id': 114,
       'caption': '''Enable TLS domain-bound certificates extension (deprecated)''',
+      'tags': [],
       'desc': '''This policy has been retired as of <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> version 36.
 
       Specifies whether the TLS domain-bound certificates extension should be enabled.
@@ -4085,6 +4312,7 @@
       'example_value': False,
       'id': 115,
       'caption': '''Enable reporting memory info (JS heap size) to page (deprecated)''',
+      'tags': [],
       'desc': '''This policy has been retired as of <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> version 35.
 
       Memory info is anyway reported to page, regardless of the option value, but the sizes reported are
@@ -4104,6 +4332,7 @@
       'example_value': False,
       'id': 117,
       'caption': '''Disable Print Preview (deprecated)''',
+      'tags': [],
       'desc': '''Show the system print dialog instead of print preview.
 
       When this setting is enabled, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will open the system print dialog instead of the built-in print preview when a user requests a page to be printed.
@@ -4122,6 +4351,7 @@
       'example_value': True,
       'id': 118,
       'caption': '''Disable TLS False Start''',
+      'tags': [],
       'desc': '''Specifies whether the TLS False Start optimization should be disabled. For historical reasons, this policy is named DisableSSLRecordSplitting.
 
       If the policy is not set, or is set to false, then TLS False Start will be enabled. If it is set to true, TLS False Start will be disabled.''',
@@ -4138,6 +4368,7 @@
       'example_value': False,
       'id': 129,
       'caption': '''Whether online OCSP/CRL checks are performed''',
+      'tags': ['website-sharing'],
       'desc': '''In light of the fact that soft-fail, online revocation checks provide no effective security benefit, they are disabled by default in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> version 19 and later. By setting this policy to true, the previous behavior is restored and online OCSP/CRL checks will be performed.
 
       If the policy is not set, or is set to false, then <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will not perform online revocation checks in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> 19 and later.''',
@@ -4154,6 +4385,7 @@
       'example_value': False,
       'id': 235,
       'caption': '''Whether online OCSP/CRL checks are required for local trust anchors''',
+      'tags': [],
       'desc': '''When this setting is enabled, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will always perform revocation checking for server certificates that successfully validate and are signed by locally-installed CA certificates.
 
       If <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is unable to obtain revocation status information, such certificates will be treated as revoked ('hard-fail').
@@ -4172,6 +4404,7 @@
       'example_value': True,
       'id': 245,
       'caption': '''Ephemeral profile''',
+      'tags': [],
       'desc': '''If set to enabled this policy forces the profile to be switched to ephemeral mode. If this policy is specified as an OS policy (e.g. GPO on Windows) it will apply to every profile on the system; if the policy is set as a Cloud policy it will apply only to a profile signed in with a managed account.
 
       In this mode the profile data is persisted on disk only for the length of the user session. Features like browser history, extensions and their data, web data like cookies and web databases are not preserved after the browser is closed. However this does not prevent the user from downloading any data to disk manually, save pages or print them.
@@ -4192,6 +4425,7 @@
       'example_value': 32,
       'id': 254,
       'caption': '''Limit the time for which a user authenticated via SAML can log in offline''',
+      'tags': [],
       'desc': '''Limit the time for which a user authenticated via SAML can log in offline.
 
       During login, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> can authenticate against a server (online) or using a cached password (offline).
@@ -4232,6 +4466,7 @@
       'example_value': 'remove-lru',
       'id': 246,
       'caption': '''Selects the strategy used to free up disk space during automatic clean-up (deprecated)''',
+      'tags': [],
       'desc': '''This policy is deprecated. <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will always use the 'RemoveLRU' clean-up strategy.
 
       Controls the automatic clean-up behavior on <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> devices. Automatic clean-up is triggered when the amount of free disk space reaches a critical level to recover some disk space.
@@ -4254,6 +4489,7 @@
       'example_value': False,
       'id': 119,
       'caption': '''Report OS and firmware version''',
+      'tags': ['admin-sharing'],
       'desc': '''Report OS and firmware version of enrolled devices.
 
       If this setting is not set or set to True, enrolled devices will report the OS and firmware version periodically. If this setting is set to False, version info will not be reported.''',
@@ -4270,6 +4506,7 @@
       'example_value': False,
       'id': 120,
       'caption': '''Report device activity times''',
+      'tags': ['admin-sharing'],
       'desc': '''Report device activity times.
 
       If this setting is not set or set to True, enrolled devices will report time periods when a user is active on the device. If this setting is set to False, device activity times will not be recorded or reported.''',
@@ -4286,6 +4523,7 @@
       'example_value': False,
       'id': 121,
       'caption': '''Report device boot mode''',
+      'tags': ['admin-sharing'],
       'desc': '''Report the state of the device's dev switch at boot.
 
       If the policy is set to false, the state of the dev switch will not be reported.''',
@@ -4303,6 +4541,7 @@
       'example_value': False,
       'id': 143,
       'caption': '''Report device location''',
+      'tags': ['admin-sharing'],
       'desc': '''Report the geographic location of the device.
 
       If the policy is not set, or set to false, the location will not be reported.''',
@@ -4319,6 +4558,7 @@
       'example_value': False,
       'id': 224,
       'caption': '''Report device network interfaces''',
+      'tags': ['admin-sharing'],
       'desc': '''Report list of network interfaces with their types and hardware addresses to the server.
 
       If the policy is set to false, the interface list will not be reported.''',
@@ -4335,6 +4575,7 @@
       'example_value': False,
       'id': 248,
       'caption': '''Report device users''',
+      'tags': ['admin-sharing'],
       'desc': '''Report list of device users that have recently logged in.
 
       If the policy is set to false, the users will not be reported.''',
@@ -4351,6 +4592,7 @@
       'example_value': False,
       'id': 290,
       'caption': '''Report hardware status''',
+      'tags': ['admin-sharing'],
       'desc': '''Report hardware statistics such as CPU/RAM usage.
 
       If the policy is set to false, the statistics will not be reported.
@@ -4368,6 +4610,7 @@
       'example_value': False,
       'id': 291,
       'caption': '''Report information about active kiosk sessions''',
+      'tags': ['admin-sharing'],
       'desc': '''Report information about the active kiosk session, such as
       application ID and version.
 
@@ -4387,6 +4630,7 @@
       'example_value': 180000,
       'id': 292,
       'caption': '''Frequency of device status report uploads''',
+      'tags': ['admin-sharing'],
       'desc': '''How frequently device status uploads are sent, in milliseconds.
 
       If this policy is unset, the default frequency is 3 hours. The minimum
@@ -4404,6 +4648,7 @@
       'example_value': False,
       'id': 293,
       'caption': '''Send monitoring heartbeats to the management server''',
+      'tags': ['admin-sharing'],
       'desc': '''Send monitoring heartbeats to the management server, to allow
       the server to detect if the device is offline.
 
@@ -4422,6 +4667,7 @@
       'example_value': 180000,
       'id': 294,
       'caption': '''Frequency of monitoring heartbeats''',
+      'tags': [],
       'desc': '''How frequently monitoring heartbeats are sent, in milliseconds.
 
       If this policy is unset, the default frequency is 3 minutes. The minimum
@@ -4440,6 +4686,7 @@
       'example_value': False,
       'id': 306,
       'caption': '''Send system logs to the management server''',
+      'tags': [],
       'desc': '''Send system logs to the management server, to allow
       admins to monitor system logs.
 
@@ -4461,6 +4708,7 @@
       'example_value': [ 'madmax@managedchrome.com' ],
       'id': 122,
       'caption': '''Login user white list''',
+      'tags': [],
       'desc': '''Defines the list of users that are allowed to login to the device. Entries are of the form <ph name="USER_WHITELIST_ENTRY_FORMAT">user@domain</ph>, such as <ph name="USER_WHITELIST_ENTRY_EXAMPLE">madmax@managedchrome.com</ph>. To allow arbitrary users on a domain, use entries of the form <ph name="USER_WHITELIST_ENTRY_WILDCARD">*@domain</ph>.
 
       If this policy is not configured, there are no restrictions on which users are allowed to sign in. Note that creating new users still requires the <ph name="DEVICEALLOWNEWUSERS_POLICY_NAME">DeviceAllowNewUsers</ph> policy to be configured appropriately.''',
@@ -4477,6 +4725,7 @@
       'example_value': True,
       'id': 123,
       'caption': '''Allow creation of new user accounts''',
+      'tags': [],
       'desc': '''Controls whether <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> allows new user accounts to be created. If this policy is set to false, users that do not have an account already will not be able to login.
 
       If this policy is set to true or not configured, new user accounts will be allowed to be created provided that <ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME">DeviceUserWhitelist</ph> does not prevent the user from logging in.''',
@@ -4493,6 +4742,7 @@
       'example_value': True,
       'id': 124,
       'caption': '''Enable guest mode''',
+      'tags': [],
       'desc': '''If this policy is set to true or not configured, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will enable guest logins. Guest logins are anonymous user sessions and do not require a password.
 
       If this policy is set to false, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will not allow guest sessions to be started.''',
@@ -4509,6 +4759,7 @@
       'example_value': True,
       'id': 125,
       'caption': '''Show usernames on login screen''',
+      'tags': [],
       'desc': '''If this policy is set to true or not configured, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will show existing users on the login screen and allow to pick one. If this policy is set to false, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will use the username/password prompt for login.''',
     },
     {
@@ -4523,6 +4774,7 @@
       'example_value': True,
       'id': 126,
       'caption': '''Enable data roaming''',
+      'tags': [],
       'desc': '''Determines whether data roaming should be enabled for the device. If set to true, data roaming is allowed. If left unconfigured or set to false, data roaming will be not available.''',
     },
     {
@@ -4537,6 +4789,7 @@
       'example_value': True,
       'id': 127,
       'caption': '''Enable metrics reporting''',
+      'tags': ['admin-sharing'],
       'desc': '''Controls whether usage metrics are reported back to Google. If set to true, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will report usage metrics. If not configured or set to false, metrics reporting will be disabled.''',
     },
     {
@@ -4571,6 +4824,7 @@
       'example_value': 'stable-channel',
       'id': 91,
       'caption': '''Release channel''',
+      'tags': [],
       'desc': '''Specifies the release channel that this device should be locked to.''',
     },
     {
@@ -4585,6 +4839,7 @@
       'example_value': False,
       'id': 134,
       'caption': '''Whether the release channel should be configurable by the user''',
+      'tags': [],
       'desc': '''If this policy is set to True and the ChromeOsReleaseChannel policy is not specified then users of the enrolling domain will be allowed to change the release channel of the device. If this policy is set to false the device will be locked in whatever channel it was last set.
 
       The user selected channel will be overridden by the ChromeOsReleaseChannel policy, but if the policy channel is more stable than the one that was installed on the device, then the channel will only switch after the version of the more stable channel reaches a higher version number than the one installed on the device.''',
@@ -4601,6 +4856,7 @@
       'example_value': True,
       'id': 128,
       'caption': '''Wipe user data on sign-out''',
+      'tags': [],
       'desc': '''Determines whether <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> keeps local account data after logout. If set to true, no persistent accounts are kept by <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> and all data from the user session will be discarded after logout. If this policy is set to false or not configured, the device may keep (encrypted) local user data.''',
     },
     {
@@ -4618,6 +4874,7 @@
       'example_value': [ 'https://google.com', 'chrome-extension://aaaaaaaaaaaaaaaaaaaaaaaa/' ],
       'id': 137,
       'caption': '''Load specified urls on demo login''',
+      'tags': [],
       'desc': '''This policy is active in retail mode only.
 
       Determines the set of URLs to be loaded when the demo session is started. This policy will override any other mechanisms for setting the initial URL and thus can only be applied to a session not associated with a particular user.''',
@@ -4634,6 +4891,7 @@
       'example_value': 60000,
       'id': 130,
       'caption': '''Timeout until idle user log-out is executed''',
+      'tags': [],
       'desc': '''This policy is active in retail mode only.
 
       When the value of this policy is set and is not 0 then the currently logged in demo user will be logged out automatically after an inactivity time of the specified duration has elapsed.
@@ -4652,6 +4910,7 @@
       'example_value': 15000,
       'id': 131,
       'caption': '''Duration of the idle log-out warning message''',
+      'tags': [],
       'desc': '''This policy is active in retail mode only.
 
       When DeviceIdleLogoutTimeout is specified this policy defines the duration of the warning box with a count down timer that is shown to the user before the logout is executed.
@@ -4670,6 +4929,7 @@
       'example_value': 'fhblcfnmnbehmifidkddcenilbpddlfk',
       'id': 132,
       'caption': '''Screen saver to be used on the sign-in screen in retail mode''',
+      'tags': [],
       'desc': '''This policy is active in retail mode only.
 
       Determines the id of the extension to be used as a screen saver on the sign-in screen. The extension must be part of the AppPack that is configured for this domain through the DeviceAppPack policy.''',
@@ -4686,6 +4946,7 @@
       'example_value': 120000,
       'id': 133,
       'caption': '''Duration of inactivity before the screen saver is shown on the sign-in screen in retail mode''',
+      'tags': [],
       'desc': '''This policy is active in retail mode only.
 
       Determines the duration before the screen saver is shown on the sign-in screen for devices in retail mode.
@@ -4707,6 +4968,7 @@
       'example_value': [ { "extension-id": "khgabmflimjjbclkmljlpmgaleanedem", "update-url": "https://clients2.google.com/service/update2/crx" } ],
       'id': 135,
       'caption': '''List of AppPack extensions''',
+      'tags': [],
       'desc': '''This policy is active in retail mode only.
 
       Lists extensions that are automatically installed for the Demo user, for devices in retail mode. These extensions are saved in the device and can be installed while offline, after the installation.
@@ -4725,6 +4987,7 @@
       'example_value': True,
       'id': 136,
       'caption': '''Disables Auto Update''',
+      'tags': ['system-security'],
       'desc': '''Disables automatic updates when set to True.
 
       <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> devices automatically check for updates when this setting is not configured or set to False.''',
@@ -4741,6 +5004,7 @@
       'example_value': False,
       'id': 242,
       'caption': '''Auto update p2p enabled''',
+      'tags': [],
       'desc': '''Specifies whether p2p is to be used for OS update payloads. If set to True, devices will share and attempt to consume update payloads on the LAN, potentially reducing Internet bandwidth usage and congestion. If the update payload is not available on the LAN, the device will fall back to downloading from an update server. If set to False or not configured, p2p will not be used.''',
     },
     {
@@ -4755,6 +5019,7 @@
       'example_value': '1412.',
       'id': 142,
       'caption': '''Target Auto Update Version''',
+      'tags': ['system-security'],
       'desc': '''Sets a target version for Auto Updates.
 
       Specifies the prefix of a target version <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> should update to. If the device is running a version that's before the specified prefix, it will update to the latest version with the given prefix. If the device is already on a later version, there is no effect (i.e. no downgrades are performed) and the device will remain on the current version. The prefix format works component-wise as is demonstrated in the following example:
@@ -4776,6 +5041,7 @@
       'example_value': 7200,
       'id': 145,
       'caption': '''Auto update scatter factor''',
+      'tags': ['system-security'],
       'desc': '''Specifies the number of seconds up to which a device may randomly delay its download of an update from the time the update was first pushed out to the server. The device may wait a portion of this time in terms of wall-clock-time and the remaining portion in terms of the number of update checks. In any case, the scatter is upper bounded to a constant amount of time so that a device does not ever get stuck waiting to download an update forever.''',
     },
     {
@@ -4793,6 +5059,7 @@
       'example_value': [ 'ethernet' ],
       'id': 146,
       'caption': '''Connection types allowed for updates''',
+      'tags': [],
       'desc': ''' The types of connections that are allowed to use for OS updates. OS updates potentially put heavy strain on the connection due to their size and may incur additional cost. Therefore, they are by default not enabled for connection types that are considered expensive, which include WiMax, Bluetooth and Cellular at the moment.
 
       The recognized connection type identifiers are "ethernet", "wifi", "wimax", "bluetooth" and "cellular".''',
@@ -4811,6 +5078,7 @@
       'example_value': True,
       'id': 243,
       'caption': '''Allow autoupdate downloads via HTTP''',
+      'tags': [],
       'desc': '''Auto-update payloads on <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> can be downloaded via HTTP instead of HTTPS. This allows transparent HTTP caching of HTTP downloads.
 
       If this policy is set to true, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will attempt to download auto-update payloads via HTTP. If the policy is set to false or not set, HTTPS will be used for downloading auto-update payloads.''',
@@ -4830,6 +5098,7 @@
       'example_value': [ "demo@example.com" ],
       'id': 163,
       'caption': '''Device-local accounts''',
+      'tags': [],
       'desc': '''Specifies the list of device-local accounts to be shown on the login screen.
 
       Every list entry specifies an identifier, which is used internally to tell the different device-local accounts apart.''',
@@ -4846,6 +5115,7 @@
       'example_value': "public@example.com",
       'id': 194,
       'caption': '''Public session for auto-login''',
+      'tags': [],
       'desc': '''A public session to auto-login after a delay.
 
       If this policy is set, the specified session will be automatically logged in after a period of time has elapsed at the login screen without user interaction. The public session must already be configured (see |DeviceLocalAccounts|).
@@ -4864,6 +5134,7 @@
       'example_value': 180000,
       'id': 195,
       'caption': '''Public session auto-login timer''',
+      'tags': [],
       'desc': '''The public session auto-login delay.
 
       If the |DeviceLocalAccountAutoLoginId| policy is unset, this policy has no effect. Otherwise:
@@ -4886,6 +5157,7 @@
       'example_value': True,
       'id': 202,
       'caption': '''Enable bailout keyboard shortcut for auto-login''',
+      'tags': [],
       'desc': '''Enable bailout keyboard shortcut for auto-login.
 
       If this policy is unset or set to True and a device-local account is configured for zero-delay auto-login, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will honor the keyboard shortcut Ctrl+Alt+S for bypassing auto-login and showing the login screen.
@@ -4904,6 +5176,7 @@
       'example_value': True,
       'id': 250,
       'caption': '''Enable network configuration prompt when offline''',
+      'tags': [],
       'desc': '''Enable network configuration prompt when offline.
 
       If this policy is unset or set to True and a device-local account is configured for zero-delay auto-login and the device does not have access to the Internet, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will show a network configuration prompt.
@@ -4922,6 +5195,7 @@
       'example_value': True,
       'id': 266,
       'caption': '''Block developer mode''',
+      'tags': [],
       'desc': '''Block developer mode.
 
       If this policy is set to True, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will prevent the device from booting into developer mode. The system will refuse to boot and show an error screen when the developer switch is turned on.
@@ -4941,6 +5215,7 @@
       'example_value': True,
       'id': 138,
       'caption': '''Continue running background apps when <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is closed''',
+      'tags': ['system-security'],
       'desc': '''Determines whether a <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> process is started on OS login and keeps running when the last browser window is closed, allowing background apps and the current browsing session to remain active, including any session cookies. The background process displays an icon in the system tray and can always be closed from there.
 
       If this policy is set to True, background mode is enabled and cannot be controlled by the user in the browser settings.
@@ -4967,6 +5242,7 @@
           'example_value': True,
           'id': 139,
           'caption': '''Disables Drive in the <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> Files app''',
+          'tags': [],
           'desc': '''Disables Google Drive syncing in the <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> Files app when set to True. In that case, no data is uploaded to Google Drive.
 
           If not set or set to False, then users will be able to transfer files to Google Drive.''',
@@ -4983,6 +5259,7 @@
           'example_value': True,
           'id': 140,
           'caption': '''Disables Google Drive over cellular connections in the <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> Files app''',
+          'tags': [],
           'desc': '''Disables Google Drive syncing in the <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> Files app when using a cellular connection when set to True. In that case, data is only synced to Google Drive when connected via WiFi or Ethernet.
 
           If not set or set to False, then users will be able to transfer files to Google Drive via cellular connections.''',
@@ -5005,6 +5282,7 @@
       'example_value': ['pjkljhegncpnkpknbcohdijeoejaedia'],
       'id': 144,
       'caption': '''List of pinned apps to show in the launcher''',
+      'tags': [],
       'desc': '''Lists the application identifiers <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> shows as pinned apps in the launcher bar.
 
       If this policy is configured, the set of applications is fixed and can't be changed by the user.
@@ -5023,6 +5301,7 @@
       'example_value': '*@domain.com',
       'id': 147,
       'caption': '''Restrict which users are allowed to sign in to <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>''',
+      'tags': [],
       'desc': '''Contains a regular expression which is used to determine which users can sign in to <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
       An appropriate error is displayed if a user tries to log in with a username that does not match this pattern.
@@ -5041,6 +5320,7 @@
       'example_value': True,
       'id': 150,
       'caption': '''Disable proceeding from the Safe Browsing warning page''',
+      'tags': [],
       'desc': '''The Safe Browsing service shows a warning page when users navigate to sites that are flagged as potentially malicious. Enabling this setting prevents users from proceeding anyway from the warning page to the malicious site.
 
       If this setting is disabled or not configured then users can choose to proceed to the flagged site after being shown the warning.''',
@@ -5057,6 +5337,7 @@
       'example_value': True,
       'id': 299,
       'caption': '''Allow users to opt in to Safe Browsing extended reporting''',
+      'tags': [],
       'desc': '''Setting this policy to false stops users from choosing to send information about security errors they encounter to Google servers. If this setting is true or not configured, then users will be allowed to send information when they encounter an SSL error or Safe Browsing warning.''',
     },
     {
@@ -5072,6 +5353,7 @@
       'example_value': False,
       'id': 151,
       'caption': '''Enable or disable spell checking web service''',
+      'tags': [],
       'desc': '''<ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> can use a Google web service to help resolve spelling errors. If this setting is enabled, then this service is always used. If this setting is disabled, then this service is never used.
 
       Spell checking can still be performed using a downloaded dictionary; this policy only controls the usage of the online service.
@@ -5090,6 +5372,7 @@
       'example_value': True,
       'id': 152,
       'caption': '''Disable mounting of external storage''',
+      'tags': [],
       'desc': '''Disable mounting of external storage.
 
       When this policy is set to true, external storage will not be available in the file browser.
@@ -5110,6 +5393,7 @@
       'example_value': False,
       'id': 159,
       'caption': '''Allow playing audio''',
+      'tags': [],
       'desc': '''Allow playing audio.
 
       When this policy is set to false, audio output will not be available on the device while the user is logged in.
@@ -5130,6 +5414,7 @@
       'example_value': False,
       'id': 160,
       'caption': '''Allow or deny audio capture''',
+      'tags': [],
       'desc': '''Allow or deny audio capture.
 
       If enabled or not configured (default), the user will be prompted for
@@ -5156,6 +5441,7 @@
       'example_value': ['https://www.example.com/', 'https://[*.]example.edu/'],
       'id': 208,
       'caption': '''URLs that will be granted access to audio capture devices without prompt''',
+      'tags': ['website-sharing'],
       'desc': '''Patterns in this list will be matched against the security
       origin of the requesting URL.  If a match is found, access to audio
       capture devices will be granted without prompt.
@@ -5174,6 +5460,7 @@
       'example_value': False,
       'id': 167,
       'caption': '''Allow or deny video capture''',
+      'tags': [],
       'desc': '''Allow or deny video capture.
 
       If enabled or not configured (default), the user will be prompted for
@@ -5200,6 +5487,7 @@
       'example_value': ['https://www.example.com/', 'https://[*.]example.edu/'],
       'id': 209,
       'caption': '''URLs that will be granted access to video capture devices without prompt''',
+      'tags': ['website-sharing'],
       'desc': '''Patterns in this list will be matched against the security
       origin of the requesting URL.  If a match is found, access to audio
       capture devices will be granted without prompt.
@@ -5218,6 +5506,7 @@
       'example_value': True,
       'id': 153,
       'caption': '''Disable taking screenshots''',
+      'tags': [],
       'desc': '''Disables taking screenshots.
 
       If enabled screenshots cannot be taken using keyboard shortcuts or extension APIs.
@@ -5236,6 +5525,7 @@
       'example_value': 'America/Los_Angeles',
       'id': 158,
       'caption': '''Timezone''',
+      'tags': [],
       'desc': '''Specifies the timezone to be used for the device. Users can override the specified timezone for the current session. However, on logout it is set back to the specified timezone. If an invalid value is provided, the policy is still activated using "GMT" instead. If an empty string is provided, the policy is ignored.
 
       If this policy is not used, the currently active timezone will remain in use however users can change the timezone and the change is persistent. Thus a change by one user affects the login-screen and all other users.
@@ -5256,6 +5546,7 @@
       'example_value': True,
       'id': 236,
       'caption': '''Use 24 hour clock by default''',
+      'tags': [],
       'desc': '''Specifies the clock format be used for the device.
 
       This policy configures the clock format to use on the login screen and as a default for user sessions. Users can still override the clock format for their account.
@@ -5276,6 +5567,7 @@
       'example_value': False,
       'id': 269,
       'caption': '''Enable virtual keyboard''',
+      'tags': [],
       'desc': '''This policy configures enabling the virtual keyboard as an input device on ChromeOS. Users cannot override this policy.
 
       If the policy is set to true, the on-screen virtual keyboard will always be enabled.
@@ -5298,6 +5590,7 @@
       'example_value': True,
       'id': 164,
       'caption': '''Add a logout button to the system tray''',
+      'tags': [],
       'desc': '''Adds a logout button to the system tray.
 
       If enabled, a big, red logout button is shown in the system tray while a session is active and the screen is not locked.
@@ -5316,6 +5609,7 @@
       'example_value': True,
       'id': 165,
       'caption': '''Use built-in DNS client''',
+      'tags': [],
       'desc': '''Controls whether the built-in DNS client is used in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
       If this policy is set to true, the built-in DNS client will be used, if available.
@@ -5355,6 +5649,7 @@
       'example_value': 'Always',
       'id': 166,
       'caption': '''Control shelf auto-hiding''',
+      'tags': [],
       'desc': '''Control auto-hiding of the <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> shelf.
 
       If this policy is set to 'AlwaysAutoHideShelf', the shelf will always auto-hide.
@@ -5377,6 +5672,7 @@
       'example_value': 'Policy User',
       'id': 169,
       'caption': '''Set the display name for device-local accounts''',
+      'tags': [],
       'desc': '''Controls the account name <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> shows on the login screen for the corresponding device-local account.
 
       If this policy is set, the login screen will use the specified string in the picture-based login chooser for the corresponding device-local account.
@@ -5397,6 +5693,7 @@
       'example_value': 3600000,
       'id': 170,
       'caption': '''Limit the session length''',
+      'tags': [],
       'desc': '''Limit the maximum length of a user session.
 
       When this policy is set, it specifies the length of time after which a user is automatically logged out, terminating the session. The user is informed about the remaining time by a countdown timer shown in the system tray.
@@ -5419,6 +5716,7 @@
       'example_value': True,
       'id': 240,
       'caption': '''Allow fullscreen mode''',
+      'tags': [],
       'desc': '''Allow fullscreen mode.
 
       This policy controls the availability of fullscreen mode in which all <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> UI is hidden and only web content is visible.
@@ -5453,6 +5751,7 @@
           'example_value': 420000,
           'id': 172,
           'caption': '''Screen dim delay when running on AC power''',
+          'tags': [],
           'desc': '''Specifies the length of time without user input after which the screen is dimmed when running on AC power.
 
           When this policy is set to a value greater than zero, it specifies the length of time that the user must remain idle before <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> dims the screen.
@@ -5479,6 +5778,7 @@
           'example_value': 480000,
           'id': 173,
           'caption': '''Screen off delay when running on AC power''',
+          'tags': [],
           'desc': '''Specifies the length of time without user input after which the screen is turned off when running on AC power.
 
           When this policy is set to a value greater than zero, it specifies the length of time that the user must remain idle before <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> turns off the screen.
@@ -5505,6 +5805,7 @@
           'example_value': 600000,
           'id': 174,
           'caption': '''Screen lock delay when running on AC power''',
+          'tags': [],
           'desc': '''Specifies the length of time without user input after which the screen is locked when running on AC power.
 
           When this policy is set to a value greater than zero, it specifies the length of time that the user must remain idle before <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> locks the screen.
@@ -5533,6 +5834,7 @@
           'example_value': 545000,
           'id': 197,
           'caption': '''Idle warning delay when running on AC power''',
+          'tags': [],
           'desc': '''Specifies the length of time without user input after which a warning dialog is shown when running on AC power.
 
           When this policy is set, it specifies the length of time that the user must remain idle before <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> shows a warning dialog telling the user that the idle action is about to be taken.
@@ -5557,6 +5859,7 @@
           'example_value': 1800000,
           'id': 175,
           'caption': '''Idle delay when running on AC power''',
+          'tags': [],
           'desc': '''Specifies the length of time without user input after which the idle action is taken when running on AC power.
 
           When this policy is set, it specifies the length of time that the user must remain idle before <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> takes the idle action, which can be configured separately.
@@ -5581,6 +5884,7 @@
           'example_value': 300000,
           'id': 176,
           'caption': '''Screen dim delay when running on battery power''',
+          'tags': [],
           'desc': '''Specifies the length of time without user input after which the screen is dimmed when running on battery power.
 
           When this policy is set to a value greater than zero, it specifies the length of time that the user must remain idle before <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> dims the screen.
@@ -5607,6 +5911,7 @@
           'example_value': 360000,
           'id': 177,
           'caption': '''Screen off delay when running on battery power''',
+          'tags': [],
           'desc': '''Specifies the length of time without user input after which the screen is turned off when running on battery power.
 
           When this policy is set to a value greater than zero, it specifies the length of time that the user must remain idle before <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> turns off the screen.
@@ -5633,6 +5938,7 @@
           'example_value': 600000,
           'id': 178,
           'caption': '''Screen lock delay when running on battery power''',
+          'tags': [],
           'desc': '''Specifies the length of time without user input after which the screen is locked when running on battery power.
 
           When this policy is set to a value greater than zero, it specifies the length of time that the user must remain idle before <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> locks the screen.
@@ -5661,6 +5967,7 @@
           'example_value': 545000,
           'id': 198,
           'caption': '''Idle warning delay when running on battery power''',
+          'tags': [],
           'desc': '''Specifies the length of time without user input after which a warning dialog is shown when running on battery power.
 
           When this policy is set, it specifies the length of time that the user must remain idle before <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> shows a warning dialog telling the user that the idle action is about to be taken.
@@ -5685,6 +5992,7 @@
           'example_value': 600000,
           'id': 179,
           'caption': '''Idle delay when running on battery power''',
+          'tags': [],
           'desc': '''Specifies the length of time without user input after which the idle action is taken when running on battery power.
 
           When this policy is set, it specifies the length of time that the user must remain idle before <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> takes the idle action, which can be configured separately.
@@ -5731,6 +6039,7 @@
           'example_value': 0,
           'id': 180,
           'caption': '''Action to take when the idle delay is reached''',
+          'tags': [],
           'desc': '''Specify the action to take when the idle delay is reached.
 
           Note that this policy is deprecated and will be removed in the future.
@@ -5777,6 +6086,7 @@
           'example_value': 0,
           'id': 226,
           'caption': '''Action to take when the idle delay is reached while running on AC power''',
+          'tags': [],
           'desc': '''Specify the action to take when the idle delay is reached while running on AC power.
 
           When this policy is set, it specifies the action that <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> takes when the user remains idle for the length of time given by the idle delay, which can be configured separately.
@@ -5823,6 +6133,7 @@
           'example_value': 0,
           'id': 222,
           'caption': '''Action to take when the idle delay is reached while running on battery power''',
+          'tags': [],
           'desc': '''Specify the action to take when the idle delay is reached while running on battery power.
 
           When this policy is set, it specifies the action that <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> takes when the user remains idle for the length of time given by the idle delay, which can be configured separately.
@@ -5868,6 +6179,7 @@
           'example_value': 0,
           'id': 181,
           'caption': '''Action to take when the user closes the lid''',
+          'tags': [],
           'desc': '''Specify the action to take when the user closes the lid.
 
           When this policy is set, it specifies the action that <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> takes when the user closes the device's lid.
@@ -5888,6 +6200,7 @@
           'example_value': True,
           'id': 182,
           'caption': '''Specify whether audio activity affects power management''',
+          'tags': [],
           'desc': '''Specifies whether audio activity affects power management.
 
           If this policy is set to True or is unset, the user is not considered to be idle while audio is playing. This prevents the idle timeout from being reached and the idle action from being taken. However, screen dimming, screen off and screen lock will be performed after the configured timeouts, irrespective of audio activity.
@@ -5906,6 +6219,7 @@
           'example_value': True,
           'id': 183,
           'caption': '''Specify whether video activity affects power management''',
+          'tags': [],
           'desc': '''Specifies whether video activity affects power management.
 
           If this policy is set to True or is unset, the user is not considered to be idle while video is playing. This prevents the idle delay, screen dim delay, screen off delay and screen lock delay from being reached and the corresponding actions from being taken.
@@ -5925,6 +6239,7 @@
           'example_value': 200,
           'id': 184,
           'caption': '''Percentage by which to scale the idle delay in presentation mode (deprecated)''',
+          'tags': [],
           'desc': '''This policy has been retired as of <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version 29. Please use the PresentationScreenDimDelayScale policy instead.''',
         },
         {
@@ -5939,6 +6254,7 @@
           'example_value': 200,
           'id': 220,
           'caption': '''Percentage by which to scale the screen dim delay in presentation mode''',
+          'tags': [],
           'desc': '''Specifies the percentage by which the screen dim delay is scaled when the device is in presentation mode.
 
           If this policy is set, it specifies the percentage by which the screen dim delay is scaled when the device is in presentation mode. When the screen dim delay is scaled, the screen off, screen lock and idle delays get adjusted to maintain the same distances from the screen dim delay as originally configured.
@@ -5959,6 +6275,7 @@
           'example_value': False,
           'id': 203,
           'caption': '''Allow screen wake locks''',
+          'tags': [],
           'desc': '''Specifies whether screen wake locks are allowed. Screen wake locks can be requested by extensions via the power management extension API.
 
           If this policy is set to true or left not set, screen wake locks will be honored for power management.
@@ -5977,6 +6294,7 @@
           'example_value': 200,
           'id': 210,
           'caption': '''Percentage by which to scale the screen dim delay if the user becomes active after dimming''',
+          'tags': [],
           'desc': '''Specifies the percentage by which the screen dim delay is scaled when user activity is observed while the screen is dimmed or soon after the screen has been turned off.
 
           If this policy is set, it specifies the percentage by which the screen dim delay is scaled when user activity is observed while the screen is dimmed or soon after the screen has been turned off. When the dim delay is scaled, the screen off, screen lock and idle delays get adjusted to maintain the same distances from the screen dim delay as originally configured.
@@ -5997,6 +6315,7 @@
           'example_value': True,
           'id': 247,
           'caption': '''Wait for initial user activity''',
+          'tags': [],
           'desc': '''Specifies whether power management delays and the session length limit should only start running after the first user activity has been observed in a session.
 
           If this policy is set to True, power management delays and the session length limit do not start running until after the first user activity has been observed in a session.
@@ -6067,6 +6386,7 @@
           },
           'id': 258,
           'caption': '''Power management settings when the user becomes idle''',
+          'tags': [],
           'desc': '''Configure power management settings when the user becomes idle.
 
           This policy controls multiple settings for the power management strategy when the user becomes idle.
@@ -6123,6 +6443,7 @@
           },
           'id': 259,
           'caption': '''Screen lock delays''',
+          'tags': [],
           'desc': '''Specifies the length of time without user input after which the screen is locked when running on AC power or battery.
 
           When the length of time is set to a value greater than zero, it represents the length of time that the user must remain idle before <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> locks the screen.
@@ -6206,6 +6527,7 @@
       },
       'id': 225,
       'caption': '''Power management on the login screen''',
+      'tags': [],
       'desc': '''Configure power management on the login screen in <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph>.
 
       This policy lets you configure how <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> behaves when there is no user activity for some amount of time while the login screen is being shown. The policy controls multiple settings. For their individual semantics and value ranges, see the corresponding policies that control power management within a session. The only deviations from these policies are:
@@ -6228,6 +6550,7 @@
       'example_value': True,
       'id': 185,
       'caption': '''Allow users to redeem offers through Chrome OS Registration''',
+      'tags': [],
       'desc': '''IT admins for enterprise devices can use this flag to control whether to allow users to redeem offers through Chrome OS Registration.
 
       If this policy is set to true or left not set, users will be able to redeem offers through Chrome OS Registration.
@@ -6246,6 +6569,7 @@
       'example_value': 'https://www.example.com/terms_of_service.txt',
       'id': 186,
       'caption': '''Set the Terms of Service for a device-local account''',
+      'tags': [],
       'desc': '''Sets the Terms of Service that the user must accept before starting a device-local account session.
 
       If this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will download the Terms of Service and present them to the user whenever a device-local account session is starting. The user will only be allowed into the session after accepting the Terms of Service.
@@ -6273,6 +6597,7 @@
           'example_value': True,
           'id': 188,
           'caption': '''Show accessibility options in system tray menu''',
+          'tags': [],
           'desc': '''Show <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> accessibility options in the system menu.
 
           If this policy is set to true, Accessibility options always appear in system tray menu.
@@ -6296,6 +6621,7 @@
           'example_value': True,
           'id': 211,
           'caption': '''Enable large cursor''',
+          'tags': [],
           'desc': '''Enable the large cursor accessibility feature.
 
           If this policy is set to true, the large cursor will always be enabled.
@@ -6319,6 +6645,7 @@
           'example_value': True,
           'id': 212,
           'caption': '''Enable spoken feedback''',
+          'tags': [],
           'desc': '''Enable the spoken feedback accessibility feature.
 
           If this policy is set to true, spoken feedback will always be enabled.
@@ -6342,6 +6669,7 @@
           'example_value': True,
           'id': 213,
           'caption': '''Enable high contrast mode''',
+          'tags': [],
           'desc': '''Enable the high contrast mode accessibility feature.
 
           If this policy is set to true, high contrast mode will always be enabled.
@@ -6365,6 +6693,7 @@
           'example_value': True,
           'id': 255,
           'caption': '''Enable on-screen keyboard''',
+          'tags': [],
           'desc': '''Enable the on-screen keyboard accessibility feature.
 
           If this policy is set to true, the on-screen keyboard will always be enabled.
@@ -6388,6 +6717,7 @@
           'example_value': True,
           'id': 260,
           'caption': '''Media keys default to function keys''',
+          'tags': [],
           'desc': '''Changes the default behaviour of the top row keys to function keys.
 
           If this policy is set to true, the keyboard's top row of keys will produce function key commands per default. The search key has to be pressed to revert their behavior back to media keys.
@@ -6422,6 +6752,7 @@
           'example_value': 1,
           'id': 214,
           'caption': '''Set screen magnifier type''',
+          'tags': [],
           'desc': '''Set the type of screen magnifier that is enabled.
 
           If this policy is set, it controls the type of screen magnifier that is enabled. Setting the policy to "None" disables the screen magnifier.
@@ -6442,6 +6773,7 @@
           'example_value': True,
           'id': 215,
           'caption': '''Set default state of the large cursor on the login screen''',
+          'tags': [],
           'desc': '''Set the default state of the large cursor accessibility feature on the login screen.
 
           If this policy is set to true, the large cursor will be enabled when the login screen is shown.
@@ -6464,6 +6796,7 @@
           'example_value': True,
           'id': 216,
           'caption': '''Set the default state of spoken feedback on the login screen''',
+          'tags': [],
           'desc': '''Set the default state of the spoken feedback accessibility feature on the login screen.
 
           If this policy is set to true, spoken feedback will be enabled when the login screen is shown.
@@ -6486,6 +6819,7 @@
           'example_value': True,
           'id': 217,
           'caption': '''Set the default state of high contrast mode on the login screen''',
+          'tags': [],
           'desc': '''Set the default state of the high contrast mode accessibility feature on the login screen.
 
           If this policy is set to true, high contrast mode will be enabled when the login screen is shown.
@@ -6508,6 +6842,7 @@
           'example_value': True,
           'id': 256,
           'caption': '''Set default state of the on-screen keyboard on the login screen''',
+          'tags': [],
           'desc': '''Set the default state of the on-screen keyboard accessibility feature on the login screen.
 
           If this policy is set to true, the on-screen keyboard will be enabled when the login screen is shown.
@@ -6545,6 +6880,7 @@
           'example_value': 1,
           'id': 218,
           'caption': '''Set the default screen magnifier type enabled on the login screen''',
+          'tags': [],
           'desc': '''Set the default type of screen magnifier that is enabled on the login screen.
 
           If this policy is set, it controls the type of screen magnifier that is enabled when the login screen is shown. Setting the policy to "None" disables the screen magnifier.
@@ -6567,6 +6903,7 @@
       'example_value': True,
       'id': 189,
       'caption': '''Hide the web store from the New Tab Page and app launcher''',
+      'tags': [],
       'desc': '''Hide the Chrome Web Store app and footer link from the New Tab Page and <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> app launcher.
 
       When this policy is set to true, the icons are hidden.
@@ -6588,6 +6925,7 @@
       'example_value': [ "enable-managed-mode", "my-cool-flag" ],
       'id': 191,
       'caption': '''System wide flags to be applied on <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> start-up''',
+      'tags': [],
       'desc': '''Specifies the flags that should be applied to <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> when it starts. The specified flags are applied before <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is started even for the sign-in screen.''',
     },
     {
@@ -6602,6 +6940,7 @@
       'example_value': 86400,
       'id': 192,
       'caption': '''Limit device uptime by automatically rebooting''',
+      'tags': [],
       'desc': '''Limit the device uptime by scheduling automatic reboots.
 
       When this policy is set, it specifies the length of device uptime after which an automatic reboot is scheduled.
@@ -6628,6 +6967,7 @@
       'example_value': True,
       'id': 193,
       'caption': '''Automatically reboot after update''',
+      'tags': [],
       'desc': '''Schedule an automatic reboot after a <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> update has been applied.
 
       When this policy is set to true, an automatic reboot is scheduled when a <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> update has been applied and a reboot is required to complete the update process. The reboot is scheduled immediately but may be delayed on the device by up to 24 hours if a user is currently using the device.
@@ -6651,6 +6991,7 @@
       'id': 196,
       'future': True,
       'caption': '''Set the restriction on the fetching of the Variations seed''',
+      'tags': [],
       'desc': '''Add a parameter to the fetching of the Variations seed in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
       If specified, will add a query parameter called 'restrict' to the URL used to fetch the Variations seed. The value of the parameter will be the value specified in this policy.
@@ -6670,6 +7011,7 @@
       'id': 199,
       'future': True,
       'caption': '''Set the restriction on the fetching of the Variations seed''',
+      'tags': [],
       'desc': '''Add a parameter to the fetching of the Variations seed in <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph>.
 
       If specified, will add a query parameter called 'restrict' to the URL used to fetch the Variations seed. The value of the parameter will be the value specified in this policy.
@@ -6694,6 +7036,7 @@
           'example_value': True,
           'id': 207,
           'caption': '''Enable remote attestation for the device''',
+          'tags': [],
           'desc': '''If true, remote attestation is allowed for the device and a certificate will automatically be generated and uploaded to the Device Management Server.
 
           If it is set to false, or if it is not set, no certificate will be generated and calls to the enterprise.platformKeysPrivate extension API will fail.''',
@@ -6710,6 +7053,7 @@
           'example_value': True,
           'id': 200,
           'caption': '''Enable remote attestation for the user''',
+          'tags': [],
           'desc': '''If true, the user can use the hardware on Chrome devices to remote attest its identity to the privacy CA via the Enterprise Platform Keys API chrome.enterprise.platformKeysPrivate.challengeUserKey().
 
           If it is set to false, or if it is not set, calls to the API will fail with an error code.''',
@@ -6729,6 +7073,7 @@
           'example_value': ['ghdilpkmfbfdnomkmaiogjhjnggaggoi'],
           'id': 201,
           'caption': '''Extensions allowed to to use the remote attestation API''',
+          'tags': [],
           'desc': '''This policy specifies the allowed extensions to use Enterprise Platform Keys API chrome.enterprise.platformKeysPrivate.challengeUserKey() for remote attestation. Extensions must be added to this list to use the API.
 
           If an extension is not in the list, or the list is not set, the call to the API will fail with an error code.''',
@@ -6745,6 +7090,7 @@
           'example_value': True,
           'id': 239,
           'caption': '''Enable the use of remote attestation for content protection for the device''',
+          'tags': [],
           'desc': '''Chrome OS devices can use remote attestation (Verified Access) to get a certificate issued by the Chrome OS CA that asserts the device is eligible to play protected content.  This process involves sending hardware endorsement information to the Chrome OS CA which uniquely identifies the device.
 
           If this setting is false, the device will not use remote attestation for content protection and the device may be unable to play protected content.
@@ -6756,6 +7102,7 @@
     {
       'name': 'SuppressChromeFrameTurndownPrompt',
       'caption': '''Suppress the <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph> turndown prompt''',
+      'tags': [],
       'desc': '''Suppresses the turndown prompt that appears when a site is rendered by <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph>.''',
       'type': 'main',
       'schema': { 'type': 'boolean' },
@@ -6806,6 +7153,7 @@
           'example_value': 2,
           'id': 204,
           'caption': '''Default behavior for sites not in any content pack''',
+          'tags': [],
           'desc': '''The default behavior for sites not in any content pack.
 
           This policy is for internal use by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> itself.''',
@@ -6832,6 +7180,7 @@
           },
           'id': 205,
           'caption': '''Managed user manual exception hosts''',
+          'tags': [],
           'desc': '''A dictionary mapping hostnames to a boolean flag specifying whether access to the host should be allowed (true) or blocked (false).
 
           This policy is for internal use by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> itself.''',
@@ -6858,6 +7207,7 @@
           },
           'id': 206,
           'caption': '''Managed user manual exception URLs''',
+          'tags': [],
           'desc': '''A dictionary mapping URLs to a boolean flag specifying whether access to the host should be allowed (true) or blocked (false).
 
           This policy is for internal use by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> itself.''',
@@ -6874,6 +7224,7 @@
           'example_value': True,
           'id': 219,
           'caption': '''Enable supervised users''',
+          'tags': [],
           'desc': '''If set to true, supervised users can be created and used.
 
           If set to false or not configured, supervised-user creation and login will be disabled. All existing supervised users will be hidden.
@@ -6892,6 +7243,7 @@
           'example_value': True,
           'id': 223,
           'caption': '''Enable creation of supervised users''',
+          'tags': [],
           'desc': '''If set to false, supervised-user creation by this user will be disabled. Any existing supervised users will still be available.
 
           If set to true or not configured, supervised users can be created and managed by this user.'''
@@ -6949,6 +7301,7 @@
       ],
       'id': 227,
       'caption': '''Managed Bookmarks''',
+      'tags': [],
       'desc': '''Configures a list of managed bookmarks.
 
       The policy consists of a list of bookmarks whereas each bookmark is a
@@ -6974,6 +7327,7 @@
       'example_value': True,
       'id': 241,
       'caption': '''Enable the data compression proxy feature''',
+      'tags': [],
       'desc': '''Enable or disable the data compression proxy and prevents users from changing this setting.
 
       If you enable or disable this setting, users cannot change or override this setting.
@@ -6999,6 +7353,7 @@
       'max_size': 524288,
       'id': 249,
       'caption': '''User avatar image''',
+      'tags': [],
       'desc': '''Configure user avatar image.
 
       This policy allows you to configure the avatar image representing the user on the login screen. The policy is set by specifying the URL from which <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> can download the avatar image and a cryptographic hash used to verify the integrity of the download. The image must be in JPEG format, its size must not exceed 512kB. The URL must be accessible without any authentication.
@@ -7045,6 +7400,7 @@
       'max_size': 16777216,
       'id': 262,
       'caption': '''Wallpaper image''',
+      'tags': [],
       'desc': '''Configure wallpaper image.
 
       This policy allows you to configure the wallpaper image that is shown on the desktop and on the login screen background for the user. The policy is set by specifying the URL from which <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> can download the wallpaper image and a cryptographic hash used to verify the integrity of the download. The image must be in JPEG format, its file size must not exceed 16MB. The URL must be accessible without any authentication.
@@ -7099,6 +7455,7 @@
       'example_value': ['ShowModalDialog_EffectiveUntil20150430'],
       'id': 270,
       'caption': '''Enable deprecated web platform features for a limited time''',
+      'tags': ['system-security'],
       'desc': '''Specify a list of deprecated web platform features to re-enable temporarily.
 
       This policy gives administrators the ability to re-enable deprecated web platform features for a limited time. Features are identified by a string tag and the features corresponding to the tags included in the list specified by this policy will get re-enabled.
@@ -7120,6 +7477,7 @@
       'example_value': True,
       'id': 271,
       'caption': '''Transfer SAML IdP cookies during login''',
+      'tags': [],
       'desc': '''Specifies whether authentication cookies set by a SAML IdP during login should be transferred to the user's profile.
 
       When a user authenticates via a SAML IdP during login, cookies set by the IdP are written to a temporary profile at first. These cookies can be transferred to the user's profile to carry forward the authentication state.
@@ -7143,6 +7501,7 @@
       'default_for_enterprise_users': False,
       'id': 272,
       'caption': '''Allows Smart Lock to be used''',
+      'tags': [],
       'desc': '''Allows Smart Lock to be used on <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> devices.
 
       If you enable this setting, users will be allowed to use Smart Lock if the requirements for the feature are satisfied.
@@ -7167,6 +7526,7 @@
       'example_value': ['de', 'fr'],
       'id': 274,
       'caption': '''Set the recommended locales for a public session''',
+      'tags': [],
       'desc': '''Sets one or more recommended locales for a public sessions, allowing users to easily choose one of these locales.
 
       The user can choose a locale and a keyboard layout before starting a public session. By default, all locales supported by <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> are listed in alphabetic order. You can use this policy to move a set of recommended locales to the top of the list.
@@ -7196,6 +7556,7 @@
       'example_value': True,
       'id': 275,
       'caption': '''Enable guest mode in browser''',
+      'tags': [],
       'desc': '''If this policy is set to true or not configured, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will enable guest logins. Guest logins are <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> profiles where all windows are in incognito mode.
 
       If this policy is set to false, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will not allow guest profiles to be started.''',
@@ -7212,6 +7573,7 @@
       'example_value': True,
       'id': 276,
       'caption': '''Enable add person in profile manager''',
+      'tags': [],
       'desc': '''If this policy is set to true or not configured, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will allow Add Person from the user manager.
 
       If this policy is set to false, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will not allow creation of new profiles from the profile manager.''',
@@ -7263,6 +7625,7 @@
       'example_value': 'ssl3',
       'id': 279,
       'caption': '''Minimum SSL version enabled''',
+      'tags': [],
       'desc': '''Warning: SSLv3 support will be entirely removed from <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> after version 43 (around July 2015) and this policy will be removed at the same time.
 
       If this policy is not configured then <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> uses a default minimum version which is SSLv3 in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> 39 and TLS 1.0 in later versions.
@@ -7312,6 +7675,7 @@
       'example_value': 'tls1.1',
       'id': 280,
       'caption': '''Minimum TLS version to fallback to''',
+      'tags': [],
       'desc': '''Warning: The TLS 1.0 version fallback will be removed from <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> after version 47 (around January 2016) and the "tls1" option will stop working then.
 
       When a TLS handshake fails, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will retry the connection with a lesser version of TLS in order to work around bugs in HTTPS servers. This setting configures the version at which this fallback process will stop. If a server performs version negotiation correctly (i.e. without breaking the connection) then this setting doesn't apply. Regardless, the resulting connection must still comply with SSLVersionMin.
@@ -7336,6 +7700,7 @@
       'example_value': True,
       'id': 281,
       'caption': '''Enable Touch to Search''',
+      'tags': [],
       'desc': '''Enables the availability of Touch to Search in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s content view.
 
       If you enable this setting, Touch to Search will be available to the user and they can choose to turn the feature on or off.
@@ -7356,6 +7721,7 @@
       'example_value': True,
       'id': 284,
       'caption': '''Automatic reboot on device shutdown''',
+      'tags': [],
       'desc': '''If this policy is set to false or not configured, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will allow the user to shut down the device.
       If this policy is set to true, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will trigger a reboot when the user shuts down the device. <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> replaces all occurrences of shutdown buttons in the UI by reboot buttons. If the user shuts down the device using the power button, it will not automatically reboot, even if the policy is enabled.''',
     },
@@ -7371,6 +7737,7 @@
       'example_value': 104857600,
       'id': 296,
       'caption': '''Set Apps and Extensions cache size (in bytes)''',
+      'tags': [],
       'desc': '''<ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> caches Apps and Extensions for installation by multiple users of a single device to avoid re-downloading them for each user.
       If this policy is not configured or the value is lower than 1 MB, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will use the default cache size.''',
     },
@@ -7386,6 +7753,7 @@
       'example_value': 'students.school.edu',
       'id': 297,
       'caption': '''Enable domain name autocomplete during user sign in''',
+      'tags': [],
       'desc': '''If this policy is set to a blank string or not configured, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will not show an autocomplete option during user sign-in flow.
       If this policy is set to a string representing a domain name, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will show an autocomplete option during user sign-in allowing the user to type in only his user name without the domain name extension.  The user will be able to overwrite this domain name extension.''',
     },
@@ -7401,6 +7769,7 @@
       'example_value': True,
       'id': 298,
       'caption': '''Maximize the first browser window on first run''',
+      'tags': [],
       'desc': '''If this policy is set to true, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will unconditionally maximize the the first window shown on first run.
       If this policy is set to false or not configured, a heuristic will decide whether to maximize the first window shown, based on the screen size.''',
     },
@@ -7416,6 +7785,7 @@
       'example_value': True,
       'id': 300,
       'caption': '''Allow proceeding from the SSL warning page''',
+      'tags': [],
       'desc': '''Chrome shows a warning page when users navigate to sites that have SSL errors. By default or when this policy is set to true, users are allowed to click through these warning pages.
       Setting this policy to false disallows users to click through any warning page.''',
     },
@@ -7431,6 +7801,7 @@
       'example_value': True,
       'id': 301,
       'caption': '''Allows QUIC protocol''',
+      'tags': [],
       'desc': '''If this policy is set to true or not set usage of QUIC protocol in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is allowed.
       If this policy is set to false usage of QUIC protocol is disallowed.''',
     },
@@ -7464,6 +7835,7 @@
       },
       'id': 302,
       'caption': 'Key Permissions',
+      'tags': [],
       'desc': '''Grants access to corporate keys to extensions.
 
       Keys are designated for corporate usage if they're generated using the chrome.enterprise.platformKeys API on a managed account. Keys imported or generated in another way are not designated for corporate usage.
@@ -7481,6 +7853,7 @@
       'schema': { 'type': 'boolean' },
       'id': 303,
       'caption': 'Enable showing the welcome page on the first browser launch following OS upgrade.',
+      'tags': [],
       'desc': '''Enable showing the welcome page on the first browser launch following OS upgrade.
 
       If this policy is set to true or not configured, the browser will re-show the welcome page on the first launch following an OS upgrade.
@@ -7504,6 +7877,7 @@
       'example_value': True,
       'id': 304,
       'caption': '''Use hardware acceleration when available''',
+      'tags': [],
       'desc': '''Use hardware acceleration when available.
 
       If this policy is set to true or left unset, hardware acceleration will be enabled unless a certain GPU feature is blacklisted.
@@ -7523,6 +7897,7 @@
       'example_value': True,
       'id': 307,
       'caption': '''Make Unified Desktop available and turn on by default.''',
+      'tags': [],
       'desc': '''If this policy is set to true, Unified Desktop is allowed and
       enabled by default, which allows applications to span multiple displays.
       The user may disable Unified Desktop for individual displays by unchecking

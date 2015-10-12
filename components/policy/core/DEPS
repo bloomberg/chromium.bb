@@ -12,4 +12,5 @@ include_rules = [
   "+policy/proto/policy_signing_key.pb.h",
   "+policy/proto/cloud_policy.pb.h",
   "+policy/proto/device_management_backend.pb.h",
+  "+policy/risk_tag.h",
 ]

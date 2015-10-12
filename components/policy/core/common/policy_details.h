@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "components/policy/policy_export.h"
+#include "policy/risk_tag.h"
 
 namespace policy {
 
@@ -29,6 +30,9 @@ struct POLICY_EXPORT PolicyDetails {
   // allowed for that data.
   // Otherwise this field is 0 and doesn't have any meaning.
   size_t max_external_data_size;
+
+  // Contains tags that describe impact on a user's privacy or security.
+  RiskTag risk_tags[kMaxRiskTagCount];
 };
 
 // A typedef for functions that match the signature of

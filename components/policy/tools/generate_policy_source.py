@@ -11,6 +11,7 @@ chromium_os_flag should be 1 if this is a Chromium OS build
 template is the path to a .json policy template file.'''
 
 from __future__ import with_statement
+from collections import OrderedDict
 from functools import partial
 import json
 from optparse import OptionParser
@@ -62,9 +63,12 @@ class PolicyDetails:
       self.caption = PolicyDetails._RemovePlaceholders(item['caption'])
       self.value = item['value']
 
-  def __init__(self, policy, chrome_major_version, os, is_chromium_os):
+  def __init__(self, policy, chrome_major_version, os, is_chromium_os,
+               valid_tags):
     self.id = policy['id']
     self.name = policy['name']
+    self.tags = policy.get('tags', None)
+    self._CheckTagsValidity(valid_tags)
     features = policy.get('features', {})
     self.can_be_recommended = features.get('can_be_recommended', False)
     self.can_be_mandatory = features.get('can_be_mandatory', True)
@@ -124,6 +128,18 @@ class PolicyDetails:
 
   PH_PATTERN = re.compile('<ph[^>]*>([^<]*|[^<]*<ex>([^<]*)</ex>[^<]*)</ph>')
 
+  def _CheckTagsValidity(self, valid_tags):
+    if self.tags == None:
+      raise RuntimeError('Policy ' + self.name + ' has to contain a list of '
+                         'tags!\n An empty list is also valid but means '
+                         'setting this policy can never harm the user\'s '
+                         'privacy or security.\n');
+    for tag in self.tags:
+      if not tag in valid_tags:
+        raise RuntimeError('Invalid Tag:' + tag + '!\n'
+                           'Chose a valid tag from \'risk_tag_definitions\' (a '
+                           'subproperty of root in policy_templates.json)!')
+
   # Simplistic grit placeholder stripper.
   @staticmethod
   def _RemovePlaceholders(text):
@@ -174,7 +190,10 @@ def main():
                     help='generate an XML file as specified by '
                     'Android\'s App Restriction Schema',
                     metavar='FILE')
-
+  parser.add_option('--rth', '--risk-tag-header',
+                    dest='risk_header_path',
+                    help='generate header file for policy risk tags',
+                    metavar='FILE')
   (opts, args) = parser.parse_args()
 
   if len(args) != 4:
@@ -190,18 +209,23 @@ def main():
 
   major_version = ParseVersionFile(version_path)
   template_file_contents = _LoadJSONFile(template_file_name)
-  policy_details = [ PolicyDetails(policy, major_version, os, is_chromium_os)
+  riskTags = RiskTags(template_file_contents)
+  policy_details = [ PolicyDetails(policy, major_version, os, is_chromium_os,
+                                   riskTags.GetValidTags())
                      for policy in _Flatten(template_file_contents) ]
+  riskTags.ComputeMaxTags(policy_details)
   sorted_policy_details = sorted(policy_details, key=lambda policy: policy.name)
 
   def GenerateFile(path, writer, sorted=False, xml=False):
     if path:
       with open(path, 'w') as f:
         _OutputGeneratedWarningHeader(f, template_file_name, xml)
-        writer(sorted and sorted_policy_details or policy_details, os, f)
+        writer(sorted and sorted_policy_details or policy_details,
+               os, f, riskTags)
 
   GenerateFile(opts.header_path, _WritePolicyConstantHeader, sorted=True)
   GenerateFile(opts.source_path, _WritePolicyConstantSource, sorted=True)
+  GenerateFile(opts.risk_header_path, _WritePolicyRiskTagHeader)
   GenerateFile(opts.cloud_policy_proto_path, _WriteCloudPolicyProtobuf)
   GenerateFile(opts.chrome_settings_proto_path, _WriteChromeSettingsProtobuf)
   GenerateFile(opts.cloud_policy_decoder_path, _WriteCloudPolicyDecoder)
@@ -268,7 +292,7 @@ def _LoadJSONFile(json_file):
 
 #------------------ policy constants header ------------------------#
 
-def _WritePolicyConstantHeader(policies, os, f):
+def _WritePolicyConstantHeader(policies, os, f, riskTags):
   f.write('#ifndef CHROME_COMMON_POLICY_CONSTANTS_H_\n'
           '#define CHROME_COMMON_POLICY_CONSTANTS_H_\n'
           '\n'
@@ -632,19 +656,18 @@ class SchemaNodesGenerator:
     self.properties_nodes = map(partial(self.ResolveID, 3),
         self.properties_nodes)
 
-def _WritePolicyConstantSource(policies, os, f):
+def _WritePolicyConstantSource(policies, os, f, riskTags):
   f.write('#include "policy/policy_constants.h"\n'
           '\n'
           '#include <algorithm>\n'
           '#include <climits>\n'
           '\n'
           '#include "base/logging.h"\n'
+          '#include "policy/risk_tag.h"\n'
           '#include "components/policy/core/common/policy_types.h"\n'
           '#include "components/policy/core/common/schema_internal.h"\n'
           '\n'
           'namespace policy {\n'
-          '\n'
-          'namespace {\n'
           '\n')
 
   # Generate the Chrome schema.
@@ -659,24 +682,29 @@ def _WritePolicyConstantSource(policies, os, f):
       chrome_schema['properties'][policy.name] = policy.schema
 
   # Note: this list must be kept in sync with the known property list of the
-  # Chrome schema, so that binary seaching in the PropertyNode array gets the
+  # Chrome schema, so that binary searching in the PropertyNode array gets the
   # right index on this array as well. See the implementation of
   # GetChromePolicyDetails() below.
   f.write('const PolicyDetails kChromePolicyDetails[] = {\n'
           '//  is_deprecated  is_device_policy  id    max_external_data_size\n')
   for policy in policies:
     if policy.is_supported:
-      f.write('  { %-14s %-16s %3s, %24s },\n' % (
+      f.write('  { %-14s %-16s %3s, %24s,\n'
+              '    %s },\n' % (
                   'true,' if policy.is_deprecated else 'false,',
                   'true,' if policy.is_device_only else 'false,',
                   policy.id,
-                  policy.max_size))
+                  policy.max_size,
+                  riskTags.ToInitString(policy.tags)))
   f.write('};\n\n')
 
   schema_generator = SchemaNodesGenerator(shared_strings)
   schema_generator.GenerateAndCollectID(chrome_schema, 'root node')
   schema_generator.ResolveReferences()
   schema_generator.Write(f)
+
+  f.write('\n'
+          'namespace {\n')
 
   f.write('bool CompareKeys(const internal::PropertyNode& node,\n'
           '                 const std::string& key) {\n'
@@ -769,6 +797,87 @@ def _WritePolicyConstantSource(policies, os, f):
           '}  // namespace policy\n')
 
 
+#------------------ policy risk tag header ------------------------#
+
+class RiskTags(object):
+  '''Generates files and strings to translate the parsed risk tags.'''
+  # TODO(fhorschig|tnagel): Add, Check & Generate translation descriptions.
+
+  def __init__(self, template_file_contents):
+    self.max_tags = None
+    self.enum_for_tag = OrderedDict()  # Ordered by severity as stated in JSON.
+    self._ReadRiskTagMetaData(template_file_contents)
+
+  def GenerateEnum(self):
+    values = ['  ' + self.enum_for_tag[tag] for tag in self.enum_for_tag]
+    values.append('  RISK_TAG_COUNT')
+    values.append('  RISK_TAG_NONE')
+    enum_text = 'enum RiskTag {\n'
+    enum_text +=',\n'.join(values) + '\n};\n'
+    return enum_text
+
+  def GetMaxTags(self):
+    return str(self.max_tags)
+
+  def GetValidTags(self):
+    return [tag for tag in self.enum_for_tag]
+
+  def ToInitString(self, tags):
+    all_tags = [self._ToEnum(tag) for tag in tags]
+    all_tags += ["RISK_TAG_NONE" for missing in range(len(tags), self.max_tags)]
+    str_tags = "{ " + ", ".join(all_tags) + " }"
+    return "\n    ".join(textwrap.wrap(str_tags, 69))
+
+  def ComputeMaxTags(self, policies):
+    self.max_tags = 0
+    for policy in policies:
+      if not policy.is_supported or policy.tags == None:
+        continue;
+      self.max_tags = max(len(policy.tags), self.max_tags)
+
+  def _ToEnum(self, tag):
+    if tag in self.enum_for_tag:
+      return self.enum_for_tag[tag]
+    raise RuntimeError('Invalid Tag:' + tag + '!\n'
+                       'Chose a valid tag from \'risk_tag_definitions\' (a '
+                       'subproperty of root in policy_templates.json)!')
+
+  def _ReadRiskTagMetaData(self, template_file_contents):
+    for tag in template_file_contents['risk_tag_definitions']:
+      if tag.get('name', None) == None:
+        raise RuntimeError('Tag in \'risk_tag_definitions\' without '
+                           'description found!')
+      if tag.get('description', None) == None:
+        raise RuntimeError('Tag ' + tag['name'] + ' has no description!')
+      if tag.get('user-description', None) == None:
+        raise RuntimeError('Tag ' + tag['name'] + ' has no user-description!')
+      self.enum_for_tag[tag['name']] = "RISK_TAG_" + \
+                                       tag['name'].replace("-","_").upper()
+
+def _WritePolicyRiskTagHeader(policies, os, f, riskTags):
+  f.write('#ifndef CHROME_COMMON_POLICY_RISK_TAG_H_\n'
+          '#define CHROME_COMMON_POLICY_RISK_TAG_H_\n'
+          '\n'
+          '#include "base/basictypes.h"\n'
+          '\n'
+          'namespace policy {\n'
+          '\n' + \
+          '// The tag of a policy indicates which impact a policy can have on\n'
+          '// a user\'s privacy and/or security. Ordered descending by \n'
+          '// impact.\n'
+          '// The explanation of the single tags is stated in\n'
+          '// policy_templates.json within the \'risk_tag_definitions\' tag.'
+          '\n' + riskTags.GenerateEnum() + '\n'
+          '// This constant describes how many risk tags were used by the\n'
+          '// policy which uses the most risk tags. \n'
+          'const size_t kMaxRiskTagCount = ' + \
+                riskTags.GetMaxTags() + ';\n'
+          '\n'
+          '}  // namespace policy\n'
+          '\n'
+          '#endif  // CHROME_COMMON_POLICY_RISK_TAG_H_'
+          '\n')
+
 #------------------ policy protobufs --------------------------------#
 
 CHROME_SETTINGS_PROTO_HEAD = '''
@@ -856,7 +965,7 @@ def _WritePolicyProto(f, policy, fields):
               (policy.name, policy.name, policy.id + RESERVED_IDS) ]
 
 
-def _WriteChromeSettingsProtobuf(policies, os, f):
+def _WriteChromeSettingsProtobuf(policies, os, f, riskTags):
   f.write(CHROME_SETTINGS_PROTO_HEAD)
 
   fields = []
@@ -874,7 +983,7 @@ def _WriteChromeSettingsProtobuf(policies, os, f):
   f.write('}\n\n')
 
 
-def _WriteCloudPolicyProtobuf(policies, os, f):
+def _WriteCloudPolicyProtobuf(policies, os, f, riskTags):
   f.write(CLOUD_POLICY_PROTO_HEAD)
   f.write('message CloudPolicySettings {\n')
   for policy in policies:
@@ -1021,7 +1130,7 @@ def _WritePolicyCode(f, policy):
           '  }\n')
 
 
-def _WriteCloudPolicyDecoder(policies, os, f):
+def _WriteCloudPolicyDecoder(policies, os, f, riskTags):
   f.write(CPP_HEAD)
   for policy in policies:
     if policy.is_supported and not policy.is_device_only:
@@ -1029,7 +1138,7 @@ def _WriteCloudPolicyDecoder(policies, os, f):
   f.write(CPP_FOOT)
 
 
-def _WriteAppRestrictions(policies, os, f):
+def _WriteAppRestrictions(policies, os, f, riskTags):
 
   def WriteRestrictionCommon(key):
     f.write('    <restriction\n'

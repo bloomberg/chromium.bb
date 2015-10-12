@@ -184,7 +184,7 @@ class PolicyTemplateChecker(object):
       if key not in ('name', 'type', 'caption', 'desc', 'device_only',
                      'supported_on', 'label', 'policies', 'items',
                      'example_value', 'features', 'deprecated', 'future',
-                     'id', 'schema', 'max_size',
+                     'id', 'schema', 'max_size', 'tags',
                      'default_for_enterprise_users'):
         self.warning_count += 1
         print ('In policy %s: Warning: Unknown key: %s' %
@@ -242,6 +242,9 @@ class PolicyTemplateChecker(object):
       # Each policy must have a protobuf ID.
       id = self._CheckContains(policy, 'id', int)
       self._AddPolicyID(id, policy_ids, policy)
+
+      # Each policy must have a tag list.
+      self._CheckContains(policy, 'tags', list)
 
       # 'schema' is the new 'type'.
       # TODO(joaodasilva): remove the 'type' checks once 'schema' is used
