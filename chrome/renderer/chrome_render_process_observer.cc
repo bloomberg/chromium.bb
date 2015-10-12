@@ -121,11 +121,10 @@ static const int kWaitForWorkersStatsTimeoutMS = 20;
 
 class ResourceUsageReporterImpl : public ResourceUsageReporter {
  public:
-  ResourceUsageReporterImpl(base::WeakPtr<ChromeRenderProcessObserver> observer,
-                            mojo::InterfaceRequest<ResourceUsageReporter> req)
-      : binding_(this, req.Pass(), 31),
-        observer_(observer),
-        weak_factory_(this) {}
+  ResourceUsageReporterImpl(
+      base::WeakPtr<ChromeRenderProcessObserver> observer,
+      mojo::InterfaceRequest<ResourceUsageReporter> req)
+      : binding_(this, req.Pass()), observer_(observer), weak_factory_(this) {}
   ~ResourceUsageReporterImpl() override {}
 
  private:

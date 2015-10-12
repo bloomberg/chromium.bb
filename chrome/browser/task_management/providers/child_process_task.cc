@@ -113,7 +113,7 @@ void ConnectResourceReporterOnIOThread(
 // |unique_child_process_id|.
 ProcessResourceUsage* CreateProcessResourcesSampler(
     int unique_child_process_id) {
-  ResourceUsageReporterPtr service(4);
+  ResourceUsageReporterPtr service;
   mojo::InterfaceRequest<ResourceUsageReporter> usage_reporter =
       mojo::GetProxy(&service);
 

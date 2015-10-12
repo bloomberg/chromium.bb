@@ -12,10 +12,8 @@ namespace internal {
 // ----------------------------------------------------------------------------
 
 Connector::Connector(ScopedMessagePipeHandle message_pipe,
-                     int id,
                      const MojoAsyncWaiter* waiter)
-    : id_(id),
-      waiter_(waiter),
+    : waiter_(waiter),
       message_pipe_(message_pipe.Pass()),
       incoming_receiver_(nullptr),
       async_wait_id_(0),
@@ -153,7 +151,7 @@ void Connector::OnHandleReady(MojoResult result) {
 void Connector::WaitToReadMore() {
   MOJO_CHECK(!async_wait_id_);
   async_wait_id_ = waiter_->AsyncWait(
-      1000 + id_, message_pipe_.get().value(), MOJO_HANDLE_SIGNAL_READABLE,
+      4, message_pipe_.get().value(), MOJO_HANDLE_SIGNAL_READABLE,
       MOJO_DEADLINE_INDEFINITE, &Connector::CallOnHandleReady, this);
 }
 

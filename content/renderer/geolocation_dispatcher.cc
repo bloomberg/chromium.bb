@@ -25,9 +25,8 @@ namespace content {
 GeolocationDispatcher::GeolocationDispatcher(RenderFrame* render_frame)
     : RenderFrameObserver(render_frame),
       pending_permissions_(new WebGeolocationPermissionRequestManager()),
-      geolocation_service_(11),
-      enable_high_accuracy_(false),
-      permission_service_(12) {}
+      enable_high_accuracy_(false) {
+}
 
 GeolocationDispatcher::~GeolocationDispatcher() {}
 

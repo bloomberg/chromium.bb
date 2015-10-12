@@ -344,7 +344,7 @@ class RenderFrameSetupImpl : public RenderFrameSetup {
  public:
   explicit RenderFrameSetupImpl(
       mojo::InterfaceRequest<RenderFrameSetup> request)
-      : routing_id_highmark_(-1), binding_(this, request.Pass(), 24) {}
+      : routing_id_highmark_(-1), binding_(this, request.Pass()) {}
 
   void ExchangeServiceProviders(
       int32_t frame_routing_id,
@@ -361,17 +361,12 @@ class RenderFrameSetupImpl : public RenderFrameSetup {
     // created due to a race between the message and a ViewMsg_New IPC that
     // triggers creation of the RenderFrame we want.
     if (!frame) {
-      mojo::ServiceProviderPtr exposed_services_with_id(22);
-      exposed_services_with_id.Bind(exposed_services.PassInterface());
       RenderThreadImpl::current()->RegisterPendingRenderFrameConnect(
-          frame_routing_id, services.Pass(), exposed_services_with_id.Pass());
+          frame_routing_id, services.Pass(), exposed_services.Pass());
       return;
     }
 
-    mojo::ServiceProviderPtr exposed_services_with_id(23);
-    exposed_services_with_id.Bind(exposed_services.PassInterface());
-    frame->BindServiceRegistry(services.Pass(),
-                               exposed_services_with_id.Pass());
+    frame->BindServiceRegistry(services.Pass(), exposed_services.Pass());
   }
 
  private:
@@ -411,7 +406,7 @@ class EmbeddedWorkerSetupImpl : public EmbeddedWorkerSetup {
  public:
   explicit EmbeddedWorkerSetupImpl(
       mojo::InterfaceRequest<EmbeddedWorkerSetup> request)
-      : binding_(this, request.Pass(), 33) {}
+      : binding_(this, request.Pass()) {}
 
   void ExchangeServiceProviders(
       int32_t thread_id,

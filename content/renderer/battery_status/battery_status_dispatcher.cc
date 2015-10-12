@@ -12,7 +12,7 @@ namespace content {
 
 BatteryStatusDispatcher::BatteryStatusDispatcher(
     blink::WebBatteryStatusListener* listener)
-    : monitor_(18), listener_(listener) {
+    : listener_(listener) {
   DCHECK(listener_);
 
   if (ServiceRegistry* registry = RenderThread::Get()->GetServiceRegistry()) {

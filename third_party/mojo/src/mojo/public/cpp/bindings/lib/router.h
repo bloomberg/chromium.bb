@@ -20,7 +20,6 @@ class Router : public MessageReceiverWithResponder {
  public:
   Router(ScopedMessagePipeHandle message_pipe,
          FilterChain filters,
-         int id = 0,
          const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter());
   ~Router() override;
 

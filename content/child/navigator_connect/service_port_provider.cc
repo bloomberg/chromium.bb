@@ -31,10 +31,7 @@ void ConnectToServiceOnMainThread(
 ServicePortProvider::ServicePortProvider(
     blink::WebServicePortProviderClient* client,
     const scoped_refptr<base::SingleThreadTaskRunner>& main_loop)
-    : client_(client),
-      binding_(this),
-      service_port_service_(29),
-      main_loop_(main_loop) {
+    : client_(client), binding_(this), main_loop_(main_loop) {
   DCHECK(client_);
   AddRef();
 }
@@ -126,7 +123,7 @@ ServicePortServicePtr& ServicePortProvider::GetServicePortServicePtr() {
 
     // Setup channel for browser to post events back to this class.
     ServicePortServiceClientPtr client_ptr;
-    binding_.Bind(GetProxy(&client_ptr), 30);
+    binding_.Bind(GetProxy(&client_ptr));
     service_port_service_->SetClient(client_ptr.Pass());
   }
   return service_port_service_;

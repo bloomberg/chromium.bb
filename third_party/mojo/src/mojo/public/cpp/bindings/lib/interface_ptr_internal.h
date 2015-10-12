@@ -23,12 +23,8 @@ namespace internal {
 template <typename Interface>
 class InterfacePtrState {
  public:
-  InterfacePtrState(int id)
-      : proxy_(nullptr),
-        router_(nullptr),
-        waiter_(nullptr),
-        version_(0u),
-        id_(id) {}
+  InterfacePtrState()
+      : proxy_(nullptr), router_(nullptr), waiter_(nullptr), version_(0u) {}
 
   ~InterfacePtrState() {
     // Destruction order matters here. We delete |proxy_| first, even though
@@ -46,9 +42,6 @@ class InterfacePtrState {
   }
 
   uint32_t version() const { return version_; }
-
-  void set_id(int id) { id_ = id; }
-  int id() const { return id_; }
 
   void QueryVersion(const Callback<void(uint32_t)>& callback) {
     ConfigureProxyIfNecessary();
@@ -155,7 +148,7 @@ class InterfacePtrState {
     filters.Append<MessageHeaderValidator>();
     filters.Append<typename Interface::ResponseValidator_>();
 
-    router_ = new Router(handle_.Pass(), filters.Pass(), id_, waiter_);
+    router_ = new Router(handle_.Pass(), filters.Pass(), waiter_);
     waiter_ = nullptr;
 
     proxy_ = new Proxy(router_);
@@ -171,9 +164,6 @@ class InterfacePtrState {
   const MojoAsyncWaiter* waiter_;
 
   uint32_t version_;
-
-  // TODO(rockot): Remove this once we've resolved http://crbug.com/534719.
-  int id_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(InterfacePtrState);
 };
