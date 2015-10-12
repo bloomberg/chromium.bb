@@ -117,3 +117,7 @@ th {
 .user-media-request-div-class > div {
   margin: 5px 0 5px 0;
 }
+
+.audio-recordings-info {
+  max-width: 60em;
+}
