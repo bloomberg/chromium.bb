@@ -44,7 +44,7 @@ ACTION_P(QuitThreadOnCounter, counter) {
   --(*counter);
   EXPECT_GE(*counter, 0);
   if (*counter == 0)
-    base::MessageLoop::current()->Quit();
+    base::MessageLoop::current()->QuitWhenIdle();
 }
 
 }  // namespace
@@ -108,9 +108,8 @@ class SslHmacChannelAuthenticatorTest : public testing::Test {
     // Ensure that .Run() does not run unbounded if the callbacks are never
     // called.
     base::Timer shutdown_timer(false, false);
-    shutdown_timer.Start(FROM_HERE,
-                         TestTimeouts::action_timeout(),
-                         base::MessageLoop::QuitClosure());
+    shutdown_timer.Start(FROM_HERE, TestTimeouts::action_timeout(),
+                         base::MessageLoop::QuitWhenIdleClosure());
     message_loop_.Run();
   }
 

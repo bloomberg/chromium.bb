@@ -56,8 +56,8 @@ const int kMessages = 100;
 const char kChannelName[] = "test_channel";
 
 void QuitCurrentThread() {
-  base::MessageLoop::current()->PostTask(FROM_HERE,
-                                         base::MessageLoop::QuitClosure());
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
 }
 
 ACTION(QuitThread) {

@@ -101,7 +101,7 @@ class AutoThread : base::PlatformThread::Delegate {
   std::string name_;
 
   // Flag used to indicate whether MessageLoop was quit properly.
-  // This allows us to detect premature exit via MessageLoop::Quit().
+  // This allows us to detect premature exit via MessageLoop::QuitWhenIdle().
   bool was_quit_properly_;
 
   // AutoThreadTaskRunner to post a task to to join & delete this thread.

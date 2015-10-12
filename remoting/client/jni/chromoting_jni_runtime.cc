@@ -195,8 +195,8 @@ ChromotingJniRuntime::ChromotingJniRuntime() {
   ui_loop_->Start();
 
   // TODO(solb) Stop pretending to control the managed UI thread's lifetime.
-  ui_task_runner_ = new AutoThreadTaskRunner(ui_loop_->task_runner(),
-                                             base::MessageLoop::QuitClosure());
+  ui_task_runner_ = new AutoThreadTaskRunner(
+      ui_loop_->task_runner(), base::MessageLoop::QuitWhenIdleClosure());
   network_task_runner_ = AutoThread::CreateWithType("native_net",
                                                     ui_task_runner_,
                                                     base::MessageLoop::TYPE_IO);

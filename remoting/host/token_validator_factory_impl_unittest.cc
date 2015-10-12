@@ -74,18 +74,18 @@ class TokenValidatorFactoryImplTest : public testing::Test {
 
   void SuccessCallback(const std::string& shared_secret) {
     EXPECT_FALSE(shared_secret.empty());
-    message_loop_.Quit();
+    message_loop_.QuitWhenIdle();
   }
 
   void FailureCallback(const std::string& shared_secret) {
     EXPECT_TRUE(shared_secret.empty());
-    message_loop_.Quit();
+    message_loop_.QuitWhenIdle();
   }
 
   void DeleteOnFailureCallback(const std::string& shared_secret) {
     EXPECT_TRUE(shared_secret.empty());
     token_validator_.reset();
-    message_loop_.Quit();
+    message_loop_.QuitWhenIdle();
   }
 
  protected:

@@ -164,7 +164,7 @@ void AutoThread::QuitThread(
     return;
   }
 
-  base::MessageLoop::current()->Quit();
+  base::MessageLoop::current()->QuitWhenIdle();
   was_quit_properly_ = true;
 
   if (joiner_.get()) {
@@ -207,7 +207,7 @@ void AutoThread::ThreadMain() {
 
   message_loop.Run();
 
-  // Assert that MessageLoop::Quit was called by AutoThread::QuitThread.
+  // Assert that MessageLoop::QuitWhenIdle was called by AutoThread::QuitThread.
   DCHECK(was_quit_properly_);
 }
 

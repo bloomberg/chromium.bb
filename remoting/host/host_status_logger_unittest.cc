@@ -24,7 +24,7 @@ namespace remoting {
 namespace {
 
 ACTION_P(QuitMainMessageLoop, message_loop) {
-  message_loop->PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
+  message_loop->PostTask(FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
 }
 
 const char kJabberClientNamespace[] = "jabber:client";

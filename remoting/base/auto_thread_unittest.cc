@@ -67,7 +67,7 @@ class AutoThreadTest : public testing::Test {
     // task to |message_loop_| so the test will not hang on failure.
     main_task_runner_ = NULL;
     message_loop_.PostDelayedTask(FROM_HERE,
-                                  base::MessageLoop::QuitClosure(),
+                                  base::MessageLoop::QuitWhenIdleClosure(),
                                   base::TimeDelta::FromSeconds(5));
     message_loop_.Run();
   }
@@ -87,7 +87,7 @@ class AutoThreadTest : public testing::Test {
  protected:
   void QuitMainMessageLoop() {
     message_loop_quit_correctly_ = true;
-    message_loop_.PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
+    message_loop_.PostTask(FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
   }
 
   base::MessageLoop message_loop_;

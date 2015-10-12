@@ -96,7 +96,7 @@ TEST_F(HostChangeNotificationListenerTest, ReceiveValidNotification) {
   host_change_notification_listener_->OnSignalStrategyIncomingStanza(
       stanza.get());
   message_loop_.PostTask(FROM_HERE,
-                         base::Bind(base::MessageLoop::QuitClosure()));
+                         base::Bind(base::MessageLoop::QuitWhenIdleClosure()));
   message_loop_.Run();
 }
 
@@ -109,7 +109,7 @@ TEST_F(HostChangeNotificationListenerTest, ReceiveNotificationBeforeDelete) {
       stanza.get());
   host_change_notification_listener_.reset();
   message_loop_.PostTask(FROM_HERE,
-                         base::Bind(base::MessageLoop::QuitClosure()));
+                         base::Bind(base::MessageLoop::QuitWhenIdleClosure()));
   message_loop_.Run();
 }
 
@@ -122,7 +122,7 @@ TEST_F(HostChangeNotificationListenerTest, ReceiveInvalidHostIdNotification) {
   host_change_notification_listener_->OnSignalStrategyIncomingStanza(
       stanza.get());
   message_loop_.PostTask(FROM_HERE,
-                         base::Bind(base::MessageLoop::QuitClosure()));
+                         base::Bind(base::MessageLoop::QuitWhenIdleClosure()));
   message_loop_.Run();
 }
 
@@ -134,7 +134,7 @@ TEST_F(HostChangeNotificationListenerTest, ReceiveInvalidBotJidNotification) {
   host_change_notification_listener_->OnSignalStrategyIncomingStanza(
       stanza.get());
   message_loop_.PostTask(FROM_HERE,
-                         base::Bind(base::MessageLoop::QuitClosure()));
+                         base::Bind(base::MessageLoop::QuitWhenIdleClosure()));
   message_loop_.Run();
 }
 
@@ -146,7 +146,7 @@ TEST_F(HostChangeNotificationListenerTest, ReceiveNonDeleteNotification) {
   host_change_notification_listener_->OnSignalStrategyIncomingStanza(
       stanza.get());
   message_loop_.PostTask(FROM_HERE,
-                         base::Bind(base::MessageLoop::QuitClosure()));
+                         base::Bind(base::MessageLoop::QuitWhenIdleClosure()));
   message_loop_.Run();
 }
 
