@@ -93,7 +93,7 @@ MockCookieMonsterDelegate::MockCookieMonsterDelegate() {
 void MockCookieMonsterDelegate::OnCookieChanged(
     const CanonicalCookie& cookie,
     bool removed,
-    CookieMonster::Delegate::ChangeCause cause) {
+    CookieMonsterDelegate::ChangeCause cause) {
   CookieNotification notification(cookie, removed);
   changes_.push_back(notification);
 }

@@ -67,7 +67,6 @@ class ParsedCookie;
 class NET_EXPORT CookieMonster : public CookieStore {
  public:
   class PersistentCookieStore;
-  typedef CookieMonsterDelegate Delegate;
 
   // Terminology:
   //    * The 'top level domain' (TLD) of an internet domain name is

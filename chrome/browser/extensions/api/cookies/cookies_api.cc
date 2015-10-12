@@ -148,23 +148,23 @@ void CookiesEventRouter::CookieChanged(
   // Map the internal cause to an external string.
   std::string cause;
   switch (details->cause) {
-    case net::CookieMonster::Delegate::CHANGE_COOKIE_EXPLICIT:
+    case net::CookieMonsterDelegate::CHANGE_COOKIE_EXPLICIT:
       cause = keys::kExplicitChangeCause;
       break;
 
-    case net::CookieMonster::Delegate::CHANGE_COOKIE_OVERWRITE:
+    case net::CookieMonsterDelegate::CHANGE_COOKIE_OVERWRITE:
       cause = keys::kOverwriteChangeCause;
       break;
 
-    case net::CookieMonster::Delegate::CHANGE_COOKIE_EXPIRED:
+    case net::CookieMonsterDelegate::CHANGE_COOKIE_EXPIRED:
       cause = keys::kExpiredChangeCause;
       break;
 
-    case net::CookieMonster::Delegate::CHANGE_COOKIE_EVICTED:
+    case net::CookieMonsterDelegate::CHANGE_COOKIE_EVICTED:
       cause = keys::kEvictedChangeCause;
       break;
 
-    case net::CookieMonster::Delegate::CHANGE_COOKIE_EXPIRED_OVERWRITE:
+    case net::CookieMonsterDelegate::CHANGE_COOKIE_EXPIRED_OVERWRITE:
       cause = keys::kExpiredOverwriteChangeCause;
       break;
 

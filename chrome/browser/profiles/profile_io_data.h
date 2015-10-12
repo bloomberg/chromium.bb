@@ -287,7 +287,7 @@ class ProfileIOData {
     scoped_refptr<content_settings::CookieSettings> cookie_settings;
     scoped_refptr<HostContentSettingsMap> host_content_settings_map;
     scoped_refptr<net::SSLConfigService> ssl_config_service;
-    scoped_refptr<net::CookieMonster::Delegate> cookie_monster_delegate;
+    scoped_refptr<net::CookieMonsterDelegate> cookie_monster_delegate;
 #if defined(ENABLE_EXTENSIONS)
     scoped_refptr<extensions::InfoMap> extension_info_map;
 #endif
