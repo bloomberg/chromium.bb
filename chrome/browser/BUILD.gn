@@ -543,8 +543,12 @@ source_set("browser") {
 
   if (is_chromeos || is_ios) {
     sources -= [
+      "metrics/chrome_signin_status_metrics_provider_delegate.cc",
+      "metrics/chrome_signin_status_metrics_provider_delegate.h",
       "metrics/signin_status_metrics_provider.cc",
       "metrics/signin_status_metrics_provider.h",
+      "metrics/signin_status_metrics_provider_delegate.cc",
+      "metrics/signin_status_metrics_provider_delegate.h",
     ]
   }
 

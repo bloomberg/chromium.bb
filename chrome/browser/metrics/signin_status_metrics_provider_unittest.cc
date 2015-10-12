@@ -6,11 +6,11 @@
 
 #include <string>
 
-#include "base/files/file_path.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-TEST(SigninStatusMetricsProvider, UpdateInitialSigninStatus) {
-  SigninStatusMetricsProvider metrics_provider(true);
+TEST(SigninStatusMetricsProviderTest, UpdateInitialSigninStatus) {
+  SigninStatusMetricsProvider metrics_provider(nullptr, true);
+
   metrics_provider.UpdateInitialSigninStatus(2, 2);
   EXPECT_EQ(SigninStatusMetricsProviderBase::ALL_PROFILES_SIGNED_IN,
             metrics_provider.GetSigninStatusForTesting());
@@ -22,50 +22,8 @@ TEST(SigninStatusMetricsProvider, UpdateInitialSigninStatus) {
             metrics_provider.GetSigninStatusForTesting());
 }
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
-TEST(SigninStatusMetricsProvider, UpdateStatusWhenBrowserAdded) {
-  SigninStatusMetricsProvider metrics_provider(true);
-
-  // Initial status is all signed in and then a signed-in browser is opened.
-  metrics_provider.UpdateInitialSigninStatus(2, 2);
-  metrics_provider.UpdateStatusWhenBrowserAdded(true);
-  EXPECT_EQ(SigninStatusMetricsProviderBase::ALL_PROFILES_SIGNED_IN,
-            metrics_provider.GetSigninStatusForTesting());
-
-  // Initial status is all signed in and then a signed-out browser is opened.
-  metrics_provider.UpdateInitialSigninStatus(2, 2);
-  metrics_provider.UpdateStatusWhenBrowserAdded(false);
-  EXPECT_EQ(SigninStatusMetricsProviderBase::MIXED_SIGNIN_STATUS,
-            metrics_provider.GetSigninStatusForTesting());
-
-  // Initial status is all signed out and then a signed-in browser is opened.
-  metrics_provider.UpdateInitialSigninStatus(2, 0);
-  metrics_provider.UpdateStatusWhenBrowserAdded(true);
-  EXPECT_EQ(SigninStatusMetricsProviderBase::MIXED_SIGNIN_STATUS,
-            metrics_provider.GetSigninStatusForTesting());
-
-  // Initial status is all signed out and then a signed-out browser is opened.
-  metrics_provider.UpdateInitialSigninStatus(2, 0);
-  metrics_provider.UpdateStatusWhenBrowserAdded(false);
-  EXPECT_EQ(SigninStatusMetricsProviderBase::ALL_PROFILES_NOT_SIGNED_IN,
-            metrics_provider.GetSigninStatusForTesting());
-
-  // Initial status is mixed and then a signed-in browser is opened.
-  metrics_provider.UpdateInitialSigninStatus(2, 1);
-  metrics_provider.UpdateStatusWhenBrowserAdded(true);
-  EXPECT_EQ(SigninStatusMetricsProviderBase::MIXED_SIGNIN_STATUS,
-            metrics_provider.GetSigninStatusForTesting());
-
-  // Initial status is mixed and then a signed-out browser is opened.
-  metrics_provider.UpdateInitialSigninStatus(2, 1);
-  metrics_provider.UpdateStatusWhenBrowserAdded(false);
-  EXPECT_EQ(SigninStatusMetricsProviderBase::MIXED_SIGNIN_STATUS,
-            metrics_provider.GetSigninStatusForTesting());
-}
-#endif
-
-TEST(SigninStatusMetricsProvider, GoogleSigninSucceeded) {
-  SigninStatusMetricsProvider metrics_provider(true);
+TEST(SigninStatusMetricsProviderTest, GoogleSigninSucceeded) {
+  SigninStatusMetricsProvider metrics_provider(nullptr, true);
 
   // Initial status is all signed out and then one of the profiles is signed in.
   metrics_provider.UpdateInitialSigninStatus(2, 0);
@@ -82,8 +40,8 @@ TEST(SigninStatusMetricsProvider, GoogleSigninSucceeded) {
             metrics_provider.GetSigninStatusForTesting());
 }
 
-TEST(SigninStatusMetricsProvider, GoogleSignedOut) {
-  SigninStatusMetricsProvider metrics_provider(true);
+TEST(SigninStatusMetricsProviderTest, GoogleSignedOut) {
+  SigninStatusMetricsProvider metrics_provider(nullptr, true);
 
   // Initial status is all signed in and then one of the profiles is signed out.
   metrics_provider.UpdateInitialSigninStatus(2, 2);

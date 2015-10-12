@@ -1,0 +1,58 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/metrics/chrome_signin_status_metrics_provider_delegate.h"
+
+#include "chrome/browser/metrics/signin_status_metrics_provider.h"
+#include "content/public/test/test_browser_thread_bundle.h"
+#include "testing/gtest/include/gtest/gtest.h"
+
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+TEST(ChromeSigninStatusMetricsProviderDelegateTest,
+     UpdateStatusWhenBrowserAdded) {
+  content::TestBrowserThreadBundle thread_bundle;
+
+  scoped_ptr<ChromeSigninStatusMetricsProviderDelegate> delegate(
+      new ChromeSigninStatusMetricsProviderDelegate);
+  ChromeSigninStatusMetricsProviderDelegate* raw_delegate = delegate.get();
+  scoped_ptr<SigninStatusMetricsProvider> metrics_provider(
+      SigninStatusMetricsProvider::CreateInstance(delegate.Pass()));
+
+  // Initial status is all signed in and then a signed-in browser is opened.
+  metrics_provider->UpdateInitialSigninStatusForTesting(2, 2);
+  raw_delegate->UpdateStatusWhenBrowserAdded(true);
+  EXPECT_EQ(SigninStatusMetricsProviderBase::ALL_PROFILES_SIGNED_IN,
+            metrics_provider->GetSigninStatusForTesting());
+
+  // Initial status is all signed in and then a signed-out browser is opened.
+  metrics_provider->UpdateInitialSigninStatusForTesting(2, 2);
+  raw_delegate->UpdateStatusWhenBrowserAdded(false);
+  EXPECT_EQ(SigninStatusMetricsProviderBase::MIXED_SIGNIN_STATUS,
+            metrics_provider->GetSigninStatusForTesting());
+
+  // Initial status is all signed out and then a signed-in browser is opened.
+  metrics_provider->UpdateInitialSigninStatusForTesting(2, 0);
+  raw_delegate->UpdateStatusWhenBrowserAdded(true);
+  EXPECT_EQ(SigninStatusMetricsProviderBase::MIXED_SIGNIN_STATUS,
+            metrics_provider->GetSigninStatusForTesting());
+
+  // Initial status is all signed out and then a signed-out browser is opened.
+  metrics_provider->UpdateInitialSigninStatusForTesting(2, 0);
+  raw_delegate->UpdateStatusWhenBrowserAdded(false);
+  EXPECT_EQ(SigninStatusMetricsProviderBase::ALL_PROFILES_NOT_SIGNED_IN,
+            metrics_provider->GetSigninStatusForTesting());
+
+  // Initial status is mixed and then a signed-in browser is opened.
+  metrics_provider->UpdateInitialSigninStatusForTesting(2, 1);
+  raw_delegate->UpdateStatusWhenBrowserAdded(true);
+  EXPECT_EQ(SigninStatusMetricsProviderBase::MIXED_SIGNIN_STATUS,
+            metrics_provider->GetSigninStatusForTesting());
+
+  // Initial status is mixed and then a signed-out browser is opened.
+  metrics_provider->UpdateInitialSigninStatusForTesting(2, 1);
+  raw_delegate->UpdateStatusWhenBrowserAdded(false);
+  EXPECT_EQ(SigninStatusMetricsProviderBase::MIXED_SIGNIN_STATUS,
+            metrics_provider->GetSigninStatusForTesting());
+}
+#endif

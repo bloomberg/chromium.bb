@@ -31,20 +31,20 @@ class SigninStatusMetricsProviderBase : public metrics::MetricsProvider {
     SIGNIN_STATUS_MAX,
   };
 
+  // Sets the value of |signin_status_|. It ensures that |signin_status_| will
+  // not be changed if its value is already ERROR_GETTING_SIGNIN_STATUS.
+  void UpdateSigninStatus(SigninStatus new_status);
+
+  SigninStatus signin_status() const { return signin_status_; }
+
  protected:
   // Record the sign in status into the proper histogram bucket. This should be
   // called exactly once for each UMA session.
   void RecordSigninStatusHistogram(SigninStatus signin_status);
 
-  // Sets the value of |signin_status_|. It ensures that |signin_status_| will
-  // not be changed if its value is already ERROR_GETTING_SIGNIN_STATUS.
-  void SetSigninStatus(SigninStatus new_status);
-
   // Resets the value of |signin_status_| to be UNKNOWN_SIGNIN_STATUS regardless
   // of its current value;
   void ResetSigninStatus();
-
-  SigninStatus signin_status() const { return signin_status_; }
 
  private:
   // Sign-in status of all profiles seen so far.

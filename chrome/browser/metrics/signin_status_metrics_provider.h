@@ -5,29 +5,26 @@
 #ifndef CHROME_BROWSER_METRICS_SIGNIN_STATUS_METRICS_PROVIDER_H_
 #define CHROME_BROWSER_METRICS_SIGNIN_STATUS_METRICS_PROVIDER_H_
 
-#include <string>
-
 #include "base/gtest_prod_util.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
+#include "build/build_config.h"
 #include "chrome/browser/metrics/signin_status_metrics_provider_base.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/ui/browser_list_observer.h"
+#include "chrome/browser/metrics/signin_status_metrics_provider_delegate.h"
 #include "components/signin/core/browser/signin_manager_base.h"
-
-class Browser;
 
 namespace metrics {
 class ChromeUserMetricsExtension;
 }
 
+class SigninStatusMetricsProviderDelegate;
+
 // Collect login status of all opened profiles during one UMA session and
 // record the value into a histogram before UMA log is uploaded on platform
 // Windows, Linux, Mac and Android.
 class SigninStatusMetricsProvider : public SigninStatusMetricsProviderBase,
-                                    public chrome::BrowserListObserver,
-                                    public SigninManagerBase::Observer,
-                                    public SigninManagerFactory::Observer {
+                                    public SigninManagerBase::Observer {
  public:
   ~SigninStatusMetricsProvider() override;
 
@@ -36,29 +33,36 @@ class SigninStatusMetricsProvider : public SigninStatusMetricsProviderBase,
       metrics::ChromeUserMetricsExtension* uma_proto) override;
 
   // Factory method, creates a new instance of this class.
-  static SigninStatusMetricsProvider* CreateInstance();
+  static SigninStatusMetricsProvider* CreateInstance(
+      scoped_ptr<SigninStatusMetricsProviderDelegate> delegate);
+
+  // Update the sign-in status when a SigninManager is created.
+  void OnSigninManagerCreated(SigninManagerBase* manager);
+
+  // Update the sign-in status when a SigninManager is shut down.
+  void OnSigninManagerShutdown(SigninManagerBase* manager);
+
+  // Updates the initial sign-in status. For testing purpose only.
+  void UpdateInitialSigninStatusForTesting(size_t total_count,
+                                           size_t signed_in_count);
+
+  // Get the current recorded sign-in status. For testing purpose only.
+  SigninStatus GetSigninStatusForTesting();
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(SigninStatusMetricsProviderTest,
+                           UpdateInitialSigninStatus);
+  FRIEND_TEST_ALL_PREFIXES(SigninStatusMetricsProviderTest,
+                           GoogleSigninSucceeded);
+  FRIEND_TEST_ALL_PREFIXES(SigninStatusMetricsProviderTest, GoogleSignedOut);
+
   // The boolean |is_test| indicates whether or not this is an instance for
   // testing purpose. If so, skip the initialization. Except for testing
   // purpose, this class's instance should be created through the static
   // CreateInstance() method.
-  explicit SigninStatusMetricsProvider(bool is_test);
-
-  FRIEND_TEST_ALL_PREFIXES(SigninStatusMetricsProvider,
-                           UpdateInitialSigninStatus);
-  FRIEND_TEST_ALL_PREFIXES(SigninStatusMetricsProvider,
-                           UpdateStatusWhenBrowserAdded);
-  FRIEND_TEST_ALL_PREFIXES(SigninStatusMetricsProvider, GoogleSigninSucceeded);
-  FRIEND_TEST_ALL_PREFIXES(SigninStatusMetricsProvider, GoogleSignedOut);
-
-  // chrome::BrowserListObserver:
-  // This will never be called on Android.
-  void OnBrowserAdded(Browser* browser) override;
-
-  // SigninManagerFactory::Observer:
-  void SigninManagerCreated(SigninManagerBase* manager) override;
-  void SigninManagerShutdown(SigninManagerBase* manager) override;
+  SigninStatusMetricsProvider(
+      scoped_ptr<SigninStatusMetricsProviderDelegate> delegate,
+      bool is_test);
 
   // SigninManagerBase::Observer:
   void GoogleSigninSucceeded(const std::string& account_id,
@@ -77,18 +81,14 @@ class SigninStatusMetricsProvider : public SigninStatusMetricsProviderBase,
   // |total_count| profiles.
   void UpdateInitialSigninStatus(size_t total_count, size_t signed_in_count);
 
-  // Update the sign-in status right after a new browser is opened.
-  void UpdateStatusWhenBrowserAdded(bool signed_in);
-
   // Compute current sign-in status of all opened profiles.
   void ComputeCurrentSigninStatus();
 
-  // Get the current recorded sign-in status. For testing purpose only.
-  SigninStatus GetSigninStatusForTesting();
+  scoped_ptr<SigninStatusMetricsProviderDelegate> delegate_;
 
   // Used to track the SigninManagers that this instance is observing so that
   // this instance can be removed as an observer on its destruction.
-  ScopedObserver<SigninManagerBase, SigninStatusMetricsProvider>
+  ScopedObserver<SigninManagerBase, SigninManagerBase::Observer>
       scoped_observer_;
 
   // Whether the instance is for testing or not.

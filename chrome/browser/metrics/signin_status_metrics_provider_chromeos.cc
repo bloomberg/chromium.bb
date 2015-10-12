@@ -45,8 +45,8 @@ void SigninStatusMetricsProviderChromeOS::ProvideGeneralMetrics(
 
 void SigninStatusMetricsProviderChromeOS::SetCurrentSigninStatus() {
   if (IsSignedInNonGuest())
-    SetSigninStatus(ALL_PROFILES_SIGNED_IN);
-  SetSigninStatus(ALL_PROFILES_NOT_SIGNED_IN);
+    UpdateSigninStatus(ALL_PROFILES_SIGNED_IN);
+  UpdateSigninStatus(ALL_PROFILES_NOT_SIGNED_IN);
 }
 
 SigninStatusMetricsProviderBase::SigninStatus

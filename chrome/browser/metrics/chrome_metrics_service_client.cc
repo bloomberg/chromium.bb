@@ -77,6 +77,7 @@
 #endif
 
 #if !defined(OS_CHROMEOS)
+#include "chrome/browser/metrics/chrome_signin_status_metrics_provider_delegate.h"
 #include "chrome/browser/metrics/signin_status_metrics_provider.h"
 #endif  // !defined(OS_CHROMEOS)
 
@@ -383,7 +384,8 @@ void ChromeMetricsServiceClient::Initialize() {
 #if !defined(OS_CHROMEOS)
   metrics_service_->RegisterMetricsProvider(
       scoped_ptr<metrics::MetricsProvider>(
-          SigninStatusMetricsProvider::CreateInstance()));
+          SigninStatusMetricsProvider::CreateInstance(
+              make_scoped_ptr(new ChromeSigninStatusMetricsProviderDelegate))));
 #endif  // !defined(OS_CHROMEOS)
 
   // Clear stability metrics if it is the first time cellular upload logic

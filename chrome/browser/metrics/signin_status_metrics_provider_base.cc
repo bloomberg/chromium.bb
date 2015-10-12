@@ -7,19 +7,18 @@
 #include "base/metrics/histogram.h"
 
 SigninStatusMetricsProviderBase::SigninStatusMetricsProviderBase()
-    : signin_status_(UNKNOWN_SIGNIN_STATUS) {
-}
+    : signin_status_(UNKNOWN_SIGNIN_STATUS) {}
 
-SigninStatusMetricsProviderBase::~SigninStatusMetricsProviderBase() {
-}
+SigninStatusMetricsProviderBase::~SigninStatusMetricsProviderBase() {}
 
 void SigninStatusMetricsProviderBase::RecordSigninStatusHistogram(
     SigninStatus signin_status) {
-  UMA_HISTOGRAM_ENUMERATION(
-        "UMA.ProfileSignInStatus", signin_status, SIGNIN_STATUS_MAX);
+  UMA_HISTOGRAM_ENUMERATION("UMA.ProfileSignInStatus", signin_status,
+                            SIGNIN_STATUS_MAX);
 }
 
-void SigninStatusMetricsProviderBase::SetSigninStatus(SigninStatus new_status) {
+void SigninStatusMetricsProviderBase::UpdateSigninStatus(
+    SigninStatus new_status) {
   // The recorded sign-in status value can't be changed once it's recorded as
   // error until the next UMA upload.
   if (signin_status_ == ERROR_GETTING_SIGNIN_STATUS)

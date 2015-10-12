@@ -4,25 +4,12 @@
 
 #include "chrome/browser/metrics/signin_status_metrics_provider.h"
 
-#include <string>
-#include <vector>
-
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/metrics/histogram.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_info_cache.h"
-#include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
 #include "components/signin/core/browser/signin_manager.h"
-
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
-#include "chrome/browser/ui/browser_finder.h"
-#endif
 
 namespace {
 
@@ -45,12 +32,18 @@ void RecordComputeSigninStatusHistogram(ComputeSigninStatus status) {
 
 }  // namespace
 
-SigninStatusMetricsProvider::SigninStatusMetricsProvider(bool is_test)
-    : scoped_observer_(this),
+SigninStatusMetricsProvider::SigninStatusMetricsProvider(
+    scoped_ptr<SigninStatusMetricsProviderDelegate> delegate,
+    bool is_test)
+    : delegate_(delegate.Pass()),
+      scoped_observer_(this),
       is_test_(is_test),
       weak_ptr_factory_(this) {
+  DCHECK(delegate_ || is_test_);
   if (is_test_)
     return;
+
+  delegate_->SetOwner(this);
 
   // Postpone the initialization until all threads are created.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -58,19 +51,7 @@ SigninStatusMetricsProvider::SigninStatusMetricsProvider(bool is_test)
                             weak_ptr_factory_.GetWeakPtr()));
 }
 
-SigninStatusMetricsProvider::~SigninStatusMetricsProvider() {
-  if (is_test_)
-    return;
-  // TODO(ios): should we provide an implementation of BrowserListObserver
-  // that works on iOS, http://crbug.com/403371
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
-  BrowserList::RemoveObserver(this);
-#endif
-
-  SigninManagerFactory* factory = SigninManagerFactory::GetInstance();
-  if (factory)
-    factory->RemoveObserver(this);
-}
+SigninStatusMetricsProvider::~SigninStatusMetricsProvider() {}
 
 void SigninStatusMetricsProvider::ProvideGeneralMetrics(
     metrics::ChromeUserMetricsExtension* uma_proto) {
@@ -83,26 +64,12 @@ void SigninStatusMetricsProvider::ProvideGeneralMetrics(
 }
 
 // static
-SigninStatusMetricsProvider* SigninStatusMetricsProvider::CreateInstance() {
-  return new SigninStatusMetricsProvider(false);
+SigninStatusMetricsProvider* SigninStatusMetricsProvider::CreateInstance(
+    scoped_ptr<SigninStatusMetricsProviderDelegate> delegate) {
+  return new SigninStatusMetricsProvider(delegate.Pass(), false);
 }
 
-void SigninStatusMetricsProvider::OnBrowserAdded(Browser* browser) {
-  if (signin_status() == MIXED_SIGNIN_STATUS)
-    return;
-
-  SigninManager* manager = SigninManagerFactory::GetForProfile(
-      browser->profile());
-
-  // Nothing will change if the opened browser is in incognito mode.
-  if (!manager)
-    return;
-
-  const bool signed_in = manager->IsAuthenticated();
-  UpdateStatusWhenBrowserAdded(signed_in);
-}
-
-void SigninStatusMetricsProvider::SigninManagerCreated(
+void SigninStatusMetricsProvider::OnSigninManagerCreated(
     SigninManagerBase* manager) {
   // Whenever a new profile is created, a new SigninManagerBase will be created
   // for it. This ensures that all sign-in or sign-out actions of all opened
@@ -113,13 +80,12 @@ void SigninStatusMetricsProvider::SigninManagerCreated(
   // SigninManagerBase and the corresponding profile should be the only opened
   // profile.
   if (signin_status() == UNKNOWN_SIGNIN_STATUS) {
-    size_t signed_in_count =
-        manager->IsAuthenticated() ? 1 : 0;
+    size_t signed_in_count = manager->IsAuthenticated() ? 1 : 0;
     UpdateInitialSigninStatus(1, signed_in_count);
   }
 }
 
-void SigninStatusMetricsProvider::SigninManagerShutdown(
+void SigninStatusMetricsProvider::OnSigninManagerShutdown(
     SigninManagerBase* manager) {
   if (scoped_observer_.IsObserving(manager))
     scoped_observer_.Remove(manager);
@@ -131,11 +97,11 @@ void SigninStatusMetricsProvider::GoogleSigninSucceeded(
     const std::string& password) {
   SigninStatus recorded_signin_status = signin_status();
   if (recorded_signin_status == ALL_PROFILES_NOT_SIGNED_IN) {
-    SetSigninStatus(MIXED_SIGNIN_STATUS);
+    UpdateSigninStatus(MIXED_SIGNIN_STATUS);
   } else if (recorded_signin_status == UNKNOWN_SIGNIN_STATUS) {
     // There should have at least one browser opened if the user can sign in, so
     // signin_status_ value should not be unknown.
-    SetSigninStatus(ERROR_GETTING_SIGNIN_STATUS);
+    UpdateSigninStatus(ERROR_GETTING_SIGNIN_STATUS);
     RecordComputeSigninStatusHistogram(USER_SIGNIN_WHEN_STATUS_UNKNOWN);
   }
 }
@@ -144,44 +110,29 @@ void SigninStatusMetricsProvider::GoogleSignedOut(const std::string& account_id,
                                                   const std::string& username) {
   SigninStatus recorded_signin_status = signin_status();
   if (recorded_signin_status == ALL_PROFILES_SIGNED_IN) {
-    SetSigninStatus(MIXED_SIGNIN_STATUS);
+    UpdateSigninStatus(MIXED_SIGNIN_STATUS);
   } else if (recorded_signin_status == UNKNOWN_SIGNIN_STATUS) {
     // There should have at least one browser opened if the user can sign out,
     // so signin_status_ value should not be unknown.
-    SetSigninStatus(ERROR_GETTING_SIGNIN_STATUS);
+    UpdateSigninStatus(ERROR_GETTING_SIGNIN_STATUS);
     RecordComputeSigninStatusHistogram(USER_SIGNOUT_WHEN_STATUS_UNKNOWN);
   }
 }
 
 void SigninStatusMetricsProvider::Initialize() {
-  // Add observers.
-  // TODO(ios): should we provide an implementation of BrowserListObserver
-  // that works on iOS, http://crbug.com/403371
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
-  // On Android, there is always only one profile in any situation, opening new
-  // windows (which is possible with only some Android devices) will not change
-  // the opened profiles signin status.
-  BrowserList::AddObserver(this);
-#endif
-  SigninManagerFactory::GetInstance()->AddObserver(this);
+  delegate_->Initialize();
 
   // Start observing all already-created SigninManagers.
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-  std::vector<Profile*> profiles = profile_manager->GetLoadedProfiles();
-  for (size_t i = 0; i < profiles.size(); ++i) {
-    SigninManager* manager = SigninManagerFactory::GetForProfileIfExists(
-        profiles[i]);
-    if (manager) {
-      DCHECK(!scoped_observer_.IsObserving(manager));
-      scoped_observer_.Add(manager);
-    }
+  for (SigninManager* manager : delegate_->GetSigninManagersForAllAccounts()) {
+    DCHECK(!scoped_observer_.IsObserving(manager));
+    scoped_observer_.Add(manager);
   }
 
   // It is possible that when this object is created, no SigninManager is
   // created yet, for example, when Chrome is opened for the first time after
   // installation on desktop, or when Chrome on Android is loaded into memory.
-  if (profiles.empty()) {
-    SetSigninStatus(UNKNOWN_SIGNIN_STATUS);
+  if (delegate_->GetStatusOfAllAccounts().num_accounts == 0) {
+    UpdateSigninStatus(UNKNOWN_SIGNIN_STATUS);
   } else {
     ComputeCurrentSigninStatus();
   }
@@ -192,66 +143,37 @@ void SigninStatusMetricsProvider::UpdateInitialSigninStatus(
     size_t signed_in_profiles_count) {
   // total_count is known to be bigger than 0.
   if (signed_in_profiles_count == 0) {
-    SetSigninStatus(ALL_PROFILES_NOT_SIGNED_IN);
+    UpdateSigninStatus(ALL_PROFILES_NOT_SIGNED_IN);
   } else if (total_count == signed_in_profiles_count) {
-    SetSigninStatus(ALL_PROFILES_SIGNED_IN);
+    UpdateSigninStatus(ALL_PROFILES_SIGNED_IN);
   } else {
-    SetSigninStatus(MIXED_SIGNIN_STATUS);
+    UpdateSigninStatus(MIXED_SIGNIN_STATUS);
   }
-}
-
-void SigninStatusMetricsProvider::UpdateStatusWhenBrowserAdded(bool signed_in) {
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
-  SigninStatus recorded_signin_status = signin_status();
-  if ((recorded_signin_status == ALL_PROFILES_NOT_SIGNED_IN && signed_in) ||
-      (recorded_signin_status == ALL_PROFILES_SIGNED_IN && !signed_in)) {
-    SetSigninStatus(MIXED_SIGNIN_STATUS);
-  } else if (recorded_signin_status == UNKNOWN_SIGNIN_STATUS) {
-    // If when function ProvideGeneralMetrics() is called, Chrome is
-    // running in the background with no browser window opened, |signin_status_|
-    // will be reset to |UNKNOWN_SIGNIN_STATUS|. Then this newly added browser
-    // is the only opened browser/profile and its signin status represents
-    // the whole status.
-    SetSigninStatus(signed_in ? ALL_PROFILES_SIGNED_IN :
-                                ALL_PROFILES_NOT_SIGNED_IN);
-  }
-#endif
 }
 
 void SigninStatusMetricsProvider::ComputeCurrentSigninStatus() {
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-  std::vector<Profile*> profile_list = profile_manager->GetLoadedProfiles();
-
-  size_t opened_profiles_count = 0;
-  size_t signed_in_profiles_count = 0;
-
-  for (size_t i = 0; i < profile_list.size(); ++i) {
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
-    if (chrome::GetTotalBrowserCountForProfile(profile_list[i]) == 0) {
-      // The profile is loaded, but there's no opened browser for this profile.
-      continue;
-    }
-#endif
-    opened_profiles_count++;
-    SigninManager* manager = SigninManagerFactory::GetForProfile(
-        profile_list[i]->GetOriginalProfile());
-    if (manager && manager->IsAuthenticated())
-      signed_in_profiles_count++;
-  }
-
   RecordComputeSigninStatusHistogram(ENTERED_COMPUTE_SIGNIN_STATUS);
-  if (profile_list.empty()) {
+
+  AccountsStatus accounts_status = delegate_->GetStatusOfAllAccounts();
+  if (accounts_status.num_accounts == 0) {
     // This should not happen. If it does, record it in histogram.
     RecordComputeSigninStatusHistogram(ERROR_NO_PROFILE_FOUND);
-    SetSigninStatus(ERROR_GETTING_SIGNIN_STATUS);
-  } else if (opened_profiles_count == 0) {
+    UpdateSigninStatus(ERROR_GETTING_SIGNIN_STATUS);
+  } else if (accounts_status.num_opened_accounts == 0) {
     // The code indicates that Chrome is running in the background but no
     // browser window is opened.
     RecordComputeSigninStatusHistogram(NO_BROWSER_OPENED);
-    SetSigninStatus(UNKNOWN_SIGNIN_STATUS);
+    UpdateSigninStatus(UNKNOWN_SIGNIN_STATUS);
   } else {
-    UpdateInitialSigninStatus(opened_profiles_count, signed_in_profiles_count);
+    UpdateInitialSigninStatus(accounts_status.num_opened_accounts,
+                              accounts_status.num_signed_in_accounts);
   }
+}
+
+void SigninStatusMetricsProvider::UpdateInitialSigninStatusForTesting(
+    size_t total_count,
+    size_t signed_in_profiles_count) {
+  UpdateInitialSigninStatus(total_count, signed_in_profiles_count);
 }
 
 SigninStatusMetricsProvider::SigninStatus
