@@ -42,6 +42,8 @@ storage_monitor::ImageCaptureDeviceManager* g_image_capture_device_manager =
 // They're gotten by cracking the device ID and taking the unique ID output.
 - (ImageCaptureDevice*)deviceForUUID:(const std::string&)uuid;
 
+- (ICDeviceBrowser*)deviceBrowserForTest;
+
 @end
 
 @implementation ImageCaptureDeviceManagerImpl
@@ -128,6 +130,10 @@ storage_monitor::ImageCaptureDeviceManager* g_image_capture_device_manager =
       storage_monitor::StorageInfo::MAC_IMAGE_CAPTURE, uuid));
 }
 
+- (ICDeviceBrowser*)deviceBrowserForTest {
+  return deviceBrowser_.get();
+}
+
 @end  // ImageCaptureDeviceManagerImpl
 
 namespace storage_monitor {
@@ -165,8 +171,13 @@ ImageCaptureDevice* ImageCaptureDeviceManager::deviceForUUID(
   return [manager deviceForUUID:uuid];
 }
 
-id<ICDeviceBrowserDelegate> ImageCaptureDeviceManager::device_browser() {
+id<ICDeviceBrowserDelegate>
+ImageCaptureDeviceManager::device_browser_delegate() {
   return device_browser_.get();
+}
+
+ICDeviceBrowser* ImageCaptureDeviceManager::device_browser_for_test() {
+  return [device_browser_ deviceBrowserForTest];
 }
 
 }  // namespace storage_monitor

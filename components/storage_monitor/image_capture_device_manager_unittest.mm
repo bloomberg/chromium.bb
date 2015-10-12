@@ -27,8 +27,8 @@ const char kTestFileContents[] = "test";
 }  // namespace
 
 // Private ICCameraDevice method needed to properly initialize the object.
-@interface NSObject (PrivateAPIICCameraDevice)
-- (id)initWithDictionary:(id)properties;
+@interface NSObject ()
+- (instancetype)initWithDictionary:(id)properties NS_DESIGNATED_INITIALIZER;
 @end
 
 @interface MockICCameraDevice : ICCameraDevice {
@@ -248,15 +248,19 @@ class ImageCaptureDeviceManagerTest : public testing::Test {
     // Ownership will be passed to the device browser delegate.
     base::scoped_nsobject<MockICCameraDevice> device(
         [[MockICCameraDevice alloc] init]);
-    id<ICDeviceBrowserDelegate> delegate = manager->device_browser();
-    [delegate deviceBrowser:nil didAddDevice:device moreComing:NO];
+    id<ICDeviceBrowserDelegate> delegate = manager->device_browser_delegate();
+    [delegate deviceBrowser:manager->device_browser_for_test()
+               didAddDevice:device
+                 moreComing:NO];
     return device.autorelease();
   }
 
   void DetachDevice(ImageCaptureDeviceManager* manager,
                     ICCameraDevice* device) {
-    id<ICDeviceBrowserDelegate> delegate = manager->device_browser();
-    [delegate deviceBrowser:nil didRemoveDevice:device moreGoing:NO];
+    id<ICDeviceBrowserDelegate> delegate = manager->device_browser_delegate();
+    [delegate deviceBrowser:manager->device_browser_for_test()
+            didRemoveDevice:device
+                  moreGoing:NO];
   }
 
  protected:
@@ -295,16 +299,16 @@ TEST_F(ImageCaptureDeviceManagerTest, OpenCamera) {
 
   base::scoped_nsobject<MockICCameraFile> picture1(
       [[MockICCameraFile alloc] init:@"pic1"]);
-  [camera cameraDevice:nil didAddItem:picture1];
+  [camera cameraDevice:device didAddItem:picture1];
   base::scoped_nsobject<MockICCameraFile> picture2(
       [[MockICCameraFile alloc] init:@"pic2"]);
-  [camera cameraDevice:nil didAddItem:picture2];
+  [camera cameraDevice:device didAddItem:picture2];
   ASSERT_EQ(2U, listener_.items().size());
   EXPECT_EQ("pic1", listener_.items()[0]);
   EXPECT_EQ("pic2", listener_.items()[1]);
   EXPECT_FALSE(listener_.completed());
 
-  [camera deviceDidBecomeReadyWithCompleteContentCatalog:nil];
+  [camera deviceDidBecomeReadyWithCompleteContentCatalog:device];
 
   ASSERT_EQ(2U, listener_.items().size());
   EXPECT_TRUE(listener_.completed());
@@ -345,7 +349,7 @@ TEST_F(ImageCaptureDeviceManagerTest, DownloadFile) {
   base::scoped_nsobject<MockICCameraFile> picture1(
       [[MockICCameraFile alloc] init:base::SysUTF8ToNSString(kTestFileName)]);
   [device addMediaFile:picture1];
-  [camera cameraDevice:nil didAddItem:picture1];
+  [camera cameraDevice:device didAddItem:picture1];
 
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
@@ -397,7 +401,7 @@ TEST_F(ImageCaptureDeviceManagerTest, TestSubdirectories) {
       [[MockICCameraFile alloc] init:base::SysUTF8ToNSString(kTestFileName)]);
   [picture1 setParent:base::SysUTF8ToNSString("dir")];
   [device addMediaFile:picture1];
-  [camera cameraDevice:nil didAddItem:picture1];
+  [camera cameraDevice:device didAddItem:picture1];
 
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());

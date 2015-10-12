@@ -167,14 +167,14 @@ class MTPDeviceDelegateImplMacTest : public testing::Test {
     manager_.SetNotifications(monitor->receiver());
 
     camera_ = [MockMTPICCameraDevice alloc];
-    id<ICDeviceBrowserDelegate> delegate = manager_.device_browser();
+    id<ICDeviceBrowserDelegate> delegate = manager_.device_browser_delegate();
     [delegate deviceBrowser:nil didAddDevice:camera_ moreComing:NO];
 
     delegate_ = new MTPDeviceDelegateImplMac(kDeviceId, kDevicePath);
   }
 
   void TearDown() override {
-    id<ICDeviceBrowserDelegate> delegate = manager_.device_browser();
+    id<ICDeviceBrowserDelegate> delegate = manager_.device_browser_delegate();
     [delegate deviceBrowser:nil didRemoveDevice:camera_ moreGoing:NO];
 
     delegate_->CancelPendingTasksAndDeleteDelegate();

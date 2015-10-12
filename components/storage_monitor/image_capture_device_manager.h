@@ -12,6 +12,7 @@
 #include "components/storage_monitor/storage_monitor.h"
 
 @protocol ICDeviceBrowserDelegate;
+@class ICDeviceBrowser;
 @class ImageCaptureDevice;
 @class ImageCaptureDeviceManagerImpl;
 
@@ -32,7 +33,7 @@ class ImageCaptureDeviceManager {
   static ImageCaptureDevice* deviceForUUID(const std::string& uuid);
 
   // Returns a weak pointer to the internal ImageCapture interface protocol.
-  id<ICDeviceBrowserDelegate> device_browser();
+  id<ICDeviceBrowserDelegate> device_browser_delegate();
 
   // Sets the receiver for device attach/detach notifications.
   // TODO(gbillock): Move this to be a constructor argument.
@@ -43,8 +44,13 @@ class ImageCaptureDeviceManager {
   void EjectDevice(const std::string& uuid,
                    base::Callback<void(StorageMonitor::EjectStatus)> callback);
 
+
  private:
   base::scoped_nsobject<ImageCaptureDeviceManagerImpl> device_browser_;
+
+  // Returns a weak pointer to the internal device browser.
+  ICDeviceBrowser* device_browser_for_test();
+  friend class ImageCaptureDeviceManagerTest;
 };
 
 }  // namespace storage_monitor
