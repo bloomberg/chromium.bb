@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/android/in_process/synchronous_compositor_registry.h"
+#include "content/browser/android/in_process/synchronous_compositor_registry_in_proc.h"
 
 #include "content/browser/android/in_process/synchronous_compositor_impl.h"
 #include "content/public/browser/browser_thread.h"
@@ -10,24 +10,25 @@
 namespace content {
 
 namespace {
-base::LazyInstance<SynchronousCompositorRegistry> g_compositor_registry =
+base::LazyInstance<SynchronousCompositorRegistryInProc> g_compositor_registry =
     LAZY_INSTANCE_INITIALIZER;
 }
 
 // static
-SynchronousCompositorRegistry* SynchronousCompositorRegistry::GetInstance() {
+SynchronousCompositorRegistryInProc*
+SynchronousCompositorRegistryInProc::GetInstance() {
   return g_compositor_registry.Pointer();
 }
 
-SynchronousCompositorRegistry::SynchronousCompositorRegistry() {
+SynchronousCompositorRegistryInProc::SynchronousCompositorRegistryInProc() {
   DCHECK(CalledOnValidThread());
 }
 
-SynchronousCompositorRegistry::~SynchronousCompositorRegistry() {
+SynchronousCompositorRegistryInProc::~SynchronousCompositorRegistryInProc() {
   DCHECK(CalledOnValidThread());
 }
 
-void SynchronousCompositorRegistry::RegisterCompositor(
+void SynchronousCompositorRegistryInProc::RegisterCompositor(
     int routing_id,
     SynchronousCompositorImpl* compositor) {
   DCHECK(CalledOnValidThread());
@@ -38,7 +39,7 @@ void SynchronousCompositorRegistry::RegisterCompositor(
   CheckIsReady(routing_id);
 }
 
-void SynchronousCompositorRegistry::UnregisterCompositor(
+void SynchronousCompositorRegistryInProc::UnregisterCompositor(
     int routing_id,
     SynchronousCompositorImpl* compositor) {
   DCHECK(CalledOnValidThread());
@@ -53,7 +54,7 @@ void SynchronousCompositorRegistry::UnregisterCompositor(
   RemoveEntryIfNeeded(routing_id);
 }
 
-void SynchronousCompositorRegistry::RegisterBeginFrameSource(
+void SynchronousCompositorRegistryInProc::RegisterBeginFrameSource(
     int routing_id,
     SynchronousCompositorExternalBeginFrameSource* begin_frame_source) {
   DCHECK(CalledOnValidThread());
@@ -64,7 +65,7 @@ void SynchronousCompositorRegistry::RegisterBeginFrameSource(
   CheckIsReady(routing_id);
 }
 
-void SynchronousCompositorRegistry::UnregisterBeginFrameSource(
+void SynchronousCompositorRegistryInProc::UnregisterBeginFrameSource(
     int routing_id,
     SynchronousCompositorExternalBeginFrameSource* begin_frame_source) {
   DCHECK(CalledOnValidThread());
@@ -79,7 +80,7 @@ void SynchronousCompositorRegistry::UnregisterBeginFrameSource(
   RemoveEntryIfNeeded(routing_id);
 }
 
-void SynchronousCompositorRegistry::RegisterOutputSurface(
+void SynchronousCompositorRegistryInProc::RegisterOutputSurface(
     int routing_id,
     SynchronousCompositorOutputSurface* output_surface) {
   DCHECK(CalledOnValidThread());
@@ -90,7 +91,7 @@ void SynchronousCompositorRegistry::RegisterOutputSurface(
   CheckIsReady(routing_id);
 }
 
-void SynchronousCompositorRegistry::UnregisterOutputSurface(
+void SynchronousCompositorRegistryInProc::UnregisterOutputSurface(
     int routing_id,
     SynchronousCompositorOutputSurface* output_surface) {
   DCHECK(CalledOnValidThread());
@@ -105,7 +106,7 @@ void SynchronousCompositorRegistry::UnregisterOutputSurface(
   RemoveEntryIfNeeded(routing_id);
 }
 
-void SynchronousCompositorRegistry::RegisterInputHandler(
+void SynchronousCompositorRegistryInProc::RegisterInputHandler(
     int routing_id,
     SynchronousInputHandlerProxy* synchronous_input_handler_proxy) {
   DCHECK(CalledOnValidThread());
@@ -116,7 +117,8 @@ void SynchronousCompositorRegistry::RegisterInputHandler(
   CheckIsReady(routing_id);
 }
 
-void SynchronousCompositorRegistry::UnregisterInputHandler(int routing_id) {
+void SynchronousCompositorRegistryInProc::UnregisterInputHandler(
+    int routing_id) {
   DCHECK(CalledOnValidThread());
   DCHECK(entry_map_.find(routing_id) != entry_map_.end());
   Entry& entry = entry_map_[routing_id];
@@ -127,7 +129,7 @@ void SynchronousCompositorRegistry::UnregisterInputHandler(int routing_id) {
   RemoveEntryIfNeeded(routing_id);
 }
 
-void SynchronousCompositorRegistry::CheckIsReady(int routing_id) {
+void SynchronousCompositorRegistryInProc::CheckIsReady(int routing_id) {
   DCHECK(entry_map_.find(routing_id) != entry_map_.end());
   Entry& entry = entry_map_[routing_id];
   if (entry.IsReady()) {
@@ -137,14 +139,14 @@ void SynchronousCompositorRegistry::CheckIsReady(int routing_id) {
   }
 }
 
-void SynchronousCompositorRegistry::UnregisterObjects(int routing_id) {
+void SynchronousCompositorRegistryInProc::UnregisterObjects(int routing_id) {
   DCHECK(entry_map_.find(routing_id) != entry_map_.end());
   Entry& entry = entry_map_[routing_id];
   DCHECK(entry.IsReady());
   entry.compositor->DidDestroyRendererObjects();
 }
 
-void SynchronousCompositorRegistry::RemoveEntryIfNeeded(int routing_id) {
+void SynchronousCompositorRegistryInProc::RemoveEntryIfNeeded(int routing_id) {
   DCHECK(entry_map_.find(routing_id) != entry_map_.end());
   Entry& entry = entry_map_[routing_id];
   if (!entry.compositor && !entry.begin_frame_source && !entry.output_surface &&
@@ -153,17 +155,17 @@ void SynchronousCompositorRegistry::RemoveEntryIfNeeded(int routing_id) {
   }
 }
 
-bool SynchronousCompositorRegistry::CalledOnValidThread() const {
+bool SynchronousCompositorRegistryInProc::CalledOnValidThread() const {
   return BrowserThread::CurrentlyOn(BrowserThread::UI);
 }
 
-SynchronousCompositorRegistry::Entry::Entry()
+SynchronousCompositorRegistryInProc::Entry::Entry()
     : compositor(nullptr),
       begin_frame_source(nullptr),
       output_surface(nullptr),
       synchronous_input_handler_proxy(nullptr) {}
 
-bool SynchronousCompositorRegistry::Entry::IsReady() {
+bool SynchronousCompositorRegistryInProc::Entry::IsReady() {
   return compositor && begin_frame_source && output_surface &&
          synchronous_input_handler_proxy;
 }

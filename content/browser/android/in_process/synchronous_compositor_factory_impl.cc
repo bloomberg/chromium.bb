@@ -9,16 +9,17 @@
 #include "base/sys_info.h"
 #include "base/thread_task_runner_handle.h"
 #include "content/browser/android/in_process/context_provider_in_process.h"
-#include "content/browser/android/in_process/synchronous_compositor_context_provider.h"
-#include "content/browser/android/in_process/synchronous_compositor_external_begin_frame_source.h"
 #include "content/browser/android/in_process/synchronous_compositor_impl.h"
-#include "content/browser/android/in_process/synchronous_compositor_output_surface.h"
+#include "content/browser/android/in_process/synchronous_compositor_registry_in_proc.h"
 #include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
+#include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/common/gpu/client/gpu_channel_host.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/gpu/in_process_gpu_thread.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
+#include "content/renderer/android/synchronous_compositor_external_begin_frame_source.h"
+#include "content/renderer/android/synchronous_compositor_output_surface.h"
 #include "content/renderer/gpu/frame_swap_message_queue.h"
 #include "content/renderer/render_thread_impl.h"
 #include "gpu/blink/webgraphicscontext3d_in_process_command_buffer_impl.h"
@@ -170,7 +171,9 @@ SynchronousCompositorFactoryImpl::CreateOutputSurface(
   scoped_refptr<cc::ContextProvider> worker_context =
       GetSharedWorkerContextProvider();
   return make_scoped_ptr(new SynchronousCompositorOutputSurface(
-      onscreen_context, worker_context, routing_id, frame_swap_message_queue));
+      onscreen_context, worker_context, routing_id,
+      SynchronousCompositorRegistryInProc::GetInstance(),
+      frame_swap_message_queue));
 }
 
 InputHandlerManagerClient*
@@ -181,8 +184,8 @@ SynchronousCompositorFactoryImpl::GetInputHandlerManagerClient() {
 scoped_ptr<cc::BeginFrameSource>
 SynchronousCompositorFactoryImpl::CreateExternalBeginFrameSource(
     int routing_id) {
-  return make_scoped_ptr(
-             new SynchronousCompositorExternalBeginFrameSource(routing_id));
+  return make_scoped_ptr(new SynchronousCompositorExternalBeginFrameSource(
+      routing_id, SynchronousCompositorRegistryInProc::GetInstance()));
 }
 
 scoped_refptr<cc::ContextProvider>
@@ -203,8 +206,7 @@ SynchronousCompositorFactoryImpl::CreateContextProviderForCompositor(
   mem_limits.mapped_memory_reclaim_limit = mapped_memory_reclaim_limit;
   scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context =
       CreateContext3D(surface_id, GetDefaultAttribs(), mem_limits);
-  return make_scoped_refptr(
-      new SynchronousCompositorContextProvider(context.Pass(), type));
+  return ContextProviderCommandBuffer::Create(context.Pass(), type);
 }
 
 scoped_refptr<cc::ContextProvider>
@@ -229,9 +231,8 @@ SynchronousCompositorFactoryImpl::GetSharedWorkerContextProvider() {
     mem_limits.mapped_memory_reclaim_limit = mapped_memory_reclaim_limit;
     scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context =
         CreateContext3D(0, GetDefaultAttribs(), mem_limits);
-    shared_worker_context_ =
-        make_scoped_refptr(new SynchronousCompositorContextProvider(
-            context.Pass(), RENDER_WORKER_CONTEXT));
+    shared_worker_context_ = ContextProviderCommandBuffer::Create(
+        context.Pass(), RENDER_WORKER_CONTEXT);
     if (!shared_worker_context_->BindToCurrentThread())
       shared_worker_context_ = nullptr;
     if (shared_worker_context_)

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_ANDROID_IN_PROCESS_SYNCHRONOUS_COMPOSITOR_OUTPUT_SURFACE_H_
-#define CONTENT_BROWSER_ANDROID_IN_PROCESS_SYNCHRONOUS_COMPOSITOR_OUTPUT_SURFACE_H_
+#ifndef CONTENT_RENDERER_ANDROID_SYNCHRONOUS_COMPOSITOR_OUTPUT_SURFACE_H_
+#define CONTENT_RENDERER_ANDROID_SYNCHRONOUS_COMPOSITOR_OUTPUT_SURFACE_H_
 
 #include <vector>
 
@@ -12,10 +12,10 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/threading/thread_checker.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/managed_memory_policy.h"
 #include "cc/output/output_surface.h"
-#include "content/public/browser/android/synchronous_compositor.h"
 #include "ipc/ipc_message.h"
 #include "ui/gfx/transform.h"
 
@@ -31,10 +31,16 @@ class Message;
 namespace content {
 
 class FrameSwapMessageQueue;
-class SynchronousCompositorClient;
-class SynchronousCompositorImpl;
-class SynchronousCompositorOutputSurface;
+class SynchronousCompositorRegistry;
 class WebGraphicsContext3DCommandBufferImpl;
+
+class SynchronousCompositorOutputSurfaceClient {
+ public:
+  virtual void Invalidate() = 0;
+
+ protected:
+  virtual ~SynchronousCompositorOutputSurfaceClient() {}
+};
 
 // Specialization of the output surface that adapts it to implement the
 // content::SynchronousCompositor public API. This class effects an "inversion
@@ -51,10 +57,11 @@ class SynchronousCompositorOutputSurface
       const scoped_refptr<cc::ContextProvider>& context_provider,
       const scoped_refptr<cc::ContextProvider>& worker_context_provider,
       int routing_id,
+      SynchronousCompositorRegistry* registry,
       scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue);
   ~SynchronousCompositorOutputSurface() override;
 
-  void SetCompositor(SynchronousCompositorImpl* compositor);
+  void SetSyncClient(SynchronousCompositorOutputSurfaceClient* compositor);
 
   // OutputSurface.
   bool BindToClient(cc::OutputSurfaceClient* surface_client) override;
@@ -94,10 +101,11 @@ class SynchronousCompositorOutputSurface
   bool CalledOnValidThread() const;
 
   const int routing_id_;
+  SynchronousCompositorRegistry* const registry_;  // unowned
   bool registered_;
 
   // Not owned.
-  SynchronousCompositorImpl* compositor_;
+  SynchronousCompositorOutputSurfaceClient* sync_client_;
 
   gfx::Transform cached_hw_transform_;
   gfx::Rect cached_hw_viewport_;
@@ -114,9 +122,11 @@ class SynchronousCompositorOutputSurface
 
   scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue_;
 
+  base::ThreadChecker thread_checker_;
+
   DISALLOW_COPY_AND_ASSIGN(SynchronousCompositorOutputSurface);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_ANDROID_IN_PROCESS_SYNCHRONOUS_COMPOSITOR_OUTPUT_SURFACE_H_
+#endif  // CONTENT_RENDERER_ANDROID_SYNCHRONOUS_COMPOSITOR_OUTPUT_SURFACE_H_

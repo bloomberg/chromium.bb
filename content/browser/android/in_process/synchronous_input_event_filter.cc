@@ -6,7 +6,7 @@
 
 #include "base/callback.h"
 #include "content/browser/android/in_process/synchronous_compositor_impl.h"
-#include "content/browser/android/in_process/synchronous_compositor_registry.h"
+#include "content/browser/android/in_process/synchronous_compositor_registry_in_proc.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/events/latency_info.h"
 
@@ -49,13 +49,13 @@ void SynchronousInputEventFilter::DidAddInputHandler(
     int routing_id,
     SynchronousInputHandlerProxy* synchronous_input_handler_proxy) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  SynchronousCompositorRegistry::GetInstance()->RegisterInputHandler(
+  SynchronousCompositorRegistryInProc::GetInstance()->RegisterInputHandler(
       routing_id, synchronous_input_handler_proxy);
 }
 
 void SynchronousInputEventFilter::DidRemoveInputHandler(int routing_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  SynchronousCompositorRegistry::GetInstance()->UnregisterInputHandler(
+  SynchronousCompositorRegistryInProc::GetInstance()->UnregisterInputHandler(
       routing_id);
 }
 

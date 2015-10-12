@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/android/in_process/synchronous_compositor_output_surface.h"
+#include "content/renderer/android/synchronous_compositor_output_surface.h"
 
 #include "base/auto_reset.h"
 #include "base/logging.h"
@@ -10,11 +10,8 @@
 #include "cc/output/context_provider.h"
 #include "cc/output/output_surface_client.h"
 #include "cc/output/software_output_device.h"
-#include "content/browser/android/in_process/synchronous_compositor_external_begin_frame_source.h"
-#include "content/browser/android/in_process/synchronous_compositor_impl.h"
-#include "content/browser/android/in_process/synchronous_compositor_registry.h"
-#include "content/browser/gpu/compositor_util.h"
-#include "content/public/browser/browser_thread.h"
+#include "content/renderer/android/synchronous_compositor_external_begin_frame_source.h"
+#include "content/renderer/android/synchronous_compositor_registry.h"
 #include "content/renderer/gpu/frame_swap_message_queue.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -31,7 +28,7 @@ namespace {
 // Do not limit number of resources, so use an unrealistically high value.
 const size_t kNumResourcesLimit = 10 * 1000 * 1000;
 
-} // namespace
+}  // namespace
 
 class SynchronousCompositorOutputSurface::SoftwareDevice
   : public cc::SoftwareOutputDevice {
@@ -64,16 +61,21 @@ SynchronousCompositorOutputSurface::SynchronousCompositorOutputSurface(
     const scoped_refptr<cc::ContextProvider>& context_provider,
     const scoped_refptr<cc::ContextProvider>& worker_context_provider,
     int routing_id,
+    SynchronousCompositorRegistry* registry,
     scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue)
     : cc::OutputSurface(
           context_provider,
           worker_context_provider,
           scoped_ptr<cc::SoftwareOutputDevice>(new SoftwareDevice(this))),
       routing_id_(routing_id),
+      registry_(registry),
       registered_(false),
+      sync_client_(nullptr),
       current_sw_canvas_(nullptr),
-      memory_policy_(0),
+      memory_policy_(0u),
       frame_swap_message_queue_(frame_swap_message_queue) {
+  thread_checker_.DetachFromThread();
+  DCHECK(registry_);
   capabilities_.draw_and_swap_full_viewport_every_frame = true;
   capabilities_.adjust_deadline_for_parent = false;
   capabilities_.delegated_rendering = true;
@@ -82,7 +84,12 @@ SynchronousCompositorOutputSurface::SynchronousCompositorOutputSurface(
       gpu::MemoryAllocation::CUTOFF_ALLOW_NICE_TO_HAVE;
 }
 
-SynchronousCompositorOutputSurface::~SynchronousCompositorOutputSurface() {
+SynchronousCompositorOutputSurface::~SynchronousCompositorOutputSurface() {}
+
+void SynchronousCompositorOutputSurface::SetSyncClient(
+    SynchronousCompositorOutputSurfaceClient* compositor) {
+  DCHECK(CalledOnValidThread());
+  sync_client_ = compositor;
 }
 
 bool SynchronousCompositorOutputSurface::BindToClient(
@@ -92,27 +99,17 @@ bool SynchronousCompositorOutputSurface::BindToClient(
     return false;
 
   client_->SetMemoryPolicy(memory_policy_);
-
-  SynchronousCompositorRegistry::GetInstance()->RegisterOutputSurface(
-      routing_id_, this);
+  registry_->RegisterOutputSurface(routing_id_, this);
   registered_ = true;
-
   return true;
 }
 
 void SynchronousCompositorOutputSurface::DetachFromClient() {
   DCHECK(CalledOnValidThread());
   if (registered_) {
-    SynchronousCompositorRegistry::GetInstance()->UnregisterOutputSurface(
-        routing_id_, this);
+    registry_->UnregisterOutputSurface(routing_id_, this);
   }
   cc::OutputSurface::DetachFromClient();
-}
-
-void SynchronousCompositorOutputSurface::SetCompositor(
-    SynchronousCompositorImpl* compositor) {
-  DCHECK(CalledOnValidThread());
-  compositor_ = compositor;
 }
 
 void SynchronousCompositorOutputSurface::Reshape(
@@ -123,24 +120,16 @@ void SynchronousCompositorOutputSurface::Reshape(
 void SynchronousCompositorOutputSurface::SwapBuffers(
     cc::CompositorFrame* frame) {
   DCHECK(CalledOnValidThread());
-
   frame_holder_.reset(new cc::CompositorFrame);
   frame->AssignTo(frame_holder_.get());
-
   client_->DidSwapBuffers();
 }
 
 void SynchronousCompositorOutputSurface::Invalidate() {
   DCHECK(CalledOnValidThread());
-  compositor_->PostInvalidate();
+  if (sync_client_)
+    sync_client_->Invalidate();
 }
-
-namespace {
-void AdjustTransform(gfx::Transform* transform, gfx::Rect viewport) {
-  // CC's draw origin starts at the viewport.
-  transform->matrix().postTranslate(-viewport.x(), -viewport.y(), 0);
-}
-} // namespace
 
 scoped_ptr<cc::CompositorFrame>
 SynchronousCompositorOutputSurface::DemandDrawHw(
@@ -155,12 +144,8 @@ SynchronousCompositorOutputSurface::DemandDrawHw(
   DCHECK(context_provider_.get());
 
   surface_size_ = surface_size;
-  InvokeComposite(transform,
-                  viewport,
-                  clip,
-                  viewport_rect_for_tile_priority,
-                  transform_for_tile_priority,
-                  true);
+  InvokeComposite(transform, viewport, clip, viewport_rect_for_tile_priority,
+                  transform_for_tile_priority, true);
 
   return frame_holder_.Pass();
 }
@@ -206,13 +191,10 @@ void SynchronousCompositorOutputSurface::InvokeComposite(
   DCHECK(!frame_holder_.get());
 
   gfx::Transform adjusted_transform = transform;
-  AdjustTransform(&adjusted_transform, viewport);
-  SetExternalDrawConstraints(adjusted_transform,
-                             viewport,
-                             clip,
+  adjusted_transform.matrix().postTranslate(-viewport.x(), -viewport.y(), 0);
+  SetExternalDrawConstraints(adjusted_transform, viewport, clip,
                              viewport_rect_for_tile_priority,
-                             transform_for_tile_priority,
-                             !hardware_draw);
+                             transform_for_tile_priority, !hardware_draw);
   SetNeedsRedrawRect(gfx::Rect(viewport.size()));
 
   client_->OnDraw();
@@ -282,11 +264,8 @@ void SynchronousCompositorOutputSurface::GetMessagesToDeliver(
   frame_swap_message_queue_->DrainMessages(messages);
 }
 
-// Not using base::NonThreadSafe as we want to enforce a more exacting threading
-// requirement: SynchronousCompositorOutputSurface() must only be used on the UI
-// thread.
 bool SynchronousCompositorOutputSurface::CalledOnValidThread() const {
-  return BrowserThread::CurrentlyOn(BrowserThread::UI);
+  return thread_checker_.CalledOnValidThread();
 }
 
 }  // namespace content

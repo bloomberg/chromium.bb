@@ -10,9 +10,10 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/browser/android/in_process/synchronous_compositor_output_surface.h"
 #include "content/common/input/input_event_ack_state.h"
 #include "content/public/browser/android/synchronous_compositor.h"
+#include "content/renderer/android/synchronous_compositor_external_begin_frame_source.h"
+#include "content/renderer/android/synchronous_compositor_output_surface.h"
 #include "content/renderer/input/synchronous_input_handler_proxy.h"
 #include "ipc/ipc_message.h"
 
@@ -38,7 +39,9 @@ struct DidOverscrollParams;
 // from the Compositor thread.
 class SynchronousCompositorImpl
     : public SynchronousInputHandler,
-      public SynchronousCompositor {
+      public SynchronousCompositor,
+      public SynchronousCompositorExternalBeginFrameSourceClient,
+      public SynchronousCompositorOutputSurfaceClient {
  public:
   // For handling upcalls from renderer code; the process id
   // is implicitly that of the in-process renderer.
@@ -58,11 +61,11 @@ class SynchronousCompositorImpl
       SynchronousInputHandlerProxy* synchronous_input_handler_proxy);
   void DidDestroyRendererObjects();
 
-  // Called by SynchronousCompositorExternalBeginFrameSource.
-  void OnNeedsBeginFramesChange(bool needs_begin_frames);
+  // SynchronousCompositorExternalBeginFrameSourceClient overrides.
+  void OnNeedsBeginFramesChange(bool needs_begin_frames) override;
 
-  // Called by SynchronousCompositorOutputSurface.
-  void PostInvalidate();
+  // SynchronousCompositorOutputSurfaceClient overrides.
+  void Invalidate() override;
 
   // Called by RenderWidgetHostViewAndroid.
   void BeginFrame(const cc::BeginFrameArgs& args);

@@ -8,9 +8,8 @@
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/message_loop/message_loop.h"
-#include "content/browser/android/in_process/synchronous_compositor_external_begin_frame_source.h"
 #include "content/browser/android/in_process/synchronous_compositor_factory_impl.h"
-#include "content/browser/android/in_process/synchronous_compositor_registry.h"
+#include "content/browser/android/in_process/synchronous_compositor_registry_in_proc.h"
 #include "content/browser/android/in_process/synchronous_input_event_filter.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
@@ -95,12 +94,12 @@ SynchronousCompositorImpl::SynchronousCompositorImpl(
     DCHECK_EQ(g_process_id, process_id);  // Not multiprocess compatible.
   }
 
-  SynchronousCompositorRegistry::GetInstance()->RegisterCompositor(
+  SynchronousCompositorRegistryInProc::GetInstance()->RegisterCompositor(
       routing_id_, this);
 }
 
 SynchronousCompositorImpl::~SynchronousCompositorImpl() {
-  SynchronousCompositorRegistry::GetInstance()->UnregisterCompositor(
+  SynchronousCompositorRegistryInProc::GetInstance()->UnregisterCompositor(
       routing_id_, this);
 }
 
@@ -146,8 +145,8 @@ void SynchronousCompositorImpl::DidInitializeRendererObjects(
   begin_frame_source_ = begin_frame_source;
   synchronous_input_handler_proxy_ = synchronous_input_handler_proxy;
 
-  output_surface_->SetCompositor(this);
-  begin_frame_source_->SetCompositor(this);
+  output_surface_->SetSyncClient(this);
+  begin_frame_source_->SetClient(this);
 }
 
 void SynchronousCompositorImpl::DidDestroyRendererObjects() {
@@ -161,8 +160,8 @@ void SynchronousCompositorImpl::DidDestroyRendererObjects() {
   }
 
   // This object is being destroyed, so remove pointers to it.
-  begin_frame_source_->SetCompositor(nullptr);
-  output_surface_->SetCompositor(nullptr);
+  begin_frame_source_->SetClient(nullptr);
+  output_surface_->SetSyncClient(nullptr);
   synchronous_input_handler_proxy_->SetOnlySynchronouslyAnimateRootFlings(
       nullptr);
 
@@ -238,7 +237,7 @@ void SynchronousCompositorImpl::SetMemoryPolicy(size_t bytes_limit) {
   }
 }
 
-void SynchronousCompositorImpl::PostInvalidate() {
+void SynchronousCompositorImpl::Invalidate() {
   DCHECK(CalledOnValidThread());
   if (registered_with_client_)
     compositor_client_->PostInvalidate();

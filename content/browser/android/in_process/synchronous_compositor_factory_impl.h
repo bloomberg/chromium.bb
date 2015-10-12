@@ -28,7 +28,7 @@ class WebGraphicsContext3DInProcessCommandBufferImpl;
 namespace content {
 
 class InProcessChildThreadParams;
-class SynchronousCompositorContextProvider;
+class ContextProviderCommandBuffer;
 
 class SynchronousCompositorFactoryImpl : public SynchronousCompositorFactory {
  public:
@@ -77,7 +77,7 @@ class SynchronousCompositorFactoryImpl : public SynchronousCompositorFactory {
   class VideoContextProvider;
   scoped_refptr<VideoContextProvider> video_context_provider_;
 
-  scoped_refptr<SynchronousCompositorContextProvider> shared_worker_context_;
+  scoped_refptr<ContextProviderCommandBuffer> shared_worker_context_;
 
   // |num_hardware_compositor_lock_| is updated on UI thread only but can be
   // read on renderer main thread.
