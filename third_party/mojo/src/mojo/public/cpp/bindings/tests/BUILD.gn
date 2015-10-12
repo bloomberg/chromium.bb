@@ -4,7 +4,7 @@
 
 import("../../../mojo_application.gni")
 import("../../../mojo_sdk.gni")
-import("../../../mojo.gni")
+import("//mojo/public/mojo.gni")
 
 mojo_sdk_source_set("tests") {
   testonly = true
@@ -115,7 +115,9 @@ if (mojo_use_application_in_sdk) {
     deps = [
       ":versioning_apptest_source_set",
     ]
-    data_deps = [ ":versioning_test_service" ]
+    data_deps = [
+      ":versioning_test_service",
+    ]
   }
 
   mojo_sdk_source_set("versioning_apptest_source_set") {
