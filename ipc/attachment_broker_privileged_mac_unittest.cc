@@ -163,6 +163,12 @@ mach_msg_type_number_t GetActiveNameCount() {
   return names_count;
 }
 
+// Increments the ref count for the right/name pair.
+void IncrementMachRefCount(mach_port_name_t name, mach_port_right_t right) {
+  kern_return_t kr = mach_port_mod_refs(mach_task_self(), name, right, 1);
+  MACH_CHECK(kr == KERN_SUCCESS, kr) << "GetRefCount";
+}
+
 // Sets up the mach communication ports with the server. Returns a port to which
 // the server will send mach objects.
 // |original_name_count| is an output variable that describes the number of
@@ -266,9 +272,13 @@ TEST_F(AttachmentBrokerPrivilegedMacMultiProcessTest, InsertRight) {
       CreateAndPopulateSharedMemoryHandle(s_memory_size);
   ASSERT_TRUE(shared_memory->handle().IsValid());
 
-  // Insert it indirectly into the destination task.
-  mach_port_name_t inserted_memory_object = broker.InsertIndirectMachPort(
-      client_task_port_, shared_memory->handle().GetMemoryObject());
+  // Insert the memory object into the destination task, via an intermediate
+  // port.
+  IncrementMachRefCount(shared_memory->handle().GetMemoryObject(),
+                        MACH_PORT_RIGHT_SEND);
+  mach_port_name_t inserted_memory_object = broker.CreateIntermediateMachPort(
+      client_task_port_, base::mac::ScopedMachSendRight(
+                             shared_memory->handle().GetMemoryObject()));
   EXPECT_NE(inserted_memory_object,
             static_cast<mach_port_name_t>(MACH_PORT_NULL));
   SendUInt32(client_port_, inserted_memory_object);
@@ -323,10 +333,14 @@ TEST_F(AttachmentBrokerPrivilegedMacMultiProcessTest, InsertSameRightTwice) {
       CreateAndPopulateSharedMemoryHandle(s_memory_size);
   ASSERT_TRUE(shared_memory->handle().IsValid());
 
-  // Insert it indirectly into the destination task, twice.
+  // Insert the memory object into the destination task, via an intermediate
+  // port, twice.
   for (int i = 0; i < 2; ++i) {
-    mach_port_name_t inserted_memory_object = broker.InsertIndirectMachPort(
-        client_task_port_, shared_memory->handle().GetMemoryObject());
+    IncrementMachRefCount(shared_memory->handle().GetMemoryObject(),
+                          MACH_PORT_RIGHT_SEND);
+    mach_port_name_t inserted_memory_object = broker.CreateIntermediateMachPort(
+        client_task_port_, base::mac::ScopedMachSendRight(
+                               shared_memory->handle().GetMemoryObject()));
     EXPECT_NE(inserted_memory_object,
               static_cast<mach_port_name_t>(MACH_PORT_NULL));
     SendUInt32(client_port_, inserted_memory_object);
@@ -408,9 +422,13 @@ TEST_F(AttachmentBrokerPrivilegedMacMultiProcessTest, InsertTwoRights) {
         CreateAndPopulateSharedMemoryHandle(s_memory_size);
     ASSERT_TRUE(shared_memory->handle().IsValid());
 
-    // Insert it indirectly into the destination task.
-    mach_port_name_t inserted_memory_object = broker.InsertIndirectMachPort(
-        client_task_port_, shared_memory->handle().GetMemoryObject());
+    // Insert the memory object into the destination task, via an intermediate
+    // port.
+    IncrementMachRefCount(shared_memory->handle().GetMemoryObject(),
+                          MACH_PORT_RIGHT_SEND);
+    mach_port_name_t inserted_memory_object = broker.CreateIntermediateMachPort(
+        client_task_port_, base::mac::ScopedMachSendRight(
+                               shared_memory->handle().GetMemoryObject()));
     EXPECT_NE(inserted_memory_object,
               static_cast<mach_port_name_t>(MACH_PORT_NULL));
     SendUInt32(client_port_, inserted_memory_object);

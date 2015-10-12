@@ -68,15 +68,29 @@ bool AttachmentBrokerPrivilegedMac::SendAttachmentToProcess(
     base::ProcessId destination_process) {
   switch (attachment->GetBrokerableType()) {
     case BrokerableAttachment::MACH_PORT: {
-      const internal::MachPortAttachmentMac* mach_port_attachment =
-          static_cast<const internal::MachPortAttachmentMac*>(attachment);
+      internal::MachPortAttachmentMac* mach_port_attachment =
+          static_cast<internal::MachPortAttachmentMac*>(attachment);
       MachPortWireFormat wire_format =
           mach_port_attachment->GetWireFormat(destination_process);
-      MachPortWireFormat new_wire_format =
-          DuplicateMachPort(wire_format, base::Process::Current().Pid());
-      if (new_wire_format.mach_port == 0)
+
+      if (destination_process == base::Process::Current().Pid()) {
+        RouteWireFormatToSelf(wire_format);
+        mach_port_attachment->reset_mach_port_ownership();
+        return true;
+      }
+
+      mach_port_name_t intermediate_port = CreateIntermediateMachPort(
+          wire_format.destination_process,
+          base::mac::ScopedMachSendRight(wire_format.mach_port));
+      mach_port_attachment->reset_mach_port_ownership();
+      if (intermediate_port == MACH_PORT_NULL) {
+        // TODO(erikchen): UMA metric.
         return false;
-      RouteDuplicatedMachPort(new_wire_format);
+      }
+
+      MachPortWireFormat intermediate_wire_format =
+          CopyWireFormat(wire_format, intermediate_port);
+      RouteWireFormatToAnother(intermediate_wire_format);
       return true;
     }
     default:
@@ -99,8 +113,10 @@ bool AttachmentBrokerPrivilegedMac::OnMessageReceived(const Message& msg) {
 void AttachmentBrokerPrivilegedMac::OnDuplicateMachPort(
     const IPC::Message& message) {
   AttachmentBrokerMsg_DuplicateMachPort::Param param;
-  if (!AttachmentBrokerMsg_DuplicateMachPort::Read(&message, &param))
+  if (!AttachmentBrokerMsg_DuplicateMachPort::Read(&message, &param)) {
+    // TODO(erikchen): UMA metric.
     return;
+  }
   IPC::internal::MachPortAttachmentMac::WireFormat wire_format =
       base::get<0>(param);
 
@@ -109,20 +125,39 @@ void AttachmentBrokerPrivilegedMac::OnDuplicateMachPort(
     return;
   }
 
-  MachPortWireFormat new_wire_format =
-      DuplicateMachPort(wire_format, message.get_sender_pid());
-  RouteDuplicatedMachPort(new_wire_format);
-}
+  // Acquire a send right to the Mach port.
+  base::ProcessId sender_pid = message.get_sender_pid();
+  DCHECK_NE(sender_pid, base::GetCurrentProcId());
+  base::mac::ScopedMachSendRight send_right(
+      AcquireSendRight(sender_pid, wire_format.mach_port));
 
-void AttachmentBrokerPrivilegedMac::RouteDuplicatedMachPort(
-    const MachPortWireFormat& wire_format) {
-  // This process is the destination.
-  if (wire_format.destination_process == base::Process::Current().Pid()) {
-    scoped_refptr<BrokerableAttachment> attachment(
-        new internal::MachPortAttachmentMac(wire_format));
-    HandleReceivedAttachment(attachment);
+  if (wire_format.destination_process == base::GetCurrentProcId()) {
+    // Intentionally leak the reference, as the consumer of the Chrome IPC
+    // message will take ownership.
+    mach_port_t final_mach_port = send_right.release();
+    MachPortWireFormat final_wire_format(
+        CopyWireFormat(wire_format, final_mach_port));
+    RouteWireFormatToSelf(final_wire_format);
     return;
   }
+
+  mach_port_name_t intermediate_mach_port = CreateIntermediateMachPort(
+      wire_format.destination_process,
+      base::mac::ScopedMachSendRight(send_right.release()));
+  RouteWireFormatToAnother(CopyWireFormat(wire_format, intermediate_mach_port));
+}
+
+void AttachmentBrokerPrivilegedMac::RouteWireFormatToSelf(
+    const MachPortWireFormat& wire_format) {
+  DCHECK_EQ(wire_format.destination_process, base::Process::Current().Pid());
+  scoped_refptr<BrokerableAttachment> attachment(
+      new internal::MachPortAttachmentMac(wire_format));
+  HandleReceivedAttachment(attachment);
+}
+
+void AttachmentBrokerPrivilegedMac::RouteWireFormatToAnother(
+    const MachPortWireFormat& wire_format) {
+  DCHECK_NE(wire_format.destination_process, base::Process::Current().Pid());
 
   // Another process is the destination.
   base::ProcessId dest = wire_format.destination_process;
@@ -141,40 +176,24 @@ void AttachmentBrokerPrivilegedMac::RouteDuplicatedMachPort(
   sender->Send(new AttachmentBrokerMsg_MachPortHasBeenDuplicated(wire_format));
 }
 
-AttachmentBrokerPrivilegedMac::MachPortWireFormat
-AttachmentBrokerPrivilegedMac::DuplicateMachPort(
-    const MachPortWireFormat& wire_format,
-    base::ProcessId source_pid) {
-  // If the source is the destination, just increment the ref count.
-  if (source_pid == wire_format.destination_process) {
-    mach_port_t task_port =
-        port_provider_->TaskForPid(wire_format.destination_process);
-    kern_return_t kr = mach_port_mod_refs(task_port, wire_format.mach_port,
-                                          MACH_PORT_RIGHT_SEND, 1);
-    if (kr != KERN_SUCCESS) {
-      // TODO(erikchen): UMA metric.
-      return CopyWireFormat(wire_format, MACH_PORT_NULL);
-    }
-    return wire_format;
+mach_port_name_t AttachmentBrokerPrivilegedMac::CreateIntermediateMachPort(
+    base::ProcessId pid,
+    base::mac::ScopedMachSendRight port_to_insert) {
+  DCHECK_NE(pid, base::GetCurrentProcId());
+  mach_port_t task_port = port_provider_->TaskForPid(pid);
+  if (task_port == MACH_PORT_NULL) {
+    // TODO(erikchen): UMA metric.
+    return MACH_PORT_NULL;
   }
-
-  // Acquire a send right to the memory object.
-  base::mac::ScopedMachSendRight memory_object(
-      AcquireSendRight(source_pid, wire_format.mach_port));
-  if (!memory_object)
-    return CopyWireFormat(wire_format, MACH_PORT_NULL);
-
-  mach_port_t task_port =
-      port_provider_->TaskForPid(wire_format.destination_process);
-  mach_port_name_t inserted_memory_object =
-      InsertIndirectMachPort(task_port, memory_object);
-  return CopyWireFormat(wire_format, inserted_memory_object);
+  return CreateIntermediateMachPort(
+      task_port, base::mac::ScopedMachSendRight(port_to_insert.release()));
 }
 
-mach_port_name_t AttachmentBrokerPrivilegedMac::InsertIndirectMachPort(
+mach_port_name_t AttachmentBrokerPrivilegedMac::CreateIntermediateMachPort(
     mach_port_t task_port,
-    mach_port_t port_to_insert) {
+    base::mac::ScopedMachSendRight port_to_insert) {
   DCHECK_NE(mach_task_self(), task_port);
+  DCHECK_NE(static_cast<mach_port_name_t>(MACH_PORT_NULL), task_port);
 
   // Make a port with receive rights in the destination task.
   mach_port_name_t endpoint;
