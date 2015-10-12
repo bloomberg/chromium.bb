@@ -117,6 +117,9 @@ class ExtensionContextMenuModel : public ui::SimpleMenuModel,
   // The type of extension action to which this context menu is attached.
   ActionType action_type_;
 
+  // The visibility of the button at the time the menu opened.
+  ButtonVisibility button_visibility_;
+
   // Menu matcher for context menu items specified by the extension.
   scoped_ptr<ContextMenuMatcher> extension_items_;
 

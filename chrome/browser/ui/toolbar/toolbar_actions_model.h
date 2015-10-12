@@ -158,6 +158,8 @@ class ToolbarActionsModel : public extensions::ExtensionActionAPI::Observer,
   bool is_highlighting() const { return highlight_type_ != HIGHLIGHT_NONE; }
   HighlightType highlight_type() const { return highlight_type_; }
 
+  void SetActionVisibility(const std::string& action_id, bool visible);
+
   void OnActionToolbarPrefChange();
 
   // Highlights the actions specified by |action_ids|. This will cause
@@ -210,13 +212,6 @@ class ToolbarActionsModel : public extensions::ExtensionActionAPI::Observer,
 
   // Save the model to prefs.
   void UpdatePrefs();
-
-  // Updates action with |action|'s id's browser action visibility pref if the
-  // browser action is in the overflow menu and should be considered hidden.
-  void MaybeUpdateVisibilityPref(const ToolbarItem& action, size_t index);
-
-  // Calls MaybeUpdateVisibilityPref() for each action in |toolbar_items|.
-  void MaybeUpdateVisibilityPrefs();
 
   // Finds the last known visible position of the icon for |action|. The value
   // returned is a zero-based index into the vector of visible items.

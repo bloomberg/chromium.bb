@@ -8,7 +8,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/active_script_controller.h"
-#include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/context_menu_matcher.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
@@ -21,6 +20,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -156,7 +156,8 @@ ExtensionContextMenuModel::ExtensionContextMenuModel(
       browser_(browser),
       profile_(browser->profile()),
       delegate_(delegate),
-      action_type_(NO_ACTION) {
+      action_type_(NO_ACTION),
+      button_visibility_(button_visibility) {
   InitMenu(extension, button_visibility);
 }
 
@@ -251,9 +252,9 @@ void ExtensionContextMenuModel::ExecuteCommand(int command_id,
       ExtensionTabUtil::OpenOptionsPage(extension, browser_);
       break;
     case TOGGLE_VISIBILITY: {
-      ExtensionActionAPI* api = ExtensionActionAPI::Get(profile_);
-      bool visible = api->GetBrowserActionVisibility(extension->id());
-      api->SetBrowserActionVisibility(extension->id(), !visible);
+      bool currently_visible = button_visibility_ == VISIBLE;
+      ToolbarActionsModel::Get(browser_->profile())
+          ->SetActionVisibility(extension->id(), !currently_visible);
       break;
     }
     case UNINSTALL: {

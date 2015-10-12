@@ -354,30 +354,30 @@ TEST_F(ExtensionContextMenuModelTest, ExtensionContextMenuShowAndHide) {
     ExtensionContextMenuModel menu(page_action.get(), GetBrowser(),
                                    ExtensionContextMenuModel::VISIBLE, nullptr);
     int index = GetCommandIndex(menu, visibility_command);
-  EXPECT_NE(-1, index);
-  EXPECT_EQ(redesign_hide_string, menu.GetLabelAt(index));
+    EXPECT_NE(-1, index);
+    EXPECT_EQ(redesign_hide_string, menu.GetLabelAt(index));
   }
 
   {
-  // If the action is overflowed, it should have the "Show button in toolbar"
-  // string.
-  ExtensionContextMenuModel menu(browser_action.get(), GetBrowser(),
-                                 ExtensionContextMenuModel::OVERFLOWED,
-                                 nullptr);
-  int index = GetCommandIndex(menu, visibility_command);
-  EXPECT_NE(-1, index);
-  EXPECT_EQ(redesign_show_string, menu.GetLabelAt(index));
+    // If the action is overflowed, it should have the "Show button in toolbar"
+    // string.
+    ExtensionContextMenuModel menu(browser_action.get(), GetBrowser(),
+                                   ExtensionContextMenuModel::OVERFLOWED,
+                                   nullptr);
+    int index = GetCommandIndex(menu, visibility_command);
+    EXPECT_NE(-1, index);
+    EXPECT_EQ(redesign_show_string, menu.GetLabelAt(index));
   }
 
   {
-  // If the action is transitively visible, as happens when it is showing a
-  // popup, we should use a "Keep button in toolbar" string.
-  ExtensionContextMenuModel menu(
-      browser_action.get(), GetBrowser(),
-      ExtensionContextMenuModel::TRANSITIVELY_VISIBLE, nullptr);
-  int index = GetCommandIndex(menu, visibility_command);
-  EXPECT_NE(-1, index);
-  EXPECT_EQ(redesign_keep_string, menu.GetLabelAt(index));
+    // If the action is transitively visible, as happens when it is showing a
+    // popup, we should use a "Keep button in toolbar" string.
+    ExtensionContextMenuModel menu(
+        browser_action.get(), GetBrowser(),
+        ExtensionContextMenuModel::TRANSITIVELY_VISIBLE, nullptr);
+    int index = GetCommandIndex(menu, visibility_command);
+    EXPECT_NE(-1, index);
+    EXPECT_EQ(redesign_keep_string, menu.GetLabelAt(index));
   }
 }
 

@@ -6,8 +6,10 @@
 
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/browser_action_test_util.h"
+#include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/toolbar/browser_actions_bar_browsertest.h"
+#include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
 #include "chrome/browser/ui/views/extensions/browser_action_drag_data.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -355,12 +357,17 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerOverflowTest,
   EXPECT_EQ(extension_b()->id(), main_bar()->GetIdAt(2u));
   EXPECT_TRUE(VerifyVisibleCount(2u));
 
-  // Hide action A. This results in it being sent to overflow, and reducing the
-  // visible size to 1, so the order should be C A B, with only C visible in the
-  // main bar.
-  extensions::ExtensionActionAPI::Get(profile())->SetBrowserActionVisibility(
-      extension_a()->id(),
-      false);
+  // Hide action A via a context menu. This results in it being sent to
+  // overflow, and reducing the visible size to 1, so the order should be C A B,
+  // with only C visible in the main bar.
+  ui::MenuModel* menu_model = main_bar()
+                                  ->GetToolbarActionViewAt(1)
+                                  ->view_controller()
+                                  ->GetContextMenu();
+  extensions::ExtensionContextMenuModel* extension_menu =
+      static_cast<extensions::ExtensionContextMenuModel*>(menu_model);
+  extension_menu->ExecuteCommand(
+      extensions::ExtensionContextMenuModel::TOGGLE_VISIBILITY, 0);
   overflow_bar()->Layout();  // Kick.
   EXPECT_EQ(extension_c()->id(), main_bar()->GetIdAt(0u));
   EXPECT_EQ(extension_a()->id(), main_bar()->GetIdAt(1u));
