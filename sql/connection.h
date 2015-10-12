@@ -18,6 +18,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
+#include "base/trace_event/memory_dump_provider.h"
 #include "sql/sql_export.h"
 
 struct sqlite3;
@@ -102,7 +103,7 @@ class SQL_EXPORT TimeSource {
   DISALLOW_COPY_AND_ASSIGN(TimeSource);
 };
 
-class SQL_EXPORT Connection {
+class SQL_EXPORT Connection : public base::trace_event::MemoryDumpProvider {
  private:
   class StatementRef;  // Forward declaration, see real one below.
 
@@ -110,7 +111,7 @@ class SQL_EXPORT Connection {
   // The database is opened by calling Open[InMemory](). Any uncommitted
   // transactions will be rolled back when this object is deleted.
   Connection();
-  ~Connection();
+  ~Connection() override;
 
   // Pre-init configuration ----------------------------------------------------
 
@@ -463,6 +464,11 @@ class SQL_EXPORT Connection {
   // those clients to work appropriately with ScopedErrorIgnorer in
   // tests.
   static bool ShouldIgnoreSqliteError(int error);
+
+  // base::trace_event::MemoryDumpProvider implementation.
+  bool OnMemoryDump(
+      const base::trace_event::MemoryDumpArgs& args,
+      base::trace_event::ProcessMemoryDump* process_memory_dump) override;
 
  private:
   // For recovery module.

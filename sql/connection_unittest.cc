@@ -11,6 +11,7 @@
 #include "base/metrics/statistics_recorder.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/histogram_tester.h"
+#include "base/trace_event/process_memory_dump.h"
 #include "sql/connection.h"
 #include "sql/correct_sql_test_base.h"
 #include "sql/meta_table.h"
@@ -1377,5 +1378,13 @@ TEST_F(SQLConnectionTest, MmapTest) {
   }
 }
 #endif
+
+TEST_F(SQLConnectionTest, OnMemoryDump) {
+  base::trace_event::ProcessMemoryDump pmd(nullptr);
+  base::trace_event::MemoryDumpArgs args = {
+      base::trace_event::MemoryDumpLevelOfDetail::DETAILED};
+  ASSERT_TRUE(db().OnMemoryDump(args, &pmd));
+  EXPECT_GE(pmd.allocator_dumps().size(), 1u);
+}
 
 }  // namespace

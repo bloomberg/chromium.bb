@@ -71,6 +71,7 @@
 #include "net/ssl/ssl_config_service.h"
 #include "ipc/mojo/scoped_ipc_support.h"
 #include "skia/ext/skia_memory_dump_provider.h"
+#include "sql/sql_memory_dump_provider.h"
 #include "ui/base/clipboard/clipboard.h"
 
 #if defined(USE_AURA) || (defined(OS_MACOSX) && !defined(OS_IOS))
@@ -661,6 +662,8 @@ void BrowserMainLoop::PostMainMessageLoopStart() {
       HostSharedBitmapManager::current());
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       skia::SkiaMemoryDumpProvider::GetInstance());
+  base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
+      sql::SqlMemoryDumpProvider::GetInstance());
 
 #if defined(TCMALLOC_TRACE_MEMORY_SUPPORTED)
   trace_memory_controller_.reset(new base::trace_event::TraceMemoryController(
