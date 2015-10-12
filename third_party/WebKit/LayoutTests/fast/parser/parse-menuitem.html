@@ -3,7 +3,7 @@
 <script src="../../resources/js-test.js"></script>
 </head>
 <div id="div"><menuitem></div>
-<menu id="menu" type=popup><menuitem id="first_item"><menuitem id="second_item"></menu>
+<menu id="menu" type=context><menuitem id="first_item"><menuitem id="second_item"></menu>
 <script>
 description("This test checks parsing of menuitem tag which is a self closing tag with no end tag.");
 shouldBeEqualToString("document.getElementById('div').innerHTML", "<menuitem>");

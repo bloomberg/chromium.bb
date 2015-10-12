@@ -5,7 +5,7 @@
 <button id="button" style="height: 100px; width: 100px;">
 </button>
 <button id="button_with_contextmenu" contextmenu="menu_id" style="height: 100px; width: 100px;">
-    <menu id="menu_id" type="PopUp">
+    <menu id="menu_id" type="ConText">
         <!-- Test removal of separator at the start. -->
         <hr>
         <menuitem label="Item1"></menuitem>
@@ -77,7 +77,7 @@
 </button>
 <!-- Test cancelling show event. -->
 <button id="button_2" contextmenu="menu_2" style="height: 100px; width: 100px;">
-    <menu id="menu_2" type="popup">
+    <menu id="menu_2" type="context">
         <menuitem label="Item1"></menuitem>
         <menuitem label="Item2"></menuitem>
         <menuitem label="Item3"></menuitem>
@@ -85,7 +85,7 @@
 </button>
 <!-- Test removing menu element inside show event handler. -->
 <button id="button_3" contextmenu="menu_3" style="height: 100px; width: 100px;">
-    <menu id="menu_3" type="popup">
+    <menu id="menu_3" type="context">
         <menuitem label="Item1"></menuitem>
         <menuitem label="Item2"></menuitem>
         <menuitem label="Item3"></menuitem>
@@ -93,7 +93,7 @@
 </button>
 <!-- Test with menu element without any children. -->
 <button id="button_4" contextmenu="menu_4" style="height: 100px; width: 100px;">
-    <menu id="menu_4" type="popup">
+    <menu id="menu_4" type="context">
     </menu>
 </button>
 <!-- Test if an element A has a parent element, then A's assigned context menu is the assigned context menu of its parent element. -->
@@ -101,7 +101,7 @@
     <div>
         <button id="button_5" style="height: 100px; width: 100px;"></button>
     </div>
-    <menu id="menu_5" type="popup">
+    <menu id="menu_5" type="context">
         <menuitem label="Item1">
         <menuitem label="Item2">
         <menuitem label="Item3">

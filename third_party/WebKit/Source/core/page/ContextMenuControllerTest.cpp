@@ -42,7 +42,7 @@ TEST_F(ContextMenuControllerTest, TestCustomMenu)
     // Load the the test page.
     setBodyInnerHTML(
         "<button id=\"button_id\" contextmenu=\"menu_id\" style=\"height: 100px; width: 100px;\">"
-        "<menu type=\"popup\" id=\"menu_id\">"
+        "<menu type=\"context\" id=\"menu_id\">"
         "<menuitem label=\"Item1\" onclick='document.title = \"Title 1\";'>"
         "<menuitem label=\"Item2\" onclick='document.title = \"Title 2\";'>"
         "<menuitem label=\"Item3\" onclick='document.title = \"Title 3\";'>"
