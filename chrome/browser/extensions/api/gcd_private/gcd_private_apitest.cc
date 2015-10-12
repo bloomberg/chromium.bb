@@ -229,13 +229,6 @@ class GcdPrivateAPITest : public ExtensionApiTest {
 #endif  // ENABLE_MDNS
   }
 
-  void TearDownOnMainThread() override {
-#if defined(ENABLE_MDNS)
-    test_service_discovery_client_ = nullptr;
-#endif  // ENABLE_MDNS
-    ExtensionApiTest::TearDownOnMainThread();
-  }
-
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(
