@@ -502,9 +502,6 @@ void KioskAppManager::InstallFromCache(const std::string& id) {
 
 void KioskAppManager::InstallSecondaryApps(
     const std::vector<std::string>& ids) {
-  if (ids.empty())
-    return;
-
   scoped_ptr<base::DictionaryValue> prefs(new base::DictionaryValue);
   for (const std::string& id : ids) {
     scoped_ptr<base::DictionaryValue> extension_entry(

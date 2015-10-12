@@ -1255,14 +1255,7 @@ void ExtensionService::CheckForUpdatesSoon() {
   if (!updater_.get())
     return;
 
-  if (AreAllExternalProvidersReady()) {
     updater_->CheckSoon();
-  } else {
-    // Sync can start updating before all the external providers are ready
-    // during startup. Start the update as soon as those providers are ready,
-    // but not before.
-    update_once_all_providers_are_ready_ = true;
-  }
 }
 
 // Some extensions will autoupdate themselves externally from Chrome.  These

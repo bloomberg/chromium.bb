@@ -127,6 +127,10 @@ const char kTestSecondaryApp1[] = "ihplaomghjbeafnpnjkhppmfpnmdihgd";
 const char kTestSecondaryApp2[] = "fiehokkcgaojmbhfhlpiheggjhaedjoc";
 const char kTestSecondaryApp3[] = "aabnpdpieclcikafhdkkpldcaodmfoai";
 const char kTestSecondaryExtension[] = "imlgadjgphbjkaceoiapiephhgeofhic";
+const char kTestSharedModulePrimaryApp[] = "ofmeihgcmabfalhhgooajcijiaoekhkg";
+const char kTestSecondaryApp[] = "bbmaiojbgkkmfaglfhaplfomobgojhke";
+const char kTestSharedModuleId[] = "biebhpdepndljbnkadldcbjkiedldnmn";
+const char kTestSecondaryExt[] = "kcoobopfcjmbfeppibolpaolbgbmkcjd";
 
 // Fake usb stick mount path.
 const char kFakeUsbMountPathUpdatePass[] =
@@ -1458,6 +1462,28 @@ class KioskUpdateTest : public KioskTest {
     LaunchKioskWithSecondaryApps(primary_app, secondary_apps);
   }
 
+  void LaunchAppWithSharedModuleAndSecondaryApp() {
+    TestAppInfo primary_app(
+        kTestSharedModulePrimaryApp, "1.0.0",
+        std::string(kTestSharedModulePrimaryApp) + "-1.0.0.crx",
+        extensions::Manifest::TYPE_PLATFORM_APP);
+
+    std::vector<TestAppInfo> secondary_apps;
+    TestAppInfo secondary_app(kTestSecondaryApp, "1.0.0",
+                              std::string(kTestSecondaryApp) + "-1.0.0.crx",
+                              extensions::Manifest::TYPE_PLATFORM_APP);
+    secondary_apps.push_back(secondary_app);
+    // Setting up FakeCWS for shared module is the same for shared module as
+    // for kiosk secondary apps.
+    TestAppInfo shared_module(kTestSharedModuleId, "1.0.0",
+                              std::string(kTestSharedModuleId) + "-1.0.0.crx",
+                              extensions::Manifest::TYPE_SHARED_MODULE);
+    secondary_apps.push_back(shared_module);
+
+    LaunchKioskWithSecondaryApps(primary_app, secondary_apps);
+    EXPECT_TRUE(IsAppInstalled(kTestSharedModuleId));
+  }
+
  private:
   class KioskAppExternalUpdateWaiter : public KioskAppManagerObserver {
    public:
@@ -1905,6 +1931,81 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, UpdateMultiAppKioskAddOneApp) {
 
 IN_PROC_BROWSER_TEST_F(KioskUpdateTest, LaunchKioskAppWithSecondaryExtension) {
   LaunchTestKioskAppWithSeconadayExtension();
+}
+
+IN_PROC_BROWSER_TEST_F(KioskUpdateTest,
+                       LaunchAppWithSharedModuleAndSecondaryApp) {
+  LaunchAppWithSharedModuleAndSecondaryApp();
+}
+
+IN_PROC_BROWSER_TEST_F(KioskUpdateTest,
+                       PRE_UpdateAppWithSharedModuleRemoveAllSecondaryApps) {
+  LaunchAppWithSharedModuleAndSecondaryApp();
+}
+
+IN_PROC_BROWSER_TEST_F(KioskUpdateTest,
+                       UpdateAppWithSharedModuleRemoveAllSecondaryApps) {
+  set_test_app_id(kTestSharedModulePrimaryApp);
+  fake_cws()->SetUpdateCrx(
+      kTestSharedModulePrimaryApp,
+      std::string(kTestSharedModulePrimaryApp) + "-2.0.0.crx", "2.0.0");
+  fake_cws()->SetNoUpdate(kTestSecondaryApp1);
+  fake_cws()->SetNoUpdate(kTestSharedModuleId);
+
+  StartUIForAppLaunch();
+  SimulateNetworkOnline();
+  LaunchApp(test_app_id(), false);
+  WaitForAppLaunchWithOptions(false, true);
+
+  // Verify the secondary app is removed.
+  EXPECT_TRUE(IsAppInstalled(kTestSharedModuleId));
+  EXPECT_FALSE(IsAppInstalled(kTestSecondaryApp1));
+}
+
+// This simulates the stand-alone ARC kiosk app case. The primary app has a
+// shared ARC runtime but no secondary apps.
+IN_PROC_BROWSER_TEST_F(KioskUpdateTest, LaunchAppWithSharedModuleNoSecondary) {
+  TestAppInfo primary_app(
+      kTestSharedModulePrimaryApp, "2.0.0",
+      std::string(kTestSharedModulePrimaryApp) + "-2.0.0.crx",
+      extensions::Manifest::TYPE_PLATFORM_APP);
+
+  std::vector<TestAppInfo> secondary_apps;
+  // Setting up FakeCWS for shared module is the same for shared module as
+  // for kiosk secondary apps.
+  TestAppInfo shared_module(kTestSharedModuleId, "1.0.0",
+                            std::string(kTestSharedModuleId) + "-1.0.0.crx",
+                            extensions::Manifest::TYPE_SHARED_MODULE);
+  secondary_apps.push_back(shared_module);
+
+  LaunchKioskWithSecondaryApps(primary_app, secondary_apps);
+}
+
+IN_PROC_BROWSER_TEST_F(KioskUpdateTest,
+                       LaunchAppWithSecondaryArcLikeAppAndExtension) {
+  TestAppInfo primary_app(
+      kTestSharedModulePrimaryApp, "3.0.0",
+      std::string(kTestSharedModulePrimaryApp) + "-3.0.0.crx",
+      extensions::Manifest::TYPE_PLATFORM_APP);
+
+  std::vector<TestAppInfo> secondary_apps;
+  // Setting up FakeCWS for shared module is the same for shared module as
+  // for kiosk secondary apps.
+  TestAppInfo shared_module(kTestSharedModuleId, "1.0.0",
+                            std::string(kTestSharedModuleId) + "-1.0.0.crx",
+                            extensions::Manifest::TYPE_SHARED_MODULE);
+  secondary_apps.push_back(shared_module);
+  // The secondary app has a shared module, which is similar to an ARC app.
+  TestAppInfo secondary_app(kTestSecondaryApp, "2.0.0",
+                            std::string(kTestSecondaryApp) + "-2.0.0.crx",
+                            extensions::Manifest::TYPE_PLATFORM_APP);
+  secondary_apps.push_back(secondary_app);
+  TestAppInfo secondary_ext(kTestSecondaryExt, "1.0.0",
+                            std::string(kTestSecondaryExt) + "-1.0.0.crx",
+                            extensions::Manifest::TYPE_EXTENSION);
+  secondary_apps.push_back(secondary_ext);
+
+  LaunchKioskWithSecondaryApps(primary_app, secondary_apps);
 }
 
 class KioskEnterpriseTest : public KioskTest {
