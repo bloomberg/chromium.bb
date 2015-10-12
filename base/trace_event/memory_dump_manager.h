@@ -227,6 +227,9 @@ class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
   // Skips the auto-registration of the core dumpers during Initialize().
   bool skip_core_dumpers_auto_registration_for_testing_;
 
+  // Whether new memory dump providers should be told to enable heap profiling.
+  bool heap_profiling_enabled_;
+
   DISALLOW_COPY_AND_ASSIGN(MemoryDumpManager);
 };
 

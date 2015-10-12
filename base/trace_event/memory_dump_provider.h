@@ -33,6 +33,10 @@ class BASE_EXPORT MemoryDumpProvider {
   virtual bool OnMemoryDump(const MemoryDumpArgs& args,
                             ProcessMemoryDump* pmd) = 0;
 
+  // Called by the MemoryDumpManager when an allocator should start or stop
+  // collecting extensive allocation data, if supported.
+  virtual void OnHeapProfilingEnabled(bool enabled) {}
+
  protected:
   MemoryDumpProvider() {}
   virtual ~MemoryDumpProvider() {}

@@ -102,6 +102,7 @@ static const char* const kSwitchNames[] = {
 #if defined(OS_WIN)
   switches::kEnableAcceleratedVpxDecode,
 #endif
+  switches::kEnableHeapProfiling,
   switches::kEnableLogging,
   switches::kEnableShareGroupAsyncTextureUpload,
 #if defined(OS_CHROMEOS)

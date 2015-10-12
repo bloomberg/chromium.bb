@@ -14,6 +14,11 @@ const char kDisableBreakpad[]               = "disable-breakpad";
 // generated internally.
 const char kEnableCrashReporter[]           = "enable-crash-reporter";
 
+// Makes memory allocators keep track of their allocations and context, so a
+// detailed breakdown of memory usage can be presented in chrome://tracing when
+// the memory-infra category is enabled.
+const char kEnableHeapProfiling[]           = "enable-heap-profiling";
+
 // Generates full memory crash dump.
 const char kFullMemoryCrashReport[]         = "full-memory-crash-report";
 

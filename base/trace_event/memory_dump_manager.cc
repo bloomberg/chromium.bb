@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/atomic_sequence_num.h"
+#include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/thread_task_runner_handle.h"
@@ -110,6 +111,11 @@ MemoryDumpManager::MemoryDumpManager()
       tracing_process_id_(kInvalidTracingProcessId),
       skip_core_dumpers_auto_registration_for_testing_(false) {
   g_next_guid.GetNext();  // Make sure that first guid is not zero.
+
+  heap_profiling_enabled_ = CommandLine::InitializedForCurrentProcess()
+                                ? CommandLine::ForCurrentProcess()->HasSwitch(
+                                      switches::kEnableHeapProfiling)
+                                : false;
 }
 
 MemoryDumpManager::~MemoryDumpManager() {
@@ -170,6 +176,9 @@ void MemoryDumpManager::RegisterDumpProvider(
     dump_providers_.erase(iter_new.first);
     dump_providers_.insert(mdp_info);
   }
+
+  if (heap_profiling_enabled_)
+    mdp->OnHeapProfilingEnabled(true);
 }
 
 void MemoryDumpManager::RegisterDumpProvider(MemoryDumpProvider* mdp) {

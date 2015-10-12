@@ -131,6 +131,7 @@ void ZygoteHostImpl::Init(const std::string& sandbox_cmd) {
   static const char* kForwardSwitches[] = {
     switches::kAllowSandboxDebugging,
     switches::kDisableSeccompFilterSandbox,
+    switches::kEnableHeapProfiling,
     switches::kEnableLogging,  // Support, e.g., --enable-logging=stderr.
     // Zygote process needs to know what resources to have loaded when it
     // becomes a renderer process.
