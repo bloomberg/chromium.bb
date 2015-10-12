@@ -292,7 +292,18 @@ void GraphicsLayer::setOffsetDoubleFromLayoutObject(const DoubleSize& offset, Sh
         setNeedsDisplay();
 }
 
-void GraphicsLayer::paintGraphicsLayerContents(GraphicsContext& context, const IntRect& clip)
+void GraphicsLayer::paintIfNeeded(GraphicsContext& context)
+{
+    ASSERT(RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled());
+    if (!m_client)
+        return;
+    if (firstPaintInvalidationTrackingEnabled())
+        m_debugInfo.clearAnnotatedInvalidateRects();
+    incrementPaintCount();
+    m_client->paintContentsIfNeeded(this, context, m_paintingPhase);
+}
+
+void GraphicsLayer::paint(GraphicsContext& context, const IntRect& clip)
 {
     if (!m_client)
         return;
@@ -1164,12 +1175,6 @@ void GraphicsLayer::setScrollableArea(ScrollableArea* scrollableArea, bool isVie
     else
         m_layer->layer()->setScrollClient(this);
 }
-
-void GraphicsLayer::paint(GraphicsContext& context, const IntRect& clip)
-{
-    paintGraphicsLayerContents(context, clip);
-}
-
 
 void GraphicsLayer::notifyAnimationStarted(double monotonicTime, int group)
 {

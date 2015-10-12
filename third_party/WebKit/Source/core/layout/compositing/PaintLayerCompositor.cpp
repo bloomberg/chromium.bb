@@ -815,6 +815,11 @@ void PaintLayerCompositor::paintContents(const GraphicsLayer* graphicsLayer, Gra
         FramePainter(*m_layoutView.frameView()).paintScrollCorner(&context, clip);
 }
 
+void PaintLayerCompositor::paintContentsIfNeeded(const GraphicsLayer* graphicsLayer, GraphicsContext& context, GraphicsLayerPaintingPhase phase) const
+{
+    paintContents(graphicsLayer, context, phase, IntRect());
+}
+
 bool PaintLayerCompositor::supportsFixedRootBackgroundCompositing() const
 {
     if (Settings* settings = m_layoutView.document().settings())

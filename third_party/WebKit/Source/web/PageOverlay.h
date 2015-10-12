@@ -71,6 +71,7 @@ public:
 
     // GraphicsLayerClient implementation
     void paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect& inClip) const override;
+    void paintContentsIfNeeded(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase) const override;
     String debugName(const GraphicsLayer*) override;
 
 private:

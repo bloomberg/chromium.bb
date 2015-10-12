@@ -246,6 +246,7 @@ public:
 
     // GraphicsContextPainter implementation.
     void paint(GraphicsContext&, const IntRect& clip) override;
+    void paintIfNeeded(GraphicsContext&) override;
 
     // WebCompositorAnimationDelegate implementation.
     void notifyAnimationStarted(double monotonicTime, int group) override;
@@ -277,9 +278,6 @@ protected:
     friend class FakeGraphicsLayerFactory;
 
 private:
-    // Callback from the underlying graphics system to draw layer contents.
-    void paintGraphicsLayerContents(GraphicsContext&, const IntRect& clip);
-
     // Sets m_needsDisplay, but without invalidating the DisplayItemList. This allows us to test
     // scenarios where paint needs to be re-calculated, but no DisplayItemClients were invalidated
     // (such as re-paints due to change of interest rect).

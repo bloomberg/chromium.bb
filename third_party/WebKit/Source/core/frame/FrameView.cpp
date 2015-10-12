@@ -2478,11 +2478,18 @@ void FrameView::synchronizedPaint(const LayoutRect& interestRect)
 
 void FrameView::synchronizedPaintRecursively(GraphicsLayer* graphicsLayer, const LayoutRect& interestRect)
 {
-    if (graphicsLayer->needsDisplay()) {
-        // TODO(chrishtr): implement interest rects.
-        GraphicsContext context(graphicsLayer->displayItemList());
-        graphicsLayer->paint(context, roundedIntRect(interestRect));
+    GraphicsContext context(graphicsLayer->displayItemList());
 
+    // TODO(chrishtr): fix unit tests to not inject one-off interest rects.
+    if (interestRect != LayoutRect::infiniteRect()) {
+        if (graphicsLayer->needsDisplay()) {
+            graphicsLayer->paint(context, roundedIntRect(interestRect));
+
+            if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+                graphicsLayer->commitIfNeeded();
+        }
+    } else {
+        graphicsLayer->paintIfNeeded(context);
         if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled())
             graphicsLayer->commitIfNeeded();
     }

@@ -2166,8 +2166,54 @@ static void paintScrollbar(const Scrollbar* scrollbar, GraphicsContext& context,
     scrollbar->paint(&context, transformedClip);
 }
 
-// Up-call from compositing layer drawing callback.
-void CompositedLayerMapping::paintContents(const GraphicsLayer* graphicsLayer, GraphicsContext& context, GraphicsLayerPaintingPhase graphicsLayerPaintingPhase, const IntRect& clip) const
+static const int kPixelDistanceToRecord = 4000;
+
+IntRect CompositedLayerMapping::computeInterestRect(const GraphicsLayer* graphicsLayer, LayoutObject* owningLayoutObject)
+{
+    FloatRect graphicsLayerBounds(FloatPoint(), graphicsLayer->size());
+
+    // Start with the bounds of the graphics layer in the space of the owning LayoutObject.
+    FloatRect graphicsLayerBoundsInObjectSpace(graphicsLayerBounds);
+    graphicsLayerBoundsInObjectSpace.move(graphicsLayer->offsetFromLayoutObject());
+
+    // Now map the bounds to its visible content rect in screen space, including applying clips along the way.
+    LayoutRect visibleContentRect(graphicsLayerBoundsInObjectSpace);
+    LayoutView* rootView = owningLayoutObject->view();
+    while (rootView->frame()->ownerLayoutObject())
+        rootView = rootView->frame()->ownerLayoutObject()->view();
+    owningLayoutObject->mapRectToPaintInvalidationBacking(rootView, visibleContentRect, 0);
+    visibleContentRect.intersect(LayoutRect(rootView->frameView()->visibleContentRect()));
+
+    // Map the visible content rect from screen space to local graphics layer space.
+    IntRect localInterestRect;
+    // If the visible content rect is empty, then it makes no sense to map it back since there is nothing to map.
+    if (!visibleContentRect.isEmpty()) {
+        localInterestRect = owningLayoutObject->absoluteToLocalQuad(FloatRect(visibleContentRect), UseTransforms).enclosingBoundingBox();
+        localInterestRect.move(-graphicsLayer->offsetFromLayoutObject());
+    }
+    // Expand by interest rect padding amount.
+    localInterestRect.expand(IntRectOutsets(kPixelDistanceToRecord, kPixelDistanceToRecord, kPixelDistanceToRecord, kPixelDistanceToRecord));
+    localInterestRect.intersect(enclosingIntRect(graphicsLayerBounds));
+    return localInterestRect;
+}
+
+void CompositedLayerMapping::paintContentsIfNeeded(const GraphicsLayer* graphicsLayer, GraphicsContext& context, GraphicsLayerPaintingPhase graphicsLayerPaintingPhase) const
+{
+    // TODO(chrishtr): paint if needsDisplay is true *or* the interest rect has changed sufficiently.
+    if (!graphicsLayer->needsDisplay())
+        return;
+
+    IntRect interestRect;
+    if (graphicsLayer == m_graphicsLayer || graphicsLayer == m_squashingLayer)
+        interestRect = computeInterestRect(graphicsLayer, m_owningLayer.layoutObject());
+    else
+        interestRect = enclosingIntRect(FloatRect(FloatPoint(), graphicsLayer->size()));
+
+    ASSERT(RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled());
+    paintContents(graphicsLayer, context, graphicsLayerPaintingPhase, interestRect);
+}
+
+void CompositedLayerMapping::paintContents(const GraphicsLayer* graphicsLayer, GraphicsContext& context, GraphicsLayerPaintingPhase graphicsLayerPaintingPhase, const IntRect& interestRect) const
 {
     // https://code.google.com/p/chromium/issues/detail?id=343772
     DisableCompositingQueryAsserts disabler;
@@ -2176,7 +2222,8 @@ void CompositedLayerMapping::paintContents(const GraphicsLayer* graphicsLayer, G
     if (Page* page = layoutObject()->frame()->page())
         page->setIsPainting(true);
 #endif
-    TRACE_EVENT1("devtools.timeline", "Paint", "data", InspectorPaintEvent::data(m_owningLayer.layoutObject(), LayoutRect(clip), graphicsLayer));
+
+    TRACE_EVENT1("devtools.timeline", "Paint", "data", InspectorPaintEvent::data(m_owningLayer.layoutObject(), LayoutRect(interestRect), graphicsLayer));
 
     PaintLayerFlags paintLayerFlags = 0;
     if (graphicsLayerPaintingPhase & GraphicsLayerPaintBackground)
@@ -2211,20 +2258,20 @@ void CompositedLayerMapping::paintContents(const GraphicsLayer* graphicsLayer, G
         paintInfo.offsetFromLayoutObject = graphicsLayer->offsetFromLayoutObject();
 
         // We have to use the same root as for hit testing, because both methods can compute and cache clipRects.
-        doPaintTask(paintInfo, paintLayerFlags, &context, clip);
+        doPaintTask(paintInfo, paintLayerFlags, &context, interestRect);
     } else if (graphicsLayer == m_squashingLayer.get()) {
         for (size_t i = 0; i < m_squashedLayers.size(); ++i)
-            doPaintTask(m_squashedLayers[i], paintLayerFlags, &context, clip);
+            doPaintTask(m_squashedLayers[i], paintLayerFlags, &context, interestRect);
     } else if (graphicsLayer == layerForHorizontalScrollbar()) {
-        paintScrollbar(m_owningLayer.scrollableArea()->horizontalScrollbar(), context, clip);
+        paintScrollbar(m_owningLayer.scrollableArea()->horizontalScrollbar(), context, interestRect);
     } else if (graphicsLayer == layerForVerticalScrollbar()) {
-        paintScrollbar(m_owningLayer.scrollableArea()->verticalScrollbar(), context, clip);
+        paintScrollbar(m_owningLayer.scrollableArea()->verticalScrollbar(), context, interestRect);
     } else if (graphicsLayer == layerForScrollCorner()) {
         IntPoint scrollCornerAndResizerLocation = m_owningLayer.scrollableArea()->scrollCornerAndResizerRect().location();
-        ScrollableAreaPainter(*m_owningLayer.scrollableArea()).paintScrollCorner(&context, -scrollCornerAndResizerLocation, clip);
-        ScrollableAreaPainter(*m_owningLayer.scrollableArea()).paintResizer(&context, -scrollCornerAndResizerLocation, clip);
+        ScrollableAreaPainter(*m_owningLayer.scrollableArea()).paintScrollCorner(&context, -scrollCornerAndResizerLocation, interestRect);
+        ScrollableAreaPainter(*m_owningLayer.scrollableArea()).paintResizer(&context, -scrollCornerAndResizerLocation, interestRect);
     }
-    InspectorInstrumentation::didPaint(m_owningLayer.layoutObject(), graphicsLayer, &context, LayoutRect(clip));
+    InspectorInstrumentation::didPaint(m_owningLayer.layoutObject(), graphicsLayer, &context, LayoutRect(interestRect));
 #if ENABLE(ASSERT)
     if (Page* page = layoutObject()->frame()->page())
         page->setIsPainting(false);

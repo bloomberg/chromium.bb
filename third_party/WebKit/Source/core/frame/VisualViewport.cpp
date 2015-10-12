@@ -578,6 +578,10 @@ void VisualViewport::paintContents(const GraphicsLayer*, GraphicsContext&, Graph
 {
 }
 
+void VisualViewport::paintContentsIfNeeded(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase) const
+{
+}
+
 LocalFrame* VisualViewport::mainFrame() const
 {
     return frameHost().page().mainFrame() && frameHost().page().mainFrame()->isLocalFrame() ? frameHost().page().deprecatedLocalMainFrame() : 0;

@@ -68,7 +68,8 @@ enum GraphicsLayerUpdateScope {
 //
 // Currently (Oct. 2013) there is one CompositedLayerMapping for each Layer,
 // but this is likely to evolve soon.
-class CompositedLayerMapping final : public GraphicsLayerClient {
+class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
+
     WTF_MAKE_NONCOPYABLE(CompositedLayerMapping); WTF_MAKE_FAST_ALLOCATED(CompositedPaintLayerMapping);
 public:
     explicit CompositedLayerMapping(PaintLayer&);
@@ -147,7 +148,9 @@ public:
     // GraphicsLayerClient interface
     void notifyAnimationStarted(const GraphicsLayer*, double monotonicTime, int group) override;
     void notifyTextPainted() override;
+
     void paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect& clip) const override;
+    void paintContentsIfNeeded(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase) const override;
     bool isTrackingPaintInvalidations() const override;
 
 #if ENABLE(ASSERT)
@@ -205,6 +208,8 @@ public:
     String debugName() const { return "CompositedLayerMapping for " + owningLayer().debugName(); }
 
 private:
+    static IntRect computeInterestRect(const GraphicsLayer*, LayoutObject* owningLayoutObject);
+
     static const GraphicsLayerPaintInfo* containingSquashedLayer(const LayoutObject*,  const Vector<GraphicsLayerPaintInfo>& layers, unsigned maxSquashedLayerIndex);
 
     // Helper methods to updateGraphicsLayerGeometry:
@@ -428,6 +433,8 @@ private:
 
     unsigned m_backgroundLayerPaintsFixedRootBackground : 1;
     unsigned m_scrollingContentsAreEmpty : 1;
+
+    friend class CompositedLayerMappingTest;
 };
 
 } // namespace blink

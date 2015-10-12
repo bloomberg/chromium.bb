@@ -181,6 +181,7 @@ private:
 #endif
 
     // GraphicsLayerClient implementation
+    void paintContentsIfNeeded(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase) const override;
     void paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect&) const override;
 
     bool isTrackingPaintInvalidations() const override;
