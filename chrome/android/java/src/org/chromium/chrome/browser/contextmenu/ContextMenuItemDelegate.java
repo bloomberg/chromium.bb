@@ -11,7 +11,7 @@ import org.chromium.content_public.common.Referrer;
 /**
  * A delegate responsible for taking actions based on context menu selections.
  */
-public interface ChromeContextMenuItemDelegate {
+public interface ContextMenuItemDelegate {
     // The type of the data to save to the clipboard.
     public static final int CLIPBOARD_TYPE_LINK_URL = 0;
     public static final int CLIPBOARD_TYPE_LINK_TEXT = 1;

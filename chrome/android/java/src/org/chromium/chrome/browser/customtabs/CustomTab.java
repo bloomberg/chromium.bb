@@ -33,6 +33,7 @@ import org.chromium.chrome.browser.ssl.ConnectionSecurityLevel;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.InterceptNavigationDelegateImpl;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabContextMenuItemDelegate;
 import org.chromium.chrome.browser.tab.TabIdManager;
 import org.chromium.chrome.browser.tab.TabWebContentsDelegateAndroid;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
@@ -224,7 +225,7 @@ public class CustomTab extends Tab {
 
     @Override
     protected ContextMenuPopulator createContextMenuPopulator() {
-        return new ChromeContextMenuPopulator(new TabChromeContextMenuItemDelegate()) {
+        return new ChromeContextMenuPopulator(new TabContextMenuItemDelegate(this, mActivity)) {
             @Override
             public void buildContextMenu(ContextMenu menu, Context context,
                     ContextMenuParams params) {

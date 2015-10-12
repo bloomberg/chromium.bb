@@ -20,7 +20,7 @@ import org.chromium.chrome.browser.preferences.datareduction.DataReductionProxyU
  * A {@link ContextMenuPopulator} used for showing the default Chrome context menu.
  */
 public class ChromeContextMenuPopulator implements ContextMenuPopulator {
-    private final ChromeContextMenuItemDelegate mDelegate;
+    private final ContextMenuItemDelegate mDelegate;
     private MenuInflater mMenuInflater;
     private static final String BLANK_URL = "about:blank";
 
@@ -67,10 +67,10 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
 
     /**
      * Builds a {@link ChromeContextMenuPopulator}.
-     * @param delegate The {@link ChromeContextMenuItemDelegate} that will be notified with actions
+     * @param delegate The {@link ContextMenuItemDelegate} that will be notified with actions
      *                 to perform when menu items are selected.
      */
-    public ChromeContextMenuPopulator(ChromeContextMenuItemDelegate delegate) {
+    public ChromeContextMenuPopulator(ContextMenuItemDelegate delegate) {
         mDelegate = delegate;
     }
 
@@ -190,15 +190,15 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
         } else if (itemId == R.id.contextmenu_copy_link_address) {
             ContextMenuUma.record(params, ContextMenuUma.ACTION_COPY_LINK_ADDRESS);
             mDelegate.onSaveToClipboard(params.getUnfilteredLinkUrl(),
-                    ChromeContextMenuItemDelegate.CLIPBOARD_TYPE_LINK_URL);
+                    ContextMenuItemDelegate.CLIPBOARD_TYPE_LINK_URL);
         } else if (itemId == R.id.contextmenu_copy_email_address) {
             ContextMenuUma.record(params, ContextMenuUma.ACTION_COPY_EMAIL_ADDRESS);
             mDelegate.onSaveToClipboard(MailTo.parse(params.getLinkUrl()).getTo(),
-                    ChromeContextMenuItemDelegate.CLIPBOARD_TYPE_LINK_URL);
+                    ContextMenuItemDelegate.CLIPBOARD_TYPE_LINK_URL);
         } else if (itemId == R.id.contextmenu_copy_link_text) {
             ContextMenuUma.record(params, ContextMenuUma.ACTION_COPY_LINK_TEXT);
             mDelegate.onSaveToClipboard(
-                    params.getLinkText(), ChromeContextMenuItemDelegate.CLIPBOARD_TYPE_LINK_TEXT);
+                    params.getLinkText(), ContextMenuItemDelegate.CLIPBOARD_TYPE_LINK_TEXT);
         } else if (itemId == R.id.contextmenu_save_image) {
             ContextMenuUma.record(params, ContextMenuUma.ACTION_SAVE_IMAGE);
             if (mDelegate.startDownload(params.getSrcUrl(), false)) {
@@ -221,7 +221,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
         } else if (itemId == R.id.contextmenu_copy_image_url) {
             ContextMenuUma.record(params, ContextMenuUma.ACTION_COPY_IMAGE_URL);
             mDelegate.onSaveToClipboard(
-                    params.getSrcUrl(), ChromeContextMenuItemDelegate.CLIPBOARD_TYPE_IMAGE_URL);
+                    params.getSrcUrl(), ContextMenuItemDelegate.CLIPBOARD_TYPE_IMAGE_URL);
         } else {
             assert false;
         }

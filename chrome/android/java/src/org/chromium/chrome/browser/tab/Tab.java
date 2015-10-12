@@ -45,7 +45,6 @@ import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.banners.AppBannerManager;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
-import org.chromium.chrome.browser.contextmenu.ChromeContextMenuItemDelegate;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulator;
 import org.chromium.chrome.browser.contextmenu.ContextMenuParams;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
@@ -61,12 +60,10 @@ import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.media.ui.MediaSessionTabHelper;
-import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.ntp.NativePageAssassin;
 import org.chromium.chrome.browser.ntp.NativePageFactory;
 import org.chromium.chrome.browser.omnibox.geo.GeolocationHeader;
 import org.chromium.chrome.browser.policy.PolicyAuditor;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.printing.TabPrinter;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.rlz.RevenueStats;
@@ -95,7 +92,6 @@ import org.chromium.printing.PrintManagerDelegateImpl;
 import org.chromium.printing.PrintingController;
 import org.chromium.printing.PrintingControllerImpl;
 import org.chromium.ui.WindowOpenDisposition;
-import org.chromium.ui.base.Clipboard;
 import org.chromium.ui.base.LocalizationUtils;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.WindowAndroid;
@@ -104,7 +100,6 @@ import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 /**
  * The basic Java representation of a tab.  Contains and manages a {@link ContentView}.
@@ -125,8 +120,6 @@ import java.util.Locale;
 public class Tab implements ViewGroup.OnHierarchyChangeListener,
         View.OnSystemUiVisibilityChangeListener {
     public static final int INVALID_TAB_ID = -1;
-    public static final String PAGESPEED_PASSTHROUGH_HEADERS =
-            "Chrome-Proxy: pass-through\nCache-Control: no-cache";
 
     /** The maximum amount of time to wait for a page to load before entering fullscreen.  -1 means
      *  wait until the page finishes loading. */
@@ -362,126 +355,11 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
 
     private final int mDefaultThemeColor;
 
-    /**
-     * The data reduction proxy was in use on the last page load if true.
-     */
-    protected boolean mUsedSpdyProxy;
-
-    /**
-     * The data reduction proxy was in pass through mode on the last page load if true.
-     */
-    protected boolean mUsedSpdyProxyWithPassthrough;
-
-    /**
-     * The last page load had request headers indicating that the data reduction proxy should
-     * be put in pass through mode, if true.
-     */
-    protected boolean mLastPageLoadHasSpdyProxyPassthroughHeaders;
-
     private ChromeDownloadDelegate mDownloadDelegate;
 
     protected Handler mHandler;
 
     private final ReaderModeManager mReaderModeManager;
-
-    /**
-     * A default {@link ChromeContextMenuItemDelegate} that supports some of the context menu
-     * functionality.
-     */
-    protected class TabChromeContextMenuItemDelegate implements ChromeContextMenuItemDelegate {
-        private final Clipboard mClipboard;
-
-        /**
-         * Builds a {@link TabChromeContextMenuItemDelegate} instance.
-         */
-        public TabChromeContextMenuItemDelegate() {
-            mClipboard = new Clipboard(getApplicationContext());
-        }
-
-        @Override
-        public boolean isIncognito() {
-            return mIncognito;
-        }
-
-        @Override
-        public boolean isIncognitoSupported() {
-            return PrefServiceBridge.getInstance().isIncognitoModeEnabled();
-        }
-
-        @Override
-        public boolean canLoadOriginalImage() {
-            return mUsedSpdyProxy && !mUsedSpdyProxyWithPassthrough;
-        }
-
-        @Override
-        public boolean isDataReductionProxyEnabledForURL(String url) {
-            return isSpdyProxyEnabledForUrl(url);
-        }
-
-        @Override
-        public boolean startDownload(String url, boolean isLink) {
-            return !isLink || !shouldInterceptContextMenuDownload(url);
-        }
-
-        @Override
-        public void onSaveToClipboard(String text, int clipboardType) {
-            mClipboard.setText(text, text);
-        }
-
-        @Override
-        public void onSaveImageToClipboard(String url) {
-            mClipboard.setHTMLText("<img src=\"" + url + "\">", url, url);
-        }
-
-        @Override
-        public void onOpenInNewTab(String url, Referrer referrer) {
-            RecordUserAction.record("MobileNewTabOpened");
-            LoadUrlParams loadUrlParams = new LoadUrlParams(url);
-            loadUrlParams.setReferrer(referrer);
-            mActivity.getTabModelSelector().openNewTab(loadUrlParams,
-                    TabLaunchType.FROM_LONGPRESS_BACKGROUND, Tab.this, isIncognito());
-        }
-
-        @Override
-        public void onReloadIgnoringCache() {
-            reloadIgnoringCache();
-        }
-
-        @Override
-        public void onLoadOriginalImage() {
-            if (mNativeTabAndroid != 0) nativeLoadOriginalImage(mNativeTabAndroid);
-        }
-
-        @Override
-        public void onOpenInNewIncognitoTab(String url) {
-            RecordUserAction.record("MobileNewTabOpened");
-            mActivity.getTabModelSelector().openNewTab(new LoadUrlParams(url),
-                    TabLaunchType.FROM_LONGPRESS_FOREGROUND, Tab.this, true);
-        }
-
-        @Override
-        public String getPageUrl() {
-            return getUrl();
-        }
-
-        @Override
-        public void onOpenImageUrl(String url, Referrer referrer) {
-            LoadUrlParams loadUrlParams = new LoadUrlParams(url);
-            loadUrlParams.setTransitionType(PageTransition.LINK);
-            loadUrlParams.setReferrer(referrer);
-            loadUrl(loadUrlParams);
-        }
-
-        @Override
-        public void onOpenImageInNewTab(String url, Referrer referrer) {
-            boolean useOriginal = isSpdyProxyEnabledForUrl(url);
-            LoadUrlParams loadUrlParams = new LoadUrlParams(url);
-            loadUrlParams.setVerbatimHeaders(useOriginal ? PAGESPEED_PASSTHROUGH_HEADERS : null);
-            loadUrlParams.setReferrer(referrer);
-            mActivity.getTabModelSelector().openNewTab(loadUrlParams,
-                    TabLaunchType.FROM_LONGPRESS_BACKGROUND, Tab.this, isIncognito());
-        }
-    }
 
     private class TabContentViewClient extends ContentViewClient {
         @Override
@@ -849,14 +727,6 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     public int loadUrl(LoadUrlParams params) {
         try {
             TraceEvent.begin("Tab.loadUrl");
-            // The data reduction proxy can only be set to pass through mode via loading an image in
-            // a new tab. We squirrel away whether pass through mode was set, and check it in:
-            // @see TabWebContentsDelegateAndroid#onLoadStopped()
-            mLastPageLoadHasSpdyProxyPassthroughHeaders = false;
-            if (TextUtils.equals(params.getVerbatimHeaders(), PAGESPEED_PASSTHROUGH_HEADERS)) {
-                mLastPageLoadHasSpdyProxyPassthroughHeaders = true;
-            }
-
             // TODO(tedchoc): When showing the android NTP, delay the call to nativeLoadUrl until
             //                the android view has entirely rendered.
             if (!mIsNativePageCommitPending) {
@@ -890,6 +760,13 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         } finally {
             TraceEvent.end("Tab.loadUrl");
         }
+    }
+
+    /**
+     * Load the original image (uncompressed by spdy proxy) in this tab.
+     */
+    void loadOriginalImage() {
+        if (mNativeTabAndroid != 0) nativeLoadOriginalImage(mNativeTabAndroid);
     }
 
     /**
@@ -1540,8 +1417,6 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         if (mTabUma != null) mTabUma.onLoadFinished();
 
         for (TabObserver observer : mObservers) observer.onPageLoadFinished(this);
-
-        maybeSetDataReductionProxyUsed();
 
         // Handle the case where a commit or prerender swap notification failed to arrive and the
         // enable fullscreen message was never enqueued.
@@ -2196,7 +2071,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      * @return An instance of a {@link ContextMenuPopulator}.
      */
     protected ContextMenuPopulator createContextMenuPopulator() {
-        return new ChromeContextMenuPopulator(new TabChromeContextMenuItemDelegate());
+        return new ChromeContextMenuPopulator(new TabContextMenuItemDelegate(this, mActivity));
     }
 
     /**
@@ -2960,41 +2835,6 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     void stopSwipeRefreshHandler() {
         if (mSwipeRefreshHandler != null) {
             mSwipeRefreshHandler.didStopRefreshing();
-        }
-    }
-
-    /**
-     * Checks if spdy proxy is enabled for input url.
-     * @param url Input url to check for spdy setting.
-     * @return true if url is enabled for spdy proxy.
-    */
-    private boolean isSpdyProxyEnabledForUrl(String url) {
-        if (DataReductionProxySettings.getInstance().isDataReductionProxyEnabled()
-                && url != null && !url.toLowerCase(Locale.US).startsWith("https://")
-                && !isIncognito()) {
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * Remember if the last load used the data reduction proxy, and if so,
-     * also remember if it used pass through mode.
-     */
-    private void maybeSetDataReductionProxyUsed() {
-        // Ignore internal URLs.
-        String url = getUrl();
-        if (url != null && url.toLowerCase(Locale.US).startsWith("chrome://")) {
-            return;
-        }
-        mUsedSpdyProxy = false;
-        mUsedSpdyProxyWithPassthrough = false;
-        if (isSpdyProxyEnabledForUrl(url)) {
-            mUsedSpdyProxy = true;
-            if (mLastPageLoadHasSpdyProxyPassthroughHeaders) {
-                mLastPageLoadHasSpdyProxyPassthroughHeaders = false;
-                mUsedSpdyProxyWithPassthrough = true;
-            }
         }
     }
 
