@@ -6,13 +6,10 @@
 #define CHROME_BROWSER_NET_FILE_DOWNLOADER_H_
 
 #include "base/callback.h"
+#include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "net/url_request/url_fetcher_delegate.h"
-
-namespace base {
-class FilePath;
-}  // namespace base
 
 namespace net {
 class URLFetcher;
@@ -44,9 +41,13 @@ class FileDownloader : public net::URLFetcherDelegate {
 
   void OnFileExistsCheckDone(bool exists);
 
+  void OnFileMoveDone(bool success);
+
   DownloadFinishedCallback callback_;
 
   scoped_ptr<net::URLFetcher> fetcher_;
+
+  base::FilePath local_path_;
 
   base::WeakPtrFactory<FileDownloader> weak_ptr_factory_;
 

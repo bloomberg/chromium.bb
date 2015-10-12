@@ -26,23 +26,24 @@ FileDownloader::FileDownloader(const GURL& url,
                                const DownloadFinishedCallback& callback)
     : callback_(callback),
       fetcher_(URLFetcher::Create(url, URLFetcher::GET, this)),
+      local_path_(path),
       weak_ptr_factory_(this) {
   fetcher_->SetRequestContext(request_context);
   fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                          net::LOAD_DO_NOT_SAVE_COOKIES);
   fetcher_->SetAutomaticallyRetryOnNetworkChanges(kNumRetries);
-  fetcher_->SaveResponseToFileAtPath(
-      path,
+  fetcher_->SaveResponseToTemporaryFile(
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
 
   if (overwrite) {
     fetcher_->Start();
   } else {
     base::PostTaskAndReplyWithResult(
-        BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(
-            base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN).get(),
-        FROM_HERE,
-        base::Bind(&base::PathExists, path),
+        BrowserThread::GetBlockingPool()
+            ->GetTaskRunnerWithShutdownBehavior(
+                base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN)
+            .get(),
+        FROM_HERE, base::Bind(&base::PathExists, local_path_),
         base::Bind(&FileDownloader::OnFileExistsCheckDone,
                    weak_ptr_factory_.GetWeakPtr()));
   }
@@ -52,9 +53,6 @@ FileDownloader::~FileDownloader() {}
 
 void FileDownloader::OnURLFetchComplete(const net::URLFetcher* source) {
   DCHECK_EQ(fetcher_.get(), source);
-  // Delete |fetcher_| when we leave this method. This is necessary so the
-  // download file will be deleted if the download failed.
-  scoped_ptr<net::URLFetcher> fetcher(fetcher_.Pass());
 
   const net::URLRequestStatus& status = source->GetStatus();
   if (!status.is_success()) {
@@ -72,10 +70,21 @@ void FileDownloader::OnURLFetchComplete(const net::URLFetcher* source) {
     return;
   }
 
-  // Take ownership of the new file.
   base::FilePath response_path;
-  bool success = source->GetResponseAsFilePath(true, &response_path);
-  callback_.Run(success);
+  bool success = source->GetResponseAsFilePath(false, &response_path);
+  if (!success) {
+    callback_.Run(false);
+    return;
+  }
+
+  base::PostTaskAndReplyWithResult(
+      BrowserThread::GetBlockingPool()
+          ->GetTaskRunnerWithShutdownBehavior(
+              base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN)
+          .get(),
+      FROM_HERE, base::Bind(&base::Move, response_path, local_path_),
+      base::Bind(&FileDownloader::OnFileMoveDone,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void FileDownloader::OnFileExistsCheckDone(bool exists) {
@@ -83,4 +92,13 @@ void FileDownloader::OnFileExistsCheckDone(bool exists) {
     callback_.Run(true);
   else
     fetcher_->Start();
+}
+
+void FileDownloader::OnFileMoveDone(bool success) {
+  if (!success) {
+    DLOG(WARNING) << "Could not move file to "
+                  << local_path_.LossyDisplayName();
+  }
+
+  callback_.Run(success);
 }
