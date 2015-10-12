@@ -13,8 +13,12 @@ from telemetry.web_perf import timeline_based_measurement
 import page_sets
 
 
-class _MemoryBenchmark(perf_benchmark.PerfBenchmark):
-  """Base class for timeline based memory benchmarks."""
+class _MemoryInfra(perf_benchmark.PerfBenchmark):
+  """Base class for new-generation memory benchmarks based on memory-infra.
+
+  This benchmark records data using memory-infra (https://goo.gl/8tGc6O), which
+  is part of chrome tracing, and extracts it using timeline-based measurements.
+  """
 
   def SetExtraBrowserOptions(self, options):
     options.AppendExtraBrowserArgs([
@@ -36,7 +40,7 @@ class _MemoryBenchmark(perf_benchmark.PerfBenchmark):
 # TODO(bashi): Workaround for http://crbug.com/532075
 # @benchmark.Enabled('android') shouldn't be needed.
 @benchmark.Enabled('android')
-class MemoryHealthPlan(_MemoryBenchmark):
+class MemoryHealthPlan(_MemoryInfra):
   """Timeline based benchmark for the Memory Health Plan."""
 
   page_set = page_sets.MemoryHealthStory
@@ -56,7 +60,7 @@ class MemoryHealthPlan(_MemoryBenchmark):
 # TODO(bashi): Workaround for http://crbug.com/532075
 # @benchmark.Enabled('android') shouldn't be needed.
 @benchmark.Enabled('android')
-class RendererMemoryBlinkMemoryMobile(_MemoryBenchmark):
+class RendererMemoryBlinkMemoryMobile(_MemoryInfra):
   """Timeline based benchmark for measuring memory consumption on mobile
   sites on which blink's memory consumption is relatively high."""
 
@@ -84,7 +88,7 @@ class RendererMemoryBlinkMemoryMobile(_MemoryBenchmark):
 
 # Disabled on all non android bots see http://crbug.com/540022
 @benchmark.Enabled('android')
-class MemoryBenchmarkTop10Mobile(_MemoryBenchmark):
+class MemoryBenchmarkTop10Mobile(_MemoryInfra):
   """Timeline based benchmark for measuring memory on top 10 mobile sites."""
 
   page_set = page_sets.MemoryInfraTop10MobilePageSet
