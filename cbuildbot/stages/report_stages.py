@@ -494,17 +494,6 @@ class ReportStage(generic_stages.BuilderStage,
       tree_status.SendHealthAlert(self._run, title, '\n\n'.join(body),
                                   extra_fields=extra_fields)
 
-  def _UploadMetadataForRun(self, final_status):
-    """Upload metadata.json for this entire run.
-
-    Args:
-      final_status: Final status string for this run.
-    """
-    self._run.attrs.metadata.UpdateWithDict(
-        self.GetReportMetadata(final_status=final_status,
-                               completion_instance=self._completion_instance))
-    self.UploadMetadata()
-
   def _UploadArchiveIndex(self, builder_run):
     """Upload an HTML index for the artifacts at remote archive location.
 
@@ -615,7 +604,7 @@ class ReportStage(generic_stages.BuilderStage,
 
     # Upload metadata, and update the pass/fail streak counter for the main
     # run only. These aren't needed for the child builder runs.
-    self._UploadMetadataForRun(final_status)
+    self.UploadMetadata()
     self._UpdateRunStreak(self._run, final_status)
 
     # Alert if the Pre-CQ has infra failures.
@@ -671,6 +660,11 @@ class ReportStage(generic_stages.BuilderStage,
       # ArchiveResults() depends the existence of this attr.
       self._run.attrs.release_tag = None
 
+    # Set up our report metadata.
+    self._run.attrs.metadata.UpdateWithDict(
+        self.GetReportMetadata(final_status=final_status,
+                               completion_instance=self._completion_instance))
+
     # Some operations can only be performed if a valid version is available.
     try:
       self._run.GetVersionInfo()
@@ -681,7 +675,6 @@ class ReportStage(generic_stages.BuilderStage,
                     'Can not archive results.')
       archive_urls = ''
       metadata_url = ''
-
 
     results_lib.Results.Report(
         sys.stdout, archive_urls=archive_urls,
