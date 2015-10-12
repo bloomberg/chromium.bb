@@ -61,7 +61,10 @@ namespace {
 ServiceDiscoverySharedClient* g_service_discovery_client = NULL;
 }  // namespace
 
-ServiceDiscoverySharedClient::ServiceDiscoverySharedClient() {
+ServiceDiscoverySharedClient::ServiceDiscoverySharedClient()
+    : RefCountedDeleteOnMessageLoop<ServiceDiscoverySharedClient>(
+          content::BrowserThread::GetMessageLoopProxyForThread(
+              content::BrowserThread::UI)) {
   DCHECK(!g_service_discovery_client);
   g_service_discovery_client = this;
 }

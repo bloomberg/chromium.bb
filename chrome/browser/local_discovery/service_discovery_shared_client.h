@@ -5,12 +5,14 @@
 #ifndef CHROME_BROWSER_LOCAL_DISCOVERY_SERVICE_DISCOVERY_SHARED_CLIENT_H_
 #define CHROME_BROWSER_LOCAL_DISCOVERY_SERVICE_DISCOVERY_SHARED_CLIENT_H_
 
+#include "base/memory/ref_counted_delete_on_message_loop.h"
+
 #include "chrome/common/local_discovery/service_discovery_client.h"
 
 namespace local_discovery {
 
 class ServiceDiscoverySharedClient
-    : public base::RefCounted<ServiceDiscoverySharedClient>,
+    : public base::RefCountedDeleteOnMessageLoop<ServiceDiscoverySharedClient>,
       public ServiceDiscoveryClient {
  public:
   static scoped_refptr<ServiceDiscoverySharedClient> GetInstance();
@@ -24,7 +26,9 @@ class ServiceDiscoverySharedClient
   ~ServiceDiscoverySharedClient() override;
 
  private:
-  friend class base::RefCounted<ServiceDiscoverySharedClient>;
+  friend class base::RefCountedDeleteOnMessageLoop<
+      ServiceDiscoverySharedClient>;
+  friend class base::DeleteHelper<ServiceDiscoverySharedClient>;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceDiscoverySharedClient);
 };
