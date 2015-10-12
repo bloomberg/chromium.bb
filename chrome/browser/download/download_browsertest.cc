@@ -1620,6 +1620,47 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CloseNewTab3) {
   CheckDownload(browser(), file, file);
 }
 
+// Open a second tab, then download a file in that tab. However, have the
+// download be canceled by having the file picker act like the user canceled
+// the download. The 2nd tab should be closed automatically.
+IN_PROC_BROWSER_TEST_F(DownloadTest, CloseNewTab4) {
+  scoped_ptr<content::DownloadTestObserver> observer(
+        CreateWaiter(browser(), 1));
+  DownloadManager* manager = DownloadManagerForBrowser(browser());
+  EXPECT_EQ(0, manager->InProgressCount());
+  EnableFileChooser(false);
+
+  // Get the download URL
+  GURL slow_download_url(net::URLRequestSlowDownloadJob::kUnknownSizeUrl);
+
+  // Open a new tab for the download
+  content::WebContents* tab =
+        browser()->tab_strip_model()->GetActiveWebContents();
+  content::WebContents* new_tab = content::WebContents::Create(
+        content::WebContents::CreateParams(tab->GetBrowserContext()));
+  ASSERT_TRUE(new_tab);
+  ASSERT_TRUE(new_tab->GetController().IsInitialNavigation());
+  browser()->tab_strip_model()->AppendWebContents(new_tab, true);
+  EXPECT_EQ(2, browser()->tab_strip_model()->count());
+
+  // Download a file in that new tab, having it open a file picker
+  scoped_ptr<DownloadUrlParameters> params(
+      DownloadUrlParameters::FromWebContents(new_tab, slow_download_url));
+  params->set_prompt(true);
+  manager->DownloadUrl(params.Pass());
+  observer->WaitForFinished();
+
+  DownloadManager::DownloadVector items;
+  manager->GetAllDownloads(&items);
+  ASSERT_NE(0u, items.size());
+  DownloadItem* item = items[0];
+  EXPECT_TRUE(item != nullptr);
+
+  // When the download is canceled, the second tab should close.
+  EXPECT_EQ(item->GetState(), DownloadItem::CANCELLED);
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
+}
+
 // EmbeddedTestServer::HandleRequestCallback function that responds with a
 // redirect to the URL specified via a query string.
 // E.g.:

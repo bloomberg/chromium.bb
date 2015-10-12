@@ -145,11 +145,10 @@ void DownloadUIController::OnDownloadUpdated(content::DownloadManager* manager,
   if (item_model.WasUINotified() || !item_model.ShouldNotifyUI())
     return;
 
-  // Wait until the target path is determined.
-  if (item->GetTargetFilePath().empty())
+  // Wait until the target path is determined or the download is canceled.
+  if (item->GetTargetFilePath().empty() &&
+      item->GetState() != content::DownloadItem::CANCELLED)
     return;
-
-  DownloadItemModel(item).SetWasUINotified(true);
 
 #if !defined(OS_ANDROID)
   content::WebContents* web_contents = item->GetWebContents();
@@ -170,5 +169,9 @@ void DownloadUIController::OnDownloadUpdated(content::DownloadManager* manager,
   }
 #endif
 
+  if (item->GetState() == content::DownloadItem::CANCELLED)
+    return;
+
+  DownloadItemModel(item).SetWasUINotified(true);
   delegate_->OnNewDownloadReady(item);
 }
