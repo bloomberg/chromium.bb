@@ -1176,7 +1176,6 @@ Bu sitenin engellenmesi gerektiğini düşünmüyorum!</translation>
 <translation id="2674170444375937751">Bu sayfaları geçmişinizden silmek istediğinizden emin misiniz?</translation>
 <translation id="2676342370492585497">Etkin Karma İçerik</translation>
 <translation id="2676946222714718093">Şurada oynatılıyor:</translation>
-<translation id="2677924368525077324">Dokunmaya dayalı metin düzenlemeyi etkinleştir</translation>
 <translation id="2678063897982469759">Tekrar etkinleştir</translation>
 <translation id="2679385451463308372">Sistem iletişim kutusunu kullanarak yazdır…</translation>
 <translation id="2680208403056680091">İnternet Bağlantınız Kontrol Ediliyor</translation>
@@ -2157,7 +2156,6 @@ Bu sitenin engellenmesi gerektiğini düşünmüyorum!</translation>
 <translation id="3972425373133383637">Tüm cihazlar arasında, bilmeniz gerekenlere bağlı kalın.</translation>
 <translation id="3974195870082915331">Şifreyi göstermek için tıklayın</translation>
 <translation id="397703832102027365">Sonlandırılıyor...</translation>
-<translation id="3978194674093708182">Silinmeyen veri türlerini iletişim kutusunda numaralandırmak yerine daha fazla bilginin sağlandığı bir makaleye bağlantı veren basit bir destek dizesi kullanın.</translation>
 <translation id="3978267865113951599">(Çöktü)</translation>
 <translation id="3979395879372752341">Yeni uzantı eklendi (<ph name="EXTENSION_NAME" />)</translation>
 <translation id="3979748722126423326"><ph name="NETWORKDEVICE" /> ağ cihazını etkinleştir</translation>
@@ -2264,7 +2262,6 @@ Tüm kullanıcılar devam etmek için çıkış yapmalıdır.</translation>
 <translation id="4146175323503586871"><ph name="SERVICE_NAME" />, Chrome OS cihazınızın bir teklif için uygun olup olmadığını kontrol etmek istiyor. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="4147376274874979956">Dosyaya erişilemiyor.</translation>
 <translation id="4151403195736952345">Genel varsayılanı kullan (Algıla)</translation>
-<translation id="4152200911868329970">Göz atma alışkanlıklarını yansıtabilecek bazı ayarlar |temizlenmeyecek|.</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 sekme}other{# sekme}}</translation>
 <translation id="4154664944169082762">Parmak izleri</translation>
 <translation id="4157188838832721931">Şifreleri şifreler sayfasında görüntülemeden önce kullanıcıya OS şifresini sormayı devre dışı bırak.</translation>
@@ -3915,7 +3912,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="656398493051028875">"<ph name="FILENAME" />" siliniyor...</translation>
 <translation id="6565108107088666812">Bu işlem senkronize edilen verileri tüm cihazlardan siler.</translation>
 <translation id="6566142449942033617">Eklentiye ilişkin '<ph name="PLUGIN_PATH" />' yolu yüklenemedi.</translation>
-<translation id="6566572652089581977">Göz atma verilerini temizle iletişim kutusunda basit bir destek dizesi kullanın.</translation>
 <translation id="6567688344210276845">Sayfa işlemine ilişkin '<ph name="ICON" />' simgesi yüklenemedi.</translation>
 <translation id="6569050677975271054">Yalnızca statik kara liste</translation>
 <translation id="6571070086367343653">Kredi kartını düzenle</translation>
@@ -4523,6 +4519,7 @@ Hatırlatma! Bir dahaki sefere Gizli mod <ph name="SHORTCUT_KEY" /> kullanışl�
 <translation id="7472639616520044048">MIME türleri:</translation>
 <translation id="7473891865547856676">Hayır, Teşekkürler</translation>
 <translation id="747459581954555080">Tümünü geri yükle</translation>
+<translation id="7474669101120914750">Bu ayar, <ph name="NAME" /> uzantısı tarafından kontrol ediliyor</translation>
 <translation id="7474889694310679759">İngilizce (Kanada) klavye</translation>
 <translation id="7475671414023905704">Netscape Kayıp Şifre URL'si</translation>
 <translation id="7477347901712410606">Parolanızı unuttuysanız, Senkronizasyonu <ph name="BEGIN_LINK" />Google Hesap Özeti<ph name="END_LINK" /> üzerinden durdurun ve sıfırlayın.</translation>
@@ -5253,7 +5250,6 @@ Dolana kadar geçecek süre hesaplanıyor</translation>
 <translation id="852269967951527627">Sitelerin bildirim göstermesine izin verme</translation>
 <translation id="8524066305376229396">Kalıcı depolama:</translation>
 <translation id="8525306231823319788">Tam ekran</translation>
-<translation id="852573274664085347">Dokunarak düzenleme, bir metin alanına veya seçilmiş metne hafifçe vurarak başlatılabilir.</translation>
 <translation id="852605377609758011">Bu işlem için bir Google Payments Sanal Kartı kullanılacak. Sanal Kart, satıcının gerçek kredi kartı numaranızı görmemesi için kullanılan yeni bir kart numarasıdır.</translation>
 <translation id="8528962588711550376">Oturum açılıyor.</translation>
 <translation id="8535005006684281994">Netscape Sertifikası Yenileme URL'si</translation>

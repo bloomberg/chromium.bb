@@ -53,7 +53,6 @@
 <translation id="2673087257647337101">Chromium を再起動して更新を完了してください</translation>
 <translation id="2685838254101182273">Chromium はアップデートの提供を中止しています。お使いのバージョンのオペレーティング システムには対応していません。</translation>
 <translation id="2705212601509139398">このサイトで使用されている Chromium Frame プラグインは、間もなくサポートが終了します。プラグインをアンインストールし、互換性のあるブラウザをダウンロードしてください。</translation>
-<translation id="2718390899429598676">セキュリティ強化のため、Chromium ではデータが暗号化されます。</translation>
 <translation id="2732467638532545152">ご使用のパソコンは、このウェブサイトのセキュリティ証明書を処理できない旧バージョンの Microsoft Windows を実行しています。このため Chromium では、証明書が <ph name="SITE" /> から発行されたものか、それとも <ph name="SITE" /> になりすましたネットワーク上の別のユーザーによって発行されたものかを判別することができません。パソコンを新しいバージョンの Windows に更新してください。</translation>
 <translation id="2770231113462710648">既定のブラウザを変更:</translation>
 <translation id="2801146392936645542"><ph name="FILE_NAME" /> は不正なファイルです。Chromium はこのファイルをブロックしました。</translation>
@@ -137,7 +136,6 @@
 <translation id="5427571867875391349">Chromium をデフォルト ブラウザに設定する</translation>
 <translation id="5466153949126434691">Chromium は自動的に更新されるため、常に最新版をご利用になれます。このダウンロードが完了すると、Chromium が再起動し、すぐにお使いいただけます。</translation>
 <translation id="549669000822060376">Chromium は最新のシステム アップデートをインストールしています。しばらくお待ちください。</translation>
-<translation id="5531349711857992002">このウェブサイトの証明書チェーンには、SHA-1 に基づく古い署名アルゴリズムで署名された証明書が 1 つ以上含まれています。</translation>
 <translation id="5563479599352954471">ワンタップで検索</translation>
 <translation id="5620765574781326016">ウェブサイト上のトピックについて、ページを移動せずに調べることができます。</translation>
 <translation id="5772805321386874569">（Chromium を<ph name="BEGIN_BUTTON" />再起動<ph name="END_BUTTON" />する必要があります）</translation>
@@ -190,7 +188,6 @@
 <translation id="705851970750939768">Chromium を更新</translation>
 <translation id="7064610482057367130">更新対象の Chromium のインストールは見つかりませんでした。</translation>
 <translation id="7066436765290594559">Chromium OS はデータを同期できませんでした。同期パスフレーズを更新してください。</translation>
-<translation id="7090955637699162649">Chromium では、より快適なブラウジングを提供する目的で<ph name="BEGIN_LINK" />ウェブサービス<ph name="END_LINK" />が使用されることがあります。これらのサービスはいつでも無効にできます。</translation>
 <translation id="7138853919861947730">Chromium は、より快適なブラウジングを提供する目的でウェブ サービスを使用することがあります。</translation>
 <translation id="7162152143154757523">Chromium ではブラウザに入力された内容を Google のサーバーに送信することで高度なスペルチェックを実現し、Google 検索で使用されるスペルチェック テクノロジーを活用できます。</translation>
 <translation id="7196020411877309443">このウィンドウが表示される理由</translation>

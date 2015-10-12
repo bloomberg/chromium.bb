@@ -1289,7 +1289,6 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
       Si aquesta política no es defineix, <ph name="PRODUCT_NAME" /> utilitzarà el valor predeterminat de 5.000 mil·lisegons.</translation>
 <translation id="7842869978353666042">Opcions de configuració de Google Drive</translation>
 <translation id="7848840259379156480">Us permet configurar el renderitzador HTML predeterminat quan <ph name="PRODUCT_FRAME_NAME" /> estigui instal·lat. De manera predeterminada, la configuració permet que el navegador amfitrió dugui a terme la renderització, però podeu substituir aquesta configuració de manera opcional i fer que <ph name="PRODUCT_FRAME_NAME" /> renderitzi les pàgines HTML de manera predeterminada.</translation>
-<translation id="7880891067740158163">Us permet especificar una llista de patrons d'URL que especifiquin els llocs per als quals <ph name="PRODUCT_NAME" /> haurà de seleccionar automàticament els certificats d'un client, si el lloc sol·licita un certificat. Si no es defineix aquesta política, no es realitzarà cap selecció automàtica a cap lloc.</translation>
 <translation id="7882585827992171421">Aquesta política només està activa en mode de venda.
 
       Determina l'identificador de l'extensió que s'ha d'utilitzar com a protector de pantalla a la pantalla d'inici de sessió. L'extensió ha de formar part de l'AppPack, que està configurat per a aquest domini a través de la política DeviceAppPack.</translation>
@@ -1307,11 +1306,6 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
           Tingueu en compte que si la política <ph name="REMOTEACCESSHOSTFIREWALLTRAVERSAL_POLICY_NAME" /> està desactivada, aquesta política s'ignorarà.
 
           Si aquesta política no es defineix, l'opció de configuració s'activarà.</translation>
-<translation id="8079569287249995869">Permet l'optimització WPAD a <ph name="PRODUCT_NAME" /> i impedeix que els usuaris canviïn aquesta opció.
-
-      Si s'activa, <ph name="PRODUCT_NAME" /> esperarà intervals d'espera més curts per als servidors WPAD basats en DNS.
-
-      Si la política no es defineix, l'optimització s'activarà i l'usuari no podrà modificar-la.</translation>
 <translation id="8099880303030573137">Retard d'inactivitat quan s'utilitza bateria</translation>
 <translation id="8102913158860568230">Configuració predeterminada de l'activitat multimèdia</translation>
 <translation id="8104962233214241919">Selecciona automàticament certificats de client per a aquest llocs</translation>

@@ -1178,7 +1178,6 @@ Tôi không cho rằng nên chặn trang web này!</translation>
 <translation id="2674170444375937751">Bạn có chắc chắn muốn xóa những trang này khỏi lịch sử duyệt web của mình không?</translation>
 <translation id="2676342370492585497">Nội dung hỗn hợp đang hoạt động</translation>
 <translation id="2676946222714718093">Đang phát trên</translation>
-<translation id="2677924368525077324">Bật tính năng chỉnh sửa văn bản dựa trên cảm ứng</translation>
 <translation id="2678063897982469759">Kích hoạt lại</translation>
 <translation id="2679385451463308372">In bằng hộp thoại hệ thống...</translation>
 <translation id="2680208403056680091">Kết nối Internet của bạn đang bị kiểm soát</translation>
@@ -2162,7 +2161,6 @@ Tôi không cho rằng nên chặn trang web này!</translation>
 <translation id="3972425373133383637">Luôn kết nối với những gì bạn cần biết trên mọi thiết bị.</translation>
 <translation id="3974195870082915331">Nhấp để hiển thị mật khẩu</translation>
 <translation id="397703832102027365">Đang hoàn tất...</translation>
-<translation id="3978194674093708182">Thay vì liệt kê các loại dữ liệu không bị xóa trong hộp thoại, hãy sử dụng chuỗi hỗ trợ đơn giản liên kết với bài viết có thêm thông tin.</translation>
 <translation id="3978267865113951599">(Bị hỏng)</translation>
 <translation id="3979395879372752341">Đã thêm tiện ích mới (<ph name="EXTENSION_NAME" />)</translation>
 <translation id="3979748722126423326">Bật <ph name="NETWORKDEVICE" /></translation>
@@ -2269,7 +2267,6 @@ Tất cả người dùng phải đăng xuất để tiếp tục.</translation>
 <translation id="4146175323503586871"><ph name="SERVICE_NAME" /> muốn kiểm tra xem thiết bị Chrome OS có đủ điều kiện để nhận được ưu đãi hay không. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="4147376274874979956">Không thể truy cập tệp.</translation>
 <translation id="4151403195736952345">Sử dụng cài đặt mặc định chung (Phát hiện)</translation>
-<translation id="4152200911868329970">Một số cài đặt có thể phản ánh thói quen duyệt web |sẽ không bị xóa|.</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 tab}other{# tab}}</translation>
 <translation id="4154664944169082762">Dấu vân tay</translation>
 <translation id="4157188838832721931">Tắt tính năng nhắc người dùng về mật khẩu hệ điều hành của họ trước khi công khai mật khẩu trên trang mật khẩu.</translation>
@@ -3924,7 +3921,6 @@ Một số tính năng có thể không có sẵn. Hãy kiểm tra xem hồ sơ 
 <translation id="656398493051028875">Đang xóa "<ph name="FILENAME" />"...</translation>
 <translation id="6565108107088666812">Thao tác này sẽ xóa dữ liệu được đồng bộ hóa khỏi tất cả các thiết bị.</translation>
 <translation id="6566142449942033617">Không thể tải '<ph name="PLUGIN_PATH" />' cho plugin.</translation>
-<translation id="6566572652089581977">Sử dụng chuỗi hỗ trợ đơn giản trong hộp thoại Xóa dữ liệu duyệt web.</translation>
 <translation id="6567688344210276845">Không thể tải biểu tượng '<ph name="ICON" />' cho tác vụ trang.</translation>
 <translation id="6569050677975271054">Chỉ danh sách cấm tĩnh</translation>
 <translation id="6571070086367343653">Chỉnh sửa thẻ tín dụng</translation>
@@ -4534,6 +4530,7 @@ Lưu ý! Chế độ ẩn danh <ph name="SHORTCUT_KEY" /> có thể hữu ích v
 <translation id="7472639616520044048">Loại MIME:</translation>
 <translation id="7473891865547856676">Không, cảm ơn</translation>
 <translation id="747459581954555080">Khôi phục tất cả</translation>
+<translation id="7474669101120914750">Cài đặt này do tiện ích <ph name="NAME" /> kiểm soát</translation>
 <translation id="7474889694310679759">Bàn phím tiếng Anh ở Canada</translation>
 <translation id="7475671414023905704">URL Mật khẩu đã Mất của Netscape</translation>
 <translation id="7477347901712410606">Nếu bạn đã quên cụm mật khẩu của mình, hãy dừng lại và đặt lại Đồng bộ hóa qua <ph name="BEGIN_LINK" />Trang tổng quan của Google<ph name="END_LINK" />.</translation>
@@ -5266,7 +5263,6 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="852269967951527627">Không cho phép bất kỳ trang web nào hiển thị thông báo</translation>
 <translation id="8524066305376229396">Bộ nhớ liên tục:</translation>
 <translation id="8525306231823319788">Toàn màn hình</translation>
-<translation id="852573274664085347">Có thể chạy chỉnh sửa dựa trên cảm ứng bằng cách nhấn vào trường văn bản hoặc văn bản đã chọn.</translation>
 <translation id="852605377609758011">Thẻ ảo Google Payments sẽ được sử dụng cho giao dịch này. Thẻ ảo là một số thẻ mới để người bán không bao giờ thấy được số thẻ tín dụng thực của bạn.</translation>
 <translation id="8528962588711550376">Đang đăng nhập.</translation>
 <translation id="8535005006684281994">URL Gia hạn Chứng chỉ của Netscape</translation>

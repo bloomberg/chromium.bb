@@ -1168,7 +1168,6 @@
 <translation id="2674170444375937751">Наистина ли искате да изтриете тези страници от историята си?</translation>
 <translation id="2676342370492585497">Активно смесено съдържание</translation>
 <translation id="2676946222714718093">Възпроизвежда се на</translation>
-<translation id="2677924368525077324">Активиране на основаното на докосвания редактиране на текст</translation>
 <translation id="2678063897982469759">Повторно активиране</translation>
 <translation id="2679385451463308372">Отпечатване чрез системния диалогов прозорец...</translation>
 <translation id="2680208403056680091">Връзката ви с интернет се контролира</translation>
@@ -2143,7 +2142,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3972425373133383637">Имайте достъп до необходимата ви информация от всички устройства.</translation>
 <translation id="3974195870082915331">Кликнете, за да се покаже паролата</translation>
 <translation id="397703832102027365">Довършва се...</translation>
-<translation id="3978194674093708182">Вместо да се посочва кои типове данни няма да бъдат изтрити, в диалоговия прозорец се използва опростен низ за поддръжка, чрез който се отваря статия с повече информация.</translation>
 <translation id="3978267865113951599">(Получи се срив)</translation>
 <translation id="3979395879372752341">Бе добавено ново разширение (<ph name="EXTENSION_NAME" />)</translation>
 <translation id="3979748722126423326">Активиране на <ph name="NETWORKDEVICE" /></translation>
@@ -2250,7 +2248,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4146175323503586871"><ph name="SERVICE_NAME" /> иска да провери дали устройството ви с Chrome OS отговаря на условията за оферта. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="4147376274874979956">Нямаме достъп до файла.</translation>
 <translation id="4151403195736952345">Използване на глобалната стандартна стойност (Откриване)</translation>
-<translation id="4152200911868329970">Някои настройки, които може да отразяват навиците при сърфиране, |няма да се изчистят|.</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 раздел}other{# раздела}}</translation>
 <translation id="4154664944169082762">Пръстови отпечатъци</translation>
 <translation id="4157188838832721931">Деактивирайте подканата за въвеждане на потребителската парола за операционната система, преди паролите да се покажат на съответната страница.</translation>
@@ -3892,7 +3889,6 @@ PDF файл или в Google Диск.</translation>
 <translation id="656398493051028875">„<ph name="FILENAME" />“ се изтрива...</translation>
 <translation id="6565108107088666812">Така ще се изчистят синхронизираните данни от всички устройства.</translation>
 <translation id="6566142449942033617">Не можа да се зареди „<ph name="PLUGIN_PATH" />“ за приставката.</translation>
-<translation id="6566572652089581977">Използване на опростен низ за поддръжка в диалоговия прозорец „Изчистване на данните за сърфирането“.</translation>
 <translation id="6567688344210276845">Не можа да се зареди иконата „<ph name="ICON" />“ за действието на страницата.</translation>
 <translation id="6569050677975271054">Само статичния черен списък</translation>
 <translation id="6571070086367343653">Редактиране на кредитната карта</translation>
@@ -4491,6 +4487,7 @@ PDF файл или в Google Диск.</translation>
 <translation id="7472639616520044048">Типове MIME:</translation>
 <translation id="7473891865547856676">Не, благодаря</translation>
 <translation id="747459581954555080">Възстановяване на всички</translation>
+<translation id="7474669101120914750">Тази настройка се контролира от разширението <ph name="NAME" /></translation>
 <translation id="7474889694310679759">Канадска (английски) клавиатура</translation>
 <translation id="7475671414023905704">URL адрес за изгубена парола на Netscape</translation>
 <translation id="7477347901712410606">Ако сте забравили пропуска си, спрете и задайте отново синхронизирането посредством <ph name="BEGIN_LINK" />Google Табло за управление<ph name="END_LINK" />.</translation>
@@ -5223,7 +5220,6 @@ PDF файл или в Google Диск.</translation>
 <translation id="852269967951527627">Забраняване на сайтовете да показват известия</translation>
 <translation id="8524066305376229396">Постоянно хранилище:</translation>
 <translation id="8525306231823319788">На цял екран</translation>
-<translation id="852573274664085347">Можете да стартирате редактирането чрез докосване, като докоснете текстово поле или избран текст.</translation>
 <translation id="852605377609758011">За тази транзакция ще се използва виртуална карта на Google Payments. Тя представлява нов номер на карта, така че продавачът никога не вижда номера на истинската ви кредитна карта.</translation>
 <translation id="8528962588711550376">Влиза се.</translation>
 <translation id="8535005006684281994">URL адрес за подновяване на сертификат на Netscape</translation>

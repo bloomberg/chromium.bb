@@ -103,7 +103,6 @@
 <translation id="4458285410772214805">Щоб зміна почала діяти, вийдіть і ввійдіть знову.</translation>
 <translation id="4480040274068703980">ОС Chrome не вдалося синхронізувати ваші дані через помилку входу.</translation>
 <translation id="4513711165509885787">Ваші платіжні дані збережено в Chrome.</translation>
-<translation id="4519152997629025674">Google Chrome може покращувати веб-перегляд за допомогою <ph name="BEGIN_LINK" />веб-служб<ph name="END_LINK" />. Ви можете будь-коли вимкнути ці служби.</translation>
 <translation id="4561051373932531560">Google Chrome дозволяє натиснути номер телефону в Інтернеті та здійснити виклик через Skype.</translation>
 <translation id="4567424176335768812">Ви ввійшли як <ph name="USER_EMAIL_ADDRESS" />. Ваші закладки, історія й інші налаштування будуть доступні на всіх пристроях, на яких ви ввійдете в цей обліковий запис.</translation>
 <translation id="4631713731678262610">Сховати в меню Chrome</translation>
@@ -134,7 +133,6 @@
 <translation id="5430073640787465221">Ваш файл налаштувань пошкоджений або недійсний. Google Chrome не може відновити ваші налаштування.</translation>
 <translation id="5453904507266736060">Дозволити Google Chrome працювати у фоновому режимі</translation>
 <translation id="5495581687705680288">Модулі, завантажені в Google Chrome</translation>
-<translation id="5531349711857992002">Ланцюжок сертифікатів для цього веб-сайту містить принаймні один сертифікат, підписаний за допомогою непідтримуваного алгоритму підпису на основі SHA-1.</translation>
 <translation id="556024056938947818">Google Chrome намагається показати паролі.</translation>
 <translation id="5563479599352954471">Пошук одним дотиком</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
@@ -168,7 +166,6 @@
 <translation id="6235018212288296708">Вхідне правило для Google Chrome дозволяє трафік mDNS.</translation>
 <translation id="6236285698028833233">Оновлення Google Chrome припинилось. Ця версія вашої операційної системи більше не підтримується.</translation>
 <translation id="629218512217695915">Використовувати пароль, згенерований Chrome</translation>
-<translation id="6368805772029492593">Задля підвищення безпеки Google Chrome шифруватиме ваші дані.</translation>
 <translation id="6368958679917195344">ОС Chrome стала можливою завдяки додатковому <ph name="BEGIN_LINK_CROS_OSS" />програмному забезпеченню з відкритим кодом<ph name="END_LINK_CROS_OSS" />.</translation>
 <translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{Триває завантаження. Скасувати його та вийти з Google Chrome?}one{Триває # завантаження. Скасувати їх і вийти з Google Chrome?}few{Тривають # завантаження. Скасувати їх і вийти з Google Chrome?}many{Тривають # завантажень. Скасувати їх і вийти з Google Chrome?}other{Тривають # завантаження. Скасувати їх і вийти з Google Chrome?}}</translation>
 <translation id="6598387184982954187">Ви синхронізуєте дані Chrome через обліковий запис <ph name="PROFILE_EMAIL" />. Щоб оновити параметри синхронізації або використовувати Chrome без облікового запису Google, перейдіть на сторінку <ph name="SETTINGS_LINK" />.</translation>

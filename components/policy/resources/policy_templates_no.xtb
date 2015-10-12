@@ -1455,9 +1455,6 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
       Hvis du ikke angir denne innstillingen, bruker <ph name="PRODUCT_NAME" /> standardverdien på 5 000 millisekunder.</translation>
 <translation id="7842869978353666042">Konfigurer Google Disk-alternativer</translation>
 <translation id="7848840259379156480">Lar deg konfigurere standard HTML-gjengivelse når <ph name="PRODUCT_FRAME_NAME" /> er installert. Standardinnstillingen er å tillate vertsnettleseren å foreta gjengivelsen. Du kan eventuelt overstyre dette og la <ph name="PRODUCT_FRAME_NAME" /> gjengi HTML-sider som standard.</translation>
-<translation id="7880891067740158163">Gjør at du kan angi en liste over nettadressemønstre som spesifiserer nettsteder som <ph name="PRODUCT_NAME" /> automatisk skal velge klientsertifikater for, hvis nettstedet ber om et sertifikat.
-
-          Hvis denne retningslinjen ikke angis, vil det ikke utføres automatiske valg for noen nettsteder.</translation>
 <translation id="7882585827992171421">Denne retningslinjen er aktiv bare i detaljistmodus.
 
       Bestemmer ID-en for utvidelsen som skal brukes som skjermsparer på påloggingssiden. Utvidelsen må være del av AppPack-elementet som er konfigurert for dette domenet gjennom DeviceAppPack-retningslinjene.</translation>
@@ -1475,12 +1472,6 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
           Merk at innstillingen ignoreres hvis innstillingen <ph name="REMOTEACCESSHOSTFIREWALLTRAVERSAL_POLICY_NAME" /> er deaktivert.
 
           Hvis denne retningslinjen ikke angis, er innstillingen aktivert.</translation>
-<translation id="8079569287249995869">Aktiverer WPAD-optimalisering i <ph name="PRODUCT_NAME" /> og hindrer brukere i å endre denne innstillingen.
-
-      Når denne innstillingen er aktivert, venter <ph name="PRODUCT_NAME" /> i kortere intervaller for DNS-baserte WPAD-tjenere.
-
-      Hvis denne innstillingen ikke angis, aktiveres den, og brukerne kan ikke
-      endre den.</translation>
 <translation id="8099880303030573137">Inaktivitetsforsinkelse når enheten kjører på batteristrøm</translation>
 <translation id="8102913158860568230">Standard innstilling for direkteavspilling av medieinnhold</translation>
 <translation id="8104962233214241919">Automatisk valg av klientsertifikater for disse nettstedene</translation>

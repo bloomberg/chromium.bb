@@ -1187,7 +1187,6 @@ Saya tidak fikir tapak web ini perlu disekat!</translation>
 <translation id="2674170444375937751">Adakah anda pasti anda mahu memadamkan halaman ini daripada sejarah anda?</translation>
 <translation id="2676342370492585497">Kandungan Campuran Aktif</translation>
 <translation id="2676946222714718093">Dimainkan di</translation>
-<translation id="2677924368525077324">Dayakan pengeditan teks berdasarkan sentuhan.</translation>
 <translation id="2678063897982469759">Dayakan semula</translation>
 <translation id="2679385451463308372">Cetak menggunakan dialog sistem…</translation>
 <translation id="2680208403056680091">Sambungan Internet Anda Sedang Dikawal</translation>
@@ -2168,7 +2167,6 @@ Saya tidak fikir tapak web ini perlu disekat!</translation>
 <translation id="3972425373133383637">Sentiasa disambungkan dengan perkara yang anda perlu tahu, pada semua peranti.</translation>
 <translation id="3974195870082915331">Klik untuk menunjukkan kata laluan</translation>
 <translation id="397703832102027365">Menyelesaikan...</translation>
-<translation id="3978194674093708182">Gunakan rentetan sokongan ringkas yang memaut kepada artikel yang mengandungi maklumat lanjut, bukannya menjelaskan jenis data yang tidak dipadamkan dalam dialog.</translation>
 <translation id="3978267865113951599">(Nahas)</translation>
 <translation id="3979395879372752341">Sambungan baharu ditambah (<ph name="EXTENSION_NAME" />)</translation>
 <translation id="3979748722126423326">Dayakan <ph name="NETWORKDEVICE" /></translation>
@@ -2275,7 +2273,6 @@ Semua pengguna mesti melog keluar untuk meneruskan.</translation>
 <translation id="4146175323503586871"><ph name="SERVICE_NAME" /> ingin menyemak sama ada peranti Chrome OS anda layak untuk menerima tawaran. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="4147376274874979956">Tidak dapat mengakses fail tersebut.</translation>
 <translation id="4151403195736952345">Gunakan lalai global (Kesan)</translation>
-<translation id="4152200911868329970">Sesetengah tetapan yang boleh menggambarkan tabiat penyemakan imbas |tidak akan dikosongkan|.</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 tab}other{# tab}}</translation>
 <translation id="4154664944169082762">Cap jari</translation>
 <translation id="4157188838832721931">Lumpuhkan gesaan kepada pengguna yang meminta kata laluan OS mereka sebelum mendedahkan kata laluan pada halaman kata laluan.</translation>
@@ -3922,7 +3919,6 @@ Tekan sebarang kekunci untuk terus meneroka.</translation>
 <translation id="656398493051028875">Memadamkan "<ph name="FILENAME" />"...</translation>
 <translation id="6565108107088666812">Tindakan ini akan mengosongkan data yang disegerakkan daripada semua peranti.</translation>
 <translation id="6566142449942033617">Tidak dapat memuatkan '<ph name="PLUGIN_PATH" />' untuk pemalam.</translation>
-<translation id="6566572652089581977">Gunakan rentetan sokongan ringkas dalam dialog Kosongkan data penyemakan imbas.</translation>
 <translation id="6567688344210276845">Tidak dapat memuatkan ikon '<ph name="ICON" />' untuk tindakan halaman.</translation>
 <translation id="6569050677975271054">Senarai hitam statik sahaja</translation>
 <translation id="6571070086367343653">Edit kad kredit</translation>
@@ -4533,6 +4529,7 @@ Psst! <ph name="SHORTCUT_KEY" /> mod Inkognito mungkin akan berguna pada masa ak
 <translation id="7472639616520044048">Jenis MIME:</translation>
 <translation id="7473891865547856676">Tidak, Terima Kasih</translation>
 <translation id="747459581954555080">Pulihkan semua</translation>
+<translation id="7474669101120914750">Tetapan ini dikawal oleh sambungan <ph name="NAME" /></translation>
 <translation id="7474889694310679759">Papan kekunci Inggeris Kanada</translation>
 <translation id="7475671414023905704">URL Kata Laluan Hilang Netscape</translation>
 <translation id="7477347901712410606">Jika anda terlupa frasa laluan anda, berhenti dan tetapkan semula Segerak melalui <ph name="BEGIN_LINK" />Papan Pemuka Google<ph name="END_LINK" />.</translation>
@@ -5269,7 +5266,6 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="852269967951527627">Jangan benarkan mana-mana tapak menunjukkan pemberitahuan</translation>
 <translation id="8524066305376229396">Storan berterusan:</translation>
 <translation id="8525306231823319788">Skrin penuh</translation>
-<translation id="852573274664085347">Pengeditan sentuh boleh dimulakan dengan mengetik pada medan teks atau teks yang dipilih.</translation>
 <translation id="852605377609758011">Kad Maya Google Payments akan digunakan untuk urus niaga ini. Kad Maya ialah nombor kad yang baharu supaya penjual tidak melihat nombor kad kredit sebenar anda.</translation>
 <translation id="8528962588711550376">Melog masuk.</translation>
 <translation id="8535005006684281994">URL Pembaharuan Sijil Netscape</translation>

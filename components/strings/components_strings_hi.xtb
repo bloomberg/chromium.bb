@@ -150,7 +150,7 @@
 <translation id="4258748452823770588">खराब हस्ताक्षर</translation>
 <translation id="4269787794583293679">(कोई उपयोगकर्ता नाम नहीं)</translation>
 <translation id="4300246636397505754">अभिभावक सुझाव</translation>
-<translation id="4325863107915753736">लेख ढूंढने में विफल</translation>
+<translation id="4325863107915753736">लेख ढूंढ़ने में विफल</translation>
 <translation id="4372948949327679948">अपेक्षित <ph name="VALUE_TYPE" /> मान.</translation>
 <translation id="4377125064752653719">आपने <ph name="DOMAIN" /> तक पहुंचने का प्रयास किया, लेकिन सर्वर द्वारा प्रस्तुत प्रमाणपत्र को उसके जारीकर्ता द्वारा रद्द कर दिया गया है. इसका अर्थ है कि सर्वर द्वारा प्रस्तुत सुरक्षा प्रमाणिकता पर पूर्णतया विश्वास नहीं करना चाहिए. हो सकता है कि आप किसी हमलावर से बातचीत कर रहे हों.</translation>
 <translation id="4394049700291259645">अक्षम करें</translation>
@@ -292,7 +292,6 @@
 <translation id="7983301409776629893">हमेशा <ph name="ORIGINAL_LANGUAGE" /> से <ph name="TARGET_LANGUAGE" /> में अनुवाद करें</translation>
 <translation id="7988324688042446538">डेस्कटॉप बुकमार्क</translation>
 <translation id="7995512525968007366">निर्दिष्‍ट नहीं किया गया</translation>
-<translation id="8003882219468422867">एंटरप्राइज़ ओवरराइड</translation>
 <translation id="8034522405403831421">यह पृष्ठ <ph name="SOURCE_LANGUAGE" /> में है. इसका <ph name="TARGET_LANGUAGE" /> में अनुवाद करें?</translation>
 <translation id="8088680233425245692">लेख देखने में विफल रहा.</translation>
 <translation id="8091372947890762290">सर्वर पर सक्रियण लंबित है</translation>

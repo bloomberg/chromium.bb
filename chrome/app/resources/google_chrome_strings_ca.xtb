@@ -103,7 +103,6 @@ En iniciar la sessió, sigui amb l'usuari que sigui, es combinarà amb <ph name=
 <translation id="4458285410772214805">Tanqueu la sessió i torneu a iniciar-la perquè aquest canvi es faci efectiu.</translation>
 <translation id="4480040274068703980">Chrome OS no ha pogut sincronitzar les vostres dades a causa d'un error en iniciar la sessió.</translation>
 <translation id="4513711165509885787">Els detalls de facturació s'han desat a Chrome.</translation>
-<translation id="4519152997629025674">Google Chrome podria utilitzar <ph name="BEGIN_LINK" />serveis web<ph name="END_LINK" /> per millorar la vostra experiència de navegació. Si voleu, podeu desactivar aquests serveis en qualsevol moment.</translation>
 <translation id="4561051373932531560">Google Chrome us permet fer clic en un número de telèfon al web i trucar-hi amb Skype!</translation>
 <translation id="4567424176335768812">Heu iniciat la sessió com a <ph name="USER_EMAIL_ADDRESS" />. Ja podeu accedir a les vostres adreces d'interès, al vostre historial i a altres paràmetres en tots els dispositius en què hàgiu iniciat la sessió.</translation>
 <translation id="4631713731678262610">Amaga al menú de Chrome</translation>
@@ -134,7 +133,6 @@ En iniciar la sessió, sigui amb l'usuari que sigui, es combinarà amb <ph name=
 <translation id="5430073640787465221">El fitxer de preferències està malmès o no és vàlid. Google Chrome no pot recuperar la configuració.</translation>
 <translation id="5453904507266736060">Permet que Google Chrome s'executi en procés de fons</translation>
 <translation id="5495581687705680288">Mòduls carregats a Google Chrome</translation>
-<translation id="5531349711857992002">La cadena de certificats d'aquest lloc web conté com a mínim un certificat que s'ha signat utilitzant un algoritme de signatura obsolet basat en SHA-1.</translation>
 <translation id="556024056938947818">Google Chrome està provant de mostrar les contrasenyes.</translation>
 <translation id="5563479599352954471">Cercar amb un toc</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
@@ -167,7 +165,6 @@ En iniciar la sessió, sigui amb l'usuari que sigui, es combinarà amb <ph name=
 <translation id="6235018212288296708">Regla d'entrada de Google Chrome per permetre el trànsit de mDNS.</translation>
 <translation id="6236285698028833233">Google Chrome ha deixat d'actualitzar-se i ja no admet aquesta versió del vostre sistema operatiu.</translation>
 <translation id="629218512217695915">Utilitza la contrasenya generada per Chrome</translation>
-<translation id="6368805772029492593">Per a més seguretat, Google Chrome encriptarà les vostres dades.</translation>
 <translation id="6368958679917195344">Chrome OS és possible gràcies a <ph name="BEGIN_LINK_CROS_OSS" />programari addicional de codi obert<ph name="END_LINK_CROS_OSS" />.</translation>
 <translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{Hi ha una baixada en curs. Voleu cancel·lar-la i sortir de Google Chrome?}other{Hi ha # baixades en curs. Voleu cancel·lar-les i sortir de Google Chrome?}}</translation>
 <translation id="6598387184982954187">Utilitzeu <ph name="PROFILE_EMAIL" /> per sincronitzar el contingut de Chrome. Per modificar la preferència de sincronització o per utilitzar Chrome sense cap compte de Google, dirigiu-vos a <ph name="SETTINGS_LINK" />.</translation>

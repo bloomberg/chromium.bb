@@ -1533,9 +1533,6 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
       Če tega pravilnika ne nastavite, bo <ph name="PRODUCT_NAME" /> uporabil privzeto vrednost 5000 ms.</translation>
 <translation id="7842869978353666042">Konfigurira možnosti storitve Google Drive</translation>
 <translation id="7848840259379156480">Omogoča nastavitev privzetega upodabljalnika HTML-ja, ko je nameščen <ph name="PRODUCT_FRAME_NAME" />. Privzeta nastavitev je, da upodabljanje izvaja gostiteljski brskalnik, vendar lahko to preglasite in določite, da <ph name="PRODUCT_FRAME_NAME" /> privzeto upodablja strani HTML.</translation>
-<translation id="7880891067740158163">Omogoča nastavitev seznama vzorcev URL-jev za spletna mesta, za katera naj <ph name="PRODUCT_NAME" /> samodejno izbere potrdila odjemalca, če spletno mesto zahteva potrdilo.
-
-         Če ta pravilnik ni nastavljen, samodejnega izbiranja za spletna mesta ne bo.</translation>
 <translation id="7882585827992171421">Ta pravilnik je aktiven samo v maloprodajnem načinu.
 
       Določa ID razširitve, ki se uporabi kot ohranjevalnik zaslona na zaslonu za prijavo. Razširitev mora biti del paketa AppPack, ki je za to domeno nastavljen s pravilnikom »DeviceAppPack«.</translation>
@@ -1558,12 +1555,6 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
           Če je pravilnik <ph name="REMOTEACCESSHOSTFIREWALLTRAVERSAL_POLICY_NAME" /> onemogočen, bo ta pravilnik prezrt.
 
           Če ta pravilnik ni nastavljen, bo nastavitev omogočena.</translation>
-<translation id="8079569287249995869">Omogoči optimizacijo WPAD v programu <ph name="PRODUCT_NAME" /> in uporabnikom prepreči spreminjanje te nastavitve.
-
-      Če to možnost omogočite, bo <ph name="PRODUCT_NAME" /> manj časa čakal na strežnike WPAD, ki temeljijo na DNS-ju.
-
-      Če ta pravilnik ni nastavljen, bo ta možnost omogočena in je uporabnik ne bo
-      mogel spremeniti.</translation>
 <translation id="8099880303030573137">Časovni zamik ob napajanju iz akumulatorja</translation>
 <translation id="8102913158860568230">Privzeta nastavitev »mediastream«</translation>
 <translation id="8104962233214241919">Samodejno izberi potrdila odjemalcev za ta spletna mesta</translation>

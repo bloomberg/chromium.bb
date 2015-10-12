@@ -1172,7 +1172,6 @@
 <translation id="2674170444375937751">هل تريد بالتأكيد حذف هذه الصفحات من السجل؟</translation>
 <translation id="2676342370492585497">محتوى مختلط نشط</translation>
 <translation id="2676946222714718093">التشغيل بواسطة</translation>
-<translation id="2677924368525077324">تمكين تعديل النص المستند إلى اللمس</translation>
 <translation id="2678063897982469759">إعادة تمكين</translation>
 <translation id="2679385451463308372">مربع حوار الطباعة باستخدام النظام…</translation>
 <translation id="2680208403056680091">يتم التحكم في اتصال الإنترنت التابع لك</translation>
@@ -2145,7 +2144,6 @@
 <translation id="3972425373133383637">البقاء على اتصال بما تحتاج إلى معرفته عبر جميع الأجهزة.</translation>
 <translation id="3974195870082915331">انقر لإظهار كلمة المرور</translation>
 <translation id="397703832102027365">جارٍ الإنهاء...</translation>
-<translation id="3978194674093708182">بدلاً من تعداد أنواع البيانات التي لا يتم حذفها في مربع الحوار، استخدم سلسلة دعم بسيطة تربط بإحدى المقالات التي تحتوي على المزيد من المعلومات.</translation>
 <translation id="3978267865113951599">(تعطلت الإضافة)</translation>
 <translation id="3979395879372752341">تمت إضافة إحدى الإضافات الجديدة (<ph name="EXTENSION_NAME" />)</translation>
 <translation id="3979748722126423326">تمكين <ph name="NETWORKDEVICE" /></translation>
@@ -2252,7 +2250,6 @@
 <translation id="4146175323503586871">‏<ph name="SERVICE_NAME" /> ترغب في التحقق إذا كان جهاز Chrome OS مؤهلاً للحصول على عرض. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="4147376274874979956">تعذر الدخول إلى الملف.</translation>
 <translation id="4151403195736952345">استخدام الإعدادات العمومية الافتراضية (كشف)</translation>
-<translation id="4152200911868329970">بعض الإعدادات التي قد تعكس عادات التصفح |لن يتم محوها|.</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{علامة تبويب واحدة}zero{# من علامات التبويب}two{علامتا تبويب (#)}few{# علامات تبويب}many{# علامة تبويب}other{# من علامات التبويب}}</translation>
 <translation id="4154664944169082762">بصمات الأصابع</translation>
 <translation id="4157188838832721931">تعطيل مطالبة المستخدم بإدخال كلمة مرور نظام التشغيل قبل الكشف عن كلمات المرور في صفحة كلمات المرور.</translation>
@@ -3889,7 +3886,6 @@
 <translation id="656398493051028875">جارٍ حذف "<ph name="FILENAME" />"...</translation>
 <translation id="6565108107088666812">يعمل ذلك على محو البيانات التي تمت مزامنتها من جميع الأجهزة.</translation>
 <translation id="6566142449942033617">تعذر تحميل '<ph name="PLUGIN_PATH" />' للمكوّن الإضافي.</translation>
-<translation id="6566572652089581977">استخدم سلسلة دعم بسيطة في مربع الحوار "محو بيانات التصفح".</translation>
 <translation id="6567688344210276845">تعذر تحميل الرمز '<ph name="ICON" />' لإجراء المتصفح.</translation>
 <translation id="6569050677975271054">القائمة السوداء الثابتة فقط</translation>
 <translation id="6571070086367343653">تعديل بطاقة الائتمان</translation>
@@ -4496,6 +4492,7 @@
 <translation id="7472639616520044048">‏أنواع MIME:</translation>
 <translation id="7473891865547856676">لا، شكرًا</translation>
 <translation id="747459581954555080">استرداد الكل</translation>
+<translation id="7474669101120914750">يتم  التحكم بهذا الإعداد بواسطة الإضافة <ph name="NAME" /></translation>
 <translation id="7474889694310679759">لوحة المفاتيح الكندية الإنجليزية</translation>
 <translation id="7475671414023905704">‏عنوان URL لكلمة المرور المفقودة في Netscape</translation>
 <translation id="7477347901712410606">‏إذا كنت قد نسيت عبارة المرور، فتوقف وأعد ضبط المزامنة عبر <ph name="BEGIN_LINK" />لوحة تحكم Google<ph name="END_LINK" />.</translation>
@@ -5229,7 +5226,6 @@
 <translation id="852269967951527627">عدم السماح لأي موقع بعرض إشعارات</translation>
 <translation id="8524066305376229396">التخزين الثابت:</translation>
 <translation id="8525306231823319788">ملء الشاشة</translation>
-<translation id="852573274664085347">يمكن بدء التعديل باللمس عبر النقر على حقل نصي أو نص محدد.</translation>
 <translation id="852605377609758011">‏ستتم هذه المعاملة باستخدام بطاقة Google Payments الظاهرية. وتُعدّ البطاقة الظاهرية رقم بطاقة جديدًا يحول دون إطلاع البائع على رقم بطاقة الائتمان الفعلي.</translation>
 <translation id="8528962588711550376">جارٍ تسجيل الدخول.</translation>
 <translation id="8535005006684281994">‏عنوان URL لتجديد شهادة Netscape</translation>

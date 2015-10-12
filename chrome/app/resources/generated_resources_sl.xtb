@@ -1178,7 +1178,6 @@ To spletno mesto ne sme biti blokirano.</translation>
 <translation id="2674170444375937751">Ali ste prepričani, da želite te strani izbrisati iz svoje zgodovine?</translation>
 <translation id="2676342370492585497">Aktivna mešana vsebina</translation>
 <translation id="2676946222714718093">Predvajanje v:</translation>
-<translation id="2677924368525077324">Omogoči urejanje besedila z dotikom</translation>
 <translation id="2678063897982469759">Znova omogoči</translation>
 <translation id="2679385451463308372">Natisni iz sistemskega pogovornega okna ...</translation>
 <translation id="2680208403056680091">Vaša povezava z internetom je nadzorovana</translation>
@@ -2159,7 +2158,6 @@ To spletno mesto ne sme biti blokirano.</translation>
 <translation id="3972425373133383637">Bodite na tekočem z vsemi potrebnimi informacijami v vseh napravah.</translation>
 <translation id="3974195870082915331">Kliknite, če želite prikazati geslo</translation>
 <translation id="397703832102027365">Dokončanje ...</translation>
-<translation id="3978194674093708182">Uporaba preprostega niza za podporo s povezavo na članek z več informacijami namesto naštevanja vrst podatkov, ki v pogovornem oknu niso izbrisani.</translation>
 <translation id="3978267865113951599">(Zrušitev)</translation>
 <translation id="3979395879372752341">Nova razširitev je dodana (<ph name="EXTENSION_NAME" />)</translation>
 <translation id="3979748722126423326">Omogoči <ph name="NETWORKDEVICE" /></translation>
@@ -2266,7 +2264,6 @@ To spletno mesto ne sme biti blokirano.</translation>
 <translation id="4146175323503586871">Storitev <ph name="SERVICE_NAME" /> želi preveriti, ali je vaša naprava s sistemom Chrome OS ustrezna za ponudbo. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="4147376274874979956">Do datoteke ni mogoče dostopati.</translation>
 <translation id="4151403195736952345">Globalno uporabi privzete nastavitve (zaznavanje)</translation>
-<translation id="4152200911868329970">Nekatere nastavitve, ki morda odražajo brskalne navade, |ne bodo izbrisane|.</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 zavihek}one{# zavihek}two{# zavihka}few{# zavihki}other{# zavihkov}}</translation>
 <translation id="4154664944169082762">Prstni odtisi</translation>
 <translation id="4157188838832721931">Onemogoči zahtevanje gesla za operacijski sistem od uporabnika pred razkritjem gesel na strani z gesli.</translation>
@@ -3919,7 +3916,6 @@ Nekatere funkcije morda ne bodo na voljo. Preverite, ali profil obstaja in ali i
 <translation id="656398493051028875">Brisanje datoteke »<ph name="FILENAME" />« ...</translation>
 <translation id="6565108107088666812">S tem se izbrišejo sinhronizirani podatki iz vseh naprav.</translation>
 <translation id="6566142449942033617">Ni mogoče naložiti »<ph name="PLUGIN_PATH" />« za vtičnik.</translation>
-<translation id="6566572652089581977">Uporaba preprostega niza za podporo v pogovornem oknu za brisanje podatkov brskanja.</translation>
 <translation id="6567688344210276845">Ikone »<ph name="ICON" />« za dejanje strani ni bilo mogoče naložiti.</translation>
 <translation id="6569050677975271054">Samo statični seznam nedovoljenih</translation>
 <translation id="6571070086367343653">Urejanje kreditne kartice</translation>
@@ -4526,6 +4522,7 @@ Pst! Naslednjič vam lahko pride prav bližnjica <ph name="SHORTCUT_KEY" /> za n
 <translation id="7472639616520044048">Vrste razširitve MIME:</translation>
 <translation id="7473891865547856676">Ne, hvala</translation>
 <translation id="747459581954555080">Obnovi vse</translation>
+<translation id="7474669101120914750">To nastavitev nadzira razširitev <ph name="NAME" /></translation>
 <translation id="7474889694310679759">Angleška tipkovnica (Kanada)</translation>
 <translation id="7475671414023905704">Spletni naslov izgubljenega Netscapeovega gesla</translation>
 <translation id="7477347901712410606">Če ste pozabili geslo, v <ph name="BEGIN_LINK" />Google Nadzorni plošči<ph name="END_LINK" /> ustavite in ponastavite sinhronizacijo.</translation>
@@ -5260,7 +5257,6 @@ izračun časa do napolnjenosti</translation>
 <translation id="852269967951527627">Nobenemu spletnemu mestu ne dovoli prikazovanja obvestil</translation>
 <translation id="8524066305376229396">Trajno shranjevanje:</translation>
 <translation id="8525306231823319788">Celozaslonsko</translation>
-<translation id="852573274664085347">Urejanje z dotikom lahko začnete tako, da se dotaknete besedilnega polja ali izbranega besedila.</translation>
 <translation id="852605377609758011">Za to transakcijo bo uporabljena virtualna kartica storitve Google Payments. Virtualna kartica je nova številka kartice, tako da prodajalec nikoli ne vidi resnične številke vaše kreditne kartice.</translation>
 <translation id="8528962588711550376">Prijavljanje.</translation>
 <translation id="8535005006684281994">Spletni naslov podaljšanja Netscapeovega potrdila</translation>

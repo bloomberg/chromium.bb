@@ -1173,7 +1173,6 @@ Jeg synes ikke, dette website skal blokeres.</translation>
 <translation id="2674170444375937751">Er du sikker på, at du vil slette disse sider fra din historik?</translation>
 <translation id="2676342370492585497">Aktivt blandet indhold</translation>
 <translation id="2676946222714718093">Afspilles i</translation>
-<translation id="2677924368525077324">Aktivér tekstredigering ved tryk</translation>
 <translation id="2678063897982469759">Genaktiver</translation>
 <translation id="2679385451463308372">Dialogboks til Udskriv via system...</translation>
 <translation id="2680208403056680091">Din internetforbindelse bliver kontrolleret</translation>
@@ -2154,7 +2153,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="3972425373133383637">Hold dig ajour med det, du har brug for at vide, på alle dine enheder.</translation>
 <translation id="3974195870082915331">Klik for at vise adgangskode</translation>
 <translation id="397703832102027365">Afslutter...</translation>
-<translation id="3978194674093708182">I stedet for at opremse datatyper, som ikke er slettet i dialogboksen, kan du bruge en enkel streng til understøttelse med et link til en artikel med flere oplysninger.</translation>
 <translation id="3978267865113951599">(Brudt ned)</translation>
 <translation id="3979395879372752341">Ny udvidelse er tilføjet (<ph name="EXTENSION_NAME" />)</translation>
 <translation id="3979748722126423326">Aktiver <ph name="NETWORKDEVICE" /></translation>
@@ -2260,7 +2258,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4146175323503586871"><ph name="SERVICE_NAME" /> vil gerne kontrollere, om din Chrome OS-enhed er berettiget til et tilbud. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="4147376274874979956">Der kunne ikke opnås adgang til filen.</translation>
 <translation id="4151403195736952345">Brug globale standardindstillinger (registrer)</translation>
-<translation id="4152200911868329970">Nogle indstillinger, der kan afspejle dine søgevaner, |ryddes ikke|.</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 fane}one{# faner}other{# faner}}</translation>
 <translation id="4154664944169082762">Fingeraftryk</translation>
 <translation id="4157188838832721931">Deaktiver anmodning om brugerens OS-adgangskode, inden vedkommende afslører sine adgangskoder på siden med adgangskoder.</translation>
@@ -2893,7 +2890,7 @@ Tryk på en vilkårlig tast for at fortsætte udforskningen.</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5120068803556741301">Inputmetode fra tredjepart</translation>
 <translation id="5120421890733714118">Hav tillid til, at dette certifikat kan identificere websites.</translation>
-<translation id="5121130586824819730">Din harddisk er fuld. Gem til en anden placering, eller frigør mere plads på harddisken.</translation>
+<translation id="5121130586824819730">Din harddisk er fuld. Gem på en anden placering, eller frigør mere plads på harddisken.</translation>
 <translation id="5122371513570456792">Der blev fundet <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> for "<ph name="SEARCH_STRING" />".</translation>
 <translation id="5125751979347152379">Ugyldig webadresse.</translation>
 <translation id="512608082539554821">Hvis denne indstilling er aktiveret, animeres overgange i selvstudiet for førstegangsbrugere.</translation>
@@ -3912,7 +3909,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="656398493051028875">Slettter "<ph name="FILENAME" />"...</translation>
 <translation id="6565108107088666812">Dette rydder synkroniserede data fra alle enheder.</translation>
 <translation id="6566142449942033617">'<ph name="PLUGIN_PATH" />' til plugin kunne ikke indlæses.</translation>
-<translation id="6566572652089581977">Brug en enkel streng til understøttelse i dialogboksen Ryd browserdata.</translation>
 <translation id="6567688344210276845">Ikonet '<ph name="ICON" />' for sidehandling kunne ikke indlæses.</translation>
 <translation id="6569050677975271054">Kun statisk spærreliste</translation>
 <translation id="6571070086367343653">Rediger kreditkort</translation>
@@ -4511,6 +4507,7 @@ Psst! Prøv at bruge Inkognitotilstand <ph name="SHORTCUT_KEY" /> næste gang.</
 <translation id="7472639616520044048">MIME-typer:</translation>
 <translation id="7473891865547856676">Nej tak</translation>
 <translation id="747459581954555080">Gendan alle</translation>
+<translation id="7474669101120914750">Denne indstilling styres af udvidelsen <ph name="NAME" /></translation>
 <translation id="7474889694310679759">Canadisk (engelsk) tastatur</translation>
 <translation id="7475671414023905704">Netscape-webadresse til mistet adgangskode</translation>
 <translation id="7477347901712410606">Hvis du har glemt din adgangssætning, skal du stoppe og nulstille synkroniseringen via <ph name="BEGIN_LINK" />Google Betjeningspanel<ph name="END_LINK" />.</translation>
@@ -5242,7 +5239,6 @@ Beregner resterende tid</translation>
 <translation id="852269967951527627">Tillad ikke, at websites viser underretninger</translation>
 <translation id="8524066305376229396">Vedvarende lagring:</translation>
 <translation id="8525306231823319788">Fuld skærm</translation>
-<translation id="852573274664085347">Redigering ved tryk kan igangsættes ved at trykke på et tekstfelt eller en markeret tekst.</translation>
 <translation id="852605377609758011">Der anvendes et virtuelt Google Payments-kort til denne transaktion. Et virtuelt kort er et nyt kortnummer, så sælgeren aldrig ser dit rigtige kreditkortnummer.</translation>
 <translation id="8528962588711550376">Logger ind...</translation>
 <translation id="8535005006684281994">Webadresse for fornyelse af Netscape-certifikat</translation>

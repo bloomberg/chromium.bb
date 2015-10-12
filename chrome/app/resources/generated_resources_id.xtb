@@ -1176,7 +1176,6 @@ Saya rasa situs ini tidak perlu diblokir!</translation>
 <translation id="2674170444375937751">Yakin ingin menghapus laman ini dari riwayat?</translation>
 <translation id="2676342370492585497">Konten Campuran yang Aktif</translation>
 <translation id="2676946222714718093">Diputar di</translation>
-<translation id="2677924368525077324">Aktifkan pengeditan teks berbasis sentuh</translation>
 <translation id="2678063897982469759">Aktifkan ulang</translation>
 <translation id="2679385451463308372">Cetak menggunakan dialog sistem...</translation>
 <translation id="2680208403056680091">Koneksi Internet Anda Sedang Dikendalikan</translation>
@@ -2158,7 +2157,6 @@ Saya rasa situs ini tidak perlu diblokir!</translation>
 <translation id="3972425373133383637">Tetap tersambung dengan yang perlu Anda tahu, di seluruh perangkat.</translation>
 <translation id="3974195870082915331">Klik untuk menampilkan sandi</translation>
 <translation id="397703832102027365">Mengakhiri...</translation>
-<translation id="3978194674093708182">Alih-alih menghitung jenis data yang tidak dihapus dalam dialog, gunakan string dukungan sederhana yang tertaut ke artikel berisi informasi selengkapnya.</translation>
 <translation id="3978267865113951599">(Mogok)</translation>
 <translation id="3979395879372752341">Ekstensi baru ditambahkan (<ph name="EXTENSION_NAME" />)</translation>
 <translation id="3979748722126423326">Aktifkan <ph name="NETWORKDEVICE" /></translation>
@@ -2265,7 +2263,6 @@ Semua pengguna harus keluar untuk melanjutkan.</translation>
 <translation id="4146175323503586871"><ph name="SERVICE_NAME" /> ingin memeriksa apakah perangkat Chrome OS Anda layak untuk penawaran. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="4147376274874979956">Tidak dapat mengakses file.</translation>
 <translation id="4151403195736952345">Gunakan default global (Deteksi)</translation>
-<translation id="4152200911868329970">Beberapa setelan yang mungkin mencerminkan kebiasaan penjelajahan |tidak akan dihapus|.</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 tab}other{# tab}}</translation>
 <translation id="4154664944169082762">Sidik jari</translation>
 <translation id="4157188838832721931">Menonaktifkan permintaan sandi OS kepada pengguna sebelum menampilkan sandi di laman sandi.</translation>
@@ -3910,7 +3907,6 @@ Tekan sembarang tombol untuk melanjutkan penjelajahan.</translation>
 <translation id="656398493051028875">Menghapus "<ph name="FILENAME" />"...</translation>
 <translation id="6565108107088666812">Tindakan ini akan menghapus data yang disinkronkan dari semua perangkat.</translation>
 <translation id="6566142449942033617">Tidak dapat memuat '<ph name="PLUGIN_PATH" />' untuk plugin.</translation>
-<translation id="6566572652089581977">Gunakan string dukungan sederhana dalam dialog Hapus data penjelajahan.</translation>
 <translation id="6567688344210276845">Tidak dapat memuat ikon '<ph name="ICON" />' untuk tindakan laman.</translation>
 <translation id="6569050677975271054">Hanya daftar hitam statis</translation>
 <translation id="6571070086367343653">Edit kartu kredit</translation>
@@ -4509,6 +4505,7 @@ Ssst! <ph name="SHORTCUT_KEY" /> mode penyamaran mungkin berguna suatu saat nant
 <translation id="7472639616520044048">Jenis MIME:</translation>
 <translation id="7473891865547856676">Lain Kali</translation>
 <translation id="747459581954555080">Pulihkan semua</translation>
+<translation id="7474669101120914750">Setelan ini dikontrol oleh ekstensi <ph name="NAME" /></translation>
 <translation id="7474889694310679759">Keyboard untuk bahasa Inggris Kanada</translation>
 <translation id="7475671414023905704">Netscape Lost Password URL</translation>
 <translation id="7477347901712410606">Jika lupa frasa sandi, berhenti dan setel ulang Sinkronisasi melalui <ph name="BEGIN_LINK" />Google Dasbor<ph name="END_LINK" />.</translation>
@@ -5239,7 +5236,6 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="852269967951527627">Jangan izinkan situs apa pun menampilkan pemberitahuan</translation>
 <translation id="8524066305376229396">Penyimpanan tetap:</translation>
 <translation id="8525306231823319788">Layar penuh</translation>
-<translation id="852573274664085347">Pengeditan sentuh dapat dimulai dengan mengetuk bidang teks atau teks yang dipilih.</translation>
 <translation id="852605377609758011">Kartu Virtual Google Payments akan digunakan untuk transaksi ini. Kartu Virtual adalah nomor kartu baru sehingga penjual tidak dapat melihat nomor kartu kredit Anda yang sebenarnya.</translation>
 <translation id="8528962588711550376">Masuk.</translation>
 <translation id="8535005006684281994">Netscape Certificate Renewal URL</translation>

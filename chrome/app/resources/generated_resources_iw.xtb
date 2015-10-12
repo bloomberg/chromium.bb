@@ -1165,7 +1165,6 @@
 <translation id="2674170444375937751">האם אתה בטוח שברצונך להסיר דפים אלו מההיסטוריה שלך?</translation>
 <translation id="2676342370492585497">תוכן מעורב פעיל</translation>
 <translation id="2676946222714718093">מופעל ב-</translation>
-<translation id="2677924368525077324">הפעל עריכה מבוססת-מגע</translation>
 <translation id="2678063897982469759">הפוך מחדש לפעיל</translation>
 <translation id="2679385451463308372">הדפס באמצעות תיבת דו-שיח של המערכת...</translation>
 <translation id="2680208403056680091">החיבור שלך לאינטרנט נשלט על ידי גורם כלשהו</translation>
@@ -2144,7 +2143,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3972425373133383637">הישאר מחובר למידע הנחוץ לך, בכל המכשירים.</translation>
 <translation id="3974195870082915331">לחץ כדי להציג את הסיסמה</translation>
 <translation id="397703832102027365">מסיים...</translation>
-<translation id="3978194674093708182">במקום ספירת סוגי נתונים שאינם נמחקים בתיבת הדו-שיח, השתמש במחרוזת תמיכה פשוטה המקשרת למאמר עם מידע נוסף.</translation>
 <translation id="3978267865113951599">(קריסה)</translation>
 <translation id="3979395879372752341">תוסף חדש נוסף (<ph name="EXTENSION_NAME" />)</translation>
 <translation id="3979748722126423326">הפעל את <ph name="NETWORKDEVICE" /></translation>
@@ -2251,7 +2249,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4146175323503586871">‏<ph name="SERVICE_NAME" /> רוצה לבדוק אם המכשיר שלך המשתמש במערכת ההפעלה של Chrome זכאי למבצע. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="4147376274874979956">לא ניתן לגשת לקובץ.</translation>
 <translation id="4151403195736952345">השתמש בברירת מחדל גלובלית (זיהוי)</translation>
-<translation id="4152200911868329970">חלק מההגדרות שעשויות לשקף את הרגלי הגלישה |לא יימחקו|.</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{כרטיסייה אחת}two{# כרטיסיות}many{# כרטיסיות}other{# כרטיסיות}}</translation>
 <translation id="4154664944169082762">טביעות אצבע</translation>
 <translation id="4157188838832721931">השבת בקשות מהמשתמש להזין את הסיסמה של מערכת ההפעלה לפני חשיפת סיסמאות בדף הסיסמאות.</translation>
@@ -3901,7 +3898,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="656398493051028875">מוחק את "<ph name="FILENAME" />"...</translation>
 <translation id="6565108107088666812">פעולה זו מנקה נתונים מסונכרנים מכל המכשירים.</translation>
 <translation id="6566142449942033617">לא היתה אפשרות לטעון את '<ph name="PLUGIN_PATH" />' עבור פלאג אין.</translation>
-<translation id="6566572652089581977">השתמש במחרוזת תמיכה פשוטה בתיבת הדו שיח 'נקה נתוני גלישה'.</translation>
 <translation id="6567688344210276845">לא היתה אפשרות לטעון את האייקון '<ph name="ICON" />' עבור פעולת דף.</translation>
 <translation id="6569050677975271054">רשימה שחורה סטטית בלבד</translation>
 <translation id="6571070086367343653">ערוך כרטיס אשראי</translation>
@@ -4493,6 +4489,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="7472639616520044048">‏סוגי MIME:</translation>
 <translation id="7473891865547856676">לא, תודה</translation>
 <translation id="747459581954555080">שחזר הכל</translation>
+<translation id="7474669101120914750">הגדרה זו נשלטת על ידי התוסף <ph name="NAME" /></translation>
 <translation id="7474889694310679759">מקלדת אנגלית (קנדה)</translation>
 <translation id="7475671414023905704">‏כתובת אתר לסיסמה שאבדה של Netscape</translation>
 <translation id="7477347901712410606">‏אם שכחת את משפט-הסיסמה, עצור ואפס את הסינכרון דרך <ph name="BEGIN_LINK" />לוח הבקרה של Google‏<ph name="END_LINK" /></translation>
@@ -5219,7 +5216,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="852269967951527627">אל תתיר הצגה של הודעות מאף אתר</translation>
 <translation id="8524066305376229396">אחסון קבוע:</translation>
 <translation id="8525306231823319788">מסך מלא</translation>
-<translation id="852573274664085347">ניתן להתחיל עריכה במגע על ידי הקשה על שדה טקסט או על טקסט נבחר.</translation>
 <translation id="852605377609758011">‏בעסקה הזו ייעשה שימוש בכרטיס וירטואלי של Google Payments. כרטיס וירטואלי הוא מספר כרטיס חדש. באמצעות המספר הזה, המפיץ לעולם לא יראה את מספר כרטיס האשראי האמיתי.</translation>
 <translation id="8528962588711550376">מבצע כניסה.</translation>
 <translation id="8535005006684281994">‏כתובת אתר לחידוש אישור Netscape</translation>

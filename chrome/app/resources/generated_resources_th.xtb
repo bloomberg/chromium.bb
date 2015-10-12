@@ -1173,7 +1173,6 @@
 <translation id="2674170444375937751">คุณแน่ใจหรือไม่ว่าต้องการนำออกหน้าเหล่านี้ออกจากประวัติการเข้าชมของคุณ</translation>
 <translation id="2676342370492585497">เนื้อหามิกซ์ที่ใช้งานอยู่</translation>
 <translation id="2676946222714718093">กำลังเล่นบน</translation>
-<translation id="2677924368525077324">เปิดใช้งานการแก้ไขข้อความแบบการแตะ</translation>
 <translation id="2678063897982469759">เปิดการใช้งานอีกครั้ง</translation>
 <translation id="2679385451463308372">พิมพ์โดยใช้หน้าต่างระบบ…</translation>
 <translation id="2680208403056680091">กำลังมีการควบคุมการเชื่อมต่ออินเทอร์เน็ตของคุณ</translation>
@@ -2154,7 +2153,6 @@
 <translation id="3972425373133383637">เชื่อมต่อกับสิ่งที่คุณต้องทราบอยู่เสมอในอุปกรณ์ทั้งหมด</translation>
 <translation id="3974195870082915331">คลิกเพื่อแสดงรหัสผ่าน</translation>
 <translation id="397703832102027365">กำลังสิ้นสุดการทำงาน...</translation>
-<translation id="3978194674093708182">ใช้สตริงการสนับสนุนพื้นฐานที่ลิงก์ไปยังบทความที่มีข้อมูลเพิ่มเติมแทนประเภทข้อมูลการแจกแจงที่ไม่ได้ลบในกล่องโต้ตอบ</translation>
 <translation id="3978267865113951599">(ขัดข้อง)</translation>
 <translation id="3979395879372752341">เพิ่มส่วนขยายใหม่แล้ว (<ph name="EXTENSION_NAME" />)</translation>
 <translation id="3979748722126423326">เปิดการใช้งาน <ph name="NETWORKDEVICE" /></translation>
@@ -2261,7 +2259,6 @@
 <translation id="4146175323503586871"><ph name="SERVICE_NAME" /> ต้องการตรวจสอบว่าอุปกรณ์ Chrome OS ของคุณมีสิทธิ์ในข้อเสนอพิเศษไหม <ph name="MORE_INFO_LINK" /></translation>
 <translation id="4147376274874979956">ไม่สามารถเข้าถึงไฟล์</translation>
 <translation id="4151403195736952345">ใช้ค่าเริ่มต้นส่วนกลาง (ตรวจหา)</translation>
-<translation id="4152200911868329970">ระบบ|จะไม่ล้าง|การตั้งค่าบางอย่างที่อาจส่งผลถึงลักษณะการเรียกดู</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 แท็บ}other{# แท็บ}}</translation>
 <translation id="4154664944169082762">ลายนิ้วมือ</translation>
 <translation id="4157188838832721931">ปิดการแจ้งให้ผู้ใช้ป้อนรหัสผ่านระบบปฏิบัติการก่อนที่จะเปิดเผยรหัสผ่านในหน้ารหัสผ่าน</translation>
@@ -3891,7 +3888,6 @@
 <translation id="656398493051028875">กำลังลบ "<ph name="FILENAME" />"...</translation>
 <translation id="6565108107088666812">การดำเนินการนี้จะล้างข้อมูลที่ซิงค์จากอุปกรณ์ทั้งหมด</translation>
 <translation id="6566142449942033617">ไม่สามารถโหลดปลั๊กอินจาก "<ph name="PLUGIN_PATH" />"</translation>
-<translation id="6566572652089581977">ใช้สตริงการสนับสนุนพื้นฐานในกล่องโต้ตอบ "ล้างข้อมูลการท่องเว็บ"</translation>
 <translation id="6567688344210276845">ไม่สามารถโหลดไอคอน "<ph name="ICON" />" เพื่อให้เกิดการทำงานบนหน้าเว็บ</translation>
 <translation id="6569050677975271054">บัญชีดำแบบคงที่เท่านั้น</translation>
 <translation id="6571070086367343653">แก้ไขบัตรเครดิต</translation>
@@ -4490,6 +4486,7 @@
 <translation id="7472639616520044048">ชนิด MIME:</translation>
 <translation id="7473891865547856676">ไม่ ขอบคุณ</translation>
 <translation id="747459581954555080">คืนค่าทั้งหมด</translation>
+<translation id="7474669101120914750">การตั้งค่านี้ควบคุมโดยส่วนขยาย <ph name="NAME" /></translation>
 <translation id="7474889694310679759">แป้นพิมพ์ภาษาอังกฤษแคนาดา</translation>
 <translation id="7475671414023905704">URL รหัสผ่านสูญหายของ Netscape</translation>
 <translation id="7477347901712410606">หากคุณลืมข้อความรหัสผ่านของคุณ ให้หยุดและรีเซ็ตการซิงค์ผ่าน <ph name="BEGIN_LINK" />หน้าแดชบอร์ดของ Google<ph name="END_LINK" /></translation>
@@ -5219,7 +5216,6 @@
 <translation id="852269967951527627">ไม่อนุญาตให้ไซต์ใดๆ แสดงการแจ้งเตือน</translation>
 <translation id="8524066305376229396">พื้นที่จัดเก็บข้อมูลถาวร:</translation>
 <translation id="8525306231823319788">เต็มหน้าจอ</translation>
-<translation id="852573274664085347">การแก้ไขด้วยการแตะสามารถเริ่มต้นโดยการแตะบนฟิลด์ข้อความหรือข้อความที่เลือก</translation>
 <translation id="852605377609758011">จะมีการใช้บัตรเสมือน Google Payments สำหรับธุรกรรมนี้ บัตรเสมือนเป็นหมายเลขบัตรใหม่ ดังนั้นผู้ขายจะไม่มีทางเห็นหมายเลขบัตรเครดิตจริงของคุณ</translation>
 <translation id="8528962588711550376">กำลังลงชื่อเข้าใช้</translation>
 <translation id="8535005006684281994">URL การต่ออายุใบรับรองของ Netscape</translation>

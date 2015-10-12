@@ -1171,7 +1171,6 @@
 <translation id="2674170444375937751">确定要从历史记录中删除这些页吗？</translation>
 <translation id="2676342370492585497">有效的混合内容</translation>
 <translation id="2676946222714718093">当前播放设备：</translation>
-<translation id="2677924368525077324">启用触摸式文字修改功能</translation>
 <translation id="2678063897982469759">重新启用</translation>
 <translation id="2679385451463308372">使用系统对话框进行打印...</translation>
 <translation id="2680208403056680091">您的互联网连接受到控制</translation>
@@ -2145,7 +2144,6 @@
 <translation id="3972425373133383637">随时在所有设备上掌握您需要了解的最新动态。</translation>
 <translation id="3974195870082915331">点击可显示密码</translation>
 <translation id="397703832102027365">正在完成...</translation>
-<translation id="3978194674093708182">使用一个简单且会链接到某篇文章（可提供更多信息）的支持字符串，而不是列举那些在对话框中未被删除的数据类型。</translation>
 <translation id="3978267865113951599">（已崩溃）</translation>
 <translation id="3979395879372752341">已添加新扩展程序（<ph name="EXTENSION_NAME" />）</translation>
 <translation id="3979748722126423326">启用<ph name="NETWORKDEVICE" /></translation>
@@ -2252,7 +2250,6 @@
 <translation id="4146175323503586871"><ph name="SERVICE_NAME" />需要检查您的Chrome操作系统设备是否能享受优惠。<ph name="MORE_INFO_LINK" /></translation>
 <translation id="4147376274874979956">无法访问该文件。</translation>
 <translation id="4151403195736952345">使用全局默认设置（检测）</translation>
-<translation id="4152200911868329970">一些可能会反映浏览习惯的设置|不会被清除|。</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 个标签页}other{# 个标签页}}</translation>
 <translation id="4154664944169082762">指纹</translation>
 <translation id="4157188838832721931">停用“在密码页上显示密码前，提示用户输入操作系统密码”的功能。</translation>
@@ -2807,7 +2804,7 @@
 <translation id="5016865932503687142">允许用户手动强制保存密码，而不依靠密码管理器的试探法进行保存。</translation>
 <translation id="5017508259293544172">LEAP</translation>
 <translation id="5023310440958281426">请查看管理员制定的政策</translation>
-<translation id="5023943178135355362">单一滚动 <ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
+<translation id="5023943178135355362">自然滚动 <ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
 <translation id="5024856940085636730">某项操作所用的时间超出预期。要取消该操作吗？</translation>
 <translation id="5026874946691314267">不再显示此通知</translation>
 <translation id="5027550639139316293">电子邮件证书</translation>
@@ -3878,7 +3875,6 @@
 <translation id="656398493051028875">正在删除“<ph name="FILENAME" />”…</translation>
 <translation id="6565108107088666812">这会清除所有设备上的已同步数据。</translation>
 <translation id="6566142449942033617">无法加载插件的路径“<ph name="PLUGIN_PATH" />”。</translation>
-<translation id="6566572652089581977">在“清除浏览数据”对话框中使用简单的支持字符串。</translation>
 <translation id="6567688344210276845">无法加载网页操作的“<ph name="ICON" />”图标。</translation>
 <translation id="6569050677975271054">仅限静态黑名单</translation>
 <translation id="6571070086367343653">修改信用卡</translation>
@@ -4478,6 +4474,7 @@
 <translation id="7472639616520044048">MIME 类型：</translation>
 <translation id="7473891865547856676">不，谢谢</translation>
 <translation id="747459581954555080">全部恢复</translation>
+<translation id="7474669101120914750">此设置由扩展程序“<ph name="NAME" />”控制</translation>
 <translation id="7474889694310679759">英语（加拿大）键盘</translation>
 <translation id="7475671414023905704">Netscape 忘了密码网址</translation>
 <translation id="7477347901712410606">如果您忘记了密码，请通过 <ph name="BEGIN_LINK" />Google 信息中心<ph name="END_LINK" />停止同步并重置。</translation>
@@ -5203,7 +5200,6 @@
 <translation id="852269967951527627">不允许任何网站显示通知</translation>
 <translation id="8524066305376229396">持久存储：</translation>
 <translation id="8525306231823319788">全屏</translation>
-<translation id="852573274664085347">点按文本字段或选中的文本即可开始触摸式修改。</translation>
 <translation id="852605377609758011">此交易将使用 Google Payments 虚拟卡付款。虚拟卡是一个新卡号，因此卖家绝对看不到您实际的信用卡卡号。</translation>
 <translation id="8528962588711550376">正在登录。</translation>
 <translation id="8535005006684281994">Netscape 证书续订网址</translation>

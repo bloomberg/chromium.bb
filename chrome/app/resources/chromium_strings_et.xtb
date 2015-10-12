@@ -54,7 +54,6 @@ ja valed mandaadid. Kas proovib ründaja teeselda, et on <ph name="SITE" />, võ
 <translation id="2673087257647337101">Rakendus on peaaegu ajakohane! Värskendamise lõpuleviimiseks taaskäivitage Chromium.</translation>
 <translation id="2685838254101182273">Chromiumi värskendamine peatati ja teie operatsioonisüsteemi seda versiooni ei toetata enam.</translation>
 <translation id="2705212601509139398">See sait kasutab pistikprogrammi Chromium Frame, mille tugi peagi lõpeb. Desinstallige see ja laadige alla ühilduv brauser.</translation>
-<translation id="2718390899429598676">Turvalisuse suurendamiseks krüptib Chromium teie andmed.</translation>
 <translation id="2732467638532545152">Teie arvuti käitab Microsoft Windowsi vana versiooni, mis ei suuda töödelda selle veebisaidi turvasertifikaati. Seetõttu ei saa Chromium tuvastada, kas sertifikaat pärineb saidilt <ph name="SITE" /> või kelleltki võrgus, kes teeskleb saiti <ph name="SITE" />. Viige arvuti üle uuemale Windowsi versioonile.</translation>
 <translation id="2770231113462710648">Asenda vaikebrauser:</translation>
 <translation id="2801146392936645542"><ph name="FILE_NAME" /> on pahatahtlik ja Chromium on selle blokeerinud.</translation>
@@ -138,7 +137,6 @@ ja valed mandaadid. Kas proovib ründaja teeselda, et on <ph name="SITE" />, võ
 <translation id="5427571867875391349">Määra Chromium vaikebrauseriks</translation>
 <translation id="5466153949126434691">Chromium teeb värskendused automaatselt, nii et kasutate alati uusimat versiooni. Kui allalaadimine on lõppenud, siis Chrome taaskäivitub ja võite alustada kasutamist.</translation>
 <translation id="549669000822060376">Oodake, kuni Chromium installib uusimad süsteemivärskendused.</translation>
-<translation id="5531349711857992002">Selle veebisaidi sertifikaadiahel sisaldab vähemalt ühte sertifikaati, mis allkirjastati ebasoovitatava allkirja algoritmiga, mis põhineb SHA-1-l.</translation>
 <translation id="5563479599352954471">Otsing ühe puudutusega</translation>
 <translation id="5620765574781326016">Lisateave veebisaitide teemade kohta ilma lehelt lahkumata.</translation>
 <translation id="5772805321386874569">(nõuab Chromiumi <ph name="BEGIN_BUTTON" />taaskäivitamist<ph name="END_BUTTON" />)</translation>
@@ -191,7 +189,6 @@ On võimalik, et mõni funktsioon ei ole saadaval. Määrake muu profiilikataloo
 <translation id="705851970750939768">Värskenda Chromiumi</translation>
 <translation id="7064610482057367130">Ei leitud Chromiumi installi, mida värskendada.</translation>
 <translation id="7066436765290594559">Chromium OS ei saanud teie andmeid sünkroonida. Värskendage oma sünkroonimisparooli.</translation>
-<translation id="7090955637699162649">Chromium võib kasutada <ph name="BEGIN_LINK" />veebiteenuseid<ph name="END_LINK" /> teie sirvimiskogemuse täiustamiseks. Võite need teenused soovi korral igal ajal välja lülitada.</translation>
 <translation id="7138853919861947730">Chromium võib kasutada veebiteenuseid sirvimiskogemuse täiustamiseks.</translation>
 <translation id="7162152143154757523">Chromium võib õigekirjakontrolli täiustada, saates brauserisse sisestatud teksti Google'i serveritesse ja võimaldades kasutada sama õigekirjakontrolli tehnoloogiat, mida kasutatakse Google'i otsingus.</translation>
 <translation id="7196020411877309443">Miks mulle seda näidatakse?</translation>

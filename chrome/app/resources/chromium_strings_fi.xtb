@@ -53,7 +53,6 @@
 <translation id="2673087257647337101">Lähes valmista! Viimeistele päivitys käynnistämällä Chromium uudelleen.</translation>
 <translation id="2685838254101182273">Chromium on lakannut päivittymästä, eikä se enää tue käyttöjärjestelmäsi tätä versiota.</translation>
 <translation id="2705212601509139398">Tämä sivusto käyttää Chromium-kehyslaajennusta, jonka tukeminen lopetetaan pian. Poista se ja lataa yhteensopiva selain.</translation>
-<translation id="2718390899429598676">Chromium lisää suojausta salaamalla tietosi.</translation>
 <translation id="2732467638532545152">Tietokoneesi Microsoft Windowsin versio ei voi käsitellä verkkosivustosi suojausvarmennetta. Siksi Chromium ei voi päätellä, onko varmenne peräisin sivustolta <ph name="SITE" /> vai verkostosi sisäiseltä taholta, joka esittää olevansa <ph name="SITE" />. Päivitä tietokoneesi Windows-versio uudempaan.</translation>
 <translation id="2770231113462710648">Vaihda oletusselaimeksi:</translation>
 <translation id="2801146392936645542"><ph name="FILE_NAME" /> on haitallinen, ja Chromium on estänyt sen.</translation>
@@ -137,7 +136,6 @@
 <translation id="5427571867875391349">Aseta Chromium oletusselaimeksi</translation>
 <translation id="5466153949126434691">Chromium päivittyy automaattisesti, joten käytössäsi on aina uusin versio. Kun lataus on valmis, Chromium käynnistyy uudelleen ja voit aloittaa käytön.</translation>
 <translation id="549669000822060376">Odota hetki, Chromium asentaa uusimpia järjestelmäpäivityksiä.</translation>
-<translation id="5531349711857992002">Verkkosivuston varmennusketju sisältää ainakin yhden varmenteen, joka on allekirjoitettu vanhentuneella SHA-1-pohjaisella algoritmilla.</translation>
 <translation id="5563479599352954471">Etsi yhdellä kosketuksella</translation>
 <translation id="5620765574781326016">Tutustu verkkosivuston aiheisiin poistumatta sivulta.</translation>
 <translation id="5772805321386874569">(vaatii Chromiumin <ph name="BEGIN_BUTTON" />uudelleenkäynnistyksen<ph name="END_BUTTON" />)</translation>
@@ -190,7 +188,6 @@ Kaikki ominaisuudet eivät ehkä ole käytettävissä. Määritä jokin muu prof
 <translation id="705851970750939768">Päivitä Chromium</translation>
 <translation id="7064610482057367130">Päivitettävää Chromium-asennusta ei löytynyt.</translation>
 <translation id="7066436765290594559">Chromium-käyttöjärjestelmä ei voi synkronoida tietoja. Päivitä synkronoinnin tunnuslause.</translation>
-<translation id="7090955637699162649">Chromium voi käyttää <ph name="BEGIN_LINK" />verkkopalveluita<ph name="END_LINK" /> selauskokemuksen parantamiseen. Voit halutessasi poistaa palvelut käytöstä.</translation>
 <translation id="7138853919861947730">Chromium voi käyttää verkkopalveluita parantaakseen selauskokemusta.</translation>
 <translation id="7162152143154757523">Chromium voi tarjota älykkäämmän oikeinkirjoituksen tarkistuspalvelun lähettämällä selaimeen kirjoittamasi tekstin Googlen palvelimille. Näin voit käyttää Google-haun kanssa samaa oikeinkirjoituksen tarkistustekniikkaa.</translation>
 <translation id="7196020411877309443">Miksi minulle näytetään tämä ilmoitus?</translation>

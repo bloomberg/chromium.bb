@@ -1173,7 +1173,6 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="2674170444375937751">Er du sikker på at du vil slette disse sidene fra loggen?</translation>
 <translation id="2676342370492585497">Aktivt blandet innhold</translation>
 <translation id="2676946222714718093">Spilles av på</translation>
-<translation id="2677924368525077324">Aktiver berøringsbasert tekstredigering</translation>
 <translation id="2678063897982469759">Aktiver på nytt</translation>
 <translation id="2679385451463308372">Skriv ut ved bruk av systemdialogboksen</translation>
 <translation id="2680208403056680091">Internett-tilkoblingen din kontrolleres</translation>
@@ -2150,7 +2149,6 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="3972425373133383637">Hold deg oppdatert på at du trenger å vite, på alle enheter.</translation>
 <translation id="3974195870082915331">Klikk for å vise passord</translation>
 <translation id="397703832102027365">Fullfører …</translation>
-<translation id="3978194674093708182">I stedet for å spesifisere hvilke datatyper som ikke skal slettes, i dialogboksen, bruker du en enkel støttestreng med en link til en artikkel med mer informasjon.</translation>
 <translation id="3978267865113951599">(Krasjet)</translation>
 <translation id="3979395879372752341">Ny utvidelse lagt til (<ph name="EXTENSION_NAME" />)</translation>
 <translation id="3979748722126423326">Slå på <ph name="NETWORKDEVICE" /></translation>
@@ -2257,7 +2255,6 @@ Alle brukere må logge av for å fortsette.</translation>
 <translation id="4146175323503586871"><ph name="SERVICE_NAME" /> ønsker å sjekke om Chrome OS-enheten din er kvalifisert for et tilbud. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="4147376274874979956">Kunne ikke få tilgang til filen.</translation>
 <translation id="4151403195736952345">Bruk global standard (oppdag)</translation>
-<translation id="4152200911868329970">Enkelte innstillinger som kan gjenspeile nettleservaner, |blir ikke fjernet|.</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 fane}other{# faner}}</translation>
 <translation id="4154664944169082762">Fingeravtrykk</translation>
 <translation id="4157188838832721931">Deaktiver forespørsel til brukeren om å oppgi OS-passordet før passord avsløres på passordsiden.</translation>
@@ -3900,7 +3897,6 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="656398493051028875">Sletter «<ph name="FILENAME" />» ...</translation>
 <translation id="6565108107088666812">Dette fjerner synkroniserte data fra alle enheter.</translation>
 <translation id="6566142449942033617">Kan ikke laste inn «<ph name="PLUGIN_PATH" />» for programtillegg.</translation>
-<translation id="6566572652089581977">Bruk en enkel støttestreng i dialogboksen «Slett nettleserdata».</translation>
 <translation id="6567688344210276845">Kan ikke laste inn ikonet «<ph name="ICON" />» for sidehandling.</translation>
 <translation id="6569050677975271054">Bare statisk svarteliste</translation>
 <translation id="6571070086367343653">Rediger kredittkort</translation>
@@ -4502,6 +4498,7 @@ Forresten: Inkognitomodus (<ph name="SHORTCUT_KEY" />) kan være kjekt neste gan
 <translation id="7472639616520044048">MIME-typer:</translation>
 <translation id="7473891865547856676">Nei takk</translation>
 <translation id="747459581954555080">Gjenopprett alt</translation>
+<translation id="7474669101120914750">Denne innstillingen styres av utvidelsen <ph name="NAME" /></translation>
 <translation id="7474889694310679759">Engelsk tastatur (Canada)</translation>
 <translation id="7475671414023905704">Nettadresse for mistet passord – Netscape</translation>
 <translation id="7477347901712410606">Hvis du har glemt passordet ditt, stopper og tilbakestiller du synkroniseringen via <ph name="BEGIN_LINK" />Google Oversikt<ph name="END_LINK" />.</translation>
@@ -5232,7 +5229,6 @@ Oppbevar nøkkelfilen på et trygt sted. Du får bruk for den når du skal oppre
 <translation id="852269967951527627">Ikke tillat at nettsteder viser varsler</translation>
 <translation id="8524066305376229396">Permanent lagring:</translation>
 <translation id="8525306231823319788">Full skjerm</translation>
-<translation id="852573274664085347">Berøringsredigering kan startes ved å trykke på et tekstfelt eller en valgt tekst.</translation>
 <translation id="852605377609758011">Et virtuelt Google Payments-kort blir brukt i denne transaksjonen. Et virtuelt kort er et nytt kortnummer, så selgeren ser aldri det virkelige kredittkortnummeret ditt.</translation>
 <translation id="8528962588711550376">Logger på.</translation>
 <translation id="8535005006684281994">Fornying av Netscape-sertifikat for nettadresse</translation>

@@ -1172,7 +1172,6 @@ No creo que este sitio deba estar bloqueado.</translation>
 <translation id="2674170444375937751">¿Estás seguro de que deseas eliminar estas páginas del historial?</translation>
 <translation id="2676342370492585497">Contenido mixto activo</translation>
 <translation id="2676946222714718093">Reproduciendo en</translation>
-<translation id="2677924368525077324">Habilitar la edición de texto táctil</translation>
 <translation id="2678063897982469759">Permitir nuevamente</translation>
 <translation id="2679385451463308372">Imprimir utilizando el diálogo del sistema…</translation>
 <translation id="2680208403056680091">Se está controlando tu conexión a Internet</translation>
@@ -2153,7 +2152,6 @@ No creo que este sitio deba estar bloqueado.</translation>
 <translation id="3972425373133383637">Mantente conectado con toda la información que necesitas, en todos los dispositivos.</translation>
 <translation id="3974195870082915331">Haz clic para mostrar la contraseña</translation>
 <translation id="397703832102027365">Finalizando...</translation>
-<translation id="3978194674093708182">En lugar de enumerar los tipos de datos que no se borran en el cuadro de diálogo, usa una string de soporte simple que se vincule con un artículo que tenga más información.</translation>
 <translation id="3978267865113951599">(Falló)</translation>
 <translation id="3979395879372752341">Se agregó una extensión nueva (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="3979748722126423326">Habilitar <ph name="NETWORKDEVICE" /></translation>
@@ -2260,7 +2258,6 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="4146175323503586871"><ph name="SERVICE_NAME" /> desea comprobar si tu dispositivo con Sistema operativo Chrome es elegible para una oferta. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="4147376274874979956">No es posible acceder al archivo.</translation>
 <translation id="4151403195736952345">Utilizar opción predeterminada global (detectar)</translation>
-<translation id="4152200911868329970">|No se borrarán| algunas opciones de configuración que podrían reflejar hábitos de navegación.</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 pestaña}other{# pestañas}}</translation>
 <translation id="4154664944169082762">Huellas digitales</translation>
 <translation id="4157188838832721931">Inhabilita la acción de solicitar al usuario la contraseña del sistema operativo antes de mostrar las contraseñas en la página correspondiente.</translation>
@@ -3905,7 +3902,6 @@ Presiona cualquier tecla para seguir con navegando.</translation>
 <translation id="656398493051028875">Eliminando "<ph name="FILENAME" />"…</translation>
 <translation id="6565108107088666812">Esto borra los datos sincronizados de todos los dispositivos.</translation>
 <translation id="6566142449942033617">No se pudo cargar '<ph name="PLUGIN_PATH" />' para el complemento.</translation>
-<translation id="6566572652089581977">Usa una string de soporte simple en el cuadro de diálogo "Borrar datos de navegación".</translation>
 <translation id="6567688344210276845">No se pudo cargar el ícono '<ph name="ICON" />' para las acciones de la página.</translation>
 <translation id="6569050677975271054">Lista negra estática únicamente</translation>
 <translation id="6571070086367343653">Editar tarjeta de crédito</translation>
@@ -4505,6 +4501,7 @@ Presiona cualquier tecla para seguir con navegando.</translation>
 <translation id="7472639616520044048">Tipos MIME:</translation>
 <translation id="7473891865547856676">No, gracias</translation>
 <translation id="747459581954555080">Restaurar todo</translation>
+<translation id="7474669101120914750">La extensión <ph name="NAME" /> controla esta configuración</translation>
 <translation id="7474889694310679759">Teclado en inglés de Canadá</translation>
 <translation id="7475671414023905704">URL de contraseña perdida de Netscape</translation>
 <translation id="7477347901712410606">Si has olvidado tu frase de contraseña, detente y reinicia la sincronización a través del <ph name="BEGIN_LINK" />panel de control de Google<ph name="END_LINK" />.</translation>
@@ -5235,7 +5232,6 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="852269967951527627">No permitir que los sitios muestren notificaciones</translation>
 <translation id="8524066305376229396">Almacenamiento permanente:</translation>
 <translation id="8525306231823319788">Pantalla completa</translation>
-<translation id="852573274664085347">La edición táctil se puede iniciar tocando un campo de texto o una parte de texto seleccionada.</translation>
 <translation id="852605377609758011">Se usará una tarjeta virtual de Google Payments para la transacción. Una tarjeta virtual te brinda un nuevo número de tarjeta para que el vendedor no tenga acceso al número real de tu tarjeta de crédito.</translation>
 <translation id="8528962588711550376">Accediendo.</translation>
 <translation id="8535005006684281994">URL de renovación del certificado Netscape</translation>

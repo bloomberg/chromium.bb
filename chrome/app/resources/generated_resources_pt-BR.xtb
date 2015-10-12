@@ -1175,7 +1175,6 @@ Não acho que este site deva ser bloqueado.</translation>
 <translation id="2674170444375937751">Tem certeza de que deseja excluir essas páginas do seu histórico?</translation>
 <translation id="2676342370492585497">Conteúdo misto ativo</translation>
 <translation id="2676946222714718093">Reproduzindo em</translation>
-<translation id="2677924368525077324">Ativar edição de texto baseada em toque</translation>
 <translation id="2678063897982469759">Reativar</translation>
 <translation id="2679385451463308372">Imprimir usando a caixa de diálogo do sistema...</translation>
 <translation id="2680208403056680091">Sua conexão com a Internet está sendo controlada</translation>
@@ -2155,7 +2154,6 @@ Não acho que este site deva ser bloqueado.</translation>
 <translation id="3972425373133383637">Fique conectado com o que você precisa saber, em todos os dispositivos.</translation>
 <translation id="3974195870082915331">Clique para exibir senha</translation>
 <translation id="397703832102027365">Finalizando...</translation>
-<translation id="3978194674093708182">Em vez de enumerar na caixa de diálogo os tipos de dados que não são excluídos, use uma string de suporte simples com um link para um artigo com mais informações.</translation>
 <translation id="3978267865113951599">(Travou)</translation>
 <translation id="3979395879372752341">Nova extensão adicionada (<ph name="EXTENSION_NAME" />)</translation>
 <translation id="3979748722126423326">Ativar <ph name="NETWORKDEVICE" /></translation>
@@ -2262,7 +2260,6 @@ Todos os usuários devem sair para continuar.</translation>
 <translation id="4146175323503586871"><ph name="SERVICE_NAME" /> deseja verificar se seu dispositivo Chrome OS está qualificado para uma oferta. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="4147376274874979956">Não foi possível acessar o arquivo.</translation>
 <translation id="4151403195736952345">Usar padrão global (Detectar)</translation>
-<translation id="4152200911868329970">Algumas configurações que podem refletir os hábitos de navegação |não serão apagadas|.</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 guia}one{# guias}other{# guias}}</translation>
 <translation id="4154664944169082762">Assinaturas digitais</translation>
 <translation id="4157188838832721931">Desativar a solicitação da senha do SO do usuário antes de revelar senhas na página "Senhas".</translation>
@@ -3906,7 +3903,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="656398493051028875">Excluindo "<ph name="FILENAME" />"...</translation>
 <translation id="6565108107088666812">Isso apaga os dados sincronizados de todos os dispositivos.</translation>
 <translation id="6566142449942033617">Não foi possível carregar "<ph name="PLUGIN_PATH" />" para o plug-in.</translation>
-<translation id="6566572652089581977">Use uma string de suporte simples na caixa de diálogo "Limpar dados de navegação".</translation>
 <translation id="6567688344210276845">Não foi possível carregar o ícone "<ph name="ICON" />" para a ação da página.</translation>
 <translation id="6569050677975271054">Apenas lista negra estática</translation>
 <translation id="6571070086367343653">Editar cartão de crédito</translation>
@@ -4507,6 +4503,7 @@ Dica: o modo de navegação anônimo <ph name="SHORTCUT_KEY" /> pode ser útil d
 <translation id="7472639616520044048">Tipos MIME:</translation>
 <translation id="7473891865547856676">Não, obrigado</translation>
 <translation id="747459581954555080">Restaurar todas</translation>
+<translation id="7474669101120914750">Esta configuração é controlada pela extensão <ph name="NAME" /></translation>
 <translation id="7474889694310679759">Teclado canadense (inglês)</translation>
 <translation id="7475671414023905704">URL da senha perdida do Netscape</translation>
 <translation id="7477347901712410606">Caso tenha esquecido sua senha, pare e reinicie a sincronização através do <ph name="BEGIN_LINK" />Painel do Google<ph name="END_LINK" />.</translation>
@@ -5237,7 +5234,6 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="852269967951527627">Não permitir que nenhum site exiba notificações</translation>
 <translation id="8524066305376229396">Armazenamento persistente:</translation>
 <translation id="8525306231823319788">Tela cheia</translation>
-<translation id="852573274664085347">A edição por toque pode ser iniciada tocando em um campo de texto ou em um texto selecionado.</translation>
 <translation id="852605377609758011">O cartão virtual do Google Payments será usado para essa transação. Um cartão virtual é um novo número de cartão para que o vendedor nunca veja o número real do seu cartão de crédito.</translation>
 <translation id="8528962588711550376">Fazendo login.</translation>
 <translation id="8535005006684281994">URL da renovação do certificado do Netscape</translation>

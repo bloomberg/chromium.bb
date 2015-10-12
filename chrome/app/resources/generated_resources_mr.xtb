@@ -1181,7 +1181,6 @@
 <translation id="2674170444375937751">आपली खात्री आहे की आपण ही पृष्ठे आपल्‍या इतिहासातून हटवू इच्छिता?</translation>
 <translation id="2676342370492585497">सक्रिय मिश्रित सामग्री</translation>
 <translation id="2676946222714718093">यावर प्ले होत आहे</translation>
-<translation id="2677924368525077324">स्पर्श आधारित मजकूर संपादन सक्षम करा</translation>
 <translation id="2678063897982469759">पुन्हा-सक्षम करा</translation>
 <translation id="2679385451463308372">सिस्टम संवाद वापरून मुद्रित करा…</translation>
 <translation id="2680208403056680091">आपले इंटरनेट कनेक्शन नियंत्रित केले जात आहे</translation>
@@ -2164,7 +2163,6 @@
 <translation id="3972425373133383637">सर्व डिव्हाइसेसवर, आपल्याला काय माहित असणे आवश्यक आहे त्यासाठी कनेक्ट केलेले रहा.</translation>
 <translation id="3974195870082915331">संकेतशब्द दर्शविण्यासाठी क्लिक करा</translation>
 <translation id="397703832102027365">पूर्ण करीत आहे...</translation>
-<translation id="3978194674093708182">संवादामधील न हटविलेल्या डेटा प्रकारांची गणना करण्याऐवजी, अधिक माहिती असलेल्या एखाद्या लेखाशी दुवा साधणारी एक साधी समर्थन स्ट्रिंग वापरा.</translation>
 <translation id="3978267865113951599">(क्रॅश झाले)</translation>
 <translation id="3979395879372752341">नवीन विस्तार जोडला (<ph name="EXTENSION_NAME" />)</translation>
 <translation id="3979748722126423326"><ph name="NETWORKDEVICE" /> सक्षम करा</translation>
@@ -2270,7 +2268,6 @@
 <translation id="4146175323503586871">ऑफरकरिता आपले Chrome OS डिव्हाइस पात्र असल्यास हे <ph name="SERVICE_NAME" /> तपासू इच्छिते. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="4147376274874979956">फाइलमध्ये प्रवेश करण्‍यास अक्षम.</translation>
 <translation id="4151403195736952345">जागतिक डीफॉल्‍ट (शोधणे) वापरा</translation>
-<translation id="4152200911868329970">काही सेटिंग्ज ज्या ब्राउझिंग सवयी प्रभावित करू शकतात |साफ केल्या जाणार नाहीत|.</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 टॅब}one{# टॅब}other{# टॅब}}</translation>
 <translation id="4154664944169082762">बोटाचा ठसा</translation>
 <translation id="4157188838832721931">वापरकर्त्‍यांना संकेतशब्‍द पृष्‍ठावरील संकेतशब्‍द उघड होण्‍यापूर्वी त्‍यांच्‍या OS संकेतशब्‍दासाठी सूचना देणे अक्षम करा.</translation>
@@ -3917,7 +3914,6 @@
 <translation id="656398493051028875">"<ph name="FILENAME" />" हटवत आहे...</translation>
 <translation id="6565108107088666812">हे सर्व डिव्हाइसेसवरून संकालित केलेला डेटा साफ करेल.</translation>
 <translation id="6566142449942033617">प्लगइनसाठी '<ph name="PLUGIN_PATH" />' लोड करणे शक्य नाही.</translation>
-<translation id="6566572652089581977">ब्राउझ केलेला डेटा साफ करा संवादमधील एक साधी समर्थन स्ट्रिंग वापरा.</translation>
 <translation id="6567688344210276845">पृष्ठ क्रियांसाठी प्रतीक '<ph name="ICON" />' लोड करणे शक्य नाही.</translation>
 <translation id="6569050677975271054">केवळ स्थिर काळीसूची</translation>
 <translation id="6571070086367343653">क्रेडिट कार्ड संपादित करा</translation>
@@ -4525,6 +4521,7 @@
 <translation id="7472639616520044048">MIME प्रकार:</translation>
 <translation id="7473891865547856676">नाही धन्यवाद</translation>
 <translation id="747459581954555080">सर्व पुनर्संचयित करा</translation>
+<translation id="7474669101120914750">ही सेटिंग <ph name="NAME" /> विस्तारद्वारे नियंत्रित केलेली आहे</translation>
 <translation id="7474889694310679759">कॅनेडियन इंग्रजी कीबोर्ड</translation>
 <translation id="7475671414023905704">Netscape संकेतशब्द URL गमावली</translation>
 <translation id="7477347901712410606">आपण आपला सांकेतिक वाक्यांश विसरला असल्यास, थांबा आणि <ph name="BEGIN_LINK" />Google डॅशबोर्ड<ph name="END_LINK" /> द्वारे समक्रमण रीसेट करा.</translation>
@@ -5254,7 +5251,6 @@
 <translation id="852269967951527627">सूचना दर्शविण्यासाठी कोणत्याही साइटला अनुमती देऊ नका</translation>
 <translation id="8524066305376229396">सातत्यपूर्ण संचयन:</translation>
 <translation id="8525306231823319788">पूर्ण स्क्रीन</translation>
-<translation id="852573274664085347">एका मजकूरफील्डवर किंवा एका निवडलेल्या मजकुरावर टॅप करून स्पर्श संपादनाचा प्रारंभ केला जाऊ शकतो.</translation>
 <translation id="852605377609758011">या व्यवहारासाठी Google Payments व्हर्च्युअल कार्ड वापरले जाईल. व्हर्च्युअल कार्ड हा एक नवीन कार्ड नंबर आहे म्हणून विक्रेता आपला खरा क्रेडिट कार्ड नंबर कधीही पहात नाही.</translation>
 <translation id="8528962588711550376">साइन इन करत आहे.</translation>
 <translation id="8535005006684281994">Netscape प्रमाणपत्र नूतनीकरण URL</translation>

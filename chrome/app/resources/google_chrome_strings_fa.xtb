@@ -104,7 +104,6 @@
 <translation id="4458285410772214805">لطفاً از سیستم خارج شوید و دوباره وارد آن شوید تا این تغییر اعمال شود.</translation>
 <translation id="4480040274068703980">‏به دلیل وجود یک خطای ورود به سیستم، سیستم‌عامل Chrome قادر به همگام‌سازی داده‌هایتان نبود.</translation>
 <translation id="4513711165509885787">‏جزئیات صورت‌حساب شما در Chrome ذخیره شده است.</translation>
-<translation id="4519152997629025674">‏ممکن است Google Chrome برای بهبود تجربه مرورتان، از <ph name="BEGIN_LINK" />سرویس‌های وب<ph name="END_LINK" /> استفاده کند. می‌توانید در هر زمانی این سرویس‌ها را به‌صورت اختیاری غیرفعال کنید.</translation>
 <translation id="4561051373932531560">‏Google Chrome به شما اجازه می‌دهد بر روی شماره تلفن روی وب کلیک کرده و از طریق Skype تماس بگیرید!</translation>
 <translation id="4567424176335768812">به عنوان <ph name="USER_EMAIL_ADDRESS" /> وارد سیستم شده‌اید. اکنون می‌توانید به نشانک‌ها، سابقه و دیگر تنظیماتتان در همه دستگاه‌هایی که با آنها به سیستم وارد شده‌اید، دسترسی یابید.</translation>
 <translation id="4631713731678262610">‏پنهان در منوی Chrome</translation>
@@ -135,7 +134,6 @@
 <translation id="5430073640787465221">‏فایل تنظیمات برگزیده شما خراب یا نامعتبر است. Google Chrome نمی‌تواند تنظیمات شما را بازیابی کند.</translation>
 <translation id="5453904507266736060">‏اجازه به Google Chrome برای اجرا در پس‌زمینه</translation>
 <translation id="5495581687705680288">‏مدول های بارگیری شده در Google Chrome</translation>
-<translation id="5531349711857992002">‏زنجیره گواهینامه برای این وب‌سایت حاوی حداقل یک گواهینامه است که با استفاده از الگوریتم امضای منسوخ مبتنی بر SHA-1 امضا شده است.</translation>
 <translation id="556024056938947818">‏Google Chrome می‌خواهد گذرواژه‌ها را نمایش دهد.</translation>
 <translation id="5563479599352954471">جستجو فقط با یک تماس</translation>
 <translation id="5566025111015594046">‏Google Chrome (ورودی mDNS)</translation>
@@ -168,7 +166,6 @@
 <translation id="6235018212288296708">‏قانون ورودی برای Google Chrome به منظور اجازه به ترافیک mDNS.</translation>
 <translation id="6236285698028833233">‏Google Chrome به‌روزرسانی را متوقف کرده است و دیگر از این نسخه سیستم عامل پشتیبانی نمی‌کند.</translation>
 <translation id="629218512217695915">‏استفاده از گذرواژه ایجاد شده توسط Chrome</translation>
-<translation id="6368805772029492593">‏برای امنیت بیشتر، Google Chrome داده‌های شما را رمزگذاری می‌کند.</translation>
 <translation id="6368958679917195344">‏Chrome OS با یک <ph name="BEGIN_LINK_CROS_OSS" />نرم‌افزار منبع آزاد<ph name="END_LINK_CROS_OSS" /> دیگر امکان‌پذیر است.</translation>
 <translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{‏در حال حاضر یک دانلود در حال انجام است. آیا می‌خواهید دانلود را لغو کنید و از Google Chrome خارج شوید؟}one{‏در حال حاضر # دانلود در حال انجام است. آیا می‌خواهید دانلود را لغو کنید و از Google Chrome خارج شوید؟}other{‏در حال حاضر # دانلود در حال انجام است. آیا می‌خواهید دانلودها را لغو کنید و از Google Chrome خارج شوید؟}}</translation>
 <translation id="6598387184982954187">‏شما از <ph name="PROFILE_EMAIL" /> برای همگام‌سازی موارد Chrome خودتان استفاده می‌کنید. برای به‌روزرسانی تنظیمات ترجیحی همگام‌سازی‌تان یا استفاده از Chrome بدون حساب Google، به <ph name="SETTINGS_LINK" /> مراجعه کنید.</translation>

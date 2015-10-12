@@ -104,7 +104,6 @@
 <translation id="4458285410772214805">โปรดออกจากระบบ และลงชื่อเข้าใช้อีกครั้งเพื่อให้การเปลี่ยนแปลงนี้มีผล</translation>
 <translation id="4480040274068703980">Chrome OS ไม่สามารถซิงค์ข้อมูลของคุณเนื่องจากเกิดข้อผิดพลาดในการลงชื่อเข้าใช้</translation>
 <translation id="4513711165509885787">รายละเอียดการเรียกเก็บเงินของคุณได้ถูกบันทึกไว้ใน Chrome</translation>
-<translation id="4519152997629025674">Google Chrome อาจใช้<ph name="BEGIN_LINK" />บริการเว็บ<ph name="END_LINK" />เพื่อปรับปรุงประสบการณ์ท่องเว็บของคุณ คุณสามารถเลือกปิดใช้บริการดังกล่าวได้ทุกเมื่อ</translation>
 <translation id="4561051373932531560">Google Chrome ทำให้คุณสามารถคลิกที่หมายเลขโทรศัพท์บนเว็บแล้วโทรหาด้วย Skype!</translation>
 <translation id="4567424176335768812">คุณกำลังลงชื่อเข้าใช้เป็น <ph name="USER_EMAIL_ADDRESS" /> ตอนนี้คุณสามารถเข้าถึงบุ๊กมาร์ก ประวัติการเข้าชม และการตั้งค่าอื่นๆ บนอุปกรณ์ทั้งหมดที่ลงชื่อเข้าใช้</translation>
 <translation id="4631713731678262610">ซ่อนในเมนู Chrome</translation>
@@ -135,7 +134,6 @@
 <translation id="5430073640787465221">ไฟล์ค่ากำหนดของคุณขัดข้องหรือไม่ถูกต้อง Google Chrome ไม่สามารถกู้คืนการตั้งค่าของคุณได้</translation>
 <translation id="5453904507266736060">ให้ Google Chrome ทำงานในเบื้องหลัง</translation>
 <translation id="5495581687705680288">โมดูลที่โหลดใน Google Chrome</translation>
-<translation id="5531349711857992002">ห่วงโซ่ประกาศนียบัตรของเว็บไซต์นี้ประกอบด้วยประกาศนียบัตรอย่างน้อย 1 รายการที่ลงนามโดยใช้อัลกอริทึมลายเซ็นซึ่งอิงตาม SHA-1 ที่เลิกใช้งานแล้ว</translation>
 <translation id="556024056938947818">Google Chrome กำลังพยายามแสดงรหัสผ่าน</translation>
 <translation id="5563479599352954471">ค้นหาด้วยการแตะเพียงครั้งเดียว</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
@@ -169,7 +167,6 @@
 <translation id="6235018212288296708">กฎขาเข้าสำหรับ Google Chrome เพื่ออนุญาตการเข้าชมแบบ mDNS</translation>
 <translation id="6236285698028833233">Google Chrome ได้หยุดการอัปเดต และไม่สนับสนุนระบบปฏิบัติการเวอร์ชันนี้อีกต่อไป</translation>
 <translation id="629218512217695915">ใช้รหัสผ่านที่ Chrome สร้างขึ้น</translation>
-<translation id="6368805772029492593">เพื่อเพิ่มความปลอดภัยให้มากยิ่งขึ้น Google Chrome จะเข้ารหัสข้อมูลของคุณ</translation>
 <translation id="6368958679917195344">Chrome OS เกิดขึ้นได้ด้วยการสนับสนุนจาก<ph name="BEGIN_LINK_CROS_OSS" />ซอฟต์แวร์โอเพนซอร์ส<ph name="END_LINK_CROS_OSS" />เพิ่มเติม</translation>
 <translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{ขณะนี้อยู่ระหว่างการดาวน์โหลด 1 รายการ คุณต้องการยกเลิกการดาวน์โหลดและออกจาก Google Chrome ไหม}other{ขณะนี้อยู่ระหว่างการดาวน์โหลด # รายการ คุณต้องการยกเลิกการดาวน์โหลดและออกจาก Google Chrome ไหม}}</translation>
 <translation id="6598387184982954187">คุณกำลังใช้ <ph name="PROFILE_EMAIL" /> ในการซิงค์ข้อมูลใน Chrome หากต้องการอัปเดตค่ากำหนดการซิงค์หรือใช้ Chrome โดยไม่มีบัญชี Google โปรดไปที่ <ph name="SETTINGS_LINK" /></translation>

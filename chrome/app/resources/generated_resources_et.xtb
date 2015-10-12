@@ -1175,7 +1175,6 @@ Ma arvan, et see sait ei tohiks olla blokeeritud.</translation>
 <translation id="2674170444375937751">Olete kindel, et soovite need leheküljed oma ajaloost kustutada?</translation>
 <translation id="2676342370492585497">Aktiivne mitmesugune sisu</translation>
 <translation id="2676946222714718093">Mängib seadmes</translation>
-<translation id="2677924368525077324">Luba puutepõhine teksti muutmine</translation>
 <translation id="2678063897982469759">Luba uuesti</translation>
 <translation id="2679385451463308372">Prindi süsteemidialoogi abil ...</translation>
 <translation id="2680208403056680091">Interneti-ühendust juhitakse</translation>
@@ -2160,7 +2159,6 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="3972425373133383637">Olge ühenduses vajalike teadmistega kõikides seadmetes.</translation>
 <translation id="3974195870082915331">Parooli kuvamiseks klõpsake</translation>
 <translation id="397703832102027365">Lõpetamine ...</translation>
-<translation id="3978194674093708182">Dialoogis kustutamata andmetüüpide nummerdamise asemel võite kasutada lihtsat tugistringi, mis sisaldab lisateavet hõlmava artikli linki.</translation>
 <translation id="3978267865113951599">(Krahhis)</translation>
 <translation id="3979395879372752341">Lisati uus laiendus (<ph name="EXTENSION_NAME" />)</translation>
 <translation id="3979748722126423326">Luba <ph name="NETWORKDEVICE" /></translation>
@@ -2267,7 +2265,6 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="4146175323503586871"><ph name="SERVICE_NAME" /> tahab kontrollida, kas teie Chrome OS-i seade on sobilik pakkumise kasutamiseks. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="4147376274874979956">Faili juurde ei õnnestu pääseda.</translation>
 <translation id="4151403195736952345">Kasuta üldist vaikevalikut (tuvasta)</translation>
-<translation id="4152200911868329970">Teatud seadeid, mis võivad kajastada sirvimisharjumusi, |ei tühjendata|.</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 vaheleht}other{# vahelehte}}</translation>
 <translation id="4154664944169082762">Sõrmejäljed</translation>
 <translation id="4157188838832721931">Kasutajalt enne paroolide lehel paroolide näitamist tema OS-i parooli küsimise keelamine.</translation>
@@ -3920,7 +3917,6 @@ Mõned funktsioonid ei pruugi olla saadaval. Veenduge, et profiil on olemas ning
 <translation id="656398493051028875">Faili „<ph name="FILENAME" />” kustutamine ...</translation>
 <translation id="6565108107088666812">See kustutab sünkroonitud andmed kõikidest seadmetest.</translation>
 <translation id="6566142449942033617">Teed <ph name="PLUGIN_PATH" /> ei õnnestunud pistikprogrammi jaoks laadida.</translation>
-<translation id="6566572652089581977">Kasuta sirvimisandmete tühjendamise dialoogis lihtsat tugistringi.</translation>
 <translation id="6567688344210276845">Lehe toimingu jaoks ei õnnestunud laadida ikooni <ph name="ICON" />.</translation>
 <translation id="6569050677975271054">Ainult staatiline must nimekiri</translation>
 <translation id="6571070086367343653">Muuda krediitkaarti</translation>
@@ -4521,6 +4517,7 @@ Inkognito režiim <ph name="SHORTCUT_KEY" /> võib järgmisel korral kasulikuks 
 <translation id="7472639616520044048">MIME-tüübid:</translation>
 <translation id="7473891865547856676">Tänan, ei</translation>
 <translation id="747459581954555080">Taasta kõik</translation>
+<translation id="7474669101120914750">Seadet juhib laiend <ph name="NAME" /></translation>
 <translation id="7474889694310679759">Kanada inglise klaviatuur</translation>
 <translation id="7475671414023905704">Netscape'i kaotatud parooli URL</translation>
 <translation id="7477347901712410606">Kui olete parooli unustanud, peatage ja lähtestage sünkroonimine <ph name="BEGIN_LINK" />Google Dashboardi<ph name="END_LINK" /> kaudu.</translation>
@@ -5252,7 +5249,6 @@ Täislaadimiseks kuluva aja arvutamine</translation>
 <translation id="852269967951527627">Ära luba ühelgi saidil näidata märguandeid</translation>
 <translation id="8524066305376229396">Püsitalletusruum:</translation>
 <translation id="8525306231823319788">Täisekraan</translation>
-<translation id="852573274664085347">Puudutusega saab muuta, kui puudutate tekstivälja või valitud teksti.</translation>
 <translation id="852605377609758011">Selleks tehinguks kasutatakse teenuse Google Payments virtuaalkaarti. Virtuaalkaart on uus kaardinumber, mistõttu müüja ei näe kunagi teie krediitkaardi tegelikku numbrit.</translation>
 <translation id="8528962588711550376">Sisselogimine.</translation>
 <translation id="8535005006684281994">Netscape'i sertifikaadi uuendus-URL</translation>

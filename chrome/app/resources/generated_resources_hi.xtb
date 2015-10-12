@@ -1185,7 +1185,6 @@
 <translation id="2674170444375937751">क्या आप वाकई अपने इतिहास से इन पृष्ठों को हटाना चाहते हैं?</translation>
 <translation id="2676342370492585497">सक्रिय मिश्रित सामग्री</translation>
 <translation id="2676946222714718093">इस पर चलाया जा रहा है:</translation>
-<translation id="2677924368525077324">स्पर्श आधारित लेख संपादन सक्षम करें</translation>
 <translation id="2678063897982469759">फिर से-सक्षम करें</translation>
 <translation id="2679385451463308372">सिस्‍टम डायलॉग का उपयोग करके प्रिंट करें…</translation>
 <translation id="2680208403056680091">आपका इंटरनेट कनेक्शन नियंत्रित किया जा रहा है</translation>
@@ -1537,7 +1536,7 @@
 <translation id="3144135466825225871">crx फ़ाइल बदलने में विफल. यह देखने के लिए जांच करें कि क्या फ़ाइल उपयोग में है.</translation>
 <translation id="31454997771848827">समूह डोमेन</translation>
 <translation id="3147485256806412701">यह साइट एक नए जेनेरिक शीर्ष-स्‍तरीय डोमेन का उपयोग कर रही है.</translation>
-<translation id="3149510190863420837">Chrome ऐप्स </translation>
+<translation id="3149510190863420837">Chrome ऐप्स</translation>
 <translation id="3150927491400159470">कठिन पुन: लोड</translation>
 <translation id="315116470104423982">मोबाइल डेटा</translation>
 <translation id="315141861755603168">"<ph name="BUNDLE_NAME" />" इन ऐप्‍स को जोड़ता है:</translation>
@@ -2170,7 +2169,6 @@
 <translation id="3972425373133383637">आप जो जानना चाहते हैं, उसके लिए संपूर्ण डिवाइस पर कनेक्‍ट रहें.</translation>
 <translation id="3974195870082915331">पासवर्ड दिखाने के लिए क्लिक करें</translation>
 <translation id="397703832102027365">अंतिम रूप दिया जा रहा है...</translation>
-<translation id="3978194674093708182">जिन डेटा प्रकारों को संवाद में हटाया नहीं जाता है उनकी गिनती करने के बजाय किसी लेख से लिंक करने के लिए अधिक जानकारी वाले सरल सहायता स्ट्रिंग का उपयोग करें.</translation>
 <translation id="3978267865113951599">(क्रैश हुआ)</translation>
 <translation id="3979395879372752341">नया एक्सटेंशन जोड़ा गया (<ph name="EXTENSION_NAME" />)</translation>
 <translation id="3979748722126423326"><ph name="NETWORKDEVICE" /> सक्षम करें</translation>
@@ -2277,7 +2275,6 @@
 <translation id="4146175323503586871"><ph name="SERVICE_NAME" /> जांचना चाहती है कि क्या आपका Chrome OS डिवाइस ऑफ़र के लिए पात्र है या नहीं. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="4147376274874979956">फ़ाइल तक पहुंचने में असमर्थ.</translation>
 <translation id="4151403195736952345">वैश्‍विक डिफ़ॉल्‍ट का उपयोग करें (पता करें)</translation>
-<translation id="4152200911868329970">कुछ सेटिंग जो आपकी ब्राउज़िंग आदतों को प्रदर्शित कर सकती हैं उन्हें |साफ़ नहीं किया जाएगा|.</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 टैब}one{# टैब}other{# टैब}}</translation>
 <translation id="4154664944169082762">फ़िंगरप्रिंट</translation>
 <translation id="4157188838832721931">पासवर्ड पृष्ठ पर पासवर्ड दिखाने से पहले उपयोगकर्ता को उनके OS पासवर्ड का संकेत देना अक्षम करें.</translation>
@@ -3922,9 +3919,8 @@
 <translation id="6562758426028728553">कृपया नया और पुराना पिन दर्ज करें.</translation>
 <translation id="656293578423618167">फ़ाइल पथ या नाम बहुत बड़ा है.  कृपया छोटे नाम के साथ या किसी अन्‍य स्‍थान पर सहेजें.</translation>
 <translation id="656398493051028875">"<ph name="FILENAME" />" हटा रहा है...</translation>
-<translation id="6565108107088666812">इससे संपूर्ण डिवाइसों से समन्वयित डेटा साफ़ हो जाता है.</translation>
+<translation id="6565108107088666812">इससे सभी डिवाइस से समन्वयित डेटा साफ़ हो जाता है.</translation>
 <translation id="6566142449942033617">प्लग इन के लिए '<ph name="PLUGIN_PATH" />' को लोड नहीं कर सका.</translation>
-<translation id="6566572652089581977">ब्राउज़िंग डेटा साफ़ करें संवाद में किसी सरल सहायता स्ट्रिंग का उपयोग करें.</translation>
 <translation id="6567688344210276845">पृष्ठ कार्रवाई के लिए '<ph name="ICON" />' आइकन लोड नहीं कर सका.</translation>
 <translation id="6569050677975271054">केवल स्‍थैतिक काली सूची</translation>
 <translation id="6571070086367343653">क्रेडिट कार्ड संपादित करें</translation>
@@ -4535,6 +4531,7 @@
 <translation id="7472639616520044048">MIME प्रकार:</translation>
 <translation id="7473891865547856676">जी रहने दें</translation>
 <translation id="747459581954555080">सभी को पुनर्स्थापित करें</translation>
+<translation id="7474669101120914750">इस सेटिंग को <ph name="NAME" /> एक्सटेंशन के द्वारा नियंत्रित किया जाता है</translation>
 <translation id="7474889694310679759">कनाडाई अंग्रेज़ी कीबोर्ड</translation>
 <translation id="7475671414023905704">Netscape खोए पासवर्ड का URL</translation>
 <translation id="7477347901712410606">यदि‍ आप अपना पासफ्रेज़ भूल गए हैं, तो रूकें और <ph name="BEGIN_LINK" />Google डैशबोर्ड<ph name="END_LINK" /> के माध्‍यम से समन्‍वयन रीसेट करें.</translation>
@@ -5269,7 +5266,6 @@
 <translation id="852269967951527627">किसी भी साइट को नोटिफिकेशन दिखाने की अनुमति ना दें</translation>
 <translation id="8524066305376229396">स्थायी मेमोरी:</translation>
 <translation id="8525306231823319788">पूर्ण स्‍क्रीन</translation>
-<translation id="852573274664085347">किसी लेख फ़ील्ड या किसी चयनित लेख पर टैप करके, स्पर्श संपादन को आरंभ किया जा सकता है.</translation>
 <translation id="852605377609758011">इस लेन-देन के लिए Google पेमेंट्स आभासी कार्ड का उपयोग किया जाएगा. आभासी कार्ड एक नया कार्ड नंबर है जिससे विक्रेता को आपका वास्तविक क्रेडिट कार्ड नंबर कभी भी दिखाई नहीं देता है.</translation>
 <translation id="8528962588711550376">प्रवेश कर रहा है.</translation>
 <translation id="8535005006684281994">Netscape प्रमाणपत्र नवीकरण URL</translation>

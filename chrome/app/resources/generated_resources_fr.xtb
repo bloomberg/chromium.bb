@@ -1179,7 +1179,6 @@ Je ne pense pas que ce site devrait être bloqué.</translation>
 <translation id="2674170444375937751">Voulez-vous vraiment supprimer ces pages de votre historique ?</translation>
 <translation id="2676342370492585497">Contenu mixte actif</translation>
 <translation id="2676946222714718093">Lecture en cours sur</translation>
-<translation id="2677924368525077324">Activer la modification tactile du texte</translation>
 <translation id="2678063897982469759">Réactiver</translation>
 <translation id="2679385451463308372">Imprimer depuis la boîte de dialogue système…</translation>
 <translation id="2680208403056680091">Une extension a pris le contrôle de votre connexion Internet</translation>
@@ -2160,7 +2159,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="3972425373133383637">Ne manquez jamais une information importante, sur tous les appareils.</translation>
 <translation id="3974195870082915331">Cliquer pour afficher le mot de passe</translation>
 <translation id="397703832102027365">Finalisation en cours…</translation>
-<translation id="3978194674093708182">Au lieu d'énumérer les types de données qui ne sont pas supprimés dans la boîte de dialogue, utilisez une chaîne d'assistance simple redirigeant vers un article contenant plus d'informations.</translation>
 <translation id="3978267865113951599">(blocage)</translation>
 <translation id="3979395879372752341">Nouvelle extension (<ph name="EXTENSION_NAME" />) ajoutée.</translation>
 <translation id="3979748722126423326">Activer <ph name="NETWORKDEVICE" /></translation>
@@ -2267,7 +2265,6 @@ Tous les utilisateurs doivent se déconnecter pour continuer.</translation>
 <translation id="4146175323503586871">Une demande de vérification pour déterminer si votre appareil Chrome OS est éligible à une offre a été envoyée depuis <ph name="SERVICE_NAME" />. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="4147376274874979956">Impossible d'accéder au fichier.</translation>
 <translation id="4151403195736952345">Utiliser la valeur par défaut globale (Détection)</translation>
-<translation id="4152200911868329970">Certains paramètres qui peuvent refléter vos habitudes de navigation |ne seront pas effacés|.</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 onglet}one{# onglet}other{# onglets}}</translation>
 <translation id="4154664944169082762">Empreintes</translation>
 <translation id="4157188838832721931">Ne plus demander à l'utilisateur le mot de passe de son OS avant d'afficher les mots de passe sur la page correspondante</translation>
@@ -3921,7 +3918,6 @@ Il est possible que certaines fonctionnalités ne soient pas disponibles. Veuill
 <translation id="656398493051028875">Suppression de "<ph name="FILENAME" />" en cours...</translation>
 <translation id="6565108107088666812">Les données synchronisées seront effacées de tous les appareils.</translation>
 <translation id="6566142449942033617">Impossible de charger "<ph name="PLUGIN_PATH" />" pour le plug-in.</translation>
-<translation id="6566572652089581977">Utiliser une chaîne d'assistance simple dans la boîte de dialogue "Effacer les données de navigation"</translation>
 <translation id="6567688344210276845">Impossible de charger l'icône "<ph name="ICON" />" d'action de page.</translation>
 <translation id="6569050677975271054">Uniquement la liste noire statique</translation>
 <translation id="6571070086367343653">Modifier la carte de paiement</translation>
@@ -4528,6 +4524,7 @@ Conseil : Le mode navigation privée (<ph name="SHORTCUT_KEY" />) pourra vous �
 <translation id="7472639616520044048">Types MIME :</translation>
 <translation id="7473891865547856676">Non, merci</translation>
 <translation id="747459581954555080">Tout restaurer</translation>
+<translation id="7474669101120914750">Ce paramètre est contrôlé par l'extension <ph name="NAME" />.</translation>
 <translation id="7474889694310679759">Clavier anglais canadien</translation>
 <translation id="7475671414023905704">URL de mot de passe perdu Netscape</translation>
 <translation id="7477347901712410606">Si vous avez oublié votre phrase secrète, interrompez la synchronisation, puis reconfigurez-la via <ph name="BEGIN_LINK" />Google Dashboard<ph name="END_LINK" />.</translation>
@@ -5261,7 +5258,6 @@ Calcul de la durée restante</translation>
 <translation id="852269967951527627">Interdire à tous les sites d'afficher des notifications</translation>
 <translation id="8524066305376229396">Stockage persistant :</translation>
 <translation id="8525306231823319788">Plein écran</translation>
-<translation id="852573274664085347">Appuyer sur un champ de texte ou sur du texte sélectionné pour lancer la modification tactile</translation>
 <translation id="852605377609758011">Une carte virtuelle Google Payments va être utilisée pour cette transaction. Il s'agit d'un nouveau numéro de carte qui vous permet de ne pas montrer votre véritable numéro de carte de paiement au vendeur.</translation>
 <translation id="8528962588711550376">Connexion en cours</translation>
 <translation id="8535005006684281994">URL de renouvellement du certificat Netscape</translation>

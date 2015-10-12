@@ -160,7 +160,7 @@
 <translation id="4913529628896049296">正在等待連線...</translation>
 <translation id="4918086044614829423">接受</translation>
 <translation id="492843737083352574">我無法順利使用鍵盤或滑鼠。</translation>
-<translation id="4973800994433240357">下載 Chromoting 主機安裝程式，即表示您同意 Google 的《<ph name="LINK_BEGIN" />服務條款<ph name="LINK_END" />》。</translation>
+<translation id="4973800994433240357">下載 Chromoting 主機安裝程式即表示您同意 Google 的《<ph name="LINK_BEGIN" />服務條款<ph name="LINK_END" />》。</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (離線)</translation>
 <translation id="5070121137485264635">遠端主機要求您向第三方網站進行驗證。如要繼續，您必須授予額外權限，讓 Chrome 遠端桌面能夠存取這個位址：</translation>
 <translation id="5156271271724754543">請在兩個方塊中輸入相同的 PIN。</translation>
@@ -256,7 +256,7 @@
 <translation id="7869445566579231750">您沒有執行這個應用程式的權限。</translation>
 <translation id="7948001860594368197">螢幕選項</translation>
 <translation id="7970576581263377361">驗證失敗，請重新登入 Chromium。</translation>
-<translation id="8041721485428375115">下載 Chrome 遠端桌面主機安裝程式，即表示您同意 Google 的《<ph name="LINK_BEGIN" />服務條款<ph name="LINK_END" />》。</translation>
+<translation id="8041721485428375115">下載 Chrome 遠端桌面主機安裝程式即表示您同意 Google 的《<ph name="LINK_BEGIN" />服務條款<ph name="LINK_END" />》。</translation>
 <translation id="8073845705237259513">您必須在裝置上新增 Google 帳戶，才能使用 Chrome 遠端桌面。</translation>
 <translation id="80739703311984697">遠端主機要求您向第三方網站進行驗證。如要繼續，您必須授予額外權限，讓 Chromoting 能夠存取這個位址：</translation>
 <translation id="809687642899217504">我的電腦</translation>

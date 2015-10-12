@@ -1172,7 +1172,6 @@ Aby bylo zabráněno generování nadměrného provozu, který by situaci dále 
 <translation id="2674170444375937751">Jste si jisti, že chcete tyto stránky odstranit ze své historie?</translation>
 <translation id="2676342370492585497">Aktivní smíšený obsah</translation>
 <translation id="2676946222714718093">Přehrávání v zařízení</translation>
-<translation id="2677924368525077324">Aktivovat úpravu textu dotykem</translation>
 <translation id="2678063897982469759">Znovu aktivovat</translation>
 <translation id="2679385451463308372">Vytisknout prostřednictvím dialogového okna systému...</translation>
 <translation id="2680208403056680091">Vaše připojení k internetu je ovládáno</translation>
@@ -2146,7 +2145,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="3972425373133383637">Zůstaňte připojeni ke všem důležitým informacím ve všech svých zařízeních.</translation>
 <translation id="3974195870082915331">Kliknutím zobrazíte heslo</translation>
 <translation id="397703832102027365">Dokončování...</translation>
-<translation id="3978194674093708182">Namísto seznamu typů dat, která se nesmažou, v dialogu bude zobrazen jednoduchý řetězec s odkazem na článek nápovědy s dalšími informacemi.</translation>
 <translation id="3978267865113951599">(Selhalo)</translation>
 <translation id="3979395879372752341">Bylo přidáno nové rozšíření (<ph name="EXTENSION_NAME" />)</translation>
 <translation id="3979748722126423326">Aktivovat <ph name="NETWORKDEVICE" /></translation>
@@ -2253,7 +2251,6 @@ Všichni uživatelé se před pokračováním musejí odhlásit.</translation>
 <translation id="4146175323503586871"><ph name="SERVICE_NAME" /> chce zkontrolovat, zda se nabídka vztahuje na vaše zařízení se systémem Chrome OS. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="4147376274874979956">K souboru nelze získat přístup.</translation>
 <translation id="4151403195736952345">Použít globální výchozí nastavení (zjistit)</translation>
-<translation id="4152200911868329970">Některá nastavení, která mohou vypovídat o vašich zvycích při prohlížení, |nebudou vymazána|.</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 karta}few{# karty}many{# karty}other{# karet}}</translation>
 <translation id="4154664944169082762">Digitální otisky</translation>
 <translation id="4157188838832721931">Zakázat zobrazení výzvy k zadání hesla operačního systému před zobrazením hesel na stránce s hesly.</translation>
@@ -3898,7 +3895,6 @@ Některé funkce nemusí být dostupné. Zkontrolujte, zda profil existuje a zda
 <translation id="656398493051028875">Mazání souboru <ph name="FILENAME" />...</translation>
 <translation id="6565108107088666812">Tímto vymažete synchronizovaná data ze všech zařízení.</translation>
 <translation id="6566142449942033617">„<ph name="PLUGIN_PATH" />“ nelze načíst jako plugin.</translation>
-<translation id="6566572652089581977">Použít v dialogovém okně Vymazat údaje o prohlížení jednoduchý řetězec s odkazem na nápovědu</translation>
 <translation id="6567688344210276845">Nelze načíst ikonu „<ph name="ICON" />“ pro akci stránky.</translation>
 <translation id="6569050677975271054">Pouze statický seznam zakázaných</translation>
 <translation id="6571070086367343653">Upravit platební kartu</translation>
@@ -4505,6 +4501,7 @@ Pssst! Příště by se vám mohl hodit anonymní režim (<ph name="SHORTCUT_KEY
 <translation id="7472639616520044048">Typy MIME:</translation>
 <translation id="7473891865547856676">Ne, děkuji</translation>
 <translation id="747459581954555080">Obnovit vše</translation>
+<translation id="7474669101120914750">Toto nastavení je spravováno rozšířením <ph name="NAME" /></translation>
 <translation id="7474889694310679759">Kanadská anglická klávesnice</translation>
 <translation id="7475671414023905704">Adresa URL pro získání ztraceného hesla Netscape</translation>
 <translation id="7477347901712410606">Pokud jste zapomněli heslovou frázi, zastavte a resetujte synchronizaci prostřednictvím <ph name="BEGIN_LINK" />Hlavního panelu Google<ph name="END_LINK" />.</translation>
@@ -5231,7 +5228,6 @@ Výpočet času zbývajícího do úplného nabití</translation>
 <translation id="852269967951527627">Nepovolovat žádnému webu zobrazovat oznámení</translation>
 <translation id="8524066305376229396">Trvalé úložiště:</translation>
 <translation id="8525306231823319788">Celá obrazovka</translation>
-<translation id="852573274664085347">Úpravu dotykem lze zahájit klepnutím na textové pole nebo na vybraný text.</translation>
 <translation id="852605377609758011">Při této transakci bude použita virtuální karta služby Google Payments. Virtuální karta představuje nové číslo karty, prodejce proto neuvidí číslo vaší skutečné platební karty.</translation>
 <translation id="8528962588711550376">Přihlašování.</translation>
 <translation id="8535005006684281994">Adresa URL pro obnovu certifikátu Netscape</translation>

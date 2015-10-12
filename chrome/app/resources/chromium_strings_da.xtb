@@ -53,7 +53,6 @@
 <translation id="2673087257647337101">Næsten opdateret! Genstart Chromium for at afslutte opdateringen</translation>
 <translation id="2685838254101182273">Chromium er holdt op med at opdatere og understøtter ikke længere denne version af dit operativsystem.</translation>
 <translation id="2705212601509139398">Dette website anvender Chromium Frame-pluginnet, som snart ikke længere understøttes. Afinstaller det, og download en kompatibel browser.</translation>
-<translation id="2718390899429598676">Som et ekstra sikkerhedsniveau krypterer Chromium dine data.</translation>
 <translation id="2732467638532545152">Din computer kører en gammel version af Microsoft Windows, som ikke kan behandle sikkerhedscertifikatet for dette website. Som følge af dette problem, kan Chromium ikke afgøre, om certifikatet kom fra <ph name="SITE" /> eller fra en bruger på dit netværk,, som udgav sig for at være <ph name="SITE" />. Opdater din computer til en nyere version af Windows.</translation>
 <translation id="2770231113462710648">Skift standardbrowser til:</translation>
 <translation id="2801146392936645542"><ph name="FILE_NAME" /> er skadelig, og Chromium har blokeret den.</translation>
@@ -137,7 +136,6 @@
 <translation id="5427571867875391349">Angiv Chromium som din standardbrowser</translation>
 <translation id="5466153949126434691">Chromium opdateres automatisk, så du altid har den nyeste version. Når downloaden er fuldført, genstartes Chromium, og så er du godt på vej.</translation>
 <translation id="549669000822060376">Vent, mens Chromium installerer de nyeste systemopdateringer.</translation>
-<translation id="5531349711857992002">Certifikatskæden for dette website indeholder mindst ét certifikat, der blev signeret ved hjælp af en forældet signaturalgoritme baseret på SHA-1.</translation>
 <translation id="5563479599352954471">Søg med én berøring</translation>
 <translation id="5620765574781326016">Læs om emner på websites uden at forlade siden.</translation>
 <translation id="5772805321386874569">(kræver en <ph name="BEGIN_BUTTON" />genstart<ph name="END_BUTTON" /> af Chromium)</translation>
@@ -190,7 +188,6 @@ Visse funktioner kan være utilgængelige. Angiv en anden profilmappe, eller bru
 <translation id="705851970750939768">Opdater Chromium</translation>
 <translation id="7064610482057367130">Der blev ikke fundet nogen opdateringsinstallation til Chromium.</translation>
 <translation id="7066436765290594559">Chromium OS kunne ikke synkronisere dine data. Opdater din adgangssætning til synkronisering.</translation>
-<translation id="7090955637699162649">Chromium kan bruge <ph name="BEGIN_LINK" />webtjenester<ph name="END_LINK" /> for at forbedre din browseroplevelse. Du kan deaktivere disse tjenester til enhver tid.</translation>
 <translation id="7138853919861947730">Chromium kan bruge webtjenester til at forbedre din søgeoplevelse.</translation>
 <translation id="7162152143154757523">Chromium kan anvende smartere stavekontrol ved at sende dine indtastninger i browseren til Googles servere, så du kan bruge den samme teknologi til stavekontrol, som der anvendes i Google-søgninger.</translation>
 <translation id="7196020411877309443">Hvorfor får jeg vist dette?</translation>

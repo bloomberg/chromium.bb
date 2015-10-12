@@ -54,7 +54,6 @@ dan tidak biasa. Bisa jadi penyerang berpura-pura menjadi <ph name="SITE" />, at
 <translation id="2673087257647337101">Hampir diperbarui! Luncurkan ulang Chromium untuk menyelesaikan pembaruan.</translation>
 <translation id="2685838254101182273">Chromium telah berhenti memperbarui dan tidak lagi mendukung versi sistem operasi ini.</translation>
 <translation id="2705212601509139398">Situs ini menggunakan plugin Chromium Frame yang akan segera tidak didukung. Copot pemasangannya dan unduh browser yang kompatibel.</translation>
-<translation id="2718390899429598676">Untuk keamanan tambahan, Chromium akan mengenkripsi data Anda.</translation>
 <translation id="2732467638532545152">Komputer Anda sedang menjalankan versi lama Microsoft Windows yang tidak dapat memproses sertifikat keamanan situs web ini. Karena masalah ini, Chromium tidak mengerti apakah sertifikat ini berasal dari <ph name="SITE" /> atau dari seseorang di jaringan Anda yang berpura-pura menjadi <ph name="SITE" />. Perbarui komputer Anda ke versi Windows yang lebih baru.</translation>
 <translation id="2770231113462710648">Ubah browser default ke:</translation>
 <translation id="2801146392936645542"><ph name="FILE_NAME" /> berbahaya dan Chromium memblokirnya.</translation>
@@ -138,7 +137,6 @@ dan tidak biasa. Bisa jadi penyerang berpura-pura menjadi <ph name="SITE" />, at
 <translation id="5427571867875391349">Setel Chromium sebagai browser default</translation>
 <translation id="5466153949126434691">Chromium otomatis diperbarui sehingga Anda selalu memiliki versi terbaru. Saat unduhan ini selesai, Chromium akan dimulai ulang dan siap digunakan.</translation>
 <translation id="549669000822060376">Harap tunggu selagi Chromium memasang pembaruan sistem terkini.</translation>
-<translation id="5531349711857992002">Rantai sertifikat untuk situs web ini setidaknya berisi satu sertifikat yang telah ditandatangani dengan algoritme tanda tangan yang sudah usang berdasarkan SHA-1.</translation>
 <translation id="5563479599352954471">Telusuri dengan satu sentuhan</translation>
 <translation id="5620765574781326016">Pelajari tentang topik di situs web tanpa meninggalkan laman.</translation>
 <translation id="5772805321386874569">(Chromium perlu <ph name="BEGIN_BUTTON" />dimulai ulang<ph name="END_BUTTON" />)</translation>
@@ -191,7 +189,6 @@ Sebagian fitur mungkin tidak tersedia. Tentukan direktori profil yang berbeda at
 <translation id="705851970750939768">Perbarui Chromium</translation>
 <translation id="7064610482057367130">Tidak ditemukan pemasangan Chromium untuk diperbarui.</translation>
 <translation id="7066436765290594559">Chromium OS tidak dapat menyinkronkan data Anda. Perbarui frasa sandi Sinkronisasi Anda.</translation>
-<translation id="7090955637699162649">Chromium mungkin akan menggunakan <ph name="BEGIN_LINK" />layanan web<ph name="END_LINK" /> untuk meningkatkan pengalaman penjelajahan Anda. Anda dapat menonaktifkan layanan ini kapan saja secara opsional.</translation>
 <translation id="7138853919861947730">Chromium dapat menggunakan layanan web untuk meningkatkan pengalaman penjelajahan Anda.</translation>
 <translation id="7162152143154757523">Chromium dapat memberikan pemeriksa ejaan yang lebih pintar dengan mengirimkan apa yang Anda ketik di browser ke server Google, sehingga memungkinkan Anda menggunakan teknologi pemeriksa ejaan yang sama seperti yang digunakan oleh penelusuran Google.</translation>
 <translation id="7196020411877309443">Mengapa saya melihat ini?</translation>

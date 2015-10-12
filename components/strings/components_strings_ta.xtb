@@ -150,6 +150,7 @@
 <translation id="4258748452823770588">தவறான கையொப்பம்</translation>
 <translation id="4269787794583293679">(பயனர்பெயர் இல்லை)</translation>
 <translation id="4300246636397505754">மூலப் பரிந்துரைகள்</translation>
+<translation id="4325863107915753736">கட்டுரையைக் கண்டறிய முடியவில்லை</translation>
 <translation id="4372948949327679948">எதிர்பார்த்த <ph name="VALUE_TYPE" /> மதிப்பு.</translation>
 <translation id="4377125064752653719"><ph name="DOMAIN" /> ஐ அடைய முயற்சி செய்தீர்கள். ஆனால் சேவையகம் வழங்கிய சான்றிதழானது அதன் வழங்குநரால் நிராகரிக்கப்பட்டது. அதாவது, சேவையகம் வழங்கிய பாதுகாப்பு நம்பிக்கைச்சான்றுகளை நிச்சயமாக எக்காரணத்தைக்கொண்டும் நம்பக்கூடாது. போலியான ஒன்றுடன் நீங்கள் தகவல் பரிமாற்றம் செய்துகொண்டிருக்கக்கூடும்.</translation>
 <translation id="4394049700291259645">முடக்கு</translation>
@@ -291,7 +292,6 @@
 <translation id="7983301409776629893"><ph name="ORIGINAL_LANGUAGE" /> ஐ <ph name="TARGET_LANGUAGE" /> க்கு எப்போதும் மொழிபெயர்ப்பு செய்க</translation>
 <translation id="7988324688042446538">டெஸ்க்டாப் புக்மார்க்குகள்</translation>
 <translation id="7995512525968007366">குறிப்பிடப்படவில்லை</translation>
-<translation id="8003882219468422867">நிறுவன மேலெழுதுதல்</translation>
 <translation id="8034522405403831421">இந்தப் பக்கம் <ph name="SOURCE_LANGUAGE" /> மொழியில் உள்ளது. இதை <ph name="TARGET_LANGUAGE" /> க்கு மொழிபெயர்க்கவா?</translation>
 <translation id="8088680233425245692">கட்டுரையைக் காட்டுவதில் தோல்வி.</translation>
 <translation id="8091372947890762290">சேவையகத்தில் செயலாக்கம் நிலுவையிலுள்ளது</translation>

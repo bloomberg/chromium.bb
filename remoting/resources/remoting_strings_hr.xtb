@@ -160,7 +160,7 @@ površine Chrome</translation>
 <translation id="4913529628896049296">čekanje na vezu...</translation>
 <translation id="4918086044614829423">Prihvati</translation>
 <translation id="492843737083352574">Imam problema s tipkovnicom ili mišem.</translation>
-<translation id="4973800994433240357">Preuzimanjem programa za instalaciju hosta Chromotinga prihvaćate Google <ph name="LINK_BEGIN" />uvjete pružanja usluge<ph name="LINK_END" />.</translation>
+<translation id="4973800994433240357">Preuzimanjem programa za instalaciju hosta Chromotinga prihvaćate Googleove <ph name="LINK_BEGIN" />Uvjete pružanja usluge<ph name="LINK_END" />.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (van mreže)</translation>
 <translation id="5070121137485264635">Udaljeni host zahtijeva autentifikaciju web-lokacije treće strane. Da biste nastavili, morate dati Udaljenoj radnoj površini Chrome dodatne dozvole za pristup ovoj adresi:</translation>
 <translation id="5156271271724754543">Unesite isti PIN u oba polja.</translation>
@@ -256,7 +256,7 @@ površine Chrome</translation>
 <translation id="7869445566579231750">Nemate dopuštenje za pokretanje te aplikacije.</translation>
 <translation id="7948001860594368197">Opcije zaslona</translation>
 <translation id="7970576581263377361">Autentifikacija nije uspjela. Prijavite se ponovo na Chromium.</translation>
-<translation id="8041721485428375115">Preuzimanjem programa za instalaciju hosta Udaljene radne površine Chrome prihvaćate Google <ph name="LINK_BEGIN" />uvjete pružanja usluge<ph name="LINK_END" />.</translation>
+<translation id="8041721485428375115">Preuzimanjem programa za instalaciju hosta Udaljene radne površine Chrome prihvaćate Googleove <ph name="LINK_BEGIN" />Uvjete pružanja usluge<ph name="LINK_END" />.</translation>
 <translation id="8073845705237259513">Da biste upotrebljavali Udaljenu radnu površinu Chrome, uređaju morate dodati Google račun.</translation>
 <translation id="80739703311984697">Udaljeni host zahtijeva autentifikaciju web-lokacije treće strane. Da biste nastavili, morate dati Chromotingu dodatne dozvole za pristup ovoj adresi:</translation>
 <translation id="809687642899217504">Moja računala</translation>

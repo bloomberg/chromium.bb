@@ -1182,7 +1182,6 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="2674170444375937751">আপনি কি আপনার ইতিহাস থেকে এই পৃষ্ঠাগুলি মোছার বিষয়ে নিশ্চিত?</translation>
 <translation id="2676342370492585497">সক্রিয় মিশ্র সামগ্রী</translation>
 <translation id="2676946222714718093">এতে প্লে হচ্ছে</translation>
-<translation id="2677924368525077324">স্পর্শ ভিত্তিক পাঠ্য সম্পাদনা সক্ষম করুন</translation>
 <translation id="2678063897982469759">পুনঃ সক্ষম</translation>
 <translation id="2679385451463308372">সিস্টেম কথোপকথন ব্যবহার করে মুদ্রণ করুন...</translation>
 <translation id="2680208403056680091">আপনার ইন্টারনেট সংযোগ নিয়ন্ত্রিত হচ্ছে</translation>
@@ -2158,7 +2157,6 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="3972425373133383637">সমস্ত ডিভাইস জুড়ে, আপনি যা জানতে চান সেগুলিতে সংযুক্ত থাকুন৷</translation>
 <translation id="3974195870082915331">পাসওয়ার্ড দেখাতে ক্লিক করুন</translation>
 <translation id="397703832102027365">চূড়ান্ত হচ্ছে...</translation>
-<translation id="3978194674093708182">ডায়ালগে মোছা হয় না এমন ডেটা প্রকারগুলির গণনার পরিবর্তে আরো তথ্য সমৃদ্ধ একটি নিবন্ধে লিঙ্ক করা একটি সহজ সহায়তা স্ট্রিং ব্যবহার করুন।</translation>
 <translation id="3978267865113951599">(ক্র্যাশ হয়েছে)</translation>
 <translation id="3979395879372752341">নতুন এক্সটেনশন জোড়া হয়েছে (<ph name="EXTENSION_NAME" />)</translation>
 <translation id="3979748722126423326"><ph name="NETWORKDEVICE" /> সক্ষম করুন</translation>
@@ -2265,7 +2263,6 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="4146175323503586871">আপনার Chrome OS ডিভাইস অফারের জন্য  যোগ্য কিনা <ph name="SERVICE_NAME" /> তা চেক করতে চাইছে। <ph name="MORE_INFO_LINK" /></translation>
 <translation id="4147376274874979956">ফাইল অ্যাক্সেস করতে অক্ষম৷</translation>
 <translation id="4151403195736952345">গ্লোবাল ডিফল্ট (সনাক্ত করুন) ব্যবহার করুন</translation>
-<translation id="4152200911868329970">ব্রাউজিং অভ্যাস প্রতিফলিত করতে পারে এমন কিছু সেটিংস |সাফ করা হবে না|।</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{১টি ট্যাব}one{#টি ট্যাব}other{#টি ট্যাব}}</translation>
 <translation id="4154664944169082762">আঙ্গুলের ছাপ</translation>
 <translation id="4157188838832721931">পাসওয়ার্ডগুলির পৃষ্ঠাতে পাসওয়ার্ডগুলি প্রকাশ করার আগে ব্যবহারকারীকে তার OS-এর পাসওয়ার্ডের জন্য প্রণোদিত হওয়া অক্ষম করুন।</translation>
@@ -3904,7 +3901,6 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="656398493051028875">"<ph name="FILENAME" />" মোছা হচ্ছে...</translation>
 <translation id="6565108107088666812">এটি সকল ডিভাইস থেকে সিঙ্ক করা ডেটা মুছে ফেলবে।</translation>
 <translation id="6566142449942033617">প্লাগইনের জন্য '<ph name="PLUGIN_PATH" />' লোড করা যায়নি৷</translation>
-<translation id="6566572652089581977">‘ব্রাউজিং ডেটা সাফ করুন’ ডায়ালগে একটি সহজ সহায়তা স্ট্রিং ব্যবহার করুন।</translation>
 <translation id="6567688344210276845">পৃষ্ঠা ক্রিয়ার জন্য '<ph name="ICON" />' আইকন লোড করা যায়নি৷</translation>
 <translation id="6569050677975271054">শুধুমাত্র স্ট্যাটিক কালোতালিকা</translation>
 <translation id="6571070086367343653">ক্রেডিট কার্ড সম্পাদনা করুন</translation>
@@ -4514,6 +4510,7 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="7472639616520044048">MIME প্রকারসমূহ:</translation>
 <translation id="7473891865547856676">না থাক</translation>
 <translation id="747459581954555080">সকল পুনরুদ্ধার করুন</translation>
+<translation id="7474669101120914750">এই সেটিংটি <ph name="NAME" /> এক্সটেনশান দ্বারা নিয়ন্ত্রিত হয়</translation>
 <translation id="7474889694310679759">কানাডিয় ইংরাজি কীবোর্ড</translation>
 <translation id="7475671414023905704">Netscape পাসওয়ার্ড URL হারিয়েছে</translation>
 <translation id="7477347901712410606">যদি আপনি আপনার পাসফ্রেজ ভুলে গিয়ে থাকেন, <ph name="BEGIN_LINK" />Google Dashboard<ph name="END_LINK" />-এর মাধ্যেমে সিঙ্ক করা থামান এবং পুনরায় সেট করুন৷</translation>
@@ -5250,7 +5247,6 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="852269967951527627">বিজ্ঞপ্তিগুলি দেখানোর জন্য কোনো সাইটকে মঞ্জুরি দেবেন না</translation>
 <translation id="8524066305376229396">অনবরত সঞ্চয়স্থান:</translation>
 <translation id="8525306231823319788">পূর্ণ স্ক্রীণ</translation>
-<translation id="852573274664085347">একটি পাঠ্য ক্ষেত্র বা একটি নির্বাচিত পাঠ্যে আলতো চাপার মাধ্যমে স্পর্শ সম্পাদনা শুরু করা যেতে পারে৷</translation>
 <translation id="852605377609758011">এই লেনদেনের জন্য একটি Google Payments ভার্চুয়াল কার্ড ব্যবহার করা হবে। একটি ভার্চুয়াল কার্ড আসলে একটি নতুন কার্ড নম্বর যার ফলে বিক্রেতা কখনোই আপনার আসল ক্রেডিট কার্ডের সংখ্যা দেখতে পায় না।</translation>
 <translation id="8528962588711550376">সাইন ইন হচ্ছে৷</translation>
 <translation id="8535005006684281994">Netscape শংসাপত্র পুনর্নবীকরণ URL</translation>

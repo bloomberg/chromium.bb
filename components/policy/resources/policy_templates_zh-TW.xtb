@@ -1286,7 +1286,6 @@
       如未設定這項政策，<ph name="PRODUCT_NAME" /> 將會套用 5000 毫秒的預設值。</translation>
 <translation id="7842869978353666042">設定 Google 雲端硬碟選項</translation>
 <translation id="7848840259379156480">允許您在安裝 <ph name="PRODUCT_FRAME_NAME" /> 之後設定預設的 HTML 轉譯器。預設的設定允許主機瀏覽器進行轉譯，但是您可以覆寫這項預設，改由 <ph name="PRODUCT_FRAME_NAME" /> 轉譯 HTML 網頁。</translation>
-<translation id="7880891067740158163">允許您指定可指定網站的網址模式清單，在網站要求憑證時，「<ph name="PRODUCT_NAME" />」應為清單自動選取用戶端憑證。如果未設定這項政策，沒有任何網站可以執行自動選取。</translation>
 <translation id="7882585827992171421">這項政策僅在零售模式下有效。
 
       決定使用擴充程式 ID 當做登入畫面的螢幕保護程式。該擴充功能必須屬於您透過 DeviceAppPack 政策為這個網域設定的 AppPack。</translation>
@@ -1304,11 +1303,6 @@
           請注意，如果停用 <ph name="REMOTEACCESSHOSTFIREWALLTRAVERSAL_POLICY_NAME" /> 政策，系統將會忽略這項政策。
 
           如果未設定這項政策，系統將啟用這項設定。</translation>
-<translation id="8079569287249995869">啟用 <ph name="PRODUCT_NAME" /> 的 WPAD 最佳化功能，且禁止使用者變更這項設定。
-
-      如果設定啟用這項功能，將縮短 <ph name="PRODUCT_NAME" /> 等待 DNS WPAD 伺服器的時間間隔。
-
-      如果未設定這項政策，系統將自動啟用這項功能，而且使用者無法變更這項設定。</translation>
 <translation id="8099880303030573137">在電池供電環境下執行時的閒置延遲時間</translation>
 <translation id="8102913158860568230">預設媒體串流設定</translation>
 <translation id="8104962233214241919">自動為這些網站選取用戶端憑證</translation>

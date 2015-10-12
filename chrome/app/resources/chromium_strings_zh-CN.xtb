@@ -53,7 +53,6 @@
 <translation id="2673087257647337101">即将更新到最新版本！重新启动 Chromium 以完成更新。</translation>
 <translation id="2685838254101182273">Chromium 已停止更新，并且不再支持您的操作系统版本。</translation>
 <translation id="2705212601509139398">此网站使用的 Chromium 内嵌框架插件即将不受支持。请卸载该插件，然后下载一款兼容的浏览器。</translation>
-<translation id="2718390899429598676">为了提高安全性，Chromium 将对您的数据进行加密。</translation>
 <translation id="2732467638532545152">您的计算机运行的是旧版Microsoft Windows，无法处理此网站的安全证书。因此，Chromium无法确定该证书是来自<ph name="SITE" />，还是来自您所在的网络中假冒<ph name="SITE" />的用户。请将您的计算机更新到更高版本的Windows。</translation>
 <translation id="2770231113462710648">将默认浏览器更改为：</translation>
 <translation id="2801146392936645542"><ph name="FILE_NAME" /> 是恶意文件，Chromium 已将其拦截。</translation>
@@ -128,7 +127,6 @@
 <translation id="5427571867875391349">将Chromium设为默认浏览器</translation>
 <translation id="5466153949126434691">Chromium会自动更新，因此您使用的始终都是最新版本。更新内容下载完毕后，Chromium会重新启动，然后您就可以开始使用了。</translation>
 <translation id="549669000822060376">Chromium正在安装最新的系统更新，请稍候。</translation>
-<translation id="5531349711857992002">此网站的证书链包含至少一个使用基于 SHA-1 的过时签名算法进行签名的证书。</translation>
 <translation id="5563479599352954471">触摸一下即可启动搜索</translation>
 <translation id="5620765574781326016">无需离开所在页面，即可了解网站上的主题。</translation>
 <translation id="5772805321386874569">（需要<ph name="BEGIN_BUTTON" />重新启动<ph name="END_BUTTON" /> Chromium）</translation>
@@ -174,7 +172,6 @@
 <translation id="705851970750939768">更新 Chromium</translation>
 <translation id="7064610482057367130">未找到要更新的Chromium安装实例。</translation>
 <translation id="7066436765290594559">Chromium操作系统无法同步您的数据。请更新您的同步密码。</translation>
-<translation id="7090955637699162649">Chromium 可能会使用<ph name="BEGIN_LINK" />网络服务<ph name="END_LINK" />来改善您的浏览体验。不过，您可以随时停用这些服务。</translation>
 <translation id="7138853919861947730">Chromium 可能会使用网络服务改善您的浏览体验。</translation>
 <translation id="7162152143154757523">Chromium 会将您在浏览器中输入的内容发送到 Google 服务器，并让您使用 Google 搜索所用的拼写检查技术，从而为您提供更智能的拼写检查功能。</translation>
 <translation id="7196020411877309443">为何会出现这个窗口？</translation>

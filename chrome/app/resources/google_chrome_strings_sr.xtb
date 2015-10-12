@@ -107,7 +107,6 @@
 <translation id="4458285410772214805">Одјавите се и поново се пријавите да би ова промена ступила на снагу.</translation>
 <translation id="4480040274068703980">Chrome ОС не може да синхронизује податке због грешке при пријављивању.</translation>
 <translation id="4513711165509885787">Детаљи обрачуна су сачувани у Chrome-у.</translation>
-<translation id="4519152997629025674">Google Chrome може да користи <ph name="BEGIN_LINK" />веб-услуге<ph name="END_LINK" /> да би побољшао искуство прегледања. Ако желите, можете да онемогућите ове услуге у било ком тренутку.</translation>
 <translation id="4561051373932531560">Google Chrome вам омогућава да кликнете на број телефона на вебу и да га позовете помоћу Skype-а!</translation>
 <translation id="4567424176335768812">Пријављени сте као <ph name="USER_EMAIL_ADDRESS" />. Сада можете да приступате обележивачима, историји и другим подешавањима на свим уређајима на којима сте пријављени.</translation>
 <translation id="4631713731678262610">Сакриј у Chrome менију</translation>
@@ -142,7 +141,6 @@
 Google Chrome не може да врати подешавања.</translation>
 <translation id="5453904507266736060">Нека Google Chrome ради у позадини</translation>
 <translation id="5495581687705680288">Модули учитани у Google Chrome</translation>
-<translation id="5531349711857992002">Ланац сертификата за овај веб-сајт садржи бар један сертификат који је потписан застарелим алгоритмом за потпис заснованим на алгоритму SHA-1.</translation>
 <translation id="556024056938947818">Google Chrome покушава да прикаже лозинке.</translation>
 <translation id="5563479599352954471">Претражујте једним додиром</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
@@ -176,7 +174,6 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="6235018212288296708">Правило за долазни саобраћај за Google Chrome да бисте омогућили mDNS саобраћај.</translation>
 <translation id="6236285698028833233">Google Chrome је престао да се ажурира и не подржава више ову верзију оперативног система.</translation>
 <translation id="629218512217695915">Користите лозинку коју је Chrome генерисао</translation>
-<translation id="6368805772029492593">Google Chrome ће шифровати податке ради додатне сигурности.</translation>
 <translation id="6368958679917195344">Chrome OС je могућ захваљујући додатном <ph name="BEGIN_LINK_CROS_OSS" />софтвер отвореног кода<ph name="END_LINK_CROS_OSS" />.</translation>
 <translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{Преузимање је у току. Желите ли да откажете преузимање и да изађете из Google Chrome-а?}one{# преузимање је у току. Желите ли да откажете преузимања и да изађете из Google Chrome-а?}few{# преузимања су у току. Желите ли да откажете преузимања и да изађете из Google Chrome-а?}other{# преузимања је у току. Желите ли да откажете преузимања и да изађете из Google Chrome-а?}}</translation>
 <translation id="6598387184982954187">Користите <ph name="PROFILE_EMAIL" /> за синхронизацију Chrome садржаја. Да бисте ажурирали подешавање синхронизације или користили Chrome без Google налога, посетите <ph name="SETTINGS_LINK" />.</translation>

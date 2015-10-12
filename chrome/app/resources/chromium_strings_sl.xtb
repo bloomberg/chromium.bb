@@ -55,7 +55,6 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="2673087257647337101">Samo še malo. Znova zaženite Chromium, da dokončate posodobitev.</translation>
 <translation id="2685838254101182273">Chromium se ne posodablja več in ne podpira več te različice operacijskega sistema.</translation>
 <translation id="2705212601509139398">To spletno mesto uporablja vtičnik Chromium Frame, za katerega podpora kmalu ne bo več na voljo. Odstranite ga in prenesite sodoben brskalnik.</translation>
-<translation id="2718390899429598676">Zaradi večje varnosti bo Chromium šifriral vaše podatke.</translation>
 <translation id="2732467638532545152">Vaš računalnik uporablja staro različico sistema Microsoft Windows, ki ne more obdelati varnostnega potrdila tega spletnega mesta. Zaradi te težave Chromium ne more ugotoviti, ali je prišlo potrdilo s spletnega mesta <ph name="SITE" /> ali od nekoga v vašem omrežju, ki se izdaja za spletno mesto <ph name="SITE" />. Posodobite sistem Microsoft Windows v računalniku na novejšo različico.</translation>
 <translation id="2770231113462710648">Spremeni privzeti brskalnik na:</translation>
 <translation id="2801146392936645542">Datoteka <ph name="FILE_NAME" /> je zlonamerna, zato jo je Chromium blokiral.</translation>
@@ -139,7 +138,6 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="5427571867875391349">Nastavitev Chromiuma za privzeti brskalnik</translation>
 <translation id="5466153949126434691">Chromium se samodejno posodablja, zato boste vedno imeli najnovejšo različico. Ko bo ta prenos končan, se bo Chromium znova zagnal in lahko boste nadaljevali z delom.</translation>
 <translation id="549669000822060376">Počakajte, da Chromium namesti najnovejše sistemske posodobitve.</translation>
-<translation id="5531349711857992002">Veriga potrdil za to spletno mesto vsebuje vsaj eno potrdilo, ki je bilo podpisano z zastarelim podpisnim algoritmom, ki temelji na SHA-1.</translation>
 <translation id="5563479599352954471">Iskanje z enim dotikom</translation>
 <translation id="5620765574781326016">Preberite več o temah na spletnih mestih, ne da bi vam bilo treba zapustiti stran.</translation>
 <translation id="5772805321386874569">(zahteva <ph name="BEGIN_BUTTON" />vnovični zagon<ph name="END_BUTTON" /> Chromiuma)</translation>
@@ -192,7 +190,6 @@ Nekatere funkcije morda ne bodo na voljo. Določite drug imenik profila ali upor
 <translation id="705851970750939768">Posodobi Chromium</translation>
 <translation id="7064610482057367130">Ni nobene namestitve Chromiuma, ki bi jo bilo mogoče posodobiti.</translation>
 <translation id="7066436765290594559">Chromium OS ni mogel sinhronizirati podatkov. Posodobite sinhronizacijsko geslo.</translation>
-<translation id="7090955637699162649">Chromium lahko za izboljšanje izkušnje brskanja uporablja <ph name="BEGIN_LINK" />spletne storitve<ph name="END_LINK" />. Te storitve lahko kadar koli onemogočite, če želite.</translation>
 <translation id="7138853919861947730">Chromium lahko za boljšo izkušnjo brskanja uporablja spletne storitve.</translation>
 <translation id="7162152143154757523">Chromium omogoča pametnejše črkovanje, tako da vaše vnose v brskalnik pošilja v Googlove strežnike in s tem omogoči, da uporabljate isto tehnologijo preverjanja črkovanja, kot jo uporablja Googlovo iskanje.</translation>
 <translation id="7196020411877309443">Zakaj je to prikazano?</translation>

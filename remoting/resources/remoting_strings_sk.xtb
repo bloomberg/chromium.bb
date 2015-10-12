@@ -85,6 +85,7 @@ Informácie o ochrane osobných údajov nájdete v Pravidlách ochrany osobných
 <translation id="2919669478609886916">Momentálne zdieľate tento počítač s iným používateľom. Chcete pokračovať v zdieľaní?</translation>
 <translation id="2921543551052660690">Predtým ste sa prihlásili ako používateľ <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Ak chcete získať prístup k počítačom v danom účte, musíte sa <ph name="LINK_BEGIN" />prihlásiť do prehliadača Chromium<ph name="LINK_END" /> pomocou daného účtu a znova nainštalovať funkciu Chromoting.</translation>
 <translation id="2926340305933667314">Vzdialený prístup k tomuto počítaču sa nepodarilo zakázať. Skúste to znova neskôr.</translation>
+<translation id="2930135165929238380">Niektoré potrebné komponenty chýbajú. Prejdite na adresu chrome://plugins a uistite sa, že je aktivovaný doplnok Native Client.</translation>
 <translation id="2939145106548231838">Overenie na účely hostenia</translation>
 <translation id="2998137343848432918">• Pridaná obrazovka Kredity
 • Opravený problém pri prepnutí do režimu celej obrazovky s viditeľnou klávesnicou</translation>

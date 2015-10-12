@@ -57,7 +57,7 @@ Pokud se přesto přihlásíte, budou data prohlížeče Chrome (například zá
 <translation id="2576431527583832481">Chrome je opět o něco lepší. K dispozici je nová verze.</translation>
 <translation id="2580411288591421699">Nelze nainstalovat verzi aplikace Google Chrome, která je právě spuštěná. Ukončete aplikaci Google Chrome a opakujte akci.</translation>
 <translation id="2588322182880276190">Logo Chrome</translation>
-<translation id="2664962310688259219">Chrome OS – licence pro otevřený zdrojový kód</translation>
+<translation id="2664962310688259219">Chrome OS – licence open source</translation>
 <translation id="2665296953892887393">Pomozte aplikaci Google Chrome zlepšovat tím, že budete společnosti Google zasílat zprávy o selhání a <ph name="UMA_LINK" />.</translation>
 <translation id="2669824781555328029">Soubor <ph name="FILE_NAME" /> může narušit prohlížení internetu, Chrome jej proto zablokoval.</translation>
 <translation id="2681064822612051220">V systému byla nalezena konfliktní instalace prohlížeče Google Chrome. Odinstalujte prosím tuto instanci a zkuste to znovu.</translation>
@@ -107,7 +107,6 @@ Pokud se přesto přihlásíte, budou data prohlížeče Chrome (například zá
 <translation id="4458285410772214805">Chcete-li, aby se změny projevily, odhlaste se a znovu se přihlaste.</translation>
 <translation id="4480040274068703980">Chrome OS vaše data nemohl synchronizovat z důvodu chyby při přihlášení.</translation>
 <translation id="4513711165509885787">Fakturační údaje byly uloženy do prohlížeče Chrome.</translation>
-<translation id="4519152997629025674">Prohlížeč Google Chrome vám může usnadnit prohlížení pomocí <ph name="BEGIN_LINK" />webových služeb<ph name="END_LINK" />. Tyto služby můžete kdykoli zakázat.</translation>
 <translation id="4561051373932531560">Google Chrome umožňuje kliknout na telefonní číslo na webu a volat na něj prostřednictvím aplikace Skype.</translation>
 <translation id="4567424176335768812">Jste přihlášeni pomocí účtu <ph name="USER_EMAIL_ADDRESS" />. Nyní můžete přistupovat ke všem svým záložkám, historii a dalším nastavením ve všech přihlášených zařízeních.</translation>
 <translation id="4631713731678262610">Skrýt v nabídce Chrome</translation>
@@ -142,7 +141,6 @@ Některé funkce mohou být nedostupné. Zadejte prosím jiný adresář profilu
 Aplikace Google Chrome nemůže vaše nastavení obnovit.</translation>
 <translation id="5453904507266736060">Nechat aplikaci Google Chrome spuštěnou na pozadí</translation>
 <translation id="5495581687705680288">Moduly načtené do aplikace Google Chrome</translation>
-<translation id="5531349711857992002">Řetězec certifikátů pro tuto stránku obsahuje minimálně jeden certifikát podepsaný zastaralým algoritmem podpisu založeným na technologii SHA-1.</translation>
 <translation id="556024056938947818">Google Chrome se pokouší zobrazit hesla.</translation>
 <translation id="5563479599352954471">Vyhledávání jedním klepnutím</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
@@ -175,7 +173,6 @@ Aplikace Google Chrome nemůže vaše nastavení obnovit.</translation>
 <translation id="6235018212288296708">Pravidlo příchozího provozu pro aplikaci Google Chrome, které povolí provoz mDNS.</translation>
 <translation id="6236285698028833233">Google Chrome již nepodporuje verzi operačního systému, kterou používáte, a nebude možné jej aktualizovat.</translation>
 <translation id="629218512217695915">Použít heslo vygenerované prohlížečem Chrome</translation>
-<translation id="6368805772029492593">V zájmu lepšího zabezpečení bude Google Chrome šifrovat vaše data.</translation>
 <translation id="6368958679917195344">Chrome OS by nemohl existovat bez dalšího <ph name="BEGIN_LINK_CROS_OSS" />softwaru s otevřeným zdrojovým kódem<ph name="END_LINK_CROS_OSS" />.</translation>
 <translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{Momentálně probíhá stahování. Chcete stahování zrušit a ukončit prohlížeč Google Chrome?}few{Momentálně probíhají # stahování. Chcete stahování zrušit a ukončit prohlížeč Google Chrome?}many{Momentálně probíhá # stahování. Chcete stahování zrušit a ukončit prohlížeč Google Chrome?}other{Momentálně probíhá # stahování. Chcete stahování zrušit a ukončit prohlížeč Google Chrome?}}</translation>
 <translation id="6598387184982954187">Synchronizujete obsah a nastavení Chrome s účtem <ph name="PROFILE_EMAIL" />. Chcete-li možnosti synchronizace upravit nebo Chrome používat bez účtu Google, navštivte <ph name="SETTINGS_LINK" />.</translation>
@@ -226,7 +223,7 @@ Aplikace Google Chrome nemůže vaše nastavení obnovit.</translation>
 <translation id="7459554271817304652">Chcete-li uložit personalizované funkce prohlížeče na web a získat k nim přístup z prohlížeče Google Chrome v libovolném prohlížeči, nastavte synchronizaci.</translation>
 <translation id="7473136999113284234">Chrome se automaticky aktualizuje, abyste měli vždy nejaktuálnější verzi.</translation>
 <translation id="7473891865547856676">Ne, děkuji</translation>
-<translation id="7494905215383356681">Chrome – licence pro otevřený zdrojový kód</translation>
+<translation id="7494905215383356681">Chrome – licence open source</translation>
 <translation id="7592736734348559088">Google Chrome vaše data nemohl synchronizovat, protože vaše přihlašovací údaje nejsou aktuální.</translation>
 <translation id="7626032353295482388">Vítá vás Chrome</translation>
 <translation id="7747138024166251722">Instalační soubor nemohl vytvořit dočasný adresář. Zkontrolujte prosím volné místo na disku a povolení instalovat software.</translation>

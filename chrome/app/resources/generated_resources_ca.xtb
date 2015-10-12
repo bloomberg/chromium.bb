@@ -253,7 +253,7 @@
       Tingueu en compte que el Bluetooth s'activarà per a tots els dispositius compatibles de l'usuari <ph name="USER_DISPLAY_EMAIL" /> i s'enviarà informació sobre el maquinari a Google. &lt;a&gt;Més informació&lt;/a&gt;</translation>
 <translation id="13649080186077898">Gestiona la configuració d'Emplenament automàtic</translation>
 <translation id="1367951781824006909">Trieu un fitxer</translation>
-<translation id="1368265273904755308">Informa d'un problema</translation>
+<translation id="1368265273904755308">Informeu d'un problema</translation>
 <translation id="1368832886055348810">D'esquerra a dreta</translation>
 <translation id="1370646789215800222">Voleu suprimir la persona?</translation>
 <translation id="1371806038977523515">L'extensió següent controla aquesta configuració:</translation>
@@ -697,7 +697,7 @@
 <translation id="1992397118740194946">No establerta</translation>
 <translation id="1999092554946563091">Activa o desactiva el filtre SafeSites per a comptes secundaris.</translation>
 <translation id="1999115740519098545">A l'inici</translation>
-<translation id="2007404777272201486">Informa d'un problema...</translation>
+<translation id="2007404777272201486">Informeu d'un problema...</translation>
 <translation id="2011110593081822050">Treballador web: <ph name="WORKER_NAME" /></translation>
 <translation id="201192063813189384">Error en llegir dades de la memòria cau.</translation>
 <translation id="2012766523151663935">Revisió de microprogramari:</translation>
@@ -831,7 +831,7 @@
 <translation id="2217501013957346740">Creeu un nom:</translation>
 <translation id="2218515861914035131">Enganxa com a text sense format</translation>
 <translation id="2218947405056773815"><ph name="API_NAME" /> ha detectat un problema.</translation>
-<translation id="2220529011494928058">Informa d'un problema</translation>
+<translation id="2220529011494928058">Informeu d'un problema</translation>
 <translation id="2222641695352322289">L'única manera de desfer aquesta acció és tornar a instal·lar <ph name="IDS_SHORT_PRODUCT_OS_NAME" />.</translation>
 <translation id="2224444042887712269">Aquesta configuració pertany a <ph name="OWNER_EMAIL" />.</translation>
 <translation id="2224551243087462610">Edita el nom de la carpeta</translation>
@@ -1175,7 +1175,6 @@ No crec que calgui bloquejar aquest lloc.</translation>
 <translation id="2674170444375937751">Estàs segur que vols suprimir aquestes pàgines de l'historial?</translation>
 <translation id="2676342370492585497">Contingut mixt actiu</translation>
 <translation id="2676946222714718093">En reproducció</translation>
-<translation id="2677924368525077324">Activa l'edició tàctil del text</translation>
 <translation id="2678063897982469759">Torna a activar</translation>
 <translation id="2679385451463308372">Imprimeix des de la finestra de diàleg del sistema…</translation>
 <translation id="2680208403056680091">La vostra connexió a Internet s'està controlant</translation>
@@ -2152,7 +2151,6 @@ No crec que calgui bloquejar aquest lloc.</translation>
 <translation id="3972425373133383637">Manteniu-vos al dia de tota la informació que us cal, en tots els dispositius.</translation>
 <translation id="3974195870082915331">Feu clic per mostrar la contrasenya</translation>
 <translation id="397703832102027365">S'està finalitzant...</translation>
-<translation id="3978194674093708182">En lloc d'enumerar al quadre de diàleg els tipus de dades que no se suprimeixen, utilitzeu una senzilla cadena d'ajuda que porti a un article amb més informació.</translation>
 <translation id="3978267865113951599">(Error)</translation>
 <translation id="3979395879372752341">S'ha afegit una extensió nova (<ph name="EXTENSION_NAME" />)</translation>
 <translation id="3979748722126423326">Activa <ph name="NETWORKDEVICE" /></translation>
@@ -2259,7 +2257,6 @@ Tots els usuaris han de tancar la sessió per continuar.</translation>
 <translation id="4146175323503586871"><ph name="SERVICE_NAME" /> vol comprovar si el dispositiu Chrome OS compleix els requisits per accedir a una oferta. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="4147376274874979956">No es pot accedir al fitxer.</translation>
 <translation id="4151403195736952345">Utilitza el valor predeterminat global (detecta)</translation>
-<translation id="4152200911868329970">|No s'esborraran| algunes opcions de configuració que poden reflectir hàbits de navegació.</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 pestanya}other{# pestanyes}}</translation>
 <translation id="4154664944169082762">Empremtes</translation>
 <translation id="4157188838832721931">Desactiva la sol·licitud de la contrasenya del sistema operatiu a l'usuari abans de revelar contrasenyes a la pàgina de contrasenyes.</translation>
@@ -3728,7 +3725,7 @@ Assegureu-vos que no es pugui accedir a informació confidencial.</translation>
 <translation id="6322279351188361895">No s'ha pogut llegir la clau privada.</translation>
 <translation id="6324839205543480136">No trobem el telèfon. Comproveu que estigui a mà i que el Bluetooth estigui activat.</translation>
 <translation id="6325191661371220117">Desactiva l'inici automàtic</translation>
-<translation id="6326175484149238433">Elimina de Chrome</translation>
+<translation id="6326175484149238433">Suprimeix de Chrome</translation>
 <translation id="632744581670418035">Superposició de teclat</translation>
 <translation id="6328639280570009161">Proveu de desactivar la predicció de xarxa</translation>
 <translation id="6333049849394141510">Tria quines dades sincronitzar</translation>
@@ -3899,7 +3896,6 @@ Consulteu el vostre correu electrònic (<ph name="ACCOUNT_EMAIL" />) per obtenir
 <translation id="656398493051028875">S'està suprimint "<ph name="FILENAME" />"...</translation>
 <translation id="6565108107088666812">S'esborraran les dades sincronitzades de tots els dispositius.</translation>
 <translation id="6566142449942033617">No s'ha pogut carregar "<ph name="PLUGIN_PATH" />" per al connector.</translation>
-<translation id="6566572652089581977">Utilitzeu una senzilla cadena d'ajuda al quadre de diàleg Esborra les dades de navegació.</translation>
 <translation id="6567688344210276845">No s'ha pogut carregar la icona "<ph name="ICON" />" per a l'acció de la pàgina.</translation>
 <translation id="6569050677975271054">Només llista negra estàtica</translation>
 <translation id="6571070086367343653">Edita la targeta de crèdit</translation>
@@ -4498,6 +4494,7 @@ El mode d'incògnit, <ph name="SHORTCUT_KEY" />, us pot resultar pràctic la pro
 <translation id="7472639616520044048">Tipus MIME:</translation>
 <translation id="7473891865547856676">No, gràcies</translation>
 <translation id="747459581954555080">Restaura'ls tots</translation>
+<translation id="7474669101120914750">L'extensió <ph name="NAME" /> controla aquesta opció de configuració</translation>
 <translation id="7474889694310679759">Teclat anglès del Canadà</translation>
 <translation id="7475671414023905704">URL de contrasenya perduda de Netscape</translation>
 <translation id="7477347901712410606">Si heu oblidat la frase de contrasenya, atureu i restabliu la sincronització mitjançant <ph name="BEGIN_LINK" />Google Dashboard<ph name="END_LINK" />.</translation>
@@ -5228,7 +5225,6 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="852269967951527627">No permetis que cap lloc mostri notificacions</translation>
 <translation id="8524066305376229396">Emmagatzematge permanent:</translation>
 <translation id="8525306231823319788">Pantalla completa</translation>
-<translation id="852573274664085347">L'edició tàctil es pot iniciar fent un toc en un camp de text o en un text seleccionat.</translation>
 <translation id="852605377609758011">S'utilitzarà una targeta virtual de Google Payments per fer la transacció. Es tracta d'un número nou de targeta que permet que el venedor no vegi mai el número real de la vostra targeta de crèdit.</translation>
 <translation id="8528962588711550376">S'està iniciant la sessió.</translation>
 <translation id="8535005006684281994">URL de renovació de certificat de Netscape</translation>

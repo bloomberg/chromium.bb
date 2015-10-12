@@ -1179,7 +1179,6 @@ Sa palagay ko, hindi dapat i-block ang site na ito!</translation>
 <translation id="2674170444375937751">Sigurado ka bang nais mong tanggalin ang mga pahinang ito mula sa iyong history?</translation>
 <translation id="2676342370492585497">Aktibong Halu-halong Content</translation>
 <translation id="2676946222714718093">Nagpe-play sa</translation>
-<translation id="2677924368525077324">Paganahin ang pag-edit ng teksto gamit ang pagpindot</translation>
 <translation id="2678063897982469759">Muling paganahin</translation>
 <translation id="2679385451463308372">I-print gamit ang dialog ng system...</translation>
 <translation id="2680208403056680091">Kinokontrol ang Iyong Koneksyon sa Internet</translation>
@@ -2162,7 +2161,6 @@ Sa palagay ko, hindi dapat i-block ang site na ito!</translation>
 <translation id="3972425373133383637">Manatiling nakakonekta sa kung ano ang kailangan mong malaman, sa lahat ng device.</translation>
 <translation id="3974195870082915331">I-click upang ipakita ang password</translation>
 <translation id="397703832102027365">Tinatapos...</translation>
-<translation id="3978194674093708182">Sa halip na isa-isahin ang mga uri ng data na hindi na-delete sa dialog, gumamit ng simpleng string ng suporta na naka-link sa isang artikulo na may higit pang impormasyon.</translation>
 <translation id="3978267865113951599">(Nasira)</translation>
 <translation id="3979395879372752341">Nagdagdag ng bagong extension (<ph name="EXTENSION_NAME" />)</translation>
 <translation id="3979748722126423326">Paganahin ang <ph name="NETWORKDEVICE" /></translation>
@@ -2269,7 +2267,6 @@ Dapat mag-sign out ang lahat ng user upang magpatuloy.</translation>
 <translation id="4146175323503586871">Gustong tingnan ng <ph name="SERVICE_NAME" /> kung kwalipikado ang iyong Chrome OS device para sa isang alok. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="4147376274874979956">Hindi ma-access ang file.</translation>
 <translation id="4151403195736952345">Gamitin ang pangkalahatang default (Tukuyin)</translation>
-<translation id="4152200911868329970">Ang ilang setting na maaaring magpakita ng mga gawi sa pagba-browse ay |hindi iki-clear|.</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 tab}one{# tab}other{# na tab}}</translation>
 <translation id="4154664944169082762">Mga fingerprint</translation>
 <translation id="4157188838832721931">I-disable ang pag-prompt sa user para sa kanilang password sa OS bago ipakita ang mga password sa pahina ng mga password.</translation>
@@ -3922,7 +3919,6 @@ Maaaring hindi available ang ilang tampok.  Mangyaring suriin na umiiral ang pro
 <translation id="656398493051028875">Tinatanggal ang "<ph name="FILENAME" />"...</translation>
 <translation id="6565108107088666812">Kini-clear nito ang naka-sync na data sa lahat ng device.</translation>
 <translation id="6566142449942033617">Maaaring hindi mai-load ang '<ph name="PLUGIN_PATH" />' para sa plugin.</translation>
-<translation id="6566572652089581977">Gumamit ng simpleng string ng suporta sa dialog na I-clear ang data ng pagba-browse.</translation>
 <translation id="6567688344210276845">Maaaring hindi mai-load ang icon '<ph name="ICON" />' para sa pagkilos sa pahina.</translation>
 <translation id="6569050677975271054">I-blacklist nang static lang</translation>
 <translation id="6571070086367343653">I-edit ang credit card</translation>
@@ -4533,6 +4529,7 @@ Psst! Maaaring maging kapaki-pakinabang ang mode na incognito <ph name="SHORTCUT
 <translation id="7472639616520044048">Mga Uri ng MIME:</translation>
 <translation id="7473891865547856676">Hindi, Salamat</translation>
 <translation id="747459581954555080">Ipanumbalik lahat</translation>
+<translation id="7474669101120914750">Kinokontrol ang setting na ito ng extension na <ph name="NAME" /></translation>
 <translation id="7474889694310679759">Canadian English na keyboard</translation>
 <translation id="7475671414023905704">URL ng Nawalang Password ng Netscape</translation>
 <translation id="7477347901712410606">Kung nakalimutan mo ang iyong passphrase, ihinto at i-reset ang Pag-sync sa pamamagitan ng <ph name="BEGIN_LINK" />Google Dashboard<ph name="END_LINK" />.</translation>
@@ -5268,7 +5265,6 @@ Kinakalkula ang oras hanggang sa mapuno</translation>
 <translation id="852269967951527627">Huwag payagan ang anumang site na magpakita ng mga notification</translation>
 <translation id="8524066305376229396">Matagalang storage:</translation>
 <translation id="8525306231823319788">Buong screen</translation>
-<translation id="852573274664085347">Maaaring masimulan ang pag-edit gamit ang pagpindot sa pamamagitan ng pag-tap sa textfield o sa napiling teksto.</translation>
 <translation id="852605377609758011">Gagamit ng isang Google Payments Virtual Card para sa transaksyong ito. Ang Virtual Card ay isang bagong numero ng card na ginagamit upang hindi makita ng nagbebenta ang tunay na numero ng iyong credit card.</translation>
 <translation id="8528962588711550376">Nagsa-sign in.</translation>
 <translation id="8535005006684281994">URL ng Pag-renew ng Netscape Certificate</translation>

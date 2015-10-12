@@ -53,7 +53,6 @@
 <translation id="2673087257647337101">Gần được cập nhật! Hãy chạy lại Chromium để hoàn tất cập nhật.</translation>
 <translation id="2685838254101182273">Chromium đã ngừng cập nhật và không còn hỗ trợ phiên bản hệ điều hành này của bạn.</translation>
 <translation id="2705212601509139398">Trang web này đang sử dụng plugin Chromium Frame sắp không còn được hỗ trợ. Vui lòng gỡ cài đặt plugin này và tải xuống trình duyệt tương thích.</translation>
-<translation id="2718390899429598676">Để bảo mật hơn, Chromium sẽ mã hóa dữ liệu của bạn.</translation>
 <translation id="2732467638532545152">Máy tính của bạn đang chạy phiên bản Microsoft Windows cũ. Phiên bản này không thể xử lý chứng chỉ bảo mật của trang web này. Do sự cố này, Chromium không thể biết chứng chỉ đến từ <ph name="SITE" /> hay từ ai đó trên mạng của bạn giả làm <ph name="SITE" />. Vui lòng cập nhật máy tính của bạn lên phiên bản Windows mới hơn.</translation>
 <translation id="2770231113462710648">Thay đổi trình duyệt mặc định thành:</translation>
 <translation id="2801146392936645542"><ph name="FILE_NAME" /> là tệp độc hại và Chromium đã chặn tệp này.</translation>
@@ -137,7 +136,6 @@
 <translation id="5427571867875391349">Đặt Chromium là trình duyệt mặc định của bạn</translation>
 <translation id="5466153949126434691">Chromium tự động cập nhật nên bạn luôn có phiên bản mới nhất. Khi quá trình tải xuống này hoàn tất, Chromium sẽ khởi động lại và bạn có thể tiếp tục sử dụng.</translation>
 <translation id="549669000822060376">Vui lòng đợi khi Chromium cài đặt các bản cập nhật hệ thống mới nhất.</translation>
-<translation id="5531349711857992002">Chuỗi chứng chỉ cho trang web này chứa ít nhất một chứng chỉ đã được ký bằng thuật toán chữ ký không dùng nữa dựa trên SHA-1.</translation>
 <translation id="5563479599352954471">Tìm kiếm bằng một lần chạm</translation>
 <translation id="5620765574781326016">Tìm hiểu về các chủ đề trên trang web mà không phải rời khỏi trang.</translation>
 <translation id="5772805321386874569">(yêu cầu Chromium <ph name="BEGIN_BUTTON" />khởi động lại<ph name="END_BUTTON" />)</translation>
@@ -190,7 +188,6 @@ Một số tính năng có thể không khả dụng. Hãy chỉ định thư m�
 <translation id="705851970750939768">Cập nhật Chromium</translation>
 <translation id="7064610482057367130">Không tìm thấy bản cài đặt Chromium cần cập nhật.</translation>
 <translation id="7066436765290594559">Chromium OS không thể đồng bộ hóa dữ liệu của bạn. Vui lòng cập nhật cụm mật khẩu Đồng bộ hóa của bạn.</translation>
-<translation id="7090955637699162649">Chromium có thể sử dụng <ph name="BEGIN_LINK" />các dịch vụ web<ph name="END_LINK" /> để cải thiện trải nghiệm duyệt web của bạn. Bạn có thể tắt các dịch vụ này bất cứ lúc nào, nếu muốn.</translation>
 <translation id="7138853919861947730">Chromium có thể sử dụng các dịch vụ web để cải thiện trải nghiệm duyệt web của bạn.</translation>
 <translation id="7162152143154757523">Chromium có thể cung cấp tính năng kiểm tra chính tả thông minh hơn bằng cách gửi những gì bạn nhập vào trình duyệt tới máy chủ Google, cho phép bạn sử dụng cùng một công nghệ kiểm tra chính tả mà tìm kiếm của Google sử dụng.</translation>
 <translation id="7196020411877309443">Tại sao tôi nhìn thấy thông báo này?</translation>

@@ -53,7 +53,6 @@
 <translation id="2673087257647337101">Hampir terkini! Lancarkan semula Chromium untuk selesai mengemas kini.</translation>
 <translation id="2685838254101182273">Chromium telah berhenti mengemas kini dan tidak lagi menyokong versi sistem pengendalian anda ini.</translation>
 <translation id="2705212601509139398">Tapak ini menggunakan pemalam Chromium Frame yang tidak akan disokong tidak lama lagi. Sila nyahpasangnya dan muat turun penyemak imbas yang serasi.</translation>
-<translation id="2718390899429598676">Untuk keselamatan tambahan, Chromium akan menyulitkan data anda.</translation>
 <translation id="2732467638532545152">Komputer anda menjalankan versi lama Microsoft Windows yang tidak dapat memproses sijil keselamatan tapak web ini. Disebabkan masalah ini, Chromium tidak dapat memberitahu sama ada sijil berasal dari <ph name="SITE" /> atau daripada seseorang pada rangkaian anda yang berpura-pura menjadi <ph name="SITE" />. Sila kemas kini komputer anda kepada versi Windows yang lebih baharu.</translation>
 <translation id="2770231113462710648">Tukar penyemak imbas lalai kepada:</translation>
 <translation id="2801146392936645542"><ph name="FILE_NAME" /> bersifat hasad dan Chromium telah menyekatnya.</translation>
@@ -137,7 +136,6 @@
 <translation id="5427571867875391349">Tetapkan Chromium sebagai penyemak imbas lalai anda</translation>
 <translation id="5466153949126434691">Chromium dikemas kini secara automatik supaya anda sentiasa mempunyai versi yang terbaharu. Apabila muat turun ini selesai, Chromium akan dimulakan semula dan anda sudah boleh menggunakannya.</translation>
 <translation id="549669000822060376">Sila tunggu sementara Chromium memasang kemas kini sistem terkini.</translation>
-<translation id="5531349711857992002">Rantaian sijil untuk tapak web ini mengandungi sekurang-kurangnya satu sijil yang ditandatangani menggunakan algoritma tandatangan yang telah ditamatkan berdasarkan SHA-1.</translation>
 <translation id="5563479599352954471">Carian dengan satu sentuhan</translation>
 <translation id="5620765574781326016">Ketahui tentang topik di tapak web tanpa meninggalkan halaman.</translation>
 <translation id="5772805321386874569">(memerlukan Chromium <ph name="BEGIN_BUTTON" />dimulakan semula<ph name="END_BUTTON" />)</translation>
@@ -190,7 +188,6 @@ Beberapa ciri mungkin tidak tersedia. Sila nyatakan direktori profil yang berbez
 <translation id="705851970750939768">Kemas kini Chromium</translation>
 <translation id="7064610482057367130">Pemasangan Chromium tidak ditemui untuk dikemas kini.</translation>
 <translation id="7066436765290594559">OS Chromium tidak dapat menyegerakkan data anda. Sila kemas kini frasa laluan Segerak anda.</translation>
-<translation id="7090955637699162649">Chromium mungkin menggunakan <ph name="BEGIN_LINK" />perkhidmatan web<ph name="END_LINK" /> untuk meningkatkan pengalaman penyemakan imbas anda. Anda boleh memilih untuk melumpuhkan perkhidmatan ini pada bila-bila masa.</translation>
 <translation id="7138853919861947730">Chromium boleh menggunakan perkhidmatan web untuk meningkatkan pengalaman penyemakan imbas anda.</translation>
 <translation id="7162152143154757523">Chromium dapat menyediakan semakan ejaan yang lebih pintar dengan menghantar apa yang anda taip dalam penyemak imbas kepada pelayan Google, membolehkan anda menggunakan teknologi semakan ejaan yang sama seperti yang digunakan oleh carian Google.</translation>
 <translation id="7196020411877309443">Mengapakah halaman ini yang saya lihat?</translation>

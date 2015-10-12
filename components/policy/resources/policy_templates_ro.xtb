@@ -1308,7 +1308,6 @@
 <translation id="7848840259379156480">Îți permite să configurezi motorul de redare HTML prestabilit atunci când <ph name="PRODUCT_FRAME_NAME" /> este instalat.
       Setarea prestabilită este să permiți browserului gazdă să redea, dar,
       dacă vrei, o poți anula, pentru ca <ph name="PRODUCT_FRAME_NAME" /> să redea paginile HTML în mod prestabilit.</translation>
-<translation id="7880891067740158163">Vă permite să specificați o listă de modele pentru adresele URL ce indică site-urile pentru care <ph name="PRODUCT_NAME" /> ar trebui să selecteze în mod automat un certificat de client, în cazul în care site-ul solicită un certificat. Dacă această politică nu este setată, nu se va realiza selectarea automată pentru niciun site.</translation>
 <translation id="7882585827992171421">Această politică este activă numai în modul Vânzare.
 
       Politica stabilește codul extensiei de utilizat ca screen saver pentru ecranul de conectare. Extensia trebuie să facă parte din pachetul de aplicații care este configurat pentru acest domeniu prin intermediul politicii DeviceAppPack.</translation>
@@ -1326,12 +1325,6 @@
           Rețineți că dacă politica <ph name="REMOTEACCESSHOSTFIREWALLTRAVERSAL_POLICY_NAME" /> este dezactivată, această politică va fi ignorată.
 
           Dacă politica nu este configurată, setarea va fi activată.</translation>
-<translation id="8079569287249995869">Activează optimizarea pentru WPAD în <ph name="PRODUCT_NAME" /> și împiedică utilizatorii să modifice această setare.
-
-      Dacă politica este activată, <ph name="PRODUCT_NAME" /> așteaptă mai puțin timp un răspuns de la serverele WPAD bazate pe DNS.
-
-      Dacă politica nu este configurată, aceasta va fi activată, iar utilizatorul nu
-      va putea să o modifice.</translation>
 <translation id="8099880303030573137">Interval de inactivitate la funcționarea pe baterie</translation>
 <translation id="8102913158860568230">Setarea implicită pentru mediastream</translation>
 <translation id="8104962233214241919">Selectați automat certificatele de client pentru aceste site-uri</translation>

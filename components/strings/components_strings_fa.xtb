@@ -76,7 +76,7 @@
 <translation id="2556876185419854533">&amp;واگرد ویرایش</translation>
 <translation id="2581221116934462656">مایلید دفعه بعد <ph name="PRODUCT_NAME" /> پیشنهاد دهد صفحه‌های <ph name="LANGUAGE_NAME" /> از این سایت ترجمه شوند؟</translation>
 <translation id="2587841377698384444">‏شناسه Directory API:</translation>
-<translation id="2597378329261239068">این سند توسط رمز ورود محافظت می‌شود.  لطفاً یک رمز ورود وارد کنید.</translation>
+<translation id="2597378329261239068">این سند توسط گذرواژه محافظت می‌شود.  لطفاً یک گذرواژه وارد کنید.</translation>
 <translation id="2625385379895617796">ساعت شما جلو است</translation>
 <translation id="2639739919103226564">وضعیت:</translation>
 <translation id="2653659639078652383">ارائه</translation>
@@ -292,7 +292,6 @@
 <translation id="7983301409776629893">همیشه <ph name="ORIGINAL_LANGUAGE" /> به <ph name="TARGET_LANGUAGE" /> ترجمه شود</translation>
 <translation id="7988324688042446538">نشانک‌های دسک‌تاپ</translation>
 <translation id="7995512525968007366">تعیین نشده</translation>
-<translation id="8003882219468422867">لغو شرکتی</translation>
 <translation id="8034522405403831421">این صفحه به زبان <ph name="SOURCE_LANGUAGE" /> است. مایلید آن را به <ph name="TARGET_LANGUAGE" /> ترجمه کنید؟</translation>
 <translation id="8088680233425245692">مشاهده مقاله ناموفق بود.</translation>
 <translation id="8091372947890762290">فعال‌سازی در سرور در حالت تعلیق است</translation>

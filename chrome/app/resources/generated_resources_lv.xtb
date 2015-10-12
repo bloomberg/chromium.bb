@@ -1176,7 +1176,6 @@ Es uzskatu, ka šai vietnei nav jābūt bloķētai.</translation>
 <translation id="2674170444375937751">Vai tiešām vēlaties dzēst šīs lapas no savas vēstures?</translation>
 <translation id="2676342370492585497">Aktīvs jauktais saturs</translation>
 <translation id="2676946222714718093">Tiek atskaņots šeit:</translation>
-<translation id="2677924368525077324">Iespējot pieskārienu izmantošanu teksta rediģēšanai</translation>
 <translation id="2678063897982469759">Atkārtoti iespējot</translation>
 <translation id="2679385451463308372">Drukāt ar sistēmas dialoglodziņu...</translation>
 <translation id="2680208403056680091">Jūsu interneta savienojums tiek pārvaldīts</translation>
@@ -2157,7 +2156,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="3972425373133383637">Piekļūstiet visai nepieciešamajai informācijai visās ierīcēs.</translation>
 <translation id="3974195870082915331">Noklikšķiniet, lai rādītu paroli</translation>
 <translation id="397703832102027365">Notiek pabeigšana...</translation>
-<translation id="3978194674093708182">Izmantot vienkāršu atbalsta virkni, kas novirza uz rakstu ar plašāku informāciju, nevis dialoglodziņā uzskaitīt tādu datu veidus, kas nav izdzēsti.</translation>
 <translation id="3978267865113951599">(Avarējis)</translation>
 <translation id="3979395879372752341">Ir pievienots jauns paplašinājums (<ph name="EXTENSION_NAME" />)</translation>
 <translation id="3979748722126423326">Iespējot <ph name="NETWORKDEVICE" /></translation>
@@ -2264,7 +2262,6 @@ Lai turpinātu, visiem lietotājiem ir jāizrakstās.</translation>
 <translation id="4146175323503586871"><ph name="SERVICE_NAME" /> vēlas pārbaudīt, vai jūsu Chrome OS ierīce ir piemērota šim piedāvājumam. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="4147376274874979956">Failam nevar piekļūt.</translation>
 <translation id="4151403195736952345">Izmantot globālo noklusējuma vērtību (noteikt)</translation>
-<translation id="4152200911868329970">|Netiks dzēsti| daži iestatījumi, kas var atspoguļot pārlūkošanas paradumus.</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 cilne}zero{# ciļņu}one{# cilne}other{# cilnes}}</translation>
 <translation id="4154664944169082762">Pirkstu nospiedumi</translation>
 <translation id="4157188838832721931">Atspējot uzvednes parādīšanu lietotājam operētājsistēmas paroles ievadīšanai, pirms tiek atklātas paroļu lapā ietvertās paroles.</translation>
@@ -3918,7 +3915,6 @@ Iespējams, dažas funkcijas nebūs pieejamas. Pārbaudiet, vai profils eksistē
 <translation id="656398493051028875">Notiek faila “<ph name="FILENAME" />” dzēšana...</translation>
 <translation id="6565108107088666812">Tādējādi no visām ierīcēm tiks dzēsti sinhronizētie dati.</translation>
 <translation id="6566142449942033617">Nevarēja ielādēt spraudņa ceļu “<ph name="PLUGIN_PATH" />”.</translation>
-<translation id="6566572652089581977">Izmantot vienkāršu atbalsta virkni dialoglodziņā Pārlūkošanas datu notīrīšana.</translation>
 <translation id="6567688344210276845">Nevarēja ielādēt lapas darbības ikonu “<ph name="ICON" />”.</translation>
 <translation id="6569050677975271054">Tikai statisks melnais saraksts</translation>
 <translation id="6571070086367343653">Rediģēt kredītkarti</translation>
@@ -4520,6 +4516,7 @@ Nākamreiz jums varētu noderēt inkognito režīms (<ph name="SHORTCUT_KEY" />)
 <translation id="7472639616520044048">MIME veidi:</translation>
 <translation id="7473891865547856676">Nē, paldies!</translation>
 <translation id="747459581954555080">Atjaunot visu</translation>
+<translation id="7474669101120914750">Šo iestatījumu kontrolē paplašinājums <ph name="NAME" /></translation>
 <translation id="7474889694310679759">Kanādas angļu valodas tastatūra</translation>
 <translation id="7475671414023905704">Netscape pazaudētās paroles URL</translation>
 <translation id="7477347901712410606">Ja esat aizmirsis savu ieejas frāzi, apturiet un atiestatiet sinhronizāciju, izmantojot <ph name="BEGIN_LINK" />Google vadības paneli<ph name="END_LINK" />.</translation>
@@ -5252,7 +5249,6 @@ Tiek rēķināts atlikušais uzlādes laiks</translation>
 <translation id="852269967951527627">Neatļaut nevienai vietnei rādīt paziņojumus</translation>
 <translation id="8524066305376229396">Pastāvīga krātuve:</translation>
 <translation id="8525306231823319788">Pilnekrāna režīms</translation>
-<translation id="852573274664085347">Lai inicializētu rediģēšanu pieskaroties, pieskarieties teksta laukam vai atlasītajam tekstam.</translation>
 <translation id="852605377609758011">Šim darījumam tiks izmantota Google Payments virtuālā karte. Tā kā virtuālās kartes numurs ir jauns kartes numurs, pārdevējs neredzēs jūsu īsto kredītkartes numuru.</translation>
 <translation id="8528962588711550376">Pierakstīšanās.</translation>
 <translation id="8535005006684281994">Netscape sertifikāta atjaunošanas URL</translation>

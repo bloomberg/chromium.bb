@@ -14,7 +14,7 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="1298199220304005244">Pomoc s používáním operačního systému Chromium OS</translation>
 <translation id="1396446129537741364">Chromium se pokouší zobrazit hesla.</translation>
 <translation id="1414495520565016063">Jste přihlášeni do prohlížeče Chromium.</translation>
-<translation id="1444754455097148408">Chromium – licence pro otevřený zdrojový kód</translation>
+<translation id="1444754455097148408">Chromium – licence open source</translation>
 <translation id="1461885241643463646">Aktivuje v prohlížeči Chromium procesy přihlášení založené na rámcích iframe. Tento příznak přepíše příznak --enable-web-based-signin.</translation>
 <translation id="1480489203462860648">Vyzkoušet (již nainstalováno)</translation>
 <translation id="151962892725702025">Chromium OS nemůže synchronizovat data, protože Synchronizace ve vaší doméně není k dispozici.</translation>
@@ -36,7 +36,7 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="2077129598763517140">V případě dostupnosti použít hardwarovou akceleraci</translation>
 <translation id="2097986737970966220">Spustit Chromium na ploše</translation>
 <translation id="2119636228670142020">O systému &amp;Chromium OS</translation>
-<translation id="2158734852934720349">Chromium OS – licence pro otevřený zdrojový kód</translation>
+<translation id="2158734852934720349">Chromium OS – licence open source</translation>
 <translation id="2233513990531887259">Znovu spustit v moderním režimu prohlížeče Chromium</translation>
 <translation id="2241627712206172106">Pokud počítač sdílíte s kamarády a členy rodiny, každý může web procházet samostatně a nastavit si Chromium podle svých požadavků.</translation>
 <translation id="225614027745146050">Vítejte</translation>
@@ -55,7 +55,6 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="2673087257647337101">Aktualizace již je skoro hotova. Dokončete ji restartováním prohlížeče Chromium.</translation>
 <translation id="2685838254101182273">Chromium již nepodporuje verzi operačního systému, kterou používáte, a nebude možné jej aktualizovat.</translation>
 <translation id="2705212601509139398">Tento web používá plugin Chromium Frame, jehož podpora bude brzy ukončena. Odinstalujte jej prosím a stáhněte si kompatibilní prohlížeč.</translation>
-<translation id="2718390899429598676">V zájmu lepšího zabezpečení bude Chromium šifrovat vaše data.</translation>
 <translation id="2732467638532545152">Váš počítač používá starou verzi operačního systému Microsoft Windows, která bezpečnostní certifikát tohoto webu neumí zpracovat. Kvůli tomuto problému Chromium nedokáže určit, zda certifikát pochází z webu <ph name="SITE" />, nebo od někoho ve vaší síti, kdo se za web <ph name="SITE" /> vydává. Aktualizujte prosím operační systém počítače na nejnovější verzi systému Windows.</translation>
 <translation id="2770231113462710648">Změnit výchozí prohlížeč na:</translation>
 <translation id="2801146392936645542">Soubor <ph name="FILE_NAME" /> je škodlivý a prohlížeč Chromium jej zablokoval.</translation>
@@ -139,7 +138,6 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="5427571867875391349">Nastavit Chromium jako výchozí prohlížeč</translation>
 <translation id="5466153949126434691">Prohlížeč Chromium se automaticky aktualizuje, abyste vždy měli k dispozici nejnovější verzi. Až toto stahování skončí, Chromium se restartuje a budete moci pokračovat.</translation>
 <translation id="549669000822060376">Počkejte prosím, než Chromium nainstaluje nejnovější aktualizace systému.</translation>
-<translation id="5531349711857992002">Řetězec certifikátů pro tuto stránku obsahuje minimálně jeden certifikát podepsaný zastaralým algoritmem podpisu založeným na technologii SHA-1.</translation>
 <translation id="5563479599352954471">Vyhledávání jedním klepnutím</translation>
 <translation id="5620765574781326016">Vyhledávejte informace o tématech zmíněných na stránce, aniž byste stránku museli opustit.</translation>
 <translation id="5772805321386874569">(vyžaduje <ph name="BEGIN_BUTTON" />restartování<ph name="END_BUTTON" /> prohlížeče Chromium)</translation>
@@ -192,7 +190,6 @@ Některé funkce mohou být nedostupné. Zadejte prosím jiný adresář profilu
 <translation id="705851970750939768">Aktualizovat Chromium</translation>
 <translation id="7064610482057367130">Nebyla nalezena žádná instalace prohlížeče Chromium, kterou by bylo možné aktualizovat.</translation>
 <translation id="7066436765290594559">Chromium OS vaše data nemohl synchronizovat. Aktualizujte prosím heslovou frázi pro synchronizaci.</translation>
-<translation id="7090955637699162649">Chromium vám může usnadnit prohlížení pomocí <ph name="BEGIN_LINK" />webových služeb<ph name="END_LINK" />. Tyto služby můžete kdykoli zakázat.</translation>
 <translation id="7138853919861947730">Chromium vám může usnadnit prohlížení pomocí webových služeb.</translation>
 <translation id="7162152143154757523">Chromium může poskytovat lepší kontrolu pravopisu tím, že text zadaný do prohlížeče odešle na servery Google. Umožňuje vám tak používat stejnou technologii kontroly pravopisu, jakou používá Vyhledávání Google.</translation>
 <translation id="7196020411877309443">Proč je zobrazeno toto dialogové okno?</translation>

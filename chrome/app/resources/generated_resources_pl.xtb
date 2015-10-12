@@ -1175,7 +1175,6 @@ Ta strona nie powinna być zablokowana.</translation>
 <translation id="2674170444375937751">Czy na pewno chcesz usunąć te strony z historii?</translation>
 <translation id="2676342370492585497">Aktywna mieszana zawartość</translation>
 <translation id="2676946222714718093">Odtwarzane na</translation>
-<translation id="2677924368525077324">Włącz dotykową edycję tekstu</translation>
 <translation id="2678063897982469759">Włącz ponownie</translation>
 <translation id="2679385451463308372">Drukuj poprzez systemowe okno dialogowe</translation>
 <translation id="2680208403056680091">Twoje połączenie internetowe jest kontrolowane</translation>
@@ -2156,7 +2155,6 @@ Ta strona nie powinna być zablokowana.</translation>
 <translation id="3972425373133383637">Miej dostęp do potrzebnych informacji na wszystkich urządzeniach.</translation>
 <translation id="3974195870082915331">Kliknij, aby pokazać hasło</translation>
 <translation id="397703832102027365">Kończę...</translation>
-<translation id="3978194674093708182">Zamiast wymieniać w oknie dialogowym typy danych, które nie są usuwane, użyj prostego ciągu pomocy prowadzącego do artykułu zawierającego więcej informacji.</translation>
 <translation id="3978267865113951599">(Awaria)</translation>
 <translation id="3979395879372752341">Dodano nowe rozszerzenie (<ph name="EXTENSION_NAME" />)</translation>
 <translation id="3979748722126423326">Włącz: <ph name="NETWORKDEVICE" /></translation>
@@ -2263,7 +2261,6 @@ Aby kontynuować, wszyscy użytkownicy muszą się wylogować.</translation>
 <translation id="4146175323503586871"><ph name="SERVICE_NAME" /> chce sprawdzić, czy Twoje urządzenie z Chrome OS kwalifikuje się do skorzystania z oferty. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="4147376274874979956">Nie można uzyskać dostępu do pliku.</translation>
 <translation id="4151403195736952345">Użyj globalnego ustawienia domyślnego (Wykrywaj)</translation>
-<translation id="4152200911868329970">Niektóre ustawienia mogące odzwierciedlać nawyki przeglądania |nie zostaną wyczyszczone|.</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 karta}few{# karty}many{# kart}other{# karty}}</translation>
 <translation id="4154664944169082762">Odciski cyfrowe</translation>
 <translation id="4157188838832721931">Wyłącza prośbę o podanie hasła użytkownika do systemu operacyjnego wyświetlaną przed ujawnieniem haseł na stronie z hasłami.</translation>
@@ -3907,7 +3904,6 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="656398493051028875">Usuwam „<ph name="FILENAME" />”...</translation>
 <translation id="6565108107088666812">Powoduje to usunięcie zsynchronizowanych danych ze wszystkich urządzeń.</translation>
 <translation id="6566142449942033617">Nie można wczytać ścieżki „<ph name="PLUGIN_PATH" />” dla wtyczki.</translation>
-<translation id="6566572652089581977">Użyj prostego ciągu pomocy w oknie dialogowym Wyczyść dane przeglądarki.</translation>
 <translation id="6567688344210276845">Nie można wczytać ikony „<ph name="ICON" />” dla czynności wykonywanej na stronie.</translation>
 <translation id="6569050677975271054">Tylko statyczna czarna lista</translation>
 <translation id="6571070086367343653">Edytuj kartę kredytową</translation>
@@ -4498,6 +4494,7 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY" />
 <translation id="7472639616520044048">Typy MIME:</translation>
 <translation id="7473891865547856676">Nie, dziękuję</translation>
 <translation id="747459581954555080">Przywróć wszystkie</translation>
+<translation id="7474669101120914750">Tym ustawieniem zarządza rozszerzenie <ph name="NAME" /></translation>
 <translation id="7474889694310679759">Klawiatura kanadyjska (angielski)</translation>
 <translation id="7475671414023905704">Adres URL utraconego hasła firmy Netscape</translation>
 <translation id="7477347901712410606">Jeśli nie pamiętasz hasła, zatrzymaj i zresetuj synchronizację przy użyciu <ph name="BEGIN_LINK" />Panelu Google<ph name="END_LINK" />.</translation>
@@ -5228,7 +5225,6 @@ Przechowuj plik klucza w bezpiecznym miejscu. Będzie on potrzebny do utworzenia
 <translation id="852269967951527627">Nie zezwalaj żadnej witrynie na pokazywanie powiadomień</translation>
 <translation id="8524066305376229396">Stała przestrzeń dyskowa:</translation>
 <translation id="8525306231823319788">Pełny ekran</translation>
-<translation id="852573274664085347">Możesz włączyć edycję dotykiem, wybierając pole tekstowe lub zaznaczony tekst.</translation>
 <translation id="852605377609758011">Do zrealizowania tej transakcji zostanie użyta wirtualna karta Google Payments. Ma ona nowy numer, więc sprzedawca nie pozna prawdziwego numeru Twojej karty kredytowej.</translation>
 <translation id="8528962588711550376">Logowanie</translation>
 <translation id="8535005006684281994">Adres URL odnowienia certyfikatu firmy Netscape</translation>

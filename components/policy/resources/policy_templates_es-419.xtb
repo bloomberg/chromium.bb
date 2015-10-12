@@ -1283,7 +1283,6 @@ desactivarlo).</translation>
       Si no se establece esta política, <ph name="PRODUCT_NAME" /> utilizará el valor predeterminado de 5.000 milisegundos.</translation>
 <translation id="7842869978353666042">Opciones de configuración de Google Drive</translation>
 <translation id="7848840259379156480">Te permite configurar el procesador de HTML predeterminado cuando <ph name="PRODUCT_FRAME_NAME" /> está instalado. La configuración predeterminada permite al navegador del host realizar el procesamiento, pero tú puedes omitirlo de manera opcional y tener las páginas HTML del procesador del <ph name="PRODUCT_FRAME_NAME" /> de forma predeterminada.</translation>
-<translation id="7880891067740158163">Te permite configurar una lista de patrones de URL que especifican los sitios para los cuales <ph name="PRODUCT_NAME" /> debe seleccionar los certificados de un cliente automáticamente, si el sitio solicita un certificado. Si esta política no se configura, no se realizarán selecciones automáticas para ningún sitio.</translation>
 <translation id="7882585827992171421">Esta política solo se encuentra activa en el modo de venta.
 
       Determina la ID de la extensión que se debe utilizar como protector de pantalla en la página de acceso. La extensión debe formar parte del AppPack configurado para este dominio a través de la política DeviceAppPack.</translation>
@@ -1301,12 +1300,6 @@ desactivarlo).</translation>
           Ten en cuenta que si se inhabilita la política <ph name="REMOTEACCESSHOSTFIREWALLTRAVERSAL_POLICY_NAME" />, esta política se ignorará.
 
           Si esta política no se establece, la configuración estará habilitada.</translation>
-<translation id="8079569287249995869">Habilita la optimización WPAD en <ph name="PRODUCT_NAME" /> y evita que los usuarios cambien esta configuración.
-
-      Al habilitar esta política, <ph name="PRODUCT_NAME" /> espera por un intervalo más corto para servidores WPAD basados en DNS.
-
-      Si no se establece esta política, quedará habilitada y el usuario no
-      podrá cambiarla.</translation>
 <translation id="8099880303030573137">Demora de inactividad con batería</translation>
 <translation id="8102913158860568230">Configuración de mediastream predeterminada</translation>
 <translation id="8104962233214241919">Seleccionar automáticamente certificados de clientes para estos sitios</translation>

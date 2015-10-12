@@ -103,7 +103,6 @@ Ako se ipak prijavite, podaci sustava Chrome kao što su oznake, povijest i osta
 <translation id="4458285410772214805">Odjavite se i prijavite se ponovo da bi ta promjena postala aktivna.</translation>
 <translation id="4480040274068703980">OS Chrome nije mogao sinkronizirati vaše podatke zbog pogreške prilikom prijave.</translation>
 <translation id="4513711165509885787">Vaše pojedinosti o naplati spremljene su u Chrome.</translation>
-<translation id="4519152997629025674">Google Chrome može koristiti <ph name="BEGIN_LINK" />web-usluge<ph name="END_LINK" /> za poboljšavanje vašeg doživljaja pregledavanja. Te usluge po želji možete onemogućiti.</translation>
 <translation id="4561051373932531560">Google Chrome omogućuje da kliknete telefonski broj na webu i nazovete ga koristeći se Skypeom!</translation>
 <translation id="4567424176335768812">Prijavljeni ste kao <ph name="USER_EMAIL_ADDRESS" />. Sada možete pristupiti svojim oznakama, povijesti i drugim postavkama na svim uređajima na kojima se prijavljujete.</translation>
 <translation id="4631713731678262610">Sakrij u izborniku Chromea</translation>
@@ -134,7 +133,6 @@ Ako se ipak prijavite, podaci sustava Chrome kao što su oznake, povijest i osta
 <translation id="5430073640787465221">Datoteka vaših postavki oštećena je ili nevažeća. Google Chrome nema mogućnost oporavka vaših postavki.</translation>
 <translation id="5453904507266736060">Neka Google Chrome radi u pozadini</translation>
 <translation id="5495581687705680288">Moduli preneseni na Google Chrome</translation>
-<translation id="5531349711857992002">Lanac certifikata za ovu web-lokaciju sadrži barem jedan certifikat potpisan ukinutim algoritmom potpisa na temelju SHA-1.</translation>
 <translation id="556024056938947818">Google Chrome pokušava prikazati zaporke.</translation>
 <translation id="5563479599352954471">Pretraživanje jednim dodirom</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
@@ -167,7 +165,6 @@ Ako se ipak prijavite, podaci sustava Chrome kao što su oznake, povijest i osta
 <translation id="6235018212288296708">Ulazno pravilo kako bi Google Chrome dopustio mDNS promet.</translation>
 <translation id="6236285698028833233">Google Chrome prestao se ažurirati i više ne podržava ovu verziju vašeg operativnog sustava.</translation>
 <translation id="629218512217695915">Upotrijebite zaporku koju generira Chrome</translation>
-<translation id="6368805772029492593">Radi dodatne sigurnosti Google Chrome kriptirat će vaše podatke.</translation>
 <translation id="6368958679917195344">OS Chrome omogućen je dodatnim <ph name="BEGIN_LINK_CROS_OSS" />softverom otvorenog koda<ph name="END_LINK_CROS_OSS" />.</translation>
 <translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{U tijeku je preuzimanje. Želite li otkazati preuzimanje i napustiti Google Chrome?}one{U tijeku je # preuzimanje. Želite li otkazati preuzimanja i napustiti Google Chrome?}few{U tijeku su # preuzimanja. Želite li otkazati preuzimanja i napustiti Google Chrome?}other{U tijeku je # preuzimanja. Želite li otkazati preuzimanja i napustiti Google Chrome?}}</translation>
 <translation id="6598387184982954187">Upotrebljavate profil <ph name="PROFILE_EMAIL" /> za sinkronizaciju sadržaja u Chromeu. Da biste ažurirali svoje postavke sinkroniziranja ili upotrebljavali Chrome bez Google računa, posjetite <ph name="SETTINGS_LINK" />.</translation>

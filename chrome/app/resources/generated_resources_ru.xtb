@@ -1174,7 +1174,6 @@
 <translation id="2674170444375937751">Удалить эти страницы из истории посещений?</translation>
 <translation id="2676342370492585497">Активный смешанный контент</translation>
 <translation id="2676946222714718093">Устройство:</translation>
-<translation id="2677924368525077324">Включить сенсорный режим редактирования текста</translation>
 <translation id="2678063897982469759">Включить снова</translation>
 <translation id="2679385451463308372">Показывать системное диалоговое окно при печати...</translation>
 <translation id="2680208403056680091">Ваше интернет-подключение уже не только ваше</translation>
@@ -2154,7 +2153,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3972425373133383637">Подсказки, которые вы привыкли видеть на смартфоне, – теперь и в вашем браузере!</translation>
 <translation id="3974195870082915331">Нажмите, чтобы показать пароль</translation>
 <translation id="397703832102027365">Завершение…</translation>
-<translation id="3978194674093708182">Позволяет указать ссылку на статью с подробной информацией вместо того, чтобы перечислять, какие данные будут удалены.</translation>
 <translation id="3978267865113951599">(произошел сбой)</translation>
 <translation id="3979395879372752341">Добавлено новое расширение (<ph name="EXTENSION_NAME" />)</translation>
 <translation id="3979748722126423326">Включить <ph name="NETWORKDEVICE" /></translation>
@@ -2261,7 +2259,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4146175323503586871"><ph name="SERVICE_NAME" /> хочет проверить, доступно ли предложение на вашем устройстве Chrome OS. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="4147376274874979956">Нет доступа к файлу.</translation>
 <translation id="4151403195736952345">Использовать глобальный параметр по умолчанию (находить)</translation>
-<translation id="4152200911868329970">Некоторые данные о паттернах работы в Интернете |удалены не будут|.</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 вкладка}one{# вкладка}few{# вкладки}many{# вкладок}other{# вкладки}}</translation>
 <translation id="4154664944169082762">Отпечатки</translation>
 <translation id="4157188838832721931">Чтобы просмотреть пароли, не нужно вводить пароль своего аккаунта в операционной системе.</translation>
@@ -3906,7 +3903,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="656398493051028875">Удаление файла "<ph name="FILENAME" />"…</translation>
 <translation id="6565108107088666812">Синхронизированные данные будут удалены со всех устройств.</translation>
 <translation id="6566142449942033617">Не удается загрузить "<ph name="PLUGIN_PATH" />" для плагина.</translation>
-<translation id="6566572652089581977">Приводить ссылку на справочные материалы в диалоговом окне "Очистить историю"</translation>
 <translation id="6567688344210276845">Не удалось загрузить значок "<ph name="ICON" />" для действия страницы.</translation>
 <translation id="6569050677975271054">Только статический черный список</translation>
 <translation id="6571070086367343653">Изменить данные карты</translation>
@@ -4506,6 +4502,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="7472639616520044048">Типы MIME:</translation>
 <translation id="7473891865547856676">Пропустить</translation>
 <translation id="747459581954555080">Восстановить все</translation>
+<translation id="7474669101120914750">Этой настройкой управляет расширение "<ph name="NAME" />"</translation>
 <translation id="7474889694310679759">Канадская раскладка (английский)</translation>
 <translation id="7475671414023905704">URL потерянных паролей Netscape</translation>
 <translation id="7477347901712410606">Если вы забыли кодовую фразу, остановите синхронизацию и сбросьте ее настройки с помощью <ph name="BEGIN_LINK" />Личного кабинета Google<ph name="END_LINK" />.</translation>
@@ -5236,7 +5233,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="852269967951527627">Не показывать уведомления на сайтах</translation>
 <translation id="8524066305376229396">Папка для постоянного хранения:</translation>
 <translation id="8525306231823319788">Полноэкранный режим</translation>
-<translation id="852573274664085347">Чтобы редактировать текст в сенсорном режиме, нажмите на текстовое поле или выделенный текст.</translation>
 <translation id="852605377609758011">Для этого платежа будет использована виртуальная карта Google Payments. Ей присваивается собственный номер, поэтому продавец не имеет доступа к номеру вашей банковской карты.</translation>
 <translation id="8528962588711550376">Выполняется вход.</translation>
 <translation id="8535005006684281994">URL обновления сертификатов Netscape</translation>

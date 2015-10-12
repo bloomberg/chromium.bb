@@ -56,7 +56,6 @@ at maling kredensyal. Maaaring sinusubukan ng isang umaatake na magpanggap na <p
 <translation id="2673087257647337101">Halos napapanahon na! Muling ilunsad ang Chromium upang tapusin ang pag-update.</translation>
 <translation id="2685838254101182273">Huminto na sa pag-update ang Chromium at hindi na nito sinusuportahan ang bersyong ito ng iyong operating system.</translation>
 <translation id="2705212601509139398">Ginagamit ng site na ito ang plugin na Chromium Frame na malapit nang hindi suportahan. Paki-uninstall ito at mag-download ng compatible na browser.</translation>
-<translation id="2718390899429598676">Para sa karagdagang seguridad, ie-encrypt ng Chromium ang iyong data.</translation>
 <translation id="2732467638532545152">Nagpapagana ang iyong computer ng lumang bersyon ng Microsoft Windows na hindi mapoproseso ang certificate ng seguridad ng website na ito. Dahil sa problemang ito, hindi masasabi ng Chromium kung ang certificate ay nagmula sa <ph name="SITE" /> o mula sa isang tao sa iyong network na nagpapanggap na <ph name="SITE" />. Mangyaring i-update ang iyong computer patungo sa mas kamakailang bersyon ng Windows.</translation>
 <translation id="2770231113462710648">Baguhin ang default na browser sa:</translation>
 <translation id="2801146392936645542">Nakakahamak ang <ph name="FILE_NAME" />, at na-block ito ng Chromium.</translation>
@@ -140,7 +139,6 @@ at maling kredensyal. Maaaring sinusubukan ng isang umaatake na magpanggap na <p
 <translation id="5427571867875391349">Itakda ang Chromium bilang iyong default na browser</translation>
 <translation id="5466153949126434691">Awtomatikong nag-a-update ang Chromium upang palagi kang may pinakabagong bersyon. Kapag nakumpleto ang pag-download na ito, magre-restart ang Chromium at makakapagpatuloy ka na.</translation>
 <translation id="549669000822060376">Mangyaring maghintay habang ini-install ng Chromium ang mga pinakabagong update sa system.</translation>
-<translation id="5531349711857992002">Naglalaman ang certificate chain para sa website na ito ng hindi bababa sa isang certificate na nilagdaan gamit ang isang hindi na ginagamit na signature algorithm na nakabatay sa SHA-1.</translation>
 <translation id="5563479599352954471">Maghanap sa isang pagpindot lang</translation>
 <translation id="5620765574781326016">Matuto tungkol sa mga paksa sa mga website nang hindi umaalis sa page.</translation>
 <translation id="5772805321386874569">(kinakailangang <ph name="BEGIN_BUTTON" />i-restart<ph name="END_BUTTON" /> ang Chromium)</translation>
@@ -193,7 +191,6 @@ Maaaring hindi available ang ilang tampok. Mangyaring tumukoy ng ibang direktory
 <translation id="705851970750939768">I-update ang Chromium</translation>
 <translation id="7064610482057367130">Walang nakitang pag-install ng Chromium upang i-update.</translation>
 <translation id="7066436765290594559">Hindi ma-sync ng Chromium OS ang iyong data. Paki-update ang iyong Passphrase sa pag-sync.</translation>
-<translation id="7090955637699162649">Maaaring gumamit ang Chromium <ph name="BEGIN_LINK" />mga serbisyo sa web<ph name="END_LINK" /> upang mahusay ang iyong karanasan sa pagba-browse. Maaari mong opsyonal na i-disable ang mga serbisyong ito anumang oras.</translation>
 <translation id="7138853919861947730">Maaaring gumamit ang Chromium ng mga serbisyo sa web upang mapahusay ang iyong karanasan sa pagba-browse.</translation>
 <translation id="7162152143154757523">Maaaring magbigay ang Chromium ng mas pinahusay na pag-i-spell check sa pamamagitan ng pagpapadala sa mga server ng Google ng tina-type mo sa browser, na nagbibigay-daan sa iyo na gamitin ang parehong teknolohiya ng pag-i-spell check na ginamit ng paghahanap sa Google.</translation>
 <translation id="7196020411877309443">Bakit ko nakikita ito?</translation>

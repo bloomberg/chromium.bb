@@ -1172,7 +1172,6 @@ Ik denk niet dat deze site moet worden geblokkeerd.</translation>
 <translation id="2674170444375937751">Weet je zeker dat u deze pagina's uit je geschiedenis wilt verwijderen?</translation>
 <translation id="2676342370492585497">Actieve gecombineerde inhoud</translation>
 <translation id="2676946222714718093">Wordt afgespeeld op</translation>
-<translation id="2677924368525077324">Tekstbewerking op basis van aanraken inschakelen</translation>
 <translation id="2678063897982469759">Opnieuw inschakelen</translation>
 <translation id="2679385451463308372">Afdrukken via het dialoogvenster van het systeem…</translation>
 <translation id="2680208403056680091">Je internetverbinding wordt beheerd</translation>
@@ -2156,7 +2155,6 @@ Ik denk niet dat deze site moet worden geblokkeerd.</translation>
 <translation id="3972425373133383637">Blijf op de hoogte van alles wat je moet weten, voor alle apparaten.</translation>
 <translation id="3974195870082915331">Klik om het wachtwoord weer te geven</translation>
 <translation id="397703832102027365">Wordt voltooid...</translation>
-<translation id="3978194674093708182">In plaats van dat je gegevenstypen die niet worden verwijderd, opsomt in het dialoogvenster, gebruik je een eenvoudige tekenreeks voor ondersteuning die een link bevat naar een artikel met meer informatie.</translation>
 <translation id="3978267865113951599">(Vastgelopen)</translation>
 <translation id="3979395879372752341">Nieuwe extensie toegevoegd (<ph name="EXTENSION_NAME" />)</translation>
 <translation id="3979748722126423326"><ph name="NETWORKDEVICE" /> inschakelen</translation>
@@ -2263,7 +2261,6 @@ Alle gebruikers moet uitloggen om door te gaan.</translation>
 <translation id="4146175323503586871"><ph name="SERVICE_NAME" /> wil controleren of je Chrome OS-apparaat in aanmerking komt voor een aanbieding. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="4147376274874979956">Kan het bestand niet openen.</translation>
 <translation id="4151403195736952345">Algemene standaard gebruiken (detecteren)</translation>
-<translation id="4152200911868329970">Bepaalde instellingen die browsegedrag kunnen weerspiegelen, |worden niet gewist|.</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 tabblad}other{# tabbladen}}</translation>
 <translation id="4154664944169082762">Vingerafdrukken</translation>
 <translation id="4157188838832721931">Uitschakelen dat de gebruiker om het wachtwoord van het besturingssysteem wordt gevraagd voordat de wachtwoorden op de wachtwoordenpagina worden weergegeven.</translation>
@@ -3913,7 +3910,6 @@ Sommige functies zijn wellicht niet beschikbaar. Controleer of het profiel besta
 <translation id="656398493051028875"><ph name="FILENAME" /> verwijderen...</translation>
 <translation id="6565108107088666812">Hiermee worden gesynchroniseerde gegevens verwijderd van alle apparaten.</translation>
 <translation id="6566142449942033617">Kan '<ph name="PLUGIN_PATH" />' niet laden voor plugin.</translation>
-<translation id="6566572652089581977">Een eenvoudige tekenreeks voor ondersteuning gebruiken in het dialoogvenster 'Browsegegevens wissen'.</translation>
 <translation id="6567688344210276845">Kan pictogram '<ph name="ICON" />' voor pagina-actie niet laden.</translation>
 <translation id="6569050677975271054">Alleen statische blacklist</translation>
 <translation id="6571070086367343653">Creditcard bewerken</translation>
@@ -4524,6 +4520,7 @@ De volgende keer kan het handig zijn de incognitomodus <ph name="SHORTCUT_KEY" /
 <translation id="7472639616520044048">MIME-typen:</translation>
 <translation id="7473891865547856676">Nee, bedankt</translation>
 <translation id="747459581954555080">Alles herstellen</translation>
+<translation id="7474669101120914750">Deze instelling wordt beheerd door de extensie <ph name="NAME" /></translation>
 <translation id="7474889694310679759">Canadees-Engels toetsenbord</translation>
 <translation id="7475671414023905704">URL van verloren Netscape-wachtwoord</translation>
 <translation id="7477347901712410606">Als je je wachtwoordzin bent vergeten, stop je Synchroniseren en stel je de functie opnieuw in via <ph name="BEGIN_LINK" />Google Dashboard<ph name="END_LINK" />.</translation>
@@ -5258,7 +5255,6 @@ Tijd berekenen tot vol</translation>
 <translation id="852269967951527627">Niet toestaan dat sites meldingen weergeven</translation>
 <translation id="8524066305376229396">Permanente opslag:</translation>
 <translation id="8525306231823319788">Volledig scherm</translation>
-<translation id="852573274664085347">Bewerking op basis van aanraken kan worden gestart door op een tekstveld of geselecteerde tekst te tikken.</translation>
 <translation id="852605377609758011">Er wordt een virtuele Google Payments-kaart gebruikt voor deze transactie. Een virtuele kaart bevat een nieuw kaartnummer. De verkoper krijgt op deze manier nooit je echte creditcardnummer te zien.</translation>
 <translation id="8528962588711550376">Inloggen.</translation>
 <translation id="8535005006684281994">URL voor verlengen van Netscape-certificaat</translation>

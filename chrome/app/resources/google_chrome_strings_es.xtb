@@ -107,7 +107,6 @@ Si decides iniciar sesión de todas formas, se fusionará la información de Chr
 <translation id="4458285410772214805">Cierra la sesión y vuelve a iniciarla para que se aplique el cambio.</translation>
 <translation id="4480040274068703980">Chrome OS no ha podido sincronizar los datos debido a un error de inicio de sesión.</translation>
 <translation id="4513711165509885787">Se ha guardado la información de facturación en Chrome.</translation>
-<translation id="4519152997629025674">Google Chrome puede utilizar <ph name="BEGIN_LINK" />servicios web<ph name="END_LINK" /> para mejorar la experiencia de navegación de los usuarios. Puedes inhabilitar estos servicios en cualquier momento.</translation>
 <translation id="4561051373932531560">Google Chrome te permite hacer clic en un número de teléfono en la Web y llamar mediante Skype.</translation>
 <translation id="4567424176335768812">Has iniciado sesión como <ph name="USER_EMAIL_ADDRESS" />. Ahora puedes acceder a tus marcadores, a tu historial y a otras opciones en todos los dispositivos en los que hayas iniciado sesión.</translation>
 <translation id="4631713731678262610">Ocultar en el menú de Chrome</translation>
@@ -142,7 +141,6 @@ Puede que algunas funciones no estén disponibles. Especifica otro directorio de
 Google Chrome no puede recuperar tu configuración.</translation>
 <translation id="5453904507266736060">Permitir que Google Chrome se ejecute en segundo plano</translation>
 <translation id="5495581687705680288">Módulos cargados en Google Chrome</translation>
-<translation id="5531349711857992002">La cadena de certificados de este sitio web incluye al menos un certificado que se ha firmado con un algoritmo de firma obsoleto basado en SHA-1.</translation>
 <translation id="556024056938947818">Google Chrome está intentando mostrar contraseñas.</translation>
 <translation id="5563479599352954471">Buscar con un toque</translation>
 <translation id="5566025111015594046">Google Chrome (tráfico mDNS entrante)</translation>
@@ -176,7 +174,6 @@ Google Chrome no puede recuperar tu configuración.</translation>
 <translation id="6235018212288296708">Regla entrante para que Google Chrome permita tráfico mDNS.</translation>
 <translation id="6236285698028833233">Google Chrome ha dejado de actualizarse y ya no admite la versión de tu sistema operativo.</translation>
 <translation id="629218512217695915">Utilizar contraseña generada por Chrome</translation>
-<translation id="6368805772029492593">Para mayor seguridad, Google Chrome cifrará tus datos.</translation>
 <translation id="6368958679917195344">Chrome OS está creado con <ph name="BEGIN_LINK_CROS_OSS" />software libre<ph name="END_LINK_CROS_OSS" /> adicional.</translation>
 <translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{Actualmente hay una descarga en curso. ¿Quieres cancelar la descarga y salir de Google Chrome?}other{Actualmente hay # descargas en curso. ¿Quieres cancelar las descargas y salir de Google Chrome?}}</translation>
 <translation id="6598387184982954187">Estás utilizando <ph name="PROFILE_EMAIL" /> para sincronizar tu contenido de Chrome. Para actualizar tus preferencias de sincronización o utilizar Chrome sin una cuenta de Google, accede a <ph name="SETTINGS_LINK" />.</translation>

@@ -105,7 +105,6 @@
 <translation id="4458285410772214805">দয়া করে পরিবর্তনটি সম্ভব করতে সাইন আউট এবং পুনরায় সাইন ইন করুন৷</translation>
 <translation id="4480040274068703980">সাইন ইনে ত্রুটির কারণে Chrome OS আপনার ডেটা সিঙ্ক করতে পারেনি৷</translation>
 <translation id="4513711165509885787">আপনার বিলের বিশদ বিবরণ Chrome এ সংরক্ষিত হয়েছে৷</translation>
-<translation id="4519152997629025674">আপনার ব্রাউজিং অভিজ্ঞতা আরো উন্নত করতে Google Chrome <ph name="BEGIN_LINK" />ওয়েব পরিষেবাগুলি<ph name="END_LINK" /> ব্যবহার করতে পারে। আপনি যেকোনো সময় এই পরিষেবাগুলি ঐচ্ছিকভাবে অক্ষম করতে পারেন।</translation>
 <translation id="4561051373932531560">Google Chrome আপনাকে ওয়েবে কোনো ফোন নম্বরে ক্লিক করতে এবং Skype-এর মাধ্যমে সেটিতে কল করতে দেয়!</translation>
 <translation id="4567424176335768812">আপনি <ph name="USER_EMAIL_ADDRESS" /> হিসাবে সাইন ইন করেছেন৷ এখন আপনি আপনার সমস্ত সাইন ইন করা ডিভাইসে আপনার বুকমার্ক, ইতিহাস এবং অন্যান্য সেটিংস অ্যাক্সেস করতে পারেন৷</translation>
 <translation id="4631713731678262610">Chromium মেনুর মধ্যে লুকান</translation>
@@ -138,7 +137,6 @@
 <translation id="5430073640787465221">আপনার অভিরুচিসমূহ ফাইল দূষিত অথবা অবৈধ৷\n\nGoogle Chrome আপনার সেটিংস পুনরুদ্ধার করতে অক্ষম৷</translation>
 <translation id="5453904507266736060">Google Chrome-কে পশ্চাদপটে চালতে দিন</translation>
 <translation id="5495581687705680288">Google Chrome-এ মডিউলগুলি লোড হয়েছে</translation>
-<translation id="5531349711857992002">এই ওয়েবসাইটের শংসাপত্রের শ্রেণীতে অন্ততপক্ষে একটি শংসাপত্র আছে যাতে SHA-1 এর উপর ভিত্তি করে একটি অননুমোদিত স্বাক্ষরের অ্যালগোরিদম ব্যবহার করে সাইন করেছে।</translation>
 <translation id="556024056938947818">Google Chrome পাসওয়ার্ডগুলি দেখানোর চেষ্টা করছে৷</translation>
 <translation id="5563479599352954471">একবার স্পর্শ করে অনুসন্ধান</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
@@ -171,7 +169,6 @@
 <translation id="6235018212288296708">mDNS ট্রাফিকের অনুমতি দিতে Google Chrome এর জন্য ইনবাউন্ড নিয়ম।</translation>
 <translation id="6236285698028833233">Google Chrome আপডেট বন্ধ করেছে এবং আপনার অপারেটিং সিস্টেমের এই সংস্করণটিকে আর সমর্থন করে না৷</translation>
 <translation id="629218512217695915">Chrome দ্বারা উৎপন্ন পাসওয়ার্ড ব্যবহার করুন</translation>
-<translation id="6368805772029492593">অতিরিক্ত নিরাপত্তার জন্য, Google Chrome আপনার ডেটা এনক্রিপ্ট করবে।</translation>
 <translation id="6368958679917195344">Chrome OS সম্ভবত অতিরিক্ত <ph name="BEGIN_LINK_CROS_OSS" />মুক্ত উৎস সফ্টওয়্যার<ph name="END_LINK_CROS_OSS" /> দিয়ে তৈরি৷</translation>
 <translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{বর্তমানে একটি ডাউনলোড হচ্ছে। আপনি কি ডাউনলোড বাতিল করে Google Chrome থেকে বেরিয়ে যেতে চান?}one{বর্তমানে #টি ডাউনলোড হচ্ছে। আপনি কি ডাউনলোডগুলি বাতিল করে Google Chrome থেকে বেরিয়ে যেতে চান?}other{বর্তমানে #টি ডাউনলোড হচ্ছে। আপনি কি ডাউনলোডগুলি বাতিল করে Google Chrome থেকে বেরিয়ে যেতে চান?}}</translation>
 <translation id="6598387184982954187">আপনার Chrome জিনিসপত্র সমন্বয় করার জন্য আপনি <ph name="PROFILE_EMAIL" /> ব্যবহার করছেন৷ আপনার সিঙ্ক পছন্দগুলি আপডেট করতে বা Google অ্যাকাউন্ট ছাড়া Chrome ব্যবহার করতে <ph name="SETTINGS_LINK" /> এ যান৷</translation>

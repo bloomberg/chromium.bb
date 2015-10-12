@@ -1171,7 +1171,6 @@ Non credo che questo sito debba essere bloccato.</translation>
 <translation id="2674170444375937751">Eliminare le pagine dalla cronologia?</translation>
 <translation id="2676342370492585497">Contenuti misti attivi</translation>
 <translation id="2676946222714718093">In riproduzione su:</translation>
-<translation id="2677924368525077324">Attiva la modifica del testo tramite tocco</translation>
 <translation id="2678063897982469759">Riattiva</translation>
 <translation id="2679385451463308372">Stampa utilizzando la finestra di dialogo di sistema…</translation>
 <translation id="2680208403056680091">La tua connessione Internet è controllata</translation>
@@ -2140,7 +2139,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="3972425373133383637">Rimani al corrente su ciò che ti occorre sapere su tutti i dispositivi.</translation>
 <translation id="3974195870082915331">Fai clic per visualizzare la password</translation>
 <translation id="397703832102027365">Finalizzazione in corso...</translation>
-<translation id="3978194674093708182">Anziché elencare nella finestra di dialogo i tipi di dati che non vengono eliminati, utilizza una stringa semplice che rimandi a un articolo dell'assistenza contenente ulteriori informazioni.</translation>
 <translation id="3978267865113951599">(Arresto anomalo)</translation>
 <translation id="3979395879372752341">Nuova estensione aggiunta (<ph name="EXTENSION_NAME" />)</translation>
 <translation id="3979748722126423326">Abilita <ph name="NETWORKDEVICE" /></translation>
@@ -2247,7 +2245,6 @@ Per continuare, devono disconnettersi tutti gli utenti.</translation>
 <translation id="4146175323503586871"><ph name="SERVICE_NAME" /> vuole controllare se il tuo dispositivo Chrome OS è idoneo per un'offerta. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="4147376274874979956">Impossibile accedere al file.</translation>
 <translation id="4151403195736952345">Utilizza impostazioni predefinite globali (Rileva)</translation>
-<translation id="4152200911868329970">Alcune impostazioni che potrebbero rispecchiare le abitudini di navigazione |non verranno cancellate|.</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 scheda}other{# schede}}</translation>
 <translation id="4154664944169082762">Impronte digitali</translation>
 <translation id="4157188838832721931">Consente di disattivare la richiesta all'utente della sua password del sistema operativo prima di visualizzare le password nella relativa pagina.</translation>
@@ -3883,7 +3880,6 @@ Tentativo di identificazione del problema in corso...</translation>
 <translation id="656398493051028875">Eliminazione di "<ph name="FILENAME" />"...</translation>
 <translation id="6565108107088666812">I dati sincronizzati verranno cancellati da tutti i dispositivi.</translation>
 <translation id="6566142449942033617">Impossibile caricare "<ph name="PLUGIN_PATH" />" per il plug-in.</translation>
-<translation id="6566572652089581977">Utilizza una semplice stringa di indirizzamento all'assistenza nella finestra di dialogo Cancella dati di navigazione.</translation>
 <translation id="6567688344210276845">Impossibile caricare l'icona "<ph name="ICON" />" per l'azione della pagina.</translation>
 <translation id="6569050677975271054">Solo lista nera statica</translation>
 <translation id="6571070086367343653">Modifica carta di credito</translation>
@@ -4476,6 +4472,7 @@ Psst! La prossima volta potrebbe esserti utile la modalità di navigazione in in
 <translation id="7472639616520044048">Tipi MIME:</translation>
 <translation id="7473891865547856676">No grazie</translation>
 <translation id="747459581954555080">Ripristina tutto</translation>
+<translation id="7474669101120914750">Questa impostazione è controllata dall'estensione <ph name="NAME" /></translation>
 <translation id="7474889694310679759">Tastiera inglese canadese</translation>
 <translation id="7475671414023905704">URL password persa Netscape</translation>
 <translation id="7477347901712410606">Se hai dimenticato la password, interrompi e reimposta la sincronizzazione tramite <ph name="BEGIN_LINK" />Google Dashboard<ph name="END_LINK" />.</translation>
@@ -5204,7 +5201,6 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="852269967951527627">Non consentire la visualizzazione di notifiche nei siti</translation>
 <translation id="8524066305376229396">Archiviazione persistente:</translation>
 <translation id="8525306231823319788">Schermo intero</translation>
-<translation id="852573274664085347">La modifica al tocco può essere inizializzata toccando un campo di testo o un testo selezionato.</translation>
 <translation id="852605377609758011">Per questa transazione verrà utilizzata una carta virtuale Google Payments, vale a dire un nuovo numero di carta che consente di evitare che il venditore veda il numero reale della tua carta di credito.</translation>
 <translation id="8528962588711550376">Accesso in corso.</translation>
 <translation id="8535005006684281994">URL di rinnovo certificato Netscape</translation>

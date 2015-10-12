@@ -1181,7 +1181,6 @@ Nemanau, kad ši svetainė turėtų būti užblokuota!</translation>
 <translation id="2674170444375937751">Ar tikrai norite pašalinti šiuos puslapius iš savo istorijos?</translation>
 <translation id="2676342370492585497">Aktyvus mišrus turinys</translation>
 <translation id="2676946222714718093">Leidžiama</translation>
-<translation id="2677924368525077324">Įgalinti palietimu pagrįstą teksto redagavimą</translation>
 <translation id="2678063897982469759">Iš naujo įgalinti</translation>
 <translation id="2679385451463308372">Spausdinkite naudodami sistemos dialogo langą...</translation>
 <translation id="2680208403056680091">Interneto ryšys yra kontroliuojamas</translation>
@@ -2162,7 +2161,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="3972425373133383637">Likite prisijungę prie reikiamų svetainių visuose įrenginiuose.</translation>
 <translation id="3974195870082915331">Spustelėkite, kad slaptažodis būtų parodytas.</translation>
 <translation id="397703832102027365">Užbaigiama...</translation>
-<translation id="3978194674093708182">Vietoj neištrintų duomenų tipų sąrašo, dialogo lange naudokite paprastą palaikymo eilutę su nuoroda į straipsnį, kuriame pateikiama daugiau informacijos.</translation>
 <translation id="3978267865113951599">(Užstrigo)</translation>
 <translation id="3979395879372752341">Pridėtas naujas plėtinys (<ph name="EXTENSION_NAME" />)</translation>
 <translation id="3979748722126423326">Įgalinti <ph name="NETWORKDEVICE" /></translation>
@@ -2269,7 +2267,6 @@ Norint tęsti, visi naudotojai turi atsijungti.</translation>
 <translation id="4146175323503586871">„<ph name="SERVICE_NAME" />“ nori patikrinti, ar „Chrome“ OS įrenginys yra tinkamas pasinaudoti pasiūlymu. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="4147376274874979956">Nepavyko pasiekti failo.</translation>
 <translation id="4151403195736952345">Naudoti visuotinį numatytąjį nustatymą (nustatyti)</translation>
-<translation id="4152200911868329970">Kai kurie nustatymai gali atspindėti naršymo įpročius |nebus išvalyta|.</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 skirtukas}one{# skirtukas}few{# skirtukai}many{# skirtuko}other{# skirtukų}}</translation>
 <translation id="4154664944169082762">Pirštų atspaudai</translation>
 <translation id="4157188838832721931">Neleisti sufleruoti naudotojui OS slaptažodžio, prieš jį parodant slaptažodžių puslapyje.</translation>
@@ -3925,7 +3922,6 @@ Kai kurios funkcijos gali būti nepasiekiamos. Įsitikinkite, kad profilis egzis
 <translation id="656398493051028875">Ištrinamas failas „<ph name="FILENAME" />“...</translation>
 <translation id="6565108107088666812">Taip bus išvalyti sinchronizuoti duomenys iš visų įrenginių.</translation>
 <translation id="6566142449942033617">Papildiniui nepavyko įkelti „<ph name="PLUGIN_PATH" />“.</translation>
-<translation id="6566572652089581977">Naudoti paprastą palaikymo eilutę naršymo duomenų išvalymo dialogo lange.</translation>
 <translation id="6567688344210276845">Puslapio veiksmui „<ph name="ICON" />“ piktogramos įkelti nepavyko.</translation>
 <translation id="6569050677975271054">Tik statinis juodasis sąrašas</translation>
 <translation id="6571070086367343653">Kredito kortelės redagavimas</translation>
@@ -4536,6 +4532,7 @@ Ei! Kitą kartą gali būti naudinga naudoti inkognito režimą (<ph name="SHORT
 <translation id="7472639616520044048">MIME tipai:</translation>
 <translation id="7473891865547856676">Ne, ačiū</translation>
 <translation id="747459581954555080">Atkurti viską</translation>
+<translation id="7474669101120914750">Šį nustatymą valdo plėtinys „<ph name="NAME" />“</translation>
 <translation id="7474889694310679759">Kanados angliška klaviatūra</translation>
 <translation id="7475671414023905704">„Netscape“ prarasto slaptažodžio URL</translation>
 <translation id="7477347901712410606">Jei pamiršote slaptafrazę, iš naujo nustatykite sinchronizavimą naudodami <ph name="BEGIN_LINK" />„Google“ informacijos suvestinę<ph name="END_LINK" />.</translation>
@@ -5270,7 +5267,6 @@ Skaičiuojamas laikas, kol bus įkrauta</translation>
 <translation id="852269967951527627">Neleisti jokioje svetainėje rodyti pranešimų</translation>
 <translation id="8524066305376229396">Ilgalaikė atmintis:</translation>
 <translation id="8525306231823319788">Viso ekrano režimas</translation>
-<translation id="852573274664085347">Redagavimą palietimu galima inicijuoti palietus teksto lauką arba pasirinktą tekstą.</translation>
 <translation id="852605377609758011">„Google Payments“ virtualioji kortelė bus naudojama vykdant šią operaciją. Virtualioji kortelė yra naujas kortelės numeris, naudojamas, kad pardavėjas nematytų tikrojo kortelės numerio.</translation>
 <translation id="8528962588711550376">Prisijungiama.</translation>
 <translation id="8535005006684281994">„Netscape“ sertifikato atnaujinimo URL</translation>

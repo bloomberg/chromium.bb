@@ -85,6 +85,7 @@ Para mais informações acerca da privacidade, consulte a Política de Privacida
 <translation id="2919669478609886916">Está atualmente a partilhar este computador com outro utilizador. Pretende continuar a partilhar?</translation>
 <translation id="2921543551052660690">Iniciou sessão anteriormente como <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Para aceder aos computadores nessa conta, <ph name="LINK_BEGIN" />inicie sessão no Chromium<ph name="LINK_END" /> com essa conta e reinstale o Chromoting.</translation>
 <translation id="2926340305933667314">Falha ao desativar o acesso remoto a este computador. Tente novamente mais tarde.</translation>
+<translation id="2930135165929238380">Faltam alguns componentes necessários. Aceda a chrome://plugins e certifique-se de que o Native Client está ativado.</translation>
 <translation id="2939145106548231838">Autenticar para anfitrião</translation>
 <translation id="2998137343848432918">• Adição do ecrã Créditos.
 • Correção de um problema ao abrir o modo de ecrã inteiro com o teclado visível.</translation>
@@ -147,7 +148,7 @@ Chromoting</translation>
 <translation id="4572065712096155137">Acesso</translation>
 <translation id="4573676252416618192">Anfitrião do Ambiente de Trabalho
 Remoto do Chrome</translation>
-<translation id="4619978527973181021">Aceitar e Instalar</translation>
+<translation id="4619978527973181021">Aceitar e instalar</translation>
 <translation id="4703799847237267011">A sessão do Chromoting terminou.</translation>
 <translation id="4736223761657662401">Histórico de Ligações</translation>
 <translation id="4741792197137897469">Falha na autenticação. Inicie sessão novamente no Chrome.</translation>

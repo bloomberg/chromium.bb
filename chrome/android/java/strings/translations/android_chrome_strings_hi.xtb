@@ -22,7 +22,7 @@
 <translation id="1285320974508926690">कभी भी इस साइट का अनुवाद न करें</translation>
 <translation id="129553762522093515">हाल ही में बंद किए गए</translation>
 <translation id="1312168552565502328">कुकी, साइट डेटा</translation>
-<translation id="1346090444609141578">यहां कोई सहेजे गए पृष्ठ नहीं</translation>
+<translation id="1346090444609141578">यहां कोई सहेजा गया पृष्ठ नहीं</translation>
 <translation id="1369915414381695676"><ph name="SITE_NAME" /> साइट जोड़ी गई</translation>
 <translation id="1373696734384179344">चयनित सामग्री डाउनलोड करने के लिए मेमोरी अपर्याप्‍त है.</translation>
 <translation id="1379156015317873965">पृष्ठ लोड निष्पादन सुधारें</translation>
@@ -110,6 +110,7 @@
 <translation id="2678212031093903894">अपने बुकमार्क का बैक अप लें और समन्‍वयित करें</translation>
 <translation id="2707726405694321444">पृष्ठ रीफ्रेश करें</translation>
 <translation id="2709516037105925701">स्‍वत: भरण</translation>
+<translation id="271033894570825754">नया</translation>
 <translation id="2718352093833049315">केवल वाई-फ़ाई पर</translation>
 <translation id="2748463065602559597">आप एक सुरक्षि‍त Google Chrome पृष्‍ठ देख रहे हैं.</translation>
 <translation id="2770465223704140727">सूची से निकालें</translation>
@@ -293,7 +294,6 @@
 <translation id="5530766185686772672">गुप्त टैब बंद करें</translation>
 <translation id="5556459405103347317">पुन: लोड करें</translation>
 <translation id="5565871407246142825">क्रेडिट कार्ड</translation>
-<translation id="5578795271662203820">इस चित्र के लिए <ph name="SEARCH_ENGINE" /> खोजें</translation>
 <translation id="5595485650161345191">पता संपादित करें</translation>
 <translation id="5596627076506792578">अधिक विकल्प</translation>
 <translation id="5626134646977739690">नाम:</translation>

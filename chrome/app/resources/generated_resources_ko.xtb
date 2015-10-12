@@ -1178,7 +1178,6 @@
 <translation id="2674170444375937751">방문 기록에서 이 페이지를 삭제하시겠습니까?</translation>
 <translation id="2676342370492585497">활성 혼합 콘텐츠</translation>
 <translation id="2676946222714718093">재생 중:</translation>
-<translation id="2677924368525077324">터치 기반 텍스트 편집 사용</translation>
 <translation id="2678063897982469759">다시 사용</translation>
 <translation id="2679385451463308372">시스템 대화상자를 사용하여 인쇄...</translation>
 <translation id="2680208403056680091">인터넷 연결이 제어되고 있습니다.</translation>
@@ -2164,7 +2163,6 @@
 <translation id="3974195870082915331">
 비밀번호를 표시하려면 클릭하세요.</translation>
 <translation id="397703832102027365">완료 중...</translation>
-<translation id="3978194674093708182">대화상자에서 삭제되지 않는 데이터 유형을 열거하는 대신, 자세한 내용이 담긴 도움말로 연결되는 간단한 지원 문자열을 사용합니다.</translation>
 <translation id="3978267865113951599">(다운됨)</translation>
 <translation id="3979395879372752341">새 확장 프로그램이 추가됨(<ph name="EXTENSION_NAME" />)</translation>
 <translation id="3979748722126423326"><ph name="NETWORKDEVICE" /> 사용</translation>
@@ -2269,7 +2267,6 @@
 <translation id="4146175323503586871"><ph name="SERVICE_NAME" />에서 Chrome OS 기기에서 쿠폰을 사용할 수 있는지 확인하려고 합니다. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="4147376274874979956">파일에 액세스할 수 없습니다.</translation>
 <translation id="4151403195736952345">글로벌 기본값 사용(감지)</translation>
-<translation id="4152200911868329970">인터넷 사용 습관을 반영할 수 있는 일부 설정은 |삭제되지 않습니다|.</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{탭 1개}other{탭 #개}}</translation>
 <translation id="4154664944169082762">지문</translation>
 <translation id="4157188838832721931">비밀번호 페이지에서 비밀번호를 표시하기 전에 사용자의 OS 비밀번호 입력을 요청하는 메시지 표시 기능을 사용 중지합니다.</translation>
@@ -3923,7 +3920,6 @@
 <translation id="656398493051028875">'<ph name="FILENAME" />' 삭제 중...</translation>
 <translation id="6565108107088666812">모든 기기에서 동기화된 데이터가 삭제됩니다.</translation>
 <translation id="6566142449942033617">플러그인('<ph name="PLUGIN_PATH" />')을 로드하지 못했습니다.</translation>
-<translation id="6566572652089581977">인터넷 사용 기록 삭제 대화상자에서 간단한 지원 문자열을 사용합니다.</translation>
 <translation id="6567688344210276845">페이지 작업의 아이콘('<ph name="ICON" />')을 로드하지 못했습니다.</translation>
 <translation id="6569050677975271054">고정 블랙리스트만</translation>
 <translation id="6571070086367343653">신용카드 수정</translation>
@@ -4531,6 +4527,7 @@
 <translation id="7472639616520044048">MIME 형식:</translation>
 <translation id="7473891865547856676">건너뛰기</translation>
 <translation id="747459581954555080">모두 복원</translation>
+<translation id="7474669101120914750">이 설정은 <ph name="NAME" />에 의해 제어됩니다.</translation>
 <translation id="7474889694310679759">캐나다 영어 키보드</translation>
 <translation id="7475671414023905704">Netscape Lost Password URL</translation>
 <translation id="7477347901712410606">암호가 생각나지 않으면 <ph name="BEGIN_LINK" />Google 대시보드<ph name="END_LINK" />를 통해 동기화를 중지하고 재설정합니다.</translation>
@@ -5260,7 +5257,6 @@
 <translation id="852269967951527627">모든 사이트에서 알림 표시 허용 안함</translation>
 <translation id="8524066305376229396">영구 저장소:</translation>
 <translation id="8525306231823319788">전체화면</translation>
-<translation id="852573274664085347">텍스트 입력란 또는 선택한 텍스트를 탭하여 터치 편집을 시작할 수 있습니다.</translation>
 <translation id="852605377609758011">거래 시 Google Payments 가상 카드가 사용됩니다. 가상 카드는 새로운 카드 번호로 표시되므로 판매자가 실제 신용카드 번호를 볼 수 없습니다.</translation>
 <translation id="8528962588711550376">로그인 중입니다.</translation>
 <translation id="8535005006684281994">Netscape Certificate Renewal URL</translation>

@@ -103,7 +103,6 @@
 <translation id="4458285410772214805">צא מהמערכת והיכנס שוב כדי שהשינוי ייכנס לתוקף.</translation>
 <translation id="4480040274068703980">‏מערכת ההפעלה של Chrome לא הצליחה לסנכרן את הנתונים שלך עקב שגיאה בתהליך הכניסה.</translation>
 <translation id="4513711165509885787">‏פרטי החיוב שלך נשמרו ב-Chrome.</translation>
-<translation id="4519152997629025674">‏Google Chrome יכול להשתמש ב<ph name="BEGIN_LINK" />שירותי האינטרנט<ph name="END_LINK" /> לשיפור חוויית הגלישה. תוכל להשבית את השירותים האלו בכל עת.</translation>
 <translation id="4561051373932531560">‏Google Chrome מאפשר לך ללחוץ על מספר טלפון באינטרנט ולהתקשר אליו באמצעות Skype!</translation>
 <translation id="4567424176335768812">נכנסת למערכת בתור <ph name="USER_EMAIL_ADDRESS" />. כעת אתה יכול לגשת אל הסימניות, ההיסטוריה והגדרות אחרות שלך בכל המכשירים שבהם אתה מחובר לחשבון.</translation>
 <translation id="4631713731678262610">‏הסתר בתפריט Chrome</translation>
@@ -134,7 +133,6 @@
 <translation id="5430073640787465221">‏קובץ ההעדפות שלך פגום או לא חוקי. Google Chrome לא יכול לשחזר את ההגדרות שלך.</translation>
 <translation id="5453904507266736060">‏אפשר ל-Google Chrome לפעול ברקע</translation>
 <translation id="5495581687705680288">‏מודולים שנטענו ב-Google Chrome</translation>
-<translation id="5531349711857992002">‏שרשרת האישורים של אתר זה מכילה אישור אחד לפחות שנחתם באמצעות אלגוריתם חתימה שהוצא משימוש, המבוסס על SHA-1.</translation>
 <translation id="556024056938947818">‏Google Chrome מנסה להציג סיסמאות.</translation>
 <translation id="5563479599352954471">חיפוש בנגיעה אחת</translation>
 <translation id="5566025111015594046">‏Google Chrome‏ (mDNS-In)</translation>
@@ -168,7 +166,6 @@
 <translation id="6235018212288296708">‏כלל נכנס עבור Google Chrome על מנת לאפשר תנועת mDNS.</translation>
 <translation id="6236285698028833233">‏Google Chrome הפסיק לעדכן את הגרסה הזו של מערכת ההפעלה שלך וכבר אינו תומך בה.</translation>
 <translation id="629218512217695915">‏השתמש בסיסמה שנוצרה על ידי Chrome</translation>
-<translation id="6368805772029492593">‏לשיפור האבטחה, Google Chrome יצפין את הנתונים.</translation>
 <translation id="6368958679917195344">‏השימוש במערכת ההפעלה של Chrome מתאפשר באמצעות <ph name="BEGIN_LINK_CROS_OSS" />תוכנת קוד פתוח<ph name="END_LINK_CROS_OSS" /> נוספת.</translation>
 <translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{‏הורדה מתבצעת עכשיו. האם ברצונך לבטל את ההורדה ולצאת מ-Google Chrome?}two{‏# הורדות מתבצעות עכשיו. האם ברצונך לבטל את ההורדות ולצאת מ-Google Chrome?}many{‏# הורדות מתבצעות עכשיו. האם ברצונך לבטל את ההורדות ולצאת מ-Google Chrome?}other{‏# הורדות מתבצעות עכשיו. האם ברצונך לבטל את ההורדות ולצאת מ-Google Chrome?}}</translation>
 <translation id="6598387184982954187">‏אתה משתמש ב-<ph name="PROFILE_EMAIL" /> כדי לסנכרן את הפריטים שלך ב-Chrome. עבור אל '<ph name="SETTINGS_LINK" />' כדי לעדכן את העדפות הסנכרון או להשתמש ב-Chrome ללא חשבון Google.</translation>

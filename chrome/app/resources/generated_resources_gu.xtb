@@ -1177,7 +1177,6 @@
 <translation id="2674170444375937751">શું તમે ખરેખર તમારા ઇતિહાસમાંથી આ પૃષ્ઠોને કાઢી નાખવા માંગો છો?</translation>
 <translation id="2676342370492585497">સક્રિય મિક્સ કરેલ સામગ્રી</translation>
 <translation id="2676946222714718093">આ પર ચલાવી રહ્યાં છે</translation>
-<translation id="2677924368525077324">ટચ આધારિત ટેક્સ્ટ સંપાદનને સક્ષમ કરો</translation>
 <translation id="2678063897982469759">ફરી સક્ષમ કરો</translation>
 <translation id="2679385451463308372">સિસ્ટમ સંવાદનો ઉપયોગ કરીને છાપો... </translation>
 <translation id="2680208403056680091">તમારું ઇન્ટરનેટ કનેક્શન નિયંત્રિત કરવામાં આવી રહ્યું છે</translation>
@@ -2160,7 +2159,6 @@
 <translation id="3972425373133383637">બધા ઉપકરણો પર, તમારે જે જાણવાની આવશ્યકતા છે તેનાથી કનેક્ટ રહો.</translation>
 <translation id="3974195870082915331">પાસવર્ડ બતાવવા માટે ક્લિક કરો</translation>
 <translation id="397703832102027365">ફાઇનલ કરી રહ્યું છે...</translation>
-<translation id="3978194674093708182">જે ડેટા પ્રકારોને સંવાદમાં કાઢી નાખવામાં આવતાં નથી તેમની ગણતરી કરવાને બદલે, વધુ માહિતી સાથેના લેખથી લિંક કરવા માટે સરળ સમર્થન સ્ટ્રિંગનો ઉપયોગ કરો.</translation>
 <translation id="3978267865113951599">(તૂટેલું)</translation>
 <translation id="3979395879372752341">નવું એક્સ્ટેંશન ઉમેરાયું (<ph name="EXTENSION_NAME" />)</translation>
 <translation id="3979748722126423326"><ph name="NETWORKDEVICE" /> સક્ષમ કરો</translation>
@@ -2267,7 +2265,6 @@
 <translation id="4146175323503586871"><ph name="SERVICE_NAME" /> તપાસવા માગે છે કે તમારું Chrome OS ઉપકરણ ઓફર માટે પાત્ર છે કે કેમ. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="4147376274874979956">ફાઇલ ઍક્સેસ કરવામાં અક્ષમ છે.</translation>
 <translation id="4151403195736952345">વૈશ્વિક ડિફોલ્ટનો ઉપયોગ કરો (શોધો)</translation>
-<translation id="4152200911868329970">કેટલીક સેટિંગ્સ જે બ્રાઉઝિંગ ટેવોને પ્રભાવિત કરી શકે છે તે |સાફ કરવામાં આવશે નહીં|.</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 ટેબ}one{# ટેબ્સ}other{# ટેબ્સ}}</translation>
 <translation id="4154664944169082762">ફિંગરપ્રીંટ્સ</translation>
 <translation id="4157188838832721931">પાસવર્ડ્સ પૃષ્ઠ પર પાસવર્ડ્સ બતાવતાં પહેલાં વપરાશકર્તાને તેમના OS પાસવર્ડ માટે સંકેત આપવાનું અક્ષમ કરો.</translation>
@@ -3914,7 +3911,6 @@
 <translation id="656398493051028875">"<ph name="FILENAME" />" કાઢી નાખી રહ્યું છે...</translation>
 <translation id="6565108107088666812">આ તમામ ઉપકરણો પરથી સમન્વયિત ડેટાને સાફ કરે છે.</translation>
 <translation id="6566142449942033617">પ્લગઇન માટે '<ph name="PLUGIN_PATH" />' લોડ કરી શકાયું નહીં.</translation>
-<translation id="6566572652089581977">બ્રાઉઝિંગ ડેટા સાફ કરો સંવાદમાં સરળ સમર્થન સ્ટ્રિંગનો ઉપયોગ કરો.</translation>
 <translation id="6567688344210276845">પૃષ્ઠ ક્રિયા માટે આયકન '<ph name="ICON" />' લોડ કરી શકાયું નથી.</translation>
 <translation id="6569050677975271054">માત્ર સ્થિર બ્લેકલિસ્ટ</translation>
 <translation id="6571070086367343653">ક્રેડિટ કાર્ડ સંપાદિત કરો </translation>
@@ -4517,6 +4513,7 @@
 <translation id="7472639616520044048">MIME પ્રકારો:</translation>
 <translation id="7473891865547856676">નહીં આભાર</translation>
 <translation id="747459581954555080">બધુ પુનર્પ્રાપ્ત કરો</translation>
+<translation id="7474669101120914750">આ સેટિંગ, <ph name="NAME" /> એક્સ્ટેન્શન દ્વારા નિયંત્રિત થાય છે</translation>
 <translation id="7474889694310679759">કેનેડિયન અંગ્રેજી કીબોર્ડ</translation>
 <translation id="7475671414023905704">નેટસ્કેપ ખોવાયેલો પાસવર્ડ URL</translation>
 <translation id="7477347901712410606">જો તમે પાસફ્રેઝ ભૂલી ગયા છો, તો થોભો અને સમન્વયન <ph name="BEGIN_LINK" />Google ડેશબોર્ડ<ph name="END_LINK" /> દ્વારા ફરીથી સેટ કરો.</translation>
@@ -5246,7 +5243,6 @@
 <translation id="852269967951527627">કોઈ પણ સાઇટને સૂચનાઓ દર્શાવવાની મંજૂરી આપશો નહીં</translation>
 <translation id="8524066305376229396">સતત સ્ટોરેજ:</translation>
 <translation id="8525306231823319788">પૂર્ણ સ્ક્રીન</translation>
-<translation id="852573274664085347">ટેક્સ્ટફીલ્ડ અથવા પસંદ કરેલા ટેક્સ્ટ પર ટેપ કરીને ટચ સંપાદન શરૂ કરી શકાય છે.</translation>
 <translation id="852605377609758011">આ વ્યવહાર માટે Google Payments વર્ચ્યુઅલ કાર્ડનો ઉપયોગ કરવામાં આવશે. વર્ચ્યુઅલ કાર્ડ એ એક નવો કાર્ડ નંબર છે જેથી વેચાણકર્તાને ક્યારેય તમારો વાસ્તવિક ક્રેડિટ કાર્ડ નંબર દેખાતો નથી.</translation>
 <translation id="8528962588711550376">સાઇન ઇન થઈ રહ્યું છે.</translation>
 <translation id="8535005006684281994">નેટસ્કેપ પ્રમાણપત્ર નવીકરણ URL</translation>

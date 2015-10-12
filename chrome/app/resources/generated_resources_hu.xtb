@@ -1176,7 +1176,6 @@ Miután létrehozott egy új felügyelt felhasználót, bármikor és bármilyen
 <translation id="2674170444375937751">Biztosan törölni szeretné ezeket az oldalakat az előzmények közül?</translation>
 <translation id="2676342370492585497">Aktív vegyes tartalom</translation>
 <translation id="2676946222714718093">Lejátszás folyamatban a következőn:</translation>
-<translation id="2677924368525077324">Érintésalapú szövegszerkesztés engedélyezése</translation>
 <translation id="2678063897982469759">Újraengedélyezés</translation>
 <translation id="2679385451463308372">Nyomtatás a rendszer párbeszédablakának segítségével...</translation>
 <translation id="2680208403056680091">Internetkapcsolata felett más vette át az irányítást</translation>
@@ -2154,7 +2153,6 @@ Elindítja a következőt: <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation
 <translation id="3972425373133383637">Tudjon mindenről, amiről tudnia kell, az összes eszközén.</translation>
 <translation id="3974195870082915331">Kattintson ide a jelszó megjelenítéséhez</translation>
 <translation id="397703832102027365">Véglegesítés...</translation>
-<translation id="3978194674093708182">A nem törölt adattípusok párbeszédablakban való felsorolása helyett használjon egy egyszerű támogatási kifejezést, amely egy további információkat tartalmazó cikkre mutat.</translation>
 <translation id="3978267865113951599">(Összeomlott)</translation>
 <translation id="3979395879372752341">Új bővítmény hozzáadva (<ph name="EXTENSION_NAME" />)</translation>
 <translation id="3979748722126423326"><ph name="NETWORKDEVICE" /> engedélyezése</translation>
@@ -2261,7 +2259,6 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="4146175323503586871">A(z)<ph name="SERVICE_NAME" /> ellenőrizni kívánja, hogy az Ön Chrome OS-t futtató eszköze jogosult-e egy ajánlatra. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="4147376274874979956">Nem sikerült elérni a fájlt.</translation>
 <translation id="4151403195736952345">Globális alapértelmezés használata (Észlelés)</translation>
-<translation id="4152200911868329970">Bizonyos beállítások, amelyek a böngészési szokásokat tükrözhetik, |nem lesznek törölve|.</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 lap}other{# lap}}</translation>
 <translation id="4154664944169082762">Ujjlenyomatok</translation>
 <translation id="4157188838832721931">Annak letiltása, hogy a jelszavak jelszóoldalon történő megjelenítése előtt rákérdezzen a felhasználónál az operációs rendszer jelszavára.</translation>
@@ -3902,7 +3899,6 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="656398493051028875">„<ph name="FILENAME" />” törlése...</translation>
 <translation id="6565108107088666812">Ez eltávolítja a szinkronizált adatokat az összes eszközről.</translation>
 <translation id="6566142449942033617">A(z) '<ph name="PLUGIN_PATH" />' nem tölthető be a bővítményhez.</translation>
-<translation id="6566572652089581977">Egyszerű támogatási kifejezés használata a „Böngészési adatok törlése” párbeszédablakban.</translation>
 <translation id="6567688344210276845">Nem sikerült a(z) '<ph name="ICON" />' ikon betöltése az oldalművelethez.</translation>
 <translation id="6569050677975271054">Csak állandó tiltott lista</translation>
 <translation id="6571070086367343653">Hitelkártya szerkesztése</translation>
@@ -4501,6 +4497,7 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY" />) hasznos lehet a következő
 <translation id="7472639616520044048">MIME típusok:</translation>
 <translation id="7473891865547856676">Nem, köszönöm</translation>
 <translation id="747459581954555080">Összes visszaállítása</translation>
+<translation id="7474669101120914750">Ezt a beállítást a(z) <ph name="NAME" /> bővítmény vezérli</translation>
 <translation id="7474889694310679759">Kanadai angol billentyűzet</translation>
 <translation id="7475671414023905704">Netscape - elveszett jelszó URL</translation>
 <translation id="7477347901712410606">Ha elfelejtette összetett jelszavát, állítsa le és állítsa vissza a <ph name="BEGIN_LINK" />Google irányítópulton<ph name="END_LINK" /> keresztül történő szinkronizálást.</translation>
@@ -5232,7 +5229,6 @@ letiltásához nyomja le a Ctrl+Alt+Z billentyűkombinációt.</translation>
 <translation id="852269967951527627">Egy webhely sem jeleníthet meg értesítéseket</translation>
 <translation id="8524066305376229396">Állandó tárhely:</translation>
 <translation id="8525306231823319788">Teljes képernyő</translation>
-<translation id="852573274664085347">Az érintéssel való szerkesztést a szövegmezőre vagy egy kijelölt szövegre koppintva kezdheti meg.</translation>
 <translation id="852605377609758011">Ennél a tranzakciónál Google Payments virtuális kártyát fog használni. A virtuális kártya egy új kártyaszámot jelent, így az eladó soha nem fogja látni az Ön hitelkártyájának számát.</translation>
 <translation id="8528962588711550376">Bejelentkezés.</translation>
 <translation id="8535005006684281994">Netscape tanúsítvány - megújítási URL</translation>

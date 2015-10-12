@@ -1174,7 +1174,6 @@ Sidhani ikiwa tovuti hii inapaswa kuzuiwa!</translation>
 <translation id="2674170444375937751">Je, una hakika kuwa ungependa kufuta kurasa hizi kutoka historia yako?</translation>
 <translation id="2676342370492585497">Maudhui Yaliyochanganywa Yanatumika</translation>
 <translation id="2676946222714718093">Inacheza kwenye</translation>
-<translation id="2677924368525077324">Washa ubadilishaji wa maandishi yanayotumia mguso</translation>
 <translation id="2678063897982469759">Washa tena</translation>
 <translation id="2679385451463308372">Chapisha kwa kutumia kidadisi cha mfumo…</translation>
 <translation id="2680208403056680091">Muunganisho Wako wa Intaneti Unadhibitiwa</translation>
@@ -2149,7 +2148,6 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="3972425373133383637">Endelea kufahamishwa kuhusu unachohitaji kujua, katika vifaa vyote.</translation>
 <translation id="3974195870082915331">Bofya ili kuonyesha nenosiri</translation>
 <translation id="397703832102027365">Inahitimisha</translation>
-<translation id="3978194674093708182">Badala ya kuhesabu aina za data ambazo hazifutwi kwenye kidirisha, tumia mfuatano rahisi wa usaidizi unaounganisha kwenye makala yaliyo na maelezo zaidi.</translation>
 <translation id="3978267865113951599">(Umevurugika)</translation>
 <translation id="3979395879372752341">Kiendelezi kipya kimeongezwa (<ph name="EXTENSION_NAME" />)</translation>
 <translation id="3979748722126423326">Washa <ph name="NETWORKDEVICE" /></translation>
@@ -2253,7 +2251,6 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4146175323503586871"><ph name="SERVICE_NAME" /> inataka kuangalia ikiwa kifaa chako kinachotumia Chrome OS kinaweza kupata ofa. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="4147376274874979956">Haiwezi kufikia faili..</translation>
 <translation id="4151403195736952345">Tumia chaguo-msingi la kimataifa (Gundua)</translation>
-<translation id="4152200911868329970">Baadhi ya mipangilio ambayo inaweza kuonyesha tabia ya kuvinjari |haitafutwa|.</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{Kichupo 1}other{Vichupo #}}</translation>
 <translation id="4154664944169082762">Alazama za Vidole</translation>
 <translation id="4157188838832721931">Zima kuomba watumiaji nenosiri la Mfumo wa Uendeshaji kabla ya kufichua manenosiri kwenye ukurasa wa manenosiri.</translation>
@@ -3895,9 +3892,8 @@ Vipengee fulani huenda visipatikane, Tafadhali hakikisha kuwa wasifu upo na una 
 <translation id="6562758426028728553">Tafadhali ingiza PIN ya zamani na mpya.</translation>
 <translation id="656293578423618167">Njia ya faili au jina ni ndefu mno. Tafadhali hifadhi ikiwa na jina fupi au kwenye eneo jingine.</translation>
 <translation id="656398493051028875">Inafuta "<ph name="FILENAME" />"...</translation>
-<translation id="6565108107088666812">Hii hufuta data iliyosawazishwa kutoka kwenye vifaa vyote.</translation>
+<translation id="6565108107088666812">Hufuta data iliyosawazishwa kutoka kwenye vifaa vyote.</translation>
 <translation id="6566142449942033617"><ph name="PLUGIN_PATH" /> haikuweza kupakiwa kwa ajili ya kiendelezi.</translation>
-<translation id="6566572652089581977">Tumia mfuatano rahisi wa usaidizi katika kidirisha cha Futa data ya kuvinjari.</translation>
 <translation id="6567688344210276845">Aikoni '<ph name="ICON" />' haikuweza kupakiwa kwa kitendo cha ukurasa.</translation>
 <translation id="6569050677975271054">Orodha iliyozuiwa isiyobadilika pekee</translation>
 <translation id="6571070086367343653">Hariri kadi ya mkopo</translation>
@@ -4507,6 +4503,7 @@ Hebu! Huenda hali fiche <ph name="SHORTCUT_KEY" /> ikakufaa wakati ujao.</transl
 <translation id="7472639616520044048">Aina za MIME:</translation>
 <translation id="7473891865547856676">La Asante</translation>
 <translation id="747459581954555080">Rejesha zote</translation>
+<translation id="7474669101120914750">Mipangilio hii inadhibitiwa na kiendelezi <ph name="NAME" /></translation>
 <translation id="7474889694310679759">Kibodi ya Kiingereza cha Kanada</translation>
 <translation id="7475671414023905704">URL ya Nenosiri la Netscape Lililopotea</translation>
 <translation id="7477347901712410606">Kama umesahau kaulisiri yako, weka upya Usawazishaji kupitia <ph name="BEGIN_LINK" />Dashibodi ya Google<ph name="END_LINK" />.</translation>
@@ -5242,7 +5239,6 @@ Inakokotoa muda wa kujaa</translation>
 <translation id="852269967951527627">Usiruhusu tovuti yoyote kuonyesha arifa</translation>
 <translation id="8524066305376229396">Hifadhi inayoendelea:</translation>
 <translation id="8525306231823319788">Skrini nzima</translation>
-<translation id="852573274664085347">Ubadilishaji wa mguso unaweza kuanzishwa kwa kugonga kwenye sehemu ya maandishi au maandishi yaliyochaguliwa.</translation>
 <translation id="852605377609758011">Google Payments Virtual Card itatumiwa kwa muamala huu. Virtual Card ni nambari ya kadi kwa hivyo muuzaji haoni nambari yako halisi ya kadi ya malipo.</translation>
 <translation id="8528962588711550376">Inaingia.</translation>
 <translation id="8535005006684281994">URL ya </translation>

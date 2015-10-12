@@ -108,7 +108,6 @@ Prisijungus bet kuriuo būdu, „Chrome“ informacija, pvz., žymės, istorija 
 <translation id="4458285410772214805">Atsijunkite ir prisijunkite iš naujo, kad šis pakeitimas būtų pritaikytas.</translation>
 <translation id="4480040274068703980">„Chrome“ OS negali sinchronizuoti duomenų, nes prisijungiant įvyko klaida.</translation>
 <translation id="4513711165509885787">Išsami atsiskaitymo informacija išsaugota „Chrome“.</translation>
-<translation id="4519152997629025674">„Google Chrome“ gali naudoti <ph name="BEGIN_LINK" />žiniatinklio paslaugas<ph name="END_LINK" />, kad būtų pagerintas naršymas. Pasirinktinai galite bet kada neleisti teikti šių paslaugų.</translation>
 <translation id="4561051373932531560">Naudodami „Google Chrome“ galite spustelėti telefono numerį žiniatinklyje ir skambinti juo naudodami „Skype“!</translation>
 <translation id="4567424176335768812">Esate prisijungę kaip <ph name="USER_EMAIL_ADDRESS" />. Dabar galite pasiekti savo žymes, istoriją ir kitus nustatymus visuose įrenginiuose, kuriuose esate prisijungę.</translation>
 <translation id="4631713731678262610">Paslėpti „Chrome“ meniu elementą</translation>
@@ -143,7 +142,6 @@ Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalog
 „Google Chrome“ negali atkurti nustatymų.</translation>
 <translation id="5453904507266736060">Paleisti „Google Chrome“ fone</translation>
 <translation id="5495581687705680288">Į „Google Chrome“ įkelti moduliai</translation>
-<translation id="5531349711857992002">Šios svetainės sertifikato grandinėje yra bent vienas sertifikatas, pasirašytas taikant nebenaudojamą parašo algoritmą, pagrįstą SHA-1.</translation>
 <translation id="556024056938947818">„Google Chrome“ bando rodyti slaptažodžius.</translation>
 <translation id="5563479599352954471">Paieška vienu palietimu</translation>
 <translation id="5566025111015594046">„Google Chrome“ (mDNS-In)</translation>
@@ -177,7 +175,6 @@ ir netinkamus prisijungimo duomenis. Užpuolėjas bando apsimesti svetaine <ph n
 <translation id="6235018212288296708">„Google Chrome“ skirta taisyklė, pagal kurią leidžiamas mDNS srautas.</translation>
 <translation id="6236285698028833233">„Google Chrome“ nebeatsinaujina ir nebepalaiko šios operacinės sistemos versijos.</translation>
 <translation id="629218512217695915">Naudokite „Chrome“ sugeneruotą slaptažodį</translation>
-<translation id="6368805772029492593">Kad būtų papildomai užtikrintas saugumas, „Google Chrome“ užšifruos jūsų duomenis.</translation>
 <translation id="6368958679917195344">„Chrome“ OS galima naudojant papildomą <ph name="BEGIN_LINK_CROS_OSS" />atvirojo šaltinio programinę įrangą<ph name="END_LINK_CROS_OSS" />.</translation>
 <translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{Šiuo metu vykdomas atsisiuntimas. Ar norite atšaukti atsisiuntimą ir išeiti iš „Google Chrome“?}one{Šiuo metu vykdomas # atsisiuntimas. Ar norite atšaukti atsisiuntimus ir išeiti iš „Google Chrome“?}few{Šiuo metu vykdomi # atsisiuntimai. Ar norite atšaukti atsisiuntimus ir išeiti iš „Google Chrome“?}many{Šiuo metu vykdoma # atsisiuntimo. Ar norite atšaukti atsisiuntimus ir išeiti iš „Google Chrome“?}other{Šiuo metu vykdoma # atsisiuntimų. Ar norite atšaukti atsisiuntimus ir išeiti iš „Google Chrome“?}}</translation>
 <translation id="6598387184982954187">Sinchronizuoti „Chrome“ duomenims naudojate <ph name="PROFILE_EMAIL" />. Jei norite atnaujinti sinchronizavimo nuostatą arba naudoti „Chrome“ be „Google“ paskyros, apsilankykite <ph name="SETTINGS_LINK" /> skiltyje.</translation>

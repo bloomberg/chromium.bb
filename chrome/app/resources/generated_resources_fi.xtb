@@ -1173,7 +1173,6 @@ Tämän sivuston ei pitäisi olla estetty.</translation>
 <translation id="2674170444375937751">Haluatko varmasti poistaa nämä sivut historiastasi?</translation>
 <translation id="2676342370492585497">Aktiivista sekalaista sisältöä</translation>
 <translation id="2676946222714718093">Toistetaan Chromecastilla</translation>
-<translation id="2677924368525077324">Ota käyttöön tekstin muokkaus koskettamalla</translation>
 <translation id="2678063897982469759">Ota uudelleen käyttöön</translation>
 <translation id="2679385451463308372">Tulosta järjestelmän ikkunan kautta...</translation>
 <translation id="2680208403056680091">Internetyhteyttäsi hallinnoidaan</translation>
@@ -2148,7 +2147,6 @@ Tämän sivuston ei pitäisi olla estetty.</translation>
 <translation id="3972425373133383637">Pysy yhteydessä sinulle tärkeisiin asioihin kaikilla laitteilla.</translation>
 <translation id="3974195870082915331">Näytä salasana klikkaamalla</translation>
 <translation id="397703832102027365">Viimeistellään...</translation>
-<translation id="3978194674093708182">Säästettävien tietotyyppien luettelemisen sijaan valintaikkunassa näytetään yksinkertainen kuvaus, jossa on linkki lisätietoartikkeliin.</translation>
 <translation id="3978267865113951599">(Kaatui)</translation>
 <translation id="3979395879372752341">Uusi laajennus lisätty (<ph name="EXTENSION_NAME" />)</translation>
 <translation id="3979748722126423326">Ota käyttöön <ph name="NETWORKDEVICE" /></translation>
@@ -2255,7 +2253,6 @@ Kaikkien käyttäjien täytyy kirjautua ulos jatkaakseen käyttöä.</translatio
 <translation id="4146175323503586871"><ph name="SERVICE_NAME" /> haluaa tarkistaa, voiko Chrome-käyttöjärjestelmälaitteellasi lunastaa tarjouksen. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="4147376274874979956">Tiedostoa ei voi käyttää.</translation>
 <translation id="4151403195736952345">Käytä yleistä oletusta (havaitse)</translation>
-<translation id="4152200911868329970">Kaikkia selaustapoihin mahdollisesti viittaavia asetuksia |ei poisteta|.</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 välilehti}other{# välilehteä}}</translation>
 <translation id="4154664944169082762">Tunnistetiedostot</translation>
 <translation id="4157188838832721931">Poista käytöstä käyttöjärjestelmän salasanan pyytäminen käyttäjältä ennen salasanojen paljastamista salasanasivulla.</translation>
@@ -3883,7 +3880,6 @@ suojaamattomia yhteyksiä.<ph name="PRODUCT_NAME" /></translation>
 <translation id="656398493051028875">Poistetaan tiedostoa <ph name="FILENAME" />…</translation>
 <translation id="6565108107088666812">Tämä toiminto poistaa synkronoidut tiedot kaikilta laitteilta.</translation>
 <translation id="6566142449942033617">Polun <ph name="PLUGIN_PATH" /> lataaminen laajennukselle ei onnistunut.</translation>
-<translation id="6566572652089581977">Käytä yksinkertaista kuvausta Poista selaustiedot -ikkunassa.</translation>
 <translation id="6567688344210276845">Kuvakkeen <ph name="ICON" /> lataaminen sivun toimintoa varten epäonnistui.</translation>
 <translation id="6569050677975271054">Vain staattinen kiellettyjen luettelo</translation>
 <translation id="6571070086367343653">Luottokortin muokkaus</translation>
@@ -4480,6 +4476,7 @@ Psst! Suosittelemme käyttämään ensi kerralla incognito-tilaa <ph name="SHORT
 <translation id="7472639616520044048">MIME-tyypit:</translation>
 <translation id="7473891865547856676">Ei kiitos</translation>
 <translation id="747459581954555080">Palauta kaikki</translation>
+<translation id="7474669101120914750">Tätä asetusta ohjaa laajennus <ph name="NAME" /></translation>
 <translation id="7474889694310679759">Näppäimistö: englanti (Kanada)</translation>
 <translation id="7475671414023905704">Netscapen unohtunut salasana -URL</translation>
 <translation id="7477347901712410606">Jos olet unohtanut tunnuslauseen, keskeytä ja nollaa synkronointi <ph name="BEGIN_LINK" />Google-hallintapaneelin<ph name="END_LINK" /> kautta.</translation>
@@ -5209,7 +5206,6 @@ Tallenna avaintiedosto suojattuun sijaintiin. Tarvitset sitä, jos haluat luoda 
 <translation id="852269967951527627">Älä anna sivustojen näyttää ilmoituksia</translation>
 <translation id="8524066305376229396">Pysyvä tallennustila:</translation>
 <translation id="8525306231823319788">Koko näyttö</translation>
-<translation id="852573274664085347">Kosketuksella muokkaamisen voi aloittaa napauttamalla tekstikenttää tai valittua tekstiä.</translation>
 <translation id="852605377609758011">Tässä tapahtumassa käytetään Google Paymentsin virtuaalista korttia. Virtuaalinen kortti on luottokortillesi annettava uusi numero, jota käytettäessä myyjä ei näe luottokorttisi oikeaa numeroa.</translation>
 <translation id="8528962588711550376">Kirjaudutaan.</translation>
 <translation id="8535005006684281994">Netscape-varmenteen uusimis-URL</translation>

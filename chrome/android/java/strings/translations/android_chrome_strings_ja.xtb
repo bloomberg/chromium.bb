@@ -110,6 +110,7 @@
 <translation id="2678212031093903894">ブックマークをバックアップして同期しよう</translation>
 <translation id="2707726405694321444">ページを更新</translation>
 <translation id="2709516037105925701">自動入力</translation>
+<translation id="271033894570825754">新しいファイル</translation>
 <translation id="2718352093833049315">Wi-Fi接続時のみ</translation>
 <translation id="2748463065602559597">Google Chrome の安全なページを表示しています。</translation>
 <translation id="2770465223704140727">リストから削除</translation>
@@ -199,7 +200,7 @@
 <translation id="423410644998903704">このサイトと機能を共有するには Chrome にアクセスを許可する必要があります。</translation>
 <translation id="4256782883801055595">オープンソース ライセンス</translation>
 <translation id="4259722352634471385"><ph name="URL" /> へのアクセスがブロックされました</translation>
-<translation id="4269820728363426813">リンクのアドレスをコピー</translation>
+<translation id="4269820728363426813">リンクアドレスをコピー</translation>
 <translation id="4271185234001491831"><ph name="LANGUAGE" />を翻訳しない</translation>
 <translation id="4278390842282768270">許可</translation>
 <translation id="4297410240212242334">タブとアプリの分離</translation>
@@ -293,7 +294,6 @@
 <translation id="5530766185686772672">シークレットタブを閉じる</translation>
 <translation id="5556459405103347317">再読み込み</translation>
 <translation id="5565871407246142825">クレジットカード</translation>
-<translation id="5578795271662203820">この画像を <ph name="SEARCH_ENGINE" /> で検索</translation>
 <translation id="5595485650161345191">住所の編集</translation>
 <translation id="5596627076506792578">その他のオプション</translation>
 <translation id="5626134646977739690">名前:</translation>

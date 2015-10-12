@@ -1175,7 +1175,6 @@
 <translation id="2674170444375937751">確定要從您的紀錄中刪除這些網頁嗎？</translation>
 <translation id="2676342370492585497">使用中混合內容</translation>
 <translation id="2676946222714718093">目前播放裝置：</translation>
-<translation id="2677924368525077324">啟用觸控式文字編輯功能。</translation>
 <translation id="2678063897982469759">重新啟用</translation>
 <translation id="2679385451463308372">使用系統對話方塊列印…</translation>
 <translation id="2680208403056680091">您的網際網路連線目前受到控制</translation>
@@ -2154,7 +2153,6 @@
 <translation id="3972425373133383637">即時在所有裝置上掌握您需要知道的訊息。</translation>
 <translation id="3974195870082915331">按這裡顯示密碼</translation>
 <translation id="397703832102027365">即將完成...</translation>
-<translation id="3978194674093708182">不在對話方塊中列出所有未刪除的資料類型，改為透過簡化的支援字串連結到提供詳細資訊的文章。</translation>
 <translation id="3978267865113951599">(已當機)</translation>
 <translation id="3979395879372752341">已新增以下擴充功能：<ph name="EXTENSION_NAME" /></translation>
 <translation id="3979748722126423326">啟用 <ph name="NETWORKDEVICE" /></translation>
@@ -2261,7 +2259,6 @@
 <translation id="4146175323503586871">「<ph name="SERVICE_NAME" />」要求確認您的 Chrome 作業系統裝置是否符合優惠兌換資格。<ph name="MORE_INFO_LINK" /></translation>
 <translation id="4147376274874979956">無法存取檔案。</translation>
 <translation id="4151403195736952345">使用全域預設設定 (偵測)</translation>
-<translation id="4152200911868329970">部分可能反映使用者瀏覽習慣的設定 |不會遭到清除|。</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 個分頁}other{# 個分頁}}</translation>
 <translation id="4154664944169082762">指紋</translation>
 <translation id="4157188838832721931">禁止在密碼頁面顯示密碼前提示使用者輸入作業系統密碼。</translation>
@@ -3887,7 +3884,6 @@
 <translation id="656398493051028875">正在刪除「<ph name="FILENAME" />」...</translation>
 <translation id="6565108107088666812">這會清除所有裝置上已同步處理的資料。</translation>
 <translation id="6566142449942033617">無法載入外掛程式的「<ph name="PLUGIN_PATH" />」。</translation>
-<translation id="6566572652089581977">在「清除瀏覽資料」對話方塊中使用簡化的支援字串。</translation>
 <translation id="6567688344210276845">無法載入網頁動作的圖示「<ph name="ICON" />」。</translation>
 <translation id="6569050677975271054">僅限靜態黑名單</translation>
 <translation id="6571070086367343653">編輯信用卡</translation>
@@ -4492,6 +4488,7 @@
 <translation id="7472639616520044048">MIME 類型：</translation>
 <translation id="7473891865547856676">不用了，謝謝</translation>
 <translation id="747459581954555080">全部還原</translation>
+<translation id="7474669101120914750">這項設定是由擴充功能「<ph name="NAME" />」控制</translation>
 <translation id="7474889694310679759">加拿大英文鍵盤</translation>
 <translation id="7475671414023905704">Netscape 遺失密碼網址</translation>
 <translation id="7477347901712410606">如果您忘記通關密語，請透過「<ph name="BEGIN_LINK" />Google 資訊主頁<ph name="END_LINK" />」停止並重設同步功能。</translation>
@@ -5223,7 +5220,6 @@
 <translation id="852269967951527627">不允許任何網站顯示通知</translation>
 <translation id="8524066305376229396">永久儲存空間：</translation>
 <translation id="8525306231823319788">全螢幕</translation>
-<translation id="852573274664085347">您可在文字欄位或選取的文字上輕按一下，啟動觸控編輯功能。</translation>
 <translation id="852605377609758011">本次交易將使用 Google Payments 虛擬信用卡。虛擬信用卡會提供新的信用卡號碼，因此賣家不會看到您實際的信用卡號碼。</translation>
 <translation id="8528962588711550376">登入中。</translation>
 <translation id="8535005006684281994">Netscape 憑證更新網址</translation>

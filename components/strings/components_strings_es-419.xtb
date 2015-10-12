@@ -150,7 +150,7 @@
 <translation id="4258748452823770588">Firma no válida</translation>
 <translation id="4269787794583293679">(Sin nombre de usuario)</translation>
 <translation id="4300246636397505754">Sugerencias para padres</translation>
-<translation id="4325863107915753736">Se produjo un error al buscar el artículo</translation>
+<translation id="4325863107915753736">No se pudo encontrar el artículo</translation>
 <translation id="4372948949327679948">Valor <ph name="VALUE_TYPE" /> esperado.</translation>
 <translation id="4377125064752653719">Intentaste acceder a <ph name="DOMAIN" />, pero el emisor anuló el certificado que presentó el servidor. Esto significa que no se debe confiar en absoluto en las credenciales de seguridad que presentó el servidor. Te puedes estar comunicando con un atacante.</translation>
 <translation id="4394049700291259645">Inhabilitar</translation>
@@ -292,7 +292,6 @@
 <translation id="7983301409776629893">Siempre traducir del <ph name="ORIGINAL_LANGUAGE" /> al <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="7988324688042446538">Marcadores de escritorio</translation>
 <translation id="7995512525968007366">Sin especificar</translation>
-<translation id="8003882219468422867">Empresa (sin anulación)</translation>
 <translation id="8034522405403831421">Esta página está en <ph name="SOURCE_LANGUAGE" />. ¿Quieres traducirla al <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="8088680233425245692">Error al visualizar artículo</translation>
 <translation id="8091372947890762290">La activación está pendiente en el servidor.</translation>

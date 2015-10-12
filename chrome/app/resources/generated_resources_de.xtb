@@ -1166,7 +1166,6 @@ Ich glaube nicht, dass diese Website blockiert werden sollte.</translation>
 <translation id="2674170444375937751">Möchten Sie diese Seiten wirklich aus dem Verlauf löschen?</translation>
 <translation id="2676342370492585497">Aktive gemischte Inhalte</translation>
 <translation id="2676946222714718093">Läuft gerade auf:</translation>
-<translation id="2677924368525077324">Textbearbeitung durch Berühren aktivieren</translation>
 <translation id="2678063897982469759">Wieder aktivieren</translation>
 <translation id="2679385451463308372">Über den Systemdialog drucken...</translation>
 <translation id="2680208403056680091">Internetverbindung wird kontrolliert</translation>
@@ -2147,7 +2146,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="3972425373133383637">Greifen Sie auf allen Ihren Geräten auf die benötigten Informationen zu.</translation>
 <translation id="3974195870082915331">Hier klicken, um Passwort anzuzeigen</translation>
 <translation id="397703832102027365">Aktualisierung wird abgeschlossen...</translation>
-<translation id="3978194674093708182">Anstatt im Dialogfenster nicht gelöschte Datentypen anzugeben, können Sie einen einfachen Supportstring nutzen, um einen Artikel mit weiteren Informationen zu verlinken.</translation>
 <translation id="3978267865113951599">(abgestürzt)</translation>
 <translation id="3979395879372752341">Neue Erweiterung hinzugefügt (<ph name="EXTENSION_NAME" />)</translation>
 <translation id="3979748722126423326"><ph name="NETWORKDEVICE" /> aktivieren</translation>
@@ -2254,7 +2252,6 @@ Alle Nutzer müssen sich abmelden, um fortfahren zu können.</translation>
 <translation id="4146175323503586871"><ph name="SERVICE_NAME" /> möchte überprüfen, ob ein Angebot für Ihr Chrome OS-Gerät gültig ist. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="4147376274874979956">Kein Zugriff auf die Datei</translation>
 <translation id="4151403195736952345">Globalen Standard verwenden (Erkennen)</translation>
-<translation id="4152200911868329970">Manche Einstellungen, in denen möglicherweise Surfgewohnheiten dargestellt werden, |werden nicht gelöscht|.</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 Tab}other{# Tabs}}</translation>
 <translation id="4154664944169082762">Fingerabdrücke</translation>
 <translation id="4157188838832721931">Deaktiviert die Aufforderung an Nutzer zur Eingabe ihres Betriebssystem-Passworts, bevor Passwörter auf der Passwortseite sichtbar gemacht werden</translation>
@@ -3883,7 +3880,6 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="656398493051028875">"<ph name="FILENAME" />" wird gelöscht...</translation>
 <translation id="6565108107088666812">Dadurch werden die synchronisierten Daten von allen Geräten gelöscht.</translation>
 <translation id="6566142449942033617">"<ph name="PLUGIN_PATH" />" konnte nicht für Plug-in geladen werden.</translation>
-<translation id="6566572652089581977">Verwenden Sie einen einfachen Supportstring im Dialogfenster "Browserdaten löschen".</translation>
 <translation id="6567688344210276845">Symbol "<ph name="ICON" />" konnte nicht für die Seitenaktion geladen werden.</translation>
 <translation id="6569050677975271054">Nur statische schwarze Liste</translation>
 <translation id="6571070086367343653">Kreditkarte bearbeiten</translation>
@@ -4484,6 +4480,7 @@ Geheimtipp: Verwenden Sie nächstes Mal den Inkognitomodus (<ph name="SHORTCUT_K
 <translation id="7472639616520044048">MIME-Typen:</translation>
 <translation id="7473891865547856676">Nein danke</translation>
 <translation id="747459581954555080">Alle wiederherstellen</translation>
+<translation id="7474669101120914750">Diese Einstellung wird von der Erweiterung <ph name="NAME" /> gesteuert.</translation>
 <translation id="7474889694310679759">Kanadisch-englische Tastatur</translation>
 <translation id="7475671414023905704">Netscape-URL für vergessene Passwörter</translation>
 <translation id="7477347901712410606">Wenn Sie die Passphrase vergessen habe, halten Sie die Synchronisierung über das <ph name="BEGIN_LINK" />Google Dashboard<ph name="END_LINK" /> an und setzen Sie sie zurück.</translation>
@@ -5214,7 +5211,6 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="852269967951527627">Keine Website darf Benachrichtigungen anzeigen</translation>
 <translation id="8524066305376229396">Permanentspeicher:</translation>
 <translation id="8525306231823319788">Vollbildmodus</translation>
-<translation id="852573274664085347">Das Bearbeiten durch Berühren kann durch Tippen auf ein Textfeld oder ausgewählten Text ausgelöst werden.</translation>
 <translation id="852605377609758011">Für die Transaktion wird eine virtuelle Google Payments-Karte verwendet, also eine neu generierte Kartennummer. Ihre echte Kartennummer bleibt somit vor dem Käufer verborgen.</translation>
 <translation id="8528962588711550376">Anmeldung läuft...</translation>
 <translation id="8535005006684281994">Verlängerungs-URL für Netscape-Zertifikate</translation>

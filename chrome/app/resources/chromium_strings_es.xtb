@@ -56,7 +56,6 @@ e incorrectas. Por tanto, es posible que un atacante esté intentando suplantar 
 <translation id="2673087257647337101">Chromium casi ha terminado de actualizarse. Reinícialo para completar la actualización.</translation>
 <translation id="2685838254101182273">Chromium ha dejado de actualizarse y ya no admite la versión de tu sistema operativo.</translation>
 <translation id="2705212601509139398">Este sitio utiliza el complemento Chromium Frame, que pronto dejará de estar disponible. Desinstálalo y descarga un navegador compatible.</translation>
-<translation id="2718390899429598676">Para mayor seguridad, Chromium cifrará tus datos.</translation>
 <translation id="2732467638532545152">Tu ordenador utiliza una versión antigua de Microsoft Windows que no puede procesar el certificado de seguridad de este sitio web. Debido a este problema, Chromium no puede saber si el certificado procede de <ph name="SITE" /> o de un atacante de tu red que quiera hacerse pasar por <ph name="SITE" />. Instala una versión más reciente de Windows en el ordenador.</translation>
 <translation id="2770231113462710648">Cambiar navegador predeterminado por:</translation>
 <translation id="2801146392936645542"><ph name="FILE_NAME" /> es un archivo malicioso y Chromium lo ha bloqueado.</translation>
@@ -140,7 +139,6 @@ e incorrectas. Por tanto, es posible que un atacante esté intentando suplantar 
 <translation id="5427571867875391349">Establecer Chromium como navegador predeterminado</translation>
 <translation id="5466153949126434691">Chromium se actualiza automáticamente para que siempre dispongas de la última versión. Cuando se complete la descarga, Chromium se reiniciará automáticamente.</translation>
 <translation id="549669000822060376">Espera mientras Chromium instala las últimas actualizaciones del sistema.</translation>
-<translation id="5531349711857992002">La cadena de certificados de este sitio web incluye al menos un certificado que se ha firmado con un algoritmo de firma obsoleto basado en SHA-1.</translation>
 <translation id="5563479599352954471">Buscar con un toque</translation>
 <translation id="5620765574781326016">Obtén información sobre los temas en sitios web sin salir de la página.</translation>
 <translation id="5772805321386874569">(se debe <ph name="BEGIN_BUTTON" />reiniciar<ph name="END_BUTTON" /> Chromium)</translation>
@@ -194,7 +192,6 @@ Es posible que algunas funciones no estén disponibles. Especifica un directorio
 <translation id="705851970750939768">Actualizar Chromium</translation>
 <translation id="7064610482057367130">No se han encontrado actualizaciones de Chromium.</translation>
 <translation id="7066436765290594559">Chromium OS no ha podido sincronizar tus datos. Actualiza tu frase de contraseña de sincronización.</translation>
-<translation id="7090955637699162649">Chromium puede utilizar <ph name="BEGIN_LINK" />servicios web<ph name="END_LINK" /> para mejorar la experiencia de navegación de los usuarios. Puedes inhabilitar estos servicios en cualquier momento.</translation>
 <translation id="7138853919861947730">Chromium puede utilizar servicios web para mejorar la experiencia de navegación de los usuarios.</translation>
 <translation id="7162152143154757523">Chromium puede proporcionar un corrector ortográfico más inteligente si envías el texto que introduces en el navegador a los servidores de Google, lo que te permitirá utilizar la misma tecnología de corrección ortográfica que usa la Búsqueda de Google.</translation>
 <translation id="7196020411877309443">¿Por qué aparece este mensaje?</translation>

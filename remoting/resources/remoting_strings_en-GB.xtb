@@ -85,6 +85,7 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
 <translation id="2919669478609886916">You are currently sharing this machine with another user. Do you want to continue sharing?</translation>
 <translation id="2921543551052660690">You have previously signed in as <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). To access your computers in that account, <ph name="LINK_BEGIN" />sign in to Chromium<ph name="LINK_END" /> with that account and re-install Chromoting.</translation>
 <translation id="2926340305933667314">Failed to disable remote access to this computer. Please try again later.</translation>
+<translation id="2930135165929238380">Some required components are missing. Please go to chrome://plugins and make sure Native Client is enabled.</translation>
 <translation id="2939145106548231838">Authenticate to host</translation>
 <translation id="2998137343848432918">• Added Credits screen.
 • Fixed a problem when going full-screen with the keyboard visible.</translation>

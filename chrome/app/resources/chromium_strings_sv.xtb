@@ -55,7 +55,6 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="2673087257647337101">Nästan klart! Slutför uppdateringen genom att starta om Chromium.</translation>
 <translation id="2685838254101182273">Chromium uppdateras inte längre och har inte längre stöd för den här versionen av ditt operativsystem.</translation>
 <translation id="2705212601509139398">På den här webbplatsen används pluginprogrammet Chromium Frame som snart slutar stödjas. Avinstallera det och ladda ned en kompatibel webbläsare.</translation>
-<translation id="2718390899429598676">Din data krypteras i Chromium för att öka säkerheten.</translation>
 <translation id="2732467638532545152">En gammal version av Microsoft Windows som inte kan behandla webbplatsens säkerhetscertifikat körs på datorn. På grund av detta kan inte Chromium avgöra om certifikatet kommer från <ph name="SITE" /> eller från någon i ditt nätverk som utger sig för att vara <ph name="SITE" />. Uppdatera datorn till en nyare version av Windows.</translation>
 <translation id="2770231113462710648">Ändra standardwebbläsare till:</translation>
 <translation id="2801146392936645542"><ph name="FILE_NAME" /> är skadlig och har blockerats av Chromium.</translation>
@@ -139,7 +138,6 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="5427571867875391349">Använd Chromium som standardwebbläsare</translation>
 <translation id="5466153949126434691">Chromium uppdateras automatiskt så att du alltid har den senaste versionen. När den här nedladdningen är klar startas Chromium om och sedan är du igång.</translation>
 <translation id="549669000822060376">Vänta medan de senaste systemuppdateringarna installeras av Chromium.</translation>
-<translation id="5531349711857992002">Certifikatkedjan för den här webbplatsen innehåller minst ett certifikat som signerades med en utfasad signaturalgoritm som baseras på SHA-1.</translation>
 <translation id="5563479599352954471">Sök med en tryckning</translation>
 <translation id="5620765574781326016">Läs mer om vilka ämnen som webbplatser handlar om utan att lämna sidan.</translation>
 <translation id="5772805321386874569">(Chromium måste <ph name="BEGIN_BUTTON" />startas om<ph name="END_BUTTON" />)</translation>
@@ -192,7 +190,6 @@ Vissa funktioner är kanske inte tillgängliga. Ange en annan profilkatalog elle
 <translation id="705851970750939768">Uppdatera Chromium</translation>
 <translation id="7064610482057367130">Det finns ingen installation av Chromium att uppdatera.</translation>
 <translation id="7066436765290594559">Det gick inte att synkronisera data med Chromium. Uppdatera lösenfrasen för synkronisering.</translation>
-<translation id="7090955637699162649"><ph name="BEGIN_LINK" />Webbtjänster<ph name="END_LINK" /> kan användas i Chromium för att förbättra din upplevelse när du surfar. Om du vill kan du inaktivera sådana tjänster.</translation>
 <translation id="7138853919861947730">Chromium kan använda webbtjänster för att förbättra din upplevelse när du surfar.</translation>
 <translation id="7162152143154757523">Med Chromiums stavningskontroll skickas det du skriver i webbläsaren till Googles servrar så att du kan använda samma stavningsteknik som används i Googles webbsökning.</translation>
 <translation id="7196020411877309443">Varför visas det här?</translation>

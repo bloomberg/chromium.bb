@@ -1172,7 +1172,6 @@ Mislim da ta web-lokacija ne bi trebala biti blokirana!</translation>
 <translation id="2674170444375937751">Jeste li sigurni da te stranice želite izbrisati iz Vaše povijesti?</translation>
 <translation id="2676342370492585497">Aktivni mješoviti sadržaj</translation>
 <translation id="2676946222714718093">Reprodukcija na uređaju</translation>
-<translation id="2677924368525077324">Omogući uređivanje teksta dodirom</translation>
 <translation id="2678063897982469759">Ponovo omogući</translation>
 <translation id="2679385451463308372">Ispiši upotrebom dijaloga sustava...</translation>
 <translation id="2680208403056680091">Internetskom vezom upravlja proširenje</translation>
@@ -2152,7 +2151,6 @@ Mislim da ta web-lokacija ne bi trebala biti blokirana!</translation>
 <translation id="3972425373133383637">Ostanite povezani sa svim svojim povjerljivim sadržajima na svim uređajima.</translation>
 <translation id="3974195870082915331">Kliknite za prikaz zaporke</translation>
 <translation id="397703832102027365">Dovršavanje...</translation>
-<translation id="3978194674093708182">Umjesto da se u dijaloškom okviru nabrajaju vrste podataka koje nisu izbrisane, upotrijebite jednostavan niz za podršku koji povezuje s člankom u kojem je navedeno više informacija.</translation>
 <translation id="3978267865113951599">(srušilo se)</translation>
 <translation id="3979395879372752341">Dodan je novi nastavak (<ph name="EXTENSION_NAME" />)</translation>
 <translation id="3979748722126423326">Omogući <ph name="NETWORKDEVICE" /></translation>
@@ -2259,7 +2257,6 @@ Svi se korisnici moraju prijaviti za nastavak.</translation>
 <translation id="4146175323503586871"><ph name="SERVICE_NAME" /> želi provjeriti ispunjava li vaš uređaj s OS-om Chrome uvjete ponude. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="4147376274874979956">Nije moguće pristupiti datoteci.</translation>
 <translation id="4151403195736952345">Upotrijebi globalnu zadanu postavku (Otkrij)</translation>
-<translation id="4152200911868329970">Neke postavke koje mogu odražavati navike tijekom pregledavanja |neće se izbrisati|.</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 kartica}one{# kartica}few{# kartice}other{# kartica}}</translation>
 <translation id="4154664944169082762">Otisci prstiju</translation>
 <translation id="4157188838832721931">Onemogući prikazivanje odzivne poruke korisniku za unošenje zaporke OS-a prije otkrivanja zaporki na stranici sa zaporkama.</translation>
@@ -3898,7 +3895,6 @@ Pritisnite bilo koju tipku da biste nastavili istraživati.</translation>
 <translation id="656398493051028875">Brisanje datoteke "<ph name="FILENAME" />"...</translation>
 <translation id="6565108107088666812">Time se brišu sinkronizirani podaci sa svih uređaja.</translation>
 <translation id="6566142449942033617">Nije uspjelo učitavanje putanje "<ph name="PLUGIN_PATH" />" za dodatak.</translation>
-<translation id="6566572652089581977">Upotrijebi jednostavan niz za podršku u dijaloškom okviru za brisanje podataka o pregledavanju.</translation>
 <translation id="6567688344210276845">Nije uspjelo učitavanje ikone "<ph name="ICON" />" za radnju stranice.</translation>
 <translation id="6569050677975271054">Samo statički popis zabranjenih</translation>
 <translation id="6571070086367343653">Uređivanje kreditne kartice</translation>
@@ -4495,6 +4491,7 @@ Psst! Sljedeći bi vam put mogao koristiti anonimni način <ph name="SHORTCUT_KE
 <translation id="7472639616520044048">MIME vrste:</translation>
 <translation id="7473891865547856676">Ne, hvala</translation>
 <translation id="747459581954555080">Obnovi sve</translation>
+<translation id="7474669101120914750">Ovom postavkom upravlja proširenje <ph name="NAME" /></translation>
 <translation id="7474889694310679759">Kanadsko-engleska tipkovnica</translation>
 <translation id="7475671414023905704">URL Netscape izgubljene zaporke</translation>
 <translation id="7477347901712410606">Ako ste zaboravili zaporku, stanite i poništite sinkronizaciju na <ph name="BEGIN_LINK" />Google Nadzornoj ploči<ph name="END_LINK" />.</translation>
@@ -5225,7 +5222,6 @@ Ključnu datoteku čuvajte na sigurnom mjestu. Trebat će vam za stvaranje novih
 <translation id="852269967951527627">Nemoj dopustiti nijednoj web-lokaciji da prikazuje obavijesti</translation>
 <translation id="8524066305376229396">Stalna pohrana:</translation>
 <translation id="8525306231823319788">Cijeli zaslon</translation>
-<translation id="852573274664085347">Uređivanje dodirom može se pokrenuti doticanjem tekstnog polja ili odabranog teksta.</translation>
 <translation id="852605377609758011">Za tu će se transakciju upotrijebiti virtualna kartica Google Paymentsa. Virtualna kartica novi je broj kartice, pa prodavatelj nikada ne vidi pravi broj vaše kreditne kartice.</translation>
 <translation id="8528962588711550376">Prijava.</translation>
 <translation id="8535005006684281994">URL za obnavljanje Netscape certifikata</translation>

@@ -1176,7 +1176,6 @@ Jag tycker inte att den här webbplatsen ska blockeras!</translation>
 <translation id="2674170444375937751">Vill du ta bort de här sidorna från historiken?</translation>
 <translation id="2676342370492585497">Aktivt blandat innehåll</translation>
 <translation id="2676946222714718093">Spelas på</translation>
-<translation id="2677924368525077324">Aktivera tryckbaserad textredigering</translation>
 <translation id="2678063897982469759">Aktivera igen</translation>
 <translation id="2679385451463308372">Skriv ut via systemets dialogruta ...</translation>
 <translation id="2680208403056680091">Internetanslutningen kontrolleras</translation>
@@ -2160,7 +2159,6 @@ hanteraren
 <translation id="3972425373133383637">Var ansluten till allt du behöver veta på alla enheter.</translation>
 <translation id="3974195870082915331">Klicka om du vill visa lösenordet</translation>
 <translation id="397703832102027365">Slutför ...</translation>
-<translation id="3978194674093708182">Istället för att rada upp datatyper som inte raderas i dialogrutan kan du använda en enkel sträng som länkar till en supportartikel med mer information.</translation>
 <translation id="3978267865113951599">(kraschad)</translation>
 <translation id="3979395879372752341">Ett nytt tillägg har lagts till (<ph name="EXTENSION_NAME" />)</translation>
 <translation id="3979748722126423326">Aktivera <ph name="NETWORKDEVICE" /></translation>
@@ -2267,7 +2265,6 @@ Alla användare måste logga ut för att fortsätta.</translation>
 <translation id="4146175323503586871"><ph name="SERVICE_NAME" /> vill kontrollera om din Chrome OS-enhet kvalificerar för ett erbjudande. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="4147376274874979956">Det går inte att öppna filen.</translation>
 <translation id="4151403195736952345">Använd global standardinställning (Upptäck)</translation>
-<translation id="4152200911868329970">En del inställningar som kan visa surfvanor |rensas inte|.</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 flik}other{# flikar}}</translation>
 <translation id="4154664944169082762">Fingeravtryck</translation>
 <translation id="4157188838832721931">Inaktivera uppmaning till användaren att ange sitt lösenord i operativsystemet innan lösenorden på sidan Lösenord visas.</translation>
@@ -3922,7 +3919,6 @@ Tryck på någon tangent om du vill fortsätta utforska.</translation>
 <translation id="656398493051028875"><ph name="FILENAME" /> tas bort ...</translation>
 <translation id="6565108107088666812">Synkroniserad data tas bort från alla enheter.</translation>
 <translation id="6566142449942033617">Det gick inte att läsa in <ph name="PLUGIN_PATH" /> för pluginprogrammet.</translation>
-<translation id="6566572652089581977">Använd en enkel sträng som länkar till supporten i dialogrutan Rensa sökdata.</translation>
 <translation id="6567688344210276845">Det gick inte att läsa in ikonen <ph name="ICON" /> för sidåtgärden.</translation>
 <translation id="6569050677975271054">Endast statisk svartlista</translation>
 <translation id="6571070086367343653">Redigera kreditkort</translation>
@@ -4523,6 +4519,7 @@ Psst! Nästa gång kanske inkognitoläget <ph name="SHORTCUT_KEY" /> kan vara n�
 <translation id="7472639616520044048">MIME-typer:</translation>
 <translation id="7473891865547856676">Nej tack</translation>
 <translation id="747459581954555080">Återställ alla</translation>
+<translation id="7474669101120914750">Den här inställningen styrs av tillägget <ph name="NAME" /></translation>
 <translation id="7474889694310679759">Kanadensiskt-engelskt tangentbord</translation>
 <translation id="7475671414023905704">Netscapes webbadress för förlorat lösenord</translation>
 <translation id="7477347901712410606">Om du har glömt lösenfrasen avslutar du och återställer synkroniseringen via <ph name="BEGIN_LINK" />Google Översikt<ph name="END_LINK" />.</translation>
@@ -5253,7 +5250,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="852269967951527627">Tillåt inga webbplatser att visa aviseringar</translation>
 <translation id="8524066305376229396">Beständig lagring:</translation>
 <translation id="8525306231823319788">Helskärm</translation>
-<translation id="852573274664085347">Tryckredigering kan initieras genom att trycka på ett textfält eller markerad text.</translation>
 <translation id="852605377609758011">Ett virtuellt kort för Google Payments används för den här transaktionen. Ett virtuellt kort är ett nytt kortnummer så att säljaren aldrig ser ditt riktiga kortnummer.</translation>
 <translation id="8528962588711550376">Inloggning sker</translation>
 <translation id="8535005006684281994">Förnyelseadress för Netscape-certifikat</translation>

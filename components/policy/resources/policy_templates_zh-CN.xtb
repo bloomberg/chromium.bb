@@ -1276,7 +1276,6 @@
       如果未设置此政策，<ph name="PRODUCT_NAME" /> 将使用默认值（即5000毫秒）。</translation>
 <translation id="7842869978353666042">配置 Google 云端硬盘选项</translation>
 <translation id="7848840259379156480">可让您配置安装“<ph name="PRODUCT_FRAME_NAME" />”时默认使用的 HTML 呈现器。默认设置是允许托管浏览器进行呈现，但您可以选择替换此设置，并默认让“<ph name="PRODUCT_FRAME_NAME" />”呈现 HTML 页面。</translation>
-<translation id="7880891067740158163">可让您指定网址格式的列表，这些网址格式用于指定在网站请求证书时，应由 <ph name="PRODUCT_NAME" />自动选择客户端证书的网站。如果未设置此政策，系统就不会对任何网站自动选择证书。</translation>
 <translation id="7882585827992171421">此策略仅在零售模式下有效。
 
       确定在登录屏幕上用作屏幕保护程序的扩展程序的 ID。该扩展程序必须属于通过 DeviceAppPack 策略为此域配置的 AppPack。</translation>
@@ -1294,11 +1293,6 @@
           请注意，政策“<ph name="REMOTEACCESSHOSTFIREWALLTRAVERSAL_POLICY_NAME" />”处于停用状态时，系统将忽略此政策。
 
           如果此政策未设置，系统将启用此政策。</translation>
-<translation id="8079569287249995869">在<ph name="PRODUCT_NAME" />中启用WPAD优化并禁止用户更改此政策。
-
-      启用此政策时，<ph name="PRODUCT_NAME" />等待更短的时间即可收到基于DNS的WPAD服务器做出的响应。
-
-      如果未设置此政策，系统会启用此政策，并且用户无法对其进行更改。</translation>
 <translation id="8099880303030573137">使用电池供电时的闲置延迟时间</translation>
 <translation id="8102913158860568230">默认 mediastream 设置</translation>
 <translation id="8104962233214241919">自动选择这些网站的客户端证书</translation>

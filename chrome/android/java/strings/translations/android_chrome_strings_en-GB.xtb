@@ -110,6 +110,7 @@
 <translation id="2678212031093903894">Back Up and Sync Your Bookmarks</translation>
 <translation id="2707726405694321444">Refresh page</translation>
 <translation id="2709516037105925701">Auto-fill</translation>
+<translation id="271033894570825754">New</translation>
 <translation id="2718352093833049315">Only on Wi-Fi</translation>
 <translation id="2748463065602559597">You are viewing a secure Google Chrome page.</translation>
 <translation id="2770465223704140727">Remove from list</translation>
@@ -117,6 +118,7 @@
 <translation id="2816165854387457183">Slow connection detected.</translation>
 <translation id="2842985007712546952">Parent folder</translation>
 <translation id="2870560284913253234">Site</translation>
+<translation id="2873598956318269337">{NUM_URLS,plural, =1{1 URL nearby}other{# URLs nearby}}</translation>
 <translation id="2888126860611144412">About Chrome</translation>
 <translation id="2891154217021530873">Stop page loading</translation>
 <translation id="2902702728133930130">Chrome failed during start-up with an unexpected error.</translation>
@@ -293,7 +295,6 @@ Just open Chrome on your computer, go to the menu and select “Sign in to Chrom
 <translation id="5530766185686772672">Close incognito tabs</translation>
 <translation id="5556459405103347317">Reload</translation>
 <translation id="5565871407246142825">Credit cards</translation>
-<translation id="5578795271662203820">Search <ph name="SEARCH_ENGINE" /> for this image</translation>
 <translation id="5595485650161345191">Edit address</translation>
 <translation id="5596627076506792578">More options</translation>
 <translation id="5626134646977739690">Name:</translation>
@@ -315,6 +316,7 @@ Just open Chrome on your computer, go to the menu and select “Sign in to Chrom
 However, you aren't invisible. Going incognito doesn't hide your browsing from your employer, your Internet service provider or the websites you visit.</translation>
 <translation id="572328651809341494">Recent tabs</translation>
 <translation id="5733727110006255111">When this feature is turned on, Chrome will use Google servers to compress pages that you visit before downloading them. SSL and incognito pages will not be included.</translation>
+<translation id="5749068826913805084">Chrome needs storage access to download files.</translation>
 <translation id="5763382633136178763">Incognito tabs</translation>
 <translation id="5765780083710877561">Description:</translation>
 <translation id="5771382037724542929">Do you want to replace the existing <ph name="FILE_NAME" /> in <ph name="DIRECTORY_NAME" />?</translation>
@@ -323,6 +325,7 @@ However, you aren't invisible. Going incognito doesn't hide your browsing from y
 <translation id="5817918615728894473">Pair</translation>
 <translation id="5832934273103296195">Expanded – Click to collapse</translation>
 <translation id="583891442612896534">Chrome is unable to reach Google servers for data compression. Your data savings may be limited.</translation>
+<translation id="585027516397408832">Data Saver enabled</translation>
 <translation id="5860033963881614850">Off</translation>
 <translation id="5869522115854928033">Saved passwords</translation>
 <translation id="588258955323874662">Full screen</translation>
@@ -425,6 +428,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7096034533295549981">Loading video</translation>
 <translation id="7191430249889272776">Tab opened in background.</translation>
 <translation id="7201341158316793215">Removing…</translation>
+<translation id="7208788139759694678">Data Saver disabled</translation>
 <translation id="7243308994586599757">Options available near bottom of the screen</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> uses your location to show local search results</translation>
 <translation id="7299721129597238157">Delete bookmark</translation>

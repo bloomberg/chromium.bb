@@ -1527,9 +1527,6 @@ Si esta opción no está establecida o está establecida en True, los dispositiv
 <translation id="7848840259379156480">Permite configurar el procesador de HTML predeterminado si se ha instalado <ph name="PRODUCT_FRAME_NAME" />.
       De forma predeterminada, se permite que el navegador del host muestre las páginas HTML,
       pero puedes anular esta opción para que <ph name="PRODUCT_FRAME_NAME" /> muestre las páginas HTML de forma predeterminada.</translation>
-<translation id="7880891067740158163">Permite especificar una lista de patrones de URL correspondientes a los sitios para los que <ph name="PRODUCT_NAME" /> deberá seleccionar automáticamente certificados de cliente (si lo solicitan).
-
-          Si no se establece esta política, no se seleccionarán certificados de cliente para ningún sitio de forma automática.</translation>
 <translation id="7882585827992171421">Esta política solo se encuentra activa en el modo comercial.
 
       Permite determinar el ID de la extensión que se debe utilizar como salvapantallas en la pantalla de inicio de sesión. La extensión debe formar parte del paquete AppPack configurado para ese dominio a través de la política DeviceAppPack.</translation>
@@ -1552,12 +1549,6 @@ Si esta opción no está establecida o está establecida en True, los dispositiv
       Ten en cuenta que si la política <ph name="REMOTEACCESSHOSTFIREWALLTRAVERSAL_POLICY_NAME" /> está inhabilitada, se ignorará.
 
       Si no se establece esta política, se habilitará la opción.</translation>
-<translation id="8079569287249995869">Permite habilitar la optimización de WPAD en <ph name="PRODUCT_NAME" /> y evitar que los usuarios modifiquen esta opción.
-
-      Si se habilita esta política, <ph name="PRODUCT_NAME" /> tendrá que esperar durante un intervalo de tiempo más corto la respuesta de los servidores WPAD basados en DNS.
-
-      Si no se define la política, se habilitará esta opción y el usuario no
-      podrá modificarla.</translation>
 <translation id="8099880303030573137">Retraso de inactividad cuando el dispositivo funciona con la batería</translation>
 <translation id="8102913158860568230">Opción predeterminada de MediaStream</translation>
 <translation id="8104962233214241919">Seleccionar automáticamente certificados de cliente de estos sitios</translation>
