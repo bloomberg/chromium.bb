@@ -501,6 +501,7 @@
           'process/process_metrics_ios.cc',
           'process/process_metrics_linux.cc',
           'process/process_metrics_mac.cc',
+          'process/process_metrics_nacl.cc',
           'process/process_metrics_openbsd.cc',
           'process/process_metrics_posix.cc',
           'process/process_metrics_win.cc',
