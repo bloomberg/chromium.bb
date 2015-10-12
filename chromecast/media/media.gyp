@@ -360,8 +360,15 @@
     { # Default implementation of libcast_media_1.0.so.
       'target_name': 'libcast_media_1.0_default',
       'type': 'loadable_module',
+      # Cannot depend on libcast_media_1.0_default_core since a loadable_module
+      # include only symbols necessary for source files. So, it should include
+      # top-level .cc, here cast_media_default.cc explicitly.
       'dependencies': [
-        'libcast_media_1.0_default_core'
+        '../../chromecast/chromecast.gyp:cast_public_api',
+        'default_cma_backend'
+      ],
+      'sources': [
+        'base/cast_media_default.cc',
       ],
     },
   ], # end of targets

@@ -117,7 +117,22 @@ source_set("libcast_media_1.0_default_core") {
 # Default implementation of libcast_media_1.0.so.
 # TODO(slan): Make this target a loadable_module (crbug/380327)
 shared_library("libcast_media_1.0_default") {
+  # Note that it cannot depend on libcast_media_1.0_default_core since a
+  # loadable_module include only symbols necessary for source files.
+  # So, it should include top-level .cc, here cast_media_default.cc explicitly.
+  sources = [
+    "cast_media_default.cc",
+  ]
+
+  configs += [ "//chromecast:config" ]
+
+  public_deps = [
+    "//chromecast/public",
+    "//chromecast/public/media",
+  ]
+
   deps = [
-    ":libcast_media_1.0_default_core",
+    "//build/config/sanitizers:deps",
+    "//chromecast/media/cma/backend",
   ]
 }
