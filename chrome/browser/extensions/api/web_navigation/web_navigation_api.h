@@ -15,7 +15,8 @@
 #include "chrome/browser/extensions/api/web_navigation/frame_navigation_state.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser_list_observer.h"
+#include "chrome/browser/ui/browser_tab_strip_tracker.h"
+#include "chrome/browser/ui/browser_tab_strip_tracker_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -112,7 +113,7 @@ class WebNavigationTabObserver
 // Observes navigation notifications and routes them as events to the extension
 // system.
 class WebNavigationEventRouter : public TabStripModelObserver,
-                                 public chrome::BrowserListObserver,
+                                 public BrowserTabStripTrackerDelegate,
                                  public content::NotificationObserver {
  public:
   explicit WebNavigationEventRouter(Profile* profile);
@@ -134,15 +135,14 @@ class WebNavigationEventRouter : public TabStripModelObserver,
     GURL target_url;
   };
 
+  // BrowserTabStripTrackerDelegate implementation.
+  bool ShouldTrackBrowser(Browser* browser) override;
+
   // TabStripModelObserver implementation.
   void TabReplacedAt(TabStripModel* tab_strip_model,
                      content::WebContents* old_contents,
                      content::WebContents* new_contents,
                      int index) override;
-
-  // chrome::BrowserListObserver implementation.
-  void OnBrowserAdded(Browser* browser) override;
-  void OnBrowserRemoved(Browser* browser) override;
 
   // content::NotificationObserver implementation.
   void Observe(int type,
@@ -171,6 +171,8 @@ class WebNavigationEventRouter : public TabStripModelObserver,
 
   // The profile that owns us via ExtensionService.
   Profile* profile_;
+
+  BrowserTabStripTracker browser_tab_strip_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(WebNavigationEventRouter);
 };

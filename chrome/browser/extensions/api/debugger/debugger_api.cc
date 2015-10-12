@@ -29,8 +29,7 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/browser_list_observer.h"
+#include "chrome/browser/ui/browser_tab_strip_tracker.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
@@ -177,8 +176,7 @@ bool ExtensionDevToolsInfoBarDelegate::Cancel() {
 // is dismissed or the object itself is destroyed.
 // It listens to all tabs in all browsers and adds/removes confirm infobar
 // to each of the tabs.
-class GlobalConfirmInfoBar : public chrome::BrowserListObserver,
-                             public TabStripModelObserver,
+class GlobalConfirmInfoBar : public TabStripModelObserver,
                              public infobars::InfoBarManager::Observer {
  public:
   GlobalConfirmInfoBar(const base::Closure& dismissed_callback,
@@ -187,10 +185,6 @@ class GlobalConfirmInfoBar : public chrome::BrowserListObserver,
 
  private:
   using InfoBarMap = std::map<InfoBarService*, infobars::InfoBar*>;
-
-  // chrome::BrowserListObserver:
-  void OnBrowserAdded(Browser* browser) override;
-  void OnBrowserRemoved(Browser* browser) override;
 
   // TabStripModelObserver:
   void TabInsertedAt(content::WebContents* web_contents,
@@ -206,6 +200,7 @@ class GlobalConfirmInfoBar : public chrome::BrowserListObserver,
   base::Closure dismissed_callback_;
   std::string client_name_;
   InfoBarMap infobars_;
+  BrowserTabStripTracker browser_tab_strip_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(GlobalConfirmInfoBar);
 };
@@ -213,10 +208,11 @@ class GlobalConfirmInfoBar : public chrome::BrowserListObserver,
 GlobalConfirmInfoBar::GlobalConfirmInfoBar(
     const base::Closure& dismissed_callback,
     const std::string& client_name)
-    : dismissed_callback_(dismissed_callback), client_name_(client_name) {
-  BrowserList::AddObserver(this);
-  for (Browser* browser : *BrowserList::GetInstance(chrome::GetActiveDesktop()))
-    OnBrowserAdded(browser);
+    : dismissed_callback_(dismissed_callback),
+      client_name_(client_name),
+      browser_tab_strip_tracker_(this, nullptr, nullptr) {
+  browser_tab_strip_tracker_.Init(
+      BrowserTabStripTracker::InitWith::BROWSERS_IN_ACTIVE_DESKTOP);
 }
 
 GlobalConfirmInfoBar::~GlobalConfirmInfoBar() {
@@ -224,22 +220,6 @@ GlobalConfirmInfoBar::~GlobalConfirmInfoBar() {
     InfoBarMap::iterator it = infobars_.begin();
     it->first->RemoveInfoBar(it->second);
   }
-
-  for (Browser* browser : *BrowserList::GetInstance(chrome::GetActiveDesktop()))
-    OnBrowserRemoved(browser);
-  BrowserList::RemoveObserver(this);
-}
-
-void GlobalConfirmInfoBar::OnBrowserAdded(Browser* browser) {
-  TabStripModel* tab_strip_model = browser->tab_strip_model();
-  tab_strip_model->AddObserver(this);
-
-  for (int index = 0; index < tab_strip_model->count(); ++index)
-    TabInsertedAt(tab_strip_model->GetWebContentsAt(index), index, false);
-}
-
-void GlobalConfirmInfoBar::OnBrowserRemoved(Browser* browser) {
-  browser->tab_strip_model()->RemoveObserver(this);
 }
 
 void GlobalConfirmInfoBar::TabInsertedAt(content::WebContents* web_contents,

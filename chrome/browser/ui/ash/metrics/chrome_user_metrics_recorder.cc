@@ -8,26 +8,18 @@
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/shell.h"
 #include "base/logging.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 
-ChromeUserMetricsRecorder::ChromeUserMetricsRecorder() {
-  BrowserList::AddObserver(this);
+ChromeUserMetricsRecorder::ChromeUserMetricsRecorder()
+    : browser_tab_strip_tracker_(this, nullptr, nullptr) {
+  browser_tab_strip_tracker_.Init(
+      BrowserTabStripTracker::InitWith::ALL_BROWERS);
 }
 
 ChromeUserMetricsRecorder::~ChromeUserMetricsRecorder() {
   DCHECK(BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH)->empty());
-  BrowserList::RemoveObserver(this);
-}
-
-void ChromeUserMetricsRecorder::OnBrowserAdded(Browser* browser) {
-  browser->tab_strip_model()->AddObserver(this);
-}
-
-void ChromeUserMetricsRecorder::OnBrowserRemoved(Browser* browser) {
-  browser->tab_strip_model()->RemoveObserver(this);
 }
 
 void ChromeUserMetricsRecorder::ActiveTabChanged(

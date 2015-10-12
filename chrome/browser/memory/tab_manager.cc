@@ -101,19 +101,19 @@ int FindTabStripModelById(int64 target_web_contents_id, TabStripModel** model) {
 // TabManager
 
 TabManager::TabManager()
-    : discard_count_(0), recent_tab_discard_(false), discard_once_(false) {
+    : discard_count_(0),
+      recent_tab_discard_(false),
+      discard_once_(false),
+      browser_tab_strip_tracker_(this, nullptr, nullptr) {
 #if defined(OS_CHROMEOS)
   delegate_.reset(new TabManagerDelegate);
 #endif
-  BrowserList::AddObserver(this);
+  browser_tab_strip_tracker_.Init(
+      BrowserTabStripTracker::InitWith::ALL_BROWERS);
 }
 
 TabManager::~TabManager() {
   Stop();
-  for (chrome::BrowserIterator iterator; !iterator.done(); iterator.Next())
-    iterator->tab_strip_model()->RemoveObserver(this);
-
-  BrowserList::RemoveObserver(this);
 }
 
 void TabManager::Start(bool discard_once) {
@@ -473,14 +473,6 @@ void TabManager::OnMemoryPressure(
   }
   // TODO(skuhne): If more memory pressure levels are introduced, we might
   // consider to call PurgeBrowserMemory() before CRITICAL is reached.
-}
-
-void TabManager::OnBrowserAdded(Browser* browser) {
-  browser->tab_strip_model()->AddObserver(this);
-}
-
-void TabManager::OnBrowserRemoved(Browser* browser) {
-  browser->tab_strip_model()->RemoveObserver(this);
 }
 
 bool TabManager::IsAudioTab(WebContents* contents) const {

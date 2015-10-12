@@ -118,47 +118,21 @@ bool TabsEventRouter::TabEntry::SetMuted(bool new_val) {
 }
 
 TabsEventRouter::TabsEventRouter(Profile* profile)
-    : profile_(profile), favicon_scoped_observer_(this) {
+    : profile_(profile),
+      favicon_scoped_observer_(this),
+      browser_tab_strip_tracker_(this, this, this) {
   DCHECK(!profile->IsOffTheRecord());
 
-  BrowserList::AddObserver(this);
-
-  // Init() can happen after the browser is running, so catch up with any
-  // windows that already exist.
-  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
-    RegisterForBrowserNotifications(*it);
-
-    // Also catch up our internal bookkeeping of tab entries.
-    Browser* browser = *it;
-    if (ExtensionTabUtil::BrowserSupportsTabs(browser)) {
-      for (int i = 0; i < browser->tab_strip_model()->count(); ++i) {
-        WebContents* contents = browser->tab_strip_model()->GetWebContentsAt(i);
-        int tab_id = ExtensionTabUtil::GetTabId(contents);
-        tab_entries_[tab_id] = make_linked_ptr(new TabEntry(contents));
-      }
-    }
-  }
+  browser_tab_strip_tracker_.Init(
+      BrowserTabStripTracker::InitWith::ALL_BROWERS);
 }
 
 TabsEventRouter::~TabsEventRouter() {
-  BrowserList::RemoveObserver(this);
 }
 
-void TabsEventRouter::OnBrowserAdded(Browser* browser) {
-  RegisterForBrowserNotifications(browser);
-}
-
-void TabsEventRouter::RegisterForBrowserNotifications(Browser* browser) {
-  if (!profile_->IsSameProfile(browser->profile()) ||
-      !ExtensionTabUtil::BrowserSupportsTabs(browser))
-    return;
-  // Start listening to TabStripModel events for this browser.
-  TabStripModel* tab_strip = browser->tab_strip_model();
-  tab_strip->AddObserver(this);
-
-  for (int i = 0; i < tab_strip->count(); ++i) {
-    RegisterForTabNotifications(tab_strip->GetWebContentsAt(i));
-  }
+bool TabsEventRouter::ShouldTrackBrowser(Browser* browser) {
+  return profile_->IsSameProfile(browser->profile()) &&
+         ExtensionTabUtil::BrowserSupportsTabs(browser);
 }
 
 void TabsEventRouter::RegisterForTabNotifications(WebContents* contents) {
@@ -188,14 +162,6 @@ void TabsEventRouter::UnregisterForTabNotifications(WebContents* contents) {
       favicon::ContentFaviconDriver::FromWebContents(contents));
 
   ZoomController::FromWebContents(contents)->RemoveObserver(this);
-}
-
-void TabsEventRouter::OnBrowserRemoved(Browser* browser) {
-  if (!profile_->IsSameProfile(browser->profile()))
-    return;
-
-  // Stop listening to TabStripModel events for this browser.
-  browser->tab_strip_model()->RemoveObserver(this);
 }
 
 void TabsEventRouter::OnBrowserSetLastActive(Browser* browser) {
@@ -240,12 +206,16 @@ void TabsEventRouter::TabCreatedAt(WebContents* contents,
 void TabsEventRouter::TabInsertedAt(WebContents* contents,
                                     int index,
                                     bool active) {
-  // If tab is new, send created event.
   int tab_id = ExtensionTabUtil::GetTabId(contents);
   if (GetTabEntry(contents).get() == NULL) {
     tab_entries_[tab_id] = make_linked_ptr(new TabEntry(contents));
 
-    TabCreatedAt(contents, index, active);
+    // We've never seen this tab, send create event as long as we're not in the
+    // constructor.
+    if (browser_tab_strip_tracker_.is_processing_initial_browsers())
+      RegisterForTabNotifications(contents);
+    else
+      TabCreatedAt(contents, index, active);
     return;
   }
 

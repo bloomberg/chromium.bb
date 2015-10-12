@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_ASH_METRICS_CHROME_USER_METRICS_RECORDER_H_
 
 #include "base/macros.h"
-#include "chrome/browser/ui/browser_list_observer.h"
+#include "chrome/browser/ui/browser_tab_strip_tracker.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 
 namespace content {
@@ -14,15 +14,10 @@ class WebContents;
 }  // namespace content
 
 // A bridge proxy between chrome/browser events and ash::UserMetricsRecorder.
-class ChromeUserMetricsRecorder : public chrome::BrowserListObserver,
-                                  public TabStripModelObserver {
+class ChromeUserMetricsRecorder : public TabStripModelObserver {
  public:
   ChromeUserMetricsRecorder();
   ~ChromeUserMetricsRecorder() override;
-
-  // chrome::BroswerListObserver:
-  void OnBrowserAdded(Browser* browser) override;
-  void OnBrowserRemoved(Browser* browser) override;
 
   // TabStripModelObserver:
   void ActiveTabChanged(content::WebContents* old_contents,
@@ -33,6 +28,8 @@ class ChromeUserMetricsRecorder : public chrome::BrowserListObserver,
  private:
   // Called when a different tab becomes active due to a user gesture.
   void OnTabSwitchedByUserGesture();
+
+  BrowserTabStripTracker browser_tab_strip_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeUserMetricsRecorder);
 };

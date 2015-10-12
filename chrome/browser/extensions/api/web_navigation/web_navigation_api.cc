@@ -74,7 +74,7 @@ WebNavigationEventRouter::PendingWebContents::PendingWebContents(
 WebNavigationEventRouter::PendingWebContents::~PendingWebContents() {}
 
 WebNavigationEventRouter::WebNavigationEventRouter(Profile* profile)
-    : profile_(profile) {
+    : profile_(profile), browser_tab_strip_tracker_(this, this, nullptr) {
   CHECK(registrar_.IsEmpty());
   registrar_.Add(this,
                  chrome::NOTIFICATION_RETARGETING,
@@ -86,27 +86,15 @@ WebNavigationEventRouter::WebNavigationEventRouter(Profile* profile)
                  content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
                  content::NotificationService::AllSources());
 
-  BrowserList::AddObserver(this);
-  for (chrome::BrowserIterator it; !it.done(); it.Next())
-    OnBrowserAdded(*it);
+  browser_tab_strip_tracker_.Init(
+      BrowserTabStripTracker::InitWith::ALL_BROWERS);
 }
 
 WebNavigationEventRouter::~WebNavigationEventRouter() {
-  for (chrome::BrowserIterator it; !it.done(); it.Next())
-    OnBrowserRemoved(*it);
-  BrowserList::RemoveObserver(this);
 }
 
-void WebNavigationEventRouter::OnBrowserAdded(Browser* browser) {
-  if (!profile_->IsSameProfile(browser->profile()))
-    return;
-  browser->tab_strip_model()->AddObserver(this);
-}
-
-void WebNavigationEventRouter::OnBrowserRemoved(Browser* browser) {
-  if (!profile_->IsSameProfile(browser->profile()))
-    return;
-  browser->tab_strip_model()->RemoveObserver(this);
+bool WebNavigationEventRouter::ShouldTrackBrowser(Browser* browser) {
+  return profile_->IsSameProfile(browser->profile());
 }
 
 void WebNavigationEventRouter::TabReplacedAt(

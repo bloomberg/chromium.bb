@@ -15,7 +15,7 @@
 #include "base/strings/string16.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/memory/tab_stats.h"
-#include "chrome/browser/ui/browser_list_observer.h"
+#include "chrome/browser/ui/browser_tab_strip_tracker.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 
 class BrowserList;
@@ -44,8 +44,7 @@ class TabManagerDelegate;
 // Note that the browser tests are only active for platforms that use
 // TabManager (CrOS only for now) and need to be adjusted accordingly if
 // support for new platforms is added.
-class TabManager : public chrome::BrowserListObserver,
-                   public TabStripModelObserver {
+class TabManager : public TabStripModelObserver {
  public:
   TabManager();
   ~TabManager() override;
@@ -127,10 +126,6 @@ class TabManager : public chrome::BrowserListObserver,
   void OnMemoryPressure(
       base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
 
-  // chrome::BrowserListObserver overrides.
-  void OnBrowserAdded(Browser* browser) override;
-  void OnBrowserRemoved(Browser* browser) override;
-
   // TabStripModelObserver overrides.
   void TabChangedAt(content::WebContents* contents,
                     int index,
@@ -178,6 +173,8 @@ class TabManager : public chrome::BrowserListObserver,
 #if defined(OS_CHROMEOS)
   scoped_ptr<TabManagerDelegate> delegate_;
 #endif
+
+  BrowserTabStripTracker browser_tab_strip_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(TabManager);
 };

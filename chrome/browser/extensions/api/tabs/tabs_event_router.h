@@ -14,6 +14,8 @@
 #include "base/scoped_observer.h"
 #include "chrome/browser/extensions/api/tabs/tabs_api.h"
 #include "chrome/browser/ui/browser_list_observer.h"
+#include "chrome/browser/ui/browser_tab_strip_tracker.h"
+#include "chrome/browser/ui/browser_tab_strip_tracker_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "components/favicon/core/favicon_driver_observer.h"
 #include "components/ui/zoom/zoom_observer.h"
@@ -35,6 +37,7 @@ namespace extensions {
 // TabsEventRouter will only route events from windows/tabs within a profile to
 // extension processes in the same profile.
 class TabsEventRouter : public TabStripModelObserver,
+                        public BrowserTabStripTrackerDelegate,
                         public chrome::BrowserListObserver,
                         public content::NotificationObserver,
                         public favicon::FaviconDriverObserver,
@@ -43,12 +46,13 @@ class TabsEventRouter : public TabStripModelObserver,
   explicit TabsEventRouter(Profile* profile);
   ~TabsEventRouter() override;
 
-  // chrome::BrowserListObserver
-  void OnBrowserAdded(Browser* browser) override;
-  void OnBrowserRemoved(Browser* browser) override;
+  // BrowserTabStripTrackerDelegate:
+  bool ShouldTrackBrowser(Browser* browser) override;
+
+  // chrome::BrowserListObserver:
   void OnBrowserSetLastActive(Browser* browser) override;
 
-  // TabStripModelObserver
+  // TabStripModelObserver:
   void TabInsertedAt(content::WebContents* contents,
                      int index,
                      bool active) override;
@@ -75,16 +79,16 @@ class TabsEventRouter : public TabStripModelObserver,
   void TabPinnedStateChanged(content::WebContents* contents,
                              int index) override;
 
-  // content::NotificationObserver.
+  // content::NotificationObserver:
   void Observe(int type,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
-  // ZoomObserver.
+  // ZoomObserver:
   void OnZoomChanged(
       const ui_zoom::ZoomController::ZoomChangedEventData& data) override;
 
-  // favicon::FaviconDriverObserver.
+  // favicon::FaviconDriverObserver:
   void OnFaviconAvailable(const gfx::Image& image) override;
   void OnFaviconUpdated(favicon::FaviconDriver* favicon_driver,
                         bool icon_url_changed) override;
@@ -122,10 +126,6 @@ class TabsEventRouter : public TabStripModelObserver,
   void DispatchTabUpdatedEvent(
       content::WebContents* contents,
       scoped_ptr<base::DictionaryValue> changed_properties);
-
-  // Register ourselves to receive the various notifications we are interested
-  // in for a browser.
-  void RegisterForBrowserNotifications(Browser* browser);
 
   // Register ourselves to receive the various notifications we are interested
   // in for a tab.
@@ -196,6 +196,8 @@ class TabsEventRouter : public TabStripModelObserver,
 
   ScopedObserver<favicon::FaviconDriver, TabsEventRouter>
       favicon_scoped_observer_;
+
+  BrowserTabStripTracker browser_tab_strip_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(TabsEventRouter);
 };
