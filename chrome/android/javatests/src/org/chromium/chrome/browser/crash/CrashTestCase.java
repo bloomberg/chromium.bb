@@ -50,23 +50,23 @@ public class CrashTestCase extends InstrumentationTestCase {
     }
 
     protected static void setUpMinidumpFile(File file, String boundary) throws IOException {
-        PrintWriter miniDumpWriter = null;
+        PrintWriter minidumpWriter = null;
         try {
-            miniDumpWriter = new PrintWriter(new FileWriter(file));
-            miniDumpWriter.println("--" + boundary);
-            miniDumpWriter.println("Content-Disposition: form-data; name=\"prod\"");
-            miniDumpWriter.println();
-            miniDumpWriter.println("Chrome_Android");
-            miniDumpWriter.println("--" + boundary);
-            miniDumpWriter.println("Content-Disposition: form-data; name=\"ver\"");
-            miniDumpWriter.println();
-            miniDumpWriter.println("1");
-            miniDumpWriter.println(boundary + "--");
-            miniDumpWriter.flush();
-            miniDumpWriter.close();
+            minidumpWriter = new PrintWriter(new FileWriter(file));
+            minidumpWriter.println("--" + boundary);
+            minidumpWriter.println("Content-Disposition: form-data; name=\"prod\"");
+            minidumpWriter.println();
+            minidumpWriter.println("Chrome_Android");
+            minidumpWriter.println("--" + boundary);
+            minidumpWriter.println("Content-Disposition: form-data; name=\"ver\"");
+            minidumpWriter.println();
+            minidumpWriter.println("1");
+            minidumpWriter.println(boundary + "--");
+            minidumpWriter.flush();
+            minidumpWriter.close();
         } finally {
-            if (miniDumpWriter != null) {
-                miniDumpWriter.close();
+            if (minidumpWriter != null) {
+                minidumpWriter.close();
             }
         }
     }
