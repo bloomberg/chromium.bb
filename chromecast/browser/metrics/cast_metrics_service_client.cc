@@ -292,6 +292,14 @@ void CastMetricsServiceClient::OnApplicationNotIdle() {
   metrics_service_->OnApplicationNotIdle();
 }
 
+void CastMetricsServiceClient::ProcessExternalEvents(const base::Closure& cb) {
+#if defined(OS_LINUX)
+  external_metrics_->ProcessExternalEvents(cb);
+#else
+  cb.Run();
+#endif  // defined(OS_LINUX)
+}
+
 void CastMetricsServiceClient::SetForceClientId(
     const std::string& client_id) {
   DCHECK(force_client_id_.empty());

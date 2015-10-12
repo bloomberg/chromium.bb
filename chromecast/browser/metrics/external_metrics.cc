@@ -76,6 +76,15 @@ void ExternalMetrics::Start() {
   DCHECK(result);
 }
 
+void ExternalMetrics::ProcessExternalEvents(const base::Closure& cb) {
+  content::BrowserThread::PostTaskAndReply(
+      content::BrowserThread::FILE, FROM_HERE,
+      base::Bind(
+          base::IgnoreResult(&ExternalMetrics::CollectEvents),
+          weak_factory_.GetWeakPtr()),
+      cb);
+}
+
 void ExternalMetrics::RecordCrash(const std::string& crash_kind) {
   content::BrowserThread::PostTask(
       content::BrowserThread::UI,

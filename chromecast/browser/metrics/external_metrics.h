@@ -32,6 +32,11 @@ class ExternalMetrics {
   // Destroys itself in appropriate thread.
   void StopAndDestroy();
 
+  // Processes all events from shared file. This should be used to consume all
+  // events in the file before shutdown. This function is safe to call from any
+  // thread.
+  void ProcessExternalEvents(const base::Closure& cb);
+
  private:
   friend class base::DeleteHelper<ExternalMetrics>;
 
