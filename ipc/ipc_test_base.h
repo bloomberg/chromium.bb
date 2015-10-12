@@ -103,9 +103,6 @@ class IPCTestBase : public base::MultiProcessTest {
 
   IPC::Channel* channel() { return channel_.get(); }
   IPC::ChannelProxy* channel_proxy() { return channel_proxy_.get(); }
-  void set_attachment_broker(IPC::AttachmentBroker* broker) {
-    attachment_broker_ = broker;
-  }
 
   const base::Process& client_process() const { return client_process_; }
   scoped_refptr<base::SequencedTaskRunner> task_runner();
@@ -123,10 +120,6 @@ class IPCTestBase : public base::MultiProcessTest {
 
   scoped_ptr<IPC::Channel> channel_;
   scoped_ptr<IPC::ChannelProxy> channel_proxy_;
-
-  // The AttachmentBroker that should be passed to |channel_| when it is
-  // created.
-  IPC::AttachmentBroker* attachment_broker_;
 
   base::Process client_process_;
 

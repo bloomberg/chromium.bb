@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This file contains Mac-specific utility functions used by ipc tests.
+// This file contains Mac-specific utility functions used by multiple test
+// suites.
 
 #ifndef IPC_TEST_UTIL_MAC_H_
 #define IPC_TEST_UTIL_MAC_H_
@@ -41,6 +42,10 @@ void SendMachPort(mach_port_t receiving_port,
 
 // The number of active names in the current task's port name space.
 mach_msg_type_number_t GetActiveNameCount();
+
+// The number of references the current task has for a given name.
+mach_port_urefs_t GetMachRefCount(mach_port_name_t name,
+                                  mach_port_right_t right);
 
 // Increments the ref count for the right/name pair.
 void IncrementMachRefCount(mach_port_name_t name, mach_port_right_t right);

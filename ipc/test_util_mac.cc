@@ -100,6 +100,15 @@ mach_msg_type_number_t GetActiveNameCount() {
   return names_count;
 }
 
+mach_port_urefs_t GetMachRefCount(mach_port_name_t name,
+                                  mach_port_right_t right) {
+  mach_port_urefs_t ref_count;
+  kern_return_t kr = mach_port_get_refs(mach_task_self(), name,
+                                        MACH_PORT_RIGHT_SEND, &ref_count);
+  MACH_CHECK(kr == KERN_SUCCESS, kr) << "GetRefCount";
+  return ref_count;
+}
+
 void IncrementMachRefCount(mach_port_name_t name, mach_port_right_t right) {
   kern_return_t kr = mach_port_mod_refs(mach_task_self(), name, right, 1);
   MACH_CHECK(kr == KERN_SUCCESS, kr) << "GetRefCount";
