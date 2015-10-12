@@ -255,7 +255,7 @@ void GpuChildThread::OnInitialize() {
 
   if (dead_on_arrival_) {
     LOG(ERROR) << "Exiting GPU process due to errors during initialization";
-    base::MessageLoop::current()->Quit();
+    base::MessageLoop::current()->QuitWhenIdle();
     return;
   }
 
@@ -287,7 +287,7 @@ void GpuChildThread::OnInitialize() {
 
 void GpuChildThread::OnFinalize() {
   // Quit the GPU process
-  base::MessageLoop::current()->Quit();
+  base::MessageLoop::current()->QuitWhenIdle();
 }
 
 void GpuChildThread::StopWatchdog() {
@@ -336,7 +336,7 @@ void GpuChildThread::OnCollectGraphicsInfo() {
 #if defined(OS_WIN)
   if (!in_browser_process_) {
     // The unsandboxed GPU process fulfilled its duty.  Rest in peace.
-    base::MessageLoop::current()->Quit();
+    base::MessageLoop::current()->QuitWhenIdle();
   }
 #endif  // OS_WIN
 }

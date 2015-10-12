@@ -24,7 +24,7 @@ class MHTMLGenerationTest : public ContentBrowserTest {
   void MHTMLGenerated(int64 size) {
     mhtml_generated_ = true;
     file_size_ = size;
-    base::MessageLoopForUI::current()->Quit();
+    base::MessageLoopForUI::current()->QuitWhenIdle();
   }
 
  protected:

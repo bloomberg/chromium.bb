@@ -64,8 +64,10 @@ void DeadlineExceeded(base::Closure quit_closure) {
 
 void RunCurrentLoopWithDeadline() {
   base::Timer deadline(false, false);
-  deadline.Start(FROM_HERE, TestTimeouts::action_max_timeout(), base::Bind(
-      &DeadlineExceeded, base::MessageLoop::current()->QuitClosure()));
+  deadline.Start(
+      FROM_HERE, TestTimeouts::action_max_timeout(),
+      base::Bind(&DeadlineExceeded,
+                 base::MessageLoop::current()->QuitWhenIdleClosure()));
   base::MessageLoop::current()->Run();
   deadline.Stop();
 }
@@ -141,7 +143,7 @@ class CaptureTestSourceController {
   void WaitForNextCopy() {
     {
       base::AutoLock guard(lock_);
-      copy_done_ = base::MessageLoop::current()->QuitClosure();
+      copy_done_ = base::MessageLoop::current()->QuitWhenIdleClosure();
     }
 
     RunCurrentLoopWithDeadline();
@@ -472,11 +474,11 @@ class StubClientObserver {
   void QuitIfConditionsMet(SkColor color, const gfx::Size& size) {
     base::AutoLock guard(lock_);
     if (error_encountered_)
-      base::MessageLoop::current()->Quit();
+      base::MessageLoop::current()->QuitWhenIdle();
     else if (wait_color_yuv_ == color && wait_size_.IsEmpty())
-      base::MessageLoop::current()->Quit();
+      base::MessageLoop::current()->QuitWhenIdle();
     else if (wait_color_yuv_ == color && wait_size_ == size)
-      base::MessageLoop::current()->Quit();
+      base::MessageLoop::current()->QuitWhenIdle();
   }
 
   // Run the current loop until a frame is delivered with the |expected_color|

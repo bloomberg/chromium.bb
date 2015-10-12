@@ -94,7 +94,7 @@ Shell::~Shell() {
     if (headless_)
       PlatformExit();
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::MessageLoop::QuitClosure());
+        FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
   }
 }
 

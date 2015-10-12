@@ -19,7 +19,8 @@ class BrowserThreadTest : public testing::Test {
  public:
   void Release() const {
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    loop_.task_runner()->PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
+    loop_.task_runner()->PostTask(FROM_HERE,
+                                  base::MessageLoop::QuitWhenIdleClosure());
   }
 
  protected:
@@ -37,8 +38,8 @@ class BrowserThreadTest : public testing::Test {
 
   static void BasicFunction(base::MessageLoop* message_loop) {
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-    message_loop->task_runner()->PostTask(FROM_HERE,
-                                          base::MessageLoop::QuitClosure());
+    message_loop->task_runner()->PostTask(
+        FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
   }
 
   class DeletedOnFile
@@ -54,8 +55,8 @@ class BrowserThreadTest : public testing::Test {
 
     ~DeletedOnFile() {
       CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-      message_loop_->task_runner()->PostTask(FROM_HERE,
-                                             base::MessageLoop::QuitClosure());
+      message_loop_->task_runner()->PostTask(
+          FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
     }
 
     base::MessageLoop* message_loop_;
@@ -109,10 +110,8 @@ TEST_F(BrowserThreadTest, PostTaskAndReply) {
   // Most of the heavy testing for PostTaskAndReply() is done inside the
   // task runner test.  This just makes sure we get piped through at all.
   ASSERT_TRUE(BrowserThread::PostTaskAndReply(
-      BrowserThread::FILE,
-      FROM_HERE,
-      base::Bind(&base::DoNothing),
-      base::Bind(&base::MessageLoop::Quit,
+      BrowserThread::FILE, FROM_HERE, base::Bind(&base::DoNothing),
+      base::Bind(&base::MessageLoop::QuitWhenIdle,
                  base::Unretained(base::MessageLoop::current()->current()))));
   base::MessageLoop::current()->Run();
 }

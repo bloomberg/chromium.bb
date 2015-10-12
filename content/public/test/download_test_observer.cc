@@ -49,7 +49,7 @@ void DownloadUpdatedObserver::OnDownloadUpdated(DownloadItem* item) {
   if (filter_.Run(item_))
     event_seen_ = true;
   if (waiting_ && event_seen_)
-    base::MessageLoopForUI::current()->Quit();
+    base::MessageLoopForUI::current()->QuitWhenIdle();
 }
 
 void DownloadUpdatedObserver::OnDownloadDestroyed(DownloadItem* item) {
@@ -57,7 +57,7 @@ void DownloadUpdatedObserver::OnDownloadDestroyed(DownloadItem* item) {
   item_->RemoveObserver(this);
   item_ = NULL;
   if (waiting_)
-    base::MessageLoopForUI::current()->Quit();
+    base::MessageLoopForUI::current()->QuitWhenIdle();
 }
 
 DownloadTestObserver::DownloadTestObserver(
@@ -216,7 +216,7 @@ void DownloadTestObserver::DownloadInFinalState(DownloadItem* download) {
 
 void DownloadTestObserver::SignalIfFinished() {
   if (waiting_ && IsFinished())
-    base::MessageLoopForUI::current()->Quit();
+    base::MessageLoopForUI::current()->QuitWhenIdle();
 }
 
 void DownloadTestObserver::AcceptDangerousDownload(uint32 download_id) {
@@ -406,8 +406,8 @@ void DownloadTestFlushObserver::PingIOThread(int cycle) {
         BrowserThread::UI, FROM_HERE,
         base::Bind(&DownloadTestFlushObserver::PingFileThread, this, cycle));
   } else {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE, base::MessageLoop::QuitClosure());
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            base::MessageLoop::QuitWhenIdleClosure());
   }
 }
 
@@ -443,7 +443,7 @@ void DownloadTestItemCreationObserver::DownloadItemCreationCallback(
   DCHECK_EQ(1u, called_back_count_);
 
   if (waiting_)
-    base::MessageLoopForUI::current()->Quit();
+    base::MessageLoopForUI::current()->QuitWhenIdle();
 }
 
 const DownloadUrlParameters::OnStartedCallback

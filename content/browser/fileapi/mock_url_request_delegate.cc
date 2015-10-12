@@ -66,7 +66,7 @@ void MockURLRequestDelegate::ReceiveData(net::URLRequest* request,
 }
 
 void MockURLRequestDelegate::RequestComplete() {
-  base::MessageLoop::current()->Quit();
+  base::MessageLoop::current()->QuitWhenIdle();
 }
 
 }  // namespace

@@ -778,7 +778,7 @@ TEST_F(DownloadFileTest, ConfirmUpdate) {
 
   // Run the message loops for 750ms and check for results.
   loop_.task_runner()->PostDelayedTask(FROM_HERE,
-                                       base::MessageLoop::QuitClosure(),
+                                       base::MessageLoop::QuitWhenIdleClosure(),
                                        base::TimeDelta::FromMilliseconds(750));
   loop_.Run();
 

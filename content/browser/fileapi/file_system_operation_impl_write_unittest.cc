@@ -131,14 +131,14 @@ class FileSystemOperationImplWriteTest
     if (status == base::File::FILE_OK) {
       add_bytes_written(bytes, complete);
       if (complete)
-        base::MessageLoop::current()->Quit();
+        base::MessageLoop::current()->QuitWhenIdle();
     } else {
       EXPECT_FALSE(complete_);
       EXPECT_EQ(status_, base::File::FILE_OK);
       complete_ = true;
       status_ = status;
       if (base::MessageLoop::current()->is_running())
-        base::MessageLoop::current()->Quit();
+        base::MessageLoop::current()->QuitWhenIdle();
     }
   }
 

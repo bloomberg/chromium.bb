@@ -64,7 +64,7 @@ class AsyncMockGeolocationObserver : public MockGeolocationObserver {
  public:
   void OnLocationUpdate(const Geoposition& position) override {
     MockGeolocationObserver::OnLocationUpdate(position);
-    base::MessageLoop::current()->Quit();
+    base::MessageLoop::current()->QuitWhenIdle();
   }
 };
 
@@ -144,7 +144,7 @@ bool GeolocationProviderTest::ProvidersStarted() {
   provider_->task_runner()->PostTaskAndReply(
       FROM_HERE, base::Bind(&GeolocationProviderTest::GetProvidersStarted,
                             base::Unretained(this), &started),
-      base::MessageLoop::QuitClosure());
+      base::MessageLoop::QuitWhenIdleClosure());
   message_loop_.Run();
   return started;
 }

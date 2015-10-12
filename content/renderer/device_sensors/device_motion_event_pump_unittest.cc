@@ -193,7 +193,7 @@ TEST_F(DeviceMotionEventPumpTest, PumpThrottlesEventRate) {
   motion_pump()->OnDidStart(handle());
 
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::MessageLoop::QuitClosure(),
+      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
       base::TimeDelta::FromMilliseconds(100));
   base::MessageLoop::current()->Run();
   motion_pump()->Stop();

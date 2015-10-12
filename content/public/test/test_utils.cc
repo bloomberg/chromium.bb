@@ -73,7 +73,7 @@ class ScriptCallback {
 void ScriptCallback::ResultCallback(const base::Value* result) {
   if (result)
     result_.reset(result->DeepCopy());
-  base::MessageLoop::current()->Quit();
+  base::MessageLoop::current()->QuitWhenIdle();
 }
 
 // Monitors if any task is processed by the message loop.

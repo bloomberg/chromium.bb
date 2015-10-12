@@ -29,7 +29,7 @@ void AppCacheTestHelper::OnGroupAndNewestCacheStored(
     bool success,
     bool /*would_exceed_quota*/) {
   ASSERT_TRUE(success);
-  base::MessageLoop::current()->Quit();
+  base::MessageLoop::current()->QuitWhenIdle();
 }
 
 void AppCacheTestHelper::AddGroupAndCache(AppCacheServiceImpl*
@@ -74,7 +74,7 @@ void AppCacheTestHelper::OnGotAppCacheInfo(int rv) {
        origin != appcache_info_->infos_by_origin.end(); ++origin) {
     origins_->insert(origin->first);
   }
-  base::MessageLoop::current()->Quit();
+  base::MessageLoop::current()->QuitWhenIdle();
 }
 
 }  // namespace content

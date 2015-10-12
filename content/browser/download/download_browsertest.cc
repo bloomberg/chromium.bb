@@ -255,7 +255,7 @@ void DownloadFileWithDelayFactory::AddRenameCallback(base::Closure callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   rename_callbacks_.push_back(callback);
   if (waiting_)
-    base::MessageLoopForUI::current()->Quit();
+    base::MessageLoopForUI::current()->QuitWhenIdle();
 }
 
 void DownloadFileWithDelayFactory::GetAllRenameCallbacks(
@@ -311,10 +311,9 @@ class CountingDownloadFile : public DownloadFileImpl {
   static int GetNumberActiveFilesFromFileThread() {
     int result = -1;
     BrowserThread::PostTaskAndReply(
-        BrowserThread::FILE,
-        FROM_HERE,
+        BrowserThread::FILE, FROM_HERE,
         base::Bind(&CountingDownloadFile::GetNumberActiveFiles, &result),
-        base::MessageLoop::current()->QuitClosure());
+        base::MessageLoop::current()->QuitWhenIdleClosure());
     base::MessageLoop::current()->Run();
     DCHECK_NE(-1, result);
     return result;
@@ -466,7 +465,7 @@ class DownloadCreateObserver : DownloadManager::Observer {
       item_ = download;
 
     if (waiting_)
-      base::MessageLoopForUI::current()->Quit();
+      base::MessageLoopForUI::current()->QuitWhenIdle();
   }
 
   DownloadItem* WaitForFinished() {
@@ -745,8 +744,8 @@ class DownloadContentTest : public ContentBrowserTest {
   static void EnsureNoPendingDownloadJobsOnIO(bool* result) {
     if (net::URLRequestSlowDownloadJob::NumberOutstandingRequests())
       *result = false;
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE, base::MessageLoop::QuitClosure());
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            base::MessageLoop::QuitWhenIdleClosure());
   }
 
   // Location of the downloads directory for these tests

@@ -366,7 +366,7 @@ void TestBlinkWebUnitTestSupport::enterRunLoop() {
 }
 
 void TestBlinkWebUnitTestSupport::exitRunLoop() {
-  base::MessageLoop::current()->Quit();
+  base::MessageLoop::current()->QuitWhenIdle();
 }
 
 void TestBlinkWebUnitTestSupport::getPluginList(

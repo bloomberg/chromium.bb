@@ -545,7 +545,7 @@ void ChildThreadImpl::OnChannelConnected(int32 peer_pid) {
 
 void ChildThreadImpl::OnChannelError() {
   set_on_channel_error_called(true);
-  base::MessageLoop::current()->Quit();
+  base::MessageLoop::current()->QuitWhenIdle();
 }
 
 bool ChildThreadImpl::Send(IPC::Message* msg) {
@@ -665,7 +665,7 @@ void ChildThreadImpl::OnProcessBackgrounded(bool backgrounded) {
 }
 
 void ChildThreadImpl::OnShutdown() {
-  base::MessageLoop::current()->Quit();
+  base::MessageLoop::current()->QuitWhenIdle();
 }
 
 #if defined(IPC_MESSAGE_LOG_ENABLED)
@@ -720,7 +720,7 @@ void ChildThreadImpl::ShutdownThread() {
 
 void ChildThreadImpl::OnProcessFinalRelease() {
   if (on_channel_error_called_) {
-    base::MessageLoop::current()->Quit();
+    base::MessageLoop::current()->QuitWhenIdle();
     return;
   }
 

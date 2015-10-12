@@ -208,7 +208,7 @@ class RenderWidgetCompositorOutputSurface : public RenderWidgetCompositor {
                          expected_fallback_successes_;
   }
 
-  void EndTest() { base::MessageLoop::current()->Quit(); }
+  void EndTest() { base::MessageLoop::current()->QuitWhenIdle(); }
 
   void AfterTest() {
     EXPECT_EQ(num_failures_before_success_, num_failures_);

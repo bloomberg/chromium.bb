@@ -174,7 +174,7 @@ class NavigationWatcher : public WebContentsObserver {
       NavigationController::ReloadType reload_type) override {
     navigated_ = true;
     if (should_quit_loop_)
-      base::MessageLoop::current()->Quit();
+      base::MessageLoop::current()->QuitWhenIdle();
   }
 
   bool navigated_;
