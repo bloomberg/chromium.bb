@@ -135,12 +135,6 @@ def main(args):
   # All tests completed. Include host-logs in the test results.
   PrintHostLogContents(host_log_files)
 
-  if TEST_FAILURE:
-    print '++++++++++AT LEAST 1 TEST FAILED++++++++++'
-    print FAILING_TESTS.rstrip('\n')
-    print '++++++++++++++++++++++++++++++++++++++++++'
-    raise Exception('At least one test failed.')
-
   return host_log_files
 
 if __name__ == '__main__':
@@ -163,6 +157,11 @@ if __name__ == '__main__':
   host_logs = ''
   try:
     host_logs = main(command_line_args)
+    if TEST_FAILURE:
+      print '++++++++++AT LEAST 1 TEST FAILED++++++++++'
+      print FAILING_TESTS.rstrip('\n')
+      print '++++++++++++++++++++++++++++++++++++++++++'
+      raise Exception('At least one test failed.')
   finally:
     # Stop host and cleanup user-profile-dir.
     TestMachineCleanup(command_line_args.user_profile_dir, host_logs)

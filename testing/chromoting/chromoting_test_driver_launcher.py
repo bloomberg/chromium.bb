@@ -24,17 +24,19 @@ def LaunchCTDCommand(args, command):
     args: Command line args, used for test-case startup tasks.
     command: Chromoting Test Driver command line.
   Returns:
-    "command" if there was a test environment failure, otherwise a string of the
-    names of failed tests.
+    command, host_log_file_names: Tuple of:
+    "command" if there was a test-environment failure, or any failing test, and
+    list of host-log file-names.
   """
+  host_log_file_names = []
 
-  TestCaseSetup(args)
+  host_log_file_names.append(TestCaseSetup(args))
   results = RunCommandInSubProcess(command)
 
   tear_down_index = results.find(TEST_ENVIRONMENT_TEAR_DOWN_INDICATOR)
   if tear_down_index == -1:
     # The test environment did not tear down. Something went horribly wrong.
-    return '[Command failed]: ' + command
+    return '[Command failed]: ' + command, host_log_file_names
 
   end_results_list = results[tear_down_index:].split('\n')
   failed_tests_list = []
@@ -47,33 +49,32 @@ def LaunchCTDCommand(args, command):
     # Note: Skipping the first one is intentional.
     for i in range(1, len(failed_tests_list)):
       test_result += '    ' + failed_tests_list[i]
-    return test_result
+    return test_result, host_log_file_names
 
   # All tests passed!
-  return ''
+  return '', host_log_file_names
 
 
 def main(args):
   InitialiseTestMachineForLinux(args.cfg_file)
 
   failed_tests = ''
-
+  host_log_files = []
   with open(args.commands_file) as f:
     for line in f:
       # Replace the PROD_DIR value in the command-line with
       # the passed in value.
       line = line.replace(PROD_DIR_ID, args.prod_dir)
       # Launch specified command line for test.
-      failed_tests += LaunchCTDCommand(args, line)
+      test_results, log_files = LaunchCTDCommand(args, line)
+      failed_tests += test_results
+      host_log_files.extend(log_files)
 
   # All tests completed. Include host-logs in the test results.
-  PrintHostLogContents()
+  PrintHostLogContents(host_log_files)
 
-  if failed_tests:
-    print '++++++++++FAILED TESTS++++++++++'
-    print failed_tests.rstrip('\n')
-    print '++++++++++++++++++++++++++++++++'
-    raise Exception('At least one test failed.')
+  return failed_tests, host_log_files
+
 
 if __name__ == '__main__':
   parser = argparse.ArgumentParser()
@@ -91,8 +92,15 @@ if __name__ == '__main__':
       '-u', '--user_profile_dir',
       help='path to user-profile-dir, used by connect-to-host tests.')
   command_line_args = parser.parse_args()
+  host_logs = ''
+  failing_tests = ''
   try:
-    main(command_line_args)
+    failing_tests, host_logs = main(command_line_args)
+    if failing_tests:
+      print '++++++++++FAILED TESTS++++++++++'
+      print failing_tests.rstrip('\n')
+      print '++++++++++++++++++++++++++++++++'
+      raise Exception('At least one test failed.')
   finally:
     # Stop host and cleanup user-profile-dir.
-    TestMachineCleanup(command_line_args.user_profile_dir)
+    TestMachineCleanup(command_line_args.user_profile_dir, host_logs)

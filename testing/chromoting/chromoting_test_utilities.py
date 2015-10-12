@@ -67,8 +67,9 @@ def TestMachineCleanup(user_profile_dir, host_logs=None):
   RunCommandInSubProcess(CHROMOTING_HOST_PATH + ' --stop')
 
   # Cleanup any host logs.
-  for host_log in host_logs:
-    RunCommandInSubProcess('rm %s' % host_log)
+  if host_logs:
+    for host_log in host_logs:
+      RunCommandInSubProcess('rm %s' % host_log)
 
   # Remove the user-profile dir
   if os.path.exists(user_profile_dir):
@@ -192,12 +193,13 @@ def PrintRunningProcesses():
 
 
 def PrintHostLogContents(host_log_files=None):
-  host_log_contents = ''
-  for log_file in sorted(host_log_files):
-    with open(log_file, 'r') as log:
-      host_log_contents += '\nHOST LOG %s\n CONTENTS:\n%s' % (
-          log_file, log.read())
-  print host_log_contents
+  if host_log_files:
+    host_log_contents = ''
+    for log_file in sorted(host_log_files):
+      with open(log_file, 'r') as log:
+        host_log_contents += '\nHOST LOG %s\n CONTENTS:\n%s' % (
+            log_file, log.read())
+    print host_log_contents
 
 
 def TestCaseSetup(args):
