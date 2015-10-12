@@ -306,6 +306,25 @@ class PayloadManager(object):
     return [p for p in self.payloads
             if set(p['labels']).issuperset(labels)]
 
+  def GetOnly(self, labels):
+    """Retrieve all payloads with label sets that are equal to |labels|.
+
+    Args:
+      labels: A list of strings.
+
+    Returns:
+      A list of gspath.Payload objects with label sets equal to |labels|.
+
+    Raises:
+      ValueError if |labels| is not a list.
+    """
+    if not isinstance(labels, list):
+      raise ValueError('PayloadManager.GetOnly expects a list of labels.'
+                       ' Given %s' % type(labels))
+
+    labels = set(labels)
+    return [p for p in self.payloads if set(p['labels']) == labels]
+
 
 class _PaygenBuild(object):
   """This class is responsible for generating the payloads for a given build.
@@ -395,7 +414,6 @@ class _PaygenBuild(object):
     self._skip_nontest_payloads = skip_nontest_payloads
     self._control_dir = control_dir
     self._output_dir = output_dir
-    self._previous_version = None
     self._run_parallel = run_parallel
     self._run_on_builder = run_on_builder
     self._archive_board = None
@@ -872,12 +890,18 @@ class _PaygenBuild(object):
 
     _LogList('Images found', images)
 
-    # Discover active FSI builds. We need these for generating deltas.
+    # Discover and filter active FSI builds.
     fsi_builds = self._DiscoverFsiBuildsForDeltas()
     if fsi_builds:
       _LogList('Active FSI builds considered', fsi_builds)
     else:
       logging.info('No active FSI builds found')
+
+    for fsi in fsi_builds:
+      fsi_images += self._DiscoverImages(fsi)
+      fsi_images += self._DiscoverTestImageArchives(fsi)
+
+    fsi_images = _FilterForBasic(fsi_images) + _FilterForTest(fsi_images)
 
     # Discover previous, non-FSI, builds that we also must generate deltas for.
     previous_builds = [b for b in self._DiscoverNmoBuild()
@@ -886,13 +910,6 @@ class _PaygenBuild(object):
       _LogList('Previous, non-FSI, builds considered', previous_builds)
     else:
       logging.info('No other previous builds found')
-
-    # Discover and filter FSI images.
-    for fsi in fsi_builds:
-      fsi_images += self._DiscoverImages(fsi)
-      fsi_images += self._DiscoverTestImageArchives(fsi)
-
-    fsi_images = _FilterForBasic(fsi_images) + _FilterForTest(fsi_images)
 
     # Discover and filter previous images.
     for p in previous_builds:
@@ -904,14 +921,6 @@ class _PaygenBuild(object):
         # TODO(mtennant): Remove this when bug is fixed properly.
         logging.warning('Previous build image is missing, skipping: %s', e)
 
-        # We also clear the previous version field so that subsequent code does
-        # not attempt to generate a full update test from the N-1 version;
-        # since this version has missing images, no payloads were generated for
-        # it and test generation is bound to fail.
-        # TODO(garnold) This should be reversed together with the rest of this
-        # block.
-        self._previous_version = None
-
         # In this case, we should also skip test image discovery; since no
         # signed deltas will be generated from this build, we don't need to
         # generate test deltas from it.
@@ -921,11 +930,19 @@ class _PaygenBuild(object):
     previous_images = (
         _FilterForBasic(previous_images) + _FilterForTest(previous_images))
 
-    # Discover full payloads for all non-test images in the current build.
+    # Discover and catalogue full, non-test payloads.
     skip_full = self._skip_full_payloads or self._skip_nontest_payloads
+
+    # Full payloads for the current build.
     payload_manager.Add(
         ['full'],
         self._DiscoverRequiredFullPayloads(_FilterForImages(images)),
+        skip=skip_full)
+
+    # Full payloads for previous builds.
+    payload_manager.Add(
+        ['full', 'previous'],
+        self._DiscoverRequiredFullPayloads(_FilterForImages(previous_images)),
         skip=skip_full)
 
     # Discover delta payloads.
@@ -981,6 +998,12 @@ class _PaygenBuild(object):
       payload_manager.Add(
           ['test', 'full'],
           self._DiscoverRequiredFullPayloads(_FilterForTest(images)),
+          skip=skip_test_full)
+
+      # Full previous payloads.
+      payload_manager.Add(
+          ['test', 'full', 'previous'],
+          self._DiscoverRequiredFullPayloads(_FilterForTest(previous_images)),
           skip=skip_test_full)
 
       # Deltas for current -> NPO (test payloads).
@@ -1311,59 +1334,55 @@ class _PaygenBuild(object):
     """
     payload_tests = []
 
-    for p in payload_manager.Get([]):
-      # We are only testing test payloads.
-      if not 'test' in p.labels:
-        continue
+    # Pre-fetch lab stable FSIs.
+    lab_stable_fsi_deltas = self._DiscoverAllFsiBuildsForDeltaTesting()
+    lab_stable_fsi_full = self._DiscoverAllFsiBuildsForFullTesting()
 
-      # Distinguish between delta and full payloads.
-      if not 'delta' in p.labels:
-        # Create a full update test from NMO, if we are newer.
-        if not self._previous_version:
-          logging.warning('No previous build, not testing full update %s from '
-                          'NMO', p)
-        elif gspaths.VersionGreater(
-            self._previous_version, p.tgt_image.version):
+    def IsFsiLabStable(fsi_image):
+      for build in lab_stable_fsi_deltas:
+        if all([fsi_image.board == build.board,
+                fsi_image.channel == build.channel,
+                fsi_image.version == build.version,
+                fsi_image.bucket == build.bucket]):
+          return True
+      return False
+
+    # Create full update tests that involve the current build.
+    for p in payload_manager.GetOnly(['test', 'full']):
+
+      # Update tests from previous to current, if we are newer.
+      for p_prev in payload_manager.GetOnly(['test', 'full', 'previous']):
+        if gspaths.VersionGreater(p_prev.tgt_image.version,
+                                  p.tgt_image.version):
           logging.warning(
               'NMO (%s) is newer than target (%s), skipping NMO full '
-              'update test.', self._previous_version, p)
-        else:
-          payload_tests.append(self.PayloadTest(
-              p, src_channel=self._build.channel,
-              src_version=self._previous_version))
+              'update test.', p_prev, p)
+          continue
 
-        # Create a full update test from the current version to itself.
         payload_tests.append(self.PayloadTest(
             p,
-            src_channel=self._build.channel,
-            src_version=self._build.version))
+            src_channel=p_prev.tgt_image.channel,
+            src_version=p_prev.tgt_image.version))
 
-        # Create a full update test from oldest viable FSI.
-        payload_tests += self._CreateFsiPayloadTests(
-            p, self._DiscoverAllFsiBuildsForFullTesting())
-      else:
-        # Create a delta update test.
+      # Update test from current version to itself.
+      payload_tests.append(self.PayloadTest(
+          p,
+          src_channel=self._build.channel,
+          src_version=self._build.version))
 
-        # FSI deltas are included only if they are lab stable.
-        if 'fsi' in p.labels:
-          fsi_image = p.src_image
-          is_lab_stable = False
+      # Update test from the oldest viable FSI.
+      payload_tests += self._CreateFsiPayloadTests(p, lab_stable_fsi_full)
 
-          for build in self._DiscoverAllFsiBuildsForDeltaTesting():
-            if all([fsi_image.board == build.board,
-                    fsi_image.channel == build.channel,
-                    fsi_image.version == build.version,
-                    fsi_image.bucket == build.bucket]):
-              is_lab_stable = True
-              break
+    # Create delta payload tests.
+    for p in payload_manager.Get(['test', 'delta']):
+      # FSI deltas are included only if they are known to be lab stable.
+      if 'fsi' in p.labels and not IsFsiLabStable(p.src_image):
+        logging.warning(
+            'FSI delta payload (%s) is not lab stable, skipping '
+            'delta update test', p)
+        continue
 
-          if not is_lab_stable:
-            logging.warning(
-                'FSI delta payload (%s) is not lab stable, skipping '
-                'delta update test', p)
-            continue
-
-        payload_tests.append(self.PayloadTest(p))
+      payload_tests.append(self.PayloadTest(p))
 
     return payload_tests
 
