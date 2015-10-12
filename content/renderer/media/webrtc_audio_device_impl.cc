@@ -44,13 +44,13 @@ WebRtcAudioDeviceImpl::~WebRtcAudioDeviceImpl() {
   Terminate();
 }
 
-int32_t WebRtcAudioDeviceImpl::AddRef() {
+int32_t WebRtcAudioDeviceImpl::AddRef() const {
   // We can be AddRefed and released on both the UI thread as well as
   // libjingle's signaling thread.
   return base::subtle::Barrier_AtomicIncrement(&ref_count_, 1);
 }
 
-int32_t WebRtcAudioDeviceImpl::Release() {
+int32_t WebRtcAudioDeviceImpl::Release() const {
   // We can be AddRefed and released on both the UI thread as well as
   // libjingle's signaling thread.
   int ret = base::subtle::Barrier_AtomicIncrement(&ref_count_, -1);

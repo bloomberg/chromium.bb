@@ -251,8 +251,8 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl
   // The creator must call AddRef() after construction and use Release()
   // to release the reference and delete this object.
   // Called on the main render thread.
-  int32_t AddRef() override;
-  int32_t Release() override;
+  int32_t AddRef() const override;
+  int32_t Release() const override;
 
  private:
   // webrtc::AudioDeviceModule implementation.
@@ -352,7 +352,7 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl
   base::ThreadChecker signaling_thread_checker_;
   base::ThreadChecker worker_thread_checker_;
 
-  int ref_count_;
+  mutable int ref_count_;
 
   // List of captures which provides access to the native audio input layer
   // in the browser process.
