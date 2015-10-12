@@ -9,6 +9,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
+#include "base/win/windows_version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/webrtc_audio_private/webrtc_audio_private_api.h"
 #include "chrome/browser/extensions/component_loader.h"
@@ -266,6 +267,12 @@ IN_PROC_BROWSER_TEST_F(WebrtcAudioPrivateTest, SetActiveSinkNoMediaStream) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebrtcAudioPrivateTest, GetAndSetWithMediaStream) {
+  // Disabled on Win 7. https://crbug.com/500432.
+#if defined(OS_WIN)
+  if (base::win::GetVersion() == base::win::VERSION_WIN7)
+    return;
+#endif
+
   // First retrieve the list of all sinks, so that we can run a test
   // where we set the active sink to each of the different available
   // sinks in turn.
