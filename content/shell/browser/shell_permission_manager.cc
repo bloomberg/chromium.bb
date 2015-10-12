@@ -5,7 +5,10 @@
 #include "content/shell/browser/shell_permission_manager.h"
 
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "content/public/browser/permission_type.h"
+#include "content/public/common/content_switches.h"
+#include "media/base/media_switches.h"
 
 namespace content {
 
@@ -40,6 +43,13 @@ PermissionStatus ShellPermissionManager::GetPermissionStatus(
     PermissionType permission,
     const GURL& requesting_origin,
     const GURL& embedding_origin) {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if ((permission == PermissionType::AUDIO_CAPTURE ||
+       permission == PermissionType::VIDEO_CAPTURE) &&
+      command_line->HasSwitch(switches::kUseFakeDeviceForMediaStream) &&
+      command_line->HasSwitch(switches::kUseFakeUIForMediaStream)) {
+    return PERMISSION_STATUS_GRANTED;
+  }
   return PERMISSION_STATUS_DENIED;
 }
 

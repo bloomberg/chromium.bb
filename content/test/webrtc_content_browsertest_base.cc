@@ -25,16 +25,18 @@ namespace content {
 
 void WebRtcContentBrowserTest::SetUpCommandLine(
     base::CommandLine* command_line) {
-  // Assume this is set by the content test launcher.
-  ASSERT_TRUE(base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kUseFakeUIForMediaStream));
   ASSERT_TRUE(base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kUseFakeDeviceForMediaStream));
 
-  // Always include loopback interface in network list, in case the test device
-  // doesn't have other interfaces available.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnforceWebRtcIPPermissionCheck);
+
+#if defined(OS_ANDROID)
+  // For OS_ANDROID, include loopback interface in network list, in case the
+  // test device doesn't have other interfaces available.
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kAllowLoopbackInPeerConnection);
+#endif
 }
 
 void WebRtcContentBrowserTest::SetUp() {
@@ -51,6 +53,13 @@ void WebRtcContentBrowserTest::TearDown() {
 #if defined(OS_CHROMEOS)
     chromeos::CrasAudioHandler::Shutdown();
 #endif
+}
+
+void WebRtcContentBrowserTest::AppendUseFakeUIForMediaStreamFlag() {
+  ASSERT_FALSE(base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kUseFakeUIForMediaStream));
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kUseFakeUIForMediaStream);
 }
 
 // Executes |javascript|. The script is required to use

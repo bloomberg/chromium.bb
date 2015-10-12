@@ -47,7 +47,7 @@ class WebRtcWebcamBrowserTest: public ContentBrowserTest {
   ~WebRtcWebcamBrowserTest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    ASSERT_TRUE(command_line->HasSwitch(switches::kUseFakeUIForMediaStream));
+    command_line->AppendSwitch(switches::kUseFakeUIForMediaStream);
 
     // The content_browsertests run with this flag by default, and this test is
     // the only current exception to that rule, so just remove the flag

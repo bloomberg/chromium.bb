@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -431,25 +432,6 @@ PeerConnectionDependencyFactory::CreatePeerConnection(
 
   // Copy the flag from Preference associated with this WebFrame.
   P2PPortAllocator::Config port_config;
-  if (web_frame && web_frame->view()) {
-    RenderViewImpl* renderer_view_impl =
-        RenderViewImpl::FromWebView(web_frame->view());
-    if (renderer_view_impl) {
-      // TODO(guoweis): |enable_multiple_routes| should be renamed to
-      // |request_multiple_routes|. Whether local IP addresses could be
-      // collected depends on if mic/camera permission is granted for this
-      // origin.
-      port_config.enable_multiple_routes =
-          renderer_view_impl->renderer_preferences()
-              .enable_webrtc_multiple_routes;
-      port_config.enable_nonproxied_udp =
-          renderer_view_impl->renderer_preferences()
-              .enable_webrtc_nonproxied_udp;
-    }
-  }
-
-  bool enforce_preferences =
-      GetContentClient()->renderer()->ShouldEnforceWebRTCRoutingPreferences();
 
   // |media_permission| will be called to check mic/camera permission. If at
   // least one of them is granted, P2PPortAllocator is allowed to gather local
@@ -458,27 +440,51 @@ PeerConnectionDependencyFactory::CreatePeerConnection(
   // case when either the experiment is not enabled or the preference is not
   // enforced.
   scoped_ptr<media::MediaPermission> media_permission;
-  const std::string group_name =
-      base::FieldTrialList::FindFullName("WebRTC-LocalIPPermissionCheck");
-  if (enforce_preferences &&
-      StartsWith(group_name, "Enabled", base::CompareCase::SENSITIVE) &&
-      port_config.enable_multiple_routes) {
-    RenderFrameImpl* render_frame = RenderFrameImpl::FromWebFrame(web_frame);
-    if (render_frame) {
-      media_permission = render_frame->CreateMediaPermissionProxy(
-          chrome_worker_thread_.task_runner());
-      DCHECK(media_permission);
-    }
-  }
-
-  if (!enforce_preferences) {
-    VLOG(3) << "WebRTC routing preferences will not be enforced";
+  if (!GetContentClient()
+           ->renderer()
+           ->ShouldEnforceWebRTCRoutingPreferences()) {
     port_config.enable_multiple_routes = true;
     port_config.enable_nonproxied_udp = true;
+    VLOG(3) << "WebRTC routing preferences will not be enforced";
   } else {
-    VLOG(3) << "WebRTC routing preferences: multiple_routes: "
-            << port_config.enable_multiple_routes
-            << ", nonproxied_udp: " << port_config.enable_nonproxied_udp;
+    if (web_frame && web_frame->view()) {
+      RenderViewImpl* renderer_view_impl =
+          RenderViewImpl::FromWebView(web_frame->view());
+      if (renderer_view_impl) {
+        // TODO(guoweis): |enable_multiple_routes| should be renamed to
+        // |request_multiple_routes|. Whether local IP addresses could be
+        // collected depends on if mic/camera permission is granted for this
+        // origin.
+        port_config.enable_multiple_routes =
+            renderer_view_impl->renderer_preferences()
+                .enable_webrtc_multiple_routes;
+        port_config.enable_nonproxied_udp =
+            renderer_view_impl->renderer_preferences()
+                .enable_webrtc_nonproxied_udp;
+        VLOG(3) << "WebRTC routing preferences: multiple_routes: "
+                << port_config.enable_multiple_routes
+                << ", nonproxied_udp: " << port_config.enable_nonproxied_udp;
+      }
+    }
+    if (port_config.enable_multiple_routes) {
+      bool create_media_permission =
+          base::CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kEnforceWebRtcIPPermissionCheck);
+      create_media_permission =
+          create_media_permission ||
+          StartsWith(base::FieldTrialList::FindFullName(
+                         "WebRTC-LocalIPPermissionCheck"),
+                     "Enabled", base::CompareCase::SENSITIVE);
+      if (create_media_permission) {
+        content::RenderFrameImpl* render_frame =
+            content::RenderFrameImpl::FromWebFrame(web_frame);
+        if (render_frame) {
+          media_permission = render_frame->CreateMediaPermissionProxy(
+              chrome_worker_thread_.task_runner());
+        }
+        DCHECK(media_permission);
+      }
+    }
   }
 
   const GURL& requesting_origin =

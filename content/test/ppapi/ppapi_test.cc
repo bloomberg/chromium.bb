@@ -53,6 +53,8 @@ void PPAPITestBase::SetUpCommandLine(base::CommandLine* command_line) {
 
   // Allow manual garbage collection.
   command_line->AppendSwitchASCII(switches::kJavaScriptFlags, "--expose_gc");
+
+  command_line->AppendSwitch(switches::kUseFakeUIForMediaStream);
 }
 
 GURL PPAPITestBase::GetTestFileUrl(const std::string& test_case) {

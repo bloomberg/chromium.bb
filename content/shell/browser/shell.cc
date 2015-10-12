@@ -19,6 +19,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/renderer_preferences.h"
 #include "content/shell/browser/blink_test_controller.h"
 #include "content/shell/browser/layout_test/layout_test_bluetooth_chooser_factory.h"
@@ -114,6 +115,14 @@ Shell* Shell::CreateShell(WebContents* web_contents,
     web_contents->GetMutableRendererPrefs()->use_custom_colors = false;
     web_contents->GetRenderViewHost()->SyncRendererPrefs();
   }
+
+#if defined(ENABLE_WEBRTC)
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableWebRtcMultipleRoutes)) {
+    web_contents->GetMutableRendererPrefs()->enable_webrtc_multiple_routes =
+        false;
+  }
+#endif
 
   return shell;
 }

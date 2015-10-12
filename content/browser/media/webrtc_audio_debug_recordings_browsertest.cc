@@ -65,7 +65,10 @@ namespace content {
 
 class WebRtcAudioDebugRecordingsBrowserTest : public WebRtcContentBrowserTest {
  public:
-  WebRtcAudioDebugRecordingsBrowserTest() {}
+  WebRtcAudioDebugRecordingsBrowserTest() {
+    // Automatically grant device permission.
+    AppendUseFakeUIForMediaStreamFlag();
+  }
   ~WebRtcAudioDebugRecordingsBrowserTest() override {}
 };
 

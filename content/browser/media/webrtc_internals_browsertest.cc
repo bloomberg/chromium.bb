@@ -152,9 +152,8 @@ class MAYBE_WebRtcInternalsBrowserTest: public ContentBrowserTest {
   ~MAYBE_WebRtcInternalsBrowserTest() override {}
 
   void SetUpOnMainThread() override {
-    // Assume this is set by the content test launcher.
-    ASSERT_TRUE(base::CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kUseFakeUIForMediaStream));
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kUseFakeUIForMediaStream);
     ASSERT_TRUE(base::CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kUseFakeDeviceForMediaStream));
   }

@@ -77,7 +77,10 @@ namespace content {
 
 class WebRtcGetUserMediaBrowserTest: public WebRtcContentBrowserTest {
  public:
-  WebRtcGetUserMediaBrowserTest() : trace_log_(NULL) {}
+  WebRtcGetUserMediaBrowserTest() : trace_log_(NULL) {
+    // Automatically grant device permission.
+    AppendUseFakeUIForMediaStreamFlag();
+  }
   ~WebRtcGetUserMediaBrowserTest() override {}
 
   void StartTracing() {
@@ -743,7 +746,10 @@ class WebRtcConstraintsBrowserTest
     : public WebRtcContentBrowserTest,
       public testing::WithParamInterface<UserMediaSizes> {
  public:
-  WebRtcConstraintsBrowserTest() : user_media_(GetParam()) {}
+  WebRtcConstraintsBrowserTest() : user_media_(GetParam()) {
+    // Automatically grant device permission.
+    AppendUseFakeUIForMediaStreamFlag();
+  }
   const UserMediaSizes& user_media() const { return user_media_; }
 
  private:

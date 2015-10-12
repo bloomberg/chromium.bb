@@ -22,10 +22,7 @@ public abstract class NativeBrowserTestActivity extends NativeTestActivity {
         "--single_process",
 
         // switches::kUseFakeDeviceForMediaStream
-        "--use-fake-device-for-media-stream",
-
-        // switches::kUseFakeUIForMediaStream
-        "--use-fake-ui-for-media-stream"
+        "--use-fake-device-for-media-stream"
     };
 
     @Override

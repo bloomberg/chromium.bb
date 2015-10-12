@@ -840,6 +840,11 @@ const char kDisableWebRtcEncryption[]      = "disable-webrtc-encryption";
 // Disables HW encode acceleration for WebRTC.
 const char kDisableWebRtcHWEncoding[]       = "disable-webrtc-hw-encoding";
 
+// Disables Multiple routes option for WebRTC. The default behavior is always
+// requesting multiple routes. This is for test cases to mimic the behavior when
+// multiple routes is disabled from user preferences.
+const char kDisableWebRtcMultipleRoutes[] = "disable-webrtc-multiple-routes";
+
 // Enables negotiation of DTLS 1.2 for WebRTC.
 const char kEnableWebRtcDtls12[]            = "enable-webrtc-dtls12";
 
@@ -848,6 +853,11 @@ const char kEnableWebRtcHWH264Encoding[]    = "enable-webrtc-hw-h264-encoding";
 
 // Enables Origin header in Stun messages for WebRTC.
 const char kEnableWebRtcStunOrigin[]        = "enable-webrtc-stun-origin";
+
+// Enforce IP Permission check. TODO(guoweis): Remove this once the feature is
+// not under finch and becomes the default.
+const char kEnforceWebRtcIPPermissionCheck[] =
+    "enforce-webrtc-ip-permission-check";
 
 // Renderer process parameter for WebRTC Stun probe trial to determine the
 // interval. Please see SetupStunProbeTrial in

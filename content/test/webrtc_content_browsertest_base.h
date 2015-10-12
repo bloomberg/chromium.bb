@@ -18,6 +18,9 @@ class WebRtcContentBrowserTest: public ContentBrowserTest {
   void TearDown() override;
 
  protected:
+  // Helper function to append "--use-fake-ui-for-media-stream".
+  void AppendUseFakeUIForMediaStreamFlag();
+
   // Executes |javascript|. The script is required to use
   // window.domAutomationController.send to send a string value back to here.
   std::string ExecuteJavascriptAndReturnResult(

@@ -810,6 +810,69 @@
         });
   }
 
+  function iceCandidateIsLoopback(candidate) {
+    return candidate.candidate.indexOf("127.0.0.1") > -1 ||
+           candidate.candidate.indexOf("::1") > -1;
+  }
+
+  // Helper function to invoke |callback| when gathering is completed.
+  function gatherIceCandidates(pc, callback) {
+    var candidates = [];
+    pc.createDataChannel("");
+    pc.onicecandidate = function(event) {
+      // null candidate indicates the gathering has completed.
+      if (event.candidate == null) {
+        callback(candidates);
+      } else {
+        candidates.push(event.candidate);
+      }
+    }
+    pc.createOffer(
+      function(offer) {
+        pc.setLocalDescription(offer);
+      },
+      function(error) { failTest(error); }
+    );
+  }
+
+  function callWithDevicePermissionGranted() {
+    var pc = new webkitRTCPeerConnection(null, null);
+    gatherIceCandidates(pc, function(candidates) {
+      assertEquals(candidates.length > 0, true);
+      for (i = 0; i < candidates.length; i++) {
+        assertEquals(iceCandidateIsLoopback(candidates[i]), false);
+      }
+      reportTestSuccess();
+    });
+  }
+
+  function callWithDevicePermissionDeniedAndEmptyIceServers() {
+    var pc = new webkitRTCPeerConnection({iceServers:[]}, null);
+    gatherIceCandidates(pc, function(candidates) {
+      assertEquals(candidates.length, 0);
+      reportTestSuccess();
+    });
+  }
+
+  function callAndExpectLoopbackCandidates() {
+    var pc = new webkitRTCPeerConnection(null, null);
+    gatherIceCandidates(pc, function(candidates) {
+      assertEquals(candidates.length > 0, true);
+      for (i = 0; i < candidates.length; i++) {
+        assertEquals(iceCandidateIsLoopback(candidates[i]), true);
+      }
+      reportTestSuccess();
+    });
+  }
+
+  function callWithDevicePermissionDeniedAndUndefinedIceServers() {
+    callAndExpectLoopbackCandidates();
+  }
+
+  function callWithMultipleRoutesDisabledAndUndefinedIceServers() {
+    callAndExpectLoopbackCandidates();
+  }
+
   function onOfferCreated(offer, caller, callee) {
     offer.sdp = transformSdp(offer.sdp);
     console.log('Offer:\n' + offer.sdp);
