@@ -4,6 +4,8 @@
 
 #include "components/sync_sessions/revisit/current_tab_matcher.h"
 
+#include <string>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/test/histogram_tester.h"
 #include "base/time/time.h"
@@ -36,17 +38,17 @@ scoped_ptr<SessionTab> Tab(const int index, const base::Time timestamp) {
   return tab;
 }
 
-void VerifyMatch(CurrentTabMatcher& matcher) {
+void VerifyMatch(CurrentTabMatcher* matcher) {
   base::HistogramTester histogram_tester;
-  matcher.Emit(PageVisitObserver::kTransitionPage);
+  matcher->Emit(PageVisitObserver::kTransitionPage);
   histogram_tester.ExpectUniqueSample("Sync.PageRevisitTabMatchTransition",
                                       PageVisitObserver::kTransitionPage, 1);
   histogram_tester.ExpectTotalCount("Sync.PageRevisitTabMatchAge", 1);
 }
 
-void VerifyMiss(CurrentTabMatcher& matcher) {
+void VerifyMiss(CurrentTabMatcher* matcher) {
   base::HistogramTester histogram_tester;
-  matcher.Emit(PageVisitObserver::kTransitionPage);
+  matcher->Emit(PageVisitObserver::kTransitionPage);
   histogram_tester.ExpectUniqueSample("Sync.PageRevisitTabMissTransition",
                                       PageVisitObserver::kTransitionPage, 1);
 }
@@ -55,14 +57,14 @@ void VerifyMiss(CurrentTabMatcher& matcher) {
 
 TEST(CurrentTabMatcherTest, NoCheck) {
   CurrentTabMatcher matcher((PageEquality(GURL(kExampleUrl))));
-  VerifyMiss(matcher);
+  VerifyMiss(&matcher);
 }
 
 TEST(CurrentTabMatcherTest, EmptyTab) {
   scoped_ptr<SessionTab> tab = Tab(0, base::Time::Now());
   CurrentTabMatcher matcher((PageEquality(GURL(kExampleUrl))));
   matcher.Check(tab.get());
-  VerifyMiss(matcher);
+  VerifyMiss(&matcher);
 }
 
 TEST(CurrentTabMatcherTest, SameUrl) {
@@ -71,7 +73,7 @@ TEST(CurrentTabMatcherTest, SameUrl) {
 
   CurrentTabMatcher matcher((PageEquality(GURL(kExampleUrl))));
   matcher.Check(tab.get());
-  VerifyMatch(matcher);
+  VerifyMatch(&matcher);
 }
 
 TEST(CurrentTabMatcherTest, DifferentUrl) {
@@ -80,7 +82,7 @@ TEST(CurrentTabMatcherTest, DifferentUrl) {
 
   CurrentTabMatcher matcher((PageEquality(GURL(kExampleUrl))));
   matcher.Check(tab.get());
-  VerifyMiss(matcher);
+  VerifyMiss(&matcher);
 }
 
 TEST(CurrentTabMatcherTest, DifferentIndex) {
@@ -90,7 +92,7 @@ TEST(CurrentTabMatcherTest, DifferentIndex) {
 
   CurrentTabMatcher matcher((PageEquality(GURL(kExampleUrl))));
   matcher.Check(tab.get());
-  VerifyMiss(matcher);
+  VerifyMiss(&matcher);
 }
 
 TEST(CurrentTabMatcherTest, Timestamp) {

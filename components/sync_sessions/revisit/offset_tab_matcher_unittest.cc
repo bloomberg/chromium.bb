@@ -4,6 +4,8 @@
 
 #include "components/sync_sessions/revisit/offset_tab_matcher.h"
 
+#include <string>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/test/histogram_tester.h"
 #include "base/time/time.h"
@@ -37,9 +39,9 @@ scoped_ptr<SessionTab> Tab(const int index,
   return tab;
 }
 
-void VerifyMatch(OffsetTabMatcher& matcher, const int offset) {
+void VerifyMatch(OffsetTabMatcher* matcher, const int offset) {
   base::HistogramTester histogram_tester;
-  matcher.Emit(PageVisitObserver::kTransitionPage);
+  matcher->Emit(PageVisitObserver::kTransitionPage);
   histogram_tester.ExpectUniqueSample("Sync.PageRevisitNavigationMatchOffset",
                                       offset, 1);
   histogram_tester.ExpectUniqueSample(
@@ -48,9 +50,9 @@ void VerifyMatch(OffsetTabMatcher& matcher, const int offset) {
   histogram_tester.ExpectTotalCount("Sync.PageRevisitNavigationMatchAge", 1);
 }
 
-void VerifyMiss(OffsetTabMatcher& matcher) {
+void VerifyMiss(OffsetTabMatcher* matcher) {
   base::HistogramTester histogram_tester;
-  matcher.Emit(PageVisitObserver::kTransitionPage);
+  matcher->Emit(PageVisitObserver::kTransitionPage);
   histogram_tester.ExpectUniqueSample(
       "Sync.PageRevisitNavigationMissTransition",
       PageVisitObserver::kTransitionPage, 1);
@@ -60,14 +62,14 @@ void VerifyMiss(OffsetTabMatcher& matcher) {
 
 TEST(OffsetTabMatcherTest, NoCheck) {
   OffsetTabMatcher matcher((PageEquality(GURL(kExampleUrl))));
-  VerifyMiss(matcher);
+  VerifyMiss(&matcher);
 }
 
 TEST(OffsetTabMatcherTest, EmptyTab) {
   scoped_ptr<SessionTab> tab = Tab(0);
   OffsetTabMatcher matcher((PageEquality(GURL(kExampleUrl))));
   matcher.Check(tab.get());
-  VerifyMiss(matcher);
+  VerifyMiss(&matcher);
 }
 
 TEST(OffsetTabMatcherTest, HasMatchForward) {
@@ -77,7 +79,7 @@ TEST(OffsetTabMatcherTest, HasMatchForward) {
 
   OffsetTabMatcher matcher((PageEquality(GURL(kExampleUrl))));
   matcher.Check(tab.get());
-  VerifyMatch(matcher, 1);
+  VerifyMatch(&matcher, 1);
 }
 
 TEST(OffsetTabMatcherTest, HasMatchBackward) {
@@ -87,7 +89,7 @@ TEST(OffsetTabMatcherTest, HasMatchBackward) {
 
   OffsetTabMatcher matcher((PageEquality(GURL(kExampleUrl))));
   matcher.Check(tab.get());
-  VerifyMatch(matcher, -1);
+  VerifyMatch(&matcher, -1);
 }
 
 TEST(OffsetTabMatcherTest, NoMatch) {
@@ -97,7 +99,7 @@ TEST(OffsetTabMatcherTest, NoMatch) {
 
   OffsetTabMatcher matcher((PageEquality(GURL(kExampleUrl))));
   matcher.Check(tab.get());
-  VerifyMiss(matcher);
+  VerifyMiss(&matcher);
 }
 
 TEST(OffsetTabMatcherTest, MultipleBackwardOffsets) {
@@ -110,7 +112,7 @@ TEST(OffsetTabMatcherTest, MultipleBackwardOffsets) {
 
   OffsetTabMatcher matcher((PageEquality(GURL(kExampleUrl))));
   matcher.Check(tab.get());
-  VerifyMatch(matcher, -2);
+  VerifyMatch(&matcher, -2);
 }
 
 TEST(OffsetTabMatcherTest, MultipleOffsets) {
@@ -123,7 +125,7 @@ TEST(OffsetTabMatcherTest, MultipleOffsets) {
 
   OffsetTabMatcher matcher((PageEquality(GURL(kExampleUrl))));
   matcher.Check(tab.get());
-  VerifyMatch(matcher, 2);
+  VerifyMatch(&matcher, 2);
 }
 
 TEST(OffsetTabMatcherTest, VeryForwardOffset) {
@@ -136,7 +138,7 @@ TEST(OffsetTabMatcherTest, VeryForwardOffset) {
   OffsetTabMatcher matcher((PageEquality(GURL(kExampleUrl))));
   matcher.Check(tab.get());
   // Expect the offset to be clamped to +10.
-  VerifyMatch(matcher, 10);
+  VerifyMatch(&matcher, 10);
 }
 
 TEST(OffsetTabMatcherTest, VeryBackwardOffset) {
@@ -149,7 +151,7 @@ TEST(OffsetTabMatcherTest, VeryBackwardOffset) {
   OffsetTabMatcher matcher((PageEquality(GURL(kExampleUrl))));
   matcher.Check(tab.get());
   // Expect the offset to be clamped to -10.
-  VerifyMatch(matcher, -10);
+  VerifyMatch(&matcher, -10);
 }
 
 TEST(OffsetTabMatcherTest, MultipleTabs) {
@@ -164,7 +166,7 @@ TEST(OffsetTabMatcherTest, MultipleTabs) {
   OffsetTabMatcher matcher((PageEquality(GURL(kExampleUrl))));
   matcher.Check(tab1.get());
   matcher.Check(tab2.get());
-  VerifyMatch(matcher, -1);
+  VerifyMatch(&matcher, -1);
 }
 
 TEST(OffsetTabMatcherTest, MultipleTabsSameTime) {
@@ -181,7 +183,7 @@ TEST(OffsetTabMatcherTest, MultipleTabsSameTime) {
   OffsetTabMatcher matcher((PageEquality(GURL(kExampleUrl))));
   matcher.Check(tab1.get());
   matcher.Check(tab2.get());
-  VerifyMatch(matcher, 1);
+  VerifyMatch(&matcher, 1);
 }
 
 }  // namespace sync_sessions

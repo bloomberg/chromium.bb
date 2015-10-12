@@ -14,6 +14,7 @@
 #include "components/sync_sessions/revisit/current_tab_matcher.h"
 #include "components/sync_sessions/revisit/offset_tab_matcher.h"
 #include "components/sync_sessions/revisit/page_equality.h"
+#include "url/gurl.h"
 
 namespace sync_sessions {
 

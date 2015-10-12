@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_SYNC_SESSIONS_REVISIT_PAGE_EQUALITY_H_
 #define COMPONENTS_SYNC_SESSIONS_REVISIT_PAGE_EQUALITY_H_
 
+#include "url/gurl.h"
+
 namespace sync_sessions {
 
 // An extremely simplistic approach to determining page equality, given two

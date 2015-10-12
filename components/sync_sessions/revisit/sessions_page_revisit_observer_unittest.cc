@@ -4,6 +4,8 @@
 
 #include "components/sync_sessions/revisit/sessions_page_revisit_observer.h"
 
+#include <string>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/test/histogram_tester.h"
 #include "components/sessions/core/serialized_navigation_entry.h"
@@ -48,12 +50,12 @@ class TestForeignSessionsProvider : public ForeignSessionsProvider {
 
 class SessionsPageRevisitObserverTest : public ::testing::Test {
  protected:
-  void CheckAndExpect(SessionsPageRevisitObserver& observer,
+  void CheckAndExpect(SessionsPageRevisitObserver* observer,
                       const GURL& url,
                       const bool current_match,
                       const bool offset_match) {
     base::HistogramTester histogram_tester;
-    observer.CheckForRevisit(url, PageVisitObserver::kTransitionPage);
+    observer->CheckForRevisit(url, PageVisitObserver::kTransitionPage);
 
     histogram_tester.ExpectTotalCount("Sync.PageRevisitTabMatchTransition",
                                       current_match ? 1 : 0);
@@ -74,7 +76,7 @@ class SessionsPageRevisitObserverTest : public ::testing::Test {
     sessions.push_back(session);
     SessionsPageRevisitObserver observer(
         make_scoped_ptr(new TestForeignSessionsProvider(sessions, true)));
-    CheckAndExpect(observer, url, current_match, offset_match);
+    CheckAndExpect(&observer, url, current_match, offset_match);
   }
 };
 
@@ -82,7 +84,7 @@ TEST_F(SessionsPageRevisitObserverTest, RunMatchersNoSessions) {
   std::vector<const SyncedSession*> sessions;
   SessionsPageRevisitObserver observer(
       make_scoped_ptr(new TestForeignSessionsProvider(sessions, true)));
-  CheckAndExpect(observer, GURL(kExampleUrl), false, false);
+  CheckAndExpect(&observer, GURL(kExampleUrl), false, false);
 }
 
 TEST_F(SessionsPageRevisitObserverTest, RunMatchersNoWindows) {
@@ -137,7 +139,7 @@ TEST_F(SessionsPageRevisitObserverTest, RunMatchersFalseProvider) {
   sessions.push_back(session.get());
   SessionsPageRevisitObserver observer(
       make_scoped_ptr(new TestForeignSessionsProvider(sessions, false)));
-  CheckAndExpect(observer, GURL(kExampleUrl), false, false);
+  CheckAndExpect(&observer, GURL(kExampleUrl), false, false);
 }
 
 TEST_F(SessionsPageRevisitObserverTest, RunMatchersMany) {
@@ -189,7 +191,7 @@ TEST_F(SessionsPageRevisitObserverTest, RunMatchersMany) {
       make_scoped_ptr(new TestForeignSessionsProvider(sessions, true)));
 
   base::HistogramTester histogram_tester;
-  CheckAndExpect(observer, GURL(kExampleUrl), true, true);
+  CheckAndExpect(&observer, GURL(kExampleUrl), true, true);
 }
 
 }  // namespace sync_sessions

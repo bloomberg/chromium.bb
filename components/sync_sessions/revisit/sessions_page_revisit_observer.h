@@ -10,7 +10,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/sync_sessions/revisit/page_visit_observer.h"
-#include "url/gurl.h"
+
+class GURL;
 
 namespace sessions {
 struct SessionTab;
