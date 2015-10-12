@@ -10,6 +10,7 @@
 #include "base/threading/thread.h"
 #include "base/tracked_objects.h"
 #include "components/metrics/profiler/tracking_synchronizer_observer.h"
+#include "components/nacl/common/nacl_process_type.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/profiler_controller.h"
 #include "content/public/common/process_type.h"
@@ -33,6 +34,37 @@ const int kNeverUsableSequenceNumber = -2;
 // all the other threads have gone away. As a result, it is ok to call it
 // from the UI thread, or for about:profiler.
 static TrackingSynchronizer* g_tracking_synchronizer = NULL;
+
+ProfilerEventProto::TrackedObject::ProcessType AsProtobufProcessType(
+    int process_type) {
+  switch (process_type) {
+    case content::PROCESS_TYPE_BROWSER:
+      return ProfilerEventProto::TrackedObject::BROWSER;
+    case content::PROCESS_TYPE_RENDERER:
+      return ProfilerEventProto::TrackedObject::RENDERER;
+    case content::PROCESS_TYPE_PLUGIN:
+      return ProfilerEventProto::TrackedObject::PLUGIN;
+    case content::PROCESS_TYPE_UTILITY:
+      return ProfilerEventProto::TrackedObject::UTILITY;
+    case content::PROCESS_TYPE_ZYGOTE:
+      return ProfilerEventProto::TrackedObject::ZYGOTE;
+    case content::PROCESS_TYPE_SANDBOX_HELPER:
+      return ProfilerEventProto::TrackedObject::SANDBOX_HELPER;
+    case content::PROCESS_TYPE_GPU:
+      return ProfilerEventProto::TrackedObject::GPU;
+    case content::PROCESS_TYPE_PPAPI_PLUGIN:
+      return ProfilerEventProto::TrackedObject::PPAPI_PLUGIN;
+    case content::PROCESS_TYPE_PPAPI_BROKER:
+      return ProfilerEventProto::TrackedObject::PPAPI_BROKER;
+    case PROCESS_TYPE_NACL_LOADER:
+      return ProfilerEventProto::TrackedObject::NACL_LOADER;
+    case PROCESS_TYPE_NACL_BROKER:
+      return ProfilerEventProto::TrackedObject::NACL_BROKER;
+    default:
+      NOTREACHED();
+      return ProfilerEventProto::TrackedObject::UNKNOWN;
+  }
+}
 
 }  // namespace
 
@@ -254,7 +286,7 @@ void TrackingSynchronizer::OnProfilerDataCollected(
     content::ProcessType process_type) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DecrementPendingProcessesAndSendData(sequence_number, profiler_data,
-                                       process_type);
+                                       AsProtobufProcessType(process_type));
 }
 
 int TrackingSynchronizer::RegisterAndNotifyAllProcesses(
@@ -288,8 +320,9 @@ int TrackingSynchronizer::RegisterAndNotifyAllProcesses(
   tracked_objects::ThreadData::Snapshot(current_profiling_phase,
                                         &process_data_snapshot);
 
-  DecrementPendingProcessesAndSendData(sequence_number, process_data_snapshot,
-                                       content::PROCESS_TYPE_BROWSER);
+  DecrementPendingProcessesAndSendData(
+      sequence_number, process_data_snapshot,
+      ProfilerEventProto::TrackedObject::BROWSER);
 
   return sequence_number;
 }
@@ -331,7 +364,7 @@ void TrackingSynchronizer::NotifyAllProcessesOfProfilingPhaseCompletion(
 
 void TrackingSynchronizer::SendData(
     const tracked_objects::ProcessDataSnapshot& profiler_data,
-    content::ProcessType process_type,
+    ProfilerEventProto::TrackedObject::ProcessType process_type,
     TrackingSynchronizerObserver* observer) const {
   // We are going to loop though past profiling phases and notify the request
   // about each phase that is contained in profiler_data. past_events
@@ -367,7 +400,7 @@ void TrackingSynchronizer::SendData(
 void TrackingSynchronizer::DecrementPendingProcessesAndSendData(
     int sequence_number,
     const tracked_objects::ProcessDataSnapshot& profiler_data,
-    content::ProcessType process_type) {
+    ProfilerEventProto::TrackedObject::ProcessType process_type) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   RequestContext* request = RequestContext::GetRequestContext(sequence_number);

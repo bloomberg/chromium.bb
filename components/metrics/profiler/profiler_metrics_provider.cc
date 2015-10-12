@@ -11,41 +11,9 @@
 #include "base/stl_util.h"
 #include "base/tracked_objects.h"
 #include "components/metrics/metrics_log.h"
-#include "components/nacl/common/nacl_process_type.h"
 
 namespace metrics {
 namespace {
-
-ProfilerEventProto::TrackedObject::ProcessType AsProtobufProcessType(
-    int process_type) {
-  switch (process_type) {
-    case content::PROCESS_TYPE_BROWSER:
-      return ProfilerEventProto::TrackedObject::BROWSER;
-    case content::PROCESS_TYPE_RENDERER:
-      return ProfilerEventProto::TrackedObject::RENDERER;
-    case content::PROCESS_TYPE_PLUGIN:
-      return ProfilerEventProto::TrackedObject::PLUGIN;
-    case content::PROCESS_TYPE_UTILITY:
-      return ProfilerEventProto::TrackedObject::UTILITY;
-    case content::PROCESS_TYPE_ZYGOTE:
-      return ProfilerEventProto::TrackedObject::ZYGOTE;
-    case content::PROCESS_TYPE_SANDBOX_HELPER:
-      return ProfilerEventProto::TrackedObject::SANDBOX_HELPER;
-    case content::PROCESS_TYPE_GPU:
-      return ProfilerEventProto::TrackedObject::GPU;
-    case content::PROCESS_TYPE_PPAPI_PLUGIN:
-      return ProfilerEventProto::TrackedObject::PPAPI_PLUGIN;
-    case content::PROCESS_TYPE_PPAPI_BROKER:
-      return ProfilerEventProto::TrackedObject::PPAPI_BROKER;
-    case PROCESS_TYPE_NACL_LOADER:
-      return ProfilerEventProto::TrackedObject::NACL_LOADER;
-    case PROCESS_TYPE_NACL_BROKER:
-      return ProfilerEventProto::TrackedObject::NACL_BROKER;
-    default:
-      NOTREACHED();
-      return ProfilerEventProto::TrackedObject::UNKNOWN;
-  }
-}
 
 // Maps a thread name by replacing trailing sequence of digits with "*".
 // Examples:
@@ -76,7 +44,7 @@ std::string NormalizeFileName(const std::string& file_name) {
 void WriteProfilerData(
     const tracked_objects::ProcessDataPhaseSnapshot& process_data_phase,
     base::ProcessId process_id,
-    content::ProcessType process_type,
+    ProfilerEventProto::TrackedObject::ProcessType process_type,
     ProfilerEventProto* performance_profile) {
   for (const auto& task : process_data_phase.tasks) {
     const tracked_objects::DeathDataSnapshot& death_data = task.death_data;
@@ -96,7 +64,7 @@ void WriteProfilerData(
     tracked_object->set_exec_time_sampled(death_data.run_duration_sample);
     tracked_object->set_queue_time_total(death_data.queue_duration_sum);
     tracked_object->set_queue_time_sampled(death_data.queue_duration_sample);
-    tracked_object->set_process_type(AsProtobufProcessType(process_type));
+    tracked_object->set_process_type(process_type);
     tracked_object->set_process_id(process_id);
   }
 }
@@ -131,7 +99,7 @@ void ProfilerMetricsProvider::ProvideGeneralMetrics(
 void ProfilerMetricsProvider::RecordProfilerData(
     const tracked_objects::ProcessDataPhaseSnapshot& process_data_phase,
     base::ProcessId process_id,
-    content::ProcessType process_type,
+    ProfilerEventProto::TrackedObject::ProcessType process_type,
     int profiling_phase,
     base::TimeDelta phase_start,
     base::TimeDelta phase_finish,

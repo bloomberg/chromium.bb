@@ -9,14 +9,13 @@ namespace metrics {
 ProfilerDataAttributes::ProfilerDataAttributes(
     int profiling_phase,
     base::ProcessId process_id,
-    content::ProcessType process_type,
+    ProfilerEventProto::TrackedObject::ProcessType process_type,
     base::TimeTicks phase_start,
     base::TimeTicks phase_finish)
     : profiling_phase(profiling_phase),
       process_id(process_id),
       process_type(process_type),
       phase_start(phase_start),
-      phase_finish(phase_finish) {
-}
+      phase_finish(phase_finish) {}
 
 }  // namespace metrics

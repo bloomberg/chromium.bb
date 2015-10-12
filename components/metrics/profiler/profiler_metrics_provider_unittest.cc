@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/tracked_objects.h"
 #include "components/metrics/metrics_hashes.h"
-#include "content/public/common/process_type.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using tracked_objects::ProcessDataPhaseSnapshot;
@@ -56,7 +55,7 @@ TEST(ProfilerMetricsProviderTest, RecordData) {
     process_data_phase.tasks.back().death_thread_name = "death_thread";
 
     profiler_metrics_provider.RecordProfilerData(
-        process_data_phase, 177, content::PROCESS_TYPE_BROWSER, 0,
+        process_data_phase, 177, ProfilerEventProto::TrackedObject::BROWSER, 0,
         base::TimeDelta::FromMinutes(1), base::TimeDelta::FromMinutes(2),
         ProfilerEvents());
   }
@@ -93,7 +92,7 @@ TEST(ProfilerMetricsProviderTest, RecordData) {
     process_data_phase.tasks.back().death_thread_name = "death_thread_ten";
 
     profiler_metrics_provider.RecordProfilerData(
-        process_data_phase, 177, content::PROCESS_TYPE_BROWSER, 1,
+        process_data_phase, 177, ProfilerEventProto::TrackedObject::BROWSER, 1,
         base::TimeDelta::FromMinutes(10), base::TimeDelta::FromMinutes(20),
         ProfilerEvents(1, ProfilerEventProto::EVENT_FIRST_NONEMPTY_PAINT));
   }
@@ -129,8 +128,8 @@ TEST(ProfilerMetricsProviderTest, RecordData) {
     process_data_phase.tasks.back().death_thread_name = "";
 
     profiler_metrics_provider.RecordProfilerData(
-        process_data_phase, 1177, content::PROCESS_TYPE_RENDERER, 0,
-        base::TimeDelta::FromMinutes(1), base::TimeDelta::FromMinutes(2),
+        process_data_phase, 1177, ProfilerEventProto::TrackedObject::RENDERER,
+        0, base::TimeDelta::FromMinutes(1), base::TimeDelta::FromMinutes(2),
         ProfilerEvents());
   }
 

@@ -82,7 +82,7 @@ class TrackingSynchronizer
   // Notify |observer| about |profiler_data| received from process of type
   // |process_type|.
   void SendData(const tracked_objects::ProcessDataSnapshot& profiler_data,
-                content::ProcessType process_type,
+                ProfilerEventProto::TrackedObject::ProcessType process_type,
                 TrackingSynchronizerObserver* observer) const;
 
  private:
@@ -121,7 +121,7 @@ class TrackingSynchronizer
   void DecrementPendingProcessesAndSendData(
       int sequence_number,
       const tracked_objects::ProcessDataSnapshot& profiler_data,
-      content::ProcessType process_type);
+      ProfilerEventProto::TrackedObject::ProcessType process_type);
 
   // Get a new sequence number to be sent to processes from browser process.
   // This method is accessible on UI thread.

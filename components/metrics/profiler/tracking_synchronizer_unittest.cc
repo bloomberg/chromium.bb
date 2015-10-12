@@ -31,7 +31,7 @@ class TestObserver : public TrackingSynchronizerObserver {
       const tracked_objects::ProcessDataPhaseSnapshot& process_data_phase,
       const ProfilerEvents& past_events) override {
     EXPECT_EQ(static_cast<base::ProcessId>(239), attributes.process_id);
-    EXPECT_EQ(content::ProcessType::PROCESS_TYPE_PLUGIN,
+    EXPECT_EQ(ProfilerEventProto::TrackedObject::PLUGIN,
               attributes.process_type);
     ASSERT_EQ(1u, process_data_phase.tasks.size());
 
@@ -127,7 +127,7 @@ TEST(TrackingSynchronizerTest, ProfilerData) {
   clock->Advance(base::TimeDelta::FromMilliseconds(444));
   TestObserver test_observer;
   tracking_synchronizer->SendData(
-      profiler_data, content::ProcessType::PROCESS_TYPE_PLUGIN, &test_observer);
+      profiler_data, ProfilerEventProto::TrackedObject::PLUGIN, &test_observer);
 }
 
 }  // namespace metrics

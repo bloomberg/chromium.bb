@@ -10,7 +10,6 @@
 #include "base/process/process_handle.h"
 #include "base/time/time.h"
 #include "components/metrics/proto/chrome_user_metrics_extension.pb.h"
-#include "content/public/common/process_type.h"
 
 namespace base {
 class TimeDelta;
@@ -30,11 +29,12 @@ typedef std::vector<ProfilerEventProto::ProfilerEvent> ProfilerEvents;
 // Attributes of profiler data passed to
 // TrackingSynchronizerObserver::ReceivedProfilerData.
 struct ProfilerDataAttributes {
-  ProfilerDataAttributes(int profiling_phase,
-                         base::ProcessId process_id,
-                         content::ProcessType process_type,
-                         base::TimeTicks phase_start,
-                         base::TimeTicks phase_finish);
+  ProfilerDataAttributes(
+      int profiling_phase,
+      base::ProcessId process_id,
+      ProfilerEventProto::TrackedObject::ProcessType process_type,
+      base::TimeTicks phase_start,
+      base::TimeTicks phase_finish);
 
   // 0-indexed profiling phase number.
   const int profiling_phase;
@@ -43,7 +43,7 @@ struct ProfilerDataAttributes {
   const base::ProcessId process_id;
 
   // Type of the process that reported the data.
-  const content::ProcessType process_type;
+  const ProfilerEventProto::TrackedObject::ProcessType process_type;
 
   // Time of the profiling phase start.
   const base::TimeTicks phase_start;

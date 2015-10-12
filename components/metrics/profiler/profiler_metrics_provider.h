@@ -10,7 +10,6 @@
 #include "components/metrics/metrics_provider.h"
 #include "components/metrics/profiler/tracking_synchronizer_observer.h"
 #include "components/metrics/proto/chrome_user_metrics_extension.pb.h"
-#include "content/public/common/process_type.h"
 
 namespace tracked_objects {
 struct ProcessDataPhaseSnapshot;
@@ -36,7 +35,7 @@ class ProfilerMetricsProvider : public MetricsProvider {
   void RecordProfilerData(
       const tracked_objects::ProcessDataPhaseSnapshot& process_data,
       base::ProcessId process_id,
-      content::ProcessType process_type,
+      ProfilerEventProto::TrackedObject::ProcessType process_type,
       int profiling_phase,
       base::TimeDelta phase_start,
       base::TimeDelta phase_finish,
