@@ -355,6 +355,8 @@ class MAYBE_WebRtcBrowserPermissionDeniedTest : public MAYBE_WebRtcBrowserTest {
 // iceServers, no candidate will be gathered.
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserPermissionDeniedTest,
                        GatherLocalCandidatesWithEmptyArrayIceServers) {
+  // Disable this test on XP, crbug.com/542416.
+  if (OnWinXp()) return;
   MakeTypicalPeerConnectionCall(
       "callWithDevicePermissionDeniedAndEmptyIceServers();");
 }
@@ -363,6 +365,8 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserPermissionDeniedTest,
 // only loopback candidate will be gathered.
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserPermissionDeniedTest,
                        GatherLocalCandidatesWithIceServersUndefined) {
+  // Disable this test on XP, crbug.com/542416.
+  if (OnWinXp()) return;
   MakeTypicalPeerConnectionCall(
       "callWithDevicePermissionDeniedAndUndefinedIceServers();");
 }
@@ -388,6 +392,8 @@ class MAYBE_WebRtcBrowserMultipleRoutesDisabledTest
 // gathered.
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserMultipleRoutesDisabledTest,
                        GatherLocalCandidatesWithIceServersUndefined) {
+  // Disable this test on XP, crbug.com/542416.
+  if (OnWinXp()) return;
   MakeTypicalPeerConnectionCall(
       "callWithMultipleRoutesDisabledAndUndefinedIceServers();");
 }
