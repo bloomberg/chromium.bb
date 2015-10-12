@@ -2152,29 +2152,9 @@ lou_hyphenate (const char *tableList, const widechar
 	    hyphens2[hyphPos] = '0';
 	}
       for (kk = wordStart; kk < wordStart + k; kk++)
-	if (!table->noBreak || hyphens2[kk] == '0')
+	if (hyphens2[kk] == '0')
 	  hyphens[kk] = hyphens2[kk];
-	else
-	  {
-	    TranslationTableRule *noBreakRule = (TranslationTableRule *)
-	      & table->ruleArea[table->noBreak];
-	    int kkk;
-	    if (kk > 0)
-	      for (kkk = 0; kkk < noBreakRule->charslen; kkk++)
-		if (workingBuffer2[kk - 1] == noBreakRule->charsdots[kkk])
-		  {
-		    hyphens[kk] = '0';
-		    break;
-		  }
-	    for (kkk = 0; kkk < noBreakRule->dotslen; kkk++);
-	    if (workingBuffer2[kk] ==
-		noBreakRule->charsdots[noBreakRule->charslen + kkk])
-	      {
-		hyphens[kk] = '0';
-		break;
-	      }
-	  }
-    }
+	}
   for (k = 0; k < inlen; k++)
     if (hyphens[k] & 1)
       hyphens[k] = '1';

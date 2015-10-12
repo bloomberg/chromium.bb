@@ -305,7 +305,6 @@ extern "C"
     CTO_EndNum,			/*end of number */
     CTO_DecPoint,
     CTO_Hyphen,
-    CTO_NoBreak,
     CTO_None,
 /*Internal opcodes */
     CTO_CapitalRule,
@@ -395,7 +394,6 @@ extern "C"
     int syllables;
     TranslationTableOffset tableSize;
     TranslationTableOffset bytesUsed;
-    TranslationTableOffset noBreak;
     TranslationTableOffset undefined;
     TranslationTableOffset letterSign;
     TranslationTableOffset numberSign;
