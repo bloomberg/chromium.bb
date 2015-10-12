@@ -161,6 +161,10 @@ TEST(UnionTest, PodValidation) {
   mojo::internal::FixedBufferForTesting buf(size);
   internal::PodUnion_Data* data = nullptr;
   SerializeUnion_(pod.Pass(), &buf, &data, false);
+  std::vector<Handle> handles;
+  data->EncodePointersAndHandles(&handles);
+  EXPECT_TRUE(handles.empty());
+
   void* raw_buf = buf.Leak();
   mojo::internal::BoundsChecker bounds_checker(data,
                                                static_cast<uint32_t>(size), 0);
@@ -498,6 +502,10 @@ TEST(UnionTest, Validation_UnionsInStruct) {
   internal::SmallStruct_Data* data = nullptr;
   Serialize_(small_struct.Pass(), &buf, &data);
 
+  std::vector<Handle> handles;
+  data->EncodePointersAndHandles(&handles);
+  EXPECT_TRUE(handles.empty());
+
   void* raw_buf = buf.Leak();
   mojo::internal::BoundsChecker bounds_checker(data,
                                                static_cast<uint32_t>(size), 0);
@@ -518,6 +526,10 @@ TEST(UnionTest, Validation_PodUnionInStruct_Failure) {
   internal::SmallStruct_Data* data = nullptr;
   Serialize_(small_struct.Pass(), &buf, &data);
   data->pod_union.tag = static_cast<internal::PodUnion_Data::PodUnion_Tag>(100);
+
+  std::vector<Handle> handles;
+  data->EncodePointersAndHandles(&handles);
+  EXPECT_TRUE(handles.empty());
 
   void* raw_buf = buf.Leak();
   mojo::internal::BoundsChecker bounds_checker(data,
@@ -556,6 +568,10 @@ TEST(UnionTest, Validation_NullableUnion) {
   mojo::internal::FixedBufferForTesting buf(size);
   internal::SmallStruct_Data* data = nullptr;
   Serialize_(small_struct.Pass(), &buf, &data);
+
+  std::vector<Handle> handles;
+  data->EncodePointersAndHandles(&handles);
+  EXPECT_TRUE(handles.empty());
 
   void* raw_buf = buf.Leak();
   mojo::internal::BoundsChecker bounds_checker(data,
@@ -676,6 +692,10 @@ TEST(UnionTest, StructInUnionValidation) {
   internal::ObjectUnion_Data* data = nullptr;
   SerializeUnion_(obj.Pass(), &buf, &data, false);
 
+  std::vector<Handle> handles;
+  data->EncodePointersAndHandles(&handles);
+  EXPECT_TRUE(handles.empty());
+
   void* raw_buf = buf.Leak();
   mojo::internal::BoundsChecker bounds_checker(data,
                                                static_cast<uint32_t>(size), 0);
@@ -697,6 +717,10 @@ TEST(UnionTest, StructInUnionValidationNonNullable) {
   internal::ObjectUnion_Data* data = nullptr;
   SerializeUnion_(obj.Pass(), &buf, &data, false);
 
+  std::vector<Handle> handles;
+  data->EncodePointersAndHandles(&handles);
+  EXPECT_TRUE(handles.empty());
+
   void* raw_buf = buf.Leak();
   mojo::internal::BoundsChecker bounds_checker(data,
                                                static_cast<uint32_t>(size), 0);
@@ -717,6 +741,10 @@ TEST(UnionTest, StructInUnionValidationNullable) {
   mojo::internal::FixedBufferForTesting buf(size);
   internal::ObjectUnion_Data* data = nullptr;
   SerializeUnion_(obj.Pass(), &buf, &data, false);
+
+  std::vector<Handle> handles;
+  data->EncodePointersAndHandles(&handles);
+  EXPECT_TRUE(handles.empty());
 
   void* raw_buf = buf.Leak();
   mojo::internal::BoundsChecker bounds_checker(data,
@@ -853,6 +881,7 @@ TEST(UnionTest, MapInUnionValidation) {
 
   std::vector<Handle> handles;
   data->EncodePointersAndHandles(&handles);
+  EXPECT_TRUE(handles.empty());
 
   void* raw_buf = buf.Leak();
   mojo::internal::BoundsChecker bounds_checker(data,
@@ -914,6 +943,7 @@ TEST(UnionTest, UnionInUnionValidation) {
 
   std::vector<Handle> handles;
   data->EncodePointersAndHandles(&handles);
+  EXPECT_TRUE(handles.empty());
 
   void* raw_buf = buf.Leak();
   mojo::internal::BoundsChecker bounds_checker(data,

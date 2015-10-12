@@ -431,6 +431,21 @@ TEST_F(ValidationIntegrationTest, Binding) {
   RunValidationTests("integration_msghdr", test_message_receiver());
 }
 
+// Test pointer validation (specifically, that the encoded offset is 32-bit)
+TEST_F(ValidationTest, ValidateEncodedPointer) {
+  uint64_t offset;
+
+  offset = 0ULL;
+  EXPECT_TRUE(mojo::internal::ValidateEncodedPointer(&offset));
+
+  offset = 1ULL;
+  EXPECT_TRUE(mojo::internal::ValidateEncodedPointer(&offset));
+
+  // offset must be <= 32-bit.
+  offset = std::numeric_limits<uint32_t>::max() + 1ULL;
+  EXPECT_FALSE(mojo::internal::ValidateEncodedPointer(&offset));
+}
+
 // Tests the IsValidValue() function generated for BasicEnum.
 TEST(EnumValueValidationTest, BasicEnum) {
   // BasicEnum can have -3,0,1,10 as possible integral values.
