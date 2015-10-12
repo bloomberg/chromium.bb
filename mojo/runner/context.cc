@@ -259,7 +259,7 @@ void Context::Shutdown() {
 void Context::OnShutdownComplete() {
   DCHECK_EQ(base::MessageLoop::current()->task_runner(),
             task_runners_->shell_runner());
-  base::MessageLoop::current()->Quit();
+  base::MessageLoop::current()->QuitWhenIdle();
 }
 
 void Context::Run(const GURL& url) {
@@ -302,7 +302,7 @@ void Context::OnApplicationEnd(const GURL& url) {
       DCHECK_EQ(base::MessageLoop::current()->task_runner(),
                 task_runners_->shell_runner());
       if (app_complete_callback_.is_null()) {
-        base::MessageLoop::current()->Quit();
+        base::MessageLoop::current()->QuitWhenIdle();
       } else {
         app_complete_callback_.Run();
       }

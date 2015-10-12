@@ -33,7 +33,7 @@ class TestNativeRunner : public shell::NativeRunner {
   ~TestNativeRunner() override {
     state_->runner_was_destroyed = true;
     if (base::MessageLoop::current()->is_running())
-      base::MessageLoop::current()->Quit();
+      base::MessageLoop::current()->QuitWhenIdle();
   }
   void Start(const base::FilePath& app_path,
              bool start_sandboxed,

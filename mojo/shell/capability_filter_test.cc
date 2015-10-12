@@ -83,12 +83,12 @@ class ConnectionValidator : public ApplicationLoader,
     if (i != expectations_.end()) {
       expectations_.erase(i);
       if (expectations_.empty())
-        loop_->Quit();
+        loop_->QuitWhenIdle();
     } else {
       // This is a test failure, and will result in PrintUnexpectedExpecations()
       // being called.
       unexpected_.insert(result);
-      loop_->Quit();
+      loop_->QuitWhenIdle();
     }
   }
 

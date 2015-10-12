@@ -39,7 +39,7 @@ static void RunUntilIdle(JNIEnv* env,
 static void Quit(JNIEnv* env,
                  const JavaParamRef<jobject>& jcaller,
                  jlong runLoopID) {
-  reinterpret_cast<base::MessageLoop*>(runLoopID)->Quit();
+  reinterpret_cast<base::MessageLoop*>(runLoopID)->QuitWhenIdle();
 }
 
 static void RunJavaRunnable(

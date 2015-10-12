@@ -54,7 +54,7 @@ class TestServiceImpl : public TestService {
     --context_->num_impls;
     if (!base::MessageLoop::current()->is_running())
       return;
-    base::MessageLoop::current()->Quit();
+    base::MessageLoop::current()->QuitWhenIdle();
   }
 
   // TestService implementation:
@@ -76,7 +76,7 @@ class TestClient {
 
   void AckTest() {
     if (quit_after_ack_)
-      base::MessageLoop::current()->Quit();
+      base::MessageLoop::current()->QuitWhenIdle();
   }
 
   void Test(const std::string& test_string) {
@@ -268,7 +268,7 @@ class TestAImpl : public TestA {
   }
 
   void Quit() {
-    base::MessageLoop::current()->Quit();
+    base::MessageLoop::current()->QuitWhenIdle();
     test_context_->set_a_called_quit();
     test_context_->QuitSoon();
   }
@@ -291,7 +291,7 @@ class TestBImpl : public TestB {
   ~TestBImpl() override {
     test_context_->IncrementNumBDeletes();
     if (base::MessageLoop::current()->is_running())
-      base::MessageLoop::current()->Quit();
+      base::MessageLoop::current()->QuitWhenIdle();
     test_context_->QuitSoon();
   }
 
@@ -351,7 +351,7 @@ class Tester : public ApplicationDelegate,
         requestor_url_ != connection->GetRemoteApplicationURL()) {
       context_->set_tester_called_quit();
       context_->QuitSoon();
-      base::MessageLoop::current()->Quit();
+      base::MessageLoop::current()->QuitWhenIdle();
       return false;
     }
     // If we're coming from A, then add B, otherwise A.

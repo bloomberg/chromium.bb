@@ -20,7 +20,7 @@ class DummyLoader : public shell::ApplicationLoader {
   void Load(const GURL& url,
             InterfaceRequest<Application> application_request) override {
     if (simulate_app_quit_)
-      base::MessageLoop::current()->Quit();
+      base::MessageLoop::current()->QuitWhenIdle();
   }
 
   void DontSimulateAppQuit() { simulate_app_quit_ = false; }

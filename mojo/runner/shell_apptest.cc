@@ -124,7 +124,7 @@ TEST_F(ShellHTTPAppTest, Http) {
                    EXPECT_EQ(GetURL("app"), app_url);
                    EXPECT_EQ(GetURL("app"), connection_url);
                    EXPECT_EQ("hello", message);
-                   base::MessageLoop::current()->Quit();
+                   base::MessageLoop::current()->QuitWhenIdle();
                  });
   base::RunLoop().Run();
 }
@@ -140,7 +140,7 @@ TEST_F(ShellHTTPAppTest, Redirect) {
                    EXPECT_EQ(GetURL("app"), app_url);
                    EXPECT_EQ(GetURL("app"), connection_url);
                    EXPECT_EQ("hello", message);
-                   base::MessageLoop::current()->Quit();
+                   base::MessageLoop::current()->QuitWhenIdle();
                  });
   base::RunLoop().Run();
 }
@@ -169,7 +169,7 @@ TEST_F(ShellHTTPAppTest, MAYBE_QueryHandling) {
       EXPECT_EQ(GetURL("app?foo"), connection_url);
     } else if (num_responses == 2) {
       EXPECT_EQ(GetURL("app?bar"), connection_url);
-      base::MessageLoop::current()->Quit();
+      base::MessageLoop::current()->QuitWhenIdle();
     } else {
       CHECK(false);
     }
@@ -189,7 +189,7 @@ TEST_F(ShellAppTest, MojoURLQueryHandling) {
                                base::CompareCase::SENSITIVE));
     EXPECT_EQ(app_url.To<std::string>() + "?foo", connection_url);
     EXPECT_EQ("hello", message);
-    base::MessageLoop::current()->Quit();
+    base::MessageLoop::current()->QuitWhenIdle();
   };
   pingable->Ping("hello", callback);
   base::RunLoop().Run();

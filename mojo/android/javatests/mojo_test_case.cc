@@ -54,8 +54,7 @@ static void RunLoop(JNIEnv* env,
   base::RunLoop run_loop;
   if (timeout_ms) {
     base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::MessageLoop::QuitClosure(),
+        FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
         base::TimeDelta::FromMilliseconds(timeout_ms));
     run_loop.Run();
   } else {

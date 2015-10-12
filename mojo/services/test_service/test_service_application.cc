@@ -53,7 +53,7 @@ void TestServiceApplication::ReleaseRef() {
   assert(ref_count_ > 0);
   ref_count_--;
   if (ref_count_ <= 0)
-    base::MessageLoop::current()->Quit();
+    base::MessageLoop::current()->QuitWhenIdle();
 }
 
 }  // namespace test

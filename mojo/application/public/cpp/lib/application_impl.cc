@@ -20,7 +20,7 @@ namespace {
 void DefaultTerminationClosure() {
   if (base::MessageLoop::current() &&
       base::MessageLoop::current()->is_running())
-    base::MessageLoop::current()->Quit();
+    base::MessageLoop::current()->QuitWhenIdle();
 }
 
 }  // namespace
