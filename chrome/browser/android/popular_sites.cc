@@ -164,8 +164,11 @@ scoped_ptr<std::vector<PopularSites::Site>> ReadAndParseJsonFile(
     item->GetString("favicon_url", &favicon_url);
     std::string thumbnail_url;
     item->GetString("thumbnail_url", &thumbnail_url);
+    std::string large_icon_url;
+    item->GetString("large_icon_url", &large_icon_url);
 
     sites->push_back(PopularSites::Site(title, GURL(url), GURL(favicon_url),
+                                        GURL(large_icon_url),
                                         GURL(thumbnail_url)));
   }
 
@@ -177,10 +180,12 @@ scoped_ptr<std::vector<PopularSites::Site>> ReadAndParseJsonFile(
 PopularSites::Site::Site(const base::string16& title,
                          const GURL& url,
                          const GURL& favicon_url,
+                         const GURL& large_icon_url,
                          const GURL& thumbnail_url)
     : title(title),
       url(url),
       favicon_url(favicon_url),
+      large_icon_url(large_icon_url),
       thumbnail_url(thumbnail_url) {}
 
 PopularSites::Site::~Site() {}

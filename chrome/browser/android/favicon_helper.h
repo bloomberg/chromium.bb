@@ -27,13 +27,14 @@ class FaviconHelper {
       jobject obj,
       jobject jprofile,
       jstring j_page_url);
-  void EnsureFaviconIsAvailable(JNIEnv* env,
-                                jobject obj,
-                                jobject j_profile,
-                                jobject j_web_contents,
-                                jstring j_page_url,
-                                jstring j_favicon_url,
-                                jobject j_availability_callback);
+  void EnsureIconIsAvailable(JNIEnv* env,
+                             jobject obj,
+                             jobject j_profile,
+                             jobject j_web_contents,
+                             jstring j_page_url,
+                             jstring j_icon_url,
+                             jboolean j_is_large_icon,
+                             jobject j_availability_callback);
   static bool RegisterFaviconHelper(JNIEnv* env);
 
  private:

@@ -43,16 +43,16 @@ public class FaviconHelper {
     }
 
     /**
-     * Callback interface for the result of the ensureFaviconIsAvailable method.
+     * Callback interface for the result of the ensureIconIsAvailable method.
      */
-    public interface FaviconAvailabilityCallback {
+    public interface IconAvailabilityCallback {
         /**
-         * This method will be called when the availability of the favicon has been checked.
-         * @param newlyAvailable true if the favicon was downloaded and is now available,
+         * This method will be called when the availability of the icon has been checked.
+         * @param newlyAvailable true if the icon was downloaded and is now available,
          *            false if the favicon was already there or the download failed.
          */
-        @CalledByNative("FaviconAvailabilityCallback")
-        public void onFaviconAvailabilityChecked(boolean newlyAvailable);
+        @CalledByNative("IconAvailabilityCallback")
+        public void onIconAvailabilityChecked(boolean newlyAvailable);
     }
 
     /**
@@ -114,11 +114,10 @@ public class FaviconHelper {
         return nativeGetSyncedFaviconImageForURL(mNativeFaviconHelper, profile, pageUrl);
     }
 
-    public void ensureFaviconIsAvailable(
-            Profile profile, WebContents webContents, String pageUrl, String faviconUrl,
-            FaviconAvailabilityCallback callback) {
-        nativeEnsureFaviconIsAvailable(
-                mNativeFaviconHelper, profile, webContents, pageUrl, faviconUrl, callback);
+    public void ensureIconIsAvailable(Profile profile, WebContents webContents, String pageUrl,
+            String iconUrl, boolean isLargeIcon, IconAvailabilityCallback callback) {
+        nativeEnsureIconIsAvailable(mNativeFaviconHelper, profile, webContents, pageUrl, iconUrl,
+                isLargeIcon, callback);
     }
 
     private static native long nativeInit();
@@ -129,7 +128,7 @@ public class FaviconHelper {
     private static native Bitmap nativeGetSyncedFaviconImageForURL(long nativeFaviconHelper,
             Profile profile, String pageUrl);
     private static native int nativeGetDominantColorForBitmap(Bitmap image);
-    private static native void nativeEnsureFaviconIsAvailable(
-            long nativeFaviconHelper, Profile profile, WebContents webContents, String pageUrl,
-            String faviconUrl, FaviconAvailabilityCallback callback);
+    private static native void nativeEnsureIconIsAvailable(long nativeFaviconHelper,
+            Profile profile, WebContents webContents, String pageUrl, String iconUrl,
+            boolean isLargeIcon, IconAvailabilityCallback callback);
 }

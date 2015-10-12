@@ -39,7 +39,8 @@ public class MostVisitedSites {
          * @param faviconUrls Array of URLs for the corresponding favicons (if known).
          */
         @CalledByNative("MostVisitedURLsObserver")
-        public void onPopularURLsAvailable(String[] urls, String[] faviconUrls);
+        public void onPopularURLsAvailable(
+                String[] urls, String[] faviconUrls, String[] largeIconUrls);
     }
 
     /**
@@ -95,10 +96,11 @@ public class MostVisitedSites {
                 }
             }
             @Override
-            public void onPopularURLsAvailable(String[] urls, String[] faviconUrls) {
+            public void onPopularURLsAvailable(
+                    String[] urls, String[] faviconUrls, String[] largeIconUrls) {
                 // Don't notify observer if we've already been destroyed.
                 if (mNativeMostVisitedSites != 0) {
-                    observer.onPopularURLsAvailable(urls, faviconUrls);
+                    observer.onPopularURLsAvailable(urls, faviconUrls, largeIconUrls);
                 }
             }
         };

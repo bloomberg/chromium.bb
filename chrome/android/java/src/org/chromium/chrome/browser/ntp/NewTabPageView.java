@@ -34,8 +34,8 @@ import android.widget.TextView;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconAvailabilityCallback;
 import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconImageCallback;
+import org.chromium.chrome.browser.favicon.FaviconHelper.IconAvailabilityCallback;
 import org.chromium.chrome.browser.favicon.LargeIconBridge.LargeIconCallback;
 import org.chromium.chrome.browser.ntp.LogoBridge.Logo;
 import org.chromium.chrome.browser.ntp.LogoBridge.LogoObserver;
@@ -183,14 +183,15 @@ public class NewTabPageView extends FrameLayout
         void getLargeIconForUrl(String url, int size, LargeIconCallback callback);
 
         /**
-         * Checks if a favicon with the given faviconUrl is available. If not,
-         * downloads it and stores it as a favicon for the given pageUrl.
+         * Checks if an icon with the given URL is available. If not,
+         * downloads it and stores it as a favicon/large icon for the given {@code pageUrl}.
          * @param pageUrl The URL of the site whose icon is being requested.
-         * @param faviconUrl The URL of the favicon.
+         * @param iconUrl The URL of the favicon/large icon.
+         * @param isLargeIcon Whether the {@code iconUrl} represents a large icon or favicon.
          * @param callback The callback to be notified when the favicon has been checked.
          */
-        void ensureFaviconIsAvailable(String pageUrl, String faviconUrl,
-                FaviconAvailabilityCallback callback);
+        void ensureIconIsAvailable(String pageUrl, String iconUrl, boolean isLargeIcon,
+                IconAvailabilityCallback callback);
 
         /**
          * Called when the user clicks on the logo.
@@ -781,21 +782,26 @@ public class NewTabPageView extends FrameLayout
     }
 
     @Override
-    public void onPopularURLsAvailable(String[] urls, String[] faviconUrls) {
+    public void onPopularURLsAvailable(
+            String[] urls, String[] faviconUrls, String[] largeIconUrls) {
         for (int i = 0; i < urls.length; i++) {
             final String url = urls[i];
-            final String faviconUrl = faviconUrls[i];
-            if (faviconUrl.isEmpty()) continue;
+            boolean useLargeIcon =
+                    mMostVisitedDesign.preferLargeIcons() && !largeIconUrls[i].isEmpty();
+            // Only fetch one of favicon or large icon based on what is required on the NTP.
+            // The other will be fetched on visiting the site.
+            String iconUrl = useLargeIcon ? largeIconUrls[i] : faviconUrls[i];
+            if (iconUrl.isEmpty()) continue;
 
-            FaviconAvailabilityCallback callback = new FaviconAvailabilityCallback() {
+            IconAvailabilityCallback callback = new IconAvailabilityCallback() {
                 @Override
-                public void onFaviconAvailabilityChecked(boolean newlyAvailable) {
+                public void onIconAvailabilityChecked(boolean newlyAvailable) {
                     if (newlyAvailable) {
-                        mMostVisitedDesign.onFaviconUpdated(url);
+                        mMostVisitedDesign.onIconUpdated(url);
                     }
                 }
             };
-            mManager.ensureFaviconIsAvailable(url, faviconUrl, callback);
+            mManager.ensureIconIsAvailable(url, iconUrl, useLargeIcon, callback);
         }
     }
 
@@ -839,7 +845,8 @@ public class NewTabPageView extends FrameLayout
         void setSearchProviderHasLogo(View mostVisitedLayout, boolean hasLogo);
         View createMostVisitedItemView(LayoutInflater inflater, String url, String title,
                 String displayTitle, MostVisitedItem item, boolean isInitialLoad);
-        void onFaviconUpdated(String url);
+        void onIconUpdated(String url);
+        boolean preferLargeIcons();
     }
 
     /**
@@ -934,7 +941,7 @@ public class NewTabPageView extends FrameLayout
         }
 
         @Override
-        public void onFaviconUpdated(final String url) {
+        public void onIconUpdated(final String url) {
             // Find a matching most visited item.
             for (MostVisitedItem item : mMostVisitedItems) {
                 if (!item.getUrl().equals(url)) continue;
@@ -953,6 +960,11 @@ public class NewTabPageView extends FrameLayout
                 mManager.getLocalFaviconImageForURL(url, mDesiredFaviconSize, faviconCallback);
                 break;
             }
+        }
+
+        @Override
+        public boolean preferLargeIcons() {
+            return false;
         }
     }
 
@@ -1071,7 +1083,7 @@ public class NewTabPageView extends FrameLayout
         }
 
         @Override
-        public void onFaviconUpdated(final String url) {
+        public void onIconUpdated(final String url) {
             // Find a matching most visited item.
             for (MostVisitedItem item : mMostVisitedItems) {
                 if (item.getUrl().equals(url)) {
@@ -1080,6 +1092,11 @@ public class NewTabPageView extends FrameLayout
                     break;
                 }
             }
+        }
+
+        @Override
+        public boolean preferLargeIcons() {
+            return true;
         }
     }
 }

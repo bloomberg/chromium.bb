@@ -21,8 +21,8 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "components/favicon/core/favicon_service.h"
+#include "components/favicon/core/favicon_util.h"
 #include "components/favicon_base/favicon_util.h"
-#include "components/favicon_base/select_favicon_frames.h"
 #include "components/sync_driver/open_tabs_ui_delegate.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/FaviconHelper_jni.h"
@@ -82,6 +82,7 @@ void OnFaviconDownloaded(
     const ScopedJavaGlobalRef<jobject>& j_availability_callback,
     Profile* profile,
     const GURL& page_url,
+    favicon_base::IconType icon_type,
     int download_request_id,
     int http_status_code,
     const GURL& image_url,
@@ -89,17 +90,17 @@ void OnFaviconDownloaded(
     const std::vector<gfx::Size>& original_sizes) {
   bool success = !bitmaps.empty();
   if (success) {
-    // Only keep the largest favicon available.
+    // Only keep the largest icon available.
     gfx::Image image = gfx::Image(gfx::ImageSkia(
         gfx::ImageSkiaRep(bitmaps[GetLargestSizeIndex(original_sizes)], 0)));
     favicon_base::SetFaviconColorSpace(&image);
     favicon::FaviconService* service = FaviconServiceFactory::GetForProfile(
         profile, ServiceAccessType::IMPLICIT_ACCESS);
-    service->SetFavicons(page_url, image_url, favicon_base::FAVICON, image);
+    service->SetFavicons(page_url, image_url, icon_type, image);
   }
 
   JNIEnv* env = AttachCurrentThread();
-  Java_FaviconAvailabilityCallback_onFaviconAvailabilityChecked(
+  Java_IconAvailabilityCallback_onIconAvailabilityChecked(
       env, j_availability_callback.obj(), success);
 }
 
@@ -108,20 +109,21 @@ void OnFaviconImageResultAvailable(
     Profile* profile,
     content::WebContents* web_contents,
     const GURL& page_url,
-    const GURL& favicon_url,
+    const GURL& icon_url,
+    favicon_base::IconType icon_type,
     const favicon_base::FaviconImageResult& result) {
   // If there already is a favicon, return immediately.
   if (!result.image.IsEmpty()) {
     JNIEnv* env = AttachCurrentThread();
-    Java_FaviconAvailabilityCallback_onFaviconAvailabilityChecked(
+    Java_IconAvailabilityCallback_onIconAvailabilityChecked(
         env, j_availability_callback.obj(), false);
     return;
   }
 
-  web_contents->DownloadImage(favicon_url, true, 0, false,
-                              base::Bind(OnFaviconDownloaded,
-                                         j_availability_callback,
-                                         profile, page_url));
+  web_contents->DownloadImage(
+      icon_url, true, 0, false,
+      base::Bind(OnFaviconDownloaded, j_availability_callback, profile,
+                 page_url, icon_type));
 }
 
 }  // namespace
@@ -208,31 +210,34 @@ ScopedJavaLocalRef<jobject> FaviconHelper::GetSyncedFaviconImageForURL(
   return gfx::ConvertToJavaBitmap(&favicon_bitmap);
 }
 
-void FaviconHelper::EnsureFaviconIsAvailable(
-    JNIEnv* env,
-    jobject obj,
-    jobject j_profile,
-    jobject j_web_contents,
-    jstring j_page_url,
-    jstring j_favicon_url,
-    jobject j_availability_callback) {
+void FaviconHelper::EnsureIconIsAvailable(JNIEnv* env,
+                                          jobject obj,
+                                          jobject j_profile,
+                                          jobject j_web_contents,
+                                          jstring j_page_url,
+                                          jstring j_icon_url,
+                                          jboolean j_is_large_icon,
+                                          jobject j_availability_callback) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
   DCHECK(profile);
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(j_web_contents);
   DCHECK(web_contents);
   GURL page_url(ConvertJavaStringToUTF8(env, j_page_url));
-  GURL favicon_url(ConvertJavaStringToUTF8(env, j_favicon_url));
+  GURL icon_url(ConvertJavaStringToUTF8(env, j_icon_url));
+  favicon_base::IconType icon_type =
+      j_is_large_icon ? favicon_base::TOUCH_ICON : favicon_base::FAVICON;
 
   // TODO(treib): Optimize this by creating a FaviconService::HasFavicon method
   // so that we don't have to actually get the image.
   ScopedJavaGlobalRef<jobject> j_scoped_callback(env, j_availability_callback);
   favicon_base::FaviconImageCallback callback_runner =
-      base::Bind(&OnFaviconImageResultAvailable, j_scoped_callback,
-                 profile, web_contents, page_url, favicon_url);
+      base::Bind(&OnFaviconImageResultAvailable, j_scoped_callback, profile,
+                 web_contents, page_url, icon_url, icon_type);
   favicon::FaviconService* service = FaviconServiceFactory::GetForProfile(
       profile, ServiceAccessType::IMPLICIT_ACCESS);
-  service->GetFaviconImageForPageURL(page_url, callback_runner,
+  favicon::GetFaviconImageForPageURL(service, page_url, icon_type,
+                                     callback_runner,
                                      cancelable_task_tracker_.get());
 }
 

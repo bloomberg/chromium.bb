@@ -31,8 +31,8 @@ import org.chromium.chrome.browser.compositor.layouts.content.InvalidationAwareT
 import org.chromium.chrome.browser.document.DocumentMetricIds;
 import org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkUtils;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
-import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconAvailabilityCallback;
 import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconImageCallback;
+import org.chromium.chrome.browser.favicon.FaviconHelper.IconAvailabilityCallback;
 import org.chromium.chrome.browser.favicon.LargeIconBridge;
 import org.chromium.chrome.browser.favicon.LargeIconBridge.LargeIconCallback;
 import org.chromium.chrome.browser.metrics.StartupMetrics;
@@ -356,12 +356,12 @@ public class NewTabPage
         }
 
         @Override
-        public void ensureFaviconIsAvailable(String pageUrl, String faviconUrl,
-                FaviconAvailabilityCallback callback) {
+        public void ensureIconIsAvailable(String pageUrl, String iconUrl, boolean isLargeIcon,
+                IconAvailabilityCallback callback) {
             if (mIsDestroyed) return;
             if (mFaviconHelper == null) mFaviconHelper = new FaviconHelper();
-            mFaviconHelper.ensureFaviconIsAvailable(mProfile, mTab.getWebContents(), pageUrl,
-                    faviconUrl, callback);
+            mFaviconHelper.ensureIconIsAvailable(
+                    mProfile, mTab.getWebContents(), pageUrl, iconUrl, isLargeIcon, callback);
         }
 
         @Override

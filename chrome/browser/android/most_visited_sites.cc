@@ -739,15 +739,17 @@ void MostVisitedSites::OnPopularSitesAvailable(bool success) {
 
   std::vector<std::string> urls;
   std::vector<std::string> favicon_urls;
+  std::vector<std::string> large_icon_urls;
   for (const PopularSites::Site& popular_site : popular_sites_->sites()) {
     urls.push_back(popular_site.url.spec());
     favicon_urls.push_back(popular_site.favicon_url.spec());
+    large_icon_urls.push_back(popular_site.large_icon_url.spec());
   }
   JNIEnv* env = AttachCurrentThread();
   Java_MostVisitedURLsObserver_onPopularURLsAvailable(
       env, observer_.obj(), ToJavaArrayOfStrings(env, urls).obj(),
-      ToJavaArrayOfStrings(env, favicon_urls).obj());
-
+      ToJavaArrayOfStrings(env, favicon_urls).obj(),
+      ToJavaArrayOfStrings(env, large_icon_urls).obj());
   QueryMostVisitedURLs();
 }
 

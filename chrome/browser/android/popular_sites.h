@@ -31,12 +31,14 @@ class PopularSites {
     Site(const base::string16& title,
          const GURL& url,
          const GURL& favicon_url,
+         const GURL& large_icon_url,
          const GURL& thumbnail_url);
     ~Site();
 
     base::string16 title;
     GURL url;
     GURL favicon_url;
+    GURL large_icon_url;
     GURL thumbnail_url;
   };
 
