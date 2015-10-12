@@ -789,9 +789,11 @@ bool PasswordAutofillAgent::FillSuggestion(
   // gets overwritten with the correct one below.
   filled_element.setValue(username, true);
   filled_element.setAutofilled(true);
+  nonscript_modified_values_[filled_element] = username;
 
   password_info->password_field.setValue(password, true);
   password_info->password_field.setAutofilled(true);
+  nonscript_modified_values_[password_info->password_field] = password;
 
   filled_element.setSelectionRange(filled_element.value().length(),
                                    filled_element.value().length());

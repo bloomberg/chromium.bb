@@ -2250,4 +2250,24 @@ TEST_F(PasswordAutofillAgentTest,
   }
 }
 
+// The password manager autofills credentials, the user chooses another
+// credentials option from a suggestion dropdown and then the user submits a
+// form. This test verifies that the browser process receives submitted
+// username/password from the renderer process.
+TEST_F(PasswordAutofillAgentTest, RememberChosenUsernamePassword) {
+  SimulateOnFillPasswordForm(fill_data_);
+  SimulateSuggestionChoiceOfUsernameAndPassword(username_element_,
+                                                ASCIIToUTF16(kBobUsername),
+                                                ASCIIToUTF16(kBobPassword));
+
+  static_cast<content::RenderFrameObserver*>(password_autofill_agent_)
+      ->WillSendSubmitEvent(username_element_.form());
+  static_cast<content::RenderFrameObserver*>(password_autofill_agent_)
+      ->WillSubmitForm(username_element_.form());
+
+  // Observe that the PasswordAutofillAgent sends to the browser selected
+  // credentials.
+  ExpectFormSubmittedWithUsernameAndPasswords(kBobUsername, kBobPassword, "");
+}
+
 }  // namespace autofill
