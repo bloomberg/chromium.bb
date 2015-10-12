@@ -191,7 +191,8 @@ def SetupBuildbotEnvironment():
     # `gclient` relies on depot_tools in $PATH, pass the extra
     # envinornment variable.
     path_env = '%s:%s' % (os.getenv('PATH'), tmp_depot_tools_path)
-    RunCommand(['gclient', 'config', bot_constants.BUILDBOT_GIT_REPO],
+    RunCommand(['gclient', 'config', bot_constants.CHROME_INFRA_SLAVE_REPO,
+                '--deps-file', bot_constants.CHROME_INFRA_SLAVE_DEPS_FILE],
                cwd=bot_constants.BUILDBOT_DIR, extra_env={'PATH': path_env})
     RunCommand(['gclient', 'sync', '--jobs', '5'],
                cwd=bot_constants.BUILDBOT_DIR,
