@@ -14,6 +14,17 @@ namespace content {
 class WebContents;
 }
 
+enum UMAThrottleInfobarResponse {
+  UMA_THROTTLE_INFOBAR_NO_RESPONSE,
+  UMA_THROTTLE_INFOBAR_TRY_AGAIN,
+  UMA_THROTTLE_INFOBAR_WAIT,
+  UMA_THROTTLE_INFOBAR_DISMISSED,
+  // NOTE: Add responses only immediately above this line. Make sure to
+  // update the enum list in tools/metrics/histograms/histograms.xml
+  // accordingly.
+  UMA_THROTTLE_INFOBAR_RESPONSE_COUNT
+};
+
 class MediaThrottleInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   typedef base::Callback<void(bool)> DecodeRequestGrantedCallback;
@@ -36,6 +47,8 @@ class MediaThrottleInfoBarDelegate : public ConfirmInfoBarDelegate {
   bool Accept() override;
   bool Cancel() override;
   void InfoBarDismissed() override;
+
+  UMAThrottleInfobarResponse infobar_response_;
 
   DecodeRequestGrantedCallback decode_granted_callback_;
 

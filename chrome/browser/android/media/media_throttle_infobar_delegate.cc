@@ -4,6 +4,7 @@
 
 #include "chrome/browser/android/media/media_throttle_infobar_delegate.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/infobars/core/infobar.h"
@@ -38,10 +39,15 @@ void MediaThrottleInfoBarDelegate::Create(
 
 MediaThrottleInfoBarDelegate::MediaThrottleInfoBarDelegate(
     const DecodeRequestGrantedCallback& callback)
-    : decode_granted_callback_(callback) {
+    : infobar_response_(UMA_THROTTLE_INFOBAR_NO_RESPONSE),
+      decode_granted_callback_(callback) {
 }
 
-MediaThrottleInfoBarDelegate::~MediaThrottleInfoBarDelegate() {}
+MediaThrottleInfoBarDelegate::~MediaThrottleInfoBarDelegate() {
+  UMA_HISTOGRAM_ENUMERATION("Media.Android.ThrottleInfobarResponse",
+                            infobar_response_,
+                            UMA_THROTTLE_INFOBAR_RESPONSE_COUNT);
+}
 
 MediaThrottleInfoBarDelegate*
     MediaThrottleInfoBarDelegate::AsMediaThrottleInfoBarDelegate() {
@@ -64,15 +70,18 @@ base::string16 MediaThrottleInfoBarDelegate::GetButtonLabel(
 }
 
 bool MediaThrottleInfoBarDelegate::Accept() {
+  infobar_response_ = UMA_THROTTLE_INFOBAR_WAIT;
   decode_granted_callback_.Run(false);
   return true;
 }
 
 bool MediaThrottleInfoBarDelegate::Cancel() {
+  infobar_response_ = UMA_THROTTLE_INFOBAR_TRY_AGAIN;
   decode_granted_callback_.Run(true);
   return true;
 }
 
 void MediaThrottleInfoBarDelegate::InfoBarDismissed() {
+  infobar_response_ = UMA_THROTTLE_INFOBAR_DISMISSED;
   decode_granted_callback_.Run(false);
 }

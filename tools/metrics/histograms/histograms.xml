@@ -17215,6 +17215,23 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.Android.NumMediaServerCrashes">
+  <owner>qinmin@chromium.org</owner>
+  <summary>
+    Android: Number of consecutive media server crashes monitored before it is
+    reset to 0. Reset happens if there are no crashes in a minute, or if user
+    hits the &quot;try again&quot; button on the media throttle info bar.
+  </summary>
+</histogram>
+
+<histogram name="Media.Android.ThrottleInfobarResponse"
+    enum="ThrottleInfobarResponse">
+  <owner>qinmin@chromium.org</owner>
+  <summary>
+    Android: The distribution of responses to the media throttle infobar prompt.
+  </summary>
+</histogram>
+
 <histogram name="Media.AudioBitsPerChannel">
   <owner>dalecurtis@chromium.org</owner>
   <summary>Bits per channel of HTML5 audio sample data.</summary>
@@ -73279,6 +73296,13 @@ To add a new entry, add it with any value and run test to compute valid value.
 <enum name="ThreadType" type="int">
   <int value="0" label="UI"/>
   <int value="1" label="Blocking"/>
+</enum>
+
+<enum name="ThrottleInfobarResponse" type="int">
+  <int value="0" label="No response"/>
+  <int value="1" label="Try again"/>
+  <int value="2" label="Wait"/>
+  <int value="3" label="Infobar dismissed"/>
 </enum>
 
 <enum name="TileMemoryBudget" type="int">

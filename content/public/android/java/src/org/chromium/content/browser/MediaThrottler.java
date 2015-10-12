@@ -14,6 +14,7 @@ import android.os.SystemClock;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.content.R;
 
 /**
@@ -185,6 +186,7 @@ class MediaThrottler implements MediaPlayer.OnErrorListener {
                 && (currentTime - mLastCrashTime < SERVER_CRASH_INTERVAL_THRESHOLD_IN_MILLIS)) {
             mServerCrashCount++;
         } else {
+            recordNumMediaServerCrashes();
             mServerCrashCount = 1;
         }
         mLastCrashTime = currentTime;
@@ -197,8 +199,20 @@ class MediaThrottler implements MediaPlayer.OnErrorListener {
     @CalledByNative
     private void reset() {
         synchronized (mLock) {
+            recordNumMediaServerCrashes();
             mServerCrashCount = 0;
             mLastCrashTime = UNKNOWN_LAST_SERVER_CRASH_TIME;
+        }
+    }
+
+    /**
+     * Records the number of consecutive media server crashes in UMA.
+     */
+    private void recordNumMediaServerCrashes() {
+        assert Thread.holdsLock(mLock);
+        if (mServerCrashCount > 0) {
+            RecordHistogram.recordCountHistogram(
+                    "Media.Android.NumMediaServerCrashes", mServerCrashCount);
         }
     }
 }
