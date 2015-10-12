@@ -234,8 +234,6 @@ crbug.com/352405 virtual/threaded/animations/transition-and-animation-1.html [ P
 
 crbug.com/461179 virtual/spv2/paint/invalidation/invalidate-when-receiving-paint-layer.html [ ImageOnlyFailure ]
 
-crbug.com/524009 inspector/sources/debugger-pause/debugger-pause-in-internal.html [ NeedsManualRebaseline ]
-
 # TODO(ojan): These tests aren't flaky. See crbug.com/517144.
 # Release trybots run asserts, but the main waterfall ones don't. So, even
 # though this is a non-flaky assert failure, we need to mark it [ Pass Crash ].
