@@ -11,9 +11,8 @@
 #include "base/run_loop.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/sync/glue/autofill_data_type_controller.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/browser/web_data_service_factory.h"
+#include "chrome/test/base/testing_profile.h"
 #include "components/autofill/core/browser/webdata/autocomplete_syncable_service.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/sync_driver/data_type_controller_mock.h"
@@ -136,7 +135,6 @@ class SyncAutofillDataTypeControllerTest : public testing::Test,
  public:
   SyncAutofillDataTypeControllerTest()
       : thread_bundle_(content::TestBrowserThreadBundle::REAL_DB_THREAD),
-        service_(&profile_),
         last_start_result_(sync_driver::DataTypeController::OK),
         weak_ptr_factory_(this) {}
   ~SyncAutofillDataTypeControllerTest() override {}
@@ -179,7 +177,6 @@ class SyncAutofillDataTypeControllerTest : public testing::Test,
  protected:
   content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
-  ProfileSyncServiceMock service_;
   scoped_refptr<AutofillDataTypeController> autofill_dtc_;
 
   // Stores arguments of most recent call of OnStartFinished().

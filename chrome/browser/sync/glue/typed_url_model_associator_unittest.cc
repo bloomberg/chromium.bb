@@ -9,8 +9,8 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
 #include "base/time/time.h"
-#include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "components/history/core/browser/history_types.h"
+#include "components/sync_driver/fake_sync_service.h"
 #include "components/sync_driver/glue/typed_url_model_associator.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -70,10 +70,10 @@ static void CreateModelAssociatorAsync(base::WaitableEvent* startup,
                                        base::WaitableEvent* aborted,
                                        base::WaitableEvent* done,
                                        TypedUrlModelAssociator** associator,
-                                       ProfileSyncServiceMock* mock) {
+                                       sync_driver::SyncService* service) {
   // Grab the done lock - when we exit, this will be released and allow the
   // test to finish.
-  *associator = new TypedUrlModelAssociator(mock, NULL, NULL);
+  *associator = new TypedUrlModelAssociator(service, NULL, NULL);
 
   // Signal frontend to call AbortAssociation and proceed after it's called.
   startup->Signal();
@@ -413,14 +413,13 @@ TEST_F(SyncTypedUrlModelAssociatorTest, TestAbort) {
   base::WaitableEvent startup(false, false);
   base::WaitableEvent aborted(false, false);
   base::WaitableEvent done(false, false);
-  TestingProfile profile;
-  ProfileSyncServiceMock mock(&profile);
+  sync_driver::FakeSyncService service;
   TypedUrlModelAssociator* associator(NULL);
   // Fire off to the DB thread to create the model associator and start
   // model association.
   base::Closure callback = base::Bind(
       &CreateModelAssociatorAsync, &startup, &aborted, &done, &associator,
-                                   &mock);
+                                   &service);
   BrowserThread::PostTask(BrowserThread::DB, FROM_HERE, callback);
   // Wait for the model associator to get created and start assocation.
   ASSERT_TRUE(startup.TimedWait(TestTimeouts::action_timeout()));

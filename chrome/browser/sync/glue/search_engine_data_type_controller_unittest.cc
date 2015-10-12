@@ -11,7 +11,6 @@
 #include "base/tracked_objects.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/search_engines/template_url_service_factory_test_util.h"
-#include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/test/base/profile_mock.h"
 #include "components/search_engines/search_engine_data_type_controller.h"
 #include "components/sync_driver/data_type_controller_mock.h"
@@ -48,7 +47,6 @@ class SyncSearchEngineDataTypeControllerTest
   }
 
   void SetUp() override {
-    service_.reset(new ProfileSyncServiceMock(&profile_));
     // Feed the DTC the profile so it is reused later.
     // This allows us to control the associated TemplateURLService.
     search_engine_dtc_ = new SearchEngineDataTypeController(
@@ -61,7 +59,6 @@ class SyncSearchEngineDataTypeControllerTest
     // Must be done before we pump the loop.
     syncable_service_.StopSyncing(syncer::SEARCH_ENGINES);
     search_engine_dtc_ = NULL;
-    service_.reset();
   }
 
  protected:
@@ -94,7 +91,6 @@ class SyncSearchEngineDataTypeControllerTest
   TemplateURLServiceFactoryTestUtil test_util_;
   scoped_refptr<SearchEngineDataTypeController> search_engine_dtc_;
   SyncApiComponentFactoryMock profile_sync_factory_;
-  scoped_ptr<ProfileSyncServiceMock> service_;
   syncer::FakeSyncableService syncable_service_;
   sync_driver::StartCallbackMock start_callback_;
   sync_driver::ModelLoadCallbackMock model_load_callback_;

@@ -14,11 +14,10 @@
 #include "base/test/test_timeouts.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/tracked_objects.h"
-#include "chrome/browser/sync/profile_sync_service_mock.h"
-#include "chrome/test/base/profile_mock.h"
 #include "components/sync_driver/change_processor_mock.h"
 #include "components/sync_driver/data_type_controller_mock.h"
 #include "components/sync_driver/fake_sync_client.h"
+#include "components/sync_driver/fake_sync_service.h"
 #include "components/sync_driver/model_associator_mock.h"
 #include "components/sync_driver/non_frontend_data_type_controller.h"
 #include "components/sync_driver/non_frontend_data_type_controller_mock.h"
@@ -113,7 +112,6 @@ class SyncNonFrontendDataTypeControllerTest
   SyncNonFrontendDataTypeControllerTest()
       : sync_driver::FakeSyncClient(&profile_sync_factory_),
         thread_bundle_(content::TestBrowserThreadBundle::REAL_DB_THREAD),
-        service_(&profile_),
         model_associator_(NULL),
         change_processor_(NULL) {}
 
@@ -206,8 +204,7 @@ class SyncNonFrontendDataTypeControllerTest
   content::TestBrowserThreadBundle thread_bundle_;
   scoped_refptr<NonFrontendDataTypeControllerFake> non_frontend_dtc_;
   scoped_refptr<NonFrontendDataTypeControllerMock> dtc_mock_;
-  ProfileMock profile_;
-  ProfileSyncServiceMock service_;
+  sync_driver::FakeSyncService service_;
   SyncApiComponentFactoryMock profile_sync_factory_;
   ModelAssociatorMock* model_associator_;
   ChangeProcessorMock* change_processor_;

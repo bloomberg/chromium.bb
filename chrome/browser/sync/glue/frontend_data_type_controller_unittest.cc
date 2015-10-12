@@ -13,16 +13,14 @@
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/tracked_objects.h"
-#include "chrome/browser/sync/profile_sync_service_mock.h"
-#include "chrome/test/base/profile_mock.h"
 #include "components/sync_driver/change_processor_mock.h"
 #include "components/sync_driver/data_type_controller_mock.h"
 #include "components/sync_driver/fake_sync_client.h"
+#include "components/sync_driver/fake_sync_service.h"
 #include "components/sync_driver/frontend_data_type_controller.h"
 #include "components/sync_driver/frontend_data_type_controller_mock.h"
 #include "components/sync_driver/model_associator_mock.h"
 #include "components/sync_driver/sync_api_component_factory_mock.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 
 using browser_sync::FrontendDataTypeController;
 using browser_sync::FrontendDataTypeControllerMock;
@@ -87,8 +85,7 @@ class SyncFrontendDataTypeControllerTest : public testing::Test,
  public:
   SyncFrontendDataTypeControllerTest()
       : sync_driver::FakeSyncClient(&profile_sync_factory_),
-        thread_bundle_(content::TestBrowserThreadBundle::DEFAULT),
-        service_(&profile_) {}
+        service_() {}
 
   // FakeSyncClient overrides.
   sync_driver::SyncService* GetSyncService() override {
@@ -153,12 +150,11 @@ class SyncFrontendDataTypeControllerTest : public testing::Test,
 
   void PumpLoop() { base::MessageLoop::current()->RunUntilIdle(); }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  base::MessageLoop message_loop_;
   scoped_refptr<FrontendDataTypeControllerFake> frontend_dtc_;
   SyncApiComponentFactoryMock profile_sync_factory_;
   scoped_refptr<FrontendDataTypeControllerMock> dtc_mock_;
-  ProfileMock profile_;
-  ProfileSyncServiceMock service_;
+  sync_driver::FakeSyncService service_;
   ModelAssociatorMock* model_associator_;
   ChangeProcessorMock* change_processor_;
   StartCallbackMock start_callback_;

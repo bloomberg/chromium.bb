@@ -17,7 +17,6 @@
 #include "chrome/browser/bookmarks/managed_bookmark_service_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
@@ -26,6 +25,7 @@
 #include "components/sync_driver/change_processor_mock.h"
 #include "components/sync_driver/data_type_controller_mock.h"
 #include "components/sync_driver/fake_sync_client.h"
+#include "components/sync_driver/fake_sync_service.h"
 #include "components/sync_driver/model_associator_mock.h"
 #include "components/sync_driver/sync_api_component_factory_mock.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -87,8 +87,7 @@ class SyncBookmarkDataTypeControllerTest : public testing::Test,
                                            public sync_driver::FakeSyncClient {
  public:
   SyncBookmarkDataTypeControllerTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::DEFAULT),
-        service_(&profile_) {}
+      : thread_bundle_(content::TestBrowserThreadBundle::DEFAULT) {}
 
   // FakeSyncClient overrides.
   bookmarks::BookmarkModel* GetBookmarkModel() override {
@@ -182,7 +181,7 @@ class SyncBookmarkDataTypeControllerTest : public testing::Test,
   TestingProfile profile_;
   BookmarkModel* bookmark_model_;
   HistoryMock* history_service_;
-  ProfileSyncServiceMock service_;
+  sync_driver::FakeSyncService service_;
   ModelAssociatorMock* model_associator_;
   ChangeProcessorMock* change_processor_;
   StartCallbackMock start_callback_;
