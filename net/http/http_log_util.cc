@@ -4,6 +4,7 @@
 
 #include "net/http/http_log_util.h"
 
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "net/http/http_auth_challenge_tokenizer.h"
@@ -42,7 +43,7 @@ std::string ElideHeaderValueForNetLog(NetLogCaptureMode capture_mode,
 
   if (redact_begin == redact_end &&
       !capture_mode.include_cookies_and_credentials()) {
-    // Note: this logic should be kept in sync with stripCookiesAndLoginInfo in
+    // Note: this logic should be kept in sync with stripCookieOrLoginInfo in
     // chrome/browser/resources/net_internals/log_view_painter.js.
 
     if (base::EqualsCaseInsensitiveASCII(header, "set-cookie") ||
@@ -71,6 +72,18 @@ std::string ElideHeaderValueForNetLog(NetLogCaptureMode capture_mode,
       base::StringPrintf("[%ld bytes were stripped]",
                          static_cast<long>(redact_end - redact_begin)) +
       std::string(redact_end, value.end());
+}
+
+std::string ElideGoAwayDebugDataForNetLog(NetLogCaptureMode capture_mode,
+                                          base::StringPiece debug_data) {
+  // Note: this logic should be kept in sync with stripGoAwayDebugData in
+  // chrome/browser/resources/net_internals/log_view_painter.js.
+  if (capture_mode.include_cookies_and_credentials()) {
+    return debug_data.as_string();
+  }
+
+  return std::string("[") + base::SizeTToString(debug_data.size()) +
+         std::string(" bytes were stripped]");
 }
 
 }  // namespace net

@@ -1551,7 +1551,8 @@ TEST_P(SpdySessionTest, Initialize) {
 TEST_P(SpdySessionTest, NetLogOnSessionGoaway) {
   session_deps_.host_resolver->set_synchronous_mode(true);
 
-  scoped_ptr<SpdyFrame> goaway(spdy_util_.ConstructSpdyGoAway());
+  scoped_ptr<SpdyFrame> goaway(
+      spdy_util_.ConstructSpdyGoAway(42, GOAWAY_ENHANCE_YOUR_CALM, "foo"));
   MockRead reads[] = {
     CreateMockRead(*goaway),
     MockRead(SYNCHRONOUS, 0, 0)  // EOF
@@ -1575,18 +1576,35 @@ TEST_P(SpdySessionTest, NetLogOnSessionGoaway) {
   log_.GetEntries(&entries);
   EXPECT_LT(0u, entries.size());
 
+  if (GetParam() == kProtoHTTP2) {
+    int pos = ExpectLogContainsSomewhere(
+        entries, 0, NetLog::TYPE_HTTP2_SESSION_GOAWAY, NetLog::PHASE_NONE);
+    TestNetLogEntry entry = entries[pos];
+    int last_accepted_stream_id;
+    ASSERT_TRUE(entry.GetIntegerValue("last_accepted_stream_id",
+                                      &last_accepted_stream_id));
+    EXPECT_EQ(42, last_accepted_stream_id);
+    int active_streams;
+    ASSERT_TRUE(entry.GetIntegerValue("active_streams", &active_streams));
+    EXPECT_EQ(0, active_streams);
+    int unclaimed_streams;
+    ASSERT_TRUE(entry.GetIntegerValue("unclaimed_streams", &unclaimed_streams));
+    EXPECT_EQ(0, unclaimed_streams);
+    int status;
+    ASSERT_TRUE(entry.GetIntegerValue("status", &status));
+    EXPECT_EQ(GOAWAY_ENHANCE_YOUR_CALM, status);
+    std::string debug_data;
+    ASSERT_TRUE(entry.GetStringValue("debug_data", &debug_data));
+    EXPECT_EQ("foo", debug_data);
+  }
+
   // Check that we logged SPDY_SESSION_CLOSE correctly.
   int pos = ExpectLogContainsSomewhere(
       entries, 0, NetLog::TYPE_HTTP2_SESSION_CLOSE, NetLog::PHASE_NONE);
-
-  if (pos < static_cast<int>(entries.size())) {
-    TestNetLogEntry entry = entries[pos];
-    int error_code = 0;
-    ASSERT_TRUE(entry.GetNetErrorCode(&error_code));
-    EXPECT_EQ(OK, error_code);
-  } else {
-    ADD_FAILURE();
-  }
+  TestNetLogEntry entry = entries[pos];
+  int error_code = 0;
+  ASSERT_TRUE(entry.GetNetErrorCode(&error_code));
+  EXPECT_EQ(OK, error_code);
 }
 
 TEST_P(SpdySessionTest, NetLogOnSessionEOF) {

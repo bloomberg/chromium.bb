@@ -257,13 +257,16 @@ scoped_ptr<base::Value> NetLogSpdyGoAwayCallback(
     int active_streams,
     int unclaimed_streams,
     SpdyGoAwayStatus status,
-    NetLogCaptureMode /* capture_mode */) {
+    StringPiece debug_data,
+    NetLogCaptureMode capture_mode) {
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetInteger("last_accepted_stream_id",
                    static_cast<int>(last_stream_id));
   dict->SetInteger("active_streams", active_streams);
   dict->SetInteger("unclaimed_streams", unclaimed_streams);
   dict->SetInteger("status", static_cast<int>(status));
+  dict->SetString("debug_data",
+                  ElideGoAwayDebugDataForNetLog(capture_mode, debug_data));
   return dict.Pass();
 }
 
@@ -2452,15 +2455,17 @@ void SpdySession::OnRstStream(SpdyStreamId stream_id,
 }
 
 void SpdySession::OnGoAway(SpdyStreamId last_accepted_stream_id,
-                           SpdyGoAwayStatus status) {
+                           SpdyGoAwayStatus status,
+                           StringPiece debug_data) {
   CHECK(in_io_loop_);
 
   // TODO(jgraettinger): UMA histogram on |status|.
 
-  net_log_.AddEvent(NetLog::TYPE_HTTP2_SESSION_GOAWAY,
-                    base::Bind(&NetLogSpdyGoAwayCallback,
-                               last_accepted_stream_id, active_streams_.size(),
-                               unclaimed_pushed_streams_.size(), status));
+  net_log_.AddEvent(
+      NetLog::TYPE_HTTP2_SESSION_GOAWAY,
+      base::Bind(&NetLogSpdyGoAwayCallback, last_accepted_stream_id,
+                 active_streams_.size(), unclaimed_pushed_streams_.size(),
+                 status, debug_data));
   MakeUnavailable();
   if (status == GOAWAY_HTTP_1_1_REQUIRED) {
     // TODO(bnc): Record histogram with number of open streams capped at 50.

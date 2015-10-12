@@ -8,6 +8,13 @@
 
 namespace net {
 
+namespace {
+
+// GOAWAY frame debug data is only buffered up to this many bytes.
+size_t kGoAwayDebugDataMaxSize = 1024;
+
+}  // namespace
+
 SpdyMajorVersion NextProtoToSpdyMajorVersion(NextProto next_proto) {
   switch (next_proto) {
     case kProtoDeprecatedSPDY2:
@@ -226,7 +233,26 @@ void BufferedSpdyFramer::OnRstStream(SpdyStreamId stream_id,
 }
 void BufferedSpdyFramer::OnGoAway(SpdyStreamId last_accepted_stream_id,
                                   SpdyGoAwayStatus status) {
-  visitor_->OnGoAway(last_accepted_stream_id, status);
+  DCHECK(!goaway_fields_);
+  goaway_fields_.reset(new GoAwayFields());
+  goaway_fields_->last_accepted_stream_id = last_accepted_stream_id;
+  goaway_fields_->status = status;
+}
+
+bool BufferedSpdyFramer::OnGoAwayFrameData(const char* goaway_data,
+                                           size_t len) {
+  if (len > 0) {
+    if (goaway_fields_->debug_data.size() < kGoAwayDebugDataMaxSize) {
+      goaway_fields_->debug_data.append(
+          goaway_data, std::min(len, kGoAwayDebugDataMaxSize -
+                                         goaway_fields_->debug_data.size()));
+    }
+    return true;
+  }
+  visitor_->OnGoAway(goaway_fields_->last_accepted_stream_id,
+                     goaway_fields_->status, goaway_fields_->debug_data);
+  goaway_fields_.reset();
+  return true;
 }
 
 void BufferedSpdyFramer::OnWindowUpdate(SpdyStreamId stream_id,
@@ -354,8 +380,9 @@ SpdyFrame* BufferedSpdyFramer::CreatePingFrame(SpdyPingId unique_id,
 // TODO(jgraettinger): Eliminate uses of this method (prefer SpdyGoAwayIR).
 SpdyFrame* BufferedSpdyFramer::CreateGoAway(
     SpdyStreamId last_accepted_stream_id,
-    SpdyGoAwayStatus status) const {
-  SpdyGoAwayIR go_ir(last_accepted_stream_id, status, "");
+    SpdyGoAwayStatus status,
+    base::StringPiece debug_data) const {
+  SpdyGoAwayIR go_ir(last_accepted_stream_id, status, debug_data);
   return spdy_framer_.SerializeGoAway(go_ir);
 }
 

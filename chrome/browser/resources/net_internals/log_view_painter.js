@@ -6,7 +6,7 @@
 
 var createLogEntryTablePrinter;
 var proxySettingsToString;
-var stripCookiesAndLoginInfo;
+var stripPrivacyInfo;
 
 // Start of anonymous namespace.
 (function() {
@@ -244,7 +244,7 @@ var ParameterOutputter = (function() {
 function writeParameters(entry, privacyStripping, out) {
   if (privacyStripping) {
     // If privacy stripping is enabled, remove data as needed.
-    entry = stripCookiesAndLoginInfo(entry);
+    entry = stripPrivacyInfo(entry);
   } else {
     // If headers are in an object, convert them to an array for better display.
     entry = reformatHeaders(entry);
@@ -479,6 +479,9 @@ function reformatHeaders(entry) {
  * Removes a cookie or unencrypted login information from a single HTTP header
  * line, if present, and returns the modified line.  Otherwise, just returns
  * the original line.
+ *
+ * Note: this logic should be kept in sync with
+ * net::ElideHeaderValueForNetLog in net/http/http_log_util.cc.
  */
 function stripCookieOrLoginInfo(line) {
   var patterns = [
@@ -545,16 +548,40 @@ function stripCookieOrLoginInfo(line) {
 }
 
 /**
+ * Remove debug data from HTTP/2 GOAWAY frame due to privacy considerations, see
+ * https://httpwg.github.io/specs/rfc7540.html#GOAWAY.
+ *
+ * Note: this logic should be kept in sync with
+ * net::ElideGoAwayDebugDataForNetLog in net/http/http_log_util.cc.
+ */
+function stripGoAwayDebugData(value) {
+  return '[' + value.length + ' bytes were stripped]';
+}
+
+/**
  * If |entry| has headers, returns a copy of |entry| with all cookie and
  * unencrypted login text removed.  Otherwise, returns original |entry| object.
  * This is needed so that JSON log dumps can be made without affecting the
  * source data.  Converts headers stored in objects to arrays.
- *
- * Note: this logic should be kept in sync with
- * net::ElideHeaderForNetLog in net/http/http_log_util.cc.
  */
-stripCookiesAndLoginInfo = function(entry) {
-  if (!entry.params || entry.params.headers === undefined ||
+stripPrivacyInfo = function(entry) {
+  if (!entry.params) {
+    return entry;
+  }
+
+  if (entry.type == EventType.HTTP2_SESSION_GOAWAY &&
+      entry.params.debug_data != undefined) {
+    // Duplicate the top level object, and |entry.params|.  All other fields are
+    // just pointers to the original values, as they won't be modified, other
+    // than |entry.params.debug_data|.
+    entry = shallowCloneObject(entry);
+    entry.params = shallowCloneObject(entry.params);
+    entry.params.debug_data =
+        stripGoAwayDebugData(entry.params.debug_data);
+    return entry;
+  }
+
+  if (entry.params.headers === undefined ||
       !(entry.params.headers instanceof Object)) {
     return entry;
   }

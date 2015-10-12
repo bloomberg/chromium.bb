@@ -14,12 +14,13 @@ namespace {
 // for methods of NetLogCaptureMode, which expect that higher values represent a
 // strict superset of the capabilities of lower values.
 enum InternalValue {
-  // Log all events, but do not include the actual transferred bytes and
-  // remove cookies and HTTP credentials.
+  // Log all events, but do not include the actual transferred bytes, and
+  // remove cookies and HTTP credentials and HTTP/2 GOAWAY frame debug data.
   DEFAULT,
 
   // Log all events, but do not include the actual transferred bytes as
   // parameters for bytes sent/received events.
+  // TODO(bnc): Consider renaming to INCLUDE_PRIVACY_INFO.
   INCLUDE_COOKIES_AND_CREDENTIALS,
 
   // Log everything possible, even if it is slow and memory expensive.

@@ -21,9 +21,9 @@ class TestBufferedSpdyVisitor : public BufferedSpdyFramerVisitorInterface {
         syn_reply_frame_count_(0),
         headers_frame_count_(0),
         push_promise_frame_count_(0),
+        goaway_count_(0),
         header_stream_id_(static_cast<SpdyStreamId>(-1)),
-        promised_stream_id_(static_cast<SpdyStreamId>(-1)) {
-  }
+        promised_stream_id_(static_cast<SpdyStreamId>(-1)) {}
 
   void OnError(SpdyFramer::SpdyError error_code) override {
     LOG(INFO) << "SpdyFramer Error: " << error_code;
@@ -100,7 +100,13 @@ class TestBufferedSpdyVisitor : public BufferedSpdyFramerVisitorInterface {
                    SpdyRstStreamStatus status) override {}
 
   void OnGoAway(SpdyStreamId last_accepted_stream_id,
-                SpdyGoAwayStatus status) override {}
+                SpdyGoAwayStatus status,
+                StringPiece debug_data) override {
+    goaway_count_++;
+    goaway_last_accepted_stream_id_ = last_accepted_stream_id;
+    goaway_status_ = status;
+    goaway_debug_data_.assign(debug_data.data(), debug_data.size());
+  }
 
   bool OnCredentialFrameData(const char*, size_t) {
     LOG(FATAL) << "Unexpected OnCredentialFrameData call.";
@@ -162,6 +168,7 @@ class TestBufferedSpdyVisitor : public BufferedSpdyFramerVisitorInterface {
   int syn_reply_frame_count_;
   int headers_frame_count_;
   int push_promise_frame_count_;
+  int goaway_count_;
 
   // Header block streaming state:
   SpdyStreamId header_stream_id_;
@@ -170,6 +177,11 @@ class TestBufferedSpdyVisitor : public BufferedSpdyFramerVisitorInterface {
   // Headers from OnSyn, OnSynReply, OnHeaders and OnPushPromise for
   // verification.
   SpdyHeaderBlock headers_;
+
+  // OnGoAway parameters.
+  SpdyStreamId goaway_last_accepted_stream_id_;
+  SpdyGoAwayStatus goaway_status_;
+  std::string goaway_debug_data_;
 };
 
 }  // namespace
@@ -338,6 +350,24 @@ TEST_P(BufferedSpdyFramerTest, ReadPushPromiseHeaderBlock) {
   EXPECT_TRUE(CompareHeaderBlocks(&headers, &visitor.headers_));
   EXPECT_EQ(1u, visitor.header_stream_id_);
   EXPECT_EQ(2u, visitor.promised_stream_id_);
+}
+
+TEST_P(BufferedSpdyFramerTest, GoAwayDebugData) {
+  if (spdy_version() < HTTP2)
+    return;
+  BufferedSpdyFramer framer(spdy_version(), true);
+  scoped_ptr<SpdyFrame> goaway_frame(
+      framer.CreateGoAway(2u, GOAWAY_FRAME_SIZE_ERROR, "foo"));
+
+  TestBufferedSpdyVisitor visitor(spdy_version());
+  visitor.SimulateInFramer(
+      reinterpret_cast<unsigned char*>(goaway_frame.get()->data()),
+      goaway_frame.get()->size());
+  EXPECT_EQ(0, visitor.error_count_);
+  EXPECT_EQ(1, visitor.goaway_count_);
+  EXPECT_EQ(2u, visitor.goaway_last_accepted_stream_id_);
+  EXPECT_EQ(GOAWAY_FRAME_SIZE_ERROR, visitor.goaway_status_);
+  EXPECT_EQ("foo", visitor.goaway_debug_data_);
 }
 
 }  // namespace net

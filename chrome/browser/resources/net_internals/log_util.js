@@ -34,7 +34,7 @@ log_util = (function() {
   function createLogDump(userComments, constants, events, polledData, tabData,
                          numericDate, privacyStripping) {
     if (privacyStripping)
-      events = events.map(stripCookiesAndLoginInfo);
+      events = events.map(stripPrivacyInfo);
 
     var logDump = {
       'userComments': userComments,

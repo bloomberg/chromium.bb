@@ -32,6 +32,7 @@ class NET_EXPORT NetLogCaptureMode {
   // no effort to strip cookies and credentials.
   //    include_cookies_and_credentials() --> true
   //    include_socket_bytes() --> false
+  // TODO(bnc): Consider renaming to IncludePrivacyInfo().
   static NetLogCaptureMode IncludeCookiesAndCredentials();
 
   // Constructs a capture mode which logs the data sent/received from sockets.
@@ -41,6 +42,7 @@ class NET_EXPORT NetLogCaptureMode {
 
   // If include_cookies_and_credentials() is true , then it is OK to log
   // events which contain cookies, credentials or other privacy sensitive data.
+  // TODO(bnc): Consider renaming to include_privacy_info().
   bool include_cookies_and_credentials() const;
 
   // If include_socket_bytes() is true, then it is OK to output the actual

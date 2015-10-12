@@ -100,7 +100,8 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramerVisitorInterface {
 
   // Called when a GOAWAY frame has been parsed.
   virtual void OnGoAway(SpdyStreamId last_accepted_stream_id,
-                        SpdyGoAwayStatus status) = 0;
+                        SpdyGoAwayStatus status,
+                        base::StringPiece debug_data) = 0;
 
   // Called when a WINDOW_UPDATE frame has been parsed.
   virtual void OnWindowUpdate(SpdyStreamId stream_id,
@@ -173,6 +174,7 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramer
   void OnRstStream(SpdyStreamId stream_id, SpdyRstStreamStatus status) override;
   void OnGoAway(SpdyStreamId last_accepted_stream_id,
                 SpdyGoAwayStatus status) override;
+  bool OnGoAwayFrameData(const char* goaway_data, size_t len) override;
   void OnWindowUpdate(SpdyStreamId stream_id, int delta_window_size) override;
   void OnPushPromise(SpdyStreamId stream_id,
                      SpdyStreamId promised_stream_id,
@@ -203,9 +205,9 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramer
                              SpdyRstStreamStatus status) const;
   SpdyFrame* CreateSettings(const SettingsMap& values) const;
   SpdyFrame* CreatePingFrame(SpdyPingId unique_id, bool is_ack) const;
-  SpdyFrame* CreateGoAway(
-      SpdyStreamId last_accepted_stream_id,
-      SpdyGoAwayStatus status) const;
+  SpdyFrame* CreateGoAway(SpdyStreamId last_accepted_stream_id,
+                          SpdyGoAwayStatus status,
+                          base::StringPiece debug_data) const;
   SpdyFrame* CreateHeaders(SpdyStreamId stream_id,
                            SpdyControlFlags flags,
                            SpdyPriority priority,
@@ -286,6 +288,14 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramer
     bool unidirectional;
   };
   scoped_ptr<ControlFrameFields> control_frame_fields_;
+
+  // Collection of fields of a GOAWAY frame that this class needs to buffer.
+  struct GoAwayFields {
+    SpdyStreamId last_accepted_stream_id;
+    SpdyGoAwayStatus status;
+    std::string debug_data;
+  };
+  scoped_ptr<GoAwayFields> goaway_fields_;
 
   DISALLOW_COPY_AND_ASSIGN(BufferedSpdyFramer);
 };
