@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script>
+
+test(function() {
+    assert_true('receiver' in navigator.presentation);
+    assert_true('getConnection' in navigator.presentation.receiver);
+    assert_true('getConnections' in navigator.presentation.receiver);
+    assert_true('onconnectionavailable' in navigator.presentation.receiver);
+
+    assert_true('PresentationReceiver' in window);
+}, "Test that the Presentation Receiver API is present.")
+
+test(function() {
+  assert_equals(typeof(navigator.presentation.receiver), "object");
+  assert_equals(typeof(navigator.presentation.receiver.getConnection), "function");
+  assert_equals(typeof(navigator.presentation.receiver.getConnections), "function");
+  assert_equals(typeof(navigator.presentation.receiver.onconnectionavailable), "object");
+}, "Test the Presentation Receiver API property types.");
+
+test(function() {
+  assert_true(navigator.presentation.receiver instanceof EventTarget);
+}, "Test that navigator.presentation.receiver is an EventTarget.");
+
+</script>
+</body>
+</html>

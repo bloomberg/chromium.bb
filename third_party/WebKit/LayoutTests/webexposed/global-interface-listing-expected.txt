@@ -3747,6 +3747,7 @@ interface PopStateEvent
     method constructor
 interface Presentation
     getter defaultRequest
+    getter receiver
     method constructor
     setter defaultRequest
 interface PresentationAvailability
@@ -3769,6 +3770,12 @@ interface PresentationConnection
 interface PresentationConnectionAvailableEvent
     getter connection
     method constructor
+interface PresentationReceiver
+    getter onconnectionavailable
+    method constructor
+    method getConnection
+    method getConnections
+    setter onconnectionavailable
 interface PresentationRequest
     getter onconnectionavailable
     method constructor

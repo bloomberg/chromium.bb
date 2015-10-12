@@ -11,6 +11,5 @@
     [MeasureAs=PresentationDefaultRequest] attribute PresentationRequest? defaultRequest;
 
     // This API is available on the receiving browsing context.
-    // TODO(mlamouri): implement PresentationReceiver, see https://crbug.com/525660
-    // [SameObject] readonly attribute PresentationReceiver? receiver;
+    [RuntimeEnabled=PresentationReceiver, SameObject] readonly attribute PresentationReceiver? receiver;
 };

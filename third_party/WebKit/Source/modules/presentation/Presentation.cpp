@@ -8,6 +8,7 @@
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
 #include "modules/presentation/PresentationController.h"
+#include "modules/presentation/PresentationReceiver.h"
 #include "modules/presentation/PresentationRequest.h"
 
 namespace blink {
@@ -32,6 +33,7 @@ Presentation* Presentation::create(LocalFrame* frame)
 DEFINE_TRACE(Presentation)
 {
     visitor->trace(m_defaultRequest);
+    visitor->trace(m_receiver);
     DOMWindowProperty::trace(visitor);
 }
 
@@ -51,6 +53,16 @@ void Presentation::setDefaultRequest(PresentationRequest* request)
     if (!controller)
         return;
     controller->setDefaultRequestUrl(request ? request->url() : KURL());
+}
+
+PresentationReceiver* Presentation::receiver()
+{
+    // TODO(mlamouri): only return something if the Blink instance is running in
+    // presentation receiver mode. The flag PresentationReceiver could be used
+    // for that.
+    if (!m_receiver)
+        m_receiver = new PresentationReceiver(frame());
+    return m_receiver;
 }
 
 } // namespace blink
