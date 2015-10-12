@@ -15,6 +15,7 @@
         'file_poller/file_poller.gyp:file_poller',
         'forwarder2/forwarder.gyp:forwarder2',
         'md5sum/md5sum.gyp:md5sum',
+        'memtrack_helper/memtrack_helper.gyp:memtrack_helper',
         'purge_ashmem/purge_ashmem.gyp:purge_ashmem',
         'run_pie/run_pie.gyp:run_pie',
         '../../tools/telemetry/telemetry.gyp:*#host',
@@ -42,6 +43,14 @@
       'type': 'none',
       'dependencies': [
         'memconsumer/memconsumer.gyp:memconsumer',
+      ],
+    },
+    {
+      # GN: //tools/android:memtrack_helper
+      'target_name': 'memtrack_helper',
+      'type': 'none',
+      'dependencies': [
+        'memtrack_helper/memtrack_helper.gyp:memtrack_helper',
       ],
     },
     {

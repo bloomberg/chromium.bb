@@ -12,6 +12,7 @@ group("android_tools") {
     "//tools/android/file_poller",
     "//tools/android/forwarder2",
     "//tools/android/md5sum",
+    "//tools/android/memtrack_helper:memtrack_helper",
     "//tools/android/purge_ashmem",
     "//tools/telemetry:bitmaptools($host_toolchain)",
   ]
