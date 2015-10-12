@@ -204,7 +204,10 @@ bool ShouldShowActionOnUI(
     const syncer::SyncProtocolError& error) {
   return (error.action != syncer::UNKNOWN_ACTION &&
           error.action != syncer::DISABLE_SYNC_ON_CLIENT &&
-          error.action != syncer::STOP_SYNC_FOR_DISABLED_ACCOUNT);
+          error.action != syncer::STOP_SYNC_FOR_DISABLED_ACCOUNT &&
+          error.action != syncer::DISABLE_SYNC_AND_ROLLBACK &&
+          error.action != syncer::ROLLBACK_DONE &&
+          error.action != syncer::RESET_LOCAL_SYNC_DATA);
 }
 
 ProfileSyncService::ProfileSyncService(
@@ -1396,6 +1399,10 @@ void ProfileSyncService::OnActionableError(const SyncProtocolError& error) {
       // restart.
       sync_disabled_by_admin_ = true;
       ShutdownImpl(syncer::DISABLE_SYNC);
+      break;
+    case syncer::RESET_LOCAL_SYNC_DATA:
+      ShutdownImpl(syncer::DISABLE_SYNC);
+      startup_controller_->TryStart();
       break;
     default:
       NOTREACHED();

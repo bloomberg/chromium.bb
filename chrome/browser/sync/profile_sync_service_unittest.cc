@@ -984,5 +984,22 @@ TEST_F(ProfileSyncServiceTest, PassphrasePromptDueToVersion) {
   EXPECT_TRUE(sync_prefs.IsPassphrasePrompted());
 }
 
+// Test that when ProfileSyncService receives actionable error
+// RESET_LOCAL_SYNC_DATA it restarts sync.
+TEST_F(ProfileSyncServiceTest, ResetSyncData) {
+  IssueTestTokens();
+  CreateService(browser_sync::AUTO_START);
+  // Backend should get initialized two times: once during initialization and
+  // once when handling actionable error.
+  ExpectDataTypeManagerCreation(2, GetDefaultConfigureCalledCallback());
+  ExpectSyncBackendHostCreation(2);
+  InitializeForNthSync();
+
+  syncer::SyncProtocolError client_cmd;
+  client_cmd.action = syncer::RESET_LOCAL_SYNC_DATA;
+  service()->OnActionableError(client_cmd);
+  EXPECT_EQ(ProfileSyncService::SYNC, service()->backend_mode());
+}
+
 }  // namespace
 }  // namespace browser_sync

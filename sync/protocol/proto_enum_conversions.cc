@@ -167,6 +167,7 @@ const char* GetErrorTypeString(sync_pb::SyncEnums::ErrorType error_type) {
     ENUM_CASE(sync_pb::SyncEnums, DISABLED_BY_ADMIN);
     ENUM_CASE(sync_pb::SyncEnums, USER_ROLLBACK);
     ENUM_CASE(sync_pb::SyncEnums, PARTIAL_FAILURE);
+    ENUM_CASE(sync_pb::SyncEnums, CLIENT_DATA_OBSOLETE);
     ENUM_CASE(sync_pb::SyncEnums, UNKNOWN);
   }
   NOTREACHED();

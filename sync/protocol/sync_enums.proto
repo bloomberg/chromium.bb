@@ -76,34 +76,39 @@ message SyncEnums {
   }
 
   enum ErrorType {
-    SUCCESS            = 0;
-    ACCESS_DENIED      = 1;   // Returned when the user doesn't have access to
-                              // store (instead of HTTP 401).
-    NOT_MY_BIRTHDAY    = 2;   // Returned when the server and client disagree on
-                              // the store birthday.
-    THROTTLED          = 3;   // Returned when the store has exceeded the
-                              // allowed bandwidth utilization.
-    AUTH_EXPIRED       = 4;   // Auth token or cookie has expired.
-    USER_NOT_ACTIVATED = 5;   // User doesn't have the Chrome bit set on that
-                              // Google Account.
-    AUTH_INVALID       = 6;   // Auth token or cookie is otherwise invalid.
-    CLEAR_PENDING      = 7;   // A clear of the user data is pending (e.g.
-                              // initiated by privacy request).  Client should
-                              // come back later.
-    TRANSIENT_ERROR    = 8;   // A transient error occured (eg. backend
-                              // timeout). Client should try again later.
-    MIGRATION_DONE     = 9;   // Migration has finished for one or more data
-                              // types.  Client should clear the cache for
-                              // these data types only and then re-sync with
-                              // a server.
-    DISABLED_BY_ADMIN = 10;   // An administrator disabled sync for this domain.
-    USER_ROLLBACK     = 11;   // Client told to stop syncing and roll back.
-    PARTIAL_FAILURE   = 12;   // Return when client want to update several data
-                              // types, but some of them failed(e.g. throttled).
-    UNKNOWN            = 100; // Unknown value. This should never be explicitly
-                              // used; it is the default value when an
-                              // out-of-date client parses a value it doesn't
-                              // recognize.
+    SUCCESS               = 0;
+    ACCESS_DENIED         = 1;  // Returned when the user doesn't have access to
+                                // store (instead of HTTP 401).
+    NOT_MY_BIRTHDAY       = 2;  // Returned when the server and client disagree
+                                // on the store birthday.
+    THROTTLED             = 3;  // Returned when the store has exceeded the
+                                // allowed bandwidth utilization.
+    AUTH_EXPIRED          = 4;  // Auth token or cookie has expired.
+    USER_NOT_ACTIVATED    = 5;  // User doesn't have the Chrome bit set on that
+                                // Google Account.
+    AUTH_INVALID          = 6;  // Auth token or cookie is otherwise invalid.
+    CLEAR_PENDING         = 7;  // A clear of the user data is pending (e.g.
+                                // initiated by privacy request).  Client should
+                                // come back later.
+    TRANSIENT_ERROR       = 8;  // A transient error occured (eg. backend
+                                // timeout). Client should try again later.
+    MIGRATION_DONE        = 9;  // Migration has finished for one or more data
+                                // types.  Client should clear the cache for
+                                // these data types only and then re-sync with
+                                // a server.
+    DISABLED_BY_ADMIN    = 10;  // An administrator disabled sync for this
+                                // domain.
+    USER_ROLLBACK        = 11;  // Client told to stop syncing and roll back.
+    PARTIAL_FAILURE      = 12;  // Return when client want to update several
+                                // data types, but some of them failed(e.g.
+                                // throttled).
+    CLIENT_DATA_OBSOLETE = 13;  // Returned when server detects that this
+                                // client's data is obsolete. Client should
+                                // reset local data and restart syncing.
+    UNKNOWN             = 100;  // Unknown value. This should never be
+                                // explicitly used; it is the default value when
+                                // an out-of-date client parses a value it
+                                // doesn't recognize.
   }
 
   enum Action {

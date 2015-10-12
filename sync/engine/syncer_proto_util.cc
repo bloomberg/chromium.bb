@@ -105,7 +105,7 @@ SyncerError ServerConnectionErrorAsSyncerError(
   }
 }
 
-SyncProtocolErrorType ConvertSyncProtocolErrorTypePBToLocalType(
+SyncProtocolErrorType PBErrorTypeToSyncProtocolErrorType(
     const sync_pb::SyncEnums::ErrorType& error_type) {
   switch (error_type) {
     case sync_pb::SyncEnums::SUCCESS:
@@ -126,6 +126,8 @@ SyncProtocolErrorType ConvertSyncProtocolErrorTypePBToLocalType(
       return USER_ROLLBACK;
     case sync_pb::SyncEnums::PARTIAL_FAILURE:
       return PARTIAL_FAILURE;
+    case sync_pb::SyncEnums::CLIENT_DATA_OBSOLETE:
+      return CLIENT_DATA_OBSOLETE;
     case sync_pb::SyncEnums::UNKNOWN:
       return UNKNOWN_ERROR;
     case sync_pb::SyncEnums::USER_NOT_ACTIVATED:
@@ -138,8 +140,7 @@ SyncProtocolErrorType ConvertSyncProtocolErrorTypePBToLocalType(
   }
 }
 
-ClientAction ConvertClientActionPBToLocalClientAction(
-    const sync_pb::SyncEnums::Action& action) {
+ClientAction PBActionToClientAction(const sync_pb::SyncEnums::Action& action) {
   switch (action) {
     case sync_pb::SyncEnums::UPGRADE_CLIENT:
       return UPGRADE_CLIENT;
@@ -159,6 +160,47 @@ ClientAction ConvertClientActionPBToLocalClientAction(
   }
 }
 
+// Returns true iff |message| is an initial GetUpdates request.
+bool IsVeryFirstGetUpdates(const ClientToServerMessage& message) {
+  if (!message.has_get_updates())
+    return false;
+  DCHECK_LT(0, message.get_updates().from_progress_marker_size());
+  for (int i = 0; i < message.get_updates().from_progress_marker_size(); ++i) {
+    if (!message.get_updates().from_progress_marker(i).token().empty())
+      return false;
+  }
+  return true;
+}
+
+// Returns true iff |message| should contain a store birthday.
+bool IsBirthdayRequired(const ClientToServerMessage& message) {
+  if (message.has_clear_server_data())
+    return false;
+  if (message.has_commit())
+    return true;
+  if (message.has_get_updates())
+    return !IsVeryFirstGetUpdates(message);
+  NOTIMPLEMENTED();
+  return true;
+}
+
+SyncProtocolError ErrorCodeToSyncProtocolError(
+    const sync_pb::SyncEnums::ErrorType& error_type) {
+  SyncProtocolError error;
+  error.error_type = PBErrorTypeToSyncProtocolErrorType(error_type);
+  if (error_type == sync_pb::SyncEnums::CLEAR_PENDING ||
+      error_type == sync_pb::SyncEnums::NOT_MY_BIRTHDAY) {
+    error.action = DISABLE_SYNC_ON_CLIENT;
+  } else if (error_type == sync_pb::SyncEnums::CLIENT_DATA_OBSOLETE) {
+    error.action = RESET_LOCAL_SYNC_DATA;
+  } else if (error_type == sync_pb::SyncEnums::DISABLED_BY_ADMIN) {
+    error.action = STOP_SYNC_FOR_DISABLED_ACCOUNT;
+  } else if (error_type == sync_pb::SyncEnums::USER_ROLLBACK) {
+    error.action = DISABLE_SYNC_AND_ROLLBACK;
+  }  // There is no other action we can compute for legacy server.
+  return error;
+}
+
 }  // namespace
 
 ModelTypeSet GetTypesToMigrate(const ClientToServerResponse& response) {
@@ -175,15 +217,14 @@ ModelTypeSet GetTypesToMigrate(const ClientToServerResponse& response) {
   return to_migrate;
 }
 
-SyncProtocolError ConvertErrorPBToLocalType(
+SyncProtocolError ConvertErrorPBToSyncProtocolError(
     const sync_pb::ClientToServerResponse_Error& error) {
   SyncProtocolError sync_protocol_error;
-  sync_protocol_error.error_type = ConvertSyncProtocolErrorTypePBToLocalType(
-      error.error_type());
+  sync_protocol_error.error_type =
+      PBErrorTypeToSyncProtocolErrorType(error.error_type());
   sync_protocol_error.error_description = error.error_description();
   sync_protocol_error.url = error.url();
-  sync_protocol_error.action = ConvertClientActionPBToLocalClientAction(
-      error.action());
+  sync_protocol_error.action = PBActionToClientAction(error.action());
 
   if (error.error_data_type_ids_size() > 0) {
     // THROTTLED and PARTIAL_FAILURE are currently the only error codes
@@ -241,6 +282,36 @@ bool SyncerProtoUtil::IsSyncDisabledByAdmin(
     const sync_pb::ClientToServerResponse& response) {
   return (response.has_error_code() &&
           response.error_code() == sync_pb::SyncEnums::DISABLED_BY_ADMIN);
+}
+
+// static
+SyncProtocolError SyncerProtoUtil::GetProtocolErrorFromResponse(
+    const sync_pb::ClientToServerResponse& response,
+    syncable::Directory* dir) {
+  SyncProtocolError sync_protocol_error;
+
+  // The DISABLED_BY_ADMIN error overrides other errors sent by the server.
+  if (IsSyncDisabledByAdmin(response)) {
+    sync_protocol_error.error_type = DISABLED_BY_ADMIN;
+    sync_protocol_error.action = STOP_SYNC_FOR_DISABLED_ACCOUNT;
+  } else if (!VerifyResponseBirthday(response, dir)) {
+    // If sync isn't disabled, first check for a birthday mismatch error.
+    if (response.error_code() == sync_pb::SyncEnums::CLIENT_DATA_OBSOLETE) {
+      // Server indicates that client needs to reset sync data.
+      sync_protocol_error.error_type = CLIENT_DATA_OBSOLETE;
+      sync_protocol_error.action = RESET_LOCAL_SYNC_DATA;
+    } else {
+      sync_protocol_error.error_type = NOT_MY_BIRTHDAY;
+      sync_protocol_error.action = DISABLE_SYNC_ON_CLIENT;
+    }
+  } else if (response.has_error()) {
+    // This is a new server. Just get the error from the protocol.
+    sync_protocol_error = ConvertErrorPBToSyncProtocolError(response.error());
+  } else {
+    // Legacy server implementation. Compute the error based on |error_code|.
+    sync_protocol_error = ErrorCodeToSyncProtocolError(response.error_code());
+  }
+  return sync_protocol_error;
 }
 
 // static
@@ -312,50 +383,6 @@ base::TimeDelta SyncerProtoUtil::GetThrottleDelay(
   return throttle_delay;
 }
 
-namespace {
-
-// Returns true iff |message| is an initial GetUpdates request.
-bool IsVeryFirstGetUpdates(const ClientToServerMessage& message) {
-  if (!message.has_get_updates())
-    return false;
-  DCHECK_LT(0, message.get_updates().from_progress_marker_size());
-  for (int i = 0; i < message.get_updates().from_progress_marker_size(); ++i) {
-    if (!message.get_updates().from_progress_marker(i).token().empty())
-      return false;
-  }
-  return true;
-}
-
-// Returns true iff |message| should contain a store birthday.
-bool IsBirthdayRequired(const ClientToServerMessage& message) {
-  if (message.has_clear_server_data())
-    return false;
-  if (message.has_commit())
-    return true;
-  if (message.has_get_updates())
-    return !IsVeryFirstGetUpdates(message);
-  NOTIMPLEMENTED();
-  return true;
-}
-
-// TODO(lipalani) : Rename these function names as per the CR for issue 7740067.
-SyncProtocolError ConvertLegacyErrorCodeToNewError(
-    const sync_pb::SyncEnums::ErrorType& error_type) {
-  SyncProtocolError error;
-  error.error_type = ConvertSyncProtocolErrorTypePBToLocalType(error_type);
-  if (error_type == sync_pb::SyncEnums::CLEAR_PENDING ||
-      error_type == sync_pb::SyncEnums::NOT_MY_BIRTHDAY) {
-    error.action = DISABLE_SYNC_ON_CLIENT;
-  } else if (error_type == sync_pb::SyncEnums::DISABLED_BY_ADMIN) {
-    error.action = STOP_SYNC_FOR_DISABLED_ACCOUNT;
-  } else if (error_type == sync_pb::SyncEnums::USER_ROLLBACK) {
-    error.action = DISABLE_SYNC_AND_ROLLBACK;
-  } // There is no other action we can compute for legacy server.
-  return error;
-}
-
-}  // namespace
-
 // static
 SyncerError SyncerProtoUtil::PostClientToServerMessage(
     ClientToServerMessage* msg,
@@ -395,24 +422,8 @@ SyncerError SyncerProtoUtil::PostClientToServerMessage(
   // Persist a bag of chips if it has been sent by the server.
   PersistBagOfChips(dir, *response);
 
-  SyncProtocolError sync_protocol_error;
-
-  // The DISABLED_BY_ADMIN error overrides other errors sent by the server.
-  if (IsSyncDisabledByAdmin(*response)) {
-    sync_protocol_error.error_type = DISABLED_BY_ADMIN;
-    sync_protocol_error.action = STOP_SYNC_FOR_DISABLED_ACCOUNT;
-  } else if (!VerifyResponseBirthday(*response, dir)) {
-    // If sync isn't disabled, first check for a birthday mismatch error.
-    sync_protocol_error.error_type = NOT_MY_BIRTHDAY;
-    sync_protocol_error.action = DISABLE_SYNC_ON_CLIENT;
-  } else if (response->has_error()) {
-    // This is a new server. Just get the error from the protocol.
-    sync_protocol_error = ConvertErrorPBToLocalType(response->error());
-  } else {
-    // Legacy server implementation. Compute the error based on |error_code|.
-    sync_protocol_error = ConvertLegacyErrorCodeToNewError(
-        response->error_code());
-  }
+  SyncProtocolError sync_protocol_error =
+      GetProtocolErrorFromResponse(*response, dir);
 
   // Inform the delegate of the error we got.
   session->delegate()->OnSyncProtocolError(sync_protocol_error);
@@ -517,6 +528,8 @@ SyncerError SyncerProtoUtil::PostClientToServerMessage(
         *partial_failure_data_types = sync_protocol_error.error_data_types;
       }
       return SERVER_RETURN_PARTIAL_FAILURE;
+    case CLIENT_DATA_OBSOLETE:
+      return SERVER_RETURN_CLIENT_DATA_OBSOLETE;
     default:
       NOTREACHED();
       return UNSET;

@@ -53,6 +53,7 @@ bool ShouldRequestEarlyExit(const SyncProtocolError& error) {
     case TRANSIENT_ERROR:
       return false;
     case NOT_MY_BIRTHDAY:
+    case CLIENT_DATA_OBSOLETE:
     case CLEAR_PENDING:
     case DISABLED_BY_ADMIN:
     case USER_ROLLBACK:

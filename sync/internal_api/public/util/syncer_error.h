@@ -32,6 +32,7 @@ enum SyncerError {
   SERVER_RETURN_DISABLED_BY_ADMIN,
   SERVER_RETURN_USER_ROLLBACK,
   SERVER_RETURN_PARTIAL_FAILURE,
+  SERVER_RETURN_CLIENT_DATA_OBSOLETE,
 
   // A datatype decided the sync cycle needed to be performed again.
   DATATYPE_TRIGGERED_RETRY,
