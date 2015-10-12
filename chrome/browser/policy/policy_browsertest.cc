@@ -1838,14 +1838,13 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallForcelist) {
   policies.Set(key::kExtensionInstallForcelist, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, forcelist.DeepCopy(),
                nullptr);
-  content::WindowedNotificationObserver observer(
-      extensions::NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED,
-      content::NotificationService::AllSources());
+  extensions::TestExtensionRegistryObserver observer(
+      extensions::ExtensionRegistry::Get(browser()->profile()));
   UpdateProviderPolicy(policies);
-  observer.Wait();
+  observer.WaitForExtensionWillBeInstalled();
   // Note: Cannot check that the notification details match the expected
   // exception, since the details object has already been freed prior to
-  // the completion of observer.Wait().
+  // the completion of observer.WaitForExtensionWillBeInstalled().
 
   EXPECT_TRUE(service->GetExtensionById(kGoodCrxId, true));
 
@@ -1876,11 +1875,10 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallForcelist) {
   extensions::ExtensionUpdater* updater = service->updater();
   extensions::ExtensionUpdater::CheckParams params;
   params.install_immediately = true;
-  content::WindowedNotificationObserver update_observer(
-      extensions::NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED,
-      content::NotificationService::AllSources());
+  extensions::TestExtensionRegistryObserver update_observer(
+      extensions::ExtensionRegistry::Get(browser()->profile()));
   updater->CheckNow(params);
-  update_observer.Wait();
+  update_observer.WaitForExtensionWillBeInstalled();
 
   const base::Version* new_version =
       service->GetExtensionById(kGoodCrxId, true)->version();
@@ -1959,11 +1957,10 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionRecommendedInstallationMode) {
                POLICY_SOURCE_CLOUD,
                dict_value.DeepCopy(),
                NULL);
-  content::WindowedNotificationObserver observer(
-      extensions::NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED,
-      content::NotificationService::AllSources());
+  extensions::TestExtensionRegistryObserver observer(
+      extensions::ExtensionRegistry::Get(browser()->profile()));
   UpdateProviderPolicy(policies);
-  observer.Wait();
+  observer.WaitForExtensionWillBeInstalled();
 
   EXPECT_TRUE(service->GetExtensionById(kGoodCrxId, true));
 
@@ -2053,14 +2050,13 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, MAYBE_ExtensionInstallSources) {
                install_sources.DeepCopy(), nullptr);
   UpdateProviderPolicy(policies);
 
-  content::WindowedNotificationObserver observer(
-      extensions::NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED,
-      content::NotificationService::AllSources());
+  extensions::TestExtensionRegistryObserver observer(
+      extensions::ExtensionRegistry::Get(browser()->profile()));
   PerformClick(1, 0);
-  observer.Wait();
+  observer.WaitForExtensionWillBeInstalled();
   // Note: Cannot check that the notification details match the expected
   // exception, since the details object has already been freed prior to
-  // the completion of observer.Wait().
+  // the completion of observer.WaitForExtensionWillBeInstalled().
 
   // The first extension shouldn't be present, the second should be there.
   EXPECT_FALSE(extension_service()->GetExtensionById(kGoodCrxId, true));
@@ -2125,11 +2121,10 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionMinimumVersionRequired) {
   // via the update URL in the manifest of the older version.
   EXPECT_EQ(1u, interceptor.GetPendingSize());
   {
-    content::WindowedNotificationObserver update_observer(
-        extensions::NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED,
-        content::NotificationService::AllSources());
+    extensions::TestExtensionRegistryObserver update_observer(
+        extensions::ExtensionRegistry::Get(browser()->profile()));
     service->updater()->CheckSoon();
-    update_observer.Wait();
+    update_observer.WaitForExtensionWillBeInstalled();
   }
   EXPECT_EQ(0u, interceptor.GetPendingSize());
 
@@ -2178,9 +2173,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionMinimumVersionRequiredAlt) {
   // An extension management policy update should trigger an update as well.
   EXPECT_EQ(1u, interceptor.GetPendingSize());
   {
-    content::WindowedNotificationObserver update_observer(
-        extensions::NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED,
-        content::NotificationService::AllSources());
+    extensions::TestExtensionRegistryObserver update_observer(
+        extensions::ExtensionRegistry::Get(browser()->profile()));
     {
       // Set a higher minimum version, just intend to trigger a policy update.
       extensions::ExtensionManagementPolicyUpdater management_policy(
@@ -2188,7 +2182,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionMinimumVersionRequiredAlt) {
       management_policy.SetMinimumVersionRequired(kGoodCrxId, "1.0.0.3");
     }
     base::RunLoop().RunUntilIdle();
-    update_observer.Wait();
+    update_observer.WaitForExtensionWillBeInstalled();
   }
   EXPECT_EQ(0u, interceptor.GetPendingSize());
 
@@ -2226,9 +2220,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionMinimumVersionForceInstalled) {
 
   // Set policy to force-install the extension, it should be installed and
   // enabled.
-  content::WindowedNotificationObserver install_observer(
-      extensions::NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED,
-      content::NotificationService::AllSources());
+  extensions::TestExtensionRegistryObserver install_observer(
+      extensions::ExtensionRegistry::Get(browser()->profile()));
   EXPECT_FALSE(registry->enabled_extensions().Contains(kGoodCrxId));
   {
     extensions::ExtensionManagementPolicyUpdater management_policy(&provider_);
@@ -2236,7 +2229,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionMinimumVersionForceInstalled) {
                                                           url.spec(), true);
   }
   base::RunLoop().RunUntilIdle();
-  install_observer.Wait();
+  install_observer.WaitForExtensionWillBeInstalled();
 
   EXPECT_TRUE(registry->enabled_extensions().Contains(kGoodCrxId));
 
