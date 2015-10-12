@@ -47,6 +47,7 @@ class GFX_EXPORT Size {
   void set_width(int width) { width_ = width < 0 ? 0 : width; }
   void set_height(int height) { height_ = height < 0 ? 0 : height; }
 
+  // This call will CHECK if the area of this size would overflow int.
   int GetArea() const;
 
   void SetSize(int width, int height) {

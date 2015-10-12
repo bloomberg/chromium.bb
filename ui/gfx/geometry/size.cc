@@ -12,6 +12,7 @@
 #include <ApplicationServices/ApplicationServices.h>
 #endif
 
+#include "base/numerics/safe_math.h"
 #include "base/strings/stringprintf.h"
 #include "ui/gfx/geometry/size_conversions.h"
 
@@ -44,7 +45,9 @@ CGSize Size::ToCGSize() const {
 #endif
 
 int Size::GetArea() const {
-  return width() * height();
+  base::CheckedNumeric<int> checked_area = width();
+  checked_area *= height();
+  return checked_area.ValueOrDie();
 }
 
 void Size::Enlarge(int grow_width, int grow_height) {
