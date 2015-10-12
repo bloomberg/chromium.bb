@@ -90,7 +90,7 @@ class SCHEDULER_EXPORT TaskQueueImpl final : public TaskQueue {
                        const Task* previous_task);
   Task TakeTaskFromWorkQueue();
 
-  std::queue<Task>& work_queue() { return work_queue_; }
+  std::queue<Task>& work_queue() { return main_thread_only().work_queue; }
 
   WakeupPolicy wakeup_policy() const {
     DCHECK(main_thread_checker_.CalledOnValidThread());
@@ -101,9 +101,13 @@ class SCHEDULER_EXPORT TaskQueueImpl final : public TaskQueue {
 
   void AsValueInto(base::trace_event::TracedValue* state) const;
 
-  size_t get_task_queue_set_index() const { return set_index_; }
+  size_t get_task_queue_set_index() const {
+    return main_thread_only().set_index;
+  }
 
-  void set_task_queue_set_index(size_t set_index) { set_index_ = set_index; }
+  void set_task_queue_set_index(size_t set_index) {
+    main_thread_only().set_index = set_index;
+  }
 
   // If the work queue isn't empty, |enqueue_order| gets set to the enqueue
   // order of the front task and the function returns true.  Otherwise the
@@ -111,13 +115,16 @@ class SCHEDULER_EXPORT TaskQueueImpl final : public TaskQueue {
   bool GetWorkQueueFrontTaskEnqueueOrder(int* enqueue_order) const;
 
   bool GetQuiescenceMonitored() const { return should_monitor_quiescence_; }
-  bool GetShouldNotifyObservers() const { return should_notify_observers_; }
+  bool GetShouldNotifyObservers() const {
+    return should_notify_observers_;
+  }
 
   void NotifyWillProcessTask(const base::PendingTask& pending_task);
   void NotifyDidProcessTask(const base::PendingTask& pending_task);
 
-  // Delayed task posted to the underlying run loop, which locks |lock_| and
-  // calls MoveReadyDelayedTasksToIncomingQueueLocked to process dealyed tasks
+  // Delayed task posted to the underlying run loop, which locks
+  // |any_thread_lock_| and calls MoveReadyDelayedTasksToIncomingQueueLocked to
+  // process dealyed tasks
   // that need to be run now.  Thread safe, but in practice it's always called
   // from the main thread.
   void MoveReadyDelayedTasksToIncomingQueue(LazyNow* lazy_now);
@@ -125,7 +132,9 @@ class SCHEDULER_EXPORT TaskQueueImpl final : public TaskQueue {
   // Test support functions.  These should not be used in production code.
   void PushTaskOntoWorkQueueForTest(const Task& task);
   void PopTaskFromWorkQueueForTest();
-  size_t WorkQueueSizeForTest() const { return work_queue_.size(); }
+  size_t WorkQueueSizeForTest() const {
+    return main_thread_only().work_queue.size();
+  }
 
   // Can be called on any thread.
   static const char* PumpPolicyToString(TaskQueue::PumpPolicy pump_policy);
@@ -143,6 +152,33 @@ class SCHEDULER_EXPORT TaskQueueImpl final : public TaskQueue {
     NON_NESTABLE,
   };
 
+  struct AnyThread {
+    AnyThread(TaskQueueManager* task_queue_manager, PumpPolicy pump_policy);
+    ~AnyThread();
+
+    // TaskQueueManager is maintained in two copies: inside AnyThread and inside
+    // MainThreadOnly. It can be changed only from main thread, so it should be
+    // locked before accessing from other threads.
+    TaskQueueManager* task_queue_manager;
+
+    std::queue<Task> incoming_queue;
+    PumpPolicy pump_policy;
+    std::priority_queue<Task> delayed_task_queue;
+  };
+
+  struct MainThreadOnly {
+    explicit MainThreadOnly(TaskQueueManager* task_queue_manager);
+    ~MainThreadOnly();
+
+    // Another copy of TaskQueueManager for lock-free access from the main
+    // thread. See description inside struct AnyThread for details.
+    TaskQueueManager* task_queue_manager;
+
+    std::queue<Task> work_queue;
+    base::ObserverList<base::MessageLoop::TaskObserver> task_observers;
+    size_t set_index;
+  };
+
   ~TaskQueueImpl() override;
 
   bool PostDelayedTaskImpl(const tracked_objects::Location& from_here,
@@ -157,7 +193,7 @@ class SCHEDULER_EXPORT TaskQueueImpl final : public TaskQueue {
 
   // Enqueues any delayed tasks which should be run now on the incoming_queue_
   // and calls ScheduleDelayedWorkLocked to ensure future tasks are scheduled.
-  // Must be called with |lock_| locked.
+  // Must be called with |any_thread_lock_| locked.
   void MoveReadyDelayedTasksToIncomingQueueLocked(LazyNow* lazy_now);
 
   void PumpQueueLocked();
@@ -182,26 +218,37 @@ class SCHEDULER_EXPORT TaskQueueImpl final : public TaskQueue {
   static void TaskAsValueInto(const Task& task,
                               base::trace_event::TracedValue* state);
 
-  // This lock protects all members in the contigious block below.
-  // TODO(alexclarke): Group all the members protected by the lock into a struct
-  mutable base::Lock lock_;
-  base::PlatformThreadId thread_id_;
-  TaskQueueManager* task_queue_manager_;
-  std::queue<Task> incoming_queue_;
-  PumpPolicy pump_policy_;
-  std::priority_queue<Task> delayed_task_queue_;
+  const base::PlatformThreadId thread_id_;
+
+  mutable base::Lock any_thread_lock_;
+  AnyThread any_thread_;
+  struct AnyThread& any_thread() {
+    any_thread_lock_.AssertAcquired();
+    return any_thread_;
+  }
+  const struct AnyThread& any_thread() const {
+    any_thread_lock_.AssertAcquired();
+    return any_thread_;
+  }
 
   const char* name_;
   const char* disabled_by_default_tracing_category_;
   const char* disabled_by_default_verbose_tracing_category_;
 
   base::ThreadChecker main_thread_checker_;
-  std::queue<Task> work_queue_;
-  base::ObserverList<base::MessageLoop::TaskObserver> task_observers_;
-  WakeupPolicy wakeup_policy_;
-  size_t set_index_;
-  bool should_monitor_quiescence_;
-  bool should_notify_observers_;
+  MainThreadOnly main_thread_only_;
+  MainThreadOnly& main_thread_only() {
+    DCHECK(main_thread_checker_.CalledOnValidThread());
+    return main_thread_only_;
+  }
+  const MainThreadOnly& main_thread_only() const {
+    DCHECK(main_thread_checker_.CalledOnValidThread());
+    return main_thread_only_;
+  }
+
+  const WakeupPolicy wakeup_policy_;
+  const bool should_monitor_quiescence_;
+  const bool should_notify_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskQueueImpl);
 };
