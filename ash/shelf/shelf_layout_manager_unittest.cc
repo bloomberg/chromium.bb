@@ -115,7 +115,7 @@ class ShelfAnimationWaiter : views::WidgetObserver {
     ++animation_steps_;
     if (IsDoneAnimating()) {
       done_waiting_ = true;
-      base::MessageLoop::current()->Quit();
+      base::MessageLoop::current()->QuitWhenIdle();
     }
   }
 

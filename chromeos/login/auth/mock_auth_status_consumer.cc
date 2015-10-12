@@ -19,59 +19,59 @@ MockAuthStatusConsumer::~MockAuthStatusConsumer() {
 // static
 void MockAuthStatusConsumer::OnRetailModeSuccessQuit(
     const UserContext& user_context) {
-  base::MessageLoop::current()->Quit();
+  base::MessageLoop::current()->QuitWhenIdle();
 }
 
 // static
 void MockAuthStatusConsumer::OnRetailModeSuccessQuitAndFail(
     const UserContext& user_context) {
   ADD_FAILURE() << "Retail mode login should have failed!";
-  base::MessageLoop::current()->Quit();
+  base::MessageLoop::current()->QuitWhenIdle();
 }
 
 // static
 void MockAuthStatusConsumer::OnGuestSuccessQuit() {
-  base::MessageLoop::current()->Quit();
+  base::MessageLoop::current()->QuitWhenIdle();
 }
 
 // static
 void MockAuthStatusConsumer::OnGuestSuccessQuitAndFail() {
   ADD_FAILURE() << "Guest login should have failed!";
-  base::MessageLoop::current()->Quit();
+  base::MessageLoop::current()->QuitWhenIdle();
 }
 
 // static
 void MockAuthStatusConsumer::OnSuccessQuit(const UserContext& user_context) {
-  base::MessageLoop::current()->Quit();
+  base::MessageLoop::current()->QuitWhenIdle();
 }
 
 // static
 void MockAuthStatusConsumer::OnSuccessQuitAndFail(
     const UserContext& user_context) {
   ADD_FAILURE() << "Login should NOT have succeeded!";
-  base::MessageLoop::current()->Quit();
+  base::MessageLoop::current()->QuitWhenIdle();
 }
 
 // static
 void MockAuthStatusConsumer::OnFailQuit(const AuthFailure& error) {
-  base::MessageLoop::current()->Quit();
+  base::MessageLoop::current()->QuitWhenIdle();
 }
 
 // static
 void MockAuthStatusConsumer::OnFailQuitAndFail(const AuthFailure& error) {
   ADD_FAILURE() << "Login should not have failed!";
-  base::MessageLoop::current()->Quit();
+  base::MessageLoop::current()->QuitWhenIdle();
 }
 
 // static
 void MockAuthStatusConsumer::OnMigrateQuit() {
-  base::MessageLoop::current()->Quit();
+  base::MessageLoop::current()->QuitWhenIdle();
 }
 
 // static
 void MockAuthStatusConsumer::OnMigrateQuitAndFail() {
   ADD_FAILURE() << "Should not have detected a PW change!";
-  base::MessageLoop::current()->Quit();
+  base::MessageLoop::current()->QuitWhenIdle();
 }
 
 }  // namespace chromeos

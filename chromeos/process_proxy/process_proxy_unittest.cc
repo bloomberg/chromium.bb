@@ -79,7 +79,7 @@ class RegistryTestRunner : public TestRunner {
 
     if (!valid || TestSucceeded()) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::MessageLoop::QuitClosure());
+          FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
     }
   }
 
@@ -142,7 +142,7 @@ class RegistryNotifiedOnProcessExitTestRunner : public TestRunner {
     }
     EXPECT_EQ("exit", type);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::MessageLoop::QuitClosure());
+        FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
   }
 
   void StartRegistryTest(ProcessProxyRegistry* registry) override {
@@ -167,7 +167,7 @@ class SigIntTestRunner : public TestRunner {
     // eventually received exit event.
     if (type == "exit") {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::MessageLoop::QuitClosure());
+          FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
     }
   }
 
@@ -211,7 +211,7 @@ class ProcessProxyTest : public testing::Test {
     registry_->ShutDown();
 
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::MessageLoop::QuitClosure());
+        FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
   }
 
   void RunTest() {

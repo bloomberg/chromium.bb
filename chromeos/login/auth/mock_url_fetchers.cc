@@ -40,7 +40,9 @@ void ExpectCanceledFetcher::Start() {
 
 void ExpectCanceledFetcher::CompleteFetch() {
   ADD_FAILURE() << "Fetch completed in ExpectCanceledFetcher!";
-  base::MessageLoop::current()->Quit();  // Allow exiting even if we mess up.
+
+  // Allow exiting even if we mess up.
+  base::MessageLoop::current()->QuitWhenIdle();
 }
 
 GotCanceledFetcher::GotCanceledFetcher(

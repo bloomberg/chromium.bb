@@ -157,7 +157,7 @@ class TestPairingDelegate : public BluetoothDevice::PairingDelegate {
   void QuitMessageLoop() {
     if (base::MessageLoop::current() &&
         base::MessageLoop::current()->is_running()) {
-      base::MessageLoop::current()->Quit();
+      base::MessageLoop::current()->QuitWhenIdle();
     }
   }
 };
@@ -354,7 +354,7 @@ class BluetoothChromeOSTest : public testing::Test {
   void QuitMessageLoop() {
     if (base::MessageLoop::current() &&
         base::MessageLoop::current()->is_running()) {
-      base::MessageLoop::current()->Quit();
+      base::MessageLoop::current()->QuitWhenIdle();
     }
   }
 };

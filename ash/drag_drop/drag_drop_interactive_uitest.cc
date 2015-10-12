@@ -82,7 +82,7 @@ views::Widget* CreateWidget(views::View* contents_view,
 }
 
 void QuitLoop() {
-  base::MessageLoop::current()->Quit();
+  base::MessageLoop::current()->QuitWhenIdle();
 }
 
 void DragDropAcrossMultiDisplay_Step4() {

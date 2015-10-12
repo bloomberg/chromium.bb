@@ -100,7 +100,7 @@ class BluetoothSocketChromeOSTest : public testing::Test {
 
   void SuccessCallback() {
     ++success_callback_count_;
-    message_loop_.Quit();
+    message_loop_.QuitWhenIdle();
   }
 
   void ErrorCallback(const std::string& message) {
@@ -108,21 +108,21 @@ class BluetoothSocketChromeOSTest : public testing::Test {
     last_message_ = message;
 
     if (message_loop_.is_running())
-      message_loop_.Quit();
+      message_loop_.QuitWhenIdle();
   }
 
   void ConnectToServiceSuccessCallback(scoped_refptr<BluetoothSocket> socket) {
     ++success_callback_count_;
     last_socket_ = socket;
 
-    message_loop_.Quit();
+    message_loop_.QuitWhenIdle();
   }
 
   void SendSuccessCallback(int bytes_sent) {
     ++success_callback_count_;
     last_bytes_sent_ = bytes_sent;
 
-    message_loop_.Quit();
+    message_loop_.QuitWhenIdle();
   }
 
   void ReceiveSuccessCallback(int bytes_received,
@@ -131,7 +131,7 @@ class BluetoothSocketChromeOSTest : public testing::Test {
     last_bytes_received_ = bytes_received;
     last_io_buffer_ = io_buffer;
 
-    message_loop_.Quit();
+    message_loop_.QuitWhenIdle();
   }
 
   void ReceiveErrorCallback(BluetoothSocket::ErrorReason reason,
@@ -140,7 +140,7 @@ class BluetoothSocketChromeOSTest : public testing::Test {
     last_reason_ = reason;
     last_message_ = error_message;
 
-    message_loop_.Quit();
+    message_loop_.QuitWhenIdle();
   }
 
   void CreateServiceSuccessCallback(scoped_refptr<BluetoothSocket> socket) {
@@ -148,7 +148,7 @@ class BluetoothSocketChromeOSTest : public testing::Test {
     last_socket_ = socket;
 
     if (message_loop_.is_running())
-      message_loop_.Quit();
+      message_loop_.QuitWhenIdle();
   }
 
   void AcceptSuccessCallback(const BluetoothDevice* device,
@@ -157,7 +157,7 @@ class BluetoothSocketChromeOSTest : public testing::Test {
     last_device_ = device;
     last_socket_ = socket;
 
-    message_loop_.Quit();
+    message_loop_.QuitWhenIdle();
   }
 
   void ImmediateSuccessCallback() {

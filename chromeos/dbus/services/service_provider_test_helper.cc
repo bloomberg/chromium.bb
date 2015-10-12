@@ -158,7 +158,7 @@ void ServiceProviderTestHelper::OnResponse(
   response_ = response.Pass();
   response_received_ = true;
   if (base::MessageLoop::current()->is_running())
-    base::MessageLoop::current()->Quit();
+    base::MessageLoop::current()->QuitWhenIdle();
 }
 
 }  // namespace chromeos

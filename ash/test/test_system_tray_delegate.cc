@@ -95,7 +95,7 @@ bool TestSystemTrayDelegate::GetSessionLengthLimit(
 }
 
 void TestSystemTrayDelegate::SignOut() {
-  base::MessageLoop::current()->Quit();
+  base::MessageLoop::current()->QuitWhenIdle();
 }
 
 }  // namespace test
