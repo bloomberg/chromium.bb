@@ -335,6 +335,10 @@
         '../components/components.gyp:metrics_gpu',
         '../components/components.gyp:metrics_net',
         '../components/components.gyp:metrics_profiler',
+
+        # TODO(gfhuang): Eliminate this dependency if ScreenInfoMetricsProvider
+        # isn't needed. crbug.com/541577
+        '../components/components.gyp:metrics_ui',
         '../content/content.gyp:content',
         '../content/content.gyp:content_app_both',
         '../skia/skia.gyp:skia',

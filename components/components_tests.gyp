@@ -333,7 +333,6 @@
       'metrics/call_stack_profile_metrics_provider_unittest.cc',
       'metrics/daily_event_unittest.cc',
       'metrics/drive_metrics_provider_unittest.cc',
-      'metrics/gpu/gpu_metrics_provider_unittest.cc',
       'metrics/histogram_encoder_unittest.cc',
       'metrics/machine_id_provider_win_unittest.cc',
       'metrics/metrics_hashes_unittest.cc',
@@ -347,6 +346,7 @@
       'metrics/profiler/profiler_metrics_provider_unittest.cc',
       'metrics/profiler/tracking_synchronizer_unittest.cc',
       'metrics/stability_metrics_helper_unittest.cc',
+      'metrics/ui/screen_info_metrics_provider_unittest.cc',
     ],
     'mime_util_unittest_sources': [
       'mime_util/mime_util_unittest.cc',
@@ -959,6 +959,7 @@
         'components.gyp:metrics',
         'components.gyp:metrics_net',
         'components.gyp:metrics_test_support',
+        'components.gyp:metrics_ui',
         'components.gyp:net_log',
         'components.gyp:network_time',
         'components.gyp:offline_pages',

@@ -122,6 +122,23 @@
       ],
     },
     {
+      # GN version: //components/metrics:ui
+      'target_name': 'metrics_ui',
+      'type': 'static_library',
+      'include_dirs': [
+        '..',
+      ],
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../ui/gfx/gfx.gyp:gfx',
+        'metrics',
+      ],
+      'sources': [
+        'metrics/ui/screen_info_metrics_provider.cc',
+        'metrics/ui/screen_info_metrics_provider.h',
+      ],
+    },
+    {
       # Protobuf compiler / generator for UMA (User Metrics Analysis).
       #
       # GN version: //components/metrics/proto:proto
@@ -201,7 +218,6 @@
           'dependencies': [
             '../base/base.gyp:base',
             '../content/content.gyp:content_browser',
-            '../ui/gfx/gfx.gyp:gfx',
             'component_metrics_proto',
             'metrics',
           ],

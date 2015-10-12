@@ -97,7 +97,6 @@ if (!is_ios) {
       "//base",
       "//content/public/browser",
       "//gpu/config",
-      "//ui/gfx",
     ]
   }
 }
@@ -126,6 +125,22 @@ static_library("net") {
     "//components/version_info",
     "//net",
     "//url",
+  ]
+}
+
+# GYP version: components/metrics.gypi:metrics_ui
+source_set("ui") {
+  sources = [
+    "ui/screen_info_metrics_provider.cc",
+    "ui/screen_info_metrics_provider.h",
+  ]
+
+  public_deps = [
+    ":metrics",
+  ]
+  deps = [
+    "//base",
+    "//ui/gfx",
   ]
 }
 
@@ -202,12 +217,14 @@ source_set("unit_tests") {
     "net/net_metrics_log_uploader_unittest.cc",
     "persisted_logs_unittest.cc",
     "stability_metrics_helper_unittest.cc",
+    "ui/screen_info_metrics_provider_unittest.cc",
   ]
 
   deps = [
     ":metrics",
     ":net",
     ":test_support",
+    ":ui",
     "//base:prefs_test_support",
     "//base/test:test_support",
     "//components/variations",
@@ -221,7 +238,6 @@ source_set("unit_tests") {
       ":profiler",
     ]
     sources += [
-      "gpu/gpu_metrics_provider_unittest.cc",
       "profiler/profiler_metrics_provider_unittest.cc",
       "profiler/tracking_synchronizer_unittest.cc",
     ]

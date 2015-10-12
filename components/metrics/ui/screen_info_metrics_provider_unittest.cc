@@ -1,8 +1,8 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/metrics/gpu/gpu_metrics_provider.h"
+#include "components/metrics/ui/screen_info_metrics_provider.h"
 
 #include "base/basictypes.h"
 #include "components/metrics/proto/chrome_user_metrics_extension.pb.h"
@@ -18,10 +18,10 @@ const int kScreenHeight = 768;
 const int kScreenCount = 3;
 const float kScreenScaleFactor = 2;
 
-class TestGPUMetricsProvider : public GPUMetricsProvider {
+class TestScreenInfoMetricsProvider : public ScreenInfoMetricsProvider {
  public:
-  TestGPUMetricsProvider() {}
-  ~TestGPUMetricsProvider() override {}
+  TestScreenInfoMetricsProvider() {}
+  ~TestScreenInfoMetricsProvider() override {}
 
  private:
   gfx::Size GetScreenSize() const override {
@@ -34,22 +34,22 @@ class TestGPUMetricsProvider : public GPUMetricsProvider {
 
   int GetScreenCount() const override { return kScreenCount; }
 
-  DISALLOW_COPY_AND_ASSIGN(TestGPUMetricsProvider);
+  DISALLOW_COPY_AND_ASSIGN(TestScreenInfoMetricsProvider);
 };
 
 }  // namespace
 
-class GPUMetricsProviderTest : public testing::Test {
+class ScreenInfoMetricsProviderTest : public testing::Test {
  public:
-  GPUMetricsProviderTest() {}
-  ~GPUMetricsProviderTest() override {}
+  ScreenInfoMetricsProviderTest() {}
+  ~ScreenInfoMetricsProviderTest() override {}
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(GPUMetricsProviderTest);
+  DISALLOW_COPY_AND_ASSIGN(ScreenInfoMetricsProviderTest);
 };
 
-TEST_F(GPUMetricsProviderTest, ProvideSystemProfileMetrics) {
-  TestGPUMetricsProvider provider;
+TEST_F(ScreenInfoMetricsProviderTest, ProvideSystemProfileMetrics) {
+  TestScreenInfoMetricsProvider provider;
   ChromeUserMetricsExtension uma_proto;
 
   provider.ProvideSystemProfileMetrics(uma_proto.mutable_system_profile());

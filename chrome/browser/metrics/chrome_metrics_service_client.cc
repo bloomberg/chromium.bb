@@ -40,6 +40,7 @@
 #include "components/metrics/profiler/profiler_metrics_provider.h"
 #include "components/metrics/profiler/tracking_synchronizer.h"
 #include "components/metrics/stability_metrics_helper.h"
+#include "components/metrics/ui/screen_info_metrics_provider.h"
 #include "components/metrics/url_constants.h"
 #include "components/omnibox/browser/omnibox_metrics_provider.h"
 #include "components/variations/variations_associated_data.h"
@@ -321,6 +322,9 @@ void ChromeMetricsServiceClient::Initialize() {
           g_browser_process->local_state())));
   metrics_service_->RegisterMetricsProvider(
       scoped_ptr<metrics::MetricsProvider>(new metrics::GPUMetricsProvider));
+  metrics_service_->RegisterMetricsProvider(
+      scoped_ptr<metrics::MetricsProvider>(
+          new metrics::ScreenInfoMetricsProvider));
 
   drive_metrics_provider_ = new metrics::DriveMetricsProvider(
       content::BrowserThread::GetMessageLoopProxyForThread(

@@ -29,6 +29,7 @@
 #include "components/metrics/net/net_metrics_log_uploader.h"
 #include "components/metrics/net/network_metrics_provider.h"
 #include "components/metrics/profiler/profiler_metrics_provider.h"
+#include "components/metrics/ui/screen_info_metrics_provider.h"
 #include "components/metrics/url_constants.h"
 #include "content/public/common/content_switches.h"
 
@@ -334,6 +335,12 @@ void CastMetricsServiceClient::Initialize(CastService* cast_service) {
     metrics_service_->RegisterMetricsProvider(
         scoped_ptr< ::metrics::MetricsProvider>(
             new ::metrics::GPUMetricsProvider));
+
+    // TODO(gfhuang): Does ChromeCast actually need metrics about screen info?
+    // crbug.com/541577
+    metrics_service_->RegisterMetricsProvider(
+        scoped_ptr< ::metrics::MetricsProvider>(
+            new ::metrics::ScreenInfoMetricsProvider));
   }
   metrics_service_->RegisterMetricsProvider(
       scoped_ptr< ::metrics::MetricsProvider>(

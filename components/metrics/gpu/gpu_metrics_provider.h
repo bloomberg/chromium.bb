@@ -7,7 +7,6 @@
 
 #include "base/basictypes.h"
 #include "components/metrics/metrics_provider.h"
-#include "ui/gfx/geometry/size.h"
 
 namespace metrics {
 
@@ -20,18 +19,6 @@ class GPUMetricsProvider : public MetricsProvider {
   // MetricsProvider:
   void ProvideSystemProfileMetrics(
       SystemProfileProto* system_profile_proto) override;
-
- protected:
-  // Exposed for the sake of mocking in test code.
-
-  // Returns the screen size for the primary monitor.
-  virtual gfx::Size GetScreenSize() const;
-
-  // Returns the device scale factor for the primary monitor.
-  virtual float GetScreenDeviceScaleFactor() const;
-
-  // Returns the number of monitors the user is using.
-  virtual int GetScreenCount() const;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GPUMetricsProvider);

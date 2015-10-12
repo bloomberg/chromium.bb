@@ -3115,6 +3115,7 @@
         '../components/components.gyp:invalidation_impl',
         '../components/components.gyp:metrics',
         '../components/components.gyp:metrics_net',
+        '../components/components.gyp:metrics_ui',
         '../components/components.gyp:navigation_metrics',
         '../components/components.gyp:network_time',
         '../components/components.gyp:offline_pages',
