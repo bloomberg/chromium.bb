@@ -474,6 +474,7 @@ if (!is_mac) {
       ]
     } else {
       sources -= [
+        "../browser/accessibility/touch_accessibility_aura_browsertest.cc",
         "../browser/renderer_host/input/touch_selection_controller_client_aura_browsertest.cc",
         "../browser/web_contents/web_contents_view_aura_browsertest.cc",
       ]
@@ -578,7 +579,9 @@ test("content_unittests") {
     ]
   }
 
-  data_deps = [ "//third_party/mesa:osmesa" ]
+  data_deps = [
+    "//third_party/mesa:osmesa",
+  ]
 
   if (!is_win) {
     sources += [ "../browser/file_descriptor_info_impl_unittest.cc" ]
