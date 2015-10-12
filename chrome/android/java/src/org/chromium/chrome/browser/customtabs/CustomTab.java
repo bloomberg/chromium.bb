@@ -143,14 +143,6 @@ public class CustomTab extends Tab {
 
     private ExternalNavigationHandler mNavigationHandler;
     private CustomTabNavigationDelegate mNavigationDelegate;
-    private TabChromeContextMenuItemDelegate
-            mContextMenuDelegate = new TabChromeContextMenuItemDelegate() {
-                @Override
-                public boolean startDownload(String url, boolean isLink) {
-                    // Behave similarly to ChromeTabChromeContextMenuItemDelegate in ChromeTab.
-                    return !isLink || !shouldInterceptContextMenuDownload(url);
-                }
-            };
 
     private CustomTabObserver mTabObserver;
     private final boolean mEnableUrlBarHiding;
@@ -232,7 +224,7 @@ public class CustomTab extends Tab {
 
     @Override
     protected ContextMenuPopulator createContextMenuPopulator() {
-        return new ChromeContextMenuPopulator(mContextMenuDelegate) {
+        return new ChromeContextMenuPopulator(new TabChromeContextMenuItemDelegate()) {
             @Override
             public void buildContextMenu(ContextMenu menu, Context context,
                     ContextMenuParams params) {

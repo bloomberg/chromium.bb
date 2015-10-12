@@ -420,10 +420,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
 
         @Override
         public boolean startDownload(String url, boolean isLink) {
-            if (isLink && shouldInterceptContextMenuDownload(url)) {
-                return false;
-            }
-            return true;
+            return !isLink || !shouldInterceptContextMenuDownload(url);
         }
 
         @Override
