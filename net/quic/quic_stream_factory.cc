@@ -603,7 +603,6 @@ QuicStreamFactory::QuicStreamFactory(
       client_socket_factory_(client_socket_factory),
       http_server_properties_(http_server_properties),
       transport_security_state_(transport_security_state),
-      quic_server_info_factory_(nullptr),
       quic_crypto_client_stream_factory_(quic_crypto_client_stream_factory),
       random_generator_(random_generator),
       clock_(clock),
@@ -673,11 +672,9 @@ QuicStreamFactory::QuicStreamFactory(
   // When disk cache is used to store the server configs, HttpCache code calls
   // |set_quic_server_info_factory| if |quic_server_info_factory_| wasn't
   // created.
-  // TODO(rtenneti): make |quic_server_info_factory_| a scoped_ptr and take
-  // ownership of this object from HttpCache.
   if (store_server_configs_in_properties_) {
-    quic_server_info_factory_ =
-        new PropertiesBasedQuicServerInfoFactory(http_server_properties_);
+    quic_server_info_factory_.reset(
+        new PropertiesBasedQuicServerInfoFactory(http_server_properties_));
   }
 }
 
@@ -692,8 +689,6 @@ QuicStreamFactory::~QuicStreamFactory() {
     STLDeleteElements(&(active_jobs_[server_id]));
     active_jobs_.erase(server_id);
   }
-  if (store_server_configs_in_properties_ && quic_server_info_factory_)
-    delete quic_server_info_factory_;
 }
 
 void QuicStreamFactory::set_require_confirmation(bool require_confirmation) {
@@ -715,6 +710,11 @@ base::TimeDelta QuicStreamFactory::GetTimeDelayForWaitingJob(
   if (!srtt)
     srtt = kDefaultRTT;
   return base::TimeDelta::FromMicroseconds(srtt);
+}
+
+void QuicStreamFactory::set_quic_server_info_factory(
+    QuicServerInfoFactory* quic_server_info_factory) {
+  quic_server_info_factory_.reset(quic_server_info_factory);
 }
 
 int QuicStreamFactory::Create(const HostPortPair& host_port_pair,
@@ -747,7 +747,7 @@ int QuicStreamFactory::Create(const HostPortPair& host_port_pair,
     task_runner_ = base::ThreadTaskRunnerHandle::Get().get();
 
   QuicServerInfo* quic_server_info = nullptr;
-  if (quic_server_info_factory_) {
+  if (quic_server_info_factory_.get()) {
     bool load_from_disk_cache = !disable_disk_cache_;
     MaybeInitialize();
     if (!ContainsKey(quic_supported_servers_at_startup_,
@@ -1284,7 +1284,7 @@ int QuicStreamFactory::CreateSession(const QuicServerId& server_id,
     config.SetInitialRoundTripTimeUsToSend(static_cast<uint32>(srtt));
   config.SetBytesForConnectionIdToSend(0);
 
-  if (quic_server_info_factory_ && !server_info) {
+  if (quic_server_info_factory_.get() && !server_info) {
     // Start the disk cache loading so that we can persist the newer QUIC server
     // information and/or inform the disk cache that we have reused
     // |server_info|.

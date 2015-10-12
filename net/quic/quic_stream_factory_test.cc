@@ -219,13 +219,6 @@ class QuicStreamFactoryPeer {
   static void EnableStoreServerConfigsInProperties(QuicStreamFactory* factory) {
     factory->store_server_configs_in_properties_ = true;
   }
-
-  static void SetQuicServerInfoFactory(
-      QuicStreamFactory* factory,
-      QuicServerInfoFactory* quic_server_info_factory) {
-    DCHECK(!factory->quic_server_info_factory_);
-    factory->quic_server_info_factory_ = quic_server_info_factory;
-  }
 };
 
 class MockQuicServerInfo : public QuicServerInfo {
@@ -309,6 +302,7 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<TestParams> {
         is_https_(false),
         privacy_mode_(PRIVACY_MODE_DISABLED) {
     factory_.set_require_confirmation(false);
+    factory_.set_quic_server_info_factory(new MockQuicServerInfoFactory());
     clock_->AdvanceTime(QuicTime::Delta::FromSeconds(1));
     QuicStreamFactoryPeer::SetEnableConnectionRacing(
         &factory_, GetParam().enable_connection_racing);
@@ -409,7 +403,6 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<TestParams> {
     return verify_details;
   }
 
-  MockQuicServerInfoFactory quic_server_info_factory_;
   MockHostResolver host_resolver_;
   DeterministicMockClientSocketFactory socket_factory_;
   MockCryptoClientStreamFactory crypto_client_stream_factory_;
@@ -1669,7 +1662,6 @@ TEST_P(QuicStreamFactoryTest, CryptoConfigWhenProofIsInvalid) {
 TEST_P(QuicStreamFactoryTest, RacingConnections) {
   if (!GetParam().enable_connection_racing)
     return;
-  factory_.set_quic_server_info_factory(&quic_server_info_factory_);
   QuicStreamFactoryPeer::SetDisableDiskCache(&factory_, false);
   QuicStreamFactoryPeer::SetTaskRunner(&factory_, runner_.get());
 
@@ -1723,7 +1715,6 @@ TEST_P(QuicStreamFactoryTest, RacingConnections) {
 }
 
 TEST_P(QuicStreamFactoryTest, EnableNotLoadFromDiskCache) {
-  factory_.set_quic_server_info_factory(&quic_server_info_factory_);
   QuicStreamFactoryPeer::SetTaskRunner(&factory_, runner_.get());
   QuicStreamFactoryPeer::SetDisableDiskCache(&factory_, true);
 
@@ -1756,7 +1747,6 @@ TEST_P(QuicStreamFactoryTest, EnableNotLoadFromDiskCache) {
 }
 
 TEST_P(QuicStreamFactoryTest, BadPacketLoss) {
-  factory_.set_quic_server_info_factory(&quic_server_info_factory_);
   QuicStreamFactoryPeer::SetTaskRunner(&factory_, runner_.get());
   QuicStreamFactoryPeer::SetDisableDiskCache(&factory_, true);
   QuicStreamFactoryPeer::SetMaxNumberOfLossyConnections(&factory_, 2);
@@ -1927,7 +1917,6 @@ TEST_P(QuicStreamFactoryTest, BadPacketLoss) {
 }
 
 TEST_P(QuicStreamFactoryTest, PublicResetPostHandshakeTwoOfTwo) {
-  factory_.set_quic_server_info_factory(&quic_server_info_factory_);
   QuicStreamFactoryPeer::SetTaskRunner(&factory_, runner_.get());
   QuicStreamFactoryPeer::SetDisableDiskCache(&factory_, true);
   QuicStreamFactoryPeer::SetThresholdPublicResetsPostHandshake(&factory_, 2);
@@ -2010,7 +1999,6 @@ TEST_P(QuicStreamFactoryTest, PublicResetPostHandshakeTwoOfTwo) {
 }
 
 TEST_P(QuicStreamFactoryTest, TimeoutsWithOpenStreamsTwoOfTwo) {
-  factory_.set_quic_server_info_factory(&quic_server_info_factory_);
   QuicStreamFactoryPeer::SetTaskRunner(&factory_, runner_.get());
   QuicStreamFactoryPeer::SetDisableDiskCache(&factory_, true);
   QuicStreamFactoryPeer::SetThresholdTimeoutsWithOpenStreams(&factory_, 2);
@@ -2098,8 +2086,6 @@ TEST_P(QuicStreamFactoryTest, TimeoutsWithOpenStreamsTwoOfTwo) {
 }
 
 TEST_P(QuicStreamFactoryTest, PublicResetPostHandshakeTwoOfThree) {
-  factory_.set_quic_server_info_factory(&quic_server_info_factory_);
-  QuicStreamFactoryPeer::SetTaskRunner(&factory_, runner_.get());
   QuicStreamFactoryPeer::SetDisableDiskCache(&factory_, true);
   QuicStreamFactoryPeer::SetThresholdPublicResetsPostHandshake(&factory_, 2);
   EXPECT_FALSE(
@@ -2212,7 +2198,6 @@ TEST_P(QuicStreamFactoryTest, PublicResetPostHandshakeTwoOfThree) {
 }
 
 TEST_P(QuicStreamFactoryTest, TimeoutsWithOpenStreamsTwoOfThree) {
-  factory_.set_quic_server_info_factory(&quic_server_info_factory_);
   QuicStreamFactoryPeer::SetTaskRunner(&factory_, runner_.get());
   QuicStreamFactoryPeer::SetDisableDiskCache(&factory_, true);
   QuicStreamFactoryPeer::SetThresholdTimeoutsWithOpenStreams(&factory_, 2);
@@ -2331,7 +2316,6 @@ TEST_P(QuicStreamFactoryTest, TimeoutsWithOpenStreamsTwoOfThree) {
 }
 
 TEST_P(QuicStreamFactoryTest, PublicResetPostHandshakeTwoOfFour) {
-  factory_.set_quic_server_info_factory(&quic_server_info_factory_);
   QuicStreamFactoryPeer::SetTaskRunner(&factory_, runner_.get());
   QuicStreamFactoryPeer::SetDisableDiskCache(&factory_, true);
   QuicStreamFactoryPeer::SetThresholdPublicResetsPostHandshake(&factory_, 2);
@@ -2470,7 +2454,6 @@ TEST_P(QuicStreamFactoryTest, PublicResetPostHandshakeTwoOfFour) {
 }
 
 TEST_P(QuicStreamFactoryTest, TimeoutsWithOpenStreamsTwoOfFour) {
-  factory_.set_quic_server_info_factory(&quic_server_info_factory_);
   QuicStreamFactoryPeer::SetTaskRunner(&factory_, runner_.get());
   QuicStreamFactoryPeer::SetDisableDiskCache(&factory_, true);
   QuicStreamFactoryPeer::SetThresholdTimeoutsWithOpenStreams(&factory_, 2);
@@ -2622,16 +2605,6 @@ TEST_P(QuicStreamFactoryTest, EnableDelayTcpRace) {
   socket_factory_.AddSocketDataProvider(&socket_data);
   socket_data.StopAfter(1);
 
-  const AlternativeService alternative_service1(QUIC, host_port_pair_.host(),
-                                                host_port_pair_.port());
-  AlternativeServiceInfoVector alternative_service_info_vector;
-  base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
-  alternative_service_info_vector.push_back(
-      AlternativeServiceInfo(alternative_service1, 1.0, expiration));
-
-  http_server_properties_.SetAlternativeServices(
-      host_port_pair_, alternative_service_info_vector);
-
   ServerNetworkStats stats1;
   stats1.srtt = base::TimeDelta::FromMicroseconds(10);
   http_server_properties_.SetServerNetworkStats(host_port_pair_, stats1);
@@ -2691,8 +2664,7 @@ TEST_P(QuicStreamFactoryTest, MaybeInitialize) {
   QuicServerInfoFactory* quic_server_info_factory =
       new PropertiesBasedQuicServerInfoFactory(
           http_server_properties_.GetWeakPtr());
-  QuicStreamFactoryPeer::SetQuicServerInfoFactory(&factory_,
-                                                  quic_server_info_factory);
+  factory_.set_quic_server_info_factory(quic_server_info_factory);
 
   scoped_ptr<QuicServerInfo> quic_server_info(
       quic_server_info_factory->GetForServer(quic_server_id));

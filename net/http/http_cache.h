@@ -418,8 +418,6 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory,
 
   Mode mode_;
 
-  scoped_ptr<QuicServerInfoFactoryAdaptor> quic_server_info_factory_;
-
   scoped_ptr<HttpTransactionFactory> network_layer_;
 
   scoped_ptr<disk_cache::Backend> disk_cache_;

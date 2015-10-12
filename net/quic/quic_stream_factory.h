@@ -42,8 +42,9 @@ class QuicChromiumClientSession;
 class QuicConnectionHelper;
 class QuicCryptoClientStreamFactory;
 class QuicRandom;
-class QuicServerInfoFactory;
 class QuicServerId;
+class QuicServerInfo;
+class QuicServerInfoFactory;
 class QuicStreamFactory;
 class SocketPerformanceWatcherFactory;
 class TransportSecurityState;
@@ -232,14 +233,11 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   bool enable_port_selection() const { return enable_port_selection_; }
 
   bool has_quic_server_info_factory() {
-    return quic_server_info_factory_ != NULL;
+    return !quic_server_info_factory_.get();
   }
 
   void set_quic_server_info_factory(
-      QuicServerInfoFactory* quic_server_info_factory) {
-    DCHECK(!quic_server_info_factory_);
-    quic_server_info_factory_ = quic_server_info_factory;
-  }
+      QuicServerInfoFactory* quic_server_info_factory);
 
   bool enable_connection_racing() const { return enable_connection_racing_; }
   void set_enable_connection_racing(bool enable_connection_racing) {
@@ -350,7 +348,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   ClientSocketFactory* client_socket_factory_;
   base::WeakPtr<HttpServerProperties> http_server_properties_;
   TransportSecurityState* transport_security_state_;
-  QuicServerInfoFactory* quic_server_info_factory_;
+  scoped_ptr<QuicServerInfoFactory> quic_server_info_factory_;
   QuicCryptoClientStreamFactory* quic_crypto_client_stream_factory_;
   QuicRandom* random_generator_;
   scoped_ptr<QuicClock> clock_;
