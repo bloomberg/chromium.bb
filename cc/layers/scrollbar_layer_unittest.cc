@@ -905,6 +905,14 @@ class ScaledScrollbarLayerTestResourceCreation : public ScrollbarLayerTest {
               scrollbar_layer->internal_content_bounds().width());
     EXPECT_LE(thumb_size.height(),
               scrollbar_layer->internal_content_bounds().height());
+    EXPECT_LE(track_size.width(),
+              layer_tree_host_->GetRendererCapabilities().max_texture_size);
+    EXPECT_LE(track_size.height(),
+              layer_tree_host_->GetRendererCapabilities().max_texture_size);
+    EXPECT_LE(thumb_size.width(),
+              layer_tree_host_->GetRendererCapabilities().max_texture_size);
+    EXPECT_LE(thumb_size.height(),
+              layer_tree_host_->GetRendererCapabilities().max_texture_size);
 
     testing::Mock::VerifyAndClearExpectations(layer_tree_host_.get());
   }
@@ -916,6 +924,9 @@ TEST_F(ScaledScrollbarLayerTestResourceCreation, ScaledResourceUpload) {
   TestResourceUpload(.041f);
   TestResourceUpload(1.41f);
   TestResourceUpload(4.1f);
+
+  // Try something extreme to make sure it gets clamped.
+  TestResourceUpload(2147483647.0f);
 }
 
 class ScaledScrollbarLayerTestScaledRasterization : public ScrollbarLayerTest {

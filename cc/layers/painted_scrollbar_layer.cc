@@ -88,7 +88,7 @@ float PaintedScrollbarLayer::ClampScaleToMaxTextureSize(float scale) {
   gfx::Size scaled_bounds = gfx::ScaleToCeiledSize(bounds(), scale);
   if (scaled_bounds.width() > MaxTextureSize() ||
       scaled_bounds.height() > MaxTextureSize()) {
-    if (scaled_bounds.width() > scaled_bounds.height())
+    if (bounds().width() > bounds().height())
       return (MaxTextureSize() - 1) / static_cast<float>(bounds().width());
     else
       return (MaxTextureSize() - 1) / static_cast<float>(bounds().height());
