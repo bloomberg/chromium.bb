@@ -584,20 +584,21 @@ void LocalizedError::GetStrings(int error_code,
       error_code == error_page::DNS_PROBE_FINISHED_NO_INTERNET) {
     error_strings->SetString("primaryParagraph",
         l10n_util::GetStringUTF16(options.summary_resource_id));
-
-    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-
-    // Check if easter egg should be disabled.
-    if (command_line->HasSwitch(switches::kDisableDinosaurEasterEgg)) {
-      // The prescence of this string disables the easter egg. Acts as a flag.
-      error_strings->SetString("disabledEasterEgg",
-          l10n_util::GetStringUTF16(IDS_ERRORPAGE_FUN_DISABLED));
-    }
   } else {
     // Set summary message in the details.
     summary->SetString("msg",
         l10n_util::GetStringUTF16(options.summary_resource_id));
   }
+
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+
+  // Check if easter egg should be disabled.
+  if (command_line->HasSwitch(switches::kDisableDinosaurEasterEgg)) {
+    // The presence of this string disables the easter egg. Acts as a flag.
+    error_strings->SetString("disabledEasterEgg",
+        l10n_util::GetStringUTF16(IDS_ERRORPAGE_FUN_DISABLED));
+  }
+
   summary->SetString("failedUrl", failed_url_string);
   summary->SetString("hostName", url_formatter::IDNToUnicode(failed_url.host(),
                                                              accept_languages));
@@ -715,7 +716,6 @@ void LocalizedError::GetStrings(int error_code,
   if (!use_default_suggestions)
     return;
 
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   const std::string& show_saved_copy_value =
       command_line->GetSwitchValueASCII(switches::kShowSavedCopy);
   bool show_saved_copy_primary = (show_saved_copy_value ==
