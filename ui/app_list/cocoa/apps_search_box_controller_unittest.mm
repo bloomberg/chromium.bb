@@ -105,9 +105,11 @@ class AppsSearchBoxControllerTest : public ui::CocoaTest {
   }
 
   void SimulateKeyAction(SEL c) {
+    base::scoped_nsobject<NSTextView> stub_field_editor(
+        [[NSTextView alloc] initWithFrame:NSZeroRect]);
     NSControl* control = [apps_search_box_controller_ searchTextField];
     [apps_search_box_controller_ control:control
-                                textView:nil
+                                textView:stub_field_editor.get()
                      doCommandBySelector:c];
   }
 
