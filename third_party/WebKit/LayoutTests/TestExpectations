@@ -435,6 +435,9 @@ crbug.com/517836 imported/web-platform-tests/screen-orientation/orientation-read
 crbug.com/517836 imported/web-platform-tests/screen-orientation/onchange-event-subframe.html [ Failure Timeout ]
 crbug.com/517836 imported/web-platform-tests/screen-orientation/onchange-event.html [ Failure Timeout ]
 
+# Will work after we have grapheme-cluser based font selection
+crbug.com/454405 inspector-protocol/layout-fonts/unicode-range-combining-chars-fallback.html [ Failure ]
+
 # New W3C failures (dpranke@ to triage)
 
 # Linux Aura doesn't support NPAPI plugins (yet?)
