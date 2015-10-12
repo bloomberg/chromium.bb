@@ -158,7 +158,11 @@ void SearchBoxModelObserverBridge::TextChanged() {
 
 - (void)clearSearch {
   [searchTextField_ setStringValue:@""];
-  [self controlTextDidChange:nil];
+  // -controlTextDidChange:'s parameter is marked nonnull in the 10.11 SDK,
+  // so pass a dummy object even though we know that this class's implementation
+  // never looks at the parameter.
+  [self controlTextDidChange:[NSNotification notificationWithName:@""
+                                                           object:self]];
 }
 
 - (void)rebuildMenu {

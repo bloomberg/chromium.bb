@@ -139,7 +139,7 @@ TEST_F(TextInputClientMacTest, TimeoutCharacterIndex) {
   EXPECT_EQ(1U, ipc_sink().message_count());
   EXPECT_TRUE(ipc_sink().GetUniqueMessageMatching(
       TextInputClientMsg_CharacterIndexForPoint::ID));
-  EXPECT_EQ(NSNotFound, index);
+  EXPECT_EQ(static_cast<NSUInteger>(NSNotFound), index);
 }
 
 TEST_F(TextInputClientMacTest, NotFoundCharacterIndex) {
@@ -167,7 +167,7 @@ TEST_F(TextInputClientMacTest, NotFoundCharacterIndex) {
       widget(), gfx::Point(2, 2));
   EXPECT_EQ(kPreviousValue, index);
   index = service()->GetCharacterIndexAtPoint(widget(), gfx::Point(2, 2));
-  EXPECT_EQ(NSNotFound, index);
+  EXPECT_EQ(static_cast<NSUInteger>(NSNotFound), index);
 
   EXPECT_EQ(2U, ipc_sink().message_count());
   for (size_t i = 0; i < ipc_sink().message_count(); ++i) {

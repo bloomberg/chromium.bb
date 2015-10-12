@@ -391,7 +391,8 @@ TEST_F(AppsGridControllerTest, CrossPageKeyboardNavigation) {
   // After page switch, arrow keys select first item on current page.
   [apps_grid_controller_ scrollToPage:0];
   [apps_grid_controller_ scrollToPage:1];
-  EXPECT_EQ(NSNotFound, [apps_grid_controller_ selectedItemIndex]);
+  EXPECT_EQ(static_cast<NSUInteger>(NSNotFound),
+            [apps_grid_controller_ selectedItemIndex]);
   SimulateKeyAction(@selector(moveUp:));
   EXPECT_EQ(kItemsPerPage, [apps_grid_controller_ selectedItemIndex]);
 }
