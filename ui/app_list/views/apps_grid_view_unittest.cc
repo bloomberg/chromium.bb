@@ -66,7 +66,7 @@ class PageFlipWaiter : public PaginationModelObserver {
     selected_pages_ += base::IntToString(new_selected);
 
     if (wait_)
-      ui_loop_->Quit();
+      ui_loop_->QuitWhenIdle();
   }
   void TransitionStarted() override {}
   void TransitionChanged() override {}

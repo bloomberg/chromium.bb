@@ -502,7 +502,7 @@ class PlatformEventTestWithMessageLoop : public PlatformEventTest {
  protected:
   void RunTest() {
     RunTestImpl();
-    message_loop_.Quit();
+    message_loop_.QuitWhenIdle();
   }
 
   virtual void RunTestImpl() = 0;

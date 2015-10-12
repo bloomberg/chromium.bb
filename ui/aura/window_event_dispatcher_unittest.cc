@@ -1929,7 +1929,7 @@ class ExitMessageLoopOnMousePress : public ui::test::TestEventHandler {
   void OnMouseEvent(ui::MouseEvent* event) override {
     ui::test::TestEventHandler::OnMouseEvent(event);
     if (event->type() == ui::ET_MOUSE_PRESSED)
-      base::MessageLoopForUI::current()->Quit();
+      base::MessageLoopForUI::current()->QuitWhenIdle();
   }
 
  private:
@@ -1958,7 +1958,7 @@ class WindowEventDispatcherTestWithMessageLoop
         base::Bind(&WindowEventDispatcherTestWithMessageLoop::RepostEventHelper,
                    host()->dispatcher(),
                    base::Passed(&mouse)));
-    message_loop()->PostTask(FROM_HERE, message_loop()->QuitClosure());
+    message_loop()->PostTask(FROM_HERE, message_loop()->QuitWhenIdleClosure());
 
     base::MessageLoop::ScopedNestableTaskAllower allow(message_loop());
     base::RunLoop loop;

@@ -234,7 +234,7 @@ void MessageListView::OnBoundsAnimatorDone(views::BoundsAnimator* animator) {
     GetWidget()->SynthesizeMouseMoveEvent();
 
   if (quit_message_loop_after_animation_for_test_)
-    base::MessageLoop::current()->Quit();
+    base::MessageLoop::current()->QuitWhenIdle();
 }
 
 bool MessageListView::IsValidChild(const views::View* child) const {

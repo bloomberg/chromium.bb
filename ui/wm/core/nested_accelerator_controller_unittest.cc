@@ -94,7 +94,7 @@ void DispatchKeyReleaseA(aura::Window* root_window) {
 #endif
   // Make sure the inner message-loop terminates after dispatching the events.
   base::MessageLoop::current()->PostTask(
-      FROM_HERE, base::MessageLoop::current()->QuitClosure());
+      FROM_HERE, base::MessageLoop::current()->QuitWhenIdleClosure());
 }
 
 class MockNestedAcceleratorDelegate : public NestedAcceleratorDelegate {

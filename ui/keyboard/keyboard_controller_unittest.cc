@@ -149,7 +149,7 @@ class KeyboardContainerObserver : public aura::WindowObserver {
  private:
   void OnWindowVisibilityChanged(aura::Window* window, bool visible) override {
     if (!visible)
-      base::MessageLoop::current()->Quit();
+      base::MessageLoop::current()->QuitWhenIdle();
   }
 
   aura::Window* window_;

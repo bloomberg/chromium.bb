@@ -73,7 +73,7 @@ class DeletingAnimationDelegate : public AnimationDelegate {
  public:
   void AnimationEnded(const Animation* animation) override {
     delete animation;
-    base::MessageLoop::current()->Quit();
+    base::MessageLoop::current()->QuitWhenIdle();
   }
 };
 

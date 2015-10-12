@@ -184,7 +184,7 @@ class ExamplesWindowContents : public WidgetDelegateView,
   void WindowClosing() override {
     instance_ = NULL;
     if (operation_ == QUIT_ON_CLOSE)
-      base::MessageLoopForUI::current()->Quit();
+      base::MessageLoopForUI::current()->QuitWhenIdle();
   }
 
   // ComboboxListener:

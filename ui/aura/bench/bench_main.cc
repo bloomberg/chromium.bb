@@ -116,7 +116,7 @@ class BenchCompositorObserver : public ui::CompositorObserver {
       }
     }
     if (max_frames_ && frames_ == max_frames_) {
-      base::MessageLoop::current()->Quit();
+      base::MessageLoop::current()->QuitWhenIdle();
     } else {
       Draw();
     }

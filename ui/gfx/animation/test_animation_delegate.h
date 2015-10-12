@@ -19,13 +19,13 @@ class TestAnimationDelegate : public AnimationDelegate {
 
   virtual void AnimationEnded(const Animation* animation) {
     finished_ = true;
-    base::MessageLoop::current()->Quit();
+    base::MessageLoop::current()->QuitWhenIdle();
   }
 
   virtual void AnimationCanceled(const Animation* animation) {
     finished_ = true;
     canceled_ = true;
-    base::MessageLoop::current()->Quit();
+    base::MessageLoop::current()->QuitWhenIdle();
   }
 
   bool finished() const {

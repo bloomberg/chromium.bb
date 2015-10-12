@@ -409,7 +409,7 @@ class GestureProviderTest : public testing::Test, public GestureProviderClient {
 
   static void RunTasksAndWait(base::TimeDelta delay) {
     base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE, base::MessageLoop::QuitClosure(), delay);
+        FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(), delay);
     base::MessageLoop::current()->Run();
   }
 
