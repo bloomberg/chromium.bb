@@ -41,6 +41,9 @@ const char kEnableAccelerated2DCanvas[] = "enable-accelerated-2d-canvas";
 // Enable font antialiasing for pixel tests.
 const char kEnableFontAntialiasing[] = "enable-font-antialiasing";
 
+// Always use the complex text path for layout tests.
+const char kAlwaysUseComplexText[] = "always-use-complex-text";
+
 // Enables the leak detection of loading webpages. This allows us to check
 // whether or not reloading a webpage releases web-related objects correctly.
 const char kEnableLeakDetection[] = "enable-leak-detection";

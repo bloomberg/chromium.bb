@@ -22,6 +22,7 @@ extern const char kDumpLineBoxTrees[];
 extern const char kExposeIpcEcho[];
 extern const char kEnableAccelerated2DCanvas[];
 extern const char kEnableFontAntialiasing[];
+extern const char kAlwaysUseComplexText[];
 extern const char kEnableLeakDetection[];
 extern const char kEncodeBinary[];
 extern const char kExposeInternalsForTesting[];

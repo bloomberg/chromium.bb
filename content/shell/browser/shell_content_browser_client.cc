@@ -230,6 +230,10 @@ void ShellContentBrowserClient::AppendExtraCommandLineSwitches(
     command_line->AppendSwitch(switches::kEnableFontAntialiasing);
   }
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAlwaysUseComplexText)) {
+    command_line->AppendSwitch(switches::kAlwaysUseComplexText);
+  }
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kExposeInternalsForTesting)) {
     command_line->AppendSwitch(switches::kExposeInternalsForTesting);
   }

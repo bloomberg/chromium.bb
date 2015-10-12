@@ -41,6 +41,7 @@
 #include "core/layout/line/GlyphOverflow.h"
 #include "core/layout/line/InlineTextBox.h"
 #include "core/paint/PaintLayer.h"
+#include "platform/LayoutTestSupport.h"
 #include "platform/fonts/Character.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/geometry/FloatQuad.h"
@@ -1832,8 +1833,10 @@ int LayoutText::nextOffset(int current) const
 
 bool LayoutText::computeCanUseSimpleFontCodePath() const
 {
-    if (RuntimeEnabledFeatures::alwaysUseComplexTextEnabled())
+    if (RuntimeEnabledFeatures::alwaysUseComplexTextEnabled()
+        || LayoutTestSupport::alwaysUseComplexTextForTest()) {
         return false;
+    }
     if (m_text.is8Bit())
         return true;
     return Character::characterRangeCodePath(characters16(), length()) == SimplePath;

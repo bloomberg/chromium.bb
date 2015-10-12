@@ -265,6 +265,16 @@ bool fontAntialiasingEnabledForTest()
     return LayoutTestSupport::isFontAntialiasingEnabledForTest();
 }
 
+void setAlwaysUseComplexTextForTest(bool value)
+{
+    LayoutTestSupport::setAlwaysUseComplexTextForTest(value);
+}
+
+bool alwaysUseComplexTextForTest()
+{
+    return LayoutTestSupport::alwaysUseComplexTextForTest();
+}
+
 void enableLogChannel(const char* name)
 {
 #if !LOG_DISABLED

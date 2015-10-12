@@ -25,6 +25,7 @@
 #include "config.h"
 #include "platform/fonts/Font.h"
 
+#include "platform/LayoutTestSupport.h"
 #include "platform/LayoutUnit.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/fonts/Character.h"
@@ -310,8 +311,10 @@ int Font::offsetForPosition(const TextRun& run, float x, bool includePartialGlyp
 
 CodePath Font::codePath(const TextRunPaintInfo& runInfo) const
 {
-    if (RuntimeEnabledFeatures::alwaysUseComplexTextEnabled())
+    if (RuntimeEnabledFeatures::alwaysUseComplexTextEnabled()
+        || LayoutTestSupport::alwaysUseComplexTextForTest()) {
         return ComplexPath;
+    }
 
     const TextRun& run = runInfo.run;
 

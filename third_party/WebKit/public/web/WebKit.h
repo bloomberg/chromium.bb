@@ -78,6 +78,10 @@ BLINK_EXPORT bool layoutTestMode();
 BLINK_EXPORT void setFontAntialiasingEnabledForTest(bool);
 BLINK_EXPORT bool fontAntialiasingEnabledForTest();
 
+// Forces the use of the complex text path for layout tests.
+BLINK_EXPORT void setAlwaysUseComplexTextForTest(bool);
+BLINK_EXPORT bool alwaysUseComplexTextForTest();
+
 // Enables the named log channel. See WebCore/platform/Logging.h for details.
 BLINK_EXPORT void enableLogChannel(const char*);
 

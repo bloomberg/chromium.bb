@@ -75,7 +75,10 @@ void LayoutTestRenderProcessObserver::WebKitInitialized() {
           switches::kEnableFontAntialiasing)) {
     blink::setFontAntialiasingEnabledForTest(true);
   }
-
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAlwaysUseComplexText)) {
+    blink::setAlwaysUseComplexTextForTest(true);
+  }
 }
 
 void LayoutTestRenderProcessObserver::OnRenderProcessShutdown() {
