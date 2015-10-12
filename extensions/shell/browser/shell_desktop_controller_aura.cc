@@ -246,8 +246,8 @@ void ShellDesktopControllerAura::OnHostCloseRequested(
     const aura::WindowTreeHost* host) {
   DCHECK_EQ(host_.get(), host);
   CloseAppWindows();
-  base::MessageLoop::current()->PostTask(FROM_HERE,
-                                         base::MessageLoop::QuitClosure());
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
 }
 
 void ShellDesktopControllerAura::InitWindowManager() {

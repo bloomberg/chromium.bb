@@ -89,7 +89,7 @@ class IPCChannelPosixTestListener : public IPC::Listener {
       loop->QuitNow();
     } else {
       // Die as soon as Run is called.
-      loop->task_runner()->PostTask(FROM_HERE, loop->QuitClosure());
+      loop->task_runner()->PostTask(FROM_HERE, loop->QuitWhenIdleClosure());
     }
   }
 
@@ -189,7 +189,8 @@ void IPCChannelPosixTest::SpinRunLoop(base::TimeDelta delay) {
   // in the case of a bad test. Usually, the run loop will quit sooner than
   // that because all tests use a IPCChannelPosixTestListener which quits the
   // current run loop on any channel activity.
-  loop->task_runner()->PostDelayedTask(FROM_HERE, loop->QuitClosure(), delay);
+  loop->task_runner()->PostDelayedTask(FROM_HERE, loop->QuitWhenIdleClosure(),
+                                       delay);
   loop->Run();
 }
 

@@ -110,7 +110,7 @@ void ExtensionTestMessageListener::Observe(
 
     if (waiting_) {
       waiting_ = false;
-      base::MessageLoopForUI::current()->Quit();
+      base::MessageLoopForUI::current()->QuitWhenIdle();
     }
   }
 }

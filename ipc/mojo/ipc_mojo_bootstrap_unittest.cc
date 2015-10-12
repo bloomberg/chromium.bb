@@ -37,11 +37,11 @@ void TestingDelegate::OnPipeAvailable(
     mojo::embedder::ScopedPlatformHandle handle,
     int32 peer_pid) {
   passed_ = true;
-  base::MessageLoop::current()->Quit();
+  base::MessageLoop::current()->QuitWhenIdle();
 }
 
 void TestingDelegate::OnBootstrapError() {
-  base::MessageLoop::current()->Quit();
+  base::MessageLoop::current()->QuitWhenIdle();
 }
 
 // Times out on Android; see http://crbug.com/502290

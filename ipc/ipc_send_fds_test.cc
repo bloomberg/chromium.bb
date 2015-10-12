@@ -73,7 +73,7 @@ class MyChannelDescriptorListener : public MyChannelDescriptorListenerBase {
   }
 
   void OnChannelError() override {
-    base::MessageLoop::current()->Quit();
+    base::MessageLoop::current()->QuitWhenIdle();
   }
 
  protected:
@@ -96,7 +96,7 @@ class MyChannelDescriptorListener : public MyChannelDescriptorListenerBase {
 
     ++num_fds_received_;
     if (num_fds_received_ == kNumFDsToSend * kNumMessages)
-      base::MessageLoop::current()->Quit();
+      base::MessageLoop::current()->QuitWhenIdle();
   }
 
  private:

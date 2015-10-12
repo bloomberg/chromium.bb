@@ -47,14 +47,14 @@ class ImageLoaderTest : public ExtensionsTest {
   void OnImageLoaded(const gfx::Image& image) {
     image_loaded_count_++;
     if (quit_in_image_loaded_)
-      base::MessageLoop::current()->Quit();
+      base::MessageLoop::current()->QuitWhenIdle();
     image_ = image;
   }
 
   void OnImageFamilyLoaded(const gfx::ImageFamily& image_family) {
     image_loaded_count_++;
     if (quit_in_image_loaded_)
-      base::MessageLoop::current()->Quit();
+      base::MessageLoop::current()->QuitWhenIdle();
     image_family_ = image_family;
   }
 

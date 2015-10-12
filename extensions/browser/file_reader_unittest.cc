@@ -45,7 +45,7 @@ class Receiver {
   void DidReadFile(bool success, const std::string& data) {
     succeeded_ = success;
     data_ = data;
-    base::MessageLoop::current()->Quit();
+    base::MessageLoop::current()->QuitWhenIdle();
   }
 
   bool succeeded_;

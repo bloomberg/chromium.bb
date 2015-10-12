@@ -129,7 +129,7 @@ class ExtensionIconImageTest : public ExtensionsTest,
   void OnExtensionIconImageChanged(IconImage* image) override {
     image_loaded_count_++;
     if (quit_in_image_loaded_)
-      base::MessageLoop::current()->Quit();
+      base::MessageLoop::current()->QuitWhenIdle();
   }
 
   gfx::ImageSkia GetDefaultIcon() {

@@ -185,7 +185,7 @@ class FuzzerServerListener : public SimpleListener {
     --message_count_;
     --pending_messages_;
     if (0 == message_count_)
-      base::MessageLoop::current()->Quit();
+      base::MessageLoop::current()->QuitWhenIdle();
   }
 
   void ReplyMsgNotHandled(uint32_t type_id) {
@@ -212,7 +212,7 @@ class FuzzerClientListener : public SimpleListener {
 
   bool OnMessageReceived(const IPC::Message& msg) override {
     last_msg_ = new IPC::Message(msg);
-    base::MessageLoop::current()->Quit();
+    base::MessageLoop::current()->QuitWhenIdle();
     return true;
   }
 

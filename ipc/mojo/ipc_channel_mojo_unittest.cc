@@ -44,7 +44,7 @@ class ListenerThatExpectsOK : public IPC::Listener {
     EXPECT_TRUE(iter.ReadString(&should_be_ok));
     EXPECT_EQ(should_be_ok, "OK");
     received_ok_ = true;
-    base::MessageLoop::current()->Quit();
+    base::MessageLoop::current()->QuitWhenIdle();
     return true;
   }
 
@@ -202,14 +202,14 @@ class ListenerExpectingErrors : public IPC::Listener {
   }
 
   void OnChannelConnected(int32_t peer_pid) override {
-    base::MessageLoop::current()->Quit();
+    base::MessageLoop::current()->QuitWhenIdle();
   }
 
   bool OnMessageReceived(const IPC::Message& message) override { return true; }
 
   void OnChannelError() override {
     has_error_ = true;
-    base::MessageLoop::current()->Quit();
+    base::MessageLoop::current()->QuitWhenIdle();
   }
 
   bool has_error() const { return has_error_; }
@@ -244,7 +244,7 @@ class ListenerThatQuits : public IPC::Listener {
   }
 
   void OnChannelConnected(int32_t peer_pid) override {
-    base::MessageLoop::current()->Quit();
+    base::MessageLoop::current()->QuitWhenIdle();
   }
 };
 
@@ -394,7 +394,7 @@ class ListenerThatExpectsMessagePipe : public IPC::Listener {
   bool OnMessageReceived(const IPC::Message& message) override {
     base::PickleIterator iter(message);
     HandleSendingHelper::ReadReceivedPipe(message, &iter);
-    base::MessageLoop::current()->Quit();
+    base::MessageLoop::current()->QuitWhenIdle();
     ListenerThatExpectsOK::SendOK(sender_);
     return true;
   }
@@ -478,7 +478,7 @@ class ListenerThatExpectsMessagePipeUsingParamTrait : public IPC::Listener {
       MojoClose(handle.value());
     }
 
-    base::MessageLoop::current()->Quit();
+    base::MessageLoop::current()->QuitWhenIdle();
     ListenerThatExpectsOK::SendOK(sender_);
     return true;
   }
@@ -597,7 +597,7 @@ class ListenerSendingOneOk : public IPC::Listener {
 
   void OnChannelConnected(int32_t peer_pid) override {
     ListenerThatExpectsOK::SendOK(sender_);
-    base::MessageLoop::current()->Quit();
+    base::MessageLoop::current()->QuitWhenIdle();
   }
 
   void set_sender(IPC::Sender* sender) { sender_ = sender; }
@@ -686,7 +686,7 @@ class ListenerThatExpectsFile : public IPC::Listener {
   bool OnMessageReceived(const IPC::Message& message) override {
     base::PickleIterator iter(message);
     HandleSendingHelper::ReadReceivedFile(message, &iter);
-    base::MessageLoop::current()->Quit();
+    base::MessageLoop::current()->QuitWhenIdle();
     ListenerThatExpectsOK::SendOK(sender_);
     return true;
   }
@@ -751,7 +751,7 @@ class ListenerThatExpectsFileAndPipe : public IPC::Listener {
     base::PickleIterator iter(message);
     HandleSendingHelper::ReadReceivedFile(message, &iter);
     HandleSendingHelper::ReadReceivedPipe(message, &iter);
-    base::MessageLoop::current()->Quit();
+    base::MessageLoop::current()->QuitWhenIdle();
     ListenerThatExpectsOK::SendOK(sender_);
     return true;
   }
@@ -816,7 +816,7 @@ class ListenerThatVerifiesPeerPid : public IPC::Listener {
  public:
   void OnChannelConnected(int32_t peer_pid) override {
     EXPECT_EQ(peer_pid, kMagicChildId);
-    base::MessageLoop::current()->Quit();
+    base::MessageLoop::current()->QuitWhenIdle();
   }
 
   bool OnMessageReceived(const IPC::Message& message) override {

@@ -59,7 +59,7 @@ class Message;
 //    public:
 //     virtual bool OnMessageReceived(const IPC::Message& msg) {
 //       <do something with the message>
-//       MessageLoop::current()->Quit();
+//       MessageLoop::current()->QuitWhenIdle();
 //       return false;  // to store the message in the sink, or true to drop it
 //     }
 //   };

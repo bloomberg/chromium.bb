@@ -49,12 +49,12 @@ bool TestChannelListener::OnMessageReceived(const IPC::Message& message) {
 void TestChannelListener::OnChannelError() {
   // There is a race when closing the channel so the last message may be lost.
   EXPECT_LE(messages_left_, 1);
-  base::MessageLoop::current()->Quit();
+  base::MessageLoop::current()->QuitWhenIdle();
 }
 
 void TestChannelListener::SendNextMessage() {
   if (--messages_left_ <= 0)
-    base::MessageLoop::current()->Quit();
+    base::MessageLoop::current()->QuitWhenIdle();
   else
     SendOneMessage(sender_, "Foo");
 }

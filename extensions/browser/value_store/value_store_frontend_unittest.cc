@@ -56,7 +56,7 @@ class ValueStoreFrontendTest : public testing::Test {
   void GetAndWait(scoped_ptr<base::Value>* output,
                   scoped_ptr<base::Value> result) {
     *output = result.Pass();
-    base::MessageLoop::current()->Quit();
+    base::MessageLoop::current()->QuitWhenIdle();
   }
 
   scoped_ptr<ValueStoreFrontend> storage_;
