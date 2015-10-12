@@ -37,11 +37,13 @@ namespace blink {
 
 class Dictionary;
 class ExceptionState;
+class MediaTrackConstraintSet;
 
 namespace MediaConstraintsImpl {
 
 WebMediaConstraints create();
 WebMediaConstraints create(const Dictionary&, ExceptionState&);
+WebMediaConstraints create(const MediaTrackConstraintSet&, ExceptionState&);
 
 }
 

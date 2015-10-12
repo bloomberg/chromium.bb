@@ -31,6 +31,7 @@
 #include "config.h"
 
 #include "modules/mediastream/MediaConstraintsImpl.h"
+#include "modules/mediastream/MediaTrackConstraintSet.h"
 
 #include "bindings/core/v8/ArrayValue.h"
 #include "bindings/core/v8/Dictionary.h"
@@ -44,13 +45,46 @@ namespace blink {
 
 namespace MediaConstraintsImpl {
 
+static bool parseMandatoryConstraintsDictionary(const Dictionary& mandatoryConstraintsDictionary, WebVector<WebMediaConstraint>& mandatory)
+{
+    Vector<WebMediaConstraint> mandatoryConstraintsVector;
+    HashMap<String, String> mandatoryConstraintsHashMap;
+    bool ok = mandatoryConstraintsDictionary.getOwnPropertiesAsStringHashMap(mandatoryConstraintsHashMap);
+    if (!ok)
+        return false;
+
+    for (const auto& iter : mandatoryConstraintsHashMap)
+        mandatoryConstraintsVector.append(WebMediaConstraint(iter.key, iter.value));
+    mandatory.assign(mandatoryConstraintsVector);
+    return true;
+}
+
+static bool parseOptionalConstraintsVectorElement(const Dictionary& constraint, Vector<WebMediaConstraint>& optionalConstraintsVector)
+{
+    Vector<String> localNames;
+    bool ok = constraint.getPropertyNames(localNames);
+    if (!ok)
+        return false;
+    if (localNames.size() != 1)
+        return false;
+    const String& key = localNames[0];
+    String value;
+    ok = DictionaryHelper::get(constraint, key, value);
+    if (!ok)
+        return false;
+    optionalConstraintsVector.append(WebMediaConstraint(key, value));
+    return true;
+}
+
 static bool parse(const Dictionary& constraintsDictionary, WebVector<WebMediaConstraint>& optional, WebVector<WebMediaConstraint>& mandatory)
 {
     if (constraintsDictionary.isUndefinedOrNull())
         return true;
 
     Vector<String> names;
-    constraintsDictionary.getPropertyNames(names);
+    bool ok = constraintsDictionary.getPropertyNames(names);
+    if (!ok)
+        return false;
 
     String mandatoryName("mandatory");
     String optionalName("optional");
@@ -60,21 +94,14 @@ static bool parse(const Dictionary& constraintsDictionary, WebVector<WebMediaCon
             return false;
     }
 
-    Vector<WebMediaConstraint> mandatoryConstraintsVector;
     if (names.contains(mandatoryName)) {
         Dictionary mandatoryConstraintsDictionary;
         bool ok = constraintsDictionary.get(mandatoryName, mandatoryConstraintsDictionary);
         if (!ok || mandatoryConstraintsDictionary.isUndefinedOrNull())
             return false;
-
-        HashMap<String, String> mandatoryConstraintsHashMap;
-        ok = mandatoryConstraintsDictionary.getOwnPropertiesAsStringHashMap(mandatoryConstraintsHashMap);
+        ok = parseMandatoryConstraintsDictionary(mandatoryConstraintsDictionary, mandatory);
         if (!ok)
             return false;
-
-        HashMap<String, String>::const_iterator iter = mandatoryConstraintsHashMap.begin();
-        for (; iter != mandatoryConstraintsHashMap.end(); ++iter)
-            mandatoryConstraintsVector.append(WebMediaConstraint(iter->key, iter->value));
     }
 
     Vector<WebMediaConstraint> optionalConstraintsVector;
@@ -94,21 +121,38 @@ static bool parse(const Dictionary& constraintsDictionary, WebVector<WebMediaCon
             ok = optionalConstraints.get(i, constraint);
             if (!ok || constraint.isUndefinedOrNull())
                 return false;
-            Vector<String> localNames;
-            constraint.getPropertyNames(localNames);
-            if (localNames.size() != 1)
-                return false;
-            String key = localNames[0];
-            String value;
-            ok = DictionaryHelper::get(constraint, key, value);
+            ok = parseOptionalConstraintsVectorElement(constraint, optionalConstraintsVector);
             if (!ok)
                 return false;
-            optionalConstraintsVector.append(WebMediaConstraint(key, value));
         }
+        optional.assign(optionalConstraintsVector);
     }
 
-    optional.assign(optionalConstraintsVector);
-    mandatory.assign(mandatoryConstraintsVector);
+    return true;
+}
+
+static bool parse(const MediaTrackConstraintSet& constraintsIn, WebVector<WebMediaConstraint>& optional, WebVector<WebMediaConstraint>& mandatory)
+{
+    Vector<WebMediaConstraint> mandatoryConstraintsVector;
+    if (constraintsIn.hasMandatory()) {
+        bool ok = parseMandatoryConstraintsDictionary(constraintsIn.mandatory(), mandatory);
+        if (!ok)
+            return false;
+    }
+
+    Vector<WebMediaConstraint> optionalConstraintsVector;
+    if (constraintsIn.hasOptional()) {
+        const Vector<Dictionary>& optionalConstraints = constraintsIn.optional();
+
+        for (const auto& constraint : optionalConstraints) {
+            if (constraint.isUndefinedOrNull())
+                return false;
+            bool ok = parseOptionalConstraintsVectorElement(constraint, optionalConstraintsVector);
+            if (!ok)
+                return false;
+        }
+        optional.assign(optionalConstraintsVector);
+    }
     return true;
 }
 
@@ -122,6 +166,19 @@ WebMediaConstraints create(const Dictionary& constraintsDictionary, ExceptionSta
         return WebMediaConstraints();
     }
 
+    WebMediaConstraints constraints;
+    constraints.initialize(optional, mandatory);
+    return constraints;
+}
+
+WebMediaConstraints create(const MediaTrackConstraintSet& constraintsIn, ExceptionState& exceptionState)
+{
+    WebVector<WebMediaConstraint> optional;
+    WebVector<WebMediaConstraint> mandatory;
+    if (!parse(constraintsIn, optional, mandatory)) {
+        exceptionState.throwTypeError("Malformed constraints object.");
+        return WebMediaConstraints();
+    }
     WebMediaConstraints constraints;
     constraints.initialize(optional, mandatory);
     return constraints;

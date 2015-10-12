@@ -43,20 +43,24 @@
 #include "modules/mediastream/MediaConstraintsImpl.h"
 #include "modules/mediastream/MediaStream.h"
 #include "modules/mediastream/MediaStreamConstraints.h"
+#include "modules/mediastream/MediaTrackConstraintSet.h"
 #include "modules/mediastream/UserMediaController.h"
 #include "platform/mediastream/MediaStreamCenter.h"
 #include "platform/mediastream/MediaStreamDescriptor.h"
 
 namespace blink {
 
-static WebMediaConstraints parseOptions(const BooleanOrDictionary& options, ExceptionState& exceptionState)
+static WebMediaConstraints parseOptions(const BooleanOrMediaTrackConstraintSet& options, ExceptionState& exceptionState)
 {
     WebMediaConstraints constraints;
 
     Dictionary constraintsDictionary;
-    if (options.isDictionary()) {
-        constraints = MediaConstraintsImpl::create(options.getAsDictionary(), exceptionState);
+    if (options.isNull()) {
+        // Do nothing.
+    } else if (options.isMediaTrackConstraintSet()) {
+        constraints = MediaConstraintsImpl::create(options.getAsMediaTrackConstraintSet(), exceptionState);
     } else {
+        ASSERT(options.isBoolean());
         if (options.getAsBoolean()) {
             constraints = MediaConstraintsImpl::create();
         }
