@@ -17,7 +17,6 @@
 #include "content/browser/devtools/protocol/io_handler.h"
 #include "content/browser/devtools/protocol/network_handler.h"
 #include "content/browser/devtools/protocol/page_handler.h"
-#include "content/browser/devtools/protocol/power_handler.h"
 #include "content/browser/devtools/protocol/security_handler.h"
 #include "content/browser/devtools/protocol/service_worker_handler.h"
 #include "content/browser/devtools/protocol/tracing_handler.h"
@@ -305,7 +304,6 @@ RenderFrameDevToolsAgentHost::RenderFrameDevToolsAgentHost(
       io_handler_(new devtools::io::IOHandler(GetIOContext())),
       network_handler_(new devtools::network::NetworkHandler()),
       page_handler_(nullptr),
-      power_handler_(new devtools::power::PowerHandler()),
       security_handler_(nullptr),
       service_worker_handler_(
           new devtools::service_worker::ServiceWorkerHandler()),
@@ -325,7 +323,6 @@ RenderFrameDevToolsAgentHost::RenderFrameDevToolsAgentHost(
   dispatcher->SetInspectorHandler(inspector_handler_.get());
   dispatcher->SetIOHandler(io_handler_.get());
   dispatcher->SetNetworkHandler(network_handler_.get());
-  dispatcher->SetPowerHandler(power_handler_.get());
   dispatcher->SetServiceWorkerHandler(service_worker_handler_.get());
   dispatcher->SetTracingHandler(tracing_handler_.get());
 
@@ -457,7 +454,6 @@ void RenderFrameDevToolsAgentHost::OnClientDetached() {
     emulation_handler_->Detached();
   if (page_handler_)
     page_handler_->Detached();
-  power_handler_->Detached();
   service_worker_handler_->Detached();
   tracing_handler_->Detached();
   frame_trace_recorder_.reset();

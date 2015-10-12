@@ -621,8 +621,6 @@
       'browser/devtools/protocol/network_handler.h',
       'browser/devtools/protocol/page_handler.cc',
       'browser/devtools/protocol/page_handler.h',
-      'browser/devtools/protocol/power_handler.cc',
-      'browser/devtools/protocol/power_handler.h',
       'browser/devtools/protocol/security_handler.cc',
       'browser/devtools/protocol/security_handler.h',
       'browser/devtools/protocol/service_worker_handler.cc',
@@ -1125,12 +1123,6 @@
       'browser/permissions/permission_service_impl.h',
       'browser/power_monitor_message_broadcaster.cc',
       'browser/power_monitor_message_broadcaster.h',
-      'browser/power_profiler/power_data_provider.h',
-      'browser/power_profiler/power_event.cc',
-      'browser/power_profiler/power_event.h',
-      'browser/power_profiler/power_profiler_observer.h',
-      'browser/power_profiler/power_profiler_service.cc',
-      'browser/power_profiler/power_profiler_service.h',
       'browser/power_save_blocker_android.cc',
       'browser/power_save_blocker_android.h',
       'browser/power_save_blocker_chromeos.cc',
@@ -1801,19 +1793,10 @@
     '<@(private_browser_sources)',
   ],
   'conditions': [
-    ['OS == "win"', {
-      'dependencies': [
-        '../third_party/power_gadget/power_gadget.gyp:power_gadget',
-      ],
-      'sources': [
-        'browser/power_profiler/power_data_provider_ia_win.cc',
-        'browser/power_profiler/power_data_provider_ia_win.h',
-      ]
-    }, { # os != "win"
+    ['OS != "win"', {
       'sources': [
         'browser/file_descriptor_info_impl.cc',
         'browser/file_descriptor_info_impl.h',
-        'browser/power_profiler/power_data_provider_dummy.cc',
       ]
     }],
     ['OS!="win" and OS!="mac" and OS!="android" and (OS!="linux" or use_udev==0)', {

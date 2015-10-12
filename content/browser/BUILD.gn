@@ -147,17 +147,10 @@ source_set("browser") {
     deps += [ "//ui/events" ]
   }
 
-  if (is_win) {
-    sources += [
-      "power_profiler/power_data_provider_ia_win.cc",
-      "power_profiler/power_data_provider_ia_win.h",
-    ]
-    deps += [ "//third_party/power_gadget" ]
-  } else {
+  if (!is_win) {
     sources += [
       "file_descriptor_info_impl.cc",
       "file_descriptor_info_impl.h",
-      "power_profiler/power_data_provider_dummy.cc",
     ]
     sources -= [ "renderer_host/web_input_event_aurawin.cc" ]
   }
