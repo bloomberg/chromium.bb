@@ -14,9 +14,11 @@
         'cast_base',
         'cast_crypto',
         '../base/base.gyp:run_all_unittests',
+        '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
       ],
       'sources': [
+        'base/device_capabilities_impl_unittest.cc',
         'base/error_codes_unittest.cc',
         'base/path_utils_unittest.cc',
         'base/process_utils_unittest.cc',

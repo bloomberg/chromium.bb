@@ -18,6 +18,9 @@ source_set("base") {
     "cast_resource.h",
     "chromecast_switches.cc",
     "chromecast_switches.h",
+    "device_capabilities.h",
+    "device_capabilities_impl.cc",
+    "device_capabilities_impl.h",
     "error_codes.cc",
     "error_codes.h",
     "path_utils.cc",
@@ -48,6 +51,7 @@ source_set("base") {
 
 test("cast_base_unittests") {
   sources = [
+    "device_capabilities_impl_unittest.cc",
     "error_codes_unittest.cc",
     "path_utils_unittest.cc",
     "process_utils_unittest.cc",
@@ -60,6 +64,7 @@ test("cast_base_unittests") {
     "//base",
     "//base/test:run_all_unittests",
     "//base/test:test_support",
+    "//testing/gmock",
     "//testing/gtest",
   ]
 }
