@@ -88,7 +88,7 @@ struct PolicySourceMap {
 const PolicySourceMap kPolicySources[policy::POLICY_SOURCE_COUNT] = {
   {"sourceEnterpriseDefault", IDS_POLICY_SOURCE_ENTERPRISE_DEFAULT},
   {"sourceCloud", IDS_POLICY_SOURCE_CLOUD},
-  {"sourceEnterpriseOverride", IDS_POLICY_SOURCE_ENTERPRISE_OVERRIDE},
+  {"sourcePublicSessionOverride", IDS_POLICY_SOURCE_PUBLIC_SESSION_OVERRIDE},
   {"sourcePlatform", IDS_POLICY_SOURCE_PLATFORM}
 };
 

@@ -331,7 +331,7 @@
   <message name="IDS_POLICY_SOURCE_PLATFORM" desc="Indicates that the policy is obtained from the local OS.">
     Platform
   </message>
-  <message name="IDS_POLICY_SOURCE_ENTERPRISE_OVERRIDE" desc="Indicates that a policy is enforced  in an enterprise environment and can not be overridden (for Chrome OS only).">
-    Enterprise override
+  <message name="IDS_POLICY_SOURCE_PUBLIC_SESSION_OVERRIDE" desc="Indicates that the policy is set programmatically because of an active public session (for Chrome OS only). It could have overridden other sources that set this policy.">
+    Public session override
   </message>
 </grit-part>

@@ -37,9 +37,9 @@ enum PolicySource {
   // The policy was set by a cloud source.
   POLICY_SOURCE_CLOUD,
 
-  // Any non-platform policy was overridden because we are running in an
-  // enterprise environment.
-  POLICY_SOURCE_ENTERPRISE_OVERRIDE,
+  // Any non-platform policy was overridden because we are running in a
+  // public session.
+  POLICY_SOURCE_PUBLIC_SESSION_OVERRIDE,
 
   // The policy was set by a platform source.
   POLICY_SOURCE_PLATFORM,

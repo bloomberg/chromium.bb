@@ -60,7 +60,7 @@ DeviceLocalAccountPolicyProvider::Create(
         key::kLidCloseAction,
         POLICY_LEVEL_MANDATORY,
         POLICY_SCOPE_MACHINE,
-        POLICY_SOURCE_ENTERPRISE_OVERRIDE,
+        POLICY_SOURCE_PUBLIC_SESSION_OVERRIDE,
         new base::FundamentalValue(
             chromeos::PowerPolicyController::ACTION_STOP_SESSION),
         NULL);
@@ -70,7 +70,7 @@ DeviceLocalAccountPolicyProvider::Create(
         key::kShelfAutoHideBehavior,
         POLICY_LEVEL_MANDATORY,
         POLICY_SCOPE_MACHINE,
-        POLICY_SOURCE_ENTERPRISE_OVERRIDE,
+        POLICY_SOURCE_PUBLIC_SESSION_OVERRIDE,
         new base::StringValue("Never"),
         NULL);
     // Force the |ShowLogoutButtonInTray| policy to |true|, ensuring that a big,
@@ -79,7 +79,7 @@ DeviceLocalAccountPolicyProvider::Create(
         key::kShowLogoutButtonInTray,
         POLICY_LEVEL_MANDATORY,
         POLICY_SCOPE_MACHINE,
-        POLICY_SOURCE_ENTERPRISE_OVERRIDE,
+        POLICY_SOURCE_PUBLIC_SESSION_OVERRIDE,
         new base::FundamentalValue(true),
         NULL);
     // Force the |FullscreenAllowed| policy to |false|, ensuring that the ash
@@ -88,7 +88,7 @@ DeviceLocalAccountPolicyProvider::Create(
         key::kFullscreenAllowed,
         POLICY_LEVEL_MANDATORY,
         POLICY_SCOPE_MACHINE,
-        POLICY_SOURCE_ENTERPRISE_OVERRIDE,
+        POLICY_SOURCE_PUBLIC_SESSION_OVERRIDE,
         new base::FundamentalValue(false),
         NULL);
   }

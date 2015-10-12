@@ -216,7 +216,7 @@ TEST_F(PolicyMapTest, MergeFrom) {
   b.Set(kTestPolicyName4,
         POLICY_LEVEL_RECOMMENDED,
         POLICY_SCOPE_MACHINE,
-        POLICY_SOURCE_ENTERPRISE_OVERRIDE,
+        POLICY_SOURCE_PUBLIC_SESSION_OVERRIDE,
         new base::FundamentalValue(true),
         NULL);
   b.Set(kTestPolicyName5,
@@ -258,7 +258,7 @@ TEST_F(PolicyMapTest, MergeFrom) {
   c.Set(kTestPolicyName4,
         POLICY_LEVEL_RECOMMENDED,
         POLICY_SCOPE_MACHINE,
-        POLICY_SOURCE_ENTERPRISE_OVERRIDE,
+        POLICY_SOURCE_PUBLIC_SESSION_OVERRIDE,
         new base::FundamentalValue(true),
         NULL);
   // POLICY_LEVEL_MANDATORY over POLICY_LEVEL_RECOMMENDED.
