@@ -40,8 +40,8 @@ TEST_F(ContentSettingsRegistryTest, Properties) {
 
   // Check that the whitelisted types are correct.
   std::vector<std::string> expected_whitelist;
-  expected_whitelist.push_back("chrome-devtools");
   expected_whitelist.push_back("chrome");
+  expected_whitelist.push_back("chrome-devtools");
   EXPECT_EQ(expected_whitelist, info->whitelisted_schemes());
 
   // Check the WebsiteSettingsInfo is populated correctly.

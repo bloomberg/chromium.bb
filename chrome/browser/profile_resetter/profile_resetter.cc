@@ -21,6 +21,8 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/installer/util/browser_distribution.h"
+#include "components/content_settings/core/browser/content_settings_info.h"
+#include "components/content_settings/core/browser/content_settings_registry.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/browser/website_settings_info.h"
 #include "components/content_settings/core/browser/website_settings_registry.h"
@@ -218,20 +220,20 @@ void ProfileResetter::ResetHomepage() {
 
 void ProfileResetter::ResetContentSettings() {
   DCHECK(CalledOnValidThread());
-  PrefService* prefs = profile_->GetPrefs();
   HostContentSettingsMap* map =
       HostContentSettingsMapFactory::GetForProfile(profile_);
 
-  content_settings::WebsiteSettingsRegistry* registry =
-      content_settings::WebsiteSettingsRegistry::GetInstance();
-  for (const content_settings::WebsiteSettingsInfo* info : *registry) {
+  for (const content_settings::WebsiteSettingsInfo* info :
+       *content_settings::WebsiteSettingsRegistry::GetInstance()) {
     map->ClearSettingsForOneType(info->type());
-    if (HostContentSettingsMap::IsSettingAllowedForType(
-            prefs, CONTENT_SETTING_DEFAULT, info->type())) {
-      // TODO(raymes): Why don't we just set this to
-      // info->intial_default_value().
-      map->SetDefaultContentSetting(info->type(), CONTENT_SETTING_DEFAULT);
-    }
+  }
+
+  // TODO(raymes): The default value isn't really used for website settings
+  // right now, but if it were we should probably reset that here too.
+  for (const content_settings::ContentSettingsInfo* info :
+       *content_settings::ContentSettingsRegistry::GetInstance()) {
+    map->SetDefaultContentSetting(info->website_settings_info()->type(),
+                                  CONTENT_SETTING_DEFAULT);
   }
   MarkAsDone(CONTENT_SETTINGS);
 }

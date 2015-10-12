@@ -176,14 +176,7 @@ class HostContentSettingsMap : public content_settings::Observer,
   // This should only be called on the UI thread.
   void ClearSettingsForOneType(ContentSettingsType content_type);
 
-  static bool IsValueAllowedForType(const base::Value* value,
-                                    ContentSettingsType content_type);
-  // TODO(raymes): Remove |prefs| from the below functions, it's unused.
-  static bool IsSettingAllowedForType(PrefService* prefs,
-                                      ContentSetting setting,
-                                      ContentSettingsType content_type);
-  static bool IsDefaultSettingAllowedForType(PrefService* prefs,
-                                             ContentSetting setting,
+  static bool IsDefaultSettingAllowedForType(ContentSetting setting,
                                              ContentSettingsType content_type);
 
   // RefcountedKeyedService implementation.

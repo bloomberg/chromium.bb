@@ -390,40 +390,6 @@ TEST_F(PrefProviderTest, ResourceIdentifier) {
   pref_content_settings_provider.ShutdownOnUIThread();
 }
 
-TEST_F(PrefProviderTest, AutoSubmitCertificateContentSetting) {
-  TestingProfile profile;
-  syncable_prefs::TestingPrefServiceSyncable* prefs =
-      profile.GetTestingPrefService();
-  GURL primary_url("https://www.example.com");
-  GURL secondary_url("https://www.sample.com");
-
-  PrefProvider provider(prefs, false);
-
-  EXPECT_EQ(CONTENT_SETTING_DEFAULT,
-            GetContentSetting(
-                &provider,
-                primary_url,
-                primary_url,
-                CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE,
-                std::string(),
-                false));
-
-  provider.SetWebsiteSetting(ContentSettingsPattern::FromURL(primary_url),
-                             ContentSettingsPattern::Wildcard(),
-                             CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE,
-                             std::string(),
-                             new base::FundamentalValue(CONTENT_SETTING_ALLOW));
-  EXPECT_EQ(CONTENT_SETTING_ALLOW,
-            GetContentSetting(
-                &provider,
-                primary_url,
-                secondary_url,
-                CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE,
-                std::string(),
-                false));
-  provider.ShutdownOnUIThread();
-}
-
 // http://crosbug.com/17760
 TEST_F(PrefProviderTest, Deadlock) {
   syncable_prefs::TestingPrefServiceSyncable prefs;

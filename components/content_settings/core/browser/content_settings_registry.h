@@ -5,7 +5,9 @@
 #ifndef COMPONENTS_CONTENT_SETTINGS_CORE_BROWSER_CONTENT_SETTINGS_REGISTRY_H_
 #define COMPONENTS_CONTENT_SETTINGS_CORE_BROWSER_CONTENT_SETTINGS_REGISTRY_H_
 
+#include <set>
 #include <string>
+#include <vector>
 
 #include "base/containers/scoped_ptr_map.h"
 #include "base/lazy_instance.h"
@@ -58,7 +60,8 @@ class ContentSettingsRegistry {
                 const std::string& name,
                 ContentSetting initial_default_value,
                 WebsiteSettingsInfo::SyncStatus sync_status,
-                const std::vector<std::string>& whitelisted_schemes);
+                const std::vector<std::string>& whitelisted_schemes,
+                const std::set<ContentSetting>& valid_settings);
 
   Map content_settings_info_;
   WebsiteSettingsRegistry* website_settings_registry_;

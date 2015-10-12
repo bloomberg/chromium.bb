@@ -515,13 +515,11 @@ TEST_F(ProfileResetterTest, ResetContentSettings) {
     ContentSetting site_setting = default_setting == CONTENT_SETTING_ALLOW
                                       ? CONTENT_SETTING_ALLOW
                                       : CONTENT_SETTING_BLOCK;
-    if (HostContentSettingsMap::IsSettingAllowedForType(
-            profile()->GetPrefs(), wildcard_setting, content_type)) {
+    if (info->IsSettingValid(wildcard_setting)) {
       host_content_settings_map->SetDefaultContentSetting(content_type,
                                                           wildcard_setting);
     }
-    if (HostContentSettingsMap::IsSettingAllowedForType(
-            profile()->GetPrefs(), site_setting, content_type)) {
+    if (info->IsSettingValid(site_setting)) {
       host_content_settings_map->SetContentSetting(
           pattern, ContentSettingsPattern::Wildcard(), content_type,
           std::string(), site_setting);

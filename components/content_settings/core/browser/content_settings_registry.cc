@@ -19,35 +19,52 @@ namespace content_settings {
 
 namespace {
 
-base::LazyInstance<content_settings::ContentSettingsRegistry> g_instance =
+base::LazyInstance<ContentSettingsRegistry> g_instance =
     LAZY_INSTANCE_INITIALIZER;
 
-// These functions return a vector of schemes in which various permissions will
-// be whitelisted.
-const std::vector<std::string>& NoWhitelistedSchemes() {
-  CR_DEFINE_STATIC_LOCAL(std::vector<std::string>, kNoWhitelistedSchemes, ());
-  return kNoWhitelistedSchemes;
+// TODO(raymes): These overloaded functions make the registration code clearer.
+// When initializer lists are available they won't be needed. The initializer
+// list can be implicitly or explicitly converted to a std::vector.
+std::vector<std::string> WhitelistedSchemes() {
+  return std::vector<std::string>();
 }
 
-const std::vector<std::string>& WhitelistedForWebUI() {
-  CR_DEFINE_STATIC_LOCAL(std::vector<std::string>, kWhitelistedForWebUI, ());
-  if (kWhitelistedForWebUI.size() == 0) {
-    kWhitelistedForWebUI.push_back(kChromeDevToolsScheme);
-    kWhitelistedForWebUI.push_back(kChromeUIScheme);
-  }
-  return kWhitelistedForWebUI;
+std::vector<std::string> WhitelistedSchemes(const char* scheme1,
+                                            const char* scheme2) {
+  const char* schemes[] = {scheme1, scheme2};
+  return std::vector<std::string>(schemes, schemes + arraysize(schemes));
 }
 
-const std::vector<std::string>& WhitelistedForWebUIAndExtensions() {
-  CR_DEFINE_STATIC_LOCAL(std::vector<std::string>,
-                         kWhitelistedForWebUIAndExtensions, ());
-  if (kWhitelistedForWebUIAndExtensions.size() == 0) {
-    kWhitelistedForWebUIAndExtensions = WhitelistedForWebUI();
-#if defined(ENABLE_EXTENSIONS)
-    kWhitelistedForWebUIAndExtensions.push_back(kExtensionScheme);
-#endif
-  }
-  return kWhitelistedForWebUIAndExtensions;
+std::vector<std::string> WhitelistedSchemes(const char* scheme1,
+                                            const char* scheme2,
+                                            const char* scheme3) {
+  const char* schemes[] = {scheme1, scheme2, scheme3};
+  return std::vector<std::string>(schemes, schemes + arraysize(schemes));
+}
+
+std::set<ContentSetting> ValidSettings() {
+  return std::set<ContentSetting>();
+}
+
+std::set<ContentSetting> ValidSettings(ContentSetting setting1,
+                                       ContentSetting setting2) {
+  ContentSetting settings[] = {setting1, setting2};
+  return std::set<ContentSetting>(settings, settings + arraysize(settings));
+}
+
+std::set<ContentSetting> ValidSettings(ContentSetting setting1,
+                                       ContentSetting setting2,
+                                       ContentSetting setting3) {
+  ContentSetting settings[] = {setting1, setting2, setting3};
+  return std::set<ContentSetting>(settings, settings + arraysize(settings));
+}
+
+std::set<ContentSetting> ValidSettings(ContentSetting setting1,
+                                       ContentSetting setting2,
+                                       ContentSetting setting3,
+                                       ContentSetting setting4) {
+  ContentSetting settings[] = {setting1, setting2, setting3, setting4};
+  return std::set<ContentSetting>(settings, settings + arraysize(settings));
 }
 
 ContentSetting GetDefaultPluginsContentSetting() {
@@ -108,54 +125,108 @@ void ContentSettingsRegistry::Init() {
   // WARNING: The string names of the permissions passed in below are used to
   // generate preference names and should never be changed!
 
-  // Content settings (those with allow/block/ask/etc. values).
   Register(CONTENT_SETTINGS_TYPE_COOKIES, "cookies", CONTENT_SETTING_ALLOW,
-           WebsiteSettingsInfo::SYNCABLE, WhitelistedForWebUI());
+           WebsiteSettingsInfo::SYNCABLE,
+           WhitelistedSchemes(kChromeUIScheme, kChromeDevToolsScheme),
+           ValidSettings(CONTENT_SETTING_ALLOW, CONTENT_SETTING_BLOCK,
+                         CONTENT_SETTING_SESSION_ONLY));
+
   Register(CONTENT_SETTINGS_TYPE_IMAGES, "images", CONTENT_SETTING_ALLOW,
-           WebsiteSettingsInfo::SYNCABLE, WhitelistedForWebUIAndExtensions());
+           WebsiteSettingsInfo::SYNCABLE,
+           WhitelistedSchemes(kChromeUIScheme, kChromeDevToolsScheme,
+                              kExtensionScheme),
+           ValidSettings(CONTENT_SETTING_ALLOW, CONTENT_SETTING_BLOCK));
+
   Register(CONTENT_SETTINGS_TYPE_JAVASCRIPT, "javascript",
            CONTENT_SETTING_ALLOW, WebsiteSettingsInfo::SYNCABLE,
-           WhitelistedForWebUIAndExtensions());
+           WhitelistedSchemes(kChromeUIScheme, kChromeDevToolsScheme,
+                              kExtensionScheme),
+           ValidSettings(CONTENT_SETTING_ALLOW, CONTENT_SETTING_BLOCK));
+
   Register(CONTENT_SETTINGS_TYPE_PLUGINS, "plugins",
-           GetDefaultPluginsContentSetting(),
-           WebsiteSettingsInfo::SYNCABLE, WhitelistedForWebUI());
+           GetDefaultPluginsContentSetting(), WebsiteSettingsInfo::SYNCABLE,
+           WhitelistedSchemes(kChromeUIScheme, kChromeDevToolsScheme),
+           ValidSettings(CONTENT_SETTING_ALLOW, CONTENT_SETTING_BLOCK,
+                         CONTENT_SETTING_ASK,
+                         CONTENT_SETTING_DETECT_IMPORTANT_CONTENT));
+
   Register(CONTENT_SETTINGS_TYPE_POPUPS, "popups", CONTENT_SETTING_BLOCK,
-           WebsiteSettingsInfo::SYNCABLE, WhitelistedForWebUIAndExtensions());
+           WebsiteSettingsInfo::SYNCABLE,
+           WhitelistedSchemes(kChromeUIScheme, kChromeDevToolsScheme,
+                              kExtensionScheme),
+           ValidSettings(CONTENT_SETTING_ALLOW, CONTENT_SETTING_BLOCK));
+
   Register(CONTENT_SETTINGS_TYPE_GEOLOCATION, "geolocation",
            CONTENT_SETTING_ASK, WebsiteSettingsInfo::UNSYNCABLE,
-           NoWhitelistedSchemes());
+           WhitelistedSchemes(),
+           ValidSettings(CONTENT_SETTING_ALLOW, CONTENT_SETTING_BLOCK,
+                         CONTENT_SETTING_ASK));
+
   Register(CONTENT_SETTINGS_TYPE_NOTIFICATIONS, "notifications",
            CONTENT_SETTING_ASK, WebsiteSettingsInfo::UNSYNCABLE,
-           NoWhitelistedSchemes());
+           WhitelistedSchemes(),
+           ValidSettings(CONTENT_SETTING_ALLOW, CONTENT_SETTING_BLOCK,
+                         CONTENT_SETTING_ASK));
+
   Register(CONTENT_SETTINGS_TYPE_FULLSCREEN, "fullscreen", CONTENT_SETTING_ASK,
-           WebsiteSettingsInfo::SYNCABLE, WhitelistedForWebUI());
+           WebsiteSettingsInfo::SYNCABLE,
+           WhitelistedSchemes(kChromeUIScheme, kChromeDevToolsScheme),
+           ValidSettings(CONTENT_SETTING_ALLOW, CONTENT_SETTING_ASK));
+
   Register(CONTENT_SETTINGS_TYPE_MOUSELOCK, "mouselock", CONTENT_SETTING_ASK,
-           WebsiteSettingsInfo::SYNCABLE, WhitelistedForWebUI());
+           WebsiteSettingsInfo::SYNCABLE,
+           WhitelistedSchemes(kChromeUIScheme, kChromeDevToolsScheme),
+           ValidSettings(CONTENT_SETTING_ALLOW, CONTENT_SETTING_BLOCK,
+                         CONTENT_SETTING_ASK));
+
   Register(CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, "media-stream-mic",
            CONTENT_SETTING_ASK, WebsiteSettingsInfo::UNSYNCABLE,
-           WhitelistedForWebUI());
+           WhitelistedSchemes(kChromeUIScheme, kChromeDevToolsScheme),
+           ValidSettings(CONTENT_SETTING_ALLOW, CONTENT_SETTING_BLOCK,
+                         CONTENT_SETTING_ASK));
+
   Register(CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, "media-stream-camera",
            CONTENT_SETTING_ASK, WebsiteSettingsInfo::UNSYNCABLE,
-           WhitelistedForWebUI());
+           WhitelistedSchemes(kChromeUIScheme, kChromeDevToolsScheme),
+           ValidSettings(CONTENT_SETTING_ALLOW, CONTENT_SETTING_BLOCK,
+                         CONTENT_SETTING_ASK));
+
   Register(CONTENT_SETTINGS_TYPE_PPAPI_BROKER, "ppapi-broker",
            CONTENT_SETTING_ASK, WebsiteSettingsInfo::UNSYNCABLE,
-           WhitelistedForWebUI());
+           WhitelistedSchemes(kChromeUIScheme, kChromeDevToolsScheme),
+           ValidSettings(CONTENT_SETTING_ALLOW, CONTENT_SETTING_BLOCK,
+                         CONTENT_SETTING_ASK));
+
   Register(CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS, "automatic-downloads",
            CONTENT_SETTING_ASK, WebsiteSettingsInfo::SYNCABLE,
-           WhitelistedForWebUIAndExtensions());
+           WhitelistedSchemes(kChromeUIScheme, kChromeDevToolsScheme,
+                              kExtensionScheme),
+           ValidSettings(CONTENT_SETTING_ALLOW, CONTENT_SETTING_BLOCK,
+                         CONTENT_SETTING_ASK));
+
   Register(CONTENT_SETTINGS_TYPE_MIDI_SYSEX, "midi-sysex", CONTENT_SETTING_ASK,
-           WebsiteSettingsInfo::SYNCABLE, NoWhitelistedSchemes());
+           WebsiteSettingsInfo::SYNCABLE, WhitelistedSchemes(),
+           ValidSettings(CONTENT_SETTING_ALLOW, CONTENT_SETTING_BLOCK,
+                         CONTENT_SETTING_ASK));
+
   Register(CONTENT_SETTINGS_TYPE_PUSH_MESSAGING, "push-messaging",
            CONTENT_SETTING_ASK, WebsiteSettingsInfo::SYNCABLE,
-           NoWhitelistedSchemes());
+           WhitelistedSchemes(),
+           ValidSettings(CONTENT_SETTING_ALLOW, CONTENT_SETTING_BLOCK,
+                         CONTENT_SETTING_ASK));
+
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS)
   Register(CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER,
            "protected-media-identifier", CONTENT_SETTING_ASK,
-           WebsiteSettingsInfo::UNSYNCABLE, NoWhitelistedSchemes());
+           WebsiteSettingsInfo::UNSYNCABLE, WhitelistedSchemes(),
+           ValidSettings(CONTENT_SETTING_ALLOW, CONTENT_SETTING_BLOCK,
+                         CONTENT_SETTING_ASK));
 #endif
+
   Register(CONTENT_SETTINGS_TYPE_DURABLE_STORAGE, "durable-storage",
            CONTENT_SETTING_ASK, WebsiteSettingsInfo::UNSYNCABLE,
-           NoWhitelistedSchemes());
+           WhitelistedSchemes(),
+           ValidSettings(CONTENT_SETTING_ALLOW, CONTENT_SETTING_BLOCK));
 
   // Content settings that aren't used to store any data. TODO(raymes): use a
   // different mechanism rather than content settings to represent these.
@@ -163,15 +234,16 @@ void ContentSettingsRegistry::Init() {
   // content setting.
   Register(CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS, "protocol-handler",
            CONTENT_SETTING_DEFAULT, WebsiteSettingsInfo::UNSYNCABLE,
-           NoWhitelistedSchemes());
+           WhitelistedSchemes(), ValidSettings());
+
   Register(CONTENT_SETTINGS_TYPE_MIXEDSCRIPT, "mixed-script",
            CONTENT_SETTING_DEFAULT, WebsiteSettingsInfo::UNSYNCABLE,
-           NoWhitelistedSchemes());
+           WhitelistedSchemes(), ValidSettings());
 
   // Deprecated.
   Register(CONTENT_SETTINGS_TYPE_MEDIASTREAM, "media-stream",
            CONTENT_SETTING_DEFAULT, WebsiteSettingsInfo::UNSYNCABLE,
-           NoWhitelistedSchemes());
+           WhitelistedSchemes(), ValidSettings());
 }
 
 void ContentSettingsRegistry::Register(
@@ -179,7 +251,8 @@ void ContentSettingsRegistry::Register(
     const std::string& name,
     ContentSetting initial_default_value,
     WebsiteSettingsInfo::SyncStatus sync_status,
-    const std::vector<std::string>& whitelisted_schemes) {
+    const std::vector<std::string>& whitelisted_schemes,
+    const std::set<ContentSetting>& valid_settings) {
   // Ensure that nothing has been registered yet for the given type.
   DCHECK(!website_settings_registry_->Get(type));
   scoped_ptr<base::Value> default_value(
@@ -190,8 +263,8 @@ void ContentSettingsRegistry::Register(
                                            WebsiteSettingsInfo::NOT_LOSSY);
   DCHECK(!ContainsKey(content_settings_info_, type));
   content_settings_info_.set(
-      type, make_scoped_ptr(new ContentSettingsInfo(website_settings_info,
-                                                    whitelisted_schemes)));
+      type, make_scoped_ptr(new ContentSettingsInfo(
+                website_settings_info, whitelisted_schemes, valid_settings)));
 }
 
 }  // namespace content_settings

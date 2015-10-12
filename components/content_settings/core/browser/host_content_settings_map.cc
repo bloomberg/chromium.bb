@@ -63,9 +63,7 @@ bool SupportsResourceIdentifier(ContentSettingsType content_type) {
 
 bool SchemeCanBeWhitelisted(const std::string& scheme) {
   return scheme == content_settings::kChromeDevToolsScheme ||
-#if defined(ENABLE_EXTENSIONS)
          scheme == content_settings::kExtensionScheme ||
-#endif
          scheme == content_settings::kChromeUIScheme;
 }
 
@@ -215,11 +213,12 @@ void HostContentSettingsMap::GetSettingsForOneType(
 void HostContentSettingsMap::SetDefaultContentSetting(
     ContentSettingsType content_type,
     ContentSetting setting) {
-  DCHECK(IsDefaultSettingAllowedForType(prefs_, setting, content_type));
-
   base::Value* value = NULL;
-  if (setting != CONTENT_SETTING_DEFAULT)
+  // A value of CONTENT_SETTING_DEFAULT implies deleting the content setting.
+  if (setting != CONTENT_SETTING_DEFAULT) {
+    DCHECK(IsDefaultSettingAllowedForType(setting, content_type));
     value = new base::FundamentalValue(setting);
+  }
   SetWebsiteSetting(
       ContentSettingsPattern::Wildcard(),
       ContentSettingsPattern::Wildcard(),
@@ -234,7 +233,6 @@ void HostContentSettingsMap::SetWebsiteSetting(
     ContentSettingsType content_type,
     const std::string& resource_identifier,
     base::Value* value) {
-  DCHECK(!value || IsValueAllowedForType(value, content_type));
   DCHECK(SupportsResourceIdentifier(content_type) ||
          resource_identifier.empty());
   UsedContentSettingsProviders();
@@ -289,7 +287,6 @@ void HostContentSettingsMap::SetContentSetting(
     ContentSetting setting) {
   DCHECK(content_settings::ContentSettingsRegistry::GetInstance()->Get(
       content_type));
-
   if (setting == CONTENT_SETTING_ALLOW &&
       (content_type == CONTENT_SETTINGS_TYPE_GEOLOCATION ||
        content_type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS)) {
@@ -297,8 +294,13 @@ void HostContentSettingsMap::SetContentSetting(
   }
 
   base::Value* value = NULL;
-  if (setting != CONTENT_SETTING_DEFAULT)
+  // A value of CONTENT_SETTING_DEFAULT implies deleting the content setting.
+  if (setting != CONTENT_SETTING_DEFAULT) {
+    DCHECK(content_settings::ContentSettingsRegistry::GetInstance()
+               ->Get(content_type)
+               ->IsSettingValid(setting));
     value = new base::FundamentalValue(setting);
+  }
   SetWebsiteSetting(primary_pattern,
                     secondary_pattern,
                     content_type,
@@ -425,9 +427,11 @@ void HostContentSettingsMap::ClearSettingsForOneType(
   FlushLossyWebsiteSettings();
 }
 
+// TODO(raymes): Remove this function. Consider making it a property of
+// ContentSettingsInfo or removing it altogether (it's unclear whether we should
+// be restricting allowed default values at this layer).
 // static
 bool HostContentSettingsMap::IsDefaultSettingAllowedForType(
-    PrefService* prefs,
     ContentSetting setting,
     ContentSettingsType content_type) {
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS)
@@ -445,82 +449,11 @@ bool HostContentSettingsMap::IsDefaultSettingAllowedForType(
     return false;
   }
 
-  return IsSettingAllowedForType(prefs, setting, content_type);
-}
-
-// static
-bool HostContentSettingsMap::IsValueAllowedForType(const base::Value* value,
-                                                   ContentSettingsType type) {
-  if (content_settings::ContentSettingsRegistry::GetInstance()->Get(type)) {
-    ContentSetting setting = content_settings::ValueToContentSetting(value);
-    if (setting == CONTENT_SETTING_DEFAULT)
-      return false;
-    return HostContentSettingsMap::IsSettingAllowedForType(nullptr, setting,
-                                                           type);
-  }
-
-  // TODO(raymes): We should permit different types of base::Value for
-  // website settings.
-  return value->GetType() == base::Value::TYPE_DICTIONARY;
-}
-
-// static
-bool HostContentSettingsMap::IsSettingAllowedForType(
-    PrefService* prefs,
-    ContentSetting setting,
-    ContentSettingsType content_type) {
-  // We don't yet support stored content settings for mixed scripting.
-  if (content_type == CONTENT_SETTINGS_TYPE_MIXEDSCRIPT)
-    return false;
-
-  // BLOCK semantics are not implemented for fullscreen.
-  if (content_type == CONTENT_SETTINGS_TYPE_FULLSCREEN &&
-      setting == CONTENT_SETTING_BLOCK) {
-    return false;
-  }
-
-  // TODO(msramek): MEDIASTREAM is deprecated. Remove this check when all
-  // references to MEDIASTREAM are removed from the code.
-  if (content_type == CONTENT_SETTINGS_TYPE_MEDIASTREAM) {
-    return false;
-  }
-
-  // Non content settings cannot be mapped to the type |ContentSetting|.
-  if (!content_settings::ContentSettingsRegistry::GetInstance()->Get(
-          content_type)) {
-    return false;
-  }
-
-  // DEFAULT, ALLOW and BLOCK are always allowed.
-  if (setting == CONTENT_SETTING_DEFAULT ||
-      setting == CONTENT_SETTING_ALLOW ||
-      setting == CONTENT_SETTING_BLOCK) {
-    return true;
-  }
-  switch (content_type) {
-    case CONTENT_SETTINGS_TYPE_COOKIES:
-      return setting == CONTENT_SETTING_SESSION_ONLY;
-    case CONTENT_SETTINGS_TYPE_PLUGINS:
-      return setting == CONTENT_SETTING_ASK ||
-             setting == CONTENT_SETTING_DETECT_IMPORTANT_CONTENT;
-    case CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS:
-    case CONTENT_SETTINGS_TYPE_FULLSCREEN:
-    case CONTENT_SETTINGS_TYPE_GEOLOCATION:
-    case CONTENT_SETTINGS_TYPE_MOUSELOCK:
-    case CONTENT_SETTINGS_TYPE_MEDIASTREAM:
-    case CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
-    case CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
-    case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
-    case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
-    case CONTENT_SETTINGS_TYPE_PPAPI_BROKER:
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
-    case CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER:
-#endif
-    case CONTENT_SETTINGS_TYPE_PUSH_MESSAGING:
-      return setting == CONTENT_SETTING_ASK;
-    default:
-      return false;
-  }
+  const content_settings::ContentSettingsInfo* info =
+      content_settings::ContentSettingsRegistry::GetInstance()->Get(
+          content_type);
+  DCHECK(info);
+  return info->IsSettingValid(setting);
 }
 
 void HostContentSettingsMap::OnContentSettingChanged(

@@ -11,6 +11,8 @@
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/strings/string_split.h"
 #include "base/time/clock.h"
+#include "components/content_settings/core/browser/content_settings_info.h"
+#include "components/content_settings/core/browser/content_settings_registry.h"
 #include "components/content_settings/core/browser/content_settings_rule.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -31,6 +33,23 @@ const char kLastUsed[] = "last_used";
 // Otherwise, returns false.
 bool SupportsResourceIdentifiers(ContentSettingsType content_type) {
   return content_type == CONTENT_SETTINGS_TYPE_PLUGINS;
+}
+
+bool IsValueAllowedForType(const base::Value* value, ContentSettingsType type) {
+  const content_settings::ContentSettingsInfo* info =
+      content_settings::ContentSettingsRegistry::GetInstance()->Get(type);
+  if (info) {
+    int setting;
+    if (!value->GetAsInteger(&setting))
+      return false;
+    if (setting == CONTENT_SETTING_DEFAULT)
+      return false;
+    return info->IsSettingValid(IntToContentSetting(setting));
+  }
+
+  // TODO(raymes): We should permit different types of base::Value for
+  // website settings.
+  return value->GetType() == base::Value::TYPE_DICTIONARY;
 }
 
 }  // namespace
@@ -78,6 +97,7 @@ bool ContentSettingsPref::SetWebsiteSetting(
     const ContentSettingsPattern& secondary_pattern,
     const ResourceIdentifier& resource_identifier,
     base::Value* in_value) {
+  DCHECK(!in_value || IsValueAllowedForType(in_value, content_type_));
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(prefs_);
   DCHECK(primary_pattern != ContentSettingsPattern::Wildcard() ||
@@ -303,8 +323,7 @@ void ContentSettingsPref::ReadContentSettingsFromPref() {
     settings_dictionary->GetWithoutPathExpansion(kSettingPath, &value);
 
     if (value) {
-      DCHECK(
-          HostContentSettingsMap::IsValueAllowedForType(value, content_type_));
+      DCHECK(IsValueAllowedForType(value, content_type_));
       value_map_.SetValue(pattern_pair.first,
                           pattern_pair.second,
                           content_type_,

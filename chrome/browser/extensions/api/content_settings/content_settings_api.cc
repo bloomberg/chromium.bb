@@ -25,6 +25,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/content_settings.h"
+#include "components/content_settings/core/browser/content_settings_info.h"
+#include "components/content_settings/core/browser/content_settings_registry.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -212,8 +214,10 @@ bool ContentSettingsContentSettingSetFunction::RunSync() {
   ContentSetting setting;
   EXTENSION_FUNCTION_VALIDATE(
       content_settings::ContentSettingFromString(setting_str, &setting));
-  EXTENSION_FUNCTION_VALIDATE(HostContentSettingsMap::IsSettingAllowedForType(
-      GetProfile()->GetPrefs(), setting, content_type));
+  EXTENSION_FUNCTION_VALIDATE(
+      content_settings::ContentSettingsRegistry::GetInstance()
+          ->Get(content_type)
+          ->IsSettingValid(setting));
 
   // Some content setting types support the full set of values listed in
   // content_settings.json only for exceptions. For the default setting,
@@ -222,8 +226,8 @@ bool ContentSettingsContentSettingSetFunction::RunSync() {
   // [ask, block] for the default setting.
   if (primary_pattern == ContentSettingsPattern::Wildcard() &&
       secondary_pattern == ContentSettingsPattern::Wildcard() &&
-      !HostContentSettingsMap::IsDefaultSettingAllowedForType(
-          GetProfile()->GetPrefs(), setting, content_type)) {
+      !HostContentSettingsMap::IsDefaultSettingAllowedForType(setting,
+                                                              content_type)) {
     static const char kUnsupportedDefaultSettingError[] =
         "'%s' is not supported as the default setting of %s.";
 
