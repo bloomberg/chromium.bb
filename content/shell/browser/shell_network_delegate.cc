@@ -107,7 +107,7 @@ bool ShellNetworkDelegate::OnCanAccessFile(const net::URLRequest& request,
   return true;
 }
 
-bool ShellNetworkDelegate::OnFirstPartyOnlyCookieExperimentEnabled() const {
+bool ShellNetworkDelegate::OnAreExperimentalCookieFeaturesEnabled() const {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableExperimentalWebPlatformFeatures);
 }

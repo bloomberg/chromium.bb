@@ -210,8 +210,9 @@ class NET_EXPORT NetworkDelegateImpl : public NetworkDelegate {
   // experiment, and false otherwise.
   //
   // TODO(mkwst): Remove this once we decide whether or not we wish to ship
-  // first-party cookies. https://crbug.com/459154
-  bool OnFirstPartyOnlyCookieExperimentEnabled() const override;
+  // first-party cookies and cookie prefixes. https://crbug.com/459154,
+  // https://crbug.com/541511
+  bool OnAreExperimentalCookieFeaturesEnabled() const override;
 
   // Called when the |referrer_url| for requesting |target_url| during handling
   // of the |request| is does not comply with the referrer policy (e.g. a

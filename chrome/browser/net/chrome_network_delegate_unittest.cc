@@ -282,14 +282,14 @@ TEST_F(ChromeNetworkDelegateTest, DataUseMeasurementUserTestWithRedirect) {
 
 TEST_F(ChromeNetworkDelegateTest, DisableFirstPartyOnlyCookiesIffFlagDisabled) {
   Initialize();
-  EXPECT_FALSE(network_delegate()->FirstPartyOnlyCookieExperimentEnabled());
+  EXPECT_FALSE(network_delegate()->AreExperimentalCookieFeaturesEnabled());
 }
 
 TEST_F(ChromeNetworkDelegateTest, EnableFirstPartyOnlyCookiesIffFlagEnabled) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalWebPlatformFeatures);
   Initialize();
-  EXPECT_TRUE(network_delegate()->FirstPartyOnlyCookieExperimentEnabled());
+  EXPECT_TRUE(network_delegate()->AreExperimentalCookieFeaturesEnabled());
 }
 
 TEST_F(ChromeNetworkDelegateTest, ReportDataUseToAggregator) {

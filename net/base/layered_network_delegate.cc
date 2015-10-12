@@ -258,14 +258,13 @@ void LayeredNetworkDelegate::OnCanEnablePrivacyModeInternal(
     const GURL& first_party_for_cookies) const {
 }
 
-bool LayeredNetworkDelegate::OnFirstPartyOnlyCookieExperimentEnabled() const {
-  OnFirstPartyOnlyCookieExperimentEnabledInternal();
-  return nested_network_delegate_->FirstPartyOnlyCookieExperimentEnabled();
+bool LayeredNetworkDelegate::OnAreExperimentalCookieFeaturesEnabled() const {
+  OnAreExperimentalCookieFeaturesEnabledInternal();
+  return nested_network_delegate_->AreExperimentalCookieFeaturesEnabled();
 }
 
-void LayeredNetworkDelegate::OnFirstPartyOnlyCookieExperimentEnabledInternal()
-    const {
-}
+void LayeredNetworkDelegate::OnAreExperimentalCookieFeaturesEnabledInternal()
+    const {}
 
 bool LayeredNetworkDelegate::
     OnCancelURLRequestWithPolicyViolatingReferrerHeader(

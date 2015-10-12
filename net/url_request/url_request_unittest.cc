@@ -2610,7 +2610,7 @@ TEST_F(URLRequestTest, FirstPartyOnlyCookiesEnabled) {
   // LocalHttpTestServer points).
   {
     TestNetworkDelegate network_delegate;
-    network_delegate.set_first_party_only_cookies_enabled(true);
+    network_delegate.set_experimental_cookie_features_enabled(true);
     default_context_.set_network_delegate(&network_delegate);
 
     TestDelegate d;
@@ -2628,7 +2628,7 @@ TEST_F(URLRequestTest, FirstPartyOnlyCookiesEnabled) {
   // Verify that the cookie is sent for first-party requests.
   {
     TestNetworkDelegate network_delegate;
-    network_delegate.set_first_party_only_cookies_enabled(true);
+    network_delegate.set_experimental_cookie_features_enabled(true);
     default_context_.set_network_delegate(&network_delegate);
     TestDelegate d;
     scoped_ptr<URLRequest> req(default_context_.CreateRequest(
@@ -2646,7 +2646,7 @@ TEST_F(URLRequestTest, FirstPartyOnlyCookiesEnabled) {
   // Verify that the cookie is not-sent for non-first-party requests.
   {
     TestNetworkDelegate network_delegate;
-    network_delegate.set_first_party_only_cookies_enabled(true);
+    network_delegate.set_experimental_cookie_features_enabled(true);
     default_context_.set_network_delegate(&network_delegate);
     TestDelegate d;
     scoped_ptr<URLRequest> req(default_context_.CreateRequest(
@@ -2670,7 +2670,7 @@ TEST_F(URLRequestTest, FirstPartyOnlyCookiesDisabled) {
   // LocalHttpTestServer points).
   {
     TestNetworkDelegate network_delegate;
-    network_delegate.set_first_party_only_cookies_enabled(false);
+    network_delegate.set_experimental_cookie_features_enabled(false);
     default_context_.set_network_delegate(&network_delegate);
 
     TestDelegate d;
@@ -2688,7 +2688,7 @@ TEST_F(URLRequestTest, FirstPartyOnlyCookiesDisabled) {
   // Verify that the cookie is sent for first-party requests.
   {
     TestNetworkDelegate network_delegate;
-    network_delegate.set_first_party_only_cookies_enabled(false);
+    network_delegate.set_experimental_cookie_features_enabled(false);
     default_context_.set_network_delegate(&network_delegate);
     TestDelegate d;
     scoped_ptr<URLRequest> req(default_context_.CreateRequest(
@@ -2706,7 +2706,7 @@ TEST_F(URLRequestTest, FirstPartyOnlyCookiesDisabled) {
   // Verify that the cookie is also sent for non-first-party requests.
   {
     TestNetworkDelegate network_delegate;
-    network_delegate.set_first_party_only_cookies_enabled(false);
+    network_delegate.set_experimental_cookie_features_enabled(false);
     default_context_.set_network_delegate(&network_delegate);
     TestDelegate d;
     scoped_ptr<URLRequest> req(default_context_.CreateRequest(

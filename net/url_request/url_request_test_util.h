@@ -273,8 +273,8 @@ class TestNetworkDelegate : public NetworkDelegateImpl {
   void set_can_access_files(bool val) { can_access_files_ = val; }
   bool can_access_files() const { return can_access_files_; }
 
-  void set_first_party_only_cookies_enabled(bool val) {
-    first_party_only_cookies_enabled_ = val;
+  void set_experimental_cookie_features_enabled(bool val) {
+    experimental_cookie_features_enabled_ = val;
   }
 
   void set_cancel_request_with_policy_violating_referrer(bool val) {
@@ -340,7 +340,7 @@ class TestNetworkDelegate : public NetworkDelegateImpl {
                       CookieOptions* options) override;
   bool OnCanAccessFile(const URLRequest& request,
                        const base::FilePath& path) const override;
-  bool OnFirstPartyOnlyCookieExperimentEnabled() const override;
+  bool OnAreExperimentalCookieFeaturesEnabled() const override;
   bool OnCancelURLRequestWithPolicyViolatingReferrerHeader(
       const URLRequest& request,
       const GURL& target_url,
@@ -387,7 +387,7 @@ class TestNetworkDelegate : public NetworkDelegateImpl {
   bool has_load_timing_info_before_auth_;
 
   bool can_access_files_;  // true by default
-  bool first_party_only_cookies_enabled_;               // false by default
+  bool experimental_cookie_features_enabled_;           // false by default
   bool cancel_request_with_policy_violating_referrer_;  // false by default
   bool will_be_intercepted_on_next_error_;
 };

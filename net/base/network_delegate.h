@@ -109,8 +109,9 @@ class NET_EXPORT NetworkDelegate : public base::NonThreadSafe {
                             const GURL& first_party_for_cookies) const;
 
   // TODO(mkwst): Remove this once we decide whether or not we wish to ship
-  // first-party cookies. https://crbug.com/459154
-  bool FirstPartyOnlyCookieExperimentEnabled() const;
+  // first-party cookies and cookie prefixes. https://crbug.com/459154,
+  // https://crbug.com/541511
+  bool AreExperimentalCookieFeaturesEnabled() const;
 
   bool CancelURLRequestWithPolicyViolatingReferrerHeader(
       const URLRequest& request,
@@ -294,12 +295,13 @@ class NET_EXPORT NetworkDelegate : public base::NonThreadSafe {
       const GURL& url,
       const GURL& first_party_for_cookies) const = 0;
 
-  // Returns true if the embedder has enabled the "first-party" cookie
-  // experiment, and false otherwise.
+  // Returns true if the embedder has enabled the experimental features,
+  // and false otherwise.
   //
   // TODO(mkwst): Remove this once we decide whether or not we wish to ship
-  // first-party cookies. https://crbug.com/459154
-  virtual bool OnFirstPartyOnlyCookieExperimentEnabled() const = 0;
+  // first-party cookies and cookie prefixes. https://crbug.com/459154,
+  // https://crbug.com/541511
+  virtual bool OnAreExperimentalCookieFeaturesEnabled() const = 0;
 
   // Called when the |referrer_url| for requesting |target_url| during handling
   // of the |request| is does not comply with the referrer policy (e.g. a

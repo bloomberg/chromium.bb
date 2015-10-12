@@ -104,7 +104,7 @@ bool NetworkDelegateImpl::OnCanEnablePrivacyMode(
   return false;
 }
 
-bool NetworkDelegateImpl::OnFirstPartyOnlyCookieExperimentEnabled() const {
+bool NetworkDelegateImpl::OnAreExperimentalCookieFeaturesEnabled() const {
   return false;
 }
 

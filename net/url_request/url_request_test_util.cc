@@ -332,7 +332,7 @@ TestNetworkDelegate::TestNetworkDelegate()
       has_load_timing_info_before_redirect_(false),
       has_load_timing_info_before_auth_(false),
       can_access_files_(true),
-      first_party_only_cookies_enabled_(false),
+      experimental_cookie_features_enabled_(false),
       cancel_request_with_policy_violating_referrer_(false),
       will_be_intercepted_on_next_error_(false) {}
 
@@ -616,8 +616,8 @@ bool TestNetworkDelegate::OnCanAccessFile(const URLRequest& request,
   return can_access_files_;
 }
 
-bool TestNetworkDelegate::OnFirstPartyOnlyCookieExperimentEnabled() const {
-  return first_party_only_cookies_enabled_;
+bool TestNetworkDelegate::OnAreExperimentalCookieFeaturesEnabled() const {
+  return experimental_cookie_features_enabled_;
 }
 
 bool TestNetworkDelegate::OnCancelURLRequestWithPolicyViolatingReferrerHeader(

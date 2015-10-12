@@ -731,7 +731,7 @@ bool ChromeNetworkDelegate::OnCanEnablePrivacyMode(
   return privacy_mode;
 }
 
-bool ChromeNetworkDelegate::OnFirstPartyOnlyCookieExperimentEnabled() const {
+bool ChromeNetworkDelegate::OnAreExperimentalCookieFeaturesEnabled() const {
   return experimental_web_platform_features_enabled_;
 }
 

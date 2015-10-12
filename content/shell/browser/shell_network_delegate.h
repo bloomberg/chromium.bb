@@ -52,7 +52,7 @@ class ShellNetworkDelegate : public net::NetworkDelegateImpl {
                       net::CookieOptions* options) override;
   bool OnCanAccessFile(const net::URLRequest& request,
                        const base::FilePath& path) const override;
-  bool OnFirstPartyOnlyCookieExperimentEnabled() const override;
+  bool OnAreExperimentalCookieFeaturesEnabled() const override;
 
   DISALLOW_COPY_AND_ASSIGN(ShellNetworkDelegate);
 };
