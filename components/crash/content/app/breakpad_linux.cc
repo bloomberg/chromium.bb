@@ -603,7 +603,7 @@ bool CrashDone(const MinidumpDescriptor& minidump,
     return false;
   }
 
-  DCHECK(!minidump.IsFD());
+  DCHECK(!(upload && minidump.IsFD()));
 
   BreakpadInfo info = {0};
   info.filename = minidump.path();
@@ -812,6 +812,19 @@ void EnableNonBrowserCrashDumping(const std::string& process_type,
       nullptr, CrashDoneInProcessNoUpload, nullptr, true, -1);
 }
 
+void GenerateMinidumpOnDemandForAndroid() {
+  // TODO(tobiasjs) this still calls FinalizeCrashDoneAndroid, which
+  // generates logspam. Consider refactoring.
+  int dump_fd = GetCrashReporterClient()->GetAndroidMinidumpDescriptor();
+  if (dump_fd >= 0) {
+    MinidumpDescriptor minidump_descriptor(dump_fd);
+    minidump_descriptor.set_size_limit(-1);
+    ExceptionHandler(minidump_descriptor, nullptr, CrashDoneNoUpload, nullptr,
+                     false, -1)
+        .WriteMinidump();
+  }
+}
+
 void MicrodumpInfo::SetGpuFingerprint(const std::string& gpu_fingerprint) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!microdump_gpu_fingerprint_);
@@ -860,6 +873,18 @@ void MicrodumpInfo::Initialize(const std::string& process_type,
                            reinterpret_cast<void*>(is_browser_process),
                            true,  // Install handlers.
                            -1);   // Server file descriptor. -1 for in-process.
+
+  if (process_type == "webview") {
+    // We do not use |DumpProcess()| for handling programatically
+    // generated dumps for WebView because we only know the file
+    // descriptor to which we are dumping at the time of the call to
+    // |DumpWithoutCrashing()|. Therefore we need to construct the
+    // |MinidumpDescriptor| and |ExceptionHandler| instances as
+    // needed, instead of setting up |g_breakpad| at initialization
+    // time.
+    base::debug::SetDumpWithoutCrashingFunction(
+        &GenerateMinidumpOnDemandForAndroid);
+  }
 }
 
 #else

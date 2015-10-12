@@ -5,9 +5,11 @@
 #include "android_webview/crash_reporter/aw_microdump_crash_reporter.h"
 
 #include "android_webview/common/aw_version_info_values.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
 #include "base/scoped_native_library.h"
+#include "base/synchronization/lock.h"
 #include "build/build_config.h"
 #include "components/crash/content/app/breakpad_linux.h"
 #include "components/crash/content/app/crash_reporter_client.h"
@@ -19,7 +21,7 @@ namespace {
 
 class AwCrashReporterClient : public ::crash_reporter::CrashReporterClient {
  public:
-  AwCrashReporterClient() {}
+  AwCrashReporterClient() : dump_fd_(-1) {}
 
   // crash_reporter::CrashReporterClient implementation.
   bool IsRunningUnattended() override { return false; }
@@ -35,7 +37,19 @@ class AwCrashReporterClient : public ::crash_reporter::CrashReporterClient {
   // only when NO_UNWIND_TABLES == 1).
   bool ShouldEnableBreakpadMicrodumps() override { return true; }
 
+  int GetAndroidMinidumpDescriptor() override { return dump_fd_; }
+
+  bool DumpWithoutCrashingToFd(int fd) {
+    base::AutoLock lock(dump_lock_);
+    dump_fd_ = fd;
+    base::debug::DumpWithoutCrashing();
+    dump_fd_ = -1;
+    return true;
+  }
+
  private:
+  int dump_fd_;
+  base::Lock dump_lock_;
   DISALLOW_COPY_AND_ASSIGN(AwCrashReporterClient);
 };
 
@@ -118,6 +132,10 @@ void EnableMicrodumpCrashReporter() {
 void AddGpuFingerprintToMicrodumpCrashHandler(
     const std::string& gpu_fingerprint) {
   breakpad::AddGpuFingerprintToMicrodumpCrashHandler(gpu_fingerprint);
+}
+
+bool DumpWithoutCrashingToFd(int fd) {
+  return g_crash_reporter_client.Pointer()->DumpWithoutCrashingToFd(fd);
 }
 
 }  // namespace crash_reporter

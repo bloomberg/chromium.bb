@@ -75,6 +75,11 @@
   public void setSmartClipResultHandler(android.os.Handler);
 }
 
+# AwDebug is accessed by reflection.
+-keep class org.chromium.android_webview.AwDebug {
+  public static boolean dumpWithoutCrashing(...);
+}
+
 # Ignore notes and warnings about the support library, which uses reflection and
 # may reference classes no longer in the SDK.
 -dontnote android.support.**

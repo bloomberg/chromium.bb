@@ -13,7 +13,7 @@ namespace crash_reporter {
 void EnableMicrodumpCrashReporter();
 void AddGpuFingerprintToMicrodumpCrashHandler(
     const std::string& gpu_fingerprint);
-
+bool DumpWithoutCrashingToFd(int fd);
 }  // namespace crash_reporter
 }  // namespace android_webview
 
