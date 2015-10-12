@@ -1065,14 +1065,18 @@ void GraphicsLayer::setContentsRect(const IntRect& rect)
 void GraphicsLayer::setContentsToImage(Image* image, RespectImageOrientationEnum respectImageOrientation)
 {
     RefPtr<SkImage> skImage = image ? image->imageForCurrentFrame() : nullptr;
+
+    if (image && skImage && image->isBitmapImage()) {
+        if (respectImageOrientation == RespectImageOrientation) {
+            ImageOrientation imageOrientation = toBitmapImage(image)->currentFrameOrientation();
+            skImage = DragImage::resizeAndOrientImage(skImage.release(), imageOrientation);
+        }
+    }
+
     if (image && skImage) {
         if (!m_imageLayer) {
             m_imageLayer = adoptPtr(Platform::current()->compositorSupport()->createImageLayer());
             registerContentsLayer(m_imageLayer->layer());
-        }
-        if (respectImageOrientation == RespectImageOrientation && image->isBitmapImage()) {
-            ImageOrientation imageOrientation = toBitmapImage(image)->currentFrameOrientation();
-            skImage = DragImage::resizeAndOrientImage(skImage.release(), imageOrientation);
         }
         m_imageLayer->setImage(skImage.get());
         m_imageLayer->layer()->setOpaque(image->currentFrameKnownToBeOpaque());
