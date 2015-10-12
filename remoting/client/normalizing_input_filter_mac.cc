@@ -9,7 +9,7 @@
 
 #include "base/logging.h"
 #include "remoting/proto/event.pb.h"
-#include "remoting/protocol/usb_key_codes.h"
+#include "ui/events/keycodes/dom/dom_code.h"
 
 namespace remoting {
 
@@ -24,18 +24,22 @@ void NormalizingInputFilterMac::InjectKeyEvent(const protocol::KeyEvent& event)
 {
   DCHECK(event.has_usb_keycode());
 
-  bool is_special_key = event.usb_keycode() == kUsbLeftControl ||
-      event.usb_keycode() == kUsbLeftShift ||
-      event.usb_keycode() == kUsbLeftAlt ||
-      event.usb_keycode() == kUsbRightControl ||
-      event.usb_keycode() == kUsbRightShift ||
-      event.usb_keycode() == kUsbRightAlt ||
-      event.usb_keycode() == kUsbTab;
+  ui::DomCode dom_code = static_cast<ui::DomCode>(event.usb_keycode());
 
-  bool is_cmd_key = event.usb_keycode() == kUsbLeftOs ||
-      event.usb_keycode() == kUsbRightOs;
+  bool is_special_key =
+      dom_code == ui::DomCode::CONTROL_LEFT ||
+      dom_code == ui::DomCode::SHIFT_LEFT ||
+      dom_code == ui::DomCode::ALT_LEFT ||
+      dom_code == ui::DomCode::CONTROL_RIGHT ||
+      dom_code == ui::DomCode::SHIFT_RIGHT ||
+      dom_code == ui::DomCode::ALT_RIGHT ||
+      dom_code == ui::DomCode::TAB;
 
-  if (event.usb_keycode() == kUsbCapsLock) {
+  bool is_cmd_key =
+      dom_code == ui::DomCode::OS_LEFT ||
+      dom_code == ui::DomCode::OS_RIGHT;
+
+  if (dom_code == ui::DomCode::CAPS_LOCK) {
     // Mac OS X generates keydown/keyup on lock-state transitions, rather than
     // when the key is pressed & released, so fake keydown/keyup on each event.
     protocol::KeyEvent newEvent(event);

@@ -142,9 +142,9 @@ TEST(InputEventTrackerTest, ReleaseAllKeys) {
   input_tracker.InjectMouseEvent(NewMouseEvent(0, 0, BUTTON_LEFT, true));
   input_tracker.InjectMouseEvent(NewMouseEvent(1, 1, BUTTON_LEFT, false));
 
-  EXPECT_FALSE(input_tracker.IsKeyPressed(1));
-  EXPECT_FALSE(input_tracker.IsKeyPressed(2));
-  EXPECT_TRUE(input_tracker.IsKeyPressed(3));
+  EXPECT_FALSE(input_tracker.IsKeyPressed(static_cast<ui::DomCode>(1)));
+  EXPECT_FALSE(input_tracker.IsKeyPressed(static_cast<ui::DomCode>(2)));
+  EXPECT_TRUE(input_tracker.IsKeyPressed(static_cast<ui::DomCode>(3)));
   EXPECT_EQ(1, input_tracker.PressedKeyCount());
 
   input_tracker.ReleaseAll();
@@ -196,12 +196,12 @@ TEST(InputEventTrackerTest, TrackUsbKeyEvents) {
   input_tracker.InjectKeyEvent(NewUsbEvent(5, true));
   PressAndReleaseUsb(&input_tracker, 2);
 
-  EXPECT_FALSE(input_tracker.IsKeyPressed(1));
-  EXPECT_FALSE(input_tracker.IsKeyPressed(2));
-  EXPECT_TRUE(input_tracker.IsKeyPressed(3));
-  EXPECT_TRUE(input_tracker.IsKeyPressed(5));
-  EXPECT_TRUE(input_tracker.IsKeyPressed(6));
-  EXPECT_TRUE(input_tracker.IsKeyPressed(7));
+  EXPECT_FALSE(input_tracker.IsKeyPressed(static_cast<ui::DomCode>(1)));
+  EXPECT_FALSE(input_tracker.IsKeyPressed(static_cast<ui::DomCode>(2)));
+  EXPECT_TRUE(input_tracker.IsKeyPressed(static_cast<ui::DomCode>(3)));
+  EXPECT_TRUE(input_tracker.IsKeyPressed(static_cast<ui::DomCode>(5)));
+  EXPECT_TRUE(input_tracker.IsKeyPressed(static_cast<ui::DomCode>(6)));
+  EXPECT_TRUE(input_tracker.IsKeyPressed(static_cast<ui::DomCode>(7)));
   EXPECT_EQ(4, input_tracker.PressedKeyCount());
 
   input_tracker.ReleaseAll();
@@ -246,9 +246,9 @@ TEST(InputEventTrackerTest, InvalidEventsNotTracked) {
 
   PressAndReleaseUsb(&input_tracker, 2);
 
-  EXPECT_FALSE(input_tracker.IsKeyPressed(1));
-  EXPECT_FALSE(input_tracker.IsKeyPressed(2));
-  EXPECT_TRUE(input_tracker.IsKeyPressed(3));
+  EXPECT_FALSE(input_tracker.IsKeyPressed(static_cast<ui::DomCode>(1)));
+  EXPECT_FALSE(input_tracker.IsKeyPressed(static_cast<ui::DomCode>(2)));
+  EXPECT_TRUE(input_tracker.IsKeyPressed(static_cast<ui::DomCode>(3)));
   EXPECT_EQ(1, input_tracker.PressedKeyCount());
 
   input_tracker.ReleaseAll();

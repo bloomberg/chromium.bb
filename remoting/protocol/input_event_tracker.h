@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "remoting/protocol/input_stub.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
+#include "ui/events/keycodes/dom/dom_code.h"
 
 namespace remoting {
 namespace protocol {
@@ -24,7 +25,7 @@ class InputEventTracker : public InputStub {
   ~InputEventTracker() override;
 
   // Returns true if the key with the specified USB code is currently pressed.
-  bool IsKeyPressed(uint32 usb_keycode) const;
+  bool IsKeyPressed(ui::DomCode usb_keycode) const;
 
   // Returns the count of keys currently pressed.
   int PressedKeyCount() const;
@@ -48,7 +49,7 @@ class InputEventTracker : public InputStub {
  private:
   protocol::InputStub* input_stub_;
 
-  std::set<uint32> pressed_keys_;
+  std::set<ui::DomCode> pressed_keys_;
 
   webrtc::DesktopVector mouse_pos_;
   uint32 mouse_button_state_;

@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "remoting/proto/event.pb.h"
-#include "remoting/protocol/usb_key_codes.h"
 
 namespace remoting {
 namespace protocol {
@@ -18,7 +17,7 @@ InputEventTracker::InputEventTracker(InputStub* input_stub)
 
 InputEventTracker::~InputEventTracker() {}
 
-bool InputEventTracker::IsKeyPressed(uint32 usb_keycode) const {
+bool InputEventTracker::IsKeyPressed(ui::DomCode usb_keycode) const {
   return pressed_keys_.find(usb_keycode) != pressed_keys_.end();
 }
 
@@ -28,10 +27,10 @@ int InputEventTracker::PressedKeyCount() const {
 
 void InputEventTracker::ReleaseAll() {
   // Release all pressed keys.
-  for (uint32 keycode : pressed_keys_) {
+  for (auto keycode : pressed_keys_) {
     KeyEvent event;
     event.set_pressed(false);
-    event.set_usb_keycode(keycode);
+    event.set_usb_keycode(static_cast<uint32_t>(keycode));
     input_stub_->InjectKeyEvent(event);
   }
   pressed_keys_.clear();
@@ -58,7 +57,7 @@ void InputEventTracker::ReleaseAll() {
   if (!touch_point_ids_.empty()) {
     TouchEvent cancel_all_touch_event;
     cancel_all_touch_event.set_event_type(TouchEvent::TOUCH_POINT_CANCEL);
-    for (uint32 touch_point_id : touch_point_ids_) {
+    for (uint32_t touch_point_id : touch_point_ids_) {
       TouchEventPoint* point = cancel_all_touch_event.add_touch_points();
       point->set_id(touch_point_id);
     }
@@ -73,17 +72,17 @@ void InputEventTracker::ReleaseAllIfModifiersStuck(bool alt_expected,
                                                    bool os_expected,
                                                    bool shift_expected) {
   bool alt_down =
-      pressed_keys_.find(kUsbLeftAlt) != pressed_keys_.end() ||
-      pressed_keys_.find(kUsbRightAlt) != pressed_keys_.end();
+      pressed_keys_.find(ui::DomCode::ALT_LEFT) != pressed_keys_.end() ||
+      pressed_keys_.find(ui::DomCode::ALT_RIGHT) != pressed_keys_.end();
   bool ctrl_down =
-      pressed_keys_.find(kUsbLeftControl) != pressed_keys_.end() ||
-      pressed_keys_.find(kUsbRightControl) != pressed_keys_.end();
+      pressed_keys_.find(ui::DomCode::CONTROL_LEFT) != pressed_keys_.end() ||
+      pressed_keys_.find(ui::DomCode::CONTROL_RIGHT) != pressed_keys_.end();
   bool os_down =
-      pressed_keys_.find(kUsbLeftOs) != pressed_keys_.end() ||
-      pressed_keys_.find(kUsbRightOs) != pressed_keys_.end();
+      pressed_keys_.find(ui::DomCode::OS_LEFT) != pressed_keys_.end() ||
+      pressed_keys_.find(ui::DomCode::OS_RIGHT) != pressed_keys_.end();
   bool shift_down =
-      pressed_keys_.find(kUsbLeftShift) != pressed_keys_.end() ||
-      pressed_keys_.find(kUsbRightShift) != pressed_keys_.end();
+      pressed_keys_.find(ui::DomCode::SHIFT_LEFT) != pressed_keys_.end() ||
+      pressed_keys_.find(ui::DomCode::SHIFT_RIGHT) != pressed_keys_.end();
 
   if ((alt_down && !alt_expected) || (ctrl_down && !ctrl_expected) ||
       (os_down && !os_expected) || (shift_down && !shift_expected)) {
@@ -99,9 +98,9 @@ void InputEventTracker::InjectKeyEvent(const KeyEvent& event) {
   if (event.has_pressed()) {
     if (event.has_usb_keycode()) {
       if (event.pressed()) {
-        pressed_keys_.insert(event.usb_keycode());
+        pressed_keys_.insert(static_cast<ui::DomCode>(event.usb_keycode()));
       } else {
-        pressed_keys_.erase(event.usb_keycode());
+        pressed_keys_.erase(static_cast<ui::DomCode>(event.usb_keycode()));
       }
     }
   }
@@ -119,7 +118,7 @@ void InputEventTracker::InjectMouseEvent(const MouseEvent& event) {
   if (event.has_button() && event.has_button_down()) {
     // Button values are defined in remoting/proto/event.proto.
     if (event.button() >= 1 && event.button() < MouseEvent::BUTTON_MAX) {
-      uint32 button_change = 1 << (event.button() - 1);
+      uint32_t button_change = 1 << (event.button() - 1);
       if (event.button_down()) {
         mouse_button_state_ |= button_change;
       } else {

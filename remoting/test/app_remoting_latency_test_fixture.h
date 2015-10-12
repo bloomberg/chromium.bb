@@ -13,6 +13,7 @@
 #include "remoting/test/remote_connection_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
+#include "ui/events/keycodes/dom/dom_code.h"
 
 namespace base {
 class RunLoop;
@@ -64,10 +65,11 @@ class AppRemotingLatencyTestFixture : public testing::Test,
   void SaveFrameDataToDisk(bool save_frame_data_to_disk);
 
   // Inject press & release key event.
-  void PressAndReleaseKey(uint32_t usb_keycode);
+  void PressAndReleaseKey(ui::DomCode usb_keycode);
 
   // Inject press & release a combination of key events.
-  void PressAndReleaseKeyCombination(const std::vector<uint32_t>& usb_keycodes);
+  void PressAndReleaseKeyCombination(
+      const std::vector<ui::DomCode>& usb_keycodes);
 
   // Setter for |host_message_received_callback_|.
   void SetHostMessageReceivedCallback(
@@ -97,7 +99,7 @@ class AppRemotingLatencyTestFixture : public testing::Test,
   void HostMessageReceived(const protocol::ExtensionMessage& message) override;
 
   // Inject press key event.
-  void PressKey(uint32_t usb_keycode, bool pressed);
+  void PressKey(ui::DomCode usb_keycode, bool pressed);
 
   // Waits for an image pattern matched reply up to |max_wait_time|. Returns
   // true if we received a response within the maximum time limit.

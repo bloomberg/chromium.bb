@@ -10,7 +10,6 @@
 #include "base/timer/timer.h"
 #include "remoting/proto/event.pb.h"
 #include "remoting/protocol/input_stub.h"
-#include "remoting/protocol/usb_key_codes.h"
 #include "remoting/test/app_remoting_connection_helper.h"
 #include "remoting/test/app_remoting_test_driver_environment.h"
 #include "remoting/test/rgb_value.h"
@@ -106,28 +105,25 @@ void AppRemotingLatencyTestFixture::HostMessageReceived(
   }
 }
 
-void AppRemotingLatencyTestFixture::PressKey(uint32_t usb_keycode,
+void AppRemotingLatencyTestFixture::PressKey(ui::DomCode dom_code,
                                              bool pressed) {
   remoting::protocol::KeyEvent event;
-  event.set_usb_keycode(usb_keycode);
+  event.set_usb_keycode(static_cast<unsigned int>(dom_code));
   event.set_pressed(pressed);
   connection_helper_->input_stub()->InjectKeyEvent(event);
 }
 
-void AppRemotingLatencyTestFixture::PressAndReleaseKey(uint32_t usb_keycode) {
-  PressKey(usb_keycode, true);
-  PressKey(usb_keycode, false);
+void AppRemotingLatencyTestFixture::PressAndReleaseKey(ui::DomCode dom_code) {
+  PressKey(dom_code, true);
+  PressKey(dom_code, false);
 }
 
 void AppRemotingLatencyTestFixture::PressAndReleaseKeyCombination(
-    const std::vector<uint32_t>& usb_keycodes) {
-  for (std::vector<uint32_t>::const_iterator iter = usb_keycodes.begin();
-       iter != usb_keycodes.end(); ++iter) {
+    const std::vector<ui::DomCode>& dom_codes) {
+  for (auto iter = dom_codes.begin(); iter != dom_codes.end(); ++iter) {
     PressKey(*iter, true);
   }
-  for (std::vector<uint32_t>::const_reverse_iterator iter =
-           usb_keycodes.rbegin();
-       iter != usb_keycodes.rend(); ++iter) {
+  for (auto iter = dom_codes.rbegin(); iter != dom_codes.rend(); ++iter) {
     PressKey(*iter, false);
   }
 }
@@ -153,10 +149,10 @@ void AppRemotingLatencyTestFixture::ResetApplicationState() {
 
   // Press Alt + F4 and wait for amount of time for the input to be delivered
   // and processed.
-  std::vector<uint32_t> usb_keycodes;
-  usb_keycodes.push_back(kUsbLeftAlt);
-  usb_keycodes.push_back(kUsbF4);
-  PressAndReleaseKeyCombination(usb_keycodes);
+  std::vector<ui::DomCode> dom_codes;
+  dom_codes.push_back(ui::DomCode::ALT_LEFT);
+  dom_codes.push_back(ui::DomCode::F4);
+  PressAndReleaseKeyCombination(dom_codes);
 
   run_loop_.reset(new base::RunLoop());
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
@@ -165,7 +161,7 @@ void AppRemotingLatencyTestFixture::ResetApplicationState() {
 
   // Press 'N' to choose not save and wait for 1 second for the input to be
   // delivered and processed.
-  PressAndReleaseKey(kUsbN);
+  PressAndReleaseKey(ui::DomCode::KEY_N);
 
   run_loop_.reset(new base::RunLoop());
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
