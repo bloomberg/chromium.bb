@@ -1,5 +1,5 @@
 Name: pthreads-win32
-URL: http://sources.redhat.com/pthreads-win32/
+URL: https://www.sourceware.org/pthreads-win32/
 Version: 2.9.1.0
 Date: 2012-08-21
 License: LGPL 2.1
@@ -13,7 +13,7 @@ the process of developing or porting a Native Client application.
 This library is not shipped with Chromium.
 
 Description:
-From http://sources.redhat.com/pthreads-win32/
+From https://www.sourceware.org/pthreads-win32/
 
 The POSIX 1003.1-2001 standard defines an application programming interface
 (API) for writing multithreaded applications. This interface is known more
