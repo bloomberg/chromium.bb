@@ -44,7 +44,7 @@ void SVGFilterGraphNodeMap::addPrimitive(LayoutObject* object, PassRefPtrWillBeR
 
     // The effect must be a newly created filter effect.
     ASSERT(!m_effectReferences.contains(effect));
-    ASSERT(object && !m_effectRenderer.contains(object));
+    ASSERT(!object || !m_effectRenderer.contains(object));
     m_effectReferences.add(effect, FilterEffectSet());
 
     unsigned numberOfInputEffects = effect->inputEffects().size();
@@ -55,7 +55,11 @@ void SVGFilterGraphNodeMap::addPrimitive(LayoutObject* object, PassRefPtrWillBeR
     for (unsigned i = 0; i < numberOfInputEffects; ++i)
         effectReferences(effect->inputEffect(i)).add(effect.get());
 
-    m_effectRenderer.add(object, effect.get());
+    // If object is null, that means the element isn't attached for some
+    // reason, which in turn mean that certain types of invalidation will not
+    // work (the LayoutObject -> FilterEffect mapping will not be defined).
+    if (object)
+        m_effectRenderer.add(object, effect.get());
 }
 
 void SVGFilterGraphNodeMap::invalidateDependentEffects(FilterEffect* effect)
@@ -130,8 +134,9 @@ void SVGFilterBuilder::buildGraph(Filter* filter, SVGFilterElement& filterElemen
         if (!effect)
             continue;
 
-        if (m_nodeMap && effectElement->layoutObject())
+        if (m_nodeMap)
             m_nodeMap->addPrimitive(effectElement->layoutObject(), effect);
+
         effectElement->setStandardAttributes(effect.get());
         effect->setEffectBoundaries(SVGLengthContext::resolveRectangle<SVGFilterPrimitiveStandardAttributes>(effectElement, filterElement.primitiveUnits()->currentValue()->enumValue(), referenceBox));
         EColorInterpolation colorInterpolation = colorInterpolationForElement(*effectElement, filterColorInterpolation);
