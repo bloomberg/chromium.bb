@@ -45,11 +45,6 @@ bool AreCountersEnabled() {
       switches::kEnableClearBrowsingDataCounters);
 }
 
-bool IsSupportStringSimplified() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kSimpleClearBrowsingDataSupportString);
-}
-
 }  // namespace
 
 namespace options {
@@ -83,9 +78,7 @@ void ClearBrowserDataHandler::InitializeHandler() {
     AddCounter(make_scoped_ptr(new HistoryCounter()),
                IDS_DEL_BROWSING_HISTORY_COUNTER);
     // TODO(msramek): Add a counter for cache.
-  }
 
-  if (IsSupportStringSimplified()) {
     sync_service_ =
         ProfileSyncServiceFactory::GetForProfile(Profile::FromWebUI(web_ui()));
     if (sync_service_)
@@ -96,7 +89,7 @@ void ClearBrowserDataHandler::InitializeHandler() {
 void ClearBrowserDataHandler::InitializePage() {
   web_ui()->CallJavascriptFunction(
       "ClearBrowserDataOverlay.createFooter",
-      base::FundamentalValue(IsSupportStringSimplified()),
+      base::FundamentalValue(AreCountersEnabled()),
       base::FundamentalValue(sync_service_ && sync_service_->IsSyncActive()));
   UpdateInfoBannerVisibility();
   OnBrowsingHistoryPrefChanged();
@@ -142,7 +135,7 @@ void ClearBrowserDataHandler::GetLocalizedValues(
   static OptionsStringResource resources[] = {
     { "clearBrowserDataLabel", IDS_CLEAR_BROWSING_DATA_LABEL },
     { "clearBrowserDataSyncWarning", IDS_CLEAR_BROWSING_DATA_SYNCED_DELETION },
-    { "clearBrowserDataSupportString", IsSupportStringSimplified()
+    { "clearBrowserDataSupportString", AreCountersEnabled()
         ? IDS_CLEAR_BROWSING_DATA_SOME_STUFF_REMAINS_SIMPLE
         : IDS_CLEAR_BROWSING_DATA_SOME_STUFF_REMAINS },
     { "deleteBrowsingHistoryCheckbox", IDS_DEL_BROWSING_HISTORY_CHKBOX },

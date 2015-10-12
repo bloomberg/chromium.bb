@@ -106,7 +106,7 @@ cr.define('options', function() {
       // and braces and converts them into buttons whereas the remainders are
       // represented as span elements.
       var footer =
-          document.querySelector('#some-stuff-remains-footer p');
+          document.querySelector('#some-stuff-remains-footer p span');
       var footerFragments =
           loadTimeData.getString('clearBrowserDataSupportString')
                       .split(/([|#])/);
@@ -122,10 +122,7 @@ cr.define('options', function() {
         var linkId = '';
         if (i + 2 < footerFragments.length) {
           if (footerFragments[i] == '|' && footerFragments[i + 2] == '|') {
-            if (simple)
-              linkId = 'open-not-deleted-help-from-clear-browsing-data';
-            else
-              linkId = 'open-content-settings-from-clear-browsing-data';
+            linkId = 'open-content-settings-from-clear-browsing-data';
           } else if (footerFragments[i] == '#' &&
                      footerFragments[i + 2] == '#') {
             linkId = 'open-search-engines-from-clear-browsing-data';
@@ -150,13 +147,7 @@ cr.define('options', function() {
         }
       }
 
-      if (simple) {
-        $('open-not-deleted-help-from-clear-browsing-data').onclick =
-            function(event) {
-          // TODO(msramek): Link to the exact page when the article is written.
-          window.open('https://support.google.com/chrome/');
-        };
-      } else {
+      if (!simple) {
         $('open-content-settings-from-clear-browsing-data').onclick =
             function(event) {
           PageManager.showPageByName('content');
@@ -166,6 +157,9 @@ cr.define('options', function() {
           PageManager.showPageByName('searchEngines');
         };
       }
+
+      $('clear-browser-data-old-learn-more-link').hidden = simple;
+      $('clear-browser-data-footer-learn-more-link').hidden = !simple;
     },
 
     /**

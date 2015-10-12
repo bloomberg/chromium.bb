@@ -83,7 +83,8 @@
   </div>
   <div class="action-area">
     <div class="hbox stretch">
-      <a target="_blank" i18n-content="learnMore"
+      <a id="clear-browser-data-old-learn-more-link" hidden
+          target="_blank" i18n-content="learnMore"
           i18n-values="href:clearBrowsingDataLearnMoreUrl"></a>
     </div>
     <div class="action-area-right">
@@ -97,6 +98,11 @@
     </div>
   </div>
   <div id="some-stuff-remains-footer" class="gray-bottom-bar">
-    <p><!--This is filled by JavaScript--></p>
+    <p>
+      <span><!--This is filled by JavaScript--></span>
+      <a id="clear-browser-data-footer-learn-more-link" hidden
+          target="_blank" i18n-content="learnMore"
+          i18n-values="href:clearBrowsingDataLearnMoreUrl"></a>
+    </p>
   </div>
 </div>
