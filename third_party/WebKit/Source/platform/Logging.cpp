@@ -70,6 +70,8 @@ WTFLogChannel LogGamepad =            { WTFLogChannelOff };
 WTFLogChannel LogScriptedAnimationController = { WTFLogChannelOff };
 WTFLogChannel LogTimers =                      { WTFLogChannelOff };
 
+WTFLogChannel LogFonts =              { WTFLogChannelOff };
+
 WTFLogChannel* getChannelFromName(const String& channelName)
 {
     if (!(channelName.length() >= 2))
@@ -155,6 +157,9 @@ WTFLogChannel* getChannelFromName(const String& channelName)
 
     if (equalIgnoringCase(channelName, String("Timers")))
         return &LogTimers;
+
+    if (equalIgnoringCase(channelName, String("Fonts")))
+        return &LogFonts;
 
     return 0;
 }
