@@ -35,12 +35,12 @@ void SetOrClearBit(uint64_t &value, uint64_t bit, bool set_bit) {
 
 void CreateAndPostKeyEvent(int keycode,
                            bool pressed,
-                           int flags,
+                           uint64_t flags,
                            const base::string16& unicode) {
   base::ScopedCFTypeRef<CGEventRef> eventRef(
       CGEventCreateKeyboardEvent(nullptr, keycode, pressed));
   if (eventRef) {
-    CGEventSetFlags(eventRef, flags);
+    CGEventSetFlags(eventRef, static_cast<CGEventFlags>(flags));
     if (!unicode.empty())
       CGEventKeyboardSetUnicodeString(eventRef, unicode.size(), &(unicode[0]));
     CGEventPost(kCGSessionEventTap, eventRef);
@@ -110,8 +110,8 @@ class InputInjectorMac : public InputInjector {
     webrtc::DesktopVector mouse_pos_;
     uint32 mouse_button_state_;
     scoped_ptr<Clipboard> clipboard_;
-    CGEventFlags left_modifiers_;
-    CGEventFlags right_modifiers_;
+    uint64_t left_modifiers_;
+    uint64_t right_modifiers_;
     base::TimeTicks last_time_display_woken_;
 
     DISALLOW_COPY_AND_ASSIGN(Core);
@@ -243,8 +243,8 @@ void InputInjectorMac::Core::InjectTextEvent(const TextEvent& event) {
 
   // Applications that ignore UnicodeString field will see the text event as
   // Space key.
-  CreateAndPostKeyEvent(kVK_Space, true, 0, text);
-  CreateAndPostKeyEvent(kVK_Space, false, 0, text);
+  CreateAndPostKeyEvent(kVK_Space, /*pressed=*/true, 0, text);
+  CreateAndPostKeyEvent(kVK_Space, /*pressed=*/false, 0, text);
 }
 
 void InputInjectorMac::Core::InjectMouseEvent(const MouseEvent& event) {
