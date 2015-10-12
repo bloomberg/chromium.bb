@@ -197,15 +197,15 @@ void AddDefaultBrowserStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString(
       "defaultBrowser", IDS_SETTINGS_DEFAULT_BROWSER);
   html_source->AddLocalizedString(
-      "defaultBroswerDefault", IDS_SETTINGS_DEFAULT_BROWSER_DEFAULT);
+      "defaultBrowserDefault", IDS_SETTINGS_DEFAULT_BROWSER_DEFAULT);
   html_source->AddLocalizedString(
-      "defaultBroswerNotDefault", IDS_SETTINGS_DEFAULT_BROWSER_NOT_DEFAULT);
+      "defaultBrowserNotDefault", IDS_SETTINGS_DEFAULT_BROWSER_NOT_DEFAULT);
   html_source->AddLocalizedString(
-      "defaultBroswerMakeDefault", IDS_SETTINGS_DEFAULT_BROWSER_MAKE_DEFAULT);
+      "defaultBrowserMakeDefault", IDS_SETTINGS_DEFAULT_BROWSER_MAKE_DEFAULT);
   html_source->AddLocalizedString(
-      "defaultBroswerUnknown", IDS_SETTINGS_DEFAULT_BROWSER_UNKNOWN);
+      "defaultBrowserUnknown", IDS_SETTINGS_DEFAULT_BROWSER_UNKNOWN);
   html_source->AddLocalizedString(
-      "defaultBroswerSecondary", IDS_SETTINGS_DEFAULT_BROWSER_SECONDARY);
+      "defaultBrowserSecondary", IDS_SETTINGS_DEFAULT_BROWSER_SECONDARY);
 }
 #endif
 

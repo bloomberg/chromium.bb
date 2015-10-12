@@ -91,10 +91,10 @@ Polymer({
     this.showButton_ = !isDefault && canBeDefault;
     if (canBeDefault) {
       this.message_ = loadTimeData.getString(isDefault ?
-          'defaultBroswerDefault' :
-          'defaultBroswerNotDefault');
+          'defaultBrowserDefault' :
+          'defaultBrowserNotDefault');
     } else {
-      this.message_ = loadTimeData.getString('defaultBroswerUnknown');
+      this.message_ = loadTimeData.getString('defaultBrowserUnknown');
     }
   },
 
