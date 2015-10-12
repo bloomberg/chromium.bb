@@ -7,10 +7,6 @@
  */
 
 login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
-  // Gaia loading time after which error message must be displayed and
-  // lazy portal check should be fired.
-  /** @const */ var GAIA_LOADING_PORTAL_SUSSPECT_TIME_SEC = 7;
-
   // GAIA animation guard timer. Started when GAIA page is loaded
   // (Authenticator 'ready' event) and is intended to guard against edge cases
   // when 'showView' message is not generated/received.
@@ -343,24 +339,12 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
     },
 
     /**
-     * Handler for Gaia loading suspiciously long timeout.
-     * @private
-     */
-    onLoadingSuspiciouslyLong_: function() {
-      if (this != Oobe.getInstance().currentScreen)
-        return;
-      chrome.send('showLoadingTimeoutError');
-      this.loadingTimer_ = setTimeout(
-          this.onLoadingTimeOut_.bind(this),
-          (MAX_GAIA_LOADING_TIME_SEC - GAIA_LOADING_PORTAL_SUSSPECT_TIME_SEC) *
-          1000);
-    },
-
-    /**
      * Handler for Gaia loading timeout.
      * @private
      */
     onLoadingTimeOut_: function() {
+      if (this != Oobe.getInstance().currentScreen)
+        return;
       this.loadingTimer_ = undefined;
       chrome.send('showLoadingTimeoutError');
     },
@@ -382,9 +366,8 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      */
     startLoadingTimer_: function() {
       this.clearLoadingTimer_();
-      this.loadingTimer_ = setTimeout(
-          this.onLoadingSuspiciouslyLong_.bind(this),
-          GAIA_LOADING_PORTAL_SUSSPECT_TIME_SEC * 1000);
+      this.loadingTimer_ = setTimeout(this.onLoadingTimeOut_.bind(this),
+                                      MAX_GAIA_LOADING_TIME_SEC * 1000);
     },
 
     /**
