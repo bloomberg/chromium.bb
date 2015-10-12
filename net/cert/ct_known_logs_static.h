@@ -100,8 +100,6 @@ const CTLogInfo kCTLogList[] = {
      "https://ctlog.api.venafi.com/"}};
 
 const size_t kNumKnownCTLogs = 8;
-const int kGoogleOperatorId = 0;
-const size_t kMaxOperatorId = 5;
 
 // The list is sorted.
 const char kGoogleLogIDs[][33] = {
