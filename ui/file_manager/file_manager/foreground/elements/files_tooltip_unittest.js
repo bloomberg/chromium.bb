@@ -6,7 +6,6 @@ var chocolateButton;
 var cherriesButton;
 var otherButton;
 var tooltip;
-var controller;
 
 function waitForMutation(target) {
   return new Promise(function(fulfill, reject) {
@@ -22,9 +21,8 @@ function setUp() {
   chocolateButton = document.querySelector('#chocolate');
   cherriesButton = document.querySelector('#cherries');
   otherButton = document.querySelector('#other');
-  tooltip = document.querySelector('#tooltip');
-  controller = new TooltipController(
-      tooltip, [chocolateButton, cherriesButton]);
+  tooltip = document.querySelector('files-tooltip');
+  tooltip.addTargets([chocolateButton, cherriesButton]);
 }
 
 function testFocus(callback) {

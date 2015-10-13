@@ -4,6 +4,11 @@
   -- found in the LICENSE file.
   -->
 
+<!-- Since resources under chrome://resources are not accessible from unittest,
+  -- we need to load them with relative paths. -->
+<link rel="import" href="../../../../../third_party/polymer/v1_0/components-chromium/polymer/polymer.html">
+<link rel="import" href="files_tooltip.html">
+
 <style type="text/css">
  button {
    display: flex;
@@ -15,10 +20,11 @@
  #container {
    display: flex;
    justify-content: space-between;
- } 
+ }
 
- #tooltip {
+ files-tooltip {
    background: yellow;
+   box-sizing: border-box;
    position: absolute;
    text-align: center;
    width: 100px;
@@ -33,12 +39,9 @@
 <!-- Button without a tooltip. -->
 <button id="other"></button>
 
-<div id="tooltip">
-  <div id="tooltip-label"></div>
-</div>
+<files-tooltip></files-tooltip>
 
 <script src="../../../../webui/resources/js/assert.js"></script>
 <script src="../../../../webui/resources/js/util.js"></script>
 <script src="../../common/js/unittest_util.js"></script>
-<script src="tooltip_controller.js"></script>
-<script src="tooltip_controller_unittest.js"></script>
+<script src="files_tooltip_unittest.js"></script>

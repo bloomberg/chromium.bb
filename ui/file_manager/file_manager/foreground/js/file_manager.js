@@ -206,13 +206,6 @@ function FileManager() {
   this.toolbarController_ = null;
 
   /**
-   * Tooltip controller.
-   * @type {TooltipController}
-   * @private
-   */
-  this.tooltipController_ = null;
-
-  /**
    * Empty folder controller.
    * @private {EmptyFolderController}
    */
@@ -490,10 +483,6 @@ FileManager.prototype = /** @struct */ {
         assert(this.ui_.locationLine),
         this.selectionHandler_,
         this.directoryModel_);
-    this.tooltipController_ = new TooltipController(
-        queryRequiredElement('#tooltip', this.dialogDom_),
-        Array.prototype.slice.call(
-            this.dialogDom_.querySelectorAll('[has-tooltip]')));
     this.emptyFolderController_ = new EmptyFolderController(
         this.ui_.emptyFolder,
         this.directoryModel_);
@@ -541,6 +530,8 @@ FileManager.prototype = /** @struct */ {
             this.document_,
             // Whether to show any welcome banner.
             this.dialogType === DialogType.FULL_PAGE));
+
+    this.ui_.attachFilesTooltip();
 
     this.ui_.decorateFilesMenuItems();
   };

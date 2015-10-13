@@ -85,6 +85,7 @@
           '../../file_manager/common/js/metrics_base.js',
           '../../file_manager/common/js/metrics_events.js',
           '../../file_manager/common/js/metrics.js',
+          '../../file_manager/foreground/elements/files_tooltip.js',
           '../../file_manager/foreground/js/metrics_start.js',
           '../../file_manager/foreground/js/metadata/content_metadata_provider.js',
           '../../file_manager/foreground/js/metadata/exif_constants.js',

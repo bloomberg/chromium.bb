@@ -143,17 +143,9 @@ function assertDeepEquals(expected, observed, opt_message) {
    */
   function runTests() {
     for (var name in window) {
-      try {
-        if (typeof window[name] == 'function' && /^test/.test(name))
-          testCases.push(name);
-      } catch(e) {
-        if (location.protocol == 'data:' && e.name == 'SecurityError') {
-          // Sometimes this file gets loaded as a data: URI. That causes issues
-          // when it touches window.caches or window.cookie.
-        } else {
-          throw e;
-        }
-      }
+      // To avoid unnecessary getting properties, test name first.
+      if (/^test/.test(name) && typeof window[name] == 'function')
+        testCases.push(name);
     }
     if (!testCases.length) {
       console.error('Failed to find test cases.');

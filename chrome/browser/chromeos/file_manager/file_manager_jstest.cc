@@ -174,9 +174,9 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ProvidersModel) {
       FILE_PATH_LITERAL("foreground/js/providers_model_unittest.html")));
 }
 
-IN_PROC_BROWSER_TEST_F(FileManagerJsTest, TooltipController) {
+IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FilesTooltip) {
   RunTest(base::FilePath(
-      FILE_PATH_LITERAL("foreground/js/tooltip_controller_unittest.html")));
+      FILE_PATH_LITERAL("foreground/elements/files_tooltip_unittest.html")));
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, SpinnerController) {

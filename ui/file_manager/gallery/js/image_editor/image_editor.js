@@ -1213,6 +1213,11 @@ ImageEditor.Toolbar.createButton_ = function(
   if (type === ImageEditor.Toolbar.ButtonType.ICON) {
     var icon = document.createElement('div');
     icon.classList.add('icon');
+
+    // Show tooltip for icon button.
+    assertInstanceof(document.querySelector('files-tooltip'), FilesTooltip)
+        .addTarget(button);
+
     button.appendChild(icon);
   } else if (type === ImageEditor.Toolbar.ButtonType.LABEL ||
       type === ImageEditor.Toolbar.ButtonType.LABEL_UPPER_CASE) {
@@ -1221,6 +1226,7 @@ ImageEditor.Toolbar.createButton_ = function(
     label.textContent =
         type === ImageEditor.Toolbar.ButtonType.LABEL_UPPER_CASE ?
         strf(title).toLocaleUpperCase() : strf(title);
+
     button.appendChild(label);
   } else {
     assertNotReached();
@@ -1230,7 +1236,7 @@ ImageEditor.Toolbar.createButton_ = function(
   button.appendChild(paperRipple);
 
   button.label = strf(title);
-  button.title = strf(title);
+  button.setAttribute('aria-label', strf(title));
 
   GalleryUtil.decorateMouseFocusHandling(button);
 

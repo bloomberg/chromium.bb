@@ -407,6 +407,14 @@ FileManagerUI.prototype.initBanners = function(banners) {
 };
 
 /**
+ * Attaches files tooltip.
+ */
+FileManagerUI.prototype.attachFilesTooltip = function() {
+  assertInstanceof(document.querySelector('files-tooltip'), FilesTooltip)
+      .addTargets(document.querySelectorAll('[has-tooltip]'));
+};
+
+/**
  * Initialize files menu items. This method must be called after all files menu
  * items are decorated as cr.ui.MenuItem.
  */
