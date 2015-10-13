@@ -278,6 +278,7 @@ private:
 inline bool FontDescription::operator==(const FontDescription& other) const
 {
     return m_familyList == other.m_familyList
+        && m_locale == other.m_locale
         && m_specifiedSize == other.m_specifiedSize
         && m_computedSize == other.m_computedSize
         && m_adjustedSize == other.m_adjustedSize
