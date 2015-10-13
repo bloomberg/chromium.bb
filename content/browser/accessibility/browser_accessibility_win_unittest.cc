@@ -1186,4 +1186,58 @@ TEST_F(BrowserAccessibilityTest, TestSelectionInContentEditables) {
   ASSERT_EQ(0, CountedBrowserAccessibility::num_instances());
 }
 
+TEST_F(BrowserAccessibilityTest, TestPlatformDeepestFirstLastChild) {
+  ui::AXNodeData root;
+  root.id = 1;
+  root.role = ui::AX_ROLE_ROOT_WEB_AREA;
+
+  ui::AXNodeData child1;
+  child1.id = 2;
+  root.child_ids.push_back(2);
+
+  ui::AXNodeData child2;
+  child2.id = 3;
+  root.child_ids.push_back(3);
+
+  ui::AXNodeData child2_child1;
+  child2_child1.id = 4;
+  child2.child_ids.push_back(4);
+
+  ui::AXNodeData child2_child2;
+  child2_child2.id = 5;
+  child2.child_ids.push_back(5);
+
+  scoped_ptr<BrowserAccessibilityManager> manager(
+      BrowserAccessibilityManager::Create(
+          MakeAXTreeUpdate(root, child1, child2, child2_child1, child2_child2),
+          nullptr, new CountedBrowserAccessibilityFactory()));
+
+  auto root_accessible = manager->GetRoot();
+  ASSERT_NE(nullptr, root_accessible);
+  ASSERT_EQ(2, root_accessible->PlatformChildCount());
+  auto child1_accessible = root_accessible->PlatformGetChild(0);
+  ASSERT_NE(nullptr, child1_accessible);
+  auto child2_accessible = root_accessible->PlatformGetChild(1);
+  ASSERT_NE(nullptr, child2_accessible);
+  ASSERT_EQ(2, child2_accessible->PlatformChildCount());
+  auto child2_child1_accessible = child2_accessible->PlatformGetChild(0);
+  ASSERT_NE(nullptr, child2_child1_accessible);
+  auto child2_child2_accessible = child2_accessible->PlatformGetChild(1);
+  ASSERT_NE(nullptr, child2_child2_accessible);
+
+  EXPECT_EQ(child1_accessible, root_accessible->PlatformDeepestFirstChild());
+  EXPECT_EQ(child2_child2_accessible,
+            root_accessible->PlatformDeepestLastChild());
+  EXPECT_EQ(nullptr, child1_accessible->PlatformDeepestFirstChild());
+  EXPECT_EQ(nullptr, child1_accessible->PlatformDeepestLastChild());
+  EXPECT_EQ(child2_child1_accessible,
+            child2_accessible->PlatformDeepestFirstChild());
+  EXPECT_EQ(child2_child2_accessible,
+            child2_accessible->PlatformDeepestLastChild());
+  EXPECT_EQ(nullptr, child2_child1_accessible->PlatformDeepestFirstChild());
+  EXPECT_EQ(nullptr, child2_child1_accessible->PlatformDeepestLastChild());
+  EXPECT_EQ(nullptr, child2_child2_accessible->PlatformDeepestFirstChild());
+  EXPECT_EQ(nullptr, child2_child2_accessible->PlatformDeepestLastChild());
+}
+
 }  // namespace content

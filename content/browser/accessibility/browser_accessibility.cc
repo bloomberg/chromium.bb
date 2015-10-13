@@ -158,8 +158,10 @@ BrowserAccessibility* BrowserAccessibility::PlatformDeepestLastChild() const {
     return nullptr;
 
   auto deepest_child = PlatformGetChild(PlatformChildCount() - 1);
-  while (deepest_child->PlatformChildCount())
-    deepest_child = deepest_child->PlatformGetChild(PlatformChildCount() - 1);
+  while (deepest_child->PlatformChildCount()) {
+    deepest_child = deepest_child->PlatformGetChild(
+        deepest_child->PlatformChildCount() - 1);
+  }
 
   return deepest_child;
 }
