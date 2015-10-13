@@ -26,6 +26,7 @@
 #include "net/base/external_estimate_provider.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
+#include "net/base/net_util.h"
 #include "net/base/network_delegate_impl.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_server_properties_manager.h"

@@ -23,6 +23,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
+#include "net/base/net_util.h"
 #include "net/base/network_interfaces.h"
 #include "net/log/net_log.h"
 #include "net/url_request/url_request_context.h"

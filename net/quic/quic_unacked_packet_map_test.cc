@@ -4,6 +4,7 @@
 
 #include "net/quic/quic_unacked_packet_map.h"
 
+#include "base/stl_util.h"
 #include "net/quic/quic_ack_notifier_manager.h"
 #include "net/quic/quic_flags.h"
 #include "net/quic/quic_utils.h"

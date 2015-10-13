@@ -21,7 +21,7 @@
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
-#include "net/base/net_util.h"
+#include "net/base/ip_address_number.h"
 #include "net/base/network_change_notifier.h"
 
 namespace net {

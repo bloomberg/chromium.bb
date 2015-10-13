@@ -27,6 +27,7 @@
 #include "device/usb/usb_device.h"
 #include "device/usb/usb_device_handle.h"
 #include "device/usb/usb_service.h"
+#include "net/base/escape.h"
 #include "net/proxy/proxy_service.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"

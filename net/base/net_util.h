@@ -213,24 +213,6 @@ NET_EXPORT_PRIVATE bool IsLocalhostTLD(base::StringPiece host);
 // for histograms and shouldn't be used to affect behavior.
 NET_EXPORT_PRIVATE bool HasGoogleHost(const GURL& url);
 
-// A subset of IP address attributes which are actionable by the
-// application layer. Currently unimplemented for all hosts;
-// IP_ADDRESS_ATTRIBUTE_NONE is always returned.
-enum IPAddressAttributes {
-  IP_ADDRESS_ATTRIBUTE_NONE = 0,
-
-  // A temporary address is dynamic by nature and will not contain MAC
-  // address. Presence of MAC address in IPv6 addresses can be used to
-  // track an endpoint and cause privacy concern. Please refer to
-  // RFC4941.
-  IP_ADDRESS_ATTRIBUTE_TEMPORARY = 1 << 0,
-
-  // A temporary address could become deprecated once the preferred
-  // lifetime is reached. It is still valid but shouldn't be used to
-  // create new connections.
-  IP_ADDRESS_ATTRIBUTE_DEPRECATED = 1 << 1,
-};
-
 }  // namespace net
 
 #endif  // NET_BASE_NET_UTIL_H_

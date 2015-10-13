@@ -8,6 +8,7 @@
 #include <openssl/evp.h>
 #include <openssl/rsa.h>
 
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "crypto/openssl_util.h"
 #include "net/quic/crypto/crypto_protocol.h"

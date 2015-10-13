@@ -10,6 +10,7 @@
 #include "base/values.h"
 #include "chrome/browser/android/contextualsearch/contextual_search_context.h"
 #include "components/search_engines/template_url_service.h"
+#include "net/base/escape.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"

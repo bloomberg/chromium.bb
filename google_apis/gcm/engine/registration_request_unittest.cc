@@ -12,6 +12,7 @@
 #include "google_apis/gcm/engine/gcm_request_test_base.h"
 #include "google_apis/gcm/engine/instance_id_get_token_request_handler.h"
 #include "google_apis/gcm/monitoring/fake_gcm_stats_recorder.h"
+#include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request_status.h"

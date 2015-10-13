@@ -12,6 +12,7 @@
 #include <sys/socket.h>
 
 #include "net/base/ip_endpoint.h"
+#include "net/base/net_util.h"
 #include "net/quic/crypto/crypto_handshake.h"
 #include "net/quic/crypto/quic_random.h"
 #include "net/quic/quic_clock.h"
