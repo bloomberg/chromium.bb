@@ -1294,11 +1294,70 @@ TEST_F(DataPipeTest, WriteCloseProducerReadNoData) {
   const void* read_buffer_ptr = nullptr;
   num_bytes = 0u;
   ASSERT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-            ReadData(&read_buffer_ptr, &num_bytes));
+            BeginReadData(&read_buffer_ptr, &num_bytes));
 
   // Ditto for discard.
   num_bytes = 10u;
   ASSERT_EQ(MOJO_RESULT_FAILED_PRECONDITION, DiscardData(&num_bytes));
+}
+
+// Test that during a two phase read the memory stays valid even if more data
+// comes in.
+TEST_F(DataPipeTest, TwoPhaseReadMemoryStable) {
+  const char kTestData[] = "hello world";
+  const uint32_t kTestDataSize = static_cast<uint32_t>(sizeof(kTestData));
+
+  const MojoCreateDataPipeOptions options = {
+      kSizeOfOptions,                           // |struct_size|.
+      MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE,  // |flags|.
+      1u,                                       // |element_num_bytes|.
+      1000u                                     // |capacity_num_bytes|.
+  };
+  ASSERT_EQ(MOJO_RESULT_OK, Create(&options));
+  MojoHandleSignalsState hss;
+
+  // Write some data.
+  uint32_t num_bytes = kTestDataSize;
+  ASSERT_EQ(MOJO_RESULT_OK, WriteData(kTestData, &num_bytes));
+  ASSERT_EQ(kTestDataSize, num_bytes);
+
+  // Wait for the data.
+  hss = MojoHandleSignalsState();
+  ASSERT_EQ(MOJO_RESULT_OK,
+            MojoWait(consumer_, MOJO_HANDLE_SIGNAL_READABLE,
+                     MOJO_DEADLINE_INDEFINITE, &hss));
+  ASSERT_EQ(MOJO_HANDLE_SIGNAL_READABLE, hss.satisfied_signals);
+  ASSERT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+            hss.satisfiable_signals);
+
+  // Begin a two-phase read.
+  const void* read_buffer_ptr = nullptr;
+  uint32_t read_buffer_size = 0u;
+  ASSERT_EQ(MOJO_RESULT_OK, BeginReadData(&read_buffer_ptr, &read_buffer_size));
+
+  // Write more data.
+  const char kExtraData[] = "bye world";
+  const uint32_t kExtraDataSize = static_cast<uint32_t>(sizeof(kExtraData));
+  num_bytes = kExtraDataSize;
+  ASSERT_EQ(MOJO_RESULT_OK, WriteData(kExtraData, &num_bytes));
+  ASSERT_EQ(kExtraDataSize, num_bytes);
+
+  // Close the producer.
+  CloseProducer();
+
+  // Wait. (Note that once the consumer knows that the producer is closed, it
+  // must also have received the extra data).
+  hss = MojoHandleSignalsState();
+  ASSERT_EQ(MOJO_RESULT_OK,
+            MojoWait(consumer_, MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+                     MOJO_DEADLINE_INDEFINITE, &hss));
+  ASSERT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, hss.satisfied_signals);
+  ASSERT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+            hss.satisfiable_signals);
+
+  // Read the two phase memory to check it's still valid.
+  ASSERT_EQ(0, memcmp(read_buffer_ptr, kTestData, kTestDataSize));
+  EndReadData(read_buffer_size);
 }
 
 // Test that two-phase reads/writes behave correctly when given invalid

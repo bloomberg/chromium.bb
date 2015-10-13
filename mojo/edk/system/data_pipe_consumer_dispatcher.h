@@ -102,6 +102,9 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipeConsumerDispatcher final
 
   bool in_two_phase_read_;
   uint32_t two_phase_max_bytes_read_;
+  // If we get data from the channel while we're in two-phase read, we can't
+  // resize data_ since it's being used. So instead we store it temporarly.
+  std::vector<char> data_received_during_two_phase_read_;
 
   bool error_;
 

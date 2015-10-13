@@ -481,10 +481,8 @@ void RawChannel::SerializeWriteBuffer(
     std::vector<WriteBuffer::Buffer> buffers;
     write_buffer_no_lock()->GetBuffers(&buffers);
     for (size_t i = 0; i < buffers.size(); ++i) {
-      size_t orig_size = buffer->size();
-      buffer->resize(orig_size + buffers[i].size);
-      memcpy(&((*buffer)[orig_size]), buffers[i].addr,
-              buffers[i].size);
+      buffer->insert(buffer->end(), buffers[i].addr,
+                     buffers[i].addr + buffers[i].size);
     }
     write_buffer_->message_queue_.DiscardMessage();
   }

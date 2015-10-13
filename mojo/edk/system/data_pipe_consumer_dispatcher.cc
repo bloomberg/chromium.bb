@@ -81,8 +81,7 @@ DataPipeConsumerDispatcher::Deserialize(
     SharedMemoryHeader* header = reinterpret_cast<SharedMemoryHeader*>(buffer);
     buffer += sizeof(SharedMemoryHeader);
     if (header->data_size) {
-      rv->data_.resize(header->data_size);
-      memcpy(&rv->data_[0], buffer, header->data_size);
+      rv->data_.assign(buffer, buffer + header->data_size);
       buffer += header->data_size;
     }
 
@@ -140,9 +139,6 @@ DataPipeConsumerDispatcher::CreateEquivalentDispatcherAndCloseImplNoLock() {
   SerializeInternal();
 
   scoped_refptr<DataPipeConsumerDispatcher> rv = Create(options_);
-  rv->channel_ = channel_;
-  channel_ = nullptr;
-  rv->options_ = options_;
   data_.swap(rv->data_);
   serialized_read_buffer_.swap(rv->serialized_read_buffer_);
   rv->serialized_platform_handle_ = serialized_platform_handle_.Pass();
@@ -251,6 +247,15 @@ MojoResult DataPipeConsumerDispatcher::EndReadDataImplNoLock(
 
   in_two_phase_read_ = false;
   two_phase_max_bytes_read_ = 0;
+  if (!data_received_during_two_phase_read_.empty()) {
+    if (data_.empty()) {
+      data_received_during_two_phase_read_.swap(data_);
+    } else {
+      data_.insert(data_.end(), data_received_during_two_phase_read_.begin(),
+                   data_received_during_two_phase_read_.end());
+      data_received_during_two_phase_read_.clear();
+    }
+  }
 
   HandleSignalsState new_state = GetHandleSignalsStateImplNoLock();
   if (!new_state.equals(old_state))
@@ -394,8 +399,8 @@ bool DataPipeConsumerDispatcher::IsBusyNoLock() const {
 void DataPipeConsumerDispatcher::OnReadMessage(
     const MessageInTransit::View& message_view,
     ScopedPlatformHandleVectorPtr platform_handles) {
-  scoped_ptr<MessageInTransit> message(new MessageInTransit(message_view));
-
+  const char* bytes_start = static_cast<const char*>(message_view.bytes());
+  const char* bytes_end = bytes_start + message_view.num_bytes();
   if (started_transport_.Try()) {
     // We're not in the middle of being sent.
 
@@ -405,16 +410,20 @@ void DataPipeConsumerDispatcher::OnReadMessage(
       locker.reset(new base::AutoLock(lock()));
     }
 
-    size_t old_size = data_.size();
-    data_.resize(old_size + message->num_bytes());
-    memcpy(&data_[old_size], message->bytes(), message->num_bytes());
-    if (!old_size)
-      awakable_list_.AwakeForStateChange(GetHandleSignalsStateImplNoLock());
+    if (in_two_phase_read_) {
+      data_received_during_two_phase_read_.insert(
+          data_received_during_two_phase_read_.end(), bytes_start, bytes_end);
+    } else {
+      bool was_empty = data_.empty();
+      data_.insert(data_.end(), bytes_start, bytes_end);
+      if (was_empty)
+        awakable_list_.AwakeForStateChange(GetHandleSignalsStateImplNoLock());
+    }
     started_transport_.Release();
   } else {
-    size_t old_size = data_.size();
-    data_.resize(old_size + message->num_bytes());
-    memcpy(&data_[old_size], message->bytes(), message->num_bytes());
+    // See comment in MessagePipeDispatcher about why we can't and don't need
+    // to lock here.
+    data_.insert(data_.end(), bytes_start, bytes_end);
   }
 }
 
@@ -457,6 +466,7 @@ void DataPipeConsumerDispatcher::OnError(Error error) {
 }
 
 void DataPipeConsumerDispatcher::SerializeInternal() {
+  DCHECK(!in_two_phase_read_);
   // We need to stop watching handle immediately, even though not on IO thread,
   // so that other messages aren't read after this.
   if (channel_) {
@@ -467,8 +477,9 @@ void DataPipeConsumerDispatcher::SerializeInternal() {
     CHECK(serialized_write_buffer.empty());
 
     channel_ = nullptr;
-    serialized_ = true;
   }
+
+  serialized_ = true;
 }
 
 }  // namespace edk
