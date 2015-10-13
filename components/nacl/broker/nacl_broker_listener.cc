@@ -85,7 +85,7 @@ bool NaClBrokerListener::OnMessageReceived(const IPC::Message& msg) {
 
 void NaClBrokerListener::OnChannelError() {
   // The browser died unexpectedly, quit to avoid a zombie process.
-  base::MessageLoop::current()->Quit();
+  base::MessageLoop::current()->QuitWhenIdle();
 }
 
 void NaClBrokerListener::OnLaunchLoaderThroughBroker(
@@ -138,5 +138,5 @@ void NaClBrokerListener::OnLaunchDebugExceptionHandler(
 }
 
 void NaClBrokerListener::OnStopBroker() {
-  base::MessageLoop::current()->Quit();
+  base::MessageLoop::current()->QuitWhenIdle();
 }

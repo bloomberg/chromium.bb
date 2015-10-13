@@ -36,7 +36,7 @@ class TaskQueueManagerPerfTest : public testing::Test {
 
   void TestDelayedTask() {
     if (--num_tasks_to_run_ == 0) {
-      message_loop_->Quit();
+      message_loop_->QuitWhenIdle();
     }
 
     num_tasks_in_flight_--;

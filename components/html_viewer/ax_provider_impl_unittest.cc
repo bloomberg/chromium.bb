@@ -35,7 +35,9 @@ namespace {
 class TestWebFrameClient : public WebFrameClient {
  public:
   ~TestWebFrameClient() override {}
-  void didStopLoading() override { base::MessageLoop::current()->Quit(); }
+  void didStopLoading() override {
+    base::MessageLoop::current()->QuitWhenIdle();
+  }
 };
 
 class TestWebViewClient : public WebViewClient {

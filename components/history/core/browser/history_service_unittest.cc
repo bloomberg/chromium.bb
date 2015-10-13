@@ -53,7 +53,7 @@ class HistoryServiceTest : public testing::Test {
 
   void OnMostVisitedURLsAvailable(const MostVisitedURLList* url_list) {
     most_visited_urls_ = *url_list;
-    base::MessageLoop::current()->Quit();
+    base::MessageLoop::current()->QuitWhenIdle();
   }
 
  protected:
@@ -79,7 +79,7 @@ class HistoryServiceTest : public testing::Test {
     // Make sure we don't have any event pending that could disrupt the next
     // test.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::MessageLoop::QuitClosure());
+        FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
     base::MessageLoop::current()->Run();
   }
 
@@ -87,7 +87,8 @@ class HistoryServiceTest : public testing::Test {
     DCHECK(history_service_);
 
     history_service_->ClearCachedDataForContextID(0);
-    history_service_->SetOnBackendDestroyTask(base::MessageLoop::QuitClosure());
+    history_service_->SetOnBackendDestroyTask(
+        base::MessageLoop::QuitWhenIdleClosure());
     history_service_->Cleanup();
     history_service_.reset();
 
@@ -123,7 +124,7 @@ class HistoryServiceTest : public testing::Test {
       query_url_row_ = URLRow();
       query_url_visits_.clear();
     }
-    base::MessageLoop::current()->Quit();
+    base::MessageLoop::current()->QuitWhenIdle();
   }
 
   // Fills in saved_redirects_ with the redirect information for the given URL,
@@ -144,7 +145,7 @@ class HistoryServiceTest : public testing::Test {
       saved_redirects_.insert(
           saved_redirects_.end(), redirects->begin(), redirects->end());
     }
-    base::MessageLoop::current()->Quit();
+    base::MessageLoop::current()->QuitWhenIdle();
   }
 
   base::ScopedTempDir temp_dir_;
@@ -567,7 +568,7 @@ class HistoryDBTaskImpl : public HistoryDBTask {
 
   void DoneRunOnMainThread() override {
     *done_invoked_ = true;
-    base::MessageLoop::current()->Quit();
+    base::MessageLoop::current()->QuitWhenIdle();
   }
 
   int* invoke_count_;

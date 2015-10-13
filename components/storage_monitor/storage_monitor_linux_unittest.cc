@@ -134,7 +134,7 @@ class TestStorageMonitorLinux : public StorageMonitorLinux {
       const MtabWatcherLinux::MountPointDeviceMap& new_mtab) override {
     StorageMonitorLinux::UpdateMtab(new_mtab);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::MessageLoop::QuitClosure());
+        FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
   }
 
   DISALLOW_COPY_AND_ASSIGN(TestStorageMonitorLinux);

@@ -71,9 +71,8 @@ class MediaStorageUtilTest : public testing::Test {
   }
 
   static void PostQuitToUIThread() {
-    BrowserThread::PostTask(BrowserThread::UI,
-                            FROM_HERE,
-                            base::MessageLoop::QuitClosure());
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            base::MessageLoop::QuitWhenIdleClosure());
   }
 
   static void WaitForFileThread() {

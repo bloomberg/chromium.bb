@@ -114,7 +114,7 @@ TemplateURLFetcherTest::TemplateURLFetcherTest()
 void TemplateURLFetcherTest::DestroyedCallback() {
   callbacks_destroyed_++;
   if (waiting_for_download_)
-    base::MessageLoop::current()->Quit();
+    base::MessageLoop::current()->QuitWhenIdle();
 }
 
 void TemplateURLFetcherTest::ConfirmAddSearchProvider(

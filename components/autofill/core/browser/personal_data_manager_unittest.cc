@@ -46,7 +46,9 @@ namespace {
 
 enum UserMode { USER_MODE_NORMAL, USER_MODE_INCOGNITO };
 
-ACTION(QuitMainMessageLoop) { base::MessageLoop::current()->Quit(); }
+ACTION(QuitMainMessageLoop) {
+  base::MessageLoop::current()->QuitWhenIdle();
+}
 
 class PersonalDataLoadedObserverMock : public PersonalDataManagerObserver {
  public:

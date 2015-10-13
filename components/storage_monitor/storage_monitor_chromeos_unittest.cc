@@ -245,7 +245,7 @@ base::FilePath StorageMonitorCrosTest::CreateMountPoint(
 // static
 void StorageMonitorCrosTest::PostQuitToUIThread() {
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::MessageLoop::QuitClosure());
+                          base::MessageLoop::QuitWhenIdleClosure());
 }
 
 // static

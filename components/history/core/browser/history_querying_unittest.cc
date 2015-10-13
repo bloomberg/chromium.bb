@@ -180,7 +180,8 @@ class HistoryQueryTest : public testing::Test {
 
   void TearDown() override {
     if (history_) {
-      history_->SetOnBackendDestroyTask(base::MessageLoop::QuitClosure());
+      history_->SetOnBackendDestroyTask(
+          base::MessageLoop::QuitWhenIdleClosure());
       history_->Cleanup();
       history_.reset();
       base::MessageLoop::current()->Run();  // Wait for the other thread.
@@ -189,7 +190,8 @@ class HistoryQueryTest : public testing::Test {
 
   void QueryHistoryComplete(QueryResults* results) {
     results->Swap(&last_query_results_);
-    base::MessageLoop::current()->Quit();  // Will return out to QueryHistory.
+    base::MessageLoop::current()
+        ->QuitWhenIdle();  // Will return out to QueryHistory.
   }
 
   base::ScopedTempDir temp_dir_;

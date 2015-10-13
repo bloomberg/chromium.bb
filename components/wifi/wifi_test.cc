@@ -50,7 +50,7 @@ class WiFiTest {
     DCHECK_NE(RESULT_PENDING, result);
     result_ = result;
     if (base::MessageLoop::current())
-      base::MessageLoop::current()->Quit();
+      base::MessageLoop::current()->QuitWhenIdle();
   }
 
   void OnNetworksChanged(

@@ -53,7 +53,9 @@ class WaitForHistoryTask : public HistoryDBTask {
     return true;
   }
 
-  void DoneRunOnMainThread() override { base::MessageLoop::current()->Quit(); }
+  void DoneRunOnMainThread() override {
+    base::MessageLoop::current()->QuitWhenIdle();
+  }
 
  private:
   ~WaitForHistoryTask() override {}
@@ -104,7 +106,7 @@ class TopSitesQuerier {
     urls_ = data;
     number_of_callbacks_++;
     if (waiting_) {
-      base::MessageLoop::current()->Quit();
+      base::MessageLoop::current()->QuitWhenIdle();
       waiting_ = false;
     }
   }
@@ -211,7 +213,7 @@ class TopSitesImplTest : public HistoryUnitTestBase {
 
   // Quit the current message loop when invoked. Useful when running a nested
   // message loop.
-  void QuitCallback() { base::MessageLoop::current()->Quit(); }
+  void QuitCallback() { base::MessageLoop::current()->QuitWhenIdle(); }
 
   // Adds a page to history.
   void AddPageToHistory(const GURL& url) {

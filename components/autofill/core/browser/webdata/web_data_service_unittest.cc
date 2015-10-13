@@ -59,7 +59,7 @@ class AutofillWebDataServiceConsumer: public WebDataServiceConsumer {
         static_cast<const WDResult<T>*>(result);
     result_ = wrapped_result->GetValue();
 
-    base::MessageLoop::current()->Quit();
+    base::MessageLoop::current()->QuitWhenIdle();
   }
 
   WebDataServiceBase::Handle handle() { return handle_; }
@@ -120,7 +120,7 @@ class WebDataServiceTest : public testing::Test {
     WaitForDatabaseThread();
 
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::MessageLoop::QuitClosure());
+        FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
     base::MessageLoop::current()->Run();
     db_thread_.Stop();
   }

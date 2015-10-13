@@ -221,7 +221,7 @@ TEST_F(GaiaCookieManagerServiceTest, MergeSessionRetried) {
   DCHECK(helper.is_running());
   // Transient error incurs a retry after 1 second.
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::MessageLoop::QuitClosure(),
+      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
       base::TimeDelta::FromMilliseconds(1100));
   base::MessageLoop::current()->Run();
   SimulateMergeSessionSuccess(&helper, "token");
@@ -243,14 +243,14 @@ TEST_F(GaiaCookieManagerServiceTest, MergeSessionRetriedTwice) {
   DCHECK(helper.is_running());
   // Transient error incurs a retry after 1 second.
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::MessageLoop::QuitClosure(),
+      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
       base::TimeDelta::FromMilliseconds(1100));
   base::MessageLoop::current()->Run();
   SimulateMergeSessionFailure(&helper, canceled());
   DCHECK(helper.is_running());
   // Next transient error incurs a retry after 3 seconds.
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::MessageLoop::QuitClosure(),
+      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
       base::TimeDelta::FromMilliseconds(3100));
   base::MessageLoop::current()->Run();
   SimulateMergeSessionSuccess(&helper, "token");

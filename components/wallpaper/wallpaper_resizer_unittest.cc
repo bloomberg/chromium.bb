@@ -74,7 +74,7 @@ class WallpaperResizerTest : public testing::Test,
 
   void WaitForResize() { message_loop_.Run(); }
 
-  void OnWallpaperResized() override { message_loop_.Quit(); }
+  void OnWallpaperResized() override { message_loop_.QuitWhenIdle(); }
 
  private:
   base::MessageLoop message_loop_;

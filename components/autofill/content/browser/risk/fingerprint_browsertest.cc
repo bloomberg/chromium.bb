@@ -163,7 +163,7 @@ class AutofillRiskFingerprintTest : public content::ContentBrowserTest {
     EXPECT_EQ(kAccuracy, location.accuracy());
     EXPECT_EQ(kGeolocationTime, location.time_in_ms());
 
-    message_loop_.Quit();
+    message_loop_.QuitWhenIdle();
   }
 
  protected:
