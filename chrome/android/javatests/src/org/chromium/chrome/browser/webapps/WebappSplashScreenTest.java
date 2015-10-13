@@ -4,9 +4,11 @@
 
 package org.chromium.chrome.browser.webapps;
 
+import android.annotation.TargetApi;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
+import android.os.Build;
 import android.test.UiThreadTest;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.view.ViewGroup;
@@ -19,11 +21,9 @@ import org.chromium.chrome.browser.ShortcutSource;
 import org.chromium.content_public.common.ScreenOrientationValues;
 
 /**
- * Tests whether the splash screen is displayed with the correct elements in place.
+ * Tests for splashscreen.
  */
 public class WebappSplashScreenTest extends WebappActivityTestBase {
-    private static final String WEBAPP_URL = "http://originalwebsite.com";
-
     @UiThreadTest
     @SmallTest
     @Feature({"Webapps"})
@@ -60,8 +60,17 @@ public class WebappSplashScreenTest extends WebappActivityTestBase {
         assertEquals(minSizePx, drawable.getBitmap().getHeight());
     }
 
+    @SmallTest
+    @Feature({"Webapps"})
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    public void testSplashscreenThemeColor() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return;
+
+        assertEquals(Color.MAGENTA, getActivity().getWindow().getStatusBarColor());
+    }
+
     private void setActivityWebappInfoFromBitmap(Bitmap image) {
-        WebappInfo mockInfo = WebappInfo.create(WEBAPP_ID, WEBAPP_URL,
+        WebappInfo mockInfo = WebappInfo.create(WEBAPP_ID, "about:blank",
                 ShortcutHelper.encodeBitmapAsString(image), null, null,
                 ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN,
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING,

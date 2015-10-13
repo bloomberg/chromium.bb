@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.webapps;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.net.Uri;
 
 import org.chromium.base.ThreadUtils;
@@ -46,6 +47,7 @@ public abstract class WebappActivityTestBase extends ChromeActivityTestCaseBase<
         Intent intent = new Intent(getInstrumentation().getTargetContext(), WebappActivity0.class);
         intent.setData(Uri.parse(WebappActivity.WEBAPP_SCHEME + "://" + WEBAPP_ID));
         intent.putExtra(ShortcutHelper.EXTRA_ID, WEBAPP_ID);
+        intent.putExtra(ShortcutHelper.EXTRA_THEME_COLOR, (long) Color.MAGENTA);
         intent.putExtra(ShortcutHelper.EXTRA_URL, "about:blank");
         setActivityIntent(intent);
 

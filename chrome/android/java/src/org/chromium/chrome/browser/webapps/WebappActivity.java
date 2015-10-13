@@ -335,6 +335,12 @@ public class WebappActivity extends FullScreenActivity {
                 : mBrandColor;
 
         ApiCompatibilityUtils.setTaskDescription(this, title, icon, color);
+        ApiCompatibilityUtils.setStatusBarColor(getWindow(), color);
+    }
+
+    @Override
+    protected void setStatusBarColor(Tab tab, int color) {
+        // Intentionally do nothing as WebappActivity explicitly sets status bar color.
     }
 
     /** Returns a unique identifier for this WebappActivity. */
