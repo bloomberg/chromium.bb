@@ -1238,5 +1238,37 @@ TEST_F(GpuControlListEntryDualGPUTest, VendorOnlyActivePrimaryGPU) {
   EntryShouldApply(json);
 }
 
+TEST_F(GpuControlListEntryTest, LinuxKernelVersion) {
+  const std::string json = LONG_STRING_CONST(
+      {
+        "id": 1,
+        "os": {
+          "type": "linux",
+          "version": {
+            "op": "<",
+            "value": "3.19.1"
+          }
+        },
+        "vendor_id": "0x8086",
+        "features": [
+          "test_feature_0"
+        ]
+      }
+  );
+  ScopedEntry entry(GetEntryFromString(json));
+  EXPECT_TRUE(entry.get() != NULL);
+  EXPECT_EQ(GpuControlList::kOsLinux, entry->GetOsType());
+
+  GPUInfo gpu_info;
+  gpu_info.gpu.vendor_id = 0x8086;
+
+  EXPECT_TRUE(entry->Contains(GpuControlList::kOsLinux,
+                              "3.13.0-63-generic",
+                              gpu_info));
+  EXPECT_FALSE(entry->Contains(GpuControlList::kOsLinux,
+                               "3.19.2-1-generic",
+                               gpu_info));
+}
+
 }  // namespace gpu
 

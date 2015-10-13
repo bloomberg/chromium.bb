@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "10.11",
+  "version": "10.12",
   "entries": [
     {
       "id": 1,
@@ -1146,6 +1146,24 @@ LONG_STRING_CONST(
       "features": [
         "accelerated_2d_canvas",
         "gpu_rasterization"
+      ]
+    },
+    {
+      "id": 107,
+      "description": "Haswell Intel drivers are buggy on kernals < 3.19.1",
+      "cr_bugs": [463243],
+      "os": {
+        "type": "linux",
+        "version": {
+          "op": "<",
+          "value": "3.19.1"
+        }
+      },
+      "vendor_id": "0x8086",
+      "device_id": ["0x0402", "0x0406", "0x040a", "0x0412", "0x0416", "0x041a",
+                    "0x0a04", "0x0a16", "0x0a22", "0x0a26", "0x0a2a"],
+      "features": [
+        "all"
       ]
     }
   ]
