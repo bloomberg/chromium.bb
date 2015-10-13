@@ -99,7 +99,8 @@ class SelectFileDialog : public ui::SelectFileDialog::Listener,
   }
 
   void FileSelectionCanceled(void* params) override {
-    canceled_callback_.Run();
+    if (!canceled_callback_.is_null())
+      canceled_callback_.Run();
     Release();  // Balanced in ::Show.
   }
 
