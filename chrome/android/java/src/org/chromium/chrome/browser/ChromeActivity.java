@@ -683,6 +683,11 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             });
         }
         if (mCompositorViewHolder != null) mCompositorViewHolder.onStart();
+
+        // Explicitly call checkAccessibility() so things are initialized correctly when Chrome has
+        // been re-started after closing due to the last tab being closed when homepage is enabled.
+        // See crbug.com/541546.
+        checkAccessibility();
     }
 
     @Override
