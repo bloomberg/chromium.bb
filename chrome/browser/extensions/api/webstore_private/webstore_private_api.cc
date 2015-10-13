@@ -10,6 +10,7 @@
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "base/version.h"
@@ -170,7 +171,6 @@ const char kInvalidIdError[] = "Invalid id";
 const char kInvalidManifestError[] = "Invalid manifest";
 const char kNoPreviousBeginInstallWithManifestError[] =
     "* does not match a previous call to beginInstallWithManifest3";
-const char kBlockedByPolicyError[] = "Blocked by policy";
 const char kUserCancelledError[] = "User cancelled install";
 const char kIncognitoError[] =
     "Apps cannot be installed in guest/incognito mode";
@@ -303,12 +303,12 @@ void WebstorePrivateBeginInstallWithManifest3Function::OnWebstoreParseSuccess(
   }
 
   // Check the management policy before the installation process begins
+  base::string16 policy_error;
   bool allow = ExtensionSystem::Get(chrome_details_.GetProfile())->
-      management_policy()->UserMayLoad(extension_.get(),
-                                       NULL);
+      management_policy()->UserMayLoad(dummy_extension_.get(), &policy_error);
   if (!allow) {
     Respond(BuildResponse(api::webstore_private::RESULT_BLOCKED_BY_POLICY,
-                          kBlockedByPolicyError));
+                          base::UTF16ToUTF8(policy_error)));
     // Matches the AddRef in Run().
     Release();
     return;
