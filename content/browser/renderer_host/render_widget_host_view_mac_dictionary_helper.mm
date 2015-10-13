@@ -22,7 +22,9 @@ void RenderWidgetHostViewMacDictionaryHelper::SetTargetView(
 
 void RenderWidgetHostViewMacDictionaryHelper::ShowDefinitionForSelection() {
   NSRange selection_range = [view_->cocoa_view() selectedRange];
-  [view_->cocoa_view() showLookUpDictionaryOverlayFromRange:selection_range];
+  NSView* view = target_view_->cocoa_view();
+  [view_->cocoa_view() showLookUpDictionaryOverlayFromRange:selection_range
+                                                       targetView:view];
 }
 
 }  // namespace content

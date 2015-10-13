@@ -209,7 +209,8 @@ class Layer;
 - (NSRect)firstViewRectForCharacterRange:(NSRange)theRange
                              actualRange:(NSRangePointer)actualRange;
 - (void)showLookUpDictionaryOverlayAtPoint:(NSPoint)point;
-- (void)showLookUpDictionaryOverlayFromRange:(NSRange)range;
+- (void)showLookUpDictionaryOverlayFromRange:(NSRange)range
+                                  targetView:(NSView*)targetView;
 @end
 
 namespace content {

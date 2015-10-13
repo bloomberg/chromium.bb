@@ -183,7 +183,8 @@ static BOOL SupportsBackingPropertiesChangedNotification() {
 - (void)setResponderDelegate:
         (NSObject<RenderWidgetHostViewMacDelegate>*)delegate;
 - (void)showLookUpDictionaryOverlayInternal:(NSAttributedString*) string
-                              baselinePoint:(NSPoint) baselinePoint;
+                              baselinePoint:(NSPoint) baselinePoint
+                                 targetView:(NSView*) view;
 @end
 
 // A window subclass that allows the fullscreen window to become main and gain
@@ -2435,7 +2436,8 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
 }
 
 - (void)showLookUpDictionaryOverlayInternal:(NSAttributedString*) string
-                              baselinePoint:(NSPoint) baselinePoint {
+                              baselinePoint:(NSPoint) baselinePoint
+                                 targetView:(NSView*) view {
   if ([string length] == 0) {
     // The PDF plugin does not support getting the attributed string at point.
     // Until it does, use NSPerformService(), which opens Dictionary.app.
@@ -2453,17 +2455,19 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
     return;
   }
   dispatch_async(dispatch_get_main_queue(), ^{
-      [self showDefinitionForAttributedString:string
-                                      atPoint:baselinePoint];
+    [view showDefinitionForAttributedString:string
+                                    atPoint:baselinePoint];
   });
 }
 
-- (void)showLookUpDictionaryOverlayFromRange:(NSRange)range {
+- (void)showLookUpDictionaryOverlayFromRange:(NSRange)range
+                                  targetView:(NSView*)targetView {
   TextInputClientMac::GetInstance()->GetStringFromRange(
       renderWidgetHostView_->render_widget_host_, range,
       ^(NSAttributedString* string, NSPoint baselinePoint) {
         [self showLookUpDictionaryOverlayInternal:string
-                                    baselinePoint:baselinePoint];
+                                    baselinePoint:baselinePoint
+                                       targetView:targetView];
       }
   );
 }
@@ -2474,7 +2478,8 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
       gfx::Point(point.x, NSHeight([self frame]) - point.y),
       ^(NSAttributedString* string, NSPoint baselinePoint) {
         [self showLookUpDictionaryOverlayInternal:string
-                                    baselinePoint:baselinePoint];
+                                    baselinePoint:baselinePoint
+                                       targetView:self];
       }
   );
 }
