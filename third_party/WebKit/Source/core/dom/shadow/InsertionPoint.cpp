@@ -214,6 +214,10 @@ Node::InsertionNotificationRequest InsertionPoint::insertedInto(ContainerNode* i
         }
     }
 
+    // We could have been distributed into in a detached subtree, make sure to
+    // clear the distribution when inserted again to avoid cycles.
+    clearDistribution();
+
     return InsertionDone;
 }
 
