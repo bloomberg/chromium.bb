@@ -4,8 +4,8 @@ layer at (0,0) size 800x260
   LayoutBlockFlow {HTML} at (0,0) size 800x260
     LayoutBlockFlow {BODY} at (8,16) size 784x236
       LayoutBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 349x19
-          text run at (0,0) width 349: "Test for negative spacing values in complex text rendering."
+        LayoutText {#text} at (0,0) size 348x19
+          text run at (0,0) width 348: "Test for negative spacing values in complex text rendering."
       LayoutBlockFlow (anonymous) at (0,36) size 784x20
         LayoutText {#text} at (0,0) size 483x19
           text run at (0,0) width 483: "Each green box should be identical to the blue box it follows, except for accents."
@@ -14,8 +14,8 @@ layer at (0,0) size 800x260
         LayoutTableSection {TBODY} at (0,0) size 414x162
           LayoutTableRow {TR} at (0,2) size 414x22
             LayoutTableCell {TD} at (2,2) size 204x22 [r=0 c=0 rs=1 cs=1]
-              LayoutText {#text} at (59,1) size 86x19
-                text run at (59,1) width 86: "Word spacing"
+              LayoutText {#text} at (60,1) size 84x19
+                text run at (60,1) width 84: "Word spacing"
             LayoutTableCell {TD} at (208,2) size 204x22 [r=0 c=1 rs=1 cs=1]
               LayoutText {#text} at (59,1) size 86x19
                 text run at (59,1) width 86: "Letter spacing"

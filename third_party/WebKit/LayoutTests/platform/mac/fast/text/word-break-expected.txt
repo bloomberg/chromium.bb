@@ -30,9 +30,9 @@ layer at (0,0) size 785x1016 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (441,5) width 1: " "
       LayoutBlockFlow (anonymous) at (0,209) size 769x72
         LayoutBR {BR} at (0,0) size 0x18
-        LayoutText {#text} at (0,18) size 753x54
+        LayoutText {#text} at (0,18) size 751x54
           text run at (0,18) width 476: "The next two examples test our custom break-word value for word-break. "
-          text run at (475,18) width 278: "We should get the same results as break-all"
+          text run at (475,18) width 276: "We should get the same results as break-all"
           text run at (0,36) width 738: "for the first test, but we should break up the word in the second test (since our behavior matches word-wrap: break-"
           text run at (0,54) width 119: "word in that case)."
       LayoutTable {TABLE} at (0,281) size 769x104 [border: (1px outset #808080)]
@@ -62,8 +62,8 @@ layer at (0,0) size 785x1016 backgroundClip at (0,0) size 785x600 clip at (0,0) 
       LayoutBlockFlow (anonymous) at (0,514) size 769x72
         LayoutBR {BR} at (0,0) size 0x18
         LayoutText {#text} at (0,18) size 750x54
-          text run at (0,18) width 641: "This test makes sure floating and positioned elements do the right thing with word-break: break-all. "
-          text run at (640,18) width 92: "The minimum"
+          text run at (0,18) width 640: "This test makes sure floating and positioned elements do the right thing with word-break: break-all. "
+          text run at (639,18) width 92: "The minimum"
           text run at (0,36) width 345: "width should be less than the containing block width. "
           text run at (344,36) width 406: "The breaking should be \"dumb\" and just occur when the end of"
           text run at (0,54) width 88: "the line is hit."
@@ -78,12 +78,12 @@ layer at (0,0) size 785x1016 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutBR {BR} at (0,0) size 0x18
       LayoutBlockFlow (anonymous) at (0,757) size 769x72
         LayoutBR {BR} at (0,0) size 0x18
-        LayoutText {#text} at (0,18) size 749x54
-          text run at (0,18) width 658: "This test makes sure floating and positioned elements do the right thing with word-break: break-word. "
-          text run at (657,18) width 92: "The minimum"
+        LayoutText {#text} at (0,18) size 748x54
+          text run at (0,18) width 657: "This test makes sure floating and positioned elements do the right thing with word-break: break-word. "
+          text run at (656,18) width 92: "The minimum"
           text run at (0,36) width 345: "width should be less than the containing block width. "
           text run at (344,36) width 402: "The breaking should be \"smart\" and be like word-wrap: break-"
-          text run at (0,54) width 581: "word, with words preferring to wrap first before allowing break opportunities within them."
+          text run at (0,54) width 580: "word, with words preferring to wrap first before allowing break opportunities within them."
       LayoutBlockFlow {DIV} at (0,829) size 304x49 [border: (2px solid #000000)]
         LayoutBlockFlow (floating) {DIV} at (2,2) size 300x45
           LayoutText {#text} at (0,0) size 250x45

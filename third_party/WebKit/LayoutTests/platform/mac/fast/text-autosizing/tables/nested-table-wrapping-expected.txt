@@ -4,9 +4,9 @@ layer at (0,0) size 800x260
   LayoutBlockFlow {HTML} at (0,0) size 800x260
     LayoutBlockFlow {BODY} at (0,0) size 800x259
       LayoutBlockFlow {DIV} at (0,0) size 600x36
-        LayoutText {#text} at (0,0) size 247x14
-          text run at (0,0) width 247: "Table autosizing tests - nested-table-wrapping.html"
-        LayoutBR {BR} at (246,0) size 1x14
+        LayoutText {#text} at (0,0) size 246x14
+          text run at (0,0) width 246: "Table autosizing tests - nested-table-wrapping.html"
+        LayoutBR {BR} at (245,0) size 1x14
         LayoutText {#text} at (0,14) size 390x14
           text run at (0,14) width 390: "This test passes if \"the table cell should tightly wrap this text\" is tightly wrapped."
       LayoutTable {TABLE} at (1,37) size 798x222 [border: none]

@@ -4,8 +4,8 @@ layer at (0,0) size 800x846 backgroundClip at (0,0) size 800x600 clip at (0,0) s
   LayoutBlockFlow {HTML} at (0,0) size 800x846
     LayoutBlockFlow {BODY} at (8,8) size 784x828
       LayoutBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 167x19
-          text run at (0,0) width 167: "Two words with no spaces."
+        LayoutText {#text} at (0,0) size 166x19
+          text run at (0,0) width 166: "Two words with no spaces."
       LayoutBlockFlow {DIV} at (0,36) size 302x22 [border: (1px solid #0000FF)]
         LayoutText {#text} at (1,1) size 480x19
           text run at (1,1) width 480: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"

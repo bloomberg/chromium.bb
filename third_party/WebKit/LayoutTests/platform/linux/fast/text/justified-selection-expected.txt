@@ -4,13 +4,13 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 101x19
-          text run at (0,0) width 101: "Test for revision "
-        LayoutInline {A} at (0,0) size 48x19 [color=#0000EE]
-          LayoutText {#text} at (101,0) size 48x19
-            text run at (101,0) width 48: "#20574"
-        LayoutText {#text} at (149,0) size 4x19
-          text run at (149,0) width 4: "."
+        LayoutText {#text} at (0,0) size 100x19
+          text run at (0,0) width 100: "Test for revision "
+        LayoutInline {A} at (0,0) size 49x19 [color=#0000EE]
+          LayoutText {#text} at (99,0) size 49x19
+            text run at (99,0) width 49: "#20574"
+        LayoutText {#text} at (147,0) size 5x19
+          text run at (147,0) width 5: "."
       LayoutBlockFlow {P} at (0,36) size 784x20
         LayoutText {#text} at (0,0) size 238x19
           text run at (0,0) width 238: "The two blue boxes should be identical."

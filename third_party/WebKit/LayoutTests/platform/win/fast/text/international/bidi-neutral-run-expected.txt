@@ -4,8 +4,8 @@ layer at (0,0) size 785x6026 backgroundClip at (0,0) size 785x600 clip at (0,0) 
   LayoutBlockFlow {HTML} at (0,0) size 785x6026
     LayoutBlockFlow {BODY} at (8,8) size 769x6002
       LayoutBlockFlow {P} at (0,0) size 769x18
-        LayoutText {#text} at (0,0) size 308x17
-          text run at (0,0) width 308: "Tests the resolved level of runs of neutral types."
+        LayoutText {#text} at (0,0) size 306x17
+          text run at (0,0) width 306: "Tests the resolved level of runs of neutral types."
       LayoutBlockFlow {DIV} at (0,34) size 769x2976
         LayoutBlockFlow {P} at (0,0) size 769x18
           LayoutText {#text} at (0,0) size 44x17

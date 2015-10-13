@@ -6,12 +6,12 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {P} at (0,0) size 784x36
         LayoutText {#text} at (0,0) size 108x17
           text run at (0,0) width 108: "This is a test for "
-        LayoutInline {I} at (0,0) size 777x35
-          LayoutText {#text} at (107,0) size 777x35
-            text run at (107,0) width 670: "http://bugzilla.opendarwin.org/show_bug.cgi?id=5980 Bidi properties of an inline container whose first"
-            text run at (0,18) width 252: "child is an inline container are ignored"
-        LayoutText {#text} at (251,18) size 5x17
-          text run at (251,18) width 5: "."
+        LayoutInline {I} at (0,0) size 776x35
+          LayoutText {#text} at (107,0) size 776x35
+            text run at (107,0) width 669: "http://bugzilla.opendarwin.org/show_bug.cgi?id=5980 Bidi properties of an inline container whose first"
+            text run at (0,18) width 251: "child is an inline container are ignored"
+        LayoutText {#text} at (250,18) size 5x17
+          text run at (250,18) width 5: "."
       LayoutBlockFlow {HR} at (0,52) size 784x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow {P} at (0,70) size 784x18
         LayoutText {#text} at (0,0) size 318x17

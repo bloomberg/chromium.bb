@@ -7,8 +7,8 @@ layer at (0,0) size 800x1895 backgroundClip at (0,0) size 800x600 clip at (0,0) 
         LayoutText {#text} at (0,0) size 317x14
           text run at (0,0) width 317: "Table autosizing tests - single-percent-width-cell-lots-of-text.html"
         LayoutBR {BR} at (316,0) size 1x14
-        LayoutText {#text} at (0,14) size 506x14
-          text run at (0,14) width 506: "This test passes if there is a one cell with lots of text that's autosized, and five cells that are not autosized."
+        LayoutText {#text} at (0,14) size 505x14
+          text run at (0,14) width 505: "This test passes if there is a one cell with lots of text that's autosized, and five cells that are not autosized."
       LayoutTable {TABLE} at (1,37) size 798x1857 [border: none]
         LayoutTableSection {TBODY} at (0,0) size 797x1856
           LayoutTableRow {TR} at (0,0) size 797x17

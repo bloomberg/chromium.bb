@@ -4,9 +4,9 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x36
-        LayoutText {#text} at (0,0) size 594x17
-          text run at (0,0) width 594: "This tests that bidirectional text is correctly rendered when using ATSUI in list box controls."
-        LayoutBR {BR} at (593,14) size 1x0
+        LayoutText {#text} at (0,0) size 592x17
+          text run at (0,0) width 592: "This tests that bidirectional text is correctly rendered when using ATSUI in list box controls."
+        LayoutBR {BR} at (591,14) size 1x0
         LayoutText {#text} at (0,18) size 578x17
           text run at (0,18) width 578: "The order of the text below each list box should match the order of the select's option text."
       LayoutBlockFlow (anonymous) at (0,52) size 784x54

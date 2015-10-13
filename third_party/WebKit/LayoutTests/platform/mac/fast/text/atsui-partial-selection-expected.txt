@@ -4,15 +4,15 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x576
       LayoutBlockFlow {P} at (0,0) size 784x36
-        LayoutText {#text} at (0,0) size 55x18
-          text run at (0,0) width 55: "Test for "
-        LayoutInline {I} at (0,0) size 763x36
-          LayoutInline {A} at (0,0) size 306x18 [color=#0000EE]
-            LayoutText {#text} at (54,0) size 306x18
-              text run at (54,0) width 306: "http://bugs.webkit.org/show_bug.cgi?id=11124"
-          LayoutText {#text} at (359,0) size 763x36
-            text run at (359,0) width 5: " "
-            text run at (363,0) width 400: "REGRESSION (r14297): No drag image for partially-selected"
+        LayoutText {#text} at (0,0) size 54x18
+          text run at (0,0) width 54: "Test for "
+        LayoutInline {I} at (0,0) size 759x36
+          LayoutInline {A} at (0,0) size 303x18 [color=#0000EE]
+            LayoutText {#text} at (53,0) size 303x18
+              text run at (53,0) width 303: "http://bugs.webkit.org/show_bug.cgi?id=11124"
+          LayoutText {#text} at (355,0) size 759x36
+            text run at (355,0) width 5: " "
+            text run at (359,0) width 400: "REGRESSION (r14297): No drag image for partially-selected"
             text run at (0,18) width 81: "complex text"
         LayoutText {#text} at (80,18) size 5x18
           text run at (80,18) width 5: "."

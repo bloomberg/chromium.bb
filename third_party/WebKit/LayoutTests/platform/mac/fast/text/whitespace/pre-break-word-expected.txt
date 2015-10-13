@@ -11,4 +11,4 @@ layer at (0,0) size 800x600
           text run at (2,56) width 148: "rap to multiple lines be"
           text run at (2,74) width 143: "cause of the word-wra"
           text run at (2,92) width 144: "p:break-word CSS pro"
-          text run at (2,110) width 37: "perty."
+          text run at (2,110) width 36: "perty."

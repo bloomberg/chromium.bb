@@ -10,4 +10,4 @@ layer at (0,0) size 800x600
           text run at (2,42) width 148: "nside should still wrap to"
           text run at (2,62) width 149: " multiple lines because of"
           text run at (2,82) width 150: " the word-wrap:break-w"
-          text run at (2,102) width 114: "ord CSS property."
+          text run at (2,102) width 113: "ord CSS property."

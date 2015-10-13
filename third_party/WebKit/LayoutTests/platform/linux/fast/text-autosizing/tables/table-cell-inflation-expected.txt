@@ -6,7 +6,7 @@ layer at (0,0) size 800x240
       LayoutBlockFlow {DIV} at (0,0) size 600x36
         LayoutText {#text} at (0,0) size 227x15
           text run at (0,0) width 227: "Table autosizing tests - table-cell-inflation.html"
-        LayoutBR {BR} at (227,0) size 0x15
+        LayoutBR {BR} at (226,0) size 1x15
         LayoutText {#text} at (0,16) size 361x15
           text run at (0,16) width 361: "This test passes if there are no numbers overflowing outside this green box."
       LayoutTable {TABLE} at (1,37) size 693x202 [border: none]

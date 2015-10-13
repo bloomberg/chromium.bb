@@ -6,12 +6,12 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {P} at (0,0) size 784x36
         LayoutText {#text} at (0,0) size 260x17
           text run at (0,0) width 260: "This test checks for a regression against "
-        LayoutInline {I} at (0,0) size 747x35
-          LayoutInline {A} at (0,0) size 354x17 [color=#0000EE]
-            LayoutText {#text} at (259,0) size 354x17
-              text run at (259,0) width 354: "http://bugzilla.opendarwin.org/show_bug.cgi?id=5619"
-          LayoutText {#text} at (612,0) size 747x35
-            text run at (612,0) width 135: " CSS2: pre-wrap has"
+        LayoutInline {I} at (0,0) size 746x35
+          LayoutInline {A} at (0,0) size 353x17 [color=#0000EE]
+            LayoutText {#text} at (259,0) size 353x17
+              text run at (259,0) width 353: "http://bugzilla.opendarwin.org/show_bug.cgi?id=5619"
+          LayoutText {#text} at (611,0) size 746x35
+            text run at (611,0) width 135: " CSS2: pre-wrap has"
             text run at (0,18) width 181: "overflow/selection problems"
         LayoutText {#text} at (180,18) size 5x17
           text run at (180,18) width 5: "."

@@ -4,26 +4,26 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x36
-        LayoutText {#text} at (0,0) size 55x17
-          text run at (0,0) width 55: "Test for "
-        LayoutInline {I} at (0,0) size 769x35
-          LayoutInline {A} at (0,0) size 306x17 [color=#0000EE]
-            LayoutText {#text} at (54,0) size 306x17
-              text run at (54,0) width 306: "http://bugs.webkit.org/show_bug.cgi?id=13153"
-          LayoutText {#text} at (359,0) size 769x35
-            text run at (359,0) width 5: " "
-            text run at (363,0) width 406: "REGRESSION: Visual highlighting of pre-populated blank line"
-            text run at (0,18) width 132: "in textarea is broken"
-        LayoutText {#text} at (131,18) size 5x17
-          text run at (131,18) width 5: "."
+        LayoutText {#text} at (0,0) size 54x17
+          text run at (0,0) width 54: "Test for "
+        LayoutInline {I} at (0,0) size 782x35
+          LayoutInline {A} at (0,0) size 305x17 [color=#0000EE]
+            LayoutText {#text} at (53,0) size 305x17
+              text run at (53,0) width 305: "http://bugs.webkit.org/show_bug.cgi?id=13153"
+          LayoutText {#text} at (357,0) size 782x35
+            text run at (357,0) width 5: " "
+            text run at (361,0) width 421: "REGRESSION: Visual highlighting of pre-populated blank line in"
+            text run at (0,18) width 115: "textarea is broken"
+        LayoutText {#text} at (114,18) size 5x17
+          text run at (114,18) width 5: "."
       LayoutBlockFlow {P} at (0,52) size 784x18
-        LayoutText {#text} at (0,0) size 340x17
-          text run at (0,0) width 340: "Testing the highlighting of and near hard line breaks."
+        LayoutText {#text} at (0,0) size 339x17
+          text run at (0,0) width 339: "Testing the highlighting of and near hard line breaks."
       LayoutBlockFlow (anonymous) at (0,86) size 784x80
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (0,182) size 784x18
-        LayoutText {#text} at (0,0) size 320x17
-          text run at (0,0) width 320: "Testing the highlighting of text split across boxes."
+        LayoutText {#text} at (0,0) size 319x17
+          text run at (0,0) width 319: "Testing the highlighting of text split across boxes."
       LayoutBlockFlow (anonymous) at (0,216) size 784x80
         LayoutText {#text} at (0,0) size 0x0
 layer at (12,98) size 62x72

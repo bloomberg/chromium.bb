@@ -60,12 +60,12 @@ layer at (0,0) size 785x944 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                             text run at (1,1) width 69: "999 points"
                         LayoutText {#text} at (70,1) size 26x16
                           text run at (70,1) width 26: " by "
-                        LayoutInline {A} at (0,0) size 21x16 [color=#0000EE]
-                          LayoutText {#text} at (96,1) size 21x16
-                            text run at (96,1) width 21: "pdr"
-                        LayoutText {#text} at (117,1) size 188x16
-                          text run at (117,1) width 88: " 4 hours ago "
-                          text run at (205,1) width 100: "| 74 comments"
+                        LayoutInline {A} at (0,0) size 22x16 [color=#0000EE]
+                          LayoutText {#text} at (95,1) size 22x16
+                            text run at (95,1) width 22: "pdr"
+                        LayoutText {#text} at (116,1) size 189x16
+                          text run at (116,1) width 89: " 4 hours ago "
+                          text run at (204,1) width 101: "| 74 comments"
                     LayoutTableRow {TR} at (0,42) size 402x10
                     LayoutTableRow {TR} at (0,54) size 402x2
                       LayoutTableCell {TD} at (2,54) size 52x2 [r=3 c=0 rs=1 cs=1]
@@ -94,11 +94,11 @@ layer at (0,0) size 785x944 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                                   LayoutText {#text} at (0,0) size 0x0
                                 LayoutBlockFlow (anonymous) at (1,25) size 583x320
                                   LayoutBR {BR} at (0,0) size 0x32
-                                  LayoutInline {SPAN} at (0,0) size 562x288
+                                  LayoutInline {SPAN} at (0,0) size 560x288
                                     LayoutText {#text} at (0,0) size 0x0
-                                    LayoutInline {FONT} at (0,0) size 562x288
-                                      LayoutText {#text} at (0,32) size 562x288
-                                        text run at (0,32) width 562: "Contrary to popular belief, blah blah blah"
+                                    LayoutInline {FONT} at (0,0) size 560x288
+                                      LayoutText {#text} at (0,32) size 560x288
+                                        text run at (0,32) width 560: "Contrary to popular belief, blah blah blah"
                                         text run at (0,64) width 526: "blah blah blah blah blah blah blah blah"
                                         text run at (0,96) width 526: "blah blah blah blah blah blah blah blah"
                                         text run at (0,128) width 526: "blah blah blah blah blah blah blah blah"

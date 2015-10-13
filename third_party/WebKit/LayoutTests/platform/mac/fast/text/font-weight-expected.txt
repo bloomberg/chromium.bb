@@ -4,11 +4,11 @@ layer at (0,0) size 800x411
   LayoutBlockFlow {HTML} at (0,0) size 800x411
     LayoutBlockFlow {BODY} at (8,8) size 784x395
       LayoutBlockFlow {H1} at (0,0) size 784x23
-        LayoutText {#text} at (0,0) size 250x23
-          text run at (0,0) width 250: "Tests support for font-weight"
+        LayoutText {#text} at (0,0) size 248x23
+          text run at (0,0) width 248: "Tests support for font-weight"
       LayoutBlockFlow {P} at (0,25) size 784x17
-        LayoutText {#text} at (0,0) size 344x17
-          text run at (0,0) width 344: "Tests that CSS font-weight with numeric values is supported."
+        LayoutText {#text} at (0,0) size 343x17
+          text run at (0,0) width 343: "Tests that CSS font-weight with numeric values is supported."
       LayoutBlockFlow {SECTION} at (0,50) size 784x173
         LayoutBlockFlow {H2} at (0,0) size 784x18
           LayoutText {#text} at (0,0) size 61x18

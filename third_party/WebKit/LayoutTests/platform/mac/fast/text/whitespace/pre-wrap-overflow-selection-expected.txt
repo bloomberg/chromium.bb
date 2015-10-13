@@ -6,15 +6,15 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {P} at (0,0) size 784x36
         LayoutText {#text} at (0,0) size 260x18
           text run at (0,0) width 260: "This test checks for a regression against "
-        LayoutInline {I} at (0,0) size 747x36
-          LayoutInline {A} at (0,0) size 354x18 [color=#0000EE]
-            LayoutText {#text} at (259,0) size 354x18
-              text run at (259,0) width 354: "http://bugzilla.opendarwin.org/show_bug.cgi?id=5619"
-          LayoutText {#text} at (612,0) size 747x36
-            text run at (612,0) width 135: " CSS2: pre-wrap has"
-            text run at (0,18) width 181: "overflow/selection problems"
-        LayoutText {#text} at (180,18) size 5x18
-          text run at (180,18) width 5: "."
+        LayoutInline {I} at (0,0) size 746x36
+          LayoutInline {A} at (0,0) size 353x18 [color=#0000EE]
+            LayoutText {#text} at (259,0) size 353x18
+              text run at (259,0) width 353: "http://bugzilla.opendarwin.org/show_bug.cgi?id=5619"
+          LayoutText {#text} at (611,0) size 746x36
+            text run at (611,0) width 135: " CSS2: pre-wrap has"
+            text run at (0,18) width 180: "overflow/selection problems"
+        LayoutText {#text} at (179,18) size 5x18
+          text run at (179,18) width 5: "."
       LayoutBlockFlow {P} at (0,52) size 784x18
         LayoutText {#text} at (0,0) size 707x18
           text run at (0,0) width 707: "Both boxes should not have scroll bars. The selection should not spill out of the blue box to the right of \x{201C}text\x{201D}."

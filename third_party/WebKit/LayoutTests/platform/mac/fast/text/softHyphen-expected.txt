@@ -1,8 +1,8 @@
-layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 992
+layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 995
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 785x992 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
-  LayoutBlockFlow {HTML} at (0,0) size 785x992
-    LayoutBlockFlow {BODY} at (8,16) size 769x960
+layer at (0,0) size 785x995 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
+  LayoutBlockFlow {HTML} at (0,0) size 785x995
+    LayoutBlockFlow {BODY} at (8,16) size 769x963
       LayoutBlockFlow {P} at (0,0) size 769x18
         LayoutText {#text} at (0,0) size 438x18
           text run at (0,0) width 438: "In all of the following, there should not be a hyphen before \x{201C}lorem\x{201D}."
@@ -96,53 +96,53 @@ layer at (0,0) size 785x992 backgroundClip at (0,0) size 785x600 clip at (0,0) s
       LayoutBlockFlow {P} at (0,530) size 769x18
         LayoutText {#text} at (0,0) size 61x18
           text run at (0,0) width 61: "Do\x{AD} \x{AD}lorem"
-      LayoutBlockFlow {P} at (0,564) size 769x18
-        LayoutText {#text} at (0,0) size 61x18
-          text run at (0,0) width 24: "Do "
-          text run at (23,0) width 38: "\x{AD}lorem"
-      LayoutBlockFlow {P} at (0,598) size 769x18
+      LayoutBlockFlow {P} at (0,564) size 769x19
+        LayoutText {#text} at (0,1) size 61x18
+          text run at (0,1) width 24: "Do "
+          text run at (23,1) width 38: "\x{AD}lorem"
+      LayoutBlockFlow {P} at (0,599) size 769x18
         LayoutText {#text} at (0,0) size 61x18
           text run at (0,0) width 24: "Do\x{AD} "
           text run at (23,0) width 38: "lorem"
-      LayoutBlockFlow {P} at (0,632) size 769x18
-        LayoutText {#text} at (0,0) size 65x18
-          text run at (0,0) width 28: "Do \x{AD} "
-          text run at (27,0) width 38: "lorem"
-      LayoutBlockFlow {P} at (0,666) size 769x18
-        LayoutText {#text} at (0,0) size 65x18
-          text run at (0,0) width 24: "Do "
-          text run at (23,0) width 42: "\x{AD} lorem"
-      LayoutBlockFlow {P} at (0,700) size 769x18
+      LayoutBlockFlow {P} at (0,633) size 769x19
+        LayoutText {#text} at (0,1) size 65x18
+          text run at (0,1) width 28: "Do \x{AD} "
+          text run at (27,1) width 38: "lorem"
+      LayoutBlockFlow {P} at (0,668) size 769x19
+        LayoutText {#text} at (0,1) size 65x18
+          text run at (0,1) width 24: "Do "
+          text run at (23,1) width 42: "\x{AD} lorem"
+      LayoutBlockFlow {P} at (0,703) size 769x18
         LayoutText {#text} at (0,0) size 20x18
           text run at (0,0) width 20: "Do"
         LayoutInline {SPAN} at (0,0) size 1x18
         LayoutText {#text} at (19,0) size 81x18
           text run at (19,0) width 81: "\x{AD}lorem ipsum"
-      LayoutBlockFlow {P} at (0,734) size 769x18
+      LayoutBlockFlow {P} at (0,737) size 769x18
         LayoutText {#text} at (0,0) size 100x18
           text run at (0,0) width 100: "Do\x{AD}\x{AD}lorem ipsum"
-      LayoutBlockFlow {P} at (0,768) size 769x18
+      LayoutBlockFlow {P} at (0,771) size 769x18
         LayoutInline {SPAN} at (0,0) size 20x18
           LayoutText {#text} at (0,0) size 20x18
             text run at (0,0) width 20: "Do\x{AD}"
         LayoutText {#text} at (19,0) size 81x18
           text run at (19,0) width 81: "\x{AD}lorem ipsum"
-      LayoutBlockFlow {P} at (0,802) size 769x18
+      LayoutBlockFlow {P} at (0,805) size 769x18
         LayoutText {#text} at (0,0) size 20x18
           text run at (0,0) width 20: "Do\x{AD}"
         LayoutInline {SPAN} at (0,0) size 81x18
           LayoutText {#text} at (19,0) size 81x18
             text run at (19,0) width 81: "\x{AD}lorem ipsum"
-      LayoutBlockFlow {P} at (0,836) size 769x18
+      LayoutBlockFlow {P} at (0,839) size 769x18
         LayoutInline {SPAN} at (0,0) size 20x18
           LayoutText {#text} at (0,0) size 20x18
             text run at (0,0) width 20: "Do\x{AD}\x{AD}"
         LayoutText {#text} at (19,0) size 81x18
           text run at (19,0) width 81: "lorem ipsum"
-      LayoutBlockFlow {P} at (0,870) size 769x18
+      LayoutBlockFlow {P} at (0,873) size 769x18
         LayoutText {#text} at (0,0) size 251x18
           text run at (0,0) width 251: "The following pair should be the same:"
-      LayoutBlockFlow {P} at (0,904) size 769x20
+      LayoutBlockFlow {P} at (0,907) size 769x20
         LayoutText {#text} at (0,1) size 16x18
           text run at (0,1) width 16: "W"
         LayoutBlockFlow {SPAN} at (15.09,0) size 13.56x20 [border: (1px solid #FF0000)]
@@ -150,7 +150,7 @@ layer at (0,0) size 785x992 backgroundClip at (0,0) size 785x600 clip at (0,0) s
             text run at (1,1) width 12: "X"
         LayoutText {#text} at (28,1) size 13x18
           text run at (28,1) width 13: "Y"
-      LayoutBlockFlow {P} at (0,940) size 769x20
+      LayoutBlockFlow {P} at (0,943) size 769x20
         LayoutText {#text} at (0,1) size 16x18
           text run at (0,1) width 16: "W"
         LayoutBlockFlow {SPAN} at (15.09,0) size 13.56x20 [border: (1px solid #FF0000)]

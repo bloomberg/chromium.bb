@@ -4,8 +4,8 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x576
       LayoutBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 370x19
-          text run at (0,0) width 370: "Test for bug 13234, layout of selected justified text is broken."
+        LayoutText {#text} at (0,0) size 369x19
+          text run at (0,0) width 369: "Test for bug 13234, layout of selected justified text is broken."
       LayoutBlockFlow {P} at (0,36) size 784x20
         LayoutText {#text} at (0,0) size 238x19
           text run at (0,0) width 238: "The two blue boxes should be identical."

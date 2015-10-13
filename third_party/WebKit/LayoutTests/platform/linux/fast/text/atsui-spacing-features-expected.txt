@@ -4,17 +4,17 @@ layer at (0,0) size 800x378
   LayoutBlockFlow {HTML} at (0,0) size 800x378
     LayoutBlockFlow {BODY} at (8,16) size 784x354
       LayoutBlockFlow {P} at (0,0) size 784x40
-        LayoutText {#text} at (0,0) size 167x19
-          text run at (0,0) width 167: "Test for regressions against "
-        LayoutInline {I} at (0,0) size 757x39
-          LayoutInline {A} at (0,0) size 350x19 [color=#0000EE]
-            LayoutText {#text} at (167,0) size 350x19
-              text run at (167,0) width 350: "http://bugzilla.opendarwin.org/show_bug.cgi?id=3922"
-          LayoutText {#text} at (517,0) size 757x39
-            text run at (517,0) width 240: " Variable word/letter spacing and full"
-            text run at (0,20) width 332: "justification not supported for ATSUI-rendered text"
-        LayoutText {#text} at (332,20) size 4x19
-          text run at (332,20) width 4: "."
+        LayoutText {#text} at (0,0) size 166x19
+          text run at (0,0) width 166: "Test for regressions against "
+        LayoutInline {I} at (0,0) size 753x39
+          LayoutInline {A} at (0,0) size 351x19 [color=#0000EE]
+            LayoutText {#text} at (165,0) size 351x19
+              text run at (165,0) width 351: "http://bugzilla.opendarwin.org/show_bug.cgi?id=3922"
+          LayoutText {#text} at (515,0) size 753x39
+            text run at (515,0) width 238: " Variable word/letter spacing and full"
+            text run at (0,20) width 331: "justification not supported for ATSUI-rendered text"
+        LayoutText {#text} at (330,20) size 5x19
+          text run at (330,20) width 5: "."
       LayoutBlockFlow (anonymous) at (0,56) size 784x20
         LayoutText {#text} at (0,0) size 483x19
           text run at (0,0) width 483: "Each green box should be identical to the blue box it follows, except for accents."
@@ -23,8 +23,8 @@ layer at (0,0) size 800x378
         LayoutTableSection {TBODY} at (0,0) size 620x260
           LayoutTableRow {TR} at (0,2) size 620x22
             LayoutTableCell {TD} at (2,2) size 204x22 [r=0 c=0 rs=1 cs=1]
-              LayoutText {#text} at (59,1) size 86x19
-                text run at (59,1) width 86: "Word spacing"
+              LayoutText {#text} at (60,1) size 84x19
+                text run at (60,1) width 84: "Word spacing"
             LayoutTableCell {TD} at (208,2) size 204x22 [r=0 c=1 rs=1 cs=1]
               LayoutText {#text} at (59,1) size 86x19
                 text run at (59,1) width 86: "Letter spacing"

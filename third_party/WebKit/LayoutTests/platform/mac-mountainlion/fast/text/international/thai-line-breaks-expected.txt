@@ -4,11 +4,11 @@ layer at (0,0) size 785x600
   LayoutBlockFlow {HTML} at (0,0) size 785x600
     LayoutBlockFlow {BODY} at (8,8) size 769x576
       LayoutBlockFlow {P} at (0,0) size 769x72
-        LayoutText {#text} at (0,0) size 762x72
+        LayoutText {#text} at (0,0) size 761x72
           text run at (0,0) width 743: "The column on the right has explicit spaces. Line breaks should be roughly the same if Thai line breaks are working"
           text run at (0,18) width 760: "well. The original source of this text was ICU, and the test program said \"by it's very nature, Thai word breaking is not"
-          text run at (0,36) width 762: "exact\", so the columns don't match exactly. In a future version we might decide to tweak the right column to match our"
-          text run at (0,54) width 121: "expected behavior."
+          text run at (0,36) width 761: "exact\", so the columns don't match exactly. In a future version we might decide to tweak the right column to match our"
+          text run at (0,54) width 120: "expected behavior."
 layer at (236,96) size 1x27896 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
   LayoutBlockFlow (positioned) {DIV} at (235.50,96) size 1x27896
     LayoutText {#text} at (0,3) size 83x27892

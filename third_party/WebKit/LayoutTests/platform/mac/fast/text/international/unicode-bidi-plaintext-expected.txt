@@ -4,8 +4,8 @@ layer at (0,0) size 800x204
   LayoutBlockFlow {HTML} at (0,0) size 800x204
     LayoutBlockFlow {BODY} at (8,8) size 784x183
       LayoutBlockFlow {DIV} at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 520x18
-          text run at (0,0) width 520: "This tests proper handling of unicode-bidi: plaintext. You should not see any red."
+        LayoutText {#text} at (0,0) size 519x18
+          text run at (0,0) width 519: "This tests proper handling of unicode-bidi: plaintext. You should not see any red."
       LayoutBlockFlow {DIV} at (0,18) size 784x75
         LayoutText {#text} at (0,0) size 46x18
           text run at (0,0) width 46: "!hello. "
@@ -18,9 +18,9 @@ layer at (0,0) size 800x204
           text run at (39,38) width 20 RTL: "\x{5DC}\x{5D5}\x{5D9}"
           text run at (58,38) width 11: "! "
         LayoutBR {BR} at (68,38) size 1x18
-        LayoutText {#text} at (683,57) size 101x18
-          text run at (683,57) width 7 RTL: "!"
-          text run at (689,57) width 51: "WebKit"
+        LayoutText {#text} at (684,57) size 100x18
+          text run at (684,57) width 7 RTL: "!"
+          text run at (690,57) width 50: "WebKit"
           text run at (739,57) width 45 RTL: "\x{5E9}\x{5DC}\x{5D5}\x{5DD}, "
       LayoutBlockFlow {PRE} at (0,106) size 784x77
         LayoutText {#text} at (0,0) size 784x77

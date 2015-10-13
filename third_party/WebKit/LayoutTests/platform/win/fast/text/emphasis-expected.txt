@@ -18,7 +18,7 @@ layer at (0,0) size 785x727 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         LayoutText {#text} at (112,70) size 334x66
           text run at (112,70) width 13: ", "
           text run at (124,70) width 213: "lobortis eu iaculis vel,"
-          text run at (3,110) width 209: "scelerisque nec dolor."
+          text run at (3,110) width 208: "scelerisque nec dolor."
       LayoutBlockFlow (floating) {DIV} at (390,8) size 366x140 [border: (3px solid #000000)]
         LayoutText {#text} at (3,3) size 273x26
           text run at (3,3) width 273: "Lorem ipsum dolor sit amet,"
@@ -94,7 +94,7 @@ layer at (0,0) size 785x727 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         LayoutText {#text} at (198,121) size 334x53
           text run at (198,121) width 7: " "
           text run at (204,121) width 133: "eu iaculis vel,"
-          text run at (3,148) width 209: "scelerisque nec dolor."
+          text run at (3,148) width 208: "scelerisque nec dolor."
       LayoutBlockFlow (floating) {DIV} at (390,164) size 366x177 [border: (3px solid #000000)]
         LayoutText {#text} at (3,3) size 70x26
           text run at (3,3) width 70: "Lorem "
@@ -154,7 +154,7 @@ layer at (0,0) size 785x727 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         LayoutText {#text} at (198,95) size 334x78
           text run at (198,95) width 7: " "
           text run at (204,95) width 133: "eu iaculis vel,"
-          text run at (3,147) width 209: "scelerisque nec dolor."
+          text run at (3,147) width 208: "scelerisque nec dolor."
       LayoutBlockFlow (floating) {DIV} at (390,357) size 366x198 [border: (3px solid #000000)]
         LayoutText {#text} at (3,14) size 273x26
           text run at (3,14) width 273: "Lorem ipsum dolor sit amet,"
@@ -170,7 +170,7 @@ layer at (0,0) size 785x727 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         LayoutText {#text} at (112,110) size 334x74
           text run at (112,110) width 13: ", "
           text run at (124,110) width 213: "lobortis eu iaculis vel,"
-          text run at (3,158) width 209: "scelerisque nec dolor."
+          text run at (3,158) width 208: "scelerisque nec dolor."
       LayoutBlockFlow (floating) {DIV} at (8,571) size 366x140 [border: (3px solid #000000)]
         LayoutText {#text} at (3,3) size 273x26
           text run at (3,3) width 273: "Lorem ipsum dolor sit amet,"
@@ -186,6 +186,6 @@ layer at (0,0) size 785x727 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         LayoutText {#text} at (112,70) size 334x66
           text run at (112,70) width 13: ", "
           text run at (124,70) width 213: "lobortis eu iaculis vel,"
-          text run at (3,110) width 209: "scelerisque nec dolor."
+          text run at (3,110) width 208: "scelerisque nec dolor."
 selection start: position 10 of child 0 {#text} of child 1 {SPAN} of child 10 {DIV} of body
 selection end:   position 7 of child 0 {#text} of child 3 {SPAN} of child 10 {DIV} of body

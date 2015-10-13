@@ -5,13 +5,13 @@ layer at (0,0) size 800x810 backgroundClip at (0,0) size 800x600 clip at (0,0) s
     LayoutBlockFlow {BODY} at (0,0) size 800x810
       LayoutBlockFlow {SPAN} at (0,0) size 200x810
         LayoutBlockFlow {DIV} at (0,0) size 200x810
-          LayoutText {#text} at (0,-3) size 200x816
-            text run at (0,-3) width 200: "This test verifies"
+          LayoutText {#text} at (0,-3) size 199x816
+            text run at (0,-3) width 199: "This test verifies"
             text run at (0,27) width 140: "that display"
             text run at (0,57) width 97: "changes"
             text run at (0,87) width 102: "properly"
             text run at (0,117) width 163: "invalidate the"
-            text run at (0,147) width 169: "text autosizer."
+            text run at (0,147) width 167: "text autosizer."
             text run at (0,177) width 187: "This test passes"
             text run at (0,207) width 195: "if this text is not"
             text run at (0,237) width 144: "overlapping"

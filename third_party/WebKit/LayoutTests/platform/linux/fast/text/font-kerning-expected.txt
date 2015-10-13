@@ -8,8 +8,8 @@ layer at (0,0) size 800x600
           LayoutText {#text} at (0,0) size 200x41
             text run at (0,0) width 200: "AVAVAVAV"
         LayoutBlockFlow {DIV} at (0,41) size 784x41
-          LayoutText {#text} at (0,0) size 200x41
-            text run at (0,0) width 200: "AVAVAVAV"
+          LayoutText {#text} at (0,0) size 184x41
+            text run at (0,0) width 184: "AVAVAVAV"
         LayoutBlockFlow {DIV} at (0,82) size 784x41
           LayoutText {#text} at (0,0) size 184x41
             text run at (0,0) width 184: "AVAVAVAV"

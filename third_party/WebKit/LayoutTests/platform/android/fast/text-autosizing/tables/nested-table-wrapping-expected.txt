@@ -1,0 +1,29 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x274
+  LayoutBlockFlow {HTML} at (0,0) size 800x274
+    LayoutBlockFlow {BODY} at (0,0) size 800x273
+      LayoutBlockFlow {DIV} at (0,0) size 600x36
+        LayoutText {#text} at (0,0) size 248x15
+          text run at (0,0) width 248: "Table autosizing tests - nested-table-wrapping.html"
+        LayoutBR {BR} at (248,0) size 0x15
+        LayoutText {#text} at (0,16) size 396x15
+          text run at (0,16) width 396: "This test passes if \"the table cell should tightly wrap this text\" is tightly wrapped."
+      LayoutTable {TABLE} at (1,37) size 798x236 [border: none]
+        LayoutTableSection {TBODY} at (0,0) size 797x235
+          LayoutTableRow {TR} at (0,0) size 797x235
+            LayoutTableCell {TD} at (0,0) size 797x235 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=0 rs=1 cs=1]
+              LayoutBlockFlow (anonymous) at (2,2) size 794x210
+                LayoutText {#text} at (0,0) size 769x209
+                  text run at (0,0) width 769: "Autosize Autosize Autosize Autosize Autosize Autosize Autosize"
+                  text run at (0,35) width 769: "Autosize Autosize Autosize Autosize Autosize Autosize Autosize"
+                  text run at (0,70) width 769: "Autosize Autosize Autosize Autosize Autosize Autosize Autosize"
+                  text run at (0,105) width 769: "Autosize Autosize Autosize Autosize Autosize Autosize Autosize"
+                  text run at (0,140) width 769: "Autosize Autosize Autosize Autosize Autosize Autosize Autosize"
+                  text run at (0,175) width 436: "Autosize Autosize Autosize Autosize"
+              LayoutTable {TABLE} at (3,213) size 204x20 [border: none]
+                LayoutTableSection {TBODY} at (0,0) size 203x19
+                  LayoutTableRow {TR} at (0,0) size 203x19
+                    LayoutTableCell {TD} at (0,0) size 203x19 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=0 rs=1 cs=1]
+                      LayoutText {#text} at (2,2) size 200x15
+                        text run at (2,2) width 200: "the table cell should tightly wrap this text"

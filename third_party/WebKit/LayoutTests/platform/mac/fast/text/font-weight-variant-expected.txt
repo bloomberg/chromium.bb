@@ -37,8 +37,8 @@ layer at (0,0) size 785x1009 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             text run at (0,0) width 331: "The three lines above should have the same weight."
       LayoutBlockFlow {SECTION} at (0,311.63) size 769x209.91
         LayoutBlockFlow {H2} at (0,0) size 769x28
-          LayoutText {#text} at (0,0) size 258x28
-            text run at (0,0) width 258: "Specific weight, Segoe UI"
+          LayoutText {#text} at (0,0) size 256x28
+            text run at (0,0) width 256: "Specific weight, Segoe UI"
         LayoutBlockFlow {DIV} at (0,47.91) size 769x18
           LayoutText {#text} at (0,0) size 523x18
             text run at (0,0) width 523: "font-weight: 100 - Back in June we delivered oxygen equipment of the same size."
@@ -68,8 +68,8 @@ layer at (0,0) size 785x1009 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             text run at (0,0) width 547: "font-weight: 900 - Back in June we delivered oxygen equipment of the same size."
       LayoutBlockFlow {SECTION} at (0,541.44) size 769x209.91
         LayoutBlockFlow {H2} at (0,0) size 769x28
-          LayoutText {#text} at (0,0) size 320x28
-            text run at (0,0) width 320: "Specific weight, Segoe UI Light"
+          LayoutText {#text} at (0,0) size 318x28
+            text run at (0,0) width 318: "Specific weight, Segoe UI Light"
         LayoutBlockFlow {DIV} at (0,47.91) size 769x18
           LayoutText {#text} at (0,0) size 523x18
             text run at (0,0) width 523: "font-weight: 100 - Back in June we delivered oxygen equipment of the same size."
@@ -99,8 +99,8 @@ layer at (0,0) size 785x1009 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             text run at (0,0) width 547: "font-weight: 900 - Back in June we delivered oxygen equipment of the same size."
       LayoutBlockFlow {SECTION} at (0,771.25) size 769x209.91
         LayoutBlockFlow {H2} at (0,0) size 769x28
-          LayoutText {#text} at (0,0) size 360x28
-            text run at (0,0) width 360: "Specific weight, Segoe UI Semibold"
+          LayoutText {#text} at (0,0) size 358x28
+            text run at (0,0) width 358: "Specific weight, Segoe UI Semibold"
         LayoutBlockFlow {DIV} at (0,47.91) size 769x18
           LayoutText {#text} at (0,0) size 523x18
             text run at (0,0) width 523: "font-weight: 100 - Back in June we delivered oxygen equipment of the same size."

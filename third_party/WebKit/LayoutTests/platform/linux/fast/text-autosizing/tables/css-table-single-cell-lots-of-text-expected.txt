@@ -6,7 +6,7 @@ layer at (0,0) size 800x567
       LayoutBlockFlow {DIV} at (0,0) size 600x36
         LayoutText {#text} at (0,0) size 291x15
           text run at (0,0) width 291: "Table autosizing tests - css-table-single-cell-lots-of-text.html"
-        LayoutBR {BR} at (291,0) size 0x15
+        LayoutBR {BR} at (290,0) size 1x15
         LayoutText {#text} at (0,16) size 568x15
           text run at (0,16) width 568: "This test passes if there is a one cell with lots of text that's autosized, and five single-word cells that are not autosized."
       LayoutTable {DIV} at (1,37) size 798x529

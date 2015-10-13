@@ -7,12 +7,12 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (0,0) size 177x18
           text run at (0,0) width 177: "This is a regression test for "
         LayoutInline {I} at (0,0) size 782x36
-          LayoutInline {A} at (0,0) size 355x18 [color=#0000EE]
-            LayoutText {#text} at (176,0) size 355x18
-              text run at (176,0) width 355: "http://bugzilla.opendarwin.org/show_bug.cgi?id=9432"
-          LayoutText {#text} at (530,0) size 782x36
-            text run at (530,0) width 5: " "
-            text run at (534,0) width 248: "REGRESSION: crash in capitalization"
+          LayoutInline {A} at (0,0) size 354x18 [color=#0000EE]
+            LayoutText {#text} at (176,0) size 354x18
+              text run at (176,0) width 354: "http://bugzilla.opendarwin.org/show_bug.cgi?id=9432"
+          LayoutText {#text} at (529,0) size 782x36
+            text run at (529,0) width 5: " "
+            text run at (533,0) width 249: "REGRESSION: crash in capitalization"
             text run at (0,18) width 278: "code due to empty-string generated content"
         LayoutText {#text} at (277,18) size 5x18
           text run at (277,18) width 5: "."

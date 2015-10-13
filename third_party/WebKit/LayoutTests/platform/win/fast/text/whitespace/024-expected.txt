@@ -19,7 +19,7 @@ layer at (0,0) size 785x1223 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (0,18) width 286: "If a nested container element is preceded by "
           text run at (285,18) width 449: "uncontained text and a blank line, and there are \"too many\" characters"
           text run at (0,36) width 419: "contained in the nested element, the PRE width will be too wide. "
-          text run at (418,36) width 343: "In the examples below, the nested element is a SPAN"
+          text run at (418,36) width 341: "In the examples below, the nested element is a SPAN"
           text run at (0,54) width 96: "whose content "
           text run at (95,54) width 233: "is the days-of-week line, as follows:"
       LayoutBlockFlow {PRE} at (0,143.44) size 769x16
@@ -174,6 +174,6 @@ layer at (0,0) size 785x1223 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 text run at (346,1) width 211: "no longer triggers the width bug,"
                 text run at (1,19) width 289: "because now the '2003' is itself contained by "
                 text run at (289,19) width 244: "a nested element (in this case, another"
-                text run at (1,37) width 51: "SPAN)."
+                text run at (1,37) width 49: "SPAN)."
       LayoutBlockFlow (anonymous) at (0,1188.69) size 769x18
         LayoutBR {BR} at (0,0) size 0x17

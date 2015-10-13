@@ -5,12 +5,12 @@ layer at (0,0) size 800x1353 backgroundClip at (0,0) size 800x600 clip at (0,0) 
     LayoutBlockFlow {BODY} at (8,8) size 784x1337
       LayoutBlockFlow {SECTION} at (0,0) size 785.55x1321
         LayoutBlockFlow {H1} at (0,0) size 785.55x27
-          LayoutText {#text} at (0,0) size 283x26
-            text run at (0,0) width 283: "Font Size Scaling Pixel Test"
+          LayoutText {#text} at (0,0) size 281x26
+            text run at (0,0) width 281: "Font Size Scaling Pixel Test"
         LayoutBlockFlow {P} at (0,31) size 785.55x20
-          LayoutText {#text} at (0,0) size 768x19
-            text run at (0,0) width 251: "Size of the text should scale smoothly. "
-            text run at (250,0) width 518: "Reported width should be within 0.02px of that of the highlighted reference row."
+          LayoutText {#text} at (0,0) size 766x19
+            text run at (0,0) width 250: "Size of the text should scale smoothly. "
+            text run at (249,0) width 517: "Reported width should be within 0.02px of that of the highlighted reference row."
         LayoutBlockFlow {DIV} at (0,55) size 785.55x1266
           LayoutBlockFlow {DIV} at (0,0) size 785.55x14 [border: none (1px solid #000000) none]
             LayoutBlockFlow {DIV} at (0,0) size 65x13
@@ -94,8 +94,8 @@ layer at (0,0) size 800x1353 backgroundClip at (0,0) size 800x600 clip at (0,0) 
                 text run at (260,0) width 229: "Amazingly few discotheques provide jukeboxes."
           LayoutBlockFlow {DIV} at (0,68) size 785.55x14
             LayoutBlockFlow {DIV} at (0,1) size 65x13
-              LayoutText {#text} at (34,0) size 26x13
-                text run at (34,0) width 26: "11.00"
+              LayoutText {#text} at (35,0) size 25x13
+                text run at (35,0) width 25: "11.00"
             LayoutBlockFlow {DIV} at (65,1) size 65x13
               LayoutText {#text} at (29,0) size 31x13
                 text run at (29,0) width 31: "233.56"
@@ -110,8 +110,8 @@ layer at (0,0) size 800x1353 backgroundClip at (0,0) size 800x600 clip at (0,0) 
                 text run at (260,0) width 234: "Amazingly few discotheques provide jukeboxes."
           LayoutBlockFlow {DIV} at (0,82) size 785.55x14
             LayoutBlockFlow {DIV} at (0,1) size 65x13
-              LayoutText {#text} at (34,0) size 26x13
-                text run at (34,0) width 26: "11.25"
+              LayoutText {#text} at (35,0) size 25x13
+                text run at (35,0) width 25: "11.25"
             LayoutBlockFlow {DIV} at (65,1) size 65x13
               LayoutText {#text} at (29,0) size 31x13
                 text run at (29,0) width 31: "238.88"
@@ -126,8 +126,8 @@ layer at (0,0) size 800x1353 backgroundClip at (0,0) size 800x600 clip at (0,0) 
                 text run at (260,0) width 239: "Amazingly few discotheques provide jukeboxes."
           LayoutBlockFlow {DIV} at (0,96) size 785.55x15
             LayoutBlockFlow {DIV} at (0,2) size 65x13
-              LayoutText {#text} at (34,0) size 26x13
-                text run at (34,0) width 26: "11.50"
+              LayoutText {#text} at (35,0) size 25x13
+                text run at (35,0) width 25: "11.50"
             LayoutBlockFlow {DIV} at (65,2) size 65x13
               LayoutText {#text} at (29,0) size 31x13
                 text run at (29,0) width 31: "244.19"
@@ -142,8 +142,8 @@ layer at (0,0) size 800x1353 backgroundClip at (0,0) size 800x600 clip at (0,0) 
                 text run at (260,0) width 245: "Amazingly few discotheques provide jukeboxes."
           LayoutBlockFlow {DIV} at (0,111) size 785.55x15
             LayoutBlockFlow {DIV} at (0,2) size 65x13
-              LayoutText {#text} at (34,0) size 26x13
-                text run at (34,0) width 26: "11.75"
+              LayoutText {#text} at (35,0) size 25x13
+                text run at (35,0) width 25: "11.75"
             LayoutBlockFlow {DIV} at (65,2) size 65x13
               LayoutText {#text} at (29,0) size 31x13
                 text run at (29,0) width 31: "249.48"
@@ -177,8 +177,8 @@ layer at (0,0) size 800x1353 backgroundClip at (0,0) size 800x600 clip at (0,0) 
               LayoutText {#text} at (34,0) size 26x13
                 text run at (34,0) width 26: "12.25"
             LayoutBlockFlow {DIV} at (65,2) size 65x13
-              LayoutText {#text} at (29,0) size 31x13
-                text run at (29,0) width 31: "260.11"
+              LayoutText {#text} at (30,0) size 30x13
+                text run at (30,0) width 30: "260.11"
             LayoutBlockFlow {DIV} at (130,2) size 65x13
               LayoutText {#text} at (29,0) size 31x13
                 text run at (29,0) width 31: "254.80"

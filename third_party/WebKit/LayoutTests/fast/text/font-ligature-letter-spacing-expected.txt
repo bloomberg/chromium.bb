@@ -2,7 +2,7 @@ CACACACA
 CACACACA
 CACACACA
 This is a testharness.js-based test.
-PASS Ligature expected not to be applied due to letter spacing. 
-PASS Ligature expected not to be applied due to letter spacing. 
+FAIL Ligature expected not to be applied due to letter spacing. assert_equals: Ligature not applied due to letter spacing. expected 282.96875 but got 138.359375
+FAIL Ligature expected not to be applied due to letter spacing. assert_equals: Ligature not applied due to letter spacing. expected 282.96875 but got 138.359375
 Harness: the test ran to completion.
 

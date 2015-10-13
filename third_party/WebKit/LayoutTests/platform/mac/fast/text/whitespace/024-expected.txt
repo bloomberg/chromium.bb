@@ -19,7 +19,7 @@ layer at (0,0) size 785x1187 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (0,18) width 286: "If a nested container element is preceded by "
           text run at (285,18) width 449: "uncontained text and a blank line, and there are \"too many\" characters"
           text run at (0,36) width 419: "contained in the nested element, the PRE width will be too wide. "
-          text run at (418,36) width 343: "In the examples below, the nested element is a SPAN"
+          text run at (418,36) width 341: "In the examples below, the nested element is a SPAN"
           text run at (0,54) width 96: "whose content "
           text run at (95,54) width 233: "is the days-of-week line, as follows:"
       LayoutBlockFlow {PRE} at (0,143.44) size 769x15
@@ -169,10 +169,10 @@ layer at (0,0) size 785x1187 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   text run at (163,128) width 1: " "
                   text run at (7,143) width 63: "28 29 30"
             LayoutTableCell {TD} at (178,2) size 589x38 [r=0 c=1 rs=1 cs=1]
-              LayoutText {#text} at (1,1) size 586x36
+              LayoutText {#text} at (1,1) size 585x36
                 text run at (1,1) width 346: "The blank line between '2003' and the nested element "
                 text run at (346,1) width 211: "no longer triggers the width bug,"
                 text run at (1,19) width 289: "because now the '2003' is itself contained by "
-                text run at (289,19) width 298: "a nested element (in this case, another SPAN)."
+                text run at (289,19) width 297: "a nested element (in this case, another SPAN)."
       LayoutBlockFlow (anonymous) at (0,1152.69) size 769x18
         LayoutBR {BR} at (0,0) size 0x18

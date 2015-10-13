@@ -20,13 +20,13 @@ layer at (0,0) size 800x390
         LayoutText {#text} at (138,0) size 10x18
           text run at (138,0) width 10: " :"
       LayoutBlockFlow {P} at (0,68) size 784x18
-        LayoutText {#text} at (0,0) size 92x18
-          text run at (0,0) width 92: "locale=tr-TR: "
+        LayoutText {#text} at (0,0) size 91x18
+          text run at (0,0) width 91: "locale=tr-TR: "
         LayoutInline {SPAN} at (0,0) size 46x18
-          LayoutText {#text} at (91,0) size 46x18
-            text run at (91,0) width 46: "Isi\x{130} \x{130}s\x{131}I"
-        LayoutText {#text} at (136,0) size 9x18
-          text run at (136,0) width 9: " :"
+          LayoutText {#text} at (90,0) size 46x18
+            text run at (90,0) width 46: "Isi\x{130} \x{130}s\x{131}I"
+        LayoutText {#text} at (135,0) size 10x18
+          text run at (135,0) width 10: " :"
       LayoutBlockFlow {P} at (0,102) size 784x18
         LayoutText {#text} at (0,0) size 131x18
           text run at (0,0) width 131: "locale=tr@foo=bar: "
@@ -68,13 +68,13 @@ layer at (0,0) size 800x390
         LayoutText {#text} at (180,0) size 9x18
           text run at (180,0) width 9: " :"
       LayoutBlockFlow {P} at (0,272) size 784x18
-        LayoutText {#text} at (0,0) size 92x18
-          text run at (0,0) width 92: "locale=tr-US: "
+        LayoutText {#text} at (0,0) size 91x18
+          text run at (0,0) width 91: "locale=tr-US: "
         LayoutInline {SPAN} at (0,0) size 46x18
-          LayoutText {#text} at (91,0) size 46x18
-            text run at (91,0) width 46: "Isi\x{130} \x{130}s\x{131}I"
-        LayoutText {#text} at (136,0) size 9x18
-          text run at (136,0) width 9: " :"
+          LayoutText {#text} at (90,0) size 46x18
+            text run at (90,0) width 46: "Isi\x{130} \x{130}s\x{131}I"
+        LayoutText {#text} at (135,0) size 10x18
+          text run at (135,0) width 10: " :"
       LayoutBlockFlow {P} at (0,306) size 784x18
         LayoutText {#text} at (0,0) size 77x18
           text run at (0,0) width 77: "locale=TR: "

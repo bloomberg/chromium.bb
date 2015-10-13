@@ -1,19 +1,18 @@
-layer at (0,0) size 800x600 scrollHeight 625
+layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 800x625 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600
-  LayoutBlockFlow {HTML} at (0,0) size 800x625
-    LayoutBlockFlow {BODY} at (0,0) size 800x368
-      LayoutBlockFlow {DIV} at (0,0) size 800x368
-        LayoutText {#text} at (0,0) size 784x368
-          text run at (0,0) width 643: "This test verifies that FastTextAutosizer"
-          text run at (0,46) width 701: "considers a list item (LI) to be \"text\" for the"
-          text run at (0,92) width 661: "purpose of determining the deepest block"
-          text run at (0,138) width 784: "containing all text (DBCAT). If this were not the"
-          text run at (0,184) width 721: "case, the cluster's DBCAT would be the DIV"
-          text run at (0,230) width 719: "inside the LI, which hasn't entered layout yet"
-          text run at (0,276) width 730: "when the list marker is autosized (causing the"
-          text run at (0,322) width 304: "autosizer to crash)."
-      LayoutBlockFlow (floating) {UL} at (0,384) size 800x225
+layer at (0,0) size 800x579
+  LayoutBlockFlow {HTML} at (0,0) size 800x579
+    LayoutBlockFlow {BODY} at (0,0) size 800x322
+      LayoutBlockFlow {DIV} at (0,0) size 800x322
+        LayoutText {#text} at (0,0) size 799x322
+          text run at (0,0) width 799: "This test verifies that FastTextAutosizer considers"
+          text run at (0,46) width 720: "a list item (LI) to be \"text\" for the purpose of"
+          text run at (0,92) width 780: "determining the deepest block containing all text"
+          text run at (0,138) width 767: "(DBCAT). If this were not the case, the cluster's"
+          text run at (0,184) width 759: "DBCAT would be the DIV inside the LI, which"
+          text run at (0,230) width 763: "hasn't entered layout yet when the list marker is"
+          text run at (0,276) width 669: "autosized (causing the autosizer to crash)."
+      LayoutBlockFlow (floating) {UL} at (0,338) size 800x225
         LayoutListItem {LI} at (40,0) size 760x225
           LayoutBlockFlow {DIV} at (0,0) size 760x225
             LayoutListMarker (anonymous) at (-31,0) size 14x45: bullet

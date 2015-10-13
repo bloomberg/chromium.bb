@@ -37,34 +37,34 @@ layer at (0,0) size 800x280
           text run at (0,20) width 263: "inherited. This was discovered in Safari 1.0."
       LayoutBlockFlow {DIV} at (0,114.44) size 784x128
         LayoutBlockFlow {P} at (0,0) size 784x20
-          LayoutText {#text} at (0,0) size 127x19
-            text run at (0,0) width 127: "Text inside "
+          LayoutText {#text} at (0,0) size 126x19
+            text run at (0,0) width 126: "Text inside "
           LayoutInline {B} at (0,0) size 48x19
-            LayoutText {#text} at (126,0) size 48x19
-              text run at (126,0) width 48: "bold"
-          LayoutText {#text} at (173,0) size 98x19
-            text run at (173,0) width 98: " element."
+            LayoutText {#text} at (125,0) size 48x19
+              text run at (125,0) width 48: "bold"
+          LayoutText {#text} at (172,0) size 98x19
+            text run at (172,0) width 98: " element."
         LayoutBlockFlow {P} at (0,36) size 784x20
-          LayoutText {#text} at (0,0) size 127x19
-            text run at (0,0) width 127: "Text inside "
-          LayoutInline {STRONG} at (0,0) size 72x19
-            LayoutText {#text} at (126,0) size 72x19
-              text run at (126,0) width 72: "strong"
-          LayoutText {#text} at (197,0) size 98x19
-            text run at (197,0) width 98: " element."
+          LayoutText {#text} at (0,0) size 126x19
+            text run at (0,0) width 126: "Text inside "
+          LayoutInline {STRONG} at (0,0) size 71x19
+            LayoutText {#text} at (125,0) size 71x19
+              text run at (125,0) width 71: "strong"
+          LayoutText {#text} at (195,0) size 99x19
+            text run at (195,0) width 99: " element."
         LayoutBlockFlow {P} at (0,72) size 784x20
-          LayoutText {#text} at (0,0) size 127x19
-            text run at (0,0) width 127: "Text inside "
+          LayoutText {#text} at (0,0) size 126x19
+            text run at (0,0) width 126: "Text inside "
           LayoutInline {I} at (0,0) size 62x19
-            LayoutText {#text} at (126,0) size 62x19
-              text run at (126,0) width 62: "italic"
-          LayoutText {#text} at (187,0) size 98x19
-            text run at (187,0) width 98: " element."
+            LayoutText {#text} at (125,0) size 62x19
+              text run at (125,0) width 62: "italic"
+          LayoutText {#text} at (186,0) size 98x19
+            text run at (186,0) width 98: " element."
         LayoutBlockFlow {P} at (0,108) size 784x20
-          LayoutText {#text} at (0,0) size 127x19
-            text run at (0,0) width 127: "Text inside "
+          LayoutText {#text} at (0,0) size 126x19
+            text run at (0,0) width 126: "Text inside "
           LayoutInline {EM} at (0,0) size 98x19
-            LayoutText {#text} at (126,0) size 98x19
-              text run at (126,0) width 98: "emphasis"
-          LayoutText {#text} at (223,0) size 99x19
-            text run at (223,0) width 99: " element."
+            LayoutText {#text} at (125,0) size 98x19
+              text run at (125,0) width 98: "emphasis"
+          LayoutText {#text} at (222,0) size 99x19
+            text run at (222,0) width 99: " element."

@@ -36,13 +36,13 @@ layer at (0,0) size 800x128
         LayoutInline {TT} at (0,0) size 88x16
           LayoutText {#text} at (113,23) size 88x16
             text run at (113,23) width 88: "eventSender"
-        LayoutText {#text} at (201,20) size 427x19
-          text run at (201,20) width 427: " to select the text. You should see some of the above text selected and "
-        LayoutInline {TT} at (0,0) size 80x16
-          LayoutText {#text} at (628,23) size 80x16
-            text run at (628,23) width 80: "test_shell"
-        LayoutText {#text} at (708,20) size 765x39
-          text run at (708,20) width 57: " shouldn't"
+        LayoutText {#text} at (201,20) size 426x19
+          text run at (201,20) width 426: " to select the text. You should see some of the above text selected and "
+        LayoutInline {TT} at (0,0) size 81x16
+          LayoutText {#text} at (626,23) size 81x16
+            text run at (626,23) width 81: "test_shell"
+        LayoutText {#text} at (706,20) size 764x39
+          text run at (706,20) width 58: " shouldn't"
           text run at (0,40) width 183: "trigger any assertions or crash."
 selection start: position 0 of child 0 {#text} of child 0 {B} of child 1 {NOBR} of child 1 {P} of body
 selection end:   position 7 of child 0 {#text} of child 6 {A} of child 1 {NOBR} of child 1 {P} of body

@@ -19,8 +19,8 @@ layer at (0,0) size 800x600
         LayoutInline {TT} at (0,0) size 64x16
           LayoutText {#text} at (480,3) size 64x16
             text run at (480,3) width 64: "absolute"
-        LayoutText {#text} at (544,0) size 149x19
-          text run at (544,0) width 149: " does not crash WebKit."
+        LayoutText {#text} at (544,0) size 148x19
+          text run at (544,0) width 148: " does not crash WebKit."
       LayoutBlockFlow {P} at (0,36) size 784x20
         LayoutText {#text} at (0,0) size 120x19
           text run at (0,0) width 120: "There should be no "

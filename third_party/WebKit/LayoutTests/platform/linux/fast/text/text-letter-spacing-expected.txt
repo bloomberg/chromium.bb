@@ -4,11 +4,11 @@ layer at (0,0) size 800x1800 backgroundClip at (0,0) size 800x600 clip at (0,0) 
   LayoutBlockFlow {HTML} at (0,0) size 800x1800
     LayoutBlockFlow {BODY} at (8,16) size 784x1768
       LayoutBlockFlow {P} at (0,0) size 784x80 [bgcolor=#FFFFFF]
-        LayoutText {#text} at (0,0) size 767x79
-          text run at (0,0) width 767: "The following lines test various combinations of letter-spacing (especially negative values) and opacity. All of the lines should say"
+        LayoutText {#text} at (0,0) size 766x79
+          text run at (0,0) width 766: "The following lines test various combinations of letter-spacing (especially negative values) and opacity. All of the lines should say"
           text run at (0,20) width 757: "\"Hello, world\" but the spacing and background shading will vary from test to test. The W3C specs are fairly silent on how user"
           text run at (0,40) width 754: "agents should handle unusual values of letter-spacing, especially negative ones, which are explicitly implementation-dependent."
-          text run at (0,60) width 632: "Different browsers will render these differently, but hopefully the WebKit ports will be consistent, at least."
+          text run at (0,60) width 630: "Different browsers will render these differently, but hopefully the WebKit ports will be consistent, at least."
       LayoutBlockFlow {P} at (0,96) size 784x20 [bgcolor=#FFFFFF]
         LayoutText {#text} at (0,0) size 241x19
           text run at (0,0) width 241: "The first line should be normally spaced."
@@ -24,9 +24,9 @@ layer at (0,0) size 800x1800 backgroundClip at (0,0) size 800x600 clip at (0,0) 
           LayoutText {#text} at (160,0) size 171x19
             text run at (160,0) width 171: "Hello, world"
       LayoutBlockFlow {P} at (0,240) size 784x40 [bgcolor=#FFFFFF]
-        LayoutText {#text} at (0,0) size 780x39
-          text run at (0,0) width 765: "The next line tests a large positive letter spacing, and should be *very* spaced out. You may only see an 'H' and a 'w', perhaps "
-          text run at (765,0) width 15: "on"
+        LayoutText {#text} at (0,0) size 779x39
+          text run at (0,0) width 764: "The next line tests a large positive letter spacing, and should be *very* spaced out. You may only see an 'H' and a 'w', perhaps "
+          text run at (763,0) width 16: "on"
           text run at (0,20) width 313: "two different lines, unless you scroll way to the right."
       LayoutBlockFlow {P} at (0,296) size 784x40 [bgcolor=#EEEEEE]
         LayoutInline {SPAN} at (0,0) size 19396x39
@@ -34,8 +34,8 @@ layer at (0,0) size 800x1800 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             text run at (160,0) width 19236: "Hello,"
             text run at (0,20) width 16035: "world"
       LayoutBlockFlow {P} at (0,352) size 784x40 [bgcolor=#FFFFFF]
-        LayoutText {#text} at (0,0) size 767x39
-          text run at (0,0) width 767: "The next line tests a very large positive letter spacing, and should also be *very* spaced out. You may only see an 'H' and a 'w',"
+        LayoutText {#text} at (0,0) size 766x39
+          text run at (0,0) width 766: "The next line tests a very large positive letter spacing, and should also be *very* spaced out. You may only see an 'H' and a 'w',"
           text run at (0,20) width 384: "perhaps on two different lines, unless you scroll way to the right."
       LayoutBlockFlow {P} at (0,408) size 784x40 [bgcolor=#EEEEEE]
         LayoutInline {SPAN} at (0,0) size 9600196x39
@@ -64,9 +64,9 @@ layer at (0,0) size 800x1800 backgroundClip at (0,0) size 800x600 clip at (0,0) 
           LayoutText {#text} at (160,0) size 0x19
             text run at (160,0) width 0: "Hello, world"
       LayoutBlockFlow {P} at (0,680) size 784x40 [bgcolor=#FFFFFF]
-        LayoutText {#text} at (0,0) size 723x39
-          text run at (0,0) width 671: "The next few lines test the interaction with opacity. The first line should be normally spaced out, slightly opaque, "
-          text run at (671,0) width 52: "and on a"
+        LayoutText {#text} at (0,0) size 722x39
+          text run at (0,0) width 670: "The next few lines test the interaction with opacity. The first line should be normally spaced out, slightly opaque, "
+          text run at (669,0) width 53: "and on a"
           text run at (0,20) width 187: "differently-colored background"
       LayoutBlockFlow {P} at (0,736) size 784x20 [bgcolor=#EEEEEE]
       LayoutBlockFlow {P} at (0,772) size 784x20 [bgcolor=#FFFFFF]
@@ -81,7 +81,7 @@ layer at (0,0) size 800x1800 backgroundClip at (0,0) size 800x600 clip at (0,0) 
       LayoutBlockFlow {P} at (0,936) size 784x20 [bgcolor=#FFFFFF]
         LayoutText {#text} at (0,0) size 716x19
           text run at (0,0) width 312: "The next line tests a very large positive line spacing, "
-          text run at (312,0) width 404: "and should be very widely spaced but blank, and on a background."
+          text run at (311,0) width 405: "and should be very widely spaced but blank, and on a background."
       LayoutBlockFlow {P} at (0,972) size 784x40 [bgcolor=#EEEEEE]
       LayoutBlockFlow {P} at (0,1028) size 784x20 [bgcolor=#FFFFFF]
         LayoutText {#text} at (0,0) size 411x19
@@ -123,16 +123,16 @@ layer at (0,0) size 800x1800 backgroundClip at (0,0) size 800x600 clip at (0,0) 
       LayoutBlockFlow {P} at (0,1496) size 784x20 [bgcolor=#FFFFFF]
         LayoutText {#text} at (0,0) size 435x19
           text run at (0,0) width 311: "The next line tests a large negative line spacing, and "
-          text run at (311,0) width 124: "should just print a 'd'"
+          text run at (310,0) width 125: "should just print a 'd'"
       LayoutBlockFlow {P} at (0,1532) size 784x20 [bgcolor=#EEEEEE]
         LayoutInline {SPAN} at (0,0) size 0x19
           LayoutText {#text} at (160,0) size 0x19
             text run at (160,0) width 0 RTL override: "Hello, world"
       LayoutBlockFlow {P} at (0,1568) size 784x20 [bgcolor=#FFFFFF]
-        LayoutText {#text} at (0,0) size 774x19
-          text run at (0,0) width 142: "Now, opacity as well - "
-          text run at (142,0) width 374: "The next line should be printed right to left, slightly spaced out "
-          text run at (516,0) width 258: "(wider than normal), and on a background."
+        LayoutText {#text} at (0,0) size 773x19
+          text run at (0,0) width 141: "Now, opacity as well - "
+          text run at (140,0) width 375: "The next line should be printed right to left, slightly spaced out "
+          text run at (514,0) width 259: "(wider than normal), and on a background."
       LayoutBlockFlow {P} at (0,1604) size 784x20 [bgcolor=#EEEEEE]
       LayoutBlockFlow {P} at (0,1640) size 784x20 [bgcolor=#FFFFFF]
         LayoutText {#text} at (0,0) size 411x19

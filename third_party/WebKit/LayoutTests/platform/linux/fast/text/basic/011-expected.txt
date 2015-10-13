@@ -9,8 +9,8 @@ layer at (0,0) size 800x146
         LayoutInline {FONT} at (0,0) size 758x32
           LayoutText {#text} at (95,5) size 758x32
             text run at (95,5) width 84: "I am teeny and tiny. "
-            text run at (179,5) width 296: "I am going to have lots of text but each line should retain the big height. "
-            text run at (475,5) width 283: "If the lines shrink, it means that the root line box's height is not being"
+            text run at (178,5) width 297: "I am going to have lots of text but each line should retain the big height. "
+            text run at (474,5) width 284: "If the lines shrink, it means that the root line box's height is not being"
             text run at (0,25) width 114: "considered and that's wrong."
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (0,56) size 784x0
@@ -21,7 +21,7 @@ layer at (0,0) size 800x146
           LayoutInline {FONT} at (0,0) size 764x49
             LayoutText {#text} at (418,18) size 764x49
               text run at (418,18) width 84: "I am teeny and tiny. "
-              text run at (502,18) width 262: "I am going to have lots of text but each line should retain the big"
+              text run at (501,18) width 263: "I am going to have lots of text but each line should retain the big"
               text run at (0,55) width 31: "height. "
               text run at (31,55) width 408: "If the lines shrink, it means that the span's line box's height is not being considered and that's wrong."
           LayoutText {#text} at (0,0) size 0x0

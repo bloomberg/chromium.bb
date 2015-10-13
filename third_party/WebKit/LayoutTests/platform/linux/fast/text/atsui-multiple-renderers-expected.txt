@@ -6,12 +6,12 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {P} at (0,0) size 784x40
         LayoutText {#text} at (0,0) size 99x19
           text run at (0,0) width 99: "This is a test for "
-        LayoutInline {I} at (0,0) size 756x39
-          LayoutText {#text} at (99,0) size 756x39
-            text run at (99,0) width 657: "http://bugzilla.opendarwin.org/show_bug.cgi?id=6139 ATSUI code path should implement small caps,"
+        LayoutInline {I} at (0,0) size 755x39
+          LayoutText {#text} at (99,0) size 755x39
+            text run at (99,0) width 656: "http://bugzilla.opendarwin.org/show_bug.cgi?id=6139 ATSUI code path should implement small caps,"
             text run at (0,20) width 412: "synthetic bold and oblique and correct metrics for fallback fonts"
-        LayoutText {#text} at (412,20) size 4x19
-          text run at (412,20) width 4: "."
+        LayoutText {#text} at (411,20) size 5x19
+          text run at (411,20) width 5: "."
       LayoutBlockFlow {HR} at (0,56) size 784x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow {P} at (0,74) size 784x20
         LayoutText {#text} at (0,0) size 571x19
@@ -44,9 +44,9 @@ layer at (0,0) size 800x600
             LayoutTableCell {TD} at (114,26) size 114x27 [border: (1px solid #008000)] [r=1 c=1 rs=1 cs=1]
               LayoutText {#text} at (2,2) size 61x23
                 text run at (2,2) width 61: "Lorem "
-              LayoutInline {SPAN} at (0,0) size 48x23
-                LayoutText {#text} at (63,2) size 48x23
-                  text run at (63,2) width 48: "ipsum"
+              LayoutInline {SPAN} at (0,0) size 49x23
+                LayoutText {#text} at (62,2) size 49x23
+                  text run at (62,2) width 49: "ipsum"
               LayoutText {#text} at (0,0) size 0x0
           LayoutTableRow {TR} at (0,53) size 228x26
             LayoutTableCell {TD} at (0,53) size 114x26 [border: (1px solid #008000)] [r=2 c=0 rs=1 cs=1]
@@ -59,9 +59,9 @@ layer at (0,0) size 800x600
             LayoutTableCell {TD} at (114,53) size 114x26 [border: (1px solid #008000)] [r=2 c=1 rs=1 cs=1]
               LayoutText {#text} at (2,2) size 57x22
                 text run at (2,2) width 57: "Lorem "
-              LayoutInline {SPAN} at (0,0) size 48x22
-                LayoutText {#text} at (59,2) size 48x22
-                  text run at (59,2) width 48: "ipsum"
+              LayoutInline {SPAN} at (0,0) size 49x22
+                LayoutText {#text} at (58,2) size 49x22
+                  text run at (58,2) width 49: "ipsum"
               LayoutText {#text} at (0,0) size 0x0
           LayoutTableRow {TR} at (0,79) size 228x27
             LayoutTableCell {TD} at (0,79) size 114x27 [border: (1px solid #008000)] [r=3 c=0 rs=1 cs=1]

@@ -6,9 +6,9 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {P} at (0,0) size 784x36
         LayoutText {#text} at (0,0) size 108x18
           text run at (0,0) width 108: "This is a test for "
-        LayoutInline {I} at (0,0) size 769x36
-          LayoutText {#text} at (107,0) size 769x36
-            text run at (107,0) width 662: "http://bugzilla.opendarwin.org/show_bug.cgi?id=6139 ATSUI code path should implement small caps,"
+        LayoutInline {I} at (0,0) size 767x36
+          LayoutText {#text} at (107,0) size 767x36
+            text run at (107,0) width 660: "http://bugzilla.opendarwin.org/show_bug.cgi?id=6139 ATSUI code path should implement small caps,"
             text run at (0,18) width 412: "synthetic bold and oblique and correct metrics for fallback fonts"
         LayoutText {#text} at (411,18) size 5x18
           text run at (411,18) width 5: "."
