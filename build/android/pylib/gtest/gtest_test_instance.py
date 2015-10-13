@@ -197,6 +197,10 @@ class GtestTestInstance(test_instance.TestInstance):
       self._app_data_files = None
       self._app_data_file_dir = None
 
+  @property
+  def gtest_filter(self):
+    return self._gtest_filter
+
   #override
   def TestType(self):
     return 'gtest'
