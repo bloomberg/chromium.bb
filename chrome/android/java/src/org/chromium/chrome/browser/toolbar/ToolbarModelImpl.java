@@ -81,7 +81,7 @@ class ToolbarModelImpl extends ToolbarModel implements ToolbarDataProvider, Tool
         if (mTab == null) return displayText;
 
         String url = mTab.getUrl().trim();
-        if (DomDistillerUrlUtils.isDistilledPage(url)) {
+        if (!mTab.isFrozen() && DomDistillerUrlUtils.isDistilledPage(url)) {
             if (isStoredArticle(url)) {
                 DomDistillerService domDistillerService =
                         DomDistillerServiceFactory.getForProfile(mTab.getProfile());
