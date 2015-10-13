@@ -48,6 +48,7 @@ namespace blink {
 
 class FloatPoint;
 class FloatRect;
+class FontFallbackIterator;
 class FontData;
 class FontMetrics;
 class FontSelector;
@@ -146,6 +147,7 @@ private:
 
 public:
     FontSelector* fontSelector() const;
+    PassRefPtr<FontFallbackIterator> createFontFallbackIterator() const;
 
     void willUseFontData(UChar32) const;
 

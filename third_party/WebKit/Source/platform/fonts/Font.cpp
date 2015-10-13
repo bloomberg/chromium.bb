@@ -30,6 +30,7 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/fonts/Character.h"
 #include "platform/fonts/FontCache.h"
+#include "platform/fonts/FontFallbackIterator.h"
 #include "platform/fonts/FontFallbackList.h"
 #include "platform/fonts/GlyphBuffer.h"
 #include "platform/fonts/GlyphPageTreeNode.h"
@@ -410,6 +411,11 @@ static inline GlyphData glyphDataForNonCJKCharacterWithGlyphOrientation(UChar32 
         }
     }
     return data;
+}
+
+PassRefPtr<FontFallbackIterator> Font::createFontFallbackIterator() const
+{
+    return FontFallbackIterator::create(m_fontDescription, m_fontFallbackList);
 }
 
 GlyphData Font::glyphDataForCharacter(UChar32& c, bool mirror, bool normalizeSpace, FontDataVariant variant) const
