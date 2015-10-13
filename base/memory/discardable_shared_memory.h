@@ -107,6 +107,9 @@ class BASE_EXPORT DiscardableSharedMemory {
   // Returns true if memory is still resident.
   bool IsMemoryResident() const;
 
+  // Returns true if memory is locked.
+  bool IsMemoryLocked() const;
+
   // Closes the open discardable memory segment.
   // It is safe to call Close repeatedly.
   void Close();

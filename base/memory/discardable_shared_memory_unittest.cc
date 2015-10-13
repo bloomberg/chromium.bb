@@ -33,6 +33,7 @@ TEST(DiscardableSharedMemoryTest, CreateAndMap) {
   bool rv = memory.CreateAndMap(kDataSize);
   ASSERT_TRUE(rv);
   EXPECT_GE(memory.mapped_size(), kDataSize);
+  EXPECT_TRUE(memory.IsMemoryLocked());
 }
 
 TEST(DiscardableSharedMemoryTest, CreateFromHandle) {
@@ -50,6 +51,7 @@ TEST(DiscardableSharedMemoryTest, CreateFromHandle) {
   TestDiscardableSharedMemory memory2(shared_handle);
   rv = memory2.Map(kDataSize);
   ASSERT_TRUE(rv);
+  EXPECT_TRUE(memory2.IsMemoryLocked());
 }
 
 TEST(DiscardableSharedMemoryTest, LockAndUnlock) {
@@ -62,6 +64,7 @@ TEST(DiscardableSharedMemoryTest, LockAndUnlock) {
   // Memory is initially locked. Unlock it.
   memory1.SetNow(Time::FromDoubleT(1));
   memory1.Unlock(0, 0);
+  EXPECT_FALSE(memory1.IsMemoryLocked());
 
   // Lock and unlock memory.
   auto lock_rv = memory1.Lock(0, 0);
@@ -72,6 +75,7 @@ TEST(DiscardableSharedMemoryTest, LockAndUnlock) {
   // Lock again before duplicating and passing ownership to new instance.
   lock_rv = memory1.Lock(0, 0);
   EXPECT_EQ(DiscardableSharedMemory::SUCCESS, lock_rv);
+  EXPECT_TRUE(memory1.IsMemoryLocked());
 
   SharedMemoryHandle shared_handle;
   ASSERT_TRUE(
@@ -86,13 +90,18 @@ TEST(DiscardableSharedMemoryTest, LockAndUnlock) {
   memory2.SetNow(Time::FromDoubleT(3));
   memory2.Unlock(0, 0);
 
+  // Both memory instances should be unlocked now.
+  EXPECT_FALSE(memory2.IsMemoryLocked());
+  EXPECT_FALSE(memory1.IsMemoryLocked());
+
   // Lock second instance before passing ownership back to first instance.
   lock_rv = memory2.Lock(0, 0);
   EXPECT_EQ(DiscardableSharedMemory::SUCCESS, lock_rv);
 
-  // Memory should still be resident.
+  // Memory should still be resident and locked.
   rv = memory1.IsMemoryResident();
   EXPECT_TRUE(rv);
+  EXPECT_TRUE(memory1.IsMemoryLocked());
 
   // Unlock first instance.
   memory1.SetNow(Time::FromDoubleT(4));

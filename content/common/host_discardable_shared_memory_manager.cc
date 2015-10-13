@@ -176,13 +176,23 @@ bool HostDiscardableSharedMemoryManager::OnMemoryDump(
     for (const auto& segment_entry : process_segments) {
       const int segment_id = segment_entry.first;
       const MemorySegment* segment = segment_entry.second.get();
+      if (!segment->memory()->mapped_size())
+        continue;
+
       std::string dump_name = base::StringPrintf(
           "discardable/process_%x/segment_%d", child_process_id, segment_id);
       base::trace_event::MemoryAllocatorDump* dump =
           pmd->CreateAllocatorDump(dump_name);
+
       dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
                       base::trace_event::MemoryAllocatorDump::kUnitsBytes,
                       segment->memory()->mapped_size());
+
+      // Host can only tell if whole segment is locked or not.
+      dump->AddScalar(
+          "locked_size", base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+          segment->memory()->IsMemoryLocked() ? segment->memory()->mapped_size()
+                                              : 0u);
 
       // Create the cross-process ownership edge. If the child creates a
       // corresponding dump for the same segment, this will avoid to

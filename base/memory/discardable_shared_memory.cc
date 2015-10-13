@@ -340,6 +340,15 @@ bool DiscardableSharedMemory::IsMemoryResident() const {
          !result.GetTimestamp().is_null();
 }
 
+bool DiscardableSharedMemory::IsMemoryLocked() const {
+  DCHECK(shared_memory_.memory());
+
+  SharedState result(subtle::NoBarrier_Load(
+      &SharedStateFromSharedMemory(shared_memory_)->value.i));
+
+  return result.GetLockState() == SharedState::LOCKED;
+}
+
 void DiscardableSharedMemory::Close() {
   shared_memory_.Close();
 }
