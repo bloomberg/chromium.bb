@@ -544,7 +544,9 @@ void FormatStringForOS(base::string16* text) {
 // child VarDictionaries (representing the child bookmarks).
 // If NULL is passed in as the bookmark then we traverse from the "root".
 // Note that the "root" bookmark contains no useful information.
-pp::VarDictionary TraverseBookmarks(FPDF_DOCUMENT doc, FPDF_BOOKMARK bookmark) {
+pp::VarDictionary TraverseBookmarks(FPDF_DOCUMENT doc,
+                                    FPDF_BOOKMARK bookmark,
+                                    unsigned int depth) {
   pp::VarDictionary dict;
   base::string16 title;
   unsigned long buffer_size = FPDFBookmark_GetTitle(bookmark, NULL, 0);
@@ -564,12 +566,19 @@ pp::VarDictionary TraverseBookmarks(FPDF_DOCUMENT doc, FPDF_BOOKMARK bookmark) {
   }
 
   pp::VarArray children;
-  int child_index = 0;
-  for (FPDF_BOOKMARK child_bookmark = FPDFBookmark_GetFirstChild(doc, bookmark);
-      child_bookmark != NULL;
-      child_bookmark = FPDFBookmark_GetNextSibling(doc, child_bookmark)) {
-    children.Set(child_index, TraverseBookmarks(doc, child_bookmark));
-    child_index++;
+
+  // Don't trust PDFium to handle circular bookmarks.
+  const unsigned int kMaxDepth = 128;
+  if (depth < kMaxDepth) {
+    int child_index = 0;
+    for (FPDF_BOOKMARK child_bookmark =
+             FPDFBookmark_GetFirstChild(doc, bookmark);
+         child_bookmark != NULL;
+         child_bookmark = FPDFBookmark_GetNextSibling(doc, child_bookmark)) {
+      children.Set(child_index,
+                   TraverseBookmarks(doc, child_bookmark, depth + 1));
+      child_index++;
+    }
   }
   dict.Set(pp::Var("children"), children);
   return dict;
@@ -2433,7 +2442,7 @@ int PDFiumEngine::GetNumberOfPages() {
 }
 
 pp::VarArray PDFiumEngine::GetBookmarks() {
-  pp::VarDictionary dict = TraverseBookmarks(doc_, NULL);
+  pp::VarDictionary dict = TraverseBookmarks(doc_, NULL, 0);
   // The root bookmark contains no useful information.
   return pp::VarArray(dict.Get(pp::Var("children")));
 }
