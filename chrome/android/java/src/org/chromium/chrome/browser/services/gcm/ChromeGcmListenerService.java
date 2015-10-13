@@ -32,13 +32,13 @@ public class ChromeGcmListenerService extends GcmListenerService {
     @Override
     public void onMessageSent(String msgId) {
         Log.d(TAG, "Message sent successfully. Message id: " + msgId);
-        GcmUpstreamUma.recordHistogram(getApplicationContext(), GcmUpstreamUma.UMA_SUCCESS);
+        GcmUma.recordGcmUpstreamHistogram(getApplicationContext(), GcmUma.UMA_UPSTREAM_SUCCESS);
     }
 
     @Override
     public void onSendError(String msgId, String error) {
         Log.w(TAG, "Error in sending message. Message id: " + msgId + " Error: " + error);
-        GcmUpstreamUma.recordHistogram(getApplicationContext(), GcmUpstreamUma.UMA_SEND_FAILED);
+        GcmUma.recordGcmUpstreamHistogram(getApplicationContext(), GcmUma.UMA_UPSTREAM_SEND_FAILED);
     }
 
     @Override

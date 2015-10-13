@@ -52,9 +52,8 @@ public class InvalidationGcmUpstreamSender extends GcmUpstreamSenderService {
 
                     @Override
                     public void tokenUnavailable(boolean isTransientError) {
-                        GcmUpstreamUma.recordHistogram(
-                                getApplicationContext(), GcmUpstreamUma.UMA_TOKEN_REQUEST_FAILED);
-                        sendUpstreamMessage(to, data, null);
+                        GcmUma.recordGcmUpstreamHistogram(
+                                getApplicationContext(), GcmUma.UMA_UPSTREAM_TOKEN_REQUEST_FAILED);
                     }
                 });
     }
@@ -63,8 +62,8 @@ public class InvalidationGcmUpstreamSender extends GcmUpstreamSenderService {
         // Add the OAuth2 token to the bundle. The token should have the prefix Bearer added to it.
         data.putString("Authorization", "Bearer " + token);
         if (!isMessageWithinLimit(data)) {
-            GcmUpstreamUma.recordHistogram(
-                    getApplicationContext(), GcmUpstreamUma.UMA_SIZE_LIMIT_EXCEEDED);
+            GcmUma.recordGcmUpstreamHistogram(
+                    getApplicationContext(), GcmUma.UMA_UPSTREAM_SIZE_LIMIT_EXCEEDED);
             return;
         }
         String msgId = UUID.randomUUID().toString();
@@ -72,7 +71,8 @@ public class InvalidationGcmUpstreamSender extends GcmUpstreamSenderService {
             GoogleCloudMessaging.getInstance(getApplicationContext()).send(to, msgId, 1, data);
         } catch (IOException | IllegalArgumentException exception) {
             Log.w(TAG, "Send message failed");
-            GcmUpstreamUma.recordHistogram(getApplicationContext(), GcmUpstreamUma.UMA_SEND_FAILED);
+            GcmUma.recordGcmUpstreamHistogram(getApplicationContext(),
+                    GcmUma.UMA_UPSTREAM_SEND_FAILED);
         }
     }
 

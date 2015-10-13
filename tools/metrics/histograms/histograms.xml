@@ -13590,6 +13590,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="GCM.AndroidGcmReceiver" enum="GcmReceiverStatus">
+  <owner>khushalsagar@chromium.org</owner>
+  <summary>Result of a message received by the GcmReceiver on Android.</summary>
+</histogram>
+
 <histogram name="GCM.APICallUnregister">
   <owner>jianli@chromium.org</owner>
   <summary>Number of times when gcm.unregister API is called.</summary>
@@ -61494,6 +61499,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="4" label="Less than or equal to 1 week"/>
   <int value="5" label="More than 1 week but less than maximum"/>
   <int value="6" label="Default or maximium time"/>
+</enum>
+
+<enum name="GcmReceiverStatus" type="int">
+  <int value="0" label="SUCCESS"/>
+  <int value="1" label="ERROR_SECURITY_EXCEPTION"/>
 </enum>
 
 <enum name="GCMRegistrationRequestStatus" type="int">
