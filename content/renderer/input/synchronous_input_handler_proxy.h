@@ -6,6 +6,7 @@
 #define CONTENT_RENDERER_INPUT_SYNCHRONOUS_INPUT_HANDLER_PROXY_H_
 
 #include "base/time/time.h"
+#include "content/common/content_export.h"
 
 namespace gfx {
 class ScrollOffset;
@@ -16,6 +17,8 @@ namespace content {
 
 class CONTENT_EXPORT SynchronousInputHandler {
  public:
+  virtual ~SynchronousInputHandler() {}
+
   // Informs the Android WebView embedder that a fling animation is running, and
   // that it should call SynchronouslyAnimate() if it wants to execute that
   // animation. The embedder/app may choose to override and ignore the
@@ -39,6 +42,8 @@ class CONTENT_EXPORT SynchronousInputHandler {
 // animations.
 class CONTENT_EXPORT SynchronousInputHandlerProxy {
  public:
+  virtual ~SynchronousInputHandlerProxy() {}
+
   // Tell the proxy that we will control the timing of root fling animations
   // from the SynchronousInputHandler. Once this is set, the InputHandler is
   // not requested to Animate() the InputHandlerProxy for root layer flings.
