@@ -437,7 +437,12 @@ by a child template that "extends" this file.
             </intent-filter>
         </receiver>
 
-        <!-- Precache service. -->
+        <!-- Precache service.
+        Not enabled on Stable or Work channels. This is currently an experiment
+        on beta channel (crbug/309216) but the mere existence of these can lead
+        to some process churn, so omit them while not relevant. b/24776372
+        -->
+        {% if channel in ['default', 'canary', 'dev', 'beta'] %}
         <service android:name="org.chromium.chrome.browser.precache.PrecacheService"
             android:exported="false" />
         <receiver android:name="org.chromium.chrome.browser.precache.PrecacheServiceLauncher">
@@ -447,6 +452,7 @@ by a child template that "extends" this file.
                 <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
             </intent-filter>
         </receiver>
+        {% endif %}
 
         <receiver android:name="org.chromium.chrome.browser.firstrun.ToSAckedReceiver"
             android:permission="{{ manifest_package }}.TOS_ACKED">
