@@ -35,10 +35,8 @@ void CurrentTabMatcher::Emit(
     UMA_HISTOGRAM_ENUMERATION("Sync.PageRevisitTabMissTransition", transition,
                               PageVisitObserver::kTransitionTypeLast);
   } else {
-    base::TimeDelta age(base::Time::Now() - most_recent_match_->timestamp);
-    UMA_HISTOGRAM_CUSTOM_TIMES("Sync.PageRevisitTabMatchAge", age,
-                               base::TimeDelta::FromSeconds(1),
-                               base::TimeDelta::FromDays(14), 100);
+    REVISIT_HISTOGRAM_AGE("Sync.PageRevisitTabMatchAge",
+                          most_recent_match_->timestamp);
     UMA_HISTOGRAM_ENUMERATION("Sync.PageRevisitTabMatchTransition", transition,
                               PageVisitObserver::kTransitionTypeLast);
   }

@@ -65,10 +65,8 @@ void OffsetTabMatcher::Emit(
     // be sure no unexpected data causes problems.
     UMA_HISTOGRAM_SPARSE_SLOWLY("Sync.PageRevisitNavigationMatchOffset",
                                 Clamp(best_offset_, -kMaxOffset, kMaxOffset));
-    UMA_HISTOGRAM_CUSTOM_TIMES("Sync.PageRevisitNavigationMatchAge",
-                               (base::Time::Now() - best_tab_->timestamp),
-                               base::TimeDelta::FromSeconds(1),
-                               base::TimeDelta::FromDays(14), 100);
+    REVISIT_HISTOGRAM_AGE("Sync.PageRevisitNavigationMatchAge",
+                          best_tab_->timestamp);
     UMA_HISTOGRAM_ENUMERATION("Sync.PageRevisitNavigationMatchTransition",
                               transition,
                               PageVisitObserver::kTransitionTypeLast);

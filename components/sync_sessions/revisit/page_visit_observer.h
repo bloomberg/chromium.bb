@@ -7,11 +7,25 @@
 
 #include <string>
 
+#include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 
 class GURL;
 
 namespace sync_sessions {
+
+// The upper bound of 90 days and the bucket count of 100 try to strike a
+// balance. We want multiple single minute digit buckets, but also notice
+// differences that happen many weeks ago. It also helps that typed URLs age out
+// around 90 days, which makes these values even more fitting. These might not
+// handle bookmarks quite as elegantly, but we're less interested in knowing the
+// age of very old objects. This must be defind as a macro instead of a static
+// method because the histogram macro makes an inline static variable that must
+// be unique for separately named histograms.
+#define REVISIT_HISTOGRAM_AGE(name, timestamp)                                \
+  UMA_HISTOGRAM_CUSTOM_COUNTS(name,                                           \
+                              (base::Time::Now() - timestamp).InMinutes(), 1, \
+                              base::TimeDelta::FromDays(90).InMinutes(), 100)
 
 // An interface that allows observers to be notified when a page is visited.
 class PageVisitObserver {
