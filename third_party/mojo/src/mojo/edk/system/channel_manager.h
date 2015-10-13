@@ -139,7 +139,8 @@ class MOJO_SYSTEM_IMPL_EXPORT ChannelManager {
       scoped_refptr<system::ChannelEndpoint> bootstrap_channel_endpoint);
 
   // Used by |CreateChannel()|. Called on the I/O thread.
-  void CreateChannelHelper(
+  static void CreateChannelHelper(
+      base::WeakPtr<ChannelManager> channel_manager,
       ChannelId channel_id,
       embedder::ScopedPlatformHandle platform_handle,
       scoped_refptr<system::ChannelEndpoint> bootstrap_channel_endpoint,

@@ -96,7 +96,7 @@ scoped_refptr<MessagePipeDispatcher> ChannelManager::CreateChannel(
           &bootstrap_channel_endpoint);
   bool ok = io_thread_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&ChannelManager::CreateChannelHelper, base::Unretained(this),
+      base::Bind(&ChannelManager::CreateChannelHelper, weak_ptr_,
                  channel_id, base::Passed(&platform_handle),
                  bootstrap_channel_endpoint, callback,
                  callback_thread_task_runner));
@@ -187,14 +187,21 @@ scoped_refptr<Channel> ChannelManager::CreateChannelOnIOThreadHelper(
   return channel;
 }
 
+// static
 void ChannelManager::CreateChannelHelper(
+    base::WeakPtr<ChannelManager> channel_manager,
     ChannelId channel_id,
     embedder::ScopedPlatformHandle platform_handle,
     scoped_refptr<system::ChannelEndpoint> bootstrap_channel_endpoint,
     const base::Closure& callback,
     scoped_refptr<base::TaskRunner> callback_thread_task_runner) {
-  CreateChannelOnIOThreadHelper(channel_id, platform_handle.Pass(),
-                                bootstrap_channel_endpoint);
+  // TODO(amistry): Handle this gracefully after determining exactly what cases
+  // can cause this. There appear to be crashes caused by ChannelManager being
+  // destroyed before this point, which shouldn't be possible in the current
+  // uses of ChannelManager.
+  CHECK(channel_manager);
+  channel_manager->CreateChannelOnIOThreadHelper(
+      channel_id, platform_handle.Pass(), bootstrap_channel_endpoint);
   if (callback_thread_task_runner) {
     bool ok = callback_thread_task_runner->PostTask(FROM_HERE, callback);
     DCHECK(ok);
