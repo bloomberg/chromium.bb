@@ -99,6 +99,10 @@ void* getRandomPageBase()
     // TODO(cevans): I think Win 8.1 has 47-bits like Linux.
     random &= 0x3ffffffffffUL;
     random += 0x10000000000UL;
+#elif defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
+    // This range is copied from the TSan source, but works for all tools.
+    random &= 0x007fffffffffUL;
+    random += 0x7e8000000000UL;
 #else
     // Linux and OS X support the full 47-bit user space of x64 processors.
     random &= 0x3fffffffffffUL;
@@ -108,6 +112,17 @@ void* getRandomPageBase()
     random &= 0x3fffffffffUL;
     random += 0x1000000000UL;
 #else // !CPU(X86_64) && !CPU(ARM64)
+#if OS(WIN)
+    // On win32 host systems the randomization plus huge alignment causes
+    // excessive fragmentation. Plus most of these systems lack ASLR, so the
+    // randomization isn't buying anything. In that case we just skip it.
+    // TODO(jschuh): Just dump the randomization when HE-ASLR is present.
+    static BOOL isWow64 = -1;
+    if (isWow64 == -1 && !IsWow64Process(GetCurrentProcess(), &isWow64))
+        isWow64 = FALSE;
+    if (!isWow64)
+        return nullptr;
+#endif // OS(WIN)
     // This is a good range on Windows, Linux and Mac.
     // Allocates in the 0.5-1.5GB region.
     random &= 0x3fffffff;
