@@ -36,8 +36,14 @@ IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest,
   ASSERT_TRUE(AwaitAllProfilesHaveSameExtensions());
 }
 
+// Flaky on Mac: http://crbug.com/535996
+#if defined(OS_MACOSX)
+#define MAYBE_StartWithSameExtensions_E2ETest DISABLED_StartWithSameExtensions_E2ETest
+#else
+#define MAYBE_StartWithSameExtensions_E2ETest StartWithSameExtensions_E2ETest
+#endif
 IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest,
-                       StartWithSameExtensions_E2ETest) {
+                       MAYBE_StartWithSameExtensions_E2ETest) {
   ASSERT_TRUE(SetupClients());
 
   const int kNumExtensions = 5;
