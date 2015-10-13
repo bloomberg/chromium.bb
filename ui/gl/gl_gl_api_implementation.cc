@@ -334,6 +334,8 @@ const GLVersionInfo* GetGLVersionInfo() {
 }
 
 void InitializeDynamicGLBindingsGL(GLContext* context) {
+  if (g_version_info)
+    return;
   g_real_gl->InitializeFilteredExtensions();
   g_driver_gl.InitializeCustomDynamicBindings(context);
   DCHECK(context && context->IsCurrent(NULL) && !g_version_info);

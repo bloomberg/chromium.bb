@@ -21,7 +21,6 @@
 #include "ui/events/event_switches.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/gl/gl_surface.h"
-#include "ui/gl/test/gl_surface_test_support.h"
 
 #if defined(USE_X11)
 #include <X11/Xlib.h>

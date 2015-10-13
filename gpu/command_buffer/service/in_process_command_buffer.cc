@@ -713,7 +713,7 @@ void InProcessCommandBuffer::CreateImageOnGpuThread(
     case gfx::SHARED_MEMORY_BUFFER: {
       scoped_refptr<gfx::GLImageSharedMemory> image(
           new gfx::GLImageSharedMemory(size, internalformat));
-      if (!image->Initialize(handle, format)) {
+      if (!image->Initialize(handle.handle, handle.id, format)) {
         LOG(ERROR) << "Failed to initialize image.";
         return;
       }

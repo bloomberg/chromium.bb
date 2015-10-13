@@ -14,6 +14,8 @@
         'test/run_all_unittests.cc',
         'gpu_timing_unittest.cc',
         'gl_api_unittest.cc',
+        'gl_image_ref_counted_memory_unittest.cc',
+        'gl_image_shared_memory_unittest.cc',
       ],
       'include_dirs': [
         '<(DEPTH)/third_party/khronos',
@@ -21,8 +23,11 @@
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/base/base.gyp:test_support_base',
+        '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/testing/gmock.gyp:gmock',
         '<(DEPTH)/testing/gtest.gyp:gtest',
+        '<(DEPTH)/third_party/mesa/mesa.gyp:osmesa',
+        '<(DEPTH)/ui/gfx/gfx.gyp:gfx',
         '<(DEPTH)/ui/gl/gl.gyp:gl',
         '<(DEPTH)/ui/gl/gl.gyp:gl_test_support',
         '<(DEPTH)/ui/gl/gl.gyp:gl_unittest_utils',
