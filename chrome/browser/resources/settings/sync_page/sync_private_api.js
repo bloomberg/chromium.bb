@@ -63,10 +63,11 @@ cr.define('settings', function() {
    * @enum {string}
    */
   SyncPrivateApi.PageStatus = {
-    CONFIGURE: 'configure',
-    TIMED_OUT: 'timeout',
-    DONE: 'done',
-    PASSPHRASE_ERROR: 'passphraseError',
+    SPINNER: 'spinner',                   // Before the page has loaded.
+    CONFIGURE: 'configure',               // Preferences ready to be configured.
+    TIMEOUT: 'timeout',                   // Preferences loading has timed out.
+    DONE: 'done',                         // Sync subpage can be closed now.
+    PASSPHRASE_ERROR: 'passphraseError',  // Error in the passphrase.
   };
 
   /** @private {?function(SyncPrivateApi.SyncPrefs)} */
@@ -148,7 +149,7 @@ cr.define('settings', function() {
    */
   SyncSetupOverlay.showSyncSetupPage = function(status, prefs) {
     switch (status) {
-      case SyncPrivateApi.PageStatus.TIMED_OUT:
+      case SyncPrivateApi.PageStatus.TIMEOUT:
       case SyncPrivateApi.PageStatus.DONE:
         SyncPrivateApi.setPageStatus_(status);
         break;
