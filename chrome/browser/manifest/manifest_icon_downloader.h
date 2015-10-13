@@ -44,10 +44,13 @@ class ManifestIconDownloader final {
                        const IconFetchCallback& callback);
 
  private:
+  class DevToolsConsoleHelper;
+
   // Callback run after the manifest icon downloaded successfully or the
   // download failed.
   static void OnIconFetched(int ideal_icon_size_in_px,
                             int minimum_icon_size_in_px,
+                            DevToolsConsoleHelper* console_helper,
                             const IconFetchCallback& callback,
                             int id,
                             int http_status_code,
