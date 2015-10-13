@@ -18,7 +18,7 @@ namespace blink {
 void EventListenerInfo::getEventListeners(EventTarget* target, WillBeHeapVector<EventListenerInfo>& eventInformation, bool includeAncestors)
 {
     // The Node's Ancestors including self.
-    Vector<EventTarget*> ancestors;
+    WillBeHeapVector<RawPtrWillBeMember<EventTarget>> ancestors;
     ancestors.append(target);
     if (includeAncestors) {
         Node* node = target->toNode();
