@@ -34,17 +34,23 @@
 // DESCRIPTION
 // spinLockLock() and spinLockUnlock() are simple spinlock primitives based on
 // the standard CPU primitive of atomic increment and decrement of an int at
-// a given memory address.
+// a given memory address. These are intended only for very short duration locks
+// and assume a system with multiple cores. For any potentially longer wait you
+// should be using a real lock.
 
 #include "wtf/Atomics.h"
 
 namespace WTF {
 
+// This is called if the initial attempt to acquire the lock fails. It's a bit
+// slower, but has a much better scheduling and power consumption behavior.
+WTF_EXPORT void slowSpinLockLock(int volatile* lock);
+
 ALWAYS_INLINE void spinLockLock(int volatile* lock)
 {
-    while (UNLIKELY(atomicTestAndSetToOne(lock))) {
-        while (*lock) { } // Spin without spamming locked instructions.
-    }
+    if (LIKELY(!atomicTestAndSetToOne(lock)))
+        return;
+    slowSpinLockLock(lock);
 }
 
 ALWAYS_INLINE void spinLockUnlock(int volatile* lock)

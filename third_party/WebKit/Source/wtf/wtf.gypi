@@ -107,6 +107,7 @@
             'RetainPtr.h',
             'SaturatedArithmetic.h',
             'SizeLimits.cpp',
+            'SpinLock.cpp',
             'SpinLock.h',
             'StaticConstructors.h',
             'StdLibExtras.h',
