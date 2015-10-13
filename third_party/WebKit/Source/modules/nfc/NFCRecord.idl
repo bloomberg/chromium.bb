@@ -6,11 +6,13 @@
 
 enum NFCRecordType { "empty", "text", "url", "json", "opaque" };
 
-[
-   RuntimeEnabled=WebNFC,
-] dictionary NFCRecord {
-    NFCRecordType kind;  // based on TNF + JSON.
-    USVString type;  // IANA media type, with parameters.
-    // TODO(riju_): https://crbug.com/537133
-    any data;  // null, string (text, url), Object (json), ArrayBuffer.
+// typedef (DOMString or unrestricted double or object or ArrayBuffer) NFCRecordData;
+
+dictionary NFCRecord {
+    NFCRecordType kind;
+    USVString type;
+    // NFCRecordData data;
+    // Use ´any´ as Blink IDL compiler complains that Object is not supported as
+    // union member. Tracked in https://crbug.com/537133 .
+    any data;
 };

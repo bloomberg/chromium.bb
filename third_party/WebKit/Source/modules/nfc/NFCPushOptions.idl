@@ -6,9 +6,7 @@
 
 enum NFCPushTarget { "tag", "peer" };
 
-[
-   RuntimeEnabled=WebNFC,
-] dictionary NFCPushOptions {
+dictionary NFCPushOptions {
     NFCPushTarget target;
     unsigned long timeout;
 };
