@@ -594,12 +594,12 @@ _waterfall_config_map = {
 
     constants.WATERFALL_INTERNAL: frozenset([
         # Experimental Paladins.
+        'glados-paladin',
         'lakitu_next-paladin',
         'panther_moblab-paladin',
         'stumpy_moblab-paladin',
 
         # Experimental Canaries (Group)
-        'glados-release-group',
         'kunimitsu-release-group',
         'storm-release-group',
         'strago-release-group',
@@ -2628,7 +2628,6 @@ def GetConfig():
       'glados', 'glados', (
           'chell',
       ),
-      important=False,
   )
 
   # storm-based boards

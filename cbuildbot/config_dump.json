@@ -7470,6 +7470,7 @@
     },
     "glados-paladin": {
         "_template": "paladin",
+        "active_waterfall": "chromeos",
         "boards": [
             "glados"
         ],
@@ -7574,7 +7575,8 @@
                 "vm_tests": []
             }
         ],
-        "description": "Release Builds (canary) (internal); Group config (boards: glados, chell)"
+        "description": "Release Builds (canary) (internal); Group config (boards: glados, chell)",
+        "important": true
     },
     "glados-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
