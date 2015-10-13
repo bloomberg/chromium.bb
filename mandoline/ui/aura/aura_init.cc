@@ -70,9 +70,12 @@ void AuraInit::InitializeResources(mojo::Shell* shell) {
       resource_loader.GetICUFile().TakePlatformFile(),
       base::MemoryMappedFile::Region::kWholeFile);
   ui::RegisterPathProvider();
-  ui::ResourceBundle::InitSharedInstanceWithPakPath(base::FilePath());
+  base::File pak_file = resource_loader.ReleaseFile(resource_file_);
+  base::File pak_file_2 = pak_file.Duplicate();
+  ui::ResourceBundle::InitSharedInstanceWithPakFileRegion(
+      pak_file.Pass(), base::MemoryMappedFile::Region::kWholeFile);
   ui::ResourceBundle::GetSharedInstance().AddDataPackFromFile(
-      resource_loader.ReleaseFile(resource_file_), ui::SCALE_FACTOR_100P);
+      pak_file_2.Pass(), ui::SCALE_FACTOR_100P);
 
   // Initialize the skia font code to go ask fontconfig underneath.
 #if defined(OS_LINUX) && !defined(OS_ANDROID)

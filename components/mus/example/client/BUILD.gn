@@ -43,10 +43,13 @@ mojo_native_application("client") {
 repack("resources") {
   sources = [
     "$root_gen_dir/ui/resources/ui_resources_100_percent.pak",
+    "$root_gen_dir/ui/strings/app_locale_settings_en-US.pak",
+    "$root_gen_dir/ui/strings/ui_strings_en-US.pak",
     "$root_gen_dir/ui/views/resources/views_resources_100_percent.pak",
   ]
   output = "$root_out_dir/example_resources.pak"
   deps = [
+    "//ui/strings",
     "//ui/resources",
     "//ui/views/resources",
   ]

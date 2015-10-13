@@ -51,10 +51,7 @@ void ClientApplicationDelegate::OnEmbed(mus::View* root) {
       views::Background::CreateSolidBackground(0xFFDDDDDD));
 
   views::Widget* widget = new views::Widget;
-  // TODO(sky): make this TYPE_WINDOW. I need to fix resources in order to use
-  // TYPE_WINDOW.
-  views::Widget::InitParams params(
-      views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
+  views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
   params.delegate = widget_delegate;
   params.native_widget =
       new mandoline::NativeWidgetViewManager(widget, app_->shell(), root);

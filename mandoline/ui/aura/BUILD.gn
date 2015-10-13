@@ -53,7 +53,12 @@ source_set("aura") {
     "//ui/wm",
   ]
 
+  data_deps = [
+    "//components/resource_provider",
+  ]
+
   if (is_linux && !is_android) {
     deps += [ "//components/font_service/public/cpp" ]
+    data_deps += [ "//components/font_service" ]
   }
 }
