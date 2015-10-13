@@ -141,8 +141,9 @@ GpuMemoryBufferConfigurationSet GetNativeGpuMemoryBufferConfigurations() {
 
   if (force_native_scanout_formats) {
     const gfx::BufferFormat kScanoutFormats[] = {
-        gfx::BufferFormat::BGRA_8888, gfx::BufferFormat::BGRX_8888,
-        gfx::BufferFormat::UYVY_422, gfx::BufferFormat::YUV_420_BIPLANAR};
+        gfx::BufferFormat::RGBA_8888, gfx::BufferFormat::BGRA_8888,
+        gfx::BufferFormat::BGRX_8888, gfx::BufferFormat::UYVY_422,
+        gfx::BufferFormat::YUV_420_BIPLANAR};
     for (auto& format : kScanoutFormats) {
       if (IsNativeGpuMemoryBufferFactoryConfigurationSupported(
               format, gfx::BufferUsage::SCANOUT)) {
