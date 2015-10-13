@@ -100,15 +100,17 @@ std::vector<AccountInfo> AccountTrackerService::GetAccounts() const {
 }
 
 AccountInfo AccountTrackerService::GetAccountInfo(
-    const std::string& account_id) {
-  if (ContainsKey(accounts_, account_id))
-    return accounts_[account_id].info;
+    const std::string& account_id) const {
+  std::map<std::string, AccountState>::const_iterator it =
+      accounts_.find(account_id);
+  if (it != accounts_.end())
+    return it->second.info;
 
   return AccountInfo();
 }
 
 AccountInfo AccountTrackerService::FindAccountInfoByGaiaId(
-    const std::string& gaia_id) {
+    const std::string& gaia_id) const {
   if (!gaia_id.empty()) {
     for (std::map<std::string, AccountState>::const_iterator it =
              accounts_.begin();
@@ -124,7 +126,7 @@ AccountInfo AccountTrackerService::FindAccountInfoByGaiaId(
 }
 
 AccountInfo AccountTrackerService::FindAccountInfoByEmail(
-    const std::string& email) {
+    const std::string& email) const {
   if (!email.empty()) {
     for (std::map<std::string, AccountState>::const_iterator it =
              accounts_.begin();
@@ -140,7 +142,7 @@ AccountInfo AccountTrackerService::FindAccountInfoByEmail(
 }
 
 AccountTrackerService::AccountIdMigrationState
-AccountTrackerService::GetMigrationState() {
+AccountTrackerService::GetMigrationState() const {
   return GetMigrationState(signin_client_->GetPrefs());
 }
 
@@ -155,7 +157,7 @@ void AccountTrackerService::SetMigrationDone() {
 
 // static
 AccountTrackerService::AccountIdMigrationState
-AccountTrackerService::GetMigrationState(PrefService* pref_service) {
+AccountTrackerService::GetMigrationState(const PrefService* pref_service) {
   return static_cast<AccountTrackerService::AccountIdMigrationState>(
       pref_service->GetInteger(prefs::kAccountIdMigrationState));
 }
@@ -249,7 +251,7 @@ void AccountTrackerService::SetIsChildAccount(const std::string& account_id,
   SaveToPrefs(state);
 }
 
-bool AccountTrackerService::IsMigratable() {
+bool AccountTrackerService::IsMigratable() const {
 #if !defined(OS_CHROMEOS)
   for (std::map<std::string, AccountState>::const_iterator it =
            accounts_.begin();
@@ -434,13 +436,13 @@ void AccountTrackerService::RemoveFromPrefs(const AccountState& state) {
 
 std::string AccountTrackerService::PickAccountIdForAccount(
     const std::string& gaia,
-    const std::string& email) {
+    const std::string& email) const {
   return PickAccountIdForAccount(signin_client_->GetPrefs(), gaia, email);
 }
 
 // static
 std::string AccountTrackerService::PickAccountIdForAccount(
-    PrefService* pref_service,
+    const PrefService* pref_service,
     const std::string& gaia,
     const std::string& email) {
   DCHECK(!gaia.empty() ||

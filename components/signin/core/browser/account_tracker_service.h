@@ -89,15 +89,15 @@ class AccountTrackerService : public KeyedService,
   // Returns the list of known accounts and for which gaia IDs
   // have been fetched.
   std::vector<AccountInfo> GetAccounts() const;
-  AccountInfo GetAccountInfo(const std::string& account_id);
-  AccountInfo FindAccountInfoByGaiaId(const std::string& gaia_id);
-  AccountInfo FindAccountInfoByEmail(const std::string& email);
+  AccountInfo GetAccountInfo(const std::string& account_id) const;
+  AccountInfo FindAccountInfoByGaiaId(const std::string& gaia_id) const;
+  AccountInfo FindAccountInfoByEmail(const std::string& email) const;
 
   // Picks the correct account_id for the specified account depending on the
   // migration state.
   std::string PickAccountIdForAccount(const std::string& gaia,
-                                      const std::string& email);
-  static std::string PickAccountIdForAccount(PrefService* pref_service,
+                                      const std::string& email) const;
+  static std::string PickAccountIdForAccount(const PrefService* pref_service,
                                              const std::string& gaia,
                                              const std::string& email);
 
@@ -110,9 +110,10 @@ class AccountTrackerService : public KeyedService,
 
   void RemoveAccount(const std::string& account_id);
 
-  AccountIdMigrationState GetMigrationState();
+  AccountIdMigrationState GetMigrationState() const;
   void SetMigrationDone();
-  static AccountIdMigrationState GetMigrationState(PrefService* pref_service);
+  static AccountIdMigrationState GetMigrationState(
+      const PrefService* pref_service);
 
  protected:
   // Available to be called in tests.
@@ -141,7 +142,7 @@ class AccountTrackerService : public KeyedService,
   void RemoveFromPrefs(const AccountState& account);
 
   // Gaia id migration.
-  bool IsMigratable();
+  bool IsMigratable() const;
   void MigrateToGaiaId();
   void SetMigrationState(AccountIdMigrationState state);
 
