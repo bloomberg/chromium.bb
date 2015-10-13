@@ -375,6 +375,9 @@ Date:   Mon Sep 28 19:10:30 2015 -0700
         scm = self.tracking_scm
         self.assertEqual(scm._commit_position_from_git_log(git_log), 1234567)
 
+    def test_timestamp_of_revision(self):
+        scm = self.tracking_scm
+        scm.most_recent_log_matching(scm._commit_position_regex_for_timestamp(), scm.checkout_root)
 
 class GitSVNTest(SCMTestBase):
     def setUp(self):

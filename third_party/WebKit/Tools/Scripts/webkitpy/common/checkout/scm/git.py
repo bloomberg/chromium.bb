@@ -196,8 +196,11 @@ class Git(SCM):
         git_log = self.most_recent_log_matching('Cr-Commit-Position:', path)
         return self._commit_position_from_git_log(git_log)
 
+    def _commit_position_regex_for_timestamp(self):
+        return 'Cr-Commit-Position:.*@{#%s}'
+
     def timestamp_of_revision(self, path, revision):
-        git_log = self.most_recent_log_matching('Cr-Commit-Position:.*@\{%s\}' % revision, path)
+        git_log = self.most_recent_log_matching(self._commit_position_regex_for_timestamp() % revision, path)
         match = re.search("^Date:\s*(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2}) ([+-])(\d{2})(\d{2})$", git_log, re.MULTILINE)
         if not match:
             return ""
