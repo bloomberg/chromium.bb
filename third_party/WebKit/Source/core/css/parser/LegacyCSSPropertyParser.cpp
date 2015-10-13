@@ -431,10 +431,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     Units unitless = FUnknown;
 
     switch (propId) {
-    case CSSPropertySize: // <length>{1,2} | auto | [ <page-size> || [ portrait | landscape] ]
-        parsedValue = parseSize();
-        break;
-
     case CSSPropertyContent:              // [ <string> | <uri> | <counter> | attr(X) | open-quote |
         // close-quote | no-open-quote | no-close-quote ]+ | inherit
         parsedValue = parseContent();
@@ -1357,6 +1353,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyBorderSpacing:
     case CSSPropertyCounterIncrement:
     case CSSPropertyCounterReset:
+    case CSSPropertySize:
         validPrimitive = false;
         break;
 
@@ -1898,72 +1895,6 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseScrollSnapCoordinate()
     }
 
     return parsePositionList(m_valueList);
-}
-
-// <length>{1,2} | auto | [ <page-size> || [ portrait | landscape] ]
-PassRefPtrWillBeRawPtr<CSSValueList> CSSPropertyParser::parseSize()
-{
-    CSSParserValue* value = m_valueList->current();
-    ASSERT(value);
-
-    RefPtrWillBeRawPtr<CSSValueList> parsedValues = CSSValueList::createSpaceSeparated();
-
-    // First parameter.
-    SizeParameterType paramType = parseSizeParameter(parsedValues.get(), value, None);
-    if (paramType == None)
-        return nullptr;
-    value = m_valueList->next();
-
-    // Second parameter, if any.
-    if (value) {
-        paramType = parseSizeParameter(parsedValues.get(), value, paramType);
-        if (paramType == None)
-            return nullptr;
-        m_valueList->next();
-    }
-
-    return parsedValues.release();
-}
-
-CSSPropertyParser::SizeParameterType CSSPropertyParser::parseSizeParameter(CSSValueList* parsedValues, CSSParserValue* value, SizeParameterType prevParamType)
-{
-    switch (value->id) {
-    case CSSValueAuto:
-        if (prevParamType == None) {
-            parsedValues->append(cssValuePool().createIdentifierValue(value->id));
-            return Auto;
-        }
-        return None;
-    case CSSValueLandscape:
-    case CSSValuePortrait:
-        if (prevParamType == None || prevParamType == PageSize) {
-            parsedValues->append(cssValuePool().createIdentifierValue(value->id));
-            return Orientation;
-        }
-        return None;
-    case CSSValueA3:
-    case CSSValueA4:
-    case CSSValueA5:
-    case CSSValueB4:
-    case CSSValueB5:
-    case CSSValueLedger:
-    case CSSValueLegal:
-    case CSSValueLetter:
-        if (prevParamType == None || prevParamType == Orientation) {
-            // Normalize to Page Size then Orientation order by prepending for simpler StyleBuilder handling
-            parsedValues->prepend(cssValuePool().createIdentifierValue(value->id));
-            return PageSize;
-        }
-        return None;
-    case 0:
-        if (validUnit(value, FLength | FNonNeg) && (prevParamType == None || prevParamType == Length)) {
-            parsedValues->append(createPrimitiveNumericValue(value));
-            return Length;
-        }
-        return None;
-    default:
-        return None;
-    }
 }
 
 // [ <string> | <uri> | <counter> | attr(X) | open-quote | close-quote | no-open-quote | no-close-quote ]+ | inherit

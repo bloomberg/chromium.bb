@@ -663,6 +663,56 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeCounter(CSSParserTokenRange& rang
     return list.release();
 }
 
+static PassRefPtrWillBeRawPtr<CSSValue> consumePageSize(CSSParserTokenRange& range)
+{
+    switch (range.peek().id()) {
+    case CSSValueA3:
+    case CSSValueA4:
+    case CSSValueA5:
+    case CSSValueB4:
+    case CSSValueB5:
+    case CSSValueLedger:
+    case CSSValueLegal:
+    case CSSValueLetter:
+        return consumeIdent(range);
+    default:
+        return nullptr;
+    }
+}
+
+static PassRefPtrWillBeRawPtr<CSSValueList> consumeSize(CSSParserTokenRange& range, CSSParserMode cssParserMode)
+{
+    RefPtrWillBeRawPtr<CSSValueList> result = CSSValueList::createSpaceSeparated();
+
+    if (range.peek().id() == CSSValueAuto) {
+        result->append(consumeIdent(range));
+        return result.release();
+    }
+
+    if (RefPtrWillBeRawPtr<CSSValue> width = consumeLength(range, cssParserMode, ValueRangeNonNegative)) {
+        RefPtrWillBeRawPtr<CSSValue> height = consumeLength(range, cssParserMode, ValueRangeNonNegative);
+        result->append(width.release());
+        if (height)
+            result->append(height.release());
+        return result.release();
+    }
+
+    RefPtrWillBeRawPtr<CSSValue> pageSize = consumePageSize(range);
+    RefPtrWillBeRawPtr<CSSValue> orientation = nullptr;
+    if (range.peek().id() == CSSValuePortrait || range.peek().id() == CSSValueLandscape)
+        orientation = consumeIdent(range);
+    if (!pageSize)
+        pageSize = consumePageSize(range);
+
+    if (!orientation && !pageSize)
+        return nullptr;
+    if (pageSize)
+        result->append(pageSize.release());
+    if (orientation)
+        result->append(orientation.release());
+    return result.release();
+}
+
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSPropertyID propId)
 {
     m_range.consumeWhitespace();
@@ -702,6 +752,8 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
     case CSSPropertyCounterIncrement:
     case CSSPropertyCounterReset:
         return consumeCounter(m_range, m_context.mode(), propId == CSSPropertyCounterIncrement ? 1 : 0);
+    case CSSPropertySize:
+        return consumeSize(m_range, m_context.mode());
     default:
         return nullptr;
     }
