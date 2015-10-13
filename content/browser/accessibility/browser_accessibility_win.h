@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/gtest_prod_util.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/common/content_export.h"
 #include "third_party/iaccessible2/ia2_api_all.h"
@@ -750,6 +751,14 @@ BrowserAccessibilityWin
   HRESULT GetStringAttributeAsBstr(
       ui::AXStringAttribute attribute,
       BSTR* value_bstr);
+
+  // Escapes characters in string attributes as required by the IA2 Spec.
+  // It's okay for input to be the same as output.
+  CONTENT_EXPORT static void SanitizeStringAttributeForIA2(
+      const base::string16& input,
+      base::string16* output);
+  FRIEND_TEST_ALL_PREFIXES(BrowserAccessibilityTest,
+                           TestSanitizeStringAttributeForIA2);
 
   // If the string attribute |attribute| is present, add its value as an
   // IAccessible2 attribute with the name |ia2_attr|.

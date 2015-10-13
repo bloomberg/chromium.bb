@@ -3255,6 +3255,8 @@ void BrowserAccessibilityWin::UpdateStep1ComputeWinAttributes() {
           base::string16 aria_invalid_value;
           if (GetString16Attribute(ui::AX_ATTR_ARIA_INVALID_VALUE,
                                    &aria_invalid_value)) {
+            SanitizeStringAttributeForIA2(aria_invalid_value,
+                                          &aria_invalid_value);
             win_attributes_->ia2_attributes.push_back(
                 L"invalid:" + aria_invalid_value);
           } else {
@@ -3407,30 +3409,39 @@ void BrowserAccessibilityWin::UpdateStep1ComputeWinAttributes() {
   if (ia_role() == ROLE_SYSTEM_PROGRESSBAR ||
       ia_role() == ROLE_SYSTEM_SCROLLBAR ||
       ia_role() == ROLE_SYSTEM_SLIDER) {
-    win_attributes_->ia2_attributes.push_back(L"valuetext:" + GetValueText());
+    base::string16 value_text = GetValueText();
+    SanitizeStringAttributeForIA2(value_text, &value_text);
+    win_attributes_->ia2_attributes.push_back(L"valuetext:" + value_text);
   }
 
   // Expose dropeffect attribute.
-  base::string16 dropEffect;
-  if (GetHtmlAttribute("aria-dropeffect", &dropEffect))
-    win_attributes_->ia2_attributes.push_back(L"dropeffect:" + dropEffect);
+  base::string16 drop_effect;
+  if (GetHtmlAttribute("aria-dropeffect", &drop_effect)) {
+    SanitizeStringAttributeForIA2(drop_effect, &drop_effect);
+    win_attributes_->ia2_attributes.push_back(L"dropeffect:" + drop_effect);
+  }
 
   // Expose grabbed attribute.
   base::string16 grabbed;
-  if (GetHtmlAttribute("aria-grabbed", &grabbed))
+  if (GetHtmlAttribute("aria-grabbed", &grabbed)) {
+    SanitizeStringAttributeForIA2(grabbed, &grabbed);
     win_attributes_->ia2_attributes.push_back(L"grabbed:" + grabbed);
+  }
 
   // Expose datetime attribute.
   base::string16 datetime;
   if (GetRole() == ui::AX_ROLE_TIME &&
-      GetHtmlAttribute("datetime", &datetime))
+      GetHtmlAttribute("datetime", &datetime)) {
+    SanitizeStringAttributeForIA2(datetime, &datetime);
     win_attributes_->ia2_attributes.push_back(L"datetime:" + datetime);
+  }
 
   // Expose input-text type attribute.
   base::string16 type;
-  if (GetRole() == ui::AX_ROLE_TEXT_FIELD &&
-      GetHtmlAttribute("type", &type))
+  if (GetRole() == ui::AX_ROLE_TEXT_FIELD && GetHtmlAttribute("type", &type)) {
+    SanitizeStringAttributeForIA2(type, &type);
     win_attributes_->ia2_attributes.push_back(L"text-input-type:" + type);
+  }
 
   // If this is a web area for a presentational iframe, give it a role of
   // something other than DOCUMENT so that the fact that it's a separate doc
@@ -3631,11 +3642,27 @@ HRESULT BrowserAccessibilityWin::GetStringAttributeAsBstr(
   return S_OK;
 }
 
+// Static
+void BrowserAccessibilityWin::SanitizeStringAttributeForIA2(
+    const base::string16& input,
+    base::string16* output) {
+  DCHECK(output);
+  // According to the IA2 Spec, these characters need to be escaped with a
+  // backslash: backslash, colon, comma, equals and semicolon.
+  // Note that backslash must be replaced first.
+  base::ReplaceChars(input, L"\\", L"\\\\", output);
+  base::ReplaceChars(*output, L":", L"\\:", output);
+  base::ReplaceChars(*output, L",", L"\\,", output);
+  base::ReplaceChars(*output, L"=", L"\\=", output);
+  base::ReplaceChars(*output, L";", L"\\;", output);
+}
+
 void BrowserAccessibilityWin::StringAttributeToIA2(
     ui::AXStringAttribute attribute,
     const char* ia2_attr) {
   base::string16 value;
   if (GetString16Attribute(attribute, &value)) {
+    SanitizeStringAttributeForIA2(value, &value);
     win_attributes_->ia2_attributes.push_back(
         base::ASCIIToUTF16(ia2_attr) + L":" + value);
   }

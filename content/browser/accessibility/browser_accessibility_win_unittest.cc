@@ -770,8 +770,14 @@ TEST_F(BrowserAccessibilityTest, EmptyDocHasUniqueIdWin) {
 }
 
 TEST_F(BrowserAccessibilityTest, TestIA2Attributes) {
+  ui::AXNodeData pseudo_before;
+  pseudo_before.id = 2;
+  pseudo_before.role = ui::AX_ROLE_DIV;
+  pseudo_before.AddStringAttribute(ui::AX_ATTR_HTML_TAG, "<pseudo:before>");
+  pseudo_before.AddStringAttribute(ui::AX_ATTR_DISPLAY, "none");
+
   ui::AXNodeData checkbox;
-  checkbox.id = 2;
+  checkbox.id = 3;
   checkbox.SetName("Checkbox");
   checkbox.role = ui::AX_ROLE_CHECK_BOX;
   checkbox.state = 1 << ui::AX_STATE_CHECKED;
@@ -782,28 +788,41 @@ TEST_F(BrowserAccessibilityTest, TestIA2Attributes) {
   root.role = ui::AX_ROLE_ROOT_WEB_AREA;
   root.state = (1 << ui::AX_STATE_READ_ONLY) | (1 << ui::AX_STATE_FOCUSABLE);
   root.child_ids.push_back(2);
+  root.child_ids.push_back(3);
 
   CountedBrowserAccessibility::reset();
   scoped_ptr<BrowserAccessibilityManager> manager(
       BrowserAccessibilityManager::Create(
-          MakeAXTreeUpdate(root, checkbox),
-          nullptr, new CountedBrowserAccessibilityFactory()));
-  ASSERT_EQ(2, CountedBrowserAccessibility::num_instances());
+          MakeAXTreeUpdate(root, pseudo_before, checkbox), nullptr,
+          new CountedBrowserAccessibilityFactory()));
+  ASSERT_EQ(3, CountedBrowserAccessibility::num_instances());
 
   ASSERT_NE(nullptr, manager->GetRoot());
   BrowserAccessibilityWin* root_accessible =
       manager->GetRoot()->ToBrowserAccessibilityWin();
       ASSERT_NE(nullptr, root_accessible);
-  ASSERT_EQ(1, root_accessible->PlatformChildCount());
-  BrowserAccessibilityWin* checkbox_accessible =
-      root_accessible->PlatformGetChild(0)->ToBrowserAccessibilityWin();
-  ASSERT_NE(nullptr, checkbox_accessible);
+      ASSERT_EQ(2, root_accessible->PlatformChildCount());
+
+      BrowserAccessibilityWin* pseudo_accessible =
+          root_accessible->PlatformGetChild(0)->ToBrowserAccessibilityWin();
+      ASSERT_NE(nullptr, pseudo_accessible);
 
   base::win::ScopedBstr attributes;
-  HRESULT hr = checkbox_accessible->get_attributes(attributes.Receive());
+  HRESULT hr = pseudo_accessible->get_attributes(attributes.Receive());
   EXPECT_EQ(S_OK, hr);
   EXPECT_NE(nullptr, static_cast<BSTR>(attributes));
   std::wstring attributes_str(attributes, attributes.Length());
+  EXPECT_EQ(L"display:none;tag:<pseudo\\:before>;", attributes_str);
+
+  BrowserAccessibilityWin* checkbox_accessible =
+      root_accessible->PlatformGetChild(1)->ToBrowserAccessibilityWin();
+  ASSERT_NE(nullptr, checkbox_accessible);
+
+  attributes.Reset();
+  hr = checkbox_accessible->get_attributes(attributes.Receive());
+  EXPECT_EQ(S_OK, hr);
+  EXPECT_NE(nullptr, static_cast<BSTR>(attributes));
+  attributes_str = std::wstring(attributes, attributes.Length());
   EXPECT_EQ(L"checkable:true;", attributes_str);
 
   manager.reset();
@@ -1238,6 +1257,13 @@ TEST_F(BrowserAccessibilityTest, TestPlatformDeepestFirstLastChild) {
   EXPECT_EQ(nullptr, child2_child1_accessible->PlatformDeepestLastChild());
   EXPECT_EQ(nullptr, child2_child2_accessible->PlatformDeepestFirstChild());
   EXPECT_EQ(nullptr, child2_child2_accessible->PlatformDeepestLastChild());
+}
+
+TEST_F(BrowserAccessibilityTest, TestSanitizeStringAttributeForIA2) {
+  base::string16 input(L"\\:=,;");
+  base::string16 output;
+  BrowserAccessibilityWin::SanitizeStringAttributeForIA2(input, &output);
+  EXPECT_EQ(L"\\\\\\:\\=\\,\\;", output);
 }
 
 }  // namespace content
