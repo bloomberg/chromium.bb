@@ -94,7 +94,12 @@ class BrowserAddedForProfileObserver : public chrome::BrowserListObserver {
   void OnBrowserAdded(Browser* browser) override {
     if (browser->profile() == profile_) {
       BrowserList::RemoveObserver(this);
-      callback_.Run(profile_, Profile::CREATE_STATUS_INITIALIZED);
+      // By the time the browser is added a tab (or multiple) are about to be
+      // added. Post the callback to the message loop so it gets executed after
+      // the tabs are created.
+      base::MessageLoop::current()->PostTask(
+          FROM_HERE,
+          base::Bind(callback_, profile_, Profile::CREATE_STATUS_INITIALIZED));
       base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
     }
   }
