@@ -691,10 +691,6 @@ test("sync_unit_tests") {
     "$root_out_dir/pyproto/google/",
   ]
 
-  if (is_android) {
-    data += [ "$root_out_dir/locales/en-US.pak" ]
-  }
-
   deps = [
     ":test_support_sync_core",
     ":test_support_sync_internal_api",

@@ -3,13 +3,6 @@
 # found in the LICENSE file.
 {
   'conditions': [
-    ['OS=="android"', {
-      'variables': {
-        'files': [
-          '<(PRODUCT_DIR)/locales/en-US.pak',
-        ],
-      },
-    }],
     ['OS=="linux" or OS=="mac" or OS=="win"', {
       'variables': {
         'command': [
