@@ -425,7 +425,6 @@
       "web/WebMediaDevicesRequest.h",
       "web/WebMediaPlayerAction.h",
       "web/WebMediaStreamRegistry.h",
-      "web/WebMemoryUsageInfo.h",
       "web/WebMenuItemInfo.h",
       "web/WebNavigationPolicy.h",
       "web/WebNavigationType.h",
