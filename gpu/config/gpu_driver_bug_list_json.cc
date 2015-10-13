@@ -1431,11 +1431,14 @@ LONG_STRING_CONST(
       "id": 123,
       "cr_bugs": [344330],
       "description": "NVIDIA drivers before 337 lack features in NV_path_rendering and related extensions to implement driver level path rendering.",
+      "vendor_id": "0x10de",
+      "os": {
+        "type": "linux"
+      },
       "driver_version": {
         "op": "<",
         "value": "337"
       },
-      "vendor_id": "0x10de",
       "features": [
         "disable_gl_path_rendering"
       ]
