@@ -2110,6 +2110,28 @@ TEST_F(SyncableDirectoryTest, SharingOfClientAndServerSpecifics) {
                                            item.GetBaseServerSpecifics()));
 }
 
+// Tests checking and marking a type as having its initial sync completed.
+TEST_F(SyncableDirectoryTest, InitialSyncEndedForType) {
+  // Not completed if there is no root node.
+  EXPECT_FALSE(dir()->InitialSyncEndedForType(PREFERENCES));
+
+  WriteTransaction trans(FROM_HERE, UNITTEST, dir().get());
+  // Create the root node.
+  ModelNeutralMutableEntry entry(&trans, syncable::CREATE_NEW_TYPE_ROOT,
+                                 PREFERENCES);
+  DCHECK(entry.good());
+
+  entry.PutServerIsDir(true);
+  entry.PutUniqueServerTag(ModelTypeToRootTag(PREFERENCES));
+
+  // Should still be marked as incomplete.
+  EXPECT_FALSE(dir()->InitialSyncEndedForType(&trans, PREFERENCES));
+
+  // Mark as complete and verify.
+  dir()->MarkInitialSyncEndedForType(&trans, PREFERENCES);
+  EXPECT_TRUE(dir()->InitialSyncEndedForType(&trans, PREFERENCES));
+}
+
 }  // namespace syncable
 
 }  // namespace syncer

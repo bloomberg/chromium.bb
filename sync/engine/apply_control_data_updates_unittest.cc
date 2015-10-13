@@ -914,4 +914,67 @@ TEST_F(ApplyControlDataUpdatesTest, ControlConflict) {
           experiments().keystore_encryption().enabled());
 }
 
+// Check that applying a EXPERIMENTS update marks the datatype as downloaded.
+TEST_F(ApplyControlDataUpdatesTest, ExperimentsApplyMarksDownloadCompleted) {
+  EXPECT_FALSE(directory()->InitialSyncEndedForType(EXPERIMENTS));
+
+  // Create root node for EXPERIMENTS datatype
+  {
+    syncable::WriteTransaction trans(FROM_HERE, UNITTEST, directory());
+    syncable::ModelNeutralMutableEntry entry(
+        &trans, syncable::CREATE_NEW_TYPE_ROOT, EXPERIMENTS);
+    ASSERT_TRUE(entry.good());
+    entry.PutServerIsDir(true);
+    entry.PutUniqueServerTag(ModelTypeToRootTag(EXPERIMENTS));
+  }
+
+  // Initial sync isn't marked as ended for EXPERIMENTS even though the
+  // root folder exists.
+  EXPECT_FALSE(directory()->InitialSyncEndedForType(EXPERIMENTS));
+
+  std::string experiment_id = "experiment";
+  sync_pb::EntitySpecifics specifics;
+  specifics.mutable_experiments()->mutable_keystore_encryption()->set_enabled(
+      true);
+  entry_factory_->CreateUnappliedNewItem(experiment_id, specifics, false);
+
+  ApplyControlDataUpdates(directory());
+
+  // After applying the updates EXPERIMENTS should be marked as having its
+  // initial sync completed.
+  EXPECT_TRUE(directory()->InitialSyncEndedForType(EXPERIMENTS));
+  // Verify that there is no side effect on another control type.
+  EXPECT_FALSE(directory()->InitialSyncEndedForType(NIGORI));
+}
+
+// Check that applying a NIGORI update marks the datatype as downloaded.
+TEST_F(ApplyControlDataUpdatesTest, NigoriApplyMarksDownloadCompleted) {
+  EXPECT_FALSE(directory()->InitialSyncEndedForType(NIGORI));
+
+  Cryptographer* cryptographer;
+
+  {
+    syncable::ReadTransaction trans(FROM_HERE, directory());
+    cryptographer = directory()->GetCryptographer(&trans);
+  }
+
+  KeyParams params = {"localhost", "dummy", "foobar"};
+  cryptographer->AddKey(params);
+  sync_pb::EntitySpecifics specifics;
+  sync_pb::NigoriSpecifics* nigori = specifics.mutable_nigori();
+  cryptographer->GetKeys(nigori->mutable_encryption_keybag());
+  nigori->set_encrypt_everything(true);
+
+  entry_factory_->CreateUnappliedNewItem(ModelTypeToRootTag(NIGORI), specifics,
+                                         true);
+
+  ApplyControlDataUpdates(directory());
+
+  // After applying the updates NIGORI should be marked as having its
+  // initial sync completed.
+  EXPECT_TRUE(directory()->InitialSyncEndedForType(NIGORI));
+  // Verify that there is no side effect on another control type.
+  EXPECT_FALSE(directory()->InitialSyncEndedForType(EXPERIMENTS));
+}
+
 }  // namespace syncer

@@ -4336,6 +4336,8 @@ TEST_F(SyncerTest, ClientTagUpdateClashesWithLocalEntry) {
     tag2_metahandle = tag2.GetMetahandle();
 
     // Preferences type root should have been created by the updates above.
+    ASSERT_TRUE(directory()->InitialSyncEndedForType(&trans, PREFERENCES));
+
     Entry pref_root(&trans, GET_TYPE_ROOT, PREFERENCES);
     ASSERT_TRUE(pref_root.good());
 
@@ -4378,6 +4380,8 @@ TEST_F(SyncerTest, ClientTagUpdateClashesWithLocalEntry) {
     EXPECT_EQ(tag2_metahandle, tag2.GetMetahandle());
 
     // Preferences type root should have been created by the updates above.
+    ASSERT_TRUE(directory()->InitialSyncEndedForType(&trans, PREFERENCES));
+
     Entry pref_root(&trans, GET_TYPE_ROOT, PREFERENCES);
     ASSERT_TRUE(pref_root.good());
 
@@ -4460,6 +4464,8 @@ TEST_F(SyncerTest, ClientTagClashWithinBatchOfUpdates) {
     EXPECT_EQ("tag c", tag_c.GetUniqueClientTag());
 
     // Preferences type root should have been created by the updates above.
+    ASSERT_TRUE(directory()->InitialSyncEndedForType(&trans, PREFERENCES));
+
     Entry pref_root(&trans, GET_TYPE_ROOT, PREFERENCES);
     ASSERT_TRUE(pref_root.good());
 
@@ -4483,6 +4489,9 @@ TEST_F(SyncerTest, EntryWithParentIdUpdatedWithEntryWithoutParentId) {
     // Preferences type root should have been created by the update above.
     // We need it in order to get its ID.
     syncable::ReadTransaction trans(FROM_HERE, directory());
+
+    ASSERT_TRUE(directory()->InitialSyncEndedForType(&trans, PREFERENCES));
+
     Entry pref_root(&trans, GET_TYPE_ROOT, PREFERENCES);
     ASSERT_TRUE(pref_root.good());
     pref_root_id = pref_root.GetId();
@@ -4675,16 +4684,17 @@ TEST_F(SyncerTest, ConfigureDownloadsTwoBatchesSuccess) {
   syncable::Id node2 = ids_.NewServerId();
 
   // Construct the first GetUpdates response.
-  mock_server_->AddUpdateDirectory(node1, ids_.root(), "one", 1, 10,
-                                   foreign_cache_guid(), "-2");
+  mock_server_->AddUpdatePref(node1.GetServerId(), "", "one", 1, 10);
   mock_server_->SetChangesRemaining(1);
   mock_server_->NextUpdateBatch();
 
   // Construct the second GetUpdates response.
-  mock_server_->AddUpdateDirectory(node2, ids_.root(), "two", 1, 20,
-                                   foreign_cache_guid(), "-2");
+  mock_server_->AddUpdatePref(node2.GetServerId(), "", "two", 2, 20);
 
   SyncShareConfigure();
+
+  // The type should now be marked as having the initial sync completed.
+  EXPECT_TRUE(directory()->InitialSyncEndedForType(PREFERENCES));
 
   syncable::ReadTransaction trans(FROM_HERE, directory());
   // Both nodes should be downloaded and applied.
@@ -4710,16 +4720,17 @@ TEST_F(SyncerTest, ConfigureFailsDontApplyUpdates) {
   mock_server_->FailNthPostBufferToPathCall(2);
 
   // Construct the first GetUpdates response.
-  mock_server_->AddUpdateDirectory(node1, ids_.root(), "one", 1, 10,
-                                   foreign_cache_guid(), "-1");
+  mock_server_->AddUpdatePref(node1.GetServerId(), "", "one", 1, 10);
   mock_server_->SetChangesRemaining(1);
   mock_server_->NextUpdateBatch();
 
-  // Consutrct the second GetUpdates response.
-  mock_server_->AddUpdateDirectory(node2, ids_.root(), "two", 1, 20,
-                                   foreign_cache_guid(), "-2");
+  // Construct the second GetUpdates response.
+  mock_server_->AddUpdatePref(node2.GetServerId(), "", "two", 2, 20);
 
   SyncShareConfigure();
+
+  // The type shouldn't be marked as having the initial sync completed.
+  EXPECT_FALSE(directory()->InitialSyncEndedForType(PREFERENCES));
 
   syncable::ReadTransaction trans(FROM_HERE, directory());
 
@@ -4765,6 +4776,27 @@ TEST_F(SyncerTest, GetKeyEmpty) {
     syncable::ReadTransaction rtrans(FROM_HERE, directory());
     EXPECT_TRUE(directory()->GetNigoriHandler()->NeedKeystoreKey(&rtrans));
   }
+}
+
+// Trigger an update that contains a progress marker only and verify that
+// the type's permanent folder is created and the type is marked as having
+// initial sync complete.
+TEST_F(SyncerTest, ProgressMarkerOnlyUpdateCreatesRootFolder) {
+  EXPECT_FALSE(directory()->InitialSyncEndedForType(PREFERENCES));
+  sync_pb::DataTypeProgressMarker* marker =
+      mock_server_->AddUpdateProgressMarker();
+  marker->set_data_type_id(GetSpecificsFieldNumberFromModelType(PREFERENCES));
+  marker->set_token("foobar");
+
+  SyncShareNudge();
+
+  {
+    syncable::ReadTransaction trans(FROM_HERE, directory());
+    syncable::Entry root(&trans, syncable::GET_TYPE_ROOT, PREFERENCES);
+    EXPECT_TRUE(root.good());
+  }
+
+  EXPECT_TRUE(directory()->InitialSyncEndedForType(PREFERENCES));
 }
 
 // Tests specifically related to bookmark (and therefore no client tags) sync

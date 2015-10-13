@@ -68,6 +68,11 @@ class SYNC_EXPORT_PRIVATE DirectoryUpdateHandler : public UpdateHandler {
   // Sometimes there is nothing to do, so we can return without doing anything.
   bool IsApplyUpdatesRequired();
 
+  // Called at the end of ApplyUpdates and PassiveApplyUpdates and performs
+  // steps common to both (even when IsApplyUpdatesRequired has returned
+  // false).
+  void PostApplyUpdates();
+
   // Processes the given SyncEntities and stores their data in the directory.
   // Their types must match this update handler's type.
   void UpdateSyncEntities(

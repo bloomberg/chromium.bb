@@ -269,6 +269,9 @@ class MockConnectionManager : public ServerConnectionManager {
   // Locate the most recent update message for purpose of alteration.
   sync_pb::SyncEntity* GetMutableLastUpdate();
 
+  // Adds a new progress marker to the last update.
+  sync_pb::DataTypeProgressMarker* AddUpdateProgressMarker();
+
  private:
   sync_pb::SyncEntity* AddUpdateFull(syncable::Id id,
                                      syncable::Id parentid,

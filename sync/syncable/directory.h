@@ -300,8 +300,16 @@ class SYNC_EXPORT Directory {
                           ModelType type,
                           const sync_pb::DataTypeContext& context);
 
+  // Returns types for which the initial sync has ended.
   ModelTypeSet InitialSyncEndedTypes();
+
+  // Returns true if the initial sync for |type| has completed.
   bool InitialSyncEndedForType(ModelType type);
+  bool InitialSyncEndedForType(BaseTransaction* trans, ModelType type);
+
+  // Marks the |type| as having its intial sync complete.
+  // This applies only to types with implicitly created root folders.
+  void MarkInitialSyncEndedForType(BaseWriteTransaction* trans, ModelType type);
 
   // (Account) Store birthday is opaque to the client, so we keep it in the
   // format it is in the proto buffer in case we switch to a binary birthday
@@ -619,9 +627,6 @@ class SYNC_EXPORT Directory {
   // Invoked by DirectoryBackingStore when a catastrophic database error is
   // detected.
   void OnCatastrophicError();
-
-  // Returns true if the initial sync for |type| has completed.
-  bool InitialSyncEndedForType(BaseTransaction* trans, ModelType type);
 
   // Stops sending events to the delegate and the transaction
   // observer.

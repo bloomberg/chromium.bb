@@ -499,11 +499,15 @@ void MockConnectionManager::SetNewTimestamp(int ts) {
   ApplyToken();
 }
 
+sync_pb::DataTypeProgressMarker*
+MockConnectionManager::AddUpdateProgressMarker() {
+  return GetUpdateResponse()->add_new_progress_marker();
+}
+
 void MockConnectionManager::ApplyToken() {
   if (!update_queue_.empty()) {
     GetUpdateResponse()->clear_new_progress_marker();
-    sync_pb::DataTypeProgressMarker* new_marker =
-        GetUpdateResponse()->add_new_progress_marker();
+    sync_pb::DataTypeProgressMarker* new_marker = AddUpdateProgressMarker();
     new_marker->set_data_type_id(-1);  // Invalid -- clients shouldn't see.
     new_marker->set_token(next_token_);
   }

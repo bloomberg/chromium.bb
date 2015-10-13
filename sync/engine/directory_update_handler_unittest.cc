@@ -86,9 +86,7 @@ class DirectoryUpdateHandlerProcessUpdateTest : public ::testing::Test {
   }
 
   bool TypeRootExists(ModelType model_type) {
-    syncable::ReadTransaction trans(FROM_HERE, dir());
-    syncable::Entry e(&trans, syncable::GET_TYPE_ROOT, model_type);
-    return e.good() && !e.GetIsDel();
+    return dir()->InitialSyncEndedForType(model_type);
   }
 
  protected:

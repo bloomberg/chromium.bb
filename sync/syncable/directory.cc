@@ -19,6 +19,7 @@
 #include "sync/syncable/entry.h"
 #include "sync/syncable/entry_kernel.h"
 #include "sync/syncable/in_memory_directory_backing_store.h"
+#include "sync/syncable/model_neutral_mutable_entry.h"
 #include "sync/syncable/on_disk_directory_backing_store.h"
 #include "sync/syncable/scoped_kernel_lock.h"
 #include "sync/syncable/scoped_parent_child_index_updater.h"
@@ -985,9 +986,29 @@ bool Directory::InitialSyncEndedForType(ModelType type) {
 
 bool Directory::InitialSyncEndedForType(
     BaseTransaction* trans, ModelType type) {
-  // True iff the type's root node has been created.
-  syncable::Entry entry(trans, syncable::GET_TYPE_ROOT, type);
-  return entry.good();
+  // True iff the type's root node has been created and changes
+  // for the type have been applied at least once.
+  Entry root(trans, GET_TYPE_ROOT, type);
+  return root.good() && root.GetBaseVersion() != CHANGES_VERSION;
+}
+
+void Directory::MarkInitialSyncEndedForType(BaseWriteTransaction* trans,
+                                            ModelType type) {
+  // If the root folder is downloaded for the server, the root's base version
+  // get updated automatically at the end of update cycle when the update gets
+  // applied. However if this is a type with client generated root, the root
+  // node gets created locally and never goes through the update cycle. In that
+  // case its base version has to be explictly changed from CHANGES_VERSION
+  // at the end of the initial update cycle to mark the type as downloaded.
+  // See Directory::InitialSyncEndedForType
+  DCHECK(IsTypeWithClientGeneratedRoot(type));
+  ModelNeutralMutableEntry root(trans, GET_TYPE_ROOT, type);
+
+  // Some tests don't bother creating type root. Need to check if the root
+  // exists before clearing its base version.
+  if (root.good() && root.GetBaseVersion() == CHANGES_VERSION) {
+    root.PutBaseVersion(0);
+  }
 }
 
 string Directory::store_birthday() const {

@@ -10,6 +10,7 @@
 #include "sync/sessions/directory_type_debug_info_emitter.h"
 #include "sync/syncable/directory.h"
 #include "sync/syncable/model_neutral_mutable_entry.h"
+#include "sync/syncable/syncable_changes_version.h"
 #include "sync/syncable/syncable_model_neutral_write_transaction.h"
 #include "sync/syncable/syncable_write_transaction.h"
 #include "sync/util/data_type_histogram.h"
@@ -109,34 +110,34 @@ void DirectoryUpdateHandler::CreateTypeRoot(
 }
 
 void DirectoryUpdateHandler::ApplyUpdates(sessions::StatusController* status) {
-  if (!IsApplyUpdatesRequired()) {
-    return;
+  if (IsApplyUpdatesRequired()) {
+    // This will invoke handlers that belong to the model and its thread, so we
+    // switch to the appropriate thread before we start this work.
+    WorkCallback c =
+        base::Bind(&DirectoryUpdateHandler::ApplyUpdatesImpl,
+                   // We wait until the callback is executed.  We can safely use
+                   // Unretained.
+                   base::Unretained(this), base::Unretained(status));
+    worker_->DoWorkAndWaitUntilDone(c);
+
+    debug_info_emitter_->EmitUpdateCountersUpdate();
+    debug_info_emitter_->EmitStatusCountersUpdate();
   }
 
-  // This will invoke handlers that belong to the model and its thread, so we
-  // switch to the appropriate thread before we start this work.
-  WorkCallback c = base::Bind(
-      &DirectoryUpdateHandler::ApplyUpdatesImpl,
-      // We wait until the callback is executed.  We can safely use Unretained.
-      base::Unretained(this),
-      base::Unretained(status));
-  worker_->DoWorkAndWaitUntilDone(c);
-
-  debug_info_emitter_->EmitUpdateCountersUpdate();
-  debug_info_emitter_->EmitStatusCountersUpdate();
+  PostApplyUpdates();
 }
 
 void DirectoryUpdateHandler::PassiveApplyUpdates(
     sessions::StatusController* status) {
-  if (!IsApplyUpdatesRequired()) {
-    return;
+  if (IsApplyUpdatesRequired()) {
+    // Just do the work here instead of deferring to another thread.
+    ApplyUpdatesImpl(status);
+
+    debug_info_emitter_->EmitUpdateCountersUpdate();
+    debug_info_emitter_->EmitStatusCountersUpdate();
   }
 
-  // Just do the work here instead of deferring to another thread.
-  ApplyUpdatesImpl(status);
-
-  debug_info_emitter_->EmitUpdateCountersUpdate();
-  debug_info_emitter_->EmitStatusCountersUpdate();
+  PostApplyUpdates();
 }
 
 SyncerError DirectoryUpdateHandler::ApplyUpdatesImpl(
@@ -216,6 +217,20 @@ SyncerError DirectoryUpdateHandler::ApplyUpdatesImpl(
   }
 
   return SYNCER_OK;
+}
+
+void DirectoryUpdateHandler::PostApplyUpdates() {
+  // If this is a type with client generated root, the root node has been
+  // created locally and didn't go through ApplyUpdatesImpl.
+  // Mark it as having the initial download completed so that the type
+  // reports as properly initialized (which is done by changing the root's
+  // base version to a value other than CHANGES_VERSION).
+  // This does nothing if the root's base version is already other than
+  // CHANGES_VERSION.
+  if (IsTypeWithClientGeneratedRoot(type_)) {
+    syncable::ModelNeutralWriteTransaction trans(FROM_HERE, SYNCER, dir_);
+    dir_->MarkInitialSyncEndedForType(&trans, type_);
+  }
 }
 
 bool DirectoryUpdateHandler::IsApplyUpdatesRequired() {
