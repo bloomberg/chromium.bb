@@ -87,7 +87,9 @@ public final class ApplicationData {
         if (files == null) return true;
         for (File file : files) {
             if (!(file.getAbsolutePath().endsWith("/lib")
-                    || file.getAbsolutePath().endsWith("/etp_native")) && !removeFile(file)) {
+                    || file.getAbsolutePath().endsWith("/etp_native") // Work Chrome
+                    || file.getAbsolutePath().endsWith("/sdk_dex")) // Work Chrome
+                    && !removeFile(file)) {
                 return false;
             }
         }
