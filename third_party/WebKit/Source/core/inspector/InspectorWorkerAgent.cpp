@@ -191,6 +191,7 @@ DEFINE_TRACE(InspectorWorkerAgent)
 #if ENABLE(OILPAN)
     visitor->trace(m_idToClient);
     visitor->trace(m_consoleAgent);
+    visitor->trace(m_workerInfos);
 #endif
     InspectorBaseAgent<InspectorWorkerAgent, InspectorFrontend::Worker>::trace(visitor);
 }

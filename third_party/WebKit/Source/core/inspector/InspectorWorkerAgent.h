@@ -43,7 +43,7 @@ class PageConsoleAgent;
 class KURL;
 class WorkerInspectorProxy;
 
-typedef String ErrorString;
+using ErrorString = String;
 
 class CORE_EXPORT InspectorWorkerAgent final : public InspectorBaseAgent<InspectorWorkerAgent, InspectorFrontend::Worker>, public InspectorBackendDispatcher::WorkerCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorWorkerAgent);
@@ -110,9 +110,9 @@ private:
         String id;
     };
 
-    typedef WillBeHeapHashMap<String, OwnPtrWillBeMember<WorkerAgentClient>> WorkerClients;
+    using WorkerClients = WillBeHeapHashMap<String, OwnPtrWillBeMember<WorkerAgentClient>>;
     WorkerClients m_idToClient;
-    typedef HashMap<WorkerInspectorProxy*, WorkerInfo> WorkerInfos;
+    using WorkerInfos = WillBeHeapHashMap<RawPtrWillBeMember<WorkerInspectorProxy>, WorkerInfo>;
     WorkerInfos m_workerInfos;
     String m_tracingSessionId;
     RawPtrWillBeMember<PageConsoleAgent> m_consoleAgent;
