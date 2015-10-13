@@ -279,10 +279,7 @@ bool TabManager::IsInternalPage(const GURL& url) {
 }
 
 void TabManager::RecordDiscardStatistics() {
-  // Record a raw count so we can compare to discard reloads.
   discard_count_++;
-  UMA_HISTOGRAM_CUSTOM_COUNTS("Tabs.Discard.DiscardCount", discard_count_, 1,
-                              1000, 50);
 
   // TODO(jamescook): Maybe incorporate extension count?
   UMA_HISTOGRAM_CUSTOM_COUNTS("Tabs.Discard.TabCount", GetTabCount(), 1, 100,
