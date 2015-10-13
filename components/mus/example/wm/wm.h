@@ -20,7 +20,9 @@ class WM : public mojom::WM, public mus::ViewTreeDelegate {
   void OnConnectionLost(mus::ViewTreeConnection* connection) override;
 
   // WM:
-  void Embed(mojo::ViewTreeClientPtr client) override;
+  void OpenWindow(mojo::ViewTreeClientPtr client) override;
+
+  void CreateContainers();
 
   mus::View* root_;
   ScopedVector<mojo::ViewTreeClientPtr> pending_embeds_;

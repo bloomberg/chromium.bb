@@ -7,5 +7,5 @@ module mojom;
 import "components/mus/public/interfaces/view_tree.mojom";
 
 interface WM {
-  Embed(mojo.ViewTreeClient client);
+  OpenWindow(mojo.ViewTreeClient client);
 };

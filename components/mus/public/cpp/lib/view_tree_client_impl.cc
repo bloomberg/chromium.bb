@@ -222,7 +222,7 @@ void ViewTreeClientImpl::OnRootDestroyed(View* root) {
 
 Id ViewTreeClientImpl::CreateViewOnServer() {
   DCHECK(tree_);
-  const Id view_id = MakeTransportId(connection_id_, ++next_id_);
+  const Id view_id = MakeTransportId(connection_id_, next_id_++);
   tree_->CreateView(view_id, [this](mojo::ErrorCode code) {
     OnActionCompleted(code == mojo::ERROR_CODE_NONE);
   });

@@ -31,7 +31,7 @@ void ClientApplicationDelegate::Initialize(mojo::ApplicationImpl* app) {
   for (int i = 0; i < 3; ++i) {
     mojo::ViewTreeClientPtr view_tree_client;
     mus::ViewTreeConnection::Create(this, GetProxy(&view_tree_client).Pass());
-    wm->Embed(view_tree_client.Pass());
+    wm->OpenWindow(view_tree_client.Pass());
   }
 }
 
@@ -59,6 +59,8 @@ void ClientApplicationDelegate::OnEmbed(mus::View* root) {
   params.native_widget =
       new mandoline::NativeWidgetViewManager(widget, app_->shell(), root);
   params.bounds = root->bounds().To<gfx::Rect>();
+  params.bounds.set_x(0);
+  params.bounds.set_y(0);
   widget->Init(params);
   widget->Show();
 }

@@ -28,6 +28,7 @@ mojo_native_application("wm") {
   testonly = true
 
   sources = [
+    "container.h",
     "main.cc",
     "wm.cc",
     "wm.h",
