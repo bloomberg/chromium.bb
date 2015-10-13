@@ -58,9 +58,9 @@ TEST(NineImagePainterTest, PaintScale) {
   for (int y = 0; y < 200; y++) {
     for (int x = 0; x < 400; x++) {
       if (green_rect.contains(x, y)) {
-        EXPECT_EQ(SK_ColorGREEN, result.getColor(x, y));
+        ASSERT_EQ(SK_ColorGREEN, result.getColor(x, y));
       } else {
-        EXPECT_EQ(SK_ColorRED, result.getColor(x, y));
+        ASSERT_EQ(SK_ColorRED, result.getColor(x, y));
       }
     }
   }
@@ -101,6 +101,75 @@ TEST(NineImagePainterTest, PaintStaysInBounds) {
   EXPECT_EQ(SK_ColorBLACK, result.getColor(2, 0));
   EXPECT_EQ(SK_ColorBLACK, result.getColor(2, 1));
   EXPECT_EQ(SK_ColorBLACK, result.getColor(2, 2));
+}
+
+TEST(NineImagePainterTest, PaintWithBoundOffset) {
+  SkBitmap src;
+  src.allocN32Pixels(10, 10);
+  src.eraseColor(SK_ColorRED);
+  src.eraseArea(SkIRect::MakeXYWH(1, 1, 8, 8), SK_ColorGREEN);
+
+  gfx::ImageSkia image(gfx::ImageSkiaRep(src, 0.0f));
+  gfx::Insets insets(1, 1, 1, 1);
+  gfx::NineImagePainter painter(image, insets);
+
+  bool is_opaque = true;
+  gfx::Canvas canvas(gfx::Size(10, 10), 1, is_opaque);
+
+  gfx::Rect bounds(1, 1, 10, 10);
+  painter.Paint(&canvas, bounds);
+
+  SkBitmap result;
+  const SkISize size = canvas.sk_canvas()->getDeviceSize();
+  result.allocN32Pixels(size.width(), size.height());
+  canvas.sk_canvas()->readPixels(&result, 0, 0);
+
+  SkIRect green_rect = SkIRect::MakeLTRB(2, 2, 10, 10);
+  for (int y = 1; y < 10; y++) {
+    for (int x = 1; x < 10; x++) {
+      if (green_rect.contains(x, y)) {
+        ASSERT_EQ(SK_ColorGREEN, result.getColor(x, y));
+      } else {
+        ASSERT_EQ(SK_ColorRED, result.getColor(x, y));
+      }
+    }
+  }
+}
+
+TEST(NineImagePainterTest, PaintWithNagativeScale) {
+  SkBitmap src;
+  src.allocN32Pixels(100, 100);
+  src.eraseColor(SK_ColorRED);
+  src.eraseArea(SkIRect::MakeXYWH(10, 10, 80, 80), SK_ColorGREEN);
+
+  gfx::ImageSkia image(gfx::ImageSkiaRep(src, 0.0f));
+  gfx::Insets insets(10, 10, 10, 10);
+  gfx::NineImagePainter painter(image, insets);
+
+  int image_scale = 2;
+  bool is_opaque = true;
+  gfx::Canvas canvas(gfx::Size(400, 400), image_scale, is_opaque);
+  canvas.Translate(gfx::Vector2d(200, 200));
+  canvas.Scale(-2, -1);
+
+  gfx::Rect bounds(0, 0, 100, 100);
+  painter.Paint(&canvas, bounds);
+
+  SkBitmap result;
+  const SkISize size = canvas.sk_canvas()->getDeviceSize();
+  result.allocN32Pixels(size.width(), size.height());
+  canvas.sk_canvas()->readPixels(&result, 0, 0);
+
+  SkIRect green_rect = SkIRect::MakeLTRB(40, 220, 360, 380);
+  for (int y = 200; y < 400; y++) {
+    for (int x = 0; x < 400; x++) {
+      if (green_rect.contains(x, y)) {
+        ASSERT_EQ(SK_ColorGREEN, result.getColor(x, y));
+      } else {
+        ASSERT_EQ(SK_ColorRED, result.getColor(x, y));
+      }
+    }
+  }
 }
 
 }  // namespace gfx

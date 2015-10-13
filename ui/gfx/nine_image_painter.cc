@@ -96,30 +96,40 @@ void NineImagePainter::Paint(Canvas* canvas,
     return;
 
   ScopedCanvas scoped_canvas(canvas);
-  canvas->Translate(bounds.OffsetFromOrigin());
 
   // Get the current transform from the canvas and apply it to the logical
   // bounds passed in. This will give us the pixel bounds which can be used
   // to draw the images at the correct locations.
   // We should not scale the bounds by the canvas->image_scale() as that can be
   // different from the real scale in the canvas transform.
-  SkRect bounds_in_pixels_f;
-  if (!canvas->sk_canvas()->getTotalMatrix().mapRect(
-          &bounds_in_pixels_f, RectToSkRect(gfx::Rect(bounds.size()))))
+  SkMatrix matrix = canvas->sk_canvas()->getTotalMatrix();
+  if (!matrix.rectStaysRect())
     return;  // Invalid transform.
 
-  SkIRect bounds_in_pixels;
-  bounds_in_pixels_f.dround(&bounds_in_pixels);
-
-  SkMatrix matrix = canvas->sk_canvas()->getTotalMatrix();
-  matrix.setTranslateX(SkIntToScalar(bounds_in_pixels.x()));
-  matrix.setTranslateY(SkIntToScalar(bounds_in_pixels.y()));
+  // Since the drawing from the following Fill() calls assumes the mapped origin
+  // is at (0,0), we need to translate the canvas to the mapped origin.
+  SkPoint corners_f[2];
+  corners_f[0] = SkPoint::Make(bounds.x(), bounds.y());
+  corners_f[1] = SkPoint::Make(bounds.right(), bounds.bottom());
+  matrix.mapPoints(corners_f, 2);
+  SkIPoint corners_in_pixels[2];
+  corners_in_pixels[0] = SkIPoint::Make(SkDScalarRoundToInt(corners_f[0].x()),
+                                        SkDScalarRoundToInt(corners_f[0].y()));
+  corners_in_pixels[1] = SkIPoint::Make(SkDScalarRoundToInt(corners_f[1].x()),
+                                        SkDScalarRoundToInt(corners_f[1].y()));
+  matrix.setTranslateX(SkIntToScalar(corners_in_pixels[0].x()));
+  matrix.setTranslateY(SkIntToScalar(corners_in_pixels[0].y()));
   canvas->sk_canvas()->setMatrix(matrix);
 
-  const int width_in_pixels = bounds_in_pixels.width();
-  const int height_in_pixels = bounds_in_pixels.height();
-  const float scale_x = matrix.getScaleX();
-  const float scale_y = matrix.getScaleY();
+  // Width and height should always be positive even when corners were flipped.
+  const int width_in_pixels =
+      SkMax32(corners_in_pixels[0].x(), corners_in_pixels[1].x()) -
+      SkMin32(corners_in_pixels[0].x(), corners_in_pixels[1].x());
+  const int height_in_pixels =
+      SkMax32(corners_in_pixels[0].y(), corners_in_pixels[1].y()) -
+      SkMin32(corners_in_pixels[0].y(), corners_in_pixels[1].y());
+  const float scale_x = fabsf(matrix.getScaleX());
+  const float scale_y = fabsf(matrix.getScaleY());
 
   // In case the corners and edges don't all have the same width/height, we draw
   // the center first, and extend it out in all directions to the edges of the
