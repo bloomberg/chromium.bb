@@ -241,6 +241,11 @@ uint32_t DrmOverlayCandidatesHost::CalculateCandidateWeight(
 
 void DrmOverlayCandidatesHost::ValidateCandidates(
     OverlaySurfaceCandidateList* candidates) {
+  // Make sure params being currently used are in cache. They might have been
+  // removed in case we haven't tried to get them from cache for a while.
+  for (const auto& param : in_use_compatible_params_)
+    cache_.Put(param.first, true);
+
   in_use_compatible_params_.clear();
   typedef std::pair<OverlaySurfaceCandidate*, OverlayCheck_Params>
       CandidatePair;
