@@ -97,6 +97,9 @@ void BrowserAccessibilityManagerMac::NotifyAccessibilityEvent(
     case ui::AX_EVENT_CHILDREN_CHANGED:
       // TODO(dtseng): no clear equivalent on Mac.
       return;
+    case ui::AX_EVENT_DOCUMENT_SELECTION_CHANGED:
+      // Not used on Mac.
+      return;
     case ui::AX_EVENT_FOCUS:
       event_id = NSAccessibilityFocusedUIElementChangedNotification;
       break;

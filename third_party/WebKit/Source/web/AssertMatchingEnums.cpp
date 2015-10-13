@@ -157,6 +157,7 @@ STATIC_ASSERT_MATCHING_ENUM(WebAXEventAutocorrectionOccured, AXObjectCache::AXAu
 STATIC_ASSERT_MATCHING_ENUM(WebAXEventBlur, AXObjectCache::AXBlur);
 STATIC_ASSERT_MATCHING_ENUM(WebAXEventCheckedStateChanged, AXObjectCache::AXCheckedStateChanged);
 STATIC_ASSERT_MATCHING_ENUM(WebAXEventChildrenChanged, AXObjectCache::AXChildrenChanged);
+STATIC_ASSERT_MATCHING_ENUM(WebAXEventDocumentSelectionChanged, AXObjectCache::AXDocumentSelectionChanged);
 STATIC_ASSERT_MATCHING_ENUM(WebAXEventFocus, AXObjectCache::AXFocusedUIElementChanged);
 STATIC_ASSERT_MATCHING_ENUM(WebAXEventHide, AXObjectCache::AXHide);
 STATIC_ASSERT_MATCHING_ENUM(WebAXEventHover, AXObjectCache::AXHover);

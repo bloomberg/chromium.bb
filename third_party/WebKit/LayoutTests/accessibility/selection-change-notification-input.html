@@ -17,19 +17,37 @@ function runTest() {
     // events only fire on elements that already exist.
     accessibilityController.accessibleElementById('dummy');
 
-    var element = document.getElementById('input');
-    var axElement = accessibilityController.accessibleElementById('input');
-    element.focus();
+    var inputElement = document.getElementById('input');
+    var axRootElement = accessibilityController.rootElement;
+    var axInputElement = accessibilityController.accessibleElementById('input');
+    inputElement.focus();
 
-    axElement.addNotificationListener(function(notification) {
+    var gotDocumentSelectionChanged = false;
+    var gotSelectedTextChanged = false;
+    function succeedIfDone() {
+        if (gotDocumentSelectionChanged && gotSelectedTextChanged)
+            finishJSTest();
+    }
+
+    axRootElement.addNotificationListener(function(notification) {
+        if (notification == 'DocumentSelectionChanged') {
+            debug('Got DocumentSelectionChanged notification on root element.');
+            gotDocumentSelectionChanged = true;
+            axRootElement.removeNotificationListener();
+            succeedIfDone();
+        }
+    });
+        
+    axInputElement.addNotificationListener(function(notification) {
         if (notification == 'SelectedTextChanged') {
             debug('Got SelectedTextChanged notification on input element.');
-            axElement.removeNotificationListener();
-            finishJSTest();
+            gotSelectedTextChanged = true;
+            axInputElement.removeNotificationListener();
+            succeedIfDone();
         }
     });
 
-    element.setSelectionRange(0, 1);
+    inputElement.setSelectionRange(0, 1);
 }
 
 if (window.testRunner && window.accessibilityController) {

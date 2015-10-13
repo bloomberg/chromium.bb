@@ -435,46 +435,4 @@ TEST_F(RendererAccessibilityTest, EventOnObjectNotInTree) {
   ASSERT_EQ(0U, base::get<0>(param).size());
 }
 
-TEST_F(RendererAccessibilityTest, TextSelectionShouldSendRoot) {
-  // A text selection change in a text field will be reflected in attributes
-  // of the root node.  Verify that the root node is updated as the result
-  // of a text change event.
-  std::string html =
-      "<body>"
-      "  <div role='group'>"
-      "    <input id='input' type='text' value='hello there'>"
-      "  </div>"
-      "</body>";
-  LoadHTML(html.c_str());
-
-  scoped_ptr<TestRendererAccessibility> accessibility(
-      new TestRendererAccessibility(frame()));
-  accessibility->SendPendingAccessibilityEvents();
-  sink_->ClearMessages();
-
-  WebDocument document = view()->GetWebView()->mainFrame()->document();
-  WebAXObject root_obj = document.accessibilityObject();
-  WebAXObject input_obj =
-      document.getElementById("input").accessibilityObject();
-  ASSERT_EQ(blink::WebAXRoleTextField, input_obj.role());
-  ExecuteJavaScriptForTests("document.getElementById('input').focus();");
-  accessibility->HandleAXEvent(
-      input_obj,
-      ui::AX_EVENT_TEXT_SELECTION_CHANGED);
-  accessibility->SendPendingAccessibilityEvents();
-  std::vector<AccessibilityHostMsg_EventParams> all_events;
-  GetAllAccEvents(&all_events);
-  EXPECT_EQ(2U, all_events.size());
-  bool had_root_update = false, had_input_update = false;
-  for (auto i = all_events.begin(); i != all_events.end(); ++i) {
-    ASSERT_EQ(ui::AX_EVENT_TEXT_SELECTION_CHANGED, i->event_type);
-    ASSERT_EQ(1U, i->update.nodes.size());
-    if (root_obj.axID() == i->update.nodes[0].id)
-      had_root_update = true;
-    if (input_obj.axID() == i->update.nodes[0].id)
-      had_input_update = true;
-  }
-  ASSERT_TRUE(had_root_update);
-  ASSERT_TRUE(had_input_update);
-}
 }  // namespace content

@@ -60,6 +60,7 @@ public:
         AXBlur,
         AXCheckedStateChanged,
         AXChildrenChanged,
+        AXDocumentSelectionChanged,
         AXFocusedUIElementChanged,
         AXHide,
         AXHover,

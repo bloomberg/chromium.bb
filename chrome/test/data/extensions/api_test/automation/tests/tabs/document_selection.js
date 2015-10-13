@@ -23,7 +23,7 @@ var allTests = [
                                             anchorOffset: 0,
                                             focusObject: textNode,
                                             focusOffset: 3});
-    listenOnce(rootNode, EventType.textSelectionChanged, function(evt) {
+    listenOnce(rootNode, EventType.documentSelectionChanged, function(evt) {
       assertEq(textNode, rootNode.anchorObject);
       assertEq(0, rootNode.anchorOffset);
       assertEq(textNode, rootNode.focusObject);
@@ -36,22 +36,19 @@ var allTests = [
     var textField = rootNode.find({role: RoleType.textField});
     assertTrue(!!textField);
     textField.focus();
-    listenOnce(rootNode, EventType.textSelectionChanged, function(evt) {
-      assertTrue(evt.target === rootNode || evt.target === textField);
-      assertEq(textField, rootNode.anchorObject);
-      assertEq(0, rootNode.anchorOffset);
-      assertEq(textField, rootNode.focusObject);
-      assertEq(0, rootNode.focusOffset);
-      // Wait for another text selection change event.  There's one for
-      // the document root and one for the text field.
-      listenOnce(rootNode, EventType.textSelectionChanged, function() {
-        assertTrue(evt.target === rootNode || evt.target === textField);
-        assertTrue(evt.target === rootNode || evt.target === textField);
+    listenOnce(textField, EventType.textSelectionChanged, function(evt) {
+      listenOnce(rootNode, EventType.documentSelectionChanged, function(evt) {
+        assertTrue(evt.target === rootNode);
+        assertEq(textField, rootNode.anchorObject);
+        assertEq(0, rootNode.anchorOffset);
+        assertEq(textField, rootNode.focusObject);
+        assertEq(0, rootNode.focusOffset);
         chrome.automation.setDocumentSelection({anchorObject: textField,
                                                 anchorOffset: 1,
                                                 focusObject: textField,
                                                 focusOffset: 3});
-        listenOnce(rootNode, EventType.textSelectionChanged, function(evt) {
+        listenOnce(rootNode, EventType.documentSelectionChanged,
+                   function(evt) {
           assertEq(textField, rootNode.anchorObject);
           assertEq(1, rootNode.anchorOffset);
           assertEq(textField, rootNode.focusObject);

@@ -2423,10 +2423,15 @@ void AXNodeObject::selectionChanged()
     // Post the selected text changed event on the first ancestor that's
     // focused (to handle form controls, ARIA text boxes and contentEditable),
     // or the web area if the selection is just in the document somewhere.
-    if (isFocused() || isWebArea())
+    if (isFocused() || isWebArea()) {
         axObjectCache().postNotification(this, AXObjectCacheImpl::AXSelectedTextChanged);
-    else
+        if (document()) {
+            AXObject* documentObject = axObjectCache().getOrCreate(document());
+            axObjectCache().postNotification(documentObject, AXObjectCacheImpl::AXDocumentSelectionChanged);
+        }
+    } else {
         AXObject::selectionChanged(); // Calls selectionChanged on parent.
+    }
 }
 
 void AXNodeObject::textChanged()

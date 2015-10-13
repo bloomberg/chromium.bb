@@ -186,15 +186,6 @@ void RendererAccessibility::HandleAXEvent(
     }
   }
 
-  if (event == ui::AX_EVENT_TEXT_SELECTION_CHANGED &&
-      obj.isFocused() &&
-      !obj.equals(document.accessibilityObject())) {
-    // Changing the text selection in a text field may invalidate
-    // the anchor/focus attributes on the tree root.  Send a generic
-    // notification to have it updated.
-    HandleAXEvent(document.accessibilityObject(), event);
-  }
-
   // Add the accessibility object to our cache and ensure it's valid.
   AccessibilityHostMsg_EventParams acc_event;
   acc_event.id = obj.axID();
