@@ -26,6 +26,7 @@ import android.view.ViewConfiguration;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
@@ -1227,10 +1228,12 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
 
     /**
      * Tests that a Tap gesture on an element with an ARIA attribute does not trigger.
-     */
+     * http://crbug.com/542874
     @SmallTest
     @Feature({"ContextualSearch"})
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    */
+    @DisabledTest
     public void testTapOnARIAIgnored() throws InterruptedException, TimeoutException {
         clickNode("aria");
         assertPanelNeverOpened();
