@@ -1136,9 +1136,6 @@
     'blink_svg': {
       'filepath': 'third_party/WebKit/Source/core/(layout/)?svg',
     },
-    'blink_test_runner': {
-      'filepath': 'third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner',
-    },
     'blink_vibration': {
       'filepath': 'third_party/WebKit/LayoutTests/vibration/' \
                   '|third_party/WebKit/Source/modules/vibration/'
@@ -1179,7 +1176,15 @@
     },
     'blink_xmlhttprequest': {
       'filepath': 'third_party/WebKit/Source/core/xmlhttprequest/'
-    }
+    },
+    'test_runner': {
+      'filepath': 'components/test_runner/' \
+                  '|content/shell/(common|browser|renderer)/layout_test/' \
+                  '|content/test/layouttest_support.cc' \
+                  '|content/public/test/layouttest_support.h' \
+                  '|components/html_viewer/layout_test*' \
+                  '|components/html_viewer/web_test_delegate_impl.*'
+    },
   },
 
   'WATCHLISTS': {
@@ -1641,8 +1646,6 @@
                    'fs@opera.com',
                    'gyuyoung.kim@chromium.org',
                    'kouhei+svg@chromium.org' ],
-    'blink_test_runner': [ 'jochen+watch@chromium.org',
-                           'mlamouri+watch-blink@chromium.org' ],
     'blink_w3ctests' : [ 'blink-reviews-w3ctests@chromium.org' ],
     'blink_webp': [ 'urvang@chromium.org',
                     'jzern@chromium.org',
@@ -1663,5 +1666,7 @@
     'blink_wtf': [ 'mikhail.pozdnyakov@intel.com',
                    'blink-reviews-wtf@chromium.org' ],
     'blink_xmlhttprequest': [ 'tyoshino+watch@chromium.org' ],
+    'test_runner': [ 'jochen+watch@chromium.org',
+                     'mlamouri+watch-test-runner@chromium.org' ],
   },
 }
