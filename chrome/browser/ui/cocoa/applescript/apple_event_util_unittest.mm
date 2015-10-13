@@ -21,7 +21,7 @@ struct TestCase {
   DescType expected_aedesc_type;
 };
 
-TEST_F(AppleEventUtilTest, DISABLED_ValueToAppleEventDescriptor) {
+TEST_F(AppleEventUtilTest, ValueToAppleEventDescriptor) {
   const struct TestCase cases[] = {
     { "null",         "'msng'",             typeType },
     { "-1000",        "-1000",              typeSInt32 },
@@ -30,7 +30,6 @@ TEST_F(AppleEventUtilTest, DISABLED_ValueToAppleEventDescriptor) {
     { "-1e100",       "-1e+100",            typeIEEE64BitFloatingPoint },
     { "0.0",          "0",                  typeIEEE64BitFloatingPoint },
     { "1e100",        "1e+100",             typeIEEE64BitFloatingPoint },
-    { "\"\"",         "'utxt'(\"\")",       typeUnicodeText },
     { "\"string\"",   "'utxt'(\"string\")", typeUnicodeText },
     { "{}",           "{ 'usrf':[  ] }",    typeAERecord },
     { "[]",           "[  ]",               typeAEList },
