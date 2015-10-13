@@ -61,7 +61,6 @@
     "extensions_unittests",
     "gcm_unit_tests",
     "gfx_unittests",
-    "gl_unittests",
     "google_apis_unittests",
     {
       "swarming": {

@@ -388,12 +388,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "gl_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "gn_unittests"
       },
       {
@@ -626,7 +620,6 @@
       "extensions_unittests",
       "gcm_unit_tests",
       "gfx_unittests",
-      "gl_unittests",
       "gn_unittests",
       "google_apis_unittests",
       "gpu_unittests",
@@ -806,9 +799,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "gfx_unittests"
-      },
-      {
-        "test": "gl_unittests"
       },
       {
         "swarming": {
@@ -1195,9 +1185,6 @@
         "test": "gfx_unittests"
       },
       {
-        "test": "gl_unittests"
-      },
-      {
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -1540,9 +1527,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "gfx_unittests"
-      },
-      {
-        "test": "gl_unittests"
       },
       {
         "swarming": {

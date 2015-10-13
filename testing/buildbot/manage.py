@@ -69,6 +69,7 @@ SKIP_GN_ISOLATE_MAP_TARGETS = {
   'angle_end2end_tests',
   'content_gl_tests',
   'gl_tests',
+  'gl_unittests',
   'gles2_conform_test',
   'tab_capture_end2end_tests',
   'telemetry_gpu_test',

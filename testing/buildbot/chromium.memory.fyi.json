@@ -126,9 +126,6 @@
         "test": "gcm_unit_tests"
       },
       {
-        "test": "gl_unittests"
-      },
-      {
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -426,9 +423,6 @@
         "test": "gfx_unittests"
       },
       {
-        "test": "gl_unittests"
-      },
-      {
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -710,9 +704,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "gfx_unittests"
-      },
-      {
-        "test": "gl_unittests"
       },
       {
         "swarming": {
