@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/toolbar/wrench_icon_painter.h"
+#include "ui/views/animation/ink_drop_host.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/button/menu_button_listener.h"
 #include "ui/views/view.h"
@@ -17,6 +18,7 @@ class WrenchMenu;
 class WrenchMenuModel;
 
 namespace views {
+class InkDropAnimationController;
 class LabelButtonBorder;
 class MenuListener;
 }
@@ -24,7 +26,8 @@ class MenuListener;
 class ToolbarView;
 
 // TODO(gbillock): Rename this? No longer a wrench.
-class WrenchToolbarButton : public views::MenuButton,
+class WrenchToolbarButton : public views::InkDropHost,
+                            public views::MenuButton,
                             public WrenchIconPainter::Delegate {
  public:
   explicit WrenchToolbarButton(ToolbarView* toolbar_view);
@@ -65,6 +68,10 @@ class WrenchToolbarButton : public views::MenuButton,
   static bool g_open_app_immediately_for_testing;
 
  private:
+  // views::InkDropHost:
+  void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
+  void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override;
+
   // views::MenuButton:
   const char* GetClassName() const override;
   bool GetDropFormats(
@@ -72,6 +79,7 @@ class WrenchToolbarButton : public views::MenuButton,
       std::set<ui::Clipboard::FormatType>* format_types) override;
   bool AreDropTypesRequired() override;
   bool CanDrop(const ui::OSExchangeData& data) override;
+  void Layout() override;
   void OnDragEntered(const ui::DropTargetEvent& event) override;
   int OnDragUpdated(const ui::DropTargetEvent& event) override;
   void OnDragExited() override;
@@ -83,6 +91,9 @@ class WrenchToolbarButton : public views::MenuButton,
 
   // Only used in MD.
   WrenchIconPainter::Severity severity_;
+
+  // Animation controller for the ink drop ripple effect.
+  scoped_ptr<views::InkDropAnimationController> ink_drop_animation_controller_;
 
   // Our owning toolbar view.
   ToolbarView* toolbar_view_;
@@ -99,6 +110,10 @@ class WrenchToolbarButton : public views::MenuButton,
   // menu should be listed later.
   scoped_ptr<WrenchMenuModel> menu_model_;
   scoped_ptr<WrenchMenu> menu_;
+
+  // Used by ShowMenu() to detect when |this| has been deleted; see comments
+  // there.
+  bool* destroyed_;
 
   // Used to spawn weak pointers for delayed tasks to open the overflow menu.
   base::WeakPtrFactory<WrenchToolbarButton> weak_factory_;

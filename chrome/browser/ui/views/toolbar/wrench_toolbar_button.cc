@@ -24,6 +24,8 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icons_public.h"
 #include "ui/keyboard/keyboard_controller.h"
+#include "ui/views/animation/ink_drop_animation_controller.h"
+#include "ui/views/animation/ink_drop_animation_controller_factory.h"
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/controls/menu/menu_listener.h"
 #include "ui/views/metrics.h"
@@ -35,16 +37,33 @@ bool WrenchToolbarButton::g_open_app_immediately_for_testing = false;
 WrenchToolbarButton::WrenchToolbarButton(ToolbarView* toolbar_view)
     : views::MenuButton(NULL, base::string16(), toolbar_view, false),
       severity_(WrenchIconPainter::SEVERITY_NONE),
+      ink_drop_animation_controller_(
+          views::InkDropAnimationControllerFactory::
+              CreateInkDropAnimationController(this)),
       toolbar_view_(toolbar_view),
       allow_extension_dragging_(
           extensions::FeatureSwitch::extension_action_redesign()
               ->IsEnabled()),
+      destroyed_(nullptr),
       weak_factory_(this) {
   if (!ui::MaterialDesignController::IsModeMaterial())
     wrench_icon_painter_.reset(new WrenchIconPainter(this));
+
+  const int kInkDropLargeSize = 32;
+  const int kInkDropLargeCornerRadius = 5;
+  const int kInkDropSmallSize = 24;
+  const int kInkDropSmallCornerRadius = 2;
+
+  ink_drop_animation_controller_->SetInkDropSize(
+      gfx::Size(kInkDropLargeSize, kInkDropLargeSize),
+      kInkDropLargeCornerRadius,
+      gfx::Size(kInkDropSmallSize, kInkDropSmallSize),
+      kInkDropSmallCornerRadius);
 }
 
 WrenchToolbarButton::~WrenchToolbarButton() {
+  if (destroyed_)
+    *destroyed_ = true;
 }
 
 void WrenchToolbarButton::SetSeverity(WrenchIconPainter::Severity severity,
@@ -80,7 +99,23 @@ void WrenchToolbarButton::ShowMenu(bool for_drop) {
 
   FOR_EACH_OBSERVER(views::MenuListener, menu_listeners_, OnMenuOpened());
 
+  // Because running the menu below spins a nested message loop, |this| can be
+  // deleted by the time RunMenu() returns. To detect this, we set |destroyed_|
+  // (which is normally null) to point to a local. If our destructor runs during
+  // RunMenu(), then this local will be set to true on return, and we'll know
+  // it's not safe to access any member variables.
+  bool destroyed = false;
+  destroyed_ = &destroyed;
+
+  ink_drop_animation_controller_->AnimateToState(
+      views::InkDropState::ACTIVATED);
   menu_->RunMenu(this);
+
+  if (!destroyed) {
+    ink_drop_animation_controller_->AnimateToState(
+        views::InkDropState::DEACTIVATED);
+    destroyed_ = nullptr;
+  }
 }
 
 void WrenchToolbarButton::CloseMenu() {
@@ -146,6 +181,23 @@ void WrenchToolbarButton::UpdateIcon() {
                                  color));
 }
 
+void WrenchToolbarButton::AddInkDropLayer(ui::Layer* ink_drop_layer) {
+  SetPaintToLayer(true);
+  image()->SetPaintToLayer(true);
+  image()->SetFillsBoundsOpaquely(false);
+
+  layer()->Add(ink_drop_layer);
+  layer()->StackAtBottom(ink_drop_layer);
+}
+
+void WrenchToolbarButton::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
+  layer()->Remove(ink_drop_layer);
+
+  image()->SetFillsBoundsOpaquely(true);
+  image()->SetPaintToLayer(false);
+  SetPaintToLayer(false);
+}
+
 const char* WrenchToolbarButton::GetClassName() const {
   return "WrenchToolbarButton";
 }
@@ -157,16 +209,28 @@ bool WrenchToolbarButton::GetDropFormats(
       BrowserActionDragData::GetDropFormats(format_types) :
       views::View::GetDropFormats(formats, format_types);
 }
+
 bool WrenchToolbarButton::AreDropTypesRequired() {
   return allow_extension_dragging_ ?
       BrowserActionDragData::AreDropTypesRequired() :
       views::View::AreDropTypesRequired();
 }
+
 bool WrenchToolbarButton::CanDrop(const ui::OSExchangeData& data) {
   return allow_extension_dragging_ ?
       BrowserActionDragData::CanDrop(data,
                                      toolbar_view_->browser()->profile()) :
       views::View::CanDrop(data);
+}
+
+void WrenchToolbarButton::Layout() {
+  MenuButton::Layout();
+
+  // ToolbarView extends the bounds of the app button to the right in maximized
+  // mode. So instead of using the center point of local bounds, we use the
+  // center point of preferred size which doesn't change in maximized mode.
+  ink_drop_animation_controller_->SetInkDropCenter(
+      gfx::Rect(GetPreferredSize()).CenterPoint());
 }
 
 void WrenchToolbarButton::OnDragEntered(const ui::DropTargetEvent& event) {

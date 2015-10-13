@@ -32,10 +32,22 @@ ToolbarButton::ToolbarButton(views::ButtonListener* listener,
       model_(model),
       menu_showing_(false),
       y_position_on_lbuttondown_(0),
+      ink_drop_animation_controller_(
+          views::InkDropAnimationControllerFactory::
+              CreateInkDropAnimationController(this)),
       show_menu_factory_(this) {
-  ink_drop_animation_controller_ = views::InkDropAnimationControllerFactory::
-      CreateInkDropAnimationController(this);
   set_context_menu_controller(this);
+
+  const int kInkDropLargeSize = 32;
+  const int kInkDropLargeCornerRadius = 5;
+  const int kInkDropSmallSize = 24;
+  const int kInkDropSmallCornerRadius = 2;
+
+  ink_drop_animation_controller_->SetInkDropSize(
+      gfx::Size(kInkDropLargeSize, kInkDropLargeSize),
+      kInkDropLargeCornerRadius,
+      gfx::Size(kInkDropSmallSize, kInkDropSmallSize),
+      kInkDropSmallCornerRadius);
 }
 
 ToolbarButton::~ToolbarButton() {
@@ -78,18 +90,6 @@ gfx::Size ToolbarButton::GetPreferredSize() const {
 
 void ToolbarButton::Layout() {
   LabelButton::Layout();
-
-  // Sizes for the the ink drop.
-  const int kInkDropLargeSize = 32;
-  const int kInkDropLargeCornerRadius = 5;
-  const int kInkDropSmallSize = 24;
-  const int kInkDropSmallCornerRadius = 2;
-
-  ink_drop_animation_controller_->SetInkDropSize(
-      gfx::Size(kInkDropLargeSize, kInkDropLargeSize),
-      kInkDropLargeCornerRadius,
-      gfx::Size(kInkDropSmallSize, kInkDropSmallSize),
-      kInkDropSmallCornerRadius);
   ink_drop_animation_controller_->SetInkDropCenter(CalculateInkDropCenter());
 }
 
