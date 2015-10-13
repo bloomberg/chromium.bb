@@ -369,23 +369,24 @@ void DiscardableSharedMemoryHeap::OnMemoryDump(
     int32_t segment_id,
     base::trace_event::ProcessMemoryDump* pmd) {
   size_t allocated_objects_count = 0;
-  size_t allocated_objects_blocks = 0;
-  size_t locked_objects_blocks = 0;
+  size_t allocated_objects_size_in_blocks = 0;
+  size_t locked_objects_size_in_blocks = 0;
   size_t offset =
       reinterpret_cast<size_t>(shared_memory->memory()) / block_size_;
   size_t end = offset + size / block_size_;
   while (offset < end) {
     Span* span = spans_[offset];
     if (!IsInFreeList(span)) {
-      allocated_objects_blocks += span->length_;
-      locked_objects_blocks += span->is_locked_ ? span->length_ : 0;
+      allocated_objects_size_in_blocks += span->length_;
+      locked_objects_size_in_blocks += span->is_locked_ ? span->length_ : 0;
       allocated_objects_count++;
     }
     offset += span->length_;
   }
   size_t allocated_objects_size_in_bytes =
-      allocated_objects_blocks * block_size_;
-  size_t locked_objects_size_in_bytes = locked_objects_blocks * block_size_;
+      allocated_objects_size_in_blocks * block_size_;
+  size_t locked_objects_size_in_bytes =
+      locked_objects_size_in_blocks * block_size_;
 
   std::string segment_dump_name =
       base::StringPrintf("discardable/segment_%d", segment_id);
