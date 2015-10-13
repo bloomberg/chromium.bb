@@ -650,6 +650,7 @@ Background.prototype = {
       output.format(opt_prependFormatStr);
     }
     output.withSpeech(range, null, Output.EventType.NAVIGATE);
+    output.withSpeechCategory(cvox.TtsCategory.LIVE);
     output.go();
   },
 

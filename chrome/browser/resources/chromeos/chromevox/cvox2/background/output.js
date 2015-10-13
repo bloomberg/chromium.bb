@@ -645,6 +645,16 @@ Output.prototype = {
   },
 
   /**
+   * Applies the given speech category to the output.
+   * @param {cvox.TtsCategory} category
+   * @return {!Output}
+   */
+  withSpeechCategory: function(category) {
+    this.speechProperties_['category'] = category;
+    return this;
+  },
+
+  /**
    * Apply a format string directly to the output buffer. This lets you
    * output a message directly to the buffer using the format syntax.
    * @param {string} formatStr
@@ -677,7 +687,8 @@ Output.prototype = {
    */
   go: function() {
     // Speech.
-    var queueMode = cvox.QueueMode.FLUSH;
+    var queueMode = this.speechProperties_['category'] ?
+        cvox.QueueMode.CATEGORY_FLUSH : cvox.QueueMode.FLUSH;
     this.speechBuffer_.forEach(function(buff, i, a) {
       if (buff.toString()) {
         (function() {
