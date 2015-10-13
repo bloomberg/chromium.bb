@@ -1020,7 +1020,7 @@ void WebAppShortcutCreator::RevealAppShimInFinder() const {
     // shim selected.
     [[NSWorkspace sharedWorkspace]
                       selectFile:base::mac::FilePathToNSString(app_path)
-        inFileViewerRootedAtPath:nil];
+        inFileViewerRootedAtPath:@""];
     return;
   }
 

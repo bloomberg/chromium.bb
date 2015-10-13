@@ -38,19 +38,6 @@
 
 namespace {
 
-// Compare function for -[NSArray sortedArrayUsingFunction:context:] that
-// sorts the views in Y order bottom up.
-NSInteger CompareFrameY(id view1, id view2, void* context) {
-  CGFloat y1 = NSMinY([view1 frame]);
-  CGFloat y2 = NSMinY([view2 frame]);
-  if (y1 < y2)
-    return NSOrderedAscending;
-  else if (y1 > y2)
-    return NSOrderedDescending;
-  else
-    return NSOrderedSame;
-}
-
 class FirstRunShowBridge : public base::RefCounted<FirstRunShowBridge> {
  public:
   FirstRunShowBridge(FirstRunDialogController* controller);
@@ -220,8 +207,16 @@ bool ShowFirstRunDialog(Profile* profile) {
 
     // Walk bottom up shuffling for all the hidden views.
     NSArray* subViews =
-        [[[win contentView] subviews] sortedArrayUsingFunction:CompareFrameY
-                                                       context:NULL];
+        [[[win contentView] subviews] sortedArrayUsingComparator:^(id a, id b) {
+          CGFloat y1 = NSMinY([a frame]);
+          CGFloat y2 = NSMinY([b frame]);
+          if (y1 < y2)
+            return NSOrderedAscending;
+          else if (y1 > y2)
+            return NSOrderedDescending;
+          else
+            return NSOrderedSame;
+        }];
     CGFloat moveDown = 0.0;
     NSUInteger numSubViews = [subViews count];
     for (NSUInteger idx = 0 ; idx < numSubViews ; ++idx) {

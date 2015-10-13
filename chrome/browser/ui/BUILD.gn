@@ -18,6 +18,11 @@ source_set("ui") {
   defines = []
   libs = []
 
+  if (is_clang) {
+    # TODO(thakis): Remove this once http://crbug.com/383820 is figured out
+    cflags = [ "-Wno-nonnull" ]
+  }
+
   configs += [
     "//build/config:precompiled_headers",
     "//build/config/compiler:wexit_time_destructors",

@@ -4,11 +4,13 @@
 
 #import "chrome/browser/ui/cocoa/one_click_signin_bubble_controller.h"
 
+#include "base/mac/foundation_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #import "chrome/browser/ui/cocoa/browser_window_cocoa.h"
 #import "chrome/browser/ui/cocoa/one_click_signin_view_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #import "testing/gtest_mac.h"
 
@@ -84,9 +86,12 @@ IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleControllerTest, Advanced) {
 IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleControllerTest, LearnMore) {
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
-  [[controller_ viewController] textView:nil
-                           clickedOnLink:nil
-                                 atIndex:0];
+  OneClickSigninViewController* view_controller =
+      base::mac::ObjCCastStrict<OneClickSigninViewController>(
+          [controller_ viewController]);
+  [view_controller textView:[view_controller linkViewForTesting]
+              clickedOnLink:@(chrome::kChromeSyncLearnMoreURL)
+                    atIndex:0];
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
   EXPECT_EQ(0, callback_count_);

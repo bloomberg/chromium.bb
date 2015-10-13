@@ -42,7 +42,6 @@ void ShiftOriginY(NSView* view, CGFloat amount) {
 
 @implementation OneClickSigninViewController
 
-
 - (id)initWithNibName:(NSString*)nibName
           webContents:(content::WebContents*)webContents
          syncCallback:(const BrowserWindow::StartSyncCallback&)syncCallback
@@ -300,6 +299,14 @@ void ShiftOriginY(NSView* view, CGFloat amount) {
 
 - (void)close {
   base::ResetAndReturn(&closeCallback_).Run();
+}
+
+@end
+
+@implementation OneClickSigninViewController (TestingAPI)
+
+- (NSTextView*)linkViewForTesting {
+  return informativeTextView_.get();
 }
 
 @end

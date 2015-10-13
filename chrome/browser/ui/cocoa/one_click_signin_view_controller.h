@@ -78,4 +78,8 @@ class WebContents;
 
 @end
 
+@interface OneClickSigninViewController (TestingAPI)
+- (NSTextView*)linkViewForTesting;
+@end
+
 #endif  // CHROME_BROWSER_UI_COCOA_ONE_CLICK_SIGNIN_VIEW_CONTROLLER_H_
