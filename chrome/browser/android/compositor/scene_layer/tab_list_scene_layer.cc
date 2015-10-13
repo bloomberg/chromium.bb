@@ -129,18 +129,22 @@ void TabListSceneLayer::PutLayer(JNIEnv* env,
   own_tree_->SetBounds(gfx::Size(viewport_width, viewport_height));
 
   scoped_refptr<TabLayer> layer = GetNextLayer(incognito);
-  layer->SetProperties(
-      id, can_use_live_layer, toolbar_resource_id, close_button_resource_id,
-      shadow_resource_id, contour_resource_id, back_logo_resource_id,
-      border_resource_id, tab_background_color, back_logo_color, is_portrait,
-      x, y, width, height, shadow_x, shadow_y, shadow_width, shadow_height,
-      pivot_x, pivot_y, rotation_x, rotation_y, alpha, border_alpha,
-      contour_alpha, shadow_alpha, close_alpha, border_scale, saturation,
-      brightness, close_btn_width, static_to_view_blend, content_width,
-      content_height, content_width, visible_content_height, show_toolbar,
-      toolbar_background_color, anonymize_toolbar,
-      toolbar_textbox_background_color, toolbar_alpha, toolbar_y_offset,
-      side_border_scale, attach_content, inset_border);
+  // https://crbug.com/517314: GetNextLayer() returns null in some corner cases.
+  DCHECK(layer);
+  if (layer) {
+    layer->SetProperties(
+        id, can_use_live_layer, toolbar_resource_id, close_button_resource_id,
+        shadow_resource_id, contour_resource_id, back_logo_resource_id,
+        border_resource_id, tab_background_color, back_logo_color, is_portrait,
+        x, y, width, height, shadow_x, shadow_y, shadow_width, shadow_height,
+        pivot_x, pivot_y, rotation_x, rotation_y, alpha, border_alpha,
+        contour_alpha, shadow_alpha, close_alpha, border_scale, saturation,
+        brightness, close_btn_width, static_to_view_blend, content_width,
+        content_height, content_width, visible_content_height, show_toolbar,
+        toolbar_background_color, anonymize_toolbar,
+        toolbar_textbox_background_color, toolbar_alpha, toolbar_y_offset,
+        side_border_scale, attach_content, inset_border);
+  }
 
   if (attach_content) {
     gfx::RectF self(own_tree_->position(), gfx::SizeF(own_tree_->bounds()));
