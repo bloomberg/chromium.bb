@@ -85,6 +85,17 @@
             'metrics_serialization',
           ],
         }],
+        ['OS == "mac"', {
+          'link_settings': {
+            'libraries': [
+              # The below are all needed for drive_metrics_provider_mac.mm.
+              '$(SDKROOT)/System/Library/Frameworks/CoreFoundation.framework',
+              '$(SDKROOT)/System/Library/Frameworks/DiskArbitration.framework',
+              '$(SDKROOT)/System/Library/Frameworks/Foundation.framework',
+              '$(SDKROOT)/System/Library/Frameworks/IOKit.framework',
+            ],
+          },
+        }],
         ['OS=="win"', {
           'sources!': [
             'metrics/machine_id_provider_stub.cc',

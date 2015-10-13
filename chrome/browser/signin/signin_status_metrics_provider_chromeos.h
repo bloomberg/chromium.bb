@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_METRICS_SIGNIN_STATUS_METRICS_PROVIDER_CHROMEOS_H_
-#define CHROME_BROWSER_METRICS_SIGNIN_STATUS_METRICS_PROVIDER_CHROMEOS_H_
+#ifndef CHROME_BROWSER_SIGNIN_SIGNIN_STATUS_METRICS_PROVIDER_CHROMEOS_H_
+#define CHROME_BROWSER_SIGNIN_SIGNIN_STATUS_METRICS_PROVIDER_CHROMEOS_H_
 
 #include "base/gtest_prod_util.h"
-#include "chrome/browser/metrics/signin_status_metrics_provider_base.h"
+#include "components/signin/core/browser/signin_status_metrics_provider_base.h"
 
 // Record and report the browser sign-in status on ChromeOS during each UMA
 // session. On ChromeOS, the browser can only be at unsigned-in status when
@@ -40,4 +40,4 @@ class SigninStatusMetricsProviderChromeOS
   DISALLOW_COPY_AND_ASSIGN(SigninStatusMetricsProviderChromeOS);
 };
 
-#endif  // CHROME_BROWSER_METRICS_SIGNIN_STATUS_METRICS_PROVIDER_CHROMEOS_H_
+#endif  // CHROME_BROWSER_SIGNIN_SIGNIN_STATUS_METRICS_PROVIDER_CHROMEOS_H_

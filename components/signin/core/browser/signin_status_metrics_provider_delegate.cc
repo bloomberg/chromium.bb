@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/metrics/signin_status_metrics_provider_delegate.h"
+#include "components/signin/core/browser/signin_status_metrics_provider_delegate.h"
 
 #include "base/logging.h"
-#include "chrome/browser/metrics/signin_status_metrics_provider.h"
+#include "components/signin/core/browser/signin_status_metrics_provider.h"
 
 AccountsStatus::AccountsStatus()
     : num_accounts(0), num_opened_accounts(0), num_signed_in_accounts(0) {}

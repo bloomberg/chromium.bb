@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_METRICS_CHROME_SIGNIN_STATUS_METRICS_PROVIDER_DELEGATE_H_
-#define CHROME_BROWSER_METRICS_CHROME_SIGNIN_STATUS_METRICS_PROVIDER_DELEGATE_H_
+#ifndef CHROME_BROWSER_SIGNIN_CHROME_SIGNIN_STATUS_METRICS_PROVIDER_DELEGATE_H_
+#define CHROME_BROWSER_SIGNIN_CHROME_SIGNIN_STATUS_METRICS_PROVIDER_DELEGATE_H_
 
 #include "base/gtest_prod_util.h"
-#include "chrome/browser/metrics/signin_status_metrics_provider_delegate.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/browser_list_observer.h"
+#include "components/signin/core/browser/signin_status_metrics_provider_delegate.h"
 
 class ChromeSigninStatusMetricsProviderDelegate
     : public SigninStatusMetricsProviderDelegate,
@@ -40,4 +40,4 @@ class ChromeSigninStatusMetricsProviderDelegate
   DISALLOW_COPY_AND_ASSIGN(ChromeSigninStatusMetricsProviderDelegate);
 };
 
-#endif  // CHROME_BROWSER_METRICS_CHROME_SIGNIN_STATUS_METRICS_PROVIDER_DELEGATE_H_
+#endif  // CHROME_BROWSER_SIGNIN_CHROME_SIGNIN_STATUS_METRICS_PROVIDER_DELEGATE_H_

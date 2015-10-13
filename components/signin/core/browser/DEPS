@@ -6,6 +6,7 @@ specific_include_rules = {
 }
 include_rules = [
   "+components/invalidation/public",
+  "+components/metrics",
   "+google/cacheinvalidation",
   "+jni",
 ]

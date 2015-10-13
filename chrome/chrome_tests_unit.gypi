@@ -136,9 +136,6 @@
       'browser/metrics/chrome_metrics_service_accessor_unittest.cc',
       'browser/metrics/cloned_install_detector_unittest.cc',
       'browser/metrics/perf/perf_provider_chromeos_unittest.cc',
-      'browser/metrics/chrome_signin_status_metrics_provider_delegate_unittest.cc',
-      'browser/metrics/signin_status_metrics_provider_chromeos_unittest.cc',
-      'browser/metrics/signin_status_metrics_provider_unittest.cc',
       'browser/metrics/thread_watcher_android_unittest.cc',
       'browser/metrics/thread_watcher_unittest.cc',
       'browser/metrics/time_ticks_experiment_unittest.cc',
@@ -209,8 +206,10 @@
       'browser/shell_integration_win_unittest.cc',
       'browser/signin/account_reconcilor_unittest.cc',
       'browser/signin/chrome_signin_client_unittest.cc',
+      'browser/signin/chrome_signin_status_metrics_provider_delegate_unittest.cc',
       'browser/signin/local_auth_unittest.cc',
       'browser/signin/signin_manager_unittest.cc',
+      'browser/signin/signin_status_metrics_provider_chromeos_unittest.cc',
       'browser/signin/signin_tracker_unittest.cc',
       'browser/signin/test_signin_client_builder.cc',
       'browser/ssl/security_state_model_unittest.cc',
@@ -2286,8 +2285,7 @@
         }],
         ['chromeos==1', {
           'sources!': [
-            'browser/metrics/chrome_signin_status_metrics_provider_delegate_unittest.cc',
-            'browser/metrics/signin_status_metrics_provider_unittest.cc',
+            'browser/signin/chrome_signin_status_metrics_provider_delegate_unittest.cc',
           ],
         }],
         ['enable_background==1', {

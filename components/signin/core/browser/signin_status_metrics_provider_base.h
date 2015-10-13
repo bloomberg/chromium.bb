@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_METRICS_SIGNIN_STATUS_METRICS_PROVIDER_BASE_H_
-#define CHROME_BROWSER_METRICS_SIGNIN_STATUS_METRICS_PROVIDER_BASE_H_
+#ifndef COMPONENTS_SIGNIN_CORE_BROWSER_SIGNIN_STATUS_METRICS_PROVIDER_BASE_H_
+#define COMPONENTS_SIGNIN_CORE_BROWSER_SIGNIN_STATUS_METRICS_PROVIDER_BASE_H_
 
 #include "components/metrics/metrics_provider.h"
 
@@ -53,4 +53,4 @@ class SigninStatusMetricsProviderBase : public metrics::MetricsProvider {
   DISALLOW_COPY_AND_ASSIGN(SigninStatusMetricsProviderBase);
 };
 
-#endif  // CHROME_BROWSER_METRICS_SIGNIN_STATUS_METRICS_PROVIDER_BASE_H_
+#endif  // COMPONENTS_SIGNIN_CORE_BROWSER_SIGNIN_STATUS_METRICS_PROVIDER_BASE_H_

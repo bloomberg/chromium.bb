@@ -624,6 +624,7 @@
       'signin/core/browser/gaia_cookie_manager_service_unittest.cc',
       'signin/core/browser/refresh_token_annotation_request_unittest.cc',
       'signin/core/browser/signin_error_controller_unittest.cc',
+      'signin/core/browser/signin_status_metrics_provider_unittest.cc',
       'signin/core/browser/webdata/token_service_table_unittest.cc',
       'signin/ios/browser/account_consistency_service_unittest.mm',
       'signin/ios/browser/profile_oauth2_token_service_ios_delegate_unittest.mm',
@@ -1317,6 +1318,7 @@
             '<@(ownership_unittest_sources)',
           ],
           'sources!': [
+            'signin/core/browser/signin_status_metrics_provider_unittest.cc',
             'storage_monitor/storage_monitor_linux_unittest.cc',
           ],
           'dependencies': [

@@ -779,7 +779,9 @@ if (!is_android) {
   # The _run targets exist only for compatibility w/ GYP.
   group("browser_tests_run") {
     testonly = true
-    data_deps = [ ":browser_tests" ]
+    data_deps = [
+      ":browser_tests",
+    ]
   }
 
   test("browser_tests") {
@@ -1328,7 +1330,9 @@ if (!is_android) {
       "//third_party/WebKit/public:blink",
     ]
 
-    data_deps = [ "//third_party/mesa:osmesa" ]
+    data_deps = [
+      "//third_party/mesa:osmesa",
+    ]
 
     if (cld_version == 2) {
       # Language detection is irrelevant to sync, so it can depend on any
@@ -1617,11 +1621,9 @@ if (!is_android) {
               "//chrome")
       sources -= [ "../browser/download/download_request_infobar_delegate_unittest.cc" ]
     }
+
     if (is_ios || is_chromeos) {
-      sources -= [
-        "../browser/metrics/chrome_signin_status_metrics_provider_delegate_unittest.cc",
-        "../browser/metrics/signin_status_metrics_provider_unittest.cc",
-      ]
+      sources -= [ "../browser/signin/chrome_signin_status_metrics_provider_delegate_unittest.cc" ]
     }
     if (enable_background) {
       sources += rebase_path(

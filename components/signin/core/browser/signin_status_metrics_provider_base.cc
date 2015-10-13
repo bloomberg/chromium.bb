@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/metrics/signin_status_metrics_provider_base.h"
+#include "components/signin/core/browser/signin_status_metrics_provider_base.h"
 
 #include "base/metrics/histogram.h"
 

@@ -77,6 +77,16 @@ source_set("metrics") {
     deps += [ ":serialization" ]
   }
 
+  if (is_mac) {
+    libs = [
+      # The below are all needed for drive_metrics_provider_mac.mm.
+      "CoreFoundation.framework",
+      "DiskArbitration.framework",
+      "Foundation.framework",
+      "IOKit.framework",
+    ]
+  }
+
   if (is_win) {
     sources -= [ "machine_id_provider_stub.cc" ]
   }

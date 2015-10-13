@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/metrics/signin_status_metrics_provider_chromeos.h"
+#include "chrome/browser/signin/signin_status_metrics_provider_chromeos.h"
 
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"

@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/metrics/chrome_signin_status_metrics_provider_delegate.h"
+#include "chrome/browser/signin/chrome_signin_status_metrics_provider_delegate.h"
 
-#include "chrome/browser/metrics/signin_status_metrics_provider.h"
+#include "components/signin/core/browser/signin_status_metrics_provider.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

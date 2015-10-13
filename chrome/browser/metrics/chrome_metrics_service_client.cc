@@ -67,7 +67,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/metrics/chromeos_metrics_provider.h"
-#include "chrome/browser/metrics/signin_status_metrics_provider_chromeos.h"
+#include "chrome/browser/signin/signin_status_metrics_provider_chromeos.h"
 #endif
 
 #if defined(OS_WIN)
@@ -77,8 +77,8 @@
 #endif
 
 #if !defined(OS_CHROMEOS)
-#include "chrome/browser/metrics/chrome_signin_status_metrics_provider_delegate.h"
-#include "chrome/browser/metrics/signin_status_metrics_provider.h"
+#include "chrome/browser/signin/chrome_signin_status_metrics_provider_delegate.h"
+#include "components/signin/core/browser/signin_status_metrics_provider.h"
 #endif  // !defined(OS_CHROMEOS)
 
 namespace {

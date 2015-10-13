@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/metrics/chrome_signin_status_metrics_provider_delegate.h"
+#include "chrome/browser/signin/chrome_signin_status_metrics_provider_delegate.h"
 
 #include <string>
 #include <vector>
 
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/metrics/signin_status_metrics_provider.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "components/signin/core/browser/signin_status_metrics_provider.h"
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
 #include "chrome/browser/ui/browser_finder.h"

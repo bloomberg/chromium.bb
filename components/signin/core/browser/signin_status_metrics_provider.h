@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_METRICS_SIGNIN_STATUS_METRICS_PROVIDER_H_
-#define CHROME_BROWSER_METRICS_SIGNIN_STATUS_METRICS_PROVIDER_H_
+#ifndef COMPONENTS_SIGNIN_CORE_BROWSER_SIGNIN_STATUS_METRICS_PROVIDER_H_
+#define COMPONENTS_SIGNIN_CORE_BROWSER_SIGNIN_STATUS_METRICS_PROVIDER_H_
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "build/build_config.h"
-#include "chrome/browser/metrics/signin_status_metrics_provider_base.h"
-#include "chrome/browser/metrics/signin_status_metrics_provider_delegate.h"
 #include "components/signin/core/browser/signin_manager_base.h"
+#include "components/signin/core/browser/signin_status_metrics_provider_base.h"
+#include "components/signin/core/browser/signin_status_metrics_provider_delegate.h"
 
 namespace metrics {
 class ChromeUserMetricsExtension;
@@ -99,4 +99,4 @@ class SigninStatusMetricsProvider : public SigninStatusMetricsProviderBase,
   DISALLOW_COPY_AND_ASSIGN(SigninStatusMetricsProvider);
 };
 
-#endif  // CHROME_BROWSER_METRICS_SIGNIN_STATUS_METRICS_PROVIDER_H_
+#endif  // COMPONENTS_SIGNIN_CORE_BROWSER_SIGNIN_STATUS_METRICS_PROVIDER_H_
