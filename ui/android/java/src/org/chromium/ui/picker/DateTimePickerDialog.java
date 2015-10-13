@@ -22,8 +22,10 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
 
-// TODO(tkent): fix deprecation warnings crbug.com/537037
-@SuppressWarnings("deprecation")
+/**
+ * A dialog that allows the user to choose a date and time. Shown for HTML form input elements
+ * with type "datetime" or "datetime-local".
+ */
 public class DateTimePickerDialog extends AlertDialog implements OnClickListener,
         OnDateChangedListener, OnTimeChangedListener {
     private final DatePicker mDatePicker;
@@ -90,11 +92,10 @@ public class DateTimePickerDialog extends AlertDialog implements OnClickListener
 
         mTimePicker = (TimePicker) view.findViewById(R.id.time_picker);
         mTimePicker.setIs24HourView(is24HourView);
-        mTimePicker.setCurrentHour(hourOfDay);
-        mTimePicker.setCurrentMinute(minute);
+        setHour(mTimePicker, hourOfDay);
+        setMinute(mTimePicker, minute);
         mTimePicker.setOnTimeChangedListener(this);
-        onTimeChanged(mTimePicker, mTimePicker.getCurrentHour(),
-                mTimePicker.getCurrentMinute());
+        onTimeChanged(mTimePicker, getHour(mTimePicker), getMinute(mTimePicker));
     }
 
     @Override
@@ -108,7 +109,7 @@ public class DateTimePickerDialog extends AlertDialog implements OnClickListener
             mTimePicker.clearFocus();
             mCallBack.onDateTimeSet(mDatePicker, mTimePicker, mDatePicker.getYear(),
                     mDatePicker.getMonth(), mDatePicker.getDayOfMonth(),
-                    mTimePicker.getCurrentHour(), mTimePicker.getCurrentMinute());
+                    getHour(mTimePicker), getMinute(mTimePicker));
         }
     }
 
@@ -117,8 +118,7 @@ public class DateTimePickerDialog extends AlertDialog implements OnClickListener
             int month, int day) {
         // Signal a time change so the max/min checks can be applied.
         if (mTimePicker != null) {
-            onTimeChanged(mTimePicker, mTimePicker.getCurrentHour(),
-                    mTimePicker.getCurrentMinute());
+            onTimeChanged(mTimePicker, getHour(mTimePicker), getMinute(mTimePicker));
         }
     }
 
@@ -127,6 +127,7 @@ public class DateTimePickerDialog extends AlertDialog implements OnClickListener
         onTimeChangedInternal(mDatePicker.getYear(), mDatePicker.getMonth(),
                 mDatePicker.getDayOfMonth(), mTimePicker, mMinTimeMillis, mMaxTimeMillis);
     }
+
     @VisibleForTesting
     public static void onTimeChangedInternal(int year, int month, int day, TimePicker picker,
             long minTimeMillis, long maxTimeMillis) {
@@ -134,15 +135,15 @@ public class DateTimePickerDialog extends AlertDialog implements OnClickListener
         // it with minimum/maximum values in UTC.
         Calendar calendar = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
         calendar.clear();
-        calendar.set(year, month, day, picker.getCurrentHour(), picker.getCurrentMinute(), 0);
+        calendar.set(year, month, day, getHour(picker), getMinute(picker), 0);
 
         if (calendar.getTimeInMillis() < minTimeMillis) {
             calendar.setTimeInMillis(minTimeMillis);
         } else if (calendar.getTimeInMillis() > maxTimeMillis) {
             calendar.setTimeInMillis(maxTimeMillis);
         }
-        picker.setCurrentHour(calendar.get(Calendar.HOUR_OF_DAY));
-        picker.setCurrentMinute(calendar.get(Calendar.MINUTE));
+        setHour(picker, calendar.get(Calendar.HOUR_OF_DAY));
+        setMinute(picker, calendar.get(Calendar.MINUTE));
     }
 
     /**
@@ -155,7 +156,29 @@ public class DateTimePickerDialog extends AlertDialog implements OnClickListener
     public void updateDateTime(int year, int monthOfYear, int dayOfMonth,
             int hourOfDay, int minutOfHour) {
         mDatePicker.updateDate(year, monthOfYear, dayOfMonth);
-        mTimePicker.setCurrentHour(hourOfDay);
-        mTimePicker.setCurrentMinute(minutOfHour);
+        setHour(mTimePicker, hourOfDay);
+        setMinute(mTimePicker, minutOfHour);
+    }
+
+    // TODO(newt): delete these deprecated method calls once we support only API 23 and higher.
+
+    @SuppressWarnings("deprecation")
+    private static void setHour(TimePicker picker, int hour) {
+        picker.setCurrentHour(hour);
+    }
+
+    @SuppressWarnings("deprecation")
+    private static void setMinute(TimePicker picker, int minute) {
+        picker.setCurrentMinute(minute);
+    }
+
+    @SuppressWarnings("deprecation")
+    private static int getHour(TimePicker picker) {
+        return picker.getCurrentHour();
+    }
+
+    @SuppressWarnings("deprecation")
+    private static int getMinute(TimePicker picker) {
+        return picker.getCurrentMinute();
     }
 }
