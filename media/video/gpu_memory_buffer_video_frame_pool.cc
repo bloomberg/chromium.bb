@@ -552,7 +552,8 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::
           mailbox_holders[VideoFrame::kUPlane],
           mailbox_holders[VideoFrame::kVPlane],
           base::Bind(&PoolImpl::MailboxHoldersReleased, this, frame_resources),
-          size, gfx::Rect(size), size, video_frame->timestamp());
+          size, gfx::Rect(size), video_frame->natural_size(),
+          video_frame->timestamp());
       if (video_frame->metadata()->IsTrue(VideoFrameMetadata::ALLOW_OVERLAY))
         frame->metadata()->SetBoolean(VideoFrameMetadata::ALLOW_OVERLAY, true);
       break;
@@ -561,7 +562,8 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::
       frame = VideoFrame::WrapNativeTexture(
           output_format_, mailbox_holders[VideoFrame::kYPlane],
           base::Bind(&PoolImpl::MailboxHoldersReleased, this, frame_resources),
-          size, gfx::Rect(size), size, video_frame->timestamp());
+          size, gfx::Rect(size), video_frame->natural_size(),
+          video_frame->timestamp());
       frame->metadata()->SetBoolean(VideoFrameMetadata::ALLOW_OVERLAY, true);
       break;
     default:

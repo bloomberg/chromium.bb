@@ -483,12 +483,12 @@
 
       // Walk horizontally counting light green pixels.
       for (var x = 0; x < aperture; ++x) {
-        if (pixels.data[4 * x + 1] != COLOR_BACKGROUND_GREEN)
+        if (!isAlmostBackgroundGreen(pixels.data[4 * x + 1]))
           lightGreenPixelsX++;
       }
       // Walk vertically counting light green pixels.
       for (var y = 0; y < aperture; ++y) {
-        if (pixels.data[4 * y * aperture + 1] != COLOR_BACKGROUND_GREEN)
+        if (!isAlmostBackgroundGreen(pixels.data[4 * y * aperture + 1]))
           lightGreenPixelsY++;
       }
       if (lightGreenPixelsX > maxLightGreenPixelsX)

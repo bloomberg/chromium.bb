@@ -103,7 +103,10 @@ WebMediaPlayerMS::WebMediaPlayerMS(
     base::WeakPtr<media::WebMediaPlayerDelegate> delegate,
     media::MediaLog* media_log,
     scoped_ptr<MediaStreamRendererFactory> factory,
-    const scoped_refptr<base::SingleThreadTaskRunner>& compositor_task_runner)
+    const scoped_refptr<base::SingleThreadTaskRunner>& compositor_task_runner,
+    const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
+    const scoped_refptr<base::TaskRunner>& worker_task_runner,
+    const scoped_refptr<media::GpuVideoAcceleratorFactories>& gpu_factories)
     : frame_(frame),
       network_state_(WebMediaPlayer::NetworkStateEmpty),
       ready_state_(WebMediaPlayer::ReadyStateHaveNothing),
@@ -115,6 +118,9 @@ WebMediaPlayerMS::WebMediaPlayerMS(
       received_first_frame_(false),
       media_log_(media_log),
       renderer_factory_(factory.Pass()),
+      media_task_runner_(media_task_runner),
+      worker_task_runner_(worker_task_runner),
+      gpu_factories_(gpu_factories),
       compositor_(new Compositor(compositor_task_runner)),
       compositor_task_runner_(compositor_task_runner) {
   DVLOG(1) << "WebMediaPlayerMS::ctor";
@@ -176,7 +182,10 @@ void WebMediaPlayerMS::load(LoadType load_type,
   video_frame_provider_ = renderer_factory_->GetVideoFrameProvider(
       url,
       base::Bind(&WebMediaPlayerMS::OnSourceError, AsWeakPtr()),
-      base::Bind(&WebMediaPlayerMS::OnFrameAvailable, AsWeakPtr()));
+      base::Bind(&WebMediaPlayerMS::OnFrameAvailable, AsWeakPtr()),
+      media_task_runner_,
+      worker_task_runner_,
+      gpu_factories_);
 
   RenderFrame* const frame = RenderFrame::FromWebFrame(frame_);
   audio_renderer_ = renderer_factory_->GetAudioRenderer(

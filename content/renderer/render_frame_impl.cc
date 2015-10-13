@@ -4798,18 +4798,22 @@ WebMediaPlayer* RenderFrameImpl::CreateWebMediaPlayerForMediaStream(
     WebMediaPlayerClient* client) {
 #if defined(ENABLE_WEBRTC)
 #if defined(OS_ANDROID) && defined(ARCH_CPU_ARMEL)
-  bool found_neon =
+  const bool found_neon =
       (android_getCpuFeatures() & ANDROID_CPU_ARM_FEATURE_NEON) != 0;
   UMA_HISTOGRAM_BOOLEAN("Platform.WebRtcNEONFound", found_neon);
 #endif  // defined(OS_ANDROID) && defined(ARCH_CPU_ARMEL)
-  scoped_refptr<base::SingleThreadTaskRunner>  compositor_task_runner =
-      RenderThreadImpl::current()->compositor_task_runner();
+  RenderThreadImpl* const render_thread = RenderThreadImpl::current();
+
+  scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner =
+      render_thread->compositor_task_runner();
   if (!compositor_task_runner.get())
     compositor_task_runner = base::MessageLoop::current()->task_runner();
+
   return new WebMediaPlayerMS(
       frame_, client, weak_factory_.GetWeakPtr(), new RenderMediaLog(),
-      CreateRendererFactory(),
-      compositor_task_runner);
+      CreateRendererFactory(), compositor_task_runner,
+      render_thread->GetMediaThreadTaskRunner(),
+      render_thread->GetWorkerTaskRunner(), render_thread->GetGpuFactories());
 #else
   return NULL;
 #endif  // defined(ENABLE_WEBRTC)

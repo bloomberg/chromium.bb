@@ -95,7 +95,10 @@ scoped_refptr<VideoFrameProvider>
 MediaStreamRendererFactoryImpl::GetVideoFrameProvider(
     const GURL& url,
     const base::Closure& error_cb,
-    const VideoFrameProvider::RepaintCB& repaint_cb) {
+    const VideoFrameProvider::RepaintCB& repaint_cb,
+    const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
+    const scoped_refptr<base::TaskRunner>& worker_task_runner,
+    const scoped_refptr<media::GpuVideoAcceleratorFactories>& gpu_factories) {
   blink::WebMediaStream web_stream =
       blink::WebMediaStreamRegistry::lookupMediaStreamDescriptor(url);
   DCHECK(!web_stream.isNull());
@@ -110,8 +113,9 @@ MediaStreamRendererFactoryImpl::GetVideoFrameProvider(
     return NULL;
   }
 
-  return new MediaStreamVideoRendererSink(video_tracks[0], error_cb,
-                                          repaint_cb);
+  return new MediaStreamVideoRendererSink(video_tracks[0], error_cb, repaint_cb,
+                                          media_task_runner, worker_task_runner,
+                                          gpu_factories);
 }
 
 scoped_refptr<MediaStreamAudioRenderer>

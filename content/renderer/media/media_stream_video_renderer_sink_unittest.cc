@@ -9,6 +9,8 @@
 #include "content/renderer/media/media_stream_video_renderer_sink.h"
 #include "content/renderer/media/mock_media_stream_registry.h"
 #include "media/base/video_frame.h"
+#include "media/renderers/gpu_video_accelerator_factories.h"
+#include "media/renderers/mock_gpu_memory_buffer_video_frame_pool.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -45,7 +47,9 @@ class MediaStreamVideoRendererSinkTest : public testing::Test {
         base::Bind(&MediaStreamVideoRendererSinkTest::ErrorCallback,
                    base::Unretained(this)),
         base::Bind(&MediaStreamVideoRendererSinkTest::RepaintCallback,
-                   base::Unretained(this)));
+                   base::Unretained(this)),
+        message_loop_.task_runner(), message_loop_.task_runner().get(),
+        nullptr /* gpu_factories */);
 
     EXPECT_TRUE(IsInStoppedState());
   }
@@ -81,7 +85,7 @@ class MediaStreamVideoRendererSinkTest : public testing::Test {
 
   // A ChildProcess and a MessageLoopForUI are both needed to fool the Tracks
   // and Sources in |registry_| into believing they are on the right threads.
-  const base::MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   const ChildProcess child_process_;
   MockMediaStreamRegistry registry_;
 
@@ -116,6 +120,38 @@ TEST_F(MediaStreamVideoRendererSinkTest, EncodeVideoFrames) {
 
   EXPECT_CALL(*this, RepaintCallback(video_frame)).Times(1);
   OnVideoFrame(video_frame);
+
+  media_stream_video_renderer_sink_->Stop();
+}
+
+class MediaStreamVideoRendererSinkAsyncAddFrameReadyTest
+    : public MediaStreamVideoRendererSinkTest {
+ public:
+  MediaStreamVideoRendererSinkAsyncAddFrameReadyTest() {
+    scoped_ptr<media::GpuMemoryBufferVideoFramePool> gpu_memory_buffer_pool(
+        new media::MockGpuMemoryBufferVideoFramePool(&frame_ready_cbs_));
+    media_stream_video_renderer_sink_->SetGpuMemoryBufferVideoForTesting(
+        gpu_memory_buffer_pool.Pass());
+  }
+
+ protected:
+  std::vector<base::Closure> frame_ready_cbs_;
+};
+
+TEST_F(MediaStreamVideoRendererSinkAsyncAddFrameReadyTest,
+       CreateHardwareFrames) {
+  media_stream_video_renderer_sink_->Start();
+
+  InSequence s;
+  const scoped_refptr<media::VideoFrame> video_frame =
+      media::VideoFrame::CreateBlackFrame(gfx::Size(160, 80));
+  OnVideoFrame(video_frame);
+  message_loop_.RunUntilIdle();
+  ASSERT_EQ(1u, frame_ready_cbs_.size());
+
+  EXPECT_CALL(*this, RepaintCallback(video_frame)).Times(1);
+  frame_ready_cbs_[0].Run();
+  message_loop_.RunUntilIdle();
 
   media_stream_video_renderer_sink_->Stop();
 }

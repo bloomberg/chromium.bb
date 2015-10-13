@@ -210,6 +210,13 @@ function isVideoBlack(pixels) {
   return true;
 }
 
+// Checks if the given color is within 1 value away from COLOR_BACKGROUND_GREEN.
+function isAlmostBackgroundGreen(color) {
+  if (Math.abs(color - COLOR_BACKGROUND_GREEN) > 1)
+    return false;
+  return true;
+}
+
 // Use Luma as in Rec. 709: Y′709 = 0.2126R + 0.7152G + 0.0722B;
 // See http://en.wikipedia.org/wiki/Rec._709.
 function rec702Luma_(r, g, b) {
