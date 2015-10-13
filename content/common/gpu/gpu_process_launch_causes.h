@@ -8,7 +8,7 @@
 namespace content {
 
 // If you change this enum you also need to update
-// http://cs/file:chrome/histograms.xml
+// tools/metrics/histograms/histograms.xml
 enum CauseForGpuLaunch {
   // Start enum from 2 to keep the same values for the histogram.
   CAUSE_FOR_GPU_LAUNCH_GPUDATAMANAGER_REQUESTCOMPLETEGPUINFOIFNEEDED = 2,
@@ -30,6 +30,5 @@ enum CauseForGpuLaunch {
 };
 
 }  // namespace content
-
 
 #endif  // CONTENT_COMMON_GPU_GPU_PROCESS_LAUNCH_CAUSES_H_

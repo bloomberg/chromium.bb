@@ -14294,6 +14294,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="GPU.GPUProcessLaunchCause" enum="GPUProcessLaunchCauses">
+  <owner>vangelis@chromium.org</owner>
+  <summary>
+    Counts enumerating the initial cause for the GPU Process to be launched.
+  </summary>
+</histogram>
+
 <histogram name="GPU.InitializeOneOffMediumTime" units="milliseconds">
   <owner>jmadill@chromium.org</owner>
   <summary>
@@ -61782,6 +61789,47 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="3" label="UPGRADE_SUCCESSFUL"/>
   <int value="4" label="UPGRADE_ALREADY_UP_TO_DATE"/>
   <int value="5" label="UPGRADE_ERROR"/>
+</enum>
+
+<enum name="GPUProcessLaunchCauses" type="int">
+  <summary>
+    Causes for the GPU Process to be launched. From:
+    content/common/gpu/gpu_process_launch_causes.h
+  </summary>
+  <int value="0" label="about:gpucrash">
+    CAUSE_FOR_GPU_LAUNCH_ABOUT_GPUCRASH
+  </int>
+  <int value="1" label="about:gpuhang">CAUSE_FOR_GPU_LAUNCH_ABOUT_GPUHANG</int>
+  <int value="2" label="GpuDataManager RequestCompleteGpuInfoIfNeeded">
+    CAUSE_FOR_GPU_LAUNCH_GPUDATAMANAGER_REQUESTCOMPLETEGPUINFOIFNEEDED
+  </int>
+  <int value="3" label="RenderWidgetFullScreenPepper CreateContext">
+    CAUSE_FOR_GPU_LAUNCH_RENDERWIDGETFULLSCREENPEPPER_CREATECONTEXT
+  </int>
+  <int value="4" label="WebGraphicsContext3DCommandBufferImpl Initialize">
+    CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE
+  </int>
+  <int value="5" label="NoLaunch">CAUSE_FOR_GPU_LAUNCH_NO_LAUNCH</int>
+  <int value="6" label="VideoDecodeAccelerator Initialize">
+    CAUSE_FOR_GPU_LAUNCH_VIDEODECODEACCELERATOR_INITIALIZE
+  </int>
+  <int value="7" label="Pepper PlatformContext3DImpl Initialize">
+    CAUSE_FOR_GPU_LAUNCH_PEPPERPLATFORMCONTEXT3DIMPL_INITIALIZE
+  </int>
+  <int value="8" label="Browser Startup">
+    CAUSE_FOR_GPU_LAUNCH_BROWSER_STARTUP
+  </int>
+  <int value="9" label="Canvas 2D">CAUSE_FOR_GPU_LAUNCH_CANVAS_2D</int>
+  <int value="10" label="Pepper VideoEncodeAccelerator Initialize">
+    CAUSE_FOR_GPU_LAUNCH_PEPPERVIDEOENCODERACCELERATOR_INITIALIZE
+  </int>
+  <int value="11" label="GpuMemoryBuffer allocate">
+    CAUSE_FOR_GPU_LAUNCH_GPU_MEMORY_BUFFER_ALLOCATE
+  </int>
+  <int value="12" label="JpegDecodeAccelerator Initialize">
+    CAUSE_FOR_GPU_LAUNCH_JPEGDECODEACCELERATOR_INITIALIZE
+  </int>
+  <int value="13" label="Mojo Setup">CAUSE_FOR_GPU_LAUNCH_MOJO_SETUP</int>
 </enum>
 
 <enum name="GzipEncodingFixupResult" type="int">
