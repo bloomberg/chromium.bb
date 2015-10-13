@@ -183,6 +183,7 @@ public:
     int boundNodeId(Node*);
     void setDOMListener(DOMListener*);
     void inspect(Node*);
+    void nodeHighlightedInOverlay(Node*);
 
     static String documentURLString(Document*);
 

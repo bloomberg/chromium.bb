@@ -1109,6 +1109,21 @@ void InspectorDOMAgent::inspect(Node* inspectedNode)
     frontend()->inspectNodeRequested(backendNodeId);
 }
 
+void InspectorDOMAgent::nodeHighlightedInOverlay(Node* node)
+{
+    if (!frontend() || !enabled())
+        return;
+
+    while (node && !node->isElementNode() && !node->isDocumentNode() && !node->isDocumentFragment())
+        node = node->parentOrShadowHostNode();
+
+    if (!node)
+        return;
+
+    int nodeId = pushNodePathToFrontend(node);
+    frontend()->nodeHighlightRequested(nodeId);
+}
+
 void InspectorDOMAgent::setSearchingForNode(ErrorString* errorString, SearchMode searchMode, JSONObject* highlightInspectorObject)
 {
     if (m_client)
