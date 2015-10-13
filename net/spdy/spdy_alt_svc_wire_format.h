@@ -36,7 +36,7 @@ class NET_EXPORT_PRIVATE SpdyAltSvcWireFormat {
     // Default is one day.
     uint32 max_age = 86400;
     // Default is always use.
-    double p = 1.0;
+    double probability = 1.0;
 
     AlternativeService();
     AlternativeService(const std::string& protocol_id,
@@ -44,12 +44,12 @@ class NET_EXPORT_PRIVATE SpdyAltSvcWireFormat {
                        uint16 port,
                        uint16 version,
                        uint32 max_age,
-                       double p);
+                       double probability);
 
     bool operator==(const AlternativeService& other) const {
       return protocol_id == other.protocol_id && host == other.host &&
              port == other.port && version == other.version &&
-             max_age == other.max_age && p == other.p;
+             max_age == other.max_age && probability == other.probability;
     }
   };
   // An empty vector means alternative services should be cleared for given
@@ -81,7 +81,7 @@ class NET_EXPORT_PRIVATE SpdyAltSvcWireFormat {
                                      uint32* value);
   static bool ParseProbability(StringPiece::const_iterator c,
                                StringPiece::const_iterator end,
-                               double* p);
+                               double* probability);
 };
 
 }  // namespace net

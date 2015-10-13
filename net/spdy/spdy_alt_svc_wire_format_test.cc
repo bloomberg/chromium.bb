@@ -44,8 +44,8 @@ class SpdyAltSvcWireFormatPeer {
   }
   static bool ParseProbability(StringPiece::const_iterator c,
                                StringPiece::const_iterator end,
-                               double* p) {
-    return SpdyAltSvcWireFormat::ParseProbability(c, end, p);
+                               double* probability) {
+    return SpdyAltSvcWireFormat::ParseProbability(c, end, probability);
   }
 };
 
@@ -87,11 +87,11 @@ void FuzzHeaderFieldValue(
     header_field_value->append("; J=s");
   }
   if (i & 1 << 5) {
-    expected_altsvc->p = 0.33;
+    expected_altsvc->probability = 0.33;
     header_field_value->append("; P=.33");
   }
   if (i & 1 << 6) {
-    expected_altsvc->p = 0.0;
+    expected_altsvc->probability = 0.0;
     expected_altsvc->version = 24;
     header_field_value->append("; p=0;v=24");
   }
@@ -100,7 +100,7 @@ void FuzzHeaderFieldValue(
     header_field_value->append("; Ma=999999999");
   }
   if (i & 1 << 8) {
-    expected_altsvc->p = 0.0;
+    expected_altsvc->probability = 0.0;
     header_field_value->append("; P=0.");
   }
   if (i & 1 << 9) {
@@ -140,7 +140,7 @@ void FuzzAlternativeService(int i,
     expected_header_field_value->append("; ma=1111");
   }
   if (i & 1 << 3) {
-    altsvc->p = 0.33;
+    altsvc->probability = 0.33;
     expected_header_field_value->append("; p=0.33");
   }
 }
@@ -156,7 +156,7 @@ TEST(SpdyAltSvcWireFormatTest, DefaultValues) {
   EXPECT_EQ(0u, altsvc.port);
   EXPECT_EQ(0u, altsvc.version);
   EXPECT_EQ(86400u, altsvc.max_age);
-  EXPECT_DOUBLE_EQ(1.0, altsvc.p);
+  EXPECT_DOUBLE_EQ(1.0, altsvc.probability);
 }
 
 TEST(SpdyAltSvcWireFormatTest, ParseInvalidEmptyHeaderFieldValue) {
@@ -188,7 +188,7 @@ TEST(SpdyAltSvcWireFormatTest, ParseHeaderFieldValue) {
     EXPECT_EQ(expected_altsvc.port, altsvc_vector[0].port);
     EXPECT_EQ(expected_altsvc.version, altsvc_vector[0].version);
     EXPECT_EQ(expected_altsvc.max_age, altsvc_vector[0].max_age);
-    EXPECT_DOUBLE_EQ(expected_altsvc.p, altsvc_vector[0].p);
+    EXPECT_DOUBLE_EQ(expected_altsvc.probability, altsvc_vector[0].probability);
   }
 }
 
@@ -219,7 +219,8 @@ TEST(SpdyAltSvcWireFormatTest, ParseHeaderFieldValueMultiple) {
       EXPECT_EQ(expected_altsvc_vector[j].port, altsvc_vector[j].port);
       EXPECT_EQ(expected_altsvc_vector[j].version, altsvc_vector[j].version);
       EXPECT_EQ(expected_altsvc_vector[j].max_age, altsvc_vector[j].max_age);
-      EXPECT_DOUBLE_EQ(expected_altsvc_vector[j].p, altsvc_vector[j].p);
+      EXPECT_DOUBLE_EQ(expected_altsvc_vector[j].probability,
+                       altsvc_vector[j].probability);
     }
   }
 }

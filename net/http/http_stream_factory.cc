@@ -61,7 +61,7 @@ void HttpStreamFactory::ProcessAlternativeService(
         base::Time::Now() +
         base::TimeDelta::FromSeconds(alternative_service_entry.max_age);
     AlternativeServiceInfo alternative_service_info(
-        alternative_service, alternative_service_entry.p, expiration);
+        alternative_service, alternative_service_entry.probability, expiration);
     alternative_service_info_vector.push_back(alternative_service_info);
   }
 
