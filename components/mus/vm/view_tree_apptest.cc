@@ -246,7 +246,7 @@ class TestViewTreeClientImpl : public mojo::ViewTreeClient,
   // Runs a nested MessageLoop until |count| changes (calls to
   // ViewTreeClient functions) have been received.
   void WaitForChangeCount(size_t count) {
-    if (count == tracker_.changes()->size())
+    if (tracker_.changes()->size() >= count)
       return;
 
     ASSERT_TRUE(wait_state_.get() == nullptr);
@@ -294,7 +294,7 @@ class TestViewTreeClientImpl : public mojo::ViewTreeClient,
   // TestChangeTracker::Delegate:
   void OnChangeAdded() override {
     if (wait_state_.get() &&
-        wait_state_->change_count == tracker_.changes()->size()) {
+        tracker_.changes()->size() >= wait_state_->change_count) {
       wait_state_->run_loop.Quit();
     }
   }
@@ -354,7 +354,8 @@ class TestViewTreeClientImpl : public mojo::ViewTreeClient,
   void OnViewInputEvent(Id view_id,
                         EventPtr event,
                         const Callback<void()>& callback) override {
-    tracker()->OnViewInputEvent(view_id, event.Pass());
+    // Don't log input events as none of the tests care about them and they
+    // may come in at random points.
     callback.Run();
   }
   void OnViewSharedPropertyChanged(uint32_t view,

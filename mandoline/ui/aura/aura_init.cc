@@ -23,12 +23,9 @@ namespace mandoline {
 
 namespace {
 
-// Paths resources are loaded from.
-const char kResourceUIPak[] = "mandoline_ui.pak";
-
-std::set<std::string> GetResourcePaths() {
+std::set<std::string> GetResourcePaths(const std::string& resource_file) {
   std::set<std::string> paths;
-  paths.insert(kResourceUIPak);
+  paths.insert(resource_file);
   return paths;
 }
 
@@ -37,8 +34,11 @@ std::set<std::string> GetResourcePaths() {
 // TODO(sky): the 1.f should be view->viewport_metrics().device_scale_factor,
 // but that causes clipping problems. No doubt we're not scaling a size
 // correctly.
-AuraInit::AuraInit(mus::View* view, mojo::Shell* shell)
-    : ui_init_(view->viewport_metrics().size_in_pixels.To<gfx::Size>(), 1.f) {
+AuraInit::AuraInit(mus::View* view,
+                   mojo::Shell* shell,
+                   const std::string& resource_file)
+    : ui_init_(view->viewport_metrics().size_in_pixels.To<gfx::Size>(), 1.f),
+      resource_file_(resource_file) {
   aura::Env::CreateInstance(false);
 
   InitializeResources(shell);
@@ -61,7 +61,8 @@ AuraInit::~AuraInit() {
 void AuraInit::InitializeResources(mojo::Shell* shell) {
   if (ui::ResourceBundle::HasSharedInstance())
     return;
-  resource_provider::ResourceLoader resource_loader(shell, GetResourcePaths());
+  resource_provider::ResourceLoader resource_loader(
+      shell, GetResourcePaths(resource_file_));
   if (!resource_loader.BlockUntilLoaded())
     return;
   CHECK(resource_loader.loaded());
@@ -71,8 +72,7 @@ void AuraInit::InitializeResources(mojo::Shell* shell) {
   ui::RegisterPathProvider();
   ui::ResourceBundle::InitSharedInstanceWithPakPath(base::FilePath());
   ui::ResourceBundle::GetSharedInstance().AddDataPackFromFile(
-      resource_loader.ReleaseFile(kResourceUIPak),
-      ui::SCALE_FACTOR_100P);
+      resource_loader.ReleaseFile(resource_file_), ui::SCALE_FACTOR_100P);
 
   // Initialize the skia font code to go ask fontconfig underneath.
 #if defined(OS_LINUX) && !defined(OS_ANDROID)

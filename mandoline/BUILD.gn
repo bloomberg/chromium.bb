@@ -16,7 +16,10 @@ group("all") {
     if (is_android) {
       deps += [ "//mandoline/app/android" ]
     } else {
-      deps += [ "//mandoline/app/desktop" ]
+      deps += [
+        "//components/mus/example",
+        "//mandoline/app/desktop",
+      ]
     }
   }
 }

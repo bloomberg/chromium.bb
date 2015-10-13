@@ -1,0 +1,53 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/ui.gni")
+import("//mojo/public/mojo_application.gni")
+import("//third_party/mojo/src/mojo/public/tools/bindings/mojom.gni")
+import("//tools/grit/repack.gni")
+
+mojo_native_application("client") {
+  output_name = "example_client"
+  testonly = true
+
+  sources = [
+    "client_application_delegate.cc",
+    "client_application_delegate.h",
+    "main.cc",
+  ]
+
+  deps = [
+    ":resources",
+    "//base",
+    "//components/mus/example/wm:interfaces",
+    "//mojo/application/public/cpp",
+    "//mandoline/ui/aura",
+    "//mojo/application/public/cpp:sources",
+    "//mojo/converters/geometry",
+    "//skia",
+    "//third_party/mojo/src/mojo/public/cpp/bindings",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
+    "//ui/mojo/events:interfaces",
+    "//ui/views",
+  ]
+
+  resources = [ "$root_out_dir/example_resources.pak" ]
+
+  data_deps = [
+    "//components/mus",
+  ]
+}
+
+repack("resources") {
+  sources = [
+    "$root_gen_dir/ui/resources/ui_resources_100_percent.pak",
+    "$root_gen_dir/ui/views/resources/views_resources_100_percent.pak",
+  ]
+  output = "$root_out_dir/example_resources.pak"
+  deps = [
+    "//ui/resources",
+    "//ui/views/resources",
+  ]
+}
