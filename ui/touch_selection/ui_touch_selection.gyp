@@ -129,8 +129,27 @@
           'includes': [ '../../build/apk_test.gypi' ],
         },
       ],
+      'conditions': [
+        ['test_isolation_mode != "noop"', {
+          'targets': [
+            {
+              'target_name': 'ui_touch_selection_unittests_apk_run',
+              'type': 'none',
+              'dependencies': [
+                'ui_touch_selection_unittests_apk',
+              ],
+              'includes': [
+                '../../build/isolate.gypi',
+              ],
+              'sources': [
+                'ui_touch_selection_unittests_apk.isolate',
+              ],
+            },
+          ]
+        }],
+      ],
     }],  # OS == "android"
-    ['test_isolation_mode != "noop"', {
+    ['test_isolation_mode != "noop" and OS != "android"', {
       'targets': [
         {
           'target_name': 'ui_touch_selection_unittests_run',
