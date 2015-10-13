@@ -28,6 +28,7 @@ class MIDI_EXPORT MidiManagerMac final : public MidiManager {
 
   // MidiManager implementation.
   void StartInitialization() override;
+  void Finalize() override;
   void DispatchSendMidiData(MidiManagerClient* client,
                             uint32 port_index,
                             const std::vector<uint8>& data,
