@@ -324,3 +324,25 @@
    fun:_ZNK4base8internal12CallbackBase7is_nullEv
    fun:_ZN8remoting8protocol12_GLOBAL__N_110FakeSocket17AppendInputPacketERKSt6vectorIcSaIcEE
 }
+{
+   bug_542502_a
+   Memcheck:Leak
+   fun:calloc
+   fun:_internal_class_createInstanceFromZone
+   fun:+[NSObject(NSObject) allocWithZone:]
+   fun:+[NSCursor _buildCursor:cursorData:]
+   fun:+[NSCursor _makeCursors]
+   fun:-[NSApplication init]
+   fun:_ZN12_GLOBAL__N_122ScopedSendingEventTestC2Ev
+   fun:_ZN12_GLOBAL__N_*ScopedSendingEventTest_*HandlingSendEvent_TestC2Ev
+   fun:_ZN12_GLOBAL__N_*ScopedSendingEventTest_*HandlingSendEvent_TestC1Ev
+}
+{
+   bug_542502_b
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   fun:-[NSApplication init]
+   fun:_ZN12_GLOBAL__N_122ScopedSendingEventTestC2Ev
+   fun:_ZN12_GLOBAL__N_*ScopedSendingEventTest_*HandlingSendEvent_TestC2Ev
+   fun:_ZN12_GLOBAL__N_*ScopedSendingEventTest_*HandlingSendEvent_TestC1Ev
+}
