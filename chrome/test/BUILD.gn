@@ -314,6 +314,7 @@ if (!is_android) {
     if (is_linux || is_win) {
       data += [
         "$root_out_dir/chrome_100_percent.pak",
+        "$root_out_dir/chrome_material_100_percent.pak",
         "$root_out_dir/locales/en-US.pak",
         "$root_out_dir/locales/fr.pak",
       ]
@@ -779,7 +780,9 @@ if (!is_android) {
   # The _run targets exist only for compatibility w/ GYP.
   group("browser_tests_run") {
     testonly = true
-    data_deps = [ ":browser_tests" ]
+    data_deps = [
+      ":browser_tests",
+    ]
   }
 
   test("browser_tests") {
@@ -824,6 +827,7 @@ if (!is_android) {
       "$root_out_dir/pyproto/",
       "$root_out_dir/browser_tests.pak",
       "$root_out_dir/chrome_100_percent.pak",
+      "$root_out_dir/chrome_material_100_percent.pak",
       "$root_out_dir/locales/",
       "$root_out_dir/remoting/unittests/",
       "$root_out_dir/resources.pak",
@@ -1301,6 +1305,7 @@ if (!is_android) {
     if (is_linux || is_win) {
       data += [
         "$root_out_dir/chrome_100_percent.pak",
+        "$root_out_dir/chrome_material_100_percent.pak",
         "$root_out_dir/locales/en-US.pak",
       ]
     }
@@ -1328,7 +1333,9 @@ if (!is_android) {
       "//third_party/WebKit/public:blink",
     ]
 
-    data_deps = [ "//third_party/mesa:osmesa" ]
+    data_deps = [
+      "//third_party/mesa:osmesa",
+    ]
 
     if (cld_version == 2) {
       # Language detection is irrelevant to sync, so it can depend on any
@@ -1523,6 +1530,9 @@ if (!is_android) {
         "$root_out_dir/chrome_100_percent.pak",
         "$root_out_dir/locales/en-US.pak",
       ]
+    }
+    if (is_linux || is_win) {
+      data += [ "$root_out_dir/chrome_material_100_percent.pak" ]
     }
 
     defines = []

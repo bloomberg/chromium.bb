@@ -152,6 +152,7 @@
       'variables': {
         'files': [
           '../chromeos/test/data/network/',
+          '<(PRODUCT_DIR)/keyboard_resources.pak',
           '<(PRODUCT_DIR)/libexif.so',
           '<(PRODUCT_DIR)/test_data/chrome/browser/resources/chromeos/',
         ],
