@@ -713,6 +713,47 @@ static PassRefPtrWillBeRawPtr<CSSValueList> consumeSize(CSSParserTokenRange& ran
     return result.release();
 }
 
+static PassRefPtrWillBeRawPtr<CSSValue> consumeTextIndent(CSSParserTokenRange& range, CSSParserMode cssParserMode)
+{
+    // [ <length> | <percentage> ] && hanging? && each-line?
+    // Keywords only allowed when css3Text is enabled.
+    RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
+
+    bool hasLengthOrPercentage = false;
+    bool hasEachLine = false;
+    bool hasHanging = false;
+
+    do {
+        if (!hasLengthOrPercentage) {
+            if (RefPtrWillBeRawPtr<CSSValue> textIndent = consumeLengthOrPercent(range, cssParserMode, ValueRangeAll, UnitlessQuirk::Allow)) {
+                list->append(textIndent.release());
+                hasLengthOrPercentage = true;
+                continue;
+            }
+        }
+
+        if (RuntimeEnabledFeatures::css3TextEnabled()) {
+            CSSValueID id = range.peek().id();
+            if (!hasEachLine && id == CSSValueEachLine) {
+                list->append(consumeIdent(range));
+                hasEachLine = true;
+                continue;
+            }
+            if (!hasHanging && id == CSSValueHanging) {
+                list->append(consumeIdent(range));
+                hasHanging = true;
+                continue;
+            }
+        }
+        return nullptr;
+    } while (!range.atEnd());
+
+    if (!hasLengthOrPercentage)
+        return nullptr;
+
+    return list.release();
+}
+
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSPropertyID propId)
 {
     m_range.consumeWhitespace();
@@ -754,6 +795,8 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
         return consumeCounter(m_range, m_context.mode(), propId == CSSPropertyCounterIncrement ? 1 : 0);
     case CSSPropertySize:
         return consumeSize(m_range, m_context.mode());
+    case CSSPropertyTextIndent:
+        return consumeTextIndent(m_range, m_context.mode());
     default:
         return nullptr;
     }

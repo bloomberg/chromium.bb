@@ -264,8 +264,6 @@ private:
 
     PassRefPtrWillBeRawPtr<CSSValue> parseTextDecoration();
 
-    PassRefPtrWillBeRawPtr<CSSValue> parseTextIndent();
-
     bool parseCalculation(CSSParserValue*, ValueRange);
 
     bool parseGeneratedImage(CSSParserValueList*, RefPtrWillBeRawPtr<CSSValue>&);

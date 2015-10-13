@@ -660,10 +660,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
             validPrimitive = validUnit(value, FLength | FNonNeg | unitless);
         break;
 
-    case CSSPropertyTextIndent:
-        parsedValue = parseTextIndent();
-        break;
-
     case CSSPropertyPaddingTop:          //// <padding-width> | inherit
     case CSSPropertyPaddingRight:        //   Which is defined as
     case CSSPropertyPaddingBottom:       //   <length> | <percentage>
@@ -1354,6 +1350,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyCounterIncrement:
     case CSSPropertyCounterReset:
     case CSSPropertySize:
+    case CSSPropertyTextIndent:
         validPrimitive = false;
         break;
 
@@ -6363,45 +6360,6 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseTextEmphasisStyle()
         return shape.release();
 
     return nullptr;
-}
-
-PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseTextIndent()
-{
-    RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
-
-    bool hasLengthOrPercentage = false;
-    bool hasEachLine = false;
-    bool hasHanging = false;
-
-    for (CSSParserValue* value = m_valueList->current(); value; value = m_valueList->next()) {
-        // <length> | <percentage> | inherit when RuntimeEnabledFeatures::css3TextEnabled() returns false
-        if (!hasLengthOrPercentage && validUnit(value, FLength | FPercent | FUnitlessQuirk)) {
-            list->append(createPrimitiveNumericValue(value));
-            hasLengthOrPercentage = true;
-            continue;
-        }
-
-        // [ <length> | <percentage> ] && hanging? && each-line? | inherit
-        // when RuntimeEnabledFeatures::css3TextEnabled() returns true
-        if (RuntimeEnabledFeatures::css3TextEnabled()) {
-            if (!hasEachLine && value->id == CSSValueEachLine) {
-                list->append(cssValuePool().createIdentifierValue(CSSValueEachLine));
-                hasEachLine = true;
-                continue;
-            }
-            if (!hasHanging && value->id == CSSValueHanging) {
-                list->append(cssValuePool().createIdentifierValue(CSSValueHanging));
-                hasHanging = true;
-                continue;
-            }
-        }
-        return nullptr;
-    }
-
-    if (!hasLengthOrPercentage)
-        return nullptr;
-
-    return list.release();
 }
 
 bool CSSPropertyParser::parseCalculation(CSSParserValue* value, ValueRange range)
