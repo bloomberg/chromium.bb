@@ -2380,7 +2380,7 @@ void FrameView::updateWidgetPositionsIfNeeded()
     updateWidgetPositions();
 }
 
-void FrameView::updateAllLifecyclePhases(const LayoutRect& interestRect)
+void FrameView::updateAllLifecyclePhases(const LayoutRect* interestRect)
 {
     frame().localFrameRoot()->view()->updateLifecyclePhasesInternal(AllPhases, interestRect);
 }
@@ -2388,15 +2388,15 @@ void FrameView::updateAllLifecyclePhases(const LayoutRect& interestRect)
 // TODO(chrishtr): add a scrolling update lifecycle phase.
 void FrameView::updateLifecycleToCompositingCleanPlusScrolling()
 {
-    frame().localFrameRoot()->view()->updateLifecyclePhasesInternal(OnlyUpToCompositingCleanPlusScrolling);
+    frame().localFrameRoot()->view()->updateLifecyclePhasesInternal(OnlyUpToCompositingCleanPlusScrolling, nullptr);
 }
 
 void FrameView::updateLifecycleToLayoutClean()
 {
-    frame().localFrameRoot()->view()->updateLifecyclePhasesInternal(OnlyUpToLayoutClean);
+    frame().localFrameRoot()->view()->updateLifecyclePhasesInternal(OnlyUpToLayoutClean, nullptr);
 }
 
-void FrameView::updateLifecyclePhasesInternal(LifeCycleUpdateOption phases, const LayoutRect& interestRect)
+void FrameView::updateLifecyclePhasesInternal(LifeCycleUpdateOption phases, const LayoutRect* interestRect)
 {
     // This must be called from the root frame, since it recurses down, not up.
     // Otherwise the lifecycles of the frames might be out of sync.
@@ -2458,7 +2458,7 @@ void FrameView::updatePaintProperties()
     lifecycle().advanceTo(DocumentLifecycle::UpdatePaintPropertiesClean);
 }
 
-void FrameView::synchronizedPaint(const LayoutRect& interestRect)
+void FrameView::synchronizedPaint(const LayoutRect* interestRect)
 {
     ASSERT(RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled());
     ASSERT(frame() == page()->mainFrame() || (!frame().tree().parent()->isLocalFrame()));
@@ -2476,14 +2476,14 @@ void FrameView::synchronizedPaint(const LayoutRect& interestRect)
     lifecycle().advanceTo(DocumentLifecycle::PaintClean);
 }
 
-void FrameView::synchronizedPaintRecursively(GraphicsLayer* graphicsLayer, const LayoutRect& interestRect)
+void FrameView::synchronizedPaintRecursively(GraphicsLayer* graphicsLayer, const LayoutRect* interestRect)
 {
     GraphicsContext context(graphicsLayer->displayItemList());
 
     // TODO(chrishtr): fix unit tests to not inject one-off interest rects.
-    if (interestRect != LayoutRect::infiniteRect()) {
+    if (interestRect) {
         if (graphicsLayer->needsDisplay()) {
-            graphicsLayer->paint(context, roundedIntRect(interestRect));
+            graphicsLayer->paint(context, roundedIntRect(*interestRect));
 
             if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled())
                 graphicsLayer->commitIfNeeded();

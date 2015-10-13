@@ -364,7 +364,7 @@ TEST_F(PaintLayerPainterTestForSlimmingPaintV2, CachedSubsequence)
         TestDisplayItem(rootLayer, endSubsequenceType));
 
     toHTMLElement(content1.node())->setAttribute(HTMLNames::styleAttr, "position: absolute; width: 100px; height: 100px; background-color: green");
-    updateLifecyclePhasesToPaintClean(LayoutRect::infiniteRect());
+    updateLifecyclePhasesToPaintClean(LayoutRect(LayoutRect::infiniteIntRect()));
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().newDisplayItems(), 11,
         TestDisplayItem(layoutView(), cachedBackgroundType),
@@ -448,7 +448,8 @@ TEST_F(PaintLayerPainterTestForSlimmingPaintV2, CachedSubsequenceOnInterestRectC
     PaintLayer& container3Layer = *toLayoutBoxModelObject(container3).layer();
     LayoutObject& content3 = *document().getElementById("content3")->layoutObject();
 
-    document().view()->updateAllLifecyclePhases(LayoutRect(0, 0, 400, 300));
+    LayoutRect interestRect(0, 0, 400, 300);
+    document().view()->updateAllLifecyclePhases(&interestRect);
 
     // Container1 is fully in the interest rect;
     // Container2 is partly (including its stacking chidren) in the interest rect;

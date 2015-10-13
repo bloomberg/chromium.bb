@@ -138,7 +138,7 @@ void ViewPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo)
 
         bool shouldPaintInViewportSpace = (*it)->attachment() == FixedBackgroundAttachment;
         if (shouldPaintInViewportSpace) {
-            BoxPainter::paintFillLayerExtended(m_layoutView, paintInfo, Color(), **it, LayoutRect::infiniteRect(), BackgroundBleedNone);
+            BoxPainter::paintFillLayerExtended(m_layoutView, paintInfo, Color(), **it, LayoutRect(LayoutRect::infiniteIntRect()), BackgroundBleedNone);
         } else {
             context.save();
             // TODO(trchen): We should be able to handle 3D-transformed root

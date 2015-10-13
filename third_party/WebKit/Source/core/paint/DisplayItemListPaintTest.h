@@ -61,12 +61,12 @@ protected:
     }
 
     // Expose some document lifecycle steps for checking new display items before commiting.
-    void updateLifecyclePhasesToPaintClean(const LayoutRect& interestRect = LayoutRect::infiniteRect())
+    void updateLifecyclePhasesToPaintClean(const LayoutRect& interestRect = LayoutRect(LayoutRect::infiniteIntRect()))
     {
-        document().view()->updateLifecyclePhasesInternal(FrameView::OnlyUpToCompositingCleanPlusScrolling);
+        document().view()->updateLifecyclePhasesInternal(FrameView::OnlyUpToCompositingCleanPlusScrolling, nullptr);
         document().view()->invalidateTreeIfNeededRecursive();
         document().view()->updatePaintProperties();
-        document().view()->synchronizedPaint(interestRect);
+        document().view()->synchronizedPaint(&interestRect);
     }
     void compositeForSlimmingPaintV2() { document().view()->compositeForSlimmingPaintV2(); }
 
