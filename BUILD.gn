@@ -106,7 +106,6 @@ group("both_gn_and_gyp") {
       "//ipc/mojo:ipc_mojo_unittests",
       "//jingle:jingle_unittests",
       "//media:media_unittests",
-      "//media/cast:cast_unittests",
       "//media/midi:midi_unittests",
       "//mojo",
       "//mojo/application/public/cpp",
@@ -616,7 +615,10 @@ group("both_gn_and_gyp") {
       "//net:net_unittests",  # TODO(GYP)
     ]
   } else if (!is_android && !is_ios) {
-    deps += [ "//breakpad:symupload" ]
+    deps += [
+      "//breakpad:symupload",
+      "//media/cast:cast_unittests",
+    ]
   }
 }
 
