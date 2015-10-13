@@ -46,6 +46,7 @@
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/LayoutVideo.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "public/platform/Platform.h"
 
 namespace blink {
 
@@ -551,6 +552,8 @@ void MediaControlFullscreenButtonElement::setIsFullscreen(bool isFullscreen)
 MediaControlCastButtonElement::MediaControlCastButtonElement(MediaControls& mediaControls, bool isOverlayButton)
     : MediaControlInputElement(mediaControls, MediaCastOnButton), m_isOverlayButton(isOverlayButton)
 {
+    if (m_isOverlayButton)
+        recordMetrics(CastOverlayMetrics::Created);
     setIsPlayingRemotely(false);
 }
 
@@ -567,7 +570,7 @@ void MediaControlCastButtonElement::defaultEventHandler(Event* event)
     if (event->type() == EventTypeNames::click) {
         if (m_isOverlayButton && !m_clickUseCounted) {
             m_clickUseCounted = true;
-            UseCounter::count(document(), UseCounter::CastOverlayClicked);
+            recordMetrics(CastOverlayMetrics::Clicked);
         }
         if (mediaElement().isPlayingRemotely()) {
             mediaElement().requestRemotePlaybackControl();
@@ -615,13 +618,19 @@ void MediaControlCastButtonElement::tryShowOverlay()
     ASSERT(isWanted());
     if (!m_showUseCounted) {
         m_showUseCounted = true;
-        UseCounter::count(document(), UseCounter::CastOverlayShown);
+        recordMetrics(CastOverlayMetrics::Shown);
     }
 }
 
 bool MediaControlCastButtonElement::keepEventInNode(Event* event)
 {
     return isUserInteractionEvent(event);
+}
+
+void MediaControlCastButtonElement::recordMetrics(CastOverlayMetrics metric)
+{
+    ASSERT(m_isOverlayButton);
+    Platform::current()->histogramEnumeration("Cast.Sender.Overlay", static_cast<int>(metric), static_cast<int>(CastOverlayMetrics::Count));
 }
 
 // ----------------------------

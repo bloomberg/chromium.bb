@@ -203,8 +203,18 @@ private:
 
     bool m_isOverlayButton;
 
-    // UseCounter related boolean. They are used to prevent counting something
-    // twice for the same media element.
+    // This is used for UMA histogram (Cast.Sender.Overlay). New values should
+    // be appended only and must be added before |Count|.
+    enum class CastOverlayMetrics {
+        Created = 0,
+        Shown,
+        Clicked,
+        Count // Keep last.
+    };
+    void recordMetrics(CastOverlayMetrics);
+
+    // UMA related boolean. They are used to prevent counting something twice
+    // for the same media element.
     bool m_clickUseCounted = false;
     bool m_showUseCounted = false;
 };

@@ -3474,6 +3474,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Cast.Sender.Overlay" enum="CastOverlayEvents">
+  <owner>avayvod@chromium.org</owner>
+  <owner>mlamouri@chromium.org</owner>
+  <summary>
+    Records events and user interactions related to the Cast overlay shown on
+    video elements.
+  </summary>
+</histogram>
+
 <histogram name="Cast.Sender.UrlResolveResult"
     enum="RemotePlaybackUrlResolveResult">
   <owner>aberent@google.com</owner>
@@ -53778,6 +53787,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="3" label="Failed to open stream"/>
 </enum>
 
+<enum name="CastOverlayEvents" type="int">
+  <int value="0" label="Created"/>
+  <int value="1" label="Shown"/>
+  <int value="2" label="Clicked"/>
+</enum>
+
 <enum name="CastPlayBackState" type="int">
   <int value="0" label="YT_PLAYER_SUCCESS"/>
   <int value="1" label="YT_PLAYER_FAILURE"/>
@@ -60204,8 +60219,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="963" label="CredentialManagerStore"/>
   <int value="964" label="CredentialManagerRequireUserMediation"/>
   <int value="965" label="RequestAutocomplete"/>
-  <int value="966" label="CastOverlayClicked"/>
-  <int value="967" label="CastOverlayShown"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">
