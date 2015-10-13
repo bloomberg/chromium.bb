@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "8.28",
+  "version": "8.29",
   "entries": [
     {
       "id": 1,
@@ -1553,6 +1553,18 @@ LONG_STRING_CONST(
       "multi_gpu_category": "active",
       "features": [
         "disable_msaa_on_non_webgl_contexts"
+      ]
+    },
+    {
+      "id": 133,
+      "description": "CHROMIUM_copy_texture with 1MB copy per flush to avoid unwanted cache growth on Adreno",
+      "cr_bugs": [542478],
+      "os": {
+        "type": "android"
+      },
+      "gl_renderer": "Adreno.*",
+      "features": [
+        "max_copy_texture_chromium_size_1048576"
       ]
     }
   ]

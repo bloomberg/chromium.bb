@@ -116,6 +116,8 @@ void StringToWorkarounds(
   if (workarounds->max_vertex_uniform_vectors_256)
     workarounds->max_vertex_uniform_vectors = 256;
 
+  if (workarounds->max_copy_texture_chromium_size_1048576)
+    workarounds->max_copy_texture_chromium_size = 1048576;
   if (workarounds->max_copy_texture_chromium_size_262144)
     workarounds->max_copy_texture_chromium_size = 262144;
 }

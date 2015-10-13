@@ -80,6 +80,8 @@
          init_varyings_without_static_use)                   \
   GPU_OP(INIT_VERTEX_ATTRIBUTES,                             \
          init_vertex_attributes)                             \
+  GPU_OP(MAX_COPY_TEXTURE_CHROMIUM_SIZE_1048576,             \
+         max_copy_texture_chromium_size_1048576)             \
   GPU_OP(MAX_COPY_TEXTURE_CHROMIUM_SIZE_262144,              \
          max_copy_texture_chromium_size_262144)              \
   GPU_OP(MAX_CUBE_MAP_TEXTURE_SIZE_LIMIT_1024,               \
