@@ -55,6 +55,7 @@ class Google(WebsiteTest):
   def Login(self):
     self.GoTo("https://accounts.google.com/ServiceLogin?sacu=1&continue=")
     self.FillUsernameInto("#Email")
+    self.Submit("#Email")
     self.FillPasswordInto("#Passwd")
     self.Submit("#Passwd")
 
