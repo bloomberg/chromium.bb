@@ -586,7 +586,8 @@ int BrowserView::GetTabStripHeight() const {
   // We want to return tabstrip_->height(), but we might be called in the midst
   // of layout, when that hasn't yet been updated to reflect the current state.
   // So return what the tabstrip height _ought_ to be right now.
-  return IsTabStripVisible() ? tabstrip_->GetPreferredSize().height() : 0;
+  return tabstrip_ && IsTabStripVisible() ?
+      tabstrip_->GetPreferredSize().height() : 0;
 }
 
 gfx::Point BrowserView::OffsetPointForToolbarBackgroundImage(
