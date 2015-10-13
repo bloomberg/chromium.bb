@@ -37,8 +37,7 @@ class CONTENT_EXPORT AudioInputSyncWriter
   AudioInputSyncWriter(void* shared_memory,
                        size_t shared_memory_size,
                        int shared_memory_segment_count,
-                       const media::AudioParameters& params,
-                       bool use_sync_socket_verification);
+                       const media::AudioParameters& params);
 
   ~AudioInputSyncWriter() override;
 
@@ -159,12 +158,6 @@ class CONTENT_EXPORT AudioInputSyncWriter
     bool key_pressed;
   };
   std::deque<OverflowParams> overflow_params_;
-
-  // If we should verify that the receiving side has read data from the shared
-  // memory.
-  // TODO(grunell): All clients should verify that they have read. Fix it and
-  // remove this. http://crbug.com/531635.
-  bool use_sync_socket_verification_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(AudioInputSyncWriter);
 };

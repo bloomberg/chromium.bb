@@ -31,8 +31,7 @@ enum AudioGlitchResult {
 AudioInputSyncWriter::AudioInputSyncWriter(void* shared_memory,
                                            size_t shared_memory_size,
                                            int shared_memory_segment_count,
-                                           const media::AudioParameters& params,
-                                           bool use_sync_socket_verification)
+                                           const media::AudioParameters& params)
     : shared_memory_(static_cast<uint8*>(shared_memory)),
       shared_memory_segment_count_(shared_memory_segment_count),
       current_segment_id_(0),
@@ -45,8 +44,7 @@ AudioInputSyncWriter::AudioInputSyncWriter(void* shared_memory,
       write_to_fifo_count_(0),
       write_error_count_(0),
       trailing_write_to_fifo_count_(0),
-      trailing_write_error_count_(0),
-      use_sync_socket_verification_(use_sync_socket_verification) {
+      trailing_write_error_count_(0) {
   DCHECK_GT(shared_memory_segment_count, 0);
   DCHECK_EQ(shared_memory_size % shared_memory_segment_count, 0u);
   shared_memory_segment_size_ =
@@ -126,31 +124,26 @@ void AudioInputSyncWriter::Write(const AudioBus* data,
   ++write_count_;
   CheckTimeSinceLastWrite();
 
-  bool write_error = false;
-
-  if (use_sync_socket_verification_) {
-    // Check that the renderer side has read data so that we don't overwrite
-    // data that hasn't been read yet. The renderer side sends a signal over
-    // the socket each time it has read data. Here, we read those verifications
-    // before writing. We verify that each buffer index is in sequence.
-    size_t number_of_indices_available = socket_->Peek() / sizeof(uint32_t);
-    if (number_of_indices_available > 0) {
-      scoped_ptr<uint32_t[]> indices(new uint32_t[number_of_indices_available]);
-      size_t bytes_received = socket_->Receive(
-          &indices[0],
-          number_of_indices_available * sizeof(indices[0]));
-      DCHECK_EQ(number_of_indices_available * sizeof(indices[0]),
-                bytes_received);
-      for (size_t i = 0; i < number_of_indices_available; ++i) {
-        ++next_read_buffer_index_;
-        CHECK_EQ(indices[i], next_read_buffer_index_);
-        --number_of_filled_segments_;
-        CHECK_GE(number_of_filled_segments_, 0);
-      }
+  // Check that the renderer side has read data so that we don't overwrite data
+  // that hasn't been read yet. The renderer side sends a signal over the socket
+  // each time it has read data. Here, we read those verifications before
+  // writing. We verify that each buffer index is in sequence.
+  size_t number_of_indices_available = socket_->Peek() / sizeof(uint32_t);
+  if (number_of_indices_available > 0) {
+    scoped_ptr<uint32_t[]> indices(new uint32_t[number_of_indices_available]);
+    size_t bytes_received = socket_->Receive(
+        &indices[0],
+        number_of_indices_available * sizeof(indices[0]));
+    DCHECK_EQ(number_of_indices_available * sizeof(indices[0]), bytes_received);
+    for (size_t i = 0; i < number_of_indices_available; ++i) {
+      ++next_read_buffer_index_;
+      CHECK_EQ(indices[i], next_read_buffer_index_);
+      --number_of_filled_segments_;
+      CHECK_GE(number_of_filled_segments_, 0);
     }
-
-    write_error = !WriteDataFromFifoToSharedMemory();
   }
+
+  bool write_error = !WriteDataFromFifoToSharedMemory();
 
   // Write the current data to the shared memory if there is room, otherwise
   // put it in the fifo.
@@ -237,8 +230,6 @@ bool AudioInputSyncWriter::PushDataToFifo(
     double volume,
     bool key_pressed,
     uint32 hardware_delay_bytes) {
-  CHECK(use_sync_socket_verification_);
-
   if (overflow_buses_.size() == kMaxOverflowBusesSize) {
     const std::string error_message = "AISW: No room in fifo.";
     LOG(ERROR) << error_message;
@@ -269,8 +260,6 @@ bool AudioInputSyncWriter::PushDataToFifo(
 }
 
 bool AudioInputSyncWriter::WriteDataFromFifoToSharedMemory() {
-  CHECK(use_sync_socket_verification_);
-
   if (overflow_buses_.empty())
     return true;
 
@@ -337,13 +326,9 @@ bool AudioInputSyncWriter::SignalDataWrittenAndUpdateCounters() {
 
   if (++current_segment_id_ >= shared_memory_segment_count_)
     current_segment_id_ = 0;
-
-  if (use_sync_socket_verification_) {
-    ++number_of_filled_segments_;
-    CHECK_LE(number_of_filled_segments_,
-             static_cast<int>(shared_memory_segment_count_));
-  }
-
+  ++number_of_filled_segments_;
+  CHECK_LE(number_of_filled_segments_,
+           static_cast<int>(shared_memory_segment_count_));
   ++next_buffer_id_;
 
   return true;

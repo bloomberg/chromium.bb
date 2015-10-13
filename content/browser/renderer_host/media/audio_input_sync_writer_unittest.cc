@@ -117,7 +117,7 @@ class AudioInputSyncWriterUnderTest : public AudioInputSyncWriter {
                                 const media::AudioParameters& params,
                                 base::CancelableSyncSocket* socket)
       : AudioInputSyncWriter(shared_memory, shared_memory_size,
-                             shared_memory_segment_count, params, true) {
+                             shared_memory_segment_count, params) {
     socket_.reset(socket);
   }
 
