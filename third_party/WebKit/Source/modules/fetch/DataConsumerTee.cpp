@@ -265,7 +265,7 @@ public:
     DestinationReader(PassRefPtr<DestinationContext::Proxy> contextProxy, WebDataConsumerHandle::Client* client)
         : m_contextProxy(contextProxy)
     {
-        MutexLocker(context()->mutex());
+        MutexLocker locker(context()->mutex());
         context()->attachReader(client);
         if (client) {
             // We need to use threadSafeBind here to retain the context. Note
@@ -276,7 +276,7 @@ public:
     }
     ~DestinationReader() override
     {
-        MutexLocker(context()->mutex());
+        MutexLocker locker(context()->mutex());
         context()->detachReader();
     }
 
