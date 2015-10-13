@@ -18,9 +18,9 @@ replaces.
 ## Paint artifact
 
 The SPv2 [paint artifact](PaintArtifact.h) consists of a list of display items
-(ideally mostly or all drawings), partitioned into *paint chunks* which define
-certain *paint properties* which affect how the content should be drawn or
-composited.
+in paint order (ideally mostly or all drawings), partitioned into *paint chunks*
+which define certain *paint properties* which affect how the content should be
+drawn or composited.
 
 ## Paint properties
 

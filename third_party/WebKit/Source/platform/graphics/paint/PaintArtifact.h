@@ -15,9 +15,9 @@ namespace blink {
 class GraphicsContext;
 class WebDisplayItemList;
 
-// The output of painting, consisting of a series of drawings partitioned into
-// discontiguous chunks with a common set of paint properties (i.e. associated
-// with the same transform, clip, effects, etc.).
+// The output of painting, consisting of a series of drawings in paint order,
+// partitioned into discontiguous chunks with a common set of paint properties
+// (i.e. associated with the same transform, clip, effects, etc.).
 //
 // It represents a particular state of the world, and should be immutable
 // (const) to most of its users.

@@ -19,7 +19,7 @@ namespace blink {
 
 // kDisplayItemAlignment must be a multiple of alignof(derived display item) for
 // each derived display item; the ideal value is the least common multiple.
-// Currently the limiting factor is TransformtionMatrix (in
+// Currently the limiting factor is TransformationMatrix (in
 // BeginTransform3DDisplayItem), which requests 16-byte alignment.
 static const size_t kDisplayItemAlignment = WTF_ALIGN_OF(BeginTransform3DDisplayItem);
 static const size_t kMaximumDisplayItemSize = sizeof(BeginTransform3DDisplayItem);
