@@ -132,6 +132,10 @@ class SupervisedUserService : public KeyedService,
   // is empty, or the empty string is there is no second custodian.
   std::string GetSecondCustodianName() const;
 
+  // Returns a message saying that extensions can only be modified by the
+  // custodian.
+  base::string16 GetExtensionsLockedMessage() const;
+
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
   // Initializes this profile for syncing, using the provided |refresh_token| to
   // mint access tokens for Sync.

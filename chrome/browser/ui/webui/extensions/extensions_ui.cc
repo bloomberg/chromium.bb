@@ -90,8 +90,8 @@ ExtensionsUI::ExtensionsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
     source = CreateExtensionsHTMLSource();
 
     ExtensionSettingsHandler* handler = new ExtensionSettingsHandler();
-    handler->GetLocalizedValues(source);
     web_ui->AddMessageHandler(handler);
+    handler->GetLocalizedValues(source);
 
     ExtensionLoaderHandler* extension_loader_handler =
         new ExtensionLoaderHandler(profile);

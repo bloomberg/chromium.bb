@@ -31,6 +31,8 @@ class ExtensionSettingsHandler : public content::WebUIMessageHandler,
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
+  // Note: This uses |web_ui()| from |WebUIMessageHandler|, so it must only be
+  // called after |web_ui->AddMessageHandler(this)| has been called.
   void GetLocalizedValues(content::WebUIDataSource* source);
 
  private:

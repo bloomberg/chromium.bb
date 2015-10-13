@@ -35,6 +35,11 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
+#if defined(ENABLE_SUPERVISED_USERS)
+#include "chrome/browser/supervised_user/supervised_user_service.h"
+#include "chrome/browser/supervised_user/supervised_user_service_factory.h"
+#endif
+
 namespace extensions {
 
 ExtensionSettingsHandler::ExtensionSettingsHandler()
@@ -142,8 +147,12 @@ void ExtensionSettingsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_POLICY_RECOMMENDED));
   source->AddString("extensionSettingsDependentExtensions",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_DEPENDENT_EXTENSIONS));
+#if defined(ENABLE_SUPERVISED_USERS)
+  const SupervisedUserService* supervised_user_service =
+      SupervisedUserServiceFactory::GetForProfile(Profile::FromWebUI(web_ui()));
   source->AddString("extensionSettingsSupervisedUser",
-      l10n_util::GetStringUTF16(IDS_EXTENSIONS_LOCKED_SUPERVISED_USER));
+                    supervised_user_service->GetExtensionsLockedMessage());
+#endif
   source->AddString("loading",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_LOADING));
   source->AddString("extensionSettingsCorruptInstall",
