@@ -174,9 +174,12 @@ uint32 BrowserAccessibility::InternalChildCount() const {
 
 BrowserAccessibility* BrowserAccessibility::InternalGetChild(
     uint32 child_index) const {
-  if (!node_ || !manager_)
-    return NULL;
-  return manager_->GetFromAXNode(node_->ChildAtIndex(child_index));
+  if (!node_ || !manager_ || child_index >= InternalChildCount())
+    return nullptr;
+
+  const auto child_node = node_->ChildAtIndex(child_index);
+  DCHECK(child_node);
+  return manager_->GetFromAXNode(child_node);
 }
 
 BrowserAccessibility* BrowserAccessibility::GetParent() const {

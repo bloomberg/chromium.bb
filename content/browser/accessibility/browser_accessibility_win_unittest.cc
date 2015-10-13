@@ -395,7 +395,7 @@ TEST_F(BrowserAccessibilityTest, TestTextBoundaries) {
   BrowserAccessibilityWin* root_obj =
       manager->GetRoot()->ToBrowserAccessibilityWin();
   ASSERT_NE(nullptr, root_obj);
-  ASSERT_EQ(1, root_obj->PlatformChildCount());
+  ASSERT_EQ(1U, root_obj->PlatformChildCount());
 
   BrowserAccessibilityWin* text_field_obj =
       root_obj->PlatformGetChild(0)->ToBrowserAccessibilityWin();
@@ -801,7 +801,7 @@ TEST_F(BrowserAccessibilityTest, TestIA2Attributes) {
   BrowserAccessibilityWin* root_accessible =
       manager->GetRoot()->ToBrowserAccessibilityWin();
       ASSERT_NE(nullptr, root_accessible);
-      ASSERT_EQ(2, root_accessible->PlatformChildCount());
+      ASSERT_EQ(2U, root_accessible->PlatformChildCount());
 
       BrowserAccessibilityWin* pseudo_accessible =
           root_accessible->PlatformGetChild(0)->ToBrowserAccessibilityWin();
@@ -873,7 +873,7 @@ TEST_F(BrowserAccessibilityTest, TestCaretAndSelectionInSimpleFields) {
   BrowserAccessibilityWin* root_accessible =
       manager->GetRoot()->ToBrowserAccessibilityWin();
       ASSERT_NE(nullptr, root_accessible);
-  ASSERT_EQ(2, root_accessible->PlatformChildCount());
+      ASSERT_EQ(2U, root_accessible->PlatformChildCount());
 
   BrowserAccessibilityWin* combo_box_accessible =
       root_accessible->PlatformGetChild(0)->ToBrowserAccessibilityWin();
@@ -991,12 +991,12 @@ TEST_F(BrowserAccessibilityTest, TestCaretInContentEditables) {
   BrowserAccessibilityWin* root_accessible =
       manager->GetRoot()->ToBrowserAccessibilityWin();
       ASSERT_NE(nullptr, root_accessible);
-  ASSERT_EQ(1, root_accessible->PlatformChildCount());
+      ASSERT_EQ(1U, root_accessible->PlatformChildCount());
 
   BrowserAccessibilityWin* div_editable_accessible =
       root_accessible->PlatformGetChild(0)->ToBrowserAccessibilityWin();
   ASSERT_NE(nullptr, div_editable_accessible);
-  ASSERT_EQ(2, div_editable_accessible->PlatformChildCount());
+  ASSERT_EQ(2U, div_editable_accessible->PlatformChildCount());
 
   // -2 is never a valid offset.
   LONG caret_offset = -2;
@@ -1024,7 +1024,7 @@ TEST_F(BrowserAccessibilityTest, TestCaretInContentEditables) {
   BrowserAccessibilityWin* link_accessible =
       div_editable_accessible->PlatformGetChild(1)->ToBrowserAccessibilityWin();
   ASSERT_NE(nullptr, link_accessible);
-  ASSERT_EQ(1, link_accessible->PlatformChildCount());
+  ASSERT_EQ(1U, link_accessible->PlatformChildCount());
 
   BrowserAccessibilityWin* link_text_accessible =
       link_accessible->PlatformGetChild(0)->ToBrowserAccessibilityWin();
@@ -1106,12 +1106,12 @@ TEST_F(BrowserAccessibilityTest, TestSelectionInContentEditables) {
   BrowserAccessibilityWin* root_accessible =
       manager->GetRoot()->ToBrowserAccessibilityWin();
       ASSERT_NE(nullptr, root_accessible);
-  ASSERT_EQ(1, root_accessible->PlatformChildCount());
+      ASSERT_EQ(1U, root_accessible->PlatformChildCount());
 
   BrowserAccessibilityWin* div_editable_accessible =
       root_accessible->PlatformGetChild(0)->ToBrowserAccessibilityWin();
   ASSERT_NE(nullptr, div_editable_accessible);
-  ASSERT_EQ(2, div_editable_accessible->PlatformChildCount());
+  ASSERT_EQ(2U, div_editable_accessible->PlatformChildCount());
 
   // -2 is never a valid offset.
   LONG caret_offset = -2;
@@ -1125,7 +1125,7 @@ TEST_F(BrowserAccessibilityTest, TestSelectionInContentEditables) {
   BrowserAccessibilityWin* link_accessible =
       div_editable_accessible->PlatformGetChild(1)->ToBrowserAccessibilityWin();
   ASSERT_NE(nullptr, link_accessible);
-  ASSERT_EQ(1, link_accessible->PlatformChildCount());
+  ASSERT_EQ(1U, link_accessible->PlatformChildCount());
 
   BrowserAccessibilityWin* link_text_accessible =
       link_accessible->PlatformGetChild(0)->ToBrowserAccessibilityWin();
@@ -1233,12 +1233,12 @@ TEST_F(BrowserAccessibilityTest, TestPlatformDeepestFirstLastChild) {
 
   auto root_accessible = manager->GetRoot();
   ASSERT_NE(nullptr, root_accessible);
-  ASSERT_EQ(2, root_accessible->PlatformChildCount());
+  ASSERT_EQ(2U, root_accessible->PlatformChildCount());
   auto child1_accessible = root_accessible->PlatformGetChild(0);
   ASSERT_NE(nullptr, child1_accessible);
   auto child2_accessible = root_accessible->PlatformGetChild(1);
   ASSERT_NE(nullptr, child2_accessible);
-  ASSERT_EQ(2, child2_accessible->PlatformChildCount());
+  ASSERT_EQ(2U, child2_accessible->PlatformChildCount());
   auto child2_child1_accessible = child2_accessible->PlatformGetChild(0);
   ASSERT_NE(nullptr, child2_child1_accessible);
   auto child2_child2_accessible = child2_accessible->PlatformGetChild(1);

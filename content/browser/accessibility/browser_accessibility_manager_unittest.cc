@@ -935,7 +935,7 @@ TEST(BrowserAccessibilityManagerTest, MAYBE_BoundsForRangeOnParentElement) {
             root_accessible->GetLocalBoundsForRange(0, 4).ToString());
 }
 
-TEST(BrowserAccessibilityManagerTest, NextPreviousInTreeOrder) {
+TEST(BrowserAccessibilityManagerTest, TestNextPreviousInTreeOrder) {
   ui::AXNodeData root;
   root.id = 1;
   root.role = ui::AX_ROLE_ROOT_WEB_AREA;
@@ -963,10 +963,17 @@ TEST(BrowserAccessibilityManagerTest, NextPreviousInTreeOrder) {
           new CountedBrowserAccessibilityFactory()));
 
   auto root_accessible = manager->GetRoot();
+  ASSERT_NE(nullptr, root_accessible);
+  ASSERT_EQ(3U, root_accessible->PlatformChildCount());
   auto node2_accessible = root_accessible->PlatformGetChild(0);
+  ASSERT_NE(nullptr, node2_accessible);
   auto node3_accessible = root_accessible->PlatformGetChild(1);
+  ASSERT_NE(nullptr, node3_accessible);
+  ASSERT_EQ(1U, node3_accessible->PlatformChildCount());
   auto node4_accessible = node3_accessible->PlatformGetChild(0);
+  ASSERT_NE(nullptr, node4_accessible);
   auto node5_accessible = root_accessible->PlatformGetChild(2);
+  ASSERT_NE(nullptr, node5_accessible);
 
   EXPECT_EQ(nullptr, manager->NextInTreeOrder(nullptr));
   EXPECT_EQ(node2_accessible, manager->NextInTreeOrder(root_accessible));
@@ -982,7 +989,7 @@ TEST(BrowserAccessibilityManagerTest, NextPreviousInTreeOrder) {
   EXPECT_EQ(root_accessible, manager->PreviousInTreeOrder(node2_accessible));
 }
 
-TEST(BrowserAccessibilityManagerTest, NextPreviousTextOnlyObject) {
+TEST(BrowserAccessibilityManagerTest, TestNextPreviousTextOnlyObject) {
   ui::AXNodeData root;
   root.id = 1;
   root.role = ui::AX_ROLE_ROOT_WEB_AREA;
@@ -1031,14 +1038,26 @@ TEST(BrowserAccessibilityManagerTest, NextPreviousTextOnlyObject) {
           new CountedBrowserAccessibilityFactory()));
 
   auto root_accessible = manager->GetRoot();
+  ASSERT_NE(nullptr, root_accessible);
+  ASSERT_EQ(4U, root_accessible->PlatformChildCount());
   auto node2_accessible = root_accessible->PlatformGetChild(0);
+  ASSERT_NE(nullptr, node2_accessible);
   auto text1_accessible = root_accessible->PlatformGetChild(1);
+  ASSERT_NE(nullptr, text1_accessible);
   auto node3_accessible = root_accessible->PlatformGetChild(2);
+  ASSERT_NE(nullptr, node3_accessible);
+  ASSERT_EQ(3U, node3_accessible->PlatformChildCount());
   auto text2_accessible = node3_accessible->PlatformGetChild(0);
+  ASSERT_NE(nullptr, text2_accessible);
   auto node4_accessible = node3_accessible->PlatformGetChild(1);
+  ASSERT_NE(nullptr, node4_accessible);
   auto text3_accessible = node3_accessible->PlatformGetChild(2);
+  ASSERT_NE(nullptr, text3_accessible);
   auto node5_accessible = root_accessible->PlatformGetChild(3);
+  ASSERT_NE(nullptr, node5_accessible);
+  ASSERT_EQ(1U, node5_accessible->PlatformChildCount());
   auto text4_accessible = node5_accessible->PlatformGetChild(0);
+  ASSERT_NE(nullptr, text4_accessible);
 
   EXPECT_EQ(nullptr, manager->NextTextOnlyObject(nullptr));
   EXPECT_EQ(text1_accessible, manager->NextTextOnlyObject(root_accessible));

@@ -138,11 +138,11 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
   BrowserAccessibility* GetRoot();
 
   // Returns a pointer to the BrowserAccessibility object for a given AXNode.
-  BrowserAccessibility* GetFromAXNode(ui::AXNode* node);
+  BrowserAccessibility* GetFromAXNode(const ui::AXNode* node) const;
 
   // Return a pointer to the object corresponding to the given id,
   // does not make a new reference.
-  BrowserAccessibility* GetFromID(int32 id);
+  BrowserAccessibility* GetFromID(int32 id) const;
 
   // If this tree has a parent tree, return the parent node in that tree.
   BrowserAccessibility* GetParentNodeFromParentTree();

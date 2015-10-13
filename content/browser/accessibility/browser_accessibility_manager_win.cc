@@ -290,6 +290,7 @@ void BrowserAccessibilityManagerWin::NotifyAccessibilityEvent(
 
 void BrowserAccessibilityManagerWin::OnNodeCreated(ui::AXTree* tree,
                                                    ui::AXNode* node) {
+  DCHECK(node);
   BrowserAccessibilityManager::OnNodeCreated(tree, node);
   BrowserAccessibility* obj = GetFromAXNode(node);
   if (!obj)
@@ -303,6 +304,7 @@ void BrowserAccessibilityManagerWin::OnNodeCreated(ui::AXTree* tree,
 
 void BrowserAccessibilityManagerWin::OnNodeWillBeDeleted(ui::AXTree* tree,
                                                          ui::AXNode* node) {
+  DCHECK(node);
   BrowserAccessibilityManager::OnNodeWillBeDeleted(tree, node);
   BrowserAccessibility* obj = GetFromAXNode(node);
   if (!obj)
@@ -337,7 +339,9 @@ void BrowserAccessibilityManagerWin::OnAtomicUpdateFinished(
   // The first step moves win_attributes_ to old_win_attributes_ and then
   // recomputes all of win_attributes_ other than IAccessibleText.
   for (size_t i = 0; i < changes.size(); ++i) {
-    BrowserAccessibility* obj = GetFromAXNode(changes[i].node);
+    const ui::AXNode* changed_node = changes[i].node;
+    DCHECK(changed_node);
+    BrowserAccessibility* obj = GetFromAXNode(changed_node);
     if (obj && obj->IsNative() && !obj->PlatformIsChildOfLeaf())
       obj->ToBrowserAccessibilityWin()->UpdateStep1ComputeWinAttributes();
   }
@@ -346,7 +350,9 @@ void BrowserAccessibilityManagerWin::OnAtomicUpdateFinished(
   // concatenation of all of its child text nodes, so it can't run until
   // the text of all of the nodes was computed in the previous step.
   for (size_t i = 0; i < changes.size(); ++i) {
-    BrowserAccessibility* obj = GetFromAXNode(changes[i].node);
+    const ui::AXNode* changed_node = changes[i].node;
+    DCHECK(changed_node);
+    BrowserAccessibility* obj = GetFromAXNode(changed_node);
     if (obj && obj->IsNative() && !obj->PlatformIsChildOfLeaf())
       obj->ToBrowserAccessibilityWin()->UpdateStep2ComputeHypertext();
   }
@@ -360,7 +366,9 @@ void BrowserAccessibilityManagerWin::OnAtomicUpdateFinished(
   // At the end, it deletes old_win_attributes_ since they're not needed
   // anymore.
   for (size_t i = 0; i < changes.size(); ++i) {
-    BrowserAccessibility* obj = GetFromAXNode(changes[i].node);
+    const ui::AXNode* changed_node = changes[i].node;
+    DCHECK(changed_node);
+    BrowserAccessibility* obj = GetFromAXNode(changed_node);
     if (obj && obj->IsNative() && !obj->PlatformIsChildOfLeaf()) {
       obj->ToBrowserAccessibilityWin()->UpdateStep3FireEvents(
           changes[i].type == AXTreeDelegate::SUBTREE_CREATED);

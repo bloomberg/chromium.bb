@@ -175,7 +175,10 @@ void BrowserAccessibilityManagerMac::OnAtomicUpdateFinished(
   for (size_t i = 0; i < changes.size(); ++i) {
     if (changes[i].type != NODE_CREATED && changes[i].type != SUBTREE_CREATED)
       continue;
-    BrowserAccessibility* obj = GetFromAXNode(changes[i].node);
+
+    const ui::AXNode* changed_node = changes[i].node;
+    DCHECK(changed_node);
+    BrowserAccessibility* obj = GetFromAXNode(changed_node);
     if (obj && obj->HasStringAttribute(ui::AX_ATTR_LIVE_STATUS)) {
       created_live_region = true;
       break;

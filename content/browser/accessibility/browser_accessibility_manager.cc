@@ -177,16 +177,18 @@ BrowserAccessibility* BrowserAccessibilityManager::GetRoot() {
 }
 
 BrowserAccessibility* BrowserAccessibilityManager::GetFromAXNode(
-    ui::AXNode* node) {
+    const ui::AXNode* node) const {
+  if (!node)
+    return nullptr;
   return GetFromID(node->id());
 }
 
-BrowserAccessibility* BrowserAccessibilityManager::GetFromID(int32 id) {
-  base::hash_map<int32, BrowserAccessibility*>::iterator iter =
-      id_wrapper_map_.find(id);
+BrowserAccessibility* BrowserAccessibilityManager::GetFromID(int32 id) const {
+  const auto iter = id_wrapper_map_.find(id);
   if (iter != id_wrapper_map_.end())
     return iter->second;
-  return NULL;
+
+  return nullptr;
 }
 
 BrowserAccessibility*
@@ -251,6 +253,9 @@ void BrowserAccessibilityManager::NavigationFailed() {
 }
 
 void BrowserAccessibilityManager::GotMouseDown() {
+  if (!focus_)
+    return;
+
   osk_state_ = OSK_ALLOWED_WITHIN_FOCUSED_OBJECT;
   NotifyAccessibilityEvent(ui::AX_EVENT_FOCUS, GetFromAXNode(focus_));
 }
@@ -387,12 +392,13 @@ BrowserAccessibility* BrowserAccessibilityManager::GetActiveDescendantFocus(
 BrowserAccessibility* BrowserAccessibilityManager::GetFocus(
     BrowserAccessibility* root) {
   if (!focus_)
-    return NULL;
+    return nullptr;
 
   if (root && !focus_->IsDescendantOf(root->node()))
-    return NULL;
+    return nullptr;
 
   BrowserAccessibility* obj = GetFromAXNode(focus_);
+  DCHECK(obj);
   if (obj->HasIntAttribute(ui::AX_ATTR_CHILD_TREE_ID)) {
     BrowserAccessibilityManager* child_manager =
         BrowserAccessibilityManager::FromID(
@@ -478,7 +484,7 @@ BrowserAccessibility* BrowserAccessibilityManager::NextInTreeOrder(
     return node->PlatformGetChild(0);
 
   while (node) {
-    auto sibling = node->GetNextSibling();
+    const auto sibling = node->GetNextSibling();
     if (sibling)
       return sibling;
 
@@ -493,7 +499,7 @@ BrowserAccessibility* BrowserAccessibilityManager::PreviousInTreeOrder(
   if (!node)
     return nullptr;
 
-  auto sibling = node->GetPreviousSibling();
+  const auto sibling = node->GetPreviousSibling();
   if (!sibling)
     return node->GetParent();
 
@@ -523,6 +529,7 @@ BrowserAccessibility* BrowserAccessibilityManager::NextTextOnlyObject(
 
 void BrowserAccessibilityManager::OnNodeWillBeDeleted(ui::AXTree* tree,
                                                       ui::AXNode* node) {
+  DCHECK(node);
   if (node == focus_ && tree_) {
     if (node != tree_->root())
       SetFocus(tree_->root(), false);
@@ -537,6 +544,7 @@ void BrowserAccessibilityManager::OnNodeWillBeDeleted(ui::AXTree* tree,
 
 void BrowserAccessibilityManager::OnSubtreeWillBeDeleted(ui::AXTree* tree,
                                                          ui::AXNode* node) {
+  DCHECK(node);
   BrowserAccessibility* obj = GetFromAXNode(node);
   if (obj)
     obj->OnSubtreeWillBeDeleted();
@@ -552,6 +560,7 @@ void BrowserAccessibilityManager::OnNodeCreated(ui::AXTree* tree,
 
 void BrowserAccessibilityManager::OnNodeChanged(ui::AXTree* tree,
                                                 ui::AXNode* node) {
+  DCHECK(node);
   GetFromAXNode(node)->OnDataChanged();
 }
 
