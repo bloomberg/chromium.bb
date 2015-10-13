@@ -40,7 +40,6 @@ WebDOMProgressEvent::WebDOMProgressEvent(const WebString& type, bool lengthIsCom
     : WebDOMEvent(ProgressEvent::create(type, lengthIsComputable, loaded, total))
 {
     ASSERT(m_private.get());
-    ASSERT(isProgressEvent());
 }
 
 } // namespace blink

@@ -33,12 +33,6 @@
 
 #include "../platform/WebCommon.h"
 #include "../platform/WebPrivatePtr.h"
-#include "../platform/WebString.h"
-#include "WebNode.h"
-
-#if BLINK_IMPLEMENTATION
-namespace WTF { template <typename T> class PassRefPtr; }
-#endif
 
 namespace blink {
 
@@ -46,12 +40,6 @@ class Event;
 
 class WebDOMEvent {
 public:
-    enum PhaseType {
-        CapturingPhase     = 1,
-        AtTarget           = 2,
-        BubblingPhase      = 3
-    };
-
     ~WebDOMEvent() { reset(); }
 
     WebDOMEvent() { }
@@ -66,30 +54,6 @@ public:
     BLINK_EXPORT void assign(const WebDOMEvent&);
 
     bool isNull() const { return m_private.isNull(); }
-
-    BLINK_EXPORT WebString type() const;
-    BLINK_EXPORT WebNode target() const;
-    BLINK_EXPORT WebNode currentTarget() const;
-
-    BLINK_EXPORT PhaseType eventPhase() const;
-    BLINK_EXPORT bool bubbles() const;
-    BLINK_EXPORT bool cancelable() const;
-
-    BLINK_EXPORT bool isUIEvent() const;
-    BLINK_EXPORT bool isMouseEvent() const;
-    BLINK_EXPORT bool isMutationEvent() const;
-    BLINK_EXPORT bool isKeyboardEvent() const;
-    BLINK_EXPORT bool isTextEvent() const;
-    BLINK_EXPORT bool isCompositionEvent() const;
-    BLINK_EXPORT bool isDragEvent() const;
-    BLINK_EXPORT bool isClipboardEvent() const;
-    BLINK_EXPORT bool isMessageEvent() const;
-    BLINK_EXPORT bool isWheelEvent() const;
-    BLINK_EXPORT bool isBeforeTextInsertedEvent() const;
-    BLINK_EXPORT bool isPageTransitionEvent() const;
-    BLINK_EXPORT bool isPopStateEvent() const;
-    BLINK_EXPORT bool isProgressEvent() const;
-    BLINK_EXPORT bool isXMLHttpRequestProgressEvent() const;
 
 #if BLINK_IMPLEMENTATION
     WebDOMEvent(const PassRefPtrWillBeRawPtr<Event>&);

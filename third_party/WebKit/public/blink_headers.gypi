@@ -360,7 +360,6 @@
       "web/WebDOMFileSystem.h",
       "web/WebDOMMediaStreamTrack.h",
       "web/WebDOMMessageEvent.h",
-      "web/WebDOMMouseEvent.h",
       "web/WebDOMProgressEvent.h",
       "web/WebDOMResourceProgressEvent.h",
       "web/WebDataSource.h",

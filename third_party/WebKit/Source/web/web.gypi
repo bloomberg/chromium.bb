@@ -123,7 +123,6 @@
       'WebDOMFileSystem.cpp',
       'WebDOMMediaStreamTrack.cpp',
       'WebDOMMessageEvent.cpp',
-      'WebDOMMouseEvent.cpp',
       'WebDOMProgressEvent.cpp',
       'WebDOMResourceProgressEvent.cpp',
       'WebDataSourceImpl.cpp',
