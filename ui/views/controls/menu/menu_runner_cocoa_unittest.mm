@@ -53,14 +53,26 @@ class TestModel : public ui::SimpleMenuModel {
 
 class MenuRunnerCocoaTest : public ViewsTestBase {
  public:
+  enum {
+    kWindowHeight = 200,
+    kWindowOffset = 100,
+  };
+
   MenuRunnerCocoaTest() {}
   ~MenuRunnerCocoaTest() override {}
 
   void SetUp() override {
+    const int kWindowWidth = 300;
     ViewsTestBase::SetUp();
 
     menu_.reset(new TestModel());
     menu_->AddCheckItem(0, base::ASCIIToUTF16("Menu Item"));
+
+    parent_ = new views::Widget();
+    parent_->Init(CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS));
+    parent_->SetBounds(
+        gfx::Rect(kWindowOffset, kWindowOffset, kWindowWidth, kWindowHeight));
+    parent_->Show();
 
     runner_ = new internal::MenuRunnerImplCocoa(menu_.get());
     EXPECT_FALSE(runner_->IsRunning());
@@ -72,6 +84,7 @@ class MenuRunnerCocoaTest : public ViewsTestBase {
       runner_ = NULL;
     }
 
+    parent_->CloseNow();
     ViewsTestBase::TearDown();
   }
 
@@ -81,8 +94,8 @@ class MenuRunnerCocoaTest : public ViewsTestBase {
         EXPECT_TRUE(runner_->IsRunning());
         block();
     });
-    return runner_->RunMenuAt(
-        NULL, NULL, gfx::Rect(), MENU_ANCHOR_TOPLEFT, MenuRunner::CONTEXT_MENU);
+    return runner_->RunMenuAt(parent_, NULL, gfx::Rect(), MENU_ANCHOR_TOPLEFT,
+                              MenuRunner::CONTEXT_MENU);
   }
 
   // Runs then cancels a combobox menu and captures the frame of the anchoring
@@ -168,15 +181,6 @@ TEST_F(MenuRunnerCocoaTest, DeleteWithoutRunning) {
 
 // Tests anchoring of the menus used for toolkit-views Comboboxes.
 TEST_F(MenuRunnerCocoaTest, ComboboxAnchoring) {
-  const int kWindowHeight = 200;
-  const int kWindowOffset = 100;
-
-  parent_ = new views::Widget();
-  parent_->Init(CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS));
-  parent_->SetBounds(
-      gfx::Rect(kWindowOffset, kWindowOffset, 300, kWindowHeight));
-  parent_->Show();
-
   // Combobox at 20,10 in the Widget.
   const gfx::Rect combobox_rect(20, 10, 80, 50);
 
@@ -215,8 +219,6 @@ TEST_F(MenuRunnerCocoaTest, ComboboxAnchoring) {
   base::i18n::SetICUDefaultLocale("he");
   RunMenuAt(anchor_rect);
   EXPECT_EQ(combobox_rect.right(), last_anchor_frame_.origin.x);
-
-  parent_->CloseNow();
 }
 
 }  // namespace test

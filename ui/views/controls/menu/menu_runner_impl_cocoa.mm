@@ -120,14 +120,14 @@ MenuRunner::RunResult MenuRunnerImplCocoa::RunMenuAt(Widget* parent,
                                                      int32 run_types) {
   DCHECK(run_types & kNativeRunTypes);
   DCHECK(!IsRunning());
+  DCHECK(parent);
   closing_event_time_ = base::TimeDelta();
 
   if (run_types & MenuRunner::CONTEXT_MENU) {
     [NSMenu popUpContextMenu:[menu_controller_ menu]
                    withEvent:[NSApp currentEvent]
-                     forView:nil];
+                     forView:parent->GetNativeView()];
   } else if (run_types & MenuRunner::COMBOBOX) {
-    DCHECK(parent);
     NSMenuItem* checked_item = FirstCheckedItem(menu_controller_);
     base::scoped_nsobject<NSView> anchor_view(
         CreateMenuAnchorView(parent->GetNativeWindow(), bounds, checked_item));
