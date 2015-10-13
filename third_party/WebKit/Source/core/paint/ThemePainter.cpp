@@ -246,7 +246,7 @@ void ThemePainter::paintSliderTicks(const LayoutObject& o, const PaintInfo& pain
         return;
 
     HTMLInputElement* input = toHTMLInputElement(node);
-    if (input->type() != InputTypeNames::range)
+    if (input->type() != InputTypeNames::range || !input->userAgentShadowRoot()->hasChildren())
         return;
 
     HTMLDataListElement* dataList = input->dataList();

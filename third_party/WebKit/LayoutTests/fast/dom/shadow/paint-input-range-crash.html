@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<input type=range list=foo><datalist id=foo></datalist>
+<script>
+test(function() {
+    var input = document.querySelector('input');
+    input.createShadowRoot().innerHTML = 'a';
+}, "Reproduction case for crbug.com/542614 (createShadowRoot on input with datalist)");
+</script>
