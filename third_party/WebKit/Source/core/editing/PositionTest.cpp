@@ -18,6 +18,29 @@ TEST_F(PositionTest, NodeAsRangeLastNodeNull)
     EXPECT_EQ(nullptr, PositionInComposedTree().nodeAsRangeLastNode());
 }
 
+TEST_F(PositionTest, editingPositionOfWithEditingIgnoresContent)
+{
+    const char* bodyContent = "<textarea id=textarea></textarea><a id=child1>1</a><b id=child2>2</b>";
+    setBodyContent(bodyContent);
+    Node* textarea = document().getElementById("textarea");
+
+    EXPECT_EQ(Position::beforeNode(textarea), Position::editingPositionOf(textarea, 0));
+    EXPECT_EQ(Position::afterNode(textarea), Position::editingPositionOf(textarea, 1));
+    EXPECT_EQ(Position::afterNode(textarea), Position::editingPositionOf(textarea, 2));
+
+    // Change DOM tree to
+    // <textarea id=textarea><a id=child1>1</a><b id=child2>2</b></textarea>
+    Node* child1 = document().getElementById("child1");
+    Node* child2 = document().getElementById("child2");
+    textarea->appendChild(child1);
+    textarea->appendChild(child2);
+
+    EXPECT_EQ(Position::beforeNode(textarea), Position::editingPositionOf(textarea, 0));
+    EXPECT_EQ(Position::afterNode(textarea), Position::editingPositionOf(textarea, 1));
+    EXPECT_EQ(Position::afterNode(textarea), Position::editingPositionOf(textarea, 2));
+    EXPECT_EQ(Position::afterNode(textarea), Position::editingPositionOf(textarea, 3));
+}
+
 TEST_F(PositionTest, NodeAsRangeLastNode)
 {
     const char* bodyContent = "<p id='p1'>11</p><p id='p2'></p><p id='p3'>33</p>";
