@@ -12,10 +12,22 @@ namespace blink {
 
 CSSCustomIdentValue::CSSCustomIdentValue(const String& str)
     : CSSValue(CustomIdentClass)
-    , m_string(str) { }
+    , m_string(str)
+    , m_propertyId(CSSPropertyInvalid) { }
+
+CSSCustomIdentValue::CSSCustomIdentValue(CSSPropertyID id)
+    : CSSValue(CustomIdentClass)
+    , m_string()
+    , m_propertyId(id)
+{
+    ASSERT(isKnownPropertyID());
+}
+
 
 String CSSCustomIdentValue::customCSSText() const
 {
+    if (isKnownPropertyID())
+        return getPropertyNameAtomicString(m_propertyId);
     return quoteCSSStringIfNeeded(m_string);
 }
 

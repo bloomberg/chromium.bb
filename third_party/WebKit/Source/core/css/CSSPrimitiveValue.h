@@ -101,7 +101,6 @@ public:
         Calc,
         CalcPercentageWithNumber,
         CalcPercentageWithLength,
-        PropertyID,
         ValueID,
 
         // This value is used to handle quirky margins in reflow roots (body, td, and th) like WinIE.
@@ -176,7 +175,6 @@ public:
     bool isLength() const { return isLength(typeWithCalcResolved()); }
     bool isNumber() const { return typeWithCalcResolved() == UnitType::Number || typeWithCalcResolved() == UnitType::Integer; }
     bool isPercentage() const { return typeWithCalcResolved() == UnitType::Percentage; }
-    bool isPropertyID() const { return type() == UnitType::PropertyID; }
     bool isPx() const { return typeWithCalcResolved() == UnitType::Pixels; }
     bool isRGBColor() const { return type() == UnitType::RGBColor; }
     bool isTime() const { return type() == UnitType::Seconds || type() == UnitType::Milliseconds; }
@@ -194,10 +192,6 @@ public:
     static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> createIdentifier(CSSValueID valueID)
     {
         return adoptRefWillBeNoop(new CSSPrimitiveValue(valueID));
-    }
-    static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> createIdentifier(CSSPropertyID propertyID)
-    {
-        return adoptRefWillBeNoop(new CSSPrimitiveValue(propertyID));
     }
     static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> createColor(RGBA32 rgbValue)
     {
@@ -239,7 +233,6 @@ public:
     RGBA32 getRGBA32Value() const { ASSERT(isRGBColor()); return m_value.rgbcolor; }
 
     CSSCalcValue* cssCalcValue() const { ASSERT(isCalculated()); return m_value.calc; }
-    CSSPropertyID getPropertyID() const { ASSERT(isPropertyID()); return m_value.propertyID; }
 
     CSSValueID getValueID() const { return type() == UnitType::ValueID ? m_value.valueID : CSSValueInvalid; }
 
@@ -261,7 +254,6 @@ public:
 
 private:
     CSSPrimitiveValue(CSSValueID);
-    CSSPrimitiveValue(CSSPropertyID);
     CSSPrimitiveValue(RGBA32 color);
     CSSPrimitiveValue(const Length&, float zoom);
     CSSPrimitiveValue(double, UnitType);
@@ -292,7 +284,6 @@ private:
     inline UnitType type() const { return static_cast<UnitType>(m_primitiveUnitType); }
 
     union {
-        CSSPropertyID propertyID;
         CSSValueID valueID;
         double num;
         RGBA32 rgbcolor;

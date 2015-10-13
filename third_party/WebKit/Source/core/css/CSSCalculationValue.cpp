@@ -124,7 +124,6 @@ static bool hasDoubleValue(CSSPrimitiveValue::UnitType type)
     case CSSPrimitiveValue::UnitType::Calc:
     case CSSPrimitiveValue::UnitType::CalcPercentageWithNumber:
     case CSSPrimitiveValue::UnitType::CalcPercentageWithLength:
-    case CSSPrimitiveValue::UnitType::PropertyID:
     case CSSPrimitiveValue::UnitType::ValueID:
     case CSSPrimitiveValue::UnitType::QuirkyEms:
         return false;

@@ -366,12 +366,14 @@ CSSTransitionData::TransitionProperty CSSToStyleMap::mapAnimationProperty(const 
 {
     if (value.isInitialValue())
         return CSSTransitionData::initialProperty();
-    if (value.isCustomIdentValue())
-        return CSSTransitionData::TransitionProperty(toCSSCustomIdentValue(value).value());
-    const CSSPrimitiveValue& primitiveValue = toCSSPrimitiveValue(value);
-    if (primitiveValue.getValueID() == CSSValueNone)
-        return CSSTransitionData::TransitionProperty(CSSTransitionData::TransitionNone);
-    return CSSTransitionData::TransitionProperty(primitiveValue.getPropertyID());
+    if (value.isCustomIdentValue()) {
+        const CSSCustomIdentValue& customIdentValue = toCSSCustomIdentValue(value);
+        if (customIdentValue.isKnownPropertyID())
+            return CSSTransitionData::TransitionProperty(customIdentValue.valueAsPropertyID());
+        return CSSTransitionData::TransitionProperty(customIdentValue.value());
+    }
+    ASSERT(toCSSPrimitiveValue(value).getValueID() == CSSValueNone);
+    return CSSTransitionData::TransitionProperty(CSSTransitionData::TransitionNone);
 }
 
 PassRefPtr<TimingFunction> CSSToStyleMap::mapAnimationTimingFunction(const CSSValue& value, bool allowStepMiddle)

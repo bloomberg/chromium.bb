@@ -63,9 +63,9 @@ PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSValuePool::createIdentifierValue(CS
     return m_identifierValueCache[ident];
 }
 
-PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSValuePool::createIdentifierValue(CSSPropertyID ident)
+PassRefPtrWillBeRawPtr<CSSCustomIdentValue> CSSValuePool::createIdentifierValue(CSSPropertyID ident)
 {
-    return CSSPrimitiveValue::createIdentifier(ident);
+    return CSSCustomIdentValue::create(ident);
 }
 
 PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSValuePool::createColorValue(unsigned rgbValue)

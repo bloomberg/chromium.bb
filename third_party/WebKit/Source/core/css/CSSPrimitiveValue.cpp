@@ -190,11 +190,6 @@ CSSPrimitiveValue::UnitType CSSPrimitiveValue::typeWithCalcResolved() const
     return UnitType::Unknown;
 }
 
-static const AtomicString& propertyName(CSSPropertyID propertyID)
-{
-    return getPropertyNameAtomicString(propertyID);
-}
-
 static const AtomicString& valueName(CSSValueID valueID)
 {
     ASSERT_ARG(valueID, valueID >= 0);
@@ -215,13 +210,6 @@ CSSPrimitiveValue::CSSPrimitiveValue(CSSValueID valueID)
 {
     init(UnitType::ValueID);
     m_value.valueID = valueID;
-}
-
-CSSPrimitiveValue::CSSPrimitiveValue(CSSPropertyID propertyID)
-    : CSSValue(PrimitiveClass)
-{
-    init(UnitType::PropertyID);
-    m_value.propertyID = propertyID;
 }
 
 CSSPrimitiveValue::CSSPrimitiveValue(double num, UnitType type)
@@ -373,7 +361,6 @@ void CSSPrimitiveValue::cleanup()
     case UnitType::Fraction:
     case UnitType::RGBColor:
     case UnitType::Unknown:
-    case UnitType::PropertyID:
     case UnitType::ValueID:
         break;
     }
@@ -799,7 +786,6 @@ const char* CSSPrimitiveValue::unitTypeToString(UnitType type)
         return "vmax";
     case UnitType::Unknown:
     case UnitType::ValueID:
-    case UnitType::PropertyID:
     case UnitType::RGBColor:
     case UnitType::Calc:
     case UnitType::CalcPercentageWithNumber:
@@ -859,9 +845,6 @@ String CSSPrimitiveValue::customCSSText() const
     case UnitType::ValueID:
         text = valueName(m_value.valueID);
         break;
-    case UnitType::PropertyID:
-        text = propertyName(m_value.propertyID);
-        break;
     case UnitType::RGBColor: {
         text = Color(m_value.rgbcolor).serializedAsCSSComponentValue();
         break;
@@ -917,8 +900,6 @@ bool CSSPrimitiveValue::equals(const CSSPrimitiveValue& other) const
     case UnitType::ViewportMax:
     case UnitType::Fraction:
         return m_value.num == other.m_value.num;
-    case UnitType::PropertyID:
-        return m_value.propertyID == other.m_value.propertyID;
     case UnitType::ValueID:
         return m_value.valueID == other.m_value.valueID;
     case UnitType::RGBColor:

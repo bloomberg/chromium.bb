@@ -671,12 +671,11 @@ void StyleBuilderFunctions::applyValueCSSPropertyWillChange(StyleResolverState& 
     Vector<CSSPropertyID> willChangeProperties;
 
     for (auto& willChangeValue : toCSSValueList(*value)) {
-        CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(willChangeValue.get());
-        if (primitiveValue->isPropertyID())
-            willChangeProperties.append(primitiveValue->getPropertyID());
-        else if (primitiveValue->getValueID() == CSSValueContents)
+        if (willChangeValue->isCustomIdentValue())
+            willChangeProperties.append(toCSSCustomIdentValue(*willChangeValue).valueAsPropertyID());
+        else if (toCSSPrimitiveValue(*willChangeValue).getValueID() == CSSValueContents)
             willChangeContents = true;
-        else if (primitiveValue->getValueID() == CSSValueScrollPosition)
+        else if (toCSSPrimitiveValue(*willChangeValue).getValueID() == CSSValueScrollPosition)
             willChangeScrollPosition = true;
         else
             ASSERT_NOT_REACHED();
