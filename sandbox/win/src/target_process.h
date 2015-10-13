@@ -103,12 +103,12 @@ class TargetProcess {
   // The token associated with the process. It provides the core of the
   // sbox security.
   base::win::ScopedHandle lockdown_token_;
-  // The lowbox token associated with the process. This token is set after the
-  // process creation.
-  base::win::ScopedHandle lowbox_token_;
   // The token given to the initial thread so that the target process can
   // start. It has more powers than the lockdown_token.
   base::win::ScopedHandle initial_token_;
+  // The lowbox token associated with the process. This token is set after the
+  // process creation.
+  base::win::ScopedHandle lowbox_token_;
   // Kernel handle to the shared memory used by the IPC server.
   base::win::ScopedHandle shared_section_;
   // Job object containing the target process.
