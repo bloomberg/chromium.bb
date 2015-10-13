@@ -232,6 +232,12 @@ UNADDRESSABLE ACCESS
 name=::Crasher::Run deliberate crash
 *!base::`anonymous namespace'::Crasher::Run
 
+WARNING
+name=AllocationRegister guard page access deliberate crash
+base.dll!base::trace_event::AllocationRegister::Insert
+*!base::trace_event::AllocationRegisterTest_OverflowDeathTest_Test::TestBody
+*!testing::internal::HandleExceptionsInMethodIfSupported<>
+
 ############################
 # Benign issues in Chromium
 
@@ -748,10 +754,4 @@ UNADDRESSABLE ACCESS
 name=bug_536803
 *!blink::SecurityOrigin::addSuborigin
 *!blink::SecurityOriginTest_Suborigins_Test::TestBody
-*!testing::internal::HandleExceptionsInMethodIfSupported<>
-
-WARNING
-name=bug_542501
-base.dll!base::trace_event::AllocationRegister::Insert
-*!base::trace_event::AllocationRegisterTest_OverflowDeathTest_Test::TestBody
 *!testing::internal::HandleExceptionsInMethodIfSupported<>
