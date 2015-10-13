@@ -51,10 +51,8 @@ class MemoryHealthPlan(_MemoryInfra):
 
   @classmethod
   def ValueCanBeAddedPredicate(cls, value, is_first_result):
-    # TODO(perezju): Do not ignore baidu failures http://crbug.com/538143
     return (value.tir_label in ['foreground', 'background']
-            and value.name.startswith('memory_')
-            and not ('baidu' in value.page.name and value.values is None))
+            and value.name.startswith('memory_'))
 
 
 # TODO(bashi): Workaround for http://crbug.com/532075
@@ -86,8 +84,9 @@ class RendererMemoryBlinkMemoryMobile(_MemoryInfra):
     return bool(cls._RE_RENDERER_VALUES.match(value.name))
 
 
-# Disabled on all non android bots see http://crbug.com/540022
-@benchmark.Enabled('android')
+# Disabled on reference builds because they don't support the new
+# Tracing.requestMemoryDump DevTools API. See http://crbug.com/540022.
+@benchmark.Disabled('reference')
 class MemoryBenchmarkTop10Mobile(_MemoryInfra):
   """Timeline based benchmark for measuring memory on top 10 mobile sites."""
 

@@ -15,6 +15,7 @@ class MemoryInfraTop10MobilePage(top_10_mobile.Top10MobilePage):
 
   def RunPageInteractions(self, action_runner):
     action_runner.tab.WaitForDocumentReadyStateToBeComplete()
+    action_runner.Wait(1)  # See crbug.com/540022#c17.
     with action_runner.CreateInteraction('foreground'):
       action_runner.Wait(DUMP_WAIT_TIME)
       action_runner.ForceGarbageCollection()
