@@ -17,6 +17,7 @@
 #include "media/base/audio_pull_fifo.h"
 #include "media/base/audio_renderer_sink.h"
 #include "media/base/channel_layout.h"
+#include "media/base/output_device.h"
 
 namespace media {
 class AudioOutputDevice;
@@ -35,7 +36,8 @@ class WebRtcAudioRendererSource;
 // for connecting WebRtc MediaStream with the audio pipeline.
 class CONTENT_EXPORT WebRtcAudioRenderer
     : NON_EXPORTED_BASE(public media::AudioRendererSink::RenderCallback),
-      NON_EXPORTED_BASE(public MediaStreamAudioRenderer) {
+      NON_EXPORTED_BASE(public MediaStreamAudioRenderer),
+      NON_EXPORTED_BASE(public media::OutputDevice) {
  public:
   // This is a little utility class that holds the configured state of an audio
   // stream.
@@ -120,6 +122,13 @@ class CONTENT_EXPORT WebRtcAudioRenderer
   base::TimeDelta GetCurrentRenderTime() const override;
   bool IsLocalRenderer() const override;
 
+  // media::OutputDevice implementation
+  void SwitchOutputDevice(const std::string& device_id,
+                          const url::Origin& security_origin,
+                          const media::SwitchOutputDeviceCB& callback) override;
+  media::AudioParameters GetOutputParameters() override;
+  media::OutputDeviceStatus GetDeviceStatus() override;
+
   // Called when an audio renderer, either the main or a proxy, starts playing.
   // Here we maintain a reference count of how many renderers are currently
   // playing so that the shared play state of all the streams can be reflected
@@ -150,6 +159,7 @@ class CONTENT_EXPORT WebRtcAudioRenderer
 
   // Used to DCHECK that we are called on the correct thread.
   base::ThreadChecker thread_checker_;
+  base::ThreadChecker audio_renderer_thread_checker_;
 
   // Flag to keep track the state of the renderer.
   State state_;
@@ -187,6 +197,10 @@ class CONTENT_EXPORT WebRtcAudioRenderer
       const scoped_refptr<webrtc::MediaStreamInterface>& media_stream,
       PlayingState* state);
 
+  // Updates |sink_params_|, |audio_fifo_| and |fifo_delay_milliseconds_| based
+  // on |sink_|, and initializes |sink_|.
+  void PrepareSink();
+
   // The RenderFrame in which the audio is rendered into |sink_|.
   const int source_render_frame_id_;
   const int session_id_;
@@ -202,7 +216,9 @@ class CONTENT_EXPORT WebRtcAudioRenderer
   // Audio data source from the browser process.
   WebRtcAudioRendererSource* source_;
 
-  // Protects access to |state_|, |source_|, |sink_| and |current_time_|.
+  // Protects access to |state_|, |source_|, |audio_fifo_|,
+  // |audio_delay_milliseconds_|, |fifo_delay_milliseconds_|, |current_time_|,
+  // |sink_params_| and |render_callback_count_|
   mutable base::Lock lock_;
 
   // Ref count for the MediaPlayers which are playing audio.
@@ -231,9 +247,9 @@ class CONTENT_EXPORT WebRtcAudioRenderer
   media::AudioParameters sink_params_;
 
   // The preferred device id of the output device or empty for the default
-  // output device.
-  const std::string output_device_id_;
-  const url::Origin security_origin_;
+  // output device. Can change as a result of a SetSinkId() call.
+  std::string output_device_id_;
+  url::Origin security_origin_;
 
   // Maps audio sources to a list of active audio renderers.
   // Pointers to PlayingState objects are only kept in this map while the

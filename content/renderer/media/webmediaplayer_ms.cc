@@ -269,7 +269,7 @@ void WebMediaPlayerMS::setVolume(double volume) {
     audio_renderer_->SetVolume(volume_);
 }
 
-void WebMediaPlayerMS::setSinkId(const blink::WebString& device_id,
+void WebMediaPlayerMS::setSinkId(const blink::WebString& sink_id,
                                  media::WebSetSinkIdCB* web_callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DVLOG(1) << __FUNCTION__;
@@ -278,11 +278,8 @@ void WebMediaPlayerMS::setSinkId(const blink::WebString& device_id,
   if (audio_renderer_.get()) {
     media::OutputDevice* output_device = audio_renderer_->GetOutputDevice();
     if (output_device) {
-      const std::string device_id_str(device_id.utf8());
-      const url::Origin security_origin(
-          GURL(frame_->securityOrigin().toString().utf8()));
-      output_device->SwitchOutputDevice(device_id_str, security_origin,
-                                        callback);
+      output_device->SwitchOutputDevice(sink_id.utf8(),
+                                        frame_->securityOrigin(), callback);
       return;
     }
   }

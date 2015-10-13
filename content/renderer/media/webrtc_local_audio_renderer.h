@@ -18,6 +18,7 @@
 #include "content/public/renderer/media_stream_audio_sink.h"
 #include "content/renderer/media/webrtc_audio_device_impl.h"
 #include "content/renderer/media/webrtc_local_audio_track.h"
+#include "media/base/output_device.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 
 namespace media {
@@ -46,7 +47,8 @@ class WebRtcAudioCapturer;
 class CONTENT_EXPORT WebRtcLocalAudioRenderer
     : NON_EXPORTED_BASE(public MediaStreamAudioRenderer),
       NON_EXPORTED_BASE(public MediaStreamAudioSink),
-      NON_EXPORTED_BASE(public media::AudioRendererSink::RenderCallback) {
+      NON_EXPORTED_BASE(public media::AudioRendererSink::RenderCallback),
+      NON_EXPORTED_BASE(public media::OutputDevice) {
  public:
   // Creates a local renderer and registers a capturing |source| object.
   // The |source| is owned by the WebRtcAudioDeviceImpl.
@@ -67,6 +69,13 @@ class CONTENT_EXPORT WebRtcLocalAudioRenderer
   media::OutputDevice* GetOutputDevice() override;
   base::TimeDelta GetCurrentRenderTime() const override;
   bool IsLocalRenderer() const override;
+
+  // media::OutputDevice implementation
+  void SwitchOutputDevice(const std::string& device_id,
+                          const url::Origin& security_origin,
+                          const media::SwitchOutputDeviceCB& callback) override;
+  media::AudioParameters GetOutputParameters() override;
+  media::OutputDeviceStatus GetDeviceStatus() override;
 
   const base::TimeDelta& total_render_time() const {
     return total_render_time_;
@@ -143,13 +152,14 @@ class CONTENT_EXPORT WebRtcLocalAudioRenderer
   // Set when playing, cleared when paused.
   bool playing_;
 
-  // Protects |audio_shifter_|, |playing_| and |sink_|.
+  // Protects |audio_shifter_|, |playing_|, |last_render_time_|,
+  // |total_render_time_| and |volume_|.
   mutable base::Lock thread_lock_;
 
   // The preferred device id of the output device or empty for the default
   // output device.
-  const std::string output_device_id_;
-  const url::Origin security_origin_;
+  std::string output_device_id_;
+  url::Origin security_origin_;
 
   // Cache value for the volume.
   float volume_;

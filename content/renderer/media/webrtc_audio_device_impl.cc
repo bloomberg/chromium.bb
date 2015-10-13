@@ -36,6 +36,7 @@ WebRtcAudioDeviceImpl::WebRtcAudioDeviceImpl()
   main_thread_checker_.DetachFromThread();
 
   worker_thread_checker_.DetachFromThread();
+  audio_renderer_thread_checker_.DetachFromThread();
 }
 
 WebRtcAudioDeviceImpl::~WebRtcAudioDeviceImpl() {
@@ -64,6 +65,7 @@ void WebRtcAudioDeviceImpl::RenderData(media::AudioBus* audio_bus,
                                        int sample_rate,
                                        int audio_delay_milliseconds,
                                        base::TimeDelta* current_time) {
+  DCHECK(audio_renderer_thread_checker_.CalledOnValidThread());
   {
     base::AutoLock auto_lock(lock_);
     if (!playing_) {
@@ -133,6 +135,16 @@ void WebRtcAudioDeviceImpl::RemoveAudioRenderer(WebRtcAudioRenderer* renderer) {
   }
 
   renderer_ = NULL;
+}
+
+void WebRtcAudioDeviceImpl::AudioRendererThreadStopped() {
+  DCHECK(main_thread_checker_.CalledOnValidThread());
+  audio_renderer_thread_checker_.DetachFromThread();
+  // Notify the playout sink of the change.
+  // Not holding |lock_| because the caller must guarantee that the audio
+  // renderer thread is dead, so no race is possible with |playout_sinks_|
+  for (const auto& sink : playout_sinks_)
+    sink->OnPlayoutDataSourceChanged();
 }
 
 int32_t WebRtcAudioDeviceImpl::RegisterAudioCallback(

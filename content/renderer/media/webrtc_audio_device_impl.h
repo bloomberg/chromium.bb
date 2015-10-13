@@ -197,6 +197,11 @@ class WebRtcAudioRendererSource {
   // Callback to notify the client that the renderer is going away.
   virtual void RemoveAudioRenderer(WebRtcAudioRenderer* renderer) = 0;
 
+  // Callback to notify the client that the audio renderer thread stopped.
+  // This function must be called only when that thread is actually stopped.
+  // Otherwise a race may occur.
+  virtual void AudioRendererThreadStopped() = 0;
+
  protected:
   virtual ~WebRtcAudioRendererSource() {}
 };
@@ -341,6 +346,7 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl
 
   // Called on the main render thread.
   void RemoveAudioRenderer(WebRtcAudioRenderer* renderer) override;
+  void AudioRendererThreadStopped() override;
 
   // WebRtcPlayoutDataSource implementation.
   void AddPlayoutSink(WebRtcPlayoutDataSource::Sink* sink) override;
@@ -351,6 +357,7 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl
   // Used to check methods that are called on libjingle's signaling thread.
   base::ThreadChecker signaling_thread_checker_;
   base::ThreadChecker worker_thread_checker_;
+  base::ThreadChecker audio_renderer_thread_checker_;
 
   mutable int ref_count_;
 
@@ -378,7 +385,7 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl
   int output_delay_ms_;
 
   // Protects |recording_|, |output_delay_ms_|, |input_delay_ms_|, |renderer_|
-  // |recording_| and |microphone_volume_|.
+  // |recording_|, |microphone_volume_| and |playout_sinks_|.
   mutable base::Lock lock_;
 
   // Used to protect the racing of calling OnData() since there can be more

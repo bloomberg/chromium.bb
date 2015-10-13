@@ -404,10 +404,13 @@ void AudioRendererHost::OnRequestDeviceAuthorization(
     return;
   }
 
-  // If attempting to use the output device associated to an opened input
-  // device and the output device is found, reuse the input device
+  // If |device_id| is not empty, ignore |session_id| and select the device
+  // indicated by |device_id|.
+  // If |device_id| is empty and |session_id| is nonzero, try to use the
+  // output device associated with the opened input device designated by
+  // |session_id| and, if such output device is found, reuse the input device
   // permissions.
-  if (session_id != 0) {
+  if (session_id != 0 && device_id.empty()) {
     const StreamDeviceInfo* info =
         media_stream_manager_->audio_input_device_manager()
             ->GetOpenedDeviceInfoById(session_id);
