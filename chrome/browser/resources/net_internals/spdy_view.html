@@ -5,7 +5,7 @@
          https://crrev.com/1268313004.  "use_alternate_protocols" is here to
          support importing netlog json files from earlier browsers.
          TODO(bnc): Deprecate around 2016 February. -->
-    <li>Use Alternative Service: <span jscontent="$this.use_alternative_services || $this.use_alternate_protocols"></span></li>
+    <li>Use Alternative Service: <span jscontent="$this.use_alternative_services == undefined ? $this.use_alternate_protocols : $this.use_alternative_services"></span></li>
     <li>Next Protocols: <span jscontent="next_protos"></span></li>
   </ul>
 
