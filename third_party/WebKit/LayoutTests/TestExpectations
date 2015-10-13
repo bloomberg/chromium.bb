@@ -325,8 +325,6 @@ crbug.com/498539 [ Win7 ] inspector/elements/styles-3/selector-list.html [ Failu
 crbug.com/498539 [ Win7 Debug ] inspector/elements/styles-3/styles-computed-trace.html [ Crash Pass ]
 crbug.com/498539 [ Win7 ] inspector/elements/styles-4/styles-update-from-js.html [ Crash Pass ]
 
-crbug.com/504178 [ Android Linux Mac XP Win7 ] fast/text/shaping/same-script-different-lang.html [ NeedsRebaseline ]
-
 crbug.com/248938 [ Win Debug ] virtual/threaded/animations/transition-and-animation-2.html [ Timeout ]
 
 crbug.com/487281 [ SnowLeopard Lion MountainLion Retina Mavericks ] fast/forms/menulist-narrow-width.html [ ImageOnlyFailure ]
@@ -1114,6 +1112,7 @@ crbug.com/464736 http/tests/xmlhttprequest/ontimeout-event-override-after-failur
 crbug.com/532469 http/tests/security/cross-frame-access-custom.html [ NeedsManualRebaseline ]
 
 # Win10 specific failures that still need triaging.
+crbug.com/521730 [ Win10 ] fast/text/shaping/same-script-different-lang.html [ Pass Timeout ]
 crbug.com/521730 [ Win10 ] fast/dom/Window/property-access-on-cached-properties-after-frame-navigated.html [ Failure ]
 crbug.com/521730 [ Win10 ] fast/dom/Window/property-access-on-cached-properties-after-frame-removed-and-gced.html [ Failure ]
 crbug.com/521730 [ Win10 ] fast/dom/Window/property-access-on-cached-properties-after-frame-removed.html [ Failure ]
@@ -1181,7 +1180,6 @@ crbug.com/521730 [ Win10 ] fast/text/letter-spacing-negative-opacity.html [ Imag
 crbug.com/521730 [ Win10 ] fast/text/line-breaks-after-white-space.html [ ImageOnlyFailure ImageOnlyFailure ImageOnlyFailure Timeout ]
 crbug.com/521730 [ Win10 ] fast/text/line-breaks.html [ ImageOnlyFailure Timeout ImageOnlyFailure ImageOnlyFailure ]
 crbug.com/521730 [ Win10 ] fast/text/shadow-no-blur.html [ ImageOnlyFailure Timeout ImageOnlyFailure ImageOnlyFailure ]
-crbug.com/521730 [ Win10 ] fast/text/shaping/same-script-different-lang.html [ ImageOnlyFailure ImageOnlyFailure Timeout Timeout ]
 crbug.com/521730 [ Win10 ] fast/text/stroking-decorations.html [ ImageOnlyFailure ImageOnlyFailure ImageOnlyFailure Timeout ]
 crbug.com/521730 [ Win10 ] fast/text/trailing-white-space-2.html [ ImageOnlyFailure ImageOnlyFailure ImageOnlyFailure Timeout ]
 crbug.com/521730 [ Win10 ] fast/text/whitespace/nbsp-mode-and-linewraps.html [ ImageOnlyFailure ImageOnlyFailure Timeout ImageOnlyFailure ]
