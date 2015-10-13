@@ -11,6 +11,7 @@ import android.net.http.SslCertificate;
 import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
@@ -85,7 +86,8 @@ class CertificateViewer implements OnItemSelectedListener {
         Spinner spinner = new Spinner(mContext);
         spinner.setAdapter(arrayAdapter);
         spinner.setOnItemSelectedListener(this);
-        spinner.setPadding(0, 0, mPadding / 2, mPadding);
+        spinner.setDropDownWidth(ViewGroup.LayoutParams.MATCH_PARENT);
+        spinner.setPadding(0, 0, 0, mPadding);
         dialogContainer.addView(spinner);
 
         LinearLayout certContainer = new LinearLayout(mContext);
