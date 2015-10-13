@@ -40,6 +40,36 @@ TODO(jbroman): Explain the semantics of transforms, clips, scrolls and effects
 as support for them is added to SPv2.
 ***
 
+### Transforms
+
+Each paint chunk is associated with a [transform node](TransformPaintPropertyNode.h),
+which defines the coordinate space in which the content should be painted.
+
+Each transform node has:
+
+* a 4x4 [`TransformationMatrix`](../../transforms/TransformationMatrix.h)
+* a 3-dimensional transform origin, which defines the origin relative to which
+  the transformation matrix should be applied (e.g. a rotation applied with some
+  transform origin will rotate the plane about that point)
+* a pointer to the parent node, which defines the coordinate space relative to
+  which the above should be interpreted
+
+The parent node pointers link the transform nodes in a hierarchy (the *transform
+tree*), which define how the transform for any painted content can be
+determined.
+
+***promo
+The painting system may create transform nodes which don't affect the position
+of points in the xy-plane, but which have an apparent effect only when
+multiplied with other transformation matrices. In particular, a transform node
+may be created to establish a perspective matrix for descendant transforms in
+order to create the illusion of depth.
+***
+
+*** aside
+TODO(jbroman): Explain flattening, etc., once it exists in the paint properties.
+***
+
 ## Display items
 
 A display item is the smallest unit of a display list in Blink. Each display
