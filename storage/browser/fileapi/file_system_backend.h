@@ -40,7 +40,7 @@ typedef base::Callback<void(const GURL& url)> URLCallback;
 // Maximum numer of bytes to be read by FileStreamReader classes. Used in
 // FileSystemBackend::CreateFileStreamReader(), when it's not known how many
 // bytes will be fetched in total.
-const int64 kMaximumLength = std::numeric_limits<int64>::max();
+const int64 kMaximumLength = INT64_MAX;
 
 // An interface for defining a file system backend.
 //
