@@ -159,9 +159,15 @@ TEST(SpdyAltSvcWireFormatTest, DefaultValues) {
   EXPECT_DOUBLE_EQ(1.0, altsvc.p);
 }
 
-TEST(SpdyAltSvcWireFormatTest, ParseEmptyHeaderFieldValue) {
+TEST(SpdyAltSvcWireFormatTest, ParseInvalidEmptyHeaderFieldValue) {
   SpdyAltSvcWireFormat::AlternativeServiceVector altsvc_vector;
-  ASSERT_TRUE(SpdyAltSvcWireFormat::ParseHeaderFieldValue("", &altsvc_vector));
+  ASSERT_FALSE(SpdyAltSvcWireFormat::ParseHeaderFieldValue("", &altsvc_vector));
+}
+
+TEST(SpdyAltSvcWireFormatTest, ParseHeaderFieldValueClear) {
+  SpdyAltSvcWireFormat::AlternativeServiceVector altsvc_vector;
+  ASSERT_TRUE(
+      SpdyAltSvcWireFormat::ParseHeaderFieldValue("clear", &altsvc_vector));
   EXPECT_EQ(0u, altsvc_vector.size());
 }
 
@@ -220,7 +226,8 @@ TEST(SpdyAltSvcWireFormatTest, ParseHeaderFieldValueMultiple) {
 
 TEST(SpdyAltSvcWireFormatTest, SerializeEmptyHeaderFieldValue) {
   SpdyAltSvcWireFormat::AlternativeServiceVector altsvc_vector;
-  EXPECT_EQ("", SpdyAltSvcWireFormat::SerializeHeaderFieldValue(altsvc_vector));
+  EXPECT_EQ("clear",
+            SpdyAltSvcWireFormat::SerializeHeaderFieldValue(altsvc_vector));
 }
 
 // Test SerializeHeaderFieldValue() with and without hostname and each

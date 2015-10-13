@@ -5,7 +5,7 @@
 // This file contains data structures and utility functions used for serializing
 // and parsing alternative service header values, common to HTTP/1.1 header
 // fields and HTTP/2 and QUIC ALTSVC frames.  See specification at
-// https://tools.ietf.org/id/draft-ietf-httpbis-alt-svc-06.html
+// https://httpwg.github.io/http-extensions/alt-svc.html.
 
 #ifndef NET_SPDY_SPDY_ALT_SVC_WIRE_FORMAT_H_
 #define NET_SPDY_SPDY_ALT_SVC_WIRE_FORMAT_H_
@@ -52,6 +52,9 @@ class NET_EXPORT_PRIVATE SpdyAltSvcWireFormat {
              max_age == other.max_age && p == other.p;
     }
   };
+  // An empty vector means alternative services should be cleared for given
+  // origin.  Note that the wire format for this is the string "clear", not an
+  // empty value (which is invalid).
   typedef std::vector<AlternativeService> AlternativeServiceVector;
 
   friend class test::SpdyAltSvcWireFormatPeer;
