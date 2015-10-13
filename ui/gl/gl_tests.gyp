@@ -72,8 +72,29 @@
           'includes': [ '../../build/apk_test.gypi' ],
         },
       ],
+      'conditions': [
+        ['test_isolation_mode != "noop"',
+          {
+            'targets': [
+              {
+                'target_name': 'gl_unittests_apk_run',
+                'type': 'none',
+                'dependencies': [
+                  'gl_unittests_apk',
+                ],
+                'includes': [
+                  '../../build/isolate.gypi',
+                ],
+                'sources': [
+                  'gl_unittests_apk.isolate',
+                ],
+              },
+            ]
+          }
+        ],
+      ],
     }],
-    ['test_isolation_mode != "noop"', {
+    ['test_isolation_mode != "noop" and OS != "android"', {
       'targets': [
         {
           'target_name': 'gl_unittests_run',
