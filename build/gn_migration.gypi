@@ -183,6 +183,7 @@
         '../third_party/mojo/mojo_edk_tests.gyp:mojo_public_system_perftests',
         '../third_party/mojo/mojo_edk_tests.gyp:mojo_public_system_unittests',
         '../third_party/mojo/mojo_edk_tests.gyp:mojo_public_utility_unittests',
+        '../third_party/openh264/tests/openh264_unittests.gyp:*',
         '../third_party/pdfium/samples/samples.gyp:pdfium_diff',
         '../third_party/pdfium/samples/samples.gyp:pdfium_test',
         '../third_party/smhasher/smhasher.gyp:pmurhash',
