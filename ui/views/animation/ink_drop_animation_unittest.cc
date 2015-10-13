@@ -63,7 +63,8 @@ TEST_F(InkDropAnimationTest, AnimateToActionPending) {
 TEST_F(InkDropAnimationTest, AnimateToQuickAction) {
   scoped_ptr<InkDropAnimation> ink_drop_animation = CreateInkDropAnimation();
   ink_drop_animation->AnimateToState(views::InkDropState::QUICK_ACTION);
-  EXPECT_EQ(views::InkDropState::HIDDEN, ink_drop_animation->ink_drop_state());
+  EXPECT_EQ(views::InkDropState::QUICK_ACTION,
+            ink_drop_animation->ink_drop_state());
 }
 
 TEST_F(InkDropAnimationTest, AnimateToSlowActionPending) {
@@ -76,7 +77,8 @@ TEST_F(InkDropAnimationTest, AnimateToSlowActionPending) {
 TEST_F(InkDropAnimationTest, AnimateToSlowAction) {
   scoped_ptr<InkDropAnimation> ink_drop_animation = CreateInkDropAnimation();
   ink_drop_animation->AnimateToState(views::InkDropState::SLOW_ACTION);
-  EXPECT_EQ(views::InkDropState::HIDDEN, ink_drop_animation->ink_drop_state());
+  EXPECT_EQ(views::InkDropState::SLOW_ACTION,
+            ink_drop_animation->ink_drop_state());
 }
 
 TEST_F(InkDropAnimationTest, AnimateToActivated) {
@@ -89,7 +91,8 @@ TEST_F(InkDropAnimationTest, AnimateToActivated) {
 TEST_F(InkDropAnimationTest, AnimateToDeactivated) {
   scoped_ptr<InkDropAnimation> ink_drop_animation = CreateInkDropAnimation();
   ink_drop_animation->AnimateToState(views::InkDropState::DEACTIVATED);
-  EXPECT_EQ(views::InkDropState::HIDDEN, ink_drop_animation->ink_drop_state());
+  EXPECT_EQ(views::InkDropState::DEACTIVATED,
+            ink_drop_animation->ink_drop_state());
 }
 
 TEST_F(InkDropAnimationTest,

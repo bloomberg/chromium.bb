@@ -9,6 +9,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/animation/ink_drop_animation_controller.h"
+#include "ui/views/animation/ink_drop_animation_observer.h"
 #include "ui/views/views_export.h"
 
 namespace views {
@@ -17,7 +18,8 @@ class InkDropHost;
 
 // A functional implementation of an InkDropAnimationController.
 class VIEWS_EXPORT InkDropAnimationControllerImpl
-    : public InkDropAnimationController {
+    : public InkDropAnimationController,
+      public InkDropAnimationObserver {
  public:
   // Constructs an ink drop controller that will attach the ink drop to the
   // given |ink_drop_host|.
@@ -26,7 +28,7 @@ class VIEWS_EXPORT InkDropAnimationControllerImpl
 
   // InkDropAnimationController:
   InkDropState GetInkDropState() const override;
-  void AnimateToState(InkDropState state) override;
+  void AnimateToState(InkDropState ink_drop_state) override;
   gfx::Size GetInkDropLargeSize() const override;
   void SetInkDropSize(const gfx::Size& large_size,
                       int large_corner_radius,
@@ -36,9 +38,17 @@ class VIEWS_EXPORT InkDropAnimationControllerImpl
 
  private:
   // Creates a new InkDropAnimation and sets it to |ink_drop_animation_|. If
-  // |ink_drop_animation_| wasn't null then it will be removed from the
-  // |ink_drop_host_|.
+  // |ink_drop_animation_| wasn't null then it will be destroyed using
+  // DestroyInkDropAnimation().
   void CreateInkDropAnimation();
+
+  // Destroys the current |ink_drop_animation_|.
+  void DestroyInkDropAnimation();
+
+  // views::InkDropAnimationObserver:
+  void InkDropAnimationStarted(InkDropState ink_drop_state) override;
+  void InkDropAnimationEnded(InkDropState ink_drop_state,
+                             InkDropAnimationEndedReason reason) override;
 
   // The host of the ink drop.
   InkDropHost* ink_drop_host_;

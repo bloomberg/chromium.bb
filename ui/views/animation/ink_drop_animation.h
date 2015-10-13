@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/observer_list.h"
 #include "base/time/time.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/gfx/geometry/size.h"
@@ -16,12 +17,15 @@
 #include "ui/views/views_export.h"
 
 namespace ui {
+class CallbackLayerAnimationObserver;
 class Layer;
+class LayerAnimationObserver;
 class LayerDelegate;
 }  // namespace ui
 
 namespace views {
 class CircleLayerDelegate;
+class InkDropAnimationObserver;
 class RectangleLayerDelegate;
 
 namespace test {
@@ -47,6 +51,9 @@ class VIEWS_EXPORT InkDropAnimation {
   ui::Layer* root_layer() { return root_layer_.get(); }
 
   InkDropState ink_drop_state() const { return ink_drop_state_; }
+
+  void AddObserver(InkDropAnimationObserver* observer);
+  void RemoveObserver(InkDropAnimationObserver* observer);
 
   // Animates from the current |ink_drop_state_| to a new |ink_drop_state|. It
   // is possible to animate from any |ink_drop_state_| to any new
@@ -77,16 +84,24 @@ class VIEWS_EXPORT InkDropAnimation {
   // ink drop.
   typedef gfx::Transform InkDropTransforms[PAINTED_SHAPE_COUNT];
 
+  // Animates the ripple to |ink_drop_state| and attaches |observer| to all
+  // LayerAnimationSequence's used.
+  void AnimateToStateInternal(InkDropState ink_drop_state,
+                              ui::LayerAnimationObserver* observer);
+
   // Animates all of the painted shape layers to the specified |transforms| and
-  // |opacity|.
+  // |opacity|. The animation will use the given |duration| and
+  // |preemption_strategy|, and |observer| will be added to all
+  // LayerAnimationSequences.
   void AnimateToTransforms(
       const InkDropTransforms transforms,
       float opacity,
       base::TimeDelta duration,
-      ui::LayerAnimator::PreemptionStrategy preemption_strategy);
+      ui::LayerAnimator::PreemptionStrategy preemption_strategy,
+      ui::LayerAnimationObserver* observer);
 
-  // Resets the Transforms on all the owned Layers to a minimum size.
-  void ResetTransformsToMinSize();
+  // Updates the Transforms and opacity to the HIDDEN state.
+  void SetStateToHidden();
 
   // Sets the |transforms| on all of the shape layers. Note that this does not
   // perform any animation.
@@ -112,6 +127,22 @@ class VIEWS_EXPORT InkDropAnimation {
 
   // Adds and configures a new |painted_shape| layer to |painted_layers_|.
   void AddPaintLayer(PaintedShape painted_shape);
+
+  void AbortAllAnimations();
+
+  // The Callback invoked when all of the animation sequences for the specific
+  // |ink_drop_state| animation have started. |observer| is the
+  // ui::CallbackLayerAnimationObserver which is notifying the callback.
+  void AnimationStartedCallback(
+      InkDropState ink_drop_state,
+      const ui::CallbackLayerAnimationObserver& observer);
+
+  // The Callback invoked when all of the animation sequences for the specific
+  // |ink_drop_state| animation have finished. |observer| is the
+  // ui::CallbackLayerAnimationObserver which is notifying the callback.
+  bool AnimationEndedCallback(
+      InkDropState ink_drop_state,
+      const ui::CallbackLayerAnimationObserver& observer);
 
   // Maximum size that an ink drop will be drawn to for any InkDropState whose
   // final frame should be large.
@@ -145,6 +176,9 @@ class VIEWS_EXPORT InkDropAnimation {
 
   // The current ink drop state.
   InkDropState ink_drop_state_;
+
+  // List of observers to notify when animations have finished.
+  base::ObserverList<InkDropAnimationObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(InkDropAnimation);
 };

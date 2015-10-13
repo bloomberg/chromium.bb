@@ -144,7 +144,8 @@ void ToolbarButton::OnMouseReleased(const ui::MouseEvent& event) {
   if (IsTriggerableEvent(event))
     show_menu_factory_.InvalidateWeakPtrs();
 
-  ink_drop_animation_controller_->AnimateToState(views::InkDropState::HIDDEN);
+  if (!HitTestPoint(event.location()))
+    ink_drop_animation_controller_->AnimateToState(views::InkDropState::HIDDEN);
 }
 
 void ToolbarButton::OnMouseCaptureLost() {
