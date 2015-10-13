@@ -21,6 +21,8 @@ BrowserManager::BrowserManager()
     : app_(nullptr), startup_time_(base::Time::Now()) {}
 
 BrowserManager::~BrowserManager() {
+  while (!browsers_.empty())
+    (*browsers_.begin())->Close();
   DCHECK(browsers_.empty());
 }
 

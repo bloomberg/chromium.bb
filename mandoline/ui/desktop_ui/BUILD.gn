@@ -63,11 +63,12 @@ mojo_native_application("mandoline_browser_apptests") {
   ]
 
   deps = [
-    "//base",
-    "//base/test:test_config",
-    "//components/mus/public/cpp",
-    "//mandoline/ui/desktop_ui:lib",
+    "//mandoline/ui/desktop_ui/public/interfaces",
     "//mojo/application/public/cpp:sources",
     "//mojo/application/public/cpp:test_support",
+  ]
+
+  data_deps = [
+    ":desktop_ui",
   ]
 }
