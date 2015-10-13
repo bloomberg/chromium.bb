@@ -126,6 +126,13 @@ class SmartPtrPrinter(Printer):
         return '%s%s' % (self.typename, typed_ptr(self.ptr()))
 
 
+class ScopedPtrPrinter(SmartPtrPrinter):
+    typename = 'scoped_ptr'
+    def ptr(self):
+        return self.val['impl_']['data_']['ptr']
+pp_set.add_printer('scoped_ptr', '^scoped_ptr<.*>$', ScopedPtrPrinter)
+
+
 class ScopedRefPtrPrinter(SmartPtrPrinter):
     typename = 'scoped_refptr'
     def ptr(self):
