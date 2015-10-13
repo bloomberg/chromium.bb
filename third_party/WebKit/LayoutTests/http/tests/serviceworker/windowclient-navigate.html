@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<title>Service Worker: WindowClient.navigate() tests</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../resources/get-host-info.js"></script>
+<script src="resources/test-helpers.js"></script>
+<script>
+
+var scope = 'resources/blank.html?windowclient-navigate';
+var client_frame;
+var worker;
+var test;
+
+var current_index = 0;
+var test_list = [
+  { url : 'blank.html' },
+  { url : 'blank.html', init : 'uncontrolled/blank.html' },
+  { url : get_host_info()['HTTP_REMOTE_ORIGIN'] +
+      '/serviceworker/resources/blank.html' },
+  { url : 'http://[example].com' },
+  { url : 'view-source://example.com' },
+  { url : 'file:///' },
+  { url : 'about:blank' },
+  { url : 'about:crash' }
+];
+
+var expected = [
+  location.origin + '/serviceworker/resources/blank.html',
+  // TODO(zino): Should TypeError instead of UnknownError.
+  // Please see: http://crbug.com/540503
+  'UnknownError',
+  null,
+  'TypeError',
+  // TODO(zino): Should TypeError instead of UnknownError.
+  // Please see: http://crbug.com/540503
+  'UnknownError',
+  'SecurityError',
+  'TypeError',
+  'TypeError'
+];
+
+var actual = [];
+
+async_test(function(t) {
+  test = t;
+  return service_worker_unregister_and_register(
+      test, 'resources/windowclient-navigate-worker.js', scope)
+    .then(function(registration) {
+        worker = registration.installing;
+        return wait_for_state(test, worker, 'activated');
+      })
+    .then(function() {
+        var channel = new MessageChannel();
+        channel.port1.onmessage = test.step_func(function(e) {
+            on_message(e, channel.port1);
+          });
+        worker.postMessage({ port : channel.port2 }, [channel.port2]);
+      })
+    .catch(unreached_rejection(t));
+}, 'WindowClient.navigate() test');
+
+function on_message(e, port) {
+  var message = e.data;
+
+  message == 'ready' || actual.push(message);
+  if (expected.length == actual.length) {
+    assert_array_equals(actual, expected);
+    service_worker_unregister_and_done(test, scope);
+  } else {
+    client_frame && client_frame.remove();
+    var init_url = test_list[current_index].init || scope;
+    with_iframe(init_url).then(function(f) {
+        client_frame = f;
+        port.postMessage(test_list[current_index++].url);
+      });
+  }
+}
+
+</script>
