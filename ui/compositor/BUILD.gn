@@ -7,6 +7,8 @@ import("//testing/test.gni")
 
 component("compositor") {
   sources = [
+    "callback_layer_animation_observer.cc",
+    "callback_layer_animation_observer.h",
     "canvas_painter.cc",
     "canvas_painter.h",
     "clip_transform_recorder.cc",
@@ -102,6 +104,8 @@ source_set("test_support") {
     "test/in_process_context_factory.h",
     "test/in_process_context_provider.cc",
     "test/in_process_context_provider.h",
+    "test/layer_animation_observer_test_api.cc",
+    "test/layer_animation_observer_test_api.h",
     "test/layer_animator_test_controller.cc",
     "test/layer_animator_test_controller.h",
     "test/test_compositor_host.h",
@@ -164,6 +168,7 @@ if (!is_android) {
 
   test("compositor_unittests") {
     sources = [
+      "callback_layer_animation_observer_unittest.cc",
       "compositor_unittest.cc",
       "layer_animation_element_unittest.cc",
       "layer_animation_sequence_unittest.cc",
