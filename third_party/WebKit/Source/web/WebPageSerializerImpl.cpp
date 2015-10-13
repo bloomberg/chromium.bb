@@ -287,6 +287,9 @@ void WebPageSerializerImpl::encodeAndFlushBuffer(
                                        status);
 }
 
+// TODO(yosin): We should utilize |MarkupFormatter| here to share code,
+// especially escaping attribute values, done by |WebEntities| |m_htmlEntities|
+// and |m_xmlEntities|.
 void WebPageSerializerImpl::openTagToString(Element* element,
                                             SerializeDomParam* param)
 {
@@ -316,7 +319,7 @@ void WebPageSerializerImpl::openTagToString(Element* element,
             if (element->hasLegalLinkAttribute(attrName)) {
                 // For links start with "javascript:", we do not change it.
                 if (attrValue.startsWith("javascript:", TextCaseInsensitive)) {
-                    result.append(attrValue);
+                    result.append(m_htmlEntities.convertEntitiesInString(attrValue));
                 } else {
                     // Get the absolute link
                     WebLocalFrameImpl* subFrame = WebLocalFrameImpl::fromFrameOwnerElement(element);
@@ -329,9 +332,9 @@ void WebPageSerializerImpl::openTagToString(Element* element,
                             result.append(param->directoryName);
                             result.append('/');
                         }
-                        result.append(m_localLinks.get(completeURL));
+                        result.append(m_htmlEntities.convertEntitiesInString(m_localLinks.get(completeURL)));
                     } else {
-                        result.append(completeURL);
+                        result.append(m_htmlEntities.convertEntitiesInString(completeURL));
                     }
                 }
             } else {

@@ -151,6 +151,27 @@ TEST_F(WebPageSerializerTest, HTMLNodes)
     EXPECT_TRUE(webVectorContains(resources, "file://c/my_folder/file.gif"));
 }
 
+TEST_F(WebPageSerializerTest, URLAttributeValues)
+{
+    WebURL topFrameURL = toKURL("http://www.test.com");
+    registerMockedURLLoad(topFrameURL.spec(), WebString::fromUTF8("url_attribute_values.html"));
+    loadURLInTopFrame(topFrameURL);
+
+    SimpleWebPageSerializerClient serializerClient;
+    WebVector<WebURL> links(&topFrameURL, 1);
+    WebVector<WebString> localPaths(&"local", 1);
+    WebPageSerializer::serialize(webView()->mainFrame()->toWebLocalFrame(), &serializerClient, links, localPaths, "");
+
+    const char* expectedHTML =
+        "\n<!-- saved from url=(0020)http://www.test.com/ -->\n"
+        "<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"><meta charset=\"utf8\">\n"
+        "</head><body><img src=\"javascript:&quot;\">\n"
+        "<a href=\"http://www.test.com/local#&quot;\">local</a>\n"
+        "<a href=\"http://www.example.com/#&quot;&gt;&lt;script&gt;alert(0)&lt;/script&gt;\">external</a>\n"
+        "</body></html>";
+    EXPECT_EQ(expectedHTML, serializerClient.toString());
+}
+
 TEST_F(WebPageSerializerTest, fromUrlWithMinusMinus)
 {
     WebURL topFrameURL = toKURL("http://www.test.com?--x--");
