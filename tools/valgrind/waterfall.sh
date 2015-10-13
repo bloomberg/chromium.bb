@@ -52,8 +52,17 @@ fetch_logs() {
   rm -rf "$LOGS_DIR" # Delete old logs
   mkdir "$LOGS_DIR"
 
+  URL=$1
+  LAYOUT_ONLY=0
+  if [ $# != 0 ]; then
+    shift
+    if [ "$1" = "layout_only" ]; then
+      LAYOUT_ONLY=1
+    fi
+  fi
+
   echo "Fetching the list of builders..."
-  download $1 "$LOGS_DIR/builders"
+  download "$URL" "$LOGS_DIR/builders"
   SLAVES=$(grep "<a href=\"builders\/" "$LOGS_DIR/builders" | \
            grep 'td class="box"' | \
            sed "s/.*<a href=\"builders\///" | sed "s/\".*//" | \
@@ -61,7 +70,13 @@ fetch_logs() {
 
   for S in $SLAVES
   do
-    SLAVE_URL=$1/$S
+    if [ "$LAYOUT_ONLY" = "1" ]; then
+      if [ "$S" != "Webkit%20Linux%20%28valgrind%20layout%29" ]; then
+        continue;
+      fi
+    fi
+
+    SLAVE_URL="$URL/$S"
     SLAVE_NAME=$(echo $S | sed -e "s/%20/ /g" -e "s/%28/(/g" -e "s/%29/)/g")
     echo -n "Fetching builds by slave '${SLAVE_NAME}'"
     download $SLAVE_URL?numbuilds=${NUMBUILDS} "$LOGS_DIR/slave_${S}"
@@ -168,17 +183,21 @@ OPTIONS:
    -n N    Fetch N builds from each slave.
 
 COMMANDS:
-  fetch    Fetch Valgrind logs from the memory waterfall
-  match    Test the local suppression files against the downloaded logs
+  fetch           Fetch Valgrind logs from the memory waterfall
+  fetch_layout    Fetch many Valgrind logs from the layout test bot only
+  match           Test the local suppression files against the downloaded logs
 
 EOF
 }
 
-NUMBUILDS=3
-
 CMD=$1
 if [ $# != 0 ]; then
   shift
+fi
+
+NUMBUILDS=3
+if [ "$CMD" = "fetch_layout" ]; then
+  NUMBUILDS=30
 fi
 
 # Arguments for "match" are handled in match_suppressions
@@ -208,8 +227,11 @@ fi
 
 if [ "$CMD" = "fetch" ]; then
   echo "Fetching $NUMBUILDS builds"
-  fetch_logs $WATERFALL_PAGE
-  fetch_logs $WATERFALL_FYI_PAGE
+  fetch_logs "$WATERFALL_PAGE"
+  fetch_logs "$WATERFALL_FYI_PAGE"
+elif [ "$CMD" = "fetch_layout" ]; then
+  echo "Fetching $NUMBUILDS builds"
+  fetch_logs "$WATERFALL_FYI_PAGE" layout_only
 elif [ "$CMD" = "match" ]; then
   match_suppressions $@
   match_gtest_excludes
