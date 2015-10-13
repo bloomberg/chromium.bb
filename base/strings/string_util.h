@@ -358,9 +358,7 @@ inline bool IsHexDigit(Char c) {
 BASE_EXPORT char HexDigitToInt(wchar_t c);
 
 // Returns true if it's a Unicode whitespace character.
-inline bool IsUnicodeWhitespace(wchar_t c) {
-  return wcschr(base::kWhitespaceWide, c) != NULL;
-}
+BASE_EXPORT bool IsUnicodeWhitespace(wchar_t c);
 
 // Return a byte string in human-readable format with a unit suffix. Not
 // appropriate for use in any UI; use of FormatBytes and friends in ui/base is

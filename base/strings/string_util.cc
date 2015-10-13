@@ -674,6 +674,15 @@ char HexDigitToInt(wchar_t c) {
   return 0;
 }
 
+bool IsUnicodeWhitespace(wchar_t c) {
+  // kWhitespaceWide is a NULL-terminated string
+  for (const wchar_t* cur = kWhitespaceWide; *cur; ++cur) {
+    if (*cur == c)
+      return true;
+  }
+  return false;
+}
+
 static const char* const kByteStringsUnlocalized[] = {
   " B",
   " kB",
