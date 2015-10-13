@@ -170,12 +170,12 @@ public:
     int drawingBufferHeight() const;
 
     void activeTexture(GLenum texture);
-    void attachShader(WebGLProgram*, WebGLShader*);
+    void attachShader(ScriptState*, WebGLProgram*, WebGLShader*);
     void bindAttribLocation(WebGLProgram*, GLuint index, const String& name);
-    void bindBuffer(GLenum target, WebGLBuffer*);
-    virtual void bindFramebuffer(GLenum target, WebGLFramebuffer*);
-    void bindRenderbuffer(GLenum target, WebGLRenderbuffer*);
-    void bindTexture(GLenum target, WebGLTexture*);
+    void bindBuffer(ScriptState*, GLenum target, WebGLBuffer*);
+    virtual void bindFramebuffer(ScriptState*, GLenum target, WebGLFramebuffer*);
+    void bindRenderbuffer(ScriptState*, GLenum target, WebGLRenderbuffer*);
+    void bindTexture(ScriptState*, GLenum target, WebGLTexture*);
     void blendColor(GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha);
     void blendEquation(GLenum mode);
     void blendEquationSeparate(GLenum modeRGB, GLenum modeAlpha);
@@ -221,7 +221,7 @@ public:
     void depthFunc(GLenum);
     void depthMask(GLboolean);
     void depthRange(GLfloat zNear, GLfloat zFar);
-    void detachShader(WebGLProgram*, WebGLShader*);
+    void detachShader(ScriptState*, WebGLProgram*, WebGLShader*);
     void disable(GLenum cap);
     void disableVertexAttribArray(GLuint index);
     void drawArrays(GLenum mode, GLint first, GLsizei count);
@@ -234,8 +234,8 @@ public:
     void enableVertexAttribArray(GLuint index);
     void finish();
     void flush();
-    void framebufferRenderbuffer(GLenum target, GLenum attachment, GLenum renderbuffertarget, WebGLRenderbuffer*);
-    void framebufferTexture2D(GLenum target, GLenum attachment, GLenum textarget, WebGLTexture*, GLint level);
+    void framebufferRenderbuffer(ScriptState*, GLenum target, GLenum attachment, GLenum renderbuffertarget, WebGLRenderbuffer*);
+    void framebufferTexture2D(ScriptState*, GLenum target, GLenum attachment, GLenum textarget, WebGLTexture*, GLint level);
     void frontFace(GLenum mode);
     void generateMipmap(GLenum target);
 
@@ -348,7 +348,7 @@ public:
     void uniformMatrix4fv(const WebGLUniformLocation*, GLboolean transpose, DOMFloat32Array* value);
     void uniformMatrix4fv(const WebGLUniformLocation*, GLboolean transpose, Vector<GLfloat>& value);
 
-    void useProgram(WebGLProgram*);
+    void useProgram(ScriptState*, WebGLProgram*);
     void validateProgram(WebGLProgram*);
 
     void vertexAttrib1f(GLuint index, GLfloat x);
@@ -363,7 +363,7 @@ public:
     void vertexAttrib4f(GLuint index, GLfloat x, GLfloat y, GLfloat z, GLfloat w);
     void vertexAttrib4fv(GLuint index, const DOMFloat32Array* values);
     void vertexAttrib4fv(GLuint index, const Vector<GLfloat>& values);
-    void vertexAttribPointer(GLuint index, GLint size, GLenum type, GLboolean normalized,
+    void vertexAttribPointer(ScriptState*, GLuint index, GLint size, GLenum type, GLboolean normalized,
         GLsizei stride, long long offset);
 
     void vertexAttribDivisorANGLE(GLuint index, GLuint divisor);
@@ -531,13 +531,8 @@ protected:
 
     PersistentWillBeMember<WebGLVertexArrayObjectBase> m_defaultVertexArrayObject;
     PersistentWillBeMember<WebGLVertexArrayObjectBase> m_boundVertexArrayObject;
-    void setBoundVertexArrayObject(WebGLVertexArrayObjectBase* arrayObject)
-    {
-        if (arrayObject)
-            m_boundVertexArrayObject = arrayObject;
-        else
-            m_boundVertexArrayObject = m_defaultVertexArrayObject;
-    }
+    bool m_preservedDefaultVAOObjectWrapper;
+    void setBoundVertexArrayObject(ScriptState*, WebGLVertexArrayObjectBase*);
 
     enum VertexAttribValueType {
         Float32ArrayType,
@@ -1103,6 +1098,16 @@ protected:
     void findNewMaxNonDefaultTextureUnit();
 
     virtual void renderbufferStorageImpl(GLenum target, GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height, const char* functionName);
+
+    // Ensures that the JavaScript wrappers for objects that are
+    // latched into the context's state, or which are implicitly
+    // linked together (like programs and their attached shaders), are
+    // not garbage collected before they should be.
+    static void preserveObjectWrapper(ScriptState*, ScriptWrappable* sourceObject, const char* baseName, unsigned long index, ScriptWrappable* targetObject);
+    // Called to lazily instantiate the wrapper for the default VAO
+    // during calls to bindBuffer and vertexAttribPointer (from
+    // JavaScript).
+    void maybePreserveDefaultVAOObjectWrapper(ScriptState*);
 
     friend class WebGLStateRestorer;
     friend class WebGLRenderingContextEvictionManager;

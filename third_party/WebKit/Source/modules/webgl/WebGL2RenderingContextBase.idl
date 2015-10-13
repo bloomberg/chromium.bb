@@ -435,9 +435,9 @@ typedef long long      GLint64;
 
     /* Vertex Array Objects */
     WebGLVertexArrayObject createVertexArray();
-    void deleteVertexArray(WebGLVertexArrayObject? vertexArray);
+    [CallWith=ScriptState] void deleteVertexArray(WebGLVertexArrayObject? vertexArray);
     GLboolean isVertexArray(WebGLVertexArrayObject? vertexArray);
-    void bindVertexArray(WebGLVertexArrayObject? vertexArray);
+    [CallWith=ScriptState] void bindVertexArray(WebGLVertexArrayObject? vertexArray);
 
     /* Reading */
     void readPixels(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, GLintptr offset);

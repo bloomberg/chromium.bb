@@ -160,16 +160,16 @@ public:
 
     /* Vertex Array Objects */
     WebGLVertexArrayObject* createVertexArray();
-    void deleteVertexArray(WebGLVertexArrayObject*);
+    void deleteVertexArray(ScriptState*, WebGLVertexArrayObject*);
     GLboolean isVertexArray(WebGLVertexArrayObject*);
-    void bindVertexArray(WebGLVertexArrayObject*);
+    void bindVertexArray(ScriptState*, WebGLVertexArrayObject*);
 
     /* Reading */
     void readPixels(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, long long offset);
 
     /* WebGLRenderingContextBase overrides */
     void initializeNewContext() override;
-    void bindFramebuffer(GLenum target, WebGLFramebuffer*) override;
+    void bindFramebuffer(ScriptState*, GLenum target, WebGLFramebuffer*) override;
     void deleteFramebuffer(WebGLFramebuffer*) override;
     ScriptValue getParameter(ScriptState*, GLenum pname) override;
     ScriptValue getTexParameter(ScriptState*, GLenum target, GLenum pname) override;

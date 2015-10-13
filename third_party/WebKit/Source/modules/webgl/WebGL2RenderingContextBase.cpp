@@ -2065,13 +2065,13 @@ WebGLVertexArrayObject* WebGL2RenderingContextBase::createVertexArray()
     return o;
 }
 
-void WebGL2RenderingContextBase::deleteVertexArray(WebGLVertexArrayObject* vertexArray)
+void WebGL2RenderingContextBase::deleteVertexArray(ScriptState* scriptState, WebGLVertexArrayObject* vertexArray)
 {
     if (isContextLost() || !vertexArray)
         return;
 
     if (!vertexArray->isDefaultObject() && vertexArray == m_boundVertexArrayObject)
-        setBoundVertexArrayObject(nullptr);
+        setBoundVertexArrayObject(scriptState, nullptr);
 
     vertexArray->deleteObject(webContext());
 }
@@ -2087,7 +2087,7 @@ GLboolean WebGL2RenderingContextBase::isVertexArray(WebGLVertexArrayObject* vert
     return webContext()->isVertexArrayOES(vertexArray->object());
 }
 
-void WebGL2RenderingContextBase::bindVertexArray(WebGLVertexArrayObject* vertexArray)
+void WebGL2RenderingContextBase::bindVertexArray(ScriptState* scriptState, WebGLVertexArrayObject* vertexArray)
 {
     if (isContextLost())
         return;
@@ -2101,14 +2101,14 @@ void WebGL2RenderingContextBase::bindVertexArray(WebGLVertexArrayObject* vertexA
         webContext()->bindVertexArrayOES(objectOrZero(vertexArray));
 
         vertexArray->setHasEverBeenBound();
-        setBoundVertexArrayObject(vertexArray);
+        setBoundVertexArrayObject(scriptState, vertexArray);
     } else {
         webContext()->bindVertexArrayOES(0);
-        setBoundVertexArrayObject(nullptr);
+        setBoundVertexArrayObject(scriptState, nullptr);
     }
 }
 
-void WebGL2RenderingContextBase::bindFramebuffer(GLenum target, WebGLFramebuffer* buffer)
+void WebGL2RenderingContextBase::bindFramebuffer(ScriptState* scriptState, GLenum target, WebGLFramebuffer* buffer)
 {
     bool deleted;
     if (!checkObjectToBeBound("bindFramebuffer", buffer, deleted))
@@ -2130,6 +2130,8 @@ void WebGL2RenderingContextBase::bindFramebuffer(GLenum target, WebGLFramebuffer
     }
 
     setFramebuffer(target, buffer);
+    if (scriptState)
+        preserveObjectWrapper(scriptState, this, "framebuffer", 0, buffer);
 }
 
 void WebGL2RenderingContextBase::deleteFramebuffer(WebGLFramebuffer* framebuffer)
@@ -2947,8 +2949,8 @@ void WebGL2RenderingContextBase::removeBoundBuffer(WebGLBuffer* buffer)
 
 void WebGL2RenderingContextBase::restoreCurrentFramebuffer()
 {
-    bindFramebuffer(GL_DRAW_FRAMEBUFFER, m_framebufferBinding.get());
-    bindFramebuffer(GL_READ_FRAMEBUFFER, m_readFramebufferBinding.get());
+    bindFramebuffer(nullptr, GL_DRAW_FRAMEBUFFER, m_framebufferBinding.get());
+    bindFramebuffer(nullptr, GL_READ_FRAMEBUFFER, m_readFramebufferBinding.get());
 }
 
 GLenum WebGL2RenderingContextBase::boundFramebufferColorFormat()

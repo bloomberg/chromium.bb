@@ -42,8 +42,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         bug=5400916)
     self.Fail('conformance/extensions/ext-frag-depth.html',
         bug=5400916)
-    self.Fail('conformance/misc/expando-loss.html',
-        bug=485634)
 
     # Win failures
     self.Fail('conformance/glsl/bugs/' +
