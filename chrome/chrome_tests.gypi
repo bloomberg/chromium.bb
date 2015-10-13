@@ -56,7 +56,6 @@
       'browser/apps/app_window_browsertest.cc',
       'browser/apps/ephemeral_app_browsertest.cc',
       'browser/apps/ephemeral_app_browsertest.h',
-      'browser/apps/ephemeral_app_launcher_browsertest.cc',
       'browser/apps/ephemeral_app_service_browsertest.cc',
       'browser/apps/event_page_browsertest.cc',
       'browser/apps/guest_view/app_view_browsertest.cc',

@@ -1458,11 +1458,6 @@ const Experiment kExperiments[] = {
      kOsMac,
      SINGLE_VALUE_TYPE(switches::kHostedAppQuitNotification)},
 #endif
-    {"enable-ephemeral-apps-in-webstore",
-     IDS_FLAGS_ENABLE_EPHEMERAL_APPS_IN_WEBSTORE_NAME,
-     IDS_FLAGS_ENABLE_EPHEMERAL_APPS_IN_WEBSTORE_DESCRIPTION,
-     kOsAll,
-     SINGLE_VALUE_TYPE(switches::kEnableEphemeralAppsInWebstore)},
 #if defined(OS_ANDROID)
     {"disable-pull-to-refresh-effect",
      IDS_FLAGS_DISABLE_PULL_TO_REFRESH_EFFECT_NAME,

@@ -128,7 +128,7 @@ void ExtensionAppModelBuilder::OnExtensionPreferenceChanged() {
 
 void ExtensionAppModelBuilder::OnBeginExtensionInstall(
     const ExtensionInstallParams& params) {
-  if (!params.is_app || params.is_ephemeral)
+  if (!params.is_app)
     return;
 
   DVLOG(2) << service_ << ": OnBeginExtensionInstall: "

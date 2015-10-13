@@ -414,10 +414,6 @@ const char kEnableDomainReliability[] = "enable-domain-reliability";
 // Download Notification. (value is "", "enabled" or "disabled")
 const char kEnableDownloadNotification[] = "enable-download-notification";
 
-// Enables experimentation with ephemeral apps to be launched from the webstore.
-const char kEnableEphemeralAppsInWebstore[] =
-    "enable-ephemeral-apps-in-webstore";
-
 // Enables experimental hotword features specific to always-on.
 const char kEnableExperimentalHotwordHardware[] = "enable-hotword-hardware";
 

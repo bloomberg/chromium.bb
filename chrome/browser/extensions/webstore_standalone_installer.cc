@@ -35,7 +35,6 @@ const char kInvalidManifestError[] = "Invalid manifest";
 const char kUserCancelledError[] = "User cancelled install";
 const char kExtensionIsBlacklisted[] = "Extension is blacklisted";
 const char kInstallInProgressError[] = "An install is already in progress";
-const char kLaunchInProgressError[] = "A launch is already in progress";
 
 WebstoreStandaloneInstaller::WebstoreStandaloneInstaller(
     const std::string& webstore_item_id,
@@ -111,13 +110,8 @@ bool WebstoreStandaloneInstaller::EnsureUniqueInstall(
   const ActiveInstallData* existing_install_data =
       tracker->GetActiveInstall(id_);
   if (existing_install_data) {
-    if (existing_install_data->is_ephemeral) {
-      *reason = webstore_install::LAUNCH_IN_PROGRESS;
-      *error = kLaunchInProgressError;
-    } else {
-      *reason = webstore_install::INSTALL_IN_PROGRESS;
-      *error = kInstallInProgressError;
-    }
+    *reason = webstore_install::INSTALL_IN_PROGRESS;
+    *error = kInstallInProgressError;
     return false;
   }
 
@@ -215,8 +209,7 @@ void WebstoreStandaloneInstaller::InstallUIProceed() {
       // Don't install a blacklisted extension.
       install_result = webstore_install::BLACKLISTED;
       install_message = kExtensionIsBlacklisted;
-    } else if (util::IsEphemeralApp(installed_extension->id(), profile_) &&
-               !approval->is_ephemeral) {
+    } else if (util::IsEphemeralApp(installed_extension->id(), profile_)) {
       // If the target extension has already been installed ephemerally and is
       // up to date, it can be promoted to a regular installed extension and
       // downloading from the Web Store is not necessary.

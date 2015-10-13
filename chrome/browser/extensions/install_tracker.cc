@@ -79,7 +79,6 @@ void InstallTracker::OnBeginExtensionInstall(
       active_installs_.find(params.extension_id);
   if (install_data == active_installs_.end()) {
     ActiveInstallData install_data(params.extension_id);
-    install_data.is_ephemeral = params.is_ephemeral;
     active_installs_.insert(std::make_pair(params.extension_id, install_data));
   }
 

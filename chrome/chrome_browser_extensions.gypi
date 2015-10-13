@@ -74,8 +74,6 @@
       'browser/apps/app_url_redirector.h',
       'browser/apps/app_window_registry_util.cc',
       'browser/apps/app_window_registry_util.h',
-      'browser/apps/ephemeral_app_launcher.cc',
-      'browser/apps/ephemeral_app_launcher.h',
       'browser/apps/ephemeral_app_service.cc',
       'browser/apps/ephemeral_app_service.h',
       'browser/apps/ephemeral_app_service_factory.cc',

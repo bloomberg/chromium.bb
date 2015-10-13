@@ -28,7 +28,6 @@ class InstallObserver {
     gfx::ImageSkia installing_icon;
     bool is_app;
     bool is_platform_app;
-    bool is_ephemeral;
   };
 
   // Called at the beginning of the complete installation process, i.e., this

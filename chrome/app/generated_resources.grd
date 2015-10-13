@@ -6329,12 +6329,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_HOSTED_APP_QUIT_NOTIFICATION_DESCRIPTION" desc="Description for the flag to enable a notification when quitting with hosted apps.">
         Display a notification when quitting Chrome if hosted apps are currently running.
       </message>
-      <message name="IDS_FLAGS_ENABLE_EPHEMERAL_APPS_IN_WEBSTORE_NAME" desc="Name of the flag to enable ephemeral apps in the webstore.">
-        Enable experimental ephemeral apps from the webstore.
-      </message>
-      <message name="IDS_FLAGS_ENABLE_EPHEMERAL_APPS_IN_WEBSTORE_DESCRIPTION" desc="Description for the flag to enable ephemeral apps.">
-        Enables ephemeral apps, which are launched without installing in Chrome, to be launched from the Chrome WebStore. Requires the experimental App Launcher to be enabled.
-      </message>
       <if expr="is_android">
         <message name="IDS_FLAGS_DISABLE_PULL_TO_REFRESH_EFFECT_NAME" desc="Name of the flag to disable the pull-to-refresh effect.">
           Disable the pull-to-refresh effect.

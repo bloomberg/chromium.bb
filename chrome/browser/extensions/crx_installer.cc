@@ -157,7 +157,6 @@ CrxInstaller::CrxInstaller(base::WeakPtr<ExtensionService> service_weak,
     minimum_version_ = base::Version(*approval->minimum_version);
 
   show_dialog_callback_ = approval->show_dialog_callback;
-  set_is_ephemeral(approval->is_ephemeral);
 }
 
 CrxInstaller::~CrxInstaller() {

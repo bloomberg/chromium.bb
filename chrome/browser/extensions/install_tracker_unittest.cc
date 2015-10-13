@@ -61,7 +61,6 @@ class InstallTrackerTest : public testing::Test {
   void VerifyInstallData(const ActiveInstallData& original,
                          const ActiveInstallData& retrieved) {
     EXPECT_EQ(original.extension_id, retrieved.extension_id);
-    EXPECT_EQ(original.is_ephemeral, retrieved.is_ephemeral);
     EXPECT_EQ(original.percent_downloaded, retrieved.percent_downloaded);
   }
 
@@ -75,7 +74,6 @@ TEST_F(InstallTrackerTest, AddAndRemoveActiveInstalls) {
   ActiveInstallData install_data1(kExtensionId1);
   install_data1.percent_downloaded = 76;
   ActiveInstallData install_data2(kExtensionId2);
-  install_data2.is_ephemeral = true;
 
   tracker_->AddActiveInstall(install_data1);
   tracker_->AddActiveInstall(install_data2);
@@ -174,7 +172,6 @@ TEST_F(InstallTrackerTest, DownloadProgressUpdated) {
 TEST_F(InstallTrackerTest, ExtensionInstallFailure) {
   InstallObserver::ExtensionInstallParams install_params(
       kExtensionId1, std::string(), gfx::ImageSkia(), false, false);
-  install_params.is_ephemeral = true;
   tracker_->OnBeginExtensionInstall(install_params);
 
   const ActiveInstallData* retrieved_data =
@@ -182,7 +179,6 @@ TEST_F(InstallTrackerTest, ExtensionInstallFailure) {
   ASSERT_TRUE(retrieved_data);
   EXPECT_EQ(0, retrieved_data->percent_downloaded);
   EXPECT_EQ(install_params.extension_id, retrieved_data->extension_id);
-  EXPECT_EQ(install_params.is_ephemeral, retrieved_data->is_ephemeral);
   retrieved_data = NULL;
 
   tracker_->OnInstallFailure(kExtensionId1);
@@ -200,7 +196,6 @@ TEST_F(InstallTrackerTest, ExtensionInstalledEvent) {
   ASSERT_TRUE(retrieved_data);
   EXPECT_EQ(0, retrieved_data->percent_downloaded);
   EXPECT_EQ(install_params.extension_id, retrieved_data->extension_id);
-  EXPECT_EQ(install_params.is_ephemeral, retrieved_data->is_ephemeral);
   retrieved_data = NULL;
 
   // Simulate an extension install.

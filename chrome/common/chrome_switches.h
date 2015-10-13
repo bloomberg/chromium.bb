@@ -124,7 +124,6 @@ extern const char kEnableDevToolsExperiments[];
 extern const char kEnableDeviceDiscoveryNotifications[];
 extern const char kEnableDownloadNotification[];
 extern const char kEnableDomainReliability[];
-extern const char kEnableEphemeralAppsInWebstore[];
 extern const char kEnableExperimentalHotwordHardware[];
 extern const char kEnableExtensionActivityLogging[];
 extern const char kEnableExtensionActivityLogTesting[];

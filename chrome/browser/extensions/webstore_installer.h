@@ -161,9 +161,6 @@ class WebstoreInstaller : public content::NotificationObserver,
     // Required minimum version.
     scoped_ptr<Version> minimum_version;
 
-    // Ephemeral apps are transiently installed.
-    bool is_ephemeral;
-
     // The authuser index required to download the item being installed. May be
     // the empty string, in which case no authuser parameter is used.
     std::string authuser;

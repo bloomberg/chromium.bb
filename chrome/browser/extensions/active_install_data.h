@@ -23,7 +23,6 @@ struct ActiveInstallData {
 
   std::string extension_id;
   int percent_downloaded;
-  bool is_ephemeral;
 };
 
 // Registers and deregisters and an active extension install with the

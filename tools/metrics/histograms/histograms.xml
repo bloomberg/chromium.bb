@@ -52396,7 +52396,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="11" label="SOURCE_KEYBOARD"/>
   <int value="12" label="SOURCE_EXTENSIONS_PAGE"/>
   <int value="13" label="SOURCE_MANAGEMENT_API"/>
-  <int value="14" label="SOURCE_EPHEMERAL_APP"/>
+  <int value="14" label="SOURCE_EPHEMERAL_APP_UNUSED"/>
   <int value="15" label="SOURCE_BACKGROUND"/>
   <int value="16" label="SOURCE_KIOSK"/>
   <int value="17" label="SOURCE_CHROME_INTERNAL"/>

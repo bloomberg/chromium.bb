@@ -11,11 +11,11 @@ namespace extensions {
 // ActiveInstallData:
 
 ActiveInstallData::ActiveInstallData()
-    : percent_downloaded(0), is_ephemeral(false) {
+    : percent_downloaded(0) {
 }
 
 ActiveInstallData::ActiveInstallData(const std::string& extension_id)
-    : extension_id(extension_id), percent_downloaded(0), is_ephemeral(false) {
+    : extension_id(extension_id), percent_downloaded(0) {
 }
 
 // ScopedActiveInstall:

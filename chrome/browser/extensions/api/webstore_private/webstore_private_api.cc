@@ -14,7 +14,6 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "base/version.h"
-#include "chrome/browser/apps/ephemeral_app_launcher.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_install_ui_util.h"
@@ -100,46 +99,6 @@ chrome::HostDesktopType GetHostDesktopTypeForWebContents(
       contents->GetTopLevelNativeWindow());
 }
 
-api::webstore_private::Result WebstoreInstallResultToApiResult(
-    webstore_install::Result result) {
-  switch (result) {
-    case webstore_install::SUCCESS:
-      return api::webstore_private::RESULT_SUCCESS;
-    case webstore_install::OTHER_ERROR:
-      return api::webstore_private::RESULT_UNKNOWN_ERROR;
-    case webstore_install::INVALID_ID:
-      return api::webstore_private::RESULT_INVALID_ID;
-    case webstore_install::NOT_PERMITTED:
-    case webstore_install::WEBSTORE_REQUEST_ERROR:
-    case webstore_install::INVALID_WEBSTORE_RESPONSE:
-      return api::webstore_private::RESULT_INSTALL_ERROR;
-    case webstore_install::INVALID_MANIFEST:
-      return api::webstore_private::RESULT_MANIFEST_ERROR;
-    case webstore_install::ICON_ERROR:
-      return api::webstore_private::RESULT_ICON_ERROR;
-    case webstore_install::ABORTED:
-    case webstore_install::USER_CANCELLED:
-      return api::webstore_private::RESULT_USER_CANCELLED;
-    case webstore_install::BLACKLISTED:
-      return api::webstore_private::RESULT_BLACKLISTED;
-    case webstore_install::MISSING_DEPENDENCIES:
-    case webstore_install::REQUIREMENT_VIOLATIONS:
-      return api::webstore_private::RESULT_MISSING_DEPENDENCIES;
-    case webstore_install::BLOCKED_BY_POLICY:
-      return api::webstore_private::RESULT_BLOCKED_BY_POLICY;
-    case webstore_install::LAUNCH_FEATURE_DISABLED:
-      return api::webstore_private::RESULT_FEATURE_DISABLED;
-    case webstore_install::LAUNCH_UNSUPPORTED_EXTENSION_TYPE:
-      return api::webstore_private::RESULT_UNSUPPORTED_EXTENSION_TYPE;
-    case webstore_install::INSTALL_IN_PROGRESS:
-      return api::webstore_private::RESULT_INSTALL_IN_PROGRESS;
-    case webstore_install::LAUNCH_IN_PROGRESS:
-      return api::webstore_private::RESULT_LAUNCH_IN_PROGRESS;
-  }
-  NOTREACHED();
-  return api::webstore_private::RESULT_NONE;
-}
-
 api::webstore_private::Result WebstoreInstallHelperResultToApiResult(
     WebstoreInstallHelper::Delegate::InstallHelperResultCode result) {
   switch (result) {
@@ -174,6 +133,8 @@ const char kNoPreviousBeginInstallWithManifestError[] =
 const char kUserCancelledError[] = "User cancelled install";
 const char kIncognitoError[] =
     "Apps cannot be installed in guest/incognito mode";
+const char kEphemeralAppLaunchingNotSupported[] =
+    "Ephemeral launching of apps is no longer supported.";
 
 WebstoreInstaller::Delegate* test_webstore_installer_delegate = nullptr;
 
@@ -746,60 +707,8 @@ WebstorePrivateLaunchEphemeralAppFunction::
 
 ExtensionFunction::ResponseAction
 WebstorePrivateLaunchEphemeralAppFunction::Run() {
-  // Check whether the browser window still exists.
-  content::WebContents* web_contents =
-      chrome_details_.GetAssociatedWebContents();
-  if (!web_contents)
-    return RespondNow(Error("aborted"));
-
-  if (!user_gesture()) {
-    return RespondNow(BuildResponse(
-        api::webstore_private::RESULT_USER_GESTURE_REQUIRED,
-        "User gesture is required"));
-  }
-
-  scoped_ptr<LaunchEphemeralApp::Params> params(
-      LaunchEphemeralApp::Params::Create(*args_));
-  EXTENSION_FUNCTION_VALIDATE(params);
-
-  AddRef();  // Balanced in OnLaunchComplete()
-
-  scoped_refptr<EphemeralAppLauncher> launcher =
-      EphemeralAppLauncher::CreateForWebContents(
-          params->id,
-          web_contents,
-          base::Bind(
-              &WebstorePrivateLaunchEphemeralAppFunction::OnLaunchComplete,
-              base::Unretained(this)));
-  launcher->Start();
-
-  return RespondLater();
-}
-
-void WebstorePrivateLaunchEphemeralAppFunction::OnLaunchComplete(
-    webstore_install::Result result, const std::string& error) {
-  Respond(BuildResponse(WebstoreInstallResultToApiResult(result), error));
-  Release();  // Matches AddRef() in Run()
-}
-
-ExtensionFunction::ResponseValue
-WebstorePrivateLaunchEphemeralAppFunction::BuildResponse(
-    api::webstore_private::Result result, const std::string& error) {
-  if (result != api::webstore_private::RESULT_SUCCESS) {
-    std::string error_message;
-    if (error.empty()) {
-      error_message = base::StringPrintf(
-          "[%s]", api::webstore_private::ToString(result).c_str());
-    } else {
-      error_message = base::StringPrintf(
-          "[%s]: %s",
-          api::webstore_private::ToString(result).c_str(),
-          error.c_str());
-    }
-    return ErrorWithArguments(LaunchEphemeralApp::Results::Create(result),
-                              error_message);
-  }
-  return ArgumentList(LaunchEphemeralApp::Results::Create(result));
+  // Just fail as this is no longer supported.
+  return RespondNow(Error(kEphemeralAppLaunchingNotSupported));
 }
 
 WebstorePrivateGetEphemeralAppsEnabledFunction::
@@ -811,7 +720,7 @@ WebstorePrivateGetEphemeralAppsEnabledFunction::
 ExtensionFunction::ResponseAction
 WebstorePrivateGetEphemeralAppsEnabledFunction::Run() {
   return RespondNow(ArgumentList(GetEphemeralAppsEnabled::Results::Create(
-      EphemeralAppLauncher::IsFeatureEnabled())));
+      false)));
 }
 
 }  // namespace extensions

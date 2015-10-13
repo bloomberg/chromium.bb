@@ -32,7 +32,6 @@
 #include "gpu/config/gpu_feature_type.h"
 #include "gpu/config/gpu_info.h"
 #include "net/dns/mock_host_resolver.h"
-#include "ui/app_list/app_list_switches.h"
 #include "ui/gl/gl_switches.h"
 
 using gpu::GpuFeatureType;
@@ -396,45 +395,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstoreGetWebGLStatusTest, Blocked) {
 
   bool webgl_allowed = false;
   RunTest(webgl_allowed);
-}
-
-class EphemeralAppWebstorePrivateApiTest
-    : public ExtensionWebstorePrivateApiTest {
- public:
-  void SetUpInProcessBrowserTestFixture() override {
-    ExtensionWebstorePrivateApiTest::SetUpInProcessBrowserTestFixture();
-
-    net::HostPortPair host_port = test_server()->host_port_pair();
-    std::string test_gallery_url = base::StringPrintf(
-        "http://www.example.com:%d/files/extensions/platform_apps/"
-        "ephemeral_launcher",
-        host_port.port());
-    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        switches::kAppsGalleryURL, test_gallery_url);
-  }
-
-  GURL GetTestServerURL(const std::string& path) override {
-    return DoGetTestServerURL(
-        std::string("files/extensions/platform_apps/ephemeral_launcher/") +
-        path);
-  }
-};
-
-// Run tests when the --enable-ephemeral-apps switch is not enabled.
-IN_PROC_BROWSER_TEST_F(EphemeralAppWebstorePrivateApiTest,
-                       EphemeralAppsFeatureDisabled) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      app_list::switches::kDisableExperimentalAppList);
-  ASSERT_TRUE(RunInstallTest("webstore_launch_disabled.html", "app.crx"));
-}
-
-// Run tests when the --enable-ephemeral-apps switch is enabled.
-IN_PROC_BROWSER_TEST_F(EphemeralAppWebstorePrivateApiTest, LaunchEphemeralApp) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableEphemeralAppsInWebstore);
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      app_list::switches::kEnableExperimentalAppList);
-  ASSERT_TRUE(RunInstallTest("webstore_launch_app.html", "app.crx"));
 }
 
 class BundleWebstorePrivateApiTest
