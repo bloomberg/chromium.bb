@@ -215,9 +215,29 @@
             'test_suite_name': 'ipc_perftests',
           },
           'includes': [ '../build/apk_test.gypi' ],
+        }
+      ],
+      'conditions': [
+        ['test_isolation_mode != "noop"', {
+          'targets': [
+            {
+              'target_name': 'ipc_tests_apk_run',
+              'type': 'none',
+              'dependencies': [
+                'ipc_tests_apk',
+              ],
+              'includes': [
+                '../build/isolate.gypi',
+              ],
+              'sources': [
+                'ipc_tests_apk.isolate',
+              ],
+            },
+          ],
         }],
+      ],
     }],
-    ['test_isolation_mode != "noop"', {
+    ['test_isolation_mode != "noop" and OS != "android"', {
       'targets': [
         {
           'target_name': 'ipc_tests_run',
