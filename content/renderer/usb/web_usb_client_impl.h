@@ -15,7 +15,7 @@ class ServiceRegistry;
 
 class WebUSBClientImpl : public blink::WebUSBClient {
  public:
-  explicit WebUSBClientImpl(content::ServiceRegistry* service_registry);
+  explicit WebUSBClientImpl(ServiceRegistry* service_registry);
   ~WebUSBClientImpl() override;
 
  private:
@@ -26,9 +26,11 @@ class WebUSBClientImpl : public blink::WebUSBClient {
       blink::WebUSBClientRequestDeviceCallbacks* callbacks) override;
   void setObserver(Observer* observer) override;
 
+  device::usb::DeviceManager* GetDeviceManager();
   void OnDeviceChangeNotification(
       device::usb::DeviceChangeNotificationPtr notification);
 
+  ServiceRegistry* const service_registry_;
   device::usb::DeviceManagerPtr device_manager_;
   Observer* observer_ = nullptr;
 

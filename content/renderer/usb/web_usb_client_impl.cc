@@ -66,16 +66,15 @@ void OnGetDevicesComplete(
 
 }  // namespace
 
-WebUSBClientImpl::WebUSBClientImpl(content::ServiceRegistry* service_registry) {
-  service_registry->ConnectToRemoteService(mojo::GetProxy(&device_manager_));
-}
+WebUSBClientImpl::WebUSBClientImpl(content::ServiceRegistry* service_registry)
+    : service_registry_(service_registry) {}
 
 WebUSBClientImpl::~WebUSBClientImpl() {}
 
 void WebUSBClientImpl::getDevices(
     blink::WebUSBClientGetDevicesCallbacks* callbacks) {
   auto scoped_callbacks = MakeScopedUSBCallbacks(callbacks);
-  device_manager_->GetDevices(
+  GetDeviceManager()->GetDevices(
       nullptr,
       base::Bind(&OnGetDevicesComplete, base::Passed(&scoped_callbacks),
                  base::Unretained(device_manager_.get())));
@@ -92,13 +91,20 @@ void WebUSBClientImpl::requestDevice(
 void WebUSBClientImpl::setObserver(Observer* observer) {
   if (!observer_) {
     // Set up two sequential calls to GetDeviceChanges to avoid latency.
-    device_manager_->GetDeviceChanges(base::Bind(
+    device::usb::DeviceManager* device_manager = GetDeviceManager();
+    device_manager->GetDeviceChanges(base::Bind(
         &WebUSBClientImpl::OnDeviceChangeNotification, base::Unretained(this)));
-    device_manager_->GetDeviceChanges(base::Bind(
+    device_manager->GetDeviceChanges(base::Bind(
         &WebUSBClientImpl::OnDeviceChangeNotification, base::Unretained(this)));
   }
 
   observer_ = observer;
+}
+
+device::usb::DeviceManager* WebUSBClientImpl::GetDeviceManager() {
+  if (!device_manager_)
+    service_registry_->ConnectToRemoteService(mojo::GetProxy(&device_manager_));
+  return device_manager_.get();
 }
 
 void WebUSBClientImpl::OnDeviceChangeNotification(
