@@ -54,7 +54,7 @@ TestCase screenTestCases[] = {
     {"(hover: hover)", 1},
     {"(hover: on-demand)", 0},
     {"(hover: none)", 0},
-    {"(display-mode)", 0},
+    {"(display-mode)", 1},
     {"(display-mode: fullscreen)", 0},
     {"(display-mode: standalone)", 0},
     {"(display-mode: minimal-ui)", 0},

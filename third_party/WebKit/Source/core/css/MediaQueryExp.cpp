@@ -157,6 +157,7 @@ static inline bool featureWithoutValue(const String& mediaFeature)
         || mediaFeature == anyPointerMediaFeature
         || mediaFeature == devicePixelRatioMediaFeature
         || mediaFeature == resolutionMediaFeature
+        || mediaFeature == displayModeMediaFeature
         || mediaFeature == scanMediaFeature;
 }
 
