@@ -101,6 +101,8 @@ void TypingCommand::deleteSelection(Document& document, Options options)
         return;
 
     if (RefPtrWillBeRawPtr<TypingCommand> lastTypingCommand = lastTypingCommandIfStillOpenForTyping(frame)) {
+        updateSelectionIfDifferentFromCurrentSelection(lastTypingCommand.get(), frame);
+
         lastTypingCommand->setShouldPreventSpellChecking(options & PreventSpellChecking);
         lastTypingCommand->deleteSelection(options & SmartDelete);
         return;

@@ -121,6 +121,32 @@ TEST_F(InputMethodControllerTest, SelectionOnConfirmExistingText)
     EXPECT_EQ(0, frame().selection().end().computeOffsetInContainerNode());
 }
 
+TEST_F(InputMethodControllerTest, DeleteBySettingEmptyComposition)
+{
+    HTMLInputElement* input = toHTMLInputElement(
+        insertHTMLElement("<input id='sample'>", "sample"));
+
+    input->setValue("foo ");
+    controller().setEditableSelectionOffsets(PlainTextRange(4, 4));
+    EXPECT_STREQ("foo ", input->value().utf8().data());
+    controller().extendSelectionAndDelete(0, 0);
+    EXPECT_STREQ("foo ", input->value().utf8().data());
+
+    input->setValue("foo ");
+    controller().setEditableSelectionOffsets(PlainTextRange(4, 4));
+    EXPECT_STREQ("foo ", input->value().utf8().data());
+    controller().extendSelectionAndDelete(1, 0);
+    EXPECT_STREQ("foo", input->value().utf8().data());
+
+    Vector<CompositionUnderline> underlines;
+    underlines.append(CompositionUnderline(0, 3, Color(255, 0, 0), false, 0));
+    controller().setCompositionFromExistingText(underlines, 0, 3);
+
+    controller().setComposition(String(""), underlines, 0, 3);
+
+    EXPECT_STREQ("", input->value().utf8().data());
+}
+
 TEST_F(InputMethodControllerTest, SetCompositionFromExistingTextWithCollapsedWhiteSpace)
 {
     // Creates a div with one leading new line char. The new line char is hidden
