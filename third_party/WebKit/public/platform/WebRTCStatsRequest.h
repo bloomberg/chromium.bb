@@ -96,7 +96,7 @@ public:
 #endif
 
 private:
-    WebPrivatePtr<RTCStatsRequest> m_private;
+    WebPrivatePtr<RTCStatsRequest, WebPrivatePtrDestructionCrossThread> m_private;
 };
 
 } // namespace blink
