@@ -5,11 +5,8 @@
 #include "net/websockets/websocket_frame.h"
 
 #include <stddef.h>
-#include <stdint.h>
-
 #include <algorithm>
 
-#include "base/basictypes.h"
 #include "base/big_endian.h"
 #include "base/logging.h"
 #include "base/rand_util.h"
@@ -87,9 +84,9 @@ WebSocketFrameChunk::~WebSocketFrameChunk() {}
 int GetWebSocketFrameHeaderSize(const WebSocketFrameHeader& header) {
   int extended_length_size = 0;
   if (header.payload_length > kMaxPayloadLengthWithoutExtendedLengthField &&
-      header.payload_length <= kuint16max) {
+      header.payload_length <= UINT16_MAX) {
     extended_length_size = 2;
-  } else if (header.payload_length > kuint16max) {
+  } else if (header.payload_length > UINT16_MAX) {
     extended_length_size = 8;
   }
 
@@ -103,9 +100,9 @@ int WriteWebSocketFrameHeader(const WebSocketFrameHeader& header,
                               int buffer_size) {
   DCHECK((header.opcode & kOpCodeMask) == header.opcode)
       << "header.opcode must fit to kOpCodeMask.";
-  DCHECK(header.payload_length <= static_cast<uint64_t>(kint64max))
+  DCHECK(header.payload_length <= static_cast<uint64_t>(INT64_MAX))
       << "WebSocket specification doesn't allow a frame longer than "
-      << "kint64max (0x7FFFFFFFFFFFFFFF) bytes.";
+      << "INT64_MAX (0x7FFFFFFFFFFFFFFF) bytes.";
   DCHECK_GE(buffer_size, 0);
 
   // WebSocket frame format is as follows:
@@ -137,7 +134,7 @@ int WriteWebSocketFrameHeader(const WebSocketFrameHeader& header,
   second_byte |= header.masked ? kMaskBit : 0u;
   if (header.payload_length <= kMaxPayloadLengthWithoutExtendedLengthField) {
     second_byte |= header.payload_length;
-  } else if (header.payload_length <= kuint16max) {
+  } else if (header.payload_length <= UINT16_MAX) {
     second_byte |= kPayloadLengthWithTwoByteExtendedLengthField;
     extended_length_size = 2;
   } else {

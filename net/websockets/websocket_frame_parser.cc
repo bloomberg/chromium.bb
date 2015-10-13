@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <limits>
 
-#include "base/basictypes.h"
 #include "base/big_endian.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
@@ -29,7 +28,7 @@ const uint64_t kMaxPayloadLengthWithoutExtendedLengthField = 125;
 const uint64_t kPayloadLengthWithTwoByteExtendedLengthField = 126;
 const uint64_t kPayloadLengthWithEightByteExtendedLengthField = 127;
 
-}  // Unnamed namespace.
+}  // namespace.
 
 namespace net {
 
@@ -134,10 +133,10 @@ void WebSocketFrameParser::DecodeFrameHeader() {
       return;
     base::ReadBigEndian(current, &payload_length);
     current += 8;
-    if (payload_length <= kuint16max ||
-        payload_length > static_cast<uint64_t>(kint64max)) {
+    if (payload_length <= UINT16_MAX ||
+        payload_length > static_cast<uint64_t>(INT64_MAX)) {
       websocket_error_ = kWebSocketErrorProtocolError;
-    } else if (payload_length > static_cast<uint64_t>(kint32max)) {
+    } else if (payload_length > static_cast<uint64_t>(INT32_MAX)) {
       websocket_error_ = kWebSocketErrorMessageTooBig;
     }
   }
