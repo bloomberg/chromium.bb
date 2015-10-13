@@ -1320,4 +1320,50 @@ TEST_F(TaskQueueManagerTest, ScheduleDelayedWorkIsNotReEntrant) {
   test_task_runner_->RunUntilIdle();
 }
 
+void HasOneRefTask(std::vector<bool>* log, internal::TaskQueueImpl* tq) {
+  log->push_back(tq->HasOneRef());
+}
+
+TEST_F(TaskQueueManagerTest, UnregisterTaskQueueInNestedLoop) {
+  InitializeWithRealMessageLoop(1u);
+
+  // We retain a reference to the task queue even when the manager has deleted
+  // its reference.
+  scoped_refptr<internal::TaskQueueImpl> task_queue =
+      manager_->NewTaskQueue(TaskQueue::Spec("test_queue"));
+
+  std::vector<bool> log;
+  std::vector<std::pair<base::Closure, bool>> tasks_to_post_from_nested_loop;
+
+  // Inside a nested run loop, call task_queue->UnregisterTaskQueue, bookended
+  // by calls to HasOneRefTask to make sure the manager doesn't release its
+  // reference until the nested run loop exits.
+  // NB: This first HasOneRefTask is a sanity check.
+  tasks_to_post_from_nested_loop.push_back(
+      std::make_pair(base::Bind(&HasOneRefTask, base::Unretained(&log),
+                                base::Unretained(task_queue.get())),
+                     true));
+  tasks_to_post_from_nested_loop.push_back(std::make_pair(
+      base::Bind(&internal::TaskQueueImpl::UnregisterTaskQueue,
+                 base::Unretained(task_queue.get())), true));
+  tasks_to_post_from_nested_loop.push_back(
+      std::make_pair(base::Bind(&HasOneRefTask, base::Unretained(&log),
+                                base::Unretained(task_queue.get())),
+                     true));
+  runners_[0]->PostTask(
+      FROM_HERE,
+      base::Bind(&PostFromNestedRunloop, message_loop_.get(), runners_[0],
+                 base::Unretained(&tasks_to_post_from_nested_loop)));
+  message_loop_->RunUntilIdle();
+
+  // Add a final call to HasOneRefTask.  This gives the manager a chance to
+  // release its reference, and checks that it has.
+  runners_[0]->PostTask(FROM_HERE,
+                        base::Bind(&HasOneRefTask, base::Unretained(&log),
+                                   base::Unretained(task_queue.get())));
+  message_loop_->RunUntilIdle();
+
+  EXPECT_THAT(log, ElementsAre(false, false, true));
+}
+
 }  // namespace scheduler

@@ -275,7 +275,8 @@ void TaskQueueManager::DoWork(bool decrement_pending_dowork_count) {
   }
   DCHECK(main_thread_checker_.CalledOnValidThread());
 
-  queues_to_delete_.clear();
+  if (!main_task_runner_->IsNested())
+    queues_to_delete_.clear();
 
   // Pass false and nullptr to UpdateWorkQueues here to prevent waking up a
   // pump-after-wakeup queue.
