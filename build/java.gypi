@@ -61,7 +61,7 @@
     'jar_path': '<(intermediate_dir)/<(jar_name)',
     'jar_final_path': '<(jar_dir)/<(jar_name)',
     'jar_excluded_classes': [ '*/R.class', '*/R##*.class' ],
-    'instr_stamp': '<(intermediate_dir)/instr.stamp',
+    'emma_instr_stamp': '<(intermediate_dir)/emma_instr.stamp',
     'additional_input_paths': [],
     'additional_locale_input_paths': [],
     'dex_path': '<(PRODUCT_DIR)/lib.java/<(_target_name).dex.jar',
@@ -335,12 +335,12 @@
       'includes': [ 'android/main_dex_action.gypi' ],
     },
     {
-      'action_name': 'instr_jar_<(_target_name)',
+      'action_name': 'emma_instr_jar_<(_target_name)',
       'message': 'Instrumenting <(_target_name) jar',
       'variables': {
         'input_path': '<(jar_path)',
         'output_path': '<(jar_final_path)',
-        'stamp_path': '<(instr_stamp)',
+        'stamp_path': '<(emma_instr_stamp)',
         'instr_type': 'jar',
       },
       'outputs': [
@@ -349,7 +349,7 @@
       'inputs': [
         '<(jar_path)',
       ],
-      'includes': [ 'android/instr_action.gypi' ],
+      'includes': [ 'android/emma_instr_action.gypi' ],
     },
     {
       'variables': {

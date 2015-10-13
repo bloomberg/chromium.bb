@@ -130,7 +130,7 @@
     'findbugs_stamp': '<(intermediate_dir)/findbugs.stamp',
     'run_findbugs%': 0,
     'java_in_dir_suffix%': '/src',
-    'instr_stamp': '<(intermediate_dir)/instr.stamp',
+    'emma_instr_stamp': '<(intermediate_dir)/emma_instr.stamp',
     'jar_stamp': '<(intermediate_dir)/jar.stamp',
     'obfuscate_stamp': '<(intermediate_dir)/obfuscate.stamp',
     'pack_relocations_stamp': '<(intermediate_dir)/pack_relocations.stamp',
@@ -937,22 +937,22 @@
       'includes': [ 'android/main_dex_action.gypi' ],
     },
     {
-      'action_name': 'instr_jar_<(_target_name)',
+      'action_name': 'emma_instr_jar_<(_target_name)',
       'message': 'Instrumenting <(_target_name) jar',
       'variables': {
         'input_path': '<(javac_jar_path)',
         'output_path': '<(jar_path)',
-        'stamp_path': '<(instr_stamp)',
+        'stamp_path': '<(emma_instr_stamp)',
         'instr_type': 'jar',
       },
       'outputs': [
-        '<(instr_stamp)',
+        '<(emma_instr_stamp)',
         '<(jar_path)',
       ],
       'inputs': [
         '<(javac_jar_path)',
       ],
-      'includes': [ 'android/instr_action.gypi' ],
+      'includes': [ 'android/emma_instr_action.gypi' ],
     },
     {
       'variables': {
@@ -1019,7 +1019,7 @@
         '>@(proguard_flags_paths)',
         '>@(obfuscate_input_jars_paths)',
         '>@(additional_obfuscate_input_paths)',
-        '<(instr_stamp)',
+        '<(emma_instr_stamp)',
       ],
       'outputs': [
         '<(obfuscate_stamp)',
@@ -1112,7 +1112,7 @@
         ['proguard_enabled == "true"', {
           'inputs': [ '<(obfuscate_stamp)' ]
         }, {
-          'inputs': [ '<(instr_stamp)' ]
+          'inputs': [ '<(emma_instr_stamp)' ]
         }],
       ],
       'includes': [ 'android/dex_action.gypi' ],
