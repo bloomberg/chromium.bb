@@ -23,7 +23,6 @@
 #include "chrome/browser/ui/libgtk2ui/app_indicator_icon.h"
 #include "chrome/browser/ui/libgtk2ui/gtk2_event_loop.h"
 #include "chrome/browser/ui/libgtk2ui/gtk2_key_bindings_handler.h"
-#include "chrome/browser/ui/libgtk2ui/gtk2_signal_registrar.h"
 #include "chrome/browser/ui/libgtk2ui/gtk2_status_icon.h"
 #include "chrome/browser/ui/libgtk2ui/gtk2_util.h"
 #include "chrome/browser/ui/libgtk2ui/native_theme_gtk2.h"

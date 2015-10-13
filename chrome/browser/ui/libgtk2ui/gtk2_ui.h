@@ -13,7 +13,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/ui/libgtk2ui/gtk2_signal.h"
-#include "chrome/browser/ui/libgtk2ui/gtk2_signal_registrar.h"
 #include "chrome/browser/ui/libgtk2ui/libgtk2ui_export.h"
 #include "ui/events/linux/text_edit_key_bindings_delegate_auralinux.h"
 #include "ui/gfx/color_utils.h"
@@ -33,7 +32,6 @@ class Image;
 namespace libgtk2ui {
 class Gtk2Border;
 class Gtk2KeyBindingsHandler;
-class Gtk2SignalRegistrar;
 class GConfListener;
 
 // Interface to GTK2 desktop features.
