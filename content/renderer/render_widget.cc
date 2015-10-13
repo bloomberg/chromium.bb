@@ -7,6 +7,7 @@
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
@@ -1293,6 +1294,20 @@ void RenderWidget::OnMouseCaptureLost() {
 
 void RenderWidget::OnSetFocus(bool enable) {
   has_focus_ = enable;
+
+  // TODO(nasko): This code is here to help diagnose https://crbug.com/541578.
+  if (webwidget_->isWebView()) {
+    blink::WebView* view = static_cast<blink::WebView*>(webwidget_);
+    if (view->mainFrame()->isWebRemoteFrame()) {
+      blink::WebFrame* mainFrame = view->mainFrame();
+
+      base::debug::Alias(&mainFrame);
+      base::debug::Alias(&is_swapped_out_);
+
+      base::debug::DumpWithoutCrashing();
+    }
+  }
+
   if (webwidget_)
     webwidget_->setFocus(enable);
 }
