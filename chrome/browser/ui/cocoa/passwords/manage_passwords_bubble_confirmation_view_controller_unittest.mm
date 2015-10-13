@@ -53,7 +53,7 @@ TEST_F(ManagePasswordsBubbleConfirmationViewControllerTest,
 
 TEST_F(ManagePasswordsBubbleConfirmationViewControllerTest,
        ShouldOpenPasswordsAndDismissWhenLinkClicked) {
-  [controller().confirmationText clickedOnLink:nil atIndex:0];
+  [controller().confirmationText clickedOnLink:@"about:blank" atIndex:0];
   EXPECT_TRUE([delegate() dismissed]);
   EXPECT_TRUE(ui_controller()->navigated_to_settings_page());
 }

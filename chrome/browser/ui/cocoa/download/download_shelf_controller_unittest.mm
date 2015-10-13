@@ -17,6 +17,7 @@
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #import "third_party/ocmock/gtest_support.h"
+#import "ui/events/test/cocoa_test_event_utils.h"
 
 using ::testing::Return;
 using ::testing::AnyNumber;
@@ -239,7 +240,7 @@ TEST_F(DownloadShelfControllerTest, AutoCloseAfterOpenWithMouseInShelf) {
   shelf_.get()->cancelAutoCloseCount_ = 0;
 
   // The mouse enters the shelf.
-  [shelf_ mouseEntered:nil];
+  [shelf_ mouseEntered:cocoa_test_event_utils::EnterEvent()];
   EXPECT_EQ(0, shelf_.get()->scheduleAutoCloseCount_);
 
   // The download opens.
@@ -253,12 +254,12 @@ TEST_F(DownloadShelfControllerTest, AutoCloseAfterOpenWithMouseInShelf) {
   EXPECT_EQ(0, shelf_.get()->cancelAutoCloseCount_);
 
   // The mouse exits the shelf. autoClose should be scheduled now.
-  [shelf_ mouseExited:nil];
+  [shelf_ mouseExited:cocoa_test_event_utils::ExitEvent()];
   EXPECT_EQ(1, shelf_.get()->scheduleAutoCloseCount_);
   EXPECT_EQ(0, shelf_.get()->cancelAutoCloseCount_);
 
   // The mouse enters the shelf again. The autoClose should be cancelled.
-  [shelf_ mouseEntered:nil];
+  [shelf_ mouseEntered:cocoa_test_event_utils::EnterEvent()];
   EXPECT_EQ(1, shelf_.get()->scheduleAutoCloseCount_);
   EXPECT_EQ(1, shelf_.get()->cancelAutoCloseCount_);
 }
@@ -295,7 +296,7 @@ TEST_F(DownloadShelfControllerTest, CloseWithPendingAutoClose) {
   shelf_.get()->cancelAutoCloseCount_ = 0;
 
   // The mouse enters the shelf.
-  [shelf_ mouseEntered:nil];
+  [shelf_ mouseEntered:cocoa_test_event_utils::EnterEvent()];
   EXPECT_EQ(0, shelf_.get()->scheduleAutoCloseCount_);
 
   // The download opens.
@@ -310,7 +311,7 @@ TEST_F(DownloadShelfControllerTest, CloseWithPendingAutoClose) {
   EXPECT_EQ(0, shelf_.get()->cancelAutoCloseCount_);
 
   // The mouse exits the shelf. autoClose should be scheduled now.
-  [shelf_ mouseExited:nil];
+  [shelf_ mouseExited:cocoa_test_event_utils::ExitEvent()];
   EXPECT_EQ(1, shelf_.get()->scheduleAutoCloseCount_);
   EXPECT_EQ(0, shelf_.get()->cancelAutoCloseCount_);
 
@@ -336,7 +337,7 @@ TEST_F(DownloadShelfControllerTest, AddItemWithPendingAutoClose) {
   shelf_.get()->cancelAutoCloseCount_ = 0;
 
   // The mouse enters the shelf.
-  [shelf_ mouseEntered:nil];
+  [shelf_ mouseEntered:cocoa_test_event_utils::EnterEvent()];
   EXPECT_EQ(0, shelf_.get()->scheduleAutoCloseCount_);
 
   // The download opens.
@@ -351,7 +352,7 @@ TEST_F(DownloadShelfControllerTest, AddItemWithPendingAutoClose) {
   EXPECT_EQ(0, shelf_.get()->cancelAutoCloseCount_);
 
   // The mouse exits the shelf. autoClose should be scheduled now.
-  [shelf_ mouseExited:nil];
+  [shelf_ mouseExited:cocoa_test_event_utils::ExitEvent()];
   EXPECT_EQ(1, shelf_.get()->scheduleAutoCloseCount_);
   EXPECT_EQ(0, shelf_.get()->cancelAutoCloseCount_);
 

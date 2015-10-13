@@ -677,13 +677,13 @@ TEST_F(BrowserWindowControllerTest, TestFindBarOnTop) {
   NSArray* subviews = [controller_.chromeContentView subviews];
   NSUInteger findBar_index =
       [subviews indexOfObject:[controller_ findBarView]];
-  EXPECT_NE(NSNotFound, findBar_index);
+  EXPECT_NE(static_cast<NSUInteger>(NSNotFound), findBar_index);
   NSUInteger toolbar_index =
       [subviews indexOfObject:[controller_ toolbarView]];
-  EXPECT_NE(NSNotFound, toolbar_index);
+  EXPECT_NE(static_cast<NSUInteger>(NSNotFound), toolbar_index);
   NSUInteger bookmark_index =
       [subviews indexOfObject:[controller_ bookmarkView]];
-  EXPECT_NE(NSNotFound, bookmark_index);
+  EXPECT_NE(static_cast<NSUInteger>(NSNotFound), bookmark_index);
 
   EXPECT_GT(findBar_index, toolbar_index);
   EXPECT_GT(findBar_index, bookmark_index);

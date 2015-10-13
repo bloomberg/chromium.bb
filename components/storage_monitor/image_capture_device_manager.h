@@ -11,6 +11,8 @@
 #include "base/mac/scoped_nsobject.h"
 #include "components/storage_monitor/storage_monitor.h"
 
+class MTPDeviceDelegateImplMacTest;
+
 @protocol ICDeviceBrowserDelegate;
 @class ICDeviceBrowser;
 @class ImageCaptureDevice;
@@ -51,6 +53,7 @@ class ImageCaptureDeviceManager {
   // Returns a weak pointer to the internal device browser.
   ICDeviceBrowser* device_browser_for_test();
   friend class ImageCaptureDeviceManagerTest;
+  friend class ::MTPDeviceDelegateImplMacTest;
 };
 
 }  // namespace storage_monitor

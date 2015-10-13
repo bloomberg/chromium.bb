@@ -9,6 +9,7 @@
 #import "chrome/browser/ui/cocoa/gradient_button_cell.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+#import "ui/events/test/cocoa_test_event_utils.h"
 
 @interface GradientButtonCell (HoverValueTesting)
 - (void)performOnePulseStep;
@@ -64,9 +65,9 @@ TEST_F(GradientButtonCellTest, TrackingRects) {
   EXPECT_FALSE([cell isMouseInside]);
 
   [cell setShowsBorderOnlyWhileMouseInside:YES];
-  [cell mouseEntered:nil];
+  [cell mouseEntered:cocoa_test_event_utils::EnterEvent()];
   EXPECT_TRUE([cell isMouseInside]);
-  [cell mouseExited:nil];
+  [cell mouseExited:cocoa_test_event_utils::ExitEvent()];
   EXPECT_FALSE([cell isMouseInside]);
 
   [cell setShowsBorderOnlyWhileMouseInside:NO];

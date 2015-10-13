@@ -7,6 +7,7 @@
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_button.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+#import "ui/events/test/cocoa_test_event_utils.h"
 
 class ConstrainedWindowButtonTest : public CocoaTest {
  public:
@@ -53,8 +54,8 @@ TEST_F(ConstrainedWindowButtonTest, TrackingRects) {
   ConstrainedWindowButtonCell* cell = [button_ cell];
   EXPECT_FALSE([cell isMouseInside]);
 
-  [button_ mouseEntered:nil];
+  [button_ mouseEntered:cocoa_test_event_utils::EnterEvent()];
   EXPECT_TRUE([cell isMouseInside]);
-  [button_ mouseExited:nil];
+  [button_ mouseExited:cocoa_test_event_utils::ExitEvent()];
   EXPECT_FALSE([cell isMouseInside]);
 }

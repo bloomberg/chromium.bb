@@ -2740,7 +2740,11 @@
     {
       'target_name': 'browser_ui',
       'type': 'static_library',
-      'variables': { 'enable_wexit_time_destructors': 1, },
+      'variables': {
+        'enable_wexit_time_destructors': 1,
+        # TODO(thakis): Remove this once http://crbug.com/383820 is figured out
+        'clang_warning_flags': [ '-Wno-nonnull' ],
+      },
       # Since browser and browser_ui actually depend on each other,
       # we must omit the dependency from browser_ui to browser.
       # However, this means browser_ui and browser should more or less

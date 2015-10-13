@@ -50,11 +50,11 @@ class ReloadButtonTest : public CocoaTest {
   }
 
   void MouseEnter() {
-    [[button_ cell] mouseEntered:nil];
+    [[button_ cell] mouseEntered:cocoa_test_event_utils::EnterEvent()];
   }
 
   void MouseExit() {
-    [[button_ cell] mouseExited:nil];
+    [[button_ cell] mouseExited:cocoa_test_event_utils::ExitEvent()];
   }
 
   ReloadButton* button_;

@@ -146,7 +146,8 @@ TEST_F(WebAppShortcutCreatorTest, CreateShortcuts) {
     if (!base::mac::ObjCCast<NSString>(value))
       continue;
 
-    EXPECT_EQ([value rangeOfString:@"@APP_"].location, NSNotFound)
+    EXPECT_EQ(static_cast<NSUInteger>(NSNotFound),
+              [value rangeOfString:@"@APP_"].location)
         << [key UTF8String] << ":" << [value UTF8String];
   }
 }

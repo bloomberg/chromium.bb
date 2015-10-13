@@ -10,6 +10,7 @@
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #include "chrome/browser/ui/cocoa/run_loop_testing.h"
+#import "ui/events/test/cocoa_test_event_utils.h"
 
 typedef CocoaTest ZoomBubbleControllerTest;
 
@@ -80,11 +81,11 @@ TEST_F(ZoomBubbleControllerTest, MouseEnteredExited) {
       setAllowedAnimations:info_bubble::kAnimateNone];
 
   EXPECT_FALSE(test_delegate.did_close());
-  [controller mouseEntered:nil];
+  [controller mouseEntered:cocoa_test_event_utils::EnterEvent()];
   chrome::testing::NSRunLoopRunAllPending();
   EXPECT_FALSE(test_delegate.did_close());
 
-  [controller mouseExited:nil];
+  [controller mouseExited:cocoa_test_event_utils::ExitEvent()];
   chrome::testing::NSRunLoopRunAllPending();
   EXPECT_TRUE(test_delegate.did_close());
 }

@@ -25,6 +25,8 @@
       'defines': ['CONTENT_SHELL_VERSION="<(content_shell_version)"'],
       'variables': {
         'chromium_code': 1,
+        # TODO(thakis): Remove this once http://crbug.com/383820 is figured out
+        'clang_warning_flags': [ '-Wno-nonnull' ],
       },
       'dependencies': [
         'app/resources/content_resources.gyp:content_resources',

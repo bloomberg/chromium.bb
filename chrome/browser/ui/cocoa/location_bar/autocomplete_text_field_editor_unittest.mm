@@ -27,6 +27,12 @@ using ::testing::A;
 
 namespace {
 
+NSMenu* MenuFromRightClick(AutocompleteTextFieldEditor* editor) {
+  NSEvent* event = cocoa_test_event_utils::MouseEventAtPoint(
+      NSZeroPoint, NSRightMouseDown, 0);
+  return [editor menuForEvent:event];
+}
+
 // TODO(shess): Very similar to AutocompleteTextFieldTest.  Maybe
 // those can be shared.
 
@@ -255,7 +261,7 @@ TEST_F(AutocompleteTextFieldEditorObserverTest, Menu) {
   EXPECT_CALL(field_observer_, ShouldEnableShowURL()).
       WillOnce(Return(true));
 
-  NSMenu* menu = [editor_ menuForEvent:nil];
+  NSMenu* menu = MenuFromRightClick(editor_);
   NSArray* items = [menu itemArray];
   ASSERT_EQ([items count], 7U);
   // TODO(shess): Check the titles, too?
@@ -279,7 +285,7 @@ TEST_F(AutocompleteTextFieldEditorObserverTest, CanPasteAndGoMenuNotEditable) {
   // Never call this when not editable.
   EXPECT_CALL(field_observer_, GetPasteActionStringId()).Times(0);
 
-  NSMenu* menu = [editor_ menuForEvent:nil];
+  NSMenu* menu = MenuFromRightClick(editor_);
   NSArray* items = [menu itemArray];
   ASSERT_EQ([items count], 3U);
   // TODO(shess): Check the titles, too?
@@ -297,7 +303,7 @@ TEST_F(AutocompleteTextFieldEditorObserverTest, CanPasteAndGoValidate) {
   EXPECT_CALL(field_observer_, ShouldEnableShowURL())
       .WillOnce(Return(false));
 
-  NSMenu* menu = [editor_ menuForEvent:nil];
+  NSMenu* menu = MenuFromRightClick(editor_);
   NSArray* items = [menu itemArray];
   ASSERT_EQ([items count], 6U);
   for (NSUInteger i = 0; i < [items count]; ++i) {
@@ -317,7 +323,7 @@ TEST_F(AutocompleteTextFieldEditorObserverTest, CannotPasteAndGoValidate) {
   EXPECT_CALL(field_observer_, ShouldEnableShowURL())
       .WillOnce(Return(false));
 
-  NSMenu* menu = [editor_ menuForEvent:nil];
+  NSMenu* menu = MenuFromRightClick(editor_);
   NSArray* items = [menu itemArray];
   ASSERT_EQ([items count], 6U);
   for (NSUInteger i = 0; i < [items count]; ++i) {
@@ -336,7 +342,7 @@ TEST_F(AutocompleteTextFieldEditorObserverTest, ShouldEnableShowURLValidate) {
   EXPECT_CALL(field_observer_, ShouldEnableShowURL())
       .WillRepeatedly(Return(true));
 
-  NSMenu* menu = [editor_ menuForEvent:nil];
+  NSMenu* menu = MenuFromRightClick(editor_);
   NSArray* items = [menu itemArray];
   ASSERT_EQ([items count], 7U);
   for (NSUInteger i = 0; i < [items count]; ++i) {
