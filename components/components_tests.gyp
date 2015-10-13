@@ -1542,6 +1542,27 @@
           'includes': [ '../build/host_jar.gypi' ],
          },
       ],
+      'conditions': [
+        ['test_isolation_mode != "noop"',
+          {
+            'targets': [
+              {
+                'target_name': 'components_unittests_apk_run',
+                'type': 'none',
+                'dependencies': [
+                  'components_unittests_apk',
+                ],
+                'includes': [
+                  '../build/isolate.gypi',
+                ],
+                'sources': [
+                  'components_unittests_apk.isolate',
+                ],
+              },
+            ],
+          },
+        ],
+      ],
     }],
     ['OS != "ios"', {
       'targets': [
