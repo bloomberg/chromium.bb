@@ -7,6 +7,10 @@ assert(is_nacl,
 
 import("//remoting/remoting_srcs.gni")
 
+config("enable_linker_optimization") {
+  ldflags = [ "-Wl,-O1" ]
+}
+
 executable("remoting_client_plugin_newlib") {
   sources =
       rebase_path(remoting_srcs_gypi_values.remoting_client_plugin_sources,
@@ -14,6 +18,12 @@ executable("remoting_client_plugin_newlib") {
                   "//remoting")
 
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
+
+  if (is_debug) {
+    # Always enable link-time optimization in debug builds to workaround
+    # crbug.com/538243 .
+    configs += [ ":enable_linker_optimization" ]
+  }
 
   deps = [
     "//net",
