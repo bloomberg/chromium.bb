@@ -49,7 +49,9 @@ class SynchronousCompositorFactory {
   GetCompositorTaskRunner() = 0;
   virtual scoped_ptr<cc::OutputSurface> CreateOutputSurface(
       int routing_id,
-      scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue) = 0;
+      const scoped_refptr<FrameSwapMessageQueue>& frame_swap_message_queue,
+      const scoped_refptr<cc::ContextProvider>& onscreen_context,
+      const scoped_refptr<cc::ContextProvider>& worker_context) = 0;
 
   // The factory maintains ownership of the returned interface.
   virtual InputHandlerManagerClient* GetInputHandlerManagerClient() = 0;

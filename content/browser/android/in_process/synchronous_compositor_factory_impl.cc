@@ -81,24 +81,6 @@ ContextHolder CreateContextHolder(
   return holder;
 }
 
-scoped_ptr<WebGraphicsContext3DCommandBufferImpl> CreateContext3D(
-    int surface_id,
-    const blink::WebGraphicsContext3D::Attributes& attributes,
-    const content::WebGraphicsContext3DCommandBufferImpl::SharedMemoryLimits&
-        mem_limits) {
-  DCHECK(RenderThreadImpl::current());
-  CauseForGpuLaunch cause =
-      CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE;
-  scoped_refptr<GpuChannelHost> gpu_channel_host(
-      RenderThreadImpl::current()->EstablishGpuChannelSync(cause));
-  CHECK(gpu_channel_host.get());
-
-  bool lose_context_when_out_of_memory = true;
-  return make_scoped_ptr(new WebGraphicsContext3DCommandBufferImpl(
-      surface_id, GURL(), gpu_channel_host.get(), attributes,
-      lose_context_when_out_of_memory, mem_limits, NULL));
-}
-
 }  // namespace
 
 class SynchronousCompositorFactoryImpl::VideoContextProvider
@@ -165,11 +147,9 @@ SynchronousCompositorFactoryImpl::GetCompositorTaskRunner() {
 scoped_ptr<cc::OutputSurface>
 SynchronousCompositorFactoryImpl::CreateOutputSurface(
     int routing_id,
-    scoped_refptr<content::FrameSwapMessageQueue> frame_swap_message_queue) {
-  scoped_refptr<cc::ContextProvider> onscreen_context =
-      CreateContextProviderForCompositor(0, RENDER_COMPOSITOR_CONTEXT);
-  scoped_refptr<cc::ContextProvider> worker_context =
-      GetSharedWorkerContextProvider();
+    const scoped_refptr<FrameSwapMessageQueue>& frame_swap_message_queue,
+    const scoped_refptr<cc::ContextProvider>& onscreen_context,
+    const scoped_refptr<cc::ContextProvider>& worker_context) {
   return make_scoped_ptr(new SynchronousCompositorOutputSurface(
       onscreen_context, worker_context, routing_id,
       SynchronousCompositorRegistryInProc::GetInstance(),
@@ -186,60 +166,6 @@ SynchronousCompositorFactoryImpl::CreateExternalBeginFrameSource(
     int routing_id) {
   return make_scoped_ptr(new SynchronousCompositorExternalBeginFrameSource(
       routing_id, SynchronousCompositorRegistryInProc::GetInstance()));
-}
-
-scoped_refptr<cc::ContextProvider>
-SynchronousCompositorFactoryImpl::CreateContextProviderForCompositor(
-    int surface_id,
-    CommandBufferContextType type) {
-  // This is half of what RenderWidget uses because synchronous compositor
-  // pipeline is only one frame deep. But twice of half for low end here
-  // because 16bit texture is not supported.
-  // TODO(reveman): This limit is based on the usage required by async
-  // uploads. Determine what a good limit is now that async uploads are
-  // no longer used.
-  unsigned int mapped_memory_reclaim_limit =
-      (base::SysInfo::IsLowEndDevice() ? 2 : 6) * 1024 * 1024;
-  blink::WebGraphicsContext3D::Attributes attributes = GetDefaultAttribs();
-
-  WebGraphicsContext3DCommandBufferImpl::SharedMemoryLimits mem_limits;
-  mem_limits.mapped_memory_reclaim_limit = mapped_memory_reclaim_limit;
-  scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context =
-      CreateContext3D(surface_id, GetDefaultAttribs(), mem_limits);
-  return ContextProviderCommandBuffer::Create(context.Pass(), type);
-}
-
-scoped_refptr<cc::ContextProvider>
-SynchronousCompositorFactoryImpl::GetSharedWorkerContextProvider() {
-  // TODO(reveman): This limit is based on the usage required by async
-  // uploads. Determine what a good limit is now that async uploads are
-  // no longer used.
-  unsigned int mapped_memory_reclaim_limit =
-      (base::SysInfo::IsLowEndDevice() ? 2 : 6) * 1024 * 1024;
-
-  bool shared_worker_context_lost = false;
-  if (shared_worker_context_) {
-    // Note: If context is lost, we delete reference after releasing the lock.
-    base::AutoLock lock(*shared_worker_context_->GetLock());
-    if (shared_worker_context_->ContextGL()->GetGraphicsResetStatusKHR() !=
-        GL_NO_ERROR) {
-      shared_worker_context_lost = true;
-    }
-  }
-  if (!shared_worker_context_ || shared_worker_context_lost) {
-    WebGraphicsContext3DCommandBufferImpl::SharedMemoryLimits mem_limits;
-    mem_limits.mapped_memory_reclaim_limit = mapped_memory_reclaim_limit;
-    scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context =
-        CreateContext3D(0, GetDefaultAttribs(), mem_limits);
-    shared_worker_context_ = ContextProviderCommandBuffer::Create(
-        context.Pass(), RENDER_WORKER_CONTEXT);
-    if (!shared_worker_context_->BindToCurrentThread())
-      shared_worker_context_ = nullptr;
-    if (shared_worker_context_)
-      shared_worker_context_->SetupLock();
-  }
-
-  return shared_worker_context_;
 }
 
 scoped_refptr<StreamTextureFactory>

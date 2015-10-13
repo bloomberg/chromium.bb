@@ -40,8 +40,9 @@ class SynchronousCompositorFactoryImpl : public SynchronousCompositorFactory {
       override;
   scoped_ptr<cc::OutputSurface> CreateOutputSurface(
       int routing_id,
-      scoped_refptr<content::FrameSwapMessageQueue> frame_swap_message_queue)
-      override;
+      const scoped_refptr<FrameSwapMessageQueue>& frame_swap_message_queue,
+      const scoped_refptr<cc::ContextProvider>& onscreen_context,
+      const scoped_refptr<cc::ContextProvider>& worker_context) override;
   InputHandlerManagerClient* GetInputHandlerManagerClient() override;
   scoped_ptr<cc::BeginFrameSource> CreateExternalBeginFrameSource(
       int routing_id) override;
@@ -61,9 +62,6 @@ class SynchronousCompositorFactoryImpl : public SynchronousCompositorFactory {
 
 
  private:
-  scoped_refptr<cc::ContextProvider> CreateContextProviderForCompositor(
-      int surface_id,
-      CommandBufferContextType type);
   scoped_refptr<cc::ContextProvider> GetSharedWorkerContextProvider();
   bool CanCreateMainThreadContext();
   scoped_refptr<StreamTextureFactorySynchronousImpl::ContextProvider>
@@ -76,8 +74,6 @@ class SynchronousCompositorFactoryImpl : public SynchronousCompositorFactory {
 
   class VideoContextProvider;
   scoped_refptr<VideoContextProvider> video_context_provider_;
-
-  scoped_refptr<ContextProviderCommandBuffer> shared_worker_context_;
 
   // |num_hardware_compositor_lock_| is updated on UI thread only but can be
   // read on renderer main thread.

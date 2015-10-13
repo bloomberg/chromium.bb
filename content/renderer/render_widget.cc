@@ -969,14 +969,6 @@ scoped_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface(bool fallback) {
   // never get a request for a cc::OutputSurface.
   DCHECK(!compositor_never_visible_);
 
-#if defined(OS_ANDROID)
-  if (SynchronousCompositorFactory* factory =
-      SynchronousCompositorFactory::GetInstance()) {
-    return factory->CreateOutputSurface(routing_id(),
-                                        frame_swap_message_queue_);
-  }
-#endif
-
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
   bool use_software = fallback;
@@ -998,6 +990,15 @@ scoped_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface(bool fallback) {
       // Cause the compositor to wait and try again.
       return nullptr;
     }
+
+#if defined(OS_ANDROID)
+    if (SynchronousCompositorFactory* factory =
+            SynchronousCompositorFactory::GetInstance()) {
+      return factory->CreateOutputSurface(
+          routing_id(), frame_swap_message_queue_, context_provider,
+          worker_context_provider);
+    }
+#endif
   }
 
   uint32 output_surface_id = next_output_surface_id_++;
@@ -2325,12 +2326,17 @@ RenderWidget::CreateGraphicsContext3D(bool compositor) {
   bool lose_context_when_out_of_memory = true;
   WebGraphicsContext3DCommandBufferImpl::SharedMemoryLimits limits;
 #if defined(OS_ANDROID)
+  bool using_synchronous_compositing =
+      SynchronousCompositorFactory::GetInstance();
   // If we raster too fast we become upload bound, and pending
   // uploads consume memory. For maximum upload throughput, we would
   // want to allow for upload_throughput * pipeline_time of pending
   // uploads, after which we are just wasting memory. Since we don't
   // know our upload throughput yet, this just caps our memory usage.
-  size_t divider = 1;
+  // Synchronous compositor uses half because synchronous compositor
+  // pipeline is only one frame deep. But twice of half for low end
+  // because 16bit texture is not supported.
+  size_t divider = using_synchronous_compositing ? 2 : 1;
   if (base::SysInfo::IsLowEndDevice())
     divider = 6;
   // For reference Nexus10 can upload 1MB in about 2.5ms.
