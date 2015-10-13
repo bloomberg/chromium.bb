@@ -21,6 +21,8 @@ bool IsWin32kLockdownEnabledForMimeType(const std::string& mime_type);
 #endif
 V8CacheOptions GetV8CacheOptions();
 
+bool IsUseZoomForDSFEnabled();
+
 } // namespace content
 
 #endif  // CONTENT_COMMON_CONTENT_SWITCHES_INTERNAL_H_

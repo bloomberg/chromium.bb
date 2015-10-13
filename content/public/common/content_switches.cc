@@ -458,6 +458,9 @@ const char kEnableTracingOutput[]           = "enable-tracing-output";
 const char kEnableUserMediaScreenCapturing[] =
     "enable-usermedia-screen-capturing";
 
+// Enable the mode that uses zooming to implment device scale factor behavior.
+const char kEnableUseZoomForDSF[]            = "enable-use-zoom-for-dsf";
+
 // Enables the use of the @viewport CSS rule, which allows
 // pages to control aspects of their own layout. This also turns on touch-screen
 // pinch gestures.

@@ -109,4 +109,10 @@ V8CacheOptions GetV8CacheOptions() {
   }
 }
 
+bool IsUseZoomForDSFEnabled() {
+  static bool enabled = base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableUseZoomForDSF);
+  return enabled;
+}
+
 } // namespace content
