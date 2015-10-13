@@ -16,8 +16,9 @@
 namespace web {
 
 bool IsWKWebViewSupported() {
-  // WKWebView is available starting from iOS8.
-  if (!base::ios::IsRunningOnIOS8OrLater())
+  // WKWebView is available starting from iOS 8, but only supported by the
+  // web layer starting from iOS 9 due to iOS 8 limitations.
+  if (!base::ios::IsRunningOnIOS9OrLater())
     return false;
 
 // WKWebView does not work with 32-bit binaries running on 64-bit hardware.
