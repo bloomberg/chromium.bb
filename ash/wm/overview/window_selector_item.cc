@@ -247,6 +247,12 @@ void WindowSelectorItem::SetItemBounds(const gfx::Rect& target_bounds,
                                        OverviewAnimationType animation_type) {
   DCHECK(root_window_ == GetWindow()->GetRootWindow());
   gfx::Rect screen_bounds = transform_window_.GetTargetBoundsInScreen();
+
+  // Avoid division by zero by ensuring screen bounds is not empty.
+  gfx::Size screen_size(screen_bounds.size());
+  screen_size.SetToMax(gfx::Size(1, 1));
+  screen_bounds.set_size(screen_size);
+
   gfx::Rect selector_item_bounds =
       ScopedTransformOverviewWindow::ShrinkRectToFitPreservingAspectRatio(
           screen_bounds, target_bounds);

@@ -350,6 +350,18 @@ TEST_F(WindowSelectorTest, A11yAlertOnOverviewMode) {
             ui::A11Y_ALERT_WINDOW_OVERVIEW_MODE_ENTERED);
 }
 
+// Tests that there are no crashes when there is not enough screen space
+// available to show all of the windows.
+TEST_F(WindowSelectorTest, SmallDisplay) {
+  UpdateDisplay("3x1");
+  gfx::Rect bounds(0, 0, 1, 1);
+  scoped_ptr<aura::Window> window1(CreateWindow(bounds));
+  scoped_ptr<aura::Window> window2(CreateWindow(bounds));
+  scoped_ptr<aura::Window> window3(CreateWindow(bounds));
+  scoped_ptr<aura::Window> window4(CreateWindow(bounds));
+  ToggleOverview();
+}
+
 // Tests entering overview mode with two windows and selecting one by clicking.
 TEST_F(WindowSelectorTest, Basic) {
   gfx::Rect bounds(0, 0, 400, 400);

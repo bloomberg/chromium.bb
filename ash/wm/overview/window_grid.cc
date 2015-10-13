@@ -149,7 +149,9 @@ void CalculateOverviewSizes(aura::Window* root_window,
   item_size->set_width(std::min(
       static_cast<int>(total_bounds.width() / num_columns),
       static_cast<int>(total_bounds.height() * kCardAspectRatio / num_rows)));
-  item_size->set_height(item_size->width() / kCardAspectRatio);
+  item_size->set_height(
+      static_cast<int>(item_size->width() / kCardAspectRatio));
+  item_size->SetToMax(gfx::Size(1, 1));
 
   bounding_rect->set_width(std::min(static_cast<int>(items), num_columns) *
                            item_size->width());

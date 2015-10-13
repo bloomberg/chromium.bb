@@ -260,10 +260,9 @@ gfx::Rect ScopedTransformOverviewWindow::ShrinkRectToFitPreservingAspectRatio(
     const gfx::Rect& rect,
     const gfx::Rect& bounds) {
   DCHECK(!rect.IsEmpty());
-  DCHECK(!bounds.IsEmpty());
-  float scale = std::min(1.0f,
-      std::min(static_cast<float>(bounds.width()) / rect.width(),
-               static_cast<float>(bounds.height()) / rect.height()));
+  float scale = std::min(
+      1.0f, std::min(static_cast<float>(bounds.width()) / rect.width(),
+                     static_cast<float>(bounds.height()) / rect.height()));
   return gfx::Rect(bounds.x() + 0.5 * (bounds.width() - scale * rect.width()),
                    bounds.y() + 0.5 * (bounds.height() - scale * rect.height()),
                    rect.width() * scale,
@@ -274,7 +273,6 @@ gfx::Transform ScopedTransformOverviewWindow::GetTransformForRect(
     const gfx::Rect& src_rect,
     const gfx::Rect& dst_rect) {
   DCHECK(!src_rect.IsEmpty());
-  DCHECK(!dst_rect.IsEmpty());
   gfx::Transform transform;
   transform.Translate(dst_rect.x() - src_rect.x(),
                       dst_rect.y() - src_rect.y());
