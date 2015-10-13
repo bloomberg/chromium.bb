@@ -4,6 +4,9 @@
 
 #include "base/trace_event/process_memory_dump.h"
 
+#include <vector>
+
+#include "base/stl_util.h"
 #include "base/trace_event/process_memory_totals.h"
 #include "base/trace_event/trace_event_argument.h"
 
@@ -15,19 +18,21 @@ namespace base {
 namespace trace_event {
 
 namespace {
+
 const char kEdgeTypeOwnership[] = "ownership";
 
 std::string GetSharedGlobalAllocatorDumpName(
     const MemoryAllocatorDumpGuid& guid) {
   return "global/" + guid.ToString();
 }
+
 }  // namespace
 
 #if defined(COUNT_RESIDENT_BYTES_SUPPORTED)
 // static
 size_t ProcessMemoryDump::CountResidentBytes(void* start_address,
                                              size_t mapped_size) {
-  const size_t page_size = base::GetPageSize();
+  const size_t page_size = GetPageSize();
   const uintptr_t start_pointer = reinterpret_cast<uintptr_t>(start_address);
   DCHECK_EQ(0u, start_pointer % page_size);
 
@@ -45,15 +50,14 @@ size_t ProcessMemoryDump::CountResidentBytes(void* start_address,
     size_t resident_page_count = 0;
 
 #if defined(OS_MACOSX) || defined(OS_IOS)
-    scoped_ptr<char[]> vec(new char[page_count + 1]);
-    int res = mincore(chunk_start, chunk_size, &vec.get()[0]);
+    std::vector<char> vec(page_count + 1);
+    int res = mincore(chunk_start, chunk_size, vector_as_array(&vec));
     DCHECK(!res);
     for (size_t i = 0; i < page_count; i++)
       resident_page_count += vec[i] & MINCORE_INCORE ? 1 : 0;
-
 #else   // defined(OS_MACOSX) || defined(OS_IOS)
-    scoped_ptr<unsigned char[]> vec(new unsigned char[page_count + 1]);
-    int res = mincore(chunk_start, chunk_size, &vec.get()[0]);
+    std::vector<unsigned char> vec(page_count + 1);
+    int res = mincore(chunk_start, chunk_size, vector_as_array(&vec));
     DCHECK(!res);
     for (size_t i = 0; i < page_count; i++)
       resident_page_count += vec[i];
@@ -106,9 +110,7 @@ MemoryAllocatorDump* ProcessMemoryDump::GetAllocatorDump(
 MemoryAllocatorDump* ProcessMemoryDump::GetOrCreateAllocatorDump(
     const std::string& absolute_name) {
   MemoryAllocatorDump* mad = GetAllocatorDump(absolute_name);
-  if (mad)
-    return mad;
-  return CreateAllocatorDump(absolute_name);
+  return mad ? mad : CreateAllocatorDump(absolute_name);
 }
 
 MemoryAllocatorDump* ProcessMemoryDump::CreateSharedGlobalAllocatorDump(
