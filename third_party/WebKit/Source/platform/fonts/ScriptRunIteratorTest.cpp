@@ -517,6 +517,12 @@ TEST_F(ScriptRunIteratorTest, QuoteParenChineseParenLatinQuote)
         { "Unicode\"", USCRIPT_LATIN } });
 }
 
+// Emojies are resolved to the leading script.
+TEST_F(ScriptRunIteratorTest, EmojiCommon)
+{
+    CHECK_RUNS({ { "百家姓🌱🌲🌳🌴", USCRIPT_HAN } });
+}
+
 // Unmatched close brace gets leading context
 TEST_F(ScriptRunIteratorTest, UnmatchedClose)
 {
@@ -662,6 +668,22 @@ TEST_F(ScriptRunIteratorTest, HanSpaceUdatta)
 {
     CHECK_RUNS({ { "萬國碼", USCRIPT_HAN },
         { " \xE0\xA5\x91", USCRIPT_DEVANAGARI } });
+}
+
+// Corresponds to one test in RunSegmenter, where orientation of the
+// space character is sidesways in vertical.
+TEST_F(ScriptRunIteratorTest, Hangul)
+{
+    CHECK_RUNS({ { "키스의 고유조건은", USCRIPT_HANGUL } });
+}
+
+// Corresponds to one test in RunSegmenter, which tests that the punctuation
+// characters mixed in are actually sideways in vertical. The ScriptIterator
+// should report one run, but the RunSegmenter should report three, with the
+// middle one rotated sideways.
+TEST_F(ScriptRunIteratorTest, HiraganaMixedPunctuation)
+{
+    CHECK_RUNS({ { "いろはに.…¡ほへと", USCRIPT_HIRAGANA } });
 }
 
 // Make sure Mock code works too.
