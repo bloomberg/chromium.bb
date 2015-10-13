@@ -12,13 +12,6 @@
 
 namespace media {
 
-const char kMojoMediaAppUrl[] = "mojo:media";
-
-// static
-GURL MojoMediaApplication::AppUrl() {
-  return GURL(kMojoMediaAppUrl);
-}
-
 // static
 scoped_ptr<mojo::ApplicationDelegate> MojoMediaApplication::CreateApp() {
   return scoped_ptr<mojo::ApplicationDelegate>(new MojoMediaApplication());

@@ -16,7 +16,6 @@ class MojoMediaApplication
     : public mojo::ApplicationDelegate,
       public mojo::InterfaceFactory<interfaces::ServiceFactory> {
  public:
-  static GURL AppUrl();
   static scoped_ptr<mojo::ApplicationDelegate> CreateApp();
 
   MojoMediaApplication();

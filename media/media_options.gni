@@ -64,6 +64,7 @@ declare_args() {
   # Valid options are:
   # - "none": Do not use mojo media application.
   # - "browser": Use mojo media application hosted in the browser process.
+  # - "gpu": Use mojo media application hosted in the gpu process.
   # - "utility": Use mojo media application hosted in the utility process.
   enable_mojo_media = "none"
 

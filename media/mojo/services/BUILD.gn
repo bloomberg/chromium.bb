@@ -15,7 +15,7 @@ import("//mojo/public/mojo_application.gni")
 
 config("enable_mojo_media_config") {
   assert(enable_mojo_media == "none" || enable_mojo_media == "browser" ||
-         enable_mojo_media == "utility")
+         enable_mojo_media == "gpu" || enable_mojo_media == "utility")
 
   if (enable_mojo_media != "none") {
     defines = [ "ENABLE_MOJO_MEDIA" ]
@@ -23,6 +23,8 @@ config("enable_mojo_media_config") {
 
   if (enable_mojo_media == "browser") {
     defines += [ "ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS" ]
+  } else if (enable_mojo_media == "gpu") {
+    defines += [ "ENABLE_MOJO_MEDIA_IN_GPU_PROCESS" ]
   } else if (enable_mojo_media == "utility") {
     defines += [ "ENABLE_MOJO_MEDIA_IN_UTILITY_PROCESS" ]
   }
@@ -209,7 +211,9 @@ if (!is_component_build) {
       "//testing/gtest",
     ]
 
-    data_deps = [ ":media" ]
+    data_deps = [
+      ":media",
+    ]
   }
 
   mojo_native_application("media_pipeline_integration_apptests") {
@@ -219,7 +223,9 @@ if (!is_component_build) {
       "//media/test:mojo_pipeline_integration_tests",
     ]
 
-    data_deps = [ ":media" ]
+    data_deps = [
+      ":media",
+    ]
   }
 }
 

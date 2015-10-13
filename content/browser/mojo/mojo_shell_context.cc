@@ -28,7 +28,8 @@
 #include "third_party/mojo/src/mojo/public/cpp/bindings/interface_request.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/string.h"
 
-#if defined(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
+#if defined(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS) || \
+    defined(ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
 #include "media/mojo/services/mojo_media_application.h"
 #endif
 
@@ -252,7 +253,11 @@ MojoShellContext::MojoShellContext() {
       scoped_ptr<mojo::shell::ApplicationLoader>(
           new mojo::shell::StaticApplicationLoader(
               base::Bind(&media::MojoMediaApplication::CreateApp))),
-      media::MojoMediaApplication::AppUrl());
+      GURL("mojo:media"));
+#elif(ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
+  application_manager_->SetLoaderForURL(
+      scoped_ptr<mojo::shell::ApplicationLoader>(new GpuProcessLoader()),
+      GURL("mojo:media"));
 #endif
 }
 

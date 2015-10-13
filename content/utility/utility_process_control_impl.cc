@@ -43,10 +43,9 @@ void UtilityProcessControlImpl::RegisterApplicationLoaders(
   }
 
 #if defined(ENABLE_MOJO_MEDIA_IN_UTILITY_PROCESS)
-  map_ref[media::MojoMediaApplication::AppUrl()] =
-      new mojo::shell::StaticApplicationLoader(
-          base::Bind(&media::MojoMediaApplication::CreateApp),
-          base::Bind(&QuitProcess));
+  map_ref[GURL("mojo:media")] = new mojo::shell::StaticApplicationLoader(
+      base::Bind(&media::MojoMediaApplication::CreateApp),
+      base::Bind(&QuitProcess));
 #endif
 }
 

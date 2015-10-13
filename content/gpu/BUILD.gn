@@ -4,6 +4,7 @@
 
 import("//build/config/ui.gni")
 import("//content/content.gni")
+import("//media/media_options.gni")
 
 # See //content/BUILD.gn for how this works.
 group("gpu") {
@@ -47,6 +48,10 @@ source_set("gpu_sources") {
     "//skia",
     "//ui/gl",
   ]
+
+  if (enable_mojo_media == "gpu") {
+    deps += [ "//media/mojo/services:application" ]
+  }
 
   if (is_win) {
     configs += [
