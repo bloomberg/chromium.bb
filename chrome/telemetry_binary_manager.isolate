@@ -17,7 +17,7 @@
       'variables': {
         'files': [
           # Chromium local path information for Telemetry's binary_manager.
-          '../tools/perf/core/binary_dependencies.json',
+          '../tools/perf/chrome_telemetry_build/',
         ],
       },
     }],

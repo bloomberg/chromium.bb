@@ -6,27 +6,30 @@ import logging
 import os
 import sys
 
-from core import path_util
+CHROMIUM_SRC_DIR = os.path.join(
+    os.path.dirname(__file__), os.path.pardir, os.path.pardir, os.path.pardir)
 
-sys.path.append(path_util.GetTelemetryDir())
+sys.path.append(os.path.join(CHROMIUM_SRC_DIR, 'tools', 'telemetry'))
+
 from telemetry import project_config
 
 
 CLIENT_CONFIG_PATH = os.path.join(
-    path_util.GetPerfDir(), 'core', 'binary_dependencies.json')
+    os.path.dirname(__file__), 'binary_dependencies.json')
 
 
 class ChromiumConfig(project_config.ProjectConfig):
   def __init__(self, top_level_dir=None, benchmark_dirs=None,
                client_config=CLIENT_CONFIG_PATH,
-               chromium_src_dir=path_util.GetChromiumSrcDir()):
+               chromium_src_dir=CHROMIUM_SRC_DIR):
 
+    perf_dir = os.path.join(CHROMIUM_SRC_DIR, 'tools', 'perf')
     if not benchmark_dirs:
-      benchmark_dirs = [path_util.GetPerfBenchmarksDir()]
+      benchmark_dirs = [os.path.join(perf_dir, 'benchmarks')]
       logging.info('No benchmark directories specified. Defaulting to %s',
                    benchmark_dirs)
     if not top_level_dir:
-      top_level_dir = path_util.GetPerfDir()
+      top_level_dir = perf_dir
       logging.info('No top level directory specified. Defaulting to %s',
                    top_level_dir)
 
@@ -35,4 +38,3 @@ class ChromiumConfig(project_config.ProjectConfig):
         client_config=client_config)
 
     self._chromium_src_dir = chromium_src_dir
-

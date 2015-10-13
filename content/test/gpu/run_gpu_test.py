@@ -8,10 +8,13 @@ import re
 import subprocess
 import sys
 
-sys.path.append(os.path.join(os.path.dirname(__file__),
-    os.pardir, os.pardir, os.pardir, 'tools', 'telemetry'))
+from gpu_tests import path_util
+path_util.AddDirToPathIfNeeded(path_util.GetChromiumSrcDir(), 'tools',
+                               'telemetry')
 
 from telemetry import benchmark_runner
+
+import gpu_project_config
 
 
 def _LaunchDBus():
@@ -84,17 +87,9 @@ def _ShutdownDBus():
 
 
 if __name__ == '__main__':
-  top_level_dir = os.path.dirname(os.path.realpath(__file__))
-  config = benchmark_runner.ProjectConfig(
-      top_level_dir=top_level_dir,
-      benchmark_dirs=[os.path.join(top_level_dir, 'gpu_tests')],
-      client_config=os.path.abspath(os.path.join(
-          top_level_dir, os.pardir, os.pardir, os.pardir, 'tools', 'perf',
-          'core', 'binary_dependencies.json')))
-
   did_launch_dbus = _LaunchDBus()
   try:
-    retcode = benchmark_runner.main(config)
+    retcode = benchmark_runner.main(gpu_project_config.CONFIG)
   finally:
     if did_launch_dbus:
       _ShutdownDBus()

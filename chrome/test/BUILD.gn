@@ -258,7 +258,7 @@ group("telemetry_binary_deps") {
   data_deps = []
 
   data = [
-    "//tools/perf/core/binary_dependencies.json",
+    "//tools/perf/chrome_telemetry_build/",
   ]
 
   if (is_win) {
@@ -779,9 +779,7 @@ if (!is_android) {
   # The _run targets exist only for compatibility w/ GYP.
   group("browser_tests_run") {
     testonly = true
-    data_deps = [
-      ":browser_tests",
-    ]
+    data_deps = [ ":browser_tests" ]
   }
 
   test("browser_tests") {
@@ -1330,9 +1328,7 @@ if (!is_android) {
       "//third_party/WebKit/public:blink",
     ]
 
-    data_deps = [
-      "//third_party/mesa:osmesa",
-    ]
+    data_deps = [ "//third_party/mesa:osmesa" ]
 
     if (cld_version == 2) {
       # Language detection is irrelevant to sync, so it can depend on any

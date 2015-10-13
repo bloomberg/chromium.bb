@@ -12,21 +12,15 @@ import os
 import subprocess
 import sys
 
-from core import chromium_config
+from chrome_telemetry_build import chromium_config
 from core import path_util
 
-if __name__ == '__main__':
+sys.path.append(path_util.GetTelemetryDir())
+from telemetry.testing import unittest_runner
+
+def main():
   project_config = chromium_config.ChromiumConfig()
-  telemetry_dir = path_util.GetTelemetryDir()
+  return unittest_runner.Run(project_config)
 
-  env = os.environ.copy()
-  if 'PYTHONPATH' in env:
-    env['PYTHONPATH'] = os.path.join(env['PYTHONPATH'], telemetry_dir)
-  else:
-    env['PYTHONPATH'] = telemetry_dir
-
-  path_to_run_tests = os.path.join(
-      telemetry_dir, 'telemetry', 'testing', 'run_tests.py')
-  argv = ['--top-level-dir', project_config.top_level_dir,
-          '--client-config', project_config.client_config] + sys.argv[1:]
-  sys.exit(subprocess.call([sys.executable, path_to_run_tests] + argv, env=env))
+if __name__ == '__main__':
+  sys.exit(main())
