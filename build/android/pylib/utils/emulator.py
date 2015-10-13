@@ -49,7 +49,7 @@ hw.trackBall=no
 hw.device.name=Galaxy Nexus
 hw.battery=yes
 hw.sensors.proximity=yes
-image.sysdir.1=system-images/android-{api.level}/{abi.type}/
+image.sysdir.1=system-images/android-{api.level}/default/{abi.type}/
 hw.sensors.orientation=yes
 hw.audioInput=yes
 hw.camera.front=none
@@ -234,7 +234,7 @@ class Emulator(object):
       avd_name: name of the AVD to create
       abi: target platform for emulator being created, defaults to x86
     """
-    android_sdk_root = os.path.join(constants.EMULATOR_SDK_ROOT, 'sdk')
+    android_sdk_root = constants.ANDROID_SDK_ROOT
     self.emulator = os.path.join(android_sdk_root, 'tools', 'emulator')
     self.android = os.path.join(android_sdk_root, 'tools', 'android')
     self.popen = None
