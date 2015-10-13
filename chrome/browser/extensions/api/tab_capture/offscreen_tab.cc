@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/tab_capture/offscreen_presentation.h"
+#include "chrome/browser/extensions/api/tab_capture/offscreen_tab.h"
 
 #include <algorithm>
 
@@ -27,27 +27,27 @@
 
 using content::WebContents;
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(extensions::OffscreenPresentationsOwner);
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(extensions::OffscreenTabsOwner);
 
 namespace {
 
-// Upper limit on the number of simultaneous off-screen presentations per
-// extension instance.
-const int kMaxPresentationsPerExtension = 3;
+// Upper limit on the number of simultaneous off-screen tabs per extension
+// instance.
+const int kMaxOffscreenTabsPerExtension = 3;
 
-// Time intervals used by the logic that detects when the capture of a
-// presentation has stopped, to automatically tear it down and free resources.
+// Time intervals used by the logic that detects when the capture of an
+// offscreen tab has stopped, to automatically tear it down and free resources.
 const int kMaxSecondsToWaitForCapture = 60;
 const int kPollIntervalInSeconds = 1;
 
 #if defined(USE_AURA)
 
 // A WindowObserver that automatically finds a root Window to adopt the
-// WebContents native view containing the OffscreenPresentation content.  This
-// is a workaround for Aura, which requires the WebContents native view be
-// attached somewhere in the window tree in order to gain access to the
-// compositing and capture functionality.  The WebContents native view, although
-// attached to the window tree, will never become visible on-screen.
+// WebContents native view containing the OffscreenTab content.  This is a
+// workaround for Aura, which requires the WebContents native view be attached
+// somewhere in the window tree in order to gain access to the compositing and
+// capture functionality.  The WebContents native view, although attached to the
+// window tree, will never become visible on-screen.
 class WindowAdoptionAgent : protected aura::WindowObserver {
  public:
   static void Start(aura::Window* offscreen_window) {
@@ -107,7 +107,7 @@ class WindowAdoptionAgent : protected aura::WindowObserver {
       root_window->AddChild(offscreen_window_);
     } else {
       LOG(DFATAL) << "Unable to find an aura root window.  "
-                     "OffscreenPresentation compositing may be halted!";
+                     "OffscreenTab compositing may be halted!";
     }
   }
 
@@ -123,48 +123,41 @@ class WindowAdoptionAgent : protected aura::WindowObserver {
 
 namespace extensions {
 
-OffscreenPresentationsOwner::OffscreenPresentationsOwner(WebContents* contents)
-    : extension_web_contents_(contents) {
+OffscreenTabsOwner::OffscreenTabsOwner(WebContents* extension_web_contents)
+    : extension_web_contents_(extension_web_contents) {
   DCHECK(extension_web_contents_);
 }
 
-OffscreenPresentationsOwner::~OffscreenPresentationsOwner() {}
+OffscreenTabsOwner::~OffscreenTabsOwner() {}
 
 // static
-OffscreenPresentationsOwner* OffscreenPresentationsOwner::Get(
+OffscreenTabsOwner* OffscreenTabsOwner::Get(
     content::WebContents* extension_web_contents) {
   // CreateForWebContents() really means "create if not exists."
   CreateForWebContents(extension_web_contents);
   return FromWebContents(extension_web_contents);
 }
 
-OffscreenPresentation* OffscreenPresentationsOwner::StartPresentation(
+OffscreenTab* OffscreenTabsOwner::OpenNewTab(
     const GURL& start_url,
-    const std::string& presentation_id,
-    const gfx::Size& initial_size) {
-  if (presentations_.size() >= kMaxPresentationsPerExtension)
-    return nullptr;  // Maximum number of presentations reached.
+    const gfx::Size& initial_size,
+    const std::string& optional_presentation_id) {
+  if (tabs_.size() >= kMaxOffscreenTabsPerExtension)
+    return nullptr;  // Maximum number of offscreen tabs reached.
 
-  presentations_.push_back(
-      new OffscreenPresentation(this, start_url, presentation_id));
-  presentations_.back()->Start(initial_size);
-  return presentations_.back();
+  tabs_.push_back(new OffscreenTab(this));
+  tabs_.back()->Start(start_url, initial_size, optional_presentation_id);
+  return tabs_.back();
 }
 
-void OffscreenPresentationsOwner::ClosePresentation(
-    OffscreenPresentation* presentation) {
-  const auto it =
-      std::find(presentations_.begin(), presentations_.end(), presentation);
-  if (it != presentations_.end())
-    presentations_.erase(it);
+void OffscreenTabsOwner::DestroyTab(OffscreenTab* tab) {
+  const auto it = std::find(tabs_.begin(), tabs_.end(), tab);
+  if (it != tabs_.end())
+    tabs_.erase(it);
 }
 
-OffscreenPresentation::OffscreenPresentation(OffscreenPresentationsOwner* owner,
-                                             const GURL& start_url,
-                                             const std::string& id)
+OffscreenTab::OffscreenTab(OffscreenTabsOwner* owner)
     : owner_(owner),
-      start_url_(start_url),
-      presentation_id_(id),
       profile_(Profile::FromBrowserContext(
                    owner->extension_web_contents()->GetBrowserContext())
                ->CreateOffTheRecordProfile()),
@@ -173,69 +166,71 @@ OffscreenPresentation::OffscreenPresentation(OffscreenPresentationsOwner* owner,
   DCHECK(profile_);
 }
 
-OffscreenPresentation::~OffscreenPresentation() {
-  DVLOG(1) << "Destroying OffscreenPresentation for start_url="
-           << start_url_.spec();
+OffscreenTab::~OffscreenTab() {
+  DVLOG(1) << "Destroying OffscreenTab for start_url=" << start_url_.spec();
 }
 
-void OffscreenPresentation::Start(const gfx::Size& initial_size) {
+void OffscreenTab::Start(const GURL& start_url,
+                         const gfx::Size& initial_size,
+                         const std::string& optional_presentation_id) {
   DCHECK(start_time_.is_null());
-  DVLOG(1) << "Starting OffscreenPresentation with initial size of "
+  start_url_ = start_url;
+  DVLOG(1) << "Starting OffscreenTab with initial size of "
            << initial_size.ToString() << " for start_url=" << start_url_.spec();
 
-  // Create the WebContents to contain the off-screen presentation page.
-  presentation_web_contents_.reset(
+  // Create the WebContents to contain the off-screen tab's page.
+  offscreen_tab_web_contents_.reset(
       WebContents::Create(WebContents::CreateParams(profile_.get())));
-  presentation_web_contents_->SetDelegate(this);
-  WebContentsObserver::Observe(presentation_web_contents_.get());
+  offscreen_tab_web_contents_->SetDelegate(this);
+  WebContentsObserver::Observe(offscreen_tab_web_contents_.get());
 
 #if defined(USE_AURA)
-  WindowAdoptionAgent::Start(presentation_web_contents_->GetNativeView());
+  WindowAdoptionAgent::Start(offscreen_tab_web_contents_->GetNativeView());
 #endif
 
   // Set initial size, if specified.
   if (!initial_size.IsEmpty())
-    ResizeWebContents(presentation_web_contents_.get(), initial_size);
+    ResizeWebContents(offscreen_tab_web_contents_.get(), initial_size);
 
   // Mute audio output.  When tab capture starts, the audio will be
   // automatically unmuted, but will be captured into the MediaStream.
-  presentation_web_contents_->SetAudioMuted(true);
+  offscreen_tab_web_contents_->SetAudioMuted(true);
 
-  // TODO(imcheng): If |presentation_id_| is not empty, register it with the
-  // PresentationRouter.  http://crbug.com/513859
-  if (!presentation_id_.empty()) {
+  // TODO(imcheng): If |optional_presentation_id| is not empty, register it with
+  // the PresentationRouter.  http://crbug.com/513859
+  if (!optional_presentation_id.empty()) {
     NOTIMPLEMENTED()
-        << "Register with PresentationRouter, id=" << presentation_id_;
+        << "Register with PresentationRouter, id=" << optional_presentation_id;
   }
 
-  // Navigate to the initial URL of the presentation.
+  // Navigate to the initial URL.
   content::NavigationController::LoadURLParams load_params(start_url_);
   load_params.should_replace_current_entry = true;
   load_params.should_clear_history_list = true;
-  presentation_web_contents_->GetController().LoadURLWithParams(load_params);
+  offscreen_tab_web_contents_->GetController().LoadURLWithParams(load_params);
 
   start_time_ = base::TimeTicks::Now();
   DieIfContentCaptureEnded();
 }
 
-void OffscreenPresentation::CloseContents(WebContents* source) {
-  DCHECK_EQ(presentation_web_contents_.get(), source);
+void OffscreenTab::CloseContents(WebContents* source) {
+  DCHECK_EQ(offscreen_tab_web_contents_.get(), source);
   // Javascript in the page called window.close().
-  DVLOG(1) << "OffscreenPresentation will die at renderer's request for "
-              "start_url=" << start_url_.spec();
-  owner_->ClosePresentation(this);
+  DVLOG(1) << "OffscreenTab will die at renderer's request for start_url="
+           << start_url_.spec();
+  owner_->DestroyTab(this);
+  // |this| is no longer valid.
 }
 
-bool OffscreenPresentation::ShouldSuppressDialogs(WebContents* source) {
-  DCHECK_EQ(presentation_web_contents_.get(), source);
+bool OffscreenTab::ShouldSuppressDialogs(WebContents* source) {
+  DCHECK_EQ(offscreen_tab_web_contents_.get(), source);
   // Suppress all because there is no possible direct user interaction with
   // dialogs.
   return true;
 }
 
-bool OffscreenPresentation::ShouldFocusLocationBarByDefault(
-    WebContents* source) {
-  DCHECK_EQ(presentation_web_contents_.get(), source);
+bool OffscreenTab::ShouldFocusLocationBarByDefault(WebContents* source) {
+  DCHECK_EQ(offscreen_tab_web_contents_.get(), source);
   // Indicate the location bar should be focused instead of the page, even
   // though there is no location bar.  This will prevent the page from
   // automatically receiving input focus, which should never occur since there
@@ -243,58 +238,55 @@ bool OffscreenPresentation::ShouldFocusLocationBarByDefault(
   return true;
 }
 
-bool OffscreenPresentation::ShouldFocusPageAfterCrash() {
+bool OffscreenTab::ShouldFocusPageAfterCrash() {
   // Never focus the page.  Not even after a crash.
   return false;
 }
 
-void OffscreenPresentation::CanDownload(
-    const GURL& url,
-    const std::string& request_method,
-    const base::Callback<void(bool)>& callback) {
-  // Presentation pages are not allowed to download files.
+void OffscreenTab::CanDownload(const GURL& url,
+                               const std::string& request_method,
+                               const base::Callback<void(bool)>& callback) {
+  // Offscreen tab pages are not allowed to download files.
   callback.Run(false);
 }
 
-bool OffscreenPresentation::HandleContextMenu(
-    const content::ContextMenuParams& params) {
+bool OffscreenTab::HandleContextMenu(const content::ContextMenuParams& params) {
   // Context menus should never be shown.  Do nothing, but indicate the context
   // menu was shown so that default implementation in libcontent does not
   // attempt to do so on its own.
   return true;
 }
 
-bool OffscreenPresentation::PreHandleKeyboardEvent(
+bool OffscreenTab::PreHandleKeyboardEvent(
     WebContents* source,
     const content::NativeWebKeyboardEvent& event,
     bool* is_keyboard_shortcut) {
-  DCHECK_EQ(presentation_web_contents_.get(), source);
+  DCHECK_EQ(offscreen_tab_web_contents_.get(), source);
   // Intercept and silence all keyboard events before they can be sent to the
   // renderer.
   *is_keyboard_shortcut = false;
   return true;
 }
 
-bool OffscreenPresentation::PreHandleGestureEvent(
-    WebContents* source,
-    const blink::WebGestureEvent& event) {
-  DCHECK_EQ(presentation_web_contents_.get(), source);
+bool OffscreenTab::PreHandleGestureEvent(WebContents* source,
+                                         const blink::WebGestureEvent& event) {
+  DCHECK_EQ(offscreen_tab_web_contents_.get(), source);
   // Intercept and silence all gesture events before they can be sent to the
   // renderer.
   return true;
 }
 
-bool OffscreenPresentation::CanDragEnter(
+bool OffscreenTab::CanDragEnter(
     WebContents* source,
     const content::DropData& data,
     blink::WebDragOperationsMask operations_allowed) {
-  DCHECK_EQ(presentation_web_contents_.get(), source);
+  DCHECK_EQ(offscreen_tab_web_contents_.get(), source);
   // Halt all drag attempts onto the page since there should be no direct user
   // interaction with it.
   return false;
 }
 
-bool OffscreenPresentation::ShouldCreateWebContents(
+bool OffscreenTab::ShouldCreateWebContents(
     WebContents* contents,
     int route_id,
     int main_frame_route_id,
@@ -303,27 +295,24 @@ bool OffscreenPresentation::ShouldCreateWebContents(
     const GURL& target_url,
     const std::string& partition_id,
     content::SessionStorageNamespace* session_storage_namespace) {
-  DCHECK_EQ(presentation_web_contents_.get(), contents);
+  DCHECK_EQ(offscreen_tab_web_contents_.get(), contents);
   // Disallow creating separate WebContentses.  The WebContents implementation
   // uses this to spawn new windows/tabs, which is also not allowed for
-  // presentation pages.
+  // offscreen tabs.
   return false;
 }
 
-bool OffscreenPresentation::EmbedsFullscreenWidget() const {
-  // OffscreenPresentation will manage fullscreen widgets.
+bool OffscreenTab::EmbedsFullscreenWidget() const {
+  // OffscreenTab will manage fullscreen widgets.
   return true;
 }
 
-void OffscreenPresentation::EnterFullscreenModeForTab(WebContents* contents,
-                                                      const GURL& origin) {
-  DCHECK_EQ(presentation_web_contents_.get(), contents);
+void OffscreenTab::EnterFullscreenModeForTab(WebContents* contents,
+                                             const GURL& origin) {
+  DCHECK_EQ(offscreen_tab_web_contents_.get(), contents);
 
   if (in_fullscreen_mode())
     return;
-
-  // TODO(miu): Refine fullscreen handling behavior once the Presentation API
-  // spec group defines this behavior.
 
   non_fullscreen_size_ =
       contents->GetRenderWidgetHostView()->GetViewBounds().size();
@@ -333,8 +322,8 @@ void OffscreenPresentation::EnterFullscreenModeForTab(WebContents* contents,
   }
 }
 
-void OffscreenPresentation::ExitFullscreenModeForTab(WebContents* contents) {
-  DCHECK_EQ(presentation_web_contents_.get(), contents);
+void OffscreenTab::ExitFullscreenModeForTab(WebContents* contents) {
+  DCHECK_EQ(offscreen_tab_web_contents_.get(), contents);
 
   if (!in_fullscreen_mode())
     return;
@@ -343,28 +332,28 @@ void OffscreenPresentation::ExitFullscreenModeForTab(WebContents* contents) {
   non_fullscreen_size_ = gfx::Size();
 }
 
-bool OffscreenPresentation::IsFullscreenForTabOrPending(
+bool OffscreenTab::IsFullscreenForTabOrPending(
     const WebContents* contents) const {
-  DCHECK_EQ(presentation_web_contents_.get(), contents);
+  DCHECK_EQ(offscreen_tab_web_contents_.get(), contents);
   return in_fullscreen_mode();
 }
 
-blink::WebDisplayMode OffscreenPresentation::GetDisplayMode(
+blink::WebDisplayMode OffscreenTab::GetDisplayMode(
     const WebContents* contents) const {
-  DCHECK_EQ(presentation_web_contents_.get(), contents);
+  DCHECK_EQ(offscreen_tab_web_contents_.get(), contents);
   return in_fullscreen_mode() ?
       blink::WebDisplayModeFullscreen : blink::WebDisplayModeBrowser;
 }
 
-void OffscreenPresentation::RequestMediaAccessPermission(
+void OffscreenTab::RequestMediaAccessPermission(
       WebContents* contents,
       const content::MediaStreamRequest& request,
       const content::MediaResponseCallback& callback) {
-  DCHECK_EQ(presentation_web_contents_.get(), contents);
+  DCHECK_EQ(offscreen_tab_web_contents_.get(), contents);
 
   // This method is being called to check whether an extension is permitted to
   // capture the page.  Verify that the request is being made by the extension
-  // that spawned this OffscreenPresentation.
+  // that spawned this OffscreenTab.
 
   // Find the extension ID associated with the extension background page's
   // WebContents.
@@ -375,7 +364,7 @@ void OffscreenPresentation::RequestMediaAccessPermission(
           GetExtensionForWebContents(owner_->extension_web_contents());
   const std::string extension_id = extension ? extension->id() : "";
   LOG_IF(DFATAL, extension_id.empty())
-      << "Extension that started this OffscreenPresentation was not found.";
+      << "Extension that started this OffscreenTab was not found.";
 
   // If verified, allow any tab capture audio/video devices that were requested.
   extensions::TabCaptureRegistry* const tab_capture_registry =
@@ -396,7 +385,7 @@ void OffscreenPresentation::RequestMediaAccessPermission(
   }
 
   DVLOG(2) << "Allowing " << devices.size()
-           << " capture devices for OffscreenPresentation content.";
+           << " capture devices for OffscreenTab content.";
 
   callback.Run(
     devices,
@@ -405,59 +394,59 @@ void OffscreenPresentation::RequestMediaAccessPermission(
     scoped_ptr<content::MediaStreamUI>(nullptr));
 }
 
-bool OffscreenPresentation::CheckMediaAccessPermission(
+bool OffscreenTab::CheckMediaAccessPermission(
     WebContents* contents,
     const GURL& security_origin,
     content::MediaStreamType type) {
-  DCHECK_EQ(presentation_web_contents_.get(), contents);
+  DCHECK_EQ(offscreen_tab_web_contents_.get(), contents);
   return type == content::MEDIA_TAB_AUDIO_CAPTURE ||
       type == content::MEDIA_TAB_VIDEO_CAPTURE;
 }
 
-void OffscreenPresentation::DidShowFullscreenWidget(int routing_id) {
-  if (presentation_web_contents_->GetCapturerCount() == 0 ||
-      presentation_web_contents_->GetPreferredSize().IsEmpty())
+void OffscreenTab::DidShowFullscreenWidget(int routing_id) {
+  if (offscreen_tab_web_contents_->GetCapturerCount() == 0 ||
+      offscreen_tab_web_contents_->GetPreferredSize().IsEmpty())
     return;  // Do nothing, since no preferred size is specified.
   content::RenderWidgetHostView* const current_fs_view =
-      presentation_web_contents_->GetFullscreenRenderWidgetHostView();
+      offscreen_tab_web_contents_->GetFullscreenRenderWidgetHostView();
   if (current_fs_view)
-    current_fs_view->SetSize(presentation_web_contents_->GetPreferredSize());
+    current_fs_view->SetSize(offscreen_tab_web_contents_->GetPreferredSize());
 }
 
-void OffscreenPresentation::DieIfContentCaptureEnded() {
-  DCHECK(presentation_web_contents_.get());
+void OffscreenTab::DieIfContentCaptureEnded() {
+  DCHECK(offscreen_tab_web_contents_.get());
 
   if (content_capture_was_detected_) {
-    if (presentation_web_contents_->GetCapturerCount() == 0) {
-      DVLOG(2) << "Capture of OffscreenPresentation content has stopped for "
-                  "start_url=" << start_url_.spec();
-      owner_->ClosePresentation(this);
-      return;
+    if (offscreen_tab_web_contents_->GetCapturerCount() == 0) {
+      DVLOG(2) << "Capture of OffscreenTab content has stopped for start_url="
+               << start_url_.spec();
+      owner_->DestroyTab(this);
+      return;  // |this| is no longer valid.
     } else {
-      DVLOG(3) << "Capture of OffscreenPresentation content continues for "
-                  "start_url=" << start_url_.spec();
+      DVLOG(3) << "Capture of OffscreenTab content continues for start_url="
+               << start_url_.spec();
     }
-  } else if (presentation_web_contents_->GetCapturerCount() > 0) {
-    DVLOG(2) << "Capture of OffscreenPresentation content has started for "
-                "start_url=" << start_url_.spec();
+  } else if (offscreen_tab_web_contents_->GetCapturerCount() > 0) {
+    DVLOG(2) << "Capture of OffscreenTab content has started for start_url="
+             << start_url_.spec();
     content_capture_was_detected_ = true;
   } else if (base::TimeTicks::Now() - start_time_ >
                  base::TimeDelta::FromSeconds(kMaxSecondsToWaitForCapture)) {
-    // More than a minute has elapsed since this OffscreenPresentation was
-    // started and content capture still hasn't started.  As a safety
-    // precaution, assume that content capture is never going to start and die
-    // to free up resources.
-    LOG(WARNING) << "Capture of OffscreenPresentation content did not start "
+    // More than a minute has elapsed since this OffscreenTab was started and
+    // content capture still hasn't started.  As a safety precaution, assume
+    // that content capture is never going to start and die to free up
+    // resources.
+    LOG(WARNING) << "Capture of OffscreenTab content did not start "
                     "within timeout for start_url=" << start_url_.spec();
-    owner_->ClosePresentation(this);
-    return;
+    owner_->DestroyTab(this);
+    return;  // |this| is no longer valid.
   }
 
   // Schedule the timer to check again in a second.
   capture_poll_timer_.Start(
       FROM_HERE,
       base::TimeDelta::FromSeconds(kPollIntervalInSeconds),
-      base::Bind(&OffscreenPresentation::DieIfContentCaptureEnded,
+      base::Bind(&OffscreenTab::DieIfContentCaptureEnded,
                  base::Unretained(this)));
 }
 

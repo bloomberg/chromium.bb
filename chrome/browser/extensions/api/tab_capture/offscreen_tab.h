@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_TAB_CAPTURE_OFFSCREEN_PRESENTATION_H_
-#define CHROME_BROWSER_EXTENSIONS_API_TAB_CAPTURE_OFFSCREEN_PRESENTATION_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_API_TAB_CAPTURE_OFFSCREEN_TAB_H_
+#define CHROME_BROWSER_EXTENSIONS_API_TAB_CAPTURE_OFFSCREEN_TAB_H_
 
 #include <string>
 #include <vector>
@@ -20,77 +20,75 @@ class Profile;
 
 namespace extensions {
 
-// TODO(miu): This file and classes should be renamed, as this implementation
-// has expanded in scope to be used for all off-screen tabs.
+class OffscreenTab;  // Forward declaration.  See below.
 
-class OffscreenPresentation;  // Forward declaration.  See below.
-
-// Creates, owns, and manages all OffscreenPresentation instances created by the
-// same extension background page.  When the extension background page's
-// WebContents is about to be destroyed, its associated
-// OffscreenPresentationsOwner and all of its OffscreenPresentation instances
-// are destroyed.
+// Creates, owns, and manages all OffscreenTab instances created by the same
+// extension background page.  When the extension background page's WebContents
+// is about to be destroyed, its associated OffscreenTabsOwner and all of its
+// OffscreenTab instances are destroyed.
 //
 // Usage:
 //
-//   OffscreenPresentationsOwner::Get(extension_contents)
-//       ->StartPresentation(start_url, presentation_id, size);
+//   OffscreenTabsOwner::Get(extension_contents)
+//       ->OpenNewTab(start_url, size, std::string());
 //
 // This class operates exclusively on the UI thread and so is not thread-safe.
-class OffscreenPresentationsOwner
-    : protected content::WebContentsUserData<OffscreenPresentationsOwner> {
+class OffscreenTabsOwner
+    : protected content::WebContentsUserData<OffscreenTabsOwner> {
  public:
-  ~OffscreenPresentationsOwner() override;
+  ~OffscreenTabsOwner() final;
 
-  // Returns the OffscreenPresentationsOwner instance associated with the given
-  // extension background page's WebContents.  Never returns nullptr.
-  static OffscreenPresentationsOwner* Get(
-      content::WebContents* extension_web_contents);
+  // Returns the OffscreenTabsOwner instance associated with the given extension
+  // background page's WebContents.  Never returns nullptr.
+  static OffscreenTabsOwner* Get(content::WebContents* extension_web_contents);
 
-  // Instantiate a new off-screen tab, navigate it to |start_url|, and register
-  // it with the presentation router using |presentation_id| (if a non-empty
-  // string).  The new tab's main frame will start out with the given
-  // |initial_size| in DIP coordinates.  If too many off-screen tabs have
-  // already been started, this method returns nullptr.
-  OffscreenPresentation* StartPresentation(
+  // Instantiate a new offscreen tab and navigate it to |start_url|.  The new
+  // tab's main frame will start out with the given |initial_size| in DIP
+  // coordinates.  If too many offscreen tabs are already running, nothing
+  // happens and nullptr is returned.
+  //
+  // If |optional_presentation_id| is non-empty, the offscreen tab is registered
+  // for use by the Media Router (chrome/browser/media/router/...) as the
+  // receiving browsing context for the W3C Presentation API.
+  OffscreenTab* OpenNewTab(
       const GURL& start_url,
-      const std::string& optional_presentation_id,
-      const gfx::Size& initial_size);
+      const gfx::Size& initial_size,
+      const std::string& optional_presentation_id);
 
  protected:
-  friend class OffscreenPresentation;
+  friend class OffscreenTab;
 
   // Accessor to the extension background page's WebContents.
   content::WebContents* extension_web_contents() const {
     return extension_web_contents_;
   }
 
-  // Shuts down and destroys the |presentation|.
-  void ClosePresentation(OffscreenPresentation* presentation);
+  // Shuts down and destroys the |tab|.
+  void DestroyTab(OffscreenTab* tab);
 
  private:
-  friend class content::WebContentsUserData<OffscreenPresentationsOwner>;
+  friend class content::WebContentsUserData<OffscreenTabsOwner>;
 
-  explicit OffscreenPresentationsOwner(content::WebContents* contents);
+  explicit OffscreenTabsOwner(content::WebContents* extension_web_contents);
 
   content::WebContents* const extension_web_contents_;
-  ScopedVector<OffscreenPresentation> presentations_;
+  ScopedVector<OffscreenTab> tabs_;
 
-  DISALLOW_COPY_AND_ASSIGN(OffscreenPresentationsOwner);
+  DISALLOW_COPY_AND_ASSIGN(OffscreenTabsOwner);
 };
 
-// Owns and controls a WebContents instance containing a presentation page.
-// Since the presentation page does not interact with the user in any direct
-// way, the WebContents is not attached to any Browser window/UI, and all input
-// and focusing capabilities are blocked.
+// Owns and controls a sandboxed WebContents instance hosting the rendering
+// engine for an offscreen tab.  Since the offscreen tab does not interact with
+// the user in any direct way, the WebContents is not attached to any Browser
+// window/UI, and any input and focusing capabilities are blocked.
 //
-// OffscreenPresentation is instantiated by OffscreenPresentationsOwner.  An
-// instance is shut down one of three ways:
+// OffscreenTab is instantiated by OffscreenTabsOwner.  An instance is shut down
+// one of three ways:
 //
 //   1. When its WebContents::GetCapturerCount() returns to zero, indicating
 //      there are no more consumers of its captured content (e.g., when all
-//      MediaStreams have been closed).  OffscreenPresentation will detect this
-//      case and initiate shutdown.
+//      MediaStreams have been closed).  OffscreenTab will auto-detect this case
+//      and self-destruct.
 //   2. By the renderer, where the WebContents implementation will invoke the
 //      WebContentsDelegate::CloseContents() override.  This occurs, for
 //      example, when a page calls window.close().
@@ -98,31 +96,29 @@ class OffscreenPresentationsOwner
 //      destroyed.
 //
 // This class operates exclusively on the UI thread and so is not thread-safe.
-class OffscreenPresentation : protected content::WebContentsDelegate,
-                              protected content::WebContentsObserver {
+class OffscreenTab : protected content::WebContentsDelegate,
+                     protected content::WebContentsObserver {
  public:
-  ~OffscreenPresentation() final;
+  ~OffscreenTab() final;
 
-  const GURL& start_url() const { return start_url_; }
-  const std::string& presentation_id() const { return presentation_id_; }
-
-  // The presentation page's WebContents instance.
+  // The WebContents instance hosting the rendering engine for this
+  // OffscreenTab.
   content::WebContents* web_contents() const {
-    return presentation_web_contents_.get();
+    return offscreen_tab_web_contents_.get();
   }
 
  protected:
-  friend class OffscreenPresentationsOwner;
+  friend class OffscreenTabsOwner;
 
-  OffscreenPresentation(OffscreenPresentationsOwner* owner,
-                        const GURL& start_url,
-                        const std::string& id);
+  explicit OffscreenTab(OffscreenTabsOwner* owner);
 
-  // Creates the WebContents instance containing the presentation page,
-  // configures it for off-screen rendering at the given |initial_size|, and
-  // navigates it to |start_url_|.  This is invoked once by
-  // OffscreenPresentationsOwner just after construction.
-  void Start(const gfx::Size& initial_size);
+  // Creates the WebContents instance containing the offscreen tab's page,
+  // configures it for offscreen rendering at the given |initial_size|, and
+  // navigates it to |start_url|.  This is invoked once by OffscreenTabsOwner
+  // just after construction.
+  void Start(const GURL& start_url,
+             const gfx::Size& initial_size,
+             const std::string& optional_presentation_id);
 
   // content::WebContentsDelegate overrides to provide the desired behaviors.
   void CloseContents(content::WebContents* source) final;
@@ -174,47 +170,46 @@ class OffscreenPresentation : protected content::WebContentsDelegate,
     return !non_fullscreen_size_.IsEmpty();
   }
 
-  // Called by |capture_poll_timer_| to automatically destroy this
-  // OffscreenPresentation when the capturer count returns to zero.
+  // Called by |capture_poll_timer_| to automatically destroy this OffscreenTab
+  // when the capturer count returns to zero.
   void DieIfContentCaptureEnded();
 
-  OffscreenPresentationsOwner* const owner_;
+  OffscreenTabsOwner* const owner_;
 
-  // The starting URL for this presentation, which may or may not match the
-  // current WebContents URL if navigations have occurred.
-  const GURL start_url_;
-
-  // The presentation ID used to help uniquely identify this instance.
-  const std::string presentation_id_;
+  // The initial navigation URL, which may or may not match the current URL if
+  // page-initiated navigations have occurred.
+  GURL start_url_;
 
   // A non-shared off-the-record profile based on the profile of the extension
   // background page.
   const scoped_ptr<Profile> profile_;
 
-  // The WebContents containing the offscreen presentation page.
-  scoped_ptr<content::WebContents> presentation_web_contents_;
+  // The WebContents containing the off-screen tab's page.
+  scoped_ptr<content::WebContents> offscreen_tab_web_contents_;
 
-  // The time at which Start() finished creating |presentation_web_contents_|.
+  // The time at which Start() finished creating |offscreen_tab_web_contents_|.
   base::TimeTicks start_time_;
 
   // Set to the original size of the renderer just before entering fullscreen
   // mode.  When not in fullscreen mode, this is an empty size.
   gfx::Size non_fullscreen_size_;
 
-  // Poll timer to monitor the capturer count on |presentation_web_contents_|.
-  // When the capturer count returns to zero, this OffscreenPresentation is
-  // automatically destroyed.
+  // Poll timer to monitor the capturer count on |offscreen_tab_web_contents_|.
+  // When the capturer count returns to zero, this OffscreenTab is automatically
+  // destroyed.
+  //
   // TODO(miu): Add a method to WebContentsObserver to report capturer count
   // changes and get rid of this polling-based approach.
+  // http://crbug.com/540965
   base::Timer capture_poll_timer_;
 
   // This is false until after the Start() method is called, and capture of the
-  // |presentation_web_contents_| is first detected.
+  // |offscreen_tab_web_contents_| is first detected.
   bool content_capture_was_detected_;
 
-  DISALLOW_COPY_AND_ASSIGN(OffscreenPresentation);
+  DISALLOW_COPY_AND_ASSIGN(OffscreenTab);
 };
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_TAB_CAPTURE_OFFSCREEN_PRESENTATION_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_API_TAB_CAPTURE_OFFSCREEN_TAB_H_

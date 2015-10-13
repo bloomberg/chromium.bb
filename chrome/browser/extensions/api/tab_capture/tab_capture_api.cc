@@ -14,7 +14,7 @@
 #include "base/command_line.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/api/tab_capture/offscreen_presentation.h"
+#include "chrome/browser/extensions/api/tab_capture/offscreen_tab.h"
 #include "chrome/browser/extensions/api/tab_capture/tab_capture_registry.h"
 #include "chrome/browser/extensions/extension_renderer_state.h"
 #include "chrome/browser/profiles/profile.h"
@@ -262,13 +262,12 @@ bool TabCaptureCaptureOffscreenTabFunction::RunSync() {
 
   content::WebContents* const extension_web_contents = GetSenderWebContents();
   EXTENSION_FUNCTION_VALIDATE(extension_web_contents);
-  OffscreenPresentation* const offscreen_tab =
-      OffscreenPresentationsOwner::Get(extension_web_contents)
-          ->StartPresentation(
-              start_url,
-              (is_whitelisted_extension && params->options.presentation_id) ?
-                  *params->options.presentation_id : std::string(),
-              DetermineInitialSize(params->options));
+  OffscreenTab* const offscreen_tab =
+      OffscreenTabsOwner::Get(extension_web_contents)->OpenNewTab(
+          start_url,
+          DetermineInitialSize(params->options),
+          (is_whitelisted_extension && params->options.presentation_id) ?
+              *params->options.presentation_id : std::string());
   if (!offscreen_tab) {
     SetError(kTooManyOffscreenTabs);
     return false;
