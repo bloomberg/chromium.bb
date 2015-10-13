@@ -393,14 +393,6 @@ BOOL ThePasteboardIsTooDamnBig() {
   [super insertText:aString];
 }
 
-- (void)setMarkedText:(id)aString selectedRange:(NSRange)selRange {
-  [super setMarkedText:aString selectedRange:selRange];
-
-  // Because the OmniboxViewMac class treats marked text as content,
-  // we need to treat the change to marked text as content change as well.
-  [self didChangeText];
-}
-
 - (NSRange)selectionRangeForProposedRange:(NSRange)proposedSelRange
                               granularity:(NSSelectionGranularity)granularity {
   AutocompleteTextFieldObserver* observer = [self observer];
