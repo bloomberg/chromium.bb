@@ -1,7 +1,7 @@
 # What is GN?
 
 GN is a meta-build system that generates
-[NinjaBuild](/chromium/src/+/master/docs/ninja_build.md)
+[NinjaBuild](https://chromium.googlesource.com/chromium/src/+/master/docs/ninja_build.md)
 files. It's meant to be faster and simpler than GYP. It outputs only Ninja build
 files.
 
@@ -81,14 +81,14 @@ Or, look at [the list of open bugs](https://code.google.com/p/chromium/issues/li
 
 Read these links:
 
-  * [Quick start](/chromium/src/+/master/tools/gn/docs/quick_start.md)
-  * [FAQ](/chromium/src/+/master/tools/gn/docs/faq.md)
-  * [GYP conversion cookbook](/chromium/src/+/master/tools/gn/docs/cookbook.md)
-  * [Language and operation details](/chromium/src/+/master/tools/gn/docs/language.md)
-  * [Reference](/chromium/src/+/master/tools/gn/docs/reference.md) The built-in `gn help` documentation.
-  * [Style guide](/chromium/src/+/master/tools/gn/docs/style_guide.md)
-  * [Cross compiling and toolchains](/chromium/src/+/master/tools/gn/docs/cross_compiles.md)
-  * [Hacking on GN itself](/chromium/src/+/master/tools/gn/docs/hacking.md)
-  * [GNStandalone](/chromium/src/+/master/tools/gn/docs/standalone.md) Standalone GN projects
-  * [UpdateGNBinaries](/chromium/src/+/master/tools/gn/docs/update_binaries.md) Pushing new binaries
-  * [Check](/chromium/src/+/master/tools/gn/docs/check.md) `gn check` command reference
+  * [Quick start](https://chromium.googlesource.com/chromium/src/+/master/tools/gn/docs/quick_start.md)
+  * [FAQ](https://chromium.googlesource.com/chromium/src/+/master/tools/gn/docs/faq.md)
+  * [GYP conversion cookbook](https://chromium.googlesource.com/chromium/src/+/master/tools/gn/docs/cookbook.md)
+  * [Language and operation details](https://chromium.googlesource.com/chromium/src/+/master/tools/gn/docs/language.md)
+  * [Reference](https://chromium.googlesource.com/chromium/src/+/master/tools/gn/docs/reference.md) The built-in `gn help` documentation.
+  * [Style guide](https://chromium.googlesource.com/chromium/src/+/master/tools/gn/docs/style_guide.md)
+  * [Cross compiling and toolchains](https://chromium.googlesource.com/chromium/src/+/master/tools/gn/docs/cross_compiles.md)
+  * [Hacking on GN itself](https://chromium.googlesource.com/chromium/src/+/master/tools/gn/docs/hacking.md)
+  * [GNStandalone](https://chromium.googlesource.com/chromium/src/+/master/tools/gn/docs/standalone.md) Standalone GN projects
+  * [UpdateGNBinaries](https://chromium.googlesource.com/chromium/src/+/master/tools/gn/docs/update_binaries.md) Pushing new binaries
+  * [Check](https://chromium.googlesource.com/chromium/src/+/master/tools/gn/docs/check.md) `gn check` command reference
