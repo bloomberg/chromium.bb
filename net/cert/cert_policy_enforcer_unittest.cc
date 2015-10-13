@@ -49,8 +49,8 @@ class DummyEVCertsWhitelist : public ct::EVCertsWhitelist {
 const char kGoogleAviatorLogID[] =
     "\x68\xf6\x98\xf8\x1f\x64\x82\xbe\x3a\x8c\xee\xb9\x28\x1d\x4c\xfc\x71\x51"
     "\x5d\x67\x93\xd4\x44\xd1\x0a\x67\xac\xbb\x4f\x4f\xfb\xc4";
-COMPILE_ASSERT(arraysize(kGoogleAviatorLogID) - 1 == crypto::kSHA256Length,
-               "Incorrect log ID length.");
+static_assert(arraysize(kGoogleAviatorLogID) - 1 == crypto::kSHA256Length,
+              "Incorrect log ID length.");
 
 class CertPolicyEnforcerTest : public ::testing::Test {
  public:
