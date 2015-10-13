@@ -587,6 +587,35 @@ TEST_F(CastAudioOutputStreamTest, Volume) {
   CloseStream(stream);
 }
 
+TEST_F(CastAudioOutputStreamTest, StartStopStart) {
+  ::media::AudioOutputStream* stream = CreateStream();
+  ASSERT_TRUE(stream);
+  ASSERT_TRUE(OpenStream(stream));
+
+  scoped_ptr<FakeAudioSourceCallback> source_callback(
+      new FakeAudioSourceCallback);
+  audio_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&::media::AudioOutputStream::Start,
+                            base::Unretained(stream), source_callback.get()));
+  audio_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&::media::AudioOutputStream::Stop, base::Unretained(stream)));
+  audio_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&::media::AudioOutputStream::Start,
+                            base::Unretained(stream), source_callback.get()));
+  RunUntilIdle(audio_task_runner_.get());
+  RunUntilIdle(backend_task_runner_.get());
+
+  AudioPipelineDevice* audio_device = GetAudio();
+  FakeClockDevice* clock_device = GetClock();
+  ASSERT_TRUE(audio_device && clock_device);
+  EXPECT_EQ(AudioPipelineDevice::kStateRunning, audio_device->GetState());
+  EXPECT_EQ(MediaClockDevice::kStateRunning, clock_device->GetState());
+  EXPECT_EQ(1.f, clock_device->rate());
+
+  CloseStream(stream);
+}
+
 }  // namespace
 }  // namespace media
 }  // namespace chromecast

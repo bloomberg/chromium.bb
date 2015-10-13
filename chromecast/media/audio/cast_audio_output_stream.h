@@ -50,8 +50,8 @@ class CastAudioOutputStream : public ::media::AudioOutputStream {
   scoped_ptr<::media::AudioBus> audio_bus_;
   scoped_refptr<media::DecoderBufferBase> decoder_buffer_;
   scoped_ptr<Backend> backend_;
-  bool backend_busy_;
   const base::TimeDelta buffer_duration_;
+  bool push_in_progress_;
   base::TimeTicks next_push_time_;
 
   scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner_;

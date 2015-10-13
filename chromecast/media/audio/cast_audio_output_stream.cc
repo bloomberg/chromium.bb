@@ -178,8 +178,8 @@ CastAudioOutputStream::CastAudioOutputStream(
       volume_(1.0),
       source_callback_(nullptr),
       backend_(new Backend(audio_params)),
-      backend_busy_(false),
       buffer_duration_(audio_params.GetBufferDuration()),
+      push_in_progress_(false),
       audio_task_runner_(audio_manager->GetTaskRunner()),
       backend_task_runner_(media::MediaMessageLoop::GetTaskRunner()),
       weak_factory_(this) {
@@ -246,10 +246,11 @@ void CastAudioOutputStream::Start(AudioSourceCallback* source_callback) {
       FROM_HERE, base::Bind(&Backend::Start, base::Unretained(backend_.get())));
 
   next_push_time_ = base::TimeTicks::Now();
-  if (!backend_busy_) {
+  if (!push_in_progress_) {
     audio_task_runner_->PostTask(FROM_HERE,
                                  base::Bind(&CastAudioOutputStream::PushFrame,
                                             weak_factory_.GetWeakPtr()));
+    push_in_progress_ = true;
   }
 
   metrics::CastMetricsHelper::GetInstance()->LogTimeToFirstAudio();
@@ -289,10 +290,12 @@ void CastAudioOutputStream::OnClosed() {
 
 void CastAudioOutputStream::PushFrame() {
   DCHECK(audio_task_runner_->BelongsToCurrentThread());
-  DCHECK(!backend_busy_);
+  DCHECK(push_in_progress_);
 
-  if (!source_callback_)
+  if (!source_callback_) {
+    push_in_progress_ = false;
     return;
+  }
 
   uint32_t bytes_delay = 0;
   int frame_count = source_callback_->OnMoreData(audio_bus_.get(), bytes_delay);
@@ -310,16 +313,17 @@ void CastAudioOutputStream::PushFrame() {
       FROM_HERE,
       base::Bind(&Backend::PushFrame, base::Unretained(backend_.get()),
                  decoder_buffer_, completion_cb));
-  backend_busy_ = true;
 }
 
 void CastAudioOutputStream::OnPushFrameComplete(bool success) {
   DCHECK(audio_task_runner_->BelongsToCurrentThread());
+  DCHECK(push_in_progress_);
 
-  backend_busy_ = false;
-  if (!source_callback_)
+  push_in_progress_ = false;
+
+  if (!source_callback_) {
     return;
-
+  }
   if (!success) {
     source_callback_->OnError(this);
     return;
@@ -337,6 +341,7 @@ void CastAudioOutputStream::OnPushFrameComplete(bool success) {
       FROM_HERE,
       base::Bind(&CastAudioOutputStream::PushFrame, weak_factory_.GetWeakPtr()),
       delay);
+  push_in_progress_ = true;
 }
 
 }  // namespace media
