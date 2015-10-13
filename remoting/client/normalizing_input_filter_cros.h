@@ -36,6 +36,7 @@ class NormalizingInputFilterCros : public protocol::InputFilter {
   void ProcessKeyUp(const protocol::KeyEvent& event);
 
   void SwitchRewritingKeyToModifying();
+  void UndoAltKeyMapping(protocol::KeyEvent* event);
 
   // Holds the keydown event for the most recent OSKey to have been pressed,
   // while it is Rewriting, or we are not yet sure whether it is Normal,
@@ -50,8 +51,9 @@ class NormalizingInputFilterCros : public protocol::InputFilter {
   // Stores the code of the OSKey while it is pressed for use as a Modifier.
   uint32 modifying_key_;
 
-  // True if the left Alt key is pressed.
+  // True if the left or right Alt keys are pressed, respectively.
   bool left_alt_is_pressed_;
+  bool right_alt_is_pressed_;
 
   // Previous mouse coordinates.
   int previous_mouse_x_;

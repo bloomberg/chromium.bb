@@ -16,6 +16,7 @@ using remoting::protocol::InputStub;
 using remoting::protocol::KeyEvent;
 using remoting::protocol::MockInputStub;
 using remoting::protocol::MouseEvent;
+using remoting::protocol::test::EqualsKeyEvent;
 using remoting::protocol::test::EqualsKeyEventWithNumLock;
 using remoting::protocol::test::EqualsMouseButtonEvent;
 using remoting::protocol::test::EqualsMouseMoveEvent;
@@ -282,6 +283,68 @@ TEST(NormalizingInputFilterCrosTest, RightAltClick) {
       MakeMouseButtonEvent(MouseEvent::BUTTON_RIGHT, true));
   processor->InjectMouseEvent(
       MakeMouseButtonEvent(MouseEvent::BUTTON_RIGHT, false));
+  processor->InjectKeyEvent(MakeKeyEvent(ui::DomCode::ALT_RIGHT, false));
+}
+
+// Test that the Alt-key remapping for Up and Down is not applied.
+TEST(NormalizingInputFilterCrosTest, UndoAltPlusArrowRemapping) {
+  MockInputStub stub;
+  scoped_ptr<protocol::InputFilter> processor(
+      new NormalizingInputFilterCros(&stub));
+
+  {
+    InSequence s;
+
+    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEvent(
+        ui::DomCode::ALT_LEFT, true)));
+    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEvent(
+        ui::DomCode::ARROW_UP, true)));
+    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEvent(
+        ui::DomCode::ARROW_UP, false)));
+    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEvent(
+        ui::DomCode::ARROW_DOWN, true)));
+    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEvent(
+        ui::DomCode::ARROW_DOWN, false)));
+    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEvent(
+        ui::DomCode::BACKSPACE, true)));
+    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEvent(
+        ui::DomCode::BACKSPACE, false)));
+    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEvent(
+        ui::DomCode::ALT_LEFT, false)));
+
+    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEvent(
+        ui::DomCode::ALT_RIGHT, true)));
+    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEvent(
+        ui::DomCode::ARROW_UP, true)));
+    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEvent(
+        ui::DomCode::ARROW_UP, false)));
+    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEvent(
+        ui::DomCode::ARROW_DOWN, true)));
+    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEvent(
+        ui::DomCode::ARROW_DOWN, false)));
+    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEvent(
+        ui::DomCode::BACKSPACE, true)));
+    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEvent(
+        ui::DomCode::BACKSPACE, false)));
+    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEvent(
+        ui::DomCode::ALT_RIGHT, false)));
+  }
+
+  // Hold the left Alt key while pressing & releasing the PgUp, PgDown and
+  // Delete keys. This simulates the mapping that ChromeOS applies if the Up,
+  // Down and Backspace keys are pressed, respectively, while the Alt key is
+  // held.
+  processor->InjectKeyEvent(MakeKeyEvent(ui::DomCode::ALT_LEFT, true));
+  PressAndReleaseKey(processor.get(), ui::DomCode::PAGE_UP);
+  PressAndReleaseKey(processor.get(), ui::DomCode::PAGE_DOWN);
+  PressAndReleaseKey(processor.get(), ui::DomCode::DEL);
+  processor->InjectKeyEvent(MakeKeyEvent(ui::DomCode::ALT_LEFT, false));
+
+  // Repeat the test for the right Alt key.
+  processor->InjectKeyEvent(MakeKeyEvent(ui::DomCode::ALT_RIGHT, true));
+  PressAndReleaseKey(processor.get(), ui::DomCode::PAGE_UP);
+  PressAndReleaseKey(processor.get(), ui::DomCode::PAGE_DOWN);
+  PressAndReleaseKey(processor.get(), ui::DomCode::DEL);
   processor->InjectKeyEvent(MakeKeyEvent(ui::DomCode::ALT_RIGHT, false));
 }
 
