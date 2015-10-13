@@ -237,10 +237,10 @@ void CopyRowsToI420Buffer(int first_row,
     DCHECK_NE(dest_stride, 0);
     DCHECK_LE(bytes_per_row, std::abs(dest_stride));
     DCHECK_LE(bytes_per_row, source_stride);
-    for (int row = first_row; row < first_row + rows; ++row) {
-      memcpy(output + dest_stride * row, source + source_stride * row,
-             bytes_per_row);
-    }
+
+    libyuv::CopyPlane(source + source_stride * first_row, source_stride,
+                      output + dest_stride * first_row, dest_stride,
+                      bytes_per_row, rows);
   }
   done.Run();
 }
