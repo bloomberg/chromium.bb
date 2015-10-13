@@ -36,11 +36,14 @@ class GCM_EXPORT ConnectionFactoryImpl :
   // for proxy auth credentials (via its HttpAuthCache). |gcm_network_session|
   // is the network session through which GCM connections should be made, and
   // must not be the same as |http_network_session|.
+  //
+  // The caller is responsible for making sure the ConnectionFactoryImpl is
+  // destroyed before the |gcm_network_session| and |http_network_session|.
   ConnectionFactoryImpl(
       const std::vector<GURL>& mcs_endpoints,
       const net::BackoffEntry::Policy& backoff_policy,
-      const scoped_refptr<net::HttpNetworkSession>& gcm_network_session,
-      const scoped_refptr<net::HttpNetworkSession>& http_network_session,
+      net::HttpNetworkSession* gcm_network_session,
+      net::HttpNetworkSession* http_network_session,
       net::NetLog* net_log,
       GCMStatsRecorder* recorder);
   ~ConnectionFactoryImpl() override;
@@ -135,10 +138,10 @@ class GCM_EXPORT ConnectionFactoryImpl :
 
   // ---- net:: components for establishing connections. ----
   // Network session for creating new GCM connections.
-  const scoped_refptr<net::HttpNetworkSession> gcm_network_session_;
+  net::HttpNetworkSession* gcm_network_session_;
   // HTTP Network session. If set, is used for extracting proxy auth
-  // credentials. If not set, is ignored.
-  const scoped_refptr<net::HttpNetworkSession> http_network_session_;
+  // credentials. If nullptr, is ignored.
+  net::HttpNetworkSession* http_network_session_;
   // Net log to use in connection attempts.
   net::BoundNetLog bound_net_log_;
   // The current PAC request, if one exists. Owned by the proxy service.

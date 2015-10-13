@@ -371,16 +371,14 @@ class SpdyNetworkTransactionTest
       }
     }
 
-    void SetSession(const scoped_refptr<HttpNetworkSession>& session) {
-      session_ = session;
+    void SetSession(scoped_ptr<HttpNetworkSession> session) {
+      session_ = session.Pass();
     }
     HttpNetworkTransaction* trans() { return trans_.get(); }
     void ResetTrans() { trans_.reset(); }
     TransactionHelperResult& output() { return output_; }
     const HttpRequestInfo& request() const { return request_; }
-    const scoped_refptr<HttpNetworkSession>& session() const {
-      return session_;
-    }
+    HttpNetworkSession* session() const { return session_.get(); }
     scoped_ptr<SpdySessionDependencies>& session_deps() {
       return session_deps_;
     }
@@ -398,7 +396,7 @@ class SpdyNetworkTransactionTest
     HttpRequestInfo request_;
     RequestPriority priority_;
     scoped_ptr<SpdySessionDependencies> session_deps_;
-    scoped_refptr<HttpNetworkSession> session_;
+    scoped_ptr<HttpNetworkSession> session_;
     TransactionHelperResult output_;
     scoped_ptr<SocketDataProvider> first_transaction_;
     SSLVector ssl_vector_;
@@ -587,7 +585,7 @@ class SpdyNetworkTransactionTest
     SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
                        PRIVACY_MODE_DISABLED);
     BoundNetLog log;
-    const scoped_refptr<HttpNetworkSession>& session = helper.session();
+    HttpNetworkSession* session = helper.session();
     base::WeakPtr<SpdySession> spdy_session =
         session->spdy_session_pool()->FindAvailableSession(key, log);
     ASSERT_TRUE(spdy_session != NULL);
@@ -615,7 +613,7 @@ class SpdyNetworkTransactionTest
 
     // Request the pushed path.
     scoped_ptr<HttpNetworkTransaction> trans2(
-        new HttpNetworkTransaction(DEFAULT_PRIORITY, helper.session().get()));
+        new HttpNetworkTransaction(DEFAULT_PRIORITY, helper.session()));
     rv = trans2->Start(
         &CreateGetPushRequest(), callback.callback(), BoundNetLog());
     EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -654,12 +652,11 @@ class SpdyNetworkTransactionTest
     helper->ResetTrans();
   }
 
-  static void StartTransactionCallback(
-      const scoped_refptr<HttpNetworkSession>& session,
-      GURL url,
-      int result) {
+  static void StartTransactionCallback(HttpNetworkSession* session,
+                                       GURL url,
+                                       int result) {
     scoped_ptr<HttpNetworkTransaction> trans(
-        new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
+        new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
     TestCompletionCallback callback;
     HttpRequestInfo request;
     request.method = "GET";
@@ -724,7 +721,7 @@ INSTANTIATE_TEST_CASE_P(
 TEST_P(SpdyNetworkTransactionTest, Constructor) {
   scoped_ptr<SpdySessionDependencies> session_deps(
       CreateSpdySessionDependencies(GetParam()));
-  scoped_refptr<HttpNetworkSession> session(
+  scoped_ptr<HttpNetworkSession> session(
       SpdySessionDependencies::SpdyCreateSession(session_deps.get()));
   scoped_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
@@ -892,11 +889,11 @@ TEST_P(SpdyNetworkTransactionTest, ThreeGets) {
   helper.AddData(&data_placeholder);
   helper.AddData(&data_placeholder);
   scoped_ptr<HttpNetworkTransaction> trans1(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, helper.session().get()));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, helper.session()));
   scoped_ptr<HttpNetworkTransaction> trans2(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, helper.session().get()));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, helper.session()));
   scoped_ptr<HttpNetworkTransaction> trans3(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, helper.session().get()));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, helper.session()));
 
   TestCompletionCallback callback1;
   TestCompletionCallback callback2;
@@ -977,9 +974,9 @@ TEST_P(SpdyNetworkTransactionTest, TwoGetsLateBinding) {
   // on will negotiate SPDY and will be used for all requests.
   helper.AddData(&data_placeholder);
   scoped_ptr<HttpNetworkTransaction> trans1(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, helper.session().get()));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, helper.session()));
   scoped_ptr<HttpNetworkTransaction> trans2(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, helper.session().get()));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, helper.session()));
 
   TestCompletionCallback callback1;
   TestCompletionCallback callback2;
@@ -1065,9 +1062,9 @@ TEST_P(SpdyNetworkTransactionTest, TwoGetsLateBindingFromPreconnect) {
   helper.AddData(&data_placeholder);
 
   scoped_ptr<HttpNetworkTransaction> trans1(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, helper.session().get()));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, helper.session()));
   scoped_ptr<HttpNetworkTransaction> trans2(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, helper.session().get()));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, helper.session()));
 
   TestCompletionCallback callback1;
   TestCompletionCallback callback2;
@@ -1182,11 +1179,11 @@ TEST_P(SpdyNetworkTransactionTest, ThreeGetsWithMaxConcurrent) {
     helper.RunPreTestSetup();
     helper.AddData(&data);
     scoped_ptr<HttpNetworkTransaction> trans1(
-        new HttpNetworkTransaction(DEFAULT_PRIORITY, helper.session().get()));
+        new HttpNetworkTransaction(DEFAULT_PRIORITY, helper.session()));
     scoped_ptr<HttpNetworkTransaction> trans2(
-        new HttpNetworkTransaction(DEFAULT_PRIORITY, helper.session().get()));
+        new HttpNetworkTransaction(DEFAULT_PRIORITY, helper.session()));
     scoped_ptr<HttpNetworkTransaction> trans3(
-        new HttpNetworkTransaction(DEFAULT_PRIORITY, helper.session().get()));
+        new HttpNetworkTransaction(DEFAULT_PRIORITY, helper.session()));
 
     TestCompletionCallback callback1;
     TestCompletionCallback callback2;
@@ -1317,13 +1314,13 @@ TEST_P(SpdyNetworkTransactionTest, FourGetsWithMaxConcurrentPriority) {
   helper.AddData(&data);
 
   scoped_ptr<HttpNetworkTransaction> trans1(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, helper.session().get()));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, helper.session()));
   scoped_ptr<HttpNetworkTransaction> trans2(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, helper.session().get()));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, helper.session()));
   scoped_ptr<HttpNetworkTransaction> trans3(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, helper.session().get()));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, helper.session()));
   scoped_ptr<HttpNetworkTransaction> trans4(
-      new HttpNetworkTransaction(HIGHEST, helper.session().get()));
+      new HttpNetworkTransaction(HIGHEST, helper.session()));
 
   TestCompletionCallback callback1;
   TestCompletionCallback callback2;
@@ -1446,11 +1443,11 @@ TEST_P(SpdyNetworkTransactionTest, ThreeGetsWithMaxConcurrentDelete) {
   helper.RunPreTestSetup();
   helper.AddData(&data);
   scoped_ptr<HttpNetworkTransaction> trans1(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, helper.session().get()));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, helper.session()));
   scoped_ptr<HttpNetworkTransaction> trans2(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, helper.session().get()));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, helper.session()));
   scoped_ptr<HttpNetworkTransaction> trans3(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, helper.session().get()));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, helper.session()));
 
   TestCompletionCallback callback1;
   TestCompletionCallback callback2;
@@ -1577,10 +1574,10 @@ TEST_P(SpdyNetworkTransactionTest, ThreeGetsWithMaxConcurrentSocketClose) {
   // there needs to be three sets of SSL connection data.
   helper.AddData(&data_placeholder);
   helper.AddData(&data_placeholder);
-  HttpNetworkTransaction trans1(DEFAULT_PRIORITY, helper.session().get());
-  HttpNetworkTransaction trans2(DEFAULT_PRIORITY, helper.session().get());
+  HttpNetworkTransaction trans1(DEFAULT_PRIORITY, helper.session());
+  HttpNetworkTransaction trans2(DEFAULT_PRIORITY, helper.session());
   HttpNetworkTransaction* trans3(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, helper.session().get()));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, helper.session()));
 
   TestCompletionCallback callback1;
   TestCompletionCallback callback2;
@@ -4552,8 +4549,8 @@ TEST_P(SpdyNetworkTransactionTest, ProxyConnect) {
                                      BoundNetLog(), GetParam(), NULL);
   helper.session_deps() = CreateSpdySessionDependencies(
       GetParam(), ProxyService::CreateFixedFromPacResult("PROXY myproxy:70"));
-  helper.SetSession(make_scoped_refptr(
-      SpdySessionDependencies::SpdyCreateSession(helper.session_deps().get())));
+  helper.SetSession(
+      SpdySessionDependencies::SpdyCreateSession(helper.session_deps().get()));
   helper.RunPreTestSetup();
   HttpNetworkTransaction* trans = helper.trans();
 
@@ -4617,8 +4614,8 @@ TEST_P(SpdyNetworkTransactionTest, DirectConnectProxyReconnect) {
   helper.session_deps() = CreateSpdySessionDependencies(
       GetParam(),
       ProxyService::CreateFixedFromPacResult("DIRECT; PROXY myproxy:70"));
-  helper.SetSession(make_scoped_refptr(
-      SpdySessionDependencies::SpdyCreateSession(helper.session_deps().get())));
+  helper.SetSession(
+      SpdySessionDependencies::SpdyCreateSession(helper.session_deps().get()));
 
   SpdySessionPool* spdy_session_pool = helper.session()->spdy_session_pool();
   helper.RunPreTestSetup();
@@ -4703,16 +4700,16 @@ TEST_P(SpdyNetworkTransactionTest, DirectConnectProxyReconnect) {
   scoped_ptr<SpdySessionDependencies> ssd_proxy(
       CreateSpdySessionDependencies(GetParam()));
   // Ensure that this transaction uses the same SpdySessionPool.
-  scoped_refptr<HttpNetworkSession> session_proxy(
+  scoped_ptr<HttpNetworkSession> session_proxy(
       SpdySessionDependencies::SpdyCreateSession(ssd_proxy.get()));
   NormalSpdyTransactionHelper helper_proxy(request_proxy, DEFAULT_PRIORITY,
                                            BoundNetLog(), GetParam(), NULL);
-  HttpNetworkSessionPeer session_peer(session_proxy);
+  HttpNetworkSessionPeer session_peer(session_proxy.get());
   scoped_ptr<ProxyService> proxy_service(
       ProxyService::CreateFixedFromPacResult("PROXY myproxy:70"));
   session_peer.SetProxyService(proxy_service.get());
   helper_proxy.session_deps().swap(ssd_proxy);
-  helper_proxy.SetSession(session_proxy);
+  helper_proxy.SetSession(session_proxy.Pass());
   helper_proxy.RunPreTestSetup();
   helper_proxy.AddData(data_proxy.get());
 
@@ -4787,7 +4784,7 @@ TEST_P(SpdyNetworkTransactionTest, VerifyRetryOnConnectionReset) {
 
     for (int i = 0; i < 2; ++i) {
       scoped_ptr<HttpNetworkTransaction> trans(
-          new HttpNetworkTransaction(DEFAULT_PRIORITY, helper.session().get()));
+          new HttpNetworkTransaction(DEFAULT_PRIORITY, helper.session()));
 
       TestCompletionCallback callback;
       int rv = trans->Start(
@@ -5103,7 +5100,7 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushClaimBeforeHeaders) {
   // Request the pushed path.  At this point, we've received the push, but the
   // headers are not yet complete.
   scoped_ptr<HttpNetworkTransaction> trans2(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, helper.session().get()));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, helper.session()));
   rv = trans2->Start(
       &CreateGetPushRequest(), callback.callback(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -5241,7 +5238,7 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushWithTwoHeaderFrames) {
   // Request the pushed path.  At this point, we've received the push, but the
   // headers are not yet complete.
   scoped_ptr<HttpNetworkTransaction> trans2(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, helper.session().get()));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, helper.session()));
   rv = trans2->Start(
       &CreateGetPushRequest(), callback.callback(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -5357,7 +5354,7 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushWithNoStatusHeaderFrames) {
   // Request the pushed path.  At this point, we've received the push, but the
   // headers are not yet complete.
   scoped_ptr<HttpNetworkTransaction> trans2(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, helper.session().get()));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, helper.session()));
   rv = trans2->Start(
       &CreateGetPushRequest(), callback.callback(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -5695,7 +5692,7 @@ TEST_P(SpdyNetworkTransactionTest, OutOfOrderSynStream) {
   HttpRequestInfo info2 = CreateGetRequest();
   TestCompletionCallback callback2;
   scoped_ptr<HttpNetworkTransaction> trans2(
-      new HttpNetworkTransaction(MEDIUM, helper.session().get()));
+      new HttpNetworkTransaction(MEDIUM, helper.session()));
   rv = trans2->Start(&info2, callback2.callback(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
   base::RunLoop().RunUntilIdle();
@@ -5703,7 +5700,7 @@ TEST_P(SpdyNetworkTransactionTest, OutOfOrderSynStream) {
   HttpRequestInfo info3 = CreateGetRequest();
   TestCompletionCallback callback3;
   scoped_ptr<HttpNetworkTransaction> trans3(
-      new HttpNetworkTransaction(HIGHEST, helper.session().get()));
+      new HttpNetworkTransaction(HIGHEST, helper.session()));
   rv = trans3->Start(&info3, callback3.callback(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
   base::RunLoop().RunUntilIdle();

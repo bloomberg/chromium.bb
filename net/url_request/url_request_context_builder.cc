@@ -386,9 +386,12 @@ scoped_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
   network_session_params.quic_connection_options =
       http_network_session_params_.quic_connection_options;
 
+  storage->set_http_network_session(
+      make_scoped_ptr(new HttpNetworkSession(network_session_params)));
+
   scoped_ptr<HttpTransactionFactory> http_transaction_factory;
   if (http_cache_enabled_) {
-    HttpCache::BackendFactory* http_cache_backend = NULL;
+    HttpCache::BackendFactory* http_cache_backend;
     if (http_cache_params_.type == HttpCacheParams::DISK) {
       http_cache_backend = new HttpCache::DefaultBackend(
           DISK_CACHE, CACHE_BACKEND_DEFAULT, http_cache_params_.path,
@@ -398,13 +401,11 @@ scoped_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
           HttpCache::DefaultBackend::InMemory(http_cache_params_.max_size);
     }
 
-    http_transaction_factory.reset(
-        new HttpCache(network_session_params, http_cache_backend));
+    http_transaction_factory.reset(new HttpCache(
+        storage->http_network_session(), http_cache_backend, true));
   } else {
-    scoped_refptr<HttpNetworkSession> network_session(
-        new HttpNetworkSession(network_session_params));
-
-    http_transaction_factory.reset(new HttpNetworkLayer(network_session.get()));
+    http_transaction_factory.reset(
+        new HttpNetworkLayer(storage->http_network_session()));
   }
   storage->set_http_transaction_factory(http_transaction_factory.Pass());
 

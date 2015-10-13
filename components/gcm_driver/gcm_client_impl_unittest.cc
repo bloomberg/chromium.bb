@@ -200,9 +200,8 @@ class FakeGCMInternalsBuilder : public GCMInternalsBuilder {
   scoped_ptr<ConnectionFactory> BuildConnectionFactory(
       const std::vector<GURL>& endpoints,
       const net::BackoffEntry::Policy& backoff_policy,
-      const scoped_refptr<net::HttpNetworkSession>& gcm_network_session,
-      const scoped_refptr<net::HttpNetworkSession>& http_network_session,
-      net::NetLog* net_log,
+      net::HttpNetworkSession* gcm_network_session,
+      net::HttpNetworkSession* http_network_session,
       GCMStatsRecorder* recorder) override;
 
  private:
@@ -234,9 +233,8 @@ scoped_ptr<MCSClient> FakeGCMInternalsBuilder::BuildMCSClient(
 scoped_ptr<ConnectionFactory> FakeGCMInternalsBuilder::BuildConnectionFactory(
     const std::vector<GURL>& endpoints,
     const net::BackoffEntry::Policy& backoff_policy,
-    const scoped_refptr<net::HttpNetworkSession>& gcm_network_session,
-    const scoped_refptr<net::HttpNetworkSession>& http_network_session,
-    net::NetLog* net_log,
+    net::HttpNetworkSession* gcm_network_session,
+    net::HttpNetworkSession* http_network_session,
     GCMStatsRecorder* recorder) {
   return make_scoped_ptr<ConnectionFactory>(new FakeConnectionFactory());
 }

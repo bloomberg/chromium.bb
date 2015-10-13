@@ -524,13 +524,10 @@ int MockBackendFactory::CreateBackend(NetLog* net_log,
 
 //-----------------------------------------------------------------------------
 
-MockHttpCache::MockHttpCache()
-    : http_cache_(new MockNetworkLayer(), NULL, new MockBackendFactory()) {
-}
+MockHttpCache::MockHttpCache() : MockHttpCache(new MockBackendFactory()) {}
 
 MockHttpCache::MockHttpCache(HttpCache::BackendFactory* disk_cache_factory)
-    : http_cache_(new MockNetworkLayer(), NULL, disk_cache_factory) {
-}
+    : http_cache_(new MockNetworkLayer(), nullptr, disk_cache_factory, true) {}
 
 disk_cache::Backend* MockHttpCache::backend() {
   TestCompletionCallback cb;

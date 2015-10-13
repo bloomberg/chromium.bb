@@ -26,7 +26,8 @@ class NET_EXPORT HttpNetworkLayer
       NON_EXPORTED_BASE(public base::NonThreadSafe) {
  public:
   // Construct a HttpNetworkLayer with an existing HttpNetworkSession which
-  // contains a valid ProxyService.
+  // contains a valid ProxyService. The HttpNetworkLayer must be destroyed
+  // before |session|.
   explicit HttpNetworkLayer(HttpNetworkSession* session);
   ~HttpNetworkLayer() override;
 
@@ -41,7 +42,7 @@ class NET_EXPORT HttpNetworkLayer
   void OnResume() override;
 
  private:
-  const scoped_refptr<HttpNetworkSession> session_;
+  HttpNetworkSession* const session_;
   bool suspended_;
 
   DISALLOW_COPY_AND_ASSIGN(HttpNetworkLayer);

@@ -127,16 +127,14 @@ TEST_F(HttpNetworkTransactionSSLTest, SSLFallback) {
   StaticSocketDataProvider data3(NULL, 0, NULL, 0);
   mock_socket_factory_.AddSocketDataProvider(&data3);
 
-  scoped_refptr<HttpNetworkSession> session(
-      new HttpNetworkSession(session_params_));
-  scoped_ptr<HttpNetworkTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
+  HttpNetworkSession session(session_params_);
+  HttpNetworkTransaction trans(DEFAULT_PRIORITY, &session);
 
   TestCompletionCallback callback;
   // This will consume |ssl_data1|, |ssl_data2| and |ssl_data3|.
-  int rv = callback.GetResult(
-      trans->Start(GetRequestInfo("https://www.paypal.com/"),
-                   callback.callback(), BoundNetLog()));
+  int rv =
+      callback.GetResult(trans.Start(GetRequestInfo("https://www.paypal.com/"),
+                                     callback.callback(), BoundNetLog()));
   EXPECT_EQ(ERR_SSL_PROTOCOL_ERROR, rv);
 
   SocketDataProviderArray<SocketDataProvider>& mock_data =
@@ -144,7 +142,7 @@ TEST_F(HttpNetworkTransactionSSLTest, SSLFallback) {
   // Confirms that |ssl_data1|, |ssl_data2| and |ssl_data3| are consumed.
   EXPECT_EQ(3u, mock_data.next_index());
 
-  SSLConfig& ssl_config = GetServerSSLConfig(trans.get());
+  SSLConfig& ssl_config = GetServerSSLConfig(&trans);
   // |version_max| fallbacks to TLS 1.0.
   EXPECT_EQ(SSL_PROTOCOL_VERSION_TLS1, ssl_config.version_max);
   EXPECT_TRUE(ssl_config.version_fallback);

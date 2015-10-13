@@ -287,7 +287,7 @@ class HttpProxyClientSocketPoolTest
     ssl_data_->SetNextProto(GetParam().protocol);
   }
 
-  HttpNetworkSession* CreateNetworkSession() {
+  scoped_ptr<HttpNetworkSession> CreateNetworkSession() {
     return SpdySessionDependencies::SpdyCreateSession(&session_deps_);
   }
 
@@ -303,7 +303,7 @@ class HttpProxyClientSocketPoolTest
   scoped_ptr<CertVerifier> cert_verifier_;
   SSLClientSocketPool ssl_socket_pool_;
 
-  const scoped_refptr<HttpNetworkSession> session_;
+  const scoped_ptr<HttpNetworkSession> session_;
 
  protected:
   SpdyTestUtil spdy_util_;

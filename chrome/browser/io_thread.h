@@ -57,6 +57,7 @@ class FtpTransactionFactory;
 class HostMappingRules;
 class HostResolver;
 class HttpAuthHandlerFactory;
+class HttpNetworkSession;
 class HttpServerProperties;
 class HttpTransactionFactory;
 class HttpUserAgentSettings;
@@ -145,6 +146,8 @@ class IOThread : public content::BrowserThreadDelegate {
     scoped_ptr<net::HttpAuthHandlerFactory> http_auth_handler_factory;
     scoped_ptr<net::HttpServerProperties> http_server_properties;
     scoped_ptr<net::ProxyService> proxy_script_fetcher_proxy_service;
+    scoped_ptr<net::HttpNetworkSession>
+        proxy_script_fetcher_http_network_session;
     scoped_ptr<net::HttpTransactionFactory>
         proxy_script_fetcher_http_transaction_factory;
     scoped_ptr<net::FtpTransactionFactory>
@@ -161,6 +164,7 @@ class IOThread : public content::BrowserThreadDelegate {
     // ProxyService, since we always directly connect to fetch the PAC script.
     scoped_ptr<net::URLRequestContext> proxy_script_fetcher_context;
     scoped_ptr<net::ProxyService> system_proxy_service;
+    scoped_ptr<net::HttpNetworkSession> system_http_network_session;
     scoped_ptr<net::HttpTransactionFactory> system_http_transaction_factory;
     scoped_ptr<net::URLRequestJobFactory> system_url_request_job_factory;
     scoped_ptr<net::URLRequestContext> system_request_context;
