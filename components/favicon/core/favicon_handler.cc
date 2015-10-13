@@ -384,17 +384,9 @@ void FaviconHandler::OnUpdateFaviconURL(
 void FaviconHandler::ProcessCurrentUrl() {
   DCHECK(!image_urls_.empty());
 
-  if (current_candidate()->icon_type == favicon_base::FAVICON &&
-      !download_largest_icon_) {
-    if (!favicon_expired_or_incomplete_ &&
-        driver_->GetActiveFaviconValidity() &&
-        DoUrlAndIconMatch(*current_candidate(),
-                          driver_->GetActiveFaviconURL(),
-                          favicon_base::FAVICON))
-      return;
-  } else if (!favicon_expired_or_incomplete_ && got_favicon_from_history_ &&
-             HasValidResult(history_results_) &&
-             DoUrlsAndIconsMatch(*current_candidate(), history_results_)) {
+  if (!favicon_expired_or_incomplete_ && got_favicon_from_history_ &&
+      HasValidResult(history_results_) &&
+      DoUrlsAndIconsMatch(*current_candidate(), history_results_)) {
     return;
   }
 
