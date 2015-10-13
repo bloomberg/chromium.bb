@@ -28,8 +28,7 @@ class ReadbackYUVInterface;
 class AuraWindowCaptureMachine
     : public media::VideoCaptureMachine,
       public aura::WindowObserver,
-      public ui::CompositorObserver,
-      public base::SupportsWeakPtr<AuraWindowCaptureMachine> {
+      public ui::CompositorObserver {
  public:
   AuraWindowCaptureMachine();
   ~AuraWindowCaptureMachine() override;
@@ -128,6 +127,12 @@ class AuraWindowCaptureMachine
   // TODO(jiayl): Remove power_save_blocker_ when there is an API to keep the
   // screen from sleeping for the drive-by web.
   scoped_ptr<PowerSaveBlocker> power_save_blocker_;
+
+  // WeakPtrs are used for the asynchronous capture callbacks passed to external
+  // modules.  They are only valid on the UI thread and become invalidated
+  // immediately when InternalStop() is called to ensure that no more captured
+  // frames will be delivered to the client.
+  base::WeakPtrFactory<AuraWindowCaptureMachine> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AuraWindowCaptureMachine);
 };

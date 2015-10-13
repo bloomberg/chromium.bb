@@ -94,6 +94,7 @@ using CaptureFrameCallback =
     media::ThreadSafeCaptureOracle::CaptureFrameCallback;
 
 void CopyOutputFinishedForVideo(
+    base::WeakPtr<AuraWindowCaptureMachine> machine,
     base::TimeTicks start_time,
     const CaptureFrameCallback& capture_frame_cb,
     const scoped_refptr<media::VideoFrame>& target,
@@ -101,10 +102,16 @@ void CopyOutputFinishedForVideo(
     const gfx::Point& cursor_position,
     scoped_ptr<cc::SingleReleaseCallback> release_callback,
     bool result) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   if (!cursor_bitmap.isNull())
     RenderCursorOnVideoFrame(target, cursor_bitmap, cursor_position);
   release_callback->Run(0, false);
-  capture_frame_cb.Run(target, start_time, result);
+
+  // Only deliver the captured frame if the AuraWindowCaptureMachine has not
+  // been stopped (i.e., the WeakPtr is still valid).
+  if (machine.get())
+    capture_frame_cb.Run(target, start_time, result);
 }
 
 void RunSingleReleaseCallback(scoped_ptr<cc::SingleReleaseCallback> cb,
@@ -117,7 +124,8 @@ void RunSingleReleaseCallback(scoped_ptr<cc::SingleReleaseCallback> cb,
 AuraWindowCaptureMachine::AuraWindowCaptureMachine()
     : desktop_window_(NULL),
       timer_(true, true),
-      screen_capture_(false) {}
+      screen_capture_(false),
+      weak_factory_(this) {}
 
 AuraWindowCaptureMachine::~AuraWindowCaptureMachine() {}
 
@@ -172,8 +180,8 @@ bool AuraWindowCaptureMachine::InternalStart(
                std::max(oracle_proxy_->min_capture_period(),
                         base::TimeDelta::FromMilliseconds(media::
                             VideoCaptureOracle::kMinTimerPollPeriodMillis)),
-               base::Bind(&AuraWindowCaptureMachine::Capture, AsWeakPtr(),
-                          false));
+               base::Bind(&AuraWindowCaptureMachine::Capture,
+                          base::Unretained(this), false));
 
   return true;
 }
@@ -189,6 +197,10 @@ void AuraWindowCaptureMachine::Stop(const base::Closure& callback) {
 
 void AuraWindowCaptureMachine::InternalStop(const base::Closure& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  // Cancel any and all outstanding callbacks owned by external modules.
+  weak_factory_.InvalidateWeakPtrs();
+
   power_save_blocker_.reset();
 
   // Stop observing compositor and window events.
@@ -255,7 +267,8 @@ void AuraWindowCaptureMachine::Capture(bool dirty) {
     scoped_ptr<cc::CopyOutputRequest> request =
         cc::CopyOutputRequest::CreateRequest(
             base::Bind(&AuraWindowCaptureMachine::DidCopyOutput,
-                       AsWeakPtr(), frame, start_time, capture_frame_cb));
+                       weak_factory_.GetWeakPtr(),
+                       frame, start_time, capture_frame_cb));
     gfx::Rect window_rect = gfx::Rect(desktop_window_->bounds().width(),
                                       desktop_window_->bounds().height());
     request->set_area(window_rect);
@@ -268,6 +281,8 @@ void AuraWindowCaptureMachine::DidCopyOutput(
     base::TimeTicks start_time,
     const CaptureFrameCallback& capture_frame_cb,
     scoped_ptr<cc::CopyOutputResult> result) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   static bool first_call = true;
 
   bool succeeded = ProcessCopyOutputResponse(
@@ -378,6 +393,7 @@ bool AuraWindowCaptureMachine::ProcessCopyOutputResponse(
       video_frame.get(),
       region_in_frame.origin(),
       base::Bind(&CopyOutputFinishedForVideo,
+                 weak_factory_.GetWeakPtr(),
                  start_time,
                  capture_frame_cb,
                  video_frame,
@@ -449,11 +465,13 @@ void AuraWindowCaptureMachine::OnWindowBoundsChanged(
     aura::Window* window,
     const gfx::Rect& old_bounds,
     const gfx::Rect& new_bounds) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(desktop_window_ && window == desktop_window_);
 
-  // Post task to update capture size on UI thread.
+  // Post a task to update capture size after first returning to the event loop.
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, base::Bind(
-      &AuraWindowCaptureMachine::UpdateCaptureSize, AsWeakPtr()));
+      &AuraWindowCaptureMachine::UpdateCaptureSize,
+      weak_factory_.GetWeakPtr()));
 }
 
 void AuraWindowCaptureMachine::OnWindowDestroying(aura::Window* window) {
@@ -466,23 +484,32 @@ void AuraWindowCaptureMachine::OnWindowDestroying(aura::Window* window) {
 
 void AuraWindowCaptureMachine::OnWindowAddedToRootWindow(
     aura::Window* window) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(window == desktop_window_);
+
   window->GetHost()->compositor()->AddObserver(this);
 }
 
 void AuraWindowCaptureMachine::OnWindowRemovingFromRootWindow(
     aura::Window* window,
     aura::Window* new_root) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(window == desktop_window_);
+
   window->GetHost()->compositor()->RemoveObserver(this);
 }
 
 void AuraWindowCaptureMachine::OnCompositingEnded(
     ui::Compositor* compositor) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   // TODO(miu): The CopyOutputRequest should be made earlier, at WillCommit().
   // http://crbug.com/492839
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, base::Bind(
-      &AuraWindowCaptureMachine::Capture, AsWeakPtr(), true));
+  BrowserThread::PostTask(
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&AuraWindowCaptureMachine::Capture, weak_factory_.GetWeakPtr(),
+                 true));
 }
 
 }  // namespace content
