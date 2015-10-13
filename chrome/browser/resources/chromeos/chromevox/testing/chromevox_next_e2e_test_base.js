@@ -51,7 +51,7 @@ ChromeVoxNextE2ETest.prototype = {
   listenOnce: function(node, eventType, callback, capture) {
     var innerCallback = this.newCallback(function() {
       node.removeEventListener(eventType, innerCallback, capture);
-      callback();
+      callback.apply(this, arguments);
     });
     node.addEventListener(eventType, innerCallback, capture);
   }

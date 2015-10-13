@@ -23,6 +23,7 @@ BackgroundTest.prototype = {
   /** @override */
   setUp: function() {
     global.backgroundObj.forceChromeVoxNextActive();
+    window.RoleType = chrome.automation.RoleType;
   },
 
   /**
@@ -229,7 +230,7 @@ TEST_F('BackgroundTest', 'LiveRegionAddElement', function() {
       </script>
     */},
     function(rootNode) {
-      var go = rootNode.find({ role: chrome.automation.RoleType.button });
+      var go = rootNode.find({ role: RoleType.button });
       mockFeedback.call(go.doDefault.bind(go))
           .expectSpeech('Hello, world');
       mockFeedback.replay();
@@ -250,7 +251,7 @@ TEST_F('BackgroundTest', 'LiveRegionRemoveElement', function() {
       </script>
     */},
     function(rootNode) {
-      var go = rootNode.find({ role: chrome.automation.RoleType.button });
+      var go = rootNode.find({ role: RoleType.button });
       go.doDefault();
       mockFeedback.expectSpeech('removed:')
           .expectSpeech('Hello, world');
@@ -294,7 +295,7 @@ TEST_F('BackgroundTest', 'ShowContextMenu', function() {
           });
       mockFeedback.replay();
 
-      var go = rootNode.find({ role: chrome.automation.RoleType.link });
+      var go = rootNode.find({ role: RoleType.link });
       this.listenOnce(go, 'focus', function(e) {
         this.doCmd('showContextMenu')();
       }.bind(this), true);
@@ -325,10 +326,10 @@ TEST_F('BackgroundTest', 'BrailleRouting', function() {
         </script>
       */},
       function(rootNode) {
-        var button1 = rootNode.find({role: chrome.automation.RoleType.button,
+        var button1 = rootNode.find({role: RoleType.button,
                                      name: 'Click me'});
         var textField = rootNode.find(
-            {role: chrome.automation.RoleType.textField});
+            {role: RoleType.textField});
         mockFeedback.expectBraille('start')
             .call(button1.focus.bind(button1))
             .expectBraille(/^Click me btn/)
@@ -366,5 +367,32 @@ TEST_F('BackgroundTest', 'FocusInputElement', function() {
           .expectNextSpeechUtteranceIsNot('Blue')
           .expectSpeech('Lancelot', 'Edit text');
       mockFeedback.replay();
+    }.bind(this));
+});
+
+TEST_F('BackgroundTest', 'UseEditableState', function() {
+  this.runWithLoadedTree(
+    function() {/*!
+      <input type="text"></input>
+      <p tabindex=0>hi</p>
+    */},
+    function(rootNode) {
+      var assertExists = this.newCallback(function (evt) {
+        assertNotNullNorUndefined(global.backgroundObj.editableTextHandler_);
+        evt.stopPropagation();
+      });
+      var assertDoesntExist = this.newCallback(function (evt) {
+        assertTrue(!global.backgroundObj.editableTextHandler_);
+        evt.stopPropagation();
+      });
+
+      var editable = rootNode.find({ role: RoleType.textField });
+      var nonEditable = rootNode.find({ role: RoleType.paragraph });
+
+      this.listenOnce(editable, 'focus', assertExists);
+      this.listenOnce(nonEditable, 'focus', assertDoesntExist);
+
+      editable.focus();
+      nonEditable.focus();
     }.bind(this));
 });

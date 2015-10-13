@@ -503,7 +503,7 @@ Background.prototype = {
       node = node.find({state: {focused: true}}) || node;
     }
 
-    if (evt.target.role == RoleType.textField)
+    if (evt.target.state.editable)
       this.createEditableTextHandlerIfNeeded_(evt.target);
 
     this.onEventDefault({target: node, type: 'focus'});
@@ -555,6 +555,9 @@ Background.prototype = {
    * @param {Object} evt
    */
   onTextOrTextSelectionChanged: function(evt) {
+    if (!evt.target.state.editable)
+      return;
+
     // Don't process nodes inside of web content if ChromeVox Next is inactive.
     if (evt.target.root.role != RoleType.desktop &&
         this.mode_ === ChromeVoxMode.CLASSIC)
@@ -572,6 +575,7 @@ Background.prototype = {
     }
 
     this.createEditableTextHandlerIfNeeded_(evt.target);
+
     var textChangeEvent = new cvox.TextChangeEvent(
         evt.target.value,
         evt.target.textSelStart,

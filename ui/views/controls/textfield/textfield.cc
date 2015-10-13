@@ -950,6 +950,8 @@ void Textfield::GetAccessibleState(ui::AXViewState* state) {
   state->name = accessible_name_;
   if (read_only())
     state->AddStateFlag(ui::AX_STATE_READ_ONLY);
+  else
+    state->AddStateFlag(ui::AX_STATE_EDITABLE);
   if (text_input_type_ == ui::TEXT_INPUT_TYPE_PASSWORD) {
     state->AddStateFlag(ui::AX_STATE_PROTECTED);
     state->value = base::string16(text().size(), '*');

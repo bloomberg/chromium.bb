@@ -845,6 +845,7 @@ void OmniboxViewViews::GetAccessibleState(ui::AXViewState* state) {
   if (popup_window_mode_) {
     state->AddStateFlag(ui::AX_STATE_READ_ONLY);
   } else {
+    state->AddStateFlag(ui::AX_STATE_EDITABLE);
     state->set_value_callback =
         base::Bind(&OmniboxViewViews::AccessibilitySetValue,
                    weak_ptr_factory_.GetWeakPtr());
