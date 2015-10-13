@@ -451,8 +451,11 @@ void AudioInputRendererHost::DoCreateStream(
         entry->writer.get(),
         user_input_monitor_);
   } else {
-    DCHECK_EQ(config.params.format(),
-              media::AudioParameters::AUDIO_PCM_LOW_LATENCY);
+    // We call CreateLowLatency regardless of the value of
+    // |audio_params.format|. Low latency can currently mean different things in
+    // different parts of the stack.
+    // TODO(grunell): Clean up the low latency terminology so that it's less
+    // confusing.
     entry->controller = media::AudioInputController::CreateLowLatency(
         audio_manager_,
         this,

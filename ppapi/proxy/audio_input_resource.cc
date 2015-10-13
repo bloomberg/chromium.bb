@@ -253,6 +253,10 @@ void AudioInputResource::Run() {
       base::checked_cast<uint32_t>(shared_memory_size_ -
                                    sizeof(media::AudioInputBufferParameters));
 
+  // This is a constantly increasing counter that is used to verify on the
+  // browser side that buffers are in sync.
+  uint32 buffer_index = 0;
+
   while (true) {
     int pending_data = 0;
     size_t bytes_read = socket_->Receive(&pending_data, sizeof(pending_data));
@@ -268,6 +272,14 @@ void AudioInputResource::Run() {
     audio_bus_->ToInterleaved(audio_bus_->frames(),
                               kBitsPerAudioInputSample / 8,
                               client_buffer_.get());
+
+    // Inform other side that we have read the data from the shared memory.
+    ++buffer_index;
+    size_t bytes_sent = socket_->Send(&buffer_index, sizeof(buffer_index));
+    if (bytes_sent != sizeof(buffer_index)) {
+      DCHECK_EQ(bytes_sent, 0U);
+      break;
+    }
 
     // While closing the stream, we may receive buffers whose size is different
     // from |data_buffer_size|.
