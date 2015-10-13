@@ -2,19 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-if (is_android) {
-  import("//build/config/android/config.gni")
-}
+# TODO(dpranke): Remove this file altogether once v8 has been updated
+# to import //build_overrides/v8.gni instead.
 
-# TODO(sky): nuke this. Temporary while sorting out http://crbug.com/465456.
-enable_correct_v8_arch = false
-
-v8_use_external_startup_data = !(is_chromeos || is_win || is_ios)
-
-# V8 extras
-# Adding V8 extras files requires API owners review
-# Be sure to synchronize with build/common.gypi
-
-v8_extra_library_files = []
-v8_experimental_extra_library_files =
-    [ "../third_party/WebKit/Source/core/streams/ByteLengthQueuingStrategy.js" ]
+import("//build_overrides/v8.gni")

@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/module_args/v8.gni")
+import("//build_overrides/v8.gni")
 import("//mojo/public/mojo_application.gni")
 import("//testing/test.gni")
 import("//tools/grit/grit_rule.gni")
@@ -357,9 +357,7 @@ mojo_native_application("apptests") {
     "//third_party/mojo/src/mojo/public/c/system:for_shared_library",
   ]
 
-  data_deps = [
-    ":html_viewer",
-  ]
+  data_deps = [ ":html_viewer" ]
 
   if (is_linux && !is_android) {
     data_deps += [ "//components/font_service" ]
