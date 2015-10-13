@@ -617,8 +617,11 @@ template<
     typename HashArg = typename DefaultHash<ValueArg>::Hash>
 class PersistentHeapListHashSet : public PersistentHeapCollectionBase<HeapListHashSet<ValueArg, inlineCapacity, HashArg>> { };
 
-template<typename T, typename U, typename V>
-class PersistentHeapHashCountedSet : public PersistentHeapCollectionBase<HeapHashCountedSet<T, U, V>> { };
+template<
+    typename ValueArg,
+    typename HashFunctions = typename DefaultHash<ValueArg>::Hash,
+    typename Traits = HashTraits<ValueArg>>
+class PersistentHeapHashCountedSet : public PersistentHeapCollectionBase<HeapHashCountedSet<ValueArg, HashFunctions, Traits>> { };
 
 template<typename T, size_t inlineCapacity = 0>
 class PersistentHeapVector : public PersistentHeapCollectionBase<HeapVector<T, inlineCapacity>> {
