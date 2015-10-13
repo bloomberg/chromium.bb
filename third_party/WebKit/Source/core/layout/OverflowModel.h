@@ -60,12 +60,15 @@ namespace blink {
 // would be clipped by the overflow clip ('overflow' != visible). This
 // corresponds to children that overflows their parent.
 // It's important to note that this overflow ignores descendants with
-// self-painting layers. This is required by the simplification made by this
-// model (single united rectangle) to avoid gigantic invalidation. A good
-// example for this is positioned objects that can be anywhere on the page and
-// could artificially inflate the visual overflow.
-// TODO(jchaffraix): Explain the interaction with the content visual overflow
-// code path (BoxPainter) and PaintLayerClipper.
+// self-painting layers (see the SELF-PAINTING LAYER section in PaintLayer).
+// This is required by the simplification made by this model (single united
+// rectangle) to avoid gigantic invalidation. A good example for this is
+// positioned objects that can be anywhere on the page and could artificially
+// inflate the visual overflow.
+// The main use of content visual overflow is to prevent unneeded clipping in
+// BoxPainter (see https://crbug.com/238732). Note that the code path for
+// self-painting layer is handled by PaintLayerPainter, which relies on
+// PaintLayerClipper and thus ignores this optimization.
 //
 // This object is allocated only when some of these fields have non-default
 // values in the owning box. Care should be taken to use LayoutBox adder
