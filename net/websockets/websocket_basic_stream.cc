@@ -4,6 +4,7 @@
 
 #include "net/websockets/websocket_basic_stream.h"
 
+#include <stdint.h>
 #include <algorithm>
 #include <limits>
 #include <string>
@@ -24,9 +25,9 @@ namespace net {
 
 namespace {
 
-// This uses type uint64 to match the definition of
+// This uses type uint64_t to match the definition of
 // WebSocketFrameHeader::payload_length in websocket_frame.h.
-const uint64 kMaxControlFramePayload = 125;
+const uint64_t kMaxControlFramePayload = 125;
 
 // The number of bytes to attempt to read at a time.
 // TODO(ricea): See if there is a better number or algorithm to fulfill our
@@ -47,17 +48,17 @@ typedef ScopedVector<WebSocketFrame>::const_iterator WebSocketFrameIterator;
 // masked bit of the frames on.
 int CalculateSerializedSizeAndTurnOnMaskBit(
     ScopedVector<WebSocketFrame>* frames) {
-  const uint64 kMaximumTotalSize = std::numeric_limits<int>::max();
+  const uint64_t kMaximumTotalSize = std::numeric_limits<int>::max();
 
-  uint64 total_size = 0;
+  uint64_t total_size = 0;
   for (WebSocketFrameIterator it = frames->begin(); it != frames->end(); ++it) {
     WebSocketFrame* frame = *it;
     // Force the masked bit on.
     frame->header.masked = true;
     // We enforce flow control so the renderer should never be able to force us
     // to cache anywhere near 2GB of frames.
-    uint64 frame_size = frame->header.payload_length +
-        GetWebSocketFrameHeaderSize(frame->header);
+    uint64_t frame_size = frame->header.payload_length +
+                          GetWebSocketFrameHeaderSize(frame->header);
     CHECK_LE(frame_size, kMaximumTotalSize - total_size)
         << "Aborting to prevent overflow";
     total_size += frame_size;
@@ -157,7 +158,8 @@ int WebSocketBasicStream::WriteFrames(ScopedVector<WebSocketFrame>* frames,
     dest += result;
     remaining_size -= result;
 
-    CHECK_LE(frame->header.payload_length, static_cast<uint64>(remaining_size));
+    CHECK_LE(frame->header.payload_length,
+             static_cast<uint64_t>(remaining_size));
     const int frame_size = static_cast<int>(frame->header.payload_length);
     if (frame_size > 0) {
       const char* const frame_data = frame->data->data();
@@ -349,10 +351,10 @@ int WebSocketBasicStream::ConvertChunkToFrame(
   // header. A check for exact equality can only be used when the whole frame
   // arrives in one chunk.
   DCHECK_GE(current_frame_header_->payload_length,
-            base::checked_cast<uint64>(chunk_size));
+            base::checked_cast<uint64_t>(chunk_size));
   DCHECK(!is_first_chunk || !is_final_chunk ||
          current_frame_header_->payload_length ==
-             base::checked_cast<uint64>(chunk_size));
+             base::checked_cast<uint64_t>(chunk_size));
 
   // Convert the chunk to a complete frame.
   *frame = CreateFrame(is_final_chunk, data_buffer);

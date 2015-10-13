@@ -5,6 +5,7 @@
 #ifndef NET_WEBSOCKETS_WEBSOCKET_EVENT_INTERFACE_H_
 #define NET_WEBSOCKETS_WEBSOCKET_EVENT_INTERFACE_H_
 
+#include <stdint.h>
 #include <string>
 #include <vector>
 
@@ -52,7 +53,7 @@ class NET_EXPORT WebSocketEventInterface {
   // Called to provide more send quota for this channel to the renderer
   // process. Currently the quota units are always bytes of message body
   // data. In future it might depend on the type of multiplexing in use.
-  virtual ChannelState OnFlowControl(int64 quota) WARN_UNUSED_RESULT = 0;
+  virtual ChannelState OnFlowControl(int64_t quota) WARN_UNUSED_RESULT = 0;
 
   // Called when the remote server has Started the WebSocket Closing
   // Handshake. The client should not attempt to send any more messages after
@@ -76,7 +77,7 @@ class NET_EXPORT WebSocketEventInterface {
   // This method returns a ChannelState for consistency, but all implementations
   // must delete the Channel and return CHANNEL_DELETED.
   virtual ChannelState OnDropChannel(bool was_clean,
-                                     uint16 code,
+                                     uint16_t code,
                                      const std::string& reason)
       WARN_UNUSED_RESULT = 0;
 

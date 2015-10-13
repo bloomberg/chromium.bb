@@ -19,18 +19,18 @@ namespace net {
 namespace {
 
 const char kHello[] = "Hello, world!";
-const uint64 kHelloLength = arraysize(kHello) - 1;
+const uint64_t kHelloLength = arraysize(kHello) - 1;
 const char kHelloFrame[] = "\x81\x0DHello, world!";
-const uint64 kHelloFrameLength = arraysize(kHelloFrame) - 1;
+const uint64_t kHelloFrameLength = arraysize(kHelloFrame) - 1;
 const char kMaskedHelloFrame[] =
     "\x81\x8D\xDE\xAD\xBE\xEF"
     "\x96\xC8\xD2\x83\xB1\x81\x9E\x98\xB1\xDF\xD2\x8B\xFF";
-const uint64 kMaskedHelloFrameLength = arraysize(kMaskedHelloFrame) - 1;
+const uint64_t kMaskedHelloFrameLength = arraysize(kMaskedHelloFrame) - 1;
 
 struct FrameHeaderTestCase {
   const char* frame_header;
   size_t frame_header_length;
-  uint64 frame_length;
+  uint64_t frame_length;
   WebSocketError error_code;
 };
 
@@ -150,7 +150,7 @@ TEST(WebSocketFrameParserTest, DecodeManyFrames) {
       continue;
     EXPECT_TRUE(frame->final_chunk);
     ASSERT_EQ(kInputs[i].expected_payload_length,
-              static_cast<uint64>(frame->data->size()));
+              static_cast<uint64_t>(frame->data->size()));
     EXPECT_TRUE(std::equal(
         kInputs[i].expected_payload,
         kInputs[i].expected_payload + kInputs[i].expected_payload_length,
@@ -228,7 +228,7 @@ TEST(WebSocketFrameParserTest, DecodePartialFrame) {
     if (expected2.size() == 0) {
       EXPECT_EQ(NULL, frame2->data.get());
     } else {
-      ASSERT_EQ(expected2.size(), static_cast<uint64>(frame2->data->size()));
+      ASSERT_EQ(expected2.size(), static_cast<uint64_t>(frame2->data->size()));
       EXPECT_TRUE(
           std::equal(expected2.begin(), expected2.end(), frame2->data->data()));
     }
@@ -265,7 +265,7 @@ TEST(WebSocketFrameParserTest, DecodePartialMaskedFrame) {
     if (expected1.size() == 0) {
       EXPECT_EQ(NULL, frame1->data.get());
     } else {
-      ASSERT_EQ(expected1.size(), static_cast<uint64>(frame1->data->size()));
+      ASSERT_EQ(expected1.size(), static_cast<uint64_t>(frame1->data->size()));
       EXPECT_TRUE(
           std::equal(expected1.begin(), expected1.end(), frame1->data->data()));
     }
@@ -295,7 +295,7 @@ TEST(WebSocketFrameParserTest, DecodePartialMaskedFrame) {
     if (expected2.size() == 0) {
       EXPECT_EQ(NULL, frame2->data.get());
     } else {
-      ASSERT_EQ(expected2.size(), static_cast<uint64>(frame2->data->size()));
+      ASSERT_EQ(expected2.size(), static_cast<uint64_t>(frame2->data->size()));
       EXPECT_TRUE(
           std::equal(expected2.begin(), expected2.end(), frame2->data->data()));
     }
@@ -308,12 +308,12 @@ TEST(WebSocketFrameParserTest, DecodeFramesOfVariousLengths) {
   for (int i = 0; i < kNumFrameHeaderTests; ++i) {
     const char* frame_header = kFrameHeaderTests[i].frame_header;
     size_t frame_header_length = kFrameHeaderTests[i].frame_header_length;
-    uint64 frame_length = kFrameHeaderTests[i].frame_length;
+    uint64_t frame_length = kFrameHeaderTests[i].frame_length;
 
     std::vector<char> input(frame_header, frame_header + frame_header_length);
     // Limit the payload size not to flood the console on failure.
-    static const uint64 kMaxPayloadSize = 200;
-    uint64 input_payload_size = std::min(frame_length, kMaxPayloadSize);
+    static const uint64_t kMaxPayloadSize = 200;
+    uint64_t input_payload_size = std::min(frame_length, kMaxPayloadSize);
     input.insert(input.end(), input_payload_size, 'a');
 
     WebSocketFrameParser parser;
@@ -343,7 +343,7 @@ TEST(WebSocketFrameParserTest, DecodeFramesOfVariousLengths) {
       EXPECT_EQ(NULL, frame->data.get());
     } else {
       ASSERT_EQ(expected_payload.size(),
-                static_cast<uint64>(frame->data->size()));
+                static_cast<uint64_t>(frame->data->size()));
       EXPECT_TRUE(std::equal(expected_payload.begin(),
                              expected_payload.end(),
                              frame->data->data()));
@@ -366,7 +366,7 @@ TEST(WebSocketFrameParserTest, DecodePartialHeader) {
   for (int i = 0; i < kNumFrameHeaderTests; ++i) {
     const char* frame_header = kFrameHeaderTests[i].frame_header;
     size_t frame_header_length = kFrameHeaderTests[i].frame_header_length;
-    uint64 frame_length = kFrameHeaderTests[i].frame_length;
+    uint64_t frame_length = kFrameHeaderTests[i].frame_length;
 
     WebSocketFrameParser parser;
 

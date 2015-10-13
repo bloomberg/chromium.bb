@@ -5,6 +5,7 @@
 #ifndef NET_WEBSOCKETS_WEBSOCKET_FRAME_H_
 #define NET_WEBSOCKETS_WEBSOCKET_FRAME_H_
 
+#include <stdint.h>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -83,7 +84,7 @@ struct NET_EXPORT WebSocketFrameHeader {
   bool reserved3;
   OpCode opcode;
   bool masked;
-  uint64 payload_length;
+  uint64_t payload_length;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebSocketFrameHeader);
@@ -186,7 +187,7 @@ NET_EXPORT WebSocketMaskingKey GenerateWebSocketMaskingKey();
 // used for unmasking a WebSocket frame.
 NET_EXPORT void MaskWebSocketFramePayload(
     const WebSocketMaskingKey& masking_key,
-    uint64 frame_offset,
+    uint64_t frame_offset,
     char* data,
     int data_size);
 

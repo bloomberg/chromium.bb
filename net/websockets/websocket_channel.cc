@@ -70,7 +70,7 @@ const size_t kMaximumCloseReasonLength = 125 - kWebSocketCloseCodeLength;
 // used for close codes received from a renderer that we are intending to send
 // out over the network. See ParseClose() for the restrictions on incoming close
 // codes. The |code| parameter is type int for convenience of implementation;
-// the real type is uint16. Code 1005 is treated specially; it cannot be set
+// the real type is uint16_t. Code 1005 is treated specially; it cannot be set
 // explicitly by Javascript but the renderer uses it to indicate we should send
 // a Close frame with no payload.
 bool IsStrictlyValidCloseStatusCode(int code) {
@@ -147,7 +147,7 @@ class WebSocketChannel::SendBuffer {
   // The total size of the payload data in |frames_|. This will be used to
   // measure the throughput of the link.
   // TODO(ricea): Measure the throughput of the link.
-  uint64 total_bytes_;
+  uint64_t total_bytes_;
 };
 
 void WebSocketChannel::SendBuffer::AddFrame(scoped_ptr<WebSocketFrame> frame) {
@@ -275,8 +275,8 @@ WebSocketChannel::PendingReceivedFrame::PendingReceivedFrame(
     bool final,
     WebSocketFrameHeader::OpCode opcode,
     const scoped_refptr<IOBuffer>& data,
-    uint64 offset,
-    uint64 size)
+    uint64_t offset,
+    uint64_t size)
     : final_(final),
       opcode_(opcode),
       data_(data),
@@ -290,7 +290,7 @@ void WebSocketChannel::PendingReceivedFrame::ResetOpcode() {
   opcode_ = WebSocketFrameHeader::kOpCodeContinuation;
 }
 
-void WebSocketChannel::PendingReceivedFrame::DidConsume(uint64 bytes) {
+void WebSocketChannel::PendingReceivedFrame::DidConsume(uint64_t bytes) {
   DCHECK_LE(offset_, size_);
   DCHECK_LE(bytes, size_ - offset_);
   offset_ += bytes;
@@ -424,7 +424,7 @@ void WebSocketChannel::SendFrame(bool fin,
   // |this| may have been deleted.
 }
 
-void WebSocketChannel::SendFlowControl(int64 quota) {
+void WebSocketChannel::SendFlowControl(int64_t quota) {
   DCHECK(state_ == CONNECTING || state_ == CONNECTED || state_ == SEND_CLOSED ||
          state_ == CLOSE_WAIT);
   // TODO(ricea): Kill the renderer if it tries to send us a negative quota
@@ -436,9 +436,9 @@ void WebSocketChannel::SendFlowControl(int64 quota) {
   }
   while (!pending_received_frames_.empty() && quota > 0) {
     PendingReceivedFrame& front = pending_received_frames_.front();
-    const uint64 data_size = front.size() - front.offset();
-    const uint64 bytes_to_send =
-        std::min(base::checked_cast<uint64>(quota), data_size);
+    const uint64_t data_size = front.size() - front.offset();
+    const uint64_t bytes_to_send =
+        std::min(base::checked_cast<uint64_t>(quota), data_size);
     const bool final = front.final() && data_size == bytes_to_send;
     const char* data =
         front.data().get() ? front.data()->data() + front.offset() : NULL;
@@ -470,7 +470,7 @@ void WebSocketChannel::SendFlowControl(int64 quota) {
   // |this| may have been deleted.
 }
 
-void WebSocketChannel::StartClosingHandshake(uint16 code,
+void WebSocketChannel::StartClosingHandshake(uint16_t code,
                                              const std::string& reason) {
   if (InClosingState()) {
     // When the associated renderer process is killed while the channel is in
@@ -768,7 +768,7 @@ ChannelState WebSocketChannel::OnReadDone(bool synchronous, int result) {
       stream_->Close();
       SetState(CLOSED);
 
-      uint16 code = kWebSocketErrorAbnormalClosure;
+      uint16_t code = kWebSocketErrorAbnormalClosure;
       std::string reason = "";
       bool was_clean = false;
       if (has_received_close_frame_) {
@@ -815,7 +815,7 @@ ChannelState WebSocketChannel::HandleFrameByState(
     const WebSocketFrameHeader::OpCode opcode,
     bool final,
     const scoped_refptr<IOBuffer>& data_buffer,
-    uint64 size) {
+    uint64_t size) {
   DCHECK_NE(RECV_CLOSED, state_)
       << "HandleFrame() does not support being called re-entrantly from within "
          "SendClose()";
@@ -852,7 +852,7 @@ ChannelState WebSocketChannel::HandleFrameByState(
       // the renderer, then the renderer should not receive an
       // OnClosingHandshake or OnDropChannel IPC until the queued message has
       // been completedly transmitted.
-      uint16 code = kWebSocketNormalClosure;
+      uint16_t code = kWebSocketNormalClosure;
       std::string reason;
       std::string message;
       if (!ParseClose(data_buffer, size, &code, &reason, &message)) {
@@ -925,7 +925,7 @@ ChannelState WebSocketChannel::HandleDataFrame(
     WebSocketFrameHeader::OpCode opcode,
     bool final,
     const scoped_refptr<IOBuffer>& data_buffer,
-    uint64 size) {
+    uint64_t size) {
   if (state_ != CONNECTED) {
     DVLOG(3) << "Ignored data packet received in state " << state_;
     return CHANNEL_ALIVE;
@@ -1001,7 +1001,7 @@ ChannelState WebSocketChannel::SendFrameFromIOBuffer(
     bool fin,
     WebSocketFrameHeader::OpCode op_code,
     const scoped_refptr<IOBuffer>& buffer,
-    uint64 size) {
+    uint64_t size) {
   DCHECK(state_ == CONNECTED || state_ == RECV_CLOSED);
   DCHECK(stream_);
 
@@ -1029,7 +1029,7 @@ ChannelState WebSocketChannel::SendFrameFromIOBuffer(
 }
 
 ChannelState WebSocketChannel::FailChannel(const std::string& message,
-                                           uint16 code,
+                                           uint16_t code,
                                            const std::string& reason) {
   DCHECK_NE(FRESHLY_CONSTRUCTED, state_);
   DCHECK_NE(CONNECTING, state_);
@@ -1051,12 +1051,12 @@ ChannelState WebSocketChannel::FailChannel(const std::string& message,
   return result;
 }
 
-ChannelState WebSocketChannel::SendClose(uint16 code,
+ChannelState WebSocketChannel::SendClose(uint16_t code,
                                          const std::string& reason) {
   DCHECK(state_ == CONNECTED || state_ == RECV_CLOSED);
   DCHECK_LE(reason.size(), kMaximumCloseReasonLength);
   scoped_refptr<IOBuffer> body;
-  uint64 size = 0;
+  uint64_t size = 0;
   if (code == kWebSocketErrorNoStatusReceived) {
     // Special case: translate kWebSocketErrorNoStatusReceived into a Close
     // frame with no payload.
@@ -1080,8 +1080,8 @@ ChannelState WebSocketChannel::SendClose(uint16 code,
 }
 
 bool WebSocketChannel::ParseClose(const scoped_refptr<IOBuffer>& buffer,
-                                  uint64 size,
-                                  uint16* code,
+                                  uint64_t size,
+                                  uint16_t* code,
                                   std::string* reason,
                                   std::string* message) {
   reason->clear();
@@ -1101,7 +1101,7 @@ bool WebSocketChannel::ParseClose(const scoped_refptr<IOBuffer>& buffer,
   }
 
   const char* data = buffer->data();
-  uint16 unchecked_code = 0;
+  uint16_t unchecked_code = 0;
   base::ReadBigEndian(data, &unchecked_code);
   static_assert(sizeof(unchecked_code) == kWebSocketCloseCodeLength,
                 "they should both be two bytes");
@@ -1133,7 +1133,7 @@ bool WebSocketChannel::ParseClose(const scoped_refptr<IOBuffer>& buffer,
 }
 
 ChannelState WebSocketChannel::DoDropChannel(bool was_clean,
-                                             uint16 code,
+                                             uint16_t code,
                                              const std::string& reason) {
   if (CHANNEL_DELETED ==
       notification_sender_->SendImmediately(event_interface_.get()))

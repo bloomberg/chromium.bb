@@ -21,7 +21,7 @@ TEST(WebSocketFrameHeaderTest, FrameLengths) {
   struct TestCase {
     const char* frame_header;
     size_t frame_header_length;
-    uint64 frame_length;
+    uint64_t frame_length;
   };
   static const TestCase kTests[] = {
     { "\x81\x00", 2, UINT64_C(0) },
@@ -59,7 +59,7 @@ TEST(WebSocketFrameHeaderTest, FrameLengthsWithMasking) {
   struct TestCase {
     const char* frame_header;
     size_t frame_header_length;
-    uint64 frame_length;
+    uint64_t frame_length;
   };
   static const TestCase kTests[] = {
     { "\x81\x80\xDE\xAD\xBE\xEF", 6, UINT64_C(0) },
@@ -179,7 +179,7 @@ TEST(WebSocketFrameHeaderTest, FinalBitAndReservedBits) {
 
 TEST(WebSocketFrameHeaderTest, InsufficientBufferSize) {
   struct TestCase {
-    uint64 payload_length;
+    uint64_t payload_length;
     bool masked;
     size_t expected_header_size;
   };
@@ -218,7 +218,7 @@ TEST(WebSocketFrameHeaderTest, InsufficientBufferSize) {
 TEST(WebSocketFrameTest, MaskPayload) {
   struct TestCase {
     const char* masking_key;
-    uint64 frame_offset;
+    uint64_t frame_offset;
     const char* input;
     const char* output;
     size_t data_length;

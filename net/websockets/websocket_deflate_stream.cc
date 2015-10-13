@@ -4,6 +4,7 @@
 
 #include "net/websockets/websocket_deflate_stream.h"
 
+#include <stdint.h>
 #include <algorithm>
 #include <string>
 
@@ -242,7 +243,7 @@ int WebSocketDeflateStream::AppendPossiblyCompressedMessage(
     return ERR_WS_PROTOCOL_ERROR;
   }
 
-  uint64 original_payload_length = 0;
+  uint64_t original_payload_length = 0;
   for (size_t i = 0; i < frames->size(); ++i) {
     WebSocketFrame* frame = (*frames)[i];
     // Asserts checking that frames represent one whole data message.
@@ -254,7 +255,7 @@ int WebSocketDeflateStream::AppendPossiblyCompressedMessage(
     original_payload_length += frame->header.payload_length;
   }
   if (original_payload_length <=
-      static_cast<uint64>(compressed_payload->size())) {
+      static_cast<uint64_t>(compressed_payload->size())) {
     // Compression is not effective. Use the original frames.
     for (size_t i = 0; i < frames->size(); ++i) {
       WebSocketFrame* frame = (*frames)[i];

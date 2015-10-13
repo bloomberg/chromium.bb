@@ -795,7 +795,7 @@ TEST_F(WebSocketBasicStreamSocketChunkedReadTest, OneMegFrame) {
   // This should be equal to the definition of kReadBufferSize in
   // websocket_basic_stream.cc.
   const int kReadBufferSize = 32 * 1024;
-  const uint64 kPayloadSize = 1 << 20;
+  const uint64_t kPayloadSize = 1 << 20;
   const size_t kWireSize = kPayloadSize + kLargeFrameHeaderSize;
   const size_t kExpectedFrameCount =
       (kWireSize + kReadBufferSize - 1) / kReadBufferSize;

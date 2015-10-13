@@ -8,6 +8,7 @@
 // inefficient. However, it makes these tests a good fit for scenarios which
 // require special server configurations.
 
+#include <stdint.h>
 #include <string>
 
 #include "base/bind.h"
@@ -68,12 +69,12 @@ class ConnectTestingEventInterface : public WebSocketEventInterface {
                            WebSocketMessageType type,
                            const std::vector<char>& data) override;
 
-  ChannelState OnFlowControl(int64 quota) override;
+  ChannelState OnFlowControl(int64_t quota) override;
 
   ChannelState OnClosingHandshake() override;
 
   ChannelState OnDropChannel(bool was_clean,
-                             uint16 code,
+                             uint16_t code,
                              const std::string& reason) override;
 
   ChannelState OnFailChannel(const std::string& message) override;
@@ -141,7 +142,7 @@ ChannelState ConnectTestingEventInterface::OnDataFrame(
   return CHANNEL_ALIVE;
 }
 
-ChannelState ConnectTestingEventInterface::OnFlowControl(int64 quota) {
+ChannelState ConnectTestingEventInterface::OnFlowControl(int64_t quota) {
   return CHANNEL_ALIVE;
 }
 
@@ -151,7 +152,7 @@ ChannelState ConnectTestingEventInterface::OnClosingHandshake() {
 
 ChannelState ConnectTestingEventInterface::OnDropChannel(
     bool was_clean,
-    uint16 code,
+    uint16_t code,
     const std::string& reason) {
   return CHANNEL_DELETED;
 }

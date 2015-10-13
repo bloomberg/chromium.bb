@@ -35,15 +35,15 @@ using PackedMaskType = size_t;
 #endif  // defined(COMPILER_GCC) && defined(ARCH_CPU_X86_FAMILY) &&
         // !defined(OS_NACL)
 
-const uint8 kFinalBit = 0x80;
-const uint8 kReserved1Bit = 0x40;
-const uint8 kReserved2Bit = 0x20;
-const uint8 kReserved3Bit = 0x10;
-const uint8 kOpCodeMask = 0xF;
-const uint8 kMaskBit = 0x80;
-const uint64 kMaxPayloadLengthWithoutExtendedLengthField = 125;
-const uint64 kPayloadLengthWithTwoByteExtendedLengthField = 126;
-const uint64 kPayloadLengthWithEightByteExtendedLengthField = 127;
+const uint8_t kFinalBit = 0x80;
+const uint8_t kReserved1Bit = 0x40;
+const uint8_t kReserved2Bit = 0x20;
+const uint8_t kReserved3Bit = 0x10;
+const uint8_t kOpCodeMask = 0xF;
+const uint8_t kMaskBit = 0x80;
+const uint64_t kMaxPayloadLengthWithoutExtendedLengthField = 125;
+const uint64_t kPayloadLengthWithTwoByteExtendedLengthField = 126;
+const uint64_t kPayloadLengthWithEightByteExtendedLengthField = 127;
 
 inline void MaskWebSocketFramePayloadByBytes(
     const WebSocketMaskingKey& masking_key,
@@ -103,7 +103,7 @@ int WriteWebSocketFrameHeader(const WebSocketFrameHeader& header,
                               int buffer_size) {
   DCHECK((header.opcode & kOpCodeMask) == header.opcode)
       << "header.opcode must fit to kOpCodeMask.";
-  DCHECK(header.payload_length <= static_cast<uint64>(kint64max))
+  DCHECK(header.payload_length <= static_cast<uint64_t>(kint64max))
       << "WebSocket specification doesn't allow a frame longer than "
       << "kint64max (0x7FFFFFFFFFFFFFFF) bytes.";
   DCHECK_GE(buffer_size, 0);
@@ -124,7 +124,7 @@ int WriteWebSocketFrameHeader(const WebSocketFrameHeader& header,
 
   int buffer_index = 0;
 
-  uint8 first_byte = 0u;
+  uint8_t first_byte = 0u;
   first_byte |= header.final ? kFinalBit : 0u;
   first_byte |= header.reserved1 ? kReserved1Bit : 0u;
   first_byte |= header.reserved2 ? kReserved2Bit : 0u;
@@ -133,7 +133,7 @@ int WriteWebSocketFrameHeader(const WebSocketFrameHeader& header,
   buffer[buffer_index++] = first_byte;
 
   int extended_length_size = 0;
-  uint8 second_byte = 0u;
+  uint8_t second_byte = 0u;
   second_byte |= header.masked ? kMaskBit : 0u;
   if (header.payload_length <= kMaxPayloadLengthWithoutExtendedLengthField) {
     second_byte |= header.payload_length;
@@ -148,7 +148,7 @@ int WriteWebSocketFrameHeader(const WebSocketFrameHeader& header,
 
   // Writes "extended payload length" field.
   if (extended_length_size == 2) {
-    uint16 payload_length_16 = static_cast<uint16>(header.payload_length);
+    uint16_t payload_length_16 = static_cast<uint16_t>(header.payload_length);
     base::WriteBigEndian(buffer + buffer_index, payload_length_16);
     buffer_index += sizeof(payload_length_16);
   } else if (extended_length_size == 8) {
@@ -181,7 +181,7 @@ WebSocketMaskingKey GenerateWebSocketMaskingKey() {
 }
 
 void MaskWebSocketFramePayload(const WebSocketMaskingKey& masking_key,
-                               uint64 frame_offset,
+                               uint64_t frame_offset,
                                char* const data,
                                int data_size) {
   static const size_t kMaskingKeyLength =

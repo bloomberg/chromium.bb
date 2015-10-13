@@ -5,6 +5,7 @@
 #ifndef NET_WEBSOCKETS_WEBSOCKET_CHANNEL_H_
 #define NET_WEBSOCKETS_WEBSOCKET_CHANNEL_H_
 
+#include <stdint.h>
 #include <queue>
 #include <string>
 #include <vector>
@@ -84,7 +85,7 @@ class NET_EXPORT WebSocketChannel {
   // Sends |quota| units of flow control to the remote side. If the underlying
   // transport has a concept of |quota|, then it permits the remote server to
   // send up to |quota| units of data.
-  void SendFlowControl(int64 quota);
+  void SendFlowControl(int64_t quota);
 
   // Starts the closing handshake for a client-initiated shutdown of the
   // connection. There is no API to close the connection without a closing
@@ -95,7 +96,7 @@ class NET_EXPORT WebSocketChannel {
   // This does *not* trigger the event OnClosingHandshake(). The caller should
   // assume that the closing handshake has started and perform the equivalent
   // processing to OnClosingHandshake() if necessary.
-  void StartClosingHandshake(uint16 code, const std::string& reason);
+  void StartClosingHandshake(uint16_t code, const std::string& reason);
 
   // Starts the connection process, using a specified creator callback rather
   // than the default. This is exposed for testing.
@@ -135,8 +136,8 @@ class NET_EXPORT WebSocketChannel {
     PendingReceivedFrame(bool final,
                          WebSocketFrameHeader::OpCode opcode,
                          const scoped_refptr<IOBuffer>& data,
-                         uint64 offset,
-                         uint64 size);
+                         uint64_t offset,
+                         uint64_t size);
     ~PendingReceivedFrame();
 
     bool final() const { return final_; }
@@ -144,10 +145,10 @@ class NET_EXPORT WebSocketChannel {
     // ResetOpcode() to Continuation.
     void ResetOpcode();
     const scoped_refptr<IOBuffer>& data() const { return data_; }
-    uint64 offset() const { return offset_; }
-    uint64 size() const { return size_; }
+    uint64_t offset() const { return offset_; }
+    uint64_t size() const { return size_; }
     // Increase |offset_| by |bytes|.
-    void DidConsume(uint64 bytes);
+    void DidConsume(uint64_t bytes);
 
     // This object needs to be copyable and assignable, since it will be placed
     // in a std::queue. The compiler-generated copy constructor and assignment
@@ -159,9 +160,9 @@ class NET_EXPORT WebSocketChannel {
     scoped_refptr<IOBuffer> data_;
     // Where to start reading from data_. Everything prior to offset_ has
     // already been sent to the browser.
-    uint64 offset_;
+    uint64_t offset_;
     // The size of data_.
-    uint64 size_;
+    uint64_t size_;
   };
 
   // Methods which return a value of type ChannelState may delete |this|. If the
@@ -260,11 +261,10 @@ class NET_EXPORT WebSocketChannel {
 
   // Handles a single frame depending on the current state. It's used by the
   // HandleFrame() method.
-  ChannelState HandleFrameByState(
-      const WebSocketFrameHeader::OpCode opcode,
-      bool final,
-      const scoped_refptr<IOBuffer>& data_buffer,
-      uint64 size) WARN_UNUSED_RESULT;
+  ChannelState HandleFrameByState(const WebSocketFrameHeader::OpCode opcode,
+                                  bool final,
+                                  const scoped_refptr<IOBuffer>& data_buffer,
+                                  uint64_t size) WARN_UNUSED_RESULT;
 
   // Forward a received data frame to the renderer, if connected. If
   // |expecting_continuation| is not equal to |expecting_to_read_continuation_|,
@@ -272,7 +272,7 @@ class NET_EXPORT WebSocketChannel {
   ChannelState HandleDataFrame(WebSocketFrameHeader::OpCode opcode,
                                bool final,
                                const scoped_refptr<IOBuffer>& data_buffer,
-                               uint64 size) WARN_UNUSED_RESULT;
+                               uint64_t size) WARN_UNUSED_RESULT;
 
   // Low-level method to send a single frame. Used for both data and control
   // frames. Either sends the frame immediately or buffers it to be scheduled
@@ -282,7 +282,7 @@ class NET_EXPORT WebSocketChannel {
   ChannelState SendFrameFromIOBuffer(bool fin,
                                      WebSocketFrameHeader::OpCode op_code,
                                      const scoped_refptr<IOBuffer>& buffer,
-                                     uint64 size) WARN_UNUSED_RESULT;
+                                     uint64_t size) WARN_UNUSED_RESULT;
 
   // Performs the "Fail the WebSocket Connection" operation as defined in
   // RFC6455. A NotifyFailure message is sent to the renderer with |message|.
@@ -294,14 +294,14 @@ class NET_EXPORT WebSocketChannel {
   // returns CHANNEL_DELETED. It is not valid to access any member variables or
   // methods after calling FailChannel().
   ChannelState FailChannel(const std::string& message,
-                           uint16 code,
+                           uint16_t code,
                            const std::string& reason) WARN_UNUSED_RESULT;
 
   // Sends a Close frame to Start the WebSocket Closing Handshake, or to respond
   // to a Close frame from the server. As a special case, setting |code| to
   // kWebSocketErrorNoStatusReceived will create a Close frame with no payload;
   // this is symmetric with the behaviour of ParseClose.
-  ChannelState SendClose(uint16 code,
+  ChannelState SendClose(uint16_t code,
                          const std::string& reason) WARN_UNUSED_RESULT;
 
   // Parses a Close frame payload. If no status code is supplied, then |code| is
@@ -311,8 +311,8 @@ class NET_EXPORT WebSocketChannel {
   // then false is returned and |message| is set to an appropriate console
   // message.
   bool ParseClose(const scoped_refptr<IOBuffer>& buffer,
-                  uint64 size,
-                  uint16* code,
+                  uint64_t size,
+                  uint16_t* code,
                   std::string* reason,
                   std::string* message);
 
@@ -322,7 +322,7 @@ class NET_EXPORT WebSocketChannel {
   //
   // Always returns CHANNEL_DELETED.
   ChannelState DoDropChannel(bool was_clean,
-                             uint16 code,
+                             uint16_t code,
                              const std::string& reason);
 
   // Called if the closing handshake times out. Closes the connection and
@@ -373,7 +373,7 @@ class NET_EXPORT WebSocketChannel {
   int current_send_quota_;
   // The remaining amount of quota that the renderer will allow us to send on
   // this logical channel (quota units).
-  uint64 current_receive_quota_;
+  uint64_t current_receive_quota_;
 
   // Timer for the closing handshake.
   base::OneShotTimer close_timer_;
@@ -389,7 +389,7 @@ class NET_EXPORT WebSocketChannel {
   // arrives until the connection is closed and they are passed to
   // OnDropChannel().
   bool has_received_close_frame_;
-  uint16 received_close_code_;
+  uint16_t received_close_code_;
   std::string received_close_reason_;
 
   // The current state of the channel. Mainly used for sanity checking, but also
