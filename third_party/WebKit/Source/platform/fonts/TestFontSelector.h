@@ -69,6 +69,9 @@ public:
 
     void willUseFontData(const FontDescription&, const AtomicString& familyName,
         UChar32) override { }
+    void willUseRange(const FontDescription&, const AtomicString& familyName,
+        const FontDataRange&) override { };
+
     unsigned version() const override { return 0; }
     void fontCacheInvalidated() override { }
 

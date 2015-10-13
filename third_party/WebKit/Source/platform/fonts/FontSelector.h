@@ -28,6 +28,7 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/fonts/FontCacheClient.h"
+#include "platform/fonts/SegmentedFontData.h"
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/AtomicString.h"
@@ -41,7 +42,10 @@ class PLATFORM_EXPORT FontSelector : public FontCacheClient {
 public:
     virtual ~FontSelector() { }
     virtual PassRefPtr<FontData> getFontData(const FontDescription&, const AtomicString& familyName) = 0;
+
+    // TODO crbug.com/542629 - The UChar32 variant of this method should go away after switching to complex text.
     virtual void willUseFontData(const FontDescription&, const AtomicString& familyName, UChar32) = 0;
+    virtual void willUseRange(const FontDescription&, const AtomicString& familyName, const FontDataRange&) = 0;
 
     virtual unsigned version() const = 0;
 };

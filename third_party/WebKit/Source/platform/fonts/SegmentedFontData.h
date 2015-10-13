@@ -28,7 +28,7 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/fonts/FontData.h"
-#include "wtf/Vector.h"
+#include "platform/fonts/SimpleFontData.h"
 
 namespace blink {
 

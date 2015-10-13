@@ -115,6 +115,17 @@ bool CSSFontFace::maybeScheduleFontLoad(const FontDescription& fontDescription, 
     return false;
 }
 
+bool CSSFontFace::maybeScheduleFontLoad(const FontDescription& fontDescription, const FontDataRange& range)
+{
+    if (m_ranges.contains(range) || (range.isEntireRange() && m_ranges.isEntireRange())) {
+        if (loadStatus() == FontFace::Unloaded) {
+            load(fontDescription);
+        }
+        return true;
+    }
+    return false;
+}
+
 void CSSFontFace::load()
 {
     FontDescription fontDescription;
@@ -212,6 +223,15 @@ bool CSSFontFace::UnicodeRangeSet::contains(UChar32 c) const
         return true;
     Vector<UnicodeRange>::const_iterator it = std::lower_bound(m_ranges.begin(), m_ranges.end(), c);
     return it != m_ranges.end() && it->contains(c);
+}
+
+bool CSSFontFace::UnicodeRangeSet::contains(const FontDataRange& range) const
+{
+    for (auto it = m_ranges.begin(); it != m_ranges.end(); ++it) {
+        if (*it == range)
+            return true;
+    }
+    return false;
 }
 
 bool CSSFontFace::UnicodeRangeSet::intersectsWith(const String& text) const

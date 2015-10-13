@@ -169,6 +169,18 @@ void CSSSegmentedFontFace::willUseFontData(const FontDescription& fontDescriptio
     }
 }
 
+void CSSSegmentedFontFace::willUseRange(const blink::FontDescription& fontDescription, const blink::FontDataRange& range)
+{
+    // Iterating backwards since later defined unicode-range faces override
+    // previously defined ones, according to the CSS3 fonts module.
+    // https://drafts.csswg.org/css-fonts/#composite-fonts
+    for (FontFaceList::reverse_iterator it = m_fontFaces.rbegin(); it != m_fontFaces.rend(); ++it) {
+        CSSFontFace* cssFontFace = (*it)->cssFontFace();
+        if (cssFontFace->maybeScheduleFontLoad(fontDescription, range))
+            break;
+    }
+}
+
 bool CSSSegmentedFontFace::checkFont(const String& text) const
 {
     for (const auto& fontFace : m_fontFaces) {

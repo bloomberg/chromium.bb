@@ -27,6 +27,7 @@
 #define CSSSegmentedFontFace_h
 
 #include "platform/fonts/FontTraits.h"
+#include "platform/fonts/SegmentedFontData.h"
 #include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"
 #include "wtf/ListHashSet.h"
@@ -67,6 +68,7 @@ public:
     bool checkFont(const String&) const;
     void match(const String&, WillBeHeapVector<RefPtrWillBeMember<FontFace>>&) const;
     void willUseFontData(const FontDescription&, UChar32);
+    void willUseRange(const FontDescription&, const FontDataRange&);
 
     DECLARE_TRACE();
 
