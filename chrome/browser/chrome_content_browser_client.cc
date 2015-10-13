@@ -1591,7 +1591,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       switches::kEnableNaClNonSfiMode,
       switches::kEnablePNaClSubzero,
       switches::kNaClDangerousNoSandboxNonSfi,
-      switches::kUseNaClHelperNonSfi,
 #endif
       switches::kPpapiFlashPath,
       switches::kPpapiFlashVersion,
