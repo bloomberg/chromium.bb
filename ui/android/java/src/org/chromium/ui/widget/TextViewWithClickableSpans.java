@@ -46,6 +46,10 @@ public class TextViewWithClickableSpans extends TextView {
     }
 
     private void init() {
+        // This disables the saving/restoring since the saved text may be in the wrong language
+        // (if the user just changed system language), and restoring spans doesn't work anyway.
+        // See crbug.com/533362
+        setSaveEnabled(false);
         mAccessibilityManager = (AccessibilityManager)
                 getContext().getSystemService(Context.ACCESSIBILITY_SERVICE);
         setOnLongClickListener(new View.OnLongClickListener() {
