@@ -225,10 +225,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #ifndef    SK_SAVE_LAYER_BOUNDS_ARE_FILTERED
 #   define SK_SAVE_LAYER_BOUNDS_ARE_FILTERED
 #endif
-
-#ifndef    SK_SUPPORT_LEGACY_GRADIENT_DITHERING
-#   define SK_SUPPORT_LEGACY_GRADIENT_DITHERING
-#endif
 ///////////////////////// Imported from BUILD.gn and skia_common.gypi
 
 /* In some places Skia can use static initializers for global initialization,
