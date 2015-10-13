@@ -31,12 +31,16 @@ class SCHEDULER_EXPORT WebFrameSchedulerImpl : public blink::WebFrameScheduler {
   ~WebFrameSchedulerImpl() override;
 
   // blink::WebFrameScheduler implementation:
-  virtual void setFrameVisible(bool visible);
-  virtual blink::WebTaskRunner* loadingTaskRunner();
-  virtual blink::WebTaskRunner* timerTaskRunner();
-  virtual void setFrameOrigin(const blink::WebSecurityOrigin* origin);
+  void setFrameVisible(bool visible) override;
+  blink::WebTaskRunner* loadingTaskRunner() override;
+  blink::WebTaskRunner* timerTaskRunner() override;
+  void setFrameOrigin(const blink::WebSecurityOrigin* origin) override;
 
  private:
+  friend class WebFrameHostSchedulerImpl;
+
+  void DetachFromFrameHostScheduler();
+
   scoped_refptr<TaskQueue> loading_task_queue_;
   scoped_refptr<TaskQueue> timer_task_queue_;
   scoped_ptr<WebTaskRunnerImpl> loading_web_task_runner_;

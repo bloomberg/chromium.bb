@@ -31,9 +31,11 @@ class SCHEDULER_EXPORT WebFrameHostSchedulerImpl
   virtual void setPageInBackground(bool background);
   virtual blink::WebFrameScheduler* createFrameScheduler();
 
+ private:
+  friend class WebFrameSchedulerImpl;
+
   void Unregister(WebFrameSchedulerImpl* frame_scheduler);
 
- private:
   std::set<WebFrameSchedulerImpl*> frame_schedulers_;
   RendererScheduler* render_scheduler_;
   bool background_;

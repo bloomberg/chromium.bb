@@ -14,8 +14,11 @@ WebFrameHostSchedulerImpl::WebFrameHostSchedulerImpl(
     : render_scheduler_(render_scheduler), background_(false) {}
 
 WebFrameHostSchedulerImpl::~WebFrameHostSchedulerImpl() {
-  DCHECK(frame_schedulers_.empty()) << "WebFrameHostSchedulerImpl should "
-                                       "outlive its WebFrameSchedulers";
+  // TODO(alexclarke): Find out why we can't rely on the frame host outliving
+  // the frame.
+  for (WebFrameSchedulerImpl* frame_scheduler : frame_schedulers_) {
+    frame_scheduler->DetachFromFrameHostScheduler();
+  }
 }
 
 void WebFrameHostSchedulerImpl::setPageInBackground(bool background) {

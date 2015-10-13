@@ -25,7 +25,12 @@ WebFrameSchedulerImpl::~WebFrameSchedulerImpl() {
   if (timer_task_queue_.get())
     timer_task_queue_->UnregisterTaskQueue();
 
-  parent_frame_host_scheduler_->Unregister(this);
+  if (parent_frame_host_scheduler_)
+    parent_frame_host_scheduler_->Unregister(this);
+}
+
+void WebFrameSchedulerImpl::DetachFromFrameHostScheduler() {
+  parent_frame_host_scheduler_ = nullptr;
 }
 
 void WebFrameSchedulerImpl::setFrameVisible(bool visible) {
