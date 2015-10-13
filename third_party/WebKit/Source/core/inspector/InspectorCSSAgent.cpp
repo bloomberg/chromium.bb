@@ -109,9 +109,8 @@ PassRefPtrWillBeRawPtr<CSSRuleList> filterDuplicateRules(RefPtrWillBeRawPtr<CSSR
     if (!ruleList)
         return uniqRuleList.release();
 
-    HashSet<CSSStyleRule*> uniqRulesSet;
-
-    Vector<RefPtrWillBeRawPtr<CSSRule>> uniqRules;
+    WillBeHeapHashSet<RawPtrWillBeMember<CSSStyleRule>> uniqRulesSet;
+    WillBeHeapVector<RefPtrWillBeMember<CSSRule>> uniqRules;
     for (unsigned i = ruleList->length(); i > 0; --i) {
         CSSRule* rule = ruleList->item(i - 1);
         if (!rule || rule->type() != CSSRule::STYLE_RULE)
