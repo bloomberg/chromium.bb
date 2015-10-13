@@ -66,6 +66,3 @@ void TabStripModelObserver::WillCloseAllTabs() {
 
 void TabStripModelObserver::CloseAllTabsCanceled() {
 }
-
-void TabStripModelObserver::TabStripModelDeleted() {
-}

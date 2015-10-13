@@ -236,7 +236,6 @@ class TabScrubberTest : public InProcessBrowserTest,
   void TabBlockedStateChanged(content::WebContents* contents,
                               int index) override {}
   void TabStripEmpty() override {}
-  void TabStripModelDeleted() override {}
 
   // History of tab activation. Scrub() resets it.
   std::vector<int> activation_order_;

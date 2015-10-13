@@ -148,10 +148,6 @@ class TabStripModelObserver {
   virtual void WillCloseAllTabs();
   virtual void CloseAllTabsCanceled();
 
-  // Sent when the tabstrip model is about to be deleted and any reference held
-  // must be dropped.
-  virtual void TabStripModelDeleted();
-
  protected:
   virtual ~TabStripModelObserver() {}
 };

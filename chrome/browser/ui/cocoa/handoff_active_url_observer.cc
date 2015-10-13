@@ -14,25 +14,21 @@
 HandoffActiveURLObserver::HandoffActiveURLObserver(
     HandoffActiveURLObserverDelegate* delegate)
     : delegate_(delegate),
-      active_tab_strip_model_(nullptr),
       active_browser_(nullptr) {
   DCHECK(delegate_);
 
-  active_browser_ = chrome::FindLastActiveWithHostDesktopType(
-      chrome::HOST_DESKTOP_TYPE_NATIVE);
   BrowserList::AddObserver(this);
-  UpdateObservations();
+  SetActiveBrowser(chrome::FindLastActiveWithHostDesktopType(
+      chrome::HOST_DESKTOP_TYPE_NATIVE));
 }
 
 HandoffActiveURLObserver::~HandoffActiveURLObserver() {
   BrowserList::RemoveObserver(this);
-  StopObservingTabStripModel();
-  StopObservingWebContents();
+  SetActiveBrowser(nullptr);
 }
 
 void HandoffActiveURLObserver::OnBrowserSetLastActive(Browser* browser) {
-  active_browser_ = browser;
-  UpdateObservations();
+  SetActiveBrowser(browser);
   delegate_->HandoffActiveURLChanged(GetActiveWebContents());
 }
 
@@ -40,9 +36,8 @@ void HandoffActiveURLObserver::OnBrowserRemoved(Browser* removed_browser) {
   if (active_browser_ != removed_browser)
     return;
 
-  active_browser_ = chrome::FindLastActiveWithHostDesktopType(
-      chrome::HOST_DESKTOP_TYPE_NATIVE);
-  UpdateObservations();
+  SetActiveBrowser(chrome::FindLastActiveWithHostDesktopType(
+      chrome::HOST_DESKTOP_TYPE_NATIVE));
   delegate_->HandoffActiveURLChanged(GetActiveWebContents());
 }
 
@@ -55,54 +50,28 @@ void HandoffActiveURLObserver::ActiveTabChanged(
   delegate_->HandoffActiveURLChanged(new_contents);
 }
 
-void HandoffActiveURLObserver::TabStripModelDeleted() {
-  StopObservingTabStripModel();
-  StopObservingWebContents();
-}
-
 void HandoffActiveURLObserver::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
   delegate_->HandoffActiveURLChanged(web_contents());
 }
 
-void HandoffActiveURLObserver::WebContentsDestroyed() {
-  StopObservingWebContents();
-}
-
-void HandoffActiveURLObserver::UpdateObservations() {
-  if (!active_browser_) {
-    StopObservingTabStripModel();
-    StopObservingWebContents();
+void HandoffActiveURLObserver::SetActiveBrowser(Browser* active_browser) {
+  if (active_browser == active_browser_)
     return;
+
+  if (active_browser_) {
+    active_browser_->tab_strip_model()->RemoveObserver(this);
+    StopObservingWebContents();
   }
 
-  TabStripModel* model = active_browser_->tab_strip_model();
-  StartObservingTabStripModel(model);
+  active_browser_ = active_browser;
 
-  content::WebContents* web_contents = model->GetActiveWebContents();
-  if (web_contents)
-    StartObservingWebContents(web_contents);
-  else
-    StopObservingWebContents();
-}
-
-void HandoffActiveURLObserver::StartObservingTabStripModel(
-    TabStripModel* tab_strip_model) {
-  DCHECK(tab_strip_model);
-
-  if (active_tab_strip_model_ == tab_strip_model)
-    return;
-
-  StopObservingTabStripModel();
-  tab_strip_model->AddObserver(this);
-  active_tab_strip_model_ = tab_strip_model;
-}
-
-void HandoffActiveURLObserver::StopObservingTabStripModel() {
-  if (active_tab_strip_model_) {
-    active_tab_strip_model_->RemoveObserver(this);
-    active_tab_strip_model_ = nullptr;
+  if (active_browser_) {
+    active_browser_->tab_strip_model()->AddObserver(this);
+    content::WebContents* web_contents = GetActiveWebContents();
+    if (web_contents)
+      StartObservingWebContents(web_contents);
   }
 }
 

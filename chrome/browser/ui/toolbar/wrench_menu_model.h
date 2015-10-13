@@ -20,7 +20,6 @@
 class BookmarkSubMenuModel;
 class Browser;
 class RecentTabsSubMenuModel;
-class TabStripModel;
 
 namespace {
 class MockWrenchMenuModel;
@@ -158,7 +157,6 @@ class WrenchMenuModel : public ui::SimpleMenuModel,
                      content::WebContents* old_contents,
                      content::WebContents* new_contents,
                      int index) override;
-  void TabStripModelDeleted() override;
 
   // Overridden from content::NotificationObserver:
   void Observe(int type,
@@ -245,7 +243,6 @@ class WrenchMenuModel : public ui::SimpleMenuModel,
   ui::AcceleratorProvider* provider_;  // weak
 
   Browser* browser_;  // weak
-  TabStripModel* tab_strip_model_; // weak
 
   scoped_ptr<content::HostZoomMap::Subscription> browser_zoom_subscription_;
   content::NotificationRegistrar registrar_;

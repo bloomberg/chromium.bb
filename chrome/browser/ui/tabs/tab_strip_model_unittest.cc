@@ -264,7 +264,6 @@ class MockTabStripModelObserver : public TabStripModelObserver {
  public:
   explicit MockTabStripModelObserver(TabStripModel* model)
       : empty_(true),
-        deleted_(false),
         model_(model) {}
   ~MockTabStripModelObserver() override {}
 
@@ -409,21 +408,18 @@ class MockTabStripModelObserver : public TabStripModelObserver {
   void CloseAllTabsCanceled() override {
     states_.push_back(State(NULL, -1, CLOSE_ALL_CANCELED));
   }
-  void TabStripModelDeleted() override { deleted_ = true; }
 
   void ClearStates() {
     states_.clear();
   }
 
   bool empty() const { return empty_; }
-  bool deleted() const { return deleted_; }
   TabStripModel* model() { return model_; }
 
  private:
   std::vector<State> states_;
 
   bool empty_;
-  bool deleted_;
   TabStripModel* model_;
 
   DISALLOW_COPY_AND_ASSIGN(MockTabStripModelObserver);
@@ -2281,7 +2277,6 @@ TEST_F(TabStripModelTest, DeleteTabStripFromDestroy) {
   DeleteWebContentsOnDestroyedObserver observer(contents2, contents1, strip);
   strip->CloseAllTabs();
   EXPECT_TRUE(tab_strip_model_observer.empty());
-  EXPECT_TRUE(tab_strip_model_observer.deleted());
 }
 
 TEST_F(TabStripModelTest, MoveSelectedTabsTo) {

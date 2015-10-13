@@ -54,7 +54,6 @@ class TabStripModelObserverBridge : public TabStripModelObserver {
   void TabPinnedStateChanged(content::WebContents* contents,
                              int index) override;
   void TabStripEmpty() override;
-  void TabStripModelDeleted() override;
 
  private:
   id controller_;  // weak, owns me
@@ -89,7 +88,6 @@ class TabStripModelObserverBridge : public TabStripModelObserver {
 - (void)tabPinnedStateChangedWithContents:(content::WebContents*)contents
                                   atIndex:(NSInteger)index;
 - (void)tabStripEmpty;
-- (void)tabStripModelDeleted;
 - (void)tabSelectionChanged;
 @end
 

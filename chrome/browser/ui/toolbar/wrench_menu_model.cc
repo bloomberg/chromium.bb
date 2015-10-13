@@ -342,8 +342,7 @@ WrenchMenuModel::WrenchMenuModel(ui::AcceleratorProvider* provider,
     : ui::SimpleMenuModel(this),
       uma_action_recorded_(false),
       provider_(provider),
-      browser_(browser),
-      tab_strip_model_(browser_->tab_strip_model()) {
+      browser_(browser) {
   Build();
   UpdateZoomControls();
 
@@ -352,15 +351,15 @@ WrenchMenuModel::WrenchMenuModel(ui::AcceleratorProvider* provider,
           ->AddZoomLevelChangedCallback(base::Bind(
               &WrenchMenuModel::OnZoomLevelChanged, base::Unretained(this)));
 
-  tab_strip_model_->AddObserver(this);
+  browser_->tab_strip_model()->AddObserver(this);
 
   registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
                  content::NotificationService::AllSources());
 }
 
 WrenchMenuModel::~WrenchMenuModel() {
-  if (tab_strip_model_)
-    tab_strip_model_->RemoveObserver(this);
+  if (browser_)  // Null in tests.
+    browser_->tab_strip_model()->RemoveObserver(this);
 }
 
 bool WrenchMenuModel::DoesCommandIdDismissMenu(int command_id) const {
@@ -821,13 +820,6 @@ void WrenchMenuModel::TabReplacedAt(TabStripModel* tab_strip_model,
   UpdateZoomControls();
 }
 
-void WrenchMenuModel::TabStripModelDeleted() {
-  // During views shutdown, the tabstrip model/browser is deleted first, while
-  // it is the opposite in gtk land.
-  tab_strip_model_->RemoveObserver(this);
-  tab_strip_model_ = NULL;
-}
-
 void WrenchMenuModel::Observe(int type,
                               const content::NotificationSource& source,
                               const content::NotificationDetails& details) {
@@ -839,9 +831,8 @@ void WrenchMenuModel::Observe(int type,
 WrenchMenuModel::WrenchMenuModel()
     : ui::SimpleMenuModel(this),
       uma_action_recorded_(false),
-      provider_(NULL),
-      browser_(NULL),
-      tab_strip_model_(NULL) {}
+      provider_(nullptr),
+      browser_(nullptr) {}
 
 bool WrenchMenuModel::ShouldShowNewIncognitoWindowMenuItem() {
   if (browser_->profile()->IsGuestSession())

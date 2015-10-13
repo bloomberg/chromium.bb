@@ -40,15 +40,7 @@ namespace {
 class MockWrenchMenuModel : public WrenchMenuModel {
  public:
   MockWrenchMenuModel() : WrenchMenuModel() {}
-  ~MockWrenchMenuModel() {
-    // This dirty, ugly hack gets around a bug in the test. In
-    // ~WrenchMenuModel(), there's a call to TabstripModel::RemoveObserver(this)
-    // which mysteriously leads to this crash: http://crbug.com/49206 .  It
-    // seems that the vector of observers is getting hosed somewhere between
-    // |-[ToolbarController dealloc]| and ~MockWrenchMenuModel(). This line
-    // short-circuits the parent destructor to avoid this crash.
-    tab_strip_model_ = NULL;
-  }
+  ~MockWrenchMenuModel() {}
   MOCK_METHOD2(ExecuteCommand, void(int command_id, int event_flags));
 };
 
