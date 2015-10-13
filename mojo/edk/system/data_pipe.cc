@@ -179,7 +179,7 @@ ScopedPlatformHandle DataPipe::Deserialize(
     if (*shared_memory_size) {
       DCHECK(serialization->shared_memory_handle_index !=
              kInvalidDataPipeHandleIndex);
-      if (!serialization->shared_memory_handle_index ||
+      if (!platform_handles ||
           serialization->shared_memory_handle_index >=
               platform_handles->size()) {
         LOG(ERROR) << "Invalid serialized data pipe dispatcher "

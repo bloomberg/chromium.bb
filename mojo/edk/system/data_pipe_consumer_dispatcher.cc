@@ -96,6 +96,12 @@ DataPipeConsumerDispatcher::Deserialize(
   if (platform_handle.is_valid()) {
     rv->Init(platform_handle.Pass(), serialized_read_buffer,
              serialized_read_buffer_size);
+  } else {
+    // The data pipe consumer could have read all the data and the producer
+    // closed its end subsequently (before the consumer was sent). In that case
+    // when we deserialize the consumer we must make sure to set error_ or
+    // otherwise the peer-closed signal will never be satisfied.
+    rv->error_ = true;
   }
   return rv;
 }

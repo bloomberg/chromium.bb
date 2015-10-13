@@ -13,6 +13,7 @@
 #include "mojo/edk/embedder/simple_platform_support.h"
 #include "mojo/edk/system/test_utils.h"
 #include "mojo/edk/system/waiter.h"
+#include "mojo/public/c/system/core.h"
 #include "mojo/public/c/system/data_pipe.h"
 #include "mojo/public/c/system/functions.h"
 #include "mojo/public/cpp/system/macros.h"
@@ -1420,6 +1421,69 @@ TEST_F(DataPipeTest, TwoPhaseMoreInvalidArguments) {
   num_bytes = 0u;
   ASSERT_EQ(MOJO_RESULT_OK, QueryData(&num_bytes));
   ASSERT_EQ(1u * sizeof(int32_t), num_bytes);
+}
+
+// Ensures that if a data pipe consumer whose producer has closed is passed over
+// a message pipe, the deserialized dispatcher is also marked as having a closed
+// peer.
+TEST_F(DataPipeTest, ConsumerWithClosedProducerSent) {
+  const MojoCreateDataPipeOptions options = {
+      kSizeOfOptions,                           // |struct_size|.
+      MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE,  // |flags|.
+      static_cast<uint32_t>(sizeof(int32_t)),   // |element_num_bytes|.
+      1000 * sizeof(int32_t)                    // |capacity_num_bytes|.
+  };
+
+  ASSERT_EQ(MOJO_RESULT_OK, Create(&options));
+
+  // We can write to a data pipe handle immediately.
+  int32_t data = 123;
+  uint32_t num_bytes = sizeof(data);
+  ASSERT_EQ(MOJO_RESULT_OK, WriteData(&data, &num_bytes));
+  ASSERT_EQ(MOJO_RESULT_OK, CloseProducer());
+
+  // Now wait for the other side to become readable and to see the peer closed.
+  MojoHandleSignalsState state;
+  ASSERT_EQ(MOJO_RESULT_OK,
+            MojoWait(consumer_, MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+                     MOJO_DEADLINE_INDEFINITE, &state));
+  ASSERT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+            state.satisfied_signals);
+  ASSERT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+            state.satisfiable_signals);
+
+  // Now send the consumer over a MP so that it's serialized.
+  MojoHandle pipe0, pipe1;
+  ASSERT_EQ(MOJO_RESULT_OK,
+            MojoCreateMessagePipe(nullptr, &pipe0, &pipe1));
+
+  ASSERT_EQ(MOJO_RESULT_OK,
+            MojoWriteMessage(pipe0, nullptr, 0, &consumer_, 1,
+                             MOJO_WRITE_MESSAGE_FLAG_NONE));
+  consumer_ = MOJO_HANDLE_INVALID;
+  ASSERT_EQ(MOJO_RESULT_OK, MojoWait(pipe1, MOJO_HANDLE_SIGNAL_READABLE,
+                                     MOJO_DEADLINE_INDEFINITE, &state));
+  uint32_t num_handles = 1;
+  ASSERT_EQ(MOJO_RESULT_OK,
+            MojoReadMessage(pipe1, nullptr, 0, &consumer_, &num_handles,
+                            MOJO_READ_MESSAGE_FLAG_NONE));
+  ASSERT_EQ(num_handles, 1u);
+
+  ASSERT_EQ(MOJO_RESULT_OK,
+            MojoWait(consumer_, MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+                     MOJO_DEADLINE_INDEFINITE, &state));
+  ASSERT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+            state.satisfied_signals);
+  ASSERT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+            state.satisfiable_signals);
+
+  uint32 read_data;
+  ASSERT_EQ(MOJO_RESULT_OK, ReadData(&read_data, &num_bytes));
+  ASSERT_EQ(sizeof(read_data), num_bytes);
+  ASSERT_EQ(data, read_data);
+
+  ASSERT_EQ(MOJO_RESULT_OK, MojoClose(pipe0));
+  ASSERT_EQ(MOJO_RESULT_OK, MojoClose(pipe1));
 }
 
 }  // namespace
