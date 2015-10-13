@@ -14,10 +14,7 @@ namespace blink {
 class Document;
 class EventTarget;
 
-// EventHandlerRegistry::m_targets is handled manually in clearWeakMembers(),
-// so its type can be HeapHashCountedSet<Member<>>, but we use WeakMember<> in this
-// alias for future other use cases.
-using EventTargetSet = WillBeHeapHashCountedSet<RawPtrWillBeWeakMember<EventTarget>>;
+typedef HashCountedSet<EventTarget*> EventTargetSet;
 
 // Registry for keeping track of event handlers. Note that only handlers on
 // documents that can be rendered or can receive input (i.e., are attached to a
