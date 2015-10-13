@@ -5,8 +5,10 @@
 #include "ui/ozone/platform/drm/ozone_platform_gbm.h"
 
 #include <dlfcn.h>
+#include <fcntl.h>
 #include <gbm.h>
 #include <stdlib.h>
+#include <xf86drm.h>
 
 #include "base/bind.h"
 #include "ui/base/cursor/ozone/bitmap_cursor_factory_ozone.h"
@@ -42,10 +44,6 @@
 #include "ui/events/ozone/layout/xkb/xkb_keyboard_layout_engine.h"
 #else
 #include "ui/events/ozone/layout/stub/stub_keyboard_layout_engine.h"
-#endif
-
-#if defined(USE_VGEM_MAP)
-#include <fcntl.h>
 #endif
 
 namespace ui {
@@ -115,11 +113,12 @@ class OzonePlatformGbm : public OzonePlatform {
   }
   base::ScopedFD OpenClientNativePixmapDevice() const override {
 #if defined(USE_VGEM_MAP)
-    static const char kVgemPath[] = "/dev/dri/renderD129";
-    base::ScopedFD vgem_fd(open(kVgemPath, O_RDWR | O_CLOEXEC));
-    if (!vgem_fd.is_valid())
-      PLOG(ERROR) << "Failed to open: " << kVgemPath;
-    return vgem_fd;
+    int vgem_fd = drmOpenWithType("vgem", nullptr, DRM_NODE_RENDER);
+    if (vgem_fd < 0) {
+      PLOG(ERROR) << "Failed to find vgem device";
+      vgem_fd = -1;
+    }
+    return base::ScopedFD(vgem_fd);
 #endif
     return base::ScopedFD();
   }
