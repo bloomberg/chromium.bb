@@ -254,25 +254,32 @@ void HandleNewWindow() {
 
 bool CanHandleNextIme(ImeControlDelegate* ime_control_delegate,
                       const ui::Accelerator& previous_accelerator) {
-  // This check is necessary e.g. not to process the Shift+Alt+
-  // ET_KEY_RELEASED accelerator for Chrome OS (see ash/accelerators/
-  // accelerator_controller.cc) when Shift+Alt+Tab is pressed and then Tab
-  // is released.
-  ui::KeyboardCode previous_key_code = previous_accelerator.key_code();
-  if (previous_accelerator.type() == ui::ET_KEY_RELEASED &&
-      // Workaround for crbug.com/139556. CJK IME users tend to press
-      // Enter (or Space) and Shift+Alt almost at the same time to commit
-      // an IME string and then switch from the IME to the English layout.
-      // This workaround allows the user to trigger NEXT_IME even if the
-      // user presses Shift+Alt before releasing Enter.
-      // TODO(nona|mazda): Fix crbug.com/139556 in a cleaner way.
-      previous_key_code != ui::VKEY_RETURN &&
-      previous_key_code != ui::VKEY_SPACE) {
-    // We totally ignore this accelerator.
-    // TODO(mazda): Fix crbug.com/158217
-    return false;
+  // We only allow next IME to be triggered if the previous is accelerator key
+  // is ONLY either Shift, Alt, Enter or Space.
+  // The first two cases to avoid conflicting accelerators that contain
+  // Alt+Shift (like Alt+Shift+Tab or Alt+Shift+S) to trigger next IME when the
+  // wrong order of key sequences is pressed. crbug.com/527154.
+  // The latter two cases are needed for CJK IME users who tend to press Enter
+  // (or Space) and Shift+Alt almost at the same time to commit an IME string
+  // and then switch from the IME to the English layout. This allows these users
+  // to trigger NEXT_IME even if they press Shift+Alt before releasing Enter.
+  // crbug.com/139556.
+  // TODO(nona|mazda): Fix crbug.com/139556 in a cleaner way.
+  const ui::KeyboardCode previous_key_code = previous_accelerator.key_code();
+  switch (previous_key_code) {
+    case ui::VKEY_SHIFT:
+    case ui::VKEY_LSHIFT:
+    case ui::VKEY_RSHIFT:
+    case ui::VKEY_MENU:
+    case ui::VKEY_LMENU:
+    case ui::VKEY_RMENU:
+    case ui::VKEY_RETURN:
+    case ui::VKEY_SPACE:
+      return ime_control_delegate && ime_control_delegate->CanCycleIme();
+
+    default:
+      return false;
   }
-  return ime_control_delegate && ime_control_delegate->CanCycleIme();
 }
 
 void HandleNextIme(ImeControlDelegate* ime_control_delegate) {

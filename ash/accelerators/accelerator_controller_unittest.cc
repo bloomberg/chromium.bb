@@ -1177,6 +1177,66 @@ TEST_F(AcceleratorControllerTest, ImeGlobalAcceleratorsWorkaround139556) {
   EXPECT_FALSE(ProcessInController(shift_alt_space_press));
 }
 
+// Makes sure that the next IME accelerators doesn't conflict with other
+// accelerators that contain Alt+Shift when the wrong sequence is pressed.
+// crbug.com/527154.
+TEST_F(AcceleratorControllerTest, ImeGlobalAcceleratorsNoConflict) {
+  DummyImeControlDelegate* delegate = new DummyImeControlDelegate;
+  GetController()->SetImeControlDelegate(
+      scoped_ptr<ImeControlDelegate>(delegate).Pass());
+  ui::test::EventGenerator& generator = GetEventGenerator();
+
+  // Correct sequence of a conflicting accelerator must not trigger next IME.
+  // Alt (press) + Shift (press) + S (press) + S (release) + Shift (release) +
+  // Alt (release).
+  generator.PressKey(ui::VKEY_MENU, ui::EF_ALT_DOWN);
+  generator.PressKey(ui::VKEY_SHIFT, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN);
+  generator.PressKey(ui::VKEY_S, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN);
+  generator.ReleaseKey(ui::VKEY_S, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN);
+  generator.ReleaseKey(ui::VKEY_SHIFT, ui::EF_ALT_DOWN);
+  generator.ReleaseKey(ui::VKEY_MENU, ui::EF_NONE);
+  EXPECT_EQ(0, delegate->handle_next_ime_count());
+
+  // Neither wrong sequences.
+  // Wrong sequence 1:
+  // Alt (press) + Shift (press) + S (press) + Shift (release) + S (release) +
+  // Alt (release).
+  generator.PressKey(ui::VKEY_MENU, ui::EF_ALT_DOWN);
+  generator.PressKey(ui::VKEY_SHIFT, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN);
+  generator.PressKey(ui::VKEY_S, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN);
+  generator.ReleaseKey(ui::VKEY_SHIFT, ui::EF_ALT_DOWN);
+  generator.ReleaseKey(ui::VKEY_S, ui::EF_ALT_DOWN);
+  generator.ReleaseKey(ui::VKEY_MENU, ui::EF_NONE);
+  EXPECT_EQ(0, delegate->handle_next_ime_count());
+
+  // Wrong sequence 2:
+  // Alt (press) + Shift (press) + S (press) + Alt (release) + S (release) +
+  // Shift (release).
+  generator.PressKey(ui::VKEY_MENU, ui::EF_ALT_DOWN);
+  generator.PressKey(ui::VKEY_SHIFT, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN);
+  generator.PressKey(ui::VKEY_S, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN);
+  generator.ReleaseKey(ui::VKEY_MENU, ui::EF_SHIFT_DOWN);
+  generator.ReleaseKey(ui::VKEY_S, ui::EF_SHIFT_DOWN);
+  generator.ReleaseKey(ui::VKEY_SHIFT, ui::EF_NONE);
+  EXPECT_EQ(0, delegate->handle_next_ime_count());
+
+  // The two possible sequences of Alt+Shift both work for triggering the next
+  // IME.
+  // 1- Alt (press) + Shift (press) + Shift (release) + Alt (release).
+  generator.PressKey(ui::VKEY_MENU, ui::EF_ALT_DOWN);
+  generator.PressKey(ui::VKEY_SHIFT, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN);
+  generator.ReleaseKey(ui::VKEY_MENU, ui::EF_SHIFT_DOWN);
+  generator.ReleaseKey(ui::VKEY_SHIFT, ui::EF_NONE);
+  EXPECT_EQ(1, delegate->handle_next_ime_count());
+
+  // 2- Shift (press) + Alt (press) + Alt (release) + Shift (release).
+  generator.PressKey(ui::VKEY_SHIFT, ui::EF_SHIFT_DOWN);
+  generator.PressKey(ui::VKEY_MENU,  ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN);
+  generator.ReleaseKey(ui::VKEY_SHIFT, ui::EF_ALT_DOWN);
+  generator.ReleaseKey(ui::VKEY_MENU, ui::EF_NONE);
+  EXPECT_EQ(2, delegate->handle_next_ime_count());
+}
+
 TEST_F(AcceleratorControllerTest, PreferredReservedAccelerators) {
 #if defined(OS_CHROMEOS)
   // Power key is reserved on chromeos.
