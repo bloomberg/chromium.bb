@@ -92,6 +92,17 @@ syncer::SyncDataList ToSyncerSyncDataList(
 
 }  // namespace
 
+struct ExtensionSyncService::PendingUpdate {
+  PendingUpdate() : grant_permissions_and_reenable(false) {}
+  PendingUpdate(const base::Version& version,
+                bool grant_permissions_and_reenable)
+    : version(version),
+      grant_permissions_and_reenable(grant_permissions_and_reenable) {}
+
+  base::Version version;
+  bool grant_permissions_and_reenable;
+};
+
 ExtensionSyncService::ExtensionSyncService(Profile* profile)
     : profile_(profile),
       registry_observer_(this),
@@ -245,12 +256,16 @@ ExtensionSyncData ExtensionSyncService::CreateSyncData(
 
   // If there's a pending update, send the new version to sync instead of the
   // installed one.
-  auto it = pending_update_versions_.find(extension.id());
-  if (it != pending_update_versions_.end()) {
-    const base::Version& version = it->second;
+  auto it = pending_updates_.find(extension.id());
+  if (it != pending_updates_.end()) {
+    const base::Version& version = it->second.version;
     // If we have a pending version, it should be newer than the installed one.
     DCHECK_EQ(-1, extension.version()->CompareTo(version));
     result.set_version(version);
+    // If we'll re-enable the extension once it's updated, also send that back
+    // to sync.
+    if (it->second.grant_permissions_and_reenable)
+      result.set_enabled(true);
   }
   return result;
 }
@@ -297,6 +312,7 @@ void ExtensionSyncService::ApplySyncData(
       extension->version()->CompareTo(extension_sync_data.version()) : 0;
 
   // Enable/disable the extension.
+  bool reenable_after_update = false;
   if (extension_sync_data.enabled()) {
     DCHECK(!extension_sync_data.disable_reasons());
 
@@ -309,7 +325,7 @@ void ExtensionSyncService::ApplySyncData(
                                (version_compare_result == 0);
       if (grant_permissions) {
         extension_service()->GrantPermissionsAndEnableExtension(extension);
-      } else {
+      } else if (!extension_service()->IsExtensionEnabled(extension->id())) {
         // Only enable if the extension already has all required permissions.
         scoped_ptr<const extensions::PermissionSet> granted_permissions =
             extension_prefs->GetGrantedPermissions(extension->id());
@@ -321,6 +337,8 @@ void ExtensionSyncService::ApplySyncData(
                 extension->GetType());
         if (!is_privilege_increase)
           extension_service()->EnableExtension(id);
+        else if (extension_sync_data.supports_disable_reasons())
+          reenable_after_update = true;
       }
     } else {
       // The extension is not installed yet. Set it to enabled; we'll check for
@@ -331,8 +349,8 @@ void ExtensionSyncService::ApplySyncData(
     int disable_reasons = extension_sync_data.disable_reasons();
     if (extension_sync_data.remote_install()) {
       if (!(disable_reasons & Extension::DISABLE_REMOTE_INSTALL)) {
-        // In the non-legacy case (>=M45) where disable reasons are synced at
-        // all, DISABLE_REMOTE_INSTALL should be among them already.
+        // Since disabled reasons are synced since M45, DISABLE_REMOTE_INSTALL
+        // should be among them already.
         DCHECK(!extension_sync_data.supports_disable_reasons());
         disable_reasons |= Extension::DISABLE_REMOTE_INSTALL;
       }
@@ -402,7 +420,8 @@ void ExtensionSyncService::ApplySyncData(
   if (extension_installed) {
     // If the extension is installed but outdated, store the new version.
     if (version_compare_result < 0) {
-      pending_update_versions_[id] = extension_sync_data.version();
+      pending_updates_[id] = PendingUpdate(extension_sync_data.version(),
+                                           reenable_after_update);
       check_for_updates = true;
     }
   } else {
@@ -495,11 +514,13 @@ void ExtensionSyncService::OnExtensionInstalled(
     bool is_update) {
   DCHECK_EQ(profile_, browser_context);
   // Clear pending version if the installed one has caught up.
-  auto it = pending_update_versions_.find(extension->id());
-  if (it != pending_update_versions_.end()) {
-    const base::Version& pending_version = it->second;
-    if (extension->version()->CompareTo(pending_version) >= 0)
-      pending_update_versions_.erase(it);
+  auto it = pending_updates_.find(extension->id());
+  if (it != pending_updates_.end()) {
+    int compare_result = extension->version()->CompareTo(it->second.version);
+    if (compare_result == 0 && it->second.grant_permissions_and_reenable)
+      extension_service()->GrantPermissionsAndEnableExtension(extension);
+    if (compare_result >= 0)
+      pending_updates_.erase(it);
   }
   SyncExtensionChangeIfNeeded(*extension);
 }
@@ -530,7 +551,7 @@ void ExtensionSyncService::OnExtensionUninstalled(
     flare_.Run(type);  // Tell sync to start ASAP.
   }
 
-  pending_update_versions_.erase(extension->id());
+  pending_updates_.erase(extension->id());
 }
 
 void ExtensionSyncService::OnExtensionStateChanged(

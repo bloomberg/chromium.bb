@@ -86,6 +86,7 @@ class ExtensionSyncData {
   // currently-installed extension doesn't match |version|).
   bool uninstalled() const { return uninstalled_; }
   bool enabled() const { return enabled_; }
+  void set_enabled(bool enabled) { enabled_ = enabled; }
   bool supports_disable_reasons() const { return supports_disable_reasons_; }
   int disable_reasons() const { return disable_reasons_; }
   bool incognito_enabled() const { return incognito_enabled_; }

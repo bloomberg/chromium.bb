@@ -6889,6 +6889,55 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataEnableDisable) {
   }
 }
 
+TEST_F(ExtensionServiceTest, ProcessSyncDataDeferredEnable) {
+  InitializeEmptyExtensionService();
+  extension_sync_service()->MergeDataAndStartSyncing(
+      syncer::EXTENSIONS,
+      syncer::SyncDataList(),
+      scoped_ptr<syncer::SyncChangeProcessor>(
+          new syncer::FakeSyncChangeProcessor),
+      scoped_ptr<syncer::SyncErrorFactory>(new syncer::SyncErrorFactoryMock()));
+
+  base::FilePath base_path = data_dir().AppendASCII("permissions_increase");
+  base::FilePath pem_path = base_path.AppendASCII("permissions.pem");
+
+  base::FilePath path = base_path.AppendASCII("v1");
+  const Extension* extension = PackAndInstallCRX(path, pem_path, INSTALL_NEW);
+  // The extension must now be installed and enabled.
+  ASSERT_TRUE(extension);
+  ASSERT_TRUE(registry()->enabled_extensions().Contains(extension->id()));
+
+  // Save the id, as the extension object will be destroyed during updating.
+  std::string id = extension->id();
+
+  // Update to a new version with increased permissions.
+  path = base_path.AppendASCII("v2");
+  PackCRXAndUpdateExtension(id, path, pem_path, DISABLED);
+
+  // Now a sync update comes in, telling us to re-enable a *newer* version.
+  sync_pb::EntitySpecifics specifics;
+  sync_pb::ExtensionSpecifics* ext_specifics = specifics.mutable_extension();
+  ext_specifics->set_id(id);
+  ext_specifics->set_version("3");
+  ext_specifics->set_enabled(true);
+  ext_specifics->set_disable_reasons(Extension::DISABLE_NONE);
+
+  syncer::SyncData sync_data =
+      syncer::SyncData::CreateLocalData(good_crx, "Name", specifics);
+  syncer::SyncChange sync_change(FROM_HERE,
+                                 syncer::SyncChange::ACTION_UPDATE,
+                                 sync_data);
+  syncer::SyncChangeList list(1, sync_change);
+  extension_sync_service()->ProcessSyncChanges(FROM_HERE, list);
+
+  // Since the version didn't match, the extension should still be disabled.
+  EXPECT_TRUE(registry()->disabled_extensions().Contains(id));
+
+  // After we update to the matching version, the extension should get enabled.
+  path = base_path.AppendASCII("v3");
+  PackCRXAndUpdateExtension(id, path, pem_path, ENABLED);
+}
+
 TEST_F(ExtensionServiceTest, ProcessSyncDataPermissionApproval) {
   // This is the update URL specified in the test extension. Setting it here is
   // necessary to make it considered syncable.
