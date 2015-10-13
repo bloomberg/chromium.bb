@@ -24,7 +24,7 @@ var remoting = remoting || {};
 /**
  * @param {remoting.ClientPlugin} plugin
  * @param {remoting.SignalStrategy} signalStrategy Signal strategy.
- * @param {remoting.Logger} logger
+ * @param {remoting.SessionLogger} logger
  * @param {remoting.ClientSession.EventHandler} listener
  *
  * @constructor
@@ -57,7 +57,7 @@ remoting.ClientSession = function(
   /** @private */
   this.hasReceivedFrame_ = false;
 
-  /** @private {remoting.Logger} */
+  /** @private */
   this.logger_ = logger;
 
   /** @private */
@@ -135,6 +135,7 @@ remoting.ClientSession.EventHandler.prototype.onDisconnected =
 //
 // TODO(kelvinp): Merge this enum with remoting.ChromotingEvent.SessionState
 // once we have migrated away from XMPP-based logging (crbug.com/523423).
+//
 // NOTE: The enums here correspond to the Chromoting.Connections enumerated
 // histogram defined in src/tools/metrics/histograms/histograms.xml. UMA
 // histograms don't work well with negative values, so only non-negative values
@@ -331,7 +332,7 @@ remoting.ClientSession.prototype.getState = function() {
 };
 
 /**
- * @return {remoting.Logger}.
+ * @return {remoting.SessionLogger}.
  */
 remoting.ClientSession.prototype.getLogger = function() {
   return this.logger_;

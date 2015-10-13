@@ -184,6 +184,7 @@ remoting_webapp_shared_js_core_files = [
   "base/js/application.js",
   "base/js/base.js",
   "base/js/callstack.js",
+  "base/js/chromoting_event.js",
   "base/js/console_wrapper.js",
   "base/js/ipc.js",
   "base/js/modal_dialogs.js",
@@ -208,11 +209,7 @@ remoting_webapp_shared_js_host_files = [
 
 # Logging and stats JavaScript files.
 remoting_webapp_shared_js_logging_files = [
-  "base/js/chromoting_event.js",
   "base/js/format_iq.js",
-  "base/js/logger.js",
-  "base/js/log_to_server.js",
-  "base/js/server_log_entry.js",
   "base/js/session_logger.js",
   "base/js/stats_accumulator.js",
 ]
@@ -275,7 +272,6 @@ remoting_webapp_js_gnubby_auth_files = [ "crd/js/gnubby_auth_handler.js" ]
 # Files for controlling the local machine as a host.
 # Includes both it2me and me2me files.
 remoting_webapp_js_host_control_files = [
-  "crd/js/buffered_signal_strategy.js",
   "crd/js/host_controller.js",
   "crd/js/host_daemon_facade.js",
   "crd/js/host_screen.js",
@@ -291,7 +287,6 @@ remoting_webapp_js_host_control_files = [
 # Files for controlling the local it2me host.
 # Included by public_session.html.
 remoting_webapp_js_it2me_host_control_files = [
-  "crd/js/buffered_signal_strategy.js",
   "crd/js/host_screen.js",
   "crd/js/host_session.js",
   "crd/js/host_install_dialog.js",
@@ -480,7 +475,9 @@ remoting_webapp_wcs_sandbox_html_js_files = [
 remoting_webapp_wcs_sandbox_html_all_js_files =
     remoting_webapp_wcs_sandbox_html_js_files
 remoting_webapp_wcs_sandbox_html_all_js_files += [
+  "base/js/chromoting_event.js",
   "base/js/error.js",
+  "base/js/platform.js",
   "base/js/plugin_settings.js",
 ]
 

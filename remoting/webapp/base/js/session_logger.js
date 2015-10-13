@@ -11,14 +11,13 @@ var remoting = remoting || {};
 'use strict';
 
 /**
- * This class defines a remoting.Logger implementation that generates
- * log entries in the format of remoting.ChromotingEvent.
+ * |remoting.SessionLogger| is responsible for reporting telemetry entries for
+ * a Chromoting session.
  *
  * @param {remoting.ChromotingEvent.Role} role
  * @param {function(!Object)} writeLogEntry
  *
  * @constructor
- * @implements {remoting.Logger}
  */
 remoting.SessionLogger = function(role, writeLogEntry) {
   /** @private */
@@ -64,53 +63,83 @@ remoting.SessionLogger.prototype.setEntryPoint = function(entryPoint) {
   this.entryPoint_ = entryPoint;
 };
 
-/** @override {remoting.Logger} */
+/**
+ * @param {number} totalTime The value of time taken to complete authorization.
+ * @return {void} Nothing.
+ */
 remoting.SessionLogger.prototype.setAuthTotalTime = function(totalTime) {
   this.authTotalTime_ = totalTime;
 };
 
-/** @override {remoting.Logger} */
+/**
+ * @param {string} hostVersion Version of the host for current session.
+ * @return {void} Nothing.
+ */
 remoting.SessionLogger.prototype.setHostVersion = function(hostVersion) {
   this.hostVersion_ = hostVersion;
 };
 
-/** @override {remoting.Logger} */
+/**
+ * @param {remoting.ChromotingEvent.Os} hostOS Type of the OS the host
+ *        for the current session.
+ * @return {void} Nothing.
+ */
 remoting.SessionLogger.prototype.setHostOS = function(hostOS) {
   this.hostOS_ = hostOS;
 };
 
-/** @override {remoting.Logger} */
+/**
+ * @param {string} hostOSVersion Version of the host Os for current session.
+ * @return {void} Nothing.
+ */
+remoting.SessionLogger.prototype.setHostOSVersion = function(hostOSVersion) {
+  this.hostOSVersion_ = hostOSVersion;
+};
+
+/**
+ * @param {number} time Time in milliseconds since the last host status update.
+ * @return {void} Nothing.
+ */
 remoting.SessionLogger.prototype.setHostStatusUpdateElapsedTime =
     function(time) {
   this.hostStatusUpdateElapsedTime_ = time;
 };
 
-/** @override {remoting.Logger} */
-remoting.SessionLogger.prototype.setHostOSVersion = function(hostOSVersion) {
-  this.hostOSVersion_ = hostOSVersion;
-};
-
-/** @override {remoting.Logger} */
+/**
+ * Set the connection type (direct, stun relay).
+ *
+ * @param {string} connectionType
+ */
 remoting.SessionLogger.prototype.setConnectionType = function(connectionType) {
   this.connectionType_ = toConnectionType(connectionType);
 };
 
-/** @override {remoting.Logger} */
+/**
+ * @param {remoting.ChromotingEvent.Mode} mode
+ */
 remoting.SessionLogger.prototype.setLogEntryMode = function(mode) {
   this.mode_ = mode;
 };
 
-/** @override {remoting.Logger} */
-remoting.SessionLogger.prototype.setAuthMethod = function(authMethod) {
-  this.authMethod_ = authMethod;
+/**
+ * @param {remoting.ChromotingEvent.AuthMethod} method
+ */
+remoting.SessionLogger.prototype.setAuthMethod = function(method) {
+  this.authMethod_ = method;
 };
 
-/** @override {remoting.Logger} */
+/**
+ * @return {string} The current session id. This is random GUID, refreshed
+ *     every 24hrs.
+ */
 remoting.SessionLogger.prototype.getSessionId = function() {
   return this.sessionId_;
 };
 
-/** @override {remoting.Logger} */
+/**
+ * @param {remoting.SignalStrategy.Type} strategyType
+ * @param {remoting.FallbackSignalStrategy.Progress} progress
+ */
 remoting.SessionLogger.prototype.logSignalStrategyProgress =
     function(strategyType, progress) {
   this.maybeExpireSessionId_();
@@ -123,7 +152,15 @@ remoting.SessionLogger.prototype.logSignalStrategyProgress =
   this.log_(entry);
 };
 
-/** @override {remoting.Logger} */
+/**
+ * Logs a client session state change.
+ *
+ * @param {remoting.ClientSession.State} state
+ * @param {!remoting.Error} stateError
+ * @param {?remoting.ChromotingEvent.XmppError} xmppError The XMPP error
+ *     as described in http://xmpp.org/rfcs/rfc6120.html#stanzas-error.
+ *     Set if the connecton error originates from the an XMPP stanza error.
+ */
 remoting.SessionLogger.prototype.logClientSessionStateChange = function(
     state, stateError, xmppError) {
   this.logSessionStateChange(
@@ -154,7 +191,11 @@ remoting.SessionLogger.prototype.logSessionStateChange = function(
   this.statsAccumulator_.empty();
 };
 
-/** @override {remoting.Logger} */
+/**
+ * Logs connection statistics.
+ *
+ * @param {Object<number>} stats The connection statistics
+ */
 remoting.SessionLogger.prototype.logStatistics = function(stats) {
   this.maybeExpireSessionId_();
   // Store the statistics.
@@ -162,7 +203,7 @@ remoting.SessionLogger.prototype.logStatistics = function(stats) {
   // Send statistics to the server if they've been accumulating for at least
   // 60 seconds.
   if (this.statsAccumulator_.getTimeSinceFirstValue() >=
-      remoting.Logger.CONNECTION_STATS_ACCUMULATE_TIME) {
+      remoting.SessionLogger.CONNECTION_STATS_ACCUMULATE_TIME) {
     this.logAccumulatedStatistics_();
   }
 };
@@ -277,6 +318,7 @@ remoting.SessionLogger.prototype.fillEvent_ = function(entry) {
 
 /**
  * Sends a log entry to the server.
+ *
  * @param {remoting.ChromotingEvent} entry
  * @private
  */
@@ -286,6 +328,7 @@ remoting.SessionLogger.prototype.log_ = function(entry) {
 
 /**
  * Sets the session ID to a random string.
+ *
  * @private
  */
 remoting.SessionLogger.prototype.setSessionId_ = function() {
@@ -316,7 +359,7 @@ remoting.SessionLogger.prototype.clearSessionId_ = function() {
 remoting.SessionLogger.prototype.maybeExpireSessionId_ = function() {
   if ((this.sessionId_ !== '') &&
       (new Date().getTime() - this.sessionIdGenerationTime_ >=
-      remoting.Logger.MAX_SESSION_ID_AGE)) {
+      remoting.SessionLogger.MAX_SESSION_ID_AGE)) {
     // Log the old session ID.
     var entry = this.makeSessionIdOld_();
     this.log_(entry);
@@ -418,5 +461,12 @@ function toConnectionType(type) {
       throw new Error('Unknown ConnectionType :=' + type);
   }
 }
+
+// The maximum age of a session ID, in milliseconds.
+remoting.SessionLogger.MAX_SESSION_ID_AGE = 24 * 60 * 60 * 1000;
+
+// The time over which to accumulate connection statistics before logging them
+// to the server, in milliseconds.
+remoting.SessionLogger.CONNECTION_STATS_ACCUMULATE_TIME = 60 * 1000;
 
 })();

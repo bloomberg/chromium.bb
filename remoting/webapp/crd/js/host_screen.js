@@ -24,7 +24,7 @@ var hostSession_ = null;
 var lastShareWasCancelled_ = false;
 
 /**
- * @type {remoting.LogToServer} Logging instance for IT2Me host connection
+ * @type {remoting.SessionLogger} Logging instance for IT2Me host connection
  *     status.
  */
 var it2meLogger = null;
@@ -36,10 +36,11 @@ var it2meLogger = null;
  * to install them if necessary.
  */
 remoting.tryShare = function() {
-  ensureIT2MeLogger_();
-  it2meLogger.setSessionId();
-  it2meLogger.logClientSessionStateChange(
-      remoting.ClientSession.State.INITIALIZING, remoting.Error.none(), null);
+  it2meLogger = createLogger_();
+  it2meLogger.logSessionStateChange(
+      remoting.ChromotingEvent.SessionState.STARTED,
+      remoting.ChromotingEvent.ConnectionError.NONE,
+      null);
 
   /** @type {remoting.It2MeHostFacade} */
   var hostFacade = new remoting.It2MeHostFacade();
@@ -92,8 +93,10 @@ remoting.tryShareWithToken_ = function(hostFacade, token) {
   lastShareWasCancelled_ = false;
   onNatTraversalPolicyChanged_(true);  // Hide warning by default.
   remoting.setMode(remoting.AppMode.HOST_WAITING_FOR_CODE);
-  it2meLogger.logClientSessionStateChange(
-      remoting.ClientSession.State.CONNECTING, remoting.Error.none(), null);
+  it2meLogger.logSessionStateChange(
+      remoting.ChromotingEvent.SessionState.CONNECTING,
+      remoting.ChromotingEvent.ConnectionError.NONE,
+      null);
   document.getElementById('cancel-share-button').disabled = false;
   disableTimeoutCountdown_();
 
@@ -206,17 +209,19 @@ function logDebugInfo_(msg) {
 function showShareError_(error) {
   if (error.hasTag(remoting.Error.Tag.CANCELLED)) {
     remoting.setMode(remoting.AppMode.HOME);
-    it2meLogger.logClientSessionStateChange(
-        remoting.ClientSession.State.CONNECTION_CANCELED,
-        remoting.Error.none(),
+    it2meLogger.logSessionStateChange(
+        remoting.ChromotingEvent.SessionState.CONNECTION_CANCELED,
+        remoting.ChromotingEvent.ConnectionError.NONE,
         null);
   } else {
     var errorDiv = document.getElementById('host-plugin-error');
     l10n.localizeElementFromTag(errorDiv, error.getTag());
     console.error('Sharing error: ' + error.toString());
     remoting.setMode(remoting.AppMode.HOST_SHARE_FAILED);
-    it2meLogger.logClientSessionStateChange(
-        remoting.ClientSession.State.FAILED, error, null);
+    it2meLogger.logSessionStateChange(
+        remoting.ChromotingEvent.SessionState.CONNECTION_FAILED,
+        error.toConnectionError(),
+        null);
   }
 
   cleanUp();
@@ -247,9 +252,9 @@ remoting.cancelShare = function() {
   remoting.lastShareWasCancelled = true;
   try {
     hostSession_.disconnect();
-    it2meLogger.logClientSessionStateChange(
-        remoting.ClientSession.State.CONNECTION_CANCELED,
-        remoting.Error.none(),
+    it2meLogger.logSessionStateChange(
+        remoting.ChromotingEvent.SessionState.CONNECTION_CANCELED,
+        remoting.ChromotingEvent.ConnectionError.NONE,
         null);
   } catch (/** @type {*} */ error) {
     console.error('Error disconnecting: ' + error +
@@ -360,26 +365,17 @@ function onNatTraversalPolicyChanged_(enabled) {
 }
 
 /**
- * Create an IT2Me LogToServer instance if one does not already exist.
+ * Create an IT2Me SessionLogger instance.
+ *
+ * @return {remoting.SessionLogger}
  */
-function ensureIT2MeLogger_() {
-  if (it2meLogger) {
-    return;
-  }
-
-  var xmppConnection = new remoting.XmppConnection();
-  var tokenPromise = remoting.identity.getToken();
-  var emailPromise = remoting.identity.getEmail();
-  tokenPromise.then(function(/** string */ token) {
-    emailPromise.then(function(/** string */ email) {
-      xmppConnection.connect(remoting.settings.XMPP_SERVER, email, token);
-    });
-  });
-
-  var bufferedSignalStrategy =
-      new remoting.BufferedSignalStrategy(xmppConnection);
-  it2meLogger = new remoting.LogToServer(bufferedSignalStrategy, true);
-  it2meLogger.setLogEntryMode(remoting.ChromotingEvent.Mode.IT2ME);
+function createLogger_() {
+  // Create a new logger for each session to refresh the session id.
+  var logger = new remoting.SessionLogger(
+      remoting.ChromotingEvent.Role.HOST,
+      remoting.TelemetryEventWriter.Client.write);
+  logger.setLogEntryMode(remoting.ChromotingEvent.Mode.IT2ME);
+  return logger;
 }
 
 })();

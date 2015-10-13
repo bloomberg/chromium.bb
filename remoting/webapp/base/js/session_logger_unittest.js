@@ -167,7 +167,7 @@ QUnit.test('logClientSessionStateChange() should handle sessionId change.',
   var oldSessionId = logger.getSessionId();
 
   // Expires the session id.
-  clock.tick(remoting.Logger.MAX_SESSION_ID_AGE + 100);
+  clock.tick(remoting.SessionLogger.MAX_SESSION_ID_AGE + 100);
 
   // Logs the event.
   logger.logClientSessionStateChange(
@@ -297,7 +297,7 @@ QUnit.test('logStatistics()', function(assert) {
 
   sinon.assert.notCalled(logWriterSpy);
   // Stats should only be accumulated at |CONNECTION_STATS_ACCUMULATE_TIME|.
-  clock.tick(remoting.Logger.CONNECTION_STATS_ACCUMULATE_TIME + 10);
+  clock.tick(remoting.SessionLogger.CONNECTION_STATS_ACCUMULATE_TIME + 10);
 
   logger.logStatistics({
     videoBandwidth: 3.0,
@@ -348,7 +348,7 @@ QUnit.test('logStatistics() should not log if all stats are zeros ',
     roundtripLatency: 0.0
   });
 
-  clock.tick(remoting.Logger.CONNECTION_STATS_ACCUMULATE_TIME + 10);
+  clock.tick(remoting.SessionLogger.CONNECTION_STATS_ACCUMULATE_TIME + 10);
 
   logger.logStatistics({
     videoBandwidth: 0.0,

@@ -214,10 +214,7 @@
     # Logging and stats JavaScript files.
     'remoting_webapp_shared_js_logging_files': [
       'webapp/base/js/chromoting_event.js',
-      'webapp/base/js/logger.js',
       'webapp/base/js/format_iq.js',
-      'webapp/base/js/log_to_server.js',
-      'webapp/base/js/server_log_entry.js',
       'webapp/base/js/session_logger.js',
       'webapp/base/js/stats_accumulator.js',
     ],
@@ -277,7 +274,6 @@
     # Files for controlling the local machine as a host.
     # Includes both it2me and me2me files.
     'remoting_webapp_js_host_control_files': [
-      'webapp/crd/js/buffered_signal_strategy.js',
       'webapp/crd/js/host_controller.js',
       'webapp/crd/js/host_daemon_facade.js',
       'webapp/crd/js/host_screen.js',
@@ -292,7 +288,6 @@
     # Files for controlling the local it2me host.
     # Included by public_session.html.
     'remoting_webapp_js_it2me_host_control_files': [
-      'webapp/crd/js/buffered_signal_strategy.js',
       'webapp/crd/js/host_screen.js',
       'webapp/crd/js/host_session.js',
       'webapp/crd/js/host_install_dialog.js',

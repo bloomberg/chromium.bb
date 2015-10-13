@@ -73,7 +73,7 @@ remoting.FallbackSignalStrategy = function(primary,
   /** @private {number} */
   this.primaryConnectTimerId_ = 0;
 
-  /** @private {remoting.Logger} */
+  /** @private */
   this.logger_ = new remoting.SessionLogger(
       remoting.ChromotingEvent.Role.CLIENT,
       remoting.TelemetryEventWriter.Client.write
