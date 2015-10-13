@@ -13,6 +13,12 @@
 
 namespace gcm {
 
+// Statistics are logged to UMA with this string as part of histogram name. They
+// can all be found under LevelDB.*.GCMKeyStore. Changing this needs to
+// synchronize with histograms.xml, AND will also become incompatible with older
+// browsers still reporting the previous values.
+const char kDatabaseUMAClientName[] = "GCMKeyStore";
+
 enum class GCMKeyStore::State {
    UNINITIALIZED,
    INITIALIZING,
@@ -174,8 +180,9 @@ void GCMKeyStore::LazyInitialize(const base::Closure& done_closure) {
   database_.reset(new leveldb_proto::ProtoDatabaseImpl<EncryptionData>(
       blocking_task_runner_));
 
-  database_->Init(key_store_path_, base::Bind(&GCMKeyStore::DidInitialize,
-                                              weak_factory_.GetWeakPtr()));
+  database_->Init(
+      kDatabaseUMAClientName, key_store_path_,
+      base::Bind(&GCMKeyStore::DidInitialize, weak_factory_.GetWeakPtr()));
 }
 
 void GCMKeyStore::DidInitialize(bool success) {

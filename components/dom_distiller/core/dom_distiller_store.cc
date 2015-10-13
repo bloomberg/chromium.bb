@@ -25,6 +25,14 @@ using syncer::SyncDataList;
 using syncer::SyncError;
 using syncer::SyncMergeResult;
 
+namespace {
+// Statistics are logged to UMA with this string as part of histogram name. They
+// can all be found under LevelDB.*.DomDistillerStore. Changing this needs to
+// synchronize with histograms.xml, AND will also become incompatible with older
+// browsers still reporting the previous values.
+const char kDatabaseUMAClientName[] = "DomDistillerStore";
+}
+
 namespace dom_distiller {
 
 DomDistillerStore::DomDistillerStore(
@@ -34,8 +42,9 @@ DomDistillerStore::DomDistillerStore(
       database_loaded_(false),
       attachment_store_(syncer::AttachmentStore::CreateInMemoryStore()),
       weak_ptr_factory_(this) {
-  database_->Init(database_dir, base::Bind(&DomDistillerStore::OnDatabaseInit,
-                                           weak_ptr_factory_.GetWeakPtr()));
+  database_->Init(kDatabaseUMAClientName, database_dir,
+                  base::Bind(&DomDistillerStore::OnDatabaseInit,
+                             weak_ptr_factory_.GetWeakPtr()));
 }
 
 DomDistillerStore::DomDistillerStore(
@@ -47,8 +56,9 @@ DomDistillerStore::DomDistillerStore(
       attachment_store_(syncer::AttachmentStore::CreateInMemoryStore()),
       model_(initial_data),
       weak_ptr_factory_(this) {
-  database_->Init(database_dir, base::Bind(&DomDistillerStore::OnDatabaseInit,
-                                           weak_ptr_factory_.GetWeakPtr()));
+  database_->Init(kDatabaseUMAClientName, database_dir,
+                  base::Bind(&DomDistillerStore::OnDatabaseInit,
+                             weak_ptr_factory_.GetWeakPtr()));
 }
 
 DomDistillerStore::~DomDistillerStore() {}

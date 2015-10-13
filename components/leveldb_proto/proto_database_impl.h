@@ -40,7 +40,8 @@ class ProtoDatabaseImpl : public ProtoDatabase<T> {
   // ProtoDatabase implementation.
   // TODO(cjhopman): Perhaps Init() shouldn't be exposed to users and not just
   //     part of the constructor
-  void Init(const base::FilePath& database_dir,
+  void Init(const char* client_name,
+            const base::FilePath& database_dir,
             const typename ProtoDatabase<T>::InitCallback& callback) override;
   void UpdateEntries(
       scoped_ptr<typename ProtoDatabase<T>::KeyEntryVector> entries_to_save,
@@ -153,10 +154,12 @@ ProtoDatabaseImpl<T>::~ProtoDatabaseImpl() {
 
 template <typename T>
 void ProtoDatabaseImpl<T>::Init(
+    const char* client_name,
     const base::FilePath& database_dir,
     const typename ProtoDatabase<T>::InitCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  InitWithDatabase(make_scoped_ptr(new LevelDB()), database_dir, callback);
+  InitWithDatabase(make_scoped_ptr(new LevelDB(client_name)), database_dir,
+                   callback);
 }
 
 template <typename T>

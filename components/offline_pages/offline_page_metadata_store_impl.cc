@@ -4,6 +4,9 @@
 
 #include "components/offline_pages/offline_page_metadata_store_impl.h"
 
+#include <string>
+#include <vector>
+
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
@@ -21,6 +24,14 @@
 #include "url/gurl.h"
 
 using leveldb_proto::ProtoDatabase;
+
+namespace {
+// Statistics are logged to UMA with this string as part of histogram name. They
+// can all be found under LevelDB.*.OfflinePageMetadataStore. Changing this
+// needs to synchronize with histograms.xml, AND will also become incompatible
+// with older browsers still reporting the previous values.
+const char kDatabaseUMAClientName[] = "OfflinePageMetadataStore";
+}
 
 namespace offline_pages {
 namespace {
@@ -125,7 +136,7 @@ OfflinePageMetadataStoreImpl::OfflinePageMetadataStoreImpl(
     scoped_ptr<ProtoDatabase<OfflinePageEntry>> database,
     const base::FilePath& database_dir)
     : database_(database.Pass()), weak_ptr_factory_(this) {
-  database_->Init(database_dir,
+  database_->Init(kDatabaseUMAClientName, database_dir,
                   base::Bind(&OfflinePageMetadataStoreImpl::OnInitDone,
                              weak_ptr_factory_.GetWeakPtr()));
 }

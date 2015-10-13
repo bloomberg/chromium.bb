@@ -35,7 +35,8 @@ class ProtoDatabase {
 
   // Asynchronously initializes the object. |callback| will be invoked on the
   // calling thread when complete.
-  virtual void Init(const base::FilePath& database_dir,
+  virtual void Init(const char* client_name,
+                    const base::FilePath& database_dir,
                     const InitCallback& callback) = 0;
 
   // Asynchronously saves |entries_to_save| and deletes entries from

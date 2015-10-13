@@ -10,6 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/metrics/histogram.h"
 #include "base/strings/string_split.h"
 #include "base/threading/thread_checker.h"
 #include "third_party/leveldatabase/env_chromium.h"
@@ -24,7 +25,14 @@
 
 namespace leveldb_proto {
 
-LevelDB::LevelDB() {}
+LevelDB::LevelDB(const char* client_name) : open_histogram_(nullptr) {
+  // Used in lieu of UMA_HISTOGRAM_ENUMERATION because the histogram name is
+  // not a constant.
+  open_histogram_ = base::LinearHistogram::FactoryGet(
+      std::string("LevelDB.Open.") + client_name, 1,
+      leveldb_env::LEVELDB_STATUS_MAX, leveldb_env::LEVELDB_STATUS_MAX + 1,
+      base::Histogram::kUmaTargetedHistogramFlag);
+}
 
 LevelDB::~LevelDB() {
   DFAKE_SCOPED_LOCK(thread_checker_);
@@ -38,6 +46,8 @@ bool LevelDB::InitWithOptions(const base::FilePath& database_dir,
 
   leveldb::DB* db = NULL;
   leveldb::Status status = leveldb::DB::Open(options, path, &db);
+  if (open_histogram_)
+    open_histogram_->Add(leveldb_env::GetLevelDBStatusUMAValue(status));
   if (status.IsCorruption()) {
     base::DeleteFile(database_dir, true);
     status = leveldb::DB::Open(options, path, &db);

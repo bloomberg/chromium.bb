@@ -30,13 +30,15 @@ namespace {
 
 typedef std::map<std::string, TestProto> EntryMap;
 
+const char kTestLevelDBClientName[] = "Test";
+
 class MockDB : public LevelDB {
  public:
   MOCK_METHOD1(Init, bool(const base::FilePath&));
   MOCK_METHOD2(Save, bool(const KeyValueVector&, const KeyVector&));
   MOCK_METHOD1(Load, bool(std::vector<std::string>*));
 
-  MockDB() {
+  MockDB() : LevelDB(kTestLevelDBClientName) {
     ON_CALL(*this, Init(_)).WillByDefault(Return(true));
     ON_CALL(*this, Save(_, _)).WillByDefault(Return(true));
     ON_CALL(*this, Load(_)).WillByDefault(Return(true));
@@ -340,8 +342,9 @@ TEST(ProtoDatabaseImplThreadingTest, TestDBDestruction) {
 
   MockDatabaseCaller caller;
   EXPECT_CALL(caller, InitCallback(_));
-  db->Init(temp_dir.path(), base::Bind(&MockDatabaseCaller::InitCallback,
-                                       base::Unretained(&caller)));
+  db->Init(
+      kTestLevelDBClientName, temp_dir.path(),
+      base::Bind(&MockDatabaseCaller::InitCallback, base::Unretained(&caller)));
 
   db.reset();
 
@@ -369,12 +372,12 @@ void TestLevelDBSaveAndLoad(bool close_after_save) {
         std::make_pair(pair.second.id(), pair.second.SerializeAsString()));
   }
 
-  scoped_ptr<LevelDB> db(new LevelDB());
+  scoped_ptr<LevelDB> db(new LevelDB(kTestLevelDBClientName));
   EXPECT_TRUE(db->Init(temp_dir.path()));
   EXPECT_TRUE(db->Save(save_entries, remove_keys));
 
   if (close_after_save) {
-    db.reset(new LevelDB());
+    db.reset(new LevelDB(kTestLevelDBClientName));
     EXPECT_TRUE(db->Init(temp_dir.path()));
   }
 
@@ -405,7 +408,7 @@ TEST(ProtoDatabaseImplLevelDBTest, TestDBInitFail) {
 
   leveldb::Options options;
   options.create_if_missing = false;
-  scoped_ptr<LevelDB> db(new LevelDB());
+  scoped_ptr<LevelDB> db(new LevelDB(kTestLevelDBClientName));
 
   KeyValueVector save_entries;
   std::vector<std::string> load_entries;
@@ -417,7 +420,7 @@ TEST(ProtoDatabaseImplLevelDBTest, TestDBInitFail) {
 }
 
 TEST(ProtoDatabaseImplLevelDBTest, TestMemoryDatabase) {
-  scoped_ptr<LevelDB> db(new LevelDB());
+  scoped_ptr<LevelDB> db(new LevelDB(kTestLevelDBClientName));
 
   std::vector<std::string> load_entries;
 
