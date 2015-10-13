@@ -15,23 +15,13 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 
-TabStripModelStatsRecorder::TabStripModelStatsRecorder() {
-  BrowserList::AddObserver(this);
+TabStripModelStatsRecorder::TabStripModelStatsRecorder()
+    : browser_tab_strip_tracker_(this, nullptr, nullptr) {
+  browser_tab_strip_tracker_.Init(
+      BrowserTabStripTracker::InitWith::ALL_BROWERS);
 }
 
 TabStripModelStatsRecorder::~TabStripModelStatsRecorder() {
-  for (chrome::BrowserIterator iterator; !iterator.done(); iterator.Next())
-    iterator->tab_strip_model()->RemoveObserver(this);
-
-  BrowserList::RemoveObserver(this);
-}
-
-void TabStripModelStatsRecorder::OnBrowserAdded(Browser* browser) {
-  browser->tab_strip_model()->AddObserver(this);
-}
-
-void TabStripModelStatsRecorder::OnBrowserRemoved(Browser* browser) {
-  browser->tab_strip_model()->RemoveObserver(this);
 }
 
 class TabStripModelStatsRecorder::TabInfo

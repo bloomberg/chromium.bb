@@ -8,8 +8,7 @@
 #include <vector>
 
 #include "base/macros.h"
-
-#include "chrome/browser/ui/browser_list_observer.h"
+#include "chrome/browser/ui/browser_tab_strip_tracker.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 
 namespace content {
@@ -19,8 +18,7 @@ class WebContents;
 // TabStripModelStatsRecorder records user tab interaction stats.
 // In particular, we record tab's lifetime and state transition probability to
 // study user interaction with background tabs. (crbug.com/517335)
-class TabStripModelStatsRecorder : public chrome::BrowserListObserver,
-                                   public TabStripModelObserver {
+class TabStripModelStatsRecorder : public TabStripModelObserver {
  public:
   // TabState represents a lifecycle of a tab in TabStripModel.
   // This should match {Current,Next}TabState defined in
@@ -50,10 +48,6 @@ class TabStripModelStatsRecorder : public chrome::BrowserListObserver,
   ~TabStripModelStatsRecorder() override;
 
  private:
-  // chrome::BrowserListObserver implementation.
-  void OnBrowserAdded(Browser* browser) override;
-  void OnBrowserRemoved(Browser* browser) override;
-
   // TabStripModelObserver implementation.
   void TabClosingAt(TabStripModel* tab_strip_model,
                     content::WebContents* contents,
@@ -70,6 +64,8 @@ class TabStripModelStatsRecorder : public chrome::BrowserListObserver,
   class TabInfo;
 
   std::vector<content::WebContents*> active_tab_history_;
+
+  BrowserTabStripTracker browser_tab_strip_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(TabStripModelStatsRecorder);
 };
