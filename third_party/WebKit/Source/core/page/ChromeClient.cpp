@@ -78,10 +78,10 @@ void ChromeClient::setWindowFeatures(const WindowFeatures& features)
     setResizable(features.resizable);
 }
 
-template<typename... Args>
+template<typename... DelegateArgs, typename... Args>
 bool openJavaScriptDialog(
     ChromeClient* chromeClient,
-    bool(ChromeClient::*function)(LocalFrame*, const String& message, Args...),
+    bool(ChromeClient::*function)(LocalFrame*, const String& message, DelegateArgs...),
     LocalFrame& frame,
     const String& message,
     ChromeClient::DialogType dialogType,
