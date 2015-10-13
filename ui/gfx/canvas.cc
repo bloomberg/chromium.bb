@@ -531,14 +531,6 @@ void Canvas::TileImageInt(const ImageSkia& image,
   canvas_->drawRect(dest_rect, paint);
 }
 
-NativeDrawingContext Canvas::BeginPlatformPaint() {
-  return skia::BeginPlatformPaint(canvas_);
-}
-
-void Canvas::EndPlatformPaint() {
-  skia::EndPlatformPaint(canvas_);
-}
-
 void Canvas::Transform(const gfx::Transform& transform) {
   canvas_->concat(transform.matrix());
 }

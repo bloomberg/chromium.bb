@@ -389,14 +389,6 @@ class GFX_EXPORT Canvas {
                     int w,
                     int h);
 
-  // Returns a native drawing context for platform specific drawing routines to
-  // use. Must be balanced by a call to EndPlatformPaint().
-  NativeDrawingContext BeginPlatformPaint();
-
-  // Signifies the end of platform drawing using the native drawing context
-  // returned by BeginPlatformPaint().
-  void EndPlatformPaint();
-
   // Apply transformation on the canvas.
   void Transform(const Transform& transform);
 
