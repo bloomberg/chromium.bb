@@ -327,14 +327,19 @@ test.util.sync.fakeEvent = function(contentWindow,
  * @param {string} targetQuery Query to specify the element.
  * @param {string} keyIdentifier Identifier of the emulated key.
  * @param {boolean} ctrl Whether CTRL should be pressed, or not.
+ * @param {boolean} shift whether SHIFT should be pressed, or not.
  * @param {string=} opt_iframeQuery Optional iframe selector.
  * @return {boolean} True if the event is sent to the target, false otherwise.
  */
 test.util.sync.fakeKeyDown = function(
-    contentWindow, targetQuery, keyIdentifier, ctrl, opt_iframeQuery) {
-  var event = new KeyboardEvent(
-      'keydown',
-      { bubbles: true, keyIdentifier: keyIdentifier, ctrlKey: ctrl });
+    contentWindow, targetQuery, keyIdentifier, ctrl, shift, opt_iframeQuery) {
+  var event = new KeyboardEvent('keydown',
+      {
+        bubbles: true,
+        keyIdentifier: keyIdentifier,
+        ctrlKey: ctrl,
+        shiftKey: shift
+      });
   return test.util.sync.sendEvent(
       contentWindow, targetQuery, event, opt_iframeQuery);
 };

@@ -212,7 +212,8 @@ function renameFile(windowId, oldName, newName) {
   return remoteCall.callRemoteTestUtil('selectFile', windowId, [oldName]).
     then(function() {
       // Push Ctrl+Enter.
-      return remoteCall.fakeKeyDown(windowId, '#detail-table', 'Enter', true);
+      return remoteCall.fakeKeyDown(
+          windowId, '#detail-table', 'Enter', true, false);
     }).then(function() {
       // Wait for rename text field.
       return remoteCall.waitForElement(windowId, 'input.rename');
@@ -222,7 +223,8 @@ function renameFile(windowId, oldName, newName) {
           'inputText', windowId, ['input.rename', newName]);
     }).then(function() {
       // Push Enter.
-      return remoteCall.fakeKeyDown(windowId, 'input.rename', 'Enter', false);
+      return remoteCall.fakeKeyDown(
+          windowId, 'input.rename', 'Enter', false, false);
     });
 }
 
@@ -242,7 +244,7 @@ function testRenameNewDirectory(path, initialEntrySet, pathInBreadcrumb) {
     var windowId = results.windowId;
     return remoteCall.waitForFiles(windowId, expectedRows).then(function() {
       return remoteCall.fakeKeyDown(
-          windowId, '#list-container', 'U+0045', true);
+          windowId, '#list-container', 'U+0045', true, false);
     }).then(function() {
       // Wait for rename text field.
       return remoteCall.waitForElement(windowId, 'input.rename');
@@ -252,11 +254,12 @@ function testRenameNewDirectory(path, initialEntrySet, pathInBreadcrumb) {
           'inputText', windowId, ['input.rename', 'foo']);
     }).then(function() {
       // Press Enter.
-      return remoteCall.fakeKeyDown(windowId, 'input.rename', 'Enter', false);
+      return remoteCall.fakeKeyDown(
+          windowId, 'input.rename', 'Enter', false, false);
     }).then(function() {
       // Press Enter again to try to get into the new directory.
-      return remoteCall.fakeKeyDown(windowId, '#list-container', 'Enter',
-          false);
+      return remoteCall.fakeKeyDown(
+          windowId, '#list-container', 'Enter', false, false);
     }).then(function() {
       // Confirm that it doesn't move the directory since it's in renaming
       // process.
@@ -268,7 +271,7 @@ function testRenameNewDirectory(path, initialEntrySet, pathInBreadcrumb) {
     }).then(function() {
       // Press Enter again.
       return remoteCall.fakeKeyDown(windowId, '#list-container', 'Enter',
-          false);
+          false, false);
     }).then(function() {
       // Confirm that it moves to renamed directory.
       return remoteCall.waitUntilCurrentDirectoryIsChanged(windowId,

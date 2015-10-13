@@ -150,6 +150,88 @@ function emptySpaceClickUnselectsInThumbnailMode(testVolumeName, volumeType) {
 }
 
 /**
+ * Selects multiple images with shift key.
+ * @param {string} testVolumeName Test volume name.
+ * @param {VolumeManagerCommon.VolumeType} volumeType Volume type.
+ * @return {!Promise} Promise to be fulfilled with on success.
+ */
+function selectMultipleImagesWithShiftKey(testVolumeName, volumeType) {
+  var image4 = new TestEntryInfo(
+      EntryType.FILE, 'image3.jpg', 'image4.jpg',
+      'image/jpeg', SharedOption.NONE, 'Jan 18, 2038, 1:02 AM',
+      'image3.jpg', '3 KB', 'JPEG image');
+
+  var launchedPromise = launch(testVolumeName, volumeType,
+      [ENTRIES.image3, image4, ENTRIES.desktop], [ENTRIES.image3]);
+  var appId;
+  return launchedPromise.then(function(result) {
+    // Confirm initial state after the launch.
+    appId = result.appId;
+    return gallery.waitForSlideImage(appId, 640, 480, 'image3');
+  }).then(function() {
+    // Swith to thumbnail mode.
+    return gallery.waitAndClickElement(appId, 'button.mode');
+  }).then(function() {
+    // Confirm that image3 is selected first: [1] 2  3
+    return gallery.callRemoteTestUtil('queryAllElements', appId,
+        ['.thumbnail-view > ul > li.selected']);
+  }).then(function(results) {
+    chrome.test.assertEq(1, results.length);
+    chrome.test.assertEq('image3.jpg',
+        results[0].attributes['title']);
+
+    // Press Right key with shift.
+    return gallery.fakeKeyDown(
+        appId, '.thumbnail-view', 'Right', false, true /* Shift */);
+  }).then(function() {
+    // Confirm 2 images are selected: [1][2] 3
+    return gallery.callRemoteTestUtil('queryAllElements', appId,
+        ['.thumbnail-view > ul > li.selected']);
+  }).then(function(results) {
+    chrome.test.assertEq(2, results.length);
+    chrome.test.assertEq('image3.jpg', results[0].attributes['title']);
+    chrome.test.assertEq('image4.jpg', results[1].attributes['title']);
+
+    // Press Right key with shift.
+    return gallery.fakeKeyDown(
+        appId, '.thumbnail-view', 'Right', false, true /* Shift */);
+  }).then(function() {
+    // Confirm 3 images are selected: [1][2][3]
+    return gallery.callRemoteTestUtil('queryAllElements', appId,
+        ['.thumbnail-view > ul > li.selected']);
+  }).then(function(results) {
+    chrome.test.assertEq(3, results.length);
+    chrome.test.assertEq('image3.jpg', results[0].attributes['title']);
+    chrome.test.assertEq('image4.jpg', results[1].attributes['title']);
+    chrome.test.assertEq('My Desktop Background.png',
+        results[2].attributes['title']);
+
+    // Press Left key with shift.
+    return gallery.fakeKeyDown(
+        appId, '.thumbnail-view', 'Left', false, true /* Shift */);
+  }).then(function() {
+    // Confirm 2 images are selected: [1][2] 3
+    return gallery.callRemoteTestUtil('queryAllElements', appId,
+        ['.thumbnail-view > ul > li.selected']);
+  }).then(function(results) {
+    chrome.test.assertEq(2, results.length);
+    chrome.test.assertEq('image3.jpg', results[0].attributes['title']);
+    chrome.test.assertEq('image4.jpg', results[1].attributes['title']);
+
+    // Press Right key without shift.
+    return gallery.fakeKeyDown(appId, '.thumbnail-view', 'Right', false, false);
+  }).then(function() {
+    // Confirm only the last image is selected: 1  2 [3]
+    return gallery.callRemoteTestUtil('queryAllElements', appId,
+        ['.thumbnail-view > ul > li.selected']);
+  }).then(function(results) {
+    chrome.test.assertEq(1, results.length);
+    chrome.test.assertEq('My Desktop Background.png',
+        results[0].attributes['title']);
+  });
+}
+
+/**
  * Rename test in thumbnail mode for Downloads.
  * @return {!Promise} Promise to be fulfilled with on success.
  */
@@ -213,4 +295,12 @@ testcase.emptySpaceClickUnselectsInThumbnailModeOnDownloads = function() {
  */
 testcase.emptySpaceClickUnselectsInThumbnailModeOnDrive = function() {
   return emptySpaceClickUnselectsInThumbnailMode('drive', 'drive');
+};
+
+/**
+ * Selects multiple images with shift key in Downloads.
+ * @return {!Promise} Promise to be fulfilled with on success.
+ */
+testcase.selectMultipleImagesWithShiftKeyOnDownloads = function() {
+  return selectMultipleImagesWithShiftKey('local', 'downloads');
 };

@@ -203,13 +203,14 @@ RemoteCall.prototype.waitForElementLost =
  * @param {string} query Query for the target element.
  * @param {string} keyIdentifer Key identifier.
  * @param {boolean} ctrlKey Control key flag.
+ * @param {boolean} shiftKey Shift key flag.
  * @return {Promise} Promise to be fulfilled or rejected depending on the
  *     result.
  */
 RemoteCall.prototype.fakeKeyDown =
-    function(windowId, query, keyIdentifer, ctrlKey) {
+    function(windowId, query, keyIdentifer, ctrlKey, shiftKey) {
   var resultPromise = this.callRemoteTestUtil(
-      'fakeKeyDown', windowId, [query, keyIdentifer, ctrlKey]);
+      'fakeKeyDown', windowId, [query, keyIdentifer, ctrlKey, shiftKey]);
   return resultPromise.then(function(result) {
     if (result)
       return true;

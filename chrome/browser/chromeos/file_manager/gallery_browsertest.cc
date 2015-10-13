@@ -375,6 +375,19 @@ IN_PROC_BROWSER_TEST_F(GalleryBrowserTest,
   StartTest();
 }
 
+#if defined(DISABLE_SLOW_FILESAPP_TESTS)
+#define MAYBE_SelectMultipleImagesWithShiftKeyOnDownloads \
+  DISABLED_SelectMultipleImagesWithShiftKeyOnDownloads
+#else
+#define MAYBE_SelectMultipleImagesWithShiftKeyOnDownloads \
+  SelectMultipleImagesWithShiftKeyOnDownloads
+#endif
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTest,
+                       MAYBE_SelectMultipleImagesWithShiftKeyOnDownloads) {
+  set_test_case_name("selectMultipleImagesWithShiftKeyOnDownloads");
+  StartTest();
+}
+
 IN_PROC_BROWSER_TEST_F(GalleryBrowserTestInGuestMode,
                        SlideshowTraversalOnDownloads) {
   set_test_case_name("slideshowTraversalOnDownloads");

@@ -354,8 +354,10 @@ ThumbnailView.prototype.onScroll_ = function(event) {
  * Moves selection to specified direction.
  * @param {string} direction Direction. Should be 'Left', 'Right', 'Up', or
  *     'Down'.
+ * @param {boolean} selectRange True to perform range selection.
+ * @private
  */
-ThumbnailView.prototype.moveSelection = function(direction) {
+ThumbnailView.prototype.moveSelection_ = function(direction, selectRange) {
   var step;
   if ((direction === 'Left' && !isRTL()) ||
       (direction === 'Right' && isRTL()) ||
@@ -370,7 +372,7 @@ ThumbnailView.prototype.moveSelection = function(direction) {
   }
 
   var vertical = direction === 'Up' || direction === 'Down';
-  var baseIndex = this.selectionModel_.selectedIndex;
+  var baseIndex = this.selectionModel_.leadIndex;
   var baseRect = this.getThumbnailRect(baseIndex);
   var baseCenter = baseRect.left + baseRect.width / 2;
   var minHorizontalGap = Number.MAX_VALUE;
@@ -412,7 +414,17 @@ ThumbnailView.prototype.moveSelection = function(direction) {
 
   if (index !== null) {
     // Move selection.
-    this.selectionModel_.selectedIndex = index;
+    if (selectRange && this.selectionModel_.anchorIndex !== -1) {
+      // Since anchorIndex will be set to 0 by unselectAll, copy the value.
+      var anchorIndex = this.selectionModel_.anchorIndex;
+      this.selectionModel_.unselectAll();
+      this.selectionModel_.selectRange(anchorIndex, index);
+      this.selectionModel_.anchorIndex = anchorIndex;
+    } else {
+      this.selectionModel_.selectedIndex = index;
+      this.selectionModel_.anchorIndex = index;
+    }
+
     this.selectionModel_.leadIndex = index;
     this.scrollTo_(index);
   }
@@ -606,6 +618,7 @@ ThumbnailView.prototype.onDblClick_ = function(event) {
 /**
  * Handles keydown event.
  * @param {!Event} event
+ * @private
  */
 ThumbnailView.prototype.onKeydown_ = function(event) {
   var keyString = util.getKeyModifiers(event) + event.keyIdentifier;
@@ -615,7 +628,11 @@ ThumbnailView.prototype.onKeydown_ = function(event) {
     case 'Left':
     case 'Up':
     case 'Down':
-      this.moveSelection(event.keyIdentifier);
+    case 'Shift-Right':
+    case 'Shift-Left':
+    case 'Shift-Up':
+    case 'Shift-Down':
+      this.moveSelection_(event.keyIdentifier, event.shiftKey);
       event.stopPropagation();
       break;
     case 'Ctrl-U+0041': // Crtl+A
@@ -638,6 +655,7 @@ ThumbnailView.prototype.selectByThumbnail_ = function(
   if (selectionMode === ThumbnailView.SelectionMode.SINGLE) {
     this.selectionModel_.unselectAll();
     this.selectionModel_.setIndexSelected(index, true);
+    this.selectionModel_.anchorIndex = index;
   } else if (selectionMode === ThumbnailView.SelectionMode.MULTIPLE) {
     this.selectionModel_.setIndexSelected(index,
         this.selectionModel_.selectedIndexes.indexOf(index) === -1);
