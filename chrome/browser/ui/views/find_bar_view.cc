@@ -36,6 +36,9 @@
 #include "ui/native_theme/common_theme.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/resources/grit/ui_resources.h"
+#include "ui/views/animation/ink_drop_animation_controller.h"
+#include "ui/views/animation/ink_drop_animation_controller_factory.h"
+#include "ui/views/animation/ink_drop_host.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/bubble/bubble_border.h"
@@ -97,6 +100,26 @@ const SkColor kSeparatorColor = SkColorSetARGB(0x26, 0, 0, 0);
 // number brings the width on a "regular fonts" system to about 300px.
 const int kDefaultCharWidth = 43;
 
+class FindBarButton : public views::ImageButton, public views::InkDropHost {
+ public:
+  explicit FindBarButton(views::ButtonListener* listener);
+  ~FindBarButton() override;
+
+ private:
+  void Layout() override;
+  void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
+  void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override;
+  bool OnMousePressed(const ui::MouseEvent& event) override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
+  void OnMouseReleased(const ui::MouseEvent& event) override;
+  void NotifyClick(const ui::Event& event) override;
+
+  // Animation controller for the ink drop ripple effect.
+  scoped_ptr<views::InkDropAnimationController> ink_drop_animation_controller_;
+
+  DISALLOW_COPY_AND_ASSIGN(FindBarButton);
+};
+
 // The match count label is like a normal label, but can process events (which
 // makes it easier to forward events to the text input --- see
 // FindBarView::TargetForRect).
@@ -113,6 +136,104 @@ class MatchCountLabel : public views::Label {
 };
 
 }  // namespace
+
+////////////////////////////////////////////////////////////////////////////////
+// FindBarButton, public:
+
+FindBarButton::FindBarButton(views::ButtonListener* listener)
+    : views::ImageButton(listener),
+      ink_drop_animation_controller_(
+          views::InkDropAnimationControllerFactory::
+              CreateInkDropAnimationController(this)) {
+  const int kInkDropLargeSize = 32;
+  const int kInkDropLargeCornerRadius = 4;
+  const int kInkDropSmallSize = 24;
+  const int kInkDropSmallCornerRadius = 2;
+
+  ink_drop_animation_controller_->SetInkDropSize(
+      gfx::Size(kInkDropLargeSize, kInkDropLargeSize),
+      kInkDropLargeCornerRadius,
+      gfx::Size(kInkDropSmallSize, kInkDropSmallSize),
+      kInkDropSmallCornerRadius);
+}
+
+FindBarButton::~FindBarButton() {}
+
+////////////////////////////////////////////////////////////////////////////////
+// FindBarButton, private:
+
+void FindBarButton::Layout() {
+  ImageButton::Layout();
+
+  ink_drop_animation_controller_->SetInkDropCenter(
+      GetLocalBounds().CenterPoint());
+}
+
+void FindBarButton::AddInkDropLayer(ui::Layer* ink_drop_layer) {
+  SetPaintToLayer(true);
+  SetFillsBoundsOpaquely(false);
+  layer()->Add(ink_drop_layer);
+  layer()->StackAtBottom(ink_drop_layer);
+}
+
+void FindBarButton::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
+  layer()->Remove(ink_drop_layer);
+  SetFillsBoundsOpaquely(true);
+  SetPaintToLayer(false);
+}
+
+bool FindBarButton::OnMousePressed(const ui::MouseEvent& event) {
+  if (IsTriggerableEvent(event)) {
+    ink_drop_animation_controller_->AnimateToState(
+        views::InkDropState::ACTION_PENDING);
+  }
+
+  return ImageButton::OnMousePressed(event);
+}
+
+void FindBarButton::OnGestureEvent(ui::GestureEvent* event) {
+  views::InkDropState ink_drop_state = views::InkDropState::HIDDEN;
+  switch (event->type()) {
+    case ui::ET_GESTURE_TAP_DOWN:
+      ink_drop_state = views::InkDropState::ACTION_PENDING;
+      // The ui::ET_GESTURE_TAP_DOWN event needs to be marked as handled so
+      // that subsequent events for the gesture are sent to |this|.
+      event->SetHandled();
+      break;
+    case ui::ET_GESTURE_LONG_PRESS:
+      ink_drop_state = views::InkDropState::SLOW_ACTION_PENDING;
+      break;
+    case ui::ET_GESTURE_TAP:
+      ink_drop_state = views::InkDropState::QUICK_ACTION;
+      break;
+    case ui::ET_GESTURE_LONG_TAP:
+      ink_drop_state = views::InkDropState::SLOW_ACTION;
+      break;
+    case ui::ET_GESTURE_END:
+    case ui::ET_GESTURE_TAP_CANCEL:
+      ink_drop_state = views::InkDropState::HIDDEN;
+      break;
+    default:
+      return;
+  }
+  ink_drop_animation_controller_->AnimateToState(ink_drop_state);
+
+  ImageButton::OnGestureEvent(event);
+}
+
+void FindBarButton::OnMouseReleased(const ui::MouseEvent& event) {
+  if (!HitTestPoint(event.location()))
+    ink_drop_animation_controller_->AnimateToState(views::InkDropState::HIDDEN);
+
+  ImageButton::OnMouseReleased(event);
+}
+
+void FindBarButton::NotifyClick(const ui::Event& event) {
+  ink_drop_animation_controller_->AnimateToState(
+      views::InkDropState::QUICK_ACTION);
+
+  ImageButton::NotifyClick(event);
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // FindBarView, public:
@@ -133,7 +254,7 @@ FindBarView::FindBarView(FindBarHost* host)
   find_text_->SetTextInputFlags(ui::TEXT_INPUT_FLAG_AUTOCORRECT_OFF);
   AddChildView(find_text_);
 
-  find_previous_button_ = new views::ImageButton(this);
+  find_previous_button_ = new FindBarButton(this);
   find_previous_button_->set_tag(FIND_PREVIOUS_TAG);
   find_previous_button_->SetFocusable(true);
   find_previous_button_->SetTooltipText(
@@ -142,7 +263,7 @@ FindBarView::FindBarView(FindBarHost* host)
       l10n_util::GetStringUTF16(IDS_ACCNAME_PREVIOUS));
   AddChildView(find_previous_button_);
 
-  find_next_button_ = new views::ImageButton(this);
+  find_next_button_ = new FindBarButton(this);
   find_next_button_->set_tag(FIND_NEXT_TAG);
   find_next_button_->SetFocusable(true);
   find_next_button_->SetTooltipText(
@@ -151,7 +272,7 @@ FindBarView::FindBarView(FindBarHost* host)
       l10n_util::GetStringUTF16(IDS_ACCNAME_NEXT));
   AddChildView(find_next_button_);
 
-  close_button_ = new views::ImageButton(this);
+  close_button_ = new FindBarButton(this);
   close_button_->set_tag(CLOSE_TAG);
   close_button_->SetFocusable(true);
   close_button_->SetTooltipText(
