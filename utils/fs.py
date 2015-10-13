@@ -34,23 +34,34 @@ if sys.platform == 'win32':
     return path
 
 
+  def walk(top, *args, **kwargs):
+    return os.walk(extend(top), *args, **kwargs)
+
+
 else:
 
 
   def extend(path):
-    """Path mangling is not needed on POSIX."""
-    # Keep the assert for compatiblity.
+    """Convert the path back to utf-8.
+
+    In some rare case, concatenating str and unicode may cause a
+    UnicodeEncodeError because the default encoding is 'ascii'.
+    """
     assert os.path.isabs(path), path
     assert isinstance(path, unicode), path
-    return path
+    return path.encode('utf-8')
 
 
   def trim(path):
     """Path mangling is not needed on POSIX."""
-    # Keep the assert for compatiblity.
     assert os.path.isabs(path), path
-    assert isinstance(path, unicode), path
-    return path
+    assert isinstance(path, str), path
+    return path.decode('utf-8')
+
+
+  def walk(top, *args, **kwargs):
+    for root, dirs, files in os.walk(extend(top), *args, **kwargs):
+      yield trim(root), dirs, files
 
 
 ## builtin
@@ -79,8 +90,6 @@ def symlink(source, link_name):
   return os.symlink(source, extend(link_name))
 
 
-def walk(top, *args, **kwargs):
-  return os.walk(extend(top), *args, **kwargs)
 
 
 ## shutil
