@@ -1,6 +1,11 @@
 function initialize_LayerTreeTests()
 {
-    InspectorTest.layerTreeModel = WebInspector.targetManager.mainTarget().layerTreeModel;
+    InspectorTest.layerTreeModel = function()
+    {
+        if (!InspectorTest._layerTreeModel)
+            InspectorTest._layerTreeModel = WebInspector.LayerTreeModel.fromTarget(InspectorTest.mainTarget);
+        return InspectorTest._layerTreeModel;
+    }
 
     InspectorTest.labelForLayer = function(layer)
     {
@@ -20,7 +25,7 @@ function initialize_LayerTreeTests()
         if (!prefix)
             prefix = "";
         if (!root) {
-            root = InspectorTest.layerTreeModel.layerTree().contentRoot();
+            root = InspectorTest.layerTreeModel().layerTree().contentRoot();
             if (!root) {
                 InspectorTest.addResult("No layer root, perhaps not in the composited mode! ");
                 InspectorTest.completeTest();
@@ -47,11 +52,11 @@ function initialize_LayerTreeTests()
     {
         function eventHandler()
         {
-            InspectorTest.layerTreeModel.removeEventListener(WebInspector.LayerTreeModel.Events.LayerTreeChanged, eventHandler);
+            InspectorTest.layerTreeModel().removeEventListener(WebInspector.LayerTreeModel.Events.LayerTreeChanged, eventHandler);
             callback();
         }
         InspectorTest.evaluateInPage(expression, function() {
-            InspectorTest.layerTreeModel.addEventListener(WebInspector.LayerTreeModel.Events.LayerTreeChanged, eventHandler);
+            InspectorTest.layerTreeModel().addEventListener(WebInspector.LayerTreeModel.Events.LayerTreeChanged, eventHandler);
         });
     }
 
@@ -68,7 +73,7 @@ function initialize_LayerTreeTests()
             result = layer;
             return true;
         }
-        InspectorTest.layerTreeModel.layerTree().forEachLayer(testLayer);
+        InspectorTest.layerTreeModel().layerTree().forEachLayer(testLayer);
         if (!result)
             InspectorTest.addResult("ERROR: No layer for " + nodeIdAttribute);
         return result;
@@ -76,11 +81,11 @@ function initialize_LayerTreeTests()
 
     InspectorTest.requestLayers = function(callback)
     {
-        InspectorTest.layerTreeModel.addEventListener(WebInspector.LayerTreeModel.Events.LayerTreeChanged, onLayerTreeChanged);
-        InspectorTest.layerTreeModel.enable();
+        InspectorTest.layerTreeModel().addEventListener(WebInspector.LayerTreeModel.Events.LayerTreeChanged, onLayerTreeChanged);
+        InspectorTest.layerTreeModel().enable();
         function onLayerTreeChanged()
         {
-            InspectorTest.layerTreeModel.removeEventListener(WebInspector.LayerTreeModel.Events.LayerTreeChanged, onLayerTreeChanged);
+            InspectorTest.layerTreeModel().removeEventListener(WebInspector.LayerTreeModel.Events.LayerTreeChanged, onLayerTreeChanged);
             callback();
         }
     }
@@ -94,7 +99,7 @@ function initialize_LayerTreeTests()
         }
 
         InspectorTest.addResult("Model elements dump");
-        InspectorTest.layerTreeModel.layerTree().forEachLayer(dumpScrollRectsForLayer.bind(this));
+        InspectorTest.layerTreeModel().layerTree().forEachLayer(dumpScrollRectsForLayer.bind(this));
     }
 
     InspectorTest.dispatchMouseEvent = function(eventType, button, element, offsetX, offsetY)

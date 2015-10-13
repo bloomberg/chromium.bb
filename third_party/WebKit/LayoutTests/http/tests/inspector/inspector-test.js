@@ -904,7 +904,6 @@ WebInspector.targetManager.observeTargets({
         InspectorTest.powerProfiler = target.powerProfiler;
         InspectorTest.cpuProfilerModel = target.cpuProfilerModel;
         InspectorTest.heapProfilerModel = target.heapProfilerModel;
-        InspectorTest.layerTreeModel = target.layerTreeModel;
         InspectorTest.animationModel = target.animationModel;
         InspectorTest.serviceWorkerCacheModel = target.serviceWorkerCacheModel;
         InspectorTest.serviceWorkerManager = target.serviceWorkerManager;

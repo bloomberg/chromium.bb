@@ -34,7 +34,7 @@ function test()
 
     function layerTreeResolved(layerTree)
     {
-        InspectorTest.layerTreeModel.setLayerTree(layerTree);
+        InspectorTest.layerTreeModel().setLayerTree(layerTree);
         InspectorTest.dumpLayerTree();
         InspectorTest.completeTest();
     }
