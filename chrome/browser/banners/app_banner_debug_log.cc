@@ -32,7 +32,7 @@ const char kManifestMissingNameOrShortName[] =
     "one of manifest name or short name must be specified";
 const char kManifestMissingSuitableIcon[] =
     "manifest does not contain a suitable icon - PNG format of at least "
-    "144x144px is required";
+    "144x144px is required, and the sizes attribute must be set";
 const char kNotServedFromSecureOrigin[] =
     "page not served from a secure origin";
 // The leading space is intentional as another string is prepended.
