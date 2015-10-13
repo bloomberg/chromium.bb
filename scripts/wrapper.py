@@ -12,6 +12,7 @@ lots of places.
 
 from __future__ import print_function
 
+import imp
 import os
 import sys
 
@@ -96,6 +97,8 @@ def FindTarget(target):
   $ ln -s $PWD/cbuildbot/cbuildbot ~/bin/; cbuildbot --help
   # No $PATH needed, but a relative symlink to a symlink to the chromite dir.
   $ cd ~; ln -s bin/cbuildbot ./; ./cbuildbot --help
+  # External chromite module
+  $ ln -s ../chromite/scripts/wrapper.py foo; ./foo
 
   Args:
     target: Path to the script we're trying to run.
@@ -103,6 +106,8 @@ def FindTarget(target):
   Returns:
     The module main functor.
   """
+  # We assume/require the script we're wrapping ends in a .py.
+  full_path = target + '.py'
   while True:
     # Walk back one symlink at a time until we get into the chromite dir.
     parent, base = os.path.split(target)
@@ -111,21 +116,38 @@ def FindTarget(target):
       target = base
       break
     target = os.path.join(os.path.dirname(target), os.readlink(target))
-  assert parent.startswith(CHROMITE_PATH), (
-      'could not figure out leading path\n'
-      '\tparent: %s\n'
-      '\tCHROMITE_PATH: %s' % (parent, CHROMITE_PATH))
-  parent = parent[len(CHROMITE_PATH):].split(os.sep)
-  target = ['chromite'] + parent + [target]
 
-  if target[-2] == 'bin':
-    # Convert <path>/bin/foo -> <path>/scripts/foo.
-    target[-2] = 'scripts'
-  elif target[1] == 'bootstrap' and len(target) == 3:
-    # Convert <git_repo>/bootstrap/foo -> <git_repo>/bootstrap/scripts/foo.
-    target.insert(2, 'scripts')
+  # If we walked all the way back to wrapper.py, it means we're trying to run
+  # an external module.  So we have to import it by filepath and not via the
+  # chromite.xxx.yyy namespace.
+  if target != 'wrapper.py':
+    assert parent.startswith(CHROMITE_PATH), (
+        'could not figure out leading path\n'
+        '\tparent: %s\n'
+        '\tCHROMITE_PATH: %s' % (parent, CHROMITE_PATH))
+    parent = parent[len(CHROMITE_PATH):].split(os.sep)
+    target = ['chromite'] + parent + [target]
 
-  module = cros_import.ImportModule(target)
+    if target[-2] == 'bin':
+      # Convert <path>/bin/foo -> <path>/scripts/foo.
+      target[-2] = 'scripts'
+    elif target[1] == 'bootstrap' and len(target) == 3:
+      # Convert <git_repo>/bootstrap/foo -> <git_repo>/bootstrap/scripts/foo.
+      target.insert(2, 'scripts')
+
+    try:
+      module = cros_import.ImportModule(target)
+    except ImportError as e:
+      print('%s: could not import chromite module: %s: %s'
+            % (sys.argv[0], full_path, e), file=sys.stderr)
+      sys.exit(1)
+  else:
+    try:
+      module = imp.load_source('main', full_path)
+    except IOError as e:
+      print('%s: could not import external module: %s: %s'
+            % (sys.argv[0], full_path, e), file=sys.stderr)
+      sys.exit(1)
 
   # Run the module's main func if it has one.
   main = getattr(module, 'main', None)
