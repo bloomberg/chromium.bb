@@ -47250,7 +47250,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
   <details>
     NOTE: This metric was incorrectly recorded on ChromeOS for versions 42
-    through 44, see http://crbug.com/499476 for more details.
+    through 45, see http://crbug.com/499476 for more details.
   </details>
 </histogram>
 
