@@ -365,6 +365,8 @@
         'browser/signin/gaia_auth_fetcher_ios_private.h',
         'browser/signin/gaia_cookie_manager_service_factory.cc',
         'browser/signin/gaia_cookie_manager_service_factory.h',
+        'browser/signin/ios_chrome_signin_status_metrics_provider_delegate.cc',
+        'browser/signin/ios_chrome_signin_status_metrics_provider_delegate.h',
         'browser/signin/oauth2_token_service_factory.cc',
         'browser/signin/oauth2_token_service_factory.h',
         'browser/signin/signin_client_factory.cc',
