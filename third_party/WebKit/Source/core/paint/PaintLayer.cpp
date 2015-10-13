@@ -904,6 +904,7 @@ PaintLayer* PaintLayer::enclosingLayerForPaintInvalidationCrossingFrameBoundarie
     while (!compositedLayer) {
         compositedLayer = layer->enclosingLayerForPaintInvalidation();
         if (!compositedLayer) {
+            RELEASE_ASSERT(layer->layoutObject()->frame());
             LayoutObject* owner = layer->layoutObject()->frame()->ownerLayoutObject();
             if (!owner)
                 break;
