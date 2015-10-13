@@ -18,6 +18,10 @@
 #include "components/password_manager/core/browser/statistics_table.h"
 #include "sync/api/syncable_service.h"
 
+namespace url {
+class Origin;
+}
+
 namespace autofill {
 struct PasswordForm;
 }
@@ -102,6 +106,15 @@ class PasswordStore : protected PasswordStoreSync,
 
   // Removes the matching PasswordForm from the secure password store (async).
   virtual void RemoveLogin(const autofill::PasswordForm& form);
+
+  // Remove all logins which are same-origin with the given origin and created
+  // in the given date range. |completion| will be posted to the
+  // |main_thread_runner_| after deletions have been completed and notification
+  // have been sent out.
+  virtual void RemoveLoginsByOriginAndTime(const url::Origin& origin,
+                                           base::Time delete_begin,
+                                           base::Time delete_end,
+                                           const base::Closure& completion);
 
   // Removes all logins created in the given date range. If |completion| is not
   // null, it will be posted to the |main_thread_runner_| after deletions have
@@ -221,6 +234,12 @@ class PasswordStore : protected PasswordStoreSync,
                                  bool custom_passphrase_sync_enabled) = 0;
 
   // Synchronous implementation to remove the given logins.
+  virtual PasswordStoreChangeList RemoveLoginsByOriginAndTimeImpl(
+      const url::Origin& origin,
+      base::Time delete_begin,
+      base::Time delete_end);
+
+  // Synchronous implementation to remove the given logins.
   virtual PasswordStoreChangeList RemoveLoginsCreatedBetweenImpl(
       base::Time delete_begin,
       base::Time delete_end) = 0;
@@ -320,6 +339,10 @@ class PasswordStore : protected PasswordStoreSync,
   void UpdateLoginWithPrimaryKeyInternal(
       const autofill::PasswordForm& new_form,
       const autofill::PasswordForm& old_primary_key);
+  void RemoveLoginsByOriginAndTimeInternal(const url::Origin& origin,
+                                           base::Time delete_begin,
+                                           base::Time delete_end,
+                                           const base::Closure& completion);
   void RemoveLoginsCreatedBetweenInternal(base::Time delete_begin,
                                           base::Time delete_end,
                                           const base::Closure& completion);

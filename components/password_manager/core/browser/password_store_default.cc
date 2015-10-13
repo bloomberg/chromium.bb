@@ -10,6 +10,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/stl_util.h"
 #include "components/password_manager/core/browser/password_store_change.h"
+#include "url/origin.h"
 
 using autofill::PasswordForm;
 
@@ -77,6 +78,26 @@ PasswordStoreChangeList PasswordStoreDefault::RemoveLoginImpl(
   PasswordStoreChangeList changes;
   if (login_db_ && login_db_->RemoveLogin(form))
     changes.push_back(PasswordStoreChange(PasswordStoreChange::REMOVE, form));
+  return changes;
+}
+
+PasswordStoreChangeList PasswordStoreDefault::RemoveLoginsByOriginAndTimeImpl(
+    const url::Origin& origin,
+    base::Time delete_begin,
+    base::Time delete_end) {
+  ScopedVector<autofill::PasswordForm> forms;
+  PasswordStoreChangeList changes;
+  if (login_db_ &&
+      login_db_->GetLoginsCreatedBetween(delete_begin, delete_end, &forms)) {
+    for (autofill::PasswordForm* form : forms) {
+      if (origin.IsSameOriginWith(url::Origin(form->origin)) &&
+          login_db_->RemoveLogin(*form))
+        changes.push_back(
+            PasswordStoreChange(PasswordStoreChange::REMOVE, *form));
+    }
+    if (!changes.empty())
+      LogStatsForBulkDeletion(changes.size());
+  }
   return changes;
 }
 

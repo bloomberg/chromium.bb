@@ -8,6 +8,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/prefs/pref_service.h"
+#include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -19,10 +20,13 @@
 #include "components/password_manager/core/browser/password_store_default.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/origin.h"
 
 using autofill::PasswordForm;
+using testing::ElementsAre;
 using testing::ElementsAreArray;
 using testing::IsEmpty;
+using testing::_;
 
 namespace password_manager {
 
@@ -75,6 +79,22 @@ PasswordFormData CreateTestPasswordFormData() {
   return data;
 }
 
+PasswordFormData CreateTestPasswordFormDataByOrigin(const char* origin_url) {
+  PasswordFormData data = {PasswordForm::SCHEME_HTML,
+                           origin_url,
+                           origin_url,
+                           origin_url,
+                           L"submit_element",
+                           L"username_element",
+                           L"password_element",
+                           L"username_value",
+                           L"password_value",
+                           true,
+                           false,
+                           base::Time::Now().ToDoubleT()};
+  return data;
+}
+
 }  // anonymous namespace
 
 class PasswordStoreDefaultTest : public testing::Test {
@@ -83,10 +103,23 @@ class PasswordStoreDefaultTest : public testing::Test {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   }
 
-  void TearDown() override { ASSERT_TRUE(temp_dir_.Delete()); }
+  void TearDown() override {
+    base::MessageLoop::current()->RunUntilIdle();
+    ASSERT_TRUE(temp_dir_.Delete());
+  }
 
   base::FilePath test_login_db_file_path() const {
     return temp_dir_.path().Append(FILE_PATH_LITERAL("login_test"));
+  }
+
+  scoped_refptr<PasswordStoreDefault> CreateInitializedStore() {
+    scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
+        base::ThreadTaskRunnerHandle::Get(),
+        base::ThreadTaskRunnerHandle::Get(),
+        make_scoped_ptr(new LoginDatabase(test_login_db_file_path()))));
+    store->Init(syncer::SyncableService::StartSyncFlare());
+
+    return store;
   }
 
   base::MessageLoopForUI message_loop_;
@@ -138,7 +171,6 @@ TEST_F(PasswordStoreDefaultTest, NonASCIIData) {
   base::MessageLoop::current()->RunUntilIdle();
 
   store->Shutdown();
-  base::MessageLoop::current()->RunUntilIdle();
 }
 
 TEST_F(PasswordStoreDefaultTest, Notifications) {
@@ -191,7 +223,6 @@ TEST_F(PasswordStoreDefaultTest, Notifications) {
 
   store->RemoveObserver(&observer);
   store->Shutdown();
-  base::MessageLoop::current()->RunUntilIdle();
 }
 
 // Verify that operations on a PasswordStore with a bad database cause no
@@ -256,7 +287,84 @@ TEST_F(PasswordStoreDefaultTest, OperationsOnABadDatabaseSilentlyFail) {
   // Ensure no notifications and no explosions during shutdown either.
   bad_store->RemoveObserver(&mock_observer);
   bad_store->Shutdown();
+}
+
+TEST_F(PasswordStoreDefaultTest,
+       RemoveLoginsByOriginAndTimeImpl_FittingOriginAndTime) {
+  scoped_refptr<PasswordStoreDefault> store = CreateInitializedStore();
+
+  const char origin_url[] = "http://foo.example.com";
+  scoped_ptr<autofill::PasswordForm> form =
+      CreatePasswordFormFromDataForTesting(
+          CreateTestPasswordFormDataByOrigin(origin_url));
+  store->AddLogin(*form);
   base::MessageLoop::current()->RunUntilIdle();
+
+  MockPasswordStoreObserver observer;
+  store->AddObserver(&observer);
+  EXPECT_CALL(observer, OnLoginsChanged(ElementsAre(PasswordStoreChange(
+                            PasswordStoreChange::REMOVE, *form))));
+
+  const url::Origin origin((GURL(origin_url)));
+  base::RunLoop run_loop;
+  store->RemoveLoginsByOriginAndTime(origin, base::Time(), base::Time::Max(),
+                                     run_loop.QuitClosure());
+  run_loop.Run();
+
+  store->RemoveObserver(&observer);
+  store->Shutdown();
+}
+
+TEST_F(PasswordStoreDefaultTest,
+       RemoveLoginsByOriginAndTimeImpl_NonMatchingOrigin) {
+  scoped_refptr<PasswordStoreDefault> store = CreateInitializedStore();
+
+  const char origin_url[] = "http://foo.example.com";
+  scoped_ptr<autofill::PasswordForm> form =
+      CreatePasswordFormFromDataForTesting(
+          CreateTestPasswordFormDataByOrigin(origin_url));
+  store->AddLogin(*form);
+  base::MessageLoop::current()->RunUntilIdle();
+
+  MockPasswordStoreObserver observer;
+  store->AddObserver(&observer);
+  EXPECT_CALL(observer, OnLoginsChanged(_)).Times(0);
+
+  const url::Origin other_origin(GURL("http://bar.example.com"));
+  base::RunLoop run_loop;
+  store->RemoveLoginsByOriginAndTime(other_origin, base::Time(),
+                                     base::Time::Max(), run_loop.QuitClosure());
+  run_loop.Run();
+
+  store->RemoveObserver(&observer);
+  store->Shutdown();
+}
+
+TEST_F(PasswordStoreDefaultTest,
+       RemoveLoginsByOriginAndTimeImpl_NotWithinTimeInterval) {
+  scoped_refptr<PasswordStoreDefault> store = CreateInitializedStore();
+
+  const char origin_url[] = "http://foo.example.com";
+  scoped_ptr<autofill::PasswordForm> form =
+      CreatePasswordFormFromDataForTesting(
+          CreateTestPasswordFormDataByOrigin(origin_url));
+  store->AddLogin(*form);
+  base::MessageLoop::current()->RunUntilIdle();
+
+  MockPasswordStoreObserver observer;
+  store->AddObserver(&observer);
+  EXPECT_CALL(observer, OnLoginsChanged(_)).Times(0);
+
+  const url::Origin origin((GURL(origin_url)));
+  base::Time time_after_creation_date =
+      form->date_created + base::TimeDelta::FromDays(1);
+  base::RunLoop run_loop;
+  store->RemoveLoginsByOriginAndTime(origin, time_after_creation_date,
+                                     base::Time::Max(), run_loop.QuitClosure());
+  run_loop.Run();
+
+  store->RemoveObserver(&observer);
+  store->Shutdown();
 }
 
 }  // namespace password_manager

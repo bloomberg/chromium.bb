@@ -14,6 +14,7 @@
 #include "components/password_manager/core/browser/affiliated_match_helper.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "components/password_manager/core/browser/password_syncable_service.h"
+#include "url/origin.h"
 
 using autofill::PasswordForm;
 
@@ -106,6 +107,15 @@ void PasswordStore::UpdateLoginWithPrimaryKey(
 
 void PasswordStore::RemoveLogin(const PasswordForm& form) {
   ScheduleTask(base::Bind(&PasswordStore::RemoveLoginInternal, this, form));
+}
+
+void PasswordStore::RemoveLoginsByOriginAndTime(
+    const url::Origin& origin,
+    base::Time delete_begin,
+    base::Time delete_end,
+    const base::Closure& completion) {
+  ScheduleTask(base::Bind(&PasswordStore::RemoveLoginsByOriginAndTimeInternal,
+                          this, origin, delete_begin, delete_end, completion));
 }
 
 void PasswordStore::RemoveLoginsCreatedBetween(
@@ -332,6 +342,18 @@ void PasswordStore::UpdateLoginWithPrimaryKeyInternal(
   NotifyLoginsChanged(all_changes);
 }
 
+void PasswordStore::RemoveLoginsByOriginAndTimeInternal(
+    const url::Origin& origin,
+    base::Time delete_begin,
+    base::Time delete_end,
+    const base::Closure& completion) {
+  PasswordStoreChangeList changes =
+      RemoveLoginsByOriginAndTimeImpl(origin, delete_begin, delete_end);
+  NotifyLoginsChanged(changes);
+  if (!completion.is_null())
+    main_thread_runner_->PostTask(FROM_HERE, completion);
+}
+
 void PasswordStore::RemoveLoginsCreatedBetweenInternal(
     base::Time delete_begin,
     base::Time delete_end,
@@ -539,6 +561,18 @@ void PasswordStore::InitSyncableService(
 void PasswordStore::DestroySyncableService() {
   DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
   syncable_service_.reset();
+}
+
+// No-op implementation of RemoveLoginsByOriginAndTimeImpl to please the
+// compiler on derived classes that have not yet provided an implementation on
+// their own.
+// TODO(ttr314@googlemail.com): Once crbug.com/113973 is done, remove default
+// implementation and mark method as pure virtual.
+PasswordStoreChangeList PasswordStore::RemoveLoginsByOriginAndTimeImpl(
+    const url::Origin& origin,
+    base::Time delete_begin,
+    base::Time delete_end) {
+  return PasswordStoreChangeList();
 }
 
 }  // namespace password_manager
