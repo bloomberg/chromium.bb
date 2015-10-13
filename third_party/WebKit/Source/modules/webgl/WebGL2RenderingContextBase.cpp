@@ -640,7 +640,7 @@ void WebGL2RenderingContextBase::texImage3D(GLenum target, GLint level, GLint in
         return;
     }
 
-    webContext()->texImage3D(target, level, convertTexInternalFormat(internalformat, type), width, height, depth, border, format, type, pixels);
+    webContext()->texImage3D(target, level, convertTexInternalFormat(internalformat, type), width, height, depth, border, format, type, data);
     tex->setLevelInfo(target, level, internalformat, width, height, depth, type);
 }
 
