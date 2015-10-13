@@ -49,7 +49,7 @@ public:
     // retrieves the "row" header (a th tag in the rightmost column)
     virtual AXObject* headerObject();
     // retrieves the "row" headers (th, scope) from left to right for the each row.
-    virtual void headerObjectsForRow(AccessibilityChildrenVector&);
+    virtual void headerObjectsForRow(AXObjectVector&);
     AXObject* parentTable() const;
 
     void setRowIndex(int rowIndex) { m_rowIndex = rowIndex; }

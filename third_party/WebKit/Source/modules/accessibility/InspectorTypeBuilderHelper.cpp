@@ -167,7 +167,7 @@ PassRefPtr<AXValue> createRelatedNodeListValue(AXRelatedObjectVector& relatedObj
     return axValue;
 }
 
-PassRefPtr<AXValue> createRelatedNodeListValue(AXObject::AccessibilityChildrenVector& axObjects, AXValueType::Enum valueType)
+PassRefPtr<AXValue> createRelatedNodeListValue(AXObject::AXObjectVector& axObjects, AXValueType::Enum valueType)
 {
     RefPtr<TypeBuilder::Array<AXRelatedNode>> relatedNodes = TypeBuilder::Array<AXRelatedNode>::create();
     for (unsigned i = 0; i < axObjects.size(); i++) {

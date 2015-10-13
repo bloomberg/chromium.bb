@@ -673,7 +673,7 @@ bool AXObject::isPresentationalChild() const
     return m_cachedIsPresentationalChild;
 }
 
-String AXObject::name(AXNameFrom& nameFrom, AXObject::AccessibilityChildrenVector* nameObjects) const
+String AXObject::name(AXNameFrom& nameFrom, AXObject::AXObjectVector* nameObjects) const
 {
     HeapHashSet<Member<const AXObject>> visited;
     AXRelatedObjectVector relatedObjects;
@@ -834,7 +834,7 @@ int AXObject::indexInParent() const
     return 0;
 }
 
-void AXObject::ariaTreeRows(AccessibilityChildrenVector& result)
+void AXObject::ariaTreeRows(AXObjectVector& result)
 {
     for (const auto& child : children()) {
         // Add tree items as the rows.
@@ -936,7 +936,7 @@ AXObject* AXObject::elementAccessibilityHitTest(const IntPoint& point) const
     return const_cast<AXObject*>(this);
 }
 
-const AXObject::AccessibilityChildrenVector& AXObject::children()
+const AXObject::AXObjectVector& AXObject::children()
 {
     updateChildrenIfNecessary();
 

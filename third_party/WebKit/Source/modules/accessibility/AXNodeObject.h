@@ -70,7 +70,7 @@ protected:
     AccessibilityRole determineAriaRoleAttribute() const;
     void tokenVectorFromAttribute(Vector<String>&, const QualifiedName&) const;
     void elementsFromAttribute(WillBeHeapVector<RawPtrWillBeMember<Element>>& elements, const QualifiedName&) const;
-    void accessibilityChildrenFromAttribute(QualifiedName attr, AXObject::AccessibilityChildrenVector&) const;
+    void accessibilityChildrenFromAttribute(QualifiedName attr, AXObject::AXObjectVector&) const;
 
     bool hasContentEditableAttributeSet() const;
     bool isTextControl() const override;

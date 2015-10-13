@@ -1175,27 +1175,27 @@ AXObject* AXLayoutObject::activeDescendant() const
     return 0;
 }
 
-void AXLayoutObject::ariaFlowToElements(AccessibilityChildrenVector& flowTo) const
+void AXLayoutObject::ariaFlowToElements(AXObjectVector& flowTo) const
 {
     accessibilityChildrenFromAttribute(aria_flowtoAttr, flowTo);
 }
 
-void AXLayoutObject::ariaControlsElements(AccessibilityChildrenVector& controls) const
+void AXLayoutObject::ariaControlsElements(AXObjectVector& controls) const
 {
     accessibilityChildrenFromAttribute(aria_controlsAttr, controls);
 }
 
-void AXLayoutObject::deprecatedAriaDescribedbyElements(AccessibilityChildrenVector& describedby) const
+void AXLayoutObject::deprecatedAriaDescribedbyElements(AXObjectVector& describedby) const
 {
     accessibilityChildrenFromAttribute(aria_describedbyAttr, describedby);
 }
 
-void AXLayoutObject::deprecatedAriaLabelledbyElements(AccessibilityChildrenVector& labelledby) const
+void AXLayoutObject::deprecatedAriaLabelledbyElements(AXObjectVector& labelledby) const
 {
     accessibilityChildrenFromAttribute(aria_labelledbyAttr, labelledby);
 }
 
-void AXLayoutObject::ariaOwnsElements(AccessibilityChildrenVector& owns) const
+void AXLayoutObject::ariaOwnsElements(AXObjectVector& owns) const
 {
     accessibilityChildrenFromAttribute(aria_ownsAttr, owns);
 }

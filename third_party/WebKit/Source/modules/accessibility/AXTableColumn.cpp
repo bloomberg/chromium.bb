@@ -66,7 +66,7 @@ LayoutRect AXTableColumn::elementRect() const
     return m_columnRect;
 }
 
-void AXTableColumn::headerObjectsForColumn(AccessibilityChildrenVector& headers)
+void AXTableColumn::headerObjectsForColumn(AXObjectVector& headers)
 {
     if (!m_parent)
         return;
@@ -113,7 +113,7 @@ void AXTableColumn::headerObjectsForColumn(AccessibilityChildrenVector& headers)
 
 AXObject* AXTableColumn::headerObject()
 {
-    AccessibilityChildrenVector headers;
+    AXObjectVector headers;
     headerObjectsForColumn(headers);
     if (!headers.size())
         return 0;

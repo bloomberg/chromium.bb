@@ -36,7 +36,7 @@ PassRefPtr<AXValue> createValue(float value, AXValueType::Enum = AXValueType::Nu
 PassRefPtr<AXValue> createBooleanValue(bool value, AXValueType::Enum = AXValueType::Boolean);
 PassRefPtr<AXValue> createRelatedNodeValue(const AXObject*, String* name = nullptr, AXValueType::Enum = AXValueType::Idref);
 PassRefPtr<AXValue> createRelatedNodeListValue(AXRelatedObjectVector&, AXValueType::Enum);
-PassRefPtr<AXValue> createRelatedNodeListValue(AXObject::AccessibilityChildrenVector& axObjects, AXValueType::Enum = AXValueType::IdrefList);
+PassRefPtr<AXValue> createRelatedNodeListValue(AXObject::AXObjectVector& axObjects, AXValueType::Enum = AXValueType::IdrefList);
 
 PassRefPtr<AXValueSource> createValueSource(NameSource&);
 

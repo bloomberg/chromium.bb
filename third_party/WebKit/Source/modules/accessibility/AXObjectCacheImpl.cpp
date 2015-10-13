@@ -139,7 +139,7 @@ AXObject* AXObjectCacheImpl::focusedImageMapUIElement(HTMLAreaElement* areaEleme
     if (!axLayoutImage)
         return 0;
 
-    const AXObject::AccessibilityChildrenVector& imageChildren = axLayoutImage->children();
+    const AXObject::AXObjectVector& imageChildren = axLayoutImage->children();
     unsigned count = imageChildren.size();
     for (unsigned k = 0; k < count; ++k) {
         AXObject* child = imageChildren[k];

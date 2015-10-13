@@ -97,7 +97,7 @@ AXObject* AXTableRow::parentTable() const
 
 AXObject* AXTableRow::headerObject()
 {
-    AccessibilityChildrenVector headers;
+    AXObjectVector headers;
     headerObjectsForRow(headers);
     if (!headers.size())
         return 0;
@@ -105,7 +105,7 @@ AXObject* AXTableRow::headerObject()
     return headers[0].get();
 }
 
-void AXTableRow::headerObjectsForRow(AccessibilityChildrenVector& headers)
+void AXTableRow::headerObjectsForRow(AXObjectVector& headers)
 {
     if (!m_layoutObject || !m_layoutObject->isTableRow())
         return;

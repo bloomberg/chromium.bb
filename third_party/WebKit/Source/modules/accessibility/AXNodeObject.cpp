@@ -578,7 +578,7 @@ void AXNodeObject::elementsFromAttribute(WillBeHeapVector<RawPtrWillBeMember<Ele
     }
 }
 
-void AXNodeObject::accessibilityChildrenFromAttribute(QualifiedName attr, AXObject::AccessibilityChildrenVector& children) const
+void AXNodeObject::accessibilityChildrenFromAttribute(QualifiedName attr, AXObject::AXObjectVector& children) const
 {
     WillBeHeapVector<RawPtrWillBeMember<Element>> elements;
     elementsFromAttribute(elements, attr);

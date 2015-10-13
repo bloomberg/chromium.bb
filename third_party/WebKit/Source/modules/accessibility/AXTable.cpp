@@ -449,21 +449,21 @@ AXObject* AXTable::headerContainer()
     return m_headerContainer.get();
 }
 
-const AXObject::AccessibilityChildrenVector& AXTable::columns()
+const AXObject::AXObjectVector& AXTable::columns()
 {
     updateChildrenIfNecessary();
 
     return m_columns;
 }
 
-const AXObject::AccessibilityChildrenVector& AXTable::rows()
+const AXObject::AXObjectVector& AXTable::rows()
 {
     updateChildrenIfNecessary();
 
     return m_rows;
 }
 
-void AXTable::columnHeaders(AccessibilityChildrenVector& headers)
+void AXTable::columnHeaders(AXObjectVector& headers)
 {
     if (!m_layoutObject)
         return;
@@ -474,7 +474,7 @@ void AXTable::columnHeaders(AccessibilityChildrenVector& headers)
         toAXTableColumn(m_columns[c].get())->headerObjectsForColumn(headers);
 }
 
-void AXTable::rowHeaders(AccessibilityChildrenVector& headers)
+void AXTable::rowHeaders(AXObjectVector& headers)
 {
     if (!m_layoutObject)
         return;
@@ -485,7 +485,7 @@ void AXTable::rowHeaders(AccessibilityChildrenVector& headers)
         toAXTableRow(m_rows[r].get())->headerObjectsForRow(headers);
 }
 
-void AXTable::cells(AXObject::AccessibilityChildrenVector& cells)
+void AXTable::cells(AXObject::AXObjectVector& cells)
 {
     if (!m_layoutObject)
         return;

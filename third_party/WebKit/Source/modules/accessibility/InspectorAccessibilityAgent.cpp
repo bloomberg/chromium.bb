@@ -247,7 +247,7 @@ void fillWidgetStates(AXObject* axObject, PassRefPtr<TypeBuilder::Array<AXProper
     }
 }
 
-PassRefPtr<AXProperty> createRelatedNodeListProperty(AXRelationshipAttributes::Enum key, AXObject::AccessibilityChildrenVector& nodes, const QualifiedName& attr, AXObject* axObject)
+PassRefPtr<AXProperty> createRelatedNodeListProperty(AXRelationshipAttributes::Enum key, AXObject::AXObjectVector& nodes, const QualifiedName& attr, AXObject* axObject)
 {
     RefPtr<AXValue> nodeListValue = createRelatedNodeListValue(nodes);
     const AtomicString& attrValue = axObject->getAttribute(attr);
@@ -261,7 +261,7 @@ void fillRelationships(AXObject* axObject, PassRefPtr<TypeBuilder::Array<AXPrope
         properties->addItem(createProperty(AXRelationshipAttributes::Activedescendant, createRelatedNodeValue(activeDescendant)));
     }
 
-    AXObject::AccessibilityChildrenVector results;
+    AXObject::AXObjectVector results;
     axObject->ariaFlowToElements(results);
     if (!results.isEmpty())
         properties->addItem(createRelatedNodeListProperty(AXRelationshipAttributes::Flowto, results, aria_flowtoAttr, axObject));

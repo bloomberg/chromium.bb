@@ -477,7 +477,7 @@ bool WebAXObject::ariaControls(WebVector<WebAXObject>& controlsElements) const
     if (isDetached())
         return false;
 
-    AXObject::AccessibilityChildrenVector controls;
+    AXObject::AXObjectVector controls;
     m_private->ariaControlsElements(controls);
 
     WebVector<WebAXObject> result(controls.size());
@@ -501,7 +501,7 @@ bool WebAXObject::ariaFlowTo(WebVector<WebAXObject>& flowToElements) const
     if (isDetached())
         return false;
 
-    AXObject::AccessibilityChildrenVector flowTo;
+    AXObject::AXObjectVector flowTo;
     m_private->ariaFlowToElements(flowTo);
 
     WebVector<WebAXObject> result(flowTo.size());
@@ -1007,7 +1007,7 @@ bool WebAXObject::deprecatedAriaDescribedby(WebVector<WebAXObject>& describedbyE
     if (isDetached())
         return false;
 
-    AXObject::AccessibilityChildrenVector describedby;
+    AXObject::AXObjectVector describedby;
     m_private->deprecatedAriaDescribedbyElements(describedby);
 
     WebVector<WebAXObject> result(describedby.size());
@@ -1023,7 +1023,7 @@ bool WebAXObject::deprecatedAriaLabelledby(WebVector<WebAXObject>& labelledbyEle
     if (isDetached())
         return false;
 
-    AXObject::AccessibilityChildrenVector labelledby;
+    AXObject::AXObjectVector labelledby;
     m_private->deprecatedAriaLabelledbyElements(labelledby);
 
     WebVector<WebAXObject> result(labelledby.size());
@@ -1328,7 +1328,7 @@ WebAXObject WebAXObject::rowAtIndex(unsigned rowIndex) const
     if (!m_private->isAXTable())
         return WebAXObject();
 
-    const AXObject::AccessibilityChildrenVector& rows = toAXTable(m_private.get())->rows();
+    const AXObject::AXObjectVector& rows = toAXTable(m_private.get())->rows();
     if (rowIndex < rows.size())
         return WebAXObject(rows[rowIndex]);
 
@@ -1343,7 +1343,7 @@ WebAXObject WebAXObject::columnAtIndex(unsigned columnIndex) const
     if (!m_private->isAXTable())
         return WebAXObject();
 
-    const AXObject::AccessibilityChildrenVector& columns = toAXTable(m_private.get())->columns();
+    const AXObject::AXObjectVector& columns = toAXTable(m_private.get())->columns();
     if (columnIndex < columns.size())
         return WebAXObject(columns[columnIndex]);
 
@@ -1380,7 +1380,7 @@ void WebAXObject::rowHeaders(WebVector<WebAXObject>& rowHeaderElements) const
     if (!m_private->isAXTable())
         return;
 
-    AXObject::AccessibilityChildrenVector headers;
+    AXObject::AXObjectVector headers;
     toAXTable(m_private.get())->rowHeaders(headers);
 
     size_t headerCount = headers.size();
@@ -1422,7 +1422,7 @@ void WebAXObject::columnHeaders(WebVector<WebAXObject>& columnHeaderElements) co
     if (!m_private->isAXTable())
         return;
 
-    AXObject::AccessibilityChildrenVector headers;
+    AXObject::AXObjectVector headers;
     toAXTable(m_private.get())->columnHeaders(headers);
 
     size_t headerCount = headers.size();

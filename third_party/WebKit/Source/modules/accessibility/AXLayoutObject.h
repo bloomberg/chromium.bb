@@ -123,11 +123,11 @@ protected:
 
     // ARIA attributes.
     AXObject* activeDescendant() const override;
-    void ariaFlowToElements(AccessibilityChildrenVector&) const override;
-    void ariaControlsElements(AccessibilityChildrenVector&) const override;
-    void deprecatedAriaDescribedbyElements(AccessibilityChildrenVector&) const override;
-    void deprecatedAriaLabelledbyElements(AccessibilityChildrenVector&) const override;
-    void ariaOwnsElements(AccessibilityChildrenVector&) const override;
+    void ariaFlowToElements(AXObjectVector&) const override;
+    void ariaControlsElements(AXObjectVector&) const override;
+    void deprecatedAriaDescribedbyElements(AXObjectVector&) const override;
+    void deprecatedAriaLabelledbyElements(AXObjectVector&) const override;
+    void ariaOwnsElements(AXObjectVector&) const override;
 
     bool ariaHasPopup() const override;
     bool ariaRoleHasPresentationalChildren() const override;

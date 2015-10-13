@@ -62,8 +62,8 @@ public:
     virtual bool isAriaTable() const { return false; }
     virtual bool supportsSelectedRows() { return false; }
 
-    const AccessibilityChildrenVector& columns();
-    const AccessibilityChildrenVector& rows();
+    const AXObjectVector& columns();
+    const AXObjectVector& rows();
 
     unsigned columnCount();
     unsigned rowCount();
@@ -71,18 +71,18 @@ public:
     String deprecatedTitle(TextUnderElementMode) const final;
 
     // all the cells in the table
-    void cells(AccessibilityChildrenVector&);
+    void cells(AXObjectVector&);
     AXTableCell* cellForColumnAndRow(unsigned column, unsigned row);
 
-    void columnHeaders(AccessibilityChildrenVector&);
-    void rowHeaders(AccessibilityChildrenVector&);
+    void columnHeaders(AXObjectVector&);
+    void rowHeaders(AXObjectVector&);
 
     // an object that contains, as children, all the objects that act as headers
     AXObject* headerContainer();
 
 protected:
-    AccessibilityChildrenVector m_rows;
-    AccessibilityChildrenVector m_columns;
+    AXObjectVector m_rows;
+    AXObjectVector m_columns;
 
     Member<AXObject> m_headerContainer;
     bool m_isAXTable;

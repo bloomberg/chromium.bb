@@ -435,7 +435,7 @@ public:
 
 class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
 public:
-    typedef HeapVector<Member<AXObject>> AccessibilityChildrenVector;
+    typedef HeapVector<Member<AXObject>> AXObjectVector;
 
     struct AXRange {
         ALLOW_ONLY_INLINE_ALLOCATION();
@@ -638,8 +638,8 @@ public:
     virtual bool deprecatedExposesTitleUIElement() const { return true; }
     virtual AXObject* deprecatedTitleUIElement() const { return 0; }
     virtual String deprecatedPlaceholder() const { return String(); }
-    virtual void deprecatedAriaDescribedbyElements(AccessibilityChildrenVector& describedby) const { }
-    virtual void deprecatedAriaLabelledbyElements(AccessibilityChildrenVector& labelledby) const { }
+    virtual void deprecatedAriaDescribedbyElements(AXObjectVector& describedby) const { }
+    virtual void deprecatedAriaLabelledbyElements(AXObjectVector& labelledby) const { }
     virtual String deprecatedAccessibilityDescription() const { return String(); }
     virtual String deprecatedTitle(TextUnderElementMode mode = TextUnderElementAll) const { return String(); }
     virtual String deprecatedHelpText() const { return String(); }
@@ -651,7 +651,7 @@ public:
 
     // Retrieves the accessible name of the object, an enum indicating where the name
     // was derived from, and a list of objects that were used to derive the name, if any.
-    virtual String name(AXNameFrom&, AccessibilityChildrenVector* nameObjects) const;
+    virtual String name(AXNameFrom&, AXObjectVector* nameObjects) const;
 
     typedef HeapVector<NameSource> NameSources;
     // Retrieves the accessible name of the object and a list of all potential sources
@@ -662,7 +662,7 @@ public:
     // accessible description of the object, which is secondary to |name|, an enum indicating
     // where the description was derived from, and a list of objects that were used to
     // derive the description, if any.
-    virtual String description(AXNameFrom, AXDescriptionFrom&, AccessibilityChildrenVector* descriptionObjects) { return String(); }
+    virtual String description(AXNameFrom, AXDescriptionFrom&, AXObjectVector* descriptionObjects) { return String(); }
 
     // Takes the result of nameFrom and descriptionFrom from calling |name| and |description|,
     // above, and retrieves the placeholder of the object, if present and if it wasn't already
@@ -730,9 +730,9 @@ public:
     virtual AXObject* activeDescendant() const { return 0; }
     virtual String ariaAutoComplete() const { return String(); }
     virtual String ariaDescribedByAttribute() const { return String(); }
-    virtual void ariaFlowToElements(AccessibilityChildrenVector&) const { }
-    virtual void ariaControlsElements(AccessibilityChildrenVector&) const { }
-    virtual void ariaOwnsElements(AccessibilityChildrenVector& owns) const { }
+    virtual void ariaFlowToElements(AXObjectVector&) const { }
+    virtual void ariaControlsElements(AXObjectVector&) const { }
+    virtual void ariaOwnsElements(AXObjectVector& owns) const { }
     virtual bool ariaHasPopup() const { return false; }
     virtual bool isEditable() const { return false; }
     bool isMultiline() const;
@@ -761,7 +761,7 @@ public:
 
     // ARIA trees.
     // Used by an ARIA tree to get all its rows.
-    void ariaTreeRows(AccessibilityChildrenVector&);
+    void ariaTreeRows(AXObjectVector&);
 
     // ARIA live-region features.
     bool isLiveRegion() const;
@@ -789,7 +789,7 @@ public:
     virtual AXObject* elementAccessibilityHitTest(const IntPoint&) const;
 
     // High-level accessibility tree access. Other modules should only use these functions.
-    const AccessibilityChildrenVector& children();
+    const AXObjectVector& children();
     AXObject* parentObject() const;
     AXObject* parentObjectIfExists() const;
     virtual AXObject* computeParent() const = 0;
@@ -890,7 +890,7 @@ public:
 
 protected:
     AXID m_id;
-    AccessibilityChildrenVector m_children;
+    AXObjectVector m_children;
     mutable bool m_haveChildren;
     AccessibilityRole m_role;
     AXObjectInclusion m_lastKnownIsIgnoredValue;
