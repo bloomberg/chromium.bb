@@ -792,7 +792,6 @@ void InspectorIndexedDBAgent::clearObjectStore(ErrorString* errorString, const S
 
 DEFINE_TRACE(InspectorIndexedDBAgent)
 {
-    visitor->trace(m_inspectedFrames);
     InspectorBaseAgent::trace(visitor);
 }
 

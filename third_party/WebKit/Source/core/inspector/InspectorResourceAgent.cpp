@@ -411,7 +411,6 @@ InspectorResourceAgent::~InspectorResourceAgent()
 
 DEFINE_TRACE(InspectorResourceAgent)
 {
-    visitor->trace(m_inspectedFrames);
     visitor->trace(m_replayXHRs);
     visitor->trace(m_replayXHRsToBeDeleted);
     visitor->trace(m_pendingXHRReplayData);

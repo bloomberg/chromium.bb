@@ -1741,7 +1741,6 @@ void InspectorCSSAgent::setEffectivePropertyValueForNode(ErrorString* errorStrin
 DEFINE_TRACE(InspectorCSSAgent)
 {
     visitor->trace(m_domAgent);
-    visitor->trace(m_inspectedFrames);
     visitor->trace(m_resourceAgent);
     visitor->trace(m_resourceContentLoader);
 #if ENABLE(OILPAN)

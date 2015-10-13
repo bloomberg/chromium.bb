@@ -62,7 +62,6 @@ PageRuntimeAgent::~PageRuntimeAgent()
 
 DEFINE_TRACE(PageRuntimeAgent)
 {
-    visitor->trace(m_inspectedFrames);
     InspectorRuntimeAgent::trace(visitor);
 }
 

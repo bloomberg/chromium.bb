@@ -63,7 +63,6 @@ PageConsoleAgent::~PageConsoleAgent()
 DEFINE_TRACE(PageConsoleAgent)
 {
     visitor->trace(m_inspectorDOMAgent);
-    visitor->trace(m_inspectedFrames);
     InspectorConsoleAgent::trace(visitor);
 }
 

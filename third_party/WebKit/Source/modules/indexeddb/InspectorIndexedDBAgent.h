@@ -63,7 +63,7 @@ public:
 private:
     explicit InspectorIndexedDBAgent(InspectedFrames*);
 
-    RawPtrWillBeMember<InspectedFrames> m_inspectedFrames;
+    InspectedFrames* m_inspectedFrames;
 };
 
 } // namespace blink

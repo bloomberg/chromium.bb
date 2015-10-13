@@ -68,7 +68,7 @@ private:
     AnimationTimeline& referenceTimeline();
     Animation* animationClone(Animation*);
 
-    RawPtrWillBeMember<InspectedFrames> m_inspectedFrames;
+    InspectedFrames* m_inspectedFrames;
     RawPtrWillBeMember<InspectorDOMAgent> m_domAgent;
     RawPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;
     PersistentHeapHashMapWillBeHeapHashMap<String, Member<Animation>> m_idToAnimation;

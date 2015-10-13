@@ -158,7 +158,6 @@ InspectorLayerTreeAgent::~InspectorLayerTreeAgent()
 
 DEFINE_TRACE(InspectorLayerTreeAgent)
 {
-    visitor->trace(m_inspectedFrames);
     InspectorBaseAgent::trace(visitor);
 }
 

@@ -765,7 +765,6 @@ ExecutionContext* InspectorFileSystemAgent::assertExecutionContextForOrigin(Erro
 
 DEFINE_TRACE(InspectorFileSystemAgent)
 {
-    visitor->trace(m_inspectedFrames);
     InspectorBaseAgent::trace(visitor);
 }
 

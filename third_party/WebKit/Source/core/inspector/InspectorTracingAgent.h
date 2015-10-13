@@ -59,7 +59,7 @@ private:
     int m_layerTreeId;
     Client* m_client;
     RawPtrWillBeMember<InspectorWorkerAgent> m_workerAgent;
-    RawPtrWillBeMember<InspectedFrames> m_inspectedFrames;
+    InspectedFrames* m_inspectedFrames;
 };
 
 } // namespace blink

@@ -73,7 +73,7 @@ private:
 
     DocumentLoader* assertFrameWithDocumentLoader(ErrorString*, String frameId);
 
-    RawPtrWillBeMember<InspectedFrames> m_inspectedFrames;
+    InspectedFrames* m_inspectedFrames;
 };
 
 } // namespace blink

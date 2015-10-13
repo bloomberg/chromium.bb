@@ -2127,7 +2127,6 @@ bool InspectorDOMAgent::pushDocumentUponHandlelessOperation(ErrorString* errorSt
 DEFINE_TRACE(InspectorDOMAgent)
 {
     visitor->trace(m_domListener);
-    visitor->trace(m_inspectedFrames);
     visitor->trace(m_injectedScriptManager);
 #if ENABLE(OILPAN)
     visitor->trace(m_documentNodeToIdMap);

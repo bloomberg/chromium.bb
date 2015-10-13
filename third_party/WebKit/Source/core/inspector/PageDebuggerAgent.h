@@ -70,7 +70,7 @@ private:
     // V8DebuggerAgent::Client implemntation.
     bool canExecuteScripts() const;
 
-    RawPtrWillBeMember<InspectedFrames> m_inspectedFrames;
+    InspectedFrames* m_inspectedFrames;
     RawPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;
     HashMap<String, String> m_compiledScriptURLs;
 };

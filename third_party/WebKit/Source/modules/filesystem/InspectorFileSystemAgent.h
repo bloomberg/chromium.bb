@@ -65,7 +65,7 @@ private:
     bool assertEnabled(ErrorString*);
     ExecutionContext* assertExecutionContextForOrigin(ErrorString*, SecurityOrigin*);
 
-    RawPtrWillBeMember<InspectedFrames> m_inspectedFrames;
+    InspectedFrames* m_inspectedFrames;
     bool m_enabled;
 };
 

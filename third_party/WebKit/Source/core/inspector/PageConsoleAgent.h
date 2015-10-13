@@ -72,7 +72,7 @@ private:
     void clearMessages(ErrorString*) override;
 
     RawPtrWillBeMember<InspectorDOMAgent> m_inspectorDOMAgent;
-    RawPtrWillBeMember<InspectedFrames> m_inspectedFrames;
+    InspectedFrames* m_inspectedFrames;
     HashSet<WorkerGlobalScopeProxy*> m_workersWithEnabledConsole;
 
     static int s_enabledAgentCount;
