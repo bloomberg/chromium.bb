@@ -573,7 +573,7 @@ FcCacheTimeValid (FcConfig *config, FcCache *cache, struct stat *dir_stat)
 #ifdef HAVE_STRUCT_STAT_ST_MTIM
     fnano = (cache->checksum_nano == dir_stat->st_mtim.tv_nsec);
     if (FcDebug () & FC_DBG_CACHE)
-	printf ("FcCacheTimeValid dir \"%s\" cache checksum %d.%ld dir checksum %d.%ld\n",
+	printf ("FcCacheTimeValid dir \"%s\" cache checksum %d.%lld dir checksum %d.%ld\n",
 		FcCacheDir (cache), cache->checksum, cache->checksum_nano, (int) dir_stat->st_mtime, dir_stat->st_mtim.tv_nsec);
 #else
     if (FcDebug () & FC_DBG_CACHE)
