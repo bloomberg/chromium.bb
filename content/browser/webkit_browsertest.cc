@@ -36,10 +36,10 @@ IN_PROC_BROWSER_TEST_F(WebKitBrowserTest, AbortOnEnd) {
   EXPECT_FALSE(shell()->web_contents()->IsCrashed());
 }
 
-// This is a browser test because the DumpRenderTree framework holds
+// This is a browser test because the test_runner framework holds
 // onto a Document* reference that blocks this reproduction from
 // destroying the Document, so it is not a use after free unless
-// you don't have DumpRenderTree loaded.
+// you don't have test_runner loaded.
 
 // TODO(gavinp): remove this browser_test if we can get good LayoutTest
 // coverage of the same issue.
@@ -55,7 +55,7 @@ IN_PROC_BROWSER_TEST_F(WebKitBrowserTest, XsltBadImport) {
   EXPECT_FALSE(shell()->web_contents()->IsCrashed());
 }
 
-// This is a browser test because DumpRenderTree has a PrerendererClient
+// This is a browser test because test_runner has a PrerendererClient
 // implementation, and the purpose of this test is to ensure that content_shell
 // does not crash when prerender elements are encountered with no Prererering
 // implementation supplied to WebKit.

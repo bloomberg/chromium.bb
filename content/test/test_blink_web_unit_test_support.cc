@@ -181,7 +181,7 @@ blink::WebURLLoader* TestBlinkWebUnitTestSupport::createURLLoader() {
 }
 
 blink::WebString TestBlinkWebUnitTestSupport::userAgent() {
-  return blink::WebString::fromUTF8("DumpRenderTree/0.0.0.0");
+  return blink::WebString::fromUTF8("test_runner/0.0.0.0");
 }
 
 blink::WebData TestBlinkWebUnitTestSupport::loadResource(const char* name) {
