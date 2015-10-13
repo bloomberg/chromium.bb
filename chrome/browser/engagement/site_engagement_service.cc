@@ -64,14 +64,9 @@ bool DoublesConsideredDifferent(double value1, double value2, double delta) {
 // Only accept a navigation event for engagement if it is one of:
 //  a. direct typed navigation
 //  b. clicking on an omnibox suggestion brought up by typing a keyword
-//  c. clicking on a bookmark
+//  c. clicking on a bookmark or opening a bookmark app
 //  d. a custom search engine keyword search (e.g. Wikipedia search box added as
 //  search engine).
-//  TODO(dominickn): opening bookmark apps uses a variety of transition types:
-//    1. link (chrome://apps)
-//    2. auto_toplevel (shortcut, launcher)
-//  We need a way of distinguishing these as bookmark app navigations for site
-//  engagement.
 bool IsEngagementNavigation(ui::PageTransition transition) {
   return ui::PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_TYPED) ||
          ui::PageTransitionCoreTypeIs(transition,
