@@ -115,6 +115,7 @@ class DebugColors {
   static SkColor HUDBackgroundColor();
   static SkColor HUDSeparatorLineColor();
   static SkColor HUDIndicatorLineColor();
+  static SkColor HUDTitleColor();
 
   static SkColor PlatformLayerTreeTextColor();
   static SkColor FPSDisplayTextAndGraphColor();
