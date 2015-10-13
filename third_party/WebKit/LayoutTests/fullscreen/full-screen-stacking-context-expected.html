@@ -1,12 +1,20 @@
 <!DOCTYPE html>
-<video></video>
 <script>
-    var runPixelTests = true;
+var runPixelTests = true;
+
+function init() {
+  waitForEventAndEnd(document, 'webkitfullscreenchange');
+  runWithKeyDown(function() {
+    document.getElementById('video').webkitRequestFullScreen();
+  });
+}
 </script>
 <script src="full-screen-test.js"></script>
-<script>
-    document.onwebkitfullscreenchange = endTest;
-    runWithKeyDown(function() {
-        document.querySelector("video").webkitRequestFullScreen();
-    });
-</script>
+<style>
+#video {
+  background-color: black;
+}
+</style>
+<body onload="init()">
+  <video id='video'></video>
+</body>

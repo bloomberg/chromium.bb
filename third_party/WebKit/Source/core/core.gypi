@@ -577,8 +577,6 @@
             'layout/LayoutFrame.h',
             'layout/LayoutFrameSet.cpp',
             'layout/LayoutFrameSet.h',
-            'layout/LayoutFullScreen.cpp',
-            'layout/LayoutFullScreen.h',
             'layout/LayoutGeometryMap.cpp',
             'layout/LayoutGeometryMap.h',
             'layout/LayoutGeometryMapStep.h',
