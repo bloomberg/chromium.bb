@@ -30,7 +30,7 @@ class SESSIONS_EXPORT IOSLiveTab : public LiveTab,
   static IOSLiveTab* GetForWebState(web::WebState* web_state);
 
   // LiveTab:
-  bool IsInitialNavigation() override;
+  bool IsInitialBlankNavigation() override;
   int GetCurrentEntryIndex() override;
   int GetPendingEntryIndex() override;
   sessions::SerializedNavigationEntry GetEntryAtIndex(int index) override;

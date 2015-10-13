@@ -36,10 +36,10 @@ bool SyncedTabDelegate::ShouldSync() const {
   if (ProfileIsSupervised() && GetBlockedNavigations()->size() > 0)
     return true;
 
-  int entry_count = GetEntryCount();
-  if (entry_count == 0)
+  if (IsInitialBlankNavigation())
     return false;  // This deliberately ignores a new pending entry.
 
+  int entry_count = GetEntryCount();
   bool found_valid_url = false;
   for (int i = 0; i < entry_count; ++i) {
     const content::NavigationEntry* entry = GetEntryAtIndexMaybePending(i);

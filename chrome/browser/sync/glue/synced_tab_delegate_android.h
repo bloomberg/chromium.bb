@@ -32,6 +32,7 @@ class SyncedTabDelegateAndroid : public browser_sync::SyncedTabDelegate {
   bool IsBeingDestroyed() const override;
   Profile* profile() const override;
   std::string GetExtensionAppId() const override;
+  bool IsInitialBlankNavigation() const override;
   int GetCurrentEntryIndex() const override;
   int GetEntryCount() const override;
   int GetPendingEntryIndex() const override;

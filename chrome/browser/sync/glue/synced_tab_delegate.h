@@ -40,7 +40,7 @@ class SyncedTabDelegate {
   virtual std::string GetExtensionAppId() const = 0;
 
   // Methods from NavigationController.
-
+  virtual bool IsInitialBlankNavigation() const = 0;
   virtual int GetCurrentEntryIndex() const = 0;
   virtual int GetEntryCount() const = 0;
   virtual int GetPendingEntryIndex() const = 0;

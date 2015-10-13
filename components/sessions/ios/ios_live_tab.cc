@@ -28,7 +28,7 @@ IOSLiveTab::IOSLiveTab(web::WebState* web_state) : web_state_(web_state) {}
 
 IOSLiveTab::~IOSLiveTab() {}
 
-bool IOSLiveTab::IsInitialNavigation() {
+bool IOSLiveTab::IsInitialBlankNavigation() {
   return navigation_manager()->GetEntryCount() == 0;
 }
 

@@ -57,6 +57,10 @@ std::string TabContentsSyncedTabDelegate::GetExtensionAppId() const {
   return std::string();
 }
 
+bool TabContentsSyncedTabDelegate::IsInitialBlankNavigation() const {
+  return web_contents_->GetController().IsInitialBlankNavigation();
+}
+
 int TabContentsSyncedTabDelegate::GetCurrentEntryIndex() const {
   return web_contents_->GetController().GetCurrentEntryIndex();
 }

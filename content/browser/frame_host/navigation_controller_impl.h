@@ -79,6 +79,7 @@ class CONTENT_EXPORT NavigationControllerImpl
   void CancelPendingReload() override;
   void ContinuePendingReload() override;
   bool IsInitialNavigation() const override;
+  bool IsInitialBlankNavigation() const override;
   void Reload(bool check_for_repost) override;
   void ReloadIgnoringCache(bool check_for_repost) override;
   void ReloadOriginalRequestURL(bool check_for_repost) override;

@@ -410,9 +410,14 @@ class NavigationController {
   // Continues a repost that brought up a warning.
   virtual void ContinuePendingReload() = 0;
 
-  // Returns true if we are navigating to the URL the tab is opened with.
-  // Returns false after the initial navigation has committed.
+  // Returns true if this is a newly created tab or a cloned tab, which has not
+  // yet committed a real page. Returns false after the initial navigation has
+  // committed.
   virtual bool IsInitialNavigation() const = 0;
+
+  // Returns true if this is a newly created tab (not a clone) that has not yet
+  // committed a real page.
+  virtual bool IsInitialBlankNavigation() const = 0;
 
   // Broadcasts the NOTIFICATION_NAV_ENTRY_CHANGED notification for the given
   // entry. This will keep things in sync like the saved session.

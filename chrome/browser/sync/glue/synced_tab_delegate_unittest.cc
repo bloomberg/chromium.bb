@@ -44,6 +44,11 @@ class FakeSyncedTabDelegate : public SyncedTabDelegate {
   bool IsBeingDestroyed() const override { return false; }
   Profile* profile() const override { return NULL; }
   std::string GetExtensionAppId() const override { return ""; }
+  bool IsInitialBlankNavigation() const override {
+    // This differs from NavigationControllerImpl, which has an initial blank
+    // NavigationEntry.
+    return GetEntryCount() == 0;
+  }
   int GetCurrentEntryIndex() const override { return current_index_; }
   int GetEntryCount() const override { return indexed_entries_.size(); }
   int GetPendingEntryIndex() const override { return pending_index_; }

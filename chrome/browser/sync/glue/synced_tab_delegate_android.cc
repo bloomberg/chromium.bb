@@ -46,6 +46,10 @@ std::string SyncedTabDelegateAndroid::GetExtensionAppId() const {
   return tab_contents_delegate_->GetExtensionAppId();
 }
 
+bool SyncedTabDelegateAndroid::IsInitialBlankNavigation() const {
+  return tab_contents_delegate_->IsInitialBlankNavigation();
+}
+
 int SyncedTabDelegateAndroid::GetCurrentEntryIndex() const {
   return tab_contents_delegate_->GetCurrentEntryIndex();
 }

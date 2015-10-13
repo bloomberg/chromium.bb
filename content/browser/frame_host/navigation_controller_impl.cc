@@ -402,6 +402,13 @@ bool NavigationControllerImpl::IsInitialNavigation() const {
   return is_initial_navigation_;
 }
 
+bool NavigationControllerImpl::IsInitialBlankNavigation() const {
+  // TODO(creis): Once we create a NavigationEntry for the initial blank page,
+  // we'll need to check for entry count 1 and restore_type RESTORE_NONE (to
+  // exclude the cloned tab case).
+  return IsInitialNavigation() && GetEntryCount() == 0;
+}
+
 NavigationEntryImpl* NavigationControllerImpl::GetEntryWithPageID(
   SiteInstance* instance, int32 page_id) const {
   int index = GetEntryIndexWithPageID(instance, page_id);

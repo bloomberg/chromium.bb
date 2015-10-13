@@ -28,8 +28,8 @@ ContentLiveTab::ContentLiveTab(content::WebContents* contents)
 
 ContentLiveTab::~ContentLiveTab() {}
 
-bool ContentLiveTab::IsInitialNavigation() {
-  return navigation_controller().IsInitialNavigation();
+bool ContentLiveTab::IsInitialBlankNavigation() {
+  return navigation_controller().IsInitialBlankNavigation();
 }
 
 int ContentLiveTab::GetCurrentEntryIndex() {

@@ -4561,6 +4561,7 @@ TEST_F(NavigationControllerTest, IsInitialNavigation) {
 
   // Initial state.
   EXPECT_TRUE(controller.IsInitialNavigation());
+  EXPECT_TRUE(controller.IsInitialBlankNavigation());
 
   // After commit, it stays false.
   const GURL url1("http://foo1");
@@ -4568,11 +4569,20 @@ TEST_F(NavigationControllerTest, IsInitialNavigation) {
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
   navigation_entry_committed_counter_ = 0;
   EXPECT_FALSE(controller.IsInitialNavigation());
+  EXPECT_FALSE(controller.IsInitialBlankNavigation());
 
   // After starting a new navigation, it stays false.
   const GURL url2("http://foo2");
   controller.LoadURL(
       url2, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
+  EXPECT_FALSE(controller.IsInitialNavigation());
+  EXPECT_FALSE(controller.IsInitialBlankNavigation());
+
+  // For cloned tabs, IsInitialNavigationShould be true but
+  // IsInitialBlankNavigation should be false.
+  scoped_ptr<WebContents> clone(controller.GetWebContents()->Clone());
+  EXPECT_TRUE(clone->GetController().IsInitialNavigation());
+  EXPECT_FALSE(clone->GetController().IsInitialBlankNavigation());
 }
 
 // Check that the favicon is not reused across a client redirect.

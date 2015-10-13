@@ -379,6 +379,11 @@ class SyncedTabDelegateFake : public SyncedTabDelegate {
                             blocked_navigations_(NULL) {}
   ~SyncedTabDelegateFake() override {}
 
+  bool IsInitialBlankNavigation() const override {
+    // This differs from NavigationControllerImpl, which has an initial blank
+    // NavigationEntry.
+    return GetEntryCount() == 0;
+  }
   int GetCurrentEntryIndex() const override { return current_entry_index_; }
   void set_current_entry_index(int i) {
     current_entry_index_ = i;

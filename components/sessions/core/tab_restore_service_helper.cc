@@ -361,7 +361,7 @@ void TabRestoreServiceHelper::PopulateTab(Tab* tab,
                                           LiveTab* live_tab) {
   const int pending_index = live_tab->GetPendingEntryIndex();
   int entry_count =
-      live_tab->IsInitialNavigation() ? 0 : live_tab->GetEntryCount();
+      live_tab->IsInitialBlankNavigation() ? 0 : live_tab->GetEntryCount();
   if (entry_count == 0 && pending_index == 0)
     entry_count++;
   tab->navigations.resize(static_cast<int>(entry_count));
