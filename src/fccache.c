@@ -34,6 +34,9 @@
 #  include <unistd.h>
 #  include <sys/mman.h>
 #endif
+#if defined(_WIN32)
+#include <sys/locking.h>
+#endif
 
 #ifndef O_BINARY
 #define O_BINARY 0
@@ -1202,6 +1205,10 @@ FcDirCacheLock (const FcChar8 *dir,
 	/* No caches in that directory. simply retry with another one */
 	if (fd != -1)
 	{
+#if defined(_WIN32)
+	    if (_locking (fd, _LK_LOCK, 1) == -1)
+		goto bail;
+#else
 	    struct flock fl;
 
 	    fl.l_type = F_WRLCK;
@@ -1211,6 +1218,7 @@ FcDirCacheLock (const FcChar8 *dir,
 	    fl.l_pid = getpid ();
 	    if (fcntl (fd, F_SETLKW, &fl) == -1)
 		goto bail;
+#endif
 	    break;
 	}
     }
@@ -1224,16 +1232,20 @@ bail:
 void
 FcDirCacheUnlock (int fd)
 {
-    struct flock fl;
-
     if (fd != -1)
     {
+#if defined(_WIN32)
+	_locking (fd, _LK_UNLCK, 1);
+#else
+	struct flock fl;
+
 	fl.l_type = F_UNLCK;
 	fl.l_whence = SEEK_SET;
 	fl.l_start = 0;
 	fl.l_len = 0;
 	fl.l_pid = getpid ();
 	fcntl (fd, F_SETLK, &fl);
+#endif
 	close (fd);
     }
 }
