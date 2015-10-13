@@ -255,14 +255,11 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
     @Override
     public void onPromoPreferenceClick() {
         super.onPromoPreferenceClick();
-        setIsPromoActive(false);
     }
 
     @Override
     public void onPromoButtonClick(boolean accepted) {
         super.onPromoButtonClick(accepted);
-        mManagementDelegate.logPromoOutcome();
-        setIsPromoActive(false);
     }
 
     // ============================================================================================
@@ -285,12 +282,8 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
     public void setPreferenceState(boolean enabled) {
         if (mManagementDelegate != null) {
             mManagementDelegate.setPreferenceState(enabled);
+            setIsPromoActive(false);
         }
-    }
-
-    @Override
-    protected boolean isPromoAvailable() {
-        return mManagementDelegate != null && mManagementDelegate.isPromoAvailable();
     }
 
     @Override
@@ -557,6 +550,7 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
 
     @Override
     public void setIsPromoActive(boolean isActive) {
+        setPromoVisibility(isActive);
         mPanelMetrics.setIsPromoActive(isActive);
     }
 
@@ -905,6 +899,38 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
     @Override
     protected float getPeekPromoHeight() {
         return getPeekPromoControl().getHeightPx();
+    }
+
+    // ============================================================================================
+    // Promo
+    // ============================================================================================
+
+    // TODO(pedrosimonetti): refactor the rest of the promo code into its own Control.
+
+    /**
+     * Whether the Promo is visible.
+     */
+    private boolean mIsPromoVisible;
+
+
+    @Override
+    protected boolean isPromoVisible() {
+        return mIsPromoVisible;
+    }
+
+    @Override
+    protected void onPromoAcceptanceAnimationFinished() {
+        // NOTE(pedrosimonetti): We should only set the preference to true after the acceptance
+        // animation finishes, because setting the preference will make the user leave the
+        // undecided state, and that will, in turn, turn the promo off.
+        setPreferenceState(true);
+    }
+
+    /**
+     * @param isVisible Whether the Promo should be visible.
+     */
+    private void setPromoVisibility(boolean isVisible) {
+        mIsPromoVisible = isVisible;
     }
 
     // ============================================================================================

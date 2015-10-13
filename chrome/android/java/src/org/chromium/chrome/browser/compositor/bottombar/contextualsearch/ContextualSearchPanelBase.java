@@ -246,9 +246,9 @@ abstract class ContextualSearchPanelBase implements ContextualSearchPromoHost {
     public abstract void setPreferenceState(boolean enabled);
 
     /**
-     * @return Whether the Panel Promo is available.
+     * @return Whether the Panel Promo is visible.
      */
-    protected abstract boolean isPromoAvailable();
+    protected abstract boolean isPromoVisible();
 
     /**
      * Animates the acceptance of the Promo.
@@ -1237,7 +1237,7 @@ abstract class ContextualSearchPanelBase implements ContextualSearchPromoHost {
      * visibility between 0 and 1 means the Promo is partially visible.
      */
     private void updatePromoVisibility(float percentage) {
-        if (isPromoAvailable()) {
+        if (isPromoVisible()) {
             mPromoVisible = true;
 
             mPromoHeightPx = Math.round(MathUtils.clamp(percentage * mPromoContentHeightPx,
@@ -1384,6 +1384,9 @@ abstract class ContextualSearchPanelBase implements ContextualSearchPromoHost {
             animatePromoAcceptance();
         } else {
             hidePromoView();
+            // NOTE(pedrosimonetti): If the user has opted out of Contextual Search, we should set
+            // the preference right away because the preference state controls whether the promo
+            // will be visible, and we want to hide the promo immediately when the user opts out.
             setPreferenceState(false);
             closePanel(StateChangeReason.OPTOUT, true);
         }
@@ -1410,7 +1413,7 @@ abstract class ContextualSearchPanelBase implements ContextualSearchPromoHost {
      * Creates the Search Promo View.
      */
     public void createPromoView() {
-        if (!isPromoAvailable()) return;
+        if (!isPromoVisible()) return;
 
         assert mContainerView != null;
 
@@ -1445,7 +1448,7 @@ abstract class ContextualSearchPanelBase implements ContextualSearchPromoHost {
      * Destroys the Search Promo View.
      */
     protected void destroyPromoView() {
-        if (!isPromoAvailable()) return;
+        if (!isPromoVisible()) return;
 
         if (mPromoView != null) {
             mContainerView.removeView(mPromoView);
@@ -1462,7 +1465,7 @@ abstract class ContextualSearchPanelBase implements ContextualSearchPromoHost {
      * @param y The Y position.
      */
     public void showPromoViewAtYPosition(float y) {
-        if (mPromoView == null || !isPromoAvailable()) return;
+        if (mPromoView == null || !isPromoVisible()) return;
 
         mPromoView.setTranslationX(getOffsetX() / mPxToDp);
         mPromoView.setTranslationY(y);
@@ -1481,7 +1484,7 @@ abstract class ContextualSearchPanelBase implements ContextualSearchPromoHost {
     public void hidePromoView() {
         if (mPromoView == null
                 || !mIsSearchPromoViewVisible
-                || !isPromoAvailable()) {
+                || !isPromoVisible()) {
             return;
         }
 

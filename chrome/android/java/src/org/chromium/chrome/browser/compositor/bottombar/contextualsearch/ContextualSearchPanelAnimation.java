@@ -108,6 +108,11 @@ public abstract class ContextualSearchPanelAnimation extends ContextualSearchPan
      */
     protected abstract void updateSearchBarTextOpacity(float percentage);
 
+    /**
+     * Notifies that the acceptance animation has finished.
+     */
+    protected abstract void onPromoAcceptanceAnimationFinished();
+
     // ============================================================================================
     // Animation API
     // ============================================================================================
@@ -261,7 +266,7 @@ public abstract class ContextualSearchPanelAnimation extends ContextualSearchPan
         // maximized so this project state change is not needed.
         if (projectedState == PanelState.MAXIMIZED
                 && getPanelState() == PanelState.PEEKED
-                && isPromoAvailable() && isFullscreenSizePanel()) {
+                && isPromoVisible() && isFullscreenSizePanel()) {
             projectedState = PanelState.EXPANDED;
         }
 
@@ -419,7 +424,7 @@ public abstract class ContextualSearchPanelAnimation extends ContextualSearchPan
     protected void onAnimationFinished() {
         if (mIsAnimatingPromoAcceptance) {
             mIsAnimatingPromoAcceptance = false;
-            setPreferenceState(true);
+            onPromoAcceptanceAnimationFinished();
         }
 
         if (mIsAnimatingPanelClosing) {
