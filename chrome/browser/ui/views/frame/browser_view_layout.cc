@@ -223,13 +223,12 @@ gfx::Rect BrowserViewLayout::GetFindBarBoundingBox() const {
     // miniature immersive style tab strip is visible. Do not overlap the
     // find bar and the tab strip.
     find_bar_y = top_container_bounds.bottom();
-  } else if (ui::MaterialDesignController::IsModeMaterial()) {
-    find_bar_y = top_container_bounds.bottom() - 6;
   } else {
-    // Position the find bar 1 pixel above the bottom of the top container
-    // so that it occludes the border between the content area and the top
-    // container and looks connected to the top container.
-    find_bar_y = top_container_bounds.bottom() - 1;
+    // Overlap the find bar atop |top_container_|.
+    // The find bar should look connected to the top container when material
+    // design is not enabled.
+    find_bar_y = top_container_bounds.bottom() -
+                 GetLayoutConstant(FIND_BAR_TOOLBAR_OVERLAP);
   }
 
   // Grow the height of |bounding_box| by the height of any elements between

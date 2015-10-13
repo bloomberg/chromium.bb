@@ -8,6 +8,7 @@
 #include "ui/base/resource/material_design/material_design_controller.h"
 
 int GetLayoutConstant(LayoutConstant constant) {
+  const int kFindBarVerticalOffset[] = {1, 6, 6};
   const int kIconLabelViewInternalPadding[] = {3, 2, 2};
   const int kIconLabelViewTrailingPadding[] = {2, 8, 8};
   const int kLocationBarBubbleHorizontalPadding[] = {1, 5, 5};
@@ -38,6 +39,8 @@ int GetLayoutConstant(LayoutConstant constant) {
 
   const int mode = ui::MaterialDesignController::GetMode();
   switch (constant) {
+    case FIND_BAR_TOOLBAR_OVERLAP:
+      return kFindBarVerticalOffset[mode];
     case ICON_LABEL_VIEW_INTERNAL_PADDING:
       return kIconLabelViewInternalPadding[mode];
     case ICON_LABEL_VIEW_TRAILING_PADDING:

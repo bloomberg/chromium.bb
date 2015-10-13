@@ -8,6 +8,9 @@
 #include "ui/gfx/geometry/insets.h"
 
 enum LayoutConstant {
+  // Vertical offset from top of content to the top of find bar.
+  FIND_BAR_TOOLBAR_OVERLAP,
+
   // Horizontal padding applied between items of icon-label views.
   ICON_LABEL_VIEW_INTERNAL_PADDING,
 
