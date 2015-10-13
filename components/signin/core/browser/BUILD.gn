@@ -48,8 +48,6 @@ source_set("browser") {
     "signin_manager.h",
     "signin_manager_base.cc",
     "signin_manager_base.h",
-    "signin_manager_cookie_helper.cc",
-    "signin_manager_cookie_helper.h",
     "signin_metrics.cc",
     "signin_metrics.h",
     "signin_status_metrics_provider.cc",

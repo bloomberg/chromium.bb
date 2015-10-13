@@ -17,7 +17,6 @@
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_internals_util.h"
-#include "components/signin/core/browser/signin_manager_cookie_helper.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/signin/core/common/signin_pref_names.h"
 #include "google_apis/gaia/gaia_auth_util.h"

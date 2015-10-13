@@ -94,8 +94,6 @@
         'signin/core/browser/signin_manager.h',
         'signin/core/browser/signin_manager_base.cc',
         'signin/core/browser/signin_manager_base.h',
-        'signin/core/browser/signin_manager_cookie_helper.cc',
-        'signin/core/browser/signin_manager_cookie_helper.h',
         'signin/core/browser/signin_metrics.cc',
         'signin/core/browser/signin_metrics.h',
         'signin/core/browser/signin_status_metrics_provider.cc',
