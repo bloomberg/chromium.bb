@@ -235,7 +235,6 @@ DrmWindow* ScreenManager::GetWindow(gfx::AcceleratedWidget widget) {
   if (it != window_map_.end())
     return it->second;
 
-  NOTREACHED() << "Attempting to get non-existing window for " << widget;
   return nullptr;
 }
 

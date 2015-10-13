@@ -5,21 +5,22 @@
 #ifndef UI_OZONE_PLATFORM_IMPL_DRM_VSYNC_PROVIDER_H_
 #define UI_OZONE_PLATFORM_IMPL_DRM_VSYNC_PROVIDER_H_
 
+#include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/vsync_provider.h"
 
 namespace ui {
 
-class DrmWindow;
+class DrmWindowProxy;
 
 class DrmVSyncProvider : public gfx::VSyncProvider {
  public:
-  DrmVSyncProvider(DrmWindow* window);
+  DrmVSyncProvider(DrmWindowProxy* window);
   ~DrmVSyncProvider() override;
 
   void GetVSyncParameters(const UpdateVSyncCallback& callback) override;
 
  private:
-  DrmWindow* window_;  // Not owned.
+  DrmWindowProxy* window_;
 
   DISALLOW_COPY_AND_ASSIGN(DrmVSyncProvider);
 };

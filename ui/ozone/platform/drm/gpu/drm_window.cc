@@ -82,8 +82,8 @@ HardwareDisplayController* DrmWindow::GetController() {
   return controller_;
 }
 
-void DrmWindow::OnBoundsChanged(const gfx::Rect& bounds) {
-  TRACE_EVENT2("drm", "DrmWindow::OnBoundsChanged", "widget", widget_, "bounds",
+void DrmWindow::SetBounds(const gfx::Rect& bounds) {
+  TRACE_EVENT2("drm", "DrmWindow::SetBounds", "widget", widget_, "bounds",
                bounds.ToString());
   bounds_ = bounds;
   if (bounds_.size() != bounds.size())

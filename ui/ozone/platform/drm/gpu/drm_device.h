@@ -53,10 +53,6 @@ class OZONE_EXPORT DrmDevice : public base::RefCountedThreadSafe<DrmDevice> {
   // Open device.
   virtual bool Initialize(bool use_atomic);
 
-  // |task_runner| will be used to asynchronously page flip.
-  virtual void InitializeTaskRunner(
-      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
-
   // Get the CRTC state. This is generally used to save state before using the
   // CRTC. When the user finishes using the CRTC, the user should restore the
   // CRTC to it's initial state. Use |SetCrtc| to restore the state.
@@ -196,13 +192,10 @@ class OZONE_EXPORT DrmDevice : public base::RefCountedThreadSafe<DrmDevice> {
   // DRM device.
   base::File file_;
 
-  // Helper thread to perform IO listener operations.
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  scoped_ptr<PageFlipManager> page_flip_manager_;
 
   // Watcher for |fd_| listening for page flip events.
-  scoped_refptr<IOWatcher> watcher_;
-
-  scoped_refptr<PageFlipManager> page_flip_manager_;
+  scoped_ptr<IOWatcher> watcher_;
 
   bool is_primary_device_;
 

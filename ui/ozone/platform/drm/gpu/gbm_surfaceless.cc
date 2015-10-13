@@ -4,36 +4,22 @@
 
 #include "ui/ozone/platform/drm/gpu/gbm_surfaceless.h"
 
-#include "base/bind.h"
-#include "base/thread_task_runner_handle.h"
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
 #include "ui/ozone/platform/drm/gpu/drm_vsync_provider.h"
-#include "ui/ozone/platform/drm/gpu/drm_window.h"
-#include "ui/ozone/platform/drm/gpu/gbm_buffer.h"
+#include "ui/ozone/platform/drm/gpu/drm_window_proxy.h"
 #include "ui/ozone/platform/drm/gpu/gbm_surface_factory.h"
-#include "ui/ozone/platform/drm/gpu/hardware_display_controller.h"
+#include "ui/ozone/platform/drm/gpu/scanout_buffer.h"
 
 namespace ui {
 
-namespace {
-
-void PostedSwapResult(const SwapCompletionCallback& callback,
-                      gfx::SwapResult result) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                base::Bind(callback, result));
-}
-
-}  // namespace
-
-GbmSurfaceless::GbmSurfaceless(DrmWindow* window,
+GbmSurfaceless::GbmSurfaceless(scoped_ptr<DrmWindowProxy> window,
                                GbmSurfaceFactory* surface_manager)
-    : window_(window),
-      surface_manager_(surface_manager) {
-  surface_manager_->RegisterSurface(window_->GetAcceleratedWidget(), this);
+    : window_(window.Pass()), surface_manager_(surface_manager) {
+  surface_manager_->RegisterSurface(window_->widget(), this);
 }
 
 GbmSurfaceless::~GbmSurfaceless() {
-  surface_manager_->UnregisterSurface(window_->GetAcceleratedWidget());
+  surface_manager_->UnregisterSurface(window_->widget());
 }
 
 void GbmSurfaceless::QueueOverlayPlane(const OverlayPlane& plane) {
@@ -56,15 +42,13 @@ bool GbmSurfaceless::OnSwapBuffers() {
 
 bool GbmSurfaceless::OnSwapBuffersAsync(
     const SwapCompletionCallback& callback) {
-  // Wrap the callback and post the result such that everything using the
-  // callback doesn't need to worry about re-entrancy.
-  window_->SchedulePageFlip(planes_, base::Bind(&PostedSwapResult, callback));
+  window_->SchedulePageFlip(planes_, callback);
   planes_.clear();
   return true;
 }
 
 scoped_ptr<gfx::VSyncProvider> GbmSurfaceless::CreateVSyncProvider() {
-  return make_scoped_ptr(new DrmVSyncProvider(window_));
+  return make_scoped_ptr(new DrmVSyncProvider(window_.get()));
 }
 
 bool GbmSurfaceless::IsUniversalDisplayLinkDevice() {

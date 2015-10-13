@@ -374,7 +374,7 @@ TEST_F(ScreenManagerTest, CheckControllerToWindowMappingWithSameBounds) {
   scoped_ptr<ui::DrmWindow> window(
       new ui::DrmWindow(1, device_manager_.get(), screen_manager_.get()));
   window->Initialize();
-  window->OnBoundsChanged(GetPrimaryBounds());
+  window->SetBounds(GetPrimaryBounds());
   screen_manager_->AddWindow(1, window.Pass());
 
   screen_manager_->AddDisplayController(drm_, kPrimaryCrtc, kPrimaryConnector);
@@ -394,7 +394,7 @@ TEST_F(ScreenManagerTest, CheckControllerToWindowMappingWithDifferentBounds) {
   window->Initialize();
   gfx::Rect new_bounds = GetPrimaryBounds();
   new_bounds.Inset(0, 0, 1, 1);
-  window->OnBoundsChanged(new_bounds);
+  window->SetBounds(new_bounds);
   screen_manager_->AddWindow(1, window.Pass());
 
   screen_manager_->AddDisplayController(drm_, kPrimaryCrtc, kPrimaryConnector);
@@ -415,7 +415,7 @@ TEST_F(ScreenManagerTest,
     scoped_ptr<ui::DrmWindow> window(
         new ui::DrmWindow(i, device_manager_.get(), screen_manager_.get()));
     window->Initialize();
-    window->OnBoundsChanged(GetPrimaryBounds());
+    window->SetBounds(GetPrimaryBounds());
     screen_manager_->AddWindow(i, window.Pass());
   }
 
@@ -440,7 +440,7 @@ TEST_F(ScreenManagerTest, ShouldDissociateWindowOnControllerRemoval) {
   scoped_ptr<ui::DrmWindow> window(new ui::DrmWindow(
       window_id, device_manager_.get(), screen_manager_.get()));
   window->Initialize();
-  window->OnBoundsChanged(GetPrimaryBounds());
+  window->SetBounds(GetPrimaryBounds());
   screen_manager_->AddWindow(window_id, window.Pass());
 
   screen_manager_->AddDisplayController(drm_, kPrimaryCrtc, kPrimaryConnector);
@@ -462,7 +462,7 @@ TEST_F(ScreenManagerTest, EnableControllerWhenWindowHasNoBuffer) {
   scoped_ptr<ui::DrmWindow> window(
       new ui::DrmWindow(1, device_manager_.get(), screen_manager_.get()));
   window->Initialize();
-  window->OnBoundsChanged(GetPrimaryBounds());
+  window->SetBounds(GetPrimaryBounds());
   screen_manager_->AddWindow(1, window.Pass());
 
   screen_manager_->AddDisplayController(drm_, kPrimaryCrtc, kPrimaryConnector);
@@ -491,7 +491,7 @@ TEST_F(ScreenManagerTest, EnableControllerWhenWindowHasBuffer) {
   scoped_ptr<ui::DrmWindow> window(
       new ui::DrmWindow(1, device_manager_.get(), screen_manager_.get()));
   window->Initialize();
-  window->OnBoundsChanged(GetPrimaryBounds());
+  window->SetBounds(GetPrimaryBounds());
   scoped_refptr<ui::ScanoutBuffer> buffer = buffer_generator_->Create(
       drm_, gfx::BufferFormat::BGRA_8888, GetPrimaryBounds().size());
   window->SchedulePageFlip(

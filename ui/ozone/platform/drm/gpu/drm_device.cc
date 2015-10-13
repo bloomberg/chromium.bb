@@ -114,10 +114,10 @@ bool CanQueryForResources(int fd) {
 
 }  // namespace
 
-class DrmDevice::PageFlipManager
-    : public base::RefCountedThreadSafe<DrmDevice::PageFlipManager> {
+class DrmDevice::PageFlipManager {
  public:
   PageFlipManager() : next_id_(0) {}
+  ~PageFlipManager() {}
 
   void OnPageFlip(uint32_t frame,
                   uint32_t seconds,
@@ -149,9 +149,6 @@ class DrmDevice::PageFlipManager
   }
 
  private:
-  friend class base::RefCountedThreadSafe<DrmDevice::PageFlipManager>;
-  ~PageFlipManager() {}
-
   struct PageFlip {
     uint64_t id;
     uint32_t pending_calls;
@@ -173,50 +170,25 @@ class DrmDevice::PageFlipManager
   DISALLOW_COPY_AND_ASSIGN(PageFlipManager);
 };
 
-class DrmDevice::IOWatcher
-    : public base::RefCountedThreadSafe<DrmDevice::IOWatcher>,
-      public base::MessagePumpLibevent::Watcher {
+class DrmDevice::IOWatcher : public base::MessagePumpLibevent::Watcher {
  public:
-  IOWatcher(int fd,
-            const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
-            const scoped_refptr<DrmDevice::PageFlipManager>& page_flip_manager)
-      : main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-        io_task_runner_(io_task_runner),
-        page_flip_manager_(page_flip_manager),
-        fd_(fd) {
-    io_task_runner_->PostTask(FROM_HERE,
-                              base::Bind(&IOWatcher::RegisterOnIO, this));
+  IOWatcher(int fd, DrmDevice::PageFlipManager* page_flip_manager)
+      : page_flip_manager_(page_flip_manager), fd_(fd) {
+    Register();
   }
 
-  void Shutdown() {
-    io_task_runner_->PostTask(FROM_HERE,
-                              base::Bind(&IOWatcher::UnregisterOnIO, this));
-  }
+  ~IOWatcher() override { Unregister(); }
 
  private:
-  friend class base::RefCountedThreadSafe<IOWatcher>;
-
-  ~IOWatcher() override {}
-
-  void RegisterOnIO() {
+  void Register() {
     DCHECK(base::MessageLoopForIO::IsCurrent());
     base::MessageLoopForIO::current()->WatchFileDescriptor(
         fd_, true, base::MessageLoopForIO::WATCH_READ, &controller_, this);
   }
 
-  void UnregisterOnIO() {
+  void Unregister() {
     DCHECK(base::MessageLoopForIO::IsCurrent());
     controller_.StopWatchingFileDescriptor();
-  }
-
-  void OnPageFlipOnIO(uint32_t frame,
-                      uint32_t seconds,
-                      uint32_t useconds,
-                      uint64_t id) {
-    main_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&DrmDevice::PageFlipManager::OnPageFlip, page_flip_manager_,
-                   frame, seconds, useconds, id));
   }
 
   // base::MessagePumpLibevent::Watcher overrides:
@@ -224,17 +196,14 @@ class DrmDevice::IOWatcher
     DCHECK(base::MessageLoopForIO::IsCurrent());
     TRACE_EVENT1("drm", "OnDrmEvent", "socket", fd);
 
-    if (!ProcessDrmEvent(
-            fd, base::Bind(&DrmDevice::IOWatcher::OnPageFlipOnIO, this)))
-      UnregisterOnIO();
+    if (!ProcessDrmEvent(fd, base::Bind(&DrmDevice::PageFlipManager::OnPageFlip,
+                                        base::Unretained(page_flip_manager_))))
+      Unregister();
   }
 
   void OnFileCanWriteWithoutBlocking(int fd) override { NOTREACHED(); }
 
-  scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
-  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
-
-  scoped_refptr<DrmDevice::PageFlipManager> page_flip_manager_;
+  DrmDevice::PageFlipManager* page_flip_manager_;
 
   base::MessagePumpLibevent::FileDescriptorWatcher controller_;
 
@@ -251,10 +220,7 @@ DrmDevice::DrmDevice(const base::FilePath& device_path,
       page_flip_manager_(new PageFlipManager()),
       is_primary_device_(is_primary_device) {}
 
-DrmDevice::~DrmDevice() {
-  if (watcher_)
-    watcher_->Shutdown();
-}
+DrmDevice::~DrmDevice() {}
 
 bool DrmDevice::Initialize(bool use_atomic) {
   // Ignore devices that cannot perform modesetting.
@@ -279,15 +245,10 @@ bool DrmDevice::Initialize(bool use_atomic) {
     return false;
   }
 
-  return true;
-}
+  watcher_.reset(
+      new IOWatcher(file_.GetPlatformFile(), page_flip_manager_.get()));
 
-void DrmDevice::InitializeTaskRunner(
-    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
-  DCHECK(!task_runner_);
-  task_runner_ = task_runner;
-  watcher_ =
-      new IOWatcher(file_.GetPlatformFile(), task_runner_, page_flip_manager_);
+  return true;
 }
 
 ScopedDrmCrtcPtr DrmDevice::GetCrtc(uint32_t crtc_id) {

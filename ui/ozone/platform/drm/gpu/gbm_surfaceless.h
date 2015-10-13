@@ -7,16 +7,17 @@
 
 #include <vector>
 
+#include "ui/gfx/native_widget_types.h"
 #include "ui/ozone/platform/drm/gpu/overlay_plane.h"
 #include "ui/ozone/public/surface_ozone_egl.h"
 
 namespace gfx {
 class Size;
-}  // namespace gfx
+}
 
 namespace ui {
 
-class DrmWindow;
+class DrmWindowProxy;
 class GbmSurfaceFactory;
 
 // In surfaceless mode drawing and displaying happens directly through
@@ -25,7 +26,7 @@ class GbmSurfaceFactory;
 // presentation.
 class GbmSurfaceless : public SurfaceOzoneEGL {
  public:
-  GbmSurfaceless(DrmWindow* window,
+  GbmSurfaceless(scoped_ptr<DrmWindowProxy> window,
                  GbmSurfaceFactory* surface_manager);
   ~GbmSurfaceless() override;
 
@@ -40,8 +41,10 @@ class GbmSurfaceless : public SurfaceOzoneEGL {
   bool IsUniversalDisplayLinkDevice() override;
 
  protected:
-  DrmWindow* window_;
+  scoped_ptr<DrmWindowProxy> window_;
+
   GbmSurfaceFactory* surface_manager_;
+
   std::vector<OverlayPlane> planes_;
 
   DISALLOW_COPY_AND_ASSIGN(GbmSurfaceless);

@@ -9,12 +9,11 @@
 #include "base/files/file_path.h"
 #include "third_party/khronos/EGL/egl.h"
 #include "ui/ozone/common/egl_util.h"
-#include "ui/ozone/platform/drm/gpu/drm_device_manager.h"
-#include "ui/ozone/platform/drm/gpu/drm_window.h"
+#include "ui/ozone/platform/drm/gpu/drm_thread_proxy.h"
+#include "ui/ozone/platform/drm/gpu/drm_window_proxy.h"
 #include "ui/ozone/platform/drm/gpu/gbm_buffer.h"
-#include "ui/ozone/platform/drm/gpu/gbm_device.h"
 #include "ui/ozone/platform/drm/gpu/gbm_surfaceless.h"
-#include "ui/ozone/platform/drm/gpu/hardware_display_controller.h"
+#include "ui/ozone/platform/drm/gpu/proxy_helpers.h"
 #include "ui/ozone/platform/drm/gpu/screen_manager.h"
 #include "ui/ozone/public/native_pixmap.h"
 #include "ui/ozone/public/surface_ozone_canvas.h"
@@ -22,17 +21,11 @@
 
 namespace ui {
 
-GbmSurfaceFactory::GbmSurfaceFactory()
-    : drm_device_manager_(nullptr), screen_manager_(nullptr) {}
+GbmSurfaceFactory::GbmSurfaceFactory(DrmThreadProxy* drm_thread)
+    : drm_thread_(drm_thread) {}
 
 GbmSurfaceFactory::~GbmSurfaceFactory() {
   DCHECK(thread_checker_.CalledOnValidThread());
-}
-
-void GbmSurfaceFactory::InitializeGpu(DrmDeviceManager* drm_device_manager,
-                                      ScreenManager* screen_manager) {
-  drm_device_manager_ = drm_device_manager;
-  screen_manager_ = screen_manager;
 }
 
 void GbmSurfaceFactory::RegisterSurface(gfx::AcceleratedWidget widget,
@@ -106,7 +99,7 @@ GbmSurfaceFactory::CreateSurfacelessEGLSurfaceForWidget(
     gfx::AcceleratedWidget widget) {
   DCHECK(thread_checker_.CalledOnValidThread());
   return make_scoped_ptr(
-      new GbmSurfaceless(screen_manager_->GetWindow(widget), this));
+      new GbmSurfaceless(drm_thread_->CreateDrmWindowProxy(widget), this));
 }
 
 scoped_refptr<ui::NativePixmap> GbmSurfaceFactory::CreateNativePixmap(
@@ -120,11 +113,8 @@ scoped_refptr<ui::NativePixmap> GbmSurfaceFactory::CreateNativePixmap(
   DCHECK(gfx::BufferUsage::SCANOUT == usage);
 #endif
 
-  scoped_refptr<GbmDevice> gbm = GetGbmDevice(widget);
-  DCHECK(gbm);
-
   scoped_refptr<GbmBuffer> buffer =
-      GbmBuffer::CreateBuffer(gbm, format, size, usage);
+      drm_thread_->CreateBuffer(widget, size, format, usage);
   if (!buffer.get())
     return nullptr;
 
@@ -140,12 +130,6 @@ scoped_refptr<ui::NativePixmap> GbmSurfaceFactory::CreateNativePixmapFromHandle(
   scoped_refptr<GbmPixmap> pixmap(new GbmPixmap(this));
   pixmap->Initialize(base::ScopedFD(handle.fd.fd), handle.stride);
   return pixmap;
-}
-
-scoped_refptr<GbmDevice> GbmSurfaceFactory::GetGbmDevice(
-    gfx::AcceleratedWidget widget) {
-  return static_cast<GbmDevice*>(
-      drm_device_manager_->GetDrmDevice(widget).get());
 }
 
 }  // namespace ui

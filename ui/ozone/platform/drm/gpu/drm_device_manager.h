@@ -10,15 +10,12 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/synchronization/lock.h"
-#include "base/threading/thread_checker.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/ozone/ozone_export.h"
 
 namespace base {
 class FilePath;
 struct FileDescriptor;
-class SingleThreadTaskRunner;
 }
 
 namespace ui {
@@ -30,8 +27,6 @@ typedef std::vector<scoped_refptr<DrmDevice>> DrmDeviceVector;
 
 // Tracks the mapping between widgets and the DRM devices used to allocate
 // buffers for the window represented by the widget.
-// Note: All calls are protected by a lock since
-// GetDrmDevice(gfx::AcceleratedWidget) may be called on the IO thread.
 class OZONE_EXPORT DrmDeviceManager {
  public:
   DrmDeviceManager(scoped_ptr<DrmDeviceGenerator> drm_device_generator);
@@ -40,9 +35,6 @@ class OZONE_EXPORT DrmDeviceManager {
   // The first device registered is assumed to be the primary device.
   bool AddDrmDevice(const base::FilePath& path, const base::FileDescriptor& fd);
   void RemoveDrmDevice(const base::FilePath& path);
-
-  void InitializeIOTaskRunner(
-      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
 
   // Updates the device associated with |widget|.
   void UpdateDrmDevice(gfx::AcceleratedWidget widget,
@@ -58,13 +50,7 @@ class OZONE_EXPORT DrmDeviceManager {
   const DrmDeviceVector& GetDrmDevices() const;
 
  private:
-  // With the exception of GetDrmDevice() all functions must be called on GPU
-  // main.
-  base::ThreadChecker thread_checker_;
-
   scoped_ptr<DrmDeviceGenerator> drm_device_generator_;
-
-  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
   DrmDeviceVector devices_;
 
@@ -77,10 +63,6 @@ class OZONE_EXPORT DrmDeviceManager {
   // 2) in order to allocate buffers for unmatched surfaces (surfaces without a
   // display; ie: when in headless mode).
   scoped_refptr<DrmDevice> primary_device_;
-
-  // This class is accessed from the main thread and the IO thread. This lock
-  // protects access to the device map.
-  base::Lock lock_;
 
   DISALLOW_COPY_AND_ASSIGN(DrmDeviceManager);
 };

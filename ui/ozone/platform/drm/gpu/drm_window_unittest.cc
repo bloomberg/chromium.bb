@@ -86,7 +86,7 @@ void DrmWindowTest::SetUp() {
   scoped_ptr<ui::DrmWindow> window(new ui::DrmWindow(
       kDefaultWidgetHandle, drm_device_manager_.get(), screen_manager_.get()));
   window->Initialize();
-  window->OnBoundsChanged(
+  window->SetBounds(
       gfx::Rect(gfx::Size(kDefaultMode.hdisplay, kDefaultMode.vdisplay)));
   screen_manager_->AddWindow(kDefaultWidgetHandle, window.Pass());
 }
@@ -139,9 +139,8 @@ TEST_F(DrmWindowTest, CheckCursorSurfaceAfterChangingDevice) {
 
   // Move window to the display on the new device.
   screen_manager_->GetWindow(kDefaultWidgetHandle)
-      ->OnBoundsChanged(gfx::Rect(0, kDefaultMode.vdisplay,
-                                  kDefaultMode.hdisplay,
-                                  kDefaultMode.vdisplay));
+      ->SetBounds(gfx::Rect(0, kDefaultMode.vdisplay, kDefaultMode.hdisplay,
+                            kDefaultMode.vdisplay));
 
   EXPECT_EQ(2u, GetCursorBuffers(drm).size());
   // Make sure the cursor is showing on the new display.

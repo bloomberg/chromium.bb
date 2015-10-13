@@ -28,6 +28,7 @@ class Rect;
 namespace ui {
 
 class DrmBuffer;
+class DrmDevice;
 class DrmDeviceManager;
 class HardwareDisplayController;
 struct OverlayCheck_Params;
@@ -67,7 +68,7 @@ class OZONE_EXPORT DrmWindow {
   void SetController(HardwareDisplayController* controller);
 
   // Called when the window is resized/moved.
-  void OnBoundsChanged(const gfx::Rect& bounds);
+  void SetBounds(const gfx::Rect& bounds);
 
   // Update the HW cursor bitmap & move to specified location. If
   // the bitmap is empty, the cursor is hidden.

@@ -33,13 +33,11 @@ DrmDeviceManager::DrmDeviceManager(
 }
 
 DrmDeviceManager::~DrmDeviceManager() {
-  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(drm_device_map_.empty());
 }
 
 bool DrmDeviceManager::AddDrmDevice(const base::FilePath& path,
                                     const base::FileDescriptor& fd) {
-  DCHECK(thread_checker_.CalledOnValidThread());
   base::File file(fd.fd);
   auto it =
       std::find_if(devices_.begin(), devices_.end(), FindByDevicePath(path));
@@ -55,9 +53,6 @@ bool DrmDeviceManager::AddDrmDevice(const base::FilePath& path,
     return false;
   }
 
-  if (io_task_runner_)
-    device->InitializeTaskRunner(io_task_runner_);
-
   if (!primary_device_)
     primary_device_ = device;
 
@@ -66,7 +61,6 @@ bool DrmDeviceManager::AddDrmDevice(const base::FilePath& path,
 }
 
 void DrmDeviceManager::RemoveDrmDevice(const base::FilePath& path) {
-  DCHECK(thread_checker_.CalledOnValidThread());
   auto it =
       std::find_if(devices_.begin(), devices_.end(), FindByDevicePath(path));
   if (it == devices_.end()) {
@@ -78,23 +72,12 @@ void DrmDeviceManager::RemoveDrmDevice(const base::FilePath& path) {
   devices_.erase(it);
 }
 
-void DrmDeviceManager::InitializeIOTaskRunner(
-    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!io_task_runner_);
-  io_task_runner_ = task_runner;
-  for (const auto& device : devices_)
-    device->InitializeTaskRunner(io_task_runner_);
-}
-
 void DrmDeviceManager::UpdateDrmDevice(gfx::AcceleratedWidget widget,
                                        const scoped_refptr<DrmDevice>& device) {
-  base::AutoLock lock(lock_);
   drm_device_map_[widget] = device;
 }
 
 void DrmDeviceManager::RemoveDrmDevice(gfx::AcceleratedWidget widget) {
-  base::AutoLock lock(lock_);
   auto it = drm_device_map_.find(widget);
   if (it != drm_device_map_.end())
     drm_device_map_.erase(it);
@@ -102,7 +85,6 @@ void DrmDeviceManager::RemoveDrmDevice(gfx::AcceleratedWidget widget) {
 
 scoped_refptr<DrmDevice> DrmDeviceManager::GetDrmDevice(
     gfx::AcceleratedWidget widget) {
-  base::AutoLock lock(lock_);
   if (widget == gfx::kNullAcceleratedWidget)
     return primary_device_;
 
@@ -119,7 +101,6 @@ scoped_refptr<DrmDevice> DrmDeviceManager::GetDrmDevice(
 }
 
 const DrmDeviceVector& DrmDeviceManager::GetDrmDevices() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
   return devices_;
 }
 

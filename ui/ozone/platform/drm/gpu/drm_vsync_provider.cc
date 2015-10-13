@@ -4,12 +4,11 @@
 
 #include "ui/ozone/platform/drm/gpu/drm_vsync_provider.h"
 
-#include "ui/ozone/platform/drm/gpu/drm_window.h"
+#include "ui/ozone/platform/drm/gpu/drm_window_proxy.h"
 
 namespace ui {
 
-DrmVSyncProvider::DrmVSyncProvider(DrmWindow* window) : window_(window) {
-}
+DrmVSyncProvider::DrmVSyncProvider(DrmWindowProxy* window) : window_(window) {}
 
 DrmVSyncProvider::~DrmVSyncProvider() {
 }
