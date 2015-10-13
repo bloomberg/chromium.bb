@@ -27,15 +27,14 @@ void ServerHelloNotifier::OnAckNotification(
   server_stream_->OnServerHelloAcked();
 }
 
-void ServerHelloNotifier::OnPacketEvent(
+void ServerHelloNotifier::OnPacketAcked(
     int acked_bytes,
-    int retransmitted_bytes,
     QuicTime::Delta delta_largest_observed) {
   // The SHLO is sent in one packet.
-  if (acked_bytes > 0) {
-    server_stream_->OnServerHelloAcked();
-  }
+  server_stream_->OnServerHelloAcked();
 }
+
+void ServerHelloNotifier::OnPacketRetransmitted(int /*retransmitted_bytes*/) {}
 
 QuicCryptoServerStream::QuicCryptoServerStream(
     const QuicCryptoServerConfig* crypto_config,

@@ -193,8 +193,8 @@ void QuicSession::OnConnectionClosed(QuicErrorCode error, bool from_peer) {
   }
 }
 
-void QuicSession::OnSuccessfulVersionNegotiation(const QuicVersion& version) {
-}
+void QuicSession::OnSuccessfulVersionNegotiation(
+    const QuicVersion& /*version*/) {}
 
 void QuicSession::OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame) {
   // Stream may be closed by the time we receive a WINDOW_UPDATE, so we can't
@@ -295,7 +295,7 @@ QuicConsumedData QuicSession::WritevData(
     QuicStreamOffset offset,
     bool fin,
     FecProtection fec_protection,
-    QuicAckNotifier::DelegateInterface* ack_notifier_delegate) {
+    QuicAckListenerInterface* ack_notifier_delegate) {
   return connection_->SendStreamData(id, iov, offset, fin, fec_protection,
                                      ack_notifier_delegate);
 }
@@ -541,12 +541,10 @@ void QuicSession::OnCryptoHandshakeEvent(CryptoHandshakeEvent event) {
 }
 
 void QuicSession::OnCryptoHandshakeMessageSent(
-    const CryptoHandshakeMessage& message) {
-}
+    const CryptoHandshakeMessage& /*message*/) {}
 
 void QuicSession::OnCryptoHandshakeMessageReceived(
-    const CryptoHandshakeMessage& message) {
-}
+    const CryptoHandshakeMessage& /*message*/) {}
 
 QuicConfig* QuicSession::config() {
   return &config_;
@@ -583,6 +581,12 @@ void QuicSession::StreamDraining(QuicStreamId stream_id) {
   }
 }
 
+void QuicSession::CloseConnection(QuicErrorCode error) {
+  if (connection()->connected()) {
+    connection()->SendConnectionClose(error);
+  }
+}
+
 ReliableQuicStream* QuicSession::GetDynamicStream(
     const QuicStreamId stream_id) {
   if (static_stream_map_.find(stream_id) != static_stream_map_.end()) {
@@ -602,9 +606,7 @@ ReliableQuicStream* QuicSession::GetDynamicStream(
   if (stream_id % 2 == next_stream_id_ % 2) {
     // We've received a frame for a locally-created stream that is not
     // currently active.  This is an error.
-    if (connection()->connected()) {
-      connection()->SendConnectionClose(QUIC_PACKET_FOR_NONEXISTENT_STREAM);
-    }
+    CloseConnection(QUIC_PACKET_FOR_NONEXISTENT_STREAM);
     return nullptr;
   }
 
@@ -616,31 +618,70 @@ ReliableQuicStream* QuicSession::GetIncomingDynamicStream(
   if (IsClosedStream(stream_id)) {
     return nullptr;
   }
-  implicitly_created_streams_.erase(stream_id);
+  available_streams_.erase(stream_id);
+
+  // Legitimate streams created by the peer are alternately-numbered.
+  if (FLAGS_allow_many_available_streams &&
+      stream_id % 2 != largest_peer_created_stream_id_ % 2) {
+    // Close the connection.
+    DVLOG(1) << "Invalid incoming stream_id " << stream_id;
+    connection()->SendConnectionClose(QUIC_INVALID_STREAM_ID);
+    return nullptr;
+  }
+
   if (stream_id > largest_peer_created_stream_id_) {
-    // Check if the number of streams that will be created (including implicitly
-    // open streams) would cause the number of open streams to exceed the limit.
-    // Note that the peer can create only alternately-numbered streams.
-    if ((stream_id - largest_peer_created_stream_id_) / 2 +
-            GetNumOpenStreams() >
-        get_max_open_streams()) {
-      DVLOG(1) << "Failed to create a new incoming stream with id:" << stream_id
-               << ".  Already " << GetNumOpenStreams()
-               << " streams open, would exceed max " << get_max_open_streams()
-               << ".";
-      // We may already have sent a connection close due to multiple reset
-      // streams in the same packet.
-      if (connection()->connected()) {
-        connection()->SendConnectionClose(QUIC_TOO_MANY_OPEN_STREAMS);
+    if (FLAGS_allow_many_available_streams) {
+      // Check if the new number of available streams would cause the number of
+      // available streams to exceed the limit.  Note that the peer can create
+      // only alternately-numbered streams.
+      size_t additional_available_streams =
+          (stream_id - largest_peer_created_stream_id_) / 2 - 1;
+      size_t new_num_available_streams =
+          GetNumAvailableStreams() + additional_available_streams;
+      if (new_num_available_streams > get_max_available_streams()) {
+        DVLOG(1) << "Failed to create a new incoming stream with id:"
+                 << stream_id << ".  There are already "
+                 << GetNumAvailableStreams()
+                 << " streams available, which would become "
+                 << new_num_available_streams << ", which exceeds the limit "
+                 << get_max_available_streams() << ".";
+        CloseConnection(QUIC_TOO_MANY_AVAILABLE_STREAMS);
+        return nullptr;
       }
-      return nullptr;
+    } else {
+      // Check if the number of streams that will be created (including
+      // available streams) would cause the number of open streams to exceed the
+      // limit.  Note that the peer can create only alternately-numbered
+      // streams.
+      if ((stream_id - largest_peer_created_stream_id_) / 2 +
+              GetNumOpenStreams() >
+          get_max_open_streams()) {
+        DVLOG(1) << "Failed to create a new incoming stream with id:"
+                 << stream_id << ".  Already " << GetNumOpenStreams()
+                 << " streams open, would exceed max " << get_max_open_streams()
+                 << ".";
+        // We may already have sent a connection close due to multiple reset
+        // streams in the same packet.
+        if (connection()->connected()) {
+          connection()->SendConnectionClose(QUIC_TOO_MANY_OPEN_STREAMS);
+        }
+        return nullptr;
+      }
     }
     for (QuicStreamId id = largest_peer_created_stream_id_ + 2;
          id < stream_id;
          id += 2) {
-      implicitly_created_streams_.insert(id);
+      available_streams_.insert(id);
     }
     largest_peer_created_stream_id_ = stream_id;
+  }
+  if (FLAGS_allow_many_available_streams) {
+    // Check if the new number of open streams would cause the number of
+    // open streams to exceed the limit.
+    if (GetNumOpenStreams() >= get_max_open_streams()) {
+      CloseConnection(QUIC_TOO_MANY_OPEN_STREAMS);
+      return nullptr;
+    }
   }
   ReliableQuicStream* stream = CreateIncomingDynamicStream(stream_id);
   if (stream == nullptr) {
@@ -652,6 +693,8 @@ ReliableQuicStream* QuicSession::GetIncomingDynamicStream(
 
 void QuicSession::set_max_open_streams(size_t max_open_streams) {
   DVLOG(1) << "Setting max_open_streams_ to " << max_open_streams;
+  DVLOG(1) << "Setting get_max_available_streams() to "
+           << get_max_available_streams();
   max_open_streams_ = max_open_streams;
 }
 
@@ -675,15 +718,22 @@ bool QuicSession::IsClosedStream(QuicStreamId id) {
     // range of created streams and it's not active, it must have been closed.
     return id < next_stream_id_;
   }
-  // For peer created streams, we also need to consider implicitly created
-  // streams.
+  // For peer created streams, we also need to consider available streams.
   return id <= largest_peer_created_stream_id_ &&
-      !ContainsKey(implicitly_created_streams_, id);
+         !ContainsKey(available_streams_, id);
 }
 
 size_t QuicSession::GetNumOpenStreams() const {
-  return dynamic_stream_map_.size() + implicitly_created_streams_.size() -
-         draining_streams_.size();
+  if (FLAGS_allow_many_available_streams) {
+    return dynamic_stream_map_.size() - draining_streams_.size();
+  } else {
+    return dynamic_stream_map_.size() + available_streams_.size() -
+           draining_streams_.size();
+  }
+}
+
+size_t QuicSession::GetNumAvailableStreams() const {
+  return available_streams_.size();
 }
 
 void QuicSession::MarkConnectionLevelWriteBlocked(QuicStreamId id,
@@ -720,10 +770,9 @@ bool QuicSession::HasDataToWrite() const {
 void QuicSession::PostProcessAfterData() {
   STLDeleteElements(&closed_streams_);
 
-  if (connection()->connected() &&
-      locally_closed_streams_highest_offset_.size() > max_open_streams_) {
-    // A buggy client may fail to send FIN/RSTs. Don't tolerate this.
-    connection_->SendConnectionClose(QUIC_TOO_MANY_UNFINISHED_STREAMS);
+  // A buggy client may fail to send FIN/RSTs. Don't tolerate this.
+  if (locally_closed_streams_highest_offset_.size() > max_open_streams_) {
+    CloseConnection(QUIC_TOO_MANY_UNFINISHED_STREAMS);
   }
 }
 

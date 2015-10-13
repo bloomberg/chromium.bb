@@ -29,12 +29,11 @@ class NET_EXPORT_PRIVATE QuicHeadersStream : public ReliableQuicStream {
   // frame to the peer.  If |fin| is true, the fin flag will be set on
   // the SPDY frame.  Returns the size, in bytes, of the resulting
   // SPDY frame.
-  size_t WriteHeaders(
-      QuicStreamId stream_id,
-      const SpdyHeaderBlock& headers,
-      bool fin,
-      QuicPriority priority,
-      QuicAckNotifier::DelegateInterface* ack_notifier_delegate);
+  size_t WriteHeaders(QuicStreamId stream_id,
+                      const SpdyHeaderBlock& headers,
+                      bool fin,
+                      QuicPriority priority,
+                      QuicAckListenerInterface* ack_notifier_delegate);
 
   // ReliableQuicStream implementation
   void OnDataAvailable() override;

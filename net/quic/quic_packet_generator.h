@@ -126,11 +126,11 @@ class NET_EXPORT_PRIVATE QuicPacketGenerator {
                                QuicStreamOffset offset,
                                bool fin,
                                FecProtection fec_protection,
-                               QuicAckNotifier::DelegateInterface* delegate);
+                               QuicAckListenerInterface* delegate);
 
   // Generates an MTU discovery packet of specified size.
   void GenerateMtuDiscoveryPacket(QuicByteCount target_mtu,
-                                  QuicAckNotifier::DelegateInterface* delegate);
+                                  QuicAckListenerInterface* delegate);
 
   // Indicates whether batch mode is currently enabled.
   bool InBatchMode();

@@ -37,7 +37,7 @@ class ReliableQuicStreamPeer {
       ReliableQuicStream* stream,
       base::StringPiece data,
       bool fin,
-      QuicAckNotifier::DelegateInterface* ack_notifier_delegate);
+      QuicAckListenerInterface* ack_notifier_delegate);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ReliableQuicStreamPeer);

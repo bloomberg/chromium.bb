@@ -441,7 +441,7 @@ class MockQuicSpdySession : public QuicSpdySession {
                                 QuicStreamOffset offset,
                                 bool fin,
                                 FecProtection fec_protection,
-                                QuicAckNotifier::DelegateInterface*));
+                                QuicAckListenerInterface*));
   MOCK_METHOD2(OnStreamHeaders, void(QuicStreamId stream_id,
                                      base::StringPiece headers_data));
   MOCK_METHOD2(OnStreamHeadersPriority, void(QuicStreamId stream_id,
@@ -612,7 +612,7 @@ class MockEntropyCalculator : public TestEntropyCalculator {
   DISALLOW_COPY_AND_ASSIGN(MockEntropyCalculator);
 };
 
-class MockAckNotifierDelegate : public QuicAckNotifier::DelegateInterface {
+class MockAckNotifierDelegate : public QuicAckListenerInterface {
  public:
   MockAckNotifierDelegate();
 
@@ -621,10 +621,10 @@ class MockAckNotifierDelegate : public QuicAckNotifier::DelegateInterface {
                     int num_retransmitted_bytes,
                     QuicTime::Delta delta_largest_observed));
 
-  MOCK_METHOD3(OnPacketEvent,
-               void(int acked_bytes,
-                    int retransmitted_bytes,
-                    QuicTime::Delta delta_largest_observed));
+  MOCK_METHOD2(OnPacketAcked,
+               void(int acked_bytes, QuicTime::Delta delta_largest_observed));
+
+  MOCK_METHOD1(OnPacketRetransmitted, void(int retransmitted_bytes));
 
  protected:
   // Object is ref counted.

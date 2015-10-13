@@ -28,20 +28,20 @@ class QuicCryptoServerStreamPeer;
 
 // Receives a notification when the server hello (SHLO) has been ACKed by the
 // peer. At this point we disable HANDSHAKE_MODE in the sent packet manager.
-class NET_EXPORT_PRIVATE ServerHelloNotifier : public
-    QuicAckNotifier::DelegateInterface {
+class NET_EXPORT_PRIVATE ServerHelloNotifier : public QuicAckListenerInterface {
  public:
   explicit ServerHelloNotifier(QuicCryptoServerStream* stream)
       : server_stream_(stream) {}
 
-  // QuicAckNotifier::DelegateInterface implementation
+  // QuicAckListenerInterface implementation
   void OnAckNotification(int num_retransmitted_packets,
                          int num_retransmitted_bytes,
                          QuicTime::Delta delta_largest_observed) override;
 
-  void OnPacketEvent(int acked_bytes,
-                     int retransmitted_bytes,
+  void OnPacketAcked(int acked_bytes,
                      QuicTime::Delta delta_largest_observed) override;
+
+  void OnPacketRetransmitted(int retransmitted_bytes) override;
 
  private:
   ~ServerHelloNotifier() override {}

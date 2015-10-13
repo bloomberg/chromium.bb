@@ -81,10 +81,9 @@ class NET_EXPORT_PRIVATE QuicDataStream : public ReliableQuicStream {
 
   // Writes the headers contained in |header_block| to the dedicated
   // headers stream.
-  virtual size_t WriteHeaders(
-      const SpdyHeaderBlock& header_block,
-      bool fin,
-      QuicAckNotifier::DelegateInterface* ack_notifier_delegate);
+  virtual size_t WriteHeaders(const SpdyHeaderBlock& header_block,
+                              bool fin,
+                              QuicAckListenerInterface* ack_notifier_delegate);
 
   // Marks |bytes_consumed| of the headers data as consumed.
   void MarkHeadersConsumed(size_t bytes_consumed);

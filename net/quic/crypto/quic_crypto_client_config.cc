@@ -775,6 +775,7 @@ QuicErrorCode QuicCryptoClientConfig::ProcessRejection(
 QuicErrorCode QuicCryptoClientConfig::ProcessServerHello(
     const CryptoHandshakeMessage& server_hello,
     QuicConnectionId connection_id,
+    QuicVersion version,
     const QuicVersionVector& negotiated_versions,
     CachedState* cached,
     QuicCryptoNegotiatedParameters* out_params,
@@ -815,6 +816,13 @@ QuicErrorCode QuicCryptoClientConfig::ProcessServerHello(
     cached->set_source_address_token(token);
   }
 
+  StringPiece shlo_nonce;
+  if (version > QUIC_VERSION_26 &&
+      !server_hello.GetStringPiece(kServerNonceTag, &shlo_nonce)) {
+    *error_details = "server hello missing server nonce";
+    return QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER;
+  }
+
   // TODO(agl):
   //   learn about updated SCFGs.
 
@@ -838,9 +846,10 @@ QuicErrorCode QuicCryptoClientConfig::ProcessServerHello(
 
   if (!CryptoUtils::DeriveKeys(
           out_params->forward_secure_premaster_secret, out_params->aead,
-          out_params->client_nonce, out_params->server_nonce, hkdf_input,
-          Perspective::IS_CLIENT, &out_params->forward_secure_crypters,
-          &out_params->subkey_secret)) {
+          out_params->client_nonce,
+          shlo_nonce.empty() ? out_params->server_nonce : shlo_nonce,
+          hkdf_input, Perspective::IS_CLIENT,
+          &out_params->forward_secure_crypters, &out_params->subkey_secret)) {
     *error_details = "Symmetric key setup failed";
     return QUIC_CRYPTO_SYMMETRIC_KEY_SETUP_FAILED;
   }

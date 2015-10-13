@@ -529,6 +529,49 @@ TEST_F(TcpCubicSenderTest, TcpCubicResetEpochOnQuiescence) {
   EXPECT_GT(kMaxCongestionWindowBytes, sender_->GetCongestionWindow());
 }
 
+TEST_F(TcpCubicSenderTest, TcpCubicShiftedEpochOnQuiescence) {
+  ValueRestore<bool> old_flag(&FLAGS_shift_quic_cubic_epoch_when_app_limited,
+                              true);
+  const int kMaxCongestionWindow = 50;
+  const QuicByteCount kMaxCongestionWindowBytes =
+      kMaxCongestionWindow * kDefaultTCPMSS;
+  sender_.reset(new TcpCubicSenderPeer(&clock_, false, kMaxCongestionWindow));
+
+  int num_sent = SendAvailableSendWindow();
+
+  // Make sure we fall out of slow start.
+  QuicByteCount saved_cwnd = sender_->GetCongestionWindow();
+  LoseNPackets(1);
+  EXPECT_GT(saved_cwnd, sender_->GetCongestionWindow());
+
+  // Ack the rest of the outstanding packets to get out of recovery.
+  for (int i = 1; i < num_sent; ++i) {
+    AckNPackets(1);
+  }
+  EXPECT_EQ(0u, bytes_in_flight_);
+
+  // Send a new window of data and ack all; cubic growth should occur.
+  saved_cwnd = sender_->GetCongestionWindow();
+  num_sent = SendAvailableSendWindow();
+  for (int i = 0; i < num_sent; ++i) {
+    AckNPackets(1);
+  }
+  EXPECT_LT(saved_cwnd, sender_->GetCongestionWindow());
+  EXPECT_GT(kMaxCongestionWindowBytes, sender_->GetCongestionWindow());
+  EXPECT_EQ(0u, bytes_in_flight_);
+
+  // Quiescent time of 100 seconds
+  clock_.AdvanceTime(QuicTime::Delta::FromSeconds(100));
+
+  // Send new window of data and ack one packet. Cubic epoch should have
+  // been reset; ensure cwnd increase is not dramatic.
+  saved_cwnd = sender_->GetCongestionWindow();
+  SendAvailableSendWindow();
+  AckNPackets(1);
+  EXPECT_NEAR(saved_cwnd, sender_->GetCongestionWindow(), kDefaultTCPMSS);
+  EXPECT_GT(kMaxCongestionWindowBytes, sender_->GetCongestionWindow());
+}
+
 TEST_F(TcpCubicSenderTest, MultipleLossesInOneWindow) {
   SendAvailableSendWindow();
   const QuicByteCount initial_window = sender_->GetCongestionWindow();

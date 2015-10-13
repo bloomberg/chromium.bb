@@ -93,7 +93,7 @@ class QuicTestClient : public SimpleClient,
   // As above, but |delegate| will be notified when |data| is ACKed.
   ssize_t SendData(const std::string& data,
                    bool last_data,
-                   QuicAckNotifier::DelegateInterface* delegate);
+                   QuicAckListenerInterface* delegate);
 
   // From SimpleClient
   // Clears any outstanding state and sends a simple GET of 'uri' to the
@@ -155,11 +155,10 @@ class QuicTestClient : public SimpleClient,
   // Calls GetorCreateStream(), sends the request on the stream, and
   // stores the reuest in case it needs to be resent.  If |headers| is
   // null, only the body will be sent on the stream.
-  ssize_t GetOrCreateStreamAndSendRequest(
-      const BalsaHeaders* headers,
-      StringPiece body,
-      bool fin,
-      QuicAckNotifier::DelegateInterface* delegate);
+  ssize_t GetOrCreateStreamAndSendRequest(const BalsaHeaders* headers,
+                                          StringPiece body,
+                                          bool fin,
+                                          QuicAckListenerInterface* delegate);
 
   QuicRstStreamErrorCode stream_error() { return stream_error_; }
   QuicErrorCode connection_error();
@@ -199,7 +198,7 @@ class QuicTestClient : public SimpleClient,
                            StringPiece body,
                            bool fin,
                            QuicTestClient* test_client,
-                           QuicAckNotifier::DelegateInterface* delegate)
+                           QuicAckListenerInterface* delegate)
         : QuicClient::QuicDataToResend(headers, body, fin),
           test_client_(test_client),
           delegate_(delegate) {}
@@ -210,7 +209,7 @@ class QuicTestClient : public SimpleClient,
 
    protected:
     QuicTestClient* test_client_;
-    QuicAckNotifier::DelegateInterface* delegate_;
+    QuicAckListenerInterface* delegate_;
   };
 
   // Given a uri, creates a simple HTTPMessage request message for testing.

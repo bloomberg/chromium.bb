@@ -23,6 +23,7 @@ namespace test {
 
 class QuicSessionPeer {
  public:
+  static QuicStreamId GetNextStreamId(QuicSession* session);
   static void SetNextStreamId(QuicSession* session, QuicStreamId id);
   static void SetMaxOpenStreams(QuicSession* session, uint32 max_streams);
   static QuicCryptoStream* GetCryptoStream(QuicSession* session);
@@ -37,7 +38,7 @@ class QuicSessionPeer {
   // time for any stream id > 0 (other than the special streams 1 and 3).
   static bool IsStreamClosed(QuicSession* session, QuicStreamId id);
   static bool IsStreamCreated(QuicSession* session, QuicStreamId id);
-  static bool IsStreamImplicitlyCreated(QuicSession* session, QuicStreamId id);
+  static bool IsStreamAvailable(QuicSession* session, QuicStreamId id);
   static bool IsStreamUncreated(QuicSession* session, QuicStreamId id);
 
  private:

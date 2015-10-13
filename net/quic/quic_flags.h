@@ -26,5 +26,7 @@ NET_EXPORT_PRIVATE extern bool FLAGS_send_goaway_after_client_migration;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_close_connection_out_of_order_sending;
 NET_EXPORT_PRIVATE extern bool FLAGS_reset_cubic_epoch_when_app_limited;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_packet_queue_use_interval_set;
+NET_EXPORT_PRIVATE extern bool FLAGS_shift_quic_cubic_epoch_when_app_limited;
+NET_EXPORT_PRIVATE extern bool FLAGS_allow_many_available_streams;
 
 #endif  // NET_QUIC_QUIC_FLAGS_H_

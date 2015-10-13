@@ -60,6 +60,10 @@ class NET_EXPORT_PRIVATE Cubic {
   // Time when this cycle started, after last loss event.
   QuicTime epoch_;
 
+  // Time when sender went into application-limited period. Zero if not in
+  // application-limited period.
+  QuicTime app_limited_start_time_;
+
   // Time when we updated last_congestion_window.
   QuicTime last_update_time_;
 

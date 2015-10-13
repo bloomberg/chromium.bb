@@ -162,6 +162,11 @@ const int kMinPacketsBetweenServerConfigUpdates = 100;
 const float kMaxStreamsMultiplier = 1.1f;
 const int kMaxStreamsMinimumIncrement = 10;
 
+// Available streams are ones with IDs less than the highest stream that has
+// been opened which have neither been opened or reset. The limit on the number
+// of available streams is 10 times the limit on the number of open streams.
+const int kMaxAvailableStreamsMultiplier = 10;
+
 // We define an unsigned 16-bit floating point value, inspired by IEEE floats
 // (http://en.wikipedia.org/wiki/Half_precision_floating-point_format),
 // with 5-bit exponent (bias 1), 11-bit mantissa (effective 12 with hidden
@@ -339,6 +344,7 @@ enum QuicVersion {
   QUIC_VERSION_25 = 25,  // SPDY/4 header keys, and removal of error_details
                          // from QuicRstStreamFrame
   QUIC_VERSION_26 = 26,  // In CHLO, send XLCT tag containing hash of leaf cert
+  QUIC_VERSION_27 = 27,  // Sends a nonce in the SHLO.
 };
 
 // This vector contains QUIC versions which we currently support.
@@ -349,7 +355,7 @@ enum QuicVersion {
 // IMPORTANT: if you are adding to this list, follow the instructions at
 // http://sites/quic/adding-and-removing-versions
 static const QuicVersion kSupportedQuicVersions[] = {
-    QUIC_VERSION_26, QUIC_VERSION_25, QUIC_VERSION_24};
+    QUIC_VERSION_27, QUIC_VERSION_26, QUIC_VERSION_25, QUIC_VERSION_24};
 
 typedef std::vector<QuicVersion> QuicVersionVector;
 
@@ -444,6 +450,7 @@ NET_EXPORT_PRIVATE QuicRstStreamErrorCode AdjustErrorForVersion(
 // These values must remain stable as they are uploaded to UMA histograms.
 // To add a new error code, use the current value of QUIC_LAST_ERROR and
 // increment QUIC_LAST_ERROR.
+// last value = 77
 enum QuicErrorCode {
   QUIC_NO_ERROR = 0,
 
@@ -502,6 +509,8 @@ enum QuicErrorCode {
   QUIC_TOO_MANY_OPEN_STREAMS = 18,
   // The peer must send a FIN/RST for each stream, and has not been doing so.
   QUIC_TOO_MANY_UNFINISHED_STREAMS = 66,
+  // The peer created too many available streams.
+  QUIC_TOO_MANY_AVAILABLE_STREAMS = 76,
   // Received public reset for this connection.
   QUIC_PUBLIC_RESET = 19,
   // Invalid protocol version.
@@ -610,7 +619,7 @@ enum QuicErrorCode {
   QUIC_VERSION_NEGOTIATION_MISMATCH = 55,
 
   // No error. Used as bound while iterating.
-  QUIC_LAST_ERROR = 76,
+  QUIC_LAST_ERROR = 77,
 };
 
 struct NET_EXPORT_PRIVATE QuicPacketPublicHeader {

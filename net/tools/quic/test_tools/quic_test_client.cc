@@ -252,7 +252,7 @@ ssize_t QuicTestClient::GetOrCreateStreamAndSendRequest(
     const BalsaHeaders* headers,
     StringPiece body,
     bool fin,
-    QuicAckNotifier::DelegateInterface* delegate) {
+    QuicAckListenerInterface* delegate) {
   // Maybe it's better just to overload this.  it's just that we need
   // for the GetOrCreateStream function to call something else...which
   // is icky and complicated, but maybe not worse than this.
@@ -324,7 +324,7 @@ ssize_t QuicTestClient::SendData(const string& data, bool last_data) {
 
 ssize_t QuicTestClient::SendData(const string& data,
                                  bool last_data,
-                                 QuicAckNotifier::DelegateInterface* delegate) {
+                                 QuicAckListenerInterface* delegate) {
   return GetOrCreateStreamAndSendRequest(nullptr, StringPiece(data), last_data,
                                          delegate);
 }

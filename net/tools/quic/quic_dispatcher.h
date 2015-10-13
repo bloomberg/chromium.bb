@@ -144,7 +144,6 @@ class QuicDispatcher : public QuicServerSessionVisitor,
  protected:
   virtual QuicServerSession* CreateQuicSession(
       QuicConnectionId connection_id,
-      const IPEndPoint& server_address,
       const IPEndPoint& client_address);
 
   // Called by |framer_visitor_| when the public header has been parsed.

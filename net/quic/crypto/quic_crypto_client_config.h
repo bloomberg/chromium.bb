@@ -247,12 +247,14 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
   // cached information about that server, writes the negotiated parameters to
   // |out_params| and returns QUIC_NO_ERROR. If |server_hello| is unacceptable
   // then it puts an error message in |error_details| and returns an error
-  // code. |negotiated_versions| contains the list of version, if any, that were
+  // code. |version| is the QUIC version for the current connection.
+  // |negotiated_versions| contains the list of version, if any, that were
   // present in a version negotiation packet previously recevied from the
   // server. The contents of this list will be compared against the list of
   // versions provided in the VER tag of the server hello.
   QuicErrorCode ProcessServerHello(const CryptoHandshakeMessage& server_hello,
                                    QuicConnectionId connection_id,
+                                   QuicVersion version,
                                    const QuicVersionVector& negotiated_versions,
                                    CachedState* cached,
                                    QuicCryptoNegotiatedParameters* out_params,

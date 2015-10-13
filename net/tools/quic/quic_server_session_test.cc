@@ -193,9 +193,9 @@ TEST_P(QuicServerSessionTest, MaxOpenStreams) {
   // many data streams. The server accepts slightly more than the negotiated
   // stream limit to deal with rare cases where a client FIN/RST is lost.
 
-  // The slightly increased stream limit is set during config negotiation. It
-  // should be either an increase of 10 over negotiated limit, or a fixed
-  // percentage scaling, whichever is larger. Test both before continuing.
+  // The slightly increased stream limit is set during config negotiation.  It
+  // is either an increase of 10 over negotiated limit, or a fixed percentage
+  // scaling, whichever is larger. Test both before continuing.
   EXPECT_EQ(kMaxStreamsForTest, session_->get_max_open_streams());
   session_->OnConfigNegotiated();
   EXPECT_LT(kMaxStreamsMultiplier * kMaxStreamsForTest,
@@ -219,41 +219,51 @@ TEST_P(QuicServerSessionTest, MaxOpenStreams) {
   }
 
   // Now violate the server's internal stream limit.
-  EXPECT_CALL(*connection_, SendConnectionClose(QUIC_TOO_MANY_OPEN_STREAMS));
   stream_id += 2;
+  EXPECT_CALL(*connection_, SendConnectionClose(QUIC_TOO_MANY_OPEN_STREAMS));
+  EXPECT_CALL(*connection_, SendRstStream(_, _, _)).Times(0);
   EXPECT_FALSE(QuicServerSessionPeer::GetIncomingDynamicStream(session_.get(),
                                                                stream_id));
 }
 
-TEST_P(QuicServerSessionTest, MaxOpenStreamsImplicit) {
-  // Test that the server closes the connection if a client attempts to open too
-  // many data streams implicitly.  The server accepts slightly more than the
-  // negotiated stream limit to deal with rare cases where a client FIN/RST is
-  // lost.
+TEST_P(QuicServerSessionTest, MaxAvailableStreams) {
+  // Test that the server closes the connection if a client makes too many data
+  // streams available.  The server accepts slightly more than the negotiated
+  // stream limit to deal with rare cases where a client FIN/RST is lost.
 
   // The slightly increased stream limit is set during config negotiation.
   EXPECT_EQ(kMaxStreamsForTest, session_->get_max_open_streams());
   session_->OnConfigNegotiated();
-  EXPECT_LT(kMaxStreamsMultiplier * kMaxStreamsForTest,
-            kMaxStreamsForTest + kMaxStreamsMinimumIncrement);
-  EXPECT_EQ(kMaxStreamsForTest + kMaxStreamsMinimumIncrement,
-            session_->get_max_open_streams());
+  const size_t kAvailableStreamLimit = session_->get_max_available_streams();
+  EXPECT_EQ(session_->get_max_open_streams() * kMaxAvailableStreamsMultiplier,
+            session_->get_max_available_streams());
+  // The protocol specification requires that there can be at least 10 times
+  // as many available streams as the connection's maximum open streams.
+  EXPECT_LE(10 * kMaxStreamsForTest, kAvailableStreamLimit);
 
   EXPECT_EQ(0u, session_->GetNumOpenStreams());
   EXPECT_TRUE(QuicServerSessionPeer::GetIncomingDynamicStream(
       session_.get(), kClientDataStreamId1));
-  // Implicitly open streams up to the server's limit.
-  const int kActualMaxStreams =
-      kMaxStreamsForTest + kMaxStreamsMinimumIncrement;
-  const int kMaxValidStreamId =
-      kClientDataStreamId1 + (kActualMaxStreams - 1) * 2;
-  EXPECT_TRUE(QuicServerSessionPeer::GetIncomingDynamicStream(
-      session_.get(), kMaxValidStreamId));
 
-  // Opening a further stream will result in connection close.
-  EXPECT_CALL(*connection_, SendConnectionClose(QUIC_TOO_MANY_OPEN_STREAMS));
+  // Establish available streams up to the server's limit.
+  const int kLimitingStreamId =
+      FLAGS_allow_many_available_streams
+          ? kClientDataStreamId1 + (kAvailableStreamLimit)*2 + 2
+          : kClientDataStreamId1 + (session_->get_max_open_streams() - 1) * 2;
+  EXPECT_TRUE(QuicServerSessionPeer::GetIncomingDynamicStream(
+      session_.get(), kLimitingStreamId));
+
+  // A further available stream will result in connection close.
+  if (FLAGS_allow_many_available_streams) {
+    EXPECT_CALL(*connection_,
+                SendConnectionClose(QUIC_TOO_MANY_AVAILABLE_STREAMS));
+  } else {
+    EXPECT_CALL(*connection_, SendConnectionClose(QUIC_TOO_MANY_OPEN_STREAMS));
+  }
+  // This forces stream kLimitingStreamId + 2 to become available, which
+  // violates the quota.
   EXPECT_FALSE(QuicServerSessionPeer::GetIncomingDynamicStream(
-      session_.get(), kMaxValidStreamId + 2));
+      session_.get(), kLimitingStreamId + 4));
 }
 
 TEST_P(QuicServerSessionTest, GetEvenIncomingError) {

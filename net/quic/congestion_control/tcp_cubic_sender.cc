@@ -315,7 +315,8 @@ void TcpCubicSender::MaybeIncreaseCwnd(QuicPacketNumber acked_packet_number,
   if (!IsCwndLimited(bytes_in_flight)) {
     // Do not increase the congestion window unless the sender is close to using
     // the current window.
-    if (FLAGS_reset_cubic_epoch_when_app_limited) {
+    if (FLAGS_reset_cubic_epoch_when_app_limited ||
+        FLAGS_shift_quic_cubic_epoch_when_app_limited) {
       cubic_.OnApplicationLimited();
     }
     return;

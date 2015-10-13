@@ -13,6 +13,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "net/quic/crypto/crypto_protocol.h"
 #include "net/quic/quic_crypto_stream.h"
+#include "net/quic/quic_flags.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_utils.h"
 #include "net/quic/reliable_quic_stream.h"
@@ -54,7 +55,7 @@ class TestCryptoStream : public QuicCryptoStream {
       : QuicCryptoStream(session) {
   }
 
-  void OnHandshakeMessage(const CryptoHandshakeMessage& message) override {
+  void OnHandshakeMessage(const CryptoHandshakeMessage& /*message*/) override {
     encryption_established_ = true;
     handshake_confirmed_ = true;
     CryptoHandshakeMessage msg;
@@ -156,7 +157,7 @@ class TestSession : public QuicSpdySession {
       QuicStreamOffset offset,
       bool fin,
       FecProtection fec_protection,
-      QuicAckNotifier::DelegateInterface* ack_notifier_delegate) override {
+      QuicAckListenerInterface* ack_notifier_delegate) override {
     // Always consumes everything.
     if (writev_consumes_all_data_) {
       return QuicConsumedData(data.total_length, fin);
@@ -276,11 +277,11 @@ TEST_P(QuicSessionTestServer, IsClosedStreamDefault) {
   }
 }
 
-TEST_P(QuicSessionTestServer, ImplicitlyCreatedStreams) {
+TEST_P(QuicSessionTestServer, AvailableStreams) {
   ASSERT_TRUE(session_.GetIncomingDynamicStream(9) != nullptr);
-  // Both 5 and 7 should be implicitly created.
-  EXPECT_TRUE(QuicSessionPeer::IsStreamImplicitlyCreated(&session_, 5));
-  EXPECT_TRUE(QuicSessionPeer::IsStreamImplicitlyCreated(&session_, 7));
+  // Both 5 and 7 should be available.
+  EXPECT_TRUE(QuicSessionPeer::IsStreamAvailable(&session_, 5));
+  EXPECT_TRUE(QuicSessionPeer::IsStreamAvailable(&session_, 7));
   ASSERT_TRUE(session_.GetIncomingDynamicStream(7) != nullptr);
   ASSERT_TRUE(session_.GetIncomingDynamicStream(5) != nullptr);
 }
@@ -308,7 +309,7 @@ TEST_P(QuicSessionTestServer, IsClosedStreamPeerCreated) {
   CloseStream(stream_id1);
   CheckClosedStreams();
   CloseStream(stream_id2);
-  // Create a stream explicitly, and another implicitly.
+  // Create a stream, and make another available.
   ReliableQuicStream* stream3 =
       session_.GetIncomingDynamicStream(stream_id2 + 4);
   CheckClosedStreams();
@@ -317,7 +318,7 @@ TEST_P(QuicSessionTestServer, IsClosedStreamPeerCreated) {
   CheckClosedStreams();
 }
 
-TEST_P(QuicSessionTestServer, MaximumImplicitlyOpenedStreams) {
+TEST_P(QuicSessionTestServer, MaximumAvailableOpenedStreams) {
   QuicStreamId stream_id = kClientDataStreamId1;
   session_.GetIncomingDynamicStream(stream_id);
   EXPECT_CALL(*connection_, SendConnectionClose(_)).Times(0);
@@ -326,16 +327,23 @@ TEST_P(QuicSessionTestServer, MaximumImplicitlyOpenedStreams) {
                 stream_id + 2 * (session_.get_max_open_streams() - 1)));
 }
 
-TEST_P(QuicSessionTestServer, TooManyImplicitlyOpenedStreams) {
+TEST_P(QuicSessionTestServer, TooManyAvailableStreams) {
   QuicStreamId stream_id1 = kClientDataStreamId1;
-  // A stream ID which is too large to create.
-  QuicStreamId stream_id2 = stream_id1 + 2 * session_.get_max_open_streams();
+  QuicStreamId stream_id2;
   EXPECT_NE(nullptr, session_.GetIncomingDynamicStream(stream_id1));
-  EXPECT_CALL(*connection_, SendConnectionClose(QUIC_TOO_MANY_OPEN_STREAMS));
+  // A stream ID which is too large to create.
+  if (FLAGS_allow_many_available_streams) {
+    stream_id2 = stream_id1 + 2 * session_.get_max_available_streams() + 4;
+    EXPECT_CALL(*connection_,
+                SendConnectionClose(QUIC_TOO_MANY_AVAILABLE_STREAMS));
+  } else {
+    stream_id2 = stream_id1 + 2 * session_.get_max_open_streams();
+    EXPECT_CALL(*connection_, SendConnectionClose(QUIC_TOO_MANY_OPEN_STREAMS));
+  }
   EXPECT_EQ(nullptr, session_.GetIncomingDynamicStream(stream_id2));
 }
 
-TEST_P(QuicSessionTestServer, ManyImplicitlyOpenedStreams) {
+TEST_P(QuicSessionTestServer, ManyAvailableStreams) {
   // When max_open_streams_ is 200, should be able to create 200 streams
   // out-of-order, that is, creating the one with the largest stream ID first.
   QuicSessionPeer::SetMaxOpenStreams(&session_, 200);
@@ -424,7 +432,7 @@ TEST_P(QuicSessionTestServer, OnCanWriteBundlesStreams) {
           QuicConnectionPeer::GetWriter(session_.connection()));
   EXPECT_CALL(*writer, WritePacket(_, _, _, _)).WillOnce(
                   Return(WriteResult(WRITE_STATUS_OK, 0)));
-  EXPECT_CALL(*send_algorithm, OnPacketSent(_, _, _, _, _)).Times(1);
+  EXPECT_CALL(*send_algorithm, OnPacketSent(_, _, _, _, _));
   session_.OnCanWrite();
   EXPECT_FALSE(session_.WillingAndAbleToWrite());
 }
@@ -560,10 +568,10 @@ TEST_P(QuicSessionTestServer, OnCanWriteLimitsNumWritesIfFlowControlBlocked) {
   // The crypto and headers streams should be called even though we are
   // connection flow control blocked.
   TestCryptoStream* crypto_stream = session_.GetCryptoStream();
-  EXPECT_CALL(*crypto_stream, OnCanWrite()).Times(1);
+  EXPECT_CALL(*crypto_stream, OnCanWrite());
   TestHeadersStream* headers_stream = new TestHeadersStream(&session_);
   QuicSpdySessionPeer::SetHeadersStream(&session_, headers_stream);
-  EXPECT_CALL(*headers_stream, OnCanWrite()).Times(1);
+  EXPECT_CALL(*headers_stream, OnCanWrite());
 
   session_.OnCanWrite();
   EXPECT_FALSE(session_.WillingAndAbleToWrite());
@@ -621,8 +629,13 @@ TEST_P(QuicSessionTestServer, MultipleRstStreamsCauseSingleConnectionClose) {
 
   // Process first invalid stream reset, resulting in the connection being
   // closed.
-  EXPECT_CALL(*connection_, SendConnectionClose(QUIC_TOO_MANY_OPEN_STREAMS))
-      .Times(1);
+  if (FLAGS_allow_many_available_streams) {
+    EXPECT_CALL(*connection_,
+                SendConnectionClose(QUIC_TOO_MANY_AVAILABLE_STREAMS));
+  } else {
+    EXPECT_CALL(*connection_, SendConnectionClose(QUIC_TOO_MANY_OPEN_STREAMS));
+  }
+
   const QuicStreamId kLargeInvalidStreamId = 99999999;
   QuicRstStreamFrame rst1(kLargeInvalidStreamId, QUIC_STREAM_NO_ERROR, 0);
   session_.OnRstStream(rst1);
@@ -778,8 +791,8 @@ TEST_P(QuicSessionTestServer, ConnectionFlowControlAccountingRstOutOfOrder) {
   EXPECT_CALL(*connection_, SendWindowUpdate(stream->id(), _)).Times(0);
   // We do expect a connection level WINDOW_UPDATE when the stream is reset.
   EXPECT_CALL(*connection_,
-              SendWindowUpdate(0, kInitialSessionFlowControlWindowForTest +
-                                      kByteOffset)).Times(1);
+              SendWindowUpdate(
+                  0, kInitialSessionFlowControlWindowForTest + kByteOffset));
 
   EXPECT_CALL(*connection_, SendRstStream(stream->id(), _, _));
   QuicRstStreamFrame rst_frame(stream->id(), QUIC_STREAM_CANCELLED,
@@ -956,7 +969,7 @@ TEST_P(QuicSessionTestServer, TooManyUnfinishedStreamsCauseConnectionClose) {
   // If a buggy/malicious peer creates too many streams that are not ended with
   // a FIN or RST then we send a connection close.
   EXPECT_CALL(*connection_,
-              SendConnectionClose(QUIC_TOO_MANY_UNFINISHED_STREAMS)).Times(1);
+              SendConnectionClose(QUIC_TOO_MANY_UNFINISHED_STREAMS));
 
   const QuicStreamId kMaxStreams = 5;
   QuicSessionPeer::SetMaxOpenStreams(&session_, kMaxStreams);
@@ -1015,15 +1028,15 @@ INSTANTIATE_TEST_CASE_P(Tests,
                         QuicSessionTestClient,
                         ::testing::ValuesIn(QuicSupportedVersions()));
 
-TEST_P(QuicSessionTestClient, ImplicitlyCreatedStreamsClient) {
+TEST_P(QuicSessionTestClient, AvailableStreamsClient) {
   ASSERT_TRUE(session_.GetIncomingDynamicStream(6) != nullptr);
-  // Both 2 and 4 should be implicitly created.
-  EXPECT_TRUE(QuicSessionPeer::IsStreamImplicitlyCreated(&session_, 2));
-  EXPECT_TRUE(QuicSessionPeer::IsStreamImplicitlyCreated(&session_, 4));
+  // Both 2 and 4 should be available.
+  EXPECT_TRUE(QuicSessionPeer::IsStreamAvailable(&session_, 2));
+  EXPECT_TRUE(QuicSessionPeer::IsStreamAvailable(&session_, 4));
   ASSERT_TRUE(session_.GetIncomingDynamicStream(2) != nullptr);
   ASSERT_TRUE(session_.GetIncomingDynamicStream(4) != nullptr);
-  // And 5 should be not implicitly created.
-  EXPECT_FALSE(QuicSessionPeer::IsStreamImplicitlyCreated(&session_, 5));
+  // And 5 should be not available.
+  EXPECT_FALSE(QuicSessionPeer::IsStreamAvailable(&session_, 5));
 }
 
 }  // namespace

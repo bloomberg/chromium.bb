@@ -160,21 +160,19 @@ class NET_EXPORT_PRIVATE ReliableQuicStream {
   // and then buffers any remaining data in queued_data_.
   // If fin is true: if it is immediately passed on to the session,
   // write_side_closed() becomes true, otherwise fin_buffered_ becomes true.
-  void WriteOrBufferData(
-      base::StringPiece data,
-      bool fin,
-      QuicAckNotifier::DelegateInterface* ack_notifier_delegate);
+  void WriteOrBufferData(base::StringPiece data,
+                         bool fin,
+                         QuicAckListenerInterface* ack_notifier_delegate);
 
   // Sends as many bytes in the first |count| buffers of |iov| to the connection
   // as the connection will consume.
   // If |ack_notifier_delegate| is provided, then it will be notified once all
   // the ACKs for this write have been received.
   // Returns the number of bytes consumed by the connection.
-  QuicConsumedData WritevData(
-      const struct iovec* iov,
-      int iov_count,
-      bool fin,
-      QuicAckNotifier::DelegateInterface* ack_notifier_delegate);
+  QuicConsumedData WritevData(const struct iovec* iov,
+                              int iov_count,
+                              bool fin,
+                              QuicAckListenerInterface* ack_notifier_delegate);
 
   // Close the read side of the stream.  Further incoming stream frames will be
   // discarded.  Can be called by the subclass or internally.

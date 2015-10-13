@@ -135,7 +135,7 @@ QuicConsumedData ConsumeAllData(
     QuicStreamOffset offset,
     bool fin,
     FecProtection /*fec_protection_*/,
-    QuicAckNotifier::DelegateInterface* /*ack_notifier_delegate*/) {
+    QuicAckListenerInterface* /*ack_notifier_delegate*/) {
   return QuicConsumedData(data.total_length, fin);
 }
 

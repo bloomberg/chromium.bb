@@ -197,7 +197,7 @@ class FecAlarm : public QuicAlarm::Delegate {
 
 // Listens for acks of MTU discovery packets and raises the maximum packet size
 // of the connection if the probe succeeds.
-class MtuDiscoveryAckListener : public QuicAckNotifier::DelegateInterface {
+class MtuDiscoveryAckListener : public QuicAckListenerInterface {
  public:
   MtuDiscoveryAckListener(QuicConnection* connection, QuicByteCount probe_size)
       : connection_(connection), probe_size_(probe_size) {}
@@ -209,12 +209,13 @@ class MtuDiscoveryAckListener : public QuicAckNotifier::DelegateInterface {
     MaybeIncreaseMtu();
   }
 
-  void OnPacketEvent(int /*acked_bytes*/,
-                     int /*retransmitted_bytes*/,
+  void OnPacketAcked(int /*acked_bytes*/,
                      QuicTime::Delta /*delta_largest_observed*/) override {
     // MTU discovery packets are not retransmittable, so it must be acked.
     MaybeIncreaseMtu();
   }
+
+  void OnPacketRetransmitted(int /*retransmitted_bytes*/) override {}
 
  protected:
   // MtuDiscoveryAckListener is ref counted.
@@ -1138,7 +1139,7 @@ QuicConsumedData QuicConnection::SendStreamData(
     QuicStreamOffset offset,
     bool fin,
     FecProtection fec_protection,
-    QuicAckNotifier::DelegateInterface* delegate) {
+    QuicAckListenerInterface* delegate) {
   if (!fin && iov.total_length == 0) {
     LOG(DFATAL) << "Attempt to send empty stream frame";
     return QuicConsumedData(0, false);

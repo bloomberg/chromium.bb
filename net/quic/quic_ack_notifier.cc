@@ -14,11 +14,7 @@ using std::make_pair;
 
 namespace net {
 
-QuicAckNotifier::DelegateInterface::DelegateInterface() {}
-
-QuicAckNotifier::DelegateInterface::~DelegateInterface() {}
-
-QuicAckNotifier::QuicAckNotifier(DelegateInterface* delegate)
+QuicAckNotifier::QuicAckNotifier(QuicAckListenerInterface* delegate)
     : delegate_(delegate),
       unacked_packets_(0),
       retransmitted_packet_count_(0),

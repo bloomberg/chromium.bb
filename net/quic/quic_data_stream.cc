@@ -46,7 +46,7 @@ QuicDataStream::~QuicDataStream() {
 size_t QuicDataStream::WriteHeaders(
     const SpdyHeaderBlock& header_block,
     bool fin,
-    QuicAckNotifier::DelegateInterface* ack_notifier_delegate) {
+    QuicAckListenerInterface* ack_notifier_delegate) {
   size_t bytes_written = spdy_session_->WriteHeaders(
       id(), header_block, fin, priority_, ack_notifier_delegate);
   if (fin) {

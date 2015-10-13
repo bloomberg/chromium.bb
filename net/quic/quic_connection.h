@@ -329,7 +329,7 @@ class NET_EXPORT_PRIVATE QuicConnection
                                   QuicStreamOffset offset,
                                   bool fin,
                                   FecProtection fec_protection,
-                                  QuicAckNotifier::DelegateInterface* delegate);
+                                  QuicAckListenerInterface* delegate);
 
   // Send a RST_STREAM frame to the peer.
   virtual void SendRstStream(QuicStreamId id,

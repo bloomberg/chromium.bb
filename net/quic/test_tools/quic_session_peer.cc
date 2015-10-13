@@ -14,6 +14,11 @@ namespace net {
 namespace test {
 
 // static
+QuicStreamId QuicSessionPeer::GetNextStreamId(QuicSession* session) {
+  return session->GetNextStreamId();
+}
+
+// static
 void QuicSessionPeer::SetNextStreamId(QuicSession* session, QuicStreamId id) {
   session->next_stream_id_ = id;
 }
@@ -67,10 +72,9 @@ bool QuicSessionPeer::IsStreamCreated(QuicSession* session, QuicStreamId id) {
 }
 
 // static
-bool QuicSessionPeer::IsStreamImplicitlyCreated(QuicSession* session,
-                                                QuicStreamId id) {
+bool QuicSessionPeer::IsStreamAvailable(QuicSession* session, QuicStreamId id) {
   DCHECK_NE(0u, id);
-  return ContainsKey(session->implicitly_created_streams_, id);
+  return ContainsKey(session->available_streams_, id);
 }
 
 // static

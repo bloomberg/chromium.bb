@@ -91,7 +91,7 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
       QuicStreamOffset offset,
       bool fin,
       FecProtection fec_protection,
-      QuicAckNotifier::DelegateInterface* ack_notifier_delegate);
+      QuicAckListenerInterface* ack_notifier_delegate);
 
   // Called by streams when they want to close the stream in both directions.
   virtual void SendRstStream(QuicStreamId id,
@@ -152,10 +152,13 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
     return connection_->connection_id();
   }
 
-  // Returns the number of currently open streams, including those which have
-  // been implicitly created, but excluding the reserved headers and crypto
-  // streams.
+  // Returns the number of currently open streams, excluding the reserved
+  // headers and crypto streams.
   virtual size_t GetNumOpenStreams() const;
+
+  // Returns the number of "available" streams, the stream ids less than
+  // largest_peer_created_stream_id_ that have not yet been opened.
+  virtual size_t GetNumAvailableStreams() const;
 
   // Add the stream to the session's write-blocked list because it is blocked by
   // connection-level flow control but not by its own stream-level flow control.
@@ -188,10 +191,17 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
 
   size_t get_max_open_streams() const { return max_open_streams_; }
 
+  size_t get_max_available_streams() const {
+    return max_open_streams_ * kMaxAvailableStreamsMultiplier;
+  }
+
   ReliableQuicStream* GetStream(const QuicStreamId stream_id);
 
   // Mark a stream as draining.
   void StreamDraining(QuicStreamId id);
+
+  // Close the connection, if it is not already closed.
+  void CloseConnection(QuicErrorCode error);
 
  protected:
   typedef base::hash_map<QuicStreamId, ReliableQuicStream*> StreamMap;
@@ -299,9 +309,9 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   StreamMap dynamic_stream_map_;
   QuicStreamId next_stream_id_;
 
-  // Set of stream ids that have been "implicitly created" by receipt
-  // of a stream id larger than the next expected stream id.
-  base::hash_set<QuicStreamId> implicitly_created_streams_;
+  // Set of stream ids that are less than the largest stream id that has been
+  // received, but are nonetheless available to be created.
+  base::hash_set<QuicStreamId> available_streams_;
 
   // Set of stream ids that are "draining" -- a FIN has been sent and received,
   // but the stream object still exists because not all the received data has

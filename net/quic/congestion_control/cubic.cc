@@ -43,6 +43,7 @@ Cubic::Cubic(const QuicClock* clock)
     : clock_(clock),
       num_connections_(kDefaultNumConnections),
       epoch_(QuicTime::Zero()),
+      app_limited_start_time_(QuicTime::Zero()),
       last_update_time_(QuicTime::Zero()) {
   Reset();
 }
@@ -69,6 +70,8 @@ float Cubic::Beta() const {
 
 void Cubic::Reset() {
   epoch_ = QuicTime::Zero();  // Reset time.
+  app_limited_start_time_ = QuicTime::Zero();
+  ;
   last_update_time_ = QuicTime::Zero();  // Reset time.
   last_congestion_window_ = 0;
   last_max_congestion_window_ = 0;
@@ -80,15 +83,18 @@ void Cubic::Reset() {
 }
 
 void Cubic::OnApplicationLimited() {
-  // When sender is not using the available congestion window, the window does
-  // not grow. But to be RTT-independent, Cubic assumes that the sender has been
-  // using the entire window during the time since the beginning of the current
-  // "epoch" (the end of the last loss recovery period). Since
-  // application-limited periods break this assumption, we reset the epoch when
-  // in such a period. This reset effectively freezes congestion window growth
-  // through application-limited periods and allows Cubic growth to continue
-  // when the entire window is being used.
-  epoch_ = QuicTime::Zero();
+  if (FLAGS_shift_quic_cubic_epoch_when_app_limited) {
+    // When sender is not using the available congestion window, Cubic's epoch
+    // should not continue growing. Record the time when sender goes into an
+    // app-limited period here, to compensate later when cwnd growth happens.
+    if (app_limited_start_time_ == QuicTime::Zero()) {
+      app_limited_start_time_ = clock_->ApproximateNow();
+    }
+  } else {
+    // When sender is not using the available congestion window, Cubic's epoch
+    // should not continue growing. Reset the epoch when in such a period.
+    epoch_ = QuicTime::Zero();
+  }
 }
 
 QuicPacketCount Cubic::CongestionWindowAfterPacketLoss(
@@ -122,7 +128,6 @@ QuicPacketCount Cubic::CongestionWindowAfterAck(
 
   if (!epoch_.IsInitialized()) {
     // First ACK after a loss event.
-    DVLOG(1) << "Start of epoch";
     epoch_ = current_time;  // Start of epoch.
     acked_packets_count_ = 1;  // Reset count.
     // Reset estimated_tcp_congestion_window_ to be in sync with cubic.
@@ -136,7 +141,19 @@ QuicPacketCount Cubic::CongestionWindowAfterAck(
                                                   current_congestion_window)));
       origin_point_congestion_window_ = last_max_congestion_window_;
     }
+  } else {
+    // If sender was app-limited, then freeze congestion window growth during
+    // app-limited period. Continue growth now by shifting the epoch-start
+    // through the app-limited period.
+    if (FLAGS_shift_quic_cubic_epoch_when_app_limited &&
+        app_limited_start_time_ != QuicTime::Zero()) {
+      QuicTime::Delta shift = current_time.Subtract(app_limited_start_time_);
+      DVLOG(1) << "Shifting epoch for quiescence by " << shift.ToMicroseconds();
+      epoch_ = epoch_.Add(shift);
+      app_limited_start_time_ = QuicTime::Zero();
+    }
   }
+
   // Change the time unit from microseconds to 2^10 fractions per second. Take
   // the round trip time in account. This is done to allow us to use shift as a
   // divide operator.

@@ -1628,7 +1628,7 @@ TEST_P(EndToEndTest, RequestWithNoBodyWillNeverSendStreamFrameWithFIN) {
 
 // A TestAckNotifierDelegate verifies that its OnAckNotification method has been
 // called exactly once on destruction.
-class TestAckNotifierDelegate : public QuicAckNotifier::DelegateInterface {
+class TestAckNotifierDelegate : public QuicAckListenerInterface {
  public:
   TestAckNotifierDelegate() {}
 
@@ -1639,12 +1639,13 @@ class TestAckNotifierDelegate : public QuicAckNotifier::DelegateInterface {
     has_been_notified_ = true;
   }
 
-  void OnPacketEvent(int /*acked_bytes*/,
-                     int /*retransmitted_bytes*/,
+  void OnPacketAcked(int /*acked_bytes*/,
                      QuicTime::Delta /*delta_largest_observed*/) override {
     ASSERT_FALSE(has_been_notified_);
     has_been_notified_ = true;
   }
+
+  void OnPacketRetransmitted(int /*retransmitted_bytes*/) override {}
 
   bool has_been_notified() const { return has_been_notified_; }
 

@@ -246,8 +246,9 @@ TEST(QuicCryptoClientConfigTest, ProcessServerDowngradeAttack) {
   string error;
   QuicCryptoClientConfig config;
   EXPECT_EQ(QUIC_VERSION_NEGOTIATION_MISMATCH,
-            config.ProcessServerHello(msg, 0, supported_versions,
-                                      &cached, &out_params, &error));
+            config.ProcessServerHello(msg, 0, supported_versions.front(),
+                                      supported_versions, &cached, &out_params,
+                                      &error));
   EXPECT_EQ("Downgrade attack detected", error);
 }
 
@@ -442,6 +443,53 @@ TEST(QuicCryptoClientConfigTest, BadlyFormattedStatelessReject) {
                               &out_params, &error));
   EXPECT_FALSE(cached.has_server_designated_connection_id());
   EXPECT_EQ("Missing kRCID", error);
+}
+
+TEST(QuicCryptoClientConfigTest, ServerNonceinSHLO_BeforeQ027) {
+  // Test that in QUIC_VERSION_26 and lower, the the server does not need to
+  // include a nonce in the SHLO.
+  CryptoHandshakeMessage msg;
+  msg.set_tag(kSHLO);
+  // Choose the lowest version.
+  QuicVersionVector supported_versions;
+  QuicVersion version = QuicSupportedVersions().back();
+  supported_versions.push_back(version);
+  EXPECT_LE(version, QUIC_VERSION_26);
+  QuicTagVector versions;
+  versions.push_back(QuicVersionToQuicTag(version));
+  msg.SetVector(kVER, versions);
+
+  QuicCryptoClientConfig config;
+  QuicCryptoClientConfig::CachedState cached;
+  QuicCryptoNegotiatedParameters out_params;
+  string error_details;
+  config.ProcessServerHello(msg, 0, version, supported_versions, &cached,
+                            &out_params, &error_details);
+  EXPECT_NE("server hello missing server nonce", error_details);
+}
+
+TEST(QuicCryptoClientConfigTest, ServerNonceinSHLO_AfterQ027) {
+  // Test that in QUIC_VERSION_27 and higher, the the server must include a
+  // nonce in the SHLO.
+  CryptoHandshakeMessage msg;
+  msg.set_tag(kSHLO);
+  // Choose the latest version.
+  QuicVersionVector supported_versions;
+  QuicVersion version = QuicSupportedVersions().front();
+  supported_versions.push_back(version);
+  EXPECT_LE(QUIC_VERSION_27, version);
+  QuicTagVector versions;
+  versions.push_back(QuicVersionToQuicTag(version));
+  msg.SetVector(kVER, versions);
+
+  QuicCryptoClientConfig config;
+  QuicCryptoClientConfig::CachedState cached;
+  QuicCryptoNegotiatedParameters out_params;
+  string error_details;
+  EXPECT_EQ(QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER,
+            config.ProcessServerHello(msg, 0, version, supported_versions,
+                                      &cached, &out_params, &error_details));
+  EXPECT_EQ("server hello missing server nonce", error_details);
 }
 
 }  // namespace test

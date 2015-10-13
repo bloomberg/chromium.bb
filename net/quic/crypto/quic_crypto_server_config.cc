@@ -790,11 +790,17 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
                                    label_len);
   forward_secure_hkdf_input.append(hkdf_suffix);
 
+  string shlo_nonce;
+  if (version > QUIC_VERSION_26) {
+    shlo_nonce = NewServerNonce(rand, info.now);
+    out->SetStringPiece(kServerNonceTag, shlo_nonce);
+  }
   if (!CryptoUtils::DeriveKeys(
           params->forward_secure_premaster_secret, params->aead,
-          info.client_nonce, info.server_nonce, forward_secure_hkdf_input,
-          Perspective::IS_SERVER, &params->forward_secure_crypters,
-          &params->subkey_secret)) {
+          info.client_nonce,
+          shlo_nonce.empty() ? info.server_nonce : shlo_nonce,
+          forward_secure_hkdf_input, Perspective::IS_SERVER,
+          &params->forward_secure_crypters, &params->subkey_secret)) {
     *error_details = "Symmetric key setup failed";
     return QUIC_CRYPTO_SYMMETRIC_KEY_SETUP_FAILED;
   }
@@ -1007,20 +1013,6 @@ void QuicCryptoServerConfig::EvaluateClientHello(
     found_error = true;
   }
 
-  if (client_hello.GetStringPiece(kNONC, &info->client_nonce) &&
-      info->client_nonce.size() == kNonceSize) {
-    info->client_nonce_well_formed = true;
-  } else {
-    info->reject_reasons.push_back(CLIENT_NONCE_INVALID_FAILURE);
-    // Invalid client nonce.
-    DVLOG(1) << "Invalid client nonce.";
-    if (FLAGS_use_early_return_when_verifying_chlo) {
-      helper.ValidationComplete(QUIC_NO_ERROR, "");
-      return;
-    }
-    found_error = true;
-  }
-
   if (version > QUIC_VERSION_25) {
     bool x509_supported = false;
     bool x509_ecdsa_supported = false;
@@ -1038,6 +1030,20 @@ void QuicCryptoServerConfig::EvaluateClientHello(
       found_error = true;
       info->reject_reasons.push_back(INVALID_EXPECTED_LEAF_CERTIFICATE);
     }
+  }
+
+  if (client_hello.GetStringPiece(kNONC, &info->client_nonce) &&
+      info->client_nonce.size() == kNonceSize) {
+    info->client_nonce_well_formed = true;
+  } else {
+    info->reject_reasons.push_back(CLIENT_NONCE_INVALID_FAILURE);
+    // Invalid client nonce.
+    DVLOG(1) << "Invalid client nonce.";
+    if (FLAGS_use_early_return_when_verifying_chlo) {
+      helper.ValidationComplete(QUIC_NO_ERROR, "");
+      return;
+    }
+    found_error = true;
   }
 
   if (!replay_protection_) {

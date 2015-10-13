@@ -70,7 +70,7 @@ void ReliableQuicStreamPeer::WriteOrBufferData(
     ReliableQuicStream* stream,
     StringPiece data,
     bool fin,
-    QuicAckNotifier::DelegateInterface* ack_notifier_delegate) {
+    QuicAckListenerInterface* ack_notifier_delegate) {
   stream->WriteOrBufferData(data, fin, ack_notifier_delegate);
 }
 

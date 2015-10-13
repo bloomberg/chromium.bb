@@ -73,3 +73,10 @@ bool FLAGS_reset_cubic_epoch_when_app_limited = true;
 // If true, use an interval set as the internal representation of a packet queue
 // instead of a set.
 bool FLAGS_quic_packet_queue_use_interval_set = true;
+
+// If true, Cubic's epoch is shifted when the sender is application-limited.
+bool FLAGS_shift_quic_cubic_epoch_when_app_limited = true;
+
+// If true, accounts for available (implicitly opened) streams under a separate
+// quota from open streams, which is 10 times larger.
+bool FLAGS_allow_many_available_streams = true;

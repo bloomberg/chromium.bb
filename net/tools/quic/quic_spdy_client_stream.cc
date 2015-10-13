@@ -128,9 +128,9 @@ void QuicSpdyClientStream::SendBody(const string& data, bool fin) {
   SendBody(data, fin, nullptr);
 }
 
-void QuicSpdyClientStream::SendBody(
-    const string& data, bool fin,
-    QuicAckNotifier::DelegateInterface* delegate) {
+void QuicSpdyClientStream::SendBody(const string& data,
+                                    bool fin,
+                                    QuicAckListenerInterface* delegate) {
   WriteOrBufferData(data, fin, delegate);
 }
 

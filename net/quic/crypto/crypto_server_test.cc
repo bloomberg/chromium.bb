@@ -101,8 +101,9 @@ class CryptoServerTest : public ::testing::TestWithParam<TestParams> {
     config_.SetProofSource(CryptoTestUtils::FakeProofSourceForTesting());
 #endif
     supported_versions_ = QuicSupportedVersions();
-    client_version_ = QuicUtils::TagToString(
-        QuicVersionToQuicTag(supported_versions_.front()));
+    client_version_ = supported_versions_.front();
+    client_version_string_ =
+        QuicUtils::TagToString(QuicVersionToQuicTag(client_version_));
 
     FLAGS_use_early_return_when_verifying_chlo =
         GetParam().use_early_return_when_verifying_chlo;
@@ -134,7 +135,7 @@ class CryptoServerTest : public ::testing::TestWithParam<TestParams> {
         "KEXS", "C255",
         "PUBS", pub_hex_.c_str(),
         "NONC", nonce_hex_.c_str(),
-        "VER\0", client_version_.data(),
+        "VER\0", client_version_string_.c_str(),
         "$padding", static_cast<int>(kClientHelloMinimumSize),
         nullptr);
     // clang-format on
@@ -347,8 +348,7 @@ class CryptoServerTest : public ::testing::TestWithParam<TestParams> {
 
     std::ostringstream xlct_stream;
     uint64 xlct =
-        QuicUtils::FNV1a_64_Hash(certs->at(0).data(), certs->at(0).length());
-
+        QuicUtils::FNV1a_64_Hash(certs->at(0).c_str(), certs->at(0).length());
     return "#" + base::HexEncode(reinterpret_cast<char*>(&xlct), sizeof(xlct));
   }
 
@@ -358,7 +358,8 @@ class CryptoServerTest : public ::testing::TestWithParam<TestParams> {
   MockClock clock_;
   const IPEndPoint client_address_;
   QuicVersionVector supported_versions_;
-  string client_version_;
+  QuicVersion client_version_;
+  string client_version_string_;
   QuicCryptoServerConfig config_;
   QuicCryptoServerConfig::ConfigOptions config_options_;
   QuicCryptoNegotiatedParameters params_;
@@ -391,15 +392,12 @@ TEST_P(CryptoServerTest, BadSNI) {
   };
   // clang-format on
 
-  string client_version =
-      QuicUtils::TagToString(QuicVersionToQuicTag(supported_versions_.front()));
-
   for (size_t i = 0; i < arraysize(kBadSNIs); i++) {
     // clang-format off
     CryptoHandshakeMessage msg = CryptoTestUtils::Message(
         "CHLO",
         "SNI", kBadSNIs[i],
-        "VER\0", client_version.data(),
+        "VER\0", client_version_string_.c_str(),
         "$padding", static_cast<int>(kClientHelloMinimumSize),
         nullptr);
     // clang-format on
@@ -426,7 +424,7 @@ TEST_P(CryptoServerTest, DefaultCert) {
       "NONC", nonce_hex_.c_str(),
       "PDMD", "X509",
       "XLCT", XlctHexString().c_str(),
-      "VER\0", client_version_.data(),
+      "VER\0", client_version_string_.c_str(),
       "$padding", static_cast<int>(kClientHelloMinimumSize),
       nullptr);
   // clang-format on
@@ -446,7 +444,7 @@ TEST_P(CryptoServerTest, TooSmall) {
   // clang-format off
   ShouldFailMentioning("too small", CryptoTestUtils::Message(
         "CHLO",
-        "VER\0", client_version_.data(),
+        "VER\0", client_version_string_.c_str(),
         nullptr));
   // clang-format on
   const HandshakeFailureReason kRejectReasons[] = {
@@ -470,7 +468,7 @@ TEST_P(CryptoServerTest, BadSourceAddressToken) {
     CryptoHandshakeMessage msg = CryptoTestUtils::Message(
         "CHLO",
         "STK", kBadSourceAddressTokens[i],
-        "VER\0", client_version_.data(),
+        "VER\0", client_version_string_.c_str(),
         "$padding", static_cast<int>(kClientHelloMinimumSize), nullptr);
     // clang-format on
     ShouldSucceed(msg);
@@ -495,7 +493,7 @@ TEST_P(CryptoServerTest, BadClientNonce) {
     CryptoHandshakeMessage msg = CryptoTestUtils::Message(
         "CHLO",
         "NONC", kBadNonces[i],
-        "VER\0", client_version_.data(),
+        "VER\0", client_version_string_.c_str(),
         "$padding", static_cast<int>(kClientHelloMinimumSize),
         nullptr);
     // clang-format on
@@ -519,7 +517,7 @@ TEST_P(CryptoServerTest, DowngradeAttack) {
   // clang-format off
   CryptoHandshakeMessage msg = CryptoTestUtils::Message(
       "CHLO",
-      "VER\0", bad_version.data(),
+      "VER\0", bad_version.c_str(),
       "$padding", static_cast<int>(kClientHelloMinimumSize),
       nullptr);
   // clang-format on
@@ -540,7 +538,7 @@ TEST_P(CryptoServerTest, CorruptServerConfig) {
       "#004b5453", srct_hex_.c_str(),
       "PUBS", pub_hex_.c_str(),
       "NONC", nonce_hex_.c_str(),
-      "VER\0", client_version_.data(),
+      "VER\0", client_version_string_.c_str(),
       "$padding", static_cast<int>(kClientHelloMinimumSize),
       nullptr);
   // clang-format on
@@ -563,7 +561,7 @@ TEST_P(CryptoServerTest, CorruptSourceAddressToken) {
       "PUBS", pub_hex_.c_str(),
       "NONC", nonce_hex_.c_str(),
       "XLCT", XlctHexString().c_str(),
-      "VER\0", client_version_.data(),
+      "VER\0", client_version_string_.c_str(),
       "$padding", static_cast<int>(kClientHelloMinimumSize),
       nullptr);
   // clang-format on
@@ -586,7 +584,7 @@ TEST_P(CryptoServerTest, CorruptClientNonceAndSourceAddressToken) {
       "PUBS", pub_hex_.c_str(),
       "NONC", (string(1, 'X') + nonce_hex_).c_str(),
       "XLCT", XlctHexString().c_str(),
-      "VER\0", client_version_.data(),
+      "VER\0", client_version_string_.c_str(),
       "$padding", static_cast<int>(kClientHelloMinimumSize),
       nullptr);
   // clang-format on
@@ -610,7 +608,7 @@ TEST_P(CryptoServerTest, CorruptMultipleTags) {
       "NONC", (string(1, 'X') + nonce_hex_).c_str(),
       "SNO\0", (string(1, 'X') + nonce_hex_).c_str(),
       "XLCT", XlctHexString().c_str(),
-      "VER\0", client_version_.data(),
+      "VER\0", client_version_string_.c_str(),
       "$padding", static_cast<int>(kClientHelloMinimumSize),
       nullptr);
   // clang-format on
@@ -635,7 +633,7 @@ TEST_P(CryptoServerTest, ReplayProtection) {
       "PUBS", pub_hex_.c_str(),
       "NONC", nonce_hex_.c_str(),
       "XLCT", XlctHexString().c_str(),
-      "VER\0", client_version_.data(),
+      "VER\0", client_version_string_.c_str(),
       "$padding", static_cast<int>(kClientHelloMinimumSize),
       nullptr);
   // clang-format on
@@ -662,30 +660,49 @@ TEST_P(CryptoServerTest, ReplayProtection) {
 }
 
 TEST_P(CryptoServerTest, RejectInvalidXlct) {
+  // clang-format off
   CryptoHandshakeMessage msg = CryptoTestUtils::Message(
-      "CHLO", "AEAD", "AESG", "KEXS", "C255", "SCID", scid_hex_.c_str(),
-      "#004b5453", srct_hex_.c_str(), "PUBS", pub_hex_.c_str(), "NONC",
-      nonce_hex_.c_str(), "VER\0", client_version_.data(), "XLCT",
-      "#0102030405060708", "$padding",
-      static_cast<int>(kClientHelloMinimumSize), nullptr);
+      "CHLO",
+      "AEAD", "AESG",
+      "KEXS", "C255",
+      "SCID", scid_hex_.c_str(),
+      "#004b5453", srct_hex_.c_str(),
+      "PUBS", pub_hex_.c_str(),
+      "NONC", nonce_hex_.c_str(),
+      "VER\0", client_version_string_.c_str(),
+      "XLCT", "#0102030405060708",
+      "$padding", static_cast<int>(kClientHelloMinimumSize),
+      nullptr);
+  // clang-format on
   // If replay protection isn't disabled, then
   // QuicCryptoServerConfig::EvaluateClientHello will leave info.unique as false
   // and cause ProcessClientHello to exit early (and generate a REJ message).
   config_.set_replay_protection(false);
 
   ShouldSucceed(msg);
+  // clang-format off
   const HandshakeFailureReason kRejectReasons[] = {
-      INVALID_EXPECTED_LEAF_CERTIFICATE};
+    INVALID_EXPECTED_LEAF_CERTIFICATE
+  };
+  // clang-format on
   CheckRejectReasons(kRejectReasons, arraysize(kRejectReasons));
 }
 
 TEST_P(CryptoServerTest, ValidXlct) {
+  // clang-format off
   CryptoHandshakeMessage msg = CryptoTestUtils::Message(
-      "CHLO", "AEAD", "AESG", "KEXS", "C255", "SCID", scid_hex_.c_str(),
-      "#004b5453", srct_hex_.c_str(), "PUBS", pub_hex_.c_str(), "NONC",
-      nonce_hex_.c_str(), "VER\0", client_version_.data(), "XLCT",
-      XlctHexString().c_str(), "$padding",
-      static_cast<int>(kClientHelloMinimumSize), nullptr);
+      "CHLO",
+      "AEAD", "AESG",
+      "KEXS", "C255",
+      "SCID", scid_hex_.c_str(),
+      "#004b5453", srct_hex_.c_str(),
+      "PUBS", pub_hex_.c_str(),
+      "NONC", nonce_hex_.c_str(),
+      "VER\0", client_version_string_.c_str(),
+      "XLCT", XlctHexString().c_str(),
+      "$padding", static_cast<int>(kClientHelloMinimumSize),
+      nullptr);
+  // clang-format on
   // If replay protection isn't disabled, then
   // QuicCryptoServerConfig::EvaluateClientHello will leave info.unique as false
   // and cause ProcessClientHello to exit early (and generate a REJ message).
@@ -693,6 +710,38 @@ TEST_P(CryptoServerTest, ValidXlct) {
 
   ShouldSucceed(msg);
   EXPECT_EQ(kSHLO, out_.tag());
+}
+
+TEST_P(CryptoServerTest, NonceInSHLO) {
+  // After QUIC_VERSION_27, the SHLO should contain a nonce.
+  // clang-format off
+  CryptoHandshakeMessage msg = CryptoTestUtils::Message(
+      "CHLO",
+      "AEAD", "AESG",
+      "KEXS", "C255",
+      "SCID", scid_hex_.c_str(),
+      "#004b5453", srct_hex_.c_str(),
+      "PUBS", pub_hex_.c_str(),
+      "NONC", nonce_hex_.c_str(),
+      "VER\0", client_version_string_.c_str(),
+      "XLCT", XlctHexString().c_str(),
+      "$padding", static_cast<int>(kClientHelloMinimumSize),
+      nullptr);
+  // clang-format on
+  // If replay protection isn't disabled, then
+  // QuicCryptoServerConfig::EvaluateClientHello will leave info.unique as false
+  // and cause ProcessClientHello to exit early (and generate a REJ message).
+  config_.set_replay_protection(false);
+
+  ShouldSucceed(msg);
+  EXPECT_EQ(kSHLO, out_.tag());
+
+  StringPiece nonce;
+  if (client_version_ <= QUIC_VERSION_26) {
+    EXPECT_FALSE(out_.GetStringPiece(kServerNonceTag, &nonce));
+  } else {
+    EXPECT_TRUE(out_.GetStringPiece(kServerNonceTag, &nonce));
+  }
 }
 
 TEST(CryptoServerConfigGenerationTest, Determinism) {
@@ -761,7 +810,7 @@ TEST(CryptoServerConfigGenerationTest, SCIDIsHashOfServerConfig) {
   hash->Finish(digest, sizeof(digest));
 
   ASSERT_EQ(scid.size(), sizeof(digest));
-  EXPECT_EQ(0, memcmp(digest, scid_str.data(), sizeof(digest)));
+  EXPECT_EQ(0, memcmp(digest, scid_str.c_str(), sizeof(digest)));
 }
 
 class CryptoServerTestNoConfig : public CryptoServerTest {
@@ -775,7 +824,7 @@ TEST_P(CryptoServerTestNoConfig, DontCrash) {
   // clang-format off
   CryptoHandshakeMessage msg = CryptoTestUtils::Message(
       "CHLO",
-      "VER\0", client_version_.data(),
+      "VER\0", client_version_string_.c_str(),
       "$padding", static_cast<int>(kClientHelloMinimumSize),
       nullptr);
   // clang-format on
@@ -789,19 +838,28 @@ TEST_P(CryptoServerTestNoConfig, DontCrash) {
 class CryptoServerTestOldVersion : public CryptoServerTest {
  public:
   void SetUp() override {
-    client_version_ = QuicUtils::TagToString(
-        QuicVersionToQuicTag(supported_versions_.back()));
+    client_version_ = supported_versions_.back();
+    client_version_string_ =
+        QuicUtils::TagToString(QuicVersionToQuicTag(client_version_));
     CryptoServerTest::SetUp();
   }
 };
 
 TEST_P(CryptoServerTestOldVersion, ServerIgnoresXlct) {
+  // clang-format off
   CryptoHandshakeMessage msg = CryptoTestUtils::Message(
-      "CHLO", "AEAD", "AESG", "KEXS", "C255", "SCID", scid_hex_.c_str(),
-      "#004b5453", srct_hex_.c_str(), "PUBS", pub_hex_.c_str(), "NONC",
-      nonce_hex_.c_str(), "VER\0", client_version_.data(), "XLCT",
-      "#0100000000000000", "$padding",
-      static_cast<int>(kClientHelloMinimumSize), nullptr);
+      "CHLO",
+      "AEAD", "AESG",
+      "KEXS", "C255",
+      "SCID", scid_hex_.c_str(),
+      "#004b5453", srct_hex_.c_str(),
+      "PUBS", pub_hex_.c_str(),
+      "NONC", nonce_hex_.c_str(),
+      "VER\0", client_version_string_.c_str(),
+      "XLCT", "#0100000000000000",
+      "$padding", static_cast<int>(kClientHelloMinimumSize),
+      nullptr);
+  // clang-format on
   // If replay protection isn't disabled, then
   // QuicCryptoServerConfig::EvaluateClientHello will leave info.unique as false
   // and cause ProcessClientHello to exit early (and generate a REJ message).
@@ -812,11 +870,19 @@ TEST_P(CryptoServerTestOldVersion, ServerIgnoresXlct) {
 }
 
 TEST_P(CryptoServerTestOldVersion, XlctNotRequired) {
+  // clang-format off
   CryptoHandshakeMessage msg = CryptoTestUtils::Message(
-      "CHLO", "AEAD", "AESG", "KEXS", "C255", "SCID", scid_hex_.c_str(),
-      "#004b5453", srct_hex_.c_str(), "PUBS", pub_hex_.c_str(), "NONC",
-      nonce_hex_.c_str(), "VER\0", client_version_.data(), "$padding",
-      static_cast<int>(kClientHelloMinimumSize), nullptr);
+      "CHLO",
+      "AEAD", "AESG",
+      "KEXS", "C255",
+      "SCID", scid_hex_.c_str(),
+      "#004b5453", srct_hex_.c_str(),
+      "PUBS", pub_hex_.c_str(),
+      "NONC", nonce_hex_.c_str(),
+      "VER\0", client_version_string_.c_str(),
+      "$padding", static_cast<int>(kClientHelloMinimumSize),
+      nullptr);
+  // clang-format on
   // If replay protection isn't disabled, then
   // QuicCryptoServerConfig::EvaluateClientHello will leave info.unique as false
   // and cause ProcessClientHello to exit early (and generate a REJ message).
@@ -837,7 +903,7 @@ class AsyncStrikeServerVerificationTest : public CryptoServerTest {
         10000,  // strike_register_max_entries
         static_cast<uint32>(clock_.WallNow().ToUNIXSeconds()),
         60,  // strike_register_window_secs
-        reinterpret_cast<const uint8*>(kOrbit.data()),
+        reinterpret_cast<const uint8*>(kOrbit.c_str()),
         StrikeRegister::NO_STARTUP_PERIOD_NEEDED);
     config_.SetStrikeRegisterClient(strike_register_client_);
     CryptoServerTest::SetUp();
@@ -858,7 +924,7 @@ TEST_P(AsyncStrikeServerVerificationTest, AsyncReplayProtection) {
       "#004b5453", srct_hex_.c_str(),
       "PUBS", pub_hex_.c_str(),
       "NONC", nonce_hex_.c_str(),
-      "VER\0", client_version_.data(),
+      "VER\0", client_version_string_.c_str(),
       "$padding", static_cast<int>(kClientHelloMinimumSize),
       nullptr);
   // clang-format on
@@ -868,9 +934,9 @@ TEST_P(AsyncStrikeServerVerificationTest, AsyncReplayProtection) {
 
   bool called = false;
   IPAddressNumber server_ip;
-  config_.ValidateClientHello(
-      msg, client_address_.address(), server_ip, supported_versions_.front(),
-      &clock_, &crypto_proof_, new ValidateCallback(this, true, "", &called));
+  config_.ValidateClientHello(msg, client_address_.address(), server_ip,
+                              client_version_, &clock_, &crypto_proof_,
+                              new ValidateCallback(this, true, "", &called));
   // The verification request was queued.
   ASSERT_FALSE(called);
   EXPECT_EQ(0u, out_.tag());
@@ -884,9 +950,9 @@ TEST_P(AsyncStrikeServerVerificationTest, AsyncReplayProtection) {
   EXPECT_EQ(kSHLO, out_.tag());
 
   // Rejected if replayed.
-  config_.ValidateClientHello(
-      msg, client_address_.address(), server_ip, supported_versions_.front(),
-      &clock_, &crypto_proof_, new ValidateCallback(this, true, "", &called));
+  config_.ValidateClientHello(msg, client_address_.address(), server_ip,
+                              client_version_, &clock_, &crypto_proof_,
+                              new ValidateCallback(this, true, "", &called));
   // The verification request was queued.
   ASSERT_FALSE(called);
   EXPECT_EQ(1, strike_register_client_->PendingVerifications());

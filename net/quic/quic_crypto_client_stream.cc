@@ -546,8 +546,9 @@ void QuicCryptoClientStream::DoReceiveSHLO(
   string error_details;
   QuicErrorCode error = crypto_config_->ProcessServerHello(
       *in, session()->connection()->connection_id(),
-      session()->connection()->server_supported_versions(),
-      cached, &crypto_negotiated_params_, &error_details);
+      session()->connection()->version(),
+      session()->connection()->server_supported_versions(), cached,
+      &crypto_negotiated_params_, &error_details);
 
   if (error != QUIC_NO_ERROR) {
     CloseConnectionWithDetails(error, "Server hello invalid: " + error_details);

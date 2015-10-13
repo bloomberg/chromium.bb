@@ -426,8 +426,8 @@ TEST_F(ReliableQuicStreamTest, StreamFlowControlMultipleWindowUpdates) {
 }
 
 void SaveProxyAckNotifierDelegate(
-    scoped_refptr<QuicAckNotifier::DelegateInterface>* delegate_out,
-    QuicAckNotifier::DelegateInterface* delegate) {
+    scoped_refptr<QuicAckListenerInterface>* delegate_out,
+    QuicAckListenerInterface* delegate) {
   *delegate_out = delegate;
 }
 
@@ -448,7 +448,7 @@ TEST_F(ReliableQuicStreamTest, WriteOrBufferDataWithQuicAckNotifier) {
   stream_->flow_controller()->UpdateSendWindowOffset(kDataSize + 1);
   session_->flow_controller()->UpdateSendWindowOffset(kDataSize + 1);
 
-  scoped_refptr<QuicAckNotifier::DelegateInterface> proxy_delegate;
+  scoped_refptr<QuicAckListenerInterface> proxy_delegate;
 
   EXPECT_CALL(*session_, WritevData(kTestStreamId, _, _, _, _, _))
       .WillOnce(DoAll(WithArgs<5>(Invoke(CreateFunctor(
@@ -501,7 +501,7 @@ TEST_F(ReliableQuicStreamTest, WriteOrBufferDataAckNotificationBeforeFlush) {
   stream_->flow_controller()->UpdateSendWindowOffset(kDataSize + 1);
   session_->flow_controller()->UpdateSendWindowOffset(kDataSize + 1);
 
-  scoped_refptr<QuicAckNotifier::DelegateInterface> proxy_delegate;
+  scoped_refptr<QuicAckListenerInterface> proxy_delegate;
 
   EXPECT_CALL(*session_, WritevData(kTestStreamId, _, _, _, _, _))
       .WillOnce(DoAll(WithArgs<5>(Invoke(CreateFunctor(
@@ -533,7 +533,7 @@ TEST_F(ReliableQuicStreamTest, WriteAndBufferDataWithAckNotiferNoBuffer) {
   scoped_refptr<MockAckNotifierDelegate> delegate(
       new StrictMock<MockAckNotifierDelegate>);
 
-  scoped_refptr<QuicAckNotifier::DelegateInterface> proxy_delegate;
+  scoped_refptr<QuicAckListenerInterface> proxy_delegate;
 
   EXPECT_CALL(*session_, WritevData(kTestStreamId, _, _, _, _, _))
       .WillOnce(DoAll(WithArgs<5>(Invoke(CreateFunctor(
@@ -554,7 +554,7 @@ TEST_F(ReliableQuicStreamTest, BufferOnWriteAndBufferDataWithAckNotifer) {
   scoped_refptr<MockAckNotifierDelegate> delegate(
       new StrictMock<MockAckNotifierDelegate>);
 
-  scoped_refptr<QuicAckNotifier::DelegateInterface> proxy_delegate;
+  scoped_refptr<QuicAckListenerInterface> proxy_delegate;
 
   EXPECT_CALL(*session_, WritevData(kTestStreamId, _, _, _, _, _))
       .WillOnce(Return(QuicConsumedData(0, false)));
@@ -580,7 +580,7 @@ TEST_F(ReliableQuicStreamTest, WriteAndBufferDataWithAckNotiferOnlyFinRemains) {
   scoped_refptr<MockAckNotifierDelegate> delegate(
       new StrictMock<MockAckNotifierDelegate>);
 
-  scoped_refptr<QuicAckNotifier::DelegateInterface> proxy_delegate;
+  scoped_refptr<QuicAckListenerInterface> proxy_delegate;
 
   EXPECT_CALL(*session_, WritevData(kTestStreamId, _, _, _, _, _))
       .WillOnce(DoAll(WithArgs<5>(Invoke(CreateFunctor(

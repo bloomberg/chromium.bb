@@ -69,7 +69,7 @@ void QuicCryptoStream::SendHandshakeMessage(
 
 void QuicCryptoStream::SendHandshakeMessage(
     const CryptoHandshakeMessage& message,
-    QuicAckNotifier::DelegateInterface* delegate) {
+    QuicAckListenerInterface* delegate) {
   DVLOG(1) << ENDPOINT << "Sending " << message.DebugString();
   session()->OnCryptoHandshakeMessageSent(message);
   const QuicData& data = message.GetSerialized();

@@ -296,8 +296,8 @@ void QuicDispatcher::OnUnauthenticatedHeader(const QuicPacketHeader& header) {
   switch (fate) {
     case kFateProcess: {
       // Create a session and process the packet.
-      QuicServerSession* session = CreateQuicSession(
-          connection_id, current_server_address_, current_client_address_);
+      QuicServerSession* session =
+          CreateQuicSession(connection_id, current_client_address_);
       DVLOG(1) << "Created new session for " << connection_id;
       session_map_.insert(make_pair(connection_id, session));
       session->connection()->ProcessUdpPacket(
@@ -462,7 +462,6 @@ void QuicDispatcher::OnConnectionRemovedFromTimeWaitList(
 
 QuicServerSession* QuicDispatcher::CreateQuicSession(
     QuicConnectionId connection_id,
-    const IPEndPoint& server_address,
     const IPEndPoint& client_address) {
   // The QuicServerSession takes ownership of |connection| below.
   QuicConnection* connection = new QuicConnection(

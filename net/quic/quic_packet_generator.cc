@@ -133,7 +133,7 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(
     QuicStreamOffset offset,
     bool fin,
     FecProtection fec_protection,
-    QuicAckNotifier::DelegateInterface* delegate) {
+    QuicAckListenerInterface* delegate) {
   bool has_handshake = id == kCryptoStreamId;
   // To make reasoning about crypto frames easier, we don't combine them with
   // other retransmittable frames in a single packet.
@@ -235,7 +235,7 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(
 
 void QuicPacketGenerator::GenerateMtuDiscoveryPacket(
     QuicByteCount target_mtu,
-    QuicAckNotifier::DelegateInterface* delegate) {
+    QuicAckListenerInterface* delegate) {
   // MTU discovery frames must be sent by themselves.
   DCHECK(!InBatchMode() && !packet_creator_.HasPendingFrames());
 

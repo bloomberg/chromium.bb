@@ -67,7 +67,7 @@ size_t QuicSpdySession::WriteHeaders(
     const SpdyHeaderBlock& headers,
     bool fin,
     QuicPriority priority,
-    QuicAckNotifier::DelegateInterface* ack_notifier_delegate) {
+    QuicAckListenerInterface* ack_notifier_delegate) {
   return headers_stream_->WriteHeaders(id, headers, fin, priority,
                                        ack_notifier_delegate);
 }

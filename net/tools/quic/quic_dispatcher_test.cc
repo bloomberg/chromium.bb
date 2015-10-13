@@ -80,9 +80,8 @@ class TestDispatcher : public QuicDispatcher {
                        new QuicDispatcher::DefaultPacketWriterFactory(),
                        new QuicEpollConnectionHelper(eps)) {}
 
-  MOCK_METHOD3(CreateQuicSession,
+  MOCK_METHOD2(CreateQuicSession,
                QuicServerSession*(QuicConnectionId connection_id,
-                                  const IPEndPoint& server_address,
                                   const IPEndPoint& client_address));
 
   using QuicDispatcher::current_server_address;
@@ -212,7 +211,7 @@ TEST_F(QuicDispatcherTest, ProcessPackets) {
   IPEndPoint client_address(net::test::Loopback4(), 1);
   server_address_ = IPEndPoint(net::test::Any4(), 5);
 
-  EXPECT_CALL(dispatcher_, CreateQuicSession(1, _, client_address))
+  EXPECT_CALL(dispatcher_, CreateQuicSession(1, client_address))
       .WillOnce(testing::Return(CreateSession(&dispatcher_, config_, 1,
                                               client_address, &crypto_config_,
                                               &session1_)));
@@ -220,7 +219,7 @@ TEST_F(QuicDispatcherTest, ProcessPackets) {
   EXPECT_EQ(client_address, dispatcher_.current_client_address());
   EXPECT_EQ(server_address_, dispatcher_.current_server_address());
 
-  EXPECT_CALL(dispatcher_, CreateQuicSession(2, _, client_address))
+  EXPECT_CALL(dispatcher_, CreateQuicSession(2, client_address))
       .WillOnce(testing::Return(CreateSession(&dispatcher_, config_, 2,
                                               client_address, &crypto_config_,
                                               &session2_)));
@@ -236,7 +235,7 @@ TEST_F(QuicDispatcherTest, ProcessPackets) {
 TEST_F(QuicDispatcherTest, Shutdown) {
   IPEndPoint client_address(net::test::Loopback4(), 1);
 
-  EXPECT_CALL(dispatcher_, CreateQuicSession(_, _, client_address))
+  EXPECT_CALL(dispatcher_, CreateQuicSession(_, client_address))
       .WillOnce(testing::Return(CreateSession(&dispatcher_, config_, 1,
                                               client_address, &crypto_config_,
                                               &session1_)));
@@ -255,7 +254,7 @@ TEST_F(QuicDispatcherTest, TimeWaitListManager) {
   // Create a new session.
   IPEndPoint client_address(net::test::Loopback4(), 1);
   QuicConnectionId connection_id = 1;
-  EXPECT_CALL(dispatcher_, CreateQuicSession(connection_id, _, client_address))
+  EXPECT_CALL(dispatcher_, CreateQuicSession(connection_id, client_address))
       .WillOnce(testing::Return(CreateSession(&dispatcher_, config_,
                                               connection_id, client_address,
                                               &crypto_config_, &session1_)));
@@ -298,7 +297,7 @@ TEST_F(QuicDispatcherTest, NoVersionPacketToTimeWaitListManager) {
   QuicConnectionId connection_id = 1;
   // Dispatcher forwards all packets for this connection_id to the time wait
   // list manager.
-  EXPECT_CALL(dispatcher_, CreateQuicSession(_, _, _)).Times(0);
+  EXPECT_CALL(dispatcher_, CreateQuicSession(_, _)).Times(0);
   EXPECT_CALL(*time_wait_list_manager_,
               ProcessPacket(_, _, connection_id, _, _)).Times(1);
   EXPECT_CALL(*time_wait_list_manager_, AddConnectionIdToTimeWait(_, _, _, _))
@@ -432,7 +431,7 @@ TEST_F(QuicDispatcherTest, ProcessPacketWithZeroPort) {
   server_address_ = IPEndPoint(net::test::Any4(), 5);
 
   // dispatcher_ should drop this packet.
-  EXPECT_CALL(dispatcher_, CreateQuicSession(1, _, client_address)).Times(0);
+  EXPECT_CALL(dispatcher_, CreateQuicSession(1, client_address)).Times(0);
   EXPECT_CALL(*time_wait_list_manager_, ProcessPacket(_, _, _, _, _)).Times(0);
   EXPECT_CALL(*time_wait_list_manager_, AddConnectionIdToTimeWait(_, _, _, _))
       .Times(0);
@@ -444,7 +443,7 @@ TEST_F(QuicDispatcherTest, OKSeqNoPacketProcessed) {
   QuicConnectionId connection_id = 1;
   server_address_ = IPEndPoint(net::test::Any4(), 5);
 
-  EXPECT_CALL(dispatcher_, CreateQuicSession(1, _, client_address))
+  EXPECT_CALL(dispatcher_, CreateQuicSession(1, client_address))
       .WillOnce(testing::Return(CreateSession(&dispatcher_, config_, 1,
                                               client_address, &crypto_config_,
                                               &session1_)));
@@ -464,7 +463,7 @@ TEST_F(QuicDispatcherTest, TooBigSeqNoPacketToTimeWaitListManager) {
   QuicConnectionId connection_id = 1;
   // Dispatcher forwards this packet for this connection_id to the time wait
   // list manager.
-  EXPECT_CALL(dispatcher_, CreateQuicSession(_, _, _)).Times(0);
+  EXPECT_CALL(dispatcher_, CreateQuicSession(_, _)).Times(0);
   EXPECT_CALL(*time_wait_list_manager_,
               ProcessPacket(_, _, connection_id, _, _)).Times(1);
   EXPECT_CALL(*time_wait_list_manager_, AddConnectionIdToTimeWait(_, _, _, _))
@@ -488,7 +487,7 @@ TEST_P(QuicDispatcherStatelessRejectTest, ParameterizedBasicTest) {
 
   IPEndPoint client_address(net::test::Loopback4(), 1);
   QuicConnectionId connection_id = 1;
-  EXPECT_CALL(dispatcher_, CreateQuicSession(connection_id, _, client_address))
+  EXPECT_CALL(dispatcher_, CreateQuicSession(connection_id, client_address))
       .WillOnce(testing::Return(
           CreateSessionBasedOnTestParams(connection_id, client_address)));
 
@@ -538,7 +537,7 @@ TEST_P(QuicDispatcherTestStrayPacketConnectionId,
   IPEndPoint client_address(net::test::Loopback4(), 1);
   QuicConnectionId connection_id = 1;
   // Dispatcher drops this packet.
-  EXPECT_CALL(dispatcher_, CreateQuicSession(_, _, _)).Times(0);
+  EXPECT_CALL(dispatcher_, CreateQuicSession(_, _)).Times(0);
   EXPECT_CALL(*time_wait_list_manager_,
               ProcessPacket(_, _, connection_id, _, _)).Times(0);
   EXPECT_CALL(*time_wait_list_manager_, AddConnectionIdToTimeWait(_, _, _, _))
@@ -584,13 +583,13 @@ class QuicDispatcherWriteBlockedListTest : public QuicDispatcherTest {
 
     IPEndPoint client_address(net::test::Loopback4(), 1);
 
-    EXPECT_CALL(dispatcher_, CreateQuicSession(_, _, client_address))
+    EXPECT_CALL(dispatcher_, CreateQuicSession(_, client_address))
         .WillOnce(testing::Return(CreateSession(&dispatcher_, config_, 1,
                                                 client_address, &crypto_config_,
                                                 &session1_)));
     ProcessPacket(client_address, 1, true, "foo");
 
-    EXPECT_CALL(dispatcher_, CreateQuicSession(_, _, client_address))
+    EXPECT_CALL(dispatcher_, CreateQuicSession(_, client_address))
         .WillOnce(testing::Return(CreateSession(&dispatcher_, config_, 2,
                                                 client_address, &crypto_config_,
                                                 &session2_)));

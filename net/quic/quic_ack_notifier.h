@@ -6,7 +6,9 @@
 #define NET_QUIC_QUIC_ACK_NOTIFIER_H_
 
 #include "base/memory/ref_counted.h"
+#include "net/quic/quic_ack_listener_interface.h"
 #include "net/quic/quic_protocol.h"
+#include "net/quic/quic_time.h"
 
 namespace net {
 
@@ -17,32 +19,8 @@ namespace net {
 // trigger a call to a provided Closure.
 class NET_EXPORT_PRIVATE QuicAckNotifier {
  public:
-  class NET_EXPORT_PRIVATE DelegateInterface
-      : public base::RefCounted<DelegateInterface> {
-   public:
-    DelegateInterface();
-    // Args:
-    //  num_retransmitted_packets - Number of packets that had to be
-    //                              retransmitted.
-    //  num_retransmitted_bytes - Number of bytes that had to be retransmitted.
-    virtual void OnAckNotification(int num_retransmitted_packets,
-                                   int num_retransmitted_bytes,
-                                   QuicTime::Delta delta_largest_observed) = 0;
-
-    // Called when a packet is acked or retransmitted.  Called once per packet.
-    virtual void OnPacketEvent(int acked_bytes,
-                               int retransmitted_bytes,
-                               QuicTime::Delta delta_largest_observed) = 0;
-
-   protected:
-    friend class base::RefCounted<DelegateInterface>;
-
-    // Delegates are ref counted.
-    virtual ~DelegateInterface();
-  };
-
   // QuicAckNotifier is expected to keep its own reference to the delegate.
-  explicit QuicAckNotifier(DelegateInterface* delegate);
+  explicit QuicAckNotifier(QuicAckListenerInterface* delegate);
   virtual ~QuicAckNotifier();
 
   // Register a serialized packet the notifier should track.
@@ -70,7 +48,7 @@ class NET_EXPORT_PRIVATE QuicAckNotifier {
   // The delegate's OnAckNotification() method will be called once we have been
   // notified of ACKs for all the packet numbers we are tracking.
   // This is not owned by OnAckNotifier and must outlive it.
-  scoped_refptr<DelegateInterface> delegate_;
+  scoped_refptr<QuicAckListenerInterface> delegate_;
 
   // The number of unacked packets being tracked.
   int unacked_packets_;

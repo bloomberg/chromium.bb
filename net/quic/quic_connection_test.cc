@@ -459,7 +459,7 @@ class TestConnection : public QuicConnection {
       StringPiece data,
       QuicStreamOffset offset,
       bool fin,
-      QuicAckNotifier::DelegateInterface* delegate) {
+      QuicAckListenerInterface* delegate) {
     return SendStreamDataWithStringHelper(id, data, offset, fin,
                                           MAY_FEC_PROTECT, delegate);
   }
@@ -469,7 +469,7 @@ class TestConnection : public QuicConnection {
       StringPiece data,
       QuicStreamOffset offset,
       bool fin,
-      QuicAckNotifier::DelegateInterface* delegate) {
+      QuicAckListenerInterface* delegate) {
     return SendStreamDataWithStringHelper(id, data, offset, fin,
                                           MUST_FEC_PROTECT, delegate);
   }
@@ -480,7 +480,7 @@ class TestConnection : public QuicConnection {
       QuicStreamOffset offset,
       bool fin,
       FecProtection fec_protection,
-      QuicAckNotifier::DelegateInterface* delegate) {
+      QuicAckListenerInterface* delegate) {
     struct iovec iov;
     QuicIOVector data_iov(MakeIOVector(data, &iov));
     return QuicConnection::SendStreamData(id, data_iov, offset, fin,
