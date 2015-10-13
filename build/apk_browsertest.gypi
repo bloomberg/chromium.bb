@@ -27,17 +27,18 @@
     '<(DEPTH)/tools/android/android_tools.gyp:android_tools',
   ],
   'conditions': [
-     ['OS == "android"', {
-       'variables': {
-         # These are used to configure java_apk.gypi included below.
-         'apk_name': '<(test_suite_name)',
-         'intermediate_dir': '<(PRODUCT_DIR)/<(test_suite_name)_apk',
-         'final_apk_path': '<(intermediate_dir)/<(test_suite_name)-debug.apk',
-         'native_lib_target': 'lib<(test_suite_name)',
-         # TODO(yfriedman, cjhopman): Support managed installs for gtests.
-         'gyp_managed_install': 0,
-       },
-       'includes': [ 'java_apk.gypi' ],
-     }],  # 'OS == "android"
+    ['OS == "android"', {
+      'variables': {
+        # These are used to configure java_apk.gypi included below.
+        'test_type': 'gtest',
+        'apk_name': '<(test_suite_name)',
+        'intermediate_dir': '<(PRODUCT_DIR)/<(test_suite_name)_apk',
+        'final_apk_path': '<(intermediate_dir)/<(test_suite_name)-debug.apk',
+        'native_lib_target': 'lib<(test_suite_name)',
+        # TODO(yfriedman, cjhopman): Support managed installs for gtests.
+        'gyp_managed_install': 0,
+      },
+      'includes': [ 'java_apk.gypi', 'android/test_runner.gypi' ],
+    }],  # 'OS == "android"
   ],  # conditions
 }
