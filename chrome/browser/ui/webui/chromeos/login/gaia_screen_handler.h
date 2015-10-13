@@ -79,6 +79,8 @@ class GaiaScreenHandler : public BaseScreenHandler,
   // pre-loads it.
   void MaybePreloadAuthExtension();
 
+  void DisableRestrictiveProxyCheckForTest();
+
  private:
   // TODO (antrim@): remove this dependency.
   friend class SigninScreenHandler;
@@ -278,6 +280,7 @@ class GaiaScreenHandler : public BaseScreenHandler,
       NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_UNKNOWN;
 
   scoped_ptr<NetworkPortalDetector> network_portal_detector_;
+  bool disable_restrictive_proxy_check_for_test_ = false;
 
   // Non-owning ptr to SigninScreenHandler instance. Should not be used
   // in dtor.

@@ -71,6 +71,8 @@ class OobeBaseTest : public ExtensionApiTest {
   base::Closure SimulateNetworkOnlineClosure();
   base::Closure SimulateNetworkPortalClosure();
 
+  void DisableRestrictiveProxyCheck();
+
   // Checks JavaScript |expression| in login screen.
   void JsExpect(const std::string& expression);
 
@@ -90,6 +92,7 @@ class OobeBaseTest : public ExtensionApiTest {
   WebUILoginDisplay* GetLoginDisplay();
 
   void WaitForGaiaPageLoad();
+  void WaitForGaiaPageReload();
   void WaitForSigninScreen();
   void ExecuteJsInSigninFrame(const std::string& js);
   void SetSignFormField(const std::string& field_id,

@@ -917,10 +917,17 @@ SigninScreenHandlerDelegate* GaiaScreenHandler::Delegate() {
 }
 
 bool GaiaScreenHandler::IsRestrictiveProxy() const {
+  if (disable_restrictive_proxy_check_for_test_)
+    return false;
+
   return captive_portal_status_ ==
              NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL ||
          captive_portal_status_ ==
              NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_OFFLINE;
+}
+
+void GaiaScreenHandler::DisableRestrictiveProxyCheckForTest() {
+  disable_restrictive_proxy_check_for_test_ = true;
 }
 
 }  // namespace chromeos

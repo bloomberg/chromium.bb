@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 #include "chrome/browser/chromeos/net/network_portal_detector_test_impl.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/signin/inline_login_ui.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -195,6 +196,14 @@ base::Closure OobeBaseTest::SimulateNetworkPortalClosure() {
                     base::Unretained(this));
 }
 
+void OobeBaseTest::DisableRestrictiveProxyCheck() {
+  static_cast<chromeos::LoginDisplayHostImpl*>(
+      chromeos::LoginDisplayHostImpl::default_host())
+      ->GetOobeUI()
+      ->GetGaiaScreenActor()
+      ->DisableRestrictiveProxyCheckForTest();
+}
+
 void OobeBaseTest::JsExpect(const std::string& expression) {
   JS().ExpectTrue(expression);
 }
@@ -214,13 +223,18 @@ WebUILoginDisplay* OobeBaseTest::GetLoginDisplay() {
 
 void OobeBaseTest::WaitForGaiaPageLoad() {
   WaitForSigninScreen();
+  WaitForGaiaPageReload();
+}
 
-  JS().Evaluate(
-      "$('gaia-signin').gaiaAuthHost_.addEventListener('ready',"
-      "function() {"
-      "window.domAutomationController.setAutomationId(0);"
-      "window.domAutomationController.send('GaiaReady');"
-      "});");
+void OobeBaseTest::WaitForGaiaPageReload() {
+  JS()
+      .Evaluate(
+          "$('gaia-signin').gaiaAuthHost_.addEventListener('ready',"
+          "function f() {"
+          "$(\'gaia-signin\').gaiaAuthHost_.removeEventListener(\'ready\', f);"
+          "window.domAutomationController.setAutomationId(0);"
+          "window.domAutomationController.send('GaiaReady');"
+          "});");
 
   content::DOMMessageQueue message_queue;
   std::string message;
