@@ -1032,6 +1032,8 @@
       'browser/media/android/media_session.cc',
       'browser/media/android/media_session.h',
       'browser/media/android/media_session_observer.h',
+      'browser/media/android/media_session_uma_helper.cc',
+      'browser/media/android/media_session_uma_helper.h',
       'browser/media/android/media_throttler.cc',
       'browser/media/android/media_throttler.h',
       'browser/media/audio_stream_monitor.cc',

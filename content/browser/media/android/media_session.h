@@ -9,6 +9,7 @@
 
 #include "base/android/scoped_java_ref.h"
 #include "base/id_map.h"
+#include "content/browser/media/android/media_session_uma_helper.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -95,6 +96,7 @@ class CONTENT_EXPORT MediaSession
   bool IsActiveForTest() const;
   Type audio_focus_type_for_test() const;
   void RemoveAllPlayersForTest();
+  MediaSessionUmaHelper* uma_helper_for_test();
 
   enum class State {
     ACTIVE,
@@ -147,12 +149,18 @@ class CONTENT_EXPORT MediaSession
   // Notifies WebContents about the state change of the media session.
   void UpdateWebContents();
 
+  // Internal method that should be used instead of setting audio_focus_state_.
+  // It sets audio_focus_state_ and notifies observers about the state change.
+  void SetAudioFocusState(State audio_focus_state);
+
   base::android::ScopedJavaGlobalRef<jobject> j_media_session_;
   PlayersMap players_;
 
   State audio_focus_state_;
   SuspendType suspend_type_;
   Type audio_focus_type_;
+
+  MediaSessionUmaHelper uma_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaSession);
 };

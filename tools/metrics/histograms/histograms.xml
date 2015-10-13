@@ -18126,6 +18126,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Video codec profile used in RTC video encoder.</summary>
 </histogram>
 
+<histogram name="Media.Session.ActiveTime" units="ms">
+  <owner>avayvod@chromium.org</owner>
+  <owner>mlamouri@chromium.org</owner>
+  <summary>
+    Time during which a media session has been active, in other words, the time
+    between an activation and deactivation, without counting time while it was
+    suspended. If a session is activated after being deactivated, there will be
+    two entries. For example, if a user plays a song but is interrupted by a
+    phone call, it will only account for the song playing time.
+  </summary>
+</histogram>
+
 <histogram name="Media.Session.Pause" enum="MediaSessionActionSource">
   <owner>avayvod@chromium.org</owner>
   <owner>mlamouri@chromium.org</owner>
@@ -18150,6 +18162,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     The number of times the user stopped a media session using other means than
     the pause button on the page.
+  </summary>
+</histogram>
+
+<histogram name="Media.Session.Suspended" enum="MediaSessionSuspendedSource">
+  <owner>avayvod@chromium.org</owner>
+  <owner>mlamouri@chromium.org</owner>
+  <summary>
+    The number of times a media session is suspended and why it has been
+    suspended.
   </summary>
 </histogram>
 
@@ -65515,6 +65536,12 @@ To add a new entry, add it with any value and run test to compute valid value.
 <enum name="MediaSessionActionSource" type="int">
   <int value="0" label="Media Notification"/>
   <int value="1" label="MediaSession (Android)"/>
+</enum>
+
+<enum name="MediaSessionSuspendedSource" type="int">
+  <int value="0" label="System Transient"/>
+  <int value="1" label="System Permanent"/>
+  <int value="2" label="UI"/>
 </enum>
 
 <enum name="MediaStreamRequestResult" type="int">

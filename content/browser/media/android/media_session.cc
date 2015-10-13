@@ -13,6 +13,9 @@
 
 namespace content {
 
+using MediaSessionSuspendedSource =
+    MediaSessionUmaHelper::MediaSessionSuspendedSource;
+
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(MediaSession);
 
 MediaSession::PlayerIdentifier::PlayerIdentifier(MediaSessionObserver* observer,
@@ -69,8 +72,9 @@ bool MediaSession::AddPlayer(MediaSessionObserver* observer,
   }
 
   State old_audio_focus_state = audio_focus_state_;
-  audio_focus_state_ = RequestSystemAudioFocus(type) ? State::ACTIVE
-                                                     : State::INACTIVE;
+  State audio_focus_state = RequestSystemAudioFocus(type) ? State::ACTIVE
+                                                          : State::INACTIVE;
+  SetAudioFocusState(audio_focus_state);
   audio_focus_type_ = type;
 
   if (audio_focus_state_ != State::ACTIVE)
@@ -108,12 +112,19 @@ void MediaSession::RemovePlayers(MediaSessionObserver* observer) {
 }
 
 void MediaSession::OnSuspend(JNIEnv* env, jobject obj, jboolean temporary) {
+  // TODO(mlamouri): this check makes it so that if a MediaSession is paused and
+  // then loses audio focus, it will still stay in the Suspended state.
+  // See https://crbug.com/539998
   if (audio_focus_state_ != State::ACTIVE)
     return;
 
   OnSuspendInternal(SuspendType::SYSTEM);
   if (!temporary)
-    audio_focus_state_ = State::INACTIVE;
+    SetAudioFocusState(State::INACTIVE);
+
+  uma_helper_.RecordSessionSuspended(
+      temporary ? MediaSessionSuspendedSource::SystemTransient
+                : MediaSessionSuspendedSource::SystemPermanent);
   UpdateWebContents();
 }
 
@@ -130,9 +141,11 @@ void MediaSession::Resume() {
 
   // Request audio focus again in case we lost it because another app started
   // playing while the playback was paused.
-  audio_focus_state_ = RequestSystemAudioFocus(audio_focus_type_)
-                           ? State::ACTIVE
-                           : State::INACTIVE;
+  State audio_focus_state = RequestSystemAudioFocus(audio_focus_type_)
+                                ? State::ACTIVE
+                                : State::INACTIVE;
+  SetAudioFocusState(audio_focus_state);
+
   if (audio_focus_state_ != State::ACTIVE)
     return;
 
@@ -179,13 +192,22 @@ MediaSession::Type MediaSession::audio_focus_type_for_test() const {
   return audio_focus_type_;
 }
 
+MediaSessionUmaHelper* MediaSession::uma_helper_for_test() {
+  return &uma_helper_;
+}
+
 void MediaSession::RemoveAllPlayersForTest() {
   players_.clear();
   AbandonSystemAudioFocusIfNeeded();
 }
 
 void MediaSession::OnSuspendInternal(SuspendType type) {
-  audio_focus_state_ = State::SUSPENDED;
+  // SuspendType::System will handle the UMA recording at the calling point
+  // because there are more than one type.
+  if (type == SuspendType::UI)
+    uma_helper_.RecordSessionSuspended(MediaSessionSuspendedSource::UI);
+
+  SetAudioFocusState(State::SUSPENDED);
   suspend_type_ = type;
 
   for (const auto& it : players_)
@@ -196,7 +218,7 @@ void MediaSession::OnResumeInternal(SuspendType type) {
   if (suspend_type_ != type && type != SuspendType::UI)
     return;
 
-  audio_focus_state_ = State::ACTIVE;
+  SetAudioFocusState(State::ACTIVE);
 
   for (const auto& it : players_)
     it.observer->OnResume(it.player_id);
@@ -238,12 +260,30 @@ void MediaSession::AbandonSystemAudioFocusIfNeeded() {
     Java_MediaSession_abandonAudioFocus(env, j_media_session_.obj());
   }
 
-  audio_focus_state_ = State::INACTIVE;
+  SetAudioFocusState(State::INACTIVE);
   UpdateWebContents();
 }
 
 void MediaSession::UpdateWebContents() {
   static_cast<WebContentsImpl*>(web_contents())->OnMediaSessionStateChanged();
+}
+
+void MediaSession::SetAudioFocusState(State audio_focus_state) {
+  if (audio_focus_state == audio_focus_state_)
+    return;
+
+  audio_focus_state_ = audio_focus_state;
+  switch (audio_focus_state_) {
+    case State::ACTIVE:
+      uma_helper_.OnSessionActive();
+      break;
+    case State::SUSPENDED:
+      uma_helper_.OnSessionSuspended();
+      break;
+    case State::INACTIVE:
+      uma_helper_.OnSessionInactive();
+      break;
+  }
 }
 
 }  // namespace content
