@@ -44,10 +44,10 @@
     /**
      * Ensures this element contains a ripple effect. For startup efficiency 
      * the ripple effect is dynamically on demand when needed.
-     * @param {event} triggeringEvent (optional) event that triggered the 
+     * @param {!Event=} opt_triggeringEvent (optional) event that triggered the
      * ripple.
      */
-    ensureRipple: function(triggeringEvent) {
+    ensureRipple: function(opt_triggeringEvent) {
       if (!this.hasRipple()) {
         this._ripple = this._createRipple();
         this._ripple.noink = this.noink;
@@ -57,8 +57,9 @@
         }
         var domContainer = rippleContainer === this.shadyRoot ? this : 
           rippleContainer;
-        if (triggeringEvent && domContainer.contains(triggeringEvent.target)) {
-          this._ripple.uiDownAction(triggeringEvent);
+        if (opt_triggeringEvent &&
+            domContainer.contains(opt_triggeringEvent.target)) {
+          this._ripple.uiDownAction(opt_triggeringEvent);
         }
       }
     },

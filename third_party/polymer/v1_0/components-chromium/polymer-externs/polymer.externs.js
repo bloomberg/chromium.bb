@@ -464,6 +464,9 @@ PolymerElement.prototype.updateStyles = function(properties) {};
  */
 PolymerElement.prototype.customStyle;
 
+/** @type {Node|undefined} */
+PolymerElement.prototype.shadyRoot;
+
 /**
  * Logs a message to the console.
  *
