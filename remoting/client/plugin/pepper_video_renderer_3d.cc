@@ -20,9 +20,15 @@
 
 namespace remoting {
 
-// The implementation here requires this minimum number of pictures from the
-// video decoder interface to work.
-const uint32_t kMinimumPictureCount = 3;
+// The implementation here requires that the decoder allocates at least 3
+// pictures. PPB_VideoDecode didn't support this parameter prior to
+// 1.1, so we have to pass 0 for backwards compatibility with older versions of
+// the browser. Currently all API implementations allocate more than 3 buffers
+// by default.
+//
+// TODO(sergeyu): Change this to 3 once PPB_VideoDecode v1.1 is enabled on
+// stable channel.
+const uint32_t kMinimumPictureCount = 0;  // 3
 
 class PepperVideoRenderer3D::PendingPacket {
  public:
@@ -160,12 +166,9 @@ void PepperVideoRenderer3D::OnSessionConfig(
       NOTREACHED();
   }
 
-  bool supports_video_decoder_1_1 =
-      pp::Module::Get()->GetBrowserInterface(
-          PPB_VIDEODECODER_INTERFACE_1_1) != NULL;
   int32_t result = video_decoder_.Initialize(
       graphics_, video_profile, PP_HARDWAREACCELERATION_WITHFALLBACK,
-      supports_video_decoder_1_1 ? kMinimumPictureCount : 0,
+      kMinimumPictureCount,
       callback_factory_.NewCallback(&PepperVideoRenderer3D::OnInitialized));
   CHECK_EQ(result, PP_OK_COMPLETIONPENDING)
       << "video_decoder_.Initialize() returned " << result;
