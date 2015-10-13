@@ -75,6 +75,11 @@ public abstract class CronetEngine {
         /**
          * Sets directory for HTTP Cache and Cookie Storage. The directory must
          * exist.
+         * <p>
+         * <b>NOTE:</b> Do not use the same storage directory with more than one
+         * {@code CronetEngine} at a time. Access to the storage directory does
+         * not support concurrent access by multiple {@code CronetEngine}s.
+         *
          * @param value path to existing directory.
          * @return the builder to facilitate chaining.
          */
