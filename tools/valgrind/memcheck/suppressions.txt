@@ -3511,3 +3511,38 @@
    fun:_ZN7content24NavigationControllerImpl17LoadURLWithParamsERKNS_20NavigationController13LoadURLParamsE
    fun:_ZN7content5Shell15LoadURLForFrameERK4GURLRKSs
 }
+{
+   bug_542543
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN8IOThread34ConstructProxyScriptFetcherContextEPNS_7GlobalsEPN3net6NetLogE
+   fun:_ZN8IOThread4InitEv
+   fun:_ZN7content17BrowserThreadImpl4InitEv
+   fun:_ZN7content21TestBrowserThreadImpl4InitEv
+   fun:_ZN4base6Thread10ThreadMainEv
+   fun:_ZN4base12_GLOBAL__N_110ThreadFuncEPv
+}
+{
+   bug_542563
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN7content21RenderProcessHostImpl4InitEv
+   fun:_ZN7content22RenderFrameHostManager14InitRenderViewEPNS_18RenderViewHostImplEi
+   fun:_ZN7content22RenderFrameHostManager8NavigateERK4GURLRKNS_20FrameNavigationEntryERKNS_19NavigationEntryImplE
+   fun:_ZN7content13NavigatorImpl15NavigateToEntryEPNS_13FrameTreeNodeERKNS_20FrameNavigationEntryERKNS_19NavigationEntryImplENS_20NavigationController10ReloadTypeEb
+   fun:_ZN7content13NavigatorImpl22NavigateToPendingEntryEPNS_13FrameTreeNodeERKNS_20FrameNavigationEntryENS_20NavigationController10ReloadTypeEb
+   fun:_ZN7content24NavigationControllerImpl30NavigateToPendingEntryInternalENS_20NavigationController10ReloadTypeE
+}
+{
+   bug_542575
+   Memcheck:Overlap
+   fun:memcpy@@GLIBC_2.14
+   fun:BrotliDecompressStreaming
+   fun:BrotliDecompress
+   fun:BrotliDecompressBuffer
+   fun:_ZN3ots18ConvertWOFF2ToSFNTEPNS_4FontEPhmPKhm
+   fun:_ZN12_GLOBAL__N_112ProcessWOFF2EPN3ots12OpenTypeFileEPNS0_4FontEPNS0_9OTSStreamEPKhm
+   fun:_ZN3ots10OTSContext7ProcessEPNS_9OTSStreamEPKhmj
+   fun:_ZN5blink17OpenTypeSanitizer8sanitizeEv
+}
