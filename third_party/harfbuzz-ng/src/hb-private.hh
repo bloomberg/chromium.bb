@@ -54,6 +54,23 @@
 #include <stdarg.h>
 
 
+/* Compile-time custom allocator support. */
+
+#if defined(hb_malloc_impl) \
+ && defined(hb_calloc_impl) \
+ && defined(hb_realloc_impl) \
+ && defined(hb_free_impl)
+extern "C" void* hb_malloc_impl(size_t size);
+extern "C" void* hb_calloc_impl(size_t nmemb, size_t size);
+extern "C" void* hb_realloc_impl(void *ptr, size_t size);
+extern "C" void  hb_free_impl(void *ptr);
+#define malloc hb_malloc_impl
+#define calloc hb_calloc_impl
+#define realloc hb_realloc_impl
+#define free hb_free_impl
+#endif
+
+
 /* Compiler attributes */
 
 
@@ -740,7 +757,7 @@ template <typename T>
 static inline void _hb_warn_no_return (bool returned)
 {
   if (unlikely (!returned)) {
-    fprintf (stderr, "OUCH, returned with no call to TRACE_RETURN.  This is a bug, please report.\n");
+    fprintf (stderr, "OUCH, returned with no call to return_trace().  This is a bug, please report.\n");
   }
 }
 template <>
@@ -775,7 +792,7 @@ struct hb_auto_trace_t {
   inline ret_t ret (ret_t v, unsigned int line = 0)
   {
     if (unlikely (returned)) {
-      fprintf (stderr, "OUCH, double calls to TRACE_RETURN.  This is a bug, please report.\n");
+      fprintf (stderr, "OUCH, double calls to return_trace().  This is a bug, please report.\n");
       return v;
     }
 
@@ -806,7 +823,7 @@ struct hb_auto_trace_t<0, ret_t> {
   inline ret_t ret (ret_t v, unsigned int line HB_UNUSED = 0) { return v; }
 };
 
-#define TRACE_RETURN(RET) trace.ret (RET, __LINE__)
+#define return_trace(RET) return trace.ret (RET, __LINE__)
 
 /* Misc */
 
@@ -855,42 +872,34 @@ hb_in_ranges (T u, T lo1, T hi1, T lo2, T hi2, T lo3, T hi3)
 
 
 template <typename T, typename T2> static inline void
-hb_bubble_sort (T *array, unsigned int len, int(*compar)(const T *, const T *), T2 *array2)
+hb_stable_sort (T *array, unsigned int len, int(*compar)(const T *, const T *), T2 *array2)
 {
-  if (unlikely (!len))
-    return;
-
-  unsigned int k = len - 1;
-  do {
-    unsigned int new_k = 0;
-
-    for (unsigned int j = 0; j < k; j++)
-      if (compar (&array[j], &array[j+1]) > 0)
-      {
-        {
-	  T t;
-	  t = array[j];
-	  array[j] = array[j + 1];
-	  array[j + 1] = t;
-	}
-        if (array2)
-        {
-	  T2 t;
-	  t = array2[j];
-	  array2[j] = array2[j + 1];
-	  array2[j + 1] = t;
-	}
-
-	new_k = j;
-      }
-    k = new_k;
-  } while (k);
+  for (unsigned int i = 1; i < len; i++)
+  {
+    unsigned int j = i;
+    while (j && compar (&array[j - 1], &array[i]) > 0)
+      j--;
+    if (i == j)
+      continue;
+    /* Move item i to occupy place for item j, shift what's in between. */
+    {
+      T t = array[i];
+      memmove (&array[j + 1], &array[j], (i - j) * sizeof (T));
+      array[j] = t;
+    }
+    if (array2)
+    {
+      T2 t = array2[i];
+      memmove (&array2[j + 1], &array2[j], (i - j) * sizeof (T2));
+      array2[j] = t;
+    }
+  }
 }
 
 template <typename T> static inline void
-hb_bubble_sort (T *array, unsigned int len, int(*compar)(const T *, const T *))
+hb_stable_sort (T *array, unsigned int len, int(*compar)(const T *, const T *))
 {
-  hb_bubble_sort (array, len, compar, (int *) NULL);
+  hb_stable_sort (array, len, compar, (int *) NULL);
 }
 
 static inline hb_bool_t

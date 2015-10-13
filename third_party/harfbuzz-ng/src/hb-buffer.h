@@ -171,6 +171,9 @@ void
 hb_buffer_guess_segment_properties (hb_buffer_t *buffer);
 
 
+/*
+ * Since: 0.9.20
+ */
 typedef enum { /*< flags >*/
   HB_BUFFER_FLAG_DEFAULT			= 0x00000000u,
   HB_BUFFER_FLAG_BOT				= 0x00000001u, /* Beginning-of-text */
@@ -185,6 +188,9 @@ hb_buffer_set_flags (hb_buffer_t       *buffer,
 hb_buffer_flags_t
 hb_buffer_get_flags (hb_buffer_t *buffer);
 
+/*
+ * Since: 0.9.42
+ */
 typedef enum {
   HB_BUFFER_CLUSTER_LEVEL_MONOTONE_GRAPHEMES	= 0,
   HB_BUFFER_CLUSTER_LEVEL_MONOTONE_CHARACTERS	= 1,
@@ -319,11 +325,15 @@ hb_buffer_normalize_glyphs (hb_buffer_t *buffer);
  * Serialize
  */
 
+/*
+ * Since: 0.9.20
+ */
 typedef enum { /*< flags >*/
   HB_BUFFER_SERIALIZE_FLAG_DEFAULT		= 0x00000000u,
   HB_BUFFER_SERIALIZE_FLAG_NO_CLUSTERS		= 0x00000001u,
   HB_BUFFER_SERIALIZE_FLAG_NO_POSITIONS		= 0x00000002u,
-  HB_BUFFER_SERIALIZE_FLAG_NO_GLYPH_NAMES	= 0x00000004u
+  HB_BUFFER_SERIALIZE_FLAG_NO_GLYPH_NAMES	= 0x00000004u,
+  HB_BUFFER_SERIALIZE_FLAG_GLYPH_EXTENTS	= 0x00000008u
 } hb_buffer_serialize_flags_t;
 
 typedef enum {

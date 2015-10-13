@@ -1,3 +1,45 @@
+Overview of changes leading to 1.0.5
+Tuesday, October 13, 2015
+====================================
+
+- Fix multiple memory access bugs discovered using libFuzzer.
+  https://github.com/behdad/harfbuzz/issues/139
+  Everyone should upgrade to this version as soon as possible.
+  We now have continuous fuzzing set up, to avoid issues like
+  these creeping in again.
+- Misc fixes.
+
+- New API:
+  * hb_font_set_parent().
+  * hb_ft_font_[sg]et_load_flags()
+    The default flags for fonts created using hb_ft_font_create()
+    has changed to default to FT_LOAD_DEFAULT now.  Previously it
+    was defaulting to FT_LOAD_DFEAULT|FT_LOAD_NO_HINTING.
+
+- API changes:
+  * Fonts now default to units-per-EM as their scale, instead of 0.
+  * hb_font_create_sub_font() does NOT make parent font immutable
+    anymore.  hb_font_make_immutable() does.
+
+
+Overview of changes leading to 1.0.4
+Wednesday, September 30, 2015
+====================================
+
+- Fix minor out-of-bounds read error.
+
+
+Overview of changes leading to 1.0.3
+Tuesday, September 1, 2015
+====================================
+
+- Start of user documentation, from Simon Cozens!
+- Implement glyph_extents() for TrueType fonts in hb-ot-font.
+- Improve GPOS cursive attachments with conflicting lookups.
+- More fixes for cluster-level = 1.
+- Uniscribe positioning fix.
+
+
 Overview of changes leading to 1.0.2
 Wednesday, August 19, 2015
 ====================================
