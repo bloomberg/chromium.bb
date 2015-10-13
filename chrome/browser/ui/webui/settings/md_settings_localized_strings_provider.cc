@@ -206,6 +206,8 @@ void AddDefaultBrowserStrings(content::WebUIDataSource* html_source) {
       "defaultBrowserUnknown", IDS_SETTINGS_DEFAULT_BROWSER_UNKNOWN);
   html_source->AddLocalizedString(
       "defaultBrowserSecondary", IDS_SETTINGS_DEFAULT_BROWSER_SECONDARY);
+  html_source->AddLocalizedString(
+      "unableToSetDefaultBrowser", IDS_SETTINGS_DEFAULT_BROWSER_ERROR);
 }
 #endif
 

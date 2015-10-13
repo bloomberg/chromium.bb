@@ -13,7 +13,8 @@
       <paper-button on-tap="onSetDefaultBrowserTap_"
           >[[i18n('defaultBrowserMakeDefault')]]</paper-button>
       <template is="dom-if" if="[[showError_]]">
-        <iron-icon icon="error" class="error-icon"></iron-icon>
+        <iron-icon icon="error" class="error-icon"
+            title="[[i18n('unableToSetDefaultBrowser')]]"></iron-icon>
       </template>
     </template>
   </template>
