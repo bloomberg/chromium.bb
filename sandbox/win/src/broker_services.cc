@@ -113,18 +113,6 @@ void DeregisterPeerTracker(PeerTracker* peer) {
 
 namespace sandbox {
 
-// TODO(rvargas): Replace this structure with a std::pair of ScopedHandles.
-struct BrokerServicesBase::TokenPair {
-  TokenPair(base::win::ScopedHandle initial_token,
-         base::win::ScopedHandle lockdown_token)
-      : initial(initial_token.Pass()),
-        lockdown(lockdown_token.Pass()) {
-  }
-
-  base::win::ScopedHandle initial;
-  base::win::ScopedHandle lockdown;
-};
-
 BrokerServicesBase::BrokerServicesBase() : thread_pool_(NULL) {
 }
 
@@ -326,9 +314,11 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
   // with the soon to be created target process.
   base::win::ScopedHandle initial_token;
   base::win::ScopedHandle lockdown_token;
+  base::win::ScopedHandle lowbox_token;
   ResultCode result = SBOX_ALL_OK;
 
-  result = policy_base->MakeTokens(&initial_token, &lockdown_token);
+  result =
+      policy_base->MakeTokens(&initial_token, &lockdown_token, &lowbox_token);
   if (SBOX_ALL_OK != result)
     return result;
 
@@ -445,13 +435,11 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
   // Create the TargetProces object and spawn the target suspended. Note that
   // Brokerservices does not own the target object. It is owned by the Policy.
   base::win::ScopedProcessInformation process_info;
-  TargetProcess* target = new TargetProcess(initial_token.Pass(),
-                                            lockdown_token.Pass(),
-                                            job.Get(),
-                                            thread_pool_);
+  TargetProcess* target =
+      new TargetProcess(initial_token.Pass(), lockdown_token.Pass(),
+                        lowbox_token.Pass(), job.Get(), thread_pool_);
 
   DWORD win_result = target->Create(exe_path, command_line, inherit_handles,
-                                    policy_base->GetLowBoxSid() ? true : false,
                                     startup_info, &process_info);
 
   // Restore the previous handle protection values.

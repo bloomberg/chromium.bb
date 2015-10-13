@@ -65,19 +65,20 @@ void* GetBaseAddress(const wchar_t* exe_name, void* entry_point) {
   return base;
 }
 
-
 TargetProcess::TargetProcess(base::win::ScopedHandle initial_token,
                              base::win::ScopedHandle lockdown_token,
-                             HANDLE job, ThreadProvider* thread_pool)
-  // This object owns everything initialized here except thread_pool and
-  // the job_ handle. The Job handle is closed by BrokerServices and results
-  // eventually in a call to our dtor.
+                             base::win::ScopedHandle lowbox_token,
+                             HANDLE job,
+                             ThreadProvider* thread_pool)
+    // This object owns everything initialized here except thread_pool and
+    // the job_ handle. The Job handle is closed by BrokerServices and results
+    // eventually in a call to our dtor.
     : lockdown_token_(lockdown_token.Pass()),
       initial_token_(initial_token.Pass()),
+      lowbox_token_(lowbox_token.Pass()),
       job_(job),
       thread_pool_(thread_pool),
-      base_address_(NULL) {
-}
+      base_address_(NULL) {}
 
 TargetProcess::~TargetProcess() {
   DWORD exit_code = 0;
@@ -116,12 +117,11 @@ TargetProcess::~TargetProcess() {
 DWORD TargetProcess::Create(const wchar_t* exe_path,
                             const wchar_t* command_line,
                             bool inherit_handles,
-                            bool set_lockdown_token_after_create,
                             const base::win::StartupInformation& startup_info,
                             base::win::ScopedProcessInformation* target_info) {
-  if (set_lockdown_token_after_create &&
+  if (lowbox_token_.IsValid() &&
       base::win::GetVersion() < base::win::VERSION_WIN8) {
-    // We don't allow set_lockdown_token_after_create below Windows 8.
+    // We don't allow lowbox_token below Windows 8.
     return ERROR_INVALID_PARAMETER;
   }
 
@@ -143,38 +143,16 @@ DWORD TargetProcess::Create(const wchar_t* exe_path,
     flags |= CREATE_BREAKAWAY_FROM_JOB;
   }
 
-  base::win::ScopedHandle scoped_lockdown_token(lockdown_token_.Take());
   PROCESS_INFORMATION temp_process_info = {};
-  if (set_lockdown_token_after_create) {
-    // First create process with a default token and then replace it later,
-    // after setting primary thread token. This is required for setting
-    // an AppContainer token along with an impersonation token.
-    if (!::CreateProcess(exe_path,
-                         cmd_line.get(),
-                         NULL,   // No security attribute.
-                         NULL,   // No thread attribute.
-                         inherit_handles,
-                         flags,
-                         NULL,   // Use the environment of the caller.
-                         NULL,   // Use current directory of the caller.
-                         startup_info.startup_info(),
-                         &temp_process_info)) {
-      return ::GetLastError();
-    }
-  } else {
-    if (!::CreateProcessAsUserW(scoped_lockdown_token.Get(),
-                                exe_path,
-                                cmd_line.get(),
-                                NULL,   // No security attribute.
-                                NULL,   // No thread attribute.
-                                inherit_handles,
-                                flags,
-                                NULL,   // Use the environment of the caller.
-                                NULL,   // Use current directory of the caller.
-                                startup_info.startup_info(),
-                                &temp_process_info)) {
-      return ::GetLastError();
-    }
+  if (!::CreateProcessAsUserW(lockdown_token_.Get(), exe_path, cmd_line.get(),
+                              NULL,  // No security attribute.
+                              NULL,  // No thread attribute.
+                              inherit_handles, flags,
+                              NULL,  // Use the environment of the caller.
+                              NULL,  // Use current directory of the caller.
+                              startup_info.startup_info(),
+                              &temp_process_info)) {
+    return ::GetLastError();
   }
   base::win::ScopedProcessInformation process_info(temp_process_info);
 
@@ -204,26 +182,6 @@ DWORD TargetProcess::Create(const wchar_t* exe_path,
     initial_token_.Close();
   }
 
-  if (set_lockdown_token_after_create) {
-    PROCESS_ACCESS_TOKEN process_access_token;
-    process_access_token.thread = process_info.thread_handle();
-    process_access_token.token = scoped_lockdown_token.Get();
-
-    NtSetInformationProcess SetInformationProcess = NULL;
-    ResolveNTFunctionPtr("NtSetInformationProcess", &SetInformationProcess);
-
-    NTSTATUS status = SetInformationProcess(
-        process_info.process_handle(),
-        static_cast<PROCESS_INFORMATION_CLASS>(NtProcessInformationAccessToken),
-        &process_access_token,
-        sizeof(process_access_token));
-    if (!NT_SUCCESS(status)) {
-      win_result = ::GetLastError();
-      ::TerminateProcess(process_info.process_handle(), 0);  // exit code
-      return win_result;
-    }
-  }
-
   CONTEXT context;
   context.ContextFlags = CONTEXT_ALL;
   if (!::GetThreadContext(process_info.thread_handle(), &context)) {
@@ -246,6 +204,25 @@ DWORD TargetProcess::Create(const wchar_t* exe_path,
     win_result = ::GetLastError();  // This may or may not be correct.
     ::TerminateProcess(process_info.process_handle(), 0);
     return win_result;
+  }
+
+  if (lowbox_token_.IsValid()) {
+    PROCESS_ACCESS_TOKEN process_access_token;
+    process_access_token.thread = process_info.thread_handle();
+    process_access_token.token = lowbox_token_.Get();
+
+    NtSetInformationProcess SetInformationProcess = NULL;
+    ResolveNTFunctionPtr("NtSetInformationProcess", &SetInformationProcess);
+
+    NTSTATUS status = SetInformationProcess(
+        process_info.process_handle(),
+        static_cast<PROCESS_INFORMATION_CLASS>(NtProcessInformationAccessToken),
+        &process_access_token, sizeof(process_access_token));
+    if (!NT_SUCCESS(status)) {
+      win_result = ERROR_INVALID_TOKEN;
+      ::TerminateProcess(process_info.process_handle(), 0);  // exit code
+      return win_result;
+    }
   }
 
   base_address_ = GetBaseAddress(exe_path, entry_point);
@@ -374,9 +351,9 @@ void TargetProcess::Terminate() {
 }
 
 TargetProcess* MakeTestTargetProcess(HANDLE process, HMODULE base_address) {
-  TargetProcess* target = new TargetProcess(base::win::ScopedHandle(),
-                                            base::win::ScopedHandle(),
-                                            NULL, NULL);
+  TargetProcess* target =
+      new TargetProcess(base::win::ScopedHandle(), base::win::ScopedHandle(),
+                        base::win::ScopedHandle(), NULL, NULL);
   PROCESS_INFORMATION process_info = {};
   process_info.hProcess = process;
   target->sandbox_process_info_.Set(process_info);

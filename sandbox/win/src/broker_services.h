@@ -64,10 +64,8 @@ class BrokerServicesBase final : public BrokerServices,
   bool IsActiveTarget(DWORD process_id);
 
  private:
-  struct TokenPair;
   typedef std::list<JobTracker*> JobTrackerList;
   typedef std::map<DWORD, PeerTracker*> PeerTrackerMap;
-  typedef std::map<uint32_t, TokenPair*> TokenCacheMap;
 
   // The routine that the worker thread executes. It is in charge of
   // notifications and cleanup-related tasks.

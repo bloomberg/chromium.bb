@@ -542,7 +542,8 @@ ResultCode PolicyBase::MakeJobObject(base::win::ScopedHandle* job) {
 }
 
 ResultCode PolicyBase::MakeTokens(base::win::ScopedHandle* initial,
-                                  base::win::ScopedHandle* lockdown) {
+                                  base::win::ScopedHandle* lockdown,
+                                  base::win::ScopedHandle* lowbox) {
   if (appcontainer_list_.get() && appcontainer_list_->HasAppContainer() &&
       lowbox_sid_) {
     return SBOX_ERROR_BAD_PARAMS;
@@ -613,7 +614,7 @@ ResultCode PolicyBase::MakeTokens(base::win::ScopedHandle* initial,
       return SBOX_ERROR_GENERIC;
 
     DCHECK(token_lowbox);
-    lockdown->Set(token_lowbox);
+    lowbox->Set(token_lowbox);
   }
 
   // Create the 'better' token. We use this token as the one that the main
