@@ -86,7 +86,8 @@ class _BlinkPerfMeasurement(page_test.PageTest):
     options.AppendExtraBrowserArgs([
         '--js-flags=--expose_gc',
         '--enable-experimental-web-platform-features',
-        '--disable-gesture-requirement-for-media-playback'
+        '--disable-gesture-requirement-for-media-playback',
+        '--enable-experimental-canvas-features'
     ])
     if 'content-shell' in options.browser_type:
       options.AppendExtraBrowserArgs('--expose-internals-for-testing')
