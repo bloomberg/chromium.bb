@@ -133,30 +133,9 @@ bool GCMProfileService::IsGCMEnabled(Profile* profile) {
 }
 
 #if defined(OS_ANDROID)
-static GCMProfileService* debug_instance = nullptr;
-
 GCMProfileService::GCMProfileService(Profile* profile)
     : profile_(profile) {
-  CHECK(!profile->IsOffTheRecord());
-
-  // TODO(johnme): Remove debug_instance and this logging code once
-  // crbug.com/437827 is fixed.
-  if (debug_instance != nullptr) {
-    LOG(FATAL) << "An instance of GCMProfileService already exists!"
-               << " Old profile: " << debug_instance->profile_ << " "
-               << debug_instance->profile_->GetDebugName() << " "
-               << debug_instance->profile_->GetProfileType() << " "
-               << debug_instance->profile_->IsSupervised() << " "
-               << debug_instance->profile_->IsNewProfile() << " "
-               << debug_instance->profile_->GetStartTime().ToInternalValue()
-               << ", new profile: " << profile << " "
-               << profile->GetDebugName() << " "
-               << profile->GetProfileType() << " "
-               << profile->IsSupervised() << " "
-               << profile->IsNewProfile() << " "
-               << profile->GetStartTime().ToInternalValue();
-  }
-  debug_instance = this;
+  DCHECK(!profile->IsOffTheRecord());
 
   scoped_refptr<base::SequencedWorkerPool> worker_pool(
       content::BrowserThread::GetBlockingPool());
@@ -204,9 +183,6 @@ GCMProfileService::GCMProfileService()
 }
 
 GCMProfileService::~GCMProfileService() {
-#if defined(OS_ANDROID)
-  debug_instance = nullptr;
-#endif
 }
 
 void GCMProfileService::Shutdown() {
