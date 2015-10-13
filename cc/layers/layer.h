@@ -503,6 +503,18 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   void set_sorted_for_recursion(bool sorted_for_recursion);
   bool sorted_for_recursion();
 
+  // LayerAnimationValueProvider implementation.
+  gfx::ScrollOffset ScrollOffsetForAnimation() const override;
+
+  // LayerAnimationValueObserver implementation.
+  void OnFilterAnimated(const FilterOperations& filters) override;
+  void OnOpacityAnimated(float opacity) override;
+  void OnTransformAnimated(const gfx::Transform& transform) override;
+  void OnScrollOffsetAnimated(const gfx::ScrollOffset& scroll_offset) override;
+  void OnAnimationWaitingForDeletion() override;
+  void OnTransformIsPotentiallyAnimatingChanged(bool is_animating) override;
+  bool IsActive() const override;
+
  protected:
   friend class LayerImpl;
   friend class TreeSynchronizer;
@@ -593,18 +605,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
 
   // This should only be called from RemoveFromParent().
   void RemoveChildOrDependent(Layer* child);
-
-  // LayerAnimationValueProvider implementation.
-  gfx::ScrollOffset ScrollOffsetForAnimation() const override;
-
-  // LayerAnimationValueObserver implementation.
-  void OnFilterAnimated(const FilterOperations& filters) override;
-  void OnOpacityAnimated(float opacity) override;
-  void OnTransformAnimated(const gfx::Transform& transform) override;
-  void OnScrollOffsetAnimated(const gfx::ScrollOffset& scroll_offset) override;
-  void OnAnimationWaitingForDeletion() override;
-  void OnTransformIsPotentiallyAnimatingChanged(bool is_animating) override;
-  bool IsActive() const override;
 
   // If this layer has a scroll parent, it removes |this| from its list of
   // scroll children.

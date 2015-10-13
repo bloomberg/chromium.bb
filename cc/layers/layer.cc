@@ -1436,7 +1436,12 @@ void Layer::OnFilterAnimated(const FilterOperations& filters) {
 }
 
 void Layer::OnOpacityAnimated(float opacity) {
+  if (opacity_ == opacity)
+    return;
   opacity_ = opacity;
+  // Changing the opacity may make a previously hidden layer visible, so a new
+  // recording may be needed.
+  SetNeedsUpdate();
   if (layer_tree_host_) {
     if (EffectNode* node = layer_tree_host_->property_trees()->effect_tree.Node(
             effect_tree_index())) {
@@ -1453,6 +1458,9 @@ void Layer::OnTransformAnimated(const gfx::Transform& transform) {
     return;
   transform_ = transform;
   transform_is_invertible_ = transform.IsInvertible();
+  // Changing the transform may change the visible part of this layer, so a new
+  // recording may be needed.
+  SetNeedsUpdate();
   if (layer_tree_host_) {
     if (TransformNode* node =
             layer_tree_host_->property_trees()->transform_tree.Node(

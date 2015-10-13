@@ -867,7 +867,7 @@ TEST_F(LayerTest, MaskAndReplicaHasParent) {
   EXPECT_EQ(replica.get(), replica->mask_layer()->parent());
 }
 
-TEST_F(LayerTest, CheckTranformIsInvertible) {
+TEST_F(LayerTest, CheckTransformIsInvertible) {
   scoped_refptr<Layer> layer = Layer::Create(layer_settings_);
   scoped_ptr<LayerImpl> impl_layer =
       LayerImpl::Create(host_impl_.active_tree(), 1);
@@ -898,7 +898,7 @@ TEST_F(LayerTest, CheckTranformIsInvertible) {
   Mock::VerifyAndClearExpectations(layer_tree_host_.get());
 }
 
-TEST_F(LayerTest, TranformIsInvertibleAnimation) {
+TEST_F(LayerTest, TransformIsInvertibleAnimation) {
   scoped_refptr<Layer> layer = Layer::Create(layer_settings_);
   scoped_ptr<LayerImpl> impl_layer =
       LayerImpl::Create(host_impl_.active_tree(), 1);
@@ -920,9 +920,9 @@ TEST_F(LayerTest, TranformIsInvertibleAnimation) {
 
   gfx::Transform identity_transform;
 
+  EXPECT_CALL(*layer_tree_host_, SetNeedsUpdateLayers()).Times(1);
   layer->SetTransform(identity_transform);
-  static_cast<LayerAnimationValueObserver*>(layer.get())
-      ->OnTransformAnimated(singular_transform);
+  layer->OnTransformAnimated(singular_transform);
   layer->PushPropertiesTo(impl_layer.get());
   EXPECT_FALSE(layer->transform_is_invertible());
   EXPECT_FALSE(impl_layer->transform_is_invertible());
@@ -1324,6 +1324,27 @@ TEST_F(LayerTest, DedupesCopyOutputRequestsBySource) {
   EXPECT_EQ(1, did_receive_result_from_different_source);
   EXPECT_EQ(1, did_receive_result_from_anonymous_source);
   EXPECT_EQ(1, did_receive_second_result_from_this_source);
+}
+
+TEST_F(LayerTest, AnimationSchedulesLayerUpdate) {
+  scoped_refptr<Layer> layer = Layer::Create(layer_settings_);
+  EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, layer_tree_host_->SetRootLayer(layer));
+
+  EXPECT_CALL(*layer_tree_host_, SetNeedsUpdateLayers()).Times(1);
+  layer->OnOpacityAnimated(0.5f);
+  Mock::VerifyAndClearExpectations(layer_tree_host_.get());
+
+  EXPECT_CALL(*layer_tree_host_, SetNeedsUpdateLayers()).Times(1);
+  gfx::Transform transform;
+  transform.Rotate(45.0);
+  layer->OnTransformAnimated(transform);
+  Mock::VerifyAndClearExpectations(layer_tree_host_.get());
+
+  // Scroll offset animation should not schedule a layer update since it is
+  // handled similarly to normal compositor scroll updates.
+  EXPECT_CALL(*layer_tree_host_, SetNeedsUpdateLayers()).Times(0);
+  layer->OnScrollOffsetAnimated(gfx::ScrollOffset(10, 10));
+  Mock::VerifyAndClearExpectations(layer_tree_host_.get());
 }
 
 }  // namespace
