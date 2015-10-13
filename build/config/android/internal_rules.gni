@@ -166,6 +166,12 @@ template("java_binary_script") {
     if (defined(invoker.wrapper_script_args)) {
       args += [ "--" ] + invoker.wrapper_script_args
     }
+    if (defined(invoker.extra_java_args)) {
+      args += [
+        "--extra-java-args",
+        invoker.extra_java_args,
+      ]
+    }
   }
 }
 
@@ -982,9 +988,14 @@ template("java_prebuilt_impl") {
   if (defined(invoker.main_class)) {
     binary_script_target_name = "${_template_name}__java_binary_script"
     java_binary_script(binary_script_target_name) {
+      forward_variables_from(invoker,
+                             [
+                               "extra_java_args",
+                               "main_class",
+                               "wrapper_script_args",
+                             ])
       build_config = _build_config
       jar_path = _jar_path
-      main_class = invoker.main_class
       script_name = _template_name
       deps = [
         ":$build_config_target_name",
@@ -1322,6 +1333,7 @@ template("java_library_impl") {
     java_binary_script("${_template_name}__java_binary_script") {
       forward_variables_from(invoker,
                              [
+                               "extra_java_args",
                                "main_class",
                                "wrapper_script_args",
                              ])

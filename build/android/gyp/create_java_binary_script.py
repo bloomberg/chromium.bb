@@ -30,16 +30,18 @@ import sys
 
 self_dir = os.path.dirname(__file__)
 classpath = [{classpath}]
-extra_args = {extra_args}
+extra_java_args = {extra_java_args}
+extra_program_args = {extra_program_args}
 if os.getcwd() != self_dir:
   offset = os.path.relpath(self_dir, os.getcwd())
   classpath = [os.path.join(offset, p) for p in classpath]
-java_args = [
-  "java",
-  "-classpath", ":".join(classpath),
-  "-enableassertions",
-  \"{main_class}\"] + extra_args + sys.argv[1:]
-os.execvp("java", java_args)
+java_cmd = ["java"]
+java_cmd.extend(extra_java_args)
+java_cmd.extend(
+    ["-classpath", ":".join(classpath), "-enableassertions", \"{main_class}\"])
+java_cmd.extend(extra_program_args)
+java_cmd.extend(sys.argv[1:])
+os.execvp("java", java_cmd)
 """
 
 def main(argv):
@@ -52,20 +54,28 @@ def main(argv):
       help='Name of the java class with the "main" entry point.')
   parser.add_option('--classpath', action='append',
       help='Classpath for running the jar.')
-  options, extra_args = parser.parse_args(argv)
+  parser.add_option('--extra-java-args',
+      help='Extra args passed to the "java" cmd')
+  options, extra_program_args = parser.parse_args(argv)
 
   classpath = [options.jar_path]
   for cp_arg in options.classpath:
     classpath += build_utils.ParseGypList(cp_arg)
+
+  if options.extra_java_args:
+    extra_java_args = build_utils.ParseGypList(options.extra_java_args)
+  else:
+    extra_java_args = []
 
   run_dir = os.path.dirname(options.output)
   classpath = [os.path.relpath(p, run_dir) for p in classpath]
 
   with open(options.output, 'w') as script:
     script.write(script_template.format(
+      extra_java_args=repr(extra_java_args),
       classpath=('"%s"' % '", "'.join(classpath)),
       main_class=options.main_class,
-      extra_args=repr(extra_args)))
+      extra_program_args=repr(extra_program_args)))
 
   os.chmod(options.output, 0750)
 
