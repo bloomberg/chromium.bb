@@ -272,7 +272,6 @@ AppCacheURLRequestJob::~AppCacheURLRequestJob() {
 void AppCacheURLRequestJob::OnResponseInfoLoaded(
       AppCacheResponseInfo* response_info, int64 response_id) {
   DCHECK(is_delivering_appcache_response());
-  scoped_refptr<AppCacheURLRequestJob> protect(this);
   if (response_info) {
     info_ = response_info;
     reader_.reset(storage_->CreateResponseReader(
