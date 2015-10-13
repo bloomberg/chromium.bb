@@ -640,6 +640,8 @@ crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/row-progression
 crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/row-progression-009.xht [ ImageOnlyFailure ]
 crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/text-baseline-006.xht [ ImageOnlyFailure ]
 crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/text-baseline-007.xht [ ImageOnlyFailure ]
+crbug.com/539425 [ XP ] imported/csswg-test/css-writing-modes-3/vertical-alignment-vrl-022.xht [ ImageOnlyFailure ]
+crbug.com/539425 [ XP ] imported/csswg-test/css-writing-modes-3/vertical-alignment-vrl-024.xht [ ImageOnlyFailure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/vertical-alignment-vrl-026.xht [ ImageOnlyFailure ]
 
 crbug.com/498845 [ Win ] fast/multicol/vertical-rl/float-content-break.html [ ImageOnlyFailure ]
@@ -658,16 +660,6 @@ crbug.com/381684 [ Win Android Mac ] fonts/family-fallback-gardiner.html [ Skip 
 crbug.com/467635 fast/dom/HTMLImageElement/image-sizes-meta-viewport.html [ Skip ]
 
 crbug.com/517898 [ SnowLeopard Debug ] fast/text/international/bidi-neutral-run.html [ Crash ]
-
-crbug.com/539425 [ XP ] imported/csswg-test/css-writing-modes-3/text-orientation-script-001b.html [ Pass Failure ImageOnlyFailure ]
-crbug.com/539425 [ XP ] imported/csswg-test/css-writing-modes-3/text-orientation-script-001c.html [ Pass Failure ImageOnlyFailure ]
-crbug.com/539425 [ XP ] imported/csswg-test/css-writing-modes-3/text-orientation-script-001d.html [ Pass Failure ImageOnlyFailure ]
-crbug.com/539425 [ XP ] imported/csswg-test/css-writing-modes-3/text-orientation-script-001i.html [ Pass Failure ImageOnlyFailure ]
-crbug.com/539425 [ XP ] imported/csswg-test/css-writing-modes-3/text-orientation-script-001j.html [ Pass Failure ImageOnlyFailure ]
-crbug.com/539425 [ XP ] imported/csswg-test/css-writing-modes-3/text-orientation-script-001m.html [ Pass Failure ImageOnlyFailure ]
-crbug.com/539425 [ XP ] imported/csswg-test/css-writing-modes-3/text-orientation-script-001n.html [ Pass Failure ImageOnlyFailure ]
-crbug.com/539425 [ XP ] imported/csswg-test/css-writing-modes-3/vertical-alignment-vrl-022.xht [ Pass Failure ImageOnlyFailure ]
-crbug.com/539425 [ XP ] imported/csswg-test/css-writing-modes-3/vertical-alignment-vrl-024.xht [ Pass Failure ImageOnlyFailure ]
 
 # crbug.com/396823 [ Mac ] fast/multicol/multicol-with-child-renderLayer-for-input.html [ ImageOnlyFailure ]
 

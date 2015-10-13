@@ -177,10 +177,19 @@ fast/canvas/canvas-lost-gpu-context.html [ WontFix ]
 [ SnowLeopard Debug ] imported/csswg-test/css-writing-modes-3/text-orientation-script-001m.html [ WontFix ]
 
 # We don't have the necessary fonts for these tests on XP.
+[ XP ] imported/csswg-test/css-writing-modes-3/text-orientation-script-001a.html [ WontFix ]
+[ XP ] imported/csswg-test/css-writing-modes-3/text-orientation-script-001b.html [ WontFix ]
+[ XP ] imported/csswg-test/css-writing-modes-3/text-orientation-script-001c.html [ WontFix ]
+[ XP ] imported/csswg-test/css-writing-modes-3/text-orientation-script-001d.html [ WontFix ]
 [ XP ] imported/csswg-test/css-writing-modes-3/text-orientation-script-001f.html [ WontFix ]
 [ XP ] imported/csswg-test/css-writing-modes-3/text-orientation-script-001g.html [ WontFix ]
 [ XP ] imported/csswg-test/css-writing-modes-3/text-orientation-script-001h.html [ WontFix ]
+[ XP ] imported/csswg-test/css-writing-modes-3/text-orientation-script-001i.html [ WontFix ]
+[ XP ] imported/csswg-test/css-writing-modes-3/text-orientation-script-001j.html [ WontFix ]
+[ XP ] imported/csswg-test/css-writing-modes-3/text-orientation-script-001k.html [ WontFix ]
 [ XP ] imported/csswg-test/css-writing-modes-3/text-orientation-script-001l.html [ WontFix ]
+[ XP ] imported/csswg-test/css-writing-modes-3/text-orientation-script-001m.html [ WontFix ]
+[ XP ] imported/csswg-test/css-writing-modes-3/text-orientation-script-001n.html [ WontFix ]
 [ XP ] imported/csswg-test/css-writing-modes-3/text-orientation-script-001o.html [ WontFix ]
 
 # Relies on precise timing which isn't reliable on XP.
