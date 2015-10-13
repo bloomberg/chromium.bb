@@ -6,10 +6,8 @@
 
 #include "base/command_line.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/render_messages.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_observer.h"
 
 namespace banners {
 
@@ -52,10 +50,10 @@ void OutputDeveloperDebugMessage(content::WebContents* web_contents,
                                  const std::string& message) {
   std::string log_message = "App banner " + message;
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kBypassAppBannerEngagementChecks) && web_contents) {
-    web_contents->GetMainFrame()->Send(
-        new ChromeViewMsg_AppBannerDebugMessageRequest(
-            web_contents->GetMainFrame()->GetRoutingID(), log_message));
+          switches::kBypassAppBannerEngagementChecks) &&
+      web_contents) {
+    web_contents->GetMainFrame()->AddMessageToConsole(
+        content::CONSOLE_MESSAGE_LEVEL_DEBUG, log_message);
   }
 }
 

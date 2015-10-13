@@ -215,8 +215,6 @@ bool ChromeRenderFrameObserver::OnMessageReceived(const IPC::Message& message) {
                         OnPrintNodeUnderContextMenu)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_AppBannerPromptRequest,
                         OnAppBannerPromptRequest)
-    IPC_MESSAGE_HANDLER(ChromeViewMsg_AppBannerDebugMessageRequest,
-                        OnAppBannerDebugMessageRequest)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -352,12 +350,6 @@ void ChromeRenderFrameObserver::OnAppBannerPromptRequest(
 
   Send(new ChromeViewHostMsg_AppBannerPromptReply(
       routing_id(), request_id, reply, referrer));
-}
-
-void ChromeRenderFrameObserver::OnAppBannerDebugMessageRequest(
-    const std::string& message) {
-  render_frame()->GetWebFrame()->addMessageToConsole(blink::WebConsoleMessage(
-      blink::WebConsoleMessage::LevelDebug, base::UTF8ToUTF16(message)));
 }
 
 void ChromeRenderFrameObserver::DidFinishLoad() {

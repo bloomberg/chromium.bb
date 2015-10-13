@@ -98,7 +98,6 @@ class ChromeRenderFrameObserver : public content::RenderFrameObserver,
   void OnSetClientSidePhishingDetection(bool enable_phishing_detection);
   void OnAppBannerPromptRequest(int request_id,
                                 const std::string& platform);
-  void OnAppBannerDebugMessageRequest(const std::string& message);
 
   // PageInfoReceiver implementation.
   void PageCaptured(base::string16* content, CaptureType capture_type) override;
