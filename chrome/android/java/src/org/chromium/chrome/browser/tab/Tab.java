@@ -15,7 +15,6 @@ import android.os.Message;
 import android.provider.Browser;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.ContextMenu;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -46,9 +45,7 @@ import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.banners.AppBannerManager;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulator;
-import org.chromium.chrome.browser.contextmenu.ContextMenuParams;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
-import org.chromium.chrome.browser.contextmenu.ContextMenuPopulatorWrapper;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchTabHelper;
 import org.chromium.chrome.browser.crash.MinidumpUploadService;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
@@ -455,18 +452,6 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
                     super.exitFullscreenVideo();
                 }
             };
-        }
-    }
-
-    private class TabContextMenuPopulator extends ContextMenuPopulatorWrapper {
-        public TabContextMenuPopulator(ContextMenuPopulator populator) {
-            super(populator);
-        }
-
-        @Override
-        public void buildContextMenu(ContextMenu menu, Context context, ContextMenuParams params) {
-            super.buildContextMenu(menu, context, params);
-            for (TabObserver observer : mObservers) observer.onContextMenuShown(Tab.this, menu);
         }
     }
 
@@ -1523,7 +1508,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
             assert mNativeTabAndroid != 0;
             nativeInitWebContents(
                     mNativeTabAndroid, mIncognito, mContentViewCore, mWebContentsDelegate,
-                    new TabContextMenuPopulator(createContextMenuPopulator()));
+                    new TabContextMenuPopulator(createContextMenuPopulator(), this));
 
             // In the case where restoring a Tab or showing a prerendered one we already have a
             // valid infobar container, no need to recreate one.
