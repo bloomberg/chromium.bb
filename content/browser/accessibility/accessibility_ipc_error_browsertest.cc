@@ -131,8 +131,14 @@ IN_PROC_BROWSER_TEST_F(AccessibilityIpcErrorBrowserTest,
   EXPECT_TRUE(button->data().state >> ui::AX_STATE_FOCUSED & 1);
 }
 
+#if defined(OS_ANDROID)
+// http://crbug.com/542704
+#define MAYBE_MultipleBadAccessibilityIPCsKillsRenderer DISABLED_MultipleBadAccessibilityIPCsKillsRenderer
+#else
+#define MAYBE_MultipleBadAccessibilityIPCsKillsRenderer MultipleBadAccessibilityIPCsKillsRenderer
+#endif
 IN_PROC_BROWSER_TEST_F(AccessibilityIpcErrorBrowserTest,
-                       MultipleBadAccessibilityIPCsKillsRenderer) {
+                       MAYBE_MultipleBadAccessibilityIPCsKillsRenderer) {
   // Create a data url and load it.
   const char url_str[] =
       "data:text/html,"
