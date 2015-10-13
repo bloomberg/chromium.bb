@@ -60,7 +60,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/result_codes.h"
-#include "crypto/nss_util.h"
 #include "device/battery/battery_status_service.h"
 #include "media/audio/audio_manager.h"
 #include "media/base/media.h"
@@ -460,10 +459,10 @@ void BrowserMainLoop::EarlyInitialization() {
   // definitely harmless, so retained as a reminder of this
   // requirement for gconf.
   g_type_init();
-#endif
+#endif  // !GLIB_CHECK_VERSION(2, 35, 0)
 
   SetUpGLibLogHandler();
-#endif
+#endif  // defined(USE_GLIB)
 
   if (parts_)
     parts_->PreEarlyInitialization();
@@ -472,7 +471,13 @@ void BrowserMainLoop::EarlyInitialization() {
   // We use quite a few file descriptors for our IPC, and the default limit on
   // the Mac is low (256), so bump it up.
   base::SetFdLimit(1024);
-#endif
+#elif defined(OS_LINUX)
+  // Same for Linux. The default various per distro, but it is 1024 on Fedora.
+  // Low soft limits combined with liberal use of file descriptors means power
+  // users can easily hit this limit with many open tabs. Bump up the limit to
+  // an arbitrarily high number. See https://crbug.com/539567
+  base::SetFdLimit(8192);
+#endif  // default(OS_MACOSX)
 
 #if defined(OS_WIN)
   net::EnsureWinsockInit();
