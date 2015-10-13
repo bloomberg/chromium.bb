@@ -7,6 +7,7 @@ include_rules = [
   "+components/bookmarks",
   "+components/component_updater",
   "+components/content_settings/core",
+  "+components/crash/core/browser",
   "+components/crash/core/common",
   "+components/data_reduction_proxy/core/browser",
   "+components/data_reduction_proxy/core/common",
@@ -81,7 +82,10 @@ include_rules = [
   "+skia/ext/skia_utils_ios.h",
 
   # Strings and resources.
+  "+grit/components_chromium_strings.h",
+  "+grit/components_google_chrome_strings.h",
   "+grit/components_resources.h",
+  "+grit/components_scaled_resources.h",
   "+grit/components_strings.h",
   "+ios/chrome/grit",
 ]

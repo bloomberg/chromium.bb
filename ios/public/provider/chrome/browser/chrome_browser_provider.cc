@@ -5,6 +5,7 @@
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 
 #include "base/logging.h"
+#include "ios/public/provider/chrome/browser/keyed_service_provider.h"
 
 namespace ios {
 
@@ -119,5 +120,11 @@ rappor::RapporService* ChromeBrowserProvider::GetRapporService() {
 bool ChromeBrowserProvider::IsOffTheRecordSessionActive() {
   return false;
 }
+
+void ChromeBrowserProvider::GetFaviconForURL(
+    ios::ChromeBrowserState* browser_state,
+    const GURL& page_url,
+    const std::vector<int>& desired_sizes_in_pixel,
+    const favicon_base::FaviconResultsCallback& callback) const {}
 
 }  // namespace ios

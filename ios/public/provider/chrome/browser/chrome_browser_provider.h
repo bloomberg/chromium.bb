@@ -8,7 +8,11 @@
 #include <CoreGraphics/CoreGraphics.h>
 
 #include <string>
+#include <vector>
 
+#include "components/favicon_base/favicon_callback.h"
+
+class GURL;
 class InfoBarViewDelegate;
 class PrefRegistrySimple;
 class PrefService;
@@ -58,6 +62,7 @@ class UIView;
 namespace ios {
 
 class ChromeBrowserProvider;
+class ChromeBrowserState;
 class ChromeBrowserStateManager;
 class ChromeIdentityService;
 class GeolocationUpdaterProvider;
@@ -126,6 +131,13 @@ class ChromeBrowserProvider {
   virtual rappor::RapporService* GetRapporService();
   // Returns whether there is an Off-The-Record session active.
   virtual bool IsOffTheRecordSessionActive();
+  // Get the favicon for |page_url| and run |callback| with result when loaded.
+  // Note. |callback| is always run asynchronously.
+  virtual void GetFaviconForURL(
+      ChromeBrowserState* browser_state,
+      const GURL& page_url,
+      const std::vector<int>& desired_sizes_in_pixel,
+      const favicon_base::FaviconResultsCallback& callback) const;
 };
 
 }  // namespace ios
