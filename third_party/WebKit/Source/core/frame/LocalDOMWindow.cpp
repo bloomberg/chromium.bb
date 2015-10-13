@@ -285,9 +285,10 @@ bool LocalDOMWindow::allowPopUp()
 LocalDOMWindow::LocalDOMWindow(LocalFrame& frame)
     : m_frameObserver(WindowFrameObserver::create(this, frame))
     , m_shouldPrintWhenFinishedLoading(false)
-#if ENABLE(ASSERT)
+// TODO(bokan): Temporarily enabled in release to trackdown crbug.com/519752.
+// #if ENABLE(ASSERT)
     , m_hasBeenReset(false)
-#endif
+// #endif
 {
 #if ENABLE(OILPAN)
     ThreadState::current()->registerPreFinalizer(this);
@@ -299,7 +300,8 @@ void LocalDOMWindow::clearDocument()
     if (!m_document)
         return;
 
-    ASSERT(!m_document->isActive());
+    // TODO(bokan): Temporarily made RELEASE_ASSERT to trackdown crbug.com/519752.
+    RELEASE_ASSERT(!m_document->isActive());
 
     // FIXME: This should be part of ActiveDOMObject shutdown
     clearEventQueue();
@@ -341,7 +343,9 @@ PassRefPtrWillBeRawPtr<Document> LocalDOMWindow::createDocument(const String& mi
 
 PassRefPtrWillBeRawPtr<Document> LocalDOMWindow::installNewDocument(const String& mimeType, const DocumentInit& init, bool forceXHTML)
 {
-    ASSERT(init.frame() == frame());
+
+    // TODO(bokan): Temporarily made RELEASE_ASSERT to trackdown crbug.com/519752.
+    RELEASE_ASSERT(init.frame() == frame());
 
     clearDocument();
 
@@ -349,8 +353,8 @@ PassRefPtrWillBeRawPtr<Document> LocalDOMWindow::installNewDocument(const String
     m_eventQueue = DOMWindowEventQueue::create(m_document.get());
     m_document->attach();
 
-    if (!frame())
-        return m_document;
+    // TODO(bokan): Temporarily made RELEASE_ASSERT to trackdown crbug.com/519752.
+    RELEASE_ASSERT(frame());
 
     frame()->script().updateDocument();
     m_document->updateViewportDescription();
@@ -440,8 +444,9 @@ LocalDOMWindow::~LocalDOMWindow()
     // Cleared when detaching document.
     ASSERT(!m_eventQueue);
 #else
-    ASSERT(m_hasBeenReset);
-    ASSERT(m_document->isStopped());
+    // TODO(bokan): Temporarily enabled in release to trackdown crbug.com/519752.
+    RELEASE_ASSERT(m_hasBeenReset);
+    RELEASE_ASSERT(m_document->isStopped());
     clearDocument();
 #endif
 }
@@ -537,9 +542,10 @@ void LocalDOMWindow::reset()
     m_navigator = nullptr;
     m_media = nullptr;
     m_applicationCache = nullptr;
-#if ENABLE(ASSERT)
+// TODO(bokan): Temporarily enabled in release to trackdown crbug.com/519752.
+// #if ENABLE(ASSERT)
     m_hasBeenReset = true;
-#endif
+// #endif
 
     LocalDOMWindow::notifyContextDestroyed();
 }
@@ -1524,7 +1530,7 @@ LocalFrame* LocalDOMWindow::frame() const
     // back to this LocalDOMWindow: otherwise, it's easy to get into a situation
     // where script execution leaks between different LocalDOMWindows.
     if (m_frameObserver->frame())
-        ASSERT_WITH_SECURITY_IMPLICATION(m_frameObserver->frame()->domWindow() == this);
+        RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(m_frameObserver->frame()->domWindow() == this);
     return m_frameObserver->frame();
 }
 
