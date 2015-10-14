@@ -79,9 +79,6 @@ crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/bidi-embed-002.
 crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/bidi-isolate-002.html [ ImageOnlyFailure ]
 crbug.com/492664 [ Win ] imported/csswg-test/css-writing-modes-3/bidi-override-005.html [ ImageOnlyFailure ]
 crbug.com/492664 [ Win ] imported/csswg-test/css-writing-modes-3/bidi-plaintext-001.html [ ImageOnlyFailure ]
-crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-combine-upright-value-all-001.html [ ImageOnlyFailure ]
-crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-combine-upright-value-all-002.html [ ImageOnlyFailure ]
-crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-combine-upright-value-all-003.html [ ImageOnlyFailure ]
 crbug.com/492664 imported/csswg-test/css-transitions-2/transitioncancel-001.html [ Failure ]
 crbug.com/418091 [ SnowLeopard ] fast/text/aat-morx.html [ Failure ]
 crbug.com/463358 [ Mac Linux Debug ] svg/hixie/perf/005.xml [ ImageOnlyFailure ]
@@ -458,6 +455,8 @@ crbug.com/517836 imported/web-platform-tests/screen-orientation/orientation-read
 crbug.com/517836 imported/web-platform-tests/screen-orientation/onchange-event-subframe.html [ Failure Timeout ]
 crbug.com/517836 imported/web-platform-tests/screen-orientation/onchange-event.html [ Failure Timeout ]
 
+crbug.com/517840 imported/web-platform-tests/webrtc/rtcpeerconnection/rtcpeerconnection-idl.html [ Failure Timeout ]
+
 # Will work after we have grapheme-cluser based font selection
 crbug.com/454405 inspector-protocol/layout-fonts/unicode-range-combining-chars-fallback.html [ Failure ]
 
@@ -619,6 +618,11 @@ crbug.com/492664 imported/csswg-test/css-writing-modes-3/clip-rect-vrl-006.xht [
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/clip-rect-vrl-008.xht [ ImageOnlyFailure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/line-box-direction-009.xht [ ImageOnlyFailure ]
 
+# These tests pass but images do not match because tests are stricter than the spec.
+crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-combine-upright-value-all-001.html [ ImageOnlyFailure ]
+crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-combine-upright-value-all-002.html [ ImageOnlyFailure ]
+crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-combine-upright-value-all-003.html [ ImageOnlyFailure ]
+
 # These CSS Writing Modes Level 3 tests pass but causes 1px diff on images, notified to the submitter.
 crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/block-flow-direction-001.xht [ ImageOnlyFailure ]
 crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/block-flow-direction-002.xht [ ImageOnlyFailure ]
@@ -670,7 +674,6 @@ crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/text-baseline-0
 crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/text-baseline-007.xht [ ImageOnlyFailure ]
 crbug.com/539425 [ XP ] imported/csswg-test/css-writing-modes-3/vertical-alignment-vrl-022.xht [ ImageOnlyFailure ]
 crbug.com/539425 [ XP ] imported/csswg-test/css-writing-modes-3/vertical-alignment-vrl-024.xht [ ImageOnlyFailure ]
-crbug.com/492664 imported/csswg-test/css-writing-modes-3/vertical-alignment-vrl-026.xht [ ImageOnlyFailure ]
 
 crbug.com/498845 [ Win ] fast/multicol/vertical-rl/float-content-break.html [ ImageOnlyFailure ]
 

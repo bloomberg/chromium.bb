@@ -1,0 +1,8 @@
+This is a testharness.js-based test.
+PASS HTMLTableSectionElement deleteRow(0) 
+PASS HTMLTableSectionElement deleteRow(-1) 
+PASS HTMLTableSectionElement deleteRow(rows.length) 
+PASS HTMLTableSectionElement deleteRow(-2) 
+FAIL HTMLTableSectionElement deleteRow(-1) with no rows Failed to execute 'deleteRow' on 'HTMLTableSectionElement': The provided index (-1 is outside the range [-1, 0].
+Harness: the test ran to completion.
+
