@@ -98,6 +98,8 @@ class JingleSessionTest : public testing::Test {
   JingleSessionTest() {
     message_loop_.reset(new base::MessageLoopForIO());
     jingle_glue::JingleThreadWrapper::EnsureForCurrentMessageLoop();
+    network_settings_ =
+        NetworkSettings(NetworkSettings::NAT_TRAVERSAL_OUTGOING);
   }
 
   // Helper method that handles OnIncomingSession().
@@ -122,8 +124,6 @@ class JingleSessionTest : public testing::Test {
   }
 
  protected:
-  void SetUp() override {}
-
   void TearDown() override {
     CloseSessions();
     CloseSessionManager();
@@ -147,12 +147,10 @@ class JingleSessionTest : public testing::Test {
     EXPECT_CALL(host_server_listener_, OnSessionManagerReady())
         .Times(1);
 
-    NetworkSettings network_settings(NetworkSettings::NAT_TRAVERSAL_OUTGOING);
-
     scoped_ptr<TransportFactory> host_transport(new LibjingleTransportFactory(
         nullptr,
-        ChromiumPortAllocator::Create(nullptr, network_settings).Pass(),
-        network_settings, TransportRole::SERVER));
+        ChromiumPortAllocator::Create(nullptr, network_settings_).Pass(),
+        network_settings_, TransportRole::SERVER));
     host_server_.reset(new JingleSessionManager(host_transport.Pass()));
     host_server_->Init(host_signal_strategy_.get(), &host_server_listener_);
 
@@ -165,8 +163,8 @@ class JingleSessionTest : public testing::Test {
         .Times(1);
     scoped_ptr<TransportFactory> client_transport(new LibjingleTransportFactory(
         nullptr,
-        ChromiumPortAllocator::Create(nullptr, network_settings).Pass(),
-        network_settings, TransportRole::CLIENT));
+        ChromiumPortAllocator::Create(nullptr, network_settings_).Pass(),
+        network_settings_, TransportRole::CLIENT));
     client_server_.reset(
         new JingleSessionManager(client_transport.Pass()));
     client_server_->Init(client_signal_strategy_.get(),
@@ -286,6 +284,8 @@ class JingleSessionTest : public testing::Test {
   }
 
   scoped_ptr<base::MessageLoopForIO> message_loop_;
+
+  NetworkSettings network_settings_;
 
   scoped_ptr<FakeSignalStrategy> host_signal_strategy_;
   scoped_ptr<FakeSignalStrategy> client_signal_strategy_;
@@ -557,6 +557,41 @@ TEST_F(JingleSessionTest, TestQuicStreamChannel) {
   tester.Start();
   message_loop_->Run();
   tester.CheckResults();
+}
+
+// Verify that channels are never marked connected if transport is broken.
+TEST_F(JingleSessionTest, TestBrokenTransport) {
+  // Allow only incoming connections on both ends, which effectively renders P2P
+  // transport unusable as.
+  network_settings_ = NetworkSettings(NetworkSettings::NAT_TRAVERSAL_DISABLED);
+  CreateSessionManagers(1, FakeAuthenticator::ACCEPT);
+
+  scoped_ptr<CandidateSessionConfig> config =
+      CandidateSessionConfig::CreateDefault();
+  config->PreferTransport(ChannelConfig::TRANSPORT_QUIC_STREAM);
+  client_server_->set_protocol_config(config.Pass());
+
+  ASSERT_NO_FATAL_FAILURE(
+      InitiateConnection(1, FakeAuthenticator::ACCEPT, false));
+
+  EXPECT_CALL(client_channel_callback_, OnDone(_)).Times(0);
+  EXPECT_CALL(host_channel_callback_, OnDone(_)).Times(0);
+
+  client_session_->GetQuicChannelFactory()->CreateChannel(
+      kChannelName, base::Bind(&JingleSessionTest::OnClientChannelCreated,
+                               base::Unretained(this)));
+  host_session_->GetQuicChannelFactory()->CreateChannel(
+      kChannelName, base::Bind(&JingleSessionTest::OnHostChannelCreated,
+                               base::Unretained(this)));
+
+  message_loop_->RunUntilIdle();
+
+  // Verify that neither of the two ends of the channel is connected.
+  EXPECT_FALSE(client_socket_);
+  EXPECT_FALSE(host_socket_);
+
+  client_session_->GetQuicChannelFactory()->CancelChannelCreation(kChannelName);
+  host_session_->GetQuicChannelFactory()->CancelChannelCreation(kChannelName);
 }
 
 // Verify that we can connect channels with multistep auth.

@@ -83,6 +83,7 @@ class LibjingleTransport
                            const cricket::Candidate& candidate);
   void OnRouteChange(cricket::TransportChannel* channel,
                      const cricket::Candidate& candidate);
+  void OnReceivingState(cricket::TransportChannel* channel);
   void OnWritableState(cricket::TransportChannel* channel);
 
   // Callback for TransportChannelSocketAdapter to notify when the socket is
@@ -202,6 +203,8 @@ void LibjingleTransport::DoStart() {
       this, &LibjingleTransport::OnCandidateGathered);
   channel_->SignalRouteChange.connect(
       this, &LibjingleTransport::OnRouteChange);
+  channel_->SignalReceivingState.connect(
+      this, &LibjingleTransport::OnReceivingState);
   channel_->SignalWritableState.connect(
       this, &LibjingleTransport::OnWritableState);
   channel_->set_incoming_only(
@@ -216,10 +219,6 @@ void LibjingleTransport::DoStart() {
   reconnect_timer_.Start(
       FROM_HERE, base::TimeDelta::FromSeconds(kReconnectDelaySeconds),
       this, &LibjingleTransport::TryReconnect);
-
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&LibjingleTransport::NotifyConnected,
-                            weak_factory_.GetWeakPtr()));
 }
 
 void LibjingleTransport::NotifyConnected() {
@@ -285,8 +284,14 @@ void LibjingleTransport::OnRouteChange(
     NotifyRouteChanged();
 }
 
-void LibjingleTransport::OnWritableState(
-    cricket::TransportChannel* channel) {
+void LibjingleTransport::OnReceivingState(cricket::TransportChannel* channel) {
+  DCHECK_EQ(channel, static_cast<cricket::TransportChannel*>(channel_.get()));
+
+  if (channel->receiving() && !callback_.is_null())
+    NotifyConnected();
+}
+
+void LibjingleTransport::OnWritableState(cricket::TransportChannel* channel) {
   DCHECK_EQ(channel, static_cast<cricket::TransportChannel*>(channel_.get()));
 
   if (channel->writable()) {
