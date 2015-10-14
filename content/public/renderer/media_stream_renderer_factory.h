@@ -14,6 +14,15 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
+namespace base {
+class SingleThreadTaskRunner;
+class TaskRunner;
+}  // namespace base
+
+namespace media {
+class GpuVideoAcceleratorFactories;
+}  // namespace media
+
 namespace content {
 
 // MediaStreamRendererFactory is used by WebMediaPlayerMS to create audio and
@@ -27,7 +36,11 @@ class MediaStreamRendererFactory {
   virtual scoped_refptr<VideoFrameProvider> GetVideoFrameProvider(
       const GURL& url,
       const base::Closure& error_cb,
-      const VideoFrameProvider::RepaintCB& repaint_cb) = 0;
+      const VideoFrameProvider::RepaintCB& repaint_cb,
+      const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
+      const scoped_refptr<base::TaskRunner>& worker_task_runner,
+      const scoped_refptr<media::GpuVideoAcceleratorFactories>&
+          gpu_factories) = 0;
 
   virtual scoped_refptr<MediaStreamAudioRenderer> GetAudioRenderer(
       const GURL& url,

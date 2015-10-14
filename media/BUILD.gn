@@ -783,6 +783,8 @@ test("audio_unittests") {
 source_set("test_support") {
   testonly = true
   sources = [
+    "renderers/mock_gpu_memory_buffer_video_frame_pool.cc",
+    "renderers/mock_gpu_memory_buffer_video_frame_pool.h",
     "renderers/mock_gpu_video_accelerator_factories.cc",
     "renderers/mock_gpu_video_accelerator_factories.h",
     "video/mock_video_decode_accelerator.cc",

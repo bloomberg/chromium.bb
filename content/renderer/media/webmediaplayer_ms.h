@@ -14,6 +14,7 @@
 #include "media/blink/skcanvas_video_renderer.h"
 #include "media/blink/webmediaplayer_util.h"
 #include "media/filters/video_renderer_algorithm.h"
+#include "media/renderers/gpu_video_accelerator_factories.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayer.h"
 #include "url/gurl.h"
@@ -58,13 +59,16 @@ class WebMediaPlayerMS
  public:
   // Construct a WebMediaPlayerMS with reference to the client, and
   // a MediaStreamClient which provides VideoFrameProvider.
-  WebMediaPlayerMS(blink::WebFrame* frame,
-                   blink::WebMediaPlayerClient* client,
-                   base::WeakPtr<media::WebMediaPlayerDelegate> delegate,
-                   media::MediaLog* media_log,
-                   scoped_ptr<MediaStreamRendererFactory> factory,
-                   const scoped_refptr<base::SingleThreadTaskRunner>&
-                       compositor_task_runner);
+  WebMediaPlayerMS(
+      blink::WebFrame* frame,
+      blink::WebMediaPlayerClient* client,
+      base::WeakPtr<media::WebMediaPlayerDelegate> delegate,
+      media::MediaLog* media_log,
+      scoped_ptr<MediaStreamRendererFactory> factory,
+      const scoped_refptr<base::SingleThreadTaskRunner>& compositor_task_runner,
+      const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
+      const scoped_refptr<base::TaskRunner>& worker_task_runner,
+      const scoped_refptr<media::GpuVideoAcceleratorFactories>& gpu_factories);
 
   ~WebMediaPlayerMS() override;
 
@@ -268,6 +272,9 @@ class WebMediaPlayerMS
 
   scoped_ptr<MediaStreamRendererFactory> renderer_factory_;
 
+  const scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
+  const scoped_refptr<base::TaskRunner> worker_task_runner_;
+  const scoped_refptr<media::GpuVideoAcceleratorFactories> gpu_factories_;
 
   // Used for DCHECKs to ensure methods calls executed in the correct thread.
   base::ThreadChecker thread_checker_;

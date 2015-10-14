@@ -4,11 +4,13 @@
 
 #include "content/renderer/media/media_stream_video_renderer_sink.h"
 
+#include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
+#include "media/renderers/gpu_video_accelerator_factories.h"
 
 const int kMinFrameSize = 2;
 
@@ -17,14 +19,23 @@ namespace content {
 MediaStreamVideoRendererSink::MediaStreamVideoRendererSink(
     const blink::WebMediaStreamTrack& video_track,
     const base::Closure& error_cb,
-    const RepaintCB& repaint_cb)
+    const RepaintCB& repaint_cb,
+    const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
+    const scoped_refptr<base::TaskRunner>& worker_task_runner,
+    const scoped_refptr<media::GpuVideoAcceleratorFactories>& gpu_factories)
     : error_cb_(error_cb),
       repaint_cb_(repaint_cb),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
       state_(STOPPED),
       frame_size_(kMinFrameSize, kMinFrameSize),
       video_track_(video_track),
+      media_task_runner_(media_task_runner),
       weak_factory_(this) {
+  if (gpu_factories &&
+      gpu_factories->ShouldUseGpuMemoryBuffersForVideoFrames()) {
+    gpu_memory_buffer_pool_.reset(new media::GpuMemoryBufferVideoFramePool(
+        media_task_runner, worker_task_runner, gpu_factories));
+  }
 }
 
 MediaStreamVideoRendererSink::~MediaStreamVideoRendererSink() {
@@ -72,6 +83,11 @@ void MediaStreamVideoRendererSink::Pause() {
     state_ = PAUSED;
 }
 
+void MediaStreamVideoRendererSink::SetGpuMemoryBufferVideoForTesting(
+    scoped_ptr<media::GpuMemoryBufferVideoFramePool> gpu_memory_buffer_pool) {
+  gpu_memory_buffer_pool_.swap(gpu_memory_buffer_pool);
+}
+
 void MediaStreamVideoRendererSink::OnReadyStateChanged(
     blink::WebMediaStreamSource::ReadyState state) {
   DCHECK(task_runner_->BelongsToCurrentThread());
@@ -83,15 +99,32 @@ void MediaStreamVideoRendererSink::OnVideoFrame(
     const scoped_refptr<media::VideoFrame>& frame,
     base::TimeTicks estimated_capture_time) {
   DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(frame);
   if (state_ != STARTED)
     return;
 
-  frame_size_ = frame->natural_size();
+  if (!gpu_memory_buffer_pool_) {
+    FrameReady(frame);
+    return;
+  }
 
-  TRACE_EVENT_INSTANT1("media_stream_video_renderer_sink",
-                       "OnVideoFrame",
-                       TRACE_EVENT_SCOPE_THREAD,
-                       "timestamp",
+  media_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(
+          &media::GpuMemoryBufferVideoFramePool::MaybeCreateHardwareFrame,
+          base::Unretained(gpu_memory_buffer_pool_.get()), frame,
+          media::BindToCurrentLoop(
+              base::Bind(&MediaStreamVideoRendererSink::FrameReady, this))));
+}
+
+void MediaStreamVideoRendererSink::FrameReady(
+    const scoped_refptr<media::VideoFrame>& frame) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(frame);
+
+  frame_size_ = frame->natural_size();
+  TRACE_EVENT_INSTANT1("media_stream_video_renderer_sink", "FrameReady",
+                       TRACE_EVENT_SCOPE_THREAD, "timestamp",
                        frame->timestamp().InMilliseconds());
   repaint_cb_.Run(frame);
 }
