@@ -7,6 +7,7 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/affiliated_match_helper.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
+#include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
 #include "url/gurl.h"
 
@@ -70,6 +71,7 @@ void CredentialManagerPendingRequestTask::OnGetPasswordStoreResults(
     // TODO(mkwst): This doesn't create a PasswordForm that we can use to create
     // a FederatedCredential (via CreatePasswordFormFromCredentialInfo). We need
     // to fix that.
+    password_manager_util::TrimUsernameOnlyCredentials(&affiliated_results);
     local_results.insert(local_results.end(), affiliated_results.begin(),
                          affiliated_results.end());
     affiliated_results.weak_clear();

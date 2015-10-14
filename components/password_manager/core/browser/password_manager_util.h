@@ -37,6 +37,11 @@ void FindDuplicates(
     ScopedVector<autofill::PasswordForm>* duplicates,
     std::vector<std::vector<autofill::PasswordForm*>>* tag_groups);
 
+// Removes Android username-only credentials from |android_credentials|.
+// Transforms federated credentials into non zero-click ones.
+void TrimUsernameOnlyCredentials(
+    ScopedVector<autofill::PasswordForm>* android_credentials);
+
 }  // namespace password_manager_util
 
 #endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_MANAGER_UTIL_H_

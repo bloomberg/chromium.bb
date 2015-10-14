@@ -501,6 +501,12 @@ TEST_F(PasswordStoreTest, GetLoginsWithAffiliations) {
        "", "", L"", L"", L"",
        L"username_value_3b",
        L"", true, true, 1},
+      // Third credential for the same application which is username-only.
+      {PasswordForm::SCHEME_USERNAME_ONLY,
+       kTestAndroidRealm1,
+       "", "", L"", L"", L"",
+       L"username_value_3c",
+       L"", true, true, 1},
       // Credential for another Android application affiliated with the realm
       // of the observed from.
       {PasswordForm::SCHEME_HTML,
@@ -552,7 +558,7 @@ TEST_F(PasswordStoreTest, GetLoginsWithAffiliations) {
   expected_results.push_back(new PasswordForm(*all_credentials[1]));
   expected_results.push_back(new PasswordForm(*all_credentials[2]));
   expected_results.push_back(new PasswordForm(*all_credentials[3]));
-  expected_results.push_back(new PasswordForm(*all_credentials[4]));
+  expected_results.push_back(new PasswordForm(*all_credentials[5]));
   for (PasswordForm* result : expected_results) {
     if (result->signon_realm != observed_form.signon_realm &&
         !IsValidAndroidFacetURI(result->signon_realm))

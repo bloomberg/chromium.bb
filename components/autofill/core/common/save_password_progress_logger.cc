@@ -57,6 +57,8 @@ SavePasswordProgressLogger::StringID FormSchemeToStringID(
       return SavePasswordProgressLogger::STRING_SCHEME_DIGEST;
     case PasswordForm::SCHEME_OTHER:
       return SavePasswordProgressLogger::STRING_OTHER;
+    case PasswordForm::SCHEME_USERNAME_ONLY:
+      return SavePasswordProgressLogger::STRING_SCHEME_USERNAME_ONLY;
   }
   NOTREACHED();
   return SavePasswordProgressLogger::STRING_INVALID;
@@ -179,6 +181,8 @@ std::string SavePasswordProgressLogger::GetStringFromID(
       return "Basic";
     case SavePasswordProgressLogger::STRING_SCHEME_DIGEST:
       return "Digest";
+    case SavePasswordProgressLogger::STRING_SCHEME_USERNAME_ONLY:
+      return "Username only";
     case SavePasswordProgressLogger::STRING_SCHEME_MESSAGE:
       return "Scheme";
     case SavePasswordProgressLogger::STRING_SIGNON_REALM:

@@ -53,12 +53,14 @@ struct PasswordForm {
   // Enum to differentiate between HTML form based authentication, and dialogs
   // using basic or digest schemes. Default is SCHEME_HTML. Only PasswordForms
   // of the same Scheme will be matched/autofilled against each other.
-  enum Scheme {
+  enum Scheme : int {
     SCHEME_HTML,
     SCHEME_BASIC,
     SCHEME_DIGEST,
     SCHEME_OTHER,
-    SCHEME_LAST = SCHEME_OTHER
+    SCHEME_USERNAME_ONLY,
+
+    SCHEME_LAST = SCHEME_USERNAME_ONLY
   } scheme;
 
   // During form parsing, Chrome tries to partly understand the type of the form

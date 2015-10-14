@@ -238,6 +238,12 @@ inline void MoveAllFormsOut(ScopedVector<autofill::PasswordForm>* forms,
   forms->weak_clear();
 }
 
+// True if the form has no password to be stored in Keychain.
+bool IsLoginDatabaseOnlyForm(const autofill::PasswordForm& form) {
+  return form.blacklisted_by_user || !form.federation_url.is_empty() ||
+         form.scheme == autofill::PasswordForm::SCHEME_USERNAME_ONLY;
+}
+
 }  // namespace
 
 #pragma mark -
@@ -470,12 +476,9 @@ bool HasChromeCreatorCode(const AppleKeychain& keychain,
 bool FormsMatchForMerge(const PasswordForm& form_a,
                         const PasswordForm& form_b,
                         FormMatchStrictness strictness) {
-  // We never merge blacklist entries between our store and the Keychain,
-  // and federated logins should not be stored in the Keychain at all.
-  if (form_a.blacklisted_by_user || form_b.blacklisted_by_user ||
-      !form_a.federation_url.is_empty() || !form_b.federation_url.is_empty()) {
+  if (IsLoginDatabaseOnlyForm(form_a) || IsLoginDatabaseOnlyForm(form_b))
     return false;
-  }
+
   bool equal_realm = form_a.signon_realm == form_b.signon_realm;
   if (strictness == FUZZY_FORM_MATCH) {
     equal_realm |= form_a.is_public_suffix_match;
@@ -493,7 +496,7 @@ void ExtractNonKeychainForms(ScopedVector<autofill::PasswordForm>* forms,
   ScopedVector<autofill::PasswordForm> remaining;
   MoveAllFormsOut(
       forms, [&remaining, extracted](scoped_ptr<autofill::PasswordForm> form) {
-        if (form->blacklisted_by_user || !form->federation_url.is_empty())
+        if (IsLoginDatabaseOnlyForm(*form))
           extracted->push_back(form.Pass());
         else
           remaining.push_back(form.Pass());
@@ -721,7 +724,7 @@ bool MacKeychainPasswordFormAdapter::HasPasswordExactlyMatchingForm(
 
 bool MacKeychainPasswordFormAdapter::HasPasswordsMergeableWithForm(
     const PasswordForm& query_form) {
-  if (!query_form.federation_url.is_empty())
+  if (IsLoginDatabaseOnlyForm(query_form))
     return false;
   std::string username = base::UTF16ToUTF8(query_form.username_value);
   std::vector<SecKeychainItemRef> matches =
@@ -768,7 +771,7 @@ MacKeychainPasswordFormAdapter::GetAllPasswordFormPasswords() {
 
 bool MacKeychainPasswordFormAdapter::AddPassword(const PasswordForm& form) {
   // We should never be trying to store a blacklist in the keychain.
-  DCHECK(!form.blacklisted_by_user);
+  DCHECK(!IsLoginDatabaseOnlyForm(form));
 
   std::string server;
   std::string security_domain;
@@ -848,9 +851,8 @@ SecKeychainItemRef MacKeychainPasswordFormAdapter::KeychainItemForForm(
   // We don't store blacklist entries in the keychain, so the answer to "what
   // Keychain item goes with this form" is always "nothing" for blacklists.
   // Same goes for federated logins.
-  if (form.blacklisted_by_user || !form.federation_url.is_empty()) {
+  if (IsLoginDatabaseOnlyForm(form))
     return NULL;
-  }
 
   std::string path;
   // Path doesn't make sense for Android app credentials.
@@ -916,6 +918,9 @@ SecAuthenticationType MacKeychainPasswordFormAdapter::AuthTypeForScheme(
     case PasswordForm::SCHEME_BASIC:  return kSecAuthenticationTypeHTTPBasic;
     case PasswordForm::SCHEME_DIGEST: return kSecAuthenticationTypeHTTPDigest;
     case PasswordForm::SCHEME_OTHER:  return kSecAuthenticationTypeDefault;
+    case PasswordForm::SCHEME_USERNAME_ONLY:
+      NOTREACHED();
+      break;
   }
   NOTREACHED();
   return kSecAuthenticationTypeDefault;
@@ -1261,7 +1266,7 @@ PasswordStoreMac::GetSiteStatsImpl(const GURL& origin_domain) {
 }
 
 bool PasswordStoreMac::AddToKeychainIfNecessary(const PasswordForm& form) {
-  if (form.blacklisted_by_user || !form.federation_url.is_empty())
+  if (IsLoginDatabaseOnlyForm(form))
     return true;
   MacKeychainPasswordFormAdapter keychainAdapter(keychain_.get());
   return keychainAdapter.AddPassword(form);

@@ -58,4 +58,20 @@ void FindDuplicates(
   forms->swap(unique_forms);
 }
 
+void TrimUsernameOnlyCredentials(
+    ScopedVector<autofill::PasswordForm>* android_credentials) {
+  ScopedVector<autofill::PasswordForm> result;
+  for (auto& form : *android_credentials) {
+    if (form->scheme == autofill::PasswordForm::SCHEME_USERNAME_ONLY) {
+      if (form->federation_url.is_empty())
+        continue;
+      else
+        form->skip_zero_click = true;
+    }
+    result.push_back(form);
+    form = nullptr;
+  }
+  android_credentials->swap(result);
+}
+
 }  // namespace password_manager_util
