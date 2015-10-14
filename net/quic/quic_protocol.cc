@@ -91,6 +91,10 @@ QuicPublicResetPacket::QuicPublicResetPacket(
     const QuicPacketPublicHeader& header)
     : public_header(header), nonce_proof(0), rejected_packet_number(0) {}
 
+UniqueStreamBuffer NewStreamBuffer(size_t size) {
+  return UniqueStreamBuffer(new char[size]);
+}
+
 QuicStreamFrame::QuicStreamFrame() : stream_id(0), fin(false), offset(0) {
 }
 
@@ -820,6 +824,8 @@ RetransmittableFrames::~RetransmittableFrames() {
         DCHECK(false) << "Cannot delete type: " << it->type;
     }
   }
+  // TODO(rtenneti): Delete the for loop once chrome has c++11 library support
+  // for "std::vector<UniqueStreamBuffer> stream_data_;".
   for (const char* buffer : stream_data_) {
     delete[] buffer;
   }
@@ -830,13 +836,13 @@ const QuicFrame& RetransmittableFrames::AddFrame(const QuicFrame& frame) {
 }
 
 const QuicFrame& RetransmittableFrames::AddFrame(const QuicFrame& frame,
-                                                 char* buffer) {
+                                                 UniqueStreamBuffer buffer) {
   if (frame.type == STREAM_FRAME &&
       frame.stream_frame->stream_id == kCryptoStreamId) {
     has_crypto_handshake_ = IS_HANDSHAKE;
   }
   if (buffer != nullptr) {
-    stream_data_.push_back(buffer);
+    stream_data_.push_back(buffer.release());
   }
   frames_.push_back(frame);
   return frames_.back();

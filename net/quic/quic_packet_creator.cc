@@ -266,7 +266,7 @@ size_t QuicPacketCreator::CreateStreamFrame(QuicStreamId id,
                                             QuicStreamOffset offset,
                                             bool fin,
                                             QuicFrame* frame,
-                                            scoped_ptr<char[]>* buffer) {
+                                            UniqueStreamBuffer* buffer) {
   DCHECK_GT(max_packet_length_,
             StreamFramePacketOverhead(connection_id_length_, kIncludeVersion,
                                       PACKET_6BYTE_PACKET_NUMBER, offset,
@@ -294,7 +294,7 @@ size_t QuicPacketCreator::CreateStreamFrame(QuicStreamId id,
   size_t bytes_consumed = min<size_t>(BytesFree() - min_frame_size, data_size);
 
   bool set_fin = fin && bytes_consumed == data_size;  // Last frame.
-  buffer->reset(new char[bytes_consumed]);
+  *buffer = NewStreamBuffer(bytes_consumed);
   CopyToBuffer(iov, iov_offset, bytes_consumed, buffer->get());
   *frame = QuicFrame(new QuicStreamFrame(
       id, set_fin, offset, StringPiece(buffer->get(), bytes_consumed)));
@@ -417,17 +417,18 @@ bool QuicPacketCreator::AddSavedFrame(const QuicFrame& frame) {
                   /*needs_padding=*/false, nullptr);
 }
 
-bool QuicPacketCreator::AddSavedFrame(const QuicFrame& frame, char* buffer) {
+bool QuicPacketCreator::AddSavedFrame(const QuicFrame& frame,
+                                      UniqueStreamBuffer buffer) {
   return AddFrame(frame,
                   /*save_retransmittable_frames=*/true,
-                  /*needs_padding=*/false, buffer);
+                  /*needs_padding=*/false, buffer.Pass());
 }
 
 bool QuicPacketCreator::AddPaddedSavedFrame(const QuicFrame& frame,
-                                            char* buffer) {
+                                            UniqueStreamBuffer buffer) {
   return AddFrame(frame,
                   /*save_retransmittable_frames=*/true,
-                  /*needs_padding=*/true, buffer);
+                  /*needs_padding=*/true, buffer.Pass());
 }
 
 SerializedPacket QuicPacketCreator::SerializePacket(
@@ -596,7 +597,7 @@ bool QuicPacketCreator::ShouldRetransmit(const QuicFrame& frame) {
 bool QuicPacketCreator::AddFrame(const QuicFrame& frame,
                                  bool save_retransmittable_frames,
                                  bool needs_padding,
-                                 char* buffer) {
+                                 UniqueStreamBuffer buffer) {
   DVLOG(1) << "Adding frame: " << frame;
   InFecGroup is_in_fec_group = MaybeUpdateLengthsAndStartFec();
 
@@ -615,7 +616,7 @@ bool QuicPacketCreator::AddFrame(const QuicFrame& frame,
           new RetransmittableFrames(encryption_level_));
     }
     queued_frames_.push_back(
-        queued_retransmittable_frames_->AddFrame(frame, buffer));
+        queued_retransmittable_frames_->AddFrame(frame, buffer.Pass()));
   } else {
     queued_frames_.push_back(frame);
   }

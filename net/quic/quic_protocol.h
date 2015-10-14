@@ -19,6 +19,7 @@
 #include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
 #include "net/base/int128.h"
 #include "net/base/iovec.h"
@@ -696,6 +697,11 @@ struct NET_EXPORT_PRIVATE QuicPingFrame {
 // frame.
 struct NET_EXPORT_PRIVATE QuicMtuDiscoveryFrame {};
 
+typedef scoped_ptr<char[]> UniqueStreamBuffer;
+
+// Allocates memory of size |size| for a QUIC stream buffer.
+UniqueStreamBuffer NewStreamBuffer(size_t size);
+
 struct NET_EXPORT_PRIVATE QuicStreamFrame {
   QuicStreamFrame();
   QuicStreamFrame(const QuicStreamFrame& frame);
@@ -1108,7 +1114,7 @@ class NET_EXPORT_PRIVATE RetransmittableFrames {
   // Takes ownership of the frame inside |frame|.
   const QuicFrame& AddFrame(const QuicFrame& frame);
   // Takes ownership of the frame inside |frame| and |buffer|.
-  const QuicFrame& AddFrame(const QuicFrame& frame, char* buffer);
+  const QuicFrame& AddFrame(const QuicFrame& frame, UniqueStreamBuffer buffer);
   // Removes all stream frames associated with |stream_id|.
   void RemoveFramesForStream(QuicStreamId stream_id);
 
@@ -1132,6 +1138,10 @@ class NET_EXPORT_PRIVATE RetransmittableFrames {
   IsHandshake has_crypto_handshake_;
   bool needs_padding_;
   // Data referenced by the StringPiece of a QuicStreamFrame.
+  //
+  // TODO(rtenneti): Change const char* to UniqueStreamBuffer once chrome has
+  // c++11 library support.
+  // std::vector<UniqueStreamBuffer> stream_data_;
   std::vector<const char*> stream_data_;
 
   DISALLOW_COPY_AND_ASSIGN(RetransmittableFrames);

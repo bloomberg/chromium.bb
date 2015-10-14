@@ -89,7 +89,7 @@ class NET_EXPORT_PRIVATE QuicPacketCreator {
                            QuicStreamOffset offset,
                            bool fin,
                            QuicFrame* frame,
-                           scoped_ptr<char[]>* buffer);
+                           UniqueStreamBuffer* buffer);
 
   // Serializes all frames into a single packet. All frames must fit into a
   // single packet. Also, sets the entropy hash of the serialized packet to a
@@ -151,13 +151,12 @@ class NET_EXPORT_PRIVATE QuicPacketCreator {
   // Returns false if the frame doesn't fit into the current packet.
   bool AddSavedFrame(const QuicFrame& frame);
 
-  // Identical to AddSavedFrame, but takes ownership of the buffer if it returns
-  // true.
-  bool AddSavedFrame(const QuicFrame& frame, char* buffer);
+  // Identical to AddSavedFrame, but takes ownership of the buffer.
+  bool AddSavedFrame(const QuicFrame& frame, UniqueStreamBuffer buffer);
 
-  // Identical to AddSavedFrame, but takes ownership of the buffer if it returns
-  // true, and allows to cause the packet to be padded.
-  bool AddPaddedSavedFrame(const QuicFrame& frame, char* buffer);
+  // Identical to AddSavedFrame, but takes ownership of the buffer, and allows
+  // to cause the packet to be padded.
+  bool AddPaddedSavedFrame(const QuicFrame& frame, UniqueStreamBuffer buffer);
 
   // Serializes all frames which have been added and adds any which should be
   // retransmitted to |retransmittable_frames| if it's not nullptr. All frames
@@ -264,7 +263,7 @@ class NET_EXPORT_PRIVATE QuicPacketCreator {
   bool AddFrame(const QuicFrame& frame,
                 bool save_retransmittable_frames,
                 bool needs_padding,
-                char* buffer);
+                UniqueStreamBuffer buffer);
 
   // Adds a padding frame to the current packet only if the current packet
   // contains a handshake message, and there is sufficient room to fit a

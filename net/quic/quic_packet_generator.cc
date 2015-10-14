@@ -168,7 +168,7 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(
   while (delegate_->ShouldGeneratePacket(
       HAS_RETRANSMITTABLE_DATA, has_handshake ? IS_HANDSHAKE : NOT_HANDSHAKE)) {
     QuicFrame frame;
-    scoped_ptr<char[]> buffer;
+    UniqueStreamBuffer buffer;
     size_t bytes_consumed = packet_creator_.CreateStreamFrame(
         id, iov, total_bytes_consumed, offset + total_bytes_consumed, fin,
         &frame, &buffer);
@@ -179,7 +179,7 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(
       ack_notifiers_.push_back(notifier);
     }
 
-    if (!AddFrame(frame, buffer.get(), has_handshake)) {
+    if (!AddFrame(frame, buffer.Pass(), has_handshake)) {
       LOG(DFATAL) << "Failed to add stream frame.";
       // Inability to add a STREAM frame creates an unrecoverable hole in a
       // the stream, so it's best to close the connection.
@@ -187,8 +187,6 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(
       delete notifier;
       return QuicConsumedData(0, false);
     }
-    // When AddFrame succeeds, it takes ownership of the buffer.
-    ignore_result(buffer.release());
 
     total_bytes_consumed += bytes_consumed;
     fin_consumed = fin && total_bytes_consumed == iov.total_length;
@@ -442,11 +440,11 @@ bool QuicPacketGenerator::AddNextPendingFrame() {
 }
 
 bool QuicPacketGenerator::AddFrame(const QuicFrame& frame,
-                                   char* buffer,
+                                   UniqueStreamBuffer buffer,
                                    bool needs_padding) {
   bool success = needs_padding
-                     ? packet_creator_.AddPaddedSavedFrame(frame, buffer)
-                     : packet_creator_.AddSavedFrame(frame, buffer);
+                     ? packet_creator_.AddPaddedSavedFrame(frame, buffer.Pass())
+                     : packet_creator_.AddSavedFrame(frame, buffer.Pass());
   if (success && debug_delegate_) {
     debug_delegate_->OnFrameAddedToPacket(frame);
   }
