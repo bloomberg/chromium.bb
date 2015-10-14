@@ -135,8 +135,11 @@ class TestJar(object):
         key = filters[0]
         value_list = filters[1].split(',')
         for value in value_list:
-          if key in annotations and value == annotations[key]:
-            return True
+          if key in annotations and annotations[key]['value']:
+            annotation_value = annotations[key]['value']
+            if ((isinstance(annotation_value, list) and
+                 value in annotation_value) or value == annotation_value):
+              return True
       elif annotation_filter in annotations:
         return True
     return False
