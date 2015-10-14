@@ -4,6 +4,7 @@
 
 #include "mandoline/ui/aura/native_widget_view_manager.h"
 
+#include "components/mus/public/cpp/view.h"
 #include "mandoline/ui/aura/input_method_mandoline.h"
 #include "mandoline/ui/aura/window_tree_host_mojo.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
@@ -33,6 +34,61 @@ class FocusRulesImpl : public wm::BaseFocusRules {
   DISALLOW_COPY_AND_ASSIGN(FocusRulesImpl);
 };
 
+class NativeWidgetViewObserver : public mus::ViewObserver {
+ public:
+  NativeWidgetViewObserver(NativeWidgetViewManager* view_manager)
+      : view_manager_(view_manager) {
+    view_manager_->view_->AddObserver(this);
+  }
+
+  ~NativeWidgetViewObserver() override {
+    if (view_manager_->view_)
+      view_manager_->view_->RemoveObserver(this);
+  }
+
+ private:
+  // ViewObserver:
+  void OnViewDestroyed(mus::View* view) override {
+    DCHECK_EQ(view, view_manager_->view_);
+    view->RemoveObserver(this);
+    view_manager_->view_ = nullptr;
+    // TODO(sky): WindowTreeHostMojo assumes the View outlives it.
+    // NativeWidgetViewObserver needs to deal, likely by deleting this.
+  }
+
+  void OnViewBoundsChanged(mus::View* view,
+                           const mojo::Rect& old_bounds,
+                           const mojo::Rect& new_bounds) override {
+    gfx::Rect view_rect = view->bounds().To<gfx::Rect>();
+    view_manager_->SetBounds(gfx::Rect(view_rect.size()));
+  }
+
+  void OnViewFocusChanged(mus::View* gained_focus,
+                          mus::View* lost_focus) override {
+    if (gained_focus == view_manager_->view_)
+      view_manager_->window_tree_host_->GetInputMethod()->OnFocus();
+    else if (lost_focus == view_manager_->view_)
+      view_manager_->window_tree_host_->GetInputMethod()->OnBlur();
+  }
+
+  void OnViewInputEvent(mus::View* view, const mojo::EventPtr& event) override {
+    scoped_ptr<ui::Event> ui_event(event.To<scoped_ptr<ui::Event>>());
+    if (!ui_event)
+      return;
+
+    if (ui_event->IsKeyEvent()) {
+      view_manager_->window_tree_host_->GetInputMethod()->DispatchKeyEvent(
+          static_cast<ui::KeyEvent*>(ui_event.get()));
+    } else {
+      view_manager_->window_tree_host_->SendEventToProcessor(ui_event.get());
+    }
+  }
+
+  NativeWidgetViewManager* const view_manager_;
+
+  DISALLOW_COPY_AND_ASSIGN(NativeWidgetViewObserver);
+};
+
 }  // namespace
 
 NativeWidgetViewManager::NativeWidgetViewManager(
@@ -40,7 +96,6 @@ NativeWidgetViewManager::NativeWidgetViewManager(
     mojo::Shell* shell,
     mus::View* view)
     : NativeWidgetAura(delegate), view_(view) {
-  view_->AddObserver(this);
   window_tree_host_.reset(new WindowTreeHostMojo(shell, view_));
   window_tree_host_->InitHost();
 
@@ -54,12 +109,11 @@ NativeWidgetViewManager::NativeWidgetViewManager(
 
   capture_client_.reset(
       new aura::client::DefaultCaptureClient(window_tree_host_->window()));
+
+  view_observer_.reset(new NativeWidgetViewObserver(this));
 }
 
-NativeWidgetViewManager::~NativeWidgetViewManager() {
-  if (view_)
-    view_->RemoveObserver(this);
-}
+NativeWidgetViewManager::~NativeWidgetViewManager() {}
 
 void NativeWidgetViewManager::InitNativeWidget(
     const views::Widget::InitParams& in_params) {
@@ -74,44 +128,6 @@ void NativeWidgetViewManager::OnWindowVisibilityChanged(aura::Window* window,
   // NOTE: We could also update aura::Window's visibility when the View's
   // visibility changes, but this code isn't going to be around for very long so
   // I'm not bothering.
-}
-
-void NativeWidgetViewManager::OnViewDestroyed(mus::View* view) {
-  DCHECK_EQ(view, view_);
-  view->RemoveObserver(this);
-  view_ = NULL;
-  // TODO(sky): WindowTreeHostMojo assumes the View outlives it.
-  // NativeWidgetViewManager needs to deal, likely by deleting this.
-}
-
-void NativeWidgetViewManager::OnViewBoundsChanged(
-    mus::View* view,
-    const mojo::Rect& old_bounds,
-    const mojo::Rect& new_bounds) {
-  gfx::Rect view_rect = view->bounds().To<gfx::Rect>();
-  GetWidget()->SetBounds(gfx::Rect(view_rect.size()));
-}
-
-void NativeWidgetViewManager::OnViewFocusChanged(mus::View* gained_focus,
-                                                 mus::View* lost_focus) {
-  if (gained_focus == view_)
-    window_tree_host_->GetInputMethod()->OnFocus();
-  else if (lost_focus == view_)
-    window_tree_host_->GetInputMethod()->OnBlur();
-}
-
-void NativeWidgetViewManager::OnViewInputEvent(mus::View* view,
-                                               const mojo::EventPtr& event) {
-  scoped_ptr<ui::Event> ui_event(event.To<scoped_ptr<ui::Event>>());
-  if (!ui_event)
-    return;
-
-  if (ui_event->IsKeyEvent()) {
-    window_tree_host_->GetInputMethod()->DispatchKeyEvent(
-        static_cast<ui::KeyEvent*>(ui_event.get()));
-  } else {
-    window_tree_host_->SendEventToProcessor(ui_event.get());
-  }
 }
 
 }  // namespace mandoline

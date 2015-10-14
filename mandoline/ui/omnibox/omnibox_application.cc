@@ -6,6 +6,7 @@
 
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/mus/public/cpp/view.h"
 #include "components/mus/public/cpp/view_tree_connection.h"
 #include "components/mus/public/cpp/view_tree_delegate.h"
 #include "components/url_formatter/url_fixer.h"
