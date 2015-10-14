@@ -5,9 +5,7 @@
 # GYP: //tools/android/forwarder2/forwarder.gyp:forwarder2
 group("forwarder2") {
   data_deps = [
-    ":host_forwarder($host_toolchain)",
     ":host_forwarder_copy($host_toolchain)",
-    ":device_forwarder($default_toolchain)",
     ":device_forwarder_prepare_dist($default_toolchain)",
   ]
 }
@@ -45,7 +43,9 @@ if (current_toolchain == default_toolchain) {
       "//build/config/sanitizers:deps",
       "//tools/android/common",
     ]
-    data_deps = [ "//build/android/pylib/device/commands" ]
+    data_deps = [
+      "//build/android/pylib/device/commands",
+    ]
   }
 
   # GYP: //tools/android/forwarder2/forwarder.gyp:forwarder2
@@ -90,15 +90,25 @@ if (current_toolchain != default_toolchain) {
   }
 
   # GYP: //tools/android/forwarder2/forwarder.gyp:forwarder2
-  copy("host_forwarder_copy") {
+  action("host_forwarder_copy") {
+    # Symlink rather than copy. When copied and using a component build, it
+    # fails to find libbase.so (since it's actually at clang_x64/libbase.so).
+    script = "//build/symlink.py"
+    _src = "$root_out_dir/host_forwarder"
+    _target = "$root_build_dir/host_forwarder"
     sources = [
-      "$root_out_dir/host_forwarder",
+      _src,
     ]
     outputs = [
-      "$root_build_dir/host_forwarder",
+      _target,
     ]
     deps = [
       ":host_forwarder",
+    ]
+    args = [
+      "-f",
+      rebase_path(_src, root_build_dir),
+      rebase_path(_target, root_build_dir),
     ]
   }
 }
