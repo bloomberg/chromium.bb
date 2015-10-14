@@ -298,26 +298,4 @@ SkCanvas* CreatePlatformCanvas(int width, int height, bool is_opaque,
   return CreateCanvas(dev, failureType);
 }
 
-// Port of PlatformBitmap to mac
-
-PlatformBitmap::~PlatformBitmap() {
-  if (surface_)
-    CGContextRelease(surface_);
-}
-
-bool PlatformBitmap::Allocate(int width, int height, bool is_opaque) {
-  if (RasterDeviceTooBigToAllocate(width, height))
-    return false;
-    
-  if (!bitmap_.tryAllocN32Pixels(width, height, is_opaque))
-    return false;
-
-  if (!is_opaque)
-    bitmap_.eraseColor(0);
-
-  surface_ = CGContextForData(bitmap_.getPixels(), bitmap_.width(),
-                              bitmap_.height());
-  return true;
-}
-
 }  // namespace skia

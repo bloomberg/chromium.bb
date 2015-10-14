@@ -154,34 +154,6 @@ class SK_API ScopedPlatformPaint {
   ScopedPlatformPaint& operator=(const ScopedPlatformPaint&);
 };
 
-// PlatformBitmap holds a PlatformSurface that can also be used as an SkBitmap.
-class SK_API PlatformBitmap {
- public:
-  PlatformBitmap();
-  ~PlatformBitmap();
-
-  // Returns true if the bitmap was able to allocate its surface.
-  bool Allocate(int width, int height, bool is_opaque);
-
-  // Returns the platform surface, or 0 if Allocate() did not return true.
-  PlatformSurface GetSurface() { return surface_; }
-
-  // Return the skia bitmap, which will be empty if Allocate() did not
-  // return true.
-  //
-  // The resulting SkBitmap holds a refcount on the underlying platform surface,
-  // so the surface will remain allocated so long as the SkBitmap or its copies
-  // stay around.
-  const SkBitmap& GetBitmap() { return bitmap_; }
-
- private:
-  SkBitmap bitmap_;
-  PlatformSurface surface_;  // initialized to 0
-  intptr_t platform_extra_;  // platform specific, initialized to 0
-
-  DISALLOW_COPY_AND_ASSIGN(PlatformBitmap);
-};
-
 }  // namespace skia
 
 #endif  // SKIA_EXT_PLATFORM_CANVAS_H_

@@ -18,12 +18,6 @@ namespace skia {
 // format that Skia supports and can then use this to draw ClearType into, etc.
 // This pixel data is provided to the bitmap that the device contains so that it
 // can be shared.
-//
-// The GDI bitmap created for drawing is actually owned by a
-// PlatformBitmapPixelRef, and stored in an SkBitmap via the normal skia
-// SkPixelRef refcounting mechanism. In this way, the GDI bitmap can outlive
-// the device created to draw into it. So it is safe to call accessBitmap() on
-// the device, and retain the returned SkBitmap.
 class SK_API BitmapPlatformDevice : public SkBitmapDevice, public PlatformDevice {
  public:
   // Factory function. is_opaque should be set if the caller knows the bitmap

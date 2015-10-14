@@ -275,15 +275,13 @@ class CaptureTestRenderViewHost : public TestRenderViewHost {
     gfx::Size size = controller_->GetCopyResultSize();
     SkColor color = controller_->GetSolidColor();
 
-    // Although it's not necessary, use a PlatformBitmap here (instead of a
-    // regular SkBitmap) to exercise possible threading issues.
-    skia::PlatformBitmap output;
-    EXPECT_TRUE(output.Allocate(size.width(), size.height(), false));
+    SkBitmap output;
+    EXPECT_TRUE(output.tryAllocN32Pixels(size.width(), size.height()));
     {
-      SkAutoLockPixels locker(output.GetBitmap());
-      output.GetBitmap().eraseColor(color);
+      SkAutoLockPixels locker(output);
+      output.eraseColor(color);
     }
-    callback.Run(output.GetBitmap(), content::READBACK_SUCCESS);
+    callback.Run(output, content::READBACK_SUCCESS);
     controller_->SignalCopy();
   }
 

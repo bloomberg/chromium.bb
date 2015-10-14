@@ -64,17 +64,4 @@ SkCanvas* CreatePlatformCanvas(int width, int height, bool is_opaque,
   return CreateCanvas(dev, failureType);
 }
 
-// Port of PlatformBitmap to android
-PlatformBitmap::~PlatformBitmap() {
-  // Nothing to do.
-}
-
-bool PlatformBitmap::Allocate(int width, int height, bool is_opaque) {
-  if (!bitmap_.tryAllocN32Pixels(width, height, is_opaque))
-    return false;
-
-  surface_ = bitmap_.getPixels();
-  return true;
-}
-
 }  // namespace skia

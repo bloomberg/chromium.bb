@@ -58,6 +58,4 @@ SkCanvas* CreateCanvas(const skia::RefPtr<SkBaseDevice>& device, OnFailureType f
   return new SkCanvas(device.get());
 }
 
-PlatformBitmap::PlatformBitmap() : surface_(0), platform_extra_(0) {}
-
 }  // namespace skia

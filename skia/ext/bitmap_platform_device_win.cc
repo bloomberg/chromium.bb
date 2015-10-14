@@ -317,35 +317,4 @@ SkCanvas* CreatePlatformCanvas(int width,
   return CreateCanvas(dev, failureType);
 }
 
-// Port of PlatformBitmap to win
-
-PlatformBitmap::~PlatformBitmap() {
-  if (surface_) {
-    if (platform_extra_)
-      SelectObject(surface_, reinterpret_cast<HGDIOBJ>(platform_extra_));
-    DeleteDC(surface_);
-  }
-}
-
-bool PlatformBitmap::Allocate(int width, int height, bool is_opaque) {
-  void* data;
-  HBITMAP hbitmap = CreateHBitmap(width, height, is_opaque, 0, &data);
-  if (!hbitmap)
-    return false;
-
-  surface_ = CreateCompatibleDC(NULL);
-  InitializeDC(surface_);
-  // When the memory DC is created, its display surface is exactly one
-  // monochrome pixel wide and one monochrome pixel high. Save this object
-  // off, we'll restore it just before deleting the memory DC.
-  HGDIOBJ stock_bitmap = SelectObject(surface_, hbitmap);
-  platform_extra_ = reinterpret_cast<intptr_t>(stock_bitmap);
-
-  if (!InstallHBitmapPixels(&bitmap_, width, height, is_opaque, data, hbitmap))
-    return false;
-  bitmap_.lockPixels();
-
-  return true;
-}
-
 }  // namespace skia
