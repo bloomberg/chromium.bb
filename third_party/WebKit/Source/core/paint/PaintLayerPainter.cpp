@@ -59,7 +59,11 @@ static ShouldRespectOverflowClip shouldRespectOverflowClip(PaintLayerFlags paint
 PaintLayerPainter::PaintResult PaintLayerPainter::paintLayer(GraphicsContext* context, const PaintLayerPaintingInfo& paintingInfo, PaintLayerFlags paintFlags)
 {
     PaintResult result = paintLayerInternal(context, paintingInfo, paintFlags);
-    m_paintLayer.clearNeedsRepaint();
+    // TODO(wangxianzhu): We may paint a layer multiple times with different flags.
+    // The following ensures the flag is only cleared once after the last painting.
+    // This is fragile but is temporary for spv1.
+    if ((paintFlags & PaintLayerPaintingCompositingForegroundPhase) || m_paintLayer.layoutObject()->isLayoutView())
+        m_paintLayer.clearNeedsRepaint();
     return result;
 }
 
@@ -189,7 +193,11 @@ private:
 PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerContents(GraphicsContext* context, const PaintLayerPaintingInfo& paintingInfo, PaintLayerFlags paintFlags, FragmentPolicy fragmentPolicy)
 {
     PaintResult result = paintLayerContentsInternal(context, paintingInfo, paintFlags, fragmentPolicy);
-    m_paintLayer.clearNeedsRepaint();
+    // TODO(wangxianzhu): We may paint a layer multiple times with different flags.
+    // The following ensures the flag is only cleared once after the last painting.
+    // This is fragile but is temporary for spv1.
+    if (paintFlags & PaintLayerPaintingCompositingForegroundPhase)
+        m_paintLayer.clearNeedsRepaint();
     return result;
 }
 

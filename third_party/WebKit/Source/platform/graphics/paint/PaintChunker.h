@@ -27,6 +27,8 @@ public:
     void incrementDisplayItemIndex();
     void decrementDisplayItemIndex();
 
+    void clear();
+
     // Releases the generated paint chunk list and resets the state of this
     // object.
     Vector<PaintChunk> releasePaintChunks();

@@ -39,6 +39,7 @@
 #include "platform/graphics/ImageOrientation.h"
 #include "platform/graphics/PaintInvalidationReason.h"
 #include "platform/graphics/filters/FilterOperations.h"
+#include "platform/graphics/paint/CachedDisplayItem.h"
 #include "platform/graphics/paint/DisplayItemClient.h"
 #include "platform/graphics/paint/PaintController.h"
 #include "platform/transforms/TransformationMatrix.h"
@@ -191,10 +192,6 @@ public:
 
     void setContentsNeedsDisplay();
 
-    bool needsDisplay() const;
-    // Commites new display items only if m_needsDisplay is true.
-    bool commitIfNeeded();
-
     void invalidateDisplayItemClient(const DisplayItemClientWrapper&, PaintInvalidationReason, const IntRect& previousPaintInvalidationRect, const IntRect& newPaintInvalidationRect);
 
     // Set that the position/size of the contents (image or video).
@@ -278,11 +275,6 @@ protected:
     friend class FakeGraphicsLayerFactory;
 
 private:
-    // Sets m_needsDisplay, but without invalidating the PaintController. This allows us to test
-    // scenarios where paint needs to be re-calculated, but no DisplayItemClients were invalidated
-    // (such as re-paints due to change of interest rect).
-    void setNeedsDisplayWithoutInvalidateForTesting();
-
     // Adds a child without calling updateChildList(), so that adding children
     // can be batched before updating.
     void addChildInternal(GraphicsLayer*);
@@ -336,8 +328,6 @@ private:
     bool m_hasScrollParent : 1;
     bool m_hasClipParent : 1;
 
-    bool m_needsDisplay : 1;
-
     bool m_textPainted : 1;
 
     GraphicsLayerPaintingPhase m_paintingPhase;
@@ -376,8 +366,6 @@ private:
     int m_3dRenderingContext;
 
     OwnPtr<PaintController> m_paintController;
-
-    friend class PaintControllerPaintTestForSlimmingPaintV2;
 };
 
 } // namespace blink

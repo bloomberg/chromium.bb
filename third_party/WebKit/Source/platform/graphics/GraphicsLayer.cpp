@@ -101,7 +101,6 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient* client)
     , m_isRootForIsolatedGroup(false)
     , m_hasScrollParent(false)
     , m_hasClipParent(false)
-    , m_needsDisplay(true)
     , m_textPainted(false)
     , m_paintingPhase(GraphicsLayerPaintAllWithOverflowClip)
     , m_parent(0)
@@ -981,25 +980,12 @@ void GraphicsLayer::setContentsNeedsDisplay()
     }
 }
 
-void GraphicsLayer::setNeedsDisplayWithoutInvalidateForTesting()
-{
-    ASSERT(RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled());
-    if (!drawsContent())
-        return;
-
-    if (RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled())
-        m_needsDisplay = true;
-}
-
 void GraphicsLayer::setNeedsDisplay()
 {
     if (!drawsContent())
         return;
 
     // TODO(chrishtr): stop invalidating the rects once FrameView::paintRecursively does so.
-    if (RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled())
-        m_needsDisplay = true;
-
     m_layer->layer()->invalidate();
     if (isTrackingPaintInvalidations())
         trackPaintInvalidationRect(FloatRect(FloatPoint(), m_size));
@@ -1011,30 +997,10 @@ void GraphicsLayer::setNeedsDisplay()
         trackPaintInvalidationObject("##ALL##");
 }
 
-bool GraphicsLayer::needsDisplay() const
-{
-    ASSERT(RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled());
-    return m_needsDisplay;
-}
-
-bool GraphicsLayer::commitIfNeeded()
-{
-    ASSERT(RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled());
-    if (m_needsDisplay) {
-        paintController()->commitNewDisplayItems(this);
-        m_needsDisplay = false;
-        return true;
-    }
-    return false;
-}
-
 void GraphicsLayer::setNeedsDisplayInRect(const IntRect& rect, PaintInvalidationReason invalidationReason)
 {
     if (!drawsContent())
         return;
-
-    if (RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled())
-        m_needsDisplay = true;
 
     m_layer->layer()->invalidateRect(rect);
     if (firstPaintInvalidationTrackingEnabled())
@@ -1047,7 +1013,6 @@ void GraphicsLayer::setNeedsDisplayInRect(const IntRect& rect, PaintInvalidation
 
 void GraphicsLayer::invalidateDisplayItemClient(const DisplayItemClientWrapper& displayItemClient, PaintInvalidationReason paintInvalidationReason, const IntRect& previousPaintInvalidationRect, const IntRect& newPaintInvalidationRect)
 {
-    m_needsDisplay = true;
     paintController()->invalidate(displayItemClient, paintInvalidationReason, previousPaintInvalidationRect, newPaintInvalidationRect);
     if (isTrackingPaintInvalidations())
         trackPaintInvalidationObject(displayItemClient.debugName());

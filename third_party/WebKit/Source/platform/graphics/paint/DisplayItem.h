@@ -176,6 +176,8 @@ public:
         CachedSubsequenceFirst,
         CachedSubsequenceLast = CachedSubsequenceFirst + SubsequenceLast - SubsequenceFirst,
 
+        CachedDisplayItemList,
+
         UninitializedType,
         TypeLast = UninitializedType
     };
@@ -320,7 +322,7 @@ public:
     DEFINE_CATEGORY_METHODS(CachedSubsequence)
     DEFINE_CONVERSION_METHODS(Subsequence, subsequence, CachedSubsequence, cachedSubsequence)
 
-    static bool isCachedType(Type type) { return isCachedDrawingType(type) || isCachedSubsequenceType(type); }
+    static bool isCachedType(Type type) { return isCachedDrawingType(type) || isCachedSubsequenceType(type) || type == CachedDisplayItemList; }
     bool isCached() const { return isCachedType(m_type); }
     static bool isCacheableType(Type type) { return isDrawingType(type) || isSubsequenceType(type); }
     bool isCacheable() const { return !skippedCache() && isCacheableType(m_type); }

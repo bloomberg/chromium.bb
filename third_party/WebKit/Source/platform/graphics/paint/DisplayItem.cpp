@@ -211,6 +211,7 @@ WTF::String DisplayItem::typeAsDebugString(Type type)
         DEBUG_STRING_CASE(EndFixedPosition);
         DEBUG_STRING_CASE(BeginFixedPositionContainer);
         DEBUG_STRING_CASE(EndFixedPositionContainer);
+        DEBUG_STRING_CASE(CachedDisplayItemList);
         DEBUG_STRING_CASE(UninitializedType);
         DEFAULT_CASE;
     }

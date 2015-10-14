@@ -4,6 +4,7 @@
 
 #include "config.h"
 
+#include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/paint/PaintControllerPaintTest.h"
 #include "platform/graphics/GraphicsContext.h"
 
@@ -364,7 +365,7 @@ TEST_F(PaintLayerPainterTestForSlimmingPaintV2, CachedSubsequence)
         TestDisplayItem(rootLayer, endSubsequenceType));
 
     toHTMLElement(content1.node())->setAttribute(HTMLNames::styleAttr, "position: absolute; width: 100px; height: 100px; background-color: green");
-    updateLifecyclePhasesToPaintClean(LayoutRect(LayoutRect::infiniteIntRect()));
+    updateLifecyclePhasesToPaintClean();
 
     EXPECT_DISPLAY_LIST(rootPaintController().newDisplayItems(), 11,
         TestDisplayItem(layoutView(), cachedBackgroundType),
@@ -396,12 +397,10 @@ TEST_F(PaintLayerPainterTestForSlimmingPaintV2, CachedSubsequence)
         TestDisplayItem(htmlLayer, endSubsequenceType),
         TestDisplayItem(rootLayer, endSubsequenceType));
 
-    // Repeated painting should just generate the root cached subsequence.
-    setNeedsDisplayWithoutInvalidationForRoot();
+    // Repeated painting should just generate a CachedDisplayItemList item.
     updateLifecyclePhasesToPaintClean();
-    EXPECT_DISPLAY_LIST(rootPaintController().newDisplayItems(), 2,
-        TestDisplayItem(layoutView(), cachedBackgroundType),
-        TestDisplayItem(rootLayer, cachedSubsequenceType));
+    EXPECT_DISPLAY_LIST(rootPaintController().newDisplayItems(), 1,
+        TestDisplayItem(*rootLayer.compositedLayerMapping(), DisplayItem::CachedDisplayItemList));
 
     compositeForSlimmingPaintV2();
 
@@ -434,7 +433,7 @@ TEST_F(PaintLayerPainterTestForSlimmingPaintV2, CachedSubsequenceOnInterestRectC
         "<div id='container3' style='position: absolute; z-index: 2; left: 300px; top: 0; width: 200px; height: 200px; background-color: blue'>"
         "  <div id='content3' style='position: absolute; width: 200px; height: 200px; background-color: green'></div>"
         "</div>");
-    setNeedsDisplayForRoot();
+    rootPaintController().invalidateAll();
 
     PaintLayer& rootLayer = *layoutView().layer();
     PaintLayer& htmlLayer = *toLayoutBoxModelObject(document().documentElement()->layoutObject())->layer();
@@ -474,14 +473,13 @@ TEST_F(PaintLayerPainterTestForSlimmingPaintV2, CachedSubsequenceOnInterestRectC
         TestDisplayItem(htmlLayer, endSubsequenceType),
         TestDisplayItem(rootLayer, endSubsequenceType));
 
-    setNeedsDisplayWithoutInvalidationForRoot();
-
     // Container1 becomes partly in the interest rect, but uses cached subsequence
     // because it was fully painted before;
     // Container2's intersection with the interest rect changes;
     // Content2b is out of the interest rect and outputs nothing;
     // Container3 becomes out of the interest rect and outputs nothing.
-    updateLifecyclePhasesToPaintClean(LayoutRect(0, 100, 300, 300));
+    LayoutRect newInterestRect(0, 100, 300, 300);
+    updateLifecyclePhasesToPaintClean(&newInterestRect);
 
     EXPECT_DISPLAY_LIST(rootPaintController().newDisplayItems(), 11,
         TestDisplayItem(layoutView(), cachedBackgroundType),

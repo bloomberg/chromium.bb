@@ -276,6 +276,16 @@ void PaintController::commitNewDisplayItems(GraphicsLayer* graphicsLayer)
         "num_non_cached_new_items", (int)m_newDisplayItems.size() - m_numCachedItems);
 
     if (RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled()) {
+        if (!m_newDisplayItems.isEmpty() && m_newDisplayItems.last().type() == DisplayItem::CachedDisplayItemList) {
+            // The whole display item list is cached.
+            ASSERT(m_newDisplayItems.size() == 1
+                || (m_newDisplayItems.size() == 2 && m_newDisplayItems[0].type() == DisplayItem::DebugRedFill));
+            ASSERT(m_invalidations.isEmpty());
+            ASSERT(m_clientsCheckedPaintInvalidation.isEmpty());
+            m_newDisplayItems.clear();
+            m_newPaintChunks.clear();
+            return;
+        }
         for (const auto& invalidation : m_invalidations)
             graphicsLayer->setNeedsDisplayInRect(invalidation.rect, invalidation.invalidationReason);
         m_invalidations.clear();

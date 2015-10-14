@@ -2481,18 +2481,13 @@ void FrameView::synchronizedPaintRecursively(GraphicsLayer* graphicsLayer, const
     GraphicsContext context(graphicsLayer->paintController());
 
     // TODO(chrishtr): fix unit tests to not inject one-off interest rects.
-    if (interestRect) {
-        if (graphicsLayer->needsDisplay()) {
-            graphicsLayer->paint(context, roundedIntRect(*interestRect));
-
-            if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled())
-                graphicsLayer->commitIfNeeded();
-        }
-    } else {
+    if (interestRect)
+        graphicsLayer->paint(context, roundedIntRect(*interestRect));
+    else
         graphicsLayer->paintIfNeeded(context);
-        if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled())
-            graphicsLayer->commitIfNeeded();
-    }
+
+    if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+        graphicsLayer->paintController()->commitNewDisplayItems(graphicsLayer);
 
     for (auto& child : graphicsLayer->children()) {
         if (child)
@@ -2505,20 +2500,17 @@ void FrameView::compositeForSlimmingPaintV2()
     ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
     ASSERT(frame() == page()->mainFrame() || (!frame().tree().parent()->isLocalFrame()));
 
-    GraphicsLayer* rootGraphicsLayer = layoutView()->layer()->graphicsLayerBacking();
-
-    // Detached frames can have no root graphics layer.
-    if (!rootGraphicsLayer)
-        return;
-
     lifecycle().advanceTo(DocumentLifecycle::InCompositingForSlimmingPaintV2);
 
-    rootGraphicsLayer->commitIfNeeded();
+    // Detached frames can have no root graphics layer.
+    if (GraphicsLayer* rootGraphicsLayer = layoutView()->layer()->graphicsLayerBacking()) {
+        rootGraphicsLayer->paintController()->commitNewDisplayItems(rootGraphicsLayer);
 
-    DisplayListCompositingBuilder compositingBuilder(*rootGraphicsLayer->paintController());
-    OwnPtr<CompositedDisplayList> compositedDisplayList = adoptPtr(new CompositedDisplayList());
-    compositingBuilder.build(*compositedDisplayList);
-    page()->setCompositedDisplayList(compositedDisplayList.release());
+        DisplayListCompositingBuilder compositingBuilder(*rootGraphicsLayer->paintController());
+        OwnPtr<CompositedDisplayList> compositedDisplayList = adoptPtr(new CompositedDisplayList());
+        compositingBuilder.build(*compositedDisplayList);
+        page()->setCompositedDisplayList(compositedDisplayList.release());
+    }
 
     lifecycle().advanceTo(DocumentLifecycle::CompositingForSlimmingPaintV2Clean);
 }

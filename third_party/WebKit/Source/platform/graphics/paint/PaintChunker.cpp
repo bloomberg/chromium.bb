@@ -56,6 +56,12 @@ void PaintChunker::decrementDisplayItemIndex()
         m_chunks.removeLast();
 }
 
+void PaintChunker::clear()
+{
+    m_chunks.clear();
+    m_currentProperties = PaintChunkProperties();
+}
+
 Vector<PaintChunk> PaintChunker::releasePaintChunks()
 {
     Vector<PaintChunk> chunks;

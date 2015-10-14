@@ -2179,9 +2179,13 @@ IntRect CompositedLayerMapping::computeInterestRect(const GraphicsLayer* graphic
 
 void CompositedLayerMapping::paintContentsIfNeeded(const GraphicsLayer* graphicsLayer, GraphicsContext& context, GraphicsLayerPaintingPhase graphicsLayerPaintingPhase) const
 {
-    // TODO(chrishtr): paint if needsDisplay is true *or* the interest rect has changed sufficiently.
-    if (!graphicsLayer->needsDisplay())
+    ASSERT(RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled());
+
+    // TODO(chrishtr): Also paint if the interest rect has changed sufficiently.
+    if (!m_owningLayer.needsRepaint()) {
+        context.paintController()->createAndAppend<CachedDisplayItem>(*this, DisplayItem::CachedDisplayItemList);
         return;
+    }
 
     IntRect interestRect;
     if (graphicsLayer == m_graphicsLayer || graphicsLayer == m_squashingLayer)
@@ -2189,7 +2193,6 @@ void CompositedLayerMapping::paintContentsIfNeeded(const GraphicsLayer* graphics
     else
         interestRect = enclosingIntRect(FloatRect(FloatPoint(), graphicsLayer->size()));
 
-    ASSERT(RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled());
     paintContents(graphicsLayer, context, graphicsLayerPaintingPhase, interestRect);
 }
 
