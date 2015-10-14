@@ -196,6 +196,10 @@ public:
     // It is very likely you do not want to call this method.
     void setShouldDoFullPaintInvalidationForViewAndAllDescendants();
 
+    // The document scrollbar is always on the right, even in RTL. This is to prevent it from moving around on navigations.
+    // TODO(skobes): This is not quite the ideal behavior, see http://crbug.com/250514 and http://crbug.com/249860.
+    bool shouldPlaceBlockDirectionScrollbarOnLogicalLeft() const override { return false; }
+
 private:
     void mapLocalToContainer(const LayoutBoxModelObject* paintInvalidationContainer, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = nullptr, const PaintInvalidationState* = nullptr) const override;
 

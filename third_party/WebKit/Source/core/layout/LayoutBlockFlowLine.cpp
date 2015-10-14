@@ -530,7 +530,7 @@ void LayoutBlockFlow::updateLogicalWidthForAlignment(const ETextAlign& textAlign
             updateLogicalWidthForLeftAlignedBlock(style()->isLeftToRightDirection(), trailingSpaceRun, logicalLeft, totalLogicalWidth, availableLogicalWidth);
         break;
     }
-    if (style()->shouldPlaceBlockDirectionScrollbarOnLogicalLeft())
+    if (shouldPlaceBlockDirectionScrollbarOnLogicalLeft())
         logicalLeft += verticalScrollbarWidth();
 }
 

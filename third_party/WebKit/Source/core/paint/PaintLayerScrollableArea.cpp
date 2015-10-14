@@ -276,14 +276,14 @@ bool PaintLayerScrollableArea::isScrollCornerVisible() const
     return !scrollCornerRect().isEmpty();
 }
 
-static int cornerStart(const ComputedStyle& style, int minX, int maxX, int thickness)
+static int cornerStart(const LayoutBox& box, int minX, int maxX, int thickness)
 {
-    if (style.shouldPlaceBlockDirectionScrollbarOnLogicalLeft())
-        return minX + style.borderLeftWidth();
-    return maxX - thickness - style.borderRightWidth();
+    if (box.shouldPlaceBlockDirectionScrollbarOnLogicalLeft())
+        return minX + box.styleRef().borderLeftWidth();
+    return maxX - thickness - box.styleRef().borderRightWidth();
 }
 
-static IntRect cornerRect(const ComputedStyle& style, const Scrollbar* horizontalScrollbar, const Scrollbar* verticalScrollbar, const IntRect& bounds)
+static IntRect cornerRect(const LayoutBox& box, const Scrollbar* horizontalScrollbar, const Scrollbar* verticalScrollbar, const IntRect& bounds)
 {
     int horizontalThickness;
     int verticalThickness;
@@ -302,8 +302,8 @@ static IntRect cornerRect(const ComputedStyle& style, const Scrollbar* horizonta
         horizontalThickness = verticalScrollbar->width();
         verticalThickness = horizontalScrollbar->height();
     }
-    return IntRect(cornerStart(style, bounds.x(), bounds.maxX(), horizontalThickness),
-        bounds.maxY() - verticalThickness - style.borderBottomWidth(),
+    return IntRect(cornerStart(box, bounds.x(), bounds.maxX(), horizontalThickness),
+        bounds.maxY() - verticalThickness - box.styleRef().borderBottomWidth(),
         horizontalThickness, verticalThickness);
 }
 
@@ -318,7 +318,7 @@ IntRect PaintLayerScrollableArea::scrollCornerRect() const
     bool hasVerticalBar = verticalScrollbar();
     bool hasResizer = box().style()->resize() != RESIZE_NONE;
     if ((hasHorizontalBar && hasVerticalBar) || (hasResizer && (hasHorizontalBar || hasVerticalBar)))
-        return cornerRect(box().styleRef(), horizontalScrollbar(), verticalScrollbar(), box().pixelSnappedBorderBoxRect());
+        return cornerRect(box(), horizontalScrollbar(), verticalScrollbar(), box().pixelSnappedBorderBoxRect());
     return IntRect();
 }
 
@@ -585,7 +585,7 @@ bool PaintLayerScrollableArea::userInputScrollable(ScrollbarOrientation orientat
 
 bool PaintLayerScrollableArea::shouldPlaceVerticalScrollbarOnLeft() const
 {
-    return box().style()->shouldPlaceBlockDirectionScrollbarOnLogicalLeft();
+    return box().shouldPlaceBlockDirectionScrollbarOnLogicalLeft();
 }
 
 int PaintLayerScrollableArea::pageStep(ScrollbarOrientation orientation) const
@@ -633,7 +633,7 @@ void PaintLayerScrollableArea::computeScrollDimensions()
     m_overflowRect = box().layoutOverflowRect();
     box().flipForWritingMode(m_overflowRect);
 
-    int scrollableLeftOverflow = m_overflowRect.x() - box().borderLeft() - (box().style()->shouldPlaceBlockDirectionScrollbarOnLogicalLeft() ? box().verticalScrollbarWidth() : 0);
+    int scrollableLeftOverflow = m_overflowRect.x() - box().borderLeft() - (box().shouldPlaceBlockDirectionScrollbarOnLogicalLeft() ? box().verticalScrollbarWidth() : 0);
     int scrollableTopOverflow = m_overflowRect.y() - box().borderTop();
     setScrollOrigin(IntPoint(-scrollableLeftOverflow, -scrollableTopOverflow));
 }
@@ -951,7 +951,7 @@ IntRect PaintLayerScrollableArea::rectForVerticalScrollbar(const IntRect& border
 
 LayoutUnit PaintLayerScrollableArea::verticalScrollbarStart(int minX, int maxX) const
 {
-    if (box().style()->shouldPlaceBlockDirectionScrollbarOnLogicalLeft())
+    if (box().shouldPlaceBlockDirectionScrollbarOnLogicalLeft())
         return minX + box().borderLeft();
     return maxX - box().borderRight() - verticalScrollbar()->width();
 }
@@ -959,7 +959,7 @@ LayoutUnit PaintLayerScrollableArea::verticalScrollbarStart(int minX, int maxX) 
 LayoutUnit PaintLayerScrollableArea::horizontalScrollbarStart(int minX) const
 {
     int x = minX + box().borderLeft();
-    if (box().style()->shouldPlaceBlockDirectionScrollbarOnLogicalLeft())
+    if (box().shouldPlaceBlockDirectionScrollbarOnLogicalLeft())
         x += hasVerticalScrollbar() ? verticalScrollbar()->width() : resizerCornerRect(box().pixelSnappedBorderBoxRect(), ResizerForPointer).width();
     return x;
 }
@@ -1193,7 +1193,7 @@ IntRect PaintLayerScrollableArea::resizerCornerRect(const IntRect& bounds, Resiz
 {
     if (box().style()->resize() == RESIZE_NONE)
         return IntRect();
-    IntRect corner = cornerRect(box().styleRef(), horizontalScrollbar(), verticalScrollbar(), bounds);
+    IntRect corner = cornerRect(box(), horizontalScrollbar(), verticalScrollbar(), bounds);
 
     if (resizerHitTestType == ResizerForTouch) {
         // We make the resizer virtually larger for touch hit testing. With the
@@ -1281,7 +1281,7 @@ IntSize PaintLayerScrollableArea::offsetFromResizeCorner(const IntPoint& absolut
     // Currently the resize corner is either the bottom right corner or the bottom left corner.
     // FIXME: This assumes the location is 0, 0. Is this guaranteed to always be the case?
     IntSize elementSize = layer()->size();
-    if (box().style()->shouldPlaceBlockDirectionScrollbarOnLogicalLeft())
+    if (box().shouldPlaceBlockDirectionScrollbarOnLogicalLeft())
         elementSize.setWidth(0);
     IntPoint resizerPoint = IntPoint(elementSize);
     IntPoint localPoint = roundedIntPoint(box().absoluteToLocal(absolutePoint, UseTransforms));
@@ -1330,7 +1330,7 @@ void PaintLayerScrollableArea::resize(const PlatformEvent& evt, const LayoutSize
     element->setMinimumSizeForResizing(minimumSize);
 
     LayoutSize adjustedOldOffset = LayoutSize(oldOffset.width() / zoomFactor, oldOffset.height() / zoomFactor);
-    if (box().style()->shouldPlaceBlockDirectionScrollbarOnLogicalLeft()) {
+    if (box().shouldPlaceBlockDirectionScrollbarOnLogicalLeft()) {
         newOffset.setWidth(-newOffset.width());
         adjustedOldOffset.setWidth(-adjustedOldOffset.width());
     }

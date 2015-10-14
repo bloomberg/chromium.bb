@@ -72,7 +72,7 @@ void ScrollableAreaPainter::drawPlatformResizerImage(GraphicsContext* context, I
         cornerResizerSize = resizeCornerImage->size();
     }
 
-    if (scrollableArea().box().style()->shouldPlaceBlockDirectionScrollbarOnLogicalLeft()) {
+    if (scrollableArea().box().shouldPlaceBlockDirectionScrollbarOnLogicalLeft()) {
         context->save();
         context->translate(resizerCornerRect.x() + cornerResizerSize.width(), resizerCornerRect.y() + resizerCornerRect.height() - cornerResizerSize.height());
         context->scale(-1.0, 1.0);

@@ -1484,7 +1484,7 @@ LayoutRect LayoutBox::overflowClipRect(const LayoutPoint& location, OverlayScrol
 
 void LayoutBox::excludeScrollbars(LayoutRect& rect, OverlayScrollbarSizeRelevancy relevancy) const
 {
-    if (style()->shouldPlaceBlockDirectionScrollbarOnLogicalLeft())
+    if (shouldPlaceBlockDirectionScrollbarOnLogicalLeft())
         rect.move(layer()->scrollableArea()->verticalScrollbarWidth(relevancy), 0);
     rect.contract(layer()->scrollableArea()->verticalScrollbarWidth(relevancy), layer()->scrollableArea()->horizontalScrollbarHeight(relevancy));
 }
@@ -3271,7 +3271,7 @@ void LayoutBox::computePositionedLogicalWidthUsing(SizeType widthSizeType, Lengt
         }
     }
 
-    if (containerBlock->isBox() && toLayoutBox(containerBlock)->scrollsOverflowY() && containerBlock->style()->shouldPlaceBlockDirectionScrollbarOnLogicalLeft()) {
+    if (containerBlock->isBox() && toLayoutBox(containerBlock)->scrollsOverflowY() && toLayoutBox(containerBlock)->shouldPlaceBlockDirectionScrollbarOnLogicalLeft()) {
         logicalLeftValue = logicalLeftValue + toLayoutBox(containerBlock)->verticalScrollbarWidth();
     }
 
@@ -4526,7 +4526,7 @@ LayoutRect LayoutBox::noOverflowRect() const
 
     const int scrollBarWidth = verticalScrollbarWidth();
     const int scrollBarHeight = horizontalScrollbarHeight();
-    LayoutUnit left = borderLeft() + (style()->shouldPlaceBlockDirectionScrollbarOnLogicalLeft() ? scrollBarWidth : 0);
+    LayoutUnit left = borderLeft() + (shouldPlaceBlockDirectionScrollbarOnLogicalLeft() ? scrollBarWidth : 0);
     LayoutUnit top = borderTop();
     LayoutUnit right = borderRight();
     LayoutUnit bottom = borderBottom();
@@ -4541,7 +4541,7 @@ LayoutRect LayoutBox::noOverflowRect() const
     // FIXME: when the above mentioned bug is fixed, it should hopefully be possible to call
     // clientBoxRect() or paddingBoxRect() in this method, rather than fiddling with the edges on
     // our own.
-    if (style()->shouldPlaceBlockDirectionScrollbarOnLogicalLeft())
+    if (shouldPlaceBlockDirectionScrollbarOnLogicalLeft())
         rect.contract(0, scrollBarHeight);
     else
         rect.contract(scrollBarWidth, scrollBarHeight);
