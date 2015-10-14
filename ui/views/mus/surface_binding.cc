@@ -106,7 +106,7 @@ SurfaceBinding::PerConnectionState::CreateOutputSurface(mus::View* view) {
 SurfaceBinding::PerConnectionState::PerConnectionState(
     mojo::Shell* shell,
     mus::ViewTreeConnection* connection)
-    : shell_(shell) {}
+    : shell_(shell), connection_(connection) {}
 
 SurfaceBinding::PerConnectionState::~PerConnectionState() {
   ConnectionToStateMap* view_map = view_states.Pointer()->Get();
