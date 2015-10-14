@@ -241,9 +241,10 @@ const struct UmaEnumCommandIdPair {
     {66, -1, IDC_CONTENT_CONTEXT_LOAD_ORIGINAL_IMAGE},
     {67, -1, IDC_CONTENT_CONTEXT_FORCESAVEPASSWORD},
     {68, -1, IDC_ROUTE_MEDIA},
+    {69, -1, IDC_CONTENT_CONTEXT_COPYLINKTEXT},
     // Add new items here and use |enum_id| from the next line.
     // Also, add new items to RenderViewContextMenuItem enum in histograms.xml.
-    {69, -1, 0},  // Must be the last. Increment |enum_id| when new IDC
+    {70, -1, 0},  // Must be the last. Increment |enum_id| when new IDC
                   // was added.
 };
 
@@ -359,6 +360,11 @@ void WriteURLToClipboard(const GURL& url, const std::string& languages) {
 
   ui::ScopedClipboardWriter scw(ui::CLIPBOARD_TYPE_COPY_PASTE);
   scw.WriteURL(text);
+}
+
+void WriteTextToClipboard(const base::string16& text) {
+  ui::ScopedClipboardWriter scw(ui::CLIPBOARD_TYPE_COPY_PASTE);
+  scw.WriteText(text);
 }
 
 bool g_custom_id_ranges_initialized = false;
@@ -812,6 +818,11 @@ void RenderViewContextMenu::AppendLinkItems() {
       params_.link_url.SchemeIs(url::kMailToScheme) ?
           IDS_CONTENT_CONTEXT_COPYEMAILADDRESS :
           IDS_CONTENT_CONTEXT_COPYLINKLOCATION);
+
+  if (!params_.link_text.empty()) {
+    menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_COPYLINKTEXT,
+                                    IDS_CONTENT_CONTEXT_COPYLINKTEXT);
+  }
 }
 
 void RenderViewContextMenu::AppendImageItems() {
@@ -1212,6 +1223,9 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
     case IDC_CONTENT_CONTEXT_COPYLINKLOCATION:
       return params_.unfiltered_link_url.is_valid();
 
+    case IDC_CONTENT_CONTEXT_COPYLINKTEXT:
+      return !params_.link_text.empty();
+
     case IDC_CONTENT_CONTEXT_SAVELINKAS: {
       PrefService* local_state = g_browser_process->local_state();
       DCHECK(local_state);
@@ -1550,6 +1564,10 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
 
     case IDC_CONTENT_CONTEXT_COPYLINKLOCATION:
       WriteURLToClipboard(params_.unfiltered_link_url);
+      break;
+
+    case IDC_CONTENT_CONTEXT_COPYLINKTEXT:
+      WriteTextToClipboard(params_.link_text);
       break;
 
     case IDC_CONTENT_CONTEXT_COPYIMAGELOCATION:

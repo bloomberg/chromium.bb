@@ -51,15 +51,33 @@ class ContextMenuBrowserTest : public InProcessBrowserTest {
  public:
   ContextMenuBrowserTest() {}
 
-  TestRenderViewContextMenu* CreateContextMenu(
+ protected:
+  scoped_ptr<TestRenderViewContextMenu> CreateContextMenuMediaTypeNone(
       const GURL& unfiltered_url,
       const GURL& url,
+      const base::string16& link_text) {
+    return CreateContextMenu(unfiltered_url, url, link_text,
+                             blink::WebContextMenuData::MediaTypeNone);
+  }
+
+  scoped_ptr<TestRenderViewContextMenu> CreateContextMenuMediaTypeImage(
+      const GURL& url) {
+    return CreateContextMenu(GURL(), url, base::string16(),
+                             blink::WebContextMenuData::MediaTypeImage);
+  }
+
+ private:
+  scoped_ptr<TestRenderViewContextMenu> CreateContextMenu(
+      const GURL& unfiltered_url,
+      const GURL& url,
+      const base::string16& link_text,
       blink::WebContextMenuData::MediaType media_type) {
     content::ContextMenuParams params;
     params.media_type = media_type;
     params.unfiltered_link_url = unfiltered_url;
     params.link_url = url;
     params.src_url = url;
+    params.link_text = link_text;
     WebContents* web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
     params.page_url = web_contents->GetController().GetActiveEntry()->GetURL();
@@ -68,39 +86,34 @@ class ContextMenuBrowserTest : public InProcessBrowserTest {
     params.writing_direction_left_to_right = 0;
     params.writing_direction_right_to_left = 0;
 #endif  // OS_MACOSX
-    TestRenderViewContextMenu* menu = new TestRenderViewContextMenu(
-        browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame(),
-        params);
+    scoped_ptr<TestRenderViewContextMenu> menu(
+        new TestRenderViewContextMenu(web_contents->GetMainFrame(), params));
     menu->Init();
     return menu;
-  }
-
-  TestRenderViewContextMenu* CreateContextMenuMediaTypeNone(
-      const GURL& unfiltered_url,
-      const GURL& url) {
-    return CreateContextMenu(unfiltered_url, url,
-                             blink::WebContextMenuData::MediaTypeNone);
   }
 };
 
 IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
                        OpenEntryPresentForNormalURLs) {
-  scoped_ptr<TestRenderViewContextMenu> menu(CreateContextMenuMediaTypeNone(
-      GURL("http://www.google.com/"), GURL("http://www.google.com/")));
+  scoped_ptr<TestRenderViewContextMenu> menu = CreateContextMenuMediaTypeNone(
+      GURL("http://www.google.com/"), GURL("http://www.google.com/"),
+      base::ASCIIToUTF16("Google"));
 
   ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKNEWTAB));
   ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW));
   ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_COPYLINKLOCATION));
+  ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_COPYLINKTEXT));
 }
 
 IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
                        OpenEntryAbsentForFilteredURLs) {
-  scoped_ptr<TestRenderViewContextMenu> menu(
-      CreateContextMenuMediaTypeNone(GURL("chrome://history"), GURL()));
+  scoped_ptr<TestRenderViewContextMenu> menu = CreateContextMenuMediaTypeNone(
+      GURL("chrome://history"), GURL(), base::ASCIIToUTF16("History"));
 
   ASSERT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKNEWTAB));
   ASSERT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW));
   ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_COPYLINKLOCATION));
+  ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_COPYLINKTEXT));
 }
 
 IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
@@ -319,9 +332,8 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, DataSaverOpenOrigImageInNewTab) {
   command_line->AppendSwitch(
       data_reduction_proxy::switches::kEnableDataReductionProxy);
 
-  scoped_ptr<TestRenderViewContextMenu> menu(
-      CreateContextMenu(GURL(), GURL("http://url.com/image.png"),
-                        blink::WebContextMenuData::MediaTypeImage));
+  scoped_ptr<TestRenderViewContextMenu> menu =
+      CreateContextMenuMediaTypeImage(GURL("http://url.com/image.png"));
 
   ASSERT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENIMAGENEWTAB));
   ASSERT_TRUE(menu->IsItemPresent(
@@ -334,9 +346,8 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
   command_line->AppendSwitch(
       data_reduction_proxy::switches::kEnableDataReductionProxy);
 
-  scoped_ptr<TestRenderViewContextMenu> menu(
-      CreateContextMenu(GURL(), GURL("https://url.com/image.png"),
-                        blink::WebContextMenuData::MediaTypeImage));
+  scoped_ptr<TestRenderViewContextMenu> menu =
+      CreateContextMenuMediaTypeImage(GURL("https://url.com/image.png"));
 
   ASSERT_FALSE(
       menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPEN_ORIGINAL_IMAGE_NEW_TAB));
@@ -344,9 +355,8 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, OpenImageInNewTab) {
-  scoped_ptr<TestRenderViewContextMenu> menu(
-      CreateContextMenu(GURL(), GURL("http://url.com/image.png"),
-                        blink::WebContextMenuData::MediaTypeImage));
+  scoped_ptr<TestRenderViewContextMenu> menu =
+      CreateContextMenuMediaTypeImage(GURL("http://url.com/image.png"));
   ASSERT_FALSE(
       menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPEN_ORIGINAL_IMAGE_NEW_TAB));
   ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENIMAGENEWTAB));

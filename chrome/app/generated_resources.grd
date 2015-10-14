@@ -731,6 +731,10 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
             Copy &amp;email address
           </message>
 
+          <message name="IDS_CONTENT_CONTEXT_COPYLINKTEXT" desc="The name of the Copy Link Text command in the content area context menu">
+            Copy link te&amp;xt
+          </message>
+
           <message name="IDS_CONTENT_CONTEXT_SAVEIMAGEAS" desc="The name of the Save Image As command in the content area context menu">
             Sa&amp;ve image as...
           </message>
@@ -935,6 +939,10 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
 
           <message name="IDS_CONTENT_CONTEXT_COPYEMAILADDRESS" desc="In Title Case: The name of the Copy Email Address command in the content area context menu">
             Copy &amp;Email Address
+          </message>
+
+          <message name="IDS_CONTENT_CONTEXT_COPYLINKTEXT" desc="In Title Case: The name of the Copy Link Text command in the content area context menu">
+            Copy Link Te&amp;xt
           </message>
 
           <message name="IDS_CONTENT_CONTEXT_SAVEIMAGEAS" desc="In Title Case: The name of the Save Image As command in the content area context menu">

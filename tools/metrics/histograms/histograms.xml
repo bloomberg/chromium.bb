@@ -70236,6 +70236,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="65" label="IDC_WRITING_DIRECTION_RTL"/>
   <int value="66" label="IDC_CONTENT_CONTEXT_LOAD_ORIGINAL_IMAGE"/>
   <int value="67" label="IDC_CONTENT_CONTEXT_FORCESAVEPASSWORD"/>
+  <int value="69" label="IDC_CONTENT_CONTEXT_COPYLINKTEXT"/>
 </enum>
 
 <enum name="ReportProcessingResult" type="int">
