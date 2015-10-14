@@ -140,7 +140,6 @@ struct display {
 	void *dummy_surface_data;
 
 	int has_rgb565;
-	int seat_version;
 	int data_device_manager_version;
 };
 
@@ -362,6 +361,7 @@ struct input {
 	uint32_t repeat_sym;
 	uint32_t repeat_key;
 	uint32_t repeat_time;
+	int seat_version;
 };
 
 struct output {
@@ -3256,7 +3256,7 @@ seat_handle_capabilities(void *data, struct wl_seat *seat,
 		wl_pointer_add_listener(input->pointer, &pointer_listener,
 					input);
 	} else if (!(caps & WL_SEAT_CAPABILITY_POINTER) && input->pointer) {
-		if (input->display->seat_version >= WL_POINTER_RELEASE_SINCE_VERSION)
+		if (input->seat_version >= WL_POINTER_RELEASE_SINCE_VERSION)
 			wl_pointer_release(input->pointer);
 		else
 			wl_pointer_destroy(input->pointer);
@@ -3269,7 +3269,7 @@ seat_handle_capabilities(void *data, struct wl_seat *seat,
 		wl_keyboard_add_listener(input->keyboard, &keyboard_listener,
 					 input);
 	} else if (!(caps & WL_SEAT_CAPABILITY_KEYBOARD) && input->keyboard) {
-		if (input->display->seat_version >= WL_KEYBOARD_RELEASE_SINCE_VERSION)
+		if (input->seat_version >= WL_KEYBOARD_RELEASE_SINCE_VERSION)
 			wl_keyboard_release(input->keyboard);
 		else
 			wl_keyboard_destroy(input->keyboard);
@@ -3281,7 +3281,7 @@ seat_handle_capabilities(void *data, struct wl_seat *seat,
 		wl_touch_set_user_data(input->touch, input);
 		wl_touch_add_listener(input->touch, &touch_listener, input);
 	} else if (!(caps & WL_SEAT_CAPABILITY_TOUCH) && input->touch) {
-		if (input->display->seat_version >= WL_TOUCH_RELEASE_SINCE_VERSION)
+		if (input->seat_version >= WL_TOUCH_RELEASE_SINCE_VERSION)
 			wl_touch_release(input->touch);
 		else
 			wl_touch_destroy(input->touch);
@@ -5218,17 +5218,20 @@ fini_xkb(struct input *input)
 }
 
 static void
-display_add_input(struct display *d, uint32_t id)
+display_add_input(struct display *d, uint32_t id, int display_seat_version)
 {
 	struct input *input;
+	int seat_version = MIN(display_seat_version, 4);
 
 	input = xzalloc(sizeof *input);
 	input->display = d;
 	input->seat = wl_registry_bind(d->registry, id, &wl_seat_interface,
-				       MIN(d->seat_version, 4));
+				       seat_version);
 	input->touch_focus = NULL;
 	input->pointer_focus = NULL;
 	input->keyboard_focus = NULL;
+	input->seat_version = seat_version;
+
 	wl_list_init(&input->touch_point_list);
 	wl_list_insert(d->input_list.prev, &input->link);
 
@@ -5278,7 +5281,7 @@ input_destroy(struct input *input)
 		else
 			wl_data_device_destroy(input->data_device);
 	}
-	if (input->display->seat_version >= WL_POINTER_RELEASE_SINCE_VERSION) {
+	if (input->seat_version >= WL_POINTER_RELEASE_SINCE_VERSION) {
 		if (input->touch)
 			wl_touch_release(input->touch);
 		if (input->pointer)
@@ -5365,8 +5368,7 @@ registry_handle_global(void *data, struct wl_registry *registry, uint32_t id,
 	} else if (strcmp(interface, "wl_output") == 0) {
 		display_add_output(d, id);
 	} else if (strcmp(interface, "wl_seat") == 0) {
-		d->seat_version = version;
-		display_add_input(d, id);
+		display_add_input(d, id, version);
 	} else if (strcmp(interface, "wl_shm") == 0) {
 		d->shm = wl_registry_bind(registry, id, &wl_shm_interface, 1);
 		wl_shm_add_listener(d->shm, &shm_listener, d);
