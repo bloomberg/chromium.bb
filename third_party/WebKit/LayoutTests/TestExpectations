@@ -55,9 +55,6 @@ crbug.com/404597 fast/text-autosizing/tables/lots-of-text-many-cells.html [ Need
 crbug.com/404597 fast/text-autosizing/tables/narrow-percentage-width.html [ NeedsRebaseline ]
 crbug.com/404597 fast/text-autosizing/tables/narrow-specified-width.html [ NeedsRebaseline ]
 
-# Ref-tests that fail due to pixel snapping across element boundaries.
-crbug.com/404597 fast/text/soft-hyphen-min-preferred-width.html [ ImageOnlyFailure ]
-
 # Ref-tests that fail due to character based shaping/fallback.
 crbug.com/404597 fast/text/international/inline-plaintext-is-isolated.html [ ImageOnlyFailure ]
 crbug.com/404597 fast/text/international/bdi-dir-default-to-auto.html [ ImageOnlyFailure ]
