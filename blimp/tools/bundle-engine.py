@@ -16,17 +16,19 @@ import os
 import subprocess
 import tarfile
 
-def GetDependencies(build_dir, target):
-  """Return the list of target's dependencies.
-  :raises CalledProcessError: if the dependency list could not be determined.
+def ReadDependencies(manifest):
+  """Read the manifest and return the list of dependencies.
+  :raises IOError: if the manifest could not be read.
   """
-  # Get the list of runtime dependencies from the already built target.
-  deps = subprocess.check_output(['gn', 'desc', build_dir, target,
-                                  'runtime_deps']).split('\n')
-  # Remove any empty strings.
-  deps = filter(bool, deps)
-  # Exclude any deps aren't under the build_dir. They are not needed.
-  return [dep for dep in deps if not dep.startswith('..')]
+  deps = []
+  with open(manifest) as f:
+    for line in f.readlines():
+      # Strip comments.
+      dep = line.partition('#')[0].strip()
+      # Ignore empty strings.
+      if dep:
+        deps.append(dep)
+  return deps
 
 def main():
   parser = argparse.ArgumentParser(description=__doc__)
@@ -38,8 +40,8 @@ def main():
                       help=('Dockerfile to add to the bundle'),
                       required=True,
                       metavar='FILE')
-  parser.add_argument('--target',
-                      help=('build target of engine'),
+  parser.add_argument('--manifest',
+                      help=('engine manifest'),
                       required=True)
   parser.add_argument('--output',
                       help=('name and path of bundle to create'),
@@ -47,13 +49,7 @@ def main():
                       metavar='FILE')
   args = parser.parse_args()
 
-  # Get the list of runtime dependencies from the already built target.
-  try:
-    deps = GetDependencies(args.build_dir, args.target)
-  except subprocess.CalledProcessError as e:
-    print "Error: " + ' '.join(e.cmd)
-    print e.output
-    exit(1)
+  deps = ReadDependencies(args.manifest)
 
   # Add the deps to the tarball along with the Dockerfile.
   with tarfile.open(args.output, 'w') as tarball:
@@ -64,7 +60,7 @@ def main():
         tarball.add(dep)
       except OSError as e:
         if e.errno == errno.ENOENT:
-          print dep + " not found (did you build " + args.target + "?)"
+          print dep + " not found (did you build the engine?)"
           exit(1)
   print 'Created ' + args.output
 

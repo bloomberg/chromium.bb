@@ -67,11 +67,12 @@ if (is_linux) {
   # Docker image.
   action("bundle_blimp_engine") {
     script = "//blimp/tools/bundle-engine.py"
+    target = "//blimp/engine:blimp_engine"
 
     # These form the arguments to the script.
     build_dir = rebase_path(root_out_dir)
     dockerfile = rebase_path("//blimp/engine/Dockerfile")
-    target = "//blimp/engine:blimp_engine"
+    manifest = rebase_path("//blimp/engine/engine-manifest.txt")
     bundle = "$root_out_dir/blimp_engine_bundle.tar"
 
     deps = [
@@ -79,6 +80,7 @@ if (is_linux) {
     ]
     inputs = [
       dockerfile,
+      manifest,
     ]
     outputs = [
       bundle,
@@ -88,8 +90,8 @@ if (is_linux) {
       build_dir,
       "--dockerfile",
       dockerfile,
-      "--target",
-      target,
+      "--manifest",
+      manifest,
       "--output",
       rebase_path(bundle),
     ]

@@ -34,6 +34,21 @@ installation instructions](https://docs.docker.com/installation/ubuntulinux/).
 The `blimp/engine:bundle_blimp_engine` build target will bundle the engine and
 its dependencies into a tarfile, which can be used to build a Docker image.
 
+### Update Engine Dependencies
+
+`blimp/engine/engine-manifest.txt` is a list of the engine's runtime
+dependencies. From time to time, this list may need to be updated. Use
+`blimp/tools/generate-engine-manifest.py` to (re)generate the manifest:
+
+```bash
+./blimp/tools/generate-engine-manifest.py \
+    --build-dir out-linux/Debug \
+    --target //blimp/engine:blimp_engine \
+    --output blimp/engine/engine-manifest.txt
+```
+
+Be sure to review the generated manifest and remove any false runtime
+dependencies.
 
 ## Build Docker Image
 
