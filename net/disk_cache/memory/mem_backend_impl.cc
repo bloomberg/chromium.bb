@@ -184,7 +184,8 @@ int MemBackendImpl::DoomEntriesSince(const base::Time initial_time,
 
 int MemBackendImpl::CalculateSizeOfAllEntries(
     const CompletionCallback& callback) {
-  return current_size_;
+  // TODO(msramek): Implement.
+  return net::ERR_NOT_IMPLEMENTED;
 }
 
 class MemBackendImpl::MemIterator : public Backend::Iterator {

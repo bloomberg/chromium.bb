@@ -130,10 +130,6 @@ class NET_EXPORT_PRIVATE SimpleIndex
   // Returns number of indexed entries.
   int32 GetEntryCount() const;
 
-  // Returns the size of the entire cache in bytes. Can only be called after the
-  // index has been initialized.
-  uint64 GetCacheSize() const;
-
   // Returns whether the index has been initialized yet.
   bool initialized() const { return initialized_; }
 

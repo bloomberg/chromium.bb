@@ -239,11 +239,6 @@ int32 SimpleIndex::GetEntryCount() const {
   return entries_set_.size();
 }
 
-uint64 SimpleIndex::GetCacheSize() const {
-  DCHECK(initialized_);
-  return cache_size_;
-}
-
 void SimpleIndex::Insert(uint64 entry_hash) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
   // Upon insert we don't know yet the size of the entry.

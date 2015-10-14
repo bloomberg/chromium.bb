@@ -89,10 +89,6 @@ class DiskCacheBackendTest : public DiskCacheTestWithCache {
                              std::set<std::string>* keys_to_match,
                              size_t* count);
 
-  // Computes the expected size of entry metadata, i.e. the total size without
-  // the actual data stored. This depends only on the entry's |key| size.
-  int GetEntryMetadataSize(std::string key);
-
   // Actual tests:
   void BackendBasics();
   void BackendKeying();
@@ -284,18 +280,6 @@ bool DiskCacheBackendTest::EnumerateAndMatchKeys(
   };
 
   return true;
-}
-
-int DiskCacheBackendTest::GetEntryMetadataSize(std::string key) {
-  // For blockfile and memory backends, it is just the key size.
-  if (!simple_cache_mode_)
-    return key.size();
-
-  // For the simple cache, we must add the file header and EOF, and that for
-  // every stream.
-  return disk_cache::kSimpleEntryStreamCount *
-         (sizeof(disk_cache::SimpleFileHeader) +
-          sizeof(disk_cache::SimpleFileEOF) + key.size());
 }
 
 void DiskCacheBackendTest::BackendBasics() {
@@ -1695,7 +1679,12 @@ void DiskCacheBackendTest::BackendCalculateSizeOfAllEntries() {
   InitCache();
 
   // The cache is initially empty.
-  EXPECT_EQ(0, CalculateSizeOfAllEntries());
+  if (memory_only_ || simple_cache_mode_) {
+    // TODO(msramek): Implement.
+    EXPECT_EQ(net::ERR_NOT_IMPLEMENTED, CalculateSizeOfAllEntries());
+  } else {
+    EXPECT_EQ(0, CalculateSizeOfAllEntries());
+  }
 
   // Generate random entries and populate them with data of respective
   // sizes 0, 1, ..., count - 1 bytes.
@@ -1708,15 +1697,10 @@ void DiskCacheBackendTest::BackendCalculateSizeOfAllEntries() {
     scoped_refptr<net::StringIOBuffer> buffer = new net::StringIOBuffer(data);
 
     // Alternate between writing to the first and second stream to test that
-    // we are not taking just the first stream into account. For convenience,
-    // the last written stream should be 0. This is because writing to
-    // the stream 1 in simple cache triggers a write to the stream 0 as well.
-    // This will happen asynchronously and possibly later than our call to
-    // |CalculateSizeOfAllEntries|.
+    // we are not taking just the first stream into account.
     disk_cache::Entry* entry;
     ASSERT_EQ(net::OK, OpenEntry(key, &entry));
-    ASSERT_EQ(count,
-              WriteData(entry, (count + 1) % 2, 0, buffer.get(), count, true));
+    ASSERT_EQ(count, WriteData(entry, count % 2, 0, buffer.get(), count, true));
     entry->Close();
 
     ++count;
@@ -1724,10 +1708,16 @@ void DiskCacheBackendTest::BackendCalculateSizeOfAllEntries() {
 
   // The resulting size should be (0 + 1 + ... + count - 1) plus keys.
   int result = CalculateSizeOfAllEntries();
-  int total_metadata_size = 0;
-  for (std::string key : key_pool)
-    total_metadata_size += GetEntryMetadataSize(key);
-  EXPECT_EQ((count - 1) * count / 2 + total_metadata_size, result);
+  if (memory_only_ || simple_cache_mode_) {
+    // TODO(msramek): Implement.
+    EXPECT_EQ(net::ERR_NOT_IMPLEMENTED, result);
+  } else {
+    int total_key_size = 0;
+    for (std::string key : key_pool)
+      total_key_size += key.size();
+
+    EXPECT_EQ((count - 1) * count / 2 + total_key_size, result);
+  }
 
   // Add another entry and test if the size is updated. Then remove it and test
   // if the size is back to original value.
@@ -1744,16 +1734,32 @@ void DiskCacheBackendTest::BackendCalculateSizeOfAllEntries() {
     entry->Close();
 
     int new_result = CalculateSizeOfAllEntries();
-    EXPECT_EQ(result + last_entry_size + GetEntryMetadataSize(key), new_result);
+    if (memory_only_ || simple_cache_mode_) {
+      // TODO(msramek): Implement.
+      EXPECT_EQ(net::ERR_NOT_IMPLEMENTED, new_result);
+    } else {
+      EXPECT_EQ(result + last_entry_size + static_cast<int>(key.size()),
+                new_result);
+    }
 
     DoomEntry(key);
     new_result = CalculateSizeOfAllEntries();
-    EXPECT_EQ(result, new_result);
+    if (memory_only_ || simple_cache_mode_) {
+      // TODO(msramek): Implement.
+      EXPECT_EQ(net::ERR_NOT_IMPLEMENTED, new_result);
+    } else {
+      EXPECT_EQ(result, new_result);
+    }
   }
 
   // After dooming the entries, the size should be back to zero.
   ASSERT_EQ(net::OK, DoomAllEntries());
-  EXPECT_EQ(0, CalculateSizeOfAllEntries());
+  if (memory_only_ || simple_cache_mode_) {
+    // TODO(msramek): Implement.
+    EXPECT_EQ(net::ERR_NOT_IMPLEMENTED, CalculateSizeOfAllEntries());
+  } else {
+    EXPECT_EQ(0, CalculateSizeOfAllEntries());
+  }
 }
 
 TEST_F(DiskCacheBackendTest, CalculateSizeOfAllEntries) {
