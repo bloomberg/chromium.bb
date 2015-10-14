@@ -321,6 +321,8 @@ void MenuButton::StateChanged() {
       should_disable_after_press_ = false;
     else if (state() == STATE_DISABLED)
       should_disable_after_press_ = true;
+  } else {
+    LabelButton::StateChanged();
   }
 }
 
