@@ -70,7 +70,7 @@ enum Multiply {
 class PLATFORM_EXPORT ImageBuffer {
     WTF_MAKE_NONCOPYABLE(ImageBuffer); WTF_MAKE_FAST_ALLOCATED(ImageBuffer);
 public:
-    static PassOwnPtr<ImageBuffer> create(const IntSize&, OpacityMode = NonOpaque);
+    static PassOwnPtr<ImageBuffer> create(const IntSize&, OpacityMode = NonOpaque, ImageInitializationMode = InitializeImagePixels);
     static PassOwnPtr<ImageBuffer> create(PassOwnPtr<ImageBufferSurface>);
 
     ~ImageBuffer();

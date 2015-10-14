@@ -80,6 +80,11 @@ enum AccelerationHint {
     PreferNoAcceleration,
 };
 
+enum ImageInitializationMode {
+    InitializeImagePixels,
+    DoNotInitializeImagePixels,
+};
+
 // TODO(junov): crbug.com/453113 relocate ShadowMode to CanvasRenderingContext2DState.h once
 // GraphicsContext no longer uses it.
 enum ShadowMode {
