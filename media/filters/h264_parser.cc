@@ -159,12 +159,24 @@ void H264Parser::SetEncryptedStream(
   }
 }
 
-const H264PPS* H264Parser::GetPPS(int pps_id) {
-  return active_PPSes_[pps_id];
+const H264PPS* H264Parser::GetPPS(int pps_id) const {
+  auto it = active_PPSes_.find(pps_id);
+  if (it == active_PPSes_.end()) {
+    DVLOG(1) << "Requested a nonexistent PPS id " << pps_id;
+    return nullptr;
+  }
+
+  return it->second;
 }
 
-const H264SPS* H264Parser::GetSPS(int sps_id) {
-  return active_SPSes_[sps_id];
+const H264SPS* H264Parser::GetSPS(int sps_id) const {
+  auto it = active_SPSes_.find(sps_id);
+  if (it == active_SPSes_.end()) {
+    DVLOG(1) << "Requested a nonexistent SPS id " << sps_id;
+    return nullptr;
+  }
+
+  return it->second;
 }
 
 static inline bool IsStartCode(const uint8* data) {
@@ -835,9 +847,6 @@ H264Parser::Result H264Parser::ParseSPS(int* sps_id) {
   READ_UE_OR_RETURN(&sps->max_num_ref_frames);
   READ_BOOL_OR_RETURN(&sps->gaps_in_frame_num_value_allowed_flag);
 
-  if (sps->gaps_in_frame_num_value_allowed_flag)
-    return kUnsupportedStream;
-
   READ_UE_OR_RETURN(&sps->pic_width_in_mbs_minus1);
   READ_UE_OR_RETURN(&sps->pic_height_in_map_units_minus1);
 
@@ -883,6 +892,11 @@ H264Parser::Result H264Parser::ParsePPS(int* pps_id) {
   READ_UE_OR_RETURN(&pps->pic_parameter_set_id);
   READ_UE_OR_RETURN(&pps->seq_parameter_set_id);
   TRUE_OR_RETURN(pps->seq_parameter_set_id < 32);
+
+  if (active_SPSes_.find(pps->seq_parameter_set_id) == active_SPSes_.end()) {
+    DVLOG(1) << "Invalid stream, no SPS id: " << pps->seq_parameter_set_id;
+    return kInvalidStream;
+  }
 
   sps = GetSPS(pps->seq_parameter_set_id);
   TRUE_OR_RETURN(sps);

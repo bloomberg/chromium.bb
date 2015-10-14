@@ -39,11 +39,15 @@ class H264Picture : public base::RefCounted<H264Picture> {
   // Values calculated per H.264 specification or taken from slice header.
   // See spec for more details on each (some names have been converted from
   // CamelCase in spec to Chromium-style names).
+  int pic_order_cnt_type;
   int top_field_order_cnt;
   int bottom_field_order_cnt;
   int pic_order_cnt;
   int pic_order_cnt_msb;
   int pic_order_cnt_lsb;
+  int delta_pic_order_cnt_bottom;
+  int delta_pic_order_cnt0;
+  int delta_pic_order_cnt1;
 
   int pic_num;
   int long_term_pic_num;
@@ -53,13 +57,19 @@ class H264Picture : public base::RefCounted<H264Picture> {
   int long_term_frame_idx;
 
   media::H264SliceHeader::Type type;
+  int nal_ref_idc;
   bool idr;  // IDR picture?
+  int idr_pic_id;  // Valid only if idr == true.
   bool ref;  // reference picture?
   bool long_term;  // long term reference picture?
   bool outputted;
   // Does memory management op 5 needs to be executed after this
   // picture has finished decoding?
   bool mem_mgmt_5;
+
+  // Created by the decoding process for gaps in frame_num.
+  // Not for decode or output.
+  bool nonexisting;
 
   Field field;
 

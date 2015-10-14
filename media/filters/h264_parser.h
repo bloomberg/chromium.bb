@@ -386,8 +386,8 @@ class MEDIA_EXPORT H264Parser {
 
   // Return a pointer to SPS/PPS with given |sps_id|/|pps_id| or NULL if not
   // present.
-  const H264SPS* GetSPS(int sps_id);
-  const H264PPS* GetPPS(int pps_id);
+  const H264SPS* GetSPS(int sps_id) const;
+  const H264PPS* GetPPS(int pps_id) const;
 
   // Slice headers and SEI messages are not used across NALUs by the parser
   // and can be discarded after current NALU, so the parser does not store

@@ -129,34 +129,43 @@ class CONTENT_EXPORT H264Decoder : public AcceleratedVideoDecoder {
 
   // Process H264 stream structures.
   bool ProcessSPS(int sps_id, bool* need_new_buffers);
-  bool ProcessPPS(int pps_id);
-  bool PreprocessSlice(media::H264SliceHeader* slice_hdr);
-  bool ProcessSlice(media::H264SliceHeader* slice_hdr);
+  // Process current slice header to discover if we need to start a new picture,
+  // finishing up the current one.
+  bool PreprocessCurrentSlice();
+  // Process current slice as a slice of the current picture.
+  bool ProcessCurrentSlice();
+
+  // Return true if we need to start a new picture.
+  bool IsNewPrimaryCodedPicture(const media::H264SliceHeader* slice_hdr) const;
 
   // Initialize the current picture according to data in |slice_hdr|.
-  bool InitCurrPicture(media::H264SliceHeader* slice_hdr);
+  bool InitCurrPicture(const media::H264SliceHeader* slice_hdr);
 
-  // Calculate picture order counts for the new picture
-  // on initialization of a new frame (see spec).
-  bool CalculatePicOrderCounts(media::H264SliceHeader* slice_hdr);
+  // Initialize |pic| as a "non-existing" picture (see spec) with |frame_num|,
+  // to be used for frame gap concealment.
+  bool InitNonexistingPicture(scoped_refptr<H264Picture> pic, int frame_num);
 
-  // Update PicNum values in pictures stored in DPB on creation of new
-  // frame (see spec).
-  void UpdatePicNums();
+  // Calculate picture order counts for |pic| on initialization
+  // of a new frame (see spec).
+  bool CalculatePicOrderCounts(scoped_refptr<H264Picture> pic);
+
+  // Update PicNum values in pictures stored in DPB on creation of
+  // a picture with |frame_num|.
+  void UpdatePicNums(int frame_num);
 
   bool UpdateMaxNumReorderFrames(const media::H264SPS* sps);
 
   // Prepare reference picture lists for the current frame.
-  void PrepareRefPicLists(media::H264SliceHeader* slice_hdr);
+  void PrepareRefPicLists(const media::H264SliceHeader* slice_hdr);
   // Prepare reference picture lists for the given slice.
-  bool ModifyReferencePicLists(media::H264SliceHeader* slice_hdr,
+  bool ModifyReferencePicLists(const media::H264SliceHeader* slice_hdr,
                                H264Picture::Vector* ref_pic_list0,
                                H264Picture::Vector* ref_pic_list1);
 
   // Construct initial reference picture lists for use in decoding of
   // P and B pictures (see 8.2.4 in spec).
-  void ConstructReferencePicListsP(media::H264SliceHeader* slice_hdr);
-  void ConstructReferencePicListsB(media::H264SliceHeader* slice_hdr);
+  void ConstructReferencePicListsP(const media::H264SliceHeader* slice_hdr);
+  void ConstructReferencePicListsB(const media::H264SliceHeader* slice_hdr);
 
   // Helper functions for reference list construction, per spec.
   int PicNumF(const scoped_refptr<H264Picture>& pic);
@@ -166,27 +175,33 @@ class CONTENT_EXPORT H264Decoder : public AcceleratedVideoDecoder {
   // specified in spec (8.2.4).
   //
   // |list| indicates list number and should be either 0 or 1.
-  bool ModifyReferencePicList(media::H264SliceHeader* slice_hdr,
+  bool ModifyReferencePicList(const media::H264SliceHeader* slice_hdr,
                               int list,
                               H264Picture::Vector* ref_pic_listx);
 
   // Perform reference picture memory management operations (marking/unmarking
   // of reference pictures, long term picture management, discarding, etc.).
   // See 8.2.5 in spec.
-  bool HandleMemoryManagementOps();
-  void ReferencePictureMarking();
+  bool HandleMemoryManagementOps(scoped_refptr<H264Picture> pic);
+  bool ReferencePictureMarking(scoped_refptr<H264Picture> pic);
+  bool SlidingWindowPictureMarking();
+
+  // Handle a gap in frame_num in the stream up to |frame_num|, by creating
+  // "non-existing" pictures (see spec).
+  bool HandleFrameNumGap(int frame_num);
 
   // Start processing a new frame.
-  bool StartNewFrame(media::H264SliceHeader* slice_hdr);
+  bool StartNewFrame(const media::H264SliceHeader* slice_hdr);
 
   // All data for a frame received, process it and decode.
   bool FinishPrevFrameIfPresent();
 
-  // Called after decoding, performs all operations to be done after decoding,
-  // including DPB management, reference picture marking and memory management
-  // operations.
-  // This will also output a picture if one is ready for output.
-  bool FinishPicture();
+  // Called after we are done processing |pic|. Performs all operations to be
+  // done after decoding, including DPB management, reference picture marking
+  // and memory management operations.
+  // This will also output pictures if any have become ready to be outputted
+  // after processing |pic|.
+  bool FinishPicture(scoped_refptr<H264Picture> pic);
 
   // Clear DPB contents and remove all surfaces in DPB from *in_use_ list.
   // Cleared pictures will be made available for decode, unless they are
@@ -220,14 +235,13 @@ class CONTENT_EXPORT H264Decoder : public AcceleratedVideoDecoder {
   H264Picture::Vector ref_pic_list_b1_;
 
   // Global state values, needed in decoding. See spec.
-  int max_pic_order_cnt_lsb_;
   int max_frame_num_;
   int max_pic_num_;
   int max_long_term_frame_idx_;
   size_t max_num_reorder_frames_;
 
-  int frame_num_;
   int prev_frame_num_;
+  int prev_ref_frame_num_;
   int prev_frame_num_offset_;
   bool prev_has_memmgmnt5_;
 

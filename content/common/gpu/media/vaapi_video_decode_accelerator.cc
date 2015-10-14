@@ -1292,10 +1292,15 @@ VaapiVideoDecodeAccelerator::VaapiH264Accelerator::
 void VaapiVideoDecodeAccelerator::VaapiH264Accelerator::FillVAPicture(
     VAPictureH264* va_pic,
     scoped_refptr<H264Picture> pic) {
-  scoped_refptr<VaapiDecodeSurface> dec_surface =
-      H264PictureToVaapiDecodeSurface(pic);
+  VASurfaceID va_surface_id = VA_INVALID_SURFACE;
 
-  va_pic->picture_id = dec_surface->va_surface()->id();
+  if (!pic->nonexisting) {
+    scoped_refptr<VaapiDecodeSurface> dec_surface =
+        H264PictureToVaapiDecodeSurface(pic);
+    va_surface_id = dec_surface->va_surface()->id();
+  }
+
+  va_pic->picture_id = va_surface_id;
   va_pic->frame_idx = pic->frame_num;
   va_pic->flags = 0;
 

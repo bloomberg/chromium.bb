@@ -1777,18 +1777,23 @@ void V4L2SliceVideoDecodeAccelerator::V4L2H264Accelerator::H264DPBToV4L2DPB(
       DVLOG(1) << "Invalid DPB size";
       break;
     }
+
+    int index = VIDEO_MAX_FRAME;
+    if (!pic->nonexisting) {
+      scoped_refptr<V4L2DecodeSurface> dec_surface =
+          H264PictureToV4L2DecodeSurface(pic);
+      index = dec_surface->output_record();
+      ref_surfaces->push_back(dec_surface);
+    }
+
     struct v4l2_h264_dpb_entry& entry = v4l2_decode_param_.dpb[i++];
-    scoped_refptr<V4L2DecodeSurface> dec_surface =
-        H264PictureToV4L2DecodeSurface(pic);
-    entry.buf_index = dec_surface->output_record();
+    entry.buf_index = index;
     entry.frame_num = pic->frame_num;
     entry.pic_num = pic->pic_num;
     entry.top_field_order_cnt = pic->top_field_order_cnt;
     entry.bottom_field_order_cnt = pic->bottom_field_order_cnt;
     entry.flags = (pic->ref ? V4L2_H264_DPB_ENTRY_FLAG_ACTIVE : 0) |
                   (pic->long_term ? V4L2_H264_DPB_ENTRY_FLAG_LONG_TERM : 0);
-
-    ref_surfaces->push_back(dec_surface);
   }
 }
 
