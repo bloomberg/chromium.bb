@@ -36,7 +36,7 @@ TEST_F(TableCellPainterTest, TableCellBackgroundInterestRect)
     PaintLayerPainter(rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
     rootPaintController().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(rootPaintController().displayItems(), 2,
+    EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 2,
         TestDisplayItem(layoutView, DisplayItem::BoxDecorationBackground),
         TestDisplayItem(cell1, DisplayItem::TableCellBackgroundFromRow));
 
@@ -44,7 +44,7 @@ TEST_F(TableCellPainterTest, TableCellBackgroundInterestRect)
     PaintLayerPainter(rootLayer).paintLayerContents(&context, paintingInfo1, PaintLayerPaintingCompositingAllPhases);
     rootPaintController().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(rootPaintController().displayItems(), 2,
+    EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 2,
         TestDisplayItem(layoutView, DisplayItem::BoxDecorationBackground),
         TestDisplayItem(cell2, DisplayItem::TableCellBackgroundFromRow));
 }

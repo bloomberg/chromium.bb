@@ -14,7 +14,7 @@ void DisplayListCompositingBuilder::build(CompositedDisplayList& compositedDispl
     // TODO(pdr): Properly implement simple layer compositing here.
     // See: https://docs.google.com/document/d/1qF7wpO_lhuxUO6YXKZ3CJuXi0grcb5gKZJBBgnoTd0k/view
     DisplayItemPropertyTreeBuilder treeBuilder;
-    for (const auto& displayItem : m_paintController.displayItems())
+    for (const auto& displayItem : m_paintController.displayItemList())
         treeBuilder.processDisplayItem(displayItem);
     compositedDisplayList.transformTree = treeBuilder.releaseTransformTree();
     // TODO(pdr, jbroman): Also release other trees, and use range records to

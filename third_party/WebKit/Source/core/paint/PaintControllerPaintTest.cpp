@@ -30,7 +30,7 @@ TEST_F(PaintControllerPaintTest, FullDocumentPaintingWithCaret)
     PaintLayerPainter(rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
     rootPaintController().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(rootPaintController().displayItems(), 2,
+    EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 2,
         TestDisplayItem(layoutView(), backgroundType),
         TestDisplayItem(textInlineBox, foregroundType));
 
@@ -42,7 +42,7 @@ TEST_F(PaintControllerPaintTest, FullDocumentPaintingWithCaret)
     PaintLayerPainter(rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
     rootPaintController().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(rootPaintController().displayItems(), 3,
+    EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 3,
         TestDisplayItem(layoutView(), backgroundType),
         TestDisplayItem(textInlineBox, foregroundType),
         TestDisplayItem(divLayoutObject, DisplayItem::Caret)); // New!
@@ -63,7 +63,7 @@ TEST_F(PaintControllerPaintTest, InlineRelayout)
     PaintLayerPainter(rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
     rootPaintController().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(rootPaintController().displayItems(), 2,
+    EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 2,
         TestDisplayItem(layoutView(), backgroundType),
         TestDisplayItem(firstTextBox, foregroundType));
 
@@ -79,7 +79,7 @@ TEST_F(PaintControllerPaintTest, InlineRelayout)
     InlineTextBox& newFirstTextBox = *newText.firstTextBox();
     InlineTextBox& secondTextBox = *newText.firstTextBox()->nextTextBox();
 
-    EXPECT_DISPLAY_LIST(rootPaintController().displayItems(), 3,
+    EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 3,
         TestDisplayItem(layoutView(), backgroundType),
         TestDisplayItem(newFirstTextBox, foregroundType),
         TestDisplayItem(secondTextBox, foregroundType));
@@ -97,7 +97,7 @@ TEST_F(PaintControllerPaintTestForSlimmingPaintV2, FullDocumentPaintingWithCaret
 
     document().view()->updateAllLifecyclePhases();
 
-    EXPECT_DISPLAY_LIST(rootPaintController().displayItems(), 4,
+    EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 4,
         TestDisplayItem(layoutView(), backgroundType),
         TestDisplayItem(rootLayer, subsequenceType),
         TestDisplayItem(textInlineBox, foregroundType),
@@ -106,7 +106,7 @@ TEST_F(PaintControllerPaintTestForSlimmingPaintV2, FullDocumentPaintingWithCaret
     div.focus();
     document().view()->updateAllLifecyclePhases();
 
-    EXPECT_DISPLAY_LIST(rootPaintController().displayItems(), 5,
+    EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 5,
         TestDisplayItem(layoutView(), backgroundType),
         TestDisplayItem(rootLayer, subsequenceType),
         TestDisplayItem(textInlineBox, foregroundType),
@@ -125,7 +125,7 @@ TEST_F(PaintControllerPaintTestForSlimmingPaintV2, InlineRelayout)
 
     document().view()->updateAllLifecyclePhases();
 
-    EXPECT_DISPLAY_LIST(rootPaintController().displayItems(), 4,
+    EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 4,
         TestDisplayItem(layoutView(), backgroundType),
         TestDisplayItem(rootLayer, subsequenceType),
         TestDisplayItem(firstTextBox, foregroundType),
@@ -138,7 +138,7 @@ TEST_F(PaintControllerPaintTestForSlimmingPaintV2, InlineRelayout)
     InlineTextBox& newFirstTextBox = *newText.firstTextBox();
     InlineTextBox& secondTextBox = *newText.firstTextBox()->nextTextBox();
 
-    EXPECT_DISPLAY_LIST(rootPaintController().displayItems(), 5,
+    EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 5,
         TestDisplayItem(layoutView(), backgroundType),
         TestDisplayItem(rootLayer, subsequenceType),
         TestDisplayItem(newFirstTextBox, foregroundType),

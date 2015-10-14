@@ -51,7 +51,7 @@ SubsequenceRecorder::SubsequenceRecorder(GraphicsContext& context, const Display
     if (m_paintController->displayItemConstructionIsDisabled())
         return;
 
-    m_beginSubsequenceIndex = m_paintController->newDisplayItems().size();
+    m_beginSubsequenceIndex = m_paintController->newDisplayItemList().size();
     m_paintController->createAndAppend<BeginSubsequenceDisplayItem>(m_client, type);
 }
 
@@ -64,10 +64,10 @@ SubsequenceRecorder::~SubsequenceRecorder()
         return;
 
     if (m_paintController->lastDisplayItemIsNoopBegin()) {
-        ASSERT(m_beginSubsequenceIndex == m_paintController->newDisplayItems().size() - 1);
+        ASSERT(m_beginSubsequenceIndex == m_paintController->newDisplayItemList().size() - 1);
         // Remove uncacheable no-op BeginSubsequence/EndSubsequence pairs.
         // Don't remove cacheable no-op pairs because we need to match them later with CachedSubsequences.
-        if (m_paintController->newDisplayItems().last().skippedCache()) {
+        if (m_paintController->newDisplayItemList().last().skippedCache()) {
             m_paintController->removeLastDisplayItem();
             return;
         }
@@ -84,8 +84,8 @@ void SubsequenceRecorder::setUncacheable()
     if (m_paintController->displayItemConstructionIsDisabled())
         return;
 
-    ASSERT(m_paintController->newDisplayItems()[m_beginSubsequenceIndex].isSubsequence());
-    m_paintController->newDisplayItems()[m_beginSubsequenceIndex].setSkippedCache();
+    ASSERT(m_paintController->newDisplayItemList()[m_beginSubsequenceIndex].isSubsequence());
+    m_paintController->newDisplayItemList()[m_beginSubsequenceIndex].setSkippedCache();
 }
 
 } // namespace blink

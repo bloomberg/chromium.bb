@@ -10,7 +10,7 @@
 namespace blink {
 
 PaintArtifact::PaintArtifact()
-    : m_displayItems(0)
+    : m_displayItemList(0)
 {
 }
 
@@ -20,27 +20,27 @@ PaintArtifact::~PaintArtifact()
 
 void PaintArtifact::reset()
 {
-    m_displayItems.clear();
+    m_displayItemList.clear();
     m_paintChunks.clear();
 }
 
 size_t PaintArtifact::approximateUnsharedMemoryUsage() const
 {
-    return sizeof(*this) + m_displayItems.memoryUsageInBytes()
+    return sizeof(*this) + m_displayItemList.memoryUsageInBytes()
         + m_paintChunks.capacity() * sizeof(m_paintChunks[0]);
 }
 
 void PaintArtifact::replay(GraphicsContext& graphicsContext) const
 {
     TRACE_EVENT0("blink,benchmark", "PaintArtifact::replay");
-    for (const DisplayItem& displayItem : m_displayItems)
+    for (const DisplayItem& displayItem : m_displayItemList)
         displayItem.replay(graphicsContext);
 }
 
 void PaintArtifact::appendToWebDisplayItemList(WebDisplayItemList* list) const
 {
     TRACE_EVENT0("blink,benchmark", "PaintArtifact::appendToWebDisplayItemList");
-    for (const DisplayItem& displayItem : m_displayItems)
+    for (const DisplayItem& displayItem : m_displayItemList)
         displayItem.appendToWebDisplayItemList(list);
 }
 

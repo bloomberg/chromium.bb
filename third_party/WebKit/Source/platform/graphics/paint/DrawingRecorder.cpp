@@ -39,7 +39,7 @@ DrawingRecorder::DrawingRecorder(GraphicsContext& context, const DisplayItemClie
     , m_displayItemClient(displayItemClient)
     , m_displayItemType(displayItemType)
 #if ENABLE(ASSERT)
-    , m_displayItemPosition(m_context.paintController()->newDisplayItems().size())
+    , m_displayItemPosition(m_context.paintController()->newDisplayItemList().size())
     , m_underInvalidationCheckingMode(DrawingDisplayItem::CheckPicture)
 #endif
 {
@@ -88,7 +88,7 @@ DrawingRecorder::~DrawingRecorder()
         m_context.restore();
 
     m_context.setInDrawingRecorder(false);
-    ASSERT(m_displayItemPosition == m_context.paintController()->newDisplayItems().size());
+    ASSERT(m_displayItemPosition == m_context.paintController()->newDisplayItemList().size());
 #endif
 
     m_context.paintController()->createAndAppend<DrawingDisplayItem>(m_displayItemClient

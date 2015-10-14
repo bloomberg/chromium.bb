@@ -12,7 +12,7 @@
 #include "platform/graphics/ContiguousContainer.h"
 #include "platform/graphics/PaintInvalidationReason.h"
 #include "platform/graphics/paint/DisplayItem.h"
-#include "platform/graphics/paint/DisplayItems.h"
+#include "platform/graphics/paint/DisplayItemList.h"
 #include "platform/graphics/paint/PaintArtifact.h"
 #include "platform/graphics/paint/PaintChunk.h"
 #include "platform/graphics/paint/PaintChunker.h"
@@ -28,7 +28,7 @@ namespace blink {
 class GraphicsLayer;
 class GraphicsContext;
 
-static const size_t kInitialDisplayItemsCapacity = 64;
+static const size_t kInitialDisplayItemListCapacity = 64;
 
 // Responsible for processing display items as they are produced, and producing
 // a final paint artifact when complete. This class includes logic for caching,
@@ -57,7 +57,6 @@ public:
 
     // Provide a new set of paint chunk properties to apply to recorded display
     // items, for Slimming Paint v2.
-    // TODO(pdr): This should be moved to PaintArtifact.
     void updateCurrentPaintChunkProperties(const PaintChunkProperties&);
 
     template <typename DisplayItemClass, typename... Args>
@@ -70,7 +69,7 @@ public:
 
         if (displayItemConstructionIsDisabled())
             return;
-        DisplayItemClass& displayItem = m_newDisplayItems.allocateAndConstruct<DisplayItemClass>(WTF::forward<Args>(args)...);
+        DisplayItemClass& displayItem = m_newDisplayItemList.allocateAndConstruct<DisplayItemClass>(WTF::forward<Args>(args)...);
         processNewItem(displayItem);
     }
 
@@ -115,7 +114,7 @@ public:
 
     // Get the artifact generated after the last commit.
     const PaintArtifact& paintArtifact() const;
-    const DisplayItems& displayItems() const { return paintArtifact().displayItems(); }
+    const DisplayItemList& displayItemList() const { return paintArtifact().displayItemList(); }
     const Vector<PaintChunk>& paintChunks() const { return paintArtifact().paintChunks(); }
 
     bool clientCacheIsValid(DisplayItemClient) const;
@@ -126,9 +125,9 @@ public:
     bool textPainted() const { return m_textPainted; }
     void setTextPainted() { m_textPainted = true; }
 
-    // Returns displayItems added using createAndAppend() since beginning or the last
-    // commitNewDisplayItems(). Use with care.
-    DisplayItems& newDisplayItems() { return m_newDisplayItems; }
+    // Returns displayItemList added using createAndAppend() since beginning or
+    // the last commitNewDisplayItems(). Use with care.
+    DisplayItemList& newDisplayItemList() { return m_newDisplayItemList; }
 
 #ifndef NDEBUG
     void showDebugData() const;
@@ -163,7 +162,7 @@ public:
 
 protected:
     PaintController()
-        : m_newDisplayItems(kInitialDisplayItemsCapacity * kMaximumDisplayItemSize)
+        : m_newDisplayItemList(kInitialDisplayItemListCapacity * kMaximumDisplayItemSize)
         , m_validlyCachedClientsDirty(false)
         , m_constructionDisabled(false)
         , m_textPainted(false)
@@ -180,25 +179,25 @@ private:
     void invalidateClient(const DisplayItemClientWrapper&);
 
 #ifndef NDEBUG
-    WTF::String displayItemsAsDebugString(const DisplayItems&) const;
+    WTF::String displayItemListAsDebugString(const DisplayItemList&) const;
 #endif
 
     // Indices into PaintList of all DrawingDisplayItems and BeginSubsequenceDisplayItems of each client.
     // Temporarily used during merge to find out-of-order display items.
     using DisplayItemIndicesByClientMap = HashMap<DisplayItemClient, Vector<size_t>>;
 
-    static size_t findMatchingItemFromIndex(const DisplayItem::Id&, const DisplayItemIndicesByClientMap&, const DisplayItems&);
+    static size_t findMatchingItemFromIndex(const DisplayItem::Id&, const DisplayItemIndicesByClientMap&, const DisplayItemList&);
     static void addItemToIndexIfNeeded(const DisplayItem&, size_t index, DisplayItemIndicesByClientMap&);
 
     struct OutOfOrderIndexContext;
-    DisplayItems::iterator findOutOfOrderCachedItem(const DisplayItem::Id&, OutOfOrderIndexContext&);
-    DisplayItems::iterator findOutOfOrderCachedItemForward(const DisplayItem::Id&, OutOfOrderIndexContext&);
-    void copyCachedSubsequence(DisplayItems::iterator& currentIt, DisplayItems& updatedList);
+    DisplayItemList::iterator findOutOfOrderCachedItem(const DisplayItem::Id&, OutOfOrderIndexContext&);
+    DisplayItemList::iterator findOutOfOrderCachedItemForward(const DisplayItem::Id&, OutOfOrderIndexContext&);
+    void copyCachedSubsequence(DisplayItemList::iterator& currentIt, DisplayItemList& updatedList);
 
 #if ENABLE(ASSERT)
     // The following two methods are for checking under-invalidations
     // (when RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled).
-    void checkUnderInvalidation(DisplayItems::iterator& newIt, DisplayItems::iterator& currentIt);
+    void checkUnderInvalidation(DisplayItemList::iterator& newIt, DisplayItemList::iterator& currentIt);
     void checkCachedDisplayItemIsUnchanged(const char* messagePrefix, const DisplayItem& newItem, const DisplayItem& oldItem);
     void checkNoRemainingCachedDisplayItems();
 #endif
@@ -208,7 +207,7 @@ private:
     PaintArtifact m_currentPaintArtifact;
 
     // Data being used to build the next paint artifact.
-    DisplayItems m_newDisplayItems;
+    DisplayItemList m_newDisplayItemList;
     PaintChunker m_newPaintChunks;
 
     // Contains all clients having valid cached paintings if updated.
@@ -251,9 +250,9 @@ private:
     Vector<Invalidation> m_invalidations;
 
 #if ENABLE(ASSERT)
-    // This is used to check duplicated ids during add(). We could also check during
-    // updatePaintList(), but checking during add() helps developer easily find where
-    // the duplicated ids are from.
+    // This is used to check duplicated ids during add(). We could also check
+    // during commitNewDisplayItems(), but checking during add() helps developer
+    // easily find where the duplicated ids are from.
     DisplayItemIndicesByClientMap m_newDisplayItemIndicesByClient;
 #endif
 

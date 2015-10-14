@@ -6,7 +6,7 @@
 #define PaintArtifact_h
 
 #include "platform/PlatformExport.h"
-#include "platform/graphics/paint/DisplayItems.h"
+#include "platform/graphics/paint/DisplayItemList.h"
 #include "platform/graphics/paint/PaintChunk.h"
 #include "wtf/Vector.h"
 
@@ -26,10 +26,10 @@ public:
     PaintArtifact();
     ~PaintArtifact();
 
-    bool isEmpty() const { return m_displayItems.isEmpty(); }
+    bool isEmpty() const { return m_displayItemList.isEmpty(); }
 
-    DisplayItems& displayItems() { return m_displayItems; }
-    const DisplayItems& displayItems() const { return m_displayItems; }
+    DisplayItemList& displayItemList() { return m_displayItemList; }
+    const DisplayItemList& displayItemList() const { return m_displayItemList; }
 
     Vector<PaintChunk>& paintChunks() { return m_paintChunks; }
     const Vector<PaintChunk>& paintChunks() const { return m_paintChunks; }
@@ -48,7 +48,7 @@ public:
     void appendToWebDisplayItemList(WebDisplayItemList*) const;
 
 private:
-    DisplayItems m_displayItems;
+    DisplayItemList m_displayItemList;
     Vector<PaintChunk> m_paintChunks;
 };
 

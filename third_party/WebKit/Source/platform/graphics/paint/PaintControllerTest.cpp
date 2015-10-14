@@ -112,7 +112,7 @@ TEST_F(PaintControllerTest, NestedRecorders)
     drawClippedRect(context, client, clipType, backgroundDrawingType, FloatRect(100, 100, 200, 200));
     paintController().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(paintController().displayItems(), 3,
+    EXPECT_DISPLAY_LIST(paintController().displayItemList(), 3,
         TestDisplayItem(client, clipType),
         TestDisplayItem(client, backgroundDrawingType),
         TestDisplayItem(client, DisplayItem::clipTypeToEndClipType(clipType)));
@@ -129,7 +129,7 @@ TEST_F(PaintControllerTest, UpdateBasic)
     drawRect(context, first, foregroundDrawingType, FloatRect(100, 100, 300, 300));
     paintController().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(paintController().displayItems(), 3,
+    EXPECT_DISPLAY_LIST(paintController().displayItemList(), 3,
         TestDisplayItem(first, backgroundDrawingType),
         TestDisplayItem(second, backgroundDrawingType),
         TestDisplayItem(first, foregroundDrawingType));
@@ -139,7 +139,7 @@ TEST_F(PaintControllerTest, UpdateBasic)
     drawRect(context, first, foregroundDrawingType, FloatRect(100, 100, 300, 300));
     paintController().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(paintController().displayItems(), 2,
+    EXPECT_DISPLAY_LIST(paintController().displayItemList(), 2,
         TestDisplayItem(first, backgroundDrawingType),
         TestDisplayItem(first, foregroundDrawingType));
 }
@@ -156,7 +156,7 @@ TEST_F(PaintControllerTest, UpdateSwapOrder)
     drawRect(context, unaffected, backgroundDrawingType, FloatRect(300, 300, 10, 10));
     paintController().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(paintController().displayItems(), 3,
+    EXPECT_DISPLAY_LIST(paintController().displayItemList(), 3,
         TestDisplayItem(first, backgroundDrawingType),
         TestDisplayItem(second, backgroundDrawingType),
         TestDisplayItem(unaffected, backgroundDrawingType));
@@ -167,7 +167,7 @@ TEST_F(PaintControllerTest, UpdateSwapOrder)
     drawRect(context, unaffected, backgroundDrawingType, FloatRect(300, 300, 10, 10));
     paintController().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(paintController().displayItems(), 3,
+    EXPECT_DISPLAY_LIST(paintController().displayItemList(), 3,
         TestDisplayItem(second, backgroundDrawingType),
         TestDisplayItem(first, backgroundDrawingType),
         TestDisplayItem(unaffected, backgroundDrawingType));
@@ -184,7 +184,7 @@ TEST_F(PaintControllerTest, UpdateNewItemInMiddle)
     drawRect(context, second, backgroundDrawingType, FloatRect(100, 100, 50, 200));
     paintController().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(paintController().displayItems(), 2,
+    EXPECT_DISPLAY_LIST(paintController().displayItemList(), 2,
         TestDisplayItem(first, backgroundDrawingType),
         TestDisplayItem(second, backgroundDrawingType));
 
@@ -193,7 +193,7 @@ TEST_F(PaintControllerTest, UpdateNewItemInMiddle)
     drawRect(context, second, backgroundDrawingType, FloatRect(100, 100, 50, 200));
     paintController().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(paintController().displayItems(), 3,
+    EXPECT_DISPLAY_LIST(paintController().displayItemList(), 3,
         TestDisplayItem(first, backgroundDrawingType),
         TestDisplayItem(third, backgroundDrawingType),
         TestDisplayItem(second, backgroundDrawingType));
@@ -214,7 +214,7 @@ TEST_F(PaintControllerTest, UpdateInvalidationWithPhases)
     drawRect(context, third, foregroundDrawingType, FloatRect(300, 100, 50, 50));
     paintController().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(paintController().displayItems(), 6,
+    EXPECT_DISPLAY_LIST(paintController().displayItemList(), 6,
         TestDisplayItem(first, backgroundDrawingType),
         TestDisplayItem(second, backgroundDrawingType),
         TestDisplayItem(third, backgroundDrawingType),
@@ -231,7 +231,7 @@ TEST_F(PaintControllerTest, UpdateInvalidationWithPhases)
     drawRect(context, third, foregroundDrawingType, FloatRect(300, 100, 50, 50));
     paintController().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(paintController().displayItems(), 6,
+    EXPECT_DISPLAY_LIST(paintController().displayItemList(), 6,
         TestDisplayItem(first, backgroundDrawingType),
         TestDisplayItem(second, backgroundDrawingType),
         TestDisplayItem(third, backgroundDrawingType),
@@ -250,7 +250,7 @@ TEST_F(PaintControllerTest, UpdateAddFirstOverlap)
     drawRect(context, second, foregroundDrawingType, FloatRect(200, 200, 50, 50));
     paintController().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(paintController().displayItems(), 2,
+    EXPECT_DISPLAY_LIST(paintController().displayItemList(), 2,
         TestDisplayItem(second, backgroundDrawingType),
         TestDisplayItem(second, foregroundDrawingType));
 
@@ -262,7 +262,7 @@ TEST_F(PaintControllerTest, UpdateAddFirstOverlap)
     drawRect(context, second, foregroundDrawingType, FloatRect(200, 200, 50, 50));
     paintController().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(paintController().displayItems(), 4,
+    EXPECT_DISPLAY_LIST(paintController().displayItemList(), 4,
         TestDisplayItem(first, backgroundDrawingType),
         TestDisplayItem(first, foregroundDrawingType),
         TestDisplayItem(second, backgroundDrawingType),
@@ -273,7 +273,7 @@ TEST_F(PaintControllerTest, UpdateAddFirstOverlap)
     drawRect(context, second, foregroundDrawingType, FloatRect(200, 200, 50, 50));
     paintController().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(paintController().displayItems(), 2,
+    EXPECT_DISPLAY_LIST(paintController().displayItemList(), 2,
         TestDisplayItem(second, backgroundDrawingType),
         TestDisplayItem(second, foregroundDrawingType));
 }
@@ -288,7 +288,7 @@ TEST_F(PaintControllerTest, UpdateAddLastOverlap)
     drawRect(context, first, foregroundDrawingType, FloatRect(100, 100, 150, 150));
     paintController().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(paintController().displayItems(), 2,
+    EXPECT_DISPLAY_LIST(paintController().displayItemList(), 2,
         TestDisplayItem(first, backgroundDrawingType),
         TestDisplayItem(first, foregroundDrawingType));
 
@@ -300,7 +300,7 @@ TEST_F(PaintControllerTest, UpdateAddLastOverlap)
     drawRect(context, second, foregroundDrawingType, FloatRect(200, 200, 50, 50));
     paintController().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(paintController().displayItems(), 4,
+    EXPECT_DISPLAY_LIST(paintController().displayItemList(), 4,
         TestDisplayItem(first, backgroundDrawingType),
         TestDisplayItem(first, foregroundDrawingType),
         TestDisplayItem(second, backgroundDrawingType),
@@ -312,7 +312,7 @@ TEST_F(PaintControllerTest, UpdateAddLastOverlap)
     drawRect(context, first, foregroundDrawingType, FloatRect(100, 100, 150, 150));
     paintController().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(paintController().displayItems(), 2,
+    EXPECT_DISPLAY_LIST(paintController().displayItemList(), 2,
         TestDisplayItem(first, backgroundDrawingType),
         TestDisplayItem(first, foregroundDrawingType));
 }
@@ -330,7 +330,7 @@ TEST_F(PaintControllerTest, UpdateClip)
     }
     paintController().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(paintController().displayItems(), 4,
+    EXPECT_DISPLAY_LIST(paintController().displayItemList(), 4,
         TestDisplayItem(first, clipType),
         TestDisplayItem(first, backgroundDrawingType),
         TestDisplayItem(second, backgroundDrawingType),
@@ -341,7 +341,7 @@ TEST_F(PaintControllerTest, UpdateClip)
     drawRect(context, second, backgroundDrawingType, FloatRect(100, 100, 150, 150));
     paintController().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(paintController().displayItems(), 2,
+    EXPECT_DISPLAY_LIST(paintController().displayItemList(), 2,
         TestDisplayItem(first, backgroundDrawingType),
         TestDisplayItem(second, backgroundDrawingType));
 
@@ -353,7 +353,7 @@ TEST_F(PaintControllerTest, UpdateClip)
     }
     paintController().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(paintController().displayItems(), 4,
+    EXPECT_DISPLAY_LIST(paintController().displayItemList(), 4,
         TestDisplayItem(first, backgroundDrawingType),
         TestDisplayItem(second, clipType),
         TestDisplayItem(second, backgroundDrawingType),
@@ -370,13 +370,13 @@ TEST_F(PaintControllerTest, CachedDisplayItems)
     drawRect(context, second, backgroundDrawingType, FloatRect(100, 100, 150, 150));
     paintController().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(paintController().displayItems(), 2,
+    EXPECT_DISPLAY_LIST(paintController().displayItemList(), 2,
         TestDisplayItem(first, backgroundDrawingType),
         TestDisplayItem(second, backgroundDrawingType));
     EXPECT_TRUE(paintController().clientCacheIsValid(first.displayItemClient()));
     EXPECT_TRUE(paintController().clientCacheIsValid(second.displayItemClient()));
-    const SkPicture* firstPicture = static_cast<const DrawingDisplayItem&>(paintController().displayItems()[0]).picture();
-    const SkPicture* secondPicture = static_cast<const DrawingDisplayItem&>(paintController().displayItems()[1]).picture();
+    const SkPicture* firstPicture = static_cast<const DrawingDisplayItem&>(paintController().displayItemList()[0]).picture();
+    const SkPicture* secondPicture = static_cast<const DrawingDisplayItem&>(paintController().displayItemList()[1]).picture();
 
     paintController().invalidate(first, PaintInvalidationFull, IntRect(), IntRect());
     EXPECT_FALSE(paintController().clientCacheIsValid(first.displayItemClient()));
@@ -386,13 +386,13 @@ TEST_F(PaintControllerTest, CachedDisplayItems)
     drawRect(context, second, backgroundDrawingType, FloatRect(100, 100, 150, 150));
     paintController().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(paintController().displayItems(), 2,
+    EXPECT_DISPLAY_LIST(paintController().displayItemList(), 2,
         TestDisplayItem(first, backgroundDrawingType),
         TestDisplayItem(second, backgroundDrawingType));
     // The first display item should be updated.
-    EXPECT_NE(firstPicture, static_cast<const DrawingDisplayItem&>(paintController().displayItems()[0]).picture());
+    EXPECT_NE(firstPicture, static_cast<const DrawingDisplayItem&>(paintController().displayItemList()[0]).picture());
     // The second display item should be cached.
-    EXPECT_EQ(secondPicture, static_cast<const DrawingDisplayItem&>(paintController().displayItems()[1]).picture());
+    EXPECT_EQ(secondPicture, static_cast<const DrawingDisplayItem&>(paintController().displayItemList()[1]).picture());
     EXPECT_TRUE(paintController().clientCacheIsValid(first.displayItemClient()));
     EXPECT_TRUE(paintController().clientCacheIsValid(second.displayItemClient()));
 
@@ -419,7 +419,7 @@ TEST_F(PaintControllerTest, ComplexUpdateSwapOrder)
     drawRect(context, container2, foregroundDrawingType, FloatRect(100, 200, 100, 100));
     paintController().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(paintController().displayItems(), 8,
+    EXPECT_DISPLAY_LIST(paintController().displayItemList(), 8,
         TestDisplayItem(container1, backgroundDrawingType),
         TestDisplayItem(content1, backgroundDrawingType),
         TestDisplayItem(content1, foregroundDrawingType),
@@ -441,7 +441,7 @@ TEST_F(PaintControllerTest, ComplexUpdateSwapOrder)
     drawRect(context, container1, foregroundDrawingType, FloatRect(100, 100, 100, 100));
     paintController().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(paintController().displayItems(), 8,
+    EXPECT_DISPLAY_LIST(paintController().displayItemList(), 8,
         TestDisplayItem(container2, backgroundDrawingType),
         TestDisplayItem(content2, backgroundDrawingType),
         TestDisplayItem(content2, foregroundDrawingType),
@@ -478,7 +478,7 @@ TEST_F(PaintControllerTest, CachedSubsequenceSwapOrder)
     }
     paintController().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(paintController().displayItems(), 12,
+    EXPECT_DISPLAY_LIST(paintController().displayItemList(), 12,
         TestDisplayItem(container1, subsequenceType),
         TestDisplayItem(container1, backgroundDrawingType),
         TestDisplayItem(content1, backgroundDrawingType),
@@ -497,13 +497,13 @@ TEST_F(PaintControllerTest, CachedSubsequenceSwapOrder)
     EXPECT_TRUE(SubsequenceRecorder::useCachedSubsequenceIfPossible(context, container2, subsequenceType));
     EXPECT_TRUE(SubsequenceRecorder::useCachedSubsequenceIfPossible(context, container1, subsequenceType));
 
-    EXPECT_DISPLAY_LIST(paintController().newDisplayItems(), 2,
+    EXPECT_DISPLAY_LIST(paintController().newDisplayItemList(), 2,
         TestDisplayItem(container2, cachedSubsequenceType),
         TestDisplayItem(container1, cachedSubsequenceType));
 
     paintController().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(paintController().displayItems(), 12,
+    EXPECT_DISPLAY_LIST(paintController().displayItemList(), 12,
         TestDisplayItem(container2, subsequenceType),
         TestDisplayItem(container2, backgroundDrawingType),
         TestDisplayItem(content2, backgroundDrawingType),
@@ -574,7 +574,7 @@ TEST_F(PaintControllerTest, CachedNestedSubsequenceUpdate)
     }
     paintController().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(paintController().displayItems(), 14,
+    EXPECT_DISPLAY_LIST(paintController().displayItemList(), 14,
         TestDisplayItem(container1, subsequenceType),
         TestDisplayItem(container1, backgroundDrawingType),
         TestDisplayItem(content1, subsequenceType),
@@ -614,7 +614,7 @@ TEST_F(PaintControllerTest, CachedNestedSubsequenceUpdate)
         EXPECT_TRUE(SubsequenceRecorder::useCachedSubsequenceIfPossible(context, content1, subsequenceType));
         drawRect(context, container1, foregroundDrawingType, FloatRect(100, 100, 100, 100));
     }
-    EXPECT_DISPLAY_LIST(paintController().newDisplayItems(), 7,
+    EXPECT_DISPLAY_LIST(paintController().newDisplayItemList(), 7,
         TestDisplayItem(content2, subsequenceType),
         TestDisplayItem(content2, foregroundDrawingType),
         TestDisplayItem(content2, endSubsequenceType),
@@ -625,7 +625,7 @@ TEST_F(PaintControllerTest, CachedNestedSubsequenceUpdate)
 
     paintController().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(paintController().displayItems(), 10,
+    EXPECT_DISPLAY_LIST(paintController().displayItemList(), 10,
         TestDisplayItem(content2, subsequenceType),
         TestDisplayItem(content2, foregroundDrawingType),
         TestDisplayItem(content2, endSubsequenceType),
@@ -660,12 +660,12 @@ TEST_F(PaintControllerTest, Scope)
     paintController().endScope();
     paintController().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(paintController().displayItems(), 3,
+    EXPECT_DISPLAY_LIST(paintController().displayItemList(), 3,
         TestDisplayItem(multicol, backgroundDrawingType),
         TestDisplayItem(content, foregroundDrawingType),
         TestDisplayItem(content, foregroundDrawingType));
-    RefPtr<const SkPicture> picture1 = static_cast<const DrawingDisplayItem&>(paintController().displayItems()[1]).picture();
-    RefPtr<const SkPicture> picture2 = static_cast<const DrawingDisplayItem&>(paintController().displayItems()[2]).picture();
+    RefPtr<const SkPicture> picture1 = static_cast<const DrawingDisplayItem&>(paintController().displayItemList()[1]).picture();
+    RefPtr<const SkPicture> picture2 = static_cast<const DrawingDisplayItem&>(paintController().displayItemList()[2]).picture();
     EXPECT_NE(picture1, picture2);
 
     // Draw again with nothing invalidated.
@@ -679,19 +679,19 @@ TEST_F(PaintControllerTest, Scope)
     drawRect(context, content, foregroundDrawingType, rect2);
     paintController().endScope();
 
-    EXPECT_DISPLAY_LIST(paintController().newDisplayItems(), 3,
+    EXPECT_DISPLAY_LIST(paintController().newDisplayItemList(), 3,
         TestDisplayItem(multicol, DisplayItem::drawingTypeToCachedDrawingType(backgroundDrawingType)),
         TestDisplayItem(content, foregroundDrawingType),
         TestDisplayItem(content, foregroundDrawingType));
 
     paintController().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(paintController().displayItems(), 3,
+    EXPECT_DISPLAY_LIST(paintController().displayItemList(), 3,
         TestDisplayItem(multicol, backgroundDrawingType),
         TestDisplayItem(content, foregroundDrawingType),
         TestDisplayItem(content, foregroundDrawingType));
-    EXPECT_NE(picture1, static_cast<const DrawingDisplayItem&>(paintController().displayItems()[1]).picture());
-    EXPECT_NE(picture2, static_cast<const DrawingDisplayItem&>(paintController().displayItems()[2]).picture());
+    EXPECT_NE(picture1, static_cast<const DrawingDisplayItem&>(paintController().displayItemList()[1]).picture());
+    EXPECT_NE(picture2, static_cast<const DrawingDisplayItem&>(paintController().displayItemList()[2]).picture());
 
     // Now the multicol becomes 3 columns and repaints.
     paintController().invalidate(multicol, PaintInvalidationFull, IntRect(), IntRect());
@@ -710,13 +710,13 @@ TEST_F(PaintControllerTest, Scope)
     paintController().endScope();
 
     // We should repaint everything on invalidation of the scope container.
-    EXPECT_DISPLAY_LIST(paintController().newDisplayItems(), 4,
+    EXPECT_DISPLAY_LIST(paintController().newDisplayItemList(), 4,
         TestDisplayItem(multicol, backgroundDrawingType),
         TestDisplayItem(content, foregroundDrawingType),
         TestDisplayItem(content, foregroundDrawingType),
         TestDisplayItem(content, foregroundDrawingType));
-    EXPECT_NE(picture1, static_cast<const DrawingDisplayItem&>(paintController().newDisplayItems()[1]).picture());
-    EXPECT_NE(picture2, static_cast<const DrawingDisplayItem&>(paintController().newDisplayItems()[2]).picture());
+    EXPECT_NE(picture1, static_cast<const DrawingDisplayItem&>(paintController().newDisplayItemList()[1]).picture());
+    EXPECT_NE(picture2, static_cast<const DrawingDisplayItem&>(paintController().newDisplayItemList()[2]).picture());
 
     paintController().commitNewDisplayItems();
 }
@@ -736,7 +736,7 @@ TEST_F(PaintControllerTest, OptimizeNoopPairs)
     drawRect(context, third, backgroundDrawingType, FloatRect(0, 0, 100, 100));
 
     paintController().commitNewDisplayItems();
-    EXPECT_DISPLAY_LIST(paintController().displayItems(), 5,
+    EXPECT_DISPLAY_LIST(paintController().displayItemList(), 5,
         TestDisplayItem(first, backgroundDrawingType),
         TestDisplayItem(second, DisplayItem::BeginClipPath),
         TestDisplayItem(second, backgroundDrawingType),
@@ -753,7 +753,7 @@ TEST_F(PaintControllerTest, OptimizeNoopPairs)
     paintController().commitNewDisplayItems();
 
     // Empty clips should have been optimized out.
-    EXPECT_DISPLAY_LIST(paintController().displayItems(), 2,
+    EXPECT_DISPLAY_LIST(paintController().displayItemList(), 2,
         TestDisplayItem(first, backgroundDrawingType),
         TestDisplayItem(third, backgroundDrawingType));
 
@@ -770,7 +770,7 @@ TEST_F(PaintControllerTest, OptimizeNoopPairs)
     paintController().commitNewDisplayItems();
 
     // Empty clips should have been optimized out.
-    EXPECT_DISPLAY_LIST(paintController().displayItems(), 2,
+    EXPECT_DISPLAY_LIST(paintController().displayItemList(), 2,
         TestDisplayItem(first, backgroundDrawingType),
         TestDisplayItem(third, backgroundDrawingType));
 }

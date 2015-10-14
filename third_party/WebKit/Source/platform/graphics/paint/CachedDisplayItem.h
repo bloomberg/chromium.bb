@@ -10,7 +10,7 @@
 
 namespace blink {
 
-// A placeholder of a DrawingDisplayItem or a subtree in the new paint DisplayItems,
+// A placeholder of a DrawingDisplayItem or a subtree in the new paint DisplayItemList,
 // to indicate that the DrawingDisplayItem/subtree has not been changed and should be replaced with
 // the cached DrawingDisplayItem/subtree when merging new paint list to cached paint list.
 class CachedDisplayItem final : public DisplayItem {

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DisplayItems_h
-#define DisplayItems_h
+#ifndef DisplayItemList_h
+#define DisplayItemList_h
 
 #include "platform/graphics/ContiguousContainer.h"
 #include "platform/graphics/paint/DisplayItem.h"
@@ -25,9 +25,9 @@ static const size_t kDisplayItemAlignment = WTF_ALIGN_OF(BeginTransform3DDisplay
 static const size_t kMaximumDisplayItemSize = sizeof(BeginTransform3DDisplayItem);
 
 // A container for a list of display items.
-class DisplayItems : public ContiguousContainer<DisplayItem, kDisplayItemAlignment> {
+class DisplayItemList : public ContiguousContainer<DisplayItem, kDisplayItemAlignment> {
 public:
-    DisplayItems(size_t initialSizeBytes)
+    DisplayItemList(size_t initialSizeBytes)
         : ContiguousContainer(kMaximumDisplayItemSize, initialSizeBytes) {}
 
     DisplayItem& appendByMoving(DisplayItem& item)
@@ -49,4 +49,4 @@ public:
 
 } // namespace blink
 
-#endif // DisplayItems_h
+#endif // DisplayItemList_h
