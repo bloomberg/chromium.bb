@@ -484,6 +484,9 @@ extern "C"
   char ** resolveTable(const char *tableList, const char *base);
 /* Resolve tableList against base. */
 
+  void * getTable(const char *tableList);
+/* Checks and loads tableList. */
+
   widechar getDotsForChar (widechar c);
 /* Returns the single-cell dot pattern corresponding to a character. */
 

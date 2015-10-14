@@ -4800,7 +4800,7 @@ cleanup:
 }
 
 static ChainEntry *lastTrans = NULL;
-static void *
+void *
 getTable (const char *tableList)
 {
 /*Keep track of which tables have already been compiled */
@@ -5049,7 +5049,7 @@ lou_charSize ()
 int EXPORT_CALL
 lou_compileString (const char *tableList, const char *inString)
 {
-  if (!lou_getTable (tableList))
+  if (!getTable (tableList))
     return 0;
   return compileString (inString);
 }
