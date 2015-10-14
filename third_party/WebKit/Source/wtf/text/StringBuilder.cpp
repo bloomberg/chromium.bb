@@ -57,12 +57,6 @@ void StringBuilder::reifyString()
         return;
     }
 
-    if (m_buffer->hasOneRef()) {
-        m_buffer->truncateAssumingIsolated(m_length);
-        m_string = m_buffer.release();
-        return;
-    }
-
     m_string = m_buffer->substring(0, m_length);
 }
 

@@ -218,15 +218,6 @@ public:
     static PassRefPtr<StringImpl> createUninitialized(unsigned length, LChar*& data);
     static PassRefPtr<StringImpl> createUninitialized(unsigned length, UChar*& data);
 
-    // If this StringImpl has only one reference, we can truncate the string by
-    // updating its m_length property without actually re-allocating its buffer.
-    void truncateAssumingIsolated(unsigned length)
-    {
-        ASSERT(hasOneRef());
-        ASSERT(length <= m_length);
-        m_length = length;
-    }
-
     unsigned length() const { return m_length; }
     bool is8Bit() const { return m_is8Bit; }
 
@@ -452,11 +443,11 @@ private:
 
 private:
     unsigned m_refCount;
-    unsigned m_length;
+    const unsigned m_length;
     mutable unsigned m_hash : 24;
     unsigned m_isAtomic : 1;
-    unsigned m_is8Bit : 1;
-    unsigned m_isStatic : 1;
+    const unsigned m_is8Bit : 1;
+    const unsigned m_isStatic : 1;
 };
 
 template <>

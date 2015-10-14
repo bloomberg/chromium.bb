@@ -360,9 +360,8 @@ String SerializedScriptValueWriter::takeWireString()
 {
     static_assert(sizeof(BufferValueType) == 2, "BufferValueType should be 2 bytes");
     fillHole();
-    String data = String(m_buffer.data(), m_buffer.size());
-    data.impl()->truncateAssumingIsolated((m_position + 1) / sizeof(BufferValueType));
-    return data;
+    ASSERT((m_position + 1) / sizeof(BufferValueType) <= m_buffer.size());
+    return String(m_buffer.data(), (m_position + 1) / sizeof(BufferValueType));
 }
 
 void SerializedScriptValueWriter::writeReferenceCount(uint32_t numberOfReferences)

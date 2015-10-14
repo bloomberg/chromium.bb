@@ -682,7 +682,7 @@ static PassRefPtr<StringImpl> caseConvert(const UChar* source16, size_t length, 
         targetLength = converter(data16, targetLength, source16, length, locale, &status);
         if (U_SUCCESS(status)) {
             if (length > 0)
-                output->truncateAssumingIsolated(targetLength);
+                return output->substring(0, targetLength);
             return output.release();
         }
         if (status != U_BUFFER_OVERFLOW_ERROR)
