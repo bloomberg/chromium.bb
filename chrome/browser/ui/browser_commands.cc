@@ -186,6 +186,8 @@ WebContents* GetTabAndRevertIfNecessary(Browser* browser,
     case NEW_FOREGROUND_TAB:
     case NEW_BACKGROUND_TAB: {
       WebContents* new_tab = current_tab->Clone();
+      if (disposition == NEW_BACKGROUND_TAB)
+        new_tab->WasHidden();
       browser->tab_strip_model()->AddWebContents(
           new_tab, -1, ui::PAGE_TRANSITION_LINK,
           (disposition == NEW_FOREGROUND_TAB) ?
