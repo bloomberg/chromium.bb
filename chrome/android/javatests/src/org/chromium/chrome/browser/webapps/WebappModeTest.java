@@ -171,8 +171,11 @@ public class WebappModeTest extends MultiActivityTestBase {
     /**
      * Tests that a WebappActivity can be brought forward by calling
      * WebContentsDelegateAndroid.activateContents().
+     *
+     * Flaky: https://crbug.com/539755
+     * @MediumTest
      */
-    @MediumTest
+    @DisabledTest
     public void testActivateContents() throws Exception {
         runForegroundingTest(true);
     }
