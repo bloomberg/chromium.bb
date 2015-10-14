@@ -11,6 +11,7 @@ import android.util.SparseBooleanArray;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.tab.Tab;
@@ -245,6 +246,7 @@ public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<Ch
      * crashed in background is restored in foreground. This is a regression test for
      * http://crbug.com/399521.
      */
+    @DisabledTest // Flaked on the try bot: http://crbug.com/543153
     @LargeTest
     @Feature({"ProcessManagement"})
     public void testCrashInBackground() throws InterruptedException {
