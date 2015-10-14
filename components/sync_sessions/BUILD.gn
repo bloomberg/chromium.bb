@@ -13,10 +13,15 @@ source_set("sync_sessions") {
     "revisit/page_visit_observer.h",
     "revisit/sessions_page_revisit_observer.cc",
     "revisit/sessions_page_revisit_observer.h",
+    "revisit/typed_url_page_revisit_observer.cc",
+    "revisit/typed_url_page_revisit_observer.h",
+    "revisit/typed_url_page_revisit_task.cc",
+    "revisit/typed_url_page_revisit_task.h",
   ]
 
   deps = [
     "//base",
+    "//components/history/core/browser",
     "//components/sessions",
     "//components/sync_driver",
     "//sync",
@@ -29,6 +34,7 @@ source_set("unit_tests") {
     "revisit/current_tab_matcher_unittest.cc",
     "revisit/offset_tab_matcher_unittest.cc",
     "revisit/sessions_page_revisit_observer_unittest.cc",
+    "revisit/typed_url_page_revisit_task_unittest.cc",
   ]
 
   deps = [

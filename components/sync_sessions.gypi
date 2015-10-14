@@ -14,6 +14,7 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../sync/sync.gyp:sync',
+        'history_core_browser',
         'sync_driver',
       ],
       'sources': [
@@ -26,6 +27,10 @@
         'sync_sessions/revisit/page_visit_observer.h',
         'sync_sessions/revisit/sessions_page_revisit_observer.cc',
         'sync_sessions/revisit/sessions_page_revisit_observer.h',
+        'sync_sessions/revisit/typed_url_page_revisit_observer.cc',
+        'sync_sessions/revisit/typed_url_page_revisit_observer.h',
+        'sync_sessions/revisit/typed_url_page_revisit_task.cc',
+        'sync_sessions/revisit/typed_url_page_revisit_task.h',
       ],
       'conditions': [
         ['OS!="ios"', {

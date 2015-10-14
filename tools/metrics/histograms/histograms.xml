@@ -45669,6 +45669,33 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Transition type that didn't match a synced tab.</summary>
 </histogram>
 
+<histogram name="Sync.PageRevisitTypedUrlDuration" units="milliseconds">
+  <owner>skym@chromium.org</owner>
+  <summary>
+    The client side execution time to check for revisits with typed URL data.
+  </summary>
+</histogram>
+
+<histogram name="Sync.PageRevisitTypedUrlMatchAge" units="minutes">
+  <owner>skym@chromium.org</owner>
+  <summary>
+    Difference in time between finding the match and the last time this URL was
+    typed on a foreign client.
+  </summary>
+</histogram>
+
+<histogram name="Sync.PageRevisitTypedUrlMatchTransition"
+    units="PageVisitTransitionType">
+  <owner>skym@chromium.org</owner>
+  <summary>Transition type that didn't match a typed URL.</summary>
+</histogram>
+
+<histogram name="Sync.PageRevisitTypedUrlMissTransition"
+    units="PageVisitTransitionType">
+  <owner>skym@chromium.org</owner>
+  <summary>Transition type that matched a typed URL.</summary>
+</histogram>
+
 <histogram name="Sync.PartiallySyncedTypes">
   <owner>zea@chromium.org</owner>
   <summary>

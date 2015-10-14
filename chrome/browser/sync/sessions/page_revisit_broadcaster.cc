@@ -8,9 +8,13 @@
 #include <vector>
 
 #include "base/metrics/field_trial.h"
+#include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/synced_session_util.h"
 #include "chrome/browser/sync/sessions/sessions_sync_manager.h"
+#include "components/history/core/browser/history_service.h"
 #include "components/sync_sessions/revisit/sessions_page_revisit_observer.h"
+#include "components/sync_sessions/revisit/typed_url_page_revisit_observer.h"
 
 namespace browser_sync {
 
@@ -47,8 +51,13 @@ PageRevisitBroadcaster::PageRevisitBroadcaster(SessionsSyncManager* manager,
         scoped_ptr<sync_sessions::ForeignSessionsProvider>(
             new SessionsSyncManagerWrapper(manager))));
 
+    history::HistoryService* history =
+        HistoryServiceFactory::GetForProfileWithoutCreating(profile);
+    if (history) {
+      revisit_observers_.push_back(
+          new sync_sessions::TypedUrlPageRevisitObserver(history));
+    }
     // TODO(skym): Add bookmarks observer.
-    // TODO(skym): Add typed URL observer.
   }
 }
 
