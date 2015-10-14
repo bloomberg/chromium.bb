@@ -2850,8 +2850,6 @@
       'browser/sync/chrome_sync_client.h',
       'browser/sync/glue/autofill_data_type_controller.cc',
       'browser/sync/glue/autofill_data_type_controller.h',
-      'browser/sync/glue/autofill_profile_data_type_controller.cc',
-      'browser/sync/glue/autofill_profile_data_type_controller.h',
       'browser/sync/glue/extensions_activity_monitor.cc',
       'browser/sync/glue/extensions_activity_monitor.h',
       'browser/sync/glue/history_delete_directives_data_type_controller.cc',

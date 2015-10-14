@@ -120,6 +120,8 @@ source_set("browser") {
     "webdata/autofill_change.h",
     "webdata/autofill_entry.cc",
     "webdata/autofill_entry.h",
+    "webdata/autofill_profile_data_type_controller.cc",
+    "webdata/autofill_profile_data_type_controller.h",
     "webdata/autofill_profile_syncable_service.cc",
     "webdata/autofill_profile_syncable_service.h",
     "webdata/autofill_table.cc",

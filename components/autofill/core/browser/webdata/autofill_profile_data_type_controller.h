@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_GLUE_AUTOFILL_PROFILE_DATA_TYPE_CONTROLLER_H_
-#define CHROME_BROWSER_SYNC_GLUE_AUTOFILL_PROFILE_DATA_TYPE_CONTROLLER_H_
+#ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_WEBDATA_AUTOFILL_PROFILE_DATA_TYPE_CONTROLLER_H_
+#define COMPONENTS_AUTOFILL_CORE_BROWSER_WEBDATA_AUTOFILL_PROFILE_DATA_TYPE_CONTROLLER_H_
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
@@ -17,24 +17,28 @@ class PersonalDataManager;
 
 namespace browser_sync {
 
+// Controls syncing of the AUTOFILL_PROFILE data type.
 class AutofillProfileDataTypeController
     : public sync_driver::NonUIDataTypeController,
       public autofill::PersonalDataManagerObserver {
  public:
-  AutofillProfileDataTypeController(const base::Closure& error_callback,
-                                    sync_driver::SyncClient* sync_client);
+  AutofillProfileDataTypeController(
+      const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
+      const scoped_refptr<base::SingleThreadTaskRunner>& db_thread,
+      const base::Closure& error_callback,
+      sync_driver::SyncClient* sync_client);
 
-  // NonUIDataTypeController implementation.
+  // NonUIDataTypeController:
   syncer::ModelType type() const override;
   syncer::ModelSafeGroup model_safe_group() const override;
 
-  // PersonalDataManagerObserver implementation:
+  // PersonalDataManagerObserver:
   void OnPersonalDataChanged() override;
 
  protected:
   ~AutofillProfileDataTypeController() override;
 
-  // NonUIDataTypeController implementation.
+  // NonUIDataTypeController:
   bool PostTaskOnBackendThread(const tracked_objects::Location& from_here,
                                const base::Closure& task) override;
   bool StartModels() override;
@@ -43,6 +47,12 @@ class AutofillProfileDataTypeController
  private:
   // Callback to notify that WebDatabase has loaded.
   void WebDatabaseLoaded();
+
+  // A reference to the UI thread's task runner.
+  const scoped_refptr<base::SingleThreadTaskRunner> ui_thread_;
+
+  // A reference to the DB thread's task runner.
+  const scoped_refptr<base::SingleThreadTaskRunner> db_thread_;
 
   sync_driver::SyncClient* const sync_client_;
   autofill::PersonalDataManager* personal_data_;
@@ -53,4 +63,4 @@ class AutofillProfileDataTypeController
 
 }  // namespace browser_sync
 
-#endif  // CHROME_BROWSER_SYNC_GLUE_AUTOFILL_PROFILE_DATA_TYPE_CONTROLLER_H_
+#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_WEBDATA_AUTOFILL_PROFILE_DATA_TYPE_CONTROLLER_H_
