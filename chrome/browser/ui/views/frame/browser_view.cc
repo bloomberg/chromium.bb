@@ -550,17 +550,12 @@ BrowserView* BrowserView::GetBrowserViewForBrowser(const Browser* browser) {
 void BrowserView::Paint1pxHorizontalLine(gfx::Canvas* canvas,
                                          SkColor color,
                                          const gfx::Rect& bounds) {
-  canvas->Save();
-  SkScalar scale_factor = 1.0f / canvas->image_scale();
-  canvas->sk_canvas()->scale(scale_factor, scale_factor);
-
-  gfx::RectF line_rect =
-      gfx::ScaleRect(gfx::RectF(bounds), canvas->image_scale());
-  line_rect.Inset(0, line_rect.height() - 1, 0, 0);
-
+  const float scale = canvas->SaveAndUnscale();
+  gfx::RectF rect(gfx::ScaleRect(gfx::RectF(bounds), scale));
+  rect.Inset(0, rect.height() - 1, 0, 0);
   SkPaint paint;
   paint.setColor(color);
-  canvas->sk_canvas()->drawRect(gfx::RectFToSkRect(line_rect), paint);
+  canvas->sk_canvas()->drawRect(gfx::RectFToSkRect(rect), paint);
   canvas->Restore();
 }
 

@@ -169,6 +169,11 @@ class GFX_EXPORT Canvas {
   // until a balanced call to Restore() is made.
   void Save();
 
+  // Saves the drawing state, unscales by the image scale factor, and returns
+  // that factor.  This is useful when callers want to draw directly in the
+  // native scale.
+  float SaveAndUnscale();
+
   // As with Save(), except draws to a layer that is blended with the canvas
   // at the specified alpha once Restore() is called.
   // |layer_bounds| are the bounds of the layer relative to the current
