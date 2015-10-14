@@ -41,7 +41,10 @@
 */
 
 #include "wtf/Compiler.h"
+#include "wtf/Noncopyable.h"
 #include "wtf/WTFExport.h"
+
+#include <stdarg.h>
 
 // Users must test "#if ENABLE(ASSERT)", which helps ensure that code
 // testing this macro has included this header.
@@ -121,9 +124,49 @@ private:
     char* m_cxaDemangled;
 };
 
+// ScopedLogger wraps log messages in parentheses, with indentation proportional
+// to the number of instances. This makes it easy to see the flow of control in
+// the output, particularly when instrumenting recursive functions.
+class WTF_EXPORT ScopedLogger {
+    WTF_MAKE_NONCOPYABLE(ScopedLogger);
+public:
+    // The first message is passed to the constructor.  Additional messages for
+    // the same scope can be added with log(). If condition is false, produce no
+    // output and do not create a scope.
+    ScopedLogger(bool condition, const char* format, ...) WTF_ATTRIBUTE_PRINTF(3, 4);
+    ~ScopedLogger();
+    void log(const char* format, ...) WTF_ATTRIBUTE_PRINTF(2, 3);
+
+private:
+    friend class AssertionsTest;
+    using PrintFunctionPtr = void (*)(const char* format, va_list args);
+    static void setPrintFuncForTests(PrintFunctionPtr p) { m_printFunc = p; } // Note: not thread safe.
+
+    void init(const char* format, va_list args);
+    void writeNewlineIfNeeded();
+    void indent();
+    void print(const char* format, ...);
+    static ScopedLogger*& current();
+
+    ScopedLogger* const m_parent;
+    bool m_multiline; // The ')' will go on the same line if there is only one entry.
+    static PrintFunctionPtr m_printFunc;
+};
+
+#if LOG_DISABLED
+#define WTF_CREATE_SCOPED_LOGGER(...) ((void) 0)
+#define WTF_CREATE_SCOPED_LOGGER_IF(...) ((void) 0)
+#define WTF_APPEND_SCOPED_LOGGER(...) ((void) 0)
+#else
+#define WTF_CREATE_SCOPED_LOGGER(name, ...) ScopedLogger name(true, __VA_ARGS__)
+#define WTF_CREATE_SCOPED_LOGGER_IF(name, condition, ...) ScopedLogger name(condition, __VA_ARGS__)
+#define WTF_APPEND_SCOPED_LOGGER(name, ...) (name.log(__VA_ARGS__))
+#endif
+
 } // namespace WTF
 
 using WTF::FrameToNameScope;
+using WTF::ScopedLogger;
 
 /* IMMEDIATE_CRASH() - Like CRASH() below but crashes in the fastest, simplest possible way with no attempt at logging. */
 #ifndef IMMEDIATE_CRASH

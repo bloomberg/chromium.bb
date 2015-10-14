@@ -213,6 +213,7 @@
         'wtf_unittest_files': [
             'ASCIICTypeTest.cpp',
             'ArrayBufferBuilderTest.cpp',
+            'AssertionsTest.cpp',
             'CheckedArithmeticTest.cpp',
             'DequeTest.cpp',
             'FunctionalTest.cpp',

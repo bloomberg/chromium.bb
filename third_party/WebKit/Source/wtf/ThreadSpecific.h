@@ -42,6 +42,7 @@
 #ifndef WTF_ThreadSpecific_h
 #define WTF_ThreadSpecific_h
 
+#include "wtf/FastMalloc.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/WTF.h"

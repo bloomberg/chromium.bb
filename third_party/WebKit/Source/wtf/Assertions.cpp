@@ -37,6 +37,8 @@
 #include "wtf/Compiler.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
+#include "wtf/ThreadSpecific.h"
+#include "wtf/Threading.h"
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -276,6 +278,92 @@ FrameToNameScope::~FrameToNameScope()
 {
     free(m_cxaDemangled);
 }
+
+static const char kScopedLoggerIndent[] = "  ";
+
+ScopedLogger::ScopedLogger(bool condition, const char* format, ...)
+    : m_parent(condition ? current() : 0)
+    , m_multiline(false)
+{
+    if (!condition)
+        return;
+
+    va_list args;
+    va_start(args, format);
+    init(format, args);
+    va_end(args);
+}
+
+ScopedLogger::~ScopedLogger()
+{
+    if (current() == this) {
+        if (m_multiline)
+            indent();
+        else
+            print(" ");
+        print(")\n");
+        current() = m_parent;
+    }
+}
+
+void ScopedLogger::init(const char* format, va_list args)
+{
+    current() = this;
+    if (m_parent)
+        m_parent->writeNewlineIfNeeded();
+    indent();
+    print("( ");
+    m_printFunc(format, args);
+}
+
+void ScopedLogger::writeNewlineIfNeeded()
+{
+    if (!m_multiline) {
+        print("\n");
+        m_multiline = true;
+    }
+}
+
+void ScopedLogger::indent()
+{
+    if (m_parent) {
+        m_parent->indent();
+        print(kScopedLoggerIndent);
+    }
+}
+
+void ScopedLogger::log(const char* format, ...)
+{
+    if (current() != this)
+        return;
+
+    va_list args;
+    va_start(args, format);
+
+    writeNewlineIfNeeded();
+    indent();
+    print(kScopedLoggerIndent);
+    m_printFunc(format, args);
+    print("\n");
+
+    va_end(args);
+}
+
+void ScopedLogger::print(const char* format, ...)
+{
+    va_list args;
+    va_start(args, format);
+    m_printFunc(format, args);
+    va_end(args);
+}
+
+ScopedLogger*& ScopedLogger::current()
+{
+    AtomicallyInitializedStaticReference(ThreadSpecific<ScopedLogger*>, ref, new ThreadSpecific<ScopedLogger*>);
+    return *ref;
+}
+
+ScopedLogger::PrintFunctionPtr ScopedLogger::m_printFunc = vprintf_stderr_common;
 
 void WTFPrintBacktrace(void** stack, int size)
 {
