@@ -25,7 +25,6 @@ Example:
 
 
 TODO(maruel): Add VOID support like subprocess2.
-TODO(maruel): Implement timeout argument to Popen.communicate().
 """
 
 import contextlib
@@ -191,10 +190,12 @@ def _calc_timeout(timeout, last_yield):
 
 class TimeoutExpired(Exception):
   """Compatible with python3 subprocess."""
-  def __init__(self, cmd, timeout, output=None):
+  def __init__(self, cmd, timeout, output=None, stderr=None):
     self.cmd = cmd
     self.timeout = timeout
     self.output = output
+    # Non-standard:
+    self.stderr = stderr
     super(TimeoutExpired, self).__init__(str(self))
 
   def __str__(self):
@@ -261,6 +262,59 @@ class Popen(subprocess.Popen):
     """
     return (self.end or time.time()) - self.start
 
+  # pylint: disable=arguments-differ,redefined-builtin
+  def communicate(self, input=None, timeout=None):
+    """Implements python3's timeout support.
+
+    Unlike wait(), timeout=0 is considered the same as None.
+
+    Raises:
+    - TimeoutExpired when more than timeout seconds were spent waiting for the
+      process.
+    """
+    if not timeout:
+      stdout, stderr = super(Popen, self).communicate(input=input)
+    else:
+      stdout = '' if self.stdout else None
+      stderr = '' if self.stderr else None
+      t = None
+      if input is not None:
+        assert self.stdin, (
+            'Can\'t use communicate(input) if not using '
+            'Popen(stdin=subprocess42.PIPE')
+        # TODO(maruel): Switch back to non-threading.
+        def write():
+          try:
+            self.stdin.write(input)
+          except IOError:
+            pass
+        t = threading.Thread(name='Popen.communicate', target=write)
+        t.daemon = True
+        t.start()
+      start = time.time()
+      def remaining():
+        return max(time.time() + timeout - start, 0)
+      try:
+        for pipe, data in self.yield_any(timeout=remaining):
+          if pipe is None:
+            raise TimeoutExpired(self.args, timeout, stdout, stderr)
+          assert pipe in ('stdout', 'stderr'), pipe
+          if pipe == 'stdout':
+            stdout += data
+          else:
+            stderr += data
+      finally:
+        if t:
+          try:
+            self.stdin.close()
+          except IOError:
+            pass
+          t.join()
+
+    # Indirectly initialize self.end.
+    self.wait()
+    return stdout, stderr
+
   def wait(self, timeout=None):  # pylint: disable=arguments-differ
     """Implements python3's timeout support.
 
@@ -317,8 +371,12 @@ class Popen(subprocess.Popen):
   def yield_any(self, maxsize=None, timeout=None):
     """Yields output until the process terminates.
 
-    Yielded values are in the form (pipename, data). Unlike wait(), does not
-    raise TimeoutExpired.
+    Unlike wait(), does not raise TimeoutExpired.
+
+    Yields:
+      (pipename, data) where pipename is either 'stdout', 'stderr' or None in
+      case of timeout or when the child process closed one of the pipe(s) and
+      all pending data on the pipe was read.
 
     Arguments:
     - maxsize: See recv_any(). Can be a callable function.
@@ -377,7 +435,8 @@ class Popen(subprocess.Popen):
           data is available within |timeout| seconds.
 
     Returns:
-      tuple(int(index) or None, str(data)).
+      tuple(pipename or None, str(data)). pipename is one of 'stdout' or
+      'stderr'.
     """
     # recv_multi_impl will early exit on a closed connection. Loop accordingly
     # to simplify call sites.
@@ -493,7 +552,7 @@ def set_signal_handler(signals, handler):
 
 def call(*args, **kwargs):
   """Adds support for timeout."""
-  timeout = kwargs.pop('timeout')
+  timeout = kwargs.pop('timeout', None)
   return Popen(*args, **kwargs).wait(timeout)
 
 
@@ -506,10 +565,12 @@ def check_call(*args, **kwargs):
 
 
 def check_output(*args, **kwargs):
+  """Adds support for timeout."""
+  timeout = kwargs.pop('timeout', None)
   if 'stdout' in kwargs:
     raise ValueError('stdout argument not allowed, it will be overridden.')
   process = Popen(stdout=PIPE, *args, **kwargs)
-  output, _ = process.communicate()
+  output, _ = process.communicate(timeout=timeout)
   retcode = process.poll()
   if retcode:
     raise CalledProcessError(retcode, kwargs.get('args') or args[0], output)

@@ -7,14 +7,13 @@ import itertools
 import logging
 import os
 import sys
+import tempfile
 import unittest
 
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT_DIR)
 
 from utils import subprocess42
-
-OUTPUT = os.path.join(ROOT_DIR, 'tests', 'subprocess42', 'output.py')
 
 
 # Disable pre-set unbuffered output to not interfere with the testing being done
@@ -41,6 +40,48 @@ SCRIPT = (
   '    print(\'ioerror\');\n'
   'print(\'bye\')') % (
     'signal.SIGBREAK' if sys.platform == 'win32' else 'signal.SIGTERM')
+
+
+OUTPUT_SCRIPT = r"""
+import re
+import sys
+import time
+
+def main():
+  try:
+    for command in sys.argv[1:]:
+      if re.match(r'^[0-9\.]+$', command):
+        time.sleep(float(command))
+        continue
+
+      if command.startswith('out_'):
+        pipe = sys.stdout
+      elif command.startswith('err_'):
+        pipe = sys.stderr
+      else:
+        return 1
+
+      command = command[4:]
+      if command == 'print':
+        pipe.write('printing')
+      elif command == 'sleeping':
+        pipe.write('Sleeping.\n')
+      elif command == 'slept':
+        pipe.write('Slept.\n')
+      elif command == 'lf':
+        pipe.write('\n')
+      elif command == 'flush':
+        pipe.flush()
+      else:
+        return 1
+    return 0
+  except OSError:
+    return 0
+
+
+if __name__ == '__main__':
+  sys.exit(main())
+"""
 
 
 def to_native_eol(string):
@@ -94,6 +135,171 @@ def get_output_sleep_proc_err(sleep_duration):
 
 
 class Subprocess42Test(unittest.TestCase):
+  def setUp(self):
+    self._output_script = None
+    super(Subprocess42Test, self).setUp()
+
+  def tearDown(self):
+    try:
+      if self._output_script:
+        os.remove(self._output_script)
+    finally:
+      super(Subprocess42Test, self).tearDown()
+
+  @property
+  def output_script(self):
+    if not self._output_script:
+      handle, self._output_script = tempfile.mkstemp(
+          prefix='subprocess42', suffix='.py')
+      os.write(handle, OUTPUT_SCRIPT)
+      os.close(handle)
+    return self._output_script
+
+  def test_communicate_timeout(self):
+    timedout = 1 if sys.platform == 'win32' else -9
+    # Format is:
+    # ( (cmd, stderr_pipe, timeout), (stdout, stderr, returncode) ), ...
+    # See OUTPUT script for the meaning of the commands.
+    test_data = [
+      # 0 means no timeout, like None.
+      (
+        (['out_sleeping', '0.001', 'out_slept', 'err_print'], None, 0),
+        ('Sleeping.\nSlept.\n', None, 0),
+      ),
+      (
+        (['err_print'], subprocess42.STDOUT, 0),
+        ('printing', None, 0),
+      ),
+      (
+        (['err_print'], subprocess42.PIPE, 0),
+        ('', 'printing', 0),
+      ),
+
+      # On a loaded system, this can be tight.
+      (
+        (['out_sleeping', 'out_flush', '100', 'out_slept'], None, 0.5),
+        ('Sleeping.\n', None, timedout),
+      ),
+      (
+        (
+          # Note that err_flush is necessary on Windows but not on the other
+          # OSes. This means the likelihood of missing stderr output from a
+          # killed child process on Windows is much higher than on other OSes.
+          [
+            'out_sleeping', 'out_flush', 'err_print', 'err_flush', '100',
+            'out_slept',
+          ],
+          subprocess42.PIPE,
+          0.5),
+        ('Sleeping.\n', 'printing', timedout),
+      ),
+
+      (
+        (['out_sleeping', '0.001', 'out_slept'], None, 100),
+        ('Sleeping.\nSlept.\n', None, 0),
+      ),
+    ]
+    for i, ((args, errpipe, timeout), expected) in enumerate(test_data):
+      proc = subprocess42.Popen(
+          [sys.executable, self.output_script] + args,
+          env=ENV,
+          stdout=subprocess42.PIPE,
+          stderr=errpipe)
+      try:
+        stdout, stderr = proc.communicate(timeout=timeout)
+        code = proc.returncode
+        duration = proc.duration
+      except subprocess42.TimeoutExpired as e:
+        stdout = e.output
+        stderr = e.stderr
+        proc.kill()
+        code = proc.wait()
+        duration = e.timeout
+      self.assertTrue(duration > 0.0001, (i, duration))
+      self.assertEqual(
+          (i, stdout, stderr, code),
+          (i,
+            to_native_eol(expected[0]),
+            to_native_eol(expected[1]),
+            expected[2]))
+
+      # Try again with universal_newlines=True.
+      proc = subprocess42.Popen(
+          [sys.executable, self.output_script] + args,
+          env=ENV,
+          stdout=subprocess42.PIPE,
+          stderr=errpipe,
+          universal_newlines=True)
+      try:
+        stdout, stderr = proc.communicate(timeout=timeout)
+        code = proc.returncode
+        duration = proc.duration
+      except subprocess42.TimeoutExpired as e:
+        stdout = e.output
+        stderr = e.stderr
+        proc.kill()
+        code = proc.wait()
+        duration = e.timeout
+      self.assertTrue(duration > 0.0001, (i, duration))
+      self.assertEqual(
+          (i, stdout, stderr, code),
+          (i,) + expected)
+
+  def test_communicate_input(self):
+    cmd = [
+      sys.executable, '-u', '-c',
+      'import sys; sys.stdout.write(sys.stdin.read(5))',
+    ]
+    proc = subprocess42.Popen(
+        cmd, stdin=subprocess42.PIPE, stdout=subprocess42.PIPE)
+    out, err = proc.communicate(input='12345')
+    self.assertEqual('12345', out)
+    self.assertEqual(None, err)
+
+  def test_communicate_input_timeout(self):
+    cmd = [
+      sys.executable, '-u', '-c',
+      'import sys, time; sys.stdout.write(sys.stdin.read(5)); time.sleep(100)',
+    ]
+    proc = subprocess42.Popen(
+        cmd, stdin=subprocess42.PIPE, stdout=subprocess42.PIPE)
+    try:
+      proc.communicate(input='12345', timeout=0.5)
+      self.fail()
+    except subprocess42.TimeoutExpired as e:
+      self.assertEqual('12345', e.output)
+
+  def test_call(self):
+    cmd = [sys.executable, '-u', '-c', 'import sys; sys.exit(0)']
+    self.assertEqual(0, subprocess42.call(cmd))
+
+    cmd = [sys.executable, '-u', '-c', 'import sys; sys.exit(1)']
+    self.assertEqual(1, subprocess42.call(cmd))
+
+  def test_check_call(self):
+    cmd = [sys.executable, '-u', '-c', 'import sys; sys.exit(0)']
+    self.assertEqual(0, subprocess42.check_call(cmd))
+
+    cmd = [sys.executable, '-u', '-c', 'import sys; sys.exit(1)']
+    try:
+      self.assertEqual(1, subprocess42.check_call(cmd))
+      self.fail()
+    except subprocess42.CalledProcessError as e:
+      self.assertEqual(None, e.output)
+
+  def test_check_output(self):
+    cmd = [sys.executable, '-u', '-c', 'print(\'.\')']
+    self.assertEqual(
+        '.\n',
+        subprocess42.check_output(cmd, universal_newlines=True))
+
+    cmd = [sys.executable, '-u', '-c', 'import sys; print(\'.\'); sys.exit(1)']
+    try:
+      subprocess42.check_output(cmd, universal_newlines=True)
+      self.fail()
+    except subprocess42.CalledProcessError as e:
+      self.assertEqual('.\n', e.output)
+
   def test_recv_any(self):
     # Test all pipe direction and output scenarios.
     combinations = [
@@ -162,7 +368,7 @@ class Subprocess42Test(unittest.TestCase):
       },
     ]
     for i, testcase in enumerate(combinations):
-      cmd = [sys.executable, OUTPUT] + testcase['cmd']
+      cmd = [sys.executable, self.output_script] + testcase['cmd']
       p = subprocess42.Popen(
           cmd, env=ENV, stdout=testcase['stdout'], stderr=testcase['stderr'])
       actual = {}
