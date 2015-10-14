@@ -18,6 +18,7 @@
 #include "components/web_view/frame_tree_delegate.h"
 #include "components/web_view/navigation_controller.h"
 #include "components/web_view/navigation_controller_delegate.h"
+#include "components/web_view/public/interfaces/frame.mojom.h"
 #include "components/web_view/public/interfaces/web_view.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
 
@@ -56,12 +57,15 @@ class WebViewImpl : public mojom::WebView,
   // See description above |pending_load_| for details.
   void OnLoad(const GURL& pending_url);
 
+  // Flatten the frame tree in pre-order, depth first.
+  void PreOrderDepthFirstTraverseTree(Frame* node, std::vector<Frame*>* output);
+
   // Overridden from WebView:
   void LoadRequest(mojo::URLRequestPtr request) override;
   void GetViewTreeClient(
       mojo::InterfaceRequest<mojo::ViewTreeClient> view_tree_client)
           override;
-  void Find(int32_t request_id, const mojo::String& search_text) override;
+  void Find(const mojo::String& search_text, bool forward_direction) override;
   void StopFinding() override;
   void GoBack() override;
   void GoForward() override;
@@ -108,7 +112,7 @@ class WebViewImpl : public mojom::WebView,
   void OnDidNavigate() override;
 
   // Overridden from FindControllerDelegate:
-  std::deque<Frame*> GetAllFrames() override;
+  std::vector<Frame*> GetAllFrames() override;
   mojom::WebViewClient* GetWebViewClient() override;
 
   mojo::ApplicationImpl* app_;

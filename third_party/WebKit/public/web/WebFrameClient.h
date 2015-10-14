@@ -495,6 +495,11 @@ public:
     virtual void reportFindInPageSelection(
         int identifier, int activeMatchOrdinal, const WebRect& selection) { }
 
+    // Currently, TextFinder will report up the frame tree on certain events to
+    // form a tree of TextFinders. When we're experimenting with OOPIFs, this
+    // is precisely not what we want. Experiments that want to search per frame
+    // should override this to true.
+    virtual bool shouldSearchSingleFrame() { return false; }
 
     // Quota ---------------------------------------------------------
 

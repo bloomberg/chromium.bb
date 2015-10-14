@@ -102,6 +102,13 @@ void WebViewImpl::OnLoad(const GURL& pending_url) {
                                   frame_connection.Pass(), client_properties));
 }
 
+void WebViewImpl::PreOrderDepthFirstTraverseTree(Frame* node,
+                                                 std::vector<Frame*>* output) {
+  output->push_back(node);
+  for (Frame* child : node->children())
+    PreOrderDepthFirstTraverseTree(child, output);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // WebViewImpl, WebView implementation:
 
@@ -116,8 +123,9 @@ void WebViewImpl::GetViewTreeClient(
       mus::ViewTreeConnection::CreateType::DONT_WAIT_FOR_EMBED);
 }
 
-void WebViewImpl::Find(int32_t request_id, const mojo::String& search_text) {
-  find_controller_.Find(request_id, search_text);
+void WebViewImpl::Find(const mojo::String& search_text,
+                       bool forward_direction) {
+  find_controller_.Find(search_text.To<std::string>(), forward_direction);
 }
 
 void WebViewImpl::StopFinding() {
@@ -272,19 +280,9 @@ void WebViewImpl::OnDidNavigate() {
 ////////////////////////////////////////////////////////////////////////////////
 // WebViewImpl, FindControllerDelegate implementation:
 
-std::deque<Frame*> WebViewImpl::GetAllFrames() {
-  std::deque<Frame*> all_frames;
-  std::queue<Frame*> frames_to_search;
-  frames_to_search.push(frame_tree_->root());
-  while (!frames_to_search.empty()) {
-    // TODO(erg): This is not in depth first order. I'm not actually sure how
-    // blink does traversal though.
-    Frame* current = frames_to_search.front();
-    frames_to_search.pop();
-    for (Frame* child : current->children())
-      frames_to_search.push(child);
-    all_frames.push_back(current);
-  }
+std::vector<Frame*> WebViewImpl::GetAllFrames() {
+  std::vector<Frame*> all_frames;
+  PreOrderDepthFirstTraverseTree(frame_tree_->root(), &all_frames);
   return all_frames;
 }
 

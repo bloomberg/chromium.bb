@@ -68,6 +68,7 @@ class WebViewTest : public mus::ViewManagerTestBase,
     NO_QUIT,
     LOADING_DONE,
     FINAL_FIND_UPATE,
+    ACTIVE_FIND_UPDATE,
   };
 
   void StartNestedRunLoopUntil(NestedLoopQuitCondition quit_condition) {
@@ -141,6 +142,8 @@ class WebViewTest : public mus::ViewManagerTestBase,
   void FindInPageSelectionUpdated(int32_t request_id,
                                   int32_t active_match_ordinal) override {
     active_find_match_ = active_match_ordinal;
+    if (quit_condition_ == ACTIVE_FIND_UPDATE)
+      QuitNestedRunLoop();
   }
 
   mojo::ApplicationImpl* app_;
@@ -238,7 +241,7 @@ TEST_F(WebViewTest, NavigationClearsForward) {
 TEST_F(WebViewTest, Find) {
   ASSERT_NO_FATAL_FAILURE(NavigateTo(kTheWordGreenFiveTimes));
 
-  web_view()->Find(1, "Green");
+  web_view()->Find("Green", true);
   StartNestedRunLoopUntil(FINAL_FIND_UPATE);
   EXPECT_EQ(1, active_find_match());
   EXPECT_EQ(5, find_count());
@@ -247,9 +250,71 @@ TEST_F(WebViewTest, Find) {
 TEST_F(WebViewTest, FindAcrossIframes) {
   ASSERT_NO_FATAL_FAILURE(NavigateTo(kTwoIframesWithGreen));
 
-  web_view()->Find(1, "Green");
+  web_view()->Find("Green", true);
   StartNestedRunLoopUntil(FINAL_FIND_UPATE);
   EXPECT_EQ(13, find_count());
+}
+
+TEST_F(WebViewTest, FindWrapAroundOneFrame) {
+  ASSERT_NO_FATAL_FAILURE(NavigateTo(kTheWordGreenFiveTimes));
+
+  web_view()->Find("Green", true);
+  StartNestedRunLoopUntil(FINAL_FIND_UPATE);
+  EXPECT_EQ(1, active_find_match());
+
+  // Searching times 2 through 5 should increment the active find.
+  for (int i = 2; i < 6; ++i) {
+    web_view()->Find("Green", true);
+    StartNestedRunLoopUntil(ACTIVE_FIND_UPDATE);
+    EXPECT_EQ(i, active_find_match());
+  }
+
+  // We should wrap around.
+  web_view()->Find("Green", true);
+  StartNestedRunLoopUntil(ACTIVE_FIND_UPDATE);
+  EXPECT_EQ(1, active_find_match());
+}
+
+TEST_F(WebViewTest, FindForwardsAndBackwards) {
+  ASSERT_NO_FATAL_FAILURE(NavigateTo(kTheWordGreenFiveTimes));
+
+  web_view()->Find("Green", true);
+  StartNestedRunLoopUntil(FINAL_FIND_UPATE);
+  EXPECT_EQ(1, active_find_match());
+
+  // Navigate two forwards.
+  for (int i = 2; i < 4; ++i) {
+    web_view()->Find("Green", true);
+    StartNestedRunLoopUntil(ACTIVE_FIND_UPDATE);
+    EXPECT_EQ(i, active_find_match());
+  }
+
+  // Navigate two backwards.
+  for (int i = 2; i > 0; --i) {
+    web_view()->Find("Green", false);
+    StartNestedRunLoopUntil(ACTIVE_FIND_UPDATE);
+    EXPECT_EQ(i, active_find_match());
+  }
+}
+
+TEST_F(WebViewTest, FindWrapAroundMultipleFrames) {
+  ASSERT_NO_FATAL_FAILURE(NavigateTo(kTwoIframesWithGreen));
+
+  web_view()->Find("Green", true);
+  StartNestedRunLoopUntil(FINAL_FIND_UPATE);
+  EXPECT_EQ(1, active_find_match());
+
+  // Searching times 2 through 13 should increment the active find.
+  for (int i = 2; i < 14; ++i) {
+    web_view()->Find("Green", true);
+    StartNestedRunLoopUntil(ACTIVE_FIND_UPDATE);
+    EXPECT_EQ(i, active_find_match());
+  }
+
+  // We should wrap around.
+  web_view()->Find("Green", true);
+  StartNestedRunLoopUntil(ACTIVE_FIND_UPDATE);
+  EXPECT_EQ(1, active_find_match());
 }
 
 }  // namespace web_view

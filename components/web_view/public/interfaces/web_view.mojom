@@ -44,7 +44,7 @@ interface WebView {
   GetViewTreeClient(mojo.ViewTreeClient& view_tree_client);
 
   // Finds a string in page.
-  Find(int32 request_id, string search_text);
+  Find(string search_text, bool forward_direction);
   StopFinding();
   
   // Moves forward and backward.

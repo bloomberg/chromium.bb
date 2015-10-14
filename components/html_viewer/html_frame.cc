@@ -16,6 +16,7 @@
 #include "cc/surfaces/surface_id.h"
 #include "components/html_viewer/ax_provider_impl.h"
 #include "components/html_viewer/blink_basic_type_converters.h"
+#include "components/html_viewer/blink_find_type_converters.h"
 #include "components/html_viewer/blink_input_events_type_converters.h"
 #include "components/html_viewer/blink_text_input_type_converters.h"
 #include "components/html_viewer/blink_url_request_type_converters.h"
@@ -516,6 +517,10 @@ void HTMLFrame::reportFindInPageSelection(int identifier,
   server_->OnFindInPageSelectionUpdated(identifier, activeMatchOrdinal);
 }
 
+bool HTMLFrame::shouldSearchSingleFrame() {
+  return true;
+}
+
 void HTMLFrame::Bind(
     web_view::mojom::FramePtr frame,
     mojo::InterfaceRequest<web_view::mojom::FrameClient> frame_client_request) {
@@ -892,15 +897,13 @@ void HTMLFrame::OnDispatchFrameLoadEvent(uint32_t frame_id) {
 
 void HTMLFrame::Find(int32 request_id,
                      const mojo::String& search_text,
+                     web_view::mojom::FindOptionsPtr options,
+                     bool wrap_within_frame,
                      const FindCallback& callback) {
-  // TODO(erg): We need to synchronize whether we're a singleton frame here
-  // with the parent; we can't trust our state.
-  bool wrap_within_frame = false;
-
-  blink::WebFindOptions options;
   blink::WebRect selection_rect;
   bool result = web_frame_->find(request_id, search_text.To<blink::WebString>(),
-                                 options, wrap_within_frame, &selection_rect);
+                                 options.To<blink::WebFindOptions>(),
+                                 wrap_within_frame, &selection_rect);
   if (!result) {
     // don't leave text selected as you move to the next frame.
     web_frame_->executeCommand(blink::WebString::fromUTF8("Unselect"),
@@ -926,10 +929,10 @@ void HTMLFrame::StopFinding(bool clear_selection) {
 
 void HTMLFrame::HighlightFindResults(int32_t request_id,
                                      const mojo::String& search_text,
+                                     web_view::mojom::FindOptionsPtr options,
                                      bool reset) {
-  blink::WebFindOptions options;
   web_frame_->scopeStringMatches(request_id, search_text.To<blink::WebString>(),
-                                 options, reset);
+                                 options.To<blink::WebFindOptions>(), reset);
 }
 
 void HTMLFrame::StopHighlightingFindResults() {

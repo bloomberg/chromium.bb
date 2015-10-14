@@ -19,8 +19,10 @@ class FindControllerDelegate {
  public:
   ~FindControllerDelegate() {}
 
-  virtual std::deque<Frame*> GetAllFrames() = 0;
+  // Returns the frame tree flattened in pre-order, depth first.
+  virtual std::vector<Frame*> GetAllFrames() = 0;
 
+  // Returns the WebViewClient so our find controller can send find messages.
   virtual mojom::WebViewClient* GetWebViewClient() = 0;
 };
 

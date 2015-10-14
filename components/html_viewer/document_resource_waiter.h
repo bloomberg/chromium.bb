@@ -82,10 +82,13 @@ class DocumentResourceWaiter : public web_view::mojom::FrameClient,
   void OnDispatchFrameLoadEvent(uint32_t frame_id) override;
   void Find(int32_t request_id,
             const mojo::String& search_text,
+            web_view::mojom::FindOptionsPtr options,
+            bool wrap_within_frame,
             const FindCallback& callback) override;
   void StopFinding(bool clear_selection) override;
   void HighlightFindResults(int32_t request_id,
                             const mojo::String& search_test,
+                            web_view::mojom::FindOptionsPtr options,
                             bool reset) override;
   void StopHighlightingFindResults() override;
 

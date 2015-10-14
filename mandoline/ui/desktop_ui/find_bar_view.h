@@ -45,7 +45,11 @@ class FindBarView : public views::View,
   views::BoxLayout* layout_;
   views::Textfield* text_field_;
   views::Label* match_count_label_;
+  views::LabelButton* next_button_;
+  views::LabelButton* prev_button_;
   views::LabelButton* close_button_;
+
+  std::string last_find_string_;
 
   DISALLOW_COPY_AND_ASSIGN(FindBarView);
 };

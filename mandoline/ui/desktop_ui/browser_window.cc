@@ -356,9 +356,8 @@ void BrowserWindow::Layout(views::View* host) {
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserWindow, FindBarDelegate implementation:
 
-void BrowserWindow::OnDoFind(const std::string& find) {
-  static int find_id = 0;
-  web_view_.web_view()->Find(++find_id, mojo::String::From(find));
+void BrowserWindow::OnDoFind(const std::string& find, bool forward) {
+  web_view_.web_view()->Find(mojo::String::From(find), forward);
 }
 
 void BrowserWindow::OnHideFindBar() {

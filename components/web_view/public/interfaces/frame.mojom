@@ -66,6 +66,15 @@ struct HTMLMessageEvent {
   // IPC_STRUCT_MEMBER(std::vector<int>, new_routing_ids)
 };
 
+// Options used when performing a find-in-page query.
+struct FindOptions {
+  // Whether to search forward or backward within the page.
+  bool forward = true;
+
+  // Whether this operation is a follow-up to the last find.
+  bool continue_last_find = false;
+};
+
 interface Frame {
   // Requests the server to message the specified frame with |event|. If the
   // operation is allowed OnPostMessageEvent() is called on the appropriate
@@ -187,7 +196,8 @@ interface FrameClient {
   // |request_id| should be a monotonically increasing number which should only
   // be reused between Find() and the HighlightFindResults() calls that are
   // searching for the same string. |search_text| may be empty.
-  Find(int32 request_id, string search_text) => (bool found);
+  Find(int32 request_id, string search_text, FindOptions options,
+       bool wrap_within_frame) => (bool found);
 
   // Stop finding the single find result on the page. If |clear_selection| is
   // set, it will also clear the selected find text.
@@ -200,7 +210,8 @@ interface FrameClient {
   //
   // HighlightFindResults() will asynchronously call
   // OnFindInFrameCountUpdated() multiple times to report its progress.
-  HighlightFindResults(int32 request_id, string search_test, bool reset);
+  HighlightFindResults(int32 request_id, string search_text,
+                       FindOptions options, bool reset);
 
   // Removes the tick marks and highlighting done by HighlightFindResults() in
   // this frame.

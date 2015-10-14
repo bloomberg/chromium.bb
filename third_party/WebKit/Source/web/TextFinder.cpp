@@ -121,7 +121,7 @@ bool TextFinder::find(int identifier, const WebString& searchText, const WebFind
     WebLocalFrameImpl* mainFrameImpl = ownerFrame().viewImpl()->mainFrameImpl();
 
     if (!options.findNext)
-        ownerFrame().frame()->page()->unmarkAllTextMatches();
+        unmarkAllTextMatches();
     else
         setMarkerActive(m_activeMatch.get(), false);
 
@@ -248,9 +248,7 @@ void TextFinder::scopeStringMatchesAlgorithm(int identifier, const WebString& se
         m_findRequestIdentifier = identifier;
 
         // Clear highlighting for this frame.
-        LocalFrame* frame = ownerFrame().frame();
-        if (frame && frame->page() && frame->editor().markedTextMatchesAreHighlighted())
-            frame->page()->unmarkAllTextMatches();
+        unmarkAllTextMatches();
 
         // Clear the tickmarks and results cache.
         clearFindMatchesCache();
@@ -261,6 +259,7 @@ void TextFinder::scopeStringMatchesAlgorithm(int identifier, const WebString& se
         m_resumeScopingFromRange = nullptr;
 
         // The view might be null on detached frames.
+        LocalFrame* frame = ownerFrame().frame();
         if (frame && frame->page())
             ownerFrame().viewImpl()->mainFrameImpl()->ensureTextFinder().m_framesScopingCount++;
 
@@ -694,6 +693,17 @@ void TextFinder::setMarkerActive(Range* range, bool active)
     if (!range || range->collapsed())
         return;
     ownerFrame().frame()->document()->markers().setMarkersActive(range, active);
+}
+
+void TextFinder::unmarkAllTextMatches()
+{
+    LocalFrame* frame = ownerFrame().frame();
+    if (frame && frame->page() && frame->editor().markedTextMatchesAreHighlighted()) {
+        if (ownerFrame().client() && ownerFrame().client()->shouldSearchSingleFrame())
+            frame->document()->markers().removeMarkers(DocumentMarker::TextMatch);
+        else
+            frame->page()->unmarkAllTextMatches();
+    }
 }
 
 int TextFinder::ordinalOfFirstMatchForFrame(WebLocalFrameImpl* frame) const

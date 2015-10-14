@@ -200,6 +200,7 @@ class HTMLFrame : public blink::WebFrameClient,
   virtual void reportFindInPageSelection(int identifier,
                                          int activeMatchOrdinal,
                                          const blink::WebRect& selection);
+  virtual bool shouldSearchSingleFrame();
 
  private:
   friend class HTMLFrameTreeManager;
@@ -292,10 +293,13 @@ class HTMLFrame : public blink::WebFrameClient,
   void OnDispatchFrameLoadEvent(uint32_t frame_id) override;
   void Find(int32 request_id,
             const mojo::String& search_text,
+            web_view::mojom::FindOptionsPtr options,
+            bool wrap_within_frame,
             const FindCallback& callback) override;
   void StopFinding(bool clear_selection) override;
   void HighlightFindResults(int32_t request_id,
                             const mojo::String& search_test,
+                            web_view::mojom::FindOptionsPtr options,
                             bool reset) override;
   void StopHighlightingFindResults() override;
 

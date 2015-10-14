@@ -18,6 +18,8 @@ FindBarView::FindBarView(FindBarDelegate* delegate)
       layout_(new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 5)),
       text_field_(new views::Textfield),
       match_count_label_(new views::Label),
+      next_button_(new views::LabelButton(this, base::ASCIIToUTF16("Next"))),
+      prev_button_(new views::LabelButton(this, base::ASCIIToUTF16("Prev"))),
       close_button_(new views::LabelButton(this, base::ASCIIToUTF16("Close"))) {
   SetLayoutManager(layout_);
 
@@ -25,6 +27,8 @@ FindBarView::FindBarView(FindBarDelegate* delegate)
 
   AddChildView(text_field_);
   AddChildView(match_count_label_);
+  AddChildView(next_button_);
+  AddChildView(prev_button_);
   AddChildView(close_button_);
 
   layout_->SetDefaultFlex(0);
@@ -42,6 +46,7 @@ void FindBarView::Show() {
 }
 
 void FindBarView::Hide() {
+  last_find_string_.clear();
   SetVisible(false);
 }
 
@@ -55,14 +60,21 @@ void FindBarView::SetMatchLabel(int result, int total) {
 void FindBarView::ContentsChanged(views::Textfield* sender,
                                   const base::string16& new_contents) {
   std::string contents = base::UTF16ToUTF8(new_contents);
-  delegate_->OnDoFind(contents);
+  last_find_string_ = contents;
+  delegate_->OnDoFind(contents, true);
 }
 
 void FindBarView::ButtonPressed(views::Button* sender, const ui::Event& event) {
-  if (sender == close_button_)
+  if (sender == next_button_) {
+    delegate_->OnDoFind(last_find_string_, true);
+  } else if (sender == prev_button_) {
+    delegate_->OnDoFind(last_find_string_, false);
+  } else if (sender == close_button_) {
+    last_find_string_.clear();
     delegate_->OnHideFindBar();
-  else
+  } else {
     NOTREACHED();
+  }
 }
 
 }  // namespace mandoline

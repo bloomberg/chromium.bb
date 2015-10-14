@@ -90,7 +90,7 @@ class BrowserWindow : public mus::ViewTreeDelegate,
   void Layout(views::View* host) override;
 
   // Overridden from FindBarDelegate:
-  void OnDoFind(const std::string& find) override;
+  void OnDoFind(const std::string& find, bool forward) override;
   void OnHideFindBar() override;
 
   void Init(mus::View* root);

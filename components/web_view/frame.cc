@@ -164,8 +164,11 @@ double Frame::GatherProgress(int* frame_count) const {
 
 void Frame::Find(int32 request_id,
                  const mojo::String& search_text,
+                 mojom::FindOptionsPtr options,
+                 bool wrap_within_frame,
                  const FindCallback& callback) {
-  frame_client_->Find(request_id, search_text, callback);
+  frame_client_->Find(request_id, search_text, options.Pass(),
+                      wrap_within_frame, callback);
 }
 
 void Frame::StopFinding(bool clear_selection) {
@@ -174,8 +177,10 @@ void Frame::StopFinding(bool clear_selection) {
 
 void Frame::HighlightFindResults(int32_t request_id,
                                  const mojo::String& search_text,
+                                 mojom::FindOptionsPtr options,
                                  bool reset) {
-  frame_client_->HighlightFindResults(request_id, search_text, reset);
+  frame_client_->HighlightFindResults(request_id, search_text, options.Pass(),
+                                      reset);
 }
 
 void Frame::StopHighlightingFindResults() {

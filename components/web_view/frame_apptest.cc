@@ -168,10 +168,13 @@ class TestFrameClient : public mojom::FrameClient {
   }
   void Find(int32_t request_id,
             const mojo::String& search_text,
+            mojom::FindOptionsPtr options,
+            bool wrap_within_frame,
             const FindCallback& callback) override {}
   void StopFinding(bool clear_selection) override {}
   void HighlightFindResults(int32_t request_id,
                             const mojo::String& search_test,
+                            mojom::FindOptionsPtr options,
                             bool reset) override {}
   void StopHighlightingFindResults() override {}
 

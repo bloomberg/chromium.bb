@@ -188,6 +188,8 @@ void DocumentResourceWaiter::OnDispatchFrameLoadEvent(uint32_t frame_id) {
 
 void DocumentResourceWaiter::Find(int32_t request_id,
                                   const mojo::String& search_text,
+                                  web_view::mojom::FindOptionsPtr options,
+                                  bool wrap_within_frame,
                                   const FindCallback& callback) {
   // It is assumed we receive OnConnect() (which unbinds) before anything else.
   NOTREACHED();
@@ -201,6 +203,7 @@ void DocumentResourceWaiter::StopFinding(bool clear_selection) {
 void DocumentResourceWaiter::HighlightFindResults(
     int32_t request_id,
     const mojo::String& search_test,
+    web_view::mojom::FindOptionsPtr options,
     bool reset) {
   // It is assumed we receive OnConnect() (which unbinds) before anything else.
   NOTREACHED();

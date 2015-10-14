@@ -13,8 +13,11 @@ class FindBarDelegate {
  public:
   virtual ~FindBarDelegate() {}
 
-  virtual void OnDoFind(const std::string& find) = 0;
+  // Sent on a user initiated find. |forward| is set to true when researching
+  // in a forward direction.
+  virtual void OnDoFind(const std::string& find, bool forward) = 0;
 
+  // Sent when the hide bar wants to be hidden.
   virtual void OnHideFindBar() = 0;
 };
 

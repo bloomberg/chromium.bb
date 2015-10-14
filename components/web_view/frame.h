@@ -115,10 +115,13 @@ class Frame : public mus::ViewObserver, public mojom::Frame {
 
   void Find(int32_t request_id,
             const mojo::String& search_text,
+            mojom::FindOptionsPtr options,
+            bool wrap_within_frame,
             const FindCallback& callback);
   void StopFinding(bool clear_selection);
   void HighlightFindResults(int32_t request_id,
                             const mojo::String& search_text,
+                            mojom::FindOptionsPtr options,
                             bool reset);
   void StopHighlightingFindResults();
 

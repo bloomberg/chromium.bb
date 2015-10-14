@@ -159,6 +159,9 @@ private:
     // Sets the markers within a range as active or inactive.
     void setMarkerActive(Range*, bool active);
 
+    // Removes all markers.
+    void unmarkAllTextMatches();
+
     // Returns the ordinal of the first match in the frame specified. This
     // function enumerates the frames, starting with the main frame and up to (but
     // not including) the frame passed in as a parameter and counts how many

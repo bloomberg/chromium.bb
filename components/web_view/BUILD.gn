@@ -31,6 +31,8 @@ source_set("lib") {
     "frame_user_data.h",
     "frame_utils.cc",
     "frame_utils.h",
+    "local_find_options.cc",
+    "local_find_options.h",
     "navigation_controller.cc",
     "navigation_controller.h",
     "navigation_entry.cc",

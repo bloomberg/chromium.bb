@@ -59,6 +59,8 @@ source_set("lib") {
     "ax_provider_impl.h",
     "blink_basic_type_converters.cc",
     "blink_basic_type_converters.h",
+    "blink_find_type_converters.cc",
+    "blink_find_type_converters.h",
     "blink_input_events_type_converters.cc",
     "blink_input_events_type_converters.h",
     "blink_platform_impl.cc",
@@ -357,7 +359,9 @@ mojo_native_application("apptests") {
     "//third_party/mojo/src/mojo/public/c/system:for_shared_library",
   ]
 
-  data_deps = [ ":html_viewer" ]
+  data_deps = [
+    ":html_viewer",
+  ]
 
   if (is_linux && !is_android) {
     data_deps += [ "//components/font_service" ]
