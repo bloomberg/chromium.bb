@@ -144,6 +144,14 @@ void UsageTracker::GetCachedHostsUsage(
     client_id_and_tracker.second->GetCachedHostsUsage(host_usage);
 }
 
+void UsageTracker::GetCachedOriginsUsage(
+    std::map<GURL, int64>* origin_usage) const {
+  DCHECK(origin_usage);
+  origin_usage->clear();
+  for (const auto& client_id_and_tracker : client_tracker_map_)
+    client_id_and_tracker.second->GetCachedOriginsUsage(origin_usage);
+}
+
 void UsageTracker::GetCachedOrigins(std::set<GURL>* origins) const {
   DCHECK(origins);
   origins->clear();

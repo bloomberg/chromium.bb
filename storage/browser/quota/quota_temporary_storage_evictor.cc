@@ -196,7 +196,7 @@ void QuotaTemporaryStorageEvictor::OnGotUsageAndQuotaForEviction(
     // TODO(michaeln): if the reason for eviction is low physical disk space,
     // make 'unlimited' origins subject to eviction too.
     quota_eviction_handler_->GetEvictionOrigin(
-        kStorageTypeTemporary,
+        kStorageTypeTemporary, qau.quota,
         base::Bind(&QuotaTemporaryStorageEvictor::OnGotEvictionOrigin,
                    weak_factory_.GetWeakPtr()));
   } else {

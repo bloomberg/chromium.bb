@@ -28,6 +28,8 @@
 #include "storage/browser/quota/storage_observer.h"
 #include "storage/browser/storage_browser_export.h"
 
+class SiteEngagementEvictionPolicyWithQuotaManagerTest;
+
 namespace base {
 class FilePath;
 class SequencedTaskRunner;
@@ -70,10 +72,12 @@ struct STORAGE_EXPORT UsageAndQuota {
 };
 
 // TODO(calamity): Use this in the temporary storage eviction path.
-// An interface for deciding which origin's temporary storage should be evicted
-// when the quota is exceeded.
+// An interface for deciding which origin's storage should be evicted when the
+// quota is exceeded.
 class STORAGE_EXPORT QuotaEvictionPolicy {
  public:
+  virtual ~QuotaEvictionPolicy() {}
+
   // Returns the next origin to evict.  It might return an empty GURL when there
   // are no evictable origins.
   virtual void GetEvictionOrigin(
@@ -94,6 +98,7 @@ class STORAGE_EXPORT QuotaEvictionHandler {
   // Returns next origin to evict.  It might return an empty GURL when there are
   // no evictable origins.
   virtual void GetEvictionOrigin(StorageType type,
+                                 int64 global_quota,
                                  const GetOriginCallback& callback) = 0;
 
   virtual void EvictOriginData(
@@ -194,6 +199,10 @@ class STORAGE_EXPORT QuotaManager
                             StorageType type,
                             bool enabled);
 
+  // Set the eviction policy to use when choosing an origin to evict.
+  void SetTemporaryStorageEvictionPolicy(
+      scoped_ptr<QuotaEvictionPolicy> policy);
+
   // DeleteOriginData and DeleteHostData (surprisingly enough) delete data of a
   // particular StorageType associated with either a specific origin or set of
   // origins. Each method additionally requires a |quota_client_mask| which
@@ -286,6 +295,7 @@ class STORAGE_EXPORT QuotaManager
   friend class QuotaManagerProxy;
   friend class QuotaTemporaryStorageEvictor;
   friend struct QuotaManagerDeleter;
+  friend class ::SiteEngagementEvictionPolicyWithQuotaManagerTest;
 
   class GetUsageInfoTask;
 
@@ -373,8 +383,12 @@ class STORAGE_EXPORT QuotaManager
   void DidGetPersistentGlobalUsageForHistogram(int64 usage,
                                                int64 unlimited_usage);
 
+  void DidGetEvictionOrigin(const GetOriginCallback& callback,
+                            const GURL& origin);
+
   // QuotaEvictionHandler.
   void GetEvictionOrigin(StorageType type,
+                         int64 global_quota,
                          const GetOriginCallback& callback) override;
   void EvictOriginData(const GURL& origin,
                        StorageType type,
@@ -435,6 +449,8 @@ class STORAGE_EXPORT QuotaManager
 
   scoped_ptr<QuotaTemporaryStorageEvictor> temporary_storage_evictor_;
   EvictionContext eviction_context_;
+  scoped_ptr<QuotaEvictionPolicy> temporary_storage_eviction_policy_;
+  bool is_getting_eviction_origin_;
 
   ClosureQueue db_initialization_callbacks_;
   AvailableSpaceCallbackQueue available_space_callbacks_;

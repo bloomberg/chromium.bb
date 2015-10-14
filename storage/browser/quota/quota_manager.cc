@@ -836,14 +836,14 @@ QuotaManager::QuotaManager(
       eviction_disabled_(false),
       io_thread_(io_thread),
       db_thread_(db_thread),
+      is_getting_eviction_origin_(false),
       temporary_quota_initialized_(false),
       temporary_quota_override_(-1),
       desired_available_space_(-1),
       special_storage_policy_(special_storage_policy),
       get_disk_space_fn_(&CallSystemGetAmountOfFreeDiskSpace),
       storage_monitor_(new StorageMonitor(this)),
-      weak_factory_(this) {
-}
+      weak_factory_(this) {}
 
 void QuotaManager::GetUsageInfo(const GetUsageInfoCallback& callback) {
   LazyInitialize();
@@ -952,6 +952,11 @@ void QuotaManager::SetUsageCacheEnabled(QuotaClient::ID client_id,
   LazyInitialize();
   DCHECK(GetUsageTracker(type));
   GetUsageTracker(type)->SetUsageCacheEnabled(client_id, origin, enabled);
+}
+
+void QuotaManager::SetTemporaryStorageEvictionPolicy(
+    scoped_ptr<QuotaEvictionPolicy> policy) {
+  temporary_storage_eviction_policy_ = policy.Pass();
 }
 
 void QuotaManager::DeleteOriginData(
@@ -1318,7 +1323,7 @@ void QuotaManager::NotifyStorageAccessedInternal(
     const GURL& origin, StorageType type,
     base::Time accessed_time) {
   LazyInitialize();
-  if (type == kStorageTypeTemporary && !lru_origin_callback_.is_null()) {
+  if (type == kStorageTypeTemporary && is_getting_eviction_origin_) {
     // Record the accessed origins while GetLRUOrigin task is runing
     // to filter out them from eviction.
     access_notified_origins_.insert(origin);
@@ -1472,8 +1477,38 @@ void QuotaManager::DidGetPersistentGlobalUsageForHistogram(
 }
 
 void QuotaManager::GetEvictionOrigin(StorageType type,
+                                     int64 global_quota,
                                      const GetOriginCallback& callback) {
-  GetLRUOrigin(type, callback);
+  LazyInitialize();
+  // This must not be called while there's an in-flight task.
+  DCHECK(!is_getting_eviction_origin_);
+  is_getting_eviction_origin_ = true;
+
+  GetOriginCallback did_get_origin_callback =
+      base::Bind(&QuotaManager::DidGetEvictionOrigin,
+                 weak_factory_.GetWeakPtr(), callback);
+
+  if (type == kStorageTypeTemporary && temporary_storage_eviction_policy_) {
+    std::map<GURL, int64> usage_map;
+    // The cached origins are populated by the prior call to
+    // GetUsageAndQuotaForEviction().
+    GetUsageTracker(kStorageTypeTemporary)->GetCachedOriginsUsage(&usage_map);
+
+    temporary_storage_eviction_policy_->GetEvictionOrigin(
+        special_storage_policy_, usage_map, global_quota,
+        did_get_origin_callback);
+    return;
+  }
+
+  // TODO(calamity): convert LRU origin retrieval into a QuotaEvictionPolicy.
+  GetLRUOrigin(type, did_get_origin_callback);
+}
+
+void QuotaManager::DidGetEvictionOrigin(const GetOriginCallback& callback,
+                                        const GURL& origin) {
+  callback.Run(origin);
+
+  is_getting_eviction_origin_ = false;
 }
 
 void QuotaManager::EvictOriginData(const GURL& origin,
@@ -1520,6 +1555,7 @@ void QuotaManager::GetLRUOrigin(StorageType type,
     return;
   }
 
+  // TODO(calamity): make all QuotaEvictionPolicies aware of these exceptions.
   std::set<GURL>* exceptions = new std::set<GURL>;
   for (std::map<GURL, int>::const_iterator p = origins_in_use_.begin();
        p != origins_in_use_.end();

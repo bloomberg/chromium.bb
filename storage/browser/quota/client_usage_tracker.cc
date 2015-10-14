@@ -173,6 +173,15 @@ void ClientUsageTracker::GetCachedHostsUsage(
   }
 }
 
+void ClientUsageTracker::GetCachedOriginsUsage(
+    std::map<GURL, int64>* origin_usage) const {
+  DCHECK(origin_usage);
+  for (const auto& host_and_usage_map : cached_usage_by_host_) {
+    for (const auto& origin_and_usage : host_and_usage_map.second)
+      (*origin_usage)[origin_and_usage.first] += origin_and_usage.second;
+  }
+}
+
 void ClientUsageTracker::GetCachedOrigins(std::set<GURL>* origins) const {
   DCHECK(origins);
   for (const auto& host_and_usage_map : cached_usage_by_host_) {

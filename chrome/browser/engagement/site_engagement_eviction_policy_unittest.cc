@@ -2,9 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/files/scoped_temp_dir.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
+#include "base/run_loop.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/engagement/site_engagement_eviction_policy.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "content/public/test/mock_special_storage_policy.h"
+#include "content/public/test/mock_storage_client.h"
+#include "content/public/test/test_browser_thread_bundle.h"
+#include "storage/browser/quota/quota_manager.h"
+#include "storage/browser/quota/quota_manager_proxy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -49,7 +58,7 @@ class SiteEngagementEvictionPolicyTest : public testing::Test {
   ~SiteEngagementEvictionPolicyTest() override {}
 
   GURL CalculateEvictionOrigin(const std::map<GURL, int64>& usage) {
-    return SiteEngagementEvictionPolicy::CalculateEvictionOrigin(
+    return SiteEngagementEvictionPolicy::CalculateEvictionOriginForTests(
         storage_policy_, score_provider_.get(), usage, kGlobalQuota);
   }
 

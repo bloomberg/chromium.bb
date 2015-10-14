@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/barrier_closure.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/engagement/site_engagement_eviction_policy.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
@@ -64,6 +63,7 @@ GURL DoCalculateEvictionOrigin(
       origin_to_evict = origin;
     }
   }
+
   return origin_to_evict;
 }
 
@@ -73,16 +73,18 @@ GURL GetSiteEngagementEvictionOriginOnUIThread(
     const std::map<GURL, int64>& usage_map,
     int64 global_quota) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
   Profile* profile = Profile::FromBrowserContext(browser_context);
-  SiteEngagementService* service =
+  SiteEngagementScoreProvider* score_provider =
       g_browser_process->profile_manager()->IsValidProfile(profile)
           ? SiteEngagementService::Get(profile)
           : nullptr;
-  if (!service)
+
+  if (!score_provider)
     return GURL();
 
-  return DoCalculateEvictionOrigin(special_storage_policy, service, usage_map,
-                                   global_quota);
+  return DoCalculateEvictionOrigin(special_storage_policy, score_provider,
+                                   usage_map, global_quota);
 }
 
 }  // namespace
@@ -98,6 +100,8 @@ void SiteEngagementEvictionPolicy::GetEvictionOrigin(
     const std::map<GURL, int64>& usage_map,
     int64 global_quota,
     const storage::GetOriginCallback& callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
   content::BrowserThread::PostTaskAndReplyWithResult(
       content::BrowserThread::UI, FROM_HERE,
       base::Bind(&GetSiteEngagementEvictionOriginOnUIThread,
@@ -107,7 +111,7 @@ void SiteEngagementEvictionPolicy::GetEvictionOrigin(
 }
 
 // static
-GURL SiteEngagementEvictionPolicy::CalculateEvictionOrigin(
+GURL SiteEngagementEvictionPolicy::CalculateEvictionOriginForTests(
     const scoped_refptr<storage::SpecialStoragePolicy>& special_storage_policy,
     SiteEngagementScoreProvider* score_provider,
     const std::map<GURL, int64>& usage_map,

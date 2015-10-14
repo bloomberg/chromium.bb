@@ -45,6 +45,7 @@ class STORAGE_EXPORT UsageTracker : public QuotaTaskObserver {
   void UpdateUsageCache(QuotaClient::ID client_id,
                         const GURL& origin,
                         int64 delta);
+  void GetCachedOriginsUsage(std::map<GURL, int64>* origin_usage) const;
   void GetCachedHostsUsage(std::map<std::string, int64>* host_usage) const;
   void GetCachedOrigins(std::set<GURL>* origins) const;
   bool IsWorking() const {

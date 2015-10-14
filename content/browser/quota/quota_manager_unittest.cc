@@ -58,10 +58,27 @@ const int64 kAvailableSpaceForApp = 13377331U;
 const int64 kMinimumPreserveForSystem = QuotaManager::kMinimumPreserveForSystem;
 const int kPerHostTemporaryPortion = QuotaManager::kPerHostTemporaryPortion;
 
+const GURL kTestEvictionOrigin = GURL("http://test.eviction.policy/result");
+
 // Returns a deterministic value for the amount of available disk space.
 int64 GetAvailableDiskSpaceForTest(const base::FilePath&) {
   return kAvailableSpaceForApp + kMinimumPreserveForSystem;
 }
+
+class TestEvictionPolicy : public storage::QuotaEvictionPolicy {
+ public:
+  TestEvictionPolicy() {}
+  ~TestEvictionPolicy() override {}
+
+  // Overridden from storage::QuotaEvictionPolicy:
+  void GetEvictionOrigin(const scoped_refptr<storage::SpecialStoragePolicy>&
+                             special_storage_policy,
+                         const std::map<GURL, int64>& usage_map,
+                         int64 global_quota,
+                         const storage::GetOriginCallback& callback) override {
+    callback.Run(kTestEvictionOrigin);
+  }
+};
 
 }  // namespace
 
@@ -277,12 +294,13 @@ class QuotaManagerTest : public testing::Test {
     quota_manager_->DeleteOriginFromDatabase(origin, type);
   }
 
-  void GetLRUOrigin(StorageType type) {
-    lru_origin_ = GURL();
-    quota_manager_->GetLRUOrigin(
-        type,
-        base::Bind(&QuotaManagerTest::DidGetLRUOrigin,
-                   weak_factory_.GetWeakPtr()));
+  void GetEvictionOrigin(StorageType type) {
+    eviction_origin_ = GURL();
+    // The quota manager's default eviction policy is to use an LRU eviction
+    // policy.
+    quota_manager_->GetEvictionOrigin(
+        type, 0, base::Bind(&QuotaManagerTest::DidGetEvictionOrigin,
+                            weak_factory_.GetWeakPtr()));
   }
 
   void NotifyOriginInUse(const GURL& origin) {
@@ -366,8 +384,8 @@ class QuotaManagerTest : public testing::Test {
     available_space_ = usage_and_quota.available_disk_space;
   }
 
-  void DidGetLRUOrigin(const GURL& origin) {
-    lru_origin_ = origin;
+  void DidGetEvictionOrigin(const GURL& origin) {
+    eviction_origin_ = origin;
   }
 
   void DidGetModifiedOrigins(const std::set<GURL>& origins, StorageType type) {
@@ -408,7 +426,7 @@ class QuotaManagerTest : public testing::Test {
   int64 unlimited_usage() const { return unlimited_usage_; }
   int64 quota() const { return quota_; }
   int64 available_space() const { return available_space_; }
-  const GURL& lru_origin() const { return lru_origin_; }
+  const GURL& eviction_origin() const { return eviction_origin_; }
   const std::set<GURL>& modified_origins() const { return modified_origins_; }
   StorageType modified_origins_type() const { return modified_origins_type_; }
   const QuotaTableEntries& quota_entries() const { return quota_entries_; }
@@ -438,7 +456,7 @@ class QuotaManagerTest : public testing::Test {
   int64 unlimited_usage_;
   int64 quota_;
   int64 available_space_;
-  GURL lru_origin_;
+  GURL eviction_origin_;
   std::set<GURL> modified_origins_;
   StorageType modified_origins_type_;
   QuotaTableEntries quota_entries_;
@@ -1263,6 +1281,15 @@ TEST_F(QuotaManagerTest, GetAvailableSpaceTest) {
   EXPECT_LE(0, available_space());
 }
 
+TEST_F(QuotaManagerTest, SetTemporaryStorageEvictionPolicy) {
+  quota_manager()->SetTemporaryStorageEvictionPolicy(
+      make_scoped_ptr(new TestEvictionPolicy));
+
+  GetEvictionOrigin(kTemp);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(kTestEvictionOrigin, eviction_origin());
+}
+
 TEST_F(QuotaManagerTest, EvictOriginData) {
   static const MockOriginData kData1[] = {
     { "http://foo.com/",   kTemp,     1 },
@@ -1387,19 +1414,19 @@ TEST_F(QuotaManagerTest, EvictOriginDataWithDeletionError) {
   EXPECT_TRUE(found_origin_in_database);
 
   for (size_t i = 0; i < kNumberOfTemporaryOrigins - 1; ++i) {
-    GetLRUOrigin(kTemp);
+    GetEvictionOrigin(kTemp);
     base::RunLoop().RunUntilIdle();
-    EXPECT_FALSE(lru_origin().is_empty());
+    EXPECT_FALSE(eviction_origin().is_empty());
     // The origin "http://foo.com/" should not be in the LRU list.
-    EXPECT_NE(std::string("http://foo.com/"), lru_origin().spec());
-    DeleteOriginFromDatabase(lru_origin(), kTemp);
+    EXPECT_NE(std::string("http://foo.com/"), eviction_origin().spec());
+    DeleteOriginFromDatabase(eviction_origin(), kTemp);
     base::RunLoop().RunUntilIdle();
   }
 
   // Now the LRU list must be empty.
-  GetLRUOrigin(kTemp);
+  GetEvictionOrigin(kTemp);
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(lru_origin().is_empty());
+  EXPECT_TRUE(eviction_origin().is_empty());
 
   // Deleting origins from the database should not affect the results of the
   // following checks.
@@ -1728,31 +1755,31 @@ TEST_F(QuotaManagerTest, NotifyAndLRUOrigin) {
   RegisterClient(client);
 
   GURL origin;
-  GetLRUOrigin(kTemp);
+  GetEvictionOrigin(kTemp);
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(lru_origin().is_empty());
+  EXPECT_TRUE(eviction_origin().is_empty());
 
   NotifyStorageAccessed(client, GURL("http://a.com/"), kTemp);
-  GetLRUOrigin(kTemp);
+  GetEvictionOrigin(kTemp);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ("http://a.com/", lru_origin().spec());
+  EXPECT_EQ("http://a.com/", eviction_origin().spec());
 
   NotifyStorageAccessed(client, GURL("http://b.com/"), kPerm);
   NotifyStorageAccessed(client, GURL("https://a.com/"), kTemp);
   NotifyStorageAccessed(client, GURL("http://c.com/"), kTemp);
-  GetLRUOrigin(kTemp);
+  GetEvictionOrigin(kTemp);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ("http://a.com/", lru_origin().spec());
+  EXPECT_EQ("http://a.com/", eviction_origin().spec());
 
-  DeleteOriginFromDatabase(lru_origin(), kTemp);
-  GetLRUOrigin(kTemp);
+  DeleteOriginFromDatabase(eviction_origin(), kTemp);
+  GetEvictionOrigin(kTemp);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ("https://a.com/", lru_origin().spec());
+  EXPECT_EQ("https://a.com/", eviction_origin().spec());
 
-  DeleteOriginFromDatabase(lru_origin(), kTemp);
-  GetLRUOrigin(kTemp);
+  DeleteOriginFromDatabase(eviction_origin(), kTemp);
+  GetEvictionOrigin(kTemp);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ("http://c.com/", lru_origin().spec());
+  EXPECT_EQ("http://c.com/", eviction_origin().spec());
 }
 
 TEST_F(QuotaManagerTest, GetLRUOriginWithOriginInUse) {
@@ -1768,46 +1795,46 @@ TEST_F(QuotaManagerTest, GetLRUOriginWithOriginInUse) {
   RegisterClient(client);
 
   GURL origin;
-  GetLRUOrigin(kTemp);
+  GetEvictionOrigin(kTemp);
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(lru_origin().is_empty());
+  EXPECT_TRUE(eviction_origin().is_empty());
 
   NotifyStorageAccessed(client, GURL("http://a.com/"), kTemp);
   NotifyStorageAccessed(client, GURL("http://b.com/"), kPerm);
   NotifyStorageAccessed(client, GURL("https://a.com/"), kTemp);
   NotifyStorageAccessed(client, GURL("http://c.com/"), kTemp);
 
-  GetLRUOrigin(kTemp);
+  GetEvictionOrigin(kTemp);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ("http://a.com/", lru_origin().spec());
+  EXPECT_EQ("http://a.com/", eviction_origin().spec());
 
   // Notify origin http://a.com is in use.
   NotifyOriginInUse(GURL("http://a.com/"));
-  GetLRUOrigin(kTemp);
+  GetEvictionOrigin(kTemp);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ("https://a.com/", lru_origin().spec());
+  EXPECT_EQ("https://a.com/", eviction_origin().spec());
 
-  // Notify origin https://a.com is in use while GetLRUOrigin is running.
-  GetLRUOrigin(kTemp);
+  // Notify origin https://a.com is in use while GetEvictionOrigin is running.
+  GetEvictionOrigin(kTemp);
   NotifyOriginInUse(GURL("https://a.com/"));
   base::RunLoop().RunUntilIdle();
   // Post-filtering must have excluded the returned origin, so we will
   // see empty result here.
-  EXPECT_TRUE(lru_origin().is_empty());
+  EXPECT_TRUE(eviction_origin().is_empty());
 
-  // Notify access for http://c.com while GetLRUOrigin is running.
-  GetLRUOrigin(kTemp);
+  // Notify access for http://c.com while GetEvictionOrigin is running.
+  GetEvictionOrigin(kTemp);
   NotifyStorageAccessed(client, GURL("http://c.com/"), kTemp);
   base::RunLoop().RunUntilIdle();
   // Post-filtering must have excluded the returned origin, so we will
   // see empty result here.
-  EXPECT_TRUE(lru_origin().is_empty());
+  EXPECT_TRUE(eviction_origin().is_empty());
 
   NotifyOriginNoLongerInUse(GURL("http://a.com/"));
   NotifyOriginNoLongerInUse(GURL("https://a.com/"));
-  GetLRUOrigin(kTemp);
+  GetEvictionOrigin(kTemp);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ("http://a.com/", lru_origin().spec());
+  EXPECT_EQ("http://a.com/", eviction_origin().spec());
 }
 
 TEST_F(QuotaManagerTest, GetOriginsModifiedSince) {

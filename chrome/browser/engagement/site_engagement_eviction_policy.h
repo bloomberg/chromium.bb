@@ -23,7 +23,7 @@ class SiteEngagementEvictionPolicy : public storage::QuotaEvictionPolicy {
  public:
   explicit SiteEngagementEvictionPolicy(
       content::BrowserContext* browser_context);
-  virtual ~SiteEngagementEvictionPolicy();
+  ~SiteEngagementEvictionPolicy() override;
 
   // Overridden from storage::QuotaEvictionPolicy:
   void GetEvictionOrigin(const scoped_refptr<storage::SpecialStoragePolicy>&
@@ -35,14 +35,14 @@ class SiteEngagementEvictionPolicy : public storage::QuotaEvictionPolicy {
  private:
   friend class SiteEngagementEvictionPolicyTest;
 
-  static GURL CalculateEvictionOrigin(
+  static GURL CalculateEvictionOriginForTests(
       const scoped_refptr<storage::SpecialStoragePolicy>&
           special_storage_policy,
       SiteEngagementScoreProvider* score_provider,
       const std::map<GURL, int64>& usage_map,
       int64 global_quota);
 
-  content::BrowserContext* browser_context_;
+  content::BrowserContext* const browser_context_;
 
   DISALLOW_COPY_AND_ASSIGN(SiteEngagementEvictionPolicy);
 };
