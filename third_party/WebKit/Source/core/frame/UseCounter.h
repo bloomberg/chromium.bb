@@ -813,6 +813,8 @@ public:
         CSSAnimationsStackedNeutralKeyframe = 937,
         ReadingCheckedInClickHandler = 938,
         FlexboxIntrinsicSizeAlgorithmIsDifferent = 939,
+        // The above items are available in M46 branch.
+
         HTMLImportsHasStyleSheets = 940,
         WebkitTextInClipProperty = 941,
         WebkitTextInColorProperty = 942,
@@ -838,6 +840,8 @@ public:
         CredentialManagerGetWithoutUI = 962,
         CredentialManagerStore = 963,
         CredentialManagerRequireUserMediation = 964,
+        // The above items are available in M47 branch.
+
         RequestAutocomplete = 965,
 
         // Add new features immediately above this line. Don't change assigned
