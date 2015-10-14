@@ -72,6 +72,7 @@ class KEYBOARD_EXPORT KeyboardUIContent : public KeyboardUI,
   // Overridden from KeyboardUI:
   aura::Window* GetKeyboardWindow() override;
   bool HasKeyboardWindow() const override;
+  bool ShouldWindowOverscroll(aura::Window* window) const override;
   void ReloadKeyboardIfNeeded() override;
   void InitInsets(const gfx::Rect& new_bounds) override;
   void ResetInsets() override;
@@ -90,6 +91,8 @@ class KEYBOARD_EXPORT KeyboardUIContent : public KeyboardUI,
   void OnWindowDestroyed(aura::Window* window) override;
 
   content::BrowserContext* browser_context() { return browser_context_; }
+
+  const aura::Window* GetKeyboardRootWindow() const;
 
  private:
   friend class TestApi;

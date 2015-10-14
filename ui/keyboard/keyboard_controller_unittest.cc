@@ -96,6 +96,9 @@ class TestKeyboardUI : public KeyboardUI {
 
   // Overridden from KeyboardUI:
   bool HasKeyboardWindow() const override { return window_; }
+  bool ShouldWindowOverscroll(aura::Window* window) const override {
+    return true;
+  }
   aura::Window* GetKeyboardWindow() override {
     if (!window_) {
       window_.reset(new aura::Window(&delegate_));

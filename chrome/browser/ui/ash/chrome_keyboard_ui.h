@@ -37,6 +37,9 @@ class ChromeKeyboardUI : public keyboard::KeyboardUIContent,
   explicit ChromeKeyboardUI(content::BrowserContext* context);
   ~ChromeKeyboardUI() override;
 
+  // keyboard::KeyboardUIContent overrides
+  bool ShouldWindowOverscroll(aura::Window* window) const override;
+
  private:
   // keyboard::KeyboardControllerProxy overrides
   ui::InputMethod* GetInputMethod() override;

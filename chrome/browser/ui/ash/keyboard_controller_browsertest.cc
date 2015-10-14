@@ -4,8 +4,15 @@
 
 #include "ash/shell.h"
 #include "base/command_line.h"
+#include "chrome/browser/apps/app_browsertest_util.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/app_window/app_window.h"
+#include "extensions/common/extension.h"
+#include "extensions/common/extension_builder.h"
+#include "extensions/common/value_builder.h"
 #include "ui/base/ime/dummy_text_input_client.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/input_method_factory.h"
@@ -129,4 +136,76 @@ IN_PROC_BROWSER_TEST_F(VirtualKeyboardWebContentTest,
   EXPECT_EQ(kKeyboardHeightForTest, keyboard_bounds.height());
   EXPECT_EQ(screen_bounds.height(),
             keyboard_bounds.height() + keyboard_bounds.y());
+}
+
+class VirtualKeyboardAppWindowTest : public extensions::PlatformAppBrowserTest {
+ public:
+  VirtualKeyboardAppWindowTest() {}
+  ~VirtualKeyboardAppWindowTest() override {}
+
+  // Ensure that the virtual keyboard is enabled.
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitch(keyboard::switches::kEnableVirtualKeyboard);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(VirtualKeyboardAppWindowTest);
+};
+
+// Tests that ime window won't overscroll. See crbug.com/529880.
+IN_PROC_BROWSER_TEST_F(VirtualKeyboardAppWindowTest,
+                       DisableOverscrollForImeWindow) {
+  scoped_refptr<extensions::Extension> extension =
+      extensions::ExtensionBuilder()
+          .SetManifest(extensions::DictionaryBuilder()
+                           .Set("name", "test extension")
+                           .Set("version", "1")
+                           .Set("manifest_version", 2))
+          .Build();
+
+  extensions::AppWindow::CreateParams non_ime_params;
+  non_ime_params.frame = extensions::AppWindow::FRAME_NONE;
+  extensions::AppWindow* non_ime_app_window =
+      CreateAppWindowFromParams(extension.get(), non_ime_params);
+  int non_ime_window_visible_height = non_ime_app_window->web_contents()
+                                          ->GetRenderWidgetHostView()
+                                          ->GetVisibleViewportSize()
+                                          .height();
+
+  extensions::AppWindow::CreateParams ime_params;
+  ime_params.frame = extensions::AppWindow::FRAME_NONE;
+  ime_params.is_ime_window = true;
+  extensions::AppWindow* ime_app_window =
+      CreateAppWindowFromParams(extension.get(), ime_params);
+  int ime_window_visible_height = ime_app_window->web_contents()
+                                      ->GetRenderWidgetHostView()
+                                      ->GetVisibleViewportSize()
+                                      .height();
+
+  ASSERT_EQ(non_ime_window_visible_height, ime_window_visible_height);
+  ASSERT_TRUE(ime_window_visible_height > 0);
+
+  int screen_height = ash::Shell::GetPrimaryRootWindow()->bounds().height();
+  gfx::Rect test_bounds(0, 0, 0, screen_height - ime_window_visible_height + 1);
+  keyboard::KeyboardController* controller =
+      keyboard::KeyboardController::GetInstance();
+  controller->ShowKeyboard(true);
+  controller->ui()->GetKeyboardWindow()->SetBounds(test_bounds);
+  gfx::Rect keyboard_bounds = controller->GetContainerWindow()->bounds();
+  // Starts overscroll.
+  controller->NotifyKeyboardBoundsChanging(keyboard_bounds);
+
+  // Non ime window should have smaller visible view port due to overlap with
+  // virtual keyboard.
+  EXPECT_LT(non_ime_app_window->web_contents()
+                ->GetRenderWidgetHostView()
+                ->GetVisibleViewportSize()
+                .height(),
+            non_ime_window_visible_height);
+  // Ime window should have not be affected by virtual keyboard.
+  EXPECT_EQ(ime_app_window->web_contents()
+                ->GetRenderWidgetHostView()
+                ->GetVisibleViewportSize()
+                .height(),
+            ime_window_visible_height);
 }

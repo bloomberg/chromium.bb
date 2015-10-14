@@ -160,6 +160,9 @@ void KeyboardUIContent::LoadSystemKeyboard() {
 
 void KeyboardUIContent::UpdateInsetsForWindow(aura::Window* window) {
   aura::Window* keyboard_window = GetKeyboardWindow();
+  if (!ShouldWindowOverscroll(window))
+    return;
+
   scoped_ptr<content::RenderWidgetHostIterator> widgets(
       content::RenderWidgetHost::GetRenderWidgetHosts());
   while (content::RenderWidgetHost* widget = widgets->GetNextHost()) {
@@ -198,6 +201,10 @@ bool KeyboardUIContent::HasKeyboardWindow() const {
   return keyboard_contents_;
 }
 
+bool KeyboardUIContent::ShouldWindowOverscroll(aura::Window* window) const {
+  return true;
+}
+
 void KeyboardUIContent::ReloadKeyboardIfNeeded() {
   DCHECK(keyboard_contents_);
   if (keyboard_contents_->GetURL() != GetVirtualKeyboardUrl()) {
@@ -222,19 +229,13 @@ void KeyboardUIContent::InitInsets(const gfx::Rect& new_bounds) {
   // window is created while the keyboard is visible.
   scoped_ptr<content::RenderWidgetHostIterator> widgets(
       content::RenderWidgetHost::GetRenderWidgetHosts());
-  aura::Window* keyboard_window = GetKeyboardWindow();
-  aura::Window* root_window = keyboard_window->GetRootWindow();
   while (content::RenderWidgetHost* widget = widgets->GetNextHost()) {
     content::RenderWidgetHostView* view = widget->GetView();
     // Can be NULL, e.g. if the RenderWidget is being destroyed or
     // the render process crashed.
     if (view) {
       aura::Window* window = view->GetNativeView();
-      // If virtual keyboard failed to load, a widget that displays error
-      // message will be created and adds as a child of the virtual keyboard
-      // window. We want to avoid add BoundsChangedObserver to that window.
-      if (!keyboard_window->Contains(window) &&
-          window->GetRootWindow() == root_window) {
+      if (ShouldWindowOverscroll(window)) {
         gfx::Rect window_bounds = window->GetBoundsInScreen();
         gfx::Rect intersect = gfx::IntersectRects(window_bounds,
                                                   new_bounds);
@@ -281,6 +282,13 @@ void KeyboardUIContent::OnWindowBoundsChanged(aura::Window* window,
 
 void KeyboardUIContent::OnWindowDestroyed(aura::Window* window) {
   window->RemoveObserver(this);
+}
+
+const aura::Window* KeyboardUIContent::GetKeyboardRootWindow() const {
+  if (!keyboard_contents_) {
+    return nullptr;
+  }
+  return keyboard_contents_->GetNativeView()->GetRootWindow();
 }
 
 void KeyboardUIContent::LoadContents(const GURL& url) {

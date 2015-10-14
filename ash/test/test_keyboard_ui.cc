@@ -20,6 +20,10 @@ bool TestKeyboardUI::HasKeyboardWindow() const {
   return keyboard_;
 }
 
+bool TestKeyboardUI::ShouldWindowOverscroll(aura::Window* window) const {
+  return true;
+}
+
 aura::Window* TestKeyboardUI::GetKeyboardWindow() {
   if (!keyboard_) {
     keyboard_.reset(new aura::Window(&delegate_));

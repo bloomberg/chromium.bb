@@ -4,7 +4,9 @@
 
 #include "chrome/browser/ui/ash/chrome_keyboard_ui.h"
 
+#include "ash/root_window_controller.h"
 #include "ash/shell.h"
+#include "ash/shell_window_ids.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "content/public/browser/host_zoom_map.h"
@@ -174,6 +176,24 @@ void ChromeKeyboardUI::ShowKeyboardContainer(aura::Window* container) {
     NOTIMPLEMENTED();
 
   KeyboardUIContent::ShowKeyboardContainer(container);
+}
+
+bool ChromeKeyboardUI::ShouldWindowOverscroll(aura::Window* window) const {
+  aura::Window* root_window = window->GetRootWindow();
+  if (!root_window)
+    return true;
+
+  if (root_window != GetKeyboardRootWindow())
+    return false;
+
+  ash::RootWindowController* root_window_controller =
+      ash::GetRootWindowController(root_window);
+  // Shell ime window container contains virtual keyboard windows and IME
+  // windows(IME windows are created by chrome.app.window.create api). They
+  // should never be overscrolled.
+  return !root_window_controller
+              ->GetContainer(ash::kShellWindowId_ImeWindowParentContainer)
+              ->Contains(window);
 }
 
 void ChromeKeyboardUI::SetUpdateInputType(ui::TextInputType type) {
