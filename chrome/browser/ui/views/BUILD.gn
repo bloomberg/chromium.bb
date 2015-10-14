@@ -4,7 +4,7 @@
 
 import("//build/config/ui.gni")
 
-assert(!is_android)
+assert(toolkit_views)
 
 component("views") {
   output_name = "browser_ui_views"

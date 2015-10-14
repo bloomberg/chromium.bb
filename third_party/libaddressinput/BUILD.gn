@@ -135,7 +135,7 @@ static_library("util") {
   ]
 }
 
-if (!is_android) {
+if (!is_android || use_aura) {
   # The list of files in libaddressinput.gypi.
   gypi_values = exec_script("//build/gypi_to_gn.py",
                             [ rebase_path("src/cpp/libaddressinput.gypi") ],

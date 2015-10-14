@@ -129,7 +129,7 @@ source_set("ui") {
     deps += [ "//net" ]
   }
 
-  if (!is_android && !is_ios) {
+  if ((!is_android || use_aura) && !is_ios) {
     sources += rebase_path(gypi_values.chrome_browser_ui_non_mobile_sources,
                            ".",
                            "//chrome")
@@ -144,6 +144,10 @@ source_set("ui") {
       "//device/bluetooth",
       "//third_party/libusb",
     ]
+
+    if (is_android) {
+      deps -= [ "//third_party/libusb" ]
+    }
   }
 
   if (enable_basic_printing || enable_print_preview) {
@@ -298,17 +302,21 @@ source_set("ui") {
     deps += [
       "//chrome/browser:jni_headers",
       "//crypto:platform",
-      "//components/web_contents_delegate_android",
     ]
-    deps -= [
-      "//chrome/browser/ui/views",
-      "//ui/events",
-    ]
-    sources += rebase_path(gypi_values.chrome_browser_ui_android_sources,
-                           ".",
-                           "//chrome")
 
     defines += [ "CHROME_BUILD_ID=" + android_chrome_build_id ]
+
+    if (!use_aura) {
+      sources +=
+          rebase_path(gypi_values.chrome_browser_ui_android_non_aura_sources,
+                      ".",
+                      "//chrome")
+      deps += [ "//components/web_contents_delegate_android" ]
+      deps -= [
+        "//chrome/browser/ui/views",
+        "//ui/events",
+      ]
+    }
   }
 
   if (is_mac) {
@@ -429,7 +437,7 @@ source_set("ui") {
         rebase_path(gypi_values.chrome_browser_ui_autofill_dialog_sources,
                     ".",
                     "//chrome")
-    if (!is_android && !is_ios) {
+    if ((!is_android || use_aura) && !is_ios) {
       sources += rebase_path(
               gypi_values.chrome_browser_ui_autofill_dialog_non_mobile_sources,
               ".",
