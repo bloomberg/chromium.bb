@@ -6,7 +6,8 @@ group("example") {
   testonly = true
 
   deps = [
-    "//components/mus/example/client",
+    "//components/mus/example/main",
+    "//components/mus/example/views_examples",
     "//components/mus/example/window_type_launcher",
     "//components/mus/example/wm",
   ]

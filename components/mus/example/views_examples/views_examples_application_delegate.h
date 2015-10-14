@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_MUS_EXAMPLE_CLIENT_CLIENT_APPLICATION_DELEGATE_H_
-#define COMPONENTS_MUS_EXAMPLE_CLIENT_CLIENT_APPLICATION_DELEGATE_H_
+#ifndef COMPONENTS_MUS_EXAMPLE_CLIENT_VIEWS_EXAMPLES_APPLICATION_DELEGATE_H_
+#define COMPONENTS_MUS_EXAMPLE_CLIENT_VIEWS_EXAMPLES_APPLICATION_DELEGATE_H_
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -12,10 +12,10 @@
 
 class MUSViewsInit;
 
-class ClientApplicationDelegate : public mojo::ApplicationDelegate {
+class ViewsExamplesApplicationDelegate : public mojo::ApplicationDelegate {
  public:
-  ClientApplicationDelegate();
-  ~ClientApplicationDelegate() override;
+  ViewsExamplesApplicationDelegate();
+  ~ViewsExamplesApplicationDelegate() override;
 
  private:
   // ApplicationDelegate:
@@ -27,7 +27,7 @@ class ClientApplicationDelegate : public mojo::ApplicationDelegate {
 
   scoped_ptr<MUSViewsInit> mus_views_init_;
 
-  DISALLOW_COPY_AND_ASSIGN(ClientApplicationDelegate);
+  DISALLOW_COPY_AND_ASSIGN(ViewsExamplesApplicationDelegate);
 };
 
-#endif  // COMPONENTS_MUS_EXAMPLE_CLIENT_CLIENT_APPLICATION_DELEGATE_H_
+#endif  // COMPONENTS_MUS_EXAMPLE_CLIENT_VIEWS_EXAMPLES_APPLICATION_DELEGATE_H_

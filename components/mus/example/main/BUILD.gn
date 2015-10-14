@@ -1,4 +1,4 @@
-# Copyright 2014 The Chromium Authors. All rights reserved.
+# Copyright 2015 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -7,34 +7,25 @@ import("//mojo/public/mojo_application.gni")
 import("//third_party/mojo/src/mojo/public/tools/bindings/mojom.gni")
 import("//tools/grit/repack.gni")
 
-mojo_native_application("client") {
-  output_name = "example_client"
+mojo_native_application("main") {
+  output_name = "example_main"
   testonly = true
 
   sources = [
-    "client_application_delegate.cc",
-    "client_application_delegate.h",
     "main.cc",
+    "main_application_delegate.cc",
+    "main_application_delegate.h",
   ]
 
   deps = [
     "//base",
-    "//components/mus/example/common",
-    "//components/mus/example/wm:interfaces",
     "//mojo/application/public/cpp",
     "//mojo/application/public/cpp:sources",
-    "//mojo/converters/geometry",
-    "//skia",
     "//third_party/mojo/src/mojo/public/cpp/bindings",
-    "//ui/gfx",
-    "//ui/gfx/geometry",
-    "//ui/mojo/events:interfaces",
-    "//ui/views",
   ]
 
-  resources = [ "$root_out_dir/example_resources.pak" ]
-
   data_deps = [
-    "//components/mus",
+    "//components/mus/example/views_examples",
+    "//components/mus/example/window_type_launcher",
   ]
 }

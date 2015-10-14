@@ -95,6 +95,8 @@ class ApplicationImpl : public Application {
   // Requests a new connection to an application. Returns a pointer to the
   // connection if the connection is permitted by this application's delegate,
   // or nullptr otherwise. Caller takes ownership.
+  scoped_ptr<ApplicationConnection> ConnectToApplication(
+      const std::string& url);
   scoped_ptr<ApplicationConnection> ConnectToApplication(URLRequestPtr request);
   scoped_ptr<ApplicationConnection> ConnectToApplicationWithCapabilityFilter(
       URLRequestPtr request,

@@ -97,9 +97,8 @@ int main(int argc, char** argv) {
 #endif
 
     views::examples::ShowExamplesWindow(
-        views::examples::QUIT_ON_CLOSE,
-        NULL,
-        scoped_ptr<ScopedVector<views::examples::ExampleBase> >());
+        views::examples::QUIT_ON_CLOSE, nullptr,
+        scoped_ptr<ScopedVector<views::examples::ExampleBase>>());
 
     base::RunLoop().Run();
 

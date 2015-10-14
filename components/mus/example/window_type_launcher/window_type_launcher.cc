@@ -349,7 +349,7 @@ WindowTypeLauncher::WindowTypeLauncher() : app_(nullptr) {}
 WindowTypeLauncher::~WindowTypeLauncher() {}
 
 bool WindowTypeLauncher::ConfigureIncomingConnection(
-  mojo::ApplicationConnection* connection) {
+    mojo::ApplicationConnection* connection) {
   return false;
 }
 

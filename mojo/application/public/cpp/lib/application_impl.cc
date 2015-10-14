@@ -46,6 +46,13 @@ ApplicationImpl::~ApplicationImpl() {
 }
 
 scoped_ptr<ApplicationConnection> ApplicationImpl::ConnectToApplication(
+    const std::string& url) {
+  mojo::URLRequestPtr request(mojo::URLRequest::New());
+  request->url = url;
+  return ConnectToApplication(request.Pass());
+}
+
+scoped_ptr<ApplicationConnection> ApplicationImpl::ConnectToApplication(
     URLRequestPtr request) {
   return ConnectToApplicationWithCapabilityFilter(request.Pass(), nullptr);
 }

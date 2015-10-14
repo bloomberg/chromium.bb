@@ -1,0 +1,40 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/ui.gni")
+import("//mojo/public/mojo_application.gni")
+import("//third_party/mojo/src/mojo/public/tools/bindings/mojom.gni")
+import("//tools/grit/repack.gni")
+
+mojo_native_application("views_examples") {
+  testonly = true
+
+  sources = [
+    "main.cc",
+    "views_examples_application_delegate.cc",
+    "views_examples_application_delegate.h",
+  ]
+
+  deps = [
+    "//base",
+    "//components/mus/example/common",
+    "//components/mus/example/wm:interfaces",
+    "//mojo/application/public/cpp",
+    "//mojo/application/public/cpp:sources",
+    "//mojo/converters/geometry",
+    "//skia",
+    "//third_party/mojo/src/mojo/public/cpp/bindings",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
+    "//ui/mojo/events:interfaces",
+    "//ui/views",
+    "//ui/views/examples:views_examples_lib",
+  ]
+
+  resources = [ "$root_out_dir/example_resources.pak" ]
+
+  data_deps = [
+    "//components/mus",
+  ]
+}
