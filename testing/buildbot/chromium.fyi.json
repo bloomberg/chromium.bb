@@ -499,14 +499,16 @@
         "test": "url_unittests"
       }
     ],
+    "isolated_scripts": [
+      {
+        "isolate_name": "telemetry_gpu_unittests",
+        "name": "telemetry_gpu_unittests"
+      }
+    ],
     "scripts": [
       {
         "name": "telemetry_unittests",
         "script": "telemetry_unittests.py"
-      },
-      {
-        "name": "telemetry_gpu_unittests",
-        "script": "telemetry_gpu_unittests.py"
       },
       {
         "name": "telemetry_perf_unittests",
@@ -1249,14 +1251,16 @@
         "test": "wtf_unittests"
       }
     ],
+    "isolated_scripts": [
+      {
+        "isolate_name": "telemetry_gpu_unittests",
+        "name": "telemetry_gpu_unittests"
+      }
+    ],
     "scripts": [
       {
         "name": "telemetry_unittests",
         "script": "telemetry_unittests.py"
-      },
-      {
-        "name": "telemetry_gpu_unittests",
-        "script": "telemetry_gpu_unittests.py"
       },
       {
         "name": "telemetry_perf_unittests",
@@ -1455,14 +1459,16 @@
         "test": "wtf_unittests"
       }
     ],
+    "isolated_scripts": [
+      {
+        "isolate_name": "telemetry_gpu_unittests",
+        "name": "telemetry_gpu_unittests"
+      }
+    ],
     "scripts": [
       {
         "name": "telemetry_unittests",
         "script": "telemetry_unittests.py"
-      },
-      {
-        "name": "telemetry_gpu_unittests",
-        "script": "telemetry_gpu_unittests.py"
       },
       {
         "name": "telemetry_perf_unittests",
@@ -4518,14 +4524,16 @@
         "test": "wm_unittests"
       }
     ],
+    "isolated_scripts": [
+      {
+        "isolate_name": "telemetry_gpu_unittests",
+        "name": "telemetry_gpu_unittests"
+      }
+    ],
     "scripts": [
       {
         "name": "telemetry_unittests",
         "script": "telemetry_unittests.py"
-      },
-      {
-        "name": "telemetry_gpu_unittests",
-        "script": "telemetry_gpu_unittests.py"
       },
       {
         "name": "telemetry_perf_unittests",
@@ -4708,14 +4716,16 @@
         "test": "wm_unittests"
       }
     ],
+    "isolated_scripts": [
+      {
+        "isolate_name": "telemetry_gpu_unittests",
+        "name": "telemetry_gpu_unittests"
+      }
+    ],
     "scripts": [
       {
         "name": "telemetry_unittests",
         "script": "telemetry_unittests.py"
-      },
-      {
-        "name": "telemetry_gpu_unittests",
-        "script": "telemetry_gpu_unittests.py"
       },
       {
         "name": "telemetry_perf_unittests",
@@ -5003,14 +5013,16 @@
         "test": "wm_unittests"
       }
     ],
+    "isolated_scripts": [
+      {
+        "isolate_name": "telemetry_gpu_unittests",
+        "name": "telemetry_gpu_unittests"
+      }
+    ],
     "scripts": [
       {
         "name": "telemetry_unittests",
         "script": "telemetry_unittests.py"
-      },
-      {
-        "name": "telemetry_gpu_unittests",
-        "script": "telemetry_gpu_unittests.py"
       },
       {
         "name": "telemetry_perf_unittests",
@@ -5181,14 +5193,16 @@
         "test": "wm_unittests"
       }
     ],
+    "isolated_scripts": [
+      {
+        "isolate_name": "telemetry_gpu_unittests",
+        "name": "telemetry_gpu_unittests"
+      }
+    ],
     "scripts": [
       {
         "name": "telemetry_unittests",
         "script": "telemetry_unittests.py"
-      },
-      {
-        "name": "telemetry_gpu_unittests",
-        "script": "telemetry_gpu_unittests.py"
       },
       {
         "name": "telemetry_perf_unittests",
