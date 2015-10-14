@@ -82,10 +82,6 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   // transform and insets.
   virtual void UpdateRootWindowSize(const gfx::Size& host_size);
 
-  // Returns the actual size of the screen.
-  // (gfx::Screen only reports on the virtual desktop exposed by Aura.)
-  static gfx::Size GetNativeScreenSize();
-
   // Converts |point| from the root window's coordinate system to native
   // screen's.
   void ConvertPointToNativeScreen(gfx::Point* point) const;

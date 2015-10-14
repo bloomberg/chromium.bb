@@ -150,6 +150,16 @@ void ReturnMailbox(scoped_refptr<cc::ContextProvider> context_provider,
   gl->ShallowFlushCHROMIUM();
 }
 
+gfx::Size GetFullscreenSize() {
+#if defined(OS_WIN)
+  return gfx::Size(GetSystemMetrics(SM_CXSCREEN),
+                   GetSystemMetrics(SM_CYSCREEN));
+#else
+  NOTIMPLEMENTED();
+  return gfx::Size(1024, 768);
+#endif
+}
+
 // A benchmark that adds a texture layer that is updated every frame.
 class WebGLBench : public BenchCompositorObserver {
  public:
@@ -312,7 +322,7 @@ int main(int argc, char** argv) {
   aura::Env::CreateInstance(true);
   aura::Env::GetInstance()->set_context_factory(context_factory.get());
   scoped_ptr<aura::TestScreen> test_screen(
-      aura::TestScreen::CreateFullscreen());
+      aura::TestScreen::Create(GetFullscreenSize()));
   gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, test_screen.get());
   scoped_ptr<aura::WindowTreeHost> host(
       test_screen->CreateHostForPrimaryDisplay());

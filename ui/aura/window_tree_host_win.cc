@@ -31,12 +31,6 @@ WindowTreeHost* WindowTreeHost::Create(const gfx::Rect& bounds) {
   return new WindowTreeHostWin(bounds);
 }
 
-// static
-gfx::Size WindowTreeHost::GetNativeScreenSize() {
-  return gfx::Size(GetSystemMetrics(SM_CXSCREEN),
-                   GetSystemMetrics(SM_CYSCREEN));
-}
-
 WindowTreeHostWin::WindowTreeHostWin(const gfx::Rect& bounds)
     : has_capture_(false),
       widget_(gfx::kNullAcceleratedWidget),

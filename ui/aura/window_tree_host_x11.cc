@@ -661,12 +661,6 @@ WindowTreeHost* WindowTreeHost::Create(const gfx::Rect& bounds) {
   return new WindowTreeHostX11(bounds);
 }
 
-// static
-gfx::Size WindowTreeHost::GetNativeScreenSize() {
-  ::XDisplay* xdisplay = gfx::GetXDisplay();
-  return gfx::Size(DisplayWidth(xdisplay, 0), DisplayHeight(xdisplay, 0));
-}
-
 namespace test {
 
 void SetUseOverrideRedirectWindowByDefault(bool override_redirect) {

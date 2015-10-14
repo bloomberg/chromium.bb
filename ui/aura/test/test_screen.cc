@@ -34,11 +34,6 @@ TestScreen* TestScreen::Create(const gfx::Size& size) {
   return new TestScreen(gfx::Rect(size.IsEmpty() ? kDefaultSize : size));
 }
 
-// static
-TestScreen* TestScreen::CreateFullscreen() {
-  return new TestScreen(gfx::Rect(WindowTreeHost::GetNativeScreenSize()));
-}
-
 TestScreen::~TestScreen() {
 }
 

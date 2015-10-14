@@ -114,7 +114,8 @@ DisplayInfo DisplayInfo::CreateFromSpec(const std::string& spec) {
 DisplayInfo DisplayInfo::CreateFromSpecWithID(const std::string& spec,
                                               int64 id) {
 #if defined(OS_WIN)
-  gfx::Rect bounds_in_native(aura::WindowTreeHost::GetNativeScreenSize());
+  gfx::Rect bounds_in_native(
+      gfx::Size(GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN)));
 #else
   // Default bounds for a display.
   const int kDefaultHostWindowX = 200;

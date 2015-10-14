@@ -116,10 +116,4 @@ WindowTreeHost* WindowTreeHost::Create(const gfx::Rect& bounds) {
   return new WindowTreeHostOzone(bounds);
 }
 
-// static
-gfx::Size WindowTreeHost::GetNativeScreenSize() {
-  NOTIMPLEMENTED();
-  return gfx::Size();
-}
-
 }  // namespace aura
