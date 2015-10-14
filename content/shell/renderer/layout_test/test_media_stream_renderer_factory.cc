@@ -44,11 +44,7 @@ scoped_refptr<VideoFrameProvider>
 TestMediaStreamRendererFactory::GetVideoFrameProvider(
     const GURL& url,
     const base::Closure& error_cb,
-    const VideoFrameProvider::RepaintCB& repaint_cb,
-    const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
-    const scoped_refptr<base::TaskRunner>& worker_task_runner,
-    const scoped_refptr<media::GpuVideoAcceleratorFactories>&
-        gpu_factories) {
+    const VideoFrameProvider::RepaintCB& repaint_cb) {
   if (!IsMockMediaStreamWithVideo(url))
     return NULL;
 

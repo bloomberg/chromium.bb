@@ -11,18 +11,12 @@
 #include "content/common/media/video_capture.h"
 #include "content/public/renderer/media_stream_video_sink.h"
 #include "content/public/renderer/video_frame_provider.h"
-#include "media/video/gpu_memory_buffer_video_frame_pool.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace base {
 class SingleThreadTaskRunner;
-class TaskRunner;
-}  // namespace base
-
-namespace media {
-class GpuVideoAcceleratorFactories;
-}  // namespace media
+}
 
 namespace content {
 
@@ -42,21 +36,15 @@ class CONTENT_EXPORT MediaStreamVideoRendererSink
     : NON_EXPORTED_BASE(public VideoFrameProvider),
       NON_EXPORTED_BASE(public MediaStreamVideoSink) {
  public:
-  MediaStreamVideoRendererSink(
-      const blink::WebMediaStreamTrack& video_track,
-      const base::Closure& error_cb,
-      const RepaintCB& repaint_cb,
-      const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
-      const scoped_refptr<base::TaskRunner>& worker_task_runner,
-      const scoped_refptr<media::GpuVideoAcceleratorFactories>& gpu_factories);
+  MediaStreamVideoRendererSink(const blink::WebMediaStreamTrack& video_track,
+                   const base::Closure& error_cb,
+                   const RepaintCB& repaint_cb);
 
   // VideoFrameProvider implementation. Called on the main thread.
   void Start() override;
   void Stop() override;
   void Play() override;
   void Pause() override;
-  void SetGpuMemoryBufferVideoForTesting(
-      scoped_ptr<media::GpuMemoryBufferVideoFramePool> gpu_memory_buffer_pool);
 
  protected:
   ~MediaStreamVideoRendererSink() override;
@@ -71,7 +59,6 @@ class CONTENT_EXPORT MediaStreamVideoRendererSink
 
   void OnVideoFrame(const scoped_refptr<media::VideoFrame>& frame,
                     base::TimeTicks estimated_capture_time);
-  void FrameReady(const scoped_refptr<media::VideoFrame>& frame);
 
   // MediaStreamVideoSink implementation. Called on the main thread.
   void OnReadyStateChanged(
@@ -81,16 +68,10 @@ class CONTENT_EXPORT MediaStreamVideoRendererSink
 
   const base::Closure error_cb_;
   const RepaintCB repaint_cb_;
-
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   State state_;
   gfx::Size frame_size_;
   const blink::WebMediaStreamTrack video_track_;
-
-  // Pool of GpuMemoryBuffers and resources used to create hardware frames.
-  scoped_ptr<media::GpuMemoryBufferVideoFramePool> gpu_memory_buffer_pool_;
-  const scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
-
   base::WeakPtrFactory<MediaStreamVideoRendererSink> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamVideoRendererSink);
