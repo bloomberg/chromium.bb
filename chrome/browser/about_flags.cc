@@ -56,9 +56,7 @@
 #include "ui/native_theme/native_theme_switches.h"
 #include "ui/views/views_switches.h"
 
-#if defined(OS_ANDROID)
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
-#else
+#if !defined(OS_ANDROID)
 #include "ui/message_center/message_center_switches.h"
 #endif
 
@@ -87,23 +85,24 @@ namespace about_flags {
 
 // Macros to simplify specifying the type.
 #define SINGLE_VALUE_TYPE_AND_VALUE(command_line_switch, switch_value) \
-    Experiment::SINGLE_VALUE, \
+    FeatureEntry::SINGLE_VALUE, \
     command_line_switch, switch_value, NULL, NULL, NULL, 0
 #define SINGLE_VALUE_TYPE(command_line_switch) \
     SINGLE_VALUE_TYPE_AND_VALUE(command_line_switch, "")
 #define SINGLE_DISABLE_VALUE_TYPE_AND_VALUE(command_line_switch, switch_value) \
-    Experiment::SINGLE_DISABLE_VALUE, \
+    FeatureEntry::SINGLE_DISABLE_VALUE, \
     command_line_switch, switch_value, NULL, NULL, NULL, 0
 #define SINGLE_DISABLE_VALUE_TYPE(command_line_switch) \
     SINGLE_DISABLE_VALUE_TYPE_AND_VALUE(command_line_switch, "")
 #define ENABLE_DISABLE_VALUE_TYPE_AND_VALUE(enable_switch, enable_value, \
                                             disable_switch, disable_value) \
-    Experiment::ENABLE_DISABLE_VALUE, enable_switch, enable_value, \
+    FeatureEntry::ENABLE_DISABLE_VALUE, enable_switch, enable_value, \
     disable_switch, disable_value, NULL, 3
 #define ENABLE_DISABLE_VALUE_TYPE(enable_switch, disable_switch) \
     ENABLE_DISABLE_VALUE_TYPE_AND_VALUE(enable_switch, "", disable_switch, "")
 #define MULTI_VALUE_TYPE(choices) \
-    Experiment::MULTI_VALUE, NULL, NULL, NULL, NULL, choices, arraysize(choices)
+    FeatureEntry::MULTI_VALUE, NULL, NULL, NULL, NULL, choices, \
+    arraysize(choices)
 
 namespace {
 
@@ -121,7 +120,7 @@ const unsigned kOsAll = kOsMac | kOsWin | kOsLinux | kOsCrOS | kOsAndroid;
 const unsigned kOsDesktop = kOsMac | kOsWin | kOsLinux | kOsCrOS;
 
 // Adds a |StringValue| to |list| for each platform where |bitmask| indicates
-// whether the experiment is available on that platform.
+// whether the entry is available on that platform.
 void AddOsStrings(unsigned bitmask, base::ListValue* list) {
   struct {
     unsigned bit;
@@ -173,7 +172,7 @@ std::set<base::CommandLine::StringType> ExtractFlagsFromCommandLine(
   return flags;
 }
 
-const Experiment::Choice kTouchEventsChoices[] = {
+const FeatureEntry::Choice kTouchEventsChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_AUTOMATIC, "", "" },
   { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED,
     switches::kTouchEvents,
@@ -184,7 +183,7 @@ const Experiment::Choice kTouchEventsChoices[] = {
 };
 
 #if defined(USE_AURA)
-const Experiment::Choice kOverscrollHistoryNavigationChoices[] = {
+const FeatureEntry::Choice kOverscrollHistoryNavigationChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED, "", "" },
   { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
     switches::kOverscrollHistoryNavigation,
@@ -195,7 +194,7 @@ const Experiment::Choice kOverscrollHistoryNavigationChoices[] = {
 };
 #endif
 
-const Experiment::Choice kTouchTextSelectionStrategyChoices[] = {
+const FeatureEntry::Choice kTouchTextSelectionStrategyChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
   { IDS_TOUCH_SELECTION_STRATEGY_CHARACTER,
     switches::kTouchTextSelectionStrategy,
@@ -205,7 +204,7 @@ const Experiment::Choice kTouchTextSelectionStrategyChoices[] = {
     "direction" }
 };
 
-const Experiment::Choice kTraceUploadURL[] = {
+const FeatureEntry::Choice kTraceUploadURL[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED, "", "" },
   { IDS_TRACE_UPLOAD_URL_CHOICE_OTHER, switches::kTraceUploadURL,
     "https://performance-insights.appspot.com/upload?tags=flags,Other"},
@@ -218,7 +217,7 @@ const Experiment::Choice kTraceUploadURL[] = {
 };
 
 #if !defined(DISABLE_NACL)
-const Experiment::Choice kNaClDebugMaskChoices[] = {
+const FeatureEntry::Choice kNaClDebugMaskChoices[] = {
   // Secure shell can be used on ChromeOS for forwarding the TCP port opened by
   // debug stub to a remote machine. Since secure shell uses NaCl, we usually
   // want to avoid debugging that. The PNaCl translator is also a NaCl module,
@@ -232,7 +231,7 @@ const Experiment::Choice kNaClDebugMaskChoices[] = {
 };
 #endif
 
-const Experiment::Choice kMarkNonSecureAsChoices[] = {
+const FeatureEntry::Choice kMarkNonSecureAsChoices[] = {
     { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
     { IDS_MARK_NON_SECURE_AS_NEUTRAL,
         switches::kMarkNonSecureAs, switches::kMarkNonSecureAsNeutral},
@@ -240,7 +239,7 @@ const Experiment::Choice kMarkNonSecureAsChoices[] = {
         switches::kMarkNonSecureAs, switches::kMarkNonSecureAsNonSecure}
 };
 
-const Experiment::Choice kDataReductionProxyLoFiChoices[] = {
+const FeatureEntry::Choice kDataReductionProxyLoFiChoices[] = {
     { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
     { IDS_FLAGS_DATA_REDUCTION_PROXY_LO_FI_ALWAYS_ON,
         data_reduction_proxy::switches::kDataReductionProxyLoFi,
@@ -258,7 +257,7 @@ const Experiment::Choice kDataReductionProxyLoFiChoices[] = {
             kDataReductionProxyLoFiValueSlowConnectionsOnly}
 };
 
-const Experiment::Choice kShowSavedCopyChoices[] = {
+const FeatureEntry::Choice kShowSavedCopyChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
   { IDS_FLAGS_ENABLE_SHOW_SAVED_COPY_PRIMARY,
     switches::kShowSavedCopy, switches::kEnableShowSavedCopyPrimary },
@@ -268,7 +267,7 @@ const Experiment::Choice kShowSavedCopyChoices[] = {
     switches::kShowSavedCopy, switches::kDisableShowSavedCopy }
 };
 
-const Experiment::Choice kDefaultTileWidthChoices[] = {
+const FeatureEntry::Choice kDefaultTileWidthChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
   { IDS_FLAGS_DEFAULT_TILE_WIDTH_SHORT,
     switches::kDefaultTileWidth, "128"},
@@ -280,7 +279,7 @@ const Experiment::Choice kDefaultTileWidthChoices[] = {
     switches::kDefaultTileWidth, "1024"}
 };
 
-const Experiment::Choice kDefaultTileHeightChoices[] = {
+const FeatureEntry::Choice kDefaultTileHeightChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
   { IDS_FLAGS_DEFAULT_TILE_HEIGHT_SHORT,
     switches::kDefaultTileHeight, "128"},
@@ -292,7 +291,7 @@ const Experiment::Choice kDefaultTileHeightChoices[] = {
     switches::kDefaultTileHeight, "1024"}
 };
 
-const Experiment::Choice kSimpleCacheBackendChoices[] = {
+const FeatureEntry::Choice kSimpleCacheBackendChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
   { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
     switches::kUseSimpleCacheBackend, "off" },
@@ -301,7 +300,7 @@ const Experiment::Choice kSimpleCacheBackendChoices[] = {
 };
 
 #if defined(USE_AURA)
-const Experiment::Choice kTabCaptureUpscaleQualityChoices[] = {
+const FeatureEntry::Choice kTabCaptureUpscaleQualityChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
   { IDS_FLAGS_TAB_CAPTURE_SCALE_QUALITY_FAST,
     switches::kTabCaptureUpscaleQuality, "fast" },
@@ -311,7 +310,7 @@ const Experiment::Choice kTabCaptureUpscaleQualityChoices[] = {
     switches::kTabCaptureUpscaleQuality, "best" },
 };
 
-const Experiment::Choice kTabCaptureDownscaleQualityChoices[] = {
+const FeatureEntry::Choice kTabCaptureDownscaleQualityChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
   { IDS_FLAGS_TAB_CAPTURE_SCALE_QUALITY_FAST,
     switches::kTabCaptureDownscaleQuality, "fast" },
@@ -323,7 +322,7 @@ const Experiment::Choice kTabCaptureDownscaleQualityChoices[] = {
 #endif
 
 #if defined(OS_ANDROID)
-const Experiment::Choice kReaderModeHeuristicsChoices[] = {
+const FeatureEntry::Choice kReaderModeHeuristicsChoices[] = {
     { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", ""},
     { IDS_FLAGS_READER_MODE_HEURISTICS_MARKUP,
       switches::kReaderModeHeuristics,
@@ -340,7 +339,7 @@ const Experiment::Choice kReaderModeHeuristicsChoices[] = {
 };
 #endif
 
-const Experiment::Choice kNumRasterThreadsChoices[] = {
+const FeatureEntry::Choice kNumRasterThreadsChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
   { IDS_FLAGS_NUM_RASTER_THREADS_ONE, switches::kNumRasterThreads, "1" },
   { IDS_FLAGS_NUM_RASTER_THREADS_TWO, switches::kNumRasterThreads, "2" },
@@ -348,7 +347,7 @@ const Experiment::Choice kNumRasterThreadsChoices[] = {
   { IDS_FLAGS_NUM_RASTER_THREADS_FOUR, switches::kNumRasterThreads, "4" }
 };
 
-const Experiment::Choice kGpuRasterizationMSAASampleCountChoices[] = {
+const FeatureEntry::Choice kGpuRasterizationMSAASampleCountChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT,
     "",
     "" },
@@ -364,7 +363,7 @@ const Experiment::Choice kGpuRasterizationMSAASampleCountChoices[] = {
     switches::kGpuRasterizationMSAASampleCount, "16" },
 };
 
-const Experiment::Choice kEnableGpuRasterizationChoices[] = {
+const FeatureEntry::Choice kEnableGpuRasterizationChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
   { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED,
     switches::kEnableGpuRasterization, "" },
@@ -375,7 +374,7 @@ const Experiment::Choice kEnableGpuRasterizationChoices[] = {
 };
 
 #if defined(OS_CHROMEOS)
-const Experiment::Choice kMemoryPressureThresholdChoices[] = {
+const FeatureEntry::Choice kMemoryPressureThresholdChoices[] = {
     { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
     { IDS_FLAGS_CONSERVATIVE_THRESHOLDS,
       chromeos::switches::kMemoryPressureThresholds,
@@ -392,7 +391,7 @@ const Experiment::Choice kMemoryPressureThresholdChoices[] = {
 };
 #endif
 
-const Experiment::Choice kExtensionContentVerificationChoices[] = {
+const FeatureEntry::Choice kExtensionContentVerificationChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
   { IDS_FLAGS_EXTENSION_CONTENT_VERIFICATION_BOOTSTRAP,
     switches::kExtensionContentVerification,
@@ -405,7 +404,7 @@ const Experiment::Choice kExtensionContentVerificationChoices[] = {
     switches::kExtensionContentVerificationEnforceStrict },
 };
 
-const Experiment::Choice kAutofillSyncCredentialChoices[] = {
+const FeatureEntry::Choice kAutofillSyncCredentialChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", ""},
   { IDS_ALLOW_AUTOFILL_SYNC_CREDENTIAL,
     password_manager::switches::kAllowAutofillSyncCredential, ""},
@@ -415,7 +414,7 @@ const Experiment::Choice kAutofillSyncCredentialChoices[] = {
     password_manager::switches::kDisallowAutofillSyncCredential, ""},
 };
 
-const Experiment::Choice kFillOnAccountSelectChoices[] = {
+const FeatureEntry::Choice kFillOnAccountSelectChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
   { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
     autofill::switches::kDisableFillOnAccountSelect, "" },
@@ -426,7 +425,7 @@ const Experiment::Choice kFillOnAccountSelectChoices[] = {
 };
 
 #if defined(ENABLE_TOPCHROME_MD)
-const Experiment::Choice kTopChromeMaterialDesignChoices[] = {
+const FeatureEntry::Choice kTopChromeMaterialDesignChoices[] = {
     {IDS_FLAGS_TOP_CHROME_MD_NON_MATERIAL, "", ""},
     {IDS_FLAGS_TOP_CHROME_MD_MATERIAL,
      switches::kTopChromeMD,
@@ -437,7 +436,7 @@ const Experiment::Choice kTopChromeMaterialDesignChoices[] = {
 #endif
 
 #if defined(OS_CHROMEOS)
-const Experiment::Choice kAshMaterialDesignInkDropAnimationSpeed[] = {
+const FeatureEntry::Choice kAshMaterialDesignInkDropAnimationSpeed[] = {
     {IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", ""},
     {IDS_FLAGS_MATERIAL_DESIGN_INK_DROP_ANIMATION_FAST,
      switches::kMaterialDesignInkDropAnimationSpeed,
@@ -446,7 +445,7 @@ const Experiment::Choice kAshMaterialDesignInkDropAnimationSpeed[] = {
      switches::kMaterialDesignInkDropAnimationSpeed,
      switches::kMaterialDesignInkDropAnimationSpeedSlow}};
 
-const Experiment::Choice kDataSaverPromptChoices[] = {
+const FeatureEntry::Choice kDataSaverPromptChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
   { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED,
     chromeos::switches::kEnableDataSaverPrompt, "" },
@@ -457,7 +456,7 @@ const Experiment::Choice kDataSaverPromptChoices[] = {
     chromeos::switches::kDataSaverPromptDemoMode },
 };
 
-const Experiment::Choice kFloatingVirtualKeyboardChoices[] = {
+const FeatureEntry::Choice kFloatingVirtualKeyboardChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
   { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
     keyboard::switches::kFloatingVirtualKeyboard,
@@ -467,7 +466,7 @@ const Experiment::Choice kFloatingVirtualKeyboardChoices[] = {
     keyboard::switches::kFloatingVirtualKeyboardEnabled},
 };
 
-const Experiment::Choice kSmartVirtualKeyboardChoices[] = {
+const FeatureEntry::Choice kSmartVirtualKeyboardChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
   { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
     keyboard::switches::kSmartVirtualKeyboard,
@@ -477,7 +476,7 @@ const Experiment::Choice kSmartVirtualKeyboardChoices[] = {
     keyboard::switches::kSmartVirtualKeyboardEnabled},
 };
 
-const Experiment::Choice kGestureTypingChoices[] = {
+const FeatureEntry::Choice kGestureTypingChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
   { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
     keyboard::switches::kGestureTyping,
@@ -487,7 +486,7 @@ const Experiment::Choice kGestureTypingChoices[] = {
     keyboard::switches::kGestureTypingEnabled},
 };
 
-const Experiment::Choice kGestureEditingChoices[] = {
+const FeatureEntry::Choice kGestureEditingChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
   { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
     keyboard::switches::kGestureEditing,
@@ -497,7 +496,7 @@ const Experiment::Choice kGestureEditingChoices[] = {
     keyboard::switches::kGestureEditingEnabled},
 };
 
-const Experiment::Choice kDownloadNotificationChoices[] = {
+const FeatureEntry::Choice kDownloadNotificationChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
   { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED,
     switches::kEnableDownloadNotification,
@@ -508,7 +507,7 @@ const Experiment::Choice kDownloadNotificationChoices[] = {
 };
 #endif
 
-const Experiment::Choice kSupervisedUserSafeSitesChoices[] = {
+const FeatureEntry::Choice kSupervisedUserSafeSitesChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
   { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED,
     switches::kSupervisedUserSafeSites,
@@ -524,7 +523,7 @@ const Experiment::Choice kSupervisedUserSafeSitesChoices[] = {
     "online-check-only" }
 };
 
-const Experiment::Choice kV8CacheOptionsChoices[] = {
+const FeatureEntry::Choice kV8CacheOptionsChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
   { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED, switches::kV8CacheOptions, "none" },
   { IDS_FLAGS_V8_CACHE_OPTIONS_PARSE, switches::kV8CacheOptions, "parse" },
@@ -532,7 +531,7 @@ const Experiment::Choice kV8CacheOptionsChoices[] = {
 };
 
 #if defined(OS_ANDROID)
-const Experiment::Choice kProgressBarAnimationChoices[] = {
+const FeatureEntry::Choice kProgressBarAnimationChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
   { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
       switches::kProgressBarAnimation, "disabled" },
@@ -546,7 +545,7 @@ const Experiment::Choice kProgressBarAnimationChoices[] = {
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
-const Experiment::Choice kCrosRegionsModeChoices[] = {
+const FeatureEntry::Choice kCrosRegionsModeChoices[] = {
   { IDS_FLAGS_CROS_REGIONS_MODE_DEFAULT, "", "" },
   { IDS_FLAGS_CROS_REGIONS_MODE_OVERRIDE, chromeos::switches::kCrosRegionsMode,
         chromeos::switches::kCrosRegionsModeOverride },
@@ -556,7 +555,7 @@ const Experiment::Choice kCrosRegionsModeChoices[] = {
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_WIN)
-const Experiment::Choice kPpapiWin32kLockdown[] = {
+const FeatureEntry::Choice kPpapiWin32kLockdown[] = {
     {IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", ""},
     {IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
      switches::kEnableWin32kLockDownMimeTypes, ""},
@@ -577,9 +576,9 @@ const Experiment::Choice kPpapiWin32kLockdown[] = {
 
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
-// The first line of the experiment is the internal name. If you'd like to
-// gather statistics about the usage of your flag, you should append a marker
-// comment to the end of the feature name, like so:
+// The first line of the entry is the internal name. If you'd like to gather
+// statistics about the usage of your flag, you should append a marker comment
+// to the end of the feature name, like so:
 //   "my-special-feature",  // FLAGS:RECORD_UMA
 //
 // After doing that, run
@@ -600,22 +599,22 @@ const Experiment::Choice kPpapiWin32kLockdown[] = {
 // whereas running with the flag enabled happens until the user flips the flag
 // again.
 
-// To add a new experiment add to the end of kExperiments. There are two
-// distinct types of experiments:
-// . SINGLE_VALUE: experiment is either on or off. Use the SINGLE_VALUE_TYPE
+// To add a new entry, add to the end of kFeatureEntries. There are two
+// distinct types of entries:
+// . SINGLE_VALUE: entry is either on or off. Use the SINGLE_VALUE_TYPE
 //   macro for this type supplying the command line to the macro.
 // . MULTI_VALUE: a list of choices, the first of which should correspond to a
 //   deactivated state for this lab (i.e. no command line option).  To specify
-//   this type of experiment use the macro MULTI_VALUE_TYPE supplying it the
+//   this type of entry use the macro MULTI_VALUE_TYPE supplying it the
 //   array of choices.
-// See the documentation of Experiment for details on the fields.
+// See the documentation of FeatureEntry for details on the fields.
 //
 // Command-line switches must have entries in enum "LoginCustomFlags" in
 // histograms.xml. See note in histograms.xml and don't forget to run
 // AboutFlagsHistogramTest unit test to calculate and verify checksum.
 //
 // When adding a new choice, add it to the end of the list.
-const Experiment kExperiments[] = {
+const FeatureEntry kFeatureEntries[] = {
     {"ignore-gpu-blacklist",
      IDS_FLAGS_IGNORE_GPU_BLACKLIST_NAME,
      IDS_FLAGS_IGNORE_GPU_BLACKLIST_DESCRIPTION,
@@ -2127,8 +2126,8 @@ const Experiment kExperiments[] = {
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.
 };
 
-const Experiment* experiments = kExperiments;
-size_t num_experiments = arraysize(kExperiments);
+const FeatureEntry* g_entries = kFeatureEntries;
+size_t g_num_entries = arraysize(kFeatureEntries);
 
 // Stores and encapsulates the little state that about:flags has.
 class FlagsState {
@@ -2138,7 +2137,7 @@ class FlagsState {
                               base::CommandLine* command_line,
                               SentinelsMode sentinels);
   bool IsRestartNeededToCommitChanges();
-  void SetExperimentEnabled(flags_ui::FlagsStorage* flags_storage,
+  void SetFeatureEntryEnabled(flags_ui::FlagsStorage* flags_storage,
                             const std::string& internal_name,
                             bool enable);
   void RemoveFlagsSwitches(
@@ -2158,35 +2157,35 @@ class FlagsState {
   DISALLOW_COPY_AND_ASSIGN(FlagsState);
 };
 
-// Adds the internal names for the specified experiment to |names|.
-void AddInternalName(const Experiment& e, std::set<std::string>* names) {
-  if (e.type == Experiment::SINGLE_VALUE ||
-      e.type == Experiment::SINGLE_DISABLE_VALUE) {
+// Adds the internal names for the specified entry to |names|.
+void AddInternalName(const FeatureEntry& e, std::set<std::string>* names) {
+  if (e.type == FeatureEntry::SINGLE_VALUE ||
+      e.type == FeatureEntry::SINGLE_DISABLE_VALUE) {
     names->insert(e.internal_name);
   } else {
-    DCHECK(e.type == Experiment::MULTI_VALUE ||
-           e.type == Experiment::ENABLE_DISABLE_VALUE);
+    DCHECK(e.type == FeatureEntry::MULTI_VALUE ||
+           e.type == FeatureEntry::ENABLE_DISABLE_VALUE);
     for (int i = 0; i < e.num_choices; ++i)
       names->insert(e.NameForChoice(i));
   }
 }
 
-// Confirms that an experiment is valid, used in a DCHECK in
+// Confirms that an entry is valid, used in a DCHECK in
 // SanitizeList below.
-bool ValidateExperiment(const Experiment& e) {
+bool ValidateFeatureEntry(const FeatureEntry& e) {
   switch (e.type) {
-    case Experiment::SINGLE_VALUE:
-    case Experiment::SINGLE_DISABLE_VALUE:
+    case FeatureEntry::SINGLE_VALUE:
+    case FeatureEntry::SINGLE_DISABLE_VALUE:
       DCHECK_EQ(0, e.num_choices);
       DCHECK(!e.choices);
       break;
-    case Experiment::MULTI_VALUE:
+    case FeatureEntry::MULTI_VALUE:
       DCHECK_GT(e.num_choices, 0);
       DCHECK(e.choices);
       DCHECK(e.choices[0].command_line_switch);
       DCHECK_EQ('\0', e.choices[0].command_line_switch[0]);
       break;
-    case Experiment::ENABLE_DISABLE_VALUE:
+    case FeatureEntry::ENABLE_DISABLE_VALUE:
       DCHECK_EQ(3, e.num_choices);
       DCHECK(!e.choices);
       DCHECK(e.command_line_switch);
@@ -2200,24 +2199,24 @@ bool ValidateExperiment(const Experiment& e) {
   return true;
 }
 
-// Removes all experiments from prefs::kEnabledLabsExperiments that are
-// unknown, to prevent this list to become very long as experiments are added
+// Removes all entries from prefs::kEnabledLabsExperiments that are
+// unknown, to prevent this list to become very long as entries are added
 // and removed.
 void SanitizeList(flags_ui::FlagsStorage* flags_storage) {
-  std::set<std::string> known_experiments;
-  for (size_t i = 0; i < num_experiments; ++i) {
-    DCHECK(ValidateExperiment(experiments[i]));
-    AddInternalName(experiments[i], &known_experiments);
+  std::set<std::string> known_entries;
+  for (size_t i = 0; i < g_num_entries; ++i) {
+    DCHECK(ValidateFeatureEntry(g_entries[i]));
+    AddInternalName(g_entries[i], &known_entries);
   }
 
-  std::set<std::string> enabled_experiments = flags_storage->GetFlags();
+  std::set<std::string> enabled_entries = flags_storage->GetFlags();
 
-  std::set<std::string> new_enabled_experiments =
+  std::set<std::string> new_enabled_entries =
       base::STLSetIntersection<std::set<std::string> >(
-          known_experiments, enabled_experiments);
+          known_entries, enabled_entries);
 
-  if (new_enabled_experiments != enabled_experiments)
-    flags_storage->SetFlags(new_enabled_experiments);
+  if (new_enabled_entries != enabled_entries)
+    flags_storage->SetFlags(new_enabled_entries);
 }
 
 void GetSanitizedEnabledFlags(flags_ui::FlagsStorage* flags_storage,
@@ -2226,25 +2225,25 @@ void GetSanitizedEnabledFlags(flags_ui::FlagsStorage* flags_storage,
   *result = flags_storage->GetFlags();
 }
 
-bool SkipConditionalExperiment(const Experiment& experiment) {
+bool SkipConditionalFeatureEntry(const FeatureEntry& entry) {
   version_info::Channel channel = chrome::GetChannel();
 
 #if defined(OS_ANDROID)
   // enable-data-reduction-proxy-dev is only available for the Dev/Beta channel.
-  if (!strcmp("enable-data-reduction-proxy-dev", experiment.internal_name) &&
+  if (!strcmp("enable-data-reduction-proxy-dev", entry.internal_name) &&
       channel != version_info::Channel::BETA &&
       channel != version_info::Channel::DEV) {
     return true;
   }
   // enable-data-reduction-proxy-alt is only available for the Dev channel.
-  if (!strcmp("enable-data-reduction-proxy-alt", experiment.internal_name) &&
+  if (!strcmp("enable-data-reduction-proxy-alt", entry.internal_name) &&
       channel != version_info::Channel::DEV) {
     return true;
   }
   // enable-data-reduction-proxy-carrier-test is only available for Chromium
   // builds and the Canary/Dev channel.
   if (!strcmp("enable-data-reduction-proxy-carrier-test",
-              experiment.internal_name) &&
+              entry.internal_name) &&
       channel != version_info::Channel::DEV &&
       channel != version_info::Channel::CANARY &&
       channel != version_info::Channel::UNKNOWN) {
@@ -2254,7 +2253,7 @@ bool SkipConditionalExperiment(const Experiment& experiment) {
 
   // data-reduction-proxy-lo-fi is only available for Chromium builds and
   // the Canary/Dev/Beta channels.
-  if (!strcmp("data-reduction-proxy-lo-fi", experiment.internal_name) &&
+  if (!strcmp("data-reduction-proxy-lo-fi", entry.internal_name) &&
       channel != version_info::Channel::BETA &&
       channel != version_info::Channel::DEV &&
       channel != version_info::Channel::CANARY &&
@@ -2265,7 +2264,7 @@ bool SkipConditionalExperiment(const Experiment& experiment) {
   // enable-data-reduction-proxy-config-client is only available for Chromium
   // builds and the Canary/Dev channels.
   if (!strcmp("enable-data-reduction-proxy-config-client",
-              experiment.internal_name) &&
+              entry.internal_name) &&
       channel != version_info::Channel::DEV &&
       channel != version_info::Channel::CANARY &&
       channel != version_info::Channel::UNKNOWN) {
@@ -2276,7 +2275,7 @@ bool SkipConditionalExperiment(const Experiment& experiment) {
   // enable-data-reduction-proxy-bypass-warning is only available for Chromium
   // builds and Canary/Dev channel.
   if (!strcmp("enable-data-reduction-proxy-bypass-warnings",
-              experiment.internal_name) &&
+              entry.internal_name) &&
       channel != version_info::Channel::UNKNOWN &&
       channel != version_info::Channel::CANARY &&
       channel != version_info::Channel::DEV) {
@@ -2295,39 +2294,40 @@ void GetSanitizedEnabledFlagsForCurrentPlatform(
     std::set<std::string>* result) {
   GetSanitizedEnabledFlags(flags_storage, result);
 
-  // Filter out any experiments that aren't enabled on the current platform.  We
+  // Filter out any entries that aren't enabled on the current platform.  We
   // don't remove these from prefs else syncing to a platform with a different
-  // set of experiments would be lossy.
-  std::set<std::string> platform_experiments;
+  // set of entries would be lossy.
+  std::set<std::string> platform_entries;
   int current_platform = GetCurrentPlatform();
-  for (size_t i = 0; i < num_experiments; ++i) {
-    if (experiments[i].supported_platforms & current_platform)
-      AddInternalName(experiments[i], &platform_experiments);
+  for (size_t i = 0; i < g_num_entries; ++i) {
+    const FeatureEntry& entry = g_entries[i];
+    if (entry.supported_platforms & current_platform)
+      AddInternalName(entry, &platform_entries);
 #if defined(OS_CHROMEOS)
-    if (experiments[i].supported_platforms & kOsCrOSOwnerOnly)
-      AddInternalName(experiments[i], &platform_experiments);
+    if (g_entries[i].supported_platforms & kOsCrOSOwnerOnly)
+      AddInternalName(entry, &platform_entries);
 #endif
   }
 
-  std::set<std::string> new_enabled_experiments =
+  std::set<std::string> new_enabled_entries =
       base::STLSetIntersection<std::set<std::string> >(
-          platform_experiments, *result);
+          platform_entries, *result);
 
-  result->swap(new_enabled_experiments);
+  result->swap(new_enabled_entries);
 }
 
-// Returns true if none of this experiment's options have been enabled.
+// Returns true if none of this entry's options have been enabled.
 bool IsDefaultValue(
-    const Experiment& experiment,
-    const std::set<std::string>& enabled_experiments) {
-  switch (experiment.type) {
-    case Experiment::SINGLE_VALUE:
-    case Experiment::SINGLE_DISABLE_VALUE:
-      return enabled_experiments.count(experiment.internal_name) == 0;
-    case Experiment::MULTI_VALUE:
-    case Experiment::ENABLE_DISABLE_VALUE:
-      for (int i = 0; i < experiment.num_choices; ++i) {
-        if (enabled_experiments.count(experiment.NameForChoice(i)) > 0)
+    const FeatureEntry& entry,
+    const std::set<std::string>& enabled_entries) {
+  switch (entry.type) {
+    case FeatureEntry::SINGLE_VALUE:
+    case FeatureEntry::SINGLE_DISABLE_VALUE:
+      return enabled_entries.count(entry.internal_name) == 0;
+    case FeatureEntry::MULTI_VALUE:
+    case FeatureEntry::ENABLE_DISABLE_VALUE:
+      for (int i = 0; i < entry.num_choices; ++i) {
+        if (enabled_entries.count(entry.NameForChoice(i)) > 0)
           return false;
       }
       break;
@@ -2337,19 +2337,19 @@ bool IsDefaultValue(
   return true;
 }
 
-// Returns the Value representing the choice data in the specified experiment.
+// Returns the Value representing the choice data in the specified entry.
 base::Value* CreateChoiceData(
-    const Experiment& experiment,
-    const std::set<std::string>& enabled_experiments) {
-  DCHECK(experiment.type == Experiment::MULTI_VALUE ||
-         experiment.type == Experiment::ENABLE_DISABLE_VALUE);
+    const FeatureEntry& entry,
+    const std::set<std::string>& enabled_entries) {
+  DCHECK(entry.type == FeatureEntry::MULTI_VALUE ||
+         entry.type == FeatureEntry::ENABLE_DISABLE_VALUE);
   base::ListValue* result = new base::ListValue;
-  for (int i = 0; i < experiment.num_choices; ++i) {
+  for (int i = 0; i < entry.num_choices; ++i) {
     base::DictionaryValue* value = new base::DictionaryValue;
-    const std::string name = experiment.NameForChoice(i);
+    const std::string name = entry.NameForChoice(i);
     value->SetString("internal_name", name);
-    value->SetString("description", experiment.DescriptionForChoice(i));
-    value->SetBoolean("selected", enabled_experiments.count(name) > 0);
+    value->SetString("description", entry.DescriptionForChoice(i));
+    value->SetBoolean("selected", enabled_entries.count(name) > 0);
     result->Append(value);
   }
   return result;
@@ -2357,20 +2357,20 @@ base::Value* CreateChoiceData(
 
 }  // namespace
 
-std::string Experiment::NameForChoice(int index) const {
-  DCHECK(type == Experiment::MULTI_VALUE ||
-         type == Experiment::ENABLE_DISABLE_VALUE);
+std::string FeatureEntry::NameForChoice(int index) const {
+  DCHECK(type == FeatureEntry::MULTI_VALUE ||
+         type == FeatureEntry::ENABLE_DISABLE_VALUE);
   DCHECK_LT(index, num_choices);
   return std::string(internal_name) + testing::kMultiSeparator +
          base::IntToString(index);
 }
 
-base::string16 Experiment::DescriptionForChoice(int index) const {
-  DCHECK(type == Experiment::MULTI_VALUE ||
-         type == Experiment::ENABLE_DISABLE_VALUE);
+base::string16 FeatureEntry::DescriptionForChoice(int index) const {
+  DCHECK(type == FeatureEntry::MULTI_VALUE ||
+         type == FeatureEntry::ENABLE_DISABLE_VALUE);
   DCHECK_LT(index, num_choices);
   int description_id;
-  if (type == Experiment::ENABLE_DISABLE_VALUE) {
+  if (type == FeatureEntry::ENABLE_DISABLE_VALUE) {
     const int kEnableDisableDescriptionIds[] = {
       IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT,
       IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED,
@@ -2419,64 +2419,64 @@ bool AreSwitchesIdenticalToCurrentCommandLine(
   return result;
 }
 
-void GetFlagsExperimentsData(flags_ui::FlagsStorage* flags_storage,
-                             FlagAccess access,
-                             base::ListValue* supported_experiments,
-                             base::ListValue* unsupported_experiments) {
-  std::set<std::string> enabled_experiments;
-  GetSanitizedEnabledFlags(flags_storage, &enabled_experiments);
+void GetFlagFeatureEntries(flags_ui::FlagsStorage* flags_storage,
+                           FlagAccess access,
+                           base::ListValue* supported_entries,
+                           base::ListValue* unsupported_entries) {
+  std::set<std::string> enabled_entries;
+  GetSanitizedEnabledFlags(flags_storage, &enabled_entries);
 
   int current_platform = GetCurrentPlatform();
 
-  for (size_t i = 0; i < num_experiments; ++i) {
-    const Experiment& experiment = experiments[i];
-    if (SkipConditionalExperiment(experiment))
+  for (size_t i = 0; i < g_num_entries; ++i) {
+    const FeatureEntry& entry = g_entries[i];
+    if (SkipConditionalFeatureEntry(entry))
       continue;
 
     base::DictionaryValue* data = new base::DictionaryValue();
-    data->SetString("internal_name", experiment.internal_name);
+    data->SetString("internal_name", entry.internal_name);
     data->SetString("name",
-                    l10n_util::GetStringUTF16(experiment.visible_name_id));
+                    l10n_util::GetStringUTF16(entry.visible_name_id));
     data->SetString("description",
                     l10n_util::GetStringUTF16(
-                        experiment.visible_description_id));
+                        entry.visible_description_id));
 
     base::ListValue* supported_platforms = new base::ListValue();
-    AddOsStrings(experiment.supported_platforms, supported_platforms);
+    AddOsStrings(entry.supported_platforms, supported_platforms);
     data->Set("supported_platforms", supported_platforms);
     // True if the switch is not currently passed.
-    bool is_default_value = IsDefaultValue(experiment, enabled_experiments);
+    bool is_default_value = IsDefaultValue(entry, enabled_entries);
     data->SetBoolean("is_default", is_default_value);
 
-    switch (experiment.type) {
-      case Experiment::SINGLE_VALUE:
-      case Experiment::SINGLE_DISABLE_VALUE:
+    switch (entry.type) {
+      case FeatureEntry::SINGLE_VALUE:
+      case FeatureEntry::SINGLE_DISABLE_VALUE:
         data->SetBoolean(
             "enabled",
             (!is_default_value &&
-             experiment.type == Experiment::SINGLE_VALUE) ||
+             entry.type == FeatureEntry::SINGLE_VALUE) ||
             (is_default_value &&
-             experiment.type == Experiment::SINGLE_DISABLE_VALUE));
+             entry.type == FeatureEntry::SINGLE_DISABLE_VALUE));
         break;
-      case Experiment::MULTI_VALUE:
-      case Experiment::ENABLE_DISABLE_VALUE:
-        data->Set("choices", CreateChoiceData(experiment, enabled_experiments));
+      case FeatureEntry::MULTI_VALUE:
+      case FeatureEntry::ENABLE_DISABLE_VALUE:
+        data->Set("choices", CreateChoiceData(entry, enabled_entries));
         break;
       default:
         NOTREACHED();
     }
 
-    bool supported = (experiment.supported_platforms & current_platform) != 0;
+    bool supported = (entry.supported_platforms & current_platform) != 0;
 #if defined(OS_CHROMEOS)
     if (access == kOwnerAccessToFlags &&
-        (experiment.supported_platforms & kOsCrOSOwnerOnly) != 0) {
+        (entry.supported_platforms & kOsCrOSOwnerOnly) != 0) {
       supported = true;
     }
 #endif
     if (supported)
-      supported_experiments->Append(data);
+      supported_entries->Append(data);
     else
-      unsupported_experiments->Append(data);
+      unsupported_entries->Append(data);
   }
 }
 
@@ -2484,10 +2484,10 @@ bool IsRestartNeededToCommitChanges() {
   return FlagsState::GetInstance()->IsRestartNeededToCommitChanges();
 }
 
-void SetExperimentEnabled(flags_ui::FlagsStorage* flags_storage,
+void SetFeatureEntryEnabled(flags_ui::FlagsStorage* flags_storage,
                           const std::string& internal_name,
                           bool enable) {
-  FlagsState::GetInstance()->SetExperimentEnabled(flags_storage,
+  FlagsState::GetInstance()->SetFeatureEntryEnabled(flags_storage,
                                                   internal_name, enable);
 }
 
@@ -2584,19 +2584,19 @@ void FlagsState::ConvertFlagsToSwitches(flags_ui::FlagsStorage* flags_storage,
   if (command_line->HasSwitch(switches::kNoExperiments))
     return;
 
-  std::set<std::string> enabled_experiments;
+  std::set<std::string> enabled_entries;
 
   GetSanitizedEnabledFlagsForCurrentPlatform(flags_storage,
-                                             &enabled_experiments);
+                                             &enabled_entries);
 
   NameToSwitchAndValueMap name_to_switch_map;
-  for (size_t i = 0; i < num_experiments; ++i) {
-    const Experiment& e = experiments[i];
-    if (e.type == Experiment::SINGLE_VALUE ||
-        e.type == Experiment::SINGLE_DISABLE_VALUE) {
+  for (size_t i = 0; i < g_num_entries; ++i) {
+    const FeatureEntry& e = g_entries[i];
+    if (e.type == FeatureEntry::SINGLE_VALUE ||
+        e.type == FeatureEntry::SINGLE_DISABLE_VALUE) {
       SetFlagToSwitchMapping(e.internal_name, e.command_line_switch,
                              e.command_line_value, &name_to_switch_map);
-    } else if (e.type == Experiment::MULTI_VALUE) {
+    } else if (e.type == FeatureEntry::MULTI_VALUE) {
       for (int j = 0; j < e.num_choices; ++j) {
         SetFlagToSwitchMapping(e.NameForChoice(j),
                                e.choices[j].command_line_switch,
@@ -2604,7 +2604,7 @@ void FlagsState::ConvertFlagsToSwitches(flags_ui::FlagsStorage* flags_storage,
                                &name_to_switch_map);
       }
     } else {
-      DCHECK_EQ(e.type, Experiment::ENABLE_DISABLE_VALUE);
+      DCHECK_EQ(e.type, FeatureEntry::ENABLE_DISABLE_VALUE);
       SetFlagToSwitchMapping(e.NameForChoice(0), std::string(), std::string(),
                              &name_to_switch_map);
       SetFlagToSwitchMapping(e.NameForChoice(1), e.command_line_switch,
@@ -2620,9 +2620,9 @@ void FlagsState::ConvertFlagsToSwitches(flags_ui::FlagsStorage* flags_storage,
         std::pair<std::string, std::string>(switches::kFlagSwitchesBegin,
                                             std::string()));
   }
-  for (const std::string& experiment_name : enabled_experiments) {
+  for (const std::string& entry_name : enabled_entries) {
     NameToSwitchAndValueMap::const_iterator name_to_switch_it =
-        name_to_switch_map.find(experiment_name);
+        name_to_switch_map.find(entry_name);
     if (name_to_switch_it == name_to_switch_map.end()) {
       NOTREACHED();
       continue;
@@ -2648,70 +2648,70 @@ bool FlagsState::IsRestartNeededToCommitChanges() {
   return needs_restart_;
 }
 
-void FlagsState::SetExperimentEnabled(flags_ui::FlagsStorage* flags_storage,
-                                      const std::string& internal_name,
-                                      bool enable) {
+void FlagsState::SetFeatureEntryEnabled(flags_ui::FlagsStorage* flags_storage,
+                                        const std::string& internal_name,
+                                        bool enable) {
   size_t at_index = internal_name.find(testing::kMultiSeparator);
   if (at_index != std::string::npos) {
     DCHECK(enable);
-    // We're being asked to enable a multi-choice experiment. Disable the
+    // We're being asked to enable a multi-choice entry. Disable the
     // currently selected choice.
     DCHECK_NE(at_index, 0u);
-    const std::string experiment_name = internal_name.substr(0, at_index);
-    SetExperimentEnabled(flags_storage, experiment_name, false);
+    const std::string entry_name = internal_name.substr(0, at_index);
+    SetFeatureEntryEnabled(flags_storage, entry_name, false);
 
     // And enable the new choice, if it is not the default first choice.
-    if (internal_name != experiment_name + "@0") {
-      std::set<std::string> enabled_experiments;
-      GetSanitizedEnabledFlags(flags_storage, &enabled_experiments);
-      needs_restart_ |= enabled_experiments.insert(internal_name).second;
-      flags_storage->SetFlags(enabled_experiments);
+    if (internal_name != entry_name + "@0") {
+      std::set<std::string> enabled_entries;
+      GetSanitizedEnabledFlags(flags_storage, &enabled_entries);
+      needs_restart_ |= enabled_entries.insert(internal_name).second;
+      flags_storage->SetFlags(enabled_entries);
     }
     return;
   }
 
-  std::set<std::string> enabled_experiments;
-  GetSanitizedEnabledFlags(flags_storage, &enabled_experiments);
+  std::set<std::string> enabled_entries;
+  GetSanitizedEnabledFlags(flags_storage, &enabled_entries);
 
-  const Experiment* e = NULL;
-  for (size_t i = 0; i < num_experiments; ++i) {
-    if (experiments[i].internal_name == internal_name) {
-      e = experiments + i;
+  const FeatureEntry* e = NULL;
+  for (size_t i = 0; i < g_num_entries; ++i) {
+    if (g_entries[i].internal_name == internal_name) {
+      e = g_entries + i;
       break;
     }
   }
   DCHECK(e);
 
-  if (e->type == Experiment::SINGLE_VALUE) {
+  if (e->type == FeatureEntry::SINGLE_VALUE) {
     if (enable)
-      needs_restart_ |= enabled_experiments.insert(internal_name).second;
+      needs_restart_ |= enabled_entries.insert(internal_name).second;
     else
-      needs_restart_ |= (enabled_experiments.erase(internal_name) > 0);
-  } else if (e->type == Experiment::SINGLE_DISABLE_VALUE) {
+      needs_restart_ |= (enabled_entries.erase(internal_name) > 0);
+  } else if (e->type == FeatureEntry::SINGLE_DISABLE_VALUE) {
     if (!enable)
-      needs_restart_ |= enabled_experiments.insert(internal_name).second;
+      needs_restart_ |= enabled_entries.insert(internal_name).second;
     else
-      needs_restart_ |= (enabled_experiments.erase(internal_name) > 0);
+      needs_restart_ |= (enabled_entries.erase(internal_name) > 0);
   } else {
     if (enable) {
       // Enable the first choice.
-      needs_restart_ |= enabled_experiments.insert(e->NameForChoice(0)).second;
+      needs_restart_ |= enabled_entries.insert(e->NameForChoice(0)).second;
     } else {
       // Find the currently enabled choice and disable it.
       for (int i = 0; i < e->num_choices; ++i) {
         std::string choice_name = e->NameForChoice(i);
-        if (enabled_experiments.find(choice_name) !=
-            enabled_experiments.end()) {
+        if (enabled_entries.find(choice_name) !=
+            enabled_entries.end()) {
           needs_restart_ = true;
-          enabled_experiments.erase(choice_name);
+          enabled_entries.erase(choice_name);
           // Continue on just in case there's a bug and more than one
-          // experiment for this choice was enabled.
+          // entry for this choice was enabled.
         }
       }
     }
   }
 
-  flags_storage->SetFlags(enabled_experiments);
+  flags_storage->SetFlags(enabled_entries);
 }
 
 void FlagsState::RemoveFlagsSwitches(
@@ -2723,8 +2723,8 @@ void FlagsState::RemoveFlagsSwitches(
 void FlagsState::ResetAllFlags(flags_ui::FlagsStorage* flags_storage) {
   needs_restart_ = true;
 
-  std::set<std::string> no_experiments;
-  flags_storage->SetFlags(no_experiments);
+  std::set<std::string> no_entries;
+  flags_storage->SetFlags(no_entries);
 }
 
 void FlagsState::reset() {
@@ -2746,19 +2746,19 @@ void ClearState() {
   FlagsState::GetInstance()->reset();
 }
 
-void SetExperiments(const Experiment* e, size_t count) {
-  if (!e) {
-    experiments = kExperiments;
-    num_experiments = arraysize(kExperiments);
+void SetFeatureEntries(const FeatureEntry* entries, size_t count) {
+  if (!entries) {
+    g_entries = kFeatureEntries;
+    g_num_entries = arraysize(kFeatureEntries);
   } else {
-    experiments = e;
-    num_experiments = count;
+    g_entries = entries;
+    g_num_entries = count;
   }
 }
 
-const Experiment* GetExperiments(size_t* count) {
-  *count = num_experiments;
-  return experiments;
+const FeatureEntry* GetFeatureEntries(size_t* count) {
+  *count = g_num_entries;
+  return g_entries;
 }
 
 }  // namespace testing

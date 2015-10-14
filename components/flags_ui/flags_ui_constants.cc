@@ -10,8 +10,8 @@ namespace flags_ui {
 const char kFlagsJS[] = "flags.js";
 
 // Message handlers.
-const char kEnableFlagsExperiment[] = "enableFlagsExperiment";
-const char kRequestFlagsExperiments[] = "requestFlagsExperiments";
+const char kEnableExperimentalFeature[] = "enableExperimentalFeature";
+const char kRequestExperimentalFeatures[] = "requestExperimentalFeatures";
 const char kResetAllFlags[] = "resetAllFlags";
 const char kRestartBrowser[] = "restartBrowser";
 
@@ -22,9 +22,7 @@ const char kDisable[] = "disable";
 const char kEnable[] = "enable";
 const char kFlagsBlurb[] = "flagsBlurb";
 const char kFlagsLongTitle[] = "flagsLongTitle";
-const char kFlagsNoExperimentsAvailable[] = "flagsNoExperimentsAvailable";
 const char kFlagsNotSupported[] = "flagsNotSupported";
-const char kFlagsNoUnsupportedExperiments[] = "flagsNoUnsupportedExperiments";
 const char kFlagsRestartButton[] = "flagsRestartButton";
 const char kFlagsRestartNotice[] = "flagsRestartNotice";
 const char kFlagsTableTitle[] = "flagsTableTitle";
@@ -33,11 +31,11 @@ const char kFlagsWarningHeader[] = "flagsWarningHeader";
 const char kNeedsRestart[] = "needsRestart";
 const char kOwnerWarning[] = "ownerWarning";
 const char kResetAllButton[] = "resetAllButton";
-const char kReturnFlagsExperiments[] = "returnFlagsExperiments";
+const char kReturnExperimentalFeatures[] = "returnExperimentalFeatures";
 const char kShowBetaChannelPromotion[] = "showBetaChannelPromotion";
 const char kShowDevChannelPromotion[] = "showDevChannelPromotion";
 const char kShowOwnerWarning[] = "showOwnerWarning";
-const char kSupportedExperiments[] = "supportedExperiments";
-const char kUnsupportedExperiments[] = "unsupportedExperiments";
+const char kSupportedFeatures[] = "supportedFeatures";
+const char kUnsupportedFeatures[] = "unsupportedFeatures";
 
 }  // namespace flags_ui

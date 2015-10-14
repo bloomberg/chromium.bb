@@ -27,14 +27,8 @@
   <message name="IDS_FLAGS_UI_RESET_ALL_BUTTON" desc="Text on a button that resets all experiments to their default state when clicked.">
     Reset all to default
   </message>
-  <message name="IDS_FLAGS_UI_NO_EXPERIMENTS_AVAILABLE" desc="Shown if no experiments are available">
-    Aww, it looks like there are currently no experiments available.
-  </message>
   <message name="IDS_FLAGS_UI_UNSUPPORTED_TABLE_TITLE" desc="Title for the unsupported experiments table on the about:flags page. It lists all experiments that are not available on the current platform.">
     Unavailable Experiments
-  </message>
-  <message name="IDS_FLAGS_UI_NO_UNSUPPORTED_EXPERIMENTS" desc="Show if there are no unavailable experiments.">
-    All experiments are available on your platform!
   </message>
   <message name="IDS_FLAGS_UI_NOT_AVAILABLE" desc="Shown instead of the Enable/Disable link, to let the user know that an experiment is not available on the current platform.">
     Sorry, this experiment is not available on your platform.

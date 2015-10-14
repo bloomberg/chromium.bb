@@ -61,8 +61,6 @@ content::WebUIDataSource* CreateFlagsUIHTMLSource() {
                              IDS_FLAGS_UI_LONG_TITLE);
   source->AddLocalizedString(flags_ui::kFlagsTableTitle,
                              IDS_FLAGS_UI_TABLE_TITLE);
-  source->AddLocalizedString(flags_ui::kFlagsNoExperimentsAvailable,
-                             IDS_FLAGS_UI_NO_EXPERIMENTS_AVAILABLE);
   source->AddLocalizedString(flags_ui::kFlagsWarningHeader,
                              IDS_FLAGS_UI_WARNING_HEADER);
   source->AddLocalizedString(flags_ui::kFlagsBlurb, IDS_FLAGS_UI_WARNING_TEXT);
@@ -72,8 +70,6 @@ content::WebUIDataSource* CreateFlagsUIHTMLSource() {
                              IDS_FLAGS_UI_PROMOTE_DEV_CHANNEL);
   source->AddLocalizedString(flags_ui::kFlagsUnsupportedTableTitle,
                              IDS_FLAGS_UI_UNSUPPORTED_TABLE_TITLE);
-  source->AddLocalizedString(flags_ui::kFlagsNoUnsupportedExperiments,
-                             IDS_FLAGS_UI_NO_UNSUPPORTED_EXPERIMENTS);
   source->AddLocalizedString(flags_ui::kFlagsNotSupported,
                              IDS_FLAGS_UI_NOT_AVAILABLE);
   source->AddLocalizedString(flags_ui::kFlagsRestartNotice,
@@ -117,24 +113,24 @@ content::WebUIDataSource* CreateFlagsUIHTMLSource() {
 class FlagsDOMHandler : public WebUIMessageHandler {
  public:
   FlagsDOMHandler() : access_(about_flags::kGeneralAccessFlagsOnly),
-                      flags_experiments_requested_(false) {
+                      experimental_features_requested_(false) {
   }
   ~FlagsDOMHandler() override {}
 
   // Initializes the DOM handler with the provided flags storage and flags
   // access. If there were flags experiments requested from javascript before
-  // this was called, it calls |HandleRequestFlagsExperiments| again.
+  // this was called, it calls |HandleRequestExperimentalFeatures| again.
   void Init(flags_ui::FlagsStorage* flags_storage,
             about_flags::FlagAccess access);
 
   // WebUIMessageHandler implementation.
   void RegisterMessages() override;
 
-  // Callback for the "requestFlagsExperiments" message.
-  void HandleRequestFlagsExperiments(const base::ListValue* args);
+  // Callback for the "requestExperimentFeatures" message.
+  void HandleRequestExperimentalFeatures(const base::ListValue* args);
 
-  // Callback for the "enableFlagsExperiment" message.
-  void HandleEnableFlagsExperimentMessage(const base::ListValue* args);
+  // Callback for the "enableExperimentalFeature" message.
+  void HandleEnableExperimentalFeatureMessage(const base::ListValue* args);
 
   // Callback for the "restartBrowser" message. Restores all tabs on restart.
   void HandleRestartBrowser(const base::ListValue* args);
@@ -145,19 +141,19 @@ class FlagsDOMHandler : public WebUIMessageHandler {
  private:
   scoped_ptr<flags_ui::FlagsStorage> flags_storage_;
   about_flags::FlagAccess access_;
-  bool flags_experiments_requested_;
+  bool experimental_features_requested_;
 
   DISALLOW_COPY_AND_ASSIGN(FlagsDOMHandler);
 };
 
 void FlagsDOMHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
-      flags_ui::kRequestFlagsExperiments,
-      base::Bind(&FlagsDOMHandler::HandleRequestFlagsExperiments,
+      flags_ui::kRequestExperimentalFeatures,
+      base::Bind(&FlagsDOMHandler::HandleRequestExperimentalFeatures,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      flags_ui::kEnableFlagsExperiment,
-      base::Bind(&FlagsDOMHandler::HandleEnableFlagsExperimentMessage,
+      flags_ui::kEnableExperimentalFeature,
+      base::Bind(&FlagsDOMHandler::HandleEnableExperimentalFeatureMessage,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       flags_ui::kRestartBrowser,
@@ -174,13 +170,13 @@ void FlagsDOMHandler::Init(flags_ui::FlagsStorage* flags_storage,
   flags_storage_.reset(flags_storage);
   access_ = access;
 
-  if (flags_experiments_requested_)
-    HandleRequestFlagsExperiments(NULL);
+  if (experimental_features_requested_)
+    HandleRequestExperimentalFeatures(NULL);
 }
 
-void FlagsDOMHandler::HandleRequestFlagsExperiments(
+void FlagsDOMHandler::HandleRequestExperimentalFeatures(
     const base::ListValue* args) {
-  flags_experiments_requested_ = true;
+  experimental_features_requested_ = true;
   // Bail out if the handler hasn't been initialized yet. The request will be
   // handled after the initialization.
   if (!flags_storage_)
@@ -188,15 +184,14 @@ void FlagsDOMHandler::HandleRequestFlagsExperiments(
 
   base::DictionaryValue results;
 
-  scoped_ptr<base::ListValue> supported_experiments(new base::ListValue);
-  scoped_ptr<base::ListValue> unsupported_experiments(new base::ListValue);
-  about_flags::GetFlagsExperimentsData(flags_storage_.get(),
-                                       access_,
-                                       supported_experiments.get(),
-                                       unsupported_experiments.get());
-  results.Set(flags_ui::kSupportedExperiments, supported_experiments.release());
-  results.Set(flags_ui::kUnsupportedExperiments,
-              unsupported_experiments.release());
+  scoped_ptr<base::ListValue> supported_features(new base::ListValue);
+  scoped_ptr<base::ListValue> unsupported_features(new base::ListValue);
+  about_flags::GetFlagFeatureEntries(flags_storage_.get(),
+                                     access_,
+                                     supported_features.get(),
+                                     unsupported_features.get());
+  results.Set(flags_ui::kSupportedFeatures, supported_features.release());
+  results.Set(flags_ui::kUnsupportedFeatures, unsupported_features.release());
   results.SetBoolean(flags_ui::kNeedsRestart,
                      about_flags::IsRestartNeededToCommitChanges());
   results.SetBoolean(flags_ui::kShowOwnerWarning,
@@ -212,26 +207,25 @@ void FlagsDOMHandler::HandleRequestFlagsExperiments(
   results.SetBoolean(flags_ui::kShowBetaChannelPromotion, false);
   results.SetBoolean(flags_ui::kShowDevChannelPromotion, false);
 #endif
-  web_ui()->CallJavascriptFunction(flags_ui::kReturnFlagsExperiments, results);
+  web_ui()->CallJavascriptFunction(flags_ui::kReturnExperimentalFeatures,
+                                   results);
 }
 
-void FlagsDOMHandler::HandleEnableFlagsExperimentMessage(
+void FlagsDOMHandler::HandleEnableExperimentalFeatureMessage(
     const base::ListValue* args) {
   DCHECK(flags_storage_);
   DCHECK_EQ(2u, args->GetSize());
   if (args->GetSize() != 2)
     return;
 
-  std::string experiment_internal_name;
+  std::string entry_internal_name;
   std::string enable_str;
-  if (!args->GetString(0, &experiment_internal_name) ||
+  if (!args->GetString(0, &entry_internal_name) ||
       !args->GetString(1, &enable_str))
     return;
 
-  about_flags::SetExperimentEnabled(
-      flags_storage_.get(),
-      experiment_internal_name,
-      enable_str == "true");
+  about_flags::SetFeatureEntryEnabled(flags_storage_.get(), entry_internal_name,
+                                      enable_str == "true");
 }
 
 void FlagsDOMHandler::HandleRestartBrowser(const base::ListValue* args) {

@@ -39,7 +39,7 @@
   </div>
 </if>
 
-  <div id="flagsExperimentTemplate">
+  <div id="flagsTemplate">
     <div id="container" class="vbox-container">
     <div id="top" class="wbox">
       <div class="section-header">
@@ -56,15 +56,8 @@
     </div>
 
     <div class="content">
-      <div class="experiment-name no-experiments"
-           jsdisplay="supportedExperiments.length == 0">
-        <div i18n-content="flagsNoExperimentsAvailable"
-          >NO_EXPERIMENTS_ARE_AVAILABLE</div>
-      </div>
-
-      <div jsdisplay="supportedExperiments.length > 0">
       <div class="experiment"
-           jsselect="supportedExperiments"
+           jsselect="supportedFeatures"
            jsvalues="id:internal_name">
         <table width="100%" cellpadding="2" cellspacing="0">
         <!-- TODO(mkwst): This doesn't work exactly as expected for multivalue
@@ -117,7 +110,6 @@
         </tr>
         </table>
       </div>
-      </div>
     </div>
 
 <!-- Unsupported experiments are not shown on iOS -->
@@ -138,15 +130,8 @@
     </div>
 
     <div class="content">
-      <div class="experiment-name no-experiments"
-           jsdisplay="unsupportedExperiments.length == 0">
-        <div i18n-content="flagsNoUnsupportedExperiments"
-          >NO_UNSUPPORTED_EXPERIMENTS</div>
-      </div>
-
-      <div jsdisplay="unsupportedExperiments.length > 0">
       <div class="experiment"
-           jsselect="unsupportedExperiments"
+           jsselect="unsupportedFeatures"
            jsvalues="id:internal_name">
         <table width="100%" cellpadding="2" cellspacing="0">
         <tr class="experiment-unsupported">
@@ -170,7 +155,6 @@
         </td>
         </tr>
         </table>
-      </div>
       </div>
     </div>
 </if>

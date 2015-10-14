@@ -468,12 +468,12 @@ void EnableNewProfileManagementPreview(Profile* profile) {
 #else
   // TODO(rogerta): instead of setting experiment flags and command line
   // args, we should set a profile preference.
-  const about_flags::Experiment experiment = {
+  const about_flags::FeatureEntry entry = {
       kNewProfileManagementExperimentInternalName,
       0,  // string id for title of experiment
       0,  // string id for description of experiment
       0,  // supported platforms
-      about_flags::Experiment::ENABLE_DISABLE_VALUE,
+      about_flags::FeatureEntry::ENABLE_DISABLE_VALUE,
       switches::kEnableNewProfileManagement,
       "",  // not used with ENABLE_DISABLE_VALUE type
       switches::kDisableNewProfileManagement,
@@ -483,10 +483,8 @@ void EnableNewProfileManagementPreview(Profile* profile) {
   };
   flags_ui::PrefServiceFlagsStorage flags_storage(
       g_browser_process->local_state());
-  about_flags::SetExperimentEnabled(
-      &flags_storage,
-      experiment.NameForChoice(1),
-      true);
+  about_flags::SetFeatureEntryEnabled(&flags_storage, entry.NameForChoice(1),
+                                      true);
 
   switches::EnableNewProfileManagementForTesting(
       base::CommandLine::ForCurrentProcess());
@@ -500,7 +498,7 @@ void EnableNewProfileManagementPreview(Profile* profile) {
 void DisableNewProfileManagementPreview(Profile* profile) {
   flags_ui::PrefServiceFlagsStorage flags_storage(
       g_browser_process->local_state());
-  about_flags::SetExperimentEnabled(
+  about_flags::SetFeatureEntryEnabled(
       &flags_storage,
       kNewProfileManagementExperimentInternalName,
       false);

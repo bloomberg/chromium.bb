@@ -13,8 +13,8 @@ extern const char kFlagsJS[];
 
 // Message handlers.
 // Must match the constants used in the resource files.
-extern const char kEnableFlagsExperiment[];
-extern const char kRequestFlagsExperiments[];
+extern const char kEnableExperimentalFeature[];
+extern const char kRequestExperimentalFeatures[];
 extern const char kResetAllFlags[];
 extern const char kRestartBrowser[];
 
@@ -26,9 +26,7 @@ extern const char kDisable[];
 extern const char kEnable[];
 extern const char kFlagsBlurb[];
 extern const char kFlagsLongTitle[];
-extern const char kFlagsNoExperimentsAvailable[];
 extern const char kFlagsNotSupported[];
-extern const char kFlagsNoUnsupportedExperiments[];
 extern const char kFlagsRestartButton[];
 extern const char kFlagsRestartNotice[];
 extern const char kFlagsTableTitle[];
@@ -37,12 +35,12 @@ extern const char kFlagsWarningHeader[];
 extern const char kNeedsRestart[];
 extern const char kOwnerWarning[];
 extern const char kResetAllButton[];
-extern const char kReturnFlagsExperiments[];
+extern const char kReturnExperimentalFeatures[];
 extern const char kShowBetaChannelPromotion[];
 extern const char kShowDevChannelPromotion[];
 extern const char kShowOwnerWarning[];
-extern const char kSupportedExperiments[];
-extern const char kUnsupportedExperiments[];
+extern const char kSupportedFeatures[];
+extern const char kUnsupportedFeatures[];
 
 }  // namespace flags_ui
 

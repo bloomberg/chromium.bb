@@ -27,31 +27,34 @@ class FlagsStorage;
 
 namespace about_flags {
 
-// Experiment is used internally by about_flags to describe an experiment (and
-// for testing).
+// FeatureEntry is used by about_flags to describe an experimental feature.
+//
+// Note that features should eventually be either turned on by default with no
+// about_flags entries or deleted. Most feature entries should only be around
+// for a few milestones, until their full launch.
+//
 // This is exposed only for testing.
-struct Experiment {
+struct FeatureEntry {
   enum Type {
-    // An experiment with a single value. This is typically what you want.
+    // A feature with a single flag value. This is typically what you want.
     SINGLE_VALUE,
 
-    // A default enabled experiment with a single value to disable it. This is
-    // for default enabled SINGLE_VALUE experiments. Please consider whether
-    // you really need a flag to disable the experiment, and even if so remove
-    // the disable flag as soon as it is no longer needed.
+    // A default enabled feature with a single flag value to disable it. Please
+    // consider whether you really need a flag to disable the feature, and even
+    // if so remove the disable flag as soon as it is no longer needed.
     SINGLE_DISABLE_VALUE,
 
-    // The experiment has multiple values only one of which is ever enabled.
+    // The feature has multiple values only one of which is ever enabled.
     // The first of the values should correspond to a deactivated state for this
-    // lab (i.e. no command line option). For MULTI_VALUE experiments the
-    // command_line of the Experiment is not used. If the experiment is enabled
-    // the command line of the selected Choice is enabled.
+    // feature (i.e. no command line option). For MULTI_VALUE entries, the
+    // command_line of the FeatureEntry is not used. If the experiment is
+    // enabled the command line of the selected Choice is enabled.
     MULTI_VALUE,
 
-    // The experiment has three possible values: Default, Enabled and Disabled.
-    // This should be used for experiments that may have their own logic to
-    // decide if the feature should be on when not explicitly specified via
-    // about flags - for example via FieldTrials.
+    // The feature has three possible values: Default, Enabled and Disabled.
+    // This should be used for features that may have their own logic to decide
+    // if the feature should be on when not explicitly specified via about
+    // flags - for example via FieldTrials.
     ENABLE_DISABLE_VALUE,
   };
 
@@ -67,22 +70,22 @@ struct Experiment {
     const char* command_line_value;
   };
 
-  // The internal name of the experiment. This is never shown to the user.
+  // The internal name of the feature entry. This is never shown to the user.
   // It _is_ however stored in the prefs file, so you shouldn't change the
   // name of existing flags.
   const char* internal_name;
 
-  // String id of the message containing the experiment's name.
+  // String id of the message containing the feature's name.
   int visible_name_id;
 
-  // String id of the message containing the experiment's description.
+  // String id of the message containing the feature's description.
   int visible_description_id;
 
-  // The platforms the experiment is available on
+  // The platforms the feature is available on.
   // Needs to be more than a compile-time #ifdef because of profile sync.
   unsigned supported_platforms;  // bitmask
 
-  // Type of experiment.
+  // Type of entry.
   Type type;
 
   // The commandline switch and value that are added when this flag is active.
@@ -116,8 +119,8 @@ struct Experiment {
 // whether it should add the sentinel switches around flags.
 enum SentinelsMode { kNoSentinels, kAddSentinels };
 
-// Reads the Labs |prefs| (called "Labs" for historical reasons) and adds the
-// commandline flags belonging to the active experiments to |command_line|.
+// Reads the state from |flags_storage| and adds the command line flags
+// belonging to the active feature entries to |command_line|.
 void ConvertFlagsToSwitches(flags_ui::FlagsStorage* flags_storage,
                             base::CommandLine* command_line,
                             SentinelsMode sentinels);
@@ -137,21 +140,22 @@ bool AreSwitchesIdenticalToCurrentCommandLine(
 // with the |kOsCrOSOwnerOnly| label should be enabled in the UI or not.
 enum FlagAccess { kGeneralAccessFlagsOnly, kOwnerAccessToFlags };
 
-// Get the list of experiments. Experiments that are available on the current
-// platform are appended to |supported_experiments|; all other experiments are
-// appended to |unsupported_experiments|.
-void GetFlagsExperimentsData(flags_ui::FlagsStorage* flags_storage,
-                             FlagAccess access,
-                             base::ListValue* supported_experiments,
-                             base::ListValue* unsupported_experiments);
+// Gets the list of feature entries. Entries that are available for the current
+// platform are appended to |supported_entries|; all other entries are appended
+// to |unsupported_entries|.
+void GetFlagFeatureEntries(flags_ui::FlagsStorage* flags_storage,
+                           FlagAccess access,
+                           base::ListValue* supported_entries,
+                           base::ListValue* unsupported_entries);
 
-// Returns true if one of the experiment flags has been flipped since startup.
+// Returns true if one of the feature entry flags has been flipped since
+// startup.
 bool IsRestartNeededToCommitChanges();
 
-// Enables or disables the experiment with id |internal_name|.
-void SetExperimentEnabled(flags_ui::FlagsStorage* flags_storage,
-                          const std::string& internal_name,
-                          bool enable);
+// Enables or disables the current with id |internal_name|.
+void SetFeatureEntryEnabled(flags_ui::FlagsStorage* flags_storage,
+                            const std::string& internal_name,
+                            bool enable);
 
 // Removes all switches that were added to a command line by a previous call to
 // |ConvertFlagsToSwitches()|.
@@ -185,12 +189,12 @@ namespace testing {
 // Clears internal global state, for unit tests.
 void ClearState();
 
-// Sets the list of experiments. Pass in NULL to use the default set. This does
-// NOT take ownership of the supplied Experiments.
-void SetExperiments(const Experiment* e, size_t count);
+// Sets the list of feature entries. Pass in null to use the default set. This
+// does NOT take ownership of the supplied |entries|.
+void SetFeatureEntries(const FeatureEntry* entries, size_t count);
 
-// Returns the current set of experiments.
-const Experiment* GetExperiments(size_t* count);
+// Returns the current set of feature entries.
+const FeatureEntry* GetFeatureEntries(size_t* count);
 
 // Separator used for multi values. Multi values are represented in prefs as
 // name-of-experiment + kMultiSeparator + selected_index.

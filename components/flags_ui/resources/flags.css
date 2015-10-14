@@ -143,12 +143,6 @@ html[dir=rtl] #experiment-reset-all {
   background-color: rgb(255, 255, 0);
 }
 
-.no-experiments {
-  font-size: 1.2em;
-  margin: 6em 0;
-  text-align: center;
-}
-
 /* Match the indentation of .experiment-text. */
 .experiment-actions {
   -webkit-padding-start: 5px;

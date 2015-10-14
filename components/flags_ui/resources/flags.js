@@ -8,22 +8,21 @@
  */
 
 /**
- * Takes the |experimentsData| input argument which represents data about all
- * the current experiments and populates the html jstemplate with that data.
- * with that data. It expects an object structure like the above.
- * @param {Object} experimentsData Information about all experiments.
+ * Takes the |experimentalFeaturesData| input argument which represents data
+ * about all the current feature entries and populates the html jstemplate with
+ * that data. It expects an object structure like the above.
+ * @param {Object} experimentalFeaturesData Information about all experiments.
  *     See returnFlagsExperiments() for the structure of this object.
  */
-function renderTemplate(experimentsData) {
+function renderTemplate(experimentalFeaturesData) {
   // This is the javascript code that processes the template:
-  jstProcess(new JsEvalContext(experimentsData),
-             $('flagsExperimentTemplate'));
+  jstProcess(new JsEvalContext(experimentalFeaturesData), $('flagsTemplate'));
 
   // Add handlers to dynamically created HTML elements.
   var elements = document.getElementsByClassName('experiment-select');
   for (var i = 0; i < elements.length; ++i) {
     elements[i].onchange = function() {
-      handleSelectChoiceExperiment(this, this.selectedIndex);
+      handleSelectExperimentalFeatureChoice(this, this.selectedIndex);
       return false;
     };
   }
@@ -31,7 +30,7 @@ function renderTemplate(experimentsData) {
   elements = document.getElementsByClassName('experiment-disable-link');
   for (var i = 0; i < elements.length; ++i) {
     elements[i].onclick = function() {
-      handleEnableExperiment(this, false);
+      handleEnableExperimentalFeature(this, false);
       return false;
     };
   }
@@ -39,7 +38,7 @@ function renderTemplate(experimentsData) {
   elements = document.getElementsByClassName('experiment-enable-link');
   for (var i = 0; i < elements.length; ++i) {
     elements[i].onclick = function() {
-      handleEnableExperiment(this, true);
+      handleEnableExperimentalFeature(this, true);
       return false;
     };
   }
@@ -75,12 +74,12 @@ function highlightReferencedFlag() {
 }
 
 /**
- * Asks the C++ FlagsDOMHandler to get details about the available experiments
- * and return detailed data about the configuration. The FlagsDOMHandler
- * should reply to returnFlagsExperiments() (below).
+ * Asks the C++ FlagsDOMHandler to get details about the available experimental
+ * features and return detailed data about the configuration. The
+ * FlagsDOMHandler should reply to returnFlagsExperiments() (below).
  */
-function requestFlagsExperimentsData() {
-  chrome.send('requestFlagsExperiments');
+function requestExperimentalFeaturesData() {
+  chrome.send('requestExperimentalFeatures');
 }
 
 /**
@@ -96,30 +95,29 @@ function restartBrowser() {
 function resetAllFlags() {
   // Asks the C++ FlagsDOMHandler to reset all flags to default values.
   chrome.send('resetAllFlags');
-  requestFlagsExperimentsData();
+  requestExperimentalFeaturesData();
 }
 
 /**
  * Called by the WebUI to re-populate the page with data representing the
- * current state of all experiments.
- * @param {Object} experimentsData Information about all experiments.
- *     in the following format:
+ * current state of all experimental features.
+ * @param {Object} experimentalFeaturesData Information about all experimental
+ *    features in the following format:
  *   {
- *     supportedExperiments: [
+ *     supportedFeatures: [
  *       {
- *         internal_name: 'Experiment ID string',
- *         name: 'Experiment Name',
- *         description: 'description',
- *         // enabled and default are only set if the experiment is single
- *         // valued.
- *         // enabled is true if the experiment is currently enabled.
- *         // is_default is true if the experiment is in its default state.
+ *         internal_name: 'Feature ID string',
+ *         name: 'Feature name',
+ *         description: 'Description',
+ *         // enabled and default are only set if the feature is single valued.
+ *         // enabled is true if the feature is currently enabled.
+ *         // is_default is true if the feature is in its default state.
  *         enabled: true,
  *         is_default: false,
- *         // choices is only set if the experiment has multiple values.
+ *         // choices is only set if the entry has multiple values.
  *         choices: [
  *           {
- *             internal_name: 'Experiment ID string',
+ *             internal_name: 'Experimental feature ID string',
  *             description: 'description',
  *             selected: true
  *           }
@@ -130,8 +128,8 @@ function resetAllFlags() {
  *         ],
  *       }
  *     ],
- *     unsupportedExperiments: [
- *       // Mirrors the format of |supportedExperiments| above.
+ *     unsupportedFeatures: [
+ *       // Mirrors the format of |supportedFeatures| above.
  *     ],
  *     needsRestart: false,
  *     showBetaChannelPromotion: false,
@@ -139,19 +137,19 @@ function resetAllFlags() {
  *     showOwnerWarning: false
  *   }
  */
-function returnFlagsExperiments(experimentsData) {
+function returnExperimentalFeatures(experimentalFeaturesData) {
   var bodyContainer = $('body-container');
-  renderTemplate(experimentsData);
+  renderTemplate(experimentalFeaturesData);
 
-  if (experimentsData.showBetaChannelPromotion)
+  if (experimentalFeaturesData.showBetaChannelPromotion)
     $('channel-promo-beta').hidden = false;
-  else if (experimentsData.showDevChannelPromotion)
+  else if (experimentalFeaturesData.showDevChannelPromotion)
     $('channel-promo-dev').hidden = false;
 
   bodyContainer.style.visibility = 'visible';
   var ownerWarningDiv = $('owner-warning');
   if (ownerWarningDiv)
-    ownerWarningDiv.hidden = !experimentsData.showOwnerWarning;
+    ownerWarningDiv.hidden = !experimentalFeaturesData.showOwnerWarning;
 }
 
 /**
@@ -159,11 +157,11 @@ function returnFlagsExperiments(experimentsData) {
  * @param {HTMLElement} node The node for the experiment being changed.
  * @param {boolean} enable Whether to enable or disable the experiment.
  */
-function handleEnableExperiment(node, enable) {
+function handleEnableExperimentalFeature(node, enable) {
   // Tell the C++ FlagsDOMHandler to enable/disable the experiment.
-  chrome.send('enableFlagsExperiment', [String(node.internal_name),
-                                        String(enable)]);
-  requestFlagsExperimentsData();
+  chrome.send('enableExperimentalFeature', [String(node.internal_name),
+                                            String(enable)]);
+  requestExperimentalFeaturesData();
 }
 
 /**
@@ -172,15 +170,15 @@ function handleEnableExperiment(node, enable) {
  * @param {HTMLElement} node The node for the experiment being changed.
  * @param {number} index The index of the option that was selected.
  */
-function handleSelectChoiceExperiment(node, index) {
+function handleSelectExperimentalFeatureChoice(node, index) {
   // Tell the C++ FlagsDOMHandler to enable the selected choice.
-  chrome.send('enableFlagsExperiment',
+  chrome.send('enableExperimentalFeature',
               [String(node.internal_name) + '@' + index, 'true']);
-  requestFlagsExperimentsData();
+  requestExperimentalFeaturesData();
 }
 
 // Get data and have it displayed upon loading.
-document.addEventListener('DOMContentLoaded', requestFlagsExperimentsData);
+document.addEventListener('DOMContentLoaded', requestExperimentalFeaturesData);
 
 // Update the highlighted flag when the hash changes.
 window.addEventListener('hashchange', highlightReferencedFlag);
