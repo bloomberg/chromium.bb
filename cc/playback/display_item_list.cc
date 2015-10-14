@@ -272,9 +272,9 @@ void DisplayItemList::EmitTraceSnapshot() const {
 void DisplayItemList::GenerateDiscardableImagesMetadata() {
   DCHECK(ProcessAppendedItemsCalled());
   // This should be only called once, and only after CreateAndCacheSkPicture.
-  DCHECK(picture_);
   DCHECK(image_map_.empty());
-  if (!picture_->willPlayBackBitmaps())
+  DCHECK_IMPLIES(use_cached_picture_, picture_);
+  if (use_cached_picture_ && !picture_->willPlayBackBitmaps())
     return;
 
   // The cached picture is translated by -layer_rect_.origin during record,
@@ -282,8 +282,8 @@ void DisplayItemList::GenerateDiscardableImagesMetadata() {
   // images.
   DiscardableImageMap::ScopedMetadataGenerator generator(
       &image_map_, gfx::Size(layer_rect_.right(), layer_rect_.bottom()));
-  generator.canvas()->translate(layer_rect_.x(), layer_rect_.y());
-  generator.canvas()->drawPicture(picture_.get());
+  Raster(generator.canvas(), nullptr,
+         gfx::Rect(layer_rect_.right(), layer_rect_.bottom()), 1.f);
 }
 
 void DisplayItemList::GetDiscardableImagesInRect(
