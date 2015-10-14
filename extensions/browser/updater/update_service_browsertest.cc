@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -96,6 +97,8 @@ void ExpectDownloadSuccess(const base::Closure& continuation, bool success) {
 
 class FakeUpdateURLFetcherFactory : public net::URLFetcherFactory {
  public:
+  FakeUpdateURLFetcherFactory() { EXPECT_TRUE(dir_.CreateUniqueTempDir()); }
+
   ~FakeUpdateURLFetcherFactory() override {}
 
   void RegisterFakeExtension(const std::string& id,
@@ -156,11 +159,17 @@ class FakeUpdateURLFetcherFactory : public net::URLFetcherFactory {
     net::TestURLFetcher* fetcher =
         new net::FakeURLFetcher(url, delegate, response.first, response.second,
                                 net::URLRequestStatus::SUCCESS);
-    fetcher->SetResponseFilePath(base::FilePath::FromUTF8Unsafe(url.path()));
+    base::FilePath path = dir_.path().Append(
+        base::FilePath::FromUTF8Unsafe(url.path().substr(1)));
+    fetcher->SetResponseFilePath(path);
     return scoped_ptr<net::URLFetcher>(fetcher);
   }
 
+  base::ScopedTempDir dir_;
+
   std::map<std::string, std::string> fake_extensions_;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeUpdateURLFetcherFactory);
 };
 
 }  // namespace

@@ -144,6 +144,7 @@
       'browser/net/chrome_network_delegate_unittest.cc',
       'browser/net/dns_probe_runner_unittest.cc',
       'browser/net/dns_probe_service_unittest.cc',
+      'browser/net/file_downloader_unittest.cc',
       'browser/net/net_error_tab_helper_unittest.cc',
       'browser/net/predictor_unittest.cc',
       'browser/net/probe_message_unittest.cc',

@@ -229,6 +229,7 @@ class TestURLFetcher : public URLFetcher {
   ResponseDestinationType fake_response_destination_;
   std::string fake_response_string_;
   base::FilePath fake_response_file_path_;
+  bool write_response_file_;
   bool fake_was_fetched_via_proxy_;
   bool fake_was_cached_;
   int64 fake_response_bytes_;

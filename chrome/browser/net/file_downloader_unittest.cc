@@ -1,0 +1,130 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
+#include "base/files/scoped_temp_dir.h"
+#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
+#include "base/thread_task_runner_handle.h"
+#include "chrome/browser/net/file_downloader.h"
+#include "content/public/browser/browser_thread.h"
+#include "net/url_request/test_url_fetcher_factory.h"
+#include "net/url_request/url_request_test_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
+
+const char kURL[] = "https://www.url.com/path";
+const char kFilename[] = "filename.ext";
+const char kFileContents1[] = "file contents";
+const char kFileContents2[] = "different contents";
+
+class FileDownloaderTest : public testing::Test {
+ public:
+  FileDownloaderTest()
+      : request_context_(new net::TestURLRequestContextGetter(
+            base::ThreadTaskRunnerHandle::Get())),
+            url_fetcher_factory_(nullptr) {}
+
+  void SetUp() override {
+    ASSERT_TRUE(dir_.CreateUniqueTempDir());
+    path_ = dir_.path().AppendASCII(kFilename);
+    ASSERT_FALSE(base::PathExists(path_));
+  }
+
+  MOCK_METHOD1(OnDownloadFinished, void(bool success));
+
+ protected:
+  const base::FilePath& path() const { return path_; }
+
+  void SetValidResponse() {
+    url_fetcher_factory_.SetFakeResponse(
+        GURL(kURL), kFileContents1, net::HTTP_OK,
+        net::URLRequestStatus::SUCCESS);
+  }
+
+  void SetValidResponse2() {
+    url_fetcher_factory_.SetFakeResponse(
+        GURL(kURL), kFileContents2, net::HTTP_OK,
+        net::URLRequestStatus::SUCCESS);
+  }
+
+  void SetFailedResponse() {
+    url_fetcher_factory_.SetFakeResponse(
+        GURL(kURL), std::string(), net::HTTP_NOT_FOUND,
+        net::URLRequestStatus::SUCCESS);
+  }
+
+  void Download(bool overwrite, bool expect_success) {
+    FileDownloader downloader(
+        GURL(kURL), path_, overwrite, request_context_.get(),
+        base::Bind(&FileDownloaderTest::OnDownloadFinished,
+                   base::Unretained(this)));
+    EXPECT_CALL(*this, OnDownloadFinished(expect_success));
+    // Wait for the FileExists check to happen if necessary.
+    if (!overwrite)
+      content::BrowserThread::GetBlockingPool()->FlushForTesting();
+    // Wait for the actual download to happen.
+    base::RunLoop().RunUntilIdle();
+    // Wait for the FileMove to happen.
+    content::BrowserThread::GetBlockingPool()->FlushForTesting();
+    base::RunLoop().RunUntilIdle();
+  }
+
+ private:
+  base::ScopedTempDir dir_;
+  base::FilePath path_;
+
+  base::MessageLoop message_loop_;
+  scoped_refptr<net::TestURLRequestContextGetter> request_context_;
+  net::FakeURLFetcherFactory url_fetcher_factory_;
+};
+
+TEST_F(FileDownloaderTest, Success) {
+  SetValidResponse();
+  Download(true, true);
+  EXPECT_TRUE(base::PathExists(path()));
+  std::string contents;
+  ASSERT_TRUE(base::ReadFileToString(path(), &contents));
+  EXPECT_EQ(std::string(kFileContents1), contents);
+}
+
+TEST_F(FileDownloaderTest, Failure) {
+  SetFailedResponse();
+  Download(true, false);
+  EXPECT_FALSE(base::PathExists(path()));
+}
+
+TEST_F(FileDownloaderTest, Overwrite) {
+  SetValidResponse();
+  Download(true, true);
+  ASSERT_TRUE(base::PathExists(path()));
+  std::string contents;
+  ASSERT_TRUE(base::ReadFileToString(path(), &contents));
+  ASSERT_EQ(std::string(kFileContents1), contents);
+
+  SetValidResponse2();
+  Download(true, true);
+  // The file should have been overwritten with the new contents.
+  EXPECT_TRUE(base::PathExists(path()));
+  ASSERT_TRUE(base::ReadFileToString(path(), &contents));
+  EXPECT_EQ(std::string(kFileContents2), contents);
+}
+
+TEST_F(FileDownloaderTest, DontOverwrite) {
+  SetValidResponse();
+  Download(true, true);
+  ASSERT_TRUE(base::PathExists(path()));
+  std::string contents;
+  ASSERT_TRUE(base::ReadFileToString(path(), &contents));
+  EXPECT_EQ(std::string(kFileContents1), contents);
+
+  SetValidResponse2();
+  Download(false, true);
+  // The file should still have the old contents.
+  EXPECT_TRUE(base::PathExists(path()));
+  ASSERT_TRUE(base::ReadFileToString(path(), &contents));
+  EXPECT_EQ(std::string(kFileContents1), contents);
+}
