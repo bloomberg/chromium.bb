@@ -125,6 +125,8 @@ const char* Target::GetStringForOutputType(OutputType type) {
       return "Group";
     case EXECUTABLE:
       return "Executable";
+    case LOADABLE_MODULE:
+      return "Loadable module";
     case SHARED_LIBRARY:
       return "Shared library";
     case STATIC_LIBRARY:
@@ -193,7 +195,9 @@ bool Target::IsLinkable() const {
 }
 
 bool Target::IsFinal() const {
-  return output_type_ == EXECUTABLE || output_type_ == SHARED_LIBRARY ||
+  return output_type_ == EXECUTABLE ||
+         output_type_ == SHARED_LIBRARY ||
+         output_type_ == LOADABLE_MODULE ||
          (output_type_ == STATIC_LIBRARY && complete_static_lib_);
 }
 
@@ -350,8 +354,9 @@ void Target::FillOutputFiles() {
       break;
     }
     case EXECUTABLE:
-      // Executables don't get linked to, but the first output is used for
-      // dependency management.
+    case LOADABLE_MODULE:
+      // Executables and loadable modules don't get linked to, but the first
+      // output is used for dependency management.
       CHECK_GE(tool->outputs().list().size(), 1u);
       check_tool_outputs = true;
       dependency_output_file_ =

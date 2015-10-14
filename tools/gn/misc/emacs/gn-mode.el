@@ -54,7 +54,7 @@ variable name or the '{{' and '}}' which surround it."
   :group 'gn-faces)
 
 (defvar gn-font-lock-target-declaration-keywords
-  '("action" "action_foreach" "copy" "executable" "group"
+  '("action" "action_foreach" "copy" "executable" "group" "loadable_module"
     "shared_library" "source_set" "static_library" "if" "else"))
 
 (defvar gn-font-lock-buildfile-fun-keywords

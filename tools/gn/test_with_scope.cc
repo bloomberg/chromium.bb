@@ -99,6 +99,16 @@ void TestWithScope::SetupToolchain(Toolchain* toolchain) {
       "{{root_out_dir}}/{{target_output_name}}{{output_extension}}"));
   toolchain->SetTool(Toolchain::TYPE_SOLINK, solink_tool.Pass());
 
+  // SOLINK_MODULE
+  scoped_ptr<Tool> solink_module_tool(new Tool);
+  SetCommandForTool("ld -bundle -o {{target_output_name}}.so {{inputs}} "
+      "{{ldflags}} {{libs}}", solink_module_tool.get());
+  solink_module_tool->set_output_prefix("lib");
+  solink_module_tool->set_default_output_extension(".so");
+  solink_module_tool->set_outputs(SubstitutionList::MakeForTest(
+      "{{root_out_dir}}/{{target_output_name}}{{output_extension}}"));
+  toolchain->SetTool(Toolchain::TYPE_SOLINK_MODULE, solink_module_tool.Pass());
+
   // LINK
   scoped_ptr<Tool> link_tool(new Tool);
   SetCommandForTool("ld -o {{target_output_name}} {{source}} "

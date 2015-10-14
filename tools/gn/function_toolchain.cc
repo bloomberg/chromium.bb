@@ -195,6 +195,7 @@ bool IsCompilerTool(Toolchain::ToolType type) {
 bool IsLinkerTool(Toolchain::ToolType type) {
   return type == Toolchain::TYPE_ALINK ||
          type == Toolchain::TYPE_SOLINK ||
+         type == Toolchain::TYPE_SOLINK_MODULE ||
          type == Toolchain::TYPE_LINK;
 }
 
@@ -503,7 +504,7 @@ const char kTool_Help[] =
     "    depend_output  [string with substitutions]\n"
     "        Valid for: \"solink\" only (optional)\n"
     "\n"
-    "        These two files specify whch of the outputs from the solink\n"
+    "        These two files specify which of the outputs from the solink\n"
     "        tool should be used for linking and dependency tracking. These\n"
     "        should match entries in the \"outputs\". If unspecified, the\n"
     "        first item in the \"outputs\" array will be used for both. See\n"
@@ -847,9 +848,10 @@ Value RunTool(Scope* scope,
   // Validate that the link_output and depend_output refer to items in the
   // outputs and aren't defined for irrelevant tool types.
   if (!tool->link_output().empty()) {
-    if (tool_type != Toolchain::TYPE_SOLINK) {
+    if (tool_type != Toolchain::TYPE_SOLINK &&
+        tool_type != Toolchain::TYPE_SOLINK_MODULE) {
       *err = Err(function, "This tool specifies a link_output.",
-          "This is only valid for solink tools.");
+          "This is only valid for solink and solink_module tools.");
       return Value();
     }
     if (!IsPatternInOutputList(tool->outputs(), tool->link_output())) {
@@ -859,9 +861,10 @@ Value RunTool(Scope* scope,
     }
   }
   if (!tool->depend_output().empty()) {
-    if (tool_type != Toolchain::TYPE_SOLINK) {
+    if (tool_type != Toolchain::TYPE_SOLINK &&
+        tool_type != Toolchain::TYPE_SOLINK_MODULE) {
       *err = Err(function, "This tool specifies a depend_output.",
-          "This is only valid for solink tools.");
+          "This is only valid for solink and solink_module tools.");
       return Value();
     }
     if (!IsPatternInOutputList(tool->outputs(), tool->depend_output())) {

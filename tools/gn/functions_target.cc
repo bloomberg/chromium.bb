@@ -355,6 +355,38 @@ Value RunGroup(Scope* scope,
                               block, err);
 }
 
+// loadable_module -------------------------------------------------------------
+
+const char kLoadableModule[] = "loadable_module";
+const char kLoadableModule_HelpShort[] =
+    "loadable_module: Declare a loadable module target.";
+const char kLoadableModule_Help[] =
+    "loadable_module: Declare a loadable module target.\n"
+    "\n"
+    "  This target type allows you to create an object file that is (and can\n"
+    "  only be) loaded and unloaded at runtime.\n"
+    "\n"
+    "  A loadable module will be specified on the linker line for targets\n"
+    "  listing the loadable module in its \"deps\". If you don't want this\n"
+    "  (if you don't need to dynamically load the library at runtime), then\n"
+    "  you should use a \"shared_library\" target type instead.\n"
+    "\n"
+    "Variables\n"
+    "\n"
+    CONFIG_VALUES_VARS_HELP
+    DEPS_VARS
+    DEPENDENT_CONFIG_VARS
+    GENERAL_TARGET_VARS;
+
+Value RunLoadableModule(Scope* scope,
+                       const FunctionCallNode* function,
+                       const std::vector<Value>& args,
+                       BlockNode* block,
+                       Err* err) {
+  return ExecuteGenericTarget(functions::kLoadableModule, scope, function, args,
+                              block, err);
+}
+
 // shared_library --------------------------------------------------------------
 
 const char kSharedLibrary[] = "shared_library";
@@ -366,7 +398,8 @@ const char kSharedLibrary_Help[] =
     "  A shared library will be specified on the linker line for targets\n"
     "  listing the shared library in its \"deps\". If you don't want this\n"
     "  (say you dynamically load the library at runtime), then you should\n"
-    "  depend on the shared library via \"data_deps\" instead.\n"
+    "  depend on the shared library via \"data_deps\" or, on Darwin\n"
+    "  platforms, use a \"loadable_module\" target type instead.\n"
     "\n"
     "Variables\n"
     "\n"
@@ -501,8 +534,7 @@ Value RunTarget(Scope* scope,
                 BlockNode* block,
                 Err* err) {
   if (args.size() != 2) {
-    *err = Err(function, "Expected two arguments.",
-               "Dude, try \"gn help target\".");
+    *err = Err(function, "Expected two arguments.", "Try \"gn help target\".");
     return Value();
   }
 

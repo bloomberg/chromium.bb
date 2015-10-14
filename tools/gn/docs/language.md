@@ -93,8 +93,8 @@ Lists support appending:
 ```
 a = [ "first" ]
 a += [ "second" ]  # [ "first", "second" ]
-a += [ "third", "fourth" ]  # [ "first", "second", "third", "fourth" ] 
-b = a + [ "fifth" ]  # [ "first", "second", "third", "fourth", "fifth" ] 
+a += [ "third", "fourth" ]  # [ "first", "second", "third", "fourth" ]
+b = a + [ "fifth" ]  # [ "first", "second", "third", "fourth", "fifth" ]
 ```
 
 Appending a list to another list appends the items in the second list
@@ -160,7 +160,7 @@ Conditionals look like C:
     ...
   } else {
     ...
-  }  
+  }
 ```
 
 You can use them in most places, even around entire targets if the
@@ -376,10 +376,11 @@ more help) are:
   * `group`: A virtual dependency node that refers to one or more other
     targets.
   * `shared_library`: A .dll or .so.
+  * `loadable_module`: A .dll or .so loadable only at runtime.
   * `source_set`: A lightweight virtual static library (usually
     preferrable over a real static library since it will build faster).
   * `static_library`: A .lib or .a file (normally you'll want a
-    source\_set instead).
+    `source_set` instead).
 
 You can extend this to make custom target types using templates (see below).
 

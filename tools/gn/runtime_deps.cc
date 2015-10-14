@@ -81,8 +81,10 @@ void RecursiveCollectRuntimeDeps(const Target* target,
   }
   (*seen_targets)[target] = is_target_data_dep;
 
-  // Add the main output file for executables and shared libraries.
+  // Add the main output file for executables, shared libraries, and
+  // loadable modules.
   if (target->output_type() == Target::EXECUTABLE ||
+      target->output_type() == Target::LOADABLE_MODULE ||
       target->output_type() == Target::SHARED_LIBRARY)
     AddIfNew(GetMainOutput(target), target, deps, found_files);
 
@@ -149,8 +151,8 @@ const char kRuntimeDeps_Help[] =
     "\n"
     "  To a first approximation, the runtime dependencies of a target are\n"
     "  the set of \"data\" files, data directories, and the shared libraries\n"
-    "  from all transitive dependencies. Executables and shared libraries are\n"
-    "  considered runtime dependencies of themselves.\n"
+    "  from all transitive dependencies. Executables, shared libraries, and\n"
+    "  loadable modules are considered runtime dependencies of themselves.\n"
     "\n"
     "Executables\n"
     "\n"

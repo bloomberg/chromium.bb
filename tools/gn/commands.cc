@@ -190,6 +190,10 @@ bool GetTargetTypeFilter(Target::OutputType* type) {
     *type = Target::SHARED_LIBRARY;
     return true;
   }
+  if (value == "loadable_module") {
+    *type = Target::LOADABLE_MODULE;
+    return true;
+  }
   if (value == "static_library") {
     *type = Target::STATIC_LIBRARY;
     return true;

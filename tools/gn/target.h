@@ -35,6 +35,7 @@ class Target : public Item {
     GROUP,
     EXECUTABLE,
     SHARED_LIBRARY,
+    LOADABLE_MODULE,
     STATIC_LIBRARY,
     SOURCE_SET,
     COPY_FILES,

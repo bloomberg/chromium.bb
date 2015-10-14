@@ -68,13 +68,14 @@ void NinjaTargetWriter::RunAndWriteFile(const Target* target) {
     NinjaGroupTargetWriter writer(target, file);
     writer.Run();
   } else if (target->output_type() == Target::EXECUTABLE ||
+             target->output_type() == Target::LOADABLE_MODULE ||
              target->output_type() == Target::STATIC_LIBRARY ||
              target->output_type() == Target::SHARED_LIBRARY ||
              target->output_type() == Target::SOURCE_SET) {
     NinjaBinaryTargetWriter writer(target, file);
     writer.Run();
   } else {
-    CHECK(0);
+    CHECK(0) << "Output type of target not handled.";
   }
 
   std::string contents = file.str();

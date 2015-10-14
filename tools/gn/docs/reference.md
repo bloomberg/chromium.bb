@@ -455,8 +455,8 @@
       Tree output can not be used with the filtering or output flags:
       --as, --type, --testonly.
 
-  --type=(action|copy|executable|group|shared_library|source_set|
-          static_library)
+  --type=(action|copy|executable|group|loadable_module|shared_library|
+          source_set|static_library)
       Restrict outputs to targets matching the given type. If
       unspecified, no filtering will be performed.
 
@@ -594,8 +594,8 @@
       accordingly. When unspecified, the target's testonly flags are
       ignored.
 
-  --type=(action|copy|executable|group|shared_library|source_set|
-          static_library)
+  --type=(action|copy|executable|group|loadable_module|shared_library|
+          source_set|static_library)
       Restrict outputs to targets matching the given type. If
       unspecified, no filtering will be performed.
 
@@ -740,8 +740,8 @@
       Tree output can not be used with the filtering or output flags:
       --as, --type, --testonly.
 
-  --type=(action|copy|executable|group|shared_library|source_set|
-          static_library)
+  --type=(action|copy|executable|group|loadable_module|shared_library|
+          source_set|static_library)
       Restrict outputs to targets matching the given type. If
       unspecified, no filtering will be performed.
 
@@ -1025,7 +1025,7 @@
 ### **Variables valid in a config definition**:
 ```
   Flags: cflags, cflags_c, cflags_cc, cflags_objc, cflags_objcc,
-         defines, include_dirs, ldflags, lib_dirs, libs,
+         asmflags, defines, include_dirs, ldflags, lib_dirs, libs,
          precompiled_header, precompiled_source
 
 ```
@@ -1103,9 +1103,48 @@
 
   See also "gn help buildargs" for an overview.
 
+  The precise behavior of declare args is:
+
+   1. The declare_arg block executes. Any variables in the enclosing
+      scope are available for reading.
+
+   2. At the end of executing the block, any variables set within that
+      scope are saved globally as build arguments, with their current
+      values being saved as the "default value" for that argument.
+
+   3. User-defined overrides are applied. Anything set in "gn args"
+      now overrides any default values. The resulting set of variables
+      is promoted to be readable from the following code in the file.
+
+  This has some ramifications that may not be obvious:
+
+    - You should not perform difficult work inside a declare_args block
+      since this only sets a default value that may be discarded. In
+      particular, don't use the result of exec_script() to set the
+      default value. If you want to have a script-defined default, set
+      some default "undefined" value like [], "", or -1, and after
+      the declare_args block, call exec_script if the value is unset by
+      the user.
+
+    - Any code inside of the declare_args block will see the default
+      values of previous variables defined in the block rather than
+      the user-overridden value. This can be surprising because you will
+      be used to seeing the overridden value. If you need to make the
+      default value of one arg dependent on the possibly-overridden
+      value of another, write two separate declare_args blocks:
+
+        declare_args() {
+          enable_foo = true
+        }
+        declare_args() {
+          # Bar defaults to same user-overridden state as foo.
+          enable_bar = enable_foo
+        }
+
 ```
 
-### **Example**:
+### **Example**
+
 ```
   declare_args() {
     enable_teleporter = true
@@ -1223,7 +1262,7 @@
 
 ```
   Flags: cflags, cflags_c, cflags_cc, cflags_objc, cflags_objcc,
-         defines, include_dirs, ldflags, lib_dirs, libs,
+         asmflags, defines, include_dirs, ldflags, lib_dirs, libs,
          precompiled_header, precompiled_source
   Deps: data_deps, deps, public_deps
   Dependent configs: all_dependent_configs, public_configs
@@ -1582,7 +1621,7 @@
   specify configs that apply to their dependents.
 
   Depending on a group is exactly like depending directly on that
-  group's deps.
+  group's deps. 
 
 ```
 
@@ -1642,6 +1681,32 @@
 
   # Looks in the current directory.
   import("my_vars.gni")
+
+
+```
+## **loadable_module**: Declare a loadable module target.
+
+```
+  This target type allows you to create an object file that is (and can
+  only be) loaded and unloaded at runtime.
+
+  A loadable module will be specified on the linker line for targets
+  listing the loadable module in its "deps". If you don't want this
+  (if you don't need to dynamically load the library at runtime), then
+  you should use a "shared_library" target type instead.
+
+```
+
+### **Variables**
+
+```
+  Flags: cflags, cflags_c, cflags_cc, cflags_objc, cflags_objcc,
+         asmflags, defines, include_dirs, ldflags, lib_dirs, libs,
+         precompiled_header, precompiled_source
+  Deps: data_deps, deps, public_deps
+  Dependent configs: all_dependent_configs, public_configs
+  General: check_includes, configs, data, inputs, output_name,
+           output_extension, public, sources, testonly, visibility
 
 
 ```
@@ -1988,7 +2053,8 @@
   A shared library will be specified on the linker line for targets
   listing the shared library in its "deps". If you don't want this
   (say you dynamically load the library at runtime), then you should
-  depend on the shared library via "data_deps" instead.
+  depend on the shared library via "data_deps" or, on Darwin
+  platforms, use a "loadable_module" target type instead.
 
 ```
 
@@ -1996,7 +2062,7 @@
 
 ```
   Flags: cflags, cflags_c, cflags_cc, cflags_objc, cflags_objcc,
-         defines, include_dirs, ldflags, lib_dirs, libs,
+         asmflags, defines, include_dirs, ldflags, lib_dirs, libs,
          precompiled_header, precompiled_source
   Deps: data_deps, deps, public_deps
   Dependent configs: all_dependent_configs, public_configs
@@ -2037,7 +2103,7 @@
 
 ```
   Flags: cflags, cflags_c, cflags_cc, cflags_objc, cflags_objcc,
-         defines, include_dirs, ldflags, lib_dirs, libs,
+         asmflags, defines, include_dirs, ldflags, lib_dirs, libs,
          precompiled_header, precompiled_source
   Deps: data_deps, deps, public_deps
   Dependent configs: all_dependent_configs, public_configs
@@ -2061,7 +2127,7 @@
 
 ```
   Flags: cflags, cflags_c, cflags_cc, cflags_objc, cflags_objcc,
-         defines, include_dirs, ldflags, lib_dirs, libs,
+         asmflags, defines, include_dirs, ldflags, lib_dirs, libs,
          precompiled_header, precompiled_source
   Deps: data_deps, deps, public_deps
   Dependent configs: all_dependent_configs, public_configs
@@ -2394,7 +2460,7 @@
     depend_output  [string with substitutions]
         Valid for: "solink" only (optional)
 
-        These two files specify whch of the outputs from the solink
+        These two files specify which of the outputs from the solink
         tool should be used for linking and dependency tracking. These
         should match entries in the "outputs". If unspecified, the
         first item in the "outputs" array will be used for both. See
@@ -2511,6 +2577,7 @@
   along with a set of compiler-specific flags. The following expansions
   are available:
 
+    {{asmflags}}
     {{cflags}}
     {{cflags_c}}
     {{cflags_cc}}
@@ -3217,8 +3284,11 @@
   and Objective C++ compilers.
 
   To target one of these variants individually, use "cflags_c",
-  "cflags_cc", "cflags_objc", and "cflags_objcc", respectively.
-  These variant-specific versions will be appended to the "cflags".
+  "cflags_cc", "cflags_objc", and "cflags_objcc",
+  respectively.
+
+  These variant-specific versions of cflags* will be appended to the
+  "cflags".
 
 ```
 
@@ -3250,8 +3320,11 @@
   and Objective C++ compilers.
 
   To target one of these variants individually, use "cflags_c",
-  "cflags_cc", "cflags_objc", and "cflags_objcc", respectively.
-  These variant-specific versions will be appended to the "cflags".
+  "cflags_cc", "cflags_objc", and "cflags_objcc",
+  respectively.
+
+  These variant-specific versions of cflags* will be appended to the
+  "cflags".
 
 ```
 
@@ -3283,8 +3356,11 @@
   and Objective C++ compilers.
 
   To target one of these variants individually, use "cflags_c",
-  "cflags_cc", "cflags_objc", and "cflags_objcc", respectively.
-  These variant-specific versions will be appended to the "cflags".
+  "cflags_cc", "cflags_objc", and "cflags_objcc",
+  respectively.
+
+  These variant-specific versions of cflags* will be appended to the
+  "cflags".
 
 ```
 
@@ -3316,8 +3392,11 @@
   and Objective C++ compilers.
 
   To target one of these variants individually, use "cflags_c",
-  "cflags_cc", "cflags_objc", and "cflags_objcc", respectively.
-  These variant-specific versions will be appended to the "cflags".
+  "cflags_cc", "cflags_objc", and "cflags_objcc",
+  respectively.
+
+  These variant-specific versions of cflags* will be appended to the
+  "cflags".
 
 ```
 
@@ -3349,8 +3428,11 @@
   and Objective C++ compilers.
 
   To target one of these variants individually, use "cflags_c",
-  "cflags_cc", "cflags_objc", and "cflags_objcc", respectively.
-  These variant-specific versions will be appended to the "cflags".
+  "cflags_cc", "cflags_objc", and "cflags_objcc",
+  respectively.
+
+  These variant-specific versions of cflags* will be appended to the
+  "cflags".
 
 ```
 
@@ -3716,8 +3798,6 @@
 
   See also "public_deps" and "data_deps".
 
-
-```
 
 ```
 ## **include_dirs**: Additional include directories.
@@ -4796,8 +4876,8 @@
 
   To a first approximation, the runtime dependencies of a target are
   the set of "data" files, data directories, and the shared libraries
-  from all transitive dependencies. Executables and shared libraries are
-  considered runtime dependencies of themselves.
+  from all transitive dependencies. Executables, shared libraries, and
+  loadable modules are considered runtime dependencies of themselves.
 
 ```
 

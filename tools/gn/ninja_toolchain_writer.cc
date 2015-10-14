@@ -109,8 +109,11 @@ void NinjaToolchainWriter::WriteToolRule(const Toolchain::ToolType type,
 
   // The link pool applies to linker tools. Don't count TYPE_ALINK since
   // static libraries are not generally intensive to write.
-  if (type == Toolchain::TYPE_SOLINK || type == Toolchain::TYPE_LINK)
+  if (type == Toolchain::TYPE_SOLINK ||
+      type == Toolchain::TYPE_SOLINK_MODULE ||
+      type == Toolchain::TYPE_LINK) {
     out_ << kIndent << "pool = link_pool\n";
+  }
 
   if (tool->restat())
     out_ << kIndent << "restat = 1" << std::endl;

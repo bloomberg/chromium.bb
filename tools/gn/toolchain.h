@@ -40,6 +40,7 @@ class Toolchain : public Item {
     TYPE_ASM,
     TYPE_ALINK,
     TYPE_SOLINK,
+    TYPE_SOLINK_MODULE,
     TYPE_LINK,
     TYPE_STAMP,
     TYPE_COPY,
@@ -55,6 +56,7 @@ class Toolchain : public Item {
   static const char* kToolAsm;
   static const char* kToolAlink;
   static const char* kToolSolink;
+  static const char* kToolSolinkModule;
   static const char* kToolLink;
   static const char* kToolStamp;
   static const char* kToolCopy;

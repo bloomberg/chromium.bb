@@ -12,10 +12,7 @@ and we'll keep the GN build running on these configurations.
 ## What is unsupported in GN?
 
 The main features not supported in GN yet are:
-  * Mac bundles
-  * Loadable module (this only matters on Mac where shared library !=
-    lodable module)
-  * Precompiled headers
+  * Mac/iOS bundles
 
 ## Where is the GN documentation?
 

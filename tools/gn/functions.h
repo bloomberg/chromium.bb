@@ -195,6 +195,15 @@ Value RunImport(Scope* scope,
                 const std::vector<Value>& args,
                 Err* err);
 
+extern const char kLoadableModule[];
+extern const char kLoadableModule_HelpShort[];
+extern const char kLoadableModule_Help[];
+Value RunLoadableModule(Scope* scope,
+                        const FunctionCallNode* function,
+                        const std::vector<Value>& args,
+                        BlockNode* block,
+                        Err* err);
+
 extern const char kPrint[];
 extern const char kPrint_HelpShort[];
 extern const char kPrint_Help[];

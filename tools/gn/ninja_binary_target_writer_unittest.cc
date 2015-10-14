@@ -365,6 +365,72 @@ TEST(NinjaBinaryTargetWriter, SharedLibraryModuleDefinitionFile) {
   EXPECT_EQ(expected, out.str());
 }
 
+TEST(NinjaBinaryTargetWriter, LoadableModule) {
+  TestWithScope setup;
+  setup.build_settings()->SetBuildDir(SourceDir("//out/Debug/"));
+
+  Target loadable_module(setup.settings(), Label(SourceDir("//foo/"), "bar"));
+  loadable_module.set_output_type(Target::LOADABLE_MODULE);
+  loadable_module.visibility().SetPublic();
+  loadable_module.SetToolchain(setup.toolchain());
+  loadable_module.sources().push_back(SourceFile("//foo/sources.cc"));
+
+  Err err;
+  ASSERT_TRUE(loadable_module.OnResolved(&err)) << err.message();
+
+  std::ostringstream out;
+  NinjaBinaryTargetWriter writer(&loadable_module, out);
+  writer.Run();
+
+  const char loadable_expected[] =
+      "defines =\n"
+      "include_dirs =\n"
+      "cflags =\n"
+      "cflags_cc =\n"
+      "root_out_dir = .\n"
+      "target_out_dir = obj/foo\n"
+      "target_output_name = libbar\n"
+      "\n"
+      "build obj/foo/libbar.sources.o: cxx ../../foo/sources.cc\n"
+      "\n"
+      "build ./libbar.so: solink_module obj/foo/libbar.sources.o\n"
+      "  ldflags =\n"
+      "  libs =\n"
+      "  output_extension = .so\n";
+  EXPECT_EQ(loadable_expected, out.str());
+
+  // Final target.
+  Target exe(setup.settings(), Label(SourceDir("//foo/"), "exe"));
+  exe.set_output_type(Target::EXECUTABLE);
+  exe.public_deps().push_back(LabelTargetPair(&loadable_module));
+  exe.SetToolchain(setup.toolchain());
+  exe.sources().push_back(SourceFile("//foo/final.cc"));
+  ASSERT_TRUE(exe.OnResolved(&err)) << err.message();
+
+  std::ostringstream final_out;
+  NinjaBinaryTargetWriter final_writer(&exe, final_out);
+  final_writer.Run();
+
+  // The final output depends on the loadable module so should have an
+  // order-only dependency on the loadable modules's output file.
+  const char final_expected[] =
+      "defines =\n"
+      "include_dirs =\n"
+      "cflags =\n"
+      "cflags_cc =\n"
+      "root_out_dir = .\n"
+      "target_out_dir = obj/foo\n"
+      "target_output_name = exe\n"
+      "\n"
+      "build obj/foo/exe.final.o: cxx ../../foo/final.cc\n"
+      "\n"
+      "build ./exe: link obj/foo/exe.final.o || ./libbar.so\n"
+      "  ldflags =\n"
+      "  libs =\n"
+      "  output_extension = \n";
+  EXPECT_EQ(final_expected, final_out.str());
+}
+
 TEST(NinjaBinaryTargetWriter, WinPrecompiledHeaders) {
   Err err;
 

@@ -156,8 +156,8 @@ void FilterTargetsByPatterns(const std::vector<const Target*>& input,
     "          Prints the first output file for the target relative to the\n"\
     "          current directory.\n"
 #define TARGET_TYPE_FILTER_COMMAND_LINE_HELP \
-    "  --type=(action|copy|executable|group|shared_library|source_set|\n"\
-    "          static_library)\n"\
+    "  --type=(action|copy|executable|group|loadable_module|shared_library|\n"\
+    "          source_set|static_library)\n"\
     "      Restrict outputs to targets matching the given type. If\n"\
     "      unspecified, no filtering will be performed.\n"
 #define TARGET_TESTONLY_FILTER_COMMAND_LINE_HELP \

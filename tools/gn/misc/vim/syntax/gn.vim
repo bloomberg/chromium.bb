@@ -27,6 +27,7 @@ hi def link     gnPredefVar         Constant
 " Target declarations
 syn keyword     gnTarget action action_foreach copy executable group
 syn keyword     gnTarget shared_library source_set static_library
+syn keyword     gnTarget loadable_module
 hi def link     gnTarget            Type
 
 " Buildfile functions

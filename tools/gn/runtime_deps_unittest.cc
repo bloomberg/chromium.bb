@@ -43,9 +43,10 @@ TEST(RuntimeDeps, Libs) {
   TestWithScope setup;
   Err err;
 
-  // Dependency hierarchy: main(exe) -> stat
-  //                                 -> shared
-  //                                 -> set
+  // Dependency hierarchy: main(exe) -> static library
+  //                                 -> shared library
+  //                                 -> loadable module
+  //                                 -> source set
 
   Target stat(setup.settings(), Label(SourceDir("//"), "stat"));
   InitTargetWithType(setup, &stat, Target::STATIC_LIBRARY);
@@ -57,6 +58,11 @@ TEST(RuntimeDeps, Libs) {
   shared.data().push_back("//shared.dat");
   ASSERT_TRUE(shared.OnResolved(&err));
 
+  Target loadable(setup.settings(), Label(SourceDir("//"), "loadable"));
+  InitTargetWithType(setup, &loadable, Target::LOADABLE_MODULE);
+  loadable.data().push_back("//loadable.dat");
+  ASSERT_TRUE(loadable.OnResolved(&err));
+
   Target set(setup.settings(), Label(SourceDir("//"), "set"));
   InitTargetWithType(setup, &set, Target::SOURCE_SET);
   set.data().push_back("//set.dat");
@@ -66,6 +72,7 @@ TEST(RuntimeDeps, Libs) {
   InitTargetWithType(setup, &main, Target::EXECUTABLE);
   main.private_deps().push_back(LabelTargetPair(&stat));
   main.private_deps().push_back(LabelTargetPair(&shared));
+  main.private_deps().push_back(LabelTargetPair(&loadable));
   main.private_deps().push_back(LabelTargetPair(&set));
   main.data().push_back("//main.dat");
   ASSERT_TRUE(main.OnResolved(&err));
@@ -73,8 +80,9 @@ TEST(RuntimeDeps, Libs) {
   std::vector<std::pair<OutputFile, const Target*>> result =
       ComputeRuntimeDeps(&main);
 
-  // The result should have deps of main, all 4 dat files, and libshared.so
-  ASSERT_EQ(6u, result.size()) << GetVectorDescription(result);
+  // The result should have deps of main, all 5 dat files, libshared.so, and
+  // libloadable.so.
+  ASSERT_EQ(8u, result.size()) << GetVectorDescription(result);
 
   // The first one should always be the main exe.
   EXPECT_TRUE(MakePair("./main", &main) == result[0]);
@@ -87,15 +95,21 @@ TEST(RuntimeDeps, Libs) {
                         MakePair("../../shared.dat", &shared)) !=
               result.end()) << GetVectorDescription(result);
   EXPECT_TRUE(std::find(result.begin(), result.end(),
+                        MakePair("../../loadable.dat", &loadable)) !=
+              result.end()) << GetVectorDescription(result);
+  EXPECT_TRUE(std::find(result.begin(), result.end(),
                         MakePair("../../set.dat", &set)) !=
               result.end()) << GetVectorDescription(result);
   EXPECT_TRUE(std::find(result.begin(), result.end(),
                         MakePair("../../main.dat", &main)) !=
               result.end()) << GetVectorDescription(result);
 
-  // Check the static library
+  // Check the static library and loadable module.
   EXPECT_TRUE(std::find(result.begin(), result.end(),
                         MakePair("./libshared.so", &shared)) !=
+              result.end()) << GetVectorDescription(result);
+  EXPECT_TRUE(std::find(result.begin(), result.end(),
+                        MakePair("./libloadable.so", &loadable)) !=
               result.end()) << GetVectorDescription(result);
 }
 

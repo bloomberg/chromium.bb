@@ -100,6 +100,10 @@ void TargetGenerator::GenerateTarget(Scope* scope,
   } else if (output_type == functions::kGroup) {
     GroupTargetGenerator generator(target.get(), scope, function_call, err);
     generator.Run();
+  } else if (output_type == functions::kLoadableModule) {
+    BinaryTargetGenerator generator(target.get(), scope, function_call,
+                                    Target::LOADABLE_MODULE, err);
+    generator.Run();
   } else if (output_type == functions::kSharedLibrary) {
     BinaryTargetGenerator generator(target.get(), scope, function_call,
                                     Target::SHARED_LIBRARY, err);

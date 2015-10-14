@@ -962,7 +962,7 @@ void NinjaBinaryTargetWriter::ClassifyDependency(
 
   if (dep->output_type() == Target::SOURCE_SET) {
     // Source sets have their object files linked into final targets
-    // (shared libraries, executables, and complete static
+    // (shared libraries, executables, loadable modules, and complete static
     // libraries). Intermediate static libraries and other source sets
     // just forward the dependency, otherwise the files in the source
     // set can easily get linked more than once which will cause
