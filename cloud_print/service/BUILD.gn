@@ -2,12 +2,34 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/features.gni")
 import("//tools/grit/grit_rule.gni")
 
-source_set("cloud_print_service_lib") {
+config("internal_config") {
+  defines = [
+    "SECURITY_WIN32",
+    "STRICT",
+    "_ATL_APARTMENT_THREADED",
+    "_ATL_CSTRING_EXPLICIT_CONSTRUCTORS",
+    "_ATL_NO_COM_SUPPORT",
+    "_ATL_NO_AUTOMATIC_NAMESPACE",
+    "_ATL_NO_EXCEPTIONS",
+  ]
+}
+
+if (is_win && is_clang) {
+  # service_controller.h uses DECLARE_REGISTRY_APPID_RESOURCEID, which
+  # in msvs2013 returns string literals via a non-const pointer. So
+  # disable this warning for now.
+  # TODO(thakis): Remove this once we're on 2014,
+  # https://connect.microsoft.com/VisualStudio/feedback/details/806376/atl-hindrances-to-adopting-new-strictstrings-conformance-option-in-vs2013
+  config("service_warning_config") {
+    cflags = [ "-Wno-writable-strings" ]
+  }
+}
+
+source_set("lib") {
   sources = [
-    "//cloud_print/common/win/cloud_print_utils.cc",
-    "//cloud_print/common/win/cloud_print_utils.h",
     "service_constants.cc",
     "service_constants.h",
     "service_state.cc",
@@ -28,24 +50,46 @@ source_set("cloud_print_service_lib") {
     "win/setup_listener.h",
   ]
 
+  configs += [
+    ":internal_config",
+    "//build/config/compiler:wexit_time_destructors",
+  ]
+
   deps = [
-    ":service_resources",
+    ":resources",
     "//base",
     "//base:base_static",
     "//base/third_party/dynamic_annotations",
-    "//content/public/common",
+    "//chrome/common:constants",
+    "//cloud_print/common",
+    "//components/cloud_devices/common",
+    "//content/public/common:static_switches",
     "//google_apis",
     "//ipc",
     "//net",
     "//url",
   ]
 
+  if (enable_basic_printing || enable_print_preview) {
+    deps += [ "//printing" ]
+  }
+
+  if (is_win) {
+    deps += [
+      "//chrome/common:constants",
+      "//chrome/installer/launcher_support",
+    ]
+  }
+
   if (is_clang) {
     cflags = [ "-Wno-parentheses" ]
+    if (is_win) {
+      public_configs = [ ":service_warning_config" ]
+    }
   }
 }
 
-grit("service_resources") {
+grit("resources") {
   source = "win/service_resources.grd"
   outputs = [
     "resources.h",

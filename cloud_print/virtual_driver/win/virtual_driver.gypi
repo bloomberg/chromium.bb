@@ -16,6 +16,7 @@
   },
   'targets' : [
     {
+      # GN version: //cloud_print/virtual_driver/win
       'target_name': 'virtual_driver_lib<(virtual_driver_suffix)',
       'type': 'static_library',
       'sources': [
@@ -28,6 +29,7 @@
       ],
     },
     {
+      # GN version: //cloud_print/virtual_driver/win/port_monitor:lib
       'target_name': 'gcp_portmon_lib<(virtual_driver_suffix)',
       'type': 'static_library',
       'sources': [
@@ -39,6 +41,7 @@
       ],
     },
     {
+      # GN version: //cloud_print/virtual_driver/win/port_monitor
       'target_name': 'gcp_portmon<(virtual_driver_suffix)',
       'type': 'loadable_module',
       'sources': [
