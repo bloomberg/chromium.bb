@@ -595,6 +595,15 @@
           ],
         }],
         ['use_nss_certs == 1', {
+          'sources': [
+            # GN version: //chrome/third_party/mozilla_security_manager
+            'third_party/mozilla_security_manager/nsNSSCertHelper.cpp',
+            'third_party/mozilla_security_manager/nsNSSCertHelper.h',
+            'third_party/mozilla_security_manager/nsNSSCertificate.cpp',
+            'third_party/mozilla_security_manager/nsNSSCertificate.h',
+            'third_party/mozilla_security_manager/nsUsageArrayHelper.cpp',
+            'third_party/mozilla_security_manager/nsUsageArrayHelper.h',
+          ],
           'dependencies': [
             '../build/linux/system.gyp:ssl',
           ],
