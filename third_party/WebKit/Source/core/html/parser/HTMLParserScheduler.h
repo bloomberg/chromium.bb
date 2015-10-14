@@ -36,7 +36,6 @@ namespace blink {
 
 class Document;
 class HTMLDocumentParser;
-class WebTaskRunner;
 
 class ActiveParserSession : public NestingLevelIncrementer {
     STACK_ALLOCATED();
@@ -73,9 +72,9 @@ private:
 class HTMLParserScheduler {
     WTF_MAKE_NONCOPYABLE(HTMLParserScheduler); WTF_MAKE_FAST_ALLOCATED(HTMLParserScheduler);
 public:
-    static PassOwnPtr<HTMLParserScheduler> create(HTMLDocumentParser* parser, WebTaskRunner* loadingTaskRunner)
+    static PassOwnPtr<HTMLParserScheduler> create(HTMLDocumentParser* parser)
     {
-        return adoptPtr(new HTMLParserScheduler(parser, loadingTaskRunner));
+        return adoptPtr(new HTMLParserScheduler(parser));
     }
     ~HTMLParserScheduler();
 
@@ -99,13 +98,13 @@ public:
     void detach(); // Clear active tasks if any.
 
 private:
-    HTMLParserScheduler(HTMLDocumentParser*, WebTaskRunner*);
+    explicit HTMLParserScheduler(HTMLDocumentParser*);
 
     bool shouldYield(const SpeculationsPumpSession&, bool startingScript) const;
     void continueParsing();
 
     HTMLDocumentParser* m_parser;
-    OwnPtr<WebTaskRunner> m_loadingTaskRunner;
+    WebTaskRunner* m_loadingTaskRunner; // NOT OWNED
 
     OwnPtr<CancellableTaskFactory> m_cancellableContinueParse;
     bool m_isSuspendedWithActiveTimer;

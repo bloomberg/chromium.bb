@@ -146,8 +146,6 @@ public:
     bool clientDefersImage(const KURL&) const;
     void determineRequestContext(ResourceRequest&, Resource::Type);
 
-    WebTaskRunner* loadingTaskRunner();
-
     void updateAllImageResourcePriorities();
 
 private:

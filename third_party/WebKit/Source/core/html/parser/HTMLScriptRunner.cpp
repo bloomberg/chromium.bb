@@ -40,7 +40,6 @@
 #include "core/html/parser/NestingLevelIncrementer.h"
 #include "platform/NotImplemented.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebFrameScheduler.h"
 
 namespace blink {
 
@@ -288,7 +287,7 @@ void HTMLScriptRunner::requestParsingBlockingScript(Element* element)
         if (m_document->frame()) {
             ScriptState* scriptState = ScriptState::forMainWorld(m_document->frame());
             if (scriptState->contextIsValid())
-                ScriptStreamer::startStreaming(m_parserBlockingScript, PendingScript::ParsingBlocking, m_document->frame()->settings(), scriptState, m_document->loadingTaskRunner());
+                ScriptStreamer::startStreaming(m_parserBlockingScript, PendingScript::ParsingBlocking, m_document->frame()->settings(), scriptState);
         }
 
         m_parserBlockingScript.watchForLoad(this);
@@ -304,7 +303,7 @@ void HTMLScriptRunner::requestDeferredScript(Element* element)
     if (m_document->frame() && !pendingScript.isReady()) {
         ScriptState* scriptState = ScriptState::forMainWorld(m_document->frame());
         if (scriptState->contextIsValid())
-            ScriptStreamer::startStreaming(pendingScript, PendingScript::Deferred, m_document->frame()->settings(), scriptState, m_document->loadingTaskRunner());
+            ScriptStreamer::startStreaming(pendingScript, PendingScript::Deferred, m_document->frame()->settings(), scriptState);
     }
 
     ASSERT(pendingScript.resource());

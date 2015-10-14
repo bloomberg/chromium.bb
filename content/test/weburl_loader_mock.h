@@ -55,8 +55,6 @@ class WebURLLoaderMock : public blink::WebURLLoader {
 
   bool isDeferred() { return is_deferred_; }
 
-  void setLoadingTaskRunner(blink::WebTaskRunner*) override;
-
  private:
   WebURLLoaderMockFactory* factory_;
   blink::WebURLLoaderClient* client_;

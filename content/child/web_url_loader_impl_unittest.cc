@@ -13,7 +13,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
-#include "components/scheduler/child/web_task_runner_impl.h"
 #include "content/child/request_extra_data.h"
 #include "content/child/request_info.h"
 #include "content/child/resource_dispatcher.h"
@@ -107,10 +106,7 @@ class TestWebURLLoaderClient : public blink::WebURLLoaderClient {
   TestWebURLLoaderClient(
       ResourceDispatcher* dispatcher,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-      : loader_(
-          new WebURLLoaderImpl(
-              dispatcher,
-              make_scoped_ptr(new scheduler::WebTaskRunnerImpl(task_runner)))),
+      : loader_(new WebURLLoaderImpl(dispatcher, task_runner)),
         expect_multipart_response_(false),
         delete_on_receive_redirect_(false),
         delete_on_receive_response_(false),

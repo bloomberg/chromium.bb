@@ -1050,8 +1050,6 @@ public:
     using WeakDocumentSet = WillBeHeapHashSet<RawPtrWillBeWeakMember<Document>>;
     static WeakDocumentSet& liveDocumentSet();
 
-    WebTaskRunner* loadingTaskRunner() const;
-
 protected:
     Document(const DocumentInit&, DocumentClassFlags = DefaultDocumentClass);
 

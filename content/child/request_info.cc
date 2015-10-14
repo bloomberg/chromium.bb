@@ -27,8 +27,7 @@ RequestInfo::RequestInfo()
       enable_upload_progress(false),
       do_not_prompt_for_login(false),
       report_raw_headers(false),
-      extra_data(NULL),
-      loading_web_task_runner(nullptr) {}
+      extra_data(NULL) {}
 
 RequestInfo::~RequestInfo() {}
 

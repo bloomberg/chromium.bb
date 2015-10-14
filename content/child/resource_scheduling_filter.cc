@@ -9,31 +9,8 @@
 #include "content/child/resource_dispatcher.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_start.h"
-#include "third_party/WebKit/public/platform/WebTaskRunner.h"
-#include "third_party/WebKit/public/platform/WebTraceLocation.h"
 
 namespace content {
-
-namespace {
-class DispatchMessageTask : public blink::WebTaskRunner::Task {
- public:
-  DispatchMessageTask(
-      base::WeakPtr<ResourceSchedulingFilter> resource_scheduling_filter,
-      const IPC::Message& message)
-    : resource_scheduling_filter_(resource_scheduling_filter),
-      message_(message) {}
-
-  void run() override {
-    if (!resource_scheduling_filter_.get())
-      return;
-    resource_scheduling_filter_->DispatchMessage(message_);
-  }
-
- private:
-  base::WeakPtr<ResourceSchedulingFilter> resource_scheduling_filter_;
-  const IPC::Message message_;
-};
-} // namespace
 
 ResourceSchedulingFilter::ResourceSchedulingFilter(
     const scoped_refptr<base::SingleThreadTaskRunner>& main_thread_task_runner,
@@ -49,40 +26,10 @@ ResourceSchedulingFilter::~ResourceSchedulingFilter() {
 }
 
 bool ResourceSchedulingFilter::OnMessageReceived(const IPC::Message& message) {
-  base::AutoLock lock(request_id_to_task_runner_map_lock_);
-  int request_id;
-
-  base::PickleIterator pickle_iterator(message);
-  if (!pickle_iterator.ReadInt(&request_id)) {
-    NOTREACHED() << "malformed resource message";
-    return true;
-  }
-  // Dispatch the message on the request id specific task runner, if there is
-  // one, or on the general main_thread_task_runner if there isn't.
-  RequestIdToTaskRunnerMap::const_iterator iter =
-      request_id_to_task_runner_map_.find(request_id);
-  if (iter != request_id_to_task_runner_map_.end()) {
-    // TODO(alexclarke): Find a way to let blink and chromium FROM_HERE coexist.
-    iter->second->postTask(
-        blink::WebTraceLocation(__FUNCTION__, __FILE__),
-        new DispatchMessageTask(weak_ptr_factory_.GetWeakPtr(), message));
-  } else {
-    main_thread_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&ResourceSchedulingFilter::DispatchMessage,
-                              weak_ptr_factory_.GetWeakPtr(), message));
-  }
+  main_thread_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&ResourceSchedulingFilter::DispatchMessage,
+                            weak_ptr_factory_.GetWeakPtr(), message));
   return true;
-}
-
-void ResourceSchedulingFilter::SetRequestIdTaskRunner(
-    int id, scoped_ptr<blink::WebTaskRunner> web_task_runner) {
-  base::AutoLock lock(request_id_to_task_runner_map_lock_);
-  request_id_to_task_runner_map_.insert(id, web_task_runner.Pass());
-}
-
-void ResourceSchedulingFilter::ClearRequestIdTaskRunner(int id) {
-  base::AutoLock lock(request_id_to_task_runner_map_lock_);
-  request_id_to_task_runner_map_.erase(id);
 }
 
 bool ResourceSchedulingFilter::GetSupportedMessageClasses(
