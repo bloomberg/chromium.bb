@@ -47,6 +47,11 @@
 #include "ui/gl/gl_switches.h"
 #include "ui/gl/gpu_switching_manager.h"
 
+#if defined(OS_ANDROID)
+#include "base/trace_event/memory_dump_manager.h"
+#include "components/tracing/graphics_memory_dump_provider_android.h"
+#endif
+
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
 #include "base/win/scoped_com_initializer.h"
@@ -382,6 +387,11 @@ int GpuMain(const MainFunctionParams& parameters) {
 
   if (watchdog_thread.get())
     watchdog_thread->AddPowerObserver();
+
+#if defined(OS_ANDROID)
+  base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
+      tracing::GraphicsMemoryDumpProvider::GetInstance());
+#endif
 
   {
     TRACE_EVENT0("gpu", "Run Message Loop");

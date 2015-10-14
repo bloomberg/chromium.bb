@@ -88,6 +88,7 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"
+#include "components/tracing/graphics_memory_dump_provider_android.h"
 #include "content/browser/android/browser_startup_controller.h"
 #include "content/browser/android/browser_surface_texture_manager.h"
 #include "content/browser/android/in_process_surface_texture_manager.h"
@@ -1162,7 +1163,6 @@ int BrowserMainLoop::BrowserThreadsStarted() {
 
 #if !defined(OS_IOS)
   HistogramSynchronizer::GetInstance();
-
 #if defined(OS_ANDROID)
   // Up the priority of the UI thread.
   base::PlatformThread::SetCurrentThreadPriority(base::ThreadPriority::DISPLAY);
@@ -1194,6 +1194,10 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   // BrowserProcessSubThread::IOThreadPreCleanUp).
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       BrowserGpuMemoryBufferManager::current(), io_thread_->task_runner());
+#if defined(OS_ANDROID)
+  base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
+      tracing::GraphicsMemoryDumpProvider::GetInstance());
+#endif
 
   {
     TRACE_EVENT0("startup", "BrowserThreadsStarted::Subsystem:AudioMan");

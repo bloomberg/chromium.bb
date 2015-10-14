@@ -30,6 +30,8 @@
         'tracing/child_memory_dump_manager_delegate_impl.h',
         'tracing/child_trace_message_filter.cc',
         'tracing/child_trace_message_filter.h',
+        'tracing/graphics_memory_dump_provider_android.cc',
+        'tracing/graphics_memory_dump_provider_android.h',
         'tracing/trace_config_file.cc',
         'tracing/trace_config_file.h',
         'tracing/tracing_export.h',
