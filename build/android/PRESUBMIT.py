@@ -52,6 +52,7 @@ def CommonChecks(input_api, output_api):
           J('devil', 'android', 'device_utils_test.py'),
           J('devil', 'android', 'md5sum_test.py'),
           J('devil', 'android', 'logcat_monitor_test.py'),
+          J('devil', 'utils', 'cmd_helper_test.py'),
           J('devil', 'utils', 'timeout_retry_unittest.py'),
           J('gyp', 'util', 'md5_check_test.py'),
           J('pylib', 'base', 'test_dispatcher_unittest.py'),
