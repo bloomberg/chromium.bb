@@ -23,6 +23,7 @@ class InternalBlobData {
 
  protected:
   friend class BlobStorageContext;
+  friend class BlobStorageRegistry;
   friend class ViewBlobInternalsJob;
 
   // Removes the given blob uuid from the internal ShareableBlobDataItems.

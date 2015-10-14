@@ -37,6 +37,8 @@
         'browser/blob/blob_reader.h',
         'browser/blob/blob_storage_context.cc',
         'browser/blob/blob_storage_context.h',
+        'browser/blob/blob_storage_registry.cc',
+        'browser/blob/blob_storage_registry.h',
         'browser/blob/blob_url_request_job.cc',
         'browser/blob/blob_url_request_job.h',
         'browser/blob/blob_url_request_job_factory.cc',

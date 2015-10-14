@@ -18,6 +18,8 @@ component("browser") {
     "blob/blob_reader.h",
     "blob/blob_storage_context.cc",
     "blob/blob_storage_context.h",
+    "blob/blob_storage_registry.cc",
+    "blob/blob_storage_registry.h",
     "blob/blob_url_request_job.cc",
     "blob/blob_url_request_job.h",
     "blob/blob_url_request_job_factory.cc",
