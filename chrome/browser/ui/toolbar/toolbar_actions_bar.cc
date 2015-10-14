@@ -593,8 +593,6 @@ void ToolbarActionsBar::OnToolbarActionAdded(const std::string& action_id,
       new ExtensionActionViewController(
           extension,
           browser_,
-          extensions::ExtensionActionManager::Get(browser_->profile())->
-              GetExtensionAction(*extension),
           this));
 
   delegate_->AddViewForAction(toolbar_actions_[index], index);
@@ -699,15 +697,40 @@ void ToolbarActionsBar::ResizeDelegate(gfx::Tween::Type tween_type,
 void ToolbarActionsBar::OnToolbarHighlightModeChanged(bool is_highlighting) {
   if (!model_->actions_initialized())
     return;
-  // It's a bit of a pain that we delete and recreate everything here, but given
-  // everything else going on (the lack of highlight, [n] more extensions
-  // appearing, etc), it's not worth the extra complexity to create and insert
-  // only the new actions.
-  DeleteActions();
-  CreateActions();
-  // Resize the delegate. We suppress the chevron so that we don't risk showing
-  // it only for the duration of the animation.
-  ResizeDelegate(gfx::Tween::LINEAR, true);
+
+  {
+    base::AutoReset<bool> layout_resetter(&suppress_layout_, true);
+    base::AutoReset<bool> animation_resetter(&suppress_animation_, true);
+    std::set<std::string> seen;
+    for (const ToolbarActionsModel::ToolbarItem item :
+         model_->toolbar_items()) {
+      auto current_pos = std::find_if(
+          toolbar_actions_.begin(),
+          toolbar_actions_.end(),
+          [&item](const ToolbarActionViewController* action) {
+        return action->GetId() == item.id;
+      });
+      if (current_pos == toolbar_actions_.end()) {
+        toolbar_actions_.push_back(
+            model_->CreateActionForItem(browser_, this, item).release());
+        delegate_->AddViewForAction(toolbar_actions_.back(),
+                                    toolbar_actions_.size() - 1);
+      }
+      seen.insert(item.id);
+    }
+
+    for (ToolbarActions::iterator iter = toolbar_actions_.begin();
+         iter != toolbar_actions_.end();) {
+      if (seen.count((*iter)->GetId()) == 0) {
+        delegate_->RemoveViewForAction(*iter);
+        iter = toolbar_actions_.erase(iter);
+      } else {
+        ++iter;
+      }
+    }
+  }
+
+  ReorderActions();
 }
 
 void ToolbarActionsBar::OnToolbarModelInitialized() {

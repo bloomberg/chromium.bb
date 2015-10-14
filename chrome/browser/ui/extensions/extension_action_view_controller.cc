@@ -9,6 +9,7 @@
 #include "chrome/browser/extensions/api/commands/command_service.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/extension_action.h"
+#include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_view.h"
 #include "chrome/browser/extensions/extension_view_host.h"
 #include "chrome/browser/extensions/extension_view_host_factory.h"
@@ -36,25 +37,25 @@ using extensions::CommandService;
 ExtensionActionViewController::ExtensionActionViewController(
     const extensions::Extension* extension,
     Browser* browser,
-    ExtensionAction* extension_action,
     ToolbarActionsBar* toolbar_actions_bar)
     : extension_(extension),
       browser_(browser),
-      extension_action_(extension_action),
+      extension_action_(
+          extensions::ExtensionActionManager::Get(browser_->profile())->
+              GetExtensionAction(*extension)),
       toolbar_actions_bar_(toolbar_actions_bar),
       popup_host_(nullptr),
       view_delegate_(nullptr),
       platform_delegate_(ExtensionActionPlatformDelegate::Create(this)),
-      icon_factory_(browser->profile(), extension, extension_action, this),
+      icon_factory_(browser->profile(), extension, extension_action_, this),
       icon_observer_(nullptr),
       extension_registry_(
           extensions::ExtensionRegistry::Get(browser_->profile())),
       popup_host_observer_(this),
       weak_factory_(this) {
-  DCHECK(extension_action);
-  DCHECK(extension_action->action_type() == ActionInfo::TYPE_PAGE ||
-         extension_action->action_type() == ActionInfo::TYPE_BROWSER);
-  DCHECK(extension);
+  DCHECK(extension_action_);
+  DCHECK(extension_action_->action_type() == ActionInfo::TYPE_PAGE ||
+         extension_action_->action_type() == ActionInfo::TYPE_BROWSER);
 }
 
 ExtensionActionViewController::~ExtensionActionViewController() {

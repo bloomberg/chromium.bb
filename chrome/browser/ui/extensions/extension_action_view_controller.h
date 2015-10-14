@@ -43,7 +43,6 @@ class ExtensionActionViewController
 
   ExtensionActionViewController(const extensions::Extension* extension,
                                 Browser* browser,
-                                ExtensionAction* extension_action,
                                 ToolbarActionsBar* toolbar_actions_bar);
   ~ExtensionActionViewController() override;
 

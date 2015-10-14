@@ -40,7 +40,7 @@ PageActionDecoration::PageActionDecoration(
   DCHECK(extension);
 
   viewController_.reset(new ExtensionActionViewController(
-      extension, browser, page_action, nullptr));
+      extension, browser, nullptr));
   viewController_->SetDelegate(this);
 
   // We set the owner last of all so that we can determine whether we are in
