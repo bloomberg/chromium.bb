@@ -167,6 +167,8 @@ class LocalDeviceInstrumentationTestRun(
       for r in results:
         if r.GetType() == base_test_result.ResultType.UNKNOWN:
           r.SetType(base_test_result.ResultType.CRASH)
+    # TODO(jbudorick): ClearApplicationState on failure before switching
+    # instrumentation tests to platform mode.
     return results
 
   #override

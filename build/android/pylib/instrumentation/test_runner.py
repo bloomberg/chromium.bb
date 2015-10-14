@@ -196,20 +196,21 @@ class TestRunner(base_test_runner.BaseTestRunner):
 
     self.tool.CleanUpEnvironment()
 
-    # The logic below relies on the test passing.
-    if not result or not result.DidRunPass():
+    if not result:
       return
+    if result.DidRunPass():
+      self.TearDownPerfMonitoring(test)
 
-    self.TearDownPerfMonitoring(test)
+      if self.flags and self._IsFreTest(test):
+        self.flags.AddFlags(['--disable-fre'])
 
-    if self.flags and self._IsFreTest(test):
-      self.flags.AddFlags(['--disable-fre'])
-
-    if self.coverage_dir:
-      self.device.PullFile(
-          self.coverage_device_file, self.coverage_host_file)
-      self.device.RunShellCommand(
-          'rm -f %s' % self.coverage_device_file)
+      if self.coverage_dir:
+        self.device.PullFile(
+            self.coverage_device_file, self.coverage_host_file)
+        self.device.RunShellCommand(
+            'rm -f %s' % self.coverage_device_file)
+    elif self.package_info:
+      self.device.ClearApplicationState(self.package_info.package)
 
   def TearDownPerfMonitoring(self, test):
     """Cleans up performance monitoring if the specified test required it.
