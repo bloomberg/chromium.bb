@@ -473,6 +473,8 @@ action("aggregate_vector_icons") {
     "vector_icons/navigate_stop.1x.icon",
     "vector_icons/navigate_stop.icon",
     "vector_icons/notifications.icon",
+    "vector_icons/overflow_chevron.1x.icon",
+    "vector_icons/overflow_chevron.icon",
     "vector_icons/paintbrush.icon",
     "vector_icons/photo_camera.icon",
     "vector_icons/protocol_handler.icon",

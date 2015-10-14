@@ -131,7 +131,9 @@
         <structure type="chrome_scaled_image" name="IDR_BLUETOOTH_PAIRING_TICK" file="cros/bluetooth_pairing_tick.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_BOOKMARKS_FAVICON" file="common/favicon_bookmarks.png" />
-      <structure type="chrome_scaled_image" name="IDR_BOOKMARK_BAR_CHEVRONS" file="common/chevron.png" />
+      <if expr="is_macosx">
+        <structure type="chrome_scaled_image" name="IDR_BOOKMARK_BAR_CHEVRONS" file="legacy/chevron.png" />
+      </if>
       <if expr="is_macosx or is_ios">
         <structure type="chrome_scaled_image" name="IDR_BOOKMARK_BAR_FOLDER" file="mac/bookmark_bar_folder.png" />
         <structure type="chrome_scaled_image" name="IDR_BOOKMARK_BAR_FOLDER_MANAGED" file="mac/bookmark_bar_folder_managed.png" />

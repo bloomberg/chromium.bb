@@ -80,8 +80,10 @@
 #include "ui/compositor/paint_recorder.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/text_constants.h"
 #include "ui/gfx/text_elider.h"
+#include "ui/gfx/vector_icons_public.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/button_drag_utils.h"
 #include "ui/views/controls/button/label_button.h"
@@ -340,11 +342,11 @@ class BookmarkFolderButton : public views::MenuButton {
   DISALLOW_COPY_AND_ASSIGN(BookmarkFolderButton);
 };
 
-// OverFlowButton (chevron) --------------------------------------------------
+// OverflowButton (chevron) --------------------------------------------------
 
-class OverFlowButton : public views::MenuButton {
+class OverflowButton : public views::MenuButton {
  public:
-  explicit OverFlowButton(BookmarkBarView* owner)
+  explicit OverflowButton(BookmarkBarView* owner)
       : MenuButton(NULL, base::string16(), owner, false),
         owner_(owner) {}
 
@@ -356,7 +358,7 @@ class OverFlowButton : public views::MenuButton {
  private:
   BookmarkBarView* owner_;
 
-  DISALLOW_COPY_AND_ASSIGN(OverFlowButton);
+  DISALLOW_COPY_AND_ASSIGN(OverflowButton);
 };
 
 void RecordAppLaunch(Profile* profile, const GURL& url) {
@@ -1644,9 +1646,7 @@ MenuButton* BookmarkBarView::CreateSupervisedBookmarksButton() {
 }
 
 MenuButton* BookmarkBarView::CreateOverflowButton() {
-  MenuButton* button = new OverFlowButton(this);
-  button->SetImage(views::Button::STATE_NORMAL,
-                   *GetImageSkiaNamed(IDR_BOOKMARK_BAR_CHEVRONS));
+  MenuButton* button = new OverflowButton(this);
 
   // The overflow button's image contains an arrow and therefore it is a
   // direction sensitive image and we need to flip it if the UI layout is
@@ -2021,6 +2021,12 @@ void BookmarkBarView::UpdateColors() {
                                              color);
   if (apps_page_shortcut_->visible())
     apps_page_shortcut_->SetTextColor(views::Button::STATE_NORMAL, color);
+
+  overflow_button_->SetImage(
+      views::Button::STATE_NORMAL,
+      gfx::CreateVectorIcon(gfx::VectorIconId::OVERFLOW_CHEVRON, 8,
+                            theme_provider->GetColor(
+                                ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON)));
 }
 
 bool BookmarkBarView::UpdateOtherAndManagedButtonsVisibility() {
