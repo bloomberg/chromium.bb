@@ -457,9 +457,6 @@ Examples:
     options.root = os.path.abspath(options.root)
 
   if options.files:
-    # --file implies --bare (for PRESUBMIT.py).
-    options.bare = True
-
     errors = check_files(options.root, options.files)
   else:
     api = get_scm(options.root, options.bare)

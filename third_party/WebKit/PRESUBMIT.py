@@ -295,18 +295,20 @@ def _CheckFilePermissions(input_api, output_api):
     """Check that all files have their permissions properly set."""
     if input_api.platform == 'win32':
         return []
-    path = input_api.os_path.join(
-        '..', '..', 'tools', 'checkperms', 'checkperms.py')
-    args = [sys.executable, path, '--root', input_api.change.RepositoryRoot()]
+    args = [input_api.python_executable,
+            input_api.os_path.join(
+                input_api.change.RepositoryRoot(),
+                'tools/checkperms/checkperms.py'),
+            '--root', input_api.change.RepositoryRoot()]
     for f in input_api.AffectedFiles():
         args += ['--file', f.LocalPath()]
-    checkperms = input_api.subprocess.Popen(
-        args, stdout=input_api.subprocess.PIPE)
-    errors = checkperms.communicate()[0].strip()
-    if errors:
+    try:
+        input_api.subprocess.check_output(args)
+        return []
+    except input_api.subprocess.CalledProcessError as error:
         return [output_api.PresubmitError(
-            'checkperms.py failed.', errors.splitlines())]
-    return []
+            'checkperms.py failed:',
+            long_text=error.output)]
 
 
 def _CheckForInvalidPreferenceError(input_api, output_api):

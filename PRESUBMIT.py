@@ -656,13 +656,13 @@ def _CheckFilePermissions(input_api, output_api):
           '--root', input_api.change.RepositoryRoot()]
   for f in input_api.AffectedFiles():
     args += ['--file', f.LocalPath()]
-  checkperms = input_api.subprocess.Popen(args,
-                                          stdout=input_api.subprocess.PIPE)
-  errors = checkperms.communicate()[0].strip()
-  if errors:
-    return [output_api.PresubmitError('checkperms.py failed.',
-                                      errors.splitlines())]
-  return []
+  try:
+    input_api.subprocess.check_output(args)
+    return []
+  except input_api.subprocess.CalledProcessError as error:
+    return [output_api.PresubmitError(
+        'checkperms.py failed:',
+        long_text=error.output)]
 
 
 def _CheckNoAuraWindowPropertyHInHeaders(input_api, output_api):
