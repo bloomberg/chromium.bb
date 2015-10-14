@@ -36,9 +36,8 @@ public:
 
     int value() const
     {
-        if (!m_isValueUpToDate) {
+        if (!m_isValueUpToDate)
             updateValueNow();
-        }
         return m_value;
     }
     void updateValue();

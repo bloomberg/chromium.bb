@@ -54,8 +54,9 @@ void LayoutListItem::styleDidChange(StyleDifference diff, const ComputedStyle* o
 {
     LayoutBlockFlow::styleDidChange(diff, oldStyle);
 
+    StyleImage* currentImage = style()->listStyleImage();
     if (style()->listStyleType() != NoneListStyle
-        || (style()->listStyleImage() && !style()->listStyleImage()->errorOccurred())) {
+        || (currentImage && !currentImage->errorOccurred())) {
         if (!m_marker)
             m_marker = LayoutListMarker::createAnonymous(this);
         m_marker->listItemStyleDidChange();
@@ -66,11 +67,11 @@ void LayoutListItem::styleDidChange(StyleDifference diff, const ComputedStyle* o
     }
 
     StyleImage* oldImage = oldStyle ? oldStyle->listStyleImage() : nullptr;
-    if (oldImage != style()->listStyleImage()) {
+    if (oldImage != currentImage) {
         if (oldImage)
             oldImage->removeClient(this);
-        if (style()->listStyleImage())
-            style()->listStyleImage()->addClient(this);
+        if (currentImage)
+            currentImage->addClient(this);
     }
 }
 
@@ -219,7 +220,7 @@ inline int LayoutListItem::calcValue() const
         return m_explicitValue;
 
     Node* list = enclosingList(this);
-    HTMLOListElement* oListElement = isHTMLOListElement(list) ? toHTMLOListElement(list) : 0;
+    HTMLOListElement* oListElement = isHTMLOListElement(list) ? toHTMLOListElement(list) : nullptr;
     int valueStep = 1;
     if (oListElement && oListElement->isReversed())
         valueStep = -1;
