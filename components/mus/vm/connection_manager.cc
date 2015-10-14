@@ -6,9 +6,6 @@
 
 #include "base/logging.h"
 #include "base/stl_util.h"
-#include "cc/output/compositor_frame.h"
-#include "cc/quads/shared_quad_state.h"
-#include "cc/quads/surface_draw_quad.h"
 #include "components/mus/vm/client_connection.h"
 #include "components/mus/vm/connection_manager_delegate.h"
 #include "components/mus/vm/server_view.h"
@@ -327,12 +324,6 @@ void ConnectionManager::AddConnection(ClientConnection* connection) {
   connection_map_[connection->service()->id()] = connection;
 }
 
-scoped_ptr<cc::CompositorFrame>
-ConnectionManager::UpdateViewTreeFromCompositorFrame(
-    const mojo::CompositorFramePtr& input) {
-  return ConvertToCompositorFrame(input, this);
-}
-
 SurfacesState* ConnectionManager::GetSurfacesState() {
   return surfaces_state_.get();
 }
@@ -430,35 +421,6 @@ void ConnectionManager::OnViewTextInputStateChanged(
     const ui::TextInputState& state) {
   ViewTreeHostImpl* host = GetViewTreeHostByView(view);
   host->UpdateTextInputState(view, state);
-}
-
-bool ConnectionManager::ConvertSurfaceDrawQuad(
-    const mojo::QuadPtr& input,
-    const mojo::CompositorFrameMetadataPtr& metadata,
-    cc::SharedQuadState* sqs,
-    cc::RenderPass* render_pass) {
-  unsigned int id = static_cast<unsigned int>(
-      input->surface_quad_state->surface.To<cc::SurfaceId>().id);
-  // TODO(fsamuel): Security checks:
-  // 1. We need to make sure the embedder can only position views it's allowed
-  //    to access.
-  // 2. We need to make sure that the embedder cannot place views in areas
-  //    outside of its own bounds.
-  ServerView* view = GetView(ViewIdFromTransportId(id));
-  // If a CompositorFrame message arrives late, say during a navigation, then
-  // it may contain view IDs that no longer exist.
-  if (!view || view->surface_id().is_null())
-    return false;
-
-  // TODO(fsamuel): This shouldn't be in the ConnectionManager. Let's find a
-  // better home for it. http://crbug.com/533029.
-  cc::SurfaceDrawQuad* surface_quad =
-      render_pass->CreateAndAppendDrawQuad<cc::SurfaceDrawQuad>();
-  surface_quad->SetAll(sqs, input->rect.To<gfx::Rect>(),
-                       input->opaque_rect.To<gfx::Rect>(),
-                       input->visible_rect.To<gfx::Rect>(),
-                       input->needs_blending, view->surface_id());
-  return true;
 }
 
 }  // namespace mus

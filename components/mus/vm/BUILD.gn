@@ -33,6 +33,8 @@ source_set("lib") {
     "server_view_drawn_tracker.h",
     "server_view_drawn_tracker_observer.h",
     "server_view_observer.h",
+    "server_view_surface.cc",
+    "server_view_surface.h",
     "view_coordinate_conversions.cc",
     "view_coordinate_conversions.h",
     "view_tree_host_connection.cc",

@@ -6,23 +6,16 @@
 #define COMPONENTS_MUS_VM_SERVER_VIEW_DELEGATE_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "components/mus/public/interfaces/compositor_frame.mojom.h"
 #include "components/mus/public/interfaces/mus_constants.mojom.h"
-
-namespace cc {
-class CompositorFrame;
-}
 
 namespace mus {
 
 class ServerView;
 class SurfacesState;
+struct ViewId;
 
 class ServerViewDelegate {
  public:
-  virtual scoped_ptr<cc::CompositorFrame> UpdateViewTreeFromCompositorFrame(
-      const mojo::CompositorFramePtr& input) = 0;
-
   virtual SurfacesState* GetSurfacesState() = 0;
 
   virtual void OnScheduleViewPaint(const ServerView* view) = 0;

@@ -33,9 +33,7 @@ class ViewTreeImpl;
 
 // ConnectionManager manages the set of connections to the ViewManager (all the
 // ViewTreeImpl) as well as providing the root of the hierarchy.
-class ConnectionManager : public ServerViewDelegate,
-                          public ServerViewObserver,
-                          public mojo::CustomSurfaceConverter {
+class ConnectionManager : public ServerViewDelegate, public ServerViewObserver {
  public:
   // Create when a ViewTreeImpl is about to make a change. Ensures clients are
   // notified correctly.
@@ -197,8 +195,6 @@ class ConnectionManager : public ServerViewDelegate,
   void AddConnection(ClientConnection* connection);
 
   // Overridden from ServerViewDelegate:
-  scoped_ptr<cc::CompositorFrame> UpdateViewTreeFromCompositorFrame(
-      const mojo::CompositorFramePtr& input) override;
   SurfacesState* GetSurfacesState() override;
   void OnScheduleViewPaint(const ServerView* view) override;
   const ServerView* GetRootView(const ServerView* view) const override;
@@ -224,12 +220,6 @@ class ConnectionManager : public ServerViewDelegate,
       const std::vector<uint8_t>* new_data) override;
   void OnViewTextInputStateChanged(ServerView* view,
                                    const ui::TextInputState& state) override;
-
-  // Overriden from CustomSurfaceConverter:
-  bool ConvertSurfaceDrawQuad(const mojo::QuadPtr& input,
-                              const mojo::CompositorFrameMetadataPtr& metadata,
-                              cc::SharedQuadState* sqs,
-                              cc::RenderPass* render_pass) override;
 
   ConnectionManagerDelegate* delegate_;
 

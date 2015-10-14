@@ -7,21 +7,11 @@
 #include <inttypes.h>
 
 #include "base/strings/stringprintf.h"
-#include "components/mus/surfaces/surfaces_state.h"
 #include "components/mus/vm/server_view_delegate.h"
 #include "components/mus/vm/server_view_observer.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
-#include "mojo/converters/surfaces/surfaces_type_converters.h"
 
 namespace mus {
-
-namespace {
-
-void CallCallback(const mojo::Closure& callback, cc::SurfaceDrawStatus status) {
-  callback.Run();
-}
-
-}  // namespace
 
 ServerView::ServerView(ServerViewDelegate* delegate, const ViewId& id)
     : delegate_(delegate),
@@ -32,8 +22,7 @@ ServerView::ServerView(ServerViewDelegate* delegate, const ViewId& id)
       // Don't notify newly added observers during notification. This causes
       // problems for code that adds an observer as part of an observer
       // notification (such as ServerViewDrawTracker).
-      observers_(base::ObserverList<ServerViewObserver>::NOTIFY_EXISTING_ONLY),
-      binding_(this) {
+      observers_(base::ObserverList<ServerViewObserver>::NOTIFY_EXISTING_ONLY) {
   DCHECK(delegate);  // Must provide a delegate.
 }
 
@@ -47,11 +36,6 @@ ServerView::~ServerView() {
     parent_->Remove(this);
 
   FOR_EACH_OBSERVER(ServerViewObserver, observers_, OnViewDestroyed(this));
-
-  // SurfaceFactory's destructor will attempt to return resources which will
-  // call back into here and access |client_| so we should destroy
-  // |surface_factory_| early on.
-  surface_factory_.reset();
 }
 
 void ServerView::AddObserver(ServerViewObserver* observer) {
@@ -62,20 +46,9 @@ void ServerView::RemoveObserver(ServerViewObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void ServerView::Bind(mojo::InterfaceRequest<Surface> request,
+void ServerView::Bind(mojo::InterfaceRequest<mojo::Surface> request,
                       mojo::SurfaceClientPtr client) {
-  if (binding_.is_bound()) {
-    if (surface_factory_) {
-      // Destroy frame surfaces submitted by the old client before replacing
-      // client_, so those surfaces will be returned to the old client.
-      surface_factory_->DestroyAll();
-      SetSurfaceId(cc::SurfaceId());
-    }
-    binding_.Close();
-    client_ = nullptr;
-  }
-  binding_.Bind(request.Pass());
-  client_ = client.Pass();
+  GetOrCreateSurface()->Bind(request.Pass(), client.Pass());
 }
 
 void ServerView::Add(ServerView* child) {
@@ -163,6 +136,19 @@ std::vector<ServerView*> ServerView::GetChildren() {
   return children_;
 }
 
+ServerView* ServerView::GetChildView(const ViewId& view_id) {
+  if (id_ == view_id)
+    return this;
+
+  for (ServerView* child : children_) {
+    ServerView* view = child->GetChildView(view_id);
+    if (view)
+      return view;
+  }
+
+  return nullptr;
+}
+
 bool ServerView::Contains(const ServerView* view) const {
   for (const ServerView* parent = view; parent; parent = parent->parent_) {
     if (parent == this)
@@ -240,44 +226,10 @@ bool ServerView::IsDrawn() const {
   return root == view;
 }
 
-void ServerView::SetSurfaceId(cc::SurfaceId surface_id) {
-  surface_id_ = surface_id;
-  delegate_->OnScheduleViewPaint(this);
-}
-
-void ServerView::SubmitCompositorFrame(
-    mojo::CompositorFramePtr frame,
-    const SubmitCompositorFrameCallback& callback) {
-  gfx::Size frame_size = frame->passes[0]->output_rect.To<gfx::Rect>().size();
-  // Create Surfaces state on demand.
-  if (!surface_factory_) {
-    surface_factory_.reset(
-        new cc::SurfaceFactory(delegate_->GetSurfacesState()->manager(), this));
-  }
-  if (!surface_id_allocator_) {
-    surface_id_allocator_.reset(
-        new cc::SurfaceIdAllocator(ViewIdToTransportId(id())));
-  }
-  if (surface_id().is_null()) {
-    // Create a Surface ID for the first time for this view.
-    cc::SurfaceId surface_id(surface_id_allocator_->GenerateId());
-    surface_factory_->Create(surface_id);
-    SetSurfaceId(surface_id);
-  } else {
-    // If the size of the CompostiorFrame has changed then destroy the existing
-    // Surface and create a new one of the appropriate size.
-    if (frame_size != last_submitted_frame_size()) {
-      surface_factory_->Destroy(surface_id());
-      cc::SurfaceId surface_id(surface_id_allocator_->GenerateId());
-      surface_factory_->Create(surface_id);
-      SetSurfaceId(surface_id);
-    }
-  }
-  surface_factory_->SubmitCompositorFrame(
-      surface_id(), delegate_->UpdateViewTreeFromCompositorFrame(frame),
-      base::Bind(&CallCallback, callback));
-  delegate_->GetSurfacesState()->scheduler()->SetNeedsDraw();
-  last_submitted_frame_size_ = frame_size;
+ServerViewSurface* ServerView::GetOrCreateSurface() {
+  if (!surface_)
+    surface_.reset(new ServerViewSurface(this));
+  return surface_.get();
 }
 
 #if !defined(NDEBUG)
@@ -290,21 +242,14 @@ std::string ServerView::GetDebugWindowHierarchy() const {
 void ServerView::BuildDebugInfo(const std::string& depth,
                                 std::string* result) const {
   *result += base::StringPrintf(
-      "%sid=%d,%d visible=%s bounds=%d,%d %dx%d surface_id=%" PRIu64 "\n",
-      depth.c_str(), static_cast<int>(id_.connection_id),
-      static_cast<int>(id_.view_id), visible_ ? "true" : "false", bounds_.x(),
-      bounds_.y(), bounds_.width(), bounds_.height(), surface_id_.id);
+      "%sid=%d,%d visible=%s bounds=%d,%d %dx%d" PRIu64 "\n", depth.c_str(),
+      static_cast<int>(id_.connection_id), static_cast<int>(id_.view_id),
+      visible_ ? "true" : "false", bounds_.x(), bounds_.y(), bounds_.width(),
+      bounds_.height());
   for (const ServerView* child : children_)
     child->BuildDebugInfo(depth + "  ", result);
 }
 #endif
-
-void ServerView::ReturnResources(const cc::ReturnedResourceArray& resources) {
-  if (!client_)
-    return;
-  client_->ReturnResources(
-      mojo::Array<mojo::ReturnedResourcePtr>::From(resources));
-}
 
 void ServerView::RemoveImpl(ServerView* view) {
   view->parent_ = NULL;

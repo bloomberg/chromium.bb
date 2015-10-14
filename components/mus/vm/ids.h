@@ -26,6 +26,13 @@ struct ViewId {
 
   bool operator!=(const ViewId& other) const { return !(*this == other); }
 
+  bool operator<(const ViewId& other) const {
+    if (connection_id == other.connection_id)
+      return view_id < other.view_id;
+
+    return connection_id < other.connection_id;
+  }
+
   ConnectionSpecificId connection_id;
   ConnectionSpecificId view_id;
 };

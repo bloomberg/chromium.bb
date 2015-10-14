@@ -47,31 +47,41 @@ namespace mus {
 namespace {
 
 // DrawViewTree recursively visits ServerViews, creating a SurfaceDrawQuad for
-// each that lacks one. For Views that already have CompositorFrames, we can
-// skip this step and let cc::SurfaceAggregator do the heavy lifting.
-// |skip_view| indicates whether or not we should generate a SurfaceDrawQuad
-// for the provided |view|.
+// each that lacks one. A ServerView may hold a CompositorFrame that
+// references other ServerViews in SurfaceDrawQuads. We should not create new
+// SurfaceDrawQuads for these |referenced_view_ids|. Instead,
+// cc::SurfaceAggregator
+// will do the heavy lifting here by expanding those references to generate one
+// top-level display CompositorFrame.
 void DrawViewTree(cc::RenderPass* pass,
-                  const ServerView* view,
+                  ServerView* view,
                   const gfx::Vector2d& parent_to_root_origin_offset,
                   float opacity,
-                  bool skip_view) {
+                  std::set<ViewId>* referenced_view_ids) {
   if (!view->visible())
     return;
 
+  ServerViewSurface* surface = view->surface();
+
+  if (surface) {
+    // Accumulate referenced views in each ServerView's CompositorFrame.
+    referenced_view_ids->insert(surface->referenced_view_ids().begin(),
+                                surface->referenced_view_ids().end());
+  }
+
   const gfx::Rect absolute_bounds =
       view->bounds() + parent_to_root_origin_offset;
-
-  std::vector<const ServerView*> children(view->GetChildren());
+  std::vector<ServerView*> children(view->GetChildren());
   // TODO(rjkroege, fsamuel): Make sure we're handling alpha correctly.
   const float combined_opacity = opacity * view->opacity();
   for (auto it = children.rbegin(); it != children.rend(); ++it) {
-    DrawViewTree(
-        pass, *it, absolute_bounds.OffsetFromOrigin(), combined_opacity,
-        view->parent() && !view->surface_id().is_null() /* skip_view */);
+    DrawViewTree(pass, *it, absolute_bounds.OffsetFromOrigin(),
+                 combined_opacity, referenced_view_ids);
   }
 
-  if (skip_view || view->surface_id().is_null())
+  // If an ancestor has already referenced this view, then we do not need
+  // to create a SurfaceDrawQuad for it.
+  if (referenced_view_ids->count(view->id()) || !surface)
     return;
 
   gfx::Transform quad_to_target_transform;
@@ -89,7 +99,7 @@ void DrawViewTree(cc::RenderPass* pass,
 
   auto surface_quad = pass->CreateAndAppendDrawQuad<cc::SurfaceDrawQuad>();
   surface_quad->SetNew(sqs, bounds_at_origin /* rect */,
-                       bounds_at_origin /* visible_rect */, view->surface_id());
+                       bounds_at_origin /* visible_rect */, surface->id());
 }
 
 }  // namespace
@@ -246,8 +256,9 @@ DefaultDisplayManager::GenerateCompositorFrame() {
   render_pass->damage_rect = dirty_rect_;
   render_pass->output_rect = gfx::Rect(metrics_.size_in_pixels.To<gfx::Size>());
 
+  std::set<ViewId> referenced_view_ids;
   DrawViewTree(render_pass.get(), delegate_->GetRootView(), gfx::Vector2d(),
-               1.0f, false /* skip_view */);
+               1.0f, &referenced_view_ids);
 
   scoped_ptr<cc::DelegatedFrameData> frame_data(new cc::DelegatedFrameData);
   frame_data->device_scale_factor = metrics_.device_pixel_ratio;

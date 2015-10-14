@@ -10,6 +10,8 @@
 
 namespace mus {
 
+struct ViewId;
+
 class TestServerViewDelegate : public ServerViewDelegate {
  public:
   TestServerViewDelegate();
@@ -19,8 +21,6 @@ class TestServerViewDelegate : public ServerViewDelegate {
 
  private:
   // ServerViewDelegate:
-  scoped_ptr<cc::CompositorFrame> UpdateViewTreeFromCompositorFrame(
-      const mojo::CompositorFramePtr& input) override;
   SurfacesState* GetSurfacesState() override;
   void OnScheduleViewPaint(const ServerView* view) override;
   const ServerView* GetRootView(const ServerView* view) const override;

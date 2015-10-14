@@ -9,12 +9,10 @@
 
 #include "base/logging.h"
 #include "base/observer_list.h"
-#include "cc/surfaces/surface_factory.h"
-#include "cc/surfaces/surface_factory_client.h"
-#include "cc/surfaces/surface_id.h"
-#include "cc/surfaces/surface_id_allocator.h"
+#include "components/mus/public/interfaces/compositor_frame.mojom.h"
 #include "components/mus/public/interfaces/view_tree.mojom.h"
 #include "components/mus/vm/ids.h"
+#include "components/mus/vm/server_view_surface.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/transform.h"
@@ -35,17 +33,17 @@ class ServerViewObserver;
 // ServerViews do not own their children. If you delete a view that has children
 // the children are implicitly removed. Similarly if a view has a parent and the
 // view is deleted the deleted view is implicitly removed from the parent.
-class ServerView : public mojo::Surface, public cc::SurfaceFactoryClient {
+class ServerView {
  public:
   ServerView(ServerViewDelegate* delegate, const ViewId& id);
-  ~ServerView() override;
+  ~ServerView();
 
   void AddObserver(ServerViewObserver* observer);
   void RemoveObserver(ServerViewObserver* observer);
 
   // Binds the provided |request| to |this| object. If an interface is already
   // bound to this ServerView then the old connection is closed first.
-  void Bind(mojo::InterfaceRequest<Surface> request,
+  void Bind(mojo::InterfaceRequest<mojo::Surface> request,
             mojo::SurfaceClientPtr client);
 
   const ViewId& id() const { return id_; }
@@ -70,6 +68,10 @@ class ServerView : public mojo::Surface, public cc::SurfaceFactoryClient {
 
   std::vector<const ServerView*> GetChildren() const;
   std::vector<ServerView*> GetChildren();
+
+  // Returns the ServerView object with the provided |id| if it lies in a
+  // subtree of |this|.
+  ServerView* GetChildView(const ViewId& id);
 
   // Returns true if this contains |view| or is |view|.
   bool Contains(const ServerView* view) const;
@@ -99,19 +101,12 @@ class ServerView : public mojo::Surface, public cc::SurfaceFactoryClient {
   // visible.
   bool IsDrawn() const;
 
-  void SetSurfaceId(cc::SurfaceId surface_id);
-  const cc::SurfaceId& surface_id() const { return surface_id_; }
-
-  const gfx::Size& last_submitted_frame_size() {
-    return last_submitted_frame_size_;
-  }
+  // Returns the surface associated with this view. If a surface has not
+  // yet been allocated for this view, then one is allocated upon invocation.
+  ServerViewSurface* GetOrCreateSurface();
+  ServerViewSurface* surface() { return surface_.get(); }
 
   ServerViewDelegate* delegate() { return delegate_; }
-
-  // mojo::Surface:
-  void SubmitCompositorFrame(
-      mojo::CompositorFramePtr frame,
-      const SubmitCompositorFrameCallback& callback) override;
 
 #if !defined(NDEBUG)
   std::string GetDebugWindowHierarchy() const;
@@ -120,9 +115,6 @@ class ServerView : public mojo::Surface, public cc::SurfaceFactoryClient {
 
  private:
   typedef std::vector<ServerView*> Views;
-
-  // SurfaceFactoryClient implementation.
-  void ReturnResources(const cc::ReturnedResourceArray& resources) override;
 
   // Implementation of removing a view. Doesn't send any notification.
   void RemoveImpl(ServerView* view);
@@ -133,19 +125,14 @@ class ServerView : public mojo::Surface, public cc::SurfaceFactoryClient {
   Views children_;
   bool visible_;
   gfx::Rect bounds_;
-  cc::SurfaceId surface_id_;
-  scoped_ptr<cc::SurfaceIdAllocator> surface_id_allocator_;
-  scoped_ptr<cc::SurfaceFactory> surface_factory_;
+  scoped_ptr<ServerViewSurface> surface_;
   float opacity_;
   gfx::Transform transform_;
   ui::TextInputState text_input_state_;
-  gfx::Size last_submitted_frame_size_;
 
   std::map<std::string, std::vector<uint8_t>> properties_;
 
   base::ObserverList<ServerViewObserver> observers_;
-  mojo::SurfaceClientPtr client_;
-  mojo::Binding<Surface> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(ServerView);
 };
