@@ -4873,6 +4873,14 @@ lou_getTable (const char *tableList)
   return getTable(tableList);
 }
 
+int EXPORT_CALL
+lou_checkTable (const char *tableList)
+{
+  if (getTable(tableList))
+    return 1;
+  return 0;
+}
+
 static unsigned char *destSpacing = NULL;
 static int sizeDestSpacing = 0;
 static unsigned short *typebuf = NULL;

@@ -77,7 +77,6 @@ option.\n", stdout);
 int
 main (int argc, char **argv)
 {
-  const TranslationTableHeader *table;
   int optc;
 
   set_program_name (argv[0]);
@@ -118,7 +117,7 @@ main (int argc, char **argv)
       exit (EXIT_FAILURE);
     }
 
-  if (!(table = lou_getTable (argv[optind])))
+  if (!lou_checkTable (argv[optind]))
     {
       lou_free ();
       exit (EXIT_FAILURE);
