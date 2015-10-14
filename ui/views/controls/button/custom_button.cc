@@ -18,6 +18,11 @@
 #include "ui/views/controls/button/radio_button.h"
 #include "ui/views/widget/widget.h"
 
+#if defined(USE_AURA)
+#include "ui/aura/client/capture_client.h"
+#include "ui/aura/window.h"
+#endif
+
 namespace views {
 
 // How long the hover animation takes if uninterrupted.
@@ -113,7 +118,7 @@ void CustomButton::OnEnabledChanged() {
     return;
 
   if (enabled())
-    SetState(IsMouseHovered() ? STATE_HOVERED : STATE_NORMAL);
+    SetState(ShouldEnterHoveredState() ? STATE_HOVERED : STATE_NORMAL);
   else
     SetState(STATE_DISABLED);
 }
@@ -293,7 +298,7 @@ void CustomButton::GetAccessibleState(ui::AXViewState* state) {
 void CustomButton::VisibilityChanged(View* starting_from, bool visible) {
   if (state_ == STATE_DISABLED)
     return;
-  SetState(visible && IsMouseHovered() ? STATE_HOVERED : STATE_NORMAL);
+  SetState(visible && ShouldEnterHoveredState() ? STATE_HOVERED : STATE_NORMAL);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -330,6 +335,30 @@ bool CustomButton::IsTriggerableEvent(const ui::Event& event) {
 
 bool CustomButton::ShouldEnterPushedState(const ui::Event& event) {
   return IsTriggerableEvent(event);
+}
+
+bool CustomButton::ShouldEnterHoveredState() {
+  if (!visible())
+    return false;
+
+  bool check_mouse_position = true;
+#if defined(USE_AURA)
+  // If another window has capture, we shouldn't check the current mouse
+  // position because the button won't receive any mouse events - so if the
+  // mouse was hovered, the button would be stuck in a hovered state (since it
+  // would never receive OnMouseExited).
+  const Widget* widget = GetWidget();
+  if (widget && widget->GetNativeWindow()) {
+    aura::Window* root_window = widget->GetNativeWindow()->GetRootWindow();
+    aura::client::CaptureClient* capture_client =
+        aura::client::GetCaptureClient(root_window);
+    aura::Window* capture_window =
+        capture_client ? capture_client->GetGlobalCaptureWindow() : nullptr;
+    check_mouse_position = !capture_window || capture_window == root_window;
+  }
+#endif
+
+  return check_mouse_position && IsMouseHovered();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -119,6 +119,32 @@ TEST_F(CustomButtonTest, HoverStateOnVisibilityChange) {
   button()->SetVisible(true);
   EXPECT_EQ(CustomButton::STATE_HOVERED, button()->state());
 
+#if defined(USE_AURA)
+  {
+    // If another widget has capture, the button should ignore mouse position
+    // and not enter hovered state.
+    Widget second_widget;
+    Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
+    params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+    params.bounds = gfx::Rect(700, 700, 10, 10);
+    second_widget.Init(params);
+    second_widget.Show();
+    second_widget.GetNativeWindow()->SetCapture();
+
+    button()->SetEnabled(false);
+    EXPECT_EQ(CustomButton::STATE_DISABLED, button()->state());
+
+    button()->SetEnabled(true);
+    EXPECT_EQ(CustomButton::STATE_NORMAL, button()->state());
+
+    button()->SetVisible(false);
+    EXPECT_EQ(CustomButton::STATE_NORMAL, button()->state());
+
+    button()->SetVisible(true);
+    EXPECT_EQ(CustomButton::STATE_NORMAL, button()->state());
+  }
+#endif
+
 // Disabling cursor events occurs for touch events and the Ash magnifier. There
 // is no touch on desktop Mac. Tracked in http://crbug.com/445520.
 #if !defined(OS_MACOSX) || defined(USE_AURA)

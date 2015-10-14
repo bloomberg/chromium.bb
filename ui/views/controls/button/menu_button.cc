@@ -342,7 +342,7 @@ void MenuButton::DecrementPressedLocked() {
     if (should_disable_after_press_) {
       desired_state = STATE_DISABLED;
       should_disable_after_press_ = false;
-    } else if (IsMouseHovered()) {
+    } else if (ShouldEnterHoveredState()) {
       desired_state = STATE_HOVERED;
     }
     SetState(desired_state);
