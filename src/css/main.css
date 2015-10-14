@@ -224,13 +224,16 @@ body:not(.controls-visible) .dynamic {
 }
 
 #main-canvas-wrapper,
+#main-preview-canvas-wrapper,
 #main-fast-canvas-wrapper,
 #main-canvas-wrapper canvas,
+#main-preview-canvas-wrapper canvas,
 #main-fast-canvas-wrapper canvas {
   width: 100%;
 }
 
 #main-canvas-wrapper canvas,
+#main-preview-canvas-wrapper canvas,
 #main-fast-canvas-wrapper canvas {
   pointer-events: none;
 }

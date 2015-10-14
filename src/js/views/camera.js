@@ -78,7 +78,7 @@ camera.views.Camera = function(context, router) {
    * @type {Canvas}
    * @private
    */
-  this.previewInputCanvas_ = document.createElement('canvas');
+  this.effectInputCanvas_ = document.createElement('canvas');
 
   /**
    * Canvas element with the current frame downsampled to small resolution, to
@@ -116,6 +116,20 @@ camera.views.Camera = function(context, router) {
   this.mainCanvasTexture_ = null;
 
   /**
+   * The main (full screen) canvas for previewing capture.
+   * @type {fx.Canvas}
+   * @private
+   */
+  this.mainPreviewCanvas_ = null;
+
+  /**
+   * Texture for the previewing canvas.
+   * @type {fx.Texture}
+   * @private
+   */
+  this.mainPreviewCanvasTexture_ = null;
+
+  /**
    * The main (full screen canvas) for fast capture.
    * @type {fx.Canvas}
    * @private
@@ -134,14 +148,14 @@ camera.views.Camera = function(context, router) {
    * @type {fx.Canvas}
    * @private
    */
-  this.previewCanvas_ = null;
+  this.effectCanvas_ = null;
 
   /**
    * Texture for the effects' canvas.
    * @type {fx.Texture}
    * @private
    */
-  this.previewCanvasTexture_ = null;
+  this.effectCanvasTexture_ = null;
 
   /**
    * The main (full screen) processor in the full quality mode.
@@ -149,6 +163,13 @@ camera.views.Camera = function(context, router) {
    * @private
    */
   this.mainProcessor_ = null;
+
+  /**
+   * The main (full screen) processor in the previewing mode.
+   * @type {camera.Processor}
+   * @private
+   */
+  this.mainPreviewProcessor_ = null;
 
   /**
    * The main (full screen) processor in the fast mode.
@@ -162,7 +183,7 @@ camera.views.Camera = function(context, router) {
    * @type {Array.<camera.Processor>}
    * @private
    */
-  this.previewProcessors_ = [];
+  this.effectProcessors_ = [];
 
   /**
    * Selected effect or null if no effect.
@@ -179,7 +200,7 @@ camera.views.Camera = function(context, router) {
   this.tracker_ = new camera.Tracker(this.trackerInputCanvas_);
 
   /**
-   * Current frame.
+   * Current previewing frame.
    * @type {number}
    * @private
    */
@@ -431,8 +452,8 @@ camera.views.Camera = function(context, router) {
 
   // Sets dimensions of the input canvas for the effects' preview on the ribbon.
   // Keep in sync with CSS.
-  this.previewInputCanvas_.width = 80;
-  this.previewInputCanvas_.height = 80;
+  this.effectInputCanvas_.width = 80;
+  this.effectInputCanvas_.height = 80;
 
   // Handle the 'Take' button.
   document.querySelector('#take-picture').addEventListener(
@@ -474,8 +495,9 @@ camera.views.Camera = function(context, router) {
  * @enum {number}
  */
 camera.views.Camera.DrawMode = Object.freeze({
-  OPTIMIZED: 0,  // Quality optimized for performance.
-  FULL: 1  // The best quality possible.
+  FAST: 0,  // Quality optimized for best performance.
+  NORMAL: 1,  // Quality adapted to the window's current size.
+  BEST: 2  // The best quality possible.
 });
 
 /**
@@ -523,8 +545,9 @@ camera.views.Camera.prototype.initialize = function(callback) {
   // Initialize the webgl canvases.
   try {
     this.mainCanvas_ = fx.canvas();
+    this.mainPreviewCanvas_ = fx.canvas();
     this.mainFastCanvas_ = fx.canvas();
-    this.previewCanvas_ = fx.canvas();
+    this.effectCanvas_ = fx.canvas();
   }
   catch (e) {
     // TODO(mtomasz): Replace with a better icon.
@@ -536,25 +559,33 @@ camera.views.Camera.prototype.initialize = function(callback) {
     document.body.classList.remove('initializing');
   }
 
-  if (this.mainCanvas_ && this.mainFastCanvas_) {
+  if (this.mainCanvas_ && this.mainPreviewCanvas_ && this.mainFastCanvas_) {
     // Initialize the processors.
     this.mainCanvasTexture_ = this.mainCanvas_.texture(this.video_);
+    this.mainPreviewCanvasTexture_ = this.mainPreviewCanvas_.texture(
+        this.video_);
     this.mainFastCanvasTexture_ = this.mainFastCanvas_.texture(this.video_);
     this.mainProcessor_ = new camera.Processor(
         this.tracker_,
         this.mainCanvasTexture_,
         this.mainCanvas_,
         this.mainCanvas_);
+    this.mainPreviewProcessor_ = new camera.Processor(
+        this.tracker_,
+        this.mainPreviewCanvasTexture_,
+        this.mainPreviewCanvas_,
+        this.mainPreviewCanvas_);
     this.mainFastProcessor_ = new camera.Processor(
         this.tracker_,
         this.mainFastCanvasTexture_,
         this.mainFastCanvas_,
-        this.mainFastCanvas_,
-        camera.Processor.Mode.FAST);
+        this.mainFastCanvas_);
 
     // Insert the main canvas to its container.
     document.querySelector('#main-canvas-wrapper').appendChild(
         this.mainCanvas_);
+    document.querySelector('#main-preview-canvas-wrapper').appendChild(
+        this.mainPreviewCanvas_);
     document.querySelector('#main-fast-canvas-wrapper').appendChild(
         this.mainFastCanvas_);
 
@@ -562,8 +593,8 @@ camera.views.Camera.prototype.initialize = function(callback) {
     this.mainProcessor_.effect = new camera.effects.Normal();
 
     // Prepare effect previews.
-    this.previewCanvasTexture_ = this.previewCanvas_.texture(
-        this.previewInputCanvas_);
+    this.effectCanvasTexture_ = this.effectCanvas_.texture(
+        this.effectInputCanvas_);
 
     // Add effects if they are available on the platform.
     var extensions = document.createElement("canvas").getContext(
@@ -596,7 +627,7 @@ camera.views.Camera.prototype.initialize = function(callback) {
           toggleMirror: true,
         },
         function(values) {
-          if (values.effectIndex < this.previewProcessors_.length)
+          if (values.effectIndex < this.effectProcessors_.length)
             this.setCurrentEffect_(values.effectIndex);
           else
             this.setCurrentEffect_(0);
@@ -627,8 +658,9 @@ camera.views.Camera.prototype.initialize = function(callback) {
  */
 camera.views.Camera.prototype.onEnter = function() {
   this.performanceMonitors_.reset();
-  this.mainProcessor_.performanceMonitors_.reset();
-  this.mainFastProcessor_.performanceMonitors_.reset();
+  this.mainProcessor_.performanceMonitors.reset();
+  this.mainPreviewProcessor_.performanceMonitors.reset();
+  this.mainFastProcessor_.performanceMonitors.reset();
   this.tracker_.start();
   this.onResize();
 };
@@ -858,6 +890,8 @@ camera.views.Camera.prototype.onPointerActivity_ = function(event) {
       if (event.target == document.body ||
           document.querySelector('#main-canvas-wrapper').contains(
               event.target) ||
+          document.querySelector('#main-preview-canvas-wrapper').contains(
+              event.target) ||
           document.querySelector('#main-fast-canvas-wrapper').contains(
               event.target)) {
         this.setExpanded_(!this.expanded_);
@@ -908,7 +942,7 @@ camera.views.Camera.prototype.addEffect_ = function(effect) {
   item.appendChild(label);
 
   // Calculate the effect index.
-  var effectIndex = this.previewProcessors_.length;
+  var effectIndex = this.effectProcessors_.length;
   item.id = 'effect-' + effectIndex;
 
   // Set aria attributes.
@@ -920,20 +954,20 @@ camera.views.Camera.prototype.addEffect_ = function(effect) {
   // Assign events.
   item.addEventListener('click', function() {
     if (this.currentEffectIndex_ == effectIndex)
-      this.previewProcessors_[effectIndex].effect.randomize();
+      this.effectProcessors_[effectIndex].effect.randomize();
     this.setCurrentEffect_(effectIndex);
   }.bind(this));
   item.addEventListener('focus',
       this.setCurrentEffect_.bind(this, effectIndex));
 
-  // Create the preview processor.
+  // Create the effect preview processor.
   var processor = new camera.Processor(
       this.tracker_,
-      this.previewCanvasTexture_,
+      this.effectCanvasTexture_,
       canvas,
-      this.previewCanvas_);
+      this.effectCanvas_);
   processor.effect = effect;
-  this.previewProcessors_.push(processor);
+  this.effectProcessors_.push(processor);
 };
 
 /**
@@ -965,8 +999,10 @@ camera.views.Camera.prototype.setCurrentEffect_ = function(effectIndex) {
       effect.focus();
   }
 
-  this.mainProcessor_.effect = this.previewProcessors_[effectIndex].effect;
-  this.mainFastProcessor_.effect = this.previewProcessors_[effectIndex].effect;
+  this.mainProcessor_.effect = this.effectProcessors_[effectIndex].effect;
+  this.mainPreviewProcessor_.effect =
+      this.effectProcessors_[effectIndex].effect;
+  this.mainFastProcessor_.effect = this.effectProcessors_[effectIndex].effect;
 
   var listWrapper = document.querySelector('#effects-wrapper');
   listWrapper.setAttribute('aria-activedescendant', effect.id);
@@ -1021,13 +1057,13 @@ camera.views.Camera.prototype.onKeyPressed = function(event) {
   switch (camera.util.getShortcutIdentifier(event)) {
     case 'Left':
       this.setCurrentEffect_(
-          (this.currentEffectIndex_ + this.previewProcessors_.length - 1) %
-              this.previewProcessors_.length);
+          (this.currentEffectIndex_ + this.effectProcessors_.length - 1) %
+              this.effectProcessors_.length);
       event.preventDefault();
       break;
     case 'Right':
       this.setCurrentEffect_(
-          (this.currentEffectIndex_ + 1) % this.previewProcessors_.length);
+          (this.currentEffectIndex_ + 1) % this.effectProcessors_.length);
       event.preventDefault();
       break;
     case 'Home':
@@ -1035,7 +1071,7 @@ camera.views.Camera.prototype.onKeyPressed = function(event) {
       event.preventDefault();
       break;
     case 'End':
-      this.setCurrentEffect_(this.previewProcessors_.length - 1);
+      this.setCurrentEffect_(this.effectProcessors_.length - 1);
       event.preventDefault();
       break;
     case 'U+0020':  // Space key for taking the picture.
@@ -1245,7 +1281,7 @@ camera.views.Camera.prototype.progressPerformanceTest_ = function(index) {
   }
 
   // Check if the end.
-  if (index == this.previewProcessors_.length * 2) {
+  if (index == this.effectProcessors_.length * 2) {
     this.stopPerformanceTest_();
     var message = '';
     var score = 0;
@@ -1268,13 +1304,14 @@ camera.views.Camera.prototype.progressPerformanceTest_ = function(index) {
 
   // Run new test.
   this.performanceMonitors_.reset();
-  this.mainProcessor_.performanceMonitors_.reset();
-  this.mainFastProcessor_.performanceMonitors_.reset();
+  this.mainProcessor_.performanceMonitors.reset();
+  this.mainPreviewProcessor_.performanceMonitors.reset();
+  this.mainFastProcessor_.performanceMonitors.reset();
   this.setCurrentEffect_(Math.floor(index / 2));
   this.setExpanded_(index % 2 == 1);
 
   // Update the progress bar.
-  var progress = (index / (this.previewProcessors_.length * 2)) * 100;
+  var progress = (index / (this.effectProcessors_.length * 2)) * 100;
   var perfTestBar = document.querySelector('#perf-test-bar');
   perfTestBar.textContent = Math.round(progress) + '%';
   perfTestBar.style.width = progress + '%';
@@ -1393,8 +1430,7 @@ camera.views.Camera.prototype.takePictureImmediately_ = function(opt_callback) {
   this.shutterSound_.play();
 
   setTimeout(function() {
-    this.mainCanvasTexture_.loadContentsOf(this.video_);
-    this.mainProcessor_.processFrame();
+    this.drawCameraFrame_(camera.views.Camera.DrawMode.BEST);
     var dataURL = this.mainCanvas_.toDataURL('image/jpeg');
 
     // Create a picture preview animation.
@@ -1465,18 +1501,21 @@ camera.views.Camera.prototype.takePictureImmediately_ = function(opt_callback) {
  * @type {Array.<Array.<number>>}
  * @const
  */
-camera.views.Camera.RESOLUTIONS = [[1280, 720], [800, 600], [640, 480]];
+camera.views.Camera.RESOLUTIONS =
+    [[1920, 1080], [1280, 720], [800, 600], [640, 480]];
+
 
 /**
  * Synchronizes video size with the window's current size.
  * @private
  */
 camera.views.Camera.prototype.synchronizeBounds_ = function() {
-  if (!this.video_.videoWidth)
+  if (!this.video_.videoHeight)
     return;
 
-  var width = document.body.offsetWidth;
-  var height = document.body.offsetHeight;
+  var scale = Math.min(1, document.body.offsetHeight / this.video_.videoHeight);
+  this.mainPreviewProcessor_.scale = scale;
+  this.mainFastProcessor_.scale = scale / 2;
 
   this.video_.width = this.video_.videoWidth;
   this.video_.height = this.video_.videoHeight;
@@ -1675,14 +1714,13 @@ camera.views.Camera.prototype.start_ = function() {
 camera.views.Camera.prototype.drawEffectsRibbon_ = function(mode) {
   var notDrawn = [];
 
-  // Draw visible frames only when in DrawMode.FULL mode. Otherwise, only
-  // one per method call.
-  for (var index = 0; index < this.previewProcessors_.length; index++) {
-    var processor = this.previewProcessors_[index];
+  // Draw visible frames only when in DrawMode.NORMAL mode. Otherwise, only one
+  // per method call.
+  for (var index = 0; index < this.effectProcessors_.length; index++) {
+    var processor = this.effectProcessors_[index];
     var effectRect = processor.output.getBoundingClientRect();
-    if (effectRect.right >= 0 &&
-        effectRect.left < document.body.offsetWidth &&
-        mode == camera.views.Camera.DrawMode.FULL) {
+    if (mode == camera.views.Camera.DrawMode.NORMAL && effectRect.right >= 0 &&
+        effectRect.left < document.body.offsetWidth) {
       processor.processFrame();
     } else {
       notDrawn.push(processor);
@@ -1705,7 +1743,7 @@ camera.views.Camera.prototype.drawCameraFrame_ = function(mode) {
   {
     var finishMeasuring = this.performanceMonitors_.startMeasuring(
         'main-fast-processor-load-contents-and-process');
-    if (this.frame_ % 10 == 0 || mode == camera.views.Camera.DrawMode.OPTIMIZED) {
+    if (this.frame_ % 10 == 0 || mode == camera.views.Camera.DrawMode.FAST) {
       this.mainFastCanvasTexture_.loadContentsOf(this.video_);
       this.mainFastProcessor_.processFrame();
     }
@@ -1713,11 +1751,24 @@ camera.views.Camera.prototype.drawCameraFrame_ = function(mode) {
   }
 
   switch (mode) {
-    case camera.views.Camera.DrawMode.OPTIMIZED:
+    case camera.views.Camera.DrawMode.FAST:
       this.mainCanvas_.parentNode.hidden = true;
+      this.mainPreviewCanvas_.parentNode.hidden = true;
       this.mainFastCanvas_.parentNode.hidden = false;
       break;
-    case camera.views.Camera.DrawMode.FULL:
+    case camera.views.Camera.DrawMode.NORMAL:
+      {
+        var finishMeasuring = this.performanceMonitors_.startMeasuring(
+            'main-preview-processor-load-contents-and-process');
+        this.mainPreviewCanvasTexture_.loadContentsOf(this.video_);
+        this.mainPreviewProcessor_.processFrame();
+        finishMeasuring();
+      }
+      this.mainCanvas_.parentNode.hidden = true;
+      this.mainPreviewCanvas_.parentNode.hidden = false;
+      this.mainFastCanvas_.parentNode.hidden = true;
+      break;
+    case camera.views.Camera.DrawMode.BEST:
       {
         var finishMeasuring = this.performanceMonitors_.startMeasuring(
             'main-processor-canvas-to-texture');
@@ -1729,6 +1780,7 @@ camera.views.Camera.prototype.drawCameraFrame_ = function(mode) {
         var finishMeasuring = this.performanceMonitors_.startMeasuring(
             'main-processor-dom');
         this.mainCanvas_.parentNode.hidden = false;
+        this.mainPreviewCanvas_.parentNode.hidden = true;
         this.mainFastCanvas_.parentNode.hidden = true;
         finishMeasuring();
       }
@@ -1745,6 +1797,8 @@ camera.views.Camera.prototype.printPerformanceStats_ = function() {
   console.info(this.performanceMonitors_.toDebugString());
   console.info('Main processor');
   console.info(this.mainProcessor_.performanceMonitors.toDebugString());
+  console.info('Main preview processor');
+  console.info(this.mainPreviewProcessor_.performanceMonitors.toDebugString());
   console.info('Main fast processor');
   console.info(this.mainFastProcessor_.performanceMonitors.toDebugString());
 };
@@ -1760,6 +1814,10 @@ camera.views.Camera.prototype.onAnimationFrame_ = function() {
 
   // No capturing while resizing.
   if (this.context.resizing)
+    return;
+
+  // No capturing while taking.
+  if (this.taking_)
     return;
 
   // If the animation is called more often than the video provides input, then
@@ -1780,12 +1838,12 @@ camera.views.Camera.prototype.onAnimationFrame_ = function() {
     var finishMeasuring = this.performanceMonitors_.startMeasuring(
         'resample-and-upload-preview-texture');
     if (this.frame_ % camera.views.Camera.PREVIEW_BUFFER_SKIP_FRAMES == 0) {
-      var context = this.previewInputCanvas_.getContext('2d');
-      // Since the preview input canvas may have a different aspect ratio, cut
+      var context = this.effectInputCanvas_.getContext('2d');
+      // Since the effect input canvas may have a different aspect ratio, cut
       // the center of it.
       var ratio =
-          this.previewInputCanvas_.width / this.previewInputCanvas_.height;
-      var scale = this.previewInputCanvas_.height / this.video_.height;
+          this.effectInputCanvas_.width / this.effectInputCanvas_.height;
+      var scale = this.effectInputCanvas_.height / this.video_.height;
       var sh = this.video_.height;
       var sw = Math.round(this.video_.height * ratio);
       var sy = 0;
@@ -1797,9 +1855,9 @@ camera.views.Camera.prototype.onAnimationFrame_ = function() {
                         sh,
                         0,
                         0,
-                        this.previewInputCanvas_.width,
-                        this.previewInputCanvas_.height);
-      this.previewCanvasTexture_.loadContentsOf(this.previewInputCanvas_);
+                        this.effectInputCanvas_.width,
+                        this.effectInputCanvas_.height);
+      this.effectCanvasTexture_.loadContentsOf(this.effectInputCanvas_);
     }
     finishMeasuring();
   }
@@ -1852,13 +1910,13 @@ camera.views.Camera.prototype.onAnimationFrame_ = function() {
   {
     var finishMeasuring =
         this.performanceMonitors_.startMeasuring('draw-frame');
-    if (this.taking_ || this.toolbarEffect_.animating ||
+    if (this.toolbarEffect_.animating ||
         this.controlsEffect_.animating || this.mainProcessor_.effect.isSlow() ||
         this.context.isUIAnimating() || this.toastEffect_.animating ||
         (this.scrollTracker_.scrolling && this.expanded_)) {
-      this.drawCameraFrame_(camera.views.Camera.DrawMode.OPTIMIZED);
+      this.drawCameraFrame_(camera.views.Camera.DrawMode.FAST);
     } else {
-      this.drawCameraFrame_(camera.views.Camera.DrawMode.FULL);
+      this.drawCameraFrame_(camera.views.Camera.DrawMode.NORMAL);
     }
     finishMeasuring();
   }
@@ -1870,18 +1928,17 @@ camera.views.Camera.prototype.onAnimationFrame_ = function() {
   {
     var finishMeasuring =
         this.performanceMonitors_.startMeasuring('draw-ribbon');
-    if (!this.taking_ && !this.controlsEffect_.animating &&
-        !this.context.isUIAnimating() && !this.scrollTracker_.scrolling &&
-        !this.toolbarEffect_.animating && !this.toastEffect_.animating ||
-        this.ribbonInitialization_) {
+    if (!this.controlsEffect_.animating && !this.context.isUIAnimating() &&
+        !this.scrollTracker_.scrolling && !this.toolbarEffect_.animating &&
+        !this.toastEffect_.animating || this.ribbonInitialization_) {
 
       if (this.expanded_ &&
           this.frame_ % camera.views.Camera.PREVIEW_BUFFER_SKIP_FRAMES == 0) {
         // Render all visible + one not visible.
-        this.drawEffectsRibbon_(camera.views.Camera.DrawMode.FULL);
+        this.drawEffectsRibbon_(camera.views.Camera.DrawMode.NORMAL);
       } else {
         // Render only one effect per frame. This is to avoid stale images.
-        this.drawEffectsRibbon_(camera.views.Camera.DrawMode.OPTIMIZED);
+        this.drawEffectsRibbon_(camera.views.Camera.DrawMode.FAST);
       }
     }
     finishMeasuring();

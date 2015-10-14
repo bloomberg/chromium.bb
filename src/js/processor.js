@@ -17,11 +17,9 @@ var camera = camera || {};
  * @param {fx.Texture} input Texture with the input frame.
  * @param {Canvas} output Canvas with the output frame.
  * @param {fx.Canvas} fxCanvas Fx canvas to be used for processing.
- * @param {camera.Processor.Mode=} opt_mode Optional mode of the processor.
- *     Default is the high quality mode.
  * @constructor
  */
-camera.Processor = function(tracker, input, output, fxCanvas, opt_mode) {
+camera.Processor = function(tracker, input, output, fxCanvas) {
   /**
    * @type {camera.Tracker}
    * @private
@@ -47,10 +45,10 @@ camera.Processor = function(tracker, input, output, fxCanvas, opt_mode) {
   this.fxCanvas_ = fxCanvas;
 
   /**
-   * @type {camera.Processor.Mode}
+   * @type {number}
    * @private
    */
-  this.mode_ = opt_mode || camera.Processor.Mode.DEFAULT;
+  this.scale_ = 1;
 
   /**
    * @type {camera.Effect}
@@ -69,17 +67,13 @@ camera.Processor = function(tracker, input, output, fxCanvas, opt_mode) {
   Object.seal(this);
 };
 
-/**
- * Type of the processor. For FAST it uses lowered resolution. DEFAULT is high
- * quality.
- * @enum {number}
- */
-camera.Processor.Mode = Object.freeze({
-  DEFAULT: 0,
-  FAST: 1
-});
-
 camera.Processor.prototype = {
+  set scale(inScale) {
+    this.scale_ = inScale;
+  },
+  get scale() {
+    return this.scale_;
+  },
   set effect(inEffect) {
     this.effect_ = inEffect;
   },
@@ -104,19 +98,8 @@ camera.Processor.prototype.processFrame = function() {
   if (!width || !height)
     return;
 
-  var textureWidth = null;
-  var textureHeight = null;
-
-  switch (this.mode_) {
-    case camera.Processor.Mode.FAST:
-      textureWidth = Math.round(width / 2);
-      textureHeight = Math.round(height / 2);
-      break;
-    case camera.Processor.Mode.DEFAULT:
-      textureWidth = width;
-      textureHeight = height;
-      break;
-  }
+  var textureWidth = Math.round(width * this.scale_);
+  var textureHeight = Math.round(height * this.scale_);
 
   {
     var finishMeasuring =
