@@ -559,7 +559,7 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
     float lastSpaceWordSpacing = 0;
     float wordSpacingForWordMeasurement = 0;
 
-    float wrapW = m_width.uncommittedWidth() + inlineLogicalWidth(m_current.object(), !m_appliedStartWidth, true);
+    float wrapW = m_width.uncommittedWidth();
     float charWidth = 0;
     // Auto-wrapping text should wrap in the middle of a word only if it could not wrap before the word,
     // which is only possible if the word is the first thing on the line, that is, if |w| is zero.
