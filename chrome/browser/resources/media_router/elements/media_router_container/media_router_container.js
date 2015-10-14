@@ -681,7 +681,6 @@ Polymer({
    * @private
    */
   showCastModeList_: function() {
-    this.currentRoute_ = null;
     this.currentView_ = this.CONTAINER_VIEW_.CAST_MODE_LIST;
   },
 
@@ -723,7 +722,6 @@ Polymer({
    * @private
    */
   showSinkList_: function() {
-    this.currentRoute_ = null;
     this.currentView_ = this.CONTAINER_VIEW_.SINK_LIST;
   },
 
