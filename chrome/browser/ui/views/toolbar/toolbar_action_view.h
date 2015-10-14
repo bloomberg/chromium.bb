@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_TOOLBAR_TOOLBAR_ACTION_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_TOOLBAR_TOOLBAR_ACTION_VIEW_H_
 
+#include "base/callback.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_action_view_delegate_views.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -26,7 +27,7 @@ class Image;
 }
 
 namespace views {
-class MenuRunner;
+class MenuItemView;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -98,6 +99,14 @@ class ToolbarActionView : public views::MenuButton,
 
   bool wants_to_run_for_testing() const { return wants_to_run_; }
 
+  using ContextMenuCallback = base::Callback<void(ToolbarActionView*)>;
+  // Set a callback to be called directly before the context menu is shown.
+  // The toolbar action opening the menu will be passed in.
+  static void set_context_menu_callback_for_testing(
+      ContextMenuCallback* callback);
+
+  views::MenuItemView* menu_for_testing() { return menu_; }
+
  private:
   // views::MenuButton:
   gfx::Size GetPreferredSize() const override;
@@ -146,8 +155,9 @@ class ToolbarActionView : public views::MenuButton,
   // tab.
   bool wants_to_run_;
 
-  // Responsible for running the menu.
-  scoped_ptr<views::MenuRunner> menu_runner_;
+  // The root MenuItemView for the context menu, or null if no menu is being
+  // shown.
+  views::MenuItemView* menu_;
 
   // If non-null, this is the next toolbar action context menu that wants to run
   // once the current owner (this one) is done.
