@@ -451,12 +451,12 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, AutofillViaDownArrow) {
   ExpectFilledTestForm();
 }
 
-// Flaky on the official cros-trunk. crbug.com/516052
-#if defined(OFFICIAL_BUILD)
+// crbug.com/516052
+#if defined(OS_CHROMEOS)
 #define MAYBE_AutofillSelectViaTab DISABLED_AutofillSelectViaTab
 #else
 #define MAYBE_AutofillSelectViaTab AutofillSelectViaTab
-#endif  // defined(OFFICIAL_BUILD)
+#endif
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_AutofillSelectViaTab) {
   CreateTestProfile();
 
@@ -482,12 +482,12 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_AutofillSelectViaTab) {
   ExpectFilledTestForm();
 }
 
-// Flaky on the official cros-trunk. crbug.com/516052
-#if defined(OFFICIAL_BUILD)
+// crbug.com/516052
+#if defined(OS_CHROMEOS)
 #define MAYBE_AutofillViaClick DISABLED_AutofillViaClick
 #else
 #define MAYBE_AutofillViaClick AutofillViaClick
-#endif  // defined(OFFICIAL_BUILD)
+#endif
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_AutofillViaClick) {
   CreateTestProfile();
 
