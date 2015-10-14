@@ -10,40 +10,31 @@
 
 namespace blink {
 
-InvalidatableStyleInterpolation::InvalidatableStyleInterpolation(
-    const Vector<const InterpolationType*>& interpolationTypes,
-    const CSSPropertySpecificKeyframe& startKeyframe,
-    const CSSPropertySpecificKeyframe& endKeyframe)
-    : StyleInterpolation(nullptr, nullptr, interpolationTypes.first()->property())
-    , m_interpolationTypes(interpolationTypes)
-    , m_startKeyframe(&startKeyframe)
-    , m_endKeyframe(&endKeyframe)
+void InvalidatableStyleInterpolation::interpolate(int, double fraction)
 {
-    maybeCachePairwiseConversion(nullptr, nullptr);
-    interpolate(0, 0);
+    if (fraction == m_currentFraction)
+        return;
+
+    if (m_currentFraction == 0 || m_currentFraction == 1 || fraction == 0 || fraction == 1)
+        clearCache();
+
+    m_currentFraction = fraction;
+    if (m_isCached && m_cachedPairConversion)
+        m_cachedPairConversion->interpolateValue(fraction, m_cachedValue);
+    // We defer the interpolation to ensureValidInterpolation() if m_cachedPairConversion is null.
 }
 
-bool InvalidatableStyleInterpolation::maybeCachePairwiseConversion(const StyleResolverState* state, const InterpolationValue* underlyingValue) const
+PassOwnPtr<PairwisePrimitiveInterpolation> InvalidatableStyleInterpolation::maybeConvertPairwise(const StyleResolverState* state, const InterpolationValue* underlyingValue) const
 {
+    ASSERT(m_currentFraction != 0 && m_currentFraction != 1);
     for (const auto& interpolationType : m_interpolationTypes) {
         if ((m_startKeyframe->isNeutral() || m_endKeyframe->isNeutral()) && (!underlyingValue || underlyingValue->type() != *interpolationType))
             continue;
         OwnPtr<PairwisePrimitiveInterpolation> pairwiseConversion = interpolationType->maybeConvertPairwise(*m_startKeyframe, *m_endKeyframe, state, m_conversionCheckers);
-        if (pairwiseConversion) {
-            m_cachedValue = pairwiseConversion->initialValue();
-            m_cachedConversion = pairwiseConversion.release();
-            return true;
-        }
+        if (pairwiseConversion)
+            return pairwiseConversion.release();
     }
-    return false;
-}
-
-void InvalidatableStyleInterpolation::interpolate(int, double fraction)
-{
-    m_currentFraction = fraction;
-    if (m_cachedConversion)
-        m_cachedConversion->interpolateValue(fraction, m_cachedValue);
-    // We defer the interpolation to ensureValidInterpolation() if m_cachedConversion is null.
+    return nullptr;
 }
 
 PassOwnPtr<InterpolationValue> InvalidatableStyleInterpolation::convertSingleKeyframe(const CSSPropertySpecificKeyframe& keyframe, const StyleResolverState& state, const InterpolationValue* underlyingValue) const
@@ -81,10 +72,20 @@ bool InvalidatableStyleInterpolation::isNeutralKeyframeActive() const
     return (m_startKeyframe->isNeutral() && m_currentFraction != 1) || (m_endKeyframe->isNeutral() && m_currentFraction != 0);
 }
 
+void InvalidatableStyleInterpolation::clearCache() const
+{
+    m_isCached = false;
+    m_cachedPairConversion.clear();
+    m_conversionCheckers.clear();
+    m_cachedValue.clear();
+}
+
 bool InvalidatableStyleInterpolation::isCacheValid(const StyleResolverState& state, const InterpolationValue* underlyingValue) const
 {
+    if (!m_isCached)
+        return false;
     if (isNeutralKeyframeActive()) {
-        if (m_cachedConversion->isFlip())
+        if (m_cachedPairConversion && m_cachedPairConversion->isFlip())
             return false;
         // Pairwise interpolation can never happen between different InterpolationTypes, neutral values always represent the underlying value.
         if (!underlyingValue || !m_cachedValue || m_cachedValue->type() != underlyingValue->type())
@@ -99,15 +100,27 @@ bool InvalidatableStyleInterpolation::isCacheValid(const StyleResolverState& sta
 
 const InterpolationValue* InvalidatableStyleInterpolation::ensureValidInterpolation(const StyleResolverState& state, const InterpolationValue* underlyingValue) const
 {
-    if (m_cachedConversion && isCacheValid(state, underlyingValue))
+    ASSERT(!std::isnan(m_currentFraction));
+    if (isCacheValid(state, underlyingValue))
         return m_cachedValue.get();
-    m_conversionCheckers.clear();
-    if (!maybeCachePairwiseConversion(&state, underlyingValue)) {
-        m_cachedConversion = FlipPrimitiveInterpolation::create(
-            convertSingleKeyframe(*m_startKeyframe, state, underlyingValue),
-            convertSingleKeyframe(*m_endKeyframe, state, underlyingValue));
+    clearCache();
+    if (m_currentFraction == 0) {
+        m_cachedValue = convertSingleKeyframe(*m_startKeyframe, state, underlyingValue);
+    } else if (m_currentFraction == 1) {
+        m_cachedValue = convertSingleKeyframe(*m_endKeyframe, state, underlyingValue);
+    } else {
+        OwnPtr<PairwisePrimitiveInterpolation> pairwiseConversion = maybeConvertPairwise(&state, underlyingValue);
+        if (pairwiseConversion) {
+            m_cachedValue = pairwiseConversion->initialValue();
+            m_cachedPairConversion = pairwiseConversion.release();
+        } else {
+            m_cachedPairConversion = FlipPrimitiveInterpolation::create(
+                convertSingleKeyframe(*m_startKeyframe, state, underlyingValue),
+                convertSingleKeyframe(*m_endKeyframe, state, underlyingValue));
+        }
+        m_cachedPairConversion->interpolateValue(m_currentFraction, m_cachedValue);
     }
-    m_cachedConversion->interpolateValue(m_currentFraction, m_cachedValue);
+    m_isCached = true;
     return m_cachedValue.get();
 }
 
@@ -123,7 +136,11 @@ void InvalidatableStyleInterpolation::setFlagIfInheritUsed(StyleResolverState& s
 
 double InvalidatableStyleInterpolation::underlyingFraction() const
 {
-    return m_cachedConversion->interpolateUnderlyingFraction(m_startKeyframe->underlyingFraction(), m_endKeyframe->underlyingFraction(), m_currentFraction);
+    if (m_currentFraction == 0)
+        return m_startKeyframe->underlyingFraction();
+    if (m_currentFraction == 1)
+        return m_endKeyframe->underlyingFraction();
+    return m_cachedPairConversion->interpolateUnderlyingFraction(m_startKeyframe->underlyingFraction(), m_endKeyframe->underlyingFraction(), m_currentFraction);
 }
 
 void InvalidatableStyleInterpolation::applyStack(const ActiveInterpolations& interpolations, StyleResolverState& state)

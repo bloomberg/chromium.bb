@@ -34,15 +34,23 @@ public:
 
 private:
     InvalidatableStyleInterpolation(
-        const Vector<const InterpolationType*>& InterpolationTypes,
+        const Vector<const InterpolationType*>& interpolationTypes,
         const CSSPropertySpecificKeyframe& startKeyframe,
-        const CSSPropertySpecificKeyframe& endKeyframe);
+        const CSSPropertySpecificKeyframe& endKeyframe)
+        : StyleInterpolation(nullptr, nullptr, interpolationTypes.first()->property())
+        , m_interpolationTypes(interpolationTypes)
+        , m_startKeyframe(&startKeyframe)
+        , m_endKeyframe(&endKeyframe)
+        , m_currentFraction(std::numeric_limits<double>::quiet_NaN())
+        , m_isCached(false)
+    { }
 
     PassOwnPtr<InterpolationValue> maybeConvertUnderlyingValue(const StyleResolverState&) const;
     const InterpolationValue* ensureValidInterpolation(const StyleResolverState&, const InterpolationValue* underlyingValue) const;
+    void clearCache() const;
     bool isCacheValid(const StyleResolverState&, const InterpolationValue* underlyingValue) const;
     bool isNeutralKeyframeActive() const;
-    bool maybeCachePairwiseConversion(const StyleResolverState*, const InterpolationValue* underlyingValue) const;
+    PassOwnPtr<PairwisePrimitiveInterpolation> maybeConvertPairwise(const StyleResolverState*, const InterpolationValue* underlyingValue) const;
     PassOwnPtr<InterpolationValue> convertSingleKeyframe(const CSSPropertySpecificKeyframe&, const StyleResolverState&, const InterpolationValue* underlyingValue) const;
     void setFlagIfInheritUsed(StyleResolverState&) const;
     double underlyingFraction() const;
@@ -51,7 +59,8 @@ private:
     const CSSPropertySpecificKeyframe* m_startKeyframe;
     const CSSPropertySpecificKeyframe* m_endKeyframe;
     double m_currentFraction;
-    mutable OwnPtr<PrimitiveInterpolation> m_cachedConversion;
+    mutable bool m_isCached;
+    mutable OwnPtr<PrimitiveInterpolation> m_cachedPairConversion;
     mutable InterpolationType::ConversionCheckers m_conversionCheckers;
     mutable OwnPtr<InterpolationValue> m_cachedValue;
 };
