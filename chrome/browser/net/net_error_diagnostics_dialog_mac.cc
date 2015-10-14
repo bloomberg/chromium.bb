@@ -12,7 +12,7 @@
 #include "base/strings/sys_string_conversions.h"
 
 bool CanShowNetworkDiagnosticsDialog() {
-  return false;
+  return true;
 }
 
 void ShowNetworkDiagnosticsDialog(content::WebContents* web_contents,
