@@ -32,7 +32,7 @@ import java.lang.reflect.Method;
  *  An Instrumentation test runner that checks SDK level for tests with specific requirements.
  */
 public class BaseInstrumentationTestRunner extends InstrumentationTestRunner {
-    private static final String TAG = "cr.base.test";
+    private static final String TAG = "base_test";
 
     @Override
     public void onCreate(Bundle arguments) {

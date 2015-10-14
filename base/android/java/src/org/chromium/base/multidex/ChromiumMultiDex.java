@@ -19,7 +19,7 @@ import java.lang.reflect.InvocationTargetException;
  */
 public class ChromiumMultiDex {
 
-    private static final String TAG = "cr.base.multidex";
+    private static final String TAG = "base_multidex";
 
     /**
      *  Installs secondary dexes if possible.

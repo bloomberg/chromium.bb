@@ -25,7 +25,7 @@ import java.util.ArrayList;
  * that our task exists before firing the next Intent.
  */
 public class AsyncDocumentLauncher {
-    private static final String TAG = "cr.document.AsyncLaunc";
+    private static final String TAG = "document_AsyncLaunc";
 
     /**
      * Milliseconds to wait for Android to acknowledge that our Activity's task exists.

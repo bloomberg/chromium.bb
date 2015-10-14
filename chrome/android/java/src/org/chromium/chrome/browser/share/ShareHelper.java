@@ -57,7 +57,7 @@ import java.util.concurrent.TimeoutException;
  */
 public class ShareHelper {
 
-    private static final String TAG = "cr.chrome.browser";
+    private static final String TAG = "share";
 
     private static final String PACKAGE_NAME_KEY = "last_shared_package_name";
     private static final String CLASS_NAME_KEY = "last_shared_class_name";

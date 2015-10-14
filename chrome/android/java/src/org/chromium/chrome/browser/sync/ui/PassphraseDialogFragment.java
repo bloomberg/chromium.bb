@@ -41,7 +41,7 @@ import org.chromium.ui.text.SpanApplier.SpanInfo;
  */
 public class PassphraseDialogFragment extends DialogFragment implements OnClickListener {
 
-    private static final String TAG = "cr.Sync.UI";
+    private static final String TAG = "Sync_UI";
 
     /**
      * A listener for passphrase events.

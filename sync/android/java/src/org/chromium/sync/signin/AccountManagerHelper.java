@@ -38,7 +38,7 @@ import java.util.regex.Pattern;
  * Use the AccountManagerHelper.get(someContext) to instantiate it
  */
 public class AccountManagerHelper {
-    private static final String TAG = "cr.Sync.Signin";
+    private static final String TAG = "Sync_Signin";
 
     private static final Pattern AT_SYMBOL = Pattern.compile("@");
 

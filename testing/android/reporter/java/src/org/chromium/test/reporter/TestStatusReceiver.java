@@ -19,7 +19,7 @@ import java.util.List;
  */
 public class TestStatusReceiver extends BroadcastReceiver {
 
-    private static final String TAG = "cr.test.reporter";
+    private static final String TAG = "test_reporter";
 
     private final List<FailCallback> mFailCallbacks = new ArrayList<FailCallback>();
     private final List<HeartbeatCallback> mHeartbeatCallbacks = new ArrayList<HeartbeatCallback>();

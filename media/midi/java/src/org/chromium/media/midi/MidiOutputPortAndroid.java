@@ -36,7 +36,7 @@ class MidiOutputPortAndroid {
      */
     private final int mIndex;
 
-    private static final String TAG = "cr.media.midi";
+    private static final String TAG = "media_midi";
 
     /**
      * constructor

@@ -33,7 +33,7 @@ import java.util.Map.Entry;
  * A test result that can skip tests.
  */
 public class BaseTestResult extends TestResult {
-    private static final String TAG = "cr.base.test";
+    private static final String TAG = "base_test";
 
     private static final int SLEEP_INTERVAL_MS = 50;
     private static final int WAIT_DURATION_MS = 5000;

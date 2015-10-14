@@ -85,7 +85,7 @@ public class ChromeLauncherActivity extends Activity
     static final String ACTION_CLOSE_ALL_INCOGNITO =
             "com.google.android.apps.chrome.document.CLOSE_ALL_INCOGNITO";
 
-    private static final String TAG = "cr.document.CLActivity";
+    private static final String TAG = "document_CLActivity";
 
     /** New instance should be launched in the foreground. */
     public static final int LAUNCH_MODE_FOREGROUND = 0;
