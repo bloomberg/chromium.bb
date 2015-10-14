@@ -253,6 +253,9 @@ public:
     // side callers are renamed.
     virtual WebFloatPoint pinchViewportOffset() const = 0;
 
+    // Get the visual viewport's size in CSS pixels.
+    virtual WebFloatSize visualViewportSize() const = 0;
+
     // Sets the default minimum, and maximum page scale. These will be overridden
     // by the page or by the overrides below if they are set.
     virtual void setDefaultPageScaleLimits(

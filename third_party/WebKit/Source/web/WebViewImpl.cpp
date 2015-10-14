@@ -3023,6 +3023,12 @@ WebFloatPoint WebViewImpl::pinchViewportOffset() const
     return visualViewportOffset();
 }
 
+WebFloatSize WebViewImpl::visualViewportSize() const
+{
+    ASSERT(page());
+    return page()->frameHost().visualViewport().visibleRect().size();
+}
+
 void WebViewImpl::scrollAndRescaleViewports(float scaleFactor,
     const IntPoint& mainFrameOrigin,
     const FloatPoint& visualViewportOrigin)

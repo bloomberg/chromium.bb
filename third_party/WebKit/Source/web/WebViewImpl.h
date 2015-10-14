@@ -204,6 +204,7 @@ public:
     void setPinchViewportOffset(const WebFloatPoint&) override;
     WebFloatPoint visualViewportOffset() const override;
     WebFloatPoint pinchViewportOffset() const override;
+    WebFloatSize visualViewportSize() const override;
     void resetScrollAndScaleState() override;
     void setIgnoreViewportTagScaleLimits(bool) override;
     WebSize contentsPreferredMinimumSize() override;
