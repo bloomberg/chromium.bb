@@ -5,6 +5,7 @@
 #include "media/cast/test/utility/default_config.h"
 
 #include "base/bind.h"
+#include "media/cast/cast_config.h"
 #include "media/cast/net/cast_transport_config.h"
 
 namespace {
@@ -30,7 +31,7 @@ FrameReceiverConfig GetDefaultAudioReceiverConfig() {
   config.receiver_ssrc = 2;
   config.sender_ssrc = 1;
   config.rtp_max_delay_ms = kDefaultRtpMaxDelayMs;
-  config.rtp_payload_type = 127;
+  config.rtp_payload_type = kDefaultRtpAudioPayloadType;
   config.rtp_timebase = 48000;
   config.channels = 2;
   config.target_frame_rate = 100;  // 10ms of signal per frame
@@ -43,7 +44,7 @@ FrameReceiverConfig GetDefaultVideoReceiverConfig() {
   config.receiver_ssrc = 12;
   config.sender_ssrc = 11;
   config.rtp_max_delay_ms = kDefaultRtpMaxDelayMs;
-  config.rtp_payload_type = 96;
+  config.rtp_payload_type = kDefaultRtpVideoPayloadType;
   config.rtp_timebase = kVideoFrequency;
   config.channels = 1;
   config.target_frame_rate = kDefaultMaxFrameRate;

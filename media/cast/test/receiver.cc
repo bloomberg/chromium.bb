@@ -122,8 +122,8 @@ void GetWindowSize(int* width, int* height) {
 void GetAudioPayloadtype(FrameReceiverConfig* audio_config) {
   test::InputBuilder input("Choose audio receiver payload type.",
                            DEFAULT_AUDIO_PAYLOAD_TYPE,
-                           96,
-                           127);
+                           kDefaultRtpVideoPayloadType  /* low_range */,
+                           kDefaultRtpAudioPayloadType  /* high_range */);
   audio_config->rtp_payload_type = input.GetIntInput();
 }
 
@@ -138,8 +138,8 @@ FrameReceiverConfig GetAudioReceiverConfig() {
 void GetVideoPayloadtype(FrameReceiverConfig* video_config) {
   test::InputBuilder input("Choose video receiver payload type.",
                            DEFAULT_VIDEO_PAYLOAD_TYPE,
-                           96,
-                           127);
+                           kDefaultRtpVideoPayloadType  /* low_range */,
+                           kDefaultRtpAudioPayloadType  /* high_range */);
   video_config->rtp_payload_type = input.GetIntInput();
 }
 

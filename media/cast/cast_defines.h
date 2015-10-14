@@ -74,6 +74,10 @@ enum DefaultSettings {
   kDefaultRtcpIntervalMs = 500,
   kDefaultRtpHistoryMs = 1000,
   kDefaultRtpMaxDelayMs = 100,
+  kDefaultRtpAudioPayloadType = 127,
+  kDefaultRtpVideoPayloadType = 96,
+  kDefaultMinVideoBitRate = 50,
+  kDefaultMaxVideoBitRate = 2000,
 };
 
 enum PacketType {

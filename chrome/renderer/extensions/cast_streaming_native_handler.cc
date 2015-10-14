@@ -663,23 +663,23 @@ bool CastStreamingNativeHandler::FrameReceiverConfigFromArg(
   if (params->codec_name == "OPUS") {
     config->codec = media::cast::CODEC_AUDIO_OPUS;
     config->rtp_timebase = 48000;
-    config->rtp_payload_type = 127;
+    config->rtp_payload_type = media::cast::kDefaultRtpAudioPayloadType;
   } else if (params->codec_name == "PCM16") {
     config->codec = media::cast::CODEC_AUDIO_PCM16;
     config->rtp_timebase = 48000;
-    config->rtp_payload_type = 127;
+    config->rtp_payload_type = media::cast::kDefaultRtpAudioPayloadType;
   } else if (params->codec_name == "AAC") {
     config->codec = media::cast::CODEC_AUDIO_AAC;
     config->rtp_timebase = 48000;
-    config->rtp_payload_type = 127;
+    config->rtp_payload_type = media::cast::kDefaultRtpAudioPayloadType;
   } else if (params->codec_name == "VP8") {
     config->codec = media::cast::CODEC_VIDEO_VP8;
     config->rtp_timebase = 90000;
-    config->rtp_payload_type = 96;
+    config->rtp_payload_type = media::cast::kDefaultRtpVideoPayloadType;
   } else if (params->codec_name == "H264") {
     config->codec = media::cast::CODEC_VIDEO_H264;
     config->rtp_timebase = 90000;
-    config->rtp_payload_type = 96;
+    config->rtp_payload_type = media::cast::kDefaultRtpVideoPayloadType;
   }
   if (params->rtp_timebase) {
     config->rtp_timebase = *params->rtp_timebase;

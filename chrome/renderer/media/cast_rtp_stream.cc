@@ -49,7 +49,7 @@ const int kBitrateMultiplier = 1000;
 
 CastRtpPayloadParams DefaultOpusPayload() {
   CastRtpPayloadParams payload;
-  payload.payload_type = 127;
+  payload.payload_type = media::cast::kDefaultRtpAudioPayloadType;
   payload.max_latency_ms = media::cast::kDefaultRtpMaxDelayMs;
   payload.ssrc = 1;
   payload.feedback_ssrc = 2;
@@ -65,13 +65,13 @@ CastRtpPayloadParams DefaultOpusPayload() {
 
 CastRtpPayloadParams DefaultVp8Payload() {
   CastRtpPayloadParams payload;
-  payload.payload_type = 96;
+  payload.payload_type = media::cast::kDefaultRtpVideoPayloadType;
   payload.max_latency_ms = media::cast::kDefaultRtpMaxDelayMs;
   payload.ssrc = 11;
   payload.feedback_ssrc = 12;
   payload.clock_rate = media::cast::kVideoFrequency;
-  payload.max_bitrate = 2000;
-  payload.min_bitrate = 50;
+  payload.max_bitrate = media::cast::kDefaultMaxVideoBitRate;
+  payload.min_bitrate = media::cast::kDefaultMinVideoBitRate;
   payload.channels = 1;
   payload.max_frame_rate = media::cast::kDefaultMaxFrameRate;
   payload.codec_name = kCodecNameVp8;
@@ -85,8 +85,8 @@ CastRtpPayloadParams DefaultH264Payload() {
   payload.ssrc = 11;
   payload.feedback_ssrc = 12;
   payload.clock_rate = media::cast::kVideoFrequency;
-  payload.max_bitrate = 2000;
-  payload.min_bitrate = 50;
+  payload.max_bitrate = media::cast::kDefaultMaxVideoBitRate;
+  payload.min_bitrate = media::cast::kDefaultMinVideoBitRate;
   payload.channels = 1;
   payload.max_frame_rate = media::cast::kDefaultMaxFrameRate;
   payload.codec_name = kCodecNameH264;
