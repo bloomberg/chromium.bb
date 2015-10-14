@@ -101,6 +101,12 @@ about:version template page
           <td class="version" i18n-content="build_id"></td>
         </tr>
 </if>
+<if expr="is_win">
+        <tr id="compiler-section">
+          <td class="label">Compiler</td>
+          <td class="version" id="compiler" i18n-content="compiler"></td>
+        </tr>
+</if>
       </table>
     </div>
     <script src="chrome://resources/js/i18n_template.js"></script>

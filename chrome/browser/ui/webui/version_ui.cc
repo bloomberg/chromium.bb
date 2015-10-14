@@ -122,6 +122,14 @@ WebUIDataSource* CreateVersionUIDataSource() {
   html_source->AddLocalizedString("variations_name",
                                   IDS_ABOUT_VERSION_VARIATIONS);
 
+#if defined(OS_WIN)
+#if defined(__clang__)
+  html_source->AddString("compiler", "clang");
+#else
+  html_source->AddString("compiler", "MSVC");
+#endif
+#endif
+
   html_source->SetJsonPath("strings.js");
   html_source->AddResourcePath("version.js", IDR_ABOUT_VERSION_JS);
   html_source->AddResourcePath("about_version.css", IDR_ABOUT_VERSION_CSS);
