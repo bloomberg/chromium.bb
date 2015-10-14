@@ -39,6 +39,7 @@
 #include "core/layout/LayoutView.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/geometry/IntSize.h"
+#include "platform/text/BidiTextRun.h"
 #include "platform/text/PlatformLocale.h"
 #include <math.h>
 
@@ -181,10 +182,10 @@ void LayoutMenuList::updateOptionsWidth()
             if (const ComputedStyle* optionStyle = element->computedStyle())
                 optionWidth += minimumValueForLength(optionStyle->textIndent(), 0);
             if (!text.isEmpty())
-                optionWidth += style()->font().width(text);
+                optionWidth += computeTextWidth(text);
             maxOptionWidth = std::max(maxOptionWidth, optionWidth);
         } else if (!text.isEmpty()) {
-            maxOptionWidth = std::max(maxOptionWidth, style()->font().width(text));
+            maxOptionWidth = std::max(maxOptionWidth, computeTextWidth(text));
         }
     }
 
@@ -195,6 +196,11 @@ void LayoutMenuList::updateOptionsWidth()
     m_optionsWidth = width;
     if (parent())
         setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::MenuWidthChanged);
+}
+
+float LayoutMenuList::computeTextWidth(const String& text) const
+{
+    return style()->font().width(constructTextRun(style()->font(), text, styleRef()));
 }
 
 void LayoutMenuList::updateFromElement()

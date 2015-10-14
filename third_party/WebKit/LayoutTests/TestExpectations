@@ -69,6 +69,7 @@ crbug.com/539247 [ Win10 ] http/tests/xmlhttprequest/open-in-body-onload-sync-to
 crbug.com/539247 [ Win10 ] http/tests/xmlhttprequest/open-in-body-onload-sync-to-invalid-redirect-response-handling.html [ Timeout Failure ]
 crbug.com/539247 [ Win10 ] http/tests/xmlhttprequest/open-in-body-onload-sync-to-invalid-preflight-handling.html [ Timeout Failure ]
 
+crbug.com/465705 fast/text/international/menulist-width-rtl.html [ NeedsRebaseline ]
 crbug.com/417782 [ Linux Win ] virtual/rootlayerscrolls/fast/scrolling/fractional-scroll-offset-fixed-position-non-composited.html [ ImageOnlyFailure ]
 crbug.com/492664 [ Linux XP ] imported/csswg-test/css-writing-modes-3/box-offsets-rel-pos-vlr-005.xht [ ImageOnlyFailure ]
 crbug.com/492664 [ Linux XP ] imported/csswg-test/css-writing-modes-3/box-offsets-rel-pos-vrl-004.xht [ ImageOnlyFailure ]

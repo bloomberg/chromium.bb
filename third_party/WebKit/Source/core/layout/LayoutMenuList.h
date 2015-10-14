@@ -81,6 +81,7 @@ private:
     void setText(const String&);
     void setTextFromOption(int optionIndex);
     void updateOptionsWidth();
+    float computeTextWidth(const String&) const;
     void updateText();
     void setIndexToSelectOnCancel(int listIndex);
 
