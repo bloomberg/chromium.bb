@@ -1488,6 +1488,10 @@ void GL_APIENTRY GLES2GenSyncTokenCHROMIUM(GLuint64 fence_sync,
                                            GLbyte* sync_token) {
   gles2::GetGLContext()->GenSyncTokenCHROMIUM(fence_sync, sync_token);
 }
+void GL_APIENTRY GLES2GenUnverifiedSyncTokenCHROMIUM(GLuint64 fence_sync,
+                                                     GLbyte* sync_token) {
+  gles2::GetGLContext()->GenUnverifiedSyncTokenCHROMIUM(fence_sync, sync_token);
+}
 void GL_APIENTRY GLES2WaitSyncTokenCHROMIUM(const GLbyte* sync_token) {
   gles2::GetGLContext()->WaitSyncTokenCHROMIUM(sync_token);
 }
@@ -2736,6 +2740,11 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
         "glGenSyncTokenCHROMIUM",
         reinterpret_cast<GLES2FunctionPointer>(glGenSyncTokenCHROMIUM),
+    },
+    {
+        "glGenUnverifiedSyncTokenCHROMIUM",
+        reinterpret_cast<GLES2FunctionPointer>(
+            glGenUnverifiedSyncTokenCHROMIUM),
     },
     {
         "glWaitSyncTokenCHROMIUM",

@@ -21,6 +21,7 @@
 #include "gpu/command_buffer/common/cmd_buffer_common.h"
 #include "gpu/command_buffer/common/command_buffer_shared.h"
 #include "gpu/command_buffer/common/gpu_memory_allocation.h"
+#include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/command_buffer/service/image_factory.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gl/gl_bindings.h"
@@ -505,6 +506,10 @@ bool CommandBufferProxyImpl::IsFenceSyncRelease(uint64_t release) {
 }
 
 bool CommandBufferProxyImpl::IsFenceSyncFlushed(uint64_t release) {
+  return release != 0 && release <= flushed_fence_sync_release_;
+}
+
+bool CommandBufferProxyImpl::IsFenceSyncFlushReceived(uint64_t release) {
   CheckLock();
   if (last_state_.error != gpu::error::kNoError)
     return false;
@@ -526,6 +531,15 @@ bool CommandBufferProxyImpl::IsFenceSyncFlushed(uint64_t release) {
   }
 
   return false;
+}
+
+bool CommandBufferProxyImpl::CanWaitUnverifiedSyncToken(
+    const gpu::SyncToken* sync_token) {
+  // Can only wait on an unverified sync token if it is from the same channel.
+  const uint64_t token_channel = sync_token->command_buffer_id() >> 32;
+  const uint64_t channel = command_buffer_id_ >> 32;
+  return (sync_token->namespace_id() == gpu::CommandBufferNamespace::GPU_IO &&
+          token_channel == channel);
 }
 
 uint32 CommandBufferProxyImpl::InsertSyncPoint() {

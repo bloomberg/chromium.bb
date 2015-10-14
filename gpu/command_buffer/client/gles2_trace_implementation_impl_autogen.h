@@ -2171,6 +2171,14 @@ void GLES2TraceImplementation::GenSyncTokenCHROMIUM(GLuint64 fence_sync,
   gl_->GenSyncTokenCHROMIUM(fence_sync, sync_token);
 }
 
+void GLES2TraceImplementation::GenUnverifiedSyncTokenCHROMIUM(
+    GLuint64 fence_sync,
+    GLbyte* sync_token) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu",
+                                "GLES2Trace::GenUnverifiedSyncTokenCHROMIUM");
+  gl_->GenUnverifiedSyncTokenCHROMIUM(fence_sync, sync_token);
+}
+
 void GLES2TraceImplementation::WaitSyncTokenCHROMIUM(const GLbyte* sync_token) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::WaitSyncTokenCHROMIUM");
   gl_->WaitSyncTokenCHROMIUM(sync_token);

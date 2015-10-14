@@ -3095,6 +3095,7 @@ TEST_F(GLES2ImplementationTest, WaitSyncPointCHROMIUM) {
 }
 // TODO(zmo): Implement unit test for InsertFenceSyncCHROMIUM
 // TODO(zmo): Implement unit test for GenSyncTokenCHROMIUM
+// TODO(zmo): Implement unit test for GenUnverifiedSyncTokenCHROMIUM
 
 TEST_F(GLES2ImplementationTest, DrawBuffersEXT) {
   GLenum data[1][1] = {{0}};

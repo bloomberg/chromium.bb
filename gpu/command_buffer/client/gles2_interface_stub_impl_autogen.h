@@ -1016,6 +1016,9 @@ GLuint64 GLES2InterfaceStub::InsertFenceSyncCHROMIUM() {
 }
 void GLES2InterfaceStub::GenSyncTokenCHROMIUM(GLuint64 /* fence_sync */,
                                               GLbyte* /* sync_token */) {}
+void GLES2InterfaceStub::GenUnverifiedSyncTokenCHROMIUM(
+    GLuint64 /* fence_sync */,
+    GLbyte* /* sync_token */) {}
 void GLES2InterfaceStub::WaitSyncTokenCHROMIUM(const GLbyte* /* sync_token */) {
 }
 void GLES2InterfaceStub::DrawBuffersEXT(GLsizei /* count */,

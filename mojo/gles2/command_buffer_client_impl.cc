@@ -423,4 +423,14 @@ bool CommandBufferClientImpl::IsFenceSyncFlushed(uint64_t release) {
   return release != 0 && release <= flushed_fence_sync_release_;
 }
 
+bool CommandBufferClientImpl::IsFenceSyncFlushReceived(uint64_t release) {
+  return IsFenceSyncFlushed(release);
+}
+
+bool CommandBufferClientImpl::CanWaitUnverifiedSyncToken(
+    const gpu::SyncToken* sync_token) {
+  // All sync tokens must be flushed before being waited on.
+  return false;
+}
+
 }  // namespace gles2

@@ -117,6 +117,8 @@ class MockClientGpuControl : public GpuControl {
   MOCK_METHOD0(GenerateFenceSyncRelease, uint64_t());
   MOCK_METHOD1(IsFenceSyncRelease, bool(uint64_t release));
   MOCK_METHOD1(IsFenceSyncFlushed, bool(uint64_t release));
+  MOCK_METHOD1(IsFenceSyncFlushReceived, bool(uint64_t release));
+  MOCK_METHOD1(CanWaitUnverifiedSyncToken, bool(const SyncToken*));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockClientGpuControl);

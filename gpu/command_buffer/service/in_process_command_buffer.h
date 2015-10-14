@@ -133,6 +133,8 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   uint64_t GenerateFenceSyncRelease() override;
   bool IsFenceSyncRelease(uint64_t release) override;
   bool IsFenceSyncFlushed(uint64_t release) override;
+  bool IsFenceSyncFlushReceived(uint64_t release) override;
+  bool CanWaitUnverifiedSyncToken(const SyncToken* sync_token) override;
 
   // The serializer interface to the GPU service (i.e. thread).
   class Service {

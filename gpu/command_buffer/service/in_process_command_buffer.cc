@@ -967,6 +967,15 @@ bool InProcessCommandBuffer::IsFenceSyncFlushed(uint64_t release) {
   return release <= flushed_fence_sync_release_;
 }
 
+bool InProcessCommandBuffer::IsFenceSyncFlushReceived(uint64_t release) {
+  return IsFenceSyncFlushed(release);
+}
+
+bool InProcessCommandBuffer::CanWaitUnverifiedSyncToken(
+    const SyncToken* sync_token) {
+  return false;
+}
+
 uint32 InProcessCommandBuffer::CreateStreamTextureOnGpuThread(
     uint32 client_texture_id) {
 #if defined(OS_ANDROID)

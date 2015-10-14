@@ -24,14 +24,16 @@ namespace gpu {
 // details.
 struct GPU_EXPORT SyncToken {
   SyncToken()
-      : namespace_id_(CommandBufferNamespace::INVALID),
+      : verified_flush_(false),
+        namespace_id_(CommandBufferNamespace::INVALID),
         command_buffer_id_(0),
         release_count_(0) {}
 
   SyncToken(CommandBufferNamespace namespace_id,
             uint64_t command_buffer_id,
             uint64_t release_count)
-      : namespace_id_(namespace_id),
+      : verified_flush_(false),
+        namespace_id_(namespace_id),
         command_buffer_id_(command_buffer_id),
         release_count_(release_count) {}
 
@@ -43,12 +45,17 @@ struct GPU_EXPORT SyncToken {
     release_count_ = release_count;
   }
 
+  void SetVerifyFlush() {
+    verified_flush_ = true;
+  }
+
   int8_t* GetData() { return reinterpret_cast<int8_t*>(this); }
 
   const int8_t* GetConstData() const {
     return reinterpret_cast<const int8_t*>(this);
   }
 
+  bool verified_flush() const { return verified_flush_; }
   CommandBufferNamespace namespace_id() const { return namespace_id_; }
   uint64_t command_buffer_id() const { return command_buffer_id_; }
   uint64_t release_count() const { return release_count_; }
@@ -64,6 +71,7 @@ struct GPU_EXPORT SyncToken {
   }
 
  private:
+  bool verified_flush_;
   CommandBufferNamespace namespace_id_;
   uint64_t command_buffer_id_;
   uint64_t release_count_;

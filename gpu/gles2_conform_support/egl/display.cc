@@ -365,4 +365,12 @@ bool Display::IsFenceSyncFlushed(uint64_t release) {
   return IsFenceSyncRelease(release);
 }
 
+bool Display::IsFenceSyncFlushReceived(uint64_t release) {
+  return IsFenceSyncRelease(release);
+}
+
+bool Display::CanWaitUnverifiedSyncToken(const gpu::SyncToken* sync_token) {
+  return false;
+}
+
 }  // namespace egl

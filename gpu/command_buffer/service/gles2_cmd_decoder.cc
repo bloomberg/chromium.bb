@@ -12499,6 +12499,12 @@ error::Error GLES2DecoderImpl::HandleGenSyncTokenCHROMIUMImmediate(
   return error::kUnknownCommand;
 }
 
+error::Error GLES2DecoderImpl::HandleGenUnverifiedSyncTokenCHROMIUMImmediate(
+    uint32 immediate_data_size,
+    const void* cmd_data) {
+  return error::kUnknownCommand;
+}
+
 error::Error GLES2DecoderImpl::HandleWaitSyncTokenCHROMIUM(
     uint32 immediate_data_size,
     const void* cmd_data) {

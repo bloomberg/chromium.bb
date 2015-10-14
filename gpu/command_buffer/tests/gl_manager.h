@@ -135,6 +135,8 @@ class GLManager : private GpuControl {
   uint64_t GenerateFenceSyncRelease() override;
   bool IsFenceSyncRelease(uint64_t release) override;
   bool IsFenceSyncFlushed(uint64_t release) override;
+  bool IsFenceSyncFlushReceived(uint64_t release) override;
+  bool CanWaitUnverifiedSyncToken(const gpu::SyncToken* sync_token) override;
 
  private:
   void PumpCommands();

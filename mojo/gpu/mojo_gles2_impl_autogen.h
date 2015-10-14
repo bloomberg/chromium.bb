@@ -767,6 +767,8 @@ class MojoGLES2Impl : public gpu::gles2::GLES2Interface {
   void WaitSyncPointCHROMIUM(GLuint sync_point) override;
   GLuint64 InsertFenceSyncCHROMIUM() override;
   void GenSyncTokenCHROMIUM(GLuint64 fence_sync, GLbyte* sync_token) override;
+  void GenUnverifiedSyncTokenCHROMIUM(GLuint64 fence_sync,
+                                      GLbyte* sync_token) override;
   void WaitSyncTokenCHROMIUM(const GLbyte* sync_token) override;
   void DrawBuffersEXT(GLsizei count, const GLenum* bufs) override;
   void DiscardBackbufferCHROMIUM() override;

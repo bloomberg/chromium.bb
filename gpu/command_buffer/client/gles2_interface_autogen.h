@@ -764,6 +764,8 @@ virtual GLuint InsertSyncPointCHROMIUM() = 0;
 virtual void WaitSyncPointCHROMIUM(GLuint sync_point) = 0;
 virtual GLuint64 InsertFenceSyncCHROMIUM() = 0;
 virtual void GenSyncTokenCHROMIUM(GLuint64 fence_sync, GLbyte* sync_token) = 0;
+virtual void GenUnverifiedSyncTokenCHROMIUM(GLuint64 fence_sync,
+                                            GLbyte* sync_token) = 0;
 virtual void WaitSyncTokenCHROMIUM(const GLbyte* sync_token) = 0;
 virtual void DrawBuffersEXT(GLsizei count, const GLenum* bufs) = 0;
 virtual void DiscardBackbufferCHROMIUM() = 0;

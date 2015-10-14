@@ -204,6 +204,15 @@ bool PpapiCommandBufferProxy::IsFenceSyncFlushed(uint64_t release) {
   return release <= flushed_fence_sync_release_;
 }
 
+bool PpapiCommandBufferProxy::IsFenceSyncFlushReceived(uint64_t release) {
+  return IsFenceSyncFlushed(release);
+}
+
+bool PpapiCommandBufferProxy::CanWaitUnverifiedSyncToken(
+    const gpu::SyncToken* sync_token) {
+  return false;
+}
+
 uint32 PpapiCommandBufferProxy::InsertSyncPoint() {
   uint32 sync_point = 0;
   if (last_state_.error == gpu::error::kNoError) {

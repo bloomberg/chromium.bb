@@ -520,4 +520,12 @@ bool GLManager::IsFenceSyncFlushed(uint64_t release) {
   return IsFenceSyncRelease(release);
 }
 
+bool GLManager::IsFenceSyncFlushReceived(uint64_t release) {
+  return IsFenceSyncRelease(release);
+}
+
+bool GLManager::CanWaitUnverifiedSyncToken(const gpu::SyncToken* sync_token) {
+  return false;
+}
+
 }  // namespace gpu

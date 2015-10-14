@@ -5380,6 +5380,29 @@ void GLES2Implementation::GenSyncTokenCHROMIUM(GLuint64 fence_sync,
     SetGLError(GL_INVALID_VALUE, "glGenSyncTokenCHROMIUM",
                "invalid fence sync");
     return;
+  } else if (!gpu_control_->IsFenceSyncFlushReceived(fence_sync)) {
+    SetGLError(GL_INVALID_OPERATION, "glGenSyncTokenCHROMIUM",
+               "fence sync must be flushed before generating sync token");
+    return;
+  }
+
+  // Copy the data over after setting the data to ensure alignment.
+  SyncToken sync_token_data(gpu_control_->GetNamespaceID(),
+                            gpu_control_->GetCommandBufferID(), fence_sync);
+  sync_token_data.SetVerifyFlush();
+  memcpy(sync_token, &sync_token_data, sizeof(sync_token_data));
+}
+
+void GLES2Implementation::GenUnverifiedSyncTokenCHROMIUM(GLuint64 fence_sync,
+                                                         GLbyte* sync_token) {
+  if (!sync_token) {
+    SetGLError(GL_INVALID_VALUE, "glGenNonFlushedSyncTokenCHROMIUM",
+               "empty sync_token");
+    return;
+  } else if (!gpu_control_->IsFenceSyncRelease(fence_sync)) {
+    SetGLError(GL_INVALID_VALUE, "glGenNonFlushedSyncTokenCHROMIUM",
+               "invalid fence sync");
+    return;
   } else if (!gpu_control_->IsFenceSyncFlushed(fence_sync)) {
     SetGLError(GL_INVALID_OPERATION, "glGenSyncTokenCHROMIUM",
                "fence sync must be flushed before generating sync token");
@@ -5401,6 +5424,14 @@ void GLES2Implementation::WaitSyncTokenCHROMIUM(const GLbyte* sync_token) {
   // Copy the data over before data access to ensure alignment.
   SyncToken sync_token_data;
   memcpy(&sync_token_data, sync_token, sizeof(SyncToken));
+
+  if (!sync_token_data.verified_flush() &&
+      !gpu_control_->CanWaitUnverifiedSyncToken(&sync_token_data)) {
+    SetGLError(GL_INVALID_VALUE, "glWaitSyncTokenCHROMIUM",
+               "Cannot wait on sync_token which has not been verified");
+    return;
+  }
+
   helper_->WaitSyncTokenCHROMIUM(sync_token_data.namespace_id(),
                                  sync_token_data.command_buffer_id(),
                                  sync_token_data.release_count());

@@ -237,6 +237,16 @@ bool CommandBufferLocal::IsFenceSyncFlushed(uint64_t release) {
   return IsFenceSyncRelease(release);
 }
 
+bool CommandBufferLocal::IsFenceSyncFlushReceived(uint64_t release) {
+  return IsFenceSyncRelease(release);
+}
+
+bool CommandBufferLocal::CanWaitUnverifiedSyncToken(
+    const gpu::SyncToken* sync_token) {
+  // All sync tokens must be flushed before being waited on.
+  return false;
+}
+
 void CommandBufferLocal::PumpCommands() {
   if (!decoder_->MakeCurrent()) {
     command_buffer_->SetContextLostReason(decoder_->GetContextLostReason());
