@@ -1131,6 +1131,9 @@ crbug.com/509025 [ Yosemite ] fast/text/international/complex-character-based-fa
 crbug.com/509025 [ Yosemite ] virtual/pointerevent/fast/events/context-no-deselect.html [ Failure ]
 crbug.com/509025 [ Yosemite ] virtual/trustedeventsdefaultaction/fast/events/context-no-deselect.html [ Failure ]
 crbug.com/509025 [ Yosemite ] virtual/prefer_compositing_to_lcd_text/compositing/overflow/theme-affects-visual-overflow.html [ Failure ]
+crbug.com/509025 [ Yosemite ] virtual/rootlayerscrolls/scrollbars/rtl/overflow-scroll-rtl.html [ ImageOnlyFailure ]
+crbug.com/509025 [ Yosemite ] virtual/rootlayerscrolls/scrollbars/scrollbars-on-positioned-content.html [ ImageOnlyFailure ]
+crbug.com/509025 [ Yosemite ] virtual/rootlayerscrolls/scrollbars/short-scrollbar.html [ ImageOnlyFailure ]
 
 crbug.com/443596 media/sources-fallback-codecs.html [ Pass Failure ]
 
