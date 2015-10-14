@@ -140,6 +140,10 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
                          const CompletionCallback& callback,
                          int result);
 
+  // Calculates the size of the entire cache. Invoked when the index is ready.
+  void IndexReadyForSizeCalculation(const CompletionCallback& callback,
+                                    int result);
+
   // Try to create the directory if it doesn't exist. This must run on the IO
   // thread.
   static DiskStatResult InitCacheStructureOnDisk(const base::FilePath& path,
