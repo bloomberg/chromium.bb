@@ -19,7 +19,7 @@ public class ExternalDataUseObserver {
     /**
      * Pointer to the native ExternalDataUseObserver object.
      */
-    private long mNativeExternalDataUseObserver;
+    protected long mNativeExternalDataUseObserver;
 
     @CalledByNative
     private static ExternalDataUseObserver create(Context context, long nativePtr) {
@@ -35,7 +35,7 @@ public class ExternalDataUseObserver {
     }
 
     @CalledByNative
-    private void onDataUse(String tag, long bytesDownloaded, long bytesUploaded) {}
+    protected void onDataUse(String tag, long bytesDownloaded, long bytesUploaded) {}
 
     /**
      * Creates an instance of {@link #ExternalDataUseObserver}.
