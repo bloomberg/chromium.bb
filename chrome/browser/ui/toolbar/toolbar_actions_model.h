@@ -150,8 +150,6 @@ class ToolbarActionsModel : public extensions::ExtensionActionAPI::Observer,
   ScopedVector<ToolbarActionViewController> CreateActions(
       Browser* browser,
       ToolbarActionsBar* bar);
-  scoped_ptr<ToolbarActionViewController> CreateActionForItem(
-      Browser* browser, ToolbarActionsBar* bar, const ToolbarItem& item);
 
   const std::vector<ToolbarItem>& toolbar_items() const {
     return is_highlighting() ? highlighted_items_ : toolbar_items_;

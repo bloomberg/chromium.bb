@@ -30,6 +30,7 @@ PageActionImageView::PageActionImageView(LocationBarView* owner,
           extensions::ExtensionRegistry::Get(browser->profile())->
               enabled_extensions().GetByID(page_action->extension_id()),
           browser,
+          page_action,
           nullptr)),
       owner_(owner),
       preview_enabled_(false) {

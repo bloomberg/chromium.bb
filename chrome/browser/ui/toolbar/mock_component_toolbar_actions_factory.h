@@ -14,18 +14,18 @@ class Browser;
 class MockComponentToolbarActionsFactory
     : public ComponentToolbarActionsFactory {
  public:
-  static const char kActionIdForTesting[];
-
   explicit MockComponentToolbarActionsFactory(Browser* browser);
   ~MockComponentToolbarActionsFactory() override;
 
   // ComponentToolbarActionsFactory:
-  std::set<std::string> GetComponentIds(Profile* profile) override;
-  scoped_ptr<ToolbarActionViewController> GetComponentToolbarActionForId(
-      const std::string& id,
+  ScopedVector<ToolbarActionViewController> GetComponentToolbarActions(
       Browser* browser) override;
 
+  const std::vector<std::string>& action_ids() const { return action_ids_; }
+
  private:
+  std::vector<std::string> action_ids_;
+
   DISALLOW_COPY_AND_ASSIGN(MockComponentToolbarActionsFactory);
 };
 

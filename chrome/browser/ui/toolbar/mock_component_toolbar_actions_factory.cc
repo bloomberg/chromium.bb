@@ -8,32 +8,25 @@
 #include "chrome/browser/ui/toolbar/test_toolbar_action_view_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 
-// static
-const char MockComponentToolbarActionsFactory::kActionIdForTesting[] =
-    "mock_action";
-
 MockComponentToolbarActionsFactory::MockComponentToolbarActionsFactory(
     Browser* browser) {
   ComponentToolbarActionsFactory::SetTestingFactory(this);
+
+  ScopedVector<ToolbarActionViewController> actions =
+      GetComponentToolbarActions(browser);
+  for (const ToolbarActionViewController* action : actions)
+    action_ids_.push_back(action->GetId());
 }
 
 MockComponentToolbarActionsFactory::~MockComponentToolbarActionsFactory() {
   ComponentToolbarActionsFactory::SetTestingFactory(nullptr);
 }
 
-std::set<std::string> MockComponentToolbarActionsFactory::GetComponentIds(
-    Profile* profile) {
-  std::set<std::string> ids;
-  ids.insert(kActionIdForTesting);
-  return ids;
-}
-
-scoped_ptr<ToolbarActionViewController>
-MockComponentToolbarActionsFactory::GetComponentToolbarActionForId(
-    const std::string& id,
+ScopedVector<ToolbarActionViewController>
+MockComponentToolbarActionsFactory::GetComponentToolbarActions(
     Browser* browser) {
-  DCHECK_EQ(kActionIdForTesting, id);
-  return scoped_ptr<ToolbarActionViewController>(
-      new TestToolbarActionViewController(
-          MockComponentToolbarActionsFactory::kActionIdForTesting));
+  ScopedVector<ToolbarActionViewController> component_actions;
+  component_actions.push_back(new TestToolbarActionViewController(
+      ComponentToolbarActionsFactory::kActionIdForTesting));
+  return component_actions.Pass();
 }
