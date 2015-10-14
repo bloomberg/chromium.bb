@@ -13,7 +13,6 @@
 #include "base/threading/thread.h"
 #include "content/common/content_export.h"
 #include "content/public/renderer/render_process_observer.h"
-#include "content/renderer/media/aec_dump_message_filter.h"
 #include "content/renderer/media/webrtc/stun_field_trial.h"
 #include "content/renderer/p2p/socket_dispatcher.h"
 #include "ipc/ipc_platform_file.h"
@@ -23,6 +22,10 @@
 
 namespace base {
 class WaitableEvent;
+}
+
+namespace media {
+class GpuVideoAcceleratorFactories;
 }
 
 namespace rtc {
