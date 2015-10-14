@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.os.Bundle;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.sync.FakeProfileSyncService;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
@@ -46,8 +47,10 @@ public class PassphraseActivityTest extends NativeLibraryTestBase {
     /**
      * This is a regression test for http://crbug.com/469890.
      * @SmallTest
-     * Constantly fails on M, fine on other platforms: http://crbug.com/517590
+     * Constantly fails on M: http://crbug.com/517590
+     * Does not clean up its test accounts: http//crbug.com/542962
      */
+    @DisabledTest
     @Feature({"Sync"})
     public void testCallbackAfterBackgrounded() throws Exception {
         getInstrumentation().waitForIdleSync();
