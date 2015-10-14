@@ -147,6 +147,12 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/textures/video/tex-image-and-sub-image-2d' +
         '-with-video-rgb5_a1-rgba-unsigned_byte.html',
         ['win8'], bug=483282)
+    # Windows Debug. Causing assertions in the GPU process which raise
+    # a dialog box, so have to skip them rather than mark them as
+    # failing.
+    self.Skip('conformance2/textures/canvas/tex-image-and-sub-image-2d' +
+        '-with-canvas-rgba8-rgba-unsigned_byte.html',
+        ['win', 'debug'], bug=542901)
 
     # Mac only.
     self.Skip('deqp/data/gles3/shaders/qualification_order.html',

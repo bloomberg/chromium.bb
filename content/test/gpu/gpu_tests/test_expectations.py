@@ -165,6 +165,11 @@ class TestExpectations(object):
     # assume that.
     if (url_path and url_path[0] == '/'):
       url_path = url_path[1:]
+    # Python's urlsplit doesn't seem to handle query arguments for
+    # file:// URLs properly. Split them off manually.
+    query_index = url_path.find('?')
+    if query_index > 0:
+      url_path = url_path[0:query_index]
     return url_path
 
   def _GetExpectationObjectForPage(self, browser, page):

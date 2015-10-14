@@ -222,3 +222,9 @@ class TestExpectationsTest(unittest.TestCase):
     self.assertExpectationEquals('fail', page)
     page = page_module.Page('http://test.com/conformance/glsl/page15.html', ps)
     self.assertExpectationEquals('skip', page)
+
+  def testQueryArgsAreStrippedFromFileURLs(self):
+    ps = story_set.StorySet()
+    page = page_module.Page(
+      'file://conformance/glsl/page15.html?webglVersion=2', ps)
+    self.assertExpectationEquals('skip', page)
