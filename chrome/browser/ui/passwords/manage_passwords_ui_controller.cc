@@ -157,7 +157,8 @@ void ManagePasswordsUIController::OnAutomaticPasswordSave(
 }
 
 void ManagePasswordsUIController::OnPasswordAutofilled(
-    const PasswordFormMap& password_form_map) {
+    const PasswordFormMap& password_form_map,
+    const GURL& origin) {
   // If we fill a form while a dialog is open, then skip the state change; we
   // have
   // the information we need, and the dialog will change its own state once the
@@ -166,7 +167,7 @@ void ManagePasswordsUIController::OnPasswordAutofilled(
           password_manager::ui::AUTO_SIGNIN_STATE &&
       passwords_data_.state() !=
           password_manager::ui::CREDENTIAL_REQUEST_STATE) {
-    passwords_data_.OnPasswordAutofilled(password_form_map);
+    passwords_data_.OnPasswordAutofilled(password_form_map, origin);
     UpdateBubbleAndIconVisibility();
   }
 }

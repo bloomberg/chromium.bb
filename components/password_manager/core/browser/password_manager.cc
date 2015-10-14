@@ -740,7 +740,7 @@ void PasswordManager::Autofill(password_manager::PasswordManagerDriver* driver,
       PreferredRealmIsFromAndroid(fill_data));
   driver->FillPasswordForm(fill_data);
 
-  client_->PasswordWasAutofilled(best_matches);
+  client_->PasswordWasAutofilled(best_matches, form_for_autofill.origin);
 }
 
 void PasswordManager::AutofillHttpAuth(
@@ -758,8 +758,9 @@ void PasswordManager::AutofillHttpAuth(
 
   FOR_EACH_OBSERVER(LoginModelObserver, observers_,
                     OnAutofillDataAvailable(preferred_match));
-
-  client_->PasswordWasAutofilled(best_matches);
+  DCHECK(!best_matches.empty());
+  client_->PasswordWasAutofilled(best_matches,
+                                 best_matches.begin()->second->origin);
 }
 
 void PasswordManager::ProcessAutofillPredictions(

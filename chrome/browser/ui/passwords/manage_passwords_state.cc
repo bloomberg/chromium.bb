@@ -145,7 +145,8 @@ void ManagePasswordsState::OnAutomaticPasswordSave(
 }
 
 void ManagePasswordsState::OnPasswordAutofilled(
-    const PasswordFormMap& password_form_map) {
+    const PasswordFormMap& password_form_map,
+    const GURL& origin) {
   // TODO(vabr): Revert back to DCHECK once http://crbug.com/486931 is fixed.
   CHECK(!password_form_map.empty());
   ClearData();
@@ -156,7 +157,7 @@ void ManagePasswordsState::OnPasswordAutofilled(
     SetState(password_manager::ui::INACTIVE_STATE);
   } else {
     local_credentials_forms_ = DeepCopyMapToVector(password_form_map);
-    origin_ = local_credentials_forms_.front()->origin;
+    origin_ = origin;
     SetState(password_manager::ui::MANAGE_STATE);
   }
 }

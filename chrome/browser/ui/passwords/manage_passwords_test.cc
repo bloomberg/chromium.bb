@@ -48,7 +48,7 @@ void ManagePasswordsTest::SetupManagingPasswords() {
   autofill::PasswordFormMap map;
   map.insert(kTestUsername,
              make_scoped_ptr(new autofill::PasswordForm(*test_form())));
-  GetController()->OnPasswordAutofilled(map);
+  GetController()->OnPasswordAutofilled(map, map.begin()->second->origin);
 }
 
 void ManagePasswordsTest::SetupPendingPassword() {

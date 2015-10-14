@@ -78,7 +78,7 @@ TEST_F(ManagePasswordsBubbleManageViewControllerTest,
   map.insert(base::ASCIIToUTF16("username2"), form2.Pass());
 
   // Add the entries to the model.
-  ui_controller()->OnPasswordAutofilled(map);
+  ui_controller()->OnPasswordAutofilled(map, map.begin()->second->origin);
   model()->set_state(password_manager::ui::MANAGE_STATE);
 
   // Check the view state.

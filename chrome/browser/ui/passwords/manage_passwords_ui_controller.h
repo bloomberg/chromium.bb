@@ -70,7 +70,8 @@ class ManagePasswordsUIController
   // password credentials for the current site which are stored in
   // |password_form_map|. This stores a copy of |password_form_map| and shows
   // the manage password icon.
-  void OnPasswordAutofilled(const autofill::PasswordFormMap& password_form_map);
+  void OnPasswordAutofilled(const autofill::PasswordFormMap& password_form_map,
+                            const GURL& origin);
 
   // TODO(vasilii): remove this method. It's obsolete.
   void OnBlacklistBlockedAutofill(

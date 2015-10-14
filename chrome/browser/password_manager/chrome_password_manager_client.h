@@ -63,8 +63,8 @@ class ChromePasswordManagerClient
       ScopedVector<autofill::PasswordForm> local_forms) override;
   void AutomaticPasswordSave(scoped_ptr<password_manager::PasswordFormManager>
                                  saved_form_manager) override;
-  void PasswordWasAutofilled(
-      const autofill::PasswordFormMap& best_matches) const override;
+  void PasswordWasAutofilled(const autofill::PasswordFormMap& best_matches,
+                             const GURL& origin) const override;
   void PasswordAutofillWasBlocked(
       const autofill::PasswordFormMap& best_matches) const override;
   PrefService* GetPrefs() override;

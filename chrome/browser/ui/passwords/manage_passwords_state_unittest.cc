@@ -349,13 +349,14 @@ TEST_F(ManagePasswordsStateTest, PasswordAutofilled) {
   password_form_map.insert(
       test_local_form().username_value,
       make_scoped_ptr(new autofill::PasswordForm(test_local_form())));
-  passwords_data().OnPasswordAutofilled(password_form_map);
+  GURL origin("https://example.com");
+  passwords_data().OnPasswordAutofilled(password_form_map, origin);
 
   EXPECT_THAT(passwords_data().GetCurrentForms(),
               ElementsAre(Pointee(test_local_form())));
   EXPECT_THAT(passwords_data().federated_credentials_forms(), IsEmpty());
   EXPECT_EQ(password_manager::ui::MANAGE_STATE, passwords_data().state());
-  EXPECT_EQ(test_local_form().origin, passwords_data().origin());
+  EXPECT_EQ(origin, passwords_data().origin());
 
   // |passwords_data| should hold a separate copy of test_local_form().
   EXPECT_THAT(passwords_data().GetCurrentForms(),
@@ -370,7 +371,8 @@ TEST_F(ManagePasswordsStateTest, InactiveOnPSLMatched) {
   password_form_map.insert(
       psl_matched_test_form.username_value,
       make_scoped_ptr(new autofill::PasswordForm(psl_matched_test_form)));
-  passwords_data().OnPasswordAutofilled(password_form_map);
+  passwords_data().OnPasswordAutofilled(password_form_map,
+                                        GURL("https://m.example.com/"));
 
   EXPECT_THAT(passwords_data().GetCurrentForms(), IsEmpty());
   EXPECT_THAT(passwords_data().federated_credentials_forms(), IsEmpty());
@@ -454,7 +456,8 @@ TEST_F(ManagePasswordsStateTest, BackgroundAutofilledAddBlacklisted) {
   password_form_map.insert(
       test_local_form().username_value,
       make_scoped_ptr(new autofill::PasswordForm(test_local_form())));
-  passwords_data().OnPasswordAutofilled(password_form_map);
+  passwords_data().OnPasswordAutofilled(
+      password_form_map, password_form_map.begin()->second->origin);
   EXPECT_EQ(password_manager::ui::MANAGE_STATE, passwords_data().state());
 
   TestBlacklistedUpdates();

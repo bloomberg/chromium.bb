@@ -234,7 +234,7 @@ TEST_F(ManagePasswordsUIControllerTest, PasswordAutofilled) {
   base::string16 kTestUsername = test_form->username_value;
   autofill::PasswordFormMap map;
   map.insert(kTestUsername, test_form.Pass());
-  controller()->OnPasswordAutofilled(map);
+  controller()->OnPasswordAutofilled(map, map.begin()->second->origin);
 
   EXPECT_EQ(password_manager::ui::MANAGE_STATE, controller()->state());
   EXPECT_FALSE(controller()->PasswordPendingUserDecision());
@@ -381,7 +381,7 @@ TEST_F(ManagePasswordsUIControllerTest, BlacklistedElsewhere) {
   autofill::PasswordFormMap map;
   map.insert(kTestUsername,
              make_scoped_ptr(new autofill::PasswordForm(test_local_form())));
-  controller()->OnPasswordAutofilled(map);
+  controller()->OnPasswordAutofilled(map, map.begin()->second->origin);
 
   test_local_form().blacklisted_by_user = true;
   password_manager::PasswordStoreChange change(
@@ -561,7 +561,7 @@ TEST_F(ManagePasswordsUIControllerTest, AutofillDuringAutoSignin) {
   autofill::PasswordFormMap map;
   base::string16 kTestUsername = test_form->username_value;
   map.insert(kTestUsername, test_form.Pass());
-  controller()->OnPasswordAutofilled(map);
+  controller()->OnPasswordAutofilled(map, map.begin()->second->origin);
 
   ExpectIconAndControllerStateIs(password_manager::ui::AUTO_SIGNIN_STATE);
 }
@@ -573,7 +573,7 @@ TEST_F(ManagePasswordsUIControllerTest, InactiveOnPSLMatched) {
       new autofill::PasswordForm(test_local_form()));
   psl_matched_test_form->is_public_suffix_match = true;
   map.insert(kTestUsername, psl_matched_test_form.Pass());
-  controller()->OnPasswordAutofilled(map);
+  controller()->OnPasswordAutofilled(map, map.begin()->second->origin);
 
   EXPECT_EQ(password_manager::ui::INACTIVE_STATE, controller()->state());
 }

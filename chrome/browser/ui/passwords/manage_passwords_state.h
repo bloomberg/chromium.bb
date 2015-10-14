@@ -61,7 +61,11 @@ class ManagePasswordsState {
       scoped_ptr<password_manager::PasswordFormManager> form_manager);
 
   // Move to MANAGE_STATE or INACTIVE_STATE for PSL matched passwords.
-  void OnPasswordAutofilled(const autofill::PasswordFormMap& password_form_map);
+  // |password_form_map| contains best matches from the password store for the
+  // form which was autofilled, |origin| is an origin of the form which was
+  // autofilled.
+  void OnPasswordAutofilled(const autofill::PasswordFormMap& password_form_map,
+                            const GURL& origin);
 
   // Move to INACTIVE_STATE.
   void OnInactive();

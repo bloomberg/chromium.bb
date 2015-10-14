@@ -108,10 +108,12 @@ class PasswordManagerClient {
 
   // Called when a password is autofilled. |best_matches| contains the
   // PasswordForm into which a password was filled: the client may choose to
-  // save this to the PasswordStore, for example. Default implementation is a
+  // save this to the PasswordStore, for example. |origin| is the origin of the
+  // form into which a password was filled. Default implementation is a
   // noop.
   virtual void PasswordWasAutofilled(
-      const autofill::PasswordFormMap& best_matches) const;
+      const autofill::PasswordFormMap& best_matches,
+      const GURL& origin) const;
 
   // Called when password autofill is blocked by the blacklist. |best_matches|
   // contains the PasswordForm that flags the current site as being on the

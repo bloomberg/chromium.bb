@@ -22,8 +22,8 @@ void PasswordManagerClient::ForceSavePassword() {
 }
 
 void PasswordManagerClient::PasswordWasAutofilled(
-    const autofill::PasswordFormMap& best_matches) const {
-}
+    const autofill::PasswordFormMap& best_matches,
+    const GURL& origin) const {}
 
 void PasswordManagerClient::PasswordAutofillWasBlocked(
     const autofill::PasswordFormMap& best_matches) const {
