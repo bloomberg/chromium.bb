@@ -1063,7 +1063,7 @@ def CMDcollect(parser, args):
 
   if options.json:
     try:
-      with fs.open(options.json, 'rb') as f:
+      with fs.open(unicode(options.json), 'rb') as f:
         tasks = sorted(
             json.load(f)['tasks'].itervalues(), key=lambda x: x['shard_index'])
         args = [t['task_id'] for t in tasks]
@@ -1184,7 +1184,7 @@ def CMDquery(parser, args):
   data.pop('cursor', None)
 
   if options.json:
-    tools.write_json(options.json, data, True)
+    tools.write_json(unicode(options.json), data, True)
   else:
     try:
       tools.write_json(sys.stdout, data, False)
@@ -1209,7 +1209,7 @@ def CMDquery_list(parser, args):
   except APIError as e:
     parser.error(str(e))
   if options.json:
-    with fs.open(options.json, 'wb') as f:
+    with fs.open(unicode(options.json), 'wb') as f:
       json.dump(apis, f)
   else:
     help_url = (
@@ -1366,7 +1366,7 @@ def CMDtrigger(parser, args):
           'base_task_name': options.task_name,
           'tasks': tasks,
         }
-        tools.write_json(options.dump_json, data, True)
+        tools.write_json(unicode(options.dump_json), data, True)
         print('To collect results, use:')
         print('  swarming.py collect -S %s --json %s' %
             (options.swarming, options.dump_json))
