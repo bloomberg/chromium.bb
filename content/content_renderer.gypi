@@ -322,6 +322,8 @@
       'renderer/media/video_capture_message_filter.h',
       'renderer/media/webmediaplayer_ms.cc',
       'renderer/media/webmediaplayer_ms.h',
+      'renderer/media/webmediaplayer_ms_compositor.cc',
+      'renderer/media/webmediaplayer_ms_compositor.h',
       'renderer/memory_benchmarking_extension.cc',
       'renderer/memory_benchmarking_extension.h',
       'renderer/menu_item_builder.cc',

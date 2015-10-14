@@ -5,19 +5,15 @@
 #ifndef CONTENT_RENDERER_MEDIA_WEBMEDIAPLAYER_MS_H_
 #define CONTENT_RENDERER_MEDIA_WEBMEDIAPLAYER_MS_H_
 
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
-#include "cc/layers/video_frame_provider.h"
 #include "media/blink/skcanvas_video_renderer.h"
 #include "media/blink/webmediaplayer_util.h"
-#include "media/filters/video_renderer_algorithm.h"
 #include "media/renderers/gpu_video_accelerator_factories.h"
-#include "skia/ext/platform_canvas.h"
+
 #include "third_party/WebKit/public/platform/WebMediaPlayer.h"
-#include "url/gurl.h"
 
 namespace blink {
 class WebFrame;
@@ -28,6 +24,7 @@ class WebMediaPlayerClient;
 namespace media {
 class MediaLog;
 class WebMediaPlayerDelegate;
+class VideoFrame;
 }
 
 namespace cc_blink {
@@ -38,9 +35,13 @@ namespace content {
 class MediaStreamAudioRenderer;
 class MediaStreamRendererFactory;
 class VideoFrameProvider;
+class WebMediaPlayerMSCompositor;
 
 // WebMediaPlayerMS delegates calls from WebCore::MediaPlayerPrivate to
 // Chrome's media player when "src" is from media stream.
+//
+// All calls to WebMediaPlayerMS methods must be from the main thread of
+// Renderer process.
 //
 // WebMediaPlayerMS works with multiple objects, the most important ones are:
 //
@@ -133,99 +134,6 @@ class WebMediaPlayerMS
       bool flip_y) override;
 
  private:
-  class Compositor : public cc::VideoFrameProvider {
-   public:
-    explicit Compositor(const scoped_refptr<base::SingleThreadTaskRunner>&
-                            compositor_task_runner);
-    ~Compositor() override;
-
-    void EnqueueFrame(scoped_refptr<media::VideoFrame> const& frame);
-
-    // Statistical data
-    gfx::Size GetCurrentSize();
-    base::TimeDelta GetCurrentTime();
-    unsigned GetTotalFrameCount();
-    unsigned GetDroppedFrameCount();
-
-    // VideoFrameProvider implementation.
-    void SetVideoFrameProviderClient(
-        cc::VideoFrameProvider::Client* client) override;
-    bool UpdateCurrentFrame(base::TimeTicks deadline_min,
-                            base::TimeTicks deadline_max) override;
-    bool HasCurrentFrame() override;
-    scoped_refptr<media::VideoFrame> GetCurrentFrame() override;
-    void PutCurrentFrame() override;
-
-    void StartRendering();
-    void StopRendering();
-    void ReplaceCurrentFrameWithACopy(media::SkCanvasVideoRenderer* renderer);
-
-    // If |enabled| is true, we are going to use VideoRendererAlgorithm for
-    // frame selection. Otherwise, we just submit the most recent frame if asked
-    // by the compositor.
-    void SetAlgorithmEnabled(bool enabled);
-    bool GetAlgorithmEnabled();
-
-    // The serial is used in the trace flags to identify different instances of
-    // WebMediaPlayerMS.
-    void SetSerial(uint32 serial);
-
-   private:
-    bool GetWallClockTimes(const std::vector<base::TimeDelta>& timestamps,
-                           std::vector<base::TimeTicks>* wall_clock_times);
-
-    void SetCurrentFrame(const scoped_refptr<media::VideoFrame>& frame);
-
-    // For algorithm enabled case only: given the render interval, update
-    // current_frame_ and dropped_frame_count_.
-    void Render(base::TimeTicks deadline_min, base::TimeTicks deadline_max);
-
-    // Used for DCHECKs to ensure method calls executed in the correct thread.
-    base::ThreadChecker thread_checker_;
-
-    scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
-
-    uint32 serial_;
-
-    // A pointer back to the compositor to inform it about state changes. This
-    // is not NULL while the compositor is actively using this webmediaplayer.
-    cc::VideoFrameProvider::Client* video_frame_provider_client_;
-
-    // |current_frame_| is updated only on compositor thread. The object it
-    // holds can be freed on the compositor thread if it is the last to hold a
-    // reference but media::VideoFrame is a thread-safe ref-pointer. It is
-    // however read on the compositor and main thread so locking is required
-    // around all modifications and all reads on the any thread.
-    scoped_refptr<media::VideoFrame> current_frame_;
-
-    // |frame_pool_| serves as a frame pool, and provides a frame selection
-    // method which returns the best frame for the render interval.
-    scoped_ptr<media::VideoRendererAlgorithm> frame_pool_;
-
-    // |current_frame_used_| is updated on compositor thread only.
-    // It's used to track whether |current_frame_| was painted for detecting
-    // when to increase |dropped_frame_count_|.
-    bool current_frame_used_;
-
-    // Historical data about last rendering. These are for detecting whether
-    // rendering is paused (one reason is that the tab is not in the front), in
-    // which case we need to do background rendering.
-    base::TimeTicks last_deadline_max_;
-    base::TimeDelta last_render_length_;
-
-    unsigned total_frame_count_;
-    unsigned dropped_frame_count_;
-
-    bool paused_;
-
-    std::deque<std::pair<base::TimeDelta, base::TimeTicks>>
-        timestamps_to_clock_times_;
-
-    // |current_frame_lock_| protects |current_frame_used_| and
-    // |current_frame_|.
-    base::Lock current_frame_lock_;
-  };
-
   // The callback for VideoFrameProvider to signal a new frame is available.
   void OnFrameAvailable(const scoped_refptr<media::VideoFrame>& frame);
   // Need repaint due to state change.
@@ -240,7 +148,7 @@ class WebMediaPlayerMS
   void SetReadyState(blink::WebMediaPlayer::ReadyState state);
 
   // Getter method to |client_|.
-  blink::WebMediaPlayerClient* GetClient();
+  blink::WebMediaPlayerClient* get_client() { return client_; }
 
   blink::WebFrame* const frame_;
 
@@ -249,24 +157,20 @@ class WebMediaPlayerMS
 
   const blink::WebTimeRanges buffered_;
 
-  float volume_;
-
   blink::WebMediaPlayerClient* const client_;
 
   const base::WeakPtr<media::WebMediaPlayerDelegate> delegate_;
 
   // Specify content:: to disambiguate from cc::.
-  scoped_refptr<content::VideoFrameProvider> video_frame_provider_;
-  bool paused_;
-  bool remote_;
+  scoped_refptr<content::VideoFrameProvider> video_frame_provider_;  // Weak
 
   scoped_ptr<cc_blink::WebLayerImpl> video_weblayer_;
 
-  bool received_first_frame_;
-
-  scoped_refptr<MediaStreamAudioRenderer> audio_renderer_;
-
+  scoped_refptr<MediaStreamAudioRenderer> audio_renderer_;  // Weak
   media::SkCanvasVideoRenderer video_renderer_;
+
+  bool paused_;
+  bool received_first_frame_;
 
   scoped_refptr<media::MediaLog> media_log_;
 
@@ -279,12 +183,11 @@ class WebMediaPlayerMS
   // Used for DCHECKs to ensure methods calls executed in the correct thread.
   base::ThreadChecker thread_checker_;
 
-  // WebMediaPlayerMS owns the Compositor instance, but the destructions of
-  // compositor should take place on Compositor Thread.
-  scoped_ptr<Compositor> compositor_;
+  // WebMediaPlayerMS owns |compositor_| and destroys it on
+  // |compositor_task_runner_|.
+  scoped_ptr<WebMediaPlayerMSCompositor> compositor_;
 
-  scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
-
+  const scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerMS);
 };
