@@ -18,6 +18,7 @@
 #include "android_webview/browser/net_disk_cache_remover.h"
 #include "android_webview/browser/renderer_host/aw_resource_dispatcher_host_delegate.h"
 #include "android_webview/common/aw_descriptors.h"
+#include "android_webview/common/aw_switches.h"
 #include "android_webview/common/render_view_messages.h"
 #include "android_webview/common/url_constants.h"
 #include "base/android/locale_utils.h"
@@ -293,6 +294,14 @@ void AwContentBrowserClient::AppendExtraCommandLineSwitches(
     // The only kind of a child process WebView can have is renderer.
     DCHECK_EQ(switches::kRendererProcess,
               command_line->GetSwitchValueASCII(switches::kProcessType));
+
+    const base::CommandLine& browser_command_line =
+        *base::CommandLine::ForCurrentProcess();
+    static const char* const kCommonSwitchNames[] = {
+      switches::kDisablePageVisibility,
+    };
+    command_line->CopySwitchesFrom(browser_command_line, kCommonSwitchNames,
+                                   arraysize(kCommonSwitchNames));
   }
 }
 

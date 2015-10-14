@@ -10,6 +10,10 @@ namespace switches {
 extern const char kDisablePageVisibility[];
 extern const char kWebViewSandboxedRenderer[];
 
+// Please note that if you are adding a flag that is intended for a renderer,
+// you also need to add it into
+// AwContentBrowserClient::AppendExtraCommandLineSwitches.
+
 }  // namespace switches
 
 #endif  // ANDROID_WEBVIEW_COMMON_AW_SWITCHES_H_
