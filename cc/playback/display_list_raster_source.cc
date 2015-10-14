@@ -24,17 +24,6 @@ DisplayListRasterSource::CreateFromDisplayListRecordingSource(
       new DisplayListRasterSource(other, can_use_lcd_text));
 }
 
-DisplayListRasterSource::DisplayListRasterSource()
-    : painter_reported_memory_usage_(0),
-      background_color_(SK_ColorTRANSPARENT),
-      requires_clear_(true),
-      can_use_lcd_text_(true),
-      is_solid_color_(false),
-      solid_color_(SK_ColorTRANSPARENT),
-      clear_canvas_with_debug_color_(false),
-      slow_down_raster_scale_factor_for_debug_(0),
-      should_attempt_to_use_distance_field_text_(false) {}
-
 DisplayListRasterSource::DisplayListRasterSource(
     const DisplayListRecordingSource* other,
     bool can_use_lcd_text)

@@ -56,7 +56,6 @@ class CC_EXPORT DisplayListRasterSource : public RasterSource {
   scoped_refptr<RasterSource> CreateCloneWithoutLCDText() const override;
 
  protected:
-  DisplayListRasterSource();
   DisplayListRasterSource(const DisplayListRecordingSource* other,
                           bool can_use_lcd_text);
   DisplayListRasterSource(const DisplayListRasterSource* other,
