@@ -56,19 +56,18 @@
 namespace blink {
 
 // static
-HashSet<Page*>& Page::allPages()
+WillBePersistentHeapHashSet<RawPtrWillBeWeakMember<Page>>& Page::allPages()
 {
-    DEFINE_STATIC_LOCAL(HashSet<Page*>, allPages, ());
+    DEFINE_STATIC_LOCAL(WillBePersistentHeapHashSet<RawPtrWillBeWeakMember<Page>>, allPages, ());
     return allPages;
 }
 
 // static
-HashSet<Page*>& Page::ordinaryPages()
+WillBePersistentHeapHashSet<RawPtrWillBeWeakMember<Page>>& Page::ordinaryPages()
 {
-    DEFINE_STATIC_LOCAL(HashSet<Page*>, ordinaryPages, ());
+    DEFINE_STATIC_LOCAL(WillBePersistentHeapHashSet<RawPtrWillBeWeakMember<Page>>, ordinaryPages, ());
     return ordinaryPages;
 }
-
 
 void Page::networkStateChanged(bool online)
 {
@@ -585,9 +584,9 @@ void Page::willBeDestroyed()
         toRemoteFrame(mainFrame.get())->setView(nullptr);
     }
 
+    ASSERT(allPages().contains(this));
     allPages().remove(this);
-    if (ordinaryPages().contains(this))
-        ordinaryPages().remove(this);
+    ordinaryPages().remove(this);
 
     if (m_scrollingCoordinator)
         m_scrollingCoordinator->willBeDestroyed();

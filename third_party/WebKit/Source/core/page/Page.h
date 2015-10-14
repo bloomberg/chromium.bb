@@ -100,9 +100,9 @@ public:
 
     // This method returns all pages, incl. private ones associated with
     // inspector overlay, popups, SVGImage, etc.
-    static HashSet<Page*>& allPages();
+    static WillBePersistentHeapHashSet<RawPtrWillBeWeakMember<Page>>& allPages();
     // This method returns all ordinary pages.
-    static HashSet<Page*>& ordinaryPages();
+    static WillBePersistentHeapHashSet<RawPtrWillBeWeakMember<Page>>& ordinaryPages();
 
     FrameHost& frameHost() const { return *m_frameHost; }
 

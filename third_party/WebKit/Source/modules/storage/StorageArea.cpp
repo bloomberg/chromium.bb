@@ -163,7 +163,7 @@ size_t StorageArea::memoryBytesUsedByCache()
 void StorageArea::dispatchLocalStorageEvent(const String& key, const String& oldValue, const String& newValue, SecurityOrigin* securityOrigin, const KURL& pageURL, WebStorageArea* sourceAreaInstance, bool originatedInProcess)
 {
     // FIXME: This looks suspicious. Why doesn't this use allPages instead?
-    const HashSet<Page*>& pages = Page::ordinaryPages();
+    const WillBePersistentHeapHashSet<RawPtrWillBeWeakMember<Page>>& pages = Page::ordinaryPages();
     for (Page* page : pages) {
         for (Frame* frame = page->mainFrame(); frame; frame = frame->tree().traverseNext()) {
             // FIXME: We do not yet have a way to dispatch events to out-of-process frames.
@@ -183,7 +183,7 @@ void StorageArea::dispatchLocalStorageEvent(const String& key, const String& old
 static Page* findPageWithSessionStorageNamespace(const WebStorageNamespace& sessionNamespace)
 {
     // FIXME: This looks suspicious. Why doesn't this use allPages instead?
-    const HashSet<Page*>& pages = Page::ordinaryPages();
+    const WillBePersistentHeapHashSet<RawPtrWillBeWeakMember<Page>>& pages = Page::ordinaryPages();
     for (Page* page : pages) {
         const bool dontCreateIfMissing = false;
         StorageNamespace* storageNamespace = StorageNamespaceController::from(page)->sessionStorage(dontCreateIfMissing);

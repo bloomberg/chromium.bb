@@ -33,7 +33,7 @@ namespace blink {
 
 ScopedPageLoadDeferrer::ScopedPageLoadDeferrer(Page* exclusion)
 {
-    const HashSet<Page*>& pages = Page::ordinaryPages();
+    const WillBePersistentHeapHashSet<RawPtrWillBeWeakMember<Page>>& pages = Page::ordinaryPages();
     for (const Page* page : pages) {
         if (page == exclusion || page->defersLoading())
             continue;
