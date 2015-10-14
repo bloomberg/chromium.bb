@@ -94,15 +94,15 @@ void TaskQueueManager::UnregisterTaskQueue(
   queues_.erase(task_queue);
   selector_.RemoveQueue(task_queue.get());
 
-  // We need to remove |task_queue| from delayed_wakeup_map_ which is a little
-  // awkward since it's keyed by time. O(n) running time.
-  for (DelayedWakeupMultimap::iterator iter = delayed_wakeup_map_.begin();
-       iter != delayed_wakeup_map_.end();) {
+  // We need to remove |task_queue| from delayed_wakeup_multimap_ which is a
+  // little awkward since it's keyed by time. O(n) running time.
+  for (DelayedWakeupMultimap::iterator iter = delayed_wakeup_multimap_.begin();
+       iter != delayed_wakeup_multimap_.end();) {
     if (iter->second == task_queue.get()) {
       DelayedWakeupMultimap::iterator temp = iter;
       iter++;
       // O(1) amortized.
-      delayed_wakeup_map_.erase(temp);
+      delayed_wakeup_multimap_.erase(temp);
     } else {
       iter++;
     }
@@ -216,13 +216,14 @@ void TaskQueueManager::ScheduleDelayedWork(internal::TaskQueueImpl* queue,
 
   // Make sure there's one (and only one) task posted to |main_task_runner_|
   // to call |DelayedDoWork| at |delayed_run_time|.
-  if (delayed_wakeup_map_.find(delayed_run_time) == delayed_wakeup_map_.end()) {
+  if (delayed_wakeup_multimap_.find(delayed_run_time) ==
+      delayed_wakeup_multimap_.end()) {
     base::TimeDelta delay =
         std::max(base::TimeDelta(), delayed_run_time - lazy_now->Now());
     main_task_runner_->PostDelayedTask(FROM_HERE, delayed_queue_wakeup_closure_,
                                        delay);
   }
-  delayed_wakeup_map_.insert(std::make_pair(delayed_run_time, queue));
+  delayed_wakeup_multimap_.insert(std::make_pair(delayed_run_time, queue));
 }
 
 void TaskQueueManager::DelayedDoWork() {
@@ -241,8 +242,9 @@ void TaskQueueManager::WakeupReadyDelayedQueues(internal::LazyNow* lazy_now) {
   // the elements sorted by key, so the begin() iterator points to the earliest
   // queue to wakeup.
   std::set<internal::TaskQueueImpl*> dedup_set;
-  while (!delayed_wakeup_map_.empty()) {
-    DelayedWakeupMultimap::iterator next_wakeup = delayed_wakeup_map_.begin();
+  while (!delayed_wakeup_multimap_.empty()) {
+    DelayedWakeupMultimap::iterator next_wakeup =
+        delayed_wakeup_multimap_.begin();
     if (next_wakeup->first > lazy_now->Now())
       break;
     // A queue could have any number of delayed tasks pending so it's worthwhile
@@ -252,7 +254,7 @@ void TaskQueueManager::WakeupReadyDelayedQueues(internal::LazyNow* lazy_now) {
     // queue to execute a task from.
     if (dedup_set.insert(next_wakeup->second).second)
       next_wakeup->second->MoveReadyDelayedTasksToIncomingQueue(lazy_now);
-    delayed_wakeup_map_.erase(next_wakeup);
+    delayed_wakeup_multimap_.erase(next_wakeup);
   }
 }
 

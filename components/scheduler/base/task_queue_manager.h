@@ -221,7 +221,7 @@ class SCHEDULER_EXPORT TaskQueueManager
   typedef std::multimap<base::TimeTicks, internal::TaskQueueImpl*>
       DelayedWakeupMultimap;
 
-  DelayedWakeupMultimap delayed_wakeup_map_;
+  DelayedWakeupMultimap delayed_wakeup_multimap_;
 
   base::AtomicSequenceNumber task_sequence_num_;
   base::debug::TaskAnnotator task_annotator_;
