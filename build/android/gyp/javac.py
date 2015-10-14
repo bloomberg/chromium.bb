@@ -150,12 +150,6 @@ def _ConvertToJMakeArgs(javac_cmd, pdb_path):
   return new_args
 
 
-def _FilterJMakeOutput(stdout):
-  if md5_check.PRINT_EXPLANATIONS:
-    return stdout
-  return re.sub(r'\b(Jmake version|Writing project database).*?\n', '', stdout)
-
-
 def _FixTempPathsInIncrementalMetadata(pdb_path, temp_dir):
   # The .pdb records absolute paths. Fix up paths within /tmp (srcjars).
   if os.path.exists(pdb_path):
@@ -238,10 +232,16 @@ def _OnStaleMd5(changes, options, javac_cmd, java_files, classpath_inputs,
       # being in a temp dir makes it unstable (breaks md5 stamping).
       cmd = javac_cmd + ['-d', classes_dir] + java_files
 
+      # JMake prints out some diagnostic logs that we want to ignore.
+      # This assumes that all compiler output goes through stderr.
+      stdout_filter = lambda s: ''
+      if md5_check.PRINT_EXPLANATIONS:
+        stdout_filter = None
+
       build_utils.CheckOutput(
           cmd,
           print_stdout=options.chromium_code,
-          stdout_filter=_FilterJMakeOutput,
+          stdout_filter=stdout_filter,
           stderr_filter=ColorJavacOutput)
 
     if options.main_class or options.manifest_entry:
