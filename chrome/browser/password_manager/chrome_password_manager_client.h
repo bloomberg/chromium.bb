@@ -143,10 +143,6 @@ class ChromePasswordManagerClient
   // |can_use_log_router_|.
   void NotifyRendererOfLoggingAvailability();
 
-  // Returns true if |url| is the reauth page for accessing the password
-  // website.
-  bool IsURLPasswordWebsiteReauth(const GURL& url) const;
-
   Profile* const profile_;
 
   password_manager::PasswordManager password_manager_;

@@ -28,6 +28,8 @@ bool LastLoadWasTransactionalReauthPage(const GURL& last_load_url) {
       GaiaUrls::GetInstance()->gaia_url().GetOrigin())
     return false;
 
+  // TODO(vabr): GAIA stops using the "rart" URL param, and instead includes a
+  // hidden form field with name "rart". http://crbug.com/543085
   // "rart" is the transactional reauth paramter.
   std::string ignored_value;
   return net::GetValueForKeyInQuery(last_load_url, "rart", &ignored_value);

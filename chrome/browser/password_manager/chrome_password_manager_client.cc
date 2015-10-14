@@ -173,9 +173,6 @@ bool ChromePasswordManagerClient::IsPasswordManagementEnabledForCurrentPage()
   if (!entry) {
     // TODO(gcasto): Determine if fix for crbug.com/388246 is relevant here.
     is_enabled = true;
-  } else if (IsURLPasswordWebsiteReauth(entry->GetURL())) {
-    // Disable the password manager for online password management.
-    is_enabled = false;
   } else if (EnabledForSyncSignin()) {
     is_enabled = true;
   } else {
@@ -498,29 +495,6 @@ void ChromePasswordManagerClient::NotifyRendererOfLoggingAvailability() {
   web_contents()->GetRenderViewHost()->Send(new AutofillMsg_SetLoggingState(
       web_contents()->GetRenderViewHost()->GetRoutingID(),
       can_use_log_router_));
-}
-
-bool ChromePasswordManagerClient::IsURLPasswordWebsiteReauth(
-    const GURL& url) const {
-  if (url.GetOrigin() != GaiaUrls::GetInstance()->gaia_url().GetOrigin())
-    return false;
-
-  // "rart" param signals this page is for transactional reauth.
-  std::string param_value;
-  if (!net::GetValueForKeyInQuery(url, "rart", &param_value))
-    return false;
-
-  // Check the "continue" param to see if this reauth page is for the passwords
-  // website.
-  param_value.clear();
-  if (!net::GetValueForKeyInQuery(url, "continue", &param_value))
-    return false;
-
-  // All password sites, including test sites, have autofilling disabled.
-  CR_DEFINE_STATIC_LOCAL(RE2, account_dashboard_pattern,
-                         ("passwords(-([a-z-]+\\.corp))?\\.google\\.com"));
-
-  return RE2::FullMatch(GURL(param_value).host(), account_dashboard_pattern);
 }
 
 bool ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled() {

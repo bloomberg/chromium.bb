@@ -244,69 +244,6 @@ TEST_F(ChromePasswordManagerClientTest, LogToAReceiver) {
   EXPECT_FALSE(client->IsLoggingActive());
 }
 
-TEST_F(ChromePasswordManagerClientTest, IsFillingEnabledForCurrentPage) {
-  ChromePasswordManagerClient* client = GetClient();
-  NavigateAndCommit(
-      GURL("https://accounts.google.com/ServiceLogin?continue="
-           "https://passwords.google.com/settings&rart=123"));
-  EXPECT_FALSE(client->IsFillingEnabledForCurrentPage());
-
-  // Password site is inaccesible via HTTP, but because of HSTS the following
-  // link should still continue to https://passwords.google.com.
-  NavigateAndCommit(
-      GURL("https://accounts.google.com/ServiceLogin?continue="
-           "http://passwords.google.com/settings&rart=123"));
-  EXPECT_FALSE(client->IsSavingAndFillingEnabledForCurrentPage());
-  EXPECT_FALSE(client->IsFillingEnabledForCurrentPage());
-
-  // Specifying default port still passes.
-  NavigateAndCommit(
-      GURL("https://accounts.google.com/ServiceLogin?continue="
-           "https://passwords.google.com:443/settings&rart=123"));
-  EXPECT_FALSE(client->IsSavingAndFillingEnabledForCurrentPage());
-  EXPECT_FALSE(client->IsFillingEnabledForCurrentPage());
-
-  // Encoded URL is considered the same.
-  NavigateAndCommit(
-      GURL("https://accounts.google.com/ServiceLogin?continue="
-           "https://passwords.%67oogle.com/settings&rart=123"));
-  EXPECT_FALSE(client->IsSavingAndFillingEnabledForCurrentPage());
-  EXPECT_FALSE(client->IsFillingEnabledForCurrentPage());
-
-  // Make sure testing sites are disabled as well.
-  NavigateAndCommit(
-      GURL("https://accounts.google.com/Login?continue="
-           "https://passwords-ac-testing.corp.google.com/settings&rart=456"));
-  EXPECT_FALSE(client->IsFillingEnabledForCurrentPage());
-
-  // Fully qualified domain name is considered a different hostname by GURL.
-  // Ideally this would not be the case, but this quirk can be avoided by
-  // verification on the server. This test is simply documentation of this
-  // behavior.
-  NavigateAndCommit(
-      GURL("https://accounts.google.com/ServiceLogin?continue="
-           "https://passwords.google.com./settings&rart=123"));
-  EXPECT_TRUE(client->IsFillingEnabledForCurrentPage());
-
-  // Not a transactional reauth page.
-  NavigateAndCommit(
-      GURL("https://accounts.google.com/ServiceLogin?continue="
-           "https://passwords.google.com/settings"));
-  EXPECT_TRUE(client->IsFillingEnabledForCurrentPage());
-
-  // Should be enabled for other transactional reauth pages.
-  NavigateAndCommit(
-      GURL("https://accounts.google.com/ServiceLogin?continue="
-           "https://mail.google.com&rart=234"));
-  EXPECT_TRUE(client->IsFillingEnabledForCurrentPage());
-
-  // Reauth pages are only on accounts.google.com
-  NavigateAndCommit(
-      GURL("https://other.site.com/ServiceLogin?continue="
-           "https://passwords.google.com&rart=234"));
-  EXPECT_TRUE(client->IsFillingEnabledForCurrentPage());
-}
-
 TEST_F(ChromePasswordManagerClientTest, GetPasswordSyncState) {
   ChromePasswordManagerClient* client = GetClient();
 
@@ -463,7 +400,7 @@ TEST_F(ChromePasswordManagerClientTest, GetLastCommittedEntryURL_Empty) {
 TEST_F(ChromePasswordManagerClientTest, GetLastCommittedEntryURL) {
   GURL kUrl(
       "https://accounts.google.com/ServiceLogin?continue="
-      "https://passwords.google.com/settings&rart=123");
+      "https://passwords.google.com/settings");
   NavigateAndCommit(kUrl);
   EXPECT_EQ(kUrl, GetClient()->GetLastCommittedEntryURL());
 }
