@@ -12,7 +12,6 @@
   'variables': {
     'native_lib_target': 'libwebviewchromium',
     'native_lib_version_name': '<(version_full)',
-    'never_lint': 1,
     'shared_resources': 1,
     'extensions_to_not_compress': '.lpak,.pak,.bin,.dat',
     'asset_location': '<(INTERMEDIATE_DIR)/assets/',

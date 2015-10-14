@@ -4,6 +4,7 @@
 
 package com.android.webview.chromium;
 
+import android.annotation.TargetApi;
 import android.app.Application;
 import android.content.Context;
 import android.content.ContextWrapper;
@@ -11,6 +12,7 @@ import android.content.pm.PackageInfo;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.graphics.Canvas;
+import android.os.Build;
 import android.os.Trace;
 import android.util.SparseArray;
 import android.view.View;
@@ -197,6 +199,7 @@ class WebViewDelegateFactory {
      * reflection to call into hidden frameworks APIs released in the API-21 version of the
      * framework.
      */
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private static class Api21CompatibilityDelegate implements WebViewDelegate {
         /** Copy of Trace.TRACE_TAG_WEBVIEW */
         private static final long TRACE_TAG_WEBVIEW = 1L << 4;

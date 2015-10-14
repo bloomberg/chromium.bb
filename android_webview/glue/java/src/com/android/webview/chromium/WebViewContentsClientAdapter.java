@@ -4,6 +4,7 @@
 
 package com.android.webview.chromium;
 
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -79,6 +80,8 @@ import java.util.WeakHashMap;
  * choose the latter, because it makes for a cleaner design.
  */
 @SuppressWarnings("deprecation")
+// You shouldn't change TargetApi, please see how Android M API was added.
+@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 public class WebViewContentsClientAdapter extends AwContentsClient {
     // TAG is chosen for consistency with classic webview tracing.
     private static final String TAG = "WebViewCallback";

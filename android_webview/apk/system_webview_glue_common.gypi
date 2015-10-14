@@ -10,7 +10,6 @@
     '<(DEPTH)/android_webview/android_webview.gyp:android_webview_pak',
   ],
   'variables': {
-    'never_lint': 1,
     'resource_rewriter_package': 'com.android.webview.chromium',
     'resource_rewriter_dir': '<(intermediate_dir)/resource_rewriter',
     'resource_rewriter_path': '<(resource_rewriter_dir)/com/android/webview/chromium/ResourceRewriter.java',
