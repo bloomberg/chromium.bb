@@ -209,7 +209,8 @@ def _OnStaleMd5(changes, options, javac_cmd, java_files, classpath_inputs,
       os.makedirs(java_dir)
       for srcjar in options.java_srcjars:
         if changed_paths:
-          changed_paths.update(changes.IterChangedSubpaths(srcjar))
+          changed_paths.update(os.path.join(java_dir, f)
+                               for f in changes.IterChangedSubpaths(srcjar))
         build_utils.ExtractAll(srcjar, path=java_dir, pattern='*.java')
       jar_srcs = build_utils.FindInDirectory(java_dir, '*.java')
       jar_srcs = _FilterJavaFiles(jar_srcs, options.javac_includes)
