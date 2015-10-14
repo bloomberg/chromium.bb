@@ -1,7 +1,7 @@
 Name: LevelDB: A Fast Persistent Key-Value Store
 Short Name: leveldb
 URL: https://github.com/google/leveldb.git
-Version: r80
+Version: unknown
 License: New BSD
 License File: src/LICENSE
 Security Critical: yes
@@ -9,6 +9,10 @@ Security Critical: yes
 Description:
 Alternative to SQLite used as the backend for IndexedDB and internally by the
 FileSystem API implementation and others.
+
+Currently using the reuse-manifest branch to get leveldb's (not yet released)
+manifest reuse feature. Intend to switch to official release (or master branch)
+once leveldb puts this feature into master.
 
 Local Additions:
 * gyp file for building in chromium
