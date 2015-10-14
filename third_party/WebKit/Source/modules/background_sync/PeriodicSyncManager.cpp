@@ -54,6 +54,10 @@ unsigned long PeriodicSyncManager::minPossiblePeriod()
 
 ScriptPromise PeriodicSyncManager::registerFunction(ScriptState* scriptState, ExecutionContext* context, const PeriodicSyncRegistrationOptions& options)
 {
+    // TODO(jkarlin): Wait for the registration to become active instead of rejecting. See crbug.com/542437.
+    if (!m_registration->active())
+        return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(AbortError, "Registration failed - no active Service Worker"));
+
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
