@@ -435,6 +435,26 @@
         'includes': [ '../../build/apk_test.gypi' ],
         }
       ],
+      'conditions': [
+        ['test_isolation_mode != "noop"', {
+          'targets': [
+            {
+              'target_name': 'sandbox_linux_unittests_android_run',
+              'type': 'none',
+              'dependencies': [
+                'sandbox_linux_unittests',
+              ],
+              'includes': [
+                '../../build/isolate.gypi',
+              ],
+              'sources': [
+                '../sandbox_linux_unittests_android.isolate',
+              ],
+            },
+          ],
+        },
+      ],
+    ],
     }],
     ['test_isolation_mode != "noop"', {
       'targets': [
