@@ -137,7 +137,8 @@ class MediaStreamAudioFifo {
            new MediaStreamAudioBus(destination_channels, destination_frames)),
        data_available_(false) {
     DCHECK_GE(source_channels, destination_channels);
-    DCHECK_GT(sample_rate_, 0);
+    DCHECK_GE(sample_rate_, 8000);
+    DCHECK_LE(sample_rate_, 48000);
 
     if (source_channels > destination_channels) {
       audio_source_intermediate_ =

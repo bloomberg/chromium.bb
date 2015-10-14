@@ -456,7 +456,7 @@ TEST_F(MediaStreamAudioProcessorTest, MAYBE_TestAllSampleRates) {
   EXPECT_TRUE(audio_processor->has_audio_processing());
 
   static const int kSupportedSampleRates[] =
-      { 8000, 16000, 22050, 32000, 44100, 48000, 88200, 96000 };
+      { 8000, 16000, 22050, 32000, 44100, 48000 };
   for (size_t i = 0; i < arraysize(kSupportedSampleRates); ++i) {
     int buffer_size = (kSupportedSampleRates[i] / 100)  < 128 ?
         kSupportedSampleRates[i] / 100 : 128;
