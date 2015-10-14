@@ -869,6 +869,11 @@ void MockClientSocket::GetConnectionAttempts(ConnectionAttempts* out) const {
   out->clear();
 }
 
+int64_t MockClientSocket::GetTotalReceivedBytes() const {
+  NOTIMPLEMENTED();
+  return 0;
+}
+
 void MockClientSocket::GetSSLCertRequestInfo(
   SSLCertRequestInfo* cert_request_info) {
 }

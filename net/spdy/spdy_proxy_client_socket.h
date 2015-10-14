@@ -5,6 +5,8 @@
 #ifndef NET_SPDY_SPDY_PROXY_CLIENT_SOCKET_H_
 #define NET_SPDY_SPDY_PROXY_CLIENT_SOCKET_H_
 
+#include <stdint.h>
+
 #include <list>
 #include <string>
 
@@ -74,6 +76,7 @@ class NET_EXPORT_PRIVATE SpdyProxyClientSocket : public ProxyClientSocket,
   void GetConnectionAttempts(ConnectionAttempts* out) const override;
   void ClearConnectionAttempts() override {}
   void AddConnectionAttempts(const ConnectionAttempts& attempts) override {}
+  int64_t GetTotalReceivedBytes() const override;
 
   // Socket implementation.
   int Read(IOBuffer* buf,

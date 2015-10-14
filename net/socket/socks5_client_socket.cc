@@ -150,6 +150,10 @@ void SOCKS5ClientSocket::GetConnectionAttempts(ConnectionAttempts* out) const {
   out->clear();
 }
 
+int64_t SOCKS5ClientSocket::GetTotalReceivedBytes() const {
+  return transport_->socket()->GetTotalReceivedBytes();
+}
+
 // Read is called by the transport layer above to read. This can only be done
 // if the SOCKS handshake is complete.
 int SOCKS5ClientSocket::Read(IOBuffer* buf, int buf_len,

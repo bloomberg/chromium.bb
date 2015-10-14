@@ -178,6 +178,10 @@ void SOCKSClientSocket::GetConnectionAttempts(ConnectionAttempts* out) const {
   out->clear();
 }
 
+int64_t SOCKSClientSocket::GetTotalReceivedBytes() const {
+  return transport_->socket()->GetTotalReceivedBytes();
+}
+
 // Read is called by the transport layer above to read. This can only be done
 // if the SOCKS handshake is complete.
 int SOCKSClientSocket::Read(IOBuffer* buf, int buf_len,

@@ -132,6 +132,10 @@ class NetStreamSocketAdapter : public net::StreamSocket {
   void AddConnectionAttempts(const net::ConnectionAttempts& attempts) override {
     NOTREACHED();
   }
+  int64_t GetTotalReceivedBytes() const override {
+    NOTIMPLEMENTED();
+    return 0;
+  }
 
  private:
   scoped_ptr<P2PStreamSocket> socket_;

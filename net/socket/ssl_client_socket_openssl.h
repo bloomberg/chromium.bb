@@ -7,6 +7,7 @@
 
 #include <openssl/base.h>
 #include <openssl/ssl.h>
+#include <stdint.h>
 
 #include <string>
 #include <vector>
@@ -83,6 +84,7 @@ class SSLClientSocketOpenSSL : public SSLClientSocket {
   void GetConnectionAttempts(ConnectionAttempts* out) const override;
   void ClearConnectionAttempts() override {}
   void AddConnectionAttempts(const ConnectionAttempts& attempts) override {}
+  int64_t GetTotalReceivedBytes() const override;
 
   // Socket implementation.
   int Read(IOBuffer* buf,

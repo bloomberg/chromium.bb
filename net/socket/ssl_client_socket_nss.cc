@@ -2448,6 +2448,11 @@ void SSLClientSocketNSS::GetConnectionAttempts(ConnectionAttempts* out) const {
   out->clear();
 }
 
+int64_t SSLClientSocketNSS::GetTotalReceivedBytes() const {
+  NOTIMPLEMENTED();
+  return 0;
+}
+
 void SSLClientSocketNSS::GetSSLCertRequestInfo(
     SSLCertRequestInfo* cert_request_info) {
   EnterFunction("");

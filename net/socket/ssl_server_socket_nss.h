@@ -9,6 +9,7 @@
 #include <keyt.h>
 #include <nspr.h>
 #include <nss.h>
+#include <stdint.h>
 
 #include "base/memory/scoped_ptr.h"
 #include "net/base/completion_callback.h"
@@ -69,6 +70,7 @@ class SSLServerSocketNSS : public SSLServerSocket {
   void GetConnectionAttempts(ConnectionAttempts* out) const override;
   void ClearConnectionAttempts() override {}
   void AddConnectionAttempts(const ConnectionAttempts& attempts) override {}
+  int64_t GetTotalReceivedBytes() const override;
 
  private:
   enum State {

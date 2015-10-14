@@ -16,6 +16,8 @@
 #ifndef JINGLE_GLUE_FAKE_SSL_CLIENT_SOCKET_H_
 #define JINGLE_GLUE_FAKE_SSL_CLIENT_SOCKET_H_
 
+#include <stdint.h>
+
 #include <cstddef>
 
 #include "base/basictypes.h"
@@ -71,6 +73,7 @@ class FakeSSLClientSocket : public net::StreamSocket {
   void ClearConnectionAttempts() override {}
   void AddConnectionAttempts(const net::ConnectionAttempts& attempts) override {
   }
+  int64_t GetTotalReceivedBytes() const override;
 
  private:
   enum HandshakeState {

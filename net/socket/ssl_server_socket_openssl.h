@@ -5,6 +5,8 @@
 #ifndef NET_SOCKET_SSL_SERVER_SOCKET_OPENSSL_H_
 #define NET_SOCKET_SSL_SERVER_SOCKET_OPENSSL_H_
 
+#include <stdint.h>
+
 #include "base/memory/scoped_ptr.h"
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
@@ -71,6 +73,7 @@ class SSLServerSocketOpenSSL : public SSLServerSocket {
   void GetConnectionAttempts(ConnectionAttempts* out) const override;
   void ClearConnectionAttempts() override {}
   void AddConnectionAttempts(const ConnectionAttempts& attempts) override {}
+  int64_t GetTotalReceivedBytes() const override;
 
  private:
   enum State {

@@ -4,6 +4,8 @@
 
 #include "net/socket/transport_client_socket_pool_test_util.h"
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/location.h"
@@ -77,6 +79,10 @@ class MockConnectClientSocket : public StreamSocket {
   }
   void ClearConnectionAttempts() override {}
   void AddConnectionAttempts(const ConnectionAttempts& attempts) override {}
+  int64_t GetTotalReceivedBytes() const override {
+    NOTIMPLEMENTED();
+    return 0;
+  }
 
   // Socket implementation.
   int Read(IOBuffer* buf,
@@ -140,6 +146,10 @@ class MockFailingClientSocket : public StreamSocket {
   }
   void ClearConnectionAttempts() override {}
   void AddConnectionAttempts(const ConnectionAttempts& attempts) override {}
+  int64_t GetTotalReceivedBytes() const override {
+    NOTIMPLEMENTED();
+    return 0;
+  }
 
   // Socket implementation.
   int Read(IOBuffer* buf,
@@ -265,6 +275,10 @@ class MockTriggerableClientSocket : public StreamSocket {
   void AddConnectionAttempts(const ConnectionAttempts& attempts) override {
     connection_attempts_.insert(connection_attempts_.begin(), attempts.begin(),
                                 attempts.end());
+  }
+  int64_t GetTotalReceivedBytes() const override {
+    NOTIMPLEMENTED();
+    return 0;
   }
 
   // Socket implementation.

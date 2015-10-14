@@ -274,6 +274,10 @@ void HttpProxyClientSocketWrapper::AddConnectionAttempts(
     transport_socket_->AddConnectionAttempts(attempts);
 }
 
+int64_t HttpProxyClientSocketWrapper::GetTotalReceivedBytes() const {
+  return transport_socket_->GetTotalReceivedBytes();
+}
+
 int HttpProxyClientSocketWrapper::Read(IOBuffer* buf,
                                        int buf_len,
                                        const CompletionCallback& callback) {

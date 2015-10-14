@@ -349,4 +349,9 @@ void FakeSSLClientSocket::GetConnectionAttempts(
   out->clear();
 }
 
+int64_t FakeSSLClientSocket::GetTotalReceivedBytes() const {
+  NOTIMPLEMENTED();
+  return 0;
+}
+
 }  // namespace jingle_glue

@@ -5,6 +5,8 @@
 #ifndef NET_HTTP_HTTP_PROXY_CLIENT_SOCKET_H_
 #define NET_HTTP_HTTP_PROXY_CLIENT_SOCKET_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/basictypes.h"
@@ -73,6 +75,7 @@ class HttpProxyClientSocket : public ProxyClientSocket {
   void GetConnectionAttempts(ConnectionAttempts* out) const override;
   void ClearConnectionAttempts() override {}
   void AddConnectionAttempts(const ConnectionAttempts& attempts) override {}
+  int64_t GetTotalReceivedBytes() const override;
 
   // Socket implementation.
   int Read(IOBuffer* buf,

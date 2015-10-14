@@ -253,6 +253,10 @@ void SSLServerSocketOpenSSL::GetConnectionAttempts(
   out->clear();
 }
 
+int64_t SSLServerSocketOpenSSL::GetTotalReceivedBytes() const {
+  return transport_socket_->GetTotalReceivedBytes();
+}
+
 void SSLServerSocketOpenSSL::OnSendComplete(int result) {
   if (next_handshake_state_ == STATE_HANDSHAKE) {
     // In handshake phase.

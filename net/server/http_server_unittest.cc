@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include <algorithm>
 #include <utility>
 #include <vector>
@@ -12,6 +14,7 @@
 #include "base/compiler_specific.h"
 #include "base/format_macros.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -503,6 +506,10 @@ class MockStreamSocket : public StreamSocket {
   }
   void ClearConnectionAttempts() override {}
   void AddConnectionAttempts(const ConnectionAttempts& attempts) override {}
+  int64_t GetTotalReceivedBytes() const override {
+    NOTIMPLEMENTED();
+    return 0;
+  }
 
   // Socket
   int Read(IOBuffer* buf,

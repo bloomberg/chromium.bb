@@ -5,6 +5,7 @@
 #include "chrome/browser/devtools/device/usb/android_usb_socket.h"
 
 #include "base/callback_helpers.h"
+#include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "net/base/net_errors.h"
 
@@ -237,6 +238,11 @@ bool AndroidUsbSocket::GetSSLInfo(net::SSLInfo* ssl_info) {
 void AndroidUsbSocket::GetConnectionAttempts(
     net::ConnectionAttempts* out) const {
   out->clear();
+}
+
+int64_t AndroidUsbSocket::GetTotalReceivedBytes() const {
+  NOTIMPLEMENTED();
+  return 0;
 }
 
 void AndroidUsbSocket::RespondToReader(bool disconnect) {

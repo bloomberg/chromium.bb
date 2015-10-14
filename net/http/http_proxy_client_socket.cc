@@ -212,6 +212,10 @@ void HttpProxyClientSocket::GetConnectionAttempts(
   out->clear();
 }
 
+int64_t HttpProxyClientSocket::GetTotalReceivedBytes() const {
+  return transport_->socket()->GetTotalReceivedBytes();
+}
+
 int HttpProxyClientSocket::Read(IOBuffer* buf, int buf_len,
                                 const CompletionCallback& callback) {
   DCHECK(user_callback_.is_null());

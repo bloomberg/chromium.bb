@@ -71,6 +71,7 @@ class MockClientSocket : public net::StreamSocket {
   MOCK_CONST_METHOD1(GetConnectionAttempts, void(net::ConnectionAttempts*));
   MOCK_METHOD0(ClearConnectionAttempts, void());
   MOCK_METHOD1(AddConnectionAttempts, void(const net::ConnectionAttempts&));
+  MOCK_CONST_METHOD0(GetTotalReceivedBytes, int64_t());
 };
 
 // Break up |data| into a bunch of chunked MockReads/Writes and push

@@ -5,6 +5,8 @@
 #ifndef NET_SOCKET_UNIX_DOMAIN_CLIENT_SOCKET_POSIX_H_
 #define NET_SOCKET_UNIX_DOMAIN_CLIENT_SOCKET_POSIX_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/basictypes.h"
@@ -58,6 +60,7 @@ class NET_EXPORT UnixDomainClientSocket : public StreamSocket {
   void GetConnectionAttempts(ConnectionAttempts* out) const override;
   void ClearConnectionAttempts() override {}
   void AddConnectionAttempts(const ConnectionAttempts& attempts) override {}
+  int64_t GetTotalReceivedBytes() const override;
 
   // Socket implementation.
   int Read(IOBuffer* buf,

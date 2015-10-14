@@ -4,9 +4,12 @@
 
 #include "net/spdy/spdy_test_util_common.h"
 
+#include <stdint.h>
+
 #include <cstddef>
 
 #include "base/compiler_specific.h"
+#include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -659,6 +662,11 @@ class FakeSpdySessionClientSocket : public MockClientSocket {
   bool GetSSLInfo(SSLInfo* ssl_info) override {
     ADD_FAILURE();
     return false;
+  }
+
+  int64_t GetTotalReceivedBytes() const override {
+    NOTIMPLEMENTED();
+    return 0;
   }
 
  private:

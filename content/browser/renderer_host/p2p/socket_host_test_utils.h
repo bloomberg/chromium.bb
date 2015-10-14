@@ -67,6 +67,7 @@ class FakeSocket : public net::StreamSocket {
   void ClearConnectionAttempts() override {}
   void AddConnectionAttempts(const net::ConnectionAttempts& attempts) override {
   }
+  int64_t GetTotalReceivedBytes() const override;
 
  private:
   void DoAsyncWrite(scoped_refptr<net::IOBuffer> buf, int buf_len,

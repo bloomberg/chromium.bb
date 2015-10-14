@@ -5,6 +5,8 @@
 #ifndef NET_SOCKET_SOCKS_CLIENT_SOCKET_H_
 #define NET_SOCKET_SOCKS_CLIENT_SOCKET_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/basictypes.h"
@@ -55,6 +57,7 @@ class NET_EXPORT_PRIVATE SOCKSClientSocket : public StreamSocket {
   void GetConnectionAttempts(ConnectionAttempts* out) const override;
   void ClearConnectionAttempts() override {}
   void AddConnectionAttempts(const ConnectionAttempts& attempts) override {}
+  int64_t GetTotalReceivedBytes() const override;
 
   // Socket implementation.
   int Read(IOBuffer* buf,

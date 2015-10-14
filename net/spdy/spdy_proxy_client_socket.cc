@@ -194,6 +194,11 @@ void SpdyProxyClientSocket::GetConnectionAttempts(
   out->clear();
 }
 
+int64_t SpdyProxyClientSocket::GetTotalReceivedBytes() const {
+  NOTIMPLEMENTED();
+  return 0;
+}
+
 int SpdyProxyClientSocket::Read(IOBuffer* buf, int buf_len,
                                 const CompletionCallback& callback) {
   DCHECK(read_callback_.is_null());

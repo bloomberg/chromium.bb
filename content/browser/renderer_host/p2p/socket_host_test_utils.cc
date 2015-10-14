@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/p2p/socket_host_test_utils.h"
 
+#include "base/logging.h"
 #include "base/sys_byteorder.h"
 #include "base/thread_task_runner_handle.h"
 #include "net/base/completion_callback.h"
@@ -174,6 +175,11 @@ bool FakeSocket::GetSSLInfo(net::SSLInfo* ssl_info) {
 
 void FakeSocket::GetConnectionAttempts(net::ConnectionAttempts* out) const {
   out->clear();
+}
+
+int64_t FakeSocket::GetTotalReceivedBytes() const {
+  NOTIMPLEMENTED();
+  return 0;
 }
 
 void CreateRandomPacket(std::vector<char>* packet) {

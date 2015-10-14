@@ -4,6 +4,8 @@
 
 #include "net/socket/client_socket_pool_base.h"
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/bind.h"
@@ -186,6 +188,10 @@ class MockClientSocket : public StreamSocket {
   }
   void ClearConnectionAttempts() override {}
   void AddConnectionAttempts(const ConnectionAttempts& attempts) override {}
+  int64_t GetTotalReceivedBytes() const override {
+    NOTIMPLEMENTED();
+    return 0;
+  }
 
  private:
   bool connected_;

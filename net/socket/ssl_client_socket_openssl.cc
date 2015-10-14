@@ -743,6 +743,10 @@ void SSLClientSocketOpenSSL::GetConnectionAttempts(
   out->clear();
 }
 
+int64_t SSLClientSocketOpenSSL::GetTotalReceivedBytes() const {
+  return transport_->socket()->GetTotalReceivedBytes();
+}
+
 int SSLClientSocketOpenSSL::Read(IOBuffer* buf,
                                  int buf_len,
                                  const CompletionCallback& callback) {

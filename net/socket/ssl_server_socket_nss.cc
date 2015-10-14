@@ -31,6 +31,7 @@
 
 #include "base/callback_helpers.h"
 #include "base/lazy_instance.h"
+#include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "crypto/nss_util_internal.h"
 #include "crypto/rsa_private_key.h"
@@ -309,6 +310,11 @@ bool SSLServerSocketNSS::GetSSLInfo(SSLInfo* ssl_info) {
 
 void SSLServerSocketNSS::GetConnectionAttempts(ConnectionAttempts* out) const {
   out->clear();
+}
+
+int64_t SSLServerSocketNSS::GetTotalReceivedBytes() const {
+  NOTIMPLEMENTED();
+  return 0;
 }
 
 int SSLServerSocketNSS::InitializeSSLOptions() {

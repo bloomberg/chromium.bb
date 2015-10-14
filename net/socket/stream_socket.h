@@ -5,6 +5,8 @@
 #ifndef NET_SOCKET_STREAM_SOCKET_H_
 #define NET_SOCKET_STREAM_SOCKET_H_
 
+#include <stdint.h>
+
 #include "net/log/net_log.h"
 #include "net/socket/connection_attempts.h"
 #include "net/socket/next_proto.h"
@@ -105,6 +107,12 @@ class NET_EXPORT_PRIVATE StreamSocket : public Socket {
 
   // Adds |attempts| to the socket's list of connection attempts.
   virtual void AddConnectionAttempts(const ConnectionAttempts& attempts) = 0;
+
+  // Returns the total number of number bytes read by the socket. This only
+  // counts the payload bytes. Transport headers are not counted. Returns
+  // 0 if the socket does not implement the function. The count is reset when
+  // Disconnect() is called.
+  virtual int64_t GetTotalReceivedBytes() const = 0;
 
  protected:
   // The following class is only used to gather statistics about the history of

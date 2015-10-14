@@ -104,6 +104,9 @@ class WrappedStreamSocket : public StreamSocket {
   void AddConnectionAttempts(const ConnectionAttempts& attempts) override {
     transport_->AddConnectionAttempts(attempts);
   }
+  int64_t GetTotalReceivedBytes() const override {
+    return transport_->GetTotalReceivedBytes();
+  }
 
   // Socket implementation:
   int Read(IOBuffer* buf,
@@ -1213,6 +1216,8 @@ TEST_F(SSLClientSocketTest, Read) {
   TestCompletionCallback callback;
   scoped_ptr<StreamSocket> transport(
       new TCPClientSocket(addr, NULL, NetLog::Source()));
+  DCHECK_EQ(0, transport->GetTotalReceivedBytes());
+
   int rv = transport->Connect(callback.callback());
   if (rv == ERR_IO_PENDING)
     rv = callback.WaitForResult();
@@ -1220,12 +1225,17 @@ TEST_F(SSLClientSocketTest, Read) {
 
   scoped_ptr<SSLClientSocket> sock(CreateSSLClientSocket(
       transport.Pass(), test_server.host_port_pair(), SSLConfig()));
+  DCHECK_EQ(0, sock->GetTotalReceivedBytes());
 
   rv = sock->Connect(callback.callback());
   if (rv == ERR_IO_PENDING)
     rv = callback.WaitForResult();
   EXPECT_EQ(OK, rv);
   EXPECT_TRUE(sock->IsConnected());
+
+  // Number of network bytes received should increase because of SSL socket
+  // establishment.
+  DCHECK_GT(sock->GetTotalReceivedBytes(), 0);
 
   const char request_text[] = "GET / HTTP/1.0\r\n\r\n";
   scoped_refptr<IOBuffer> request_buffer(
@@ -1241,6 +1251,8 @@ TEST_F(SSLClientSocketTest, Read) {
   EXPECT_EQ(static_cast<int>(arraysize(request_text) - 1), rv);
 
   scoped_refptr<IOBuffer> buf(new IOBuffer(4096));
+  int64_t unencrypted_bytes_read = 0;
+  int64_t network_bytes_read_during_handshake = sock->GetTotalReceivedBytes();
   for (;;) {
     rv = sock->Read(buf.get(), 4096, callback.callback());
     EXPECT_TRUE(rv >= 0 || rv == ERR_IO_PENDING);
@@ -1251,7 +1263,15 @@ TEST_F(SSLClientSocketTest, Read) {
     EXPECT_GE(rv, 0);
     if (rv <= 0)
       break;
+    unencrypted_bytes_read += rv;
   }
+  DCHECK_GT(unencrypted_bytes_read, 0);
+  // Reading the payload should increase the number of bytes on network layer.
+  DCHECK_GT(sock->GetTotalReceivedBytes(), network_bytes_read_during_handshake);
+  // Number of bytes received on the network after the handshake should be
+  // higher than the number of encrypted bytes read.
+  DCHECK_GE(sock->GetTotalReceivedBytes() - network_bytes_read_during_handshake,
+            unencrypted_bytes_read);
 
   // The peer should have cleanly closed the connection with a close_notify.
   EXPECT_EQ(0, rv);

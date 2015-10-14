@@ -425,6 +425,11 @@ void ProxyResolvingClientSocket::GetConnectionAttempts(
   out->clear();
 }
 
+int64_t ProxyResolvingClientSocket::GetTotalReceivedBytes() const {
+  NOTIMPLEMENTED();
+  return 0;
+}
+
 void ProxyResolvingClientSocket::CloseTransportSocket() {
   if (transport_.get() && transport_->socket())
     transport_->socket()->Disconnect();

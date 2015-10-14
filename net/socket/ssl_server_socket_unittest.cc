@@ -15,6 +15,7 @@
 
 #include "net/socket/ssl_server_socket.h"
 
+#include <stdint.h>
 #include <stdlib.h>
 
 #include <queue>
@@ -23,6 +24,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
@@ -238,6 +240,11 @@ class FakeSocket : public StreamSocket {
   void ClearConnectionAttempts() override {}
 
   void AddConnectionAttempts(const ConnectionAttempts& attempts) override {}
+
+  int64_t GetTotalReceivedBytes() const override {
+    NOTIMPLEMENTED();
+    return 0;
+  }
 
  private:
   BoundNetLog net_log_;

@@ -4,6 +4,7 @@
 
 #include "net/socket/websocket_endpoint_lock_manager.h"
 
+#include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"
@@ -61,6 +62,11 @@ class FakeStreamSocket : public StreamSocket {
   void ClearConnectionAttempts() override {}
 
   void AddConnectionAttempts(const ConnectionAttempts& attempts) override {}
+
+  int64_t GetTotalReceivedBytes() const override {
+    NOTIMPLEMENTED();
+    return 0;
+  }
 
   // Socket implementation
   int Read(IOBuffer* buf,

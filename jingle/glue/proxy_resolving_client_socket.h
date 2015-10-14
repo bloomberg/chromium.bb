@@ -8,6 +8,8 @@
 #ifndef JINGLE_GLUE_PROXY_RESOLVING_CLIENT_SOCKET_H_
 #define JINGLE_GLUE_PROXY_RESOLVING_CLIENT_SOCKET_H_
 
+#include <stdint.h>
+
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
@@ -74,6 +76,7 @@ class ProxyResolvingClientSocket : public net::StreamSocket {
   void ClearConnectionAttempts() override {}
   void AddConnectionAttempts(const net::ConnectionAttempts& attempts) override {
   }
+  int64_t GetTotalReceivedBytes() const override;
 
  private:
   // Proxy resolution and connection functions.

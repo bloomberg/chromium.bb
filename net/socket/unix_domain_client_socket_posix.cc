@@ -152,6 +152,11 @@ void UnixDomainClientSocket::GetConnectionAttempts(
   out->clear();
 }
 
+int64_t UnixDomainClientSocket::GetTotalReceivedBytes() const {
+  NOTIMPLEMENTED();
+  return 0;
+}
+
 int UnixDomainClientSocket::Read(IOBuffer* buf, int buf_len,
                                  const CompletionCallback& callback) {
   DCHECK(socket_);

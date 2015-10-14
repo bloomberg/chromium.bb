@@ -4,6 +4,8 @@
 
 #include "extensions/browser/api/socket/tls_socket.h"
 
+#include <stdint.h>
+
 #include <deque>
 #include <utility>
 
@@ -56,6 +58,7 @@ class MockSSLClientSocket : public net::SSLClientSocket {
   MOCK_CONST_METHOD1(GetConnectionAttempts, void(net::ConnectionAttempts*));
   MOCK_METHOD0(ClearConnectionAttempts, void());
   MOCK_METHOD1(AddConnectionAttempts, void(const net::ConnectionAttempts&));
+  MOCK_CONST_METHOD0(GetTotalReceivedBytes, int64_t());
   MOCK_METHOD5(ExportKeyingMaterial,
                int(const StringPiece&,
                    bool,
