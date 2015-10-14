@@ -900,6 +900,7 @@ void MediaGalleriesAddScanResultsFunction::ReturnGalleries(
 MediaGalleriesGetMetadataFunction::~MediaGalleriesGetMetadataFunction() {}
 
 bool MediaGalleriesGetMetadataFunction::RunAsync() {
+  media_galleries::UsageCount(media_galleries::GET_METADATA);
   std::string blob_uuid;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &blob_uuid));
 
@@ -1203,6 +1204,7 @@ MediaGalleriesGetAllGalleryWatchFunction::
 
 bool MediaGalleriesGetAllGalleryWatchFunction::RunAsync() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  media_galleries::UsageCount(media_galleries::GET_ALL_GALLERY_WATCH);
   if (!render_frame_host() || !render_frame_host()->GetProcess())
     return false;
 
@@ -1237,6 +1239,7 @@ MediaGalleriesRemoveAllGalleryWatchFunction::
 
 bool MediaGalleriesRemoveAllGalleryWatchFunction::RunAsync() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  media_galleries::UsageCount(media_galleries::REMOVE_ALL_GALLERY_WATCH);
   if (!render_frame_host() || !render_frame_host()->GetProcess())
     return false;
 

@@ -23,6 +23,7 @@
 #include "chrome/browser/media_galleries/fileapi/media_path_filter.h"
 #include "chrome/browser/media_galleries/fileapi/native_media_file_util.h"
 #include "chrome/browser/media_galleries/media_file_system_registry.h"
+#include "chrome/browser/media_galleries/media_galleries_histograms.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
@@ -134,11 +135,14 @@ MediaFileSystemBackend::MediaFileSystemBackend(
 #if defined(OS_WIN) || defined(OS_MACOSX)
       ,
       picasa_file_util_(new picasa::PicasaFileUtil(media_path_filter_.get())),
-      itunes_file_util_(new itunes::ITunesFileUtil(media_path_filter_.get()))
+      itunes_file_util_(new itunes::ITunesFileUtil(media_path_filter_.get())),
+      picasa_file_util_used_(false),
+      itunes_file_util_used_(false)
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
 #if defined(OS_MACOSX)
       ,
-      iphoto_file_util_(new iphoto::IPhotoFileUtil(media_path_filter_.get()))
+      iphoto_file_util_(new iphoto::IPhotoFileUtil(media_path_filter_.get())),
+      iphoto_file_util_used_(false)
 #endif  // defined(OS_MACOSX)
 {
 }
@@ -252,6 +256,8 @@ void MediaFileSystemBackend::ResolveURL(
 
 storage::AsyncFileUtil* MediaFileSystemBackend::GetAsyncFileUtil(
     storage::FileSystemType type) {
+  // We count file system usages here, because we want to count (per session)
+  // when the file system is actually used for I/O, rather than merely present.
   switch (type) {
     case storage::kFileSystemTypeNativeMedia:
       return native_media_file_util_.get();
@@ -259,12 +265,24 @@ storage::AsyncFileUtil* MediaFileSystemBackend::GetAsyncFileUtil(
       return device_media_async_file_util_.get();
 #if defined(OS_WIN) || defined(OS_MACOSX)
     case storage::kFileSystemTypeItunes:
+      if (!itunes_file_util_used_) {
+        media_galleries::UsageCount(media_galleries::ITUNES_FILE_SYSTEM_USED);
+        itunes_file_util_used_ = true;
+      }
       return itunes_file_util_.get();
     case storage::kFileSystemTypePicasa:
+      if (!picasa_file_util_used_) {
+        media_galleries::UsageCount(media_galleries::PICASA_FILE_SYSTEM_USED);
+        picasa_file_util_used_ = true;
+      }
       return picasa_file_util_.get();
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
 #if defined(OS_MACOSX)
     case storage::kFileSystemTypeIphoto:
+      if (!iphoto_file_util_used_) {
+        media_galleries::UsageCount(media_galleries::IPHOTO_FILE_SYSTEM_USED);
+        iphoto_file_util_used_ = true;
+      }
       return iphoto_file_util_.get();
 #endif  // defined(OS_MACOSX)
     default:

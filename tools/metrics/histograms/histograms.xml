@@ -65626,6 +65626,11 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="20" label="Gallery removed from AddScanResults dialog"/>
   <int value="21" label="Gallery removed from permission dialog"/>
   <int value="22" label="DropPermissionForMediaFileSystem API invocations"/>
+  <int value="23" label="GetAllGalleryWatch API invocations"/>
+  <int value="24" label="RemoveAllGalleryWatch API invocations"/>
+  <int value="25" label="iTunes file system used this session"/>
+  <int value="26" label="Picasa file system used this session"/>
+  <int value="27" label="iPhoto file system used this session"/>
 </enum>
 
 <enum name="MediaKeyError" type="int">
