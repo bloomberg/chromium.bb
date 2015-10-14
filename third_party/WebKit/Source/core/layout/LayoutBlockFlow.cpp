@@ -1752,7 +1752,7 @@ void LayoutBlockFlow::markAllDescendantsWithFloatsForLayout(LayoutBox* floatToRe
         removeFloatingObject(floatToRemove);
 
     // Iterate over our children and mark them as needed.
-    if (!childrenInline() || floatToRemove) {
+    if (!childrenInline()) {
         for (LayoutObject* child = firstChild(); child; child = child->nextSibling()) {
             if ((!floatToRemove && child->isFloatingOrOutOfFlowPositioned()) || !child->isLayoutBlock())
                 continue;

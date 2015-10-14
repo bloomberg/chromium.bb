@@ -634,9 +634,10 @@ void LayoutBlock::collapseAnonymousBlockChild(LayoutBlock* parent, LayoutBlock* 
     if (child->beingDestroyed())
         return;
     parent->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::ChildAnonymousBlockChanged);
-    parent->setChildrenInline(child->childrenInline());
 
     child->moveAllChildrenTo(parent, child->nextSibling(), child->hasLayer());
+    parent->setChildrenInline(child->childrenInline());
+
     parent->children()->removeChildNode(parent, child, child->hasLayer());
     child->destroy();
 }
