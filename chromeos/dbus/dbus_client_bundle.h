@@ -14,6 +14,7 @@ namespace chromeos {
 
 class AmplifierClient;
 class ApManagerClient;
+class ArcBridgeClient;
 class AudioDspClient;
 class BluetoothAdapterClient;
 class BluetoothAgentManagerClient;
@@ -92,6 +93,7 @@ class CHROMEOS_EXPORT DBusClientBundle {
     PRIVET_DAEMON =        1 << 21,
     AMPLIFIER =            1 << 22,
     AUDIO_DSP =            1 << 23,
+    ARC_BRIDGE =           1 << 24,
   };
 
   explicit DBusClientBundle(DBusClientTypeMask unstub_client_mask);
@@ -113,6 +115,8 @@ class CHROMEOS_EXPORT DBusClientBundle {
   AmplifierClient* amplifier_client() { return amplifier_client_.get(); }
 
   ApManagerClient* ap_manager_client() { return ap_manager_client_.get(); }
+
+  ArcBridgeClient* arc_bridge_client() { return arc_bridge_client_.get(); }
 
   AudioDspClient* audio_dsp_client() { return audio_dsp_client_.get(); }
 
@@ -290,6 +294,7 @@ class CHROMEOS_EXPORT DBusClientBundle {
 
   scoped_ptr<AmplifierClient> amplifier_client_;
   scoped_ptr<ApManagerClient> ap_manager_client_;
+  scoped_ptr<ArcBridgeClient> arc_bridge_client_;
   scoped_ptr<AudioDspClient> audio_dsp_client_;
   scoped_ptr<BluetoothAdapterClient> bluetooth_adapter_client_;
   scoped_ptr<BluetoothLEAdvertisingManagerClient>

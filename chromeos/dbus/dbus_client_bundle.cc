@@ -12,6 +12,7 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/amplifier_client.h"
 #include "chromeos/dbus/ap_manager_client.h"
+#include "chromeos/dbus/arc_bridge_client.h"
 #include "chromeos/dbus/audio_dsp_client.h"
 #include "chromeos/dbus/bluetooth_adapter_client.h"
 #include "chromeos/dbus/bluetooth_agent_manager_client.h"
@@ -32,6 +33,7 @@
 #include "chromeos/dbus/easy_unlock_client.h"
 #include "chromeos/dbus/fake_amplifier_client.h"
 #include "chromeos/dbus/fake_ap_manager_client.h"
+#include "chromeos/dbus/fake_arc_bridge_client.h"
 #include "chromeos/dbus/fake_audio_dsp_client.h"
 #include "chromeos/dbus/fake_bluetooth_adapter_client.h"
 #include "chromeos/dbus/fake_bluetooth_agent_manager_client.h"
@@ -107,6 +109,7 @@ const struct {
 } client_type_map[] = {
     { "amplifier",  DBusClientBundle::AMPLIFIER },
     { "ap",  DBusClientBundle::AP_MANAGER },
+    { "arc", DBusClientBundle::ARC_BRIDGE },
     { "audio_dsp",  DBusClientBundle::AUDIO_DSP },
     { "bluetooth",  DBusClientBundle::BLUETOOTH },
     { "cras",  DBusClientBundle::CRAS },
@@ -151,6 +154,11 @@ DBusClientBundle::DBusClientBundle(DBusClientTypeMask unstub_client_mask)
     amplifier_client_.reset(AmplifierClient::Create());
   else
     amplifier_client_.reset(new FakeAmplifierClient);
+
+  if (!IsUsingStub(ARC_BRIDGE))
+    arc_bridge_client_.reset(ArcBridgeClient::Create());
+  else
+    arc_bridge_client_.reset(new FakeArcBridgeClient);
 
   if (!IsUsingStub(AUDIO_DSP))
     audio_dsp_client_.reset(AudioDspClient::Create());

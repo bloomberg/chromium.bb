@@ -27,6 +27,7 @@ namespace chromeos {
 // Style Note: Clients are sorted by names.
 class AmplifierClient;
 class ApManagerClient;
+class ArcBridgeClient;
 class AudioDspClient;
 class BluetoothAdapterClient;
 class BluetoothLEAdvertisingManagerClient;
@@ -123,6 +124,7 @@ class CHROMEOS_EXPORT DBusThreadManager {
   // pointers after DBusThreadManager has been shut down.
   AmplifierClient* GetAmplifierClient();
   ApManagerClient* GetApManagerClient();
+  ArcBridgeClient* GetArcBridgeClient();
   AudioDspClient* GetAudioDspClient();
   BluetoothAdapterClient* GetBluetoothAdapterClient();
   BluetoothLEAdvertisingManagerClient* GetBluetoothLEAdvertisingManagerClient();
@@ -209,6 +211,7 @@ class CHROMEOS_EXPORT DBusThreadManagerSetter {
   ~DBusThreadManagerSetter();
 
   void SetAmplifierClient(scoped_ptr<AmplifierClient> client);
+  void SetArcBridgeClient(scoped_ptr<ArcBridgeClient> client);
   void SetAudioDspClient(scoped_ptr<AudioDspClient> client);
   void SetBluetoothAdapterClient(scoped_ptr<BluetoothAdapterClient> client);
   void SetBluetoothLEAdvertisingManagerClient(
