@@ -13658,7 +13658,7 @@ After you create a new supervised user, you can manage their settings at any tim
         <message name="IDS_LEGACY_SUPERVISED_USER_CREATED_TEXT" desc="Informative text for the confirmation dialog that appears after a supervised user has been created.">
           A supervised user named <ph name="NEW_PROFILE_NAME">$1<ex>New User</ex></ph> has been created. To set which websites this supervised user can view, you can configure restrictions and settings by visiting <ph name="BEGIN_LINK">&lt;a target="_blank" href="$3"&gt;</ph><ph name="DISPLAY_LINK">$4</ph><ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>. If you do not change the default settings, <ph name="NEW_PROFILE_NAME">$1<ex>New User</ex></ph> can browse all sites on the web.
 
-  Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex></ph> for these and further instructions.
+Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex></ph> for these and further instructions.
         </message>
         <message name="IDS_LEGACY_SUPERVISED_USER_CREATED_DONE_BUTTON" desc="Text for the button that closes the dialog without making any additional changes, on the supervised user creation confirmation dialog.">
           Got it
