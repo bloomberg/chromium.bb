@@ -1368,26 +1368,6 @@ void CompositedLayerMapping::positionOverflowControlsLayers()
     }
 }
 
-bool CompositedLayerMapping::hasUnpositionedOverflowControlsLayers() const
-{
-    if (GraphicsLayer* layer = layerForHorizontalScrollbar()) {
-        if (!layer->drawsContent())
-            return true;
-    }
-
-    if (GraphicsLayer* layer = layerForVerticalScrollbar()) {
-        if (!layer->drawsContent())
-            return true;
-    }
-
-    if (GraphicsLayer* layer = layerForScrollCorner()) {
-        if (!layer->drawsContent())
-            return true;
-    }
-
-    return false;
-}
-
 enum ApplyToGraphicsLayersModeFlags {
     ApplyToLayersAffectedByPreserve3D = (1 << 0),
     ApplyToSquashingLayer = (1 << 1),

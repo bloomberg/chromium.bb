@@ -132,7 +132,6 @@ public:
     IntRect pixelSnappedCompositedBounds() const;
 
     void positionOverflowControlsLayers();
-    bool hasUnpositionedOverflowControlsLayers() const;
 
     // Returns true if the assignment actually changed the assigned squashing layer.
     bool updateSquashingLayerAssignment(PaintLayer* squashedLayer, size_t nextSquashedLayerIndex);

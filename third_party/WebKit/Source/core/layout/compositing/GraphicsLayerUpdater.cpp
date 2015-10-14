@@ -100,10 +100,8 @@ void GraphicsLayerUpdater::updateRecursive(PaintLayer& layer, UpdateType updateT
                 m_needsRebuildTree = true;
 
             mapping->updateGraphicsLayerGeometry(compositingContainer, context.compositingStackingContext(), layersNeedingPaintInvalidation);
-
-            if (mapping->hasUnpositionedOverflowControlsLayers())
-                layer.scrollableArea()->positionOverflowControls();
-
+            if (PaintLayerScrollableArea* scrollableArea = layer.scrollableArea())
+                scrollableArea->positionOverflowControls();
             updateType = mapping->updateTypeForChildren(updateType);
             mapping->clearNeedsGraphicsLayerUpdate();
         }
