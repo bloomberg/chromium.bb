@@ -42,7 +42,7 @@ function test()
         InspectorTest.addResult("Collapsed node " + node.data.id);
     }
 
-    var columns = [{id: "id"}];
+    var columns = [{id: "id", title: "ID column", width: "250px"}];
     var dataGrid = new WebInspector.ViewportDataGrid(columns);
     var a = new WebInspector.ViewportDataGridNode({id: "a"});
     var aa = new WebInspector.ViewportDataGridNode({id: "aa"});
@@ -52,6 +52,16 @@ function test()
     var b = new WebInspector.ViewportDataGridNode({id: "b"});
 
     var root = dataGrid.rootNode();
+
+    var dialog = new WebInspector.Dialog();
+    dialog.show();
+    var containerElement = dialog.element;
+    containerElement.style.position = "absolute";
+    containerElement.style.width = "300px";
+    containerElement.style.height = "300px";
+    containerElement.style.overflow = "hidden";
+    dataGrid.show(containerElement);
+    dataGrid.element.style.width = "100%";
 
     InspectorTest.addResult("Building tree.");
 
@@ -94,6 +104,19 @@ function test()
     detach(ab, aac);
     dumpNodes();
 
+    // crbug.com/542553 -- the below should not produce exceptions.
+    dataGrid.setStickToBottom(true);
+    for (var i = 0; i < 500; ++i) {
+        var xn = new WebInspector.ViewportDataGridNode({id: "x" + i});
+        root.appendChild(xn);
+        if (i + 1 === 500) {
+            dataGrid.updateInstantlyForTests();
+            xn.revealAndSelect();
+            xn.refresh();
+        }
+    }
+    root.removeChildren();
+    dataGrid.updateInstantlyForTests();
     InspectorTest.completeTest();
 }
 </script>
