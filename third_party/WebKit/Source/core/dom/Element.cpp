@@ -1920,7 +1920,7 @@ PassRefPtrWillBeRawPtr<ShadowRoot> Element::createShadowRoot(const ScriptState* 
 
 PassRefPtrWillBeRawPtr<ShadowRoot> Element::createShadowRoot(const ScriptState* scriptState, const ShadowRootInit& shadowRootInitDict, ExceptionState& exceptionState)
 {
-    ASSERT(RuntimeEnabledFeatures::createShadowRootWithParameterEnabled());
+    ASSERT(RuntimeEnabledFeatures::shadowDOMV1Enabled());
     UseCounter::count(document(), UseCounter::ElementCreateShadowRootWithParameter);
 
     OriginsUsingFeatures::countMainWorldOnly(scriptState, document(), OriginsUsingFeatures::Feature::ElementCreateShadowRoot);
