@@ -401,12 +401,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
         // close-quote | no-open-quote | no-close-quote ]+ | inherit
         parsedValue = parseContent();
         break;
-    case CSSPropertyClip:                 // <shape> | auto | inherit
-        if (id == CSSValueAuto)
-            validPrimitive = true;
-        else if (value->m_unit == CSSParserValue::Function)
-            parsedValue = parseClipShape();
-        break;
 
     /* Start of supported CSS properties with validation. This is needed for parseShorthand to work
      * correctly and allows optimization in blink::applyRule(..)
@@ -1307,6 +1301,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyWebkitMinLogicalHeight:
     case CSSPropertyWebkitLogicalWidth:
     case CSSPropertyWebkitLogicalHeight:
+    case CSSPropertyClip:
         validPrimitive = false;
         break;
 
@@ -3679,50 +3674,6 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseCounterContent(CSSParse
     }
 
     return CSSCounterValue::create(identifier.release(), listStyle.release(), separator.release());
-}
-
-PassRefPtrWillBeRawPtr<CSSQuadValue> CSSPropertyParser::parseClipShape()
-{
-    CSSParserValue* value = m_valueList->current();
-    CSSParserValueList* args = value->function->args.get();
-
-    if (value->function->id != CSSValueRect || !args)
-        return nullptr;
-
-    // rect(t, r, b, l) || rect(t r b l)
-    if (args->size() != 4 && args->size() != 7)
-        return nullptr;
-    int i = 0;
-    CSSParserValue* a = args->current();
-
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> top = nullptr;
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> right = nullptr;
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> bottom = nullptr;
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> left = nullptr;
-    while (a) {
-        if (a->id != CSSValueAuto && !validUnit(a, FLength | FUnitlessQuirk))
-            return nullptr;
-        RefPtrWillBeRawPtr<CSSPrimitiveValue> length = a->id == CSSValueAuto ?
-            cssValuePool().createIdentifierValue(CSSValueAuto) :
-            createPrimitiveNumericValue(a);
-        if (i == 0)
-            top = length;
-        else if (i == 1)
-            right = length;
-        else if (i == 2)
-            bottom = length;
-        else
-            left = length;
-        a = args->next();
-        if (a && args->size() == 7) {
-            if (!consumeComma(args))
-                return nullptr;
-            a = args->current();
-        }
-        i++;
-    }
-    m_valueList->next();
-    return CSSQuadValue::create(top.release(), right.release(), bottom.release(), left.release(), CSSQuadValue::SerializeAsRect);
 }
 
 static void completeBorderRadii(RefPtrWillBeRawPtr<CSSPrimitiveValue> radii[4])

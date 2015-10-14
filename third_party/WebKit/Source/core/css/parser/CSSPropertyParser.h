@@ -179,8 +179,6 @@ private:
     bool parseGridLineNames(CSSParserValueList&, CSSValueList&, CSSGridLineNamesValue* = nullptr);
     PassRefPtrWillBeRawPtr<CSSValue> parseGridAutoFlow(CSSParserValueList&);
 
-    PassRefPtrWillBeRawPtr<CSSQuadValue> parseClipShape();
-
     bool parseLegacyPosition(CSSPropertyID, bool important);
     bool parseItemPositionOverflowPosition(CSSPropertyID, bool important);
     PassRefPtrWillBeRawPtr<CSSValue> parseContentDistributionOverflowPosition();

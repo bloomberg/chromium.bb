@@ -11,6 +11,7 @@
 #include "core/css/CSSFontFaceSrcValue.h"
 #include "core/css/CSSFontFeatureValue.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
+#include "core/css/CSSQuadValue.h"
 #include "core/css/CSSStringValue.h"
 #include "core/css/CSSURIValue.h"
 #include "core/css/CSSUnicodeRangeValue.h"
@@ -801,6 +802,39 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeWidthOrHeight(CSSParserTokenRange
     return consumeLengthOrPercent(range, context.mode(), ValueRangeNonNegative, unitless);
 }
 
+static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeClipComponent(CSSParserTokenRange& range, CSSParserMode cssParserMode)
+{
+    if (range.peek().id() == CSSValueAuto)
+        return consumeIdent(range);
+    return consumeLength(range, cssParserMode, ValueRangeAll, UnitlessQuirk::Allow);
+}
+
+static PassRefPtrWillBeRawPtr<CSSValue> consumeClip(CSSParserTokenRange& range, CSSParserMode cssParserMode)
+{
+    if (range.peek().id() == CSSValueAuto)
+        return consumeIdent(range);
+
+    if (range.peek().functionId() != CSSValueRect)
+        return nullptr;
+
+    CSSParserTokenRange args = consumeFunction(range);
+    // rect(t, r, b, l) || rect(t r b l)
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> top = consumeClipComponent(args, cssParserMode);
+    if (!top)
+        return nullptr;
+    bool needsComma = consumeCommaIncludingWhitespace(args);
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> right = consumeClipComponent(args, cssParserMode);
+    if (!right || (needsComma && !consumeCommaIncludingWhitespace(args)))
+        return nullptr;
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> bottom = consumeClipComponent(args, cssParserMode);
+    if (!bottom || (needsComma && !consumeCommaIncludingWhitespace(args)))
+        return nullptr;
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> left = consumeClipComponent(args, cssParserMode);
+    if (!left || !args.atEnd())
+        return nullptr;
+    return CSSQuadValue::create(top.release(), right.release(), bottom.release(), left.release(), CSSQuadValue::SerializeAsRect);
+}
+
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSPropertyID propId)
 {
     m_range.consumeWhitespace();
@@ -860,6 +894,8 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
     case CSSPropertyWebkitLogicalWidth:
     case CSSPropertyWebkitLogicalHeight:
         return consumeWidthOrHeight(m_range, m_context);
+    case CSSPropertyClip:
+        return consumeClip(m_range, m_context.mode());
     default:
         return nullptr;
     }
