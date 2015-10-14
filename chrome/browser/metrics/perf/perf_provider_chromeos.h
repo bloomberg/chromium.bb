@@ -12,6 +12,8 @@
 #include "base/threading/non_thread_safe.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/metrics/perf/cpu_identity.h"
+#include "chrome/browser/metrics/perf/random_selector.h"
 #include "chrome/browser/sessions/session_restore.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/login/login_state.h"
@@ -194,6 +196,9 @@ class PerfProvider : public base::NonThreadSafe,
   // Parameters controlling how profiles are collected.
   CollectionParams collection_params_;
 
+  // Set of commands to choose from.
+  RandomSelector command_selector_;
+
   // Vector of SampledProfile protobufs containing perf profiles.
   std::vector<SampledProfile> cached_perf_data_;
 
@@ -225,6 +230,16 @@ class PerfProvider : public base::NonThreadSafe,
 
   DISALLOW_COPY_AND_ASSIGN(PerfProvider);
 };
+
+// Exposed for unit testing.
+namespace internal {
+
+// Return the default set of perf commands and their odds of selection given
+// the identity of the CPU in |cpuid|.
+std::vector<RandomSelector::WeightAndValue> GetDefaultCommandsForCpu(
+    const CPUIdentity& cpuid);
+
+}  // namespace internal
 
 }  // namespace metrics
 

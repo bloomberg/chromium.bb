@@ -4,6 +4,7 @@
 
 #include "chrome/browser/metrics/perf/perf_provider_chromeos.h"
 
+#include <algorithm>
 #include <string>
 
 #include "base/bind.h"
@@ -11,6 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/metrics/histogram.h"
 #include "base/rand_util.h"
+#include "base/strings/string_split.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/metrics/perf/windowed_incognito_observer.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -66,7 +68,88 @@ base::TimeDelta RandomTimeDelta(base::TimeDelta max) {
       base::RandGenerator(max.InMicroseconds()));
 }
 
+// Hopefully we never need a space in a command argument.
+const char kPerfCommandDelimiter[] = " ";
+
+const char kPerfRecordCyclesCmd[] =
+  "perf record -a -e cycles -c 1000003";
+
+const char kPerfRecordCallgraphCmd[] =
+  "perf record -a -e cycles -g -c 4000037";
+
+const char kPerfRecordLBRCmd[] =
+  "perf record -a -e r2c4 -b -c 20011";
+
+const char kPerfRecordInstructionTLBMissesCmd[] =
+  "perf record -a -e iTLB-misses -c 2003";
+
+const char kPerfRecordDataTLBMissesCmd[] =
+  "perf record -a -e dTLB-misses -c 2003";
+
+const char kPerfStatMemoryBandwidthCmd[] =
+  "perf stat -a -e cycles -e instructions "
+  "-e uncore_imc/data_reads/ -e uncore_imc/data_writes/ "
+  "-e cpu/event=0xD0,umask=0x11,name=MEM_UOPS_RETIRED-STLB_MISS_LOADS/ "
+  "-e cpu/event=0xD0,umask=0x12,name=MEM_UOPS_RETIRED-STLB_MISS_STORES/";
+
+const std::vector<RandomSelector::WeightAndValue> GetDefaultCommands_x86_64(
+    const CPUIdentity& cpuid) {
+  using WeightAndValue = RandomSelector::WeightAndValue;
+  std::vector<WeightAndValue> cmds;
+  DCHECK_EQ(cpuid.arch, "x86_64");
+  const std::string intel_uarch = GetIntelUarch(cpuid);
+  if (intel_uarch == "IvyBridge" ||
+      intel_uarch == "Haswell" ||
+      intel_uarch == "Broadwell") {
+    cmds.push_back(WeightAndValue(60.0, kPerfRecordCyclesCmd));
+    cmds.push_back(WeightAndValue(20.0, kPerfRecordCallgraphCmd));
+    cmds.push_back(WeightAndValue(5.0, kPerfRecordLBRCmd));
+    cmds.push_back(WeightAndValue(5.0, kPerfRecordInstructionTLBMissesCmd));
+    cmds.push_back(WeightAndValue(5.0, kPerfRecordDataTLBMissesCmd));
+    cmds.push_back(WeightAndValue(5.0, kPerfStatMemoryBandwidthCmd));
+    return cmds;
+  }
+  if (intel_uarch == "SandyBridge") {
+    cmds.push_back(WeightAndValue(65.0, kPerfRecordCyclesCmd));
+    cmds.push_back(WeightAndValue(20.0, kPerfRecordCallgraphCmd));
+    cmds.push_back(WeightAndValue(5.0, kPerfRecordLBRCmd));
+    cmds.push_back(WeightAndValue(5.0, kPerfRecordInstructionTLBMissesCmd));
+    cmds.push_back(WeightAndValue(5.0, kPerfRecordDataTLBMissesCmd));
+    return cmds;
+  }
+  // Other 64-bit x86
+  cmds.push_back(WeightAndValue(70.0, kPerfRecordCyclesCmd));
+  cmds.push_back(WeightAndValue(20.0, kPerfRecordCallgraphCmd));
+  cmds.push_back(WeightAndValue(5.0, kPerfRecordInstructionTLBMissesCmd));
+  cmds.push_back(WeightAndValue(5.0, kPerfRecordDataTLBMissesCmd));
+  return cmds;
+}
+
 }  // namespace
+
+namespace internal {
+
+std::vector<RandomSelector::WeightAndValue> GetDefaultCommandsForCpu(
+    const CPUIdentity& cpuid) {
+  using WeightAndValue = RandomSelector::WeightAndValue;
+
+  if (cpuid.arch == "x86_64")  // 64-bit x86
+    return GetDefaultCommands_x86_64(cpuid);
+
+  std::vector<WeightAndValue> cmds;
+  if (cpuid.arch == "x86" ||     // 32-bit x86, or...
+      cpuid.arch == "armv7l") {  // ARM
+    cmds.push_back(WeightAndValue(80.0, kPerfRecordCyclesCmd));
+    cmds.push_back(WeightAndValue(20.0, kPerfRecordCallgraphCmd));
+    return cmds;
+  }
+
+  // Unknown CPUs
+  cmds.push_back(WeightAndValue(1.0, kPerfRecordCyclesCmd));
+  return cmds;
+}
+
+}  // namespace internal
 
 PerfProvider::CollectionParams::CollectionParams(
     base::TimeDelta collection_duration,
@@ -101,6 +184,9 @@ PerfProvider::PerfProvider()
       login_observer_(this),
       next_profiling_interval_start_(base::TimeTicks::Now()),
       weak_factory_(this) {
+  command_selector_.SetOdds(
+      internal::GetDefaultCommandsForCpu(GetCPUIdentity())),
+
   // Register the login observer with LoginState.
   chromeos::LoginState::Get()->AddObserver(&login_observer_);
 
@@ -340,8 +426,11 @@ void PerfProvider::CollectIfNecessary(
   chromeos::DebugDaemonClient* client =
       chromeos::DBusThreadManager::Get()->GetDebugDaemonClient();
 
+  std::vector<std::string> command = base::SplitString(
+      command_selector_.Select(), kPerfCommandDelimiter,
+      base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
   client->GetPerfOutput(
-      collection_params_.collection_duration().InSeconds(),
+      collection_params_.collection_duration().InSeconds(), command,
       base::Bind(&PerfProvider::ParseOutputProtoIfValid,
                  weak_factory_.GetWeakPtr(), base::Passed(&incognito_observer),
                  base::Passed(&sampled_profile)));

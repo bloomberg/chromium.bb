@@ -25,6 +25,18 @@ namespace {
 const int kPerfSuccess = 0;
 const int kPerfFailure = 1;
 
+const char kPerfRecordCyclesCmd[] =
+  "perf record -a -e cycles -c 1000003";
+const char kPerfRecordCallgraphCmd[] =
+  "perf record -a -e cycles -g -c 4000037";
+const char kPerfRecordLBRCmd[] =
+  "perf record -a -e r2c4 -b -c 20011";
+const char kPerfStatMemoryBandwidthCmd[] =
+  "perf stat -a -e cycles -e instructions "
+  "-e uncore_imc/data_reads/ -e uncore_imc/data_writes/ "
+  "-e cpu/event=0xD0,umask=0x11,name=MEM_UOPS_RETIRED-STLB_MISS_LOADS/ "
+  "-e cpu/event=0xD0,umask=0x12,name=MEM_UOPS_RETIRED-STLB_MISS_STORES/";
+
 // Converts a protobuf to serialized format as a byte vector.
 std::vector<uint8_t> SerializeMessageToVector(
     const google::protobuf::MessageLite& message) {
@@ -457,6 +469,117 @@ TEST_F(PerfProviderTest, IncognitoWindowOpened) {
   EXPECT_FALSE(profile3.has_perf_stat());
   EXPECT_EQ(SerializeMessageToVector(perf_data_proto_),
             SerializeMessageToVector(profile3.perf_data()));
+}
+
+TEST_F(PerfProviderTest, DefaultCommandsBasedOnUarch_IvyBridge) {
+  CPUIdentity cpuid;
+  cpuid.arch = "x86_64";
+  cpuid.vendor = "GenuineIntel";
+  cpuid.family = 0x06;
+  cpuid.model = 0x3a;  // IvyBridge
+  cpuid.model_name = "";
+  std::vector<RandomSelector::WeightAndValue> cmds =
+      internal::GetDefaultCommandsForCpu(cpuid);
+  ASSERT_GE(cmds.size(), 2UL);
+  EXPECT_EQ(cmds[0].value, kPerfRecordCyclesCmd);
+  EXPECT_EQ(cmds[1].value, kPerfRecordCallgraphCmd);
+  auto found = std::find_if(
+      cmds.begin(), cmds.end(),
+      [](const RandomSelector::WeightAndValue& cmd) -> bool {
+        return cmd.value == kPerfStatMemoryBandwidthCmd;
+      });
+  EXPECT_NE(cmds.end(), found);
+  found = std::find_if(
+      cmds.begin(), cmds.end(),
+      [](const RandomSelector::WeightAndValue& cmd) -> bool {
+        return cmd.value == kPerfRecordLBRCmd;
+      });
+  EXPECT_NE(cmds.end(), found);
+}
+
+TEST_F(PerfProviderTest, DefaultCommandsBasedOnUarch_SandyBridge) {
+  CPUIdentity cpuid;
+  cpuid.arch = "x86_64";
+  cpuid.vendor = "GenuineIntel";
+  cpuid.family = 0x06;
+  cpuid.model = 0x2a;  // SandyBridge
+  cpuid.model_name = "";
+  std::vector<RandomSelector::WeightAndValue> cmds =
+      internal::GetDefaultCommandsForCpu(cpuid);
+  ASSERT_GE(cmds.size(), 2UL);
+  EXPECT_EQ(cmds[0].value, kPerfRecordCyclesCmd);
+  EXPECT_EQ(cmds[1].value, kPerfRecordCallgraphCmd);
+  auto found = std::find_if(
+      cmds.begin(), cmds.end(),
+      [](const RandomSelector::WeightAndValue& cmd) -> bool {
+        return cmd.value == kPerfStatMemoryBandwidthCmd;
+      });
+  EXPECT_EQ(cmds.end(), found) << "SandyBridge does not support this command";
+  found = std::find_if(
+      cmds.begin(), cmds.end(),
+      [](const RandomSelector::WeightAndValue& cmd) -> bool {
+        return cmd.value == kPerfRecordLBRCmd;
+      });
+  EXPECT_NE(cmds.end(), found);
+}
+
+TEST_F(PerfProviderTest, DefaultCommandsBasedOnArch_Arm) {
+  CPUIdentity cpuid;
+  cpuid.arch = "armv7l";
+  cpuid.vendor = "";
+  cpuid.family = 0;
+  cpuid.model = 0;
+  cpuid.model_name = "";
+  std::vector<RandomSelector::WeightAndValue> cmds =
+      internal::GetDefaultCommandsForCpu(cpuid);
+  ASSERT_GE(cmds.size(), 2UL);
+  EXPECT_EQ(cmds[0].value, kPerfRecordCyclesCmd);
+  EXPECT_EQ(cmds[1].value, kPerfRecordCallgraphCmd);
+  const auto found = std::find_if(
+      cmds.begin(), cmds.end(),
+      [](const RandomSelector::WeightAndValue& cmd) -> bool {
+        return cmd.value == kPerfRecordLBRCmd;
+      });
+  EXPECT_EQ(cmds.end(), found) << "ARM does not support this command";
+}
+
+TEST_F(PerfProviderTest, DefaultCommandsBasedOnArch_x86_32) {
+  CPUIdentity cpuid;
+  cpuid.arch = "x86";
+  cpuid.vendor = "GenuineIntel";
+  cpuid.family = 0x06;
+  cpuid.model = 0x2f;  // Westmere
+  cpuid.model_name = "";
+  std::vector<RandomSelector::WeightAndValue> cmds =
+      internal::GetDefaultCommandsForCpu(cpuid);
+  ASSERT_GE(cmds.size(), 2UL);
+  EXPECT_EQ(cmds[0].value, kPerfRecordCyclesCmd);
+  EXPECT_EQ(cmds[1].value, kPerfRecordCallgraphCmd);
+  auto found = std::find_if(
+      cmds.begin(), cmds.end(),
+      [](const RandomSelector::WeightAndValue& cmd) -> bool {
+        return cmd.value == kPerfStatMemoryBandwidthCmd;
+      });
+  EXPECT_EQ(cmds.end(), found) << "x86_32 does not support this command";
+  found = std::find_if(
+      cmds.begin(), cmds.end(),
+      [](const RandomSelector::WeightAndValue& cmd) -> bool {
+        return cmd.value == kPerfRecordLBRCmd;
+      });
+  EXPECT_EQ(cmds.end(), found) << "x86_32 does not support this command";
+}
+
+TEST_F(PerfProviderTest, DefaultCommandsBasedOnArch_Unknown) {
+  CPUIdentity cpuid;
+  cpuid.arch = "nonsense";
+  cpuid.vendor = "";
+  cpuid.family = 0;
+  cpuid.model = 0;
+  cpuid.model_name = "";
+  std::vector<RandomSelector::WeightAndValue> cmds =
+      internal::GetDefaultCommandsForCpu(cpuid);
+  EXPECT_EQ(1UL, cmds.size());
+  EXPECT_EQ(cmds[0].value, kPerfRecordCyclesCmd);
 }
 
 }  // namespace metrics
