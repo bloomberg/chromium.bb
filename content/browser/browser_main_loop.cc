@@ -242,9 +242,9 @@ static void GLibLogHandler(const gchar* log_domain,
                << "http://crbug.com/179797";
   } else if (strstr(message, "Attempting to store changes into") ||
              strstr(message, "Attempting to set the permissions of")) {
-    LOG(ERROR) << message << " (http://bugs.chromium.org/161366)";
+    LOG(ERROR) << message << " (http://crbug.com/161366)";
   } else if (strstr(message, "drawable is not a native X11 window")) {
-    LOG(ERROR) << message << " (http://bugs.chromium.org/329991)";
+    LOG(ERROR) << message << " (http://crbug.com/329991)";
   } else if (strstr(message, "Cannot do system-bus activation with no user")) {
     LOG(ERROR) << message << " (http://crbug.com/431005)";
   } else if (strstr(message, "deprecated")) {

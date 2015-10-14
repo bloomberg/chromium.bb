@@ -132,7 +132,7 @@ chrome.test.runTests([
     }));
   }
 
-  /* Disabled -- see http://bugs.chromium.org/58229.
+  /* Disabled -- see http://crbug.com/58229.
   function windowSetFocused() {
     chrome.windows.getCurrent(function(oldWin) {
       chrome.windows.create({}, function(newWin) {
