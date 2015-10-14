@@ -1455,9 +1455,21 @@ void LayerTreeHostImpl::ReclaimResources(const CompositorFrameAck* ack) {
   // In OOM, we now might be able to release more resources that were held
   // because they were exported.
   if (resource_pool_) {
+    if (resource_pool_->memory_usage_bytes()) {
+      const size_t kMegabyte = 1024 * 1024;
+
+      // This is a good time to log memory usage. A chunk of work has just
+      // completed but none of the memory used for that work has likely been
+      // freed.
+      UMA_HISTOGRAM_MEMORY_MB(
+          "Renderer4.ResourcePoolMemoryUsage",
+          static_cast<int>(resource_pool_->memory_usage_bytes() / kMegabyte));
+    }
+
     resource_pool_->CheckBusyResources();
     resource_pool_->ReduceResourceUsage();
   }
+
   // If we're not visible, we likely released resources, so we want to
   // aggressively flush here to make sure those DeleteTextures make it to the
   // GPU process to free up the memory.

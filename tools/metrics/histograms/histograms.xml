@@ -37174,6 +37174,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Renderer4.ResourcePoolMemoryUsage" units="MB">
+  <owner>ericrk@chromium.org</owner>
+  <summary>
+    Size of the in-use portion of the ResourcePool. Recorded each time resources
+    are reclaimed after tile work completes.
+  </summary>
+</histogram>
+
 <histogram name="Renderer4.Snapshot">
   <owner>wiltzius@chromium.org</owner>
   <summary>Time to capture a renderer snapshot.</summary>
