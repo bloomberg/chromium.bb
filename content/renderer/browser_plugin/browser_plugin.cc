@@ -395,7 +395,7 @@ v8::Local<v8::Object> BrowserPlugin::v8ScriptableObject(v8::Isolate* isolate) {
 }
 
 bool BrowserPlugin::supportsKeyboardFocus() const {
-  return true;
+  return visible_;
 }
 
 bool BrowserPlugin::supportsEditCommands() const {

@@ -1,0 +1,13 @@
+{
+  "name": "App Test: Hidden <webview>  not Focusable",
+  "description": "Loads a guest which monitors tabs",
+  "version": "1",
+  "permissions": [
+      "webview"
+  ],
+  "app": {
+    "background": {
+      "scripts": ["background.js"]
+    }
+  }
+}

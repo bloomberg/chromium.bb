@@ -227,6 +227,12 @@ class WebViewInteractiveTest
     guest_web_contents_ = GetGuestViewManager()->WaitForSingleGuestCreated();
   }
 
+  void SendMessageToEmbedder(const std::string& message) {
+    ASSERT_TRUE(content::ExecuteScript(
+        GetFirstAppWindowWebContents(),
+        base::StringPrintf("onAppMessage('%s');", message.c_str())));
+  }
+
   void SetupTest(const std::string& app_name,
                  const std::string& guest_url_spec) {
     ASSERT_TRUE(StartEmbeddedTestServer());
@@ -1216,3 +1222,42 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, TextSelection) {
   ASSERT_EQ("AAAAAAAAAA", selected_text.substr(0, 10));
 }
 #endif
+
+IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, FocusAndVisibility) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  LoadAndLaunchPlatformApp("web_view/focus_visibility",
+                           "WebViewInteractiveTest.LOADED");
+  ExtensionTestMessageListener test_init_listener(
+      "WebViewInteractiveTest.WebViewInitialized", false);
+  SendMessageToEmbedder("init");
+  test_init_listener.WaitUntilSatisfied();
+  // Send several tab-keys. The button inside webview should receive focus at
+  // least once.
+  for (size_t i = 0; i < 4; ++i)
+    SendKeyPressToPlatformApp(ui::VKEY_TAB);
+  ExtensionTestMessageListener webview_button_focused_listener(
+      "WebViewInteractiveTest.WebViewButtonWasFocused", false);
+  webview_button_focused_listener.set_failure_message(
+      "WebViewInteractiveTest.WebViewButtonWasNotFocused");
+  SendMessageToEmbedder("verify");
+  EXPECT_TRUE(webview_button_focused_listener.WaitUntilSatisfied());
+  // Now make the <webview> invisible.
+  ExtensionTestMessageListener reset_listener("WebViewInteractiveTest.DidReset",
+                                              false);
+  SendMessageToEmbedder("reset");
+  reset_listener.WaitUntilSatisfied();
+  ExtensionTestMessageListener did_hide_webview_listener(
+      "WebViewInteractiveTest.DidHideWebView", false);
+  SendMessageToEmbedder("hide-webview");
+  did_hide_webview_listener.WaitUntilSatisfied();
+  // Send the same number of keys and verify that the webview button was not
+  // this time.
+  for (size_t i = 0; i < 4; ++i)
+    SendKeyPressToPlatformApp(ui::VKEY_TAB);
+  ExtensionTestMessageListener webview_button_not_focused_listener(
+      "WebViewInteractiveTest.WebViewButtonWasNotFocused", false);
+  webview_button_not_focused_listener.set_failure_message(
+      "WebViewInteractiveTest.WebViewButtonWasFocused");
+  SendMessageToEmbedder("verify");
+  EXPECT_TRUE(webview_button_not_focused_listener.WaitUntilSatisfied());
+}
