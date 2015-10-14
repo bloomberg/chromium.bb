@@ -326,8 +326,6 @@ private:
         return static_cast<Units>(static_cast<unsigned>(a) | static_cast<unsigned>(b));
     }
 
-    bool validWidthOrHeight(CSSParserValue*, Units);
-
     bool validCalculationUnit(CSSParserValue*, Units, ReleaseParsedCalcValueCondition releaseCalc = DoNotReleaseParsedCalcValue);
 
     bool shouldAcceptUnitLessValues(CSSParserValue*, Units, CSSParserMode);

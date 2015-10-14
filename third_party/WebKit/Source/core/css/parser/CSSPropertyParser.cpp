@@ -754,6 +754,53 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeTextIndent(CSSParserTokenRange& r
     return list.release();
 }
 
+static bool validWidthOrHeightKeyword(CSSValueID id, const CSSParserContext& context)
+{
+    if (id == CSSValueIntrinsic || id == CSSValueMinIntrinsic
+        || id == CSSValueWebkitMinContent || id == CSSValueWebkitMaxContent || id == CSSValueWebkitFillAvailable || id == CSSValueWebkitFitContent
+        || id == CSSValueMinContent || id == CSSValueMaxContent || id == CSSValueFitContent) {
+        if (context.useCounter()) {
+            switch (id) {
+            case CSSValueIntrinsic:
+            case CSSValueMinIntrinsic:
+                // These two will be counted in StyleAdjuster because they emit a deprecation
+                // message, and we don't have access to a Document/LocalFrame here.
+                break;
+            case CSSValueWebkitMinContent:
+                context.useCounter()->count(UseCounter::CSSValuePrefixedMinContent);
+                break;
+            case CSSValueWebkitMaxContent:
+                context.useCounter()->count(UseCounter::CSSValuePrefixedMaxContent);
+                break;
+            case CSSValueWebkitFillAvailable:
+                context.useCounter()->count(UseCounter::CSSValuePrefixedFillAvailable);
+                break;
+            case CSSValueWebkitFitContent:
+                context.useCounter()->count(UseCounter::CSSValuePrefixedFitContent);
+                break;
+            default:
+                break;
+            }
+        }
+        return true;
+    }
+    return false;
+}
+
+static PassRefPtrWillBeRawPtr<CSSValue> consumeMaxWidthOrHeight(CSSParserTokenRange& range, const CSSParserContext& context, UnitlessQuirk unitless = UnitlessQuirk::Forbid)
+{
+    if (range.peek().id() == CSSValueNone || validWidthOrHeightKeyword(range.peek().id(), context))
+        return consumeIdent(range);
+    return consumeLengthOrPercent(range, context.mode(), ValueRangeNonNegative, unitless);
+}
+
+static PassRefPtrWillBeRawPtr<CSSValue> consumeWidthOrHeight(CSSParserTokenRange& range, const CSSParserContext& context, UnitlessQuirk unitless = UnitlessQuirk::Forbid)
+{
+    if (range.peek().id() == CSSValueAuto || validWidthOrHeightKeyword(range.peek().id(), context))
+        return consumeIdent(range);
+    return consumeLengthOrPercent(range, context.mode(), ValueRangeNonNegative, unitless);
+}
+
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSPropertyID propId)
 {
     m_range.consumeWhitespace();
@@ -797,6 +844,22 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
         return consumeSize(m_range, m_context.mode());
     case CSSPropertyTextIndent:
         return consumeTextIndent(m_range, m_context.mode());
+    case CSSPropertyMaxWidth:
+    case CSSPropertyMaxHeight:
+        return consumeMaxWidthOrHeight(m_range, m_context, UnitlessQuirk::Allow);
+    case CSSPropertyWebkitMaxLogicalWidth:
+    case CSSPropertyWebkitMaxLogicalHeight:
+        return consumeMaxWidthOrHeight(m_range, m_context);
+    case CSSPropertyMinWidth:
+    case CSSPropertyMinHeight:
+    case CSSPropertyWidth:
+    case CSSPropertyHeight:
+        return consumeWidthOrHeight(m_range, m_context, UnitlessQuirk::Allow);
+    case CSSPropertyWebkitMinLogicalWidth:
+    case CSSPropertyWebkitMinLogicalHeight:
+    case CSSPropertyWebkitLogicalWidth:
+    case CSSPropertyWebkitLogicalHeight:
+        return consumeWidthOrHeight(m_range, m_context);
     default:
         return nullptr;
     }

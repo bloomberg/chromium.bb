@@ -309,40 +309,6 @@ static bool isGeneratedImageValue(CSSParserValue* val)
         || id == CSSValueWebkitCrossFade;
 }
 
-bool CSSPropertyParser::validWidthOrHeight(CSSParserValue* value, Units unitless)
-{
-    int id = value->id;
-    if (id == CSSValueIntrinsic || id == CSSValueMinIntrinsic
-        || id == CSSValueWebkitMinContent || id == CSSValueWebkitMaxContent || id == CSSValueWebkitFillAvailable || id == CSSValueWebkitFitContent
-        || id == CSSValueMinContent || id == CSSValueMaxContent || id == CSSValueFitContent) {
-        if (m_context.useCounter()) {
-            switch (value->id) {
-            case CSSValueIntrinsic:
-            case CSSValueMinIntrinsic:
-                // These two will be counted in StyleAdjuster because they emit a deprecation
-                // message, and we don't have access to a Document/LocalFrame here.
-                break;
-            case CSSValueWebkitMinContent:
-                m_context.useCounter()->count(UseCounter::CSSValuePrefixedMinContent);
-                break;
-            case CSSValueWebkitMaxContent:
-                m_context.useCounter()->count(UseCounter::CSSValuePrefixedMaxContent);
-                break;
-            case CSSValueWebkitFillAvailable:
-                m_context.useCounter()->count(UseCounter::CSSValuePrefixedFillAvailable);
-                break;
-            case CSSValueWebkitFitContent:
-                m_context.useCounter()->count(UseCounter::CSSValuePrefixedFitContent);
-                break;
-            default:
-                break;
-            }
-        }
-        return true;
-    }
-    return validUnit(value, FLength | FPercent | FNonNeg | unitless);
-}
-
 inline PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSPropertyParser::parseValidPrimitive(CSSValueID identifier, CSSParserValue* value)
 {
     if (identifier)
@@ -671,28 +637,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyWebkitPaddingBefore:
     case CSSPropertyWebkitPaddingAfter:
         validPrimitive = validUnit(value, FLength | FPercent | FNonNeg | unitless);
-        break;
-
-    case CSSPropertyMaxWidth:
-    case CSSPropertyMaxHeight:
-        unitless = FUnitlessQuirk;
-        // fall through
-    case CSSPropertyWebkitMaxLogicalWidth:
-    case CSSPropertyWebkitMaxLogicalHeight:
-        validPrimitive = (id == CSSValueNone || validWidthOrHeight(value, unitless));
-        break;
-
-    case CSSPropertyMinWidth:
-    case CSSPropertyMinHeight:
-    case CSSPropertyWidth:
-    case CSSPropertyHeight:
-        unitless = FUnitlessQuirk;
-        // fall through
-    case CSSPropertyWebkitMinLogicalWidth:
-    case CSSPropertyWebkitMinLogicalHeight:
-    case CSSPropertyWebkitLogicalWidth:
-    case CSSPropertyWebkitLogicalHeight:
-        validPrimitive = (id == CSSValueAuto || validWidthOrHeight(value, unitless));
         break;
 
     case CSSPropertyVerticalAlign:
@@ -1351,6 +1295,18 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyCounterReset:
     case CSSPropertySize:
     case CSSPropertyTextIndent:
+    case CSSPropertyMaxWidth:
+    case CSSPropertyMaxHeight:
+    case CSSPropertyWebkitMaxLogicalWidth:
+    case CSSPropertyWebkitMaxLogicalHeight:
+    case CSSPropertyMinWidth:
+    case CSSPropertyMinHeight:
+    case CSSPropertyWidth:
+    case CSSPropertyHeight:
+    case CSSPropertyWebkitMinLogicalWidth:
+    case CSSPropertyWebkitMinLogicalHeight:
+    case CSSPropertyWebkitLogicalWidth:
+    case CSSPropertyWebkitLogicalHeight:
         validPrimitive = false;
         break;
 
