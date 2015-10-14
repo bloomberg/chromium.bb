@@ -719,6 +719,11 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
   RunHtmlTest(FILE_PATH_LITERAL("contenteditable-descendants.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       AccessibilityElementClassIdSrcAttr) {
+  RunHtmlTest(FILE_PATH_LITERAL("element-class-id-src-attr.html"));
+}
+
 #if defined(OS_ANDROID)
 // Flaky failures: http://crbug.com/445929.
 #define MAYBE_AccessibilityContenteditableDescendantsWithSelection \

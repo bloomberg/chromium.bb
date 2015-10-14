@@ -1,0 +1,4 @@
+android.webkit.WebView focusable focused scrollable
+++android.view.View clickable heading name='Image'
+++android.view.View
+++++android.widget.Image clickable name='ImageAlt'

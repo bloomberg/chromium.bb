@@ -3405,44 +3405,7 @@ void BrowserAccessibilityWin::UpdateStep1ComputeWinAttributes() {
     relations_.push_back(relation);
   }
 
-  // Expose slider value.
-  if (ia_role() == ROLE_SYSTEM_PROGRESSBAR ||
-      ia_role() == ROLE_SYSTEM_SCROLLBAR ||
-      ia_role() == ROLE_SYSTEM_SLIDER) {
-    base::string16 value_text = GetValueText();
-    SanitizeStringAttributeForIA2(value_text, &value_text);
-    win_attributes_->ia2_attributes.push_back(L"valuetext:" + value_text);
-  }
-
-  // Expose dropeffect attribute.
-  base::string16 drop_effect;
-  if (GetHtmlAttribute("aria-dropeffect", &drop_effect)) {
-    SanitizeStringAttributeForIA2(drop_effect, &drop_effect);
-    win_attributes_->ia2_attributes.push_back(L"dropeffect:" + drop_effect);
-  }
-
-  // Expose grabbed attribute.
-  base::string16 grabbed;
-  if (GetHtmlAttribute("aria-grabbed", &grabbed)) {
-    SanitizeStringAttributeForIA2(grabbed, &grabbed);
-    win_attributes_->ia2_attributes.push_back(L"grabbed:" + grabbed);
-  }
-
-  // Expose datetime attribute.
-  base::string16 datetime;
-  if (GetRole() == ui::AX_ROLE_TIME &&
-      GetHtmlAttribute("datetime", &datetime)) {
-    SanitizeStringAttributeForIA2(datetime, &datetime);
-    win_attributes_->ia2_attributes.push_back(L"datetime:" + datetime);
-  }
-
-  // Expose input-text type attribute.
-  base::string16 type;
-  if (GetRole() == ui::AX_ROLE_TEXT_FIELD && GetHtmlAttribute("type", &type)) {
-    SanitizeStringAttributeForIA2(type, &type);
-    win_attributes_->ia2_attributes.push_back(L"text-input-type:" + type);
-  }
-
+  UpdateRequiredAttributes();
   // If this is a web area for a presentational iframe, give it a role of
   // something other than DOCUMENT so that the fact that it's a separate doc
   // is not exposed to AT.
@@ -4097,6 +4060,69 @@ bool BrowserAccessibilityWin::IsListBoxOptionOrMenuListOption() {
   }
 
   return false;
+}
+
+void BrowserAccessibilityWin::UpdateRequiredAttributes() {
+  // Expose slider value.
+  if (ia_role() == ROLE_SYSTEM_PROGRESSBAR ||
+      ia_role() == ROLE_SYSTEM_SCROLLBAR ||
+      ia_role() == ROLE_SYSTEM_SLIDER) {
+    base::string16 value_text = GetValueText();
+    SanitizeStringAttributeForIA2(value_text, &value_text);
+    win_attributes_->ia2_attributes.push_back(L"valuetext:" + value_text);
+  }
+
+  // Expose dropeffect attribute.
+  base::string16 drop_effect;
+  if (GetHtmlAttribute("aria-dropeffect", &drop_effect)) {
+    SanitizeStringAttributeForIA2(drop_effect, &drop_effect);
+    win_attributes_->ia2_attributes.push_back(L"dropeffect:" + drop_effect);
+  }
+
+  // Expose grabbed attribute.
+  base::string16 grabbed;
+  if (GetHtmlAttribute("aria-grabbed", &grabbed)) {
+    SanitizeStringAttributeForIA2(grabbed, &grabbed);
+    win_attributes_->ia2_attributes.push_back(L"grabbed:" + grabbed);
+  }
+
+  // Expose class attribute.
+  base::string16 class_attr;
+  if (GetHtmlAttribute("class", &class_attr)) {
+    SanitizeStringAttributeForIA2(class_attr, &class_attr);
+    win_attributes_->ia2_attributes.push_back(L"class:" + class_attr);
+  }
+
+  // Expose datetime attribute.
+  base::string16 datetime;
+  if (GetRole() == ui::AX_ROLE_TIME &&
+      GetHtmlAttribute("datetime", &datetime)) {
+    SanitizeStringAttributeForIA2(datetime, &datetime);
+    win_attributes_->ia2_attributes.push_back(L"datetime:" + datetime);
+  }
+
+  // Expose id attribute.
+  base::string16 id;
+  if (GetHtmlAttribute("id", &id)) {
+    SanitizeStringAttributeForIA2(id, &id);
+    win_attributes_->ia2_attributes.push_back(L"id:" + id);
+  }
+
+  // Expose src attribute.
+  base::string16 src;
+  if (GetRole() == ui::AX_ROLE_IMAGE && GetHtmlAttribute("src", &src)) {
+    SanitizeStringAttributeForIA2(src, &src);
+    win_attributes_->ia2_attributes.push_back(L"src:" + src);
+  }
+
+  // Expose input-text type attribute.
+  base::string16 type;
+  base::string16 html_tag = GetString16Attribute(ui::AX_ATTR_HTML_TAG);
+  if (GetRole() == ui::AX_ROLE_TEXT_FIELD && html_tag == L"input" &&
+      GetHtmlAttribute("type", &type)) {
+    SanitizeStringAttributeForIA2(type, &type);
+    win_attributes_->ia2_attributes.push_back(L"text-input-type:" + type);
+  }
 }
 
 void BrowserAccessibilityWin::InitRoleAndState() {

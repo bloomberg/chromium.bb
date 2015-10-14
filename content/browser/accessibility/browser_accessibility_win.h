@@ -848,6 +848,9 @@ BrowserAccessibilityWin
   // or a menu list option with a parent of type menu list popup.
   bool IsListBoxOptionOrMenuListOption();
 
+  // Updates object attributes of IA2 with html attributes.
+  void UpdateRequiredAttributes();
+
   // Windows-specific unique ID (unique within the browser process),
   // used for get_accChild, NotifyWinEvent, and as the unique ID for
   // IAccessible2 and ISimpleDOM.
