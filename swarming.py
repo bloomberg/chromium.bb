@@ -1062,8 +1062,9 @@ def CMDcollect(parser, args):
     parser.error('Only use one of task id or --json.')
 
   if options.json:
+    options.json = unicode(os.path.abspath(options.json))
     try:
-      with fs.open(unicode(options.json), 'rb') as f:
+      with fs.open(options.json, 'rb') as f:
         tasks = sorted(
             json.load(f)['tasks'].itervalues(), key=lambda x: x['shard_index'])
         args = [t['task_id'] for t in tasks]
@@ -1095,7 +1096,8 @@ def CMDput_bootstrap(parser, args):
   if len(args) != 1:
     parser.error('Must specify file to upload')
   url = options.swarming + '/_ah/api/swarming/v1/server/put_bootstrap'
-  with fs.open(args[0], 'rb') as f:
+  path = unicode(os.path.abspath(args[0]))
+  with fs.open(path, 'rb') as f:
     content = f.read().decode('utf-8')
   data = net.url_read_json(url, data={'content': content})
   print data
@@ -1109,7 +1111,8 @@ def CMDput_bot_config(parser, args):
   if len(args) != 1:
     parser.error('Must specify file to upload')
   url = options.swarming + '/_ah/api/swarming/v1/server/put_bot_config'
-  with fs.open(args[0], 'rb') as f:
+  path = unicode(os.path.abspath(args[0]))
+  with fs.open(path, 'rb') as f:
     content = f.read().decode('utf-8')
   data = net.url_read_json(url, data={'content': content})
   print data
@@ -1184,7 +1187,8 @@ def CMDquery(parser, args):
   data.pop('cursor', None)
 
   if options.json:
-    tools.write_json(unicode(options.json), data, True)
+    options.json = unicode(os.path.abspath(options.json))
+    tools.write_json(options.json, data, True)
   else:
     try:
       tools.write_json(sys.stdout, data, False)
@@ -1209,7 +1213,8 @@ def CMDquery_list(parser, args):
   except APIError as e:
     parser.error(str(e))
   if options.json:
-    with fs.open(unicode(options.json), 'wb') as f:
+    options.json = unicode(os.path.abspath(options.json))
+    with fs.open(options.json, 'wb') as f:
       json.dump(apis, f)
   else:
     help_url = (

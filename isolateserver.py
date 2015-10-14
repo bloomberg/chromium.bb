@@ -1843,8 +1843,9 @@ def fetch_isolated(isolated_hash, storage, cache, outdir, require_command):
       # Optionally support local files by manually adding them to cache.
       if not isolated_format.is_valid_hash(isolated_hash, algo):
         logging.debug('%s is not a valid hash, assuming a file', isolated_hash)
+        path = unicode(os.path.abspath(isolated_hash))
         try:
-          isolated_hash = fetch_queue.inject_local_file(isolated_hash, algo)
+          isolated_hash = fetch_queue.inject_local_file(path, algo)
         except IOError:
           raise isolated_format.MappingError(
               '%s doesn\'t seem to be a valid file. Did you intent to pass a '
