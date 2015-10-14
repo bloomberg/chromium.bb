@@ -20,6 +20,7 @@ import org.chromium.base.Log;
 import org.chromium.base.SysUtils;
 import org.chromium.base.multidex.ChromiumMultiDex;
 import org.chromium.base.test.BaseTestResult.SkipCheck;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.test.reporter.TestStatusListener;
@@ -45,7 +46,7 @@ public class BaseInstrumentationTestRunner extends InstrumentationTestRunner {
             @Override
             protected TestResult createTestResult() {
                 BaseTestResult r = new BaseTestResult(BaseInstrumentationTestRunner.this);
-                addSkipChecks(r);
+                addTestHooks(r);
                 return r;
             }
         };
@@ -54,17 +55,24 @@ public class BaseInstrumentationTestRunner extends InstrumentationTestRunner {
     }
 
     /**
-     * Adds the desired SkipChecks to result. Subclasses can add additional SkipChecks.
+     * Override this method to register hooks and checks to be run for each test. Make sure to call
+     * the base implementation if you do so.
+     *
+     * @see BaseTestResult#addSkipCheck(BaseTestResult.SkipCheck)
+     * @see BaseTestResult#addPreTestHook(BaseTestResult.PreTestHook)
      */
-    protected void addSkipChecks(BaseTestResult result) {
+    protected void addTestHooks(BaseTestResult result) {
         result.addSkipCheck(new MinAndroidSdkLevelSkipCheck());
         result.addSkipCheck(new RestrictionSkipCheck());
+
+        result.addPreTestHook(CommandLineFlags.getRegistrationHook());
     }
 
     /**
      * Checks if any restrictions exist and skip the test if it meets those restrictions.
      */
     public class RestrictionSkipCheck implements SkipCheck {
+        @Override
         public boolean shouldSkip(TestCase testCase) {
             Method method;
             try {

@@ -210,8 +210,8 @@ public class ChromeInstrumentationTestRunner extends BaseInstrumentationTestRunn
     }
 
     @Override
-    protected void addSkipChecks(BaseTestResult result) {
-        super.addSkipChecks(result);
+    protected void addTestHooks(BaseTestResult result) {
+        super.addTestHooks(result);
         result.addSkipCheck(new DisableInTabbedModeSkipCheck());
         result.addSkipCheck(new ChromeRestrictionSkipCheck());
     }

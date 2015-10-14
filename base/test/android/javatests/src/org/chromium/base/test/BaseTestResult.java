@@ -14,7 +14,6 @@ import junit.framework.TestCase;
 import junit.framework.TestResult;
 
 import org.chromium.base.Log;
-import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.parameter.BaseParameter;
 import org.chromium.base.test.util.parameter.Parameter;
 import org.chromium.base.test.util.parameter.Parameterizable;
@@ -22,6 +21,7 @@ import org.chromium.base.test.util.parameter.ParameterizedTest;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -40,12 +40,14 @@ public class BaseTestResult extends TestResult {
 
     private final Instrumentation mInstrumentation;
     private final List<SkipCheck> mSkipChecks;
+    private final List<PreTestHook> mPreTestHooks;
 
     /**
      * Creates an instance of BaseTestResult.
      */
     public BaseTestResult(Instrumentation instrumentation) {
         mSkipChecks = new ArrayList<>();
+        mPreTestHooks = new ArrayList<>();
         mInstrumentation = instrumentation;
     }
 
@@ -64,6 +66,19 @@ public class BaseTestResult extends TestResult {
     }
 
     /**
+     * An interface for classes that have some code to run before a test. They run after
+     * {@link SkipCheck}s. Provides access to the test method (and the annotations defined for it)
+     * and the instrumentation context.
+     */
+    public interface PreTestHook {
+        /**
+         * @param targetContext the instrumentation context that will be used during the test.
+         * @param testMethod the test method to be run.
+         */
+        public void run(Context targetContext, Method testMethod);
+    }
+
+    /**
      * Adds a check for whether a test should run.
      *
      * @param skipCheck The check to add.
@@ -72,11 +87,33 @@ public class BaseTestResult extends TestResult {
         mSkipChecks.add(skipCheck);
     }
 
+    /**
+     * Adds hooks that will be executed before each test that runs.
+     *
+     * @param preTestHook The hook to add.
+     */
+    public void addPreTestHook(PreTestHook preTestHook) {
+        mPreTestHooks.add(preTestHook);
+    }
+
     protected boolean shouldSkip(TestCase test) {
         for (SkipCheck s : mSkipChecks) {
             if (s.shouldSkip(test)) return true;
         }
         return false;
+    }
+
+    private void runPreTestHooks(TestCase test) {
+        try {
+            Method testMethod = test.getClass().getMethod(test.getName());
+            Context targetContext = getTargetContext();
+
+            for (PreTestHook hook : mPreTestHooks) {
+                hook.run(targetContext, testMethod);
+            }
+        } catch (NoSuchMethodException e) {
+            Log.e(TAG, "Unable to run pre test hooks.", e);
+        }
     }
 
     @Override
@@ -92,13 +129,7 @@ public class BaseTestResult extends TestResult {
 
             endTest(test);
         } else {
-            try {
-                CommandLineFlags.setUp(
-                        getTargetContext(),
-                        test.getClass().getMethod(test.getName()));
-            } catch (NoSuchMethodException e) {
-                Log.e(TAG, "Unable to set up CommandLineFlags", e);
-            }
+            runPreTestHooks(test);
 
             if (test instanceof Parameterizable) {
                 try {

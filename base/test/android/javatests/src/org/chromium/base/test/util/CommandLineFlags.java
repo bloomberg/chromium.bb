@@ -10,6 +10,7 @@ import junit.framework.Assert;
 
 import org.chromium.base.BaseChromiumApplication;
 import org.chromium.base.CommandLine;
+import org.chromium.base.test.BaseTestResult.PreTestHook;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
@@ -102,4 +103,14 @@ public final class CommandLineFlags {
     }
 
     private CommandLineFlags() {}
+
+    public static PreTestHook getRegistrationHook() {
+        return new PreTestHook() {
+            @Override
+            public void run(Context targetContext, Method testMethod) {
+                CommandLineFlags.setUp(targetContext, testMethod);
+            }
+
+        };
+    }
 }
