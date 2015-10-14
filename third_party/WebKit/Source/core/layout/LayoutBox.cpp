@@ -455,7 +455,7 @@ int LayoutBox::pixelSnappedScrollWidth() const
 int LayoutBox::pixelSnappedScrollHeight() const
 {
     if (hasOverflowClip())
-        return layer()->scrollableArea()->scrollHeight();
+        return snapSizeToPixel(layer()->scrollableArea()->scrollHeight(), location().y() + clientTop());
     // For objects with visible overflow, this matches IE.
     // FIXME: Need to work right with writing modes.
     return snapSizeToPixel(scrollHeight(), location().y() + clientTop());
