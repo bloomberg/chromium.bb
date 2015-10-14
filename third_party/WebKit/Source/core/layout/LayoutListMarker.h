@@ -40,6 +40,17 @@ public:
 
     const String& text() const { return m_text; }
 
+    // A reduced set of list style categories allowing for more concise expression
+    // of list style specific logic.
+    enum class ListStyleCategory {
+        None,
+        Symbol,
+        Language
+    };
+
+    // Returns the list's style as one of a reduced high level categorical set of styles.
+    ListStyleCategory listStyleCategory() const;
+
     bool isInside() const;
 
     void updateMarginsAndContent();

@@ -18,6 +18,28 @@
 
 namespace blink {
 
+static inline void paintSymbol(GraphicsContext* context, const Color& color,
+    const IntRect& marker, EListStyleType listStyle)
+{
+    context->setStrokeColor(color);
+    context->setStrokeStyle(SolidStroke);
+    context->setStrokeThickness(1.0f);
+    switch (listStyle) {
+    case Disc:
+        context->fillEllipse(marker);
+        break;
+    case Circle:
+        context->strokeEllipse(marker);
+        break;
+    case Square:
+        context->fillRect(marker);
+        break;
+    default:
+        ASSERT_NOT_REACHED();
+        break;
+    }
+}
+
 void ListMarkerPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     if (paintInfo.phase != PaintPhaseForeground)
@@ -64,79 +86,20 @@ void ListMarkerPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& pai
         context->fillRect(pixelSnappedIntRect(selRect), m_layoutListMarker.listItem()->selectionBackgroundColor());
     }
 
+    LayoutListMarker::ListStyleCategory styleCategory = m_layoutListMarker.listStyleCategory();
+    if (styleCategory == LayoutListMarker::ListStyleCategory::None)
+        return;
+
     const Color color(m_layoutListMarker.resolveColor(CSSPropertyColor));
-    context->setStrokeColor(color);
-    context->setStrokeStyle(SolidStroke);
-    context->setStrokeThickness(1.0f);
+    // Apply the color to the list marker text.
     context->setFillColor(color);
 
-    EListStyleType type = m_layoutListMarker.style()->listStyleType();
-    switch (type) {
-    case Disc:
-        context->fillEllipse(marker);
+    const EListStyleType listStyle = m_layoutListMarker.style()->listStyleType();
+    if (styleCategory == LayoutListMarker::ListStyleCategory::Symbol) {
+        paintSymbol(context, color, marker, listStyle);
         return;
-    case Circle:
-        context->strokeEllipse(marker);
-        return;
-    case Square:
-        context->fillRect(marker);
-        return;
-    case NoneListStyle:
-        return;
-    case ArabicIndic:
-    case Armenian:
-    case Bengali:
-    case Cambodian:
-    case CJKIdeographic:
-    case CjkEarthlyBranch:
-    case CjkHeavenlyStem:
-    case DecimalLeadingZero:
-    case DecimalListStyle:
-    case Devanagari:
-    case EthiopicHalehame:
-    case EthiopicHalehameAm:
-    case EthiopicHalehameTiEr:
-    case EthiopicHalehameTiEt:
-    case Georgian:
-    case Gujarati:
-    case Gurmukhi:
-    case Hebrew:
-    case Hangul:
-    case HangulConsonant:
-    case KoreanHangulFormal:
-    case KoreanHanjaFormal:
-    case KoreanHanjaInformal:
-    case Hiragana:
-    case HiraganaIroha:
-    case Kannada:
-    case Katakana:
-    case KatakanaIroha:
-    case Khmer:
-    case Lao:
-    case LowerAlpha:
-    case LowerArmenian:
-    case LowerGreek:
-    case LowerLatin:
-    case LowerRoman:
-    case Malayalam:
-    case Mongolian:
-    case Myanmar:
-    case Oriya:
-    case Persian:
-    case SimpChineseFormal:
-    case SimpChineseInformal:
-    case Telugu:
-    case Thai:
-    case Tibetan:
-    case TradChineseFormal:
-    case TradChineseInformal:
-    case UpperAlpha:
-    case UpperArmenian:
-    case UpperLatin:
-    case UpperRoman:
-    case Urdu:
-        break;
     }
+
     if (m_layoutListMarker.text().isEmpty())
         return;
 
@@ -171,7 +134,7 @@ void ListMarkerPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& pai
         textRun.setText(reversedText.toString());
     }
 
-    const UChar suffix = m_layoutListMarker.listMarkerSuffix(type, m_layoutListMarker.listItem()->value());
+    const UChar suffix = m_layoutListMarker.listMarkerSuffix(listStyle, m_layoutListMarker.listItem()->value());
     UChar suffixStr[2] = { suffix, static_cast<UChar>(' ') };
     TextRun suffixRun = constructTextRun(font, suffixStr, 2, m_layoutListMarker.styleRef(), m_layoutListMarker.style()->direction());
     TextRunPaintInfo suffixRunInfo(suffixRun);

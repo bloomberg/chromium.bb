@@ -1109,68 +1109,14 @@ void LayoutListMarker::updateContent()
         return;
     }
 
-    EListStyleType type = style()->listStyleType();
-    switch (type) {
-    case NoneListStyle:
+    switch (listStyleCategory()) {
+    case ListStyleCategory::None:
         break;
-    case Circle:
-    case Disc:
-    case Square:
-        m_text = listMarkerText(type, 0); // value is ignored for these types
+    case ListStyleCategory::Symbol:
+        m_text = listMarkerText(style()->listStyleType(), 0); // value is ignored for these types
         break;
-    case ArabicIndic:
-    case Armenian:
-    case Bengali:
-    case Cambodian:
-    case CJKIdeographic:
-    case CjkEarthlyBranch:
-    case CjkHeavenlyStem:
-    case DecimalLeadingZero:
-    case DecimalListStyle:
-    case Devanagari:
-    case EthiopicHalehame:
-    case EthiopicHalehameAm:
-    case EthiopicHalehameTiEr:
-    case EthiopicHalehameTiEt:
-    case Georgian:
-    case Gujarati:
-    case Gurmukhi:
-    case Hangul:
-    case HangulConsonant:
-    case KoreanHangulFormal:
-    case KoreanHanjaFormal:
-    case KoreanHanjaInformal:
-    case Hebrew:
-    case Hiragana:
-    case HiraganaIroha:
-    case Kannada:
-    case Katakana:
-    case KatakanaIroha:
-    case Khmer:
-    case Lao:
-    case LowerAlpha:
-    case LowerArmenian:
-    case LowerGreek:
-    case LowerLatin:
-    case LowerRoman:
-    case Malayalam:
-    case Mongolian:
-    case Myanmar:
-    case Oriya:
-    case Persian:
-    case SimpChineseFormal:
-    case SimpChineseInformal:
-    case Telugu:
-    case Thai:
-    case Tibetan:
-    case TradChineseFormal:
-    case TradChineseInformal:
-    case UpperAlpha:
-    case UpperArmenian:
-    case UpperLatin:
-    case UpperRoman:
-    case Urdu:
-        m_text = listMarkerText(type, m_listItem->value());
+    case ListStyleCategory::Language:
+        m_text = listMarkerText(style()->listStyleType(), m_listItem->value());
         break;
     }
 }
@@ -1191,72 +1137,18 @@ void LayoutListMarker::computePreferredLogicalWidths()
     const Font& font = style()->font();
 
     LayoutUnit logicalWidth = 0;
-    EListStyleType type = style()->listStyleType();
-    switch (type) {
-    case NoneListStyle:
+    switch (listStyleCategory()) {
+    case ListStyleCategory::None:
         break;
-    case Circle:
-    case Disc:
-    case Square:
+    case ListStyleCategory::Symbol:
         logicalWidth = (font.fontMetrics().ascent() * 2 / 3 + 1) / 2 + 2;
         break;
-    case ArabicIndic:
-    case Armenian:
-    case Bengali:
-    case Cambodian:
-    case CJKIdeographic:
-    case CjkEarthlyBranch:
-    case CjkHeavenlyStem:
-    case DecimalLeadingZero:
-    case DecimalListStyle:
-    case Devanagari:
-    case EthiopicHalehame:
-    case EthiopicHalehameAm:
-    case EthiopicHalehameTiEr:
-    case EthiopicHalehameTiEt:
-    case Georgian:
-    case Gujarati:
-    case Gurmukhi:
-    case Hangul:
-    case HangulConsonant:
-    case KoreanHangulFormal:
-    case KoreanHanjaFormal:
-    case KoreanHanjaInformal:
-    case Hebrew:
-    case Hiragana:
-    case HiraganaIroha:
-    case Kannada:
-    case Katakana:
-    case KatakanaIroha:
-    case Khmer:
-    case Lao:
-    case LowerAlpha:
-    case LowerArmenian:
-    case LowerGreek:
-    case LowerLatin:
-    case LowerRoman:
-    case Malayalam:
-    case Mongolian:
-    case Myanmar:
-    case Oriya:
-    case Persian:
-    case SimpChineseFormal:
-    case SimpChineseInformal:
-    case Telugu:
-    case Thai:
-    case Tibetan:
-    case TradChineseFormal:
-    case TradChineseInformal:
-    case UpperAlpha:
-    case UpperArmenian:
-    case UpperLatin:
-    case UpperRoman:
-    case Urdu:
+    case ListStyleCategory::Language:
         if (m_text.isEmpty()) {
             logicalWidth = 0;
         } else {
             LayoutUnit itemWidth = font.width(m_text);
-            UChar suffixSpace[2] = { listMarkerSuffix(type, m_listItem->value()), ' ' };
+            UChar suffixSpace[2] = { listMarkerSuffix(style()->listStyleType(), m_listItem->value()), ' ' };
             LayoutUnit suffixSpaceWidth = font.width(constructTextRun(font, suffixSpace, 2, styleRef(), style()->direction()));
             logicalWidth = itemWidth + suffixSpaceWidth;
         }
@@ -1282,10 +1174,8 @@ void LayoutListMarker::updateMargins()
         if (isImage()) {
             marginEnd = cMarkerPadding;
         } else {
-            switch (style()->listStyleType()) {
-            case Disc:
-            case Circle:
-            case Square:
+            switch (listStyleCategory()) {
+            case ListStyleCategory::Symbol:
                 marginStart = -1;
                 marginEnd = fontMetrics.ascent() - minPreferredLogicalWidth() + 1;
                 break;
@@ -1299,13 +1189,11 @@ void LayoutListMarker::updateMargins()
                 marginStart = -minPreferredLogicalWidth() - cMarkerPadding;
             } else {
                 int offset = fontMetrics.ascent() * 2 / 3;
-                switch (style()->listStyleType()) {
-                case Disc:
-                case Circle:
-                case Square:
+                switch (listStyleCategory()) {
+                case ListStyleCategory::Symbol:
                     marginStart = -offset - cMarkerPadding - 1;
                     break;
-                case NoneListStyle:
+                case ListStyleCategory::None:
                     break;
                 default:
                     marginStart = m_text.isEmpty() ? LayoutUnit() : -minPreferredLogicalWidth() - offset / 2;
@@ -1317,13 +1205,11 @@ void LayoutListMarker::updateMargins()
                 marginEnd = cMarkerPadding;
             } else {
                 int offset = fontMetrics.ascent() * 2 / 3;
-                switch (style()->listStyleType()) {
-                case Disc:
-                case Circle:
-                case Square:
+                switch (listStyleCategory()) {
+                case ListStyleCategory::Symbol:
                     marginEnd = offset + cMarkerPadding + 1 - minPreferredLogicalWidth();
                     break;
-                case NoneListStyle:
+                case ListStyleCategory::None:
                     break;
                 default:
                     marginEnd = m_text.isEmpty() ? 0 : offset / 2;
@@ -1353,31 +1239,15 @@ int LayoutListMarker::baselinePosition(FontBaseline baselineType, bool firstLine
     return LayoutBox::baselinePosition(baselineType, firstLine, direction, linePositionMode);
 }
 
-bool LayoutListMarker::isInside() const
+LayoutListMarker::ListStyleCategory LayoutListMarker::listStyleCategory() const
 {
-    return m_listItem->notInList() || style()->listStylePosition() == INSIDE;
-}
-
-IntRect LayoutListMarker::getRelativeMarkerRect() const
-{
-    if (isImage())
-        return IntRect(0, 0, m_image->imageSize(this, style()->effectiveZoom()).width(), m_image->imageSize(this, style()->effectiveZoom()).height());
-
-    IntRect relativeRect;
-    EListStyleType type = style()->listStyleType();
-    switch (type) {
+    switch (style()->listStyleType()) {
+    case NoneListStyle:
+        return ListStyleCategory::None;
     case Disc:
     case Circle:
-    case Square: {
-        // FIXME: Are these particular rounding rules necessary?
-        const FontMetrics& fontMetrics = style()->fontMetrics();
-        int ascent = fontMetrics.ascent();
-        int bulletWidth = (ascent * 2 / 3 + 1) / 2;
-        relativeRect = IntRect(1, 3 * (ascent - ascent * 2 / 3) / 2, bulletWidth, bulletWidth);
-        break;
-    }
-    case NoneListStyle:
-        return IntRect();
+    case Square:
+        return ListStyleCategory::Symbol;
     case ArabicIndic:
     case Armenian:
     case Bengali:
@@ -1396,9 +1266,6 @@ IntRect LayoutListMarker::getRelativeMarkerRect() const
     case Gujarati:
     case Gurmukhi:
     case Hangul:
-    case KoreanHangulFormal:
-    case KoreanHanjaFormal:
-    case KoreanHanjaInformal:
     case HangulConsonant:
     case Hebrew:
     case Hiragana:
@@ -1407,6 +1274,9 @@ IntRect LayoutListMarker::getRelativeMarkerRect() const
     case Katakana:
     case KatakanaIroha:
     case Khmer:
+    case KoreanHangulFormal:
+    case KoreanHanjaFormal:
+    case KoreanHanjaInformal:
     case Lao:
     case LowerAlpha:
     case LowerArmenian:
@@ -1430,11 +1300,42 @@ IntRect LayoutListMarker::getRelativeMarkerRect() const
     case UpperLatin:
     case UpperRoman:
     case Urdu:
+        return ListStyleCategory::Language;
+    default:
+        ASSERT_NOT_REACHED();
+        return ListStyleCategory::Language;
+    }
+}
+
+bool LayoutListMarker::isInside() const
+{
+    return m_listItem->notInList() || style()->listStylePosition() == INSIDE;
+}
+
+IntRect LayoutListMarker::getRelativeMarkerRect() const
+{
+    if (isImage())
+        return IntRect(0, 0, m_image->imageSize(this, style()->effectiveZoom()).width(), m_image->imageSize(this, style()->effectiveZoom()).height());
+
+    IntRect relativeRect;
+    switch (listStyleCategory()) {
+    case ListStyleCategory::None:
+        return IntRect();
+    case ListStyleCategory::Symbol: {
+        // TODO(wkorman): Review and clean up/document the calculations below.
+        // http://crbug.com/543193
+        const FontMetrics& fontMetrics = style()->fontMetrics();
+        int ascent = fontMetrics.ascent();
+        int bulletWidth = (ascent * 2 / 3 + 1) / 2;
+        relativeRect = IntRect(1, 3 * (ascent - ascent * 2 / 3) / 2, bulletWidth, bulletWidth);
+        break;
+    }
+    case ListStyleCategory::Language:
         if (m_text.isEmpty())
             return IntRect();
         const Font& font = style()->font();
         int itemWidth = font.width(m_text);
-        UChar suffixSpace[2] = { listMarkerSuffix(type, m_listItem->value()), ' ' };
+        UChar suffixSpace[2] = { listMarkerSuffix(style()->listStyleType(), m_listItem->value()), ' ' };
         int suffixSpaceWidth = font.width(constructTextRun(font, suffixSpace, 2, styleRef(), style()->direction()));
         relativeRect = IntRect(0, 0, itemWidth + suffixSpaceWidth, font.fontMetrics().height());
     }
