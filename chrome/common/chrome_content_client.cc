@@ -628,9 +628,7 @@ void ChromeContentClient::AddServiceWorkerSchemes(
 #endif
 }
 
-void ChromeContentClient::AddIsolatedSchemes(std::set<std::string>* schemes) {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kIsolateExtensions)) {
-    schemes->insert(extensions::kExtensionScheme);
-  }
+bool ChromeContentClient::IsSupplementarySiteIsolationModeEnabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kIsolateExtensions);
 }

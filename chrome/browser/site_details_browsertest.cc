@@ -691,8 +691,7 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, ExtensionWithTwoWebIframes) {
   EXPECT_THAT(GetRenderProcessCount(), EqualsIfExtensionsIsolated(3));
 }
 
-// TODO(nick): This test demonstrates that --isolate-extensions currently
-// isolates hosted apps too. It shouldn't. http://crbug.com/535073
+// Verifies that --isolate-extensions doesn't isolate hosted apps.
 IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, IsolateExtensionsHostedApps) {
   GURL app_with_web_iframe_url = embedded_test_server()->GetURL(
       "app.org", "/cross_site_iframe_factory.html?app.org(b.com)");
@@ -716,6 +715,16 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, IsolateExtensionsHostedApps) {
                   "SiteIsolation.IsolateExtensionsProcessCountNoLimit"),
               ElementsAre(Bucket(1, 1)));
   EXPECT_THAT(GetRenderProcessCount(), EqualsIfExtensionsIsolated(1));
+  EXPECT_THAT(details->uma()->GetAllSamples(
+                  "SiteIsolation.IsolateAllSitesProcessCountEstimate"),
+              ElementsAre(Bucket(2, 1)));
+  EXPECT_THAT(details->uma()->GetAllSamples(
+                  "SiteIsolation.IsolateAllSitesProcessCountLowerBound"),
+              ElementsAre(Bucket(2, 1)));
+  EXPECT_THAT(details->uma()->GetAllSamples(
+                  "SiteIsolation.IsolateAllSitesProcessCountNoLimit"),
+              ElementsAre(Bucket(2, 1)));
+  EXPECT_THAT(GetRenderProcessCount(), EqualsIfSitePerProcess(2));
 
   ui_test_utils::NavigateToURL(browser(), app_in_web_iframe_url);
   details = new TestMemoryDetails();
@@ -733,11 +742,22 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, IsolateExtensionsHostedApps) {
                   "SiteIsolation.IsolateExtensionsProcessCountNoLimit"),
               ElementsAre(Bucket(1, 1)));
   EXPECT_THAT(GetRenderProcessCount(), EqualsIfExtensionsIsolated(1));
+  EXPECT_THAT(details->uma()->GetAllSamples(
+                  "SiteIsolation.IsolateAllSitesProcessCountEstimate"),
+              ElementsAre(Bucket(2, 1)));
+  EXPECT_THAT(details->uma()->GetAllSamples(
+                  "SiteIsolation.IsolateAllSitesProcessCountLowerBound"),
+              ElementsAre(Bucket(2, 1)));
+  EXPECT_THAT(details->uma()->GetAllSamples(
+                  "SiteIsolation.IsolateAllSitesProcessCountNoLimit"),
+              ElementsAre(Bucket(2, 1)));
+  EXPECT_THAT(GetRenderProcessCount(), EqualsIfSitePerProcess(2));
 
   // Now install app.org as a hosted app.
   CreateHostedApp("App", GURL("http://app.org"));
 
-  // Reload the same two pages.
+  // Reload the same two pages, and verify that the hosted app still is not
+  // isolated by --isolate-extensions, but is isolated by --site-per-process.
   ui_test_utils::NavigateToURL(browser(), app_with_web_iframe_url);
   details = new TestMemoryDetails();
   details->StartFetchAndWait();
@@ -746,14 +766,24 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, IsolateExtensionsHostedApps) {
               ElementsAre(Bucket(1, 1)));
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.IsolateExtensionsProcessCountEstimate"),
-              ElementsAre(Bucket(2, 1)));
+              ElementsAre(Bucket(1, 1)));
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.IsolateExtensionsProcessCountLowerBound"),
-              ElementsAre(Bucket(2, 1)));
+              ElementsAre(Bucket(1, 1)));
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.IsolateExtensionsProcessCountNoLimit"),
+              ElementsAre(Bucket(1, 1)));
+  EXPECT_THAT(GetRenderProcessCount(), EqualsIfExtensionsIsolated(1));
+  EXPECT_THAT(details->uma()->GetAllSamples(
+                  "SiteIsolation.IsolateAllSitesProcessCountEstimate"),
               ElementsAre(Bucket(2, 1)));
-  EXPECT_THAT(GetRenderProcessCount(), EqualsIfExtensionsIsolated(2));
+  EXPECT_THAT(details->uma()->GetAllSamples(
+                  "SiteIsolation.IsolateAllSitesProcessCountLowerBound"),
+              ElementsAre(Bucket(2, 1)));
+  EXPECT_THAT(details->uma()->GetAllSamples(
+                  "SiteIsolation.IsolateAllSitesProcessCountNoLimit"),
+              ElementsAre(Bucket(2, 1)));
+  EXPECT_THAT(GetRenderProcessCount(), EqualsIfSitePerProcess(2));
 
   ui_test_utils::NavigateToURL(browser(), app_in_web_iframe_url);
   details = new TestMemoryDetails();
@@ -763,13 +793,22 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, IsolateExtensionsHostedApps) {
               ElementsAre(Bucket(1, 1)));
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.IsolateExtensionsProcessCountEstimate"),
-              ElementsAre(Bucket(2, 1)));
+              ElementsAre(Bucket(1, 1)));
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.IsolateExtensionsProcessCountLowerBound"),
-              ElementsAre(Bucket(2, 1)));
+              ElementsAre(Bucket(1, 1)));
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.IsolateExtensionsProcessCountNoLimit"),
+              ElementsAre(Bucket(1, 1)));
+  EXPECT_THAT(GetRenderProcessCount(), EqualsIfExtensionsIsolated(1));
+  EXPECT_THAT(details->uma()->GetAllSamples(
+                  "SiteIsolation.IsolateAllSitesProcessCountEstimate"),
               ElementsAre(Bucket(2, 1)));
-
-  EXPECT_THAT(GetRenderProcessCount(), EqualsIfExtensionsIsolated(2));
+  EXPECT_THAT(details->uma()->GetAllSamples(
+                  "SiteIsolation.IsolateAllSitesProcessCountLowerBound"),
+              ElementsAre(Bucket(2, 1)));
+  EXPECT_THAT(details->uma()->GetAllSamples(
+                  "SiteIsolation.IsolateAllSitesProcessCountNoLimit"),
+              ElementsAre(Bucket(2, 1)));
+  EXPECT_THAT(GetRenderProcessCount(), EqualsIfSitePerProcess(2));
 }

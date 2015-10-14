@@ -81,7 +81,7 @@ class ChromeContentClient : public content::ContentClient {
 
   void AddServiceWorkerSchemes(std::set<std::string>* schemes) override;
 
-  void AddIsolatedSchemes(std::set<std::string>* schemes) override;
+  bool IsSupplementarySiteIsolationModeEnabled() override;
 };
 
 #endif  // CHROME_COMMON_CHROME_CONTENT_CLIENT_H_

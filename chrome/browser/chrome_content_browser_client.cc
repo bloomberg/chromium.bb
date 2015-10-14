@@ -957,6 +957,18 @@ bool ChromeContentBrowserClient::ShouldUseProcessPerSite(
 #endif
 }
 
+bool ChromeContentBrowserClient::DoesSiteRequireDedicatedProcess(
+    content::BrowserContext* browser_context,
+    const GURL& effective_site_url) {
+#if defined(ENABLE_EXTENSIONS)
+  if (ChromeContentBrowserClientExtensionsPart::DoesSiteRequireDedicatedProcess(
+          browser_context, effective_site_url)) {
+    return true;
+  }
+#endif
+  return false;
+}
+
 // TODO(creis, nick): https://crbug.com/160576 describes a weakness in our
 // origin-lock enforcement, where we don't have a way to efficiently know
 // effective URLs on the IO thread, and wind up killing processes that e.g.

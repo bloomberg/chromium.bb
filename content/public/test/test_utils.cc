@@ -193,9 +193,7 @@ bool AreAllSitesIsolatedForTesting() {
 }
 
 void IsolateAllSitesForTesting(base::CommandLine* command_line) {
-  EXPECT_TRUE(SiteIsolationPolicy::IsolateAllSitesForTesting())
-      << "IsolateAllSitesForTesting() called after "
-      << "SiteIsolationPolicy was already used";
+  command_line->AppendSwitch(switches::kSitePerProcess);
 }
 
 MessageLoopRunner::MessageLoopRunner()

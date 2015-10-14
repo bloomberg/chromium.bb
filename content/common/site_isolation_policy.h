@@ -34,15 +34,8 @@ class CONTENT_EXPORT SiteIsolationPolicy {
   // particular site merits protection.
   static bool AreCrossProcessFramesPossible();
 
-  // Returns true if pages loaded from |effective_url| ought to be handled only
-  // by a renderer process isolated from other sites. If --site-per-process is
-  // on the command line, this is true for all sites. In other site isolation
-  // modes, only a subset of sites will require dedicated processes.
-  //
-  // |effective_url| must be an effective URL -- practically speaking, that
-  // means that this function should only be called on the UI thread in the
-  // browser process.
-  static bool DoesSiteRequireDedicatedProcess(const GURL& effective_url);
+  // Returns true if every site should be placed in a dedicated process.
+  static bool UseDedicatedProcessesForAllSites();
 
   // Returns true if navigation and history code should maintain per-frame
   // navigation entries. This is an in-progress feature related to site
@@ -60,13 +53,6 @@ class CONTENT_EXPORT SiteIsolationPolicy {
   // TODO(nasko): When swappedout:// is eliminated entirely, this function
   // should be removed and its callers cleaned up.
   static bool IsSwappedOutStateForbidden();
-
-  // Overrides the default site isolation mode so that all sites are
-  // isolated. Returns true if successful. Can fail if SiteIsolationPolicy
-  // has already been consulted at runtime prior to the override call --
-  // if so, try calling this earlier in the test, maybe before creating
-  // any renderer processes.
-  static bool IsolateAllSitesForTesting();
 
  private:
   SiteIsolationPolicy();  // Not instantiable.

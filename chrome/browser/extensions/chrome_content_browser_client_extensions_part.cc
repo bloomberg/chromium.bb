@@ -19,6 +19,7 @@
 #include "chrome/browser/renderer_host/chrome_extension_message_filter.h"
 #include "chrome/browser/sync_file_system/local/sync_file_system_backend.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_process_policy.h"
 #include "components/guest_view/browser/guest_view_message_filter.h"
 #include "content/public/browser/browser_thread.h"
@@ -181,6 +182,26 @@ bool ChromeContentBrowserClientExtensionsPart::ShouldUseProcessPerSite(
   // process per site, since all instances can make synchronous calls to the
   // background window.  Other extensions should use process per site as well.
   return true;
+}
+
+// static
+bool ChromeContentBrowserClientExtensionsPart::DoesSiteRequireDedicatedProcess(
+    content::BrowserContext* browser_context,
+    const GURL& effective_site_url) {
+  if (effective_site_url.SchemeIs(extensions::kExtensionScheme)) {
+    // --isolate-extensions should isolate extensions, except for hosted apps.
+    // Isolating hosted apps is a good idea, but ought to be a separate knob.
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            ::switches::kIsolateExtensions)) {
+      const Extension* extension =
+          ExtensionRegistry::Get(browser_context)
+              ->enabled_extensions()
+              .GetExtensionOrAppByURL(effective_site_url);
+      if (extension && !extension->is_hosted_app())
+        return true;
+    }
+  }
+  return false;
 }
 
 // static

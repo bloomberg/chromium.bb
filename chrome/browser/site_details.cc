@@ -7,7 +7,12 @@
 #include "base/metrics/histogram.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
+
+#if defined(ENABLE_EXTENSIONS)
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
+#include "extensions/common/extension.h"
+#endif
 
 using content::BrowserThread;
 using content::RenderProcessHost;
@@ -16,7 +21,9 @@ using content::WebContents;
 
 namespace {
 
-bool ShouldIsolate(IsolationScenarioType policy, const GURL& site) {
+bool ShouldIsolate(content::BrowserContext* browser_context,
+                   IsolationScenarioType policy,
+                   const GURL& site) {
   switch (policy) {
     case ISOLATE_ALL_SITES:
       return true;
@@ -26,8 +33,19 @@ bool ShouldIsolate(IsolationScenarioType policy, const GURL& site) {
       // the New Tab Page gets counted as two processes under this policy, and
       // extensions are isolated as well.
       return !site.SchemeIs(url::kHttpScheme);
-    case ISOLATE_EXTENSIONS:
-      return site.SchemeIs(extensions::kExtensionScheme);
+    case ISOLATE_EXTENSIONS: {
+#if !defined(ENABLE_EXTENSIONS)
+      return false;
+#else
+      if (!site.SchemeIs(extensions::kExtensionScheme))
+        return false;
+      extensions::ExtensionRegistry* registry =
+          extensions::ExtensionRegistry::Get(browser_context);
+      const extensions::Extension* extension =
+          registry->enabled_extensions().GetExtensionOrAppByURL(site);
+      return extension && !extension->is_hosted_app();
+#endif
+    }
   }
   NOTREACHED();
   return true;
@@ -41,7 +59,10 @@ IsolationScenario::~IsolationScenario() {}
 
 void IsolationScenario::CollectSiteInfoForScenario(SiteInstance* primary,
                                                    const GURL& site) {
-  const GURL& isolated = ShouldIsolate(policy, site) ? site : GURL("http://");
+  const GURL& isolated =
+      ShouldIsolate(primary->GetBrowserContext(), policy, site)
+          ? site
+          : GURL("http://");
   sites.insert(isolated);
   browsing_instance_site_map[primary->GetId()].insert(isolated);
 }

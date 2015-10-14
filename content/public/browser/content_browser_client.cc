@@ -39,6 +39,12 @@ bool ContentBrowserClient::ShouldUseProcessPerSite(
   return false;
 }
 
+bool ContentBrowserClient::DoesSiteRequireDedicatedProcess(
+    BrowserContext* browser_context,
+    const GURL& effective_url) {
+  return false;
+}
+
 bool ContentBrowserClient::ShouldLockToOrigin(BrowserContext* browser_context,
                                               const GURL& effective_url) {
   return true;

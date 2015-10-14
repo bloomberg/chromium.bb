@@ -112,4 +112,8 @@ bool ContentClient::GetSandboxProfileForSandboxType(
 }
 #endif
 
+bool ContentClient::IsSupplementarySiteIsolationModeEnabled() {
+  return false;
+}
+
 }  // namespace content

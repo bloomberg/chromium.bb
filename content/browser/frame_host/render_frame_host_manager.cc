@@ -1532,8 +1532,8 @@ bool RenderFrameHostManager::IsRendererTransferNeededForNavigation(
   if (rfh->GetSiteInstance()->GetSiteURL().SchemeIs(kGuestScheme))
     return false;
 
-  GURL effective_url = SiteInstanceImpl::GetEffectiveURL(
-      rfh->GetSiteInstance()->GetBrowserContext(), dest_url);
+  BrowserContext* context = rfh->GetSiteInstance()->GetBrowserContext();
+  GURL effective_url = SiteInstanceImpl::GetEffectiveURL(context, dest_url);
 
   // TODO(nasko, nick): These following --site-per-process checks are
   // overly simplistic. Update them to match all the cases
@@ -1547,7 +1547,8 @@ bool RenderFrameHostManager::IsRendererTransferNeededForNavigation(
   // The sites differ. If either one requires a dedicated process,
   // then a transfer is needed.
   return rfh->GetSiteInstance()->RequiresDedicatedProcess() ||
-         SiteIsolationPolicy::DoesSiteRequireDedicatedProcess(effective_url);
+         SiteInstanceImpl::DoesSiteRequireDedicatedProcess(context,
+                                                           effective_url);
 }
 
 SiteInstance* RenderFrameHostManager::ConvertToSiteInstance(

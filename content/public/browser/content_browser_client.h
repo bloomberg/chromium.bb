@@ -180,9 +180,22 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual bool ShouldUseProcessPerSite(BrowserContext* browser_context,
                                        const GURL& effective_url);
 
+  // Returns true if site isolation should be enabled for |effective_url|. This
+  // call allows the embedder to supplement the site isolation policy enforced
+  // by the content layer.
+  //
+  // Will only be called if both of the following happen:
+  //   1. The embedder asked to be consulted, by returning true from
+  //      ContentClient::IsSupplementarySiteIsolationModeEnabled().
+  //   2. The content layer didn't decide to isolate |effective_url| according
+  //      to its internal policy (e.g. because of --site-per-process).
+  virtual bool DoesSiteRequireDedicatedProcess(BrowserContext* browser_context,
+                                               const GURL& effective_url);
+
   // Returns true unless the effective URL is part of a site that cannot live in
-  // a process dedicated to that site.  This is only called if
-  // SiteIsolationPolicy::DoesSiteRequireDedicatedProcess returns true.
+  // a process restricted to just that site.  This is only called if site
+  // isolation is enabled for this URL, and is a bug workaround.
+  //
   // TODO(nick): Remove this function once https://crbug.com/160576 is fixed,
   // and origin lock can be applied to all URLs.
   virtual bool ShouldLockToOrigin(BrowserContext* browser_context,

@@ -147,9 +147,12 @@ class CONTENT_EXPORT ContentClient {
   // trustworthy schemes should be added.
   virtual void AddServiceWorkerSchemes(std::set<std::string>* schemes) {}
 
-  // Gives the embedder a chance to register schemes for which site isolation
-  // should be enabled.
-  virtual void AddIsolatedSchemes(std::set<std::string>* schemes) {}
+  // Returns true if the embedder wishes to supplement the site isolation policy
+  // used by the content layer. Returning true enables the infrastructure for
+  // out-of-process iframes, and causes the content layer to consult
+  // ContentBrowserClient::DoesSiteRequireDedicatedProcess() when making process
+  // model decisions.
+  virtual bool IsSupplementarySiteIsolationModeEnabled();
 
  private:
   friend class ContentClientInitializer;  // To set these pointers.

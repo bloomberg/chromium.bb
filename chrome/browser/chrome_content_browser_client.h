@@ -68,12 +68,14 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   content::WebContentsViewDelegate* GetWebContentsViewDelegate(
       content::WebContents* web_contents) override;
   void RenderProcessWillLaunch(content::RenderProcessHost* host) override;
-  bool ShouldUseProcessPerSite(content::BrowserContext* browser_context,
-                               const GURL& effective_url) override;
-  bool ShouldLockToOrigin(content::BrowserContext* browser_context,
-                          const GURL& effective_site_url) override;
   GURL GetEffectiveURL(content::BrowserContext* browser_context,
                        const GURL& url) override;
+  bool ShouldUseProcessPerSite(content::BrowserContext* browser_context,
+                               const GURL& effective_url) override;
+  bool DoesSiteRequireDedicatedProcess(content::BrowserContext* browser_context,
+                                       const GURL& effective_url) override;
+  bool ShouldLockToOrigin(content::BrowserContext* browser_context,
+                          const GURL& effective_site_url) override;
   void GetAdditionalWebUISchemes(
       std::vector<std::string>* additional_schemes) override;
   void GetAdditionalWebUIHostsToIgnoreParititionCheck(
