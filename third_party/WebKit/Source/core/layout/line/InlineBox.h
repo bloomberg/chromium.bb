@@ -269,7 +269,9 @@ public:
 
     bool visibleToHitTestRequest(const HitTestRequest& request) const { return lineLayoutItem().visibleToHitTestRequest(request); }
 
-    EVerticalAlign verticalAlign() const { return lineLayoutItem().isText() ? ComputedStyle::initialVerticalAlign() : lineLayoutItem().style(m_bitfields.firstLine())->verticalAlign(); }
+    // Anonymous inline: https://drafts.csswg.org/css2/visuren.html#anonymous
+    bool isAnonymousInline() const { return lineLayoutItem().isText() && lineLayoutItem().parent() && lineLayoutItem().parent().isBox(); }
+    EVerticalAlign verticalAlign() const { return isAnonymousInline() ? ComputedStyle::initialVerticalAlign() : lineLayoutItem().style(m_bitfields.firstLine())->verticalAlign(); }
 
     // Use with caution! The type is not checked!
     LineLayoutBoxModel boxModelObject() const
