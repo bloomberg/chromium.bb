@@ -63,10 +63,10 @@ public class WebappSplashScreenTest extends WebappActivityTestBase {
     @SmallTest
     @Feature({"Webapps"})
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    public void testSplashscreenThemeColor() {
+    public void testSplashscreenThemeColorWhenNotSpecified() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return;
 
-        assertEquals(Color.MAGENTA, getActivity().getWindow().getStatusBarColor());
+        assertEquals(Color.BLACK, getActivity().getWindow().getStatusBarColor());
     }
 
     private void setActivityWebappInfoFromBitmap(Bitmap image) {

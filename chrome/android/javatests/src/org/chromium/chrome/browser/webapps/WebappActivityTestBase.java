@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.webapps;
 
 import android.content.Intent;
-import android.graphics.Color;
 import android.net.Uri;
 
 import org.chromium.base.ThreadUtils;
@@ -33,6 +32,18 @@ public abstract class WebappActivityTestBase extends ChromeActivityTestCaseBase<
         super(WebappActivity0.class);
     }
 
+    /**
+     * Creates the Intent that starts the WebAppActivity. This is meant to be overriden by other
+     * tests in order for them to pass some specific values.
+     */
+    protected Intent createIntent() {
+        Intent intent = new Intent(getInstrumentation().getTargetContext(), WebappActivity0.class);
+        intent.setData(Uri.parse(WebappActivity.WEBAPP_SCHEME + "://" + WEBAPP_ID));
+        intent.putExtra(ShortcutHelper.EXTRA_ID, WEBAPP_ID);
+        intent.putExtra(ShortcutHelper.EXTRA_URL, "about:blank");
+        return intent;
+    }
+
     @Override
     protected void setUp() throws Exception {
         super.setUp();
@@ -44,12 +55,7 @@ public abstract class WebappActivityTestBase extends ChromeActivityTestCaseBase<
 
         // Default to a webapp that just loads about:blank to avoid a network load.  This results
         // in the URL bar showing since {@link UrlUtils} cannot parse this type of URL.
-        Intent intent = new Intent(getInstrumentation().getTargetContext(), WebappActivity0.class);
-        intent.setData(Uri.parse(WebappActivity.WEBAPP_SCHEME + "://" + WEBAPP_ID));
-        intent.putExtra(ShortcutHelper.EXTRA_ID, WEBAPP_ID);
-        intent.putExtra(ShortcutHelper.EXTRA_THEME_COLOR, (long) Color.MAGENTA);
-        intent.putExtra(ShortcutHelper.EXTRA_URL, "about:blank");
-        setActivityIntent(intent);
+        setActivityIntent(createIntent());
 
         waitUntilIdle();
 
