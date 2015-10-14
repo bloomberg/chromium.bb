@@ -555,7 +555,7 @@ public class SingleWebsitePreferences extends PreferenceFragment
 
     @Override
     public boolean onPreferenceChange(Preference preference, Object newValue) {
-        ContentSetting permission = ContentSetting.fromInt(Integer.parseInt((String) newValue));
+        ContentSetting permission = ContentSetting.fromString((String) newValue);
         if (PREF_CAMERA_CAPTURE_PERMISSION.equals(preference.getKey())) {
             mSite.setCameraPermission(permission);
         } else if (PREF_COOKIES_PERMISSION.equals(preference.getKey())) {

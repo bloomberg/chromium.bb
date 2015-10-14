@@ -20,7 +20,9 @@ public enum ContentSetting {
     private int mValue;
 
     /**
-     * Converts the enum value to int.
+     * Converts the enum value to int. The integer value should be used when dealing with native
+     * code (reading from or writing to native content settings). Non-native code that needs a
+     * simple data type (e.g. preferences) should use the string representation.
      */
     public int toInt() {
         return mValue;
@@ -34,6 +36,18 @@ public enum ContentSetting {
     public static ContentSetting fromInt(int i) {
         for (ContentSetting enumValue : ContentSetting.values()) {
             if (enumValue.toInt() == i) return enumValue;
+        }
+        return null;
+    }
+
+    /**
+     * Converts a string to its equivalent ContentSetting.
+     * @param value The string to convert.
+     * @return What value the enum is representing (or null if failed).
+     */
+    public static ContentSetting fromString(String value) {
+        for (ContentSetting enumValue : ContentSetting.values()) {
+            if (enumValue.toString().equals(value)) return enumValue;
         }
         return null;
     }
