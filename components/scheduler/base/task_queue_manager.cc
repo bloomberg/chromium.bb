@@ -146,10 +146,20 @@ void TaskQueueManager::RegisterAsUpdatableTaskQueue(
 void TaskQueueManager::UnregisterAsUpdatableTaskQueue(
     internal::TaskQueueImpl* queue) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
+  MoveNewlyUpdatableQueuesIntoUpdatableQueueSet();
+#ifndef NDEBUG
+  {
+    base::AutoLock lock(newly_updatable_lock_);
+    DCHECK(!(updatable_queue_set_.find(queue) == updatable_queue_set_.end() &&
+             std::find(newly_updatable_.begin(), newly_updatable_.end(),
+                       queue) != newly_updatable_.end()));
+  }
+#endif
   updatable_queue_set_.erase(queue);
 }
 
 void TaskQueueManager::MoveNewlyUpdatableQueuesIntoUpdatableQueueSet() {
+  DCHECK(main_thread_checker_.CalledOnValidThread());
   base::AutoLock lock(newly_updatable_lock_);
   while (!newly_updatable_.empty()) {
     updatable_queue_set_.insert(newly_updatable_.back());
@@ -168,14 +178,7 @@ void TaskQueueManager::UpdateWorkQueues(
   // Move any ready delayed tasks into the incomming queues.
   WakeupReadyDelayedQueues(&lazy_now);
 
-  // Insert any newly updatable queues into the updatable_queue_set_.
-  {
-    base::AutoLock lock(newly_updatable_lock_);
-    while (!newly_updatable_.empty()) {
-      updatable_queue_set_.insert(newly_updatable_.back());
-      newly_updatable_.pop_back();
-    }
-  }
+  MoveNewlyUpdatableQueuesIntoUpdatableQueueSet();
 
   auto iter = updatable_queue_set_.begin();
   while (iter != updatable_queue_set_.end()) {
