@@ -27,6 +27,29 @@ source_set("result_codes") {
   ]
 }
 
+# Forces static linking for targets using the static_switches constants, even
+# in the component build. This config makes it impossible to use the static
+# switches target and use the rest of content at the same time, because the
+# component export flags won't be consistent.
+config("static_switches_defines") {
+  defines = [ "COMPILE_CONTENT_STATICALLY" ]
+}
+
+# This target allows you to use the content_switches constants and statically
+# link to it, without depending on the rest of content. This is only for use
+# without content, or you will get multiply defined symbols.
+source_set("static_switches") {
+  public = [
+    "content_switches.h",
+  ]
+  sources = [
+    "//content/common/content_export.h",
+    "content_switches.cc",
+  ]
+
+  public_configs = [ ":static_switches_defines" ]
+}
+
 source_set("common_sources") {
   visibility = [ "//content/*" ]
 

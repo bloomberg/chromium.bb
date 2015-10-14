@@ -300,7 +300,8 @@ void ServiceController::UpdateState() {
   std::vector<uint8> buffer(config_size, 0);
   QUERY_SERVICE_CONFIG* config =
       reinterpret_cast<QUERY_SERVICE_CONFIG*>(&buffer[0]);
-  if (!::QueryServiceConfig(service.Get(), config, buffer.size(),
+  if (!::QueryServiceConfig(service.Get(), config,
+                            static_cast<DWORD>(buffer.size()),
                             &config_size) ||
       config_size != buffer.size()) {
     return;

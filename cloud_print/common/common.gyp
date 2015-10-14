@@ -7,6 +7,7 @@
   },
   'targets': [
     {
+      # GN version: //cloud_print/common:install_utils
       'target_name': 'cloud_print_install_lib',
       'type': 'static_library',
       'dependencies': [

@@ -4,6 +4,9 @@
 
 # This file defines rules that allow you to generate version resources for
 # Windows images.
+#
+# GN: Use the "process_version" template in //chrome/version.gni.
+# For an example, see the target //chrome:chrome_exe_version
 
 # Include 'version.gypi' at the top of your GYP file to define
 # the required variables:
