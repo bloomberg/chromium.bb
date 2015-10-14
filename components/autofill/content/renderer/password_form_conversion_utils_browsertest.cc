@@ -880,9 +880,15 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest, IsGaiaReauthFormIgnored) {
        {TestCase::KeyValue("continue", "https://mail.google.com"),
         TestCase::KeyValue("rart", "")},
        false},
-      // A reauth form for a password site is ignored.
+      // A reauth form for a password site is recognised as such.
       {"https://accounts.google.com",
        {TestCase::KeyValue("continue", "https://passwords.google.com"),
+        TestCase::KeyValue("rart", "")},
+       true},
+      // Path, params or fragment in "continue" should not have influence.
+      {"https://accounts.google.com",
+       {TestCase::KeyValue("continue",
+                           "https://passwords.google.com/path?param=val#frag"),
         TestCase::KeyValue("rart", "")},
        true},
       // Password site is inaccesible via HTTP, but because of HSTS the
