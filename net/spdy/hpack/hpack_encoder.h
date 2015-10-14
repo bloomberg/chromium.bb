@@ -53,11 +53,6 @@ class NET_EXPORT_PRIVATE HpackEncoder {
   // SETTINGS_HEADER_TABLE_SIZE update from the remote decoding endpoint.
   void ApplyHeaderTableSizeSetting(size_t size_setting);
 
-  // Sets externally-owned storage for aggregating character counts of emitted
-  // literal representations.
-  void SetCharCountsStorage(std::vector<size_t>* char_counts,
-                            size_t* total_char_counts);
-
   size_t CurrentHeaderTableSizeSetting() const {
     return header_table_.settings_size_bound();
   }
@@ -76,8 +71,6 @@ class NET_EXPORT_PRIVATE HpackEncoder {
 
   // Emits a Huffman or identity string (whichever is smaller).
   void EmitString(base::StringPiece str);
-
-  void UpdateCharacterCounts(base::StringPiece str);
 
   // Emits the current dynamic table size if the table size was recently
   // updated and we have not yet emitted it (Section 6.3).
@@ -98,10 +91,6 @@ class NET_EXPORT_PRIVATE HpackEncoder {
   size_t min_table_size_setting_received_;
   bool allow_huffman_compression_;
   bool should_emit_table_size_;
-
-  // Externally-owned, nullable storage for character counts of literals.
-  std::vector<size_t>* char_counts_;
-  size_t* total_char_counts_;
 
   DISALLOW_COPY_AND_ASSIGN(HpackEncoder);
 };
