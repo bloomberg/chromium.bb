@@ -50,6 +50,14 @@
             "group_name": "Disabled"
         }
     ],
+    "DataCompressionProxyDevRollout": [
+        {
+            "group_name": "Control"
+        },
+        {
+            "group_name": "Enabled"
+        }
+    ],
     "DataCompressionProxyLoFi": [
         {
             "group_name": "Enabled",
