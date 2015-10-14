@@ -262,6 +262,9 @@ bool ParseFtpDirectoryListingVms(
           space, base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     }
 
+    if (columns.empty())
+      return false;
+
     FtpDirectoryListingEntry entry;
     if (!ParseVmsFilename(columns[0], &entry.name, &entry.type))
       return false;

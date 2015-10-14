@@ -165,6 +165,31 @@ TEST_F(FtpDirectoryListingParserVmsTest, BadDataAfterFooter) {
   }
 }
 
+TEST_F(FtpDirectoryListingParserVmsTest, EmptyColumnZero) {
+  std::vector<base::string16> lines;
+
+  // The parser requires a directory header before accepting regular input.
+  lines.push_back(ASCIIToUTF16("garbage"));
+
+  base::char16 data[] = {0x0};
+  lines.push_back(base::string16(data, 1));
+
+  std::vector<FtpDirectoryListingEntry> entries;
+  EXPECT_FALSE(ParseFtpDirectoryListingVms(lines, &entries));
+}
+
+TEST_F(FtpDirectoryListingParserVmsTest, EmptyColumnWhitespace) {
+  std::vector<base::string16> lines;
+
+  // The parser requires a directory header before accepting regular input.
+  lines.push_back(ASCIIToUTF16("garbage"));
+
+  lines.push_back(ASCIIToUTF16("   "));
+
+  std::vector<FtpDirectoryListingEntry> entries;
+  EXPECT_FALSE(ParseFtpDirectoryListingVms(lines, &entries));
+}
+
 }  // namespace
 
 }  // namespace net
