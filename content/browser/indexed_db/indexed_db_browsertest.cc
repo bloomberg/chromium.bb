@@ -47,7 +47,8 @@ namespace content {
 
 // This browser test is aimed towards exercising the IndexedDB bindings and
 // the actual implementation that lives in the browser side.
-class IndexedDBBrowserTest : public ContentBrowserTest {
+class IndexedDBBrowserTest : public ContentBrowserTest,
+                             public ::testing::WithParamInterface<const char*> {
  public:
   IndexedDBBrowserTest() : disk_usage_(-1) {}
 
@@ -187,16 +188,6 @@ class IndexedDBBrowserTest : public ContentBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(IndexedDBBrowserTest);
 };
 
-class IndexedDBBrowserTestWithExperimentalAPIs
-    : public IndexedDBBrowserTest,
-      public ::testing::WithParamInterface<const char*> {
- public:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(
-        switches::kEnableExperimentalWebPlatformFeatures);
-  }
-};
-
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, CursorTest) {
   SimpleTest(GetTestUrl("indexeddb", "cursor_test.html"));
 }
@@ -242,8 +233,7 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, CallbackAccounting) {
   SimpleTest(GetTestUrl("indexeddb", "callback_accounting.html"));
 }
 
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithExperimentalAPIs,
-                       GetAllMaxMessageSize) {
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, GetAllMaxMessageSize) {
   SimpleTest(GetTestUrl("indexeddb", "getall_max_message_size.html"));
 }
 
@@ -701,11 +691,7 @@ static scoped_ptr<net::test_server::HttpResponse> CorruptDBRequestHandler(
 
 }  // namespace
 
-// Experimental for IDBObjectStore.getAll()
-using IndexedDBBrowserCorruptionTest = IndexedDBBrowserTestWithExperimentalAPIs;
-
-IN_PROC_BROWSER_TEST_P(IndexedDBBrowserCorruptionTest,
-                       OperationOnCorruptedOpenDatabase) {
+IN_PROC_BROWSER_TEST_P(IndexedDBBrowserTest, OperationOnCorruptedOpenDatabase) {
   ASSERT_TRUE(embedded_test_server()->Started() ||
               embedded_test_server()->InitializeAndWaitUntilReady());
   const GURL& origin_url = embedded_test_server()->base_url();
@@ -724,8 +710,8 @@ IN_PROC_BROWSER_TEST_P(IndexedDBBrowserCorruptionTest,
   SimpleTest(embedded_test_server()->GetURL(test_file));
 }
 
-INSTANTIATE_TEST_CASE_P(IndexedDBBrowserCorruptionTestInstantiation,
-                        IndexedDBBrowserCorruptionTest,
+INSTANTIATE_TEST_CASE_P(IndexedDBBrowserTestInstantiation,
+                        IndexedDBBrowserTest,
                         ::testing::Values("failGetBlobJournal",
                                           "get",
                                           "getAll",

@@ -2605,6 +2605,8 @@ interface IDBIndex
     method constructor
     method count
     method get
+    method getAll
+    method getAllKeys
     method getKey
     method openCursor
     method openKeyCursor
@@ -2628,8 +2630,11 @@ interface IDBObjectStore
     method delete
     method deleteIndex
     method get
+    method getAll
+    method getAllKeys
     method index
     method openCursor
+    method openKeyCursor
     method put
 interface IDBOpenDBRequest
     getter onblocked
@@ -2652,6 +2657,7 @@ interface IDBTransaction
     getter db
     getter error
     getter mode
+    getter objectStoreNames
     getter onabort
     getter oncomplete
     getter onerror
@@ -5719,6 +5725,8 @@ interface webkitIDBIndex
     method constructor
     method count
     method get
+    method getAll
+    method getAllKeys
     method getKey
     method openCursor
     method openKeyCursor
@@ -5742,8 +5750,11 @@ interface webkitIDBObjectStore
     method delete
     method deleteIndex
     method get
+    method getAll
+    method getAllKeys
     method index
     method openCursor
+    method openKeyCursor
     method put
 interface webkitIDBRequest
     getter error
@@ -5760,6 +5771,7 @@ interface webkitIDBTransaction
     getter db
     getter error
     getter mode
+    getter objectStoreNames
     getter onabort
     getter oncomplete
     getter onerror

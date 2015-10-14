@@ -273,6 +273,8 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method constructor
 [Worker]     method count
 [Worker]     method get
+[Worker]     method getAll
+[Worker]     method getAllKeys
 [Worker]     method getKey
 [Worker]     method openCursor
 [Worker]     method openKeyCursor
@@ -296,8 +298,11 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method delete
 [Worker]     method deleteIndex
 [Worker]     method get
+[Worker]     method getAll
+[Worker]     method getAllKeys
 [Worker]     method index
 [Worker]     method openCursor
+[Worker]     method openKeyCursor
 [Worker]     method put
 [Worker] interface IDBOpenDBRequest
 [Worker]     getter onblocked
@@ -320,6 +325,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     getter db
 [Worker]     getter error
 [Worker]     getter mode
+[Worker]     getter objectStoreNames
 [Worker]     getter onabort
 [Worker]     getter oncomplete
 [Worker]     getter onerror
@@ -654,6 +660,8 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method constructor
 [Worker]     method count
 [Worker]     method get
+[Worker]     method getAll
+[Worker]     method getAllKeys
 [Worker]     method getKey
 [Worker]     method openCursor
 [Worker]     method openKeyCursor
@@ -677,8 +685,11 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method delete
 [Worker]     method deleteIndex
 [Worker]     method get
+[Worker]     method getAll
+[Worker]     method getAllKeys
 [Worker]     method index
 [Worker]     method openCursor
+[Worker]     method openKeyCursor
 [Worker]     method put
 [Worker] interface webkitIDBRequest
 [Worker]     getter error
@@ -695,6 +706,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     getter db
 [Worker]     getter error
 [Worker]     getter mode
+[Worker]     getter objectStoreNames
 [Worker]     getter onabort
 [Worker]     getter oncomplete
 [Worker]     getter onerror
