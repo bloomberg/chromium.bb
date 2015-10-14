@@ -24,7 +24,6 @@ check_targets = [
   "//cc/*",
 
   #"//chrome/*",  # Epic number of errors.
-  "//chrome/common/*",
   "//chrome/installer/*",
   "//chromecast/*",
 

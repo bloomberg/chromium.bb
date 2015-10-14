@@ -16,12 +16,10 @@
 #include "content/public/common/content_switches.h"
 #include "ipc/ipc_switches.h"
 
-// Breakpad dependencies exist only on Windows and Mac desktop. Exclude them
-// from "gn check" to avoid failures on Linux (it doesn't understand ifdefs).
 #if defined(OS_MACOSX)
-#include "breakpad/src/common/simple_string_dictionary.h"  // nogncheck
+#include "breakpad/src/common/simple_string_dictionary.h"
 #elif defined(OS_WIN)
-#include "breakpad/src/client/windows/common/ipc_protocol.h"  // nogncheck
+#include "breakpad/src/client/windows/common/ipc_protocol.h"
 #elif defined(OS_CHROMEOS)
 #include "chrome/common/chrome_switches.h"
 #include "gpu/command_buffer/service/gpu_switches.h"

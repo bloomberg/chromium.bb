@@ -41,12 +41,10 @@ if (enable_extensions) {
       "//build/config/compiler:no_size_t_to_int_warning",
     ]
 
-    public_deps = [
+    deps = [
       ":common_constants",
       ":mojo",
-    ]
 
-    deps = [
       # TODO(benwells): figure out what to do with the api target and
       # api resources compiled into the chrome resource bundle.
       # http://crbug.com/162530

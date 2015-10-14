@@ -159,11 +159,6 @@ component("shared_impl") {
     "PPAPI_THUNK_IMPLEMENTATION",
   ]
 
-  public_deps = [
-    "//ppapi/c",
-    "//ppapi/thunk",
-  ]
-
   deps = [
     "//base",
     "//base:i18n",
@@ -174,6 +169,8 @@ component("shared_impl") {
     "//gpu/command_buffer/common",
     "//ipc",
     "//media:shared_memory_support",
+    "//ppapi/c",
+    "//ppapi/thunk",
     "//third_party/icu:icuuc",
     "//url",
   ]
