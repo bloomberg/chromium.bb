@@ -17,6 +17,7 @@
 #include "components/autofill/core/common/password_form_field_prediction_map.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "third_party/WebKit/public/platform/WebString.h"
+#include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFormControlElement.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
@@ -130,8 +131,15 @@ PasswordForm::Layout SequenceToLayout(base::StringPiece layout_sequence) {
 
 void PopulateSyntheticFormFromWebForm(const WebFormElement& web_form,
                                       SyntheticForm* synthetic_form) {
-  synthetic_form->control_elements =
-      form_util::ExtractAutofillableElementsInForm(web_form);
+  // TODO(vabr): The fact that we are actually passing all form fields, not just
+  // autofillable ones (cause of http://crbug.com/537396, see also
+  // http://crbug.com/543006) is not tested yet, due to difficulties to fake
+  // test frame origin to match GAIA login page. Once this code gets moved to
+  // browser, we need to add tests for this as well.
+  blink::WebVector<blink::WebFormControlElement> web_control_elements;
+  web_form.getFormControlElements(web_control_elements);
+  synthetic_form->control_elements.assign(web_control_elements.begin(),
+                                          web_control_elements.end());
   synthetic_form->action = web_form.action();
   synthetic_form->document = web_form.document();
 }
@@ -266,10 +274,10 @@ void FindPredictedElements(
     const FormFieldData& target_field = prediction->first;
     const PasswordFormFieldPredictionType& type = prediction->second;
 
-    for (size_t i = 0; i < form.control_elements.size(); ++i) {
-      if (form.control_elements[i].nameForAutofill() == target_field.name) {
+    for (size_t i = 0; i < autofillable_elements.size(); ++i) {
+      if (autofillable_elements[i].nameForAutofill() == target_field.name) {
         const WebInputElement* input_element =
-            toWebInputElement(&form.control_elements[i]);
+            toWebInputElement(&autofillable_elements[i]);
         // TODO(sebsg): Investigate why this guard is necessary, see
         // https://crbug.com/517490 for more details.
         if (input_element) {
