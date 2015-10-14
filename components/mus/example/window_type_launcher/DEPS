@@ -1,0 +1,4 @@
+include_rules = [
+  # TODO(sky): nuke this. Refactor mandoline/ui/aura into mojo.
+  "+mandoline/ui/aura",
+]
