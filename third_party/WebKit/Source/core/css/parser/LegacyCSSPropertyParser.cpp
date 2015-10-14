@@ -4395,9 +4395,9 @@ PassRefPtrWillBeRawPtr<CSSValueList> CSSPropertyParser::parseShadow(CSSParserVal
 
 PassRefPtrWillBeRawPtr<CSSShadowValue> CSSPropertyParser::parseSingleShadow(CSSParserValueList* valueList, bool allowInset, bool allowSpread)
 {
-    RefPtrWillBeMember<CSSPrimitiveValue> style;
-    RefPtrWillBeMember<CSSPrimitiveValue> color;
-    Vector<RefPtrWillBeRawPtr<CSSPrimitiveValue>, 4> lengths;
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> style = nullptr;
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> color = nullptr;
+    WillBeHeapVector<RefPtrWillBeMember<CSSPrimitiveValue>, 4> lengths;
 
     CSSParserValue* val = valueList->current();
     if (!val)
@@ -4440,7 +4440,7 @@ PassRefPtrWillBeRawPtr<CSSShadowValue> CSSPropertyParser::parseSingleShadow(CSSP
     }
 
     if (val) {
-        if (RefPtrWillBeMember<CSSPrimitiveValue> colorValue = parseColor(val)) {
+        if (RefPtrWillBeRawPtr<CSSPrimitiveValue> colorValue = parseColor(val)) {
             if (color)
                 return nullptr;
             color = colorValue;
