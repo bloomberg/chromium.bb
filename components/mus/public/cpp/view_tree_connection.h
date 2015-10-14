@@ -20,13 +20,22 @@ class ViewTreeDelegate;
 // every time an app is embedded.
 class ViewTreeConnection {
  public:
+  enum class CreateType {
+    // Indicates Create() should wait for OnEmbed(). If true, the
+    // ViewTreeConnection returned from Create() will have its root, otherwise
+    // the ViewTreeConnection will get the root at a later time.
+    WAIT_FOR_EMBED,
+    DONT_WAIT_FOR_EMBED
+  };
+
   virtual ~ViewTreeConnection() {}
 
   // The returned ViewTreeConnection instance owns itself, and is deleted when
   // the last root is destroyed or the connection to the service is broken.
   static ViewTreeConnection* Create(
       ViewTreeDelegate* delegate,
-      mojo::InterfaceRequest<mojo::ViewTreeClient> request);
+      mojo::InterfaceRequest<mojo::ViewTreeClient> request,
+      CreateType create_type);
 
   // Returns the root of this connection.
   virtual View* GetRoot() = 0;

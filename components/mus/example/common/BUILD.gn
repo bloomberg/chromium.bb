@@ -7,34 +7,46 @@ import("//mojo/public/mojo_application.gni")
 import("//third_party/mojo/src/mojo/public/tools/bindings/mojom.gni")
 import("//tools/grit/repack.gni")
 
-mojo_native_application("client") {
-  output_name = "example_client"
+source_set("common") {
   testonly = true
 
   sources = [
-    "client_application_delegate.cc",
-    "client_application_delegate.h",
-    "main.cc",
+    "mus_views_init.cc",
+    "mus_views_init.h",
   ]
 
   deps = [
     "//base",
-    "//components/mus/example/common",
     "//components/mus/example/wm:interfaces",
+    "//components/mus/public/cpp",
+    "//components/mus/public/interfaces",
     "//mojo/application/public/cpp",
+    "//mandoline/ui/aura",
     "//mojo/application/public/cpp:sources",
-    "//mojo/converters/geometry",
-    "//skia",
     "//third_party/mojo/src/mojo/public/cpp/bindings",
-    "//ui/gfx",
-    "//ui/gfx/geometry",
-    "//ui/mojo/events:interfaces",
     "//ui/views",
   ]
 
-  resources = [ "$root_out_dir/example_resources.pak" ]
-
   data_deps = [
     "//components/mus",
+  ]
+
+  public_deps = [
+    ":resources",
+  ]
+}
+
+repack("resources") {
+  sources = [
+    "$root_gen_dir/ui/resources/ui_resources_100_percent.pak",
+    "$root_gen_dir/ui/strings/app_locale_settings_en-US.pak",
+    "$root_gen_dir/ui/strings/ui_strings_en-US.pak",
+    "$root_gen_dir/ui/views/resources/views_resources_100_percent.pak",
+  ]
+  output = "$root_out_dir/example_resources.pak"
+  deps = [
+    "//ui/strings",
+    "//ui/resources",
+    "//ui/views/resources",
   ]
 }

@@ -23,6 +23,9 @@ class ViewTreeClientImpl : public ViewTreeConnection,
                      mojo::InterfaceRequest<mojo::ViewTreeClient> request);
   ~ViewTreeClientImpl() override;
 
+  // Wait for OnEmbed(), returning when done.
+  void WaitForEmbed();
+
   bool connected() const { return tree_; }
   ConnectionSpecificId connection_id() const { return connection_id_; }
 

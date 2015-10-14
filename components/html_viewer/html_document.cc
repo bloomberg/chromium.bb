@@ -317,7 +317,8 @@ void HTMLDocument::Create(
       new ViewTreeDelegateImpl(this));
   transferable_state_.owns_view_tree_connection = true;
   mus::ViewTreeConnection::Create(
-      transferable_state_.view_tree_delegate_impl.get(), request.Pass());
+      transferable_state_.view_tree_delegate_impl.get(), request.Pass(),
+      mus::ViewTreeConnection::CreateType::DONT_WAIT_FOR_EMBED);
 }
 
 }  // namespace html_viewer

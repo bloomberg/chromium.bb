@@ -95,7 +95,9 @@ void ViewManagerTestBase::OnConnectionLost(ViewTreeConnection* connection) {
 void ViewManagerTestBase::Create(
     mojo::ApplicationConnection* connection,
     mojo::InterfaceRequest<mojo::ViewTreeClient> request) {
-  ViewTreeConnection::Create(this, request.Pass());
+  ViewTreeConnection::Create(
+      this, request.Pass(),
+      ViewTreeConnection::CreateType::DONT_WAIT_FOR_EMBED);
 }
 
 }  // namespace mus

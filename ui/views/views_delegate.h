@@ -88,6 +88,11 @@ class VIEWS_EXPORT ViewsDelegate {
   // Returns the ViewsDelegate instance if there is one, or nullptr otherwise.
   static ViewsDelegate* GetInstance();
 
+  // Allows the delegate to override creation of the default NativeWidget
+  // implementation used by Widget.
+  virtual NativeWidget* CreateNativeWidget(
+      internal::NativeWidgetDelegate* delegate);
+
   // Saves the position, size and "show" state for the window with the
   // specified name.
   virtual void SaveWindowPlacement(const Widget* widget,

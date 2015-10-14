@@ -111,7 +111,9 @@ void WebViewImpl::LoadRequest(mojo::URLRequestPtr request) {
 
 void WebViewImpl::GetViewTreeClient(
     mojo::InterfaceRequest<mojo::ViewTreeClient> view_tree_client) {
-  mus::ViewTreeConnection::Create(this, view_tree_client.Pass());
+  mus::ViewTreeConnection::Create(
+      this, view_tree_client.Pass(),
+      mus::ViewTreeConnection::CreateType::DONT_WAIT_FOR_EMBED);
 }
 
 void WebViewImpl::Find(int32_t request_id, const mojo::String& search_text) {

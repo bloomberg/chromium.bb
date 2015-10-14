@@ -414,7 +414,9 @@ class PDFView : public mojo::ApplicationDelegate,
   void Create(
       mojo::ApplicationConnection* connection,
       mojo::InterfaceRequest<mojo::ViewTreeClient> request) override {
-    mus::ViewTreeConnection::Create(this, request.Pass());
+    mus::ViewTreeConnection::Create(
+        this, request.Pass(),
+        mus::ViewTreeConnection::CreateType::DONT_WAIT_FOR_EMBED);
   }
 
   void DrawBitmap(EmbedderData* embedder_data) {

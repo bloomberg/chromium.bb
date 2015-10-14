@@ -383,9 +383,13 @@ class FrameTest : public mojo::test::ApplicationTestBase,
       mojo::ApplicationConnection* connection,
       mojo::InterfaceRequest<mojo::ViewTreeClient> request) override {
     if (view_and_frame_) {
-      mus::ViewTreeConnection::Create(view_and_frame_.get(), request.Pass());
+      mus::ViewTreeConnection::Create(
+          view_and_frame_.get(), request.Pass(),
+          mus::ViewTreeConnection::CreateType::DONT_WAIT_FOR_EMBED);
     } else {
-      mus::ViewTreeConnection::Create(this, request.Pass());
+      mus::ViewTreeConnection::Create(
+          this, request.Pass(),
+          mus::ViewTreeConnection::CreateType::DONT_WAIT_FOR_EMBED);
     }
   }
 

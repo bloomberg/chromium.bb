@@ -5,11 +5,7 @@
 #include "components/mus/example/window_type_launcher/window_type_launcher.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "components/mus/example/wm/wm.mojom.h"
-#include "components/mus/public/cpp/view_tree_connection.h"
-#include "components/mus/public/cpp/view_tree_host_factory.h"
-#include "mandoline/ui/aura/aura_init.h"
-#include "mandoline/ui/aura/native_widget_view_manager.h"
+#include "components/mus/example/common/mus_views_init.h"
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
@@ -26,7 +22,6 @@
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
-#include "ui/wm/core/shadow_types.h"
 
 using views::MenuItemView;
 using views::MenuRunner;
@@ -353,44 +348,25 @@ class WindowTypeLauncherView : public views::WidgetDelegateView,
 WindowTypeLauncher::WindowTypeLauncher() : app_(nullptr) {}
 WindowTypeLauncher::~WindowTypeLauncher() {}
 
-void WindowTypeLauncher::Initialize(mojo::ApplicationImpl* app) {
-  app_ = app;
-
-  mojom::WMPtr wm;
-  mojo::URLRequestPtr request(mojo::URLRequest::New());
-  request->url = "mojo:example_wm";
-  app->ConnectToService(request.Pass(), &wm);
-
-  mojo::ViewTreeClientPtr view_tree_client;
-  mus::ViewTreeConnection::Create(this, GetProxy(&view_tree_client).Pass());
-  wm->OpenWindow(view_tree_client.Pass());
-}
-
 bool WindowTypeLauncher::ConfigureIncomingConnection(
   mojo::ApplicationConnection* connection) {
   return false;
 }
 
-void WindowTypeLauncher::OnEmbed(mus::View* root) {
-  if (!aura_init_) {
-    aura_init_.reset(
-      new mandoline::AuraInit(root, app_->shell(), "example_resources.pak"));
-  }
+void WindowTypeLauncher::Initialize(mojo::ApplicationImpl* app) {
+  app_ = app;
+
+  mus_views_init_.reset(new MUSViewsInit(app));
+
+  // TODO(sky): total hack! This is necessary as WindowTypeLauncherView is
+  // created before AuraInit. WindowTypeLauncherView uses resources that are
+  // configured by MUSViewsInit once a View is created. By creating a Widget
+  // here we ensure the necessary state has been setup.
+  views::Widget::CreateWindow(new views::WidgetDelegateView);
 
   views::Widget* widget = new views::Widget;
-  // TODO(sky): make this TYPE_WINDOW. I need to fix resources in order to use
-  // TYPE_WINDOW.
-  views::Widget::InitParams params(
-    views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
+  views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
   params.delegate = new WindowTypeLauncherView;
-  params.native_widget =
-      new mandoline::NativeWidgetViewManager(widget, app_->shell(), root);
-  params.bounds = root->bounds().To<gfx::Rect>();
-  params.bounds.set_x(0);
-  params.bounds.set_y(0);
   widget->Init(params);
   widget->Show();
-}
-
-void WindowTypeLauncher::OnConnectionLost(mus::ViewTreeConnection* connection) {
 }

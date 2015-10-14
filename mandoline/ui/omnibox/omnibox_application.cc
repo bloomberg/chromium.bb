@@ -190,7 +190,9 @@ bool OmniboxImpl::HandleKeyEvent(views::Textfield* sender,
 
 void OmniboxImpl::GetViewTreeClient(
     mojo::InterfaceRequest<mojo::ViewTreeClient> request) {
-  mus::ViewTreeConnection::Create(this, request.Pass());
+  mus::ViewTreeConnection::Create(
+      this, request.Pass(),
+      mus::ViewTreeConnection::CreateType::DONT_WAIT_FOR_EMBED);
 }
 
 void OmniboxImpl::ShowForURL(const mojo::String& url) {

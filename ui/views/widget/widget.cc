@@ -59,8 +59,14 @@ void BuildRootLayers(View* view, std::vector<ui::Layer*>* layers) {
 NativeWidget* CreateNativeWidget(NativeWidget* native_widget,
                                  internal::NativeWidgetDelegate* delegate) {
   if (!native_widget) {
-    native_widget =
-        internal::NativeWidgetPrivate::CreateNativeWidget(delegate);
+    if (ViewsDelegate::GetInstance()) {
+      native_widget = ViewsDelegate::GetInstance()->CreateNativeWidget(
+          delegate);
+    }
+    if (!native_widget) {
+      native_widget =
+          internal::NativeWidgetPrivate::CreateNativeWidget(delegate);
+    }
   }
   return native_widget;
 }

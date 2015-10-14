@@ -70,8 +70,12 @@ View* BuildViewTree(ViewTreeClientImpl* client,
 
 ViewTreeConnection* ViewTreeConnection::Create(
     ViewTreeDelegate* delegate,
-    mojo::InterfaceRequest<mojo::ViewTreeClient> request) {
-  return new ViewTreeClientImpl(delegate, request.Pass());
+    mojo::InterfaceRequest<mojo::ViewTreeClient> request,
+    CreateType create_type) {
+  ViewTreeClientImpl* client = new ViewTreeClientImpl(delegate, request.Pass());
+  if (create_type == CreateType::WAIT_FOR_EMBED)
+    client->WaitForEmbed();
+  return client;
 }
 
 ViewTreeClientImpl::ViewTreeClientImpl(
@@ -110,6 +114,13 @@ ViewTreeClientImpl::~ViewTreeClientImpl() {
     delete non_owned[i];
 
   delegate_->OnConnectionLost(this);
+}
+
+void ViewTreeClientImpl::WaitForEmbed() {
+  DCHECK(!root_);
+  // OnEmbed() is the first function called.
+  binding_.WaitForIncomingMethodCall();
+  // TODO(sky): deal with pipe being closed before we get OnEmbed().
 }
 
 void ViewTreeClientImpl::DestroyView(Id view_id) {

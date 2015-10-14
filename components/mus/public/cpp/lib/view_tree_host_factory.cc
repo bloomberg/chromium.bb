@@ -15,7 +15,9 @@ void CreateViewTreeHost(mojo::ViewTreeHostFactory* factory,
                         ViewTreeDelegate* delegate,
                         mojo::ViewTreeHostPtr* host) {
   mojo::ViewTreeClientPtr tree_client;
-  ViewTreeConnection::Create(delegate, GetProxy(&tree_client));
+  ViewTreeConnection::Create(
+      delegate, GetProxy(&tree_client),
+      ViewTreeConnection::CreateType::DONT_WAIT_FOR_EMBED);
   factory->CreateViewTreeHost(GetProxy(host), host_client.Pass(),
                               tree_client.Pass());
 }

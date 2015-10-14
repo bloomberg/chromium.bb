@@ -7,35 +7,25 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "components/mus/public/cpp/view_tree_delegate.h"
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/interface_factory_impl.h"
 
-namespace mandoline {
-  class AuraInit;
-}
+class MUSViewsInit;
 
-class WindowTypeLauncher : public mojo::ApplicationDelegate,
-                           public mus::ViewTreeDelegate {
-public:
+class WindowTypeLauncher : public mojo::ApplicationDelegate {
+ public:
   WindowTypeLauncher();
   ~WindowTypeLauncher() override;
 
-  // Overridden from ApplicationDelegate:
-  void Initialize(mojo::ApplicationImpl* app) override;
-
-private:
+ private:
   // ApplicationDelegate:
+  void Initialize(mojo::ApplicationImpl* app) override;
   bool ConfigureIncomingConnection(
     mojo::ApplicationConnection* connection) override;
 
-  // mus::ViewTreeDelegate:
-  void OnEmbed(mus::View* root) override;
-  void OnConnectionLost(mus::ViewTreeConnection* connection) override;
-
   mojo::ApplicationImpl* app_;
 
-  scoped_ptr<mandoline::AuraInit> aura_init_;
+  scoped_ptr<MUSViewsInit> mus_views_init_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTypeLauncher);
 };
