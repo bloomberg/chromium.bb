@@ -23,6 +23,8 @@ mojom("test_interfaces") {
     "test_structs.mojom",
     "validation_test_interfaces.mojom",
   ]
+
+  with_environment = false
 }
 
 mojom("test_interfaces_experimental") {
@@ -30,6 +32,8 @@ mojom("test_interfaces_experimental") {
   sources = [
     "test_unions.mojom",
   ]
+
+  with_environment = false
 }
 
 mojom("versioning_test_service_interfaces") {
@@ -38,6 +42,8 @@ mojom("versioning_test_service_interfaces") {
   sources = [
     "versioning_test_service.mojom",
   ]
+
+  with_environment = false
 }
 
 mojom("versioning_test_client_interfaces") {
@@ -46,4 +52,6 @@ mojom("versioning_test_client_interfaces") {
   sources = [
     "versioning_test_client.mojom",
   ]
+
+  with_environment = false
 }

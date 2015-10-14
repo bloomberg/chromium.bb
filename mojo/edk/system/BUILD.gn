@@ -22,13 +22,15 @@ mojom("master") {
   sources = [
     "master.mojom",
   ]
+
+  with_environment = false
 }
 
 static_library("system") {
-# TODO(use_chrome_edk): this should be a component to match third_party,
-# but since third_party includes it, we either make it a static library
-# or we have to change the export macros to be different than third_party.
-#component("system") {
+  # TODO(use_chrome_edk): this should be a component to match third_party,
+  # but since third_party includes it, we either make it a static library
+  # or we have to change the export macros to be different than third_party.
+  #component("system") {
   # TODO(use_chrome_edk): remove "2"
   output_name = "mojo_system_impl2"
 
@@ -55,6 +57,7 @@ static_library("system") {
     "handle_table.h",
     "mapping_table.cc",
     "mapping_table.h",
+
     #"master_impl.cc",
     #"master_impl.h",
     "message_in_transit.cc",
@@ -98,6 +101,7 @@ static_library("system") {
   deps = [
     "//base",
     "//base/third_party/dynamic_annotations",
+
     #":master",
   ]
 
@@ -149,6 +153,7 @@ test("mojo_system_unittests2") {
     "core_unittest.cc",
     "data_pipe_unittest.cc",
     "dispatcher_unittest.cc",
+
     #"master_impl_unittest.cc",
 
     "message_in_transit_queue_unittest.cc",
@@ -160,7 +165,6 @@ test("mojo_system_unittests2") {
     "multiprocess_message_pipe_unittest.cc",
     "options_validation_unittest.cc",
     "platform_handle_dispatcher_unittest.cc",
-
     "raw_channel_unittest.cc",
     "run_all_unittests.cc",
     "shared_buffer_dispatcher_unittest.cc",

@@ -8,4 +8,6 @@ mojom("bindings") {
   sources = [
     "interface_control_messages.mojom",
   ]
+
+  with_environment = false
 }

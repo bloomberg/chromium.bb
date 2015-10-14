@@ -38,6 +38,11 @@ import("../../mojo_sdk.gni")
 #   import_dirs (optional)
 #       List of import directories that will get added when processing sources.
 #
+#   with_environment (optional)
+#       Set to |false| to omit an implicit bindings dependency on the Chromium
+#       Mojo environment implementation. Defaults to |true| and in general
+#       should only be overridden by mojom targets within the Mojo EDK.
+#
 #   testonly (optional)
 #
 #   visibility (optional)
@@ -151,8 +156,8 @@ template("mojom") {
       script = generator_script
       inputs = generator_sources
       sources = invoker.sources
-      outputs = generator_cpp_outputs + generator_java_outputs +
-                generator_js_outputs
+      outputs =
+          generator_cpp_outputs + generator_java_outputs + generator_js_outputs
       args = [
         "{{source}}",
         "--use_bundled_pylibs",
@@ -265,6 +270,9 @@ template("mojom") {
         # get the cpp dependency name.
         full_name = get_label_info(d, "label_no_toolchain")
         deps += [ "${full_name}_${cpp_sources_suffix}" ]
+      }
+      if (!defined(invoker.with_environment) || invoker.with_environment) {
+        deps += [ "//mojo/environment:chromium" ]
       }
     }
   }
