@@ -41,7 +41,6 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_prefs.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
-#include "components/data_usage/core/data_use_aggregator.h"
 #include "components/net_log/chrome_net_log.h"
 #include "components/policy/core/common/policy_service.h"
 #include "components/proxy_config/pref_proxy_config_tracker.h"
@@ -111,6 +110,7 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/build_info.h"
+#include "chrome/browser/android/datausage/external_data_use_observer.h"
 #include "chrome/browser/android/net/external_estimate_provider_android.h"
 #endif
 
@@ -571,7 +571,7 @@ void IOThread::Init() {
       extension_event_router_forwarder_;
 #endif
 
-  globals_->data_use_aggregator.reset(new data_usage::DataUseAggregator());
+  data_use_aggregator_.reset(new data_usage::DataUseAggregator());
 
   // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/466432
   // is fixed.
@@ -583,8 +583,12 @@ void IOThread::Init() {
                                 &system_enable_referrers_));
   // By default, data usage is considered off the record.
   chrome_network_delegate->set_data_use_aggregator(
-      globals_->data_use_aggregator.get(),
-      true /* is_data_usage_off_the_record */);
+      data_use_aggregator(), true /* is_data_usage_off_the_record */);
+
+#if defined(OS_ANDROID)
+  external_data_use_observer_.reset(
+      new chrome::android::ExternalDataUseObserver(data_use_aggregator()));
+#endif
 
   // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/466432
   // is fixed.
@@ -1058,6 +1062,10 @@ void IOThread::InitializeNetworkSessionParamsFromGlobals(
 
 base::TimeTicks IOThread::creation_time() const {
   return creation_time_;
+}
+
+data_usage::DataUseAggregator* IOThread::data_use_aggregator() const {
+  return data_use_aggregator_.get();
 }
 
 net::SSLConfigService* IOThread::GetSSLConfigService() {

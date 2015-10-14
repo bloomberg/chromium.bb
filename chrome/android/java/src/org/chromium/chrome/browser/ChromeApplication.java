@@ -42,6 +42,7 @@ import org.chromium.chrome.browser.accessibility.FontSizePrefs;
 import org.chromium.chrome.browser.banners.AppBannerManager;
 import org.chromium.chrome.browser.banners.AppDetailsDelegate;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
+import org.chromium.chrome.browser.datausage.ExternalDataUseObserver;
 import org.chromium.chrome.browser.document.DocumentActivity;
 import org.chromium.chrome.browser.document.IncognitoDocumentActivity;
 import org.chromium.chrome.browser.download.DownloadManagerService;
@@ -607,6 +608,14 @@ public class ChromeApplication extends ContentApplication {
      */
     public ExternalEstimateProviderAndroid createExternalEstimateProviderAndroid(long nativePtr) {
         return new ExternalEstimateProviderAndroid();
+    }
+
+    /**
+     * @return An external observer of data use.
+     * @param nativePtr Pointer to the native ExternalDataUseObserver object.
+     */
+    public ExternalDataUseObserver createExternalDataUseObserver(long nativePtr) {
+        return new ExternalDataUseObserver(nativePtr);
     }
 
     /**

@@ -20,6 +20,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/ssl_config_service_manager.h"
+#include "components/data_usage/core/data_use_aggregator.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browser_thread_delegate.h"
 #include "net/base/network_change_notifier.h"
@@ -41,10 +42,6 @@ class DnsProbeService;
 
 namespace extensions {
 class EventRouterForwarder;
-}
-
-namespace data_usage {
-class DataUseAggregator;
 }
 
 namespace net {
@@ -127,9 +124,6 @@ class IOThread : public content::BrowserThreadDelegate {
     Globals();
     ~Globals();
 
-    // Global aggregator of data use. It must outlive the
-    // |system_network_delegate|.
-    scoped_ptr<data_usage::DataUseAggregator> data_use_aggregator;
     // The "system" NetworkDelegate, used for Profile-agnostic network events.
     scoped_ptr<net::NetworkDelegate> system_network_delegate;
     scoped_ptr<net::HostResolver> host_resolver;
@@ -255,6 +249,8 @@ class IOThread : public content::BrowserThreadDelegate {
   void InitializeNetworkSessionParams(net::HttpNetworkSession::Params* params);
 
   base::TimeTicks creation_time() const;
+
+  data_usage::DataUseAggregator* data_use_aggregator() const;
 
   // Returns true if QUIC should be enabled for data reduction proxy, either as
   // a result of a field trial or a command line flag.
@@ -516,6 +512,13 @@ class IOThread : public content::BrowserThreadDelegate {
 
   // True if QUIC is allowed by policy.
   bool is_quic_allowed_by_policy_;
+
+  // Global aggregator of data use. It must outlive the
+  // |system_network_delegate|.
+  scoped_ptr<data_usage::DataUseAggregator> data_use_aggregator_;
+  // An external observer of data use.
+  scoped_ptr<data_usage::DataUseAggregator::Observer>
+      external_data_use_observer_;
 
   const base::TimeTicks creation_time_;
 
