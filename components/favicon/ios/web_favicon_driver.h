@@ -35,7 +35,6 @@ class WebFaviconDriver : public web::WebStateObserver,
   int StartDownload(const GURL& url, int max_bitmap_size) override;
   bool IsOffTheRecord() override;
   GURL GetActiveURL() override;
-  bool GetActiveFaviconValidity() override;
   void SetActiveFaviconValidity(bool valid) override;
   GURL GetActiveFaviconURL() override;
   void SetActiveFaviconURL(const GURL& url) override;
@@ -49,9 +48,6 @@ class WebFaviconDriver : public web::WebStateObserver,
                    history::HistoryService* history_service,
                    bookmarks::BookmarkModel* bookmark_model);
   ~WebFaviconDriver() override;
-
-  // Returns whether the active URL has changed since FetchFavicon() was called.
-  bool ActiveURLChangedSinceFetchFavicon();
 
   // web::WebStateObserver implementation.
   void FaviconUrlUpdated(

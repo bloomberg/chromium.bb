@@ -72,16 +72,12 @@ GURL WebFaviconDriver::GetActiveURL() {
   return item ? item->GetURL() : GURL();
 }
 
-bool WebFaviconDriver::GetActiveFaviconValidity() {
-  return !ActiveURLChangedSinceFetchFavicon() && GetFaviconStatus().valid;
-}
-
 void WebFaviconDriver::SetActiveFaviconValidity(bool validity) {
   GetFaviconStatus().valid = validity;
 }
 
 GURL WebFaviconDriver::GetActiveFaviconURL() {
-  return ActiveURLChangedSinceFetchFavicon() ? GURL() : GetFaviconStatus().url;
+  return GetFaviconStatus().url;
 }
 
 void WebFaviconDriver::SetActiveFaviconURL(const GURL& url) {
@@ -92,17 +88,8 @@ void WebFaviconDriver::SetActiveFaviconImage(const gfx::Image& image) {
   GetFaviconStatus().image = image;
 }
 
-bool WebFaviconDriver::ActiveURLChangedSinceFetchFavicon() {
-  // On iOS the active URL can change in between calls to FetchFavicon(). For
-  // instance, FetchFavicon() is not synchronously called when the active URL
-  // changes as a result of CRWSessionController::goToEntry().
-  // TODO(stuartmorgan): Remove this once iOS always triggers favicon fetches
-  // synchronously after active URL changes.
-  return GetActiveURL() != fetch_favicon_url_;
-}
-
 web::FaviconStatus& WebFaviconDriver::GetFaviconStatus() {
-  DCHECK(!ActiveURLChangedSinceFetchFavicon());
+  DCHECK(web_state()->GetNavigationManager()->GetVisibleItem());
   return web_state()->GetNavigationManager()->GetVisibleItem()->GetFavicon();
 }
 

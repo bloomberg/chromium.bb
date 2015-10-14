@@ -113,10 +113,6 @@ GURL ContentFaviconDriver::GetActiveURL() {
   return entry ? entry->GetURL() : GURL();
 }
 
-bool ContentFaviconDriver::GetActiveFaviconValidity() {
-  return GetFaviconStatus().valid;
-}
-
 void ContentFaviconDriver::SetActiveFaviconValidity(bool valid) {
   GetFaviconStatus().valid = valid;
 }

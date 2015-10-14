@@ -61,10 +61,6 @@ class FaviconDriver {
   // otherwise.
   virtual GURL GetActiveURL() = 0;
 
-  // Returns whether the page's favicon is valid (returns false if the default
-  // favicon is being used).
-  virtual bool GetActiveFaviconValidity() = 0;
-
   // Sets whether the page's favicon is valid (if false, the default favicon is
   // being used).
   virtual void SetActiveFaviconValidity(bool valid) = 0;

@@ -229,7 +229,7 @@ class TestFaviconDriver : public FaviconDriver {
 
   GURL GetActiveURL() override { return url_; }
 
-  bool GetActiveFaviconValidity() override { return favicon_validity_; }
+  bool GetActiveFaviconValidity() { return favicon_validity_; }
 
   void SetActiveFaviconValidity(bool favicon_validity) override {
     favicon_validity_ = favicon_validity;

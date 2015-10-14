@@ -568,8 +568,7 @@ void FaviconHandler::OnFaviconDataForInitialURLFromFaviconService(
       preferred_icon_size(), favicon_bitmap_results);
   bool has_valid_result = HasValidResult(favicon_bitmap_results);
 
-  if (has_results && handler_type_ == FAVICON &&
-      !download_largest_icon_ && !driver_->GetActiveFaviconValidity() &&
+  if (has_results && handler_type_ == FAVICON && !download_largest_icon_ &&
       (!current_candidate() ||
        DoUrlsAndIconsMatch(*current_candidate(), favicon_bitmap_results))) {
     if (has_valid_result) {

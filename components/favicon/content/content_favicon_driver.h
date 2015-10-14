@@ -47,7 +47,6 @@ class ContentFaviconDriver
   int StartDownload(const GURL& url, int max_bitmap_size) override;
   bool IsOffTheRecord() override;
   GURL GetActiveURL() override;
-  bool GetActiveFaviconValidity() override;
   void SetActiveFaviconValidity(bool valid) override;
   GURL GetActiveFaviconURL() override;
   void SetActiveFaviconURL(const GURL& url) override;
