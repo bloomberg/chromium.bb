@@ -13,9 +13,9 @@
 #include "mojo/edk/embedder/simple_platform_support.h"
 #include "mojo/edk/system/test_utils.h"
 #include "mojo/edk/system/waiter.h"
-#include "mojo/public/c/system/core.h"
 #include "mojo/public/c/system/data_pipe.h"
 #include "mojo/public/c/system/functions.h"
+#include "mojo/public/c/system/message_pipe.h"
 #include "mojo/public/cpp/system/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -1480,6 +1480,86 @@ TEST_F(DataPipeTest, TwoPhaseMoreInvalidArguments) {
   num_bytes = 0u;
   ASSERT_EQ(MOJO_RESULT_OK, QueryData(&num_bytes));
   ASSERT_EQ(1u * sizeof(int32_t), num_bytes);
+}
+
+// Test that a producer can be sent over a MP.
+TEST_F(DataPipeTest, SendProducer) {
+  const char kTestData[] = "hello world";
+  const uint32_t kTestDataSize = static_cast<uint32_t>(sizeof(kTestData));
+
+  const MojoCreateDataPipeOptions options = {
+      kSizeOfOptions,                           // |struct_size|.
+      MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE,  // |flags|.
+      1u,                                       // |element_num_bytes|.
+      1000u                                     // |capacity_num_bytes|.
+  };
+  ASSERT_EQ(MOJO_RESULT_OK, Create(&options));
+  MojoHandleSignalsState hss;
+
+  // Write some data.
+  uint32_t num_bytes = kTestDataSize;
+  ASSERT_EQ(MOJO_RESULT_OK, WriteData(kTestData, &num_bytes));
+  ASSERT_EQ(kTestDataSize, num_bytes);
+
+  // Wait for the data.
+  hss = MojoHandleSignalsState();
+  ASSERT_EQ(MOJO_RESULT_OK,
+            MojoWait(consumer_, MOJO_HANDLE_SIGNAL_READABLE,
+                     MOJO_DEADLINE_INDEFINITE, &hss));
+  ASSERT_EQ(MOJO_HANDLE_SIGNAL_READABLE, hss.satisfied_signals);
+  ASSERT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+            hss.satisfiable_signals);
+
+  // Check the data.
+  const void* read_buffer = nullptr;
+  num_bytes = 0u;
+  ASSERT_EQ(MOJO_RESULT_OK,
+            BeginReadData(&read_buffer, &num_bytes, false));
+  ASSERT_EQ(0, memcmp(read_buffer, kTestData, kTestDataSize));
+  EndReadData(num_bytes);
+
+  // Now send the producer over a MP so that it's serialized.
+  MojoHandle pipe0, pipe1;
+  ASSERT_EQ(MOJO_RESULT_OK,
+            MojoCreateMessagePipe(nullptr, &pipe0, &pipe1));
+
+  ASSERT_EQ(MOJO_RESULT_OK,
+            MojoWriteMessage(pipe0, nullptr, 0, &producer_, 1,
+                             MOJO_WRITE_MESSAGE_FLAG_NONE));
+  producer_ = MOJO_HANDLE_INVALID;
+  ASSERT_EQ(MOJO_RESULT_OK, MojoWait(pipe1, MOJO_HANDLE_SIGNAL_READABLE,
+                                     MOJO_DEADLINE_INDEFINITE, &hss));
+  uint32_t num_handles = 1;
+  ASSERT_EQ(MOJO_RESULT_OK,
+            MojoReadMessage(pipe1, nullptr, 0, &producer_, &num_handles,
+                            MOJO_READ_MESSAGE_FLAG_NONE));
+  ASSERT_EQ(num_handles, 1u);
+
+  // Write more data.
+  const char kExtraData[] = "bye world";
+  const uint32_t kExtraDataSize = static_cast<uint32_t>(sizeof(kExtraData));
+  num_bytes = kExtraDataSize;
+  ASSERT_EQ(MOJO_RESULT_OK, WriteData(kExtraData, &num_bytes));
+  ASSERT_EQ(kExtraDataSize, num_bytes);
+
+  // Wait for it.
+  hss = MojoHandleSignalsState();
+  ASSERT_EQ(MOJO_RESULT_OK,
+            MojoWait(consumer_, MOJO_HANDLE_SIGNAL_READABLE,
+                     MOJO_DEADLINE_INDEFINITE, &hss));
+  ASSERT_EQ(MOJO_HANDLE_SIGNAL_READABLE, hss.satisfied_signals);
+  ASSERT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+            hss.satisfiable_signals);
+
+  // Check the second write.
+  num_bytes = 0u;
+  ASSERT_EQ(MOJO_RESULT_OK,
+            BeginReadData(&read_buffer, &num_bytes, false));
+  ASSERT_EQ(0, memcmp(read_buffer, kExtraData, kExtraDataSize));
+  EndReadData(num_bytes);
+
+  ASSERT_EQ(MOJO_RESULT_OK, MojoClose(pipe0));
+  ASSERT_EQ(MOJO_RESULT_OK, MojoClose(pipe1));
 }
 
 // Ensures that if a data pipe consumer whose producer has closed is passed over

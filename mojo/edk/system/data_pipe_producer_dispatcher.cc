@@ -81,7 +81,7 @@ DataPipeProducerDispatcher::Deserialize(
 
 DataPipeProducerDispatcher::DataPipeProducerDispatcher(
     const MojoCreateDataPipeOptions& options)
-    : options_(options), channel_(nullptr), error_(false) {
+    : options_(options), channel_(nullptr), error_(false), serialized_(false) {
 }
 
 DataPipeProducerDispatcher::~DataPipeProducerDispatcher() {
@@ -104,10 +104,12 @@ scoped_refptr<Dispatcher>
 DataPipeProducerDispatcher::CreateEquivalentDispatcherAndCloseImplNoLock() {
   lock().AssertAcquired();
 
+  SerializeInternal();
+
   scoped_refptr<DataPipeProducerDispatcher> rv = Create(options_);
-  rv->channel_ = channel_;
-  channel_ = nullptr;
-  rv->options_ = options_;
+  serialized_write_buffer_.swap(rv->serialized_write_buffer_);
+  rv->serialized_platform_handle_ = serialized_platform_handle_.Pass();
+  rv->serialized_ = true;
   return scoped_refptr<Dispatcher>(rv.get());
 }
 
@@ -256,14 +258,9 @@ void DataPipeProducerDispatcher::StartSerializeImplNoLock(
     size_t* max_size,
     size_t* max_platform_handles) {
   DCHECK(HasOneRef());  // Only one ref => no need to take the lock.
+  if (!serialized_)
+    SerializeInternal();
 
-  if (channel_) {
-    std::vector<char> serialized_read_buffer;
-    serialized_platform_handle_ = channel_->ReleaseHandle(
-        &serialized_read_buffer, &serialized_write_buffer_);
-    channel_ = nullptr;
-    CHECK(serialized_read_buffer.empty());
-  }
   DataPipe::StartSerialize(serialized_platform_handle_.is_valid(),
                            !serialized_write_buffer_.empty(), max_size,
                            max_platform_handles);
@@ -376,6 +373,19 @@ bool DataPipeProducerDispatcher::WriteDataIntoMessages(
   }
 
   return true;
+}
+
+void DataPipeProducerDispatcher::SerializeInternal() {
+  // We need to stop watching handle immediately, even though not on IO thread,
+  // so that other messages aren't read after this.
+  if (channel_) {
+    std::vector<char> serialized_read_buffer;
+    serialized_platform_handle_ = channel_->ReleaseHandle(
+        &serialized_read_buffer, &serialized_write_buffer_);
+    CHECK(serialized_read_buffer.empty());
+    channel_ = nullptr;
+  }
+  serialized_ = true;
 }
 
 }  // namespace edk

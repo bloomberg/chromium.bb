@@ -85,6 +85,9 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipeProducerDispatcher final
   bool InTwoPhaseWrite() const;
   bool WriteDataIntoMessages(const void* elements, uint32_t num_bytes);
 
+  // See comment in MessagePipeDispatcher for this method.
+  void SerializeInternal();
+
   MojoCreateDataPipeOptions options_;
 
   // Protected by |lock()|:
@@ -98,6 +101,7 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipeProducerDispatcher final
 
   bool error_;
 
+  bool serialized_;
   ScopedPlatformHandle serialized_platform_handle_;
   std::vector<char> serialized_write_buffer_;
   std::vector<char> two_phase_data_;
