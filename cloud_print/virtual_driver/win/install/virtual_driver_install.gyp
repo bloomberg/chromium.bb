@@ -13,7 +13,6 @@
   },
   'targets' : [
     {
-      # GN version: //cloud_print/virtual_driver/win/install:virtual_driver_setup
       'target_name': 'virtual_driver_setup',
       'type': 'executable',
       'include_dirs': [
@@ -103,7 +102,6 @@
       ],
     },
     {
-      # GN version: //cloud_print/virtual_driver/win/install:resources
       'target_name': 'virtual_driver_setup_resources',
       'type': 'none',
       'variables': {

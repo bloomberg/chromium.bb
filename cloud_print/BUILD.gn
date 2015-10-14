@@ -4,25 +4,6 @@
 
 import("//testing/test.gni")
 
-group("cloud_print") {
-  if (is_win) {
-    public_deps = [
-      "//cloud_print/service/win:cloud_print_service",
-      "//cloud_print/service/win:cloud_print_service_config",
-      "//cloud_print/service/win:cloud_print_service_setup",
-      "//cloud_print/virtual_driver/win/install:virtual_driver_setup",
-      "//cloud_print/virtual_driver/win/port_monitor",
-    ]
-
-    # When compiling 32-bit, also reference the 64-bit driver for installing on
-    # 64-bit systems.
-    if (target_cpu == "x86" && current_cpu == "x86") {
-      # TODO(brettw) enable this when Windows cross-compiles are set up.
-      # public_deps += [ "//cloud_print/virtual_driver/win/port_monitor(//build/toolchain/win:x64)" ]
-    }
-  }
-}
-
 test("cloud_print_unittests") {
   sources = [
     "service/service_state_unittest.cc",
@@ -31,17 +12,18 @@ test("cloud_print_unittests") {
   deps = [
     "//base",
     "//base/test:run_all_unittests",
-    "//cloud_print/service:lib",
+    "//cloud_print/service:cloud_print_service_lib",
     "//testing/gmock",
     "//testing/gtest",
   ]
 
-  if (is_win) {
-    sources += [
-      "service/win/service_ipc_unittest.cc",
-      "virtual_driver/win/port_monitor/port_monitor_unittest.cc",
-    ]
-    deps += [ "//cloud_print/virtual_driver/win/port_monitor:lib" ]
-    libs = [ "secur32.lib" ]
-  }
+  # TODO(GYP)
+  # if (is_win) {
+  #  sources += [
+  #    "service/win/service_ipc_unittest.cc",
+  #    "virtual_driver/win/port_monitor/port_monitor_unittest.cc",
+  #  ]
+  #
+  #  deps += [ "virtual_driver/win:gcp_portmon_lib" ]
+  #}
 }

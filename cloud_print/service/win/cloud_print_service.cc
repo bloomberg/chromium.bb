@@ -361,8 +361,8 @@ class CloudPrintServiceModule
     }
 
     if (new_contents != contents) {
-      size_t written = base::WriteFile(
-          file, new_contents.c_str(), static_cast<int>(new_contents.size()));
+      size_t  written = base::WriteFile(file, new_contents.c_str(),
+                                              new_contents.size());
       if (written != new_contents.size()) {
         return ReportError(cloud_print::GetLastHResult(),
                            IDS_ERROR_FAILED_CREATE_CONFIG);

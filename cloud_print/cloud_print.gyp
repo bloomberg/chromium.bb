@@ -7,7 +7,6 @@
   },
   'targets': [
     {
-      # GN version: //cloud_print
       'target_name': 'cloud_print',
       'type': 'none',
       'dependencies': [
@@ -30,7 +29,6 @@
       ],
     },
     {
-      # GN version: //cloud_print:cloud_print_unittests
       'target_name': 'cloud_print_unittests',
       'type': 'executable',
       'sources': [

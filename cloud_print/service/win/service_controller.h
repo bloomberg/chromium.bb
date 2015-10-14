@@ -10,7 +10,7 @@
 
 #include "base/command_line.h"
 #include "base/strings/string16.h"
-#include "cloud_print/service/resources.h"
+#include "cloud_print/resources.h"
 
 namespace base {
 class FilePath;
