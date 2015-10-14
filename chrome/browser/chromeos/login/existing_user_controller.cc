@@ -693,8 +693,6 @@ void ExistingUserController::OnPasswordChangeDetected() {
 
   if (auth_status_consumer_)
     auth_status_consumer_->OnPasswordChangeDetected();
-
-  display_email_.clear();
 }
 
 void ExistingUserController::WhiteListCheckFailed(const std::string& email) {
