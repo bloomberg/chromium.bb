@@ -21,9 +21,7 @@ import subprocess
 import sys
 
 from common import chromium_utils
-from common import gtest_utils
 
-from slave import annotation_utils
 from slave import build_directory
 from slave import slave_utils
 from slave import xvfb
@@ -120,13 +118,6 @@ def _BuildTestBinaryCommand(_build_dir, test_exe_path, options):
   return command
 
 
-def _UsingGtestJson(options):
-  """Returns True if we're using GTest JSON summary."""
-  return (options.annotate == 'gtest' and
-          not options.run_python_script and
-          not options.run_shell_script)
-
-
 def _GenerateRunIsolatedCommand(build_dir, test_exe_path, options, command):
   """Converts the command to run through the run isolate script.
 
@@ -156,23 +147,6 @@ def _GetSanitizerSymbolizeCommand(strip_path_prefix=None, json_file_name=None):
   if json_file_name:
     command.append('--test-summary-json-file=%s' % json_file_name)
   return command
-
-
-def _SymbolizeSnippetsInJSON(options, json_file_name):
-  if not json_file_name:
-    return
-  symbolize_command = _GetSanitizerSymbolizeCommand(
-      strip_path_prefix=options.strip_path_prefix,
-      json_file_name=json_file_name)
-  try:
-    p = subprocess.Popen(symbolize_command, stderr=subprocess.PIPE)
-    (_, stderr) = p.communicate()
-  except OSError as e:
-      print 'Exception while symbolizing snippets: %s' % e
-
-  if p.returncode != 0:
-    print "Error: failed to symbolize snippets in JSON:\n"
-    print stderr
 
 
 def _Main(options, args, extra_env):
@@ -240,10 +214,6 @@ def _Main(options, args, extra_env):
   command.extend(args[1:])
 
   log_processor = None
-  if _UsingGtestJson(options):
-    log_processor = gtest_utils.GTestJSONParser(
-        options.build_properties.get('mastername'))
-
   try:
     # TODO(dpranke): checking on test_exe is a temporary hack until we
     # can change the buildbot master to pass --xvfb instead of --no-xvfb
@@ -260,10 +230,9 @@ def _Main(options, args, extra_env):
           with_wm=(options.factory_properties.get('window_manager', 'True') ==
                    'True'))
 
-    if _UsingGtestJson(options):
-      json_file_name = log_processor.PrepareJSONFile(
-          options.test_launcher_summary_output)
-      command.append('--test-launcher-summary-output=%s' % json_file_name)
+    if options.test_launcher_summary_output:
+      command.append('--test-launcher-summary-output=%s' %
+                     options.test_launcher_summary_output)
 
     command = _GenerateRunIsolatedCommand(build_dir, test_exe_path, options,
                                           command)
@@ -302,13 +271,6 @@ def _Main(options, args, extra_env):
   finally:
     if start_xvfb:
       xvfb.StopVirtualX(None)
-    if _UsingGtestJson(options):
-      if options.use_symbolization_script:
-        _SymbolizeSnippetsInJSON(options, json_file_name)
-      log_processor.ProcessJSONFile(options.build_dir)
-
-  if options.annotate:
-    annotation_utils.annotate(options.test_type, result, log_processor)
 
   return result
 
