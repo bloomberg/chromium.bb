@@ -2,6 +2,7 @@
 {
     'variables': {
         'wtf_files': [
+            'ASCIICType.cpp',
             'ASCIICType.h',
             'AddressSanitizer.h',
             'AddressSpaceRandomization.cpp',
