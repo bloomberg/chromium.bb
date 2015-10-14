@@ -2955,6 +2955,19 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Bluetooth.Web.Characteristic.StartNotifications.Outcome"
+    enum="WebBluetoothGATTOperationOutcome">
+  <owner>jyasskin@chromium.org</owner>
+  <owner>ortuno@chromium.org</owner>
+  <owner>scheib@chromium.org</owner>
+  <summary>
+    Records the outcome of a call to characteristic.startNofications(). Used to
+    know what types of errors users are seeing. The results will be used to
+    determine how common these errors are and if we need to provide better error
+    messages to the users.
+  </summary>
+</histogram>
+
 <histogram name="Bluetooth.Web.Characteristic.WriteValue.Outcome"
     enum="WebBluetoothGATTOperationOutcome">
   <owner>jyasskin@chromium.org</owner>
@@ -53168,6 +53181,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="95" label="RDH_ILLEGAL_ORIGIN"/>
   <int value="96" label="RDH_UNAUTHORIZED_HEADER_REQUEST"/>
   <int value="97" label="RDH_INVALID_URL"/>
+  <int value="98" label="BDH_CHARACTERISTIC_ALREADY_SUBSCRIBED"/>
 </enum>
 
 <enum name="BadMessageReasonExtensions" type="int">
@@ -74537,6 +74551,8 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="3" label="getCharacteristic()"/>
   <int value="4" label="Characteristic.readValue()"/>
   <int value="5" label="Characteristic.writeValue()"/>
+  <int value="6" label="Characteristic.startNotifications()"/>
+  <int value="7" label="Characteristic.stopNotifications()"/>
 </enum>
 
 <enum name="WebBluetoothGATTOperationOutcome" type="int">

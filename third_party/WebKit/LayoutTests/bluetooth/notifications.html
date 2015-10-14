@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="resources/bluetooth-helpers.js"></script>
+<script>
+'use strict';
+test(t => { assert_true(window.testRunner instanceof Object); t.done(); },
+     'window.testRunner is required for the following tests.');
+
+promise_test(() => {
+  testRunner.setBluetoothMockDataSet('HeartRateAdapter');
+  let start_promise;
+  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
+   .then(device => device.connectGATT())
+   .then(gattServer => gattServer.getPrimaryService('heart_rate'))
+   .then(service => service.getCharacteristic('heart_rate_measurement'))
+   .then(characteristic => {
+     start_promise = characteristic.startNotifications();
+     // We itentionally don't return the promise so that 'characteristic' goes
+     // out of scope while the request is still pending.
+   }).then(() => runGarbageCollection())
+   .then(() => start_promise);
+}, 'Object gets garbage collected while start request is pending.');
+
+promise_test(() => {
+  testRunner.setBluetoothMockDataSet('HeartRateAdapter');
+  let stop_promise;
+  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
+   .then(device => device.connectGATT())
+   .then(gattServer => gattServer.getPrimaryService('heart_rate'))
+   .then(service => service.getCharacteristic('heart_rate_measurement'))
+   .then(characteristic => {
+     return characteristic.startNotifications().then(() => {
+       stop_promise = characteristic.stopNotifications();
+       // We itentionally don't return the promise so that 'characteristic' goes
+       // out of scope while the request is still pending.
+     });
+   }).then(() => runGarbageCollection())
+   .then(() => stop_promise);
+}, 'Object gets garbage collected while stop request is pending.');
+
+promise_test(() => {
+  testRunner.setBluetoothMockDataSet('HeartRateAdapter');
+  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
+   .then(device => device.connectGATT())
+   .then(gattServer => gattServer.getPrimaryService('heart_rate'))
+   .then(service => service.getCharacteristic('heart_rate_measurement'))
+   .then(characteristic => {
+     return characteristic.startNotifications()
+                          .then(() => characteristic.stopNotifications());
+   }).then(() => runGarbageCollection());
+}, 'Single start notifications succeeds.');
+
+
+promise_test(() => {
+  testRunner.setBluetoothMockDataSet('HeartRateAdapter');
+  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
+   .then(device => device.connectGATT())
+   .then(gattServer => gattServer.getPrimaryService('heart_rate'))
+   .then(service => service.getCharacteristic('heart_rate_measurement'))
+   .then(characteristic => {
+     return characteristic.startNotifications().then(() => {
+       return characteristic.startNotifications()
+                            .then(() => characteristic.stopNotifications());
+     });
+   }).then(() => runGarbageCollection());
+}, 'Start notifications after succesfully starting before.');
+
+promise_test(() => {
+  testRunner.setBluetoothMockDataSet('HeartRateAdapter');
+  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
+   .then(device => device.connectGATT())
+   .then(gattServer => gattServer.getPrimaryService('heart_rate'))
+   .then(service => service.getCharacteristic('heart_rate_measurement'))
+   .then(characteristic => {
+     return characteristic.startNotifications()
+                          .then(() => characteristic.stopNotifications())
+                          .then(() => characteristic.startNotifications())
+                          .then(() => characteristic.stopNotifications());
+   }).then(() => runGarbageCollection());
+}, 'Start -> stop -> start -> stop.');
+
+promise_test(() => {
+  testRunner.setBluetoothMockDataSet('HeartRateAdapter');
+  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
+   .then(device => device.connectGATT())
+   .then(gattServer => gattServer.getPrimaryService('heart_rate'))
+   .then(service => service.getCharacteristic('heart_rate_measurement'))
+   .then(characteristic => {
+     return Promise.all([characteristic.startNotifications(),
+                         characteristic.startNotifications(),
+                         characteristic.startNotifications()])
+                   .then(() => characteristic.stopNotifications());
+   }).then(() => runGarbageCollection());
+}, 'Multiple starts in a row.');
+
+promise_test(() => {
+  testRunner.setBluetoothMockDataSet('HeartRateAdapter');
+  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
+   .then(device => device.connectGATT())
+   .then(gattServer => gattServer.getPrimaryService('heart_rate'))
+   .then(service => service.getCharacteristic('heart_rate_measurement'))
+   .then(characteristic => {
+     return Promise.all([characteristic.startNotifications(),
+                         characteristic.stopNotifications()]);
+   }).then(() => runGarbageCollection());
+}, "Parallel start and stop.");
+
+promise_test(() => {
+  testRunner.setBluetoothMockDataSet('HeartRateAdapter');
+  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
+   .then(device => device.connectGATT())
+   .then(gattServer => gattServer.getPrimaryService('heart_rate'))
+   .then(service => service.getCharacteristic('heart_rate_measurement'))
+   .then(characteristic => {
+     return characteristic.startNotifications().then(() => {
+       return Promise.all([characteristic.stopNotifications(),
+                           characteristic.stopNotifications()]);
+     });
+   }).then(() => runGarbageCollection());
+}, "Concurrent stop requests.");
+
+promise_test(() => {
+  testRunner.setBluetoothMockDataSet('HeartRateAdapter');
+  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
+   .then(device => device.connectGATT())
+   .then(gattServer => gattServer.getPrimaryService('heart_rate'))
+   .then(service => service.getCharacteristic('heart_rate_measurement'))
+   .then(characteristic => {
+     return characteristic.startNotifications()
+                          .then(() => characteristic.stopNotifications())
+                          .then(() => characteristic.stopNotifications());
+   }).then(() => runGarbageCollection());
+}, "Stopping twice.");
+
+promise_test(() => {
+  testRunner.setBluetoothMockDataSet('HeartRateAdapter');
+  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
+   .then(device => device.connectGATT())
+   .then(gattServer => gattServer.getPrimaryService('heart_rate'))
+   .then(service => service.getCharacteristic('heart_rate_measurement'))
+   .then(characteristic => {
+     return characteristic.startNotifications().then(() => {
+       return Promise.all([characteristic.stopNotifications(),
+                           characteristic.startNotifications()]);
+     }).then(() => characteristic.stopNotifications());
+   }).then(() => runGarbageCollection());
+}, "Start request before stop request resolves");
+
+promise_test(() => {
+  testRunner.setBluetoothMockDataSet('HeartRateAdapter');
+  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
+   .then(device => device.connectGATT())
+   .then(gattServer => gattServer.getPrimaryService('heart_rate'))
+   .then(service => service.getCharacteristic('heart_rate_measurement'))
+   .then(characteristic => characteristic.stopNotifications())
+   .then(() => runGarbageCollection());
+}, "Stop without starting.");
+</script>

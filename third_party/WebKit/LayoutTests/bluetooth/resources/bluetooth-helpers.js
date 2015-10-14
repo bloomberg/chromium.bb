@@ -123,3 +123,14 @@ class AddDeviceEventSet {
     return this._idsByName.get(name);
   }
 }
+
+function runGarbageCollection()
+{
+  // Run gc() as a promise.
+  return new Promise(
+      function(resolve, reject) {
+        GCController.collect();
+        setTimeout(resolve, 0);
+      });
+  return Promise.resolve();
+}

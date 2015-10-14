@@ -183,6 +183,25 @@ IPC_MESSAGE_CONTROL3(BluetoothMsg_WriteCharacteristicValueError,
                      int /* request_id */,
                      blink::WebBluetoothError /* result */)
 
+// Informs the renderer that the user has successfully subscribed to
+// notifications from the device.
+IPC_MESSAGE_CONTROL2(BluetoothMsg_StartNotificationsSuccess,
+                     int /* thread_id */,
+                     int /* request_id */)
+
+// Informs the renderer that an error ocurred when trying to subscribe to
+// notifications from the device.
+IPC_MESSAGE_CONTROL3(BluetoothMsg_StartNotificationsError,
+                     int /* thread_id */,
+                     int /* request_id */,
+                     blink::WebBluetoothError)
+
+// Informs the renderer that the user has successfully unsubscribed from
+// notifications.
+IPC_MESSAGE_CONTROL2(BluetoothMsg_StopNotificationsSuccess,
+                     int /* thread_id */,
+                     int /* request_id */)
+
 // Messages sent from the renderer to the browser.
 
 // Requests a bluetooth device from the browser.
@@ -225,3 +244,15 @@ IPC_MESSAGE_CONTROL4(BluetoothHostMsg_WriteValue,
                      int /* request_id */,
                      std::string /* characteristic_instance_id */,
                      std::vector<uint8_t> /* value */)
+
+// Subscribes to notifications from a device's characteristic.
+IPC_MESSAGE_CONTROL3(BluetoothHostMsg_StartNotifications,
+                     int /* thread_id */,
+                     int /* request_id */,
+                     std::string /* characteristic_instance_id */)
+
+// Unsubscribes from notifications from a device's characteristic.
+IPC_MESSAGE_CONTROL3(BluetoothHostMsg_StopNotifications,
+                     int /* thread_id */,
+                     int /* request_id */,
+                     std::string /* characteristic_instance_id */)

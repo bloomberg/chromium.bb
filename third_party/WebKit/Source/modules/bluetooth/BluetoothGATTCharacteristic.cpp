@@ -17,17 +17,43 @@
 
 namespace blink {
 
-BluetoothGATTCharacteristic::BluetoothGATTCharacteristic(PassOwnPtr<WebBluetoothGATTCharacteristicInit> webCharacteristic)
-    : m_webCharacteristic(webCharacteristic)
+BluetoothGATTCharacteristic::BluetoothGATTCharacteristic(ExecutionContext* context, PassOwnPtr<WebBluetoothGATTCharacteristicInit> webCharacteristic)
+    : ActiveDOMObject(context)
+    , m_webCharacteristic(webCharacteristic)
+    , m_stopped(false)
 {
+    // See example in Source/platform/heap/ThreadState.h
+    ThreadState::current()->registerPreFinalizer(this);
 }
 
-BluetoothGATTCharacteristic* BluetoothGATTCharacteristic::take(ScriptPromiseResolver*, PassOwnPtr<WebBluetoothGATTCharacteristicInit> webCharacteristic)
+BluetoothGATTCharacteristic* BluetoothGATTCharacteristic::take(ScriptPromiseResolver* resolver, PassOwnPtr<WebBluetoothGATTCharacteristicInit> webCharacteristic)
 {
     if (!webCharacteristic) {
         return nullptr;
     }
-    return new BluetoothGATTCharacteristic(webCharacteristic);
+    BluetoothGATTCharacteristic* characteristic = new BluetoothGATTCharacteristic(resolver->executionContext(), webCharacteristic);
+    // See note in ActiveDOMObject about suspendIfNeeded.
+    characteristic->suspendIfNeeded();
+    return characteristic;
+}
+
+void BluetoothGATTCharacteristic::stop()
+{
+    notifyCharacteristicObjectRemoved();
+}
+
+void BluetoothGATTCharacteristic::dispose()
+{
+    notifyCharacteristicObjectRemoved();
+}
+
+void BluetoothGATTCharacteristic::notifyCharacteristicObjectRemoved()
+{
+    if (!m_stopped) {
+        m_stopped = true;
+        WebBluetooth* webbluetooth = BluetoothSupplement::fromExecutionContext(ActiveDOMObject::executionContext());
+        webbluetooth->characteristicObjectRemoved(m_webCharacteristic->characteristicInstanceID, this);
+    }
 }
 
 ScriptPromise BluetoothGATTCharacteristic::readValue(ScriptState* scriptState)
@@ -61,6 +87,29 @@ ScriptPromise BluetoothGATTCharacteristic::writeValue(ScriptState* scriptState, 
     webbluetooth->writeValue(m_webCharacteristic->characteristicInstanceID, valueVector, new CallbackPromiseAdapter<void, BluetoothError>(resolver));
 
     return promise;
+}
+
+ScriptPromise BluetoothGATTCharacteristic::startNotifications(ScriptState* scriptState)
+{
+    WebBluetooth* webbluetooth = BluetoothSupplement::fromScriptState(scriptState);
+    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromise promise = resolver->promise();
+    webbluetooth->startNotifications(m_webCharacteristic->characteristicInstanceID, this, new CallbackPromiseAdapter<void, BluetoothError>(resolver));
+    return promise;
+}
+
+ScriptPromise BluetoothGATTCharacteristic::stopNotifications(ScriptState* scriptState)
+{
+    WebBluetooth* webbluetooth = BluetoothSupplement::fromScriptState(scriptState);
+    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromise promise = resolver->promise();
+    webbluetooth->stopNotifications(m_webCharacteristic->characteristicInstanceID, this, new CallbackPromiseAdapter<void, BluetoothError>(resolver));
+    return promise;
+}
+
+DEFINE_TRACE(BluetoothGATTCharacteristic)
+{
+    ActiveDOMObject::trace(visitor);
 }
 
 } // namespace blink

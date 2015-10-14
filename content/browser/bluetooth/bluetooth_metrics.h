@@ -29,6 +29,8 @@ enum class UMAWebBluetoothFunction {
   GET_CHARACTERISTIC = 3,
   CHARACTERISTIC_READ_VALUE = 4,
   CHARACTERISTIC_WRITE_VALUE = 5,
+  CHARACTERISTIC_START_NOTIFICATIONS = 6,
+  CHARACTERISTIC_STOP_NOTIFICATIONS = 7,
   // NOTE: Add new actions immediately above this line. Make sure to update
   // the enum list in tools/metrics/histograms/histograms.xml accordingly.
   COUNT
@@ -159,6 +161,7 @@ enum UMAGATTOperationOutcome {
 enum class UMAGATTOperation {
   CHARACTERISTIC_READ,
   CHARACTERISTIC_WRITE,
+  START_NOTIFICATIONS,
   // Note: Add new GATT Operations immediately above this line.
   COUNT
 };
@@ -180,6 +183,12 @@ void RecordCharacteristicReadValueOutcome(UMAGATTOperationOutcome error);
 // Send(BluetoothMsg_WriteCharacteristicValueSuccess) and
 // Send(BluetoothMsg_WriteCharacteristicValueError).
 void RecordCharacteristicWriteValueOutcome(UMAGATTOperationOutcome error);
+
+// Characteristic.startNotifications() Metrics
+// There should be a call to this function for every call to
+// Send(BluetoothMsg_StartNotificationsSuccess) and
+// Send(BluetoothMsg_StopNotificationsError).
+void RecordStartNotificationsOutcome(UMAGATTOperationOutcome outcome);
 
 }  // namespace content
 

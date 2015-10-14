@@ -8,6 +8,13 @@
 // case.
 // https://webbluetoothchrome.github.io/web-bluetooth/#dom-bluetoothdevice-connectgatt
 
+// ID Not In Map Note:
+// A service, characteristic, or descriptor ID not in the corresponding
+// BluetoothDispatcherHost map [service_to_device_, characteristic_to_service_,
+// descriptor_to_characteristic_] implies a hostile renderer because a renderer
+// obtains the corresponding ID from this class and it will be added to the map
+// at that time.
+
 #include "content/browser/bluetooth/bluetooth_dispatcher_host.h"
 
 #include "base/bind.h"
@@ -204,6 +211,8 @@ bool BluetoothDispatcherHost::OnMessageReceived(const IPC::Message& message) {
   IPC_MESSAGE_HANDLER(BluetoothHostMsg_GetCharacteristic, OnGetCharacteristic)
   IPC_MESSAGE_HANDLER(BluetoothHostMsg_ReadValue, OnReadValue)
   IPC_MESSAGE_HANDLER(BluetoothHostMsg_WriteValue, OnWriteValue)
+  IPC_MESSAGE_HANDLER(BluetoothHostMsg_StartNotifications, OnStartNotifications)
+  IPC_MESSAGE_HANDLER(BluetoothHostMsg_StopNotifications, OnStopNotifications)
   IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -356,6 +365,15 @@ void BluetoothDispatcherHost::DeviceRemoved(device::BluetoothAdapter* adapter,
       session->chooser->RemoveDevice(device->GetAddress());
     }
   }
+}
+
+void BluetoothDispatcherHost::GattCharacteristicValueChanged(
+    device::BluetoothAdapter* adapter,
+    device::BluetoothGattCharacteristic* characteristic,
+    const std::vector<uint8>& value) {
+  // TODO(ortuno): Notify renderer the characteristic changed.
+  // http://crbug.com/529560
+  VLOG(1) << "Characteristic updated.";
 }
 
 void BluetoothDispatcherHost::OnRequestDevice(
@@ -517,11 +535,8 @@ void BluetoothDispatcherHost::OnGetCharacteristic(
   RecordGetCharacteristicCharacteristic(characteristic_uuid);
 
   auto device_iter = service_to_device_.find(service_instance_id);
-  // A service_instance_id not in the map implies a hostile renderer
-  // because a renderer obtains the service id from this class and
-  // it will be added to the map at that time.
+  // Kill the renderer, see "ID Not In Map Note" above.
   if (device_iter == service_to_device_.end()) {
-    // Kill the renderer
     bad_message::ReceivedBadMessage(this, bad_message::BDH_INVALID_SERVICE_ID);
     return;
   }
@@ -585,11 +600,9 @@ void BluetoothDispatcherHost::OnReadValue(
 
   auto characteristic_iter =
       characteristic_to_service_.find(characteristic_instance_id);
-  // A characteristic_instance_id not in the map implies a hostile renderer
-  // because a renderer obtains the characteristic id from this class and
-  // it will be added to the map at that time.
+
+  // Kill the renderer, see "ID Not In Map Note" above.
   if (characteristic_iter == characteristic_to_service_.end()) {
-    // Kill the renderer
     bad_message::ReceivedBadMessage(this,
                                     bad_message::BDH_INVALID_CHARACTERISTIC_ID);
     return;
@@ -657,9 +670,8 @@ void BluetoothDispatcherHost::OnWriteValue(
 
   auto characteristic_iter =
       characteristic_to_service_.find(characteristic_instance_id);
-  // A characteristic_instance_id not in the map implies a hostile renderer
-  // because a renderer obtains the characteristic id from this class and
-  // it will be added to the map at that time.
+
+  // Kill the renderer, see "ID Not In Map Note" above.
   if (characteristic_iter == characteristic_to_service_.end()) {
     bad_message::ReceivedBadMessage(this,
                                     bad_message::BDH_INVALID_CHARACTERISTIC_ID);
@@ -703,6 +715,94 @@ void BluetoothDispatcherHost::OnWriteValue(
                         weak_ptr_on_ui_thread_, thread_id, request_id),
       base::Bind(&BluetoothDispatcherHost::OnWriteValueFailed,
                  weak_ptr_on_ui_thread_, thread_id, request_id));
+}
+
+void BluetoothDispatcherHost::OnStartNotifications(
+    int thread_id,
+    int request_id,
+    const std::string& characteristic_instance_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  RecordWebBluetoothFunctionCall(
+      UMAWebBluetoothFunction::CHARACTERISTIC_START_NOTIFICATIONS);
+
+  // BluetoothDispatcher will never send a request for a characteristic
+  // already subscribed to notifications.
+  if (characteristic_id_to_notify_session_.find(characteristic_instance_id) !=
+      characteristic_id_to_notify_session_.end()) {
+    bad_message::ReceivedBadMessage(
+        this, bad_message::BDH_CHARACTERISTIC_ALREADY_SUBSCRIBED);
+    return;
+  }
+
+  // TODO(ortuno): Check if notify/indicate bit is set.
+  // http://crbug.com/538869
+
+  auto characteristic_iter =
+      characteristic_to_service_.find(characteristic_instance_id);
+
+  // Kill the renderer, see "ID Not In Map Note" above.
+  if (characteristic_iter == characteristic_to_service_.end()) {
+    bad_message::ReceivedBadMessage(this,
+                                    bad_message::BDH_INVALID_CHARACTERISTIC_ID);
+    return;
+  }
+
+  const std::string& service_instance_id = characteristic_iter->second;
+  auto device_iter = service_to_device_.find(service_instance_id);
+  CHECK(device_iter != service_to_device_.end());
+
+  device::BluetoothDevice* device =
+      adapter_->GetDevice(device_iter->second /* device_instance_id */);
+  if (device == nullptr) {  // See "NETWORK_ERROR Note" above.
+    RecordStartNotificationsOutcome(UMAGATTOperationOutcome::NO_DEVICE);
+    Send(new BluetoothMsg_StartNotificationsError(
+        thread_id, request_id, WebBluetoothError::DeviceNoLongerInRange));
+    return;
+  }
+
+  BluetoothGattService* service = device->GetGattService(service_instance_id);
+  if (service == nullptr) {
+    RecordStartNotificationsOutcome(UMAGATTOperationOutcome::NO_SERVICE);
+    Send(new BluetoothMsg_StartNotificationsError(
+        thread_id, request_id, WebBluetoothError::ServiceNoLongerExists));
+    return;
+  }
+
+  BluetoothGattCharacteristic* characteristic =
+      service->GetCharacteristic(characteristic_instance_id);
+  if (characteristic == nullptr) {
+    RecordStartNotificationsOutcome(UMAGATTOperationOutcome::NO_CHARACTERISTIC);
+    Send(new BluetoothMsg_StartNotificationsError(
+        thread_id, request_id,
+        WebBluetoothError::CharacteristicNoLongerExists));
+    return;
+  }
+
+  characteristic->StartNotifySession(
+      base::Bind(&BluetoothDispatcherHost::OnStartNotifySessionSuccess,
+                 weak_ptr_factory_.GetWeakPtr(), thread_id, request_id),
+      base::Bind(&BluetoothDispatcherHost::OnStartNotifySessionFailed,
+                 weak_ptr_factory_.GetWeakPtr(), thread_id, request_id));
+}
+
+void BluetoothDispatcherHost::OnStopNotifications(
+    int thread_id,
+    int request_id,
+    const std::string& characteristic_instance_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  RecordWebBluetoothFunctionCall(
+      UMAWebBluetoothFunction::CHARACTERISTIC_STOP_NOTIFICATIONS);
+
+  auto notify_session_iter =
+      characteristic_id_to_notify_session_.find(characteristic_instance_id);
+  if (notify_session_iter == characteristic_id_to_notify_session_.end()) {
+    Send(new BluetoothMsg_StopNotificationsSuccess(thread_id, request_id));
+    return;
+  }
+  notify_session_iter->second->Stop(
+      base::Bind(&BluetoothDispatcherHost::OnStopNotifySession,
+                 weak_ptr_factory_.GetWeakPtr(), thread_id, request_id,
+                 characteristic_instance_id));
 }
 
 void BluetoothDispatcherHost::OnDiscoverySessionStarted(
@@ -944,6 +1044,35 @@ void BluetoothDispatcherHost::OnWriteValueFailed(
   Send(new BluetoothMsg_WriteCharacteristicValueError(
       thread_id, request_id,
       TranslateGATTError(error_code, UMAGATTOperation::CHARACTERISTIC_WRITE)));
+}
+
+void BluetoothDispatcherHost::OnStartNotifySessionSuccess(
+    int thread_id,
+    int request_id,
+    scoped_ptr<device::BluetoothGattNotifySession> notify_session) {
+  RecordStartNotificationsOutcome(UMAGATTOperationOutcome::SUCCESS);
+
+  characteristic_id_to_notify_session_.insert(
+      notify_session->GetCharacteristicIdentifier(), notify_session.Pass());
+  Send(new BluetoothMsg_StartNotificationsSuccess(thread_id, request_id));
+}
+
+void BluetoothDispatcherHost::OnStartNotifySessionFailed(
+    int thread_id,
+    int request_id,
+    device::BluetoothGattService::GattErrorCode error_code) {
+  // TranslateGATTError calls RecordGATTOperationOutcome.
+  Send(new BluetoothMsg_StartNotificationsError(
+      thread_id, request_id,
+      TranslateGATTError(error_code, UMAGATTOperation::START_NOTIFICATIONS)));
+}
+
+void BluetoothDispatcherHost::OnStopNotifySession(
+    int thread_id,
+    int request_id,
+    const std::string& characteristic_instance_id) {
+  characteristic_id_to_notify_session_.erase(characteristic_instance_id);
+  Send(new BluetoothMsg_StopNotificationsSuccess(thread_id, request_id));
 }
 
 void BluetoothDispatcherHost::ShowBluetoothOverviewLink() {

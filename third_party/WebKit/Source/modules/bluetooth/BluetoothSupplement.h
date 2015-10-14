@@ -30,6 +30,8 @@ public:
     // Returns the WebBluetooth attached to the frame if the frame exists.
     // Otherwise returns nullptr.
     static WebBluetooth* fromScriptState(ScriptState*);
+    // Returns the WebBluetooth attached to the execution context.
+    static WebBluetooth* fromExecutionContext(ExecutionContext*);
 
     DECLARE_VIRTUAL_TRACE();
 

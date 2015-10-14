@@ -12,6 +12,10 @@
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetooth.h"
 
+namespace blink {
+class WebBluetoothGATTCharacteristic;
+}
+
 namespace content {
 
 class BluetoothDispatcher;
@@ -45,6 +49,15 @@ class CONTENT_EXPORT WebBluetoothImpl
   void writeValue(const blink::WebString& characteristic_instance_id,
                   const std::vector<uint8_t>& value,
                   blink::WebBluetoothWriteValueCallbacks*) override;
+  void startNotifications(const blink::WebString& characteristic_instance_id,
+                          blink::WebBluetoothGATTCharacteristic* characteristic,
+                          blink::WebBluetoothNotificationsCallbacks*) override;
+  void stopNotifications(const blink::WebString& characteristic_instance_id,
+                         blink::WebBluetoothGATTCharacteristic* characteristic,
+                         blink::WebBluetoothNotificationsCallbacks*) override;
+  void characteristicObjectRemoved(
+      const blink::WebString& characteristic_instance_id,
+      blink::WebBluetoothGATTCharacteristic* characteristic) override;
 
  private:
   BluetoothDispatcher* GetDispatcher();

@@ -8,6 +8,7 @@
 
 [
     GarbageCollected,
+    ActiveDOMObject,
     RuntimeEnabled=WebBluetooth,
 ] interface BluetoothGATTCharacteristic {//: CharacteristicEventHandlers {
     // TODO(ortuno): Add test to make sure service matches the service
@@ -20,6 +21,6 @@
     // Promise<sequence<BluetoothGATTDescriptor>> getDescriptors(optional BluetoothDescriptorUUID descriptor);
     [CallWith=ScriptState] Promise<ArrayBuffer> readValue();
     [CallWith=ScriptState] Promise<void>        writeValue(BufferSource value);
-    // Promise<void>                              startNotifications();
-    // Promise<void>                              stopNotifications();
+    [CallWith=ScriptState] Promise<void>        startNotifications();
+    [CallWith=ScriptState] Promise<void>        stopNotifications();
 };

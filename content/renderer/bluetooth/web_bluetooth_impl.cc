@@ -61,6 +61,29 @@ void WebBluetoothImpl::writeValue(
   GetDispatcher()->writeValue(characteristic_instance_id, value, callbacks);
 }
 
+void WebBluetoothImpl::startNotifications(
+    const blink::WebString& characteristic_instance_id,
+    blink::WebBluetoothGATTCharacteristic* characteristic,
+    blink::WebBluetoothNotificationsCallbacks* callbacks) {
+  GetDispatcher()->startNotifications(characteristic_instance_id,
+                                      characteristic, callbacks);
+}
+
+void WebBluetoothImpl::stopNotifications(
+    const blink::WebString& characteristic_instance_id,
+    blink::WebBluetoothGATTCharacteristic* characteristic,
+    blink::WebBluetoothNotificationsCallbacks* callbacks) {
+  GetDispatcher()->stopNotifications(characteristic_instance_id, characteristic,
+                                     callbacks);
+}
+
+void WebBluetoothImpl::characteristicObjectRemoved(
+    const blink::WebString& characteristic_instance_id,
+    blink::WebBluetoothGATTCharacteristic* characteristic) {
+  GetDispatcher()->characteristicObjectRemoved(characteristic_instance_id,
+                                               characteristic);
+}
+
 BluetoothDispatcher* WebBluetoothImpl::GetDispatcher() {
   return BluetoothDispatcher::GetOrCreateThreadSpecificInstance(
       thread_safe_sender_.get());

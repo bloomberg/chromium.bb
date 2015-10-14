@@ -14,6 +14,8 @@
 
 namespace blink {
 
+class WebBluetoothGATTCharacteristic;
+
 struct WebBluetoothDevice;
 struct WebBluetoothGATTCharacteristicInit;
 struct WebBluetoothGATTRemoteServer;
@@ -37,6 +39,10 @@ using WebBluetoothReadValueCallbacks = WebCallbacks<const WebVector<uint8_t>&, c
 
 // Success and failure callbacks for writeValue.
 using WebBluetoothWriteValueCallbacks = WebCallbacks<void, const WebBluetoothError&>;
+
+// Success and failure callbacks for characteristic.startNotifications and
+// characteristic.stopNotifications.
+using WebBluetoothNotificationsCallbacks = WebCallbacks<void, const WebBluetoothError&>;
 
 class WebBluetooth {
 public:
@@ -74,6 +80,15 @@ public:
     virtual void writeValue(const WebString& characteristicInstanceID,
         const std::vector<uint8_t>& value,
         WebBluetoothWriteValueCallbacks*) { }
+    virtual void startNotifications(const WebString& characteristicInstanceID,
+        WebBluetoothGATTCharacteristic*,
+        WebBluetoothNotificationsCallbacks*) {}
+    virtual void stopNotifications(const WebString& characteristicInstanceID,
+        WebBluetoothGATTCharacteristic*,
+        WebBluetoothNotificationsCallbacks*) {}
+    virtual void characteristicObjectRemoved(
+        const WebString& characteristicInstanceID,
+        WebBluetoothGATTCharacteristic*) {}
 };
 
 } // namespace blink

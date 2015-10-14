@@ -14,6 +14,7 @@
 #include "third_party/WebKit/public/platform/WebPassOwnPtr.h"
 #include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetoothDevice.h"
 #include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetoothError.h"
+#include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetoothGATTCharacteristic.h"
 #include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetoothGATTCharacteristicInit.h"
 #include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetoothGATTRemoteServer.h"
 #include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetoothGATTService.h"
@@ -31,6 +32,8 @@ using blink::WebBluetoothScanFilter;
 using blink::WebRequestDeviceOptions;
 using blink::WebString;
 using blink::WebVector;
+using NotificationsRequestType =
+    content::BluetoothDispatcher::NotificationsRequestType;
 
 struct BluetoothPrimaryServiceRequest {
   BluetoothPrimaryServiceRequest(
@@ -60,6 +63,31 @@ struct BluetoothCharacteristicRequest {
   blink::WebString service_instance_id;
   blink::WebString characteristic_uuid;
   scoped_ptr<blink::WebBluetoothGetCharacteristicCallbacks> callbacks;
+};
+
+// Struct that holds a pending Start/StopNotifications request.
+struct BluetoothNotificationsRequest {
+  BluetoothNotificationsRequest(
+      const std::string characteristic_instance_id,
+      blink::WebBluetoothGATTCharacteristic* characteristic,
+      blink::WebBluetoothNotificationsCallbacks* callbacks,
+      NotificationsRequestType type)
+      : characteristic_instance_id(characteristic_instance_id),
+        characteristic(characteristic),
+        callbacks(callbacks),
+        type(type) {}
+  ~BluetoothNotificationsRequest() {}
+
+  const std::string characteristic_instance_id;
+  // The characteristic object is owned by the execution context on
+  // the blink side which can destroy the object at any point. Since the
+  // object implements ActiveDOMObject, the object calls Stop when is getting
+  // destroyed, which in turn calls characteristicObjectRemoved.
+  // characteristicObjectRemoved will null any pointers to the object
+  // and queue a stop notifications request if necessary.
+  blink::WebBluetoothGATTCharacteristic* characteristic;
+  scoped_ptr<blink::WebBluetoothNotificationsCallbacks> callbacks;
+  NotificationsRequestType type;
 };
 
 namespace content {
@@ -143,6 +171,12 @@ void BluetoothDispatcher::OnMessageReceived(const IPC::Message& msg) {
                       OnWriteValueSuccess);
   IPC_MESSAGE_HANDLER(BluetoothMsg_WriteCharacteristicValueError,
                       OnWriteValueError);
+  IPC_MESSAGE_HANDLER(BluetoothMsg_StartNotificationsSuccess,
+                      OnStartNotificationsSuccess)
+  IPC_MESSAGE_HANDLER(BluetoothMsg_StartNotificationsError,
+                      OnStartNotificationsError)
+  IPC_MESSAGE_HANDLER(BluetoothMsg_StopNotificationsSuccess,
+                      OnStopNotificationsSuccess)
   IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   DCHECK(handled) << "Unhandled message:" << msg.type();
@@ -225,8 +259,245 @@ void BluetoothDispatcher::writeValue(
       CurrentWorkerId(), request_id, characteristic_instance_id.utf8(), value));
 }
 
+void BluetoothDispatcher::startNotifications(
+    const blink::WebString& characteristic_instance_id,
+    blink::WebBluetoothGATTCharacteristic* characteristic,
+    blink::WebBluetoothNotificationsCallbacks* callbacks) {
+  int request_id = QueueNotificationRequest(characteristic_instance_id.utf8(),
+                                            characteristic, callbacks,
+                                            NotificationsRequestType::START);
+  // The Notification subscription's state can change after a request
+  // finishes. To avoid resolving with a soon-to-be-invalid state we queue
+  // requests.
+  if (HasNotificationRequestResponsePending(
+          characteristic_instance_id.utf8())) {
+    return;
+  }
+
+  ResolveOrSendStartNotificationRequest(request_id);
+}
+
+void BluetoothDispatcher::stopNotifications(
+    const blink::WebString& characteristic_instance_id,
+    blink::WebBluetoothGATTCharacteristic* characteristic,
+    blink::WebBluetoothNotificationsCallbacks* callbacks) {
+  int request_id = QueueNotificationRequest(characteristic_instance_id.utf8(),
+                                            characteristic, callbacks,
+                                            NotificationsRequestType::STOP);
+  if (HasNotificationRequestResponsePending(
+          characteristic_instance_id.utf8())) {
+    return;
+  }
+
+  ResolveOrSendStopNotificationsRequest(request_id);
+}
+
+void BluetoothDispatcher::characteristicObjectRemoved(
+    const blink::WebString& characteristic_instance_id,
+    blink::WebBluetoothGATTCharacteristic* characteristic) {
+  // A characteristic object is in the queue waiting for a response
+  // or in the set of active notifications.
+
+  // If the object is in the queue we null the characteristic. If this is the
+  // first object waiting for a response OnStartNotificationsSuccess will make
+  // sure not to add the characteristic to the map and it will queue a Stop
+  // request. Otherwise ResolveOrSendStartNotificationRequest will make sure not
+  // to add it to active notification subscriptions.
+  bool found = false;
+  for (IDMap<BluetoothNotificationsRequest, IDMapOwnPointer>::iterator iter(
+           &pending_notifications_requests_);
+       !iter.IsAtEnd(); iter.Advance()) {
+    if (iter.GetCurrentValue()->characteristic == characteristic) {
+      found = true;
+      iter.GetCurrentValue()->characteristic = nullptr;
+    }
+  }
+
+  if (found) {
+    // A characteristic will never be in the set of active notifications
+    // and in the queue at the same time.
+    auto subscriptions_iter = active_notification_subscriptions_.find(
+        characteristic_instance_id.utf8());
+    if (subscriptions_iter != active_notification_subscriptions_.end()) {
+      DCHECK(!ContainsKey(subscriptions_iter->second, characteristic));
+    }
+    return;
+  }
+
+  // If the object is not in the queue then:
+  //   1. The subscription was inactive already: this characteristic
+  //      object didn't subscribe to notifications.
+  //   2. The subscription will become inactive: the characteristic
+  //      object that subscribed to notifications is getting destroyed.
+  //   3. The subscription will still be active: there are other
+  //      characteristic objects subscribed to notifications.
+
+  if (!HasActiveNotificationSubscription(characteristic_instance_id.utf8())) {
+    return;
+  }
+
+  // For 2 and 3 calling ResolveOrSendStopNotificationsRequest ensures the
+  // notification subscription is released.
+  // We pass in the characteristic so that ResolveOrSendStopNotificationsRequest
+  // can remove the characteristic from ActiveNotificationSubscriptions.
+  ResolveOrSendStopNotificationsRequest(QueueNotificationRequest(
+      characteristic_instance_id.utf8(), characteristic,
+      nullptr /* callbacks */, NotificationsRequestType::STOP));
+}
+
 void BluetoothDispatcher::WillStopCurrentWorkerThread() {
   delete this;
+}
+
+int BluetoothDispatcher::QueueNotificationRequest(
+    const std::string& characteristic_instance_id,
+    blink::WebBluetoothGATTCharacteristic* characteristic,
+    blink::WebBluetoothNotificationsCallbacks* callbacks,
+    NotificationsRequestType type) {
+  int request_id =
+      pending_notifications_requests_.Add(new BluetoothNotificationsRequest(
+          characteristic_instance_id, characteristic, callbacks, type));
+  notification_requests_queues_[characteristic_instance_id].push(request_id);
+
+  return request_id;
+}
+
+void BluetoothDispatcher::PopNotificationRequestQueueAndProcessNext(
+    int request_id) {
+  BluetoothNotificationsRequest* old_request =
+      pending_notifications_requests_.Lookup(request_id);
+
+  auto queue_iter = notification_requests_queues_.find(
+      old_request->characteristic_instance_id);
+
+  CHECK(queue_iter != notification_requests_queues_.end());
+
+  std::queue<int>& request_queue = queue_iter->second;
+
+  DCHECK(request_queue.front() == request_id);
+
+  // Remove old request and clean map if necessary.
+  request_queue.pop();
+  pending_notifications_requests_.Remove(request_id);
+  if (request_queue.empty()) {
+    notification_requests_queues_.erase(queue_iter);
+    return;
+  }
+
+  int next_request_id = request_queue.front();
+  BluetoothNotificationsRequest* next_request =
+      pending_notifications_requests_.Lookup(next_request_id);
+
+  switch (next_request->type) {
+    case NotificationsRequestType::START:
+      ResolveOrSendStartNotificationRequest(next_request_id);
+      return;
+    case NotificationsRequestType::STOP:
+      ResolveOrSendStopNotificationsRequest(next_request_id);
+      return;
+  }
+}
+
+bool BluetoothDispatcher::HasNotificationRequestResponsePending(
+    const std::string& characteristic_instance_id) {
+  return ContainsKey(notification_requests_queues_,
+                     characteristic_instance_id) &&
+         (notification_requests_queues_[characteristic_instance_id].size() > 1);
+}
+
+bool BluetoothDispatcher::HasActiveNotificationSubscription(
+    const std::string& characteristic_instance_id) {
+  return ContainsKey(active_notification_subscriptions_,
+                     characteristic_instance_id);
+}
+
+void BluetoothDispatcher::AddToActiveNotificationSubscriptions(
+    const std::string& characteristic_instance_id,
+    blink::WebBluetoothGATTCharacteristic* characteristic) {
+  active_notification_subscriptions_[characteristic_instance_id].insert(
+      characteristic);
+}
+
+bool BluetoothDispatcher::RemoveFromActiveNotificationSubscriptions(
+    const std::string& characteristic_instance_id,
+    blink::WebBluetoothGATTCharacteristic* characteristic) {
+  auto active_map =
+      active_notification_subscriptions_.find(characteristic_instance_id);
+
+  if (active_map == active_notification_subscriptions_.end()) {
+    return false;
+  }
+
+  active_map->second.erase(characteristic);
+
+  if (active_map->second.empty()) {
+    active_notification_subscriptions_.erase(active_map);
+    DCHECK(!HasActiveNotificationSubscription(characteristic_instance_id));
+    return true;
+  }
+  return false;
+}
+
+void BluetoothDispatcher::ResolveOrSendStartNotificationRequest(
+    int request_id) {
+  BluetoothNotificationsRequest* request =
+      pending_notifications_requests_.Lookup(request_id);
+  const std::string& characteristic_instance_id =
+      request->characteristic_instance_id;
+  blink::WebBluetoothGATTCharacteristic* characteristic =
+      request->characteristic;
+  blink::WebBluetoothNotificationsCallbacks* callbacks =
+      request->callbacks.get();
+
+  // If an object is already subscribed to notifications from the characteristic
+  // no need to send an IPC again.
+  if (HasActiveNotificationSubscription(characteristic_instance_id)) {
+    // The object could have been destroyed while we waited.
+    if (characteristic != nullptr) {
+      AddToActiveNotificationSubscriptions(characteristic_instance_id,
+                                           characteristic);
+    }
+    callbacks->onSuccess();
+
+    PopNotificationRequestQueueAndProcessNext(request_id);
+    return;
+  }
+
+  Send(new BluetoothHostMsg_StartNotifications(CurrentWorkerId(), request_id,
+                                               characteristic_instance_id));
+}
+
+void BluetoothDispatcher::ResolveOrSendStopNotificationsRequest(
+    int request_id) {
+  // The Notification subscription's state can change after a request
+  // finishes. To avoid resolving with a soon-to-be-invalid state we queue
+  // requests.
+  BluetoothNotificationsRequest* request =
+      pending_notifications_requests_.Lookup(request_id);
+  const std::string& characteristic_instance_id =
+      request->characteristic_instance_id;
+  blink::WebBluetoothGATTCharacteristic* characteristic =
+      request->characteristic;
+  blink::WebBluetoothNotificationsCallbacks* callbacks =
+      request->callbacks.get();
+
+  // If removing turns the subscription inactive then stop.
+  if (RemoveFromActiveNotificationSubscriptions(characteristic_instance_id,
+                                                characteristic)) {
+    Send(new BluetoothHostMsg_StopNotifications(CurrentWorkerId(), request_id,
+                                                characteristic_instance_id));
+    return;
+  }
+
+  // We could be processing a request with nullptr callbacks due to:
+  //   1) OnStartNotificationSuccess queues a Stop request because the object
+  //      got destroyed in characteristicObjectRemoved.
+  //   2) The last characteristic object that held this subscription got
+  //      destroyed in characteristicObjectRemoved.
+  if (callbacks != nullptr) {
+    callbacks->onSuccess();
+  }
+  PopNotificationRequestQueueAndProcessNext(request_id);
 }
 
 void BluetoothDispatcher::OnRequestDeviceSuccess(
@@ -367,6 +638,82 @@ void BluetoothDispatcher::OnWriteValueError(int thread_id,
       ->onError(WebBluetoothError(error));
 
   pending_write_value_requests_.Remove(request_id);
+}
+
+void BluetoothDispatcher::OnStartNotificationsSuccess(int thread_id,
+                                                      int request_id) {
+  DCHECK(pending_notifications_requests_.Lookup(request_id)) << request_id;
+
+  BluetoothNotificationsRequest* request =
+      pending_notifications_requests_.Lookup(request_id);
+
+  DCHECK(notification_requests_queues_[request->characteristic_instance_id]
+             .front() == request_id);
+
+  // We only send an IPC for inactive notifications.
+  DCHECK(
+      !HasActiveNotificationSubscription(request->characteristic_instance_id));
+
+  AddToActiveNotificationSubscriptions(request->characteristic_instance_id,
+                                       request->characteristic);
+
+  // The object requesting the notification could have been destroyed
+  // while waiting for the subscription. characteristicRemoved
+  // nulls the characteristic when the corresponding js object gets destroyed.
+  // A Stop request must be issued as the subscription is no longer needed.
+  // The Stop requets is added to the end of the queue in case another
+  // Start request exists in the queue from another characteristic object,
+  // which would result in the subscription continuing.
+  if (request->characteristic == nullptr) {
+    QueueNotificationRequest(
+        request->characteristic_instance_id, nullptr /* characteristic */,
+        nullptr /* callbacks */, NotificationsRequestType::STOP);
+  }
+
+  request->callbacks->onSuccess();
+
+  PopNotificationRequestQueueAndProcessNext(request_id);
+}
+
+void BluetoothDispatcher::OnStartNotificationsError(int thread_id,
+                                                    int request_id,
+                                                    WebBluetoothError error) {
+  DCHECK(pending_notifications_requests_.Lookup(request_id)) << request_id;
+
+  BluetoothNotificationsRequest* request =
+      pending_notifications_requests_.Lookup(request_id);
+
+  DCHECK(notification_requests_queues_[request->characteristic_instance_id]
+             .front() == request_id);
+
+  // We only send an IPC for inactive notifications.
+  DCHECK(
+      !HasActiveNotificationSubscription(request->characteristic_instance_id));
+
+  request->callbacks->onError(error);
+
+  PopNotificationRequestQueueAndProcessNext(request_id);
+}
+
+void BluetoothDispatcher::OnStopNotificationsSuccess(int thread_id,
+                                                     int request_id) {
+  DCHECK(pending_notifications_requests_.Lookup(request_id)) << request_id;
+
+  BluetoothNotificationsRequest* request =
+      pending_notifications_requests_.Lookup(request_id);
+
+  DCHECK(notification_requests_queues_[request->characteristic_instance_id]
+             .front() == request_id);
+
+  // We only send an IPC for inactive notifications.
+  DCHECK(
+      !HasActiveNotificationSubscription(request->characteristic_instance_id));
+
+  if (request->callbacks != nullptr) {
+    request->callbacks->onSuccess();
+  }
+
+  PopNotificationRequestQueueAndProcessNext(request_id);
 }
 
 }  // namespace content

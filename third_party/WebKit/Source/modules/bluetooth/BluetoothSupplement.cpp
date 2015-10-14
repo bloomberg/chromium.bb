@@ -37,10 +37,15 @@ WebBluetooth* BluetoothSupplement::from(LocalFrame* frame)
 
 WebBluetooth* BluetoothSupplement::fromScriptState(ScriptState* scriptState)
 {
-    if (!scriptState->executionContext()->isDocument()) {
+    return fromExecutionContext(scriptState->executionContext());
+}
+
+WebBluetooth* BluetoothSupplement::fromExecutionContext(ExecutionContext* executionContext)
+{
+    if (!executionContext->isDocument()) {
         return nullptr;
     }
-    return BluetoothSupplement::from(static_cast<Document*>(scriptState->executionContext())->frame());
+    return BluetoothSupplement::from(static_cast<Document*>(executionContext)->frame());
 }
 
 DEFINE_TRACE(BluetoothSupplement)

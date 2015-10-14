@@ -150,6 +150,9 @@ void RecordGATTOperationOutcome(UMAGATTOperation operation,
     case UMAGATTOperation::CHARACTERISTIC_WRITE:
       RecordCharacteristicWriteValueOutcome(outcome);
       return;
+    case UMAGATTOperation::START_NOTIFICATIONS:
+      RecordStartNotificationsOutcome(outcome);
+      return;
     case UMAGATTOperation::COUNT:
       NOTREACHED();
       return;
@@ -172,6 +175,14 @@ void RecordCharacteristicWriteValueOutcome(UMAGATTOperationOutcome outcome) {
   UMA_HISTOGRAM_ENUMERATION("Bluetooth.Web.Characteristic.WriteValue.Outcome",
                             static_cast<int>(outcome),
                             static_cast<int>(UMAGATTOperationOutcome::COUNT));
+}
+
+// Characteristic.startNotifications
+void RecordStartNotificationsOutcome(UMAGATTOperationOutcome outcome) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "Bluetooth.Web.Characteristic.StartNotifications.Outcome",
+      static_cast<int>(outcome),
+      static_cast<int>(UMAGATTOperationOutcome::COUNT));
 }
 
 }  // namespace content

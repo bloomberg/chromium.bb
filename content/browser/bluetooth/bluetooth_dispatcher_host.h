@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_BLUETOOTH_BLUETOOTH_DISPATCHER_HOST_H_
 
 #include "base/basictypes.h"
+#include "base/containers/scoped_ptr_map.h"
 #include "base/id_map.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
@@ -13,6 +14,7 @@
 #include "content/public/browser/browser_message_filter.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_gatt_connection.h"
+#include "device/bluetooth/bluetooth_gatt_notify_session.h"
 #include "device/bluetooth/bluetooth_gatt_service.h"
 
 namespace device {
@@ -75,6 +77,10 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
                    device::BluetoothDevice* device) override;
   void DeviceRemoved(device::BluetoothAdapter* adapter,
                      device::BluetoothDevice* device) override;
+  void GattCharacteristicValueChanged(
+      device::BluetoothAdapter* adapter,
+      device::BluetoothGattCharacteristic* characteristic,
+      const std::vector<uint8>& value) override;
 
   // IPC Handlers, see definitions in bluetooth_messages.h.
   void OnRequestDevice(
@@ -100,6 +106,12 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
                     int request_id,
                     const std::string& characteristic_instance_id,
                     const std::vector<uint8_t>& value);
+  void OnStartNotifications(int thread_id,
+                            int request_id,
+                            const std::string& characteristic_instance_id);
+  void OnStopNotifications(int thread_id,
+                           int request_id,
+                           const std::string& characteristic_instance_id);
 
   // Callbacks for BluetoothAdapter::StartDiscoverySession.
   void OnDiscoverySessionStarted(
@@ -156,6 +168,21 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
                           int request_id,
                           device::BluetoothGattService::GattErrorCode);
 
+  // Callbacks for BluetoothGattCharacteristic::StartNotifySession.
+  void OnStartNotifySessionSuccess(
+      int thread_id,
+      int request_id,
+      scoped_ptr<device::BluetoothGattNotifySession> notify_session);
+  void OnStartNotifySessionFailed(
+      int thread_id,
+      int request_id,
+      device::BluetoothGattService::GattErrorCode error_code);
+
+  // Callback for BluetoothGattNotifySession::Stop.
+  void OnStopNotifySession(int thread_id,
+                           int request_id,
+                           const std::string& characteristic_instance_id);
+
   // Show help pages from the chooser dialog.
   void ShowBluetoothOverviewLink();
   void ShowBluetoothPairingLink();
@@ -174,6 +201,13 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
   std::map<std::string, std::string> service_to_device_;
   // Map of characteristic_instance_id to service_instance_id.
   std::map<std::string, std::string> characteristic_to_service_;
+
+  // Map that matches characteristic_instance_id to notify session.
+  // TODO(ortuno): Also key by thread_id once support for web workers,
+  // is added: http://crbug.com/537372
+  base::ScopedPtrMap<std::string,
+                     scoped_ptr<device::BluetoothGattNotifySession>>
+      characteristic_id_to_notify_session_;
 
   // Defines how long to scan for and how long to discover services for.
   int current_delay_time_;
