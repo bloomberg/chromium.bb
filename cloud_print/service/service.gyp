@@ -22,19 +22,14 @@
       '_ATL_NO_AUTOMATIC_NAMESPACE',
       '_ATL_NO_EXCEPTIONS',
     ],
-    'conditions': [
-      ['OS=="win"', {
-        # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-        'msvs_disabled_warnings': [ 4267, ],
-      }],
-    ],
   },
   'targets': [
     {
+      # GN version: //cloud_print/service:resources
       'target_name': 'service_resources',
       'type': 'none',
       'variables': {
-        'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/cloud_print',
+        'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/cloud_print/service',
       },
       'actions': [
         {
@@ -48,6 +43,7 @@
       'includes': [ '../../build/grit_target.gypi' ],
     },
     {
+      # GN version: //cloud_print/service
       'target_name': 'cloud_print_service_lib',
       'type': 'static_library',
       'dependencies': [

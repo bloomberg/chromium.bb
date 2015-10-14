@@ -1,0 +1,108 @@
+# Copyright 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/win/manifest.gni")
+import("//chrome/version.gni")
+
+assert(is_win)
+
+executable("cloud_print_service") {
+  sources = [
+    "cloud_print_service.cc",
+  ]
+
+  configs += [
+    "//build/config/compiler:wexit_time_destructors",
+    "//cloud_print/service:internal_config",
+  ]
+
+  deps = [
+    ":exe_manifest",
+    ":exe_version",
+    "//cloud_print/service:lib",
+  ]
+
+  libs = [ "secur32.lib" ]
+}
+
+windows_manifest("exe_manifest") {
+  sources = [
+    common_controls_manifest,
+    default_compatibility_manifest,
+    require_administrator_manifest,
+  ]
+  type = "exe"
+}
+
+process_version("exe_version") {
+  template_file = chrome_version_rc_template
+  sources = [
+    "cloud_print_service_exe.ver",
+  ]
+  output = "$target_gen_dir/cloud_print_service_exe_version.rc"
+}
+
+executable("cloud_print_service_config") {
+  sources = [
+    "cloud_print_service_config.cc",
+  ]
+
+  configs -= [ "//build/config/win:console" ]
+  configs += [ "//build/config/win:windowed" ]
+
+  deps = [
+    ":config_version",
+    ":exe_manifest",
+    "//cloud_print/common:install_utils",
+    "//cloud_print/service:resources",
+    "//cloud_print/service:lib",
+  ]
+
+  libs = [ "secur32.lib" ]
+
+  # TODO: Remove once cloud_print_service_config.cc no longer depends on
+  # atlapp.h, http://crbug.com/5027
+  if (is_clang) {
+    cflags = [
+      # atlapp.h contains a global "using namespace WTL;".
+      "-Wno-header-hygiene",
+
+      # atlgdi.h does an intentional assignment in an if conditional.
+      "-Wno-parentheses",
+
+      # atlgdi.h fails with -Wreorder enabled.
+      "-Wno-reorder",
+
+      # atlgdi.h doesn"t use braces around subobject initializers.
+      "-Wno-missing-braces",
+    ]
+  }
+}
+
+process_version("config_version") {
+  template_file = chrome_version_rc_template
+  sources = [
+    "cloud_print_service_config_exe.ver",
+  ]
+  output = "$target_gen_dir/cloud_print_service_config_version.rc"
+}
+
+executable("cloud_print_service_setup") {
+  sources = [
+    "installer.cc",
+    "installer.h",
+  ]
+
+  configs -= [ "//build/config/win:console" ]
+  configs += [ "//build/config/win:windowed" ]
+
+  deps = [
+    ":exe_manifest",
+    "//cloud_print/common:install_utils",
+    "//cloud_print/service:resources",
+    "//cloud_print/service:lib",
+  ]
+
+  libs = [ "secur32.lib" ]
+}

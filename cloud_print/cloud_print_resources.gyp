@@ -17,6 +17,9 @@
   ],
   'targets': [
     {
+      # GN: Thes targets for this are split out depending on when the specific
+      # .ver file is used. For example, see:
+      # //cloud_print/sevice/win:exe_version
       'target_name': 'cloud_print_version_resources',
       'type': 'none',
       'variables': {

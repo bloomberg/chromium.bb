@@ -22,11 +22,10 @@
       '_ATL_NO_AUTOMATIC_NAMESPACE',
       '_ATL_NO_EXCEPTIONS',
     ],
-    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    'msvs_disabled_warnings': [ 4267, ],
   },
   'targets': [
     {
+      # GN version: //cloud_print/service/win:cloud_print_service
       'target_name': 'cloud_print_service',
       'type': 'executable',
       'sources': [
@@ -51,6 +50,7 @@
       },
     },
     {
+      # GN version: //cloud_print/service/win:cloud_print_service_config
       'target_name': 'cloud_print_service_config',
       'type': 'executable',
       'sources': [
@@ -99,6 +99,7 @@
       },
     },
     {
+      # GN version: //cloud_print/service/win:cloud_print_service_setup
       'target_name': 'cloud_print_service_setup',
       'type': 'executable',
       'sources': [
