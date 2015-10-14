@@ -24,26 +24,33 @@ def WaitForViaHeader(tab, url="http://check.googlezip.net/test.html"):
 
   tab.Navigate('data:text/html;base64,%s' % base64.b64encode(
     '<html><body><script>'
-    'function ProbeViaHeader(url, wanted_via) {'
+    'window.via_header_found = false;'
+    'function PollDRPCheck(url, wanted_via) {'
+      'if (via_header_found) { return true; }'
       'try {'
         'var xmlhttp = new XMLHttpRequest();'
-        'xmlhttp.timeout = 15;'
-        'xmlhttp.open("HEAD",url,false);'
+        'xmlhttp.open("HEAD",url,true);'
+        'xmlhttp.onload=function(e) {'
+          'var via=xmlhttp.getResponseHeader("via");'
+          'if (via && via.indexOf(wanted_via) != -1) {'
+            'window.via_header_found = true;'
+          '}'
+        '};'
+        'xmlhttp.timeout=30000;'
         'xmlhttp.send();'
-        'var via=xmlhttp.getResponseHeader("via");'
-        'return (via && via.indexOf(wanted_via) != -1);'
-       '} catch (err) {'
-         'return false;'
-       '}'
+      '} catch (err) {'
+        '/* Return normally if the xhr request failed. */'
+      '}'
+      'return false;'
     '}'
     '</script>'
     'Waiting for Chrome to start using the DRP...'
     '</body></html>'))
 
   # Ensure the page has started loading before attempting the DRP check.
-  tab.WaitForJavaScriptExpression('performance.timing.loadEventStart', 300)
+  tab.WaitForJavaScriptExpression('performance.timing.loadEventStart', 60)
   tab.WaitForJavaScriptExpression(
-    'ProbeViaHeader("%s", "%s")' % (url, metrics.CHROME_PROXY_VIA_HEADER), 300)
+    'PollDRPCheck("%s", "%s")' % (url, metrics.CHROME_PROXY_VIA_HEADER), 60)
 
 
 class ChromeProxyValidation(page_test.PageTest):
