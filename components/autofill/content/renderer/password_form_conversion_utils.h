@@ -6,11 +6,11 @@
 #define COMPONENTS_AUTOFILL_CONTENT_RENDERER_PASSWORD_FORM_CONVERSION_UTILS_H_
 
 #include <map>
+#include <vector>
 
 #include "base/memory/scoped_ptr.h"
 #include "components/autofill/core/common/password_form_field_prediction_map.h"
 #include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/public/platform/WebVector.h"
 #include "url/gurl.h"
 
 namespace blink {
@@ -28,12 +28,12 @@ struct FormFieldData;
 struct PasswordForm;
 
 // Tests whether the given form is a GAIA reauthentication form. The form is
-// not passed directly as WebFormElement, but by specifying its |url| and
+// not passed directly as WebFormElement, but by specifying its |origin| and
 // |control_elements|. This is for better performance and easier testing.
 // TODO(msramek): Move this logic to the browser.
 bool IsGaiaReauthenticationForm(
     const GURL& origin,
-    const blink::WebVector<blink::WebFormControlElement>& control_elements);
+    const std::vector<blink::WebFormControlElement>& control_elements);
 
 typedef std::map<const blink::WebInputElement,
                  blink::WebString> ModifiedValues;

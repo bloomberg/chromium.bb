@@ -4,7 +4,7 @@
 
 #include "components/autofill/content/renderer/password_form_conversion_utils.h"
 
-#include <vector>
+#include <string>
 
 #include "base/i18n/case_conversion.h"
 #include "base/lazy_instance.h"
@@ -17,7 +17,6 @@
 #include "components/autofill/core/common/password_form_field_prediction_map.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFormControlElement.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
@@ -30,7 +29,6 @@ using blink::WebFormElement;
 using blink::WebFrame;
 using blink::WebInputElement;
 using blink::WebString;
-using blink::WebVector;
 
 namespace autofill {
 namespace {
@@ -246,7 +244,7 @@ void FindPredictedElements(
   // the username to be updated even if the form is changed after page load.
   // See https://crbug.com/476092 for more details.
   auto predictions_iterator = form_predictions.begin();
-  for (;predictions_iterator != form_predictions.end();
+  for (; predictions_iterator != form_predictions.end();
        ++predictions_iterator) {
     if (predictions_iterator->first.action == form_data.action &&
         predictions_iterator->first.name == form_data.name) {
@@ -322,8 +320,8 @@ bool GetPasswordForm(const SyntheticForm& form,
   // the form will be ignored.
   // TODO(msramek): Move this logic to the browser, and disable filling only
   // for the sync credential and if passwords are being synced.
-  if (IsGaiaReauthenticationForm(
-          GURL(form.document.url()).GetOrigin(), form.control_elements)) {
+  if (IsGaiaReauthenticationForm(GURL(form.document.url()).GetOrigin(),
+                                 form.control_elements)) {
     return false;
   }
 
@@ -544,7 +542,7 @@ bool GetPasswordForm(const SyntheticForm& form,
 
 bool IsGaiaReauthenticationForm(
     const GURL& origin,
-    const WebVector<blink::WebFormControlElement>& control_elements) {
+    const std::vector<blink::WebFormControlElement>& control_elements) {
   if (origin != GaiaUrls::GetInstance()->gaia_url().GetOrigin())
     return false;
 

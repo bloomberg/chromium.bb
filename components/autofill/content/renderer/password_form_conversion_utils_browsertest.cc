@@ -850,145 +850,106 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest,
 }
 
 TEST_F(MAYBE_PasswordFormConversionUtilsTest, IsGaiaReauthFormIgnored) {
-  scoped_ptr<PasswordFormBuilder> builder;
-  FormsPredictionsMap predictions;
-  WebFormElement form;
-  WebVector<WebFormControlElement> control_elements;
+  struct TestCase {
+    const char* origin;
+    struct KeyValue {
+      KeyValue() : name(nullptr), value(nullptr) {}
+      KeyValue(const char* new_name, const char* new_value)
+          : name(new_name), value(new_value) {}
+      const char* name;
+      const char* value;
+    } hidden_fields[2];
+    bool expected_form_is_reauth;
+  } cases[] = {
+      // A common password form is parsed successfully.
+      {"https://example.com",
+       {TestCase::KeyValue(), TestCase::KeyValue()},
+       false},
+      // A common password form, even if it appears on a GAIA reauth url,
+      // is parsed successfully.
+      {"https://accounts.google.com",
+       {TestCase::KeyValue(), TestCase::KeyValue()},
+       false},
+      // Not a transactional reauth.
+      {"https://accounts.google.com",
+       {TestCase::KeyValue("continue", "https://passwords.google.com/settings"),
+        TestCase::KeyValue()},
+       false},
+      // A reauth form that is not for a password site is parsed successfuly.
+      {"https://accounts.google.com",
+       {TestCase::KeyValue("continue", "https://mail.google.com"),
+        TestCase::KeyValue("rart", "")},
+       false},
+      // A reauth form for a password site is ignored.
+      {"https://accounts.google.com",
+       {TestCase::KeyValue("continue", "https://passwords.google.com"),
+        TestCase::KeyValue("rart", "")},
+       true},
+      // Password site is inaccesible via HTTP, but because of HSTS the
+      // following link should still continue to https://passwords.google.com.
+      {"https://accounts.google.com",
+       {TestCase::KeyValue("continue", "http://passwords.google.com"),
+        TestCase::KeyValue("rart", "")},
+       true},
+      // Make sure testing sites are disabled as well.
+      {"https://accounts.google.com",
+       {TestCase::KeyValue(
+            "continue",
+            "https://passwords-ac-testing.corp.google.com/settings"),
+        TestCase::KeyValue("rart", "")},
+       true},
+      // Specifying default port doesn't change anything.
+      {"https://accounts.google.com",
+       {TestCase::KeyValue("continue", "passwords.google.com:443"),
+        TestCase::KeyValue("rart", "")},
+       true},
+      // Encoded URL is considered the same.
+      {"https://accounts.google.com",
+       {TestCase::KeyValue("continue",
+                           "https://passwords.%67oogle.com/settings"),
+        TestCase::KeyValue("rart", "")},
+       true},
+      // Fully qualified domain should work as well.
+      {"https://accounts.google.com",
+       {TestCase::KeyValue("continue",
+                           "https://passwords.google.com./settings"),
+        TestCase::KeyValue("rart", "")},
+       true},
+      // A correctly looking form, but on a different page.
+      {"https://google.com",
+       {TestCase::KeyValue("continue", "https://passwords.google.com"),
+        TestCase::KeyValue("rart", "")},
+       false},
+  };
 
-  // A common password form is parsed successfully.
-  builder.reset(new PasswordFormBuilder("https://example.com"));
-  builder->AddTextField("username", "", nullptr);
-  builder->AddPasswordField("password", "", nullptr);
-  std::string html = builder->ProduceHTML();
-  LoadWebFormFromHTML(html, &form);
-  form.getFormControlElements(control_elements);
-  EXPECT_FALSE(IsGaiaReauthenticationForm(
-      GURL("https://example.com"), control_elements));
-
-  // A common password form, even if it appears on a GAIA reauth url,
-  // is parsed successfully.
-  builder.reset(new PasswordFormBuilder("https://accounts.google.com"));
-  builder->AddTextField("username", "", nullptr);
-  builder->AddPasswordField("password", "", nullptr);
-  html = builder->ProduceHTML();
-  LoadWebFormFromHTML(html, &form);
-  form.getFormControlElements(control_elements);
-  EXPECT_FALSE(IsGaiaReauthenticationForm(
-      GURL("https://accounts.google.com"), control_elements));
-
-  // Not a transactional reauth.
-  builder.reset(new PasswordFormBuilder("https://accounts.google.com"));
-  builder->AddTextField("username", "", nullptr);
-  builder->AddPasswordField("password", "", nullptr);
-  builder->AddHiddenField(
-      "continue", "https://passwords.google.com/settings");
-  html = builder->ProduceHTML();
-  LoadWebFormFromHTML(html, &form);
-  form.getFormControlElements(control_elements);
-  EXPECT_FALSE(IsGaiaReauthenticationForm(
-      GURL("https://accounts.google.com"), control_elements));
-
-  // A reauth form that is not for a password site is parsed successfuly.
-  builder.reset(new PasswordFormBuilder("https://accounts.google.com"));
-  builder->AddTextField("username", "", nullptr);
-  builder->AddPasswordField("password", "", nullptr);
-  builder->AddHiddenField("rart", "");
-  builder->AddHiddenField("continue", "https://mail.google.com");
-  html = builder->ProduceHTML();
-  LoadWebFormFromHTML(html, &form);
-  form.getFormControlElements(control_elements);
-  EXPECT_FALSE(IsGaiaReauthenticationForm(
-      GURL("https://accounts.google.com"), control_elements));
-
-  // A reauth form for a password site is ignored.
-  builder.reset(new PasswordFormBuilder("https://accounts.google.com"));
-  builder->AddTextField("username", "", nullptr);
-  builder->AddPasswordField("password", "", nullptr);
-  builder->AddHiddenField("rart", "");
-  builder->AddHiddenField("continue", "https://passwords.google.com");
-  html = builder->ProduceHTML();
-  LoadWebFormFromHTML(html, &form);
-  form.getFormControlElements(control_elements);
-  EXPECT_TRUE(IsGaiaReauthenticationForm(
-      GURL("https://accounts.google.com"), control_elements));
-
-  // Password site is inaccesible via HTTP, but because of HSTS the following
-  // link should still continue to https://passwords.google.com.
-  builder.reset(new PasswordFormBuilder("https://accounts.google.com"));
-  builder->AddTextField("username", "", nullptr);
-  builder->AddPasswordField("password", "", nullptr);
-  builder->AddHiddenField("rart", "");
-  builder->AddHiddenField("continue", "http://passwords.google.com");
-  html = builder->ProduceHTML();
-  LoadWebFormFromHTML(html, &form);
-  form.getFormControlElements(control_elements);
-  EXPECT_TRUE(IsGaiaReauthenticationForm(
-      GURL("https://accounts.google.com"), control_elements));
-
-  // Make sure testing sites are disabled as well.
-  builder.reset(new PasswordFormBuilder("https://accounts.google.com"));
-  builder->AddTextField("username", "", nullptr);
-  builder->AddPasswordField("password", "", nullptr);
-  builder->AddHiddenField("rart", "");
-  builder->AddHiddenField(
-      "continue", "https://passwords-ac-testing.corp.google.com/settings");
-  html = builder->ProduceHTML();
-  LoadWebFormFromHTML(html, &form);
-  form.getFormControlElements(control_elements);
-  EXPECT_TRUE(IsGaiaReauthenticationForm(
-      GURL("https://accounts.google.com"), control_elements));
-
-  // Specifying default port doesn't change anything.
-  builder.reset(new PasswordFormBuilder("https://accounts.google.com"));
-  builder->AddTextField("username", "", nullptr);
-  builder->AddPasswordField("password", "", nullptr);
-  builder->AddHiddenField("rart", "");
-  builder->AddHiddenField("continue", "passwords.google.com:443");
-  html = builder->ProduceHTML();
-  LoadWebFormFromHTML(html, &form);
-  form.getFormControlElements(control_elements);
-  EXPECT_TRUE(IsGaiaReauthenticationForm(
-      GURL("https://accounts.google.com"), control_elements));
-
-  // Encoded URL is considered the same.
-  builder.reset(new PasswordFormBuilder("https://accounts.google.com"));
-  builder->AddTextField("username", "", nullptr);
-  builder->AddPasswordField("password", "", nullptr);
-  builder->AddHiddenField("rart", "");
-  builder->AddHiddenField(
-      "continue", "https://passwords.%67oogle.com/settings&rart=123");
-  html = builder->ProduceHTML();
-  LoadWebFormFromHTML(html, &form);
-  form.getFormControlElements(control_elements);
-  EXPECT_TRUE(IsGaiaReauthenticationForm(
-      GURL("https://accounts.google.com"), control_elements));
-
-  // Fully qualified domain name is considered a different hostname by GURL.
-  // Ideally this would not be the case, but this quirk can be avoided by
-  // verification on the server. This test is simply documentation of this
-  // behavior.
-  builder.reset(new PasswordFormBuilder("https://accounts.google.com"));
-  builder->AddTextField("username", "", nullptr);
-  builder->AddPasswordField("password", "", nullptr);
-  builder->AddHiddenField("rart", "");
-  builder->AddHiddenField("continue", "https://passwords.google.com./settings");
-  html = builder->ProduceHTML();
-  LoadWebFormFromHTML(html, &form);
-  form.getFormControlElements(control_elements);
-  EXPECT_TRUE(IsGaiaReauthenticationForm(
-      GURL("https://accounts.google.com"), control_elements));
-
-  // A correctly looking form, but on a different page.
-  builder.reset(new PasswordFormBuilder("https://google.com"));
-  builder->AddTextField("username", "", nullptr);
-  builder->AddPasswordField("password", "", nullptr);
-  builder->AddHiddenField("rart", "");
-  builder->AddHiddenField("continue", "https://passwords.google.com");
-  html = builder->ProduceHTML();
-  LoadWebFormFromHTML(html, &form);
-  form.getFormControlElements(control_elements);
-  EXPECT_FALSE(IsGaiaReauthenticationForm(
-      GURL("https://google.com"), control_elements));
+  for (TestCase& test_case : cases) {
+    SCOPED_TRACE(testing::Message("origin=")
+                 << test_case.origin
+                 << ", hidden_fields[0]=" << test_case.hidden_fields[0].name
+                 << "/" << test_case.hidden_fields[0].value
+                 << ", hidden_fields[1]=" << test_case.hidden_fields[1].name
+                 << "/" << test_case.hidden_fields[1].value
+                 << ", expected_form_is_reauth="
+                 << test_case.expected_form_is_reauth);
+    scoped_ptr<PasswordFormBuilder> builder(new PasswordFormBuilder(""));
+    builder->AddTextField("username", "", nullptr);
+    builder->AddPasswordField("password", "", nullptr);
+    for (TestCase::KeyValue& hidden_field : test_case.hidden_fields) {
+      if (hidden_field.name)
+        builder->AddHiddenField(hidden_field.name, hidden_field.value);
+    }
+    std::string html = builder->ProduceHTML();
+    WebFormElement form;
+    LoadWebFormFromHTML(html, &form);
+    std::vector<WebFormControlElement> control_elements;
+    WebVector<blink::WebFormControlElement> web_control_elements;
+    form.getFormControlElements(web_control_elements);
+    control_elements.assign(web_control_elements.begin(),
+                            web_control_elements.end());
+    EXPECT_EQ(test_case.expected_form_is_reauth,
+              IsGaiaReauthenticationForm(GURL(test_case.origin).GetOrigin(),
+                                         control_elements));
+  }
 }
 
 TEST_F(MAYBE_PasswordFormConversionUtilsTest,
