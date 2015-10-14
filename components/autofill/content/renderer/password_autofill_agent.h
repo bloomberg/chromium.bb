@@ -105,8 +105,9 @@ class PasswordAutofillAgent : public content::RenderFrameObserver {
     bool username_was_edited;
     PasswordInfo();
   };
-  typedef std::map<blink::WebInputElement, PasswordInfo> LoginToPasswordInfoMap;
-  typedef std::map<blink::WebElement, int> LoginToPasswordInfoKeyMap;
+  typedef std::map<blink::WebInputElement, PasswordInfo>
+      WebInputToPasswordInfoMap;
+  typedef std::map<blink::WebElement, int> WebElementToPasswordInfoKeyMap;
   typedef std::map<blink::WebInputElement, blink::WebInputElement>
       PasswordToLoginMap;
 
@@ -240,9 +241,9 @@ class PasswordAutofillAgent : public content::RenderFrameObserver {
   LegacyPasswordAutofillAgent legacy_;
 
   // The logins we have filled so far with their associated info.
-  LoginToPasswordInfoMap login_to_password_info_;
+  WebInputToPasswordInfoMap web_input_to_password_info_;
   // And the keys under which PasswordAutofillManager can find the same info.
-  LoginToPasswordInfoKeyMap login_to_password_info_key_;
+  WebElementToPasswordInfoKeyMap web_element_to_password_info_key_;
   // A (sort-of) reverse map to |login_to_password_info_|.
   PasswordToLoginMap password_to_username_;
 

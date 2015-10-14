@@ -676,9 +676,9 @@ void PasswordAutofillAgent::PasswordValueGatekeeper::ShowValue(
 
 bool PasswordAutofillAgent::TextFieldDidEndEditing(
     const blink::WebInputElement& element) {
-  LoginToPasswordInfoMap::const_iterator iter =
-      login_to_password_info_.find(element);
-  if (iter == login_to_password_info_.end())
+  WebInputToPasswordInfoMap::const_iterator iter =
+      web_input_to_password_info_.find(element);
+  if (iter == web_input_to_password_info_.end())
     return false;
 
   const PasswordInfo& password_info = iter->second;
@@ -714,8 +714,9 @@ bool PasswordAutofillAgent::TextDidChangeInTextField(
   blink::WebInputElement mutable_element = element;  // We need a non-const.
   mutable_element.setAutofilled(false);
 
-  LoginToPasswordInfoMap::iterator iter = login_to_password_info_.find(element);
-  if (iter != login_to_password_info_.end()) {
+  WebInputToPasswordInfoMap::iterator iter =
+      web_input_to_password_info_.find(element);
+  if (iter != web_input_to_password_info_.end()) {
     iter->second.password_was_edited_last = false;
     // If wait_for_username is true we will fill when the username loses focus.
     if (iter->second.fill_data.wait_for_username)
@@ -734,9 +735,9 @@ void PasswordAutofillAgent::UpdateStateForTextChange(
   if (element.isTextField())
     nonscript_modified_values_[element] = element.value();
 
-  LoginToPasswordInfoMap::iterator password_info_iter =
-      login_to_password_info_.find(element);
-  if (password_info_iter != login_to_password_info_.end()) {
+  WebInputToPasswordInfoMap::iterator password_info_iter =
+      web_input_to_password_info_.find(element);
+  if (password_info_iter != web_input_to_password_info_.end()) {
     password_info_iter->second.username_was_edited = true;
   }
 
@@ -762,7 +763,7 @@ void PasswordAutofillAgent::UpdateStateForTextChange(
 
     PasswordToLoginMap::iterator iter = password_to_username_.find(element);
     if (iter != password_to_username_.end()) {
-      login_to_password_info_[iter->second].password_was_edited_last = true;
+      web_input_to_password_info_[iter->second].password_was_edited_last = true;
       // Note that the suggested value of |mutable_element| was reset when its
       // value changed.
       mutable_element.setAutofilled(false);
@@ -848,6 +849,14 @@ bool PasswordAutofillAgent::FindPasswordInfoForElement(
   if (!element.isPasswordField()) {
     *username_element = &element;
   } else {
+    WebInputToPasswordInfoMap::iterator iter =
+        web_input_to_password_info_.find(element);
+    if (iter != web_input_to_password_info_.end()) {
+      // It's a password field without corresponding username field.
+      *username_element = nullptr;
+      *password_info = &iter->second;
+      return true;
+    }
     PasswordToLoginMap::const_iterator password_iter =
         password_to_username_.find(element);
     if (password_iter == password_to_username_.end())
@@ -855,10 +864,10 @@ bool PasswordAutofillAgent::FindPasswordInfoForElement(
     *username_element = &password_iter->second;
   }
 
-  LoginToPasswordInfoMap::iterator iter =
-      login_to_password_info_.find(**username_element);
+  WebInputToPasswordInfoMap::iterator iter =
+      web_input_to_password_info_.find(**username_element);
 
-  if (iter == login_to_password_info_.end())
+  if (iter == web_input_to_password_info_.end())
     return false;
 
   *password_info = &iter->second;
@@ -891,8 +900,9 @@ bool PasswordAutofillAgent::ShowSuggestions(
   if (element.value().length() > kMaximumTextSizeForAutocomplete)
     return false;
 
-  bool username_is_available =
-      !username_element->isNull() && IsElementEditable(*username_element);
+  bool username_is_available = username_element &&
+                               !username_element->isNull() &&
+                               IsElementEditable(*username_element);
   // If the element is a password field, a popup should only be shown if there
   // is no username or the corresponding username element is not editable since
   // it is only in that case that the username element does not have a
@@ -915,7 +925,8 @@ bool PasswordAutofillAgent::ShowSuggestions(
   // for the call to ShowSuggestionPopup.
   return ShowSuggestionPopup(
       password_info->fill_data,
-      username_element->isNull() ? element : *username_element,
+      (!username_element || username_element->isNull()) ? element
+                                                        : *username_element,
       show_all && !element.isPasswordField(), element.isPasswordField());
 }
 
@@ -1292,15 +1303,18 @@ void PasswordAutofillAgent::OnFillPasswordForm(
     if (password_field_name.empty())
       break;
 
-    // We might have already filled this form if there are two <form> elements
-    // with identical markup.
-    if (login_to_password_info_.find(username_element) !=
-        login_to_password_info_.end())
-      continue;
-
     // Get pointer to password element. (We currently only support single
     // password forms).
     password_element = (*iter)[password_field_name];
+
+    blink::WebInputElement main_element =
+        username_element.isNull() ? password_element : username_element;
+
+    // We might have already filled this form if there are two <form> elements
+    // with identical markup.
+    if (web_input_to_password_info_.find(main_element) !=
+        web_input_to_password_info_.end())
+      continue;
 
     // If wait_for_username is true, we don't want to initially fill the form
     // until the user types in a valid username.
@@ -1317,9 +1331,9 @@ void PasswordAutofillAgent::OnFillPasswordForm(
     PasswordInfo password_info;
     password_info.fill_data = form_data;
     password_info.password_field = password_element;
-    login_to_password_info_[username_element] = password_info;
+    web_input_to_password_info_[main_element] = password_info;
     password_to_username_[password_element] = username_element;
-    login_to_password_info_key_[username_element] = key;
+    web_element_to_password_info_key_[main_element] = key;
   }
 }
 
@@ -1396,9 +1410,9 @@ bool PasswordAutofillAgent::ShowSuggestionPopup(
 
   blink::WebInputElement selected_element = user_input;
   if (show_on_password_field && !selected_element.isPasswordField()) {
-    LoginToPasswordInfoMap::const_iterator iter =
-        login_to_password_info_.find(user_input);
-    DCHECK(iter != login_to_password_info_.end());
+    WebInputToPasswordInfoMap::const_iterator iter =
+        web_input_to_password_info_.find(user_input);
+    DCHECK(iter != web_input_to_password_info_.end());
     selected_element = iter->second.password_field;
   }
   gfx::Rect bounding_box(selected_element.boundsInViewportSpace());
@@ -1407,9 +1421,9 @@ bool PasswordAutofillAgent::ShowSuggestionPopup(
   if (!show_on_password_field || !user_input.isPasswordField()) {
     username = user_input;
   }
-  LoginToPasswordInfoKeyMap::const_iterator key_it =
-      login_to_password_info_key_.find(username);
-  DCHECK(key_it != login_to_password_info_key_.end());
+  WebElementToPasswordInfoKeyMap::const_iterator key_it =
+      web_element_to_password_info_key_.find(user_input);
+  DCHECK(key_it != web_element_to_password_info_key_.end());
 
   float scale =
       render_frame()->GetRenderView()->GetWebView()->pageScaleFactor();
@@ -1433,11 +1447,11 @@ bool PasswordAutofillAgent::ShowSuggestionPopup(
 }
 
 void PasswordAutofillAgent::FrameClosing() {
-  for (auto const& iter : login_to_password_info_) {
-    login_to_password_info_key_.erase(iter.first);
+  for (auto const& iter : web_input_to_password_info_) {
+    web_element_to_password_info_key_.erase(iter.first);
     password_to_username_.erase(iter.second.password_field);
   }
-  login_to_password_info_.clear();
+  web_input_to_password_info_.clear();
   provisionally_saved_form_.reset();
   nonscript_modified_values_.clear();
 }

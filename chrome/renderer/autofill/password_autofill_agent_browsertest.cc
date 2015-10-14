@@ -207,6 +207,16 @@ const char kNoFormHTML[] =
     "  <INPUT type='text' id='username'/>"
     "  <INPUT type='password' id='password'/>";
 
+const char kTwoNoUsernameFormsHTML[] =
+    "<FORM name='form1' action='http://www.bidule.com'>"
+    "  <INPUT type='password' id='password1' name='password'/>"
+    "  <INPUT type='submit' value='Login'/>"
+    "</FORM>"
+    "<FORM name='form2' action='http://www.bidule.com'>"
+    "  <INPUT type='password' id='password2' name='password'/>"
+    "  <INPUT type='submit' value='Login'/>"
+    "</FORM>";
+
 // Sets the "readonly" attribute of |element| to the value given by |read_only|.
 void SetElementReadOnly(WebInputElement& element, bool read_only) {
   element.setAttribute(WebString::fromUTF8("readonly"),
@@ -2268,6 +2278,21 @@ TEST_F(PasswordAutofillAgentTest, RememberChosenUsernamePassword) {
   // Observe that the PasswordAutofillAgent sends to the browser selected
   // credentials.
   ExpectFormSubmittedWithUsernameAndPasswords(kBobUsername, kBobPassword, "");
+}
+
+// Tests that we can correctly suggest to autofill two forms without username
+// fields.
+TEST_F(PasswordAutofillAgentTest, ShowSuggestionForNonUsernameFieldForms) {
+  LoadHTML(kTwoNoUsernameFormsHTML);
+  fill_data_.username_field.name.clear();
+  fill_data_.username_field.value.clear();
+  UpdateOriginForHTML(kTwoNoUsernameFormsHTML);
+  SimulateOnFillPasswordForm(fill_data_);
+
+  SimulateElementClick("password1");
+  CheckSuggestions(std::string(), false);
+  SimulateElementClick("password2");
+  CheckSuggestions(std::string(), false);
 }
 
 }  // namespace autofill
