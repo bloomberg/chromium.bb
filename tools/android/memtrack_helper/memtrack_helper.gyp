@@ -7,11 +7,17 @@
     {
       'target_name': 'memtrack_helper-unstripped',
       'type': 'executable',
-      'link_settings': {
-        'libraries': [
-          '-ldl',
-        ],
-      },
+      # Unwind tables create a dependency on libc++. By removing them
+      # the final binary will not require anything more than libc and libdl.
+      # This makes its deployment easier in component=shared_library mode.
+      'cflags!': [
+        '-funwind-tables',
+        '-fasynchronous-unwind-tables',
+      ],
+      'cflags': [
+        '-fno-unwind-tables',
+        '-fno-asynchronous-unwind-tables',
+      ],
       'sources': [
         'memtrack_helper.c',
       ],
