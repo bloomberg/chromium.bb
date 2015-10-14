@@ -109,7 +109,6 @@ class RenderProcessObserver;
 class RendererBlinkPlatformImpl;
 class RendererDemuxerAndroid;
 class ResourceDispatchThrottler;
-class ResourceSchedulingFilter;
 class V8SamplingProfiler;
 class VideoCaptureImplManager;
 class WebGraphicsContext3DCommandBufferImpl;
@@ -615,8 +614,6 @@ class CONTENT_EXPORT RenderThreadImpl
 
   scoped_refptr<base::SingleThreadTaskRunner>
       main_thread_compositor_task_runner_;
-
-  scoped_refptr<ResourceSchedulingFilter> resource_scheduling_filter_;
 
   // Compositor settings.
   bool is_gpu_rasterization_enabled_;

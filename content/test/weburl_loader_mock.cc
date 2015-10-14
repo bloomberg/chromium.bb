@@ -147,3 +147,7 @@ void WebURLLoaderMock::setDefersLoading(bool deferred) {
   }
   NOTIMPLEMENTED();
 }
+
+void WebURLLoaderMock::setLoadingTaskRunner(blink::WebTaskRunner*) {
+  NOTIMPLEMENTED();
+}

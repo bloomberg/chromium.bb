@@ -5,11 +5,18 @@
 #ifndef CONTENT_CHILD_RESOURCE_SCHEDULING_FILTER_H_
 #define CONTENT_CHILD_RESOURCE_SCHEDULING_FILTER_H_
 
+#include <map>
+
 #include "base/containers/hash_tables.h"
+#include "base/containers/scoped_ptr_map.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "content/common/content_export.h"
 #include "ipc/message_filter.h"
+
+namespace blink {
+class WebTaskRunner;
+}
 
 namespace content {
 class ResourceDispatcher;
@@ -28,10 +35,24 @@ class CONTENT_EXPORT ResourceSchedulingFilter : public IPC::MessageFilter {
   bool GetSupportedMessageClasses(
       std::vector<uint32>* supported_message_classes) const override;
 
- protected:
-  ~ResourceSchedulingFilter() override;
+  // Sets the task runner associated with request messages with |id|.
+  void SetRequestIdTaskRunner(
+      int id, scoped_ptr<blink::WebTaskRunner> web_task_runner);
+
+  // Removes the task runner associated with |id|.
+  void ClearRequestIdTaskRunner(int id);
 
   void DispatchMessage(const IPC::Message& message);
+
+ private:
+  ~ResourceSchedulingFilter() override;
+
+  typedef base::ScopedPtrMap<int, scoped_ptr<blink::WebTaskRunner>>
+      RequestIdToTaskRunnerMap;
+
+  // This lock guards |request_id_to_task_runner_map_|
+  base::Lock request_id_to_task_runner_map_lock_;
+  RequestIdToTaskRunnerMap request_id_to_task_runner_map_;
 
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   ResourceDispatcher* resource_dispatcher_;  // NOT OWNED

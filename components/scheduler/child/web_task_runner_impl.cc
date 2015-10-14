@@ -36,4 +36,8 @@ void WebTaskRunnerImpl::postDelayedTask(
       base::TimeDelta::FromMillisecondsD(delayMs));
 }
 
+blink::WebTaskRunner* WebTaskRunnerImpl::clone() {
+  return new WebTaskRunnerImpl(task_runner_);
+}
+
 }  // namespace scheduler

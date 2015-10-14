@@ -48,6 +48,7 @@ class ResourceLoader;
 class ResourceResponse;
 class ResourceRequest;
 class ResourceTimingInfo;
+class WebTaskRunner;
 
 enum FetchResourceType {
     FetchMainResource,
@@ -105,6 +106,8 @@ public:
     virtual void addCSPHeaderIfNecessary(Resource::Type, FetchRequest&);
 
     virtual ResourceLoadPriority modifyPriorityForExperiments(ResourceLoadPriority priority, Resource::Type, const FetchRequest&, ResourcePriority::VisibilityStatus) { return priority; }
+
+    virtual WebTaskRunner* loadingTaskRunner() const { return nullptr; }
 
 protected:
     FetchContext() { }

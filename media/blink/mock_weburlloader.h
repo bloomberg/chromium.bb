@@ -23,6 +23,7 @@ class MockWebURLLoader : public blink::WebURLLoader {
                                         blink::WebURLLoaderClient* client));
   MOCK_METHOD0(cancel, void());
   MOCK_METHOD1(setDefersLoading, void(bool value));
+  MOCK_METHOD1(setLoadingTaskRunner, void(blink::WebTaskRunner* task_runner));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockWebURLLoader);

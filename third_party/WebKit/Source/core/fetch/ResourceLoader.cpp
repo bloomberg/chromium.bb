@@ -142,6 +142,7 @@ void ResourceLoader::start()
 
     m_loader = adoptPtr(Platform::current()->createURLLoader());
     ASSERT(m_loader);
+    m_loader->setLoadingTaskRunner(m_fetcher->loadingTaskRunner());
     WrappedResourceRequest wrappedRequest(m_request);
     m_loader->loadAsynchronously(wrappedRequest, this);
 }
