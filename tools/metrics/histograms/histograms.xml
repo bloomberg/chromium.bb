@@ -54592,6 +54592,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="15" label="Open link in a new window"/>
   <int value="16" label="Print"/>
   <int value="17" label="Search web for..."/>
+  <int value="18" label="Save media as"/>
 </enum>
 
 <enum name="CookieDeletionCause" type="int">
