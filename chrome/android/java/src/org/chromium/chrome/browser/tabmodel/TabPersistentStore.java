@@ -8,11 +8,11 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.os.StrictMode;
 import android.text.TextUtils;
-import android.util.Log;
 import android.util.Pair;
 import android.util.SparseIntArray;
 
 import org.chromium.base.ImportantFileWriterAndroid;
+import org.chromium.base.Log;
 import org.chromium.base.StreamUtil;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
@@ -232,6 +232,9 @@ public class TabPersistentStore extends TabPersister {
         // Temporarily allowing disk access. TODO: Fix. See http://b/5518024
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
         try {
+            // The list of tabs should be saved first in case our activity is terminated early.
+            saveTabList();
+
             // Add current tabs to save because they did not get a save signal yet.
             Tab currentStandardTab = TabModelUtils.getCurrentTab(mTabModelSelector.getModel(false));
             if (currentStandardTab != null && !mTabsToSave.contains(currentStandardTab)
@@ -264,9 +267,6 @@ public class TabPersistentStore extends TabPersister {
 
                 mSaveTabTask = null;
             }
-
-            // The list of tabs should be saved first in case our activity is terminated early.
-            saveTabList();
 
             // Synchronously save any remaining unsaved tabs (hopefully very few).
             for (Tab tab : mTabsToSave) {
@@ -589,6 +589,9 @@ public class TabPersistentStore extends TabPersister {
         stream.writeInt(numTabsTotal);
         stream.writeInt(incognitoList.index());
         stream.writeInt(standardList.index() + incognitoList.getCount());
+        Log.d(TAG, "Serializing tab lists; counts: "
+                + standardList.getCount() + "," + incognitoList.getCount());
+
         // Save incognito state first, so when we load, if the incognito files are unreadable
         // we can fall back easily onto the standard selected tab.
         for (int i = 0; i < incognitoList.getCount(); i++) {
@@ -821,6 +824,8 @@ public class TabPersistentStore extends TabPersister {
             cleanupPersistentData();
             onStateLoaded();
             mLoadTabTask = null;
+            Log.d(TAG, "Loaded tab lists; counts: " + mTabModelSelector.getModel(false).getCount()
+                    + "," + mTabModelSelector.getModel(true).getCount());
         } else {
             TabRestoreDetails tabToRestore = mTabsToRestore.removeFirst();
             mLoadTabTask = new LoadTabTask(tabToRestore);

@@ -280,6 +280,9 @@ public class TabModelImpl extends TabModelJniBridge {
             }
         }
 
+        // Re-save the tab list now that it is being kept.
+        mTabSaver.addTabToSaveQueue(tab);
+
         for (TabModelObserver obs : mObservers) obs.tabClosureUndone(tab);
     }
 
