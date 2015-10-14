@@ -21,4 +21,10 @@ DataUse::DataUse(const GURL& url,
       tx_bytes(tx_bytes),
       rx_bytes(rx_bytes) {}
 
+bool DataUse::CanCombineWith(const DataUse& other) const {
+  return url == other.url && request_time == other.request_time &&
+         first_party_for_cookies == other.first_party_for_cookies &&
+         tab_id == other.tab_id && connection_type == other.connection_type;
+}
+
 }  // namespace data_usage

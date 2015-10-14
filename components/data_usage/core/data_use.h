@@ -22,6 +22,9 @@ struct DataUse {
           int64_t tx_bytes,
           int64_t rx_bytes);
 
+  // Returns true if |this| and |other| are identical except for byte counts.
+  bool CanCombineWith(const DataUse& other) const;
+
   GURL url;
   // The time when the request that is associated with these bytes was started.
   base::Time request_time;

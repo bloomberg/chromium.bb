@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
 #include "components/data_usage/core/data_use.h"
@@ -50,11 +51,28 @@ class DataUseAggregator {
   // Virtual for testing.
   virtual void ReportOffTheRecordDataUse(int64_t tx_bytes, int64_t rx_bytes);
 
+  base::WeakPtr<DataUseAggregator> GetWeakPtr();
+
  private:
-  void NotifyDataUse(const std::vector<DataUse>& data_use_sequence);
+  // Flush any buffered data use and notify observers.
+  void FlushBufferedDataUse();
 
   base::ThreadChecker thread_checker_;
   base::ObserverList<Observer> observer_list_;
+
+  // Buffer of unreported data use.
+  std::vector<DataUse> buffered_data_use_;
+
+  // The total amount of off-the-record data usage that has happened since the
+  // last time the buffer was flushed.
+  int64_t off_the_record_tx_bytes_since_last_flush_;
+  int64_t off_the_record_rx_bytes_since_last_flush_;
+
+  // Indicates if a FlushBufferedDataUse() callback has been posted to run later
+  // on the IO thread.
+  bool is_flush_pending_;
+
+  base::WeakPtrFactory<DataUseAggregator> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DataUseAggregator);
 };
