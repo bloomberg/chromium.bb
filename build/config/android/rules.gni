@@ -1237,14 +1237,6 @@ template("android_apk") {
                  " of the Chromium linker.")
     }
 
-    _enable_relocation_packing = false
-    if (defined(invoker.enable_relocation_packing) &&
-        invoker.enable_relocation_packing) {
-      _enable_relocation_packing = relocation_packing_supported
-      assert(_use_chromium_linker,
-             "Relocation packing requires use of the" + " Chromium linker.")
-    }
-
     if (is_component_build) {
       _native_libs += [ "$root_shlib_dir/libc++_shared.so" ]
       _chromium_linker_dep += [ "//build/android:cpplib_stripped" ]
@@ -1478,9 +1470,10 @@ template("android_apk") {
       inputs += [ _build_config ]
       deps += [ ":$build_config_target" ]
 
+      rebased_gdbserver = rebase_path(android_gdbserver, root_build_dir)
       skip_packing_list = [
-        "gdbserver",
-        "libchromium_android_linker$shlib_extension",
+        rebased_gdbserver,
+        "libchromium_android_linker.so",
       ]
 
       enable_packing_arg = 0
@@ -1509,7 +1502,6 @@ template("android_apk") {
       }
 
       if (is_debug) {
-        rebased_gdbserver = rebase_path([ android_gdbserver ], root_build_dir)
         inputs += [ android_gdbserver ]
         args += [ "--libraries=$rebased_gdbserver" ]
       }

@@ -20,7 +20,6 @@ irrespective of any --enable-packing setting.  Typically this would be
 
 import optparse
 import os
-import shlex
 import shutil
 import sys
 import tempfile
@@ -69,7 +68,8 @@ def main(args):
   options, _ = parser.parse_args(args)
   enable_packing = (options.enable_packing == '1' and
                     options.configuration_name == 'Release')
-  exclude_packing_set = set(shlex.split(options.exclude_packing_list))
+  exclude_packing_set = set(build_utils.ParseGypList(
+      options.exclude_packing_list))
 
   libraries = []
   for libs_arg in options.libraries:
