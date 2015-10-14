@@ -25,7 +25,9 @@ public:
 private:
     CSSValueNonInterpolableValue(PassRefPtrWillBeRawPtr<CSSValue> cssValue)
         : m_cssValue(cssValue)
-    { }
+    {
+        ASSERT(m_cssValue);
+    }
 
     RefPtrWillBePersistent<CSSValue> m_cssValue;
 };
@@ -35,14 +37,15 @@ DEFINE_NON_INTERPOLABLE_VALUE_TYPE_CASTS(CSSValueNonInterpolableValue);
 
 PassOwnPtr<InterpolationValue> CSSValueInterpolationType::maybeConvertSingle(const CSSPropertySpecificKeyframe& keyframe, const StyleResolverState*, ConversionCheckers&) const
 {
+    if (keyframe.isNeutral())
+        return nullptr;
+
     return InterpolationValue::create(*this, InterpolableList::create(0), CSSValueNonInterpolableValue::create(keyframe.value()));
 }
 
 void CSSValueInterpolationType::apply(const InterpolableValue&, const NonInterpolableValue* nonInterpolableValue, StyleResolverState& state) const
 {
-    CSSValue* value = toCSSValueNonInterpolableValue(nonInterpolableValue)->cssValue();
-    if (value)
-        StyleBuilder::applyProperty(m_property, state, value);
+    StyleBuilder::applyProperty(m_property, state, toCSSValueNonInterpolableValue(nonInterpolableValue)->cssValue());
 }
 
 } // namespace blink
