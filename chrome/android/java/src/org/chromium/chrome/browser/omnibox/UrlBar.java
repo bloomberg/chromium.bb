@@ -10,6 +10,7 @@ import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.graphics.Canvas;
+import android.graphics.Paint;
 import android.graphics.Rect;
 import android.os.SystemClock;
 import android.text.Editable;
@@ -18,6 +19,7 @@ import android.text.Selection;
 import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.text.style.ReplacementSpan;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
 import android.view.KeyEvent;
@@ -32,6 +34,7 @@ import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputConnectionWrapper;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.SysUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.UrlUtilities;
@@ -52,6 +55,11 @@ import java.net.URL;
  */
 public class UrlBar extends VerticallyFixedEditText {
     private static final String TAG = "UrlBar";
+
+    // TextView becomes very slow on long strings, so we limit maximum length
+    // of what is displayed to the user, see limitDisplayableLength().
+    private static final int MAX_DISPLAYABLE_LENGHT = 4000;
+    private static final int MAX_DISPLAYABLE_LENGHT_LOW_END = 1000;
 
     /** The contents of the URL that precede the path/query after being formatted. */
     private String mFormattedUrlLocation;
@@ -759,6 +767,7 @@ public class UrlBar extends VerticallyFixedEditText {
         // URL is being edited).
         if (!TextUtils.equals(getEditableText(), text)) {
             super.setText(text, type);
+            limitDisplayableLength();
             mAccessibilityTextOverride = null;
         }
 
@@ -782,6 +791,25 @@ public class UrlBar extends VerticallyFixedEditText {
                 }
             }
         }
+    }
+
+    private void limitDisplayableLength() {
+        // To limit displayable length we replace middle portion of the string with ellipsis.
+        // That affects only presentation of the text, and doesn't affect other aspects like
+        // copying to the clipboard, getting text with getText(), etc.
+        final int maxLength = SysUtils.isLowEndDevice()
+                ? MAX_DISPLAYABLE_LENGHT_LOW_END : MAX_DISPLAYABLE_LENGHT;
+
+        Editable text = getText();
+        int textLength = text.length();
+        if (textLength <= maxLength) return;
+
+        int spanLeft = text.nextSpanTransition(0, textLength, EllipsisSpan.class);
+        if (spanLeft != textLength) return;
+
+        spanLeft = maxLength / 2;
+        text.setSpan(EllipsisSpan.INSTANCE, spanLeft, textLength - spanLeft,
+                Editable.SPAN_INCLUSIVE_EXCLUSIVE);
     }
 
     /**
@@ -1000,6 +1028,28 @@ public class UrlBar extends VerticallyFixedEditText {
             getText().removeSpan(this);
             mAutocompleteText = null;
             mUserText = null;
+        }
+    }
+
+    /**
+     * Span that displays ellipsis instead of the text. Used to hide portion of
+     * very large string to get decent performance from TextView.
+     */
+    private static class EllipsisSpan extends ReplacementSpan {
+        private static final String ELLIPSIS = "...";
+
+        public static final EllipsisSpan INSTANCE = new EllipsisSpan();
+
+        @Override
+        public int getSize(Paint paint, CharSequence text,
+                int start, int end, Paint.FontMetricsInt fm) {
+            return (int) paint.measureText(ELLIPSIS);
+        }
+
+        @Override
+        public void draw(Canvas canvas, CharSequence text, int start, int end,
+                float x, int top, int y, int bottom, Paint paint) {
+            canvas.drawText(ELLIPSIS, x, y, paint);
         }
     }
 }

@@ -4,6 +4,9 @@
 
 package org.chromium.chrome.browser.omnibox;
 
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.content.Intent;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.text.Editable;
@@ -30,6 +33,12 @@ import java.util.concurrent.atomic.AtomicReference;
  * Tests for the URL bar UI component.
  */
 public class UrlBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
+
+    // 9000+ chars of goodness
+    private static final String HUGE_URL =
+            "data:text/plain,H"
+            + new String(new char[9000]).replace('\0', 'u')
+            + "ge!";
 
     public UrlBarTest() {
         super(ChromeActivity.class);
@@ -536,6 +545,46 @@ public class UrlBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
         assertNotNull(urlBar);
         OmniboxTestUtils.toggleUrlBarFocus(urlBar, true);
         assertTrue(OmniboxTestUtils.waitForFocusAndKeyboardActive(urlBar, true));
+    }
+
+    @SmallTest
+    @Feature({"Omnibox"})
+    public void testCopyHuge() throws InterruptedException {
+        startMainActivityWithURL(HUGE_URL);
+        OmniboxTestUtils.toggleUrlBarFocus(getUrlBar(), true);
+        assertEquals(HUGE_URL, copyUrlToClipboard(android.R.id.copy));
+    }
+
+    @SmallTest
+    @Feature({"Omnibox"})
+    public void testCutHuge() throws InterruptedException {
+        startMainActivityWithURL(HUGE_URL);
+        OmniboxTestUtils.toggleUrlBarFocus(getUrlBar(), true);
+        assertEquals(HUGE_URL, copyUrlToClipboard(android.R.id.cut));
+    }
+
+    /**
+     * Clears the clipboard, executes specified action on the omnibox and
+     * returns clipboard's content. Action can be either android.R.id.copy
+     * or android.R.id.cut.
+     */
+    private String copyUrlToClipboard(final int action) {
+        ClipboardManager clipboardManager = (ClipboardManager)
+                getActivity().getSystemService(Context.CLIPBOARD_SERVICE);
+
+        clipboardManager.setPrimaryClip(ClipData.newPlainText(null, ""));
+
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                assertTrue(getUrlBar().onTextContextMenuItem(action));
+            }
+        });
+
+        ClipData clip = clipboardManager.getPrimaryClip();
+        CharSequence text = (clip != null && clip.getItemCount() != 0)
+                ? clip.getItemAt(0).getText() : null;
+        return text != null ? text.toString() : null;
     }
 
     @Override
