@@ -184,12 +184,6 @@ class TabStripModel {
       int index,
       content::WebContents* new_contents);
 
-  // Destroys the WebContents at the specified index, but keeps the tab
-  // visible in the tab strip. Used to free memory in low-memory conditions,
-  // especially on Chrome OS. The tab reloads if the user clicks on it.
-  // Returns the new empty WebContents, used only for testing.
-  content::WebContents* DiscardWebContentsAt(int index);
-
   // Detaches the WebContents at the specified index from this strip. The
   // WebContents is not destroyed, just removed from display. The caller
   // is responsible for doing something with it (e.g. stuffing it into another

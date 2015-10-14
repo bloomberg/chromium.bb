@@ -232,6 +232,7 @@ void TabStripModel::WebContentsData::WebContentsDestroyed() {
 }
 
 void TabStripModel::WebContentsData::DidStartLoading() {
+  // TODO(georgesak): move this into tab_manager.cc.
   memory::TabDiscardState::SetDiscardState(contents_, false);
 }
 
@@ -360,39 +361,6 @@ WebContents* TabStripModel::ReplaceWebContentsAt(int index,
                          TabStripModelObserver::CHANGE_REASON_REPLACED));
   }
   return old_contents;
-}
-
-WebContents* TabStripModel::DiscardWebContentsAt(int index) {
-  DCHECK(ContainsIndex(index));
-  // Do not discard active tab.
-  if (active_index() == index)
-    return NULL;
-
-  WebContents* null_contents =
-      WebContents::Create(WebContents::CreateParams(profile()));
-  WebContents* old_contents = GetWebContentsAtImpl(index);
-  // Copy over the state from the navigation controller so we preserve the
-  // back/forward history and continue to display the correct title/favicon.
-  null_contents->GetController().CopyStateFrom(old_contents->GetController());
-
-  // Make sure we persist the last active time property.
-  null_contents->SetLastActiveTime(old_contents->GetLastActiveTime());
-  // Copy over the discard count.
-  memory::TabDiscardState::CopyState(old_contents, null_contents);
-
-  // Replace the tab we're discarding with the null version.
-  ReplaceWebContentsAt(index, null_contents);
-  // Mark the tab so it will reload when we click.
-  if (!memory::TabDiscardState::IsDiscarded(null_contents)) {
-    memory::TabDiscardState::SetDiscardState(null_contents, true);
-    memory::TabDiscardState::IncrementDiscardCount(null_contents);
-  }
-  // Discard the old tab's renderer.
-  // TODO(jamescook): This breaks script connections with other tabs.
-  // We need to find a different approach that doesn't do that, perhaps based
-  // on navigation to swappedout://.
-  delete old_contents;
-  return null_contents;
 }
 
 WebContents* TabStripModel::DetachWebContentsAt(int index) {
@@ -1299,6 +1267,7 @@ void TabStripModel::NotifyIfActiveTabChanged(WebContents* old_contents,
                          active_index(),
                          reason));
     in_notify_ = false;
+    // TODO(georgesak): move this into tab_manager.cc.
     memory::TabDiscardState::SetDiscardState(new_contents, false);
   }
 }

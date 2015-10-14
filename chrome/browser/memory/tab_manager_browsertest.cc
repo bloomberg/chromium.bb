@@ -24,7 +24,6 @@ using content::OpenURLParams;
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
 
 namespace memory {
-namespace {
 
 class TabManagerTest : public InProcessBrowserTest {
  public:
@@ -119,7 +118,7 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, TabManagerBasics) {
   tsm->ActivateTabAt(1, true);
   EXPECT_EQ(1, tsm->active_index());
   EXPECT_FALSE(memory::TabDiscardState::IsDiscarded(tsm->GetWebContentsAt(1)));
-  tsm->DiscardWebContentsAt(2);
+  tab_manager->DiscardWebContentsAt(2, tsm);
   EXPECT_TRUE(memory::TabDiscardState::IsDiscarded(tsm->GetWebContentsAt(2)));
 
   // Force creation of the FindBarController.
@@ -217,7 +216,6 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, OomPressureListener) {
   EXPECT_TRUE(tab_manager->recent_tab_discard());
 }
 
-}  // namespace
 }  // namespace memory
 
 #endif  // OS_WIN || OS_CHROMEOS

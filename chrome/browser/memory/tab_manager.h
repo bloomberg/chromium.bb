@@ -21,6 +21,10 @@
 class BrowserList;
 class GURL;
 
+namespace content {
+class WebContents;
+}
+
 namespace memory {
 
 #if defined(OS_CHROMEOS)
@@ -72,7 +76,7 @@ class TabManager : public TabStripModelObserver {
   // Discards a tab with the given unique ID. The tab still exists in the
   // tab-strip; clicking on it will reload it. Returns true if it successfully
   // found a tab and discarded it.
-  bool DiscardTabById(int64 target_web_contents_id);
+  content::WebContents* DiscardTabById(int64 target_web_contents_id);
 
   // Log memory statistics for the running processes, then discards a tab.
   // Tab discard happens sometime later, as collecting the statistics touches
@@ -84,7 +88,11 @@ class TabManager : public TabStripModelObserver {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, Comparator);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerTest, DiscardedTabKeepsLastActiveTime);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerTest, DiscardWebContentsAt);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, IsInternalPage);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerTest, ReloadDiscardedTabContextMenu);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerTest, TabManagerBasics);
 
   static void PurgeMemoryAndDiscardTab();
 
@@ -92,13 +100,13 @@ class TabManager : public TabStripModelObserver {
   // can be easily reloaded and hence makes a good choice to discard.
   static bool IsInternalPage(const GURL& url);
 
-  // Records UMA histogram statistics for a tab discard. We record statistics
-  // for user triggered discards via chrome://discards/ because that allows us
-  // to manually test the system.
+  // Records UMA histogram statistics for a tab discard. Record statistics for
+  // user triggered discards via chrome://discards/ because that allows to
+  // manually test the system.
   void RecordDiscardStatistics();
 
-  // Record whether we ran out of memory during a recent time interval.
-  // This allows us to normalize low memory statistics versus usage.
+  // Record whether an out of memory occured during a recent time interval. This
+  // allows the normalization of low memory statistics versus usage.
   void RecordRecentTabDiscard();
 
   // Purges data structures in the browser that can be easily recomputed.
@@ -108,7 +116,7 @@ class TabManager : public TabStripModelObserver {
   int GetTabCount() const;
 
   // Adds all the stats of the tabs in |browser_list| into |stats_list|. If
-  // |active_desktop| is true, we consider its first window as being active.
+  // |active_desktop| is true, consider its first window as being active.
   void AddTabStats(BrowserList* browser_list,
                    bool active_desktop,
                    TabStatsList* stats_list);
@@ -121,6 +129,11 @@ class TabManager : public TabStripModelObserver {
   // the automatic tab discarding mechanism. Note that this is not used when
   // discarding a particular tab from about:discards.
   bool CanDiscardTab(int64 target_web_contents_id) const;
+
+  // Does the actual discard by destroying the WebContents in |model| at |index|
+  // and replacing it by an empty one. Returns the new WebContents or NULL if
+  // the operation fails (return value used only in testing).
+  content::WebContents* DiscardWebContentsAt(int index, TabStripModel* model);
 
   // Called by the memory pressure listener when the memory pressure rises.
   void OnMemoryPressure(
@@ -160,14 +173,14 @@ class TabManager : public TabStripModelObserver {
   // times for discontinuities caused by suspend/resume.
   base::TimeTicks last_adjust_time_;
 
-  // Number of times we have discarded a tab, for statistics.
+  // Number of times a tab has been discarded, for statistics.
   int discard_count_;
 
   // Whether a tab discard event has occurred during the last time interval,
   // used for statistics normalized by usage.
   bool recent_tab_discard_;
 
-  // Whether we ever only discard a tab once.
+  // Whether a tab can only ever discarded once.
   bool discard_once_;
 
 #if defined(OS_CHROMEOS)
