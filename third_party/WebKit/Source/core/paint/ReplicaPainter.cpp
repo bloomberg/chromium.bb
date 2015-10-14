@@ -15,6 +15,10 @@ namespace blink {
 
 void ReplicaPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
+    // PaintLayerReflectionInfo should have set a transform on the LayoutReplica.
+    // Without it, we won't paint the reflection correctly.
+    ASSERT(m_layoutReplica.layer()->transform());
+
     if (paintInfo.phase != PaintPhaseForeground && paintInfo.phase != PaintPhaseMask)
         return;
 
@@ -23,7 +27,7 @@ void ReplicaPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintO
     if (paintInfo.phase == PaintPhaseForeground) {
         // Turn around and paint the parent layer. Use temporary clipRects, so that the layer doesn't end up caching clip rects
         // computing using the wrong rootLayer
-        PaintLayer* rootPaintingLayer = m_layoutReplica.layer()->transform() ? m_layoutReplica.layer()->parent() : m_layoutReplica.layer()->enclosingTransformedAncestor();
+        PaintLayer* rootPaintingLayer = m_layoutReplica.layer()->parent();
         PaintLayerPaintingInfo paintingInfo(rootPaintingLayer, LayoutRect(paintInfo.rect), GlobalPaintNormalPhase, LayoutSize(), 0);
         PaintLayerFlags flags = PaintLayerHaveTransparency | PaintLayerAppliedTransform | PaintLayerUncachedClipRects | PaintLayerPaintingReflection;
         PaintLayerPainter(*m_layoutReplica.layer()->parent()).paintLayer(paintInfo.context, paintingInfo, flags);

@@ -113,7 +113,7 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerContentsAndReflectio
     // Paint the reflection first if we have one.
     if (m_paintLayer.reflectionInfo()) {
         ScopeRecorder scopeRecorder(*context);
-        m_paintLayer.reflectionInfo()->paint(context, paintingInfo, localPaintFlags | PaintLayerPaintingReflection);
+        m_paintLayer.reflectionInfo()->paint(context, paintingInfo, localPaintFlags);
         result = MaybeNotFullyPainted;
     }
 

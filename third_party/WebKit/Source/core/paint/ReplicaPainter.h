@@ -13,6 +13,9 @@ struct PaintInfo;
 class LayoutPoint;
 class LayoutReplica;
 
+// ReplicaPainter is used to paint reflections.
+//
+// See LayoutReplica for more details on our implementation.
 class ReplicaPainter {
     STACK_ALLOCATED();
 public:

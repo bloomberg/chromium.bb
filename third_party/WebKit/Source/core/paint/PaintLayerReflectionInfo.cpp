@@ -136,7 +136,7 @@ void PaintLayerReflectionInfo::paint(GraphicsContext* context, const PaintLayerP
 
     // Mark that we are now inside replica painting.
     m_isPaintingInsideReflection = true;
-    PaintLayerPainter(*reflectionLayer()).paintLayer(context, paintingInfo, flags);
+    PaintLayerPainter(*reflectionLayer()).paintLayer(context, paintingInfo, flags | PaintLayerPaintingReflection);
     m_isPaintingInsideReflection = false;
 }
 

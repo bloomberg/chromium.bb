@@ -33,6 +33,28 @@
 
 namespace blink {
 
+// LayoutReplica is a synthetic object used to represent reflections.
+// https://www.webkit.org/blog/182/css-reflections/
+//
+// The object is part of the layout tree, however it is not fully inserted into
+// it: LayoutReplica::parent() will return the right information but the
+// parent's children() don't know about the LayoutReplica.
+// Note that its PaintLayer is fully inserted into the PaintLayer tree, which
+// requires some special casing in the painting code (e.g. in
+// PaintLayerStackingNode).
+//
+// LayoutReplica's parent() is the object with the -webkit-box-reflect.
+// LayoutReplica inherits its style from its parent() but also have an extra
+// 'transform' to paint the reflection correctly. This is done by
+// PaintLayerReflectionInfo.
+//
+// The object is created and managed by PaintLayerReflectionInfo. Also all of
+// its operations happen through PaintLayerReflectionInfo (e.g. layout, style
+// updates, ...).
+//
+// This class is a big hack. The original intent for it is unclear but has to do
+// with implementing the correct painting of reflection. It may be to apply a
+// 'transform' and offset during painting.
 class LayoutReplica final : public LayoutBox {
 public:
     static LayoutReplica* createAnonymous(Document*);
