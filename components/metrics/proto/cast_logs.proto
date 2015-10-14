@@ -146,7 +146,7 @@ message CastLogsProto {
     optional int64 value = 8;
 
     // An optional value for the multi-room group uuid.
-    optional int64 group_uuid = 10;
+    optional fixed64 group_uuid = 10;
   }
   repeated CastEventProto cast_event = 3;
 }
