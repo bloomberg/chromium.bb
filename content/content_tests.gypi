@@ -2153,6 +2153,27 @@
           ],
         },
       ],
+      'conditions': [
+        ['test_isolation_mode != "noop"',
+          {
+            'targets': [
+              {
+                'target_name': 'content_browsertests_apk_run',
+                'type': 'none',
+                'dependencies': [
+                  'content_browsertests_apk',
+                ],
+                'includes': [
+                  '../build/isolate.gypi',
+                ],
+                'sources': [
+                  'content_browsertests_apk.isolate',
+                ],
+              },
+            ]
+          }
+        ],
+      ],
     }],
   ],
 }
