@@ -330,11 +330,6 @@ class RemoteDeviceEnvironment(environment.Environment):
     return self._network_config
 
   @property
-  def only_output_failures(self): # pylint: disable=no-self-use
-    # TODO(jbudorick): Remove this once b/18981674 is fixed.
-    return True
-
-  @property
   def results_path(self):
     return self._results_path
 

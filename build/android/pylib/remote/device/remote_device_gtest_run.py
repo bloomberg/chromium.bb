@@ -75,8 +75,6 @@ class RemoteDeviceGtestTestRun(remote_device_test_run.RemoteDeviceTestRun):
               if l.startswith(self._INSTRUMENTATION_STREAM_LEADER))
     results_list = self._test_instance.ParseGTestOutput(output)
     results.AddResults(results_list)
-    if self._env.only_output_failures:
-      logging.info('See logcat for more results information.')
 
     self._DetectPlatformErrors(results)
     return results
