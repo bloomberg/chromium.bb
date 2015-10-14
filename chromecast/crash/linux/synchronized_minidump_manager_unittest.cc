@@ -100,6 +100,10 @@ class FakeSynchronizedMinidumpUploader : public SynchronizedMinidumpManager {
     return 0;
   }
 
+  bool LockFileHasDumps() {
+    return SynchronizedMinidumpManager::LockFileHasDumps();
+  }
+
   // Accessors for testing.
   bool can_upload_return_val() { return can_upload_return_val_; }
 
@@ -503,6 +507,37 @@ TEST_F(SynchronizedMinidumpManagerTest, UploadSucceedsAfterRateLimitPeriodEnd) {
 
   produce_dumps(producer, 1);
   consume_dumps(uploader, 1);
+}
+
+TEST_F(SynchronizedMinidumpManagerTest, LockFileHasDumpsWithoutDumps) {
+  FakeSynchronizedMinidumpUploader uploader;
+  ASSERT_FALSE(uploader.LockFileHasDumps());
+}
+
+TEST_F(SynchronizedMinidumpManagerTest, LockFileHasDumpsWithDumps) {
+  // Sample parameters.
+  time_t now = time(0);
+  MinidumpParams params;
+  params.process_name = "process";
+
+  SynchronizedMinidumpManagerSimple producer;
+  FakeSynchronizedMinidumpUploader uploader;
+
+  producer.SetDumpInfoToWrite(
+      make_scoped_ptr(new DumpInfo("dump1", "log1", now, params)));
+
+  const int kNumDumps = 3;
+  for (int i = 0; i < kNumDumps; ++i) {
+    produce_dumps(producer, 1);
+    ASSERT_TRUE(uploader.LockFileHasDumps());
+  }
+
+  for (int i = 0; i < kNumDumps; ++i) {
+    ASSERT_TRUE(uploader.LockFileHasDumps());
+    consume_dumps(uploader, 1);
+  }
+
+  ASSERT_FALSE(uploader.LockFileHasDumps());
 }
 
 }  // namespace chromecast

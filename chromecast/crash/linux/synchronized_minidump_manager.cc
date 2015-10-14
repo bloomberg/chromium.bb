@@ -403,4 +403,13 @@ bool SynchronizedMinidumpManager::CanUploadDump() {
   return period_dumps_count < kRatelimitPeriodMaxDumps;
 }
 
+bool SynchronizedMinidumpManager::LockFileHasDumps() {
+  int64 size = 0;
+  if (!GetFileSize(base::FilePath(lockfile_path_), &size)) {
+    return false;
+  }
+
+  return size > 0;
+}
+
 }  // namespace chromecast
