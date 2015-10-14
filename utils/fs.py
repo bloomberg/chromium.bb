@@ -117,12 +117,11 @@ def _is_path_fn(func):
 _os_fns = (
   'access', 'chdir', 'chflags', 'chroot', 'chmod', 'chown', 'lchflags',
   'lchmod', 'lchown', 'listdir', 'lstat', 'mknod', 'mkdir', 'makedirs',
-  'remove', 'removedirs', 'rmdir', 'stat', 'statvfs', 'unlink', 'utime', 'walk',
-)
+  'remove', 'removedirs', 'rmdir', 'stat', 'statvfs', 'unlink', 'utime')
 
 _os_path_fns = (
   'exists', 'lexists', 'getatime', 'getmtime', 'getctime', 'getsize', 'isfile',
-  'isdir', 'islink', 'ismount', 'walk')
+  'isdir', 'islink', 'ismount')
 
 
 for _fn in _os_fns:
