@@ -51,6 +51,7 @@ struct ShapeCacheEntry {
 };
 
 class ShapeCache {
+    WTF_MAKE_NONCOPYABLE(ShapeCache);
 private:
     // Used to optimize small strings as hash table keys. Avoids malloc'ing an out-of-line StringImpl.
     class SmallStringKey {
