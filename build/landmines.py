@@ -27,10 +27,7 @@ import clobber
 import landmine_utils
 
 
-SRC_DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-
-
-def get_build_dir(build_tool, is_iphone=False):
+def get_build_dir(build_tool, src_dir, is_iphone=False):
   """
   Returns output directory absolute path dependent on build and targets.
   Examples:
@@ -42,7 +39,7 @@ def get_build_dir(build_tool, is_iphone=False):
   """
   ret = None
   if build_tool == 'xcode':
-    ret = os.path.join(SRC_DIR, 'xcodebuild')
+    ret = os.path.join(src_dir, 'xcodebuild')
   elif build_tool in ['make', 'ninja', 'ninja-ios']:  # TODO: Remove ninja-ios.
     if 'CHROMIUM_OUT_DIR' in os.environ:
       output_dir = os.environ.get('CHROMIUM_OUT_DIR').strip()
@@ -50,16 +47,16 @@ def get_build_dir(build_tool, is_iphone=False):
         raise Error('CHROMIUM_OUT_DIR environment variable is set but blank!')
     else:
       output_dir = landmine_utils.gyp_generator_flags().get('output_dir', 'out')
-    ret = os.path.join(SRC_DIR, output_dir)
+    ret = os.path.join(src_dir, output_dir)
   else:
     raise NotImplementedError('Unexpected GYP_GENERATORS (%s)' % build_tool)
   return os.path.abspath(ret)
 
 
-def clobber_if_necessary(new_landmines):
+def clobber_if_necessary(new_landmines, src_dir):
   """Does the work of setting, planting, and triggering landmines."""
-  out_dir = get_build_dir(landmine_utils.builder())
-  landmines_path = os.path.normpath(os.path.join(out_dir, '..', '.landmines'))
+  out_dir = get_build_dir(landmine_utils.builder(), src_dir)
+  landmines_path = os.path.normpath(os.path.join(src_dir, '.landmines'))
   try:
     os.makedirs(out_dir)
   except OSError as e:
@@ -85,14 +82,16 @@ def clobber_if_necessary(new_landmines):
 
 
 def process_options():
-  """Returns a list of landmine emitting scripts."""
+  """Returns an options object containing the configuration for this script."""
   parser = optparse.OptionParser()
   parser.add_option(
       '-s', '--landmine-scripts', action='append',
-      default=[os.path.join(SRC_DIR, 'build', 'get_landmines.py')],
       help='Path to the script which emits landmines to stdout. The target '
            'is passed to this script via option -t. Note that an extra '
            'script can be specified via an env var EXTRA_LANDMINES_SCRIPT.')
+  parser.add_option('-d', '--src-dir',
+      help='Path of the source root dir. Overrides the default location of the '
+           'source root dir when calculating the build directory.')
   parser.add_option('-v', '--verbose', action='store_true',
       default=('LANDMINES_VERBOSE' in os.environ),
       help=('Emit some extra debugging information (default off). This option '
@@ -107,15 +106,27 @@ def process_options():
   logging.basicConfig(
       level=logging.DEBUG if options.verbose else logging.ERROR)
 
+  if options.src_dir:
+    if not os.path.isdir(options.src_dir):
+      parser.error('Cannot find source root dir at %s' % options.src_dir)
+    logging.debug('Overriding source root dir. Using: %s', options.src_dir)
+  else:
+    options.src_dir = \
+        os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+
+  if not options.landmine_scripts:
+    options.landmine_scripts = [os.path.join(options.src_dir, 'build',
+                                             'get_landmines.py')]
+
   extra_script = os.environ.get('EXTRA_LANDMINES_SCRIPT')
   if extra_script:
-    return options.landmine_scripts + [extra_script]
-  else:
-    return options.landmine_scripts
+    options.landmine_scripts += [extra_script]
+
+  return options
 
 
 def main():
-  landmine_scripts = process_options()
+  options = process_options()
 
   if landmine_utils.builder() in ('dump_dependency_json', 'eclipse'):
     return 0
@@ -123,11 +134,11 @@ def main():
   gyp_environment.SetEnvironment()
 
   landmines = []
-  for s in landmine_scripts:
+  for s in options.landmine_scripts:
     proc = subprocess.Popen([sys.executable, s], stdout=subprocess.PIPE)
     output, _ = proc.communicate()
     landmines.extend([('%s\n' % l.strip()) for l in output.splitlines()])
-  clobber_if_necessary(landmines)
+  clobber_if_necessary(landmines, options.src_dir)
 
   return 0
 
