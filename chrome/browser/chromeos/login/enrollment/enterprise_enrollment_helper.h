@@ -72,6 +72,16 @@ class EnterpriseEnrollmentHelper {
       const policy::EnrollmentConfig& enrollment_config,
       const std::string& enrolling_user_domain);
 
+  using CreateMockEnrollmentHelper = EnterpriseEnrollmentHelper* (*)(
+      EnrollmentStatusConsumer* status_consumer,
+      const policy::EnrollmentConfig& enrollment_config,
+      const std::string& enrolling_user_domain);
+
+  // Use |creator| instead of the default enrollment helper allocator. This
+  // allows tests to substitute in a mock enrollment helper. This function will
+  // only be used once.
+  static void SetupEnrollmentHelperMock(CreateMockEnrollmentHelper creator);
+
   virtual ~EnterpriseEnrollmentHelper();
 
   // Starts enterprise enrollment using |auth_code|. First tries to exchange the
@@ -118,6 +128,10 @@ class EnterpriseEnrollmentHelper {
 
  private:
   EnrollmentStatusConsumer* status_consumer_;
+
+  // If this is not nullptr, then it will be used to create the enrollment
+  // helper. |create_mock_enrollment_helper_| needs to outlive this class.
+  static CreateMockEnrollmentHelper create_mock_enrollment_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(EnterpriseEnrollmentHelper);
 };

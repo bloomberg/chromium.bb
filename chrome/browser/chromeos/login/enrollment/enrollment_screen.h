@@ -94,6 +94,12 @@ class EnrollmentScreen
 
  private:
   FRIEND_TEST_ALL_PREFIXES(EnrollmentScreenTest, TestSuccess);
+  FRIEND_TEST_ALL_PREFIXES(EnterpriseEnrollmentTest,
+                           TestProperPageGetsLoadedOnEnrollmentSuccess);
+  FRIEND_TEST_ALL_PREFIXES(EnterpriseEnrollmentTest,
+                           TestAttributePromptPageGetsLoaded);
+  FRIEND_TEST_ALL_PREFIXES(EnterpriseEnrollmentTest,
+                           TestAuthCodeGetsProperlyReceivedFromGaia);
 
   // Creates an enrollment helper.
   void CreateEnrollmentHelper();

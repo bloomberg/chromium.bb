@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_helper.h"
@@ -43,6 +44,11 @@ class EnterpriseEnrollmentHelperImpl : public EnterpriseEnrollmentHelper {
                               const std::string& location) override;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(EnterpriseEnrollmentTest,
+                           TestProperPageGetsLoadedOnEnrollmentSuccess);
+  FRIEND_TEST_ALL_PREFIXES(EnterpriseEnrollmentTest,
+                           TestAttributePromptPageGetsLoaded);
+
   void DoEnrollUsingToken(const std::string& token);
 
   // Handles completion of the OAuth2 token fetch attempt.
