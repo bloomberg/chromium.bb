@@ -225,6 +225,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         bug=536887)
 
     # Linux only.
+    self.Skip('deqp/functional/gles3/shaderswitch.html',
+        ['linux'], bug=483282)
     self.Fail('conformance2/glsl3/vector-dynamic-indexing.html',
         ['linux'], bug=483282)
     self.Fail('conformance2/rendering/draw-buffers.html',
@@ -233,13 +235,24 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux'], bug=483282)
     self.Fail('conformance2/state/gl-object-get-calls.html',
         ['linux'], bug=483282)
-    # Linux NVIDIA only.
-    self.Skip('deqp/functional/gles3/shaderswitch.html',
-        ['linux', 'nvidia'], bug=483282)
-    # Linux AMD only (but fails on all Linux, so not specified as AMD specific)
+
+    # Linux AMD only.
     # It looks like AMD shader compiler rejects many valid ES3 semantics.
-    self.Skip('deqp/data/gles3/shaders/arrays.html', ['linux'], bug=483282)
+    self.Skip('deqp/data/gles3/shaders/arrays.html',
+        ['linux', 'amd'], bug=483282)
     self.Skip('deqp/data/gles3/shaders/constant_expressions.html',
-        ['linux'], bug=483282)
+        ['linux', 'amd'], bug=483282)
     self.Skip('deqp/data/gles3/shaders/qualification_order.html',
-        ['linux'], bug=483282)
+        ['linux', 'amd'], bug=483282)
+    self.Skip('deqp/functional/gles3/texturestatequery.html',
+        ['linux', 'amd'], bug=483282)
+    self.Fail('conformance2/attribs/gl-vertex-attrib-i-render.html',
+        ['linux', 'amd'], bug=483282)
+    self.Fail('conformance2/attribs/gl-vertexattribipointer-offsets.html',
+        ['linux', 'amd'], bug=483282)
+    self.Fail('conformance2/buffers/buffer-type-restrictions.html',
+        ['linux', 'amd'], bug=483282)
+    self.Fail('conformance2/buffers/buffer-overflow-test.html',
+        ['linux', 'amd'], bug=483282)
+    self.Fail('conformance2/textures/misc/tex-storage-compressed-formats.html',
+        ['linux', 'amd'], bug=483282)
