@@ -244,10 +244,21 @@ void discardSystemPages(void* addr, size_t len)
     // decommitSystemPages() here to avoid code duplication.
     decommitSystemPages(addr, len);
 #else
-    (void) addr;
-    (void) len;
-    // TODO(cevans): implement this using MEM_RESET for Windows, once we've
-    // decided that the semantics are a match.
+    // On Windows discarded pages are not returned to the system immediately and
+    // not guaranteed to be zeroed when returned to the application.
+    using DiscardVirtualMemoryFunction = DWORD(WINAPI*)(PVOID virtualAddress, SIZE_T size);
+    static DiscardVirtualMemoryFunction discardVirtualMemory = reinterpret_cast<DiscardVirtualMemoryFunction>(-1);
+    if (discardVirtualMemory == reinterpret_cast<DiscardVirtualMemoryFunction>(-1))
+        discardVirtualMemory = reinterpret_cast<DiscardVirtualMemoryFunction>(GetProcAddress(GetModuleHandle(L"Kernel32.dll"), "DiscardVirtualMemory"));
+    // Use DiscardVirtualMemory when available because it releases faster than MEM_RESET.
+    DWORD ret = 1;
+    if (discardVirtualMemory)
+        ret = discardVirtualMemory(addr, len);
+    // DiscardVirtualMemory is buggy in Win10 SP0, so fall back to MEM_RESET on failure.
+    if (ret) {
+        void* ret = VirtualAlloc(addr, len, MEM_RESET, PAGE_READWRITE);
+        RELEASE_ASSERT(ret);
+    }
 #endif
 }
 
