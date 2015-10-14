@@ -197,9 +197,15 @@ class TabTest : public views::ViewsTestBase,
                   tab.close_button_->bounds().x() +
                       tab.close_button_->GetInsets().left());
       }
-      EXPECT_LE(tab.close_button_->bounds().right(), contents_bounds.right());
-      EXPECT_LE(contents_bounds.y(), tab.close_button_->bounds().y());
-      EXPECT_LE(tab.close_button_->bounds().bottom(), contents_bounds.bottom());
+      // We need to use the close button contents bounds instead of its bounds,
+      // since it has an empty border around it to extend its clickable area for
+      // touch.
+      // Note: The close button right edge can be outside the nominal contents
+      // bounds, but shouldn't leave the local bounds.
+      const gfx::Rect close_bounds = tab.close_button_->GetContentsBounds();
+      EXPECT_LE(close_bounds.right(), tab.GetLocalBounds().right());
+      EXPECT_LE(contents_bounds.y(), close_bounds.y());
+      EXPECT_LE(close_bounds.bottom(), contents_bounds.bottom());
     }
   }
 

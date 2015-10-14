@@ -390,6 +390,8 @@ Tab::Tab(TabController* controller)
 
   set_id(VIEW_ID_TAB);
 
+  SetBorder(views::Border::CreateEmptyBorder(GetLayoutInsets(TAB)));
+
   title_->SetHorizontalAlignment(gfx::ALIGN_TO_HEAD);
   title_->SetElideBehavior(gfx::FADE_TAIL);
   title_->SetHandlesTooltips(false);
@@ -779,7 +781,7 @@ void Tab::OnPaint(gfx::Canvas* canvas) {
 }
 
 void Tab::Layout() {
-  gfx::Rect lb = GetInteriorBounds();
+  gfx::Rect lb = GetContentsBounds();
   if (lb.IsEmpty())
     return;
 
@@ -1346,7 +1348,7 @@ void Tab::PaintIcon(gfx::Canvas* canvas) {
   gfx::Rect bounds = favicon_bounds_;
   bounds.set_x(GetMirroredXForRect(bounds));
   bounds.Offset(0, favicon_hiding_offset_);
-  bounds.Intersect(GetInteriorBounds());
+  bounds.Intersect(GetContentsBounds());
   if (bounds.IsEmpty())
     return;
 
@@ -1519,12 +1521,6 @@ void Tab::ScheduleIconPaint() {
     bounds.set_height(height() - bounds.y());
   bounds.set_x(GetMirroredXForRect(bounds));
   SchedulePaintInRect(bounds);
-}
-
-gfx::Rect Tab::GetInteriorBounds() const {
-  gfx::Rect bounds(GetContentsBounds());
-  bounds.Inset(GetLayoutInsets(TAB));
-  return bounds;
 }
 
 gfx::Rect Tab::GetImmersiveBarRect() const {

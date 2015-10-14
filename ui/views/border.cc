@@ -15,9 +15,9 @@ namespace views {
 namespace {
 
 // A simple border with different thicknesses on each side and single color.
-class SidedSolidBorder : public Border {
+class SolidSidedBorder : public Border {
  public:
-  SidedSolidBorder(int top, int left, int bottom, int right, SkColor color);
+  SolidSidedBorder(const gfx::Insets& insets, SkColor color);
 
   // Overridden from Border:
   void Paint(const View& view, gfx::Canvas* canvas) override;
@@ -25,22 +25,18 @@ class SidedSolidBorder : public Border {
   gfx::Size GetMinimumSize() const override;
 
  private:
-  const SkColor color_;
   const gfx::Insets insets_;
+  const SkColor color_;
 
-  DISALLOW_COPY_AND_ASSIGN(SidedSolidBorder);
+  DISALLOW_COPY_AND_ASSIGN(SolidSidedBorder);
 };
 
-SidedSolidBorder::SidedSolidBorder(int top,
-                                   int left,
-                                   int bottom,
-                                   int right,
-                                   SkColor color)
-    : color_(color),
-      insets_(top, left, bottom, right) {
+SolidSidedBorder::SolidSidedBorder(const gfx::Insets& insets, SkColor color)
+    : insets_(insets),
+      color_(color) {
 }
 
-void SidedSolidBorder::Paint(const View& view, gfx::Canvas* canvas) {
+void SolidSidedBorder::Paint(const View& view, gfx::Canvas* canvas) {
   // Top border.
   canvas->FillRect(gfx::Rect(0, 0, view.width(), insets_.top()), color_);
   // Left border.
@@ -55,36 +51,22 @@ void SidedSolidBorder::Paint(const View& view, gfx::Canvas* canvas) {
                    color_);
 }
 
-gfx::Insets SidedSolidBorder::GetInsets() const {
+gfx::Insets SolidSidedBorder::GetInsets() const {
   return insets_;
 }
 
-gfx::Size SidedSolidBorder::GetMinimumSize() const {
+gfx::Size SolidSidedBorder::GetMinimumSize() const {
   return gfx::Size(insets_.width(), insets_.height());
 }
 
-// A variation of SidedSolidBorder, where each side has the same thickness.
-class SolidBorder : public SidedSolidBorder {
- public:
-  SolidBorder(int thickness, SkColor color)
-      : SidedSolidBorder(thickness, thickness, thickness, thickness, color) {
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SolidBorder);
-};
-
 class EmptyBorder : public Border {
  public:
-  EmptyBorder(int top, int left, int bottom, int right)
-      : insets_(top, left, bottom, right) {}
+  explicit EmptyBorder(const gfx::Insets& insets);
 
   // Overridden from Border:
-  void Paint(const View& view, gfx::Canvas* canvas) override {}
-
-  gfx::Insets GetInsets() const override { return insets_; }
-
-  gfx::Size GetMinimumSize() const override { return gfx::Size(); }
+  void Paint(const View& view, gfx::Canvas* canvas) override;
+  gfx::Insets GetInsets() const override ;
+  gfx::Size GetMinimumSize() const override;
 
  private:
   const gfx::Insets insets_;
@@ -92,26 +74,28 @@ class EmptyBorder : public Border {
   DISALLOW_COPY_AND_ASSIGN(EmptyBorder);
 };
 
+EmptyBorder::EmptyBorder(const gfx::Insets& insets) : insets_(insets) {
+}
+
+void EmptyBorder::Paint(const View& view, gfx::Canvas* canvas) {
+}
+
+gfx::Insets EmptyBorder::GetInsets() const {
+  return insets_;
+}
+
+gfx::Size EmptyBorder::GetMinimumSize() const {
+  return gfx::Size();
+}
+
 class BorderPainter : public Border {
  public:
-  explicit BorderPainter(Painter* painter, const gfx::Insets& insets)
-      : painter_(painter),
-        insets_(insets) {
-    DCHECK(painter);
-  }
-
-  ~BorderPainter() override {}
+  BorderPainter(Painter* painter, const gfx::Insets& insets);
 
   // Overridden from Border:
-  void Paint(const View& view, gfx::Canvas* canvas) override {
-    Painter::PaintPainterAt(canvas, painter_.get(), view.GetLocalBounds());
-  }
-
-  gfx::Insets GetInsets() const override { return insets_; }
-
-  gfx::Size GetMinimumSize() const override {
-    return painter_->GetMinimumSize();
-  }
+  void Paint(const View& view, gfx::Canvas* canvas) override;
+  gfx::Insets GetInsets() const override;
+  gfx::Size GetMinimumSize() const override;
 
  private:
   scoped_ptr<Painter> painter_;
@@ -119,6 +103,24 @@ class BorderPainter : public Border {
 
   DISALLOW_COPY_AND_ASSIGN(BorderPainter);
 };
+
+BorderPainter::BorderPainter(Painter* painter, const gfx::Insets& insets)
+    : painter_(painter),
+      insets_(insets) {
+  DCHECK(painter);
+}
+
+void BorderPainter::Paint(const View& view, gfx::Canvas* canvas) {
+  Painter::PaintPainterAt(canvas, painter_.get(), view.GetLocalBounds());
+}
+
+gfx::Insets BorderPainter::GetInsets() const {
+  return insets_;
+}
+
+gfx::Size BorderPainter::GetMinimumSize() const {
+  return painter_->GetMinimumSize();
+}
 
 }  // namespace
 
@@ -135,7 +137,13 @@ scoped_ptr<Border> Border::NullBorder() {
 
 // static
 scoped_ptr<Border> Border::CreateSolidBorder(int thickness, SkColor color) {
-  return make_scoped_ptr(new SolidBorder(thickness, color));
+  return make_scoped_ptr(new SolidSidedBorder(
+      gfx::Insets(thickness, thickness, thickness, thickness), color));
+}
+
+// static
+scoped_ptr<Border> Border::CreateEmptyBorder(const gfx::Insets& insets) {
+  return make_scoped_ptr(new EmptyBorder(insets));
 }
 
 // static
@@ -143,7 +151,7 @@ scoped_ptr<Border> Border::CreateEmptyBorder(int top,
                                              int left,
                                              int bottom,
                                              int right) {
-  return make_scoped_ptr(new EmptyBorder(top, left, bottom, right));
+  return CreateEmptyBorder(gfx::Insets(top, left, bottom, right));
 }
 
 // static
@@ -152,7 +160,8 @@ scoped_ptr<Border> Border::CreateSolidSidedBorder(int top,
                                                   int bottom,
                                                   int right,
                                                   SkColor color) {
-  return make_scoped_ptr(new SidedSolidBorder(top, left, bottom, right, color));
+  return make_scoped_ptr(new SolidSidedBorder(
+      gfx::Insets(top, left, bottom, right), color));
 }
 
 // static

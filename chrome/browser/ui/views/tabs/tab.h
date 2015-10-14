@@ -288,9 +288,6 @@ class Tab : public gfx::AnimationDelegate,
   // Schedules repaint task for icon.
   void ScheduleIconPaint();
 
-  // Returns the rect that can be used for content inside the tab borders.
-  gfx::Rect GetInteriorBounds() const;
-
   // Returns the rectangle for the light bar in immersive mode.
   gfx::Rect GetImmersiveBarRect() const;
 

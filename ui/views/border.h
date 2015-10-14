@@ -51,6 +51,7 @@ class VIEWS_EXPORT Border {
 
   // Creates a border for reserving space. The returned border does not
   // paint anything.
+  static scoped_ptr<Border> CreateEmptyBorder(const gfx::Insets& insets);
   static scoped_ptr<Border> CreateEmptyBorder(int top,
                                               int left,
                                               int bottom,
