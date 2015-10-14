@@ -22,10 +22,7 @@
 namespace {
 
 int GetCancelButtonText(password_manager::CredentialSourceType source_type) {
-  return source_type ==
-      password_manager::CredentialSourceType::CREDENTIAL_SOURCE_API
-      ? IDS_PASSWORD_MANAGER_SAVE_PASSWORD_SMART_LOCK_NO_THANKS_BUTTON
-      : IDS_PASSWORD_MANAGER_BLACKLIST_BUTTON;
+  return IDS_PASSWORD_MANAGER_BLACKLIST_BUTTON;
 }
 
 }  // namespace
@@ -140,12 +137,7 @@ bool SavePasswordInfoBarDelegate::Accept() {
 
 bool SavePasswordInfoBarDelegate::Cancel() {
   DCHECK(form_to_save_.get());
-  if (source_type_ ==
-      password_manager::CredentialSourceType::CREDENTIAL_SOURCE_API) {
-    InfoBarDismissed();
-  } else {
-    form_to_save_->PermanentlyBlacklist();
-    infobar_response_ = password_manager::metrics_util::NEVER_REMEMBER_PASSWORD;
-  }
+  form_to_save_->PermanentlyBlacklist();
+  infobar_response_ = password_manager::metrics_util::NEVER_REMEMBER_PASSWORD;
   return true;
 }

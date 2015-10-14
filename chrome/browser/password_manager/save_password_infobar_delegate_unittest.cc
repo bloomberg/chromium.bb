@@ -128,8 +128,7 @@ void SavePasswordInfoBarDelegateTest::TearDown() {
 TEST_F(SavePasswordInfoBarDelegateTest, CancelTestCredentialSourceAPI) {
   scoped_ptr<MockPasswordFormManager> password_form_manager(
       CreateMockFormManager());
-  EXPECT_CALL(*password_form_manager.get(), PermanentlyBlacklist())
-      .Times(testing::Exactly(0));
+  EXPECT_CALL(*password_form_manager.get(), PermanentlyBlacklist());
   scoped_ptr<ConfirmInfoBarDelegate> infobar(CreateDelegate(
       password_form_manager.Pass(),
       password_manager::CredentialSourceType::CREDENTIAL_SOURCE_API, false));
@@ -140,8 +139,7 @@ TEST_F(SavePasswordInfoBarDelegateTest,
        CancelTestCredentialSourcePasswordManager) {
   scoped_ptr<MockPasswordFormManager> password_form_manager(
       CreateMockFormManager());
-  EXPECT_CALL(*password_form_manager.get(), PermanentlyBlacklist())
-      .Times(testing::Exactly(1));
+  EXPECT_CALL(*password_form_manager.get(), PermanentlyBlacklist());
   scoped_ptr<ConfirmInfoBarDelegate> infobar(CreateDelegate(
       password_form_manager.Pass(), password_manager::CredentialSourceType::
                                         CREDENTIAL_SOURCE_PASSWORD_MANAGER,
