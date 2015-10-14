@@ -73,7 +73,7 @@ bool SiteIsolationPolicy::UseSubframeNavigationEntries() {
 
 // static
 bool SiteIsolationPolicy::IsSwappedOutStateForbidden() {
-  return true;
+  return AreCrossProcessFramesPossible();
 }
 
 // static
