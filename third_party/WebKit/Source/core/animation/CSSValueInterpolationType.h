@@ -29,6 +29,11 @@ public:
         return nullptr;
     }
 
+    void composite(UnderlyingValue& underlyingValue, double underlyingFraction, const InterpolationValue& value) const final
+    {
+        underlyingValue.set(&value);
+    }
+
     void apply(const InterpolableValue&, const NonInterpolableValue*, StyleResolverState&) const final;
 };
 
