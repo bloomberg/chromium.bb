@@ -8,10 +8,11 @@
 
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/android/history_report/usage_report_util.h"
 #include "chrome/browser/android/proto/delta_file.pb.h"
-#include "third_party/leveldatabase/src/include/leveldb/comparator.h"
+#include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 #include "third_party/leveldatabase/src/include/leveldb/iterator.h"
 #include "third_party/leveldatabase/src/include/leveldb/options.h"
@@ -38,8 +39,11 @@ bool UsageReportsBufferBackend::Init() {
   std::string path = db_file_name_.value();
   leveldb::DB* db = NULL;
   leveldb::Status status = leveldb::DB::Open(options, path, &db);
+  UMA_HISTOGRAM_ENUMERATION("LevelDB.Open.UsageReportsBufferBackend",
+                            leveldb_env::GetLevelDBStatusUMAValue(status),
+                            leveldb_env::LEVELDB_STATUS_MAX);
   if (status.IsCorruption()) {
-    LOG(WARNING) << "Deleting possibly-corrupt database";
+    LOG(ERROR) << "Deleting corrupt database";
     base::DeleteFile(db_file_name_, true);
     status = leveldb::DB::Open(options, path, &db);
   }
