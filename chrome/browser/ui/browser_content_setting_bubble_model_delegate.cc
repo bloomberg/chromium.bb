@@ -32,31 +32,26 @@ void BrowserContentSettingBubbleModelDelegate::ShowCollectedCookiesDialog(
 
 void BrowserContentSettingBubbleModelDelegate::ShowContentSettingsPage(
     ContentSettingsType type) {
-  switch (type) {
-    case CONTENT_SETTINGS_TYPE_MIXEDSCRIPT:
-      // We don't (yet?) implement user-settable exceptions for mixed script
-      // blocking, so bounce to an explanatory page for now.
-      content_settings::RecordMixedScriptAction(
-          content_settings::MIXED_SCRIPT_ACTION_CLICKED_LEARN_MORE);
-      chrome::AddSelectedTabWithURL(browser_,
-                                    GURL(kInsecureScriptHelpUrl),
-                                    ui::PAGE_TRANSITION_LINK);
-      return;
-    case CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS:
-      chrome::ShowSettingsSubPage(browser_, chrome::kHandlerSettingsSubPage);
-      return;
-    case CONTENT_SETTINGS_TYPE_MEDIASTREAM:
-      // If the user requested to see the settings page for both camera
-      // and microphone, point them to the default settings instead of
-      // exceptions, as camera and microphone exceptions are now in two
-      // different overlays. Specifically, point them to the microphone
-      // default settings, as those appear first in the list.
-      chrome::ShowContentSettings(
-          browser_, CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC);
-      return;
-    default:
-      chrome::ShowContentSettingsExceptions(browser_, type);
-      return;
+  if (type == CONTENT_SETTINGS_TYPE_MIXEDSCRIPT) {
+    // We don't (yet?) implement user-settable exceptions for mixed script
+    // blocking, so bounce to an explanatory page for now.
+    content_settings::RecordMixedScriptAction(
+        content_settings::MIXED_SCRIPT_ACTION_CLICKED_LEARN_MORE);
+    chrome::AddSelectedTabWithURL(browser_,
+                                  GURL(kInsecureScriptHelpUrl),
+                                  ui::PAGE_TRANSITION_LINK);
+  } else if (type == CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS) {
+    chrome::ShowSettingsSubPage(browser_, chrome::kHandlerSettingsSubPage);
+  } else if (type == CONTENT_SETTINGS_TYPE_MEDIASTREAM) {
+    // If the user requested to see the settings page for both camera
+    // and microphone, point them to the default settings instead of
+    // exceptions, as camera and microphone exceptions are now in two
+    // different overlays. Specifically, point them to the microphone
+    // default settings, as those appear first in the list.
+    chrome::ShowContentSettings(
+        browser_, CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC);
+  } else {
+    chrome::ShowContentSettingsExceptions(browser_, type);
   }
 }
 

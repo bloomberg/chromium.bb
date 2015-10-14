@@ -234,15 +234,12 @@ bool ContentSettingsContentSettingSetFunction::RunSync() {
     // TODO(msramek): Get the same human readable name as is presented
     // externally in the API, i.e. chrome.contentSettings.<name>.set().
     std::string readable_type_name;
-    switch (content_type) {
-      case CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
-        readable_type_name = "microphone";
-        break;
-      case CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
-        readable_type_name = "camera";
-        break;
-      default:
-        DCHECK(false) << "No human-readable type name defined for this type.";
+    if (content_type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC) {
+      readable_type_name = "microphone";
+    } else if (content_type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA) {
+      readable_type_name = "camera";
+    } else {
+      NOTREACHED() << "No human-readable type name defined for this type.";
     }
 
     error_ = base::StringPrintf(
