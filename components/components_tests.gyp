@@ -1549,6 +1549,19 @@
           {
             'targets': [
               {
+                'target_name': 'components_browsertests_apk_run',
+                'type': 'none',
+                'dependencies': [
+                  'components_browsertests_apk',
+                ],
+                'includes': [
+                  '../build/isolate.gypi',
+                ],
+                'sources': [
+                  'components_browsertests_apk.isolate',
+                ],
+              },
+              {
                 'target_name': 'components_unittests_apk_run',
                 'type': 'none',
                 'dependencies': [
