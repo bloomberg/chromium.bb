@@ -119,6 +119,18 @@ LeafUnwindBlacklist::~LeafUnwindBlacklist() {}
 
 // Win32StackFrameUnwinder ----------------------------------------------------
 
+// hipis0e011b8.dll from McAfee Host Intrusion Prevention has been observed to
+// provide a pointer to a bogus RUNTIME_FUNCTION structure. This function checks
+// that the values in the structure look plausible.
+bool SanityCheckRuntimeFunction(PRUNTIME_FUNCTION runtime_function,
+                                ULONG64 image_base,
+                                DWORD64 program_counter) {
+  const DWORD64 program_counter_offset = program_counter - image_base;
+  return (runtime_function->BeginAddress <= runtime_function->EndAddress &&
+          program_counter_offset >= runtime_function->BeginAddress &&
+          program_counter_offset <= runtime_function->EndAddress);
+}
+
 Win32StackFrameUnwinder::UnwindFunctions::~UnwindFunctions() {}
 Win32StackFrameUnwinder::UnwindFunctions::UnwindFunctions() {}
 
@@ -138,6 +150,9 @@ bool Win32StackFrameUnwinder::TryUnwind(CONTEXT* context) {
       unwind_functions_->LookupFunctionEntry(context->Rip, &image_base);
 
   if (runtime_function) {
+    if (!SanityCheckRuntimeFunction(runtime_function, image_base, context->Rip))
+      return false;
+
     unwind_functions_->VirtualUnwind(image_base, context->Rip, runtime_function,
                                      context);
     at_top_frame_ = false;

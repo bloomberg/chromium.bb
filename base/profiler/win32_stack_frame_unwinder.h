@@ -16,7 +16,11 @@ namespace base {
 #if !defined(_WIN64)
 // Allows code to compile for x86. Actual support for x86 will require either
 // refactoring these interfaces or separate architecture-specific interfaces.
-using PRUNTIME_FUNCTION = void*;
+struct RUNTIME_FUNCTION {
+  DWORD BeginAddress;
+  DWORD EndAddress;
+};
+using PRUNTIME_FUNCTION = RUNTIME_FUNCTION*;
 #endif  // !defined(_WIN64)
 
 // Instances of this class are expected to be created and destroyed for each
