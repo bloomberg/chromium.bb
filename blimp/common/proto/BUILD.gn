@@ -4,7 +4,14 @@
 
 import("//third_party/protobuf/proto_library.gni")
 
-proto_library("proto") {
+group("proto") {
+  public_deps = [
+    ":proto_lib",
+    "//third_party/protobuf:protobuf_lite",
+  ]
+}
+
+proto_library("proto_lib") {
   sources = [
     "blimp_message.proto",
     "client_control.proto",

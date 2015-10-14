@@ -9,6 +9,9 @@
     ],
     "gtest_tests": [
       {
+        "test": "blimp_net_tests"
+      },
+      {
         "test": "html_viewer_unittests"
       },
       {
@@ -687,6 +690,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "base_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "blimp_net_tests"
       },
       {
         "swarming": {

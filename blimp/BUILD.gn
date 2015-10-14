@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# Metatarget for all of Blimp's feature code.
 group("blimp") {
   deps = [
     "//blimp/client:blimp_client",
@@ -22,6 +23,7 @@ group("blimp_tests") {
 
   deps = [
     ":blimp",
+    "//blimp/net:blimp_net_tests",
   ]
 
   if (is_android) {
