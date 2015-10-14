@@ -169,7 +169,11 @@ DefaultBrowserInfoBarDelegate::~DefaultBrowserInfoBarDelegate() {
 
 infobars::InfoBarDelegate::Type DefaultBrowserInfoBarDelegate::GetInfoBarType()
     const {
+#if defined(OS_WIN)
+  return WARNING_TYPE;
+#else
   return PAGE_ACTION_TYPE;
+#endif
 }
 
 int DefaultBrowserInfoBarDelegate::GetIconId() const {
