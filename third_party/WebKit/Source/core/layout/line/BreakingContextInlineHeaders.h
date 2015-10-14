@@ -815,7 +815,7 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
     WordMeasurement& wordMeasurement = wordMeasurements.last();
     wordMeasurement.layoutText = layoutText;
 
-    // IMPORTANT: current.m_pos is > length here!
+    // IMPORTANT: current.offset() is > layoutText.textLength() here!
     float additionalTempWidth = 0;
     wordMeasurement.startOffset = lastSpace;
     wordMeasurement.endOffset = m_current.offset();
