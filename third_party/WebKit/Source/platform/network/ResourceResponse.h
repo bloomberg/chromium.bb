@@ -46,7 +46,7 @@ struct CrossThreadResourceResponseData;
 class PLATFORM_EXPORT ResourceResponse {
     WTF_MAKE_FAST_ALLOCATED(ResourceResponse);
 public:
-    enum HTTPVersion { Unknown, HTTP_0_9, HTTP_1_0, HTTP_1_1 };
+    enum HTTPVersion { Unknown, HTTP_0_9, HTTP_1_0, HTTP_1_1, HTTP_2_0 };
     enum SecurityStyle {
         SecurityStyleUnknown,
         SecurityStyleUnauthenticated,

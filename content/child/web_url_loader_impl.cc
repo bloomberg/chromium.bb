@@ -974,6 +974,8 @@ void WebURLLoaderImpl::PopulateURLResponse(const GURL& url,
     version = WebURLResponse::HTTP_1_0;
   else if (headers->GetHttpVersion() == net::HttpVersion(1, 1))
     version = WebURLResponse::HTTP_1_1;
+  else if (headers->GetHttpVersion() == net::HttpVersion(2, 0))
+    version = WebURLResponse::HTTP_2_0;
   response->setHTTPVersion(version);
   response->setHTTPStatusCode(headers->response_code());
   response->setHTTPStatusText(WebString::fromLatin1(headers->GetStatusText()));

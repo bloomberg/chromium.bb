@@ -664,10 +664,13 @@ void HttpResponseHeaders::ParseStatusLine(
   // Extract the version number
   parsed_http_version_ = ParseVersion(line_begin, line_end);
 
-  // Clamp the version number to one of: {0.9, 1.0, 1.1}
+  // Clamp the version number to one of: {0.9, 1.0, 1.1, 2.0}
   if (parsed_http_version_ == HttpVersion(0, 9) && !has_headers) {
     http_version_ = HttpVersion(0, 9);
     raw_headers_ = "HTTP/0.9";
+  } else if (parsed_http_version_ == HttpVersion(2, 0)) {
+    http_version_ = HttpVersion(2, 0);
+    raw_headers_ = "HTTP/2.0";
   } else if (parsed_http_version_ >= HttpVersion(1, 1)) {
     http_version_ = HttpVersion(1, 1);
     raw_headers_ = "HTTP/1.1";

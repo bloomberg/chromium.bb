@@ -360,6 +360,7 @@ void BufferedResourceLoader::didReceiveResponse(
            << (response.httpVersion() == WebURLResponse::HTTP_0_9 ? "0.9" :
                response.httpVersion() == WebURLResponse::HTTP_1_0 ? "1.0" :
                response.httpVersion() == WebURLResponse::HTTP_1_1 ? "1.1" :
+               response.httpVersion() == WebURLResponse::HTTP_2_0 ? "2.0" :
                "Unknown")
            << " " << response.httpStatusCode();
   DCHECK(active_loader_.get());
