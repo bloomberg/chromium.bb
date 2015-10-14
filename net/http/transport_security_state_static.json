@@ -2654,7 +2654,7 @@
     { "name": "bigdinosaur.org", "include_subdomains": true, "mode": "force-https" },
     { "name": "bownty.dk", "include_subdomains": true, "mode": "force-https" },
     { "name": "braineet.com", "include_subdomains": true, "mode": "force-https" },
-    { "name": "branchtrack.com", "include_subdomains": true, "mode": "force-https" },
+    { "name": "branchtrack.com", "mode": "force-https" },
     { "name": "brks.xyz", "include_subdomains": true, "mode": "force-https" },
     { "name": "businesshosting.nl", "include_subdomains": true, "mode": "force-https" },
     { "name": "bygningsregistrering.dk", "include_subdomains": true, "mode": "force-https" },
