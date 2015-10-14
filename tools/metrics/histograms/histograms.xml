@@ -48815,6 +48815,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Time spent doing a full GC during an IdleNotification.</summary>
 </histogram>
 
+<histogram name="V8.GCFinalizeMCReduceMemory" units="milliseconds">
+  <owner>ulan@chromium.org</owner>
+  <owner>hpayer@chromium.org</owner>
+  <summary>
+    Time spent in finalize incremental memory-reducing mark-sweep phase of GC.
+  </summary>
+</histogram>
+
+<histogram name="V8.GCFinalzeMC" units="milliseconds">
+  <owner>ulan@chromium.org</owner>
+  <owner>hpayer@chromium.org</owner>
+  <summary>Time spent in finalize incremental mark-sweep phase of GC.</summary>
+</histogram>
+
 <histogram name="V8.GCIdleNotification" units="milliseconds">
   <owner>jochen@chromium.org</owner>
   <owner>hpayer@chromium.org</owner>
