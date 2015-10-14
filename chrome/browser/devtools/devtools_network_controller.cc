@@ -33,7 +33,6 @@ DevToolsNetworkController::GetInterceptor(
     return default_interceptor_->GetWeakPtr();
 
   DevToolsNetworkInterceptor* interceptor = interceptors_.get(client_id);
-  DCHECK(interceptor);
   if (!interceptor)
     return default_interceptor_->GetWeakPtr();
 
