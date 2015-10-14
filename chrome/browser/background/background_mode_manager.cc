@@ -61,10 +61,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
-#if defined(OS_WIN)
-#include "components/browser_watcher/exit_funnel_win.h"
-#endif
-
 using base::UserMetricsAction;
 using extensions::Extension;
 
@@ -669,10 +665,6 @@ void BackgroundModeManager::ExecuteCommand(int command_id, int event_flags) {
       break;
     case IDC_EXIT:
       RecordMenuItemClick(MENU_ITEM_EXIT);
-#if defined(OS_WIN)
-      browser_watcher::ExitFunnel::RecordSingleEvent(
-            chrome::kBrowserExitCodesRegistryPath, L"TraybarExit");
-#endif
       content::RecordAction(UserMetricsAction("Exit"));
       chrome::CloseAllBrowsers();
       break;
@@ -795,11 +787,6 @@ void BackgroundModeManager::UpdateKeepAliveAndTrayIcon() {
     if (!keeping_alive_) {
       keeping_alive_ = true;
       chrome::IncrementKeepAliveCount();
-
-#if defined(OS_WIN)
-      browser_watcher::ExitFunnel::RecordSingleEvent(
-            chrome::kBrowserExitCodesRegistryPath, L"BackgroundOn");
-#endif
     }
     CreateStatusTrayIcon();
     return;
@@ -809,11 +796,6 @@ void BackgroundModeManager::UpdateKeepAliveAndTrayIcon() {
   if (keeping_alive_) {
     keeping_alive_ = false;
     chrome::DecrementKeepAliveCount();
-
-#if defined(OS_WIN)
-    browser_watcher::ExitFunnel::RecordSingleEvent(
-          chrome::kBrowserExitCodesRegistryPath, L"BackgroundOff");
-#endif
   }
 }
 
