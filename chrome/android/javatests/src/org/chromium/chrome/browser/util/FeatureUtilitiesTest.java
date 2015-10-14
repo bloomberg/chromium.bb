@@ -203,6 +203,7 @@ public class FeatureUtilitiesTest extends InstrumentationTestCase {
         assertFalse(RecognizesSpeechUncached);
     }
 
+    @DisabledTest // Flaked on the try bot: http://crbug.com/543160
     @SmallTest
     @Feature({"FeatureUtilities", "GoogleAccounts"})
     public void testHasGoogleAccountCorrectlyDetected() {
