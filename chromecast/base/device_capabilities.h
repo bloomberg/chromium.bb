@@ -104,26 +104,30 @@ class DeviceCapabilities {
 
   // Registers a Validator for a capability. A given key must only be
   // registered once, and must be unregistered before calling Register() again.
-  // The capability also gets added to the class with an initial value passed
-  // in. If the capability has a value of Dictionary type, |key| must be just
+  // If the capability has a value of Dictionary type, |key| must be just
   // the capability's top-level key and not include path expansions to levels
   // farther down. For example, "foo" is a valid value for |key|, but "foo.bar"
   // is not. Note that if "foo.bar" is updated in SetCapability(), the
   // Validate() method for "foo"'s Validator will be called, with a |path| of
   // "foo.bar". Both Register() and Unregister() must be called on cast
   // receiver main thread; the Validator provided will also be called on cast
-  // receiver main thread.
+  // receiver main thread. Note that this method does not add or modify
+  // the capability. To do this, SetCapability() should be called, or
+  // Validators can call SetValidatedValue().
   virtual void Register(const std::string& key,
-                        scoped_ptr<base::Value> init_value,
                         Validator* validator) = 0;
-  // Unregisters Validator for |key| and removes capability. |validator|
-  // argument must match |validator| argument that was passed in to Register()
-  // for |key|.
+  // Unregisters Validator for |key|. |validator| argument must match
+  // |validator| argument that was passed in to Register() for |key|. Note that
+  // the capability and its value remain untouched.
   virtual void Unregister(const std::string& key,
                           const Validator* validator) = 0;
+  // Gets the Validator currently registered for |key|. Returns nullptr if
+  // no Validator is registered.
+  virtual Validator* GetValidator(const std::string& key) const = 0;
 
   // Accessors for default capabilities. Note that the capability must be added
-  // through Register() or SetCapability() before accessors are called.
+  // through SetCapability() or SetValidatedValue() (for Validators) before
+  // accessors are called.
   virtual bool BluetoothSupported() const = 0;
   virtual bool DisplaySupported() const = 0;
 

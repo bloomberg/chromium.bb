@@ -17,10 +17,9 @@ class DeviceCapabilitiesImpl : public DeviceCapabilities {
   ~DeviceCapabilitiesImpl() override;
 
   // DeviceCapabilities implementation:
-  void Register(const std::string& key,
-                scoped_ptr<base::Value> init_value,
-                Validator* validator) override;
+  void Register(const std::string& key, Validator* validator) override;
   void Unregister(const std::string& key, const Validator* validator) override;
+  Validator* GetValidator(const std::string& key) const override;
   bool BluetoothSupported() const override;
   bool DisplaySupported() const override;
   bool GetCapability(const std::string& path,
@@ -48,8 +47,6 @@ class DeviceCapabilitiesImpl : public DeviceCapabilities {
 
   void SetValidatedValueInternal(const std::string& path,
                                  scoped_ptr<base::Value> new_value) override;
-
-  void AddValidator(const std::string& key, Validator* validator);
   void UpdateStrAndNotifyChanged(const std::string& path);
 
   scoped_ptr<base::DictionaryValue> capabilities_;

@@ -26,14 +26,25 @@ const char kSampleDictionaryCapability[] =
 // argument.
 class FakeCapabilityManagerSimple : public DeviceCapabilities::Validator {
  public:
+  // Registers itself as Validator in constructor. If init_value is not null,
+  // the capability gets initialized to that value. Else capability remains
+  // untouched.
   FakeCapabilityManagerSimple(DeviceCapabilities* capabilities,
                               const std::string& key,
+                              scoped_ptr<base::Value> init_value,
                               bool accept_changes)
       : DeviceCapabilities::Validator(capabilities),
         key_(key),
-        accept_changes_(accept_changes) {}
+        accept_changes_(accept_changes) {
+    capabilities->Register(key, this);
+    if (init_value)
+      SetValidatedValue(key, init_value.Pass());
+  }
 
-  ~FakeCapabilityManagerSimple() override {}
+  // Unregisters itself as Validator.
+  ~FakeCapabilityManagerSimple() override {
+    capabilities()->Unregister(key_, this);
+  }
 
   void Validate(const std::string& path,
                 scoped_ptr<base::Value> proposed_value) override {
@@ -151,16 +162,16 @@ TEST_F(DeviceCapabilitiesImplTest, Register) {
   std::string key;
   scoped_ptr<base::Value> init_value;
   GetSampleDefaultCapability(&key, &init_value);
-  FakeCapabilityManagerSimple manager(capabilities(), key, true);
 
-  EXPECT_CALL(*capabilities_observer(), OnCapabilitiesChanged(key)).Times(2);
-  capabilities()->Register(key, init_value->CreateDeepCopy(), &manager);
-  EXPECT_TRUE(JsonStringEquals(capabilities()->GetCapabilitiesString(), key,
-                               *init_value));
-  const base::Value* dict_value;
-  EXPECT_TRUE(capabilities()->GetCapabilities()->Get(key, &dict_value));
-  EXPECT_TRUE(base::Value::Equals(init_value.get(), dict_value));
-  capabilities()->Unregister(key, &manager);
+  EXPECT_CALL(*capabilities_observer(), OnCapabilitiesChanged(key)).Times(0);
+  FakeCapabilityManagerSimple manager(capabilities(), key, nullptr, true);
+
+  EXPECT_EQ(capabilities()->GetValidator(key), &manager);
+  scoped_ptr<const std::string> empty_dict_string(
+      SerializeToJson(base::DictionaryValue()));
+  EXPECT_EQ(capabilities()->GetCapabilitiesString(), *empty_dict_string);
+  const base::Value* value = nullptr;
+  EXPECT_FALSE(capabilities()->GetCapability(key, &value));
 }
 
 // Tests Unregister() of a default capability.
@@ -168,15 +179,19 @@ TEST_F(DeviceCapabilitiesImplTest, Unregister) {
   std::string key;
   scoped_ptr<base::Value> init_value;
   GetSampleDefaultCapability(&key, &init_value);
-  FakeCapabilityManagerSimple manager(capabilities(), key, true);
 
-  capabilities()->Register(key, init_value->CreateDeepCopy(), &manager);
+  EXPECT_CALL(*capabilities_observer(), OnCapabilitiesChanged(key)).Times(0);
+  FakeCapabilityManagerSimple* manager =
+      new FakeCapabilityManagerSimple(capabilities(), key, nullptr, true);
 
-  capabilities()->Unregister(key, &manager);
+  delete manager;
+
+  EXPECT_EQ(capabilities()->GetValidator(key), nullptr);
   scoped_ptr<const std::string> empty_dict_string(
       SerializeToJson(base::DictionaryValue()));
   EXPECT_EQ(capabilities()->GetCapabilitiesString(), *empty_dict_string);
-  EXPECT_TRUE(capabilities()->GetCapabilities()->empty());
+  const base::Value* value = nullptr;
+  EXPECT_FALSE(capabilities()->GetCapability(key, &value));
 }
 
 // Tests GetCapability() and updating the value through SetCapability().
@@ -184,9 +199,8 @@ TEST_F(DeviceCapabilitiesImplTest, GetCapabilityAndSetCapability) {
   std::string key;
   scoped_ptr<base::Value> init_value;
   GetSampleDefaultCapability(&key, &init_value);
-  FakeCapabilityManagerSimple manager(capabilities(), key, true);
-
-  capabilities()->Register(key, init_value->CreateDeepCopy(), &manager);
+  FakeCapabilityManagerSimple manager(capabilities(), key,
+                                      init_value->CreateDeepCopy(), true);
 
   const base::Value* value = nullptr;
   EXPECT_TRUE(capabilities()->GetCapability(key, &value));
@@ -197,49 +211,32 @@ TEST_F(DeviceCapabilitiesImplTest, GetCapabilityAndSetCapability) {
   value = nullptr;
   EXPECT_TRUE(capabilities()->GetCapability(key, &value));
   EXPECT_TRUE(base::Value::Equals(value, new_value.get()));
-
-  capabilities()->Unregister(key, &manager);
-  value = nullptr;
-  EXPECT_FALSE(capabilities()->GetCapability(key, &value));
-  EXPECT_EQ(value, nullptr);
 }
 
 // Tests BluetoothSupported() and updating this value through SetCapability().
 TEST_F(DeviceCapabilitiesImplTest, BluetoothSupportedAndSetCapability) {
   FakeCapabilityManagerSimple manager(
-      capabilities(), DeviceCapabilities::kKeyBluetoothSupported, true);
-
-  capabilities()->Register(DeviceCapabilities::kKeyBluetoothSupported,
-                           make_scoped_ptr(new base::FundamentalValue(true)),
-                           &manager);
+      capabilities(), DeviceCapabilities::kKeyBluetoothSupported,
+      make_scoped_ptr(new base::FundamentalValue(true)), true);
 
   EXPECT_TRUE(capabilities()->BluetoothSupported());
   capabilities()->SetCapability(
       DeviceCapabilities::kKeyBluetoothSupported,
       make_scoped_ptr(new base::FundamentalValue(false)));
   EXPECT_FALSE(capabilities()->BluetoothSupported());
-
-  capabilities()->Unregister(DeviceCapabilities::kKeyBluetoothSupported,
-                             &manager);
 }
 
 // Tests DisplaySupported() and updating this value through SetCapability().
 TEST_F(DeviceCapabilitiesImplTest, DisplaySupportedAndSetCapability) {
   FakeCapabilityManagerSimple manager(
-      capabilities(), DeviceCapabilities::kKeyDisplaySupported, true);
-
-  capabilities()->Register(DeviceCapabilities::kKeyDisplaySupported,
-                           make_scoped_ptr(new base::FundamentalValue(true)),
-                           &manager);
+      capabilities(), DeviceCapabilities::kKeyDisplaySupported,
+      make_scoped_ptr(new base::FundamentalValue(true)), true);
 
   EXPECT_TRUE(capabilities()->DisplaySupported());
   capabilities()->SetCapability(
       DeviceCapabilities::kKeyDisplaySupported,
       make_scoped_ptr(new base::FundamentalValue(false)));
   EXPECT_FALSE(capabilities()->DisplaySupported());
-
-  capabilities()->Unregister(DeviceCapabilities::kKeyDisplaySupported,
-                             &manager);
 }
 
 // Tests SetCapability() for a default capability when the capability's manager
@@ -248,17 +245,14 @@ TEST_F(DeviceCapabilitiesImplTest, SetCapabilityInvalid) {
   std::string key;
   scoped_ptr<base::Value> init_value;
   GetSampleDefaultCapability(&key, &init_value);
-  FakeCapabilityManagerSimple manager(capabilities(), key, false);
-
-  capabilities()->Register(key, init_value->CreateDeepCopy(), &manager);
+  FakeCapabilityManagerSimple manager(capabilities(), key,
+                                      init_value->CreateDeepCopy(), false);
 
   capabilities()->SetCapability(key, GetSampleDefaultCapabilityNewValue());
 
-  const base::Value* dict_value = nullptr;
-  EXPECT_TRUE(capabilities()->GetCapabilities()->Get(key, &dict_value));
-  EXPECT_TRUE(base::Value::Equals(init_value.get(), dict_value));
-
-  capabilities()->Unregister(key, &manager);
+  const base::Value* value = nullptr;
+  EXPECT_TRUE(capabilities()->GetCapability(key, &value));
+  EXPECT_TRUE(base::Value::Equals(init_value.get(), value));
 }
 
 // Test that SetCapability() updates the capabilities string correctly
@@ -266,9 +260,8 @@ TEST_F(DeviceCapabilitiesImplTest, SetCapabilityUpdatesString) {
   std::string key;
   scoped_ptr<base::Value> init_value;
   GetSampleDefaultCapability(&key, &init_value);
-  FakeCapabilityManagerSimple manager(capabilities(), key, true);
-
-  capabilities()->Register(key, init_value->CreateDeepCopy(), &manager);
+  FakeCapabilityManagerSimple manager(capabilities(), key,
+                                      init_value->CreateDeepCopy(), true);
 
   EXPECT_TRUE(JsonStringEquals(capabilities()->GetCapabilitiesString(), key,
                                *init_value));
@@ -277,8 +270,6 @@ TEST_F(DeviceCapabilitiesImplTest, SetCapabilityUpdatesString) {
   capabilities()->SetCapability(key, new_value->CreateDeepCopy());
   EXPECT_TRUE(JsonStringEquals(capabilities()->GetCapabilitiesString(), key,
                                *new_value));
-
-  capabilities()->Unregister(key, &manager);
 }
 
 // Test that SetCapability() notifies Observers when the capability's value
@@ -287,43 +278,43 @@ TEST_F(DeviceCapabilitiesImplTest, SetCapabilityNotifiesObservers) {
   std::string key;
   scoped_ptr<base::Value> init_value;
   GetSampleDefaultCapability(&key, &init_value);
-  FakeCapabilityManagerSimple manager(capabilities(), key, true);
 
-  EXPECT_CALL(*capabilities_observer(), OnCapabilitiesChanged(key)).Times(4);
+  EXPECT_CALL(*capabilities_observer(), OnCapabilitiesChanged(key)).Times(3);
 
-  capabilities()->Register(key, init_value->CreateDeepCopy(), &manager);
+  // 1st call (register)
+  FakeCapabilityManagerSimple manager(capabilities(), key,
+                                      init_value->CreateDeepCopy(), true);
 
+  // 2nd call
   capabilities()->SetCapability(key, GetSampleDefaultCapabilityNewValue());
 
   // Observer should not get called when value does not change
   capabilities()->SetCapability(key, GetSampleDefaultCapabilityNewValue());
 
+  // 3rd call
   capabilities()->SetCapability(key, init_value.Pass());
-
-  capabilities()->Unregister(key, &manager);
 }
 
 // Test adding dynamic capabilities
 TEST_F(DeviceCapabilitiesImplTest, SetCapabilityDynamic) {
   std::string key;
   scoped_ptr<base::Value> init_value;
-
-  ASSERT_FALSE(capabilities()->GetCapabilities()->HasKey(key));
-
   GetSampleDynamicCapability(&key, &init_value);
+
+  const base::Value* value = nullptr;
+  ASSERT_FALSE(capabilities()->GetCapability(key, &value));
   capabilities()->SetCapability(key, init_value->CreateDeepCopy());
 
-  const base::Value* dict_value = nullptr;
-  EXPECT_TRUE(capabilities()->GetCapabilities()->Get(key, &dict_value));
-  EXPECT_TRUE(base::Value::Equals(init_value.get(), dict_value));
+  EXPECT_TRUE(capabilities()->GetCapability(key, &value));
+  EXPECT_TRUE(base::Value::Equals(init_value.get(), value));
   EXPECT_TRUE(JsonStringEquals(capabilities()->GetCapabilitiesString(), key,
                                *init_value));
 
   scoped_ptr<base::Value> new_value = GetSampleDynamicCapabilityNewValue();
   capabilities()->SetCapability(key, new_value->CreateDeepCopy());
-  dict_value = nullptr;
-  EXPECT_TRUE(capabilities()->GetCapabilities()->Get(key, &dict_value));
-  EXPECT_TRUE(base::Value::Equals(new_value.get(), dict_value));
+  value = nullptr;
+  EXPECT_TRUE(capabilities()->GetCapability(key, &value));
+  EXPECT_TRUE(base::Value::Equals(new_value.get(), value));
   EXPECT_TRUE(JsonStringEquals(capabilities()->GetCapabilitiesString(), key,
                                *new_value));
 }
@@ -335,94 +326,84 @@ TEST_F(DeviceCapabilitiesImplTest, SetCapabilityDictionary) {
   scoped_ptr<base::Value> init_value =
       DeserializeFromJson(kSampleDictionaryCapability);
   ASSERT_NE(init_value, nullptr);
-  FakeCapabilityManagerSimple manager(capabilities(), key, true);
-
-  capabilities()->Register(key, init_value.Pass(), &manager);
+  FakeCapabilityManagerSimple manager(capabilities(), key, init_value.Pass(),
+                                      true);
 
   capabilities()->SetCapability(
       "dummy_dictionary_key.dummy_field_bool",
       make_scoped_ptr(new base::FundamentalValue(false)));
-  const base::Value* dict_value = nullptr;
-  bool dict_value_bool = true;
-  EXPECT_TRUE(capabilities()->GetCapabilities()->Get(
-      "dummy_dictionary_key.dummy_field_bool", &dict_value));
-  EXPECT_TRUE(dict_value->GetAsBoolean(&dict_value_bool));
-  EXPECT_FALSE(dict_value_bool);
+  const base::Value* value = nullptr;
+  bool value_bool = true;
+  EXPECT_TRUE(capabilities()->GetCapability(
+      "dummy_dictionary_key.dummy_field_bool", &value));
+  EXPECT_TRUE(value->GetAsBoolean(&value_bool));
+  EXPECT_FALSE(value_bool);
 
   capabilities()->SetCapability(
       "dummy_dictionary_key.dummy_field_int",
       make_scoped_ptr(new base::FundamentalValue(100)));
-  dict_value = nullptr;
-  int dict_value_int = 0;
-  EXPECT_TRUE(capabilities()->GetCapabilities()->Get(
-      "dummy_dictionary_key.dummy_field_int", &dict_value));
-  EXPECT_TRUE(dict_value->GetAsInteger(&dict_value_int));
-  EXPECT_EQ(dict_value_int, 100);
-
-  capabilities()->Unregister(key, &manager);
+  value = nullptr;
+  int value_int = 0;
+  EXPECT_TRUE(capabilities()->GetCapability(
+      "dummy_dictionary_key.dummy_field_int", &value));
+  EXPECT_TRUE(value->GetAsInteger(&value_int));
+  EXPECT_EQ(value_int, 100);
 }
 
 // Tests that SetCapability() works with expanded paths when there is a
-// capability of type DictionaryValue and invalid changes are proposed. Ensures
-// that the manager's ValidationCallback is getting called for expanded paths
-// passed to SetCapability().
+// capability of type DictionaryValue and invalid changes are proposed.
 TEST_F(DeviceCapabilitiesImplTest, SetCapabilityDictionaryInvalid) {
   std::string key("dummy_dictionary_key");
   scoped_ptr<base::Value> init_value =
       DeserializeFromJson(kSampleDictionaryCapability);
   ASSERT_NE(init_value, nullptr);
-  FakeCapabilityManagerSimple manager(capabilities(), key, false);
-
-  capabilities()->Register(key, init_value.Pass(), &manager);
+  FakeCapabilityManagerSimple manager(capabilities(), key, init_value.Pass(),
+                                      false);
 
   capabilities()->SetCapability(
       "dummy_dictionary_key.dummy_field_bool",
       make_scoped_ptr(new base::FundamentalValue(false)));
-  const base::Value* dict_value = nullptr;
-  bool dict_value_bool = false;
-  EXPECT_TRUE(capabilities()->GetCapabilities()->Get(
-      "dummy_dictionary_key.dummy_field_bool", &dict_value));
-  EXPECT_TRUE(dict_value->GetAsBoolean(&dict_value_bool));
-  EXPECT_TRUE(dict_value_bool);
+  const base::Value* value = nullptr;
+  bool value_bool = false;
+  EXPECT_TRUE(capabilities()->GetCapability(
+      "dummy_dictionary_key.dummy_field_bool", &value));
+  EXPECT_TRUE(value->GetAsBoolean(&value_bool));
+  EXPECT_TRUE(value_bool);
 
   capabilities()->SetCapability(
       "dummy_dictionary_key.dummy_field_int",
       make_scoped_ptr(new base::FundamentalValue(100)));
-  dict_value = nullptr;
-  int dict_value_int = 0;
-  EXPECT_TRUE(capabilities()->GetCapabilities()->Get(
-      "dummy_dictionary_key.dummy_field_int", &dict_value));
-  EXPECT_TRUE(dict_value->GetAsInteger(&dict_value_int));
-  EXPECT_EQ(dict_value_int, 99);
-
-  capabilities()->Unregister(key, &manager);
+  value = nullptr;
+  int value_int = 0;
+  EXPECT_TRUE(capabilities()->GetCapability(
+      "dummy_dictionary_key.dummy_field_int", &value));
+  EXPECT_TRUE(value->GetAsInteger(&value_int));
+  EXPECT_EQ(value_int, 99);
 }
 
 // Test  MergeDictionary.
 TEST_F(DeviceCapabilitiesImplTest, MergeDictionary) {
-  scoped_ptr<base::Value> value =
+  scoped_ptr<base::Value> deserialized_value =
       DeserializeFromJson(kSampleDictionaryCapability);
-  ASSERT_NE(value, nullptr);
+  ASSERT_NE(deserialized_value, nullptr);
   base::DictionaryValue* dict_value = nullptr;
-  ASSERT_TRUE(value->GetAsDictionary(&dict_value));
+  ASSERT_TRUE(deserialized_value->GetAsDictionary(&dict_value));
   ASSERT_NE(dict_value, nullptr);
 
   capabilities()->MergeDictionary(*dict_value);
 
   // First make sure that capabilities get created if they do not exist
-  const base::Value* internal_value = nullptr;
-  bool dict_value_bool = false;
-  EXPECT_TRUE(capabilities()->GetCapabilities()->Get("dummy_field_bool",
-                                                     &internal_value));
-  EXPECT_TRUE(internal_value->GetAsBoolean(&dict_value_bool));
-  EXPECT_TRUE(dict_value_bool);
+  const base::Value* value = nullptr;
+  bool value_bool = false;
+  EXPECT_TRUE(capabilities()->GetCapability("dummy_field_bool", &value));
+  EXPECT_TRUE(value->GetAsBoolean(&value_bool));
+  EXPECT_TRUE(value_bool);
 
-  internal_value = nullptr;
-  int dict_value_int = 0;
-  EXPECT_TRUE(capabilities()->GetCapabilities()->Get("dummy_field_int",
-                                                     &internal_value));
-  EXPECT_TRUE(internal_value->GetAsInteger(&dict_value_int));
-  EXPECT_EQ(dict_value_int, 99);
+  value = nullptr;
+  int value_int = 0;
+  EXPECT_TRUE(capabilities()->GetCapability("dummy_field_int", &value));
+  EXPECT_TRUE(value->GetAsInteger(&value_int));
+  EXPECT_EQ(value_int, 99);
 
   // Now just update one of the fields. Make sure the updated value is changed
   // in DeviceCapabilities and the other field remains untouched.
@@ -431,18 +412,16 @@ TEST_F(DeviceCapabilitiesImplTest, MergeDictionary) {
 
   capabilities()->MergeDictionary(*dict_value);
 
-  internal_value = nullptr;
-  dict_value_bool = false;
-  EXPECT_TRUE(capabilities()->GetCapabilities()->Get("dummy_field_bool",
-                                                     &internal_value));
-  EXPECT_TRUE(internal_value->GetAsBoolean(&dict_value_bool));
-  EXPECT_TRUE(dict_value_bool);
+  value = nullptr;
+  value_bool = false;
+  EXPECT_TRUE(capabilities()->GetCapability("dummy_field_bool", &value));
+  EXPECT_TRUE(value->GetAsBoolean(&value_bool));
+  EXPECT_TRUE(value_bool);
 
-  internal_value = nullptr;
-  EXPECT_TRUE(capabilities()->GetCapabilities()->Get("dummy_field_int",
-                                                     &internal_value));
-  EXPECT_TRUE(internal_value->GetAsInteger(&dict_value_int));
-  EXPECT_EQ(dict_value_int, 100);
+  value = nullptr;
+  EXPECT_TRUE(capabilities()->GetCapability("dummy_field_int", &value));
+  EXPECT_TRUE(value->GetAsInteger(&value_int));
+  EXPECT_EQ(value_int, 100);
 }
 
 }  // namespace chromecast

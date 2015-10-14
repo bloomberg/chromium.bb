@@ -83,33 +83,31 @@ DeviceCapabilitiesImpl::~DeviceCapabilitiesImpl() {
 }
 
 void DeviceCapabilitiesImpl::Register(const std::string& key,
-                                      scoped_ptr<base::Value> init_value,
                                       Validator* validator) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(IsValidRegisterKey(key));
-  DCHECK(init_value.get());
   DCHECK(validator);
 
-  AddValidator(key, validator);
-
-  capabilities_->Set(key, init_value.Pass());
-  UpdateStrAndNotifyChanged(key);
+  bool added = validator_map_.insert(std::make_pair(key, validator)).second;
+  // Check that a validator has not already been registered for this key
+  DCHECK(added);
 }
 
 void DeviceCapabilitiesImpl::Unregister(const std::string& key,
                                         const Validator* validator) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  auto validator_it = validator_map_.find(key);
-  DCHECK(validator_it != validator_map_.end());
   // Check that validator being unregistered matches the original for |key|.
   // This prevents managers from accidentally unregistering incorrect
   // validators.
-  DCHECK_EQ(validator, validator_it->second);
-  validator_map_.erase(validator_it);
+  DCHECK_EQ(validator, GetValidator(key));
+  bool erased = validator_map_.erase(key);
+  DCHECK(erased);
+}
 
-  bool removed = capabilities_->Remove(key, nullptr);
-  DCHECK(removed);
-  UpdateStrAndNotifyChanged(key);
+DeviceCapabilities::Validator* DeviceCapabilitiesImpl::GetValidator(
+    const std::string& key) const {
+  auto validator_it = validator_map_.find(key);
+  return validator_it == validator_map_.end() ? nullptr : validator_it->second;
 }
 
 bool DeviceCapabilitiesImpl::BluetoothSupported() const {
@@ -206,14 +204,6 @@ void DeviceCapabilitiesImpl::SetValidatedValueInternal(
 
   capabilities_->Set(path, new_value.Pass());
   UpdateStrAndNotifyChanged(path);
-}
-
-void DeviceCapabilitiesImpl::AddValidator(const std::string& key,
-                                          Validator* validator) {
-  DCHECK(validator);
-  bool added = validator_map_.insert(std::make_pair(key, validator)).second;
-  // Check that a validator has not already been registered for this key
-  DCHECK(added);
 }
 
 void DeviceCapabilitiesImpl::UpdateStrAndNotifyChanged(
