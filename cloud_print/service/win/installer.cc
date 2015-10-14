@@ -14,7 +14,7 @@
 #include "base/win/shortcut.h"
 #include "cloud_print/common/win/cloud_print_utils.h"
 #include "cloud_print/common/win/install_utils.h"
-#include "cloud_print/service/resources.h"
+#include "cloud_print/resources.h"
 #include "cloud_print/service/service_constants.h"
 #include "cloud_print/service/service_switches.h"
 #include "cloud_print/service/win/service_controller.h"

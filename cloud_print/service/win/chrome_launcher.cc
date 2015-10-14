@@ -279,7 +279,7 @@ std::string ChromeLauncher::CreateServiceStateFile(
   base::JSONWriter::Write(printer_list, &printers_json);
   size_t written = base::WriteFile(printers_file,
                                    printers_json.c_str(),
-                                   static_cast<int>(printers_json.size()));
+                                   printers_json.size());
   if (written != printers_json.size()) {
     LOG(ERROR) << "Can't write file.";
     return std::string();

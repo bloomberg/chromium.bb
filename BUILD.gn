@@ -596,8 +596,6 @@ group("both_gn_and_gyp") {
       "//chrome/installer/setup:setup_unittests",
       "//chrome_elf:chrome_elf_unittests",
       "//chrome_elf:dll_hash_main",
-      "//cloud_print/service/win:cloud_print_service",
-      "//cloud_print:cloud_print_unittests",
       "//components/crash/content/tools:crash_service",
       "//components/wifi:wifi_test",
       "//net:quic_client",

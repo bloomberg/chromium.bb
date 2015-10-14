@@ -30,7 +30,7 @@ check_targets = [
   # TODO(brettw): Fix http://crbug.com/460828 and uncomment the following
   # line.
   #"//chrome_elf/*",
-  #"//cloud_print/*",
+  "//cloud_print/*",
 
   #"//components/*",  # Lots of errors.
   "//components/app_modal/*",
@@ -63,7 +63,6 @@ check_targets = [
 
   #"//content/*",  # A whole lot of errors.
   "//content/public/common:result_codes",
-  "//content/public/common:static_switches",
   "//courgette/*",
   "//crypto/*",
   "//data/*",

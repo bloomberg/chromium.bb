@@ -109,8 +109,8 @@ bool LocalSecurityPolicy::SetPrivilege(const base::string16& username,
   LSA_UNICODE_STRING privilege_string;
   base::string16 privilage_copy(privilage);
   privilege_string.Buffer = &privilage_copy[0];
-  privilege_string.Length = static_cast<USHORT>(
-      wcslen(privilege_string.Buffer) * sizeof(privilege_string.Buffer[0]));
+  privilege_string.Length = wcslen(privilege_string.Buffer) *
+                            sizeof(privilege_string.Buffer[0]);
   privilege_string.MaximumLength = privilege_string.Length +
                                    sizeof(privilege_string.Buffer[0]);
   return STATUS_SUCCESS ==
