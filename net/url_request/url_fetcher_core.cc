@@ -7,14 +7,12 @@
 #include <stdint.h>
 
 #include "base/bind.h"
-#include "base/debug/dump_without_crashing.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
-#include "base/strings/string_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/tracked_objects.h"
 #include "net/base/elements_upload_data_stream.h"
@@ -737,22 +735,6 @@ void URLFetcherCore::NotifyMalformedContent() {
 }
 
 void URLFetcherCore::DidFinishWriting(int result) {
-  // Record a stack trace if saved more than 1 MB to an in-memory string.
-  // TODO(mmenke):  Remove once a hard limit on the URLFetcherStringWriter's
-  // buffer size has been implemented.  See https://crbug.com/535601.
-  URLFetcherStringWriter* string_writer =
-      response_writer_ ? response_writer_->AsStringWriter() : nullptr;
-  if (string_writer && string_writer->data().size() > 1024 * 1024) {
-    char url_buf[128];
-    base::strlcpy(url_buf, original_url_.spec().c_str(), arraysize(url_buf));
-    size_t response_size = string_writer->data().size();
-    base::debug::StackTrace stack_trace = stack_trace_;
-    base::debug::Alias(url_buf);
-    base::debug::Alias(&response_size);
-    base::debug::Alias(&stack_trace);
-    base::debug::DumpWithoutCrashing();
-  }
-
   if (result != OK) {
     CancelRequestAndInformDelegate(result);
     return;
