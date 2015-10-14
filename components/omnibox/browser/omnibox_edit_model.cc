@@ -676,7 +676,7 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
   AutocompleteResult fake_single_entry_result;
   fake_single_entry_result.AppendMatches(input_, fake_single_entry_matches);
   OmniboxLog log(
-      input_text,
+      input_.from_omnibox_focus() ? base::string16() : input_text,
       just_deleted_text_,
       input_.type(),
       popup_model()->IsOpen(),
