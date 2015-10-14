@@ -4815,9 +4815,7 @@ getTable (const char *tableList)
   /*See if this is the last table used. */
   if (lastTrans != NULL)
     if (tableListLen == lastTrans->tableListLength && (memcmp
-						       (&lastTrans->
-							tableList
-							[0],
+						       (&lastTrans->tableList[0],
 							tableList,
 							tableListLen)) == 0)
       return (table = lastTrans->table);
@@ -4826,9 +4824,7 @@ getTable (const char *tableList)
   while (currentEntry != NULL)
     {
       if (tableListLen == currentEntry->tableListLength && (memcmp
-							    (&currentEntry->
-							     tableList
-							     [0],
+							    (&currentEntry->tableList[0],
 							     tableList,
 							     tableListLen))
 	  == 0)
@@ -4857,6 +4853,7 @@ getTable (const char *tableList)
       lastTrans = newEntry;
       return newEntry->table;
     }
+  logMessage (LOG_ERROR, "%s could not be found", tableList);
   return NULL;
 }
 
@@ -4873,14 +4870,7 @@ getLastTableList ()
 void *EXPORT_CALL
 lou_getTable (const char *tableList)
 {
-  void *table = NULL;
-  if (tableList == NULL || tableList[0] == 0)
-    return NULL;
-  errorCount = fileCount = 0;
-  table = getTable (tableList);
-  if (!table)
-    logMessage (LOG_ERROR, "%s could not be found", tableList);
-  return table;
+  return getTable(tableList);
 }
 
 static unsigned char *destSpacing = NULL;
