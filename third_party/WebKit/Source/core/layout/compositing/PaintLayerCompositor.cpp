@@ -58,8 +58,8 @@
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/TraceEvent.h"
 #include "platform/graphics/GraphicsLayer.h"
-#include "platform/graphics/paint/DisplayItemList.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
+#include "platform/graphics/paint/PaintController.h"
 #include "platform/graphics/paint/TransformDisplayItem.h"
 #include "public/platform/Platform.h"
 

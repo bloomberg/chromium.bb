@@ -4,20 +4,20 @@
 
 #include "config.h"
 
-#include "core/paint/DisplayItemListPaintTest.h"
+#include "core/paint/PaintControllerPaintTest.h"
 #include "platform/graphics/GraphicsContext.h"
 
 namespace blink {
 
 class PaintLayerPainterTest
-    : public DisplayItemListPaintTest
+    : public PaintControllerPaintTest
     , public testing::WithParamInterface<FrameSettingOverrideFunction> {
     WTF_MAKE_FAST_ALLOCATED(PaintLayerPainterTest);
 public:
     FrameSettingOverrideFunction settingOverrider() const override { return GetParam(); }
 };
 
-using PaintLayerPainterTestForSlimmingPaintV2 = DisplayItemListPaintTestForSlimmingPaintV2;
+using PaintLayerPainterTestForSlimmingPaintV2 = PaintControllerPaintTestForSlimmingPaintV2;
 
 INSTANTIATE_TEST_CASE_P(All, PaintLayerPainterTest, ::testing::Values(
     nullptr,
@@ -46,13 +46,13 @@ TEST_P(PaintLayerPainterTest, CachedSubsequence)
     PaintLayer& container2Layer = *toLayoutBoxModelObject(container2).layer();
     LayoutObject& content2 = *document().getElementById("content2")->layoutObject();
 
-    GraphicsContext context(&rootDisplayItemList());
+    GraphicsContext context(&rootPaintController());
     PaintLayerPaintingInfo paintingInfo(&rootLayer, LayoutRect(0, 0, 800, 600), GlobalPaintNormalPhase, LayoutSize());
     PaintLayerPainter(rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
-    rootDisplayItemList().commitNewDisplayItems();
+    rootPaintController().commitNewDisplayItems();
 
     if (rootLayerScrolls) {
-        EXPECT_DISPLAY_LIST(rootDisplayItemList().displayItems(), 11,
+        EXPECT_DISPLAY_LIST(rootPaintController().displayItems(), 11,
             TestDisplayItem(layoutView(), backgroundType),
             TestDisplayItem(rootLayer, subsequenceType),
             TestDisplayItem(container1, backgroundType),
@@ -65,7 +65,7 @@ TEST_P(PaintLayerPainterTest, CachedSubsequence)
             TestDisplayItem(container2Layer, endSubsequenceType),
             TestDisplayItem(rootLayer, endSubsequenceType));
     } else {
-        EXPECT_DISPLAY_LIST(rootDisplayItemList().displayItems(), 13,
+        EXPECT_DISPLAY_LIST(rootPaintController().displayItems(), 13,
             TestDisplayItem(layoutView(), backgroundType),
             TestDisplayItem(rootLayer, subsequenceType),
             TestDisplayItem(htmlLayer, subsequenceType),
@@ -86,7 +86,7 @@ TEST_P(PaintLayerPainterTest, CachedSubsequence)
     PaintLayerPainter(rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
 
     if (rootLayerScrolls) {
-        EXPECT_DISPLAY_LIST(rootDisplayItemList().newDisplayItems(), 9,
+        EXPECT_DISPLAY_LIST(rootPaintController().newDisplayItems(), 9,
             TestDisplayItem(layoutView(), cachedBackgroundType),
             TestDisplayItem(rootLayer, subsequenceType),
             TestDisplayItem(container1, cachedBackgroundType),
@@ -97,7 +97,7 @@ TEST_P(PaintLayerPainterTest, CachedSubsequence)
             TestDisplayItem(container2Layer, cachedSubsequenceType),
             TestDisplayItem(rootLayer, endSubsequenceType));
     } else {
-        EXPECT_DISPLAY_LIST(rootDisplayItemList().newDisplayItems(), 11,
+        EXPECT_DISPLAY_LIST(rootPaintController().newDisplayItems(), 11,
             TestDisplayItem(layoutView(), cachedBackgroundType),
             TestDisplayItem(rootLayer, subsequenceType),
             TestDisplayItem(htmlLayer, subsequenceType),
@@ -111,10 +111,10 @@ TEST_P(PaintLayerPainterTest, CachedSubsequence)
             TestDisplayItem(rootLayer, endSubsequenceType));
     }
 
-    rootDisplayItemList().commitNewDisplayItems();
+    rootPaintController().commitNewDisplayItems();
 
     if (rootLayerScrolls) {
-        EXPECT_DISPLAY_LIST(rootDisplayItemList().displayItems(), 11,
+        EXPECT_DISPLAY_LIST(rootPaintController().displayItems(), 11,
             TestDisplayItem(layoutView(), backgroundType),
             TestDisplayItem(rootLayer, subsequenceType),
             TestDisplayItem(container1, backgroundType),
@@ -127,7 +127,7 @@ TEST_P(PaintLayerPainterTest, CachedSubsequence)
             TestDisplayItem(container2Layer, endSubsequenceType),
             TestDisplayItem(rootLayer, endSubsequenceType));
     } else {
-        EXPECT_DISPLAY_LIST(rootDisplayItemList().displayItems(), 13,
+        EXPECT_DISPLAY_LIST(rootPaintController().displayItems(), 13,
             TestDisplayItem(layoutView(), backgroundType),
             TestDisplayItem(rootLayer, subsequenceType),
             TestDisplayItem(htmlLayer, subsequenceType),
@@ -145,14 +145,14 @@ TEST_P(PaintLayerPainterTest, CachedSubsequence)
 
     // Repeated painting should just generate the root cached subsequence.
     PaintLayerPainter(rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
-    EXPECT_DISPLAY_LIST(rootDisplayItemList().newDisplayItems(), 2,
+    EXPECT_DISPLAY_LIST(rootPaintController().newDisplayItems(), 2,
         TestDisplayItem(layoutView(), cachedBackgroundType),
         TestDisplayItem(rootLayer, cachedSubsequenceType));
 
-    rootDisplayItemList().commitNewDisplayItems();
+    rootPaintController().commitNewDisplayItems();
 
     if (rootLayerScrolls) {
-        EXPECT_DISPLAY_LIST(rootDisplayItemList().displayItems(), 11,
+        EXPECT_DISPLAY_LIST(rootPaintController().displayItems(), 11,
             TestDisplayItem(layoutView(), backgroundType),
             TestDisplayItem(rootLayer, subsequenceType),
             TestDisplayItem(container1, backgroundType),
@@ -165,7 +165,7 @@ TEST_P(PaintLayerPainterTest, CachedSubsequence)
             TestDisplayItem(container2Layer, endSubsequenceType),
             TestDisplayItem(rootLayer, endSubsequenceType));
     } else {
-        EXPECT_DISPLAY_LIST(rootDisplayItemList().displayItems(), 13,
+        EXPECT_DISPLAY_LIST(rootPaintController().displayItems(), 13,
             TestDisplayItem(layoutView(), backgroundType),
             TestDisplayItem(rootLayer, subsequenceType),
             TestDisplayItem(htmlLayer, subsequenceType),
@@ -197,7 +197,7 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceOnInterestRectChange)
         "<div id='container3' style='position: absolute; z-index: 2; left: 300px; top: 0; width: 200px; height: 200px; background-color: blue'>"
         "  <div id='content3' style='position: absolute; width: 200px; height: 200px; background-color: green'></div>"
         "</div>");
-    rootDisplayItemList().invalidateAll();
+    rootPaintController().invalidateAll();
 
     bool rootLayerScrolls = document().frame()->settings()->rootLayerScrolls();
     PaintLayer& rootLayer = *layoutView().layer();
@@ -213,17 +213,17 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceOnInterestRectChange)
     LayoutObject& content3 = *document().getElementById("content3")->layoutObject();
 
     document().view()->updateAllLifecyclePhases();
-    GraphicsContext context(&rootDisplayItemList());
+    GraphicsContext context(&rootPaintController());
     PaintLayerPaintingInfo paintingInfo(&rootLayer, LayoutRect(0, 0, 400, 300), GlobalPaintNormalPhase, LayoutSize());
     PaintLayerPainter(rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
-    rootDisplayItemList().commitNewDisplayItems();
+    rootPaintController().commitNewDisplayItems();
 
     // Container1 is fully in the interest rect;
     // Container2 is partly (including its stacking chidren) in the interest rect;
     // Content2b is out of the interest rect and output nothing;
     // Container3 is partly in the interest rect.
     if (rootLayerScrolls) {
-        EXPECT_DISPLAY_LIST(rootDisplayItemList().displayItems(), 15,
+        EXPECT_DISPLAY_LIST(rootPaintController().displayItems(), 15,
             TestDisplayItem(layoutView(), backgroundType),
             TestDisplayItem(rootLayer, subsequenceType),
             TestDisplayItem(container1, backgroundType),
@@ -240,7 +240,7 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceOnInterestRectChange)
             TestDisplayItem(container3Layer, endSubsequenceType),
             TestDisplayItem(rootLayer, endSubsequenceType));
     } else {
-        EXPECT_DISPLAY_LIST(rootDisplayItemList().displayItems(), 17,
+        EXPECT_DISPLAY_LIST(rootPaintController().displayItems(), 17,
             TestDisplayItem(layoutView(), backgroundType),
             TestDisplayItem(rootLayer, subsequenceType),
             TestDisplayItem(htmlLayer, subsequenceType),
@@ -269,7 +269,7 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceOnInterestRectChange)
     PaintLayerPainter(rootLayer).paintLayerContents(&context, paintingInfo1, PaintLayerPaintingCompositingAllPhases);
 
     if (rootLayerScrolls) {
-        EXPECT_DISPLAY_LIST(rootDisplayItemList().newDisplayItems(), 9,
+        EXPECT_DISPLAY_LIST(rootPaintController().newDisplayItems(), 9,
             TestDisplayItem(layoutView(), cachedBackgroundType),
             TestDisplayItem(rootLayer, subsequenceType),
             TestDisplayItem(container1, cachedBackgroundType),
@@ -281,7 +281,7 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceOnInterestRectChange)
             TestDisplayItem(rootLayer, endSubsequenceType));
 
     } else {
-        EXPECT_DISPLAY_LIST(rootDisplayItemList().newDisplayItems(), 11,
+        EXPECT_DISPLAY_LIST(rootPaintController().newDisplayItems(), 11,
             TestDisplayItem(layoutView(), cachedBackgroundType),
             TestDisplayItem(rootLayer, subsequenceType),
             TestDisplayItem(htmlLayer, subsequenceType),
@@ -295,10 +295,10 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceOnInterestRectChange)
             TestDisplayItem(rootLayer, endSubsequenceType));
     }
 
-    rootDisplayItemList().commitNewDisplayItems();
+    rootPaintController().commitNewDisplayItems();
 
     if (rootLayerScrolls) {
-        EXPECT_DISPLAY_LIST(rootDisplayItemList().displayItems(), 11,
+        EXPECT_DISPLAY_LIST(rootPaintController().displayItems(), 11,
             TestDisplayItem(layoutView(), backgroundType),
             TestDisplayItem(rootLayer, subsequenceType),
             TestDisplayItem(container1, backgroundType),
@@ -311,7 +311,7 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceOnInterestRectChange)
             TestDisplayItem(container2Layer, endSubsequenceType),
             TestDisplayItem(rootLayer, endSubsequenceType));
     } else {
-        EXPECT_DISPLAY_LIST(rootDisplayItemList().displayItems(), 13,
+        EXPECT_DISPLAY_LIST(rootPaintController().displayItems(), 13,
             TestDisplayItem(layoutView(), backgroundType),
             TestDisplayItem(rootLayer, subsequenceType),
             TestDisplayItem(htmlLayer, subsequenceType),
@@ -348,7 +348,7 @@ TEST_F(PaintLayerPainterTestForSlimmingPaintV2, CachedSubsequence)
     PaintLayer& container2Layer = *toLayoutBoxModelObject(container2).layer();
     LayoutObject& content2 = *document().getElementById("content2")->layoutObject();
 
-    EXPECT_DISPLAY_LIST(rootDisplayItemList().displayItems(), 13,
+    EXPECT_DISPLAY_LIST(rootPaintController().displayItems(), 13,
         TestDisplayItem(layoutView(), backgroundType),
         TestDisplayItem(rootLayer, subsequenceType),
         TestDisplayItem(htmlLayer, subsequenceType),
@@ -366,7 +366,7 @@ TEST_F(PaintLayerPainterTestForSlimmingPaintV2, CachedSubsequence)
     toHTMLElement(content1.node())->setAttribute(HTMLNames::styleAttr, "position: absolute; width: 100px; height: 100px; background-color: green");
     updateLifecyclePhasesToPaintClean(LayoutRect(LayoutRect::infiniteIntRect()));
 
-    EXPECT_DISPLAY_LIST(rootDisplayItemList().newDisplayItems(), 11,
+    EXPECT_DISPLAY_LIST(rootPaintController().newDisplayItems(), 11,
         TestDisplayItem(layoutView(), cachedBackgroundType),
         TestDisplayItem(rootLayer, subsequenceType),
         TestDisplayItem(htmlLayer, subsequenceType),
@@ -381,7 +381,7 @@ TEST_F(PaintLayerPainterTestForSlimmingPaintV2, CachedSubsequence)
 
     compositeForSlimmingPaintV2();
 
-    EXPECT_DISPLAY_LIST(rootDisplayItemList().displayItems(), 13,
+    EXPECT_DISPLAY_LIST(rootPaintController().displayItems(), 13,
         TestDisplayItem(layoutView(), backgroundType),
         TestDisplayItem(rootLayer, subsequenceType),
         TestDisplayItem(htmlLayer, subsequenceType),
@@ -399,13 +399,13 @@ TEST_F(PaintLayerPainterTestForSlimmingPaintV2, CachedSubsequence)
     // Repeated painting should just generate the root cached subsequence.
     setNeedsDisplayWithoutInvalidationForRoot();
     updateLifecyclePhasesToPaintClean();
-    EXPECT_DISPLAY_LIST(rootDisplayItemList().newDisplayItems(), 2,
+    EXPECT_DISPLAY_LIST(rootPaintController().newDisplayItems(), 2,
         TestDisplayItem(layoutView(), cachedBackgroundType),
         TestDisplayItem(rootLayer, cachedSubsequenceType));
 
     compositeForSlimmingPaintV2();
 
-    EXPECT_DISPLAY_LIST(rootDisplayItemList().displayItems(), 13,
+    EXPECT_DISPLAY_LIST(rootPaintController().displayItems(), 13,
         TestDisplayItem(layoutView(), backgroundType),
         TestDisplayItem(rootLayer, subsequenceType),
         TestDisplayItem(htmlLayer, subsequenceType),
@@ -455,7 +455,7 @@ TEST_F(PaintLayerPainterTestForSlimmingPaintV2, CachedSubsequenceOnInterestRectC
     // Container2 is partly (including its stacking chidren) in the interest rect;
     // Content2b is out of the interest rect and output nothing;
     // Container3 is partly in the interest rect.
-    EXPECT_DISPLAY_LIST(rootDisplayItemList().displayItems(), 17,
+    EXPECT_DISPLAY_LIST(rootPaintController().displayItems(), 17,
         TestDisplayItem(layoutView(), backgroundType),
         TestDisplayItem(rootLayer, subsequenceType),
         TestDisplayItem(htmlLayer, subsequenceType),
@@ -483,7 +483,7 @@ TEST_F(PaintLayerPainterTestForSlimmingPaintV2, CachedSubsequenceOnInterestRectC
     // Container3 becomes out of the interest rect and outputs nothing.
     updateLifecyclePhasesToPaintClean(LayoutRect(0, 100, 300, 300));
 
-    EXPECT_DISPLAY_LIST(rootDisplayItemList().newDisplayItems(), 11,
+    EXPECT_DISPLAY_LIST(rootPaintController().newDisplayItems(), 11,
         TestDisplayItem(layoutView(), cachedBackgroundType),
         TestDisplayItem(rootLayer, subsequenceType),
         TestDisplayItem(htmlLayer, subsequenceType),
@@ -498,7 +498,7 @@ TEST_F(PaintLayerPainterTestForSlimmingPaintV2, CachedSubsequenceOnInterestRectC
 
     compositeForSlimmingPaintV2();
 
-    EXPECT_DISPLAY_LIST(rootDisplayItemList().displayItems(), 13,
+    EXPECT_DISPLAY_LIST(rootPaintController().displayItems(), 13,
         TestDisplayItem(layoutView(), backgroundType),
         TestDisplayItem(rootLayer, subsequenceType),
         TestDisplayItem(htmlLayer, subsequenceType),

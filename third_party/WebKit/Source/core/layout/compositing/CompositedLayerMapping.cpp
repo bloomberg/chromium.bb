@@ -61,7 +61,7 @@
 #include "platform/graphics/BitmapImage.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/ClipDisplayItem.h"
-#include "platform/graphics/paint/DisplayItemList.h"
+#include "platform/graphics/paint/PaintController.h"
 #include "platform/graphics/paint/TransformDisplayItem.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/text/StringBuilder.h"
@@ -2143,13 +2143,13 @@ void CompositedLayerMapping::doPaintTask(const GraphicsLayerPaintInfo& paintInfo
         // FIXME: Combine similar code here and LayerClipRecorder.
         dirtyRect.intersect(paintInfo.localClipRectForSquashedLayer);
         {
-            ASSERT(context->displayItemList());
-            context->displayItemList()->createAndAppend<ClipDisplayItem>(*this, DisplayItem::ClipLayerOverflowControls, dirtyRect);
+            ASSERT(context->paintController());
+            context->paintController()->createAndAppend<ClipDisplayItem>(*this, DisplayItem::ClipLayerOverflowControls, dirtyRect);
         }
         PaintLayerPainter(*paintInfo.paintLayer).paintLayer(context, paintingInfo, paintLayerFlags);
         {
-            ASSERT(context->displayItemList());
-            context->displayItemList()->endItem<EndClipDisplayItem>(*this, DisplayItem::clipTypeToEndClipType(DisplayItem::ClipLayerOverflowControls));
+            ASSERT(context->paintController());
+            context->paintController()->endItem<EndClipDisplayItem>(*this, DisplayItem::clipTypeToEndClipType(DisplayItem::ClipLayerOverflowControls));
         }
     }
 }

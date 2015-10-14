@@ -6,8 +6,8 @@
 #include "core/paint/FloatClipRecorder.h"
 
 #include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/paint/DisplayItemList.h"
 #include "platform/graphics/paint/FloatClipDisplayItem.h"
+#include "platform/graphics/paint/PaintController.h"
 
 namespace blink {
 
@@ -16,15 +16,15 @@ FloatClipRecorder::FloatClipRecorder(GraphicsContext& context, const DisplayItem
     , m_client(client)
     , m_clipType(DisplayItem::paintPhaseToFloatClipType(paintPhase))
 {
-    ASSERT(m_context.displayItemList());
-    m_context.displayItemList()->createAndAppend<FloatClipDisplayItem>(m_client, m_clipType, clipRect);
+    ASSERT(m_context.paintController());
+    m_context.paintController()->createAndAppend<FloatClipDisplayItem>(m_client, m_clipType, clipRect);
 }
 
 FloatClipRecorder::~FloatClipRecorder()
 {
     DisplayItem::Type endType = DisplayItem::floatClipTypeToEndFloatClipType(m_clipType);
-    ASSERT(m_context.displayItemList());
-    m_context.displayItemList()->endItem<EndFloatClipDisplayItem>(m_client, endType);
+    ASSERT(m_context.paintController());
+    m_context.paintController()->endItem<EndFloatClipDisplayItem>(m_client, endType);
 }
 
 } // namespace blink

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "core/paint/DisplayItemListPaintTest.h"
+#include "core/paint/PaintControllerPaintTest.h"
 
 #include "core/layout/LayoutText.h"
 #include "core/layout/line/InlineTextBox.h"
@@ -15,7 +15,7 @@
 
 namespace blink {
 
-TEST_F(DisplayItemListPaintTest, FullDocumentPaintingWithCaret)
+TEST_F(PaintControllerPaintTest, FullDocumentPaintingWithCaret)
 {
     setBodyInnerHTML("<div id='div' contentEditable='true' style='outline:none'>XYZ</div>");
     document().page()->focusController().setActive(true);
@@ -25,30 +25,30 @@ TEST_F(DisplayItemListPaintTest, FullDocumentPaintingWithCaret)
     LayoutObject& divLayoutObject = *document().body()->firstChild()->layoutObject();
     InlineTextBox& textInlineBox = *toLayoutText(div.firstChild()->layoutObject())->firstTextBox();
 
-    GraphicsContext context(&rootDisplayItemList());
+    GraphicsContext context(&rootPaintController());
     PaintLayerPaintingInfo paintingInfo(&rootLayer, LayoutRect(0, 0, 800, 600), GlobalPaintNormalPhase, LayoutSize());
     PaintLayerPainter(rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
-    rootDisplayItemList().commitNewDisplayItems();
+    rootPaintController().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(rootDisplayItemList().displayItems(), 2,
+    EXPECT_DISPLAY_LIST(rootPaintController().displayItems(), 2,
         TestDisplayItem(layoutView(), backgroundType),
         TestDisplayItem(textInlineBox, foregroundType));
 
     div.focus();
     document().view()->updateAllLifecyclePhases();
-    EXPECT_TRUE(rootDisplayItemList().clientCacheIsValid(layoutView().displayItemClient()));
-    EXPECT_FALSE(rootDisplayItemList().clientCacheIsValid(divLayoutObject.displayItemClient()));
-    EXPECT_TRUE(rootDisplayItemList().clientCacheIsValid(textInlineBox.displayItemClient()));
+    EXPECT_TRUE(rootPaintController().clientCacheIsValid(layoutView().displayItemClient()));
+    EXPECT_FALSE(rootPaintController().clientCacheIsValid(divLayoutObject.displayItemClient()));
+    EXPECT_TRUE(rootPaintController().clientCacheIsValid(textInlineBox.displayItemClient()));
     PaintLayerPainter(rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
-    rootDisplayItemList().commitNewDisplayItems();
+    rootPaintController().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(rootDisplayItemList().displayItems(), 3,
+    EXPECT_DISPLAY_LIST(rootPaintController().displayItems(), 3,
         TestDisplayItem(layoutView(), backgroundType),
         TestDisplayItem(textInlineBox, foregroundType),
         TestDisplayItem(divLayoutObject, DisplayItem::Caret)); // New!
 }
 
-TEST_F(DisplayItemListPaintTest, InlineRelayout)
+TEST_F(PaintControllerPaintTest, InlineRelayout)
 {
     setBodyInnerHTML("<div id='div' style='width:100px; height: 200px'>AAAAAAAAAA BBBBBBBBBB</div>");
     PaintLayer& rootLayer = *layoutView().layer();
@@ -58,34 +58,34 @@ TEST_F(DisplayItemListPaintTest, InlineRelayout)
     InlineTextBox& firstTextBox = *text.firstTextBox();
     DisplayItemClient firstTextBoxDisplayItemClient = firstTextBox.displayItemClient();
 
-    GraphicsContext context(&rootDisplayItemList());
+    GraphicsContext context(&rootPaintController());
     PaintLayerPaintingInfo paintingInfo(&rootLayer, LayoutRect(0, 0, 800, 600), GlobalPaintNormalPhase, LayoutSize());
     PaintLayerPainter(rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
-    rootDisplayItemList().commitNewDisplayItems();
+    rootPaintController().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(rootDisplayItemList().displayItems(), 2,
+    EXPECT_DISPLAY_LIST(rootPaintController().displayItems(), 2,
         TestDisplayItem(layoutView(), backgroundType),
         TestDisplayItem(firstTextBox, foregroundType));
 
     div.setAttribute(HTMLNames::styleAttr, "width: 10px; height: 200px");
     document().view()->updateAllLifecyclePhases();
-    EXPECT_TRUE(rootDisplayItemList().clientCacheIsValid(layoutView().displayItemClient()));
-    EXPECT_FALSE(rootDisplayItemList().clientCacheIsValid(divBlock.displayItemClient()));
-    EXPECT_FALSE(rootDisplayItemList().clientCacheIsValid(firstTextBoxDisplayItemClient));
+    EXPECT_TRUE(rootPaintController().clientCacheIsValid(layoutView().displayItemClient()));
+    EXPECT_FALSE(rootPaintController().clientCacheIsValid(divBlock.displayItemClient()));
+    EXPECT_FALSE(rootPaintController().clientCacheIsValid(firstTextBoxDisplayItemClient));
     PaintLayerPainter(rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
-    rootDisplayItemList().commitNewDisplayItems();
+    rootPaintController().commitNewDisplayItems();
 
     LayoutText& newText = *toLayoutText(divBlock.firstChild());
     InlineTextBox& newFirstTextBox = *newText.firstTextBox();
     InlineTextBox& secondTextBox = *newText.firstTextBox()->nextTextBox();
 
-    EXPECT_DISPLAY_LIST(rootDisplayItemList().displayItems(), 3,
+    EXPECT_DISPLAY_LIST(rootPaintController().displayItems(), 3,
         TestDisplayItem(layoutView(), backgroundType),
         TestDisplayItem(newFirstTextBox, foregroundType),
         TestDisplayItem(secondTextBox, foregroundType));
 }
 
-TEST_F(DisplayItemListPaintTestForSlimmingPaintV2, FullDocumentPaintingWithCaret)
+TEST_F(PaintControllerPaintTestForSlimmingPaintV2, FullDocumentPaintingWithCaret)
 {
     setBodyInnerHTML("<div id='div' contentEditable='true' style='outline:none'>XYZ</div>");
     document().page()->focusController().setActive(true);
@@ -97,7 +97,7 @@ TEST_F(DisplayItemListPaintTestForSlimmingPaintV2, FullDocumentPaintingWithCaret
 
     document().view()->updateAllLifecyclePhases();
 
-    EXPECT_DISPLAY_LIST(rootDisplayItemList().displayItems(), 4,
+    EXPECT_DISPLAY_LIST(rootPaintController().displayItems(), 4,
         TestDisplayItem(layoutView(), backgroundType),
         TestDisplayItem(rootLayer, subsequenceType),
         TestDisplayItem(textInlineBox, foregroundType),
@@ -106,7 +106,7 @@ TEST_F(DisplayItemListPaintTestForSlimmingPaintV2, FullDocumentPaintingWithCaret
     div.focus();
     document().view()->updateAllLifecyclePhases();
 
-    EXPECT_DISPLAY_LIST(rootDisplayItemList().displayItems(), 5,
+    EXPECT_DISPLAY_LIST(rootPaintController().displayItems(), 5,
         TestDisplayItem(layoutView(), backgroundType),
         TestDisplayItem(rootLayer, subsequenceType),
         TestDisplayItem(textInlineBox, foregroundType),
@@ -114,7 +114,7 @@ TEST_F(DisplayItemListPaintTestForSlimmingPaintV2, FullDocumentPaintingWithCaret
         TestDisplayItem(rootLayer, endSubsequenceType));
 }
 
-TEST_F(DisplayItemListPaintTestForSlimmingPaintV2, InlineRelayout)
+TEST_F(PaintControllerPaintTestForSlimmingPaintV2, InlineRelayout)
 {
     setBodyInnerHTML("<div id='div' style='width:100px; height: 200px'>AAAAAAAAAA BBBBBBBBBB</div>");
     PaintLayer& rootLayer = *layoutView().layer();
@@ -125,7 +125,7 @@ TEST_F(DisplayItemListPaintTestForSlimmingPaintV2, InlineRelayout)
 
     document().view()->updateAllLifecyclePhases();
 
-    EXPECT_DISPLAY_LIST(rootDisplayItemList().displayItems(), 4,
+    EXPECT_DISPLAY_LIST(rootPaintController().displayItems(), 4,
         TestDisplayItem(layoutView(), backgroundType),
         TestDisplayItem(rootLayer, subsequenceType),
         TestDisplayItem(firstTextBox, foregroundType),
@@ -138,7 +138,7 @@ TEST_F(DisplayItemListPaintTestForSlimmingPaintV2, InlineRelayout)
     InlineTextBox& newFirstTextBox = *newText.firstTextBox();
     InlineTextBox& secondTextBox = *newText.firstTextBox()->nextTextBox();
 
-    EXPECT_DISPLAY_LIST(rootDisplayItemList().displayItems(), 5,
+    EXPECT_DISPLAY_LIST(rootPaintController().displayItems(), 5,
         TestDisplayItem(layoutView(), backgroundType),
         TestDisplayItem(rootLayer, subsequenceType),
         TestDisplayItem(newFirstTextBox, foregroundType),

@@ -29,7 +29,7 @@ public:
 private:
     const LayoutObject& m_layoutObject;
     const PaintInfo& m_paintInfo;
-    bool m_useDisplayItemList;
+    bool m_usePaintController;
     DisplayItem::Type m_clipType;
 };
 

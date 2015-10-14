@@ -35,16 +35,16 @@ class SkCanvas;
 
 namespace blink {
 
-class DisplayItemList;
 class GraphicsContext;
 class IntRect;
+class PaintController;
 
 class PLATFORM_EXPORT GraphicsContextPainter {
 public:
     virtual void paint(GraphicsContext&, const IntRect& clip) = 0;
     // Paints the content if required, either because the content changed or its interest rect has too much unpainted area.
     virtual void paintIfNeeded(GraphicsContext&) = 0;
-    virtual DisplayItemList* displayItemList() = 0;
+    virtual PaintController* paintController() = 0;
 
 protected:
     virtual ~GraphicsContextPainter() { }

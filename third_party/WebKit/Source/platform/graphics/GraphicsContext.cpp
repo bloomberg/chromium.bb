@@ -32,7 +32,7 @@
 #include "platform/graphics/ColorSpace.h"
 #include "platform/graphics/Gradient.h"
 #include "platform/graphics/ImageBuffer.h"
-#include "platform/graphics/paint/DisplayItemList.h"
+#include "platform/graphics/paint/PaintController.h"
 #include "platform/weborigin/KURL.h"
 #include "skia/ext/platform_device.h"
 #include "third_party/skia/include/core/SkAnnotation.h"
@@ -50,10 +50,10 @@
 
 namespace blink {
 
-GraphicsContext::GraphicsContext(DisplayItemList* displayItemList, DisabledMode disableContextOrPainting, SkMetaData* metaData)
+GraphicsContext::GraphicsContext(PaintController* paintController, DisabledMode disableContextOrPainting, SkMetaData* metaData)
     : m_canvas(nullptr)
     , m_originalCanvas(nullptr)
-    , m_displayItemList(displayItemList)
+    , m_paintController(paintController)
     , m_paintStateStack()
     , m_paintStateIndex(0)
 #if ENABLE(ASSERT)
@@ -66,8 +66,8 @@ GraphicsContext::GraphicsContext(DisplayItemList* displayItemList, DisabledMode 
     , m_printing(false)
     , m_hasMetaData(!!metaData)
 {
-    // TODO(chrishtr): switch the type of the parameter to DisplayItemList&.
-    ASSERT(displayItemList);
+    // TODO(chrishtr): switch the type of the parameter to PaintController&.
+    ASSERT(paintController);
 
     if (metaData)
         m_metaData = *metaData;
@@ -734,7 +734,7 @@ void GraphicsContext::drawText(const Font& font, const TextRunPaintInfo& runInfo
         return;
 
     if (font.drawText(m_canvas, runInfo, point, m_deviceScaleFactor, paint))
-        m_displayItemList->setTextPainted();
+        m_paintController->setTextPainted();
 }
 
 template<typename DrawTextFunc>
@@ -762,7 +762,7 @@ void GraphicsContext::drawText(const Font& font, const TextRunPaintInfo& runInfo
 
     drawTextPasses([&font, &runInfo, &point, this](const SkPaint& paint) {
         if (font.drawText(m_canvas, runInfo, point, m_deviceScaleFactor, paint))
-            m_displayItemList->setTextPainted();
+            m_paintController->setTextPainted();
     });
 }
 
@@ -783,7 +783,7 @@ void GraphicsContext::drawBidiText(const Font& font, const TextRunPaintInfo& run
 
     drawTextPasses([&font, &runInfo, &point, customFontNotReadyAction, this](const SkPaint& paint) {
         if (font.drawBidiText(m_canvas, runInfo, point, customFontNotReadyAction, m_deviceScaleFactor, paint))
-            m_displayItemList->setTextPainted();
+            m_paintController->setTextPainted();
     });
 }
 

@@ -9,7 +9,7 @@
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/paint/CompositingDisplayItem.h"
-#include "platform/graphics/paint/DisplayItemList.h"
+#include "platform/graphics/paint/PaintController.h"
 
 namespace blink {
 
@@ -27,14 +27,14 @@ CompositingRecorder::~CompositingRecorder()
 
 void CompositingRecorder::beginCompositing(GraphicsContext& graphicsContext, const DisplayItemClientWrapper& client, const SkXfermode::Mode xferMode, const float opacity, const FloatRect* bounds, ColorFilter colorFilter)
 {
-    ASSERT(graphicsContext.displayItemList());
-    graphicsContext.displayItemList()->createAndAppend<BeginCompositingDisplayItem>(client, xferMode, opacity, bounds, colorFilter);
+    ASSERT(graphicsContext.paintController());
+    graphicsContext.paintController()->createAndAppend<BeginCompositingDisplayItem>(client, xferMode, opacity, bounds, colorFilter);
 }
 
 void CompositingRecorder::endCompositing(GraphicsContext& graphicsContext, const DisplayItemClientWrapper& client)
 {
-    ASSERT(graphicsContext.displayItemList());
-    graphicsContext.displayItemList()->endItem<EndCompositingDisplayItem>(client);
+    ASSERT(graphicsContext.paintController());
+    graphicsContext.paintController()->endItem<EndCompositingDisplayItem>(client);
 }
 
 } // namespace blink

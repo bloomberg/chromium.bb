@@ -6,7 +6,7 @@
 #include "core/paint/Transform3DRecorder.h"
 
 #include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/paint/DisplayItemList.h"
+#include "platform/graphics/paint/PaintController.h"
 #include "platform/graphics/paint/Transform3DDisplayItem.h"
 
 namespace blink {
@@ -27,8 +27,8 @@ Transform3DRecorder::Transform3DRecorder(
     if (m_skipRecordingForIdentityTransform)
         return;
 
-    ASSERT(m_context.displayItemList());
-    m_context.displayItemList()->createAndAppend<BeginTransform3DDisplayItem>(m_client, m_type, transform, transformOrigin);
+    ASSERT(m_context.paintController());
+    m_context.paintController()->createAndAppend<BeginTransform3DDisplayItem>(m_client, m_type, transform, transformOrigin);
 }
 
 Transform3DRecorder::~Transform3DRecorder()
@@ -36,8 +36,8 @@ Transform3DRecorder::~Transform3DRecorder()
     if (m_skipRecordingForIdentityTransform)
         return;
 
-    ASSERT(m_context.displayItemList());
-    m_context.displayItemList()->endItem<EndTransform3DDisplayItem>(m_client, DisplayItem::transform3DTypeToEndTransform3DType(m_type));
+    ASSERT(m_context.paintController());
+    m_context.paintController()->endItem<EndTransform3DDisplayItem>(m_client, DisplayItem::transform3DTypeToEndTransform3DType(m_type));
 }
 
 } // namespace blink

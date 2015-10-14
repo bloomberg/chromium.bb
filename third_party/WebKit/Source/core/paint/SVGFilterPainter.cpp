@@ -13,8 +13,8 @@
 #include "platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "platform/graphics/filters/SourceGraphic.h"
 #include "platform/graphics/paint/CompositingDisplayItem.h"
-#include "platform/graphics/paint/DisplayItemList.h"
 #include "platform/graphics/paint/DrawingDisplayItem.h"
+#include "platform/graphics/paint/PaintController.h"
 
 #define CHECK_CTM_FOR_TRANSFORMED_IMAGEFILTER
 
@@ -27,8 +27,8 @@ GraphicsContext* SVGFilterRecordingContext::beginContent(FilterData* filterData)
     GraphicsContext* context = paintingContext();
 
     // Create a new context so the contents of the filter can be drawn and cached.
-    m_displayItemList = DisplayItemList::create();
-    m_context = adoptPtr(new GraphicsContext(m_displayItemList.get()));
+    m_paintController = PaintController::create();
+    m_context = adoptPtr(new GraphicsContext(m_paintController.get()));
     context = m_context.get();
 
     filterData->m_state = FilterData::RecordingContent;
@@ -45,17 +45,17 @@ void SVGFilterRecordingContext::endContent(FilterData* filterData)
     GraphicsContext* context = paintingContext();
 
     // Use the context that contains the filtered content.
-    ASSERT(m_displayItemList);
+    ASSERT(m_paintController);
     ASSERT(m_context);
     context = m_context.get();
     context->beginRecording(filterData->filter->filterRegion());
-    m_displayItemList->commitNewDisplayItems();
-    m_displayItemList->paintArtifact().replay(*context);
+    m_paintController->commitNewDisplayItems();
+    m_paintController->paintArtifact().replay(*context);
 
     sourceGraphic->setPicture(context->endRecording());
 
     // Content is cached by the source graphic so temporaries can be freed.
-    m_displayItemList = nullptr;
+    m_paintController = nullptr;
     m_context = nullptr;
 
     filterData->m_state = FilterData::ReadyToPaint;

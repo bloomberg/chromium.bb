@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "platform/graphics/paint/DisplayItemList.h"
+#include "platform/graphics/paint/PaintController.h"
 
 #include "platform/NotImplemented.h"
 #include "platform/TraceEvent.h"
@@ -18,14 +18,14 @@
 
 namespace blink {
 
-const PaintArtifact& DisplayItemList::paintArtifact() const
+const PaintArtifact& PaintController::paintArtifact() const
 {
     ASSERT(m_newDisplayItems.isEmpty());
     ASSERT(m_newPaintChunks.isInInitialState());
     return m_currentPaintArtifact;
 }
 
-bool DisplayItemList::lastDisplayItemIsNoopBegin() const
+bool PaintController::lastDisplayItemIsNoopBegin() const
 {
     if (m_newDisplayItems.isEmpty())
         return false;
@@ -34,7 +34,7 @@ bool DisplayItemList::lastDisplayItemIsNoopBegin() const
     return lastDisplayItem.isBegin() && !lastDisplayItem.drawsContent();
 }
 
-void DisplayItemList::removeLastDisplayItem()
+void PaintController::removeLastDisplayItem()
 {
     if (m_newDisplayItems.isEmpty())
         return;
@@ -54,7 +54,7 @@ void DisplayItemList::removeLastDisplayItem()
         m_newPaintChunks.decrementDisplayItemIndex();
 }
 
-void DisplayItemList::processNewItem(DisplayItem& displayItem)
+void PaintController::processNewItem(DisplayItem& displayItem)
 {
     ASSERT(!m_constructionDisabled);
     ASSERT(!skippingCache() || !displayItem.isCached());
@@ -94,25 +94,25 @@ void DisplayItemList::processNewItem(DisplayItem& displayItem)
         m_newPaintChunks.incrementDisplayItemIndex();
 }
 
-void DisplayItemList::updateCurrentPaintChunkProperties(const PaintChunkProperties& newProperties)
+void PaintController::updateCurrentPaintChunkProperties(const PaintChunkProperties& newProperties)
 {
     m_newPaintChunks.updateCurrentPaintChunkProperties(newProperties);
 }
 
-void DisplayItemList::beginScope()
+void PaintController::beginScope()
 {
     ASSERT_WITH_SECURITY_IMPLICATION(m_nextScope < UINT_MAX);
     m_scopeStack.append(m_nextScope++);
     beginSkippingCache();
 }
 
-void DisplayItemList::endScope()
+void PaintController::endScope()
 {
     m_scopeStack.removeLast();
     endSkippingCache();
 }
 
-void DisplayItemList::invalidate(const DisplayItemClientWrapper& client, PaintInvalidationReason paintInvalidationReason, const IntRect& previousPaintInvalidationRect, const IntRect& newPaintInvalidationRect)
+void PaintController::invalidate(const DisplayItemClientWrapper& client, PaintInvalidationReason paintInvalidationReason, const IntRect& previousPaintInvalidationRect, const IntRect& newPaintInvalidationRect)
 {
     invalidateClient(client);
 
@@ -127,14 +127,14 @@ void DisplayItemList::invalidate(const DisplayItemClientWrapper& client, PaintIn
     }
 }
 
-void DisplayItemList::invalidateClient(const DisplayItemClientWrapper& client)
+void PaintController::invalidateClient(const DisplayItemClientWrapper& client)
 {
     invalidateUntracked(client.displayItemClient());
     if (RuntimeEnabledFeatures::slimmingPaintV2Enabled() && m_trackedPaintInvalidationObjects)
         m_trackedPaintInvalidationObjects->append(client.debugName());
 }
 
-void DisplayItemList::invalidateUntracked(DisplayItemClient client)
+void PaintController::invalidateUntracked(DisplayItemClient client)
 {
     // This can be called during painting, but we can't invalidate already painted clients.
     ASSERT(!m_newDisplayItemIndicesByClient.contains(client));
@@ -142,7 +142,7 @@ void DisplayItemList::invalidateUntracked(DisplayItemClient client)
     m_validlyCachedClients.remove(client);
 }
 
-void DisplayItemList::invalidateAll()
+void PaintController::invalidateAll()
 {
     // Can only be called during layout/paintInvalidation, not during painting.
     ASSERT(m_newDisplayItems.isEmpty());
@@ -154,7 +154,7 @@ void DisplayItemList::invalidateAll()
         m_trackedPaintInvalidationObjects->append("##ALL##");
 }
 
-bool DisplayItemList::clientCacheIsValid(DisplayItemClient client) const
+bool PaintController::clientCacheIsValid(DisplayItemClient client) const
 {
     if (skippingCache())
         return false;
@@ -162,7 +162,7 @@ bool DisplayItemList::clientCacheIsValid(DisplayItemClient client) const
     return m_validlyCachedClients.contains(client);
 }
 
-void DisplayItemList::invalidatePaintOffset(const DisplayItemClientWrapper& client)
+void PaintController::invalidatePaintOffset(const DisplayItemClientWrapper& client)
 {
     ASSERT(RuntimeEnabledFeatures::slimmingPaintOffsetCachingEnabled());
     invalidateClient(client);
@@ -174,14 +174,14 @@ void DisplayItemList::invalidatePaintOffset(const DisplayItemClientWrapper& clie
 }
 
 #if ENABLE(ASSERT)
-bool DisplayItemList::paintOffsetWasInvalidated(DisplayItemClient client) const
+bool PaintController::paintOffsetWasInvalidated(DisplayItemClient client) const
 {
     ASSERT(RuntimeEnabledFeatures::slimmingPaintOffsetCachingEnabled());
     return m_clientsWithPaintOffsetInvalidations.contains(client);
 }
 #endif
 
-size_t DisplayItemList::findMatchingItemFromIndex(const DisplayItem::Id& id, const DisplayItemIndicesByClientMap& displayItemIndicesByClient, const DisplayItems& list)
+size_t PaintController::findMatchingItemFromIndex(const DisplayItem::Id& id, const DisplayItemIndicesByClientMap& displayItemIndicesByClient, const DisplayItems& list)
 {
     DisplayItemIndicesByClientMap::const_iterator it = displayItemIndicesByClient.find(id.client);
     if (it == displayItemIndicesByClient.end())
@@ -198,7 +198,7 @@ size_t DisplayItemList::findMatchingItemFromIndex(const DisplayItem::Id& id, con
     return kNotFound;
 }
 
-void DisplayItemList::addItemToIndexIfNeeded(const DisplayItem& displayItem, size_t index, DisplayItemIndicesByClientMap& displayItemIndicesByClient)
+void PaintController::addItemToIndexIfNeeded(const DisplayItem& displayItem, size_t index, DisplayItemIndicesByClientMap& displayItemIndicesByClient)
 {
     if (!displayItem.isCacheable())
         return;
@@ -209,14 +209,14 @@ void DisplayItemList::addItemToIndexIfNeeded(const DisplayItem& displayItem, siz
     indices.append(index);
 }
 
-struct DisplayItemList::OutOfOrderIndexContext {
+struct PaintController::OutOfOrderIndexContext {
     OutOfOrderIndexContext(DisplayItems::iterator begin) : nextItemToIndex(begin) { }
 
     DisplayItems::iterator nextItemToIndex;
     DisplayItemIndicesByClientMap displayItemIndicesByClient;
 };
 
-DisplayItems::iterator DisplayItemList::findOutOfOrderCachedItem(const DisplayItem::Id& id, OutOfOrderIndexContext& context)
+DisplayItems::iterator PaintController::findOutOfOrderCachedItem(const DisplayItem::Id& id, OutOfOrderIndexContext& context)
 {
     ASSERT(clientCacheIsValid(id.client));
 
@@ -228,7 +228,7 @@ DisplayItems::iterator DisplayItemList::findOutOfOrderCachedItem(const DisplayIt
 }
 
 // Find forward for the item and index all skipped indexable items.
-DisplayItems::iterator DisplayItemList::findOutOfOrderCachedItemForward(const DisplayItem::Id& id, OutOfOrderIndexContext& context)
+DisplayItems::iterator PaintController::findOutOfOrderCachedItemForward(const DisplayItem::Id& id, OutOfOrderIndexContext& context)
 {
     DisplayItems::iterator currentEnd = m_currentPaintArtifact.displayItems().end();
     for (; context.nextItemToIndex != currentEnd; ++context.nextItemToIndex) {
@@ -244,7 +244,7 @@ DisplayItems::iterator DisplayItemList::findOutOfOrderCachedItemForward(const Di
     return currentEnd;
 }
 
-void DisplayItemList::copyCachedSubsequence(DisplayItems::iterator& currentIt, DisplayItems& updatedList)
+void PaintController::copyCachedSubsequence(DisplayItems::iterator& currentIt, DisplayItems& updatedList)
 {
     ASSERT(currentIt->isSubsequence());
     ASSERT(!currentIt->scope());
@@ -269,9 +269,9 @@ void DisplayItemList::copyCachedSubsequence(DisplayItems::iterator& currentIt, D
 // Coefficients are related to the ratio of out-of-order CachedDisplayItems
 // and the average number of (Drawing|Subsequence)DisplayItems per client.
 //
-void DisplayItemList::commitNewDisplayItems(GraphicsLayer* graphicsLayer)
+void PaintController::commitNewDisplayItems(GraphicsLayer* graphicsLayer)
 {
-    TRACE_EVENT2("blink,benchmark", "DisplayItemList::commitNewDisplayItems",
+    TRACE_EVENT2("blink,benchmark", "PaintController::commitNewDisplayItems",
         "current_display_list_size", (int)m_currentPaintArtifact.displayItems().size(),
         "num_non_cached_new_items", (int)m_newDisplayItems.size() - m_numCachedItems);
 
@@ -389,7 +389,7 @@ void DisplayItemList::commitNewDisplayItems(GraphicsLayer* graphicsLayer)
     m_numCachedItems = 0;
 }
 
-size_t DisplayItemList::approximateUnsharedMemoryUsage() const
+size_t PaintController::approximateUnsharedMemoryUsage() const
 {
     size_t memoryUsage = sizeof(*this);
 
@@ -414,7 +414,7 @@ size_t DisplayItemList::approximateUnsharedMemoryUsage() const
     return memoryUsage;
 }
 
-void DisplayItemList::updateValidlyCachedClientsIfNeeded() const
+void PaintController::updateValidlyCachedClientsIfNeeded() const
 {
     if (!m_validlyCachedClientsDirty)
         return;
@@ -435,7 +435,7 @@ void DisplayItemList::updateValidlyCachedClientsIfNeeded() const
 
 #if ENABLE(ASSERT)
 
-void DisplayItemList::checkUnderInvalidation(DisplayItems::iterator& newIt, DisplayItems::iterator& currentIt)
+void PaintController::checkUnderInvalidation(DisplayItems::iterator& newIt, DisplayItems::iterator& currentIt)
 {
     ASSERT(RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled());
     ASSERT(newIt->isCached());
@@ -485,7 +485,7 @@ static void showUnderInvalidationError(const char* messagePrefix, const char* re
 #endif // NDEBUG
 }
 
-void DisplayItemList::checkCachedDisplayItemIsUnchanged(const char* messagePrefix, const DisplayItem& newItem, const DisplayItem& oldItem)
+void PaintController::checkCachedDisplayItemIsUnchanged(const char* messagePrefix, const DisplayItem& newItem, const DisplayItem& oldItem)
 {
     ASSERT(RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled());
     ASSERT(!newItem.isCached());
@@ -520,7 +520,7 @@ void DisplayItemList::checkCachedDisplayItemIsUnchanged(const char* messagePrefi
     ASSERT_NOT_REACHED();
 }
 
-void DisplayItemList::checkNoRemainingCachedDisplayItems()
+void PaintController::checkNoRemainingCachedDisplayItems()
 {
     ASSERT(RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled());
 
@@ -535,7 +535,7 @@ void DisplayItemList::checkNoRemainingCachedDisplayItems()
 
 #ifndef NDEBUG
 
-WTF::String DisplayItemList::displayItemsAsDebugString(const DisplayItems& list) const
+WTF::String PaintController::displayItemsAsDebugString(const DisplayItems& list) const
 {
     StringBuilder stringBuilder;
     size_t i = 0;
@@ -554,7 +554,7 @@ WTF::String DisplayItemList::displayItemsAsDebugString(const DisplayItems& list)
     return stringBuilder.toString();
 }
 
-void DisplayItemList::showDebugData() const
+void PaintController::showDebugData() const
 {
     WTFLogAlways("current display items: [%s]\n", displayItemsAsDebugString(m_currentPaintArtifact.displayItems()).utf8().data());
     WTFLogAlways("new display items: [%s]\n", displayItemsAsDebugString(m_newDisplayItems).utf8().data());

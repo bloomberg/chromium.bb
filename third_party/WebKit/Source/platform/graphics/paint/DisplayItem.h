@@ -260,7 +260,7 @@ public:
     // supply this to the DisplayItem constructor.
     size_t derivedSize() const { return m_derivedSize; }
 
-    // For DisplayItemList only. Painters should use DisplayItemCacheSkipper instead.
+    // For PaintController only. Painters should use DisplayItemCacheSkipper instead.
     void setSkippedCache() { m_skippedCache = true; }
     bool skippedCache() const { return m_skippedCache; }
 

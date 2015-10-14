@@ -32,7 +32,7 @@
 #include "platform/TracedValue.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/paint/DisplayItemList.h"
+#include "platform/graphics/paint/PaintController.h"
 #include "platform/transforms/AffineTransform.h"
 #include "platform/transforms/TransformationMatrix.h"
 #include "public/platform/WebDisplayItemList.h"
@@ -85,35 +85,35 @@ void ContentLayerDelegate::paintContents(
     // here so the browser is usable during development and does not crash due
     // to committing the new display items twice.
     if (RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled()) {
-        m_painter->displayItemList()->paintArtifact().appendToWebDisplayItemList(webDisplayItemList);
+        m_painter->paintController()->paintArtifact().appendToWebDisplayItemList(webDisplayItemList);
         return;
     }
 
-    DisplayItemList* displayItemList = m_painter->displayItemList();
-    ASSERT(displayItemList);
-    displayItemList->setDisplayItemConstructionIsDisabled(
+    PaintController* paintController = m_painter->paintController();
+    ASSERT(paintController);
+    paintController->setDisplayItemConstructionIsDisabled(
         paintingControl == WebContentLayerClient::DisplayListConstructionDisabled);
 
     // We also disable caching when Painting or Construction are disabled. In both cases we would like
     // to compare assuming the full cost of recording, not the cost of re-using cached content.
     if (paintingControl != WebContentLayerClient::PaintDefaultBehavior)
-        displayItemList->invalidateAll();
+        paintController->invalidateAll();
 
     GraphicsContext::DisabledMode disabledMode = GraphicsContext::NothingDisabled;
     if (paintingControl == WebContentLayerClient::DisplayListPaintingDisabled
         || paintingControl == WebContentLayerClient::DisplayListConstructionDisabled)
         disabledMode = GraphicsContext::FullyDisabled;
-    GraphicsContext context(displayItemList, disabledMode);
+    GraphicsContext context(paintController, disabledMode);
 
     m_painter->paint(context, clip);
 
-    displayItemList->commitNewDisplayItems();
-    displayItemList->paintArtifact().appendToWebDisplayItemList(webDisplayItemList);
+    paintController->commitNewDisplayItems();
+    paintController->paintArtifact().appendToWebDisplayItemList(webDisplayItemList);
 }
 
 size_t ContentLayerDelegate::approximateUnsharedMemoryUsage() const
 {
-    return m_painter->displayItemList()->approximateUnsharedMemoryUsage();
+    return m_painter->paintController()->approximateUnsharedMemoryUsage();
 }
 
 } // namespace blink

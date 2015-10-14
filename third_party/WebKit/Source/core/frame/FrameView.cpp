@@ -92,7 +92,7 @@
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/GraphicsLayerDebugInfo.h"
-#include "platform/graphics/paint/DisplayItemList.h"
+#include "platform/graphics/paint/PaintController.h"
 #include "platform/scroll/ScrollAnimator.h"
 #include "platform/text/TextStream.h"
 #include "public/platform/WebDisplayItemList.h"
@@ -2478,7 +2478,7 @@ void FrameView::synchronizedPaint(const LayoutRect* interestRect)
 
 void FrameView::synchronizedPaintRecursively(GraphicsLayer* graphicsLayer, const LayoutRect* interestRect)
 {
-    GraphicsContext context(graphicsLayer->displayItemList());
+    GraphicsContext context(graphicsLayer->paintController());
 
     // TODO(chrishtr): fix unit tests to not inject one-off interest rects.
     if (interestRect) {
@@ -2515,7 +2515,7 @@ void FrameView::compositeForSlimmingPaintV2()
 
     rootGraphicsLayer->commitIfNeeded();
 
-    DisplayListCompositingBuilder compositingBuilder(*rootGraphicsLayer->displayItemList());
+    DisplayListCompositingBuilder compositingBuilder(*rootGraphicsLayer->paintController());
     OwnPtr<CompositedDisplayList> compositedDisplayList = adoptPtr(new CompositedDisplayList());
     compositingBuilder.build(*compositedDisplayList);
     page()->setCompositedDisplayList(compositedDisplayList.release());

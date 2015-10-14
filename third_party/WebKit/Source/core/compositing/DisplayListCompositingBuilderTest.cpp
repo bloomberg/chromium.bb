@@ -31,10 +31,10 @@ private:
 
 TEST_F(DisplayListCompositingBuilderTest, BasicTransformPropertyTree)
 {
-    OwnPtr<DisplayItemList> displayItemList = DisplayItemList::create();
-    displayItemList->commitNewDisplayItems();
+    OwnPtr<PaintController> paintController = PaintController::create();
+    paintController->commitNewDisplayItems();
 
-    DisplayListCompositingBuilder compositingBuilder(*displayItemList);
+    DisplayListCompositingBuilder compositingBuilder(*paintController);
     CompositedDisplayList compositedDisplayList;
     compositingBuilder.build(compositedDisplayList);
 

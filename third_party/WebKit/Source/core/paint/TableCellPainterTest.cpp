@@ -4,13 +4,13 @@
 
 #include "config.h"
 
-#include "core/paint/DisplayItemListPaintTest.h"
+#include "core/paint/PaintControllerPaintTest.h"
 #include "core/paint/PaintLayerPainter.h"
 #include "platform/graphics/GraphicsContext.h"
 
 namespace blink {
 
-using TableCellPainterTest = DisplayItemListPaintTest;
+using TableCellPainterTest = PaintControllerPaintTest;
 
 // TODO(wangxianzhu): Create a version for slimming paint v2 when it supports interest rect
 TEST_F(TableCellPainterTest, TableCellBackgroundInterestRect)
@@ -31,20 +31,20 @@ TEST_F(TableCellPainterTest, TableCellBackgroundInterestRect)
     LayoutObject& cell1 = *document().getElementById("cell1")->layoutObject();
     LayoutObject& cell2 = *document().getElementById("cell2")->layoutObject();
 
-    GraphicsContext context(&rootDisplayItemList());
+    GraphicsContext context(&rootPaintController());
     PaintLayerPaintingInfo paintingInfo(&rootLayer, LayoutRect(0, 0, 200, 200), GlobalPaintNormalPhase, LayoutSize());
     PaintLayerPainter(rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
-    rootDisplayItemList().commitNewDisplayItems();
+    rootPaintController().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(rootDisplayItemList().displayItems(), 2,
+    EXPECT_DISPLAY_LIST(rootPaintController().displayItems(), 2,
         TestDisplayItem(layoutView, DisplayItem::BoxDecorationBackground),
         TestDisplayItem(cell1, DisplayItem::TableCellBackgroundFromRow));
 
     PaintLayerPaintingInfo paintingInfo1(&rootLayer, LayoutRect(0, 300, 200, 200), GlobalPaintNormalPhase, LayoutSize());
     PaintLayerPainter(rootLayer).paintLayerContents(&context, paintingInfo1, PaintLayerPaintingCompositingAllPhases);
-    rootDisplayItemList().commitNewDisplayItems();
+    rootPaintController().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(rootDisplayItemList().displayItems(), 2,
+    EXPECT_DISPLAY_LIST(rootPaintController().displayItems(), 2,
         TestDisplayItem(layoutView, DisplayItem::BoxDecorationBackground),
         TestDisplayItem(cell2, DisplayItem::TableCellBackgroundFromRow));
 }

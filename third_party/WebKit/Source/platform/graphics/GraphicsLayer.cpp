@@ -39,8 +39,8 @@
 #include "platform/graphics/Image.h"
 #include "platform/graphics/LinkHighlight.h"
 #include "platform/graphics/filters/SkiaImageFilterBuilder.h"
-#include "platform/graphics/paint/DisplayItemList.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
+#include "platform/graphics/paint/PaintController.h"
 #include "platform/scroll/ScrollableArea.h"
 #include "platform/text/TextStream.h"
 #include "public/platform/Platform.h"
@@ -311,7 +311,7 @@ void GraphicsLayer::paint(GraphicsContext& context, const IntRect& clip)
         m_debugInfo.clearAnnotatedInvalidateRects();
     incrementPaintCount();
 #ifndef NDEBUG
-    if (m_displayItemList && contentsOpaque() && s_drawDebugRedFill) {
+    if (m_paintController && contentsOpaque() && s_drawDebugRedFill) {
         FloatRect rect(FloatPoint(), size());
         if (!DrawingRecorder::useCachedDrawingIfPossible(context, *this, DisplayItem::DebugRedFill)) {
             DrawingRecorder recorder(context, *this, DisplayItem::DebugRedFill, rect);
@@ -320,7 +320,7 @@ void GraphicsLayer::paint(GraphicsContext& context, const IntRect& clip)
     }
 #endif
     m_client->paintContents(this, context, m_paintingPhase, clip);
-    if (!m_textPainted && m_displayItemList->textPainted()) {
+    if (!m_textPainted && m_paintController->textPainted()) {
         m_textPainted = true;
         m_client->notifyTextPainted();
     }
@@ -813,8 +813,8 @@ void GraphicsLayer::setSize(const FloatSize& size)
 
 #ifndef NDEBUG
     // The red debug fill needs to be invalidated if the layer resizes.
-    if (m_displayItemList)
-        m_displayItemList->invalidateUntracked(displayItemClient());
+    if (m_paintController)
+        m_paintController->invalidateUntracked(displayItemClient());
 #endif
 }
 
@@ -1006,7 +1006,7 @@ void GraphicsLayer::setNeedsDisplay()
     for (size_t i = 0; i < m_linkHighlights.size(); ++i)
         m_linkHighlights[i]->invalidate();
 
-    displayItemList()->invalidateAll();
+    paintController()->invalidateAll();
     if (isTrackingPaintInvalidations())
         trackPaintInvalidationObject("##ALL##");
 }
@@ -1021,7 +1021,7 @@ bool GraphicsLayer::commitIfNeeded()
 {
     ASSERT(RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled());
     if (m_needsDisplay) {
-        displayItemList()->commitNewDisplayItems(this);
+        paintController()->commitNewDisplayItems(this);
         m_needsDisplay = false;
         return true;
     }
@@ -1048,7 +1048,7 @@ void GraphicsLayer::setNeedsDisplayInRect(const IntRect& rect, PaintInvalidation
 void GraphicsLayer::invalidateDisplayItemClient(const DisplayItemClientWrapper& displayItemClient, PaintInvalidationReason paintInvalidationReason, const IntRect& previousPaintInvalidationRect, const IntRect& newPaintInvalidationRect)
 {
     m_needsDisplay = true;
-    displayItemList()->invalidate(displayItemClient, paintInvalidationReason, previousPaintInvalidationRect, newPaintInvalidationRect);
+    paintController()->invalidate(displayItemClient, paintInvalidationReason, previousPaintInvalidationRect, newPaintInvalidationRect);
     if (isTrackingPaintInvalidations())
         trackPaintInvalidationObject(displayItemClient.debugName());
 }
@@ -1203,11 +1203,11 @@ void GraphicsLayer::didScroll()
     }
 }
 
-DisplayItemList* GraphicsLayer::displayItemList()
+PaintController* GraphicsLayer::paintController()
 {
-    if (!m_displayItemList)
-        m_displayItemList = DisplayItemList::create();
-    return m_displayItemList.get();
+    if (!m_paintController)
+        m_paintController = PaintController::create();
+    return m_paintController.get();
 }
 
 } // namespace blink

@@ -93,7 +93,7 @@ list.
 ***
 
 Generally, clients of this code should use stack-allocated recorder classes to
-emit display items to a `DisplayItemList` (using `GraphicsContext`).
+emit display items to a `PaintController` (using `GraphicsContext`).
 
 ### Standalone display items
 
@@ -126,10 +126,10 @@ them in SPv2.
 ## Display item list
 
 Callers use `GraphicsContext` (via its drawing methods, and its
-`displayItemList()` accessor) and scoped recorder classes, which emit items into
-a `DisplayItemList`.
+`paintController()` accessor) and scoped recorder classes, which emit items into
+a `PaintController`.
 
-`DisplayItemList` is responsible for producing the paint artifact. It contains
+`PaintController` is responsible for producing the paint artifact. It contains
 the *current* paint artifact, which is always complete (i.e. it has no
 `CachedDisplayItem` objects), and *new* display items and paint chunks, which
 are added as content is painted.

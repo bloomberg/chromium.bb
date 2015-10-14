@@ -79,7 +79,7 @@ typedef unsigned long long DOMTimeStamp;
 class CORE_EXPORT FrameView final : public Widget, public ScrollableArea {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(FrameView);
 
-    friend class DisplayItemListPaintTestForSlimmingPaintV2;
+    friend class PaintControllerPaintTestForSlimmingPaintV2;
     friend class Internals;
     friend class LayoutPart; // for invalidateTreeIfNeeded
 

@@ -7,19 +7,19 @@
 
 #include "core/CoreExport.h"
 #include "platform/graphics/CompositedDisplayList.h"
-#include "platform/graphics/paint/DisplayItemList.h"
+#include "platform/graphics/paint/PaintController.h"
 
 namespace blink {
 
 class CORE_EXPORT DisplayListCompositingBuilder {
 public:
-    DisplayListCompositingBuilder(const DisplayItemList& displayItemList)
-        : m_displayItemList(displayItemList) { }
+    DisplayListCompositingBuilder(const PaintController& paintController)
+        : m_paintController(paintController) { }
 
     void build(CompositedDisplayList&);
 
 private:
-    const DisplayItemList& m_displayItemList;
+    const PaintController& m_paintController;
 };
 
 } // namespace blink

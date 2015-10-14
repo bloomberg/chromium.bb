@@ -11,7 +11,7 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/paint/ClipDisplayItem.h"
-#include "platform/graphics/paint/DisplayItemList.h"
+#include "platform/graphics/paint/PaintController.h"
 
 namespace blink {
 
@@ -50,13 +50,13 @@ BoxClipper::BoxClipper(const LayoutBox& box, const PaintInfo& paintInfo, const L
             return;
     }
 
-    ASSERT(m_paintInfo.context->displayItemList());
-    if (!m_paintInfo.context->displayItemList()->displayItemConstructionIsDisabled()) {
+    ASSERT(m_paintInfo.context->paintController());
+    if (!m_paintInfo.context->paintController()->displayItemConstructionIsDisabled()) {
         m_clipType = m_paintInfo.displayItemTypeForClipping();
         Vector<FloatRoundedRect> roundedRects;
         if (hasBorderRadius)
             roundedRects.append(clipRoundedRect);
-        m_paintInfo.context->displayItemList()->createAndAppend<ClipDisplayItem>(m_box, m_clipType, pixelSnappedIntRect(clipRect), roundedRects);
+        m_paintInfo.context->paintController()->createAndAppend<ClipDisplayItem>(m_box, m_clipType, pixelSnappedIntRect(clipRect), roundedRects);
     }
 }
 
@@ -66,8 +66,8 @@ BoxClipper::~BoxClipper()
         return;
 
     ASSERT(m_box.hasControlClip() || (m_box.hasOverflowClip() && !m_box.layer()->isSelfPaintingLayer()));
-    ASSERT(m_paintInfo.context->displayItemList());
-    m_paintInfo.context->displayItemList()->endItem<EndClipDisplayItem>(m_box, DisplayItem::clipTypeToEndClipType(m_clipType));
+    ASSERT(m_paintInfo.context->paintController());
+    m_paintInfo.context->paintController()->endItem<EndClipDisplayItem>(m_box, DisplayItem::clipTypeToEndClipType(m_clipType));
 }
 
 } // namespace blink

@@ -1997,19 +1997,19 @@ void Internals::forceFullRepaint(Document* document, ExceptionState& exceptionSt
 void Internals::startTrackingPaintInvalidationObjects()
 {
     ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
-    toLocalFrame(frame()->page()->mainFrame())->view()->layoutView()->layer()->graphicsLayerBacking()->displayItemList()->startTrackingPaintInvalidationObjects();
+    toLocalFrame(frame()->page()->mainFrame())->view()->layoutView()->layer()->graphicsLayerBacking()->paintController()->startTrackingPaintInvalidationObjects();
 }
 
 void Internals::stopTrackingPaintInvalidationObjects()
 {
     ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
-    toLocalFrame(frame()->page()->mainFrame())->view()->layoutView()->layer()->graphicsLayerBacking()->displayItemList()->stopTrackingPaintInvalidationObjects();
+    toLocalFrame(frame()->page()->mainFrame())->view()->layoutView()->layer()->graphicsLayerBacking()->paintController()->stopTrackingPaintInvalidationObjects();
 }
 
 Vector<String> Internals::trackedPaintInvalidationObjects()
 {
     ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
-    return toLocalFrame(frame()->page()->mainFrame())->view()->layoutView()->layer()->graphicsLayerBacking()->displayItemList()->trackedPaintInvalidationObjects();
+    return toLocalFrame(frame()->page()->mainFrame())->view()->layoutView()->layer()->graphicsLayerBacking()->paintController()->trackedPaintInvalidationObjects();
 }
 
 ClientRectList* Internals::draggableRegions(Document* document, ExceptionState& exceptionState)

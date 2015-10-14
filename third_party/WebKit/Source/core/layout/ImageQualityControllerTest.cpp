@@ -8,7 +8,7 @@
 #include "core/layout/LayoutImage.h"
 #include "core/layout/LayoutTestHelper.h"
 #include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/paint/DisplayItemList.h"
+#include "platform/graphics/paint/PaintController.h"
 
 #include <gtest/gtest.h>
 
@@ -106,8 +106,8 @@ TEST_F(ImageQualityControllerTest, MediumQualityFilterForUnscaledImage)
     LayoutImage* img = toLayoutImage(document().body()->firstChild()->layoutObject());
 
     RefPtr<TestImageLowQuality> testImage = adoptRef(new TestImageLowQuality);
-    OwnPtr<DisplayItemList> displayItemList = DisplayItemList::create();
-    GraphicsContext context(displayItemList.get());
+    OwnPtr<PaintController> paintController = PaintController::create();
+    GraphicsContext context(paintController.get());
     EXPECT_EQ(InterpolationMedium, controller()->chooseInterpolationQuality(&context, img, testImage.get(), testImage.get(), LayoutSize(1, 1)));
 }
 
@@ -134,8 +134,8 @@ TEST_F(ImageQualityControllerTest, LowQualityFilterForLiveResize)
     LayoutImage* img = toLayoutImage(document().body()->firstChild()->layoutObject());
 
     RefPtr<TestImageLowQuality> testImage = adoptRef(new TestImageLowQuality);
-    OwnPtr<DisplayItemList> displayItemList = DisplayItemList::create();
-    GraphicsContext context(displayItemList.get());
+    OwnPtr<PaintController> paintController = PaintController::create();
+    GraphicsContext context(paintController.get());
 
     // Start a resize
     document().frame()->view()->willStartLiveResize();
@@ -166,8 +166,8 @@ TEST_F(ImageQualityControllerTest, LowQualityFilterForResizingImage)
     LayoutImage* img = toLayoutImage(document().body()->firstChild()->layoutObject());
 
     RefPtr<TestImageLowQuality> testImage = adoptRef(new TestImageLowQuality);
-    OwnPtr<DisplayItemList> displayItemList = DisplayItemList::create();
-    GraphicsContext context(displayItemList.get());
+    OwnPtr<PaintController> paintController = PaintController::create();
+    GraphicsContext context(paintController.get());
 
     // Paint once. This will kick off a timer to see if we resize it during that timer's execution.
     EXPECT_EQ(InterpolationMedium, controller()->chooseInterpolationQuality(&context, img, testImage.get(), testImage.get(), LayoutSize(2, 2)));
@@ -191,8 +191,8 @@ TEST_F(ImageQualityControllerTest, DontKickTheAnimationTimerWhenPaintingAtTheSam
     LayoutImage* img = toLayoutImage(document().body()->firstChild()->layoutObject());
 
     RefPtr<TestImageLowQuality> testImage = adoptRef(new TestImageLowQuality);
-    OwnPtr<DisplayItemList> displayItemList = DisplayItemList::create();
-    GraphicsContext context(displayItemList.get());
+    OwnPtr<PaintController> paintController = PaintController::create();
+    GraphicsContext context(paintController.get());
 
     // Paint once. This will kick off a timer to see if we resize it during that timer's execution.
     EXPECT_EQ(InterpolationMedium, controller()->chooseInterpolationQuality(&context, img, testImage.get(), testImage.get(), LayoutSize(2, 2)));

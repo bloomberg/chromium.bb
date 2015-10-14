@@ -11,8 +11,8 @@
 #include "core/paint/PaintInfo.h"
 #include "core/paint/TransformRecorder.h"
 #include "platform/graphics/paint/CompositingDisplayItem.h"
-#include "platform/graphics/paint/DisplayItemList.h"
 #include "platform/graphics/paint/DrawingDisplayItem.h"
+#include "platform/graphics/paint/PaintController.h"
 
 namespace blink {
 
@@ -28,8 +28,8 @@ bool SVGMaskPainter::prepareEffect(const LayoutObject& object, GraphicsContext* 
     if (paintInvalidationRect.isEmpty() || !m_mask.element()->hasChildren())
         return false;
 
-    ASSERT(context->displayItemList());
-    context->displayItemList()->createAndAppend<BeginCompositingDisplayItem>(object, SkXfermode::kSrcOver_Mode, 1, &paintInvalidationRect);
+    ASSERT(context->paintController());
+    context->paintController()->createAndAppend<BeginCompositingDisplayItem>(object, SkXfermode::kSrcOver_Mode, 1, &paintInvalidationRect);
     return true;
 }
 
@@ -47,8 +47,8 @@ void SVGMaskPainter::finishEffect(const LayoutObject& object, GraphicsContext* c
         drawMaskForLayoutObject(context, object, object.objectBoundingBox(), paintInvalidationRect);
     }
 
-    ASSERT(context->displayItemList());
-    context->displayItemList()->endItem<EndCompositingDisplayItem>(object);
+    ASSERT(context->paintController());
+    context->paintController()->endItem<EndCompositingDisplayItem>(object);
 }
 
 void SVGMaskPainter::drawMaskForLayoutObject(GraphicsContext* context, const LayoutObject& layoutObject, const FloatRect& targetBoundingBox, const FloatRect& targetPaintInvalidationRect)

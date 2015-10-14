@@ -47,7 +47,7 @@ class WebGraphicsContext;
 // Clients can paint by implementing WebPageOverlay.
 //
 // With Slimming Paint, internal clients can extract a GraphicsContext to add
-// to the DisplayItemList owned by the GraphicsLayer
+// to the PaintController owned by the GraphicsLayer
 class PageOverlay : public GraphicsLayerClient {
 public:
     class Delegate : public GarbageCollectedFinalized<Delegate> {

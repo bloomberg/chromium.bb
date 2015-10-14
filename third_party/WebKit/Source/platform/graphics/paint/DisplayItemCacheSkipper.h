@@ -6,7 +6,7 @@
 #define DisplayItemCacheSkipper_h
 
 #include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/paint/DisplayItemList.h"
+#include "platform/graphics/paint/PaintController.h"
 
 namespace blink {
 
@@ -15,11 +15,11 @@ public:
     DisplayItemCacheSkipper(GraphicsContext& context)
         : m_context(context)
     {
-        context.displayItemList()->beginSkippingCache();
+        context.paintController()->beginSkippingCache();
     }
     ~DisplayItemCacheSkipper()
     {
-        m_context.displayItemList()->endSkippingCache();
+        m_context.paintController()->endSkippingCache();
     }
 
 private:

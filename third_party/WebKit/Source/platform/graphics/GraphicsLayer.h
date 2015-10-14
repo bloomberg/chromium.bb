@@ -40,7 +40,7 @@
 #include "platform/graphics/PaintInvalidationReason.h"
 #include "platform/graphics/filters/FilterOperations.h"
 #include "platform/graphics/paint/DisplayItemClient.h"
-#include "platform/graphics/paint/DisplayItemList.h"
+#include "platform/graphics/paint/PaintController.h"
 #include "platform/transforms/TransformationMatrix.h"
 #include "public/platform/WebCompositorAnimationDelegate.h"
 #include "public/platform/WebContentLayer.h"
@@ -55,7 +55,6 @@
 
 namespace blink {
 
-class DisplayItemList;
 class FloatRect;
 class GraphicsContext;
 class GraphicsLayer;
@@ -64,6 +63,7 @@ class GraphicsLayerFactoryChromium;
 class Image;
 class LinkHighlight;
 class JSONObject;
+class PaintController;
 class ScrollableArea;
 class WebCompositorAnimation;
 class WebLayer;
@@ -255,7 +255,7 @@ public:
     // WebLayerScrollClient implementation.
     void didScroll() override;
 
-    DisplayItemList* displayItemList() override;
+    PaintController* paintController() override;
 
     // Exposed for tests.
     virtual WebLayer* contentsLayer() const { return m_contentsLayer; }
@@ -278,7 +278,7 @@ protected:
     friend class FakeGraphicsLayerFactory;
 
 private:
-    // Sets m_needsDisplay, but without invalidating the DisplayItemList. This allows us to test
+    // Sets m_needsDisplay, but without invalidating the PaintController. This allows us to test
     // scenarios where paint needs to be re-calculated, but no DisplayItemClients were invalidated
     // (such as re-paints due to change of interest rect).
     void setNeedsDisplayWithoutInvalidateForTesting();
@@ -375,9 +375,9 @@ private:
     GraphicsLayerDebugInfo m_debugInfo;
     int m_3dRenderingContext;
 
-    OwnPtr<DisplayItemList> m_displayItemList;
+    OwnPtr<PaintController> m_paintController;
 
-    friend class DisplayItemListPaintTestForSlimmingPaintV2;
+    friend class PaintControllerPaintTestForSlimmingPaintV2;
 };
 
 } // namespace blink

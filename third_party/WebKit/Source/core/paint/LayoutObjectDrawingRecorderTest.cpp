@@ -7,18 +7,18 @@
 
 #include "core/layout/LayoutTestHelper.h"
 #include "core/layout/LayoutView.h"
-#include "core/paint/DisplayItemListPaintTest.h"
+#include "core/paint/PaintControllerPaintTest.h"
 #include "core/paint/PaintLayer.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsLayer.h"
-#include "platform/graphics/paint/DisplayItemList.h"
 #include "platform/graphics/paint/DrawingDisplayItem.h"
+#include "platform/graphics/paint/PaintController.h"
 #include <gtest/gtest.h>
 
 namespace blink {
 
-using LayoutObjectDrawingRecorderTest = DisplayItemListPaintTest;
-using LayoutObjectDrawingRecorderTestForSlimmingPaintV2 = DisplayItemListPaintTestForSlimmingPaintV2;
+using LayoutObjectDrawingRecorderTest = PaintControllerPaintTest;
+using LayoutObjectDrawingRecorderTestForSlimmingPaintV2 = PaintControllerPaintTestForSlimmingPaintV2;
 
 namespace {
 
@@ -41,66 +41,66 @@ void drawRect(GraphicsContext& context, LayoutView& layoutView, PaintPhase phase
 
 TEST_F(LayoutObjectDrawingRecorderTest, Nothing)
 {
-    GraphicsContext context(&rootDisplayItemList());
+    GraphicsContext context(&rootPaintController());
     LayoutRect bound = layoutView().viewRect();
-    EXPECT_EQ((size_t)0, rootDisplayItemList().displayItems().size());
+    EXPECT_EQ((size_t)0, rootPaintController().displayItems().size());
 
     drawNothing(context, layoutView(), PaintPhaseForeground, bound);
-    rootDisplayItemList().commitNewDisplayItems();
-    EXPECT_DISPLAY_LIST(rootDisplayItemList().displayItems(), 1,
+    rootPaintController().commitNewDisplayItems();
+    EXPECT_DISPLAY_LIST(rootPaintController().displayItems(), 1,
         TestDisplayItem(layoutView(), DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)));
-    EXPECT_FALSE(static_cast<const DrawingDisplayItem&>(rootDisplayItemList().displayItems()[0]).picture());
+    EXPECT_FALSE(static_cast<const DrawingDisplayItem&>(rootPaintController().displayItems()[0]).picture());
 }
 
 TEST_F(LayoutObjectDrawingRecorderTest, Rect)
 {
-    GraphicsContext context(&rootDisplayItemList());
+    GraphicsContext context(&rootPaintController());
     LayoutRect bound = layoutView().viewRect();
     drawRect(context, layoutView(), PaintPhaseForeground, bound);
-    rootDisplayItemList().commitNewDisplayItems();
-    EXPECT_DISPLAY_LIST(rootDisplayItemList().displayItems(), 1,
+    rootPaintController().commitNewDisplayItems();
+    EXPECT_DISPLAY_LIST(rootPaintController().displayItems(), 1,
         TestDisplayItem(layoutView(), DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)));
 }
 
 TEST_F(LayoutObjectDrawingRecorderTest, Cached)
 {
-    GraphicsContext context(&rootDisplayItemList());
+    GraphicsContext context(&rootPaintController());
     LayoutRect bound = layoutView().viewRect();
     drawNothing(context, layoutView(), PaintPhaseBlockBackground, bound);
     drawRect(context, layoutView(), PaintPhaseForeground, bound);
-    rootDisplayItemList().commitNewDisplayItems();
+    rootPaintController().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(rootDisplayItemList().displayItems(), 2,
+    EXPECT_DISPLAY_LIST(rootPaintController().displayItems(), 2,
         TestDisplayItem(layoutView(), DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
         TestDisplayItem(layoutView(), DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)));
 
     drawNothing(context, layoutView(), PaintPhaseBlockBackground, bound);
     drawRect(context, layoutView(), PaintPhaseForeground, bound);
 
-    EXPECT_DISPLAY_LIST(rootDisplayItemList().newDisplayItems(), 2,
+    EXPECT_DISPLAY_LIST(rootPaintController().newDisplayItems(), 2,
         TestDisplayItem(layoutView(), DisplayItem::drawingTypeToCachedDrawingType(DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground))),
         TestDisplayItem(layoutView(), DisplayItem::drawingTypeToCachedDrawingType(DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground))));
 
-    rootDisplayItemList().commitNewDisplayItems();
+    rootPaintController().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(rootDisplayItemList().displayItems(), 2,
+    EXPECT_DISPLAY_LIST(rootPaintController().displayItems(), 2,
         TestDisplayItem(layoutView(), DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
         TestDisplayItem(layoutView(), DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)));
 }
 
 template <typename T>
-FloatRect drawAndGetCullRect(DisplayItemList& list, const LayoutObject& layoutObject, const T& bounds)
+FloatRect drawAndGetCullRect(PaintController& controller, const LayoutObject& layoutObject, const T& bounds)
 {
-    list.invalidateAll();
+    controller.invalidateAll();
     {
         // Draw some things which will produce a non-null picture.
-        GraphicsContext context(&list);
+        GraphicsContext context(&controller);
         LayoutObjectDrawingRecorder recorder(
             context, layoutObject, DisplayItem::BoxDecorationBackground, bounds, LayoutPoint());
         context.drawRect(enclosedIntRect(FloatRect(bounds)));
     }
-    list.commitNewDisplayItems();
-    const auto& drawing = static_cast<const DrawingDisplayItem&>(list.displayItems()[0]);
+    controller.commitNewDisplayItems();
+    const auto& drawing = static_cast<const DrawingDisplayItem&>(controller.displayItems()[0]);
     return drawing.picture()->cullRect();
 }
 
@@ -115,19 +115,19 @@ TEST_F(LayoutObjectDrawingRecorderTest, CullRectMatchesProvidedClip)
     // are exactly on a half-pixel boundary. The numbers chosen map nicely to
     // both float and LayoutUnit, to make equality checking reliable.
     FloatRect rect(20.75, -5.5, 5.375, 10);
-    EXPECT_EQ(rect, drawAndGetCullRect(rootDisplayItemList(), layoutView(), rect));
-    EXPECT_EQ(rect, drawAndGetCullRect(rootDisplayItemList(), layoutView(), LayoutRect(rect)));
+    EXPECT_EQ(rect, drawAndGetCullRect(rootPaintController(), layoutView(), rect));
+    EXPECT_EQ(rect, drawAndGetCullRect(rootPaintController(), layoutView(), LayoutRect(rect)));
 }
 
 TEST_F(LayoutObjectDrawingRecorderTest, PaintOffsetCache)
 {
     RuntimeEnabledFeatures::setSlimmingPaintOffsetCachingEnabled(true);
 
-    GraphicsContext context(&rootDisplayItemList());
+    GraphicsContext context(&rootPaintController());
     LayoutRect bounds = layoutView().viewRect();
     LayoutPoint paintOffset(1, 2);
 
-    rootDisplayItemList().invalidateAll();
+    rootPaintController().invalidateAll();
     EXPECT_FALSE(LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(context, layoutView(), PaintPhaseForeground, paintOffset));
     {
         LayoutObjectDrawingRecorder drawingRecorder(context, layoutView(), PaintPhaseForeground, bounds, paintOffset);
@@ -135,8 +135,8 @@ TEST_F(LayoutObjectDrawingRecorderTest, PaintOffsetCache)
         context.drawRect(rect);
     }
 
-    rootDisplayItemList().commitNewDisplayItems();
-    EXPECT_DISPLAY_LIST(rootDisplayItemList().displayItems(), 1,
+    rootPaintController().commitNewDisplayItems();
+    EXPECT_DISPLAY_LIST(rootPaintController().displayItems(), 1,
         TestDisplayItem(layoutView(), DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)));
 
     // Ensure we cannot use the cache with a new paint offset.
@@ -150,8 +150,8 @@ TEST_F(LayoutObjectDrawingRecorderTest, PaintOffsetCache)
         context.drawRect(rect);
     }
 
-    rootDisplayItemList().commitNewDisplayItems();
-    EXPECT_DISPLAY_LIST(rootDisplayItemList().displayItems(), 1,
+    rootPaintController().commitNewDisplayItems();
+    EXPECT_DISPLAY_LIST(rootPaintController().displayItems(), 1,
         TestDisplayItem(layoutView(), DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)));
 
     // Ensure the old paint offset cannot be used.
@@ -159,8 +159,8 @@ TEST_F(LayoutObjectDrawingRecorderTest, PaintOffsetCache)
 
     // Ensure the new paint offset can be used.
     EXPECT_TRUE(LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(context, layoutView(), PaintPhaseForeground, newPaintOffset));
-    rootDisplayItemList().commitNewDisplayItems();
-    EXPECT_DISPLAY_LIST(rootDisplayItemList().displayItems(), 1,
+    rootPaintController().commitNewDisplayItems();
+    EXPECT_DISPLAY_LIST(rootPaintController().displayItems(), 1,
         TestDisplayItem(layoutView(), DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)));
 }
 

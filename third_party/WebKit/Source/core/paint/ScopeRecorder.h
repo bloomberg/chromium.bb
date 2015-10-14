@@ -11,9 +11,9 @@
 
 namespace blink {
 
-class DisplayItemList;
 class GraphicsContext;
 class LayoutObject;
+class PaintController;
 
 class CORE_EXPORT ScopeRecorder {
     ALLOW_ONLY_INLINE_ALLOCATION();
@@ -23,7 +23,7 @@ public:
     ~ScopeRecorder();
 
 private:
-    DisplayItemList* m_displayItemList;
+    PaintController* m_paintController;
 };
 
 } // namespace blink

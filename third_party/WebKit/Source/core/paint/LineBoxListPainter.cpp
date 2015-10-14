@@ -14,7 +14,7 @@
 #include "core/paint/InlinePainter.h"
 #include "core/paint/ObjectPainter.h"
 #include "core/paint/PaintInfo.h"
-#include "platform/graphics/paint/DisplayItemList.h"
+#include "platform/graphics/paint/PaintController.h"
 
 namespace blink {
 
@@ -63,24 +63,24 @@ void LineBoxListPainter::paint(const LayoutBoxModelObject& layoutObject, const P
     }
 }
 
-static void invalidateLineBoxPaintOffsetsInternal(DisplayItemList* displayItemList, InlineFlowBox* inlineBox)
+static void invalidateLineBoxPaintOffsetsInternal(PaintController* paintController, InlineFlowBox* inlineBox)
 {
-    displayItemList->invalidatePaintOffset(*inlineBox);
+    paintController->invalidatePaintOffset(*inlineBox);
     for (InlineBox* child = inlineBox->firstChild(); child; child = child->nextOnLine()) {
         if (!child->lineLayoutItem().isText() && child->boxModelObject().hasSelfPaintingLayer())
             continue;
         if (child->isInlineFlowBox())
-            invalidateLineBoxPaintOffsetsInternal(displayItemList, toInlineFlowBox(child));
+            invalidateLineBoxPaintOffsetsInternal(paintController, toInlineFlowBox(child));
         else
-            displayItemList->invalidatePaintOffset(*child);
+            paintController->invalidatePaintOffset(*child);
     }
 }
 
 void LineBoxListPainter::invalidateLineBoxPaintOffsets(const PaintInfo& paintInfo) const
 {
-    DisplayItemList* displayItemList = paintInfo.context->displayItemList();
+    PaintController* paintController = paintInfo.context->paintController();
     for (InlineFlowBox* curr = m_lineBoxList.firstLineBox(); curr; curr = curr->nextLineBox())
-        invalidateLineBoxPaintOffsetsInternal(displayItemList, curr);
+        invalidateLineBoxPaintOffsetsInternal(paintController, curr);
 }
 
 } // namespace blink

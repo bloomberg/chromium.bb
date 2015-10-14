@@ -5,8 +5,8 @@
 #ifndef CompositedDisplayList_h
 #define CompositedDisplayList_h
 
-#include "platform/graphics/paint/DisplayItemList.h"
 #include "platform/graphics/paint/DisplayItemTransformTree.h"
+#include "platform/graphics/paint/PaintController.h"
 
 namespace blink {
 

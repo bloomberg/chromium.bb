@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DisplayItemListPaintTest_h
-#define DisplayItemListPaintTest_h
+#ifndef PaintControllerPaintTest_h
+#define PaintControllerPaintTest_h
 
 #include "core/frame/FrameView.h"
 #include "core/layout/LayoutTestHelper.h"
@@ -14,16 +14,16 @@
 
 namespace blink {
 
-class DisplayItemListPaintTest : public RenderingTest {
+class PaintControllerPaintTest : public RenderingTest {
 public:
-    DisplayItemListPaintTest()
+    PaintControllerPaintTest()
         : m_originalSlimmingPaintSubsequenceCachingEnabled(RuntimeEnabledFeatures::slimmingPaintSubsequenceCachingEnabled())
         , m_originalSlimmingPaintOffsetCachingEnabled(RuntimeEnabledFeatures::slimmingPaintOffsetCachingEnabled())
         { }
 
 protected:
     LayoutView& layoutView() { return *document().layoutView(); }
-    DisplayItemList& rootDisplayItemList() { return *layoutView().layer()->graphicsLayerBacking()->displayItemList(); }
+    PaintController& rootPaintController() { return *layoutView().layer()->graphicsLayerBacking()->paintController(); }
 
 private:
     void SetUp() override
@@ -43,14 +43,14 @@ private:
 
 // Slimming paint v2 has subtly different behavior on some paint tests. This
 // class is used to test only v2 behavior while maintaining v1 test coverage.
-class DisplayItemListPaintTestForSlimmingPaintV2 : public RenderingTest {
+class PaintControllerPaintTestForSlimmingPaintV2 : public RenderingTest {
 public:
-    DisplayItemListPaintTestForSlimmingPaintV2()
+    PaintControllerPaintTestForSlimmingPaintV2()
         : m_originalSlimmingPaintV2Enabled(RuntimeEnabledFeatures::slimmingPaintV2Enabled()) { }
 
 protected:
     LayoutView& layoutView() { return *document().layoutView(); }
-    DisplayItemList& rootDisplayItemList() { return *layoutView().layer()->graphicsLayerBacking()->displayItemList(); }
+    PaintController& rootPaintController() { return *layoutView().layer()->graphicsLayerBacking()->paintController(); }
     void setNeedsDisplayForRoot()
     {
         layoutView().layer()->graphicsLayerBacking()->setNeedsDisplay();
@@ -129,4 +129,4 @@ const DisplayItem::Type cachedSubsequenceType = DisplayItem::subsequenceTypeToCa
 
 } // namespace blink
 
-#endif // DisplayItemListPaintTest_h
+#endif // PaintControllerPaintTest_h

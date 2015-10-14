@@ -29,7 +29,7 @@
 #include "core/svg/SVGFitToViewBox.h"
 #include "core/svg/SVGPatternElement.h"
 #include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/paint/DisplayItemList.h"
+#include "platform/graphics/paint/PaintController.h"
 #include "platform/graphics/paint/SkPictureBuilder.h"
 #include "third_party/skia/include/core/SkPicture.h"
 

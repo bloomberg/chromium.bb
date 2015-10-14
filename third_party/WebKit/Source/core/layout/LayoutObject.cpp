@@ -86,7 +86,7 @@
 #include "platform/TracedValue.h"
 #include "platform/geometry/TransformState.h"
 #include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/paint/DisplayItemList.h"
+#include "platform/graphics/paint/PaintController.h"
 #include "wtf/Partitions.h"
 #include "wtf/RefCountedLeakCounter.h"
 #include "wtf/text/StringBuilder.h"
@@ -1450,9 +1450,9 @@ void LayoutObject::invalidatePaintIfNeededForSynchronizedPainting(const PaintInf
     ASSERT(paintInfo.paintInvalidationState);
     ASSERT(paintInfo.paintContainer());
 
-    DisplayItemList* displayItemList = paintInfo.context->displayItemList();
-    if (displayItemList->clientHasCheckedPaintInvalidation(displayItemClient())) {
-        ASSERT(displayItemList->clientCacheIsValid(displayItemClient())
+    PaintController* paintController = paintInfo.context->paintController();
+    if (paintController->clientHasCheckedPaintInvalidation(displayItemClient())) {
+        ASSERT(paintController->clientCacheIsValid(displayItemClient())
             == (invalidatePaintIfNeeded(*paintInfo.paintInvalidationState, *paintInfo.paintContainer()) == PaintInvalidationNone));
         return;
     }
@@ -1463,7 +1463,7 @@ void LayoutObject::invalidatePaintIfNeededForSynchronizedPainting(const PaintInf
     if (reason == PaintInvalidationDelayedFull)
         paintInfo.paintInvalidationState->pushDelayedPaintInvalidationTarget(*this);
 
-    displayItemList->setClientHasCheckedPaintInvalidation(displayItemClient());
+    paintController->setClientHasCheckedPaintInvalidation(displayItemClient());
 }
 
 PaintInvalidationReason LayoutObject::paintInvalidationReason(const LayoutBoxModelObject& paintInvalidationContainer,

@@ -44,7 +44,7 @@
 #include "platform/TracedValue.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/TransformState.h"
-#include "platform/graphics/paint/DisplayItemList.h"
+#include "platform/graphics/paint/PaintController.h"
 #include <inttypes.h>
 
 namespace blink {

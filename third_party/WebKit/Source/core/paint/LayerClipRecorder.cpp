@@ -12,7 +12,7 @@
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/paint/ClipRecorder.h"
-#include "platform/graphics/paint/DisplayItemList.h"
+#include "platform/graphics/paint/PaintController.h"
 
 namespace blink {
 
@@ -28,8 +28,8 @@ LayerClipRecorder::LayerClipRecorder(GraphicsContext& graphicsContext, const Lay
         collectRoundedRectClips(*layoutObject.layer(), *localPaintingInfo, graphicsContext, fragmentOffset, paintFlags, rule, roundedRects);
     }
 
-    ASSERT(m_graphicsContext.displayItemList());
-    m_graphicsContext.displayItemList()->createAndAppend<ClipDisplayItem>(layoutObject, m_clipType, snappedClipRect, roundedRects);
+    ASSERT(m_graphicsContext.paintController());
+    m_graphicsContext.paintController()->createAndAppend<ClipDisplayItem>(layoutObject, m_clipType, snappedClipRect, roundedRects);
 }
 
 static bool inContainingBlockChain(PaintLayer* startLayer, PaintLayer* endLayer)
@@ -73,8 +73,8 @@ void LayerClipRecorder::collectRoundedRectClips(PaintLayer& paintLayer, const Pa
 
 LayerClipRecorder::~LayerClipRecorder()
 {
-    ASSERT(m_graphicsContext.displayItemList());
-    m_graphicsContext.displayItemList()->endItem<EndClipDisplayItem>(m_layoutObject, DisplayItem::clipTypeToEndClipType(m_clipType));
+    ASSERT(m_graphicsContext.paintController());
+    m_graphicsContext.paintController()->endItem<EndClipDisplayItem>(m_layoutObject, DisplayItem::clipTypeToEndClipType(m_clipType));
 }
 
 } // namespace blink

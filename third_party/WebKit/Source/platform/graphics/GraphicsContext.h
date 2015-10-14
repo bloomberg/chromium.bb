@@ -57,9 +57,9 @@ struct SkRect;
 
 namespace blink {
 
-class DisplayItemList;
 class ImageBuffer;
 class KURL;
+class PaintController;
 
 class PLATFORM_EXPORT GraphicsContext {
     WTF_MAKE_NONCOPYABLE(GraphicsContext); WTF_MAKE_FAST_ALLOCATED(GraphicsContext);
@@ -69,14 +69,14 @@ public:
         FullyDisabled = 1 // Do absolutely minimal work to remove the cost of the context from performance tests.
     };
 
-    explicit GraphicsContext(DisplayItemList*, DisabledMode = NothingDisabled, SkMetaData* = 0);
+    explicit GraphicsContext(PaintController*, DisabledMode = NothingDisabled, SkMetaData* = 0);
 
     ~GraphicsContext();
 
     SkCanvas* canvas() { return m_canvas; }
     const SkCanvas* canvas() const { return m_canvas; }
 
-    DisplayItemList* displayItemList() { return m_displayItemList; }
+    PaintController* paintController() { return m_paintController; }
 
     bool contextDisabled() const { return m_disabledState; }
 
@@ -343,8 +343,8 @@ private:
     // used when Slimming Paint is active.
     SkCanvas* m_originalCanvas;
 
-    // This being null indicates not to paint into a DisplayItemList, and instead directly into the canvas.
-    DisplayItemList* m_displayItemList;
+    // This being null indicates not to paint using the PaintController, and instead directly into the canvas.
+    PaintController* m_paintController;
 
     // Paint states stack. Enables local drawing state change with save()/restore() calls.
     // This state controls the appearance of drawn content.

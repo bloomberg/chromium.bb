@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DisplayItemList_h
-#define DisplayItemList_h
+#ifndef PaintController_h
+#define PaintController_h
 
 #include "platform/PlatformExport.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -33,13 +33,13 @@ static const size_t kInitialDisplayItemsCapacity = 64;
 // Responsible for processing display items as they are produced, and producing
 // a final paint artifact when complete. This class includes logic for caching,
 // cache invalidation, and merging.
-class PLATFORM_EXPORT DisplayItemList {
-    WTF_MAKE_NONCOPYABLE(DisplayItemList);
-    WTF_MAKE_FAST_ALLOCATED(DisplayItemList);
+class PLATFORM_EXPORT PaintController {
+    WTF_MAKE_NONCOPYABLE(PaintController);
+    WTF_MAKE_FAST_ALLOCATED(PaintController);
 public:
-    static PassOwnPtr<DisplayItemList> create()
+    static PassOwnPtr<PaintController> create()
     {
-        return adoptPtr(new DisplayItemList());
+        return adoptPtr(new PaintController());
     }
 
     // These methods are called during paint invalidation (or paint if SlimmingPaintSynchronizedPainting is on).
@@ -109,7 +109,7 @@ public:
     void commitNewDisplayItems(GraphicsLayer* = 0);
 
     // Returns the approximate memory usage, excluding memory likely to be
-    // shared with the embedder after copying to WebDisplayItemList.
+    // shared with the embedder after copying to WebPaintController.
     // Should only be called right after commitNewDisplayItems.
     size_t approximateUnsharedMemoryUsage() const;
 
@@ -162,7 +162,7 @@ public:
     }
 
 protected:
-    DisplayItemList()
+    PaintController()
         : m_newDisplayItems(kInitialDisplayItemsCapacity * kMaximumDisplayItemSize)
         , m_validlyCachedClientsDirty(false)
         , m_constructionDisabled(false)
@@ -233,7 +233,7 @@ private:
     // in performance metrics.
     bool m_constructionDisabled;
 
-    // Indicates this DisplayItemList has ever had text. It is never reset to false.
+    // Indicates this PaintController has ever had text. It is never reset to false.
     bool m_textPainted;
 
     int m_skippingCacheCount;
@@ -262,4 +262,4 @@ private:
 
 } // namespace blink
 
-#endif // DisplayItemList_h
+#endif // PaintController_h

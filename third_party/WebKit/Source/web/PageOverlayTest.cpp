@@ -9,8 +9,8 @@
 #include "core/layout/LayoutView.h"
 #include "platform/graphics/Color.h"
 #include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/paint/DisplayItemList.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
+#include "platform/graphics/paint/PaintController.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCanvas.h"
 #include "public/platform/WebThread.h"
@@ -152,12 +152,12 @@ void PageOverlayTest::runPageOverlayTestWithAcceleratedCompositing()
 
     // Paint the layer with a null canvas to get a display list, and then
     // replay that onto the mock canvas for examination.
-    GraphicsContext graphicsContext(graphicsLayer->displayItemList());
+    GraphicsContext graphicsContext(graphicsLayer->paintController());
     graphicsLayer->paint(graphicsContext, rect);
 
     graphicsContext.beginRecording(IntRect(rect));
-    graphicsLayer->displayItemList()->commitNewDisplayItems();
-    graphicsLayer->displayItemList()->paintArtifact().replay(graphicsContext);
+    graphicsLayer->paintController()->commitNewDisplayItems();
+    graphicsLayer->paintController()->paintArtifact().replay(graphicsContext);
     graphicsContext.endRecording()->playback(&canvas);
 }
 

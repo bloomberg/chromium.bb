@@ -6,7 +6,7 @@
 #include "core/paint/TransformRecorder.h"
 
 #include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/paint/DisplayItemList.h"
+#include "platform/graphics/paint/PaintController.h"
 #include "platform/graphics/paint/TransformDisplayItem.h"
 
 namespace blink {
@@ -20,8 +20,8 @@ TransformRecorder::TransformRecorder(GraphicsContext& context, const DisplayItem
     if (m_skipRecordingForIdentityTransform)
         return;
 
-    ASSERT(m_context.displayItemList());
-    m_context.displayItemList()->createAndAppend<BeginTransformDisplayItem>(m_client, transform);
+    ASSERT(m_context.paintController());
+    m_context.paintController()->createAndAppend<BeginTransformDisplayItem>(m_client, transform);
 }
 
 TransformRecorder::~TransformRecorder()
@@ -29,8 +29,8 @@ TransformRecorder::~TransformRecorder()
     if (m_skipRecordingForIdentityTransform)
         return;
 
-    ASSERT(m_context.displayItemList());
-    m_context.displayItemList()->endItem<EndTransformDisplayItem>(m_client);
+    ASSERT(m_context.paintController());
+    m_context.paintController()->endItem<EndTransformDisplayItem>(m_client);
 }
 
 } // namespace blink
