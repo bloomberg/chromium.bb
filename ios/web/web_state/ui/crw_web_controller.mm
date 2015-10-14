@@ -2962,9 +2962,11 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     return NO;
   }
 
+  // Fetching is considered as successful even if |_DOMElementForLastTouch| is
+  // empty. However if |_DOMElementForLastTouch| is empty then custom context
+  // menu should not be shown.
   UMA_HISTOGRAM_BOOLEAN("WebController.FetchContextMenuInfoAsyncSucceeded",
                         _DOMElementForLastTouch);
-
   return _DOMElementForLastTouch && !_DOMElementForLastTouch->empty();
 }
 
