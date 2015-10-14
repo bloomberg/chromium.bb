@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.preferences.autofill;
 
-import android.app.Activity;
-import android.content.Context;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -177,22 +175,14 @@ public class AutofillPreferences extends PreferenceFragment
     }
 
     @Override
-    public void onDestroy() {
-        super.onDestroy();
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        PersonalDataManager.getInstance().registerDataObserver(this);
+    }
+
+    @Override
+    public void onDestroyView() {
         PersonalDataManager.getInstance().unregisterDataObserver(this);
-    }
-
-    // TODO: remove this than we only support Build.VERSION_CODES.M and newer.
-    @SuppressWarnings("deprecation")
-    @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        PersonalDataManager.getInstance().registerDataObserver(this);
-    }
-
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        PersonalDataManager.getInstance().registerDataObserver(this);
+        super.onDestroyView();
     }
 }
