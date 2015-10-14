@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MANDOLINE_UI_AURA_NATIVE_WIDGET_VIEW_MANAGER_H_
-#define MANDOLINE_UI_AURA_NATIVE_WIDGET_VIEW_MANAGER_H_
+#ifndef UI_VIEWS_MUS_NATIVE_WIDGET_VIEW_MANAGER_H_
+#define UI_VIEWS_MUS_NATIVE_WIDGET_VIEW_MANAGER_H_
 
 #include "ui/views/widget/native_widget_aura.h"
 
@@ -11,6 +11,14 @@ namespace aura {
 namespace client {
 class DefaultCaptureClient;
 }
+}
+
+namespace mojo {
+class Shell;
+}
+
+namespace mus {
+class View;
 }
 
 namespace ui {
@@ -23,15 +31,7 @@ namespace wm {
 class FocusController;
 }
 
-namespace mojo {
-class Shell;
-}
-
-namespace mus {
-class View;
-}
-
-namespace mandoline {
+namespace views {
 
 namespace {
 class NativeWidgetViewObserver;
@@ -65,6 +65,6 @@ class NativeWidgetViewManager : public views::NativeWidgetAura {
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetViewManager);
 };
 
-}  // namespace mandoline
+}  // namespace views
 
-#endif  // MANDOLINE_UI_AURA_NATIVE_WIDGET_VIEW_MANAGER_H_
+#endif  // UI_VIEWS_MUS_NATIVE_WIDGET_VIEW_MANAGER_H_

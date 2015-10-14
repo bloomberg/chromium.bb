@@ -21,10 +21,10 @@ source_set("common") {
     "//components/mus/public/cpp",
     "//components/mus/public/interfaces",
     "//mojo/application/public/cpp",
-    "//mandoline/ui/aura",
     "//mojo/application/public/cpp:sources",
     "//third_party/mojo/src/mojo/public/cpp/bindings",
     "//ui/views",
+    "//ui/views/mus",
   ]
 
   data_deps = [

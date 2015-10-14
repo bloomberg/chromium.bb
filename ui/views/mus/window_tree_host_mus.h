@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MANDOLINE_UI_AURA_WINDOW_TREE_HOST_MOJO_H_
-#define MANDOLINE_UI_AURA_WINDOW_TREE_HOST_MOJO_H_
+#ifndef UI_VIEWS_MUS_WINDOW_TREE_HOST_MUS_H_
+#define UI_VIEWS_MUS_WINDOW_TREE_HOST_MUS_H_
 
 #include "base/macros.h"
 #include "components/mus/public/cpp/view_observer.h"
@@ -13,17 +13,17 @@
 
 class SkBitmap;
 
-namespace ui {
-class Compositor;
-}
-
 namespace mojo {
 class Shell;
 }
 
-namespace mandoline {
+namespace ui {
+class Compositor;
+}
 
-class InputMethodMandoline;
+namespace views {
+
+class InputMethodMUS;
 class SurfaceContextFactory;
 
 class WindowTreeHostMojo : public aura::WindowTreeHost,
@@ -62,13 +62,13 @@ class WindowTreeHostMojo : public aura::WindowTreeHost,
 
   gfx::Rect bounds_;
 
-  scoped_ptr<InputMethodMandoline> input_method_;
+  scoped_ptr<InputMethodMUS> input_method_;
 
   scoped_ptr<SurfaceContextFactory> context_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTreeHostMojo);
 };
 
-}  // namespace mandoline
+}  // namespace views
 
-#endif  // MANDOLINE_UI_AURA_WINDOW_TREE_HOST_MOJO_H_
+#endif  // UI_VIEWS_MUS_WINDOW_TREE_HOST_MUS_H_

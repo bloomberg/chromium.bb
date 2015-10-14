@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MANDOLINE_UI_AURA_AURA_INIT_H_
-#define MANDOLINE_UI_AURA_AURA_INIT_H_
+#ifndef UI_VIEWS_MUS_AURA_INIT_H_
+#define UI_VIEWS_MUS_AURA_INIT_H_
 
 #include <string>
 
@@ -22,10 +22,9 @@ namespace mus {
 class View;
 }
 
-namespace mandoline {
+namespace views {
 
 // Sets up necessary state for aura when run with the viewmanager.
-// TODO(sky): move this out of mandoline.
 // |resource_file| is the path to the apk file containing the resources.
 class AuraInit {
  public:
@@ -48,6 +47,6 @@ class AuraInit {
   DISALLOW_COPY_AND_ASSIGN(AuraInit);
 };
 
-}  // namespace mandoline
+}  // namespace views
 
-#endif  // MANDOLINE_UI_AURA_AURA_INIT_H_
+#endif  // UI_VIEWS_MUS_AURA_INIT_H_

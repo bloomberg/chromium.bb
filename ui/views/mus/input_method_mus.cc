@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mandoline/ui/aura/input_method_mandoline.h"
+#include "ui/views/mus/input_method_mus.h"
 
 #include "components/mus/public/cpp/view.h"
 #include "mojo/converters/ime/ime_type_converters.h"
@@ -10,40 +10,38 @@
 #include "ui/events/event.h"
 #include "ui/mojo/ime/text_input_state.mojom.h"
 
-namespace mandoline {
+namespace views {
 
 ////////////////////////////////////////////////////////////////////////////////
-// InputMethodMandoline, public:
+// InputMethodMUS, public:
 
-InputMethodMandoline::InputMethodMandoline(
-    ui::internal::InputMethodDelegate* delegate,
-    mus::View* view)
+InputMethodMUS::InputMethodMUS(ui::internal::InputMethodDelegate* delegate,
+                               mus::View* view)
     : view_(view) {
   SetDelegate(delegate);
 }
 
-InputMethodMandoline::~InputMethodMandoline() {}
+InputMethodMUS::~InputMethodMUS() {}
 
 ////////////////////////////////////////////////////////////////////////////////
-// InputMethodMandoline, ui::InputMethod implementation:
+// InputMethodMUS, ui::InputMethod implementation:
 
-void InputMethodMandoline::OnFocus() {
+void InputMethodMUS::OnFocus() {
   InputMethodBase::OnFocus();
   UpdateTextInputType();
 }
 
-void InputMethodMandoline::OnBlur() {
+void InputMethodMUS::OnBlur() {
   InputMethodBase::OnBlur();
   UpdateTextInputType();
 }
 
-bool InputMethodMandoline::OnUntranslatedIMEMessage(
-    const base::NativeEvent& event,
-    NativeEventResult* result) {
+bool InputMethodMUS::OnUntranslatedIMEMessage(const base::NativeEvent& event,
+                                              NativeEventResult* result) {
   return false;
 }
 
-void InputMethodMandoline::DispatchKeyEvent(ui::KeyEvent* event) {
+void InputMethodMUS::DispatchKeyEvent(ui::KeyEvent* event) {
   DCHECK(event->type() == ui::ET_KEY_PRESSED ||
          event->type() == ui::ET_KEY_RELEASED);
 
@@ -66,40 +64,34 @@ void InputMethodMandoline::DispatchKeyEvent(ui::KeyEvent* event) {
   ignore_result(DispatchKeyEventPostIME(event));
 }
 
-void InputMethodMandoline::OnTextInputTypeChanged(
-    const ui::TextInputClient* client) {
+void InputMethodMUS::OnTextInputTypeChanged(const ui::TextInputClient* client) {
   if (IsTextInputClientFocused(client))
     UpdateTextInputType();
   InputMethodBase::OnTextInputTypeChanged(client);
 }
 
-void InputMethodMandoline::OnCaretBoundsChanged(
-    const ui::TextInputClient* client) {
-}
+void InputMethodMUS::OnCaretBoundsChanged(const ui::TextInputClient* client) {}
 
-void InputMethodMandoline::CancelComposition(
-    const ui::TextInputClient* client) {
-}
+void InputMethodMUS::CancelComposition(const ui::TextInputClient* client) {}
 
-void InputMethodMandoline::OnInputLocaleChanged() {
-}
+void InputMethodMUS::OnInputLocaleChanged() {}
 
-std::string InputMethodMandoline::GetInputLocale() {
+std::string InputMethodMUS::GetInputLocale() {
   return "";
 }
 
-bool InputMethodMandoline::IsCandidatePopupOpen() const {
+bool InputMethodMUS::IsCandidatePopupOpen() const {
   return false;
 }
 
-void InputMethodMandoline::OnDidChangeFocusedClient(
+void InputMethodMUS::OnDidChangeFocusedClient(
     ui::TextInputClient* focused_before,
     ui::TextInputClient* focused) {
   InputMethodBase::OnDidChangeFocusedClient(focused_before, focused);
   UpdateTextInputType();
 }
 
-void InputMethodMandoline::UpdateTextInputType() {
+void InputMethodMUS::UpdateTextInputType() {
   ui::TextInputType type = GetTextInputType();
   mojo::TextInputStatePtr state = mojo::TextInputState::New();
   state->type = mojo::ConvertTo<mojo::TextInputType>(type);

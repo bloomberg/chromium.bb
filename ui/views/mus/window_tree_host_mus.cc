@@ -2,11 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mandoline/ui/aura/window_tree_host_mojo.h"
+#include "ui/views/mus/window_tree_host_mus.h"
 
 #include "components/mus/public/cpp/view_tree_connection.h"
-#include "mandoline/ui/aura/input_method_mandoline.h"
-#include "mandoline/ui/aura/surface_context_factory.h"
 #include "mojo/application/public/interfaces/shell.mojom.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "ui/aura/env.h"
@@ -14,8 +12,10 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
+#include "ui/views/mus/input_method_mus.h"
+#include "ui/views/mus/surface_context_factory.h"
 
-namespace mandoline {
+namespace views {
 
 ////////////////////////////////////////////////////////////////////////////////
 // WindowTreeHostMojo, public:
@@ -36,7 +36,7 @@ WindowTreeHostMojo::WindowTreeHostMojo(mojo::Shell* shell, mus::View* view)
   aura::Env::GetInstance()->set_context_factory(default_context_factory);
   DCHECK_EQ(context_factory_.get(), compositor()->context_factory());
 
-  input_method_.reset(new InputMethodMandoline(this, view_));
+  input_method_.reset(new InputMethodMUS(this, view_));
   SetSharedInputMethod(input_method_.get());
 }
 
@@ -61,8 +61,7 @@ void WindowTreeHostMojo::ShowImpl() {
   window()->Show();
 }
 
-void WindowTreeHostMojo::HideImpl() {
-}
+void WindowTreeHostMojo::HideImpl() {}
 
 gfx::Rect WindowTreeHostMojo::GetBounds() const {
   return bounds_;
@@ -111,4 +110,4 @@ void WindowTreeHostMojo::OnViewBoundsChanged(mus::View* view,
     OnHostResized(bounds_.size());
 }
 
-}  // namespace mandoline
+}  // namespace views

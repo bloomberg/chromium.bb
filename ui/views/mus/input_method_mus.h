@@ -4,20 +4,19 @@
 
 #include "ui/base/ime/input_method_base.h"
 
-#ifndef MANDOLINE_UI_AURA_INPUT_METHOD_MANDOLINE_H_
-#define MANDOLINE_UI_AURA_INPUT_METHOD_MANDOLINE_H_
+#ifndef UI_VIEWS_MUS_INPUT_METHOD_MUS_H_
+#define UI_VIEWS_MUS_INPUT_METHOD_MUS_H_
 
 namespace mus {
 class View;
 }  // namespace mojo
 
-namespace mandoline {
+namespace views {
 
-class InputMethodMandoline : public ui::InputMethodBase {
+class InputMethodMUS : public ui::InputMethodBase {
  public:
-  InputMethodMandoline(ui::internal::InputMethodDelegate* delegate,
-                       mus::View* view);
-  ~InputMethodMandoline() override;
+  InputMethodMUS(ui::internal::InputMethodDelegate* delegate, mus::View* view);
+  ~InputMethodMUS() override;
 
  private:
   // Overridden from ui::InputMethod:
@@ -42,9 +41,9 @@ class InputMethodMandoline : public ui::InputMethodBase {
   // The toplevel view which is not owned by this class.
   mus::View* view_;
 
-  DISALLOW_COPY_AND_ASSIGN(InputMethodMandoline);
+  DISALLOW_COPY_AND_ASSIGN(InputMethodMUS);
 };
 
-}  // namespace mandoline
+}  // namespace views
 
-#endif  // MANDOLINE_UI_AURA_INPUT_METHOD_MANDOLINE_H_
+#endif  // UI_VIEWS_MUS_INPUT_METHOD_MUS_H_

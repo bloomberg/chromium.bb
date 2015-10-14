@@ -2,21 +2,20 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# GYP version: mojo/mojo.gyp:mojo_aura_support
-source_set("aura") {
+source_set("mus") {
   sources = [
     "aura_init.cc",
     "aura_init.h",
-    "input_method_mandoline.cc",
-    "input_method_mandoline.h",
+    "input_method_mus.cc",
+    "input_method_mus.h",
     "native_widget_view_manager.cc",
     "native_widget_view_manager.h",
     "surface_binding.cc",
     "surface_binding.h",
     "surface_context_factory.cc",
     "surface_context_factory.h",
-    "window_tree_host_mojo.cc",
-    "window_tree_host_mojo.h",
+    "window_tree_host_mus.cc",
+    "window_tree_host_mus.h",
   ]
 
   public_deps = [

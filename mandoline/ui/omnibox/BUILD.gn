@@ -28,7 +28,6 @@ source_set("lib") {
     "//base",
     "//components/mus/public/cpp",
     "//components/url_formatter",
-    "//mandoline/ui/aura",
     "//mandoline/ui/desktop_ui/public/interfaces",
     "//mojo/application/public/cpp:sources",
     "//mojo/common",
@@ -38,5 +37,6 @@ source_set("lib") {
     "//ui/gfx/geometry",
     "//ui/mojo/events:interfaces",
     "//ui/views",
+    "//ui/views/mus",
   ]
 }

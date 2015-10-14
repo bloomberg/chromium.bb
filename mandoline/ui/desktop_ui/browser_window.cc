@@ -10,7 +10,6 @@
 #include "base/time/time.h"
 #include "components/mus/public/cpp/scoped_view_ptr.h"
 #include "components/mus/public/cpp/view_tree_host_factory.h"
-#include "mandoline/ui/aura/native_widget_view_manager.h"
 #include "mandoline/ui/desktop_ui/browser_commands.h"
 #include "mandoline/ui/desktop_ui/browser_manager.h"
 #include "mandoline/ui/desktop_ui/find_bar_view.h"
@@ -23,6 +22,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/label_button.h"
+#include "ui/views/mus/native_widget_view_manager.h"
 #include "ui/views/widget/widget_delegate.h"
 
 namespace mandoline {
@@ -372,7 +372,8 @@ void BrowserWindow::OnHideFindBar() {
 void BrowserWindow::Init(mus::View* root) {
   DCHECK_GT(root->viewport_metrics().device_pixel_ratio, 0);
   if (!aura_init_)
-    aura_init_.reset(new AuraInit(root, app_->shell(), "mandoline_ui.pak"));
+    aura_init_.reset(
+        new views::AuraInit(root, app_->shell(), "mandoline_ui.pak"));
 
   root_ = root;
   omnibox_view_ = root_->connection()->CreateView();
@@ -394,7 +395,7 @@ void BrowserWindow::Init(mus::View* root) {
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.native_widget =
-      new NativeWidgetViewManager(widget, app_->shell(), root_);
+      new views::NativeWidgetViewManager(widget, app_->shell(), root_);
   params.delegate = widget_delegate;
   params.bounds = root_->bounds().To<gfx::Rect>();
   widget->Init(params);

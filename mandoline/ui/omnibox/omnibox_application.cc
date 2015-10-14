@@ -10,8 +10,6 @@
 #include "components/mus/public/cpp/view_tree_connection.h"
 #include "components/mus/public/cpp/view_tree_delegate.h"
 #include "components/url_formatter/url_fixer.h"
-#include "mandoline/ui/aura/aura_init.h"
-#include "mandoline/ui/aura/native_widget_view_manager.h"
 #include "mandoline/ui/desktop_ui/public/interfaces/view_embedder.mojom.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/common/common_type_converters.h"
@@ -20,6 +18,8 @@
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/layout/layout_manager.h"
+#include "ui/views/mus/aura_init.h"
+#include "ui/views/mus/native_widget_view_manager.h"
 #include "ui/views/widget/widget_delegate.h"
 
 namespace mandoline {
@@ -58,7 +58,7 @@ class OmniboxImpl : public mus::ViewTreeDelegate,
   void HideWindow();
   void ShowWindow();
 
-  scoped_ptr<AuraInit> aura_init_;
+  scoped_ptr<views::AuraInit> aura_init_;
   mojo::ApplicationImpl* app_;
   mus::View* root_;
   mojo::String url_;
@@ -117,7 +117,8 @@ void OmniboxImpl::OnEmbed(mus::View* root) {
   root_ = root;
 
   if (!aura_init_.get()) {
-    aura_init_.reset(new AuraInit(root, app_->shell(), "mandoline_ui.pak"));
+    aura_init_.reset(
+        new views::AuraInit(root, app_->shell(), "mandoline_ui.pak"));
     edit_ = new views::Textfield;
     edit_->set_controller(this);
     edit_->SetTextInputType(ui::TEXT_INPUT_TYPE_URL);
@@ -137,7 +138,7 @@ void OmniboxImpl::OnEmbed(mus::View* root) {
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.native_widget =
-      new NativeWidgetViewManager(widget, app_->shell(), root);
+      new views::NativeWidgetViewManager(widget, app_->shell(), root);
   params.delegate = widget_delegate;
   params.bounds = root->bounds().To<gfx::Rect>();
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;

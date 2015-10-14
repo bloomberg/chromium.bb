@@ -10,13 +10,13 @@
 #include "components/mus/public/interfaces/view_tree_host.mojom.h"
 #include "components/web_view/public/cpp/web_view.h"
 #include "components/web_view/public/interfaces/web_view.mojom.h"
-#include "mandoline/ui/aura/aura_init.h"
 #include "mandoline/ui/desktop_ui/find_bar_delegate.h"
 #include "mandoline/ui/desktop_ui/public/interfaces/omnibox.mojom.h"
 #include "mandoline/ui/desktop_ui/public/interfaces/view_embedder.mojom.h"
 #include "mojo/application/public/cpp/interface_factory.h"
 #include "mojo/common/weak_binding_set.h"
 #include "ui/views/layout/layout_manager.h"
+#include "ui/views/mus/aura_init.h"
 #include "url/gurl.h"
 
 namespace mojo {
@@ -97,7 +97,7 @@ class BrowserWindow : public mus::ViewTreeDelegate,
   void EmbedOmnibox();
 
   mojo::ApplicationImpl* app_;
-  scoped_ptr<AuraInit> aura_init_;
+  scoped_ptr<views::AuraInit> aura_init_;
   mojo::ViewTreeHostPtr host_;
   mojo::Binding<ViewTreeHostClient> host_client_binding_;
   BrowserManager* manager_;

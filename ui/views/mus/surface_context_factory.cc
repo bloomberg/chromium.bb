@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mandoline/ui/aura/surface_context_factory.h"
+#include "ui/views/mus/surface_context_factory.h"
 
 #include "cc/output/output_surface.h"
 #include "cc/resources/shared_bitmap_manager.h"
@@ -12,7 +12,7 @@
 #include "ui/compositor/reflector.h"
 #include "ui/gl/gl_bindings.h"
 
-namespace mandoline {
+namespace views {
 namespace {
 
 class FakeReflector : public ui::Reflector {
@@ -23,15 +23,13 @@ class FakeReflector : public ui::Reflector {
   void AddMirroringLayer(ui::Layer* layer) override {}
   void RemoveMirroringLayer(ui::Layer* layer) override {}
 };
-
 }
 
 SurfaceContextFactory::SurfaceContextFactory(mojo::Shell* shell,
                                              mus::View* view)
     : surface_binding_(shell, view), next_surface_id_namespace_(1u) {}
 
-SurfaceContextFactory::~SurfaceContextFactory() {
-}
+SurfaceContextFactory::~SurfaceContextFactory() {}
 
 void SurfaceContextFactory::CreateOutputSurface(
     base::WeakPtr<ui::Compositor> compositor) {
@@ -95,4 +93,4 @@ void SurfaceContextFactory::ResizeDisplay(ui::Compositor* compositor,
   NOTIMPLEMENTED();
 }
 
-}  // namespace mandoline
+}  // namespace views

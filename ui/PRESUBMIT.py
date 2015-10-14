@@ -32,12 +32,13 @@ def CheckScopedPtr(input_api, output_api,
         errors.append(output_api.PresubmitError(
             ('%s:%d uses explicit scoped_ptr constructor. ' +
              'Use make_scoped_ptr() instead.') % (f.LocalPath(), line_number)))
+      # TODO(sky): this incorrectly catches templates. Fix and reenable.
       # Disallow:
       # scoped_ptr<T>()
-      if input_api.re.search(r'\bscoped_ptr<.*?>\(\)', line):
-        errors.append(output_api.PresubmitError(
-            '%s:%d uses scoped_ptr<T>(). Use nullptr instead.' %
-            (f.LocalPath(), line_number)))
+      # if input_api.re.search(r'\bscoped_ptr<.*?>\(\)', line):
+      #   errors.append(output_api.PresubmitError(
+      #       '%s:%d uses scoped_ptr<T>(). Use nullptr instead.' %
+      #       (f.LocalPath(), line_number)))
   return errors
 
 

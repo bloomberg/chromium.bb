@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mandoline/ui/aura/surface_binding.h"
+#include "ui/views/mus/surface_binding.h"
 
 #include <map>
 
@@ -19,14 +19,14 @@
 #include "components/mus/public/cpp/view.h"
 #include "components/mus/public/cpp/view_tree_connection.h"
 #include "components/mus/public/interfaces/gpu.mojom.h"
-#include "mandoline/ui/aura/window_tree_host_mojo.h"
 #include "mojo/application/public/cpp/connect.h"
 #include "mojo/application/public/interfaces/shell.mojom.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/converters/surfaces/surfaces_type_converters.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "ui/views/mus/window_tree_host_mus.h"
 
-namespace mandoline {
+namespace views {
 namespace {
 void OnGotContentHandlerID(uint32_t content_handler_id) {}
 }  // namespace
@@ -134,11 +134,10 @@ void SurfaceBinding::PerConnectionState::Init() {
 SurfaceBinding::SurfaceBinding(mojo::Shell* shell, mus::View* view)
     : view_(view), state_(PerConnectionState::Get(shell, view->connection())) {}
 
-SurfaceBinding::~SurfaceBinding() {
-}
+SurfaceBinding::~SurfaceBinding() {}
 
 scoped_ptr<cc::OutputSurface> SurfaceBinding::CreateOutputSurface() {
   return state_->CreateOutputSurface(view_);
 }
 
-}  // namespace mandoline
+}  // namespace views

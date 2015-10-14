@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mandoline/ui/aura/native_widget_view_manager.h"
+#include "ui/views/mus/native_widget_view_manager.h"
 
 #include "components/mus/public/cpp/view.h"
-#include "mandoline/ui/aura/input_method_mandoline.h"
-#include "mandoline/ui/aura/window_tree_host_mojo.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/converters/input_events/input_events_type_converters.h"
 #include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/ime/input_method_delegate.h"
+#include "ui/views/mus/input_method_mus.h"
+#include "ui/views/mus/window_tree_host_mus.h"
 #include "ui/wm/core/base_focus_rules.h"
 #include "ui/wm/core/capture_controller.h"
 #include "ui/wm/core/focus_controller.h"
 
-namespace mandoline {
+namespace views {
 namespace {
 
 // TODO: figure out what this should be.
@@ -130,4 +130,4 @@ void NativeWidgetViewManager::OnWindowVisibilityChanged(aura::Window* window,
   // I'm not bothering.
 }
 
-}  // namespace mandoline
+}  // namespace views

@@ -7,10 +7,10 @@
 #include "components/mus/example/wm/wm.mojom.h"
 #include "components/mus/public/cpp/view_tree_connection.h"
 #include "components/mus/public/interfaces/view_tree.mojom.h"
-#include "mandoline/ui/aura/aura_init.h"
-#include "mandoline/ui/aura/native_widget_view_manager.h"
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/application_impl.h"
+#include "ui/views/mus/aura_init.h"
+#include "ui/views/mus/native_widget_view_manager.h"
 
 MUSViewsInit::MUSViewsInit(mojo::ApplicationImpl* app) : app_(app) {}
 
@@ -35,8 +35,8 @@ mus::View* MUSViewsInit::CreateWindow() {
 
 views::NativeWidget* MUSViewsInit::CreateNativeWidget(
     views::internal::NativeWidgetDelegate* delegate) {
-  return new mandoline::NativeWidgetViewManager(delegate, app_->shell(),
-                                                CreateWindow());
+  return new views::NativeWidgetViewManager(delegate, app_->shell(),
+                                            CreateWindow());
 }
 
 void MUSViewsInit::OnBeforeWidgetInit(
@@ -46,7 +46,7 @@ void MUSViewsInit::OnBeforeWidgetInit(
 void MUSViewsInit::OnEmbed(mus::View* root) {
   if (!aura_init_) {
     aura_init_.reset(
-        new mandoline::AuraInit(root, app_->shell(), "example_resources.pak"));
+        new views::AuraInit(root, app_->shell(), "example_resources.pak"));
   }
 }
 

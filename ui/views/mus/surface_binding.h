@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MANDOLINE_UI_AURA_SURFACE_BINDING_H_
-#define MANDOLINE_UI_AURA_SURFACE_BINDING_H_
+#ifndef UI_VIEWS_MUS_SURFACE_BINDING_H_
+#define UI_VIEWS_MUS_SURFACE_BINDING_H_
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -20,7 +20,7 @@ namespace mus {
 class View;
 }
 
-namespace mandoline {
+namespace views {
 
 // SurfaceBinding is responsible for managing the connections necessary to
 // bind a View to the surfaces service.
@@ -46,6 +46,6 @@ class SurfaceBinding {
   DISALLOW_COPY_AND_ASSIGN(SurfaceBinding);
 };
 
-}  // namespace mandoline
+}  // namespace views
 
-#endif  // MANDOLINE_UI_AURA_SURFACE_BINDING_H_
+#endif  // UI_VIEWS_MUS_SURFACE_BINDING_H_

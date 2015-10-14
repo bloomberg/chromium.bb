@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mandoline/ui/aura/aura_init.h"
+#include "ui/views/mus/aura_init.h"
 
 #include "base/i18n/icu_util.h"
 #include "base/lazy_instance.h"
@@ -19,7 +19,7 @@
 #include "components/font_service/public/cpp/font_loader.h"
 #endif
 
-namespace mandoline {
+namespace views {
 
 namespace {
 
@@ -77,7 +77,7 @@ void AuraInit::InitializeResources(mojo::Shell* shell) {
   ui::ResourceBundle::GetSharedInstance().AddDataPackFromFile(
       pak_file_2.Pass(), ui::SCALE_FACTOR_100P);
 
-  // Initialize the skia font code to go ask fontconfig underneath.
+// Initialize the skia font code to go ask fontconfig underneath.
 #if defined(OS_LINUX) && !defined(OS_ANDROID)
   font_loader_ = skia::AdoptRef(new font_service::FontLoader(shell));
   SkFontConfigInterface::SetGlobal(font_loader_.get());
@@ -88,4 +88,4 @@ void AuraInit::InitializeResources(mojo::Shell* shell) {
   gfx::Font();
 }
 
-}  // namespace mandoline
+}  // namespace views

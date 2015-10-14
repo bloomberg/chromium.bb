@@ -18,6 +18,5 @@ include_rules = [
   "+ui/gl",
   "+ui/mojo/ime",
   "+ui/mojo/init",
-  "+ui/views",
   "+ui/wm",
 ]

@@ -39,7 +39,6 @@ source_set("lib") {
     "//base",
     "//components/web_view/public/cpp",
     "//components/web_view/public/interfaces",
-    "//mandoline/ui/aura",
     "//mojo/application/public/cpp:sources",
     "//mojo/common:common_base",
     "//mojo/converters/geometry",
@@ -51,6 +50,7 @@ source_set("lib") {
     "//ui/gfx/geometry",
     "//ui/mojo/events:interfaces",
     "//ui/views",
+    "//ui/views/mus",
     "//url",
   ]
 }

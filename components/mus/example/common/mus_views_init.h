@@ -9,12 +9,12 @@
 #include "components/mus/public/cpp/view_tree_delegate.h"
 #include "ui/views/views_delegate.h"
 
-namespace mandoline {
-class AuraInit;
-}
-
 namespace mojo {
 class ApplicationImpl;
+}
+
+namespace views {
+class AuraInit;
 }
 
 // Does the necessary setup to use mus, views and the example wm.
@@ -42,7 +42,7 @@ class MUSViewsInit : public views::ViewsDelegate, public mus::ViewTreeDelegate {
 
   mojo::ApplicationImpl* app_;
 
-  scoped_ptr<mandoline::AuraInit> aura_init_;
+  scoped_ptr<views::AuraInit> aura_init_;
 
   DISALLOW_COPY_AND_ASSIGN(MUSViewsInit);
 };
