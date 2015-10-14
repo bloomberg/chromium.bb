@@ -32,7 +32,7 @@ BluetoothGATTRemoteServer* BluetoothGATTRemoteServer::take(ScriptPromiseResolver
 
 ScriptPromise BluetoothGATTRemoteServer::getPrimaryService(ScriptState* scriptState, const StringOrUnsignedLong& service, ExceptionState& exceptionState)
 {
-    WebBluetooth* webbluetooth = BluetoothSupplement::from(scriptState);
+    WebBluetooth* webbluetooth = BluetoothSupplement::fromScriptState(scriptState);
 
     String serviceUUID = BluetoothUUID::getService(service, exceptionState);
     if (exceptionState.hadException())

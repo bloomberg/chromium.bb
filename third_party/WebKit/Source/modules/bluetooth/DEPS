@@ -4,7 +4,5 @@ include_rules = [
     "+heap",
     "-modules",
     "+modules/bluetooth",
-    "+platform",
-    "+public/platform",
     "-web",
 ]

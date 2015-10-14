@@ -34,7 +34,7 @@ BluetoothGATTService* BluetoothGATTService::take(ScriptPromiseResolver*, PassOwn
 ScriptPromise BluetoothGATTService::getCharacteristic(ScriptState* scriptState,
     const StringOrUnsignedLong& characteristic, ExceptionState& exceptionState)
 {
-    WebBluetooth* webbluetooth = BluetoothSupplement::from(scriptState);
+    WebBluetooth* webbluetooth = BluetoothSupplement::fromScriptState(scriptState);
 
     String characteristicUUID = BluetoothUUID::getCharacteristic(characteristic, exceptionState);
     if (exceptionState.hadException())

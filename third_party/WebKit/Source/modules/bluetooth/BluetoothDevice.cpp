@@ -78,7 +78,7 @@ Vector<String> BluetoothDevice::uuids()
 
 ScriptPromise BluetoothDevice::connectGATT(ScriptState* scriptState)
 {
-    WebBluetooth* webbluetooth = BluetoothSupplement::from(scriptState);
+    WebBluetooth* webbluetooth = BluetoothSupplement::fromScriptState(scriptState);
     if (!webbluetooth)
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(NotSupportedError));
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);

@@ -32,7 +32,7 @@ BluetoothGATTCharacteristic* BluetoothGATTCharacteristic::take(ScriptPromiseReso
 
 ScriptPromise BluetoothGATTCharacteristic::readValue(ScriptState* scriptState)
 {
-    WebBluetooth* webbluetooth = BluetoothSupplement::from(scriptState);
+    WebBluetooth* webbluetooth = BluetoothSupplement::fromScriptState(scriptState);
 
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
@@ -43,7 +43,7 @@ ScriptPromise BluetoothGATTCharacteristic::readValue(ScriptState* scriptState)
 
 ScriptPromise BluetoothGATTCharacteristic::writeValue(ScriptState* scriptState, const DOMArrayPiece& value)
 {
-    WebBluetooth* webbluetooth = BluetoothSupplement::from(scriptState);
+    WebBluetooth* webbluetooth = BluetoothSupplement::fromScriptState(scriptState);
     // Partial implementation of writeValue algorithm:
     // https://webbluetoothchrome.github.io/web-bluetooth/#dom-bluetoothgattcharacteristic-writevalue
 

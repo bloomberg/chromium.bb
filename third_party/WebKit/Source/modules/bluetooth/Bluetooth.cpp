@@ -64,7 +64,7 @@ ScriptPromise Bluetooth::requestDevice(ScriptState* scriptState, const RequestDe
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(SecurityError, "Must be handling a user gesture to show a permission request."));
     }
 
-    WebBluetooth* webbluetooth = BluetoothSupplement::from(scriptState);
+    WebBluetooth* webbluetooth = BluetoothSupplement::fromScriptState(scriptState);
     if (!webbluetooth)
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(NotSupportedError));
 

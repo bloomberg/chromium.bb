@@ -5,8 +5,7 @@
 #include "config.h"
 #include "modules/bluetooth/BluetoothSupplement.h"
 
-#include "core/frame/LocalDOMWindow.h"
-#include "public/platform/Platform.h"
+#include "core/dom/Document.h"
 
 namespace blink {
 
@@ -26,15 +25,22 @@ void BluetoothSupplement::provideTo(LocalFrame& frame, WebBluetooth* bluetooth)
     WillBeHeapSupplement<LocalFrame>::provideTo(frame, supplementName(), bluetoothSupplement.release());
 };
 
-WebBluetooth* BluetoothSupplement::from(ScriptState* scriptState)
+WebBluetooth* BluetoothSupplement::from(LocalFrame* frame)
 {
-    LocalDOMWindow* window = scriptState->domWindow();
-    if (window && window->frame()) {
-        BluetoothSupplement* supplement = static_cast<BluetoothSupplement*>(WillBeHeapSupplement<LocalFrame>::from(window->frame(), supplementName()));
-        if (supplement && supplement->m_bluetooth)
-            return supplement->m_bluetooth;
+    BluetoothSupplement* supplement = static_cast<BluetoothSupplement*>(WillBeHeapSupplement<LocalFrame>::from(frame, supplementName()));
+
+    ASSERT(supplement);
+    ASSERT(supplement->m_bluetooth);
+
+    return supplement->m_bluetooth;
+}
+
+WebBluetooth* BluetoothSupplement::fromScriptState(ScriptState* scriptState)
+{
+    if (!scriptState->executionContext()->isDocument()) {
+        return nullptr;
     }
-    return Platform::current()->bluetooth();
+    return BluetoothSupplement::from(static_cast<Document*>(scriptState->executionContext())->frame());
 }
 
 DEFINE_TRACE(BluetoothSupplement)

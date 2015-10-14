@@ -24,9 +24,12 @@ public:
 
     static void provideTo(LocalFrame&, WebBluetooth*);
 
-    // Returns the WebBluetooth attached to the ScriptState's frame if that exists;
-    // otherwise the Platform's WebBluetooth.
-    static WebBluetooth* from(ScriptState*);
+    // Returns the WebBluetooth attached to the frame.
+    static WebBluetooth* from(LocalFrame*);
+
+    // Returns the WebBluetooth attached to the frame if the frame exists.
+    // Otherwise returns nullptr.
+    static WebBluetooth* fromScriptState(ScriptState*);
 
     DECLARE_VIRTUAL_TRACE();
 
