@@ -78,7 +78,7 @@ class CC_EXPORT DisplayItemList
 
   void GenerateDiscardableImagesMetadata();
   void GetDiscardableImagesInRect(const gfx::Rect& rect,
-                                  std::vector<PositionImage>* images);
+                                  std::vector<DrawImage>* images);
 
  private:
   DisplayItemList(gfx::Rect layer_rect,

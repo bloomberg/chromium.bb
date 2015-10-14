@@ -201,42 +201,32 @@ TEST(DisplayListRasterSourceTest, PixelRefIteratorDiscardableRefsOneTile) {
 
   // Tile sized iterators. These should find only one pixel ref.
   {
-    std::vector<PositionImage> images;
+    std::vector<DrawImage> images;
     raster->GetDiscardableImagesInRect(gfx::Rect(0, 0, 256, 256), &images);
     EXPECT_EQ(1u, images.size());
-    EXPECT_EQ(discardable_image[0][0].get(), images[0].image);
-    EXPECT_EQ(gfx::RectF(32, 32).ToString(),
-              gfx::SkRectToRectF(images[0].image_rect).ToString());
+    EXPECT_EQ(discardable_image[0][0].get(), images[0].image());
   }
   // Shifted tile sized iterators. These should find only one pixel ref.
   {
-    std::vector<PositionImage> images;
+    std::vector<DrawImage> images;
     raster->GetDiscardableImagesInRect(gfx::Rect(260, 260, 256, 256), &images);
     EXPECT_EQ(1u, images.size());
-    EXPECT_EQ(discardable_image[1][1].get(), images[0].image);
-    EXPECT_EQ(gfx::RectF(260, 260, 32, 32).ToString(),
-              gfx::SkRectToRectF(images[0].image_rect).ToString());
+    EXPECT_EQ(discardable_image[1][1].get(), images[0].image());
   }
   // Ensure there's no discardable pixel refs in the empty cell
   {
-    std::vector<PositionImage> images;
+    std::vector<DrawImage> images;
     raster->GetDiscardableImagesInRect(gfx::Rect(0, 256, 256, 256), &images);
     EXPECT_EQ(0u, images.size());
   }
   // Layer sized iterators. These should find three pixel ref.
   {
-    std::vector<PositionImage> images;
+    std::vector<DrawImage> images;
     raster->GetDiscardableImagesInRect(gfx::Rect(0, 0, 512, 512), &images);
     EXPECT_EQ(3u, images.size());
-    EXPECT_EQ(discardable_image[0][0].get(), images[0].image);
-    EXPECT_EQ(discardable_image[0][1].get(), images[1].image);
-    EXPECT_EQ(discardable_image[1][1].get(), images[2].image);
-    EXPECT_EQ(gfx::RectF(32, 32).ToString(),
-              gfx::SkRectToRectF(images[0].image_rect).ToString());
-    EXPECT_EQ(gfx::RectF(260, 0, 32, 32).ToString(),
-              gfx::SkRectToRectF(images[1].image_rect).ToString());
-    EXPECT_EQ(gfx::RectF(260, 260, 32, 32).ToString(),
-              gfx::SkRectToRectF(images[2].image_rect).ToString());
+    EXPECT_EQ(discardable_image[0][0].get(), images[0].image());
+    EXPECT_EQ(discardable_image[0][1].get(), images[1].image());
+    EXPECT_EQ(discardable_image[1][1].get(), images[2].image());
   }
 }
 

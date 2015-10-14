@@ -42,7 +42,7 @@ class CC_EXPORT DisplayListRasterSource : public RasterSource {
   gfx::Size GetSize() const override;
   void GetDiscardableImagesInRect(
       const gfx::Rect& layer_rect,
-      std::vector<PositionImage>* images) const override;
+      std::vector<DrawImage>* images) const override;
   bool CoversRect(const gfx::Rect& layer_rect) const override;
   bool HasRecordings() const override;
   gfx::Rect RecordedViewport() const override;

@@ -8,13 +8,10 @@
 #include <utility>
 #include <vector>
 
-#include "base/containers/hash_tables.h"
-#include "base/lazy_instance.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
 #include "cc/base/rtree.h"
-#include "cc/playback/position_image.h"
+#include "cc/playback/draw_image.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -23,15 +20,11 @@ class SkImage;
 
 namespace cc {
 
-class DisplayItemList;
-
-// This class is used for generating discardable images data (see PositionImage
+// This class is used for generating discardable images data (see DrawImage
 // for the type of data it stores). It allows the client to query a particular
-// rect and get back a list of PositionImages in that rect.
+// rect and get back a list of DrawImages in that rect.
 class CC_EXPORT DiscardableImageMap {
  public:
-  using Images = std::vector<PositionImage>;
-
   class CC_EXPORT ScopedMetadataGenerator {
    public:
     ScopedMetadataGenerator(DiscardableImageMap* image_map,
@@ -50,15 +43,17 @@ class CC_EXPORT DiscardableImageMap {
 
   bool empty() const { return all_images_.empty(); }
   void GetDiscardableImagesInRect(const gfx::Rect& rect,
-                                  std::vector<PositionImage>* images);
+                                  std::vector<DrawImage>* images) const;
 
  private:
   friend class ScopedMetadataGenerator;
+  friend class DiscardableImageMapTest;
+  using PositionDrawImage = std::pair<DrawImage, gfx::RectF>;
 
   scoped_ptr<SkCanvas> BeginGeneratingMetadata(const gfx::Size& bounds);
   void EndGeneratingMetadata();
 
-  Images all_images_;
+  std::vector<PositionDrawImage> all_images_;
   RTree images_rtree_;
 };
 

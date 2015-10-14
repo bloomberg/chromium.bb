@@ -72,56 +72,42 @@ TEST(DisplayListRecordingSourceTest, DiscardableImagesWithTransform) {
 
   // Tile sized iterators. These should find only one pixel ref.
   {
-    std::vector<PositionImage> images;
+    std::vector<DrawImage> images;
     raster_source->GetDiscardableImagesInRect(gfx::Rect(0, 0, 128, 128),
                                               &images);
     EXPECT_EQ(2u, images.size());
-    EXPECT_TRUE(images[0].image == discardable_image[0][0].get());
-    EXPECT_TRUE(images[1].image == discardable_image[1][1].get());
-    EXPECT_EQ(rect.ToString(),
-              gfx::SkRectToRectF(images[0].image_rect).ToString());
-    EXPECT_EQ(rotate_rect.ToString(),
-              gfx::SkRectToRectF(images[1].image_rect).ToString());
+    EXPECT_TRUE(images[0].image() == discardable_image[0][0].get());
+    EXPECT_TRUE(images[1].image() == discardable_image[1][1].get());
   }
 
   // Shifted tile sized iterators. These should find only one pixel ref.
   {
-    std::vector<PositionImage> images;
+    std::vector<DrawImage> images;
     raster_source->GetDiscardableImagesInRect(gfx::Rect(130, 140, 128, 128),
                                               &images);
     EXPECT_EQ(1u, images.size());
-    EXPECT_TRUE(images[0].image == discardable_image[1][1].get());
-    EXPECT_EQ(rotate_rect.ToString(),
-              gfx::SkRectToRectF(images[0].image_rect).ToString());
+    EXPECT_TRUE(images[0].image() == discardable_image[1][1].get());
   }
 
   // The rotated bitmap would still be in the top right tile.
   {
-    std::vector<PositionImage> images;
+    std::vector<DrawImage> images;
     raster_source->GetDiscardableImagesInRect(gfx::Rect(130, 0, 128, 128),
                                               &images);
     EXPECT_EQ(1u, images.size());
-    EXPECT_TRUE(images[0].image == discardable_image[1][1].get());
-    EXPECT_EQ(rotate_rect.ToString(),
-              gfx::SkRectToRectF(images[0].image_rect).ToString());
+    EXPECT_TRUE(images[0].image() == discardable_image[1][1].get());
   }
 
   // Layer sized iterators. These should find all pixel refs.
   {
-    std::vector<PositionImage> images;
+    std::vector<DrawImage> images;
     raster_source->GetDiscardableImagesInRect(gfx::Rect(0, 0, 256, 256),
                                               &images);
     EXPECT_EQ(3u, images.size());
     // Top left tile with bitmap[0][0] and bitmap[1][1].
-    EXPECT_TRUE(images[0].image == discardable_image[0][0].get());
-    EXPECT_TRUE(images[1].image == discardable_image[1][0].get());
-    EXPECT_TRUE(images[2].image == discardable_image[1][1].get());
-    EXPECT_EQ(rect.ToString(),
-              gfx::SkRectToRectF(images[0].image_rect).ToString());
-    EXPECT_EQ(translate_rect.ToString(),
-              gfx::SkRectToRectF(images[1].image_rect).ToString());
-    EXPECT_EQ(rotate_rect.ToString(),
-              gfx::SkRectToRectF(images[2].image_rect).ToString());
+    EXPECT_TRUE(images[0].image() == discardable_image[0][0].get());
+    EXPECT_TRUE(images[1].image() == discardable_image[1][0].get());
+    EXPECT_TRUE(images[2].image() == discardable_image[1][1].get());
   }
 }
 
@@ -270,7 +256,7 @@ TEST(DisplayListRecordingSourceTest, NoGatherImageEmptyImages) {
   // If recording source do not gather images, raster source is not going to
   // get images.
   {
-    std::vector<PositionImage> images;
+    std::vector<DrawImage> images;
     raster_source->GetDiscardableImagesInRect(recorded_viewport, &images);
     EXPECT_TRUE(images.empty());
   }
@@ -289,21 +275,21 @@ TEST(DisplayListRecordingSourceTest, EmptyImages) {
 
   // Tile sized iterators.
   {
-    std::vector<PositionImage> images;
+    std::vector<DrawImage> images;
     raster_source->GetDiscardableImagesInRect(gfx::Rect(0, 0, 128, 128),
                                               &images);
     EXPECT_TRUE(images.empty());
   }
   // Shifted tile sized iterators.
   {
-    std::vector<PositionImage> images;
+    std::vector<DrawImage> images;
     raster_source->GetDiscardableImagesInRect(gfx::Rect(140, 140, 128, 128),
                                               &images);
     EXPECT_TRUE(images.empty());
   }
   // Layer sized iterators.
   {
-    std::vector<PositionImage> images;
+    std::vector<DrawImage> images;
     raster_source->GetDiscardableImagesInRect(gfx::Rect(0, 0, 256, 256),
                                               &images);
     EXPECT_TRUE(images.empty());
@@ -347,21 +333,21 @@ TEST(DisplayListRecordingSourceTest, NoDiscardableImages) {
 
   // Tile sized iterators.
   {
-    std::vector<PositionImage> images;
+    std::vector<DrawImage> images;
     raster_source->GetDiscardableImagesInRect(gfx::Rect(0, 0, 128, 128),
                                               &images);
     EXPECT_TRUE(images.empty());
   }
   // Shifted tile sized iterators.
   {
-    std::vector<PositionImage> images;
+    std::vector<DrawImage> images;
     raster_source->GetDiscardableImagesInRect(gfx::Rect(140, 140, 128, 128),
                                               &images);
     EXPECT_TRUE(images.empty());
   }
   // Layer sized iterators.
   {
-    std::vector<PositionImage> images;
+    std::vector<DrawImage> images;
     raster_source->GetDiscardableImagesInRect(gfx::Rect(0, 0, 256, 256),
                                               &images);
     EXPECT_TRUE(images.empty());
@@ -399,29 +385,25 @@ TEST(DisplayListRecordingSourceTest, DiscardableImages) {
 
   // Tile sized iterators. These should find only one image.
   {
-    std::vector<PositionImage> images;
+    std::vector<DrawImage> images;
     raster_source->GetDiscardableImagesInRect(gfx::Rect(0, 0, 128, 128),
                                               &images);
     EXPECT_EQ(1u, images.size());
-    EXPECT_TRUE(images[0].image == discardable_image[0][0].get());
-    EXPECT_EQ(gfx::RectF(32, 32).ToString(),
-              gfx::SkRectToRectF(images[0].image_rect).ToString());
+    EXPECT_TRUE(images[0].image() == discardable_image[0][0].get());
   }
 
   // Shifted tile sized iterators. These should find only one image.
   {
-    std::vector<PositionImage> images;
+    std::vector<DrawImage> images;
     raster_source->GetDiscardableImagesInRect(gfx::Rect(140, 140, 128, 128),
                                               &images);
     EXPECT_EQ(1u, images.size());
-    EXPECT_TRUE(images[0].image == discardable_image[1][1].get());
-    EXPECT_EQ(gfx::RectF(140, 140, 32, 32).ToString(),
-              gfx::SkRectToRectF(images[0].image_rect).ToString());
+    EXPECT_TRUE(images[0].image() == discardable_image[1][1].get());
   }
 
   // Ensure there's no discardable images in the empty cell
   {
-    std::vector<PositionImage> images;
+    std::vector<DrawImage> images;
     raster_source->GetDiscardableImagesInRect(gfx::Rect(140, 0, 128, 128),
                                               &images);
     EXPECT_TRUE(images.empty());
@@ -429,19 +411,13 @@ TEST(DisplayListRecordingSourceTest, DiscardableImages) {
 
   // Layer sized iterators. These should find all 3 images.
   {
-    std::vector<PositionImage> images;
+    std::vector<DrawImage> images;
     raster_source->GetDiscardableImagesInRect(gfx::Rect(0, 0, 256, 256),
                                               &images);
     EXPECT_EQ(3u, images.size());
-    EXPECT_TRUE(images[0].image == discardable_image[0][0].get());
-    EXPECT_TRUE(images[1].image == discardable_image[1][0].get());
-    EXPECT_TRUE(images[2].image == discardable_image[1][1].get());
-    EXPECT_EQ(gfx::RectF(32, 32).ToString(),
-              gfx::SkRectToRectF(images[0].image_rect).ToString());
-    EXPECT_EQ(gfx::RectF(0, 130, 32, 32).ToString(),
-              gfx::SkRectToRectF(images[1].image_rect).ToString());
-    EXPECT_EQ(gfx::RectF(140, 140, 32, 32).ToString(),
-              gfx::SkRectToRectF(images[2].image_rect).ToString());
+    EXPECT_TRUE(images[0].image() == discardable_image[0][0].get());
+    EXPECT_TRUE(images[1].image() == discardable_image[1][0].get());
+    EXPECT_TRUE(images[2].image() == discardable_image[1][1].get());
   }
 }
 
@@ -485,46 +461,36 @@ TEST(DisplayListRecordingSourceTest, DiscardableImagesBaseNonDiscardable) {
 
   // Tile sized iterators. These should find only one image.
   {
-    std::vector<PositionImage> images;
+    std::vector<DrawImage> images;
     raster_source->GetDiscardableImagesInRect(gfx::Rect(0, 0, 256, 256),
                                               &images);
     EXPECT_EQ(1u, images.size());
-    EXPECT_TRUE(images[0].image == discardable_image[0][0].get());
-    EXPECT_EQ(gfx::RectF(128, 128).ToString(),
-              gfx::SkRectToRectF(images[0].image_rect).ToString());
+    EXPECT_TRUE(images[0].image() == discardable_image[0][0].get());
   }
   // Shifted tile sized iterators. These should find only one image.
   {
-    std::vector<PositionImage> images;
+    std::vector<DrawImage> images;
     raster_source->GetDiscardableImagesInRect(gfx::Rect(260, 260, 256, 256),
                                               &images);
     EXPECT_EQ(1u, images.size());
-    EXPECT_TRUE(images[0].image == discardable_image[1][1].get());
-    EXPECT_EQ(gfx::RectF(260, 260, 128, 128).ToString(),
-              gfx::SkRectToRectF(images[0].image_rect).ToString());
+    EXPECT_TRUE(images[0].image() == discardable_image[1][1].get());
   }
   // Ensure there's no discardable images in the empty cell
   {
-    std::vector<PositionImage> images;
+    std::vector<DrawImage> images;
     raster_source->GetDiscardableImagesInRect(gfx::Rect(0, 256, 256, 256),
                                               &images);
     EXPECT_TRUE(images.empty());
   }
   // Layer sized iterators. These should find three images.
   {
-    std::vector<PositionImage> images;
+    std::vector<DrawImage> images;
     raster_source->GetDiscardableImagesInRect(gfx::Rect(0, 0, 512, 512),
                                               &images);
     EXPECT_EQ(3u, images.size());
-    EXPECT_TRUE(images[0].image == discardable_image[0][0].get());
-    EXPECT_TRUE(images[1].image == discardable_image[0][1].get());
-    EXPECT_TRUE(images[2].image == discardable_image[1][1].get());
-    EXPECT_EQ(gfx::RectF(128, 128).ToString(),
-              gfx::SkRectToRectF(images[0].image_rect).ToString());
-    EXPECT_EQ(gfx::RectF(260, 0, 128, 128).ToString(),
-              gfx::SkRectToRectF(images[1].image_rect).ToString());
-    EXPECT_EQ(gfx::RectF(260, 260, 128, 128).ToString(),
-              gfx::SkRectToRectF(images[2].image_rect).ToString());
+    EXPECT_TRUE(images[0].image() == discardable_image[0][0].get());
+    EXPECT_TRUE(images[1].image() == discardable_image[0][1].get());
+    EXPECT_TRUE(images[2].image() == discardable_image[1][1].get());
   }
 }
 

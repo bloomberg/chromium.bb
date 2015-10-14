@@ -19,7 +19,7 @@ class ImageDecodeController {
   ImageDecodeController();
   ~ImageDecodeController();
 
-  scoped_refptr<ImageDecodeTask> GetTaskForImage(const PositionImage& image,
+  scoped_refptr<ImageDecodeTask> GetTaskForImage(const DrawImage& image,
                                                  int layer_id,
                                                  uint64_t prepare_tiles_id);
 

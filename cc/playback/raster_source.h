@@ -71,7 +71,7 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
   // rect in layer space.
   virtual void GetDiscardableImagesInRect(
       const gfx::Rect& layer_rect,
-      std::vector<PositionImage>* images) const = 0;
+      std::vector<DrawImage>* images) const = 0;
 
   // Return true iff this raster source can raster the given rect in layer
   // space.

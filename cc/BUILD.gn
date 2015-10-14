@@ -298,6 +298,7 @@ component("cc") {
     "playback/display_list_raster_source.h",
     "playback/display_list_recording_source.cc",
     "playback/display_list_recording_source.h",
+    "playback/draw_image.h",
     "playback/drawing_display_item.cc",
     "playback/drawing_display_item.h",
     "playback/filter_display_item.cc",
@@ -306,7 +307,6 @@ component("cc") {
     "playback/float_clip_display_item.h",
     "playback/largest_display_item.cc",
     "playback/largest_display_item.h",
-    "playback/position_image.h",
     "playback/raster_source.h",
     "playback/raster_source_helper.cc",
     "playback/raster_source_helper.h",
@@ -880,7 +880,9 @@ test("cc_unittests") {
     "//ui/gl:test_support",
   ]
 
-  data_deps = [ "//third_party/mesa:osmesa" ]
+  data_deps = [
+    "//third_party/mesa:osmesa",
+  ]
 }
 
 test("cc_perftests") {
