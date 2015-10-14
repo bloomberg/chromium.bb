@@ -80,11 +80,6 @@ const char* kDefaultThemeGalleryID = "hkacjpbfdknhflllbcmjibkdeoafencn";
 // ExtensionService::GarbageCollectExtensions() does something similar.
 const int kRemoveUnusedThemesStartupDelay = 30;
 
-// The filename to be used for a cached theme created while material design is
-// enabled.
-const base::FilePath::CharType kThemePackMaterialDesignFilename[] =
-    FILE_PATH_LITERAL("Cached Theme Material Design.pak");
-
 SkColor IncreaseLightness(SkColor color, double percent) {
   color_utils::HSL result;
   color_utils::SkColorToHSL(color, &result);
@@ -554,7 +549,7 @@ void ThemeService::LoadThemePrefs() {
   base::FilePath path = prefs->GetFilePath(prefs::kCurrentThemePackFilename);
   if (path != base::FilePath()) {
     path = path.Append(ui::MaterialDesignController::IsModeMaterial()
-                           ? kThemePackMaterialDesignFilename
+                           ? chrome::kThemePackMaterialDesignFilename
                            : chrome::kThemePackFilename);
     SwapThemeSupplier(BrowserThemePack::BuildFromDataPack(path, current_id));
     loaded_pack = theme_supplier_.get() != nullptr;
@@ -675,7 +670,7 @@ void ThemeService::BuildFromExtension(const Extension* extension) {
   // Write the packed file to disk.
   base::FilePath pack_path =
       extension->path().Append(ui::MaterialDesignController::IsModeMaterial()
-                                   ? kThemePackMaterialDesignFilename
+                                   ? chrome::kThemePackMaterialDesignFilename
                                    : chrome::kThemePackFilename);
   service->GetFileTaskRunner()->PostTask(
       FROM_HERE,
