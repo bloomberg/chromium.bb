@@ -102,7 +102,7 @@ bool ScriptResource::mimeTypeAllowedByNosniff() const
 
 bool ScriptResource::mustRefetchDueToIntegrityMetadata(const FetchRequest& request) const
 {
-    if (!m_integrityChecked || request.integrityMetadata().isEmpty())
+    if (request.integrityMetadata().isEmpty())
         return false;
 
     // TODO(jww) this integrity metadata should actually be
