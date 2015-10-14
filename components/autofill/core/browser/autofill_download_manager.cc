@@ -224,8 +224,7 @@ void AutofillDownloadManager::CacheQueryRequest(
     const std::vector<std::string>& forms_in_query,
     const std::string& query_data) {
   std::string signature = GetCombinedSignature(forms_in_query);
-  for (QueryRequestCache::iterator it = cached_forms_.begin();
-       it != cached_forms_.end(); ++it) {
+  for (auto it = cached_forms_.begin(); it != cached_forms_.end(); ++it) {
     if (it->first == signature) {
       // We hit the cache, move to the first position and return.
       std::pair<std::string, std::string> data = *it;
@@ -246,11 +245,10 @@ bool AutofillDownloadManager::CheckCacheForQueryRequest(
     const std::vector<std::string>& forms_in_query,
     std::string* query_data) const {
   std::string signature = GetCombinedSignature(forms_in_query);
-  for (QueryRequestCache::const_iterator it = cached_forms_.begin();
-       it != cached_forms_.end(); ++it) {
-    if (it->first == signature) {
+  for (const auto& it : cached_forms_) {
+    if (it.first == signature) {
       // We hit the cache, fill the data and return.
-      *query_data = it->second;
+      *query_data = it.second;
       return true;
     }
   }

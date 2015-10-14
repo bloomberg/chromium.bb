@@ -448,29 +448,22 @@ bool FillUserNameAndPassword(
     password = fill_data.password_field.value;
   } else {
     // Scan additional logins for a match.
-    PasswordFormFillData::LoginCollection::const_iterator iter;
-    for (iter = fill_data.additional_logins.begin();
-         iter != fill_data.additional_logins.end();
-         ++iter) {
-      if (DoUsernamesMatch(
-              iter->first, current_username, exact_username_match)) {
-        username = iter->first;
-        password = iter->second.password;
+    for (const auto& it : fill_data.additional_logins) {
+      if (DoUsernamesMatch(it.first, current_username, exact_username_match)) {
+        username = it.first;
+        password = it.second.password;
         break;
       }
     }
 
     // Check possible usernames.
     if (username.empty() && password.empty()) {
-      for (PasswordFormFillData::UsernamesCollection::const_iterator iter =
-               fill_data.other_possible_usernames.begin();
-           iter != fill_data.other_possible_usernames.end();
-           ++iter) {
-        for (size_t i = 0; i < iter->second.size(); ++i) {
+      for (const auto& it : fill_data.other_possible_usernames) {
+        for (size_t i = 0; i < it.second.size(); ++i) {
           if (DoUsernamesMatch(
-                  iter->second[i], current_username, exact_username_match)) {
-            username = iter->second[i];
-            password = iter->first.password;
+                  it.second[i], current_username, exact_username_match)) {
+            username = it.second[i];
+            password = it.first.password;
             break;
           }
         }
@@ -654,11 +647,8 @@ void PasswordAutofillAgent::PasswordValueGatekeeper::RegisterElement(
 void PasswordAutofillAgent::PasswordValueGatekeeper::OnUserGesture() {
   was_user_gesture_seen_ = true;
 
-  for (std::vector<blink::WebInputElement>::iterator it = elements_.begin();
-       it != elements_.end();
-       ++it) {
-    ShowValue(&(*it));
-  }
+  for (blink::WebInputElement& element : elements_)
+    ShowValue(&element);
 
   elements_.clear();
 }
@@ -1280,23 +1270,26 @@ void PasswordAutofillAgent::OnFillPasswordForm(
       DoesFormContainAmbiguousOrEmptyNames(form_data);
   FormElementsList forms;
   FindFormElements(render_frame(), form_data, ambiguous_or_empty_names, &forms);
-  FormElementsList::iterator iter;
-  for (iter = forms.begin(); iter != forms.end(); ++iter) {
-    // Attach autocomplete listener to enable selecting alternate logins.
-    blink::WebInputElement username_element, password_element;
-
-    base::string16 username_field_name, password_field_name;
-    password_field_name =
+  for (const auto& form : forms) {
+    base::string16 username_field_name;
+    base::string16 password_field_name =
         FieldName(form_data.password_field, ambiguous_or_empty_names);
     bool form_contains_fillable_username_field =
         FillDataContainsFillableUsername(form_data);
-    if (form_contains_fillable_username_field)
+    if (form_contains_fillable_username_field) {
       username_field_name =
           FieldName(form_data.username_field, ambiguous_or_empty_names);
+    }
+
+    // Attach autocomplete listener to enable selecting alternate logins.
+    blink::WebInputElement username_element;
+    blink::WebInputElement password_element;
 
     // Check whether the password form has a username input field.
     if (!username_field_name.empty()) {
-      username_element = (*iter)[username_field_name];
+      const auto it = form.find(username_field_name);
+      DCHECK(it != form.end());
+      username_element = it->second;
     }
 
     // No password field, bail out.
@@ -1305,7 +1298,11 @@ void PasswordAutofillAgent::OnFillPasswordForm(
 
     // Get pointer to password element. (We currently only support single
     // password forms).
-    password_element = (*iter)[password_field_name];
+    {
+      const auto it = form.find(password_field_name);
+      DCHECK(it != form.end());
+      password_element = it->second;
+    }
 
     blink::WebInputElement main_element =
         username_element.isNull() ? password_element : username_element;
@@ -1499,9 +1496,9 @@ void PasswordAutofillAgent::ProvisionallySavePassword(
 }
 
 bool PasswordAutofillAgent::ProvisionallySavedPasswordIsValid() {
-   return provisionally_saved_form_ &&
-       !provisionally_saved_form_->username_value.empty() &&
-       !(provisionally_saved_form_->password_value.empty() &&
+  return provisionally_saved_form_ &&
+         !provisionally_saved_form_->username_value.empty() &&
+         !(provisionally_saved_form_->password_value.empty() &&
          provisionally_saved_form_->new_password_value.empty());
 }
 

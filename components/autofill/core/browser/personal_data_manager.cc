@@ -929,7 +929,6 @@ std::vector<Suggestion> PersonalDataManager::GetCreditCardSuggestions(
   for (auto outer_it = cards_to_suggest.begin();
        outer_it != cards_to_suggest.end();
        ++outer_it) {
-
     if ((*outer_it)->record_type() == CreditCard::FULL_SERVER_CARD) {
       for (auto inner_it = cards_to_suggest.begin();
            inner_it != cards_to_suggest.end();) {
@@ -1126,33 +1125,28 @@ void PersonalDataManager::SetProfiles(std::vector<AutofillProfile>* profiles) {
 
   // Any profiles that are not in the new profile list should be removed from
   // the web database.
-  for (std::vector<AutofillProfile*>::const_iterator iter =
-           web_profiles_.begin();
-       iter != web_profiles_.end(); ++iter) {
-    if (!FindByGUID<AutofillProfile>(*profiles, (*iter)->guid()))
-      database_->RemoveAutofillProfile((*iter)->guid());
+  for (const AutofillProfile* it : web_profiles_) {
+    if (!FindByGUID<AutofillProfile>(*profiles, it->guid()))
+      database_->RemoveAutofillProfile(it->guid());
   }
 
   // Update the web database with the existing profiles.
-  for (std::vector<AutofillProfile>::iterator iter = profiles->begin();
-       iter != profiles->end(); ++iter) {
-    if (FindByGUID<AutofillProfile>(web_profiles_, iter->guid()))
-      database_->UpdateAutofillProfile(*iter);
+  for (const AutofillProfile& it : *profiles) {
+    if (FindByGUID<AutofillProfile>(web_profiles_, it.guid()))
+      database_->UpdateAutofillProfile(it);
   }
 
   // Add the new profiles to the web database.  Don't add a duplicate.
-  for (std::vector<AutofillProfile>::iterator iter = profiles->begin();
-       iter != profiles->end(); ++iter) {
-    if (!FindByGUID<AutofillProfile>(web_profiles_, iter->guid()) &&
-        !FindByContents(web_profiles_, *iter))
-      database_->AddAutofillProfile(*iter);
+  for (const AutofillProfile& it : *profiles) {
+    if (!FindByGUID<AutofillProfile>(web_profiles_, it.guid()) &&
+        !FindByContents(web_profiles_, it))
+      database_->AddAutofillProfile(it);
   }
 
   // Copy in the new profiles.
   web_profiles_.clear();
-  for (std::vector<AutofillProfile>::iterator iter = profiles->begin();
-       iter != profiles->end(); ++iter) {
-    web_profiles_.push_back(new AutofillProfile(*iter));
+  for (const AutofillProfile& it : *profiles) {
+    web_profiles_.push_back(new AutofillProfile(it));
   }
 
   // Refresh our local cache and send notifications to observers.

@@ -30,14 +30,13 @@ bool IsValidGURL(const GURL& url) {
 }
 
 bool IsValidFormFieldData(const FormFieldData& field) {
-  return
-      IsValidString16(field.label) &&
-      IsValidString16(field.name) &&
-      IsValidString16(field.value) &&
-      IsValidString(field.form_control_type) &&
-      IsValidString(field.autocomplete_attribute) &&
-      IsValidString16Vector(field.option_values) &&
-      IsValidString16Vector(field.option_contents);
+  return IsValidString16(field.label) &&
+         IsValidString16(field.name) &&
+         IsValidString16(field.value) &&
+         IsValidString(field.form_control_type) &&
+         IsValidString(field.autocomplete_attribute) &&
+         IsValidString16Vector(field.option_values) &&
+         IsValidString16Vector(field.option_contents);
 }
 
 bool IsValidFormData(const FormData& form) {
@@ -49,9 +48,8 @@ bool IsValidFormData(const FormData& form) {
   if (form.fields.size() > kMaxListSize)
     return false;
 
-  for (std::vector<FormFieldData>::const_iterator it = form.fields.begin();
-       it != form.fields.end(); ++it) {
-    if (!IsValidFormFieldData(*it))
+  for (const FormFieldData& field : form.fields) {
+    if (!IsValidFormFieldData(field))
       return false;
   }
 
@@ -66,22 +64,18 @@ bool IsValidPasswordFormFillData(const PasswordFormFillData& form) {
     return false;
   }
 
-  for (PasswordFormFillData::LoginCollection::const_iterator it =
-           form.additional_logins.begin();
-       it != form.additional_logins.end(); ++it) {
-    if (!IsValidString16(it->first) ||
-        !IsValidString16(it->second.password) ||
-        !IsValidString(it->second.realm))
+  for (const auto& it : form.additional_logins) {
+    if (!IsValidString16(it.first) ||
+        !IsValidString16(it.second.password) ||
+        !IsValidString(it.second.realm))
       return false;
   }
 
-  for (PasswordFormFillData::UsernamesCollection::const_iterator it =
-           form.other_possible_usernames.begin();
-       it != form.other_possible_usernames.end(); ++it) {
-    if (!IsValidString16(it->first.username) ||
-        !IsValidString16(it->first.password) ||
-        !IsValidString(it->first.realm) ||
-        !IsValidString16Vector(it->second))
+  for (const auto& it : form.other_possible_usernames) {
+    if (!IsValidString16(it.first.username) ||
+        !IsValidString16(it.first.password) ||
+        !IsValidString(it.first.realm) ||
+        !IsValidString16Vector(it.second))
       return false;
   }
 
@@ -92,9 +86,8 @@ bool IsValidString16Vector(const std::vector<base::string16>& v) {
   if (v.size() > kMaxListSize)
     return false;
 
-  for (std::vector<base::string16>::const_iterator it = v.begin();
-       it != v.end(); ++it) {
-    if (!IsValidString16(*it))
+  for (const base::string16& str : v) {
+    if (!IsValidString16(str))
       return false;
   }
 
@@ -105,9 +98,8 @@ bool IsValidFormDataVector(const std::vector<FormData>& v) {
   if (v.size() > kMaxListSize)
     return false;
 
-  for (std::vector<FormData>::const_iterator it = v.begin(); it != v.end();
-       ++it) {
-    if (!IsValidFormData(*it))
+  for (const FormData& form : v) {
+    if (!IsValidFormData(form))
       return false;
   }
 

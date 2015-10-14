@@ -451,21 +451,20 @@ WebDatabase::State AutofillWebDataBackendImpl::RemoveOriginURLsModifiedBetween(
     WebDatabase* db) {
   DCHECK(db_thread_->BelongsToCurrentThread());
   ScopedVector<AutofillProfile> profiles;
-  if (AutofillTable::FromWebDatabase(db)->RemoveOriginURLsModifiedBetween(
+  if (!AutofillTable::FromWebDatabase(db)->RemoveOriginURLsModifiedBetween(
           delete_begin, delete_end, &profiles)) {
-    for (std::vector<AutofillProfile*>::const_iterator it = profiles.begin();
-         it != profiles.end(); ++it) {
-      AutofillProfileChange change(AutofillProfileChange::UPDATE,
-                                   (*it)->guid(), *it);
-      FOR_EACH_OBSERVER(AutofillWebDataServiceObserverOnDBThread,
-                        db_observer_list_,
-                        AutofillProfileChanged(change));
-    }
-    // Note: It is the caller's responsibility to post notifications for any
-    // changes, e.g. by calling the Refresh() method of PersonalDataManager.
-    return WebDatabase::COMMIT_NEEDED;
+    return WebDatabase::COMMIT_NOT_NEEDED;
   }
-  return WebDatabase::COMMIT_NOT_NEEDED;
+
+  for (const AutofillProfile* it : profiles) {
+    AutofillProfileChange change(AutofillProfileChange::UPDATE, it->guid(), it);
+    FOR_EACH_OBSERVER(AutofillWebDataServiceObserverOnDBThread,
+                      db_observer_list_,
+                      AutofillProfileChanged(change));
+  }
+  // Note: It is the caller's responsibility to post notifications for any
+  // changes, e.g. by calling the Refresh() method of PersonalDataManager.
+  return WebDatabase::COMMIT_NEEDED;
 }
 
 WebDatabase::State AutofillWebDataBackendImpl::RemoveExpiredFormElementsImpl(

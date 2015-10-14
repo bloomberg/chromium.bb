@@ -18,10 +18,9 @@ void FormGroup::GetMatchingTypes(const base::string16& text,
 
   ServerFieldTypeSet types;
   GetSupportedTypes(&types);
-  for (ServerFieldTypeSet::const_iterator type = types.begin();
-       type != types.end(); ++type) {
-    if (GetInfo(AutofillType(*type), app_locale) == text)
-      matching_types->insert(*type);
+  for (const auto& type : types) {
+    if (GetInfo(AutofillType(type), app_locale) == text)
+      matching_types->insert(type);
   }
 }
 
@@ -29,10 +28,9 @@ void FormGroup::GetNonEmptyTypes(const std::string& app_locale,
                                  ServerFieldTypeSet* non_empty_types) const {
   ServerFieldTypeSet types;
   GetSupportedTypes(&types);
-  for (ServerFieldTypeSet::const_iterator type = types.begin();
-       type != types.end(); ++type) {
-    if (!GetInfo(AutofillType(*type), app_locale).empty())
-      non_empty_types->insert(*type);
+  for (const auto& type : types) {
+    if (!GetInfo(AutofillType(type), app_locale).empty())
+      non_empty_types->insert(type);
   }
 }
 

@@ -116,8 +116,7 @@ syncer::SyncMergeResult AutocompleteSyncableService::MergeDataAndStartSyncing(
   }
 
   AutocompleteEntryMap new_db_entries;
-  for (std::vector<AutofillEntry>::iterator it = entries.begin();
-       it != entries.end(); ++it) {
+  for (auto it = entries.begin(); it != entries.end(); ++it) {
     new_db_entries[it->key()] =
         std::make_pair(syncer::SyncChange::ACTION_ADD, it);
   }
@@ -128,10 +127,8 @@ syncer::SyncMergeResult AutocompleteSyncableService::MergeDataAndStartSyncing(
   // Go through and check for all the entries that sync already knows about.
   // CreateOrUpdateEntry() will remove entries that are same with the synced
   // ones from |new_db_entries|.
-  for (syncer::SyncDataList::const_iterator it = initial_sync_data.begin();
-       it != initial_sync_data.end(); ++it) {
-    CreateOrUpdateEntry(*it, &new_db_entries, &new_synced_entries);
-  }
+  for (const auto& it : initial_sync_data)
+    CreateOrUpdateEntry(it, &new_db_entries, &new_synced_entries);
 
   if (!SaveChangesToWebData(new_synced_entries)) {
     merge_result.set_error(error_handler_->CreateAndUploadError(
@@ -141,12 +138,11 @@ syncer::SyncMergeResult AutocompleteSyncableService::MergeDataAndStartSyncing(
   }
 
   syncer::SyncChangeList new_changes;
-  for (AutocompleteEntryMap::iterator it = new_db_entries.begin();
-       it != new_db_entries.end(); ++it) {
+  for (const auto& it : new_db_entries) {
     new_changes.push_back(
         syncer::SyncChange(FROM_HERE,
-                           it->second.first,
-                           CreateSyncData(*(it->second.second))));
+                           it.second.first,
+                           CreateSyncData(*(it.second.second))));
   }
 
   merge_result.set_error(
@@ -182,10 +178,8 @@ syncer::SyncDataList AutocompleteSyncableService::GetAllSyncData(
   if (!LoadAutofillData(&entries))
     return current_data;
 
-  for (std::vector<AutofillEntry>::iterator it = entries.begin();
-       it != entries.end(); ++it) {
-    current_data.push_back(CreateSyncData(*it));
-  }
+  for (const AutofillEntry& it : entries)
+    current_data.push_back(CreateSyncData(it));
 
   return current_data;
 }
@@ -211,10 +205,9 @@ syncer::SyncError AutocompleteSyncableService::ProcessSyncChanges(
 
   syncer::SyncError list_processing_error;
 
-  for (syncer::SyncChangeList::const_iterator i = change_list.begin();
-       i != change_list.end() && !list_processing_error.IsSet(); ++i) {
-    DCHECK(i->IsValid());
-    switch (i->change_type()) {
+  for (const auto& i : change_list) {
+    DCHECK(i.IsValid());
+    switch (i.change_type()) {
       case syncer::SyncChange::ACTION_ADD:
       case syncer::SyncChange::ACTION_UPDATE:
         if (!db_entries) {
@@ -230,14 +223,14 @@ syncer::SyncError AutocompleteSyncableService::ProcessSyncChanges(
                 std::make_pair(syncer::SyncChange::ACTION_ADD, it);
           }
         }
-        CreateOrUpdateEntry(i->sync_data(), db_entries.get(), &new_entries);
+        CreateOrUpdateEntry(i.sync_data(), db_entries.get(), &new_entries);
         break;
 
       case syncer::SyncChange::ACTION_DELETE: {
-        DCHECK(i->sync_data().GetSpecifics().has_autofill())
+        DCHECK(i.sync_data().GetSpecifics().has_autofill())
             << "Autofill specifics data not present on delete!";
         const sync_pb::AutofillSpecifics& autofill =
-            i->sync_data().GetSpecifics().autofill();
+            i.sync_data().GetSpecifics().autofill();
         if (autofill.has_value())
           list_processing_error = AutofillEntryDelete(autofill);
         else
@@ -250,7 +243,7 @@ syncer::SyncError AutocompleteSyncableService::ProcessSyncChanges(
         return error_handler_->CreateAndUploadError(
             FROM_HERE,
             "ProcessSyncChanges failed on ChangeType " +
-                 syncer::SyncChange::ChangeTypeToString(i->change_type()));
+                 syncer::SyncChange::ChangeTypeToString(i.change_type()));
     }
   }
 
@@ -369,19 +362,18 @@ void AutocompleteSyncableService::ActOnChanges(
     const AutofillChangeList& changes) {
   DCHECK(sync_processor_);
   syncer::SyncChangeList new_changes;
-  for (AutofillChangeList::const_iterator change = changes.begin();
-       change != changes.end(); ++change) {
-    switch (change->type()) {
+  for (const auto& change : changes) {
+    switch (change.type()) {
       case AutofillChange::ADD:
       case AutofillChange::UPDATE: {
         base::Time date_created, date_last_used;
         bool success = GetAutofillTable()->GetAutofillTimestamps(
-            change->key().name(), change->key().value(),
+            change.key().name(), change.key().value(),
             &date_created, &date_last_used);
         DCHECK(success);
-        AutofillEntry entry(change->key(), date_created, date_last_used);
+        AutofillEntry entry(change.key(), date_created, date_last_used);
         syncer::SyncChange::SyncChangeType change_type =
-           (change->type() == AutofillChange::ADD) ?
+           (change.type() == AutofillChange::ADD) ?
             syncer::SyncChange::ACTION_ADD :
             syncer::SyncChange::ACTION_UPDATE;
         new_changes.push_back(syncer::SyncChange(FROM_HERE,
@@ -391,7 +383,7 @@ void AutocompleteSyncableService::ActOnChanges(
       }
 
       case AutofillChange::REMOVE: {
-        AutofillEntry entry(change->key(), base::Time(), base::Time());
+        AutofillEntry entry(change.key(), base::Time(), base::Time());
         new_changes.push_back(
             syncer::SyncChange(FROM_HERE,
                                syncer::SyncChange::ACTION_DELETE,

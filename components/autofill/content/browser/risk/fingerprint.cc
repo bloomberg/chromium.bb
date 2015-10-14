@@ -75,12 +75,11 @@ std::string GetOperatingSystemVersion() {
 // Adds the list of |fonts| to the |machine|.
 void AddFontsToFingerprint(const base::ListValue& fonts,
                            Fingerprint::MachineCharacteristics* machine) {
-  for (base::ListValue::const_iterator it = fonts.begin();
-       it != fonts.end(); ++it) {
+  for (const auto& it : fonts) {
     // Each item in the list is a two-element list such that the first element
     // is the font family and the second is the font name.
     const base::ListValue* font_description = NULL;
-    bool success = (*it)->GetAsList(&font_description);
+    bool success = it->GetAsList(&font_description);
     DCHECK(success);
 
     std::string font_name;
@@ -94,18 +93,14 @@ void AddFontsToFingerprint(const base::ListValue& fonts,
 // Adds the list of |plugins| to the |machine|.
 void AddPluginsToFingerprint(const std::vector<content::WebPluginInfo>& plugins,
                              Fingerprint::MachineCharacteristics* machine) {
-  for (std::vector<content::WebPluginInfo>::const_iterator it = plugins.begin();
-       it != plugins.end(); ++it) {
+  for (const content::WebPluginInfo& it : plugins) {
     Fingerprint::MachineCharacteristics::Plugin* plugin =
         machine->add_plugin();
-    plugin->set_name(base::UTF16ToUTF8(it->name));
-    plugin->set_description(base::UTF16ToUTF8(it->desc));
-    for (std::vector<content::WebPluginMimeType>::const_iterator mime_type =
-             it->mime_types.begin();
-         mime_type != it->mime_types.end(); ++mime_type) {
-      plugin->add_mime_type(mime_type->mime_type);
-    }
-    plugin->set_version(base::UTF16ToUTF8(it->version));
+    plugin->set_name(base::UTF16ToUTF8(it.name));
+    plugin->set_description(base::UTF16ToUTF8(it.desc));
+    for (const content::WebPluginMimeType& mime_type : it.mime_types)
+      plugin->add_mime_type(mime_type.mime_type);
+    plugin->set_version(base::UTF16ToUTF8(it.version));
   }
 }
 

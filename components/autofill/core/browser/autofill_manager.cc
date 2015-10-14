@@ -1103,16 +1103,15 @@ void AutofillManager::FillOrPreviewDataModelForm(
   // If the relevant section is auto-filled, we should fill |field| but not the
   // rest of the form.
   if (SectionIsAutofilled(*form_structure, form, autofill_field->section())) {
-    for (std::vector<FormFieldData>::iterator iter = result.fields.begin();
-         iter != result.fields.end(); ++iter) {
-      if (iter->SameFieldAs(field)) {
+    for (FormFieldData& iter : result.fields) {
+      if (iter.SameFieldAs(field)) {
         base::string16 value =
             data_model.GetInfo(autofill_field->Type(), app_locale_);
         if (AutofillField::FillFormField(*autofill_field,
                                          value,
                                          profile_language_code,
                                          app_locale_,
-                                         &(*iter))) {
+                                         &iter)) {
           // Mark the cached field as autofilled, so that we can detect when a
           // user edits an autofilled field (for metrics).
           autofill_field->is_autofilled = true;
@@ -1120,7 +1119,7 @@ void AutofillManager::FillOrPreviewDataModelForm(
           // Mark the field as autofilled when a non-empty value is assigned to
           // it. This allows the renderer to distinguish autofilled fields from
           // fields with non-empty values, such as select-one fields.
-          iter->is_autofilled = true;
+          iter.is_autofilled = true;
 
           if (!is_credit_card && !value.empty())
             client_->DidFillOrPreviewField(value, profile_full_name);

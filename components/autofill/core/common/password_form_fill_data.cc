@@ -62,28 +62,27 @@ void InitPasswordFormFillData(
     result->preferred_realm = preferred_match->signon_realm;
 
   // Copy additional username/value pairs.
-  PasswordFormMap::const_iterator iter;
-  for (iter = matches.begin(); iter != matches.end(); iter++) {
-    if (iter->second != preferred_match) {
+  for (const auto& it : matches) {
+    if (it.second != preferred_match) {
       PasswordAndRealm value;
-      value.password = iter->second->password_value;
-      if (iter->second->is_public_suffix_match)
-        value.realm = iter->second->signon_realm;
-      result->additional_logins[iter->first] = value;
+      value.password = it.second->password_value;
+      if (it.second->is_public_suffix_match)
+        value.realm = it.second->signon_realm;
+      result->additional_logins[it.first] = value;
     }
     if (enable_other_possible_usernames &&
-        !iter->second->other_possible_usernames.empty()) {
+        !it.second->other_possible_usernames.empty()) {
       // Note that there may be overlap between other_possible_usernames and
       // other saved usernames or with other other_possible_usernames. For now
       // we will ignore this overlap as it should be a rare occurence. We may
       // want to revisit this in the future.
       UsernamesCollectionKey key;
-      key.username = iter->first;
-      key.password = iter->second->password_value;
-      if (iter->second->is_public_suffix_match)
-        key.realm = iter->second->signon_realm;
+      key.username = it.first;
+      key.password = it.second->password_value;
+      if (it.second->is_public_suffix_match)
+        key.realm = it.second->signon_realm;
       result->other_possible_usernames[key] =
-          iter->second->other_possible_usernames;
+          it.second->other_possible_usernames;
     }
   }
 }

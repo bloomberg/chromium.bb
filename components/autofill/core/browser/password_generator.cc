@@ -54,10 +54,9 @@ bool VerifyPassword(const std::string& password) {
 // password. Assume that there already exists a lower case letter as it's the
 // default from gen_pron_pass.
 void ForceFixPassword(std::string* password) {
-  for (std::string::iterator iter = password->begin();
-       iter != password->end(); ++iter) {
-    if (islower(*iter)) {
-      *iter = base::ToUpperASCII(*iter);
+  for (char& it : *password) {
+    if (islower(it)) {
+      it = base::ToUpperASCII(it);
       break;
     }
   }

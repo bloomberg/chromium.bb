@@ -217,14 +217,10 @@ class AutofillImporter : public PersonalDataManagerObserver {
 
   // PersonalDataManagerObserver:
   void OnPersonalDataChanged() override {
-    for (std::vector<AutofillProfile>::const_iterator iter = profiles_.begin();
-         iter != profiles_.end(); ++iter) {
-      personal_data_manager_->AddProfile(*iter);
-    }
-    for (std::vector<CreditCard>::const_iterator iter = credit_cards_.begin();
-         iter != credit_cards_.end(); ++iter) {
-      personal_data_manager_->AddCreditCard(*iter);
-    }
+    for (const AutofillProfile& it : profiles_)
+      personal_data_manager_->AddProfile(it);
+    for (const CreditCard& it : credit_cards_)
+      personal_data_manager_->AddCreditCard(it);
     delete this;
   }
 
@@ -302,7 +298,7 @@ bool ImportAutofillDataWin(PersonalDataManager* pdm) {
   // In incognito mode we do not have PDM - and we should not import anything.
   if (!pdm)
     return false;
-  AutofillImporter *importer = new AutofillImporter(pdm);
+  AutofillImporter* importer = new AutofillImporter(pdm);
   // importer will self delete.
   return importer->ImportProfiles();
 }

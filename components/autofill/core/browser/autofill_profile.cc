@@ -158,10 +158,8 @@ void GetFieldsForDistinguishingProfiles(
   seen_fields.insert(GetStorableTypeCollapsingGroups(excluded_field));
 
   distinguishing_fields->clear();
-  for (std::vector<ServerFieldType>::const_iterator it =
-           suggested_fields->begin();
-       it != suggested_fields->end(); ++it) {
-    ServerFieldType suggested_type = GetStorableTypeCollapsingGroups(*it);
+  for (const ServerFieldType& it : *suggested_fields) {
+    ServerFieldType suggested_type = GetStorableTypeCollapsingGroups(it);
     if (seen_fields.insert(suggested_type).second)
       distinguishing_fields->push_back(suggested_type);
   }
@@ -176,11 +174,9 @@ void GetFieldsForDistinguishingProfiles(
   ServerFieldType effective_excluded_type =
       GetStorableTypeCollapsingGroups(excluded_field);
   if (excluded_field != effective_excluded_type) {
-    for (std::vector<ServerFieldType>::const_iterator it =
-             suggested_fields->begin();
-         it != suggested_fields->end(); ++it) {
-      if (*it != excluded_field &&
-          GetStorableTypeCollapsingGroups(*it) == effective_excluded_type) {
+    for (const ServerFieldType& it : *suggested_fields) {
+      if (it != excluded_field &&
+          GetStorableTypeCollapsingGroups(it) == effective_excluded_type) {
         distinguishing_fields->push_back(effective_excluded_type);
         break;
       }
@@ -192,9 +188,8 @@ void GetFieldsForDistinguishingProfiles(
 // collapses to full name, area code collapses to full phone, etc.
 void CollapseCompoundFieldTypes(ServerFieldTypeSet* type_set) {
   ServerFieldTypeSet collapsed_set;
-  for (ServerFieldTypeSet::iterator it = type_set->begin();
-       it != type_set->end(); ++it) {
-    switch (*it) {
+  for (const auto& it : *type_set) {
+    switch (it) {
       case NAME_FIRST:
       case NAME_MIDDLE:
       case NAME_LAST:
@@ -213,7 +208,7 @@ void CollapseCompoundFieldTypes(ServerFieldTypeSet* type_set) {
         break;
 
       default:
-        collapsed_set.insert(*it);
+        collapsed_set.insert(it);
     }
   }
   std::swap(*type_set, collapsed_set);
@@ -301,8 +296,9 @@ void AutofillProfile::GetMatchingTypes(
     const std::string& app_locale,
     ServerFieldTypeSet* matching_types) const {
   FormGroupList info = FormGroups();
-  for (FormGroupList::const_iterator it = info.begin(); it != info.end(); ++it)
-    (*it)->GetMatchingTypes(text, app_locale, matching_types);
+  for (const auto& it : info) {
+    it->GetMatchingTypes(text, app_locale, matching_types);
+  }
 }
 
 base::string16 AutofillProfile::GetRawInfo(ServerFieldType type) const {
@@ -547,18 +543,17 @@ void AutofillProfile::OverwriteWith(const AutofillProfile& profile,
     field_types.erase(ADDRESS_HOME_LINE2);
   }
 
-  for (ServerFieldTypeSet::const_iterator iter = field_types.begin();
-       iter != field_types.end(); ++iter) {
-    FieldTypeGroup group = AutofillType(*iter).group();
+  for (const auto& iter : field_types) {
+    FieldTypeGroup group = AutofillType(iter).group();
     // Special case names.
     if (group == NAME) {
       OverwriteName(profile.name_, app_locale);
       continue;
     }
 
-    base::string16 new_value = profile.GetRawInfo(*iter);
-    if (!compare.StringsEqual(GetRawInfo(*iter), new_value))
-      SetRawInfo(*iter, new_value);
+    base::string16 new_value = profile.GetRawInfo(iter);
+    if (!compare.StringsEqual(GetRawInfo(iter), new_value))
+      SetRawInfo(iter, new_value);
   }
 }
 
@@ -678,18 +673,16 @@ void AutofillProfile::CreateInferredLabels(
   }
 
   labels->resize(profiles.size());
-  for (std::map<base::string16, std::list<size_t> >::const_iterator it =
-           labels_to_profiles.begin();
-       it != labels_to_profiles.end(); ++it) {
-    if (it->second.size() == 1) {
+  for (auto& it : labels_to_profiles) {
+    if (it.second.size() == 1) {
       // This label is unique, so use it without any further ado.
-      base::string16 label = it->first;
-      size_t profile_index = it->second.front();
+      base::string16 label = it.first;
+      size_t profile_index = it.second.front();
       (*labels)[profile_index] = label;
     } else {
       // We have more than one profile with the same label, so add
       // differentiating fields.
-      CreateInferredLabelsHelper(profiles, it->second, fields_to_use,
+      CreateInferredLabelsHelper(profiles, it.second, fields_to_use,
                                  minimal_fields_shown, app_locale, labels);
     }
   }
@@ -791,8 +784,9 @@ bool AutofillProfile::AreProfileStringsSimilar(const base::string16& a,
 void AutofillProfile::GetSupportedTypes(
     ServerFieldTypeSet* supported_types) const {
   FormGroupList info = FormGroups();
-  for (FormGroupList::const_iterator it = info.begin(); it != info.end(); ++it)
-    (*it)->GetSupportedTypes(supported_types);
+  for (const auto& it : info) {
+    it->GetSupportedTypes(supported_types);
+  }
 }
 
 base::string16 AutofillProfile::ConstructInferredLabel(
@@ -879,16 +873,14 @@ void AutofillProfile::CreateInferredLabelsHelper(
   // each value's frequency.
   std::map<ServerFieldType,
            std::map<base::string16, size_t> > field_text_frequencies_by_field;
-  for (std::vector<ServerFieldType>::const_iterator field = fields.begin();
-       field != fields.end(); ++field) {
+  for (const ServerFieldType& field : fields) {
     std::map<base::string16, size_t>& field_text_frequencies =
-        field_text_frequencies_by_field[*field];
+        field_text_frequencies_by_field[field];
 
-    for (std::list<size_t>::const_iterator it = indices.begin();
-         it != indices.end(); ++it) {
-      const AutofillProfile* profile = profiles[*it];
+    for (const auto& it : indices) {
+      const AutofillProfile* profile = profiles[it];
       base::string16 field_text =
-          profile->GetInfo(AutofillType(*field), app_locale);
+          profile->GetInfo(AutofillType(field), app_locale);
 
       // If this label is not already in the map, add it with frequency 0.
       if (!field_text_frequencies.count(field_text))
@@ -906,9 +898,8 @@ void AutofillProfile::CreateInferredLabelsHelper(
   // Before we've satisfied condition (2), we include all fields, even ones that
   // are identical across all the profiles. Once we've satisfied condition (2),
   // we only include fields that that have at last two distinct values.
-  for (std::list<size_t>::const_iterator it = indices.begin();
-       it != indices.end(); ++it) {
-    const AutofillProfile* profile = profiles[*it];
+  for (const auto& it : indices) {
+    const AutofillProfile* profile = profiles[it];
 
     std::vector<ServerFieldType> label_fields;
     bool found_differentiating_field = false;
@@ -941,7 +932,7 @@ void AutofillProfile::CreateInferredLabelsHelper(
         break;
     }
 
-    (*labels)[*it] = profile->ConstructInferredLabel(
+    (*labels)[it] = profile->ConstructInferredLabel(
         label_fields, label_fields.size(), app_locale);
   }
 }

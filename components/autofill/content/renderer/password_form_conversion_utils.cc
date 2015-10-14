@@ -155,14 +155,13 @@ bool LocateSpecificPasswords(std::vector<WebInputElement> passwords,
   // First, look for elements marked with either autocomplete='current-password'
   // or 'new-password' -- if we find any, take the hint, and treat the first of
   // each kind as the element we are looking for.
-  for (std::vector<WebInputElement>::const_iterator it = passwords.begin();
-       it != passwords.end(); it++) {
-    if (HasAutocompleteAttributeValue(*it, kAutocompleteCurrentPassword) &&
+  for (const WebInputElement& it : passwords) {
+    if (HasAutocompleteAttributeValue(it, kAutocompleteCurrentPassword) &&
         current_password->isNull()) {
-      *current_password = *it;
-    } else if (HasAutocompleteAttributeValue(*it, kAutocompleteNewPassword) &&
-        new_password->isNull()) {
-      *new_password = *it;
+      *current_password = it;
+    } else if (HasAutocompleteAttributeValue(it, kAutocompleteNewPassword) &&
+               new_password->isNull()) {
+      *new_password = it;
     }
   }
 
@@ -251,33 +250,29 @@ void FindPredictedElements(
   // Matching only requires that action and name of the form match to allow
   // the username to be updated even if the form is changed after page load.
   // See https://crbug.com/476092 for more details.
-  auto predictions_iterator = form_predictions.begin();
-  for (; predictions_iterator != form_predictions.end();
-       ++predictions_iterator) {
-    if (predictions_iterator->first.action == form_data.action &&
-        predictions_iterator->first.name == form_data.name) {
+  auto predictions_it = form_predictions.begin();
+  for (; predictions_it != form_predictions.end(); ++predictions_it) {
+    if (predictions_it->first.action == form_data.action &&
+        predictions_it->first.name == form_data.name) {
       break;
     }
   }
 
-  if (predictions_iterator == form_predictions.end())
+  if (predictions_it == form_predictions.end())
     return;
 
   std::vector<blink::WebFormControlElement> autofillable_elements =
       form_util::ExtractAutofillableElementsFromSet(form.control_elements);
-
   const PasswordFormFieldPredictionMap& field_predictions =
-      predictions_iterator->second;
-  for (PasswordFormFieldPredictionMap::const_iterator prediction =
-           field_predictions.begin();
-       prediction != field_predictions.end(); ++prediction) {
-    const FormFieldData& target_field = prediction->first;
-    const PasswordFormFieldPredictionType& type = prediction->second;
-
-    for (size_t i = 0; i < autofillable_elements.size(); ++i) {
-      if (autofillable_elements[i].nameForAutofill() == target_field.name) {
+      predictions_it->second;
+  for (const auto& prediction : field_predictions) {
+    const FormFieldData& target_field = prediction.first;
+    const PasswordFormFieldPredictionType& type = prediction.second;
+    for (const auto& control_element : autofillable_elements)  {
+      if (control_element.nameForAutofill() == target_field.name) {
         const WebInputElement* input_element =
-            toWebInputElement(&autofillable_elements[i]);
+            toWebInputElement(&control_element);
+
         // TODO(sebsg): Investigate why this guard is necessary, see
         // https://crbug.com/517490 for more details.
         if (input_element) {

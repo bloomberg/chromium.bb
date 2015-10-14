@@ -83,10 +83,9 @@ bool ContainsForm(const std::vector<FormData>& forms,
 void CopyElementValueToOtherInputElements(
     const blink::WebInputElement* element,
     std::vector<blink::WebInputElement>* elements) {
-  for (std::vector<blink::WebInputElement>::iterator it = elements->begin();
-       it != elements->end(); ++it) {
-    if (*element != *it) {
-      it->setValue(element->value(), true /* sendEvents */);
+  for (blink::WebInputElement& it : *elements) {
+    if (*element != it) {
+      it.setValue(element->value(), true /* sendEvents */);
     }
   }
 }

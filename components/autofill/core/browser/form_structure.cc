@@ -85,14 +85,11 @@ std::string EncodeFieldTypes(const ServerFieldTypeSet& available_field_types) {
 
   // Pack the types in |available_field_types| into |bit_field|.
   std::vector<uint8> bit_field(kNumBytes, 0);
-  for (ServerFieldTypeSet::const_iterator field_type =
-           available_field_types.begin();
-       field_type != available_field_types.end();
-       ++field_type) {
+  for (const auto& field_type : available_field_types) {
     // Set the appropriate bit in the field.  The bit we set is the one
     // |field_type| % 8 from the left of the byte.
-    const size_t byte = *field_type / 8;
-    const size_t bit = 0x80 >> (*field_type % 8);
+    const size_t byte = field_type / 8;
+    const size_t bit = 0x80 >> (field_type % 8);
     DCHECK(byte < bit_field.size());
     bit_field[byte] |= bit;
   }
@@ -148,8 +145,7 @@ void EncodeFieldForUpload(const AutofillField& field,
 
   ServerFieldTypeSet types = field.possible_types();
   // |types| could be empty in unit-tests only.
-  for (ServerFieldTypeSet::iterator field_type = types.begin();
-       field_type != types.end(); ++field_type) {
+  for (const auto& field_type : types) {
     // We use the same field elements as the query and add a few more below.
     buzz::XmlElement* field_element = EncodeFieldForQuery(field, parent);
 
@@ -160,7 +156,7 @@ void EncodeFieldForUpload(const AutofillField& field,
     }
 
     field_element->SetAttr(buzz::QName(kAttributeAutofillType),
-                           base::IntToString(*field_type));
+                           base::IntToString(field_type));
   }
 }
 
@@ -169,15 +165,14 @@ void EncodeFieldForUpload(const AutofillField& field,
 void EncodeFieldForFieldAssignments(const AutofillField& field,
                                     buzz::XmlElement* parent) {
   ServerFieldTypeSet types = field.possible_types();
-  for (ServerFieldTypeSet::iterator field_type = types.begin();
-       field_type != types.end(); ++field_type) {
+  for (const auto& field_type : types) {
     buzz::XmlElement *field_element = new buzz::XmlElement(
         buzz::QName(kXMLElementFields));
 
     field_element->SetAttr(buzz::QName(kAttributeFieldID),
                            field.FieldSignature());
     field_element->SetAttr(buzz::QName(kAttributeFieldType),
-                           base::IntToString(*field_type));
+                           base::IntToString(field_type));
     field_element->SetAttr(buzz::QName(kAttributeName),
                            base::UTF16ToUTF8(field.name));
     parent->AddElement(field_element);
@@ -461,16 +456,11 @@ bool FormStructure::EncodeUploadRequest(
 
   // Verify that |available_field_types| agrees with the possible field types we
   // are uploading.
-  for (std::vector<AutofillField*>::const_iterator field = begin();
-       field != end();
-       ++field) {
-    for (ServerFieldTypeSet::const_iterator type =
-             (*field)->possible_types().begin();
-         type != (*field)->possible_types().end();
-         ++type) {
-      DCHECK(*type == UNKNOWN_TYPE ||
-             *type == EMPTY_TYPE ||
-             available_field_types.count(*type));
+  for (const AutofillField* field : *this) {
+    for (const auto& type : field->possible_types()) {
+      DCHECK(type == UNKNOWN_TYPE ||
+             type == EMPTY_TYPE ||
+             available_field_types.count(type));
     }
   }
 
@@ -546,10 +536,8 @@ bool FormStructure::EncodeQueryRequest(
   // Some badly formatted web sites repeat forms - detect that and encode only
   // one form as returned data would be the same for all the repeated forms.
   std::set<std::string> processed_forms;
-  for (ScopedVector<FormStructure>::const_iterator it = forms.begin();
-       it != forms.end();
-       ++it) {
-    std::string signature((*it)->FormSignature());
+  for (const auto& it : forms) {
+    std::string signature(it->FormSignature());
     if (processed_forms.find(signature) != processed_forms.end())
       continue;
     processed_forms.insert(signature);
@@ -558,9 +546,10 @@ bool FormStructure::EncodeQueryRequest(
     encompassing_xml_element->SetAttr(buzz::QName(kAttributeSignature),
                                       signature);
 
-    if (!(*it)->EncodeFormRequest(FormStructure::QUERY,
-                                  encompassing_xml_element.get()))
+    if (!it->EncodeFormRequest(FormStructure::QUERY,
+                               encompassing_xml_element.get())) {
       continue;  // Malformed form, skip it.
+    }
 
     autofill_request_xml.AddElement(encompassing_xml_element.release());
     encoded_signatures->push_back(signature);
@@ -605,15 +594,12 @@ void FormStructure::ParseQueryResponse(const std::string& response_xml,
   // Copy the field types into the actual form.
   std::vector<AutofillServerFieldInfo>::iterator current_info =
       field_infos.begin();
-  for (std::vector<FormStructure*>::const_iterator iter = forms.begin();
-       iter != forms.end(); ++iter) {
-    FormStructure* form = *iter;
+  for (FormStructure* form : forms) {
     form->upload_required_ = upload_required;
 
     bool query_response_has_no_server_data = true;
-    for (std::vector<AutofillField*>::iterator field = form->fields_.begin();
-         field != form->fields_.end(); ++field) {
-      if (form->ShouldSkipField(**field))
+    for (AutofillField* field : form->fields_) {
+      if (form->ShouldSkipField(*field))
         continue;
 
       // In some cases *successful* response does not return all the fields.
@@ -627,21 +613,21 @@ void FormStructure::ParseQueryResponse(const std::string& response_xml,
       // If |form->has_author_specified_types| only password fields should be
       // updated.
       if (!form->has_author_specified_types_ ||
-          (*field)->form_control_type == "password") {
+          field->form_control_type == "password") {
         // UNKNOWN_TYPE is reserved for use by the client.
         DCHECK_NE(current_info->field_type, UNKNOWN_TYPE);
 
-        ServerFieldType heuristic_type = (*field)->heuristic_type();
+        ServerFieldType heuristic_type = field->heuristic_type();
         if (heuristic_type != UNKNOWN_TYPE)
           heuristics_detected_fillable_field = true;
 
-        (*field)->set_server_type(current_info->field_type);
-        if (heuristic_type != (*field)->Type().GetStorableType())
+        field->set_server_type(current_info->field_type);
+        if (heuristic_type != field->Type().GetStorableType())
           query_response_overrode_heuristics = true;
 
         // Copy default value into the field if available.
         if (!current_info->default_value.empty())
-          (*field)->set_default_value(current_info->default_value);
+          field->set_default_value(current_info->default_value);
       }
 
       ++current_info;
@@ -677,8 +663,7 @@ std::vector<FormDataPredictions> FormStructure::GetFieldTypePredictions(
     const std::vector<FormStructure*>& form_structures) {
   std::vector<FormDataPredictions> forms;
   forms.reserve(form_structures.size());
-  for (size_t i = 0; i < form_structures.size(); ++i) {
-    FormStructure* form_structure = form_structures[i];
+  for (const FormStructure* form_structure : form_structures) {
     FormDataPredictions form;
     form.data.name = form_structure->form_name_;
     form.data.origin = form_structure->source_url_;
@@ -686,18 +671,16 @@ std::vector<FormDataPredictions> FormStructure::GetFieldTypePredictions(
     form.data.is_form_tag = form_structure->is_form_tag_;
     form.signature = form_structure->FormSignature();
 
-    for (std::vector<AutofillField*>::const_iterator field =
-             form_structure->fields_.begin();
-         field != form_structure->fields_.end(); ++field) {
-      form.data.fields.push_back(FormFieldData(**field));
+    for (const AutofillField* field : form_structure->fields_) {
+      form.data.fields.push_back(FormFieldData(*field));
 
       FormFieldDataPredictions annotated_field;
-      annotated_field.signature = (*field)->FieldSignature();
+      annotated_field.signature = field->FieldSignature();
       annotated_field.heuristic_type =
-          AutofillType((*field)->heuristic_type()).ToString();
+          AutofillType(field->heuristic_type()).ToString();
       annotated_field.server_type =
-          AutofillType((*field)->server_type()).ToString();
-      annotated_field.overall_type = (*field)->Type().ToString();
+          AutofillType(field->server_type()).ToString();
+      annotated_field.overall_type = field->Type().ToString();
       form.fields.push_back(annotated_field);
     }
 
@@ -737,9 +720,7 @@ bool FormStructure::IsAutofillable() const {
 
 void FormStructure::UpdateAutofillCount() {
   autofill_count_ = 0;
-  for (std::vector<AutofillField*>::const_iterator iter = begin();
-       iter != end(); ++iter) {
-    AutofillField* field = *iter;
+  for (const AutofillField* field : *this) {
     if (field && field->IsFieldFillable())
       ++autofill_count_;
   }
@@ -756,9 +737,8 @@ bool FormStructure::ShouldBeParsed() const {
     return false;
 
   bool has_text_field = false;
-  for (std::vector<AutofillField*>::const_iterator it = begin();
-       it != end() && !has_text_field; ++it) {
-    has_text_field |= (*it)->form_control_type != "select-one";
+  for (const AutofillField* it : *this) {
+    has_text_field |= it->form_control_type != "select-one";
   }
 
   return has_text_field;
@@ -777,10 +757,7 @@ void FormStructure::UpdateFromCache(const FormStructure& cached_form) {
     cached_fields[field->FieldSignature()] = field;
   }
 
-  for (std::vector<AutofillField*>::const_iterator iter = begin();
-       iter != end(); ++iter) {
-    AutofillField* field = *iter;
-
+  for (AutofillField* field : *this) {
     std::map<std::string, const AutofillField*>::const_iterator
         cached_field = cached_fields.find(field->FieldSignature());
     if (cached_field != cached_fields.end()) {
@@ -856,17 +833,15 @@ void FormStructure::LogQualityMetrics(
     // Collapse field types that Chrome treats as identical, e.g. home and
     // billing address fields.
     ServerFieldTypeSet collapsed_field_types;
-    for (ServerFieldTypeSet::const_iterator it = field_types.begin();
-         it != field_types.end();
-         ++it) {
+    for (const auto& it : field_types) {
       // Since we currently only support US phone numbers, the (city code + main
       // digits) number is almost always identical to the whole phone number.
       // TODO(isherman): Improve this logic once we add support for
       // international numbers.
-      if (*it == PHONE_HOME_CITY_AND_NUMBER)
+      if (it == PHONE_HOME_CITY_AND_NUMBER)
         collapsed_field_types.insert(PHONE_HOME_WHOLE_NUMBER);
       else
-        collapsed_field_types.insert(AutofillType(*it).GetStorableType());
+        collapsed_field_types.insert(AutofillType(it).GetStorableType());
     }
 
     // Capture the field's type, if it is unambiguous.
@@ -1089,10 +1064,7 @@ void FormStructure::ParseFieldTypesFromAutocompleteAttributes(
 
   *found_types = false;
   *found_sections = false;
-  for (std::vector<AutofillField*>::iterator it = fields_.begin();
-       it != fields_.end(); ++it) {
-    AutofillField* field = *it;
-
+  for (AutofillField* field : fields_) {
     // To prevent potential section name collisions, add a default suffix for
     // other fields.  Without this, 'autocomplete' attribute values
     // "section--shipping street-address" and "shipping street-address" would be
@@ -1221,26 +1193,26 @@ bool FormStructure::FillFields(
 std::set<base::string16> FormStructure::PossibleValues(ServerFieldType type) {
   std::set<base::string16> values;
   AutofillType target_type(type);
-  for (std::vector<AutofillField*>::iterator iter = fields_.begin();
-       iter != fields_.end(); ++iter) {
-    AutofillField* field = *iter;
+  for (const AutofillField* field : fields_) {
     if (field->Type().GetStorableType() != target_type.GetStorableType() ||
         field->Type().group() != target_type.group()) {
       continue;
     }
 
     // No option values; anything goes.
-    if (field->option_values.empty())
-      return std::set<base::string16>();
-
-    for (size_t i = 0; i < field->option_values.size(); ++i) {
-      if (!field->option_values[i].empty())
-        values.insert(base::i18n::ToUpper(field->option_values[i]));
+    if (field->option_values.empty()) {
+      values.clear();
+      break;
     }
 
-    for (size_t i = 0; i < field->option_contents.size(); ++i) {
-      if (!field->option_contents[i].empty())
-        values.insert(base::i18n::ToUpper(field->option_contents[i]));
+    for (const base::string16& val : field->option_values) {
+      if (!val.empty())
+        values.insert(base::i18n::ToUpper(val));
+    }
+
+    for (const base::string16& content : field->option_contents) {
+      if (!content.empty())
+        values.insert(base::i18n::ToUpper(content));
     }
   }
 
@@ -1249,15 +1221,15 @@ std::set<base::string16> FormStructure::PossibleValues(ServerFieldType type) {
 
 base::string16 FormStructure::GetUniqueValue(HtmlFieldType type) const {
   base::string16 value;
-  for (std::vector<AutofillField*>::const_iterator iter = fields_.begin();
-       iter != fields_.end(); ++iter) {
-    const AutofillField* field = *iter;
+  for (const AutofillField* field : fields_) {
     if (field->html_type() != type)
       continue;
 
     // More than one value found; abort rather than choosing one arbitrarily.
-    if (!value.empty() && !field->value.empty())
-      return base::string16();
+    if (!value.empty() && !field->value.empty()) {
+      value.clear();
+      break;
+    }
 
     value = field->value;
   }

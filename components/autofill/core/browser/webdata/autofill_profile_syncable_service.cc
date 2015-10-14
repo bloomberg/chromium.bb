@@ -106,9 +106,7 @@ AutofillProfileSyncableService::MergeDataAndStartSyncing(
     DVLOG(2) << "[AUTOFILL MIGRATION]"
              << "Printing profiles from web db";
 
-    for (ScopedVector<AutofillProfile>::const_iterator ix =
-         profiles_.begin(); ix != profiles_.end(); ++ix) {
-      AutofillProfile* p = *ix;
+    for (const auto& p : profiles_) {
       DVLOG(2) << "[AUTOFILL MIGRATION]  "
                << UTF16ToUTF8(p->GetRawInfo(NAME_FIRST))
                << UTF16ToUTF8(p->GetRawInfo(NAME_LAST))
@@ -122,12 +120,9 @@ AutofillProfileSyncableService::MergeDataAndStartSyncing(
   CreateGUIDToProfileMap(profiles_.get(), &remaining_profiles);
   DataBundle bundle;
   // Go through and check for all the profiles that sync already knows about.
-  for (syncer::SyncDataList::const_iterator sync_iter =
-           initial_sync_data.begin();
-       sync_iter != initial_sync_data.end();
-       ++sync_iter) {
+  for (const auto& sync_iter : initial_sync_data) {
     GUIDToProfileMap::iterator it =
-        CreateOrUpdateProfile(*sync_iter, &remaining_profiles, &bundle);
+        CreateOrUpdateProfile(sync_iter, &remaining_profiles, &bundle);
     // |it| points to created/updated profile. Add it to the |profiles_map_| and
     // then remove it from |remaining_profiles|. After this loop is completed
     // |remaining_profiles| will have only those profiles that are not in the
@@ -138,19 +133,18 @@ AutofillProfileSyncableService::MergeDataAndStartSyncing(
 
   // Check for similar unmatched profiles - they are created independently on
   // two systems, so merge them.
-  for (GUIDToProfileMap::iterator it = bundle.candidates_to_merge.begin();
-       it != bundle.candidates_to_merge.end(); ++it) {
+  for (const auto& it : bundle.candidates_to_merge) {
     GUIDToProfileMap::iterator profile_to_merge =
-        remaining_profiles.find(it->first);
+        remaining_profiles.find(it.first);
     if (profile_to_merge != remaining_profiles.end()) {
       bundle.profiles_to_delete.push_back(profile_to_merge->second->guid());
-      if (MergeProfile(*(profile_to_merge->second), it->second, app_locale_))
-        bundle.profiles_to_sync_back.push_back(it->second);
+      if (MergeProfile(*(profile_to_merge->second), it.second, app_locale_))
+        bundle.profiles_to_sync_back.push_back(it.second);
       DVLOG(2) << "[AUTOFILL SYNC]"
                << "Found similar profile in sync db but with a different guid: "
-               << UTF16ToUTF8(it->second->GetRawInfo(NAME_FIRST))
-               << UTF16ToUTF8(it->second->GetRawInfo(NAME_LAST))
-               << "New guid " << it->second->guid()
+               << UTF16ToUTF8(it.second->GetRawInfo(NAME_FIRST))
+               << UTF16ToUTF8(it.second->GetRawInfo(NAME_LAST))
+               << "New guid " << it.second->guid()
                << ". Profile to be deleted "
                << profile_to_merge->second->guid();
       remaining_profiles.erase(profile_to_merge);
@@ -165,13 +159,12 @@ AutofillProfileSyncableService::MergeDataAndStartSyncing(
   }
 
   syncer::SyncChangeList new_changes;
-  for (GUIDToProfileMap::iterator i = remaining_profiles.begin();
-       i != remaining_profiles.end(); ++i) {
+  for (const auto& it : remaining_profiles) {
     new_changes.push_back(
         syncer::SyncChange(FROM_HERE,
                            syncer::SyncChange::ACTION_ADD,
-                           CreateData(*(i->second))));
-    profiles_map_[i->first] = i->second;
+                           CreateData(*(it.second))));
+    profiles_map_[it.first] = it.second;
   }
 
   for (size_t i = 0; i < bundle.profiles_to_sync_back.size(); ++i) {
@@ -209,11 +202,8 @@ syncer::SyncDataList AutofillProfileSyncableService::GetAllSyncData(
   DCHECK_EQ(type, syncer::AUTOFILL_PROFILE);
 
   syncer::SyncDataList current_data;
-
-  for (GUIDToProfileMap::const_iterator i = profiles_map_.begin();
-       i != profiles_map_.end(); ++i) {
-    current_data.push_back(CreateData(*(i->second)));
-  }
+  for (const auto& it : profiles_map_)
+    current_data.push_back(CreateData(*(it.second)));
   return current_data;
 }
 
@@ -231,16 +221,15 @@ syncer::SyncError AutofillProfileSyncableService::ProcessSyncChanges(
 
   DataBundle bundle;
 
-  for (syncer::SyncChangeList::const_iterator i = change_list.begin();
-       i != change_list.end(); ++i) {
-    DCHECK(i->IsValid());
-    switch (i->change_type()) {
+  for (const auto& it : change_list) {
+    DCHECK(it.IsValid());
+    switch (it.change_type()) {
       case syncer::SyncChange::ACTION_ADD:
       case syncer::SyncChange::ACTION_UPDATE:
-        CreateOrUpdateProfile(i->sync_data(), &profiles_map_, &bundle);
+        CreateOrUpdateProfile(it.sync_data(), &profiles_map_, &bundle);
         break;
       case syncer::SyncChange::ACTION_DELETE: {
-        std::string guid = i->sync_data().GetSpecifics().
+        std::string guid = it.sync_data().GetSpecifics().
              autofill_profile().guid();
         bundle.profiles_to_delete.push_back(guid);
         profiles_map_.erase(guid);
@@ -250,7 +239,7 @@ syncer::SyncError AutofillProfileSyncableService::ProcessSyncChanges(
         return sync_error_factory_->CreateAndUploadError(
               FROM_HERE,
               "ProcessSyncChanges failed on ChangeType " +
-                  syncer::SyncChange::ChangeTypeToString(i->change_type()));
+                  syncer::SyncChange::ChangeTypeToString(it.change_type()));
     }
   }
 
