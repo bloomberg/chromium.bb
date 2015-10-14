@@ -37,12 +37,6 @@ class DistillerNativeJavaScript {
   // provided string.
   std::string DistillerEcho(const std::string& message);
 
-  // Send feedback about distillation quality.
-  void DistillerSendFeedback(bool good);
-
-  // Close the UI panel and record the action.
-  void DistillerClosePanel();
-
   content::RenderFrame* render_frame_;
   DistillerJavaScriptServicePtr distiller_js_service_;
 };

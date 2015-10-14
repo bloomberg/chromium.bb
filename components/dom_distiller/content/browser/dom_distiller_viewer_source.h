@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "components/dom_distiller/content/browser/external_feedback_reporter.h"
+#include "components/dom_distiller/content/browser/distiller_ui_handle.h"
 #include "content/public/browser/url_data_source.h"
 
 namespace dom_distiller {
@@ -26,7 +26,7 @@ class DomDistillerViewerSource : public content::URLDataSource {
   DomDistillerViewerSource(
       DomDistillerServiceInterface* dom_distiller_service,
       const std::string& scheme,
-      scoped_ptr<ExternalFeedbackReporter> external_reporter);
+      scoped_ptr<DistillerUIHandle> ui_handle);
   ~DomDistillerViewerSource() override;
 
   class RequestViewerHandle;
@@ -55,8 +55,9 @@ class DomDistillerViewerSource : public content::URLDataSource {
   // the list of articles.
   DomDistillerServiceInterface* dom_distiller_service_;
 
-  // A means for starting/opening an external service for feedback reporting.
-  scoped_ptr<ExternalFeedbackReporter> external_feedback_reporter_;
+  // An object for accessing chrome-specific UI controls including external
+  // feedback and opening the distiller settings.
+  scoped_ptr<DistillerUIHandle> distiller_ui_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(DomDistillerViewerSource);
 };

@@ -16,7 +16,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/dom_distiller/content/browser/distiller_javascript_service_impl.h"
 #include "components/dom_distiller/content/browser/distiller_javascript_utils.h"
-#include "components/dom_distiller/content/browser/external_feedback_reporter.h"
+#include "components/dom_distiller/content/browser/distiller_ui_handle.h"
 #include "components/dom_distiller/content/common/distiller_page_notifier_service.mojom.h"
 #include "components/dom_distiller/core/distilled_page_prefs.h"
 #include "components/dom_distiller/core/dom_distiller_request_view_base.h"
@@ -168,10 +168,10 @@ void DomDistillerViewerSource::RequestViewerHandle::DidFinishLoad(
 DomDistillerViewerSource::DomDistillerViewerSource(
     DomDistillerServiceInterface* dom_distiller_service,
     const std::string& scheme,
-    scoped_ptr<ExternalFeedbackReporter> external_reporter)
+    scoped_ptr<DistillerUIHandle> ui_handle)
     : scheme_(scheme),
       dom_distiller_service_(dom_distiller_service),
-      external_feedback_reporter_(external_reporter.Pass()) {
+      distiller_ui_handle_(ui_handle.Pass()) {
 }
 
 DomDistillerViewerSource::~DomDistillerViewerSource() {
@@ -232,7 +232,7 @@ void DomDistillerViewerSource::StartDataRequest(
   render_frame_host->GetServiceRegistry()->AddService(
       base::Bind(&CreateDistillerJavaScriptService,
           render_frame_host,
-          external_feedback_reporter_.get()));
+          distiller_ui_handle_.get()));
 
   // Tell the renderer that this is currently a distilled page.
   DistillerPageNotifierServicePtr page_notifier_service;

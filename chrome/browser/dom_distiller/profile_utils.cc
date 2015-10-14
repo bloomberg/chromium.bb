@@ -11,13 +11,13 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_isolated_world_ids.h"
 #include "components/dom_distiller/content/browser/distiller_javascript_utils.h"
+#include "components/dom_distiller/content/browser/distiller_ui_handle.h"
 #include "components/dom_distiller/content/browser/dom_distiller_viewer_source.h"
-#include "components/dom_distiller/content/browser/external_feedback_reporter.h"
 #include "components/dom_distiller/core/dom_distiller_switches.h"
 #include "components/dom_distiller/core/url_constants.h"
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/android/dom_distiller/external_feedback_reporter_android.h"
+#include "chrome/browser/android/dom_distiller/distiller_ui_handle_android.h"
 #endif  // defined(OS_ANDROID)
 
 void RegisterDomDistillerViewerSource(Profile* profile) {
@@ -30,11 +30,11 @@ void RegisterDomDistillerViewerSource(Profile* profile) {
     dom_distiller::LazyDomDistillerService* lazy_service =
         new dom_distiller::LazyDomDistillerService(
             profile, dom_distiller_service_factory);
-    scoped_ptr<dom_distiller::ExternalFeedbackReporter> reporter;
+    scoped_ptr<dom_distiller::DistillerUIHandle> ui_handle;
 
 #if defined(OS_ANDROID)
-    reporter.reset(
-        new dom_distiller::android::ExternalFeedbackReporterAndroid());
+    ui_handle.reset(
+        new dom_distiller::android::DistillerUIHandleAndroid());
 #endif  // defined(OS_ANDROID)
 
     // Set the JavaScript world ID.
@@ -46,6 +46,7 @@ void RegisterDomDistillerViewerSource(Profile* profile) {
     content::URLDataSource::Add(
         profile,
         new dom_distiller::DomDistillerViewerSource(
-            lazy_service, dom_distiller::kDomDistillerScheme, reporter.Pass()));
+            lazy_service, dom_distiller::kDomDistillerScheme,
+            ui_handle.Pass()));
   }
 }

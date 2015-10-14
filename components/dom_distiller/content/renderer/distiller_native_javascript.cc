@@ -39,25 +39,39 @@ void DistillerNativeJavaScript::AddJavaScriptObjectToFrame(
   v8::Local<v8::Object> distiller_obj =
       GetOrCreateDistillerObject(isolate, context->Global());
 
+  EnsureServiceConnected();
+
+  // Some of the JavaScript functions require extra work to be done when it is
+  // called, so they have wrapper functions maintained in this class.
   BindFunctionToObject(
       distiller_obj,
       "echo",
       base::Bind(
           &DistillerNativeJavaScript::DistillerEcho, base::Unretained(this)));
 
+  // Many functions can simply call the Mojo interface directly and have no
+  // wrapper function for binding. Note that calling distiller_js_service.get()
+  // does not transfer ownership of the interface.
   BindFunctionToObject(
       distiller_obj,
       "sendFeedback",
       base::Bind(
-          &DistillerNativeJavaScript::DistillerSendFeedback,
-          base::Unretained(this)));
+          &DistillerJavaScriptService::HandleDistillerFeedbackCall,
+          base::Unretained(distiller_js_service_.get())));
 
   BindFunctionToObject(
       distiller_obj,
       "closePanel",
       base::Bind(
-          &DistillerNativeJavaScript::DistillerClosePanel,
-          base::Unretained(this)));
+          &DistillerJavaScriptService::HandleDistillerClosePanelCall,
+          base::Unretained(distiller_js_service_.get())));
+
+  BindFunctionToObject(
+      distiller_obj,
+      "openSettings",
+      base::Bind(
+          &DistillerJavaScriptService::HandleDistillerOpenSettingsCall,
+          base::Unretained(distiller_js_service_.get())));
 }
 
 template<typename Sig>
@@ -73,20 +87,10 @@ void DistillerNativeJavaScript::BindFunctionToObject(
 }
 
 void DistillerNativeJavaScript::EnsureServiceConnected() {
-  if (!distiller_js_service_) {
+  if (!distiller_js_service_ || !distiller_js_service_.is_bound()) {
     render_frame_->GetServiceRegistry()->ConnectToRemoteService(
         mojo::GetProxy(&distiller_js_service_));
   }
-}
-
-void DistillerNativeJavaScript::DistillerSendFeedback(bool good) {
-  EnsureServiceConnected();
-  distiller_js_service_->HandleDistillerFeedbackCall(good);
-}
-
-void DistillerNativeJavaScript::DistillerClosePanel() {
-  EnsureServiceConnected();
-  distiller_js_service_->HandleDistillerClosePanelCall();
 }
 
 std::string DistillerNativeJavaScript::DistillerEcho(
