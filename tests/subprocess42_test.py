@@ -94,75 +94,6 @@ def get_output_sleep_proc_err(sleep_duration):
 
 
 class Subprocess42Test(unittest.TestCase):
-  def test_call_with_timeout(self):
-    timedout = 1 if sys.platform == 'win32' else -9
-    # Format is:
-    # ( (cmd, stderr_pipe, timeout), (stdout, stderr, returncode) ), ...
-    test_data = [
-      # 0 means no timeout, like None.
-      (
-        (['out_sleeping', '0.001', 'out_slept', 'err_print'], None, 0),
-        ('Sleeping.\nSlept.\n', None, 0),
-      ),
-      (
-        (['err_print'], subprocess42.STDOUT, 0),
-        ('printing', None, 0),
-      ),
-      (
-        (['err_print'], subprocess42.PIPE, 0),
-        ('', 'printing', 0),
-      ),
-
-      # On a loaded system, this can be tight.
-      (
-        (['out_sleeping', 'out_flush', '100', 'out_slept'], None, 0.5),
-        ('Sleeping.\n', '', timedout),
-      ),
-      (
-        (
-          # Note that err_flush is necessary on Windows but not on the other
-          # OSes. This means the likelihood of missing stderr output from a
-          # killed child process on Windows is much higher than on other OSes.
-          [
-            'out_sleeping', 'out_flush', 'err_print', 'err_flush', '100',
-            'out_slept',
-          ],
-          subprocess42.PIPE,
-          0.5),
-        ('Sleeping.\n', 'printing', timedout),
-      ),
-
-      (
-        (['out_sleeping', '0.001', 'out_slept'], None, 100),
-        ('Sleeping.\nSlept.\n', '', 0),
-      ),
-    ]
-    for i, (data, expected) in enumerate(test_data):
-      stdout, stderr, code, duration = subprocess42.call_with_timeout(
-          [sys.executable, OUTPUT] + data[0],
-          env=ENV,
-          stderr=data[1],
-          timeout=data[2])
-      self.assertTrue(duration > 0.0001, (data, duration))
-      self.assertEqual(
-          (i, stdout, stderr, code),
-          (i,
-            to_native_eol(expected[0]),
-            to_native_eol(expected[1]),
-            expected[2]))
-
-      # Try again with universal_newlines=True.
-      stdout, stderr, code, duration = subprocess42.call_with_timeout(
-          [sys.executable, OUTPUT] + data[0],
-          env=ENV,
-          stderr=data[1],
-          timeout=data[2],
-          universal_newlines=True)
-      self.assertTrue(duration > 0.0001, (data, duration))
-      self.assertEqual(
-          (i, stdout, stderr, code),
-          (i,) + expected)
-
   def test_recv_any(self):
     # Test all pipe direction and output scenarios.
     combinations = [
@@ -339,50 +270,7 @@ class Subprocess42Test(unittest.TestCase):
           continue
         raise
 
-  def test_yield_any_hard_timeout(self):
-    # Kill the process due to hard_timeout.
-    proc = get_output_sleep_proc(True, True, 10)
-    got_none = False
-    actual = ''
-    for p, data in proc.yield_any(hard_timeout=1):
-      if not data:
-        got_none = True
-        continue
-      self.assertEqual('stdout', p)
-      actual += data
-    if sys.platform == 'win32':
-      self.assertEqual(1, proc.returncode)
-    else:
-      self.assertEqual(-9, proc.returncode)
-    self.assertEqual('A\n', actual)
-    # No None is returned, since it's not using soft_timeout.
-    self.assertEqual(False, got_none)
-
-  def test_yield_any_hard_timeout_callable(self):
-    # Kill the process due to hard_timeout.
-    proc = get_output_sleep_proc(True, True, 10)
-    got_none = False
-    actual = ''
-    called = []
-    def hard_timeout():
-      called.append(1)
-      return 1
-    for p, data in proc.yield_any(hard_timeout=hard_timeout):
-      if not data:
-        got_none = True
-        continue
-      self.assertEqual('stdout', p)
-      actual += data
-    if sys.platform == 'win32':
-      self.assertEqual(1, proc.returncode)
-    else:
-      self.assertEqual(-9, proc.returncode)
-    self.assertEqual('A\n', actual)
-    # No None is returned, since it's not using soft_timeout.
-    self.assertEqual(False, got_none)
-    self.assertTrue(called)
-
-  def test_yield_any_soft_timeout_0(self):
+  def test_yield_any_timeout_0(self):
     # rec_any() is expected to timeout and return None with no data pending at
     # least once, due to the sleep of 'duration' and the use of timeout=0.
     for duration in (0.05, 0.1, 0.5, 2):
@@ -393,7 +281,7 @@ class Subprocess42Test(unittest.TestCase):
           'B\n',
         ]
         got_none = False
-        for p, data in proc.yield_any(soft_timeout=0):
+        for p, data in proc.yield_any(timeout=0):
           if not p:
             got_none = True
             continue
@@ -409,7 +297,7 @@ class Subprocess42Test(unittest.TestCase):
           continue
         raise
 
-  def test_yield_any_soft_timeout_0_called(self):
+  def test_yield_any_timeout_0_called(self):
     # rec_any() is expected to timeout and return None with no data pending at
     # least once, due to the sleep of 'duration' and the use of timeout=0.
     for duration in (0.05, 0.1, 0.5, 2):
@@ -421,10 +309,10 @@ class Subprocess42Test(unittest.TestCase):
         ]
         got_none = False
         called = []
-        def soft_timeout():
+        def timeout():
           called.append(0)
           return 0
-        for p, data in proc.yield_any(soft_timeout=soft_timeout):
+        for p, data in proc.yield_any(timeout=timeout):
           if not p:
             got_none = True
             continue
