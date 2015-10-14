@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head><title>Loopback test</title></head>
+<body>
+  <video id="localVideo" width="1280" height="720" autoplay muted></video>
+  <video id="remoteVideo" width="1280" height="720" autoplay muted></video>
+<script>
+
+"use strict";
+
+var testDone = 0;
+var errors = "";
+
+// Starts the test.
+function testCamera(resolution) {
+  var test = new CameraTest(resolution);
+  test.run();
+}
+
+
+function CameraTest(resolutionArray) {
+  this.resolution = resolutionArray;
+  this.localStream = null;
+  this.remoteStream = null;
+  this.remoteVideo = document.getElementById("remoteVideo");
+  this.localVideo = document.getElementById("localVideo");
+  this.localVideo.width = this.resolution[0].toString();
+  this.localVideo.height = this.resolution[1].toString();
+  this.remoteVideo.width = this.resolution[0].toString();
+  this.remoteVideo.height = this.resolution[1].toString();
+}
+
+
+CameraTest.prototype = {
+  run: function() {
+    this.triggerGetUserMedia(this.resolution);
+  },
+
+  triggerGetUserMedia: function(resolution) {
+    var constraints = {
+      audio: false,
+      video: {
+        mandatory: {
+          minWidth:  resolution[0],
+          minHeight: resolution[1],
+          maxWidth:  resolution[0],
+          maxHeight: resolution[1]
+        }
+      }
+    };
+    try {
+      this.doGetUserMedia(constraints, this.gotLocalStream.bind(this),
+          this.onGetUserMediaError.bind(this));
+    } catch (exception) {
+      console.log('Unexpected exception: ', exception);
+      this.reportError('gUM', 'doGetUserMedia failed: ' + exception);
+    }
+  },
+
+  reportError: function(errorType, message) {
+    console.log(errorType, message);
+    errors = message;
+  },
+
+  doGetUserMedia: function(constraints, onSuccess, onFail) {
+    navigator.getUserMedia = navigator.getUserMedia ||
+      navigator.webkitGetUserMedia;
+    navigator.getUserMedia(constraints, onSuccess, onFail);
+  },
+
+  gotLocalStream: function(stream) {
+    this.localStream = stream;
+    var servers = null;
+
+    this.localPeerConnection = new webkitRTCPeerConnection(servers);
+    this.localPeerConnection.onicecandidate = this.gotLocalIceCandidate.bind(
+        this);
+
+    this.remotePeerConnection = new webkitRTCPeerConnection(servers);
+    this.remotePeerConnection.onicecandidate = this.gotRemoteIceCandidate.bind(
+        this);
+    this.remotePeerConnection.onaddstream = this.gotRemoteStream.bind(this);
+
+    this.localPeerConnection.addStream(this.localStream);
+    this.localPeerConnection.createOffer(this.gotLocalDescription.bind(this));
+    this.localVideo.src = URL.createObjectURL(stream);
+  },
+
+  onGetUserMediaError: function(stream) {
+    this.reportError('gUM', 'gUM call failed');
+  },
+
+  gotRemoteStream: function(event) {
+    this.remoteVideo.src = URL.createObjectURL(event.stream);
+  },
+
+  gotLocalDescription: function(description) {
+    this.localPeerConnection.setLocalDescription(description);
+    this.remotePeerConnection.setRemoteDescription(description);
+    this.remotePeerConnection.createAnswer(this.gotRemoteDescription.bind(
+        this));
+  },
+
+  gotRemoteDescription: function(description) {
+    this.remotePeerConnection.setLocalDescription(description);
+    this.localPeerConnection.setRemoteDescription(description);
+  },
+
+  gotLocalIceCandidate: function(event) {
+    if (event.candidate)
+      this.remotePeerConnection.addIceCandidate(
+        new RTCIceCandidate(event.candidate));
+  },
+
+  gotRemoteIceCandidate: function(event) {
+    if (event.candidate)
+      this.localPeerConnection.addIceCandidate(
+        new RTCIceCandidate(event.candidate));
+  },
+}
+
+window.onerror = function (message, filename, lineno, colno, error) {
+  console.log("Something went wrong, here is the stack trace --> %s",
+    error.stack);
+};
+</script>
+</body>
+</html>
