@@ -143,7 +143,7 @@ getCommands (void)
 	      getInput ();
 	      strcpy (table, inputBuffer);
 	    }
-	  while ((validTable = lou_getTable (table)) == NULL);
+	  while ((validTable = getTable (table)) == NULL);
 	  break;
 	case 'r':
 	  if (validTable == NULL)

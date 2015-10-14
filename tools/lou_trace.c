@@ -288,7 +288,7 @@ main(int argc, char **argv) {
     exit(EXIT_FAILURE);
   }
   table = argv[optind];
-  if (!lou_getTable(table)) {
+  if (!getTable(table)) {
     lou_free();
     exit(EXIT_FAILURE);
   }

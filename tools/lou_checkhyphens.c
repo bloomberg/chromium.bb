@@ -114,7 +114,7 @@ getCommands (void)
 	      printf ("Enter the name of a table or a list: ");
 	      getInput ();
 	      strcpy (table, inputBuffer);
-	      validTable = lou_getTable (table);
+	      validTable = getTable (table);
 	      if (validTable != NULL && validTable->hyphenStatesArray == 0)
 		{
 		  printf ("No hyphenation table.\n");

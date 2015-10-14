@@ -731,7 +731,7 @@ main (int argc, char **argv)
       exit (EXIT_FAILURE);
     }
 
-  if (!(table = lou_getTable (argv[optind])))
+  if (!(table = getTable (argv[optind])))
     {
       lou_free ();
       exit (EXIT_FAILURE);
