@@ -5,11 +5,13 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_CHROME_EXTENSIONS_BROWSER_CLIENT_H_
 #define CHROME_BROWSER_EXTENSIONS_CHROME_EXTENSIONS_BROWSER_CLIENT_H_
 
-#include <map>
+#include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/lazy_instance.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/chrome_notification_observer.h"
 #include "extensions/browser/extensions_browser_client.h"
@@ -111,6 +113,8 @@ class ChromeExtensionsBrowserClient : public ExtensionsBrowserClient {
                       int view_instance_id) override;
   void AttachExtensionTaskManagerTag(content::WebContents* web_contents,
                                      ViewType view_type) override;
+  scoped_refptr<update_client::UpdateClient> CreateUpdateClient(
+      content::BrowserContext* context) override;
 
  private:
   friend struct base::DefaultLazyInstanceTraits<ChromeExtensionsBrowserClient>;

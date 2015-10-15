@@ -851,6 +851,8 @@
       'browser/extensions/unpacked_installer.h',
       'browser/extensions/updater/chrome_extension_downloader_factory.cc',
       'browser/extensions/updater/chrome_extension_downloader_factory.h',
+      'browser/extensions/updater/chrome_update_client_config.cc',
+      'browser/extensions/updater/chrome_update_client_config.h',
       'browser/extensions/updater/extension_updater.cc',
       'browser/extensions/updater/extension_updater.h',
       'browser/extensions/user_script_listener.cc',

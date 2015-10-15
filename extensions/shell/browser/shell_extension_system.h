@@ -64,6 +64,8 @@ class ShellExtensionSystem : public ExtensionSystem {
   ContentVerifier* content_verifier() override;
   scoped_ptr<ExtensionSet> GetDependentExtensions(
       const Extension* extension) override;
+  void InstallUpdate(const std::string& extension_id,
+                     const base::FilePath& temp_dir) override;
 
  private:
   void OnExtensionRegisteredWithRequestContexts(

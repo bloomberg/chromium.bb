@@ -18,6 +18,8 @@ source_set("browser") {
     "//components/pref_registry",
     "//components/sessions",
     "//components/ui/zoom",
+    "//components/update_client",
+    "//components/version_info",
     "//components/web_cache/browser",
     "//components/web_modal",
     "//content/public/browser",

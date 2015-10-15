@@ -77,6 +77,11 @@ class ConfiguratorImpl {
   // non on-demand components.
   bool UseBackgroundDownloader() const;
 
+  // Setting this to false means that we'll only use secure transport (eg https)
+  // for update/ping urls. This is already false by default everywhere but older
+  // versions of Windows XP.
+  void set_enable_alt_source_url(bool enable_alt_source_url);
+
  private:
   net::URLRequestContextGetter* url_request_getter_;
   std::string extra_info_;

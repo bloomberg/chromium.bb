@@ -58,6 +58,8 @@ class TestExtensionSystem : public ExtensionSystem {
   ContentVerifier* content_verifier() override;
   scoped_ptr<ExtensionSet> GetDependentExtensions(
       const Extension* extension) override;
+  void InstallUpdate(const std::string& extension_id,
+                     const base::FilePath& temp_dir) override;
 
   // Note that you probably want to use base::RunLoop().RunUntilIdle() right
   // after this to run all the accumulated tasks.

@@ -71,4 +71,9 @@ scoped_ptr<ExtensionSet> MockExtensionSystem::GetDependentExtensions(
   return scoped_ptr<ExtensionSet>();
 }
 
+void MockExtensionSystem::InstallUpdate(const std::string& extension_id,
+                                        const base::FilePath& temp_dir) {
+  NOTREACHED();
+}
+
 }  // namespace extensions

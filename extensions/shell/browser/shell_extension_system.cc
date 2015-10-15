@@ -176,6 +176,12 @@ scoped_ptr<ExtensionSet> ShellExtensionSystem::GetDependentExtensions(
   return make_scoped_ptr(new ExtensionSet());
 }
 
+void ShellExtensionSystem::InstallUpdate(const std::string& extension_id,
+                                         const base::FilePath& temp_dir) {
+  NOTREACHED();
+  base::DeleteFile(temp_dir, true /* recursive */);
+}
+
 void ShellExtensionSystem::OnExtensionRegisteredWithRequestContexts(
     scoped_refptr<Extension> extension) {
   ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context_);

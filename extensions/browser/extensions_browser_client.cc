@@ -6,7 +6,9 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
+#include "components/update_client/update_client.h"
 #include "extensions/browser/extension_error.h"
+#include "extensions/browser/updater/update_client_config.h"
 
 namespace extensions {
 
@@ -15,6 +17,11 @@ namespace {
 ExtensionsBrowserClient* g_client = NULL;
 
 }  // namespace
+
+scoped_refptr<update_client::UpdateClient>
+ExtensionsBrowserClient::CreateUpdateClient(content::BrowserContext* context) {
+  return scoped_refptr<update_client::UpdateClient>(nullptr);
+}
 
 void ExtensionsBrowserClient::ReportError(content::BrowserContext* context,
                                           scoped_ptr<ExtensionError> error) {

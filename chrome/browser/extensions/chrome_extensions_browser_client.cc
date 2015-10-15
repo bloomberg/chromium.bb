@@ -26,6 +26,7 @@
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/menu_manager.h"
+#include "chrome/browser/extensions/updater/chrome_update_client_config.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -36,6 +37,7 @@
 #include "chrome/common/extensions/features/feature_channel.h"
 #include "chrome/common/pref_names.h"
 #include "components/net_log/chrome_net_log.h"
+#include "components/update_client/update_client.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_switches.h"
@@ -378,6 +380,13 @@ void ChromeExtensionsBrowserClient::AttachExtensionTaskManagerTag(
       NOTREACHED();
       return;
   }
+}
+
+scoped_refptr<update_client::UpdateClient>
+ChromeExtensionsBrowserClient::CreateUpdateClient(
+    content::BrowserContext* context) {
+  return update_client::UpdateClientFactory(
+      make_scoped_refptr(new ChromeUpdateClientConfig(context)));
 }
 
 }  // namespace extensions

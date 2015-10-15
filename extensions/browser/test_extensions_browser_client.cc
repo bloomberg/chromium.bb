@@ -27,6 +27,11 @@ TestExtensionsBrowserClient::TestExtensionsBrowserClient(
 
 TestExtensionsBrowserClient::~TestExtensionsBrowserClient() {}
 
+void TestExtensionsBrowserClient::SetUpdateClientFactory(
+    const base::Callback<update_client::UpdateClient*(void)>& factory) {
+  update_client_factory_ = factory;
+}
+
 void TestExtensionsBrowserClient::SetIncognitoContext(BrowserContext* context) {
   // If a context is provided it must be off-the-record.
   DCHECK(!context || context->IsOffTheRecord());
@@ -202,6 +207,14 @@ ExtensionWebContentsObserver*
 TestExtensionsBrowserClient::GetExtensionWebContentsObserver(
     content::WebContents* web_contents) {
   return nullptr;
+}
+
+scoped_refptr<update_client::UpdateClient>
+TestExtensionsBrowserClient::CreateUpdateClient(
+    content::BrowserContext* context) {
+  return update_client_factory_.is_null()
+             ? nullptr
+             : make_scoped_refptr(update_client_factory_.Run());
 }
 
 }  // namespace extensions

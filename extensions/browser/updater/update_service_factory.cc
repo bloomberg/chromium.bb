@@ -5,7 +5,9 @@
 #include "extensions/browser/updater/update_service_factory.h"
 
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/update_client/update_client.h"
 #include "extensions/browser/extension_registry_factory.h"
+#include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/process_manager_factory.h"
 #include "extensions/browser/updater/update_service.h"
 
@@ -27,8 +29,6 @@ UpdateServiceFactory::UpdateServiceFactory()
     : BrowserContextKeyedServiceFactory(
           "UpdateService",
           BrowserContextDependencyManager::GetInstance()) {
-  DependsOn(extensions::ExtensionRegistryFactory::GetInstance());
-  DependsOn(extensions::ProcessManagerFactory::GetInstance());
 }
 
 UpdateServiceFactory::~UpdateServiceFactory() {
@@ -36,7 +36,8 @@ UpdateServiceFactory::~UpdateServiceFactory() {
 
 KeyedService* UpdateServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  return new UpdateService(context);
+  return new UpdateService(
+      context, ExtensionsBrowserClient::Get()->CreateUpdateClient(context));
 }
 
 }  // namespace extensions

@@ -54,6 +54,8 @@ class ExtensionSystemImpl : public ExtensionSystem {
   ContentVerifier* content_verifier() override;  // shared
   scoped_ptr<ExtensionSet> GetDependentExtensions(
       const Extension* extension) override;
+  void InstallUpdate(const std::string& extension_id,
+                     const base::FilePath& temp_dir) override;
 
  private:
   friend class ExtensionSystemSharedFactory;

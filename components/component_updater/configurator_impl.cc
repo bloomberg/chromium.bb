@@ -192,4 +192,8 @@ bool ConfiguratorImpl::UseBackgroundDownloader() const {
   return background_downloads_enabled_;
 }
 
+void ConfiguratorImpl::set_enable_alt_source_url(bool enable_alt_source_url) {
+  fallback_to_alt_source_url_enabled_ = enable_alt_source_url;
+}
+
 }  // namespace component_updater

@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "extensions/browser/extension_event_histogram_value.h"
 #include "extensions/browser/extension_prefs_observer.h"
@@ -33,6 +34,10 @@ class NetLog;
 class NetworkDelegate;
 class URLRequest;
 class URLRequestJob;
+}
+
+namespace update_client {
+class UpdateClient;
 }
 
 namespace extensions {
@@ -235,6 +240,10 @@ class ExtensionsBrowserClient {
   // manager.
   virtual void AttachExtensionTaskManagerTag(content::WebContents* web_contents,
                                              ViewType view_type) {}
+
+  // Returns a new UpdateClient.
+  virtual scoped_refptr<update_client::UpdateClient> CreateUpdateClient(
+      content::BrowserContext* context);
 
   // Returns the single instance of |this|.
   static ExtensionsBrowserClient* Get();

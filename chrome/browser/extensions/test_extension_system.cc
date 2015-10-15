@@ -127,6 +127,11 @@ scoped_ptr<ExtensionSet> TestExtensionSystem::GetDependentExtensions(
       extension);
 }
 
+void TestExtensionSystem::InstallUpdate(const std::string& extension_id,
+                                        const base::FilePath& temp_dir) {
+  NOTREACHED();
+}
+
 // static
 scoped_ptr<KeyedService> TestExtensionSystem::Build(
     content::BrowserContext* profile) {

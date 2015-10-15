@@ -13,9 +13,6 @@ const char kAppShellAllowRoaming[] = "app-shell-allow-roaming";
 // Size for the host window to create (i.e. "800x600").
 const char kAppShellHostWindowSize[] = "app-shell-host-window-size";
 
-// ID of an extension CRX to be downloaded from the web store.
-const char kAppShellInstallCrx[] = "app-shell-install-crx";
-
 // SSID of the preferred WiFi network.
 const char kAppShellPreferredNetwork[] = "app-shell-preferred-network";
 

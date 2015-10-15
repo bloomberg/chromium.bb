@@ -12,7 +12,6 @@ namespace switches {
 // alongside the definition of their values in the .cc file.
 extern const char kAppShellAllowRoaming[];
 extern const char kAppShellHostWindowSize[];
-extern const char kAppShellInstallCrx[];
 extern const char kAppShellPreferredNetwork[];
 extern const char kAppShellRefreshToken[];
 extern const char kAppShellUser[];

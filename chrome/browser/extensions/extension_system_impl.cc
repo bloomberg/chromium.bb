@@ -8,6 +8,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/trace_event/trace_event.h"
@@ -372,6 +373,12 @@ scoped_ptr<ExtensionSet> ExtensionSystemImpl::GetDependentExtensions(
     const Extension* extension) {
   return extension_service()->shared_module_service()->GetDependentExtensions(
       extension);
+}
+
+void ExtensionSystemImpl::InstallUpdate(const std::string& extension_id,
+                                        const base::FilePath& temp_dir) {
+  NOTREACHED() << "Not yet implemented";
+  base::DeleteFile(temp_dir, true /* recursive */);
 }
 
 void ExtensionSystemImpl::RegisterExtensionWithRequestContexts(

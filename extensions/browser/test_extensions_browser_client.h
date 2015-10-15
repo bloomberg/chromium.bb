@@ -5,7 +5,13 @@
 #ifndef EXTENSIONS_BROWSER_TEST_EXTENSIONS_BROWSER_CLIENT_H_
 #define EXTENSIONS_BROWSER_TEST_EXTENSIONS_BROWSER_CLIENT_H_
 
+#include <string>
+#include <vector>
+
+#include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/memory/ref_counted.h"
+#include "components/update_client/update_client.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/updater/extension_cache.h"
 
@@ -29,6 +35,10 @@ class TestExtensionsBrowserClient : public ExtensionsBrowserClient {
   void set_extension_cache(scoped_ptr<ExtensionCache> extension_cache) {
     extension_cache_ = extension_cache.Pass();
   }
+
+  // Sets a factory to respond to calls of the CreateUpdateClient method.
+  void SetUpdateClientFactory(
+      const base::Callback<update_client::UpdateClient*(void)>& factory);
 
   // Associates an incognito context with |main_context_|.
   void SetIncognitoContext(content::BrowserContext* incognito_context);
@@ -97,6 +107,8 @@ class TestExtensionsBrowserClient : public ExtensionsBrowserClient {
   bool IsMinBrowserVersionSupported(const std::string& min_version) override;
   ExtensionWebContentsObserver* GetExtensionWebContentsObserver(
       content::WebContents* web_contents) override;
+  scoped_refptr<update_client::UpdateClient> CreateUpdateClient(
+      content::BrowserContext* context) override;
 
  private:
   content::BrowserContext* main_context_;       // Not owned.
@@ -109,6 +121,8 @@ class TestExtensionsBrowserClient : public ExtensionsBrowserClient {
   ExtensionSystemProvider* extension_system_factory_;
 
   scoped_ptr<ExtensionCache> extension_cache_;
+
+  base::Callback<update_client::UpdateClient*(void)> update_client_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TestExtensionsBrowserClient);
 };
