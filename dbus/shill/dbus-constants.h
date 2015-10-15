@@ -650,8 +650,9 @@ const char kTDLSUnknownState[] = "Unknown";
 
 // Wake on WiFi features.
 const char kWakeOnWiFiFeaturesEnabledPacket[] = "packet";
-const char kWakeOnWiFiFeaturesEnabledSSID[] = "ssid";
-const char kWakeOnWiFiFeaturesEnabledPacketSSID[] = "packet_and_ssid";
+const char kWakeOnWiFiFeaturesEnabledDarkConnect[] = "darkconnect";
+const char kWakeOnWiFiFeaturesEnabledPacketDarkConnect[] =
+    "packet_and_darkconnect";
 const char kWakeOnWiFiFeaturesEnabledNone[] = "none";
 const char kWakeOnWiFiFeaturesEnabledNotSupported[] = "not_supported";
 
