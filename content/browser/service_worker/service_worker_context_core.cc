@@ -76,7 +76,11 @@ class ClearAllServiceWorkersHelper
       const std::vector<ServiceWorkerRegistrationInfo>& registrations) {
     if (!context)
       return;
-    for (const auto& version_itr : context->GetLiveVersions()) {
+    // Make a copy of live versions map because StopWorker() removes the version
+    // from it when we were starting up and don't have a process yet.
+    const std::map<int64, ServiceWorkerVersion*> live_versions_copy =
+        context->GetLiveVersions();
+    for (const auto& version_itr : live_versions_copy) {
       ServiceWorkerVersion* version(version_itr.second);
       if (version->running_status() == ServiceWorkerVersion::STARTING ||
           version->running_status() == ServiceWorkerVersion::RUNNING) {
