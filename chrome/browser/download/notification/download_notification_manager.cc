@@ -78,6 +78,7 @@ DownloadNotificationManagerForProfile::DownloadNotificationManagerForProfile(
     DownloadNotificationManager* parent_manager)
     : profile_(profile),
       parent_manager_(parent_manager),
+      message_center_(g_browser_process->message_center()),
       items_deleter_(&items_) {
 }
 
@@ -152,4 +153,10 @@ void DownloadNotificationManagerForProfile::OnNewDownloadReady(
 
   DownloadItemNotification* item = new DownloadItemNotification(download, this);
   items_.insert(std::make_pair(download, item));
+}
+
+void DownloadNotificationManagerForProfile::OverrideMessageCenterForTest(
+    message_center::MessageCenter* message_center) {
+  DCHECK(message_center);
+  message_center_ = message_center;
 }

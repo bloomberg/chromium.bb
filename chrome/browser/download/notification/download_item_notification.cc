@@ -163,7 +163,9 @@ DownloadItemNotification::DownloadItemNotification(
     content::DownloadItem* item,
     DownloadNotificationManagerForProfile* manager)
     : item_(item),
+      message_center_(manager->message_center()),
       weak_factory_(this) {
+
   // Creates the notification instance. |title|, |body| and |icon| will be
   // overridden by UpdateNotificationData() below.
   notification_.reset(new Notification(
@@ -199,8 +201,6 @@ bool DownloadItemNotification::HasNotificationClickedListener() {
 }
 
 void DownloadItemNotification::OnNotificationClose() {
-  visible_ = false;
-
   if (item_ && item_->IsDangerous() && !item_->IsDone()) {
     content::RecordAction(
         UserMetricsAction("DownloadNotification.Close_Dangerous"));
@@ -314,7 +314,7 @@ void DownloadItemNotification::CloseNotificationByUser() {
   // MessageCenter instance.
   // Note that: this calling has no side-effect even when the message center
   // is not opened.
-  g_browser_process->message_center()->RemoveNotification(
+  message_center_->RemoveNotification(
       notification_id_in_message_center, true /* by_user */);
 }
 
@@ -331,13 +331,11 @@ void DownloadItemNotification::Update() {
        (download_state == content::DownloadItem::INTERRUPTED &&
         previous_download_state_ != content::DownloadItem::INTERRUPTED));
 
-  if (visible_) {
+  if (IsNotificationVisible()) {
     UpdateNotificationData(popup ? UPDATE_AND_POPUP : UPDATE);
   } else {
-    if (show_next_ || popup) {
+    if (show_next_ || popup)
       UpdateNotificationData(ADD);
-      visible_ = true;
-    }
   }
 
   show_next_ = false;
@@ -429,7 +427,7 @@ void DownloadItemNotification::UpdateNotificationData(
     // immediately when the message center is visible.
     // See the comment in MessageCenterImpl::UpdateNotification() for detail.
     if (type == UPDATE_AND_POPUP &&
-        g_browser_process->message_center()->IsMessageCenterVisible() &&
+        message_center_->IsMessageCenterVisible() &&
         (item_->GetState() == content::DownloadItem::COMPLETE ||
          item_->GetState() == content::DownloadItem::INTERRUPTED)) {
       DCHECK_EQ(notification_->type(),
@@ -901,12 +899,17 @@ Profile* DownloadItemNotification::profile() const {
 bool DownloadItemNotification::IsNotificationVisible() const {
   const std::string& notification_id = watcher()->id();
   const ProfileID profile_id = NotificationUIManager::GetProfileID(profile());
-  const std::string notification_id_in_message_center =
-      ProfileNotification::GetProfileNotificationId(notification_id,
-                                                    profile_id);
+  if (!g_browser_process->notification_ui_manager())
+    return false;
+  const Notification* notification = g_browser_process->
+      notification_ui_manager()->FindById(notification_id, profile_id);
+  if (!notification)
+    return false;
+
+  const std::string notification_id_in_message_center = notification->id();
 
   message_center::NotificationList::Notifications visible_notifications =
-      g_browser_process->message_center()->GetVisibleNotifications();
+      message_center_->GetVisibleNotifications();
   for (const auto& notification : visible_notifications) {
     if (notification->id() == notification_id_in_message_center)
       return true;

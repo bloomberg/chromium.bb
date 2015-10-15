@@ -374,6 +374,11 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DownloadFile) {
   EXPECT_EQ(message_center::NOTIFICATION_TYPE_PROGRESS,
             GetNotification(notification_id())->type());
 
+  // Confirms that the download update is delivered to the notification.
+  NotificationUpdateObserver download_notification_periodically_update_observer;
+  download_item()->UpdateObservers();
+  download_notification_periodically_update_observer.Wait();
+
   NotificationUpdateObserver download_notification_update_observer;
 
   // Requests to complete the download.
@@ -783,6 +788,17 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, MAYBE_DownloadMultipleFiles) {
             GetNotification(notification_id1)->priority());
   EXPECT_EQ(message_center::DEFAULT_PRIORITY,
             GetNotification(notification_id2)->priority());
+
+  // Confirms that the updates of both download are delivered to the
+  // notifications.
+  NotificationUpdateObserver notification_periodically_update_observer1;
+  download1->UpdateObservers();
+  EXPECT_EQ(notification_id1,
+            notification_periodically_update_observer1.Wait());
+  NotificationUpdateObserver notification_periodically_update_observer2;
+  download2->UpdateObservers();
+  EXPECT_EQ(notification_id2,
+            notification_periodically_update_observer2.Wait());
 
   // Requests to complete the downloads.
   ui_test_utils::NavigateToURL(
