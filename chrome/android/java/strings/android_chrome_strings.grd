@@ -2277,6 +2277,9 @@ However, you aren’t invisible. Going incognito doesn’t hide your browsing fr
       </message>
 
       <!-- Physical Web strings -->
+      <message name="IDS_PHYSICAL_WEB_LIST_URLS_ACTIVITY_TITLE" desc="The title for a dialog that shows a list of URLs broadcasted from nearby devices.">
+        Nearby URLs
+      </message>
       <message name="IDS_PHYSICAL_WEB_NOTIFICATION_TITLE" desc="Description of quantity of discovered URLs nearby.">
         {NUM_URLS, plural,
          =1 {1 URL nearby}

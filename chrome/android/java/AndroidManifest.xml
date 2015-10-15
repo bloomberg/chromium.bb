@@ -403,6 +403,12 @@ by a child template that "extends" this file.
             android:process=":browser_restart_process">
         </activity>
 
+        <!-- Activity to list Physical Web Urls -->
+        <activity android:name="org.chromium.chrome.browser.physicalweb.ListUrlsActivity"
+            android:label="@string/physical_web_list_urls_activity_title"
+            android:exported="false">
+        </activity>
+
         <!-- Providers for chrome data. -->
         <provider android:name="org.chromium.chrome.browser.ChromeBrowserProvider"
             android:authorities="{{ manifest_package }}.ChromeBrowserProvider;{{ manifest_package }}.browser;{{ manifest_package }}"

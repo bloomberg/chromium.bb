@@ -5,7 +5,9 @@
 package org.chromium.chrome.browser.physicalweb;
 
 import android.app.Notification;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.support.v4.app.NotificationCompat;
@@ -75,6 +77,13 @@ public class UrlManager {
         updateNotification(urls);
     }
 
+    /**
+     * Get the stored URLs.
+     */
+    public Set<String> getUrls() {
+        return getCachedUrls();
+    }
+
     private Set<String> getCachedUrls() {
         // Check the version.
         SharedPreferences prefs = mContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
@@ -98,6 +107,12 @@ public class UrlManager {
         editor.apply();
     }
 
+    private PendingIntent createListUrlsIntent() {
+        Intent intent = new Intent(mContext, ListUrlsActivity.class);
+        PendingIntent pendingIntent = PendingIntent.getActivity(mContext, 0, intent, 0);
+        return pendingIntent;
+    }
+
     private void updateNotification(Set<String> urls) {
         if (urls.isEmpty()) {
             mNotificationManager.cancel(NotificationConstants.NOTIFICATION_ID_PHYSICAL_WEB);
@@ -109,12 +124,14 @@ public class UrlManager {
         Resources resources = mContext.getResources();
         String title = resources.getQuantityString(R.plurals.physical_web_notification_title,
                                                    urls.size(), urls.size());
+        PendingIntent pendingIntent = createListUrlsIntent();
 
         // Create the notification.
         Notification notification = new NotificationCompat.Builder(mContext)
                 .setSmallIcon(R.drawable.ic_physical_web_notification)
                 .setContentTitle(title)
                 .setContentText(displayUrl)
+                .setContentIntent(pendingIntent)
                 .setPriority(NotificationCompat.PRIORITY_MIN)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .build();
