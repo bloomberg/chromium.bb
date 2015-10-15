@@ -24,6 +24,13 @@ namespace {
 const char kUMAProxyStartupStateHistogram[] =
     "DataReductionProxy.StartupState";
 
+void RecordSettingsEnabledState(
+    data_reduction_proxy::DataReductionSettingsEnabledAction action) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "DataReductionProxy.EnabledState", action,
+      data_reduction_proxy::DATA_REDUCTION_SETTINGS_ACTION_BOUNDARY);
+}
+
 }  // namespace
 
 namespace data_reduction_proxy {
@@ -253,6 +260,12 @@ void DataReductionProxySettings::MaybeActivateDataReductionProxy(
       !prefs->GetBoolean(prefs::kDataReductionProxyWasEnabledBefore)) {
     prefs->SetBoolean(prefs::kDataReductionProxyWasEnabledBefore, true);
     ResetDataReductionStatistics();
+  }
+  if (!at_startup) {
+    if (IsDataReductionProxyEnabled())
+      RecordSettingsEnabledState(DATA_REDUCTION_SETTINGS_ACTION_OFF_TO_ON);
+    else
+      RecordSettingsEnabledState(DATA_REDUCTION_SETTINGS_ACTION_ON_TO_OFF);
   }
   // Configure use of the data reduction proxy if it is enabled.
   if (at_startup && !data_reduction_proxy_service_->Initialized())

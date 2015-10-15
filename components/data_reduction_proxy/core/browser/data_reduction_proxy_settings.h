@@ -55,6 +55,15 @@ enum LoFiImplicitOptOutAction {
   LO_FI_OPT_OUT_ACTION_INDEX_BOUNDARY,
 };
 
+// Values of the UMA DataReductionProxy.EnabledState histogram.
+// This enum must remain synchronized with DataReductionProxyEnabledState
+// in metrics/histograms/histograms.xml.
+enum DataReductionSettingsEnabledAction {
+  DATA_REDUCTION_SETTINGS_ACTION_OFF_TO_ON = 0,
+  DATA_REDUCTION_SETTINGS_ACTION_ON_TO_OFF,
+  DATA_REDUCTION_SETTINGS_ACTION_BOUNDARY,
+};
+
 // Central point for configuring the data reduction proxy.
 // This object lives on the UI thread and all of its methods are expected to
 // be called from there.
@@ -236,6 +245,8 @@ class DataReductionProxySettings : public DataReductionProxyServiceObserver {
                            TestLoFiImplicitOptOutHistograms);
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxySettingsTest,
                            TestLoFiSessionStateHistograms);
+  FRIEND_TEST_ALL_PREFIXES(DataReductionProxySettingsTest,
+                           TestSettingsEnabledStateHistograms);
 
   // Override of DataReductionProxyService::Observer.
   void OnServiceInitialized() override;

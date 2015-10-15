@@ -628,6 +628,33 @@ TEST_F(DataReductionProxySettingsTest, TestLoFiSessionStateHistograms) {
       kUMALoFiSessionState, settings_->lo_fi_consecutive_session_disables_ + 3);
 }
 
+TEST_F(DataReductionProxySettingsTest, TestSettingsEnabledStateHistograms) {
+  const char kUMAEnabledState[] = "DataReductionProxy.EnabledState";
+  base::HistogramTester histogram_tester;
+
+  settings_->InitPrefMembers();
+  settings_->data_reduction_proxy_service_->SetIOData(
+      test_context_->io_data()->GetWeakPtr());
+
+  // No settings state histograms should be recorded during startup.
+  test_context_->RunUntilIdle();
+  histogram_tester.ExpectTotalCount(kUMAEnabledState, 0);
+
+  settings_->SetDataReductionProxyEnabled(true);
+  test_context_->RunUntilIdle();
+  histogram_tester.ExpectBucketCount(
+      kUMAEnabledState, DATA_REDUCTION_SETTINGS_ACTION_OFF_TO_ON, 1);
+  histogram_tester.ExpectBucketCount(
+      kUMAEnabledState, DATA_REDUCTION_SETTINGS_ACTION_ON_TO_OFF, 0);
+
+  settings_->SetDataReductionProxyEnabled(false);
+  test_context_->RunUntilIdle();
+  histogram_tester.ExpectBucketCount(
+      kUMAEnabledState, DATA_REDUCTION_SETTINGS_ACTION_OFF_TO_ON, 1);
+  histogram_tester.ExpectBucketCount(
+      kUMAEnabledState, DATA_REDUCTION_SETTINGS_ACTION_ON_TO_OFF, 1);
+}
+
 TEST_F(DataReductionProxySettingsTest, TestGetDailyContentLengths) {
   ContentLengthList result =
       settings_->GetDailyContentLengths(prefs::kDailyHttpOriginalContentLength);

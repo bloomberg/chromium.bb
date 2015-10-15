@@ -5820,6 +5820,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="DataReductionProxy.EnabledState"
+    enum="DataReductionProxyEnabledState">
+  <owner>bengr@chromium.org</owner>
+  <owner>rajendrant@chromium.org</owner>
+  <summary>
+    Samples of user interactions with the Data Saver settings menu across all
+    platforms (android, IOS, desktop extension). Data is collected whenever user
+    toggles the ON/OFF switch in the settings menu for reducing data usage.
+
+    For desktop, Off-to-On/On-to-Off histogram count will increment when the
+    data saver extension is installed/uninstalled respectively as well.
+  </summary>
+</histogram>
+
 <histogram name="DataReductionProxy.HeaderTamperDetectionHTTP">
   <owner>xingx@chromium.org</owner>
   <owner>bolian@chromium.org</owner>
@@ -55088,6 +55102,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="8" label="Bypass because the request URI was too long"/>
   <int value="9" label="Bypass due to a 503 response"/>
   <int value="10" label="Bypass due to any network error"/>
+</enum>
+
+<enum name="DataReductionProxyEnabledState" type="int">
+  <int value="0" label="Off-to-On"/>
+  <int value="1" label="On-to-Off"/>
 </enum>
 
 <enum name="DataReductionProxyLoFiImplicitOptOutAction" type="int">
