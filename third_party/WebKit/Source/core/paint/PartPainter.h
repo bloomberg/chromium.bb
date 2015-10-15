@@ -22,6 +22,8 @@ public:
     void paintContents(const PaintInfo&, const LayoutPoint&);
 
 private:
+    bool isSelected() const;
+
     const LayoutPart& m_layoutPart;
 };
 

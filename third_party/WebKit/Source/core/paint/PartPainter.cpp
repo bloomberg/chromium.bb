@@ -17,6 +17,29 @@
 
 namespace blink {
 
+bool PartPainter::isSelected() const
+{
+    SelectionState s = m_layoutPart.selectionState();
+    if (s == SelectionNone)
+        return false;
+    if (s == SelectionInside)
+        return true;
+
+    int selectionStart, selectionEnd;
+    m_layoutPart.selectionStartEnd(selectionStart, selectionEnd);
+    if (s == SelectionStart)
+        return selectionStart == 0;
+
+    int end = m_layoutPart.node()->hasChildren() ? m_layoutPart.node()->countChildren() : 1;
+    if (s == SelectionEnd)
+        return selectionEnd == end;
+    if (s == SelectionBoth)
+        return selectionStart == 0 && selectionEnd == end;
+
+    ASSERT(0);
+    return false;
+}
+
 void PartPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     if (!m_layoutPart.shouldPaint(paintInfo, paintOffset))
@@ -60,7 +83,7 @@ void PartPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffs
     }
 
     // Paint a partially transparent wash over selected widgets.
-    if (m_layoutPart.isSelected() && !paintInfo.isPrinting() && !LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*paintInfo.context, m_layoutPart, paintInfo.phase, adjustedPaintOffset)) {
+    if (isSelected() && !paintInfo.isPrinting() && !LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*paintInfo.context, m_layoutPart, paintInfo.phase, adjustedPaintOffset)) {
         LayoutRect rect = m_layoutPart.localSelectionRect();
         rect.moveBy(adjustedPaintOffset);
         IntRect selectionRect = pixelSnappedIntRect(rect);

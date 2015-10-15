@@ -333,7 +333,7 @@ LayoutRect LayoutSVGRoot::clippedOverflowRectForPaintInvalidation(const LayoutBo
     if (m_hasBoxDecorationBackground || hasOverflowModel()) {
         // The selectionRect can project outside of the overflowRect, so take their union
         // for paint invalidation to avoid selection painting glitches.
-        LayoutRect decoratedPaintInvalidationRect = unionRect(localSelectionRect(false), visualOverflowRect());
+        LayoutRect decoratedPaintInvalidationRect = unionRect(localSelectionRect(), visualOverflowRect());
         paintInvalidationRect.unite(decoratedPaintInvalidationRect);
     }
 

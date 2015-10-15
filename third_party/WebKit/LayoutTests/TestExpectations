@@ -61,6 +61,16 @@ crbug.com/404597 fast/text/international/bdi-dir-default-to-auto.html [ ImageOnl
 
 crbug.com/542643 fast/text/zero-font-size-2.html [ Pass Crash ]
 
+crbug.com/541598 fast/repaint/selected-replaced.html [ NeedsRebaseline ]
+crbug.com/541598 svg/custom/mouse-move-on-svg-container.xhtml [ NeedsRebaseline ]
+crbug.com/541598 svg/custom/mouse-move-on-svg-root.xhtml [ NeedsRebaseline ]
+crbug.com/541598 svg/custom/pattern-userSpaceOnUse-userToBaseTransform.xhtml [ NeedsRebaseline ]
+crbug.com/541598 svg/hixie/mixed/010.xml [ NeedsRebaseline ]
+crbug.com/541598 svg/repaint/add-background-property-on-root.html [ NeedsRebaseline ]
+crbug.com/541598 svg/repaint/change-background-color.html [ NeedsRebaseline ]
+crbug.com/541598 svg/repaint/remove-background-property-on-root.html [ NeedsRebaseline ]
+crbug.com/541598 svg/text/small-fonts-in-html5.html [ NeedsRebaseline ]
+
 crbug.com/539226 [ Win7 ] http/tests/xmlhttprequest/open-in-body-onload-sync-to-invalid-cross-origin-response-handling.html [ Timeout ]
 crbug.com/539226 [ Win7 ] http/tests/xmlhttprequest/open-in-body-onload-sync-to-invalid-redirect-response-handling.html [ Timeout ]
 crbug.com/539226 [ Win7 ] http/tests/xmlhttprequest/open-in-body-onload-sync-to-invalid-preflight-handling.html [ Timeout ]

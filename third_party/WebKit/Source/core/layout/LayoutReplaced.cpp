@@ -130,12 +130,6 @@ bool LayoutReplaced::shouldPaint(const PaintInfo& paintInfo, const LayoutPoint& 
     // Early exit if the element touches the edges.
     LayoutUnit top = paintRect.y();
     LayoutUnit bottom = paintRect.maxY();
-    if (isSelected() && inlineBoxWrapper()) {
-        LayoutUnit selTop = paintOffset.y() + inlineBoxWrapper()->root().selectionTop();
-        LayoutUnit selBottom = paintOffset.y() + selTop + inlineBoxWrapper()->root().selectionHeight();
-        top = std::min(selTop, top);
-        bottom = std::max(selBottom, bottom);
-    }
 
     if (paintRect.x() >= paintInfo.rect.maxX() || paintRect.maxX() <= paintInfo.rect.x())
         return false;
@@ -438,10 +432,10 @@ LayoutRect LayoutReplaced::selectionRectForPaintInvalidation(const LayoutBoxMode
 {
     ASSERT(!needsLayout());
 
-    if (!isSelected())
-        return LayoutRect();
-
     LayoutRect rect = localSelectionRect();
+    if (rect.isEmpty())
+        return rect;
+
     mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, 0);
     // FIXME: groupedMapping() leaks the squashing abstraction.
     if (paintInvalidationContainer->layer()->groupedMapping())
@@ -449,9 +443,9 @@ LayoutRect LayoutReplaced::selectionRectForPaintInvalidation(const LayoutBoxMode
     return rect;
 }
 
-LayoutRect LayoutReplaced::localSelectionRect(bool checkWhetherSelected) const
+LayoutRect LayoutReplaced::localSelectionRect() const
 {
-    if (checkWhetherSelected && !isSelected())
+    if (selectionState() == SelectionNone)
         return LayoutRect();
 
     if (!inlineBoxWrapper()) {
@@ -480,41 +474,7 @@ void LayoutReplaced::setSelectionState(SelectionState state)
         setPreviousPaintInvalidationRect(boundsRectForPaintInvalidation(containerForPaintInvalidation()));
 
     if (canUpdateSelectionOnRootLineBoxes())
-        inlineBoxWrapper()->root().setHasSelectedChildren(isSelected());
-}
-
-bool LayoutReplaced::isSelected() const
-{
-    SelectionState s = selectionState();
-    if (s == SelectionNone)
-        return false;
-    if (s == SelectionInside)
-        return true;
-
-    int selectionStart, selectionEnd;
-    selectionStartEnd(selectionStart, selectionEnd);
-    if (s == SelectionStart)
-        return selectionStart == 0;
-
-    int end = node()->hasChildren() ? node()->countChildren() : 1;
-    if (s == SelectionEnd)
-        return selectionEnd == end;
-    if (s == SelectionBoth)
-        return selectionStart == 0 && selectionEnd == end;
-
-    ASSERT(0);
-    return false;
-}
-LayoutRect LayoutReplaced::clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
-{
-    if (style()->visibility() != VISIBLE && !enclosingLayer()->hasVisibleContent())
-        return LayoutRect();
-
-    // The selectionRect can project outside of the overflowRect, so take their union
-    // for paint invalidation to avoid selection painting glitches.
-    LayoutRect r = isSelected() ? localSelectionRect() : visualOverflowRect();
-    mapRectToPaintInvalidationBacking(paintInvalidationContainer, r, paintInvalidationState);
-    return r;
+        inlineBoxWrapper()->root().setHasSelectedChildren(state != SelectionNone);
 }
 
 }
