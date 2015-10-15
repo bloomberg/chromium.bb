@@ -12,14 +12,10 @@ test(function() {
   reader.addEventListener("loadend", function() {
     // |reader.result| contains the contents of blob as an ArrayBuffer.
     var outputArray = new Uint8Array(reader.result);
-    assert_equals(array.length, outputArray.length);
-    for (var index in outputArray) {
-      assert_equals(array[index], outputArray[index]);
-    }
+    assert_array_equals(array, outputArray)
   });
   reader.readAsArrayBuffer(blob);
 
 }, 'check BlobEvent creation and content management');
-
 
 </script>

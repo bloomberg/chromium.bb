@@ -104,6 +104,7 @@ void MediaRecorder::start(int timeSlice, ExceptionState& exceptionState)
     m_state = State::Recording;
 
     m_recorderHandler->start(timeSlice);
+    scheduleDispatchEvent(Event::create(EventTypeNames::start));
 }
 
 void MediaRecorder::stop(ExceptionState& exceptionState)
@@ -144,6 +145,7 @@ void MediaRecorder::resume(ExceptionState& exceptionState)
     m_state = State::Recording;
 
     m_recorderHandler->resume();
+    scheduleDispatchEvent(Event::create(EventTypeNames::resume));
 }
 
 void MediaRecorder::requestData(ExceptionState& exceptionState)
