@@ -85,10 +85,10 @@ HardwareDisplayController* DrmWindow::GetController() {
 void DrmWindow::SetBounds(const gfx::Rect& bounds) {
   TRACE_EVENT2("drm", "DrmWindow::SetBounds", "widget", widget_, "bounds",
                bounds.ToString());
-  bounds_ = bounds;
   if (bounds_.size() != bounds.size())
     last_submitted_planes_.clear();
 
+  bounds_ = bounds;
   screen_manager_->UpdateControllerToWindowMapping();
 }
 
