@@ -69,7 +69,7 @@ static bool fullscreenIsSupported(const Document& document)
     return !document.settings() || document.settings()->fullscreenSupported();
 }
 
-static bool fullscreenElementReady(const Element& element, Fullscreen::RequestType requestType)
+static bool fullscreenElementReady(const Element& element)
 {
     // A fullscreen element ready check for an element |element| returns true if all of the
     // following are true, and false otherwise:
@@ -98,7 +98,7 @@ static bool fullscreenElementReady(const Element& element, Fullscreen::RequestTy
     // fullscreen element ready check returns true for |element|'s node document's browsing
     // context's browsing context container, or it has no browsing context container.
     if (const Element* owner = element.document().ownerElement()) {
-        if (!fullscreenElementReady(*owner, requestType))
+        if (!fullscreenElementReady(*owner))
             return false;
     }
 
@@ -223,7 +223,7 @@ void Fullscreen::requestFullscreen(Element& element, RequestType requestType)
         // node document:
 
         // The fullscreen element ready check returns false.
-        if (!fullscreenElementReady(element, requestType))
+        if (!fullscreenElementReady(element))
             break;
 
         // This algorithm is not allowed to show a pop-up:
