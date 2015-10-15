@@ -278,14 +278,13 @@ void HTMLSelectElement::setValue(const String &value, bool sendEvents)
     setSuggestedIndex(-1);
     if (m_isAutofilledByPreview)
         setAutofilled(false);
-    setSelectedIndex(optionIndex);
+    SelectOptionFlags flags = DeselectOtherOptions;
+    if (sendEvents)
+        flags |= DispatchInputAndChangeEvent | UserDriven;
+    selectOption(optionIndex, flags);
 
-    if (sendEvents && previousSelectedIndex != selectedIndex()) {
-        if (usesMenuList())
-            dispatchInputAndChangeEventForMenuList(false);
-        else
-            listBoxOnChange();
-    }
+    if (sendEvents && previousSelectedIndex != selectedIndex() && !usesMenuList())
+        listBoxOnChange();
 }
 
 String HTMLSelectElement::suggestedValue() const
@@ -717,12 +716,12 @@ void HTMLSelectElement::listBoxOnChange()
     }
 }
 
-void HTMLSelectElement::dispatchInputAndChangeEventForMenuList(bool requiresUserGesture)
+void HTMLSelectElement::dispatchInputAndChangeEventForMenuList()
 {
     ASSERT(usesMenuList());
 
     HTMLOptionElement* selectedOption = this->selectedOption();
-    if (m_lastOnChangeOption.get() != selectedOption && (!requiresUserGesture || m_isProcessingUserDrivenChange)) {
+    if (m_lastOnChangeOption.get() != selectedOption && m_isProcessingUserDrivenChange) {
         m_lastOnChangeOption = selectedOption;
         m_isProcessingUserDrivenChange = false;
         RefPtrWillBeRawPtr<HTMLSelectElement> protector(this);
@@ -971,17 +970,17 @@ void HTMLSelectElement::selectOption(int optionIndex, SelectOptionFlags flags)
     if (selectedIndex() != optionIndex && isAutofilled())
         setAutofilled(false);
 
-    HTMLElement* element = 0;
+    HTMLOptionElement* element = nullptr;
     if (listIndex >= 0) {
-        element = items[listIndex];
-        if (isHTMLOptionElement(*element)) {
-            // setActiveSelectionAnchorIndex is O(N).
-            if (m_activeSelectionAnchorIndex < 0 || shouldDeselect)
-                setActiveSelectionAnchorIndex(listIndex);
-            if (m_activeSelectionEndIndex < 0 || shouldDeselect)
-                setActiveSelectionEndIndex(listIndex);
-            toHTMLOptionElement(*element).setSelectedState(true);
-        }
+        // listIndex must point an HTMLOptionElement if listIndex is not -1
+        // because optionToListIndex() returned it.
+        element = toHTMLOptionElement(items[listIndex]);
+        // setActiveSelectionAnchorIndex is O(N).
+        if (m_activeSelectionAnchorIndex < 0 || shouldDeselect)
+            setActiveSelectionAnchorIndex(listIndex);
+        if (m_activeSelectionEndIndex < 0 || shouldDeselect)
+            setActiveSelectionEndIndex(listIndex);
+        element->setSelectedState(true);
     }
 
     // deselectItemsWithoutValidation() is O(N).
@@ -1002,6 +1001,8 @@ void HTMLSelectElement::selectOption(int optionIndex, SelectOptionFlags flags)
         m_isProcessingUserDrivenChange = flags & UserDriven;
         if (flags & DispatchInputAndChangeEvent)
             dispatchInputAndChangeEventForMenuList();
+        else
+            m_lastOnChangeOption = element;
         if (LayoutObject* layoutObject = this->layoutObject()) {
             if (usesMenuList()) {
                 // didSetSelectedIndex() is O(N) because of listToOptionIndex

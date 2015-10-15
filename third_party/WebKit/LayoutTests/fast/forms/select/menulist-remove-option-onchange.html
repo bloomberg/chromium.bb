@@ -8,6 +8,12 @@
 <option>b</option>
 <option>c</option>
 </select>
+<select id="select2">
+<option value="">Placeholder</option>
+<option>a</option>
+<option>b</option>
+<option>c</option>
+</select>
 <script>
 var select = document.querySelector('select');
 var placeholderOption = document.querySelector('option');
@@ -32,5 +38,32 @@ test(function() {
     eventSender.keyDown('c');
     assert_equals(selectedValue, 'c');
 }, 'Change event should be dispatched after the option removal.');
+
+selectedValue = null;
+var select2 = document.querySelector('#select2');
+select2.focus();
+select2.addEventListener('change', function() {
+    selectedValue = select2.value;
+    if (select2.options[0].value == '') {
+        var options = select2.options;
+        for (var i = 0; i < options.length - 1; ++i) {
+            options[i].label = options[i + 1].label;
+            options[i].value = options[i + 1].value;
+            options[i].textContent = options[i + 1].textContent;
+        }
+        select2.removeChild(options[options.length - 1]);
+        select2.value = selectedValue;
+    }
+});
+test(function() {
+    eventSender.keyDown('a');
+    assert_equals(select2.selectedIndex, 0);
+    assert_equals(selectedValue, 'a');
+    internals.resetTypeAheadSession(select2);
+
+    eventSender.keyDown('b');
+    assert_equals(select2.selectedIndex, 1);
+    assert_equals(selectedValue, 'b');
+}, 'Change event should be dispatched after updating selection programatically.');
 </script>
 </body>

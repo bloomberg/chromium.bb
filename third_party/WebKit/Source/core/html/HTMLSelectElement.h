@@ -191,7 +191,7 @@ private:
 
     void defaultEventHandler(Event*) override;
 
-    void dispatchInputAndChangeEventForMenuList(bool requiresUserGesture = true);
+    void dispatchInputAndChangeEventForMenuList();
 
     void recalcListItems(bool updateSelectedStates = true) const;
 
