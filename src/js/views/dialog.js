@@ -98,8 +98,7 @@ camera.views.Dialog.prototype.onEnter = function(opt_arguments) {
  * @override
  */
 camera.views.Dialog.prototype.onActivate = function() {
-  if (document.activeElement != document.body)
-    document.querySelector('#dialog-popup').focus();
+  this.positiveButton_.focus();
 };
 
 /**
@@ -126,7 +125,7 @@ camera.views.Dialog.prototype.onNegativeButtonClicked_ = function(event) {
 camera.views.Dialog.prototype.onKeyPressed = function(event) {
   switch (camera.util.getShortcutIdentifier(event)) {
     case 'Enter':
-      if (document.activeElement == this.negativeButton_)
+      if (document.activeElement != this.positiveButton_)
         break;
       this.router.back({isPositive: true});
       event.preventDefault();
