@@ -9,9 +9,12 @@
   'targets': [
     {
       'target_name': 'device_core',
-      'type': 'static_library',
+      'type': '<(component)',
       'include_dirs': [
         '../..',
+      ],
+      'defines': [
+        'DEVICE_CORE_IMPLEMENTATION',
       ],
       'sources': [
         'device_client.cc',
@@ -20,8 +23,8 @@
         'device_monitor_win.h',
       ],
       'dependencies': [
-        '<(DEPTH)/third_party/mojo/mojo_public.gyp:mojo_cpp_bindings',
-      ],
+        '../../base/base.gyp:base',
+      ]
     },
   ],
 }

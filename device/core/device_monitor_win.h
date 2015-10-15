@@ -8,14 +8,15 @@
 #include <windows.h>
 
 #include "base/observer_list.h"
+#include "device/core/device_core_export.h"
 
 namespace device {
 
 // Use an instance of this class to observe devices being added and removed
 // from the system, matched by device interface GUID.
-class DeviceMonitorWin {
+class DEVICE_CORE_EXPORT DeviceMonitorWin {
  public:
-  class Observer {
+  class DEVICE_CORE_EXPORT Observer {
    public:
     virtual void OnDeviceAdded(const GUID& class_guid,
                                const std::string& device_path);

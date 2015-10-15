@@ -2,13 +2,17 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("core") {
+component("core") {
+  output_name = "device_core"
+
   sources = [
     "device_client.cc",
     "device_client.h",
     "device_monitor_win.cc",
     "device_monitor_win.h",
   ]
+
+  defines = [ "DEVICE_CORE_IMPLEMENTATION" ]
 
   public_deps = [
     "//base",

@@ -6,20 +6,17 @@
 #define DEVICE_CORE_DEVICE_CLIENT_H_
 
 #include "base/macros.h"
+#include "device/core/device_core_export.h"
 
 namespace device {
 
 class HidService;
 class UsbService;
 
-namespace usb {
-class DeviceManager;
-}
-
 // Interface used by consumers of //device APIs to get pointers to the service
 // singletons appropriate for a given embedding application. For an example see
 // //chrome/browser/chrome_device_client.h.
-class DeviceClient {
+class DEVICE_CORE_EXPORT DeviceClient {
  public:
   // Construction sets the single instance.
   DeviceClient();
