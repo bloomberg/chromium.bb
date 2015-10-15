@@ -18,6 +18,7 @@
 #include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/readback_types.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/TabContentManager_jni.h"
 #include "ui/android/resources/ui_resource_provider.h"
@@ -71,7 +72,10 @@ class TabContentManager::TabReadbackRequest {
     }
 
     DCHECK(view->GetWebContents());
-    view->GetWebContents()->GetRenderViewHost()->LockBackingStore();
+    view->GetWebContents()
+        ->GetRenderViewHost()
+        ->GetWidget()
+        ->LockBackingStore();
 
     SkColorType color_type = kN32_SkColorType;
 
@@ -91,7 +95,10 @@ class TabContentManager::TabReadbackRequest {
 
     if (view) {
       DCHECK(view->GetWebContents());
-      view->GetWebContents()->GetRenderViewHost()->UnlockBackingStore();
+      view->GetWebContents()
+          ->GetRenderViewHost()
+          ->GetWidget()
+          ->UnlockBackingStore();
     }
 
     if (response != content::READBACK_SUCCESS || drop_after_readback_) {
@@ -249,6 +256,7 @@ void TabContentManager::CacheTab(JNIEnv* env,
     if (!view ||
         !view->GetWebContents()
              ->GetRenderViewHost()
+             ->GetWidget()
              ->CanCopyFromBackingStore() ||
         pending_tab_readbacks_.find(tab_id) != pending_tab_readbacks_.end() ||
         pending_tab_readbacks_.size() >= kMaxReadbacks) {

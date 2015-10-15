@@ -42,6 +42,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/speech_recognition_session_preamble.h"
 #include "content/public/browser/web_contents.h"
@@ -634,8 +635,8 @@ void StartPageService::LoadStartPageURL() {
       ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
       std::string());
 
-  contents_->GetRenderViewHost()->GetView()->SetBackgroundColor(
-        SK_ColorTRANSPARENT);
+  contents_->GetRenderViewHost()->GetWidget()->GetView()->SetBackgroundColor(
+      SK_ColorTRANSPARENT);
 }
 
 void StartPageService::FetchDoodleJson() {

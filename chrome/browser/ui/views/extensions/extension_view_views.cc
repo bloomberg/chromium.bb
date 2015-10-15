@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_host.h"
@@ -47,7 +48,7 @@ void ExtensionViewViews::SetVisible(bool is_visible) {
     // is not part of the View hierarchy and does not know about the change
     // unless we tell it.
     content::RenderWidgetHostView* host_view =
-        host_->render_view_host()->GetView();
+        host_->render_view_host()->GetWidget()->GetView();
     if (host_view) {
       if (is_visible)
         host_view->Show();

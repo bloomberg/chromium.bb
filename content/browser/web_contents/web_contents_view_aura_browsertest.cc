@@ -26,6 +26,7 @@
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_switches.h"
@@ -396,7 +397,7 @@ class WebContentsViewAuraTest : public ContentBrowserTest {
 
   RenderWidgetHostViewBase* GetRenderWidgetHostView() const {
     return static_cast<RenderWidgetHostViewBase*>(
-        GetRenderViewHost()->GetView());
+        GetRenderViewHost()->GetWidget()->GetView());
   }
 
   InputEventMessageFilterWaitsForAcks* filter() {

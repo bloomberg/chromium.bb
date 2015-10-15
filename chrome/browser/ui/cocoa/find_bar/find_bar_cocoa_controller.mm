@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/theme_resources.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMNSAnimation+Duration.h"
@@ -275,7 +276,8 @@ const float kRightEdgeOffset = 25;
     // the list above.
     content::RenderViewHost* render_view_host =
         web_contents->GetRenderViewHost();
-    render_view_host->ForwardKeyboardEvent(NativeWebKeyboardEvent(event));
+    render_view_host->GetWidget()->ForwardKeyboardEvent(
+        NativeWebKeyboardEvent(event));
     return YES;
   }
 

@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/views/find_bar_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -71,7 +72,7 @@ bool FindBarHost::MaybeForwardKeyEventToWebpage(
   // input. Otherwise Up and Down arrow key strokes get eaten. "Nom Nom Nom".
   render_view_host->ClearFocusedElement();
   NativeWebKeyboardEvent event(key_event);
-  render_view_host->ForwardKeyboardEvent(event);
+  render_view_host->GetWidget()->ForwardKeyboardEvent(event);
   return true;
 }
 

@@ -129,6 +129,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_paths.h"
@@ -814,9 +815,9 @@ class PolicyTest : public InProcessBrowserTest {
     click_event.clickCount = 1;
     click_event.x = x;
     click_event.y = y;
-    contents->GetRenderViewHost()->ForwardMouseEvent(click_event);
+    contents->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(click_event);
     click_event.type = blink::WebInputEvent::MouseUp;
-    contents->GetRenderViewHost()->ForwardMouseEvent(click_event);
+    contents->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(click_event);
   }
 
   void SetPolicy(PolicyMap* policies, const char* key, base::Value* value) {

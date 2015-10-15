@@ -6,6 +6,7 @@
 
 #include "base/threading/sequenced_worker_pool.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/app_window/app_window.h"
@@ -297,7 +298,8 @@ void NativeAppWindowViews::OnWidgetActivationChanged(views::Widget* widget,
 void NativeAppWindowViews::RenderViewCreated(
     content::RenderViewHost* render_view_host) {
   if (app_window_->requested_alpha_enabled() && CanHaveAlphaEnabled()) {
-    content::RenderWidgetHostView* view = render_view_host->GetView();
+    content::RenderWidgetHostView* view =
+        render_view_host->GetWidget()->GetView();
     DCHECK(view);
     view->SetBackgroundColor(SK_ColorTRANSPARENT);
   }

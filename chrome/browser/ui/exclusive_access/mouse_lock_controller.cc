@@ -14,6 +14,7 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 
@@ -221,7 +222,7 @@ void MouseLockController::UnlockMouse() {
   if (!mouse_lock_view) {
     RenderViewHost* const rvh = exclusive_access_tab()->GetRenderViewHost();
     if (rvh)
-      mouse_lock_view = rvh->GetView();
+      mouse_lock_view = rvh->GetWidget()->GetView();
   }
 
   if (mouse_lock_view)

@@ -122,6 +122,10 @@ class CONTENT_EXPORT RenderViewHostImpl
   ~RenderViewHostImpl() override;
 
   // RenderViewHost implementation.
+  bool Send(IPC::Message* msg) override;
+  RenderWidgetHost* GetWidget() const override;
+  RenderProcessHost* GetProcess() const override;
+  int GetRoutingID() const override;
   RenderFrameHost* GetMainFrame() override;
   void AllowBindings(int binding_flags) override;
   void ClearFocusedElement() override;

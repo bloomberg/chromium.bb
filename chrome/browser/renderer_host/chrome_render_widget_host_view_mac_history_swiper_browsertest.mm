@@ -14,6 +14,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
@@ -180,8 +181,11 @@ class ChromeRenderWidgetHostViewMacHistorySwiperTest
     NSUInteger modifierFlags = 0;
     [(NSEvent*)[[event stub]
         andReturnValue:OCMOCK_VALUE(modifierFlags)] modifierFlags];
-    NSView* view =
-        GetWebContents()->GetRenderViewHost()->GetView()->GetNativeView();
+    NSView* view = GetWebContents()
+                       ->GetRenderViewHost()
+                       ->GetWidget()
+                       ->GetView()
+                       ->GetNativeView();
     NSWindow* window = [view window];
     [(NSEvent*)[[event stub] andReturnValue:OCMOCK_VALUE(window)] window];
 
@@ -306,8 +310,11 @@ class ChromeRenderWidgetHostViewMacHistorySwiperTest
     while ([event_queue_ count] > 0) {
       QueuedEvent* queued_event = [event_queue_ objectAtIndex:0];
       NSEvent* event = queued_event.event;
-      NSView* view =
-          GetWebContents()->GetRenderViewHost()->GetView()->GetNativeView();
+      NSView* view = GetWebContents()
+                         ->GetRenderViewHost()
+                         ->GetWidget()
+                         ->GetView()
+                         ->GetNativeView();
       BOOL run_loop = queued_event.runMessageLoop;
       switch (queued_event.deployment) {
         case DEPLOYMENT_GESTURE_BEGIN:

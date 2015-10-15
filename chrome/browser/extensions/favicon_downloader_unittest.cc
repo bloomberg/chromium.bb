@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/favicon_downloader.h"
 
+#include "base/bind.h"
 #include "base/files/scoped_temp_dir.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "content/public/common/favicon_url.h"

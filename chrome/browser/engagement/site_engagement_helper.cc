@@ -125,15 +125,15 @@ void SiteEngagementHelper::InputTracker::AddCallbacks() {
   if (!contents)
     return;
 
-  host_->AddKeyPressEventCallback(key_press_event_callback_);
-  host_->AddMouseEventCallback(mouse_event_callback_);
+  host_->GetWidget()->AddKeyPressEventCallback(key_press_event_callback_);
+  host_->GetWidget()->AddMouseEventCallback(mouse_event_callback_);
   is_tracking_ = true;
 }
 
 void SiteEngagementHelper::InputTracker::RemoveCallbacks() {
   if (is_tracking_) {
-    host_->RemoveKeyPressEventCallback(key_press_event_callback_);
-    host_->RemoveMouseEventCallback(mouse_event_callback_);
+    host_->GetWidget()->RemoveKeyPressEventCallback(key_press_event_callback_);
+    host_->GetWidget()->RemoveMouseEventCallback(mouse_event_callback_);
     is_tracking_ = false;
   }
 }

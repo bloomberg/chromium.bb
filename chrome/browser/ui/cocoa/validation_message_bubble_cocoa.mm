@@ -12,6 +12,7 @@
 #import "chrome/browser/ui/cocoa/validation_message_bubble_controller.h"
 #include "chrome/browser/ui/validation_message_bubble.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/theme_resources.h"
@@ -155,7 +156,8 @@ ValidationMessageBubbleCocoa::ValidationMessageBubbleCocoa(
     const gfx::Rect& anchor_in_root_view,
     const base::string16& main_text,
     const base::string16& sub_text) {
-  content::RenderWidgetHost* widget_host = web_contents->GetRenderViewHost();
+  content::RenderWidgetHost* widget_host =
+      web_contents->GetRenderViewHost()->GetWidget();
   controller_.reset([[[ValidationMessageBubbleController alloc]
             init:[widget_host->GetView()->GetNativeView() window]
       anchoredAt:GetAnchorPoint(widget_host, anchor_in_root_view)

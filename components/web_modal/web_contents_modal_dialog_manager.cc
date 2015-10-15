@@ -8,6 +8,7 @@
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 
@@ -126,7 +127,7 @@ void WebContentsModalDialogManager::BlockWebContentsInteraction(bool blocked) {
   // RenderViewHost may be NULL during shutdown.
   content::RenderViewHost* host = contents->GetRenderViewHost();
   if (host)
-    host->SetIgnoreInputEvents(blocked);
+    host->GetWidget()->SetIgnoreInputEvents(blocked);
   if (delegate_)
     delegate_->SetWebContentsBlocked(contents, blocked);
 }

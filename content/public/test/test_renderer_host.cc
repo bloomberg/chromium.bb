@@ -70,7 +70,8 @@ bool RenderViewHostTester::TestOnMessageReceived(RenderViewHost* rvh,
 
 // static
 bool RenderViewHostTester::HasTouchEventHandler(RenderViewHost* rvh) {
-  RenderWidgetHostImpl* host_impl = RenderWidgetHostImpl::From(rvh);
+  RenderWidgetHostImpl* host_impl =
+      RenderWidgetHostImpl::From(rvh->GetWidget());
   return host_impl->has_touch_handler();
 }
 

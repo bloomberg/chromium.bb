@@ -150,7 +150,8 @@ class TestInterstitialPage : public InterstitialPageImpl {
 
   bool is_showing() const {
     return static_cast<TestRenderWidgetHostView*>(
-               GetMainFrame()->GetRenderViewHost()->GetView())->is_showing();
+               GetMainFrame()->GetRenderViewHost()->GetWidget()->GetView())
+        ->is_showing();
   }
 
   void ClearStates() {

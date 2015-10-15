@@ -385,7 +385,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CrossSiteIframe) {
   // The out-of-process iframe should have its own RenderWidgetHost,
   // independent of any RenderViewHost.
   EXPECT_NE(
-      rvh->GetView(),
+      rvh->GetWidget()->GetView(),
       proxy_to_parent->cross_process_frame_connector()->get_view_for_testing());
   EXPECT_TRUE(child->current_frame_host()->GetRenderWidgetHost());
 
@@ -3501,7 +3501,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_EQ(root->child_at(0), root->frame_tree()->GetFocusedFrame());
 
   // Click on the root frame.
-  shell()->web_contents()->GetRenderViewHost()->ForwardMouseEvent(mouse_event);
+  shell()->web_contents()->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(
+      mouse_event);
 
   // Check that the subframe lost focus and fired blur event on its
   // document's body.

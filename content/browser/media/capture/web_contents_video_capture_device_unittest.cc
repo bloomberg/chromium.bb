@@ -648,7 +648,7 @@ class MAYBE_WebContentsVideoCaptureDeviceTest : public testing::Test {
   // particular window).
   float GetDeviceScaleFactor() const {
     RenderWidgetHostView* const view =
-        web_contents_->GetRenderViewHost()->GetView();
+        web_contents_->GetRenderViewHost()->GetWidget()->GetView();
     CHECK(view);
     return ui::GetScaleFactorForNativeView(view->GetNativeView());
   }
@@ -657,13 +657,14 @@ class MAYBE_WebContentsVideoCaptureDeviceTest : public testing::Test {
     if (source()->CanUseFrameSubscriber()) {
       // Print
       CaptureTestView* test_view = static_cast<CaptureTestView*>(
-          web_contents_->GetRenderViewHost()->GetView());
+          web_contents_->GetRenderViewHost()->GetWidget()->GetView());
       test_view->SimulateUpdate();
     } else {
       // Simulate a non-accelerated paint.
       NotificationService::current()->Notify(
           NOTIFICATION_RENDER_WIDGET_HOST_DID_UPDATE_BACKING_STORE,
-          Source<RenderWidgetHost>(web_contents_->GetRenderViewHost()),
+          Source<RenderWidgetHost>(
+              web_contents_->GetRenderViewHost()->GetWidget()),
           NotificationService::NoDetails());
     }
   }
@@ -671,7 +672,7 @@ class MAYBE_WebContentsVideoCaptureDeviceTest : public testing::Test {
   void SimulateSourceSizeChange(const gfx::Size& size) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     CaptureTestView* test_view = static_cast<CaptureTestView*>(
-        web_contents_->GetRenderViewHost()->GetView());
+        web_contents_->GetRenderViewHost()->GetWidget()->GetView());
     test_view->SetSize(size);
     // Normally, RenderWidgetHostImpl would notify WebContentsImpl that the size
     // has changed.  However, in this test setup where there is no render

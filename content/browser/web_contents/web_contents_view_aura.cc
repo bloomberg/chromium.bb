@@ -687,7 +687,7 @@ void WebContentsViewAura::EndDrag(blink::WebDragOperationsMask ops) {
       gfx::Screen::GetScreenFor(GetNativeView())->GetCursorScreenPoint();
   gfx::Point client_loc = screen_loc;
   RenderViewHost* rvh = web_contents_->GetRenderViewHost();
-  aura::Window* window = rvh->GetView()->GetNativeView();
+  aura::Window* window = rvh->GetWidget()->GetView()->GetNativeView();
   aura::Window::ConvertPointToTarget(root_window, window, &client_loc);
   if (!web_contents_)
     return;

@@ -104,7 +104,7 @@ class RenderWidgetHostViewBrowserTest : public ContentBrowserTest {
 
   RenderWidgetHostViewBase* GetRenderWidgetHostView() const {
     return static_cast<RenderWidgetHostViewBase*>(
-        GetRenderViewHost()->GetView());
+        GetRenderViewHost()->GetWidget()->GetView());
   }
 
   // Callback when using CopyFromBackingStore() API.
@@ -154,13 +154,11 @@ class RenderWidgetHostViewBrowserTest : public ContentBrowserTest {
     while (true) {
       ++count_attempts;
       base::RunLoop run_loop;
-      GetRenderViewHost()->CopyFromBackingStore(
-          gfx::Rect(),
-          frame_size(),
+      GetRenderViewHost()->GetWidget()->CopyFromBackingStore(
+          gfx::Rect(), frame_size(),
           base::Bind(
               &RenderWidgetHostViewBrowserTest::FinishCopyFromBackingStore,
-              base::Unretained(this),
-              run_loop.QuitClosure()),
+              base::Unretained(this), run_loop.QuitClosure()),
           kN32_SkColorType);
       run_loop.Run();
 
@@ -289,12 +287,10 @@ IN_PROC_BROWSER_TEST_P(CompositingRenderWidgetHostViewBrowserTest,
   SET_UP_SURFACE_OR_PASS_TEST(NULL);
 
   base::RunLoop run_loop;
-  GetRenderViewHost()->CopyFromBackingStore(
-      gfx::Rect(),
-      frame_size(),
+  GetRenderViewHost()->GetWidget()->CopyFromBackingStore(
+      gfx::Rect(), frame_size(),
       base::Bind(&RenderWidgetHostViewBrowserTest::FinishCopyFromBackingStore,
-                 base::Unretained(this),
-                 run_loop.QuitClosure()),
+                 base::Unretained(this), run_loop.QuitClosure()),
       kN32_SkColorType);
   run_loop.Run();
 

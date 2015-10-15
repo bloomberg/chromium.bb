@@ -12,6 +12,7 @@
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/common/frame_navigate_params.h"
 #include "url/gurl.h"
@@ -53,7 +54,7 @@ void NavigationMetricsRecorder::DidStartLoading() {
   content::RenderViewHost* rvh = web_contents()->GetRenderViewHost();
 
   if (rvh && base::win::GetVersion() >= base::win::VERSION_WIN8) {
-    content::RenderWidgetHostView* rwhv = rvh->GetView();
+    content::RenderWidgetHostView* rwhv = rvh->GetWidget()->GetView();
     if (rwhv) {
       gfx::NativeView native_view = rwhv->GetNativeView();
       if (native_view) {

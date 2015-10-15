@@ -18,6 +18,7 @@
 #include "components/password_manager/core/browser/password_generation_manager.h"
 #include "components/password_manager/core/browser/test_password_store.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -116,7 +117,7 @@ class PasswordGenerationInteractiveTest :
     content::NativeWebKeyboardEvent event;
     event.windowsKeyCode = key;
     event.type = blink::WebKeyboardEvent::RawKeyDown;
-    RenderViewHost()->ForwardKeyboardEvent(event);
+    RenderViewHost()->GetWidget()->ForwardKeyboardEvent(event);
   }
 
   bool GenerationPopupShowing() {

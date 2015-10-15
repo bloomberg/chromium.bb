@@ -35,6 +35,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
@@ -270,8 +271,11 @@ void WebUILoginView::LoadURL(const GURL & url) {
 
   // TODO(nkostylev): Use WebContentsObserver::RenderViewCreated to track
   // when RenderView is created.
-  GetWebContents()->GetRenderViewHost()->GetView()->SetBackgroundColor(
-      SK_ColorTRANSPARENT);
+  GetWebContents()
+      ->GetRenderViewHost()
+      ->GetWidget()
+      ->GetView()
+      ->SetBackgroundColor(SK_ColorTRANSPARENT);
 }
 
 content::WebUI* WebUILoginView::GetWebUI() {

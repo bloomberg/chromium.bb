@@ -23,6 +23,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
@@ -179,9 +180,9 @@ class ReferrerPolicyTest : public InProcessBrowserTest {
       mouse_event.x = 15;
       mouse_event.y = 15;
       mouse_event.clickCount = 1;
-      tab->GetRenderViewHost()->ForwardMouseEvent(mouse_event);
+      tab->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(mouse_event);
       mouse_event.type = blink::WebInputEvent::MouseUp;
-      tab->GetRenderViewHost()->ForwardMouseEvent(mouse_event);
+      tab->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(mouse_event);
     }
 
     if (disposition == CURRENT_TAB) {

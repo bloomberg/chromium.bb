@@ -9,6 +9,7 @@
 #include "chromecast/browser/cast_browser_process.h"
 #include "chromecast/media/base/video_plane_controller.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "ipc/ipc_message.h"
@@ -131,7 +132,8 @@ void CastContentWindow::MediaStartedPlaying() {
 
 void CastContentWindow::RenderViewCreated(
     content::RenderViewHost* render_view_host) {
-  content::RenderWidgetHostView* view = render_view_host->GetView();
+  content::RenderWidgetHostView* view =
+      render_view_host->GetWidget()->GetView();
   if (view)
     view->SetBackgroundColor(transparent_ ? SK_ColorTRANSPARENT
                                           : SK_ColorBLACK);

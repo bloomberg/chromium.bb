@@ -310,11 +310,13 @@ void ContentViewCoreImpl::RenderViewHostChanged(RenderViewHost* old_host,
     old_pid = GetRenderProcessIdFromRenderViewHost(old_host);
 
     RenderWidgetHostViewAndroid* view =
-        static_cast<RenderWidgetHostViewAndroid*>(old_host->GetView());
+        static_cast<RenderWidgetHostViewAndroid*>(
+            old_host->GetWidget()->GetView());
     if (view)
       view->SetContentViewCore(NULL);
 
-    view = static_cast<RenderWidgetHostViewAndroid*>(new_host->GetView());
+    view = static_cast<RenderWidgetHostViewAndroid*>(
+        new_host->GetWidget()->GetView());
     if (view)
       view->SetContentViewCore(this);
   }
@@ -342,6 +344,7 @@ RenderWidgetHostViewAndroid*
       rwhv = web_contents_->GetInterstitialPage()
                  ->GetMainFrame()
                  ->GetRenderViewHost()
+                 ->GetWidget()
                  ->GetView();
     }
   }

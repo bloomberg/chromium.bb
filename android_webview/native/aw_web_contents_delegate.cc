@@ -19,6 +19,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/file_chooser_file_info.h"
 #include "content/public/common/file_chooser_params.h"
@@ -237,14 +238,14 @@ void AwWebContentsDelegate::EnterFullscreenModeForTab(
     content::WebContents* web_contents, const GURL& origin) {
   WebContentsDelegateAndroid::EnterFullscreenModeForTab(web_contents, origin);
   is_fullscreen_ = true;
-  web_contents->GetRenderViewHost()->WasResized();
+  web_contents->GetRenderViewHost()->GetWidget()->WasResized();
 }
 
 void AwWebContentsDelegate::ExitFullscreenModeForTab(
     content::WebContents* web_contents) {
   WebContentsDelegateAndroid::ExitFullscreenModeForTab(web_contents);
   is_fullscreen_ = false;
-  web_contents->GetRenderViewHost()->WasResized();
+  web_contents->GetRenderViewHost()->GetWidget()->WasResized();
 }
 
 bool AwWebContentsDelegate::IsFullscreenForTabOrPending(

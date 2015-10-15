@@ -28,6 +28,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/message_port_provider.h"
+#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "jni/WebContentsImpl_jni.h"
@@ -284,6 +285,7 @@ RenderWidgetHostViewAndroid*
     rwhv = web_contents_->GetInterstitialPage()
                ->GetMainFrame()
                ->GetRenderViewHost()
+               ->GetWidget()
                ->GetView();
   }
   return static_cast<RenderWidgetHostViewAndroid*>(rwhv);

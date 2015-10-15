@@ -17,6 +17,7 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_switches.h"
@@ -313,7 +314,7 @@ void Shell::ToggleFullscreenModeForTab(WebContents* web_contents,
     return;
   if (is_fullscreen_ != enter_fullscreen) {
     is_fullscreen_ = enter_fullscreen;
-    web_contents->GetRenderViewHost()->WasResized();
+    web_contents->GetRenderViewHost()->GetWidget()->WasResized();
   }
 }
 
@@ -398,11 +399,11 @@ void Shell::RendererUnresponsive(WebContents* source) {
 }
 
 void Shell::ActivateContents(WebContents* contents) {
-  contents->GetRenderViewHost()->Focus();
+  contents->GetRenderViewHost()->GetWidget()->Focus();
 }
 
 void Shell::DeactivateContents(WebContents* contents) {
-  contents->GetRenderViewHost()->Blur();
+  contents->GetRenderViewHost()->GetWidget()->Blur();
 }
 
 bool Shell::HandleContextMenu(const content::ContextMenuParams& params) {

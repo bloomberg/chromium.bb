@@ -140,8 +140,8 @@ class TouchInputBrowserTest : public ContentBrowserTest {
   ~TouchInputBrowserTest() override {}
 
   RenderWidgetHostImpl* GetWidgetHost() {
-    return RenderWidgetHostImpl::From(shell()->web_contents()->
-                                          GetRenderViewHost());
+    return RenderWidgetHostImpl::From(
+        shell()->web_contents()->GetRenderViewHost()->GetWidget());
   }
 
   InputEventMessageFilter* filter() { return filter_.get(); }

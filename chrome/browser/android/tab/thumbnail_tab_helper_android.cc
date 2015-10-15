@@ -18,6 +18,7 @@
 #include "chrome/browser/thumbnails/thumbnailing_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/ThumbnailTabHelper_jni.h"
@@ -70,7 +71,7 @@ void CaptureThumbnailInternal(
     const gfx::Size& thumbnail_size) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   content::RenderWidgetHost* render_widget_host =
-      web_contents->GetRenderViewHost();
+      web_contents->GetRenderViewHost()->GetWidget();
   content::RenderWidgetHostView* view = render_widget_host->GetView();
   if (!view)
     return;

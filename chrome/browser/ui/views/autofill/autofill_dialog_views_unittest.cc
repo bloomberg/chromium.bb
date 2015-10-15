@@ -15,6 +15,7 @@
 #include "components/web_modal/test_web_contents_modal_dialog_host.h"
 #include "components/web_modal/test_web_contents_modal_dialog_manager_delegate.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
+#include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/common/url_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/views/color_chooser_dialog.h"
 #include "content/public/browser/color_chooser.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/views/color_chooser/color_chooser_listener.h"
@@ -57,8 +58,11 @@ ColorChooserWin* ColorChooserWin::Open(content::WebContents* web_contents,
 ColorChooserWin::ColorChooserWin(content::WebContents* web_contents,
                                  SkColor initial_color)
     : web_contents_(web_contents) {
-  gfx::NativeWindow owning_window = platform_util::GetTopLevel(
-      web_contents->GetRenderViewHost()->GetView()->GetNativeView());
+  gfx::NativeWindow owning_window =
+      platform_util::GetTopLevel(web_contents->GetRenderViewHost()
+                                     ->GetWidget()
+                                     ->GetView()
+                                     ->GetNativeView());
   color_chooser_dialog_ = new ColorChooserDialog(this,
                                                  initial_color,
                                                  owning_window);

@@ -14,6 +14,7 @@
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -259,17 +260,18 @@ class FullscreenObserver : public WebContentsObserver {
   // a Blur() message to the renderer, but only if the RWHV currently has focus.
   content::RenderViewHost* rvh = [self webContents]->GetRenderViewHost();
   if (rvh) {
-    if (rvh->GetView() && rvh->GetView()->HasFocus()) {
-      rvh->Blur();
+    if (rvh->GetWidget()->GetView() &&
+        rvh->GetWidget()->GetView()->HasFocus()) {
+      rvh->GetWidget()->Blur();
       return;
     }
     WebContents* devtools = DevToolsWindow::GetInTabWebContents(
         [self webContents], NULL);
     if (devtools) {
       content::RenderViewHost* devtoolsView = devtools->GetRenderViewHost();
-      if (devtoolsView && devtoolsView->GetView() &&
-          devtoolsView->GetView()->HasFocus()) {
-        devtoolsView->Blur();
+      if (devtoolsView && devtoolsView->GetWidget()->GetView() &&
+          devtoolsView->GetWidget()->GetView()->HasFocus()) {
+        devtoolsView->GetWidget()->Blur();
       }
     }
   }

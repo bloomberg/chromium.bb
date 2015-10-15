@@ -15,6 +15,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/size_conversions.h"
@@ -80,7 +81,8 @@ void AsyncProcessThumbnail(content::WebContents* web_contents,
                            scoped_refptr<ThumbnailingContext> context,
                            scoped_refptr<ThumbnailingAlgorithm> algorithm) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  RenderWidgetHost* render_widget_host = web_contents->GetRenderViewHost();
+  RenderWidgetHost* render_widget_host =
+      web_contents->GetRenderViewHost()->GetWidget();
   content::RenderWidgetHostView* view = render_widget_host->GetView();
   if (!view)
     return;
@@ -151,14 +153,12 @@ void ThumbnailTabHelper::Observe(int type,
 void ThumbnailTabHelper::RenderViewDeleted(
     content::RenderViewHost* render_view_host) {
   bool registered = registrar_.IsRegistered(
-      this,
-      content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
-      content::Source<RenderWidgetHost>(render_view_host));
+      this, content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
+      content::Source<RenderWidgetHost>(render_view_host->GetWidget()));
   if (registered) {
     registrar_.Remove(
-        this,
-        content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
-        content::Source<RenderWidgetHost>(render_view_host));
+        this, content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
+        content::Source<RenderWidgetHost>(render_view_host->GetWidget()));
   }
 }
 
@@ -210,14 +210,11 @@ void ThumbnailTabHelper::RenderViewHostCreated(
   // RenderView, not RenderViewHost, and there is no good way to get
   // notifications of RenderViewHosts. So just be tolerant of re-registrations.
   bool registered = registrar_.IsRegistered(
-      this,
-      content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
-      content::Source<RenderWidgetHost>(renderer));
+      this, content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
+      content::Source<RenderWidgetHost>(renderer->GetWidget()));
   if (!registered) {
-    registrar_.Add(
-        this,
-        content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
-        content::Source<RenderWidgetHost>(renderer));
+    registrar_.Add(this, content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
+                   content::Source<RenderWidgetHost>(renderer->GetWidget()));
   }
 }
 

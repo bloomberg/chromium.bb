@@ -3906,7 +3906,7 @@ void WebContentsImpl::UpdateTargetURL(RenderViewHost* render_view_host,
     // If we're fullscreen only update the url if it's from the fullscreen
     // renderer.
     RenderWidgetHostView* fs = GetFullscreenRenderWidgetHostView();
-    if (fs && fs->GetRenderWidgetHost() != render_view_host)
+    if (fs && fs->GetRenderWidgetHost() != render_view_host->GetWidget())
       return;
   }
   if (delegate_)
@@ -4352,10 +4352,10 @@ void WebContentsImpl::CreateRenderWidgetHostViewForRenderManager(
       BrowserPluginGuestMode::UseCrossProcessFramesForGuests();
   if (is_guest_in_site_per_process) {
     RenderWidgetHostViewChildFrame* rwh_view_child =
-        new RenderWidgetHostViewChildFrame(render_view_host);
+        new RenderWidgetHostViewChildFrame(render_view_host->GetWidget());
     rwh_view = rwh_view_child;
   } else {
-    rwh_view = view_->CreateViewForWidget(render_view_host, false);
+    rwh_view = view_->CreateViewForWidget(render_view_host->GetWidget(), false);
   }
 
   // Now that the RenderView has been created, we need to tell it its size.
@@ -4393,7 +4393,7 @@ bool WebContentsImpl::CreateRenderViewForRenderManager(
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
   // Force a ViewMsg_Resize to be sent, needed to make plugins show up on
   // linux. See crbug.com/83941.
-  RenderWidgetHostView* rwh_view = render_view_host->GetView();
+  RenderWidgetHostView* rwh_view = render_view_host->GetWidget()->GetView();
   if (rwh_view) {
     if (RenderWidgetHost* render_widget_host = rwh_view->GetRenderWidgetHost())
       render_widget_host->WasResized();

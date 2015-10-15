@@ -47,6 +47,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/speech_recognition_session_preamble.h"
 #include "content/public/browser/user_metrics.h"
@@ -715,7 +716,7 @@ std::vector<views::View*> AppListViewDelegate::CreateCustomPageWebViews(
 
     // Make the webview transparent.
     content::RenderWidgetHostView* render_view_host_view =
-        web_contents->GetRenderViewHost()->GetView();
+        web_contents->GetRenderViewHost()->GetWidget()->GetView();
     // The RenderWidgetHostView may be null if the renderer has crashed.
     if (render_view_host_view)
       render_view_host_view->SetBackgroundColor(SK_ColorTRANSPARENT);

@@ -33,6 +33,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
@@ -181,7 +182,9 @@ class TestInterstitialPage : public content::InterstitialPageDelegate {
 
   void DontProceed() { interstitial_page_->DontProceed(); }
 
-  bool HasFocus() { return render_view_host()->GetView()->HasFocus(); }
+  bool HasFocus() {
+    return render_view_host()->GetWidget()->GetView()->HasFocus();
+  }
 
  private:
   std::string html_contents_;
@@ -465,7 +468,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, InterstitialFocus) {
   ui_test_utils::NavigateToURL(browser(), url);
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER));
-  EXPECT_TRUE(tab->GetRenderViewHost()->GetView()->HasFocus());
+  EXPECT_TRUE(tab->GetRenderViewHost()->GetWidget()->GetView()->HasFocus());
 
   // Create and show a test interstitial page; it should gain focus.
   TestInterstitialPage* interstitial_page = new TestInterstitialPage(tab);
@@ -476,7 +479,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, InterstitialFocus) {
   interstitial_page->DontProceed();
   content::RunAllPendingInMessageLoop();
   EXPECT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER));
-  EXPECT_TRUE(tab->GetRenderViewHost()->GetView()->HasFocus());
+  EXPECT_TRUE(tab->GetRenderViewHost()->GetWidget()->GetView()->HasFocus());
 }
 
 // Test that find-in-page UI can request focus, even when it is already open.

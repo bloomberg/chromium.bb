@@ -7,9 +7,9 @@
 
 #include "base/callback_forward.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/render_widget_host.h"
 #include "content/public/common/file_chooser_params.h"
 #include "content/public/common/page_zoom.h"
+#include "ipc/ipc_sender.h"
 #include "third_party/WebKit/public/web/WebDragOperation.h"
 #include "third_party/mojo/src/mojo/public/cpp/system/core.h"
 
@@ -27,13 +27,16 @@ struct WebPluginAction;
 
 namespace gfx {
 class Point;
+class Size;
 }
 
 namespace content {
 
 class ChildProcessSecurityPolicy;
 class RenderFrameHost;
+class RenderProcessHost;
 class RenderViewHostDelegate;
+class RenderWidgetHost;
 class SessionStorageNamespace;
 class SiteInstance;
 struct DropData;
@@ -53,22 +56,37 @@ struct WebPreferences;
 // WebContents (see WebContents for an example) but also as views, etc.
 //
 // DEPRECATED: RenderViewHost is being removed as part of the SiteIsolation
-// project. New code should not be added here, but to either RenderFrameHost
-// (if frame specific) or WebContents (if page specific).
+// project. New code should not be added here, but to RenderWidgetHost (if it's
+// about drawing or events), RenderFrameHost (if it's frame specific), or
+// WebContents (if it's page specific).
 //
 // For context, please see https://crbug.com/467770 and
 // http://www.chromium.org/developers/design-documents/site-isolation.
-class CONTENT_EXPORT RenderViewHost : virtual public RenderWidgetHost {
+class CONTENT_EXPORT RenderViewHost : public IPC::Sender {
  public:
   // Returns the RenderViewHost given its ID and the ID of its render process.
   // Returns nullptr if the IDs do not correspond to a live RenderViewHost.
   static RenderViewHost* FromID(int render_process_id, int render_view_id);
 
-  // Downcasts from a RenderWidgetHost to a RenderViewHost.  Required
-  // because RenderWidgetHost is a virtual base class.
+  // Returns the RenderViewHost, if any, that uses the specified
+  // RenderWidgetHost. Returns nullptr if there is no such RenderViewHost.
   static RenderViewHost* From(RenderWidgetHost* rwh);
 
   ~RenderViewHost() override {}
+
+  // Returns the RenderWidgetHost for this RenderViewHost.
+  virtual RenderWidgetHost* GetWidget() const = 0;
+
+  // Returns the RenderProcessHost for this RenderViewHost.
+  virtual RenderProcessHost* GetProcess() const = 0;
+
+  // Returns the routing id for IPC use for this RenderViewHost.
+  //
+  // Implementation note: Historically, RenderViewHost was-a RenderWidgetHost,
+  // and shared its IPC channel and its routing ID. Although this inheritance is
+  // no longer so, the IPC channel is currently still shared. Expect this to
+  // change.
+  virtual int GetRoutingID() const = 0;
 
   // Returns the main frame for this render view.
   virtual RenderFrameHost* GetMainFrame() = 0;

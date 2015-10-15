@@ -518,9 +518,8 @@ class TestPrerenderContents : public PrerenderContents {
     // Used to make sure the RenderViewHost is hidden and, if used,
     // subsequently shown.
     notification_registrar().Add(
-        this,
-        content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
-        content::Source<RenderWidgetHost>(new_render_view_host));
+        this, content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
+        content::Source<RenderWidgetHost>(new_render_view_host->GetWidget()));
 
     new_render_view_host_ = new_render_view_host;
 
@@ -532,7 +531,7 @@ class TestPrerenderContents : public PrerenderContents {
                const content::NotificationDetails& details) override {
     if (type ==
         content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED) {
-      EXPECT_EQ(new_render_view_host_,
+      EXPECT_EQ(new_render_view_host_->GetWidget(),
                 content::Source<RenderWidgetHost>(source).ptr());
       bool is_visible = *content::Details<bool>(details).ptr();
 

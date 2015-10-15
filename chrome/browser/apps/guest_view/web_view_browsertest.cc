@@ -38,6 +38,7 @@
 #include "content/public/browser/interstitial_page_delegate.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/child_process_host.h"
@@ -665,9 +666,11 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
     mouse_event.button = blink::WebMouseEvent::ButtonRight;
     mouse_event.x = 1;
     mouse_event.y = 1;
-    web_contents->GetRenderViewHost()->ForwardMouseEvent(mouse_event);
+    web_contents->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(
+        mouse_event);
     mouse_event.type = blink::WebInputEvent::MouseUp;
-    web_contents->GetRenderViewHost()->ForwardMouseEvent(mouse_event);
+    web_contents->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(
+        mouse_event);
   }
 
   content::WebContents* GetGuestWebContents() {

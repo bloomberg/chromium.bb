@@ -12,6 +12,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/renderer_context_menu/views/toolkit_delegate_views.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/aura/client/screen_position_client.h"
@@ -146,10 +147,11 @@ void RenderViewContextMenuViews::ExecuteCommand(int command_id,
     case IDC_WRITING_DIRECTION_RTL:
     case IDC_WRITING_DIRECTION_LTR: {
       content::RenderViewHost* view_host = GetRenderViewHost();
-      view_host->UpdateTextDirection((command_id == IDC_WRITING_DIRECTION_RTL) ?
-          blink::WebTextDirectionRightToLeft :
-          blink::WebTextDirectionLeftToRight);
-      view_host->NotifyTextDirection();
+      view_host->GetWidget()->UpdateTextDirection(
+          (command_id == IDC_WRITING_DIRECTION_RTL)
+              ? blink::WebTextDirectionRightToLeft
+              : blink::WebTextDirectionLeftToRight);
+      view_host->GetWidget()->NotifyTextDirection();
       RenderViewContextMenu::RecordUsedItem(command_id);
       break;
     }

@@ -33,6 +33,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/resource_request_details.h"
 #include "content/public/browser/session_storage_namespace.h"
 #include "content/public/browser/web_contents.h"
@@ -418,7 +419,7 @@ void PrerenderContents::Observe(int type,
         // thread of the browser process.  When the RenderView receives its
         // size, is also sets itself to be visible, which would then break the
         // visibility API.
-        new_render_view_host->WasResized();
+        new_render_view_host->GetWidget()->WasResized();
         prerender_contents_->WasHidden();
       }
       break;

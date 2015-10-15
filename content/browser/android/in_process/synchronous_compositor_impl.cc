@@ -21,6 +21,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host.h"
 #include "content/public/common/child_process_host.h"
 #include "ui/gfx/geometry/scroll_offset.h"
 #include "ui/gl/gl_surface.h"
@@ -51,7 +52,7 @@ SynchronousCompositorImpl* SynchronousCompositorImpl::FromRoutingID(
   if (!rvh)
     return nullptr;
   RenderWidgetHostViewAndroid* rwhva =
-      static_cast<RenderWidgetHostViewAndroid*>(rvh->GetView());
+      static_cast<RenderWidgetHostViewAndroid*>(rvh->GetWidget()->GetView());
   if (!rwhva)
     return nullptr;
   return rwhva->GetSynchronousCompositorImpl();

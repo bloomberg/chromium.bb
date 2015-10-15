@@ -12,6 +12,7 @@
 #include "components/nacl/browser/nacl_browser_delegate.h"
 
 #if defined(ENABLE_EXTENSIONS)
+#include "base/memory/ref_counted.h"
 #include "extensions/common/url_pattern.h"
 
 namespace extensions {

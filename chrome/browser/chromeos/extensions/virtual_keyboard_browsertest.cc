@@ -14,6 +14,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
@@ -53,7 +54,7 @@ VirtualKeyboardBrowserTestConfig::VirtualKeyboardBrowserTestConfig()
       url_(kVirtualKeyboardURL) {
 }
 
-VirtualKeyboardBrowserTestConfig::~VirtualKeyboardBrowserTestConfig() {};
+VirtualKeyboardBrowserTestConfig::~VirtualKeyboardBrowserTestConfig() {}
 
 void VirtualKeyboardBrowserTest::SetUpCommandLine(
     base::CommandLine* command_line) {

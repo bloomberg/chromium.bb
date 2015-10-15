@@ -142,7 +142,7 @@ class RenderViewSizeObserver : public WebContentsObserver {
 
   // WebContentsObserver:
   void RenderViewCreated(RenderViewHost* rvh) override {
-    rwhv_create_size_ = rvh->GetView()->GetViewBounds().size();
+    rwhv_create_size_ = rvh->GetWidget()->GetView()->GetViewBounds().size();
   }
 
   void DidStartProvisionalLoadForFrame(
@@ -706,7 +706,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, ChangeDisplayMode) {
 
   delegate.set_mode(blink::WebDisplayModeFullscreen);
   // Simulate widget is entering fullscreen (changing size is enough).
-  shell()->web_contents()->GetRenderViewHost()->WasResized();
+  shell()->web_contents()->GetRenderViewHost()->GetWidget()->WasResized();
 
   ASSERT_TRUE(ExecuteScript(shell()->web_contents(),
                             "document.title = "

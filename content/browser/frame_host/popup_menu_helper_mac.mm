@@ -32,10 +32,12 @@ PopupMenuHelper::PopupMenuHelper(RenderFrameHost* render_frame_host)
       popup_was_hidden_(false) {
   notification_registrar_.Add(
       this, NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
-      Source<RenderWidgetHost>(render_frame_host->GetRenderViewHost()));
+      Source<RenderWidgetHost>(
+          render_frame_host->GetRenderViewHost()->GetWidget()));
   notification_registrar_.Add(
       this, NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
-      Source<RenderWidgetHost>(render_frame_host->GetRenderViewHost()));
+      Source<RenderWidgetHost>(
+          render_frame_host->GetRenderViewHost()->GetWidget()));
 }
 
 void PopupMenuHelper::ShowPopupMenu(
@@ -117,14 +119,14 @@ void PopupMenuHelper::DontShowPopupMenuForTesting() {
 
 RenderWidgetHostViewMac* PopupMenuHelper::GetRenderWidgetHostView() const {
   return static_cast<RenderWidgetHostViewMac*>(
-      render_frame_host_->GetRenderViewHost()->GetView());
+      render_frame_host_->GetRenderViewHost()->GetWidget()->GetView());
 }
 
 void PopupMenuHelper::Observe(int type,
                               const NotificationSource& source,
                               const NotificationDetails& details) {
   DCHECK_EQ(Source<RenderWidgetHost>(source).ptr(),
-            render_frame_host_->GetRenderViewHost());
+            render_frame_host_->GetRenderViewHost()->GetWidget());
   switch (type) {
     case NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED: {
       render_frame_host_ = NULL;

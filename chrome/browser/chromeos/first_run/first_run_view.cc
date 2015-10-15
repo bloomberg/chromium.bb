@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/webui/chromeos/first_run/first_run_ui.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
@@ -31,7 +32,7 @@ void FirstRunView::Init(content::BrowserContext* context) {
   extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
       web_contents);
 
-  web_contents->GetRenderViewHost()->GetView()->SetBackgroundColor(
+  web_contents->GetRenderViewHost()->GetWidget()->GetView()->SetBackgroundColor(
       SK_ColorTRANSPARENT);
 }
 

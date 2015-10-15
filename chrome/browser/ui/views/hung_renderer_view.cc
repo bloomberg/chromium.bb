@@ -19,6 +19,7 @@
 #include "components/web_modal/web_contents_modal_dialog_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/result_codes.h"
 #include "grit/theme_resources.h"
@@ -361,8 +362,11 @@ bool HungRendererDialogView::Accept(bool window_closing) {
     return true;
 
   // Start waiting again for responsiveness.
-  if (hung_pages_table_model_->GetRenderViewHost())
-    hung_pages_table_model_->GetRenderViewHost()->RestartHangMonitorTimeout();
+  if (hung_pages_table_model_->GetRenderViewHost()) {
+    hung_pages_table_model_->GetRenderViewHost()
+        ->GetWidget()
+        ->RestartHangMonitorTimeout();
+  }
   return true;
 }
 

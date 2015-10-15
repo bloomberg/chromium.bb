@@ -12,6 +12,7 @@
 #include "components/password_manager/core/browser/password_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
 #include "net/url_request/url_request.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -56,7 +57,8 @@ class LoginHandlerViews : public LoginHandler, public views::DialogDelegate {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     content::WebContents* web_contents = GetWebContentsForLogin();
     if (web_contents)
-      web_contents->GetRenderViewHost()->SetIgnoreInputEvents(false);
+      web_contents->GetRenderViewHost()->GetWidget()->SetIgnoreInputEvents(
+          false);
 
     // Reference is no longer valid.
     dialog_ = NULL;

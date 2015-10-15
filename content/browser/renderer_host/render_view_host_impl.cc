@@ -734,6 +734,23 @@ void RenderViewHostImpl::DragSourceSystemDragEnded() {
   Send(new DragMsg_SourceSystemDragEnded(GetRoutingID()));
 }
 
+bool RenderViewHostImpl::Send(IPC::Message* msg) {
+  return RenderWidgetHostImpl::Send(msg);
+}
+
+RenderWidgetHost* RenderViewHostImpl::GetWidget() const {
+  return const_cast<RenderWidgetHost*>(
+      static_cast<const RenderWidgetHost*>(this));
+}
+
+RenderProcessHost* RenderViewHostImpl::GetProcess() const {
+  return RenderWidgetHostImpl::GetProcess();
+}
+
+int RenderViewHostImpl::GetRoutingID() const {
+  return RenderWidgetHostImpl::GetRoutingID();
+}
+
 RenderFrameHost* RenderViewHostImpl::GetMainFrame() {
   return RenderFrameHost::FromID(GetProcess()->GetID(), main_frame_routing_id_);
 }
@@ -883,8 +900,10 @@ bool RenderViewHostImpl::SuddenTerminationAllowed() const {
 // RenderViewHostImpl, IPC message handlers:
 
 bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
-  if (!BrowserMessageFilter::CheckCanDispatchOnUI(msg, this))
+  if (!BrowserMessageFilter::CheckCanDispatchOnUI(
+          msg, static_cast<RenderWidgetHostImpl*>(this))) {
     return true;
+  }
 
   // Filter out most IPC messages if this renderer is swapped out.
   // We still want to handle certain ACKs to keep our state consistent.

@@ -610,8 +610,9 @@ void BrowserPluginGuest::RenderViewReady() {
   Send(new InputMsg_SetFocus(routing_id(), focused_));
   UpdateVisibility();
 
-  RenderWidgetHostImpl::From(rvh)->set_hung_renderer_delay(
-      base::TimeDelta::FromMilliseconds(kHungRendererDelayMs));
+  RenderWidgetHostImpl::From(rvh->GetWidget())
+      ->set_hung_renderer_delay(
+          base::TimeDelta::FromMilliseconds(kHungRendererDelayMs));
 }
 
 void BrowserPluginGuest::RenderProcessGone(base::TerminationStatus status) {
@@ -750,9 +751,9 @@ void BrowserPluginGuest::OnWillAttachComplete(
         GetWebContents()->GetRenderViewHost())->Init();
     WebContentsViewGuest* web_contents_view =
         static_cast<WebContentsViewGuest*>(GetWebContents()->GetView());
-    if (!web_contents()->GetRenderViewHost()->GetView()) {
+    if (!web_contents()->GetRenderViewHost()->GetWidget()->GetView()) {
       web_contents_view->CreateViewForWidget(
-          web_contents()->GetRenderViewHost(), true);
+          web_contents()->GetRenderViewHost()->GetWidget(), true);
     }
   }
 

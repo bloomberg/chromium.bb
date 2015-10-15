@@ -86,7 +86,8 @@ void NavigationEntryScreenshotManager::TakeScreenshot() {
     return;
 
   RenderViewHost* render_view_host = owner_->delegate()->GetRenderViewHost();
-  content::RenderWidgetHostView* view = render_view_host->GetView();
+  content::RenderWidgetHostView* view =
+      render_view_host->GetWidget()->GetView();
   if (!view)
     return;
 
@@ -115,14 +116,12 @@ void NavigationEntryScreenshotManager::ClearAllScreenshots() {
 void NavigationEntryScreenshotManager::TakeScreenshotImpl(
     RenderViewHost* host,
     NavigationEntryImpl* entry) {
-  DCHECK(host && host->GetView());
+  DCHECK(host && host->GetWidget()->GetView());
   DCHECK(entry);
-  host->CopyFromBackingStore(
-      gfx::Rect(),
-      host->GetView()->GetViewBounds().size(),
+  host->GetWidget()->CopyFromBackingStore(
+      gfx::Rect(), host->GetWidget()->GetView()->GetViewBounds().size(),
       base::Bind(&NavigationEntryScreenshotManager::OnScreenshotTaken,
-                 screenshot_factory_.GetWeakPtr(),
-                 entry->GetUniqueID()),
+                 screenshot_factory_.GetWeakPtr(), entry->GetUniqueID()),
       kAlpha_8_SkColorType);
 }
 

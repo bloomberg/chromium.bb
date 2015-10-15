@@ -12,6 +12,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #import "ui/base/cocoa/menu_controller.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -168,8 +169,8 @@ void RenderViewContextMenuMac::ExecuteCommand(int command_id, int event_flags) {
       blink::WebTextDirection dir = blink::WebTextDirectionLeftToRight;
       if (command_id == IDC_WRITING_DIRECTION_RTL)
         dir = blink::WebTextDirectionRightToLeft;
-      view_host->UpdateTextDirection(dir);
-      view_host->NotifyTextDirection();
+      view_host->GetWidget()->UpdateTextDirection(dir);
+      view_host->GetWidget()->NotifyTextDirection();
       RenderViewContextMenu::RecordUsedItem(command_id);
       break;
     }
@@ -210,7 +211,8 @@ bool RenderViewContextMenuMac::IsCommandIdEnabled(int command_id) const {
       return true;
 
     case IDC_CONTENT_CONTEXT_SPEECH_STOP_SPEAKING: {
-      content::RenderWidgetHostView* view = GetRenderViewHost()->GetView();
+      content::RenderWidgetHostView* view =
+          GetRenderViewHost()->GetWidget()->GetView();
       return view && view->IsSpeaking();
     }
 
@@ -271,7 +273,8 @@ void RenderViewContextMenuMac::InitToolkitMenu() {
     menu_model_.InsertSeparatorAt(index++, ui::NORMAL_SEPARATOR);
   }
 
-  content::RenderWidgetHostView* view = GetRenderViewHost()->GetView();
+  content::RenderWidgetHostView* view =
+      GetRenderViewHost()->GetWidget()->GetView();
   if (view && view->SupportsSpeech()) {
     menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
     speech_submenu_model_.AddItemWithStringId(
@@ -323,19 +326,22 @@ void RenderViewContextMenuMac::AppendBidiSubMenu() {
 }
 
 void RenderViewContextMenuMac::LookUpInDictionary() {
-  content::RenderWidgetHostView* view = GetRenderViewHost()->GetView();
+  content::RenderWidgetHostView* view =
+      GetRenderViewHost()->GetWidget()->GetView();
   if (view)
     view->ShowDefinitionForSelection();
 }
 
 void RenderViewContextMenuMac::StartSpeaking() {
-  content::RenderWidgetHostView* view = GetRenderViewHost()->GetView();
+  content::RenderWidgetHostView* view =
+      GetRenderViewHost()->GetWidget()->GetView();
   if (view)
     view->SpeakSelection();
 }
 
 void RenderViewContextMenuMac::StopSpeaking() {
-  content::RenderWidgetHostView* view = GetRenderViewHost()->GetView();
+  content::RenderWidgetHostView* view =
+      GetRenderViewHost()->GetWidget()->GetView();
   if (view)
     view->StopSpeaking();
 }

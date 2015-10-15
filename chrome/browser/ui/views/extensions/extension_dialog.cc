@@ -14,6 +14,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/base_window.h"
@@ -132,7 +133,8 @@ void ExtensionDialog::MaybeFocusRenderView() {
   if (focus_manager->GetFocusedView())
     return;
 
-  content::RenderWidgetHostView* view = host()->render_view_host()->GetView();
+  content::RenderWidgetHostView* view =
+      host()->render_view_host()->GetWidget()->GetView();
   if (!view)
     return;
 

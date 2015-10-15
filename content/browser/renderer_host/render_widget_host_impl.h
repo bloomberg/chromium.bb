@@ -80,12 +80,11 @@ struct EditCommand;
 
 // This implements the RenderWidgetHost interface that is exposed to
 // embedders of content, and adds things only visible to content.
-class CONTENT_EXPORT RenderWidgetHostImpl
-    : virtual public RenderWidgetHost,
-      public InputRouterClient,
-      public InputAckHandler,
-      public TouchEmulatorClient,
-      public IPC::Listener {
+class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
+                                            public InputRouterClient,
+                                            public InputAckHandler,
+                                            public TouchEmulatorClient,
+                                            public IPC::Listener {
  public:
   // |routing_id| must not be MSG_ROUTING_NONE.
   // If this object outlives |delegate|, DetachDelegate() must be called when

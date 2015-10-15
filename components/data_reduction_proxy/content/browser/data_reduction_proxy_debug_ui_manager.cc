@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "components/data_reduction_proxy/content/browser/data_reduction_proxy_debug_blocking_page.h"

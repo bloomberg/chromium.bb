@@ -6,6 +6,7 @@
 
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/screen_orientation_delegate.h"
 #include "content/public/browser/screen_orientation_dispatcher_host.h"
 #include "content/public/browser/web_contents.h"
@@ -131,7 +132,7 @@ void ScreenOrientationProvider::DidToggleFullscreenModeForTab(
 
 blink::WebScreenOrientationLockType
     ScreenOrientationProvider::GetNaturalLockType() const {
-  RenderWidgetHost* rwh = web_contents()->GetRenderViewHost();
+  RenderWidgetHost* rwh = web_contents()->GetRenderViewHost()->GetWidget();
   if (!rwh)
     return blink::WebScreenOrientationLockDefault;
 
@@ -164,7 +165,7 @@ blink::WebScreenOrientationLockType
 
 bool ScreenOrientationProvider::LockMatchesCurrentOrientation(
     blink::WebScreenOrientationLockType lock) {
-  RenderWidgetHost* rwh = web_contents()->GetRenderViewHost();
+  RenderWidgetHost* rwh = web_contents()->GetRenderViewHost()->GetWidget();
   if (!rwh)
     return false;
 

@@ -344,10 +344,12 @@ class AutofillInteractiveTest : public InProcessBrowserTest {
     test_delegate_.Reset();
     // Install the key press event sink to ensure that any events that are not
     // handled by the installed callbacks do not end up crashing the test.
-    GetRenderViewHost()->AddKeyPressEventCallback(key_press_event_sink_);
-    GetRenderViewHost()->ForwardKeyboardEvent(event);
+    GetRenderViewHost()->GetWidget()->AddKeyPressEventCallback(
+        key_press_event_sink_);
+    GetRenderViewHost()->GetWidget()->ForwardKeyboardEvent(event);
     test_delegate_.Wait();
-    GetRenderViewHost()->RemoveKeyPressEventCallback(key_press_event_sink_);
+    GetRenderViewHost()->GetWidget()->RemoveKeyPressEventCallback(
+        key_press_event_sink_);
   }
 
   // Datalist does not support autofill preview. There is no need to start
@@ -359,9 +361,11 @@ class AutofillInteractiveTest : public InProcessBrowserTest {
     event.type = blink::WebKeyboardEvent::RawKeyDown;
     // Install the key press event sink to ensure that any events that are not
     // handled by the installed callbacks do not end up crashing the test.
-    GetRenderViewHost()->AddKeyPressEventCallback(key_press_event_sink_);
-    GetRenderViewHost()->ForwardKeyboardEvent(event);
-    GetRenderViewHost()->RemoveKeyPressEventCallback(key_press_event_sink_);
+    GetRenderViewHost()->GetWidget()->AddKeyPressEventCallback(
+        key_press_event_sink_);
+    GetRenderViewHost()->GetWidget()->ForwardKeyboardEvent(event);
+    GetRenderViewHost()->GetWidget()->RemoveKeyPressEventCallback(
+        key_press_event_sink_);
   }
 
   void TryBasicFormFill() {

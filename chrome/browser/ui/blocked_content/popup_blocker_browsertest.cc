@@ -40,6 +40,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/url_constants.h"
@@ -627,7 +628,7 @@ void InjectRawKeyEvent(WebContents* web_contents,
                        int modifiers) {
   NativeWebKeyboardEvent event;
   BuildSimpleWebKeyEvent(type, key_code, native_key_code, modifiers, &event);
-  web_contents->GetRenderViewHost()->ForwardKeyboardEvent(event);
+  web_contents->GetRenderViewHost()->GetWidget()->ForwardKeyboardEvent(event);
 }
 
 // Tests that Ctrl+Enter/Cmd+Enter keys on a link open the backgournd tab.

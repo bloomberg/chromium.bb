@@ -23,6 +23,7 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/resource_request_details.h"
 #include "content/public/browser/site_instance.h"
@@ -453,11 +454,15 @@ void WebViewGuest::GuestReady() {
   // interstitial page if one is showing at this time. We only want opacity
   // to apply to web pages.
   if (allow_transparency_) {
-    web_contents()->GetRenderViewHost()->GetView()->SetBackgroundColor(
-        SK_ColorTRANSPARENT);
+    web_contents()
+        ->GetRenderViewHost()
+        ->GetWidget()
+        ->GetView()
+        ->SetBackgroundColor(SK_ColorTRANSPARENT);
   } else {
     web_contents()
         ->GetRenderViewHost()
+        ->GetWidget()
         ->GetView()
         ->SetBackgroundColorToDefault();
   }
@@ -1157,15 +1162,19 @@ void WebViewGuest::SetAllowTransparency(bool allow) {
     return;
 
   allow_transparency_ = allow;
-  if (!web_contents()->GetRenderViewHost()->GetView())
+  if (!web_contents()->GetRenderViewHost()->GetWidget()->GetView())
     return;
 
   if (allow_transparency_) {
-    web_contents()->GetRenderViewHost()->GetView()->SetBackgroundColor(
-        SK_ColorTRANSPARENT);
+    web_contents()
+        ->GetRenderViewHost()
+        ->GetWidget()
+        ->GetView()
+        ->SetBackgroundColor(SK_ColorTRANSPARENT);
   } else {
     web_contents()
         ->GetRenderViewHost()
+        ->GetWidget()
         ->GetView()
         ->SetBackgroundColorToDefault();
   }
@@ -1487,7 +1496,7 @@ void WebViewGuest::SetFullscreenState(bool is_fullscreen) {
   }
   // Since we changed fullscreen state, sending a Resize message ensures that
   // renderer/ sees the change.
-  web_contents()->GetRenderViewHost()->WasResized();
+  web_contents()->GetRenderViewHost()->GetWidget()->WasResized();
 }
 
 }  // namespace extensions

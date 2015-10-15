@@ -77,6 +77,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/security_style_explanation.h"
@@ -271,7 +272,7 @@ class RenderViewSizeObserver : public content::WebContentsObserver {
   // Cache the size when RenderViewHost is first created.
   void RenderViewCreated(content::RenderViewHost* render_view_host) override {
     render_view_sizes_[render_view_host].rwhv_create_size =
-        render_view_host->GetView()->GetViewBounds().size();
+        render_view_host->GetWidget()->GetView()->GetViewBounds().size();
   }
 
   // Enlarge WebContentsView by |wcv_resize_insets_| while the navigation entry

@@ -226,7 +226,8 @@ void InterstitialPageImpl::Show() {
   // already been destroyed.
   notification_registrar_.Add(
       this, NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
-      Source<RenderWidgetHost>(controller_->delegate()->GetRenderViewHost()));
+      Source<RenderWidgetHost>(
+          controller_->delegate()->GetRenderViewHost()->GetWidget()));
 
   // Update the g_web_contents_to_interstitial_page map.
   iter = g_web_contents_to_interstitial_page->find(web_contents_);
@@ -272,7 +273,7 @@ void InterstitialPageImpl::Hide() {
   Disable();
 
   RenderWidgetHostView* old_view =
-      controller_->delegate()->GetRenderViewHost()->GetView();
+      controller_->delegate()->GetRenderViewHost()->GetWidget()->GetView();
   if (controller_->delegate()->GetInterstitialPage() == this &&
       old_view &&
       !old_view->IsShowing() &&
@@ -289,8 +290,12 @@ void InterstitialPageImpl::Hide() {
   // (Note that in unit-tests the RVH may not have a view).
   if (render_view_host_->GetView() &&
       render_view_host_->GetView()->HasFocus() &&
-      controller_->delegate()->GetRenderViewHost()->GetView()) {
-    controller_->delegate()->GetRenderViewHost()->GetView()->Focus();
+      controller_->delegate()->GetRenderViewHost()->GetWidget()->GetView()) {
+    controller_->delegate()
+        ->GetRenderViewHost()
+        ->GetWidget()
+        ->GetView()
+        ->Focus();
   }
 
   // Delete this and call Shutdown on the RVH asynchronously, as we may have
@@ -512,7 +517,7 @@ void InterstitialPageImpl::DidNavigate(
   controller_->delegate()->AttachInterstitialPage(this);
 
   RenderWidgetHostView* rwh_view =
-      controller_->delegate()->GetRenderViewHost()->GetView();
+      controller_->delegate()->GetRenderViewHost()->GetWidget()->GetView();
 
   // The RenderViewHost may already have crashed before we even get here.
   if (rwh_view) {

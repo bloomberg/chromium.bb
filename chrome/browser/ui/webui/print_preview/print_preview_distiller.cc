@@ -20,6 +20,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/resource_request_details.h"
 #include "content/public/browser/session_storage_namespace.h"
 #include "content/public/browser/web_contents.h"
@@ -182,7 +183,7 @@ class PrintPreviewDistiller::WebContentsDelegateImpl
           // size, is also sets itself to be visible, which would then break the
           // visibility API.
           content::Details<RenderViewHost> new_render_view_host(details);
-          new_render_view_host->WasResized();
+          new_render_view_host->GetWidget()->WasResized();
           web_contents()->WasHidden();
         }
         break;

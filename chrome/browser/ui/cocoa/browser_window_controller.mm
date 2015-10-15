@@ -89,6 +89,7 @@
 #include "components/translate/core/browser/translate_ui_delegate.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #import "ui/base/cocoa/cocoa_base_utils.h"
@@ -1067,7 +1068,8 @@ using content::WebContents;
     // Send new resize rect to foreground tab.
     if (WebContents* contents = [self webContents]) {
       if (content::RenderViewHost* rvh = contents->GetRenderViewHost()) {
-        rvh->ResizeRectChanged(windowShim_->GetRootWindowResizerRect());
+        rvh->GetWidget()->ResizeRectChanged(
+            windowShim_->GetRootWindowResizerRect());
       }
     }
   }

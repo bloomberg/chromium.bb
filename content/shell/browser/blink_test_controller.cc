@@ -24,6 +24,7 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/storage_partition.h"
@@ -276,9 +277,15 @@ bool BlinkTestController::PrepareForLayoutTest(
     // Shell::SizeTo is not implemented on all platforms.
     main_window_->SizeTo(initial_size_);
 #endif
-    main_window_->web_contents()->GetRenderViewHost()->GetView()
+    main_window_->web_contents()
+        ->GetRenderViewHost()
+        ->GetWidget()
+        ->GetView()
         ->SetSize(initial_size_);
-    main_window_->web_contents()->GetRenderViewHost()->WasResized();
+    main_window_->web_contents()
+        ->GetRenderViewHost()
+        ->GetWidget()
+        ->WasResized();
     RenderViewHost* render_view_host =
         main_window_->web_contents()->GetRenderViewHost();
     WebPreferences prefs = render_view_host->GetWebkitPreferences();
@@ -293,8 +300,9 @@ bool BlinkTestController::PrepareForLayoutTest(
     main_window_->web_contents()->GetController().LoadURLWithParams(params);
     main_window_->web_contents()->Focus();
   }
-  main_window_->web_contents()->GetRenderViewHost()->SetActive(true);
-  main_window_->web_contents()->GetRenderViewHost()->Focus();
+  main_window_->web_contents()->GetRenderViewHost()->GetWidget()->SetActive(
+      true);
+  main_window_->web_contents()->GetRenderViewHost()->GetWidget()->Focus();
   return true;
 }
 
