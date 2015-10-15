@@ -24,10 +24,9 @@ syntax = "proto2";
 
 option optimize_for = LITE_RUNTIME;
 
-import "client_control.proto";
+import "control.proto";
 import "compositor.proto";
 import "input.proto";
-import "server_control.proto";
 
 package blimp;
 
@@ -35,8 +34,7 @@ message BlimpMessage {
   enum Type {
     COMPOSITOR = 0;
     INPUT = 1;
-    CLIENT_CONTROL = 2;
-    SERVER_CONTROL = 3;
+    CONTROL = 2;
   }
   // Identifies the feature type of this message.
   // The feature-specific contents are contained in optional fields of the same
@@ -59,7 +57,6 @@ message BlimpMessage {
   // TODO(kmarshall): use a 'oneof' union when it's supported in Chromium.
   optional CompositorMessage compositor = 1000;
   optional InputMessage input = 1001;
-  optional ClientControlMessage client_control = 1002;
-  optional ServerControlMessage server_control = 1003;
+  optional ControlMessage control = 1002;
 }
 

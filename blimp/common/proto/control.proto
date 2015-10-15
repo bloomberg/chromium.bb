@@ -1,0 +1,28 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+//
+// Message definitions for browser control messages.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+
+message LoadUrlMessage {
+  optional string url = 1;
+}
+
+message ControlMessage {
+  enum Type {
+    // Client <=> Server types.
+    CREATE_TAB = 1;
+    CLOSE_TAB = 2;
+    LOAD_URL = 3;
+
+    // Server => Client types.
+    // Client => Server types.
+  }
+  optional Type type = 1;
+
+  optional LoadUrlMessage load_url = 1000;
+}

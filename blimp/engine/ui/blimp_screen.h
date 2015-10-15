@@ -35,6 +35,9 @@ class BlimpScreen : public gfx::Screen {
   void AddObserver(gfx::DisplayObserver* observer) override;
   void RemoveObserver(gfx::DisplayObserver* observer) override;
 
+  static const int kDefaultDisplayWidth;
+  static const int kDefaultDisplayHeight;
+
  private:
   gfx::Display display_;
 

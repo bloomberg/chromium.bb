@@ -10,18 +10,20 @@ source_set("browser") {
     "blimp_browser_main_parts.h",
     "blimp_content_browser_client.cc",
     "blimp_content_browser_client.h",
+    "blimp_engine_session.cc",
+    "blimp_engine_session.h",
     "blimp_network_delegate.cc",
     "blimp_network_delegate.h",
     "blimp_permission_manager.cc",
     "blimp_permission_manager.h",
     "blimp_url_request_context_getter.cc",
     "blimp_url_request_context_getter.h",
-    "blimp_window.cc",
-    "blimp_window.h",
   ]
 
   deps = [
     "//base",
+    "//blimp/common/proto",
+    "//blimp/net:blimp_net",
     "//blimp/engine/ui",
     "//content",
     "//content/public/browser",

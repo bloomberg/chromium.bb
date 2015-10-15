@@ -10,12 +10,13 @@ namespace engine {
 namespace {
 
 const int64 kDisplayId = 1;
-const int kDefaultDisplayWidth = 1;
-const int kDefaultDisplayHeight = 1;
 const float kDefaultScale = 1.0f;
 const int kNumDisplays = 1;
 
 }  // namespace
+
+const int BlimpScreen::kDefaultDisplayWidth = 800;
+const int BlimpScreen::kDefaultDisplayHeight = 600;
 
 BlimpScreen::BlimpScreen() : display_(kDisplayId) {
   display_.SetScaleAndBounds(

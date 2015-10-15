@@ -14,10 +14,9 @@ group("proto") {
 proto_library("proto_lib") {
   sources = [
     "blimp_message.proto",
-    "client_control.proto",
     "common.proto",
     "compositor.proto",
+    "control.proto",
     "input.proto",
-    "server_control.proto",
   ]
 }

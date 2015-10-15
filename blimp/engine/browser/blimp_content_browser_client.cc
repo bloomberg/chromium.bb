@@ -31,8 +31,8 @@ net::URLRequestContextGetter* BlimpContentBrowserClient::CreateRequestContext(
       .get();
 }
 
-BlimpBrowserContext* BlimpContentBrowserClient::browser_context() {
-  return blimp_browser_main_parts_->browser_context();
+BlimpBrowserContext* BlimpContentBrowserClient::GetBrowserContext() {
+  return blimp_browser_main_parts_->GetBrowserContext();
 }
 
 }  // namespace engine

@@ -7,17 +7,21 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "blimp/engine/browser/blimp_browser_context.h"
 #include "content/public/browser/browser_main_parts.h"
 
 namespace net {
 class NetLog;
 }
 
+namespace content {
+struct MainFunctionParams;
+}
+
 namespace blimp {
 namespace engine {
 
-class BlimpScreen;
+class BlimpBrowserContext;
+class BlimpEngineSession;
 
 class BlimpBrowserMainParts : public content::BrowserMainParts {
  public:
@@ -27,14 +31,12 @@ class BlimpBrowserMainParts : public content::BrowserMainParts {
   // content::BrowserMainParts implementation.
   void PreMainMessageLoopRun() override;
   void PostMainMessageLoopRun() override;
-  int PreCreateThreads() override;
 
-  BlimpBrowserContext* browser_context() { return browser_context_.get(); }
+  BlimpBrowserContext* GetBrowserContext();
 
  private:
   scoped_ptr<net::NetLog> net_log_;
-  scoped_ptr<BlimpBrowserContext> browser_context_;
-  scoped_ptr<BlimpScreen> screen_;
+  scoped_ptr<BlimpEngineSession> engine_session_;
 
   DISALLOW_COPY_AND_ASSIGN(BlimpBrowserMainParts);
 };

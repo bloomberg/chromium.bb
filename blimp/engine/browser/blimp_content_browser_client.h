@@ -27,7 +27,7 @@ class BlimpContentBrowserClient : public content::ContentBrowserClient {
       content::ProtocolHandlerMap* protocol_handlers,
       content::URLRequestInterceptorScopedVector request_interceptors) override;
 
-  BlimpBrowserContext* browser_context();
+  BlimpBrowserContext* GetBrowserContext();
 
  private:
   // Owned by BrowserMainLoop
