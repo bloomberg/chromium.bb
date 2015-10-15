@@ -487,7 +487,7 @@ QuicTimeWaitListManager* QuicDispatcher::CreateQuicTimeWaitListManager() {
   time_wait_list_writer_.reset(
       packet_writer_factory_->Create(writer_.get(), nullptr));
   return new QuicTimeWaitListManager(time_wait_list_writer_.get(), this,
-                                     helper_.get(), supported_versions());
+                                     helper_.get());
 }
 
 bool QuicDispatcher::HandlePacketForTimeWait(

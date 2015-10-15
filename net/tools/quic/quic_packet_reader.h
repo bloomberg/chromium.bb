@@ -37,8 +37,8 @@ class QuicPacketReader {
   virtual ~QuicPacketReader();
 
   // Reads a number of packets from the given fd, and then passes them off to
-  // the PacketProcessInterface.  Returns true if at least 1 packet is read,
-  // false otherwise.
+  // the PacketProcessInterface.  Returns true if there may be additional
+  // packets available on the socket.
   // Populates |packets_dropped| if it is non-null and the socket is configured
   // to track dropped packets and some packets are read.
   virtual bool ReadAndDispatchPackets(int fd,

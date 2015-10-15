@@ -189,9 +189,9 @@ TEST_P(QuicServerSessionTest, AcceptClosedStream) {
 }
 
 TEST_P(QuicServerSessionTest, MaxOpenStreams) {
-  // Test that the server closes the connection if a client attempts to open too
-  // many data streams. The server accepts slightly more than the negotiated
-  // stream limit to deal with rare cases where a client FIN/RST is lost.
+  // Test that the server refuses if a client attempts to open too many data
+  // streams.  The server accepts slightly more than the negotiated stream limit
+  // to deal with rare cases where a client FIN/RST is lost.
 
   // The slightly increased stream limit is set during config negotiation.  It
   // is either an increase of 10 over negotiated limit, or a fixed percentage
@@ -220,8 +220,14 @@ TEST_P(QuicServerSessionTest, MaxOpenStreams) {
 
   // Now violate the server's internal stream limit.
   stream_id += 2;
-  EXPECT_CALL(*connection_, SendConnectionClose(QUIC_TOO_MANY_OPEN_STREAMS));
-  EXPECT_CALL(*connection_, SendRstStream(_, _, _)).Times(0);
+  if (connection_->version() <= QUIC_VERSION_27) {
+    EXPECT_CALL(*connection_, SendConnectionClose(QUIC_TOO_MANY_OPEN_STREAMS));
+    EXPECT_CALL(*connection_, SendRstStream(_, _, _)).Times(0);
+  } else {
+    EXPECT_CALL(*connection_, SendConnectionClose(_)).Times(0);
+    EXPECT_CALL(*connection_, SendRstStream(stream_id, QUIC_REFUSED_STREAM, 0));
+  }
+  // Even if the connection remains open, the stream creation should fail.
   EXPECT_FALSE(QuicServerSessionPeer::GetIncomingDynamicStream(session_.get(),
                                                                stream_id));
 }

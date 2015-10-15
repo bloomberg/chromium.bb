@@ -14,6 +14,7 @@
 
 #include "base/logging.h"
 #include "net/base/ip_endpoint.h"
+#include "net/quic/quic_flags.h"
 #include "net/tools/quic/quic_dispatcher.h"
 #include "net/tools/quic/quic_socket_utils.h"
 
@@ -103,7 +104,12 @@ bool QuicPacketReader::ReadAndDispatchPackets(
                                            packets_dropped);
   }
 
-  return true;
+  if (FLAGS_quic_read_packets_full_recvmmsg) {
+    // We may not have read all of the packets available on the socket.
+    return packets_read == kNumPacketsPerReadMmsgCall;
+  } else {
+    return true;
+  }
 #else
   LOG(FATAL) << "Unsupported";
   return false;

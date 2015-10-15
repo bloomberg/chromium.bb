@@ -239,6 +239,7 @@ class TestPacketWriter : public QuicPacketWriter {
         framer_(SupportedVersions(version_)),
         last_packet_size_(0),
         write_blocked_(false),
+        write_should_fail_(false),
         block_on_next_write_(false),
         is_write_blocked_data_buffered_(false),
         final_bytes_of_last_packet_(0),
@@ -274,6 +275,11 @@ class TestPacketWriter : public QuicPacketWriter {
     if (IsWriteBlocked()) {
       return WriteResult(WRITE_STATUS_BLOCKED, -1);
     }
+
+    if (ShouldWriteFail()) {
+      return WriteResult(WRITE_STATUS_ERROR, 0);
+    }
+
     last_packet_size_ = packet.length();
 
     if (!write_pause_time_delta_.IsZero()) {
@@ -286,9 +292,13 @@ class TestPacketWriter : public QuicPacketWriter {
     return is_write_blocked_data_buffered_;
   }
 
+  bool ShouldWriteFail() { return write_should_fail_; }
+
   bool IsWriteBlocked() const override { return write_blocked_; }
 
   void SetWritable() override { write_blocked_ = false; }
+
+  void SetShouldWriteFail() { write_should_fail_ = true; }
 
   QuicByteCount GetMaxPacketSize(
       const IPEndPoint& /*peer_address*/) const override {
@@ -383,6 +393,7 @@ class TestPacketWriter : public QuicPacketWriter {
   SimpleQuicFramer framer_;
   size_t last_packet_size_;
   bool write_blocked_;
+  bool write_should_fail_;
   bool block_on_next_write_;
   bool is_write_blocked_data_buffered_;
   uint32 final_bytes_of_last_packet_;
@@ -1076,7 +1087,7 @@ TEST_P(QuicConnectionTest, IncreaseServerMaxPacketSize) {
   QuicFrames frames;
   QuicPaddingFrame padding;
   frames.push_back(QuicFrame(&frame1_));
-  frames.push_back(QuicFrame(&padding));
+  frames.push_back(QuicFrame(padding));
   scoped_ptr<QuicPacket> packet(ConstructPacket(header, frames));
   char buffer[kMaxPacketSize];
   scoped_ptr<QuicEncryptedPacket> encrypted(framer_.EncryptPayload(
@@ -1107,7 +1118,7 @@ TEST_P(QuicConnectionTest, IncreaseServerMaxPacketSizeWhileWriterLimited) {
   QuicFrames frames;
   QuicPaddingFrame padding;
   frames.push_back(QuicFrame(&frame1_));
-  frames.push_back(QuicFrame(&padding));
+  frames.push_back(QuicFrame(padding));
   scoped_ptr<QuicPacket> packet(ConstructPacket(header, frames));
   char buffer[kMaxPacketSize];
   scoped_ptr<QuicEncryptedPacket> encrypted(framer_.EncryptPayload(
@@ -3648,6 +3659,16 @@ TEST_P(QuicConnectionTest, SendScheduler) {
   connection_.SendPacket(ENCRYPTION_NONE, 1, packet, kTestEntropyHash,
                          HAS_RETRANSMITTABLE_DATA, false, false);
   EXPECT_EQ(0u, connection_.NumQueuedPackets());
+}
+
+TEST_P(QuicConnectionTest, FailToSendFirstPacket) {
+  // Test that the connection does not crash when it fails to send the first
+  // packet at which point self_address_ might be uninitialized.
+  EXPECT_CALL(visitor_, OnConnectionClosed(_, _)).Times(1);
+  QuicPacket* packet = ConstructDataPacket(1, 0, !kEntropyFlag);
+  writer_->SetShouldWriteFail();
+  connection_.SendPacket(ENCRYPTION_NONE, 1, packet, kTestEntropyHash,
+                         HAS_RETRANSMITTABLE_DATA, false, false);
 }
 
 TEST_P(QuicConnectionTest, SendSchedulerEAGAIN) {

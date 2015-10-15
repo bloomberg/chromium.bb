@@ -142,6 +142,8 @@ QuicTag QuicVersionToQuicTag(const QuicVersion version) {
       return MakeQuicTag('Q', '0', '2', '6');
     case QUIC_VERSION_27:
       return MakeQuicTag('Q', '0', '2', '7');
+    case QUIC_VERSION_28:
+      return MakeQuicTag('Q', '0', '2', '8');
     default:
       // This shold be an ERROR because we should never attempt to convert an
       // invalid QuicVersion to be written to the wire.
@@ -172,6 +174,7 @@ string QuicVersionToString(const QuicVersion version) {
     RETURN_STRING_LITERAL(QUIC_VERSION_25);
     RETURN_STRING_LITERAL(QUIC_VERSION_26);
     RETURN_STRING_LITERAL(QUIC_VERSION_27);
+    RETURN_STRING_LITERAL(QUIC_VERSION_28);
     default:
       return "QUIC_VERSION_UNSUPPORTED";
   }
@@ -263,59 +266,37 @@ QuicConnectionCloseFrame::QuicConnectionCloseFrame()
 
 QuicFrame::QuicFrame() {}
 
-QuicFrame::QuicFrame(QuicPaddingFrame* padding_frame)
-    : type(PADDING_FRAME),
-      padding_frame(padding_frame) {
-}
+QuicFrame::QuicFrame(QuicPaddingFrame padding_frame)
+    : type(PADDING_FRAME), padding_frame(padding_frame) {}
 
 QuicFrame::QuicFrame(QuicStreamFrame* stream_frame)
-    : type(STREAM_FRAME),
-      stream_frame(stream_frame) {
-}
+    : type(STREAM_FRAME), stream_frame(stream_frame) {}
 
-QuicFrame::QuicFrame(QuicAckFrame* frame)
-    : type(ACK_FRAME),
-      ack_frame(frame) {
-}
+QuicFrame::QuicFrame(QuicAckFrame* frame) : type(ACK_FRAME), ack_frame(frame) {}
 
-QuicFrame::QuicFrame(QuicMtuDiscoveryFrame* frame)
-    : type(MTU_DISCOVERY_FRAME), mtu_discovery_frame(frame) {
-}
+QuicFrame::QuicFrame(QuicMtuDiscoveryFrame frame)
+    : type(MTU_DISCOVERY_FRAME), mtu_discovery_frame(frame) {}
 
 QuicFrame::QuicFrame(QuicStopWaitingFrame* frame)
-    : type(STOP_WAITING_FRAME),
-      stop_waiting_frame(frame) {
-}
+    : type(STOP_WAITING_FRAME), stop_waiting_frame(frame) {}
 
-QuicFrame::QuicFrame(QuicPingFrame* frame)
-    : type(PING_FRAME),
-      ping_frame(frame) {
-}
+QuicFrame::QuicFrame(QuicPingFrame frame)
+    : type(PING_FRAME), ping_frame(frame) {}
 
 QuicFrame::QuicFrame(QuicRstStreamFrame* frame)
-    : type(RST_STREAM_FRAME),
-      rst_stream_frame(frame) {
-}
+    : type(RST_STREAM_FRAME), rst_stream_frame(frame) {}
 
 QuicFrame::QuicFrame(QuicConnectionCloseFrame* frame)
-    : type(CONNECTION_CLOSE_FRAME),
-      connection_close_frame(frame) {
-}
+    : type(CONNECTION_CLOSE_FRAME), connection_close_frame(frame) {}
 
 QuicFrame::QuicFrame(QuicGoAwayFrame* frame)
-    : type(GOAWAY_FRAME),
-      goaway_frame(frame) {
-}
+    : type(GOAWAY_FRAME), goaway_frame(frame) {}
 
 QuicFrame::QuicFrame(QuicWindowUpdateFrame* frame)
-    : type(WINDOW_UPDATE_FRAME),
-      window_update_frame(frame) {
-}
+    : type(WINDOW_UPDATE_FRAME), window_update_frame(frame) {}
 
 QuicFrame::QuicFrame(QuicBlockedFrame* frame)
-    : type(BLOCKED_FRAME),
-      blocked_frame(frame) {
-}
+    : type(BLOCKED_FRAME), blocked_frame(frame) {}
 
 QuicFecData::QuicFecData() : fec_group(0) {}
 
@@ -785,43 +766,39 @@ RetransmittableFrames::RetransmittableFrames(EncryptionLevel level)
 }
 
 RetransmittableFrames::~RetransmittableFrames() {
-  for (QuicFrames::iterator it = frames_.begin(); it != frames_.end(); ++it) {
-    switch (it->type) {
+  for (QuicFrame& frame : frames_) {
+    switch (frame.type) {
+      // Frames smaller than a pointer are inlined, so don't need to be deleted.
       case PADDING_FRAME:
-        delete it->padding_frame;
+      case MTU_DISCOVERY_FRAME:
+      case PING_FRAME:
         break;
       case STREAM_FRAME:
-        delete it->stream_frame;
+        delete frame.stream_frame;
         break;
       case ACK_FRAME:
-        delete it->ack_frame;
-        break;
-      case MTU_DISCOVERY_FRAME:
-        delete it->mtu_discovery_frame;
+        delete frame.ack_frame;
         break;
       case STOP_WAITING_FRAME:
-        delete it->stop_waiting_frame;
-        break;
-      case PING_FRAME:
-        delete it->ping_frame;
+        delete frame.stop_waiting_frame;
         break;
       case RST_STREAM_FRAME:
-        delete it->rst_stream_frame;
+        delete frame.rst_stream_frame;
         break;
       case CONNECTION_CLOSE_FRAME:
-        delete it->connection_close_frame;
+        delete frame.connection_close_frame;
         break;
       case GOAWAY_FRAME:
-        delete it->goaway_frame;
+        delete frame.goaway_frame;
         break;
       case WINDOW_UPDATE_FRAME:
-        delete it->window_update_frame;
+        delete frame.window_update_frame;
         break;
       case BLOCKED_FRAME:
-        delete it->blocked_frame;
+        delete frame.blocked_frame;
         break;
       case NUM_FRAME_TYPES:
-        DCHECK(false) << "Cannot delete type: " << it->type;
+        DCHECK(false) << "Cannot delete type: " << frame.type;
     }
   }
   // TODO(rtenneti): Delete the for loop once chrome has c++11 library support
@@ -893,31 +870,31 @@ ostream& operator<<(ostream& os, const QuicEncryptedPacket& s) {
 TransmissionInfo::TransmissionInfo()
     : retransmittable_frames(nullptr),
       packet_number_length(PACKET_1BYTE_PACKET_NUMBER),
-      sent_time(QuicTime::Zero()),
       bytes_sent(0),
       nack_count(0),
+      sent_time(QuicTime::Zero()),
       transmission_type(NOT_RETRANSMISSION),
-      all_transmissions(nullptr),
       in_flight(false),
       is_unackable(false),
-      is_fec_packet(false) {}
+      is_fec_packet(false),
+      all_transmissions(nullptr) {}
 
 TransmissionInfo::TransmissionInfo(
     RetransmittableFrames* retransmittable_frames,
     QuicPacketNumberLength packet_number_length,
     TransmissionType transmission_type,
     QuicTime sent_time,
-    QuicByteCount bytes_sent,
+    QuicPacketLength bytes_sent,
     bool is_fec_packet)
     : retransmittable_frames(retransmittable_frames),
       packet_number_length(packet_number_length),
-      sent_time(sent_time),
       bytes_sent(bytes_sent),
       nack_count(0),
+      sent_time(sent_time),
       transmission_type(transmission_type),
-      all_transmissions(nullptr),
       in_flight(false),
       is_unackable(false),
-      is_fec_packet(is_fec_packet) {}
+      is_fec_packet(is_fec_packet),
+      all_transmissions(nullptr) {}
 
 }  // namespace net

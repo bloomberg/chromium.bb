@@ -109,12 +109,11 @@ MockableQuicClient::MockableQuicClient(
     const QuicServerId& server_id,
     const QuicVersionVector& supported_versions,
     EpollServer* epoll_server)
-    : QuicClient(server_address,
-                 server_id,
-                 supported_versions,
-                 epoll_server),
-      override_connection_id_(0),
-      test_writer_(nullptr) {}
+    : MockableQuicClient(server_address,
+                         server_id,
+                         QuicConfig(),
+                         supported_versions,
+                         epoll_server) {}
 
 MockableQuicClient::MockableQuicClient(
     IPEndPoint server_address,
@@ -164,36 +163,29 @@ QuicTestClient::QuicTestClient(IPEndPoint server_address,
                                const string& server_hostname,
                                bool secure,
                                const QuicVersionVector& supported_versions)
+    : QuicTestClient(server_address,
+                     server_hostname,
+                     secure,
+                     QuicConfig(),
+                     supported_versions) {}
+
+QuicTestClient::QuicTestClient(IPEndPoint server_address,
+                               const string& server_hostname,
+                               bool secure,
+                               const QuicConfig& config,
+                               const QuicVersionVector& supported_versions)
     : client_(new MockableQuicClient(server_address,
                                      QuicServerId(server_hostname,
                                                   server_address.port(),
                                                   secure,
                                                   PRIVACY_MODE_DISABLED),
+                                     config,
                                      supported_versions,
                                      &epoll_server_)) {
   Initialize(secure);
 }
 
-QuicTestClient::QuicTestClient(
-    IPEndPoint server_address,
-    const string& server_hostname,
-    bool secure,
-    const QuicConfig& config,
-    const QuicVersionVector& supported_versions)
-    : client_(
-          new MockableQuicClient(server_address,
-                                 QuicServerId(server_hostname,
-                                              server_address.port(),
-                                              secure,
-                                              PRIVACY_MODE_DISABLED),
-                                 config,
-                                 supported_versions,
-                                 &epoll_server_)) {
-  Initialize(secure);
-}
-
-QuicTestClient::QuicTestClient() {
-}
+QuicTestClient::QuicTestClient() {}
 
 QuicTestClient::~QuicTestClient() {
   if (stream_) {

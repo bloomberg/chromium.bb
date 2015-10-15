@@ -47,17 +47,7 @@ const char kSourceAddressTokenSecret[] = "secret";
 
 }  // namespace
 
-QuicServer::QuicServer()
-    : port_(0),
-      fd_(-1),
-      packets_dropped_(0),
-      overflow_supported_(false),
-      use_recvmmsg_(false),
-      crypto_config_(kSourceAddressTokenSecret, QuicRandom::GetInstance()),
-      supported_versions_(QuicSupportedVersions()),
-      packet_reader_(new QuicPacketReader()) {
-  Initialize();
-}
+QuicServer::QuicServer() : QuicServer(QuicConfig(), QuicSupportedVersions()) {}
 
 QuicServer::QuicServer(const QuicConfig& config,
                        const QuicVersionVector& supported_versions)
@@ -215,14 +205,14 @@ void QuicServer::OnEvent(int fd, EpollEvent* event) {
 
   if (event->in_events & EPOLLIN) {
     DVLOG(1) << "EPOLLIN";
-    bool read = true;
-    while (read) {
+    bool more_to_read = true;
+    while (more_to_read) {
       if (use_recvmmsg_) {
-        read = packet_reader_->ReadAndDispatchPackets(
+        more_to_read = packet_reader_->ReadAndDispatchPackets(
             fd_, port_, dispatcher_.get(),
             overflow_supported_ ? &packets_dropped_ : nullptr);
       } else {
-        read = QuicPacketReader::ReadAndDispatchSinglePacket(
+        more_to_read = QuicPacketReader::ReadAndDispatchSinglePacket(
             fd_, port_, dispatcher_.get(),
             overflow_supported_ ? &packets_dropped_ : nullptr);
       }

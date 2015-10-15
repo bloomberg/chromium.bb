@@ -451,7 +451,11 @@ SerializedPacket QuicPacketCreator::SerializePacket(
   bool possibly_truncated_by_length = packet_size_ == max_plaintext_size_ &&
                                       queued_frames_.size() == 1 &&
                                       queued_frames_.back().type == ACK_FRAME;
-  char buffer[kMaxPacketSize];
+  // The optimized encryption algorithm implementations run faster when
+  // operating on aligned memory.
+  // TODO(rtenneti): Change the default 64 alignas value (used the default
+  // value from CACHELINE_SIZE).
+  ALIGNAS(64) char buffer[kMaxPacketSize];
   scoped_ptr<QuicPacket> packet;
   // Use the packet_size_ instead of the buffer size to ensure smaller
   // packet sizes are properly used.
@@ -638,8 +642,7 @@ void QuicPacketCreator::MaybeAddPadding() {
     return;
   }
 
-  QuicPaddingFrame padding;
-  bool success = AddFrame(QuicFrame(&padding), false, false, nullptr);
+  bool success = AddFrame(QuicFrame(QuicPaddingFrame()), false, false, nullptr);
   DCHECK(success);
 }
 

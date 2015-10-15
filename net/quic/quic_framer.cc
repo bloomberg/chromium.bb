@@ -268,7 +268,8 @@ size_t QuicFramer::GetSerializedFrameLength(
     InFecGroup is_in_fec_group,
     QuicPacketNumberLength packet_number_length) {
   // Prevent a rare crash reported in b/19458523.
-  if (frame.stream_frame == nullptr) {
+  if ((frame.type == STREAM_FRAME || frame.type == ACK_FRAME) &&
+      frame.stream_frame == nullptr) {
     LOG(DFATAL) << "Cannot compute the length of a null frame. "
                 << "type:" << frame.type << "free_bytes:" << free_bytes
                 << " first_frame:" << first_frame

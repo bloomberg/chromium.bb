@@ -1100,9 +1100,15 @@ TEST_P(EndToEndTest, NegotiateMaxOpenStreams) {
   }
   client_->WaitForResponse();
 
-  EXPECT_FALSE(client_->connected());
-  EXPECT_EQ(QUIC_STREAM_CONNECTION_ERROR, client_->stream_error());
-  EXPECT_EQ(QUIC_TOO_MANY_OPEN_STREAMS, client_->connection_error());
+  if (negotiated_version_ <= QUIC_VERSION_27) {
+    EXPECT_FALSE(client_->connected());
+    EXPECT_EQ(QUIC_STREAM_CONNECTION_ERROR, client_->stream_error());
+    EXPECT_EQ(QUIC_TOO_MANY_OPEN_STREAMS, client_->connection_error());
+  } else {
+    EXPECT_TRUE(client_->connected());
+    EXPECT_EQ(QUIC_REFUSED_STREAM, client_->stream_error());
+    EXPECT_EQ(QUIC_NO_ERROR, client_->connection_error());
+  }
 }
 
 TEST_P(EndToEndTest, NegotiateCongestionControl) {

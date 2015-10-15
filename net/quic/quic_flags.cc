@@ -51,7 +51,7 @@ bool FLAGS_quic_limit_max_cwnd = true;
 
 // If true, require handshake confirmation for QUIC connections, functionally
 // disabling 0-rtt handshakes.
-// TODO(rtenneti): Enable this flag after fixing tests.
+// TODO(rtenneti): Enable this flag after CryptoServerTest's are fixed.
 bool FLAGS_quic_require_handshake_confirmation = false;
 
 // Disables special treatment of truncated acks, since older retransmissions are
@@ -80,3 +80,8 @@ bool FLAGS_shift_quic_cubic_epoch_when_app_limited = true;
 // If true, accounts for available (implicitly opened) streams under a separate
 // quota from open streams, which is 10 times larger.
 bool FLAGS_allow_many_available_streams = true;
+
+// If true, QuicPacketReader::ReadAndDispatchPackets will only return true if
+// recvmmsg fills all of the passed in messages. Otherwise, it will return true
+// if recvmmsg read any messages.
+bool FLAGS_quic_read_packets_full_recvmmsg = true;

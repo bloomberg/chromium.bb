@@ -1626,7 +1626,9 @@ bool QuicConnection::WritePacketInner(QueuedPacket* packet) {
     OnWriteError(result.error_code);
     DLOG(ERROR) << ENDPOINT << "failed writing " << encrypted->length()
                 << " bytes "
-                << " from host " << self_address().ToStringWithoutPort()
+                << " from host " << (self_address().address().empty()
+                                         ? " empty address "
+                                         : self_address().ToStringWithoutPort())
                 << " to address " << peer_address().ToString();
     return false;
   }
@@ -1763,7 +1765,7 @@ void QuicConnection::SendPing() {
   if (retransmission_alarm_->IsSet()) {
     return;
   }
-  packet_generator_.AddControlFrame(QuicFrame(new QuicPingFrame));
+  packet_generator_.AddControlFrame(QuicFrame(QuicPingFrame()));
 }
 
 void QuicConnection::SendAck() {

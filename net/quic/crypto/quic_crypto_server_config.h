@@ -50,8 +50,6 @@ struct ClientHelloInfo {
 
   // Outputs from EvaluateClientHello.
   bool valid_source_address_token;
-  bool client_nonce_well_formed;
-  bool unique;
   base::StringPiece sni;
   base::StringPiece client_nonce;
   base::StringPiece server_nonce;
@@ -145,7 +143,9 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
   //     into a KDF before use. In tests, use TESTING.
   // |server_nonce_entropy|: an entropy source used to generate the orbit and
   //     key for server nonces, which are always local to a given instance of a
-  //     server.
+  //     server. Not owned.
+  // |proof_source|: provides certificate chains and signatures. This class
+  //     takes ownership of |proof_source|.
   QuicCryptoServerConfig(base::StringPiece source_address_token_secret,
                          QuicRandom* server_nonce_entropy);
   ~QuicCryptoServerConfig();

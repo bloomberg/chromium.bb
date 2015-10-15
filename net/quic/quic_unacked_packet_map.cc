@@ -185,7 +185,7 @@ bool QuicUnackedPacketMap::HasRetransmittableFrames(
 }
 
 void QuicUnackedPacketMap::NackPacket(QuicPacketNumber packet_number,
-                                      QuicPacketCount min_nacks) {
+                                      uint16 min_nacks) {
   DCHECK_GE(packet_number, least_unacked_);
   DCHECK_LT(packet_number, least_unacked_ + unacked_packets_.size());
   unacked_packets_[packet_number - least_unacked_].nack_count = max(

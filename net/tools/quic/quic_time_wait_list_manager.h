@@ -44,8 +44,7 @@ class QuicTimeWaitListManager : public QuicBlockedWriterInterface {
   // helper - used to run clean up alarms. (Owned by the dispatcher)
   QuicTimeWaitListManager(QuicPacketWriter* writer,
                           QuicServerSessionVisitor* visitor,
-                          QuicConnectionHelperInterface* helper,
-                          const QuicVersionVector& supported_versions);
+                          QuicConnectionHelperInterface* helper);
   ~QuicTimeWaitListManager() override;
 
   // Adds the given connection_id to time wait state for time_wait_period_.

@@ -2924,7 +2924,7 @@ TEST_P(QuicFramerTest, BuildPaddingFramePacket) {
   QuicPaddingFrame padding_frame;
 
   QuicFrames frames;
-  frames.push_back(QuicFrame(&padding_frame));
+  frames.push_back(QuicFrame(padding_frame));
 
   // clang-format off
   unsigned char packet[kMaxPacketSize] = {
@@ -2973,7 +2973,7 @@ TEST_P(QuicFramerTest, Build4ByteSequenceNumberPaddingFramePacket) {
   QuicPaddingFrame padding_frame;
 
   QuicFrames frames;
-  frames.push_back(QuicFrame(&padding_frame));
+  frames.push_back(QuicFrame(padding_frame));
 
   // clang-format off
   unsigned char packet[kMaxPacketSize] = {
@@ -3021,7 +3021,7 @@ TEST_P(QuicFramerTest, Build2ByteSequenceNumberPaddingFramePacket) {
   QuicPaddingFrame padding_frame;
 
   QuicFrames frames;
-  frames.push_back(QuicFrame(&padding_frame));
+  frames.push_back(QuicFrame(padding_frame));
 
   // clang-format off
   unsigned char packet[kMaxPacketSize] = {
@@ -3069,7 +3069,7 @@ TEST_P(QuicFramerTest, Build1ByteSequenceNumberPaddingFramePacket) {
   QuicPaddingFrame padding_frame;
 
   QuicFrames frames;
-  frames.push_back(QuicFrame(&padding_frame));
+  frames.push_back(QuicFrame(padding_frame));
 
   // clang-format off
   unsigned char packet[kMaxPacketSize] = {
@@ -3944,7 +3944,7 @@ TEST_P(QuicFramerTest, BuildPingPacket) {
   QuicPingFrame ping_frame;
 
   QuicFrames frames;
-  frames.push_back(QuicFrame(&ping_frame));
+  frames.push_back(QuicFrame(ping_frame));
 
   // clang-format off
   unsigned char packet[] = {
@@ -3986,7 +3986,7 @@ TEST_P(QuicFramerTest, BuildMtuDiscoveryPacket) {
   QuicMtuDiscoveryFrame mtu_discovery_frame;
 
   QuicFrames frames;
-  frames.push_back(QuicFrame(&mtu_discovery_frame));
+  frames.push_back(QuicFrame(mtu_discovery_frame));
 
   // clang-format off
   unsigned char packet[] = {

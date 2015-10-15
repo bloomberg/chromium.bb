@@ -408,22 +408,18 @@ TEST_P(CryptoServerTest, BadSNI) {
   }
 }
 
-// TODO(rtenneti): Enable the DefaultCert test after implementing ProofSource.
-// See http://crbug.com/514472.
 TEST_P(CryptoServerTest, DefaultCert) {
   // Check that the server replies with a default certificate when no SNI is
-  // specified.
+  // specified. The CHLO is constructed to generate a REJ with certs, so must
+  // not contain a valid STK, and must include PDMD.
   // clang-format off
   CryptoHandshakeMessage msg = CryptoTestUtils::Message(
       "CHLO",
       "AEAD", "AESG",
       "KEXS", "C255",
-      "SCID", scid_hex_.c_str(),
-      "#004b5453", srct_hex_.c_str(),
       "PUBS", pub_hex_.c_str(),
       "NONC", nonce_hex_.c_str(),
       "PDMD", "X509",
-      "XLCT", XlctHexString().c_str(),
       "VER\0", client_version_string_.c_str(),
       "$padding", static_cast<int>(kClientHelloMinimumSize),
       nullptr);
@@ -435,9 +431,15 @@ TEST_P(CryptoServerTest, DefaultCert) {
   EXPECT_TRUE(out_.GetStringPiece(kPROF, &proof));
   EXPECT_NE(0u, cert.size());
   EXPECT_NE(0u, proof.size());
-  const HandshakeFailureReason kRejectReasons[] = {
-      CLIENT_NONCE_INVALID_TIME_FAILURE};
-  CheckRejectReasons(kRejectReasons, arraysize(kRejectReasons));
+  if (client_version_ <= QUIC_VERSION_26) {
+    const HandshakeFailureReason kRejectReasons[] = {
+        CLIENT_NONCE_INVALID_TIME_FAILURE};
+    CheckRejectReasons(kRejectReasons, arraysize(kRejectReasons));
+  } else {
+    const HandshakeFailureReason kRejectReasons[] = {
+        SERVER_CONFIG_INCHOATE_HELLO_FAILURE};
+    CheckRejectReasons(kRejectReasons, arraysize(kRejectReasons));
+  }
 }
 
 TEST_P(CryptoServerTest, TooSmall) {
@@ -614,14 +616,23 @@ TEST_P(CryptoServerTest, CorruptMultipleTags) {
   // clang-format on
   ShouldSucceed(msg);
   CheckRejectTag();
-  const HandshakeFailureReason kRejectReasons[] = {
-      SOURCE_ADDRESS_TOKEN_DECRYPTION_FAILURE, CLIENT_NONCE_INVALID_FAILURE,
-      SERVER_NONCE_DECRYPTION_FAILURE,
+
+  if (client_version_ <= QUIC_VERSION_26) {
+    const HandshakeFailureReason kRejectReasons[] = {
+        SOURCE_ADDRESS_TOKEN_DECRYPTION_FAILURE, CLIENT_NONCE_INVALID_FAILURE,
+        SERVER_NONCE_DECRYPTION_FAILURE};
+    CheckRejectReasons(kRejectReasons, arraysize(kRejectReasons));
+  } else {
+    const HandshakeFailureReason kRejectReasons[] = {
+        SOURCE_ADDRESS_TOKEN_DECRYPTION_FAILURE, CLIENT_NONCE_INVALID_FAILURE};
+    CheckRejectReasons(kRejectReasons, arraysize(kRejectReasons));
   };
-  CheckRejectReasons(kRejectReasons, arraysize(kRejectReasons));
 }
 
 TEST_P(CryptoServerTest, ReplayProtection) {
+  if (client_version_ > QUIC_VERSION_26) {
+    return;
+  }
   // This tests that disabling replay protection works.
   // clang-format off
   CryptoHandshakeMessage msg = CryptoTestUtils::Message(

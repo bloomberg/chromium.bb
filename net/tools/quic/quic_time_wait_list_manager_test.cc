@@ -96,10 +96,7 @@ class QuicTimeWaitListManagerTest : public ::testing::Test {
  protected:
   QuicTimeWaitListManagerTest()
       : helper_(&epoll_server_),
-        time_wait_list_manager_(&writer_,
-                                &visitor_,
-                                &helper_,
-                                QuicSupportedVersions()),
+        time_wait_list_manager_(&writer_, &visitor_, &helper_),
         framer_(QuicSupportedVersions(),
                 QuicTime::Zero(),
                 Perspective::IS_SERVER),

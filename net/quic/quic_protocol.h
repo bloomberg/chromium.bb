@@ -51,6 +51,7 @@ typedef std::map<QuicTag, std::string> QuicTagValueMap;
 // TODO(rtenneti): Didn't use SpdyPriority because SpdyPriority is uint8 and
 // QuicPriority is uint32. Use SpdyPriority when we change the QUIC_VERSION.
 typedef uint32 QuicPriority;
+typedef uint16 QuicPacketLength;
 
 // Default initial maximum size in bytes of a QUIC packet.
 const QuicByteCount kDefaultMaxPacketSize = 1350;
@@ -346,6 +347,7 @@ enum QuicVersion {
                          // from QuicRstStreamFrame
   QUIC_VERSION_26 = 26,  // In CHLO, send XLCT tag containing hash of leaf cert
   QUIC_VERSION_27 = 27,  // Sends a nonce in the SHLO.
+  QUIC_VERSION_28 = 28,  // Receiver can refuse to create a requested stream.
 };
 
 // This vector contains QUIC versions which we currently support.
@@ -356,7 +358,8 @@ enum QuicVersion {
 // IMPORTANT: if you are adding to this list, follow the instructions at
 // http://sites/quic/adding-and-removing-versions
 static const QuicVersion kSupportedQuicVersions[] = {
-    QUIC_VERSION_27, QUIC_VERSION_26, QUIC_VERSION_25, QUIC_VERSION_24};
+    QUIC_VERSION_28, QUIC_VERSION_27, QUIC_VERSION_26, QUIC_VERSION_25,
+    QUIC_VERSION_24};
 
 typedef std::vector<QuicVersion> QuicVersionVector;
 
@@ -436,6 +439,10 @@ enum QuicRstStreamErrorCode {
   // Closing stream locally, sending a RST to allow for proper flow control
   // accounting. Sent in response to a RST from the peer.
   QUIC_RST_ACKNOWLEDGEMENT,
+  // Receiver refused to create the stream (because its limit on open streams
+  // has been reached).  The sender should retry the request later (using
+  // another stream).
+  QUIC_REFUSED_STREAM,
 
   // No error. Used as bound while iterating.
   QUIC_STREAM_LAST_ERROR,
@@ -685,13 +692,11 @@ enum QuicVersionNegotiationState {
 typedef QuicPacketPublicHeader QuicVersionNegotiationPacket;
 
 // A padding frame contains no payload.
-struct NET_EXPORT_PRIVATE QuicPaddingFrame {
-};
+struct NET_EXPORT_PRIVATE QuicPaddingFrame {};
 
 // A ping frame contains no payload, though it is retransmittable,
 // and ACK'd just like other normal frames.
-struct NET_EXPORT_PRIVATE QuicPingFrame {
-};
+struct NET_EXPORT_PRIVATE QuicPingFrame {};
 
 // A path MTU discovery frame contains no payload and is serialized as a ping
 // frame.
@@ -994,15 +999,15 @@ enum EncryptionLevel {
 
 struct NET_EXPORT_PRIVATE QuicFrame {
   QuicFrame();
-  explicit QuicFrame(QuicPaddingFrame* padding_frame);
+  explicit QuicFrame(QuicPaddingFrame padding_frame);
+  explicit QuicFrame(QuicMtuDiscoveryFrame frame);
+  explicit QuicFrame(QuicPingFrame frame);
+
   explicit QuicFrame(QuicStreamFrame* stream_frame);
   explicit QuicFrame(QuicAckFrame* frame);
-  explicit QuicFrame(QuicMtuDiscoveryFrame* frame);
-
   explicit QuicFrame(QuicRstStreamFrame* frame);
   explicit QuicFrame(QuicConnectionCloseFrame* frame);
   explicit QuicFrame(QuicStopWaitingFrame* frame);
-  explicit QuicFrame(QuicPingFrame* frame);
   explicit QuicFrame(QuicGoAwayFrame* frame);
   explicit QuicFrame(QuicWindowUpdateFrame* frame);
   explicit QuicFrame(QuicBlockedFrame* frame);
@@ -1012,14 +1017,15 @@ struct NET_EXPORT_PRIVATE QuicFrame {
 
   QuicFrameType type;
   union {
-    QuicPaddingFrame* padding_frame;
+    // Frames smaller than a pointer are inline.
+    QuicPaddingFrame padding_frame;
+    QuicMtuDiscoveryFrame mtu_discovery_frame;
+    QuicPingFrame ping_frame;
+
+    // Frames larger than a pointer.
     QuicStreamFrame* stream_frame;
     QuicAckFrame* ack_frame;
-    QuicMtuDiscoveryFrame* mtu_discovery_frame;
-
     QuicStopWaitingFrame* stop_waiting_frame;
-
-    QuicPingFrame* ping_frame;
     QuicRstStreamFrame* rst_stream_frame;
     QuicConnectionCloseFrame* connection_close_frame;
     QuicGoAwayFrame* goaway_frame;
@@ -1027,6 +1033,9 @@ struct NET_EXPORT_PRIVATE QuicFrame {
     QuicBlockedFrame* blocked_frame;
   };
 };
+// QuicFrameType consumes 8 bytes with padding.
+static_assert(sizeof(QuicFrame) <= 16,
+              "Frames larger than 8 bytes should be referenced by pointer.");
 
 typedef std::vector<QuicFrame> QuicFrames;
 
@@ -1180,25 +1189,25 @@ struct NET_EXPORT_PRIVATE TransmissionInfo {
                    QuicPacketNumberLength packet_number_length,
                    TransmissionType transmission_type,
                    QuicTime sent_time,
-                   QuicByteCount bytes_sent,
+                   QuicPacketLength bytes_sent,
                    bool is_fec_packet);
 
   RetransmittableFrames* retransmittable_frames;
   QuicPacketNumberLength packet_number_length;
+  QuicPacketLength bytes_sent;
+  uint16 nack_count;
   QuicTime sent_time;
-  QuicByteCount bytes_sent;
-  QuicPacketCount nack_count;
   // Reason why this packet was transmitted.
   TransmissionType transmission_type;
-  // Stores the packet numbers of all transmissions of this packet.
-  // Must always be nullptr or have multiple elements.
-  PacketNumberList* all_transmissions;
   // In flight packets have not been abandoned or lost.
   bool in_flight;
   // True if the packet can never be acked, so it can be removed.
   bool is_unackable;
   // True if the packet is an FEC packet.
   bool is_fec_packet;
+  // Stores the packet numbers of all transmissions of this packet.
+  // Must always be nullptr or have multiple elements.
+  PacketNumberList* all_transmissions;
 };
 
 // Convenience wrapper to wrap an iovec array and the total length, which must

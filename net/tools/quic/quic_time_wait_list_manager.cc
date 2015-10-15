@@ -80,8 +80,7 @@ class QuicTimeWaitListManager::QueuedPacket {
 QuicTimeWaitListManager::QuicTimeWaitListManager(
     QuicPacketWriter* writer,
     QuicServerSessionVisitor* visitor,
-    QuicConnectionHelperInterface* helper,
-    const QuicVersionVector& supported_versions)
+    QuicConnectionHelperInterface* helper)
     : time_wait_period_(
           QuicTime::Delta::FromSeconds(FLAGS_quic_time_wait_list_seconds)),
       connection_id_clean_up_alarm_(

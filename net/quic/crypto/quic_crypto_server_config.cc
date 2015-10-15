@@ -120,7 +120,6 @@ class VerifyNonceIsValidAndUniqueCallback
                InsertStatus nonce_error) override {
     DVLOG(1) << "Using client nonce, unique: " << nonce_is_valid_and_unique
              << " nonce_error: " << nonce_error;
-    result_->info.unique = nonce_is_valid_and_unique;
     if (!nonce_is_valid_and_unique) {
       HandshakeFailureReason client_nonce_error;
       switch (nonce_error) {
@@ -168,12 +167,7 @@ const char QuicCryptoServerConfig::TESTING[] = "secret string for testing";
 
 ClientHelloInfo::ClientHelloInfo(const IPAddressNumber& in_client_ip,
                                  QuicWallTime in_now)
-    : client_ip(in_client_ip),
-      now(in_now),
-      valid_source_address_token(false),
-      client_nonce_well_formed(false),
-      unique(false) {
-}
+    : client_ip(in_client_ip), now(in_now), valid_source_address_token(false) {}
 
 ClientHelloInfo::~ClientHelloInfo() {
 }
@@ -617,10 +611,7 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
     return QUIC_HANDSHAKE_FAILED;
   }
 
-  if (!info.valid_source_address_token ||
-      !info.client_nonce_well_formed ||
-      !info.unique ||
-      !requested_config.get()) {
+  if (!info.reject_reasons.empty() || !requested_config.get()) {
     BuildRejection(*primary_config, client_hello, info,
                    validate_chlo_result.cached_network_params,
                    use_stateless_rejects, server_designated_connection_id, rand,
@@ -1032,10 +1023,8 @@ void QuicCryptoServerConfig::EvaluateClientHello(
     }
   }
 
-  if (client_hello.GetStringPiece(kNONC, &info->client_nonce) &&
-      info->client_nonce.size() == kNonceSize) {
-    info->client_nonce_well_formed = true;
-  } else {
+  if (!client_hello.GetStringPiece(kNONC, &info->client_nonce) ||
+      info->client_nonce.size() != kNonceSize) {
     info->reject_reasons.push_back(CLIENT_NONCE_INVALID_FAILURE);
     // Invalid client nonce.
     DVLOG(1) << "Invalid client nonce.";
@@ -1046,27 +1035,36 @@ void QuicCryptoServerConfig::EvaluateClientHello(
     found_error = true;
   }
 
-  if (!replay_protection_) {
-    if (!found_error) {
-      info->unique = true;
+  // Server nonce is optional, and used for key derivation if present.
+  client_hello.GetStringPiece(kServerNonceTag, &info->server_nonce);
+
+  if (version > QUIC_VERSION_26) {
+    DVLOG(1) << "No 0-RTT replay protection in QUIC_VERSION_27 and higher.";
+    // If the server nonce is empty and we're requiring handshake confirmation
+    // for DoS reasons then we must reject the CHLO.
+    if (FLAGS_quic_require_handshake_confirmation &&
+        info->server_nonce.empty()) {
+      info->reject_reasons.push_back(SERVER_NONCE_REQUIRED_FAILURE);
     }
+    helper.ValidationComplete(QUIC_NO_ERROR, "");
+    return;
+  }
+
+  if (!replay_protection_) {
     DVLOG(1) << "No replay protection.";
     helper.ValidationComplete(QUIC_NO_ERROR, "");
     return;
   }
 
-  client_hello.GetStringPiece(kServerNonceTag, &info->server_nonce);
   if (!info->server_nonce.empty()) {
     // If the server nonce is present, use it to establish uniqueness.
     HandshakeFailureReason server_nonce_error =
         ValidateServerNonce(info->server_nonce, info->now);
-    if (server_nonce_error == HANDSHAKE_OK) {
-      info->unique = true;
-    } else {
+    bool is_unique = server_nonce_error == HANDSHAKE_OK;
+    if (!is_unique) {
       info->reject_reasons.push_back(server_nonce_error);
-      info->unique = false;
     }
-    DVLOG(1) << "Using server nonce, unique: " << info->unique;
+    DVLOG(1) << "Using server nonce, unique: " << is_unique;
     helper.ValidationComplete(QUIC_NO_ERROR, "");
     return;
   }

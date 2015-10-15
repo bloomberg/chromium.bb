@@ -146,6 +146,7 @@ const char* QuicUtils::StreamErrorToString(QuicRstStreamErrorCode error) {
     RETURN_STRING_LITERAL(QUIC_STREAM_PEER_GOING_AWAY);
     RETURN_STRING_LITERAL(QUIC_STREAM_CANCELLED);
     RETURN_STRING_LITERAL(QUIC_RST_ACKNOWLEDGEMENT);
+    RETURN_STRING_LITERAL(QUIC_REFUSED_STREAM);
     RETURN_STRING_LITERAL(QUIC_STREAM_LAST_ERROR);
   }
   // Return a default value so that we return this when |error| doesn't match

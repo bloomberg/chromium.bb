@@ -42,7 +42,7 @@ class NET_EXPORT_PRIVATE QuicUnackedPacketMap {
   bool IsUnacked(QuicPacketNumber packet_number) const;
 
   // Sets the nack count to the max of the current nack count and |min_nacks|.
-  void NackPacket(QuicPacketNumber packet_number, QuicPacketCount min_nacks);
+  void NackPacket(QuicPacketNumber packet_number, uint16 min_nacks);
 
   // Marks |packet_number| as no longer in flight.
   void RemoveFromInFlight(QuicPacketNumber packet_number);

@@ -416,8 +416,7 @@ void QuicConnectionLogger::OnFrameAddedToPacket(const QuicFrame& frame) {
       ++num_blocked_frames_sent_;
       net_log_.AddEvent(
           NetLog::TYPE_QUIC_SESSION_BLOCKED_FRAME_SENT,
-          base::Bind(&NetLogQuicBlockedFrameCallback,
-                     frame.blocked_frame));
+          base::Bind(&NetLogQuicBlockedFrameCallback, frame.blocked_frame));
       break;
     case STOP_WAITING_FRAME:
       net_log_.AddEvent(

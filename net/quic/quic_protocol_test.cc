@@ -14,7 +14,7 @@ namespace test {
 namespace {
 
 TEST(QuicProtocolTest, AdjustErrorForVersion) {
-  ASSERT_EQ(8, QUIC_STREAM_LAST_ERROR)
+  ASSERT_EQ(9, QUIC_STREAM_LAST_ERROR)
       << "Any additions to QuicRstStreamErrorCode require an addition to "
       << "AdjustErrorForVersion and this associated test.";
 

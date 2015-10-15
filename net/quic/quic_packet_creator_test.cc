@@ -1006,7 +1006,7 @@ TEST_P(QuicPacketCreatorTest, AddFrameAndSerialize) {
   EXPECT_TRUE(creator_.HasPendingFrames());
 
   QuicPaddingFrame padding_frame;
-  EXPECT_TRUE(creator_.AddSavedFrame(QuicFrame(&padding_frame)));
+  EXPECT_TRUE(creator_.AddSavedFrame(QuicFrame(padding_frame)));
   EXPECT_TRUE(creator_.HasPendingFrames());
   EXPECT_EQ(0u, creator_.BytesFree());
 

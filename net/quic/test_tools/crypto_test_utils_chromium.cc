@@ -116,7 +116,7 @@ ProofSource* CryptoTestUtils::ProofSourceForTesting() {
   ProofSourceChromium* source = new ProofSourceChromium();
   base::FilePath certs_dir = GetTestCertsDirectory();
   CHECK(source->Initialize(
-      certs_dir.AppendASCII("quic_chain.crt"),
+      certs_dir.AppendASCII("quic_test.example.com.crt"),
       certs_dir.AppendASCII("quic_test.example.com.key.pkcs8")));
   return source;
 }

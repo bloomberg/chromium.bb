@@ -57,16 +57,14 @@ QuicPacketGenerator::~QuicPacketGenerator() {
   for (QuicFrame& frame : queued_control_frames_) {
     switch (frame.type) {
       case PADDING_FRAME:
-        delete frame.padding_frame;
+      case MTU_DISCOVERY_FRAME:
+      case PING_FRAME:
         break;
       case STREAM_FRAME:
         delete frame.stream_frame;
         break;
       case ACK_FRAME:
         delete frame.ack_frame;
-        break;
-      case MTU_DISCOVERY_FRAME:
-        delete frame.mtu_discovery_frame;
         break;
       case RST_STREAM_FRAME:
         delete frame.rst_stream_frame;
@@ -85,9 +83,6 @@ QuicPacketGenerator::~QuicPacketGenerator() {
         break;
       case STOP_WAITING_FRAME:
         delete frame.stop_waiting_frame;
-        break;
-      case PING_FRAME:
-        delete frame.ping_frame;
         break;
       case NUM_FRAME_TYPES:
         DCHECK(false) << "Cannot delete type: " << frame.type;
@@ -250,7 +245,7 @@ void QuicPacketGenerator::GenerateMtuDiscoveryPacket(
   // The MTU discovery frame is allocated on the stack, since it is going to be
   // serialized within this function.
   QuicMtuDiscoveryFrame mtu_discovery_frame;
-  QuicFrame frame(&mtu_discovery_frame);
+  QuicFrame frame(mtu_discovery_frame);
 
   // Send the probe packet with the new length.
   SetMaxPacketLength(target_mtu, /*force=*/true);

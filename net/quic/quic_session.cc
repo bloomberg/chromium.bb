@@ -679,7 +679,12 @@ ReliableQuicStream* QuicSession::GetIncomingDynamicStream(
     // Check if the new number of open streams would cause the number of
     // open streams to exceed the limit.
     if (GetNumOpenStreams() >= get_max_open_streams()) {
-      CloseConnection(QUIC_TOO_MANY_OPEN_STREAMS);
+      if (connection()->version() <= QUIC_VERSION_27) {
+        CloseConnection(QUIC_TOO_MANY_OPEN_STREAMS);
+      } else {
+        // Refuse to open the stream.
+        SendRstStream(stream_id, QUIC_REFUSED_STREAM, 0);
+      }
       return nullptr;
     }
   }
