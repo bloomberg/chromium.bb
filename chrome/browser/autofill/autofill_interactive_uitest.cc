@@ -50,6 +50,7 @@
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/test_utils.h"
 #include "net/base/net_errors.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_status.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -160,6 +161,9 @@ class AutofillInteractiveTest : public InProcessBrowserTest {
     gfx::Point reset_mouse(GetWebContents()->GetContainerBounds().origin());
     reset_mouse = gfx::Point(reset_mouse.x() + 5, reset_mouse.y() + 5);
     ASSERT_TRUE(ui_test_utils::SendMouseMoveSync(reset_mouse));
+
+    ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+    InProcessBrowserTest::SetUpOnMainThread();
   }
 
   void TearDownOnMainThread() override {
@@ -1172,8 +1176,6 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_AutofillAfterTranslate) {
 #define MAYBE_ComparePhoneNumbers ComparePhoneNumbers
 #endif  // defined(OS_WIN) || defined(OFFICIAL_BUILD)
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_ComparePhoneNumbers) {
-  ASSERT_TRUE(test_server()->Start());
-
   AutofillProfile profile;
   profile.SetRawInfo(NAME_FIRST, ASCIIToUTF16("Bob"));
   profile.SetRawInfo(NAME_LAST, ASCIIToUTF16("Smith"));
@@ -1184,7 +1186,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_ComparePhoneNumbers) {
   profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, ASCIIToUTF16("1-408-555-4567"));
   SetTestProfile(browser(), profile);
 
-  GURL url = test_server()->GetURL("files/autofill/form_phones.html");
+  GURL url = embedded_test_server()->GetURL("/autofill/form_phones.html");
   ui_test_utils::NavigateToURL(browser(), url);
   PopulateForm("NAME_FIRST");
 
@@ -1216,8 +1218,6 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_ComparePhoneNumbers) {
 #endif  // defined(OFFICIAL_BUILD)
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
                        MAYBE_NoAutofillForReadOnlyFields) {
-  ASSERT_TRUE(test_server()->Start());
-
   std::string addr_line1("1234 H St.");
 
   AutofillProfile profile;
@@ -1232,7 +1232,8 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
   profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, ASCIIToUTF16("408-871-4567"));
   SetTestProfile(browser(), profile);
 
-  GURL url = test_server()->GetURL("files/autofill/read_only_field_test.html");
+  GURL url =
+      embedded_test_server()->GetURL("/autofill/read_only_field_test.html");
   ui_test_utils::NavigateToURL(browser(), url);
   PopulateForm("firstname");
 
@@ -1247,11 +1248,10 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
 //   3. Fill form using a saved profile.
 // Flakily times out: http://crbug.com/270341
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, DISABLED_FormFillableOnReset) {
-  ASSERT_TRUE(test_server()->Start());
-
   CreateTestProfile();
 
-  GURL url = test_server()->GetURL("files/autofill/autofill_test_form.html");
+  GURL url =
+      embedded_test_server()->GetURL("/autofill/autofill_test_form.html");
   ui_test_utils::NavigateToURL(browser(), url);
   PopulateForm("NAME_FIRST");
 
@@ -1275,12 +1275,10 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, DISABLED_FormFillableOnReset) {
 // Flakily times out: http://crbug.com/270341
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
                        DISABLED_DistinguishMiddleInitialWithinName) {
-  ASSERT_TRUE(test_server()->Start());
-
   CreateTestProfile();
 
-  GURL url = test_server()->GetURL(
-      "files/autofill/autofill_middleinit_form.html");
+  GURL url =
+      embedded_test_server()->GetURL("/autofill/autofill_middleinit_form.html");
   ui_test_utils::NavigateToURL(browser(), url);
   PopulateForm("NAME_FIRST");
 
@@ -1292,8 +1290,6 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
 // Flakily times out: http://crbug.com/270341
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
                        DISABLED_MultipleEmailFilledByOneUserGesture) {
-  ASSERT_TRUE(test_server()->Start());
-
   std::string email("bsmith@gmail.com");
 
   AutofillProfile profile;
@@ -1303,8 +1299,8 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
   profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, ASCIIToUTF16("4088714567"));
   SetTestProfile(browser(), profile);
 
-  GURL url = test_server()->GetURL(
-      "files/autofill/autofill_confirmemail_form.html");
+  GURL url = embedded_test_server()->GetURL(
+      "/autofill/autofill_confirmemail_form.html");
   ui_test_utils::NavigateToURL(browser(), url);
   PopulateForm("NAME_FIRST");
 
@@ -1319,8 +1315,6 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
 // Flakily times out: http://crbug.com/281527
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
                        DISABLED_FormFillLatencyAfterSubmit) {
-  ASSERT_TRUE(test_server()->Start());
-
   std::vector<std::string> cities;
   cities.push_back("San Jose");
   cities.push_back("San Francisco");
@@ -1361,8 +1355,8 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
   LOG(INFO) << "Created " << kNumProfiles << " profiles in " <<
                (base::Time::Now() - start_time).InSeconds() << " seconds.";
 
-  GURL url = test_server()->GetURL(
-      "files/autofill/latency_after_submit_test.html");
+  GURL url = embedded_test_server()->GetURL(
+      "/autofill/latency_after_submit_test.html");
   ui_test_utils::NavigateToURL(browser(), url);
   PopulateForm("NAME_FIRST");
 

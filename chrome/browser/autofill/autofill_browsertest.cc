@@ -43,6 +43,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/test_utils.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -127,6 +128,9 @@ class AutofillTest : public InProcessBrowserTest {
   void SetUpOnMainThread() override {
     // Don't want Keychain coming up on Mac.
     test::DisableSystemServices(browser()->profile()->GetPrefs());
+
+    ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+    InProcessBrowserTest::SetUpOnMainThread();
   }
 
   void TearDownOnMainThread() override {
@@ -194,7 +198,7 @@ class AutofillTest : public InProcessBrowserTest {
                                     const std::string& submit_js,
                                     bool simulate_click,
                                     bool expect_personal_data_change) {
-    GURL url = test_server()->GetURL("files/autofill/" + filename);
+    GURL url = embedded_test_server()->GetURL("/autofill/" + filename);
     chrome::NavigateParams params(browser(), url,
                                   ui::PAGE_TRANSITION_LINK);
     params.disposition = NEW_FOREGROUND_TAB;
@@ -235,8 +239,6 @@ class AutofillTest : public InProcessBrowserTest {
   // Aggregate profiles from forms into Autofill preferences. Returns the number
   // of parsed profiles.
   int AggregateProfilesIntoAutofillPrefs(const std::string& filename) {
-    CHECK(test_server()->Start());
-
     std::string data;
     base::FilePath data_file =
         ui_test_utils::GetTestFilePath(base::FilePath().AppendASCII("autofill"),
@@ -524,7 +526,6 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, InvalidCreditCardNumberIsNotAggregated) {
     return;
 #endif
 
-  ASSERT_TRUE(test_server()->Start());
   std::string card("4408 0412 3456 7890");
   ASSERT_FALSE(autofill::IsValidCreditCardNumber(ASCIIToUTF16(card)));
   SubmitCreditCard("Bob Smith", card.c_str(), "12", "2014");
@@ -545,7 +546,6 @@ IN_PROC_BROWSER_TEST_F(AutofillTest,
     return;
 #endif
 
-  ASSERT_TRUE(test_server()->Start());
   SubmitCreditCard("Bob Smith", "4408 0412 3456 7893", "12", "2014");
   SubmitCreditCard("Jane Doe", "4417-1234-5678-9113", "10", "2013");
 
@@ -562,7 +562,6 @@ IN_PROC_BROWSER_TEST_F(AutofillTest,
 // The minimum required address fields must be specified: First Name, Last Name,
 // Address Line 1, City, Zip Code, and State.
 IN_PROC_BROWSER_TEST_F(AutofillTest, AggregatesMinValidProfile) {
-  ASSERT_TRUE(test_server()->Start());
   FormMap data;
   data["NAME_FIRST"] = "Bob";
   data["NAME_LAST"] = "Smith";
@@ -577,7 +576,6 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, AggregatesMinValidProfile) {
 
 // Different Javascript to submit the form.
 IN_PROC_BROWSER_TEST_F(AutofillTest, AggregatesMinValidProfileDifferentJS) {
-  ASSERT_TRUE(test_server()->Start());
   FormMap data;
   data["NAME_FIRST"] = "Bob";
   data["NAME_LAST"] = "Smith";
@@ -597,7 +595,6 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, AggregatesMinValidProfileDifferentJS) {
 // which prevents submission of the form. Will not update the user's personal
 // data.
 IN_PROC_BROWSER_TEST_F(AutofillTest, ProfilesNotAggregatedWithSubmitHandler) {
-  ASSERT_TRUE(test_server()->Start());
   FormMap data;
   data["NAME_FIRST"] = "Bob";
   data["NAME_LAST"] = "Smith";
@@ -642,7 +639,6 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, ProfilesNotAggregatedWithSubmitHandler) {
 // The minimum required address fields must be specified: First Name, Last Name,
 // Address Line 1, City, Zip Code, and State.
 IN_PROC_BROWSER_TEST_F(AutofillTest, ProfilesNotAggregatedWithNoAddress) {
-  ASSERT_TRUE(test_server()->Start());
   FormMap data;
   data["NAME_FIRST"] = "Bob";
   data["NAME_LAST"] = "Smith";
@@ -657,7 +653,6 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, ProfilesNotAggregatedWithNoAddress) {
 
 // Test Autofill does not aggregate profiles with an invalid email.
 IN_PROC_BROWSER_TEST_F(AutofillTest, ProfilesNotAggregatedWithInvalidEmail) {
-  ASSERT_TRUE(test_server()->Start());
   FormMap data;
   data["NAME_FIRST"] = "Bob";
   data["NAME_LAST"] = "Smith";
@@ -677,7 +672,6 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, ProfilesNotAggregatedWithInvalidEmail) {
 // The data file contains two profiles with valid phone numbers and two
 // profiles with invalid phone numbers from their respective country.
 IN_PROC_BROWSER_TEST_F(AutofillTest, ProfileSavedWithValidCountryPhone) {
-  ASSERT_TRUE(test_server()->Start());
   std::vector<FormMap> profiles;
 
   FormMap data1;
@@ -747,7 +741,6 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, ProfileSavedWithValidCountryPhone) {
 // Prepend country codes when formatting phone numbers, but only if the user
 // provided one in the first place.
 IN_PROC_BROWSER_TEST_F(AutofillTest, AppendCountryCodeForAggregatedPhones) {
-  ASSERT_TRUE(test_server()->Start());
   FormMap data;
   data["NAME_FIRST"] = "Bob";
   data["NAME_LAST"] = "Smith";
@@ -798,7 +791,6 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, AppendCountryCodeForAggregatedPhones) {
 #endif
 
 IN_PROC_BROWSER_TEST_F(AutofillTest, MAYBE_UsePlusSignForInternationalNumber) {
-  ASSERT_TRUE(test_server()->Start());
   std::vector<FormMap> profiles;
 
   FormMap data1;
@@ -881,7 +873,6 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, CCInfoNotStoredWhenAutocompleteOff) {
     return;
 #endif
 
-  ASSERT_TRUE(test_server()->Start());
   FormMap data;
   data["CREDIT_CARD_NAME"] = "Bob Smith";
   data["CREDIT_CARD_NUMBER"] = "4408041234567893";
@@ -896,8 +887,6 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, CCInfoNotStoredWhenAutocompleteOff) {
 
 // Test profile not aggregated if email found in non-email field.
 IN_PROC_BROWSER_TEST_F(AutofillTest, ProfileWithEmailInOtherFieldNotSaved) {
-  ASSERT_TRUE(test_server()->Start());
-
   FormMap data;
   data["NAME_FIRST"] = "Bob";
   data["NAME_LAST"] = "Smith";
