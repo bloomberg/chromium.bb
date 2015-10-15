@@ -106,6 +106,10 @@ class DownloadItemNotification : public DownloadNotification,
   // goes visible. The initial value is true so it gets shown on initial update.
   bool show_next_ = true;
 
+  // Flag if the notification has been closed or not. Setting this flag
+  // prevents updates after close.
+  bool closed_ = false;
+
   int image_resource_id_ = 0;
   std::pair<gfx::VectorIconId, SkColor> vector_icon_params_;
   content::DownloadItem::DownloadState previous_download_state_ =

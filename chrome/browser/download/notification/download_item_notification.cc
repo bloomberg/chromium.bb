@@ -204,6 +204,7 @@ void DownloadItemNotification::OnNotificationClose() {
   if (item_ && item_->IsDangerous() && !item_->IsDone()) {
     content::RecordAction(
         UserMetricsAction("DownloadNotification.Close_Dangerous"));
+    closed_ = true;  // Should be set before cancelling the download.
     item_->Cancel(true /* by_user */);
     return;
   }
@@ -331,7 +332,7 @@ void DownloadItemNotification::Update() {
        (download_state == content::DownloadItem::INTERRUPTED &&
         previous_download_state_ != content::DownloadItem::INTERRUPTED));
 
-  if (IsNotificationVisible()) {
+  if (IsNotificationVisible() && !closed_) {
     UpdateNotificationData(popup ? UPDATE_AND_POPUP : UPDATE);
   } else {
     if (show_next_ || popup)
@@ -416,6 +417,7 @@ void DownloadItemNotification::UpdateNotificationData(
   notification_->set_buttons(notification_actions);
 
   if (type == ADD) {
+    closed_ = false;
     g_browser_process->notification_ui_manager()->
         Add(*notification_, profile());
   } else if (type == UPDATE ||
@@ -443,6 +445,7 @@ void DownloadItemNotification::UpdateNotificationData(
         Update(*notification_, profile());
   } else if (type == UPDATE_AND_POPUP) {
     CloseNotificationByNonUser();
+    closed_ = false;
     g_browser_process->notification_ui_manager()->
         Add(*notification_, profile());
   } else {
@@ -574,6 +577,7 @@ void DownloadItemNotification::DisablePopup() {
   // doesn't pop-up itself so this logic works as disabling pop-up.
   CloseNotificationByNonUser();
   notification_->set_priority(message_center::LOW_PRIORITY);
+  closed_ = false;
   g_browser_process->notification_ui_manager()->Add(*notification_, profile());
 }
 
