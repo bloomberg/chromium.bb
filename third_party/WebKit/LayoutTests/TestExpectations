@@ -691,8 +691,6 @@ crbug.com/443615 [ Linux Win ] imported/csswg-test/css-shapes-1/shape-outside/su
 
 crbug.com/443379 imported/web-platform-tests/gamepad/idlharness.html [ Failure Timeout ]
 
-crbug.com/443382 imported/web-platform-tests/subresource-integrity/subresource-integrity.html [ Failure Timeout ]
-
 crbug.com/396775 compositing/overflow/reflected-overlay-scrollbars-should-appear-without-compositing.html [ ImageOnlyFailure ]
 crbug.com/396775 virtual/prefer_compositing_to_lcd_text/compositing/overflow/reflected-overlay-scrollbars-should-appear-without-compositing.html [ ImageOnlyFailure ]
 

@@ -158,8 +158,8 @@ imported/web-platform-tests/server-side.md [ Skip ]
 imported/web-platform-tests/service-workers [ Skip ]
 ## Owners: kochi@chromium.org crbug.com/505364
 # imported/web-platform-tests/shadow-dom [ Pass ]
-## Owners: mkwst@chromium.org
-# imported/web-platform-tests/subresource-integrity [ Pass ]
+## Owners: jww@chromium.org
+imported/web-platform-tests/subresource-integrity [ Skip ]
 imported/web-platform-tests/svg [ Skip ]
 imported/web-platform-tests/tools [ Skip ]
 imported/web-platform-tests/touch-events [ Skip ]
