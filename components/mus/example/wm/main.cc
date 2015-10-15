@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/mus/example/wm/wm_application_delegate.h"
+#include "components/mus/example/wm/window_manager_application.h"
 #include "mojo/application/public/cpp/application_runner.h"
 #include "third_party/mojo/src/mojo/public/c/system/main.h"
 
 MojoResult MojoMain(MojoHandle shell_handle) {
-  mojo::ApplicationRunner runner(new WMApplicationDelegate);
+  mojo::ApplicationRunner runner(new WindowManagerApplication);
   return runner.Run(shell_handle);
 }

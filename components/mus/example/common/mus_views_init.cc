@@ -4,9 +4,9 @@
 
 #include "components/mus/example/common/mus_views_init.h"
 
-#include "components/mus/example/wm/wm.mojom.h"
 #include "components/mus/public/cpp/view_tree_connection.h"
 #include "components/mus/public/interfaces/view_tree.mojom.h"
+#include "components/mus/public/interfaces/window_manager.mojom.h"
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "ui/views/mus/aura_init.h"
@@ -17,7 +17,7 @@ MUSViewsInit::MUSViewsInit(mojo::ApplicationImpl* app) : app_(app) {}
 MUSViewsInit::~MUSViewsInit() {}
 
 mus::View* MUSViewsInit::CreateWindow() {
-  mojom::WMPtr wm;
+  mus::mojom::WindowManagerPtr wm;
   mojo::URLRequestPtr request(mojo::URLRequest::New());
   request->url = "mojo:example_wm";
   app_->ConnectToService(request.Pass(), &wm);

@@ -15,6 +15,7 @@ mojom("interfaces") {
     "surface_id.mojom",
     "view_tree.mojom",
     "view_tree_host.mojom",
+    "window_manager.mojom",
   ]
 
   import_dirs = [

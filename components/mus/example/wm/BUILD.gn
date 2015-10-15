@@ -6,23 +6,6 @@ import("//build/config/ui.gni")
 import("//mojo/public/mojo_application.gni")
 import("//third_party/mojo/src/mojo/public/tools/bindings/mojom.gni")
 
-mojom("interfaces") {
-  testonly = true
-
-  sources = [
-    "wm.mojom",
-  ]
-
-  import_dirs = [
-    get_path_info("../../../..", "abspath"),
-    "//mojo/services",
-  ]
-
-  deps = [
-    "//components/mus/public/interfaces",
-  ]
-}
-
 mojo_native_application("wm") {
   output_name = "example_wm"
   testonly = true
@@ -30,16 +13,16 @@ mojo_native_application("wm") {
   sources = [
     "container.h",
     "main.cc",
-    "wm.cc",
-    "wm.h",
-    "wm_application_delegate.cc",
-    "wm_application_delegate.h",
+    "window_manager_application.cc",
+    "window_manager_application.h",
+    "window_manager_impl.cc",
+    "window_manager_impl.h",
   ]
 
   deps = [
-    ":interfaces",
     "//base",
     "//components/mus/public/cpp",
+    "//components/mus/public/interfaces",
     "//mojo/application/public/cpp",
     "//mojo/common:common_base",
   ]

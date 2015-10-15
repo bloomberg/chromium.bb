@@ -17,7 +17,6 @@ source_set("common") {
 
   deps = [
     "//base",
-    "//components/mus/example/wm:interfaces",
     "//components/mus/public/cpp",
     "//components/mus/public/interfaces",
     "//mojo/application/public/cpp",

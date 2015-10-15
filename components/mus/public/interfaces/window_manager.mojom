@@ -1,0 +1,21 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module mus.mojom;
+
+import "components/mus/public/interfaces/view_tree.mojom";
+import "ui/mojo/geometry/geometry.mojom";
+
+// Represents a core interface that should be implemented by any window manager
+// built on top of Mus.
+// For security reasons, methods that take view_ids can only pass view ids
+// created by calls to OpenWindow() from the *same connection* to the window
+// manager.
+interface WindowManager {
+  OpenWindow(mojo.ViewTreeClient client);
+
+  // Resizes the corresponding view to |size| and centers it in the current
+  // context.
+  CenterWindow(uint32 view_id, mojo.Size size);
+};
