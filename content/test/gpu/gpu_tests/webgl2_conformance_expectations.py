@@ -81,7 +81,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     self.Fail('conformance2/buffers/uniform-buffers.html', bug=483282)
     self.Fail('conformance2/glsl3/array-complex-indexing.html', bug=483282)
-    self.Fail('conformance2/glsl3/frag-depth.html', bug=483282)
     self.Fail('conformance2/glsl3/invalid-default-precision.html', bug=483282)
     self.Fail('conformance2/glsl3/sequence-operator-returns-non-constant.html',
         bug=483282)
@@ -103,6 +102,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win'], bug=483282)
     self.Fail('conformance2/glsl3/array-in-complex-expression.html',
         ['win'], bug=483282)
+    self.Fail('conformance2/glsl3/frag-depth.html',
+        ['win'], bug=483282)
     self.Fail('conformance2/glsl3/short-circuiting-in-loop-condition.html',
         ['win'], bug=483282)
     self.Fail('conformance2/reading/read-pixels-from-fbo-test.html',
@@ -110,8 +111,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/renderbuffers/framebuffer-object-attachment.html',
         ['win'], bug=1082) # angle bug ID
     self.Fail('conformance2/rendering/draw-buffers.html',
-        ['win'], bug=483282)
-    self.Fail('conformance2/state/gl-get-calls.html',
         ['win'], bug=483282)
     self.Fail('conformance2/state/gl-object-get-calls.html',
         ['win'], bug=483282)
