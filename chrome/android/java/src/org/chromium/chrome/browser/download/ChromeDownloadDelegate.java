@@ -29,6 +29,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.infobar.ConfirmInfoBar;
 import org.chromium.chrome.browser.infobar.InfoBar;
 import org.chromium.chrome.browser.infobar.InfoBarListeners;
+import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.content.browser.ContentViewDownloadDelegate;
@@ -56,14 +57,17 @@ public class ChromeDownloadDelegate
 
     // The application context.
     private final Context mContext;
-    private final Tab mTab;
+    private Tab mTab;
     private final TabModelSelector mTabModelSelector;
 
     // Pending download request for a dangerous file.
     private DownloadInfo mPendingRequest;
 
+    private final EmptyTabObserver mTabObserver;
+
     @Override
     public void onConfirmInfoBarButtonClicked(ConfirmInfoBar infoBar, boolean confirm) {
+        assert mTab != null;
         if (mPendingRequest.hasDownloadId()) {
             nativeDangerousDownloadValidated(mTab, mPendingRequest.getDownloadId(), confirm);
             if (confirm) {
@@ -115,6 +119,7 @@ public class ChromeDownloadDelegate
     public void onInfoBarDismissed(InfoBar infoBar) {
         if (mPendingRequest != null) {
             if (mPendingRequest.hasDownloadId()) {
+                assert mTab != null;
                 nativeDangerousDownloadValidated(mTab, mPendingRequest.getDownloadId(), false);
             } else if (!mPendingRequest.isGETRequest()) {
                 // Infobar was dismissed, discard the file if a POST download is pending.
@@ -135,6 +140,12 @@ public class ChromeDownloadDelegate
             Context context, TabModelSelector tabModelSelector, Tab tab) {
         mContext = context;
         mTab = tab;
+        mTabObserver = new EmptyTabObserver() {
+            @Override
+            public void onDestroyed(Tab tab) {
+                mTab = null;
+            }
+        };
         mTabModelSelector = tabModelSelector;
         mPendingRequest = null;
     }
@@ -289,6 +300,8 @@ public class ChromeDownloadDelegate
     private void confirmDangerousDownload(DownloadInfo downloadInfo) {
         // A Dangerous file is already pending user confirmation, ignore the new download.
         if (mPendingRequest != null) return;
+        // Tab is already destroyed, no need to add an infobar.
+        if (mTab == null) return;
 
         mPendingRequest = downloadInfo;
 
@@ -297,7 +310,6 @@ public class ChromeDownloadDelegate
         final String titleText = nativeGetDownloadWarningText(mPendingRequest.getFileName());
         final String okButtonText = mContext.getResources().getString(R.string.ok);
         final String cancelButtonText = mContext.getResources().getString(R.string.cancel);
-
         mTab.getInfoBarContainer().addInfoBar(new ConfirmInfoBar(
                 this, drawableId, null, titleText, null, okButtonText, cancelButtonText));
     }
@@ -320,6 +332,11 @@ public class ChromeDownloadDelegate
 
     @Override
     public void requestFileAccess(final long callbackId) {
+        if (mTab == null) {
+            // TODO(tedchoc): Show toast (only when activity is alive).
+            DownloadController.getInstance().onRequestFileAccessResult(callbackId, false);
+            return;
+        }
         final String storagePermission = android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
         final Activity activity = mTab.getWindowAndroid().getActivity().get();
 
@@ -431,6 +448,7 @@ public class ChromeDownloadDelegate
     }
 
     private void launchDownloadInfoBar(DownloadInfo info, String dirName, String fullDirPath) {
+        if (mTab == null) return;
         nativeLaunchDownloadOverwriteInfoBar(
                 ChromeDownloadDelegate.this, mTab, info, info.getFileName(), dirName, fullDirPath);
     }
@@ -584,9 +602,13 @@ public class ChromeDownloadDelegate
 
     /**
      * Close a blank tab just opened for the download purpose.
-     * @return true iff the tab was closed.
+     * @return true iff the tab was (already) closed.
      */
     private boolean closeBlankTab() {
+        if (mTab == null) {
+            // We do not want caller to dismiss infobar.
+            return true;
+        }
         WebContents contents = mTab.getWebContents();
         boolean isInitialNavigation = contents == null
                 || contents.getNavigationController().isInitialNavigation();
