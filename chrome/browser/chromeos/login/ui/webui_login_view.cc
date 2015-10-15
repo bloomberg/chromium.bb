@@ -499,10 +499,4 @@ void WebUILoginView::OnLoginPromptVisible() {
   webui_visible_ = true;
 }
 
-void WebUILoginView::ReturnFocus(bool reverse) {
-  // Return the focus to the web contents.
-  webui_login_->web_contents()->FocusThroughTabTraversal(reverse);
-  GetWidget()->Activate();
-}
-
 }  // namespace chromeos

@@ -158,10 +158,6 @@ class WebUILoginView : public views::View,
   // 2. Notifies OOBE/sign classes.
   void OnLoginPromptVisible();
 
-  // Called when focus is returned from status area.
-  // |reverse| is true when focus is traversed backwards (using Shift-Tab).
-  void ReturnFocus(bool reverse);
-
   content::NotificationRegistrar registrar_;
 
   // Converts keyboard events on the WebContents to accelerators.
