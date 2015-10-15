@@ -477,8 +477,6 @@ void InputRouterImpl::OnHasTouchEventHandlers(bool has_handlers) {
   // modifiers or that all its touch-action modifiers are auto. Resetting the
   // touch-action here allows forwarding of subsequent gestures even if the
   // underlying touches never reach the router.
-  // TODO(jdduke): Reset touch-action only at the end of a touch sequence to
-  // prevent potentially strange mid-sequence behavior, crbug.com/375940.
   if (!has_handlers)
     touch_action_filter_.ResetTouchAction();
 

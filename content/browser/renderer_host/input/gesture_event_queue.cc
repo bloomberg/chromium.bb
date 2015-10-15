@@ -207,7 +207,6 @@ void GestureEventQueue::ProcessGestureAck(InputEventAckState ack_result,
 
   // It's possible that the ack for the second event in an in-flight, coalesced
   // Gesture{Scroll,Pinch}Update pair is received prior to the first event ack.
-  // TODO(jdduke): Unify GSU/GPU pairs into a single event, crbug.com/359115.
   size_t event_index = 0;
   if (ignore_next_ack_ &&
       coalesced_gesture_events_.size() > 1 &&
@@ -248,7 +247,6 @@ void GestureEventQueue::ProcessGestureAck(InputEventAckState ack_result,
   const GestureEventWithLatencyInfo& first_gesture_event =
       coalesced_gesture_events_.front();
 
-  // TODO(jdduke): Unify GSU/GPU pairs into a single event, crbug.com/359115.
   // Check for the coupled GesturePinchUpdate before sending either event,
   // handling the case where the first GestureScrollUpdate ack is synchronous.
   GestureEventWithLatencyInfo second_gesture_event;

@@ -724,8 +724,7 @@ bool InputHandlerProxy::FilterInputEventForFlingBoosting(
                            current_fling_velocity_.y());
 
       // The client expects balanced calls between a consumed GestureFlingStart
-      // and |DidStopFlinging()|. TODO(jdduke): Provide a count parameter to
-      // |DidStopFlinging()| and only send after the accumulated fling ends.
+      // and |DidStopFlinging()|.
       client_->DidStopFlinging();
       return true;
     }

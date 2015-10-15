@@ -2636,7 +2636,6 @@ public class ContentViewCore implements
 
     private boolean showPastePopup(int x, int y) {
         if (!mHasInsertion || !canPaste()) return false;
-        // TODO(jdduke): Factor out all selection/paste-related logic from ContentViewCore.
         final float contentOffsetYPix = mRenderCoordinates.getContentOffsetYPix();
         getPastePopup().show(x, (int) (y + contentOffsetYPix));
         return true;

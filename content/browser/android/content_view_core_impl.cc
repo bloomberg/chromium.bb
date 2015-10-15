@@ -561,8 +561,6 @@ bool ContentViewCoreImpl::FilterInputEvent(const blink::WebInputEvent& event) {
                                                     gesture_type,
                                                     gesture.x * dpi_scale(),
                                                     gesture.y * dpi_scale());
-
-  // TODO(jdduke): Also report double-tap UMA, crbug/347568.
 }
 
 bool ContentViewCoreImpl::HasFocus() {

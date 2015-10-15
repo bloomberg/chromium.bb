@@ -109,7 +109,6 @@ class NullIPCSender : public IPC::Sender {
   size_t sent_count_;
 };
 
-// TODO(jdduke): Use synthetic gesture pipeline, crbug.com/344598.
 typedef std::vector<WebGestureEvent> Gestures;
 Gestures BuildScrollSequence(size_t steps,
                              const gfx::Vector2dF& origin,
@@ -268,7 +267,6 @@ class InputRouterImplPerfTest : public testing::Test {
     return latency;
   }
 
-  // TODO(jdduke): Use synthetic gesture pipeline, crbug.com/344598.
   template <typename EventType>
   void SimulateEventSequence(const char* test_name,
                              const std::vector<EventType>& events,

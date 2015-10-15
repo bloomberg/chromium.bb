@@ -116,10 +116,6 @@ void TouchSelectionController::OnSelectionBoundsChanged(
 
   // It's possible that the bounds temporarily overlap while a selection handle
   // is being dragged, incorrectly reporting a CENTER orientation.
-  // TODO(jdduke): This safeguard is racy, as it's possible the delayed response
-  // from handle positioning occurs *after* the handle dragging has ceased.
-  // Instead, prevent selection -> insertion transitions without an intervening
-  // action or selection clearing of some sort, crbug.com/392696.
   if (is_selection_dragging) {
     if (start_orientation_ == TouchHandleOrientation::CENTER)
       start_orientation_ = start_selection_handle_->orientation();

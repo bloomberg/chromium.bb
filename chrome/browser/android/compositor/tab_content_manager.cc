@@ -94,7 +94,6 @@ class TabContentManager::TabReadbackRequest {
       view->GetWebContents()->GetRenderViewHost()->UnlockBackingStore();
     }
 
-    // TODO(jdduke): Tailor response to different failure values appropriately.
     if (response != content::READBACK_SUCCESS || drop_after_readback_) {
       end_callback_.Run(0.f, SkBitmap());
       return;
