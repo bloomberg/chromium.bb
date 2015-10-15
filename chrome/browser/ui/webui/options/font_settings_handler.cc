@@ -64,7 +64,8 @@ const char kAdvancedFontSettingsExtensionId[] =
 namespace options {
 
 FontSettingsHandler::FontSettingsHandler()
-    : extension_registry_observer_(this) {
+    : extension_registry_observer_(this),
+      weak_ptr_factory_(this) {
 }
 
 FontSettingsHandler::~FontSettingsHandler() {
@@ -190,7 +191,7 @@ void FontSettingsHandler::OnExtensionUnloaded(
 void FontSettingsHandler::HandleFetchFontsData(const base::ListValue* args) {
   content::GetFontListAsync(
       base::Bind(&FontSettingsHandler::FontsListHasLoaded,
-                 base::Unretained(this)));
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void FontSettingsHandler::FontsListHasLoaded(

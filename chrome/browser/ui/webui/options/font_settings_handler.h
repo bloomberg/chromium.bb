@@ -5,7 +5,9 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_OPTIONS_FONT_SETTINGS_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_OPTIONS_FONT_SETTINGS_HANDLER_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/prefs/pref_member.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
@@ -79,6 +81,8 @@ class FontSettingsHandler : public OptionsPageUIHandler,
   ScopedObserver<extensions::ExtensionRegistry,
                  extensions::ExtensionRegistryObserver>
       extension_registry_observer_;
+
+  base::WeakPtrFactory<FontSettingsHandler> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FontSettingsHandler);
 };
