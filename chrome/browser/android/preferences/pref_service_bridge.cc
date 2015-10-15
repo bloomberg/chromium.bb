@@ -70,7 +70,6 @@ bool GetBooleanForContentSetting(ContentSettingsType type) {
     case CONTENT_SETTING_BLOCK:
       return false;
     case CONTENT_SETTING_ALLOW:
-      return true;
     case CONTENT_SETTING_ASK:
     default:
       return true;

@@ -1407,14 +1407,8 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
 #endif
 
     case IDC_SPELLCHECK_MENU:
-      return true;
-
     case IDC_CONTENT_CONTEXT_OPENLINKWITH:
-      return true;
-
     case IDC_CONTENT_CONTEXT_PROTOCOL_HANDLER_SETTINGS:
-      return true;
-
     case IDC_CONTENT_CONTEXT_FORCESAVEPASSWORD:
       return true;
 
