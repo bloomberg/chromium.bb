@@ -12,6 +12,8 @@
 #include "chrome/common/media_galleries/metadata_types.h"
 #include "chrome/utility/chrome_content_utility_client.h"
 #include "chrome/utility/media_galleries/image_metadata_extractor.h"
+#include "chrome/utility/media_galleries/ipc_data_source.h"
+#include "chrome/utility/media_galleries/media_metadata_parser.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/utility/utility_thread.h"
 #include "extensions/common/extension.h"
@@ -51,9 +53,19 @@ void ReleaseProcessIfNeeded() {
   content::UtilityThread::Get()->ReleaseProcessIfNeeded();
 }
 
+void FinishParseMediaMetadata(
+    metadata::MediaMetadataParser* /* parser */,
+    const extensions::api::media_galleries::MediaMetadata& metadata,
+    const std::vector<metadata::AttachedImage>& attached_images) {
+  Send(new ChromeUtilityHostMsg_ParseMediaMetadata_Finished(
+      true, *metadata.ToValue(), attached_images));
+  ReleaseProcessIfNeeded();
+}
+
 }  // namespace
 
-ExtensionsHandler::ExtensionsHandler() {
+ExtensionsHandler::ExtensionsHandler(ChromeContentUtilityClient* utility_client)
+    : utility_client_(utility_client) {
   ExtensionsClient::Set(ChromeExtensionsClient::GetInstance());
 }
 
@@ -73,6 +85,9 @@ bool ExtensionsHandler::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ExtensionsHandler, message)
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_CheckMediaFile, OnCheckMediaFile)
+    IPC_MESSAGE_HANDLER(ChromeUtilityMsg_ParseMediaMetadata,
+                        OnParseMediaMetadata)
+
 #if defined(OS_WIN)
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_ParseITunesPrefXml,
                         OnParseITunesPrefXml)
@@ -111,6 +126,17 @@ void ExtensionsHandler::OnCheckMediaFile(
       base::TimeDelta::FromMilliseconds(milliseconds_of_decoding));
   Send(new ChromeUtilityHostMsg_CheckMediaFile_Finished(check_success));
   ReleaseProcessIfNeeded();
+}
+
+void ExtensionsHandler::OnParseMediaMetadata(
+    const std::string& mime_type, int64 total_size, bool get_attached_images) {
+  // Only one IPCDataSource may be created and added to the list of handlers.
+  scoped_ptr<metadata::IPCDataSource> source(
+      new metadata::IPCDataSource(total_size));
+  metadata::MediaMetadataParser* parser = new metadata::MediaMetadataParser(
+      source.get(), mime_type, get_attached_images);
+  utility_client_->AddHandler(source.Pass());
+  parser->Start(base::Bind(&FinishParseMediaMetadata, base::Owned(parser)));
 }
 
 #if defined(OS_WIN)

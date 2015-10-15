@@ -16,6 +16,8 @@
 #error "Extensions must be enabled"
 #endif
 
+class ChromeContentUtilityClient;
+
 namespace metadata {
 class MediaMetadataParser;
 }
@@ -25,7 +27,7 @@ namespace extensions {
 // Dispatches IPCs for Chrome extensions utility messages.
 class ExtensionsHandler : public UtilityMessageHandler {
  public:
-  ExtensionsHandler();
+  explicit ExtensionsHandler(ChromeContentUtilityClient* utility_client);
   ~ExtensionsHandler() override;
 
   static void PreSandboxStartup();
@@ -37,6 +39,10 @@ class ExtensionsHandler : public UtilityMessageHandler {
   // IPC message handlers.
   void OnCheckMediaFile(int64 milliseconds_of_decoding,
                         const IPC::PlatformFileForTransit& media_file);
+
+  void OnParseMediaMetadata(const std::string& mime_type,
+                            int64 total_size,
+                            bool get_attached_images);
 
 #if defined(OS_WIN)
   void OnParseITunesPrefXml(const std::string& itunes_xml_data);
@@ -64,6 +70,9 @@ class ExtensionsHandler : public UtilityMessageHandler {
 #endif  // defined(OS_WIN)
 
   UtilityHandler utility_handler_;
+
+  // The client that owns this.
+  ChromeContentUtilityClient* const utility_client_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionsHandler);
 };

@@ -30,6 +30,8 @@ class ChromeContentUtilityClient : public content::ContentUtilityClient {
   bool OnMessageReceived(const IPC::Message& message) override;
   void RegisterMojoServices(content::ServiceRegistry* registry) override;
 
+  void AddHandler(scoped_ptr<UtilityMessageHandler> handler);
+
   static void PreSandboxStartup();
 
   // Shared with extensions::ExtensionsHandler.
@@ -72,13 +74,8 @@ class ChromeContentUtilityClient : public content::ContentUtilityClient {
 #if defined(OS_MACOSX)
   void OnAnalyzeDmgFileForDownloadProtection(
       const IPC::PlatformFileForTransit& dmg_file);
-#endif
-#endif
-#if defined(ENABLE_EXTENSIONS)
-  void OnParseMediaMetadata(const std::string& mime_type,
-                            int64 total_size,
-                            bool get_attached_images);
-#endif
+#endif  // defined(OS_MACOSX)
+#endif  // defined(FULL_SAFE_BROWSING)
 
   typedef ScopedVector<UtilityMessageHandler> Handlers;
   Handlers handlers_;
