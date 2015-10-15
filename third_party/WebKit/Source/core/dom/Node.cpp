@@ -1510,7 +1510,7 @@ void Node::showTreeForThisInComposedTree() const
 
 void Node::showNodePathForThis() const
 {
-    Vector<const Node*, 16> chain;
+    WillBeHeapVector<RawPtrWillBeMember<const Node>, 16> chain;
     const Node* node = this;
     while (node->parentOrShadowHostNode()) {
         chain.append(node);
