@@ -1531,17 +1531,6 @@ template("copy_ex") {
     if (defined(invoker.args)) {
       args += invoker.args
     }
-
-    if (defined(invoker.renaming_sources) &&
-        defined(invoker.renaming_destinations)) {
-      sources += invoker.renaming_sources
-      rebased_renaming_sources =
-          rebase_path(invoker.renaming_sources, root_build_dir)
-      args += [ "--renaming-sources=$rebased_renaming_sources" ]
-
-      renaming_destinations = invoker.renaming_destinations
-      args += [ "--renaming-destinations=$renaming_destinations" ]
-    }
   }
 }
 
