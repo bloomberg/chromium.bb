@@ -417,16 +417,12 @@ TEST_F(VisitDatabaseTest, GetVisibleVisitsForURL) {
 }
 
 TEST_F(VisitDatabaseTest, GetHistoryCount) {
-  Time today = Time::Now().LocalMidnight();
-  // Find the beginning of yesterday and the day before yesterday. We cannot use
-  // TimeDelta::FromDays(1), as this simply removes 24 hours and thus does not
-  // work correctly with DST shifts. Instead, we'll jump 36 hours (i.e.
-  // somewhere in the middle of the previous day), and use |LocalMidnight()| to
-  // round down to the beginning of the day in the local time, taking timezones
-  // and DST into account. This is necessary to achieve the same equivalence
-  // class on days as the DATE(..., 'localtime') function in SQL.
-  Time yesterday = (today - TimeDelta::FromHours(36)).LocalMidnight();
-  Time two_days_ago = (yesterday - TimeDelta::FromHours(36)).LocalMidnight();
+  // Start with a day in the middle of summer, so that we are nowhere near
+  // DST shifts.
+  Time today;
+  ASSERT_TRUE(Time::FromString("2015-07-07", &today));
+  Time yesterday = today - TimeDelta::FromDays(1);
+  Time two_days_ago = yesterday - TimeDelta::FromDays(1);
   Time now = two_days_ago;
 
   ui::PageTransition standard_transition = ui::PageTransitionFromInt(
@@ -526,7 +522,14 @@ TEST_F(VisitDatabaseTest, GetHistoryCount) {
   EXPECT_EQ(0, result);
 
   // If this timezone uses DST, test the behavior on days when the time
-  // is shifted forward and backward.
+  // is shifted forward and backward. Note that in this case we cannot use
+  // TimeDelta::FromDays(1) to move one day, as this simply removes 24 hours and
+  // thus does not work correctly with DST shifts. Instead, we'll go back
+  // 1 second (i.e. somewhere in the middle of the previous day), and use
+  // |LocalMidnight()| to round down to the beginning of the day in the local
+  // time, taking timezones and DST into account. This is necessary to achieve
+  // the same equivalence class on days as the DATE(..., 'localtime') function
+  // in SQL.
   Time shift_forward;
   Time shift_backward;
   Time current_day = (two_days_ago - TimeDelta::FromSeconds(1)).LocalMidnight();
