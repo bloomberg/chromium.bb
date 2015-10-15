@@ -612,12 +612,6 @@ String CSSSelector::selectorText(const String& rightSide) const
             str.append(cs->value());
 
             switch (cs->pseudoType()) {
-            case PseudoNot:
-                ASSERT(cs->selectorList());
-                str.append('(');
-                str.append(cs->selectorList()->first()->selectorText());
-                str.append(')');
-                break;
             case PseudoNthChild:
             case PseudoNthLastChild:
             case PseudoNthOfType:
@@ -646,52 +640,22 @@ String CSSSelector::selectorText(const String& rightSide) const
                 str.append(cs->argument());
                 str.append(')');
                 break;
-            case PseudoAny: {
-                str.append('(');
-                const CSSSelector* firstSubSelector = cs->selectorList()->first();
-                for (const CSSSelector* subSelector = firstSubSelector; subSelector; subSelector = CSSSelectorList::next(*subSelector)) {
-                    if (subSelector != firstSubSelector)
-                        str.append(',');
-                    str.append(subSelector->selectorText());
-                }
-                str.append(')');
+            case PseudoNot:
+                ASSERT(cs->selectorList());
                 break;
-            }
             case PseudoHost:
-            case PseudoHostContext: {
-                if (cs->selectorList()) {
-                    str.append('(');
-                    const CSSSelector* firstSubSelector = cs->selectorList()->first();
-                    for (const CSSSelector* subSelector = firstSubSelector; subSelector; subSelector = CSSSelectorList::next(*subSelector)) {
-                        if (subSelector != firstSubSelector)
-                            str.append(',');
-                        str.append(subSelector->selectorText());
-                    }
-                    str.append(')');
-                }
+            case PseudoHostContext:
+            case PseudoAny:
                 break;
-            }
             default:
                 break;
             }
         } else if (cs->m_match == PseudoElement) {
             str.appendLiteral("::");
             str.append(cs->value());
-
-            if (cs->pseudoType() == PseudoContent) {
-                if (cs->relation() == SubSelector && cs->tagHistory())
-                    return cs->tagHistory()->selectorText() + str.toString() + rightSide;
-            } else if (cs->pseudoType() == PseudoCue) {
-                if (cs->selectorList()) {
-                    str.append('(');
-                    const CSSSelector* firstSubSelector = cs->selectorList()->first();
-                    for (const CSSSelector* subSelector = firstSubSelector; subSelector; subSelector = CSSSelectorList::next(*subSelector)) {
-                        if (subSelector != firstSubSelector)
-                            str.append(',');
-                        str.append(subSelector->selectorText());
-                    }
-                    str.append(')');
-                }
+            // ::content is always stored at the end of the compound.
+            if (cs->pseudoType() == PseudoContent && cs->relation() == SubSelector && cs->tagHistory()) {
+                return cs->tagHistory()->selectorText() + str.toString() + rightSide;
             }
         } else if (cs->isAttributeSelector()) {
             str.append('[');
@@ -734,6 +698,18 @@ String CSSSelector::selectorText(const String& rightSide) const
                 str.append(']');
             }
         }
+
+        if (cs->selectorList()) {
+            str.append('(');
+            const CSSSelector* firstSubSelector = cs->selectorList()->first();
+            for (const CSSSelector* subSelector = firstSubSelector; subSelector; subSelector = CSSSelectorList::next(*subSelector)) {
+                if (subSelector != firstSubSelector)
+                    str.append(',');
+                str.append(subSelector->selectorText());
+            }
+            str.append(')');
+        }
+
         if (cs->relation() != SubSelector || !cs->tagHistory())
             break;
         cs = cs->tagHistory();
