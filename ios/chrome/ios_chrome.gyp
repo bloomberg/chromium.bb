@@ -288,6 +288,8 @@
         'browser/metrics/field_trial_synchronizer.h',
         'browser/metrics/ios_chrome_metrics_service_accessor.cc',
         'browser/metrics/ios_chrome_metrics_service_accessor.h',
+        'browser/metrics/ios_chrome_metrics_service_client.cc',
+        'browser/metrics/ios_chrome_metrics_service_client.h',
         'browser/metrics/ios_chrome_stability_metrics_provider.cc',
         'browser/metrics/ios_chrome_stability_metrics_provider.h',
         'browser/metrics/ios_stability_metrics_provider.h',

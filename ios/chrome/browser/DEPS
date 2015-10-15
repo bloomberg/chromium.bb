@@ -69,9 +69,8 @@ include_rules = [
   "+third_party/google_toolbox_for_mac",
   "+ui",
 
-  # Those don't works on iOS or depends on //content, exclude them.
+  # Those depend on //content; exclude them.
   "-components/metrics/gpu",
-  "-components/metrics/profiler",
 
   # For tests.
   "+ios/chrome/test",
