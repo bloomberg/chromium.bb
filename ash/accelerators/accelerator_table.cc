@@ -264,7 +264,7 @@ const AcceleratorData kDebugAcceleratorData[] = {
     {true, ui::VKEY_W,
      ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
      DEBUG_PRINT_WINDOW_HIERARCHY},
-    {true, ui::VKEY_S,
+    {true, ui::VKEY_D,
      ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
      DEBUG_TOGGLE_DEVICE_SCALE_FACTOR},
     {true, ui::VKEY_B,
