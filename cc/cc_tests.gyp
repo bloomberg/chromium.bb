@@ -299,10 +299,6 @@
         '<@(cc_unit_tests_source_files)',
         '<@(cc_surfaces_unit_tests_source_files)',
       ],
-      'include_dirs': [
-        'test',
-        '.',
-      ],
       'conditions': [
         ['OS == "android"',
           {
@@ -363,10 +359,6 @@
         'trees/layer_tree_host_perftest.cc',
         'trees/occlusion_tracker_perftest.cc',
       ],
-      'include_dirs': [
-        'test',
-        '.',
-      ],
       'conditions': [
         ['OS == "android"',
           {
@@ -388,11 +380,6 @@
     {
       'target_name': 'cc_test_support',
       'type': 'static_library',
-      'include_dirs': [
-        'test',
-        '.',
-        '..',
-      ],
       'dependencies': [
         '../base/base.gyp:base',
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',

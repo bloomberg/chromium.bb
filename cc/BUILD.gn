@@ -661,10 +661,6 @@ source_set("test_support") {
   ]
 
   configs += [ "//build/config:precompiled_headers" ]
-  include_dirs = [
-    ".",
-    "test",
-  ]
 
   public_deps = [
     ":cc",
