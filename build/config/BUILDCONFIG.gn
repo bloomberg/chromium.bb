@@ -431,7 +431,8 @@ set_defaults("static_library") {
   configs = _native_compiler_configs
 }
 
-# Shared library defaults (also for components in component mode).
+# Shared library and loadable module defaults (also for components in component
+# mode).
 _shared_library_configs =
     _native_compiler_configs + [ "//build/config:default_libs" ]
 if (is_win) {
@@ -445,6 +446,9 @@ if (is_win) {
       [ "//build/config/android:hide_native_jni_exports" ]
 }
 set_defaults("shared_library") {
+  configs = _shared_library_configs
+}
+set_defaults("loadable_module") {
   configs = _shared_library_configs
 }
 if (is_component_build) {

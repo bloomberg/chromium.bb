@@ -285,6 +285,45 @@ template("gcc_toolchain") {
       depend_output = tocfile
     }
 
+    tool("solink_module") {
+      soname = "{{target_output_name}}{{output_extension}}"  # e.g. "libfoo.so".
+      sofile = "{{root_out_dir}}/$soname"  # Possibly including toolchain dir.
+      if (shlib_subdir != ".") {
+        sofile = "{{root_out_dir}}/$shlib_subdir/$soname"
+      }
+      rspfile = sofile + ".rsp"
+
+      unstripped_sofile = sofile
+      if (defined(invoker.strip)) {
+        unstripped_sofile = "{{root_out_dir}}/lib.unstripped/$soname"
+      }
+
+      command = "$ld -shared {{ldflags}} -o $unstripped_sofile -Wl,-soname=$soname @$rspfile"
+
+      if (defined(invoker.strip)) {
+        strip_command =
+            "${invoker.strip} --strip-unneeded -o $sofile $unstripped_sofile"
+        command += " && " + strip_command
+      }
+      rspfile_content = "-Wl,--whole-archive {{inputs}} {{solibs}} -Wl,--no-whole-archive $solink_libs_section_prefix {{libs}} $solink_libs_section_postfix"
+
+      description = "SOLINK_MODULE $sofile"
+
+      # Use this for {{output_extension}} expansions unless a target manually
+      # overrides it (in which case {{output_extension}} will be what the target
+      # specifies).
+      default_output_extension = default_shlib_extension
+
+      output_prefix = "lib"
+
+      outputs = [
+        sofile,
+      ]
+      if (sofile != unstripped_sofile) {
+        outputs += [ unstripped_sofile ]
+      }
+    }
+
     tool("link") {
       exename = "{{target_output_name}}{{output_extension}}"
       outfile = "{{root_out_dir}}/$exename"

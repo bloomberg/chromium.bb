@@ -167,6 +167,33 @@ template("mac_toolchain") {
       depend_output = tocname
     }
 
+    tool("solink_module") {
+      sofile = "{{root_out_dir}}/{{target_output_name}}{{output_extension}}"  # eg "./libfoo.so"
+      rspfile = sofile + ".rsp"
+
+      link_command = "$ld -bundle {{ldflags}} -o $sofile -Wl,-filelist,$rspfile"
+      if (is_component_build) {
+        link_command += " -Wl,-install_name,@rpath/{{target_output_name}}{{output_extension}}"
+      }
+      link_command += " {{solibs}} {{libs}}"
+      command = link_command
+
+      rspfile_content = "{{inputs_newline}}"
+
+      description = "SOLINK_MODULE {{output}}"
+
+      # Use this for {{output_extension}} expansions unless a target manually
+      # overrides it (in which case {{output_extension}} will be what the target
+      # specifies).
+      default_output_extension = ".so"
+
+      output_prefix = "lib"
+
+      outputs = [
+        sofile,
+      ]
+    }
+
     tool("link") {
       outfile = "{{root_out_dir}}/{{target_output_name}}{{output_extension}}"
       rspfile = "$outfile.rsp"

@@ -174,6 +174,25 @@ template("msvc_toolchain") {
       rspfile_content = "{{libs}} {{solibs}} {{inputs_newline}} {{ldflags}}"
     }
 
+    tool("solink_module") {
+      dllname = "{{root_out_dir}}/{{target_output_name}}{{output_extension}}"  # e.g. foo.dll
+      rspfile = "${dllname}.rsp"
+
+      link_command = "$python_path gyp-win-tool link-wrapper $env False link.exe /nologo /DLL /OUT:$dllname /PDB:${dllname}.pdb @$rspfile"
+
+      command = link_command
+
+      default_output_extension = ".dll"
+      description = "LINK_MODULE(DLL) {{output}}"
+      outputs = [
+        dllname,
+      ]
+
+      # The use of inputs_newline is to work around a fixed per-line buffer
+      # size in the linker.
+      rspfile_content = "{{libs}} {{solibs}} {{inputs_newline}} {{ldflags}}"
+    }
+
     tool("link") {
       rspfile = "{{output}}.rsp"
 
