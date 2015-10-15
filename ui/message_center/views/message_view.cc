@@ -46,8 +46,7 @@ MessageView::MessageView(MessageViewController* controller,
       notifier_id_(notifier_id),
       background_view_(NULL),
       scroller_(NULL),
-      display_source_(display_source),
-      is_hover_(false) {
+      display_source_(display_source) {
   SetFocusable(true);
 
   // Create the opaque background that's above the view's shadow.
@@ -83,15 +82,6 @@ MessageView::MessageView(MessageViewController* controller,
 }
 
 MessageView::~MessageView() {
-}
-
-// views::View
-void MessageView::OnMouseEntered(const ui::MouseEvent& event) {
-  is_hover_ = true;
-}
-
-void MessageView::OnMouseExited(const ui::MouseEvent& event) {
-  is_hover_ = false;
 }
 
 void MessageView::UpdateWithNotification(const Notification& notification) {

@@ -82,8 +82,6 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::SlideOutView,
   void OnFocus() override;
   void OnBlur() override;
   void Layout() override;
-  void OnMouseEntered(const ui::MouseEvent& event) override;
-  void OnMouseExited(const ui::MouseEvent& event) override;
 
   // Overridden from ui::EventHandler:
   void OnGestureEvent(ui::GestureEvent* event) override;
@@ -95,8 +93,6 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::SlideOutView,
   std::string notification_id() { return notification_id_; }
   NotifierId notifier_id() { return notifier_id_; }
   const base::string16& display_source() const { return display_source_; }
-
-  bool is_hover() { return is_hover_; }
 
  protected:
   // Overridden from views::SlideOutView:
@@ -118,9 +114,6 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::SlideOutView,
   base::string16 accessible_name_;
 
   base::string16 display_source_;
-
-  // True if the mouse cursor is on this view. False if not.
-  bool is_hover_;
 
   scoped_ptr<views::Painter> focus_painter_;
 
