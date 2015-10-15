@@ -28,10 +28,12 @@ class FlagChanger(object):
     self._cmdline_file = cmdline_file
 
     # Save the original flags.
-    try:
-      self._orig_line = self._device.ReadFile(self._cmdline_file).strip()
-    except device_errors.CommandFailedError:
-      self._orig_line = ''
+    self._orig_line = ''
+    if self._device.PathExists(self._cmdline_file):
+      try:
+        self._orig_line = self._device.ReadFile(self._cmdline_file).strip()
+      except device_errors.CommandFailedError:
+        pass
 
     # Parse out the flags into a list to facilitate adding and removing flags.
     self._current_flags = self._TokenizeFlags(self._orig_line)
