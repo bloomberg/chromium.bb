@@ -482,65 +482,23 @@ void MenuController::Cancel(ExitType type) {
   }
 }
 
-bool MenuController::OnMousePressed(SubmenuView* source,
+void MenuController::OnMousePressed(SubmenuView* source,
                                     const ui::MouseEvent& event) {
-  // We should either have no current_mouse_event_target_, or should have a
-  // pressed state stored.
-  DCHECK(!current_mouse_event_target_ || current_mouse_pressed_state_);
-
-  // Find the root view to check. If any buttons were previously pressed, this
-  // is the same root view we've been forwarding to. Otherwise, it's the root
-  // view of the target.
-  MenuHostRootView* forward_to_root =
-      current_mouse_pressed_state_ ? current_mouse_event_target_
-                                   : GetRootView(source, event.location());
-
-  current_mouse_pressed_state_ |= event.changed_button_flags();
-
-  if (forward_to_root) {
-    ui::MouseEvent event_for_root(event);
-    ConvertLocatedEventForRootView(source, forward_to_root, &event_for_root);
-    View* view =
-        forward_to_root->GetEventHandlerForPoint(event_for_root.location());
-    // Empty menu items are always handled by the menu controller.
-    if (!view || view->id() != MenuItemView::kEmptyMenuItemViewID) {
-      bool processed = forward_to_root->ProcessMousePressed(event_for_root);
-      // If the event was processed, the root view becomes our current mouse
-      // handler...
-      if (processed && !current_mouse_event_target_) {
-        current_mouse_event_target_ = forward_to_root;
-      }
-
-      // ...and we always return the result of the current handler.
-      if (current_mouse_event_target_)
-        return processed;
-    }
-  }
-
-  // Otherwise, the menu handles this click directly.
   SetSelectionOnPointerDown(source, event);
-  return true;
 }
 
-bool MenuController::OnMouseDragged(SubmenuView* source,
+void MenuController::OnMouseDragged(SubmenuView* source,
                                     const ui::MouseEvent& event) {
-  if (current_mouse_event_target_) {
-    ui::MouseEvent event_for_root(event);
-    ConvertLocatedEventForRootView(source, current_mouse_event_target_,
-                                   &event_for_root);
-    return current_mouse_event_target_->ProcessMouseDragged(event_for_root);
-  }
-
   MenuPart part = GetMenuPart(source, event.location());
   UpdateScrolling(part);
 
   if (!blocking_run_)
-    return false;
+    return;
 
   if (possible_drag_) {
     if (View::ExceededDragThreshold(event.location() - press_pt_))
       StartDrag(source, press_pt_);
-    return true;
+    return;
   }
   MenuItemView* mouse_menu = NULL;
   if (part.type == MenuPart::MENU_ITEM) {
@@ -553,29 +511,10 @@ bool MenuController::OnMouseDragged(SubmenuView* source,
     ShowSiblingMenu(source, event.location());
   }
   UpdateActiveMouseView(source, event, mouse_menu);
-
-  return true;
 }
 
 void MenuController::OnMouseReleased(SubmenuView* source,
                                      const ui::MouseEvent& event) {
-  current_mouse_pressed_state_ &= ~event.changed_button_flags();
-
-  if (current_mouse_event_target_) {
-    // If this was the final mouse button, then remove the forwarding target.
-    // We need to do this *before* dispatching the event to the root view
-    // because there's a chance that the event will open a nested (and blocking)
-    // menu, and we need to not have a forwarded root view.
-    MenuHostRootView* cached_event_target = current_mouse_event_target_;
-    if (!current_mouse_pressed_state_)
-      current_mouse_event_target_ = nullptr;
-    ui::MouseEvent event_for_root(event);
-    ConvertLocatedEventForRootView(source, cached_event_target,
-                                   &event_for_root);
-    cached_event_target->ProcessMouseReleased(event_for_root);
-    return;
-  }
-
   if (!blocking_run_)
     return;
 
@@ -650,17 +589,6 @@ void MenuController::OnMouseReleased(SubmenuView* source,
 
 void MenuController::OnMouseMoved(SubmenuView* source,
                                   const ui::MouseEvent& event) {
-  if (current_mouse_event_target_) {
-    ui::MouseEvent event_for_root(event);
-    ConvertLocatedEventForRootView(source, current_mouse_event_target_,
-                                   &event_for_root);
-    current_mouse_event_target_->ProcessMouseMoved(event_for_root);
-    return;
-  }
-
-  MenuHostRootView* root_view = GetRootView(source, event.location());
-  if (root_view)
-    root_view->ProcessMouseMoved(event);
   HandleMouseLocation(source, event.location());
 }
 
@@ -722,23 +650,6 @@ void MenuController::OnGestureEvent(SubmenuView* source,
   if (!part.submenu)
     return;
   part.submenu->OnGestureEvent(event);
-}
-
-View* MenuController::GetTooltipHandlerForPoint(SubmenuView* source,
-                                                const gfx::Point& point) {
-  MenuHostRootView* root_view = GetRootView(source, point);
-  return root_view ? root_view->ProcessGetTooltipHandlerForPoint(point)
-                   : nullptr;
-}
-
-void MenuController::ViewHierarchyChanged(
-    SubmenuView* source,
-    const View::ViewHierarchyChangedDetails& details) {
-  // If the current mouse handler is removed, remove it as the handler.
-  if (!details.is_add && details.child == current_mouse_event_target_) {
-    current_mouse_event_target_ = nullptr;
-    current_mouse_pressed_state_ = 0;
-  }
 }
 
 bool MenuController::GetDropFormats(
@@ -894,11 +805,6 @@ void MenuController::OnDragWillStart() {
 void MenuController::OnDragComplete(bool should_close) {
   DCHECK(drag_in_progress_);
   drag_in_progress_ = false;
-  // During a drag, mouse events are processed directly by the widget, and not
-  // sent to the MenuController. At drag completion, reset pressed state and
-  // the event target.
-  current_mouse_pressed_state_ = 0;
-  current_mouse_event_target_ = nullptr;
   if (showing_ && should_close && GetActiveInstance() == this) {
     CloseAllNestedMenus();
     Cancel(EXIT_ALL);
@@ -1243,8 +1149,6 @@ MenuController::MenuController(ui::NativeTheme* theme,
       menu_start_time_(base::TimeTicks()),
       is_combobox_(false),
       item_selected_by_touch_(false),
-      current_mouse_event_target_(nullptr),
-      current_mouse_pressed_state_(0),
       message_loop_(MenuMessageLoop::Create()) {
   active_instance_ = this;
 }
@@ -1522,26 +1426,6 @@ bool MenuController::GetMenuPartByScreenCoordinateImpl(
   // is contained by menu and so we return true. If we didn't return true other
   // menus would be searched, even though they are likely obscured by us.
   return true;
-}
-
-MenuHostRootView* MenuController::GetRootView(SubmenuView* submenu,
-                                              const gfx::Point& source_loc) {
-  MenuPart part = GetMenuPart(submenu, source_loc);
-  SubmenuView* view = part.submenu;
-  return view && view->GetWidget()
-             ? static_cast<MenuHostRootView*>(view->GetWidget()->GetRootView())
-             : nullptr;
-}
-
-void MenuController::ConvertLocatedEventForRootView(View* source,
-                                                    View* dst,
-                                                    ui::LocatedEvent* event) {
-  if (source->GetWidget()->GetRootView() == dst)
-    return;
-  gfx::Point new_location(event->location());
-  View::ConvertPointToScreen(source, &new_location);
-  View::ConvertPointFromScreen(dst, &new_location);
-  event->set_location(new_location);
 }
 
 bool MenuController::DoesSubmenuContainLocation(SubmenuView* submenu,

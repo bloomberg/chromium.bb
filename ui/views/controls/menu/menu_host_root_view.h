@@ -30,15 +30,6 @@ class MenuHostRootView : public internal::RootView {
   void OnMouseReleased(const ui::MouseEvent& event) override;
   void OnMouseMoved(const ui::MouseEvent& event) override;
   bool OnMouseWheel(const ui::MouseWheelEvent& event) override;
-  View* GetTooltipHandlerForPoint(const gfx::Point& point) override;
-  void ViewHierarchyChanged(const ViewHierarchyChangedDetails& details)
-      override;
-
-  bool ProcessMousePressed(const ui::MouseEvent& event);
-  bool ProcessMouseDragged(const ui::MouseEvent& event);
-  void ProcessMouseReleased(const ui::MouseEvent& event);
-  void ProcessMouseMoved(const ui::MouseEvent& event);
-  View* ProcessGetTooltipHandlerForPoint(const gfx::Point& point);
 
  private:
   // ui::EventProcessor:
@@ -47,8 +38,14 @@ class MenuHostRootView : public internal::RootView {
   // Returns the MenuController for this MenuHostRootView.
   MenuController* GetMenuController();
 
+  // Returns true if event targets EmptyMenu.
+  bool DoesEventTargetEmptyMenuItem(const ui::MouseEvent& event);
+
   // The SubmenuView we contain.
   SubmenuView* submenu_;
+
+  // Whether mouse dragged/released should be forwarded to the MenuController.
+  bool forward_drag_to_menu_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(MenuHostRootView);
 };

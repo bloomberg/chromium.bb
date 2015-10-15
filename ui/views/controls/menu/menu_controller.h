@@ -132,16 +132,13 @@ class VIEWS_EXPORT MenuController : public WidgetObserver {
   //
   // NOTE: the coordinates of the events are in that of the
   // MenuScrollViewContainer.
-  bool OnMousePressed(SubmenuView* source, const ui::MouseEvent& event);
-  bool OnMouseDragged(SubmenuView* source, const ui::MouseEvent& event);
+  void OnMousePressed(SubmenuView* source, const ui::MouseEvent& event);
+  void OnMouseDragged(SubmenuView* source, const ui::MouseEvent& event);
   void OnMouseReleased(SubmenuView* source, const ui::MouseEvent& event);
   void OnMouseMoved(SubmenuView* source, const ui::MouseEvent& event);
   void OnMouseEntered(SubmenuView* source, const ui::MouseEvent& event);
   bool OnMouseWheel(SubmenuView* source, const ui::MouseWheelEvent& event);
   void OnGestureEvent(SubmenuView* source, ui::GestureEvent* event);
-  View* GetTooltipHandlerForPoint(SubmenuView* source, const gfx::Point& point);
-  void ViewHierarchyChanged(SubmenuView* source,
-                            const View::ViewHierarchyChangedDetails& details);
 
   bool GetDropFormats(SubmenuView* source,
                       int* formats,
@@ -371,17 +368,6 @@ class VIEWS_EXPORT MenuController : public WidgetObserver {
   bool GetMenuPartByScreenCoordinateImpl(SubmenuView* menu,
                                          const gfx::Point& screen_loc,
                                          MenuPart* part);
-
-  // Returns the RootView of the target for the mouse event, if there is a
-  // target at |source_loc|.
-  MenuHostRootView* GetRootView(SubmenuView* source,
-                                const gfx::Point& source_loc);
-
-  // Converts the located event from |source|'s geometry to |dst|'s geometry,
-  // iff the root view of source and dst differ.
-  void ConvertLocatedEventForRootView(View* source,
-                                      View* dst,
-                                      ui::LocatedEvent* event);
 
   // Returns true if the SubmenuView contains the specified location. This does
   // NOT included the scroll buttons, only the submenu view.
@@ -654,15 +640,6 @@ class VIEWS_EXPORT MenuController : public WidgetObserver {
 
   // Set to true if the menu item was selected by touch.
   bool item_selected_by_touch_;
-
-  // During mouse event handling, this is the RootView to forward mouse events
-  // to. We need this, because if we forward one event to it (e.g., mouse
-  // pressed), subsequent events (like dragging) should also go to it, even if
-  // the mouse is no longer over the view.
-  MenuHostRootView* current_mouse_event_target_;
-
-  // A mask of the EventFlags for the mouse buttons currently pressed.
-  int current_mouse_pressed_state_;
 
   scoped_ptr<MenuMessageLoop> message_loop_;
 
