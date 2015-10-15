@@ -15,11 +15,11 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/vector_icons_public.h"
 
 #if !defined(OS_MACOSX)
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/vector_icons_public.h"
 #endif
 
 using content::WebContents;
@@ -90,19 +90,81 @@ class ContentSettingMIDISysExImageModel : public ContentSettingImageModel {
 
 namespace {
 
-struct ContentSettingsTypeIdEntry {
+struct ContentSettingsImageDetails {
   ContentSettingsType type;
-  int id;
+  int blocked_icon_id;
+  gfx::VectorIconId vector_icon_id;
+  int blocked_tooltip_id;
+  int blocked_explanatory_text_id;
+  int accessed_icon_id;
+  int accessed_tooltip_id;
 };
 
-int GetIdForContentType(const ContentSettingsTypeIdEntry* entries,
-                        size_t num_entries,
-                        ContentSettingsType type) {
-  for (size_t i = 0; i < num_entries; ++i) {
-    if (entries[i].type == type)
-      return entries[i].id;
+static const ContentSettingsImageDetails kImageDetails[] = {
+    {CONTENT_SETTINGS_TYPE_COOKIES,
+     IDR_BLOCKED_COOKIES,
+     gfx::VectorIconId::COOKIE,
+     IDS_BLOCKED_COOKIES_TITLE,
+     0,
+     IDR_ACCESSED_COOKIES,
+     IDS_ACCESSED_COOKIES_TITLE},
+    {CONTENT_SETTINGS_TYPE_IMAGES,
+     IDR_BLOCKED_IMAGES,
+     gfx::VectorIconId::IMAGE,
+     IDS_BLOCKED_IMAGES_TITLE,
+     0,
+     0,
+     0},
+    {CONTENT_SETTINGS_TYPE_JAVASCRIPT,
+     IDR_BLOCKED_JAVASCRIPT,
+     gfx::VectorIconId::CODE,
+     IDS_BLOCKED_JAVASCRIPT_TITLE,
+     0,
+     0,
+     0},
+    {CONTENT_SETTINGS_TYPE_PLUGINS,
+     IDR_BLOCKED_PLUGINS,
+     gfx::VectorIconId::EXTENSION,
+     IDS_BLOCKED_PLUGINS_MESSAGE,
+     IDS_BLOCKED_PLUGIN_EXPLANATORY_TEXT,
+     0,
+     0},
+    {CONTENT_SETTINGS_TYPE_POPUPS,
+     IDR_BLOCKED_POPUPS,
+     gfx::VectorIconId::WEB,
+     IDS_BLOCKED_POPUPS_TOOLTIP,
+     IDS_BLOCKED_POPUPS_EXPLANATORY_TEXT,
+     0,
+     0},
+    {CONTENT_SETTINGS_TYPE_MIXEDSCRIPT,
+     IDR_BLOCKED_MIXED_CONTENT,
+     gfx::VectorIconId::MIXED_CONTENT,
+     IDS_BLOCKED_DISPLAYING_INSECURE_CONTENT,
+     0,
+     0,
+     0},
+    {CONTENT_SETTINGS_TYPE_PPAPI_BROKER,
+     IDR_BLOCKED_PPAPI_BROKER,
+     gfx::VectorIconId::EXTENSION,
+     IDS_BLOCKED_PPAPI_BROKER_TITLE,
+     0,
+     IDR_BLOCKED_PPAPI_BROKER,
+     IDS_ALLOWED_PPAPI_BROKER_TITLE},
+    {CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS,
+     IDR_BLOCKED_DOWNLOADS,
+     gfx::VectorIconId::FILE_DOWNLOAD,
+     IDS_BLOCKED_DOWNLOAD_TITLE,
+     IDS_BLOCKED_DOWNLOADS_EXPLANATION,
+     IDR_ALLOWED_DOWNLOADS,
+     IDS_ALLOWED_DOWNLOAD_TITLE},
+};
+
+const ContentSettingsImageDetails* GetImageDetails(ContentSettingsType type) {
+  for (const ContentSettingsImageDetails& image_details : kImageDetails) {
+    if (image_details.type == type)
+      return &image_details;
   }
-  return 0;
+  return nullptr;
 }
 
 }  // namespace
@@ -119,76 +181,11 @@ void ContentSettingBlockedImageModel::UpdateFromWebContents(
     return;
 
   ContentSettingsType type = get_content_settings_type();
-  static const ContentSettingsTypeIdEntry kBlockedIconIDs[] = {
-    {CONTENT_SETTINGS_TYPE_COOKIES, IDR_BLOCKED_COOKIES},
-    {CONTENT_SETTINGS_TYPE_IMAGES, IDR_BLOCKED_IMAGES},
-    {CONTENT_SETTINGS_TYPE_JAVASCRIPT, IDR_BLOCKED_JAVASCRIPT},
-    {CONTENT_SETTINGS_TYPE_PLUGINS, IDR_BLOCKED_PLUGINS},
-    {CONTENT_SETTINGS_TYPE_POPUPS, IDR_BLOCKED_POPUPS},
-    {CONTENT_SETTINGS_TYPE_MIXEDSCRIPT, IDR_BLOCKED_MIXED_CONTENT},
-    {CONTENT_SETTINGS_TYPE_PPAPI_BROKER, IDR_BLOCKED_PPAPI_BROKER},
-    {CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS, IDR_BLOCKED_DOWNLOADS},
-  };
-  int icon_id =
-      GetIdForContentType(kBlockedIconIDs, arraysize(kBlockedIconIDs), type);
+  const ContentSettingsImageDetails* image_details = GetImageDetails(type);
 
-#if !defined(OS_MACOSX)
-  gfx::VectorIconId vector_icon_id = gfx::VectorIconId::VECTOR_ICON_NONE;
-  switch (type) {
-    case CONTENT_SETTINGS_TYPE_COOKIES:
-      vector_icon_id = gfx::VectorIconId::COOKIE;
-      break;
-    case CONTENT_SETTINGS_TYPE_IMAGES:
-      vector_icon_id = gfx::VectorIconId::IMAGE;
-      break;
-    case CONTENT_SETTINGS_TYPE_JAVASCRIPT:
-      vector_icon_id = gfx::VectorIconId::CODE;
-      break;
-    case CONTENT_SETTINGS_TYPE_PLUGINS:
-      vector_icon_id = gfx::VectorIconId::EXTENSION;
-      break;
-    case CONTENT_SETTINGS_TYPE_POPUPS:
-      vector_icon_id = gfx::VectorIconId::WEB;
-      break;
-    case CONTENT_SETTINGS_TYPE_MIXEDSCRIPT:
-      vector_icon_id = gfx::VectorIconId::MIXED_CONTENT;
-      break;
-    case CONTENT_SETTINGS_TYPE_PPAPI_BROKER:
-      vector_icon_id = gfx::VectorIconId::EXTENSION;
-      break;
-    case CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS:
-      vector_icon_id = gfx::VectorIconId::FILE_DOWNLOAD;
-      break;
-    default:
-      // If we didn't find a vector icon ID we shouldn't have found an
-      // asset ID either.
-      DCHECK_EQ(0, icon_id);
-      break;
-  }
-#endif
-
-  static const ContentSettingsTypeIdEntry kBlockedTooltipIDs[] = {
-    {CONTENT_SETTINGS_TYPE_COOKIES, IDS_BLOCKED_COOKIES_TITLE},
-    {CONTENT_SETTINGS_TYPE_IMAGES, IDS_BLOCKED_IMAGES_TITLE},
-    {CONTENT_SETTINGS_TYPE_JAVASCRIPT, IDS_BLOCKED_JAVASCRIPT_TITLE},
-    {CONTENT_SETTINGS_TYPE_PLUGINS, IDS_BLOCKED_PLUGINS_MESSAGE},
-    {CONTENT_SETTINGS_TYPE_POPUPS, IDS_BLOCKED_POPUPS_TOOLTIP},
-    {CONTENT_SETTINGS_TYPE_MIXEDSCRIPT,
-        IDS_BLOCKED_DISPLAYING_INSECURE_CONTENT},
-    {CONTENT_SETTINGS_TYPE_PPAPI_BROKER, IDS_BLOCKED_PPAPI_BROKER_TITLE},
-    {CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS, IDS_BLOCKED_DOWNLOAD_TITLE},
-  };
-  int tooltip_id = GetIdForContentType(kBlockedTooltipIDs,
-                                       arraysize(kBlockedTooltipIDs), type);
-
-  static const ContentSettingsTypeIdEntry kBlockedExplanatoryTextIDs[] = {
-    {CONTENT_SETTINGS_TYPE_POPUPS, IDS_BLOCKED_POPUPS_EXPLANATORY_TEXT},
-    {CONTENT_SETTINGS_TYPE_PLUGINS, IDS_BLOCKED_PLUGIN_EXPLANATORY_TEXT},
-    {CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS,
-        IDS_BLOCKED_DOWNLOADS_EXPLANATION},
-  };
-  int explanation_id = GetIdForContentType(
-      kBlockedExplanatoryTextIDs, arraysize(kBlockedExplanatoryTextIDs), type);
+  int icon_id = image_details->blocked_icon_id;
+  int tooltip_id = image_details->blocked_tooltip_id;
+  int explanation_id = image_details->blocked_explanatory_text_id;
 
   // For plugins, don't show the animated explanation unless the plugin was
   // blocked despite the user's content settings being set to allow it (e.g.
@@ -220,20 +217,8 @@ void ContentSettingBlockedImageModel::UpdateFromWebContents(
         (map->GetDefaultContentSetting(type, NULL) != CONTENT_SETTING_BLOCK))
       return;
 
-    static const ContentSettingsTypeIdEntry kAccessedIconIDs[] = {
-      {CONTENT_SETTINGS_TYPE_COOKIES, IDR_ACCESSED_COOKIES},
-      {CONTENT_SETTINGS_TYPE_PPAPI_BROKER, IDR_BLOCKED_PPAPI_BROKER},
-      {CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS, IDR_ALLOWED_DOWNLOADS},
-    };
-    icon_id = GetIdForContentType(kAccessedIconIDs, arraysize(kAccessedIconIDs),
-                                  type);
-    static const ContentSettingsTypeIdEntry kAccessedTooltipIDs[] = {
-      {CONTENT_SETTINGS_TYPE_COOKIES, IDS_ACCESSED_COOKIES_TITLE},
-      {CONTENT_SETTINGS_TYPE_PPAPI_BROKER, IDS_ALLOWED_PPAPI_BROKER_TITLE},
-      {CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS, IDS_ALLOWED_DOWNLOAD_TITLE},
-    };
-    tooltip_id = GetIdForContentType(
-        kAccessedTooltipIDs, arraysize(kAccessedTooltipIDs), type);
+    icon_id = image_details->accessed_icon_id;
+    tooltip_id = image_details->accessed_tooltip_id;
     explanation_id = 0;
   }
   set_visible(true);
@@ -242,12 +227,11 @@ void ContentSettingBlockedImageModel::UpdateFromWebContents(
     SetIconByResourceId(icon_id);
 #if !defined(OS_MACOSX)
   } else {
-    DCHECK(gfx::VectorIconId::VECTOR_ICON_NONE != vector_icon_id);
-
     if (type == CONTENT_SETTINGS_TYPE_PPAPI_BROKER) {
-      set_icon(GetIcon(vector_icon_id, gfx::VectorIconId::WARNING_BADGE));
+      set_icon(GetIcon(image_details->vector_icon_id,
+                       gfx::VectorIconId::WARNING_BADGE));
     } else {
-      SetIconByVectorId(vector_icon_id,
+      SetIconByVectorId(image_details->vector_icon_id,
                         content_settings->IsContentBlocked(type));
     }
 #endif
@@ -452,21 +436,18 @@ ContentSettingImageModel::ContentSettingImageModel(
 ContentSettingImageModel*
     ContentSettingImageModel::CreateContentSettingImageModel(
     ContentSettingsType content_settings_type) {
-  switch (content_settings_type) {
-    case CONTENT_SETTINGS_TYPE_GEOLOCATION:
-      return new ContentSettingGeolocationImageModel();
-    case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
-      return new ContentSettingNotificationsImageModel();
-    case CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS:
-      return new ContentSettingRPHImageModel();
-    case CONTENT_SETTINGS_TYPE_MEDIASTREAM:
-    case CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
-    case CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
-      return new ContentSettingMediaImageModel(content_settings_type);
-    case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
-      return new ContentSettingMIDISysExImageModel();
-    default:
-      return new ContentSettingBlockedImageModel(content_settings_type);
+  if (content_settings_type == CONTENT_SETTINGS_TYPE_GEOLOCATION) {
+    return new ContentSettingGeolocationImageModel();
+  } else if (content_settings_type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
+    return new ContentSettingNotificationsImageModel();
+  } else if (content_settings_type == CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS) {
+    return new ContentSettingRPHImageModel();
+  } else if (content_settings_type == CONTENT_SETTINGS_TYPE_MEDIASTREAM) {
+    return new ContentSettingMediaImageModel(content_settings_type);
+  } else if (content_settings_type == CONTENT_SETTINGS_TYPE_MIDI_SYSEX) {
+    return new ContentSettingMIDISysExImageModel();
+  } else {
+    return new ContentSettingBlockedImageModel(content_settings_type);
   }
 }
 
