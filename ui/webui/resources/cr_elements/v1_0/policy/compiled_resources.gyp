@@ -18,5 +18,20 @@
       },
       'includes': ['../../../../../../third_party/closure_compiler/compile_js.gypi'],
     },
+    {
+      'target_name': 'cr_policy_pref_behavior',
+      'variables': {
+        'depends': [
+          '../../../../../../third_party/polymer/v1_0/components-chromium/iron-iconset-svg/iron-iconset-svg-extracted.js',
+          '../../../../../../third_party/polymer/v1_0/components-chromium/iron-meta/iron-meta-extracted.js',
+          '../../../../../../ui/webui/resources/js/compiled_resources.gyp:assert',
+          '../../../../../../ui/webui/resources/js/compiled_resources.gyp:load_time_data',
+        ],
+        'externs': [
+          '../../../../../../third_party/closure_compiler/externs/settings_private.js'
+        ],
+      },
+      'includes': ['../../../../../../third_party/closure_compiler/compile_js.gypi'],
+    },
   ],
 }

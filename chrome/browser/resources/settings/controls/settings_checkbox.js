@@ -16,12 +16,12 @@
 Polymer({
   is: 'settings-checkbox',
 
-  behaviors: [PolicyControllable],
+  behaviors: [CrPolicyPrefBehavior],
 
   properties: {
     /**
      * The boolean preference object to control.
-     * @type {?chrome.settingsPrivate.PrefObject}
+     * @type {!chrome.settingsPrivate.PrefObject|undefined}
      */
     pref: {
       type: Object,
@@ -101,11 +101,11 @@ Polymer({
 
   /**
    * @param {boolean} disabled
-   * @param {?chrome.settingsPrivate.PrefObject} pref
+   * @param {!chrome.settingsPrivate.PrefObject} pref
    * @return {boolean} Whether the checkbox should be disabled.
    * @private
    */
   checkboxDisabled_: function(disabled, pref) {
-    return disabled || this.isPolicyControlled(pref);
+    return disabled || this.isPrefPolicyControlled(pref);
   },
 });

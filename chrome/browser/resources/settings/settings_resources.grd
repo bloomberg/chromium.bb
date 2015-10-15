@@ -253,12 +253,6 @@
       <structure name="IDR_SETTINGS_LANGUAGES_LANGUAGE_DETAIL_PAGE_JS"
                  file="languages_page/language_detail_page.js"
                  type="chrome_html" />
-      <structure name="IDR_SETTINGS_POLICY_CONTROLLABLE_HTML"
-                 file="policy_controllable/policy_controllable.html"
-                 type="chrome_html" />
-      <structure name="IDR_SETTINGS_POLICY_CONTROLLABLE_JS"
-                 file="policy_controllable/policy_controllable.js"
-                 type="chrome_html" />
       <structure name="IDR_SETTINGS_PREFS_HTML"
                  file="prefs/prefs.html"
                  type="chrome_html" />

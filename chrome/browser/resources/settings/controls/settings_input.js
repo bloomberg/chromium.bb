@@ -12,12 +12,12 @@
 Polymer({
   is: 'settings-input',
 
-  behaviors: [PolicyControllable],
+  behaviors: [CrPolicyPrefBehavior],
 
   properties: {
     /**
      * The preference object to control.
-     * @type {chrome.settingsPrivate.PrefObject|undefined}
+     * @type {!chrome.settingsPrivate.PrefObject|undefined}
      */
     pref: {
       type: Object,
@@ -128,11 +128,11 @@ Polymer({
 
   /**
    * @param {boolean} disabled
-   * @param {?chrome.settingsPrivate.PrefObject} pref
+   * @param {!chrome.settingsPrivate.PrefObject} pref
    * @return {boolean} Whether the element should be disabled.
    * @private
    */
   isDisabled_: function(disabled, pref) {
-    return disabled || this.isPolicyControlled(pref);
+    return disabled || this.isPrefPolicyControlled(pref);
   },
 });

@@ -7,7 +7,7 @@
       'target_name': 'settings_checkbox',
       'variables': {
         'depends': [
-          '../policy_controllable/policy_controllable.js',
+          '../../../../../ui/webui/resources/cr_elements/v1_0/policy/cr_policy_pref_behavior.js',
         ],
         'externs': [
           '../../../../../third_party/closure_compiler/externs/settings_private.js'
@@ -20,7 +20,7 @@
       'variables': {
         'depends': [
           '../../../../../ui/webui/resources/js/compiled_resources.gyp:assert',
-          '../policy_controllable/policy_controllable.js',
+          '../../../../../ui/webui/resources/cr_elements/v1_0/policy/cr_policy_pref_behavior.js',
         ],
         'externs': [
           '../../../../../third_party/closure_compiler/externs/settings_private.js'
