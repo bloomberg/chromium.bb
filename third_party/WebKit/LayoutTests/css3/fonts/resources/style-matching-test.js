@@ -26,7 +26,7 @@ function notifyInspectorFontsReady() {
     var cssRules = document.styleSheets[0].cssRules;
     var fontsAvailable = [];
     for (var i = 0; i < cssRules.length; i++) {
-        urlmatch = /url\(.*fonts\/CSSMatchingTest_(.*).ttf\)/.exec(
+        urlmatch = /url\(".*fonts\/CSSMatchingTest_(.*).ttf"\)/.exec(
             cssRules[i].cssText);
         fontsAvailable.push(urlmatch[1]);
     }

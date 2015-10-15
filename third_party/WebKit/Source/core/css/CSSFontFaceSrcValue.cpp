@@ -26,6 +26,7 @@
 #include "config.h"
 #include "core/css/CSSFontFaceSrcValue.h"
 
+#include "core/css/CSSMarkup.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/dom/Document.h"
 #include "core/dom/Node.h"
@@ -54,16 +55,17 @@ bool CSSFontFaceSrcValue::isSupportedFormat() const
 String CSSFontFaceSrcValue::customCSSText() const
 {
     StringBuilder result;
-    if (isLocal())
+    if (isLocal()) {
         result.appendLiteral("local(");
-    else
-        result.appendLiteral("url(");
-    result.append(m_resource);
-    result.append(')');
+        result.append(serializeString(m_resource));
+        result.appendLiteral(")");
+    } else {
+        result.append(serializeURI(m_resource));
+    }
     if (!m_format.isEmpty()) {
         result.appendLiteral(" format(");
-        result.append(m_format);
-        result.append(')');
+        result.append(serializeString(m_format));
+        result.appendLiteral(")");
     }
     return result.toString();
 }

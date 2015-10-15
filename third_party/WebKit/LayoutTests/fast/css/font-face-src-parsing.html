@@ -25,6 +25,12 @@
     src: url(font.ttf), local(font2), url(font3.otf) format("opentype"), local(foo bar);
 }
 @font-face {
+    src: url('http://w/\aaaa/1b\aaaa.ttf');
+}
+@font-face {
+    src: url(http://w/\aaaa/1b\aaaa.ttf);
+}
+@font-face {
     src: local(foo);
 }
 @font-face {
@@ -34,7 +40,28 @@
     src: local("foo");
 }
 @font-face {
+    src: local("\"foo\"");
+}
+@font-face {
+    src: local(" foo");
+}
+@font-face {
+    src: local("foo ");
+}
+@font-face {
+    src: local(" foo ");
+}
+@font-face {
     src: local("foo bar");
+}
+@font-face {
+    src: local('w\\d w');
+}
+@font-face {
+    src: local(' x x\\9 x ');
+}
+@font-face {
+    src: local('y y\\9 y');
 }
 </style>
 
@@ -84,18 +111,28 @@
 <div id="validResult"></div>
 
 <p>Expected result for valid rules:</p>
-<pre id="validExpected">@font-face { src: url(font.ttf); }
-@font-face { src: url(http://foo/bar/font.ttf); }
-@font-face { src: url(font.svg#id); }
-@font-face { src: url(font.ttf) format(truetype); }
-@font-face { src: url(font.woff) format(woff), local(font2); }
-@font-face { src: url(font2.ttf); }
-@font-face { src: url(font2.ttf) format(truetype); }
-@font-face { src: url(font3.otf) format(opentype), local(foo bar); }
-@font-face { src: local(foo); }
-@font-face { src: local(font), local(foo bar); }
-@font-face { src: local(foo); }
-@font-face { src: local(foo bar); }
+<pre id="validExpected">
+@font-face { src: url("font.ttf"); }
+@font-face { src: url("http://foo/bar/font.ttf"); }
+@font-face { src: url("font.svg#id"); }
+@font-face { src: url("font.ttf") format("truetype"); }
+@font-face { src: url("font.woff") format("woff"), local("font2"); }
+@font-face { src: url("font2.ttf"); }
+@font-face { src: url("font2.ttf") format("truetype"); }
+@font-face { src: url("font3.otf") format("opentype"), local("foo bar"); }
+@font-face { src: url("http://w/%EA%AA%AA/1b%EA%AA%AA.ttf"); }
+@font-face { src: url("http://w/%EA%AA%AA/1b%EA%AA%AA.ttf"); }
+@font-face { src: local("foo"); }
+@font-face { src: local("font"), local("foo bar"); }
+@font-face { src: local("foo"); }
+@font-face { src: local("\"foo\""); }
+@font-face { src: local(" foo"); }
+@font-face { src: local("foo "); }
+@font-face { src: local(" foo "); }
+@font-face { src: local("foo bar"); }
+@font-face { src: local("w\d w"); }
+@font-face { src: local(" x x\9 x "); }
+@font-face { src: local("y y\9 y"); }
 </pre>
 
 <p>Invalid rules form the stylesheet:</p>
