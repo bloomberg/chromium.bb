@@ -74,7 +74,7 @@ public:
     void updateHaveWheelEventHandlers();
     void updateHaveScrollEventHandlers();
 
-    // Should be called whenever scrollable area set changes.
+    // Should be called whenever a scrollable area is added or removed, or gains/loses a composited layer.
     void scrollableAreasDidChange();
 
     // Should be called whenever the slow repaint objects counter changes between zero and one.

@@ -1581,16 +1581,20 @@ bool CompositedLayerMapping::updateScrollingLayers(bool needsScrollingLayers)
             }
 
             layerChanged = true;
-            if (scrollingCoordinator)
+            if (scrollingCoordinator) {
                 scrollingCoordinator->scrollableAreaScrollLayerDidChange(m_owningLayer.scrollableArea());
+                scrollingCoordinator->scrollableAreasDidChange();
+            }
         }
     } else if (m_scrollingLayer) {
         m_scrollingLayer = nullptr;
         m_scrollingContentsLayer = nullptr;
         m_scrollingBlockSelectionLayer = nullptr;
         layerChanged = true;
-        if (scrollingCoordinator)
+        if (scrollingCoordinator) {
             scrollingCoordinator->scrollableAreaScrollLayerDidChange(m_owningLayer.scrollableArea());
+            scrollingCoordinator->scrollableAreasDidChange();
+        }
     }
 
     return layerChanged;
