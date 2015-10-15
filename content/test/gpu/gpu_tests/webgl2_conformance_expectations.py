@@ -192,37 +192,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac'], bug=483282)
     self.Fail('conformance2/textures/misc/texture-npot.html',
         ['mac'], bug=483282)
-    # Mac Intel only.
-    self.Fail('deqp/data/gles3/shaders/arrays.html', ['mac', 'intel'],
-        bug=536887)
-    self.Fail('deqp/data/gles3/shaders/conditionals.html', ['mac', 'intel'],
-        bug=536887)
-    self.Fail('deqp/data/gles3/shaders/declarations.html', ['mac', 'intel'],
-        bug=536887)
-    self.Fail('deqp/data/gles3/shaders/fragdata.html', ['mac', 'intel'],
-        bug=536887)
-    self.Fail('deqp/data/gles3/shaders/invalid_texture_functions.html',
-        ['mac', 'intel'], bug=536887)
-    self.Fail('deqp/data/gles3/shaders/keywords.html', ['mac', 'intel'],
-        bug=536887)
-    self.Fail('deqp/data/gles3/shaders/negative.html', ['mac', 'intel'],
-        bug=536887)
-    self.Fail('deqp/data/gles3/shaders/switch.html', ['mac', 'intel'],
-        bug=536887)
-    self.Fail('deqp/data/gles3/shaders/swizzles.html', ['mac', 'intel'],
-        bug=536887)
-    self.Fail('deqp/functional/gles3/bufferobjectquery.html', ['mac', 'intel'],
-        bug=536887)
-    self.Fail('deqp/functional/gles3/fbostencilbuffer.html', ['mac', 'intel'],
-        bug=536887)
-    self.Fail('deqp/functional/gles3/rbostatequery.html', ['mac', 'intel'],
-        bug=536887)
-    self.Fail('deqp/functional/gles3/readpixel.html', ['mac', 'intel'],
-        bug=536887)
-    self.Fail('deqp/functional/gles3/shaderapi.html', ['mac', 'intel'],
-        bug=536887)
-    self.Fail('deqp/functional/gles3/stringquery.html', ['mac', 'intel'],
-        bug=536887)
 
     # Linux only.
     self.Skip('deqp/functional/gles3/shaderswitch.html',
