@@ -15,17 +15,6 @@
 
 namespace cc {
 
-// TODO(pdr): Remove PaintContents as all calls should go through
-// PaintContentsToDisplayList.
-void SolidColorContentLayerClient::PaintContents(
-    SkCanvas* canvas,
-    const gfx::Rect& rect,
-    PaintingControlSetting painting_control) {
-  scoped_refptr<DisplayItemList> contents =
-      PaintContentsToDisplayList(rect, painting_control);
-  contents->Raster(canvas, nullptr, rect, 1.0f);
-}
-
 scoped_refptr<DisplayItemList>
 SolidColorContentLayerClient::PaintContentsToDisplayList(
     const gfx::Rect& clip,

@@ -35,39 +35,6 @@ FakeContentLayerClient::FakeContentLayerClient()
 FakeContentLayerClient::~FakeContentLayerClient() {
 }
 
-void FakeContentLayerClient::PaintContents(
-    SkCanvas* canvas,
-    const gfx::Rect& paint_rect,
-    PaintingControlSetting painting_control) {
-  last_canvas_ = canvas;
-  last_painting_control_ = painting_control;
-
-  canvas->clipRect(gfx::RectToSkRect(paint_rect));
-  for (RectPaintVector::const_iterator it = draw_rects_.begin();
-      it != draw_rects_.end(); ++it) {
-    const gfx::RectF& draw_rect = it->first;
-    const SkPaint& paint = it->second;
-    canvas->drawRect(gfx::RectFToSkRect(draw_rect), paint);
-  }
-
-  for (ImageVector::const_iterator it = draw_images_.begin();
-       it != draw_images_.end(); ++it) {
-    canvas->drawImage(it->image.get(), it->point.x(), it->point.y(),
-                      &it->paint);
-  }
-
-  if (fill_with_nonsolid_color_) {
-    gfx::Rect draw_rect = paint_rect;
-    bool red = true;
-    while (!draw_rect.IsEmpty()) {
-      SkPaint paint;
-      paint.setColor(red ? SK_ColorRED : SK_ColorBLUE);
-      canvas->drawIRect(gfx::RectToSkIRect(draw_rect), paint);
-      draw_rect.Inset(1, 1);
-    }
-  }
-}
-
 scoped_refptr<DisplayItemList>
 FakeContentLayerClient::PaintContentsToDisplayList(
     const gfx::Rect& clip,

@@ -62,16 +62,6 @@ void WebContentLayerImpl::setDoubleSided(bool double_sided) {
   layer_->layer()->SetDoubleSided(double_sided);
 }
 
-void WebContentLayerImpl::PaintContents(
-    SkCanvas* canvas,
-    const gfx::Rect& clip,
-    cc::ContentLayerClient::PaintingControlSetting painting_control) {
-  if (!client_)
-    return;
-
-  client_->paintContents(canvas, clip, PaintingControlToWeb(painting_control));
-}
-
 scoped_refptr<cc::DisplayItemList>
 WebContentLayerImpl::PaintContentsToDisplayList(
     const gfx::Rect& clip,

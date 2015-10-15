@@ -1553,11 +1553,6 @@ class TestOpacityChangeLayerDelegate : public ContentLayerClient {
 
   void SetTestLayer(Layer* test_layer) { test_layer_ = test_layer; }
 
-  void PaintContents(SkCanvas* canvas,
-                     const gfx::Rect& clip,
-                     PaintingControlSetting picture_control) override {
-    NOTIMPLEMENTED();
-  }
   scoped_refptr<DisplayItemList> PaintContentsToDisplayList(
       const gfx::Rect& clip,
       PaintingControlSetting picture_control) override {
@@ -2158,12 +2153,6 @@ class LayerTreeHostTestChangeLayerPropertiesInPaintContents
     SetBoundsClient() : layer_(0) {}
 
     void set_layer(Layer* layer) { layer_ = layer; }
-
-    void PaintContents(SkCanvas* canvas,
-                       const gfx::Rect& clip,
-                       PaintingControlSetting picture_control) override {
-      NOTIMPLEMENTED();
-    }
 
     scoped_refptr<DisplayItemList> PaintContentsToDisplayList(
         const gfx::Rect& clip,

@@ -32,16 +32,6 @@ class MaskContentLayerClient : public ContentLayerClient {
   bool FillsBoundsCompletely() const override { return false; }
   size_t GetApproximateUnsharedMemoryUsage() const override { return 0; }
 
-  // TODO(pdr): Remove PaintContents as all calls should go through
-  // PaintContentsToDisplayList.
-  void PaintContents(SkCanvas* canvas,
-                     const gfx::Rect& rect,
-                     PaintingControlSetting picture_control) override {
-    scoped_refptr<DisplayItemList> contents =
-        PaintContentsToDisplayList(rect, picture_control);
-    contents->Raster(canvas, nullptr, rect, 1.0f);
-  }
-
   scoped_refptr<DisplayItemList> PaintContentsToDisplayList(
       const gfx::Rect& clip,
       PaintingControlSetting picture_control) override {
@@ -119,8 +109,10 @@ TEST_P(LayerTreeHostMasksPixelTest, ImageMaskOfLayer) {
   SkCanvas* canvas = surface->getCanvas();
   canvas->scale(SkIntToScalar(4), SkIntToScalar(4));
   MaskContentLayerClient client(mask_bounds);
-  client.PaintContents(canvas, gfx::Rect(mask_bounds),
-                       ContentLayerClient::PAINTING_BEHAVIOR_NORMAL);
+  scoped_refptr<DisplayItemList> mask_display_list =
+      client.PaintContentsToDisplayList(
+          gfx::Rect(mask_bounds), ContentLayerClient::PAINTING_BEHAVIOR_NORMAL);
+  mask_display_list->Raster(canvas, nullptr, gfx::Rect(mask_bounds), 1.0f);
   skia::RefPtr<const SkImage> image =
       skia::AdoptRef(surface->newImageSnapshot());
   mask->SetImage(image.Pass());
@@ -319,15 +311,6 @@ class CheckerContentLayerClient : public ContentLayerClient {
   ~CheckerContentLayerClient() override {}
   bool FillsBoundsCompletely() const override { return false; }
   size_t GetApproximateUnsharedMemoryUsage() const override { return 0; }
-  // TODO(pdr): Remove PaintContents as all calls should go through
-  // PaintContentsToDisplayList.
-  void PaintContents(SkCanvas* canvas,
-                     const gfx::Rect& rect,
-                     PaintingControlSetting picture_control) override {
-    scoped_refptr<DisplayItemList> contents =
-        PaintContentsToDisplayList(rect, picture_control);
-    contents->Raster(canvas, nullptr, rect, 1.0f);
-  }
   scoped_refptr<DisplayItemList> PaintContentsToDisplayList(
       const gfx::Rect& clip,
       PaintingControlSetting picture_control) override {
@@ -375,15 +358,6 @@ class CircleContentLayerClient : public ContentLayerClient {
   ~CircleContentLayerClient() override {}
   bool FillsBoundsCompletely() const override { return false; }
   size_t GetApproximateUnsharedMemoryUsage() const override { return 0; }
-  // TODO(pdr): Remove PaintContents as all calls should go through
-  // PaintContentsToDisplayList.
-  void PaintContents(SkCanvas* canvas,
-                     const gfx::Rect& rect,
-                     PaintingControlSetting picture_control) override {
-    scoped_refptr<DisplayItemList> contents =
-        PaintContentsToDisplayList(rect, picture_control);
-    contents->Raster(canvas, nullptr, rect, 1.0f);
-  }
   scoped_refptr<DisplayItemList> PaintContentsToDisplayList(
       const gfx::Rect& clip,
       PaintingControlSetting picture_control) override {

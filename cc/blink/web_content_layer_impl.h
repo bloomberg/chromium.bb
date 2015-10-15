@@ -35,9 +35,6 @@ class WebContentLayerImpl : public blink::WebContentLayer,
   ~WebContentLayerImpl() override;
 
   // ContentLayerClient implementation.
-  void PaintContents(SkCanvas* canvas,
-                     const gfx::Rect& clip,
-                     PaintingControlSetting painting_control) override;
   scoped_refptr<cc::DisplayItemList> PaintContentsToDisplayList(
       const gfx::Rect& clip,
       PaintingControlSetting painting_control) override;

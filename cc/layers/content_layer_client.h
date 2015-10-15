@@ -8,8 +8,6 @@
 #include "cc/base/cc_export.h"
 #include "cc/playback/display_item_list.h"
 
-class SkCanvas;
-
 namespace gfx {
 class Rect;
 }
@@ -24,10 +22,6 @@ class CC_EXPORT ContentLayerClient {
     DISPLAY_LIST_CACHING_DISABLED,
     DISPLAY_LIST_PAINTING_DISABLED
   };
-
-  virtual void PaintContents(SkCanvas* canvas,
-                             const gfx::Rect& clip,
-                             PaintingControlSetting painting_status) = 0;
 
   virtual scoped_refptr<DisplayItemList> PaintContentsToDisplayList(
       const gfx::Rect& clip,

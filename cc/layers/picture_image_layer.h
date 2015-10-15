@@ -25,10 +25,6 @@ class CC_EXPORT PictureImageLayer : public PictureLayer, ContentLayerClient {
   scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
 
   // ContentLayerClient implementation.
-  void PaintContents(
-      SkCanvas* canvas,
-      const gfx::Rect& clip,
-      ContentLayerClient::PaintingControlSetting painting_control) override;
   scoped_refptr<DisplayItemList> PaintContentsToDisplayList(
       const gfx::Rect& clip,
       ContentLayerClient::PaintingControlSetting painting_control) override;

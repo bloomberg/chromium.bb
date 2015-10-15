@@ -750,14 +750,6 @@ void Layer::RequestCopyOfOutput(scoped_ptr<cc::CopyOutputRequest> request) {
   cc_layer_->RequestCopyOfOutput(request.Pass());
 }
 
-void Layer::PaintContents(
-    SkCanvas* sk_canvas,
-    const gfx::Rect& clip,
-    ContentLayerClient::PaintingControlSetting painting_control) {
-  // The old non-slimming paint path is not used in ui::Compositor.
-  NOTREACHED();
-}
-
 scoped_refptr<cc::DisplayItemList> Layer::PaintContentsToDisplayList(
     const gfx::Rect& clip,
     ContentLayerClient::PaintingControlSetting painting_control) {
