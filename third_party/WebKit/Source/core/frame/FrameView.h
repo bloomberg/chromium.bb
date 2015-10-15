@@ -716,6 +716,8 @@ private:
     void collectFrameTimingRequests(GraphicsLayerFrameTimingRequests&);
     void collectFrameTimingRequestsRecursive(GraphicsLayerFrameTimingRequests&);
 
+    template <typename Function> void forAllFrameViews(Function);
+
     LayoutSize m_size;
 
     typedef HashSet<RefPtr<LayoutEmbeddedObject>> EmbeddedObjectSet;

@@ -21,7 +21,7 @@ class PaintControllerTest : public ::testing::Test {
 public:
     PaintControllerTest()
         : m_paintController(PaintController::create())
-        , m_originalSlimmingPaintSubsequenceCachingEnabled(RuntimeEnabledFeatures::slimmingPaintSubsequenceCachingEnabled())
+        , m_originalSlimmingPaintSynchronizedPaintingEnabled(RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled())
         , m_originalSlimmingPaintV2Enabled(RuntimeEnabledFeatures::slimmingPaintV2Enabled()) { }
 
 protected:
@@ -30,12 +30,12 @@ protected:
 private:
     void TearDown() override
     {
-        RuntimeEnabledFeatures::setSlimmingPaintSubsequenceCachingEnabled(m_originalSlimmingPaintSubsequenceCachingEnabled);
+        RuntimeEnabledFeatures::setSlimmingPaintSynchronizedPaintingEnabled(m_originalSlimmingPaintSynchronizedPaintingEnabled);
         RuntimeEnabledFeatures::setSlimmingPaintV2Enabled(m_originalSlimmingPaintV2Enabled);
     }
 
     OwnPtr<PaintController> m_paintController;
-    bool m_originalSlimmingPaintSubsequenceCachingEnabled;
+    bool m_originalSlimmingPaintSynchronizedPaintingEnabled;
     bool m_originalSlimmingPaintV2Enabled;
 };
 
@@ -454,7 +454,7 @@ TEST_F(PaintControllerTest, ComplexUpdateSwapOrder)
 
 TEST_F(PaintControllerTest, CachedSubsequenceSwapOrder)
 {
-    RuntimeEnabledFeatures::setSlimmingPaintSubsequenceCachingEnabled(true);
+    RuntimeEnabledFeatures::setSlimmingPaintSynchronizedPaintingEnabled(true);
 
     TestDisplayItemClient container1("container1");
     TestDisplayItemClient content1("content1");
@@ -546,7 +546,7 @@ TEST_F(PaintControllerTest, OutOfOrderNoCrash)
 
 TEST_F(PaintControllerTest, CachedNestedSubsequenceUpdate)
 {
-    RuntimeEnabledFeatures::setSlimmingPaintSubsequenceCachingEnabled(true);
+    RuntimeEnabledFeatures::setSlimmingPaintSynchronizedPaintingEnabled(true);
 
     TestDisplayItemClient container1("container1");
     TestDisplayItemClient content1("content1");

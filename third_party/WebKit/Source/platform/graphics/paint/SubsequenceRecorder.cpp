@@ -15,7 +15,7 @@ namespace blink {
 
 bool SubsequenceRecorder::useCachedSubsequenceIfPossible(GraphicsContext& context, const DisplayItemClientWrapper& client, DisplayItem::Type type)
 {
-    if (!RuntimeEnabledFeatures::slimmingPaintSubsequenceCachingEnabled())
+    if (!RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled())
         return false;
 
     ASSERT(context.paintController());
@@ -44,7 +44,7 @@ SubsequenceRecorder::SubsequenceRecorder(GraphicsContext& context, const Display
     , m_beginSubsequenceIndex(0)
     , m_type(type)
 {
-    if (!RuntimeEnabledFeatures::slimmingPaintSubsequenceCachingEnabled())
+    if (!RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled())
         return;
 
     ASSERT(m_paintController);
@@ -57,7 +57,7 @@ SubsequenceRecorder::SubsequenceRecorder(GraphicsContext& context, const Display
 
 SubsequenceRecorder::~SubsequenceRecorder()
 {
-    if (!RuntimeEnabledFeatures::slimmingPaintSubsequenceCachingEnabled())
+    if (!RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled())
         return;
 
     if (m_paintController->displayItemConstructionIsDisabled())
@@ -78,7 +78,7 @@ SubsequenceRecorder::~SubsequenceRecorder()
 
 void SubsequenceRecorder::setUncacheable()
 {
-    if (!RuntimeEnabledFeatures::slimmingPaintSubsequenceCachingEnabled())
+    if (!RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled())
         return;
 
     if (m_paintController->displayItemConstructionIsDisabled())

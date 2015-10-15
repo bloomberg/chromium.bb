@@ -598,7 +598,7 @@ public:
 
     bool needsRepaint() const { return m_needsRepaint; }
     void setNeedsRepaint();
-    void clearNeedsRepaint() { m_needsRepaint = false; }
+    void clearNeedsRepaintRecursively();
 
     IntSize previousScrollOffsetAccumulationForPainting() const { return m_previousScrollOffsetAccumulationForPainting; }
     void setPreviousScrollOffsetAccumulationForPainting(const IntSize& s) { m_previousScrollOffsetAccumulationForPainting = s; }

@@ -217,6 +217,17 @@ void FrameView::reset()
     m_layoutSubtreeRootList.clear();
 }
 
+template <typename Function>
+void FrameView::forAllFrameViews(Function function)
+{
+    for (Frame* frame = m_frame.get(); frame; frame = frame->tree().traverseNext(m_frame.get())) {
+        if (!frame->isLocalFrame())
+            continue;
+        if (FrameView* view = toLocalFrame(frame)->view())
+            function(*view);
+    }
+}
+
 void FrameView::removeFromAXObjectCache()
 {
     if (AXObjectCache* cache = axObjectCache()) {
@@ -1270,14 +1281,9 @@ bool FrameView::shouldSetCursor() const
 
 void FrameView::scrollContentsIfNeededRecursive()
 {
-    scrollContentsIfNeeded();
-
-    for (Frame* child = m_frame->tree().firstChild(); child; child = child->tree().nextSibling()) {
-        if (!child->isLocalFrame())
-            continue;
-        if (FrameView* view = toLocalFrame(child)->view())
-            view->scrollContentsIfNeededRecursive();
-    }
+    forAllFrameViews([](FrameView& frameView) {
+        frameView.scrollContentsIfNeeded();
+    });
 }
 
 bool FrameView::invalidateViewportConstrainedObjects()
@@ -1796,14 +1802,10 @@ void FrameView::setBaseBackgroundColor(const Color& backgroundColor)
 
 void FrameView::updateBackgroundRecursively(const Color& backgroundColor, bool transparent)
 {
-    for (Frame* frame = m_frame.get(); frame; frame = frame->tree().traverseNext(m_frame.get())) {
-        if (!frame->isLocalFrame())
-            continue;
-        if (FrameView* view = toLocalFrame(frame)->view()) {
-            view->setTransparent(transparent);
-            view->setBaseBackgroundColor(backgroundColor);
-        }
-    }
+    forAllFrameViews([backgroundColor, transparent](FrameView& frameView) {
+        frameView.setTransparent(transparent);
+        frameView.setBaseBackgroundColor(backgroundColor);
+    });
 }
 
 void FrameView::scrollToAnchor()
@@ -2453,9 +2455,9 @@ void FrameView::updatePaintProperties()
 {
     ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
 
-    lifecycle().advanceTo(DocumentLifecycle::InUpdatePaintProperties);
+    forAllFrameViews([](FrameView& frameView) { frameView.lifecycle().advanceTo(DocumentLifecycle::InUpdatePaintProperties); });
     // TODO(pdr): Calculate the paint properties by walking the layout tree.
-    lifecycle().advanceTo(DocumentLifecycle::UpdatePaintPropertiesClean);
+    forAllFrameViews([](FrameView& frameView) { frameView.lifecycle().advanceTo(DocumentLifecycle::UpdatePaintPropertiesClean); });
 }
 
 void FrameView::synchronizedPaint(const LayoutRect* interestRect)
@@ -2467,13 +2469,17 @@ void FrameView::synchronizedPaint(const LayoutRect* interestRect)
     ASSERT(view);
     // TODO(chrishtr): figure out if there can be any GraphicsLayer above this one that draws content.
     GraphicsLayer* rootGraphicsLayer = view->layer()->graphicsLayerBacking();
-    lifecycle().advanceTo(DocumentLifecycle::InPaint);
+    forAllFrameViews([](FrameView& frameView) { frameView.lifecycle().advanceTo(DocumentLifecycle::InPaint); });
 
     // A null graphics layer can occur for painting of SVG images that are not parented into the main frame tree.
     if (rootGraphicsLayer) {
         synchronizedPaintRecursively(rootGraphicsLayer, interestRect);
     }
-    lifecycle().advanceTo(DocumentLifecycle::PaintClean);
+
+    forAllFrameViews([](FrameView& frameView) {
+        frameView.lifecycle().advanceTo(DocumentLifecycle::PaintClean);
+        frameView.layoutView()->layer()->clearNeedsRepaintRecursively();
+    });
 }
 
 void FrameView::synchronizedPaintRecursively(GraphicsLayer* graphicsLayer, const LayoutRect* interestRect)
@@ -2489,10 +2495,8 @@ void FrameView::synchronizedPaintRecursively(GraphicsLayer* graphicsLayer, const
     if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled())
         graphicsLayer->paintController()->commitNewDisplayItems(graphicsLayer);
 
-    for (auto& child : graphicsLayer->children()) {
-        if (child)
-            synchronizedPaintRecursively(child, interestRect);
-    }
+    for (auto& child : graphicsLayer->children())
+        synchronizedPaintRecursively(child, interestRect);
 }
 
 void FrameView::compositeForSlimmingPaintV2()
@@ -2500,7 +2504,7 @@ void FrameView::compositeForSlimmingPaintV2()
     ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
     ASSERT(frame() == page()->mainFrame() || (!frame().tree().parent()->isLocalFrame()));
 
-    lifecycle().advanceTo(DocumentLifecycle::InCompositingForSlimmingPaintV2);
+    forAllFrameViews([](FrameView& frameView) { frameView.lifecycle().advanceTo(DocumentLifecycle::InCompositingForSlimmingPaintV2); });
 
     // Detached frames can have no root graphics layer.
     if (GraphicsLayer* rootGraphicsLayer = layoutView()->layer()->graphicsLayerBacking()) {
@@ -2512,7 +2516,7 @@ void FrameView::compositeForSlimmingPaintV2()
         page()->setCompositedDisplayList(compositedDisplayList.release());
     }
 
-    lifecycle().advanceTo(DocumentLifecycle::CompositingForSlimmingPaintV2Clean);
+    forAllFrameViews([](FrameView& frameView) { frameView.lifecycle().advanceTo(DocumentLifecycle::CompositingForSlimmingPaintV2Clean); });
 }
 
 void FrameView::updateFrameTimingRequestsIfNeeded()

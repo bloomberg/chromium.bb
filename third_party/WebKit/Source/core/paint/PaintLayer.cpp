@@ -2716,6 +2716,13 @@ void PaintLayer::markAncestorChainForNeedsRepaint()
     }
 }
 
+void PaintLayer::clearNeedsRepaintRecursively()
+{
+    for (PaintLayer* child = firstChild(); child; child = child->nextSibling())
+        child->clearNeedsRepaintRecursively();
+    m_needsRepaint = false;
+}
+
 ObjectPaintProperties& PaintLayer::mutablePaintProperties()
 {
     ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled());

@@ -17,7 +17,7 @@ namespace blink {
 class PaintControllerPaintTest : public RenderingTest {
 public:
     PaintControllerPaintTest()
-        : m_originalSlimmingPaintSubsequenceCachingEnabled(RuntimeEnabledFeatures::slimmingPaintSubsequenceCachingEnabled())
+        : m_originalSlimmingPaintSynchronizedPaintingEnabled(RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled())
         , m_originalSlimmingPaintOffsetCachingEnabled(RuntimeEnabledFeatures::slimmingPaintOffsetCachingEnabled())
         { }
 
@@ -30,14 +30,16 @@ private:
     {
         RenderingTest::SetUp();
         enableCompositing();
+        GraphicsLayer::setDrawDebugRedFillForTesting(false);
     }
     void TearDown() override
     {
-        RuntimeEnabledFeatures::setSlimmingPaintSubsequenceCachingEnabled(m_originalSlimmingPaintSubsequenceCachingEnabled);
+        RuntimeEnabledFeatures::setSlimmingPaintSynchronizedPaintingEnabled(m_originalSlimmingPaintSynchronizedPaintingEnabled);
         RuntimeEnabledFeatures::setSlimmingPaintOffsetCachingEnabled(m_originalSlimmingPaintOffsetCachingEnabled);
+        GraphicsLayer::setDrawDebugRedFillForTesting(true);
     }
 
-    bool m_originalSlimmingPaintSubsequenceCachingEnabled;
+    bool m_originalSlimmingPaintSynchronizedPaintingEnabled;
     bool m_originalSlimmingPaintOffsetCachingEnabled;
 };
 

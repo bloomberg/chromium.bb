@@ -58,17 +58,6 @@ static ShouldRespectOverflowClip shouldRespectOverflowClip(PaintLayerFlags paint
 
 PaintLayerPainter::PaintResult PaintLayerPainter::paintLayer(GraphicsContext* context, const PaintLayerPaintingInfo& paintingInfo, PaintLayerFlags paintFlags)
 {
-    PaintResult result = paintLayerInternal(context, paintingInfo, paintFlags);
-    // TODO(wangxianzhu): We may paint a layer multiple times with different flags.
-    // The following ensures the flag is only cleared once after the last painting.
-    // This is fragile but is temporary for spv1.
-    if ((paintFlags & PaintLayerPaintingCompositingForegroundPhase) || m_paintLayer.layoutObject()->isLayoutView())
-        m_paintLayer.clearNeedsRepaint();
-    return result;
-}
-
-PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerInternal(GraphicsContext* context, const PaintLayerPaintingInfo& paintingInfo, PaintLayerFlags paintFlags)
-{
     // https://code.google.com/p/chromium/issues/detail?id=343772
     DisableCompositingQueryAsserts disabler;
 
@@ -122,7 +111,7 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerContentsAndReflectio
     }
 
     localPaintFlags |= PaintLayerPaintingCompositingAllPhases;
-    if (paintLayerContentsInternal(context, paintingInfo, localPaintFlags, fragmentPolicy) == MaybeNotFullyPainted)
+    if (paintLayerContents(context, paintingInfo, localPaintFlags, fragmentPolicy) == MaybeNotFullyPainted)
         result = MaybeNotFullyPainted;
 
     return result;
@@ -190,18 +179,7 @@ private:
     GraphicsContext* m_context;
 };
 
-PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerContents(GraphicsContext* context, const PaintLayerPaintingInfo& paintingInfo, PaintLayerFlags paintFlags, FragmentPolicy fragmentPolicy)
-{
-    PaintResult result = paintLayerContentsInternal(context, paintingInfo, paintFlags, fragmentPolicy);
-    // TODO(wangxianzhu): We may paint a layer multiple times with different flags.
-    // The following ensures the flag is only cleared once after the last painting.
-    // This is fragile but is temporary for spv1.
-    if (paintFlags & PaintLayerPaintingCompositingForegroundPhase)
-        m_paintLayer.clearNeedsRepaint();
-    return result;
-}
-
-PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerContentsInternal(GraphicsContext* context, const PaintLayerPaintingInfo& paintingInfoArg, PaintLayerFlags paintFlags, FragmentPolicy fragmentPolicy)
+PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerContents(GraphicsContext* context, const PaintLayerPaintingInfo& paintingInfoArg, PaintLayerFlags paintFlags, FragmentPolicy fragmentPolicy)
 {
     ASSERT(m_paintLayer.isSelfPaintingLayer() || m_paintLayer.hasSelfPaintingLayerDescendant());
     ASSERT(!(paintFlags & PaintLayerAppliedTransform));
