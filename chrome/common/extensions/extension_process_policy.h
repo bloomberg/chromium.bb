@@ -5,12 +5,12 @@
 #ifndef CHROME_COMMON_EXTENSIONS_EXTENSION_PROCESS_POLICY_H_
 #define CHROME_COMMON_EXTENSIONS_EXTENSION_PROCESS_POLICY_H_
 
-class ExtensionSet;
 class GURL;
 
 namespace extensions {
 
 class Extension;
+class ExtensionSet;
 
 // Returns the extension for the given URL.  Excludes extension objects for
 // bookmark apps, which do not use the app process model.
