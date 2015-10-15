@@ -1567,6 +1567,9 @@ class GLES2DecoderImpl : public GLES2Decoder,
   // attached. Generates GL error if not.
   bool CheckBoundReadFramebufferColorAttachment(const char* func_name);
 
+  // Infer color encoding from internalformat
+  static GLint GetColorEncodingFromInternalFormat(GLenum internalformat);
+
   // Check that the currently bound read framebuffer's color image
   // isn't the target texture of the glCopyTex{Sub}Image2D.
   bool FormsTextureCopyingFeedbackLoop(TextureRef* texture, GLint level);
@@ -4017,6 +4020,19 @@ bool GLES2DecoderImpl::CheckBoundReadFramebufferColorAttachment(
     return false;
   }
   return true;
+}
+
+GLint GLES2DecoderImpl::GetColorEncodingFromInternalFormat(
+    GLenum internalformat) {
+  switch (internalformat) {
+    case GL_SRGB_EXT:
+    case GL_SRGB_ALPHA_EXT:
+    case GL_SRGB8:
+    case GL_SRGB8_ALPHA8:
+      return GL_SRGB;
+    default:
+      return GL_LINEAR;
+  }
 }
 
 bool GLES2DecoderImpl::FormsTextureCopyingFeedbackLoop(
@@ -11001,6 +11017,20 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
     LOCAL_SET_GL_ERROR(
         GL_INVALID_OPERATION, "glCopyTexImage2D", "incompatible format");
     return;
+  }
+
+  if (feature_info_->IsES3Enabled()) {
+    GLint color_encoding = GetColorEncodingFromInternalFormat(read_format);
+    if (color_encoding != GetColorEncodingFromInternalFormat(internal_format) ||
+        GLES2Util::IsFloatFormat(internal_format) ||
+        (GLES2Util::IsSignedIntegerFormat(internal_format) !=
+         GLES2Util::IsSignedIntegerFormat(read_format)) ||
+        (GLES2Util::IsUnsignedIntegerFormat(internal_format) !=
+         GLES2Util::IsUnsignedIntegerFormat(read_format))) {
+      LOCAL_SET_GL_ERROR(
+          GL_INVALID_OPERATION, "glCopyTexImage2D", "incompatible format");
+      return;
+    }
   }
 
   if ((channels_needed & (GLES2Util::kDepth | GLES2Util::kStencil)) != 0) {

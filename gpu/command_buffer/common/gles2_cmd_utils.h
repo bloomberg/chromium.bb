@@ -190,6 +190,7 @@ class GLES2_UTILS_EXPORT GLES2Util {
   static bool IsUnsignedIntegerFormat(uint32_t internal_format);
   static bool IsSignedIntegerFormat(uint32_t internal_format);
   static bool IsIntegerFormat(uint32_t internal_format);
+  static bool IsFloatFormat(uint32_t internal_format);
 
   #include "../common/gles2_cmd_utils_autogen.h"
 
