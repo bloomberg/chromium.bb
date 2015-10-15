@@ -31,7 +31,6 @@ const int kPasswordFieldTag = 2;
 
 - (NSAlert*)alert;
 - (NSView*)accessoryView;
-- (void)focus;
 - (void)alertDidEnd:(NSAlert*)alert
          returnCode:(int)returnCode
         contextInfo:(void*)contextInfo;
@@ -54,11 +53,8 @@ const int kPasswordFieldTag = 2;
 
   usernameField_ = [accessory_view viewWithTag:kUsernameFieldTag];
   passwordField_ = [accessory_view viewWithTag:kPasswordFieldTag];
+  [[alert_ window] setInitialFirstResponder:usernameField_];
   return accessory_view;
-}
-
-- (void)focus {
-  [[alert_ window] makeFirstResponder:usernameField_];
 }
 
 - (void)alertDidEnd:(NSAlert*)alert
@@ -104,8 +100,6 @@ void ShellLoginDialog::PlatformCreateDialog(const base::string16& message) {
                  modalDelegate:helper_
                 didEndSelector:@selector(alertDidEnd:returnCode:contextInfo:)
                    contextInfo:this];
-
-  [helper_ focus];
 }
 
 void ShellLoginDialog::PlatformCleanUp() {

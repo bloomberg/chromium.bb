@@ -90,6 +90,7 @@ const int kMessageTextMaxSlots = 2000;
       [[NSTextField alloc] initWithFrame:NSMakeRect(0, 0, 300, 22)]);
   [[textField_ cell] setLineBreakMode:NSLineBreakByTruncatingTail];
   [[self alert] setAccessoryView:textField_];
+  [[alert_ window] setInitialFirstResponder:textField_];
 
   [textField_ setStringValue:prompt];
 }
@@ -131,9 +132,6 @@ const int kMessageTextMaxSlots = 2000;
                     modalDelegate:self
                    didEndSelector:@selector(alertDidEnd:returnCode:contextInfo:)
                       contextInfo:NULL];
-
-  if ([alert accessoryView])
-    [[alert window] makeFirstResponder:[alert accessoryView]];
 }
 
 - (void)acceptAlert {

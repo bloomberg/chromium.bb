@@ -54,6 +54,7 @@
   textField_ = [[NSTextField alloc] initWithFrame:NSMakeRect(0, 0, 300, 22)];
   [[textField_ cell] setLineBreakMode:NSLineBreakByTruncatingTail];
   [alert_ setAccessoryView:textField_];
+  [[alert_ window] setInitialFirstResponder:textField_];
   [textField_ release];
 
   return textField_;
@@ -122,9 +123,6 @@ ShellJavaScriptDialog::ShellJavaScriptDialog(
                  modalDelegate:helper_
                 didEndSelector:@selector(alertDidEnd:returnCode:contextInfo:)
                    contextInfo:this];
-
-  if ([alert accessoryView])
-    [[alert window] makeFirstResponder:[alert accessoryView]];
 }
 
 ShellJavaScriptDialog::~ShellJavaScriptDialog() {
