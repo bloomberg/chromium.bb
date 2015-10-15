@@ -113,10 +113,15 @@ class PasswordStoreDefaultTest : public testing::Test {
   }
 
   scoped_refptr<PasswordStoreDefault> CreateInitializedStore() {
+    return CreateInitializedStore(
+        make_scoped_ptr(new LoginDatabase(test_login_db_file_path())));
+  }
+
+  scoped_refptr<PasswordStoreDefault> CreateInitializedStore(
+      scoped_ptr<LoginDatabase> database) {
     scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
         base::ThreadTaskRunnerHandle::Get(),
-        base::ThreadTaskRunnerHandle::Get(),
-        make_scoped_ptr(new LoginDatabase(test_login_db_file_path()))));
+        base::ThreadTaskRunnerHandle::Get(), database.Pass()));
     store->Init(syncer::SyncableService::StartSyncFlare());
 
     return store;
@@ -131,10 +136,7 @@ ACTION(STLDeleteElements0) {
 }
 
 TEST_F(PasswordStoreDefaultTest, NonASCIIData) {
-  scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
-      base::ThreadTaskRunnerHandle::Get(), base::ThreadTaskRunnerHandle::Get(),
-      make_scoped_ptr(new LoginDatabase(test_login_db_file_path()))));
-  store->Init(syncer::SyncableService::StartSyncFlare());
+  scoped_refptr<PasswordStoreDefault> store = CreateInitializedStore();
 
   // Some non-ASCII password form data.
   static const PasswordFormData form_data[] = {
@@ -174,10 +176,7 @@ TEST_F(PasswordStoreDefaultTest, NonASCIIData) {
 }
 
 TEST_F(PasswordStoreDefaultTest, Notifications) {
-  scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
-      base::ThreadTaskRunnerHandle::Get(), base::ThreadTaskRunnerHandle::Get(),
-      make_scoped_ptr(new LoginDatabase(test_login_db_file_path()))));
-  store->Init(syncer::SyncableService::StartSyncFlare());
+  scoped_refptr<PasswordStoreDefault> store = CreateInitializedStore();
 
   scoped_ptr<PasswordForm> form =
       CreatePasswordFormFromDataForTesting(CreateTestPasswordFormData());
@@ -229,11 +228,9 @@ TEST_F(PasswordStoreDefaultTest, Notifications) {
 // explosions, but fail without side effect, return no data and trigger no
 // notifications.
 TEST_F(PasswordStoreDefaultTest, OperationsOnABadDatabaseSilentlyFail) {
-  scoped_refptr<PasswordStoreDefault> bad_store(new PasswordStoreDefault(
-      base::ThreadTaskRunnerHandle::Get(), base::ThreadTaskRunnerHandle::Get(),
-      make_scoped_ptr<LoginDatabase>(new BadLoginDatabase)));
+  scoped_refptr<PasswordStoreDefault> bad_store =
+      CreateInitializedStore(make_scoped_ptr(new BadLoginDatabase));
 
-  bad_store->Init(syncer::SyncableService::StartSyncFlare());
   base::MessageLoop::current()->RunUntilIdle();
   ASSERT_EQ(nullptr, bad_store->login_db());
 
@@ -278,9 +275,11 @@ TEST_F(PasswordStoreDefaultTest, OperationsOnABadDatabaseSilentlyFail) {
   // Delete one login; a range of logins.
   bad_store->RemoveLogin(*form);
   base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop run_loop;
   bad_store->RemoveLoginsCreatedBetween(base::Time(), base::Time::Max(),
-                                        base::Closure());
-  base::MessageLoop::current()->RunUntilIdle();
+                                        run_loop.QuitClosure());
+  run_loop.Run();
+
   bad_store->RemoveLoginsSyncedBetween(base::Time(), base::Time::Max());
   base::MessageLoop::current()->RunUntilIdle();
 
