@@ -5,6 +5,7 @@
 from core import perf_benchmark
 
 from benchmarks import silk_flags
+import ct_benchmarks_util
 from measurements import smoothness
 import page_sets
 from telemetry import benchmark
@@ -64,3 +65,26 @@ class RepaintGpuRasterizationKeyMobileSites(_Repaint):
   def Name(cls):
     return 'repaint.gpu_rasterization.key_mobile_sites_repaint'
 
+
+# Disabled because we do not plan on running CT benchmarks on the perf
+# waterfall any time soon.
+@benchmark.Disabled
+class RepaintCT(_Repaint):
+  """Measures repaint performance for Cluster Telemetry."""
+
+  @classmethod
+  def Name(cls):
+    return 'repaint_ct'
+
+  @classmethod
+  def AddBenchmarkCommandLineArgs(cls, parser):
+    _Repaint.AddBenchmarkCommandLineArgs(parser)
+    ct_benchmarks_util.AddBenchmarkCommandLineArgs(parser)
+
+  @classmethod
+  def ProcessCommandLineArgs(cls, parser, args):
+    ct_benchmarks_util.ValidateCommandLineArgs(parser, args)
+
+  def CreateStorySet(self, options):
+    return page_sets.CTPageSet(
+        options.urls_list, options.user_agent, options.archive_data_file)

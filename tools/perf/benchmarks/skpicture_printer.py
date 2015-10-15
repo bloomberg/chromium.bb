@@ -4,6 +4,8 @@
 
 from core import perf_benchmark
 
+import ct_benchmarks_util
+import page_sets
 from telemetry import benchmark
 from telemetry.core import discover
 from telemetry import story
@@ -48,3 +50,32 @@ class SkpicturePrinter(perf_benchmark.PerfBenchmark):
     story_set_class = _MatchPageSetName(options.page_set_name,
                                         options.page_set_base_dir)
     return story_set_class()
+
+
+# Disabled because we do not plan on running CT benchmarks on the perf
+# waterfall any time soon.
+@benchmark.Disabled
+class SkpicturePrinterCT(perf_benchmark.PerfBenchmark):
+  """Captures SKPs for Cluster Telemetry."""
+
+  @classmethod
+  def Name(cls):
+    return 'skpicture_printer_ct'
+
+  @classmethod
+  def AddBenchmarkCommandLineArgs(cls, parser):
+    ct_benchmarks_util.AddBenchmarkCommandLineArgs(parser)
+    parser.add_option('-s', '--skp-outdir',
+                      default=None,
+                      help='Output directory for the SKP files')
+
+  @classmethod
+  def ProcessCommandLineArgs(cls, parser, args):
+    ct_benchmarks_util.ValidateCommandLineArgs(parser, args)
+
+  def CreatePageTest(self, options):
+    return skpicture_printer.SkpicturePrinter(options.skp_outdir)
+
+  def CreateStorySet(self, options):
+    return page_sets.CTPageSet(
+        options.urls_list, options.user_agent, options.archive_data_file)

@@ -4,6 +4,7 @@
 
 from core import perf_benchmark
 
+import ct_benchmarks_util
 from measurements import rasterize_and_record_micro
 import page_sets
 from telemetry import benchmark
@@ -95,3 +96,27 @@ class RasterizeAndRecordMicroPolymer(_RasterizeAndRecordMicro):
 
   def CreateStorySet(self, options):
     return page_sets.PolymerPageSet(run_no_page_interactions=True)
+
+
+# Disabled because we do not plan on running CT benchmarks on the perf
+# waterfall any time soon.
+@benchmark.Disabled
+class RasterizeAndRecordMicroCT(_RasterizeAndRecordMicro):
+  """Measures rasterize and record performance for Cluster Telemetry."""
+
+  @classmethod
+  def Name(cls):
+    return 'rasterize_and_record_micro_ct'
+
+  @classmethod
+  def AddBenchmarkCommandLineArgs(cls, parser):
+    _RasterizeAndRecordMicro.AddBenchmarkCommandLineArgs(parser)
+    ct_benchmarks_util.AddBenchmarkCommandLineArgs(parser)
+
+  @classmethod
+  def ProcessCommandLineArgs(cls, parser, args):
+    ct_benchmarks_util.ValidateCommandLineArgs(parser, args)
+
+  def CreateStorySet(self, options):
+    return page_sets.CTPageSet(
+        options.urls_list, options.user_agent, options.archive_data_file)
