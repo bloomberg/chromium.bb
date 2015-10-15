@@ -87,11 +87,11 @@
   <structure name="IDR_CR_ELEMENTS_1_0_CR_POLICY_INDICATOR_CSS"
              file="../../webui/resources/cr_elements/v1_0/policy/cr_policy_indicator.css"
              type="chrome_html" />
-  <structure name="IDR_CR_ELEMENTS_1_0_CR_POLICY_INDICATOR_HTML"
-             file="../../webui/resources/cr_elements/v1_0/policy/cr_policy_indicator.html"
+  <structure name="IDR_CR_ELEMENTS_1_0_CR_POLICY_PREF_INDICATOR_HTML"
+             file="../../webui/resources/cr_elements/v1_0/policy/cr_policy_pref_indicator.html"
              type="chrome_html" />
-  <structure name="IDR_CR_ELEMENTS_1_0_CR_POLICY_INDICATOR_JS"
-             file="../../webui/resources/cr_elements/v1_0/policy/cr_policy_indicator.js"
+  <structure name="IDR_CR_ELEMENTS_1_0_CR_POLICY_PREF_INDICATOR_JS"
+             file="../../webui/resources/cr_elements/v1_0/policy/cr_policy_pref_indicator.js"
              type="chrome_html" />
   <structure name="IDR_CR_ELEMENTS_1_0_CR_POLICY_PREF_BEHAVIOR_HTML"
              file="../../webui/resources/cr_elements/v1_0/policy/cr_policy_pref_behavior.html"

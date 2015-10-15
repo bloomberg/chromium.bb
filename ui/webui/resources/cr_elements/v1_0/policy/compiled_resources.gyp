@@ -4,7 +4,7 @@
 {
   'targets': [
     {
-      'target_name': 'cr_policy_indicator',
+      'target_name': 'cr_policy_pref_indicator',
       'variables': {
         'depends': [
           '../../../../../../third_party/polymer/v1_0/components-chromium/iron-iconset-svg/iron-iconset-svg-extracted.js',

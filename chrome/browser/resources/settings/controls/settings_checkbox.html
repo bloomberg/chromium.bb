@@ -2,7 +2,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="chrome://resources/cr_elements/v1_0/cr_events/cr_events.html">
 <link rel="import" href="chrome://resources/cr_elements/v1_0/policy/cr_policy_pref_behavior.html">
-<link rel="import" href="chrome://resources/cr_elements/v1_0/policy/cr_policy_indicator.html">
+<link rel="import" href="chrome://resources/cr_elements/v1_0/policy/cr_policy_pref_indicator.html">
 <link rel="import" href="chrome://md-settings/pref_tracker/pref_tracker.html">
 
 <dom-module id="settings-checkbox">
@@ -17,7 +17,7 @@
         <span id="mainLabel">{{label}}</span>
         <span id="subLabel">{{subLabel}}</span>
       </paper-checkbox>
-      <cr-policy-indicator pref="[[pref]]"></cr-policy-indicator>
+      <cr-policy-pref-indicator pref="[[pref]]"></cr-policy-pref-indicator>
     </div>
   </template>
   <script src="settings_checkbox.js"></script>

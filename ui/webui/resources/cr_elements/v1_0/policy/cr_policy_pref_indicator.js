@@ -22,9 +22,9 @@ var CrPolicyIndicator = {
 
 (function() {
 
-/** @element cr-policy-indicator */
+/** @element cr-policy-pref-indicator */
 Polymer({
-  is: 'cr-policy-indicator',
+  is: 'cr-policy-pref-indicator',
 
   properties: {
     /**
