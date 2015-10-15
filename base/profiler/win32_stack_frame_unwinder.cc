@@ -205,7 +205,13 @@ bool Win32StackFrameUnwinder::TryUnwind(CONTEXT* context) {
     } else {
       // We're not at the end of the stack. This frame is untrustworthy and we
       // can't safely unwind from here.
-      if (unwind_info_present_for_all_frames_) {
+      if (!image_base) {
+        // A null image_base means that the the last unwind produced an invalid
+        // instruction pointer. This has been observed where unwind information
+        // was present for a function but was inconsistent with the actual
+        // function code, in particular in BoringSSL. See
+        // https://crbug.com/542919.
+      } else if (unwind_info_present_for_all_frames_) {
         // Unwind information was present for all previous frames, so we can
         // be confident this is case 2. Record the module to be blacklisted.
         LeafUnwindBlacklist::GetInstance()->BlacklistModule(
