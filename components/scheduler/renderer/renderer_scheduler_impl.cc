@@ -20,7 +20,7 @@ const double kLoadingTaskEstimationPercentile = 90;
 const int kTimerTaskEstimationSampleCount = 200;
 const double kTimerTaskEstimationPercentile = 90;
 const int kShortIdlePeriodDurationSampleCount = 10;
-const double kShortIdlePeriodDurationPercentile = 20;
+const double kShortIdlePeriodDurationPercentile = 50;
 }
 
 RendererSchedulerImpl::RendererSchedulerImpl(
@@ -43,6 +43,7 @@ RendererSchedulerImpl::RendererSchedulerImpl(
           base::Bind(&RendererSchedulerImpl::UpdatePolicy,
                      base::Unretained(this)),
           helper_.ControlTaskRunner()),
+      main_thread_only_(compositor_task_runner_),
       policy_may_need_update_(&any_thread_lock_),
       weak_factory_(this) {
   update_policy_closure_ = base::Bind(&RendererSchedulerImpl::UpdatePolicy,
@@ -60,10 +61,6 @@ RendererSchedulerImpl::RendererSchedulerImpl(
   TRACE_EVENT_OBJECT_CREATED_WITH_ID(
       TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"), "RendererScheduler",
       this);
-
-  // Make sure that we don't initially assume there is no idle time.
-  MainThreadOnly().short_idle_period_duration.InsertSample(
-      cc::BeginFrameArgs::DefaultInterval());
 
   helper_.SetObserver(this);
 }
@@ -94,12 +91,15 @@ RendererSchedulerImpl::Policy::Policy()
       timer_queue_priority(TaskQueue::NORMAL_PRIORITY),
       default_queue_priority(TaskQueue::NORMAL_PRIORITY) {}
 
-RendererSchedulerImpl::MainThreadOnly::MainThreadOnly()
+RendererSchedulerImpl::MainThreadOnly::MainThreadOnly(
+    const scoped_refptr<TaskQueue>& compositor_task_runner)
     : loading_task_cost_estimator(kLoadingTaskEstimationSampleCount,
                                   kLoadingTaskEstimationPercentile),
       timer_task_cost_estimator(kTimerTaskEstimationSampleCount,
                                 kTimerTaskEstimationPercentile),
-      short_idle_period_duration(kShortIdlePeriodDurationSampleCount),
+      idle_time_estimator(compositor_task_runner,
+                          kShortIdlePeriodDurationSampleCount,
+                          kShortIdlePeriodDurationPercentile),
       current_use_case(UseCase::NONE),
       timer_queue_suspend_count(0),
       navigation_task_expected_count(0),
@@ -220,6 +220,7 @@ void RendererSchedulerImpl::WillBeginFrame(const cc::BeginFrameArgs& args) {
   EndIdlePeriod();
   MainThreadOnly().estimated_next_frame_begin = args.frame_time + args.interval;
   MainThreadOnly().have_seen_a_begin_main_frame = true;
+  MainThreadOnly().compositor_frame_interval = args.interval;
   {
     base::AutoLock lock(any_thread_lock_);
     AnyThread().begin_main_frame_on_critical_path = args.on_critical_path;
@@ -240,16 +241,9 @@ void RendererSchedulerImpl::DidCommitFrameToCompositor() {
     idle_helper_.StartIdlePeriod(
         IdleHelper::IdlePeriodState::IN_SHORT_IDLE_PERIOD, now,
         MainThreadOnly().estimated_next_frame_begin);
-    MainThreadOnly().short_idle_period_duration.InsertSample(
-        MainThreadOnly().estimated_next_frame_begin - now);
-  } else {
-    // There was no idle time :(
-    MainThreadOnly().short_idle_period_duration.InsertSample(base::TimeDelta());
   }
 
-  MainThreadOnly().expected_short_idle_period_duration =
-      MainThreadOnly().short_idle_period_duration.Percentile(
-          kShortIdlePeriodDurationPercentile);
+  MainThreadOnly().idle_time_estimator.DidCommitFrameToCompositor();
 }
 
 void RendererSchedulerImpl::BeginFrameNotExpectedSoon() {
@@ -260,6 +254,10 @@ void RendererSchedulerImpl::BeginFrameNotExpectedSoon() {
     return;
 
   idle_helper_.EnableLongIdlePeriod();
+  {
+    base::AutoLock lock(any_thread_lock_);
+    AnyThread().begin_main_frame_on_critical_path = false;
+  }
 }
 
 void RendererSchedulerImpl::OnRendererHidden() {
@@ -559,14 +557,19 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
       use_case, now, &touchstart_expected_flag_valid_for_duration);
   MainThreadOnly().touchstart_expected_soon = touchstart_expected_soon;
 
+  base::TimeDelta expected_idle_duration =
+      MainThreadOnly().idle_time_estimator.GetExpectedIdleDuration(
+          MainThreadOnly().compositor_frame_interval);
+  MainThreadOnly().expected_idle_duration = expected_idle_duration;
+
   bool loading_tasks_seem_expensive =
       MainThreadOnly().loading_task_cost_estimator.expected_task_duration() >
-      MainThreadOnly().expected_short_idle_period_duration;
+      expected_idle_duration;
   MainThreadOnly().loading_tasks_seem_expensive = loading_tasks_seem_expensive;
 
   bool timer_tasks_seem_expensive =
       MainThreadOnly().timer_task_cost_estimator.expected_task_duration() >
-      MainThreadOnly().expected_short_idle_period_duration;
+      expected_idle_duration;
   MainThreadOnly().timer_tasks_seem_expensive = timer_tasks_seem_expensive;
 
   // The |new_policy_duration| is the minimum of |expected_use_case_duration|
@@ -639,7 +642,8 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
   if (block_expensive_tasks && loading_tasks_seem_expensive)
     new_policy.loading_queue_priority = TaskQueue::DISABLED_PRIORITY;
 
-  if (MainThreadOnly().timer_queue_suspend_count != 0 ||
+  if ((block_expensive_tasks && timer_tasks_seem_expensive) ||
+      MainThreadOnly().timer_queue_suspend_count != 0 ||
       MainThreadOnly().timer_queue_suspended_when_backgrounded) {
     new_policy.timer_queue_priority = TaskQueue::DISABLED_PRIORITY;
   }
@@ -758,6 +762,10 @@ RendererSchedulerImpl::GetTimerTaskCostEstimatorForTesting() {
   return &MainThreadOnly().timer_task_cost_estimator;
 }
 
+IdleTimeEstimator* RendererSchedulerImpl::GetIdleTimeEstimatorForTesting() {
+  return &MainThreadOnly().idle_time_estimator;
+}
+
 void RendererSchedulerImpl::SuspendTimerQueue() {
   MainThreadOnly().timer_queue_suspend_count++;
   ForceUpdatePolicy();
@@ -838,9 +846,11 @@ RendererSchedulerImpl::AsValueLocked(base::TimeTicks optional_now) const {
                        .timer_task_cost_estimator.expected_task_duration()
                        .InMillisecondsF());
   // TODO(skyostil): Can we somehow trace how accurate these estimates were?
+  state->SetDouble("expected_idle_duration",
+                   MainThreadOnly().expected_idle_duration.InMillisecondsF());
   state->SetDouble(
-      "expected_short_idle_period_duration",
-      MainThreadOnly().expected_short_idle_period_duration.InMillisecondsF());
+      "compositor_frame_interval",
+      MainThreadOnly().compositor_frame_interval.InMillisecondsF());
   state->SetDouble(
       "estimated_next_frame_begin",
       (MainThreadOnly().estimated_next_frame_begin - base::TimeTicks())
@@ -917,10 +927,7 @@ void RendererSchedulerImpl::ResetForNavigationLocked() {
   any_thread_lock_.AssertAcquired();
   MainThreadOnly().loading_task_cost_estimator.Clear();
   MainThreadOnly().timer_task_cost_estimator.Clear();
-  MainThreadOnly().short_idle_period_duration.Clear();
-  // Make sure that we don't initially assume there is no idle time.
-  MainThreadOnly().short_idle_period_duration.InsertSample(
-      cc::BeginFrameArgs::DefaultInterval());
+  MainThreadOnly().idle_time_estimator.Clear();
   AnyThread().user_model.Reset(helper_.Now());
   MainThreadOnly().have_seen_a_begin_main_frame = false;
   UpdatePolicyLocked(UpdateType::MAY_EARLY_OUT_IF_POLICY_UNCHANGED);

@@ -48,6 +48,8 @@
       'ppapi/webthread_impl_for_ppapi.h',
       'renderer/deadline_task_runner.cc',
       'renderer/deadline_task_runner.h',
+      'renderer/idle_time_estimator.cc',
+      'renderer/idle_time_estimator.h',
       'renderer/renderer_scheduler.cc',
       'renderer/renderer_scheduler.h',
       'renderer/renderer_scheduler_impl.cc',

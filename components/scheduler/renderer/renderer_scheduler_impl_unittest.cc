@@ -266,6 +266,8 @@ class RendererSchedulerImplTest : public testing::Test {
             make_scoped_ptr(new TestTimeSource(clock_.get())));
     scheduler_->GetTimerTaskCostEstimatorForTesting()->SetTimeSourceForTesting(
         make_scoped_ptr(new TestTimeSource(clock_.get())));
+    scheduler_->GetIdleTimeEstimatorForTesting()->SetTimeSourceForTesting(
+        make_scoped_ptr(new TestTimeSource(clock_.get())));
   }
 
   void TearDown() override {
@@ -294,7 +296,7 @@ class RendererSchedulerImplTest : public testing::Test {
   void DoMainFrame() {
     cc::BeginFrameArgs begin_frame_args = cc::BeginFrameArgs::Create(
         BEGINFRAME_FROM_HERE, clock_->NowTicks(), base::TimeTicks(),
-        base::TimeDelta::FromMilliseconds(1000), cc::BeginFrameArgs::NORMAL);
+        base::TimeDelta::FromMilliseconds(16), cc::BeginFrameArgs::NORMAL);
     begin_frame_args.on_critical_path = false;
     scheduler_->WillBeginFrame(begin_frame_args);
     scheduler_->DidCommitFrameToCompositor();
@@ -303,7 +305,7 @@ class RendererSchedulerImplTest : public testing::Test {
   void ForceMainThreadScrollingUseCase() {
     cc::BeginFrameArgs begin_frame_args = cc::BeginFrameArgs::Create(
         BEGINFRAME_FROM_HERE, clock_->NowTicks(), base::TimeTicks(),
-        base::TimeDelta::FromMilliseconds(1000), cc::BeginFrameArgs::NORMAL);
+        base::TimeDelta::FromMilliseconds(16), cc::BeginFrameArgs::NORMAL);
     begin_frame_args.on_critical_path = true;
     scheduler_->WillBeginFrame(begin_frame_args);
   }
@@ -337,6 +339,27 @@ class RendererSchedulerImplTest : public testing::Test {
     mock_task_runner_->SetAutoAdvanceNowToPendingTasks(false);
   }
 
+  void WillBeginMainThreadGestureFrame() {
+    scheduler_->DidAnimateForInputOnCompositorThread();
+    cc::BeginFrameArgs begin_frame_args = cc::BeginFrameArgs::Create(
+        BEGINFRAME_FROM_HERE, clock_->NowTicks(), base::TimeTicks(),
+        base::TimeDelta::FromMilliseconds(16), cc::BeginFrameArgs::NORMAL);
+    begin_frame_args.on_critical_path = true;
+    scheduler_->WillBeginFrame(begin_frame_args);
+  }
+
+  void SimulateMainThreadGestureCompositorTask(
+      base::TimeDelta begin_main_frame_duration) {
+    WillBeginMainThreadGestureFrame();
+    clock_->Advance(begin_main_frame_duration);
+    scheduler_->DidCommitFrameToCompositor();
+  }
+
+  void SimulateTimerTask(base::TimeDelta duration) {
+    clock_->Advance(duration);
+    simulate_timer_task_ran_ = true;
+  }
+
   void EnableIdleTasks() { DoMainFrame(); }
 
   UseCase CurrentUseCase() {
@@ -362,6 +385,10 @@ class RendererSchedulerImplTest : public testing::Test {
 
   bool TimerTasksSeemExpensive() {
     return scheduler_->MainThreadOnly().timer_tasks_seem_expensive;
+  }
+
+  base::TimeTicks EstimatedNextFrameBegin() {
+    return scheduler_->MainThreadOnly().estimated_next_frame_begin;
   }
 
   // Helper for posting several tasks of specific types. |task_descriptor| is a
@@ -466,6 +493,7 @@ class RendererSchedulerImplTest : public testing::Test {
   scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner_;
   scoped_refptr<SingleThreadIdleTaskRunner> idle_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> timer_task_runner_;
+  bool simulate_timer_task_ran_;
 
   DISALLOW_COPY_AND_ASSIGN(RendererSchedulerImplTest);
 };
@@ -736,10 +764,9 @@ TEST_F(RendererSchedulerImplTest, TestCompositorPolicy_DidAnimateForInput) {
   EXPECT_EQ(RendererScheduler::UseCase::COMPOSITOR_GESTURE, CurrentUseCase());
 }
 
-// TODO(skyostil): Re-enable once timer blocking is re-enabled.
 TEST_F(
     RendererSchedulerImplTest,
-    DISABLED_TestCompositorPolicy_ExpensiveTimersDontRunWhenMainThreadOnCriticalPath) {
+    TestCompositorPolicy_ExpensiveTimersDontRunWhenMainThreadOnCriticalPath) {
   std::vector<std::string> run_order;
 
   SimulateExpensiveTasks(timer_task_runner_);
@@ -748,12 +775,7 @@ TEST_F(
   PostTestTasks(&run_order, "C1 T1");
 
   // Trigger main_thread_gesture UseCase
-  scheduler_->DidAnimateForInputOnCompositorThread();
-  cc::BeginFrameArgs begin_frame_args1 = cc::BeginFrameArgs::Create(
-      BEGINFRAME_FROM_HERE, clock_->NowTicks(), base::TimeTicks(),
-      base::TimeDelta::FromMilliseconds(16), cc::BeginFrameArgs::NORMAL);
-  begin_frame_args1.on_critical_path = true;
-  scheduler_->WillBeginFrame(begin_frame_args1);
+  WillBeginMainThreadGestureFrame();
   RunUntilIdle();
   EXPECT_EQ(RendererScheduler::UseCase::MAIN_THREAD_GESTURE, CurrentUseCase());
 
@@ -773,12 +795,7 @@ TEST_F(RendererSchedulerImplTest, Navigation_ResetsTaskCostEstimations) {
   scheduler_->OnNavigationStarted();
   PostTestTasks(&run_order, "C1 T1");
 
-  scheduler_->DidAnimateForInputOnCompositorThread();
-  cc::BeginFrameArgs begin_frame_args1 = cc::BeginFrameArgs::Create(
-      BEGINFRAME_FROM_HERE, clock_->NowTicks(), base::TimeTicks(),
-      base::TimeDelta::FromMilliseconds(1000), cc::BeginFrameArgs::NORMAL);
-  begin_frame_args1.on_critical_path = true;
-  scheduler_->WillBeginFrame(begin_frame_args1);
+  WillBeginMainThreadGestureFrame();
   scheduler_->DidCommitFrameToCompositor();  // Starts Idle Period
   RunUntilIdle();
 
@@ -2101,5 +2118,62 @@ TEST_F(
   EXPECT_THAT(run_order, testing::ElementsAre(std::string("D1")));
 }
 
+TEST_F(RendererSchedulerImplTest, ModeratelyExpensiveTimer_NotBlocked) {
+  for (int i = 0; i < 20; i++) {
+    simulate_timer_task_ran_ = false;
+    compositor_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(
+            &RendererSchedulerImplTest::SimulateMainThreadGestureCompositorTask,
+            base::Unretained(this), base::TimeDelta::FromMilliseconds(4)));
+    timer_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&RendererSchedulerImplTest::SimulateTimerTask,
+                              base::Unretained(this),
+                              base::TimeDelta::FromMilliseconds(10)));
 
+    RunUntilIdle();
+    EXPECT_TRUE(simulate_timer_task_ran_);
+    EXPECT_EQ(RendererScheduler::UseCase::MAIN_THREAD_GESTURE,
+              CurrentUseCase());
+    EXPECT_FALSE(LoadingTasksSeemExpensive());
+    EXPECT_FALSE(TimerTasksSeemExpensive());
+
+    base::TimeDelta time_till_next_frame =
+        EstimatedNextFrameBegin() - clock_->NowTicks();
+    if (time_till_next_frame > base::TimeDelta())
+      clock_->Advance(time_till_next_frame);
+  }
+}
+
+TEST_F(RendererSchedulerImplTest, ExpensiveTimer_Blocked) {
+  for (int i = 0; i < 20; i++) {
+    simulate_timer_task_ran_ = false;
+    compositor_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(
+            &RendererSchedulerImplTest::SimulateMainThreadGestureCompositorTask,
+            base::Unretained(this), base::TimeDelta::FromMilliseconds(8)));
+    timer_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&RendererSchedulerImplTest::SimulateTimerTask,
+                              base::Unretained(this),
+                              base::TimeDelta::FromMilliseconds(10)));
+
+    RunUntilIdle();
+    EXPECT_EQ(RendererScheduler::UseCase::MAIN_THREAD_GESTURE,
+              CurrentUseCase());
+    EXPECT_FALSE(LoadingTasksSeemExpensive());
+    if (i == 0) {
+      EXPECT_FALSE(TimerTasksSeemExpensive());
+      EXPECT_TRUE(simulate_timer_task_ran_);
+    } else {
+      EXPECT_TRUE(TimerTasksSeemExpensive());
+      EXPECT_FALSE(simulate_timer_task_ran_);
+    }
+
+    base::TimeDelta time_till_next_frame =
+        EstimatedNextFrameBegin() - clock_->NowTicks();
+    if (time_till_next_frame > base::TimeDelta())
+      clock_->Advance(time_till_next_frame);
+  }
+}
 }  // namespace scheduler

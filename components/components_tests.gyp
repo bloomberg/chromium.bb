@@ -589,6 +589,7 @@
       'scheduler/child/webthread_impl_for_worker_scheduler_unittest.cc',
       'scheduler/child/worker_scheduler_impl_unittest.cc',
       'scheduler/renderer/deadline_task_runner_unittest.cc',
+      'scheduler/renderer/idle_time_estimator_unittest.cc',
       'scheduler/renderer/renderer_scheduler_impl_unittest.cc',
       'scheduler/renderer/task_cost_estimator_unittest.cc',
       'scheduler/renderer/user_model_unittest.cc',

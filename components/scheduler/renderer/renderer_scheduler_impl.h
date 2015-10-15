@@ -11,6 +11,7 @@
 #include "components/scheduler/child/idle_helper.h"
 #include "components/scheduler/child/scheduler_helper.h"
 #include "components/scheduler/renderer/deadline_task_runner.h"
+#include "components/scheduler/renderer/idle_time_estimator.h"
 #include "components/scheduler/renderer/renderer_scheduler.h"
 #include "components/scheduler/renderer/task_cost_estimator.h"
 #include "components/scheduler/renderer/user_model.h"
@@ -75,6 +76,7 @@ class SCHEDULER_EXPORT RendererSchedulerImpl
   SchedulerHelper* GetSchedulerHelperForTesting();
   TaskCostEstimator* GetLoadingTaskCostEstimatorForTesting();
   TaskCostEstimator* GetTimerTaskCostEstimatorForTesting();
+  IdleTimeEstimator* GetIdleTimeEstimatorForTesting();
   base::TimeTicks CurrentIdleTaskDeadlineForTesting() const;
 
  private:
@@ -141,6 +143,10 @@ class SCHEDULER_EXPORT RendererSchedulerImpl
   // The amount of time for which loading tasks will be prioritized over
   // other tasks during the initial page load.
   static const int kRailsInitialLoadingPrioritizationMillis = 1000;
+
+  // The amount of time in milliseconds we have to respond to user input as
+  // defined by RAILS.
+  static const int kRailsResponseTimeMillis = 50;
 
   // For the purposes of deciding whether or not it's safe to turn timers and
   // loading tasks on only in idle periods, we regard the system as being as
@@ -229,17 +235,19 @@ class SCHEDULER_EXPORT RendererSchedulerImpl
   // (the accessors) for the following data members.
 
   struct MainThreadOnly {
-    MainThreadOnly();
+    explicit MainThreadOnly(
+        const scoped_refptr<TaskQueue>& compositor_task_runner);
     ~MainThreadOnly();
 
     TaskCostEstimator loading_task_cost_estimator;
     TaskCostEstimator timer_task_cost_estimator;
-    cc::RollingTimeDeltaHistory short_idle_period_duration;
+    IdleTimeEstimator idle_time_estimator;
     UseCase current_use_case;
     Policy current_policy;
     base::TimeTicks current_policy_expiration_time;
     base::TimeTicks estimated_next_frame_begin;
-    base::TimeDelta expected_short_idle_period_duration;
+    base::TimeDelta compositor_frame_interval;
+    base::TimeDelta expected_idle_duration;
     int timer_queue_suspend_count;  // TIMER_TASK_QUEUE suspended if non-zero.
     int navigation_task_expected_count;
     bool renderer_hidden;
