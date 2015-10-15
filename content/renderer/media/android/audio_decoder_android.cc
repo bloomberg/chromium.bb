@@ -481,6 +481,9 @@ static void BufferAndCopyPcmDataToBus(int input_fd,
                               file_sample_rate);
 
   for (size_t m = 0; m < number_of_samples; m += number_of_channels) {
+    if (decoded_frames >= number_of_frames)
+      break;
+
     for (size_t k = 0; k < number_of_channels; ++k) {
       int16_t sample = decoded_samples[m + k];
       destination_bus->channelData(k)[decoded_frames] =
