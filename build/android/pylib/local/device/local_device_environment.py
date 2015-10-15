@@ -32,6 +32,7 @@ class LocalDeviceEnvironment(environment.Environment):
     self._max_tries = 1 + args.num_retries
     self._tool_name = args.tool
     self._enable_device_cache = args.enable_device_cache
+    self._incremental_install = args.incremental_install
 
   #override
   def SetUp(self):
@@ -62,6 +63,10 @@ class LocalDeviceEnvironment(environment.Environment):
     if not self._devices:
       raise device_errors.NoDevicesError()
     return self._devices
+
+  @property
+  def incremental_install(self):
+    return self._incremental_install
 
   @property
   def parallel_devices(self):

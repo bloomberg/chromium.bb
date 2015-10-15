@@ -80,15 +80,26 @@ template("test") {
       }
     }
 
-    test_name = main_target_name
+    _test_name = main_target_name
     if (defined(invoker.output_name)) {
-      test_name = invoker.output_name
+      _test_name = invoker.output_name
     }
-    test_runner_script_name = "${test_name}__test_runner_script"
+    test_runner_script_name = "${_test_name}__test_runner_script"
     test_runner_script(test_runner_script_name) {
-      test_name = test_name
+      test_name = _test_name
       test_type = "gtest"
-      test_suite = test_name
+      test_suite = _test_name
+      if (defined(invoker.isolate_file)) {
+        isolate_file = invoker.isolate_file
+      }
+    }
+    incremental_test_runner_script_name =
+        "${_test_name}_incremental__test_runner_script"
+    test_runner_script(incremental_test_runner_script_name) {
+      test_name = "${_test_name}_incremental"
+      test_type = "gtest"
+      test_suite = _test_name
+      incremental_install = true
       if (defined(invoker.isolate_file)) {
         isolate_file = invoker.isolate_file
       }
@@ -100,8 +111,16 @@ template("test") {
         ":$test_runner_script_name",
       ]
       deps = [
-        ":$library_name",
         ":$apk_name",
+      ]
+    }
+    group("${target_name}_incremental") {
+      testonly = true
+      datadeps = [
+        ":$incremental_test_runner_script_name",
+      ]
+      deps = [
+        ":${apk_name}_incremental",
       ]
     }
   } else if (is_ios) {

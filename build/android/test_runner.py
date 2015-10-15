@@ -188,6 +188,8 @@ def AddDeviceOptions(parser):
   group.add_argument('--blacklist-file', help='Device blacklist file.')
   group.add_argument('--enable-device-cache', action='store_true',
                      help='Cache device state to disk between runs')
+  group.add_argument('--incremental-install', action='store_true',
+                     help='Use an _incremental apk.')
 
 
 def AddGTestOptions(parser):

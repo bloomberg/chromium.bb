@@ -24,8 +24,10 @@ from pylib import constants
 from pylib.utils import run_tests_helper
 from pylib.utils import time_profile
 
-sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, 'gyp'))
+prev_sys_path = list(sys.path)
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), os.pardir, 'gyp'))
 from util import build_utils
+sys.path = prev_sys_path
 
 
 def _TransformDexPaths(paths):
@@ -44,6 +46,142 @@ def _Execute(concurrently, *funcs):
       f()
   timer.Stop(log=False)
   return timer
+
+
+def _GetDeviceIncrementalDir(package):
+  """Returns the device path to put incremental files for the given package."""
+  return '/data/local/tmp/incremental-app-%s' % package
+
+
+def Uninstall(device, package):
+  """Uninstalls and removes all incremental files for the given package."""
+  main_timer = time_profile.TimeProfile()
+  device.Uninstall(package)
+  device.RunShellCommand(['rm', '-rf', _GetDeviceIncrementalDir(package)],
+                         check_return=True)
+  logging.info('Uninstall took %s seconds.', main_timer.GetDelta())
+
+
+def Install(device, apk, split_globs=None, lib_dir=None, dex_files=None,
+            enable_device_cache=True, use_concurrency=True):
+  """Installs the given incremental apk and all required supporting files.
+
+  Args:
+    device: A DeviceUtils instance.
+    apk: The path to the apk, or an ApkHelper instance.
+    split_globs: Glob patterns for any required apk splits (optional).
+    lib_dir: Directory containing the app's native libraries (optional).
+    dex_files: List of .dex.jar files that comprise the app's Dalvik code.
+    enable_device_cache: Whether to enable on-device caching of checksums.
+    use_concurrency: Whether to speed things up using multiple threads.
+  """
+  main_timer = time_profile.TimeProfile()
+  install_timer = time_profile.TimeProfile()
+  push_native_timer = time_profile.TimeProfile()
+  push_dex_timer = time_profile.TimeProfile()
+
+  apk = apk_helper.ToHelper(apk)
+  apk_package = apk.GetPackageName()
+  device_incremental_dir = _GetDeviceIncrementalDir(apk_package)
+
+  # Install .apk(s) if any of them have changed.
+  def do_install():
+    install_timer.Start()
+    if split_globs:
+      splits = []
+      for split_glob in split_globs:
+        splits.extend((f for f in glob.glob(split_glob)))
+      device.InstallSplitApk(apk, splits, reinstall=True,
+                             allow_cached_props=True, permissions=())
+    else:
+      device.Install(apk, reinstall=True, permissions=())
+    install_timer.Stop(log=False)
+
+  # Push .so and .dex files to the device (if they have changed).
+  def do_push_files():
+    if lib_dir:
+      push_native_timer.Start()
+      device_lib_dir = posixpath.join(device_incremental_dir, 'lib')
+      device.PushChangedFiles([(lib_dir, device_lib_dir)],
+                              delete_device_stale=True)
+      push_native_timer.Stop(log=False)
+
+    if dex_files:
+      push_dex_timer.Start()
+      # Put all .dex files to be pushed into a temporary directory so that we
+      # can use delete_device_stale=True.
+      with build_utils.TempDir() as temp_dir:
+        device_dex_dir = posixpath.join(device_incremental_dir, 'dex')
+        # Ensure no two files have the same name.
+        transformed_names = _TransformDexPaths(dex_files)
+        for src_path, dest_name in zip(dex_files, transformed_names):
+          shutil.copyfile(src_path, os.path.join(temp_dir, dest_name))
+        device.PushChangedFiles([(temp_dir, device_dex_dir)],
+                                delete_device_stale=True)
+      push_dex_timer.Stop(log=False)
+
+  def check_selinux():
+    # Samsung started using SELinux before Marshmallow. There may be even more
+    # cases where this is required...
+    has_selinux = (device.build_version_sdk >= version_codes.MARSHMALLOW or
+                   device.GetProp('selinux.policy_version'))
+    if has_selinux and apk.HasIsolatedProcesses():
+      raise Exception('Cannot use incremental installs on versions of Android '
+                      'where isoloated processes cannot access the filesystem '
+                      '(this includes Android M+, and Samsung L+) without '
+                      'first disabling isoloated processes.\n'
+                      'To do so, use GN arg:\n'
+                      '    disable_incremental_isolated_processes=true')
+
+  cache_path = '%s/files-cache.json' % device_incremental_dir
+  def restore_cache():
+    if not enable_device_cache:
+      logging.info('Ignoring device cache')
+      return
+    # Delete the cached file so that any exceptions cause the next attempt
+    # to re-compute md5s.
+    cmd = 'P=%s;cat $P 2>/dev/null && rm $P' % cache_path
+    lines = device.RunShellCommand(cmd, check_return=False, large_output=True)
+    if lines:
+      device.LoadCacheData(lines[0])
+    else:
+      logging.info('Device cache not found: %s', cache_path)
+
+  def save_cache():
+    cache_data = device.DumpCacheData()
+    device.WriteFile(cache_path, cache_data)
+
+  # Create 2 lock files:
+  # * install.lock tells the app to pause on start-up (until we release it).
+  # * firstrun.lock is used by the app to pause all secondary processes until
+  #   the primary process finishes loading the .dex / .so files.
+  def create_lock_files():
+    # Creates or zeros out lock files.
+    cmd = ('D="%s";'
+           'mkdir -p $D &&'
+           'echo -n >$D/install.lock 2>$D/firstrun.lock')
+    device.RunShellCommand(cmd % device_incremental_dir, check_return=True)
+
+  # The firstrun.lock is released by the app itself.
+  def release_installer_lock():
+    device.RunShellCommand('echo > %s/install.lock' % device_incremental_dir,
+                           check_return=True)
+
+  # Concurrency here speeds things up quite a bit, but DeviceUtils hasn't
+  # been designed for multi-threading. Enabling only because this is a
+  # developer-only tool.
+  setup_timer = _Execute(
+      use_concurrency, create_lock_files, restore_cache, check_selinux)
+
+  _Execute(use_concurrency, do_install, do_push_files)
+
+  finalize_timer = _Execute(use_concurrency, release_installer_lock, save_cache)
+
+  logging.info(
+      'Took %s seconds (setup=%s, install=%s, libs=%s, dex=%s, finalize=%s)',
+      main_timer.GetDelta(), setup_timer.GetDelta(), install_timer.GetDelta(),
+      push_native_timer.GetDelta(), push_dex_timer.GetDelta(),
+      finalize_timer.GetDelta())
 
 
 def main():
@@ -94,11 +232,6 @@ def main():
   if args.output_directory:
     constants.SetOutputDirectory(args.output_directory)
 
-  main_timer = time_profile.TimeProfile()
-  install_timer = time_profile.TimeProfile()
-  push_native_timer = time_profile.TimeProfile()
-  push_dex_timer = time_profile.TimeProfile()
-
   if args.device:
     # Retries are annoying when commands fail for legitimate reasons. Might want
     # to enable them if this is ever used on bots though.
@@ -121,117 +254,14 @@ def main():
         msg += '  %s (%s)\n' % (d, desc)
       raise Exception(msg)
 
-  apk = apk_helper.ApkHelper(args.apk_path)
-  apk_package = apk.GetPackageName()
-  device_incremental_dir = '/data/local/tmp/incremental-app-%s' % apk_package
-
+  apk = apk_helper.ToHelper(args.apk_path)
   if args.uninstall:
-    device.Uninstall(apk_package)
-    device.RunShellCommand(['rm', '-rf', device_incremental_dir],
-                           check_return=True)
-    logging.info('Uninstall took %s seconds.', main_timer.GetDelta())
-    return
-
-  # Install .apk(s) if any of them have changed.
-  def do_install():
-    install_timer.Start()
-    if args.splits:
-      splits = []
-      for split_glob in args.splits:
-        splits.extend((f for f in glob.glob(split_glob)))
-      device.InstallSplitApk(apk, splits, reinstall=True,
-                             allow_cached_props=True, permissions=())
-    else:
-      device.Install(apk, reinstall=True, permissions=())
-    install_timer.Stop(log=False)
-
-  # Push .so and .dex files to the device (if they have changed).
-  def do_push_files():
-    if args.lib_dir:
-      push_native_timer.Start()
-      device_lib_dir = posixpath.join(device_incremental_dir, 'lib')
-      device.PushChangedFiles([(args.lib_dir, device_lib_dir)],
-                              delete_device_stale=True)
-      push_native_timer.Stop(log=False)
-
-    if args.dex_files:
-      push_dex_timer.Start()
-      # Put all .dex files to be pushed into a temporary directory so that we
-      # can use delete_device_stale=True.
-      with build_utils.TempDir() as temp_dir:
-        device_dex_dir = posixpath.join(device_incremental_dir, 'dex')
-        # Ensure no two files have the same name.
-        transformed_names = _TransformDexPaths(args.dex_files)
-        for src_path, dest_name in zip(args.dex_files, transformed_names):
-          shutil.copyfile(src_path, os.path.join(temp_dir, dest_name))
-        device.PushChangedFiles([(temp_dir, device_dex_dir)],
-                                delete_device_stale=True)
-      push_dex_timer.Stop(log=False)
-
-  def check_selinux():
-    # Samsung started using SELinux before Marshmallow. There may be even more
-    # cases where this is required...
-    has_selinux = (device.build_version_sdk >= version_codes.MARSHMALLOW or
-                   device.GetProp('selinux.policy_version'))
-    if has_selinux and apk.HasIsolatedProcesses():
-      raise Exception('Cannot use incremental installs on versions of Android '
-                      'where isoloated processes cannot access the filesystem '
-                      '(this includes Android M+, and Samsung L+) without '
-                      'first disabling isoloated processes.\n'
-                      'To do so, use GN arg:\n'
-                      '    disable_incremental_isolated_processes=true')
-
-  cache_path = '%s/files-cache.json' % device_incremental_dir
-  def restore_cache():
-    if not args.cache:
-      logging.info('Ignoring device cache')
-      return
-    # Delete the cached file so that any exceptions cause the next attempt
-    # to re-compute md5s.
-    cmd = 'P=%s;cat $P 2>/dev/null && rm $P' % cache_path
-    lines = device.RunShellCommand(cmd, check_return=False, large_output=True)
-    if lines:
-      device.LoadCacheData(lines[0])
-    else:
-      logging.info('Device cache not found: %s', cache_path)
-
-  def save_cache():
-    cache_data = device.DumpCacheData()
-    device.WriteFile(cache_path, cache_data)
-
-  # Create 2 lock files:
-  # * install.lock tells the app to pause on start-up (until we release it).
-  # * firstrun.lock is used by the app to pause all secondary processes until
-  #   the primary process finishes loading the .dex / .so files.
-  def create_lock_files():
-    # Creates or zeros out lock files.
-    cmd = ('D="%s";'
-           'mkdir -p $D &&'
-           'echo -n >$D/install.lock 2>$D/firstrun.lock')
-    device.RunShellCommand(cmd % device_incremental_dir, check_return=True)
-
-  # The firstrun.lock is released by the app itself.
-  def release_installer_lock():
-    device.RunShellCommand('echo > %s/install.lock' % device_incremental_dir,
-                           check_return=True)
-
-  # Concurrency here speeds things up quite a bit, but DeviceUtils hasn't
-  # been designed for multi-threading. Enabling only because this is a
-  # developer-only tool.
-  setup_timer = _Execute(
-      args.threading, create_lock_files, restore_cache, check_selinux)
-
-  _Execute(args.threading, do_install, do_push_files)
-
-  finalize_timer = _Execute(args.threading, release_installer_lock, save_cache)
-
-  logging.info(
-      'Took %s seconds (setup=%s, install=%s, libs=%s, dex=%s, finalize=%s)',
-      main_timer.GetDelta(), setup_timer.GetDelta(), install_timer.GetDelta(),
-      push_native_timer.GetDelta(), push_dex_timer.GetDelta(),
-      finalize_timer.GetDelta())
+    Uninstall(device, apk.GetPackageName())
+  else:
+    Install(device, apk, split_globs=args.splits, lib_dir=args.lib_dir,
+            dex_files=args.dex_files, enable_device_cache=args.cache,
+            use_concurrency=args.threading)
 
 
 if __name__ == '__main__':
   sys.exit(main())
-

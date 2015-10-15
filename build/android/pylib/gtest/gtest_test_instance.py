@@ -138,9 +138,10 @@ class GtestTestInstance(test_instance.TestInstance):
 
     self._shard_timeout = args.shard_timeout
 
+    incremental_part = '_incremental' if args.incremental_install else ''
     apk_path = os.path.join(
         constants.GetOutDirectory(), '%s_apk' % self._suite,
-        '%s-debug.apk' % self._suite)
+        '%s-debug%s.apk' % (self._suite, incremental_part))
     self._exe_path = os.path.join(constants.GetOutDirectory(),
                                   self._suite)
     if not os.path.exists(apk_path):

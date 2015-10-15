@@ -1661,6 +1661,16 @@ template("test_runner_script") {
         rebase_path(invoker.isolate_file, root_build_dir),
       ]
     }
+    if (defined(invoker.incremental_install) && invoker.incremental_install) {
+      test_runner_args += [ "--incremental-install" ]
+
+      # These can still be overridden, but make more better defaults during
+      # development.
+      test_runner_args += [
+        "--enable-device-cache",
+        "--num_retries=0",
+      ]
+    }
 
     generated_script = "$root_build_dir/bin/run_${_test_name}"
     outputs = [

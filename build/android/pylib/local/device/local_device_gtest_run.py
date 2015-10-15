@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import imp
 import itertools
 import os
 import posixpath
@@ -9,6 +10,7 @@ import posixpath
 from devil.android import device_errors
 from devil.android import device_temp_file
 from devil.android import ports
+from incremental_install import installer
 from pylib import constants
 from pylib.gtest import gtest_test_instance
 from pylib.local import local_test_server_spawner
@@ -85,12 +87,27 @@ class _ApkDelegate(object):
     self._package = test_instance.package
     self._runner = test_instance.runner
     self._permissions = test_instance.permissions
-
+    self._suite = test_instance.suite
     self._component = '%s/%s' % (self._package, self._runner)
     self._extras = test_instance.extras
 
-  def Install(self, device):
-    device.Install(self._apk_helper, permissions=self._permissions)
+  def Install(self, device, incremental=False):
+    if not incremental:
+      device.Install(self._apk_helper, permissions=self._permissions)
+      return
+
+    installer_script = os.path.join(constants.GetOutDirectory(), 'bin',
+                                    'install_%s_apk_incremental' % self._suite)
+    try:
+      install_wrapper = imp.load_source('install_wrapper', installer_script)
+    except IOError:
+      raise Exception(('Incremental install script not found: %s\n'
+                       'Make sure to first build "%s_incremental"') %
+                      (installer_script, self._suite))
+    params = install_wrapper.GetInstallParameters()
+
+    installer.Install(device, self._apk_helper, split_globs=params['splits'],
+                      lib_dir=params['lib_dir'], dex_files=params['dex_files'])
 
   def Run(self, test, device, flags=None, **kwargs):
     extras = dict(self._extras)
@@ -141,7 +158,8 @@ class _ExeDelegate(object):
       self._deps_host_path = None
     self._test_run = tr
 
-  def Install(self, device):
+  def Install(self, device, incremental=False):
+    assert not incremental
     # TODO(jbudorick): Look into merging this with normal data deps pushing if
     # executables become supported on nonlocal environments.
     host_device_tuples = [(self._exe_host_path, self._exe_device_path)]
@@ -210,7 +228,7 @@ class LocalDeviceGtestRun(local_device_test_run.LocalDeviceTestRun):
     @local_device_test_run.handle_shard_failures
     def individual_device_set_up(dev, host_device_tuples):
       # Install test APK.
-      self._delegate.Install(dev)
+      self._delegate.Install(dev, incremental=self._env.incremental_install)
 
       # Push data dependencies.
       external_storage = dev.GetExternalStoragePath()
