@@ -404,12 +404,14 @@ UpdateCheckDriver::~UpdateCheckDriver() {
     }
   }
   for (const auto& delegate : delegates_) {
-    if (status_ == UPGRADE_ERROR)
-      delegate->OnError(error_code_, html_error_message_, new_version_);
-    else if (install_update_if_possible_)
-      delegate->OnUpgradeComplete(new_version_);
-    else
-      delegate->OnUpdateCheckComplete(new_version_);
+    if (delegate) {
+      if (status_ == UPGRADE_ERROR)
+        delegate->OnError(error_code_, html_error_message_, new_version_);
+      else if (install_update_if_possible_)
+        delegate->OnUpgradeComplete(new_version_);
+      else
+        delegate->OnUpdateCheckComplete(new_version_);
+    }
   }
 
   driver_ = nullptr;
