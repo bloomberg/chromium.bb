@@ -329,8 +329,14 @@ IN_PROC_BROWSER_TEST_P(CompositingRenderWidgetHostViewBrowserTest,
 
 // Test basic frame subscription functionality.  We subscribe, and then run
 // until at least one DeliverFrameCallback has been invoked.
+// https://crbug.com/542896
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_FrameSubscriberTest DISABLED_FrameSubscriberTest
+#else
+#define MAYBE_FrameSubscriberTest FrameSubscriberTest
+#endif
 IN_PROC_BROWSER_TEST_P(CompositingRenderWidgetHostViewBrowserTest,
-                       FrameSubscriberTest) {
+                       MAYBE_FrameSubscriberTest) {
   SET_UP_SURFACE_OR_PASS_TEST(NULL);
   RenderWidgetHostViewBase* const view = GetRenderWidgetHostView();
 
@@ -698,8 +704,16 @@ class CompositingRenderWidgetHostViewBrowserTestTabCapture
   std::string test_url_;
 };
 
+// https://crbug.com/542896
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_CopyFromCompositingSurface_Origin_Unscaled \
+  DISABLED_CopyFromCompositingSurface_Origin_Unscaled
+#else
+#define MAYBE_CopyFromCompositingSurface_Origin_Unscaled \
+  CopyFromCompositingSurface_Origin_Unscaled
+#endif
 IN_PROC_BROWSER_TEST_P(CompositingRenderWidgetHostViewBrowserTestTabCapture,
-                       CopyFromCompositingSurface_Origin_Unscaled) {
+                       MAYBE_CopyFromCompositingSurface_Origin_Unscaled) {
   gfx::Rect copy_rect(400, 300);
   gfx::Size output_size = copy_rect.size();
   gfx::Size html_rect_size(400, 300);
@@ -710,8 +724,16 @@ IN_PROC_BROWSER_TEST_P(CompositingRenderWidgetHostViewBrowserTestTabCapture,
                                 video_frame);
 }
 
+// https://crbug.com/542896
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_CopyFromCompositingSurface_Origin_Scaled \
+  DISABLED_FrameSubscriberTestCopyFromCompositingSurface_Origin_Scaled
+#else
+#define MAYBE_CopyFromCompositingSurface_Origin_Scaled \
+  CopyFromCompositingSurface_Origin_Scaled
+#endif
 IN_PROC_BROWSER_TEST_P(CompositingRenderWidgetHostViewBrowserTestTabCapture,
-                       CopyFromCompositingSurface_Origin_Scaled) {
+                       MAYBE_CopyFromCompositingSurface_Origin_Scaled) {
   gfx::Rect copy_rect(400, 300);
   gfx::Size output_size(200, 100);
   gfx::Size html_rect_size(400, 300);
@@ -722,8 +744,16 @@ IN_PROC_BROWSER_TEST_P(CompositingRenderWidgetHostViewBrowserTestTabCapture,
                                 video_frame);
 }
 
+// https://crbug.com/542896
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_CopyFromCompositingSurface_Cropped_Unscaled \
+  DISABLED_CopyFromCompositingSurface_Cropped_Unscaled
+#else
+#define MAYBE_CopyFromCompositingSurface_Cropped_Unscaled \
+  CopyFromCompositingSurface_Cropped_Unscaled
+#endif
 IN_PROC_BROWSER_TEST_P(CompositingRenderWidgetHostViewBrowserTestTabCapture,
-                       CopyFromCompositingSurface_Cropped_Unscaled) {
+                       MAYBE_CopyFromCompositingSurface_Cropped_Unscaled) {
   // Grab 60x60 pixels from the center of the tab contents.
   gfx::Rect copy_rect(400, 300);
   copy_rect = gfx::Rect(copy_rect.CenterPoint() - gfx::Vector2d(30, 30),
@@ -737,8 +767,16 @@ IN_PROC_BROWSER_TEST_P(CompositingRenderWidgetHostViewBrowserTestTabCapture,
                                 video_frame);
 }
 
+// https://crbug.com/542896
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_CopyFromCompositingSurface_Cropped_Scaled \
+  DISABLED_CopyFromCompositingSurface_Cropped_Scaled
+#else
+#define MAYBE_CopyFromCompositingSurface_Cropped_Scaled \
+  CopyFromCompositingSurface_Cropped_Scaled
+#endif
 IN_PROC_BROWSER_TEST_P(CompositingRenderWidgetHostViewBrowserTestTabCapture,
-                       CopyFromCompositingSurface_Cropped_Scaled) {
+                       MAYBE_CopyFromCompositingSurface_Cropped_Scaled) {
   // Grab 60x60 pixels from the center of the tab contents.
   gfx::Rect copy_rect(400, 300);
   copy_rect = gfx::Rect(copy_rect.CenterPoint() - gfx::Vector2d(30, 30),
@@ -752,8 +790,16 @@ IN_PROC_BROWSER_TEST_P(CompositingRenderWidgetHostViewBrowserTestTabCapture,
                                 video_frame);
 }
 
+// https://crbug.com/542896
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_CopyFromCompositingSurface_ForVideoFrame \
+  DISABLED_CopyFromCompositingSurface_ForVideoFrame
+#else
+#define MAYBE_CopyFromCompositingSurface_ForVideoFrame \
+  CopyFromCompositingSurface_ForVideoFrame
+#endif
 IN_PROC_BROWSER_TEST_P(CompositingRenderWidgetHostViewBrowserTestTabCapture,
-                       CopyFromCompositingSurface_ForVideoFrame) {
+                       MAYBE_CopyFromCompositingSurface_ForVideoFrame) {
   // Grab 90x60 pixels from the center of the tab contents.
   gfx::Rect copy_rect(400, 300);
   copy_rect = gfx::Rect(copy_rect.CenterPoint() - gfx::Vector2d(45, 30),
@@ -767,8 +813,16 @@ IN_PROC_BROWSER_TEST_P(CompositingRenderWidgetHostViewBrowserTestTabCapture,
                                 video_frame);
 }
 
+// https://crbug.com/542896
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_CopyFromCompositingSurface_ForVideoFrame_Scaled \
+  DISABLED_CopyFromCompositingSurface_ForVideoFrame_Scaled
+#else
+#define MAYBE_CopyFromCompositingSurface_ForVideoFrame_Scaled \
+  CopyFromCompositingSurface_ForVideoFrame_Scaled
+#endif
 IN_PROC_BROWSER_TEST_P(CompositingRenderWidgetHostViewBrowserTestTabCapture,
-                       CopyFromCompositingSurface_ForVideoFrame_Scaled) {
+                       MAYBE_CopyFromCompositingSurface_ForVideoFrame_Scaled) {
   // Grab 90x60 pixels from the center of the tab contents.
   gfx::Rect copy_rect(400, 300);
   copy_rect = gfx::Rect(copy_rect.CenterPoint() - gfx::Vector2d(45, 30),
@@ -819,7 +873,8 @@ class CompositingRenderWidgetHostViewBrowserTestTabCaptureHighDPI
 
 // NineImagePainter implementation crashes the process on Windows when this
 // content_browsertest forces a device scale factor.  http://crbug.com/399349
-#if defined(OS_WIN)
+// Disabled under MSAN.  http://crbug.com/542896
+#if defined(OS_WIN) || defined(MEMORY_SANITIZER)
 #define MAYBE_CopyToBitmap_EntireRegion DISABLED_CopyToBitmap_EntireRegion
 #define MAYBE_CopyToBitmap_CenterRegion DISABLED_CopyToBitmap_CenterRegion
 #define MAYBE_CopyToBitmap_ScaledResult DISABLED_CopyToBitmap_ScaledResult
