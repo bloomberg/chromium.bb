@@ -2170,8 +2170,21 @@
                   'content_browsertests_apk.isolate',
                 ],
               },
-            ]
-          }
+              {
+                'target_name': 'content_shell_test_apk_run',
+                'type': 'none',
+                'dependencies': [
+                  'content_shell_test_apk',
+                ],
+                'includes': [
+                  '../build/isolate.gypi',
+                ],
+                'sources': [
+                  'content_shell_test_apk_run.isolate',
+                ],
+              },
+            ],
+          },
         ],
       ],
     }],
