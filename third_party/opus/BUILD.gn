@@ -18,6 +18,10 @@ use_opus_rtcd = current_cpu == "arm" && (is_win || is_android || is_linux)
 
 config("opus_config") {
   include_dirs = [ "src/include" ]
+
+  if (use_opus_fixed_point) {
+    defines = [ "OPUS_FIXED_POINT" ]
+  }
 }
 
 config("opus_test_config") {

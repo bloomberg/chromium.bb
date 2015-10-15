@@ -220,13 +220,17 @@ source_set("base") {
 
   if (media_use_ffmpeg) {
     sources += [
-      "audio_video_metadata_extractor.cc",
-      "audio_video_metadata_extractor.h",
       "container_names.cc",
       "container_names.h",
-      "media_file_checker.cc",
-      "media_file_checker.h",
     ]
+    if (!is_android) {
+      sources += [
+        "audio_video_metadata_extractor.cc",
+        "audio_video_metadata_extractor.h",
+        "media_file_checker.cc",
+        "media_file_checker.h",
+      ]
+    }
 
     deps += [ "//third_party/ffmpeg" ]
   }
@@ -432,7 +436,9 @@ source_set("unittests") {
     "//testing/gtest",
   ]
 
-  if (media_use_ffmpeg) {
+  # Even if FFmpeg is enabled on Android we don't want these.
+  # TODO(watk): Refactor tests that could be made to run on Android.
+  if (media_use_ffmpeg && !is_android) {
     sources += [
       "audio_video_metadata_extractor_unittest.cc",
       "media_file_checker_unittest.cc",

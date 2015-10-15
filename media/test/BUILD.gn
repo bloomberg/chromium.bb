@@ -7,7 +7,9 @@ import("//media/media_options.gni")
 source_set("pipeline_integration_test_base") {
   testonly = true
 
-  if (media_use_ffmpeg) {
+  # Even if FFmpeg is enabled on Android we don't want these.
+  # TODO(watk): Refactor tests that could be made to run on Android.
+  if (media_use_ffmpeg && !is_android) {
     sources = [
       "pipeline_integration_test_base.cc",
       "pipeline_integration_test_base.h",
@@ -28,7 +30,7 @@ source_set("pipeline_integration_test_base") {
 source_set("pipeline_integration_tests") {
   testonly = true
 
-  if (media_use_ffmpeg) {
+  if (media_use_ffmpeg && !is_android) {
     sources = [
       "pipeline_integration_test.cc",
     ]
@@ -56,7 +58,7 @@ source_set("pipeline_integration_tests") {
 source_set("pipeline_integration_perftests") {
   testonly = true
 
-  if (media_use_ffmpeg) {
+  if (media_use_ffmpeg && !is_android) {
     sources = [
       "pipeline_integration_perftest.cc",
     ]
@@ -79,7 +81,7 @@ if (!is_component_build) {
   source_set("mojo_pipeline_integration_tests") {
     testonly = true
 
-    if (media_use_ffmpeg) {
+    if (media_use_ffmpeg && !is_android) {
       sources = [
         "pipeline_integration_test.cc",
       ]

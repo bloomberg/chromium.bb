@@ -56,6 +56,12 @@ config("media_dependent_config") {
       "/DELAYLOAD:mfreadwrite.dll",
     ]
   }
+  if (media_use_ffmpeg && is_android) {
+    defines += [
+      "ENABLE_MEDIA_PIPELINE_ON_ANDROID",
+      "DISABLE_FFMPEG_VIDEO_DECODERS",
+    ]
+  }
 }
 
 if (use_ozone) {
@@ -364,6 +370,14 @@ component("media") {
   }
 
   if (is_android) {
+    # On Android, FFmpeg is built without video decoders. We only
+    # support hardware video decoding.
+    if (media_use_ffmpeg) {
+      sources -= [
+        "filters/ffmpeg_video_decoder.cc",
+        "filters/ffmpeg_video_decoder.h",
+      ]
+    }
     sources += [
       "capture/video/android/video_capture_device_android.cc",
       "capture/video/android/video_capture_device_android.h",
@@ -376,7 +390,9 @@ component("media") {
       "//media/base/android:video_capture_jni_headers",
     ]
     allow_circular_includes_from = [ "//media/base/android" ]
-  } else {
+  }
+
+  if (!is_android || media_use_ffmpeg) {
     sources += [
       "filters/opus_audio_decoder.cc",
       "filters/opus_audio_decoder.h",
@@ -518,6 +534,7 @@ component("media") {
   public_deps = [
     "//media/base",
     "//media/audio",
+    "//third_party/opus",
   ]
 
   deps += [
@@ -666,13 +683,20 @@ test("media_unittests") {
     sources += [
       "ffmpeg/ffmpeg_common_unittest.cc",
       "filters/audio_decoder_unittest.cc",
-      "filters/audio_file_reader_unittest.cc",
-      "filters/blocking_url_protocol_unittest.cc",
       "filters/ffmpeg_demuxer_unittest.cc",
       "filters/ffmpeg_glue_unittest.cc",
-      "filters/ffmpeg_video_decoder_unittest.cc",
-      "filters/in_memory_url_protocol_unittest.cc",
     ]
+
+    # Even if FFmpeg is enabled we do not want these files on Android.
+    # TODO(watk): Refactor tests that could be made to run on Android.
+    if (!is_android) {
+      sources += [
+        "filters/audio_file_reader_unittest.cc",
+        "filters/blocking_url_protocol_unittest.cc",
+        "filters/ffmpeg_video_decoder_unittest.cc",
+        "filters/in_memory_url_protocol_unittest.cc",
+      ]
+    }
   }
 
   if (media_use_libwebm) {

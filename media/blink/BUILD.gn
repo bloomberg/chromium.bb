@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//media/media_options.gni")
 import("//testing/test.gni")
 
 component("blink") {
@@ -40,8 +41,6 @@ component("blink") {
     "cdm_result_promise_helper.h",
     "cdm_session_adapter.cc",
     "cdm_session_adapter.h",
-    "encrypted_media_player_support.cc",
-    "encrypted_media_player_support.h",
     "key_system_config_selector.cc",
     "key_system_config_selector.h",
     "new_session_cdm_result_promise.cc",
@@ -63,8 +62,6 @@ component("blink") {
     "webinbandtexttrack_impl.cc",
     "webinbandtexttrack_impl.h",
     "webmediaplayer_delegate.h",
-    "webmediaplayer_impl.cc",
-    "webmediaplayer_impl.h",
     "webmediaplayer_params.cc",
     "webmediaplayer_params.h",
     "webmediaplayer_util.cc",
@@ -75,8 +72,8 @@ component("blink") {
     "websourcebuffer_impl.h",
   ]
 
-  if (is_android) {
-    sources -= [
+  if (media_use_ffmpeg || !is_android) {
+    sources += [
       "encrypted_media_player_support.cc",
       "encrypted_media_player_support.h",
       "webmediaplayer_impl.cc",
