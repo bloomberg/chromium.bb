@@ -86,7 +86,9 @@ class CastAudioOutputStream::Backend : public MediaPipelineBackend::Delegate {
 
     backend_task_runner_.reset(new TaskRunnerImpl());
     MediaPipelineDeviceParams device_params(
-        MediaPipelineDeviceParams::kModeIgnorePts, backend_task_runner_.get());
+        MediaPipelineDeviceParams::kModeIgnorePts,
+        MediaPipelineDeviceParams::kAudioStreamSoundEffects,
+        backend_task_runner_.get());
     backend_ = audio_manager->CreateMediaPipelineBackend(device_params);
     if (backend_)
       decoder_ = InitializeBackend(audio_params_, backend_.get(), this);

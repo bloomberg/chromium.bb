@@ -27,14 +27,36 @@ struct MediaPipelineDeviceParams {
     kModeIgnorePtsAndVSync = 2,
   };
 
+  enum AudioStreamType {
+    // "Real" audio stream. If this stream underruns, all audio output may pause
+    // until more real stream data is available.
+    kAudioStreamNormal = 0,
+    // Sound-effects audio stream. May be interrupted if a real audio stream
+    // is created with a different sample rate. Underruns on an effects stream
+    // do not affect output of real audio streams.
+    kAudioStreamSoundEffects = 1,
+  };
+
   MediaPipelineDeviceParams(TaskRunner* task_runner_in)
-      : sync_type(kModeSyncPts), task_runner(task_runner_in) {}
+      : sync_type(kModeSyncPts),
+        audio_type(kAudioStreamNormal),
+        task_runner(task_runner_in) {}
 
   MediaPipelineDeviceParams(MediaSyncType sync_type_in,
                             TaskRunner* task_runner_in)
-      : sync_type(sync_type_in), task_runner(task_runner_in) {}
+      : sync_type(sync_type_in),
+        audio_type(kAudioStreamNormal),
+        task_runner(task_runner_in) {}
+
+  MediaPipelineDeviceParams(MediaSyncType sync_type_in,
+                            AudioStreamType audio_type_in,
+                            TaskRunner* task_runner_in)
+      : sync_type(sync_type_in),
+        audio_type(audio_type_in),
+        task_runner(task_runner_in) {}
 
   const MediaSyncType sync_type;
+  const AudioStreamType audio_type;
 
   // task_runner allows backend implementations to post tasks to the media
   // thread.  Since all calls from cast_shell into the backend are made on
