@@ -136,18 +136,13 @@ InspectorTest._rewriteNodes = function(msg)
         }
         var promises = [];
         for (var property of properties) {
-            if (property.value.type === "idrefList") {
-                if (!InspectorTest._checkExists("value.relatedNodeArrayValue", property, reject))
+            if (property.value.type === "idrefList" || property.value.type === "idref") {
+                if (!InspectorTest._checkExists("value.relatedNodes", property, reject))
                     return;
-                var relatedNodeArray = property.value.relatedNodeArrayValue;
-                InspectorTest._check(Array.isArray(relatedNodeArray), "value.relatedNodeArrayValue should be an array", JSON.stringify(property), reject);
+                var relatedNodeArray = property.value.relatedNodes;
+                InspectorTest._check(Array.isArray(relatedNodeArray), "value.relatedNodes should be an array", JSON.stringify(property), reject);
                  for (var relatedNode of relatedNodeArray)
                      promises.push(InspectorTest._rewriteNode(relatedNode));
-            } else if (property.value.type === "idref") {
-                if (!InspectorTest._checkExists("value.relatedNodeValue", property, reject))
-                    return;
-                var relatedNode = property.value.relatedNodeValue;
-                promises.push(InspectorTest._rewriteNode(relatedNode));
             }
         }
 

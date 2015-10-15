@@ -101,17 +101,13 @@ function test()
 
     function rewriteValue(value, promises)
     {
-        if (value.type === "idrefList") {
-            checkExists("relatedNodeArrayValue", value);
-            var relatedNodeArray = value.relatedNodeArrayValue;
-            check(Array.isArray(relatedNodeArray), "relatedNodeArrayValue should be an array", JSON.stringify(value));
+        if (value.type === "idrefList" || value.type === "idref") {
+            checkExists("relatedNodes", value);
+            var relatedNodeArray = value.relatedNodes;
+            check(Array.isArray(relatedNodeArray), "relatedNodes should be an array", JSON.stringify(value));
             for (var relatedNode of relatedNodeArray) {
                promises.push(rewriteNode(relatedNode));
             }
-        } else if (value.type === "idref") {
-           checkExists("relatedNodeValue", value);
-           var relatedNode = value.relatedNodeValue;
-           promises.push(rewriteNode(relatedNode));
         }
     }
     function rewriteNodes(msg)

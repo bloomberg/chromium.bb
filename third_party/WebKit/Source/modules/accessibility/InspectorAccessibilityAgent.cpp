@@ -69,7 +69,7 @@ void fillLiveRegionProperties(AXObject* axObject, PassRefPtr<TypeBuilder::Array<
     properties->addItem(createProperty(AXLiveRegionAttributes::Busy, createBooleanValue(axObject->containerLiveRegionBusy())));
 
     if (!axObject->isLiveRegion())
-        properties->addItem(createProperty(AXLiveRegionAttributes::Root, createRelatedNodeValue(axObject->liveRegionRoot())));
+        properties->addItem(createProperty(AXLiveRegionAttributes::Root, createRelatedNodeListValue(axObject->liveRegionRoot())));
 }
 
 void fillGlobalStates(AXObject* axObject, PassRefPtr<TypeBuilder::Array<AXProperty>> properties)
@@ -79,7 +79,7 @@ void fillGlobalStates(AXObject* axObject, PassRefPtr<TypeBuilder::Array<AXProper
 
     if (const AXObject* hiddenRoot = axObject->ariaHiddenRoot()) {
         properties->addItem(createProperty(AXGlobalStates::Hidden, createBooleanValue(true)));
-        properties->addItem(createProperty(AXGlobalStates::HiddenRoot, createRelatedNodeValue(hiddenRoot)));
+        properties->addItem(createProperty(AXGlobalStates::HiddenRoot, createRelatedNodeListValue(hiddenRoot)));
     }
 
     InvalidState invalidState = axObject->invalidState();
@@ -258,7 +258,7 @@ PassRefPtr<AXProperty> createRelatedNodeListProperty(AXRelationshipAttributes::E
 void fillRelationships(AXObject* axObject, PassRefPtr<TypeBuilder::Array<AXProperty>> properties)
 {
     if (AXObject* activeDescendant = axObject->activeDescendant()) {
-        properties->addItem(createProperty(AXRelationshipAttributes::Activedescendant, createRelatedNodeValue(activeDescendant)));
+        properties->addItem(createProperty(AXRelationshipAttributes::Activedescendant, createRelatedNodeListValue(activeDescendant)));
     }
 
     AXObject::AXObjectVector results;

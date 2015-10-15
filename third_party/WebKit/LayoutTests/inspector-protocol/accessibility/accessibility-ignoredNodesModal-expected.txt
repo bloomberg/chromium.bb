@@ -16,10 +16,12 @@ Non-hidden element inside dialog
           "name": "activeModalDialog",
           "value": {
             "type": "idref",
-            "relatedNodeValue": {
-              "backendNodeId": "<string>",
-              "idref": "_2"
-            }
+            "relatedNodes": [
+              {
+                "backendNodeId": "<string>",
+                "idref": "_2"
+              }
+            ]
           }
         }
       ]

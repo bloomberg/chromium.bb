@@ -34,17 +34,19 @@ Ginger Ale
           "name": "activedescendant",
           "value": {
             "type": "idref",
-            "relatedNodeValue": {
-              "idref": "rg1-r4",
-              "nodeResult": "li#rg1-r4"
-            }
+            "relatedNodes": [
+              {
+                "idref": "rg1-r4",
+                "nodeResult": "li#rg1-r4"
+              }
+            ]
           }
         },
         {
           "name": "labelledby",
           "value": {
             "type": "idrefList",
-            "relatedNodeArrayValue": [
+            "relatedNodes": [
               {
                 "idref": "rg1_label",
                 "nodeResult": "h3#rg1_label"
@@ -62,7 +64,7 @@ Ginger Ale
             "type": "relatedElement",
             "value": {
               "type": "idrefList",
-              "relatedNodeArrayValue": [
+              "relatedNodes": [
                 {
                   "idref": "rg1_label",
                   "text": "Lunch Options",
@@ -114,7 +116,7 @@ Ginger Ale
           "name": "labelledby",
           "value": {
             "type": "idrefList",
-            "relatedNodeArrayValue": [
+            "relatedNodes": [
               {
                 "idref": "rg2_label",
                 "nodeResult": "h3#rg2_label"
@@ -132,7 +134,7 @@ Ginger Ale
             "type": "relatedElement",
             "value": {
               "type": "idrefList",
-              "relatedNodeArrayValue": [
+              "relatedNodes": [
                 {
                   "idref": "rg2_label",
                   "text": "Drink Options",

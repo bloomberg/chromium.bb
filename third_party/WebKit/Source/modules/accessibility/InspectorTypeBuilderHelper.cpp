@@ -92,7 +92,7 @@ String ignoredReasonName(AXIgnoredReason reason)
 PassRefPtr<AXProperty> createProperty(IgnoredReason reason)
 {
     if (reason.relatedObject)
-        return createProperty(ignoredReasonName(reason.reason), createRelatedNodeValue(reason.relatedObject, nullptr, AXValueType::Idref));
+        return createProperty(ignoredReasonName(reason.reason), createRelatedNodeListValue(reason.relatedObject, nullptr, AXValueType::Idref));
     return createProperty(ignoredReasonName(reason.reason), createBooleanValue(true));
 }
 
@@ -146,11 +146,13 @@ PassRefPtr<AXRelatedNode> relatedNodeForAXObject(const AXObject* axObject, Strin
     return relatedNode;
 }
 
-PassRefPtr<AXValue> createRelatedNodeValue(const AXObject* axObject, String* name, AXValueType::Enum valueType)
+PassRefPtr<AXValue> createRelatedNodeListValue(const AXObject* axObject, String* name, AXValueType::Enum valueType)
 {
     RefPtr<AXValue> axValue = AXValue::create().setType(valueType);
     RefPtr<AXRelatedNode> relatedNode = relatedNodeForAXObject(axObject, name);
-    axValue->setRelatedNodeValue(relatedNode);
+    RefPtr<TypeBuilder::Array<AXRelatedNode>> relatedNodes = TypeBuilder::Array<AXRelatedNode>::create();
+    relatedNodes->addItem(relatedNode);
+    axValue->setRelatedNodes(relatedNodes);
     return axValue;
 }
 
@@ -163,7 +165,7 @@ PassRefPtr<AXValue> createRelatedNodeListValue(AXRelatedObjectVector& relatedObj
             frontendRelatedNodes->addItem(frontendRelatedNode);
     }
     RefPtr<AXValue> axValue = AXValue::create().setType(valueType);
-    axValue->setRelatedNodeArrayValue(frontendRelatedNodes);
+    axValue->setRelatedNodes(frontendRelatedNodes);
     return axValue;
 }
 
@@ -176,7 +178,7 @@ PassRefPtr<AXValue> createRelatedNodeListValue(AXObject::AXObjectVector& axObjec
             relatedNodes->addItem(relatedNode);
     }
     RefPtr<AXValue> axValue = AXValue::create().setType(valueType);
-    axValue->setRelatedNodeArrayValue(relatedNodes);
+    axValue->setRelatedNodes(relatedNodes);
     return axValue;
 }
 

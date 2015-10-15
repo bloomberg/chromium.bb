@@ -116,9 +116,11 @@ Content within label refers to label container
           "name": "ancestorDisallowsChild",
           "value": {
             "type": "idref",
-            "relatedNodeValue": {
-              "backendNodeId": "<string>"
-            }
+            "relatedNodes": [
+              {
+                "backendNodeId": "<string>"
+              }
+            ]
           }
         }
       ]
@@ -140,9 +142,11 @@ Content within label refers to label container
           "name": "ancestorDisallowsChild",
           "value": {
             "type": "idref",
-            "relatedNodeValue": {
-              "backendNodeId": "<string>"
-            }
+            "relatedNodes": [
+              {
+                "backendNodeId": "<string>"
+              }
+            ]
           }
         }
       ]
@@ -164,9 +168,11 @@ Content within label refers to label container
           "name": "ancestorIsLeafNode",
           "value": {
             "type": "idref",
-            "relatedNodeValue": {
-              "backendNodeId": "<string>"
-            }
+            "relatedNodes": [
+              {
+                "backendNodeId": "<string>"
+              }
+            ]
           }
         }
       ]
@@ -210,10 +216,12 @@ Content within label refers to label container
           "name": "ariaHiddenRoot",
           "value": {
             "type": "idref",
-            "relatedNodeValue": {
-              "backendNodeId": "<string>",
-              "idref": "_6"
-            }
+            "relatedNodes": [
+              {
+                "backendNodeId": "<string>",
+                "idref": "_6"
+              }
+            ]
           }
         }
       ]
@@ -298,10 +306,12 @@ Content within label refers to label container
           "name": "inheritsPresentation",
           "value": {
             "type": "idref",
-            "relatedNodeValue": {
-              "backendNodeId": "<string>",
-              "idref": "_9"
-            }
+            "relatedNodes": [
+              {
+                "backendNodeId": "<string>",
+                "idref": "_9"
+              }
+            ]
           }
         }
       ]
@@ -355,10 +365,12 @@ Content within label refers to label container
           "name": "labelFor",
           "value": {
             "type": "idref",
-            "relatedNodeValue": {
-              "backendNodeId": "<string>",
-              "idref": "checkbox"
-            }
+            "relatedNodes": [
+              {
+                "backendNodeId": "<string>",
+                "idref": "checkbox"
+              }
+            ]
           }
         }
       ]
@@ -380,20 +392,24 @@ Content within label refers to label container
           "name": "labelContainer",
           "value": {
             "type": "idref",
-            "relatedNodeValue": {
-              "backendNodeId": "<string>",
-              "idref": "_12"
-            }
+            "relatedNodes": [
+              {
+                "backendNodeId": "<string>",
+                "idref": "_12"
+              }
+            ]
           }
         },
         {
           "name": "labelFor",
           "value": {
             "type": "idref",
-            "relatedNodeValue": {
-              "backendNodeId": "<string>",
-              "idref": "checkbox"
-            }
+            "relatedNodes": [
+              {
+                "backendNodeId": "<string>",
+                "idref": "checkbox"
+              }
+            ]
           }
         }
       ]
