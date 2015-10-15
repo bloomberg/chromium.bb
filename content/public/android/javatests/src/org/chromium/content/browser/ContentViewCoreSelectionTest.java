@@ -12,6 +12,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 import android.text.TextUtils;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.test.util.Criteria;
@@ -175,6 +176,7 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
         assertWaitForPastePopupStatus(false);
     }
 
+    @DisabledTest // http://crbug.com/543682
     @SmallTest
     @Feature({"TextInput"})
     public void testPastePopupNotShownOnLongPressingReadOnlyInput() throws Throwable {
