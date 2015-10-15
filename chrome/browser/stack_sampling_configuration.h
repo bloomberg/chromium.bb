@@ -26,14 +26,12 @@ class StackSamplingConfiguration {
  private:
   enum ProfileConfiguration {
     PROFILE_DISABLED,
-    PROFILE_CONTROL,
     PROFILE_NO_SAMPLES,  // Run the profiler thread, but don't collect profiles.
     PROFILE_5HZ,
     PROFILE_10HZ,
-    PROFILE_100HZ
+    PROFILE_100HZ,
+    PROFILE_COUNT = PROFILE_100HZ
   };
-
-  static ProfileConfiguration GenerateConfiguration();
 
   const ProfileConfiguration configuration_;
 
