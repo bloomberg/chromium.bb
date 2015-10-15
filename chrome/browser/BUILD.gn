@@ -132,6 +132,7 @@ source_set("browser") {
     "//components/metrics:gpu",
     "//components/metrics:net",
     "//components/metrics:profiler",
+    "//components/metrics:profiler_content",
     "//components/metrics/proto:proto",
     "//components/metrics:ui",
     "//components/mime_util",

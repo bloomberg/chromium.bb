@@ -138,6 +138,27 @@ static_library("net") {
   ]
 }
 
+# GYP version: components/metrics.gypi:metrics_profiler
+source_set("profiler") {
+  sources = [
+    "profiler/profiler_metrics_provider.cc",
+    "profiler/profiler_metrics_provider.h",
+    "profiler/tracking_synchronizer.cc",
+    "profiler/tracking_synchronizer.h",
+    "profiler/tracking_synchronizer_delegate.h",
+    "profiler/tracking_synchronizer_observer.cc",
+    "profiler/tracking_synchronizer_observer.h",
+  ]
+
+  public_deps = [
+    ":metrics",
+  ]
+  deps = [
+    "//base",
+    "//components/variations",
+  ]
+}
+
 # GYP version: components/metrics.gypi:metrics_ui
 source_set("ui") {
   sources = [
@@ -155,25 +176,35 @@ source_set("ui") {
 }
 
 if (!is_ios) {
-  # GYP version: components/metrics.gypi:metrics_profiler
-  source_set("profiler") {
+  # GYP version: components/metrics.gypi:metrics_profiler_content
+  source_set("profiler_content") {
     sources = [
-      "profiler/profiler_metrics_provider.cc",
-      "profiler/profiler_metrics_provider.h",
-      "profiler/tracking_synchronizer.cc",
-      "profiler/tracking_synchronizer.h",
-      "profiler/tracking_synchronizer_observer.cc",
-      "profiler/tracking_synchronizer_observer.h",
+      "profiler/content/content_tracking_synchronizer_delegate.cc",
+      "profiler/content/content_tracking_synchronizer_delegate.h",
     ]
 
     public_deps = [
-      ":metrics",
+      ":profiler",
     ]
     deps = [
       "//base",
-      "//components/variations",
       "//content/public/browser",
       "//content/public/common",
+    ]
+  }
+} else {
+  # GYP version: components/metrics.gypi:metrics_profiler_ios
+  source_set("profiler_ios") {
+    sources = [
+      "profiler/ios/ios_tracking_synchronizer_delegate.cc",
+      "profiler/ios/ios_tracking_synchronizer_delegate.h",
+    ]
+
+    public_deps = [
+      ":profiler",
+    ]
+    deps = [
+      "//base",
     ]
   }
 }
@@ -233,6 +264,7 @@ source_set("unit_tests") {
   deps = [
     ":metrics",
     ":net",
+    ":profiler",
     ":test_support",
     ":ui",
     "//base:prefs_test_support",
@@ -241,17 +273,6 @@ source_set("unit_tests") {
     "//testing/gtest",
   ]
 
-  if (!is_ios) {
-    deps += [
-      "//content/public/common",
-      ":gpu",
-      ":profiler",
-    ]
-    sources += [
-      "profiler/profiler_metrics_provider_unittest.cc",
-      "profiler/tracking_synchronizer_unittest.cc",
-    ]
-  }
   if (is_linux) {
     sources += [ "serialization/serialization_utils_unittest.cc" ]
     deps += [ ":serialization" ]

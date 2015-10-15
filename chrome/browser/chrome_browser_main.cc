@@ -112,6 +112,7 @@
 #include "components/language_usage_metrics/language_usage_metrics.h"
 #include "components/metrics/call_stack_profile_metrics_provider.h"
 #include "components/metrics/metrics_service.h"
+#include "components/metrics/profiler/content/content_tracking_synchronizer_delegate.h"
 #include "components/metrics/profiler/tracking_synchronizer.h"
 #include "components/nacl/browser/nacl_browser.h"
 #include "components/rappor/rappor_service.h"
@@ -1038,7 +1039,8 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
 
   // Initialize tracking synchronizer system.
   tracking_synchronizer_ = new metrics::TrackingSynchronizer(
-      make_scoped_ptr(new base::DefaultTickClock()));
+      make_scoped_ptr(new base::DefaultTickClock()),
+      base::Bind(&metrics::ContentTrackingSynchronizerDelegate::Create));
 
 #if defined(OS_MACOSX)
   // Get the Keychain API to register for distributed notifications on the main

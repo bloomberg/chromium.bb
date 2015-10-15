@@ -962,6 +962,7 @@
         'components.gyp:memory_pressure',
         'components.gyp:metrics',
         'components.gyp:metrics_net',
+        'components.gyp:metrics_profiler',
         'components.gyp:metrics_test_support',
         'components.gyp:metrics_ui',
         'components.gyp:net_log',
@@ -1109,7 +1110,6 @@
             'components.gyp:navigation_interception',
             'components.gyp:network_hints_renderer',
             'components.gyp:metrics_gpu',
-            'components.gyp:metrics_profiler',
             'components.gyp:page_load_metrics_browser',
             'components.gyp:page_load_metrics_renderer',
             'components.gyp:password_manager_content_browser',
@@ -1166,11 +1166,6 @@
           'sources': [
             'webp_transcode/webp_decoder_unittest.mm',
             'webp_transcode/webp_network_client_unittest.mm',
-          ],
-          'sources!': [
-            'metrics/gpu/gpu_metrics_provider_unittest.cc',
-            'metrics/profiler/profiler_metrics_provider_unittest.cc',
-            'metrics/profiler/tracking_synchronizer_unittest.cc',
           ],
           'sources/': [
             # Exclude all tests that depends on //content (based on layered-

@@ -3233,6 +3233,7 @@
             '../components/components.gyp:network_hints_common',
             '../components/components.gyp:metrics_gpu',
             '../components/components.gyp:metrics_profiler',
+            '../components/components.gyp:metrics_profiler_content',
             '../components/components.gyp:net_log',
             '../components/components.gyp:packed_ct_ev_whitelist',
             '../components/components.gyp:password_manager_content_browser',

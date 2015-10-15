@@ -198,6 +198,31 @@
         'metrics/test_metrics_service_client.h',
       ],
     },
+    {
+      # GN version: //components/metrics:profiler
+      'target_name': 'metrics_profiler',
+      'type': 'static_library',
+      'include_dirs': [
+        '..',
+      ],
+      'dependencies': [
+        'component_metrics_proto',
+        'metrics',
+        'variations',
+      ],
+      'export_dependent_settings': [
+        'component_metrics_proto',
+      ],
+      'sources': [
+        'metrics/profiler/profiler_metrics_provider.cc',
+        'metrics/profiler/profiler_metrics_provider.h',
+        'metrics/profiler/tracking_synchronizer.cc',
+        'metrics/profiler/tracking_synchronizer.h',
+        'metrics/profiler/tracking_synchronizer_delegate.h',
+        'metrics/profiler/tracking_synchronizer_observer.cc',
+        'metrics/profiler/tracking_synchronizer_observer.h',
+      ],
+    },
   ],
   'conditions': [
     ['OS=="linux"', {
@@ -238,32 +263,43 @@
           ],
         },
         {
-          # GN version: //components/metrics:profiler
-          'target_name': 'metrics_profiler',
+          # GN version: //components/metrics:profiler_content
+          'target_name': 'metrics_profiler_content',
           'type': 'static_library',
           'include_dirs': [
             '..',
           ],
           'dependencies': [
+            '../base/base.gyp:base',
             '../content/content.gyp:content_browser',
             '../content/content.gyp:content_common',
-            'component_metrics_proto',
-            'metrics',
-            'variations',
-          ],
-          'export_dependent_settings': [
-            'component_metrics_proto',
+            'metrics_profiler',
           ],
           'sources': [
-            'metrics/profiler/profiler_metrics_provider.cc',
-            'metrics/profiler/profiler_metrics_provider.h',
-            'metrics/profiler/tracking_synchronizer.cc',
-            'metrics/profiler/tracking_synchronizer.h',
-            'metrics/profiler/tracking_synchronizer_observer.cc',
-            'metrics/profiler/tracking_synchronizer_observer.h',
+            'metrics/profiler/content/content_tracking_synchronizer_delegate.cc',
+            'metrics/profiler/content/content_tracking_synchronizer_delegate.h',
           ],
         },
       ],
-    }]
+    }, {  # OS==ios
+      'targets': [
+        {
+          # GN version: //components/metrics:profiler_ios
+          'target_name': 'metrics_profiler_ios',
+          'type': 'static_library',
+          'include_dirs': [
+            '..',
+          ],
+          'dependencies': [
+            '../base/base.gyp:base',
+            'metrics_profiler',
+          ],
+          'sources': [
+            'metrics/profiler/ios/ios_tracking_synchronizer_delegate.cc',
+            'metrics/profiler/ios/ios_tracking_synchronizer_delegate.h',
+          ],
+        },
+      ],
+    }],
   ],
 }

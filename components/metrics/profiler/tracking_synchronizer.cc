@@ -10,10 +10,7 @@
 #include "base/threading/thread.h"
 #include "base/tracked_objects.h"
 #include "components/metrics/profiler/tracking_synchronizer_observer.h"
-#include "components/nacl/common/nacl_process_type.h"
 #include "components/variations/variations_associated_data.h"
-#include "content/public/browser/profiler_controller.h"
-#include "content/public/common/process_type.h"
 
 using base::TimeTicks;
 
@@ -34,37 +31,6 @@ const int kNeverUsableSequenceNumber = -2;
 // all the other threads have gone away. As a result, it is ok to call it
 // from the UI thread, or for about:profiler.
 static TrackingSynchronizer* g_tracking_synchronizer = NULL;
-
-ProfilerEventProto::TrackedObject::ProcessType AsProtobufProcessType(
-    int process_type) {
-  switch (process_type) {
-    case content::PROCESS_TYPE_BROWSER:
-      return ProfilerEventProto::TrackedObject::BROWSER;
-    case content::PROCESS_TYPE_RENDERER:
-      return ProfilerEventProto::TrackedObject::RENDERER;
-    case content::PROCESS_TYPE_PLUGIN:
-      return ProfilerEventProto::TrackedObject::PLUGIN;
-    case content::PROCESS_TYPE_UTILITY:
-      return ProfilerEventProto::TrackedObject::UTILITY;
-    case content::PROCESS_TYPE_ZYGOTE:
-      return ProfilerEventProto::TrackedObject::ZYGOTE;
-    case content::PROCESS_TYPE_SANDBOX_HELPER:
-      return ProfilerEventProto::TrackedObject::SANDBOX_HELPER;
-    case content::PROCESS_TYPE_GPU:
-      return ProfilerEventProto::TrackedObject::GPU;
-    case content::PROCESS_TYPE_PPAPI_PLUGIN:
-      return ProfilerEventProto::TrackedObject::PPAPI_PLUGIN;
-    case content::PROCESS_TYPE_PPAPI_BROKER:
-      return ProfilerEventProto::TrackedObject::PPAPI_BROKER;
-    case PROCESS_TYPE_NACL_LOADER:
-      return ProfilerEventProto::TrackedObject::NACL_LOADER;
-    case PROCESS_TYPE_NACL_BROKER:
-      return ProfilerEventProto::TrackedObject::NACL_BROKER;
-    default:
-      NOTREACHED();
-      return ProfilerEventProto::TrackedObject::UNKNOWN;
-  }
-}
 
 }  // namespace
 
@@ -209,27 +175,18 @@ base::LazyInstance
 
 // TrackingSynchronizer methods and members.
 
-TrackingSynchronizer::TrackingSynchronizer(scoped_ptr<base::TickClock> clock)
+TrackingSynchronizer::TrackingSynchronizer(
+    scoped_ptr<base::TickClock> clock,
+    const TrackingSynchronizerDelegateFactory& delegate_factory)
     : last_used_sequence_number_(kNeverUsableSequenceNumber),
       clock_(clock.Pass()) {
   DCHECK(!g_tracking_synchronizer);
   g_tracking_synchronizer = this;
   phase_start_times_.push_back(clock_->NowTicks());
-
-#if !defined(OS_IOS)
-  // TODO: This ifdef and other ifdefs for OS_IOS in this file are only
-  // short-term hacks to make this compile on iOS, and the proper solution is to
-  // refactor to remove content dependencies from shared code.
-  // See crbug/472210.
-  content::ProfilerController::GetInstance()->Register(this);
-#endif
+  delegate_ = delegate_factory.Run(this);
 }
 
 TrackingSynchronizer::~TrackingSynchronizer() {
-#if !defined(OS_IOS)
-  content::ProfilerController::GetInstance()->Unregister(this);
-#endif
-
   // Just in case we have any pending tasks, clear them out.
   RequestContext::OnShutdown();
 
@@ -283,10 +240,10 @@ void TrackingSynchronizer::OnPendingProcesses(int sequence_number,
 void TrackingSynchronizer::OnProfilerDataCollected(
     int sequence_number,
     const tracked_objects::ProcessDataSnapshot& profiler_data,
-    content::ProcessType process_type) {
+    ProfilerEventProto::TrackedObject::ProcessType process_type) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DecrementPendingProcessesAndSendData(sequence_number, profiler_data,
-                                       AsProtobufProcessType(process_type));
+                                       process_type);
 }
 
 int TrackingSynchronizer::RegisterAndNotifyAllProcesses(
@@ -303,17 +260,8 @@ int TrackingSynchronizer::RegisterAndNotifyAllProcesses(
 
   const int current_profiling_phase = phase_completion_events_sequence_.size();
 
-#if !defined(OS_IOS)
-  // Get profiler data from renderer and browser child processes.
-  content::ProfilerController::GetInstance()->GetProfilerData(
-      sequence_number, current_profiling_phase);
-#else
-  // On non-iOS platforms, |OnPendingProcesses()| is called from
-  // |content::ProfilerController|. On iOS, manually call the method to indicate
-  // that there is no need to wait for data from child processes. On iOS, there
-  // is only the main browser process.
-  OnPendingProcesses(sequence_number, 0, true);
-#endif  // !defined(OS_IOS)
+  delegate_->GetProfilerDataForChildProcesses(sequence_number,
+                                              current_profiling_phase);
 
   // Send process data snapshot from browser process.
   tracked_objects::ProcessDataSnapshot process_data_snapshot;
@@ -352,11 +300,7 @@ void TrackingSynchronizer::NotifyAllProcessesOfProfilingPhaseCompletion(
 
   RegisterPhaseCompletion(profiling_event);
 
-#if !defined(OS_IOS)
-  // Notify renderer and browser child processes.
-  content::ProfilerController::GetInstance()->OnProfilingPhaseCompleted(
-      profiling_phase);
-#endif
+  delegate_->OnProfilingPhaseCompleted(profiling_phase);
 
   // Notify browser process.
   tracked_objects::ThreadData::OnProfilingPhaseCompleted(profiling_phase);
