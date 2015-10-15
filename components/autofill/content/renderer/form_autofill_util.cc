@@ -1355,8 +1355,7 @@ bool WebFormElementToFormData(
                                    extract_mask, form, field);
 }
 
-std::vector<WebFormControlElement>
-GetUnownedAutofillableFormFieldElements(
+std::vector<WebFormControlElement> GetUnownedFormFieldElements(
     const WebElementCollection& elements,
     std::vector<WebElement>* fieldsets) {
   std::vector<WebFormControlElement> unowned_fieldset_children;
@@ -1374,7 +1373,14 @@ GetUnownedAutofillableFormFieldElements(
       fieldsets->push_back(element);
     }
   }
-  return ExtractAutofillableElementsFromSet(unowned_fieldset_children);
+  return unowned_fieldset_children;
+}
+
+std::vector<WebFormControlElement> GetUnownedAutofillableFormFieldElements(
+    const WebElementCollection& elements,
+    std::vector<WebElement>* fieldsets) {
+  return ExtractAutofillableElementsFromSet(
+      GetUnownedFormFieldElements(elements, fieldsets));
 }
 
 bool UnownedCheckoutFormElementsAndFieldSetsToFormData(

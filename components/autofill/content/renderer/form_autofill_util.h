@@ -142,6 +142,12 @@ bool WebFormElementToFormData(
 // Get all form control elements from |elements| that are not part of a form.
 // If |fieldsets| is not NULL, also append the fieldsets encountered that are
 // not part of a form.
+std::vector<blink::WebFormControlElement> GetUnownedFormFieldElements(
+    const blink::WebElementCollection& elements,
+    std::vector<blink::WebElement>* fieldsets);
+
+// A shorthand for filtering the results of GetUnownedFormFieldElements with
+// ExtractAutofillableElementsFromSet.
 std::vector<blink::WebFormControlElement>
 GetUnownedAutofillableFormFieldElements(
     const blink::WebElementCollection& elements,

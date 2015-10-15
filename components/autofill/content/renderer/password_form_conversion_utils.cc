@@ -43,6 +43,8 @@ struct SyntheticForm {
   ~SyntheticForm();
 
   std::vector<blink::WebElement> fieldsets;
+  // Contains control elements of the represented form, including not fillable
+  // ones.
   std::vector<blink::WebFormControlElement> control_elements;
   blink::WebDocument document;
   blink::WebString action;
@@ -606,9 +608,8 @@ scoped_ptr<PasswordForm> CreatePasswordFormFromUnownedInputElements(
     const ModifiedValues* nonscript_modified_values,
     const FormsPredictionsMap* form_predictions) {
   SyntheticForm synthetic_form;
-  synthetic_form.control_elements =
-      form_util::GetUnownedAutofillableFormFieldElements(
-          frame.document().all(), &synthetic_form.fieldsets);
+  synthetic_form.control_elements = form_util::GetUnownedFormFieldElements(
+      frame.document().all(), &synthetic_form.fieldsets);
   synthetic_form.document = frame.document();
 
   if (synthetic_form.control_elements.empty())
