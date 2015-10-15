@@ -121,6 +121,12 @@ class Webgl2ConformanceValidator(WebglConformanceValidator):
         '--enable-unsafe-es3-apis',
         '--test-type=gpu'
     ])
+    browser = browser_finder.FindBrowser(options.finder_options)
+    if browser.target_os == 'darwin':
+      # crbug.com/539993
+      options.AppendExtraBrowserArgs([
+          '--disable-accelerated-video-decode'
+      ])
 
 class WebglConformancePage(gpu_test_base.PageBase):
   def __init__(self, story_set, test, expectations):
