@@ -387,7 +387,10 @@ void CompositorImpl::SetRootLayer(scoped_refptr<cc::Layer> root_layer) {
   }
 }
 
-void CompositorImpl::SetWindowSurface(ANativeWindow* window) {
+void CompositorImpl::SetSurface(jobject surface) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  base::android::ScopedJavaLocalRef<jobject> j_surface(env, surface);
+
   GpuSurfaceTracker* tracker = GpuSurfaceTracker::Get();
 
   if (window_) {
@@ -396,7 +399,17 @@ void CompositorImpl::SetWindowSurface(ANativeWindow* window) {
     tracker->RemoveSurface(surface_id_);
     ANativeWindow_release(window_);
     window_ = NULL;
+    UnregisterViewSurface(surface_id_);
     surface_id_ = 0;
+  }
+
+  ANativeWindow* window = NULL;
+  if (surface) {
+    // Note: This ensures that any local references used by
+    // ANativeWindow_fromSurface are released immediately. This is needed as a
+    // workaround for https://code.google.com/p/android/issues/detail?id=68174
+    base::android::ScopedJavaLocalFrame scoped_local_reference_frame(env);
+    window = ANativeWindow_fromSurface(env, surface);
   }
 
   if (window) {
@@ -406,34 +419,10 @@ void CompositorImpl::SetWindowSurface(ANativeWindow* window) {
     tracker->SetSurfaceHandle(
         surface_id_,
         gfx::GLSurfaceHandle(surface_id_, gfx::NATIVE_DIRECT));
-    SetVisible(true);
-  }
-}
-
-void CompositorImpl::SetSurface(jobject surface) {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  base::android::ScopedJavaLocalRef<jobject> j_surface(env, surface);
-
-  // First, shut down the GL context.
-  int surface_id = surface_id_;
-  SetWindowSurface(NULL);
-  // Then, cleanup any existing surface references.
-  if (surface_id)
-    UnregisterViewSurface(surface_id);
-
-  // Now, set the new surface if we have one.
-  ANativeWindow* window = NULL;
-  if (surface) {
-    // Note: This ensures that any local references used by
-    // ANativeWindow_fromSurface are released immediately. This is needed as a
-    // workaround for https://code.google.com/p/android/issues/detail?id=68174
-    base::android::ScopedJavaLocalFrame scoped_local_reference_frame(env);
-    window = ANativeWindow_fromSurface(env, surface);
-  }
-  if (window) {
-    SetWindowSurface(window);
-    ANativeWindow_release(window);
+    // Register first, SetVisible() might create an OutputSurface.
     RegisterViewSurface(surface_id_, j_surface.obj());
+    SetVisible(true);
+    ANativeWindow_release(window);
   }
 }
 

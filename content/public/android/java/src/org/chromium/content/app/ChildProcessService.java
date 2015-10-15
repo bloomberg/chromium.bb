@@ -333,7 +333,7 @@ public class ChildProcessService extends Service {
         try {
             return mCallback.getViewSurface(surfaceId).getSurface();
         } catch (RemoteException e) {
-            Log.e(TAG, "Unable to call establishSurfaceTexturePeer: %s", e);
+            Log.e(TAG, "Unable to call getViewSurface: %s", e);
             return null;
         }
     }

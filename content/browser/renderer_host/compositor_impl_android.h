@@ -119,7 +119,6 @@ class CONTENT_EXPORT CompositorImpl
                base::TimeDelta vsync_period) override;
   void SetNeedsAnimate() override;
 
-  void SetWindowSurface(ANativeWindow* window);
   void SetVisible(bool visible);
 
   enum CompositingTrigger {
