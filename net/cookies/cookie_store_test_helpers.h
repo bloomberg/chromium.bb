@@ -70,7 +70,6 @@ class DelayedCookieMonster : public CookieStore {
                        const CookieChangedCallback& callback) override;
 
  private:
-
   // Be called immediately from CookieMonster.
 
   void SetCookiesInternalCallback(bool result);
@@ -94,6 +93,26 @@ class DelayedCookieMonster : public CookieStore {
   bool result_;
   std::string cookie_;
   std::string cookie_line_;
+};
+
+class CookieURLHelper {
+ public:
+  explicit CookieURLHelper(const std::string& url_string);
+
+  const std::string& domain() const { return domain_and_registry_; }
+  std::string host() const { return url_.host(); }
+  const GURL& url() const { return url_; }
+  const GURL AppendPath(const std::string& path) const;
+
+  // Return a new string with the following substitutions:
+  // 1. "%R" -> Domain registry (i.e. "com")
+  // 2. "%D" -> Domain + registry (i.e. "google.com")
+  std::string Format(const std::string& format_string) const;
+
+ private:
+  const GURL url_;
+  const std::string registry_;
+  const std::string domain_and_registry_;
 };
 
 }  // namespace net

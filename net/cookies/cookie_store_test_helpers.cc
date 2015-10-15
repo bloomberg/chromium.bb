@@ -7,7 +7,27 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/string_util.h"
 #include "base/thread_task_runner_handle.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+
+using net::registry_controlled_domains::GetDomainAndRegistry;
+using net::registry_controlled_domains::GetRegistryLength;
+using net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES;
+using net::registry_controlled_domains::INCLUDE_UNKNOWN_REGISTRIES;
+
+namespace {
+
+std::string GetRegistry(const GURL& url) {
+  size_t registry_length = GetRegistryLength(url, INCLUDE_UNKNOWN_REGISTRIES,
+                                             INCLUDE_PRIVATE_REGISTRIES);
+  if (registry_length == 0)
+    return std::string();
+  return std::string(url.host(), url.host().length() - registry_length,
+                     registry_length);
+}
+
+}  // namespace
 
 namespace net {
 
@@ -141,6 +161,27 @@ DelayedCookieMonster::AddCallbackForCookie(
     const CookieChangedCallback& callback) {
   ADD_FAILURE();
   return scoped_ptr<CookieStore::CookieChangedSubscription>();
+}
+
+//
+// CookieURLHelper
+//
+CookieURLHelper::CookieURLHelper(const std::string& url_string)
+    : url_(url_string),
+      registry_(GetRegistry(url_)),
+      domain_and_registry_(
+          GetDomainAndRegistry(url_, INCLUDE_PRIVATE_REGISTRIES)) {}
+
+const GURL CookieURLHelper::AppendPath(const std::string& path) const {
+  return GURL(url_.spec() + path);
+}
+
+std::string CookieURLHelper::Format(const std::string& format_string) const {
+  std::string new_string = format_string;
+  base::ReplaceSubstringsAfterOffset(&new_string, 0, "%D",
+                                     domain_and_registry_);
+  base::ReplaceSubstringsAfterOffset(&new_string, 0, "%R", registry_);
+  return new_string;
 }
 
 }  // namespace net
