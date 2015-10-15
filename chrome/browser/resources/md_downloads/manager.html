@@ -5,6 +5,7 @@
 <link rel="import" href="chrome://resources/html/cr/ui/focus_grid.html">
 <link rel="import" href="chrome://resources/html/util.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-list/iron-list.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-header-panel/paper-header-panel.html">
 <link rel="import" href="chrome://downloads/action_service.html">
 <link rel="import" href="chrome://downloads/constants.html">
@@ -16,8 +17,14 @@
   <template>
     <paper-header-panel id="panel" class="loading">
       <downloads-toolbar class="paper-header" id="toolbar"></downloads-toolbar>
-      <div id="downloads-list" hidden$="[[!hasDownloads_]]"></div>
-      <div id="no-downloads" hidden$="[[hasDownloads_]]">
+      <iron-list id="downloads-list" items="{{items_}}"
+          hidden="[[!hasDownloads_]]">
+        <template>
+          <downloads-item data="[[item]]" hide-date="[[item.hideDate]]">
+          </downloads-item>
+        </template>
+      </iron-list>
+      <div id="no-downloads" hidden="[[hasDownloads_]]">
         <div>
           <div class="illustration"></div>
           <span><!-- Text populated in Manager#updateAll_(). --></span>

@@ -1632,7 +1632,46 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   </style>
 <script src="chrome://downloads/strings.js"></script>
 </head>
-<body><div hidden="" by-vulcanize=""><dom-module id="paper-header-panel" assetpath="chrome://resources/polymer/v1_0/paper-header-panel/">
+<body><div hidden="" by-vulcanize=""><dom-module id="iron-list" assetpath="chrome://resources/polymer/v1_0/iron-list/">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+  
+      :host(.has-scroller) {
+        overflow: auto;
+      }
+  
+      :host(:not(.has-scroller)) {
+        position: relative;
+      }
+  
+      #items {
+        @apply(--iron-list-items-container);
+        position: relative;
+      }
+  
+      #items > ::content > * {
+        width: 100%;
+        box-sizing: border-box;
+        position: absolute;
+        top: 0;
+        will-change: transform;
+      }
+    </style>
+
+    <array-selector id="selector" items="{{items}}" selected="{{selectedItems}}" selected-item="{{selectedItem}}">
+    </array-selector>
+
+    <div id="items">
+      <content></content>
+    </div>
+
+  </template>
+</dom-module>
+
+<dom-module id="paper-header-panel" assetpath="chrome://resources/polymer/v1_0/paper-header-panel/">
 
   <style>
 /**
@@ -2512,14 +2551,13 @@ paper-button {
 :host {
   display: flex;
   flex-direction: column;
-  margin: 12px 0;
 }
 
 #date {
   color: #7c7c7c;
   font-size: 100%;
   font-weight: 500;
-  margin: 18px auto 16px;  /* This top margin + :host top margin = 30px. */
+  margin: 24px auto 10px;
   width: var(--downloads-item-width);
 }
 
@@ -2528,7 +2566,7 @@ paper-button {
   border-radius: 2px;
   display: flex;
   flex: none;
-  margin: 0 auto;
+  margin: 6px auto;
   min-height: 103px;
   position: relative;
   width: var(--downloads-item-width);
@@ -3398,8 +3436,13 @@ paper-item:hover {
   <template>
     <paper-header-panel id="panel" class="loading">
       <downloads-toolbar class="paper-header" id="toolbar"></downloads-toolbar>
-      <div id="downloads-list" hidden$="[[!hasDownloads_]]"></div>
-      <div id="no-downloads" hidden$="[[hasDownloads_]]">
+      <iron-list id="downloads-list" items="{{items_}}" hidden="[[!hasDownloads_]]">
+        <template>
+          <downloads-item data="[[item]]" hide-date="[[item.hideDate]]">
+          </downloads-item>
+        </template>
+      </iron-list>
+      <div id="no-downloads" hidden="[[hasDownloads_]]">
         <div>
           <div class="illustration"></div>
           <span></span>

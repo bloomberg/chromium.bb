@@ -5,14 +5,13 @@
 :host {
   display: flex;
   flex-direction: column;
-  margin: 12px 0;
 }
 
 #date {
   color: #7c7c7c;
   font-size: 100%;
   font-weight: 500;
-  margin: 18px auto 16px;  /* This top margin + :host top margin = 30px. */
+  margin: 24px auto 10px;
   width: var(--downloads-item-width);
 }
 
@@ -21,7 +20,7 @@
   border-radius: 2px;
   display: flex;
   flex: none;
-  margin: 0 auto;
+  margin: 6px auto;
   min-height: 103px;
   position: relative;
   width: var(--downloads-item-width);

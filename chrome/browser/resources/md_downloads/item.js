@@ -6,14 +6,6 @@ cr.define('downloads', function() {
   var Item = Polymer({
     is: 'downloads-item',
 
-    /**
-     * @param {!downloads.ThrottledIconLoader} iconLoader
-     */
-    factoryImpl: function(iconLoader) {
-      /** @private {!downloads.ThrottledIconLoader} */
-      this.iconLoader_ = iconLoader;
-    },
-
     properties: {
       data: {
         type: Object,
@@ -22,15 +14,6 @@ cr.define('downloads', function() {
       hideDate: {
         type: Boolean,
         value: true,
-      },
-
-      readyPromise: {
-        type: Object,
-        value: function() {
-          return new Promise(function(resolve, reject) {
-            this.resolveReadyPromise_ = resolve;
-          }.bind(this));
-        },
       },
 
       completelyOnDisk_: {
@@ -105,21 +88,11 @@ cr.define('downloads', function() {
       // TODO(dbeam): this gets called way more when I observe data.by_ext_id
       // and data.by_ext_name directly. Why?
       'observeControlledBy_(controlledBy_)',
+      'observeIsDangerous_(isDangerous_, data.file_path)',
     ],
 
     ready: function() {
       this.content = this.$.content;
-      this.resolveReadyPromise_();
-    },
-
-    /** @param {!downloads.Data} data */
-    update: function(data) {
-      this.data = data;
-
-      if (!this.isDangerous_) {
-        var icon = 'chrome://fileicon/' + encodeURIComponent(data.file_path);
-        this.iconLoader_.loadScaledIcon(this.$['file-icon'], icon);
-      }
     },
 
     /** @private */
@@ -277,6 +250,14 @@ cr.define('downloads', function() {
     /** @private */
     observeControlledBy_: function() {
       this.$['controlled-by'].innerHTML = this.controlledBy_;
+    },
+
+    /** @private */
+    observeIsDangerous_: function() {
+      if (this.data && !this.isDangerous_) {
+        var filePath = encodeURIComponent(this.data.file_path);
+        this.$['file-icon'].src = 'chrome://fileicon/' + filePath;
+      }
     },
 
     /** @private */
