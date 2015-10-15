@@ -679,6 +679,7 @@
     ],
     'tracing_unittest_sources': [
       'tracing/trace_config_file_unittest.cc',
+      'tracing/graphics_memory_dump_provider_android_unittest.cc',
     ],
     'translate_unittest_sources': [
       'translate/core/browser/language_state_unittest.cc',
@@ -1081,6 +1082,7 @@
             '<@(safe_json_unittest_sources)',
             '<@(scheduler_unittest_sources)',
             '<@(storage_monitor_unittest_sources)',
+            '<@(tracing_unittest_sources)',
             '<@(ui_unittest_sources)',
             '<@(visitedlink_unittest_sources)',
             '<@(web_cache_unittest_sources)',
@@ -1129,6 +1131,7 @@
             'components.gyp:web_modal_test_support',
             'scheduler/scheduler.gyp:scheduler',
             'test_runner/test_runner.gyp:test_runner',
+            'tracing.gyp:tracing',
             'webcrypto/webcrypto.gyp:webcrypto',
             '../third_party/re2/re2.gyp:re2',
           ],
@@ -1275,7 +1278,6 @@
             '<@(copresence_unittest_sources)',
             '<@(feedback_unittest_sources)',
             '<@(proximity_auth_unittest_sources)',
-            '<@(tracing_unittest_sources)',
             '<@(webusb_detector_unittest_sources)',
           ],
           'sources!': [
@@ -1301,7 +1303,6 @@
             'components.gyp:proximity_auth',
             'components.gyp:proximity_auth_test_support',
             'components.gyp:webusb',
-            'tracing.gyp:tracing',
           ],
         }],
         ['chromeos==1', {
@@ -1374,6 +1375,7 @@
             ['OS=="android"', {
               'sources/': [
                 ['exclude', '^policy/core/common/async_policy_provider_unittest\\.cc'],
+                ['exclude', '^tracing/trace_config_file_unittest\\.cc'],
               ],
             }],
             ['OS=="android" or OS=="ios"', {

@@ -39,18 +39,21 @@ component("startup_tracing") {
   ]
 }
 
-if (!is_android) {
-  source_set("unit_tests") {
-    testonly = true
+source_set("unit_tests") {
+  testonly = true
 
-    sources = [
-      "trace_config_file_unittest.cc",
-    ]
+  sources = [
+    "graphics_memory_dump_provider_android_unittest.cc",
+  ]
 
-    deps = [
-      ":startup_tracing",
-      "//base/test:test_support",
-      "//testing/gtest",
-    ]
+  deps = [
+    ":tracing",
+    "//base/test:test_support",
+    "//testing/gtest",
+  ]
+
+  if (!is_android) {
+    sources += [ "trace_config_file_unittest.cc" ]
+    deps += [ ":startup_tracing" ]
   }
 }
