@@ -1741,6 +1741,14 @@ void RenderProcessHostImpl::Cleanup() {
 
     RemoveUserData(kSessionStorageHolderKey);
 
+    // On shutdown, |this| may not be deleted because the deleter is posted to
+    // the current MessageLoop, but MessageLoop deletes all its pending
+    // callbacks on shutdown. Since the deleter takes |this| as a raw pointer,
+    // deleting the callback doesn't delete |this| resulting in a memory leak.
+    // Valgrind complains, so delete |mojo_application_host_| explicitly here to
+    // stop valgrind from complaining.
+    mojo_application_host_.reset();
+
     // Remove ourself from the list of renderer processes so that we can't be
     // reused in between now and when the Delete task runs.
     UnregisterHost(GetID());

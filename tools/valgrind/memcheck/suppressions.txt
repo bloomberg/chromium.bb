@@ -538,32 +538,6 @@
    fun:_ZN7content45ManifestParserTest_IconDensityParseRules_Test8TestBodyEv
 }
 {
-   bug_484444
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN4mojo7BindingINS_15ServiceProviderEE4BindENS_16ScopedHandleBaseINS_17MessagePipeHandleEEEPK15MojoAsyncWaiter
-   fun:_ZN4mojo7BindingINS_15ServiceProviderEE4BindENS_16InterfaceRequestIS1_EEPK15MojoAsyncWaiter
-   fun:_ZN7content19ServiceRegistryImpl4BindEN4mojo16InterfaceRequestINS1_15ServiceProviderEEE
-}
-{
-   bug_484444b
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN4mojo8internal11FilterChain6AppendINS0_22MessageHeaderValidatorEEEvv
-   fun:_ZN4mojo8internal17InterfacePtrStateINS_15ServiceProviderEE25ConfigureProxyIfNecessaryEv
-   fun:_ZN4mojo8internal17InterfacePtrStateINS_15ServiceProviderEE8instanceEv
-}
-{
-   bug_484444c
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN4mojo8internal10SharedDataIPNS0_6RouterEEC2ERKS3_
-   fun:_ZN4mojo8internal6RouterC1ENS_16ScopedHandleBaseINS_17MessagePipeHandleEEENS0_11FilterChainEPK15MojoAsyncWaiter
-   fun:_ZN4mojo8internal17InterfacePtrStateINS_15ServiceProviderEE25ConfigureProxyIfNecessaryEv
-   fun:_ZN4mojo8internal17InterfacePtrStateINS_15ServiceProviderEE8instanceEv
-}
-{
    bug_512466
    Memcheck:Leak
    fun:_Znw*
@@ -2611,41 +2585,6 @@
    fun:_ZN3WTFL18callFunctionObjectEPv
 }
 {
-   bug_367809_a
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN4mojo6common13HandleWatcher5StartERKNS_6HandleEjmRKN4base8CallbackIFviEEE
-   fun:_ZN4mojo8internal12_GLOBAL__N_19AsyncWaitEP15MojoAsyncWaiterjjmPFvPviES4_
-   fun:_ZN4mojo8internal9Connector14WaitToReadMoreEv
-   fun:_ZN4mojo8internal9ConnectorC1ENS_16ScopedHandleBaseINS_17MessagePipeHandleEEEP15MojoAsyncWaiter
-   fun:_ZN4mojo8internal6RouterC1ENS_16ScopedHandleBaseINS_17MessagePipeHandleEEEP15MojoAsyncWaiter
-   fun:_ZN4mojo9RemotePtrINS_11ShellClientEE5StateC1ENS_16ScopedHandleBaseINS_17MessagePipeHandleEEEPNS_5ShellEPNS_12ErrorHandlerEP15MojoAsyncWaiter
-   fun:_ZN4mojo9RemotePtrINS_11ShellClientEE5resetENS_16ScopedHandleBaseINS_15InterfaceHandleIS1_EEEEPNS_5ShellEPNS_12ErrorHandlerEP15MojoAsyncWaiter
-   fun:_ZN7content19MojoApplicationHost4InitEv
-}
-{
-   bug_367809_b
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN4mojo8internal12_GLOBAL__N_19AsyncWaitEP15MojoAsyncWaiterjjmPFvPviES4_
-   fun:_ZN4mojo8internal9Connector14WaitToReadMoreEv
-   fun:_ZN4mojo8internal9ConnectorC1ENS_16ScopedHandleBaseINS_17MessagePipeHandleEEEP15MojoAsyncWaiter
-   fun:_ZN4mojo8internal6RouterC1ENS_16ScopedHandleBaseINS_17MessagePipeHandleEEEP15MojoAsyncWaiter
-   fun:_ZN4mojo9RemotePtrINS_11ShellClientEE5StateC1ENS_16ScopedHandleBaseINS_17MessagePipeHandleEEEPNS_5ShellEPNS_12ErrorHandlerEP15MojoAsyncWaiter
-   fun:_ZN4mojo9RemotePtrINS_11ShellClientEE5resetENS_16ScopedHandleBaseINS_15InterfaceHandleIS1_EEEEPNS_5ShellEPNS_12ErrorHandlerEP15MojoAsyncWaiter
-   fun:_ZN7content19MojoApplicationHost4InitEv
-}
-{
-   bug_367809_c
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN4mojo8internal10SharedDataIPNS0_6RouterEEC1ERKS3_
-   fun:_ZN4mojo8internal6RouterC1ENS_16ScopedHandleBaseINS_17MessagePipeHandleEEEP15MojoAsyncWaiter
-   fun:_ZN4mojo9RemotePtrINS_11ShellClientEE5StateC1ENS_16ScopedHandleBaseINS_17MessagePipeHandleEEEPNS_5ShellEPNS_12ErrorHandlerEP15MojoAsyncWaiter
-   fun:_ZN4mojo9RemotePtrINS_11ShellClientEE5resetENS_16ScopedHandleBaseINS_15InterfaceHandleIS1_EEEEPNS_5ShellEPNS_12ErrorHandlerEP15MojoAsyncWaiter
-   fun:_ZN7content19MojoApplicationHost4InitEv
-}
-{
    bug_367809_d
    Memcheck:Leak
    fun:_Znw*
@@ -2677,55 +2616,6 @@
    fun:_ZN8feedback16FeedbackDataTestC1Ev
    fun:_ZN8feedback*FeedbackDataTest*
    fun:_ZN7testing8internal15TestFactoryImplIN8feedback*
-}
-{
-   bug_372487_a
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN4mojo10BindToPipeIN7content19MojoApplicationHost9ShellImplEEEPT_S5_NS_16ScopedHandleBaseINS_17MessagePipeHandleEEEP15MojoAsyncWaiter
-   fun:_ZN7content19MojoApplicationHost4InitEv
-   fun:_ZN7content21RenderProcessHostImpl4InitEv
-   fun:_ZN7content18RenderViewHostImpl16CreateRenderViewERKSbItN4base20string16_char_traitsESaItEEiib
-   fun:_ZN7content15WebContentsImpl32CreateRenderViewForRenderManagerEPNS_14RenderViewHostEiPNS_26CrossProcessFrameConnectorE
-   fun:_ZN7content22RenderFrameHostManager14InitRenderViewEPNS_14RenderViewHostEi
-   fun:_ZN7content22RenderFrameHostManager8NavigateERKNS_19NavigationEntryImplE
-   fun:_ZN7content13NavigatorImpl15NavigateToEntryEPNS_19RenderFrameHostImplERKNS_19NavigationEntryImplENS_20NavigationController10ReloadTypeE
-   fun:_ZN7content13NavigatorImpl22NavigateToPendingEntryEPNS_19RenderFrameHostImplENS_20NavigationController10ReloadTypeE
-   fun:_ZN7content15WebContentsImpl22NavigateToPendingEntryENS_20NavigationController10ReloadTypeE
-   fun:_ZN7content24NavigationControllerImpl22NavigateToPendingEntryENS_20NavigationController10ReloadTypeE
-   fun:_ZN7content24NavigationControllerImpl9LoadEntryEPNS_19NavigationEntryImplE
-   fun:_ZN7content24NavigationControllerImpl17LoadURLWithParamsERKNS_20NavigationController13LoadURLParamsE
-   fun:_ZN7content5Shell15LoadURLForFrameERK4GURLRKSs
-   fun:_ZN7content5Shell7LoadURLERK4GURL
-   fun:_ZN7content19BlinkTestController20PrepareForLayoutTestERK4GURLRKN4base8FilePathEbRKSs
-   fun:_ZN12_GLOBAL__N_110RunOneTestERKSsPbRK10scoped_ptrIN7content17BrowserMainRunnerEN4base14DefaultDeleterIS5_EEE
-   fun:_Z16ShellBrowserMainRKN7content18MainFunctionParamsERK10scoped_ptrINS_17BrowserMainRunnerEN4base14DefaultDeleterIS4_EEE
-   fun:_ZN7content17ShellMainDelegate10RunProcessERKSsRKNS_18MainFunctionParamsE
-   fun:_ZN7content23RunNamedProcessTypeMainERKSsRKNS_18MainFunctionParamsEPNS_19ContentMainDelegateE
-}
-{
-   bug_372487_b
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN4mojo8internal6RouterC1ENS_16ScopedHandleBaseINS_17MessagePipeHandleEEEP15MojoAsyncWaiter
-   fun:_ZN4mojo8internal18InterfaceImplStateINS_5ShellEE4BindENS_16ScopedHandleBaseINS_17MessagePipeHandleEEEP15MojoAsyncWaiter
-   fun:_ZN4mojo10BindToPipeIN7content19MojoApplicationHost9ShellImplEEEPT_S5_NS_16ScopedHandleBaseINS_17MessagePipeHandleEEEP15MojoAsyncWaiter
-   fun:_ZN7content19MojoApplicationHost4InitEv
-   fun:_ZN7content21RenderProcessHostImpl4InitEv
-   fun:_ZN7content18RenderViewHostImpl16CreateRenderViewERKSbItN4base20string16_char_traitsESaItEEiib
-   fun:_ZN7content15WebContentsImpl32CreateRenderViewForRenderManagerEPNS_14RenderViewHostEiPNS_26CrossProcessFrameConnectorE
-   fun:_ZN7content22RenderFrameHostManager14InitRenderViewEPNS_14RenderViewHostEi
-   fun:_ZN7content22RenderFrameHostManager8NavigateERKNS_19NavigationEntryImplE
-   fun:_ZN7content13NavigatorImpl15NavigateToEntryEPNS_19RenderFrameHostImplERKNS_19NavigationEntryImplENS_20NavigationController10ReloadTypeE
-   fun:_ZN7content13NavigatorImpl22NavigateToPendingEntryEPNS_19RenderFrameHostImplENS_20NavigationController10ReloadTypeE
-   fun:_ZN7content15WebContentsImpl22NavigateToPendingEntryENS_20NavigationController10ReloadTypeE
-   fun:_ZN7content24NavigationControllerImpl22NavigateToPendingEntryENS_20NavigationController10ReloadTypeE
-   fun:_ZN7content24NavigationControllerImpl9LoadEntryEPNS_19NavigationEntryImplE
-   fun:_ZN7content24NavigationControllerImpl17LoadURLWithParamsERKNS_20NavigationController13LoadURLParamsE
-   fun:_ZN7content5Shell15LoadURLForFrameERK4GURLRKSs
-   fun:_ZN7content5Shell7LoadURLERK4GURL
 }
 {
    bug_379943
@@ -3282,24 +3172,6 @@
    fun:_ZN4base12_GLOBAL__N_110ThreadFuncEPv
 }
 {
-   bug_455732
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN7content12_GLOBAL__N_120ApplicationSetupImpl24ExchangeServiceProvidersEN4mojo16InterfaceRequestINS2_15ServiceProviderEEENS2_12InterfacePtrIS4_EE
-   fun:_ZN7content20ApplicationSetupStub6AcceptEPN4mojo7MessageE
-   fun:_ZN4mojo8internal6Router21HandleIncomingMessageEPNS_7MessageE
-   fun:_ZN4mojo8internal6Router26HandleIncomingMessageThunk6AcceptEPNS_7MessageE
-   fun:_ZN7content32ApplicationSetupRequestValidator6AcceptEPN4mojo7MessageE
-   fun:_ZN4mojo8internal22MessageHeaderValidator6AcceptEPNS_7MessageE
-   fun:_ZN4mojo22ReadAndDispatchMessageENS_17MessagePipeHandleEPNS_15MessageReceiverEPb
-   fun:_ZN4mojo8internal9Connector17ReadSingleMessageEPi
-   fun:_ZN4mojo8internal9Connector24ReadAllAvailableMessagesEv
-   fun:_ZN4mojo8internal9Connector13OnHandleReadyEi
-   fun:_ZN4mojo8internal9Connector17CallOnHandleReadyEPvi
-   fun:_ZN4mojo8internal12_GLOBAL__N_113OnHandleReadyEPNS_6common13HandleWatcherEPFvPviES5_i
-}
-{
    bug_476940
    Memcheck:Leak
    fun:malloc
@@ -3492,26 +3364,6 @@
    fun:_Znw*
    fun:_ZN7content26PushMessagingMessageFilterC1EiPNS_27ServiceWorkerContextWrapperE
    fun:_ZN7content21RenderProcessHostImpl20CreateMessageFiltersEv
-   fun:_ZN7content21RenderProcessHostImpl4InitEv
-   fun:_ZN7content22RenderFrameHostManager14InitRenderViewEPNS_18RenderViewHostImplEi
-   fun:_ZN7content22RenderFrameHostManager8NavigateERK4GURLRKNS_20FrameNavigationEntryERKNS_19NavigationEntryImplE
-   fun:_ZN7content13NavigatorImpl15NavigateToEntryEPNS_13FrameTreeNodeERKNS_20FrameNavigationEntryERKNS_19NavigationEntryImplENS_20NavigationController10ReloadTypeEb
-   fun:_ZN7content13NavigatorImpl22NavigateToPendingEntryEPNS_13FrameTreeNodeERKNS_20FrameNavigationEntryENS_20NavigationController10ReloadTypeEb
-   fun:_ZN7content24NavigationControllerImpl30NavigateToPendingEntryInternalENS_20NavigationController10ReloadTypeE
-   fun:_ZN7content24NavigationControllerImpl22NavigateToPendingEntryENS_20NavigationController10ReloadTypeE
-   fun:_ZN7content24NavigationControllerImpl9LoadEntryE10scoped_ptrINS_19NavigationEntryImplEN4base14DefaultDeleterIS2_EEE
-   fun:_ZN7content24NavigationControllerImpl17LoadURLWithParamsERKNS_20NavigationController13LoadURLParamsE
-   fun:_ZN7content5Shell15LoadURLForFrameERK4GURLRKSs
-}
-{
-   bug_536907_b
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZNSt3mapISsN4base8CallbackIFvN4mojo16ScopedHandleBaseINS2_17MessagePipeHandleEEEEEESt4lessISsESaISt4pairIKSsS7_EEEixERSB_
-   fun:_ZN7content19ServiceRegistryImpl10AddServiceERKSsN4base8CallbackIFvN4mojo16ScopedHandleBaseINS5_17MessagePipeHandleEEEEEE
-   fun:_ZN7content15ServiceRegistry10AddServiceIN6device14BatteryMonitorEEEvN4base8CallbackIFvN4mojo16InterfaceRequestIT_EEEEE
-   fun:_ZN7content21RenderProcessHostImpl20RegisterMojoServicesEv
    fun:_ZN7content21RenderProcessHostImpl4InitEv
    fun:_ZN7content22RenderFrameHostManager14InitRenderViewEPNS_18RenderViewHostImplEi
    fun:_ZN7content22RenderFrameHostManager8NavigateERK4GURLRKNS_20FrameNavigationEntryERKNS_19NavigationEntryImplE
