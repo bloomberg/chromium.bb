@@ -134,7 +134,7 @@
               },
             }],
           ],
-        },
+        },  # end of target 'remoting_android_client_java'
         {
           'target_name': 'remoting_apk',
           'type': 'none',
@@ -168,11 +168,6 @@
           },
           'includes': [ '../build/java_apk.gypi' ],
         },  # end of target 'remoting_test_apk'
-      ], # end of 'targets'
-    }],  # 'OS=="android"'
-
-    ['OS=="android"', {
-      'targets': [
         {
           'target_name': 'remoting_unittests_apk',
           'type': 'none',
@@ -183,8 +178,8 @@
             'test_suite_name': 'remoting_unittests',
           },
           'includes': [ '../build/apk_test.gypi' ],
-        },
-      ],
+        },  # end of target 'remoting_unittests_apk'
+      ],  # end of 'targets'
     }],  # 'OS=="android"
   ],  # end of 'conditions'
 }
