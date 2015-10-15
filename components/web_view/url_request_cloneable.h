@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/time/time.h"
 #include "mojo/services/network/public/interfaces/url_loader.mojom.h"
 #include "url/gurl.h"
 
@@ -28,6 +29,11 @@ class URLRequestCloneable {
   // Creates a new URLRequest.
   mojo::URLRequestPtr Clone() const;
 
+  base::TimeTicks originating_time() const { return originating_time_; }
+  void set_originating_time(base::TimeTicks value) {
+    originating_time_ = value;
+  }
+
  private:
   // All of these are straight from mojo::URLRequest.
   mojo::String url_;
@@ -46,6 +52,8 @@ class URLRequestCloneable {
   // this data straight out of the data pipes, and then serve it any time that
   // AsURLRequest() is called.
   std::vector<std::string> body_;
+
+  base::TimeTicks originating_time_;
 
   DISALLOW_COPY_AND_ASSIGN(URLRequestCloneable);
 };

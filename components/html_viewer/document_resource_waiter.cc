@@ -126,6 +126,7 @@ void DocumentResourceWaiter::OnConnect(
     uint32_t view_id,
     ViewConnectType view_connect_type,
     mojo::Array<web_view::mojom::FrameDataPtr> frame_data,
+    int64_t navigation_start_time_ticks,
     const OnConnectCallback& callback) {
   DCHECK(frame_data_.is_null());
   change_id_ = change_id;
@@ -133,6 +134,8 @@ void DocumentResourceWaiter::OnConnect(
   view_connect_type_ = view_connect_type;
   frame_ = frame.Pass();
   frame_data_ = frame_data.Pass();
+  navigation_start_time_ =
+      base::TimeTicks::FromInternalValue(navigation_start_time_ticks);
   on_connect_callback_ = callback;
   CHECK(frame_data_.size() > 0u);
   frame_client_request_ = frame_client_binding_.Unbind();

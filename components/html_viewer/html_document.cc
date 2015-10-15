@@ -10,6 +10,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "components/html_viewer/blink_url_request_type_converters.h"
 #include "components/html_viewer/devtools_agent_impl.h"
 #include "components/html_viewer/document_resource_waiter.h"
@@ -160,6 +161,8 @@ void HTMLDocument::Load() {
   extra_data->synthetic_response =
       resource_waiter_->ReleaseURLResponse().Pass();
 
+  base::TimeTicks navigation_start_time =
+      resource_waiter_->navigation_start_time();
   frame_ = HTMLFrameTreeManager::CreateFrameAndAttachToTree(
       global_state_, view, resource_waiter_.Pass(), this);
 
@@ -185,7 +188,7 @@ void HTMLDocument::Load() {
   web_request.setURL(url);
   web_request.setExtraData(extra_data.release());
 
-  frame_->LoadRequest(web_request);
+  frame_->LoadRequest(web_request, navigation_start_time);
 }
 
 HTMLDocument::BeforeLoadCache* HTMLDocument::GetBeforeLoadCache() {

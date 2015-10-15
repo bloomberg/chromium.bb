@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
+#include "base/time/time.h"
 #include "mojo/services/network/public/interfaces/url_loader.mojom.h"
 #include "url/gurl.h"
 
@@ -35,6 +36,10 @@ class PendingWebViewLoad {
 
   const GURL& pending_url() const { return pending_url_; }
 
+  base::TimeTicks navigation_start_time() const {
+    return navigation_start_time_;
+  }
+
  private:
   void OnGotContentHandlerID();
 
@@ -44,6 +49,8 @@ class PendingWebViewLoad {
   bool is_content_handler_id_valid_;
 
   scoped_ptr<FrameConnection> frame_connection_;
+
+  base::TimeTicks navigation_start_time_;
 
   DISALLOW_COPY_AND_ASSIGN(PendingWebViewLoad);
 };

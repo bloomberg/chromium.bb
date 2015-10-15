@@ -15,7 +15,8 @@ FrameTree::FrameTree(uint32_t root_app_id,
                      FrameTreeDelegate* delegate,
                      mojom::FrameClient* root_client,
                      scoped_ptr<FrameUserData> user_data,
-                     const Frame::ClientPropertyMap& client_properties)
+                     const Frame::ClientPropertyMap& client_properties,
+                     base::TimeTicks navigation_start_time)
     : view_(view),
       delegate_(delegate),
       root_(new Frame(this,
@@ -28,7 +29,7 @@ FrameTree::FrameTree(uint32_t root_app_id,
                       client_properties)),
       progress_(0.f),
       change_id_(1u) {
-  root_->Init(nullptr, view_tree_client.Pass(), nullptr);
+  root_->Init(nullptr, view_tree_client.Pass(), nullptr, navigation_start_time);
 }
 
 FrameTree::~FrameTree() {
@@ -54,7 +55,7 @@ Frame* FrameTree::CreateChildFrame(
   Frame* frame =
       new Frame(this, frame_view, frame_id, app_id, ViewOwnership::OWNS_VIEW,
                 raw_client, user_data.Pass(), client_properties);
-  frame->Init(parent, nullptr, frame_request.Pass());
+  frame->Init(parent, nullptr, frame_request.Pass(), base::TimeTicks());
   return frame;
 }
 

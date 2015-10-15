@@ -7,14 +7,20 @@
 namespace web_view {
 
 NavigationEntry::NavigationEntry(mojo::URLRequestPtr original_request)
-    : url_request_(original_request.Pass()) {}
+    : url_request_(original_request.Pass()) {
+  if (url_request_.originating_time().is_null())
+    url_request_.set_originating_time(base::TimeTicks::Now());
+}
 
 NavigationEntry::NavigationEntry(const GURL& raw_url)
     : url_request_(raw_url) {}
 
 NavigationEntry::~NavigationEntry() {}
 
-mojo::URLRequestPtr NavigationEntry::BuildURLRequest() const {
+mojo::URLRequestPtr NavigationEntry::BuildURLRequest(
+    bool update_originating_time) {
+  if (update_originating_time)
+    url_request_.set_originating_time(base::TimeTicks::Now());
   return url_request_.Clone();
 }
 

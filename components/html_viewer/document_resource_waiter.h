@@ -6,6 +6,7 @@
 #define COMPONENTS_HTML_VIEWER_DOCUMENT_RESOURCE_WAITER_H_
 
 #include "base/basictypes.h"
+#include "base/time/time.h"
 #include "components/html_viewer/html_frame_tree_manager_observer.h"
 #include "components/mus/public/cpp/view_observer.h"
 #include "components/web_view/public/interfaces/frame.mojom.h"
@@ -51,6 +52,10 @@ class DocumentResourceWaiter : public web_view::mojom::FrameClient,
   // See class description.
   bool is_ready() const { return is_ready_; }
 
+  base::TimeTicks navigation_start_time() const {
+    return navigation_start_time_;
+  }
+
   void SetRoot(mus::View* root);
   mus::View* root() { return root_; }
 
@@ -66,6 +71,7 @@ class DocumentResourceWaiter : public web_view::mojom::FrameClient,
                  uint32_t view_id,
                  web_view::mojom::ViewConnectType view_connect_type,
                  mojo::Array<web_view::mojom::FrameDataPtr> frame_data,
+                 int64_t navigation_start_time_ticks,
                  const OnConnectCallback& callback) override;
   void OnFrameAdded(uint32_t change_id,
                     web_view::mojom::FrameDataPtr frame_data) override;
@@ -111,6 +117,7 @@ class DocumentResourceWaiter : public web_view::mojom::FrameClient,
   mojo::Array<web_view::mojom::FrameDataPtr> frame_data_;
   uint32_t change_id_;
   uint32_t view_id_;
+  base::TimeTicks navigation_start_time_;
   web_view::mojom::ViewConnectType view_connect_type_;
   OnConnectCallback on_connect_callback_;
 

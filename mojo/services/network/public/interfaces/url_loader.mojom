@@ -35,6 +35,9 @@ struct URLRequest {
   // servers to also not satisfy the request from their cache.  This has the
   // effect of forcing a full end-to-end fetch.
   bool bypass_cache = false;
+
+  // The time when this request originated. 0 indicates that it is not recorded.
+  int64 originating_time_ticks = 0;
 };
 
 struct URLResponse {

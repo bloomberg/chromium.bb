@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_WEB_VIEW_FRAME_TREE_H_
 #define COMPONENTS_WEB_VIEW_FRAME_TREE_H_
 
+#include "base/time/time.h"
 #include "components/mus/public/interfaces/view_tree.mojom.h"
 #include "components/web_view/frame.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/array.h"
@@ -41,7 +42,8 @@ class FrameTree {
             FrameTreeDelegate* delegate,
             mojom::FrameClient* root_client,
             scoped_ptr<FrameUserData> user_data,
-            const Frame::ClientPropertyMap& client_properties);
+            const Frame::ClientPropertyMap& client_properties,
+            base::TimeTicks navigation_start_time);
   ~FrameTree();
 
   const Frame* root() const { return root_; }

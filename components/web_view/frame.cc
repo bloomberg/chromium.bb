@@ -96,7 +96,8 @@ Frame::~Frame() {
 
 void Frame::Init(Frame* parent,
                  mojo::ViewTreeClientPtr view_tree_client,
-                 mojo::InterfaceRequest<mojom::Frame> frame_request) {
+                 mojo::InterfaceRequest<mojom::Frame> frame_request,
+                 base::TimeTicks navigation_start_time) {
   {
     // Set the FrameClient to null so that we don't notify the client of the
     // add before OnConnect().
@@ -110,7 +111,7 @@ void Frame::Init(Frame* parent,
                                      ? ClientType::NEW_CHILD_FRAME
                                      : ClientType::EXISTING_FRAME_NEW_APP;
   InitClient(client_type, nullptr, view_tree_client.Pass(),
-             frame_request.Pass());
+             frame_request.Pass(), navigation_start_time);
 
   tree_->delegate_->DidCreateFrame(this);
 
@@ -190,7 +191,8 @@ void Frame::StopHighlightingFindResults() {
 void Frame::InitClient(ClientType client_type,
                        scoped_ptr<FrameUserDataAndBinding> data_and_binding,
                        mojo::ViewTreeClientPtr view_tree_client,
-                       mojo::InterfaceRequest<mojom::Frame> frame_request) {
+                       mojo::InterfaceRequest<mojom::Frame> frame_request,
+                       base::TimeTicks navigation_start_time) {
   if (client_type == ClientType::EXISTING_FRAME_NEW_APP &&
       view_tree_client.get()) {
     embedded_connection_id_ = kInvalidConnectionId;
@@ -210,6 +212,7 @@ void Frame::InitClient(ClientType client_type,
     frame_client_->OnConnect(
         nullptr, tree_->change_id(), id_, mojom::VIEW_CONNECT_TYPE_USE_NEW,
         mojo::Array<mojom::FrameDataPtr>(),
+        navigation_start_time.ToInternalValue(),
         base::Bind(&OnConnectAck, base::Passed(&data_and_binding)));
   } else {
     std::vector<const Frame*> frames;
@@ -229,7 +232,7 @@ void Frame::InitClient(ClientType client_type,
         client_type == ClientType::EXISTING_FRAME_SAME_APP
             ? mojom::VIEW_CONNECT_TYPE_USE_EXISTING
             : mojom::VIEW_CONNECT_TYPE_USE_NEW,
-        array.Pass(),
+        array.Pass(), navigation_start_time.ToInternalValue(),
         base::Bind(&OnConnectAck, base::Passed(&data_and_binding)));
     tree_->delegate_->DidStartNavigation(this);
 
@@ -248,7 +251,8 @@ void Frame::OnConnectAck(scoped_ptr<FrameUserDataAndBinding> data_and_binding) {
 void Frame::ChangeClient(mojom::FrameClient* frame_client,
                          scoped_ptr<FrameUserData> user_data,
                          mojo::ViewTreeClientPtr view_tree_client,
-                         uint32_t app_id) {
+                         uint32_t app_id,
+                         base::TimeTicks navigation_start_time) {
   while (!children_.empty())
     delete children_[0];
 
@@ -273,7 +277,7 @@ void Frame::ChangeClient(mojom::FrameClient* frame_client,
   app_id_ = app_id;
 
   InitClient(client_type, data_and_binding.Pass(), view_tree_client.Pass(),
-             nullptr);
+             nullptr, navigation_start_time);
 }
 
 void Frame::OnEmbedAck(bool success, mus::ConnectionSpecificId connection_id) {
@@ -286,11 +290,13 @@ void Frame::OnEmbedAck(bool success, mus::ConnectionSpecificId connection_id) {
 void Frame::OnWillNavigateAck(mojom::FrameClient* frame_client,
                               scoped_ptr<FrameUserData> user_data,
                               mojo::ViewTreeClientPtr view_tree_client,
-                              uint32 app_id) {
+                              uint32 app_id,
+                              base::TimeTicks navigation_start_time) {
   DCHECK(waiting_for_on_will_navigate_ack_);
   DVLOG(2) << "Frame::OnWillNavigateAck id=" << id_;
   waiting_for_on_will_navigate_ack_ = false;
-  ChangeClient(frame_client, user_data.Pass(), view_tree_client.Pass(), app_id);
+  ChangeClient(frame_client, user_data.Pass(), view_tree_client.Pass(), app_id,
+               navigation_start_time);
   if (pending_navigate_.get())
     StartNavigate(pending_navigate_.Pass());
 }
@@ -353,13 +359,16 @@ void Frame::StartNavigate(mojo::URLRequestPtr request) {
   DVLOG(2) << "Frame::StartNavigate id=" << id_ << " url=" << request->url;
 
   const GURL requested_url(request->url);
+  base::TimeTicks navigation_start_time =
+      base::TimeTicks::FromInternalValue(request->originating_time_ticks);
   tree_->delegate_->CanNavigateFrame(
-      this, request.Pass(),
-      base::Bind(&Frame::OnCanNavigateFrame,
-                 navigate_weak_ptr_factory_.GetWeakPtr(), requested_url));
+      this, request.Pass(), base::Bind(&Frame::OnCanNavigateFrame,
+                                       navigate_weak_ptr_factory_.GetWeakPtr(),
+                                       requested_url, navigation_start_time));
 }
 
 void Frame::OnCanNavigateFrame(const GURL& url,
+                               base::TimeTicks navigation_start_time,
                                uint32_t app_id,
                                mojom::FrameClient* frame_client,
                                scoped_ptr<FrameUserData> user_data,
@@ -372,14 +381,17 @@ void Frame::OnCanNavigateFrame(const GURL& url,
     // and ends up reusing it).
     DCHECK(!view_tree_client.get());
     ChangeClient(frame_client, user_data.Pass(), view_tree_client.Pass(),
-                 app_id);
+                 app_id, navigation_start_time);
   } else {
     waiting_for_on_will_navigate_ack_ = true;
     DCHECK(view_tree_client.get());
     // TODO(sky): url isn't correct here, it should be a security origin.
-    frame_client_->OnWillNavigate(url.spec(), base::Bind(
-        &Frame::OnWillNavigateAck, base::Unretained(this), frame_client,
-        base::Passed(&user_data), base::Passed(&view_tree_client), app_id));
+    frame_client_->OnWillNavigate(
+        url.spec(),
+        base::Bind(&Frame::OnWillNavigateAck, base::Unretained(this),
+                   frame_client, base::Passed(&user_data),
+                   base::Passed(&view_tree_client), app_id,
+                   navigation_start_time));
   }
 }
 

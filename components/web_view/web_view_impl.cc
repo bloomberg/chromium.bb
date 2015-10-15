@@ -99,7 +99,8 @@ void WebViewImpl::OnLoad(const GURL& pending_url) {
   const uint32_t content_handler_id = frame_connection->GetContentHandlerID();
   frame_tree_.reset(new FrameTree(content_handler_id, content_,
                                   view_tree_client.Pass(), this, frame_client,
-                                  frame_connection.Pass(), client_properties));
+                                  frame_connection.Pass(), client_properties,
+                                  pending_load->navigation_start_time()));
 }
 
 void WebViewImpl::PreOrderDepthFirstTraverseTree(Frame* node,

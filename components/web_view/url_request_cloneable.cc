@@ -24,7 +24,9 @@ URLRequestCloneable::URLRequestCloneable(mojo::URLRequestPtr original_request)
       auto_follow_redirects_(original_request->auto_follow_redirects),
       bypass_cache_(original_request->bypass_cache),
       original_body_null_(original_request->body.is_null()),
-      body_(original_request->body.size()) {
+      body_(original_request->body.size()),
+      originating_time_(base::TimeTicks::FromInternalValue(
+          original_request->originating_time_ticks)) {
   // TODO(erg): Maybe we can do some sort of async copy here?
   for (size_t i = 0; i < original_request->body.size(); ++i) {
     mojo::common::BlockingCopyToString(original_request->body[i].Pass(),
@@ -70,6 +72,8 @@ mojo::URLRequestPtr URLRequestCloneable::Clone() const {
       DCHECK_EQ(num_bytes, body_[i].size());
     }
   }
+
+  request->originating_time_ticks = originating_time_.ToInternalValue();
 
   return request.Pass();
 }

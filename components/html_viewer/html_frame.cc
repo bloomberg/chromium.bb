@@ -272,13 +272,15 @@ bool HTMLFrame::HasLocalDescendant() const {
   return false;
 }
 
-void HTMLFrame::LoadRequest(const blink::WebURLRequest& request) {
+void HTMLFrame::LoadRequest(const blink::WebURLRequest& request,
+                            base::TimeTicks navigation_start_time) {
   DCHECK(IsLocal());
 
   DVLOG(2) << "HTMLFrame::LoadRequest this=" << this << " id=" << id_
            << " URL=" << GURL(request.url());
 
   pending_navigation_ = false;
+  navigation_start_time_ = navigation_start_time;
   web_frame_->toWebLocalFrame()->loadRequest(request);
 }
 
@@ -395,6 +397,8 @@ blink::WebNavigationPolicy HTMLFrame::decidePolicyForNavigation(
            << " URL=" << GURL(info.urlRequest.url());
 
   mojo::URLRequestPtr url_request = mojo::URLRequest::From(info.urlRequest);
+  url_request->originating_time_ticks =
+      base::TimeTicks::Now().ToInternalValue();
   server_->RequestNavigate(
       WebNavigationPolicyToNavigationTarget(info.defaultPolicy), id_,
       url_request.Pass());
@@ -491,6 +495,13 @@ void HTMLFrame::didCommitProvisionalLoad(
   // NavigationControllerImpl::RendererDidNavigate use everything passed
   // through.
   server_->DidCommitProvisionalLoad();
+
+  if (!navigation_start_time_.is_null()) {
+    frame->dataSource()->setNavigationStartTime(
+        navigation_start_time_.ToInternalValue() /
+        static_cast<double>(base::Time::kMicrosecondsPerSecond));
+    navigation_start_time_ = base::TimeTicks();
+  }
 }
 
 void HTMLFrame::didReceiveTitle(blink::WebLocalFrame* frame,
@@ -786,6 +797,7 @@ void HTMLFrame::OnConnect(web_view::mojom::FramePtr frame,
                           uint32_t view_id,
                           web_view::mojom::ViewConnectType view_connect_type,
                           mojo::Array<web_view::mojom::FrameDataPtr> frame_data,
+                          int64_t navigation_start_time_ticks,
                           const OnConnectCallback& callback) {
   // This is called if this frame is created by way of OnCreatedFrame().
   callback.Run();

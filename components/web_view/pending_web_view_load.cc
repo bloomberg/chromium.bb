@@ -19,6 +19,8 @@ PendingWebViewLoad::~PendingWebViewLoad() {}
 void PendingWebViewLoad::Init(mojo::URLRequestPtr request) {
   DCHECK(!frame_connection_);
   pending_url_ = GURL(request->url);
+  navigation_start_time_ =
+      base::TimeTicks::FromInternalValue(request->originating_time_ticks);
   frame_connection_.reset(new FrameConnection);
   frame_connection_->Init(web_view_->app_, request.Pass(),
                           base::Bind(&PendingWebViewLoad::OnGotContentHandlerID,

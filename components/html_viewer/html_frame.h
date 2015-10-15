@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/time/time.h"
 #include "cc/layers/surface_layer.h"
 #include "components/html_viewer/html_frame_tree_manager.h"
 #include "components/html_viewer/replicated_frame_state.h"
@@ -147,7 +148,8 @@ class HTMLFrame : public blink::WebFrameClient,
   // Returns true if this or one of the frames descendants is local.
   bool HasLocalDescendant() const;
 
-  void LoadRequest(const blink::WebURLRequest& request);
+  void LoadRequest(const blink::WebURLRequest& request,
+                   base::TimeTicks navigation_start_time);
 
  protected:
   virtual ~HTMLFrame();
@@ -276,6 +278,7 @@ class HTMLFrame : public blink::WebFrameClient,
                  uint32_t view_id,
                  web_view::mojom::ViewConnectType view_connect_type,
                  mojo::Array<web_view::mojom::FrameDataPtr> frame_data,
+                 int64_t navigation_start_time_ticks,
                  const OnConnectCallback& callback) override;
   void OnFrameAdded(uint32_t change_id,
                     web_view::mojom::FrameDataPtr frame_data) override;
@@ -360,6 +363,8 @@ class HTMLFrame : public blink::WebFrameClient,
   // A navigation request has been sent to the frame server side, and we haven't
   // received response to it.
   bool pending_navigation_;
+
+  base::TimeTicks navigation_start_time_;
 
   base::WeakPtrFactory<HTMLFrame> weak_factory_;
 

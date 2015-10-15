@@ -10,6 +10,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/test_timeouts.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "components/html_viewer/public/interfaces/test_html_viewer.mojom.h"
 #include "components/mus/public/cpp/tests/view_manager_test_base.h"
@@ -226,10 +227,10 @@ class HTMLFrameTest : public ViewManagerTestBase {
     FrameConnection* result = frame_connection.get();
     FrameClient* frame_client = frame_connection->frame_client();
     ViewTreeClientPtr tree_client = frame_connection->GetViewTreeClient();
-    frame_tree_.reset(
-        new FrameTree(result->GetContentHandlerID(), view, tree_client.Pass(),
-                      frame_tree_delegate_.get(), frame_client,
-                      frame_connection.Pass(), Frame::ClientPropertyMap()));
+    frame_tree_.reset(new FrameTree(
+        result->GetContentHandlerID(), view, tree_client.Pass(),
+        frame_tree_delegate_.get(), frame_client, frame_connection.Pass(),
+        Frame::ClientPropertyMap(), base::TimeTicks::Now()));
     frame_tree_delegate_->set_frame_tree(frame_tree_.get());
     return result;
   }

@@ -143,12 +143,15 @@ interface FrameClient {
   // Called once per client. |frame_data| gives the contents of the tree.
   // |view_id| is the id of the view the FrameClient should render to. If a
   // ViewTreeClient is asked for then |view_id| is the same id as that of the
-  // View supplied to ViewTreeClient::OnEmbed().
+  // View supplied to ViewTreeClient::OnEmbed(). |navigation_start_time_ticks|
+  // is the time when the navigation resulting in this OnConnect() call was
+  // started.
   OnConnect(Frame? frame,
             uint32 change_id,
             uint32 view_id,
             ViewConnectType view_connect_type,
-            array<FrameData>? frame_data) => ();
+            array<FrameData>? frame_data,
+            int64 navigation_start_time_ticks) => ();
 
   // Called when a new frame is added to the tree.
   OnFrameAdded(uint32 change_id, FrameData frame_data);

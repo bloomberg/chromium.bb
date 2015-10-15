@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/time/time.h"
 #include "components/mus/public/cpp/types.h"
 #include "components/mus/public/cpp/view_observer.h"
 #include "components/web_view/public/interfaces/frame.mojom.h"
@@ -68,7 +69,8 @@ class Frame : public mus::ViewObserver, public mojom::Frame {
 
   void Init(Frame* parent,
             mojo::ViewTreeClientPtr view_tree_client,
-            mojo::InterfaceRequest<mojom::Frame> frame_request);
+            mojo::InterfaceRequest<mojom::Frame> frame_request,
+            base::TimeTicks navigation_start_time);
 
   // Walks the View tree starting at |view| going up returning the first
   // Frame that is associated with |view|. For example, if |view|
@@ -158,7 +160,8 @@ class Frame : public mus::ViewObserver, public mojom::Frame {
   void InitClient(ClientType client_type,
                   scoped_ptr<FrameUserDataAndBinding> data_and_binding,
                   mojo::ViewTreeClientPtr view_tree_client,
-                  mojo::InterfaceRequest<mojom::Frame> frame_request);
+                  mojo::InterfaceRequest<mojom::Frame> frame_request,
+                  base::TimeTicks navigation_start_time);
 
   // Callback from OnConnect(). This does nothing (other than destroying
   // |data_and_binding|). See InitClient() for details as to why destruction of
@@ -173,14 +176,16 @@ class Frame : public mus::ViewObserver, public mojom::Frame {
   void OnWillNavigateAck(mojom::FrameClient* frame_client,
                          scoped_ptr<FrameUserData> user_data,
                          mojo::ViewTreeClientPtr view_tree_client,
-                         uint32 app_id);
+                         uint32 app_id,
+                         base::TimeTicks navigation_start_time);
 
   // Completes a navigation request; swapping the existing FrameClient to the
   // supplied arguments.
   void ChangeClient(mojom::FrameClient* frame_client,
                     scoped_ptr<FrameUserData> user_data,
                     mojo::ViewTreeClientPtr view_tree_client,
-                    uint32 app_id);
+                    uint32 app_id,
+                    base::TimeTicks navigation_start_time);
 
   void SetView(mus::View* view);
 
@@ -196,6 +201,7 @@ class Frame : public mus::ViewObserver, public mojom::Frame {
   // no View the navigation waits until the View is available.
   void StartNavigate(mojo::URLRequestPtr request);
   void OnCanNavigateFrame(const GURL& url,
+                          base::TimeTicks navigation_start_time,
                           uint32_t app_id,
                           mojom::FrameClient* frame_client,
                           scoped_ptr<FrameUserData> user_data,

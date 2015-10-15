@@ -75,7 +75,7 @@ void NavigationController::GoBack() {
 
   pending_entry_index_ = current_index - 1;
   // TODO(erg): Transition type handled here.
-  NavigateToPendingEntry(ReloadType::NO_RELOAD);
+  NavigateToPendingEntry(ReloadType::NO_RELOAD, true);
 }
 
 void NavigationController::GoForward() {
@@ -93,17 +93,19 @@ void NavigationController::GoForward() {
 
   pending_entry_index_ = current_index + 1;
   // TODO(erg): Transition type handled here.
-  NavigateToPendingEntry(ReloadType::NO_RELOAD);
+  NavigateToPendingEntry(ReloadType::NO_RELOAD, true);
 }
 
 void NavigationController::LoadURL(mojo::URLRequestPtr request) {
   // TODO(erg): This mimics part of NavigationControllerImpl::LoadURL(), minus
   // all the error checking.
   SetPendingEntry(make_scoped_ptr(new NavigationEntry(request.Pass())));
-  NavigateToPendingEntry(ReloadType::NO_RELOAD);
+  NavigateToPendingEntry(ReloadType::NO_RELOAD, false);
 }
 
-void NavigationController::NavigateToPendingEntry(ReloadType reload_type) {
+void NavigationController::NavigateToPendingEntry(
+    ReloadType reload_type,
+    bool update_navigation_start_time) {
   // TODO(erg): Deal with session history navigations while trying to navigate
   // to a slow-to-commit page.
 
@@ -117,7 +119,8 @@ void NavigationController::NavigateToPendingEntry(ReloadType reload_type) {
 
   // TODO(erg): Eventually, we need to deal with restoring the state of the
   // full tree. For now, we'll just shell back to the WebView.
-  delegate_->OnNavigate(pending_entry_->BuildURLRequest());
+  delegate_->OnNavigate(
+      pending_entry_->BuildURLRequest(update_navigation_start_time));
 }
 
 void NavigationController::DiscardPendingEntry(bool was_failure) {

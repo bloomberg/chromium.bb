@@ -10,6 +10,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/test_timeouts.h"
+#include "base/time/time.h"
 #include "components/mus/public/cpp/view_observer.h"
 #include "components/mus/public/cpp/view_tree_connection.h"
 #include "components/mus/public/cpp/view_tree_delegate.h"
@@ -124,12 +125,17 @@ class TestFrameClient : public mojom::FrameClient {
     return last_dispatch_load_event_frame_id_;
   }
 
+  base::TimeTicks last_navigation_start_time() const {
+    return last_navigation_start_time_;
+  }
+
   // mojom::FrameClient:
   void OnConnect(mojom::FramePtr frame,
                  uint32_t change_id,
                  uint32_t view_id,
                  mojom::ViewConnectType view_connect_type,
                  mojo::Array<mojom::FrameDataPtr> frames,
+                 int64_t navigation_start_time_ticks,
                  const OnConnectCallback& callback) override {
     connect_count_++;
     connect_frames_ = frames.Pass();
@@ -138,6 +144,9 @@ class TestFrameClient : public mojom::FrameClient {
     callback.Run();
     if (!on_connect_callback_.is_null())
       on_connect_callback_.Run();
+
+    last_navigation_start_time_ =
+        base::TimeTicks::FromInternalValue(navigation_start_time_ticks);
   }
   void OnFrameAdded(uint32_t change_id, mojom::FrameDataPtr frame) override {
     adds_.push_back(frame.Pass());
@@ -196,6 +205,7 @@ class TestFrameClient : public mojom::FrameClient {
   base::Closure on_dispatch_load_event_callback_;
   LoadingStateChangedNotification last_loading_state_changed_notification_;
   uint32_t last_dispatch_load_event_frame_id_;
+  base::TimeTicks last_navigation_start_time_;
 
   DISALLOW_COPY_AND_ASSIGN(TestFrameClient);
 };
@@ -292,13 +302,20 @@ class FrameTest : public mojo::test::ApplicationTestBase,
   FrameTree* frame_tree() { return frame_tree_.get(); }
   ViewAndFrame* root_view_and_frame() { return root_view_and_frame_.get(); }
 
-  scoped_ptr<ViewAndFrame> NavigateFrame(ViewAndFrame* view_and_frame) {
+  scoped_ptr<ViewAndFrame> NavigateFrameWithStartTime(
+      ViewAndFrame* view_and_frame,
+      base::TimeTicks navigation_start_time) {
     mojo::URLRequestPtr request(mojo::URLRequest::New());
     request->url = mojo::String::From(application_impl()->url());
+    request->originating_time_ticks = navigation_start_time.ToInternalValue();
     view_and_frame->server_frame()->RequestNavigate(
         mojom::NAVIGATION_TARGET_TYPE_EXISTING_FRAME,
         view_and_frame->view()->id(), request.Pass());
     return WaitForViewAndFrame();
+  }
+
+  scoped_ptr<ViewAndFrame> NavigateFrame(ViewAndFrame* view_and_frame) {
+    return NavigateFrameWithStartTime(view_and_frame, base::TimeTicks());
   }
 
   // Creates a new shared frame as a child of |parent|.
@@ -366,10 +383,10 @@ class FrameTest : public mojo::test::ApplicationTestBase,
         frame_connection->GetViewTreeClient();
     mus::View* frame_root_view = window_manager()->CreateView();
     window_manager()->GetRoot()->AddChild(frame_root_view);
-    frame_tree_.reset(
-        new FrameTree(0u, frame_root_view, view_tree_client.Pass(),
-                      frame_tree_delegate_.get(), frame_client,
-                      frame_connection.Pass(), Frame::ClientPropertyMap()));
+    frame_tree_.reset(new FrameTree(
+        0u, frame_root_view, view_tree_client.Pass(),
+        frame_tree_delegate_.get(), frame_client, frame_connection.Pass(),
+        Frame::ClientPropertyMap(), base::TimeTicks::Now()));
     root_view_and_frame_ = WaitForViewAndFrame();
   }
 
@@ -535,4 +552,20 @@ TEST_F(FrameTest, NotifyRemoteParentWithLoadEvent) {
                           ->last_dispatch_load_event_frame_id();
   EXPECT_EQ(child_frame_id, frame_id);
 }
+
+TEST_F(FrameTest, PassAlongNavigationStartTime) {
+  scoped_ptr<ViewAndFrame> child_view_and_frame(
+      CreateChildViewAndFrame(root_view_and_frame()));
+  ASSERT_TRUE(child_view_and_frame);
+
+  base::TimeTicks navigation_start_time = base::TimeTicks::FromInternalValue(1);
+  scoped_ptr<ViewAndFrame> navigated_child_view_and_frame =
+      NavigateFrameWithStartTime(child_view_and_frame.get(),
+                                 navigation_start_time)
+          .Pass();
+  EXPECT_EQ(navigation_start_time,
+            navigated_child_view_and_frame->test_frame_client()
+                ->last_navigation_start_time());
+}
+
 }  // namespace web_view

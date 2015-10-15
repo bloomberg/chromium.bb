@@ -21,7 +21,7 @@ class NavigationEntry {
 
   // Builds a copy of the URLRequest that generated this navigation. This
   // method is heavyweight as it clones a few mojo pipes.
-  mojo::URLRequestPtr BuildURLRequest() const;
+  mojo::URLRequestPtr BuildURLRequest(bool update_originating_time);
 
  private:
   // TODO(erg): This is not enough information to regenerate the state of the

@@ -7,6 +7,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/test_timeouts.h"
+#include "base/time/time.h"
 #include "components/mus/public/cpp/tests/view_manager_test_base.h"
 #include "components/mus/public/cpp/view.h"
 #include "components/mus/public/cpp/view_tree_connection.h"
@@ -102,9 +103,10 @@ TEST_F(AXProviderTest, HelloWorld) {
 
   web_view::mojom::FrameClientPtr frame_client;
   connection->ConnectToService(&frame_client);
-  frame_client->OnConnect(frame_ptr.Pass(), 1u, embed_view->id(),
-                          web_view::mojom::VIEW_CONNECT_TYPE_USE_NEW,
-                          array.Pass(), base::Closure());
+  frame_client->OnConnect(
+      frame_ptr.Pass(), 1u, embed_view->id(),
+      web_view::mojom::VIEW_CONNECT_TYPE_USE_NEW, array.Pass(),
+      base::TimeTicks::Now().ToInternalValue(), base::Closure());
 
   // Connect to the AxProvider of the HTML document and get the AxTree.
   AxProviderPtr ax_provider;

@@ -41,7 +41,8 @@ class NavigationController {
 
   void LoadURL(mojo::URLRequestPtr request);
 
-  void NavigateToPendingEntry(ReloadType reload_type);
+  void NavigateToPendingEntry(ReloadType reload_type,
+                              bool update_navigation_start_time);
 
   // Takes ownership of a pending entry, and adds it to the current list.
   //
