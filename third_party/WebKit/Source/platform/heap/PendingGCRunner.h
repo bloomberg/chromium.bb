@@ -61,7 +61,7 @@ public:
             m_nesting--;
 
         ThreadState* state = ThreadState::current();
-        state->safePoint(m_nesting ? ThreadState::HeapPointersOnStack : ThreadState::NoHeapPointersOnStack);
+        state->safePoint(m_nesting ? BlinkGC::HeapPointersOnStack : BlinkGC::NoHeapPointersOnStack);
     }
 
 private:

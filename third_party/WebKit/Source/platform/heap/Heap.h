@@ -205,7 +205,7 @@ public:
         NumberOfGCReason,
     };
     static const char* gcReasonString(GCReason);
-    static void collectGarbage(ThreadState::StackState, ThreadState::GCType, GCReason);
+    static void collectGarbage(BlinkGC::StackState, BlinkGC::GCType, GCReason);
     static void collectGarbageForTerminatingThread(ThreadState*);
     static void collectAllGarbage();
 
@@ -215,7 +215,7 @@ public:
     static void setForcePreciseGCForTesting();
 
     static void preGC();
-    static void postGC(ThreadState::GCType);
+    static void postGC(BlinkGC::GCType);
 
     // Conservatively checks whether an address is a pointer in any of the
     // thread heaps.  If so marks the object pointed to as live.
@@ -411,17 +411,17 @@ inline int Heap::heapIndexForObjectSize(size_t size)
 {
     if (size < 64) {
         if (size < 32)
-            return ThreadState::NormalPage1HeapIndex;
-        return ThreadState::NormalPage2HeapIndex;
+            return BlinkGC::NormalPage1HeapIndex;
+        return BlinkGC::NormalPage2HeapIndex;
     }
     if (size < 128)
-        return ThreadState::NormalPage3HeapIndex;
-    return ThreadState::NormalPage4HeapIndex;
+        return BlinkGC::NormalPage3HeapIndex;
+    return BlinkGC::NormalPage4HeapIndex;
 }
 
 inline bool Heap::isNormalHeapIndex(int index)
 {
-    return index >= ThreadState::NormalPage1HeapIndex && index <= ThreadState::NormalPage4HeapIndex;
+    return index >= BlinkGC::NormalPage1HeapIndex && index <= BlinkGC::NormalPage4HeapIndex;
 }
 
 #define DECLARE_EAGER_FINALIZATION_OPERATOR_NEW() \
@@ -432,7 +432,7 @@ public:                                           \
         return allocateObject(size, true);        \
     }
 
-#define IS_EAGERLY_FINALIZED() (pageFromObject(this)->heap()->heapIndex() == ThreadState::EagerSweepHeapIndex)
+#define IS_EAGERLY_FINALIZED() (pageFromObject(this)->heap()->heapIndex() == BlinkGC::EagerSweepHeapIndex)
 #if ENABLE(ASSERT) && ENABLE(OILPAN)
 class VerifyEagerFinalization {
 public:
@@ -467,7 +467,7 @@ public:                                                \
 inline Address Heap::allocateOnHeapIndex(ThreadState* state, size_t size, int heapIndex, size_t gcInfoIndex)
 {
     ASSERT(state->isAllocationAllowed());
-    ASSERT(heapIndex != ThreadState::LargeObjectHeapIndex);
+    ASSERT(heapIndex != BlinkGC::LargeObjectHeapIndex);
     NormalPageHeap* heap = static_cast<NormalPageHeap*>(state->heap(heapIndex));
     return heap->allocateObject(allocationSizeFromSize(size), gcInfoIndex);
 }
@@ -476,7 +476,7 @@ template<typename T>
 Address Heap::allocate(size_t size, bool eagerlySweep)
 {
     ThreadState* state = ThreadStateFor<ThreadingTrait<T>::Affinity>::state();
-    return Heap::allocateOnHeapIndex(state, size, eagerlySweep ? ThreadState::EagerSweepHeapIndex : Heap::heapIndexForObjectSize(size), GCInfoTrait<T>::index());
+    return Heap::allocateOnHeapIndex(state, size, eagerlySweep ? BlinkGC::EagerSweepHeapIndex : Heap::heapIndexForObjectSize(size), GCInfoTrait<T>::index());
 }
 
 template<typename T>
@@ -498,7 +498,7 @@ Address Heap::reallocate(void* previous, size_t size)
     int heapIndex = page->heap()->heapIndex();
     // Recompute the effective heap index if previous allocation
     // was on the normal heaps or a large object.
-    if (isNormalHeapIndex(heapIndex) || heapIndex == ThreadState::LargeObjectHeapIndex)
+    if (isNormalHeapIndex(heapIndex) || heapIndex == BlinkGC::LargeObjectHeapIndex)
         heapIndex = heapIndexForObjectSize(size);
 
     // TODO(haraken): We don't support reallocate() for finalizable objects.

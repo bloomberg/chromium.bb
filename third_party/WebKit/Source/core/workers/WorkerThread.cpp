@@ -365,7 +365,7 @@ void WorkerThread::performShutdownTask()
 void WorkerThread::terminate()
 {
     // Prevent the deadlock between GC and an attempt to terminate a thread.
-    SafePointScope safePointScope(ThreadState::HeapPointersOnStack);
+    SafePointScope safePointScope(BlinkGC::HeapPointersOnStack);
     terminateInternal();
 }
 
@@ -525,7 +525,7 @@ WorkerThread::TaskQueueResult WorkerThread::runDebuggerTask(WaitMode waitMode)
     {
         if (waitMode == DontWaitForTask)
             absoluteTime = 0.0;
-        SafePointScope safePointScope(ThreadState::NoHeapPointersOnStack);
+        SafePointScope safePointScope(BlinkGC::NoHeapPointersOnStack);
         task = m_debuggerTaskQueue->waitWithTimeout(result, absoluteTime);
     }
 

@@ -41,7 +41,7 @@ WebThreadSupportingGC::~WebThreadSupportingGC()
 {
     if (ThreadState::current() && m_owningThread) {
         // WebThread's destructor blocks until all the tasks are processed.
-        SafePointScope scope(ThreadState::HeapPointersOnStack);
+        SafePointScope scope(BlinkGC::HeapPointersOnStack);
         m_owningThread.clear();
     }
 }

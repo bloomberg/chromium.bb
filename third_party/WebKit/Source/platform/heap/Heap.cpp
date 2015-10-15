@@ -81,12 +81,12 @@ private:
 
 class GCScope final {
 public:
-    GCScope(ThreadState* state, ThreadState::StackState stackState, ThreadState::GCType gcType)
+    GCScope(ThreadState* state, BlinkGC::StackState stackState, BlinkGC::GCType gcType)
         : m_state(state)
         , m_gcForbiddenScope(state)
         // See collectGarbageForTerminatingThread() comment on why a
         // safepoint scope isn't entered for its GCScope.
-        , m_safePointScope(stackState, gcType != ThreadState::ThreadTerminationGC ? state : nullptr)
+        , m_safePointScope(stackState, gcType != BlinkGC::ThreadTerminationGC ? state : nullptr)
         , m_gcType(gcType)
         , m_parkedAllThreads(false)
     {
@@ -100,18 +100,18 @@ public:
         // TODO(haraken): In an unlikely coincidence that two threads decide
         // to collect garbage at the same time, avoid doing two GCs in
         // a row.
-        if (LIKELY(gcType != ThreadState::ThreadTerminationGC && ThreadState::stopThreads()))
+        if (LIKELY(gcType != BlinkGC::ThreadTerminationGC && ThreadState::stopThreads()))
             m_parkedAllThreads = true;
 
         switch (gcType) {
-        case ThreadState::GCWithSweep:
-        case ThreadState::GCWithoutSweep:
+        case BlinkGC::GCWithSweep:
+        case BlinkGC::GCWithoutSweep:
             m_visitor = adoptPtr(new MarkingVisitor<Visitor::GlobalMarking>());
             break;
-        case ThreadState::TakeSnapshot:
+        case BlinkGC::TakeSnapshot:
             m_visitor = adoptPtr(new MarkingVisitor<Visitor::SnapshotMarking>());
             break;
-        case ThreadState::ThreadTerminationGC:
+        case BlinkGC::ThreadTerminationGC:
             m_visitor = adoptPtr(new MarkingVisitor<Visitor::ThreadLocalMarking>());
             break;
         default:
@@ -129,7 +129,7 @@ public:
     {
         // Only cleanup if we parked all threads in which case the GC happened
         // and we need to resume the other threads.
-        if (LIKELY(m_gcType != ThreadState::ThreadTerminationGC && m_parkedAllThreads))
+        if (LIKELY(m_gcType != BlinkGC::ThreadTerminationGC && m_parkedAllThreads))
             ThreadState::resumeThreads();
     }
 
@@ -141,7 +141,7 @@ private:
     // to be in a GC forbidden scope when doing so.
     GCForbiddenScope m_gcForbiddenScope;
     SafePointScope m_safePointScope;
-    ThreadState::GCType m_gcType;
+    BlinkGC::GCType m_gcType;
     OwnPtr<Visitor> m_visitor;
     bool m_parkedAllThreads; // False if we fail to park all threads
 };
@@ -392,7 +392,7 @@ void Heap::preGC()
         state->preGC();
 }
 
-void Heap::postGC(ThreadState::GCType gcType)
+void Heap::postGC(BlinkGC::GCType gcType)
 {
     ASSERT(ThreadState::current()->isInGC());
     for (ThreadState* state : ThreadState::attachedThreads())
@@ -415,7 +415,7 @@ const char* Heap::gcReasonString(GCReason reason)
     return "<Unknown>";
 }
 
-void Heap::collectGarbage(ThreadState::StackState stackState, ThreadState::GCType gcType, GCReason reason)
+void Heap::collectGarbage(BlinkGC::StackState stackState, BlinkGC::GCType gcType, GCReason reason)
 {
     ThreadState* state = ThreadState::current();
     // Nested collectGarbage() invocations aren't supported.
@@ -432,12 +432,12 @@ void Heap::collectGarbage(ThreadState::StackState stackState, ThreadState::GCTyp
         ScriptForbiddenScope::enter();
 
     TRACE_EVENT2("blink_gc", "Heap::collectGarbage",
-        "lazySweeping", gcType == ThreadState::GCWithoutSweep,
+        "lazySweeping", gcType == BlinkGC::GCWithoutSweep,
         "gcReason", gcReasonString(reason));
     TRACE_EVENT_SCOPED_SAMPLING_STATE("blink_gc", "BlinkGC");
     double timeStamp = WTF::currentTimeMS();
 
-    if (gcType == ThreadState::TakeSnapshot)
+    if (gcType == BlinkGC::TakeSnapshot)
         BlinkGCMemoryDumpProvider::instance()->clearProcessDumpForCurrentGC();
 
     // Disallow allocation during garbage collection (but not during the
@@ -449,7 +449,7 @@ void Heap::collectGarbage(ThreadState::StackState stackState, ThreadState::GCTyp
     StackFrameDepthScope stackDepthScope;
 
     size_t totalObjectSize = Heap::allocatedObjectSize() + Heap::markedObjectSize();
-    if (gcType != ThreadState::TakeSnapshot)
+    if (gcType != BlinkGC::TakeSnapshot)
         Heap::resetHeapCounters();
 
     // 1. Trace persistent roots.
@@ -474,7 +474,7 @@ void Heap::collectGarbage(ThreadState::StackState stackState, ThreadState::GCTyp
     s_estimatedMarkingTimePerByte = totalObjectSize ? (markingTimeInMilliseconds / 1000 / totalObjectSize) : 0;
 
 #if PRINT_HEAP_STATS
-    dataLogF("Heap::collectGarbage (gcReason=%s, lazySweeping=%d, time=%.1lfms)\n", gcReasonString(reason), gcType == ThreadState::GCWithoutSweep, markingTimeInMilliseconds);
+    dataLogF("Heap::collectGarbage (gcReason=%s, lazySweeping=%d, time=%.1lfms)\n", gcReasonString(reason), gcType == BlinkGC::GCWithoutSweep, markingTimeInMilliseconds);
 #endif
 
     Platform::current()->histogramCustomCounts("BlinkGC.CollectGarbage", markingTimeInMilliseconds, 0, 10 * 1000, 50);
@@ -497,7 +497,7 @@ void Heap::collectGarbageForTerminatingThread(ThreadState* state)
         // ahead while it is running, hence the termination GC does not enter a
         // safepoint. GCScope will not enter also a safepoint scope for
         // ThreadTerminationGC.
-        GCScope gcScope(state, ThreadState::NoHeapPointersOnStack, ThreadState::ThreadTerminationGC);
+        GCScope gcScope(state, BlinkGC::NoHeapPointersOnStack, BlinkGC::ThreadTerminationGC);
 
         ThreadState::NoAllocationScope noAllocationScope(state);
 
@@ -523,7 +523,7 @@ void Heap::collectGarbageForTerminatingThread(ThreadState* state)
         postMarkingProcessing(gcScope.visitor());
         globalWeakProcessing(gcScope.visitor());
 
-        state->postGC(ThreadState::GCWithSweep);
+        state->postGC(BlinkGC::GCWithSweep);
     }
     state->preSweep();
 }
@@ -584,7 +584,7 @@ void Heap::collectAllGarbage()
     // We need to run multiple GCs to collect a chain of persistent handles.
     size_t previousLiveObjects = 0;
     for (int i = 0; i < 5; ++i) {
-        collectGarbage(ThreadState::NoHeapPointersOnStack, ThreadState::GCWithSweep, ForcedGC);
+        collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithSweep, ForcedGC);
         size_t liveObjects = Heap::markedObjectSize();
         if (liveObjects == previousLiveObjects)
             break;

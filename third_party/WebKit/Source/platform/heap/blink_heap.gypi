@@ -31,6 +31,7 @@
 {
   'variables': {
     'platform_heap_files': [
+      'BlinkGC.h',
       'BlinkGCMemoryDumpProvider.cpp',
       'BlinkGCMemoryDumpProvider.h',
       'CallbackStack.cpp',

@@ -32,6 +32,7 @@
 #define HeapPage_h
 
 #include "platform/PlatformExport.h"
+#include "platform/heap/BlinkGC.h"
 #include "platform/heap/GCInfo.h"
 #include "platform/heap/ThreadState.h"
 #include "platform/heap/Visitor.h"
@@ -395,7 +396,7 @@ public:
     virtual void makeConsistentForMutator() = 0;
 
 #if defined(ADDRESS_SANITIZER)
-    virtual void poisonObjects(ThreadState::ObjectsToPoison, ThreadState::Poisoning) = 0;
+    virtual void poisonObjects(BlinkGC::ObjectsToPoison, BlinkGC::Poisoning) = 0;
 #endif
     // Check if the given address points to an object in this
     // heap page. If so, find the start of that object and mark it
@@ -485,7 +486,7 @@ public:
     void makeConsistentForGC() override;
     void makeConsistentForMutator() override;
 #if defined(ADDRESS_SANITIZER)
-    void poisonObjects(ThreadState::ObjectsToPoison, ThreadState::Poisoning) override;
+    void poisonObjects(BlinkGC::ObjectsToPoison, BlinkGC::Poisoning) override;
 #endif
     void checkAndMarkPointer(Visitor*, Address) override;
     void markOrphaned() override;
@@ -550,7 +551,7 @@ public:
     void makeConsistentForGC() override;
     void makeConsistentForMutator() override;
 #if defined(ADDRESS_SANITIZER)
-    void poisonObjects(ThreadState::ObjectsToPoison, ThreadState::Poisoning) override;
+    void poisonObjects(BlinkGC::ObjectsToPoison, BlinkGC::Poisoning) override;
 #endif
     void checkAndMarkPointer(Visitor*, Address) override;
     void markOrphaned() override;
@@ -726,7 +727,7 @@ public:
     void prepareHeapForTermination();
     void prepareForSweep();
 #if defined(ADDRESS_SANITIZER)
-    void poisonHeap(ThreadState::ObjectsToPoison, ThreadState::Poisoning);
+    void poisonHeap(BlinkGC::ObjectsToPoison, BlinkGC::Poisoning);
 #endif
     Address lazySweep(size_t, size_t gcInfoIndex);
     void sweepUnsweptPage();

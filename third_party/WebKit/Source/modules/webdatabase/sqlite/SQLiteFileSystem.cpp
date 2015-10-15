@@ -46,7 +46,7 @@ SQLiteFileSystem::SQLiteFileSystem()
 
 int SQLiteFileSystem::openDatabase(const String& filename, sqlite3** database)
 {
-    SafePointScope scope(ThreadState::HeapPointersOnStack);
+    SafePointScope scope(BlinkGC::HeapPointersOnStack);
     return sqlite3_open_v2(filename.utf8().data(), database, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, "chromium_vfs");
 }
 

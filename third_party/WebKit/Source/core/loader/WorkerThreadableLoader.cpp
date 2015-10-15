@@ -88,7 +88,7 @@ void WorkerThreadableLoader::loadResourceSynchronously(WorkerGlobalScope& worker
 
     WebWaitableEvent* signalled;
     {
-        SafePointScope scope(ThreadState::HeapPointersOnStack);
+        SafePointScope scope(BlinkGC::HeapPointersOnStack);
         signalled = Platform::current()->waitMultipleEvents(events);
     }
     if (signalled == shutdownEvent) {

@@ -18,7 +18,7 @@ class PagePool {
 protected:
     PagePool()
     {
-        for (int i = 0; i < ThreadState::NumberOfHeaps; ++i)
+        for (int i = 0; i < BlinkGC::NumberOfHeaps; ++i)
             m_pool[i] = nullptr;
     }
 
@@ -33,7 +33,7 @@ protected:
         PoolEntry* next;
     };
 
-    PoolEntry* m_pool[ThreadState::NumberOfHeaps];
+    PoolEntry* m_pool[BlinkGC::NumberOfHeaps];
 };
 
 // Once pages have been used for one type of thread heap they will never be
@@ -51,7 +51,7 @@ public:
     PageMemory* takeFreePage(int);
 
 private:
-    Mutex m_mutex[ThreadState::NumberOfHeaps];
+    Mutex m_mutex[BlinkGC::NumberOfHeaps];
 };
 
 class OrphanedPagePool : public PagePool<BasePage> {

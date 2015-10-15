@@ -13,7 +13,7 @@ namespace blink {
 class SafePointScope final {
     WTF_MAKE_NONCOPYABLE(SafePointScope);
 public:
-    explicit SafePointScope(ThreadState::StackState stackState, ThreadState* state = ThreadState::current())
+    explicit SafePointScope(BlinkGC::StackState stackState, ThreadState* state = ThreadState::current())
         : m_state(state)
     {
         if (m_state) {
@@ -40,7 +40,7 @@ private:
 class SafePointAwareMutexLocker final {
     WTF_MAKE_NONCOPYABLE(SafePointAwareMutexLocker);
 public:
-    explicit SafePointAwareMutexLocker(MutexBase& mutex, ThreadState::StackState stackState = ThreadState::HeapPointersOnStack)
+    explicit SafePointAwareMutexLocker(MutexBase& mutex, BlinkGC::StackState stackState = BlinkGC::HeapPointersOnStack)
         : m_mutex(mutex)
         , m_locked(false)
     {

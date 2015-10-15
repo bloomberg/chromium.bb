@@ -48,7 +48,7 @@ bool BlinkGCMemoryDumpProvider::onMemoryDump(WebMemoryDumpLevelOfDetail levelOfD
         return true;
     }
 
-    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack, ThreadState::TakeSnapshot, Heap::ForcedGC);
+    Heap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::TakeSnapshot, Heap::ForcedGC);
     dumpMemoryTotals(memoryDump);
 
     // Merge all dumps collected by Heap::collectGarbage.

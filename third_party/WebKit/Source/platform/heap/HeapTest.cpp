@@ -50,12 +50,12 @@ namespace blink {
 
 static void preciselyCollectGarbage()
 {
-    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack, ThreadState::GCWithSweep, Heap::ForcedGC);
+    Heap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithSweep, Heap::ForcedGC);
 }
 
 static void conservativelyCollectGarbage()
 {
-    Heap::collectGarbage(ThreadState::HeapPointersOnStack, ThreadState::GCWithSweep, Heap::ForcedGC);
+    Heap::collectGarbage(BlinkGC::HeapPointersOnStack, BlinkGC::GCWithSweep, Heap::ForcedGC);
 }
 
 class IntWrapper : public GarbageCollectedFinalized<IntWrapper> {
@@ -242,7 +242,7 @@ namespace blink {
 
 class TestGCScope {
 public:
-    explicit TestGCScope(ThreadState::StackState state)
+    explicit TestGCScope(BlinkGC::StackState state)
         : m_state(ThreadState::current())
         , m_safePointScope(state)
         , m_parkedAllThreads(false)
@@ -261,7 +261,7 @@ public:
         // Only cleanup if we parked all threads in which case the GC happened
         // and we need to resume the other threads.
         if (LIKELY(m_parkedAllThreads)) {
-            Heap::postGC(ThreadState::GCWithSweep);
+            Heap::postGC(BlinkGC::GCWithSweep);
             ThreadState::resumeThreads();
         }
     }
@@ -468,7 +468,7 @@ protected:
             m_threads.last()->taskRunner()->postTask(FROM_HERE, new Task(threadSafeBind(threadFunc, AllowCrossThreadAccess(tester))));
         }
         while (tester->m_threadsToFinish) {
-            SafePointScope scope(ThreadState::NoHeapPointersOnStack);
+            SafePointScope scope(BlinkGC::NoHeapPointersOnStack);
             Platform::current()->yieldCurrentThread();
         }
         delete tester;
@@ -524,7 +524,7 @@ protected:
         longLivingPersistent = createGlobalPersistent(0x2a2a2a2a);
         int gcCount = 0;
         while (!done()) {
-            ThreadState::current()->safePoint(ThreadState::NoHeapPointersOnStack);
+            ThreadState::current()->safePoint(BlinkGC::NoHeapPointersOnStack);
             {
                 Persistent<IntWrapper> wrapper;
 
@@ -535,7 +535,7 @@ protected:
                     if (!(i % 10)) {
                         globalPersistent = createGlobalPersistent(0x0ed0cabb);
                     }
-                    SafePointScope scope(ThreadState::NoHeapPointersOnStack);
+                    SafePointScope scope(BlinkGC::NoHeapPointersOnStack);
                     Platform::current()->yieldCurrentThread();
                 }
 
@@ -548,12 +548,12 @@ protected:
                 // Taking snapshot shouldn't have any bad side effect.
                 // TODO(haraken): This snapshot GC causes crashes, so disable
                 // it at the moment. Fix the crash and enable it.
-                // Heap::collectGarbage(ThreadState::NoHeapPointersOnStack, ThreadState::TakeSnapshot, Heap::ForcedGC);
+                // Heap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::TakeSnapshot, Heap::ForcedGC);
                 preciselyCollectGarbage();
                 EXPECT_EQ(wrapper->value(), 0x0bbac0de);
                 EXPECT_EQ((*globalPersistent)->value(), 0x0ed0cabb);
             }
-            SafePointScope scope(ThreadState::NoHeapPointersOnStack);
+            SafePointScope scope(BlinkGC::NoHeapPointersOnStack);
             Platform::current()->yieldCurrentThread();
         }
 
@@ -582,7 +582,7 @@ private:
 
         int gcCount = 0;
         while (!done()) {
-            ThreadState::current()->safePoint(ThreadState::NoHeapPointersOnStack);
+            ThreadState::current()->safePoint(BlinkGC::NoHeapPointersOnStack);
             {
                 Persistent<HeapHashMap<ThreadMarker, WeakMember<IntWrapper>>> weakMap = new HeapHashMap<ThreadMarker, WeakMember<IntWrapper>>;
                 PersistentHeapHashMap<ThreadMarker, WeakMember<IntWrapper>> weakMap2;
@@ -590,7 +590,7 @@ private:
                 for (int i = 0; i < numberOfAllocations; i++) {
                     weakMap->add(static_cast<unsigned>(i), IntWrapper::create(0));
                     weakMap2.add(static_cast<unsigned>(i), IntWrapper::create(0));
-                    SafePointScope scope(ThreadState::NoHeapPointersOnStack);
+                    SafePointScope scope(BlinkGC::NoHeapPointersOnStack);
                     Platform::current()->yieldCurrentThread();
                 }
 
@@ -603,12 +603,12 @@ private:
                 // Taking snapshot shouldn't have any bad side effect.
                 // TODO(haraken): This snapshot GC causes crashes, so disable
                 // it at the moment. Fix the crash and enable it.
-                // Heap::collectGarbage(ThreadState::NoHeapPointersOnStack, ThreadState::TakeSnapshot, Heap::ForcedGC);
+                // Heap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::TakeSnapshot, Heap::ForcedGC);
                 preciselyCollectGarbage();
                 EXPECT_TRUE(weakMap->isEmpty());
                 EXPECT_TRUE(weakMap2.isEmpty());
             }
-            SafePointScope scope(ThreadState::NoHeapPointersOnStack);
+            SafePointScope scope(BlinkGC::NoHeapPointersOnStack);
             Platform::current()->yieldCurrentThread();
         }
         ThreadState::detach();
@@ -779,7 +779,7 @@ public:
     void* operator new(size_t size)
     {
         ThreadState* state = ThreadState::current();
-        return Heap::allocateOnHeapIndex(state, size, ThreadState::NodeHeapIndex, GCInfoTrait<IntNode>::index());
+        return Heap::allocateOnHeapIndex(state, size, BlinkGC::NodeHeapIndex, GCInfoTrait<IntNode>::index());
     }
 
     static IntNode* create(int i)
@@ -1971,7 +1971,7 @@ TEST(HeapTest, LazySweepingPages)
     EXPECT_EQ(0, SimpleFinalizedObject::s_destructorCalls);
     for (int i = 0; i < 1000; i++)
         SimpleFinalizedObject::create();
-    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack, ThreadState::GCWithoutSweep, Heap::ForcedGC);
+    Heap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithoutSweep, Heap::ForcedGC);
     EXPECT_EQ(0, SimpleFinalizedObject::s_destructorCalls);
     for (int i = 0; i < 10000; i++)
         SimpleFinalizedObject::create();
@@ -1998,7 +1998,7 @@ TEST(HeapTest, LazySweepingLargeObjectPages)
     EXPECT_EQ(0, LargeHeapObject::s_destructorCalls);
     for (int i = 0; i < 10; i++)
         LargeHeapObject::create();
-    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack, ThreadState::GCWithoutSweep, Heap::ForcedGC);
+    Heap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithoutSweep, Heap::ForcedGC);
     EXPECT_EQ(0, LargeHeapObject::s_destructorCalls);
     for (int i = 0; i < 10; i++) {
         LargeHeapObject::create();
@@ -2007,7 +2007,7 @@ TEST(HeapTest, LazySweepingLargeObjectPages)
     LargeHeapObject::create();
     LargeHeapObject::create();
     EXPECT_EQ(10, LargeHeapObject::s_destructorCalls);
-    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack, ThreadState::GCWithoutSweep, Heap::ForcedGC);
+    Heap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithoutSweep, Heap::ForcedGC);
     EXPECT_EQ(10, LargeHeapObject::s_destructorCalls);
     preciselyCollectGarbage();
     EXPECT_EQ(22, LargeHeapObject::s_destructorCalls);
@@ -2082,7 +2082,7 @@ TEST(HeapTest, EagerlySweepingPages)
         SimpleFinalizedEagerObject::create();
     for (int i = 0; i < 100; i++)
         SimpleFinalizedObjectInstanceOfTemplate::create();
-    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack, ThreadState::GCWithoutSweep, Heap::ForcedGC);
+    Heap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithoutSweep, Heap::ForcedGC);
     EXPECT_EQ(0, SimpleFinalizedObject::s_destructorCalls);
     EXPECT_EQ(100, SimpleFinalizedEagerObject::s_destructorCalls);
     EXPECT_EQ(100, SimpleFinalizedObjectInstanceOfTemplate::s_destructorCalls);
@@ -3799,7 +3799,7 @@ TEST(HeapTest, CheckAndMarkPointer)
     // to allocate anything again. We do this by forcing a GC after doing the
     // checkAndMarkPointer tests.
     {
-        TestGCScope scope(ThreadState::HeapPointersOnStack);
+        TestGCScope scope(BlinkGC::HeapPointersOnStack);
         EXPECT_TRUE(scope.allThreadsParked()); // Fail the test if we could not park all threads.
         Heap::flushHeapDoesNotContainCache();
         for (size_t i = 0; i < objectAddresses.size(); i++) {
@@ -3818,7 +3818,7 @@ TEST(HeapTest, CheckAndMarkPointer)
     // however we don't rely on that below since we don't have any allocations.
     clearOutOldGarbage();
     {
-        TestGCScope scope(ThreadState::HeapPointersOnStack);
+        TestGCScope scope(BlinkGC::HeapPointersOnStack);
         EXPECT_TRUE(scope.allThreadsParked());
         Heap::flushHeapDoesNotContainCache();
         for (size_t i = 0; i < objectAddresses.size(); i++) {
@@ -4645,7 +4645,7 @@ public:
 
         {
             // Expect the first attempt to park the sleeping thread to fail
-            TestGCScope scope(ThreadState::NoHeapPointersOnStack);
+            TestGCScope scope(BlinkGC::NoHeapPointersOnStack);
             EXPECT_FALSE(scope.allThreadsParked());
         }
 
@@ -4655,13 +4655,13 @@ public:
         while (s_sleeperRunning) {
             // We enter the safepoint here since the sleeper thread will detach
             // causing it to GC.
-            ThreadState::current()->safePoint(ThreadState::NoHeapPointersOnStack);
+            ThreadState::current()->safePoint(BlinkGC::NoHeapPointersOnStack);
             Platform::current()->yieldCurrentThread();
         }
 
         {
             // Since the sleeper thread has detached this is the only thread.
-            TestGCScope scope(ThreadState::NoHeapPointersOnStack);
+            TestGCScope scope(BlinkGC::NoHeapPointersOnStack);
             EXPECT_TRUE(scope.allThreadsParked());
         }
     }
@@ -5375,7 +5375,7 @@ private:
             // Wait for the main thread to do two GCs without sweeping this thread
             // heap. The worker waits within a safepoint, but there is no sweeping
             // until leaving the safepoint scope.
-            SafePointScope scope(ThreadState::NoHeapPointersOnStack);
+            SafePointScope scope(BlinkGC::NoHeapPointersOnStack);
             parkWorkerThread();
         }
 
@@ -5431,7 +5431,7 @@ public:
 
         // Wait for the worker thread to sweep its heaps before checking.
         {
-            SafePointScope scope(ThreadState::NoHeapPointersOnStack);
+            SafePointScope scope(BlinkGC::NoHeapPointersOnStack);
             parkMainThread();
         }
     }
@@ -5469,7 +5469,7 @@ private:
             // scope. If the weak collection backing is marked dead
             // because of this we will not get strongification in the
             // GC we force when we continue.
-            SafePointScope scope(ThreadState::NoHeapPointersOnStack);
+            SafePointScope scope(BlinkGC::NoHeapPointersOnStack);
             parkWorkerThread();
         }
 
@@ -5660,7 +5660,7 @@ private:
         // to acquire the same global lock that the thread just got and deadlock
         // unless the global lock is recursive.
         parkWorkerThread();
-        SafePointAwareMutexLocker recursiveLocker(recursiveMutex(), ThreadState::NoHeapPointersOnStack);
+        SafePointAwareMutexLocker recursiveLocker(recursiveMutex(), BlinkGC::NoHeapPointersOnStack);
 
         // We won't get here unless the lock is recursive since the sweep done
         // in the constructor of SafePointAwareMutexLocker after
@@ -6381,7 +6381,7 @@ void workerThreadMainForCrossThreadWeakPersistentTest(DestructorLockingObject** 
     parkWorkerThread();
 
     // Step 4: Run a GC.
-    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack, ThreadState::GCWithSweep, Heap::ForcedGC);
+    Heap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithSweep, Heap::ForcedGC);
     wakeMainThread();
     parkWorkerThread();
 
@@ -6418,7 +6418,7 @@ TEST(HeapTest, CrossThreadWeakPersistent)
 
     {
         // Pretend we have no pointers on stack during the step 4.
-        SafePointScope scope(ThreadState::NoHeapPointersOnStack);
+        SafePointScope scope(BlinkGC::NoHeapPointersOnStack);
         wakeWorkerThread();
         parkMainThread();
     }

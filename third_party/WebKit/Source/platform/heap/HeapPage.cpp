@@ -314,10 +314,10 @@ void BaseHeap::prepareForSweep()
 }
 
 #if defined(ADDRESS_SANITIZER)
-void BaseHeap::poisonHeap(ThreadState::ObjectsToPoison objectsToPoison, ThreadState::Poisoning poisoning)
+void BaseHeap::poisonHeap(BlinkGC::ObjectsToPoison objectsToPoison, BlinkGC::Poisoning poisoning)
 {
     // TODO(sof): support complete poisoning of all heaps.
-    ASSERT(objectsToPoison != ThreadState::MarkedAndUnmarked || heapIndex() == ThreadState::EagerSweepHeapIndex);
+    ASSERT(objectsToPoison != BlinkGC::MarkedAndUnmarked || heapIndex() == BlinkGC::EagerSweepHeapIndex);
 
     // This method may either be called to poison (SetPoison) heap
     // object payloads prior to sweeping, or it may be called at
@@ -325,7 +325,7 @@ void BaseHeap::poisonHeap(ThreadState::ObjectsToPoison objectsToPoison, ThreadSt
     // objects remaining in the heap. Those will all be live and unmarked.
     //
     // Poisoning may be limited to unmarked objects only, or apply to all.
-    if (poisoning == ThreadState::SetPoison) {
+    if (poisoning == BlinkGC::SetPoison) {
         for (BasePage* page = m_firstUnsweptPage; page; page = page->next())
             page->poisonObjects(objectsToPoison, poisoning);
         return;
@@ -804,8 +804,8 @@ Address NormalPageHeap::outOfLineAllocate(size_t allocationSize, size_t gcInfoIn
     // 1. If this allocation is big enough, allocate a large object.
     if (allocationSize >= largeObjectSizeThreshold) {
         // TODO(sof): support eagerly finalized large objects, if ever needed.
-        RELEASE_ASSERT(heapIndex() != ThreadState::EagerSweepHeapIndex);
-        LargeObjectHeap* largeObjectHeap = static_cast<LargeObjectHeap*>(threadState()->heap(ThreadState::LargeObjectHeapIndex));
+        RELEASE_ASSERT(heapIndex() != BlinkGC::EagerSweepHeapIndex);
+        LargeObjectHeap* largeObjectHeap = static_cast<LargeObjectHeap*>(threadState()->heap(BlinkGC::LargeObjectHeapIndex));
         Address largeObject = largeObjectHeap->allocateLargeObjectPage(allocationSize, gcInfoIndex);
         ASAN_MARK_LARGE_VECTOR_CONTAINER(this, largeObject);
         return largeObject;
@@ -1337,7 +1337,7 @@ void NormalPage::makeConsistentForMutator()
 }
 
 #if defined(ADDRESS_SANITIZER)
-void NormalPage::poisonObjects(ThreadState::ObjectsToPoison objectsToPoison, ThreadState::Poisoning poisoning)
+void NormalPage::poisonObjects(BlinkGC::ObjectsToPoison objectsToPoison, BlinkGC::Poisoning poisoning)
 {
     for (Address headerAddress = payload(); headerAddress < payloadEnd();) {
         HeapObjectHeader* header = reinterpret_cast<HeapObjectHeader*>(headerAddress);
@@ -1349,8 +1349,8 @@ void NormalPage::poisonObjects(ThreadState::ObjectsToPoison objectsToPoison, Thr
             continue;
         }
         ASSERT(header->checkHeader());
-        if (objectsToPoison == ThreadState::MarkedAndUnmarked || !header->isMarked()) {
-            if (poisoning == ThreadState::SetPoison)
+        if (objectsToPoison == BlinkGC::MarkedAndUnmarked || !header->isMarked()) {
+            if (poisoning == BlinkGC::SetPoison)
                 ASAN_POISON_MEMORY_REGION(header->payload(), header->payloadSize());
             else
                 ASAN_UNPOISON_MEMORY_REGION(header->payload(), header->payloadSize());
@@ -1677,11 +1677,11 @@ void LargeObjectPage::makeConsistentForMutator()
 }
 
 #if defined(ADDRESS_SANITIZER)
-void LargeObjectPage::poisonObjects(ThreadState::ObjectsToPoison objectsToPoison, ThreadState::Poisoning poisoning)
+void LargeObjectPage::poisonObjects(BlinkGC::ObjectsToPoison objectsToPoison, BlinkGC::Poisoning poisoning)
 {
     HeapObjectHeader* header = heapObjectHeader();
-    if (objectsToPoison == ThreadState::MarkedAndUnmarked || !header->isMarked()) {
-        if (poisoning == ThreadState::SetPoison)
+    if (objectsToPoison == BlinkGC::MarkedAndUnmarked || !header->isMarked()) {
+        if (poisoning == BlinkGC::SetPoison)
             ASAN_POISON_MEMORY_REGION(header->payload(), header->payloadSize());
         else
             ASAN_UNPOISON_MEMORY_REGION(header->payload(), header->payloadSize());
