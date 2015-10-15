@@ -633,8 +633,6 @@ crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-combine-upright-va
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-combine-upright-value-all-002.html [ ImageOnlyFailure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-combine-upright-value-all-003.html [ ImageOnlyFailure ]
 
-crbug.com/543008 [ XP ] imported/csswg-test/css-writing-modes-3/vertical-alignment-vrl-026.xht [ ImageOnlyFailure ]
-
 # These CSS Writing Modes Level 3 tests pass but causes 1px diff on images, notified to the submitter.
 crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/block-flow-direction-001.xht [ ImageOnlyFailure ]
 crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/block-flow-direction-002.xht [ ImageOnlyFailure ]

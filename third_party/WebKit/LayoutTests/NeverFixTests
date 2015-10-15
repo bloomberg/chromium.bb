@@ -191,6 +191,7 @@ fast/canvas/canvas-lost-gpu-context.html [ WontFix ]
 [ XP ] imported/csswg-test/css-writing-modes-3/text-orientation-script-001m.html [ WontFix ]
 [ XP ] imported/csswg-test/css-writing-modes-3/text-orientation-script-001n.html [ WontFix ]
 [ XP ] imported/csswg-test/css-writing-modes-3/text-orientation-script-001o.html [ WontFix ]
+[ XP ] imported/csswg-test/css-writing-modes-3/vertical-alignment-vrl-026.xht [ WontFix ]
 
 # Relies on precise timing which isn't reliable on XP.
 [ XP ] imported/web-platform-tests/user-timing/test_user_timing_mark.html [ WontFix ]
