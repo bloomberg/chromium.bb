@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import fnmatch
 import functools
 import logging
 
@@ -114,7 +115,15 @@ class LocalDeviceTestRun(test_run.TestRun):
           all_fail_results[result.GetName()] = result
 
       results_names = set(r.GetName() for r in results.GetAll())
-      tests = [t for t in tests if self._GetTestName(t) not in results_names]
+
+      def has_test_result(name):
+        # When specifying a test filter, names can contain trailing wildcards.
+        # See local_device_gtest_run._ExtractTestsFromFilter()
+        if name.endswith('*'):
+          return any(fnmatch.fnmatch(n, name) for n in results_names)
+        return name in results_names
+
+      tests = [t for t in tests if not has_test_result(self._GetTestName(t))]
       tries += 1
       logging.info('FINISHED TRY #%d/%d', tries, self._env.max_tries)
       if tests:
