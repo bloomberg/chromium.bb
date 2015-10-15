@@ -269,7 +269,7 @@ STDMETHODIMP BrowserAccessibilityWin::accHitTest(LONG x_left,
 
   gfx::Point point(x_left, y_top);
   if (!GetGlobalBoundsRect().Contains(point)) {
-    // Return S_FALSE and VT_EMPTY when the outside the object's boundaries.
+    // Return S_FALSE and VT_EMPTY when outside the object's boundaries.
     child->vt = VT_EMPTY;
     return S_FALSE;
   }
@@ -2463,33 +2463,109 @@ STDMETHODIMP BrowserAccessibilityWin::get_hyperlinkIndex(
 }
 
 //
-// IAccessibleHyperlink not implemented.
+// IAccessibleHyperlink methods.
 //
 
+// Currently, only text links are supported.
 STDMETHODIMP BrowserAccessibilityWin::get_anchor(long index, VARIANT* anchor) {
-  return E_NOTIMPL;
+  if (!instance_active() || !IsHyperlink())
+    return E_FAIL;
+
+  // IA2 text links can have only one anchor, that is the text inside them.
+  if (index != 0 || !anchor)
+    return E_INVALIDARG;
+
+  BSTR hypertext = SysAllocString(TextForIAccessibleText().c_str());
+  DCHECK(hypertext);
+  anchor->vt = VT_BSTR;
+  anchor->bstrVal = hypertext;
+
+  // Returning S_FALSE is not mentioned in the IA2 Spec, but it might have been
+  // an oversight.
+  if (!SysStringLen(hypertext))
+    return S_FALSE;
+
+  return S_OK;
 }
-STDMETHODIMP
-BrowserAccessibilityWin::get_anchorTarget(long index, VARIANT* anchor_target) {
-  return E_NOTIMPL;
+
+// Currently, only text links are supported.
+STDMETHODIMP BrowserAccessibilityWin::get_anchorTarget(long index,
+                                                       VARIANT* anchor_target) {
+  if (!instance_active() || !IsHyperlink())
+    return E_FAIL;
+
+  // IA2 text links can have at most one target, that is when they represent an
+  // HTML hyperlink, i.e. an <a> element with a "href" attribute.
+  if (index != 0 || !anchor_target)
+    return E_INVALIDARG;
+
+  BSTR target;
+  if (!(ia_state() & STATE_SYSTEM_LINKED) ||
+      FAILED(GetStringAttributeAsBstr(ui::AX_ATTR_URL, &target))) {
+    target = SysAllocString(L"");
+  }
+  DCHECK(target);
+  anchor_target->vt = VT_BSTR;
+  anchor_target->bstrVal = target;
+
+  // Returning S_FALSE is not mentioned in the IA2 Spec, but it might have been
+  // an oversight.
+  if (!SysStringLen(target))
+    return S_FALSE;
+
+  return S_OK;
 }
+
 STDMETHODIMP BrowserAccessibilityWin::get_startIndex(long* index) {
-  return E_NOTIMPL;
+  if (!instance_active() || !IsHyperlink())
+    return E_FAIL;
+
+  if (!index)
+    return E_INVALIDARG;
+
+  int32 hypertext_offset = 0;
+  const auto parent = GetParent();
+  if (parent) {
+    hypertext_offset =
+        parent->ToBrowserAccessibilityWin()->GetHypertextOffsetFromChild(*this);
+  }
+  *index = static_cast<LONG>(hypertext_offset);
+  return S_OK;
 }
+
 STDMETHODIMP BrowserAccessibilityWin::get_endIndex(long* index) {
-  return E_NOTIMPL;
+  LONG start_index;
+  HRESULT hr = get_startIndex(&start_index);
+  if (hr == S_OK)
+    *index = start_index + 1;
+  return hr;
 }
+
+// This method is deprecated in the IA2 Spec.
 STDMETHODIMP BrowserAccessibilityWin::get_valid(boolean* valid) {
   return E_NOTIMPL;
 }
 
 //
-// IAccessibleAction not implemented.
+// IAccessibleAction mostly not implemented.
 //
 
 STDMETHODIMP BrowserAccessibilityWin::nActions(long* n_actions) {
-  return E_NOTIMPL;
+  if (!instance_active())
+    return E_FAIL;
+
+  if (!n_actions)
+    return E_INVALIDARG;
+
+  // Required for IAccessibleHyperlink::anchor/anchorTarget to work properly.
+  // TODO(nektar): Implement the rest of the logic required by this interface.
+  if (IsHyperlink())
+    *n_actions = 1;
+  else
+    *n_actions = 0;
+  return S_OK;
 }
+
 STDMETHODIMP BrowserAccessibilityWin::doAction(long action_index) {
   return E_NOTIMPL;
 }
@@ -2996,7 +3072,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_fontFamily(BSTR* font_family) {
 // IServiceProvider methods.
 //
 
-STDMETHODIMP BrowserAccessibilityWin::QueryService(REFGUID guidService,
+STDMETHODIMP BrowserAccessibilityWin::QueryService(REFGUID guid_service,
                                                    REFIID riid,
                                                    void** object) {
   if (!instance_active())
@@ -3008,7 +3084,7 @@ STDMETHODIMP BrowserAccessibilityWin::QueryService(REFGUID guidService,
   if (riid == IID_IAccessible2)
     BrowserAccessibilityStateImpl::GetInstance()->EnableAccessibility();
 
-  if (guidService == GUID_IAccessibleContentDocument) {
+  if (guid_service == GUID_IAccessibleContentDocument) {
     // Special Mozilla extension: return the accessible for the root document.
     // Screen readers use this to distinguish between a document loaded event
     // on the root document vs on an iframe.
@@ -3016,22 +3092,22 @@ STDMETHODIMP BrowserAccessibilityWin::QueryService(REFGUID guidService,
         IID_IAccessible2, object);
   }
 
-  if (guidService == IID_IAccessible ||
-      guidService == IID_IAccessible2 ||
-      guidService == IID_IAccessibleAction ||
-      guidService == IID_IAccessibleApplication ||
-      guidService == IID_IAccessibleHyperlink ||
-      guidService == IID_IAccessibleHypertext ||
-      guidService == IID_IAccessibleImage ||
-      guidService == IID_IAccessibleTable ||
-      guidService == IID_IAccessibleTable2 ||
-      guidService == IID_IAccessibleTableCell ||
-      guidService == IID_IAccessibleText ||
-      guidService == IID_IAccessibleValue ||
-      guidService == IID_ISimpleDOMDocument ||
-      guidService == IID_ISimpleDOMNode ||
-      guidService == IID_ISimpleDOMText ||
-      guidService == GUID_ISimpleDOM) {
+  if (guid_service == IID_IAccessible ||
+      guid_service == IID_IAccessible2 ||
+      guid_service == IID_IAccessibleAction ||
+      guid_service == IID_IAccessibleApplication ||
+      guid_service == IID_IAccessibleHyperlink ||
+      guid_service == IID_IAccessibleHypertext ||
+      guid_service == IID_IAccessibleImage ||
+      guid_service == IID_IAccessibleTable ||
+      guid_service == IID_IAccessibleTable2 ||
+      guid_service == IID_IAccessibleTableCell ||
+      guid_service == IID_IAccessibleText ||
+      guid_service == IID_IAccessibleValue ||
+      guid_service == IID_ISimpleDOMDocument ||
+      guid_service == IID_ISimpleDOMNode ||
+      guid_service == IID_ISimpleDOMText ||
+      guid_service == GUID_ISimpleDOM) {
     return QueryInterface(riid, object);
   }
 
@@ -3153,6 +3229,12 @@ HRESULT WINAPI BrowserAccessibilityWin::InternalQueryInterface(
   } else if (iid == IID_ISimpleDOMDocument) {
     if (ia_role != ROLE_SYSTEM_DOCUMENT) {
       *object = NULL;
+      return E_NOINTERFACE;
+    }
+  } else if (iid == IID_IAccessibleHyperlink) {
+    auto ax_object = reinterpret_cast<const BrowserAccessibilityWin*>(this_ptr);
+    if (!ax_object || !ax_object->IsHyperlink()) {
+      *object = nullptr;
       return E_NOINTERFACE;
     }
   }
@@ -3651,6 +3733,19 @@ void BrowserAccessibilityWin::IntAttributeToIA2(
         base::ASCIIToUTF16(ia2_attr) + L":" +
         base::IntToString16(value));
   }
+}
+
+bool BrowserAccessibilityWin::IsHyperlink() const {
+  int32 hyperlink_index = -1;
+  const auto parent = GetParent();
+  if (parent) {
+    hyperlink_index =
+        parent->ToBrowserAccessibilityWin()->GetHyperlinkIndexFromChild(*this);
+  }
+
+  if (hyperlink_index >= 0)
+    return true;
+  return false;
 }
 
 int32 BrowserAccessibilityWin::GetHyperlinkIndexFromChild(

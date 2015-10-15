@@ -523,15 +523,16 @@ BrowserAccessibilityWin
   CONTENT_EXPORT STDMETHODIMP
   get_hyperlinkIndex(long char_index, long* hyperlink_index) override;
 
-  // IAccessibleHyperlink not implemented.
+  // IAccessibleHyperlink methods.
   CONTENT_EXPORT STDMETHODIMP get_anchor(long index, VARIANT* anchor) override;
-  CONTENT_EXPORT STDMETHODIMP
-  get_anchorTarget(long index, VARIANT* anchor_target) override;
+  CONTENT_EXPORT STDMETHODIMP get_anchorTarget(long index,
+                                               VARIANT* anchor_target) override;
   CONTENT_EXPORT STDMETHODIMP get_startIndex(long* index) override;
   CONTENT_EXPORT STDMETHODIMP get_endIndex(long* index) override;
+  // This method is deprecated in the IA2 Spec and so we don't implement it.
   CONTENT_EXPORT STDMETHODIMP get_valid(boolean* valid) override;
 
-  // IAccessibleAction not implemented.
+  // IAccessibleAction mostly not implemented.
   CONTENT_EXPORT STDMETHODIMP nActions(long* n_actions) override;
   CONTENT_EXPORT STDMETHODIMP doAction(long action_index) override;
   CONTENT_EXPORT STDMETHODIMP
@@ -775,11 +776,18 @@ BrowserAccessibilityWin
   void IntAttributeToIA2(ui::AXIntAttribute attribute,
                          const char* ia2_attr);
 
-  // Functions that help when retrieving hyperlinks and hypertext offsets.
-  // Return -1 in case of failure.
+  //
+  // Helper methods for IA2 hyperlinks.
+  //
   // Hyperlink is an IA2 misnomer. It refers to objects embedded within other
   // objects, such as a numbered list within a contenteditable div.
-  // Also, text that includes embedded objects is called hypertext.
+  // Also, in IA2, text that includes embedded objects is called hypertext.
+
+  // Returns true if the current object is an IA2 hyperlink.
+  bool IsHyperlink() const;
+
+  // Functions for retrieving offsets for hyperlinks and hypertext.
+  // Return -1 in case of failure.
   int32 GetHyperlinkIndexFromChild(const BrowserAccessibilityWin& child) const;
   int32 GetHypertextOffsetFromHyperlinkIndex(int32 hyperlink_index) const;
   int32 GetHypertextOffsetFromChild(const BrowserAccessibilityWin& child) const;
@@ -792,11 +800,14 @@ BrowserAccessibilityWin
   // offset. Otherwise, returns either 0 or the length of the hypertext
   // depending on the direction of the selection.
   // Returns -1 in case of unexpected failure, e.g. the selection endpoint
-  // cannot be located in the accessibility tree.
+  // cannot be found in the accessibility tree.
   int GetHypertextOffsetFromEndpoint(
       const BrowserAccessibilityWin& endpoint_object,
       int endpoint_offset) const;
 
+  //
+  // Selection helper functions.
+  //
   // The following functions retrieve the endpoints of the current selection.
   // First they check for a local selection found on the current control, e.g.
   // when querying the selection on a textarea.
@@ -805,7 +816,7 @@ BrowserAccessibilityWin
   int GetSelectionFocus() const;
   // Retrieves the selection offsets in the way required by the IA2 APIs.
   // selection_start and selection_end are -1 when there is no selection active
-  // inside this object.
+  // on this object.
   // The greatest of the two offsets is one past the last character of the
   // selection.)
   void GetSelectionOffsets(int* selection_start, int* selection_end) const;
