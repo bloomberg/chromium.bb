@@ -1307,10 +1307,10 @@ ShellUtil::DefaultState ProbeOpenCommandHandlers(
     const base::FilePath& chrome_exe,
     const wchar_t* const* protocols,
     size_t num_protocols) {
-  // Get its short (8.3) form.
-  base::string16 short_app_path;
-  if (!ShortNameFromPath(chrome_exe, &short_app_path))
-    return ShellUtil::UNKNOWN_DEFAULT;
+  // Get its short (8.3) form if possible.
+  base::string16 app_path;
+  if (!ShortNameFromPath(chrome_exe, &app_path))
+    app_path = chrome_exe.value();
 
   const HKEY root_key = HKEY_CLASSES_ROOT;
   base::string16 key_path;
@@ -1330,11 +1330,14 @@ ShellUtil::DefaultState ProbeOpenCommandHandlers(
 
     // Need to normalize path in case it's been munged.
     command_line = base::CommandLine::FromString(value);
-    if (!ShortNameFromPath(command_line.GetProgram(), &short_path))
-      return ShellUtil::UNKNOWN_DEFAULT;
-
-    if (!base::FilePath::CompareEqualIgnoreCase(short_path, short_app_path))
-      return ShellUtil::NOT_DEFAULT;
+    if (ShortNameFromPath(command_line.GetProgram(), &short_path)) {
+      if (!base::FilePath::CompareEqualIgnoreCase(short_path, app_path))
+        return ShellUtil::NOT_DEFAULT;
+    } else {
+      if (!base::FilePath::CompareEqualIgnoreCase(
+              command_line.GetProgram().value(), app_path))
+        return ShellUtil::NOT_DEFAULT;
+    }
   }
 
   return ShellUtil::IS_DEFAULT;
