@@ -125,6 +125,7 @@ bool LayoutReplaced::shouldPaint(const PaintInfo& paintInfo, const LayoutPoint& 
         return false;
 
     LayoutRect paintRect(visualOverflowRect());
+    paintRect.unite(localSelectionRect());
     paintRect.moveBy(paintOffset + location());
 
     // Early exit if the element touches the edges.
