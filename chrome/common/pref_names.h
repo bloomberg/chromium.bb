@@ -454,9 +454,6 @@ extern const char kStabilityPluginInstances[];
 extern const char kStabilityPluginCrashes[];
 extern const char kStabilityPluginLoadingErrors[];
 
-extern const char kUninstallLastLaunchTimeSec[];
-extern const char kUninstallLastObservedRunTimeSec[];
-
 extern const char kBrowserSuppressDefaultBrowserPrompt[];
 
 extern const char kBrowserWindowPlacement[];

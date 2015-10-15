@@ -28,7 +28,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/crash_keys.h"
-#include "chrome/common/pref_names.h"
 #include "components/metrics/call_stack_profile_metrics_provider.h"
 #include "components/metrics/drive_metrics_provider.h"
 #include "components/metrics/gpu/gpu_metrics_provider.h"
@@ -168,9 +167,6 @@ scoped_ptr<ChromeMetricsServiceClient> ChromeMetricsServiceClient::Create(
 
 // static
 void ChromeMetricsServiceClient::RegisterPrefs(PrefRegistrySimple* registry) {
-  registry->RegisterInt64Pref(prefs::kUninstallLastLaunchTimeSec, 0);
-  registry->RegisterInt64Pref(prefs::kUninstallLastObservedRunTimeSec, 0);
-
   metrics::MetricsService::RegisterPrefs(registry);
   metrics::StabilityMetricsHelper::RegisterPrefs(registry);
 

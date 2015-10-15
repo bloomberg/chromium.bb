@@ -1306,14 +1306,6 @@ const char kStabilityPluginInstances[] = "instances";
 const char kStabilityPluginCrashes[] = "crashes";
 const char kStabilityPluginLoadingErrors[] = "loading_errors";
 
-// The keys below are strictly increasing counters over the lifetime of
-// a chrome installation. They are (optionally) sent up to the uninstall
-// survey in the event of uninstallation.
-const char kUninstallLastLaunchTimeSec[] =
-    "uninstall_metrics.last_launch_time_sec";
-const char kUninstallLastObservedRunTimeSec[] =
-    "uninstall_metrics.last_observed_running_time_sec";
-
 // String containing the version of Chrome for which Chrome will not prompt the
 // user about setting Chrome as the default browser.
 const char kBrowserSuppressDefaultBrowserPrompt[] =
