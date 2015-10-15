@@ -8,7 +8,6 @@ import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler;
 import org.chromium.components.navigation_interception.NavigationParams;
 import org.chromium.content.browser.ContentViewCore;
 
-
 /**
  * An base class for tracking events on the overlay panel.
  */

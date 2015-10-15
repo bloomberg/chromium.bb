@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.compositor.bottombar.contextualsearch;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelContent;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel.PanelState;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel.StateChangeReason;
 import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation;
@@ -179,7 +178,7 @@ public interface ContextualSearchPanelDelegate {
     /**
      * @return True if the panel loaded a URL.
      */
-    boolean didLoadAnyUrl();
+    boolean isProcessingPendingNavigation();
 
     /**
      * Sets the top control state based on the internals of the panel.
@@ -192,10 +191,9 @@ public interface ContextualSearchPanelDelegate {
     void setWasSearchContentViewSeen();
 
     /**
-     * Sets the visibility of the Search Content View.
-     * @param isVisible True to make it visible.
+     * Notifies that the Panel has been touched.
      */
-    void setSearchContentViewVisibility(boolean isVisible);
+    void notifyPanelTouched();
 
     /**
      * Creates an {@link org.chromium.chrome.browser.compositor.layouts.ChromeAnimation.Animatable}
@@ -203,9 +201,11 @@ public interface ContextualSearchPanelDelegate {
      */
     <T extends Enum<?>> void addToAnimation(ChromeAnimation.Animatable<T> object, T prop,
             float start, float end, long duration, long startTime);
+
     /**
-     * @param panelContent The OverlayPanelContent that this panel should use.
+     * Allows test cases to use a custom OverlayPanelContent in tests.
+     * @param factory The OverlayPanelContentFactory that will create the OverlayPanelContent.
      */
     @VisibleForTesting
-    void setOverlayPanelContent(OverlayPanelContent panelContent);
+    void setOverlayPanelContentFactory(OverlayPanelContentFactory factory);
 }

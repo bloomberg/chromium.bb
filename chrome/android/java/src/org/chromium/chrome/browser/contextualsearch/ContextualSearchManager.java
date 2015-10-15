@@ -473,8 +473,6 @@ public class ContextualSearchManager extends ContextualSearchObservable
             removeLastSearchVisit();
         }
 
-        mSearchPanelDelegate.setSearchContentViewVisibility(false);
-
         boolean isTap = mSelectionController.getSelectionType() == SelectionType.TAP;
         boolean didRequestSurroundings = false;
 
@@ -998,7 +996,7 @@ public class ContextualSearchManager extends ContextualSearchObservable
         // Require a touch, but no recent loading, in order to promote to a separate tab.
         // Note that tapping the opt-in button requires checking for recent loading.
         return mSearchPanelDelegate.didTouchSearchContentView()
-                && !mSearchPanelDelegate.didLoadAnyUrl();
+                && !mSearchPanelDelegate.isProcessingPendingNavigation();
     }
 
     /**

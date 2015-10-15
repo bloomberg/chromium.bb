@@ -22,7 +22,7 @@ import org.chromium.content.browser.ContentViewCore;
  * Controls the Contextual Search Panel.
  */
 public class ContextualSearchPanel extends ContextualSearchPanelAnimation
-        implements ContextualSearchPanelDelegate {
+        implements ContextualSearchPanelDelegate, OverlayPanelContentFactory {
 
     /**
      * State of the Contextual Search Panel.
@@ -108,14 +108,19 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
     private ContextualSearchPanelHost mSearchPanelHost;
 
     /**
+     * That factory that creates OverlayPanelContents.
+     */
+    private OverlayPanelContentFactory mContentFactory;
+
+    /**
      * Container for content the panel will show.
      */
-    private OverlayPanelContent mOverlayPanelContent;
+    private OverlayPanelContent mContent;
 
     /**
      * Used for logging state changes.
      */
-    private ContextualSearchPanelMetrics mPanelMetrics;
+    private final ContextualSearchPanelMetrics mPanelMetrics;
 
     /**
      * The object for handling global Contextual Search management duties
@@ -132,12 +137,21 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
      */
     public ContextualSearchPanel(Context context, LayoutUpdateHost updateHost) {
         super(context, updateHost);
+        mContentFactory = this;
         mPanelMetrics = new ContextualSearchPanelMetrics();
     }
 
     /**
-     * Create a new OverlayPanelContent object. This can be overridden for tests.
+     * Destroy the panel's components.
      */
+    public void destroy() {
+        destroyOverlayPanelContent();
+        destroyPromoView();
+        destroyPeekPromoControl();
+        destroySearchBarControl();
+    }
+
+    @Override
     public OverlayPanelContent createNewOverlayPanelContent() {
         OverlayPanelContent overlayPanelContent = new OverlayPanelContent(
                 mManagementDelegate.getOverlayContentDelegate(), new PanelProgressObserver(),
@@ -287,12 +301,8 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
     }
 
     @Override
-    protected void onClose(StateChangeReason reason) {
-        destroySearchBarControl();
-        destroyPeekPromoControl();
-        if (mOverlayPanelContent != null) {
-            mOverlayPanelContent.destroyContentView();
-        }
+    protected void onClosed(StateChangeReason reason) {
+        destroy();
         mManagementDelegate.onCloseContextualSearch(reason);
     }
 
@@ -321,7 +331,7 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
         if (ty > 0 && getPanelState() == PanelState.MAXIMIZED) {
             // Resets the Search Content View scroll position when swiping the Panel down
             // after being maximized.
-            mOverlayPanelContent.resetContentViewScroll();
+            mContent.resetContentViewScroll();
         }
 
         // Negative ty value means an upward movement so subtracting ty means expanding the panel.
@@ -511,18 +521,28 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
      * @return The vertical scroll position of the content.
      */
     public float getSearchContentViewVerticalScroll() {
-        return mOverlayPanelContent.getContentViewVerticalScroll();
+        return mContent.getContentViewVerticalScroll();
     }
 
     /**
      * @return A new OverlayPanelContent if the instance was null or the existing one.
      */
-    public OverlayPanelContent getOverlayPanelContent() {
+    protected OverlayPanelContent getOverlayPanelContent() {
         // Only create the content when necessary
-        if (mOverlayPanelContent == null) {
-            mOverlayPanelContent = createNewOverlayPanelContent();
+        if (mContent == null) {
+            mContent = mContentFactory.createNewOverlayPanelContent();
         }
-        return mOverlayPanelContent;
+        return mContent;
+    }
+
+    /**
+     * Destroys the OverlayPanelContent.
+     */
+    protected void destroyOverlayPanelContent() {
+        if (mContent != null) {
+            mContent.destroy();
+            mContent = null;
+        }
     }
 
     // ============================================================================================
@@ -690,7 +710,7 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
 
     @Override
     public boolean isContentViewShowing() {
-        return mOverlayPanelContent != null && mOverlayPanelContent.isContentViewShowing();
+        return mContent != null && mContent.isContentViewShowing();
     }
 
     @Override
@@ -704,13 +724,13 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
     }
 
     @Override
-    public boolean didLoadAnyUrl() {
-        return mOverlayPanelContent != null && mOverlayPanelContent.didLoadAnyUrl();
+    public boolean isProcessingPendingNavigation() {
+        return mContent != null && mContent.isProcessingPendingNavigation();
     }
 
     @Override
     public void updateTopControlState() {
-        if (mOverlayPanelContent == null) return;
+        if (mContent == null) return;
 
         if (isFullscreenSizePanel()) {
             // Consider the ContentView height to be fullscreen, and inform the system that
@@ -720,9 +740,9 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
             // minus the Toolbar height.
             //
             // This is necessary to fix the bugs: crbug.com/510205 and crbug.com/510206
-            mOverlayPanelContent.updateTopControlsState(false, true, false);
+            mContent.updateTopControlsState(false, true, false);
         } else {
-            mOverlayPanelContent.updateTopControlsState(true, false, false);
+            mContent.updateTopControlsState(true, false, false);
         }
     }
 
@@ -942,34 +962,24 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
     @Override
     public ContentViewCore getContentViewCore() {
         // Expose OverlayPanelContent method.
-        return mOverlayPanelContent != null ? mOverlayPanelContent.getContentViewCore() : null;
+        return mContent != null ? mContent.getContentViewCore() : null;
     }
 
     @Override
     public void removeLastHistoryEntry(String historyUrl, long urlTimeMs) {
-        if (mOverlayPanelContent == null) return;
+        if (mContent == null) return;
         // Expose OverlayPanelContent method.
-        mOverlayPanelContent.removeLastHistoryEntry(historyUrl, urlTimeMs);
+        mContent.removeLastHistoryEntry(historyUrl, urlTimeMs);
     }
 
     @Override
-    public void setSearchContentViewVisibility(boolean isVisible) {
-        getOverlayPanelContent().setVisibility(isVisible);
-    }
-
-    /**
-     * Destroy the native components associated with this panel's content.
-     */
-    public void destroy() {
-        // It is possible that an OverlayPanelContent was never created for this panel.
-        if (mOverlayPanelContent != null) {
-            mOverlayPanelContent.destroy();
-        }
+    public void notifyPanelTouched() {
+        getOverlayPanelContent().notifyPanelTouched();
     }
 
     @Override
     @VisibleForTesting
-    public void setOverlayPanelContent(OverlayPanelContent panelContent) {
-        mOverlayPanelContent = panelContent;
+    public void setOverlayPanelContentFactory(OverlayPanelContentFactory factory) {
+        mContentFactory = factory;
     }
 }

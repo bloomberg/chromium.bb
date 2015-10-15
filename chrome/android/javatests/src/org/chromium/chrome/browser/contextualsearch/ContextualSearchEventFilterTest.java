@@ -143,13 +143,9 @@ public class ContextualSearchEventFilterTest extends InstrumentationTestCase
          * Override creation and destruction of the ContentViewCore as they rely on native methods.
          */
         private static class MockOverlayPanelContent extends OverlayPanelContent {
-            public MockOverlayPanelContent() {}
-
-            @Override
-            public void createNewContentView() {}
-
-            @Override
-            public void destroyContentView() {}
+            public MockOverlayPanelContent() {
+                super(null, null, null);
+            }
 
             @Override
             public void removeLastHistoryEntry(String url, long timeInMs) {}

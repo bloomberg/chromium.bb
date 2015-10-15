@@ -5,8 +5,11 @@
 package org.chromium.chrome.browser.contextualsearch;
 
 import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayContentDelegate;
+import org.chromium.chrome.browser.compositor.bottombar.OverlayContentProgressObserver;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelContent;
+import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.OverlayPanelContentFactory;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -20,15 +23,21 @@ import javax.annotation.Nullable;
  *              be something like ContextualSearchFakeEnvironment.
  */
 @VisibleForTesting
-class ContextualSearchFakeServer extends OverlayPanelContent
-        implements ContextualSearchNetworkCommunicator {
+class ContextualSearchFakeServer
+        implements ContextualSearchNetworkCommunicator, OverlayPanelContentFactory {
 
     private final ContextualSearchNetworkCommunicator mBaseManager;
+
+    private final OverlayContentDelegate mContentDelegate;
+    private final OverlayContentProgressObserver mProgressObserver;
+    private final ChromeActivity mActivity;
+
+    private OverlayPanelContent mContent;
+
     private String mLoadedUrl;
+    private int mLoadedUrlCount;
     private String mSearchTermRequested;
     private boolean mShouldUseHttps;
-    private int mLoadedUrlCount;
-    private boolean mIsSearchContentViewCreated;
 
     /**
      * Constructs a fake Contextual Search server that will callback to the given baseManager.
@@ -36,24 +45,44 @@ class ContextualSearchFakeServer extends OverlayPanelContent
      */
     @VisibleForTesting
     ContextualSearchFakeServer(ContextualSearchNetworkCommunicator baseManager,
-            OverlayContentDelegate observer) {
+            OverlayContentDelegate contentDelegate,
+            OverlayContentProgressObserver progressObserver,
+            ChromeActivity activity) {
         mBaseManager = baseManager;
-        setOverlayObserver(observer);
+
+        mContentDelegate = contentDelegate;
+        mProgressObserver = progressObserver;
+        mActivity = activity;
+    }
+
+    @Override
+    public OverlayPanelContent createNewOverlayPanelContent() {
+        mContent =  new OverlayPanelContent(mContentDelegate, mProgressObserver, mActivity) {
+            @Override
+            public void loadUrl(String url) {
+                mLoadedUrl = url;
+                mLoadedUrlCount++;
+                super.loadUrl(url);
+            }
+
+            @Override
+            public void removeLastHistoryEntry(String url, long timeInMs) {
+                // Override to prevent call to native code.
+            }
+        };
+
+        return mContent;
+    }
+
+    @VisibleForTesting
+    public boolean didCreateContentView() {
+        return mContent != null ? mContent.didCreateContentView() : false;
     }
 
     @Override
     public void startSearchTermResolutionRequest(String selection) {
         mLoadedUrl = null;
         mSearchTermRequested = selection;
-    }
-
-    @Override
-    public void loadUrl(String url) {
-        mLoadedUrl = url;
-        mLoadedUrlCount++;
-        // This will not actually load a URL because no Search Content View will be created
-        // when under test -- see comments in createNewSearchContentView.
-        super.loadUrl(url);
     }
 
     @Override
@@ -77,26 +106,6 @@ class ContextualSearchFakeServer extends OverlayPanelContent
             }
         }
         return baseUrl;
-    }
-
-    @Override
-    public void createNewContentView() {
-        mIsSearchContentViewCreated = true;
-        // Don't call the super method because that will cause loadUrl to make a live request!
-        // This method is only called by loadUrl, which will subseqently check if the CV was
-        // successfully created before issuing the search request.
-        // TODO(donnd): This is brittle, improve!  E.g. make live requests to a local server.
-    }
-
-    @Override
-    public void destroyContentView() {
-        mIsSearchContentViewCreated = false;
-        super.destroyContentView();
-    }
-
-    @Override
-    public void removeLastHistoryEntry(String url, long timeInMs) {
-        // Override to prevent call to native code.
     }
 
     /**
@@ -132,22 +141,14 @@ class ContextualSearchFakeServer extends OverlayPanelContent
     }
 
     /**
-     * @return Whether we tried to create the Search Content View.
-     */
-    @VisibleForTesting
-    boolean isSearchContentViewCreated() {
-        return mIsSearchContentViewCreated;
-    }
-
-    /**
      * Resets the fake server's member data.
      */
     @VisibleForTesting
     void reset() {
+        mContent = null;
         mLoadedUrl = null;
         mSearchTermRequested = null;
         mShouldUseHttps = false;
         mLoadedUrlCount = 0;
-        mIsSearchContentViewCreated = false;
     }
 }

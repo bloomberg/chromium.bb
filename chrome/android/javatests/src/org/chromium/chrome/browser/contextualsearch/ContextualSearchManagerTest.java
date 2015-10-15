@@ -34,6 +34,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayContentDelegate;
+import org.chromium.chrome.browser.compositor.bottombar.OverlayContentProgressObserver;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel.PanelState;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanelDelegate;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler;
@@ -59,6 +60,8 @@ import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.touch_selection.SelectionEventType;
 
 import java.util.concurrent.TimeoutException;
+
+// TODO(pedrosimonetti): add tests for recent regressions crbug.com/543319.
 
 /**
  * Tests the Contextual Search Manager using instrumentation tests.
@@ -96,8 +99,11 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         if (mManager != null) {
             mPanelDelegate = mManager.getContextualSearchPanelDelegate();
             mFakeServer = new ContextualSearchFakeServer(mManager,
-                    mManager.getOverlayContentDelegate());
-            mPanelDelegate.setOverlayPanelContent(mFakeServer);
+                    mManager.getOverlayContentDelegate(),
+                    new OverlayContentProgressObserver(),
+                    getActivity());
+
+            mPanelDelegate.setOverlayPanelContentFactory(mFakeServer);
             mManager.setNetworkCommunicator(mFakeServer);
             mSelectionController = mManager.getSelectionController();
             mPolicy = ContextualSearchPolicy.getInstance(getActivity());
@@ -291,11 +297,11 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     }
 
     private void assertContentViewCoreCreated() {
-        assertTrue(mFakeServer.isSearchContentViewCreated());
+        assertTrue(mFakeServer.didCreateContentView());
     }
 
     private void assertNoContentViewCore() {
-        assertFalse(mFakeServer.isSearchContentViewCreated());
+        assertFalse(mFakeServer.didCreateContentView());
     }
 
     /**

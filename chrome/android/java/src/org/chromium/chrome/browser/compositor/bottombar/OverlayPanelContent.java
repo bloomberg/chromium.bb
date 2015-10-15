@@ -8,6 +8,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.WebContentsFactory;
+import org.chromium.chrome.browser.contextualsearch.ContextualSearchManager;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler;
 import org.chromium.components.navigation_interception.InterceptNavigationDelegate;
 import org.chromium.components.navigation_interception.NavigationParams;
@@ -50,12 +51,25 @@ public class OverlayPanelContent {
     private WebContentsObserver mWebContentsObserver;
 
     /**
-     * If the ContentViewCore has loaded a URL.
+     * Whether the ContentViewCore has started loading a URL.
      */
-    private boolean mDidLoadAnyUrl;
+    private boolean mDidStartLoadingUrl;
 
     /**
-     * If the content view is currently being displayed.
+     * Whether the ContentViewCore is processing a pending navigation.
+     * NOTE(pedrosimonetti): This is being used to prevent redirections on the SERP to
+     * interpreted as a regular navigation, which should cause the Contextual Search Panel
+     * to be promoted as a Tab. This was added to work around a server bug that has been fixed.
+     * Just checking for whether the Content has been touched is enough to determine whether a
+     * navigation should be promoted (assuming it was caused by the touch), as done in
+     * {@link ContextualSearchManager#shouldPromoteSearchNavigation()}.
+     * For more details, see crbug.com/441048
+     * TODO(pedrosimonetti): remove this from M48 or move it to Contextual Search Panel.
+     */
+    private boolean mIsProcessingPendingNavigation;
+
+    /**
+     * Whether the content view is currently being displayed.
      */
     private boolean mIsContentViewShowing;
 
@@ -65,9 +79,9 @@ public class OverlayPanelContent {
     private ContentViewClient mContentViewClient;
 
     /**
-     * The observer used by this object to inform inplementers of different events.
+     * The observer used by this object to inform implementers of different events.
      */
-    private OverlayContentDelegate mOverlayObserver;
+    private OverlayContentDelegate mContentDelegate;
 
     /**
      * Used to observe progress bar events.
@@ -92,7 +106,7 @@ public class OverlayPanelContent {
         public boolean shouldIgnoreNavigation(NavigationParams navigationParams) {
             // TODO(mdjones): Rather than passing the two navigation params, instead consider
             // passing a boolean to make this API simpler.
-            return !mOverlayObserver.shouldInterceptNavigation(mExternalNavHandler,
+            return !mContentDelegate.shouldInterceptNavigation(mExternalNavHandler,
                     navigationParams);
         }
     }
@@ -102,15 +116,15 @@ public class OverlayPanelContent {
     // ============================================================================================
 
     /**
-     * @param overlayObserver An observer for events that occur on this content. If null is passed
+     * @param contentDelegate An observer for events that occur on this content. If null is passed
      *                        for this parameter, the default one will be used.
-     * @param progresObserver An observer for progress related events.
+     * @param progressObserver An observer for progress related events.
      * @param activity The ChromeActivity that contains this object.
      */
-    public OverlayPanelContent(OverlayContentDelegate overlayObserver,
+    public OverlayPanelContent(OverlayContentDelegate contentDelegate,
             OverlayContentProgressObserver progressObserver, ChromeActivity activity) {
         mNativeOverlayPanelContentPtr = nativeInit();
-        mOverlayObserver = overlayObserver;
+        mContentDelegate = contentDelegate;
         mProgressObserver = progressObserver;
         mActivity = activity;
 
@@ -135,39 +149,23 @@ public class OverlayPanelContent {
         };
     }
 
-    /**
-     * Create a largely empty OverlayPanelContent for testing.
-     */
-    @VisibleForTesting
-    public OverlayPanelContent() {
-        // NOTE(mdjones): This constructor is intentionally sparse for testing.
-        mWebContentsDelegate = null;
-    }
-
     // ============================================================================================
     // ContentViewCore related
     // ============================================================================================
 
     /**
-     * @param observer The OverlayContentDelegate to use.
-     */
-    @VisibleForTesting
-    public void setOverlayObserver(OverlayContentDelegate observer) {
-        mOverlayObserver = observer;
-    }
-
-    /**
      * Create a new ContentViewCore that will be managed by this panel.
-     * TODO(mdjones): Make this private and create a new instance of this class per request.
      */
-    public void createNewContentView() {
-        // If the ContentViewCore has already been created, but never used,
-        // then there's no need to create a new one.
-        if (mContentViewCore != null && !mDidLoadAnyUrl) {
-            return;
+    private void createNewContentView() {
+        if (mContentViewCore != null) {
+            // If the ContentViewCore has already been created, but never used,
+            // then there's no need to create a new one.
+            if (!mDidStartLoadingUrl) return;
+
+            destroyContentView();
         }
 
-        destroyContentView();
+        System.out.println("ctxs --- OverlayPanelContent.createNewContentView");
         mContentViewCore = new ContentViewCore(mActivity);
 
         if (mContentViewClient == null) {
@@ -189,7 +187,7 @@ public class OverlayPanelContent {
                 new WebContentsObserver(mContentViewCore.getWebContents()) {
                     @Override
                     public void didStartLoading(String url) {
-                        mOverlayObserver.onContentLoadStarted(url);
+                        mContentDelegate.onContentLoadStarted(url);
                     }
 
                     @Override
@@ -197,7 +195,7 @@ public class OverlayPanelContent {
                             boolean isMainFrame, String validatedUrl, boolean isErrorPage,
                             boolean isIframeSrcdoc) {
                         if (isMainFrame) {
-                            mOverlayObserver.onMainFrameLoadStarted(validatedUrl);
+                            mContentDelegate.onMainFrameLoadStarted(validatedUrl);
                         }
                     }
 
@@ -205,17 +203,15 @@ public class OverlayPanelContent {
                     public void didNavigateMainFrame(String url, String baseUrl,
                             boolean isNavigationToDifferentPage, boolean isNavigationInPage,
                             int httpResultCode) {
-                        // TODO(mdjones): Instead of tracking this, create a new instance of this
-                        // class per request.
-                        mDidLoadAnyUrl = false;
-                        mOverlayObserver.onMainFrameNavigation(url,
+                        mIsProcessingPendingNavigation = false;
+                        mContentDelegate.onMainFrameNavigation(url,
                                 isHttpFailureCode(httpResultCode));
                     }
 
                     @Override
                     public void didFinishLoad(long frameId, String validatedUrl,
                             boolean isMainFrame) {
-                        mOverlayObserver.onContentLoadFinished();
+                        mContentDelegate.onContentLoadFinished();
                     }
                 };
 
@@ -223,15 +219,15 @@ public class OverlayPanelContent {
         nativeSetInterceptNavigationDelegate(mNativeOverlayPanelContentPtr,
                 mInterceptNavigationDelegate, mContentViewCore.getWebContents());
 
-        mOverlayObserver.onContentViewCreated(mContentViewCore);
+        mContentDelegate.onContentViewCreated(mContentViewCore);
     }
 
     /**
      * Destroy this panel's ContentViewCore.
-     * TODO(mdjones): Make this private.
      */
-    public void destroyContentView() {
+    private void destroyContentView() {
         if (mContentViewCore != null) {
+            System.out.println("ctxs --- OverlayPanelContent.destroyContentView");
             nativeDestroyWebContents(mNativeOverlayPanelContentPtr);
             mContentViewCore.getWebContents().destroy();
             mContentViewCore.destroy();
@@ -241,21 +237,22 @@ public class OverlayPanelContent {
                 mWebContentsObserver = null;
             }
 
-            mOverlayObserver.onContentViewDestroyed();
+            mDidStartLoadingUrl = false;
+            mIsProcessingPendingNavigation = false;
+
+            setVisibility(false);
+
+            // After everything has been disposed, notify the observer.
+            mContentDelegate.onContentViewDestroyed();
         }
+    }
 
-        // This should be called last here. The setSearchContentViewVisibility method
-        // will change the visibility the SearchContentView but also set the value of the
-        // internal property mIsSearchContentViewShowing. If we call this after deleting
-        // the SearchContentView, it will be faster, because only the internal property
-        // will be changed, since there will be no need to change the visibility of the
-        // SearchContentView.
-        //
-        // Also, this should be called outside the block above because tests will not
-        // create a ContentView, therefore if this call is placed inside the block,
-        // it will not be called on tests, which will cause some tests to fail.
-        setVisibility(false);
-
+    /**
+     * @return Whether the ContentViewCore was created.
+     */
+    @VisibleForTesting
+    public boolean didCreateContentView() {
+        return mContentViewCore != null;
     }
 
     /**
@@ -263,14 +260,23 @@ public class OverlayPanelContent {
      * @param url The URL that should be loaded.
      */
     public void loadUrl(String url) {
+        System.out.println("ctxs --- OverlayPanelContent.loadUrl");
         createNewContentView();
 
         if (mContentViewCore != null && mContentViewCore.getWebContents() != null) {
-            mDidLoadAnyUrl = true;
+            mDidStartLoadingUrl = true;
+            mIsProcessingPendingNavigation = true;
             mContentViewCore.getWebContents().getNavigationController().loadUrl(
                     new LoadUrlParams(url));
-            mContentViewCore.onShow();
         }
+    }
+
+    /**
+     * Notifies that the Panel has been touched. Calling this method will turn the Content
+     * visible, causing it to be rendered.
+     */
+    public void notifyPanelTouched() {
+        setVisibility(true);
     }
 
     // ============================================================================================
@@ -292,10 +298,10 @@ public class OverlayPanelContent {
     }
 
     /**
-     * @return true if the panel loaded a URL.
+     * @return Whether a pending navigation if being processed.
      */
-    public boolean didLoadAnyUrl() {
-        return mDidLoadAnyUrl;
+    public boolean isProcessingPendingNavigation() {
+        return mIsProcessingPendingNavigation;
     }
 
     /**
@@ -319,7 +325,7 @@ public class OverlayPanelContent {
      * Sets the visibility of the Search Content View.
      * @param isVisible True to make it visible.
      */
-    public void setVisibility(boolean isVisible) {
+    private void setVisibility(boolean isVisible) {
         if (mIsContentViewShowing == isVisible) return;
 
         mIsContentViewShowing = isVisible;
@@ -330,14 +336,20 @@ public class OverlayPanelContent {
             if (mContentViewCore == null) {
                 createNewContentView();
             }
+
+            // NOTE(pedrosimonetti): Calling onShow() on the ContentViewCore will cause the page
+            // to be rendered. This has a side effect of causing the page to be included in
+            // your Web History (if enabled). For this reason, onShow() should only be called
+            // when we know for sure the page will be seen by the user.
             if (mContentViewCore != null) mContentViewCore.onShow();
-            mOverlayObserver.onContentViewSeen();
+            if (mContentViewCore != null) System.out.println("ctxs --- mContentViewCore.onShow");
+
+            mContentDelegate.onContentViewSeen();
         } else {
             if (mContentViewCore != null) mContentViewCore.onHide();
-            destroyContentView();
         }
 
-        mOverlayObserver.onVisibilityChanged(isVisible);
+        mContentDelegate.onVisibilityChanged(isVisible);
     }
 
     /**
@@ -389,7 +401,7 @@ public class OverlayPanelContent {
     /**
      * Remove the list history entry from this panel if it was within a certain timeframe.
      * @param historyUrl The URL to remove.
-     * @param urlTimeMS The time the URL was navigated to.
+     * @param urlTimeMs The time the URL was navigated to.
      */
     public void removeLastHistoryEntry(String historyUrl, long urlTimeMs) {
         nativeRemoveLastHistoryEntry(mNativeOverlayPanelContentPtr, historyUrl, urlTimeMs);
@@ -400,8 +412,15 @@ public class OverlayPanelContent {
      */
     @VisibleForTesting
     public void destroy() {
-        destroyContentView();
-        nativeDestroy(mNativeOverlayPanelContentPtr);
+        if (mContentViewCore != null) {
+            destroyContentView();
+        }
+
+        // Tests will not create the native pointer, so we need to check if it's not zero
+        // otherwise calling nativeDestroy with zero will make Chrome crash.
+        if (mNativeOverlayPanelContentPtr != 0L) {
+            nativeDestroy(mNativeOverlayPanelContentPtr);
+        }
     }
 
     // Native calls.
