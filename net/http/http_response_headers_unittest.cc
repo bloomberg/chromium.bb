@@ -23,7 +23,6 @@ struct TestData {
   const char* raw_headers;
   const char* expected_headers;
   int expected_response_code;
-  HttpVersion expected_parsed_version;
   HttpVersion expected_version;
 };
 
@@ -112,7 +111,6 @@ TEST_P(CommonHttpResponseHeadersTest, TestCommon) {
 
   EXPECT_EQ(test.expected_response_code, parsed->response_code());
 
-  EXPECT_TRUE(test.expected_parsed_version == parsed->GetParsedHttpVersion());
   EXPECT_TRUE(test.expected_version == parsed->GetHttpVersion());
 }
 
@@ -129,7 +127,6 @@ TestData response_headers_tests[] = {
      "Set-Cookie: a, b\n",
 
      202,
-     HttpVersion(1, 1),
      HttpVersion(1, 1)},
     {// Normalize leading whitespace.
 
@@ -143,7 +140,6 @@ TestData response_headers_tests[] = {
      "Set-Cookie: a, b\n",
 
      202,
-     HttpVersion(1, 1),
      HttpVersion(1, 1)},
     {// Normalize blank headers.
 
@@ -161,7 +157,6 @@ TestData response_headers_tests[] = {
      "Header5: \n",
 
      200,
-     HttpVersion(1, 1),
      HttpVersion(1, 1)},
     {// Don't believe the http/0.9 version if there are headers!
 
@@ -172,7 +167,6 @@ TestData response_headers_tests[] = {
      "Content-TYPE: text/html; charset=utf-8\n",
 
      201,
-     HttpVersion(0, 9),
      HttpVersion(1, 0)},
     {// Accept the HTTP/0.9 version number if there are no headers.
      // This is how HTTP/0.9 responses get constructed from
@@ -183,7 +177,6 @@ TestData response_headers_tests[] = {
      "HTTP/0.9 200 OK\n",
 
      200,
-     HttpVersion(0, 9),
      HttpVersion(0, 9)},
     {// Add missing OK.
 
@@ -194,7 +187,6 @@ TestData response_headers_tests[] = {
      "Content-TYPE: text/html; charset=utf-8\n",
 
      201,
-     HttpVersion(1, 1),
      HttpVersion(1, 1)},
     {// Normalize bad status line.
 
@@ -205,7 +197,6 @@ TestData response_headers_tests[] = {
      "Content-TYPE: text/html; charset=utf-8\n",
 
      200,
-     HttpVersion(0, 0),  // Parse error.
      HttpVersion(1, 0)},
     {// Normalize invalid status code.
 
@@ -214,7 +205,6 @@ TestData response_headers_tests[] = {
      "HTTP/1.1 200 OK\n",
 
      200,
-     HttpVersion(1, 1),
      HttpVersion(1, 1)},
     {// Normalize empty header.
 
@@ -223,7 +213,6 @@ TestData response_headers_tests[] = {
      "HTTP/1.0 200 OK\n",
 
      200,
-     HttpVersion(0, 0),  // Parse Error.
      HttpVersion(1, 0)},
     {// Normalize headers that start with a colon.
 
@@ -238,7 +227,6 @@ TestData response_headers_tests[] = {
      "baz: blat\n",
 
      202,
-     HttpVersion(1, 1),
      HttpVersion(1, 1)},
     {// Normalize headers that end with a colon.
 
@@ -255,7 +243,6 @@ TestData response_headers_tests[] = {
      "zip: \n",
 
      202,
-     HttpVersion(1, 1),
      HttpVersion(1, 1)},
     {// Normalize whitespace headers.
 
@@ -264,7 +251,6 @@ TestData response_headers_tests[] = {
      "HTTP/1.0 200 OK\n",
 
      200,
-     HttpVersion(0, 0),  // Parse error.
      HttpVersion(1, 0)},
     {// Consolidate Set-Cookie headers.
 
@@ -276,7 +262,6 @@ TestData response_headers_tests[] = {
      "Set-Cookie: x=1, y=2\n",
 
      200,
-     HttpVersion(1, 1),
      HttpVersion(1, 1)},
 };
 

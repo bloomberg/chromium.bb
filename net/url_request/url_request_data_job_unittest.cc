@@ -29,7 +29,7 @@ TEST(BuildResponseTest, Simple) {
   EXPECT_EQ("US-ASCII", charset);
   EXPECT_EQ("Hello", data);
 
-  const HttpVersion& version = headers->GetParsedHttpVersion();
+  const HttpVersion& version = headers->GetHttpVersion();
   EXPECT_EQ(1, version.major_value());
   EXPECT_EQ(1, version.minor_value());
   EXPECT_EQ("OK", headers->GetStatusText());

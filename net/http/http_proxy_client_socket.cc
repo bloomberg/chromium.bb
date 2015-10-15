@@ -444,7 +444,7 @@ int HttpProxyClientSocket::DoReadHeadersComplete(int result) {
     return result;
 
   // Require the "HTTP/1.x" status line for SSL CONNECT.
-  if (response_.headers->GetParsedHttpVersion() < HttpVersion(1, 0))
+  if (response_.headers->GetHttpVersion() < HttpVersion(1, 0))
     return ERR_TUNNEL_CONNECTION_FAILED;
 
   net_log_.AddEvent(

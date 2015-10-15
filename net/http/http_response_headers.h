@@ -153,11 +153,6 @@ class NET_EXPORT HttpResponseHeaders
     return http_version_;
   }
 
-  // Get the HTTP version determined while parsing; or (0,0) if parsing failed
-  HttpVersion GetParsedHttpVersion() const {
-    return parsed_http_version_;
-  }
-
   // Get the HTTP status text of the normalized status line.
   std::string GetStatusText() const;
 
@@ -405,9 +400,6 @@ class NET_EXPORT HttpResponseHeaders
 
   // The normalized http version (consistent with what GetStatusLine() returns).
   HttpVersion http_version_;
-
-  // The parsed http version number (not normalized).
-  HttpVersion parsed_http_version_;
 
   DISALLOW_COPY_AND_ASSIGN(HttpResponseHeaders);
 };

@@ -1078,7 +1078,7 @@ int HttpNetworkTransaction::DoReadHeadersComplete(int result) {
       NetLog::TYPE_HTTP_TRANSACTION_READ_RESPONSE_HEADERS,
       base::Bind(&HttpResponseHeaders::NetLogCallback, response_.headers));
 
-  if (response_.headers->GetParsedHttpVersion() < HttpVersion(1, 0)) {
+  if (response_.headers->GetHttpVersion() < HttpVersion(1, 0)) {
     // HTTP/0.9 doesn't support the PUT method, so lack of response headers
     // indicates a buggy server.  See:
     // https://bugzilla.mozilla.org/show_bug.cgi?id=193921

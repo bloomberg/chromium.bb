@@ -662,16 +662,16 @@ void HttpResponseHeaders::ParseStatusLine(
     std::string::const_iterator line_end,
     bool has_headers) {
   // Extract the version number
-  parsed_http_version_ = ParseVersion(line_begin, line_end);
+  HttpVersion parsed_http_version = ParseVersion(line_begin, line_end);
 
   // Clamp the version number to one of: {0.9, 1.0, 1.1, 2.0}
-  if (parsed_http_version_ == HttpVersion(0, 9) && !has_headers) {
+  if (parsed_http_version == HttpVersion(0, 9) && !has_headers) {
     http_version_ = HttpVersion(0, 9);
     raw_headers_ = "HTTP/0.9";
-  } else if (parsed_http_version_ == HttpVersion(2, 0)) {
+  } else if (parsed_http_version == HttpVersion(2, 0)) {
     http_version_ = HttpVersion(2, 0);
     raw_headers_ = "HTTP/2.0";
-  } else if (parsed_http_version_ >= HttpVersion(1, 1)) {
+  } else if (parsed_http_version >= HttpVersion(1, 1)) {
     http_version_ = HttpVersion(1, 1);
     raw_headers_ = "HTTP/1.1";
   } else {
@@ -679,7 +679,7 @@ void HttpResponseHeaders::ParseStatusLine(
     http_version_ = HttpVersion(1, 0);
     raw_headers_ = "HTTP/1.0";
   }
-  if (parsed_http_version_ != http_version_) {
+  if (parsed_http_version != http_version_) {
     DVLOG(1) << "assuming HTTP/" << http_version_.major_value() << "."
              << http_version_.minor_value();
   }
