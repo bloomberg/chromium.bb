@@ -34,7 +34,6 @@ namespace blink {
 
 class DateComponents;
 class DateTimeFieldsState;
-class Font;
 
 // DateTimeFieldElement is base class of date time field element.
 class DateTimeFieldElement : public HTMLSpanElement {
@@ -65,7 +64,7 @@ public:
     void defaultEventHandler(Event*) override;
     virtual bool hasValue() const = 0;
     bool isDisabled() const;
-    virtual float maximumWidth(const Font&);
+    virtual float maximumWidth(const ComputedStyle&);
     virtual void populateDateTimeFieldsState(DateTimeFieldsState&) = 0;
     void removeEventHandler() { m_fieldOwner = nullptr; }
     void setDisabled();
@@ -78,6 +77,8 @@ public:
     virtual String value() const = 0;
     virtual String visibleValue() const = 0;
     DECLARE_VIRTUAL_TRACE();
+
+    static float computeTextWidth(const ComputedStyle&, const String&);
 
 protected:
     DateTimeFieldElement(Document&, FieldOwner&);

@@ -84,7 +84,7 @@ protected:
 private:
     // DateTimeFieldElement functions.
     void handleKeyboardEvent(KeyboardEvent*) final;
-    float maximumWidth(const Font&) override;
+    float maximumWidth(const ComputedStyle&) override;
     void stepDown() final;
     void stepUp() final;
     String value() const final;

@@ -74,12 +74,12 @@ DateTimeNumericFieldElement::DateTimeNumericFieldElement(Document& document, Fie
     }
 }
 
-float DateTimeNumericFieldElement::maximumWidth(const Font& font)
+float DateTimeNumericFieldElement::maximumWidth(const ComputedStyle& style)
 {
-    float maximumWidth = font.width(m_placeholder);
-    maximumWidth = std::max(maximumWidth, font.width(formatValue(maximum())));
-    maximumWidth = std::max(maximumWidth, font.width(value()));
-    return maximumWidth + DateTimeFieldElement::maximumWidth(font);
+    float maximumWidth = computeTextWidth(style, m_placeholder);
+    maximumWidth = std::max(maximumWidth, computeTextWidth(style, formatValue(maximum())));
+    maximumWidth = std::max(maximumWidth, computeTextWidth(style, value()));
+    return maximumWidth + DateTimeFieldElement::maximumWidth(style);
 }
 
 int DateTimeNumericFieldElement::defaultValueForStepDown() const

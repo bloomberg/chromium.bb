@@ -63,12 +63,12 @@ DateTimeSymbolicFieldElement::DateTimeSymbolicFieldElement(Document& document, F
     ASSERT(m_minimumIndex <= m_maximumIndex);
 }
 
-float DateTimeSymbolicFieldElement::maximumWidth(const Font& font)
+float DateTimeSymbolicFieldElement::maximumWidth(const ComputedStyle& style)
 {
-    float maximumWidth = font.width(visibleEmptyValue());
+    float maximumWidth = computeTextWidth(style, visibleEmptyValue());
     for (unsigned index = 0; index < m_symbols.size(); ++index)
-        maximumWidth = std::max(maximumWidth, font.width(m_symbols[index]));
-    return maximumWidth + DateTimeFieldElement::maximumWidth(font);
+        maximumWidth = std::max(maximumWidth, computeTextWidth(style, m_symbols[index]));
+    return maximumWidth + DateTimeFieldElement::maximumWidth(style);
 }
 
 void DateTimeSymbolicFieldElement::handleKeyboardEvent(KeyboardEvent* keyboardEvent)
