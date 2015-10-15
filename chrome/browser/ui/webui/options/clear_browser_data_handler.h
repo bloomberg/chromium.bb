@@ -33,6 +33,10 @@ class ClearBrowserDataHandler : public OptionsPageUIHandler,
   void UpdateInfoBannerVisibility();
 
  private:
+  // Javascript callback for when the CBD dialog is opened. The caller does
+  // not provide any parameters, so |value| is unused.
+  void OnPageOpened(const base::ListValue* value);
+
   // Javascript callback to start clearing data.
   void HandleClearBrowserData(const base::ListValue* value);
 

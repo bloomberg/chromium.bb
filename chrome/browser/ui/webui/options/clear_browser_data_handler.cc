@@ -97,10 +97,6 @@ void ClearBrowserDataHandler::InitializePage() {
   web_ui()->CallJavascriptFunction("ClearBrowserDataOverlay.setClearing",
                                    base::FundamentalValue(removal_in_progress));
 
-  for (BrowsingDataCounter* counter : counters_) {
-    DCHECK(AreCountersEnabled());
-    counter->Restart();
-  }
   web_ui()->CallJavascriptFunction(
       "ClearBrowserDataOverlay.markInitializationComplete");
 }
@@ -126,6 +122,13 @@ void ClearBrowserDataHandler::UpdateInfoBannerVisibility() {
 
   web_ui()->CallJavascriptFunction("ClearBrowserDataOverlay.setBannerText",
                                    base::StringValue(text));
+}
+
+void ClearBrowserDataHandler::OnPageOpened(const base::ListValue* value) {
+  for (BrowsingDataCounter* counter : counters_) {
+    DCHECK(AreCountersEnabled());
+    counter->Restart();
+  }
 }
 
 void ClearBrowserDataHandler::GetLocalizedValues(
@@ -192,6 +195,9 @@ void ClearBrowserDataHandler::RegisterMessages() {
   // Setup handlers specific to this panel.
   web_ui()->RegisterMessageCallback("performClearBrowserData",
       base::Bind(&ClearBrowserDataHandler::HandleClearBrowserData,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("openedClearBrowserData",
+      base::Bind(&ClearBrowserDataHandler::OnPageOpened,
                  base::Unretained(this)));
 }
 

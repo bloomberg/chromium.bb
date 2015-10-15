@@ -90,6 +90,11 @@ cr.define('options', function() {
       this.updateStateOfControls_();
     },
 
+    /** @override */
+    didShowPage: function() {
+      chrome.send('openedClearBrowserData');
+    },
+
     /**
      * Create a footer that explains that some content is not cleared by the
      * clear browsing data dialog and warns that the deletion may be synced.
