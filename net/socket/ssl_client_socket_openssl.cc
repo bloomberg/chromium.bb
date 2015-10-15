@@ -1116,8 +1116,7 @@ int SSLClientSocketOpenSSL::DoHandshakeComplete(int result) {
 
   RecordNegotiationExtension();
   RecordChannelIDSupport(channel_id_service_, channel_id_sent_,
-                         ssl_config_.channel_id_enabled,
-                         crypto::ECPrivateKey::IsSupported());
+                         ssl_config_.channel_id_enabled);
 
   // Only record OCSP histograms if OCSP was requested.
   if (ssl_config_.signed_cert_timestamps_enabled ||

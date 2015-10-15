@@ -152,11 +152,9 @@ class NET_EXPORT SSLClientSocket : public SSLSocket {
 
   // Records histograms for channel id support during full handshakes - resumed
   // handshakes are ignored.
-  static void RecordChannelIDSupport(
-      ChannelIDService* channel_id_service,
-      bool negotiated_channel_id,
-      bool channel_id_enabled,
-      bool supports_ecc);
+  static void RecordChannelIDSupport(ChannelIDService* channel_id_service,
+                                     bool negotiated_channel_id,
+                                     bool channel_id_enabled);
 
   // Returns whether TLS channel ID is enabled.
   static bool IsChannelIDEnabled(

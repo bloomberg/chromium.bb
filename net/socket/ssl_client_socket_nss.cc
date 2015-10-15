@@ -648,10 +648,8 @@ class SSLClientSocketNSS::Core : public base::RefCountedThreadSafe<Core> {
   void OnNSSBufferUpdated(int amount_in_read_buffer);
   void DidNSSRead(int result);
   void DidNSSWrite(int result);
-  void RecordChannelIDSupportOnNetworkTaskRunner(
-      bool negotiated_channel_id,
-      bool channel_id_enabled,
-      bool supports_ecc) const;
+  void RecordChannelIDSupportOnNetworkTaskRunner(bool negotiated_channel_id,
+                                                 bool channel_id_enabled) const;
 
   ////////////////////////////////////////////////////////////////////////////
   // Methods that are called on both the network task runner and the NSS
@@ -2131,23 +2129,17 @@ void SSLClientSocketNSS::Core::RecordChannelIDSupportOnNSSTaskRunner() {
   // network task runner state.
   PostOrRunCallback(
       FROM_HERE,
-      base::Bind(&Core::RecordChannelIDSupportOnNetworkTaskRunner,
-                 this,
-                 channel_id_xtn_negotiated_,
-                 ssl_config_.channel_id_enabled,
-                 crypto::ECPrivateKey::IsSupported()));
+      base::Bind(&Core::RecordChannelIDSupportOnNetworkTaskRunner, this,
+                 channel_id_xtn_negotiated_, ssl_config_.channel_id_enabled));
 }
 
 void SSLClientSocketNSS::Core::RecordChannelIDSupportOnNetworkTaskRunner(
     bool negotiated_channel_id,
-    bool channel_id_enabled,
-    bool supports_ecc) const {
+    bool channel_id_enabled) const {
   DCHECK(OnNetworkTaskRunner());
 
-  RecordChannelIDSupport(channel_id_service_,
-                         negotiated_channel_id,
-                         channel_id_enabled,
-                         supports_ecc);
+  RecordChannelIDSupport(channel_id_service_, negotiated_channel_id,
+                         channel_id_enabled);
 }
 
 int SSLClientSocketNSS::Core::DoBufferRecv(IOBuffer* read_buffer, int len) {

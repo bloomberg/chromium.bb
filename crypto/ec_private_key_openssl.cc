@@ -93,9 +93,6 @@ ECPrivateKey* ECPrivateKey::Copy() const {
 }
 
 // static
-bool ECPrivateKey::IsSupported() { return true; }
-
-// static
 ECPrivateKey* ECPrivateKey::Create() {
   OpenSSLErrStackTracer err_tracer(FROM_HERE);
 
