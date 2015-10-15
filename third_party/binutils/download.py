@@ -9,6 +9,7 @@
 TODO(mithro): Replace with generic download_and_extract tool.
 """
 
+import argparse
 import os
 import platform
 import re
@@ -98,10 +99,20 @@ def FetchAndExtract(arch):
 
 
 def main(args):
+  parser = argparse.ArgumentParser(description=__doc__)
+  parser.add_argument('--ignore-if-arch', metavar='ARCH',
+                      action='append', default=[],
+                      help='Do nothing on host architecture ARCH')
+
+  options = parser.parse_args(args)
+
   if not sys.platform.startswith('linux'):
     return 0
 
   arch = GetArch()
+  if arch in options.ignore_if_arch:
+    return 0
+
   if arch == 'x64':
     return FetchAndExtract(arch)
   if arch == 'ia32':
@@ -110,9 +121,10 @@ def main(args):
       return ret
     # Fetch the x64 toolchain as well for official bots with 64-bit kernels.
     return FetchAndExtract('x64')
+
   print "Host architecture %s is not supported." % arch
   return 1
 
 
 if __name__ == '__main__':
-  sys.exit(main(sys.argv))
+  sys.exit(main(sys.argv[1:]))
