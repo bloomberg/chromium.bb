@@ -114,6 +114,7 @@ samp interfaceName=HTMLElement
 script constructorNeedsCreatedByParser
 section interfaceName=HTMLElement
 select constructorNeedsFormElement
+slot interfaceName=HTMLSlotElement
 small interfaceName=HTMLElement
 source runtimeEnabled=media
 span

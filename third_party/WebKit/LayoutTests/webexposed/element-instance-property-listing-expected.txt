@@ -850,6 +850,8 @@ html element select
     property willValidate
 html element shadow
     property getDistributedNodes
+html element slot
+    property name
 html element small
 html element source
     property media

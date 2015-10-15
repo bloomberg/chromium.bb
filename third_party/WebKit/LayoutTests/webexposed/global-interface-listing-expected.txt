@@ -2661,6 +2661,10 @@ interface HTMLSelectElement
 interface HTMLShadowElement
     method constructor
     method getDistributedNodes
+interface HTMLSlotElement
+    getter name
+    method constructor
+    setter name
 interface HTMLSourceElement
     getter media
     getter sizes
