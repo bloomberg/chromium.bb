@@ -437,9 +437,7 @@ if (!is_android) {
 
       if (enable_nacl) {
         deps += [
-          "//native_client/src/trusted/service_runtime/linux:munge_nacl_helper_bootstrap",
           "//components/nacl:nacl_helper",
-
           # '../components/nacl_nonsfi.gyp:nacl_helper_nonsfi',  TODO(GYP)
         ]
       }
@@ -996,9 +994,7 @@ if (!is_android) {
       }
       if (is_linux) {
         data_deps += [
-          "//native_client/src/trusted/service_runtime/linux:munge_nacl_helper_bootstrap",
           "//components/nacl:nacl_helper",
-
           # "//components/nacl_nonsfi.gyp:nacl_helper_nonsfi",  # TODO(GYP) bug 512912.
         ]
       }

@@ -39,6 +39,7 @@ if (enable_nacl) {
       "//ppapi/proxy:ipc",
       "//ppapi/shared_impl",
       "//third_party/mojo/src/mojo/edk/embedder",
+
       # TODO(use_chrome_edk): so that EDK in third_party can choose the EDK in
       # src/mojo if the command line flag is specified. It has to since we can
       # only have one definition of the Mojo primitives.
@@ -46,7 +47,9 @@ if (enable_nacl) {
     ]
 
     if (enable_nacl_untrusted) {
-      data_deps = [ "//ppapi/native_client:irt" ]
+      data_deps = [
+        "//ppapi/native_client:irt",
+      ]
     }
     if (enable_pnacl) {
       data_deps +=
@@ -196,6 +199,10 @@ if (enable_nacl) {
       cflags = [ "-fPIE" ]
 
       ldflags = [ "-pie" ]
+
+      data_deps = [
+        "//native_client/src/trusted/service_runtime/linux:bootstrap",
+      ]
     }
 
     source_set("nacl_linux") {
