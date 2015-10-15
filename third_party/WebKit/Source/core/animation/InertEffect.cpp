@@ -48,7 +48,7 @@ InertEffect::InertEffect(EffectModel* model, const Timing& timing, bool paused, 
 {
 }
 
-void InertEffect::sample(OwnPtr<Vector<RefPtr<Interpolation>>>& result)
+void InertEffect::sample(Vector<RefPtr<Interpolation>>& result)
 {
     updateInheritedTime(m_inheritedTime, TimingUpdateOnDemand);
     if (!isInEffect()) {

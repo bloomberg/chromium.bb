@@ -7,12 +7,9 @@
 
 namespace blink {
 
-void InterpolationEffect::getActiveInterpolations(double fraction, double iterationDuration, OwnPtr<Vector<RefPtr<Interpolation>>>& result) const
+void InterpolationEffect::getActiveInterpolations(double fraction, double iterationDuration, Vector<RefPtr<Interpolation>>& result) const
 {
-    if (!result)
-        result = adoptPtr(new Vector<RefPtr<Interpolation>>());
-
-    size_t existingSize = result->size();
+    size_t existingSize = result.size();
     size_t resultIndex = 0;
 
     for (const auto& record : m_interpolations) {
@@ -23,13 +20,13 @@ void InterpolationEffect::getActiveInterpolations(double fraction, double iterat
                 localFraction = record->m_easing->evaluate(localFraction, accuracyForDuration(iterationDuration));
             interpolation->interpolate(0, localFraction);
             if (resultIndex < existingSize)
-                (*result)[resultIndex++] = interpolation;
+                result[resultIndex++] = interpolation;
             else
-                result->append(interpolation);
+                result.append(interpolation);
         }
     }
     if (resultIndex < existingSize)
-        result->shrink(resultIndex);
+        result.shrink(resultIndex);
 }
 
 void InterpolationEffect::addInterpolationsFromKeyframes(PropertyHandle property, Element* element, const ComputedStyle* baseStyle, Keyframe::PropertySpecificKeyframe& keyframeA, Keyframe::PropertySpecificKeyframe& keyframeB, double applyFrom, double applyTo)

@@ -453,11 +453,11 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
             newFrames[1]->clearPropertyValue(id);
 
             InertEffect* inertAnimationForSampling = InertEffect::create(oldAnimation->model(), oldAnimation->specifiedTiming(), false, inheritedTime);
-            OwnPtr<Vector<RefPtr<Interpolation>>> sample = nullptr;
+            Vector<RefPtr<Interpolation>> sample;
             inertAnimationForSampling->sample(sample);
-            if (sample && sample->size() == 1) {
-                newFrames[0]->setPropertyValue(id, toLegacyStyleInterpolation(sample->at(0).get())->currentValue());
-                newFrames[1]->setPropertyValue(id, toLegacyStyleInterpolation(sample->at(0).get())->currentValue());
+            if (sample.size() == 1) {
+                newFrames[0]->setPropertyValue(id, toLegacyStyleInterpolation(sample.at(0).get())->currentValue());
+                newFrames[1]->setPropertyValue(id, toLegacyStyleInterpolation(sample.at(0).get())->currentValue());
                 model = AnimatableValueKeyframeEffectModel::create(newFrames);
             }
         }

@@ -64,7 +64,7 @@ void KeyframeEffectModelBase::setFrames(KeyframeVector& keyframes)
     m_lastFraction = std::numeric_limits<double>::quiet_NaN();
 }
 
-bool KeyframeEffectModelBase::sample(int iteration, double fraction, double iterationDuration, OwnPtr<Vector<RefPtr<Interpolation>>>& result) const
+bool KeyframeEffectModelBase::sample(int iteration, double fraction, double iterationDuration, Vector<RefPtr<Interpolation>>& result) const
 {
     ASSERT(iteration >= 0);
     ASSERT(!isNull(fraction));

@@ -21,7 +21,7 @@ public:
         return adoptRef(new InterpolationEffect());
     }
 
-    void getActiveInterpolations(double fraction, double iterationDuration, OwnPtr<Vector<RefPtr<Interpolation>>>&) const;
+    void getActiveInterpolations(double fraction, double iterationDuration, Vector<RefPtr<Interpolation>>&) const;
 
     void addInterpolation(PassRefPtr<Interpolation> interpolation, PassRefPtr<TimingFunction> easing, double start, double end, double applyFrom, double applyTo)
     {

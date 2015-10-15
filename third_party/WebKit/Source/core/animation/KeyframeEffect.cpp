@@ -176,17 +176,21 @@ void KeyframeEffect::applyEffects()
 
     double iteration = currentIteration();
     ASSERT(iteration >= 0);
-    OwnPtr<Vector<RefPtr<Interpolation>>> interpolations = m_sampledEffect ? m_sampledEffect->mutableInterpolations() : nullptr;
-    bool changed = m_model->sample(clampTo<int>(iteration, 0), timeFraction(), iterationDuration(), interpolations);
+    bool changed = false;
     if (m_sampledEffect) {
-        m_sampledEffect->setInterpolations(interpolations.release());
-    } else if (interpolations && !interpolations->isEmpty()) {
-        SampledEffect* sampledEffect = SampledEffect::create(this, interpolations.release());
-        m_sampledEffect = sampledEffect;
-        ensureAnimationStack(m_target).add(sampledEffect);
-        changed = true;
+        changed = m_model->sample(clampTo<int>(iteration, 0), timeFraction(), iterationDuration(), m_sampledEffect->mutableInterpolations());
     } else {
-        return;
+        Vector<RefPtr<Interpolation>> interpolations;
+        m_model->sample(clampTo<int>(iteration, 0), timeFraction(), iterationDuration(), interpolations);
+        if (!interpolations.isEmpty()) {
+            SampledEffect* sampledEffect = SampledEffect::create(this);
+            sampledEffect->mutableInterpolations().swap(interpolations);
+            m_sampledEffect = sampledEffect;
+            ensureAnimationStack(m_target).add(sampledEffect);
+            changed = true;
+        } else {
+            return;
+        }
     }
 
     if (changed)

@@ -68,10 +68,10 @@ bool compareEffects(const Member<SampledEffect>& effect1, const Member<SampledEf
 void copyNewAnimationsToActiveInterpolationsMap(const HeapVector<Member<InertEffect>>& newAnimations, ActiveInterpolationsMap& result)
 {
     for (const auto& newAnimation : newAnimations) {
-        OwnPtr<Vector<RefPtr<Interpolation>>> sample;
+        Vector<RefPtr<Interpolation>> sample;
         newAnimation->sample(sample);
-        if (sample)
-            copyToActiveInterpolationsMap(*sample, result);
+        if (!sample.isEmpty())
+            copyToActiveInterpolationsMap(sample, result);
     }
 }
 

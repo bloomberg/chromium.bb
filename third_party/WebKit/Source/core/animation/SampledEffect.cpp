@@ -11,21 +11,19 @@
 
 namespace blink {
 
-SampledEffect::SampledEffect(KeyframeEffect* effect, PassOwnPtr<Vector<RefPtr<Interpolation>>> interpolations)
+SampledEffect::SampledEffect(KeyframeEffect* effect)
     : m_effect(effect)
     , m_animation(effect->animation())
-    , m_interpolations(interpolations)
     , m_sequenceNumber(effect->animation()->sequenceNumber())
     , m_priority(effect->priority())
 {
-    ASSERT(m_interpolations && !m_interpolations->isEmpty());
 }
 
 void SampledEffect::clear()
 {
     m_effect = nullptr;
     m_animation = nullptr;
-    m_interpolations->clear();
+    m_interpolations.clear();
 }
 
 DEFINE_TRACE(SampledEffect)
@@ -36,7 +34,7 @@ DEFINE_TRACE(SampledEffect)
 
 void SampledEffect::applySVGUpdate(SVGElement& targetElement)
 {
-    for (const auto& interpolation : *m_interpolations) {
+    for (const auto& interpolation : m_interpolations) {
         if (interpolation->isSVGInterpolation()) {
             toSVGInterpolation(interpolation.get())->apply(targetElement);
         }

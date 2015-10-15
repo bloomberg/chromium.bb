@@ -85,7 +85,7 @@ public:
     }
 
     // EffectModel implementation.
-    bool sample(int iteration, double fraction, double iterationDuration, OwnPtr<Vector<RefPtr<Interpolation>>>&) const override;
+    bool sample(int iteration, double fraction, double iterationDuration, Vector<RefPtr<Interpolation>>&) const override;
 
     bool isKeyframeEffectModel() const override { return true; }
 

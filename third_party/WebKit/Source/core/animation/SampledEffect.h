@@ -21,17 +21,15 @@ class SVGElement;
 class SampledEffect : public GarbageCollectedFinalized<SampledEffect> {
     WTF_MAKE_NONCOPYABLE(SampledEffect);
 public:
-    static SampledEffect* create(KeyframeEffect* animation, PassOwnPtr<Vector<RefPtr<Interpolation>>> interpolations)
+    static SampledEffect* create(KeyframeEffect* animation)
     {
-        return new SampledEffect(animation, interpolations);
+        return new SampledEffect(animation);
     }
 
     void clear();
 
-    const Vector<RefPtr<Interpolation>>& interpolations() const { return *m_interpolations; }
-    PassOwnPtr<Vector<RefPtr<Interpolation>>> mutableInterpolations() { return m_interpolations.release(); }
-
-    void setInterpolations(PassOwnPtr<Vector<RefPtr<Interpolation>>> interpolations) { m_interpolations = interpolations; }
+    const Vector<RefPtr<Interpolation>>& interpolations() const { return m_interpolations; }
+    Vector<RefPtr<Interpolation>>& mutableInterpolations() { return m_interpolations; }
 
     KeyframeEffect* effect() const { return m_effect; }
     unsigned sequenceNumber() const { return m_sequenceNumber; }
@@ -42,11 +40,11 @@ public:
     void applySVGUpdate(SVGElement&);
 
 private:
-    SampledEffect(KeyframeEffect*, PassOwnPtr<Vector<RefPtr<Interpolation>>>);
+    SampledEffect(KeyframeEffect*);
 
     WeakMember<KeyframeEffect> m_effect;
     Member<Animation> m_animation;
-    OwnPtr<Vector<RefPtr<Interpolation>>> m_interpolations;
+    Vector<RefPtr<Interpolation>> m_interpolations;
     const unsigned m_sequenceNumber;
     KeyframeEffect::Priority m_priority;
 };

@@ -52,24 +52,24 @@ TEST_F(AnimationInterpolationEffectTest, SingleInterpolation)
     interpolationEffect->addInterpolation(SampleInterpolation::create(InterpolableNumber::create(0), InterpolableNumber::create(10)),
         RefPtr<TimingFunction>(), 0, 1, -1, 2);
 
-    OwnPtr<Vector<RefPtr<Interpolation>>> activeInterpolations = nullptr;
+    Vector<RefPtr<Interpolation>> activeInterpolations;
     interpolationEffect->getActiveInterpolations(-2, duration, activeInterpolations);
-    EXPECT_EQ(0ul, activeInterpolations->size());
+    EXPECT_EQ(0ul, activeInterpolations.size());
 
     interpolationEffect->getActiveInterpolations(-0.5, duration, activeInterpolations);
-    EXPECT_EQ(1ul, activeInterpolations->size());
-    EXPECT_EQ(-5, getInterpolableNumber(activeInterpolations->at(0)));
+    EXPECT_EQ(1ul, activeInterpolations.size());
+    EXPECT_EQ(-5, getInterpolableNumber(activeInterpolations.at(0)));
 
     interpolationEffect->getActiveInterpolations(0.5, duration, activeInterpolations);
-    EXPECT_EQ(1ul, activeInterpolations->size());
-    EXPECT_FLOAT_EQ(5, getInterpolableNumber(activeInterpolations->at(0)));
+    EXPECT_EQ(1ul, activeInterpolations.size());
+    EXPECT_FLOAT_EQ(5, getInterpolableNumber(activeInterpolations.at(0)));
 
     interpolationEffect->getActiveInterpolations(1.5, duration, activeInterpolations);
-    EXPECT_EQ(1ul, activeInterpolations->size());
-    EXPECT_FLOAT_EQ(15, getInterpolableNumber(activeInterpolations->at(0)));
+    EXPECT_EQ(1ul, activeInterpolations.size());
+    EXPECT_FLOAT_EQ(15, getInterpolableNumber(activeInterpolations.at(0)));
 
     interpolationEffect->getActiveInterpolations(3, duration, activeInterpolations);
-    EXPECT_EQ(0ul, activeInterpolations->size());
+    EXPECT_EQ(0ul, activeInterpolations.size());
 }
 
 TEST_F(AnimationInterpolationEffectTest, MultipleInterpolations)
@@ -82,36 +82,36 @@ TEST_F(AnimationInterpolationEffectTest, MultipleInterpolations)
     interpolationEffect->addInterpolation(SampleInterpolation::create(InterpolableNumber::create(1), InterpolableNumber::create(6)),
         CubicBezierTimingFunction::preset(CubicBezierTimingFunction::Ease), 0.5, 1.5, 0.5, 1.5);
 
-    OwnPtr<Vector<RefPtr<Interpolation>>> activeInterpolations = nullptr;
+    Vector<RefPtr<Interpolation>> activeInterpolations;
     interpolationEffect->getActiveInterpolations(-0.5, duration, activeInterpolations);
-    EXPECT_EQ(0ul, activeInterpolations->size());
+    EXPECT_EQ(0ul, activeInterpolations.size());
 
     interpolationEffect->getActiveInterpolations(0, duration, activeInterpolations);
-    EXPECT_EQ(1ul, activeInterpolations->size());
-    EXPECT_FLOAT_EQ(0, getInterpolableNumber(activeInterpolations->at(0)));
+    EXPECT_EQ(1ul, activeInterpolations.size());
+    EXPECT_FLOAT_EQ(0, getInterpolableNumber(activeInterpolations.at(0)));
 
     interpolationEffect->getActiveInterpolations(0.5, duration, activeInterpolations);
-    EXPECT_EQ(2ul, activeInterpolations->size());
-    EXPECT_FLOAT_EQ(0.5f, getInterpolableNumber(activeInterpolations->at(0)));
-    EXPECT_FLOAT_EQ(1, getInterpolableNumber(activeInterpolations->at(1)));
+    EXPECT_EQ(2ul, activeInterpolations.size());
+    EXPECT_FLOAT_EQ(0.5f, getInterpolableNumber(activeInterpolations.at(0)));
+    EXPECT_FLOAT_EQ(1, getInterpolableNumber(activeInterpolations.at(1)));
 
     interpolationEffect->getActiveInterpolations(1, duration, activeInterpolations);
-    EXPECT_EQ(2ul, activeInterpolations->size());
-    EXPECT_FLOAT_EQ(10, getInterpolableNumber(activeInterpolations->at(0)));
-    EXPECT_FLOAT_EQ(5.0282884f, getInterpolableNumber(activeInterpolations->at(1)));
+    EXPECT_EQ(2ul, activeInterpolations.size());
+    EXPECT_FLOAT_EQ(10, getInterpolableNumber(activeInterpolations.at(0)));
+    EXPECT_FLOAT_EQ(5.0282884f, getInterpolableNumber(activeInterpolations.at(1)));
 
     interpolationEffect->getActiveInterpolations(1, duration * 1000, activeInterpolations);
-    EXPECT_EQ(2ul, activeInterpolations->size());
-    EXPECT_FLOAT_EQ(10, getInterpolableNumber(activeInterpolations->at(0)));
-    EXPECT_FLOAT_EQ(5.0120168f, getInterpolableNumber(activeInterpolations->at(1)));
+    EXPECT_EQ(2ul, activeInterpolations.size());
+    EXPECT_FLOAT_EQ(10, getInterpolableNumber(activeInterpolations.at(0)));
+    EXPECT_FLOAT_EQ(5.0120168f, getInterpolableNumber(activeInterpolations.at(1)));
 
     interpolationEffect->getActiveInterpolations(1.5, duration, activeInterpolations);
-    EXPECT_EQ(1ul, activeInterpolations->size());
-    EXPECT_FLOAT_EQ(12.5f, getInterpolableNumber(activeInterpolations->at(0)));
+    EXPECT_EQ(1ul, activeInterpolations.size());
+    EXPECT_FLOAT_EQ(12.5f, getInterpolableNumber(activeInterpolations.at(0)));
 
     interpolationEffect->getActiveInterpolations(2, duration, activeInterpolations);
-    EXPECT_EQ(1ul, activeInterpolations->size());
-    EXPECT_FLOAT_EQ(15, getInterpolableNumber(activeInterpolations->at(0)));
+    EXPECT_EQ(1ul, activeInterpolations.size());
+    EXPECT_FLOAT_EQ(15, getInterpolableNumber(activeInterpolations.at(0)));
 }
 
 }
