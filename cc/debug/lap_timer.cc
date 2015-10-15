@@ -42,6 +42,8 @@ LapTimer::LapTimer()
     : LapTimer(kWarmupRuns,
                base::TimeDelta::FromMilliseconds(kTimeLimitMillis),
                kTimeCheckInterval) {
+  if (base::ThreadTicks::IsSupported())
+    base::ThreadTicks::WaitUntilInitialized();
 }
 
 void LapTimer::Reset() {

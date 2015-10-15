@@ -646,6 +646,7 @@ TEST(TimeTicks, HighRes) {
 #endif
 TEST(ThreadTicks, MAYBE_ThreadNow) {
   if (ThreadTicks::IsSupported()) {
+    ThreadTicks::WaitUntilInitialized();
     TimeTicks begin = TimeTicks::Now();
     ThreadTicks begin_thread = ThreadTicks::Now();
     // Make sure that ThreadNow value is non-zero.

@@ -24,6 +24,11 @@ class TaskQueueManagerPerfTest : public testing::Test {
         num_tasks_to_post_(0),
         num_tasks_to_run_(0) {}
 
+  void SetUp() override {
+    if (base::ThreadTicks::IsSupported())
+      base::ThreadTicks::WaitUntilInitialized();
+  }
+
   void Initialize(size_t num_queues) {
     num_queues_ = num_queues;
     message_loop_.reset(new base::MessageLoop());

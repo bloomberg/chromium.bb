@@ -14,6 +14,8 @@ scoped_ptr<RenderingStatsInstrumentation>
 
 RenderingStatsInstrumentation::RenderingStatsInstrumentation()
     : record_rendering_stats_(false) {
+  if (base::ThreadTicks::IsSupported())
+    base::ThreadTicks::WaitUntilInitialized();
 }
 
 RenderingStatsInstrumentation::~RenderingStatsInstrumentation() {}

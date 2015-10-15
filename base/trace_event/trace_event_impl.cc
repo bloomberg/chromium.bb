@@ -177,7 +177,11 @@ void TraceEvent::UpdateDuration(const TraceTicks& now,
                                 const ThreadTicks& thread_now) {
   DCHECK_EQ(duration_.ToInternalValue(), -1);
   duration_ = now - timestamp_;
-  thread_duration_ = thread_now - thread_timestamp_;
+
+  // |thread_timestamp_| can be empty if the thread ticks clock wasn't
+  // initialized when it was recorded.
+  if (thread_timestamp_ != ThreadTicks())
+    thread_duration_ = thread_now - thread_timestamp_;
 }
 
 void TraceEvent::EstimateTraceMemoryOverhead(

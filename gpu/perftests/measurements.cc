@@ -57,6 +57,7 @@ MeasurementTimers::MeasurementTimers(gfx::GPUTimingClient* gpu_timing_client)
   DCHECK(gpu_timing_client);
   wall_time_start_ = base::TraceTicks::Now();
   if (base::ThreadTicks::IsSupported()) {
+    base::ThreadTicks::WaitUntilInitialized();
     cpu_time_start_ = base::ThreadTicks::Now();
   } else {
     static bool logged_once = false;

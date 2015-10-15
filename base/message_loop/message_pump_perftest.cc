@@ -25,6 +25,11 @@ class ScheduleWorkTest : public testing::Test {
  public:
   ScheduleWorkTest() : counter_(0) {}
 
+  void SetUp() override {
+    if (base::ThreadTicks::IsSupported())
+      base::ThreadTicks::WaitUntilInitialized();
+  }
+
   void Increment(uint64_t amount) { counter_ += amount; }
 
   void Schedule(int index) {
