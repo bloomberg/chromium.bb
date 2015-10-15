@@ -22,6 +22,13 @@ namespace autofill {
 
 class AutofillMetrics {
  public:
+  enum AutofillProfileAction {
+    EXISTING_PROFILE_USED,
+    EXISTING_PROFILE_UPDATED,
+    NEW_PROFILE_CREATED,
+    AUTOFILL_PROFILE_ACTION_ENUM_SIZE,
+  };
+
   enum DeveloperEngagementMetric {
     // Parsed a form that is potentially autofillable.
     FILLABLE_FORM_PARSED = 0,
@@ -579,9 +586,9 @@ class AutofillMetrics {
   // This should be called each time a server response is parsed for a form.
   static void LogServerResponseHasDataForForm(bool has_data);
 
-  // This should be called at each form submission to indicate whether a new
-  // profile was created.
-  static void LogAutomaticProfileCreation(bool created);
+  // This should be called at each form submission to indicate what profile
+  // action happened.
+  static void LogProfileActionOnFormSubmitted(AutofillProfileAction action);
 
   // Utility to autofill form events in the relevant histograms depending on
   // the presence of server and/or local data.

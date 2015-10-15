@@ -3073,8 +3073,8 @@ TEST_F(AutofillMetricsTest, FormFillDuration) {
   }
 }
 
-// Verify that we correctly log metrics for profile creation on form submission.
-TEST_F(AutofillMetricsTest, AutomaticProfileCreation) {
+// Verify that we correctly log metrics for profile action on form submission.
+TEST_F(AutofillMetricsTest, ProfileActionOnFormSubmitted) {
   base::HistogramTester histogram_tester;
 
   // Load a fillable form.
@@ -3101,6 +3101,8 @@ TEST_F(AutofillMetricsTest, AutomaticProfileCreation) {
   form.fields.push_back(field);
   test::CreateTestFormField("Zip", "zip", "", "text", &field);
   form.fields.push_back(field);
+  test::CreateTestFormField("Organization", "organization", "", "text", &field);
+  form.fields.push_back(field);
 
   std::vector<FormData> forms(1, form);
 
@@ -3111,6 +3113,10 @@ TEST_F(AutofillMetricsTest, AutomaticProfileCreation) {
   // Fill a third form.
   FormData third_form = form;
   std::vector<FormData> third_forms(1, third_form);
+
+  // Fill a fourth form.
+  FormData fourth_form = form;
+  std::vector<FormData> fourth_forms(1, fourth_form);
 
   // Fill the field values for the first form submission.
   form.fields[0].value = ASCIIToUTF16("Albert Canuck");
@@ -3128,36 +3134,65 @@ TEST_F(AutofillMetricsTest, AutomaticProfileCreation) {
   // Fill the field values for the third form submission.
   third_form.fields[0].value = ASCIIToUTF16("Jean-Paul Canuck");
   third_form.fields[1].value = ASCIIToUTF16("can2@gmail.com");
-  third_form.fields[2].value = ASCIIToUTF16("12345678901");
+  third_form.fields[2].value = ASCIIToUTF16("");
   third_form.fields[3].value = ASCIIToUTF16("1234 McGill street.");
   third_form.fields[4].value = ASCIIToUTF16("Montreal");
   third_form.fields[5].value = ASCIIToUTF16("Canada");
   third_form.fields[6].value = ASCIIToUTF16("Quebec");
   third_form.fields[7].value = ASCIIToUTF16("A1A 1A1");
 
-  // Expect to log true for the metric since a new profile is submitted.
+  // Fill the field values for the fourth form submission (same as third form
+  // plus phone info).
+  fourth_form.fields = third_form.fields;
+  fourth_form.fields[2].value = ASCIIToUTF16("12345678901");
+
+  // Expect to log NEW_PROFILE_CREATED for the metric since a new profile is
+  // submitted.
   autofill_manager_->OnFormsSeen(forms, TimeTicks::FromInternalValue(1));
   autofill_manager_->SubmitForm(form, TimeTicks::FromInternalValue(17));
-  histogram_tester.ExpectBucketCount("Autofill.AutomaticProfileCreation",
-                                     true, 1);
-  histogram_tester.ExpectBucketCount("Autofill.AutomaticProfileCreation",
-                                     false, 0);
+  histogram_tester.ExpectBucketCount("Autofill.ProfileActionOnFormSubmitted",
+                                     AutofillMetrics::NEW_PROFILE_CREATED, 1);
+  histogram_tester.ExpectBucketCount("Autofill.ProfileActionOnFormSubmitted",
+                                     AutofillMetrics::EXISTING_PROFILE_USED, 0);
+  histogram_tester.ExpectBucketCount("Autofill.ProfileActionOnFormSubmitted",
+                                     AutofillMetrics::EXISTING_PROFILE_UPDATED,
+                                     0);
 
-  // Expect to log false for the metric since the same profile is submitted.
+  // Expect to log EXISTING_PROFILE_USED for the metric since the same profile
+  // is submitted.
   autofill_manager_->OnFormsSeen(second_forms, TimeTicks::FromInternalValue(1));
   autofill_manager_->SubmitForm(second_form, TimeTicks::FromInternalValue(17));
-  histogram_tester.ExpectBucketCount("Autofill.AutomaticProfileCreation",
-                                     true, 1);
-  histogram_tester.ExpectBucketCount("Autofill.AutomaticProfileCreation",
-                                     false, 1);
+  histogram_tester.ExpectBucketCount("Autofill.ProfileActionOnFormSubmitted",
+                                     AutofillMetrics::NEW_PROFILE_CREATED, 1);
+  histogram_tester.ExpectBucketCount("Autofill.ProfileActionOnFormSubmitted",
+                                     AutofillMetrics::EXISTING_PROFILE_USED, 1);
+  histogram_tester.ExpectBucketCount("Autofill.ProfileActionOnFormSubmitted",
+                                     AutofillMetrics::EXISTING_PROFILE_UPDATED,
+                                     0);
 
-  // Expect to log true for the metric since a new profile is submitted.
+  // Expect to log NEW_PROFILE_CREATED for the metric since a new profile is
+  // submitted.
   autofill_manager_->OnFormsSeen(third_forms, TimeTicks::FromInternalValue(1));
   autofill_manager_->SubmitForm(third_form, TimeTicks::FromInternalValue(17));
-  histogram_tester.ExpectBucketCount("Autofill.AutomaticProfileCreation",
-                                     true, 2);
-  histogram_tester.ExpectBucketCount("Autofill.AutomaticProfileCreation",
-                                     false, 1);
+  histogram_tester.ExpectBucketCount("Autofill.ProfileActionOnFormSubmitted",
+                                     AutofillMetrics::NEW_PROFILE_CREATED, 2);
+  histogram_tester.ExpectBucketCount("Autofill.ProfileActionOnFormSubmitted",
+                                     AutofillMetrics::EXISTING_PROFILE_USED, 1);
+  histogram_tester.ExpectBucketCount("Autofill.ProfileActionOnFormSubmitted",
+                                     AutofillMetrics::EXISTING_PROFILE_UPDATED,
+                                     0);
+
+  // Expect to log EXISTING_PROFILE_UPDATED for the metric since the profile was
+  // updated.
+  autofill_manager_->OnFormsSeen(fourth_forms, TimeTicks::FromInternalValue(1));
+  autofill_manager_->SubmitForm(fourth_form, TimeTicks::FromInternalValue(17));
+  histogram_tester.ExpectBucketCount("Autofill.ProfileActionOnFormSubmitted",
+                                     AutofillMetrics::NEW_PROFILE_CREATED, 2);
+  histogram_tester.ExpectBucketCount("Autofill.ProfileActionOnFormSubmitted",
+                                     AutofillMetrics::EXISTING_PROFILE_USED, 1);
+  histogram_tester.ExpectBucketCount("Autofill.ProfileActionOnFormSubmitted",
+                                     AutofillMetrics::EXISTING_PROFILE_UPDATED,
+                                     1);
 }
 
 // Test class that shares setup code for testing ParseQueryResponse.

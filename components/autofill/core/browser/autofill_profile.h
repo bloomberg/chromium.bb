@@ -114,8 +114,9 @@ class AutofillProfile : public AutofillDataModel {
                              const std::string& app_locale,
                              const ServerFieldTypeSet& types) const;
 
-  // Overwrites the field data in |profile| with this Profile.
-  void OverwriteWith(const AutofillProfile& profile,
+  // Overwrites the field data in |profile| with this Profile. Returns |true| if
+  // at least one field was overwritten.
+  bool OverwriteWith(const AutofillProfile& profile,
                      const std::string& app_locale);
 
   // Saves info from |profile| into |this|, provided |this| and |profile| do not
@@ -223,7 +224,8 @@ class AutofillProfile : public AutofillDataModel {
   // If |name| has the same full name representation as |name_|,
   // this will keep the one that has more information (i.e.
   // is not reconstructible via a heuristic parse of the full name string).
-  void OverwriteName(const NameInfo& name, const std::string& app_locale);
+  // Returns |true| is |name_| was overwritten.
+  bool OverwriteName(const NameInfo& name, const std::string& app_locale);
 
   // Same as operator==, but ignores differences in GUID.
   bool EqualsSansGuid(const AutofillProfile& profile) const;

@@ -643,8 +643,10 @@ void AutofillMetrics::LogServerResponseHasDataForForm(bool has_data) {
 }
 
 // static
-void AutofillMetrics::LogAutomaticProfileCreation(bool created) {
-  UMA_HISTOGRAM_BOOLEAN("Autofill.AutomaticProfileCreation", created);
+void AutofillMetrics::LogProfileActionOnFormSubmitted(
+    AutofillProfileAction action) {
+  UMA_HISTOGRAM_ENUMERATION("Autofill.ProfileActionOnFormSubmitted", action,
+                            AUTOFILL_PROFILE_ACTION_ENUM_SIZE);
 }
 
 AutofillMetrics::FormEventLogger::FormEventLogger(bool is_for_credit_card)

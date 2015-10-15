@@ -66,6 +66,14 @@ struct TestCase {
   std::vector<NameParts> expected_result;
 };
 
+void SetupTestProfile(AutofillProfile& profile) {
+  profile.set_guid(base::GenerateGUID());
+  profile.set_origin("Chrome settings");
+  test::SetProfileInfo(&profile, "Marion", "Mitchell", "Morrison",
+                       "marion@me.xyz", "Fox", "123 Zoo St.", "unit 5",
+                       "Hollywood", "CA", "91601", "US", "12345678910");
+}
+
 }  // namespace
 
 // Tests different possibilities for summary string generation.
@@ -830,12 +838,9 @@ TEST(AutofillProfileTest, IsSubsetOf) {
   EXPECT_FALSE(a->IsSubsetOf(*b, "en-US"));
 }
 
-TEST(AutofillProfileTest, OverwriteWith) {
-  AutofillProfile a(base::GenerateGUID(), "https://www.example.com");
-  test::SetProfileInfo(&a, "Marion", "Mitchell", "Morrison",
-                       "marion@me.xyz", "Fox", "123 Zoo St.", "unit 5",
-                       "Hollywood", "CA", "91601", "US",
-                       "12345678910");
+TEST(AutofillProfileTest, OverwriteWith_DifferentProfile) {
+  AutofillProfile a;
+  SetupTestProfile(a);
 
   // Create an identical profile except that the new profile:
   //   (1) Has a different origin,
@@ -852,13 +857,44 @@ TEST(AutofillProfileTest, OverwriteWith) {
   b.SetRawInfo(NAME_FULL, ASCIIToUTF16("Marion M. Morrison"));
   b.set_language_code("en");
 
-  a.OverwriteWith(b, "en-US");
+  EXPECT_TRUE(a.OverwriteWith(b, "en-US"));
   EXPECT_EQ("Chrome settings", a.origin());
   EXPECT_EQ(ASCIIToUTF16("area 51"), a.GetRawInfo(ADDRESS_HOME_LINE2));
   EXPECT_EQ(ASCIIToUTF16("Fox"), a.GetRawInfo(COMPANY_NAME));
   base::string16 name = a.GetInfo(AutofillType(NAME_FULL), "en-US");
   EXPECT_EQ(ASCIIToUTF16("Marion M. Morrison"), name);
   EXPECT_EQ("en", a.language_code());
+}
+
+TEST(AutofillProfileTest, OverwriteWith_SameProfile) {
+  AutofillProfile a;
+  SetupTestProfile(a);
+
+  AutofillProfile b = a;
+  b.set_guid(base::GenerateGUID());
+  EXPECT_FALSE(a.OverwriteWith(b, "en-US"));
+}
+
+TEST(AutofillProfileTest, OverwriteWith_DifferentName) {
+  AutofillProfile a;
+  SetupTestProfile(a);
+
+  AutofillProfile b = a;
+  b.SetRawInfo(NAME_FIRST, ASCIIToUTF16("Mario"));
+  EXPECT_TRUE(a.OverwriteWith(b, "en-US"));
+  base::string16 name_full = a.GetInfo(AutofillType(NAME_FULL), "en-US");
+  EXPECT_EQ(ASCIIToUTF16("Mario Mitchell Morrison"), name_full);
+}
+
+TEST(AutofillProfileTest, OverwriteWith_DifferentAddress) {
+  AutofillProfile a;
+  SetupTestProfile(a);
+
+  AutofillProfile b = a;
+  b.SetRawInfo(ADDRESS_HOME_LINE1, ASCIIToUTF16("123 Aquarium St."));
+  EXPECT_TRUE(a.OverwriteWith(b, "en-US"));
+  base::string16 address = a.GetRawInfo(ADDRESS_HOME_LINE1);
+  EXPECT_EQ(ASCIIToUTF16("123 Aquarium St."), address);
 }
 
 TEST(AutofillProfileTest, AssignmentOperator) {

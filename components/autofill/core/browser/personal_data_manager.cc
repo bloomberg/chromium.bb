@@ -1058,10 +1058,11 @@ std::string PersonalDataManager::MergeProfile(
   }
 
   // If the new profile was not merged with an existing one, add it to the list.
-  if (!matching_profile_found)
+  if (!matching_profile_found) {
     merged_profiles->push_back(new_profile);
-
-  AutofillMetrics::LogAutomaticProfileCreation(!matching_profile_found);
+    AutofillMetrics::LogProfileActionOnFormSubmitted(
+        AutofillMetrics::NEW_PROFILE_CREATED);
+  }
 
   return guid;
 }

@@ -24,6 +24,7 @@
 #include "components/autofill/core/browser/address_i18n.h"
 #include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/autofill_field.h"
+#include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/contact_info.h"
 #include "components/autofill/core/browser/phone_number.h"
@@ -478,12 +479,15 @@ bool AutofillProfile::IsSubsetOfForFieldSet(
   return true;
 }
 
-void AutofillProfile::OverwriteName(const NameInfo& imported_name,
+bool AutofillProfile::OverwriteName(const NameInfo& imported_name,
                                     const std::string& app_locale) {
   if (name_.ParsedNamesAreEqual(imported_name)) {
-    if (name_.GetRawInfo(NAME_FULL).empty())
+    if (name_.GetRawInfo(NAME_FULL).empty() &&
+        !imported_name.GetRawInfo(NAME_FULL).empty()) {
       name_.SetRawInfo(NAME_FULL, imported_name.GetRawInfo(NAME_FULL));
-    return;
+      return true;
+    }
+    return false;
   }
 
   l10n::CaseInsensitiveCompare compare;
@@ -501,13 +505,14 @@ void AutofillProfile::OverwriteName(const NameInfo& imported_name,
     NameInfo heuristically_parsed_name;
     heuristically_parsed_name.SetInfo(type, full_name, app_locale);
     if (imported_name.ParsedNamesAreEqual(heuristically_parsed_name))
-      return;
+      return false;
   }
 
   name_ = imported_name;
+  return true;
 }
 
-void AutofillProfile::OverwriteWith(const AutofillProfile& profile,
+bool AutofillProfile::OverwriteWith(const AutofillProfile& profile,
                                     const std::string& app_locale) {
   // Verified profiles should never be overwritten with unverified data.
   DCHECK(!IsVerified() || profile.IsVerified());
@@ -543,18 +548,26 @@ void AutofillProfile::OverwriteWith(const AutofillProfile& profile,
     field_types.erase(ADDRESS_HOME_LINE2);
   }
 
-  for (const auto& iter : field_types) {
-    FieldTypeGroup group = AutofillType(iter).group();
+  bool did_overwrite = false;
+
+  for (ServerFieldTypeSet::const_iterator iter = field_types.begin();
+       iter != field_types.end(); ++iter) {
+    FieldTypeGroup group = AutofillType(*iter).group();
+
     // Special case names.
     if (group == NAME) {
-      OverwriteName(profile.name_, app_locale);
+      did_overwrite = OverwriteName(profile.name_, app_locale) || did_overwrite;
       continue;
     }
 
-    base::string16 new_value = profile.GetRawInfo(iter);
-    if (!compare.StringsEqual(GetRawInfo(iter), new_value))
-      SetRawInfo(iter, new_value);
+    base::string16 new_value = profile.GetRawInfo(*iter);
+    if (!compare.StringsEqual(GetRawInfo(*iter), new_value)) {
+      SetRawInfo(*iter, new_value);
+      did_overwrite = true;
+    }
   }
+
+  return did_overwrite;
 }
 
 bool AutofillProfile::SaveAdditionalInfo(const AutofillProfile& profile,
@@ -622,8 +635,15 @@ bool AutofillProfile::SaveAdditionalInfo(const AutofillProfile& profile,
     }
   }
 
-  if (!IsVerified() || profile.IsVerified())
-    OverwriteWith(profile, app_locale);
+  if (!IsVerified() || profile.IsVerified()) {
+    if (OverwriteWith(profile, app_locale)) {
+      AutofillMetrics::LogProfileActionOnFormSubmitted(
+          AutofillMetrics::EXISTING_PROFILE_UPDATED);
+    } else {
+      AutofillMetrics::LogProfileActionOnFormSubmitted(
+          AutofillMetrics::EXISTING_PROFILE_USED);
+    }
+  }
   return true;
 }
 

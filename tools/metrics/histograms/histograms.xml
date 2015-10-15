@@ -2068,6 +2068,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Autofill.AutomaticProfileCreation" enum="BooleanCreated">
+  <obsolete>
+    Deprecated as of 6/2015, replaced by Autofill.ProfileActionOnFormSubmitted.
+  </obsolete>
   <owner>sebsg@chromium.org</owner>
   <summary>
     Whether a new Autofill profile was created automatically. In the
@@ -2343,6 +2346,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     Tracks the increased load on the Autofill server if the restriction on
     querying for password forms with fewer than 3 fields were omitted.
+  </summary>
+</histogram>
+
+<histogram name="Autofill.ProfileActionOnFormSubmitted"
+    enum="AutofillProfileAction">
+  <owner>sebsg@chromium.org</owner>
+  <summary>
+    The profile action that took place when a form was submitted.
   </summary>
 </histogram>
 
@@ -52927,6 +52938,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <enum name="AutofillMacAddressBook" type="int">
   <int value="0" label="Showed popup entry"/>
   <int value="1" label="Selected popup entry"/>
+</enum>
+
+<enum name="AutofillProfileAction" type="int">
+  <int value="0" label="Existing profile used"/>
+  <int value="1" label="Existing profile updated"/>
+  <int value="2" label="New profile created"/>
 </enum>
 
 <enum name="AutofillQuality" type="int">
