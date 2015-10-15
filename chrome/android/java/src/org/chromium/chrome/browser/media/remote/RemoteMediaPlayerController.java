@@ -185,6 +185,11 @@ public class RemoteMediaPlayerController implements MediaRouteController.UiListe
      */
     public void requestRemotePlayback(
             MediaRouteController.MediaStateListener player, MediaRouteController controller) {
+        // If we are already casting then simply switch to new video.
+        if (controller.isBeingCast()) {
+            controller.playerTakesOverCastDevice(player);
+            return;
+        }
         Activity currentActivity = ApplicationStatus.getLastTrackedFocusedActivity();
         mChromeVideoActivity = new WeakReference<Activity>(currentActivity);
 
@@ -269,41 +274,6 @@ public class RemoteMediaPlayerController implements MediaRouteController.UiListe
         createLockScreen();
         TransportControl lockScreen = getLockScreen();
         if (lockScreen != null) lockScreen.show(initialState);
-    }
-
-    /**
-     * Returns the current remote playback position.
-     *
-     * @return The current position of the remote playback in milliseconds.
-     */
-    public int getPosition() {
-        if (mCurrentRouteController == null) return -1;
-        return mCurrentRouteController.getPosition();
-    }
-
-    /**
-     * @return The stream duration in milliseconds.
-     */
-    public int getDuration() {
-        if (mCurrentRouteController == null) return 0;
-        return mCurrentRouteController.getDuration();
-    }
-
-    /**
-     * @return Whether the video is currently being played.
-     */
-    public boolean isPlaying() {
-        return mCurrentRouteController != null && mCurrentRouteController.isPlaying();
-    }
-
-    /**
-     * Initiates a seek request for the remote playback device to the specified position.
-     *
-     * @param msec The position to seek to, in milliseconds.
-     */
-    public void seekTo(int msec) {
-        if (mCurrentRouteController == null) return;
-        mCurrentRouteController.seekTo(msec);
     }
 
     /**

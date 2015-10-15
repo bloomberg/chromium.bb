@@ -23,13 +23,14 @@ RemoteMediaPlayerManager::RemoteMediaPlayerManager(
 RemoteMediaPlayerManager::~RemoteMediaPlayerManager() {}
 
 void RemoteMediaPlayerManager::OnStart(int player_id) {
-  // TODO(aberent) This assumes this is the first time we have started this
-  // video, rather than restarting after pause. There is a lot of logic here
-  // that is unnecessary if we are restarting after pause.
-  if (MaybeStartPlayingRemotely(player_id))
-    return;
-
-  ReplaceRemotePlayerWithLocal();
+  RemoteMediaPlayerBridge* remote_player = GetRemotePlayer(player_id);
+  if (remote_player) {
+    if (IsPlayingRemotely(player_id)) {
+      remote_player->Start();
+    } else if (remote_player->TakesOverCastDevice()) {
+      return;
+    }
+  }
   BrowserMediaPlayerManager::OnStart(player_id);
 }
 
@@ -39,11 +40,8 @@ void RemoteMediaPlayerManager::OnInitialize(
 
   MediaPlayerAndroid* player = GetPlayer(media_params.player_id);
   if (player) {
-    CreateRemoteMediaPlayer(player);
-    RemoteMediaPlayerBridge* remote_player = GetRemotePlayer(
-        media_params.player_id);
-    if (remote_player)
-      remote_player->OnPlayerCreated();
+    RemoteMediaPlayerBridge* remote_player = CreateRemoteMediaPlayer(player);
+    remote_player->OnPlayerCreated();
   }
 }
 
@@ -56,7 +54,7 @@ void RemoteMediaPlayerManager::OnDestroyPlayer(int player_id) {
 
 void RemoteMediaPlayerManager::OnReleaseResources(int player_id) {
   // We only want to release resources of local players.
-  if (player_id != RemotePlayerId())
+  if (!IsPlayingRemotely(player_id))
     BrowserMediaPlayerManager::OnReleaseResources(player_id);
 }
 
@@ -125,130 +123,72 @@ RemoteMediaPlayerBridge* RemoteMediaPlayerManager::CreateRemoteMediaPlayer(
       GetUserAgent(),
       false,
       this);
-  remote_players_.push_back(player);
+  alternative_players_.push_back(player);
   player->Initialize();
   return player;
 }
 
-int RemoteMediaPlayerManager::RemotePlayerId() {
-  // The remote player is created with the same id as the corresponding local
-  // player.
-  if (replaced_local_player_.get())
-    return replaced_local_player_->player_id();
-  else
-    return -1;
+// OnSuspend and OnResume are called when the local player loses or gains
+// audio focus. If we are playing remotely then ignore these.
+void RemoteMediaPlayerManager::OnSuspend(int player_id) {
+  if (!IsPlayingRemotely(player_id))
+    BrowserMediaPlayerManager::OnSuspend(player_id);
 }
 
-void RemoteMediaPlayerManager::ReplaceLocalPlayerWithRemote(
-    MediaPlayerAndroid* player) {
-  if (!player)
-    return;
+void RemoteMediaPlayerManager::OnResume(int player_id) {
+  if (!IsPlayingRemotely(player_id))
+    BrowserMediaPlayerManager::OnResume(player_id);
+}
 
-  int player_id = player->player_id();
-  if (player_id == RemotePlayerId()) {
-    // The player is already remote.
-    return;
-  }
-
-  // Before we replace the new remote player, put the old local player back
-  // in its place.
-  ReplaceRemotePlayerWithLocal();
-
-  // Pause the local player first before replacing it. This will allow the local
-  // player to reset its state, such as the PowerSaveBlocker.
-  // We have to pause locally as well as telling the renderer to pause, because
-  // by the time the renderer comes back to us telling us to pause we will have
-  // switched players.
-  player->Pause(true);
-  Send(new MediaPlayerMsg_DidMediaPlayerPause(RoutingID(), player_id));
-
+void RemoteMediaPlayerManager::SwapCurrentPlayer(int player_id) {
   // Find the remote player
-  for (auto it = remote_players_.begin(); it != remote_players_.end(); ++it) {
-    if ((*it)->player_id() == player_id) {
-      replaced_local_player_ = SwapPlayer(player_id, *it);
-
-      // Seek to the previous player's position.
-      (*it)->SeekTo(player->GetCurrentTime());
-
-      // SwapPlayers takes ownership, so we have to remove the remote player
-      // from the vector.
-      remote_players_.weak_erase(it);
-      break;
-    }
-  }
+  auto it = GetAlternativePlayer(player_id);
+  if (it == alternative_players_.end())
+    return;
+  MediaPlayerAndroid* new_player = *it;
+  scoped_ptr<MediaPlayerAndroid> old_player = SwapPlayer(player_id, new_player);
+  alternative_players_.weak_erase(it);
+  alternative_players_.push_back(old_player.release());
 }
 
-void RemoteMediaPlayerManager::ReplaceRemotePlayerWithLocal() {
-  int player_id = RemotePlayerId();
-  if (player_id == -1)
-    return;
+void RemoteMediaPlayerManager::SwitchToRemotePlayer(
+    int player_id,
+    const std::string& casting_message) {
+  DCHECK(!IsPlayingRemotely(player_id));
+  SwapCurrentPlayer(player_id);
+  players_playing_remotely_.insert(player_id);
+  Send(new MediaPlayerMsg_DidMediaPlayerPlay(RoutingID(), player_id));
+  Send(new MediaPlayerMsg_ConnectedToRemoteDevice(RoutingID(), player_id,
+                                                  casting_message));
+}
 
+void RemoteMediaPlayerManager::SwitchToLocalPlayer(int player_id) {
+  DCHECK(IsPlayingRemotely(player_id));
+  SwapCurrentPlayer(player_id);
+  players_playing_remotely_.erase(player_id);
+  Send(new MediaPlayerMsg_DisconnectedFromRemoteDevice(RoutingID(), player_id));
+}
+
+void RemoteMediaPlayerManager::ReplaceRemotePlayerWithLocal(int player_id) {
+  if (!IsPlayingRemotely(player_id))
+    return;
+  MediaPlayerAndroid* remote_player = GetPlayer(player_id);
+  remote_player->Pause(true);
   Send(new MediaPlayerMsg_DidMediaPlayerPause(RoutingID(), player_id));
   Send(new MediaPlayerMsg_DisconnectedFromRemoteDevice(RoutingID(), player_id));
 
-  scoped_ptr<MediaPlayerAndroid> remote_player =
-      SwapPlayer(player_id, replaced_local_player_.release());
-  if (remote_player) {
-    // Seek to the previous player's position.
-    GetPlayer(player_id)->SeekTo(remote_player->GetCurrentTime());
-
-    remote_player->Release();
-    // Add the remote player back into the list
-    remote_players_.push_back(
-        static_cast<RemoteMediaPlayerBridge *>(remote_player.release()));
-  }
-}
-
-bool RemoteMediaPlayerManager::MaybeStartPlayingRemotely(int player_id) {
-  MediaPlayerAndroid* player = GetPlayer(player_id);
-  if (!player)
-    return false;
-
-  RemoteMediaPlayerBridge* remote_player = GetRemotePlayer(player_id);
-
-  if (!remote_player)
-    return false;
-
-  if (remote_player->IsMediaPlayableRemotely() &&
-      remote_player->IsRemotePlaybackAvailable() &&
-      remote_player->IsRemotePlaybackPreferredForFrame()) {
-    ReplaceLocalPlayerWithRemote(player);
-
-    remote_player->SetNativePlayer();
-    remote_player->Start();
-
-    Send(new MediaPlayerMsg_DidMediaPlayerPlay(RoutingID(), player_id));
-
-    Send(new MediaPlayerMsg_ConnectedToRemoteDevice(
-        RoutingID(),
-        player_id,
-        remote_player->GetCastingMessage()));
-
-    return true;
-  }
-
-  return false;
-}
-
-void RemoteMediaPlayerManager::OnRemoteDeviceSelected(int player_id) {
-
-  MediaPlayerAndroid* player = GetPlayer(player_id);
-  if (!player)
-    return;
-
-  if (MaybeStartPlayingRemotely(player_id))
-    return;
-  OnStart(player_id);
+  SwapCurrentPlayer(player_id);
+  GetLocalPlayer(player_id)->SeekTo(remote_player->GetCurrentTime());
+  remote_player->Release();
+  players_playing_remotely_.erase(player_id);
 }
 
 void RemoteMediaPlayerManager::OnRemoteDeviceUnselected(int player_id) {
-  if (player_id == RemotePlayerId())
-    ReplaceRemotePlayerWithLocal();
+  ReplaceRemotePlayerWithLocal(player_id);
 }
 
 void RemoteMediaPlayerManager::OnRemotePlaybackFinished(int player_id) {
-  if (player_id == RemotePlayerId())
-    ReplaceRemotePlayerWithLocal();
+  ReplaceRemotePlayerWithLocal(player_id);
 }
 
 void RemoteMediaPlayerManager::OnRouteAvailabilityChanged(
@@ -260,10 +200,11 @@ void RemoteMediaPlayerManager::OnRouteAvailabilityChanged(
 
 void RemoteMediaPlayerManager::ReleaseFullscreenPlayer(
     MediaPlayerAndroid* player) {
+  int player_id = player->player_id();
   // Release the original player's resources, not the current fullscreen player
   // (which is the remote player).
-  if (replaced_local_player_.get())
-    replaced_local_player_->Release();
+  if (IsPlayingRemotely(player_id))
+    GetLocalPlayer(player_id)->Release();
   else
     BrowserMediaPlayerManager::ReleaseFullscreenPlayer(player);
 }
@@ -276,18 +217,34 @@ void RemoteMediaPlayerManager::OnPaused(int player_id) {
   Send(new MediaPlayerMsg_DidMediaPlayerPause(RoutingID(),player_id));
 }
 
+ScopedVector<MediaPlayerAndroid>::iterator
+RemoteMediaPlayerManager::GetAlternativePlayer(int player_id) {
+  for (auto it = alternative_players_.begin(); it != alternative_players_.end();
+       ++it) {
+    if ((*it)->player_id() == player_id) {
+      return it;
+    }
+  }
+  return alternative_players_.end();
+}
+
 RemoteMediaPlayerBridge* RemoteMediaPlayerManager::GetRemotePlayer(
     int player_id) {
-  if (player_id == RemotePlayerId()) {
+  if (IsPlayingRemotely(player_id))
     return static_cast<RemoteMediaPlayerBridge*>(GetPlayer(player_id));
-  } else {
-    for (RemoteMediaPlayerBridge* player : remote_players_) {
-      if (player->player_id() == player_id) {
-        return player;
-      }
-    }
+  auto it = GetAlternativePlayer(player_id);
+  if (it == alternative_players_.end())
     return nullptr;
-  }
+  return static_cast<RemoteMediaPlayerBridge*>(*it);
+}
+
+MediaPlayerAndroid* RemoteMediaPlayerManager::GetLocalPlayer(int player_id) {
+  if (!IsPlayingRemotely(player_id))
+    return static_cast<RemoteMediaPlayerBridge*>(GetPlayer(player_id));
+  auto it = GetAlternativePlayer(player_id);
+  if (it == alternative_players_.end())
+    return nullptr;
+  return *it;
 }
 
 void RemoteMediaPlayerManager::OnMediaMetadataChanged(int player_id,
@@ -295,15 +252,19 @@ void RemoteMediaPlayerManager::OnMediaMetadataChanged(int player_id,
                                                       int width,
                                                       int height,
                                                       bool success) {
-  if (player_id == RemotePlayerId() && replaced_local_player_) {
+  if (IsPlayingRemotely(player_id)) {
+    MediaPlayerAndroid* local_player = GetLocalPlayer(player_id);
     Send(new MediaPlayerMsg_MediaMetadataChanged(
-        RoutingID(), player_id, duration,
-        replaced_local_player_->GetVideoWidth(),
-        replaced_local_player_->GetVideoHeight(), success));
+        RoutingID(), player_id, duration, local_player->GetVideoWidth(),
+        local_player->GetVideoHeight(), success));
   } else {
     BrowserMediaPlayerManager::OnMediaMetadataChanged(player_id, duration,
                                                       width, height, success);
   }
+}
+
+bool RemoteMediaPlayerManager::IsPlayingRemotely(int player_id) {
+  return players_playing_remotely_.count(player_id) != 0;
 }
 
 } // namespace remote_media

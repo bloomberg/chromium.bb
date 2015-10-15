@@ -59,11 +59,14 @@ class RemoteMediaPlayerBridge : public media::MediaPlayerAndroid {
       JNIEnv* env, jobject obj);
   void OnPlaying(JNIEnv* env, jobject obj);
   void OnPaused(JNIEnv* env, jobject obj);
-  void OnRouteSelected(JNIEnv* env, jobject obj, jstring castingMessage);
   void OnRouteUnselected(JNIEnv* env, jobject obj);
   void OnPlaybackFinished(JNIEnv* env, jobject obj);
   void OnRouteAvailabilityChanged(JNIEnv* env, jobject obj, jboolean available);
   base::android::ScopedJavaLocalRef<jstring> GetTitle(JNIEnv* env, jobject obj);
+  void PauseLocal(JNIEnv* env, jobject obj);
+  jint GetLocalPosition(JNIEnv* env, jobject obj);
+  void OnCastStarting(JNIEnv* env, jobject obj, jstring casting_message);
+  void OnCastStopping(JNIEnv* env, jobject obj);
 
   // Wrappers for calls to Java used by the remote media player manager
   void RequestRemotePlayback();
@@ -71,11 +74,7 @@ class RemoteMediaPlayerBridge : public media::MediaPlayerAndroid {
   void SetNativePlayer();
   void OnPlayerCreated();
   void OnPlayerDestroyed();
-  bool IsRemotePlaybackAvailable() const;
-  bool IsRemotePlaybackPreferredForFrame() const;
-
-  // Returns true if the we can play the media remotely
-  bool IsMediaPlayableRemotely() const;
+  bool TakesOverCastDevice();
 
   // Gets the message to display on the embedded player while casting.
   std::string GetCastingMessage();
@@ -88,13 +87,11 @@ class RemoteMediaPlayerBridge : public media::MediaPlayerAndroid {
   void OnVideoSizeChanged(int width, int height) override;
   void OnPlaybackComplete() override;
   void OnMediaInterrupted() override;
-  void OnMediaPrepared() override;
 
  private:
   // Functions that implements media player control.
   void StartInternal();
   void PauseInternal();
-  void SeekInternal(base::TimeDelta time);
 
   // Called when |time_update_timer_| fires.
   void OnTimeUpdateTimerFired();
@@ -103,8 +100,6 @@ class RemoteMediaPlayerBridge : public media::MediaPlayerAndroid {
   // are retrieved.
   void OnCookiesRetrieved(const std::string& cookies);
 
-  void PendingSeekInternal(const base::TimeDelta& time);
-
   // Prepare the player for playback, asynchronously. When succeeds,
   // OnMediaPrepared() will be called. Otherwise, OnMediaError() will
   // be called with an error type.
@@ -112,15 +107,10 @@ class RemoteMediaPlayerBridge : public media::MediaPlayerAndroid {
 
   long start_position_millis_;
   MediaPlayerAndroid* local_player_;
-  bool in_use_;
-  bool prepared_;
-  bool pending_play_;
   int width_;
   int height_;
   base::RepeatingTimer time_update_timer_;
   base::TimeDelta duration_;
-  bool should_seek_on_prepare_;
-  base::TimeDelta pending_seek_;
 
   // Hide url log from media player.
   bool hide_url_log_;
