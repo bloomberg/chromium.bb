@@ -128,9 +128,15 @@ def parse_args(args):
             default=False, help="Save generated results as new baselines "
                  "into the *most-specific-platform* directory, overwriting whatever's "
                  "already there. Equivalent to --reset-results --add-platform-exceptions"),
-        optparse.make_option("--no-new-test-results", action="store_false",
-            dest="new_test_results", default=True,
-            help="Don't create new baselines when no expected results exist"),
+
+        # TODO(ojan): Remove once bots stop using it.
+        optparse.make_option("--no-new-test-results",
+            help="This doesn't do anything. TODO(ojan): Remove once bots stop using it."),
+
+        optparse.make_option("--new-test-results", action="store_true",
+            default=False,
+            help="Create new baselines when no expected results exist"),
+
         optparse.make_option("--no-show-results", action="store_false",
             default=True, dest="show_results",
             help="Don't launch a browser with results after the tests "

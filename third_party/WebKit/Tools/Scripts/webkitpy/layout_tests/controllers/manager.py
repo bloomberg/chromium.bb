@@ -474,6 +474,8 @@ class Manager(object):
         self._port.clobber_old_port_specific_results()
 
     def _tests_to_retry(self, run_results):
+        # TODO(ojan): This should also check that result.type != test_expectations.MISSING since retrying missing expectations is silly.
+        # But that's a bit tricky since we only consider the last retry attempt for the count of unexpected regressions.
         return [result.test_name for result in run_results.unexpected_results_by_name.values() if result.type != test_expectations.PASS]
 
     def _write_json_files(self, summarized_full_results, summarized_failing_results, initial_results, running_all_tests):

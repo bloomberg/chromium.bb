@@ -62,8 +62,8 @@ def parse_args(extra_args=None, tests_included=False, new_results=False, print_n
     args = []
     if not '--platform' in extra_args:
         args.extend(['--platform', 'test'])
-    if not new_results:
-        args.append('--no-new-test-results')
+    if new_results:
+        args.append('--new-test-results')
 
     if not '--child-processes' in extra_args:
         args.extend(['--child-processes', 1])
