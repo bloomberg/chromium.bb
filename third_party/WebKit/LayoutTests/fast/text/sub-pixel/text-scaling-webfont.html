@@ -31,18 +31,25 @@
                 window.testRunner.setTextSubpixelPositioning(true);
 
             var PANGRAM = 'My faxed joke won a pager in the cable TV quiz show.';
-            var results = runTest(document.getElementById('test'), PANGRAM);
-            
-            if (results == PASS) {
-                testPassed('Size of text scales smoothly and width scales with font size as expected.');
-                
-                // Hide text if test passes as the actual numbers are
-                // different across platforms and would require platform
-                // specific baselines.
-                if (window.testRunner)
-                    document.getElementById('test').style.display = 'none';
-            } else {
-                testFailed('Size of text does not scale smoothly, reported widths highlighted in red do not match reference row.');
+
+            jsTestIsAsync = true;
+            document.fonts.ready.then(testAndReport);
+
+            function testAndReport() {
+                var results = runTest(document.getElementById('test'), PANGRAM);
+
+                if (results == PASS) {
+                    testPassed('Size of text scales smoothly and width scales with font size as expected.');
+
+                    // Hide text if test passes as the actual numbers are
+                    // different across platforms and would require platform
+                    // specific baselines.
+                    if (window.testRunner)
+                        document.getElementById('test').style.display = 'none';
+                } else {
+                    testFailed('Size of text does not scale smoothly, reported widths highlighted in red do not match reference row.');
+                }
+                finishJSTest();
             }
         </script>
     </body>
