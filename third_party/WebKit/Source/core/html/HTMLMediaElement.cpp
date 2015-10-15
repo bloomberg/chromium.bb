@@ -1979,7 +1979,7 @@ void HTMLMediaElement::play()
         if (m_userGestureRequiredForPlay) {
             recordAutoplayMetric(PlayMethodFailed);
             String message = ExceptionMessages::failedToExecute("play", "HTMLMediaElement", "API can only be initiated by a user gesture.");
-            document().executionContext()->addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, message));
+            document().addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, message));
             return;
         }
     } else if (m_userGestureRequiredForPlay) {
