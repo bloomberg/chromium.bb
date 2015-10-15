@@ -94,6 +94,15 @@ void OfflinePageBridge::OfflinePageModelLoaded(OfflinePageModel* model) {
   NotifyIfDoneLoading();
 }
 
+void OfflinePageBridge::OfflinePageModelChanged(OfflinePageModel* model) {
+  DCHECK_EQ(offline_page_model_, model);
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = weak_java_ref_.get(env);
+  if (obj.is_null())
+    return;
+  Java_OfflinePageBridge_offlinePageModelChanged(env, obj.obj());
+}
+
 void OfflinePageBridge::GetAllPages(JNIEnv* env,
                                     jobject obj,
                                     jobject j_result_obj) {

@@ -18,6 +18,12 @@ namespace offline_pages {
 // Metadata of the offline page.
 struct OfflinePageItem {
  public:
+  // Note that this should match with Flags enum in offline_pages.proto.
+  enum Flags {
+    NO_FLAG = 0,
+    MARKED_FOR_DELETION = 0x1,
+  };
+
   OfflinePageItem();
   OfflinePageItem(const GURL& url,
                   int64 bookmark_id,
@@ -32,6 +38,14 @@ struct OfflinePageItem {
 
   // Gets a URL of the file under |file_path|.
   GURL GetOfflineURL() const;
+
+  // Returns true if the page has been marked for deletion. This allows an undo
+  // in a short time period. After that, the marked page will be deleted.
+  bool IsMarkedForDeletion() const;
+
+  // Sets/clears the mark for deletion.
+  void MarkForDeletion();
+  void ClearMarkForDeletion();
 
   // The URL of the page.
   GURL url;
@@ -49,6 +63,8 @@ struct OfflinePageItem {
   base::Time last_access_time;
   // Number of times that the offline archive has been accessed.
   int access_count;
+  // Flags about the state and behavior of the offline page.
+  Flags flags;
 };
 
 }  // namespace offline_pages

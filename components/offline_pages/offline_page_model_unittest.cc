@@ -172,6 +172,7 @@ class OfflinePageModelTest
 
   // OfflinePageModel::Observer implementation.
   void OfflinePageModelLoaded(OfflinePageModel* model) override;
+  void OfflinePageModelChanged(OfflinePageModel* model) override;
 
   // OfflinePageModel callbacks.
   void OnSavePageDone(SavePageResult result);
@@ -284,6 +285,10 @@ void OfflinePageModelTest::OfflinePageModelLoaded(OfflinePageModel* model) {
   run_loop_->Quit();
 }
 
+void OfflinePageModelTest::OfflinePageModelChanged(OfflinePageModel* model) {
+  ASSERT_EQ(model_.get(), model);
+}
+
 void OfflinePageModelTest::OnSavePageDone(
     OfflinePageModel::SavePageResult result) {
   run_loop_->Quit();
@@ -371,6 +376,7 @@ TEST_F(OfflinePageModelTest, SavePageSuccessful) {
   EXPECT_EQ(archiver_path, offline_pages[0].file_path);
   EXPECT_EQ(kTestFileSize, offline_pages[0].file_size);
   EXPECT_EQ(0, offline_pages[0].access_count);
+  EXPECT_EQ(0, offline_pages[0].flags);
 }
 
 TEST_F(OfflinePageModelTest, SavePageOfflineArchiverCancelled) {
@@ -505,11 +511,13 @@ TEST_F(OfflinePageModelTest, SavePageOfflineArchiverTwoPages) {
   EXPECT_EQ(archiver_path, offline_pages[0].file_path);
   EXPECT_EQ(kTestFileSize, offline_pages[0].file_size);
   EXPECT_EQ(0, offline_pages[0].access_count);
+  EXPECT_EQ(0, offline_pages[0].flags);
   EXPECT_EQ(kTestUrl2, offline_pages[1].url);
   EXPECT_EQ(kTestPageBookmarkId2, offline_pages[1].bookmark_id);
   EXPECT_EQ(archiver_path2, offline_pages[1].file_path);
   EXPECT_EQ(kTestFileSize, offline_pages[1].file_size);
   EXPECT_EQ(0, offline_pages[1].access_count);
+  EXPECT_EQ(0, offline_pages[1].flags);
 }
 
 TEST_F(OfflinePageModelTest, MarkPageAccessed) {
@@ -533,6 +541,36 @@ TEST_F(OfflinePageModelTest, MarkPageAccessed) {
   EXPECT_EQ(kTestPageBookmarkId1, offline_pages[0].bookmark_id);
   EXPECT_EQ(kTestFileSize, offline_pages[0].file_size);
   EXPECT_EQ(1, offline_pages[0].access_count);
+}
+
+TEST_F(OfflinePageModelTest, MarkPageForDeletion) {
+  scoped_ptr<OfflinePageTestArchiver> archiver(
+      BuildArchiver(kTestUrl,
+                    OfflinePageArchiver::ArchiverResult::SUCCESSFULLY_CREATED)
+          .Pass());
+  model()->SavePage(
+      kTestUrl, kTestPageBookmarkId1, archiver.Pass(),
+      base::Bind(&OfflinePageModelTest::OnSavePageDone, AsWeakPtr()));
+  PumpLoop();
+
+  // Delete the page with undo tiggerred.
+  model()->MarkPageForDeletion(
+      kTestPageBookmarkId1,
+      base::Bind(&OfflinePageModelTest::OnDeletePageDone, AsWeakPtr()));
+  PumpLoop();
+
+  // GetAllPages will not return the page that is marked for deletion.
+  const std::vector<OfflinePageItem>& offline_pages = model()->GetAllPages();
+  EXPECT_EQ(0UL, offline_pages.size());
+
+  // Undo the deletion.
+  model()->UndoPageDeletion(kTestPageBookmarkId1);
+  base::RunLoop().RunUntilIdle();
+
+  // GetAllPages will now return the restored page.
+  const std::vector<OfflinePageItem>& offline_pages_after_undo =
+      model()->GetAllPages();
+  EXPECT_EQ(1UL, offline_pages_after_undo.size());
 }
 
 TEST_F(OfflinePageModelTest, GetAllPagesStoreEmpty) {

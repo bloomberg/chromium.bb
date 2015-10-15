@@ -55,6 +55,8 @@ void OfflinePageItemToEntry(const OfflinePageItem& item,
   item_proto->set_creation_time(item.creation_time.ToInternalValue());
   item_proto->set_last_access_time(item.last_access_time.ToInternalValue());
   item_proto->set_access_count(item.access_count);
+  item_proto->set_flags(
+      static_cast<::offline_pages::OfflinePageEntry_Flags>(item.flags));
 }
 
 bool OfflinePageItemFromEntry(const offline_pages::OfflinePageEntry& item_proto,
@@ -85,6 +87,9 @@ bool OfflinePageItemFromEntry(const offline_pages::OfflinePageEntry& item_proto,
   }
   if (item_proto.has_access_count()) {
     item->access_count = item_proto.access_count();
+  }
+  if (item_proto.has_flags()) {
+    item->flags = static_cast<OfflinePageItem::Flags>(item_proto.flags());
   }
   return true;
 }

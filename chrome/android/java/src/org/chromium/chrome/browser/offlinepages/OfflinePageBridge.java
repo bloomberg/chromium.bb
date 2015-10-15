@@ -64,13 +64,20 @@ public final class OfflinePageBridge {
     }
 
     /**
-     * Interface that provides listeners to be notified of changes to the offline page model.
+     * Base empty implementation observer class that provides listeners to be notified of changes to
+     * the offline page model.
      */
-    public interface OfflinePageModelObserver {
+    public abstract static class OfflinePageModelObserver {
         /**
          * Called when the native side of offline pages is loaded and now in usable state.
          */
-        void offlinePageModelLoaded();
+        public void offlinePageModelLoaded() {}
+
+        /**
+         * Called when the native side of offline pages is changed due to adding, removing or
+         * update an offline page.
+         */
+        public void offlinePageModelChanged() {}
     }
 
     private static int getFreeSpacePercentage() {
@@ -240,6 +247,13 @@ public final class OfflinePageBridge {
         mIsNativeOfflinePageModelLoaded = true;
         for (OfflinePageModelObserver observer : mObservers) {
             observer.offlinePageModelLoaded();
+        }
+    }
+
+    @CalledByNative
+    private void offlinePageModelChanged() {
+        for (OfflinePageModelObserver observer : mObservers) {
+            observer.offlinePageModelChanged();
         }
     }
 

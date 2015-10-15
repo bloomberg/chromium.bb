@@ -15,7 +15,8 @@ const int kCurrentVersion = 1;
 OfflinePageItem::OfflinePageItem()
     : version(kCurrentVersion),
       file_size(0),
-      access_count(0) {
+      access_count(0),
+      flags(NO_FLAG) {
 }
 
 OfflinePageItem::OfflinePageItem(const GURL& url,
@@ -27,7 +28,8 @@ OfflinePageItem::OfflinePageItem(const GURL& url,
       version(kCurrentVersion),
       file_path(file_path),
       file_size(file_size),
-      access_count(0) {
+      access_count(0),
+      flags(NO_FLAG) {
 }
 
 OfflinePageItem::OfflinePageItem(const GURL& url,
@@ -42,7 +44,8 @@ OfflinePageItem::OfflinePageItem(const GURL& url,
       file_size(file_size),
       creation_time(creation_time),
       last_access_time(creation_time),
-      access_count(0) {
+      access_count(0),
+      flags(NO_FLAG) {
 }
 
 OfflinePageItem::~OfflinePageItem() {
@@ -50,6 +53,18 @@ OfflinePageItem::~OfflinePageItem() {
 
 GURL OfflinePageItem::GetOfflineURL() const {
   return net::FilePathToFileURL(file_path);
+}
+
+bool OfflinePageItem::IsMarkedForDeletion() const {
+  return (static_cast<int>(flags) & MARKED_FOR_DELETION) != 0;
+}
+
+void OfflinePageItem::MarkForDeletion() {
+  flags = static_cast<Flags>(static_cast<int>(flags) | MARKED_FOR_DELETION);
+}
+
+void OfflinePageItem::ClearMarkForDeletion() {
+  flags = static_cast<Flags>(static_cast<int>(flags) & ~MARKED_FOR_DELETION);
 }
 
 }  // namespace offline_pages

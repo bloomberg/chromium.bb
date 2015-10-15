@@ -36,4 +36,16 @@ message OfflinePageEntry {
 
   // Number of times that the offline archive has been accessed.
   optional int32 access_count = 8;
+
+  // Flags about the state and behavior of the offline page.
+  enum Flags {
+    // No flag is set.
+    NONE = 0;
+    // Indicates that the page is marked for deletion. The real deletion will
+    // occur soon, after which the undo will not be possible.
+    MARKED_FOR_DELETION = 1;
+  };
+
+  // Flags for the offline page.
+  optional Flags flags = 9;
 }

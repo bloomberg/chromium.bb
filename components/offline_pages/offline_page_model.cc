@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
@@ -29,6 +30,11 @@ namespace {
 // Threshold for how old offline copy of a page should be before we offer to
 // delete it to free up space.
 const base::TimeDelta kPageCleanUpThreshold = base::TimeDelta::FromDays(30);
+
+// The delay for the final deletion to kick in after the page is marked for
+// deletion. The value set here is a bit longer that the duration of the
+// snackbar that offers undo.
+const base::TimeDelta kFinalDeletionDelay = base::TimeDelta::FromSeconds(6);
 
 SavePageResult ToSavePageResult(ArchiverResult archiver_result) {
   SavePageResult result;
@@ -125,8 +131,27 @@ void OfflinePageModel::MarkPageAccessed(int64 bookmark_id) {
   offline_page_item.access_count++;
   store_->AddOrUpdateOfflinePage(
       offline_page_item,
-      base::Bind(&OfflinePageModel::OnUpdateOfflinePageDone,
+      base::Bind(&OfflinePageModel::OnMarkPageAccesseDone,
                  weak_ptr_factory_.GetWeakPtr(), offline_page_item));
+}
+
+void OfflinePageModel::MarkPageForDeletion(int64 bookmark_id,
+                                           const DeletePageCallback& callback) {
+  DCHECK(is_loaded_);
+  auto iter = offline_pages_.find(bookmark_id);
+  if (iter == offline_pages_.end()) {
+    InformDeletePageDone(callback, DeletePageResult::NOT_FOUND);
+    return;
+  }
+
+  // Make a copy of the cached item and update it. The cached item should only
+  // be updated upon the successful store operation.
+  OfflinePageItem offline_page_item = iter->second;
+  offline_page_item.MarkForDeletion();
+  store_->AddOrUpdateOfflinePage(
+      offline_page_item,
+      base::Bind(&OfflinePageModel::OnMarkPageForDeletionDone,
+                 weak_ptr_factory_.GetWeakPtr(), offline_page_item, callback));
 }
 
 void OfflinePageModel::DeletePageByBookmarkId(
@@ -170,8 +195,11 @@ void OfflinePageModel::DeletePagesByBookmarkId(
 const std::vector<OfflinePageItem> OfflinePageModel::GetAllPages() const {
   DCHECK(is_loaded_);
   std::vector<OfflinePageItem> offline_pages;
-  for (const auto& id_page_pair : offline_pages_)
+  for (const auto& id_page_pair : offline_pages_) {
+    if (id_page_pair.second.IsMarkedForDeletion())
+      continue;
     offline_pages.push_back(id_page_pair.second);
+  }
   return offline_pages;
 }
 
@@ -180,8 +208,10 @@ const std::vector<OfflinePageItem> OfflinePageModel::GetPagesToCleanUp() const {
   std::vector<OfflinePageItem> offline_pages;
   base::Time now = base::Time::Now();
   for (const auto& id_page_pair : offline_pages_) {
-    if (now - id_page_pair.second.last_access_time > kPageCleanUpThreshold)
+    if (!id_page_pair.second.IsMarkedForDeletion() &&
+        now - id_page_pair.second.last_access_time > kPageCleanUpThreshold) {
       offline_pages.push_back(id_page_pair.second);
+    }
   }
   return offline_pages;
 }
@@ -255,16 +285,91 @@ void OfflinePageModel::OnAddOfflinePageDone(OfflinePageArchiver* archiver,
   }
   InformSavePageDone(callback, result);
   DeletePendingArchiver(archiver);
+
+  FOR_EACH_OBSERVER(Observer, observers_, OfflinePageModelChanged(this));
 }
 
-void OfflinePageModel::OnUpdateOfflinePageDone(
+void OfflinePageModel::OnMarkPageAccesseDone(
     const OfflinePageItem& offline_page_item, bool success) {
   // Update the item in the cache only upon success.
   if (success)
     offline_pages_[offline_page_item.bookmark_id] = offline_page_item;
+
+  // No need to fire OfflinePageModelChanged event since updating access info
+  // should not have any impact to the UI.
+}
+
+void OfflinePageModel::OnMarkPageForDeletionDone(
+    const OfflinePageItem& offline_page_item,
+    const DeletePageCallback& callback,
+    bool success) {
+  // Update the item in the cache only upon success.
+  if (success)
+    offline_pages_[offline_page_item.bookmark_id] = offline_page_item;
+
+  InformDeletePageDone(callback, success ? DeletePageResult::SUCCESS
+                                         : DeletePageResult::STORE_FAILURE);
+
+  if (!success)
+    return;
+
+  // Schedule to do the final deletion.
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&OfflinePageModel::FinalizePageDeletion,
+                 weak_ptr_factory_.GetWeakPtr()),
+      kFinalDeletionDelay);
+
+  FOR_EACH_OBSERVER(Observer, observers_, OfflinePageModelChanged(this));
+}
+
+void OfflinePageModel::OnUndoOfflinePageDone(
+    const OfflinePageItem& offline_page, bool success) {
+  if (!success)
+    return;
+  offline_pages_[offline_page.bookmark_id] = offline_page;
+
+  FOR_EACH_OBSERVER(Observer, observers_, OfflinePageModelChanged(this));
+}
+
+void OfflinePageModel::FinalizePageDeletion() {
+  std::vector<int64> bookmark_ids_pending_deletion;
+  for (const auto& id_page_pair : offline_pages_) {
+    if (!id_page_pair.second.IsMarkedForDeletion())
+      continue;
+    bookmark_ids_pending_deletion.push_back(id_page_pair.second.bookmark_id);
+  }
+  DeletePagesByBookmarkId(bookmark_ids_pending_deletion, DeletePageCallback());
+}
+
+void OfflinePageModel::UndoPageDeletion(int64 bookmark_id) {
+  auto iter = offline_pages_.find(bookmark_id);
+  if (iter == offline_pages_.end())
+    return;
+
+  // Make a copy of the cached item and update it. The cached item should only
+  // be updated upon the successful store operation.
+  OfflinePageItem offline_page_item = iter->second;
+  if (!offline_page_item.IsMarkedForDeletion())
+    return;
+
+  // Clear the flag to bring it back.
+  offline_page_item.ClearMarkForDeletion();
+  store_->AddOrUpdateOfflinePage(
+      offline_page_item,
+      base::Bind(&OfflinePageModel::OnUndoOfflinePageDone,
+                 weak_ptr_factory_.GetWeakPtr(), offline_page_item));
 }
 
 void OfflinePageModel::BookmarkModelChanged() {
+}
+
+void OfflinePageModel::BookmarkNodeAdded(bookmarks::BookmarkModel* model,
+                                         const bookmarks::BookmarkNode* parent,
+                                         int index) {
+  const bookmarks::BookmarkNode* node = parent->GetChild(index);
+  DCHECK(node);
+  UndoPageDeletion(node->id());
 }
 
 void OfflinePageModel::BookmarkNodeRemoved(
@@ -275,13 +380,13 @@ void OfflinePageModel::BookmarkNodeRemoved(
     const std::set<GURL>& removed_urls) {
   if (!is_loaded_) {
     delayed_tasks_.push_back(
-        base::Bind(&OfflinePageModel::DeletePageByBookmarkId,
+        base::Bind(&OfflinePageModel::MarkPageForDeletion,
                    weak_ptr_factory_.GetWeakPtr(),
                    node->id(),
                    base::Bind(&EmptyDeleteCallback)));
     return;
   }
-  DeletePageByBookmarkId(node->id(), base::Bind(&EmptyDeleteCallback));
+  MarkPageForDeletion(node->id(), base::Bind(&EmptyDeleteCallback));
 }
 
 void OfflinePageModel::OnLoadDone(
@@ -299,6 +404,10 @@ void OfflinePageModel::OnLoadDone(
   for (const auto& delayed_task : delayed_tasks_)
     delayed_task.Run();
   delayed_tasks_.clear();
+
+  // If there are pages that are marked for deletion, but not yet deleted and
+  // OfflinePageModel gets reloaded. Delete the pages now.
+  FinalizePageDeletion();
 
   FOR_EACH_OBSERVER(Observer, observers_, OfflinePageModelLoaded(this));
 }
@@ -365,7 +474,8 @@ void OfflinePageModel::InformDeletePageDone(const DeletePageCallback& callback,
       "OfflinePages.DeletePageResult",
       static_cast<int>(result),
       static_cast<int>(DeletePageResult::RESULT_COUNT));
-  callback.Run(result);
+  if (!callback.is_null())
+    callback.Run(result);
 }
 
 }  // namespace offline_pages

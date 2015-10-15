@@ -18,6 +18,7 @@ import org.chromium.chrome.browser.BookmarksBridge.BookmarkModelObserver;
 import org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkManager.UIState;
 import org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkPromoHeader.PromoHeaderShowingChangeListener;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
+import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.OfflinePageModelObserver;
 import org.chromium.chrome.browser.offlinepages.OfflinePageFreeUpSpaceCallback;
 import org.chromium.chrome.browser.offlinepages.OfflinePageFreeUpSpaceDialog;
 import org.chromium.chrome.browser.offlinepages.OfflinePageStorageSpaceHeader;
@@ -76,6 +77,8 @@ class EnhancedBookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.Vie
             mDelegate.notifyStateChange(EnhancedBookmarkItemsAdapter.this);
         }
     };
+
+    private OfflinePageModelObserver mOfflinePageModelObserver;
 
     EnhancedBookmarkItemsAdapter(Context context) {
         mContext = context;
@@ -272,6 +275,14 @@ class EnhancedBookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.Vie
         mPromoHeaderManager = new EnhancedBookmarkPromoHeader(mContext, this);
         OfflinePageBridge offlinePageBridge = mDelegate.getModel().getOfflinePageBridge();
         if (offlinePageBridge != null) {
+            mOfflinePageModelObserver = new OfflinePageModelObserver() {
+                @Override
+                public void offlinePageModelChanged() {
+                    mDelegate.notifyStateChange(EnhancedBookmarkItemsAdapter.this);
+                }
+            };
+            offlinePageBridge.addObserver(mOfflinePageModelObserver);
+
             mOfflineStorageHeader = new OfflinePageStorageSpaceHeader(
                     mContext, offlinePageBridge, new OfflinePageFreeUpSpaceCallback() {
                         @Override
@@ -295,7 +306,10 @@ class EnhancedBookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.Vie
         mDelegate.removeUIObserver(this);
         mDelegate.getModel().removeObserver(mBookmarkModelObserver);
         mPromoHeaderManager.destroy();
-        if (mOfflineStorageHeader != null) {
+
+        OfflinePageBridge offlinePageBridge = mDelegate.getModel().getOfflinePageBridge();
+        if (offlinePageBridge != null) {
+            offlinePageBridge.removeObserver(mOfflinePageModelObserver);
             mOfflineStorageHeader.destroy();
         }
     }

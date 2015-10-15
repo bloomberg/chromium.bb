@@ -36,6 +36,7 @@ class OfflinePageBridge : public OfflinePageModel::Observer {
 
   // OfflinePageModel::Observer implementation.
   void OfflinePageModelLoaded(OfflinePageModel* model) override;
+  void OfflinePageModelChanged(OfflinePageModel* model) override;
 
   void GetAllPages(JNIEnv* env,
                    jobject obj,

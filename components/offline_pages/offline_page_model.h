@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -98,6 +99,10 @@ class OfflinePageModel : public KeyedService,
     // Invoked when the model has finished loading.
     virtual void OfflinePageModelLoaded(OfflinePageModel* model) = 0;
 
+    // Invoked when the model is being updated, due to adding, removing or
+    // updating an offline page.
+    virtual void OfflinePageModelChanged(OfflinePageModel* model) = 0;
+
    protected:
     virtual ~Observer() {}
   };
@@ -135,6 +140,12 @@ class OfflinePageModel : public KeyedService,
   // will be updated. Requires that the model is loaded.
   void MarkPageAccessed(int64 bookmark_id);
 
+  // Marks that the offline page related to the passed |bookmark_id| was going
+  // to be deleted. The deletion will occur in a short while. The undo can be
+  // done before this. Requires that the model is loaded.
+  void MarkPageForDeletion(int64 bookmark_id,
+                           const DeletePageCallback& callback);
+
   // Deletes an offline page related to the passed |bookmark_id|. Requires that
   // the model is loaded.
   void DeletePageByBookmarkId(int64 bookmark_id,
@@ -144,6 +155,8 @@ class OfflinePageModel : public KeyedService,
   // the model is loaded.
   void DeletePagesByBookmarkId(const std::vector<int64>& bookmark_ids,
                                const DeletePageCallback& callback);
+
+  void UndeletePage(int64 bookmark_id, const DeletePageCallback& callback);
 
   // Gets all available offline pages. Requires that the model is loaded.
   const std::vector<OfflinePageItem> GetAllPages() const;
@@ -166,10 +179,15 @@ class OfflinePageModel : public KeyedService,
   bool is_loaded() const { return is_loaded_; }
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(OfflinePageModelTest, MarkPageForDeletion);
+
   typedef ScopedVector<OfflinePageArchiver> PendingArchivers;
 
   // BaseBookmarkModelObserver:
   void BookmarkModelChanged() override;
+  void BookmarkNodeAdded(bookmarks::BookmarkModel* model,
+                         const bookmarks::BookmarkNode* parent,
+                         int index) override;
   void BookmarkNodeRemoved(bookmarks::BookmarkModel* model,
                            const bookmarks::BookmarkNode* parent,
                            int old_index,
@@ -208,8 +226,18 @@ class OfflinePageModel : public KeyedService,
   void InformDeletePageDone(const DeletePageCallback& callback,
                             DeletePageResult result);
 
-  void OnUpdateOfflinePageDone(const OfflinePageItem& offline_page_item,
-                               bool success);
+  void OnMarkPageAccesseDone(const OfflinePageItem& offline_page_item,
+                             bool success);
+
+  // Steps for marking an offline page for deletion that can be undo-ed.
+  void OnMarkPageForDeletionDone(const OfflinePageItem& offline_page_item,
+                                 const DeletePageCallback& callback,
+                                 bool success);
+  void FinalizePageDeletion();
+
+  // Steps for undoing a offline page deletion.
+  void UndoPageDeletion(int64 bookmark_id);
+  void OnUndoOfflinePageDone(const OfflinePageItem& offline_page, bool success);
 
   // Persistent store for offline page metadata.
   scoped_ptr<OfflinePageMetadataStore> store_;
