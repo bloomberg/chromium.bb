@@ -81,12 +81,6 @@ class PermissionsUpdater {
   // required by the extension.
   void InitializePermissions(const Extension* extension);
 
-  // Grants any withheld all-hosts (or all-hosts-like) permissions.
-  void GrantWithheldImpliedAllHosts(const Extension* extension);
-
-  // Revokes any requests all-hosts (or all-hosts-like) permissions.
-  void WithholdImpliedAllHosts(const Extension* extension);
-
  private:
   enum EventType {
     ADDED,

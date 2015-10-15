@@ -11,6 +11,7 @@
 #include "chrome/browser/extensions/extension_sync_service_factory.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/permissions_updater.h"
+#include "chrome/browser/extensions/scripting_permissions_modifier.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
@@ -384,7 +385,9 @@ TEST_F(ActiveScriptControllerUnitTest, TestAlwaysRun) {
   EXPECT_EQ(0u, GetExecutionCountForExtension(extension->id()));
 
   // Allow the extension to always run on this origin.
-  controller()->AlwaysRunOnVisibleOrigin(extension);
+  ScriptingPermissionsModifier modifier(profile(), extension);
+  modifier.GrantHostPermission(web_contents()->GetLastCommittedURL());
+  controller()->OnClicked(extension);
 
   // The extension should execute, and the extension shouldn't want to run.
   EXPECT_EQ(1u, GetExecutionCountForExtension(extension->id()));

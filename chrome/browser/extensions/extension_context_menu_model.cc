@@ -14,6 +14,7 @@
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "chrome/browser/extensions/menu_manager.h"
+#include "chrome/browser/extensions/scripting_permissions_modifier.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
@@ -242,8 +243,10 @@ void ExtensionContextMenuModel::ExecuteCommand(int command_id,
     case ALWAYS_RUN: {
       content::WebContents* web_contents = GetActiveWebContents();
       if (web_contents) {
+        ScriptingPermissionsModifier(profile_, extension)
+            .GrantHostPermission(web_contents->GetLastCommittedURL());
         ActiveScriptController::GetForWebContents(web_contents)
-            ->AlwaysRunOnVisibleOrigin(extension);
+            ->OnClicked(extension);
       }
       break;
     }

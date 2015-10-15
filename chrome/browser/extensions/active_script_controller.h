@@ -53,10 +53,6 @@ class ActiveScriptController : public content::WebContentsObserver,
   // extension.
   void OnActiveTabPermissionGranted(const Extension* extension);
 
-  // Adds the visible origin to |extension|'s active permissions, granting
-  // |extension| permission to always run script injections on the origin.
-  void AlwaysRunOnVisibleOrigin(const Extension* extension);
-
   // Notifies the ActiveScriptController that the action for |extension| has
   // been clicked, running any pending tasks that were previously shelved.
   void OnClicked(const Extension* extension);

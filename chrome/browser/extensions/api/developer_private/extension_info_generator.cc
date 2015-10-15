@@ -17,6 +17,7 @@
 #include "chrome/browser/extensions/extension_ui_util.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/path_util.h"
+#include "chrome/browser/extensions/scripting_permissions_modifier.h"
 #include "chrome/browser/extensions/shared_module_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
@@ -498,12 +499,13 @@ void ExtensionInfoGenerator::CreateExtensionInfoHelper(
   }
 
   // Runs on all urls.
+  ScriptingPermissionsModifier permissions_modifier(
+      browser_context_, make_scoped_refptr(&extension));
   info->run_on_all_urls.is_enabled =
       (FeatureSwitch::scripts_require_action()->IsEnabled() &&
-       PermissionsData::ScriptsMayRequireActionForExtension(
-           &extension, extension.permissions_data()->active_permissions())) ||
-      extension.permissions_data()->HasWithheldImpliedAllHosts() ||
-      util::HasSetAllowedScriptingOnAllUrls(extension.id(), browser_context_);
+       permissions_modifier.CanAffectExtension(
+           extension.permissions_data()->active_permissions())) ||
+      permissions_modifier.HasAffectedExtension();
   info->run_on_all_urls.is_active =
       util::AllowedScriptingOnAllUrls(extension.id(), browser_context_);
 

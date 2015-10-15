@@ -72,14 +72,6 @@ class PermissionsData {
   // whitelist of extensions that can script all pages.
   static bool CanExecuteScriptEverywhere(const Extension* extension);
 
-  // Returns true if the --scripts-require-action flag would possibly affect
-  // the given |extension| and |permissions|. We pass in the |permissions|
-  // explicitly, as we may need to check with permissions other than the ones
-  // that are currently on the extension's PermissionsData.
-  static bool ScriptsMayRequireActionForExtension(
-      const Extension* extension,
-      const PermissionSet& permissions);
-
   // Returns true if we should skip the permissions warning for the extension
   // with the given |extension_id|.
   static bool ShouldSkipPermissionWarnings(const std::string& extension_id);

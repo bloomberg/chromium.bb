@@ -65,37 +65,6 @@ void ActiveScriptController::OnActiveTabPermissionGranted(
   RunPendingForExtension(extension);
 }
 
-void ActiveScriptController::AlwaysRunOnVisibleOrigin(
-    const Extension* extension) {
-  const GURL& url = web_contents()->GetVisibleURL();
-  URLPatternSet new_explicit_hosts;
-  URLPatternSet new_scriptable_hosts;
-
-  const PermissionSet& withheld_permissions =
-      extension->permissions_data()->withheld_permissions();
-  if (withheld_permissions.explicit_hosts().MatchesURL(url)) {
-    new_explicit_hosts.AddOrigin(UserScript::ValidUserScriptSchemes(),
-                                 url.GetOrigin());
-  }
-  if (withheld_permissions.scriptable_hosts().MatchesURL(url)) {
-    new_scriptable_hosts.AddOrigin(UserScript::ValidUserScriptSchemes(),
-                                   url.GetOrigin());
-  }
-
-
-  // Update permissions for the session. This adds |new_permissions| to active
-  // permissions and granted permissions.
-  // TODO(devlin): Make sure that the permission is removed from
-  // withheld_permissions if appropriate.
-  PermissionsUpdater(browser_context_)
-      .AddPermissions(extension,
-                      PermissionSet(APIPermissionSet(), ManifestPermissionSet(),
-                                    new_explicit_hosts, new_scriptable_hosts));
-
-  // Allow current tab to run injection.
-  OnClicked(extension);
-}
-
 void ActiveScriptController::OnClicked(const Extension* extension) {
   DCHECK(ContainsKey(pending_requests_, extension->id()));
   RunPendingForExtension(extension);
