@@ -267,6 +267,8 @@ class BrowserActionsContainer
 
   views::BubbleDelegateView* active_bubble() { return active_bubble_; }
 
+  ChevronMenuButton* chevron_for_testing() { return chevron_; }
+
  protected:
   // Overridden from views::View:
   void ViewHierarchyChanged(

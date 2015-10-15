@@ -167,7 +167,13 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, MultipleWindows) {
       drop_data, location, location, ui::DragDropTypes::DRAG_MOVE);
 
   // Drag and drop.
+  first->toolbar_actions_bar()->OnDragStarted();
   first->OnDragUpdated(target_event);
+
+  // Semi-random placement for a regression test for crbug.com/539744.
+  first->Layout();
+  EXPECT_FALSE(first->chevron_for_testing()->visible());
+
   first->OnPerformDrop(target_event);
 
   // The new order, B A C, should be reflected in *both* containers, even
@@ -184,6 +190,8 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, MultipleWindows) {
   // The first and second container should each have resized.
   EXPECT_EQ(2u, first->VisibleBrowserActions());
   EXPECT_EQ(2u, second->VisibleBrowserActions());
+  EXPECT_TRUE(first->chevron_for_testing()->visible());
+  EXPECT_TRUE(second->chevron_for_testing()->visible());
 }
 
 // Test that the BrowserActionsContainer responds correctly when the underlying

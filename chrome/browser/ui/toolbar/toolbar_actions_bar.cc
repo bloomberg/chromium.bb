@@ -282,8 +282,11 @@ size_t ToolbarActionsBar::GetEndIndexInBounds() const {
 
 bool ToolbarActionsBar::NeedsOverflow() const {
   DCHECK(!in_overflow_mode());
+  // We need an overflow view if either the end index is less than the number of
+  // icons, or if a drag is in progress with the redesign turned on (since the
+  // user can drag an icon into the wrench menu).
   return GetEndIndexInBounds() != toolbar_actions_.size() ||
-         is_drag_in_progress_;
+         (is_drag_in_progress_ && !platform_settings_.chevron_enabled);
 }
 
 gfx::Rect ToolbarActionsBar::GetFrameForIndex(
