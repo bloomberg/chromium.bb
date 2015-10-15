@@ -505,11 +505,16 @@ function formOrFieldsetsToFormData_(formElement, formControlElement,
       continue;
 
     var controlElement = controlElements[i];
-    var fieldLabel = formFields[fieldIdx]['label'];
-    if (!fieldLabel) {
-      formFields[fieldIdx]['label'] =
+    var currentField = formFields[fieldIdx];
+    if (!currentField['label']) {
+      currentField['label'] =
           __gCrWeb.autofill.inferLabelForElement(controlElement);
     }
+    if (currentField['label'].length > __gCrWeb.autofill.MAX_DATA_LENGTH) {
+      currentField['label'] =
+          currentField['label'].substr(0, __gCrWeb.autofill.MAX_DATA_LENGTH);
+    }
+
     if (controlElement === formControlElement)
       field = formFields[fieldIdx];
     ++fieldIdx;
