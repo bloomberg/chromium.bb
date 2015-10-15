@@ -2357,3 +2357,5 @@ crbug.com/522389 [ Linux Mac Win ] fast/overflow/overflow-update-transform.html 
 crbug.com/522389 [ Linux Mac Win ] virtual/prefer_compositing_to_lcd_text/compositing/overflow/nested-render-surfaces-with-rotation.html [ NeedsRebaseline ]
 
 crbug.com/541601 svg/overflow/overflow-on-outermost-svg-element-in-xhtml-defaults.xhtml [ ImageOnlyFailure ]
+
+crbug.com/543369 [ Linux ] fast/forms/select/popup-menu-appearance-tall.html [ ImageOnlyFailure ]
