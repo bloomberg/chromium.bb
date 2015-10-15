@@ -122,7 +122,7 @@ TEST(IpAddressNumberTest, IsIPv4Mapped) {
   EXPECT_FALSE(IsIPv4Mapped(ipv4_number));
 
   IPAddressNumber ipv6_number;
-  EXPECT_TRUE(ParseIPLiteralToNumber("::1", &ipv4_number));
+  EXPECT_TRUE(ParseIPLiteralToNumber("::1", &ipv6_number));
   EXPECT_FALSE(IsIPv4Mapped(ipv6_number));
 
   IPAddressNumber ipv4mapped_number;
