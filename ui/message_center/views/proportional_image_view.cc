@@ -5,6 +5,7 @@
 #include "ui/message_center/views/proportional_image_view.h"
 
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/image/image_skia_operations.h"
 #include "ui/message_center/message_center_style.h"
 
 namespace message_center {
@@ -33,29 +34,18 @@ void ProportionalImageView::OnPaint(gfx::Canvas* canvas) {
   views::View::OnPaint(canvas);
 
   gfx::Size draw_size = GetImageDrawingSize();
-
   if (draw_size.IsEmpty())
     return;
 
   gfx::Rect draw_bounds = GetContentsBounds();
   draw_bounds.ClampToCenteredSize(draw_size);
 
-  gfx::Size image_size(image_.size());
-
-  if (image_size == draw_size) {
-    canvas->DrawImageInt(image_, draw_bounds.x(), draw_bounds.y());
-  } else {
-    SkPaint paint;
-    paint.setFilterQuality(kLow_SkFilterQuality);
-
-    // This call resizes the image while drawing into the canvas.
-    canvas->DrawImageInt(
-        image_,
-        0, 0, image_size.width(), image_size.height(),
-        draw_bounds.x(), draw_bounds.y(), draw_size.width(), draw_size.height(),
-        true,
-        paint);
-  }
+  gfx::ImageSkia image =
+      (image_.size() == draw_size)
+          ? image_
+          : gfx::ImageSkiaOperations::CreateResizedImage(
+                image_, skia::ImageOperations::RESIZE_BEST, draw_size);
+  canvas->DrawImageInt(image, draw_bounds.x(), draw_bounds.y());
 }
 
 const char* ProportionalImageView::GetClassName() const {
