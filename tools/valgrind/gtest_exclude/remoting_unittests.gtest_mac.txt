@@ -1,2 +1,0 @@
-# Failing on Mac. https://crbug.com/543431
-JingleSessionTest.TestQuicStreamChannel

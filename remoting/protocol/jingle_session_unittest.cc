@@ -530,11 +530,12 @@ TEST_F(JingleSessionTest, TestQuicStreamChannel) {
   config->PreferTransport(ChannelConfig::TRANSPORT_QUIC_STREAM);
   client_server_->set_protocol_config(config.Pass());
 
+  ExpectRouteChange(kQuicChannelName);
+
   ASSERT_NO_FATAL_FAILURE(
       InitiateConnection(1, FakeAuthenticator::ACCEPT, false));
 
   int counter = 2;
-  ExpectRouteChange(kQuicChannelName);
   EXPECT_CALL(client_channel_callback_, OnDone(_))
       .WillOnce(QuitThreadOnCounter(&counter));
   EXPECT_CALL(host_channel_callback_, OnDone(_))
