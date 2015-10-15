@@ -916,6 +916,7 @@ function unownedFormElementsAndFieldSetsToFormData_(
   form['origin'] = __gCrWeb.common.removeQueryAndReferenceFromURL(
       frame.location.href);
   form['action'] = ''
+  form['is_form_tag'] = false;
 
   return formOrFieldsetsToFormData_(
       null /* formElement*/, null /* formControlElement */, fieldsets,
