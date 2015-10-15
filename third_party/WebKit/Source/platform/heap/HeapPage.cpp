@@ -699,7 +699,7 @@ bool NormalPageHeap::expandObject(HeapObjectHeader* header, size_t newSize)
     size_t allocationSize = Heap::allocationSizeFromSize(newSize);
     ASSERT(allocationSize > header->size());
     size_t expandSize = allocationSize - header->size();
-    if (isObjectAllocatedAtAllocationPoint(header) && expandSize <= m_remainingAllocationSize) {
+    if (header->payloadEnd() == m_currentAllocationPoint && expandSize <= m_remainingAllocationSize) {
         m_currentAllocationPoint += expandSize;
         m_remainingAllocationSize -= expandSize;
 
@@ -719,7 +719,7 @@ bool NormalPageHeap::shrinkObject(HeapObjectHeader* header, size_t newSize)
     size_t allocationSize = Heap::allocationSizeFromSize(newSize);
     ASSERT(header->size() > allocationSize);
     size_t shrinkSize = header->size() - allocationSize;
-    if (isObjectAllocatedAtAllocationPoint(header)) {
+    if (header->payloadEnd() == m_currentAllocationPoint) {
         m_currentAllocationPoint -= shrinkSize;
         m_remainingAllocationSize += shrinkSize;
         SET_MEMORY_INACCESSIBLE(m_currentAllocationPoint, shrinkSize);
