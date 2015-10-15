@@ -547,9 +547,6 @@ gfx::Rect SurfaceAggregator::PrewalkTree(SurfaceId surface_id) {
   if (provider_)
     provider_->DeclareUsedResourcesFromChild(child_id, referenced_resources);
 
-  for (const auto& render_pass : frame_data->render_pass_list)
-    has_copy_requests_ |= !render_pass->copy_requests.empty();
-
   gfx::Rect damage_rect;
   if (!frame_data->render_pass_list.empty()) {
     RenderPass* last_pass = frame_data->render_pass_list.back();
@@ -566,6 +563,13 @@ gfx::Rect SurfaceAggregator::PrewalkTree(SurfaceId surface_id) {
     damage_rect.Union(
         MathUtil::MapEnclosingClippedRect(surface_info.second, surface_damage));
   }
+
+  if (surface->factory())
+    surface->factory()->WillDrawSurface(surface->surface_id(), damage_rect);
+
+  for (const auto& render_pass : frame_data->render_pass_list)
+    has_copy_requests_ |= !render_pass->copy_requests.empty();
+
   referenced_surfaces_.erase(it);
   return damage_rect;
 }
