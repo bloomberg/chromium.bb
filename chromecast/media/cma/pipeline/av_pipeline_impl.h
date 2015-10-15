@@ -12,8 +12,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
-#include "chromecast/media/cma/pipeline/av_pipeline_client.h"
-#include "chromecast/public/media/media_component_device.h"
+#include "chromecast/media/cma/base/cast_decoder_buffer_impl.h"
+#include "chromecast/public/media/media_pipeline_backend.h"
 #include "chromecast/public/media/stream_id.h"
 
 namespace media {
@@ -28,7 +28,6 @@ class BufferingFrameProvider;
 class BufferingState;
 class CodedFrameProvider;
 class DecoderBufferBase;
-class MediaComponentDevice;
 
 class AvPipelineImpl {
  public:
@@ -47,9 +46,8 @@ class AvPipelineImpl {
            const ::media::AudioDecoderConfig&,
            const ::media::VideoDecoderConfig&)> UpdateConfigCB;
 
-  AvPipelineImpl(
-      MediaComponentDevice* media_component_device,
-      const UpdateConfigCB& update_config_cb);
+  AvPipelineImpl(MediaPipelineBackend::Decoder* decoder,
+                 const UpdateConfigCB& update_config_cb);
   ~AvPipelineImpl();
 
   // Setting the frame provider or the client must be done in the
@@ -57,10 +55,6 @@ class AvPipelineImpl {
   void SetCodedFrameProvider(scoped_ptr<CodedFrameProvider> frame_provider,
                              size_t max_buffer_size,
                              size_t max_frame_size);
-  void SetClient(const AvPipelineClient& client);
-
-  // Initialize the pipeline.
-  bool Initialize();
 
   // Setup the pipeline and ensure samples are available for the given media
   // time, then start rendering samples.
@@ -79,13 +73,12 @@ class AvPipelineImpl {
 
   void SetCdm(BrowserCdmCast* media_keys);
 
+  void OnBufferPushed(MediaPipelineBackend::BufferStatus status);
+
  private:
   // Callback invoked when the CDM state has changed in a way that might
   // impact media playback.
   void OnCdmStateChange();
-
-  // Callback invoked when playback has reached the end of stream.
-  void OnEos();
 
   // Feed the pipeline, getting the frames from |frame_provider_|.
   void FetchBufferIfNeeded();
@@ -98,28 +91,24 @@ class AvPipelineImpl {
   // Process a pending buffer.
   void ProcessPendingBuffer();
 
-  void OnFramePushed(MediaComponentDevice::FrameStatus status);
-
   // Callbacks:
   // - when BrowserCdm updated its state.
   // - when BrowserCdm has been destroyed.
   void OnCdmStateChanged();
   void OnCdmDestroyed();
 
-  // Callback invoked when a frame has been buffered by |frame_provider_|
+  // Callback invoked when a media buffer has been buffered by |frame_provider_|
   // which is a BufferingFrameProvider.
-  void OnFrameBuffered(const scoped_refptr<DecoderBufferBase>& buffer,
-                       bool is_at_max_capacity);
+  void OnDataBuffered(const scoped_refptr<DecoderBufferBase>& buffer,
+                      bool is_at_max_capacity);
   void UpdatePlayableFrames();
 
   base::ThreadChecker thread_checker_;
 
   UpdateConfigCB update_config_cb_;
 
-  AvPipelineClient client_;
-
   // Backends.
-  MediaComponentDevice* media_component_device_;
+  MediaPipelineBackend::Decoder* decoder_;
 
   // AV pipeline state.
   State state_;
@@ -147,11 +136,11 @@ class AvPipelineImpl {
   // Indicate whether there is a pending buffer read.
   bool pending_read_;
 
-  // Pending buffer.
+  // Pending buffer (not pushed to device yet)
   scoped_refptr<DecoderBufferBase> pending_buffer_;
 
-  // Indicate if there is a frame being pushed to the audio device.
-  bool pending_push_;
+  // Buffer that has been pushed to the device but not processed yet.
+  CastDecoderBufferImpl pushed_buffer_;
 
   // The media time is retrieved at regular intervals.
   // Indicate whether time update is enabled.

@@ -80,8 +80,7 @@ void MediaPipelineProxyInternal::Shutdown() {
       CmaMessageFilterProxy::MediaDelegate());
 }
 
-void MediaPipelineProxyInternal::SetClient(
-    const MediaPipelineClient& client) {
+void MediaPipelineProxyInternal::SetClient(const MediaPipelineClient& client) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!client.error_cb.is_null());
   DCHECK(!client.buffering_state_cb.is_null());
@@ -185,8 +184,7 @@ MediaPipelineProxy::~MediaPipelineProxy() {
       FROM_HERE, base::Bind(&MediaChannelProxy::Close, media_channel_proxy_));
 }
 
-void MediaPipelineProxy::SetClient(
-    const MediaPipelineClient& client) {
+void MediaPipelineProxy::SetClient(const MediaPipelineClient& client) {
   DCHECK(thread_checker_.CalledOnValidThread());
   FORWARD_ON_IO_THREAD(SetClient, client);
 }
@@ -196,11 +194,11 @@ void MediaPipelineProxy::SetCdm(int cdm_id) {
   FORWARD_ON_IO_THREAD(SetCdm, render_frame_id_, cdm_id);
 }
 
-AudioPipeline* MediaPipelineProxy::GetAudioPipeline() const {
+AudioPipelineProxy* MediaPipelineProxy::GetAudioPipeline() const {
   return audio_pipeline_.get();
 }
 
-VideoPipeline* MediaPipelineProxy::GetVideoPipeline() const {
+VideoPipelineProxy* MediaPipelineProxy::GetVideoPipeline() const {
   return video_pipeline_.get();
 }
 

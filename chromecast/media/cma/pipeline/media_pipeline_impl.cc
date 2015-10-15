@@ -19,7 +19,6 @@
 #include "chromecast/media/cma/base/coded_frame_provider.h"
 #include "chromecast/media/cma/pipeline/audio_pipeline_impl.h"
 #include "chromecast/media/cma/pipeline/video_pipeline_impl.h"
-#include "chromecast/public/media/media_clock_device.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
 #include "media/base/timestamp_constants.h"
 
@@ -51,9 +50,13 @@ const int kStatisticsUpdatePeriod = 4;
 }  // namespace
 
 MediaPipelineImpl::MediaPipelineImpl()
-    : has_audio_(false),
+    : audio_decoder_(nullptr),
+      video_decoder_(nullptr),
+      backend_initialized_(false),
+      has_audio_(false),
       has_video_(false),
-      target_playback_rate_(0.0),
+      paused_(false),
+      target_playback_rate_(1.0f),
       enable_time_update_(false),
       pending_time_update_task_(false),
       statistics_rolling_counter_(0),
@@ -84,7 +87,6 @@ void MediaPipelineImpl::Initialize(
   CMALOG(kLogControl) << __FUNCTION__;
   DCHECK(thread_checker_.CalledOnValidThread());
   media_pipeline_backend_.reset(media_pipeline_backend.release());
-  clock_device_ = media_pipeline_backend_->GetClock();
   if (!client_.pipeline_backend_created_cb.is_null())
     client_.pipeline_backend_created_cb.Run();
 
@@ -101,12 +103,6 @@ void MediaPipelineImpl::Initialize(
         buffering_config,
         base::Bind(&MediaPipelineImpl::OnBufferingNotification, weak_this_)));
   }
-
-  audio_pipeline_.reset(
-      new AudioPipelineImpl(media_pipeline_backend_->GetAudio()));
-
-  video_pipeline_.reset(
-      new VideoPipelineImpl(media_pipeline_backend_->GetVideo()));
 }
 
 void MediaPipelineImpl::SetClient(const MediaPipelineClient& client) {
@@ -127,6 +123,36 @@ void MediaPipelineImpl::SetCdm(int cdm_id) {
   // One possibility would be a GetCdmByIdCB that's passed in.
 }
 
+void MediaPipelineImpl::OnVideoResolutionChanged(
+    MediaPipelineBackend::VideoDecoder* decoder,
+    const Size& size) {
+  DCHECK(decoder == video_decoder_);
+  video_pipeline_->OnNaturalSizeChanged(size);
+}
+
+void MediaPipelineImpl::OnPushBufferComplete(
+    MediaPipelineBackend::Decoder* decoder,
+    MediaPipelineBackend::BufferStatus status) {
+  if (decoder == audio_decoder_)
+    audio_pipeline_->OnBufferPushed(status);
+  else if (decoder == video_decoder_)
+    video_pipeline_->OnBufferPushed(status);
+}
+
+void MediaPipelineImpl::OnEndOfStream(MediaPipelineBackend::Decoder* decoder) {
+  if (decoder == audio_decoder_)
+    audio_pipeline_->OnEndOfStream();
+  else if (decoder == video_decoder_)
+    video_pipeline_->OnEndOfStream();
+}
+
+void MediaPipelineImpl::OnDecoderError(MediaPipelineBackend::Decoder* decoder) {
+  if (decoder == audio_decoder_)
+    audio_pipeline_->OnError();
+  else if (decoder == video_decoder_)
+    video_pipeline_->OnError();
+}
+
 void MediaPipelineImpl::SetCdm(BrowserCdmCast* cdm) {
   CMALOG(kLogControl) << __FUNCTION__;
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -134,41 +160,41 @@ void MediaPipelineImpl::SetCdm(BrowserCdmCast* cdm) {
   video_pipeline_->SetCdm(cdm);
 }
 
-AudioPipeline* MediaPipelineImpl::GetAudioPipeline() const {
-  return audio_pipeline_.get();
-}
-
-VideoPipeline* MediaPipelineImpl::GetVideoPipeline() const {
-  return video_pipeline_.get();
-}
-
 void MediaPipelineImpl::InitializeAudio(
     const ::media::AudioDecoderConfig& config,
+    const AvPipelineClient& client,
     scoped_ptr<CodedFrameProvider> frame_provider,
     const ::media::PipelineStatusCB& status_cb) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!has_audio_);
-  if (clock_device_->GetState() == MediaClockDevice::kStateUninitialized &&
-      !clock_device_->SetState(MediaClockDevice::kStateIdle)) {
-    status_cb.Run(::media::PIPELINE_ERROR_INITIALIZATION_FAILED);
+
+  has_audio_ = true;
+
+  audio_decoder_ = media_pipeline_backend_->CreateAudioDecoder();
+  if (!audio_decoder_) {
+    status_cb.Run(::media::PIPELINE_ERROR_ABORT);
     return;
   }
-  has_audio_ = true;
+  audio_pipeline_.reset(new AudioPipelineImpl(audio_decoder_, client));
   audio_pipeline_->Initialize(config, frame_provider.Pass(), status_cb);
 }
 
 void MediaPipelineImpl::InitializeVideo(
-    const std::vector<::media::VideoDecoderConfig>& configs,
+    const std::vector< ::media::VideoDecoderConfig>& configs,
+    const VideoPipelineClient& client,
     scoped_ptr<CodedFrameProvider> frame_provider,
     const ::media::PipelineStatusCB& status_cb) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!has_video_);
-  if (clock_device_->GetState() == MediaClockDevice::kStateUninitialized &&
-      !clock_device_->SetState(MediaClockDevice::kStateIdle)) {
-    status_cb.Run(::media::PIPELINE_ERROR_INITIALIZATION_FAILED);
+
+  has_video_ = true;
+  video_decoder_ = media_pipeline_backend_->CreateVideoDecoder();
+  if (!video_decoder_) {
+    status_cb.Run(::media::PIPELINE_ERROR_ABORT);
     return;
   }
-  has_video_ = true;
+  video_pipeline_.reset(new VideoPipelineImpl(video_decoder_, client));
+
   video_pipeline_->Initialize(configs, frame_provider.Pass(), status_cb);
 }
 
@@ -177,14 +203,20 @@ void MediaPipelineImpl::StartPlayingFrom(base::TimeDelta time) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(has_audio_ || has_video_);
   DCHECK(!pending_flush_callbacks_);
+  // When starting, we always enter the "playing" state (not paused).
+  paused_ = false;
 
-  // Reset the start of the timeline.
-  DCHECK_EQ(clock_device_->GetState(), MediaClockDevice::kStateIdle);
-  clock_device_->ResetTimeline(time.InMicroseconds());
+  // Lazy initialise
+  if (!backend_initialized_) {
+    backend_initialized_ = media_pipeline_backend_->Initialize(this);
+    if (!backend_initialized_) {
+      OnError(::media::PIPELINE_ERROR_ABORT);
+      return;
+    }
+  }
 
-  // Start the clock. If the playback rate is 0, then the clock is started
-  // but does not increase.
-  if (!clock_device_->SetState(MediaClockDevice::kStateRunning)) {
+  // Start the backend.
+  if (!media_pipeline_backend_->Start(time.InMicroseconds())) {
     OnError(::media::PIPELINE_ERROR_ABORT);
     return;
   }
@@ -224,16 +256,14 @@ void MediaPipelineImpl::Flush(const ::media::PipelineStatusCB& status_cb) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(has_audio_ || has_video_);
   DCHECK(!pending_flush_callbacks_);
-  DCHECK(clock_device_->GetState() == MediaClockDevice::kStateUninitialized ||
-         clock_device_->GetState() == MediaClockDevice::kStateRunning);
 
   // No need to update media time anymore.
   enable_time_update_ = false;
 
   buffering_controller_->Reset();
 
-  // The clock should return to idle.
-  if (!clock_device_->SetState(MediaClockDevice::kStateIdle)) {
+  // Stop the backend
+  if (!media_pipeline_backend_->Stop()) {
     status_cb.Run(::media::PIPELINE_ERROR_ABORT);
     return;
   }
@@ -269,34 +299,42 @@ void MediaPipelineImpl::Stop() {
   // No need to update media time anymore.
   enable_time_update_ = false;
 
-  // Release hardware resources on Stop.
-  // Note: Stop can be called from any state.
-  if (clock_device_->GetState() == MediaClockDevice::kStateRunning)
-    clock_device_->SetState(MediaClockDevice::kStateIdle);
-  if (clock_device_->GetState() == MediaClockDevice::kStateIdle)
-    clock_device_->SetState(MediaClockDevice::kStateUninitialized);
-
   // Stop both the audio and video pipeline.
   if (has_audio_)
     audio_pipeline_->Stop();
   if (has_video_)
     video_pipeline_->Stop();
+
+  // Release hardware resources on Stop.
+  audio_pipeline_ = nullptr;
+  video_pipeline_ = nullptr;
+  media_pipeline_backend_.reset();
 }
 
 void MediaPipelineImpl::SetPlaybackRate(double rate) {
   CMALOG(kLogControl) << __FUNCTION__ << " rate=" << rate;
   DCHECK(thread_checker_.CalledOnValidThread());
+  if (!buffering_controller_ || !buffering_controller_->IsBuffering()) {
+    if (paused_ && rate != 0.0f) {
+      if (rate != target_playback_rate_)
+        media_pipeline_backend_->SetPlaybackRate(rate);
+      paused_ = false;
+      media_pipeline_backend_->Resume();
+    } else if (!paused_ && rate == 0.0f) {
+      paused_ = true;
+      media_pipeline_backend_->Pause();
+    } else {
+      media_pipeline_backend_->SetPlaybackRate(rate);
+    }
+  }
   target_playback_rate_ = rate;
-  if (!buffering_controller_ || !buffering_controller_->IsBuffering())
-    media_pipeline_backend_->GetClock()->SetRate(rate);
 }
 
-AudioPipelineImpl* MediaPipelineImpl::GetAudioPipelineImpl() const {
-  return audio_pipeline_.get();
-}
-
-VideoPipelineImpl* MediaPipelineImpl::GetVideoPipelineImpl() const {
-  return video_pipeline_.get();
+void MediaPipelineImpl::SetVolume(float volume) {
+  CMALOG(kLogControl) << __FUNCTION__ << " vol=" << volume;
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(audio_pipeline_);
+  audio_pipeline_->SetVolume(volume);
 }
 
 void MediaPipelineImpl::StateTransition(
@@ -317,16 +355,15 @@ void MediaPipelineImpl::OnBufferingNotification(bool is_buffering) {
     client_.buffering_state_cb.Run(buffering_state);
   }
 
-  if (media_pipeline_backend_->GetClock()->GetState() ==
-      MediaClockDevice::kStateUninitialized) {
-    return;
-  }
-
   if (is_buffering) {
     // Do not consume data in a rebuffering phase.
-    media_pipeline_backend_->GetClock()->SetRate(0.0);
-  } else {
-    media_pipeline_backend_->GetClock()->SetRate(target_playback_rate_);
+    if (!paused_) {
+      paused_ = true;
+      media_pipeline_backend_->Pause();
+    }
+  } else if (paused_) {
+    paused_ = false;
+    media_pipeline_backend_->Resume();
   }
 }
 
@@ -336,14 +373,16 @@ void MediaPipelineImpl::UpdateMediaTime() {
     return;
 
   if (statistics_rolling_counter_ == 0) {
-    audio_pipeline_->UpdateStatistics();
-    video_pipeline_->UpdateStatistics();
+    if (audio_pipeline_)
+      audio_pipeline_->UpdateStatistics();
+    if (video_pipeline_)
+      video_pipeline_->UpdateStatistics();
   }
   statistics_rolling_counter_ =
       (statistics_rolling_counter_ + 1) % kStatisticsUpdatePeriod;
 
-  base::TimeDelta media_time =
-      base::TimeDelta::FromMicroseconds(clock_device_->GetTimeMicroseconds());
+  base::TimeDelta media_time = base::TimeDelta::FromMicroseconds(
+      media_pipeline_backend_->GetCurrentPts());
   if (media_time == ::media::kNoTimestamp()) {
     pending_time_update_task_ = true;
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(

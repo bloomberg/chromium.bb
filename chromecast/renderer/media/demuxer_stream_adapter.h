@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMECAST_MEDIA_CMA_FILTERS_DEMUXER_STREAM_ADAPTER_H_
-#define CHROMECAST_MEDIA_CMA_FILTERS_DEMUXER_STREAM_ADAPTER_H_
+#ifndef CHROMECAST_RENDERER_MEDIA_DEMUXER_STREAM_ADAPTER_H_
+#define CHROMECAST_RENDERER_MEDIA_DEMUXER_STREAM_ADAPTER_H_
 
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
@@ -34,7 +34,7 @@ class DemuxerStreamAdapter : public CodedFrameProvider {
   DemuxerStreamAdapter(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       const scoped_refptr<BalancedMediaTaskRunnerFactory>&
-      media_task_runner_factory,
+          media_task_runner_factory,
       ::media::DemuxerStream* demuxer_stream);
   ~DemuxerStreamAdapter() override;
 
@@ -51,7 +51,7 @@ class DemuxerStreamAdapter : public CodedFrameProvider {
   // Callback invoked from the demuxer stream to signal a buffer is ready.
   void OnNewBuffer(const ReadCB& read_cb,
                    ::media::DemuxerStream::Status status,
-                   const scoped_refptr< ::media::DecoderBuffer>& input);
+                   const scoped_refptr<::media::DecoderBuffer>& input);
 
   base::ThreadChecker thread_checker_;
 
@@ -90,4 +90,4 @@ class DemuxerStreamAdapter : public CodedFrameProvider {
 }  // namespace media
 }  // namespace chromecast
 
-#endif  // CHROMECAST_MEDIA_CMA_FILTERS_DEMUXER_STREAM_ADAPTER_H_
+#endif  // CHROMECAST_RENDERER_MEDIA_DEMUXER_STREAM_ADAPTER_H_

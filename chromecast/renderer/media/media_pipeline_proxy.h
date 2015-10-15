@@ -11,9 +11,10 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "chromecast/media/cma/pipeline/load_type.h"
-#include "chromecast/media/cma/pipeline/media_pipeline.h"
 #include "chromecast/media/cma/pipeline/media_pipeline_client.h"
+#include "media/base/audio_decoder_config.h"
 #include "media/base/serial_runner.h"
+#include "media/base/video_decoder_config.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -22,34 +23,32 @@ class SingleThreadTaskRunner;
 namespace chromecast {
 namespace media {
 class AudioPipelineProxy;
+class CodedFrameProvider;
 class MediaChannelProxy;
 class MediaPipelineProxyInternal;
 class VideoPipelineProxy;
 
-class MediaPipelineProxy : public MediaPipeline {
+class MediaPipelineProxy {
  public:
   MediaPipelineProxy(int render_frame_id,
                      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
                      LoadType load_type);
-  ~MediaPipelineProxy() override;
+  ~MediaPipelineProxy();
 
-  // MediaPipeline implementation.
-  void SetClient(const MediaPipelineClient& client) override;
-  void SetCdm(int cdm_id) override;
-  AudioPipeline* GetAudioPipeline() const override;
-  VideoPipeline* GetVideoPipeline() const override;
-  void InitializeAudio(
-      const ::media::AudioDecoderConfig& config,
-      scoped_ptr<CodedFrameProvider> frame_provider,
-      const ::media::PipelineStatusCB& status_cb) override;
-  void InitializeVideo(
-      const std::vector<::media::VideoDecoderConfig>& configs,
-      scoped_ptr<CodedFrameProvider> frame_provider,
-      const ::media::PipelineStatusCB& status_cb) override;
-  void StartPlayingFrom(base::TimeDelta time) override;
-  void Flush(const ::media::PipelineStatusCB& status_cb) override;
-  void Stop() override;
-  void SetPlaybackRate(double playback_rate) override;
+  void SetClient(const MediaPipelineClient& client);
+  void SetCdm(int cdm_id);
+  AudioPipelineProxy* GetAudioPipeline() const;
+  VideoPipelineProxy* GetVideoPipeline() const;
+  void InitializeAudio(const ::media::AudioDecoderConfig& config,
+                       scoped_ptr<CodedFrameProvider> frame_provider,
+                       const ::media::PipelineStatusCB& status_cb);
+  void InitializeVideo(const std::vector<::media::VideoDecoderConfig>& configs,
+                       scoped_ptr<CodedFrameProvider> frame_provider,
+                       const ::media::PipelineStatusCB& status_cb);
+  void StartPlayingFrom(base::TimeDelta time);
+  void Flush(const ::media::PipelineStatusCB& status_cb);
+  void Stop();
+  void SetPlaybackRate(double playback_rate);
 
  private:
   void OnProxyFlushDone(const ::media::PipelineStatusCB& status_cb,

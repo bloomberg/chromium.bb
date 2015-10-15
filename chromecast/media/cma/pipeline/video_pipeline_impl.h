@@ -11,10 +11,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
-#include "chromecast/media/cma/pipeline/video_pipeline.h"
 #include "chromecast/media/cma/pipeline/video_pipeline_client.h"
+#include "chromecast/public/media/media_pipeline_backend.h"
 #include "chromecast/public/media/stream_id.h"
-#include "chromecast/public/media/video_pipeline_device.h"
 
 namespace media {
 class AudioDecoderConfig;
@@ -28,13 +27,12 @@ class AvPipelineImpl;
 class BrowserCdmCast;
 class BufferingState;
 class CodedFrameProvider;
-class VideoPipelineDevice;
 
-class VideoPipelineImpl : public VideoPipeline {
+class VideoPipelineImpl {
  public:
-  // |buffering_controller| can be NULL.
-  explicit VideoPipelineImpl(VideoPipelineDevice* video_device);
-  ~VideoPipelineImpl() override;
+  VideoPipelineImpl(MediaPipelineBackend::VideoDecoder* decoder,
+                    const VideoPipelineClient& client);
+  ~VideoPipelineImpl();
 
   // Input port of the pipeline.
   void SetCodedFrameProvider(scoped_ptr<CodedFrameProvider> frame_provider);
@@ -55,8 +53,10 @@ class VideoPipelineImpl : public VideoPipeline {
   // Update the playback statistics for this video stream.
   void UpdateStatistics();
 
-  // VideoPipeline implementation.
-  void SetClient(const VideoPipelineClient& client) override;
+  void OnBufferPushed(MediaPipelineBackend::BufferStatus status);
+  void OnEndOfStream();
+  void OnError();
+  void OnNaturalSizeChanged(const Size& size);
 
  private:
   class DeviceClientImpl;
@@ -66,9 +66,8 @@ class VideoPipelineImpl : public VideoPipeline {
   void OnUpdateConfig(StreamId id,
                       const ::media::AudioDecoderConfig& audio_config,
                       const ::media::VideoDecoderConfig& video_config);
-  void OnNaturalSizeChanged(const Size& size);
 
-  VideoPipelineDevice* video_device_;
+  MediaPipelineBackend::VideoDecoder* video_decoder_;
 
   scoped_ptr<AvPipelineImpl> av_pipeline_impl_;
   VideoPipelineClient video_client_;

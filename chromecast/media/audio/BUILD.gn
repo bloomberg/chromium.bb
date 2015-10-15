@@ -28,8 +28,11 @@ source_set("test_support") {
 
   configs += [ "//chromecast:config" ]
 
-  deps = [
+  public_deps = [
     ":audio",
+  ]
+
+  deps = [
     "//testing/gtest",
   ]
 }

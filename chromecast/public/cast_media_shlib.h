@@ -42,9 +42,9 @@ class CHROMECAST_EXPORT CastMediaShlib {
   // called at any time.  The VideoPlane object must be destroyed in Finalize.
   static VideoPlane* GetVideoPlane();
 
-  // Creates a factory object for a media pipeline backend.  Called in the
-  // browser process, any number of times (once per media pipeline).  Each call
-  // must instantiate a new factory object
+  // Creates a media pipeline backend.  Called in the browser process for each
+  // media pipeline and raw audio stream. The caller owns the returned
+  // MediaPipelineBackend instance.
   static MediaPipelineBackend* CreateMediaPipelineBackend(
       const MediaPipelineDeviceParams& params);
 };

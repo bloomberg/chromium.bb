@@ -42,6 +42,7 @@ class CastDecoderBufferImpl : public CastDecoderBuffer {
   bool end_of_stream() const override;
 
   const scoped_refptr<DecoderBufferBase>& buffer() const;
+  void set_buffer(const scoped_refptr<DecoderBufferBase>& buffer);
 
  private:
   scoped_refptr<DecoderBufferBase> buffer_;

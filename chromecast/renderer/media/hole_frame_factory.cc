@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromecast/media/cma/filters/hole_frame_factory.h"
+#include "chromecast/renderer/media/hole_frame_factory.h"
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -16,18 +16,15 @@ namespace media {
 
 HoleFrameFactory::HoleFrameFactory(
     const scoped_refptr<::media::GpuVideoAcceleratorFactories>& gpu_factories)
-    : gpu_factories_(gpu_factories),
-      texture_(0),
-      image_id_(0),
-      sync_point_(0) {
+    : gpu_factories_(gpu_factories), texture_(0), image_id_(0), sync_point_(0) {
   if (gpu_factories_) {
     gpu::gles2::GLES2Interface* gl = gpu_factories_->GetGLES2Interface();
     CHECK(gl);
 
     gl->GenTextures(1, &texture_);
     gl->BindTexture(GL_TEXTURE_2D, texture_);
-    image_id_ = gl->CreateGpuMemoryBufferImageCHROMIUM(1, 1, GL_RGBA,
-                                                       GL_SCANOUT_CHROMIUM);
+    image_id_ = gl->CreateGpuMemoryBufferImageCHROMIUM(
+        1, 1, GL_RGBA, GL_SCANOUT_CHROMIUM);
     gl->BindTexImage2DCHROMIUM(GL_TEXTURE_2D, image_id_);
 
     gl->GenMailboxCHROMIUM(mailbox_.name);

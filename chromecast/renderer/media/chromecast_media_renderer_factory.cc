@@ -6,7 +6,7 @@
 
 #include "base/command_line.h"
 #include "chromecast/media/base/switching_media_renderer.h"
-#include "chromecast/media/cma/filters/cma_renderer.h"
+#include "chromecast/renderer/media/cma_renderer.h"
 #include "chromecast/renderer/media/media_pipeline_proxy.h"
 #include "content/public/renderer/render_thread.h"
 #include "media/base/audio_hardware_config.h"
@@ -34,7 +34,7 @@ scoped_ptr<::media::Renderer> ChromecastMediaRendererFactory::CreateRenderer(
     const scoped_refptr<base::TaskRunner>& worker_task_runner,
     ::media::AudioRendererSink* audio_renderer_sink,
     ::media::VideoRendererSink* video_renderer_sink) {
-  if (!default_render_factory_) {
+  if (!default_renderer_factory_) {
     // Chromecast doesn't have input audio devices, so leave this uninitialized
     ::media::AudioParameters input_audio_params;
     // TODO(servolk): Audio parameters are hardcoded for now, but in the future
@@ -52,26 +52,26 @@ scoped_ptr<::media::Renderer> ChromecastMediaRendererFactory::CreateRenderer(
     audio_config_.reset(new ::media::AudioHardwareConfig(input_audio_params,
                                                          output_audio_params));
 
-    default_render_factory_.reset(new ::media::DefaultRendererFactory(
+    default_renderer_factory_.reset(new ::media::DefaultRendererFactory(
         media_log_, /*gpu_factories*/ nullptr, *audio_config_));
   }
 
-  DCHECK(default_render_factory_);
+  DCHECK(default_renderer_factory_);
   // TODO(erickung): crbug.com/443956. Need to provide right LoadType.
   LoadType cma_load_type = kLoadTypeMediaSource;
-  scoped_ptr<MediaPipeline> cma_media_pipeline(
-      new MediaPipelineProxy(
-          render_frame_id_,
-          content::RenderThread::Get()->GetIOMessageLoopProxy(),
-          cma_load_type));
+  scoped_ptr<MediaPipelineProxy> cma_media_pipeline(new MediaPipelineProxy(
+      render_frame_id_,
+      content::RenderThread::Get()->GetIOMessageLoopProxy(),
+      cma_load_type));
   scoped_ptr<CmaRenderer> cma_renderer(new CmaRenderer(
       cma_media_pipeline.Pass(), video_renderer_sink, gpu_factories_));
-  scoped_ptr<::media::Renderer> default_media_render(
-      default_render_factory_->CreateRenderer(
-          media_task_runner, media_task_runner, audio_renderer_sink,
-          video_renderer_sink));
+  scoped_ptr<::media::Renderer> default_media_renderer(
+      default_renderer_factory_->CreateRenderer(media_task_runner,
+                                                media_task_runner,
+                                                audio_renderer_sink,
+                                                video_renderer_sink));
   scoped_ptr<SwitchingMediaRenderer> media_renderer(new SwitchingMediaRenderer(
-      default_media_render.Pass(), cma_renderer.Pass()));
+      default_media_renderer.Pass(), cma_renderer.Pass()));
   return media_renderer.Pass();
 }
 

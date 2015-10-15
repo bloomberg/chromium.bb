@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMECAST_MEDIA_CMA_FILTERS_HOLE_FRAME_FACTORY_H_
-#define CHROMECAST_MEDIA_CMA_FILTERS_HOLE_FRAME_FACTORY_H_
+#ifndef CHROMECAST_RENDERER_MEDIA_HOLE_FRAME_FACTORY_H_
+#define CHROMECAST_RENDERER_MEDIA_HOLE_FRAME_FACTORY_H_
 
 #include <GLES2/gl2.h>
 
@@ -46,4 +46,4 @@ class HoleFrameFactory {
 }  // namespace media
 }  // namespace chromecast
 
-#endif  // CHROMECAST_MEDIA_CMA_FILTERS_HOLE_FRAME_FACTORY_H_
+#endif  // CHROMECAST_RENDERER_MEDIA_HOLE_FRAME_FACTORY_H_

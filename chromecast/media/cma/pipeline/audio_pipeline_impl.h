@@ -10,8 +10,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
-#include "chromecast/media/cma/pipeline/audio_pipeline.h"
 #include "chromecast/media/cma/pipeline/av_pipeline_client.h"
+#include "chromecast/public/media/media_pipeline_backend.h"
 #include "chromecast/public/media/stream_id.h"
 
 namespace media {
@@ -21,17 +21,16 @@ class VideoDecoderConfig;
 
 namespace chromecast {
 namespace media {
-class AudioPipelineDevice;
 class AvPipelineImpl;
 class BrowserCdmCast;
 class BufferingState;
 class CodedFrameProvider;
 
-class AudioPipelineImpl : public AudioPipeline {
+class AudioPipelineImpl {
  public:
-  // |buffering_controller| can be NULL.
-  explicit AudioPipelineImpl(AudioPipelineDevice* audio_device);
-  ~AudioPipelineImpl() override;
+  AudioPipelineImpl(MediaPipelineBackend::AudioDecoder* decoder,
+                    const AvPipelineClient& client);
+  ~AudioPipelineImpl();
 
   // Input port of the pipeline.
   void SetCodedFrameProvider(scoped_ptr<CodedFrameProvider> frame_provider);
@@ -52,9 +51,11 @@ class AudioPipelineImpl : public AudioPipeline {
   // Update the playback statistics for this audio stream.
   void UpdateStatistics();
 
-  // AudioPipeline implementation.
-  void SetClient(const AvPipelineClient& client) override;
-  void SetVolume(float volume) override;
+  void SetVolume(float volume);
+
+  void OnBufferPushed(MediaPipelineBackend::BufferStatus status);
+  void OnEndOfStream();
+  void OnError();
 
  private:
   void OnFlushDone(const ::media::PipelineStatusCB& status_cb);
@@ -62,7 +63,7 @@ class AudioPipelineImpl : public AudioPipeline {
                       const ::media::AudioDecoderConfig& audio_config,
                       const ::media::VideoDecoderConfig& video_config);
 
-  AudioPipelineDevice* audio_device_;
+  MediaPipelineBackend::AudioDecoder* decoder_;
 
   scoped_ptr<AvPipelineImpl> av_pipeline_impl_;
   AvPipelineClient audio_client_;

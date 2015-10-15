@@ -11,7 +11,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "chromecast/common/media/cma_ipc_common.h"
-#include "chromecast/media/cma/pipeline/audio_pipeline.h"
 #include "media/base/pipeline_status.h"
 
 namespace base {
@@ -26,16 +25,16 @@ class AudioDecoderConfig;
 namespace chromecast {
 namespace media {
 class AudioPipelineProxyInternal;
-struct AvPipelineClient;
 class AvStreamerProxy;
 class CodedFrameProvider;
 class MediaChannelProxy;
+struct AvPipelineClient;
 
-class AudioPipelineProxy : public AudioPipeline {
+class AudioPipelineProxy {
  public:
   AudioPipelineProxy(scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
                      scoped_refptr<MediaChannelProxy> media_channel_proxy);
-  ~AudioPipelineProxy() override;
+  ~AudioPipelineProxy();
 
   void Initialize(
       const ::media::AudioDecoderConfig& config,
@@ -45,9 +44,8 @@ class AudioPipelineProxy : public AudioPipeline {
   void Flush(const base::Closure& done_cb);
   void Stop();
 
-  // AudioPipeline implementation.
-  void SetClient(const AvPipelineClient& client) override;
-  void SetVolume(float volume) override;
+  void SetClient(const AvPipelineClient& client);
+  void SetVolume(float volume);
 
  private:
   base::ThreadChecker thread_checker_;

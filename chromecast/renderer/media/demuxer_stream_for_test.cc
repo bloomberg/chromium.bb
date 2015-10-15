@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/threading/thread.h"
-#include "chromecast/media/cma/test/demuxer_stream_for_test.h"
+#include "chromecast/renderer/media/demuxer_stream_for_test.h"
 
 namespace chromecast {
 namespace media {
@@ -35,8 +35,9 @@ void DemuxerStreamForTest::Read(const ReadCB& read_cb) {
 
   if ((frame_count_ % cycle_count_) < delayed_frame_count_) {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, base::Bind(&DemuxerStreamForTest::DoRead,
-                              base::Unretained(this), read_cb),
+        FROM_HERE,
+        base::Bind(
+            &DemuxerStreamForTest::DoRead, base::Unretained(this), read_cb),
         base::TimeDelta::FromMilliseconds(20));
     return;
   }
@@ -52,10 +53,16 @@ void DemuxerStreamForTest::Read(const ReadCB& read_cb) {
   gfx::Size coded_size(640, 480);
   gfx::Rect visible_rect(640, 480);
   gfx::Size natural_size(640, 480);
-  return ::media::VideoDecoderConfig(
-      ::media::kCodecH264, ::media::VIDEO_CODEC_PROFILE_UNKNOWN,
-      ::media::PIXEL_FORMAT_YV12, ::media::COLOR_SPACE_UNSPECIFIED, coded_size,
-      visible_rect, natural_size, NULL, 0, false);
+  return ::media::VideoDecoderConfig(::media::kCodecH264,
+                                     ::media::VIDEO_CODEC_PROFILE_UNKNOWN,
+                                     ::media::PIXEL_FORMAT_YV12,
+                                     ::media::COLOR_SPACE_UNSPECIFIED,
+                                     coded_size,
+                                     visible_rect,
+                                     natural_size,
+                                     NULL,
+                                     0,
+                                     false);
 }
 
 ::media::DemuxerStream::Type DemuxerStreamForTest::type() const {

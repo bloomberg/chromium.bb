@@ -16,7 +16,7 @@ CmaMediaPipelineClient::~CmaMediaPipelineClient() {}
 
 scoped_ptr<MediaPipelineBackend>
 CmaMediaPipelineClient::CreateMediaPipelineBackend(
-    const media::MediaPipelineDeviceParams& params) {
+    const MediaPipelineDeviceParams& params) {
   return make_scoped_ptr(CastMediaShlib::CreateMediaPipelineBackend(params));
 }
 

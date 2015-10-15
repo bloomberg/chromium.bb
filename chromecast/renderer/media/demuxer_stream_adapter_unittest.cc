@@ -13,9 +13,9 @@
 #include "base/time/time.h"
 #include "chromecast/media/cma/base/balanced_media_task_runner_factory.h"
 #include "chromecast/media/cma/base/decoder_buffer_base.h"
-#include "chromecast/media/cma/filters/demuxer_stream_adapter.h"
-#include "chromecast/media/cma/test/demuxer_stream_for_test.h"
 #include "chromecast/public/media/cast_decoder_buffer.h"
+#include "chromecast/renderer/media/demuxer_stream_adapter.h"
+#include "chromecast/renderer/media/demuxer_stream_for_test.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/demuxer_stream.h"
@@ -72,9 +72,10 @@ DemuxerStreamAdapterTest::~DemuxerStreamAdapterTest() {
 
 void DemuxerStreamAdapterTest::Initialize(
     ::media::DemuxerStream* demuxer_stream) {
-  coded_frame_provider_.reset(new DemuxerStreamAdapter(
-      base::ThreadTaskRunnerHandle::Get(),
-      scoped_refptr<BalancedMediaTaskRunnerFactory>(), demuxer_stream));
+  coded_frame_provider_.reset(
+      new DemuxerStreamAdapter(base::ThreadTaskRunnerHandle::Get(),
+                               scoped_refptr<BalancedMediaTaskRunnerFactory>(),
+                               demuxer_stream));
 }
 
 void DemuxerStreamAdapterTest::Start() {
@@ -89,9 +90,8 @@ void DemuxerStreamAdapterTest::Start() {
                  base::Unretained(this)),
       base::TimeDelta::FromSeconds(5));
 
-  coded_frame_provider_->Read(
-      base::Bind(&DemuxerStreamAdapterTest::OnNewFrame,
-                 base::Unretained(this)));
+  coded_frame_provider_->Read(base::Bind(&DemuxerStreamAdapterTest::OnNewFrame,
+                                         base::Unretained(this)));
 }
 
 void DemuxerStreamAdapterTest::OnTestTimeout() {
@@ -116,21 +116,18 @@ void DemuxerStreamAdapterTest::OnNewFrame(
   frame_received_count_++;
 
   if (frame_received_count_ >= total_frames_) {
-    coded_frame_provider_->Flush(
-        base::Bind(&DemuxerStreamAdapterTest::OnFlushCompleted,
-                   base::Unretained(this)));
+    coded_frame_provider_->Flush(base::Bind(
+        &DemuxerStreamAdapterTest::OnFlushCompleted, base::Unretained(this)));
     return;
   }
 
-  coded_frame_provider_->Read(
-      base::Bind(&DemuxerStreamAdapterTest::OnNewFrame,
-                 base::Unretained(this)));
+  coded_frame_provider_->Read(base::Bind(&DemuxerStreamAdapterTest::OnNewFrame,
+                                         base::Unretained(this)));
 
   ASSERT_LE(frame_received_count_, early_flush_idx_);
   if (frame_received_count_ == early_flush_idx_) {
-    base::Closure flush_cb =
-        base::Bind(&DemuxerStreamAdapterTest::OnFlushCompleted,
-                   base::Unretained(this));
+    base::Closure flush_cb = base::Bind(
+        &DemuxerStreamAdapterTest::OnFlushCompleted, base::Unretained(this));
     if (use_post_task_for_flush_) {
       base::MessageLoop::current()->PostTask(
           FROM_HERE,
@@ -152,7 +149,7 @@ void DemuxerStreamAdapterTest::OnFlushCompleted() {
 
 TEST_F(DemuxerStreamAdapterTest, NoDelay) {
   total_frames_ = 10;
-  early_flush_idx_ = total_frames_;   // No early flush.
+  early_flush_idx_ = total_frames_;  // No early flush.
   total_expected_frames_ = 10;
   config_idx_.push_back(0);
   config_idx_.push_back(5);
@@ -172,7 +169,7 @@ TEST_F(DemuxerStreamAdapterTest, NoDelay) {
 
 TEST_F(DemuxerStreamAdapterTest, AllDelayed) {
   total_frames_ = 10;
-  early_flush_idx_ = total_frames_;   // No early flush.
+  early_flush_idx_ = total_frames_;  // No early flush.
   total_expected_frames_ = 10;
   config_idx_.push_back(0);
   config_idx_.push_back(5);

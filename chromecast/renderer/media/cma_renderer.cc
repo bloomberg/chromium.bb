@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromecast/media/cma/filters/cma_renderer.h"
+#include "chromecast/renderer/media/cma_renderer.h"
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -11,14 +11,14 @@
 #include "base/thread_task_runner_handle.h"
 #include "chromecast/media/cma/base/balanced_media_task_runner_factory.h"
 #include "chromecast/media/cma/base/cma_logging.h"
-#include "chromecast/media/cma/filters/demuxer_stream_adapter.h"
-#include "chromecast/media/cma/filters/hole_frame_factory.h"
-#include "chromecast/media/cma/pipeline/audio_pipeline.h"
 #include "chromecast/media/cma/pipeline/av_pipeline_client.h"
-#include "chromecast/media/cma/pipeline/media_pipeline.h"
 #include "chromecast/media/cma/pipeline/media_pipeline_client.h"
-#include "chromecast/media/cma/pipeline/video_pipeline.h"
 #include "chromecast/media/cma/pipeline/video_pipeline_client.h"
+#include "chromecast/renderer/media/audio_pipeline_proxy.h"
+#include "chromecast/renderer/media/demuxer_stream_adapter.h"
+#include "chromecast/renderer/media/hole_frame_factory.h"
+#include "chromecast/renderer/media/media_pipeline_proxy.h"
+#include "chromecast/renderer/media/video_pipeline_proxy.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/demuxer_stream_provider.h"
 #include "media/base/pipeline_status.h"
@@ -34,15 +34,15 @@ namespace {
 
 // Maximum difference between audio frame PTS and video frame PTS
 // for frames read from the DemuxerStream.
-const base::TimeDelta kMaxDeltaFetcher(
-    base::TimeDelta::FromMilliseconds(2000));
+const base::TimeDelta kMaxDeltaFetcher(base::TimeDelta::FromMilliseconds(2000));
 
-void MediaPipelineClientDummyCallback() {}
+void MediaPipelineClientDummyCallback() {
+}
 
 }  // namespace
 
 CmaRenderer::CmaRenderer(
-    scoped_ptr<MediaPipeline> media_pipeline,
+    scoped_ptr<MediaPipelineProxy> media_pipeline,
     ::media::VideoRendererSink* video_renderer_sink,
     const scoped_refptr<::media::GpuVideoAcceleratorFactories>& gpu_factories)
     : media_task_runner_factory_(
@@ -122,8 +122,8 @@ void CmaRenderer::Initialize(
       base::Bind(&CmaRenderer::OnPlaybackTimeUpdated, weak_this_));
   media_pipeline_client.pipeline_backend_created_cb =
       base::Bind(&MediaPipelineClientDummyCallback);
-  media_pipeline_client.pipeline_backend_destroyed_cb
-      = base::Bind(&MediaPipelineClientDummyCallback);
+  media_pipeline_client.pipeline_backend_destroyed_cb =
+      base::Bind(&MediaPipelineClientDummyCallback);
   media_pipeline_->SetClient(media_pipeline_client);
 
   init_cb_ = init_cb;
@@ -144,9 +144,8 @@ void CmaRenderer::Flush(const base::Closure& flush_cb) {
   }
 
   DCHECK_EQ(state_, kPlaying) << state_;
-  media_pipeline_->Flush(
-      ::media::BindToCurrentLoop(
-          base::Bind(&CmaRenderer::OnFlushDone, weak_this_)));
+  media_pipeline_->Flush(::media::BindToCurrentLoop(
+      base::Bind(&CmaRenderer::OnFlushDone, weak_this_)));
 
   {
     base::AutoLock auto_lock(time_interpolator_lock_);
@@ -248,7 +247,8 @@ void CmaRenderer::InitializeAudioPipeline() {
       demuxer_stream_provider_->GetStream(::media::DemuxerStream::AUDIO);
   ::media::PipelineStatusCB audio_initialization_done_cb =
       ::media::BindToCurrentLoop(
-          base::Bind(&CmaRenderer::OnAudioPipelineInitializeDone, weak_this_,
+          base::Bind(&CmaRenderer::OnAudioPipelineInitializeDone,
+                     weak_this_,
                      stream != nullptr));
   if (!stream) {
     CMALOG(kLogControl) << __FUNCTION__ << ": no audio stream, skipping init.";
@@ -260,8 +260,8 @@ void CmaRenderer::InitializeAudioPipeline() {
   AvPipelineClient av_pipeline_client;
   av_pipeline_client.eos_cb = ::media::BindToCurrentLoop(
       base::Bind(&CmaRenderer::OnEosReached, weak_this_, true));
-  av_pipeline_client.playback_error_cb = ::media::BindToCurrentLoop(
-      base::Bind(&CmaRenderer::OnError, weak_this_));
+  av_pipeline_client.playback_error_cb =
+      ::media::BindToCurrentLoop(base::Bind(&CmaRenderer::OnError, weak_this_));
   av_pipeline_client.statistics_cb = ::media::BindToCurrentLoop(
       base::Bind(&CmaRenderer::OnStatisticsUpdated, weak_this_));
   audio_pipeline_->SetClient(av_pipeline_client);
@@ -307,7 +307,8 @@ void CmaRenderer::InitializeVideoPipeline() {
       demuxer_stream_provider_->GetStream(::media::DemuxerStream::VIDEO);
   ::media::PipelineStatusCB video_initialization_done_cb =
       ::media::BindToCurrentLoop(
-          base::Bind(&CmaRenderer::OnVideoPipelineInitializeDone, weak_this_,
+          base::Bind(&CmaRenderer::OnVideoPipelineInitializeDone,
+                     weak_this_,
                      stream != nullptr));
   if (!stream) {
     CMALOG(kLogControl) << __FUNCTION__ << ": no video stream, skipping init.";
@@ -319,8 +320,8 @@ void CmaRenderer::InitializeVideoPipeline() {
   VideoPipelineClient client;
   client.av_pipeline_client.eos_cb = ::media::BindToCurrentLoop(
       base::Bind(&CmaRenderer::OnEosReached, weak_this_, false));
-  client.av_pipeline_client.playback_error_cb = ::media::BindToCurrentLoop(
-      base::Bind(&CmaRenderer::OnError, weak_this_));
+  client.av_pipeline_client.playback_error_cb =
+      ::media::BindToCurrentLoop(base::Bind(&CmaRenderer::OnError, weak_this_));
   client.av_pipeline_client.statistics_cb = ::media::BindToCurrentLoop(
       base::Bind(&CmaRenderer::OnStatisticsUpdated, weak_this_));
   client.natural_size_changed_cb = ::media::BindToCurrentLoop(
@@ -339,9 +340,7 @@ void CmaRenderer::InitializeVideoPipeline() {
   std::vector<::media::VideoDecoderConfig> configs;
   configs.push_back(config);
   media_pipeline_->InitializeVideo(
-      configs,
-      frame_provider.Pass(),
-      video_initialization_done_cb);
+      configs, frame_provider.Pass(), video_initialization_done_cb);
 }
 
 void CmaRenderer::OnVideoPipelineInitializeDone(
@@ -383,8 +382,7 @@ void CmaRenderer::OnEosReached(bool is_audio) {
 
   bool audio_finished = !has_audio_ || received_audio_eos_;
   bool video_finished = !has_video_ || received_video_eos_;
-  CMALOG(kLogControl) << __FUNCTION__
-                      << " audio_finished=" << audio_finished
+  CMALOG(kLogControl) << __FUNCTION__ << " audio_finished=" << audio_finished
                       << " video_finished=" << video_finished;
   if (audio_finished && video_finished)
     ended_cb_.Run();
@@ -402,10 +400,9 @@ void CmaRenderer::OnNaturalSizeChanged(const gfx::Size& size) {
       hole_frame_factory_->CreateHoleFrame(size));
 }
 
-void CmaRenderer::OnPlaybackTimeUpdated(
-    base::TimeDelta time,
-    base::TimeDelta max_time,
-    base::TimeTicks capture_time) {
+void CmaRenderer::OnPlaybackTimeUpdated(base::TimeDelta time,
+                                        base::TimeDelta max_time,
+                                        base::TimeTicks capture_time) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (state_ != kPlaying) {
     LOG(WARNING) << "Ignoring a late time update";

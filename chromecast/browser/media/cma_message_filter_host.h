@@ -46,12 +46,12 @@ class CmaMessageFilterHost
  public:
   // Factory method to create a MediaPipelineBackend
   typedef base::Callback<scoped_ptr<MediaPipelineBackend>(
-      const MediaPipelineDeviceParams&)> CreateDeviceComponentsCB;
+      const MediaPipelineDeviceParams&)> CreateBackendCB;
 
   CmaMessageFilterHost(int render_process_id,
                        scoped_refptr<CmaMediaPipelineClient> client);
 
-  // content::BrowserMessageFilter implementation.
+  // content::BrowserMessageFilter implementation:
   void OnChannelClosing() override;
   void OnDestruct() const override;
   bool OnMessageReceived(const IPC::Message& message) override;
@@ -114,8 +114,8 @@ class CmaMessageFilterHost
   // Render process ID correponding to this message filter.
   const int process_id_;
 
-  // Factory function for device-specific part of media pipeline creation
-  CreateDeviceComponentsCB create_device_components_cb_;
+  // Factory function for media pipeline backend.
+  CreateBackendCB create_backend_cb_;
   scoped_refptr<CmaMediaPipelineClient> client_;
 
   // List of media pipeline and message loop media pipelines are running on.

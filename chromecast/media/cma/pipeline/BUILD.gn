@@ -4,8 +4,6 @@
 
 source_set("pipeline") {
   sources = [
-    "audio_pipeline.cc",
-    "audio_pipeline.h",
     "audio_pipeline_impl.cc",
     "audio_pipeline_impl.h",
     "av_pipeline_client.cc",
@@ -14,22 +12,13 @@ source_set("pipeline") {
     "av_pipeline_impl.h",
     "decrypt_util.cc",
     "decrypt_util.h",
-    "frame_status_cb_impl.cc",
-    "frame_status_cb_impl.h",
     "load_type.h",
-    "media_component_device_client_impl.cc",
-    "media_component_device_client_impl.h",
-    "media_pipeline.h",
     "media_pipeline_client.cc",
     "media_pipeline_client.h",
     "media_pipeline_impl.cc",
     "media_pipeline_impl.h",
-    "video_pipeline.cc",
-    "video_pipeline.h",
     "video_pipeline_client.cc",
     "video_pipeline_client.h",
-    "video_pipeline_device_client_impl.cc",
-    "video_pipeline_device_client_impl.h",
     "video_pipeline_impl.cc",
     "video_pipeline_impl.h",
   ]

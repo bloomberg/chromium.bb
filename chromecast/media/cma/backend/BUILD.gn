@@ -4,22 +4,8 @@
 
 source_set("backend") {
   sources = [
-    "audio_pipeline_device_default.cc",
-    "audio_pipeline_device_default.h",
-    "media_clock_device_default.cc",
-    "media_clock_device_default.h",
-    "media_component_device_default.cc",
-    "media_component_device_default.h",
     "media_pipeline_backend_default.cc",
     "media_pipeline_backend_default.h",
-    "video_pipeline_device_default.cc",
-    "video_pipeline_device_default.h",
-  ]
-
-  # This target cannot depend on //media. Include these headers directly.
-  sources += [
-    "//media/base/media_export.h",
-    "//media/base/timestamp_constants.h",
   ]
 
   public_deps = [

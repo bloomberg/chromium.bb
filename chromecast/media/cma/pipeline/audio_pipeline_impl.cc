@@ -10,7 +10,6 @@
 #include "chromecast/media/cma/base/coded_frame_provider.h"
 #include "chromecast/media/cma/base/decoder_config_adapter.h"
 #include "chromecast/media/cma/pipeline/av_pipeline_impl.h"
-#include "chromecast/public/media/audio_pipeline_device.h"
 #include "chromecast/public/media/decoder_config.h"
 #include "media/base/audio_decoder_config.h"
 
@@ -21,11 +20,12 @@ namespace {
 const size_t kMaxAudioFrameSize = 32 * 1024;
 }
 
-AudioPipelineImpl::AudioPipelineImpl(AudioPipelineDevice* audio_device)
-    : audio_device_(audio_device),
-      weak_factory_(this) {
+AudioPipelineImpl::AudioPipelineImpl(
+    MediaPipelineBackend::AudioDecoder* decoder,
+    const AvPipelineClient& client)
+    : decoder_(decoder), audio_client_(client), weak_factory_(this) {
   av_pipeline_impl_.reset(new AvPipelineImpl(
-      audio_device_,
+      decoder_,
       base::Bind(&AudioPipelineImpl::OnUpdateConfig, base::Unretained(this))));
   weak_this_ = weak_factory_.GetWeakPtr();
 }
@@ -39,16 +39,10 @@ void AudioPipelineImpl::SetCodedFrameProvider(
       frame_provider.Pass(), kAppAudioBufferSize, kMaxAudioFrameSize);
 }
 
-void AudioPipelineImpl::SetClient(const AvPipelineClient& client) {
-  audio_client_ = client;
-  av_pipeline_impl_->SetClient(client);
-}
-
 bool AudioPipelineImpl::StartPlayingFrom(
     base::TimeDelta time,
     const scoped_refptr<BufferingState>& buffering_state) {
-  CMALOG(kLogControl) << "AudioPipelineImpl::StartPlayingFrom t0="
-                      << time.InMilliseconds();
+  CMALOG(kLogControl) << __FUNCTION__ << " t0=" << time.InMilliseconds();
 
   // Reset the pipeline statistics.
   previous_stats_ = ::media::PipelineStatistics();
@@ -68,7 +62,7 @@ bool AudioPipelineImpl::StartPlayingFrom(
 }
 
 void AudioPipelineImpl::Flush(const ::media::PipelineStatusCB& status_cb) {
-  CMALOG(kLogControl) << "AudioPipelineImpl::Flush";
+  CMALOG(kLogControl) << __FUNCTION__;
   if (av_pipeline_impl_->GetState() == AvPipelineImpl::kError) {
     status_cb.Run(::media::PIPELINE_ERROR_ABORT);
     return;
@@ -81,7 +75,7 @@ void AudioPipelineImpl::Flush(const ::media::PipelineStatusCB& status_cb) {
 
 void AudioPipelineImpl::OnFlushDone(
     const ::media::PipelineStatusCB& status_cb) {
-  CMALOG(kLogControl) << "AudioPipelineImpl::OnFlushDone";
+  CMALOG(kLogControl) << __FUNCTION__;
   if (av_pipeline_impl_->GetState() == AvPipelineImpl::kError) {
     status_cb.Run(::media::PIPELINE_ERROR_ABORT);
     return;
@@ -91,7 +85,7 @@ void AudioPipelineImpl::OnFlushDone(
 }
 
 void AudioPipelineImpl::Stop() {
-  CMALOG(kLogControl) << "AudioPipelineImpl::Stop";
+  CMALOG(kLogControl) << __FUNCTION__;
   av_pipeline_impl_->Stop();
   av_pipeline_impl_->TransitionToState(AvPipelineImpl::kStopped);
 }
@@ -104,15 +98,14 @@ void AudioPipelineImpl::Initialize(
     const ::media::AudioDecoderConfig& audio_config,
     scoped_ptr<CodedFrameProvider> frame_provider,
     const ::media::PipelineStatusCB& status_cb) {
-  CMALOG(kLogControl) << "AudioPipelineImpl::Initialize "
+  CMALOG(kLogControl) << __FUNCTION__ << " "
                       << audio_config.AsHumanReadableString();
   if (frame_provider)
     SetCodedFrameProvider(frame_provider.Pass());
 
   DCHECK(audio_config.IsValidConfig());
-  if (!audio_device_->SetConfig(
-         DecoderConfigAdapter::ToCastAudioConfig(kPrimary, audio_config)) ||
-      !av_pipeline_impl_->Initialize()) {
+  if (!decoder_->SetConfig(
+          DecoderConfigAdapter::ToCastAudioConfig(kPrimary, audio_config))) {
     status_cb.Run(::media::PIPELINE_ERROR_INITIALIZATION_FAILED);
     return;
   }
@@ -121,7 +114,24 @@ void AudioPipelineImpl::Initialize(
 }
 
 void AudioPipelineImpl::SetVolume(float volume) {
-  audio_device_->SetStreamVolumeMultiplier(volume);
+  decoder_->SetVolume(volume);
+}
+
+void AudioPipelineImpl::OnBufferPushed(
+    MediaPipelineBackend::BufferStatus status) {
+  av_pipeline_impl_->OnBufferPushed(status);
+}
+
+void AudioPipelineImpl::OnEndOfStream() {
+  if (!audio_client_.eos_cb.is_null())
+    audio_client_.eos_cb.Run();
+}
+
+void AudioPipelineImpl::OnError() {
+  if (!audio_client_.playback_error_cb.is_null()) {
+    audio_client_.playback_error_cb.Run(
+        ::media::PIPELINE_ERROR_COULD_NOT_RENDER);
+  }
 }
 
 void AudioPipelineImpl::OnUpdateConfig(
@@ -129,10 +139,10 @@ void AudioPipelineImpl::OnUpdateConfig(
     const ::media::AudioDecoderConfig& audio_config,
     const ::media::VideoDecoderConfig& video_config) {
   if (audio_config.IsValidConfig()) {
-    CMALOG(kLogControl) << "AudioPipelineImpl::OnUpdateConfig id:" << id << " "
+    CMALOG(kLogControl) << __FUNCTION__ << " id:" << id << " "
                         << audio_config.AsHumanReadableString();
 
-    bool success = audio_device_->SetConfig(
+    bool success = decoder_->SetConfig(
         DecoderConfigAdapter::ToCastAudioConfig(id, audio_config));
     if (!success && !audio_client_.playback_error_cb.is_null())
       audio_client_.playback_error_cb.Run(::media::PIPELINE_ERROR_DECODE);
@@ -143,9 +153,8 @@ void AudioPipelineImpl::UpdateStatistics() {
   if (audio_client_.statistics_cb.is_null())
     return;
 
-  MediaComponentDevice::Statistics device_stats;
-  if (!audio_device_->GetStatistics(&device_stats))
-    return;
+  MediaPipelineBackend::Decoder::Statistics device_stats;
+  decoder_->GetStatistics(&device_stats);
 
   ::media::PipelineStatistics current_stats;
   current_stats.audio_bytes_decoded = device_stats.decoded_bytes;

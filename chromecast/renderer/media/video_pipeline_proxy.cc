@@ -17,6 +17,7 @@
 #include "chromecast/media/cma/base/coded_frame_provider.h"
 #include "chromecast/media/cma/ipc/media_message_fifo.h"
 #include "chromecast/media/cma/ipc_streamer/av_streamer_proxy.h"
+#include "chromecast/media/cma/pipeline/video_pipeline_client.h"
 #include "chromecast/renderer/media/cma_message_filter_proxy.h"
 #include "chromecast/renderer/media/media_channel_proxy.h"
 #include "media/base/bind_to_current_loop.h"
@@ -213,8 +214,7 @@ VideoPipelineProxy::~VideoPipelineProxy() {
       base::Bind(&VideoPipelineProxyInternal::Release, base::Passed(&proxy_)));
 }
 
-void VideoPipelineProxy::SetClient(
-    const VideoPipelineClient& video_client) {
+void VideoPipelineProxy::SetClient(const VideoPipelineClient& video_client) {
   DCHECK(thread_checker_.CalledOnValidThread());
   base::Closure pipe_read_cb =
       ::media::BindToCurrentLoop(

@@ -39,8 +39,8 @@ class CastAudioOutputStream : public ::media::AudioOutputStream {
   class Backend;
 
   void OnClosed();
-  void PushFrame();
-  void OnPushFrameComplete(bool success);
+  void PushBuffer();
+  void OnPushBufferComplete(bool success);
 
   const ::media::AudioParameters audio_params_;
   CastAudioManager* const audio_manager_;

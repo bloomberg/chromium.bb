@@ -41,5 +41,10 @@ const scoped_refptr<DecoderBufferBase>& CastDecoderBufferImpl::buffer() const {
   return buffer_;
 }
 
+void CastDecoderBufferImpl::set_buffer(
+    const scoped_refptr<DecoderBufferBase>& buffer) {
+  buffer_ = buffer;
+}
+
 }  // namespace media
 }  // namespace chromecast

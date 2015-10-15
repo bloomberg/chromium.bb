@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMECAST_MEDIA_CMA_FILTERS_CMA_RENDERER_H_
-#define CHROMECAST_MEDIA_CMA_FILTERS_CMA_RENDERER_H_
+#ifndef CHROMECAST_RENDERER_MEDIA_CMA_RENDERER_H_
+#define CHROMECAST_RENDERER_MEDIA_CMA_RENDERER_H_
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -29,29 +29,28 @@ class VideoRendererSink;
 
 namespace chromecast {
 namespace media {
-class AudioPipeline;
+class AudioPipelineProxy;
 class BalancedMediaTaskRunnerFactory;
 class HoleFrameFactory;
-class MediaPipeline;
-class VideoPipeline;
+class MediaPipelineProxy;
+class VideoPipelineProxy;
 
 class CmaRenderer : public ::media::Renderer {
  public:
-  CmaRenderer(scoped_ptr<MediaPipeline> media_pipeline,
+  CmaRenderer(scoped_ptr<MediaPipelineProxy> media_pipeline,
               ::media::VideoRendererSink* video_renderer_sink,
               const scoped_refptr<::media::GpuVideoAcceleratorFactories>&
                   gpu_factories);
   ~CmaRenderer() override;
 
   // ::media::Renderer implementation:
-  void Initialize(
-      ::media::DemuxerStreamProvider* demuxer_stream_provider,
-      const ::media::PipelineStatusCB& init_cb,
-      const ::media::StatisticsCB& statistics_cb,
-      const ::media::BufferingStateCB& buffering_state_cb,
-      const base::Closure& ended_cb,
-      const ::media::PipelineStatusCB& error_cb,
-      const base::Closure& waiting_for_decryption_key_cb) override;
+  void Initialize(::media::DemuxerStreamProvider* demuxer_stream_provider,
+                  const ::media::PipelineStatusCB& init_cb,
+                  const ::media::StatisticsCB& statistics_cb,
+                  const ::media::BufferingStateCB& buffering_state_cb,
+                  const base::Closure& ended_cb,
+                  const ::media::PipelineStatusCB& error_cb,
+                  const base::Closure& waiting_for_decryption_key_cb) override;
   void Flush(const base::Closure& flush_cb) override;
   void StartPlayingFrom(base::TimeDelta time) override;
   void SetPlaybackRate(double playback_rate) override;
@@ -102,9 +101,9 @@ class CmaRenderer : public ::media::Renderer {
   base::ThreadChecker thread_checker_;
 
   scoped_refptr<BalancedMediaTaskRunnerFactory> media_task_runner_factory_;
-  scoped_ptr<MediaPipeline> media_pipeline_;
-  AudioPipeline* audio_pipeline_;
-  VideoPipeline* video_pipeline_;
+  scoped_ptr<MediaPipelineProxy> media_pipeline_;
+  AudioPipelineProxy* audio_pipeline_;
+  VideoPipelineProxy* video_pipeline_;
   ::media::VideoRendererSink* video_renderer_sink_;
 
   ::media::DemuxerStreamProvider* demuxer_stream_provider_;
@@ -143,7 +142,7 @@ class CmaRenderer : public ::media::Renderer {
 
   // Tracks the most recent media time update and provides interpolated values
   // as playback progresses.
-  scoped_ptr< ::media::TimeDeltaInterpolator> time_interpolator_;
+  scoped_ptr<::media::TimeDeltaInterpolator> time_interpolator_;
 
   double playback_rate_;
 
@@ -156,4 +155,4 @@ class CmaRenderer : public ::media::Renderer {
 }  // namespace media
 }  // namespace chromecast
 
-#endif  // CHROMECAST_MEDIA_CMA_FILTERS_CMA_RENDERER_H_
+#endif  // CHROMECAST_RENDERER_MEDIA_CMA_RENDERER_H_

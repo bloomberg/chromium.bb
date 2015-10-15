@@ -12,7 +12,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
-#include "chromecast/media/cma/pipeline/video_pipeline.h"
 #include "media/base/pipeline_status.h"
 
 namespace base {
@@ -26,17 +25,17 @@ class VideoDecoderConfig;
 
 namespace chromecast {
 namespace media {
-struct AvPipelineClient;
 class AvStreamerProxy;
 class CodedFrameProvider;
-class VideoPipelineProxyInternal;
 class MediaChannelProxy;
+struct VideoPipelineClient;
+class VideoPipelineProxyInternal;
 
-class VideoPipelineProxy : public VideoPipeline {
+class VideoPipelineProxy {
  public:
   VideoPipelineProxy(scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
                      scoped_refptr<MediaChannelProxy> media_channel_proxy);
-  ~VideoPipelineProxy() override;
+  ~VideoPipelineProxy();
 
   void Initialize(const std::vector<::media::VideoDecoderConfig>& configs,
                   scoped_ptr<CodedFrameProvider> frame_provider,
@@ -45,8 +44,7 @@ class VideoPipelineProxy : public VideoPipeline {
   void Flush(const base::Closure& done_cb);
   void Stop();
 
-  // VideoPipeline implementation.
-  void SetClient(const VideoPipelineClient& video_client) override;
+  void SetClient(const VideoPipelineClient& video_client);
 
  private:
   base::ThreadChecker thread_checker_;

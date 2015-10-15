@@ -33,24 +33,25 @@ class TaskRunnerImpl;
 namespace media {
 struct AvPipelineClient;
 class BrowserCdmCast;
-class MediaPipelineBackend;
 struct MediaPipelineClient;
+struct VideoPipelineClient;
+class CodedFrameProvider;
+class MediaPipelineBackend;
 struct MediaPipelineDeviceParams;
 class MediaPipelineImpl;
-struct VideoPipelineClient;
 
 class MediaPipelineHost {
  public:
   // Factory method to create a MediaPipelineBackend
-  typedef base::Callback<scoped_ptr<media::MediaPipelineBackend>(
-      const MediaPipelineDeviceParams&)> CreateDeviceComponentsCB;
+  typedef base::Callback<scoped_ptr<MediaPipelineBackend>(
+      const MediaPipelineDeviceParams&)> CreateBackendCB;
 
   MediaPipelineHost();
   ~MediaPipelineHost();
 
   void Initialize(LoadType load_type,
                   const MediaPipelineClient& client,
-                  const CreateDeviceComponentsCB& create_device_components_cb);
+                  const CreateBackendCB& create_backend_cb);
 
   void SetAvPipe(TrackId track_id,
                  scoped_ptr<base::SharedMemory> shared_mem,
@@ -62,7 +63,7 @@ class MediaPipelineHost {
                        const ::media::PipelineStatusCB& status_cb);
   void VideoInitialize(TrackId track_id,
                        const VideoPipelineClient& client,
-                       const std::vector<::media::VideoDecoderConfig>& configs,
+                       const std::vector< ::media::VideoDecoderConfig>& configs,
                        const ::media::PipelineStatusCB& status_cb);
   void StartPlayingFrom(base::TimeDelta time);
   void Flush(const ::media::PipelineStatusCB& status_cb);
@@ -79,6 +80,9 @@ class MediaPipelineHost {
 
   scoped_ptr<TaskRunnerImpl> task_runner_;
   scoped_ptr<MediaPipelineImpl> media_pipeline_;
+
+  scoped_ptr<CodedFrameProvider> audio_frame_provider_;
+  scoped_ptr<CodedFrameProvider> video_frame_provider_;
 
   // The shared memory for a track id must be valid until Stop is invoked on
   // that track id.

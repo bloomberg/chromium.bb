@@ -23,8 +23,6 @@
 #include "chromecast/media/cma/pipeline/video_pipeline_impl.h"
 #include "chromecast/media/cma/test/frame_generator_for_test.h"
 #include "chromecast/media/cma/test/mock_frame_provider.h"
-#include "chromecast/public/media/audio_pipeline_device.h"
-#include "chromecast/public/media/media_clock_device.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/video_decoder_config.h"
@@ -63,9 +61,9 @@ AudioVideoPipelineImplTest::AudioVideoPipelineImplTest()
     : message_loop_(new base::MessageLoop()),
       task_runner_(new TaskRunnerImpl()),
       media_pipeline_(new MediaPipelineImpl()) {
-  MediaPipelineDeviceParams params(task_runner_.get());
   scoped_ptr<MediaPipelineBackend> backend =
-      make_scoped_ptr(new MediaPipelineBackendDefault(params));
+      make_scoped_ptr(new MediaPipelineBackendDefault());
+
   media_pipeline_->Initialize(kLoadTypeURL, backend.Pass());
   media_pipeline_->SetPlaybackRate(1.0);
 }
@@ -77,18 +75,6 @@ void AudioVideoPipelineImplTest::Initialize(
     const base::Closure& done_cb,
     ::media::PipelineStatus status,
     bool is_audio) {
-  if (is_audio) {
-    AvPipelineClient client;
-    client.eos_cb =
-        base::Bind(&AudioVideoPipelineImplTest::OnEos, base::Unretained(this));
-    media_pipeline_->GetAudioPipeline()->SetClient(client);
-  } else {
-    VideoPipelineClient client;
-    client.av_pipeline_client.eos_cb =
-        base::Bind(&AudioVideoPipelineImplTest::OnEos, base::Unretained(this));
-    media_pipeline_->GetVideoPipeline()->SetClient(client);
-  }
-
   ::media::AudioDecoderConfig audio_config(
       ::media::kCodecMP3,
       ::media::kSampleFormatS16,
@@ -129,19 +115,32 @@ void AudioVideoPipelineImplTest::Initialize(
                  done_cb);
 
   scoped_ptr<CodedFrameProvider> frame_provider_base(frame_provider.release());
-  base::Closure task = is_audio ?
-      base::Bind(&MediaPipeline::InitializeAudio,
-                 base::Unretained(media_pipeline_.get()),
-                 audio_config,
-                 base::Passed(&frame_provider_base),
-                 next_task) :
-      base::Bind(&MediaPipeline::InitializeVideo,
-                 base::Unretained(media_pipeline_.get()),
-                 video_configs,
-                 base::Passed(&frame_provider_base),
-                 next_task);
 
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, task);
+  if (is_audio) {
+    AvPipelineClient client;
+    client.eos_cb =
+        base::Bind(&AudioVideoPipelineImplTest::OnEos, base::Unretained(this));
+
+    base::Closure task = base::Bind(&MediaPipelineImpl::InitializeAudio,
+                                    base::Unretained(media_pipeline_.get()),
+                                    audio_config,
+                                    client,
+                                    base::Passed(&frame_provider_base),
+                                    next_task);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, task);
+  } else {
+    VideoPipelineClient client;
+    client.av_pipeline_client.eos_cb =
+        base::Bind(&AudioVideoPipelineImplTest::OnEos, base::Unretained(this));
+
+    base::Closure task = base::Bind(&MediaPipelineImpl::InitializeVideo,
+                                    base::Unretained(media_pipeline_.get()),
+                                    video_configs,
+                                    client,
+                                    base::Passed(&frame_provider_base),
+                                    next_task);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, task);
+  }
 }
 
 void AudioVideoPipelineImplTest::StartPlaying(
@@ -164,7 +163,8 @@ void AudioVideoPipelineImplTest::Flush(
                  done_cb);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&MediaPipeline::Flush, base::Unretained(media_pipeline_.get()),
+      base::Bind(&MediaPipelineImpl::Flush,
+                 base::Unretained(media_pipeline_.get()),
                  next_task));
 }
 

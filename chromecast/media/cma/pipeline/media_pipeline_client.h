@@ -14,8 +14,8 @@ namespace chromecast {
 namespace media {
 
 struct MediaPipelineClient {
-  typedef base::Callback<void(
-      base::TimeDelta, base::TimeDelta, base::TimeTicks)> TimeUpdateCB;
+  typedef base::Callback<
+      void(base::TimeDelta, base::TimeDelta, base::TimeTicks)> TimeUpdateCB;
 
   MediaPipelineClient();
   ~MediaPipelineClient();

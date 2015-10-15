@@ -5,9 +5,9 @@
 #ifndef CHROMECAST_PUBLIC_MEDIA_MEDIA_PIPELINE_DEVICE_PARAMS_H_
 #define CHROMECAST_PUBLIC_MEDIA_MEDIA_PIPELINE_DEVICE_PARAMS_H_
 
-#include "task_runner.h"
-
 namespace chromecast {
+class TaskRunner;
+
 namespace media {
 
 // Supplies creation parameters to platform-specific pipeline backend.

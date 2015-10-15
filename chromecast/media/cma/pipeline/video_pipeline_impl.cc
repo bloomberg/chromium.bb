@@ -10,10 +10,8 @@
 #include "chromecast/media/cma/base/coded_frame_provider.h"
 #include "chromecast/media/cma/base/decoder_config_adapter.h"
 #include "chromecast/media/cma/pipeline/av_pipeline_impl.h"
-#include "chromecast/media/cma/pipeline/video_pipeline_device_client_impl.h"
 #include "chromecast/public/graphics_types.h"
 #include "chromecast/public/media/decoder_config.h"
-#include "chromecast/public/media/video_pipeline_device.h"
 #include "media/base/video_decoder_config.h"
 
 namespace chromecast {
@@ -23,12 +21,15 @@ namespace {
 const size_t kMaxVideoFrameSize = 1024 * 1024;
 }
 
-VideoPipelineImpl::VideoPipelineImpl(VideoPipelineDevice* video_device)
-    : video_device_(video_device),
+VideoPipelineImpl::VideoPipelineImpl(
+    MediaPipelineBackend::VideoDecoder* video_decoder,
+    const VideoPipelineClient& client)
+    : video_decoder_(video_decoder),
+      video_client_(client),
       weak_factory_(this) {
   weak_this_ = weak_factory_.GetWeakPtr();
   av_pipeline_impl_.reset(new AvPipelineImpl(
-      video_device_,
+      video_decoder_,
       base::Bind(&VideoPipelineImpl::OnUpdateConfig, base::Unretained(this))));
 }
 
@@ -44,8 +45,7 @@ void VideoPipelineImpl::SetCodedFrameProvider(
 bool VideoPipelineImpl::StartPlayingFrom(
     base::TimeDelta time,
     const scoped_refptr<BufferingState>& buffering_state) {
-  CMALOG(kLogControl) << "VideoPipelineImpl::StartPlayingFrom t0="
-                      << time.InMilliseconds();
+  CMALOG(kLogControl) << __FUNCTION__ << " t0=" << time.InMilliseconds();
 
   // Reset the pipeline statistics.
   previous_stats_ = ::media::PipelineStatistics();
@@ -65,7 +65,7 @@ bool VideoPipelineImpl::StartPlayingFrom(
 }
 
 void VideoPipelineImpl::Flush(const ::media::PipelineStatusCB& status_cb) {
-  CMALOG(kLogControl) << "VideoPipelineImpl::Flush";
+  CMALOG(kLogControl) << __FUNCTION__;
   if (av_pipeline_impl_->GetState() == AvPipelineImpl::kError) {
     status_cb.Run(::media::PIPELINE_ERROR_ABORT);
     return;
@@ -78,7 +78,7 @@ void VideoPipelineImpl::Flush(const ::media::PipelineStatusCB& status_cb) {
 
 void VideoPipelineImpl::OnFlushDone(
     const ::media::PipelineStatusCB& status_cb) {
-  CMALOG(kLogControl) << "VideoPipelineImpl::OnFlushDone";
+  CMALOG(kLogControl) << __FUNCTION__;
   if (av_pipeline_impl_->GetState() == AvPipelineImpl::kError) {
     status_cb.Run(::media::PIPELINE_ERROR_ABORT);
     return;
@@ -88,7 +88,7 @@ void VideoPipelineImpl::OnFlushDone(
 }
 
 void VideoPipelineImpl::Stop() {
-  CMALOG(kLogControl) << "VideoPipelineImpl::Stop";
+  CMALOG(kLogControl) << __FUNCTION__;
   av_pipeline_impl_->Stop();
   av_pipeline_impl_->TransitionToState(AvPipelineImpl::kStopped);
 }
@@ -97,9 +97,21 @@ void VideoPipelineImpl::SetCdm(BrowserCdmCast* media_keys) {
   av_pipeline_impl_->SetCdm(media_keys);
 }
 
-void VideoPipelineImpl::SetClient(const VideoPipelineClient& client) {
-  video_client_ = client;
-  av_pipeline_impl_->SetClient(client.av_pipeline_client);
+void VideoPipelineImpl::OnBufferPushed(
+    MediaPipelineBackend::BufferStatus status) {
+  av_pipeline_impl_->OnBufferPushed(status);
+}
+
+void VideoPipelineImpl::OnEndOfStream() {
+  if (!video_client_.av_pipeline_client.eos_cb.is_null())
+    video_client_.av_pipeline_client.eos_cb.Run();
+}
+
+void VideoPipelineImpl::OnError() {
+  if (!video_client_.av_pipeline_client.playback_error_cb.is_null()) {
+    video_client_.av_pipeline_client.playback_error_cb.Run(
+        ::media::PIPELINE_ERROR_COULD_NOT_RENDER);
+  }
 }
 
 void VideoPipelineImpl::Initialize(
@@ -111,8 +123,7 @@ void VideoPipelineImpl::Initialize(
     CMALOG(kLogControl) << __FUNCTION__ << " "
                         << config.AsHumanReadableString();
   }
-  video_device_->SetVideoClient(new VideoPipelineDeviceClientImpl(
-      base::Bind(&VideoPipelineImpl::OnNaturalSizeChanged, weak_this_)));
+
   if (frame_provider)
     SetCodedFrameProvider(frame_provider.Pass());
 
@@ -132,8 +143,7 @@ void VideoPipelineImpl::Initialize(
     video_config.additional_config = &secondary_config;
   }
 
-  if (!video_device_->SetConfig(video_config) ||
-      !av_pipeline_impl_->Initialize()) {
+  if (!video_decoder_->SetConfig(video_config)) {
     status_cb.Run(::media::PIPELINE_ERROR_INITIALIZATION_FAILED);
     return;
   }
@@ -146,10 +156,10 @@ void VideoPipelineImpl::OnUpdateConfig(
     const ::media::AudioDecoderConfig& audio_config,
     const ::media::VideoDecoderConfig& video_config) {
   if (video_config.IsValidConfig()) {
-    CMALOG(kLogControl) << "VideoPipelineImpl::OnUpdateConfig id:" << id << " "
+    CMALOG(kLogControl) << __FUNCTION__ << " id:" << id << " "
                         << video_config.AsHumanReadableString();
 
-    bool success = video_device_->SetConfig(
+    bool success = video_decoder_->SetConfig(
         DecoderConfigAdapter::ToCastVideoConfig(id, video_config));
     if (!success &&
         !video_client_.av_pipeline_client.playback_error_cb.is_null()) {
@@ -173,9 +183,8 @@ void VideoPipelineImpl::UpdateStatistics() {
   if (video_client_.av_pipeline_client.statistics_cb.is_null())
     return;
 
-  MediaComponentDevice::Statistics device_stats;
-  if (!video_device_->GetStatistics(&device_stats))
-    return;
+  MediaPipelineBackend::Decoder::Statistics device_stats;
+  video_decoder_->GetStatistics(&device_stats);
 
   ::media::PipelineStatistics current_stats;
   current_stats.video_bytes_decoded = device_stats.decoded_bytes;

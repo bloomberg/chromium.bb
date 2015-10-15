@@ -39,7 +39,7 @@ VideoPlane* CastMediaShlib::GetVideoPlane() {
 
 MediaPipelineBackend* CastMediaShlib::CreateMediaPipelineBackend(
     const MediaPipelineDeviceParams& params) {
-  return new MediaPipelineBackendDefault(params);
+  return new MediaPipelineBackendDefault();
 }
 
 MediaCodecSupportShlib::CodecSupport MediaCodecSupportShlib::IsSupported(

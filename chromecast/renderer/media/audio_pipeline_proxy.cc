@@ -118,9 +118,8 @@ void AudioPipelineProxyInternal::NotifyPipeWrite() {
   VLOG_IF(4, !success) << "Sending msg failed";
 }
 
-void AudioPipelineProxyInternal::SetClient(
-    const base::Closure& pipe_read_cb,
-    const AvPipelineClient& client) {
+void AudioPipelineProxyInternal::SetClient(const base::Closure& pipe_read_cb,
+                                           const AvPipelineClient& client) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   CmaMessageFilterProxy::AudioDelegate delegate;
@@ -221,8 +220,7 @@ AudioPipelineProxy::~AudioPipelineProxy() {
       base::Bind(&AudioPipelineProxyInternal::Release, base::Passed(&proxy_)));
 }
 
-void AudioPipelineProxy::SetClient(
-    const AvPipelineClient& client) {
+void AudioPipelineProxy::SetClient(const AvPipelineClient& client) {
   DCHECK(thread_checker_.CalledOnValidThread());
   base::Closure pipe_read_cb = ::media::BindToCurrentLoop(
       base::Bind(&AudioPipelineProxy::OnPipeRead, weak_this_));

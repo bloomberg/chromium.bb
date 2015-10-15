@@ -12,9 +12,9 @@
 #include "base/time/time.h"
 #include "chromecast/media/cma/base/balanced_media_task_runner_factory.h"
 #include "chromecast/media/cma/base/decoder_buffer_base.h"
-#include "chromecast/media/cma/filters/demuxer_stream_adapter.h"
-#include "chromecast/media/cma/test/demuxer_stream_for_test.h"
 #include "chromecast/public/media/cast_decoder_buffer.h"
+#include "chromecast/renderer/media/demuxer_stream_adapter.h"
+#include "chromecast/renderer/media/demuxer_stream_for_test.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/demuxer_stream.h"
@@ -76,8 +76,9 @@ MultiDemuxerStreamAdaptersTest::~MultiDemuxerStreamAdaptersTest() {
 
 void MultiDemuxerStreamAdaptersTest::Start() {
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::Bind(&MultiDemuxerStreamAdaptersTest::OnTestTimeout,
-                            base::Unretained(this)),
+      FROM_HERE,
+      base::Bind(&MultiDemuxerStreamAdaptersTest::OnTestTimeout,
+                 base::Unretained(this)),
       base::TimeDelta::FromSeconds(5));
 
   media_task_runner_factory_ = new BalancedMediaTaskRunnerFactory(
@@ -89,18 +90,20 @@ void MultiDemuxerStreamAdaptersTest::Start() {
   for (auto& stream : demuxer_streams_) {
     coded_frame_providers_.push_back(make_scoped_ptr(
         new DemuxerStreamAdapter(base::ThreadTaskRunnerHandle::Get(),
-                                 media_task_runner_factory_, stream)));
+                                 media_task_runner_factory_,
+                                 stream)));
   }
   running_stream_count_ = coded_frame_providers_.size();
 
   // read each stream
   for (auto& code_frame_provider : coded_frame_providers_) {
     auto read_cb = base::Bind(&MultiDemuxerStreamAdaptersTest::OnNewFrame,
-                              base::Unretained(this), code_frame_provider);
+                              base::Unretained(this),
+                              code_frame_provider);
 
-    base::Closure task =
-        base::Bind(&CodedFrameProvider::Read,
-                   base::Unretained(code_frame_provider), read_cb);
+    base::Closure task = base::Bind(&CodedFrameProvider::Read,
+                                    base::Unretained(code_frame_provider),
+                                    read_cb);
 
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, task);
   }
@@ -124,7 +127,8 @@ void MultiDemuxerStreamAdaptersTest::OnNewFrame(
 
   frame_received_count_++;
   auto read_cb = base::Bind(&MultiDemuxerStreamAdaptersTest::OnNewFrame,
-                            base::Unretained(this), frame_provider);
+                            base::Unretained(this),
+                            frame_provider);
   frame_provider->Read(read_cb);
 }
 
