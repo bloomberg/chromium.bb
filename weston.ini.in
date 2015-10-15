@@ -66,3 +66,6 @@ path=@libexecdir@/weston-keyboard
 
 [screen-share]
 command=@bindir@/weston --backend=rdp-backend.so --shell=fullscreen-shell.so --no-clients-resize
+
+#[xwayland]
+#path=@bindir@/Xwayland
