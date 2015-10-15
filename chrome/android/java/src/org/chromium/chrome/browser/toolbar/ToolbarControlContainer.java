@@ -130,6 +130,7 @@ public class ToolbarControlContainer extends FrameLayout implements ControlConta
 
     private static class ToolbarViewResourceAdapter extends ViewResourceAdapter {
         private final int mToolbarActualHeightPx;
+        private final int mTabStripHeightPx;
         private final int[] mTempPosition = new int[2];
 
         private final View mToolbarContainer;
@@ -147,6 +148,8 @@ public class ToolbarControlContainer extends FrameLayout implements ControlConta
             }
             mToolbarActualHeightPx = toolbarContainer.getResources().getDimensionPixelSize(
                     containerHeightResId);
+            mTabStripHeightPx = toolbarContainer.getResources().getDimensionPixelSize(
+                    R.dimen.tab_strip_height);
         }
 
         /**
@@ -186,7 +189,7 @@ public class ToolbarControlContainer extends FrameLayout implements ControlConta
 
         @Override
         protected void computeContentPadding(Rect outContentPadding) {
-            outContentPadding.set(0, ((View) mToolbar).getTop(), mToolbarContainer.getWidth(),
+            outContentPadding.set(0, mTabStripHeightPx, mToolbarContainer.getWidth(),
                     mToolbarActualHeightPx);
         }
 
