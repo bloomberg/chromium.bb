@@ -5,8 +5,6 @@
 #include "components/autofill/core/browser/suggestion.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "components/autofill/core/browser/autofill_profile.h"
-#include "components/autofill/core/browser/credit_card.h"
 
 namespace autofill {
 
