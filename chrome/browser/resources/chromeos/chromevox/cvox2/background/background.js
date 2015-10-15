@@ -13,11 +13,13 @@ goog.provide('global');
 goog.require('AutomationPredicate');
 goog.require('AutomationUtil');
 goog.require('ClassicCompatibility');
+goog.require('NextEarcons');
 goog.require('Output');
 goog.require('Output.EventType');
 goog.require('cursors.Cursor');
 goog.require('cvox.BrailleKeyCommand');
 goog.require('cvox.ChromeVoxEditableTextBase');
+goog.require('cvox.ClassicEarcons');
 goog.require('cvox.ExtensionBridge');
 goog.require('cvox.NavBraille');
 
@@ -115,6 +117,25 @@ Background = function() {
         break;
     }
   }.bind(this));
+
+  /** @type {!cvox.AbstractEarcons} @private */
+  this.classicEarcons_ = cvox.ChromeVox.earcons || new cvox.ClassicEarcons();
+
+  /** @type {!cvox.AbstractEarcons} @private */
+  this.nextEarcons_ = new NextEarcons();
+
+  // Turn cvox.ChromeVox.earcons into a getter that returns either the
+  // Next earcons or the Classic earcons depending on the current mode.
+  Object.defineProperty(cvox.ChromeVox, 'earcons', {
+    get: (function() {
+      if (this.mode_ === ChromeVoxMode.FORCE_NEXT ||
+          this.mode_ === ChromeVoxMode.NEXT) {
+        return this.nextEarcons_;
+      } else {
+        return this.classicEarcons_;
+      }
+    }).bind(this)
+  });
 };
 
 Background.prototype = {

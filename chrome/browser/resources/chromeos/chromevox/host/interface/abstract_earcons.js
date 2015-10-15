@@ -37,10 +37,12 @@ cvox.Earcon = {
   OBJECT_SELECT: 'object_select',
   PAGE_FINISH_LOADING: 'page_finish_loading',
   PAGE_START_LOADING: 'page_start_loading',
+  POP_UP_BUTTON: 'pop_up_button',
   RECOVER_FOCUS: 'recover_focus',
   SELECTION: 'selection',
   SELECTION_REVERSE: 'selection_reverse',
   SKIP: 'skip',
+  SLIDER: 'slider',
   WRAP: 'wrap',
   WRAP_EDGE: 'wrap_edge',
 };
@@ -50,13 +52,15 @@ cvox.Earcon = {
  * @constructor
  */
 cvox.AbstractEarcons = function() {
-  /**
-   * Public flag set to enable or disable earcons. Callers should prefer
-   * toggle(); however, this member is public for initialization.
-   * @type {boolean}
-   */
-  this.enabled = true;
 };
+
+
+/**
+ * Public static flag set to enable or disable earcons. Callers should prefer
+ * toggle(); however, this member is public for initialization.
+ * @type {boolean}
+ */
+cvox.AbstractEarcons.enabled = true;
 
 
 /**
@@ -81,6 +85,6 @@ cvox.AbstractEarcons.prototype.earconsAvailable = function() {
  * @return {boolean} True if earcons are now enabled; false otherwise.
  */
 cvox.AbstractEarcons.prototype.toggle = function() {
-  this.enabled = !this.enabled;
-  return this.enabled;
+  cvox.AbstractEarcons.enabled = !cvox.AbstractEarcons.enabled;
+  return cvox.AbstractEarcons.enabled;
 };

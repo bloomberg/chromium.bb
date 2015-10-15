@@ -15,9 +15,9 @@ goog.require('cvox.BrailleCaptionsBackground');
 goog.require('cvox.ChromeVox');
 goog.require('cvox.ChromeVoxEditableTextBase');
 goog.require('cvox.ChromeVoxPrefs');
+goog.require('cvox.ClassicEarcons');
 goog.require('cvox.CompositeTts');
 goog.require('cvox.ConsoleTts');
-goog.require('cvox.EarconsBackground');
 goog.require('cvox.ExtensionBridge');
 goog.require('cvox.HostFactory');
 goog.require('cvox.InjectedScriptLoader');
@@ -75,7 +75,6 @@ cvox.ChromeVoxBackground.prototype.init = function() {
       .add(this.backgroundTts_)
       .add(consoleTts);
 
-  this.earcons = new cvox.EarconsBackground();
   this.addBridgeListener();
 
   /**
@@ -85,13 +84,14 @@ cvox.ChromeVoxBackground.prototype.init = function() {
    */
   this.backgroundBraille_ = new cvox.BrailleBackground();
 
-    this.tabsApiHandler_ = new cvox.TabsApiHandler(
-      this.tts, this.backgroundBraille_, this.earcons);
+  this.tabsApiHandler_ = new cvox.TabsApiHandler();
 
   // Export globals on cvox.ChromeVox.
   cvox.ChromeVox.tts = this.tts;
   cvox.ChromeVox.braille = this.backgroundBraille_;
-  cvox.ChromeVox.earcons = this.earcons;
+
+  if (!cvox.ChromeVox.earcons)
+    cvox.ChromeVox.earcons = new cvox.ClassicEarcons();
 
   if (cvox.ChromeVox.isChromeOS &&
       chrome.accessibilityPrivate.onIntroduceChromeVox) {
@@ -264,7 +264,7 @@ cvox.ChromeVoxBackground.prototype.onTtsMessage = function(msg) {
  */
 cvox.ChromeVoxBackground.prototype.onEarconMessage = function(msg) {
   if (msg.action == 'play') {
-    this.earcons.playEarcon(msg.earcon);
+    cvox.ChromeVox.earcons.playEarcon(msg.earcon);
   }
 };
 
@@ -328,7 +328,7 @@ cvox.ChromeVoxBackground.prototype.addBridgeListener = function() {
                 false);
           }
         } else if (msg['pref'] == 'earcons') {
-          this.earcons.enabled = msg['value'];
+          cvox.AbstractEarcons.enabled = msg['value'];
         } else if (msg['pref'] == 'sticky' && msg['announce']) {
           if (msg['value']) {
             this.tts.speak(Msgs.getMsg('sticky_mode_enabled'),

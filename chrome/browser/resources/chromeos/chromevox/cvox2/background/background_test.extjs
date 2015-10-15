@@ -396,3 +396,49 @@ TEST_F('BackgroundTest', 'UseEditableState', function() {
       nonEditable.focus();
     }.bind(this));
 });
+
+TEST_F('BackgroundTest', 'EarconsForControls', function() {
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(
+    function() {/*!
+      <p>Initial focus will be on something that's not a control.</p>
+      <a href="#">MyLink</a>
+      <button>MyButton</button>
+      <input type=checkbox>
+      <input type=checkbox checked>
+      <input>
+      <select multiple><option>1</option></select>
+      <select><option>2</option></select>
+      <input type=range value=5>
+    */},
+    function(rootNode) {
+      var doCmd = this.doCmd.bind(this);
+
+      mockFeedback.call(doCmd('nextElement'))
+          .expectSpeech('MyLink')
+          .expectEarcon(cvox.Earcon.LINK)
+          .call(doCmd('nextElement'))
+          .expectSpeech('MyButton')
+          .expectEarcon(cvox.Earcon.BUTTON)
+          .call(doCmd('nextElement'))
+          .expectSpeech('Check box')
+          .expectEarcon(cvox.Earcon.CHECK_OFF)
+          .call(doCmd('nextElement'))
+          .expectSpeech('Check box')
+          .expectEarcon(cvox.Earcon.CHECK_ON)
+          .call(doCmd('nextElement'))
+          .expectSpeech('Edit text')
+          .expectEarcon(cvox.Earcon.EDITABLE_TEXT)
+          .call(doCmd('nextElement'))
+          .expectSpeech('List box')
+          .expectEarcon(cvox.Earcon.LISTBOX)
+          .call(doCmd('nextElement'))
+          .expectSpeech('Button', 'has pop up')
+          .expectEarcon(cvox.Earcon.POP_UP_BUTTON)
+          .call(doCmd('nextElement'))
+          .expectSpeech(/slider/)
+          .expectEarcon(cvox.Earcon.SLIDER);
+
+      mockFeedback.replay();
+    }.bind(this));
+});

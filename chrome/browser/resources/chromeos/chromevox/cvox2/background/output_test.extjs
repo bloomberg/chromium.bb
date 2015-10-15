@@ -108,14 +108,14 @@ TEST_F('OutputE2ETest', 'Checkbox', function() {
       var el = root.firstChild.firstChild;
       var range = cursors.Range.fromNode(el);
       var o = new Output().withSpeechAndBraille(range, null, 'navigate');
-      assertEqualsJSON({string_: '|Check box|not checked', 'spans_': [
-        // Attributes.
-        {value: 'name', start: 0, end: 0},
-        {value: 'role', start: 1, end: 10},
-        {value: 'state', start: 11, end: 22},
-
+      assertEqualsJSON({string_: '||Check box|not checked', 'spans_': [
         // Checkbox earcon (based on the state).
-        {value: {earconId: 'CHECK_OFF'}, start: 11, end: 22}
+        {value: {earconId: 'CHECK_OFF'}, start: 0, end: 0},
+
+        // Attributes.
+        {value: 'name', start: 1, end: 1},
+        {value: 'role', start: 2, end: 11},
+        {value: 'state', start: 12, end: 23}
       ]}, o.speechOutputForTest);
       checkBrailleOutput(
           'chk ( )',
@@ -223,9 +223,10 @@ TEST_F('OutputE2ETest', 'Audio', function() {
       var prevRange = range;
       range = cursors.Range.fromNode(el);
       var o = new Output().withSpeechAndBraille(range, prevRange, 'navigate');
-      assertEqualsJSON({string_: '0, , slider|audio time scrubber',
+      assertEqualsJSON({string_: '|0, , slider|audio time scrubber',
           spans_:
-              [{value: 'help', start: 12, end: 31}]
+              [{value: {'earconId': 'SLIDER'}, start: 0, end: 0},
+               {value: 'help', start: 13, end: 32}]
           }, o.speechOutputForTest);
       // TODO(plundblad): Investigate this.
       checkBrailleOutput(
@@ -453,6 +454,7 @@ TEST_F('OutputE2ETest', 'Menu', function() {
     assertEqualsJSON({string_:
             '|Menu|with 1 item|a|Menu item| 1 of 1 ', spans_: [
         {value: 'name', start: 18, end: 19},
+        {value: {earconId: 'BUTTON'}, start:18, end:19},
         {value: 'role', start:20, end: 29}
     ]}, o.speechOutputForTest);
     checkBrailleOutput(

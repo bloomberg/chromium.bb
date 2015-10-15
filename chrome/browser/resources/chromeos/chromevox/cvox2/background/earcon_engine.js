@@ -18,7 +18,7 @@ EarconEngine = function() {
   // Public control parameters. All of these are meant to be adjustable.
 
   /** @type {number} The master volume, as an amplification factor. */
-  this.masterVolume = 0.2;
+  this.masterVolume = 1.0;
 
   /** @type {number} The base relative pitch adjustment, in half-steps. */
   this.masterPitch = -4;

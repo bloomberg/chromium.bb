@@ -4,7 +4,7 @@
 
 // Include test fixture.
 GEN_INCLUDE(['chromevox_unittest_base.js',
-            'mock_feedback.js']);
+             'mock_feedback.js']);
 
 function speak(text, opt_properties) {
   cvox.ChromeVox.tts.speak(text, 0, opt_properties);
@@ -14,6 +14,10 @@ function braille(text) {
   var navBraille = cvox.NavBraille.fromText(text);
   cvox.ChromeVox.braille.write(navBraille);
   return navBraille;
+}
+
+function earcon(earconName) {
+  cvox.ChromeVox.earcons.playEarcon(cvox.Earcon[earconName]);
 }
 
 /**
@@ -36,7 +40,8 @@ MockFeedbackUnitTest.prototype = {
   closureModuleDeps: [
     'cvox.BrailleInterface',
     'cvox.NavBraille',
-    'cvox.TtsInterface'
+    'cvox.TtsInterface',
+    'cvox.AbstractEarcons'
   ]
 };
 
@@ -169,4 +174,28 @@ TEST_F('MockFeedbackUnitTest', 'NoMatchDoesNotFinish', function() {
       })
       .replay();
   assertTrue(firstCallbackCalled);
+});
+
+TEST_F('MockFeedbackUnitTest', 'SpeechAndEarcons', function() {
+  var finishCalled = false;
+  var mock = new MockFeedback(function() { finishCalled = true; });
+  mock.install();
+  mock.call(function() {
+    speak('MyButton', {startCallback: function() {
+      earcon('BUTTON');
+    }});
+  })
+      .expectSpeech('MyButton')
+      .expectEarcon(cvox.Earcon.BUTTON)
+      .call(function() {
+        earcon('ALERT_MODAL');
+        speak('MyTextField', {startCallback: function() {
+          earcon('EDITABLE_TEXT');
+        }});
+      })
+      .expectEarcon(cvox.Earcon.ALERT_MODAL)
+      .expectSpeech('MyTextField')
+      .expectEarcon(cvox.Earcon.EDITABLE_TEXT)
+      .replay();
+  assertTrue(finishCalled);
 });

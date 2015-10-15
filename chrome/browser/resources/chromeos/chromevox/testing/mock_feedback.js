@@ -3,18 +3,20 @@
 // found in the LICENSE file.
 
 /**
- * @fileoverview This file contains the |MockFeedback| class which is a
- * combined mock class for speech and braille feedback.  A test that uses
- * this class may add expectations for speech utterances and braille display
- * content to be output.  The |install| method sets appropriate mock classes
- * as the |cvox.ChromeVox.tts| and |cvox.ChromeVox.braille| objects,
- * respectively.  Output sent to those objects will then be collected in
- * an internal queue.
+ * @fileoverview This file contains the |MockFeedback| class which is
+ * a combined mock class for speech, braille, and earcon feedback.  A
+ * test that uses this class may add expectations for speech
+ * utterances, braille display content to be output, and earcons
+ * played (by name).  The |install| method sets appropriate mock
+ * classes as the |cvox.ChromeVox.tts|, |cvox.ChromeVox.braille| and
+ * |cvox.ChromeVox.earcons| objects, respectively.  Output sent to
+ * those objects will then be collected in an internal queue.
  *
- * Expectations can be added using the |expectSpeech| and |expectBraille|
- * methods.  These methods take either strings or regular expressions to match
- * against.  Strings must match a full utterance (or display content) exactly,
- * while a regular expression must match a substring (use anchor operators if
+ * Expectations can be added using the |expectSpeech|,
+ * |expectBraille|, and |expectEarcon| methods.  These methods take
+ * either strings or regular expressions to match against.  Strings
+ * must match a full utterance (or display content) exactly, while a
+ * regular expression must match a substring (use anchor operators if
  * needed).
  *
  * Function calls may be inserted in the stream of expectations using the
@@ -22,11 +24,11 @@
  * have been met, and before any further expectations are matched.  Callbacks
  * are called in the order they were added to the mock.
  *
- * The |replay| method starts processing any pending utterances and braille
- * display content and will try to match expectations as new feedback enters
- * the queue asynchronously.  When all expectations have been met and callbacks
- * called, the finish callback, if any was provided to the constructor, is
- * called.
+ * The |replay| method starts processing any pending utterances,
+ * braille display content, and earcons and will try to match
+ * expectations as new feedback enters the queue asynchronously.  When
+ * all expectations have been met and callbacks called, the finish
+ * callback, if any was provided to the constructor, is called.
  *
  * This mock class is lean, meaning that feedback that doesn't match
  * any expectations is silently ignored.
@@ -82,6 +84,12 @@ var MockFeedback = function(opt_finishedCallback) {
    */
   this.pendingBraille_ = [];
   /**
+   * Pending earcons.
+   * @type {Array<{text: string, callback: (function|undefined)}>}
+   * @private
+   */
+  this.pendingEarcons_ = [];
+  /**
    * Handle for the timeout set for debug logging.
    * @type {number}
    * @private
@@ -118,6 +126,17 @@ MockFeedback.prototype = {
     };
 
     cvox.ChromeVox.braille = new MockBraille();
+
+    var MockEarcons = function() {};
+    MockEarcons.prototype = {
+      __proto__: cvox.AbstractEarcons.prototype,
+      playEarcon: this.addEarcon_.bind(this)
+    };
+
+    // cvox.ChromeVox.earcons is a getter that switches between Classic and
+    // Next; replace it with MockEarcons.
+    delete cvox.ChromeVox.earcons;
+    cvox.ChromeVox.earcons = new MockEarcons();
   },
 
   /**
@@ -197,6 +216,26 @@ MockFeedback.prototype = {
   },
 
   /**
+   * Adds an expectation for a played earcon.
+   * @param {string} earconName The name of the earcon.
+   * @return {MockFeedback} |this| for chaining
+   */
+  expectEarcon: function(earconName, opt_props) {
+    assertFalse(this.replaying_);
+    this.pendingActions_.push({
+      perform: function() {
+        var match = MockFeedback.matchAndConsume_(
+            earconName, {}, this.pendingEarcons_);
+        return !!match;
+      }.bind(this),
+      toString: function() {
+        return 'Earcon \'' + earconName + '\'';
+      }
+    });
+    return this;
+  },
+
+  /**
    * Arranges for a callback to be invoked when all expectations that were
    * added before this call have been met.  Callbacks are called in the
    * order they are added.
@@ -270,6 +309,12 @@ MockFeedback.prototype = {
     this.process_();
   },
 
+  /** @private */
+  addEarcon_: function(earconName) {
+    this.pendingEarcons_.push({text: earconName});
+    this.process_();
+  },
+
   /*** @private */
   process_: function() {
     if (!this.replaying_ || this.inProcess_)
@@ -324,6 +369,7 @@ MockFeedback.prototype = {
     }
     logPending('speech utterances', this.pendingUtterances_);
     logPending('braille', this.pendingBraille_);
+    logPending('earcons', this.pendingEarcons_);
     this.logTimeoutId_ = 0;
   },
 };
@@ -338,7 +384,10 @@ MockFeedback.prototype = {
  */
 MockFeedback.matchAndConsume_ = function(text, props, pending) {
   for (var i = 0, candidate; candidate = pending[i]; ++i) {
-    var candidateText = candidate.text.toString();
+    var candidateText = candidate.text;
+    if (typeof(candidateText) != 'string')
+      candidateText = candidateText.toString();
+
     if (text === candidateText ||
         (text instanceof RegExp && text.test(candidateText))) {
       var matched = true;

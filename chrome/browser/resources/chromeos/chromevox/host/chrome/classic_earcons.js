@@ -9,7 +9,7 @@
  */
 
 
-goog.provide('cvox.EarconsBackground');
+goog.provide('cvox.ClassicEarcons');
 
 goog.require('cvox.AbstractEarcons');
 
@@ -18,21 +18,22 @@ goog.require('cvox.AbstractEarcons');
  * @constructor
  * @extends {cvox.AbstractEarcons}
  */
-cvox.EarconsBackground = function() {
+cvox.ClassicEarcons = function() {
   goog.base(this);
 
-  this.audioMap = new Object();
   if (localStorage['earcons'] === 'false') {
-    this.enabled = false;
+    cvox.AbstractEarcons.enabled = false;
   }
+
+  this.audioMap = new Object();
 };
-goog.inherits(cvox.EarconsBackground, cvox.AbstractEarcons);
+goog.inherits(cvox.ClassicEarcons, cvox.AbstractEarcons);
 
 
 /**
  * @return {string} The human-readable name of the earcon set.
  */
-cvox.EarconsBackground.prototype.getName = function() {
+cvox.ClassicEarcons.prototype.getName = function() {
   return 'ChromeVox earcons';
 };
 
@@ -40,22 +41,20 @@ cvox.EarconsBackground.prototype.getName = function() {
 /**
  * @return {string} The base URL for loading earcons.
  */
-cvox.EarconsBackground.prototype.getBaseUrl = function() {
-  return cvox.EarconsBackground.BASE_URL;
+cvox.ClassicEarcons.prototype.getBaseUrl = function() {
+  return cvox.ClassicEarcons.BASE_URL;
 };
 
 
 /**
  * @override
  */
-cvox.EarconsBackground.prototype.playEarcon = function(earcon) {
+cvox.ClassicEarcons.prototype.playEarcon = function(earcon) {
   goog.base(this, 'playEarcon', earcon);
-  if (!this.enabled) {
+  if (!cvox.AbstractEarcons.enabled) {
     return;
   }
-  if (window['console']) {
-    window['console']['log']('Earcon ' + earcon);
-  }
+  console.log('Earcon ' + earcon);
 
   this.currentAudio = this.audioMap[earcon];
   if (!this.currentAudio) {
@@ -78,4 +77,4 @@ cvox.EarconsBackground.prototype.playEarcon = function(earcon) {
  * The base URL for  loading eracons.
  * @type {string}
  */
-cvox.EarconsBackground.BASE_URL = 'chromevox/background/earcons/';
+cvox.ClassicEarcons.BASE_URL = 'chromevox/background/earcons/';

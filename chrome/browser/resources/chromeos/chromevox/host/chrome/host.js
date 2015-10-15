@@ -62,9 +62,6 @@ cvox.ChromeHost.prototype.init = function() {
 
       cvox.ChromeVox.version = prefs['version'];
 
-      cvox.ChromeVox.earcons.enabled =
-          /** @type {boolean} */(JSON.parse(prefs['earcons']));
-
       cvox.ChromeVox.typingEcho =
           /** @type {number} */(JSON.parse(prefs['typingEcho']));
 

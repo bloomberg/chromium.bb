@@ -19,19 +19,8 @@ goog.require('cvox.NavBraille');
 /**
  * Class that adds listeners and handles events from the tabs API.
  * @constructor
- * @param {cvox.TtsInterface} tts The TTS to use for speaking.
- * @param {cvox.BrailleInterface} braille The braille interface to use for
- * brailling.
- * @param {cvox.AbstractEarcons} earcons The earcons object to use for playing
- *        earcons.
  */
-cvox.TabsApiHandler = function(tts, braille, earcons) {
-  /** @type {cvox.TtsInterface} @private */
-  this.tts_ = tts;
-  /** @type {cvox.BrailleInterface} @private */
-  this.braille_ = braille;
-  /** @type {cvox.AbstractEarcons} @private */
-  this.earcons_ = earcons;
+cvox.TabsApiHandler = function() {
   /** @type {function(string, Array<string>=)} @private */
   this.msg_ = Msgs.getMsg.bind(Msgs);
   /**
@@ -57,12 +46,12 @@ cvox.TabsApiHandler.prototype = {
     if (!cvox.ChromeVox.isActive) {
       return;
     }
-    this.tts_.speak(this.msg_('chrome_tab_created'),
-                   cvox.QueueMode.FLUSH,
-                   cvox.AbstractTts.PERSONALITY_ANNOUNCEMENT);
-    this.braille_.write(
+    cvox.ChromeVox.tts.speak(this.msg_('chrome_tab_created'),
+                             cvox.QueueMode.FLUSH,
+                             cvox.AbstractTts.PERSONALITY_ANNOUNCEMENT);
+    cvox.ChromeVox.braille.write(
         cvox.NavBraille.fromText(this.msg_('chrome_tab_created')));
-    this.earcons_.playEarcon(cvox.Earcon.OBJECT_OPEN);
+    cvox.ChromeVox.earcons.playEarcon(cvox.Earcon.OBJECT_OPEN);
   },
 
   /**
@@ -73,7 +62,7 @@ cvox.TabsApiHandler.prototype = {
     if (!cvox.ChromeVox.isActive) {
       return;
     }
-    this.earcons_.playEarcon(cvox.Earcon.OBJECT_CLOSE);
+    cvox.ChromeVox.earcons.playEarcon(cvox.Earcon.OBJECT_CLOSE);
   },
 
   /**
@@ -90,13 +79,13 @@ cvox.TabsApiHandler.prototype = {
         return;
       }
       var title = tab.title ? tab.title : tab.url;
-      this.tts_.speak(this.msg_('chrome_tab_selected',
-                         [title]),
-                     cvox.QueueMode.FLUSH,
-                     cvox.AbstractTts.PERSONALITY_ANNOUNCEMENT);
-      this.braille_.write(
+      cvox.ChromeVox.tts.speak(this.msg_('chrome_tab_selected',
+                                         [title]),
+                               cvox.QueueMode.FLUSH,
+                               cvox.AbstractTts.PERSONALITY_ANNOUNCEMENT);
+      cvox.ChromeVox.braille.write(
           cvox.NavBraille.fromText(this.msg_('chrome_tab_selected', [title])));
-      this.earcons_.playEarcon(cvox.Earcon.OBJECT_SELECT);
+      cvox.ChromeVox.earcons.playEarcon(cvox.Earcon.OBJECT_SELECT);
     }.bind(this));
   },
 
@@ -115,10 +104,10 @@ cvox.TabsApiHandler.prototype = {
       }
       if (tab.status == 'loading') {
         this.lastActiveTabLoaded_ = false;
-        this.earcons_.playEarcon(cvox.Earcon.PAGE_START_LOADING);
+        cvox.ChromeVox.earcons.playEarcon(cvox.Earcon.PAGE_START_LOADING);
       } else if (!this.lastActiveTabLoaded_) {
         this.lastActiveTabLoaded_ = true;
-        this.earcons_.playEarcon(cvox.Earcon.PAGE_FINISH_LOADING);
+        cvox.ChromeVox.earcons.playEarcon(cvox.Earcon.PAGE_FINISH_LOADING);
       }
     }.bind(this));
   },
@@ -140,12 +129,12 @@ cvox.TabsApiHandler.prototype = {
             'chrome_normal_window_selected';
         var tab = tabs[0] || {};
         var title = tab.title ? tab.title : tab.url;
-        this.tts_.speak(this.msg_(msgId, [title]),
-                       cvox.QueueMode.FLUSH,
-                       cvox.AbstractTts.PERSONALITY_ANNOUNCEMENT);
-        this.braille_.write(
+        cvox.ChromeVox.tts.speak(this.msg_(msgId, [title]),
+                                 cvox.QueueMode.FLUSH,
+                                 cvox.AbstractTts.PERSONALITY_ANNOUNCEMENT);
+        cvox.ChromeVox.braille.write(
             cvox.NavBraille.fromText(this.msg_(msgId, [title])));
-        this.earcons_.playEarcon(cvox.Earcon.OBJECT_SELECT);
+        cvox.ChromeVox.earcons.playEarcon(cvox.Earcon.OBJECT_SELECT);
       }.bind(this));
     }.bind(this));
   }

@@ -215,13 +215,16 @@ Output.ROLE_INFO_ = {
     msgId: 'role_menubar',
   },
   menuItem: {
-    msgId: 'role_menuitem'
+    msgId: 'role_menuitem',
+    earconId: 'BUTTON'
   },
   menuItemCheckBox: {
-    msgId: 'role_menuitemcheckbox'
+    msgId: 'role_menuitemcheckbox',
+    earconId: 'BUTTON'
   },
   menuItemRadio: {
-    msgId: 'role_menuitemradio'
+    msgId: 'role_menuitemradio',
+    earconId: 'BUTTON'
   },
   menuListOption: {
     msgId: 'role_menuitem'
@@ -239,7 +242,6 @@ Output.ROLE_INFO_ = {
   },
   popUpButton: {
     msgId: 'role_button',
-    earcon: 'LISTBOX'
   },
   radioButton: {
     msgId: 'role_radio'
@@ -321,15 +323,12 @@ Output.ROLE_INFO_ = {
 Output.STATE_INFO_ = {
   checked: {
     on: {
-      earconId: 'CHECK_ON',
       msgId: 'checkbox_checked_state'
     },
     off: {
-      earconId: 'CHECK_OFF',
       msgId: 'checkbox_unchecked_state'
     },
     omitted: {
-      earconId: 'CHECK_OFF',
       msgId: 'checkbox_unchecked_state'
     }
   },
@@ -395,7 +394,8 @@ Output.RULES = {
       enter: '@column_granularity $tableCellColumnIndex'
     },
     checkBox: {
-      speak: '$name $role $checked'
+      speak: '$if($checked, $earcon(CHECK_ON), $earcon(CHECK_OFF)) ' +
+             '$name $role $checked'
     },
     dialog: {
       enter: '$name $role'
@@ -446,7 +446,7 @@ Output.RULES = {
       speak: '$descendants'
     },
     popUpButton: {
-      speak: '$value $name $role @aria_has_popup ' +
+      speak: '$earcon(POP_UP_BUTTON) $value $name $role @aria_has_popup ' +
           '$if($collapsed, @aria_expanded_false, @aria_expanded_true)'
     },
     radioButton: {
@@ -463,7 +463,7 @@ Output.RULES = {
       enter: '@row_granularity $tableRowIndex'
     },
     slider: {
-      speak: '@describe_slider($value, $name) $help'
+      speak: '$earcon(SLIDER) @describe_slider($value, $name) $help'
     },
     staticText: {
       speak: '$value='
@@ -690,27 +690,25 @@ Output.prototype = {
     var queueMode = this.speechProperties_['category'] ?
         cvox.QueueMode.CATEGORY_FLUSH : cvox.QueueMode.FLUSH;
     this.speechBuffer_.forEach(function(buff, i, a) {
-      if (buff.toString()) {
-        (function() {
-          var scopedBuff = buff;
-          this.speechProperties_['startCallback'] = function() {
-            var actions = scopedBuff.getSpansInstanceOf(Output.Action);
-            if (actions) {
-              actions.forEach(function(a) {
-                a.run();
-              });
-            }
-          };
-        }.bind(this)());
+      (function() {
+        var scopedBuff = buff;
+        this.speechProperties_['startCallback'] = function() {
+          var actions = scopedBuff.getSpansInstanceOf(Output.Action);
+          if (actions) {
+            actions.forEach(function(a) {
+              a.run();
+            });
+          }
+        };
+      }.bind(this)());
 
-        if (this.speechEndCallback_ && i == a.length - 1)
-          this.speechProperties_['endCallback'] = this.speechEndCallback_;
-        else
-          this.speechProperties_['endCallback'] = null;
-        cvox.ChromeVox.tts.speak(
-            buff.toString(), queueMode, this.speechProperties_);
-        queueMode = cvox.QueueMode.QUEUE;
-      }
+      if (this.speechEndCallback_ && i == a.length - 1)
+        this.speechProperties_['endCallback'] = this.speechEndCallback_;
+      else
+        this.speechProperties_['endCallback'] = null;
+      cvox.ChromeVox.tts.speak(
+          buff.toString(), queueMode, this.speechProperties_);
+      queueMode = cvox.QueueMode.QUEUE;
     }.bind(this));
 
     // Braille.
@@ -967,13 +965,10 @@ Output.prototype = {
             // Ignore unless we're generating speech output.
             if (!this.formatOptions_.speech)
               return;
-            // Assumes there's existing output in our buffer.
-            var lastBuff = buff[buff.length - 1];
-            if (!lastBuff)
-              return;
 
-            lastBuff.setSpan(
-                new Output.EarconAction(tree.firstChild.value), 0, 0);
+            options.annotation.push(
+                new Output.EarconAction(tree.firstChild.value));
+            this.append_(buff, '', options);
           } else if (token == 'countChildren') {
             var role = tree.firstChild.value;
             var count = node.children.filter(function(e) {

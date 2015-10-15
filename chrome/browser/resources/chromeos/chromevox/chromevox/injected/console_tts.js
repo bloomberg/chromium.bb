@@ -41,7 +41,7 @@ cvox.ConsoleTts.prototype.speak = function(textString, queueMode, properties) {
       logStr += ' category=' + properties.category;
     }
     logStr += ' "' + textString + '"';
-    window['console']['log'](logStr);
+    console.log(logStr);
   }
   return this;
 };
@@ -52,7 +52,7 @@ cvox.ConsoleTts.prototype.isSpeaking = function() { return false; };
 /** @override */
 cvox.ConsoleTts.prototype.stop = function() {
   if (this.enabled_) {
-    window['console']['log']('Stop');
+    console.log('Stop');
   }
 };
 

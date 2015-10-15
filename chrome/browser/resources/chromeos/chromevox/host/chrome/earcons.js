@@ -31,7 +31,7 @@ goog.inherits(cvox.ChromeEarcons, cvox.AbstractEarcons);
  */
 cvox.ChromeEarcons.prototype.playEarcon = function(earcon) {
   goog.base(this, 'playEarcon', earcon);
-  if (!this.enabled) {
+  if (!cvox.AbstractEarcons.enabled) {
     return;
   }
 
@@ -51,9 +51,9 @@ cvox.ChromeEarcons.prototype.toggle = function() {
     'target': 'Prefs',
     'action': 'setPref',
     'pref': 'earcons',
-    'value': this.enabled
+    'value': cvox.AbstractEarcons.enabled
   });
-  if (!this.enabled) {
+  if (!cvox.AbstractEarcons.enabled) {
     cvox.ChromeVox.host.sendToBackgroundPage({
       'target': 'Prefs',
       'action': 'setPref',
@@ -61,8 +61,11 @@ cvox.ChromeEarcons.prototype.toggle = function() {
       'value': true
     });
   }
-  return this.enabled;
+  return cvox.AbstractEarcons.enabled;
 };
 
 
+/**
+ * @override
+ */
 cvox.HostFactory.earconsConstructor = cvox.ChromeEarcons;
