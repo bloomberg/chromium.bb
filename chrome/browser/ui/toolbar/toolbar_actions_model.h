@@ -24,6 +24,7 @@ class ToolbarActionsBar;
 class ToolbarActionViewController;
 
 namespace extensions {
+class ExtensionActionManager;
 class ExtensionRegistry;
 class ExtensionSet;
 }
@@ -150,6 +151,10 @@ class ToolbarActionsModel : public extensions::ExtensionActionAPI::Observer,
   ScopedVector<ToolbarActionViewController> CreateActions(
       Browser* browser,
       ToolbarActionsBar* bar);
+  scoped_ptr<ToolbarActionViewController> CreateActionForItem(
+      Browser* browser,
+      ToolbarActionsBar* bar,
+      const ToolbarItem& item);
 
   const std::vector<ToolbarItem>& toolbar_items() const {
     return is_highlighting() ? highlighted_items_ : toolbar_items_;
@@ -242,6 +247,9 @@ class ToolbarActionsModel : public extensions::ExtensionActionAPI::Observer,
 
   // The ExtensionRegistry object, cached for convenience.
   extensions::ExtensionRegistry* extension_registry_;
+
+  // The ExtensionActionManager, cached for convenience.
+  extensions::ExtensionActionManager* extension_action_manager_;
 
   // True if we've handled the initial EXTENSIONS_READY notification.
   bool actions_initialized_;

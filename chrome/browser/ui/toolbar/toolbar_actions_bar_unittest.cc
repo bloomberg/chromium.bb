@@ -333,6 +333,74 @@ TEST_F(ToolbarActionsBarUnitTest, ToolbarActionsReorderOnPrefChange) {
   }
 }
 
+TEST_F(ToolbarActionsBarUnitTest, TestHighlightMode) {
+  std::vector<std::string> ids;
+  for (int i = 0; i < 3; ++i) {
+    ids.push_back(CreateAndAddExtension(
+                      base::StringPrintf("extension %d", i),
+                      extensions::extension_action_test_util::BROWSER_ACTION)
+                      ->id());
+  }
+  EXPECT_EQ(3u, toolbar_actions_bar()->GetIconCount());
+  const char kExtension0[] = "extension 0";
+  const char kExtension1[] = "extension 1";
+  const char kExtension2[] = "extension 2";
+
+  {
+    // The order should start as 0, 1, 2.
+    const char* expected_names[] = {kExtension0, kExtension1, kExtension2};
+    EXPECT_TRUE(VerifyToolbarOrder(expected_names, 3u, 3u));
+  }
+
+  std::vector<std::string> ids_to_highlight;
+  ids_to_highlight.push_back(ids[0]);
+  ids_to_highlight.push_back(ids[2]);
+  toolbar_model()->HighlightActions(ids_to_highlight,
+                                    ToolbarActionsModel::HIGHLIGHT_WARNING);
+
+  {
+    // The order should now be 0, 2, since 1 is not being highlighted.
+    const char* expected_names[] = {kExtension0, kExtension2};
+    EXPECT_TRUE(VerifyToolbarOrder(expected_names, 2u, 2u));
+  }
+
+  toolbar_model()->StopHighlighting();
+
+  {
+    // The order should go back to normal.
+    const char* expected_names[] = {kExtension0, kExtension1, kExtension2};
+    EXPECT_TRUE(VerifyToolbarOrder(expected_names, 3u, 3u));
+  }
+
+  ids_to_highlight.push_back(ids[1]);
+  toolbar_model()->HighlightActions(ids_to_highlight,
+                                    ToolbarActionsModel::HIGHLIGHT_WARNING);
+  {
+    // All actions should be highlighted (in the order of the vector passed in,
+    // so with '1' at the end).
+    const char* expected_names[] = {kExtension0, kExtension2, kExtension1};
+    EXPECT_TRUE(VerifyToolbarOrder(expected_names, 3u, 3u));
+  }
+
+  ids_to_highlight.clear();
+  ids_to_highlight.push_back(ids[1]);
+  toolbar_model()->HighlightActions(ids_to_highlight,
+                                    ToolbarActionsModel::HIGHLIGHT_WARNING);
+
+  {
+    // Only extension 1 should be visible.
+    const char* expected_names[] = {kExtension1};
+    EXPECT_TRUE(VerifyToolbarOrder(expected_names, 1u, 1u));
+  }
+
+  toolbar_model()->StopHighlighting();
+  {
+    // And, again, back to normal.
+    const char* expected_names[] = {kExtension0, kExtension1, kExtension2};
+    EXPECT_TRUE(VerifyToolbarOrder(expected_names, 3u, 3u));
+  }
+}
+
 TEST_F(ToolbarActionsBarRedesignUnitTest, IconSurfacingBubbleAppearance) {
   // Without showing anything new, we shouldn't show the bubble, and should
   // auto-acknowledge it.

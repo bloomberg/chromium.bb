@@ -172,7 +172,7 @@ class ToolbarActionsModelUnitTest
 
   // The mock component action will be referred to as "MCA" below.
   const char* component_action_id() {
-    return ComponentToolbarActionsFactory::kActionIdForTesting;
+    return MockComponentToolbarActionsFactory::kActionIdForTesting;
   }
 
  private:

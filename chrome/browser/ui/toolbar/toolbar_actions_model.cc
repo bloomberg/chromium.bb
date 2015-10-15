@@ -46,6 +46,8 @@ ToolbarActionsModel::ToolbarActionsModel(
       prefs_(profile_->GetPrefs()),
       extension_action_api_(extensions::ExtensionActionAPI::Get(profile_)),
       extension_registry_(extensions::ExtensionRegistry::Get(profile_)),
+      extension_action_manager_(
+          extensions::ExtensionActionManager::Get(profile_)),
       actions_initialized_(false),
       use_redesign_(extensions::FeatureSwitch::extension_action_redesign()
                         ->IsEnabled()),
@@ -158,58 +160,43 @@ ScopedVector<ToolbarActionViewController> ToolbarActionsModel::CreateActions(
   DCHECK(bar);
   ScopedVector<ToolbarActionViewController> action_list;
 
-  // Get the component action list.
-  ScopedVector<ToolbarActionViewController> component_actions =
-      ComponentToolbarActionsFactory::GetInstance()->GetComponentToolbarActions(
-          browser);
-
-  extensions::ExtensionActionManager* action_manager =
-      extensions::ExtensionActionManager::Get(profile_);
-
   // toolbar_items() might not equate to toolbar_items_ in the case where a
-  // subset are highlighted.
-  for (const ToolbarItem& item : toolbar_items()) {
-    switch (item.type) {
-      case EXTENSION_ACTION: {
-        // Get the extension.
-        const extensions::Extension* extension = GetExtensionById(item.id);
-        DCHECK(extension);
-
-        // Create and add an ExtensionActionViewController for the extension.
-        action_list.push_back(new ExtensionActionViewController(
-            extension, browser, action_manager->GetExtensionAction(*extension),
-            bar));
-        break;
-      }
-      case COMPONENT_ACTION: {
-        DCHECK(use_redesign_);
-        // Find the index of the component action with the id.
-        auto iter = std::find_if(
-            component_actions.begin(), component_actions.end(),
-            [&item](const ToolbarActionViewController* action) {
-          return action->GetId() == item.id;
-        });
-        // We should always find a corresponding action.
-        DCHECK(iter != component_actions.end());
-        action_list.push_back(*iter);
-
-        // We have moved ownership of the action from |component_actions| to
-        // |action_list|.
-        component_actions.weak_erase(iter);
-        break;
-      }
-      case UNKNOWN_ACTION:
-        NOTREACHED();  // Should never have an UNKNOWN_ACTION in toolbar_items.
-        break;
-    }
-  }
-
-  // We've moved ownership of the subset of the component actions that we
-  // kept track of via toolbar_items() from |component_actions| to
-  // |action_list|. The rest will be deleted when |component_actions| goes out
-  // of scope.
+  // subset is highlighted.
+  for (const ToolbarItem& item : toolbar_items())
+    action_list.push_back(CreateActionForItem(browser, bar, item).release());
 
   return action_list.Pass();
+}
+
+scoped_ptr<ToolbarActionViewController>
+ToolbarActionsModel::CreateActionForItem(Browser* browser,
+                                         ToolbarActionsBar* bar,
+                                         const ToolbarItem& item) {
+  scoped_ptr<ToolbarActionViewController> result;
+  switch (item.type) {
+    case EXTENSION_ACTION: {
+      // Get the extension.
+      const extensions::Extension* extension = GetExtensionById(item.id);
+      DCHECK(extension);
+
+      // Create and add an ExtensionActionViewController for the extension.
+      result.reset(new ExtensionActionViewController(
+          extension, browser,
+          extension_action_manager_->GetExtensionAction(*extension), bar));
+      break;
+    }
+    case COMPONENT_ACTION: {
+      DCHECK(use_redesign_);
+      result = ComponentToolbarActionsFactory::GetInstance()
+                   ->GetComponentToolbarActionForId(item.id, browser)
+                   .Pass();
+      break;
+    }
+    case UNKNOWN_ACTION:
+      NOTREACHED();  // Should never have an UNKNOWN_ACTION in toolbar_items.
+      break;
+  }
+  return result.Pass();
 }
 
 void ToolbarActionsModel::OnExtensionActionVisibilityChanged(
@@ -311,15 +298,13 @@ bool ToolbarActionsModel::ShouldAddExtension(
       !extensions::util::IsIncognitoEnabled(extension->id(), profile_))
     return false;
 
-  extensions::ExtensionActionManager* action_manager =
-      extensions::ExtensionActionManager::Get(profile_);
   if (use_redesign_) {
     // In this case, we don't care about the browser action visibility, because
     // we want to show each extension regardless.
-    return action_manager->GetExtensionAction(*extension) != NULL;
+    return extension_action_manager_->GetExtensionAction(*extension) != nullptr;
   }
 
-  return action_manager->GetBrowserAction(*extension) &&
+  return extension_action_manager_->GetBrowserAction(*extension) &&
          extension_action_api_->GetBrowserActionVisibility(extension->id());
 }
 
@@ -487,8 +472,8 @@ void ToolbarActionsModel::Populate() {
   }
 
   // Next, add the component action ids.
-  std::vector<std::string> component_ids =
-      ComponentToolbarActionsFactory::GetComponentIds();
+  std::set<std::string> component_ids =
+      ComponentToolbarActionsFactory::GetInstance()->GetComponentIds(profile_);
   for (const std::string& id : component_ids)
     all_actions.push_back(ToolbarItem(id, COMPONENT_ACTION));
 
@@ -591,6 +576,8 @@ void ToolbarActionsModel::IncognitoPopulate() {
   // overflowed. Order is the same as in regular mode.
   visible_icon_count_ = 0;
 
+  std::set<std::string> component_ids =
+      ComponentToolbarActionsFactory::GetInstance()->GetComponentIds(profile_);
   for (std::vector<ToolbarItem>::const_iterator iter =
            original_model->toolbar_items_.begin();
        iter != original_model->toolbar_items_.end(); ++iter) {
@@ -602,7 +589,9 @@ void ToolbarActionsModel::IncognitoPopulate() {
         should_add = ShouldAddExtension(GetExtensionById(iter->id));
         break;
       case COMPONENT_ACTION:
-        should_add = ComponentToolbarActionsFactory::EnabledIncognito(iter->id);
+        // The component action factory only returns actions that should be
+        // added.
+        should_add = component_ids.count(iter->id) != 0;
         break;
       case UNKNOWN_ACTION:
         // We should never have an uninitialized action in the model.

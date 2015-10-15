@@ -49,12 +49,13 @@ IN_PROC_BROWSER_TEST_F(ComponentToolbarActionsBrowserTest,
 
   // Even though the method says "ExtensionId", this actually refers to any id
   // for the action.
-  EXPECT_EQ(ComponentToolbarActionsFactory::kActionIdForTesting,
+  EXPECT_EQ(MockComponentToolbarActionsFactory::kActionIdForTesting,
             browser_actions_bar.GetExtensionId(0));
 
   // There should only have been one created component action.
-  const std::vector<std::string>& action_ids = mock_factory()->action_ids();
-  ASSERT_EQ(1u, action_ids.size());
+  EXPECT_EQ(1u, ComponentToolbarActionsFactory::GetInstance()
+                    ->GetComponentIds(browser()->profile())
+                    .size());
 
   const std::vector<ToolbarActionViewController*>& actions =
       browser_actions_bar.GetToolbarActionsBar()->GetActions();
