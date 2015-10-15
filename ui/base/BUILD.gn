@@ -127,6 +127,7 @@ component("base") {
     "hit_test.h",
     "idle/idle.cc",
     "idle/idle.h",
+    "idle/idle_android.cc",
     "idle/idle_chromeos.cc",
     "idle/idle_linux.cc",
     "idle/idle_mac.mm",
@@ -570,10 +571,14 @@ component("base") {
   }
 
   if (is_android || is_ios) {
+    sources -= [ "device_form_factor_desktop.cc" ]
+  }
+
+  if ((is_android && !use_aura) || is_ios) {
     sources -= [
-      "device_form_factor_desktop.cc",
       "idle/idle.cc",
       "idle/idle.h",
+      "idle/idle_android.cc",
     ]
   }
 }

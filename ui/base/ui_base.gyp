@@ -198,6 +198,7 @@
         'hit_test.h',
         'idle/idle.cc',
         'idle/idle.h',
+        'idle/idle_android.cc',
         'idle/idle_chromeos.cc',
         'idle/idle_linux.cc',
         'idle/idle_mac.mm',
@@ -584,8 +585,6 @@
             'default_theme_provider.cc',
             'dragdrop/drag_utils.cc',
             'dragdrop/drag_utils.h',
-            'idle/idle.cc',
-            'idle/idle.h',
             'l10n/l10n_font_util.cc',
             'models/button_menu_item_model.cc',
             'models/dialog_model.cc',
@@ -606,7 +605,10 @@
         }],
         ['OS=="android" and use_aura==0', {
           'sources!': [
-            'cursor/cursor_android.cc'
+            'cursor/cursor_android.cc',
+            'idle/idle.cc',
+            'idle/idle.h',
+            'idle/idle_android.cc',
           ],
         }],
         ['OS=="android" and use_aura==1', {
