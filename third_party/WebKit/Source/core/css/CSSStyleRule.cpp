@@ -32,7 +32,8 @@
 
 namespace blink {
 
-using SelectorTextCache = HashMap<const CSSStyleRule*, String>;
+using SelectorTextCache = WillBePersistentHeapHashMap<RawPtrWillBeWeakMember<const CSSStyleRule>, String>;
+
 static SelectorTextCache& selectorTextCache()
 {
     DEFINE_STATIC_LOCAL(SelectorTextCache, cache, ());
@@ -52,7 +53,9 @@ CSSStyleRule::~CSSStyleRule()
         m_propertiesCSSOMWrapper->clearParentRule();
 #endif
     if (hasCachedSelectorText()) {
+#if !ENABLE(OILPAN)
         selectorTextCache().remove(this);
+#endif
         setHasCachedSelectorText(false);
     }
 }
