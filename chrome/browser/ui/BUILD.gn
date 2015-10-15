@@ -249,6 +249,11 @@ source_set("ui") {
                              ".",
                              "//chrome")
     }
+  } else {
+    # !toolkit_views
+    if (!is_ios) {
+      deps -= [ "//chrome/browser/ui/views" ]
+    }
   }
   if (use_aura && !use_ozone && is_desktop_linux) {
     deps += [
@@ -312,10 +317,7 @@ source_set("ui") {
                       ".",
                       "//chrome")
       deps += [ "//components/web_contents_delegate_android" ]
-      deps -= [
-        "//chrome/browser/ui/views",
-        "//ui/events",
-      ]
+      deps -= [ "//ui/events" ]
     }
   }
 
