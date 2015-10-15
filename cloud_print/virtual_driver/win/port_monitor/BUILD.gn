@@ -14,8 +14,6 @@ if (target_cpu == "x86" && current_cpu == "x64") {
   arch_suffix = ""
 }
 
-print("port_monitor $current_toolchain")
-
 shared_library("port_monitor") {
   output_name = "gcp_portmon$arch_suffix"
 
