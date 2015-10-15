@@ -24,35 +24,35 @@ import("//tools/grit/grit_rule.gni")
 # dependencies (GN will do the right thing without this extra target).
 if (is_component_build) {
   component("policy_component") {
-    deps = [
+    public_deps = [
       "//components/policy/core/browser",
       "//components/policy/core/common",
     ]
   }
   group("policy_component_browser") {
-    deps = [
+    public_deps = [
       ":policy_component",
     ]
   }
   group("policy_component_common") {
-    deps = [
+    public_deps = [
       ":policy_component",
     ]
   }
 } else {  # Compile to separate libraries.
   group("policy_component") {
-    deps = [
+    public_deps = [
       ":policy_component_browser",
       ":policy_component_common",
     ]
   }
   component("policy_component_browser") {
-    deps = [
+    public_deps = [
       "//components/policy/core/browser",
     ]
   }
   component("policy_component_common") {
-    deps = [
+    public_deps = [
       "//components/policy/core/common",
     ]
   }

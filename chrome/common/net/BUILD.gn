@@ -19,6 +19,7 @@ static_library("net") {
 
   deps = [
     "//base",
+    "//base:i18n",
     "//chrome:resources",
     "//chrome:strings",
     "//components/url_formatter",
@@ -44,7 +45,12 @@ static_library("net") {
   }
 
   if (use_nss_certs) {
-    deps += [ "//crypto:platform" ]
+    deps += [
+      "//chrome/third_party/mozilla_security_manager",
+      "//crypto:platform",
+    ]
+    allow_circular_includes_from =
+        [ "//chrome/third_party/mozilla_security_manager" ]
   } else {
     sources -= [ "x509_certificate_model_nss.cc" ]
   }

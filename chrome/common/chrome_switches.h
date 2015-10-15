@@ -13,10 +13,6 @@
 // Don't add more switch files here. This is linked into some places like the
 // installer where dependencies should be limited. Instead, have files
 // directly include your switch file.
-//
-// TODO(brettw) delete content_switches.h include and make callers include that
-// file manually if they need a content switch.
-#include "content/public/common/content_switches.h"
 
 namespace switches {
 

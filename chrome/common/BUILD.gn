@@ -47,10 +47,6 @@ static_library("common") {
   ]
 
   public_deps = [
-    "//chrome/common:constants",
-    "//chrome/common/safe_browsing:proto",
-  ]
-  deps = [
     "//base:base",
     "//base:i18n",
     "//base:prefs",
@@ -58,12 +54,17 @@ static_library("common") {
     "//chrome:resources",
     "//chrome:strings",
     "//chrome/app/theme:theme_resources",
+    "//chrome/common:constants",
+    "//chrome/common/safe_browsing:proto",
     "//chrome/common/variations:fieldtrial_testing_config",
     "//chrome/installer/util",
     "//components/cloud_devices/common",
     "//components/component_updater",
     "//components/content_settings/core/common",
     "//components/crash/core/common",
+    "//components/data_reduction_proxy/content/common",
+    "//components/dom_distiller/core",
+    "//components/error_page/common",
     "//components/favicon_base",
     "//components/gcm_driver/common",
     "//components/json_schema",
@@ -79,10 +80,20 @@ static_library("common") {
     "//content/public/common",
     "//crypto",
     "//extensions/common:common_constants",
+    "//gin",
+    "//google_apis",
+    "//gpu/command_buffer/service",
+    "//gpu/config",
     "//net",
+    "//ppapi/shared_impl",
     "//skia",
     "//third_party/icu",
     "//third_party/zlib:zip",
+    "//ui/accessibility",
+    "//ui/base",
+    "//ui/gfx/ipc",
+    "//ui/gl",
+    "//ui/message_center",
     "//ui/resources:resources",
     "//url",
   ]
@@ -98,8 +109,9 @@ static_library("common") {
     ]
   } else {
     # Non-iOS.
-    deps += [
+    public_deps += [
       ":mojo_bindings",
+      "//chrome/common/net",
       "//components/visitedlink/common",
       "//components/autofill/content/common",
       "//components/autofill/core/common",
@@ -110,11 +122,8 @@ static_library("common") {
       "//media",
       "//ipc",
       "//third_party/re2",
-      "//third_party/widevine/cdm:version_h",
-    ]
-    public_deps += [
-      "//chrome/common/net",
       "//third_party/mojo/src/mojo/public/cpp/bindings",
+      "//third_party/widevine/cdm:version_h",
     ]
   }
 
@@ -122,7 +131,7 @@ static_library("common") {
     sources += rebase_path(gypi_values.chrome_common_extensions_sources,
                            ".",
                            "//chrome")
-    deps += [
+    public_deps += [
       "//device/usb",
       "//chrome/common/extensions/api",
       "//extensions/common",
@@ -130,6 +139,9 @@ static_library("common") {
       "//extensions:extensions_resources",
       "//extensions/strings",
       "//media/cast:net",
+
+      # This dependency is for a header used only by extensions code.
+      "//ui/keyboard:keyboard_with_content",
     ]
     if (is_chromeos) {
       sources +=
@@ -142,7 +154,7 @@ static_library("common") {
   if (is_win || is_mac) {
     sources +=
         rebase_path(gypi_values.chrome_common_win_mac_sources, ".", "//chrome")
-    deps += [ "//breakpad:client" ]
+    public_deps += [ "//breakpad:client" ]
   }
   if (is_win || is_mac || is_chromeos) {
     sources += rebase_path(gypi_values.chrome_common_networking_private_sources,
@@ -150,21 +162,24 @@ static_library("common") {
                            "//chrome")
 
     # networking_private_crypto.cc depends on boringssl.
-    deps += [ "//third_party/boringssl" ]
+    public_deps += [ "//third_party/boringssl" ]
   }
   if (is_mac) {
     sources +=
         rebase_path(gypi_values.chrome_common_mac_sources, ".", "//chrome")
-    deps += [ ":app_mode_app_support" ]
+    public_deps += [ ":app_mode_app_support" ]
+  }
+  if (is_chromeos) {
+    public_deps += [ "//chromeos" ]
   }
 
   if (enable_nacl) {
-    deps += [ "//components/nacl:nacl_common" ]
+    public_deps += [ "//components/nacl:nacl_common" ]
   }
 
   # Printing.
   if (enable_basic_printing || enable_print_preview) {
-    deps += [
+    public_deps += [
       "//components/printing/common",
       "//printing",
     ]
@@ -207,7 +222,7 @@ static_library("common") {
   }
 
   if (is_win) {
-    deps += [
+    public_deps += [
       "//components/dom_distiller/core",  # Needed by chrome_content_client.cc.
       "//third_party/wtl",
     ]
@@ -219,7 +234,7 @@ static_library("common") {
 
   if (is_mac) {
     sources -= [ "channel_info_posix.cc" ]
-    deps += [
+    public_deps += [
       "//third_party/mach_override",
       "//third_party/google_toolbox_for_mac",
     ]
@@ -232,7 +247,7 @@ static_library("common") {
       "ppapi_utils.cc",
       "ppapi_utils.h",
     ]
-    deps += [ "//third_party/adobe/flash:flapper_version_h" ]
+    public_deps += [ "//third_party/adobe/flash:flapper_version_h" ]
   }
   if (enable_plugins && enable_extensions) {
     sources += [
@@ -244,7 +259,7 @@ static_library("common") {
     sources -= [ "media/webrtc_logging_messages.h" ]
   }
   if (enable_configuration_policy) {
-    deps += [ "//components/policy" ]
+    public_deps += [ "//components/policy" ]
   }
 
   if (safe_browsing_mode == 1) {
