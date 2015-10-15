@@ -821,7 +821,7 @@ void LocalFrame::unregisterPluginElement(HTMLPlugInElement* plugin)
 
 void LocalFrame::clearWeakMembers(Visitor* visitor)
 {
-    Vector<HTMLPlugInElement*> deadPlugins;
+    Vector<UntracedMember<HTMLPlugInElement>> deadPlugins;
     for (const auto& pluginElement : m_pluginElements) {
         if (!Heap::isHeapObjectAlive(pluginElement)) {
             pluginElement->shouldDisposePlugin();

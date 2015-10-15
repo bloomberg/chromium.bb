@@ -43,6 +43,10 @@
 
 namespace blink {
 
+template<typename T> class Member;
+template<typename T> class WeakMember;
+template<typename T> class UntracedMember;
+
 template<typename T, bool = NeedsAdjustAndMark<T>::value> class ObjectAliveTrait;
 
 template<typename T>
@@ -96,6 +100,11 @@ public:
     }
     template<typename T>
     static inline bool isHeapObjectAlive(const WeakMember<T>& member)
+    {
+        return isHeapObjectAlive(member.get());
+    }
+    template<typename T>
+    static inline bool isHeapObjectAlive(const UntracedMember<T>& member)
     {
         return isHeapObjectAlive(member.get());
     }

@@ -14,7 +14,7 @@ namespace blink {
 class Document;
 class EventTarget;
 
-typedef HashCountedSet<EventTarget*> EventTargetSet;
+typedef HashCountedSet<RawPtrWillBeUntracedMember<EventTarget>> EventTargetSet;
 
 // Registry for keeping track of event handlers. Note that only handlers on
 // documents that can be rendered or can receive input (i.e., are attached to a
