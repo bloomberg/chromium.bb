@@ -33,7 +33,6 @@ void CloseBalloon(const std::string& id, ProfileID profile_id) {
 
 // Prefix added to the notification ids.
 const char kNotificationPrefix[] = "desktop_notification_balloon.";
-const char kNotifierId[] = "status-icons.desktop-notification-balloon";
 
 // Timeout for automatically dismissing the notification balloon.
 const size_t kTimeoutSeconds = 6;
@@ -74,7 +73,8 @@ DesktopNotificationBalloon::~DesktopNotificationBalloon() {
 void DesktopNotificationBalloon::DisplayBalloon(
     const gfx::ImageSkia& icon,
     const base::string16& title,
-    const base::string16& contents) {
+    const base::string16& contents,
+    const message_center::NotifierId& notifier_id) {
   // Allowing IO access is required here to cover the corner case where
   // there is no last used profile and the default one is loaded.
   // IO access won't be required for normal uses.
@@ -86,16 +86,9 @@ void DesktopNotificationBalloon::DisplayBalloon(
 
   NotificationDelegate* delegate =
       new DummyNotificationDelegate(base::IntToString(id_count_++), profile_);
-  // TODO(johnme): In theory the desktop notification balloon class can be used
-  // by lots of other features, which would not fall under a single system
-  // component id. So callers should pass in the notifier_id to be used here,
-  // see https://crbug.com/542232
   Notification notification(message_center::NOTIFICATION_TYPE_SIMPLE, title,
-      contents, gfx::Image(icon),
-      message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
-                                 kNotifierId),
-      base::string16(), GURL(), std::string(),
-      message_center::RichNotificationData(), delegate);
+      contents, gfx::Image(icon), notifier_id, base::string16(), GURL(),
+      std::string(), message_center::RichNotificationData(), delegate);
 
   g_browser_process->notification_ui_manager()->Add(notification, profile);
 

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/status_icons/status_icon_linux_wrapper.h"
 
+#include "ui/message_center/notifier_settings.h"
 #include "ui/views/linux_ui/linux_ui.h"
 
 StatusIconLinuxWrapper::StatusIconLinuxWrapper(
@@ -26,10 +27,12 @@ void StatusIconLinuxWrapper::SetToolTip(const base::string16& tool_tip) {
   status_icon_->SetToolTip(tool_tip);
 }
 
-void StatusIconLinuxWrapper::DisplayBalloon(const gfx::ImageSkia& icon,
-                                            const base::string16& title,
-                                            const base::string16& contents) {
-  notification_.DisplayBalloon(icon, title, contents);
+void StatusIconLinuxWrapper::DisplayBalloon(
+    const gfx::ImageSkia& icon,
+    const base::string16& title,
+    const base::string16& contents,
+    const message_center::NotifierId& notifier_id) {
+  notification_.DisplayBalloon(icon, title, contents, notifier_id);
 }
 
 void StatusIconLinuxWrapper::OnClick() {

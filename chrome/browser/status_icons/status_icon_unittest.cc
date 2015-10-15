@@ -8,6 +8,7 @@
 #include "chrome/browser/status_icons/status_icon_observer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/message_center/notifier_settings.h"
 
 class MockStatusIconObserver : public StatusIconObserver {
  public:
@@ -23,7 +24,8 @@ class TestStatusIcon : public StatusIcon {
   void UpdatePlatformContextMenu(StatusIconMenuModel* menu) override {}
   void DisplayBalloon(const gfx::ImageSkia& icon,
                       const base::string16& title,
-                      const base::string16& contents) override {}
+                      const base::string16& contents,
+                      const message_center::NotifierId& notifier_id) override {}
 };
 
 TEST(StatusIconTest, ObserverAdd) {

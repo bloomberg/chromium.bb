@@ -31,6 +31,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/image/image.h"
 #include "ui/message_center/message_center.h"
+#include "ui/message_center/notifier_settings.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/users/scoped_test_user_manager.h"
@@ -122,7 +123,8 @@ class TestStatusIcon : public StatusIcon {
   void SetToolTip(const base::string16& tool_tip) override {}
   void DisplayBalloon(const gfx::ImageSkia& icon,
                       const base::string16& title,
-                      const base::string16& contents) override {}
+                      const base::string16& contents,
+                      const message_center::NotifierId& notifier_id) override {}
   void UpdatePlatformContextMenu(StatusIconMenuModel* menu) override {}
 
  private:

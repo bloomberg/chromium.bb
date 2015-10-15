@@ -12,6 +12,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #import "ui/base/cocoa/menu_controller.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/message_center/notifier_settings.h"
 
 @interface StatusItemController : NSObject {
   StatusIconMac* statusIcon_; // weak
@@ -83,10 +84,12 @@ void StatusIconMac::SetToolTip(const base::string16& tool_tip) {
   }
 }
 
-void StatusIconMac::DisplayBalloon(const gfx::ImageSkia& icon,
-                                   const base::string16& title,
-                                   const base::string16& contents) {
-  notification_.DisplayBalloon(icon, title, contents);
+void StatusIconMac::DisplayBalloon(
+    const gfx::ImageSkia& icon,
+    const base::string16& title,
+    const base::string16& contents,
+    const message_center::NotifierId& notifier_id) {
+  notification_.DisplayBalloon(icon, title, contents, notifier_id);
 }
 
 bool StatusIconMac::HasStatusIconMenu() {

@@ -50,7 +50,8 @@ class StatusIconWin : public StatusIcon {
   void SetToolTip(const base::string16& tool_tip) override;
   void DisplayBalloon(const gfx::ImageSkia& icon,
                       const base::string16& title,
-                      const base::string16& contents) override;
+                      const base::string16& contents,
+                      const message_center::NotifierId& notifier_id) override;
   void ForceVisible() override;
 
  protected:

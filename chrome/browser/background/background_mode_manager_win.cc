@@ -17,8 +17,11 @@
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/message_center/notifier_settings.h"
 
 using content::BrowserThread;
+
+const char kAppInstalledNotifierId[] = "background-mode.app-installed";
 
 void BackgroundModeManager::EnableLaunchOnStartup(bool should_launch) {
   // This functionality is only defined for default profile, currently.
@@ -41,7 +44,9 @@ void BackgroundModeManager::DisplayClientInstalledNotification(
       l10n_util::GetStringUTF16(IDS_BACKGROUND_APP_INSTALLED_BALLOON_TITLE),
       l10n_util::GetStringFUTF16(IDS_BACKGROUND_APP_INSTALLED_BALLOON_BODY,
                                  name,
-                                 l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
+                                 l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)),
+      message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
+                                 kAppInstalledNotifierId));
 }
 
 base::string16 BackgroundModeManager::GetPreferencesMenuLabel() {

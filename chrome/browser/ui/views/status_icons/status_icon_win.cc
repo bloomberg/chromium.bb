@@ -11,6 +11,7 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/icon_util.h"
+#include "ui/message_center/notifier_settings.h"
 #include "ui/views/controls/menu/menu_runner.h"
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -115,9 +116,11 @@ void StatusIconWin::SetToolTip(const base::string16& tool_tip) {
     LOG(WARNING) << "Unable to set tooltip for status tray icon";
 }
 
-void StatusIconWin::DisplayBalloon(const gfx::ImageSkia& icon,
-                                   const base::string16& title,
-                                   const base::string16& contents) {
+void StatusIconWin::DisplayBalloon(
+    const gfx::ImageSkia& icon,
+    const base::string16& title,
+    const base::string16& contents,
+    const message_center::NotifierId& notifier_id) {
   NOTIFYICONDATA icon_data;
   InitIconData(&icon_data);
   icon_data.uFlags = NIF_INFO;

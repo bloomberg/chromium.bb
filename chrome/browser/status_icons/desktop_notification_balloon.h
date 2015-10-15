@@ -16,6 +16,10 @@ namespace gfx {
 class ImageSkia;
 }
 
+namespace message_center {
+struct NotifierId;
+}
+
 // Provides the notification balloon functionality by using desktop
 // notifications to platforms that don't have a specific native API.
 class DesktopNotificationBalloon {
@@ -25,7 +29,8 @@ class DesktopNotificationBalloon {
 
   void DisplayBalloon(const gfx::ImageSkia& icon,
                       const base::string16& title,
-                      const base::string16& contents);
+                      const base::string16& contents,
+                      const message_center::NotifierId& notifier_id);
 
  private:
   std::string notification_id_;
