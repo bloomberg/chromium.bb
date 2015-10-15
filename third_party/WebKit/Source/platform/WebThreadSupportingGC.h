@@ -5,8 +5,8 @@
 #ifndef WebThreadSupportingGC_h
 #define WebThreadSupportingGC_h
 
-#include "platform/heap/glue/MessageLoopInterruptor.h"
-#include "platform/heap/glue/PendingGCRunner.h"
+#include "platform/heap/MessageLoopInterruptor.h"
+#include "platform/heap/PendingGCRunner.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebTaskRunner.h"
 #include "public/platform/WebThread.h"

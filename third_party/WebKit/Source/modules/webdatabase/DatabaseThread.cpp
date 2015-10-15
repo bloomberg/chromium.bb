@@ -35,8 +35,7 @@
 #include "modules/webdatabase/SQLTransactionCoordinator.h"
 #include "platform/Logging.h"
 #include "platform/ThreadSafeFunctional.h"
-#include "platform/heap/glue/MessageLoopInterruptor.h"
-#include "platform/heap/glue/PendingGCRunner.h"
+#include "platform/WebThreadSupportingGC.h"
 #include "public/platform/Platform.h"
 
 namespace blink {
