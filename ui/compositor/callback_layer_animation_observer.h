@@ -69,9 +69,44 @@ class COMPOSITOR_EXPORT CallbackLayerAnimationObserver
   typedef base::Callback<bool(const CallbackLayerAnimationObserver&)>
       AnimationEndedCallback;
 
+  // A dummy no-op AnimationStartedCallback.
+  static void DummyAnimationStartedCallback(
+      const CallbackLayerAnimationObserver&);
+
+  // A dummy no-op AnimationEndedCallback that will return
+  // |should_delete_observer|.
+  //
+  // Example usage:
+  //
+  //    ui::CallbackLayerAnimationObserver* animation_observer =
+  //        new ui::CallbackLayerAnimationObserver(
+  //            base::Bind(&ui::CallbackLayerAnimationObserver::
+  //                DummyAnimationStartedCallback),
+  //            base::Bind(&ui::CallbackLayerAnimationObserver::
+  //                DummyAnimationEndedCallback, false));
+  static bool DummyAnimationEndedCallback(
+      bool should_delete_observer,
+      const CallbackLayerAnimationObserver&);
+
+  // Create an instance that will invoke the |animation_started_callback| when
+  // the animation has started and the |animation_ended_callback| when the
+  // animation has ended.
   CallbackLayerAnimationObserver(
       AnimationStartedCallback animation_started_callback,
       AnimationEndedCallback animation_ended_callback);
+
+  // Create an instance that will invoke the |animation_started_callback| when
+  // the animation has started and will delete |this| when the animations have
+  // ended if |should_delete_observer| is true.
+  CallbackLayerAnimationObserver(
+      AnimationStartedCallback animation_started_callback,
+      bool should_delete_observer);
+
+  // Create an instance that will invoke the |animation_ended_callback| when the
+  // animations have ended.
+  explicit CallbackLayerAnimationObserver(
+      AnimationEndedCallback animation_ended_callback);
+
   ~CallbackLayerAnimationObserver() override;
 
   bool active() const { return active_; }
@@ -108,22 +143,22 @@ class COMPOSITOR_EXPORT CallbackLayerAnimationObserver
   void CheckAllSequencesCompleted();
 
   // Allows the callbacks to be invoked when true.
-  bool active_;
+  bool active_ = false;
 
   // The total number of animation sequences that have been attached.
-  int attached_sequence_count_;
+  int attached_sequence_count_ = 0;
 
   // The total number of animation sequences that have been detached.
-  int detached_sequence_count_;
+  int detached_sequence_count_ = 0;
 
   // The number of animation sequences that have been started.
-  int started_count_;
+  int started_count_ = 0;
 
   // The number of animation sequences that were aborted.
-  int aborted_count_;
+  int aborted_count_ = 0;
 
   // The number of animation sequences that completed successfully.
-  int successful_count_;
+  int successful_count_ = 0;
 
   // The callback to invoke once all the animation sequences have been started.
   AnimationStartedCallback animation_started_callback_;
@@ -133,7 +168,7 @@ class COMPOSITOR_EXPORT CallbackLayerAnimationObserver
 
   // Set to true in the destructor (if non-NULL). Used to detect deletion while
   // calling out.
-  bool* destroyed_;
+  bool* destroyed_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(CallbackLayerAnimationObserver);
 };

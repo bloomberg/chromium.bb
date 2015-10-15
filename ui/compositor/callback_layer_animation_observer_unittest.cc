@@ -154,6 +154,16 @@ class TestCallbackLayerAnimationObserver
       AnimationStartedCallback animation_started_callback,
       AnimationEndedCallback animation_ended_callback,
       bool* destroyed);
+
+  TestCallbackLayerAnimationObserver(
+      AnimationStartedCallback animation_started_callback,
+      bool should_delete_observer,
+      bool* destroyed);
+
+  TestCallbackLayerAnimationObserver(
+      AnimationEndedCallback animation_ended_callback,
+      bool* destroyed);
+
   ~TestCallbackLayerAnimationObserver() override;
 
  private:
@@ -169,11 +179,33 @@ TestCallbackLayerAnimationObserver::TestCallbackLayerAnimationObserver(
     : CallbackLayerAnimationObserver(animation_started_callback,
                                      animation_ended_callback),
       destroyed_(destroyed) {
-  (*destroyed_) = false;
+  if (destroyed_)
+    (*destroyed_) = false;
+}
+
+TestCallbackLayerAnimationObserver::TestCallbackLayerAnimationObserver(
+    AnimationStartedCallback animation_started_callback,
+    bool should_delete_observer,
+    bool* destroyed)
+    : CallbackLayerAnimationObserver(animation_started_callback,
+                                     should_delete_observer),
+      destroyed_(destroyed) {
+  if (destroyed_)
+    (*destroyed_) = false;
+}
+
+TestCallbackLayerAnimationObserver::TestCallbackLayerAnimationObserver(
+    AnimationEndedCallback animation_ended_callback,
+    bool* destroyed)
+    : CallbackLayerAnimationObserver(animation_ended_callback),
+      destroyed_(destroyed) {
+  if (destroyed_)
+    (*destroyed_) = false;
 }
 
 TestCallbackLayerAnimationObserver::~TestCallbackLayerAnimationObserver() {
-  (*destroyed_) = true;
+  if (destroyed_)
+    (*destroyed_) = true;
 }
 
 class CallbackLayerAnimationObserverTest : public testing::Test {
@@ -224,13 +256,37 @@ CallbackLayerAnimationObserverTest::CreateLayerAnimationSequence() {
   return sequence;
 }
 
-TEST_F(CallbackLayerAnimationObserverTest, VerifyInitialState) {
-  EXPECT_FALSE(observer_->active());
-  EXPECT_EQ(0, observer_->aborted_count());
-  EXPECT_EQ(0, observer_->successful_count());
+TEST(CallbackLayerAnimationObserverDestructionTest, VerifyFalseAutoDelete) {
+  TestCallbacks callbacks;
+  callbacks.set_should_delete_observer_on_animations_ended(false);
 
-  EXPECT_FALSE(callbacks_->animations_started());
-  EXPECT_FALSE(callbacks_->animations_ended());
+  bool is_destroyed = false;
+
+  TestCallbackLayerAnimationObserver* observer =
+      new TestCallbackLayerAnimationObserver(
+          base::Bind(&TestCallbacks::AnimationsStarted,
+                     base::Unretained(&callbacks)),
+          false, &is_destroyed);
+  observer->SetActive();
+
+  EXPECT_FALSE(is_destroyed);
+  delete observer;
+}
+
+TEST(CallbackLayerAnimationObserverDestructionTest, VerifyTrueAutoDelete) {
+  TestCallbacks callbacks;
+  callbacks.set_should_delete_observer_on_animations_ended(false);
+
+  bool is_destroyed = false;
+
+  TestCallbackLayerAnimationObserver* observer =
+      new TestCallbackLayerAnimationObserver(
+          base::Bind(&TestCallbacks::AnimationsStarted,
+                     base::Unretained(&callbacks)),
+          true, &is_destroyed);
+  observer->SetActive();
+
+  EXPECT_TRUE(is_destroyed);
 }
 
 TEST(CallbackLayerAnimationObserverDestructionTest,
@@ -269,6 +325,15 @@ TEST(CallbackLayerAnimationObserverDestructionTest, AnimationEndedReturnsTrue) {
   observer->SetActive();
 
   EXPECT_TRUE(is_destroyed);
+}
+
+TEST_F(CallbackLayerAnimationObserverTest, VerifyInitialState) {
+  EXPECT_FALSE(observer_->active());
+  EXPECT_EQ(0, observer_->aborted_count());
+  EXPECT_EQ(0, observer_->successful_count());
+
+  EXPECT_FALSE(callbacks_->animations_started());
+  EXPECT_FALSE(callbacks_->animations_ended());
 }
 
 // Verifies that the CallbackLayerAnimationObserver is robust to explicit

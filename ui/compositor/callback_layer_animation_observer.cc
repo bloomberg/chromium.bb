@@ -4,22 +4,39 @@
 
 #include "ui/compositor/callback_layer_animation_observer.h"
 
+#include "base/bind.h"
 #include "ui/compositor/layer_animation_sequence.h"
 
 namespace ui {
 
+void CallbackLayerAnimationObserver::DummyAnimationStartedCallback(
+    const CallbackLayerAnimationObserver&) {}
+
+bool CallbackLayerAnimationObserver::DummyAnimationEndedCallback(
+    bool should_delete_observer,
+    const CallbackLayerAnimationObserver&) {
+  return should_delete_observer;
+}
+
 CallbackLayerAnimationObserver::CallbackLayerAnimationObserver(
     AnimationStartedCallback animation_started_callback,
     AnimationEndedCallback animation_ended_callback)
-    : active_(false),
-      attached_sequence_count_(0),
-      detached_sequence_count_(0),
-      started_count_(0),
-      aborted_count_(0),
-      successful_count_(0),
-      animation_started_callback_(animation_started_callback),
-      animation_ended_callback_(animation_ended_callback),
-      destroyed_(nullptr) {}
+    : animation_started_callback_(animation_started_callback),
+      animation_ended_callback_(animation_ended_callback) {}
+
+CallbackLayerAnimationObserver::CallbackLayerAnimationObserver(
+    AnimationStartedCallback animation_started_callback,
+    bool should_delete_observer)
+    : animation_started_callback_(animation_started_callback),
+      animation_ended_callback_(base::Bind(
+          &CallbackLayerAnimationObserver::DummyAnimationEndedCallback,
+          should_delete_observer)) {}
+
+CallbackLayerAnimationObserver::CallbackLayerAnimationObserver(
+    AnimationEndedCallback animation_ended_callback)
+    : animation_started_callback_(base::Bind(
+          &CallbackLayerAnimationObserver::DummyAnimationStartedCallback)),
+      animation_ended_callback_(animation_ended_callback) {}
 
 CallbackLayerAnimationObserver::~CallbackLayerAnimationObserver() {
   if (destroyed_)
