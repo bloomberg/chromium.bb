@@ -184,7 +184,7 @@ template("linux_package") {
   channel = invoker.channel
 
   if (current_cpu == "x86") {
-    # The shell scripts use "ia32" instead of "x86".
+    # The shell scruipts use "ia32" instead of "x86".
     build_script_arch = "ia32"
   } else {
     build_script_arch = current_cpu
@@ -199,26 +199,24 @@ template("linux_package") {
     "$root_out_dir/xdg-settings",
     "$root_out_dir/locales/en-US.pak",
 
-    "$root_out_dir/nacl_helper",
-    "$root_out_dir/nacl_helper_bootstrap",
+    #"$root_out_dir/nacl_helper",  TODO(GYP) NaCl support.
+    #"$root_out_dir/nacl_helper_bootstrap",  TODO(GYP) NaCl support.
     "$root_out_dir/PepperFlash/libpepflashplayer.so",
     "$root_out_dir/PepperFlash/manifest.json",
   ]
 
   if (current_cpu == "x86") {
     packaging_files_binaries += [
-      "$root_out_dir/nacl_irt_x86_32.nexe",
+      #"$root_out_dir/nacl_irt_x86_32.nexe",  TODO(GYP) NaCl support.
       "$root_out_dir/libwidevinecdmadapter.so",
       "$root_out_dir/libwidevinecdm.so",
     ]
   } else if (current_cpu == "x64") {
     packaging_files_binaries += [
-      "$root_out_dir/nacl_irt_x86_64.nexe",
+      #"$root_out_dir/nacl_irt_x86_64.nexe",  TODO(GYP) NaCl support.
       "$root_out_dir/libwidevinecdmadapter.so",
       "$root_out_dir/libwidevinecdm.so",
     ]
-  } else if (current_cpu == "arm") {
-    packaging_files_binaries += [ "$root_out_dir/nacl_irt_arm.nexe" ]
   }
   if (is_asan) {
     packaging_files_binaries += [ "$root_out_dir/lib/libc++.so" ]
