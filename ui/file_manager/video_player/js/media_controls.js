@@ -245,17 +245,12 @@ MediaControls.prototype.initPlayButton = function(opt_parent) {
 MediaControls.PROGRESS_RANGE = 5000;
 
 /**
- * @param {boolean=} opt_seekMark True if the progress slider should have
- *     a seek mark.
  * @param {HTMLElement=} opt_parent Parent container.
  */
-MediaControls.prototype.initTimeControls = function(opt_seekMark, opt_parent) {
+MediaControls.prototype.initTimeControls = function(opt_parent) {
   var timeControls = this.createControl('time-controls', opt_parent);
 
-  var sliderConstructor =
-      opt_seekMark ? MediaControls.PreciseSlider : MediaControls.Slider;
-
-  this.progressSlider_ = new sliderConstructor(
+  this.progressSlider_ = new MediaControls.PreciseSlider(
       this.createControl('progress media-control', timeControls),
       0, /* value */
       MediaControls.PROGRESS_RANGE,
@@ -848,13 +843,12 @@ MediaControls.AnimatedSlider.prototype.setValueToUI_ = function(value) {
  * @param {number} range Number of distinct slider positions to be supported.
  * @param {function(number)} onChange Value change handler.
  * @param {function(boolean)} onDrag Drag begin/end handler.
- * @param {function(number):string} formatFunction Value formatting function.
  * @constructor
  * @struct
  * @extends {MediaControls.Slider}
  */
 MediaControls.PreciseSlider = function(
-    container, value, range, onChange, onDrag, formatFunction) {
+    container, value, range, onChange, onDrag) {
   MediaControls.Slider.apply(this, arguments);
 
   var doc = this.container_.ownerDocument;
@@ -1072,7 +1066,7 @@ function VideoControls(containerElement, onMediaError, stringFunction,
 
   this.container_.classList.add('video-controls');
   this.initPlayButton();
-  this.initTimeControls(true /* show seek mark */);
+  this.initTimeControls();
   this.initVolumeControls();
 
   // Create the cast button.
@@ -1299,68 +1293,4 @@ VideoControls.prototype.updateStyle = function() {
   hideBelow('.volume', 275);
   hideBelow('.volume-controls', 210);
   hideBelow('.fullscreen', 150);
-};
-
-/**
- * Creates audio controls.
- *
- * @param {!HTMLElement} container Parent container.
- * @param {function(boolean)} advanceTrack Parameter: true=forward.
- * @param {function(Event)} onError Error handler.
- * @constructor
- * @struct
- * @extends {MediaControls}
- */
-function AudioControls(container, advanceTrack, onError) {
-  MediaControls.call(this, container, onError);
-
-  this.container_.classList.add('audio-controls');
-
-  this.advanceTrack_ = advanceTrack;
-
-  this.initPlayButton();
-  this.initTimeControls(false /* no seek mark */);
-  /* No volume controls */
-  this.createButton('previous', this.onAdvanceClick_.bind(this, false));
-  this.createButton('next', this.onAdvanceClick_.bind(this, true));
-
-  // Disables all controls at first.
-  this.enableControls_('.media-control', false);
-
-  var audioControls = this;
-  chrome.mediaPlayerPrivate.onNextTrack.addListener(
-      function() { audioControls.onAdvanceClick_(true); });
-  chrome.mediaPlayerPrivate.onPrevTrack.addListener(
-      function() { audioControls.onAdvanceClick_(false); });
-  chrome.mediaPlayerPrivate.onTogglePlayState.addListener(
-      function() { audioControls.togglePlayState(); });
-}
-
-AudioControls.prototype = { __proto__: MediaControls.prototype };
-
-/**
- * Media completion handler. Advances to the next track.
- */
-AudioControls.prototype.onMediaComplete = function() {
-  this.advanceTrack_(true);
-};
-
-/**
- * The track position after which "previous" button acts as "restart".
- */
-AudioControls.TRACK_RESTART_THRESHOLD = 5;  // seconds.
-
-/**
- * @param {boolean} forward True if advancing forward.
- * @private
- */
-AudioControls.prototype.onAdvanceClick_ = function(forward) {
-  if (!forward &&
-      (this.getMedia().currentTime > AudioControls.TRACK_RESTART_THRESHOLD)) {
-    // We are far enough from the beginning of the current track.
-    // Restart it instead of than skipping to the previous one.
-    this.getMedia().currentTime = 0;
-  } else {
-    this.advanceTrack_(forward);
-  }
 };
