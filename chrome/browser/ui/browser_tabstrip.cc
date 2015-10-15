@@ -24,9 +24,10 @@ void AddTabAt(Browser* browser, const GURL& url, int idx, bool foreground) {
   // WebContents, but we want to include the time it takes to create the
   // WebContents object too.
   base::TimeTicks new_tab_start_time = base::TimeTicks::Now();
+  bool show_ntp = url.is_empty();
   chrome::NavigateParams params(browser,
-      url.is_empty() ? GURL(chrome::kChromeUINewTabURL) : url,
-      ui::PAGE_TRANSITION_TYPED);
+      show_ntp ? GURL(chrome::kChromeUINewTabURL) : url,
+      show_ntp ? ui::PAGE_TRANSITION_AUTO_TOPLEVEL : ui::PAGE_TRANSITION_TYPED);
   params.disposition = foreground ? NEW_FOREGROUND_TAB : NEW_BACKGROUND_TAB;
   params.tabstrip_index = idx;
   chrome::Navigate(&params);
