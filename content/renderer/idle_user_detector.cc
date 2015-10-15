@@ -26,8 +26,7 @@ bool IdleUserDetector::OnMessageReceived(const IPC::Message& message) {
 }
 
 void IdleUserDetector::OnHandleInputEvent(const blink::WebInputEvent* event,
-                                          const ui::LatencyInfo& latency_info,
-                                          bool is_keyboard_shortcut) {
+                                          const ui::LatencyInfo& latency_info) {
   if (GetContentClient()->renderer()->RunIdleHandlerWhenWidgetsHidden()) {
     RenderThreadImpl* render_thread = RenderThreadImpl::current();
     if (render_thread != NULL) {

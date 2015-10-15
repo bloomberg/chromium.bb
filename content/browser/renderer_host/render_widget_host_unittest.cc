@@ -55,6 +55,22 @@ using blink::WebTouchPoint;
 
 namespace content {
 
+std::string GetInputMessageTypes(MockRenderProcessHost* process) {
+  std::string result;
+  for (size_t i = 0; i < process->sink().message_count(); ++i) {
+    const IPC::Message* message = process->sink().GetMessageAt(i);
+    EXPECT_EQ(InputMsg_HandleInputEvent::ID, message->type());
+    InputMsg_HandleInputEvent::Param params;
+    EXPECT_TRUE(InputMsg_HandleInputEvent::Read(message, &params));
+    const WebInputEvent* event = base::get<0>(params);
+    if (i != 0)
+      result += " ";
+    result += WebInputEventTraits::GetName(event->type);
+  }
+  process->sink().ClearMessages();
+  return result;
+}
+
 // MockInputRouter -------------------------------------------------------------
 
 class MockInputRouter : public InputRouter {
@@ -83,8 +99,8 @@ class MockInputRouter : public InputRouter {
       const MouseWheelEventWithLatencyInfo& wheel_event) override {
     sent_wheel_event_ = true;
   }
-  void SendKeyboardEvent(const NativeWebKeyboardEventWithLatencyInfo& key_event,
-                         bool is_shortcut) override {
+  void SendKeyboardEvent(
+      const NativeWebKeyboardEventWithLatencyInfo& key_event) override {
     sent_keyboard_event_ = true;
   }
   void SendGestureEvent(
@@ -327,13 +343,13 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
  public:
   MockRenderWidgetHostDelegate()
       : prehandle_keyboard_event_(false),
+        prehandle_keyboard_event_is_shortcut_(false),
         prehandle_keyboard_event_called_(false),
         prehandle_keyboard_event_type_(WebInputEvent::Undefined),
         unhandled_keyboard_event_called_(false),
         unhandled_keyboard_event_type_(WebInputEvent::Undefined),
         handle_wheel_event_(false),
-        handle_wheel_event_called_(false) {
-  }
+        handle_wheel_event_called_(false) {}
   ~MockRenderWidgetHostDelegate() override {}
 
   // Tests that make sure we ignore keyboard event acknowledgments to events we
@@ -362,15 +378,18 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
     handle_wheel_event_ = handle;
   }
 
-  bool handle_wheel_event_called() {
-    return handle_wheel_event_called_;
+  void set_prehandle_keyboard_event_is_shortcut(bool is_shortcut) {
+    prehandle_keyboard_event_is_shortcut_ = is_shortcut;
   }
+
+  bool handle_wheel_event_called() const { return handle_wheel_event_called_; }
 
  protected:
   bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
                               bool* is_keyboard_shortcut) override {
     prehandle_keyboard_event_type_ = event.type;
     prehandle_keyboard_event_called_ = true;
+    *is_keyboard_shortcut = prehandle_keyboard_event_is_shortcut_;
     return prehandle_keyboard_event_;
   }
 
@@ -391,6 +410,7 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
 
  private:
   bool prehandle_keyboard_event_;
+  bool prehandle_keyboard_event_is_shortcut_;
   bool prehandle_keyboard_event_called_;
   WebInputEvent::Type prehandle_keyboard_event_type_;
 
@@ -891,7 +911,7 @@ TEST_F(RenderWidgetHostTest, IgnoreKeyEventsHandledByRenderer) {
 }
 
 TEST_F(RenderWidgetHostTest, PreHandleRawKeyDownEvent) {
-  // Simluate the situation that the browser handled the key down event during
+  // Simulate the situation that the browser handled the key down event during
   // pre-handle phrase.
   delegate_->set_prehandle_keyboard_event(true);
   process_->sink().ClearMessages();
@@ -929,6 +949,59 @@ TEST_F(RenderWidgetHostTest, PreHandleRawKeyDownEvent) {
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
 
   EXPECT_TRUE(delegate_->unhandled_keyboard_event_called());
+  EXPECT_EQ(WebInputEvent::KeyUp, delegate_->unhandled_keyboard_event_type());
+}
+
+TEST_F(RenderWidgetHostTest, RawKeyDownShortcutEvent) {
+  // Simulate the situation that the browser marks the key down as a keyboard
+  // shortcut, but doesn't consume it in the pre-handle phase.
+  delegate_->set_prehandle_keyboard_event_is_shortcut(true);
+  process_->sink().ClearMessages();
+
+  // Simulate a keyboard event.
+  SimulateKeyboardEvent(WebInputEvent::RawKeyDown);
+
+  EXPECT_TRUE(delegate_->prehandle_keyboard_event_called());
+  EXPECT_EQ(WebInputEvent::RawKeyDown,
+            delegate_->prehandle_keyboard_event_type());
+
+  // Make sure the RawKeyDown event is sent to the renderer.
+  EXPECT_EQ(1U, process_->sink().message_count());
+  EXPECT_EQ("RawKeyDown", GetInputMessageTypes(process_));
+  process_->sink().ClearMessages();
+
+  // Send the simulated response from the renderer back.
+  SendInputEventACK(WebInputEvent::RawKeyDown,
+                    INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(WebInputEvent::RawKeyDown,
+            delegate_->unhandled_keyboard_event_type());
+
+  // The browser won't pre-handle a Char event.
+  delegate_->set_prehandle_keyboard_event_is_shortcut(false);
+
+  // Forward the Char event.
+  SimulateKeyboardEvent(WebInputEvent::Char);
+
+  // The Char event is not suppressed; the renderer will ignore it
+  // if the preceding RawKeyDown shortcut goes unhandled.
+  EXPECT_EQ(1U, process_->sink().message_count());
+  EXPECT_EQ("Char", GetInputMessageTypes(process_));
+  process_->sink().ClearMessages();
+
+  // Send the simulated response from the renderer back.
+  SendInputEventACK(WebInputEvent::Char, INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(WebInputEvent::Char, delegate_->unhandled_keyboard_event_type());
+
+  // Forward the KeyUp event.
+  SimulateKeyboardEvent(WebInputEvent::KeyUp);
+
+  // Make sure only KeyUp was sent to the renderer.
+  EXPECT_EQ(1U, process_->sink().message_count());
+  EXPECT_EQ("KeyUp", GetInputMessageTypes(process_));
+  process_->sink().ClearMessages();
+
+  // Send the simulated response from the renderer back.
+  SendInputEventACK(WebInputEvent::KeyUp, INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(WebInputEvent::KeyUp, delegate_->unhandled_keyboard_event_type());
 }
 
@@ -1132,22 +1205,6 @@ TEST_F(RenderWidgetHostTest, NewContentRenderingTimeout) {
       TimeDelta::FromMicroseconds(20));
   base::MessageLoop::current()->Run();
   EXPECT_TRUE(host_->new_content_rendering_timeout_fired());
-}
-
-std::string GetInputMessageTypes(RenderWidgetHostProcess* process) {
-  std::string result;
-  for (size_t i = 0; i < process->sink().message_count(); ++i) {
-    const IPC::Message *message = process->sink().GetMessageAt(i);
-    EXPECT_EQ(InputMsg_HandleInputEvent::ID, message->type());
-    InputMsg_HandleInputEvent::Param params;
-    EXPECT_TRUE(InputMsg_HandleInputEvent::Read(message, &params));
-    const WebInputEvent* event = base::get<0>(params);
-    if (i != 0)
-      result += " ";
-    result += WebInputEventTraits::GetName(event->type);
-  }
-  process->sink().ClearMessages();
-  return result;
 }
 
 TEST_F(RenderWidgetHostTest, TouchEmulator) {

@@ -80,12 +80,6 @@ WebInputEvent& GetEventWithType(WebInputEvent::Type type) {
   return *event;
 }
 
-bool GetIsShortcutFromHandleInputEventMessage(const IPC::Message* msg) {
-  InputMsg_HandleInputEvent::Schema::Param param;
-  InputMsg_HandleInputEvent::Read(msg, &param);
-  return base::get<2>(param);
-}
-
 template<typename MSG_T, typename ARG_T1>
 void ExpectIPCMessageWithArg1(const IPC::Message* msg, const ARG_T1& arg1) {
   ASSERT_EQ(MSG_T::ID, msg->type());
@@ -182,12 +176,12 @@ class InputRouterImplTest : public testing::Test {
     input_router()->NotifySiteIsMobileOptimized(false);
   }
 
-  void SimulateKeyboardEvent(WebInputEvent::Type type, bool is_shortcut) {
+  void SimulateKeyboardEvent(WebInputEvent::Type type) {
     WebKeyboardEvent event = SyntheticWebKeyboardEventBuilder::Build(type);
     NativeWebKeyboardEvent native_event;
     memcpy(&native_event, &event, sizeof(event));
     NativeWebKeyboardEventWithLatencyInfo key_event(native_event);
-    input_router_->SendKeyboardEvent(key_event, is_shortcut);
+    input_router_->SendKeyboardEvent(key_event);
   }
 
   void SimulateWheelEvent(float dX, float dY, int modifiers, bool precise) {
@@ -617,7 +611,7 @@ TEST_F(InputRouterImplTest, HandledInputEvent) {
   client_->set_filter_state(INPUT_EVENT_ACK_STATE_CONSUMED);
 
   // Simulate a keyboard event.
-  SimulateKeyboardEvent(WebInputEvent::RawKeyDown, false);
+  SimulateKeyboardEvent(WebInputEvent::RawKeyDown);
 
   // Make sure no input event is sent to the renderer.
   EXPECT_EQ(0u, GetSentMessageCountAndResetSink());
@@ -634,7 +628,7 @@ TEST_F(InputRouterImplTest, ClientCanceledKeyboardEvent) {
   client_->set_filter_state(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
 
   // Simulate a keyboard event that has no consumer.
-  SimulateKeyboardEvent(WebInputEvent::RawKeyDown, false);
+  SimulateKeyboardEvent(WebInputEvent::RawKeyDown);
 
   // Make sure no input event is sent to the renderer.
   EXPECT_EQ(0u, GetSentMessageCountAndResetSink());
@@ -643,27 +637,15 @@ TEST_F(InputRouterImplTest, ClientCanceledKeyboardEvent) {
 
   // Simulate a keyboard event that should be dropped.
   client_->set_filter_state(INPUT_EVENT_ACK_STATE_UNKNOWN);
-  SimulateKeyboardEvent(WebInputEvent::RawKeyDown, false);
+  SimulateKeyboardEvent(WebInputEvent::RawKeyDown);
 
   // Make sure no input event is sent to the renderer, and no ack is sent.
   EXPECT_EQ(0u, GetSentMessageCountAndResetSink());
   EXPECT_EQ(0U, ack_handler_->GetAndResetAckCount());
 }
 
-TEST_F(InputRouterImplTest, ShortcutKeyboardEvent) {
-  SimulateKeyboardEvent(WebInputEvent::RawKeyDown, true);
-  EXPECT_TRUE(GetIsShortcutFromHandleInputEventMessage(
-      process_->sink().GetMessageAt(0)));
-
-  process_->sink().ClearMessages();
-
-  SimulateKeyboardEvent(WebInputEvent::RawKeyDown, false);
-  EXPECT_FALSE(GetIsShortcutFromHandleInputEventMessage(
-      process_->sink().GetMessageAt(0)));
-}
-
 TEST_F(InputRouterImplTest, NoncorrespondingKeyEvents) {
-  SimulateKeyboardEvent(WebInputEvent::RawKeyDown, false);
+  SimulateKeyboardEvent(WebInputEvent::RawKeyDown);
 
   SendInputEventACK(WebInputEvent::KeyUp,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
@@ -674,7 +656,7 @@ TEST_F(InputRouterImplTest, NoncorrespondingKeyEvents) {
 
 TEST_F(InputRouterImplTest, HandleKeyEventsWeSent) {
   // Simulate a keyboard event.
-  SimulateKeyboardEvent(WebInputEvent::RawKeyDown, false);
+  SimulateKeyboardEvent(WebInputEvent::RawKeyDown);
   ASSERT_TRUE(input_router_->GetLastKeyboardEvent());
   EXPECT_EQ(WebInputEvent::RawKeyDown,
             input_router_->GetLastKeyboardEvent()->type);

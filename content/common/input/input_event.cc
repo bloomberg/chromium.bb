@@ -8,14 +8,12 @@
 
 namespace content {
 
-InputEvent::InputEvent() : is_keyboard_shortcut(false) {}
+InputEvent::InputEvent() {}
 
 InputEvent::InputEvent(const blink::WebInputEvent& web_event,
-                       const ui::LatencyInfo& latency_info,
-                       bool is_keyboard_shortcut)
-     : web_event(WebInputEventTraits::Clone(web_event)),
-       latency_info(latency_info),
-       is_keyboard_shortcut(is_keyboard_shortcut) {}
+                       const ui::LatencyInfo& latency_info)
+    : web_event(WebInputEventTraits::Clone(web_event)),
+      latency_info(latency_info) {}
 
 InputEvent::~InputEvent() {}
 

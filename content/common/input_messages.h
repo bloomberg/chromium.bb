@@ -72,7 +72,6 @@ IPC_STRUCT_TRAITS_END()
 IPC_STRUCT_TRAITS_BEGIN(content::InputEvent)
   IPC_STRUCT_TRAITS_MEMBER(web_event)
   IPC_STRUCT_TRAITS_MEMBER(latency_info)
-  IPC_STRUCT_TRAITS_MEMBER(is_keyboard_shortcut)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::SyntheticGestureParams)
@@ -116,10 +115,9 @@ IPC_STRUCT_TRAITS_BEGIN(content::InputEventAck)
 IPC_STRUCT_TRAITS_END()
 
 // Sends an input event to the render widget.
-IPC_MESSAGE_ROUTED3(InputMsg_HandleInputEvent,
+IPC_MESSAGE_ROUTED2(InputMsg_HandleInputEvent,
                     IPC::WebInputEventPointer /* event */,
-                    ui::LatencyInfo /* latency_info */,
-                    bool /* is_keyboard_shortcut */)
+                    ui::LatencyInfo /* latency_info */)
 
 // Sends the cursor visibility state to the render widget.
 IPC_MESSAGE_ROUTED1(InputMsg_CursorVisibilityChange,

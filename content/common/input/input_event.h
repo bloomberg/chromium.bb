@@ -22,13 +22,11 @@ class CONTENT_EXPORT InputEvent {
  public:
   InputEvent();
   InputEvent(const blink::WebInputEvent& web_event,
-             const ui::LatencyInfo& latency_info,
-             bool is_keyboard_shortcut);
+             const ui::LatencyInfo& latency_info);
   ~InputEvent();
 
   ScopedWebInputEvent web_event;
   ui::LatencyInfo latency_info;
-  bool is_keyboard_shortcut;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InputEvent);

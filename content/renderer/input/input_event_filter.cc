@@ -147,7 +147,6 @@ void InputEventFilter::ForwardToHandler(const IPC::Message& message) {
     return;
   const WebInputEvent* event = base::get<0>(params);
   ui::LatencyInfo latency_info = base::get<1>(params);
-  bool is_keyboard_shortcut = base::get<2>(params);
   DCHECK(event);
 
   const bool send_ack = WebInputEventTraits::WillReceiveAckFromRenderer(*event);
@@ -167,8 +166,8 @@ void InputEventFilter::ForwardToHandler(const IPC::Message& message) {
         "input",
         "InputEventFilter::ForwardToHandler::ForwardToMainListener",
         TRACE_EVENT_SCOPE_THREAD);
-    IPC::Message new_msg = InputMsg_HandleInputEvent(
-        routing_id, event, latency_info, is_keyboard_shortcut);
+    IPC::Message new_msg =
+        InputMsg_HandleInputEvent(routing_id, event, latency_info);
     main_task_runner_->PostTask(FROM_HERE, base::Bind(main_listener_, new_msg));
     return;
   }

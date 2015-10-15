@@ -927,7 +927,7 @@ class RenderWidgetHostViewMacPinchTest : public RenderWidgetHostViewMacTest {
         break;
     }
     DCHECK(message);
-    base::Tuple<IPC::WebInputEventPointer, ui::LatencyInfo, bool> data;
+    base::Tuple<IPC::WebInputEventPointer, ui::LatencyInfo> data;
     InputMsg_HandleInputEvent::Read(message, &data);
     IPC::WebInputEventPointer ipc_event = base::get<0>(data);
     const blink::WebGestureEvent* gesture_event =

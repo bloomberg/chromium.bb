@@ -33,7 +33,7 @@ InputEventAckState MockInputRouterClient::FilterInputEvent(
     const WebInputEvent& input_event,
     const ui::LatencyInfo& latency_info) {
   filter_input_event_called_ = true;
-  last_filter_event_.reset(new InputEvent(input_event, latency_info, false));
+  last_filter_event_.reset(new InputEvent(input_event, latency_info));
   return filter_state_;
 }
 

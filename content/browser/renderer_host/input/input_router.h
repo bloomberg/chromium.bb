@@ -35,8 +35,7 @@ class InputRouter : public IPC::Listener {
   virtual void SendWheelEvent(
       const MouseWheelEventWithLatencyInfo& wheel_event) = 0;
   virtual void SendKeyboardEvent(
-      const NativeWebKeyboardEventWithLatencyInfo& key_event,
-      bool is_shortcut) = 0;
+      const NativeWebKeyboardEventWithLatencyInfo& key_event) = 0;
   virtual void SendGestureEvent(
       const GestureEventWithLatencyInfo& gesture_event) = 0;
   virtual void SendTouchEvent(

@@ -1045,8 +1045,7 @@ void RenderWidget::OnSwapBuffersComplete() {
 }
 
 void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
-                                      const ui::LatencyInfo& latency_info,
-                                      bool is_keyboard_shortcut) {
+                                      const ui::LatencyInfo& latency_info) {
   if (!input_event)
     return;
   base::AutoReset<bool> handling_input_event_resetter(&handling_input_event_,
@@ -1158,6 +1157,9 @@ void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
   // If this RawKeyDown event corresponds to a browser keyboard shortcut and
   // it's not processed by webkit, then we need to suppress the upcoming Char
   // events.
+  bool is_keyboard_shortcut =
+      input_event->type == WebInputEvent::RawKeyDown &&
+      static_cast<const WebKeyboardEvent*>(input_event)->isBrowserShortcut;
   if (!processed && is_keyboard_shortcut)
     suppress_next_char_events_ = true;
 

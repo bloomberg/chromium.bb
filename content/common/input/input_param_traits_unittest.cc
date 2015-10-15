@@ -30,7 +30,6 @@ class InputParamTraitsTest : public testing::Test {
     }
     EXPECT_EQ(a->latency_info.latency_components().size(),
               b->latency_info.latency_components().size());
-    EXPECT_EQ(a->is_keyboard_shortcut, b->is_keyboard_shortcut);
   }
 
   static void Compare(const InputEvents* a, const InputEvents* b) {
@@ -163,30 +162,30 @@ TEST_F(InputParamTraitsTest, InitializedEvents) {
   blink::WebKeyboardEvent key_event;
   key_event.type = blink::WebInputEvent::RawKeyDown;
   key_event.nativeKeyCode = 5;
-  events.push_back(new InputEvent(key_event, latency, false));
+  events.push_back(new InputEvent(key_event, latency));
 
   blink::WebMouseWheelEvent wheel_event;
   wheel_event.type = blink::WebInputEvent::MouseWheel;
   wheel_event.deltaX = 10;
   latency.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, 1, 1);
-  events.push_back(new InputEvent(wheel_event, latency, false));
+  events.push_back(new InputEvent(wheel_event, latency));
 
   blink::WebMouseEvent mouse_event;
   mouse_event.type = blink::WebInputEvent::MouseDown;
   mouse_event.x = 10;
   latency.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_UI_COMPONENT, 2, 2);
-  events.push_back(new InputEvent(mouse_event, latency, false));
+  events.push_back(new InputEvent(mouse_event, latency));
 
   blink::WebGestureEvent gesture_event;
   gesture_event.type = blink::WebInputEvent::GestureScrollBegin;
   gesture_event.x = -1;
-  events.push_back(new InputEvent(gesture_event, latency, false));
+  events.push_back(new InputEvent(gesture_event, latency));
 
   blink::WebTouchEvent touch_event;
   touch_event.type = blink::WebInputEvent::TouchStart;
   touch_event.touchesLength = 1;
   touch_event.touches[0].radiusX = 1;
-  events.push_back(new InputEvent(touch_event, latency, false));
+  events.push_back(new InputEvent(touch_event, latency));
 
   Verify(events);
 }

@@ -1145,8 +1145,9 @@ void RenderWidgetHostImpl::ForwardKeyboardEvent(
     return;
 
   NativeWebKeyboardEventWithLatencyInfo key_event_with_latency(key_event);
+  key_event_with_latency.event.isBrowserShortcut = is_shortcut;
   latency_tracker_.OnInputEvent(key_event, &key_event_with_latency.latency);
-  input_router_->SendKeyboardEvent(key_event_with_latency, is_shortcut);
+  input_router_->SendKeyboardEvent(key_event_with_latency);
 }
 
 void RenderWidgetHostImpl::QueueSyntheticGesture(

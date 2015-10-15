@@ -318,14 +318,14 @@ void RenderViewTest::SendWebKeyboardEvent(
     const blink::WebKeyboardEvent& key_event) {
   RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
   impl->OnMessageReceived(
-      InputMsg_HandleInputEvent(0, &key_event, ui::LatencyInfo(), false));
+      InputMsg_HandleInputEvent(0, &key_event, ui::LatencyInfo()));
 }
 
 void RenderViewTest::SendWebMouseEvent(
     const blink::WebMouseEvent& mouse_event) {
   RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
   impl->OnMessageReceived(
-      InputMsg_HandleInputEvent(0, &mouse_event, ui::LatencyInfo(), false));
+      InputMsg_HandleInputEvent(0, &mouse_event, ui::LatencyInfo()));
 }
 
 const char* const kGetCoordinatesScript =
@@ -392,10 +392,10 @@ void RenderViewTest::SimulatePointClick(const gfx::Point& point) {
   mouse_event.clickCount = 1;
   RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
   impl->OnMessageReceived(
-      InputMsg_HandleInputEvent(0, &mouse_event, ui::LatencyInfo(), false));
+      InputMsg_HandleInputEvent(0, &mouse_event, ui::LatencyInfo()));
   mouse_event.type = WebInputEvent::MouseUp;
   impl->OnMessageReceived(
-      InputMsg_HandleInputEvent(0, &mouse_event, ui::LatencyInfo(), false));
+      InputMsg_HandleInputEvent(0, &mouse_event, ui::LatencyInfo()));
 }
 
 
@@ -416,10 +416,10 @@ void RenderViewTest::SimulatePointRightClick(const gfx::Point& point) {
   mouse_event.clickCount = 1;
   RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
   impl->OnMessageReceived(
-      InputMsg_HandleInputEvent(0, &mouse_event, ui::LatencyInfo(), false));
+      InputMsg_HandleInputEvent(0, &mouse_event, ui::LatencyInfo()));
   mouse_event.type = WebInputEvent::MouseUp;
   impl->OnMessageReceived(
-      InputMsg_HandleInputEvent(0, &mouse_event, ui::LatencyInfo(), false));
+      InputMsg_HandleInputEvent(0, &mouse_event, ui::LatencyInfo()));
 }
 
 void RenderViewTest::SimulateRectTap(const gfx::Rect& rect) {
@@ -432,7 +432,7 @@ void RenderViewTest::SimulateRectTap(const gfx::Rect& rect) {
   gesture_event.type = WebInputEvent::GestureTap;
   RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
   impl->OnMessageReceived(
-      InputMsg_HandleInputEvent(0, &gesture_event, ui::LatencyInfo(), false));
+      InputMsg_HandleInputEvent(0, &gesture_event, ui::LatencyInfo()));
   impl->FocusChangeComplete();
 }
 

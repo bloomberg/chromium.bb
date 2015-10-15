@@ -152,12 +152,11 @@ void InputRouterImpl::SendWheelEvent(
   LOCAL_HISTOGRAM_COUNTS_100("Renderer.WheelQueueSize",
                              coalesced_mouse_wheel_events_.size());
 
-  FilterAndSendWebInputEvent(wheel_event.event, wheel_event.latency, false);
+  FilterAndSendWebInputEvent(wheel_event.event, wheel_event.latency);
 }
 
 void InputRouterImpl::SendKeyboardEvent(
-    const NativeWebKeyboardEventWithLatencyInfo& key_event,
-    bool is_keyboard_shortcut) {
+    const NativeWebKeyboardEventWithLatencyInfo& key_event) {
   // Put all WebKeyboardEvent objects in a queue since we can't trust the
   // renderer and we need to give something to the HandleKeyboardEvent
   // handler.
@@ -167,9 +166,7 @@ void InputRouterImpl::SendKeyboardEvent(
   gesture_event_queue_.FlingHasBeenHalted();
 
   // Only forward the non-native portions of our event.
-  FilterAndSendWebInputEvent(key_event.event,
-                             key_event.latency,
-                             is_keyboard_shortcut);
+  FilterAndSendWebInputEvent(key_event.event, key_event.latency);
 }
 
 void InputRouterImpl::SendGestureEvent(
@@ -213,7 +210,7 @@ void InputRouterImpl::SendMouseEventImmediately(
     current_mouse_move_ = mouse_event;
   }
 
-  FilterAndSendWebInputEvent(mouse_event.event, mouse_event.latency, false);
+  FilterAndSendWebInputEvent(mouse_event.event, mouse_event.latency);
 }
 
 void InputRouterImpl::SendTouchEventImmediately(
@@ -227,12 +224,12 @@ void InputRouterImpl::SendTouchEventImmediately(
     UpdateTouchAckTimeoutEnabled();
   }
 
-  FilterAndSendWebInputEvent(touch_event.event, touch_event.latency, false);
+  FilterAndSendWebInputEvent(touch_event.event, touch_event.latency);
 }
 
 void InputRouterImpl::SendGestureEventImmediately(
     const GestureEventWithLatencyInfo& gesture_event) {
-  FilterAndSendWebInputEvent(gesture_event.event, gesture_event.latency, false);
+  FilterAndSendWebInputEvent(gesture_event.event, gesture_event.latency);
 }
 
 const NativeWebKeyboardEvent* InputRouterImpl::GetLastKeyboardEvent() const {
@@ -339,8 +336,7 @@ bool InputRouterImpl::Send(IPC::Message* message) {
 
 void InputRouterImpl::FilterAndSendWebInputEvent(
     const WebInputEvent& input_event,
-    const ui::LatencyInfo& latency_info,
-    bool is_keyboard_shortcut) {
+    const ui::LatencyInfo& latency_info) {
   TRACE_EVENT1("input",
                "InputRouterImpl::FilterAndSendWebInputEvent",
                "type",
@@ -354,18 +350,17 @@ void InputRouterImpl::FilterAndSendWebInputEvent(
   // Any input event cancels a pending mouse move event.
   next_mouse_move_.reset();
 
-  OfferToHandlers(input_event, latency_info, is_keyboard_shortcut);
+  OfferToHandlers(input_event, latency_info);
 }
 
 void InputRouterImpl::OfferToHandlers(const WebInputEvent& input_event,
-                                      const ui::LatencyInfo& latency_info,
-                                      bool is_keyboard_shortcut) {
+                                      const ui::LatencyInfo& latency_info) {
   output_stream_validator_.Validate(input_event);
 
   if (OfferToClient(input_event, latency_info))
     return;
 
-  OfferToRenderer(input_event, latency_info, is_keyboard_shortcut);
+  OfferToRenderer(input_event, latency_info);
 
   // Touch events should always indicate in the event whether they are
   // cancelable (respect ACK disposition) or not except touchmove.
@@ -416,10 +411,9 @@ bool InputRouterImpl::OfferToClient(const WebInputEvent& input_event,
 }
 
 bool InputRouterImpl::OfferToRenderer(const WebInputEvent& input_event,
-                                      const ui::LatencyInfo& latency_info,
-                                      bool is_keyboard_shortcut) {
-  if (Send(new InputMsg_HandleInputEvent(
-          routing_id(), &input_event, latency_info, is_keyboard_shortcut))) {
+                                      const ui::LatencyInfo& latency_info) {
+  if (Send(new InputMsg_HandleInputEvent(routing_id(), &input_event,
+                                         latency_info))) {
     // Ack messages for ignored ack event types should never be sent by the
     // renderer. Consequently, such event types should not affect event time
     // or in-flight event count metrics.

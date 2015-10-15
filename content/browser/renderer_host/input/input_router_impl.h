@@ -59,8 +59,8 @@ class CONTENT_EXPORT InputRouterImpl
   void SendMouseEvent(const MouseEventWithLatencyInfo& mouse_event) override;
   void SendWheelEvent(
       const MouseWheelEventWithLatencyInfo& wheel_event) override;
-  void SendKeyboardEvent(const NativeWebKeyboardEventWithLatencyInfo& key_event,
-                         bool is_keyboard_shortcut) override;
+  void SendKeyboardEvent(
+      const NativeWebKeyboardEventWithLatencyInfo& key_event) override;
   void SendGestureEvent(
       const GestureEventWithLatencyInfo& gesture_event) override;
   void SendTouchEvent(const TouchEventWithLatencyInfo& touch_event) override;
@@ -97,19 +97,13 @@ private:
 
   // Filters and forwards |input_event| to the appropriate handler.
   void FilterAndSendWebInputEvent(const blink::WebInputEvent& input_event,
-                                  const ui::LatencyInfo& latency_info,
-                                  bool is_keyboard_shortcut);
+                                  const ui::LatencyInfo& latency_info);
 
   // Utility routine for filtering and forwarding |input_event| to the
   // appropriate handler. |input_event| will be offered to the overscroll
   // controller, client and renderer, in that order.
   void OfferToHandlers(const blink::WebInputEvent& input_event,
-                       const ui::LatencyInfo& latency_info,
-                       bool is_keyboard_shortcut);
-
-  // Returns true if |input_event| was consumed by the overscroll controller.
-  bool OfferToOverscrollController(const blink::WebInputEvent& input_event,
-                                   const ui::LatencyInfo& latency_info);
+                       const ui::LatencyInfo& latency_info);
 
   // Returns true if |input_event| was consumed by the client.
   bool OfferToClient(const blink::WebInputEvent& input_event,
@@ -118,8 +112,7 @@ private:
   // Returns true if |input_event| was successfully sent to the renderer
   // as an async IPC Message.
   bool OfferToRenderer(const blink::WebInputEvent& input_event,
-                       const ui::LatencyInfo& latency_info,
-                       bool is_keyboard_shortcut);
+                       const ui::LatencyInfo& latency_info);
 
   // IPC message handlers
   void OnInputEventAck(const InputEventAck& ack);
