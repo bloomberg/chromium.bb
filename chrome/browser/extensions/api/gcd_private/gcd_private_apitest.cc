@@ -144,7 +144,6 @@ const uint8 kGoodbyePacket[] = {
     'o',  'c',  'a',  'l',  0x00,
 };
 
-#if !defined(OS_WIN) || defined(NDEBUG)
 const uint8 kQueryPacket[] = {
     // Header
     0x00, 0x00,  // ID is zeroed out
@@ -160,7 +159,6 @@ const uint8 kQueryPacket[] = {
     'p',  0x05, 'l', 'o', 'c', 'a', 'l', 0x00, 0x00, 0x0c,  // TYPE is PTR.
     0x00, 0x01,                                             // CLASS is IN.
 };
-#endif  // !defined(OS_WIN) || defined(NDEBUG)
 
 #endif  // ENABLE_MDNS
 
@@ -222,11 +220,6 @@ class FakeGCDApiFlowFactory
 class GcdPrivateAPITest : public ExtensionApiTest {
  public:
   GcdPrivateAPITest() : url_fetcher_factory_(&url_fetcher_impl_factory_) {
-#if defined(ENABLE_MDNS)
-    test_service_discovery_client_ =
-        new local_discovery::TestServiceDiscoveryClient();
-    test_service_discovery_client_->Start();
-#endif  // ENABLE_MDNS
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -236,43 +229,10 @@ class GcdPrivateAPITest : public ExtensionApiTest {
         "ddchlicdkolnonkihahngkmmmjnjlkkf");
   }
 
-#if defined(ENABLE_WIFI_BOOTSTRAPPING)
-  virtual void OnCreateWifiManager() {
-    wifi_manager_ = wifi_manager_factory_.GetLastCreatedWifiManager();
-
-    EXPECT_CALL(*wifi_manager_, Start());
-
-    EXPECT_CALL(*wifi_manager_,
-                RequestNetworkCredentialsInternal("SuccessNetwork"))
-        .WillOnce(Invoke(this, &GcdPrivateAPITest::RespondToNetwork));
-
-    EXPECT_CALL(*wifi_manager_,
-                RequestNetworkCredentialsInternal("FailureNetwork"))
-        .WillOnce(Invoke(this, &GcdPrivateAPITest::RespondToNetwork));
-  }
-
-  void RespondToNetwork(const std::string& network) {
-    bool success = (network == "SuccessNetwork");
-
-    wifi_manager_->CallRequestNetworkCredentialsCallback(
-        success, network, success ? "SuccessPass" : "");
-  }
-#endif
-
  protected:
   FakeGCDApiFlowFactory api_flow_factory_;
   net::URLFetcherImplFactory url_fetcher_impl_factory_;
   net::FakeURLFetcherFactory url_fetcher_factory_;
-
-#if defined(ENABLE_MDNS)
-  scoped_refptr<local_discovery::TestServiceDiscoveryClient>
-      test_service_discovery_client_;
-#endif  // ENABLE_MDNS
-
-#if defined(ENABLE_WIFI_BOOTSTRAPPING)
-  local_discovery::wifi::MockWifiManagerFactory wifi_manager_factory_;
-  local_discovery::wifi::MockWifiManager* wifi_manager_;
-#endif
 };
 
 IN_PROC_BROWSER_TEST_F(GcdPrivateAPITest, GetCloudList) {
@@ -286,7 +246,36 @@ IN_PROC_BROWSER_TEST_F(GcdPrivateAPITest, GetCloudList) {
 }
 
 #if defined(ENABLE_MDNS)
-IN_PROC_BROWSER_TEST_F(GcdPrivateAPITest, DeviceInfo) {
+class GcdPrivateWithMdnsAPITest : public GcdPrivateAPITest {
+ public:
+  void SetUpOnMainThread() override {
+    test_service_discovery_client_ =
+        new local_discovery::TestServiceDiscoveryClient();
+    test_service_discovery_client_->Start();
+  }
+
+  void TearDownOnMainThread() override {
+    test_service_discovery_client_ = nullptr;
+    ExtensionApiTest::TearDownOnMainThread();
+  }
+
+ protected:
+  void SimulateReceiveWithDelay(const uint8* packet, int size) {
+    if (ExtensionSubtestsAreSkipped())
+      return;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(
+            &local_discovery::TestServiceDiscoveryClient::SimulateReceive,
+            test_service_discovery_client_, packet, size),
+        base::TimeDelta::FromSeconds(1));
+  }
+
+  scoped_refptr<local_discovery::TestServiceDiscoveryClient>
+      test_service_discovery_client_;
+};
+
+IN_PROC_BROWSER_TEST_F(GcdPrivateWithMdnsAPITest, DeviceInfo) {
   test_service_discovery_client_->SimulateReceive(kAnnouncePacket,
                                                   sizeof(kAnnouncePacket));
   url_fetcher_factory_.SetFakeResponse(GURL("http://1.2.3.4:8888/privet/info"),
@@ -296,7 +285,7 @@ IN_PROC_BROWSER_TEST_F(GcdPrivateAPITest, DeviceInfo) {
   EXPECT_TRUE(RunExtensionSubtest("gcd_private/api", "device_info.html"));
 }
 
-IN_PROC_BROWSER_TEST_F(GcdPrivateAPITest, Session) {
+IN_PROC_BROWSER_TEST_F(GcdPrivateWithMdnsAPITest, Session) {
   test_service_discovery_client_->SimulateReceive(kAnnouncePacket,
                                                   sizeof(kAnnouncePacket));
   url_fetcher_factory_.SetFakeResponse(GURL("http://1.2.3.4:8888/privet/info"),
@@ -306,7 +295,7 @@ IN_PROC_BROWSER_TEST_F(GcdPrivateAPITest, Session) {
   EXPECT_TRUE(RunExtensionSubtest("gcd_private/api", "session.html"));
 }
 
-IN_PROC_BROWSER_TEST_F(GcdPrivateAPITest, AddBefore) {
+IN_PROC_BROWSER_TEST_F(GcdPrivateWithMdnsAPITest, AddBefore) {
   test_service_discovery_client_->SimulateReceive(kAnnouncePacket,
                                                   sizeof(kAnnouncePacket));
 
@@ -314,66 +303,70 @@ IN_PROC_BROWSER_TEST_F(GcdPrivateAPITest, AddBefore) {
       RunExtensionSubtest("gcd_private/api", "receive_new_device.html"));
 }
 
-IN_PROC_BROWSER_TEST_F(GcdPrivateAPITest, AddAfter) {
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&local_discovery::TestServiceDiscoveryClient::SimulateReceive,
-                 test_service_discovery_client_,
-                 kAnnouncePacket,
-                 sizeof(kAnnouncePacket)),
-      base::TimeDelta::FromSeconds(1));
-
+IN_PROC_BROWSER_TEST_F(GcdPrivateWithMdnsAPITest, AddAfter) {
+  SimulateReceiveWithDelay(kAnnouncePacket, sizeof(kAnnouncePacket));
   EXPECT_TRUE(
       RunExtensionSubtest("gcd_private/api", "receive_new_device.html"));
 }
 
-IN_PROC_BROWSER_TEST_F(GcdPrivateAPITest, AddRemove) {
+IN_PROC_BROWSER_TEST_F(GcdPrivateWithMdnsAPITest, AddRemove) {
   test_service_discovery_client_->SimulateReceive(kAnnouncePacket,
                                                   sizeof(kAnnouncePacket));
-
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&local_discovery::TestServiceDiscoveryClient::SimulateReceive,
-                 test_service_discovery_client_,
-                 kGoodbyePacket,
-                 sizeof(kGoodbyePacket)),
-      base::TimeDelta::FromSeconds(1));
-
+  SimulateReceiveWithDelay(kGoodbyePacket, sizeof(kGoodbyePacket));
   EXPECT_TRUE(RunExtensionSubtest("gcd_private/api", "remove_device.html"));
 }
 
-IN_PROC_BROWSER_TEST_F(GcdPrivateAPITest, SendQuery) {
-// TODO(noamsml): Win Dbg has a workaround that makes RunExtensionSubtest
-// always return true without actually running the test. Remove when fixed.
-// See http://crbug.com/177163 for details.
-#if !defined(OS_WIN) || defined(NDEBUG)
+IN_PROC_BROWSER_TEST_F(GcdPrivateWithMdnsAPITest, SendQuery) {
+  if (ExtensionSubtestsAreSkipped())
+    return;
   EXPECT_CALL(*test_service_discovery_client_.get(),
               OnSendTo(std::string(reinterpret_cast<const char*>(kQueryPacket),
                                    sizeof(kQueryPacket)))).Times(2);
-#endif
   EXPECT_TRUE(RunExtensionSubtest("gcd_private/api", "send_query.html"));
 }
-
 #endif  // ENABLE_MDNS
 
 #if defined(ENABLE_WIFI_BOOTSTRAPPING)
+class GcdPrivateWithWifiAPITest : public GcdPrivateAPITest {
+ public:
+  virtual void OnCreateWifiManager() {
+    wifi_manager_ = wifi_manager_factory_.GetLastCreatedWifiManager();
 
-IN_PROC_BROWSER_TEST_F(GcdPrivateAPITest, WifiMessage) {
+    EXPECT_CALL(*wifi_manager_, Start());
+
+    EXPECT_CALL(*wifi_manager_,
+                RequestNetworkCredentialsInternal("SuccessNetwork"))
+        .WillOnce(Invoke(this, &GcdPrivateWithWifiAPITest::RespondToNetwork));
+
+    EXPECT_CALL(*wifi_manager_,
+                RequestNetworkCredentialsInternal("FailureNetwork"))
+        .WillOnce(Invoke(this, &GcdPrivateWithWifiAPITest::RespondToNetwork));
+  }
+
+  void RespondToNetwork(const std::string& network) {
+    bool success = (network == "SuccessNetwork");
+
+    wifi_manager_->CallRequestNetworkCredentialsCallback(
+        success, network, success ? "SuccessPass" : "");
+  }
+
+ protected:
+  local_discovery::wifi::MockWifiManagerFactory wifi_manager_factory_;
+  local_discovery::wifi::MockWifiManager* wifi_manager_;
+};
+
+IN_PROC_BROWSER_TEST_F(GcdPrivateWithWifiAPITest, WifiMessage) {
   EXPECT_TRUE(RunExtensionSubtest("gcd_private/api", "wifi_message.html"));
 }
 
-IN_PROC_BROWSER_TEST_F(GcdPrivateAPITest, WifiPasswords) {
-// TODO(noamsml): Win Dbg has a workaround that makes RunExtensionSubtest
-// always return true without actually running the test. Remove when fixed.
-// See http://crbug.com/177163 for details.
-#if !defined(OS_WIN) || defined(NDEBUG)
+IN_PROC_BROWSER_TEST_F(GcdPrivateWithWifiAPITest, WifiPasswords) {
+  if (ExtensionSubtestsAreSkipped())
+    return;
   EXPECT_CALL(wifi_manager_factory_, WifiManagerCreated())
-      .WillOnce(Invoke(this, &GcdPrivateAPITest::OnCreateWifiManager));
-#endif
+      .WillOnce(Invoke(this, &GcdPrivateWithWifiAPITest::OnCreateWifiManager));
 
   EXPECT_TRUE(RunExtensionSubtest("gcd_private/api", "wifi_password.html"));
 }
-
 #endif  // ENABLE_WIFI_BOOTSTRAPPING
 
 }  // namespace

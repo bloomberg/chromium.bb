@@ -4,8 +4,6 @@
 
 #include "chrome/browser/local_discovery/service_discovery_shared_client.h"
 
-#include "content/public/browser/browser_thread.h"
-
 #if defined(OS_WIN)
 #include "base/files/file_path.h"
 #include "base/metrics/histogram.h"
@@ -62,11 +60,13 @@ ServiceDiscoverySharedClient* g_service_discovery_client = NULL;
 }  // namespace
 
 ServiceDiscoverySharedClient::ServiceDiscoverySharedClient() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!g_service_discovery_client);
   g_service_discovery_client = this;
 }
 
 ServiceDiscoverySharedClient::~ServiceDiscoverySharedClient() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(g_service_discovery_client, this);
   g_service_discovery_client = NULL;
 }

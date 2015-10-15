@@ -4,12 +4,13 @@
 
 #import <Cocoa/Cocoa.h>
 
+#import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "base/bind.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/local_discovery/service_discovery_client_mac.h"
-#import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "chrome/common/local_discovery/service_discovery_client.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest_mac.h"
 
 @interface TestNSNetService : NSNetService {
@@ -65,10 +66,11 @@ class ServiceDiscoveryClientMacTest : public CocoaTest {
   }
 
  protected:
+  content::TestBrowserThreadBundle thread_bundle_;
+
   scoped_refptr<ServiceDiscoveryClientMac> client_mac_;
   ServiceDiscoveryClient* client_;  // weak
 
-  base::MessageLoop message_loop_;
   ServiceWatcher::UpdateType last_update_;
   std::string last_service_name_;
   int num_updates_;

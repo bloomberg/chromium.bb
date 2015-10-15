@@ -5,14 +5,17 @@
 #include "chrome/browser/local_discovery/test_service_discovery_client.h"
 
 #include "chrome/common/local_discovery/service_discovery_client_impl.h"
+#include "content/public/browser/browser_thread.h"
 #include "net/dns/mdns_client_impl.h"
 
 namespace local_discovery {
 
 TestServiceDiscoveryClient::TestServiceDiscoveryClient() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
 TestServiceDiscoveryClient::~TestServiceDiscoveryClient() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
 void TestServiceDiscoveryClient::Start() {

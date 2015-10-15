@@ -424,6 +424,11 @@ class LocalDiscoveryUITest : public WebUIBrowserTest {
     AddLibrary(base::FilePath(FILE_PATH_LITERAL("local_discovery_ui_test.js")));
   }
 
+  void TearDownOnMainThread() override {
+    test_service_discovery_client_ = nullptr;
+    WebUIBrowserTest::TearDownOnMainThread();
+  }
+
   void SetUpCommandLine(base::CommandLine* command_line) override {
 #if defined(OS_CHROMEOS)
     // On chromeos, don't sign in with the stub-user automatically.  Use the
