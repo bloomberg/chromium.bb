@@ -508,9 +508,6 @@ public class DownloadManagerService extends BroadcastReceiver implements
             downloadId = manager.addCompletedDownload(
                     downloadInfo.getFileName(), description, true, mimeType,
                     downloadInfo.getFilePath(), downloadInfo.getContentLength(), false);
-            if (shouldOpenAfterDownload(downloadInfo)) {
-                handleAutoOpenAfterDownload(downloadInfo, downloadId);
-            }
         } catch (IllegalArgumentException e) {
             Log.w(TAG, "Failed to add the download item to DownloadManager: ", e);
             if (downloadInfo.getFilePath() != null) {
@@ -558,12 +555,18 @@ public class DownloadManagerService extends BroadcastReceiver implements
                                 Map<DownloadInfo, Pair<Long, Boolean>> result) {
                             for (Map.Entry<DownloadInfo, Pair<Long, Boolean>> entry :
                                     result.entrySet()) {
-                                if (entry.getValue().first == INVALID_DOWNLOAD_ID) {
-                                    onDownloadFailed(entry.getKey().getFileName());
+                                DownloadInfo info = entry.getKey();
+                                long downloadId = entry.getValue().first;
+                                if (downloadId == INVALID_DOWNLOAD_ID) {
+                                    onDownloadFailed(info.getFileName());
                                 } else {
-                                    mDownloadSnackbarController.onDownloadSucceeded(
-                                            entry.getKey(), entry.getValue().first,
-                                            entry.getValue().second);
+                                    boolean canResolve = entry.getValue().second;
+                                    if (canResolve && shouldOpenAfterDownload(info)) {
+                                        handleAutoOpenAfterDownload(info, downloadId);
+                                    } else {
+                                        mDownloadSnackbarController.onDownloadSucceeded(
+                                                info, downloadId, canResolve);
+                                    }
                                 }
                             }
                         }
@@ -680,7 +683,7 @@ public class DownloadManagerService extends BroadcastReceiver implements
         protected void onPostExecute(Pair<Integer, Boolean> result) {
             switch (result.first) {
                 case DownloadManager.STATUS_SUCCESSFUL:
-                    if (shouldOpenAfterDownload(mDownloadInfo)) {
+                    if (shouldOpenAfterDownload(mDownloadInfo) && result.second) {
                         handleAutoOpenAfterDownload(mDownloadInfo, mDownloadId);
                     } else {
                         mDownloadSnackbarController.onDownloadSucceeded(
@@ -932,7 +935,6 @@ public class DownloadManagerService extends BroadcastReceiver implements
 
             @Override
             protected void onPostExecute(Intent intent) {
-                // TODO(qinmin): cancel download notification if openIntent() returns true.
                 if (intent != null) {
                     openIntent(mContext, intent, true);
                 }
