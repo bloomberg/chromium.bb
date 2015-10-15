@@ -152,6 +152,11 @@ def RestartMe2MeHost():
   return log_file
 
 
+def CleanupUserProfileDir(args):
+  SetupUserProfileDir(args.me2me_manifest_file, args.it2me_manifest_file,
+                      args.user_profile_dir)
+
+
 def SetupUserProfileDir(me2me_manifest_file, it2me_manifest_file,
                         user_profile_dir):
   """Sets up the Google Chrome user profile directory.
@@ -203,13 +208,10 @@ def PrintHostLogContents(host_log_files=None):
 
 
 def TestCaseSetup(args):
-  # Stop+start me2me host process.
-  host_log_file = RestartMe2MeHost()
-
   # Reset the user profile directory to start each test with a clean slate.
-  SetupUserProfileDir(args.me2me_manifest_file, args.it2me_manifest_file,
-                      args.user_profile_dir)
-  return host_log_file
+  CleanupUserProfileDir(args)
+  # Stop+start me2me host process.
+  return RestartMe2MeHost()
 
 
 def GetJidListFromTestResults(results):

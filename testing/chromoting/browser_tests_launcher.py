@@ -7,6 +7,7 @@
 import argparse
 import time
 
+from chromoting_test_utilities import CleanupUserProfileDir
 from chromoting_test_utilities import GetJidListFromTestResults
 from chromoting_test_utilities import InitialiseTestMachineForLinux
 from chromoting_test_utilities import PrintHostLogContents
@@ -48,7 +49,10 @@ def LaunchBTCommand(args, command):
     # It returns the file-name of the me2me host log.
     # If we are attempting to run this test because of a JID-mismatch, don't
     # restart host.
-    if not host_jid_mismatch:
+    if host_jid_mismatch:
+      # Cleanup user-profile directory, but don't restart host.
+      CleanupUserProfileDir(args)
+    else:
       host_log_file_names.append(TestCaseSetup(args))
       # Parse the me2me host log to obtain the JID that the host registered.
       host_jid = None
