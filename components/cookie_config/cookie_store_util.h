@@ -2,26 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_NET_COOKIE_STORE_UTIL_H_
-#define CHROME_BROWSER_NET_COOKIE_STORE_UTIL_H_
-
-#include "base/memory/ref_counted.h"
-#include "content/public/browser/browser_context.h"
-#include "content/public/browser/cookie_store_factory.h"
-
-class Profile;
+#ifndef COMPONENTS_COOKIE_CONFIG_COOKIE_STORE_UTIL_H_
+#define COMPONENTS_COOKIE_CONFIG_COOKIE_STORE_UTIL_H_
 
 namespace net {
-class CookieMonsterDelegate;
+class CookieCryptoDelegate;
 }  // namespace net
 
-namespace chrome_browser_net {
+namespace cookie_config {
 
 // Factory method for returning a CookieCryptoDelegate if one is appropriate for
 // this platform. The object returned is a LazyInstance. Ownership is not
 // transferred.
 net::CookieCryptoDelegate* GetCookieCryptoDelegate();
 
-}  // namespace chrome_browser_net
+}  // namespace cookie_config
 
-#endif  // CHROME_BROWSER_NET_COOKIE_STORE_UTIL_H_
+#endif  // COMPONENTS_COOKIE_CONFIG_COOKIE_STORE_UTIL_H_

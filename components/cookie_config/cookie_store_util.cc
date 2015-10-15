@@ -2,18 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/net/cookie_store_util.h"
+#include "components/cookie_config/cookie_store_util.h"
 
 #include "base/lazy_instance.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/common/chrome_constants.h"
-#include "chrome/common/chrome_switches.h"
 #include "components/os_crypt/os_crypt.h"
-#include "content/public/common/content_constants.h"
-#include "extensions/common/constants.h"
 #include "net/extras/sqlite/cookie_crypto_delegate.h"
 
-namespace chrome_browser_net {
+namespace cookie_config {
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 namespace {
@@ -67,10 +62,10 @@ base::LazyInstance<CookieOSCryptoDelegate> g_cookie_crypto_delegate =
 net::CookieCryptoDelegate* GetCookieCryptoDelegate() {
   return g_cookie_crypto_delegate.Pointer();
 }
-#else  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+#else   // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 net::CookieCryptoDelegate* GetCookieCryptoDelegate() {
   return NULL;
 }
 #endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 
-}  // namespace chrome_browser_net
+}  // namespace cookie_config

@@ -21,6 +21,7 @@
     'component_updater.gypi',
     'compression.gypi',
     'content_settings.gypi',
+    'cookie_config.gypi',
     'crash.gypi',
     'cronet.gypi',
     'crx_file.gypi',

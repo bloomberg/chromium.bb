@@ -29,7 +29,6 @@
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/connect_interceptor.h"
-#include "chrome/browser/net/cookie_store_util.h"
 #include "chrome/browser/net/http_server_properties_manager_factory.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/net/quota_policy_channel_id_store.h"
@@ -41,6 +40,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "components/cookie_config/cookie_store_util.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/data_reduction_proxy/core/browser/data_store_impl.h"
@@ -513,8 +513,7 @@ void ProfileImplIOData::InitializeInternal(
         lazy_params_->session_cookie_mode,
         lazy_params_->special_storage_policy.get(),
         profile_params->cookie_monster_delegate.get());
-    cookie_config.crypto_delegate =
-      chrome_browser_net::GetCookieCryptoDelegate();
+    cookie_config.crypto_delegate = cookie_config::GetCookieCryptoDelegate();
     cookie_store = content::CreateCookieStore(cookie_config);
   }
 
@@ -616,8 +615,7 @@ void ProfileImplIOData::
       lazy_params_->extensions_cookie_path,
       lazy_params_->session_cookie_mode,
       NULL, NULL);
-  cookie_config.crypto_delegate =
-      chrome_browser_net::GetCookieCryptoDelegate();
+  cookie_config.crypto_delegate = cookie_config::GetCookieCryptoDelegate();
   net::CookieStore* extensions_cookie_store =
       content::CreateCookieStore(cookie_config);
   // Enable cookies for chrome-extension URLs.
@@ -694,8 +692,7 @@ net::URLRequestContext* ProfileImplIOData::InitializeAppRequestContext(
         cookie_path,
         content::CookieStoreConfig::EPHEMERAL_SESSION_COOKIES,
         NULL, NULL);
-    cookie_config.crypto_delegate =
-      chrome_browser_net::GetCookieCryptoDelegate();
+    cookie_config.crypto_delegate = cookie_config::GetCookieCryptoDelegate();
     cookie_store = content::CreateCookieStore(cookie_config);
   }
 
