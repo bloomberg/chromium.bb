@@ -792,6 +792,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      * Tests a sequence in landscape orientation: swiping the overlay open, after an
      * initial tap that activates the peeking card.
      */
+    @DisabledTest // https://crbug.com/543733
     @SmallTest
     @Feature({"ContextualSearch"})
     @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
