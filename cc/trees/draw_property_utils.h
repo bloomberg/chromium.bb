@@ -103,6 +103,10 @@ gfx::Transform CC_EXPORT
 ScreenSpaceTransformFromPropertyTrees(const LayerImpl* layer,
                                       const TransformTree& tree);
 
+gfx::Transform CC_EXPORT SurfaceScreenSpaceTransformFromPropertyTrees(
+    const RenderSurfaceImpl* render_surface,
+    const TransformTree& tree);
+
 void CC_EXPORT
 UpdatePageScaleFactorInPropertyTrees(PropertyTrees* property_trees,
                                      const LayerImpl* page_scale_layer,

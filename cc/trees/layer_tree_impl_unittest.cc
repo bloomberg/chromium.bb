@@ -1456,7 +1456,8 @@ TEST_F(LayerTreeImplTest,
   EXPECT_EQ(gfx::Rect(test_layer->bounds()), test_layer->visible_layer_rect());
 
   // Hit checking for a point outside the layer should return a null pointer
-  // (the root layer does not draw content, so it will not be tested either).
+  // (the root layer does not have a touch event handler, so it will not be
+  // tested either).
   gfx::PointF test_point(76.f, 76.f);
   test_point =
       gfx::ScalePoint(test_point, device_scale_factor * page_scale_factor);
@@ -1709,6 +1710,79 @@ TEST_F(LayerTreeImplTest, HitCheckingTouchHandlerOverlappingRegions) {
       host_impl().active_tree()->FindLayerThatIsHitByPointInTouchHandlerRegion(
           test_point);
   EXPECT_FALSE(result_layer);
+}
+
+TEST_F(LayerTreeImplTest, HitTestingTouchHandlerRegionsForLayerThatIsNotDrawn) {
+  scoped_ptr<LayerImpl> root = LayerImpl::Create(host_impl().active_tree(), 1);
+
+  gfx::Transform identity_matrix;
+  gfx::Point3F transform_origin;
+  SetLayerPropertiesForTesting(root.get(), identity_matrix, transform_origin,
+                               gfx::PointF(), gfx::Size(100, 100), true, false,
+                               true);
+  root->SetDrawsContent(true);
+  {
+    Region touch_handler_region(gfx::Rect(10, 10, 30, 30));
+    gfx::PointF position;
+    gfx::Size bounds(50, 50);
+    scoped_ptr<LayerImpl> test_layer =
+        LayerImpl::Create(host_impl().active_tree(), 12345);
+    SetLayerPropertiesForTesting(test_layer.get(), identity_matrix,
+                                 transform_origin, position, bounds, true,
+                                 false, false);
+
+    test_layer->SetDrawsContent(false);
+    test_layer->SetTouchEventHandlerRegion(touch_handler_region);
+    root->AddChild(test_layer.Pass());
+  }
+  host_impl().SetViewportSize(root->bounds());
+  host_impl().active_tree()->SetRootLayer(root.Pass());
+  host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
+
+  LayerImpl* test_layer =
+      host_impl().active_tree()->root_layer()->children()[0];
+  // As test_layer doesn't draw content, the layer list of root's render surface
+  // should contain only the root layer.
+  ASSERT_EQ(1u, RenderSurfaceLayerList().size());
+  ASSERT_EQ(1u, root_layer()->render_surface()->layer_list().size());
+
+  // Hit testing for a point outside the test layer should return null pointer.
+  // We also implicitly check that the updated screen space transform of a layer
+  // that is not in drawn render surface layer list (test_layer) is used during
+  // hit testing (becuase the point is inside test_layer with respect to the old
+  // screen space transform).
+  gfx::PointF test_point(24.f, 24.f);
+  test_layer->SetPosition(gfx::PointF(25.f, 25.f));
+  gfx::Transform expected_screen_space_transform;
+  expected_screen_space_transform.Translate(25.f, 25.f);
+
+  host_impl().active_tree()->property_trees()->needs_rebuild = true;
+  host_impl().active_tree()->BuildPropertyTreesForTesting();
+  LayerImpl* result_layer =
+      host_impl().active_tree()->FindLayerThatIsHitByPointInTouchHandlerRegion(
+          test_point);
+  EXPECT_FALSE(result_layer);
+  EXPECT_FALSE(test_layer->IsDrawnRenderSurfaceLayerListMember());
+  EXPECT_TRANSFORMATION_MATRIX_EQ(expected_screen_space_transform,
+                                  test_layer->screen_space_transform());
+
+  // We change the position of the test layer such that the test point is now
+  // inside the test_layer.
+  test_layer = host_impl().active_tree()->root_layer()->children()[0];
+  test_layer->SetPosition(gfx::PointF(10.f, 10.f));
+  expected_screen_space_transform.MakeIdentity();
+  expected_screen_space_transform.Translate(10.f, 10.f);
+
+  host_impl().active_tree()->property_trees()->needs_rebuild = true;
+  host_impl().active_tree()->BuildPropertyTreesForTesting();
+  result_layer =
+      host_impl().active_tree()->FindLayerThatIsHitByPointInTouchHandlerRegion(
+          test_point);
+  ASSERT_TRUE(result_layer);
+  ASSERT_EQ(test_layer, result_layer);
+  EXPECT_FALSE(result_layer->IsDrawnRenderSurfaceLayerListMember());
+  EXPECT_TRANSFORMATION_MATRIX_EQ(expected_screen_space_transform,
+                                  result_layer->screen_space_transform());
 }
 
 TEST_F(LayerTreeImplTest, SelectionBoundsForSingleLayer) {

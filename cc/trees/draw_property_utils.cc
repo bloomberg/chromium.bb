@@ -682,7 +682,7 @@ gfx::Rect SurfaceClipRect(const RenderSurfaceImpl* render_surface,
   return gfx::ToEnclosingRect(parent_clip_node->data.clip_in_target_space);
 }
 
-gfx::Transform SurfaceScreenSpaceTransform(
+gfx::Transform SurfaceScreenSpaceTransformFromPropertyTrees(
     const RenderSurfaceImpl* render_surface,
     const TransformTree& tree) {
   const TransformNode* node = tree.Node(render_surface->TransformTreeIndex());
@@ -888,8 +888,9 @@ void ComputeSurfaceDrawPropertiesUsingPropertyTrees(
       SurfaceDrawOpacity(render_surface, property_trees->effect_tree);
   draw_properties->draw_transform =
       SurfaceDrawTransform(render_surface, property_trees->transform_tree);
-  draw_properties->screen_space_transform = SurfaceScreenSpaceTransform(
-      render_surface, property_trees->transform_tree);
+  draw_properties->screen_space_transform =
+      SurfaceScreenSpaceTransformFromPropertyTrees(
+          render_surface, property_trees->transform_tree);
 
   if (render_surface->HasReplica()) {
     gfx::Transform replica_to_surface = ReplicaToSurfaceTransform(
