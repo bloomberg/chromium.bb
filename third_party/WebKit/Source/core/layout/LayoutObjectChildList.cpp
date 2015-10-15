@@ -186,14 +186,7 @@ void LayoutObjectChildList::invalidatePaintOnRemoval(const LayoutObject& oldChil
         oldChild.view()->setShouldDoFullPaintInvalidation();
         return;
     }
-
-    DisableCompositingQueryAsserts disabler;
-    // FIXME: We should not allow paint invalidation out of paint invalidation state. crbug.com/457415
-    DisablePaintInvalidationStateAsserts paintInvalidationAssertDisabler;
-    const LayoutBoxModelObject& paintInvalidationContainer = *oldChild.containerForPaintInvalidation();
-    const LayoutRect& invalidationRect = oldChild.previousPaintInvalidationRectIncludingCompositedScrolling(paintInvalidationContainer);
-    oldChild.invalidatePaintUsingContainer(paintInvalidationContainer, invalidationRect, PaintInvalidationLayoutObjectRemoval);
-    oldChild.invalidateDisplayItemClients(paintInvalidationContainer, PaintInvalidationLayoutObjectRemoval, invalidationRect, invalidationRect);
+    oldChild.invalidatePaintOfPreviousPaintInvalidationRect(*oldChild.containerForPaintInvalidation(), PaintInvalidationLayoutObjectRemoval);
 }
 
 } // namespace blink

@@ -1,0 +1,57 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [1, 1, 100, 100],
+        [1, 1, 100, 100]
+      ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow DIV id='target'",
+        "LayoutBlockFlow DIV id='child'"
+      ],
+      "children": [
+        {
+          "position": [8, 8]
+        },
+        {
+          "shouldFlattenTransform": false,
+          "children": [
+            {
+              "position": [8, 8],
+              "bounds": [784, 52],
+              "drawsContent": true,
+              "repaintRects": [
+                [1, 1, 100, 100],
+                [1, 1, 100, 100],
+                [0, 52, 784, 49]
+              ],
+              "paintInvalidationClients": [
+                "LayoutBlockFlow DIV id='target'",
+                "LayoutBlockFlow DIV id='child'",
+                "LayoutBlockFlow (relative positioned) DIV"
+              ]
+            },
+            {
+              "position": [9, 9],
+              "bounds": [100, 100],
+              "drawsContent": true,
+              "repaintRects": [
+                [0, 0, 100, 100],
+                [0, 0, 100, 100]
+              ],
+              "paintInvalidationClients": [
+                "LayoutBlockFlow DIV id='target'",
+                "LayoutBlockFlow DIV id='child'"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+

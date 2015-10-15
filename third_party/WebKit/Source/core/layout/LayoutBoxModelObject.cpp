@@ -280,20 +280,15 @@ void LayoutBoxModelObject::styleDidChange(StyleDifference diff, const ComputedSt
 
 void LayoutBoxModelObject::createLayer(PaintLayerType type)
 {
-
-    // Acquiring a PaintLayer may change the paint invalidation container. Therefore we must eagerly
-    // invalidate paint for this object before creating the layer.
-    if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled() && isRooted()) {
-        DisablePaintInvalidationStateAsserts invalidationDisabler;
-        DisableCompositingQueryAsserts compositingDisabler;
-
-        // It would be more correct to call invalidatePaintIncludingNonCompositingDescendants, but
-        // we do this instead to avoid performance issues when creating large numbers of layers.
-        const LayoutBoxModelObject& paintInvalidationContainer = containerForPaintInvalidationOnRootedTree();
-        invalidatePaintUsingContainer(
-            paintInvalidationContainer,
-            boundsRectForPaintInvalidation(&paintInvalidationContainer),
-            PaintInvalidationLayer);
+    // If the current paint invalidation container is not a stacking context and this object is
+    // a or treated as a stacking context, creating this layer may cause this object and its
+    // descendants to change paint invalidation container. Therefore we must eagerly invalidate
+    // them on the original paint invalidation container before creating the layer.
+    if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled() && isRooted() && styleRef().isTreatedAsOrStackingContext()) {
+        if (const LayoutBoxModelObject* currentPaintInvalidationContainer = containerForPaintInvalidation()) {
+            if (!currentPaintInvalidationContainer->styleRef().isStackingContext())
+                invalidatePaintIncludingNonSelfPaintingLayerDescendants(*currentPaintInvalidationContainer);
+        }
     }
 
     ASSERT(!m_layer);

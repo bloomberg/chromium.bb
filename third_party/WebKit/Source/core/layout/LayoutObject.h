@@ -1029,6 +1029,7 @@ public:
     void invalidatePaintForOverflowIfNeeded();
 
     void invalidatePaintIncludingNonCompositingDescendants();
+    void invalidatePaintIncludingNonSelfPaintingLayerDescendants(const LayoutBoxModelObject& paintInvalidationContainer);
     void setShouldDoFullPaintInvalidationIncludingNonCompositingDescendants();
 
     // Returns the rect that should have paint invalidated whenever this object changes. The rect is in the view's
@@ -1464,7 +1465,7 @@ private:
 
     inline void invalidateContainerPreferredLogicalWidths();
 
-    void invalidatePaintIncludingNonCompositingDescendantsInternal(const LayoutBoxModelObject& repaintContainer);
+    void invalidatePaintOfPreviousPaintInvalidationRect(const LayoutBoxModelObject& paintInvalidationContainer, PaintInvalidationReason) const;
 
     LayoutRect previousSelectionRectForPaintInvalidation() const;
     void setPreviousSelectionRectForPaintInvalidation(const LayoutRect&);
