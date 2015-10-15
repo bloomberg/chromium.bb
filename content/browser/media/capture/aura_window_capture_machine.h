@@ -120,8 +120,7 @@ class AuraWindowCaptureMachine
 
   // Cursor state.
   ui::Cursor last_cursor_;
-  gfx::Size desktop_size_when_cursor_last_updated_;
-  gfx::Point cursor_hot_point_;
+  gfx::Size window_size_when_cursor_last_updated_;
   SkBitmap scaled_cursor_bitmap_;
 
   // TODO(jiayl): Remove power_save_blocker_ when there is an API to keep the

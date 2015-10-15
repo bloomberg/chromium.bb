@@ -405,23 +405,24 @@ bool AuraWindowCaptureMachine::ProcessCopyOutputResponse(
 
 gfx::Point AuraWindowCaptureMachine::UpdateCursorState(
     const gfx::Rect& region_in_frame) {
-  const gfx::Rect desktop_bounds = desktop_window_->layer()->bounds();
-  if (desktop_bounds.IsEmpty()) {
-    // Return early to prevent divide-by-zero in calculations below.
+  const gfx::Rect window_bounds = desktop_window_->GetBoundsInScreen();
+  gfx::Point cursor_position = aura::Env::GetInstance()->last_mouse_location();
+  if (!window_bounds.Contains(cursor_position)) {
+    // Return early if there is no need to draw the cursor.
     ClearCursorState();
     return gfx::Point();
   }
 
-  gfx::NativeCursor cursor =
-      desktop_window_->GetHost()->last_cursor();
+  gfx::NativeCursor cursor = desktop_window_->GetHost()->last_cursor();
+  gfx::Point cursor_hot_point;
   if (last_cursor_ != cursor ||
-      desktop_size_when_cursor_last_updated_ != desktop_bounds.size()) {
+      window_size_when_cursor_last_updated_ != window_bounds.size()) {
     SkBitmap cursor_bitmap;
-    if (ui::GetCursorBitmap(cursor, &cursor_bitmap, &cursor_hot_point_)) {
+    if (ui::GetCursorBitmap(cursor, &cursor_bitmap, &cursor_hot_point)) {
       const int scaled_width = cursor_bitmap.width() *
-          region_in_frame.width() / desktop_bounds.width();
+          region_in_frame.width() / window_bounds.width();
       const int scaled_height = cursor_bitmap.height() *
-          region_in_frame.height() / desktop_bounds.height();
+          region_in_frame.height() / window_bounds.height();
       if (scaled_width <= 0 || scaled_height <= 0) {
         ClearCursorState();
         return gfx::Point();
@@ -432,7 +433,7 @@ gfx::Point AuraWindowCaptureMachine::UpdateCursorState(
           scaled_width,
           scaled_height);
       last_cursor_ = cursor;
-      desktop_size_when_cursor_last_updated_ = desktop_bounds.size();
+      window_size_when_cursor_last_updated_ = window_bounds.size();
     } else {
       // Clear cursor state if ui::GetCursorBitmap failed so that we do not
       // render cursor on the captured frame.
@@ -440,24 +441,18 @@ gfx::Point AuraWindowCaptureMachine::UpdateCursorState(
     }
   }
 
-  gfx::Point cursor_position = aura::Env::GetInstance()->last_mouse_location();
-  aura::client::GetScreenPositionClient(desktop_window_->GetRootWindow())->
-      ConvertPointFromScreen(desktop_window_, &cursor_position);
-  const gfx::Point hot_point_in_dip = ui::ConvertPointToDIP(
-      desktop_window_->layer(), cursor_hot_point_);
-  cursor_position.Offset(-desktop_bounds.x() - hot_point_in_dip.x(),
-                         -desktop_bounds.y() - hot_point_in_dip.y());
+  cursor_position.Offset(-window_bounds.x() - cursor_hot_point.x(),
+                         -window_bounds.y() - cursor_hot_point.y());
   return gfx::Point(
-      region_in_frame.x() + cursor_position.x() * region_in_frame.width() /
-          desktop_bounds.width(),
-      region_in_frame.y() + cursor_position.y() * region_in_frame.height() /
-          desktop_bounds.height());
+      region_in_frame.x() + cursor_position.x() *
+          region_in_frame.width() / window_bounds.width(),
+      region_in_frame.y() + cursor_position.y() *
+          region_in_frame.height() / window_bounds.height());
 }
 
 void AuraWindowCaptureMachine::ClearCursorState() {
   last_cursor_ = ui::Cursor();
-  desktop_size_when_cursor_last_updated_ = gfx::Size();
-  cursor_hot_point_ = gfx::Point();
+  window_size_when_cursor_last_updated_ = gfx::Size();
   scaled_cursor_bitmap_.reset();
 }
 
