@@ -83,10 +83,6 @@ const char kDisableBackingStoreLimit[]      = "disable-backing-store-limit";
 // features.
 const char kDisableBlinkFeatures[]          = "disable-blink-features";
 
-// Disable the creation of compositing layers when it would prevent LCD text.
-const char kDisablePreferCompositingToLCDText[] =
-    "disable-prefer-compositing-to-lcd-text";
-
 // Disables HTML5 DB support.
 const char kDisableDatabases[]              = "disable-databases";
 
@@ -215,6 +211,10 @@ const char kDisablePinch[]                  = "disable-pinch";
 // ones shipped with the browser plus third-party ones as specified by
 // --extra-plugin-dir and --load-plugin switches.
 const char kDisablePluginsDiscovery[]       = "disable-plugins-discovery";
+
+// Disable the creation of compositing layers when it would prevent LCD text.
+const char kDisablePreferCompositingToLCDText[] =
+    "disable-prefer-compositing-to-lcd-text";
 
 // Disables the Presentation API.
 const char kDisablePresentationAPI[]        = "disable-presentation-api";

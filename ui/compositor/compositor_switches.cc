@@ -15,6 +15,9 @@ const char kEnableHardwareOverlays[] = "enable-hardware-overlays";
 // Forces tests to produce pixel output when they normally wouldn't.
 const char kEnablePixelOutputInTests[] = "enable-pixel-output-in-tests";
 
+// Disable partial swap which is needed for some OpenGL drivers / emulators.
+const char kUIDisablePartialSwap[] = "ui-disable-partial-swap";
+
 const char kUIEnableCompositorAnimationTimelines[] =
     "ui-enable-compositor-animation-timelines";
 

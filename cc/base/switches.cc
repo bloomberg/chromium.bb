@@ -11,6 +11,12 @@ namespace switches {
 
 const char kDisableThreadedAnimation[] = "disable-threaded-animation";
 
+// Disables the use of a cached picture for raster in the renderer,
+// making raster go directly from the display item list (this is the data
+// structure surfaced to tracing). This is useful for debugging to remove
+// the cached picture from the pipeline to narrow down bugs.
+const char kDisableCachedPictureRaster[] = "disable-cached-picture-raster";
+
 // Disables layer-edge anti-aliasing in the compositor.
 const char kDisableCompositedAntialiasing[] =
     "disable-composited-antialiasing";
@@ -43,9 +49,6 @@ const char kStrictLayerPropertyChangeChecking[] =
 // computed by CalcDrawProperties.
 const char kEnablePropertyTreeVerification[] =
     "enable-property-tree-verification";
-
-// Disable partial swap which is needed for some OpenGL drivers / emulators.
-const char kUIDisablePartialSwap[] = "ui-disable-partial-swap";
 
 // Use a BeginFrame signal from browser to renderer to schedule rendering.
 const char kEnableBeginFrameScheduling[] = "enable-begin-frame-scheduling";

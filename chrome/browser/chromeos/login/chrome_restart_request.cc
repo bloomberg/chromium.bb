@@ -146,6 +146,7 @@ void DeriveCommandLine(const GURL& start_url,
 #if defined(ENABLE_TOPCHROME_MD)
     ::switches::kTopChromeMD,
 #endif
+    ::switches::kUIDisablePartialSwap,
     ::switches::kUIEnableCompositorAnimationTimelines,
     ::switches::kUIPrioritizeInGpuProcess,
 #if defined(USE_CRAS)
@@ -185,6 +186,7 @@ void DeriveCommandLine(const GURL& start_url,
     // Please keep these in alphabetical order. Non-UI Compositor switches
     // here should also be added to
     // content/browser/renderer_host/render_process_host_impl.cc.
+    cc::switches::kDisableCachedPictureRaster,
     cc::switches::kDisableCompositedAntialiasing,
     cc::switches::kDisableMainFrameBeforeActivation,
     cc::switches::kDisableThreadedAnimation,
@@ -200,7 +202,6 @@ void DeriveCommandLine(const GURL& start_url,
     cc::switches::kShowScreenSpaceRects,
     cc::switches::kShowSurfaceDamageRects,
     cc::switches::kSlowDownRasterScaleFactor,
-    cc::switches::kUIDisablePartialSwap,
     chromeos::switches::kConsumerDeviceManagementUrl,
     chromeos::switches::kDbusStub,
     chromeos::switches::kDbusUnstubClients,

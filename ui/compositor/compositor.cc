@@ -109,7 +109,7 @@ Compositor::Compositor(ui::ContextFactory* context_factory,
     }
   }
   settings.renderer_settings.partial_swap_enabled =
-      !command_line->HasSwitch(cc::switches::kUIDisablePartialSwap);
+      !command_line->HasSwitch(switches::kUIDisablePartialSwap);
 #if defined(OS_WIN)
   settings.renderer_settings.finish_rendering_on_resize = true;
 #endif
