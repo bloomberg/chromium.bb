@@ -53,6 +53,7 @@ class ManifestManager : public RenderFrameObserver {
 
   // Called when receiving a ManifestManagerMsg_RequestManifest from the browser
   // process.
+  void OnHasManifest(int request_id);
   void OnRequestManifest(int request_id);
   void OnRequestManifestComplete(int request_id, const Manifest&);
 

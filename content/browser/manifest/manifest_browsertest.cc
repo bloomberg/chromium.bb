@@ -46,8 +46,7 @@ class ManifestBrowserTest : public ContentBrowserTest  {
  protected:
   friend MockWebContentsDelegate;
 
-  ManifestBrowserTest()
-      : console_error_count_(0) {
+  ManifestBrowserTest() : console_error_count_(0), has_manifest_(false) {
     cors_embedded_test_server_.reset(new net::test_server::EmbeddedTestServer);
     base::FilePath test_data_dir;
     CHECK(PathService::Get(base::DIR_SOURCE_ROOT, &test_data_dir));
@@ -75,13 +74,31 @@ class ManifestBrowserTest : public ContentBrowserTest  {
     message_loop_runner_->Run();
   }
 
+  void HasManifestAndWait() {
+    shell()->web_contents()->HasManifest(
+        base::Bind(&ManifestBrowserTest::OnHasManifest,
+                   base::Unretained(this)));
+
+    message_loop_runner_ = new MessageLoopRunner();
+    message_loop_runner_->Run();
+  }
+
   void OnGetManifest(const Manifest& manifest) {
     manifest_ = manifest;
     message_loop_runner_->Quit();
   }
 
+  void OnHasManifest(bool has_manifest) {
+    has_manifest_ = has_manifest;
+    message_loop_runner_->Quit();
+  }
+
   const Manifest& manifest() const {
     return manifest_;
+  }
+
+  bool has_manifest() const {
+    return has_manifest_;
   }
 
   unsigned int console_error_count() const {
@@ -102,6 +119,7 @@ class ManifestBrowserTest : public ContentBrowserTest  {
   scoped_ptr<net::test_server::EmbeddedTestServer> cors_embedded_test_server_;
   Manifest manifest_;
   int console_error_count_;
+  bool has_manifest_;
 
   DISALLOW_COPY_AND_ASSIGN(ManifestBrowserTest);
 };
@@ -132,11 +150,14 @@ IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, NoManifest) {
 
   GetManifestAndWait();
   EXPECT_TRUE(manifest().IsEmpty());
+
+  HasManifestAndWait();
+  EXPECT_FALSE(has_manifest());
   EXPECT_EQ(0u, console_error_count());
 }
 
 // If a page manifest points to a 404 URL, requesting the manifest should return
-// the empty manifest.
+// the empty manifest. However, HasManifest will return true.
 IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, 404Manifest) {
   GURL test_url = GetTestUrl("manifest", "404-manifest.html");
 
@@ -146,6 +167,9 @@ IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, 404Manifest) {
 
   GetManifestAndWait();
   EXPECT_TRUE(manifest().IsEmpty());
+
+  HasManifestAndWait();
+  EXPECT_TRUE(has_manifest());
   EXPECT_EQ(0u, console_error_count());
 }
 
@@ -160,6 +184,9 @@ IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, EmptyManifest) {
 
   GetManifestAndWait();
   EXPECT_TRUE(manifest().IsEmpty());
+
+  HasManifestAndWait();
+  EXPECT_TRUE(has_manifest());
   EXPECT_EQ(0u, console_error_count());
 }
 
@@ -174,6 +201,9 @@ IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, ParseErrorManifest) {
 
   GetManifestAndWait();
   EXPECT_TRUE(manifest().IsEmpty());
+
+  HasManifestAndWait();
+  EXPECT_TRUE(has_manifest());
   EXPECT_EQ(1u, console_error_count());
 }
 
@@ -188,6 +218,9 @@ IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, DummyManifest) {
 
   GetManifestAndWait();
   EXPECT_FALSE(manifest().IsEmpty());
+
+  HasManifestAndWait();
+  EXPECT_TRUE(has_manifest());
   EXPECT_EQ(0u, console_error_count());
 }
 
@@ -203,6 +236,9 @@ IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, DynamicManifest) {
   {
     GetManifestAndWait();
     EXPECT_TRUE(manifest().IsEmpty());
+
+    HasManifestAndWait();
+    EXPECT_FALSE(has_manifest());
   }
 
   {
@@ -213,6 +249,9 @@ IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, DynamicManifest) {
 
     GetManifestAndWait();
     EXPECT_FALSE(manifest().IsEmpty());
+
+    HasManifestAndWait();
+    EXPECT_TRUE(has_manifest());
   }
 
   {
@@ -223,6 +262,9 @@ IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, DynamicManifest) {
 
     GetManifestAndWait();
     EXPECT_TRUE(manifest().IsEmpty());
+
+    HasManifestAndWait();
+    EXPECT_TRUE(has_manifest());
   }
 
   EXPECT_EQ(0u, console_error_count());
@@ -252,6 +294,8 @@ IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, CORSManifest) {
   GetManifestAndWait();
   EXPECT_TRUE(manifest().IsEmpty());
 
+  HasManifestAndWait();
+  EXPECT_TRUE(has_manifest());
   EXPECT_EQ(0u, console_error_count());
 
   // The purpose of this second load is to make sure the first load is fully
@@ -290,6 +334,8 @@ IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, CORSManifestWithAcessControls) {
   GetManifestAndWait();
   EXPECT_FALSE(manifest().IsEmpty());
 
+  HasManifestAndWait();
+  EXPECT_TRUE(has_manifest());
   EXPECT_EQ(0u, console_error_count());
 }
 
@@ -319,6 +365,8 @@ IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, MixedContentManifest) {
   GetManifestAndWait();
   EXPECT_TRUE(manifest().IsEmpty());
 
+  HasManifestAndWait();
+  EXPECT_TRUE(has_manifest());
   EXPECT_EQ(0u, console_error_count());
 }
 
@@ -334,6 +382,9 @@ IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, ParsingErrorsManifest) {
   GetManifestAndWait();
   EXPECT_TRUE(manifest().IsEmpty());
   EXPECT_EQ(6u, console_error_count());
+
+  HasManifestAndWait();
+  EXPECT_TRUE(has_manifest());
 }
 
 // If a page has a manifest and the page is navigated to a page without a
@@ -350,6 +401,9 @@ IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, Navigation) {
 
     GetManifestAndWait();
     EXPECT_FALSE(manifest().IsEmpty());
+
+    HasManifestAndWait();
+    EXPECT_TRUE(has_manifest());
     EXPECT_EQ(0u, console_error_count());
   }
 
@@ -364,6 +418,9 @@ IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, Navigation) {
     GetManifestAndWait();
     EXPECT_TRUE(manifest().IsEmpty());
     EXPECT_EQ(0u, console_error_count());
+
+    HasManifestAndWait();
+    EXPECT_FALSE(has_manifest());
   }
 }
 
@@ -390,6 +447,9 @@ IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, PushStateNavigation) {
 
   GetManifestAndWait();
   EXPECT_FALSE(manifest().IsEmpty());
+
+  HasManifestAndWait();
+  EXPECT_TRUE(has_manifest());
   EXPECT_EQ(0u, console_error_count());
 }
 
@@ -417,6 +477,10 @@ IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, AnchorNavigation) {
 
   GetManifestAndWait();
   EXPECT_FALSE(manifest().IsEmpty());
+  EXPECT_EQ(0u, console_error_count());
+
+  HasManifestAndWait();
+  EXPECT_TRUE(has_manifest());
   EXPECT_EQ(0u, console_error_count());
 }
 
@@ -472,6 +536,9 @@ IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, UseCredentialsSendCookies) {
 
   GetManifestAndWait();
   EXPECT_FALSE(manifest().IsEmpty());
+
+  HasManifestAndWait();
+  EXPECT_TRUE(has_manifest());
   EXPECT_EQ(0u, console_error_count());
 
   // The custom embedded test server will fill the name field with the cookie
@@ -528,6 +595,9 @@ IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, NoUseCredentialsNoCookies) {
 
   GetManifestAndWait();
   EXPECT_FALSE(manifest().IsEmpty());
+
+  HasManifestAndWait();
+  EXPECT_TRUE(has_manifest());
   EXPECT_EQ(0u, console_error_count());
 
   // The custom embedded test server will fill set the name to 'no cookies' if

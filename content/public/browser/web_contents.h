@@ -660,7 +660,14 @@ class WebContents : public PageNavigator,
   typedef base::Callback<void(const Manifest&)> GetManifestCallback;
 
   // Requests the Manifest of the main frame's document.
-  virtual void GetManifest(const GetManifestCallback&) = 0;
+  virtual void GetManifest(const GetManifestCallback& callback) = 0;
+
+  typedef base::Callback<void(bool)> HasManifestCallback;
+
+  // Returns true if the main frame has a <link> to a web manifest, otherwise
+  // false. This method does not guarantee that the manifest exists at the
+  // specified location or is valid.
+  virtual void HasManifest(const HasManifestCallback& callback) = 0;
 
   // Requests the renderer to exit fullscreen.
   virtual void ExitFullscreen() = 0;

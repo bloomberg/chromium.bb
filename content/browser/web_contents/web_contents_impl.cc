@@ -2751,6 +2751,10 @@ void WebContentsImpl::GetManifest(const GetManifestCallback& callback) {
   manifest_manager_host_->GetManifest(GetMainFrame(), callback);
 }
 
+void WebContentsImpl::HasManifest(const HasManifestCallback& callback) {
+  manifest_manager_host_->HasManifest(GetMainFrame(), callback);
+}
+
 void WebContentsImpl::ExitFullscreen() {
   // Clean up related state and initiate the fullscreen exit.
   GetRenderViewHost()->RejectMouseLockOrUnlockIfNecessary();

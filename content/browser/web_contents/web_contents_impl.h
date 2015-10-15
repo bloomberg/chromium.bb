@@ -368,7 +368,8 @@ class CONTENT_EXPORT WebContentsImpl
   void StopFinding(StopFindAction action) override;
   void InsertCSS(const std::string& css) override;
   bool WasRecentlyAudible() override;
-  void GetManifest(const GetManifestCallback&) override;
+  void GetManifest(const GetManifestCallback& callback) override;
+  void HasManifest(const HasManifestCallback& callback) override;
   void ExitFullscreen() override;
   void ResumeLoadingCreatedWebContents() override;
 #if defined(OS_ANDROID)

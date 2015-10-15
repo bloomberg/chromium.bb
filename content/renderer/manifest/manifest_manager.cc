@@ -38,11 +38,20 @@ bool ManifestManager::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
 
   IPC_BEGIN_MESSAGE_MAP(ManifestManager, message)
+    IPC_MESSAGE_HANDLER(ManifestManagerMsg_HasManifest, OnHasManifest)
     IPC_MESSAGE_HANDLER(ManifestManagerMsg_RequestManifest, OnRequestManifest)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
   return handled;
+}
+
+void ManifestManager::OnHasManifest(int request_id) {
+  GURL url(render_frame()->GetWebFrame()->document().manifestURL());
+
+  bool has_manifest = may_have_manifest_ && !url.is_empty();
+  Send(new ManifestManagerHostMsg_HasManifestResponse(
+      routing_id(), request_id, has_manifest));
 }
 
 void ManifestManager::OnRequestManifest(int request_id) {
