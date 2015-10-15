@@ -8,14 +8,15 @@ vars = {
   # directories contain commits at each revision, you will need to select
   # revisions at latest revision up to a high watermark from each slice.
   # Document the high watermark here:
-  # chrome_rev: 353393
-  "build_rev": "7a42b9b754f793da93af8026e4939e282ce6c431", # from cr commit position 353392
-  "binutils_rev": "6e2968041d5b0bcb4a6b8d6ef969c4f00887246c", # from cr commit position 351682
+  # chrome_rev: 354362
+  "build_rev": "972beed504af8891c0258e912d176e26d1843520", # from cr commit position 354349
+  "build_overrides_rev": "8c154a6ede185ce6d97122e2945608b6064841ae", # from cr commit position 353969
+  "binutils_rev": "c485984110688e490052a3ef60218a26b71e207a", # from cr commit position 354325
   "valgrind_rev": "3a97aa8142b6e63f16789b22daafb42d202f91dc",
-  "tools_valgrind_rev": "7a3eaff0af6ce49174dc764b8c352c33b141acfb", # from cr commit position 352335
+  "tools_valgrind_rev": "fcbedb1404dd50322a0cbd96b4feedb2c19ed5de", # from cr commit position 354357
   # NOTE: be sure to update clang_lib_version in SConstruct whenever
   # updating this clang_rev (e.g., if LLVM changes from version 3.7 to 3.8).
-  "clang_rev": "b698dbbee55763d4aa388ceb125d60d428f05ba8", # from cr commit position 353187
+  "clang_rev": "a56c9063d582660d29b32f967ce20875c589fc3e", # from cr commit position 353437
 
   # NOTE!  These five should be kept up to date with their counterparts in
   # chromium/src/DEPS.
@@ -29,7 +30,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling build tools
   # and whatever else without interference from each other.
-  'buildtools_revision': '5fc8d3943e163ee627c8af50366c700c0325bba2',
+  'buildtools_revision': 'ef7f1f539cff0441c4401d8c052e54cfd01bff07',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling lss
   # and whatever else without interference from each other.
@@ -57,6 +58,9 @@ deps = {
   "build":
     Var("chromium_git") + "/chromium/src/build.git@" +
     Var("build_rev"),
+  "build_overrides":
+    Var("chromium_git") + "/chromium/src/build_overrides.git@" +
+    Var("build_overrides_rev"),
   "testing/gtest":
     (Var("chromium_git") + "/external/github.com/google/googletest.git@" +
      Var("gtest_rev")),
@@ -152,6 +156,7 @@ hooks = [
     'action': [
         'python',
         'third_party/binutils/download.py',
+        '--ignore-if-arch=arm',
     ],
   },
   # Update clang
