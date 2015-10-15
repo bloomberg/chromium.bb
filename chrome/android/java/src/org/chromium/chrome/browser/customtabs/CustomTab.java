@@ -238,7 +238,7 @@ public class CustomTab extends Tab {
 
                 String linkText = params.getLinkText();
                 if (linkText != null) linkText = linkText.trim();
-                if (!TextUtils.isEmpty(linkText)) {
+                if (!TextUtils.isEmpty(linkText)  && !params.isImage()) {
                     menu.add(Menu.NONE, org.chromium.chrome.R.id.contextmenu_copy_link_text,
                             Menu.NONE, org.chromium.chrome.R.string.contextmenu_copy_link_text);
                 }
@@ -247,10 +247,6 @@ public class CustomTab extends Tab {
                             R.string.contextmenu_save_image);
                     menu.add(Menu.NONE, R.id.contextmenu_open_image, Menu.NONE,
                             R.string.contextmenu_open_image);
-                    menu.add(Menu.NONE, R.id.contextmenu_copy_image, Menu.NONE,
-                            R.string.contextmenu_copy_image);
-                    menu.add(Menu.NONE, R.id.contextmenu_copy_image_url, Menu.NONE,
-                            R.string.contextmenu_copy_image_url);
                 } else if (UrlUtilities.isDownloadableScheme(params.getLinkUrl())) {
                     // "Save link" is not shown for image.
                     menu.add(Menu.NONE, R.id.contextmenu_save_link_as, Menu.NONE,

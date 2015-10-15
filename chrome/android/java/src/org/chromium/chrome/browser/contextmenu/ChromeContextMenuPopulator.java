@@ -34,9 +34,6 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
         static final int ACTION_SAVE_LINK = 5;
         static final int ACTION_SAVE_IMAGE = 6;
         static final int ACTION_OPEN_IMAGE = 7;
-        static final int ACTION_OPEN_IMAGE_IN_NEW_TAB = 8;
-        static final int ACTION_COPY_IMAGE = 9;
-        static final int ACTION_COPY_IMAGE_URL = 10;
         static final int ACTION_LOAD_IMAGES = 12;
         static final int ACTION_LOAD_ORIGINAL_IMAGE = 13;
         static final int ACTION_SAVE_VIDEO = 14;
@@ -99,7 +96,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
             menu.findItem(R.id.contextmenu_open_in_incognito_tab).setVisible(false);
         }
 
-        if (params.getLinkText().trim().isEmpty()) {
+        if (params.getLinkText().trim().isEmpty() || params.isImage()) {
             menu.findItem(R.id.contextmenu_copy_link_text).setVisible(false);
         }
 
@@ -136,19 +133,11 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
             // new tab," and "Copy image URL" should be disabled on Lo-Fi images.
             menu.findItem(R.id.contextmenu_save_image).setVisible(false);
             menu.findItem(R.id.contextmenu_open_image).setVisible(false);
-            menu.findItem(R.id.contextmenu_open_image_in_new_tab).setVisible(false);
-            menu.findItem(R.id.contextmenu_copy_image).setVisible(false);
         } else if (params.isImage() && !params.imageWasFetchedLoFi()) {
             menu.findItem(R.id.contextmenu_load_original_image).setVisible(false);
 
             menu.findItem(R.id.contextmenu_save_image).setVisible(
                     UrlUtilities.isDownloadableScheme(params.getSrcUrl()));
-
-            if (mDelegate.canLoadOriginalImage()) {
-                menu.findItem(R.id.contextmenu_open_image_in_new_tab).setVisible(false);
-            } else {
-                menu.findItem(R.id.contextmenu_open_original_image_in_new_tab).setVisible(false);
-            }
 
             // Avoid showing open image option for same image which is already opened.
             if (mDelegate.getPageUrl().equals(params.getSrcUrl())) {
@@ -168,10 +157,6 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
         } else if (itemId == R.id.contextmenu_open_image) {
             ContextMenuUma.record(params, ContextMenuUma.ACTION_OPEN_IMAGE);
             mDelegate.onOpenImageUrl(params.getSrcUrl(), params.getReferrer());
-        } else if (itemId == R.id.contextmenu_open_image_in_new_tab
-                || itemId == R.id.contextmenu_open_original_image_in_new_tab) {
-            ContextMenuUma.record(params, ContextMenuUma.ACTION_OPEN_IMAGE_IN_NEW_TAB);
-            mDelegate.onOpenImageInNewTab(params.getSrcUrl(), params.getReferrer());
         } else if (itemId == R.id.contextmenu_load_images) {
             ContextMenuUma.record(params, ContextMenuUma.ACTION_LOAD_IMAGES);
             DataReductionProxyUma.dataReductionProxyLoFiUIAction(
@@ -215,13 +200,6 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
             if (mDelegate.startDownload(params.getUnfilteredLinkUrl(), true)) {
                 helper.startContextMenuDownload(true, false);
             }
-        } else if (itemId == R.id.contextmenu_copy_image) {
-            ContextMenuUma.record(params, ContextMenuUma.ACTION_COPY_IMAGE);
-            mDelegate.onSaveImageToClipboard(params.getSrcUrl());
-        } else if (itemId == R.id.contextmenu_copy_image_url) {
-            ContextMenuUma.record(params, ContextMenuUma.ACTION_COPY_IMAGE_URL);
-            mDelegate.onSaveToClipboard(
-                    params.getSrcUrl(), ContextMenuItemDelegate.CLIPBOARD_TYPE_IMAGE_URL);
         } else {
             assert false;
         }

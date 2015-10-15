@@ -175,13 +175,11 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
     public void testContextMenuEntriesForImage() throws InterruptedException, TimeoutException {
         startCustomTabActivityWithIntent(createMinimalCustomTabIntent());
 
-        final int expectedMenuSize = 4;
+        final int expectedMenuSize = 2;
         Menu menu = ContextMenuUtils.openContextMenu(this, getActivity().getActivityTab(), "logo");
         assertEquals(expectedMenuSize, menu.size());
         assertNotNull(menu.findItem(R.id.contextmenu_save_image));
         assertNotNull(menu.findItem(R.id.contextmenu_open_image));
-        assertNotNull(menu.findItem(R.id.contextmenu_copy_image));
-        assertNotNull(menu.findItem(R.id.contextmenu_copy_image_url));
     }
 
     /**

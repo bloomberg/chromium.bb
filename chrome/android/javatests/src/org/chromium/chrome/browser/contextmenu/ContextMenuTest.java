@@ -89,20 +89,7 @@ public class ContextMenuTest extends DownloadTestBase {
                 R.id.contextmenu_copy_link_text);
 
         assertEquals("Clipboard text was not what was expected",
-                "This is pretty   extreme \n(newline). ", getClipboardText());
-    }
-
-    @MediumTest
-    @Feature({"Browser"})
-    public void testCopyImageToClipboard() throws InterruptedException, TimeoutException {
-        Tab tab = getActivity().getActivityTab();
-        ContextMenuUtils.selectContextMenuItem(this, tab, "testImage",
-                R.id.contextmenu_copy_image);
-
-        String expectedUrl = TestHttpServerClient.getUrl(
-                "chrome/test/data/android/contextmenu/test_image.png");
-
-        assertEquals("Clipboard text is not correct", expectedUrl, getClipboardText());
+                "This is pretty extreme \n(newline). ", getClipboardText());
     }
 
     @MediumTest
@@ -199,19 +186,6 @@ public class ContextMenuTest extends DownloadTestBase {
 
     @MediumTest
     @Feature({"Browser"})
-    public void testCopyImageURL() throws InterruptedException, TimeoutException {
-        Tab tab = getActivity().getActivityTab();
-        ContextMenuUtils.selectContextMenuItem(this, tab, "testImage",
-                R.id.contextmenu_copy_image_url);
-
-        String expectedUrl = TestHttpServerClient.getUrl(
-                "chrome/test/data/android/contextmenu/test_image.png");
-
-        assertEquals("Copied image URL is not correct", expectedUrl, getClipboardText());
-    }
-
-    @MediumTest
-    @Feature({"Browser"})
     public void testCopyEmailAddress() throws InterruptedException, TimeoutException {
         Tab tab = getActivity().getActivityTab();
         ContextMenuUtils.selectContextMenuItem(this, tab, "testEmail",
@@ -281,10 +255,10 @@ public class ContextMenuTest extends DownloadTestBase {
                     }
                 }));
 
-        ContextMenuUtils.selectContextMenuItem(this, tab, "testImage",
-                R.id.contextmenu_open_image_in_new_tab);
+        ContextMenuUtils.selectContextMenuItem(this, tab, "testLink2",
+                R.id.contextmenu_open_in_new_tab);
         getInstrumentation().waitForIdleSync();
-        int indexOfImagePage = numOpenedTabs;
+        int indexOfLinkPage2 = numOpenedTabs;
         numOpenedTabs += 1;
         assertEquals("Number of open tabs does not match", numOpenedTabs, tabModel.getCount());
 
@@ -297,8 +271,8 @@ public class ContextMenuTest extends DownloadTestBase {
         assertEquals(newTabUrl, tabModel.getTabAt(indexOfLinkPage).getUrl());
 
         String imageUrl = TestHttpServerClient.getUrl(
-                "chrome/test/data/android/contextmenu/test_image.png");
-        assertEquals(imageUrl, tabModel.getTabAt(indexOfImagePage).getUrl());
+                "chrome/test/data/android/contextmenu/test_link2.html");
+        assertEquals(imageUrl, tabModel.getTabAt(indexOfLinkPage2).getUrl());
     }
 
     private void saveMediaFromContextMenu(String mediaDOMElement, int saveMenuID,

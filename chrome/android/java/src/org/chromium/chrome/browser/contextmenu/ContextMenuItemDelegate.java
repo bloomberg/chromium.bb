@@ -29,12 +29,6 @@ public interface ContextMenuItemDelegate {
     boolean isIncognitoSupported();
 
     /**
-     * @return Whether or not the context menu should give the user the chance to show the original
-     *         image.
-     */
-    boolean canLoadOriginalImage();
-
-    /**
      * Returns whether or not the Data Reduction Proxy is enabled for input url.
      * @param url Input url to check for the Data Reduction Proxy setting.
      * @return true if the Data Reduction Proxy is enabled for the url.
@@ -69,12 +63,6 @@ public interface ContextMenuItemDelegate {
     void onOpenImageUrl(String url, Referrer referrer);
 
     /**
-     * Called when the {@code url} is of an image and should be opened in a new tab.
-     * @param url The image URL to open.
-     */
-    void onOpenImageInNewTab(String url, Referrer referrer);
-
-    /**
      * Called when the page should be reloaded ignoring the cache.
      */
     void onReloadIgnoringCache();
@@ -90,13 +78,6 @@ public interface ContextMenuItemDelegate {
      * @param type The type of data in {@code text}.
      */
     void onSaveToClipboard(String text, int clipboardType);
-
-    /**
-     * Called when the {@code url} is of an image and a link to the image should be saved to the
-     * clipboard.
-     * @param url The image URL.
-     */
-    void onSaveImageToClipboard(String url);
 
    /**
     * @return page url.

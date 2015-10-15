@@ -1243,23 +1243,11 @@ You are signing in with a managed account and giving its administrator control o
       <message name="IDS_CONTEXTMENU_OPEN_IMAGE" desc="Context sensitive menu item for opening/viewing the selected image. [CHAR-LIMIT=30]">
         Open image
       </message>
-      <message name="IDS_CONTEXTMENU_OPEN_IMAGE_IN_NEW_TAB" desc="Context sensitive menu item for opening/viewing the selected image in a new tab. [CHAR-LIMIT=30]">
-        Open image in new tab
-      </message>
-      <message name="IDS_CONTEXTMENU_OPEN_ORIGINAL_IMAGE_IN_NEW_TAB" desc="Context sensitive menu item for opening/viewing the original version of the selected image in a new tab. [CHAR-LIMIT=30]">
-        Open original image in new tab
-      </message>
       <message name="IDS_CONTEXTMENU_LOAD_IMAGES" desc="Context sensitive menu item for Data Saver low fidelity placeholder images that reloads the page with the original images. [CHAR-LIMIT=30]">
         Load images
       </message>
       <message name="IDS_CONTEXTMENU_LOAD_ORIGINAL_IMAGE" desc="Context sensitive menu item for Data Saver low fidelity placeholder images that loads the original version in place. [CHAR-LIMIT=30]">
         Load image
-      </message>
-      <message name="IDS_CONTEXTMENU_COPY_IMAGE" desc="Context sensitive menu item for copying an image to the clipboard. [CHAR-LIMIT=30]">
-        Copy image
-      </message>
-      <message name="IDS_CONTEXTMENU_COPY_IMAGE_URL" desc="Context sensitive menu item for copying an image url to the clipboard. [CHAR-LIMIT=30]">
-        Copy image URL
       </message>
       <message name="IDS_CONTEXTMENU_SAVE_VIDEO" desc="Context sensitive menu item for saving the selected video. [CHAR-LIMIT=30]">
         Save video
