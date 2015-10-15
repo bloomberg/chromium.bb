@@ -149,8 +149,6 @@ static_library("content_shell_lib") {
     "renderer/layout_test/blink_test_helpers.h",
     "renderer/layout_test/blink_test_runner.cc",
     "renderer/layout_test/blink_test_runner.h",
-    "renderer/layout_test/gc_controller.cc",
-    "renderer/layout_test/gc_controller.h",
     "renderer/layout_test/layout_test_content_renderer_client.cc",
     "renderer/layout_test/layout_test_content_renderer_client.h",
     "renderer/layout_test/layout_test_render_frame_observer.cc",

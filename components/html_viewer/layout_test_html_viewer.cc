@@ -8,6 +8,7 @@
 #include "components/html_viewer/layout_test_content_handler_impl.h"
 #include "components/test_runner/web_test_interfaces.h"
 #include "components/web_view/test_runner/public/interfaces/layout_test_runner.mojom.h"
+#include "v8/include/v8.h"
 
 namespace html_viewer {
 
@@ -26,6 +27,10 @@ void LayoutTestHTMLViewer::Initialize(mojo::ApplicationImpl* app) {
   test_delegate_.set_completion_callback(
       base::Bind(&LayoutTestHTMLViewer::TestFinished, base::Unretained(this)));
   test_interfaces_->SetDelegate(&test_delegate_);
+
+  // Always expose GC to layout tests.
+  std::string flags("--expose-gc");
+  v8::V8::SetFlagsFromString(flags.c_str(), static_cast<int>(flags.size()));
 }
 
 void LayoutTestHTMLViewer::TestFinished() {

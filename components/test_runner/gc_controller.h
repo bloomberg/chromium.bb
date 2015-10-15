@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_SHELL_RENDERER_LAYOUT_TEST_GC_CONTROLLER_H_
-#define CONTENT_SHELL_RENDERER_LAYOUT_TEST_GC_CONTROLLER_H_
+#ifndef COMPONENTS_TEST_RUNNER_GC_CONTROLLER_H_
+#define COMPONENTS_TEST_RUNNER_GC_CONTROLLER_H_
 
 #include "base/basictypes.h"
 #include "gin/wrappable.h"
@@ -16,7 +16,7 @@ namespace gin {
 class Arguments;
 }
 
-namespace content {
+namespace test_runner {
 
 class GCController : public gin::Wrappable<GCController> {
  public:
@@ -38,6 +38,6 @@ class GCController : public gin::Wrappable<GCController> {
   DISALLOW_COPY_AND_ASSIGN(GCController);
 };
 
-}  // namespace content
+}  // namespace test_runner
 
-#endif  // CONTENT_SHELL_RENDERER_LAYOUT_TEST_GC_CONTROLLER_H_
+#endif  // COMPONENTS_TEST_RUNNER_GC_CONTROLLER_H_

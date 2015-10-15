@@ -54,6 +54,8 @@
         'event_sender.h',
         'gamepad_controller.cc',
         'gamepad_controller.h',
+        'gc_controller.cc',
+        'gc_controller.h',
         'mock_color_chooser.cc',
         'mock_color_chooser.h',
         'mock_constraints.cc',

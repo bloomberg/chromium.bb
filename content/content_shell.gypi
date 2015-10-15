@@ -215,8 +215,6 @@
         'shell/renderer/layout_test/blink_test_helpers.h',
         'shell/renderer/layout_test/blink_test_runner.cc',
         'shell/renderer/layout_test/blink_test_runner.h',
-        'shell/renderer/layout_test/gc_controller.cc',
-        'shell/renderer/layout_test/gc_controller.h',
         'shell/renderer/layout_test/layout_test_content_renderer_client.cc',
         'shell/renderer/layout_test/layout_test_content_renderer_client.h',
         'shell/renderer/layout_test/layout_test_render_frame_observer.cc',

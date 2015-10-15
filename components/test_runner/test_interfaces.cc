@@ -15,6 +15,7 @@
 #include "components/test_runner/app_banner_client.h"
 #include "components/test_runner/event_sender.h"
 #include "components/test_runner/gamepad_controller.h"
+#include "components/test_runner/gc_controller.h"
 #include "components/test_runner/test_runner.h"
 #include "components/test_runner/text_input_controller.h"
 #include "components/test_runner/web_test_proxy.h"
@@ -79,6 +80,7 @@ void TestInterfaces::BindTo(blink::WebFrame* frame) {
     gamepad_controller_->Install(frame);
   text_input_controller_->Install(frame);
   test_runner_->Install(frame);
+  GCController::Install(frame);
 }
 
 void TestInterfaces::ResetTestHelperControllers() {
