@@ -35,7 +35,6 @@ import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.content.browser.ScreenOrientationProvider;
 import org.chromium.content_public.browser.LoadUrlParams;
-import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.ui.base.PageTransition;
 
@@ -54,8 +53,6 @@ public class WebappActivity extends FullScreenActivity {
     private final WebappDirectoryManager mDirectoryManager;
 
     private boolean mOldWebappCleanupStarted;
-
-    private WebContentsObserver mWebContentsObserver;
 
     private ViewGroup mSplashScreen;
     private WebappUrlBar mUrlBar;
@@ -100,7 +97,6 @@ public class WebappActivity extends FullScreenActivity {
             if (NetworkChangeNotifier.isOnline()) getActivityTab().reloadIgnoringCache();
         }
 
-        mWebContentsObserver = createWebContentsObserver();
         getActivityTab().addObserver(createTabObserver());
         getActivityTab().getTabWebContentsDelegateAndroid().setDisplayMode(
                 (int) WebDisplayMode.Standalone);
@@ -210,67 +206,6 @@ public class WebappActivity extends FullScreenActivity {
         mUrlBar.update(tab.getUrl(), tab.getSecurityLevel());
     }
 
-    private WebContentsObserver createWebContentsObserver() {
-        // TODO: Move to TabObserver eventually.
-        return new WebContentsObserver(getActivityTab().getWebContents()) {
-            @Override
-            public void didNavigateMainFrame(String url, String baseUrl,
-                    boolean isNavigationToDifferentPage, boolean isNavigationInPage,
-                    int statusCode) {
-                updateUrlBar();
-            }
-
-            @Override
-            public void didAttachInterstitialPage() {
-                updateUrlBar();
-
-                int state = ApplicationStatus.getStateForActivity(WebappActivity.this);
-                if (state == ActivityState.PAUSED || state == ActivityState.STOPPED
-                        || state == ActivityState.DESTROYED) {
-                    return;
-                }
-
-                // Kick the interstitial navigation to Chrome.
-                Intent intent = new Intent(
-                        Intent.ACTION_VIEW, Uri.parse(getActivityTab().getUrl()));
-                intent.setPackage(getPackageName());
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity(intent);
-
-                // Pretend like the navigation never happened.  We delay so that this happens while
-                // the Activity is in the background.
-                mHandler.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        getActivityTab().goBack();
-                    }
-                }, MS_BEFORE_NAVIGATING_BACK_FROM_INTERSTITIAL);
-            }
-
-            @Override
-            public void didDetachInterstitialPage() {
-                updateUrlBar();
-            }
-
-            @Override
-            public void didFirstVisuallyNonEmptyPaint() {
-                if (mSplashScreen == null) return;
-
-                mSplashScreen.animate()
-                        .alpha(0f)
-                        .withEndAction(new Runnable() {
-                            @Override
-                            public void run() {
-                                ViewGroup contentView =
-                                        (ViewGroup) findViewById(android.R.id.content);
-                                contentView.removeView(mSplashScreen);
-                                mSplashScreen = null;
-                            }
-                        });
-            }
-        };
-    }
-
     private boolean isWebappDomain() {
         return UrlUtilities.sameDomainOrHost(
                 getActivityTab().getUrl(), getWebappInfo().uri().toString(), true);
@@ -307,6 +242,62 @@ public class WebappActivity extends FullScreenActivity {
             public void onFaviconUpdated(Tab tab) {
                 if (!isWebappDomain()) return;
                 updateTaskDescription();
+            }
+
+            @Override
+            public void onDidNavigateMainFrame(Tab tab, String url, String baseUrl,
+                    boolean isNavigationToDifferentPage, boolean isNavigationInPage,
+                    int statusCode) {
+                updateUrlBar();
+            }
+
+            @Override
+            public void onDidAttachInterstitialPage(Tab tab) {
+                updateUrlBar();
+
+                int state = ApplicationStatus.getStateForActivity(WebappActivity.this);
+                if (state == ActivityState.PAUSED || state == ActivityState.STOPPED
+                        || state == ActivityState.DESTROYED) {
+                    return;
+                }
+
+                // Kick the interstitial navigation to Chrome.
+                Intent intent = new Intent(
+                        Intent.ACTION_VIEW, Uri.parse(getActivityTab().getUrl()));
+                intent.setPackage(getPackageName());
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+
+                // Pretend like the navigation never happened.  We delay so that this happens while
+                // the Activity is in the background.
+                mHandler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        getActivityTab().goBack();
+                    }
+                }, MS_BEFORE_NAVIGATING_BACK_FROM_INTERSTITIAL);
+            }
+
+            @Override
+            public void onDidDetachInterstitialPage(Tab tab) {
+                updateUrlBar();
+            }
+
+            @Override
+            public void didFirstVisuallyNonEmptyPaint(Tab tab) {
+                if (mSplashScreen == null) return;
+
+                mSplashScreen.animate()
+                        .alpha(0f)
+                        .withEndAction(new Runnable() {
+                            @Override
+                            public void run() {
+                                ViewGroup contentView =
+                                        (ViewGroup) findViewById(android.R.id.content);
+                                contentView.removeView(mSplashScreen);
+                                mSplashScreen = null;
+                            }
+                        });
             }
         };
     }
