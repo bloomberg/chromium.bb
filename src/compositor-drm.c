@@ -1245,7 +1245,8 @@ drm_assign_planes(struct weston_output *output_base)
 		if (b->use_pixman ||
 		    (es->buffer_ref.buffer &&
 		    (!wl_shm_buffer_get(es->buffer_ref.buffer->resource) ||
-		     (ev->surface->width <= 64 && ev->surface->height <= 64))))
+		     (ev->surface->width <= b->cursor_width &&
+		      ev->surface->height <= b->cursor_height))))
 			es->keep_buffer = true;
 		else
 			es->keep_buffer = false;
