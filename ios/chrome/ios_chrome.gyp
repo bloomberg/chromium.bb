@@ -401,6 +401,8 @@
         'browser/sync/sync_setup_service.h',
         'browser/sync/sync_setup_service_factory.cc',
         'browser/sync/sync_setup_service_factory.h',
+        'browser/tab_parenting_global_observer.cc',
+        'browser/tab_parenting_global_observer.h',
         'browser/translate/after_translate_infobar_controller.h',
         'browser/translate/after_translate_infobar_controller.mm',
         'browser/translate/before_translate_infobar_controller.h',
