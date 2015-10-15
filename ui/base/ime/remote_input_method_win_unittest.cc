@@ -79,8 +79,8 @@ class MockTextInputClient : public DummyTextInputClient {
   void SetCompositionText(const ui::CompositionText& composition) override {
     ++call_count_set_composition_text_;
   }
-  void InsertChar(base::char16 ch, int flags) override {
-    inserted_text_.append(1, ch);
+  void InsertChar(const ui::KeyEvent& event) override {
+    inserted_text_.append(1, event.GetCharacter());
     ++call_count_insert_char_;
   }
   void InsertText(const base::string16& text) override {

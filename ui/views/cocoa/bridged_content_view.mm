@@ -639,10 +639,14 @@ bool DispatchEventToMenu(views::Widget* widget, ui::KeyboardCode key_code) {
   // processed, so don't send it to InsertChar() as well. E.g. Alt+S puts 'ß' in
   // |text| but sending 'Alt' to InsertChar would filter it out since it thinks
   // it's a command. Actual commands (e.g. Cmd+S) won't go through insertText:.
-  if (inKeyDown_ && [text length] == 1)
-    textInputClient_->InsertChar([text characterAtIndex:0], 0);
-  else
+  if (inKeyDown_ && [text length] == 1) {
+    ui::KeyEvent char_event(
+        [text characterAtIndex:0],
+        static_cast<ui::KeyboardCode>([text characterAtIndex:0]), ui::EF_NONE);
+    textInputClient_->InsertChar(char_event);
+  } else {
     textInputClient_->InsertText(base::SysNSStringToUTF16(text));
+  }
 }
 
 - (NSRange)markedRange {

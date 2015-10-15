@@ -1607,22 +1607,17 @@ void RenderWidgetHostViewAura::InsertText(const base::string16& text) {
   has_composition_text_ = false;
 }
 
-void RenderWidgetHostViewAura::InsertChar(base::char16 ch, int flags) {
+void RenderWidgetHostViewAura::InsertChar(const ui::KeyEvent& event) {
   if (popup_child_host_view_ && popup_child_host_view_->NeedsInputGrab()) {
-    popup_child_host_view_->InsertChar(ch, flags);
+    popup_child_host_view_->InsertChar(event);
     return;
   }
 
   // Ignore character messages for VKEY_RETURN sent on CTRL+M. crbug.com/315547
-  if (host_ && (accept_return_character_ || ch != ui::VKEY_RETURN)) {
-    double now = ui::EventTimeForNow().InSecondsF();
+  if (host_ &&
+      (accept_return_character_ || event.GetCharacter() != ui::VKEY_RETURN)) {
     // Send a blink::WebInputEvent::Char event to |host_|.
-    NativeWebKeyboardEvent webkit_event(ui::ET_KEY_PRESSED,
-                                        true /* is_char */,
-                                        ch,
-                                        flags,
-                                        now);
-    ForwardKeyboardEvent(webkit_event);
+    ForwardKeyboardEvent(NativeWebKeyboardEvent(event, event.GetCharacter()));
   }
 }
 

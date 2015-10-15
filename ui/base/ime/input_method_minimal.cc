@@ -37,7 +37,7 @@ void InputMethodMinimal::DispatchKeyEvent(ui::KeyEvent* event) {
   if (event->type() == ET_KEY_PRESSED && GetTextInputClient()) {
     const uint16 ch = event->GetCharacter();
     if (ch) {
-      GetTextInputClient()->InsertChar(ch, event->flags());
+      GetTextInputClient()->InsertChar(*event);
       event->StopPropagation();
     }
   }

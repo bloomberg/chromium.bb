@@ -69,8 +69,7 @@ WebKeyboardEvent WebKeyboardEventBuilder::Build(HWND hwnd,
     result.text[0] = result.windowsKeyCode;
     result.unmodifiedText[0] = result.windowsKeyCode;
   }
-  if (result.type != WebInputEvent::Char)
-    result.setKeyIdentifierFromWindowsKeyCode();
+  result.setKeyIdentifierFromWindowsKeyCode();
 
   if (::GetKeyState(VK_SHIFT) & 0x8000)
     result.modifiers |= WebInputEvent::ShiftKey;

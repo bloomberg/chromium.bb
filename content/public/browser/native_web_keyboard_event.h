@@ -7,10 +7,10 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
-#include "ui/events/event_constants.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace ui {
@@ -46,11 +46,8 @@ struct CONTENT_EXPORT NativeWebKeyboardEvent :
 #else
   explicit NativeWebKeyboardEvent(const ui::KeyEvent& key_event);
 #if defined(USE_AURA)
-  NativeWebKeyboardEvent(ui::EventType type,
-                         bool is_char,
-                         wchar_t character,
-                         int state,
-                         double time_stamp_seconds);
+  // Create a legacy keypress event specified by |character|.
+  NativeWebKeyboardEvent(const ui::KeyEvent& key_event, base::char16 character);
 #endif
 #endif
 

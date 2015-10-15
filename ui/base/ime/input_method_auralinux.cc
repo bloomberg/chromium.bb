@@ -97,8 +97,11 @@ void InputMethodAuraLinux::DispatchKeyEvent(ui::KeyEvent* event) {
   // Processes the result text before composition for sync mode.
   if (client && !result_text_.empty()) {
     if (filtered && NeedInsertChar()) {
-      for (const auto ch : result_text_)
-        client->InsertChar(ch, event->flags());
+      for (const auto ch : result_text_) {
+        ui::KeyEvent ch_event(*event);
+        ch_event.set_character(ch);
+        client->InsertChar(ch_event);
+      }
     } else {
       // If |filtered| is false, that means the IME wants to commit some text
       // but still release the key to the application. For example, Korean IME
@@ -146,7 +149,7 @@ void InputMethodAuraLinux::DispatchKeyEvent(ui::KeyEvent* event) {
       // DispatchKeyEventPostIME may cause the current text input client change.
       base::char16 ch = event->GetCharacter();
       if (ch && GetTextInputClient())
-        GetTextInputClient()->InsertChar(ch, event->flags());
+        GetTextInputClient()->InsertChar(*event);
       should_stop_propagation = true;
     }
   }

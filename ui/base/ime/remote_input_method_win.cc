@@ -183,9 +183,7 @@ class RemoteInputMethodWin : public InputMethod,
     if (event->HasNativeEvent()) {
       const base::NativeEvent& native_key_event = event->native_event();
       if (native_key_event.message == WM_CHAR && text_input_client_) {
-        text_input_client_->InsertChar(
-            static_cast<base::char16>(native_key_event.wParam),
-            ui::GetModifiersFromKeyState());
+        text_input_client_->InsertChar(*event);
         event->StopPropagation();
       }
       return;
@@ -193,9 +191,7 @@ class RemoteInputMethodWin : public InputMethod,
 
     if (event->is_char()) {
       if (text_input_client_) {
-        text_input_client_->InsertChar(
-            event->GetCharacter(),
-            ui::GetModifiersFromKeyState());
+        text_input_client_->InsertChar(*event);
       }
       event->StopPropagation();
       return;
@@ -319,8 +315,12 @@ class RemoteInputMethodWin : public InputMethod,
       // According to the comment in text_input_client.h,
       // TextInputClient::InsertText should never be called when the
       // text input type is TEXT_INPUT_TYPE_NONE.
-      for (size_t i = 0; i < text.size(); ++i)
-        text_input_client_->InsertChar(text[i], 0);
+
+      for (size_t i = 0; i < text.size(); ++i) {
+        ui::KeyEvent char_event(text[i], static_cast<ui::KeyboardCode>(text[i]),
+                                ui::EF_NONE);
+        text_input_client_->InsertChar(char_event);
+      }
       return;
     }
     text_input_client_->InsertText(text);

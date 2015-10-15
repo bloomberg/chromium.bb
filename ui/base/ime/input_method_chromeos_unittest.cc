@@ -256,9 +256,9 @@ class InputMethodChromeOSTest : public internal::InputMethodDelegate,
   void InsertText(const base::string16& text) override {
     inserted_text_ = text;
   }
-  void InsertChar(base::char16 ch, int flags) override {
-    inserted_char_ = ch;
-    inserted_char_flags_ = flags;
+  void InsertChar(const KeyEvent& event) override {
+    inserted_char_ = event.GetCharacter();
+    inserted_char_flags_ = event.flags();
   }
   TextInputType GetTextInputType() const override { return input_type_; }
   TextInputMode GetTextInputMode() const override { return input_mode_; }

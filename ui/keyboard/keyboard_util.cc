@@ -319,7 +319,9 @@ bool SendKeyEvent(const std::string type,
       ui::TextInputClient* tic = input_method->GetTextInputClient();
 
       SendProcessKeyEvent(ui::ET_KEY_PRESSED, host);
-      tic->InsertChar(static_cast<uint16>(key_value), ui::EF_NONE);
+
+      ui::KeyEvent char_event(key_value, code, ui::EF_NONE);
+      tic->InsertChar(char_event);
       SendProcessKeyEvent(ui::ET_KEY_RELEASED, host);
     }
   } else {

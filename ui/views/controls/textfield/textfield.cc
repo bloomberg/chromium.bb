@@ -1450,14 +1450,15 @@ void Textfield::InsertText(const base::string16& new_text) {
   OnAfterUserAction();
 }
 
-void Textfield::InsertChar(base::char16 ch, int flags) {
+void Textfield::InsertChar(const ui::KeyEvent& event) {
   // Filter out all control characters, including tab and new line characters,
   // and all characters with Alt modifier (and Search on ChromeOS). But allow
   // characters with the AltGr modifier. On Windows AltGr is represented by
   // Alt+Ctrl or Right Alt, and on Linux it's a different flag that we don't
   // care about.
+  const base::char16 ch = event.GetCharacter();
   const bool should_insert_char = ((ch >= 0x20 && ch < 0x7F) || ch > 0x9F) &&
-                                  !ui::IsSystemKeyModifier(flags);
+                                  !ui::IsSystemKeyModifier(event.flags());
   if (GetTextInputType() == ui::TEXT_INPUT_TYPE_NONE || !should_insert_char)
     return;
 

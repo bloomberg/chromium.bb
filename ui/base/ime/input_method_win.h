@@ -50,6 +50,7 @@ class UI_BASE_IME_EXPORT InputMethodWin : public InputMethodBase {
                  UINT message,
                  WPARAM wparam,
                  LPARAM lparam,
+                 const base::NativeEvent& event,
                  BOOL* handled);
 
   LRESULT OnImeSetContext(HWND window_handle,

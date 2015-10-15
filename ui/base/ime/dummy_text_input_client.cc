@@ -29,8 +29,7 @@ void DummyTextInputClient::ClearCompositionText() {
 void DummyTextInputClient::InsertText(const base::string16& text) {
 }
 
-void DummyTextInputClient::InsertChar(base::char16 ch, int flags) {
-}
+void DummyTextInputClient::InsertChar(const KeyEvent& event) {}
 
 TextInputType DummyTextInputClient::GetTextInputType() const {
   return text_input_type_;

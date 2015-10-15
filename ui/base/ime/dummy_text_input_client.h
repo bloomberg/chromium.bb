@@ -21,7 +21,7 @@ class DummyTextInputClient : public TextInputClient {
   void ConfirmCompositionText() override;
   void ClearCompositionText() override;
   void InsertText(const base::string16& text) override;
-  void InsertChar(base::char16 ch, int flags) override;
+  void InsertChar(const KeyEvent& event) override;
   TextInputType GetTextInputType() const override;
   TextInputMode GetTextInputMode() const override;
   int GetTextInputFlags() const override;

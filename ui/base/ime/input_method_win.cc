@@ -82,8 +82,8 @@ bool InputMethodWin::OnUntranslatedIMEMessage(
       break;
     case WM_CHAR:
     case WM_SYSCHAR:
-      original_result = OnChar(
-          event.hwnd, event.message, event.wParam, event.lParam, &handled);
+      original_result = OnChar(event.hwnd, event.message, event.wParam,
+                               event.lParam, event, &handled);
       break;
     case WM_IME_NOTIFY:
       original_result = OnImeNotify(
@@ -108,7 +108,8 @@ void InputMethodWin::DispatchKeyEvent(ui::KeyEvent* event) {
   BOOL handled = FALSE;
   if (native_key_event.message == WM_CHAR) {
     OnChar(native_key_event.hwnd, native_key_event.message,
-           native_key_event.wParam, native_key_event.lParam, &handled);
+           native_key_event.wParam, native_key_event.lParam, native_key_event,
+           &handled);
     if (handled)
       event->StopPropagation();
     return;
@@ -175,7 +176,7 @@ void InputMethodWin::DispatchKeyEvent(ui::KeyEvent* event) {
 
   for (size_t i = 0; i < char_msgs.size(); ++i) {
     MSG msg = char_msgs[i];
-    OnChar(msg.hwnd, msg.message, msg.wParam, msg.lParam, &handled);
+    OnChar(msg.hwnd, msg.message, msg.wParam, msg.lParam, msg, &handled);
   }
 }
 
@@ -255,6 +256,7 @@ LRESULT InputMethodWin::OnChar(HWND window_handle,
                                UINT message,
                                WPARAM wparam,
                                LPARAM lparam,
+                               const base::NativeEvent& event,
                                BOOL* handled) {
   *handled = TRUE;
 
@@ -271,8 +273,10 @@ LRESULT InputMethodWin::OnChar(HWND window_handle,
       accept_carriage_return_ = true;
     // Conditionally ignore '\r' events to work around crbug.com/319100.
     // TODO(yukawa, IME): Figure out long-term solution.
-    if (ch != kCarriageReturn || accept_carriage_return_)
-      GetTextInputClient()->InsertChar(ch, ui::GetModifiersFromKeyState());
+    if (ch != kCarriageReturn || accept_carriage_return_) {
+      ui::KeyEvent char_event(event);
+      GetTextInputClient()->InsertChar(char_event);
+    }
   }
 
   // Explicitly show the system menu at a good location on [Alt]+[Space].
@@ -589,9 +593,9 @@ bool InputMethodWin::IsWindowFocused(const TextInputClient* client) const {
 void InputMethodWin::DispatchFabricatedKeyEvent(ui::KeyEvent* event) {
   if (event->is_char()) {
     if (GetTextInputClient()) {
-      GetTextInputClient()->InsertChar(
-          static_cast<base::char16>(event->key_code()),
-          ui::GetModifiersFromKeyState());
+      ui::KeyEvent ch_event(*event);
+      ch_event.set_character(static_cast<base::char16>(event->key_code()));
+      GetTextInputClient()->InsertChar(ch_event);
       return;
     }
   }

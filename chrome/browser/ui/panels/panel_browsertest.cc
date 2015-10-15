@@ -44,7 +44,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/events/event.h"
 #include "ui/events/event_utils.h"
+#include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/gfx/screen.h"
 
 using content::WebContents;
@@ -1696,21 +1698,10 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_Accelerator) {
   content::WindowedNotificationObserver signal(
       chrome::NOTIFICATION_PANEL_CLOSED,
       content::Source<Panel>(panel));
-#if defined(USE_AURA)
-  double now = ui::EventTimeForNow().InSecondsF();
-  content::NativeWebKeyboardEvent key_event(
-      ui::ET_KEY_PRESSED,
-      false,
-      ui::VKEY_W,
-      ui::EF_CONTROL_DOWN,
-      now);
-#elif defined(OS_WIN)
-  ::MSG key_msg = { NULL, WM_KEYDOWN, ui::VKEY_W, 0 };
-  content::NativeWebKeyboardEvent key_event(key_msg);
-  key_event.modifiers = content::NativeWebKeyboardEvent::ControlKey;
-#else
-  content::NativeWebKeyboardEvent key_event;
-#endif
+
+  ui::KeyEvent ui_event(ui::ET_KEY_PRESSED, ui::VKEY_W, ui::DomCode::KEY_W,
+                        ui::EF_CONTROL_DOWN);
+  content::NativeWebKeyboardEvent key_event(ui_event);
   panel->HandleKeyboardEvent(key_event);
   signal.Wait();
   EXPECT_EQ(0, panel_manager->num_panels());

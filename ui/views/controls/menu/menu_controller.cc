@@ -2209,7 +2209,7 @@ void MenuController::SelectByChar(base::char16 character) {
   }
 
   if (is_combobox_) {
-    item->GetSubmenu()->GetPrefixSelector()->InsertChar(character, 0);
+    item->GetSubmenu()->GetPrefixSelector()->InsertText(char_array);
   } else {
     // If no mnemonics found, look at first character of titles.
     details = FindChildForMnemonic(item, key, &TitleMatchesMnemonic);

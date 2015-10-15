@@ -91,6 +91,7 @@ bool IsKeyEvent(const base::NativeEvent& native_event) {
   return native_event.message == WM_KEYDOWN ||
          native_event.message == WM_SYSKEYDOWN ||
          native_event.message == WM_CHAR ||
+         native_event.message == WM_SYSCHAR ||
          native_event.message == WM_KEYUP ||
          native_event.message == WM_SYSKEYUP;
 }
@@ -150,6 +151,7 @@ EventType EventTypeFromNative(const base::NativeEvent& native_event) {
     case WM_KEYDOWN:
     case WM_SYSKEYDOWN:
     case WM_CHAR:
+    case WM_SYSCHAR:
       return ET_KEY_PRESSED;
     // The WM_DEADCHAR message is posted to the window with the keyboard focus
     // when a WM_KEYUP message is translated. This happens for special keyboard
@@ -265,7 +267,7 @@ DomCode CodeFromNative(const base::NativeEvent& native_event) {
 }
 
 bool IsCharFromNative(const base::NativeEvent& native_event) {
-  return native_event.message == WM_CHAR;
+  return native_event.message == WM_CHAR || native_event.message == WM_SYSCHAR;
 }
 
 int GetChangedMouseButtonFlagsFromNative(

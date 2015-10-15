@@ -19,14 +19,6 @@ ui::Event* CopyEvent(const ui::Event* event) {
   return event ? ui::Event::Clone(*event).release() : nullptr;
 }
 
-int EventFlagsToWebInputEventModifiers(int flags) {
-  return
-      (flags & ui::EF_SHIFT_DOWN ? blink::WebInputEvent::ShiftKey : 0) |
-      (flags & ui::EF_CONTROL_DOWN ? blink::WebInputEvent::ControlKey : 0) |
-      (flags & ui::EF_CAPS_LOCK_DOWN ? blink::WebInputEvent::CapsLockOn : 0) |
-      (flags & ui::EF_ALT_DOWN ? blink::WebInputEvent::AltKey : 0);
-}
-
 }  // namespace
 
 using blink::WebKeyboardEvent;
@@ -58,34 +50,16 @@ NativeWebKeyboardEvent::NativeWebKeyboardEvent(
       match_edit_command(false) {
 }
 
-NativeWebKeyboardEvent::NativeWebKeyboardEvent(
-    ui::EventType key_event_type,
-    bool is_char,
-    wchar_t character,
-    int state,
-    double time_stamp_seconds)
-    : os_event(NULL),
+NativeWebKeyboardEvent::NativeWebKeyboardEvent(const ui::KeyEvent& key_event,
+                                               base::char16 character)
+    : WebKeyboardEvent(MakeWebKeyboardEvent(key_event)),
+      os_event(NULL),
       skip_in_browser(false),
       match_edit_command(false) {
-  switch (key_event_type) {
-    case ui::ET_KEY_PRESSED:
-      type = is_char ? blink::WebInputEvent::Char :
-          blink::WebInputEvent::RawKeyDown;
-      break;
-    case ui::ET_KEY_RELEASED:
-      type = blink::WebInputEvent::KeyUp;
-      break;
-    default:
-      NOTREACHED();
-  }
-
-  modifiers = EventFlagsToWebInputEventModifiers(state);
-  timeStampSeconds = time_stamp_seconds;
+  type = blink::WebInputEvent::Char;
   windowsKeyCode = character;
-  nativeKeyCode = character;
   text[0] = character;
   unmodifiedText[0] = character;
-  isSystemKey = ui::IsSystemKeyModifier(state);
   setKeyIdentifierFromWindowsKeyCode();
 }
 

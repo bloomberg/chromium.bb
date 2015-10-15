@@ -414,7 +414,7 @@ void InputMethodChromeOS::ProcessUnfilteredKeyPressEvent(
   // to send corresponding character to the focused text input client.
   uint16 ch = event->GetCharacter();
   if (ch)
-    client->InsertChar(ch, event->flags());
+    client->InsertChar(*event);
 }
 
 void InputMethodChromeOS::ProcessInputMethodResult(ui::KeyEvent* event,
@@ -426,7 +426,9 @@ void InputMethodChromeOS::ProcessInputMethodResult(ui::KeyEvent* event,
     if (handled && NeedInsertChar()) {
       for (base::string16::const_iterator i = result_text_.begin();
            i != result_text_.end(); ++i) {
-        client->InsertChar(*i, event->flags());
+        ui::KeyEvent ch_event(*event);
+        ch_event.set_character(*i);
+        client->InsertChar(ch_event);
       }
     } else {
       client->InsertText(result_text_);

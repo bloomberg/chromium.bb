@@ -172,7 +172,7 @@ void MockInputMethod::DispatchKeyEvent(ui::KeyEvent* key) {
     } else if (key->type() == ui::ET_KEY_PRESSED) {
       base::char16 ch = key->GetCharacter();
       if (ch)
-        client->InsertChar(ch, key->flags());
+        client->InsertChar(*key);
     }
   }
 
@@ -272,8 +272,8 @@ class TestTextfield : public views::Textfield {
   }
 
   // ui::TextInputClient overrides:
-  void InsertChar(base::char16 ch, int flags) override {
-    views::Textfield::InsertChar(ch, flags);
+  void InsertChar(const ui::KeyEvent& e) override {
+    views::Textfield::InsertChar(e);
 #if defined(OS_MACOSX)
     // On Mac, characters are inserted directly rather than attempting to get a
     // unicode character from the ui::KeyEvent (which isn't always possible).
