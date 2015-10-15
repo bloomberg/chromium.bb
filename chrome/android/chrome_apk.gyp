@@ -400,6 +400,19 @@
               'chrome_public_test_apk.isolate',
             ],
           },
+          {
+            'target_name': 'chrome_sync_shell_test_apk_run',
+            'type': 'none',
+            'dependencies': [
+              'chrome_sync_shell_test_apk',
+            ],
+            'includes': [
+              '../../build/isolate.gypi',
+            ],
+            'sources': [
+              'chrome_sync_shell_test_apk.isolate',
+            ],
+          },
         ]
       }
     ],
