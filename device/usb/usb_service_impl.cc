@@ -200,7 +200,7 @@ void ReadStringDescriptor(
     uint8_t index,
     uint16_t language_id,
     const base::Callback<void(const base::string16&)>& callback) {
-  scoped_refptr<IOBufferWithSize> buffer = new IOBufferWithSize(256);
+  scoped_refptr<IOBufferWithSize> buffer = new IOBufferWithSize(255);
   device_handle->ControlTransfer(
       USB_DIRECTION_INBOUND, UsbDeviceHandle::STANDARD, UsbDeviceHandle::DEVICE,
       kGetDescriptorRequest, kStringDescriptorType << 8 | index, language_id,
@@ -232,7 +232,7 @@ void OnReadWebUsbLandingPage(scoped_refptr<UsbDevice> device,
 void ReadWebUsbLandingPage(scoped_refptr<UsbDeviceHandle> device_handle,
                            const base::Closure& callback,
                            uint8_t vendor_code) {
-  scoped_refptr<IOBufferWithSize> buffer = new IOBufferWithSize(256);
+  scoped_refptr<IOBufferWithSize> buffer = new IOBufferWithSize(255);
   device_handle->ControlTransfer(
       USB_DIRECTION_INBOUND, UsbDeviceHandle::VENDOR, UsbDeviceHandle::DEVICE,
       vendor_code, 0, kGetLandingPageRequest, buffer, buffer->size(),
