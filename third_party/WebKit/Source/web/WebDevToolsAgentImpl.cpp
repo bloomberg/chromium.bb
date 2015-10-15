@@ -469,7 +469,7 @@ void WebDevToolsAgentImpl::initializeDeferredAgents()
     m_agents.append(InspectorInputAgent::create(m_inspectedFrames.get()));
 
     v8::Isolate* isolate = V8PerIsolateData::mainThreadIsolate();
-    m_agents.append(InspectorProfilerAgent::create(isolate, injectedScriptManager, m_overlay.get()));
+    m_agents.append(InspectorProfilerAgent::create(isolate, m_overlay.get()));
 
     m_agents.append(InspectorHeapProfilerAgent::create(isolate, injectedScriptManager));
 

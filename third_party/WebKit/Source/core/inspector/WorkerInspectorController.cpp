@@ -136,7 +136,7 @@ WorkerInspectorController::WorkerInspectorController(WorkerGlobalScope* workerGl
     m_agents.append(workerDebuggerAgent.release());
 
     v8::Isolate* isolate = workerGlobalScope->thread()->isolate();
-    m_agents.append(InspectorProfilerAgent::create(isolate, m_injectedScriptManager.get(), 0));
+    m_agents.append(InspectorProfilerAgent::create(isolate, 0));
     m_agents.append(InspectorHeapProfilerAgent::create(isolate, m_injectedScriptManager.get()));
 
     OwnPtrWillBeRawPtr<WorkerConsoleAgent> workerConsoleAgent = WorkerConsoleAgent::create(m_injectedScriptManager.get(), workerGlobalScope);
