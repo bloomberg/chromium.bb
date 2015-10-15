@@ -952,6 +952,68 @@ TEST_P(GoogleUpdateWinTest, RetryAfterExternalUpdaterError) {
   task_runner_->RunUntilIdle();
 }
 
+TEST_P(GoogleUpdateWinTest, UpdateInstalledMultipleDelegates) {
+  CComObject<MockAppBundle>* mock_app_bundle = nullptr;
+  CComObject<MockApp>* mock_app = nullptr;
+  MakeGoogleUpdateMocks(&mock_app_bundle, &mock_app);
+
+  // Expect the bundle to be called on to start the update.
+  EXPECT_CALL(*mock_app_bundle, checkForUpdate()).WillOnce(Return(S_OK));
+  // Expect the bundle to be called on to start the install.
+  EXPECT_CALL(*mock_app_bundle, install()).WillOnce(Return(S_OK));
+
+  mock_app->PushState(STATE_INIT);
+  mock_app->PushState(STATE_CHECKING_FOR_UPDATE);
+  mock_app->PushUpdateAvailableState(new_version_);
+  mock_app->PushState(STATE_WAITING_TO_DOWNLOAD);
+  mock_app->PushProgressiveState(STATE_DOWNLOADING, 0);
+  mock_app->PushProgressiveState(STATE_DOWNLOADING, 25);
+  mock_app->PushProgressiveState(STATE_DOWNLOADING, 25);
+  mock_app->PushProgressiveState(STATE_DOWNLOADING, 75);
+  mock_app->PushState(STATE_WAITING_TO_INSTALL);
+  mock_app->PushProgressiveState(STATE_INSTALLING, 50);
+  mock_app->PushState(STATE_INSTALL_COMPLETE);
+
+  StrictMock<MockUpdateCheckDelegate> mock_update_check_delegate_2;
+  {
+    InSequence callback_sequence;
+    EXPECT_CALL(mock_update_check_delegate_,
+                OnUpgradeProgress(0, StrEq(new_version_)));
+    EXPECT_CALL(mock_update_check_delegate_2,
+                OnUpgradeProgress(0, StrEq(new_version_)));
+
+    EXPECT_CALL(mock_update_check_delegate_,
+                OnUpgradeProgress(12, StrEq(new_version_)));
+    EXPECT_CALL(mock_update_check_delegate_2,
+                OnUpgradeProgress(12, StrEq(new_version_)));
+
+    EXPECT_CALL(mock_update_check_delegate_,
+                OnUpgradeProgress(37, StrEq(new_version_)));
+    EXPECT_CALL(mock_update_check_delegate_2,
+                OnUpgradeProgress(37, StrEq(new_version_)));
+
+    EXPECT_CALL(mock_update_check_delegate_,
+                OnUpgradeProgress(50, StrEq(new_version_)));
+    EXPECT_CALL(mock_update_check_delegate_2,
+                OnUpgradeProgress(50, StrEq(new_version_)));
+
+    EXPECT_CALL(mock_update_check_delegate_,
+                OnUpgradeProgress(75, StrEq(new_version_)));
+    EXPECT_CALL(mock_update_check_delegate_2,
+                OnUpgradeProgress(75, StrEq(new_version_)));
+
+    EXPECT_CALL(mock_update_check_delegate_,
+                OnUpgradeComplete(StrEq(new_version_)));
+    EXPECT_CALL(mock_update_check_delegate_2,
+                OnUpgradeComplete(StrEq(new_version_)));
+  }
+  BeginUpdateCheck(task_runner_, std::string(), true, 0,
+                   mock_update_check_delegate_.AsWeakPtr());
+  BeginUpdateCheck(task_runner_, std::string(), true, 0,
+                   mock_update_check_delegate_2.AsWeakPtr());
+  task_runner_->RunUntilIdle();
+}
+
 INSTANTIATE_TEST_CASE_P(UserLevel, GoogleUpdateWinTest, Values(false));
 
 INSTANTIATE_TEST_CASE_P(SystemLevel, GoogleUpdateWinTest, Values(true));

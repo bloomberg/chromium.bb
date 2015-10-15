@@ -7,6 +7,8 @@
 #include <atlbase.h>
 #include <atlcom.h>
 
+#include <vector>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
@@ -206,8 +208,7 @@ class UpdateCheckDriver {
       gfx::AcceleratedWidget elevation_window,
       const base::WeakPtr<UpdateCheckDelegate>& delegate);
 
-  // Invokes a completion or error method on the caller's delegate, as
-  // appropriate.
+  // Invokes a completion or error method on all delegates, as appropriate.
   ~UpdateCheckDriver();
 
   // Starts an update check.
@@ -221,7 +222,7 @@ class UpdateCheckDriver {
   // |hresult|, installer_exit_code_ to |installer_exit_code|, and
   // html_error_message_ to a composition of all values suitable for display
   // to the user. This call should be followed by deletion of the driver,
-  // which will result in the caller being notified via its delegate.
+  // which will result in callers being notified via their delegates.
   void OnUpgradeError(GoogleUpdateErrorCode error_code,
                       HRESULT hresult,
                       int installer_exit_code,
@@ -283,10 +284,17 @@ class UpdateCheckDriver {
   // previous notification) and another future poll will be scheduled.
   void PollGoogleUpdate();
 
+  // If an UpdateCheckDriver is already running, the delegate is added to the
+  // existing one instead of creating a new one.
+  void AddDelegate(const base::WeakPtr<UpdateCheckDelegate>& delegate);
+
+  static UpdateCheckDriver* driver_;
+
   // The task runner on which the update checks runs.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
-  // The caller's task runner, on which methods of |delegate_| will be invoked.
+  // The caller's task runner, on which methods of the |delegates_| will be
+  // invoked.
   scoped_refptr<base::SingleThreadTaskRunner> result_runner_;
 
   // The UI locale.
@@ -298,8 +306,8 @@ class UpdateCheckDriver {
   // A parent window in case any UX is required (e.g., an elevation prompt).
   gfx::AcceleratedWidget elevation_window_;
 
-  // The caller's delegate by which feedback is conveyed.
-  base::WeakPtr<UpdateCheckDelegate> delegate_;
+  // Contains all delegates by which feedback is conveyed.
+  std::vector<base::WeakPtr<UpdateCheckDelegate>> delegates_;
 
   // Number of remaining retries allowed when errors occur.
   int allowed_retries_;
@@ -331,6 +339,8 @@ class UpdateCheckDriver {
   DISALLOW_COPY_AND_ASSIGN(UpdateCheckDriver);
 };
 
+UpdateCheckDriver* UpdateCheckDriver::driver_ = nullptr;
+
 // static
 void UpdateCheckDriver::RunUpdateCheck(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
@@ -338,14 +348,21 @@ void UpdateCheckDriver::RunUpdateCheck(
     bool install_update_if_possible,
     gfx::AcceleratedWidget elevation_window,
     const base::WeakPtr<UpdateCheckDelegate>& delegate) {
-  // The driver is owned by itself, and will self-destruct when its work is
-  // done.
-  UpdateCheckDriver* driver =
-      new UpdateCheckDriver(task_runner, locale, install_update_if_possible,
-                            elevation_window, delegate);
-  task_runner->PostTask(FROM_HERE,
-                        base::Bind(&UpdateCheckDriver::BeginUpdateCheck,
-                                   base::Unretained(driver)));
+  // Create the driver if it doesn't exist, or add the delegate to the existing
+  // one.
+  if (!driver_) {
+    // The driver is owned by itself, and will self-destruct when its work is
+    // done.
+    driver_ =
+        new UpdateCheckDriver(task_runner, locale, install_update_if_possible,
+                              elevation_window, delegate);
+    task_runner->PostTask(FROM_HERE,
+                          base::Bind(&UpdateCheckDriver::BeginUpdateCheck,
+                                     base::Unretained(driver_)));
+  } else {
+    DCHECK_EQ(driver_->task_runner_, task_runner);
+    driver_->AddDelegate(delegate);
+  }
 }
 
 // Runs on the caller's thread.
@@ -360,7 +377,6 @@ UpdateCheckDriver::UpdateCheckDriver(
       locale_(locale),
       install_update_if_possible_(install_update_if_possible),
       elevation_window_(elevation_window),
-      delegate_(delegate),
       allowed_retries_(kGoogleAllowedRetries),
       system_level_install_(false),
       last_reported_progress_(0),
@@ -368,6 +384,7 @@ UpdateCheckDriver::UpdateCheckDriver(
       error_code_(GOOGLE_UPDATE_NO_ERROR),
       hresult_(S_OK),
       installer_exit_code_(-1) {
+  delegates_.push_back(delegate);
 }
 
 UpdateCheckDriver::~UpdateCheckDriver() {
@@ -386,14 +403,16 @@ UpdateCheckDriver::~UpdateCheckDriver() {
                                   installer_exit_code_);
     }
   }
-  if (delegate_) {
+  for (const auto& delegate : delegates_) {
     if (status_ == UPGRADE_ERROR)
-      delegate_->OnError(error_code_, html_error_message_, new_version_);
+      delegate->OnError(error_code_, html_error_message_, new_version_);
     else if (install_update_if_possible_)
-      delegate_->OnUpgradeComplete(new_version_);
+      delegate->OnUpgradeComplete(new_version_);
     else
-      delegate_->OnUpdateCheckComplete(new_version_);
+      delegate->OnUpdateCheckComplete(new_version_);
   }
+
+  driver_ = nullptr;
 }
 
 void UpdateCheckDriver::BeginUpdateCheck() {
@@ -710,10 +729,12 @@ void UpdateCheckDriver::PollGoogleUpdate() {
 
       // It is safe to post this task with an unretained pointer since the task
       // is guaranteed to run before a subsequent DeleteSoon is handled.
-      result_runner_->PostTask(
-          FROM_HERE,
-          base::Bind(&UpdateCheckDelegate::OnUpgradeProgress, delegate_,
-                     last_reported_progress_, new_version_));
+      for (const auto& delegate : delegates_) {
+        result_runner_->PostTask(
+            FROM_HERE,
+            base::Bind(&UpdateCheckDelegate::OnUpgradeProgress, delegate,
+                       last_reported_progress_, new_version_));
+      }
     }
 
     // Schedule the next check.
@@ -733,6 +754,11 @@ void UpdateCheckDriver::PollGoogleUpdate() {
   google_update_.Release();
 
   result_runner_->DeleteSoon(FROM_HERE, this);
+}
+
+void UpdateCheckDriver::AddDelegate(
+    const base::WeakPtr<UpdateCheckDelegate>& delegate) {
+  delegates_.push_back(delegate);
 }
 
 void UpdateCheckDriver::OnUpgradeError(GoogleUpdateErrorCode error_code,
