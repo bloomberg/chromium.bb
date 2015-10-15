@@ -8036,5 +8036,48 @@ TEST_F(LayerTreeHostCommonTest, TwoUnclippedRenderSurfaces) {
   EXPECT_EQ(gfx::Rect(-10, -10, 30, 30), render_surface2->clip_rect());
 }
 
+TEST_F(LayerTreeHostCommonTest, LargeTransformTest) {
+  LayerImpl* root = root_layer();
+  LayerImpl* render_surface1 = AddChild<LayerImpl>(root);
+  LayerImpl* render_surface2 = AddChild<LayerImpl>(render_surface1);
+
+  const gfx::Transform identity_matrix;
+  render_surface1->SetDrawsContent(true);
+  render_surface2->SetDrawsContent(true);
+
+  gfx::Transform large_transform;
+  large_transform.Scale(99999999999999999999.f, 99999999999999999999.f);
+  large_transform.Scale(9999999999999999999.f, 9999999999999999999.f);
+  EXPECT_TRUE(std::isinf(large_transform.matrix().get(0, 0)));
+  EXPECT_TRUE(std::isinf(large_transform.matrix().get(1, 1)));
+
+  SetLayerPropertiesForTesting(root, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(30, 30), true, false,
+                               true);
+  SetLayerPropertiesForTesting(render_surface1, large_transform, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(30, 30), true, false,
+                               true);
+  SetLayerPropertiesForTesting(render_surface2, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(30, 30), true, false,
+                               true);
+
+  ExecuteCalculateDrawProperties(root);
+
+  EXPECT_TRUE(std::isinf(
+      render_surface2->render_surface()->draw_transform().matrix().get(0, 0)));
+  EXPECT_TRUE(std::isinf(
+      render_surface2->render_surface()->draw_transform().matrix().get(1, 1)));
+  EXPECT_EQ(gfx::RectF(),
+            render_surface2->render_surface()->DrawableContentRect());
+
+  std::vector<LayerImpl*>* rsll = render_surface_layer_list_impl();
+  bool root_in_rsll =
+      std::find(rsll->begin(), rsll->end(), root) != rsll->end();
+  EXPECT_TRUE(root_in_rsll);
+  bool render_surface2_in_rsll =
+      std::find(rsll->begin(), rsll->end(), render_surface2) != rsll->end();
+  EXPECT_FALSE(render_surface2_in_rsll);
+}
+
 }  // namespace
 }  // namespace cc

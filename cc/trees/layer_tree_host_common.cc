@@ -2624,7 +2624,7 @@ void CalculateRenderSurfaceLayerListInternal(
         layer->render_surface()->accumulated_content_rect());
 
   if (render_to_separate_surface && !IsRootLayer(layer) &&
-      layer->render_surface()->content_rect().IsEmpty()) {
+      layer->render_surface()->DrawableContentRect().IsEmpty()) {
     RemoveSurfaceForEarlyExit(layer, render_surface_layer_list);
     return;
   }

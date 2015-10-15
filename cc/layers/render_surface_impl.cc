@@ -47,6 +47,14 @@ gfx::RectF RenderSurfaceImpl::DrawableContentRect() const {
         replica_draw_transform_, gfx::RectF(content_rect_)));
   }
 
+  // If the rect has a NaN coordinate, we return empty rect to avoid crashes in
+  // functions (for example, gfx::ToEnclosedRect) that are called on this rect.
+  if (std::isnan(drawable_content_rect.x()) ||
+      std::isnan(drawable_content_rect.y()) ||
+      std::isnan(drawable_content_rect.right()) ||
+      std::isnan(drawable_content_rect.bottom()))
+    return gfx::RectF();
+
   return drawable_content_rect;
 }
 
