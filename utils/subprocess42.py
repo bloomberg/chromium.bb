@@ -575,3 +575,16 @@ def check_output(*args, **kwargs):
   if retcode:
     raise CalledProcessError(retcode, kwargs.get('args') or args[0], output)
   return output
+
+
+def call_with_timeout(args, timeout, **kwargs):
+  """Runs an executable; kill it in case of timeout."""
+  proc = Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, **kwargs)
+  try:
+    out, err = proc.communicate(timeout=timeout)
+  except TimeoutExpired as e:
+    out = e.output
+    err = e.stderr
+    proc.kill()
+    proc.wait()
+  return out, err, proc.returncode, proc.duration()
