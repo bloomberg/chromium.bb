@@ -165,7 +165,6 @@ public class OverlayPanelContent {
             destroyContentView();
         }
 
-        System.out.println("ctxs --- OverlayPanelContent.createNewContentView");
         mContentViewCore = new ContentViewCore(mActivity);
 
         if (mContentViewClient == null) {
@@ -227,7 +226,6 @@ public class OverlayPanelContent {
      */
     private void destroyContentView() {
         if (mContentViewCore != null) {
-            System.out.println("ctxs --- OverlayPanelContent.destroyContentView");
             nativeDestroyWebContents(mNativeOverlayPanelContentPtr);
             mContentViewCore.getWebContents().destroy();
             mContentViewCore.destroy();
@@ -260,7 +258,6 @@ public class OverlayPanelContent {
      * @param url The URL that should be loaded.
      */
     public void loadUrl(String url) {
-        System.out.println("ctxs --- OverlayPanelContent.loadUrl");
         createNewContentView();
 
         if (mContentViewCore != null && mContentViewCore.getWebContents() != null) {
@@ -342,7 +339,6 @@ public class OverlayPanelContent {
             // your Web History (if enabled). For this reason, onShow() should only be called
             // when we know for sure the page will be seen by the user.
             if (mContentViewCore != null) mContentViewCore.onShow();
-            if (mContentViewCore != null) System.out.println("ctxs --- mContentViewCore.onShow");
 
             mContentDelegate.onContentViewSeen();
         } else {
