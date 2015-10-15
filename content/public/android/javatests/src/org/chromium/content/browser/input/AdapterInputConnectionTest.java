@@ -11,7 +11,6 @@ import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.text.Editable;
 import android.view.View;
-import android.view.inputmethod.BaseInputConnection;
 import android.view.inputmethod.EditorInfo;
 
 import org.chromium.base.test.util.Feature;
@@ -39,10 +38,9 @@ public class AdapterInputConnectionTest extends ContentShellTestBase {
         mWrapper = new TestInputMethodManagerWrapper(getActivity());
         ImeAdapterDelegate delegate = new TestImeAdapterDelegate();
         mImeAdapter = new TestImeAdapter(mWrapper, delegate);
-        EditorInfo info = new EditorInfo();
         mEditable = Editable.Factory.getInstance().newEditable("");
         mConnection = new AdapterInputConnection(
-                getContentViewCore().getContainerView(), mImeAdapter, mEditable, info);
+                getContentViewCore().getContainerView(), mImeAdapter, mEditable, new EditorInfo());
     }
 
     @SmallTest
@@ -102,53 +100,16 @@ public class AdapterInputConnectionTest extends ContentShellTestBase {
         mWrapper.verifyUpdateSelectionCall(0, 4, 4, 0, 4);
     }
 
-    @MediumTest
-    @Feature({"TextInput", "Main"})
-    public void testNewConnectionFinishesComposingText() throws Throwable {
-        mConnection.setComposingText("abc", 1);
-        assertEquals(0, BaseInputConnection.getComposingSpanStart(mEditable));
-        assertEquals(3, BaseInputConnection.getComposingSpanEnd(mEditable));
-
-        mConnection = new AdapterInputConnection(
-                getContentViewCore().getContainerView(), mImeAdapter, mEditable, new EditorInfo());
-
-        assertEquals(1, mImeAdapter.mFinishComposingTextCounter);
-        assertEquals(-1, BaseInputConnection.getComposingSpanStart(mEditable));
-        assertEquals(-1, BaseInputConnection.getComposingSpanEnd(mEditable));
-    }
-
     private static class TestImeAdapter extends ImeAdapter {
         private final ArrayList<Integer> mKeyEventQueue = new ArrayList<Integer>();
-        private int mDeleteSurroundingTextCounter;
-        private int mFinishComposingTextCounter;
 
         public TestImeAdapter(InputMethodManagerWrapper wrapper, ImeAdapterDelegate embedder) {
             super(wrapper, embedder);
         }
 
         @Override
-        public boolean deleteSurroundingText(int beforeLength, int afterLength) {
-            ++mDeleteSurroundingTextCounter;
-            return true;
-        }
-
-        @Override
         public void sendSyntheticKeyPress(int keyCode, int flags) {
             mKeyEventQueue.add(keyCode);
-        }
-
-        @Override
-        protected void finishComposingText() {
-            ++mFinishComposingTextCounter;
-            super.finishComposingText();
-        }
-
-        public int getDeleteSurroundingTextCallCount() {
-            return mDeleteSurroundingTextCounter;
-        }
-
-        public Integer[] getKeyEvents() {
-            return mKeyEventQueue.toArray(new Integer[mKeyEventQueue.size()]);
         }
     }
 

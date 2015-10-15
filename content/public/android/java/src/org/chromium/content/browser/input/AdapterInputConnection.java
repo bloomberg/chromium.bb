@@ -48,18 +48,13 @@ public class AdapterInputConnection extends BaseInputConnection {
     private int mLastUpdateCompositionEnd = INVALID_COMPOSITION;
 
     @VisibleForTesting
-    AdapterInputConnection(View view, ImeAdapter imeAdapter, Editable editable,
-            EditorInfo outAttrs) {
+    AdapterInputConnection(
+            View view, ImeAdapter imeAdapter, Editable editable, EditorInfo outAttrs) {
         super(view, true);
         mInternalView = view;
         mImeAdapter = imeAdapter;
         mImeAdapter.setInputConnection(this);
         mEditable = editable;
-
-        // The editable passed in might have been in use by a prior keyboard and could have had
-        // prior composition spans set.  To avoid keyboard conflicts, remove all composing spans
-        // when taking ownership of an existing Editable.
-        finishComposingText();
 
         mSingleLine = true;
         outAttrs.imeOptions = EditorInfo.IME_FLAG_NO_FULLSCREEN
@@ -142,7 +137,6 @@ public class AdapterInputConnection extends BaseInputConnection {
         Log.d(TAG, "Constructor called with outAttrs: %s", dumpEditorInfo(outAttrs));
 
         Selection.setSelection(mEditable, outAttrs.initialSelStart, outAttrs.initialSelEnd);
-        updateSelectionIfRequired();
     }
 
     private String dumpEditorInfo(EditorInfo editorInfo) {
