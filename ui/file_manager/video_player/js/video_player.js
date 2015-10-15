@@ -218,37 +218,6 @@ VideoPlayer.prototype.prepare = function(videos) {
 
   document.ondragstart = preventDefault;
 
-  var maximizeButton = queryRequiredElement('.maximize-button');
-  maximizeButton.addEventListener(
-      'click',
-      function(event) {
-        var appWindow = chrome.app.window.current();
-        if (appWindow.isMaximized())
-          appWindow.restore();
-        else
-          appWindow.maximize();
-        event.stopPropagation();
-      }.wrap(null));
-  maximizeButton.addEventListener('mousedown', preventDefault);
-
-  var minimizeButton = queryRequiredElement('.minimize-button');
-  minimizeButton.addEventListener(
-      'click',
-      function(event) {
-        chrome.app.window.current().minimize();
-        event.stopPropagation();
-      }.wrap(null));
-  minimizeButton.addEventListener('mousedown', preventDefault);
-
-  var closeButton = queryRequiredElement('.close-button');
-  closeButton.addEventListener(
-      'click',
-      function(event) {
-        window.close();
-        event.stopPropagation();
-      }.wrap(null));
-  closeButton.addEventListener('mousedown', preventDefault);
-
   cr.ui.decorate(getRequiredElement('cast-menu'), cr.ui.Menu);
 
   this.controls_ = new FullWindowVideoControls(
@@ -307,8 +276,6 @@ VideoPlayer.prototype.loadVideo_ = function(video, opt_callback) {
 
   this.loadQueue_.run(function(callback) {
     document.title = video.name;
-
-    getRequiredElement('title').innerText = video.name;
 
     var videoPlayerElement = getRequiredElement('video-player');
     if (this.currentPos_ === (this.videos_.length - 1))

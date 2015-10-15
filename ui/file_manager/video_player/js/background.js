@@ -17,7 +17,9 @@ var ICON_IMAGE = 'images/icon/video-player-64.png';
  * @type {Object}
  */
 var windowCreateOptions = {
-  frame: 'none',
+  frame: {
+    color: '#fafafa'
+  },
   minWidth: 480,
   minHeight: 270
 };
