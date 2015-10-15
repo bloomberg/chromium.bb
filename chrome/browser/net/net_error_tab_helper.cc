@@ -18,14 +18,12 @@
 #include "components/error_page/common/net_error_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/render_view_host.h"
 #include "ipc/ipc_message_macros.h"
 #include "net/base/net_errors.h"
 #include "url/gurl.h"
 
 using content::BrowserContext;
 using content::BrowserThread;
-using content::RenderViewHost;
 using content::WebContents;
 using content::WebContentsObserver;
 using error_page::DnsProbeStatus;
@@ -82,13 +80,16 @@ void NetErrorTabHelper::set_state_for_testing(TestingState state) {
   testing_state_ = state;
 }
 
-void NetErrorTabHelper::RenderViewCreated(
-    content::RenderViewHost* render_view_host) {
-  content::RenderFrameHost* render_frame_host =
-      render_view_host->GetMainFrame();
-  render_frame_host->Send(new ChromeViewMsg_SetCanShowNetworkDiagnosticsDialog(
-      render_frame_host->GetRoutingID(),
-      CanShowNetworkDiagnosticsDialog()));
+void NetErrorTabHelper::RenderFrameCreated(
+    content::RenderFrameHost* render_frame_host) {
+  // Ignore subframe creation - only main frame error pages can link to the
+  // platform's network diagnostics dialog.
+  if (render_frame_host->GetParent())
+    return;
+  render_frame_host->Send(
+      new ChromeViewMsg_SetCanShowNetworkDiagnosticsDialog(
+          render_frame_host->GetRoutingID(),
+          CanShowNetworkDiagnosticsDialog()));
 }
 
 void NetErrorTabHelper::DidStartNavigationToPendingEntry(

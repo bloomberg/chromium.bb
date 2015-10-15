@@ -30,7 +30,7 @@ class NavigationCorrectionTabObserver
   friend class content::WebContentsUserData<NavigationCorrectionTabObserver>;
 
   // content::WebContentsObserver overrides:
-  void RenderViewCreated(content::RenderViewHost* render_view_host) override;
+  void RenderFrameCreated(content::RenderFrameHost* render_frame_host) override;
 
   // Internal helpers ----------------------------------------------------------
 
@@ -45,7 +45,8 @@ class NavigationCorrectionTabObserver
   void OnEnabledChanged();
 
   // Updates the renderer's navigation correction service configuration.
-  void UpdateNavigationCorrectionInfo(content::RenderViewHost* rvh);
+  void UpdateNavigationCorrectionInfo(
+      content::RenderFrameHost* render_frame_host);
 
   Profile* profile_;
   PrefChangeRegistrar pref_change_registrar_;

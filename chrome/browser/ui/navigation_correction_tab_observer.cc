@@ -15,12 +15,10 @@
 #include "components/google/core/browser/google_util.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "google_apis/google_api_keys.h"
 
 using content::RenderFrameHost;
-using content::RenderViewHost;
 using content::WebContents;
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(NavigationCorrectionTabObserver);
@@ -65,16 +63,20 @@ void NavigationCorrectionTabObserver::RegisterProfilePrefs(
 ////////////////////////////////////////////////////////////////////////////////
 // WebContentsObserver overrides
 
-void NavigationCorrectionTabObserver::RenderViewCreated(
-    RenderViewHost* render_view_host) {
-  UpdateNavigationCorrectionInfo(render_view_host);
+void NavigationCorrectionTabObserver::RenderFrameCreated(
+    RenderFrameHost* render_frame_host) {
+  // Ignore subframe creation - only main frame error pages can request and
+  // display nagivation correction information.
+  if (render_frame_host->GetParent())
+    return;
+  UpdateNavigationCorrectionInfo(render_frame_host);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Internal helpers
 
 void NavigationCorrectionTabObserver::OnGoogleURLUpdated() {
-  UpdateNavigationCorrectionInfo(web_contents()->GetRenderViewHost());
+  UpdateNavigationCorrectionInfo(web_contents()->GetMainFrame());
 }
 
 GURL NavigationCorrectionTabObserver::GetNavigationCorrectionURL() const {
@@ -89,15 +91,14 @@ GURL NavigationCorrectionTabObserver::GetNavigationCorrectionURL() const {
 }
 
 void NavigationCorrectionTabObserver::OnEnabledChanged() {
-  UpdateNavigationCorrectionInfo(web_contents()->GetRenderViewHost());
+  UpdateNavigationCorrectionInfo(web_contents()->GetMainFrame());
 }
 
 void NavigationCorrectionTabObserver::UpdateNavigationCorrectionInfo(
-    RenderViewHost* rvh) {
-  RenderFrameHost* rfh = rvh->GetMainFrame();
+    RenderFrameHost* render_frame_host) {
   GURL google_base_url(UIThreadSearchTermsData(profile_).GoogleBaseURLValue());
-  rfh->Send(new ChromeViewMsg_SetNavigationCorrectionInfo(
-      rfh->GetRoutingID(),
+  render_frame_host->Send(new ChromeViewMsg_SetNavigationCorrectionInfo(
+      render_frame_host->GetRoutingID(),
       GetNavigationCorrectionURL(),
       google_util::GetGoogleLocale(g_browser_process->GetApplicationLocale()),
       google_util::GetGoogleCountryCode(google_base_url),

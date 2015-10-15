@@ -48,7 +48,7 @@ class NetErrorTabHelper
   }
 
   // content::WebContentsObserver implementation.
-  void RenderViewCreated(content::RenderViewHost* render_view_host) override;
+  void RenderFrameCreated(content::RenderFrameHost* render_frame_host) override;
 
   void DidStartNavigationToPendingEntry(
       const GURL& url,
