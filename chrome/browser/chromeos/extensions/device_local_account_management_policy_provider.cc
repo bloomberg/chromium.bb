@@ -27,6 +27,7 @@ const char* const kPublicSessionWhitelist[] = {
     "mfaihdlpglflfgpfjcifdjdjcckigekc",  // ARC Runtime
     "ngjnkanfphagcaokhjecbgkboelgfcnf",  // Print button
     "gbchcmhmhahfdphkhkmpfmihenigjmpp",  // Chrome Remote Desktop
+    "cjanmonomjogheabiocdamfpknlpdehm",  // HP printer driver
 
     // Libraries:
     "aclofikceldphonlfmghmimkodjdmhck",  // Ancoris login component
