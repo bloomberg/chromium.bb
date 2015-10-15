@@ -4,7 +4,7 @@
 
 
 from core import perf_benchmark
-import simple_benchmarks_case
+from core.test_data import simple_benchmarks_case
 
 
 class TestBenchmarkComplexFoo(perf_benchmark.PerfBenchmark):
