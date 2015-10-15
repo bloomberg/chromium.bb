@@ -1236,10 +1236,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
         validPrimitive = validUnit(value, FNumber);
         break;
 
-    case CSSPropertyTouchAction:
-        parsedValue = parseTouchAction();
-        break;
-
     case CSSPropertyAlignContent:
         ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
         parsedValue = parseContentDistributionOverflowPosition();
@@ -1302,6 +1298,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyWebkitLogicalWidth:
     case CSSPropertyWebkitLogicalHeight:
     case CSSPropertyClip:
+    case CSSPropertyTouchAction:
         validPrimitive = false;
         break;
 
@@ -6136,57 +6133,6 @@ PassRefPtrWillBeRawPtr<CSSValueList> CSSPropertyParser::parseTransformOrigin()
     if (zValue)
         list->append(zValue.release());
     return list.release();
-}
-
-PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseTouchAction()
-{
-    CSSParserValue* value = m_valueList->current();
-    RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
-    if (m_valueList->size() == 1 && value && (value->id == CSSValueAuto || value->id == CSSValueNone || value->id == CSSValueManipulation)) {
-        list->append(cssValuePool().createIdentifierValue(value->id));
-        m_valueList->next();
-        return list.release();
-    }
-
-    bool xSet = false;
-    bool ySet = false;
-    while (value) {
-        switch (value->id) {
-        case CSSValuePanX:
-        case CSSValuePanRight:
-        case CSSValuePanLeft: {
-            if (xSet)
-                return nullptr;
-            xSet = true;
-            if (value->id != CSSValuePanX && !RuntimeEnabledFeatures::cssTouchActionPanDirectionsEnabled())
-                return nullptr;
-
-            RefPtrWillBeRawPtr<CSSValue> panValue = cssValuePool().createIdentifierValue(value->id);
-            list->append(panValue.release());
-            break;
-        }
-        case CSSValuePanY:
-        case CSSValuePanDown:
-        case CSSValuePanUp: {
-            if (ySet)
-                return nullptr;
-            ySet = true;
-            if (value->id != CSSValuePanY && !RuntimeEnabledFeatures::cssTouchActionPanDirectionsEnabled())
-                return nullptr;
-            RefPtrWillBeRawPtr<CSSValue> panValue = cssValuePool().createIdentifierValue(value->id);
-            list->append(panValue.release());
-            break;
-        }
-        default:
-            return nullptr;
-        }
-        value = m_valueList->next();
-    }
-
-    if (list->length())
-        return list.release();
-
-    return nullptr;
 }
 
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseTextDecoration()

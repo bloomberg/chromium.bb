@@ -258,8 +258,6 @@ private:
 
     PassRefPtrWillBeRawPtr<CSSValue> parseTextEmphasisStyle();
 
-    PassRefPtrWillBeRawPtr<CSSValue> parseTouchAction();
-
     PassRefPtrWillBeRawPtr<CSSValue> parseTextDecoration();
 
     bool parseCalculation(CSSParserValue*, ValueRange);

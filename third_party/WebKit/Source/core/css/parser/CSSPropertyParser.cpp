@@ -835,6 +835,46 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeClip(CSSParserTokenRange& range, 
     return CSSQuadValue::create(top.release(), right.release(), bottom.release(), left.release(), CSSQuadValue::SerializeAsRect);
 }
 
+static bool consumePan(CSSParserTokenRange& range, RefPtrWillBeRawPtr<CSSValue>& panX, RefPtrWillBeRawPtr<CSSValue>& panY)
+{
+    CSSValueID id = range.peek().id();
+    if ((id == CSSValuePanX || id == CSSValuePanRight || id == CSSValuePanLeft) && !panX) {
+        if (id != CSSValuePanX && !RuntimeEnabledFeatures::cssTouchActionPanDirectionsEnabled())
+            return false;
+        panX = consumeIdent(range);
+    } else if ((id == CSSValuePanY || id == CSSValuePanDown || id == CSSValuePanUp) && !panY) {
+        if (id != CSSValuePanY && !RuntimeEnabledFeatures::cssTouchActionPanDirectionsEnabled())
+            return false;
+        panY = consumeIdent(range);
+    } else {
+        return false;
+    }
+    return true;
+}
+
+static PassRefPtrWillBeRawPtr<CSSValue> consumeTouchAction(CSSParserTokenRange& range)
+{
+    RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
+    CSSValueID id = range.peek().id();
+    if (id == CSSValueAuto || id == CSSValueNone || id == CSSValueManipulation) {
+        list->append(consumeIdent(range));
+        return list.release();
+    }
+
+    RefPtrWillBeRawPtr<CSSValue> panX = nullptr;
+    RefPtrWillBeRawPtr<CSSValue> panY = nullptr;
+    if (!consumePan(range, panX, panY))
+        return nullptr;
+    if (!range.atEnd() && !consumePan(range, panX, panY))
+        return nullptr;
+
+    if (panX)
+        list->append(panX.release());
+    if (panY)
+        list->append(panY.release());
+    return list.release();
+}
+
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSPropertyID propId)
 {
     m_range.consumeWhitespace();
@@ -896,6 +936,8 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
         return consumeWidthOrHeight(m_range, m_context);
     case CSSPropertyClip:
         return consumeClip(m_range, m_context.mode());
+    case CSSPropertyTouchAction:
+        return consumeTouchAction(m_range);
     default:
         return nullptr;
     }
