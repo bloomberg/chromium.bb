@@ -45,7 +45,9 @@ def GetNinjaOutputDirectory(chrome_root, configuration=None):
         if os.path.isdir(out):
           output_dirs.append(os.path.relpath(out, start = chrome_root))
 
-  configs = [configuration] if configuration else ['Debug', 'Release']
+  configs = ['Debug', 'Release', 'Default']
+  if configuration:
+    configs = [configuration]
 
   def generate_paths():
     for out_dir, config in itertools.product(output_dirs, configs):
