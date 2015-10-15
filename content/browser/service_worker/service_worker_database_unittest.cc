@@ -1396,10 +1396,10 @@ TEST(ServiceWorkerDatabaseTest, UpdateLastCheckTime) {
                 data.registration_id, origin, base::Time::Now()));
 }
 
-TEST(ServiceWorkerDatabaseTest, UncommittedResourceIds) {
+TEST(ServiceWorkerDatabaseTest, UncommittedAndPurgeableResourceIds) {
   scoped_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
 
-  // Write {1, 2, 3}.
+  // Write {1, 2, 3} into the uncommitted list.
   std::set<int64> ids1;
   ids1.insert(1);
   ids1.insert(2);
@@ -1412,7 +1412,7 @@ TEST(ServiceWorkerDatabaseTest, UncommittedResourceIds) {
             database->GetUncommittedResourceIds(&ids_out));
   EXPECT_EQ(ids1, ids_out);
 
-  // Write {2, 4}.
+  // Write {2, 4} into the uncommitted list.
   std::set<int64> ids2;
   ids2.insert(2);
   ids2.insert(4);
@@ -1422,63 +1422,30 @@ TEST(ServiceWorkerDatabaseTest, UncommittedResourceIds) {
   ids_out.clear();
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
             database->GetUncommittedResourceIds(&ids_out));
-  std::set<int64> expected = base::STLSetUnion<std::set<int64> >(ids1, ids2);
+  std::set<int64> expected = base::STLSetUnion<std::set<int64>>(ids1, ids2);
   EXPECT_EQ(expected, ids_out);
 
-  // Delete {2, 3}.
-  std::set<int64> ids3;
-  ids3.insert(2);
-  ids3.insert(3);
+  // Move {2, 4} from the uncommitted list to the purgeable list.
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
-            database->ClearUncommittedResourceIds(ids3));
+            database->PurgeUncommittedResourceIds(ids2));
+  ids_out.clear();
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            database->GetPurgeableResourceIds(&ids_out));
+  EXPECT_EQ(ids2, ids_out);
 
+  // Delete {2, 4} from the purgeable list.
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            database->ClearPurgeableResourceIds(ids2));
+  ids_out.clear();
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            database->GetPurgeableResourceIds(&ids_out));
+  EXPECT_TRUE(ids_out.empty());
+
+  // {1, 3} should be still in the uncommitted list.
   ids_out.clear();
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
             database->GetUncommittedResourceIds(&ids_out));
-  expected = base::STLSetDifference<std::set<int64> >(expected, ids3);
-  EXPECT_EQ(expected, ids_out);
-}
-
-TEST(ServiceWorkerDatabaseTest, PurgeableResourceIds) {
-  scoped_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
-
-  // Write {1, 2, 3}.
-  std::set<int64> ids1;
-  ids1.insert(1);
-  ids1.insert(2);
-  ids1.insert(3);
-  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
-            database->WritePurgeableResourceIds(ids1));
-
-  std::set<int64> ids_out;
-  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
-            database->GetPurgeableResourceIds(&ids_out));
-  EXPECT_EQ(ids1, ids_out);
-
-  // Write {2, 4}.
-  std::set<int64> ids2;
-  ids2.insert(2);
-  ids2.insert(4);
-  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
-            database->WritePurgeableResourceIds(ids2));
-
-  ids_out.clear();
-  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
-            database->GetPurgeableResourceIds(&ids_out));
-  std::set<int64> expected = base::STLSetUnion<std::set<int64> >(ids1, ids2);
-  EXPECT_EQ(expected, ids_out);
-
-  // Delete {2, 3}.
-  std::set<int64> ids3;
-  ids3.insert(2);
-  ids3.insert(3);
-  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
-            database->ClearPurgeableResourceIds(ids3));
-
-  ids_out.clear();
-  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
-            database->GetPurgeableResourceIds(&ids_out));
-  expected = base::STLSetDifference<std::set<int64> >(expected, ids3);
+  expected = base::STLSetDifference<std::set<int64>>(ids1, ids2);
   EXPECT_EQ(expected, ids_out);
 }
 

@@ -1025,12 +1025,12 @@ ServiceWorkerDatabase::GetUncommittedResourceIds(std::set<int64>* ids) {
 
 ServiceWorkerDatabase::Status
 ServiceWorkerDatabase::WriteUncommittedResourceIds(const std::set<int64>& ids) {
-  return WriteResourceIds(kUncommittedResIdKeyPrefix, ids);
-}
-
-ServiceWorkerDatabase::Status
-ServiceWorkerDatabase::ClearUncommittedResourceIds(const std::set<int64>& ids) {
-  return DeleteResourceIds(kUncommittedResIdKeyPrefix, ids);
+  leveldb::WriteBatch batch;
+  Status status =
+      WriteResourceIdsInBatch(kUncommittedResIdKeyPrefix, ids, &batch);
+  if (status != STATUS_OK)
+    return status;
+  return WriteBatch(&batch);
 }
 
 ServiceWorkerDatabase::Status
@@ -1039,13 +1039,13 @@ ServiceWorkerDatabase::GetPurgeableResourceIds(std::set<int64>* ids) {
 }
 
 ServiceWorkerDatabase::Status
-ServiceWorkerDatabase::WritePurgeableResourceIds(const std::set<int64>& ids) {
-  return WriteResourceIds(kPurgeableResIdKeyPrefix, ids);
-}
-
-ServiceWorkerDatabase::Status
 ServiceWorkerDatabase::ClearPurgeableResourceIds(const std::set<int64>& ids) {
-  return DeleteResourceIds(kPurgeableResIdKeyPrefix, ids);
+  leveldb::WriteBatch batch;
+  Status status =
+      DeleteResourceIdsInBatch(kPurgeableResIdKeyPrefix, ids, &batch);
+  if (status != STATUS_OK)
+    return status;
+  return WriteBatch(&batch);
 }
 
 ServiceWorkerDatabase::Status
@@ -1404,16 +1404,6 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::ReadResourceIds(
   return status;
 }
 
-ServiceWorkerDatabase::Status ServiceWorkerDatabase::WriteResourceIds(
-    const char* id_key_prefix,
-    const std::set<int64>& ids) {
-  leveldb::WriteBatch batch;
-  Status status = WriteResourceIdsInBatch(id_key_prefix, ids, &batch);
-  if (status != STATUS_OK)
-    return status;
-  return WriteBatch(&batch);
-}
-
 ServiceWorkerDatabase::Status ServiceWorkerDatabase::WriteResourceIdsInBatch(
     const char* id_key_prefix,
     const std::set<int64>& ids,
@@ -1435,16 +1425,6 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::WriteResourceIdsInBatch(
   // std::set is sorted, so the last element is the largest.
   BumpNextResourceIdIfNeeded(*ids.rbegin(), batch);
   return STATUS_OK;
-}
-
-ServiceWorkerDatabase::Status ServiceWorkerDatabase::DeleteResourceIds(
-    const char* id_key_prefix,
-    const std::set<int64>& ids) {
-  leveldb::WriteBatch batch;
-  Status status = DeleteResourceIdsInBatch(id_key_prefix, ids, &batch);
-  if (status != STATUS_OK)
-    return status;
-  return WriteBatch(&batch);
 }
 
 ServiceWorkerDatabase::Status ServiceWorkerDatabase::DeleteResourceIdsInBatch(
