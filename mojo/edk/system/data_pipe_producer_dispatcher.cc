@@ -25,6 +25,8 @@ void DataPipeProducerDispatcher::Init(
         nullptr, 0u, serialized_write_buffer, serialized_write_buffer_size);
     internal::g_io_thread_task_runner->PostTask(
         FROM_HERE, base::Bind(&DataPipeProducerDispatcher::InitOnIO, this));
+  } else {
+    error_ = true;
   }
 }
 
@@ -72,10 +74,8 @@ DataPipeProducerDispatcher::Deserialize(
     serialized_write_buffer_size = shared_memory_size;
   }
 
-  if (platform_handle.is_valid()) {
-    rv->Init(platform_handle.Pass(), serialized_write_buffer,
-             serialized_write_buffer_size);
-  }
+  rv->Init(platform_handle.Pass(), serialized_write_buffer,
+           serialized_write_buffer_size);
   return rv;
 }
 
@@ -331,6 +331,13 @@ void DataPipeProducerDispatcher::OnError(Error error) {
   error_ = true;
   if (started_transport_.Try()) {
     base::AutoLock locker(lock());
+    // We can get two OnError callbacks before the post task below completes.
+    // Although RawChannel still has a pointer to this object until Shutdown is
+    // called, that is safe since this class always does a PostTask to the IO
+    // thread to self destruct.
+    if (!channel_)
+      return;
+
     awakable_list_.AwakeForStateChange(GetHandleSignalsStateImplNoLock());
 
     base::MessageLoop::current()->PostTask(

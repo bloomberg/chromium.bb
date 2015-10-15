@@ -118,6 +118,8 @@ void MessagePipeDispatcher::Init(
       InitOnIO();
     }
     // TODO(jam): optimize for when running on IO thread?
+  } else {
+    error_ = true;
   }
 }
 
@@ -636,6 +638,8 @@ bool MessagePipeDispatcher::EndSerializeAndCloseImplNoLock(
 
     serialization->shared_memory_handle_index = platform_handles->size();
     platform_handles->push_back(shared_buffer->PassPlatformHandle().release());
+  } else {
+    serialization->shared_memory_handle_index = kInvalidMessagePipeHandleIndex;
   }
 
   *actual_size = sizeof(SerializedMessagePipeHandleDispatcher);
@@ -721,6 +725,13 @@ void MessagePipeDispatcher::OnError(Error error) {
   error_ = true;
   if (started_transport_.Try()) {
     base::AutoLock locker(lock());
+    // We can get two OnError callbacks before the post task below completes.
+    // Although RawChannel still has a pointer to this object until Shutdown is
+    // called, that is safe since this class always does a PostTask to the IO
+    // thread to self destruct.
+    if (!channel_)
+      return;
+
     awakable_list_.AwakeForStateChange(GetHandleSignalsStateImplNoLock());
 
     base::MessageLoop::current()->PostTask(

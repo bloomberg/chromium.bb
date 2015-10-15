@@ -31,6 +31,12 @@ void DataPipeConsumerDispatcher::Init(
         serialized_read_buffer, serialized_read_buffer_size, nullptr, 0u);
     internal::g_io_thread_task_runner->PostTask(
         FROM_HERE, base::Bind(&DataPipeConsumerDispatcher::InitOnIO, this));
+  } else {
+    // The data pipe consumer could have read all the data and the producer
+    // closed its end subsequently (before the consumer was sent). In that case
+    // when we deserialize the consumer we must make sure to set error_ or
+    // otherwise the peer-closed signal will never be satisfied.
+    error_ = true;
   }
 }
 
@@ -92,16 +98,8 @@ DataPipeConsumerDispatcher::Deserialize(
     }
   }
 
-  if (platform_handle.is_valid()) {
-    rv->Init(platform_handle.Pass(), serialized_read_buffer,
-             serialized_read_buffer_size);
-  } else {
-    // The data pipe consumer could have read all the data and the producer
-    // closed its end subsequently (before the consumer was sent). In that case
-    // when we deserialize the consumer we must make sure to set error_ or
-    // otherwise the peer-closed signal will never be satisfied.
-    rv->error_ = true;
-  }
+  rv->Init(platform_handle.Pass(), serialized_read_buffer,
+           serialized_read_buffer_size);
   return rv;
 }
 
@@ -453,6 +451,13 @@ void DataPipeConsumerDispatcher::OnError(Error error) {
   error_ = true;
   if (started_transport_.Try()) {
     base::AutoLock locker(lock());
+    // We can get two OnError callbacks before the post task below completes.
+    // Although RawChannel still has a pointer to this object until Shutdown is
+    // called, that is safe since this class always does a PostTask to the IO
+    // thread to self destruct.
+    if (!channel_)
+      return;
+
     awakable_list_.AwakeForStateChange(GetHandleSignalsStateImplNoLock());
     started_transport_.Release();
 

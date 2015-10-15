@@ -369,7 +369,8 @@ void RawChannelPosix::OnFileCanReadWithoutBlocking(int fd) {
   size_t bytes_read = 0;
   IOResult io_result = Read(&bytes_read);
   if (io_result != IO_PENDING) {
-    OnReadCompleted(io_result, bytes_read);
+    base::AutoLock locker(read_lock());
+    OnReadCompletedNoLock(io_result, bytes_read);
     // TODO(vtl): If we weren't destroyed, we'd like to do
     //
     //   DCHECK(!read_watcher_ || pending_read_);
@@ -404,8 +405,9 @@ void RawChannelPosix::OnFileCanWriteWithoutBlocking(int fd) {
   }
 
   if (io_result != IO_PENDING) {
-    OnWriteCompleted(io_result, platform_handles_written, bytes_written);
-    return;  // |this| may have been destroyed in |OnWriteCompleted()|.
+    base::AutoLock locker(write_lock());
+    OnWriteCompletedNoLock(io_result, platform_handles_written, bytes_written);
+    return;
   }
 }
 
@@ -463,14 +465,11 @@ void RawChannelPosix::WaitToWrite() {
   if (!message_loop_for_io()->WatchFileDescriptor(
           fd_.get().fd, false, base::MessageLoopForIO::WATCH_WRITE,
           write_watcher_.get(), this)) {
-    {
-      base::AutoLock locker(write_lock());
-
-      DCHECK(pending_write_);
-      pending_write_ = false;
-    }
-    OnWriteCompleted(IO_FAILED_UNKNOWN, 0, 0);
-    return;  // |this| may have been destroyed in |OnWriteCompleted()|.
+    base::AutoLock locker(write_lock());
+    DCHECK(pending_write_);
+    pending_write_ = false;
+    OnWriteCompletedNoLock(IO_FAILED_UNKNOWN, 0, 0);
+    return;
   }
 }
 

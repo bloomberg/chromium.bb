@@ -192,7 +192,7 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
     // Gets buffers to be written. These buffers will always come from the front
     // of |message_queue_|. Once they are completely written, the front
     // |MessageInTransit| should be popped (and destroyed); this is done in
-    // |OnWriteCompletedNoLock()|.
+    // |OnWriteCompletedInternalNoLock()|.
     void GetBuffers(std::vector<Buffer>* buffers);
 
     bool IsEmpty() const { return message_queue_.IsEmpty(); }
@@ -223,13 +223,16 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
   virtual ~RawChannel();
 
   // |result| must not be |IO_PENDING|. Must be called on the I/O thread WITHOUT
-  // |write_lock_| held. This object may be destroyed by this call.
-  void OnReadCompleted(IOResult io_result, size_t bytes_read);
+  // |write_lock_| held. This object may be destroyed by this call. This
+  // acquires |read_lock_| inside of it. The caller needs to acquire read_lock_
+  // first.
+  void OnReadCompletedNoLock(IOResult io_result, size_t bytes_read);
   // |result| must not be |IO_PENDING|. Must be called on the I/O thread WITHOUT
-  // |write_lock_| held. This object may be destroyed by this call.
-  void OnWriteCompleted(IOResult io_result,
-                        size_t platform_handles_written,
-                        size_t bytes_written);
+  // |write_lock_| held. This object may be destroyed by this call. The caller
+  // needs to acquire write_lock_ first.
+  void OnWriteCompletedNoLock(IOResult io_result,
+                              size_t platform_handles_written,
+                              size_t bytes_written);
 
   // Serialize the read buffer into the given array so that it can be sent to
   // another process. Increments |num_valid_bytes_| by |additional_bytes_read|
@@ -239,9 +242,9 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
 
   // Serialize the pending messages to be written to the OS pipe to the given
   // buffer so that it can be sent to another process.
-  void SerializeWriteBuffer(std::vector<char>* buffer,
-                            size_t additional_bytes_written,
-                            size_t additional_platform_handles_written);
+  void SerializeWriteBuffer(size_t additional_bytes_written,
+                            size_t additional_platform_handles_written,
+                            std::vector<char>* buffer);
 
   base::MessageLoopForIO* message_loop_for_io() { return message_loop_for_io_; }
   base::Lock& write_lock() { return write_lock_; }
@@ -255,6 +258,8 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
     write_lock_.AssertAcquired();
     return write_buffer_.get();
   }
+
+  bool pending_error() { return pending_error_; }
 
   // Adds |message| to the write message queue. Implementation subclasses may
   // override this to add any additional "control" messages needed. This is
@@ -361,9 +366,9 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
   // failure or any other error occurs, cancels pending writes and returns
   // false. Must be called under |write_lock_| and only if |write_stopped_| is
   // false.
-  bool OnWriteCompletedNoLock(IOResult io_result,
-                              size_t platform_handles_written,
-                              size_t bytes_written);
+  bool OnWriteCompletedInternalNoLock(IOResult io_result,
+                                      size_t platform_handles_written,
+                                      size_t bytes_written);
 
   // Helper method to dispatch messages from the read buffer.
   // |did_dispatch_message| is true iff it dispatched any messages.
@@ -373,6 +378,9 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
   void DispatchMessages(bool* did_dispatch_message, bool* stop_dispatching);
 
   void UpdateWriteBuffer(size_t platform_handles_written, size_t bytes_written);
+
+  // Acquires read_lock_ and calls OnReadCompletedNoLock.
+  void CallOnReadCompleted(IOResult io_result, size_t bytes_read);
 
   // Set in |Init()| and never changed (hence usable on any thread without
   // locking):
@@ -405,6 +413,10 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
   scoped_ptr<WriteBuffer> write_buffer_;
 
   bool error_occurred_;
+
+  // True iff a PostTask has been called to set an error. Can be written under
+  // either read or write lock. It's read with both acquired.
+  bool pending_error_;
 
   // This is used for posting tasks from write threads to the I/O thread. It
   // must only be accessed under |write_lock_|. The weak pointers it produces

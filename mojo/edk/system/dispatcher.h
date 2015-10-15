@@ -270,13 +270,6 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher
   // They will only be called on a dispatcher that's attached to and "owned" by
   // a |MessageInTransit|. See the non-"impl" versions for more information.
   //
-  // Note: |StartSerializeImplNoLock()| is actually called with |lock_| NOT
-  // held, since the dispatcher should only be accessible to the calling thread.
-  // On Debug builds, |EndSerializeAndCloseImplNoLock()| is called with |lock_|
-  // held, to satisfy any |lock_.AssertAcquired()| (e.g., in |CloseImplNoLock()|
-  // -- and anything it calls); disentangling those assertions is
-  // difficult/fragile, and would weaken our general checking of invariants.
-  //
   // TODO(vtl): Consider making these pure virtual once most things support
   // being passed over a message pipe.
   virtual void StartSerializeImplNoLock(size_t* max_size,

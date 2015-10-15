@@ -453,6 +453,7 @@ void Dispatcher::StartSerialize(size_t* max_size,
   DCHECK(max_size);
   DCHECK(max_platform_handles);
   DCHECK(!is_closed_);
+  base::AutoLock locker(lock_);
   StartSerializeImplNoLock(max_size, max_platform_handles);
 }
 
@@ -467,13 +468,7 @@ bool Dispatcher::EndSerializeAndClose(void* destination,
   // shouldn't be in |Core|'s handle table.
   is_closed_ = true;
 
-#if !defined(NDEBUG)
-  // See the comment above |EndSerializeAndCloseImplNoLock()|. In brief: Locking
-  // isn't actually needed, but we need to satisfy assertions (which we don't
-  // want to remove or weaken).
   base::AutoLock locker(lock_);
-#endif
-
   return EndSerializeAndCloseImplNoLock(destination, actual_size,
                                         platform_handles);
 }
