@@ -2183,6 +2183,19 @@
                   'content_shell_test_apk_run.isolate',
                 ],
               },
+              {
+                'target_name': 'content_unittests_apk_run',
+                'type': 'none',
+                'dependencies': [
+                  'content_unittests_apk',
+                ],
+                'includes': [
+                  '../build/isolate.gypi',
+                ],
+                'sources': [
+                  'content_unittests_apk.isolate',
+                ],
+              },
             ],
           },
         ],
