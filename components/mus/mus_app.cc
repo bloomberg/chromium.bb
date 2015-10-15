@@ -71,9 +71,7 @@ void MandolineUIServicesApp::Initialize(ApplicationImpl* app) {
 
 bool MandolineUIServicesApp::ConfigureIncomingConnection(
     ApplicationConnection* connection) {
-  // MandolineUIServices
   connection->AddService<ViewTreeHostFactory>(this);
-  // GPU
   connection->AddService<Gpu>(this);
   return true;
 }

@@ -39,8 +39,8 @@ class GestureConfigurationMojo : public ui::GestureConfiguration {
 };
 #endif
 
-UIInit::UIInit(const gfx::Size& screen_size_in_pixels, float device_pixel_ratio)
-    : screen_(new ScreenMojo(screen_size_in_pixels, device_pixel_ratio)) {
+UIInit::UIInit(const std::vector<gfx::Display>& displays)
+    : screen_(new ScreenMojo(displays)) {
   gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, screen_.get());
 #if defined(OS_ANDROID)
   gesture_configuration_.reset(new GestureConfigurationMojo);

@@ -55,3 +55,16 @@ void WindowManagerImpl::CenterWindow(uint32_t view_id, mojo::SizePtr size) {
   // TODO(beng):
 }
 
+void WindowManagerImpl::GetDisplays(const GetDisplaysCallback& callback) {
+  mojo::Array<mus::mojom::DisplayPtr> displays(1);
+  displays[0] = mus::mojom::Display::New();
+  displays[0]->id = 2001;
+  displays[0]->bounds = mojo::Rect::New();
+  displays[0]->bounds->y = 0;
+  displays[0]->bounds->width = state_->root()->bounds().width;
+  displays[0]->bounds->height = state_->root()->bounds().width;
+  displays[0]->work_area = displays[0]->bounds.Clone();
+  displays[0]->device_pixel_ratio =
+      state_->root()->viewport_metrics().device_pixel_ratio;
+  callback.Run(displays.Pass());
+}

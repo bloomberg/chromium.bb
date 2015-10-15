@@ -358,12 +358,6 @@ void WindowTypeLauncher::Initialize(mojo::ApplicationImpl* app) {
 
   mus_views_init_.reset(new MUSViewsInit(app));
 
-  // TODO(sky): total hack! This is necessary as WindowTypeLauncherView is
-  // created before AuraInit. WindowTypeLauncherView uses resources that are
-  // configured by MUSViewsInit once a View is created. By creating a Widget
-  // here we ensure the necessary state has been setup.
-  views::Widget::CreateWindow(new views::WidgetDelegateView);
-
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
   params.delegate = new WindowTypeLauncherView;

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <vector>
+
 #include "base/at_exit.h"
 #include "base/bind.h"
 #include "base/path_service.h"
@@ -9,6 +11,7 @@
 #include "base/test/test_suite.h"
 #include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/display.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/mojo/init/ui_init.h"
 
@@ -20,11 +23,17 @@
 
 namespace {
 
+std::vector<gfx::Display> GetTestDisplays() {
+  std::vector<gfx::Display> displays(1);
+  displays[0].set_id(2000);
+  displays[0].SetScaleAndBounds(1., gfx::Rect(0, 0, 800, 600));
+  return displays;
+}
+
 class NoAtExitBaseTestSuite : public base::TestSuite {
  public:
   NoAtExitBaseTestSuite(int argc, char** argv)
-      : base::TestSuite(argc, argv, false),
-        ui_init_(gfx::Size(800, 600), 1.f) {
+      : base::TestSuite(argc, argv, false), ui_init_(GetTestDisplays()) {
 #if defined(OS_ANDROID)
     base::MemoryMappedFile::Region resource_file_region;
     int fd = base::android::OpenApkAsset("assets/html_viewer.pak",

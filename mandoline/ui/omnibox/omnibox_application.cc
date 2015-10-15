@@ -117,8 +117,7 @@ void OmniboxImpl::OnEmbed(mus::View* root) {
   root_ = root;
 
   if (!aura_init_.get()) {
-    aura_init_.reset(
-        new views::AuraInit(root, app_->shell(), "mandoline_ui.pak"));
+    aura_init_.reset(new views::AuraInit(app_, "mandoline_ui.pak", root_));
     edit_ = new views::Textfield;
     edit_->set_controller(this);
     edit_->SetTextInputType(ui::TEXT_INPUT_TYPE_URL);

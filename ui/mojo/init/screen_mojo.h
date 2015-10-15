@@ -5,8 +5,9 @@
 #ifndef UI_MOJO_INIT_SCREEN_MOJO_H_
 #define UI_MOJO_INIT_SCREEN_MOJO_H_
 
+#include <vector>
+
 #include "ui/gfx/display.h"
-#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/screen.h"
 
 namespace ui {
@@ -14,7 +15,8 @@ namespace mojo {
 
 class ScreenMojo : public gfx::Screen {
  public:
-  ScreenMojo(const gfx::Size& screen_size_in_pixels, float device_pixel_ratio);
+  explicit ScreenMojo(const std::vector<gfx::Display>& displays);
+  ~ScreenMojo() override;
 
   // gfx::Screen:
   gfx::Point GetCursorScreenPoint() override;
@@ -30,10 +32,7 @@ class ScreenMojo : public gfx::Screen {
   void RemoveObserver(gfx::DisplayObserver* observer) override;
 
  private:
-  const gfx::Size screen_size_in_pixels_;
-  const float device_pixel_ratio_;
-
-  gfx::Display display_;
+  const std::vector<gfx::Display> displays_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenMojo);
 };

@@ -20,6 +20,7 @@
 #include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
+#include "ui/gfx/display.h"
 #include "ui/mojo/init/ui_init.h"
 #include "v8/include/v8.h"
 
@@ -56,16 +57,26 @@ std::set<std::string> GetResourcePaths() {
   return paths;
 }
 
+// TODO(sky): convert to using DisplayService.
+std::vector<gfx::Display> DisplaysFromSizeAndScale(
+    const gfx::Size& screen_size_in_pixels,
+    float device_pixel_ratio) {
+  std::vector<gfx::Display> displays(1);
+  displays[0].set_id(2000);
+  displays[0].SetScaleAndBounds(device_pixel_ratio,
+                                gfx::Rect(screen_size_in_pixels));
+  return displays;
+}
+
 }  // namespace
 
 GlobalState::GlobalState(mojo::ApplicationImpl* app)
     : app_(app),
-      resource_loader_(app->shell(), GetResourcePaths()),
+      resource_loader_(app, GetResourcePaths()),
       did_init_(false),
       device_pixel_ratio_(1.f),
       discardable_memory_allocator_(kDesiredMaxMemory),
-      compositor_thread_("compositor thread") {
-}
+      compositor_thread_("compositor thread") {}
 
 GlobalState::~GlobalState() {
   if (blink_platform_) {
@@ -105,8 +116,8 @@ void GlobalState::InitIfNecessary(const gfx::Size& screen_size_in_pixels,
   SkFontConfigInterface::SetGlobal(font_loader_.get());
 #endif
 
-  ui_init_.reset(
-      new ui::mojo::UIInit(screen_size_in_pixels, device_pixel_ratio));
+  ui_init_.reset(new ui::mojo::UIInit(
+      DisplaysFromSizeAndScale(screen_size_in_pixels_, device_pixel_ratio_)));
   base::DiscardableMemoryAllocator::SetInstance(&discardable_memory_allocator_);
 
   mojo::URLRequestPtr request(mojo::URLRequest::New());

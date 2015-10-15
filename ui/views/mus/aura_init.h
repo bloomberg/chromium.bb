@@ -6,6 +6,7 @@
 #define UI_VIEWS_MUS_AURA_INIT_H_
 
 #include <string>
+#include <vector>
 
 #include "skia/ext/refptr.h"
 #include "ui/mojo/init/ui_init.h"
@@ -14,8 +15,12 @@ namespace font_service {
 class FontLoader;
 }
 
+namespace gfx {
+class Display;
+}
+
 namespace mojo {
-class Shell;
+class ApplicationImpl;
 }
 
 namespace mus {
@@ -28,13 +33,18 @@ namespace views {
 // |resource_file| is the path to the apk file containing the resources.
 class AuraInit {
  public:
-  AuraInit(mus::View* root,
-           mojo::Shell* shell,
-           const std::string& resource_file);
+  // This constructor builds the set of Displays from the ViewportMetrics of
+  // |view|.
+  AuraInit(mojo::ApplicationImpl* app,
+           const std::string& resource_file,
+           mus::View* view);
+  AuraInit(mojo::ApplicationImpl* app,
+           const std::string& resource_file,
+           const std::vector<gfx::Display>& displays);
   ~AuraInit();
 
  private:
-  void InitializeResources(mojo::Shell* shell);
+  void InitializeResources(mojo::ApplicationImpl* app);
 
   ui::mojo::UIInit ui_init_;
 

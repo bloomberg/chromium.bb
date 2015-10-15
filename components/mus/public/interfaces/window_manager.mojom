@@ -7,6 +7,21 @@ module mus.mojom;
 import "components/mus/public/interfaces/view_tree.mojom";
 import "ui/mojo/geometry/geometry.mojom";
 
+enum Rotation {
+  VALUE_0,
+  VALUE_90,
+  VALUE_180,
+  VALUE_270,
+};
+
+struct Display {
+  int64 id;
+  mojo.Rect bounds;
+  mojo.Rect work_area;
+  float device_pixel_ratio;
+  Rotation rotation;
+};
+
 // Represents a core interface that should be implemented by any window manager
 // built on top of Mus.
 // For security reasons, methods that take view_ids can only pass view ids
@@ -18,4 +33,6 @@ interface WindowManager {
   // Resizes the corresponding view to |size| and centers it in the current
   // context.
   CenterWindow(uint32 view_id, mojo.Size size);
+
+  GetDisplays() => (array<Display> displays);
 };

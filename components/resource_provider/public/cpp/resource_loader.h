@@ -22,7 +22,7 @@ class File;
 }
 
 namespace mojo {
-class Shell;
+class ApplicationImpl;
 }
 
 namespace resource_provider {
@@ -33,7 +33,8 @@ namespace resource_provider {
 // have been obtained.
 class ResourceLoader {
  public:
-  ResourceLoader(mojo::Shell* shell, const std::set<std::string>& paths);
+  ResourceLoader(mojo::ApplicationImpl* app,
+                 const std::set<std::string>& paths);
   ~ResourceLoader();
 
   // Uses WaitForIncomingMessage() to block until the results are available, or

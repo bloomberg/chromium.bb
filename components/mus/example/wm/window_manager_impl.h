@@ -21,6 +21,7 @@ class WindowManagerImpl : public mus::mojom::WindowManager {
   // mus::mojom::WindowManager:
   void OpenWindow(mojo::ViewTreeClientPtr client) override;
   void CenterWindow(uint32_t view_id, mojo::SizePtr size) override;
+  void GetDisplays(const GetDisplaysCallback& callback) override;
 
   WindowManagerApplication* state_;
   mojo::StrongBinding<mus::mojom::WindowManager> binding_;

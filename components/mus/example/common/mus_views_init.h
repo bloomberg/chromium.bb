@@ -7,6 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "components/mus/public/cpp/view_tree_delegate.h"
+#include "ui/views/mus/aura_init.h"
 #include "ui/views/views_delegate.h"
 
 namespace mojo {
@@ -42,7 +43,7 @@ class MUSViewsInit : public views::ViewsDelegate, public mus::ViewTreeDelegate {
 
   mojo::ApplicationImpl* app_;
 
-  scoped_ptr<views::AuraInit> aura_init_;
+  views::AuraInit aura_init_;
 
   DISALLOW_COPY_AND_ASSIGN(MUSViewsInit);
 };

@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/files/file.h"
+#include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/application/public/cpp/connect.h"
 #include "mojo/application/public/interfaces/service_provider.mojom.h"
 #include "mojo/application/public/interfaces/shell.mojom.h"
@@ -23,17 +24,12 @@ base::File GetFileFromHandle(mojo::ScopedHandle handle) {
 }
 }
 
-ResourceLoader::ResourceLoader(mojo::Shell* shell,
+ResourceLoader::ResourceLoader(mojo::ApplicationImpl* app,
                                const std::set<std::string>& paths)
     : loaded_(false), did_block_(false) {
   mojo::URLRequestPtr request(mojo::URLRequest::New());
   request->url = mojo::String::From("mojo:resource_provider");
-  mojo::ServiceProviderPtr resource_provider_service_provider;
-  shell->ConnectToApplication(
-      request.Pass(), GetProxy(&resource_provider_service_provider), nullptr,
-      nullptr, mojo::Shell::ConnectToApplicationCallback());
-  mojo::ConnectToService(resource_provider_service_provider.get(),
-                         &resource_provider_);
+  app->ConnectToService(request.Pass(), &resource_provider_);
   std::vector<std::string> paths_vector(paths.begin(), paths.end());
   resource_provider_->GetResources(
       mojo::Array<mojo::String>::From(paths_vector),

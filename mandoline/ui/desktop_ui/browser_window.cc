@@ -372,8 +372,7 @@ void BrowserWindow::OnHideFindBar() {
 void BrowserWindow::Init(mus::View* root) {
   DCHECK_GT(root->viewport_metrics().device_pixel_ratio, 0);
   if (!aura_init_)
-    aura_init_.reset(
-        new views::AuraInit(root, app_->shell(), "mandoline_ui.pak"));
+    aura_init_.reset(new views::AuraInit(app_, "mandoline_ui.pak", root));
 
   root_ = root;
   omnibox_view_ = root_->connection()->CreateView();

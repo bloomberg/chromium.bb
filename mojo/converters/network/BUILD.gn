@@ -1,0 +1,13 @@
+# Copyright 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("network") {
+  public_deps = [
+    "//mojo/services/network/public/interfaces",
+  ]
+  sources = [
+    "network_type_converters.cc",
+    "network_type_converters.h",
+  ]
+}

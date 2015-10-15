@@ -9,11 +9,13 @@
 #include "base/path_service.h"
 #include "components/mus/public/cpp/view.h"
 #include "components/resource_provider/public/cpp/resource_loader.h"
+#include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "ui/aura/env.h"
 #include "ui/base/ime/input_method_initializer.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
+#include "ui/gfx/display.h"
 
 #if defined(OS_LINUX) && !defined(OS_ANDROID)
 #include "components/font_service/public/cpp/font_loader.h"
@@ -29,19 +31,32 @@ std::set<std::string> GetResourcePaths(const std::string& resource_file) {
   return paths;
 }
 
+std::vector<gfx::Display> GetDisplaysFromView(mus::View* view) {
+  static int64 synthesized_display_id = 2000;
+  gfx::Display display;
+  display.set_id(synthesized_display_id++);
+  display.SetScaleAndBounds(
+      view->viewport_metrics().device_pixel_ratio,
+      gfx::Rect(view->viewport_metrics().size_in_pixels.To<gfx::Size>()));
+  std::vector<gfx::Display> displays;
+  displays.push_back(display);
+  return displays;
+}
+
 }  // namespace
 
-// TODO(sky): the 1.f should be view->viewport_metrics().device_scale_factor,
-// but that causes clipping problems. No doubt we're not scaling a size
-// correctly.
-AuraInit::AuraInit(mus::View* view,
-                   mojo::Shell* shell,
-                   const std::string& resource_file)
-    : ui_init_(view->viewport_metrics().size_in_pixels.To<gfx::Size>(), 1.f),
-      resource_file_(resource_file) {
+AuraInit::AuraInit(mojo::ApplicationImpl* app,
+                   const std::string& resource_file,
+                   mus::View* view)
+    : AuraInit(app, resource_file, GetDisplaysFromView(view)) {}
+
+AuraInit::AuraInit(mojo::ApplicationImpl* app,
+                   const std::string& resource_file,
+                   const std::vector<gfx::Display>& displays)
+    : ui_init_(displays), resource_file_(resource_file) {
   aura::Env::CreateInstance(false);
 
-  InitializeResources(shell);
+  InitializeResources(app);
 
   ui::InitializeInputMethodForTesting();
 }
@@ -58,11 +73,11 @@ AuraInit::~AuraInit() {
 #endif
 }
 
-void AuraInit::InitializeResources(mojo::Shell* shell) {
+void AuraInit::InitializeResources(mojo::ApplicationImpl* app) {
   if (ui::ResourceBundle::HasSharedInstance())
     return;
   resource_provider::ResourceLoader resource_loader(
-      shell, GetResourcePaths(resource_file_));
+      app, GetResourcePaths(resource_file_));
   if (!resource_loader.BlockUntilLoaded())
     return;
   CHECK(resource_loader.loaded());
@@ -79,7 +94,7 @@ void AuraInit::InitializeResources(mojo::Shell* shell) {
 
 // Initialize the skia font code to go ask fontconfig underneath.
 #if defined(OS_LINUX) && !defined(OS_ANDROID)
-  font_loader_ = skia::AdoptRef(new font_service::FontLoader(shell));
+  font_loader_ = skia::AdoptRef(new font_service::FontLoader(app->shell()));
   SkFontConfigInterface::SetGlobal(font_loader_.get());
 #endif
 

@@ -9,10 +9,74 @@
 #include "components/mus/public/interfaces/window_manager.mojom.h"
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/application_impl.h"
-#include "ui/views/mus/aura_init.h"
+#include "mojo/converters/geometry/geometry_type_converters.h"
+#include "mojo/converters/network/network_type_converters.h"
+#include "ui/gfx/display.h"
+#include "ui/gfx/geometry/point_conversions.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/views/mus/native_widget_view_manager.h"
 
-MUSViewsInit::MUSViewsInit(mojo::ApplicationImpl* app) : app_(app) {}
+namespace mojo {
+
+gfx::Display::Rotation GFXRotationFromMojomRotation(
+    mus::mojom::Rotation input) {
+  switch (input) {
+    case mus::mojom::ROTATION_VALUE_0:
+      return gfx::Display::ROTATE_0;
+    case mus::mojom::ROTATION_VALUE_90:
+      return gfx::Display::ROTATE_90;
+    case mus::mojom::ROTATION_VALUE_180:
+      return gfx::Display::ROTATE_180;
+    case mus::mojom::ROTATION_VALUE_270:
+      return gfx::Display::ROTATE_270;
+  }
+  return gfx::Display::ROTATE_0;
+}
+
+template <>
+struct TypeConverter<gfx::Display, mus::mojom::DisplayPtr> {
+  static gfx::Display Convert(const mus::mojom::DisplayPtr& input) {
+    gfx::Display result;
+    result.set_id(input->id);
+    result.SetScaleAndBounds(input->device_pixel_ratio,
+                             input->bounds.To<gfx::Rect>());
+    gfx::Rect work_area(
+        gfx::ToFlooredPoint(gfx::ScalePoint(
+            gfx::Point(input->work_area->x, input->work_area->y),
+            1.0f / input->device_pixel_ratio)),
+        gfx::ScaleToFlooredSize(
+            gfx::Size(input->work_area->width, input->work_area->height),
+            1.0f / input->device_pixel_ratio));
+    result.set_work_area(work_area);
+    result.set_rotation(GFXRotationFromMojomRotation(input->rotation));
+    return result;
+  }
+};
+
+}  // namespace mojo
+
+namespace {
+
+std::vector<gfx::Display> GetDisplaysFromWindowManager(
+    mojo::ApplicationImpl* app) {
+  mus::mojom::WindowManagerPtr window_manager;
+  app->ConnectToService(mojo::URLRequest::From(std::string("mojo:example_wm")),
+                        &window_manager);
+  std::vector<gfx::Display> displays;
+  window_manager->GetDisplays(
+      [&displays](mojo::Array<mus::mojom::DisplayPtr> mojom_displays) {
+        displays = mojom_displays.To<std::vector<gfx::Display>>();
+      });
+  CHECK(window_manager.WaitForIncomingResponse());
+  return displays;
+}
+}
+
+MUSViewsInit::MUSViewsInit(mojo::ApplicationImpl* app)
+    : app_(app),
+      aura_init_(app,
+                 "example_resources.pak",
+                 GetDisplaysFromWindowManager(app)) {}
 
 MUSViewsInit::~MUSViewsInit() {}
 
@@ -44,10 +108,6 @@ void MUSViewsInit::OnBeforeWidgetInit(
     views::internal::NativeWidgetDelegate* delegate) {}
 
 void MUSViewsInit::OnEmbed(mus::View* root) {
-  if (!aura_init_) {
-    aura_init_.reset(
-        new views::AuraInit(root, app_->shell(), "example_resources.pak"));
-  }
 }
 
 void MUSViewsInit::OnConnectionLost(mus::ViewTreeConnection* connection) {}
