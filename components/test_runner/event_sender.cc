@@ -96,6 +96,12 @@ int GetKeyModifier(const std::string& modifier_name) {
 #else
     return WebInputEvent::ControlKey;
 #endif
+  } else if (!strcmp(characters, "accessKey")) {
+#ifdef __APPLE__
+    return WebInputEvent::AltKey | WebInputEvent::ControlKey;
+#else
+    return WebInputEvent::AltKey;
+#endif
   } else if (!strcmp(characters, "leftButton")) {
     return WebInputEvent::LeftButtonDown;
   } else if (!strcmp(characters, "middleButton")) {

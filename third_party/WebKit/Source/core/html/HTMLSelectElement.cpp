@@ -42,6 +42,7 @@
 #include "core/events/GestureEvent.h"
 #include "core/events/KeyboardEvent.h"
 #include "core/events/MouseEvent.h"
+#include "core/events/ScopedEventQueue.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
@@ -1705,24 +1706,27 @@ void HTMLSelectElement::accessKeySetSelectedIndex(int index)
     if (!focused())
         accessKeyAction(false);
 
-    // If this index is already selected, unselect. otherwise update the selected index.
     const WillBeHeapVector<RawPtrWillBeMember<HTMLElement>>& items = listItems();
     int listIndex = optionToListIndex(index);
-    if (listIndex >= 0) {
-        HTMLElement* element = items[listIndex];
-        if (isHTMLOptionElement(*element)) {
-            if (toHTMLOptionElement(*element).selected())
-                toHTMLOptionElement(*element).setSelectedState(false);
-            else
-                selectOption(index, DispatchInputAndChangeEvent | UserDriven);
-        }
+    if (listIndex < 0)
+        return;
+    HTMLElement& element = *items[listIndex];
+    if (!isHTMLOptionElement(element))
+        return;
+    EventQueueScope scope;
+    // If this index is already selected, unselect. otherwise update the
+    // selected index.
+    if (toHTMLOptionElement(element).selected()) {
+        if (usesMenuList())
+            selectOption(-1, DispatchInputAndChangeEvent | UserDriven);
+        else
+            toHTMLOptionElement(element).setSelectedState(false);
+    } else {
+        selectOption(index, DispatchInputAndChangeEvent | UserDriven);
     }
-
     if (usesMenuList())
-        dispatchInputAndChangeEventForMenuList();
-    else
-        listBoxOnChange();
-
+        return;
+    listBoxOnChange();
     scrollToSelection();
 }
 
