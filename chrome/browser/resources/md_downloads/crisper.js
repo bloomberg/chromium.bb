@@ -3007,7 +3007,7 @@ debouncer.stop();
 }
 }
 });
-Polymer.version = '1.1.4';
+Polymer.version = '1.1.5';
 Polymer.Base._addFeature({
 _registerFeatures: function () {
 this._prepIs();
@@ -4884,7 +4884,15 @@ this.listen(node, name, listeners[key]);
 }
 },
 listen: function (node, eventName, methodName) {
-this._listen(node, eventName, this._createEventHandler(node, eventName, methodName));
+var handler = this._recallEventHandler(this, eventName, node, methodName);
+if (!handler) {
+handler = this._createEventHandler(node, eventName, methodName);
+}
+if (handler._listening) {
+return;
+}
+this._listen(node, eventName, handler);
+handler._listening = true;
 },
 _boundListenerKey: function (eventName, methodName) {
 return eventName + ':' + methodName;
@@ -4923,6 +4931,7 @@ host[methodName](e, e.detail);
 host._warn(host._logf('_createEventHandler', 'listener method `' + methodName + '` not defined'));
 }
 };
+handler._listening = false;
 this._recordEventHandler(host, eventName, node, methodName, handler);
 return handler;
 },
@@ -4930,6 +4939,7 @@ unlisten: function (node, eventName, methodName) {
 var handler = this._recallEventHandler(this, eventName, node, methodName);
 if (handler) {
 this._unlisten(node, eventName, handler);
+handler._listening = false;
 }
 },
 _listen: function (node, eventName, handler) {
@@ -5777,6 +5787,12 @@ elt[n] = props[n];
 }
 }
 return elt;
+},
+isLightDescendant: function (node) {
+return this.contains(node) && Polymer.dom(this).getOwnerRoot() === Polymer.dom(node).getOwnerRoot();
+},
+isLocalDescendant: function (node) {
+return this.root === Polymer.dom(node).getOwnerRoot();
 }
 });
 Polymer.Bind = {
@@ -6578,6 +6594,22 @@ if (args.length) {
 this._notifySplice(array, path, 0, args.length, []);
 }
 return ret;
+},
+prepareModelNotifyPath: function (model) {
+this.mixin(model, {
+fire: Polymer.Base.fire,
+notifyPath: Polymer.Base.notifyPath,
+_EVENT_CHANGED: Polymer.Base._EVENT_CHANGED,
+_notifyPath: Polymer.Base._notifyPath,
+_pathEffector: Polymer.Base._pathEffector,
+_annotationPathEffect: Polymer.Base._annotationPathEffect,
+_complexObserverPathEffect: Polymer.Base._complexObserverPathEffect,
+_annotatedComputationPathEffect: Polymer.Base._annotatedComputationPathEffect,
+_computePathEffect: Polymer.Base._computePathEffect,
+_modelForPath: Polymer.Base._modelForPath,
+_pathMatchesEffect: Polymer.Base._pathMatchesEffect,
+_notifyBoundPaths: Polymer.Base._notifyBoundPaths
+});
 }
 });
 }());
@@ -7784,6 +7816,7 @@ properties: { __hideTemplateChildren__: { observer: '_showHideChildren' } },
 _instanceProps: Polymer.nob,
 _parentPropPrefix: '_parent_',
 templatize: function (template) {
+this._templatized = template;
 if (!template._content) {
 template._content = template.content;
 }
@@ -7794,11 +7827,11 @@ return;
 }
 var archetype = Object.create(Polymer.Base);
 this._customPrepAnnotations(archetype, template);
+this._prepParentProperties(archetype, template);
 archetype._prepEffects();
 this._customPrepEffects(archetype);
 archetype._prepBehaviors();
 archetype._prepBindings();
-this._prepParentProperties(archetype, template);
 archetype._notifyPath = this._notifyPathImpl;
 archetype._scopeElementClass = this._scopeElementClassImpl;
 archetype.listen = this._listenImpl;
@@ -7881,6 +7914,7 @@ delete parentProps[prop];
 proto = archetype._parentPropProto = Object.create(null);
 if (template != this) {
 Polymer.Bind.prepareModel(proto);
+Polymer.Base.prepareModelNotifyPath(proto);
 }
 for (prop in parentProps) {
 var parentProp = this._parentPropPrefix + prop;
@@ -7899,6 +7933,7 @@ Polymer.Bind.prepareInstance(template);
 template._forwardParentProp = this._forwardParentProp.bind(this);
 }
 this._extendTemplate(template, proto);
+template._pathEffector = this._pathEffectorImpl.bind(this);
 }
 },
 _createForwardPropEffector: function (prop) {
@@ -7909,7 +7944,7 @@ this._forwardParentProp(prop, value);
 _createHostPropEffector: function (prop) {
 var prefix = this._parentPropPrefix;
 return function (source, value) {
-this.dataHost[prefix + prop] = value;
+this.dataHost._templatized[prefix + prop] = value;
 };
 },
 _createInstancePropEffector: function (prop) {
@@ -7941,16 +7976,17 @@ var dot = path.indexOf('.');
 var root = dot < 0 ? path : path.slice(0, dot);
 dataHost._forwardInstancePath.call(dataHost, this, path, value);
 if (root in dataHost._parentProps) {
-dataHost.notifyPath(dataHost._parentPropPrefix + path, value);
+dataHost._templatized.notifyPath(dataHost._parentPropPrefix + path, value);
 }
 },
-_pathEffector: function (path, value, fromAbove) {
+_pathEffectorImpl: function (path, value, fromAbove) {
 if (this._forwardParentPath) {
 if (path.indexOf(this._parentPropPrefix) === 0) {
-this._forwardParentPath(path.substring(8), value);
+var subPath = path.substring(this._parentPropPrefix.length);
+this._forwardParentPath(subPath, value);
 }
 }
-Polymer.Base._pathEffector.apply(this, arguments);
+Polymer.Base._pathEffector.call(this._templatized, path, value, fromAbove);
 },
 _constructorImpl: function (model, host) {
 this._rootDataHost = host._getRootDataHost();
@@ -7993,8 +8029,9 @@ return host._scopeElementClass(node, value);
 stamp: function (model) {
 model = model || {};
 if (this._parentProps) {
+var templatized = this._templatized;
 for (var prop in this._parentProps) {
-model[prop] = this[this._parentPropPrefix + prop];
+model[prop] = templatized[this._parentPropPrefix + prop];
 }
 }
 return new this.ctor(model, this);
@@ -8602,7 +8639,7 @@ this.deselect(item);
 }
 } else {
 this.push('selected', item);
-skey = this._selectedColl.getKey(item);
+var skey = this._selectedColl.getKey(item);
 this.linkPaths('selected.' + skey, 'items.' + key);
 }
 } else {
@@ -9018,6 +9055,535 @@ this.fire('dom-change');
     });
 
   })();
+(function() {
+
+    // monostate data
+    var metaDatas = {};
+    var metaArrays = {};
+
+    Polymer.IronMeta = Polymer({
+
+      is: 'iron-meta',
+
+      properties: {
+
+        /**
+         * The type of meta-data.  All meta-data of the same type is stored
+         * together.
+         */
+        type: {
+          type: String,
+          value: 'default',
+          observer: '_typeChanged'
+        },
+
+        /**
+         * The key used to store `value` under the `type` namespace.
+         */
+        key: {
+          type: String,
+          observer: '_keyChanged'
+        },
+
+        /**
+         * The meta-data to store or retrieve.
+         */
+        value: {
+          type: Object,
+          notify: true,
+          observer: '_valueChanged'
+        },
+
+        /**
+         * If true, `value` is set to the iron-meta instance itself.
+         */
+         self: {
+          type: Boolean,
+          observer: '_selfChanged'
+        },
+
+        /**
+         * Array of all meta-data values for the given type.
+         */
+        list: {
+          type: Array,
+          notify: true
+        }
+
+      },
+
+      /**
+       * Only runs if someone invokes the factory/constructor directly
+       * e.g. `new Polymer.IronMeta()`
+       */
+      factoryImpl: function(config) {
+        if (config) {
+          for (var n in config) {
+            switch(n) {
+              case 'type':
+              case 'key':
+              case 'value':
+                this[n] = config[n];
+                break;
+            }
+          }
+        }
+      },
+
+      created: function() {
+        // TODO(sjmiles): good for debugging?
+        this._metaDatas = metaDatas;
+        this._metaArrays = metaArrays;
+      },
+
+      _keyChanged: function(key, old) {
+        this._resetRegistration(old);
+      },
+
+      _valueChanged: function(value) {
+        this._resetRegistration(this.key);
+      },
+
+      _selfChanged: function(self) {
+        if (self) {
+          this.value = this;
+        }
+      },
+
+      _typeChanged: function(type) {
+        this._unregisterKey(this.key);
+        if (!metaDatas[type]) {
+          metaDatas[type] = {};
+        }
+        this._metaData = metaDatas[type];
+        if (!metaArrays[type]) {
+          metaArrays[type] = [];
+        }
+        this.list = metaArrays[type];
+        this._registerKeyValue(this.key, this.value);
+      },
+
+      /**
+       * Retrieves meta data value by key.
+       *
+       * @method byKey
+       * @param {string} key The key of the meta-data to be returned.
+       * @return {*}
+       */
+      byKey: function(key) {
+        return this._metaData && this._metaData[key];
+      },
+
+      _resetRegistration: function(oldKey) {
+        this._unregisterKey(oldKey);
+        this._registerKeyValue(this.key, this.value);
+      },
+
+      _unregisterKey: function(key) {
+        this._unregister(key, this._metaData, this.list);
+      },
+
+      _registerKeyValue: function(key, value) {
+        this._register(key, value, this._metaData, this.list);
+      },
+
+      _register: function(key, value, data, list) {
+        if (key && data && value !== undefined) {
+          data[key] = value;
+          list.push(value);
+        }
+      },
+
+      _unregister: function(key, data, list) {
+        if (key && data) {
+          if (key in data) {
+            var value = data[key];
+            delete data[key];
+            this.arrayDelete(list, value);
+          }
+        }
+      }
+
+    });
+
+    /**
+    `iron-meta-query` can be used to access infomation stored in `iron-meta`.
+
+    Examples:
+
+    If I create an instance like this:
+
+        <iron-meta key="info" value="foo/bar"></iron-meta>
+
+    Note that value="foo/bar" is the metadata I've defined. I could define more
+    attributes or use child nodes to define additional metadata.
+
+    Now I can access that element (and it's metadata) from any `iron-meta-query` instance:
+
+         var value = new Polymer.IronMetaQuery({key: 'info'}).value;
+
+    @group Polymer Iron Elements
+    @element iron-meta-query
+    */
+    Polymer.IronMetaQuery = Polymer({
+
+      is: 'iron-meta-query',
+
+      properties: {
+
+        /**
+         * The type of meta-data.  All meta-data of the same type is stored
+         * together.
+         */
+        type: {
+          type: String,
+          value: 'default',
+          observer: '_typeChanged'
+        },
+
+        /**
+         * Specifies a key to use for retrieving `value` from the `type`
+         * namespace.
+         */
+        key: {
+          type: String,
+          observer: '_keyChanged'
+        },
+
+        /**
+         * The meta-data to store or retrieve.
+         */
+        value: {
+          type: Object,
+          notify: true,
+          readOnly: true
+        },
+
+        /**
+         * Array of all meta-data values for the given type.
+         */
+        list: {
+          type: Array,
+          notify: true
+        }
+
+      },
+
+      /**
+       * Actually a factory method, not a true constructor. Only runs if
+       * someone invokes it directly (via `new Polymer.IronMeta()`);
+       */
+      factoryImpl: function(config) {
+        if (config) {
+          for (var n in config) {
+            switch(n) {
+              case 'type':
+              case 'key':
+                this[n] = config[n];
+                break;
+            }
+          }
+        }
+      },
+
+      created: function() {
+        // TODO(sjmiles): good for debugging?
+        this._metaDatas = metaDatas;
+        this._metaArrays = metaArrays;
+      },
+
+      _keyChanged: function(key) {
+        this._setValue(this._metaData && this._metaData[key]);
+      },
+
+      _typeChanged: function(type) {
+        this._metaData = metaDatas[type];
+        this.list = metaArrays[type];
+        if (this.key) {
+          this._keyChanged(this.key);
+        }
+      },
+
+      /**
+       * Retrieves meta data value by key.
+       * @param {string} key The key of the meta-data to be returned.
+       * @return {*}
+       */
+      byKey: function(key) {
+        return this._metaData && this._metaData[key];
+      }
+
+    });
+
+  })();
+Polymer({
+
+      is: 'iron-icon',
+
+      properties: {
+
+        /**
+         * The name of the icon to use. The name should be of the form:
+         * `iconset_name:icon_name`.
+         */
+        icon: {
+          type: String,
+          observer: '_iconChanged'
+        },
+
+        /**
+         * The name of the theme to used, if one is specified by the
+         * iconset.
+         */
+        theme: {
+          type: String,
+          observer: '_updateIcon'
+        },
+
+        /**
+         * If using iron-icon without an iconset, you can set the src to be
+         * the URL of an individual icon image file. Note that this will take
+         * precedence over a given icon attribute.
+         */
+        src: {
+          type: String,
+          observer: '_srcChanged'
+        },
+
+        /**
+         * @type {!Polymer.IronMeta}
+         */
+        _meta: {
+          value: Polymer.Base.create('iron-meta', {type: 'iconset'})
+        }
+
+      },
+
+      _DEFAULT_ICONSET: 'icons',
+
+      _iconChanged: function(icon) {
+        var parts = (icon || '').split(':');
+        this._iconName = parts.pop();
+        this._iconsetName = parts.pop() || this._DEFAULT_ICONSET;
+        this._updateIcon();
+      },
+
+      _srcChanged: function(src) {
+        this._updateIcon();
+      },
+
+      _usesIconset: function() {
+        return this.icon || !this.src;
+      },
+
+      /** @suppress {visibility} */
+      _updateIcon: function() {
+        if (this._usesIconset()) {
+          if (this._iconsetName) {
+            this._iconset = /** @type {?Polymer.Iconset} */ (
+              this._meta.byKey(this._iconsetName));
+            if (this._iconset) {
+              this._iconset.applyIcon(this, this._iconName, this.theme);
+              this.unlisten(window, 'iron-iconset-added', '_updateIcon');
+            } else {
+              this.listen(window, 'iron-iconset-added', '_updateIcon');
+            }
+          }
+        } else {
+          if (!this._img) {
+            this._img = document.createElement('img');
+            this._img.style.width = '100%';
+            this._img.style.height = '100%';
+            this._img.draggable = false;
+          }
+          this._img.src = this.src;
+          Polymer.dom(this.root).appendChild(this._img);
+        }
+      }
+
+    });
+/**
+   * The `iron-iconset-svg` element allows users to define their own icon sets
+   * that contain svg icons. The svg icon elements should be children of the
+   * `iron-iconset-svg` element. Multiple icons should be given distinct id's.
+   *
+   * Using svg elements to create icons has a few advantages over traditional
+   * bitmap graphics like jpg or png. Icons that use svg are vector based so they
+   * are resolution independent and should look good on any device. They are
+   * stylable via css. Icons can be themed, colorized, and even animated.
+   *
+   * Example:
+   *
+   *     <iron-iconset-svg name="my-svg-icons" size="24">
+   *       <svg>
+   *         <defs>
+   *           <g id="shape">
+   *             <rect x="50" y="50" width="50" height="50" />
+   *             <circle cx="50" cy="50" r="50" />
+   *           </g>
+   *         </defs>
+   *       </svg>
+   *     </iron-iconset-svg>
+   *
+   * This will automatically register the icon set "my-svg-icons" to the iconset
+   * database.  To use these icons from within another element, make a
+   * `iron-iconset` element and call the `byId` method
+   * to retrieve a given iconset. To apply a particular icon inside an
+   * element use the `applyIcon` method. For example:
+   *
+   *     iconset.applyIcon(iconNode, 'car');
+   *
+   * @element iron-iconset-svg
+   * @demo demo/index.html
+   */
+  Polymer({
+
+    is: 'iron-iconset-svg',
+
+    properties: {
+
+      /**
+       * The name of the iconset.
+       *
+       * @attribute name
+       * @type string
+       */
+      name: {
+        type: String,
+        observer: '_nameChanged'
+      },
+
+      /**
+       * The size of an individual icon. Note that icons must be square.
+       *
+       * @attribute iconSize
+       * @type number
+       * @default 24
+       */
+      size: {
+        type: Number,
+        value: 24
+      }
+
+    },
+
+    /**
+     * Construct an array of all icon names in this iconset.
+     *
+     * @return {!Array} Array of icon names.
+     */
+    getIconNames: function() {
+      this._icons = this._createIconMap();
+      return Object.keys(this._icons).map(function(n) {
+        return this.name + ':' + n;
+      }, this);
+    },
+
+    /**
+     * Applies an icon to the given element.
+     *
+     * An svg icon is prepended to the element's shadowRoot if it exists,
+     * otherwise to the element itself.
+     *
+     * @method applyIcon
+     * @param {Element} element Element to which the icon is applied.
+     * @param {string} iconName Name of the icon to apply.
+     * @return {Element} The svg element which renders the icon.
+     */
+    applyIcon: function(element, iconName) {
+      // insert svg element into shadow root, if it exists
+      element = element.root || element;
+      // Remove old svg element
+      this.removeIcon(element);
+      // install new svg element
+      var svg = this._cloneIcon(iconName);
+      if (svg) {
+        var pde = Polymer.dom(element);
+        pde.insertBefore(svg, pde.childNodes[0]);
+        return element._svgIcon = svg;
+      }
+      return null;
+    },
+
+    /**
+     * Remove an icon from the given element by undoing the changes effected
+     * by `applyIcon`.
+     *
+     * @param {Element} element The element from which the icon is removed.
+     */
+    removeIcon: function(element) {
+      // Remove old svg element
+      if (element._svgIcon) {
+        Polymer.dom(element).removeChild(element._svgIcon);
+        element._svgIcon = null;
+      }
+    },
+
+    /**
+     *
+     * When name is changed, register iconset metadata
+     *
+     */
+    _nameChanged: function() {
+      new Polymer.IronMeta({type: 'iconset', key: this.name, value: this});
+      this.async(function() {
+        this.fire('iron-iconset-added', this, {node: window});
+      });
+    },
+
+    /**
+     * Create a map of child SVG elements by id.
+     *
+     * @return {!Object} Map of id's to SVG elements.
+     */
+    _createIconMap: function() {
+      // Objects chained to Object.prototype (`{}`) have members. Specifically,
+      // on FF there is a `watch` method that confuses the icon map, so we
+      // need to use a null-based object here.
+      var icons = Object.create(null);
+      Polymer.dom(this).querySelectorAll('[id]')
+        .forEach(function(icon) {
+          icons[icon.id] = icon;
+        });
+      return icons;
+    },
+
+    /**
+     * Produce installable clone of the SVG element matching `id` in this
+     * iconset, or `undefined` if there is no matching element.
+     *
+     * @return {Element} Returns an installable clone of the SVG element
+     * matching `id`.
+     */
+    _cloneIcon: function(id) {
+      // create the icon map on-demand, since the iconset itself has no discrete
+      // signal to know when it's children are fully parsed
+      this._icons = this._icons || this._createIconMap();
+      return this._prepareSvgClone(this._icons[id], this.size);
+    },
+
+    /**
+     * @param {Element} sourceSvg
+     * @param {number} size
+     * @return {Element}
+     */
+    _prepareSvgClone: function(sourceSvg, size) {
+      if (sourceSvg) {
+        var content = sourceSvg.cloneNode(true),
+            svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg'),
+            viewBox = content.getAttribute('viewBox') || '0 0 ' + size + ' ' + size;
+        svg.setAttribute('viewBox', viewBox);
+        svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+        // TODO(dfreedm): `pointer-events: none` works around https://crbug.com/370136
+        // TODO(sjmiles): inline style may not be ideal, but avoids requiring a shadow-root
+        svg.style.cssText = 'pointer-events: none; display: block; width: 100%; height: 100%;';
+        svg.appendChild(content).removeAttribute('id');
+        return svg;
+      }
+      return null;
+    }
+
+  });
 Polymer({
     is: 'paper-material',
 
@@ -9838,6 +10404,17 @@ Polymer({
           observer: '_holdDownChanged'
         },
 
+        /**
+         * If true, the ripple will not generate a ripple effect 
+         * via pointer interaction.
+         * Calling ripple's imperative api like `simulatedRipple` will 
+         * still generate the ripple effect.
+         */
+        noink: {
+          type: Boolean,
+          value: false
+        },
+
         _animating: {
           type: Boolean
         },
@@ -9849,6 +10426,10 @@ Polymer({
           }
         }
       },
+
+      observers: [
+        '_noinkChanged(noink, isAttached)'
+      ],
 
       get target () {
         var ownerRoot = Polymer.dom(this).getOwnerRoot();
@@ -9870,12 +10451,13 @@ Polymer({
       },
 
       attached: function() {
-        this.listen(this.target, 'up', 'upAction');
-        this.listen(this.target, 'down', 'downAction');
+        this.listen(this.target, 'up', 'uiUpAction');
+        this.listen(this.target, 'down', 'uiDownAction');
+      },
 
-        if (!this.target.hasAttribute('noink')) {
-          this.keyEventTarget = this.target;
-        }
+      detached: function() {
+        this.unlisten(this.target, 'up', 'uiUpAction');
+        this.unlisten(this.target, 'down', 'uiDownAction');
       },
 
       get shouldKeepAnimating () {
@@ -9897,7 +10479,22 @@ Polymer({
         }, 1);
       },
 
-      /** @param {Event=} event */
+      /** 
+       * Provokes a ripple down effect via a UI event, 
+       * respecting the `noink` property.
+       * @param {Event=} event 
+       */
+      uiDownAction: function(event) {
+        if (!this.noink) {
+          this.downAction(event);
+        }
+      },
+
+      /** 
+       * Provokes a ripple down effect via a UI event, 
+       * *not* respecting the `noink` property.
+       * @param {Event=} event 
+       */
       downAction: function(event) {
         if (this.holdDown && this.ripples.length > 0) {
           return;
@@ -9912,7 +10509,22 @@ Polymer({
         }
       },
 
-      /** @param {Event=} event */
+      /** 
+       * Provokes a ripple up effect via a UI event, 
+       * respecting the `noink` property.
+       * @param {Event=} event 
+       */
+      uiUpAction: function(event) {
+        if (!this.noink) {
+          this.upAction(event);
+        }
+      },
+
+      /** 
+       * Provokes a ripple up effect via a UI event, 
+       * *not* respecting the `noink` property.
+       * @param {Event=} event 
+       */
       upAction: function(event) {
         if (this.holdDown) {
           return;
@@ -9985,23 +10597,34 @@ Polymer({
       },
 
       _onEnterKeydown: function() {
-        this.downAction();
-        this.async(this.upAction, 1);
+        this.uiDownAction();
+        this.async(this.uiUpAction, 1);
       },
 
       _onSpaceKeydown: function() {
-        this.downAction();
+        this.uiDownAction();
       },
 
       _onSpaceKeyup: function() {
-        this.upAction();
+        this.uiUpAction();
       },
 
-      _holdDownChanged: function(holdDown) {
-        if (holdDown) {
+      // note: holdDown does not respect noink since it can be a focus based
+      // effect.
+      _holdDownChanged: function(newVal, oldVal) {
+        if (oldVal === undefined) {
+          return;
+        }
+        if (newVal) {
           this.downAction();
         } else {
           this.upAction();
+        }
+      },
+
+      _noinkChanged: function(noink, attached) {
+        if (attached) {
+          this.keyEventTarget = noink ? this : this.target;
         }
       }
     });
@@ -10208,33 +10831,7 @@ Polymer({
       }
     },
 
-    _eventSourceIsPrimaryInput: function(event) {
-      event = event.detail.sourceEvent || event;
-
-      // Always true for non-mouse events....
-      if (!this._mouseEventRe.test(event.type)) {
-        return true;
-      }
-
-      // http://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/buttons
-      if ('buttons' in event) {
-        return event.buttons === 1;
-      }
-
-      // http://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/which
-      if (typeof event.which === 'number') {
-        return event.which < 2;
-      }
-
-      // http://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/button
-      return event.button < 1;
-    },
-
     _downHandler: function(event) {
-      if (!this._eventSourceIsPrimaryInput(event)) {
-        return;
-      }
-
       this._setPointerDown(true);
       this._setPressed(true);
       this._setReceivedFocusFromKeyboard(false);
@@ -10312,24 +10909,138 @@ Polymer({
     Polymer.IronA11yKeysBehavior,
     Polymer.IronButtonStateImpl
   ];
-/** @polymerBehavior */
+/** 
+   * `Polymer.PaperRippleBehavior` dynamically implements a ripple 
+   * when the element has focus via pointer or keyboard.
+   *
+   * NOTE: This behavior is intended to be used in conjunction with and after
+   * `Polymer.IronButtonState` and `Polymer.IronControlState`.
+   *
+   * @polymerBehavior Polymer.PaperRippleBehavior 
+   */
+  Polymer.PaperRippleBehavior = {
+
+    properties: {
+      /**
+       * If true, the element will not produce a ripple effect when interacted
+       * with via the pointer.
+       */
+      noink: {
+        type: Boolean,
+        observer: '_noinkChanged'
+      }
+    },
+
+    /**
+     * Ensures a `<paper-ripple>` element is available when the element is 
+     * focused.
+     */
+    _buttonStateChanged: function() {
+      if (this.focused) {
+        this.ensureRipple();
+      }
+    },
+
+    /** 
+     * In addition to the functionality provided in `IronButtonState`, ensures
+     * a ripple effect is created when the element is in a `pressed` state.
+     */
+    _downHandler: function(event) {
+      Polymer.IronButtonStateImpl._downHandler.call(this, event);
+      if (this.pressed) {
+        this.ensureRipple(event);
+      }
+    },
+
+    /**
+     * Ensures this element contains a ripple effect. For startup efficiency 
+     * the ripple effect is dynamically on demand when needed.
+     * @param {!Event=} opt_triggeringEvent (optional) event that triggered the
+     * ripple.
+     */
+    ensureRipple: function(opt_triggeringEvent) {
+      if (!this.hasRipple()) {
+        this._ripple = this._createRipple();
+        this._ripple.noink = this.noink;
+        var rippleContainer = this._rippleContainer || this.root;
+        if (rippleContainer) {
+          Polymer.dom(rippleContainer).appendChild(this._ripple);
+        }
+        var domContainer = rippleContainer === this.shadyRoot ? this : 
+          rippleContainer;
+        if (opt_triggeringEvent &&
+            domContainer.contains(opt_triggeringEvent.target)) {
+          this._ripple.uiDownAction(opt_triggeringEvent);
+        }
+      }
+    },
+
+    /**
+     * Returns the `<paper-ripple>` element used by this element to create
+     * ripple effects. The element's ripple is created on demand, when
+     * necessary, and calling this method will force the 
+     * ripple to be created.
+     */
+    getRipple: function() {
+      this.ensureRipple();
+      return this._ripple;
+    },
+
+    /**
+     * Returns true if this element currently contains a ripple effect.
+     * @return {boolean}
+     */
+    hasRipple: function() {
+      return Boolean(this._ripple);
+    },
+
+    /**
+     * Create the element's ripple effect via creating a `<paper-ripple>`.
+     * Override this method to customize the ripple element.
+     * @return {element} Returns a `<paper-ripple>` element.
+     */
+    _createRipple: function() {
+      return document.createElement('paper-ripple');
+    },
+
+    _noinkChanged: function(noink) {
+      if (this.hasRipple()) {
+        this._ripple.noink = noink;
+      }
+    }
+
+  };
+/** @polymerBehavior Polymer.PaperButtonBehavior */
   Polymer.PaperButtonBehaviorImpl = {
 
     properties: {
 
-      _elevation: {
-        type: Number
+      /**
+       * The z-depth of this element, from 0-5. Setting to 0 will remove the
+       * shadow, and each increasing number greater than 0 will be "deeper"
+       * than the last.
+       *
+       * @attribute elevation
+       * @type number
+       * @default 1
+       */
+      elevation: {
+        type: Number,
+        reflectToAttribute: true,
+        readOnly: true
       }
 
     },
 
     observers: [
-      '_calculateElevation(focused, disabled, active, pressed, receivedFocusFromKeyboard)'
+      '_calculateElevation(focused, disabled, active, pressed, receivedFocusFromKeyboard)',
+      '_computeKeyboardClass(receivedFocusFromKeyboard)'
     ],
 
     hostAttributes: {
       role: 'button',
-      tabindex: '0'
+      tabindex: '0',
+      animated: true
     },
 
     _calculateElevation: function() {
@@ -10341,14 +11052,42 @@ Polymer({
       } else if (this.receivedFocusFromKeyboard) {
         e = 3;
       }
-      this._elevation = e;
+      this._setElevation(e);
+    },
+
+    _computeKeyboardClass: function(receivedFocusFromKeyboard) {
+      this.classList.toggle('keyboard-focus', receivedFocusFromKeyboard);
+    },
+
+    /**
+     * In addition to `IronButtonState` behavior, when space key goes down, 
+     * create a ripple down effect.
+     */
+    _spaceKeyDownHandler: function(event) {
+      Polymer.IronButtonStateImpl._spaceKeyDownHandler.call(this, event);
+      if (this.hasRipple()) {
+        this._ripple.uiDownAction();
+      }
+    },
+
+    /**
+     * In addition to `IronButtonState` behavior, when space key goes up, 
+     * create a ripple up effect.
+     */
+    _spaceKeyUpHandler: function(event) {
+      Polymer.IronButtonStateImpl._spaceKeyUpHandler.call(this, event);
+      if (this.hasRipple()) {
+        this._ripple.uiUpAction();
+      }
     }
+
   };
 
   /** @polymerBehavior */
   Polymer.PaperButtonBehavior = [
     Polymer.IronButtonState,
     Polymer.IronControlState,
+    Polymer.PaperRippleBehavior,
     Polymer.PaperButtonBehaviorImpl
   ];
 Polymer({
@@ -10372,18 +11111,10 @@ Polymer({
 
     _calculateElevation: function() {
       if (!this.raised) {
-        this._elevation = 0;
+        this.elevation = 0;
       } else {
         Polymer.PaperButtonBehaviorImpl._calculateElevation.apply(this);
       }
-    },
-
-    _computeContentClass: function(receivedFocusFromKeyboard) {
-      var className = 'content ';
-      if (receivedFocusFromKeyboard) {
-        className += ' keyboard-focus';
-      }
-      return className;
     }
   });
 /** 
@@ -10736,6 +11467,23 @@ cr.define('downloads', function() {
     },
 
     /** @private */
+    computeDangerIcon_: function() {
+      if (!this.isDangerous_)
+        return '';
+
+      switch (this.data.danger_type) {
+        case downloads.DangerType.DANGEROUS_CONTENT:
+        case downloads.DangerType.DANGEROUS_HOST:
+        case downloads.DangerType.DANGEROUS_URL:
+        case downloads.DangerType.POTENTIALLY_UNWANTED:
+        case downloads.DangerType.UNCOMMON_CONTENT:
+          return 'remove-circle';
+        default:
+          return 'warning';
+      }
+    },
+
+    /** @private */
     computeDate_: function() {
       if (this.hideDate)
         return '';
@@ -10904,533 +11652,6 @@ cr.define('downloads', function() {
 
   return {Item: Item};
 });
-(function() {
-
-    // monostate data
-    var metaDatas = {};
-    var metaArrays = {};
-
-    Polymer.IronMeta = Polymer({
-
-      is: 'iron-meta',
-
-      properties: {
-
-        /**
-         * The type of meta-data.  All meta-data of the same type is stored
-         * together.
-         */
-        type: {
-          type: String,
-          value: 'default',
-          observer: '_typeChanged'
-        },
-
-        /**
-         * The key used to store `value` under the `type` namespace.
-         */
-        key: {
-          type: String,
-          observer: '_keyChanged'
-        },
-
-        /**
-         * The meta-data to store or retrieve.
-         */
-        value: {
-          type: Object,
-          notify: true,
-          observer: '_valueChanged'
-        },
-
-        /**
-         * If true, `value` is set to the iron-meta instance itself.
-         */
-         self: {
-          type: Boolean,
-          observer: '_selfChanged'
-        },
-
-        /**
-         * Array of all meta-data values for the given type.
-         */
-        list: {
-          type: Array,
-          notify: true
-        }
-
-      },
-
-      /**
-       * Only runs if someone invokes the factory/constructor directly
-       * e.g. `new Polymer.IronMeta()`
-       */
-      factoryImpl: function(config) {
-        if (config) {
-          for (var n in config) {
-            switch(n) {
-              case 'type':
-              case 'key':
-              case 'value':
-                this[n] = config[n];
-                break;
-            }
-          }
-        }
-      },
-
-      created: function() {
-        // TODO(sjmiles): good for debugging?
-        this._metaDatas = metaDatas;
-        this._metaArrays = metaArrays;
-      },
-
-      _keyChanged: function(key, old) {
-        this._resetRegistration(old);
-      },
-
-      _valueChanged: function(value) {
-        this._resetRegistration(this.key);
-      },
-
-      _selfChanged: function(self) {
-        if (self) {
-          this.value = this;
-        }
-      },
-
-      _typeChanged: function(type) {
-        this._unregisterKey(this.key);
-        if (!metaDatas[type]) {
-          metaDatas[type] = {};
-        }
-        this._metaData = metaDatas[type];
-        if (!metaArrays[type]) {
-          metaArrays[type] = [];
-        }
-        this.list = metaArrays[type];
-        this._registerKeyValue(this.key, this.value);
-      },
-
-      /**
-       * Retrieves meta data value by key.
-       *
-       * @method byKey
-       * @param {string} key The key of the meta-data to be returned.
-       * @return {*}
-       */
-      byKey: function(key) {
-        return this._metaData && this._metaData[key];
-      },
-
-      _resetRegistration: function(oldKey) {
-        this._unregisterKey(oldKey);
-        this._registerKeyValue(this.key, this.value);
-      },
-
-      _unregisterKey: function(key) {
-        this._unregister(key, this._metaData, this.list);
-      },
-
-      _registerKeyValue: function(key, value) {
-        this._register(key, value, this._metaData, this.list);
-      },
-
-      _register: function(key, value, data, list) {
-        if (key && data && value !== undefined) {
-          data[key] = value;
-          list.push(value);
-        }
-      },
-
-      _unregister: function(key, data, list) {
-        if (key && data) {
-          if (key in data) {
-            var value = data[key];
-            delete data[key];
-            this.arrayDelete(list, value);
-          }
-        }
-      }
-
-    });
-
-    /**
-    `iron-meta-query` can be used to access infomation stored in `iron-meta`.
-
-    Examples:
-
-    If I create an instance like this:
-
-        <iron-meta key="info" value="foo/bar"></iron-meta>
-
-    Note that value="foo/bar" is the metadata I've defined. I could define more
-    attributes or use child nodes to define additional metadata.
-
-    Now I can access that element (and it's metadata) from any `iron-meta-query` instance:
-
-         var value = new Polymer.IronMetaQuery({key: 'info'}).value;
-
-    @group Polymer Iron Elements
-    @element iron-meta-query
-    */
-    Polymer.IronMetaQuery = Polymer({
-
-      is: 'iron-meta-query',
-
-      properties: {
-
-        /**
-         * The type of meta-data.  All meta-data of the same type is stored
-         * together.
-         */
-        type: {
-          type: String,
-          value: 'default',
-          observer: '_typeChanged'
-        },
-
-        /**
-         * Specifies a key to use for retrieving `value` from the `type`
-         * namespace.
-         */
-        key: {
-          type: String,
-          observer: '_keyChanged'
-        },
-
-        /**
-         * The meta-data to store or retrieve.
-         */
-        value: {
-          type: Object,
-          notify: true,
-          readOnly: true
-        },
-
-        /**
-         * Array of all meta-data values for the given type.
-         */
-        list: {
-          type: Array,
-          notify: true
-        }
-
-      },
-
-      /**
-       * Actually a factory method, not a true constructor. Only runs if
-       * someone invokes it directly (via `new Polymer.IronMeta()`);
-       */
-      factoryImpl: function(config) {
-        if (config) {
-          for (var n in config) {
-            switch(n) {
-              case 'type':
-              case 'key':
-                this[n] = config[n];
-                break;
-            }
-          }
-        }
-      },
-
-      created: function() {
-        // TODO(sjmiles): good for debugging?
-        this._metaDatas = metaDatas;
-        this._metaArrays = metaArrays;
-      },
-
-      _keyChanged: function(key) {
-        this._setValue(this._metaData && this._metaData[key]);
-      },
-
-      _typeChanged: function(type) {
-        this._metaData = metaDatas[type];
-        this.list = metaArrays[type];
-        if (this.key) {
-          this._keyChanged(this.key);
-        }
-      },
-
-      /**
-       * Retrieves meta data value by key.
-       * @param {string} key The key of the meta-data to be returned.
-       * @return {*}
-       */
-      byKey: function(key) {
-        return this._metaData && this._metaData[key];
-      }
-
-    });
-
-  })();
-Polymer({
-
-      is: 'iron-icon',
-
-      properties: {
-
-        /**
-         * The name of the icon to use. The name should be of the form:
-         * `iconset_name:icon_name`.
-         */
-        icon: {
-          type: String,
-          observer: '_iconChanged'
-        },
-
-        /**
-         * The name of the theme to used, if one is specified by the
-         * iconset.
-         */
-        theme: {
-          type: String,
-          observer: '_updateIcon'
-        },
-
-        /**
-         * If using iron-icon without an iconset, you can set the src to be
-         * the URL of an individual icon image file. Note that this will take
-         * precedence over a given icon attribute.
-         */
-        src: {
-          type: String,
-          observer: '_srcChanged'
-        },
-
-        /**
-         * @type {!Polymer.IronMeta}
-         */
-        _meta: {
-          value: Polymer.Base.create('iron-meta', {type: 'iconset'})
-        }
-
-      },
-
-      _DEFAULT_ICONSET: 'icons',
-
-      _iconChanged: function(icon) {
-        var parts = (icon || '').split(':');
-        this._iconName = parts.pop();
-        this._iconsetName = parts.pop() || this._DEFAULT_ICONSET;
-        this._updateIcon();
-      },
-
-      _srcChanged: function(src) {
-        this._updateIcon();
-      },
-
-      _usesIconset: function() {
-        return this.icon || !this.src;
-      },
-
-      /** @suppress {visibility} */
-      _updateIcon: function() {
-        if (this._usesIconset()) {
-          if (this._iconsetName) {
-            this._iconset = /** @type {?Polymer.Iconset} */ (
-              this._meta.byKey(this._iconsetName));
-            if (this._iconset) {
-              this._iconset.applyIcon(this, this._iconName, this.theme);
-              this.unlisten(window, 'iron-iconset-added', '_updateIcon');
-            } else {
-              this.listen(window, 'iron-iconset-added', '_updateIcon');
-            }
-          }
-        } else {
-          if (!this._img) {
-            this._img = document.createElement('img');
-            this._img.style.width = '100%';
-            this._img.style.height = '100%';
-            this._img.draggable = false;
-          }
-          this._img.src = this.src;
-          Polymer.dom(this.root).appendChild(this._img);
-        }
-      }
-
-    });
-/**
-   * The `iron-iconset-svg` element allows users to define their own icon sets
-   * that contain svg icons. The svg icon elements should be children of the
-   * `iron-iconset-svg` element. Multiple icons should be given distinct id's.
-   *
-   * Using svg elements to create icons has a few advantages over traditional
-   * bitmap graphics like jpg or png. Icons that use svg are vector based so they
-   * are resolution independent and should look good on any device. They are
-   * stylable via css. Icons can be themed, colorized, and even animated.
-   *
-   * Example:
-   *
-   *     <iron-iconset-svg name="my-svg-icons" size="24">
-   *       <svg>
-   *         <defs>
-   *           <g id="shape">
-   *             <rect x="50" y="50" width="50" height="50" />
-   *             <circle cx="50" cy="50" r="50" />
-   *           </g>
-   *         </defs>
-   *       </svg>
-   *     </iron-iconset-svg>
-   *
-   * This will automatically register the icon set "my-svg-icons" to the iconset
-   * database.  To use these icons from within another element, make a
-   * `iron-iconset` element and call the `byId` method
-   * to retrieve a given iconset. To apply a particular icon inside an
-   * element use the `applyIcon` method. For example:
-   *
-   *     iconset.applyIcon(iconNode, 'car');
-   *
-   * @element iron-iconset-svg
-   * @demo demo/index.html
-   */
-  Polymer({
-
-    is: 'iron-iconset-svg',
-
-    properties: {
-
-      /**
-       * The name of the iconset.
-       *
-       * @attribute name
-       * @type string
-       */
-      name: {
-        type: String,
-        observer: '_nameChanged'
-      },
-
-      /**
-       * The size of an individual icon. Note that icons must be square.
-       *
-       * @attribute iconSize
-       * @type number
-       * @default 24
-       */
-      size: {
-        type: Number,
-        value: 24
-      }
-
-    },
-
-    /**
-     * Construct an array of all icon names in this iconset.
-     *
-     * @return {!Array} Array of icon names.
-     */
-    getIconNames: function() {
-      this._icons = this._createIconMap();
-      return Object.keys(this._icons).map(function(n) {
-        return this.name + ':' + n;
-      }, this);
-    },
-
-    /**
-     * Applies an icon to the given element.
-     *
-     * An svg icon is prepended to the element's shadowRoot if it exists,
-     * otherwise to the element itself.
-     *
-     * @method applyIcon
-     * @param {Element} element Element to which the icon is applied.
-     * @param {string} iconName Name of the icon to apply.
-     * @return {Element} The svg element which renders the icon.
-     */
-    applyIcon: function(element, iconName) {
-      // insert svg element into shadow root, if it exists
-      element = element.root || element;
-      // Remove old svg element
-      this.removeIcon(element);
-      // install new svg element
-      var svg = this._cloneIcon(iconName);
-      if (svg) {
-        var pde = Polymer.dom(element);
-        pde.insertBefore(svg, pde.childNodes[0]);
-        return element._svgIcon = svg;
-      }
-      return null;
-    },
-
-    /**
-     * Remove an icon from the given element by undoing the changes effected
-     * by `applyIcon`.
-     *
-     * @param {Element} element The element from which the icon is removed.
-     */
-    removeIcon: function(element) {
-      // Remove old svg element
-      if (element._svgIcon) {
-        Polymer.dom(element).removeChild(element._svgIcon);
-        element._svgIcon = null;
-      }
-    },
-
-    /**
-     *
-     * When name is changed, register iconset metadata
-     *
-     */
-    _nameChanged: function() {
-      new Polymer.IronMeta({type: 'iconset', key: this.name, value: this});
-      this.async(function() {
-        this.fire('iron-iconset-added', this, {node: window});
-      });
-    },
-
-    /**
-     * Create a map of child SVG elements by id.
-     *
-     * @return {!Object} Map of id's to SVG elements.
-     */
-    _createIconMap: function() {
-      // Objects chained to Object.prototype (`{}`) have members. Specifically,
-      // on FF there is a `watch` method that confuses the icon map, so we
-      // need to use a null-based object here.
-      var icons = Object.create(null);
-      Polymer.dom(this).querySelectorAll('[id]')
-        .forEach(function(icon) {
-          icons[icon.id] = icon;
-        });
-      return icons;
-    },
-
-    /**
-     * Produce installable clone of the SVG element matching `id` in this
-     * iconset, or `undefined` if there is no matching element.
-     *
-     * @return {Element} Returns an installable clone of the SVG element
-     * matching `id`.
-     */
-    _cloneIcon: function(id) {
-      // create the icon map on-demand, since the iconset itself has no discrete
-      // signal to know when it's children are fully parsed
-      this._icons = this._icons || this._createIconMap();
-      return this._prepareSvgClone(this._icons[id], this.size);
-    },
-
-    /**
-     * @param {Element} sourceSvg
-     * @param {number} size
-     * @return {Element}
-     */
-    _prepareSvgClone: function(sourceSvg, size) {
-      if (sourceSvg) {
-        var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-        svg.setAttribute('viewBox', ['0', '0', size, size].join(' '));
-        svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
-        // TODO(dfreedm): `pointer-events: none` works around https://crbug.com/370136
-        // TODO(sjmiles): inline style may not be ideal, but avoids requiring a shadow-root
-        svg.style.cssText = 'pointer-events: none; display: block; width: 100%; height: 100%;';
-        svg.appendChild(sourceSvg.cloneNode(true)).removeAttribute('id');
-        return svg;
-      }
-      return null;
-    }
-
-  });
 Polymer({
       is: 'paper-item',
 
@@ -11642,7 +11863,7 @@ Polymer({
        * @type {object}
        * @default {template: 1}
        */
-      excludedLocalNames: {
+      _excludedLocalNames: {
         type: Object,
         value: function() {
           return {
@@ -11659,6 +11880,9 @@ Polymer({
     created: function() {
       this._bindFilterItem = this._filterItem.bind(this);
       this._selection = new Polymer.IronSelection(this._applySelection.bind(this));
+      // TODO(cdata): When polymer/polymer#2535 lands, we do not need to do this
+      // book keeping anymore:
+      this.__listeningForActivate = false;
     },
 
     attached: function() {
@@ -11667,6 +11891,7 @@ Polymer({
       if (!this.selectedItem && this.selected) {
         this._updateSelected(this.attrForSelected,this.selected)
       }
+      this._addListener(this.activateEvent);
     },
 
     detached: function() {
@@ -11733,11 +11958,17 @@ Polymer({
     },
 
     _addListener: function(eventName) {
+      if (!this.isAttached || this.__listeningForActivate) {
+        return;
+      }
+
+      this.__listeningForActivate = true;
       this.listen(this, eventName, '_activateHandler');
     },
 
     _removeListener: function(eventName) {
       this.unlisten(this, eventName, '_activateHandler');
+      this.__listeningForActivate = false;
     },
 
     _activateEventChanged: function(eventName, old) {
@@ -11754,7 +11985,7 @@ Polymer({
     },
 
     _filterItem: function(node) {
-      return !this.excludedLocalNames[node.localName];
+      return !this._excludedLocalNames[node.localName];
     },
 
     _valueToItem: function(value) {
@@ -12857,7 +13088,8 @@ intent. Closing generally implies that the user acknowledged the content on the 
 it will cancel whenever the user taps outside it or presses the escape key. This behavior is
 configurable with the `no-cancel-on-esc-key` and the `no-cancel-on-outside-click` properties.
 `close()` should be called explicitly by the implementer when the user interacts with a control
-in the overlay element.
+in the overlay element. When the dialog is canceled, the overlay fires an 'iron-overlay-canceled'
+event. Call `preventDefault` on this event to prevent the overlay from closing.
 
 ### Positioning
 
@@ -13028,6 +13260,11 @@ context. You should place this element as a child of `<body>` whenever possible.
      * Cancels the overlay.
      */
     cancel: function() {
+      var cancelEvent = this.fire('iron-overlay-canceled', undefined, {cancelable: true});
+      if (cancelEvent.defaultPrevented) {
+        return;
+      }
+
       this.opened = false;
       this._setCanceled(true);
     },
@@ -14576,7 +14813,7 @@ Polymer({
 /**
    * `Polymer.PaperInkyFocusBehavior` implements a ripple when the element has keyboard focus.
    *
-   * @polymerBehavior Polymer.PaperInkyFocusBehavior
+   * @polymerBehavior Polymer.PaperInkyFocusBehaviorImpl
    */
   Polymer.PaperInkyFocusBehaviorImpl = {
 
@@ -14585,11 +14822,20 @@ Polymer({
     ],
 
     _focusedChanged: function(receivedFocusFromKeyboard) {
-      if (!this.$.ink) {
-        return;
+      if (receivedFocusFromKeyboard) {
+        this.ensureRipple();
       }
+      if (this.hasRipple()) {
+        this._ripple.holdDown = receivedFocusFromKeyboard;
+      }
+    },
 
-      this.$.ink.holdDown = receivedFocusFromKeyboard;
+    _createRipple: function() {
+      var ripple = Polymer.PaperRippleBehavior._createRipple();
+      ripple.id = 'ink';
+      ripple.setAttribute('center', '');
+      ripple.classList.add('circle');
+      return ripple;
     }
 
   };
@@ -14598,56 +14844,57 @@ Polymer({
   Polymer.PaperInkyFocusBehavior = [
     Polymer.IronButtonState,
     Polymer.IronControlState,
+    Polymer.PaperRippleBehavior,
     Polymer.PaperInkyFocusBehaviorImpl
   ];
 Polymer({
-    is: 'paper-icon-button',
+      is: 'paper-icon-button',
 
-    hostAttributes: {
-      role: 'button',
-      tabindex: '0'
-    },
-
-    behaviors: [
-      Polymer.PaperInkyFocusBehavior
-    ],
-
-    properties: {
-      /**
-       * The URL of an image for the icon. If the src property is specified,
-       * the icon property should not be.
-       */
-      src: {
-        type: String
+      hostAttributes: {
+        role: 'button',
+        tabindex: '0'
       },
 
-      /**
-       * Specifies the icon name or index in the set of icons available in
-       * the icon's icon set. If the icon property is specified,
-       * the src property should not be.
-       */
-      icon: {
-        type: String
+      behaviors: [
+        Polymer.PaperInkyFocusBehavior
+      ],
+
+      properties: {
+        /**
+         * The URL of an image for the icon. If the src property is specified,
+         * the icon property should not be.
+         */
+        src: {
+          type: String
+        },
+
+        /**
+         * Specifies the icon name or index in the set of icons available in
+         * the icon's icon set. If the icon property is specified,
+         * the src property should not be.
+         */
+        icon: {
+          type: String
+        },
+
+        /**
+         * Specifies the alternate text for the button, for accessibility.
+         */
+        alt: {
+          type: String,
+          observer: "_altChanged"
+        }
       },
 
-      /**
-       * Specifies the alternate text for the button, for accessibility.
-       */
-      alt: {
-        type: String,
-        observer: "_altChanged"
-      }
-    },
+      _altChanged: function(newValue, oldValue) {
+        var label = this.getAttribute('aria-label');
 
-    _altChanged: function(newValue, oldValue) {
-      var label = this.getAttribute('aria-label');
-
-      // Don't stomp over a user-set aria-label.
-      if (!label || oldValue == label) {
-        this.setAttribute('aria-label', newValue);
+        // Don't stomp over a user-set aria-label.
+        if (!label || oldValue == label) {
+          this.setAttribute('aria-label', newValue);
+        }
       }
-    }
-  });
+    });
 /**
    * Use `Polymer.IronValidatableBehavior` to implement an element that validates user input.
    *

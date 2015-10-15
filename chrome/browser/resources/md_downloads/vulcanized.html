@@ -1770,674 +1770,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 </dom-module>
 
-<dom-module id="paper-material" assetpath="chrome://resources/polymer/v1_0/paper-material/">
-  <style>
-    :host {
-      display: block;
-      position: relative;
-    }
-
-    :host([animated]) {
-      @apply(--shadow-transition);
-    }
-
-    :host([elevation="1"]) {
-      @apply(--shadow-elevation-2dp);
-    }
-
-    :host([elevation="2"]) {
-      @apply(--shadow-elevation-4dp);
-    }
-
-    :host([elevation="3"]) {
-      @apply(--shadow-elevation-6dp);
-    }
-
-    :host([elevation="4"]) {
-      @apply(--shadow-elevation-8dp);
-    }
-
-    :host([elevation="5"]) {
-      @apply(--shadow-elevation-16dp);
-    }
-  </style>
-  <template>
-    <content></content>
-  </template>
-</dom-module>
-<dom-module id="paper-ripple" assetpath="chrome://resources/polymer/v1_0/paper-ripple/">
-
-  
-  
-  <template>
-    <style>
-      :host {
-        display: block;
-        position: absolute;
-        border-radius: inherit;
-        overflow: hidden;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-      }
-  
-      :host([animating]) {
-        /* This resolves a rendering issue in Chrome (as of 40) where the
-           ripple is not properly clipped by its parent (which may have
-           rounded corners). See: http://jsbin.com/temexa/4
-  
-           Note: We only apply this style conditionally. Otherwise, the browser
-           will create a new compositing layer for every ripple element on the
-           page, and that would be bad. */
-        -webkit-transform: translate(0, 0);
-        transform: translate3d(0, 0, 0);
-      }
-  
-      :host([noink]) {
-        pointer-events: none;
-      }
-  
-      #background,
-      #waves,
-      .wave-container,
-      .wave {
-        pointer-events: none;
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-      }
-  
-      #background,
-      .wave {
-        opacity: 0;
-      }
-  
-      #waves,
-      .wave {
-        overflow: hidden;
-      }
-  
-      .wave-container,
-      .wave {
-        border-radius: 50%;
-      }
-  
-      :host(.circle) #background,
-      :host(.circle) #waves {
-        border-radius: 50%;
-      }
-  
-      :host(.circle) .wave-container {
-        overflow: hidden;
-      }
-    </style>
-    
-    <div id="background"></div>
-    <div id="waves"></div>
-  </template>
-</dom-module>
-<dom-module id="paper-button" assetpath="chrome://resources/polymer/v1_0/paper-button/">
-  <template>
-
-    <style>
-      :host {
-        display: inline-block;
-        position: relative;
-        box-sizing: border-box;
-        min-width: 5.14em;
-        margin: 0 0.29em;
-        background: transparent;
-        text-align: center;
-        font: inherit;
-        text-transform: uppercase;
-        outline-width: 0;
-        border-radius: 3px;
-        -moz-user-select: none;
-        -ms-user-select: none;
-        -webkit-user-select: none;
-        user-select: none;
-        cursor: pointer;
-        z-index: 0;
-        padding: 0.7em 0.57em;
-
-        @apply(--paper-button);
-      }
-
-      :host([raised]) .keyboard-focus {
-        font-weight: bold;
-        @apply(--paper-button-raised-keyboard-focus);
-      }
-
-      :host(:not([raised])) .keyboard-focus {
-        font-weight: bold;
-        @apply(--paper-button-flat-keyboard-focus);
-      }
-
-      :host([disabled]) {
-        background: #eaeaea;
-        color: #a8a8a8;
-        cursor: auto;
-        pointer-events: none;
-
-        @apply(--paper-button-disabled);
-      }
-
-      :host([noink]) paper-ripple {
-        display: none;
-      }
-
-      paper-ripple {
-        color: var(--paper-button-ink-color);
-      }
-
-      paper-material {
-        border-radius: inherit;
-        @apply(--layout-fit);
-      }
-
-      .content > ::content * {
-        text-transform: inherit;
-      }
-    </style>
-
-    <paper-ripple></paper-ripple>
-
-    <paper-material elevation="[[_elevation]]" animated=""></paper-material>
-
-    <div class$="[[_computeContentClass(receivedFocusFromKeyboard)]]">
-      <content></content>
-    </div>
-
-  </template>
-</dom-module>
-
-<dom-module id="paper-progress" assetpath="chrome://resources/polymer/v1_0/paper-progress/">
-  <style>
-    :host {
-      display: block;
-      width: 200px;
-      position: relative;
-      overflow: hidden;
-    }
-
-    #progressContainer {
-      position: relative;
-    }
-
-    #progressContainer,
-    /* the stripe for the indeterminate animation*/
-    .indeterminate:after {
-      height: var(--paper-progress-height, 4px);
-    }
-
-    #primaryProgress,
-    #secondaryProgress,
-    .indeterminate:after {
-      @apply(--layout-fit);
-    }
-
-    #progressContainer,
-    .indeterminate:after {
-      background-color: var(--paper-progress-container-color, --google-grey-300);
-    }
-
-    :host(.transiting) #primaryProgress,
-    :host(.transiting) #secondaryProgress {
-      -webkit-transition-property: -webkit-transform;
-      transition-property: transform;
-
-      /* Duration */
-      -webkit-transition-duration: var(--paper-progress-transition-duration, 0.08s);
-      transition-duration: var(--paper-progress-transition-duration, 0.08s);
-
-      /* Timing function */
-      -webkit-transition-timing-function: var(--paper-progress-transition-timing-function, ease);
-      transition-timing-function: var(--paper-progress-transition-timing-function, ease);
-
-      /* Delay */
-      -webkit-transition-delay: var(--paper-progress-transition-delay, 0s);
-      transition-delay: var(--paper-progress-transition-delay, 0s);
-    }
-
-    #primaryProgress,
-    #secondaryProgress {
-      @apply(--layout-fit);
-      -webkit-transform-origin: left center;
-      transform-origin: left center;
-      -webkit-transform: scaleX(0);
-      transform: scaleX(0);
-      will-change: transform;
-    }
-
-    #primaryProgress {
-      background-color: var(--paper-progress-active-color, --google-green-500);
-    }
-
-    #secondaryProgress {
-      position: relative;
-      background-color: var(--paper-progress-secondary-color, --google-green-100);
-    }
-
-    :host([disabled]) #primaryProgress {
-      background-color: var(--paper-progress-disabled-active-color, --google-grey-500);
-    }
-
-    :host([disabled]) #secondaryProgress {
-      background-color: var(--paper-progress-disabled-active-color, --google-grey-300);
-    }
-
-    :host(:not([disabled])) #primaryProgress.indeterminate {
-      -webkit-transform-origin: right center;
-      transform-origin: right center;
-      -webkit-animation: indeterminate-bar 2s linear infinite;
-      animation: indeterminate-bar 2s linear infinite;
-    }
-
-    :host(:not([disabled])) #primaryProgress.indeterminate:after {
-      content: "";
-      -webkit-transform-origin: center center;
-      transform-origin: center center;
-
-      -webkit-animation: indeterminate-splitter 2s linear infinite;
-      animation: indeterminate-splitter 2s linear infinite;
-    }
-
-    @-webkit-keyframes indeterminate-bar {
-      0% {
-        -webkit-transform: scaleX(1) translateX(-100%);
-      }
-      50% {
-        -webkit-transform: scaleX(1) translateX(0%);
-      }
-      75% {
-        -webkit-transform: scaleX(1) translateX(0%);
-        -webkit-animation-timing-function: cubic-bezier(.28,.62,.37,.91);
-      }
-      100% {
-        -webkit-transform: scaleX(0) translateX(0%);
-      }
-    }
-
-    @-webkit-keyframes indeterminate-splitter {
-      0% {
-        -webkit-transform: scaleX(.75) translateX(-125%);
-      }
-      30% {
-        -webkit-transform: scaleX(.75) translateX(-125%);
-        -webkit-animation-timing-function: cubic-bezier(.42,0,.6,.8);
-      }
-      90% {
-        -webkit-transform: scaleX(.75) translateX(125%);
-      }
-      100% {
-        -webkit-transform: scaleX(.75) translateX(125%);
-      }
-    }
-
-    @keyframes indeterminate-bar {
-      0% {
-        transform: scaleX(1) translateX(-100%);
-      }
-      50% {
-        transform: scaleX(1) translateX(0%);
-      }
-      75% {
-        transform: scaleX(1) translateX(0%);
-        animation-timing-function: cubic-bezier(.28,.62,.37,.91);
-      }
-      100% {
-        transform: scaleX(0) translateX(0%);
-      }
-    }
-
-    @keyframes indeterminate-splitter {
-      0% {
-        transform: scaleX(.75) translateX(-125%);
-      }
-      30% {
-        transform: scaleX(.75) translateX(-125%);
-        animation-timing-function: cubic-bezier(.42,0,.6,.8);
-      }
-      90% {
-        transform: scaleX(.75) translateX(125%);
-      }
-      100% {
-        transform: scaleX(.75) translateX(125%);
-      }
-    }
-  </style>
-  <template>
-    <div id="progressContainer">
-      <div id="secondaryProgress" hidden$="[[_hideSecondaryProgress(secondaryRatio)]]"></div>
-      <div id="primaryProgress"></div>
-    </div>
-  </template>
-</dom-module>
-
-<dom-module id="downloads-item" assetpath="chrome://downloads/">
-  <template>
-    <template is="dom-if" if="[[!hideDate]]">
-      <h3 id="date">[[computeDate_(data.since_string, data.date_string)]]</h3>
-    </template>
-
-    <div id="content" on-dragstart="onDragStart_" class$="[[computeClass_(isActive_, isDangerous_, showProgress_)]]">
-      <div id="file-icon-wrapper" class="icon-wrapper">
-        <img class="icon" id="file-icon" alt="" hidden="[[isDangerous_]]">
-        <div class="icon" id="warning" hidden="[[!isDangerous_]]"></div>
-      </div>
-
-      <div id="details">
-        <div id="title-area"><a is="action-link" id="file-link" href="[[data.url]]" on-tap="onFileLinkTap_" hidden="[[!completelyOnDisk_]]">[[data.file_name]]</a><span id="name" hidden="[[completelyOnDisk_]]">[[data.file_name]]</span>
-          <span id="tag">[[computeTag_(data.state, data.last_reason_text, data.file_externally_removed)]]</span>
-        </div>
-
-        <a id="url" target="_blank" href="[[data.url]]">[[data.url]]</a>
-
-        <div id="description">[[computeDescription_(data.state, data.danger_type, data.file_name, data.progress_status_text)]]</div>
-
-        <template is="dom-if" if="[[showProgress_]]">
-          <paper-progress id="progress" indeterminate="[[isIndeterminate_(data.percent)]]" value="[[data.percent]]"></paper-progress>
-        </template>
-
-        <div id="safe" class="controls" hidden="[[isDangerous_]]">
-          <a is="action-link" id="show" i18n-content="controlShowInFolder" on-tap="onShowTap_" hidden="[[!completelyOnDisk_]]"></a>
-          <template is="dom-if" if="[[data.retry]]">
-            <paper-button id="retry" on-tap="onRetryTap_">[[i18n_.retry]]</paper-button>
-          </template>
-          <template is="dom-if" if="[[isInProgress_]]">
-            <paper-button id="pause" on-tap="onPauseTap_">[[i18n_.pause]]</paper-button>
-          </template>
-          <template is="dom-if" if="[[data.resume]]">
-            <paper-button id="resume" on-tap="onResumeTap_">[[i18n_.resume]]</paper-button>
-          </template>
-          <template is="dom-if" if="[[showCancel_]]">
-            <paper-button id="cancel" on-tap="onCancelTap_">[[i18n_.cancel]]</paper-button>
-          </template>
-          <span id="controlled-by"></span>
-        </div>
-
-        <template is="dom-if" if="[[isDangerous_]]">
-          <div id="dangerous" class="controls">
-            
-            <template is="dom-if" if="[[!isMalware_]]">
-              <paper-button id="discard" on-tap="onDiscardDangerousTap_" class="discard">[[i18n_.discard]]</paper-button>
-              <paper-button id="save" on-tap="onSaveDangerousTap_" class="keep">[[i18n_.save]]</paper-button>
-            </template>
-
-            
-            <template is="dom-if" if="[[isMalware_]]">
-              <paper-button id="danger-remove" on-tap="onDiscardDangerousTap_" class="discard">[[i18n_.remove]]</paper-button>
-              <paper-button id="restore" on-tap="onSaveDangerousTap_" class="keep">[[i18n_.restore]</paper-button>
-            </template>
-          </div>
-        </template>
-      </div>
-
-      <div id="remove-wrapper" class="icon-wrapper">
-        <paper-icon-button id="remove" icon="clear" i18n-values="title:controlRemoveFromList" style$="[[computeRemoveStyle_(isDangerous_, showCancel_)]]" on-tap="onRemoveTap_"></paper-icon-button>
-      </div>
-
-      <div id="incognito" i18n-values="title:inIncognito" hidden="[[!data.otr]]"></div>
-    </div>
-
-  </template>
-  <style>
-/* Copyright 2015 The Chromium Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file. */
-
-[is='action-link'] {
-  cursor: pointer;
-  display: inline-block;
-  text-decoration: none;
-}
-
-[is='action-link']:hover {
-  text-decoration: underline;
-}
-
-[is='action-link']:active {
-  color: rgb(5, 37, 119);
-  text-decoration: underline;
-}
-
-[is='action-link'][disabled] {
-  color: #999;
-  cursor: default;
-  pointer-events: none;
-  text-decoration: none;
-}
-
-[is='action-link'].no-outline {
-  outline: none;
-}
-
-</style>
-  <style>
-/* Copyright 2015 The Chromium Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file. */
-
-* {
-  --downloads-item-width: 622px;
-}
-
-paper-button {
-  font-weight: 500;
-  margin: 0;
-  min-width: auto;
-}
-
-</style>
-  <style>
-/* Copyright 2015 The Chromium Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file. */
-
-:host {
-  display: flex;
-  flex-direction: column;
-  margin: 12px 0;
-}
-
-#date {
-  color: #7c7c7c;
-  font-size: 100%;
-  font-weight: 500;
-  margin: 18px auto 16px;  /* This top margin + :host top margin = 30px. */
-  width: var(--downloads-item-width);
-}
-
-#content {
-  background: white;
-  border-radius: 2px;
-  display: flex;
-  flex: none;
-  margin: 0 auto;
-  min-height: 103px;
-  position: relative;
-  width: var(--downloads-item-width);
-}
-
-#content.is-active {
-  box-shadow: 0 2px 2px 0 rgba(0, 0, 0, .05), 0 1px 4px 0 rgba(0, 0, 0, .08),
-              0 3px 1px -2px rgba(0, 0, 0, .2);
-}
-
-#content:not(.is-active) {
-  opacity: .6;
-}
-
-#details {
-  -webkit-border-start: 1px #d8d8d8 solid;
-  -webkit-padding-end: 16px;
-  -webkit-padding-start: 24px;
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  padding-bottom: 12px;
-  padding-top: 16px;
-}
-
-#content:not(.is-active) #details {
-  color: #bababa;
-}
-
-#content:not(.is-active) #name {
-  text-decoration: line-through;
-}
-
-.icon-wrapper {
-  align-self: center;
-  flex: none;
-  justify-content: center;
-  margin: 0 24px;
-}
-
-.icon {
-  height: 32px;
-  width: 32px;
-}
-
-#content:-webkit-any(.show-progress, .dangerous) #file-icon-wrapper {
-  /* TODO(dbeam): animate from top-aligned to centered when items finish? */
-  align-self: flex-start;
-  padding-top: 16px;
-}
-
-#content:not(.is-active) .icon {
-  -webkit-filter: grayscale(100%);
-  opacity: .5;
-}
-
-#warning {
-  -webkit-mask-image: url("chrome://resources/images/warning.svg");
-  -webkit-mask-repeat: no-repeat;
-  -webkit-mask-size: 100%;
-  background: rgb(255, 193, 7);
-}
-
-#name,
-#file-link,
-#url {
-  max-width: 100%;
-}
-
-#name,
-#file-link {
-  font-weight: 500;
-  word-break: break-all;
-}
-
-#name {
-  -webkit-margin-end: 12px;  /* Only really affects #tag. */
-}
-
-.is-active :-webkit-any(#name, #file-link, #pause, #resume, #show) {
-  color: rgb(51, 103, 214);
-}
-
-#tag {
-  color: #5a5a5a;
-  font-weight: 500;
-}
-
-#url {
-  color: inherit;
-  margin-top: 6px;
-  overflow: hidden;
-  text-decoration: none;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.is-active #url {
-  color: #969696;
-}
-
-#progress,
-#description:not(:empty),
-.controls {
-  margin-top: 16px;
-}
-
-.is-active #description {
-  color: #616161;
-}
-
-.dangerous #description {
-  color: rgb(239, 108, 0);
-}
-
-#progress {
-  --paper-progress-active-color: rgb(54, 126, 237);
-  --paper-progress-container-color: rgb(223, 222, 223);
-  width: auto;
-}
-
-.controls {
-  -webkit-margin-start: -.57em;
-}
-
-#cancel,
-#retry,
-.keep,
-.discard {
-  color: #5a5a5a;
-}
-
-#show {
-  margin: .7em .57em;
-}
-
-#controlled-by {
-  -webkit-margin-start: 8px;
-}
-
-#controlled-by,
-#controlled-by a {
-  color: #5a5a5a;
-}
-
-.is-active #controlled-by {
-  color: #333;
-}
-
-.is-active #controlled-by a {
-  color: rgb(51, 103, 214);
-}
-
-#remove-wrapper {
-  align-self: flex-start;
-  margin: 0;
-}
-
-#remove {
-  --iron-icon-height: 16px;
-  --iron-icon-width: 16px;
-  --layout-inline: {
-    /* HACK(dbeam): we probably shouldn't be overriding Polymer like this. */
-  };
-  color: #969696;
-  height: 16px;
-  padding: 8px;
-  width: 16px;
-}
-
-#incognito {
-  bottom: 20px;
-  content: -webkit-image-set(
-      url("chrome://downloads/1x/incognito_marker.png") 1x,
-      url("chrome://downloads/2x/incognito_marker.png") 2x);
-  position: absolute;
-  right: 10px;
-}
-
-</style>
-  </dom-module>
 <dom-module id="iron-icon" assetpath="chrome://resources/polymer/v1_0/iron-icon/">
 
   <style>
@@ -2727,6 +2059,663 @@ paper-button {
 <g id="zoom-out"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14zM7 9h5v1H7z"></path></g>
 </defs></svg>
 </iron-iconset-svg>
+<dom-module id="paper-material" assetpath="chrome://resources/polymer/v1_0/paper-material/">
+  <style>
+    :host {
+      display: block;
+      position: relative;
+    }
+
+    :host([animated]) {
+      @apply(--shadow-transition);
+    }
+
+    :host([elevation="1"]) {
+      @apply(--shadow-elevation-2dp);
+    }
+
+    :host([elevation="2"]) {
+      @apply(--shadow-elevation-4dp);
+    }
+
+    :host([elevation="3"]) {
+      @apply(--shadow-elevation-6dp);
+    }
+
+    :host([elevation="4"]) {
+      @apply(--shadow-elevation-8dp);
+    }
+
+    :host([elevation="5"]) {
+      @apply(--shadow-elevation-16dp);
+    }
+  </style>
+  <template>
+    <content></content>
+  </template>
+</dom-module>
+<dom-module id="paper-ripple" assetpath="chrome://resources/polymer/v1_0/paper-ripple/">
+
+  
+  
+  <template>
+    <style>
+      :host {
+        display: block;
+        position: absolute;
+        border-radius: inherit;
+        overflow: hidden;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+      }
+  
+      :host([animating]) {
+        /* This resolves a rendering issue in Chrome (as of 40) where the
+           ripple is not properly clipped by its parent (which may have
+           rounded corners). See: http://jsbin.com/temexa/4
+  
+           Note: We only apply this style conditionally. Otherwise, the browser
+           will create a new compositing layer for every ripple element on the
+           page, and that would be bad. */
+        -webkit-transform: translate(0, 0);
+        transform: translate3d(0, 0, 0);
+      }
+  
+      :host([noink]) {
+        pointer-events: none;
+      }
+  
+      #background,
+      #waves,
+      .wave-container,
+      .wave {
+        pointer-events: none;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+      }
+  
+      #background,
+      .wave {
+        opacity: 0;
+      }
+  
+      #waves,
+      .wave {
+        overflow: hidden;
+      }
+  
+      .wave-container,
+      .wave {
+        border-radius: 50%;
+      }
+  
+      :host(.circle) #background,
+      :host(.circle) #waves {
+        border-radius: 50%;
+      }
+  
+      :host(.circle) .wave-container {
+        overflow: hidden;
+      }
+    </style>
+    
+    <div id="background"></div>
+    <div id="waves"></div>
+  </template>
+</dom-module>
+<dom-module id="paper-button" assetpath="chrome://resources/polymer/v1_0/paper-button/">
+  <template strip-whitespace="">
+
+    <style include="paper-material">
+      :host {
+        display: inline-block;
+        position: relative;
+        box-sizing: border-box;
+        min-width: 5.14em;
+        margin: 0 0.29em;
+        background: transparent;
+        text-align: center;
+        font: inherit;
+        text-transform: uppercase;
+        outline-width: 0;
+        border-radius: 3px;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        -webkit-user-select: none;
+        user-select: none;
+        cursor: pointer;
+        z-index: 0;
+        padding: 0.7em 0.57em;
+
+        @apply(--paper-button);
+      }
+
+      :host([raised].keyboard-focus) {
+        font-weight: bold;
+        @apply(--paper-button-raised-keyboard-focus);
+      }
+
+      :host(:not([raised]).keyboard-focus) {
+        font-weight: bold;
+        @apply(--paper-button-flat-keyboard-focus);
+      }
+
+      :host([disabled]) {
+        background: #eaeaea;
+        color: #a8a8a8;
+        cursor: auto;
+        pointer-events: none;
+
+        @apply(--paper-button-disabled);
+      }
+
+      paper-ripple {
+        color: var(--paper-button-ink-color);
+      }
+
+      :host > ::content * {
+        text-transform: inherit;
+      }
+    </style>
+    <content></content>
+  </template>
+</dom-module>
+
+<dom-module id="paper-progress" assetpath="chrome://resources/polymer/v1_0/paper-progress/">
+  <style>
+    :host {
+      display: block;
+      width: 200px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #progressContainer {
+      position: relative;
+    }
+
+    #progressContainer,
+    /* the stripe for the indeterminate animation*/
+    .indeterminate:after {
+      height: var(--paper-progress-height, 4px);
+    }
+
+    #primaryProgress,
+    #secondaryProgress,
+    .indeterminate:after {
+      @apply(--layout-fit);
+    }
+
+    #progressContainer,
+    .indeterminate:after {
+      background-color: var(--paper-progress-container-color, --google-grey-300);
+    }
+
+    :host(.transiting) #primaryProgress,
+    :host(.transiting) #secondaryProgress {
+      -webkit-transition-property: -webkit-transform;
+      transition-property: transform;
+
+      /* Duration */
+      -webkit-transition-duration: var(--paper-progress-transition-duration, 0.08s);
+      transition-duration: var(--paper-progress-transition-duration, 0.08s);
+
+      /* Timing function */
+      -webkit-transition-timing-function: var(--paper-progress-transition-timing-function, ease);
+      transition-timing-function: var(--paper-progress-transition-timing-function, ease);
+
+      /* Delay */
+      -webkit-transition-delay: var(--paper-progress-transition-delay, 0s);
+      transition-delay: var(--paper-progress-transition-delay, 0s);
+    }
+
+    #primaryProgress,
+    #secondaryProgress {
+      @apply(--layout-fit);
+      -webkit-transform-origin: left center;
+      transform-origin: left center;
+      -webkit-transform: scaleX(0);
+      transform: scaleX(0);
+      will-change: transform;
+    }
+
+    #primaryProgress {
+      background-color: var(--paper-progress-active-color, --google-green-500);
+    }
+
+    #secondaryProgress {
+      position: relative;
+      background-color: var(--paper-progress-secondary-color, --google-green-100);
+    }
+
+    :host([disabled]) #primaryProgress {
+      background-color: var(--paper-progress-disabled-active-color, --google-grey-500);
+    }
+
+    :host([disabled]) #secondaryProgress {
+      background-color: var(--paper-progress-disabled-active-color, --google-grey-300);
+    }
+
+    :host(:not([disabled])) #primaryProgress.indeterminate {
+      -webkit-transform-origin: right center;
+      transform-origin: right center;
+      -webkit-animation: indeterminate-bar 2s linear infinite;
+      animation: indeterminate-bar 2s linear infinite;
+    }
+
+    :host(:not([disabled])) #primaryProgress.indeterminate:after {
+      content: "";
+      -webkit-transform-origin: center center;
+      transform-origin: center center;
+
+      -webkit-animation: indeterminate-splitter 2s linear infinite;
+      animation: indeterminate-splitter 2s linear infinite;
+    }
+
+    @-webkit-keyframes indeterminate-bar {
+      0% {
+        -webkit-transform: scaleX(1) translateX(-100%);
+      }
+      50% {
+        -webkit-transform: scaleX(1) translateX(0%);
+      }
+      75% {
+        -webkit-transform: scaleX(1) translateX(0%);
+        -webkit-animation-timing-function: cubic-bezier(.28,.62,.37,.91);
+      }
+      100% {
+        -webkit-transform: scaleX(0) translateX(0%);
+      }
+    }
+
+    @-webkit-keyframes indeterminate-splitter {
+      0% {
+        -webkit-transform: scaleX(.75) translateX(-125%);
+      }
+      30% {
+        -webkit-transform: scaleX(.75) translateX(-125%);
+        -webkit-animation-timing-function: cubic-bezier(.42,0,.6,.8);
+      }
+      90% {
+        -webkit-transform: scaleX(.75) translateX(125%);
+      }
+      100% {
+        -webkit-transform: scaleX(.75) translateX(125%);
+      }
+    }
+
+    @keyframes indeterminate-bar {
+      0% {
+        transform: scaleX(1) translateX(-100%);
+      }
+      50% {
+        transform: scaleX(1) translateX(0%);
+      }
+      75% {
+        transform: scaleX(1) translateX(0%);
+        animation-timing-function: cubic-bezier(.28,.62,.37,.91);
+      }
+      100% {
+        transform: scaleX(0) translateX(0%);
+      }
+    }
+
+    @keyframes indeterminate-splitter {
+      0% {
+        transform: scaleX(.75) translateX(-125%);
+      }
+      30% {
+        transform: scaleX(.75) translateX(-125%);
+        animation-timing-function: cubic-bezier(.42,0,.6,.8);
+      }
+      90% {
+        transform: scaleX(.75) translateX(125%);
+      }
+      100% {
+        transform: scaleX(.75) translateX(125%);
+      }
+    }
+  </style>
+  <template>
+    <div id="progressContainer">
+      <div id="secondaryProgress" hidden$="[[_hideSecondaryProgress(secondaryRatio)]]"></div>
+      <div id="primaryProgress"></div>
+    </div>
+  </template>
+</dom-module>
+
+<dom-module id="downloads-item" assetpath="chrome://downloads/">
+  <template>
+    <template is="dom-if" if="[[!hideDate]]">
+      <h3 id="date">[[computeDate_(hideDate, data.since_string, data.date_string)]]</h3>
+    </template>
+
+    <div id="content" on-dragstart="onDragStart_" class$="[[computeClass_(isActive_, isDangerous_, showProgress_)]]">
+      <div id="file-icon-wrapper" class="icon-wrapper">
+        <img class="icon" id="file-icon" alt="" hidden="[[isDangerous_]]">
+        <iron-icon id="danger-icon" icon$="[[computeDangerIcon_(isDangerous_, data.danger_type)]]" hidden="[[!isDangerous_]]"></iron-icon>
+      </div>
+
+      <div id="details">
+        <div id="title-area"><a is="action-link" id="file-link" href="[[data.url]]" on-tap="onFileLinkTap_" hidden="[[!completelyOnDisk_]]">[[data.file_name]]</a><span id="name" hidden="[[completelyOnDisk_]]">[[data.file_name]]</span>
+          <span id="tag">[[computeTag_(data.state, data.last_reason_text, data.file_externally_removed)]]</span>
+        </div>
+
+        <a id="url" target="_blank" href="[[data.url]]">[[data.url]]</a>
+
+        <div id="description">[[computeDescription_(data.state, data.danger_type, data.file_name, data.progress_status_text)]]</div>
+
+        <template is="dom-if" if="[[showProgress_]]">
+          <paper-progress id="progress" indeterminate="[[isIndeterminate_(data.percent)]]" value="[[data.percent]]"></paper-progress>
+        </template>
+
+        <div id="safe" class="controls" hidden="[[isDangerous_]]">
+          <a is="action-link" id="show" i18n-content="controlShowInFolder" on-tap="onShowTap_" hidden="[[!completelyOnDisk_]]"></a>
+          <template is="dom-if" if="[[data.retry]]">
+            <paper-button id="retry" on-tap="onRetryTap_">[[i18n_.retry]]</paper-button>
+          </template>
+          <template is="dom-if" if="[[isInProgress_]]">
+            <paper-button id="pause" on-tap="onPauseTap_">[[i18n_.pause]]</paper-button>
+          </template>
+          <template is="dom-if" if="[[data.resume]]">
+            <paper-button id="resume" on-tap="onResumeTap_">[[i18n_.resume]]</paper-button>
+          </template>
+          <template is="dom-if" if="[[showCancel_]]">
+            <paper-button id="cancel" on-tap="onCancelTap_">[[i18n_.cancel]]</paper-button>
+          </template>
+          <span id="controlled-by"></span>
+        </div>
+
+        <template is="dom-if" if="[[isDangerous_]]">
+          <div id="dangerous" class="controls">
+            
+            <template is="dom-if" if="[[!isMalware_]]">
+              <paper-button id="discard" on-tap="onDiscardDangerousTap_" class="discard">[[i18n_.discard]]</paper-button>
+              <paper-button id="save" on-tap="onSaveDangerousTap_" class="keep">[[i18n_.save]]</paper-button>
+            </template>
+
+            
+            <template is="dom-if" if="[[isMalware_]]">
+              <paper-button id="danger-remove" on-tap="onDiscardDangerousTap_" class="discard">[[i18n_.remove]]</paper-button>
+              <paper-button id="restore" on-tap="onSaveDangerousTap_" class="keep">[[i18n_.restore]</paper-button>
+            </template>
+          </div>
+        </template>
+      </div>
+
+      <div id="remove-wrapper" class="icon-wrapper">
+        <paper-icon-button id="remove" icon="clear" i18n-values="title:controlRemoveFromList" style$="[[computeRemoveStyle_(isDangerous_, showCancel_)]]" on-tap="onRemoveTap_"></paper-icon-button>
+      </div>
+
+      <div id="incognito" i18n-values="title:inIncognito" hidden="[[!data.otr]]"></div>
+    </div>
+
+  </template>
+  <style>
+/* Copyright 2015 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+[is='action-link'] {
+  cursor: pointer;
+  display: inline-block;
+  text-decoration: none;
+}
+
+[is='action-link']:hover {
+  text-decoration: underline;
+}
+
+[is='action-link']:active {
+  color: rgb(5, 37, 119);
+  text-decoration: underline;
+}
+
+[is='action-link'][disabled] {
+  color: #999;
+  cursor: default;
+  pointer-events: none;
+  text-decoration: none;
+}
+
+[is='action-link'].no-outline {
+  outline: none;
+}
+
+</style>
+  <style>
+/* Copyright 2015 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+* {
+  --downloads-item-width: 622px;
+}
+
+paper-button {
+  font-weight: 500;
+  margin: 0;
+  min-width: auto;
+}
+
+</style>
+  <style>
+/* Copyright 2015 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+:host {
+  display: flex;
+  flex-direction: column;
+  margin: 12px 0;
+}
+
+#date {
+  color: #7c7c7c;
+  font-size: 100%;
+  font-weight: 500;
+  margin: 18px auto 16px;  /* This top margin + :host top margin = 30px. */
+  width: var(--downloads-item-width);
+}
+
+#content {
+  background: white;
+  border-radius: 2px;
+  display: flex;
+  flex: none;
+  margin: 0 auto;
+  min-height: 103px;
+  position: relative;
+  width: var(--downloads-item-width);
+}
+
+#content.is-active {
+  box-shadow: 0 2px 2px 0 rgba(0, 0, 0, .05), 0 1px 4px 0 rgba(0, 0, 0, .08),
+              0 3px 1px -2px rgba(0, 0, 0, .2);
+}
+
+#content:not(.is-active) {
+  opacity: .6;
+}
+
+#details {
+  -webkit-border-start: 1px #d8d8d8 solid;
+  -webkit-padding-end: 16px;
+  -webkit-padding-start: 24px;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  padding-bottom: 12px;
+  padding-top: 16px;
+}
+
+#content:not(.is-active) #details {
+  color: #bababa;
+}
+
+#content:not(.is-active) #name {
+  text-decoration: line-through;
+}
+
+.icon-wrapper {
+  align-self: center;
+  flex: none;
+  justify-content: center;
+  margin: 0 24px;
+}
+
+.icon {
+  height: 32px;
+  width: 32px;
+}
+
+#content:-webkit-any(.show-progress, .dangerous) #file-icon-wrapper {
+  /* TODO(dbeam): animate from top-aligned to centered when items finish? */
+  align-self: flex-start;
+  padding-top: 16px;
+}
+
+#content:not(.is-active) .icon {
+  -webkit-filter: grayscale(100%);
+  opacity: .5;
+}
+
+#danger-icon {
+  height: 32px;
+  width: 32px;
+}
+
+#danger-icon[icon='warning'] {
+  color: rgb(255, 193, 7);
+}
+
+#danger-icon[icon='remove-circle'] {
+  color: rgb(244, 67, 54);
+}
+
+#name,
+#file-link,
+#url {
+  max-width: 100%;
+}
+
+#name,
+#file-link {
+  font-weight: 500;
+  word-break: break-all;
+}
+
+#name {
+  -webkit-margin-end: 12px;  /* Only really affects #tag. */
+}
+
+.is-active :-webkit-any(#name, #file-link, #pause, #resume, #show) {
+  color: rgb(51, 103, 214);
+}
+
+#tag {
+  color: #5a5a5a;
+  font-weight: 500;
+}
+
+#url {
+  color: inherit;
+  margin-top: 6px;
+  overflow: hidden;
+  text-decoration: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.is-active #url {
+  color: #969696;
+}
+
+#progress,
+#description:not(:empty),
+.controls {
+  margin-top: 16px;
+}
+
+.is-active #description {
+  color: #616161;
+}
+
+.dangerous #description {
+  color: rgb(239, 108, 0);
+}
+
+#progress {
+  --paper-progress-active-color: rgb(54, 126, 237);
+  --paper-progress-container-color: rgb(223, 222, 223);
+  width: auto;
+}
+
+.controls {
+  -webkit-margin-start: -.57em;
+}
+
+#cancel,
+#retry,
+.keep,
+.discard {
+  color: #5a5a5a;
+}
+
+#show {
+  margin: .7em .57em;
+}
+
+#controlled-by {
+  -webkit-margin-start: 8px;
+}
+
+#controlled-by,
+#controlled-by a {
+  color: #5a5a5a;
+}
+
+.is-active #controlled-by {
+  color: #333;
+}
+
+.is-active #controlled-by a {
+  color: rgb(51, 103, 214);
+}
+
+#remove-wrapper {
+  align-self: flex-start;
+  margin: 0;
+}
+
+#remove {
+  --iron-icon-height: 16px;
+  --iron-icon-width: 16px;
+  --layout-inline: {
+    /* HACK(dbeam): we probably shouldn't be overriding Polymer like this. */
+  };
+  color: #969696;
+  height: 16px;
+  padding: 8px;
+  width: 16px;
+}
+
+#incognito {
+  bottom: 20px;
+  content: -webkit-image-set(
+      url("chrome://downloads/1x/incognito_marker.png") 1x,
+      url("chrome://downloads/2x/incognito_marker.png") 2x);
+  position: absolute;
+  right: 10px;
+}
+
+</style>
+  </dom-module>
 <dom-module id="paper-item-shared-styles" assetpath="chrome://resources/polymer/v1_0/paper-item/">
   <template>
     <style>
@@ -2927,41 +2916,46 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   </template>
 </dom-module>
 <dom-module id="paper-icon-button" assetpath="chrome://resources/polymer/v1_0/paper-icon-button/">
-  <style>
+  <template strip-whitespace="">
+    <style>
+      :host {
+        display: inline-block;
+        position: relative;
+        padding: 8px;
+        outline: none;
+        -webkit-tap-highlight-color: rgba(0,0,0,0);
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        cursor: pointer;
+        z-index: 0;
 
-    :host {
-      display: inline-block;
-      position: relative;
-      padding: 8px;
-      outline: none;
-      -webkit-tap-highlight-color: rgba(0,0,0,0);
-      -webkit-user-select: none;
-      -moz-user-select: none;
-      -ms-user-select: none;
-      user-select: none;
-      cursor: pointer;
-      z-index: 0;
+        width: 24px;
+        @apply(--paper-icon-button);
+      }
 
-      @apply(--paper-icon-button);
-    }
+      :host #ink {
+        color: var(--paper-icon-button-ink-color, --primary-text-color);
+        opacity: 0.6;
+      }
 
-    :host #ink {
-      color: var(--paper-icon-button-ink-color, --primary-text-color);
-      opacity: 0.6;
-    }
+      :host([disabled]) {
+        color: var(--paper-icon-button-disabled-text, --disabled-text-color);
+        pointer-events: none;
+        cursor: auto;
+        @apply(--paper-icon-button-disabled);
+      }
 
-    :host([disabled]) {
-      color: var(--paper-icon-button-disabled-text, --disabled-text-color);
-      pointer-events: none;
-      cursor: auto;
-      @apply(--paper-icon-button-disabled);
-    }
-  </style>
-  <template>
-    <paper-ripple id="ink" class="circle" center=""></paper-ripple>
+      iron-icon {
+        --iron-icon-width: 100%;
+        --iron-icon-height: 100%;
+      }
+    </style>
     <iron-icon id="icon" src="[[src]]" icon="[[icon]]" alt$="[[alt]]"></iron-icon>
   </template>
-</dom-module>
+
+  </dom-module>
 <dom-module id="paper-input-container" assetpath="chrome://resources/polymer/v1_0/paper-input/">
   <template>
 
@@ -3311,6 +3305,10 @@ paper-button {
   display: flex;
   flex: none;
   width: var(--downloads-item-width);
+}
+
+:host-context(.loading) #actions {
+  visibility: hidden;
 }
 
 :host(:not([downloads-showing])) #actions {
