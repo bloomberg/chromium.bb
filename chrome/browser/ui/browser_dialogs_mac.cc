@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 
 #include "base/command_line.h"
-#include "chrome/common/chrome_switches.cc"
+#include "chrome/common/chrome_switches.h"
 
 namespace chrome {
 
