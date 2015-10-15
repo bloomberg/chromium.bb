@@ -144,12 +144,12 @@ void LayoutTableRow::addChild(LayoutObject* child, LayoutObject* beforeChild)
 
     LayoutTableCell* cell = toLayoutTableCell(child);
 
+    ASSERT(!beforeChild || beforeChild->isTableCell());
+    LayoutBox::addChild(cell, beforeChild);
+
     // Generated content can result in us having a null section so make sure to null check our parent.
     if (parent())
         section()->addCell(cell, this);
-
-    ASSERT(!beforeChild || beforeChild->isTableCell());
-    LayoutBox::addChild(cell, beforeChild);
 
     if (beforeChild || nextRow())
         section()->setNeedsCellRecalc();

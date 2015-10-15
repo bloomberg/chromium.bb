@@ -128,9 +128,15 @@ public:
 
     typedef Vector<LayoutTableCell*, 2> SpanningLayoutTableCells;
 
+    // CellStruct represents the cells that occupy an (N, M) position in the
+    // table grid.
     struct CellStruct {
         ALLOW_ONLY_INLINE_ALLOCATION();
     public:
+        // All the cells that fills this grid "slot".
+        // Due to colspan / rowpsan, it is possible to have overlapping cells
+        // (see class comment about an example).
+        // This Vector is sorted in DOM order.
         Vector<LayoutTableCell*, 1> cells;
         bool inColSpan; // true for columns after the first in a colspan
 
@@ -139,6 +145,17 @@ public:
         {
         }
 
+        // This is the cell in the grid "slot" that is on top of the others
+        // (aka the last cell in DOM order for this slot).
+        //
+        // This is the cell originating from this slot if it exists.
+        //
+        // The concept of a primary cell is dubious at most as it doesn't
+        // correspond to a DOM or rendering concept. Also callers should be
+        // careful about assumptions about it. For example, even though the
+        // primary cell is visibly the top most, it is not guaranteed to be
+        // the only one visible for this slot due to different visual
+        // overflow rectangles.
         LayoutTableCell* primaryCell()
         {
             return hasCells() ? cells[cells.size() - 1] : 0;
@@ -380,6 +397,11 @@ private:
     HashSet<LayoutTableCell*> m_overflowingCells;
     bool m_forceSlowPaintPathWithOverflowingCell;
 
+    // This boolean tracks if we have cells overlapping due to rowspan / colspan
+    // (see class comment above about when it could appear).
+    //
+    // The use is to disable a painting optimization where we just paint the
+    // invalidated cells.
     bool m_hasMultipleCellLevels;
 
     // This map holds the collapsed border values for cells with collapsed borders.
