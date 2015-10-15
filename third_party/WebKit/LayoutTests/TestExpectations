@@ -1617,6 +1617,7 @@ crbug.com/471824 virtual/pointerevent/imported/web-platform-tests/pointerevents/
 crbug.com/471824 virtual/pointerevent/imported/web-platform-tests/pointerevents/pointerevent_touch-action-verification.html [ Skip ]
 
 crbug.com/470429 inspector/tracing/worker-js-profile.html [ Skip ]
+crbug.com/470429 virtual/threaded/inspector/tracing/worker-js-profile.html [ Skip ]
 
 crbug.com/471066 [ SnowLeopard ] fast/text/apply-start-width-after-skipped-text.html [ Failure ]
 crbug.com/471066 [ SnowLeopard ] fast/text/bidi-explicit-embedding-past-end.html [ Failure ]
