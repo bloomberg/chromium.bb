@@ -356,7 +356,6 @@
       "web/WebCustomElement.h",
       "web/WebDOMActivityLogger.h",
       "web/WebDOMCustomEvent.h",
-      "web/WebDOMError.h",
       "web/WebDOMEvent.h",
       "web/WebDOMFileSystem.h",
       "web/WebDOMMediaStreamTrack.h",

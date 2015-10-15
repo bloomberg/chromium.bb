@@ -8,8 +8,6 @@ var binding = require('binding').Binding.create('fileSystemProvider');
 var fileSystemProviderInternal =
     require('binding').Binding.create('fileSystemProviderInternal').generate();
 var eventBindings = require('event_bindings');
-var fileSystemNatives = requireNative('file_system_natives');
-var GetDOMError = fileSystemNatives.GetDOMError;
 
 /**
  * Maximum size of the thumbnail in bytes.

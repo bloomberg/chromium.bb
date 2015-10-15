@@ -21,8 +21,6 @@ class FileSystemNatives : public ObjectBackedNativeHandler {
   void GetIsolatedFileSystem(const v8::FunctionCallbackInfo<v8::Value>& args);
   void CrackIsolatedFileSystemName(
       const v8::FunctionCallbackInfo<v8::Value>& args);
-  // Constructs a DOMError object to be used in JavaScript.
-  void GetDOMError(const v8::FunctionCallbackInfo<v8::Value>& args);
 
   DISALLOW_COPY_AND_ASSIGN(FileSystemNatives);
 };

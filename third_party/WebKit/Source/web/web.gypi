@@ -118,7 +118,6 @@
       'WebCSSParser.cpp',
       'WebDOMActivityLogger.cpp',
       'WebDOMCustomEvent.cpp',
-      'WebDOMError.cpp',
       'WebDOMEvent.cpp',
       'WebDOMFileSystem.cpp',
       'WebDOMMediaStreamTrack.cpp',
