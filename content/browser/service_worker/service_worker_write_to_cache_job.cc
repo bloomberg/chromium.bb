@@ -40,6 +40,15 @@ const char kRedirectError[] =
     "The script resource is behind a redirect, which is disallowed.";
 const char kServiceWorkerAllowed[] = "Service-Worker-Allowed";
 
+// The net error code used when the job fails the update attempt because the new
+// script is byte-by-byte identical to the incumbent script. This error is shown
+// in DevTools and in netlog, so we want something obscure enough that it won't
+// conflict with a legitimate network error, and not too alarming if seen by
+// developers.
+// TODO(falken): Redesign this class so we don't have to fail at the network
+// stack layer just to cancel the update.
+const int kIdenticalScriptError = net::ERR_FILE_EXISTS;
+
 }  // namespace
 
 ServiceWorkerWriteToCacheJob::ServiceWorkerWriteToCacheJob(
@@ -170,7 +179,7 @@ bool ServiceWorkerWriteToCacheJob::ReadRawData(net::IOBuffer* buf,
   // to match the failure this function is about to return.
   if (status.status() == net::URLRequestStatus::SUCCESS &&
       *bytes_read == 0 && !cache_writer_->did_replace()) {
-    status = net::URLRequestStatus::FromError(net::ERR_FAILED);
+    status = net::URLRequestStatus::FromError(kIdenticalScriptError);
   }
 
   if (!status.is_success()) {
@@ -451,7 +460,7 @@ void ServiceWorkerWriteToCacheJob::NotifyDoneHelper(
   // ServiceWorker and write it back, but which did not replace the incumbent
   // script because the new script was identical, are considered to have failed.
   if (status.is_success() && !cache_writer_->did_replace()) {
-    reported_status = net::URLRequestStatus::FromError(net::ERR_FAILED);
+    reported_status = net::URLRequestStatus::FromError(kIdenticalScriptError);
     reported_status_message = "";
   }
 
@@ -471,8 +480,7 @@ void ServiceWorkerWriteToCacheJob::NotifyFinishedCaching(
   // exists.
   if (status.status() == net::URLRequestStatus::SUCCESS &&
       !cache_writer_->did_replace()) {
-    status =
-        net::URLRequestStatus(net::URLRequestStatus::FAILED, net::ERR_FAILED);
+    status = net::URLRequestStatus::FromError(kIdenticalScriptError);
     version_->SetStartWorkerStatusCode(SERVICE_WORKER_ERROR_EXISTS);
   }
 
