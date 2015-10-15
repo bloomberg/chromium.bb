@@ -3,7 +3,6 @@
  * found in the LICENSE file. */
 
 #container {
-  border: 1px solid;
   max-height: 1000px;
   min-height: 50px;
   overflow-y: auto;
@@ -12,4 +11,8 @@
 /* Note: the 'flex' attribute on core-list doesn't work as expected. */
 #networkList {
   flex: 1;
+}
+
+cr-network-list-item:not(:last-of-type) {
+  border-bottom: 1px solid lightgrey;
 }

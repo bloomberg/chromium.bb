@@ -2,16 +2,17 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
+iron-icon {
+ -webkit-margin-end: 5px;
+ -webkit-margin-start: -3px;
+}
+
+paper-button {
+  margin: 0;
+}
+
 span {
-  margin-right: 10px;
-}
-
-#outerDiv {
-  margin-bottom: 10px;
-}
-
-#lockedDiv iron-icon {
-  margin: 0 5px 0 -2px;
+  -webkit-margin-end: 10px;
 }
 
 #lockedDiv span {
@@ -20,16 +21,16 @@ span {
 }
 
 #lockedDiv paper-input {
-  margin-left: 10px;
+  -webkit-margin-start: 10px;
   width: 80px;
 }
 
 #unlockSimDialog paper-input {
-  margin-left: 5px;
+  -webkit-margin-start: 5px;
 }
 
 #unlockSimDialog span {
-  margin-left: 5px;
+  -webkit-margin-start: 5px;
 }
 
 .pin {

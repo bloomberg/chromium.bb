@@ -22,7 +22,7 @@
     <div class="layout vertical">
       <!-- Title section: Icon + name + connection state. -->
       <div id="titleDiv" class="layout horizontal center">
-        <cr-network-icon id="networkIcon" network-state="[[networkProperties]]">
+        <cr-network-icon network-state="[[networkProperties]]">
         </cr-network-icon>
         <span id="networkName">[[getStateName_(networkProperties)]]</span>
         <span id="networkState"
@@ -32,7 +32,7 @@
 
       <div id="outerDiv" class="layout vertical">
         <!-- For Cellular, show SIM info first. -->
-        <div id="simInfoDiv" class="layout vertical">
+        <div class="layout vertical section">
           <network-siminfo editable
               hidden$="[[!showCellularSim_(networkProperties)]]"
               network-properties="[[networkProperties]]"
@@ -42,14 +42,16 @@
 
         <!-- Info and properties common to all networks. -->
         <div id="infoDiv" class="layout vertical">
-          <div class="layout horizontal" hidden$="[[!IPAddress]]">
-            <span>IP Address:</span>
+          <div class="layout horizontal section" hidden$="[[!IPAddress]]">
+            <span id="ipAddressLabel">IP Address:</span>
             <span>[[IPAddress]]</span>
           </div>
-          <span hidden$="[[!showShared_(networkProperties)]]">
-            This network is shared with other users.
-          </span>
-          <div class="layout horizontal center"
+          <div class="section">
+            <span hidden$="[[!showShared_(networkProperties)]]">
+              This network is shared with other users.
+            </span>
+          </div>
+          <div class="layout horizontal center section"
               hidden$="[[!showPreferNetwork_(networkProperties)]]">
             <paper-icon-button id="preferButton"
                 toggles active="{{preferNetwork}}"
@@ -57,20 +59,23 @@
             </paper-icon-button>
             <span>Prefer this network</span>
           </div>
-          <paper-checkbox checked="{{autoConnect}}"
-              hidden$="[[!showAutoConnect_(networkProperties)]]">
-            Automatically connect to this network
-          </paper-checkbox>
-
+          <div class="section">
+            <paper-checkbox checked="{{autoConnect}}"
+                hidden$="[[!showAutoConnect_(networkProperties)]]">
+              Automatically connect to this network
+            </paper-checkbox>
+          </div>
           <!-- Properties to always show if present. -->
-          <network-property-list
-              fields="[[getInfoFields_(networkProperties)]]"
-              property-dict="[[networkProperties]]">
-          </network-property-list>
+          <div class="section">
+            <network-property-list
+                fields="[[getInfoFields_(networkProperties)]]"
+                property-dict="[[networkProperties]]">
+            </network-property-list>
+          </div>
         </div>
 
         <!-- Button row: Advanced + Disconnect | Connect. -->
-        <div class="layout horizontal center">
+        <div id="buttonDiv" class="layout horizontal center">
           <paper-button toggles noink active="{{advancedExpanded}}"
               hidden$="[[!hasAdvancedOrDeviceFields_(networkProperties)]]">
             Advanced
@@ -100,7 +105,7 @@
             hidden$="[[!hasAdvancedOrDeviceFields_(networkProperties)]]">
           <cr-collapse opened="[[advancedExpanded]]">
             <!-- Advanced properties -->
-            <div id="advancedInfoDiv" class="layout vertical">
+            <div id="advancedInfoDiv" class="layout vertical section">
               <network-property-list
                   fields="[[getAdvancedFields_(networkProperties)]]"
                   property-dict="[[networkProperties]]">
@@ -108,13 +113,15 @@
             </div>
 
             <!-- Network (APN, address, nameservers) -->
-            <div id="addressDiv" class="layout vertical"
+            <div id="addressDiv" class="layout vertical section"
                 hidden$="[[!hasNetworkSection_(networkProperties)]]">
-              <paper-button toggles noink active="{{addressExpanded}}">
-                Network
-              </paper-button>
+              <div>
+                <paper-button toggles noink active="{{addressExpanded}}">
+                  Network
+                </paper-button>
+              </div>
               <cr-collapse opened="[[addressExpanded]]">
-                <div class="layout vertical flex">
+                <div class="layout vertical">
                   <network-apnlist editable
                       hidden$="[[!isType_(networkProperties, NetworkType.CELLULAR)]]"
                       network-properties="[[networkProperties]]"
@@ -133,13 +140,15 @@
             </div>
 
             <!-- Proxy -->
-            <div class="layout vertical"
+            <div class="layout vertical section"
                 hidden$="[[!hasNetworkSection_(networkProperties)]]">
-              <paper-button toggles noink active="{{proxyExpanded}}">
-                Proxy
-              </paper-button>
+              <div>
+                <paper-button toggles noink active="{{proxyExpanded}}">
+                  Proxy
+                </paper-button>
+              </div>
               <cr-collapse opened="[[proxyExpanded]]">
-                <div id="proxyDiv" class="layout vertical flex">
+                <div id="proxyDiv" class="layout vertical">
                   <network-proxy editable
                       network-properties="[[networkProperties]]"
                       on-proxy-change="onProxyChange_">
@@ -149,17 +158,18 @@
             </div>
 
             <!-- Device properties -->
-            <div class="layout vertical"
+            <div class="layout vertical section"
                 hidden$="[[!hasDeviceFields_(networkProperties)]]">
-              <paper-button toggles noink active="{{deviceExpanded}}">
-                Device
-              </paper-button>
+              <div>
+                <paper-button toggles noink active="{{deviceExpanded}}">
+                  Device
+                </paper-button>
+              </div>
               <cr-collapse opened="[[deviceExpanded]]">
                 <network-property-list
                     fields="[[getDeviceFields_(networkProperties)]]"
                     property-dict="[[networkProperties]]">
                 </network-property-list>
-                <!-- TODO(stevenjb): Cellular SIM -->
               </cr-collapse>
             </div>
           </cr-collapse>

@@ -6,7 +6,7 @@
   <link rel="import" type="css" href="network_nameservers.css">
   <template>
     <div id="outer" class="layout vertical">
-      <div>
+      <div id="selectTypeDiv">
         <!-- TODO(stevenjb): Use cr-dropdown-menu once available. -->
         <select id="type" on-change="onTypeChange_">
           <template is="dom-repeat" items="[[nameserverTypeNames_]]">

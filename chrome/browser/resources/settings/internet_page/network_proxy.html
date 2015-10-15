@@ -12,7 +12,7 @@
   <template>
     <div id="outer" class="layout vertical flex">
       <!-- TODO(stevenjb): Use cr-dropdown-menu once available. -->
-      <div>
+      <div id="selectDiv">
         <select id="selectType" on-change="onTypeChange_">
           <template is="dom-repeat" items="[[proxyTypes_]]">
             <option value="[[item]]">[[proxyTypeDesc_(item)]]</option>

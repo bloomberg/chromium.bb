@@ -499,9 +499,6 @@
         <structure name="IDR_SETTINGS_NETWORK_SIMINFO_JS"
                    file="internet_page/network_siminfo.js"
                    type="chrome_html" />
-        <structure name="IDR_SETTINGS_NETWORK_SUMMARY_CSS"
-                   file="internet_page/network_summary.css"
-                   type="chrome_html" />
         <structure name="IDR_SETTINGS_NETWORK_SUMMARY_HTML"
                    file="internet_page/network_summary.html"
                    type="chrome_html" />

@@ -2,10 +2,11 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
+#selectTypeDiv {
+  margin: 10px 0;
+}
+
 select {
-  font-size: 16px;
-  margin-bottom: 10px;
-  margin-top: 10px;
   padding: 5px;
 }
 

@@ -3,7 +3,8 @@
  * found in the LICENSE file. */
 
 span {
-  margin: 0 5px 5px 0;
+  -webkit-margin-end: 5px;
+  margin-bottom: 5px;
 }
 
 span.fill {
@@ -14,5 +15,11 @@ span.fill {
 }
 
 paper-input-container {
-  margin: -8px 0 -3px 5px;
+  -webkit-margin-start: 5px;
+  margin-bottom: -3px;
+  margin-top: -12px;
+}
+
+#outerDiv {
+  padding: 5px 0;
 }
