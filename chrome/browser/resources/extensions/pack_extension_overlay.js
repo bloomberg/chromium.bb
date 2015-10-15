@@ -97,7 +97,8 @@ cr.define('extensions', function() {
 
     /**
      * Handles a response from a packDirectory call.
-     * @param {PackDirectoryResponse} response The response of the pack call.
+     * @param {chrome.developerPrivate.PackDirectoryResponse} response The
+     *     response of the pack call.
      * @private
      */
     onPackResponse_: function(response) {

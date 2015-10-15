@@ -66,8 +66,8 @@ cr.define('extensions', function() {
 
   /**
    * Compares two extensions for the order they should appear in the list.
-   * @param {ExtensionInfo} a The first extension.
-   * @param {ExtensionInfo} b The second extension.
+   * @param {chrome.developerPrivate.ExtensionInfo} a The first extension.
+   * @param {chrome.developerPrivate.ExtensionInfo} b The second extension.
    * returns {number} -1 if A comes before B, 1 if A comes after B, 0 if equal.
    */
   function compareExtensions(a, b) {
@@ -163,7 +163,7 @@ cr.define('extensions', function() {
      * @param {!extensions.ExtensionListDelegate} delegate
      */
     initialize: function(delegate) {
-      /** @private {!Array<ExtensionInfo>} */
+      /** @private {!Array<chrome.developerPrivate.ExtensionInfo>} */
       this.extensions_ = [];
 
       /** @private {!extensions.ExtensionListDelegate} */
@@ -408,7 +408,8 @@ cr.define('extensions', function() {
     /**
      * Synthesizes and initializes an HTML element for the extension metadata
      * given in |extension|.
-     * @param {!ExtensionInfo} extension A dictionary of extension metadata.
+     * @param {!chrome.developerPrivate.ExtensionInfo} extension A dictionary
+     *     of extension metadata.
      * @param {?Element} nextWrapper The newly created wrapper will be inserted
      *     before |nextWrapper| if non-null (else it will be appended to the
      *     wrapper list).
@@ -602,7 +603,8 @@ cr.define('extensions', function() {
 
     /**
      * Updates an HTML element for the extension metadata given in |extension|.
-     * @param {!ExtensionInfo} extension A dictionary of extension metadata.
+     * @param {!chrome.developerPrivate.ExtensionInfo} extension A dictionary of
+     *     extension metadata.
      * @param {!Element} wrapper The extension wrapper element to update.
      * @private
      */
@@ -1047,8 +1049,8 @@ cr.define('extensions', function() {
 
     /**
      * Updates or creates a wrapper for |extension|.
-     * @param {!ExtensionInfo} extension The information about the extension to
-     *     update.
+     * @param {!chrome.developerPrivate.ExtensionInfo} extension The information
+     *     about the extension to update.
      * @private
      */
     updateOrCreateWrapper_: function(extension) {

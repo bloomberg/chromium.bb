@@ -54,7 +54,7 @@ cr.define('extensions', function() {
   /**
    * Called by the dom_ui_ to re-populate the page with data representing
    * the current state of extension commands.
-   * @param {!Array<ExtensionInfo>} extensionsData
+   * @param {!Array<chrome.developerPrivate.ExtensionInfo>} extensionsData
    */
   ExtensionCommandsOverlay.updateExtensionsData = function(extensionsData) {
     var overlay = ExtensionCommandsOverlay.getInstance();

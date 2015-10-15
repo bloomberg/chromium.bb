@@ -243,7 +243,7 @@ cr.define('extensions', function() {
     /**
      * [Re]-Populates the page with data representing the current state of
      * installed extensions.
-     * @param {ProfileInfo} profileInfo
+     * @param {chrome.developerPrivate.ProfileInfo} profileInfo
      * @private
      */
     update_: function(profileInfo) {

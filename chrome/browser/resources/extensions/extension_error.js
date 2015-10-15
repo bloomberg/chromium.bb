@@ -195,7 +195,7 @@ cr.define('extensions', function() {
 
       /**
        * The callback for the extension changed event.
-       * @private {function(EventData):void}
+       * @private {function(chrome.developerPrivate.EventData):void}
        */
       this.onItemStateChangedListener_ = function(data) {
         var type = chrome.developerPrivate.EventType;

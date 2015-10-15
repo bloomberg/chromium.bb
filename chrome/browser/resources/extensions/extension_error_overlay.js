@@ -2,6 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+
+/** @typedef {chrome.developerPrivate.RuntimeError} */
+var RuntimeError;
+/** @typedef {chrome.developerPrivate.ManifestError} */
+var ManifestError;
+
 cr.define('extensions', function() {
   'use strict';
 
@@ -465,7 +471,8 @@ cr.define('extensions', function() {
 
     /**
      * Requests a file's source.
-     * @param {RequestFileSourceProperties} args The arguments for the call.
+     * @param {chrome.developerPrivate.RequestFileSourceProperties} args The
+     *     arguments for the call.
      */
     requestFileSource: function(args) {
       chrome.developerPrivate.requestFileSource(
@@ -475,10 +482,10 @@ cr.define('extensions', function() {
     /**
      * Set the code to be displayed in the code portion of the overlay.
      * @see ExtensionErrorOverlay.requestFileSourceResponse().
-     * @param {?RequestFileSourceResponse} response The response from the
-     *     request file source call, which will be shown as code. If |response|
-     *     is null, then a "Could not display code" message will be displayed
-     *     instead.
+     * @param {?chrome.developerPrivate.RequestFileSourceResponse} response The
+     *     response from the request file source call, which will be shown as
+     *     code. If |response| is null, then a "Could not display code" message
+     *     will be displayed instead.
      */
     onFileSourceResponse_: function(response) {
       this.codeDiv_.populate(

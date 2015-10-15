@@ -2,16 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/** @typedef {{active: boolean,
- *             command_name: string,
- *             description: string,
- *             extension_action: boolean,
- *             extension_id: string,
- *             global: boolean,
- *             keybinding: string}}
- */
-var ExtensionCommand;
-
 cr.define('options', function() {
   'use strict';
 
@@ -217,10 +207,11 @@ cr.define('options', function() {
 
     /**
      * Updates the extensions data for the overlay.
-     * @param {!Array<ExtensionInfo>} data The extension data.
+     * @param {!Array<chrome.developerPrivate.ExtensionInfo>} data The extension
+     *     data.
      */
     setData: function(data) {
-      /** @private {!Array<ExtensionInfo>} */
+      /** @private {!Array<chrome.developerPrivate.ExtensionInfo>} */
       this.data_ = data;
 
       this.textContent = '';
@@ -232,7 +223,8 @@ cr.define('options', function() {
     /**
      * Synthesizes and initializes an HTML element for the extension command
      * metadata given in |extension|.
-     * @param {ExtensionInfo} extension A dictionary of extension metadata.
+     * @param {chrome.developerPrivate.ExtensionInfo} extension A dictionary of
+     *     extension metadata.
      * @private
      */
     createNodeForExtension_: function(extension) {
@@ -259,7 +251,8 @@ cr.define('options', function() {
      * Synthesizes and initializes an HTML element for the extension command
      * metadata given in |command|.
      * @param {string} extensionId The associated extension's id.
-     * @param {Command} command A dictionary of extension command metadata.
+     * @param {chrome.developerPrivate.Command} command A dictionary of
+     *     extension command metadata.
      * @private
      */
     createNodeForCommand_: function(extensionId, command) {
