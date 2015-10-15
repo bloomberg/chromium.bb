@@ -198,7 +198,7 @@ public abstract class FirstRunFlowSequencer  {
     /**
      * Checks if the First Run needs to be launched.
      * @return The intent to launch the First Run Experience if necessary, or null.
-     * @param activity       The context
+     * @param context The context
      * @param fromChromeIcon Whether Chrome is opened via the Chrome icon
      */
     public static Intent checkIfFirstRunIsNecessary(Context context, boolean fromChromeIcon) {
@@ -224,7 +224,7 @@ public abstract class FirstRunFlowSequencer  {
 
     /**
      * @return A generic intent to show the First Run Activity.
-     * @param context        The context
+     * @param context The context
      * @param fromChromeIcon Whether Chrome is opened via the Chrome icon
     */
     public static Intent createGenericFirstRunIntent(Context context, boolean fromChromeIcon) {

@@ -45,8 +45,6 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
     protected static final String TAG = "FirstRunActivity";
 
     // Incoming parameters:
-    public static final String ORIGINAL_INTENT = "OriginalIntent";
-    public static final String FIRE_ORIGINAL_INTENT = "FireOriginalIntent";
     public static final String COMING_FROM_CHROME_ICON = "ComingFromChromeIcon";
     public static final String USE_FRE_FLOW_SEQUENCER = "UseFreFlowSequencer";
 
@@ -291,11 +289,6 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
         mFreProperties.putString(RESULT_SIGNIN_ACCOUNT_NAME, mResultSignInAccountName);
         mFreProperties.putBoolean(RESULT_SHOW_SYNC_SETTINGS, mResultShowSyncSettings);
         FirstRunFlowSequencer.markFlowAsCompleted(this, mFreProperties);
-
-        if (mFreProperties.getBoolean(FirstRunActivity.FIRE_ORIGINAL_INTENT)) {
-            Intent originalIntent = mFreProperties.getParcelable(FirstRunActivity.ORIGINAL_INTENT);
-            startActivity(originalIntent);
-        }
 
         if (DataReductionPromoScreen
                 .getDisplayedDataReductionPromo(getApplicationContext())) {
