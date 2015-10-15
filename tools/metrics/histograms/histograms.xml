@@ -30178,7 +30178,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="PageLoad.Timing2.NavigationToFirstText" units="milliseconds">
+<histogram name="PageLoad.Timing2.NavigationToFirstTextPaint"
+    units="milliseconds">
   <owner>ksakamoto@chromium.org</owner>
   <summary>
     Measures the time from navigation timing's navigation start to the time the
@@ -78417,7 +78418,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram
       name="PageLoad.Timing2.NavigationToDOMContentLoadedEventFired"/>
   <affected-histogram name="PageLoad.Timing2.NavigationToFirstLayout"/>
-  <affected-histogram name="PageLoad.Timing2.NavigationToFirstText"/>
+  <affected-histogram name="PageLoad.Timing2.NavigationToFirstTextPaint"/>
   <affected-histogram name="PageLoad.Timing2.NavigationToLoadEventFired"/>
 </histogram_suffixes>
 
