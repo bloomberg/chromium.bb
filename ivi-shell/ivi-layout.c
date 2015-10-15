@@ -2682,7 +2682,7 @@ ivi_layout_surface_add_configured_listener(struct ivi_layout_surface* ivisurf,
 	wl_signal_add(&ivisurf->configured, listener);
 }
 
-static struct ivi_controller_interface ivi_controller_interface = {
+static struct ivi_layout_interface ivi_layout_interface = {
 	/**
 	 * commit all changes
 	 */
@@ -2798,7 +2798,7 @@ load_controller_modules(struct weston_compositor *compositor, const char *module
 	char buffer[256];
 	int (*controller_module_init)(struct weston_compositor *compositor,
 				      int *argc, char *argv[],
-				      const struct ivi_controller_interface *interface,
+				      const struct ivi_layout_interface *interface,
 				      size_t interface_version);
 
 	if (modules == NULL)
@@ -2814,8 +2814,8 @@ load_controller_modules(struct weston_compositor *compositor, const char *module
 			return -1;
 
 		if (controller_module_init(compositor, argc, argv,
-					   &ivi_controller_interface,
-				sizeof(struct ivi_controller_interface)) != 0) {
+					   &ivi_layout_interface,
+				sizeof(struct ivi_layout_interface)) != 0) {
 			weston_log("ivi-shell: Initialization of controller module fails");
 			return -1;
 		}

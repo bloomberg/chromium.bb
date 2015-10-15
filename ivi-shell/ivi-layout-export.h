@@ -173,7 +173,7 @@ typedef void (*ivi_controller_surface_content_callback)(
 			int32_t content,
 			void *userdata);
 
-struct ivi_controller_interface {
+struct ivi_layout_interface {
 
 	/**
 	 * \brief Commit all changes and execute all enqueued commands since
