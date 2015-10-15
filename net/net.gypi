@@ -333,6 +333,8 @@
       'quic/quic_flags.h',
       'quic/quic_flow_controller.cc',
       'quic/quic_flow_controller.h',
+      'quic/quic_frame_list.cc',
+      'quic/quic_frame_list.h',
       'quic/quic_framer.cc',
       'quic/quic_framer.h',
       'quic/quic_packet_creator.cc',

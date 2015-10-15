@@ -22,9 +22,11 @@ size_t QuicStreamSequencerPeer::GetNumBufferedFrames(
 bool QuicStreamSequencerPeer::FrameOverlapsBufferedData(
     QuicStreamSequencer* sequencer,
     const QuicStreamFrame& frame) {
-  QuicStreamSequencer::FrameList::iterator it =
-      sequencer->FindInsertionPoint(frame);
-  return sequencer->FrameOverlapsBufferedData(frame, it);
+  list<QuicFrameList::FrameData>::iterator it =
+      sequencer->buffered_frames_.FindInsertionPoint(frame.offset,
+                                                     frame.data.length());
+  return sequencer->buffered_frames_.FrameOverlapsBufferedData(
+      frame.offset, frame.data.length(), it);
 }
 
 // static

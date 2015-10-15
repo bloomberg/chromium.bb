@@ -523,8 +523,8 @@ TEST_F(QuicStreamSequencerTest, MarkConsumedError) {
   // stream to be closed.
   EXPECT_CALL(stream_, Reset(QUIC_ERROR_PROCESSING_STREAM));
   EXPECT_DFATAL(sequencer_->MarkConsumed(4),
-                "Invalid argument to MarkConsumed.  num_bytes_consumed_: 3 "
-                "end_offset: 4 offset: 9 length: 17");
+                "Invalid argument to MarkConsumed."
+                " expect to consume: 4, but not enough bytes available.");
 }
 
 TEST_F(QuicStreamSequencerTest, MarkConsumedWithMissingPacket) {
