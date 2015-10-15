@@ -43,6 +43,7 @@ size_t ProcessMemoryDump::CountResidentBytes(void* start_address,
   const size_t kMaxChunkSize = 32 * 1024 * 1024;
   size_t offset = 0;
   size_t total_resident_size = 0;
+  int result = 0;
   while (offset < mapped_size) {
     void* chunk_start = reinterpret_cast<void*>(start_pointer + offset);
     const size_t chunk_size = std::min(mapped_size - offset, kMaxChunkSize);
@@ -51,20 +52,35 @@ size_t ProcessMemoryDump::CountResidentBytes(void* start_address,
 
 #if defined(OS_MACOSX) || defined(OS_IOS)
     std::vector<char> vec(page_count + 1);
-    int res = mincore(chunk_start, chunk_size, vector_as_array(&vec));
-    DCHECK(!res);
+    // mincore in MAC does not fail with EAGAIN.
+    result = mincore(chunk_start, chunk_size, vector_as_array(&vec));
+    if (result)
+      break;
+
     for (size_t i = 0; i < page_count; i++)
       resident_page_count += vec[i] & MINCORE_INCORE ? 1 : 0;
 #else   // defined(OS_MACOSX) || defined(OS_IOS)
     std::vector<unsigned char> vec(page_count + 1);
-    int res = mincore(chunk_start, chunk_size, vector_as_array(&vec));
-    DCHECK(!res);
+    int error_counter = 0;
+    // HANDLE_EINTR tries for 100 times. So following the same pattern.
+    do {
+      result = mincore(chunk_start, chunk_size, vector_as_array(&vec));
+    } while (result == -1 && errno == EAGAIN && error_counter++ < 100);
+    if (result)
+      break;
+
     for (size_t i = 0; i < page_count; i++)
       resident_page_count += vec[i];
 #endif  // defined(OS_MACOSX) || defined(OS_IOS)
 
     total_resident_size += resident_page_count * page_size;
     offset += kMaxChunkSize;
+  }
+
+  DCHECK_EQ(0, result);
+  if (result) {
+    total_resident_size = 0;
+    LOG(ERROR) << "mincore() call failed. The resident size is invalid";
   }
   return total_resident_size;
 }
