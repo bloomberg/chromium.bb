@@ -57,13 +57,16 @@ class WebLayer;
 class WebLayerTreeView;
 class WebMouseEvent;
 class WebMouseWheelEvent;
+class WebFrameWidgetImpl;
+
+using WebFrameWidgetsSet = WillBePersistentHeapHashSet<RawPtrWillBeWeakMember<WebFrameWidgetImpl>>;
 
 class WebFrameWidgetImpl final : public RefCountedWillBeGarbageCollectedFinalized<WebFrameWidgetImpl>
     , public WebFrameWidget
     , public PageWidgetEventHandler {
 public:
     static WebFrameWidgetImpl* create(WebWidgetClient*, WebLocalFrame*);
-    static HashSet<WebFrameWidgetImpl*>& allInstances();
+    static WebFrameWidgetsSet& allInstances();
 
     // WebWidget functions:
     void close() override;

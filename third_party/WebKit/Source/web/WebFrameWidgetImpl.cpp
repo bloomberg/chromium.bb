@@ -82,9 +82,9 @@ WebFrameWidgetImpl* WebFrameWidgetImpl::create(WebWidgetClient* client, WebLocal
 }
 
 // static
-HashSet<WebFrameWidgetImpl*>& WebFrameWidgetImpl::allInstances()
+WebFrameWidgetsSet& WebFrameWidgetImpl::allInstances()
 {
-    DEFINE_STATIC_LOCAL(HashSet<WebFrameWidgetImpl*>, allInstances, ());
+    DEFINE_STATIC_LOCAL(WebFrameWidgetsSet, allInstances, ());
     return allInstances;
 }
 

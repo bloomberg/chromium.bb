@@ -160,7 +160,7 @@ private:
         agent->flushPendingProtocolNotifications();
 
         Vector<WebViewImpl*> views;
-        Vector<WebFrameWidgetImpl*> widgets;
+        WillBeHeapVector<RawPtrWillBeMember<WebFrameWidgetImpl>> widgets;
 
         // 1. Disable input events.
         const HashSet<WebViewImpl*>& viewImpls = WebViewImpl::allInstances();
@@ -172,9 +172,9 @@ private:
             view->setIgnoreInputEvents(true);
         }
 
-        const HashSet<WebFrameWidgetImpl*>& widgetImpls = WebFrameWidgetImpl::allInstances();
-        HashSet<WebFrameWidgetImpl*>::const_iterator widgetImplsEnd = widgetImpls.end();
-        for (HashSet<WebFrameWidgetImpl*>::const_iterator it =  widgetImpls.begin(); it != widgetImplsEnd; ++it) {
+        const WebFrameWidgetsSet& widgetImpls = WebFrameWidgetImpl::allInstances();
+        WebFrameWidgetsSet::const_iterator widgetImplsEnd = widgetImpls.end();
+        for (WebFrameWidgetsSet::const_iterator it =  widgetImpls.begin(); it != widgetImplsEnd; ++it) {
             WebFrameWidgetImpl* widget = *it;
             m_frozenWidgets.add(widget);
             widgets.append(widget);
@@ -200,7 +200,7 @@ private:
                 (*it)->setIgnoreInputEvents(false);
             }
         }
-        for (Vector<WebFrameWidgetImpl*>::iterator it = widgets.begin(); it != widgets.end(); ++it) {
+        for (WillBeHeapVector<RawPtrWillBeMember<WebFrameWidgetImpl>>::iterator it = widgets.begin(); it != widgets.end(); ++it) {
             if (m_frozenWidgets.contains(*it)) {
                 // The widget was not closed during the dispatch.
                 (*it)->setIgnoreInputEvents(false);
@@ -226,8 +226,7 @@ private:
     OwnPtr<WebDevToolsAgentClient::WebKitClientMessageLoop> m_messageLoop;
     typedef HashSet<WebViewImpl*> FrozenViewsSet;
     FrozenViewsSet m_frozenViews;
-    typedef HashSet<WebFrameWidgetImpl*> FrozenWidgetsSet;
-    FrozenWidgetsSet m_frozenWidgets;
+    WebFrameWidgetsSet m_frozenWidgets;
     static ClientMessageLoopAdapter* s_instance;
 };
 
