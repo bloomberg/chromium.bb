@@ -21,8 +21,10 @@ _ANDROID_NAMESPACE = 'http://schemas.android.com/apk/res/android'
 ElementTree.register_namespace('android', _ANDROID_NAMESPACE)
 
 _INCREMENTAL_APP_NAME = 'org.chromium.incrementalinstall.BootstrapApplication'
-_META_DATA_NAME = 'incremental-install-real-app'
+_META_DATA_APP_NAME = 'incremental-install-real-app'
+_META_DATA_INSTRUMENTATION_NAME = 'incremental-install-real-instrumentation'
 _DEFAULT_APPLICATION_CLASS = 'android.app.Application'
+_DEFAULT_INSTRUMENTATION_CLASS = 'android.app.Instrumentation'
 
 
 def _AddNamespace(name):
@@ -43,6 +45,12 @@ def _ParseArgs():
                            'This is required on Android M+',
                       action='store_true')
   return parser.parse_args()
+
+
+def _CreateMetaData(parent, name, value):
+  meta_data_node = ElementTree.SubElement(parent, 'meta-data')
+  meta_data_node.set(_AddNamespace('name'), name)
+  meta_data_node.set(_AddNamespace('value'), value)
 
 
 def _ProcessManifest(main_manifest, disable_isolated_processes):
@@ -68,10 +76,18 @@ def _ProcessManifest(main_manifest, disable_isolated_processes):
   real_app_class = app_node.get(_AddNamespace('name'),
                                 _DEFAULT_APPLICATION_CLASS)
   app_node.set(_AddNamespace('name'), _INCREMENTAL_APP_NAME)
+  _CreateMetaData(app_node, _META_DATA_APP_NAME, real_app_class)
 
-  meta_data_node = ElementTree.SubElement(app_node, 'meta-data')
-  meta_data_node.set(_AddNamespace('name'), _META_DATA_NAME)
-  meta_data_node.set(_AddNamespace('value'), real_app_class)
+  # Seems to be a bug in ElementTree, as doc.find() doesn't work here.
+  instrumentation_nodes = doc.findall('instrumentation')
+  if instrumentation_nodes:
+    instrumentation_node = instrumentation_nodes[0]
+    real_instrumentation_class = instrumentation_node.get(_AddNamespace('name'))
+    instrumentation_node.set(_AddNamespace('name'),
+                             _DEFAULT_INSTRUMENTATION_CLASS)
+    _CreateMetaData(app_node, _META_DATA_INSTRUMENTATION_NAME,
+                    real_instrumentation_class)
+
   return ElementTree.tostring(doc, encoding='UTF-8')
 
 

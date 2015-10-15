@@ -9,6 +9,7 @@ android_library("bootstrap_java") {
   dex_path = "$target_gen_dir/bootstrap.dex"
   java_files = [
     "java/org/chromium/incrementalinstall/BootstrapApplication.java",
+    "java/org/chromium/incrementalinstall/BootstrapInstrumentation.java",
     "java/org/chromium/incrementalinstall/ClassLoaderPatcher.java",
     "java/org/chromium/incrementalinstall/LockFile.java",
     "java/org/chromium/incrementalinstall/Reflect.java",

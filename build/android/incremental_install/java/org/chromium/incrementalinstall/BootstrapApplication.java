@@ -5,10 +5,13 @@
 package org.chromium.incrementalinstall;
 
 import android.app.Application;
+import android.app.Instrumentation;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.os.Bundle;
 import android.util.Log;
 
 import java.io.File;
@@ -18,17 +21,23 @@ import java.util.Map;
 
 /**
  * An Application that replaces itself with another Application (as defined in
- * the "incremental-install-real-app" meta-data tag within the
- * AndroidManifest.xml). It loads the other application only after side-loading
- * its .so and .dex files from /data/local/tmp.
+ * an AndroidManifext.xml meta-data tag). It loads the other application only
+ * after side-loading its .so and .dex files from /data/local/tmp.
+ *
+ * This class is highly dependent on the private implementation details of
+ * Android's ActivityThread.java. However, it has been tested to work with
+ * JellyBean through Marshmallow.
  */
 public final class BootstrapApplication extends Application {
     private static final String TAG = "cr.incrementalinstall";
     private static final String MANAGED_DIR_PREFIX = "/data/local/tmp/incremental-app-";
     private static final String REAL_APP_META_DATA_NAME = "incremental-install-real-app";
+    private static final String REAL_INSTRUMENTATION_META_DATA_NAME =
+            "incremental-install-real-instrumentation";
 
     private ClassLoaderPatcher mClassLoaderPatcher;
     private Application mRealApplication;
+    private Instrumentation mRealInstrumentation;
     private Object mStashedProviderList;
     private Object mActivityThread;
 
@@ -65,10 +74,25 @@ public final class BootstrapApplication extends Application {
                 LockFile.clearInstallerLock(firstRunLockFile);
             }
 
+            Bundle metadata = getManifestMetadata();
+            // mInstrumentationAppDir is one of a set of fields that is initialized only when
+            // instrumentation is active.
+            if (Reflect.getField(mActivityThread, "mInstrumentationAppDir") != null) {
+                initInstrumentation(metadata.getString(REAL_INSTRUMENTATION_META_DATA_NAME));
+            } else {
+                Log.i(TAG, "No instrumentation active.");
+            }
+
+            // Even when instrumentation is not enabled, ActivityThread uses a default
+            // Instrumentation instance internally. We hook it here in order to hook into the
+            // call to Instrumentation.onCreate().
+            Reflect.setField(mActivityThread, "mInstrumentation",
+                    new BootstrapInstrumentation(this));
+
             // attachBaseContext() is called from ActivityThread#handleBindApplication() and
             // Application#mApplication is changed right after we return. Thus, we cannot swap
             // the Application instances until onCreate() is called.
-            String realApplicationName = getRealApplicationName();
+            String realApplicationName = metadata.getString(REAL_APP_META_DATA_NAME);
             Log.i(TAG, "Instantiating " + realApplicationName);
             mRealApplication =
                     (Application) Reflect.newInstance(Class.forName(realApplicationName));
@@ -79,7 +103,49 @@ public final class BootstrapApplication extends Application {
             // class being installed, so temporarily pretend there are no providers, and then
             // instantiate them explicitly within onCreate().
             disableContentProviders();
-            Log.i(TAG, "Waiting for onCreate");
+            Log.i(TAG, "Waiting for Instrumentation.onCreate");
+        } catch (Exception e) {
+            throw new RuntimeException("Incremental install failed.", e);
+        }
+    }
+
+    /**
+     * Instantiates and initializes mRealInstrumentation (the real Instrumentation class).
+     */
+    private void initInstrumentation(String realInstrumentationName)
+            throws ReflectiveOperationException {
+        Log.i(TAG, "Instantiating instrumentation " + realInstrumentationName);
+        mRealInstrumentation = (Instrumentation) Reflect.newInstance(
+                Class.forName(realInstrumentationName));
+        Instrumentation oldInstrumentation =
+                (Instrumentation) Reflect.getField(mActivityThread, "mInstrumentation");
+
+        // Initialize the fields that are set by Instrumentation.init().
+        String[] initFields = {"mThread", "mMessageQueue", "mInstrContext", "mAppContext",
+                "mWatcher", "mUiAutomationConnection"};
+        for (String fieldName : initFields) {
+            Reflect.setField(mRealInstrumentation, fieldName,
+                    Reflect.getField(oldInstrumentation, fieldName));
+        }
+        // But make sure the correct ComponentName is used.
+        ComponentName newName = new ComponentName(
+                oldInstrumentation.getComponentName().getPackageName(), realInstrumentationName);
+        Reflect.setField(mRealInstrumentation, "mComponent", newName);
+    }
+
+    /**
+     * Called by BootstrapInstrumentation from Instrumentation.onCreate().
+     * This happens regardless of whether or not instrumentation is enabled.
+     */
+    void onInstrumentationCreate(Bundle arguments) {
+        Log.i(TAG, "Instrumentation.onCreate() called. Swapping references.");
+        try {
+            swapApplicationReferences();
+            enableContentProviders();
+            if (mRealInstrumentation != null) {
+                Reflect.setField(mActivityThread, "mInstrumentation", mRealInstrumentation);
+                mRealInstrumentation.onCreate(arguments);
+            }
         } catch (Exception e) {
             throw new RuntimeException("Incremental install failed.", e);
         }
@@ -89,10 +155,7 @@ public final class BootstrapApplication extends Application {
     public void onCreate() {
         super.onCreate();
         try {
-            Log.i(TAG, "onCreate() called. Swapping Application references");
-            swapApplicationReferences();
-            enableContentProviders();
-            Log.i(TAG, "Calling onCreate");
+            Log.i(TAG, "Application.onCreate() called.");
             mRealApplication.onCreate();
         } catch (Exception e) {
             throw new RuntimeException("Incremental install failed.", e);
@@ -103,10 +166,10 @@ public final class BootstrapApplication extends Application {
      * Returns the class name of the real Application class (recorded in the
      * AndroidManifest.xml)
      */
-    private String getRealApplicationName() throws NameNotFoundException {
+    private Bundle getManifestMetadata() throws NameNotFoundException {
         ApplicationInfo appInfo = getPackageManager().getApplicationInfo(getPackageName(),
                 PackageManager.GET_META_DATA);
-        return appInfo.metaData.getString(REAL_APP_META_DATA_NAME);
+        return appInfo.metaData;
     }
 
     /**
