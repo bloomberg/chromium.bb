@@ -29,7 +29,9 @@ struct FrameHostMsg_ReclaimCompositorResources_Params;
 namespace content {
 class RenderFrameProxyHost;
 class RenderWidgetHostImpl;
+class RenderWidgetHostViewBase;
 class RenderWidgetHostViewChildFrame;
+class WebCursor;
 
 // CrossProcessFrameConnector provides the platform view abstraction for
 // RenderWidgetHostViewChildFrame allowing RWHVChildFrame to remain ignorant
@@ -96,6 +98,7 @@ class CONTENT_EXPORT CrossProcessFrameConnector {
   gfx::Rect ChildFrameRect();
   float device_scale_factor() const { return device_scale_factor_; }
   void GetScreenInfo(blink::WebScreenInfo* results);
+  void UpdateCursor(const WebCursor& cursor);
 
  private:
   // Handlers for messages received from the parent frame.
@@ -112,6 +115,9 @@ class CONTENT_EXPORT CrossProcessFrameConnector {
 
   void SetDeviceScaleFactor(float scale_factor);
   void SetSize(gfx::Rect frame_rect);
+
+  // Retrieve the view for the top-level frame under the same WebContents.
+  RenderWidgetHostViewBase* GetRootRenderWidgetHostView();
 
   // The RenderFrameProxyHost that routes messages to the parent frame's
   // renderer process.

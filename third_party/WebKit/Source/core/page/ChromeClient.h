@@ -140,7 +140,7 @@ public:
 
     // Methods used by HostWindow.
     virtual WebScreenInfo screenInfo() const = 0;
-    virtual void setCursor(const Cursor&) = 0;
+    virtual void setCursor(const Cursor&, LocalFrame* localRoot) = 0;
     // End methods used by HostWindow.
     virtual Cursor lastSetCursorForTesting() const = 0;
 

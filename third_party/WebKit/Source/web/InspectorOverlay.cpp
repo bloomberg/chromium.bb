@@ -138,10 +138,10 @@ public:
         EmptyChromeClient::trace(visitor);
     }
 
-    void setCursor(const Cursor& cursor) override
+    void setCursor(const Cursor& cursor, LocalFrame* localRoot) override
     {
         toChromeClientImpl(m_client)->setCursorOverridden(false);
-        toChromeClientImpl(m_client)->setCursor(cursor);
+        toChromeClientImpl(m_client)->setCursor(cursor, localRoot);
         bool overrideCursor = m_overlay->m_layoutEditor;
         toChromeClientImpl(m_client)->setCursorOverridden(overrideCursor);
     }
@@ -633,7 +633,7 @@ void InspectorOverlay::overlayClearSelection(bool commitChanges)
         highlightNode(m_hoveredNodeForInspectMode.get(), *m_inspectModeHighlightConfig, false);
 
     toChromeClientImpl(m_webViewImpl->page()->chromeClient()).setCursorOverridden(false);
-    toChromeClientImpl(m_webViewImpl->page()->chromeClient()).setCursor(pointerCursor());
+    toChromeClientImpl(m_webViewImpl->page()->chromeClient()).setCursor(pointerCursor(), overlayMainFrame());
 }
 
 void InspectorOverlay::profilingStarted()

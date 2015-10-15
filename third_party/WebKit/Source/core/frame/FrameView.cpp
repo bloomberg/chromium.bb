@@ -2949,7 +2949,7 @@ void FrameView::setCursor(const Cursor& cursor)
     Page* page = frame().page();
     if (!page || !page->settings().deviceSupportsMouse())
         return;
-    page->chromeClient().setCursor(cursor);
+    page->chromeClient().setCursor(cursor, m_frame->localFrameRoot());
 }
 
 void FrameView::frameRectsChanged()

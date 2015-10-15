@@ -24,6 +24,7 @@
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/frame_messages.h"
+#include "content/common/view_messages.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -3514,5 +3515,86 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // The root frame should be focused again.
   EXPECT_EQ(root, root->frame_tree()->GetFocusedFrame());
 }
+
+// There are no cursors on Android.
+#if !defined(OS_ANDROID)
+class CursorMessageFilter : public content::BrowserMessageFilter {
+ public:
+  CursorMessageFilter()
+      : content::BrowserMessageFilter(ViewMsgStart),
+        message_loop_runner_(new content::MessageLoopRunner),
+        last_set_cursor_routing_id_(MSG_ROUTING_NONE) {}
+
+  bool OnMessageReceived(const IPC::Message& message) override {
+    if (message.type() == ViewHostMsg_SetCursor::ID) {
+      content::BrowserThread::PostTask(
+          content::BrowserThread::UI, FROM_HERE,
+          base::Bind(&CursorMessageFilter::OnSetCursor, this,
+                     message.routing_id()));
+    }
+    return false;
+  }
+
+  void OnSetCursor(int routing_id) {
+    last_set_cursor_routing_id_ = routing_id;
+    message_loop_runner_->Quit();
+  }
+
+  int last_set_cursor_routing_id() const { return last_set_cursor_routing_id_; }
+
+  void Wait() {
+    last_set_cursor_routing_id_ = MSG_ROUTING_NONE;
+    message_loop_runner_->Run();
+  }
+
+ private:
+  ~CursorMessageFilter() override {}
+
+  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
+  int last_set_cursor_routing_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(CursorMessageFilter);
+};
+
+// Verify that we receive a mouse cursor update message when we mouse over
+// a text field contained in an out-of-process iframe.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       CursorUpdateFromReceivedFromCrossSiteIframe) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "/frame_tree/page_with_positioned_frame.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  FrameTreeNode* child_node = root->child_at(0);
+  EXPECT_NE(shell()->web_contents()->GetSiteInstance(),
+            child_node->current_frame_host()->GetSiteInstance());
+
+  scoped_refptr<CursorMessageFilter> filter = new CursorMessageFilter();
+  child_node->current_frame_host()->GetProcess()->AddFilter(filter.get());
+
+  // Send a MouseMove to the subframe. The frame contains text, and moving the
+  // mouse over it should cause the renderer to send a mouse cursor update.
+  blink::WebMouseEvent mouse_event;
+  mouse_event.type = blink::WebInputEvent::MouseMove;
+  mouse_event.x = 60;
+  mouse_event.y = 60;
+  RenderWidgetHost* rwh_child =
+      root->child_at(0)->current_frame_host()->GetRenderWidgetHost();
+  RenderWidgetHostViewBase* root_view = static_cast<RenderWidgetHostViewBase*>(
+      root->current_frame_host()->GetRenderWidgetHost()->GetView());
+  static_cast<WebContentsImpl*>(shell()->web_contents())
+      ->GetInputEventRouter()
+      ->RouteMouseEvent(root_view, &mouse_event);
+
+  // CursorMessageFilter::Wait() implicitly tests whether we receive a
+  // ViewHostMsg_SetCursor message from the renderer process, because it does
+  // does not return otherwise.
+  filter->Wait();
+  EXPECT_EQ(filter->last_set_cursor_routing_id(), rwh_child->GetRoutingID());
+}
+#endif
 
 }  // namespace content

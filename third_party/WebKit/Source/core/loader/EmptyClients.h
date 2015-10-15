@@ -148,7 +148,7 @@ public:
 
     void openFileChooser(LocalFrame*, PassRefPtr<FileChooser>) override;
 
-    void setCursor(const Cursor&) override {}
+    void setCursor(const Cursor&, LocalFrame* localRoot) override {}
     Cursor lastSetCursorForTesting() const override { return pointerCursor(); }
 
     void attachRootGraphicsLayer(GraphicsLayer*, LocalFrame* localRoot) override {}

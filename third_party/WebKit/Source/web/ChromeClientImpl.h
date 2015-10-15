@@ -110,7 +110,7 @@ public:
     PassRefPtr<DateTimeChooser> openDateTimeChooser(DateTimeChooserClient*, const DateTimeChooserParameters&) override;
     void openFileChooser(LocalFrame*, PassRefPtr<FileChooser>) override;
     void enumerateChosenDirectory(FileChooser*) override;
-    void setCursor(const Cursor&) override;
+    void setCursor(const Cursor&, LocalFrame* localRoot) override;
     Cursor lastSetCursorForTesting() const override;
     void needTouchEvents(bool needTouchEvents) override;
     void setTouchAction(TouchAction) override;
@@ -184,7 +184,7 @@ private:
     void unregisterPopupOpeningObserver(PopupOpeningObserver*) override;
 
     void notifyPopupOpeningObservers() const;
-    void setCursor(const WebCursorInfo&);
+    void setCursor(const WebCursorInfo&, LocalFrame* localRoot);
 
     WebViewImpl* m_webView; // Weak pointer.
     WindowFeatures m_windowFeatures;

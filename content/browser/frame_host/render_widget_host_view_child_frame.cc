@@ -162,6 +162,8 @@ void RenderWidgetHostViewChildFrame::MovePluginWindows(
 }
 
 void RenderWidgetHostViewChildFrame::UpdateCursor(const WebCursor& cursor) {
+  if (frame_connector_)
+    frame_connector_->UpdateCursor(cursor);
 }
 
 void RenderWidgetHostViewChildFrame::SetIsLoading(bool is_loading) {
