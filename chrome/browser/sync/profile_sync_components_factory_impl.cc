@@ -5,6 +5,7 @@
 #include "chrome/browser/sync/profile_sync_components_factory_impl.h"
 
 #include "base/command_line.h"
+#include "base/memory/ref_counted.h"
 #include "base/prefs/pref_service.h"
 #include "build/build_config.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
@@ -160,11 +161,15 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
   sync_driver::SyncService* sync_service = sync_client->GetSyncService();
   base::Closure error_callback =
       base::Bind(&ChromeReportUnrecoverableError, chrome::GetChannel());
+  const scoped_refptr<base::SingleThreadTaskRunner> ui_thread =
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI);
+  const scoped_refptr<base::SingleThreadTaskRunner> db_thread =
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB);
 
   // TODO(stanisc): can DEVICE_INFO be one of disabled datatypes?
   sync_service->RegisterDataTypeController(new DeviceInfoDataTypeController(
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-      error_callback, sync_client, sync_service->GetLocalDeviceInfoProvider()));
+      ui_thread, error_callback, sync_client,
+      sync_service->GetLocalDeviceInfoProvider()));
 
   // Autofill sync is enabled by default.  Register unless explicitly
   // disabled.
@@ -177,10 +182,8 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
   // disabled.
   if (!disabled_types.Has(syncer::AUTOFILL_PROFILE)) {
     sync_service->RegisterDataTypeController(
-        new AutofillProfileDataTypeController(
-            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
-            error_callback, sync_client));
+        new AutofillProfileDataTypeController(ui_thread, db_thread,
+                                              error_callback, sync_client));
   }
 
   // Wallet data sync is enabled by default, but behind a syncer experiment
@@ -189,9 +192,8 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
   if (!wallet_disabled) {
     sync_service->RegisterDataTypeController(
         new browser_sync::AutofillWalletDataTypeController(
-            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
-            error_callback, sync_client, syncer::AUTOFILL_WALLET_DATA));
+            ui_thread, db_thread, error_callback, sync_client,
+            syncer::AUTOFILL_WALLET_DATA));
   }
 
   // Wallet metadata sync depends on Wallet data sync. Register if Wallet data
@@ -200,17 +202,15 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
       !disabled_types.Has(syncer::AUTOFILL_WALLET_METADATA)) {
     sync_service->RegisterDataTypeController(
         new browser_sync::AutofillWalletDataTypeController(
-            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
-            error_callback, sync_client, syncer::AUTOFILL_WALLET_METADATA));
+            ui_thread, db_thread, error_callback, sync_client,
+            syncer::AUTOFILL_WALLET_METADATA));
   }
 
   // Bookmark sync is enabled by default.  Register unless explicitly
   // disabled.
   if (!disabled_types.Has(syncer::BOOKMARKS)) {
-    sync_service->RegisterDataTypeController(new BookmarkDataTypeController(
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-        error_callback, sync_client));
+    sync_service->RegisterDataTypeController(
+        new BookmarkDataTypeController(ui_thread, error_callback, sync_client));
   }
 
   const bool history_disabled =
@@ -235,9 +235,8 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
   // This is also disabled if the browser history is disabled, because the
   // tab sync data is added to the web history on the server.
   if (!disabled_types.Has(syncer::PROXY_TABS) && !history_disabled) {
-    sync_service->RegisterDataTypeController(new ProxyDataTypeController(
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-        syncer::PROXY_TABS));
+    sync_service->RegisterDataTypeController(
+        new ProxyDataTypeController(ui_thread, syncer::PROXY_TABS));
     // TODO(zea): remove this once SyncedWindowDelegateGetter is componentized.
     // For now, we know that the implementation of SyncService is always a
     // ProfileSyncService at this level.
@@ -254,11 +253,9 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
       !history_disabled) {
     // crbug/384552. We disable error uploading for this data types for now.
     sync_service->RegisterDataTypeController(new UIDataTypeController(
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-        base::Closure(), syncer::FAVICON_IMAGES, sync_client));
+        ui_thread, base::Closure(), syncer::FAVICON_IMAGES, sync_client));
     sync_service->RegisterDataTypeController(new UIDataTypeController(
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-        base::Closure(), syncer::FAVICON_TRACKING, sync_client));
+        ui_thread, base::Closure(), syncer::FAVICON_TRACKING, sync_client));
   }
 
   // Password sync is enabled by default.  Register unless explicitly
@@ -270,15 +267,13 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
 
   if (!disabled_types.Has(syncer::PRIORITY_PREFERENCES)) {
     sync_service->RegisterDataTypeController(new UIDataTypeController(
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-        error_callback, syncer::PRIORITY_PREFERENCES, sync_client));
+        ui_thread, error_callback, syncer::PRIORITY_PREFERENCES, sync_client));
   }
 
   // Article sync is disabled by default.  Register only if explicitly enabled.
   if (dom_distiller::IsEnableSyncArticlesSet()) {
     sync_service->RegisterDataTypeController(new UIDataTypeController(
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-        error_callback, syncer::ARTICLES, sync_client));
+        ui_thread, error_callback, syncer::ARTICLES, sync_client));
   }
 
 #if defined(ENABLE_SUPERVISED_USERS)
@@ -300,6 +295,8 @@ void ProfileSyncComponentsFactoryImpl::RegisterDesktopDataTypes(
   sync_driver::SyncService* sync_service = sync_client->GetSyncService();
   base::Closure error_callback =
       base::Bind(&ChromeReportUnrecoverableError, chrome::GetChannel());
+  const scoped_refptr<base::SingleThreadTaskRunner> ui_thread =
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI);
 
 #if defined(ENABLE_EXTENSIONS)
   // App sync is enabled by default.  Register unless explicitly
@@ -321,8 +318,7 @@ void ProfileSyncComponentsFactoryImpl::RegisterDesktopDataTypes(
   // disabled.
   if (!disabled_types.Has(syncer::PREFERENCES)) {
     sync_service->RegisterDataTypeController(new UIDataTypeController(
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-        error_callback, syncer::PREFERENCES, sync_client));
+        ui_thread, error_callback, syncer::PREFERENCES, sync_client));
   }
 
 #if defined(ENABLE_THEMES)
@@ -337,8 +333,7 @@ void ProfileSyncComponentsFactoryImpl::RegisterDesktopDataTypes(
   // disabled.
   if (!disabled_types.Has(syncer::SEARCH_ENGINES)) {
     sync_service->RegisterDataTypeController(new SearchEngineDataTypeController(
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-        error_callback, sync_client,
+        ui_thread, error_callback, sync_client,
         TemplateURLServiceFactory::GetForProfile(profile_)));
   }
 
@@ -363,8 +358,7 @@ void ProfileSyncComponentsFactoryImpl::RegisterDesktopDataTypes(
 #if defined(ENABLE_APP_LIST)
   if (app_list::switches::IsAppListSyncEnabled()) {
     sync_service->RegisterDataTypeController(new UIDataTypeController(
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-        error_callback, syncer::APP_LIST, sync_client));
+        ui_thread, error_callback, syncer::APP_LIST, sync_client));
   }
 #endif
 
@@ -372,8 +366,7 @@ void ProfileSyncComponentsFactoryImpl::RegisterDesktopDataTypes(
   // Dictionary sync is enabled by default.
   if (!disabled_types.Has(syncer::DICTIONARY)) {
     sync_service->RegisterDataTypeController(new UIDataTypeController(
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-        error_callback, syncer::DICTIONARY, sync_client));
+        ui_thread, error_callback, syncer::DICTIONARY, sync_client));
   }
 #endif
 
@@ -391,8 +384,7 @@ void ProfileSyncComponentsFactoryImpl::RegisterDesktopDataTypes(
   if (command_line_->HasSwitch(switches::kEnableWifiCredentialSync) &&
       !disabled_types.Has(syncer::WIFI_CREDENTIALS)) {
     sync_service->RegisterDataTypeController(new UIDataTypeController(
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-        error_callback, syncer::WIFI_CREDENTIALS, sync_client));
+        ui_thread, error_callback, syncer::WIFI_CREDENTIALS, sync_client));
   }
 #endif
 }
@@ -477,11 +469,12 @@ ProfileSyncComponentsFactoryImpl::CreateAttachmentService(
   // signed in sync user (e.g. sync is running in "backup" mode).
   if (!user_share.sync_credentials.email.empty() &&
       !user_share.sync_credentials.scope_set.empty()) {
+    const scoped_refptr<base::SingleThreadTaskRunner> ui_thread =
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI);
+
     scoped_refptr<OAuth2TokenServiceRequest::TokenServiceProvider>
-        token_service_provider(new TokenServiceProvider(
-            content::BrowserThread::GetMessageLoopProxyForThread(
-                content::BrowserThread::UI),
-            token_service_));
+        token_service_provider(
+            new TokenServiceProvider(ui_thread, token_service_));
     // TODO(maniscalco): Use shared (one per profile) thread-safe instances of
     // AttachmentUploader and AttachmentDownloader instead of creating a new one
     // per AttachmentService (bug 369536).
@@ -491,10 +484,8 @@ ProfileSyncComponentsFactoryImpl::CreateAttachmentService(
         user_share.sync_credentials.scope_set, token_service_provider,
         store_birthday, model_type));
 
-    token_service_provider = new TokenServiceProvider(
-        content::BrowserThread::GetMessageLoopProxyForThread(
-            content::BrowserThread::UI),
-        token_service_);
+    token_service_provider =
+        new TokenServiceProvider(ui_thread, token_service_);
     attachment_downloader = syncer::AttachmentDownloader::Create(
         sync_service_url_, url_request_context_getter_,
         user_share.sync_credentials.email,
