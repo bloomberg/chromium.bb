@@ -20,7 +20,9 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
+#include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
+#include "net/test/url_request/url_request_failed_job.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "net/url_request/url_request_test_job.h"
@@ -50,6 +52,7 @@ const int kMiddleBlock = 5;
 std::string GenerateLongResponse() {
   return std::string(kNumBlocks * kBlockSize, 'a');
 }
+
 net::URLRequestJob* CreateNormalURLRequestJob(
     net::URLRequest* request,
     net::NetworkDelegate* network_delegate) {
@@ -66,6 +69,14 @@ net::URLRequestJob* CreateResponseJob(const std::string& response_data,
   return new net::URLRequestTestJob(request, network_delegate,
                                     std::string(kHeaders, arraysize(kHeaders)),
                                     response_data, true);
+}
+
+net::URLRequestJob* CreateFailedURLRequestJob(
+    net::URLRequest* request,
+    net::NetworkDelegate* network_delegate) {
+  return new net::URLRequestFailedJob(request, network_delegate,
+                                      net::URLRequestFailedJob::START,
+                                      net::ERR_FAILED);
 }
 
 net::URLRequestJob* CreateInvalidMimeTypeJob(
@@ -393,6 +404,9 @@ class ServiceWorkerWriteToCacheJobTest : public testing::Test {
     return helper_->context_wrapper();
   }
 
+  // Disables the cache to simulate cache errors.
+  void DisableCache() { context()->storage()->disk_cache()->Disable(); }
+
  protected:
   TestBrowserThreadBundle browser_thread_bundle_;
   scoped_ptr<EmbeddedWorkerTestHelper> helper_;
@@ -571,6 +585,27 @@ TEST_F(ServiceWorkerWriteToCacheJobTest, Update_EmptyScript) {
   // Update from empty to empty.
   version = UpdateScript(std::string());
   EXPECT_EQ(kInvalidServiceWorkerResponseId, GetResourceId(version.get()));
+}
+
+TEST_F(ServiceWorkerWriteToCacheJobTest, Error) {
+  mock_protocol_handler_->SetCreateJobCallback(
+      base::Bind(&CreateFailedURLRequestJob));
+  request_->Start();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(net::URLRequestStatus::FAILED, request_->status().status());
+  EXPECT_EQ(net::ERR_FAILED, request_->status().error());
+  EXPECT_EQ(kInvalidServiceWorkerResponseId,
+            version_->script_cache_map()->LookupResourceId(script_url_));
+}
+
+TEST_F(ServiceWorkerWriteToCacheJobTest, FailedWriteHeadersToCache) {
+  mock_protocol_handler_->SetCreateJobCallback(
+      base::Bind(&CreateNormalURLRequestJob));
+  DisableCache();
+  request_->Start();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(net::URLRequestStatus::FAILED, request_->status().status());
+  EXPECT_EQ(net::ERR_FAILED, request_->status().error());
 }
 
 }  // namespace content

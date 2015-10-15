@@ -352,13 +352,18 @@ void ServiceWorkerWriteToCacheJob::OnResponseStarted(
       info_buffer.get(),
       base::Bind(&ServiceWorkerWriteToCacheJob::OnWriteHeadersComplete,
                  weak_factory_.GetWeakPtr()));
-  SetStatus(net::URLRequestStatus::FromError(error));
-  if (error != net::ERR_IO_PENDING)
-    NotifyHeadersComplete();
+  if (error == net::ERR_IO_PENDING)
+    return;
+  OnWriteHeadersComplete(error);
 }
 
 void ServiceWorkerWriteToCacheJob::OnWriteHeadersComplete(net::Error error) {
-  SetStatus(net::URLRequestStatus::FromError(error));
+  DCHECK_NE(net::ERR_IO_PENDING, error);
+  if (error != net::OK) {
+    NotifyStartError(net::URLRequestStatus::FromError(error));
+    return;
+  }
+  SetStatus(net::URLRequestStatus());
   NotifyHeadersComplete();
 }
 

@@ -205,7 +205,9 @@ class MockServiceWorkerResponseWriter : public ServiceWorkerResponseWriter {
 
   // Enqueue expected writes.
   void ExpectWriteInfoOk(size_t len, bool async);
+  void ExpectWriteInfo(size_t len, bool async, int result);
   void ExpectWriteDataOk(size_t len, bool async);
+  void ExpectWriteData(size_t len, bool async, int result);
 
   // Complete a pending asynchronous write. This method DCHECKs unless there is
   // a pending write (a write for which WriteInfo() or WriteData() has been
@@ -239,8 +241,10 @@ void MockServiceWorkerResponseWriter::WriteInfo(
   DCHECK(!expected_writes_.empty());
   ExpectedWrite write = expected_writes_.front();
   EXPECT_TRUE(write.is_info);
-  EXPECT_EQ(write.length, static_cast<size_t>(info_buf->response_data_size));
-  info_written_ += info_buf->response_data_size;
+  if (write.result > 0) {
+    EXPECT_EQ(write.length, static_cast<size_t>(info_buf->response_data_size));
+    info_written_ += info_buf->response_data_size;
+  }
   if (!write.async) {
     expected_writes_.pop();
     callback.Run(write.result);
@@ -256,8 +260,10 @@ void MockServiceWorkerResponseWriter::WriteData(
   DCHECK(!expected_writes_.empty());
   ExpectedWrite write = expected_writes_.front();
   EXPECT_FALSE(write.is_info);
-  EXPECT_EQ(write.length, static_cast<size_t>(buf_len));
-  data_written_ += buf_len;
+  if (write.result > 0) {
+    EXPECT_EQ(write.length, static_cast<size_t>(buf_len));
+    data_written_ += buf_len;
+  }
   if (!write.async) {
     expected_writes_.pop();
     callback.Run(write.result);
@@ -268,13 +274,27 @@ void MockServiceWorkerResponseWriter::WriteData(
 
 void MockServiceWorkerResponseWriter::ExpectWriteInfoOk(size_t length,
                                                         bool async) {
-  ExpectedWrite expected(true, length, async, length);
-  expected_writes_.push(expected);
+  ExpectWriteInfo(length, async, length);
 }
 
 void MockServiceWorkerResponseWriter::ExpectWriteDataOk(size_t length,
                                                         bool async) {
-  ExpectedWrite expected(false, length, async, length);
+  ExpectWriteData(length, async, length);
+}
+
+void MockServiceWorkerResponseWriter::ExpectWriteInfo(size_t length,
+                                                      bool async,
+                                                      int result) {
+  DCHECK_NE(net::ERR_IO_PENDING, result);
+  ExpectedWrite expected(true, length, async, result);
+  expected_writes_.push(expected);
+}
+
+void MockServiceWorkerResponseWriter::ExpectWriteData(size_t length,
+                                                      bool async,
+                                                      int result) {
+  DCHECK_NE(net::ERR_IO_PENDING, result);
+  ExpectedWrite expected(false, length, async, result);
   expected_writes_.push(expected);
 }
 
@@ -399,6 +419,7 @@ TEST_F(ServiceWorkerCacheWriterTest, PassthroughHeadersAsync) {
   EXPECT_FALSE(write_complete_);
   writer->CompletePendingWrite();
   EXPECT_TRUE(write_complete_);
+  EXPECT_EQ(net::OK, last_error_);
   EXPECT_TRUE(writer->AllExpectedWritesDone());
   EXPECT_EQ(0U, cache_writer_->bytes_written());
 }
@@ -447,6 +468,62 @@ TEST_F(ServiceWorkerCacheWriterTest, PassthroughDataAsync) {
   EXPECT_EQ(net::ERR_IO_PENDING, error);
   writer->CompletePendingWrite();
   EXPECT_TRUE(write_complete_);
+  EXPECT_EQ(net::OK, last_error_);
+  EXPECT_TRUE(writer->AllExpectedWritesDone());
+}
+
+TEST_F(ServiceWorkerCacheWriterTest, PassthroughHeadersFailSync) {
+  const size_t kHeaderSize = 16;
+  MockServiceWorkerResponseWriter* writer = ExpectWriter();
+  writer->ExpectWriteInfo(kHeaderSize, false, net::ERR_FAILED);
+
+  net::Error error = WriteHeaders(kHeaderSize);
+  EXPECT_EQ(net::ERR_FAILED, error);
+  EXPECT_FALSE(write_complete_);
+  EXPECT_TRUE(writer->AllExpectedWritesDone());
+  EXPECT_EQ(0U, cache_writer_->bytes_written());
+}
+
+TEST_F(ServiceWorkerCacheWriterTest, PassthroughHeadersFailAsync) {
+  size_t kHeaderSize = 16;
+  MockServiceWorkerResponseWriter* writer = ExpectWriter();
+  writer->ExpectWriteInfo(kHeaderSize, true, net::ERR_FAILED);
+
+  net::Error error = WriteHeaders(kHeaderSize);
+  EXPECT_EQ(net::ERR_IO_PENDING, error);
+  EXPECT_FALSE(write_complete_);
+  writer->CompletePendingWrite();
+  EXPECT_TRUE(write_complete_);
+  EXPECT_EQ(net::ERR_FAILED, last_error_);
+  EXPECT_TRUE(writer->AllExpectedWritesDone());
+  EXPECT_EQ(0U, cache_writer_->bytes_written());
+}
+
+TEST_F(ServiceWorkerCacheWriterTest, PassthroughDataFailSync) {
+  const std::string data = "abcdef";
+
+  MockServiceWorkerResponseWriter* writer = ExpectWriter();
+  writer->ExpectWriteInfoOk(data.size(), false);
+  writer->ExpectWriteData(data.size(), false, net::ERR_FAILED);
+
+  EXPECT_EQ(net::OK, WriteHeaders(data.size()));
+  EXPECT_EQ(net::ERR_FAILED, WriteData(data));
+  EXPECT_TRUE(writer->AllExpectedWritesDone());
+}
+
+TEST_F(ServiceWorkerCacheWriterTest, PassthroughDataFailAsync) {
+  const std::string data = "abcdef";
+
+  MockServiceWorkerResponseWriter* writer = ExpectWriter();
+  writer->ExpectWriteInfoOk(data.size(), false);
+  writer->ExpectWriteData(data.size(), true, net::ERR_FAILED);
+
+  EXPECT_EQ(net::OK, WriteHeaders(data.size()));
+
+  EXPECT_EQ(net::ERR_IO_PENDING, WriteData(data));
+  writer->CompletePendingWrite();
+  EXPECT_EQ(net::ERR_FAILED, last_error_);
+  EXPECT_TRUE(write_complete_);
   EXPECT_TRUE(writer->AllExpectedWritesDone());
 }
 
@@ -483,6 +560,38 @@ TEST_F(ServiceWorkerCacheWriterTest, CompareDataOkSync) {
 
   error = WriteData(data1);
   EXPECT_EQ(net::OK, error);
+
+  EXPECT_TRUE(writer->AllExpectedWritesDone());
+  EXPECT_TRUE(reader->AllExpectedReadsDone());
+  EXPECT_EQ(0U, cache_writer_->bytes_written());
+}
+
+TEST_F(ServiceWorkerCacheWriterTest, CompareHeadersFailSync) {
+  size_t response_size = 3;
+  MockServiceWorkerResponseWriter* writer = ExpectWriter();
+  MockServiceWorkerResponseReader* reader = ExpectReader();
+
+  reader->ExpectReadInfo(response_size, false, net::ERR_FAILED);
+
+  EXPECT_EQ(net::ERR_FAILED, WriteHeaders(response_size));
+  EXPECT_TRUE(writer->AllExpectedWritesDone());
+  EXPECT_TRUE(reader->AllExpectedReadsDone());
+}
+
+TEST_F(ServiceWorkerCacheWriterTest, CompareDataFailSync) {
+  const std::string data1 = "abcdef";
+  size_t response_size = data1.size();
+
+  MockServiceWorkerResponseWriter* writer = ExpectWriter();
+  MockServiceWorkerResponseReader* reader = ExpectReader();
+
+  reader->ExpectReadInfoOk(response_size, false);
+  reader->ExpectReadData(data1.c_str(), data1.length(), false, net::ERR_FAILED);
+
+  net::Error error = WriteHeaders(response_size);
+  EXPECT_EQ(net::OK, error);
+
+  EXPECT_EQ(net::ERR_FAILED, WriteData(data1));
 
   EXPECT_TRUE(writer->AllExpectedWritesDone());
   EXPECT_TRUE(reader->AllExpectedReadsDone());

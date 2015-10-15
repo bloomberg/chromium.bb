@@ -109,7 +109,7 @@ int ServiceWorkerCacheWriter::DoLoop(int status) {
         state_ = STATE_DONE;
         break;
     }
-  } while (status >= net::OK && state_ != STATE_DONE);
+  } while (status != net::ERR_IO_PENDING && state_ != STATE_DONE);
   io_pending_ = (status == net::ERR_IO_PENDING);
   return status;
 }
@@ -209,6 +209,7 @@ int ServiceWorkerCacheWriter::DoStart(int result) {
 }
 
 int ServiceWorkerCacheWriter::DoReadHeadersForCompare(int result) {
+  DCHECK_GE(result, 0);
   DCHECK(headers_to_write_);
 
   headers_to_read_ = new HttpResponseInfoIOBuffer;
@@ -228,6 +229,7 @@ int ServiceWorkerCacheWriter::DoReadHeadersForCompareDone(int result) {
 }
 
 int ServiceWorkerCacheWriter::DoReadDataForCompare(int result) {
+  DCHECK_GE(result, 0);
   DCHECK(data_to_write_);
 
   data_to_read_ = new net::IOBuffer(len_to_write_);
@@ -244,12 +246,13 @@ int ServiceWorkerCacheWriter::DoReadDataForCompareDone(int result) {
   DCHECK(data_to_read_);
   DCHECK(data_to_write_);
   DCHECK_EQ(len_to_read_, len_to_write_);
-  DCHECK_LE(result + compare_offset_, static_cast<size_t>(len_to_write_));
 
   if (result < 0) {
     state_ = STATE_DONE;
     return result;
   }
+
+  DCHECK_LE(result + compare_offset_, static_cast<size_t>(len_to_write_));
 
   // Premature EOF while reading the service worker script cache data to
   // compare. Fail the comparison.
@@ -302,6 +305,7 @@ int ServiceWorkerCacheWriter::DoReadDataForCompareDone(int result) {
 }
 
 int ServiceWorkerCacheWriter::DoReadHeadersForCopy(int result) {
+  DCHECK_GE(result, 0);
   bytes_copied_ = 0;
   copy_reader_ = reader_creator_.Run();
   headers_to_read_ = new HttpResponseInfoIOBuffer;
@@ -325,6 +329,7 @@ int ServiceWorkerCacheWriter::DoReadHeadersForCopyDone(int result) {
 // Also note that this *discards* the read headers and replaces them with the
 // net headers.
 int ServiceWorkerCacheWriter::DoWriteHeadersForCopy(int result) {
+  DCHECK_GE(result, 0);
   DCHECK(!writer_);
   writer_ = writer_creator_.Run();
   state_ = STATE_WRITE_HEADERS_FOR_COPY_DONE;
@@ -341,6 +346,7 @@ int ServiceWorkerCacheWriter::DoWriteHeadersForCopyDone(int result) {
 }
 
 int ServiceWorkerCacheWriter::DoReadDataForCopy(int result) {
+  DCHECK_GE(result, 0);
   size_t to_read = std::min(kCopyBufferSize, bytes_compared_ - bytes_copied_);
   // At this point, all compared bytes have been read. Currently
   // |data_to_write_| and |len_to_write_| hold the chunk of network input that
@@ -381,6 +387,7 @@ int ServiceWorkerCacheWriter::DoWriteDataForCopyDone(int result) {
 }
 
 int ServiceWorkerCacheWriter::DoWriteHeadersForPassthrough(int result) {
+  DCHECK_GE(result, 0);
   writer_ = writer_creator_.Run();
   state_ = STATE_WRITE_HEADERS_FOR_PASSTHROUGH_DONE;
   return WriteInfoHelper(writer_, headers_to_write_.get());
@@ -388,10 +395,11 @@ int ServiceWorkerCacheWriter::DoWriteHeadersForPassthrough(int result) {
 
 int ServiceWorkerCacheWriter::DoWriteHeadersForPassthroughDone(int result) {
   state_ = STATE_DONE;
-  return net::OK;
+  return result;
 }
 
 int ServiceWorkerCacheWriter::DoWriteDataForPassthrough(int result) {
+  DCHECK_GE(result, 0);
   state_ = STATE_WRITE_DATA_FOR_PASSTHROUGH_DONE;
   if (len_to_write_ > 0)
     result = WriteDataHelper(writer_, data_to_write_.get(), len_to_write_);
@@ -410,7 +418,7 @@ int ServiceWorkerCacheWriter::DoWriteDataForPassthroughDone(int result) {
 
 int ServiceWorkerCacheWriter::DoDone(int result) {
   state_ = STATE_DONE;
-  return net::OK;
+  return result;
 }
 
 // These helpers adapt the AppCache "always use the callback" pattern to the
