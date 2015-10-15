@@ -60,6 +60,11 @@ if (is_linux) {
     data_deps = [
       ":blimp_engine_app",
       ":pak",
+      "//sandbox/linux:chrome_sandbox",
+
+      # TODO(maniscalco): Get rid of osmesa once we no longer depend on X
+      # (crbug.com/540932, crbug.com/541203).
+      "//third_party/mesa:osmesa",
     ]
   }
 
