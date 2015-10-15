@@ -68,6 +68,7 @@
         'web_state/ui/crw_web_controller_container_view_unittest.mm',
         'web_state/ui/crw_web_controller_observer_unittest.mm',
         'web_state/ui/crw_web_controller_unittest.mm',
+        'web_state/ui/crw_wk_script_message_router_unittest.mm',
         'web_state/ui/crw_wk_simple_web_view_controller_unittest.mm',
         'web_state/ui/crw_wk_web_view_crash_detector_unittest.mm',
         'web_state/ui/web_view_js_utils_unittest.mm',

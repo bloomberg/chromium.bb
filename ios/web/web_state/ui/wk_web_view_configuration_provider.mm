@@ -14,6 +14,7 @@
 #import "ios/web/alloc_with_zone_interceptor.h"
 #include "ios/web/public/browser_state.h"
 #import "ios/web/web_state/js/page_script_util.h"
+#import "ios/web/web_state/ui/crw_wk_script_message_router.h"
 #import "ios/web/web_state/web_view_internal_creation_util.h"
 
 #if !defined(NDEBUG)
@@ -162,15 +163,30 @@ WKWebViewConfigurationProvider::GetWebViewConfiguration() {
   return [[configuration_ copy] autorelease];
 }
 
+CRWWKScriptMessageRouter*
+WKWebViewConfigurationProvider::GetScriptMessageRouter() {
+  DCHECK([NSThread isMainThread]);
+  if (!router_) {
+    WKUserContentController* userContentController =
+        [GetWebViewConfiguration() userContentController];
+    router_.reset([[CRWWKScriptMessageRouter alloc]
+        initWithUserContentController:userContentController]);
+  }
+  return router_;
+}
+
 void WKWebViewConfigurationProvider::Purge() {
   DCHECK([NSThread isMainThread]);
 #if !defined(NDEBUG) || !defined(DCHECK_ALWAYS_ON)  // Matches DCHECK_IS_ON.
   base::WeakNSObject<id> weak_configuration(configuration_);
+  base::WeakNSObject<id> weak_router(router_);
   base::WeakNSObject<id> weak_process_pool([configuration_ processPool]);
 #endif  // !defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)
   configuration_.reset();
-  // Make sure that no one retains configuration and processPool.
+  router_.reset();
+  // Make sure that no one retains configuration, router, processPool.
   DCHECK(!weak_configuration);
+  DCHECK(!weak_router);
   // TODO(shreyasv): Enable this DCHECK (crbug.com/522672).
   // DCHECK(!weak_process_pool);
 }

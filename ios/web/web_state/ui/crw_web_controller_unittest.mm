@@ -381,7 +381,6 @@ class CRWWKWebViewWebControllerTest
     id result = [[OCMockObject mockForClass:[WKWebView class]] retain];
 
     // Called by resetInjectedWebView
-    [[result stub] configuration];
     [[result stub] backForwardList];
     [[result stub] setNavigationDelegate:OCMOCK_ANY];
     [[result stub] setUIDelegate:OCMOCK_ANY];

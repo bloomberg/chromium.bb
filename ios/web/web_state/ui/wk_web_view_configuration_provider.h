@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/supports_user_data.h"
 
+@class CRWWKScriptMessageRouter;
 @class WKWebViewConfiguration;
 
 namespace web {
@@ -16,8 +17,9 @@ namespace web {
 class BrowserState;
 
 // A provider class associated with a single web::BrowserState object. Manages
-// the lifetime and performs setup of WKWebViewConfiguration instance.
-// Not threadsafe. Must be used only on the main thread.
+// the lifetime and performs setup of WKWebViewConfiguration and
+// CRWWKScriptMessageRouter instances. Not threadsafe. Must be used only on the
+// main thread.
 class WKWebViewConfigurationProvider : public base::SupportsUserData::Data {
  public:
   // Returns a provider for the given |browser_state|. Lazily attaches one if it
@@ -32,9 +34,14 @@ class WKWebViewConfigurationProvider : public base::SupportsUserData::Data {
   // Callers must not retain the returned object.
   WKWebViewConfiguration* GetWebViewConfiguration();
 
-  // Purges config object if it exists. When this method is called config and
-  // config's process pool must not be retained by anyone (this will be enforced
-  // in debug builds).
+  // Returns CRWWKScriptMessafeRouter associated with WKWebViewConfiguration.
+  // Lazily creates the router. Callers must not retain the returned object
+  // (this will be enforced in debug builds).
+  CRWWKScriptMessageRouter* GetScriptMessageRouter();
+
+  // Purges config and router objects if they exist. When this method is called
+  // config and config's process pool must not be retained by anyone (this will
+  // be enforced in debug builds).
   void Purge();
 
  private:
@@ -43,6 +50,7 @@ class WKWebViewConfigurationProvider : public base::SupportsUserData::Data {
   ~WKWebViewConfigurationProvider() override;
 
   base::scoped_nsobject<WKWebViewConfiguration> configuration_;
+  base::scoped_nsobject<CRWWKScriptMessageRouter> router_;
   // Result of |web::BrowserState::IsOffTheRecord| call.
   bool is_off_the_record_;
 

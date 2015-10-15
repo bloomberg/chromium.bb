@@ -269,6 +269,8 @@
         'web_state/ui/crw_web_controller_container_view.h',
         'web_state/ui/crw_web_controller_container_view.mm',
         'web_state/ui/crw_web_view_content_view.mm',
+        'web_state/ui/crw_wk_script_message_router.h',
+        'web_state/ui/crw_wk_script_message_router.mm',
         'web_state/ui/crw_wk_simple_web_view_controller.h',
         'web_state/ui/crw_wk_simple_web_view_controller.mm',
         'web_state/ui/crw_wk_web_view_crash_detector.h',

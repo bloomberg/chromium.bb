@@ -32,8 +32,8 @@
 #import "ios/web/web_state/error_translation_util.h"
 #include "ios/web/web_state/frame_info.h"
 #import "ios/web/web_state/js/crw_js_window_id_manager.h"
-#import "ios/web/web_state/js/page_script_util.h"
 #import "ios/web/web_state/ui/crw_web_controller+protected.h"
+#import "ios/web/web_state/ui/crw_wk_script_message_router.h"
 #import "ios/web/web_state/ui/crw_wk_web_view_crash_detector.h"
 #import "ios/web/web_state/ui/web_view_js_utils.h"
 #import "ios/web/web_state/ui/wk_back_forward_list_item_holder.h"
@@ -82,9 +82,7 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 
 }  // namespace
 
-@interface CRWWKWebViewWebController () <WKNavigationDelegate,
-                                         WKScriptMessageHandler,
-                                         WKUIDelegate> {
+@interface CRWWKWebViewWebController ()<WKNavigationDelegate, WKUIDelegate> {
   // The WKWebView managed by this instance.
   base::scoped_nsobject<WKWebView> _wkWebView;
 
@@ -264,9 +262,8 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 // _documentURL, and informs the superclass of the change.
 - (void)URLDidChangeWithoutDocumentChange:(const GURL&)URL;
 
-// Returns new autoreleased instance of WKUserContentController which has
-// early page script.
-- (WKUserContentController*)createUserContentController;
+// Called when web controller receives a new message from the web page.
+- (void)didReceiveScriptMessage:(WKScriptMessage*)message;
 
 // Attempts to handle a script message. Returns YES on success, NO otherwise.
 - (BOOL)respondToWKScriptMessage:(WKScriptMessage*)scriptMessage;
@@ -643,11 +640,6 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 
 - (void)ensureWebViewCreatedWithConfiguration:(WKWebViewConfiguration*)config {
   if (!_wkWebView) {
-    // Use a separate userContentController for each web view.
-    // WKUserContentController does not allow adding multiple script message
-    // handlers for the same name, hence userContentController can't be shared
-    // between all web views.
-    config.userContentController = [self createUserContentController];
     [self setWebView:[self createWebViewWithConfiguration:config]];
     // Notify super class about created web view. -webViewDidChange is not
     // called from -setWebView:scriptMessageRouter: as the latter used in unit
@@ -667,10 +659,13 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
   DCHECK_NE(_wkWebView.get(), webView);
 
   // Unwind the old web view.
-  WKUserContentController* oldContentController =
-      [[_wkWebView configuration] userContentController];
-  [oldContentController removeScriptMessageHandlerForName:kScriptMessageName];
-  [oldContentController removeScriptMessageHandlerForName:kScriptImmediateName];
+  // TODO(eugenebut): Remove CRWWKScriptMessageRouter once crbug.com/543374 is
+  // fixed.
+  CRWWKScriptMessageRouter* messageRouter =
+      [self webViewConfigurationProvider].GetScriptMessageRouter();
+  if (_wkWebView) {
+    [messageRouter removeAllScriptMessageHandlersForWebView:_wkWebView];
+  }
   [_wkWebView setNavigationDelegate:nil];
   [_wkWebView setUIDelegate:nil];
   for (NSString* keyPath in self.wkWebViewObservers) {
@@ -681,10 +676,18 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
   _wkWebView.reset([webView retain]);
 
   // Set up the new web view.
-  WKUserContentController* newContentController =
-      [[_wkWebView configuration] userContentController];
-  [newContentController addScriptMessageHandler:self name:kScriptMessageName];
-  [newContentController addScriptMessageHandler:self name:kScriptImmediateName];
+  if (webView) {
+    base::WeakNSObject<CRWWKWebViewWebController> weakSelf(self);
+    void (^messageHandler)(WKScriptMessage*) = ^(WKScriptMessage* message) {
+      [weakSelf didReceiveScriptMessage:message];
+    };
+    [messageRouter setScriptMessageHandler:messageHandler
+                                      name:kScriptMessageName
+                                   webView:webView];
+    [messageRouter setScriptMessageHandler:messageHandler
+                                      name:kScriptImmediateName
+                                   webView:webView];
+  }
   [_wkWebView setNavigationDelegate:self];
   [_wkWebView setUIDelegate:self];
   for (NSString* keyPath in self.wkWebViewObservers) {
@@ -938,19 +941,7 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
   }
 }
 
-- (WKUserContentController*)createUserContentController {
-  WKUserContentController* result =
-      [[[WKUserContentController alloc] init] autorelease];
-  base::scoped_nsobject<WKUserScript> script([[WKUserScript alloc]
-        initWithSource:web::GetEarlyPageScript(web::WK_WEB_VIEW_TYPE)
-         injectionTime:WKUserScriptInjectionTimeAtDocumentStart
-      forMainFrameOnly:YES]);
-  [result addUserScript:script];
-  return result;
-}
-
-- (void)userContentController:(WKUserContentController*)userContentController
-      didReceiveScriptMessage:(WKScriptMessage*)message {
+- (void)didReceiveScriptMessage:(WKScriptMessage*)message {
   // Broken out into separate method to catch errors.
   // TODO(jyquinn): Evaluate whether this is necessary for WKWebView.
   if (![self respondToWKScriptMessage:message]) {

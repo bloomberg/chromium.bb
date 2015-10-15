@@ -12,6 +12,7 @@
 #include "ios/web/public/test/web_test_util.h"
 #include "ios/web/public/web_client.h"
 #import "ios/web/web_state/js/page_script_util.h"
+#import "ios/web/web_state/ui/crw_wk_script_message_router.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
@@ -131,19 +132,33 @@ TEST_F(WKWebViewConfigurationProviderTest, ConfigurationProtection) {
             provider.GetWebViewConfiguration().userContentController);
 }
 
-// Tests that configuration is deallocated after |Purge| call.
+// Tests that script message router is bound to correct user content controller.
+TEST_F(WKWebViewConfigurationProviderTest, ScriptMessageRouter) {
+  CR_TEST_REQUIRES_WK_WEB_VIEW();
+
+  ASSERT_TRUE(GetProvider().GetWebViewConfiguration().userContentController);
+  EXPECT_EQ(GetProvider().GetWebViewConfiguration().userContentController,
+            GetProvider().GetScriptMessageRouter().userContentController);
+}
+
+// Tests that both configuration and script message router are deallocated after
+// |Purge| call.
 TEST_F(WKWebViewConfigurationProviderTest, Purge) {
   CR_TEST_REQUIRES_WK_WEB_VIEW();
 
   base::WeakNSObject<id> config;
+  base::WeakNSObject<id> router;
   @autoreleasepool {  // Make sure that resulting copy is deallocated.
     config.reset(GetProvider().GetWebViewConfiguration());
+    router.reset(GetProvider().GetScriptMessageRouter());
     ASSERT_TRUE(config);
+    ASSERT_TRUE(router);
   }
 
-  // No configuration after |Purge| call.
+  // No configuration and router after |Purge| call.
   GetProvider().Purge();
   EXPECT_FALSE(config);
+  EXPECT_FALSE(router);
 }
 
 // Tests that configuration's userContentController has only one script with the
