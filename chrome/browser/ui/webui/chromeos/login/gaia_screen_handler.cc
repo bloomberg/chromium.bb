@@ -407,14 +407,13 @@ void GaiaScreenHandler::OnPortalDetectionCompleted(
           << NetworkPortalDetector::CaptivePortalStatusString(state.status);
 
   const NetworkPortalDetector::CaptivePortalStatus status = state.status;
-  if (status == captive_portal_status_)
+  if (status == captive_portal_status_ ||
+      disable_restrictive_proxy_check_for_test_)
     return;
 
   captive_portal_status_ = status;
-  if (signin_screen_handler_->ShouldLoadGaia()) {
-    LoadAuthExtension(true /* force */, true /* silent_load */,
-                      false /* offline */);
-  }
+  LoadAuthExtension(true /* force */, true /* silent_load */,
+                    false /* offline */);
 }
 
 void GaiaScreenHandler::HandleIdentifierEntered(

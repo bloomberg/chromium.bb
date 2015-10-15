@@ -15,7 +15,6 @@
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 #include "chrome/browser/chromeos/net/network_portal_detector_test_impl.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
-#include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/signin/inline_login_ui.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -194,14 +193,6 @@ void OobeBaseTest::SimulateNetworkPortal() {
 base::Closure OobeBaseTest::SimulateNetworkPortalClosure() {
   return base::Bind(&OobeBaseTest::SimulateNetworkPortal,
                     base::Unretained(this));
-}
-
-void OobeBaseTest::DisableRestrictiveProxyCheck() {
-  static_cast<chromeos::LoginDisplayHostImpl*>(
-      chromeos::LoginDisplayHostImpl::default_host())
-      ->GetOobeUI()
-      ->GetGaiaScreenActor()
-      ->DisableRestrictiveProxyCheckForTest();
 }
 
 void OobeBaseTest::JsExpect(const std::string& expression) {
