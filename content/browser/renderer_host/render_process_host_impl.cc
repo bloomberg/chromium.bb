@@ -1706,6 +1706,17 @@ void RenderProcessHostImpl::Cleanup() {
     DCHECK(!deleting_soon_);
 
     DCHECK_EQ(0, pending_views_);
+
+    // If |channel_| is still valid, the process associated with this
+    // RenderProcessHost is still alive. Notify all observers that the process
+    // has exited cleanly, even though it will be destroyed a bit later.
+    // Observers shouldn't rely on this process anymore.
+    if (channel_.get()) {
+      FOR_EACH_OBSERVER(
+          RenderProcessHostObserver, observers_,
+          RenderProcessExited(this, base::TERMINATION_STATUS_NORMAL_TERMINATION,
+                              0));
+    }
     FOR_EACH_OBSERVER(RenderProcessHostObserver, observers_,
                       RenderProcessHostDestroyed(this));
     NotificationService::current()->Notify(
