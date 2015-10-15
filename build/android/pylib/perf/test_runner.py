@@ -392,6 +392,21 @@ class TestRunner(base_test_runner.BaseTestRunner):
                  test_name, exit_code, end_time - start_time,
                  self.device_serial)
 
+    try:
+      # Some perf configs run the same benchmark with different options on
+      # different step names. Here we disambiguate those, so that data is
+      # uploaded to the perf dashoards based on their step name instead.
+      chart_data = json.loads(json_output)
+      if chart_data['benchmark_name'] != test_name:
+        logging.info('Benchmark %r will be reported as %r in chartjson.',
+                     chart_data['benchmark_name'], test_name)
+        chart_data['telemetry_benchmark_name'] = chart_data['benchmark_name']
+        chart_data['benchmark_name'] = test_name
+        json_output = json.dumps(chart_data, sort_keys=True, indent=2,
+                                 separators=(',', ': '))
+    except StandardError:
+      logging.exception('Could not read data from chartjson.')
+
     if exit_code == 0:
       result_type = base_test_result.ResultType.PASS
     else:
