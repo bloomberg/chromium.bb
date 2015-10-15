@@ -56,7 +56,6 @@
 #include "chrome/browser/chromeos/ui/focus_ring_controller.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -1131,14 +1130,6 @@ void LoginDisplayHostImpl::StartTimeZoneResolve() {
     return;
 
   g_browser_process->platform_part()->GetTimezoneResolver()->Start();
-}
-
-// static
-void LoginDisplayHostImpl::DisableRestrictiveProxyCheckForTest() {
-  static_cast<chromeos::LoginDisplayHostImpl*>(default_host())
-      ->GetOobeUI()
-      ->GetGaiaScreenActor()
-      ->DisableRestrictiveProxyCheckForTest();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

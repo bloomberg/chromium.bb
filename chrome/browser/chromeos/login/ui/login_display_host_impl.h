@@ -109,9 +109,6 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
 
   void StartTimeZoneResolve();
 
-  // Disable GaiaScreenHandler restrictive proxy check.
-  static void DisableRestrictiveProxyCheckForTest();
-
  protected:
   // content::NotificationObserver implementation:
   void Observe(int type,

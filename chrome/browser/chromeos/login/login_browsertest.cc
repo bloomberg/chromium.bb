@@ -77,8 +77,6 @@ class LoginSigninTest : public InProcessBrowserTest {
   }
 
   void SetUpOnMainThread() override {
-    chromeos::LoginDisplayHostImpl::DisableRestrictiveProxyCheckForTest();
-
     ASSERT_TRUE(tracing::BeginTracingWithWatch(
         "ui", "ui", "ShowLoginWebUI", 1));
   }

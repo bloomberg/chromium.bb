@@ -71,6 +71,8 @@ class OobeBaseTest : public ExtensionApiTest {
   base::Closure SimulateNetworkOnlineClosure();
   base::Closure SimulateNetworkPortalClosure();
 
+  void DisableRestrictiveProxyCheck();
+
   // Checks JavaScript |expression| in login screen.
   void JsExpect(const std::string& expression);
 
