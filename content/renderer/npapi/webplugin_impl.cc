@@ -258,8 +258,12 @@ bool WebPluginImpl::initialize(WebPluginContainer* container) {
     blink::WebPlugin* replacement_plugin =
         GetContentClient()->renderer()->CreatePluginReplacement(
             render_frame_, file_path_);
-    if (!replacement_plugin)
+    if (!replacement_plugin) {
+      // Maintain invariant that container() returns null when initialize()
+      // returns false.
+      SetContainer(nullptr);
       return false;
+    }
 
     // Disable scripting by this plugin before replacing it with the new
     // one. This plugin also needs destroying, so use destroy(), which will

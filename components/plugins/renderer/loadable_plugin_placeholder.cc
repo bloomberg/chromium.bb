@@ -105,6 +105,7 @@ void LoadablePluginPlaceholder::ReplacePlugin(blink::WebPlugin* new_plugin) {
   if (!new_plugin)
     return;
   blink::WebPluginContainer* container = plugin()->container();
+  CHECK(container->plugin() == plugin());
   // Set the new plugin on the container before initializing it.
   container->setPlugin(new_plugin);
   // Save the element in case the plugin is removed from the page during

@@ -724,8 +724,10 @@ void WebPluginContainerImpl::dispose()
     for (size_t i = 0; i < m_pluginLoadObservers.size(); ++i)
         m_pluginLoadObservers[i]->clearPluginContainer();
 
-    if (m_webPlugin)
+    if (m_webPlugin) {
+        RELEASE_ASSERT(!m_webPlugin->container() || m_webPlugin->container() == this);
         m_webPlugin->destroy();
+    }
     m_webPlugin = nullptr;
 
     if (m_webLayer) {

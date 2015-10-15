@@ -124,14 +124,22 @@ bool PepperWebPluginImpl::initialize(WebPluginContainer* container) {
     blink::WebPlugin* replacement_plugin =
         GetContentClient()->renderer()->CreatePluginReplacement(
             init_data_->render_frame, init_data_->module->path());
-    if (!replacement_plugin || !replacement_plugin->initialize(container))
+    if (!replacement_plugin)
       return false;
 
     container->setPlugin(replacement_plugin);
+    if (!replacement_plugin->initialize(container)) {
+      CHECK(replacement_plugin->container() == nullptr);
+      return false;
+    }
+
+    CHECK(container->plugin() == replacement_plugin);
+    CHECK(replacement_plugin->container() == container);
     return true;
   }
 
   init_data_.reset();
+  CHECK(container->plugin() == this);
   container_ = container;
   return true;
 }

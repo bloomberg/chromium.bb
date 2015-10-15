@@ -61,14 +61,21 @@ template <typename T> class WebVector;
 
 class WebPlugin {
 public:
+    // Perform any initialization work given the container this plugin will use to
+    // communicate with renderer code. Plugins that return false here must
+    // subsequently return nullptr for the container() method.
     virtual bool initialize(WebPluginContainer*) = 0;
+
+    // Plugins must arrange for themselves to be deleted sometime during or after this
+    // method is called.
     virtual void destroy() = 0;
 
-    virtual WebPluginContainer* container() const { return 0; }
+    // Must return null container when the initialize() method returns false.
+    virtual WebPluginContainer* container() const { return nullptr; }
     virtual void containerDidDetachFromParent() { }
 
-    virtual NPObject* scriptableObject() { return 0; }
-    virtual struct _NPP* pluginNPP() { return 0; }
+    virtual NPObject* scriptableObject() { return nullptr; }
+    virtual struct _NPP* pluginNPP() { return nullptr; }
 
     // The same as scriptableObject() but allows to expose scriptable interface
     // through plain v8 object instead of NPObject.
