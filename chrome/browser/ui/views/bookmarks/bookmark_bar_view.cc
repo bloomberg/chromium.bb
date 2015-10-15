@@ -74,14 +74,12 @@
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/page_transition_types.h"
-#include "ui/base/resource/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/compositor/paint_recorder.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/favicon_size.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/text_constants.h"
 #include "ui/gfx/text_elider.h"
@@ -147,8 +145,8 @@ static const int kDropIndicatorWidth = 2;
 static const int kSeparatorMargin = 1;
 
 // Width of the separator between the recently bookmarked button and the
-// overflow indicator, indexed by MD mode.
-static const int kSeparatorWidth[] = {4, 9, 9};
+// overflow indicator.
+static const int kSeparatorWidth = 4;
 
 // Starting x-coordinate of the separator line within a separator.
 static const int kSeparatorStartX = 2;
@@ -349,7 +347,8 @@ class BookmarkFolderButton : public views::MenuButton {
 class OverflowButton : public views::MenuButton {
  public:
   explicit OverflowButton(BookmarkBarView* owner)
-      : MenuButton(NULL, base::string16(), owner, false), owner_(owner) {}
+      : MenuButton(NULL, base::string16(), owner, false),
+        owner_(owner) {}
 
   bool OnMousePressed(const ui::MouseEvent& e) override {
     owner_->StopThrobbing(true);
@@ -476,40 +475,20 @@ class BookmarkBarView::ButtonSeparatorView : public views::View {
   ~ButtonSeparatorView() override {}
 
   void OnPaint(gfx::Canvas* canvas) override {
-    if (ui::MaterialDesignController::IsModeMaterial()) {
-      // 1px wide at all scale factors. If there is an uneven amount of padding
-      // left over, place the extra pixel on the outside, i.e. away from the
-      // "Other bookmarks" folder.
-      const float scale = canvas->SaveAndUnscale();
-      const gfx::RectF scaled_bounds =
-          gfx::ScaleRect(gfx::RectF(bounds()), scale);
-
-      const int kLineThickness = 1;
-      const float fractional_x = (scaled_bounds.width() - kLineThickness) / 2.f;
-      const int x = base::i18n::IsRTL() ? std::floor(fractional_x)
-                                        : std::ceil(fractional_x);
-
-      const int height = gfx::kFaviconSize * scale;
-      const int top_y = (scaled_bounds.height() - height) / 2;
-      canvas->DrawLine(
-          gfx::Point(x, top_y), gfx::Point(x, top_y + height),
-          SkColorSetA(GetThemeProvider()->GetColor(
-                          ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON),
-                      0x4D));
-      canvas->Restore();
-    } else {
-      PaintVerticalDivider(
-          canvas, kSeparatorStartX, height(), 1, kEdgeDividerColor,
-          kMiddleDividerColor,
-          GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR));
-    }
+    PaintVerticalDivider(
+        canvas,
+        kSeparatorStartX,
+        height(),
+        1,
+        kEdgeDividerColor,
+        kMiddleDividerColor,
+        GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR));
   }
 
   gfx::Size GetPreferredSize() const override {
     // We get the full height of the bookmark bar, so that the height returned
     // here doesn't matter.
-    return gfx::Size(kSeparatorWidth[ui::MaterialDesignController::GetMode()],
-                     1);
+    return gfx::Size(kSeparatorWidth, 1);
   }
 
   void GetAccessibleState(ui::AXViewState* state) override {
