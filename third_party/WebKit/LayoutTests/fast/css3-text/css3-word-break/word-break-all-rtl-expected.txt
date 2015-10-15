@@ -1,0 +1,4 @@
+There should be only one line of arabic below.
+
+اب و عدم وابستگی.
+PASS

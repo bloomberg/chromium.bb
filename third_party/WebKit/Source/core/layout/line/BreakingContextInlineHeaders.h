@@ -714,7 +714,7 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
                         return false;
                     }
                 } else {
-                    if (!betweenWords || (midWordBreak && !m_autoWrap))
+                    if (!betweenWords || (midWordBreak && !m_autoWrap) || (breakAll && !m_currentCharacterIsSpace))
                         m_width.addUncommittedWidth(-additionalTempWidth);
                     if (hyphenWidth) {
                         // Subtract the width of the soft hyphen out since we fit on a line.
@@ -752,7 +752,7 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
             if (betweenWords) {
                 lastSpaceWordSpacing = applyWordSpacing ? wordSpacing : 0;
                 wordSpacingForWordMeasurement = (applyWordSpacing && wordMeasurement.width) ? wordSpacing : 0;
-                lastSpace = m_current.offset();
+                lastSpace = !breakAll || m_currentCharacterIsSpace ? m_current.offset() : lastSpace;
             }
 
             if (!m_ignoringSpaces && m_currentStyle->collapseWhiteSpace()) {
