@@ -12,6 +12,7 @@
 #include "core/paint/BlockPainter.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/PaintInfo.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/geometry/LayoutPoint.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 #include "wtf/text/CharacterNames.h"
@@ -53,7 +54,8 @@ void ListMarkerPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& pai
 
     LayoutPoint boxOrigin(paintOffset + m_layoutListMarker.location());
     LayoutRect overflowRect(m_layoutListMarker.visualOverflowRect());
-    if (m_layoutListMarker.selectionState() != SelectionNone)
+    if (!RuntimeEnabledFeatures::selectionPaintingWithoutSelectionGapsEnabled()
+        && m_layoutListMarker.selectionState() != SelectionNone)
         overflowRect.unite(m_layoutListMarker.localSelectionRect());
     overflowRect.moveBy(boxOrigin);
 
@@ -80,7 +82,8 @@ void ListMarkerPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& pai
         return;
     }
 
-    if (m_layoutListMarker.selectionState() != SelectionNone) {
+    if (!RuntimeEnabledFeatures::selectionPaintingWithoutSelectionGapsEnabled()
+        && m_layoutListMarker.selectionState() != SelectionNone) {
         LayoutRect selRect = m_layoutListMarker.localSelectionRect();
         selRect.moveBy(boxOrigin);
         context->fillRect(pixelSnappedIntRect(selRect), m_layoutListMarker.listItem()->selectionBackgroundColor());
