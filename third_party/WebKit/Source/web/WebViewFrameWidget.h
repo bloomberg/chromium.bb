@@ -46,7 +46,7 @@ public:
     void willEndLiveResize() override;
     void didEnterFullScreen() override;
     void didExitFullScreen() override;
-    void beginFrame(const WebBeginFrameArgs& frameTime) override;
+    void beginFrame(double lastFrameTimeMonotonic) override;
     void layout() override;
     void paint(WebCanvas*, const WebRect& viewPort) override;
     void paintCompositedDeprecated(WebCanvas*, const WebRect&) override;

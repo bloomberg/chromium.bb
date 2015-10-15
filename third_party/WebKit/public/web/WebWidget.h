@@ -40,7 +40,6 @@
 #include "../platform/WebRect.h"
 #include "../platform/WebSize.h"
 #include "../platform/WebTopControlsState.h"
-#include "WebBeginFrameArgs.h"
 #include "WebCompositionUnderline.h"
 #include "WebTextDirection.h"
 #include "WebTextInputInfo.h"
@@ -93,7 +92,7 @@ public:
 
     // Called to update imperative animation state. This should be called before
     // paint, although the client can rate-limit these calls.
-    virtual void beginFrame(const WebBeginFrameArgs& frameTime) { }
+    virtual void beginFrame(double lastFrameTimeMonotonic) { }
 
     // Called to layout the WebWidget. This MUST be called before Paint,
     // and it may result in calls to WebWidgetClient::didInvalidateRect.

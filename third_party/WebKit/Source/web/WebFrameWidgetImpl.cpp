@@ -47,7 +47,6 @@
 #include "core/page/Page.h"
 #include "platform/KeyboardCodes.h"
 #include "platform/NotImplemented.h"
-#include "public/web/WebBeginFrameArgs.h"
 #include "public/web/WebWidgetClient.h"
 #include "web/ContextMenuAllowedScope.h"
 #include "web/WebDevToolsAgentImpl.h"
@@ -246,11 +245,11 @@ void WebFrameWidgetImpl::didExitFullScreen()
     // FIXME: Implement full screen for out-of-process iframes.
 }
 
-void WebFrameWidgetImpl::beginFrame(const WebBeginFrameArgs& frameTime)
+void WebFrameWidgetImpl::beginFrame(double lastFrameTimeMonotonic)
 {
-    TRACE_EVENT1("blink", "WebFrameWidgetImpl::beginFrame", "frameTime", frameTime.lastFrameTimeMonotonic);
-    ASSERT(frameTime.lastFrameTimeMonotonic);
-    PageWidgetDelegate::animate(*page(), frameTime.lastFrameTimeMonotonic);
+    TRACE_EVENT1("blink", "WebFrameWidgetImpl::beginFrame", "frameTime", lastFrameTimeMonotonic);
+    ASSERT(lastFrameTimeMonotonic);
+    PageWidgetDelegate::animate(*page(), lastFrameTimeMonotonic);
 }
 
 void WebFrameWidgetImpl::layout()

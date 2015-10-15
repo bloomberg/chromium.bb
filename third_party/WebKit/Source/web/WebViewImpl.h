@@ -109,7 +109,7 @@ public:
     void didEnterFullScreen() override;
     void didExitFullScreen() override;
 
-    void beginFrame(const WebBeginFrameArgs&) override;
+    void beginFrame(double lastFrameTimeMonotonic) override;
 
     void layout() override;
     void paint(WebCanvas*, const WebRect&) override;

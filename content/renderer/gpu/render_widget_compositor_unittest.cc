@@ -27,7 +27,7 @@ namespace {
 
 class MockWebWidget : public blink::WebWidget {
  public:
-  MOCK_METHOD1(beginFrame, void(const blink::WebBeginFrameArgs& args));
+  MOCK_METHOD1(beginFrame, void(double lastFrameTimeMonotonic));
 };
 
 class TestRenderWidget : public RenderWidget {
@@ -80,11 +80,7 @@ TEST_F(RenderWidgetCompositorTest, BeginMainFrame) {
       cc::BeginFrameArgs::Create(BEGINFRAME_FROM_HERE, frame_time, deadline,
                                  interval, cc::BeginFrameArgs::NORMAL));
 
-  EXPECT_CALL(render_widget_->mock_webwidget_,
-              beginFrame(AllOf(
-                  Field(&blink::WebBeginFrameArgs::lastFrameTimeMonotonic, 1),
-                  Field(&blink::WebBeginFrameArgs::deadline, 2),
-                  Field(&blink::WebBeginFrameArgs::interval, 3))));
+  EXPECT_CALL(render_widget_->mock_webwidget_, beginFrame(1));
 
   render_widget_compositor_->BeginMainFrame(args);
 }

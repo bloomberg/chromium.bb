@@ -761,16 +761,11 @@ void WebTestProxyBase::ScheduleAnimation() {
 void WebTestProxyBase::AnimateNow() {
   if (animate_scheduled_) {
     base::TimeDelta animate_time = base::TimeTicks::Now() - base::TimeTicks();
-    base::TimeDelta interval = base::TimeDelta::FromMicroseconds(16666);
-    blink::WebBeginFrameArgs args(animate_time.InSecondsF(),
-                                  (animate_time + interval).InSecondsF(),
-                                  interval.InSecondsF());
-
     animate_scheduled_ = false;
-    web_widget_->beginFrame(args);
+    web_widget_->beginFrame(animate_time.InSecondsF());
     web_widget_->layout();
     if (blink::WebPagePopup* popup = web_widget_->pagePopup()) {
-      popup->beginFrame(args);
+      popup->beginFrame(animate_time.InSecondsF());
       popup->layout();
     }
   }

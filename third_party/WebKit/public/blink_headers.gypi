@@ -337,7 +337,6 @@
       "web/WebArrayBufferConverter.h",
       "web/WebArrayBufferView.h",
       "web/WebAutofillClient.h",
-      "web/WebBeginFrameArgs.h",
       "web/WebBindings.h",
       "web/WebBlob.h",
       "web/WebCSSParser.h",

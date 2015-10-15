@@ -131,7 +131,6 @@
 #include "public/web/WebAXObject.h"
 #include "public/web/WebActiveWheelFlingParameters.h"
 #include "public/web/WebAutofillClient.h"
-#include "public/web/WebBeginFrameArgs.h"
 #include "public/web/WebElement.h"
 #include "public/web/WebFrame.h"
 #include "public/web/WebFrameClient.h"
@@ -1864,14 +1863,14 @@ void WebViewImpl::didExitFullScreen()
     m_fullscreenController->didExitFullScreen();
 }
 
-void WebViewImpl::beginFrame(const WebBeginFrameArgs& frameTime)
+void WebViewImpl::beginFrame(double lastFrameTimeMonotonic)
 {
-    TRACE_EVENT1("blink", "WebViewImpl::beginFrame", "frameTime", frameTime.lastFrameTimeMonotonic);
-    ASSERT(frameTime.lastFrameTimeMonotonic);
+    TRACE_EVENT1("blink", "WebViewImpl::beginFrame", "frameTime", lastFrameTimeMonotonic);
+    ASSERT(lastFrameTimeMonotonic);
 
     // Create synthetic wheel events as necessary for fling.
     if (m_gestureAnimation) {
-        if (m_gestureAnimation->animate(frameTime.lastFrameTimeMonotonic))
+        if (m_gestureAnimation->animate(lastFrameTimeMonotonic))
             scheduleAnimation();
         else {
             endActiveFlingAnimation();
@@ -1888,7 +1887,7 @@ void WebViewImpl::beginFrame(const WebBeginFrameArgs& frameTime)
     if (!m_page)
         return;
 
-    PageWidgetDelegate::animate(*m_page, frameTime.lastFrameTimeMonotonic);
+    PageWidgetDelegate::animate(*m_page, lastFrameTimeMonotonic);
 }
 
 void WebViewImpl::layout()

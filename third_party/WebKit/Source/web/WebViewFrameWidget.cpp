@@ -72,9 +72,9 @@ void WebViewFrameWidget::didExitFullScreen()
     return m_webView->didExitFullScreen();
 }
 
-void WebViewFrameWidget::beginFrame(const WebBeginFrameArgs& frameTime)
+void WebViewFrameWidget::beginFrame(double lastFrameTimeMonotonic)
 {
-    return m_webView->beginFrame(frameTime);
+    return m_webView->beginFrame(lastFrameTimeMonotonic);
 }
 
 void WebViewFrameWidget::layout()

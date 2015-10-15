@@ -75,8 +75,7 @@ SimDisplayItemList SimCompositor::beginFrame()
     // Always advance the time as if the compositor was running at 60fps.
     m_lastFrameTimeMonotonic = monotonicallyIncreasingTime() + 0.016;
 
-    WebBeginFrameArgs args(m_lastFrameTimeMonotonic, 0, 0);
-    m_webViewImpl->beginFrame(args);
+    m_webViewImpl->beginFrame(m_lastFrameTimeMonotonic);
     m_webViewImpl->layout();
 
     LocalFrame* root = m_webViewImpl->mainFrameImpl()->frame();

@@ -74,7 +74,7 @@ public:
 private:
     // WebWidget functions
     WebSize size() override;
-    void beginFrame(const WebBeginFrameArgs&) override;
+    void beginFrame(double lastFrameTimeMonotonic) override;
     void layout() override;
     void willCloseLayerTreeView() override;
     void paint(WebCanvas*, const WebRect&) override;

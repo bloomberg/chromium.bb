@@ -66,7 +66,6 @@ namespace cc {
 class Layer;
 }
 
-using blink::WebBeginFrameArgs;
 using blink::WebFloatPoint;
 using blink::WebRect;
 using blink::WebSelection;
@@ -859,13 +858,9 @@ void RenderWidgetCompositor::DidBeginMainFrame() {
 }
 
 void RenderWidgetCompositor::BeginMainFrame(const cc::BeginFrameArgs& args) {
-  double frame_time_sec = (args.frame_time - base::TimeTicks()).InSecondsF();
-  double deadline_sec = (args.deadline - base::TimeTicks()).InSecondsF();
-  double interval_sec = args.interval.InSecondsF();
-  WebBeginFrameArgs web_begin_frame_args =
-      WebBeginFrameArgs(frame_time_sec, deadline_sec, interval_sec);
   compositor_deps_->GetRendererScheduler()->WillBeginFrame(args);
-  widget_->webwidget()->beginFrame(web_begin_frame_args);
+  double frame_time_sec = (args.frame_time - base::TimeTicks()).InSecondsF();
+  widget_->webwidget()->beginFrame(frame_time_sec);
 }
 
 void RenderWidgetCompositor::BeginMainFrameNotExpectedSoon() {

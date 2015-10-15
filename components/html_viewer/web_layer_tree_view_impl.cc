@@ -91,11 +91,7 @@ void WebLayerTreeViewImpl::BeginMainFrameNotExpectedSoon() {
 void WebLayerTreeViewImpl::BeginMainFrame(const cc::BeginFrameArgs& args) {
   VLOG(2) << "WebLayerTreeViewImpl::BeginMainFrame";
   double frame_time_sec = (args.frame_time - base::TimeTicks()).InSecondsF();
-  double deadline_sec = (args.deadline - base::TimeTicks()).InSecondsF();
-  double interval_sec = args.interval.InSecondsF();
-  blink::WebBeginFrameArgs web_begin_frame_args(
-      frame_time_sec, deadline_sec, interval_sec);
-  widget_->beginFrame(web_begin_frame_args);
+  widget_->beginFrame(frame_time_sec);
   layer_tree_host_->SetNeedsAnimate();
 }
 
