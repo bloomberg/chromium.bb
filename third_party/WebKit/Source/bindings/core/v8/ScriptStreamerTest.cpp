@@ -73,6 +73,7 @@ public:
         , m_pendingScript(PendingScriptWrapper::create(0, m_resource.get()))
     {
         m_resource->setLoading(true);
+        m_pendingScript = PendingScriptWrapper::create(0, m_resource.get());
         ScriptStreamer::setSmallScriptThresholdForTesting(0);
     }
 

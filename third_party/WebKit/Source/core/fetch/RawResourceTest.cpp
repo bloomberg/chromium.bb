@@ -62,27 +62,25 @@ TEST(RawResourceTest, DontIgnoreAcceptForCacheReuse)
 
 TEST(RawResourceTest, RevalidationSucceeded)
 {
-    // Create two RawResources and set one to revalidate the other.
-    RawResource* oldResourcePointer = new RawResource(ResourceRequest("data:text/html,"), Resource::Raw);
-    RawResource* newResourcePointer = new RawResource(ResourceRequest("data:text/html,"), Resource::Raw);
-    newResourcePointer->setResourceToRevalidate(oldResourcePointer);
-    ResourcePtr<Resource> oldResource = oldResourcePointer;
-    ResourcePtr<Resource> newResource = newResourcePointer;
-    memoryCache()->add(oldResource.get());
-    memoryCache()->remove(oldResource.get());
-    memoryCache()->add(newResource.get());
+    ResourcePtr<Resource> resource = new RawResource(ResourceRequest("data:text/html,"), Resource::Raw);
+    ResourceResponse response;
+    response.setHTTPStatusCode(200);
+    resource->responseReceived(response, nullptr);
+    const char data[5] = "abcd";
+    resource->appendData(data, 4);
+    resource->finish();
+    memoryCache()->add(resource.get());
 
     // Simulate a successful revalidation.
-    // The revalidated resource (oldResource) should now be in the cache, newResource
-    // should have been sliently switched to point to the revalidated resource, and
-    // we shouldn't hit any ASSERTs.
-    ResourceResponse response;
-    response.setHTTPStatusCode(304);
-    newResource->responseReceived(response, nullptr);
-    EXPECT_EQ(memoryCache()->resourceForURL(KURL(ParsedURLString, "data:text/html,")), oldResource.get());
-    EXPECT_EQ(oldResource.get(), newResource.get());
-    EXPECT_NE(newResource.get(), newResourcePointer);
-    memoryCache()->remove(newResource.get());
+    resource->setRevalidatingRequest(ResourceRequest("data:text/html,"));
+    ResourceResponse revalidatingResponse;
+    revalidatingResponse.setHTTPStatusCode(304);
+    resource->responseReceived(revalidatingResponse, nullptr);
+    EXPECT_FALSE(resource->isCacheValidator());
+    EXPECT_EQ(200, resource->response().httpStatusCode());
+    EXPECT_EQ(4u, resource->resourceBuffer()->size());
+    EXPECT_EQ(memoryCache()->resourceForURL(KURL(ParsedURLString, "data:text/html,")), resource.get());
+    memoryCache()->remove(resource.get());
 }
 
 class DummyClient : public RawResourceClient {

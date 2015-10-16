@@ -341,9 +341,7 @@ void ResourceLoader::didReceiveResponse(WebURLLoader*, const WebURLResponse& res
             // the access control with respect to it. Need to do this right here
             // before the resource switches clients over to that validated resource.
             Resource* resource = m_resource;
-            if (resource->isCacheValidator() && resourceResponse.httpStatusCode() == 304)
-                resource = m_resource->resourceToRevalidate();
-            else
+            if (!resource->isCacheValidator() || resourceResponse.httpStatusCode() != 304)
                 m_resource->setResponse(resourceResponse);
             if (!m_fetcher->canAccessResource(resource, m_options.securityOrigin.get(), response.url(), ResourceFetcher::ShouldLogAccessControlErrors)) {
                 m_fetcher->didReceiveResponse(m_resource, resourceResponse);
