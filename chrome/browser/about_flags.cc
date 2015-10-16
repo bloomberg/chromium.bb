@@ -2119,13 +2119,13 @@ const FeatureEntry kFeatureEntries[] = {
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.
 };
 
-const FeatureEntry* g_entries = kFeatureEntries;
-size_t g_num_entries = arraysize(kFeatureEntries);
-
 // Stores and encapsulates the little state that about:flags has.
 class FlagsState {
  public:
-  FlagsState() : needs_restart_(false) {}
+  FlagsState()
+      : feature_entries(kFeatureEntries),
+        num_feature_entries(arraysize(kFeatureEntries)),
+        needs_restart_(false) {}
   void ConvertFlagsToSwitches(flags_ui::FlagsStorage* flags_storage,
                               base::CommandLine* command_line,
                               SentinelsMode sentinels);
@@ -2136,7 +2136,18 @@ class FlagsState {
   void RemoveFlagsSwitches(
       std::map<std::string, base::CommandLine::StringType>* switch_list);
   void ResetAllFlags(flags_ui::FlagsStorage* flags_storage);
-  void reset();
+  void Reset();
+
+  // Gets the list of feature entries. Entries that are available for the
+  // current platform are appended to |supported_entries|; all other entries are
+  // appended to |unsupported_entries|.
+  void GetFlagFeatureEntries(flags_ui::FlagsStorage* flags_storage,
+                             FlagAccess access,
+                             base::ListValue* supported_entries,
+                             base::ListValue* unsupported_entries);
+
+  void SetFeatureEntries(const FeatureEntry* entries, size_t count);
+  const FeatureEntry* GetFeatureEntries(size_t* count);
 
   // Returns the singleton instance of this class
   static FlagsState* GetInstance() {
@@ -2144,6 +2155,22 @@ class FlagsState {
   }
 
  private:
+  // Removes all entries from prefs::kEnabledLabsExperiments that are unknown,
+  // to prevent this list to become very long as entries are added and removed.
+  void SanitizeList(flags_ui::FlagsStorage* flags_storage);
+
+  void GetSanitizedEnabledFlags(flags_ui::FlagsStorage* flags_storage,
+                                std::set<std::string>* result);
+
+  // Variant of GetSanitizedEnabledFlags that also removes any flags that aren't
+  // enabled on the current platform.
+  void GetSanitizedEnabledFlagsForCurrentPlatform(
+      flags_ui::FlagsStorage* flags_storage,
+      std::set<std::string>* result);
+
+  const FeatureEntry* feature_entries;
+  size_t num_feature_entries;
+
   bool needs_restart_;
   std::map<std::string, std::string> flags_switches_;
 
@@ -2192,14 +2219,11 @@ bool ValidateFeatureEntry(const FeatureEntry& e) {
   return true;
 }
 
-// Removes all entries from prefs::kEnabledLabsExperiments that are
-// unknown, to prevent this list to become very long as entries are added
-// and removed.
-void SanitizeList(flags_ui::FlagsStorage* flags_storage) {
+void FlagsState::SanitizeList(flags_ui::FlagsStorage* flags_storage) {
   std::set<std::string> known_entries;
-  for (size_t i = 0; i < g_num_entries; ++i) {
-    DCHECK(ValidateFeatureEntry(g_entries[i]));
-    AddInternalName(g_entries[i], &known_entries);
+  for (size_t i = 0; i < num_feature_entries; ++i) {
+    DCHECK(ValidateFeatureEntry(feature_entries[i]));
+    AddInternalName(feature_entries[i], &known_entries);
   }
 
   std::set<std::string> enabled_entries = flags_storage->GetFlags();
@@ -2212,8 +2236,8 @@ void SanitizeList(flags_ui::FlagsStorage* flags_storage) {
     flags_storage->SetFlags(new_enabled_entries);
 }
 
-void GetSanitizedEnabledFlags(flags_ui::FlagsStorage* flags_storage,
-                              std::set<std::string>* result) {
+void FlagsState::GetSanitizedEnabledFlags(flags_ui::FlagsStorage* flags_storage,
+                                          std::set<std::string>* result) {
   SanitizeList(flags_storage);
   *result = flags_storage->GetFlags();
 }
@@ -2279,10 +2303,7 @@ bool SkipConditionalFeatureEntry(const FeatureEntry& entry) {
   return false;
 }
 
-
-// Variant of GetSanitizedEnabledFlags that also removes any flags that aren't
-// enabled on the current platform.
-void GetSanitizedEnabledFlagsForCurrentPlatform(
+void FlagsState::GetSanitizedEnabledFlagsForCurrentPlatform(
     flags_ui::FlagsStorage* flags_storage,
     std::set<std::string>* result) {
   GetSanitizedEnabledFlags(flags_storage, result);
@@ -2292,12 +2313,12 @@ void GetSanitizedEnabledFlagsForCurrentPlatform(
   // set of entries would be lossy.
   std::set<std::string> platform_entries;
   int current_platform = GetCurrentPlatform();
-  for (size_t i = 0; i < g_num_entries; ++i) {
-    const FeatureEntry& entry = g_entries[i];
+  for (size_t i = 0; i < num_feature_entries; ++i) {
+    const FeatureEntry& entry = feature_entries[i];
     if (entry.supported_platforms & current_platform)
       AddInternalName(entry, &platform_entries);
 #if defined(OS_CHROMEOS)
-    if (g_entries[i].supported_platforms & kOsCrOSOwnerOnly)
+    if (feature_entries[i].supported_platforms & kOsCrOSOwnerOnly)
       AddInternalName(entry, &platform_entries);
 #endif
   }
@@ -2412,17 +2433,17 @@ bool AreSwitchesIdenticalToCurrentCommandLine(
   return result;
 }
 
-void GetFlagFeatureEntries(flags_ui::FlagsStorage* flags_storage,
-                           FlagAccess access,
-                           base::ListValue* supported_entries,
-                           base::ListValue* unsupported_entries) {
+void FlagsState::GetFlagFeatureEntries(flags_ui::FlagsStorage* flags_storage,
+                                       FlagAccess access,
+                                       base::ListValue* supported_entries,
+                                       base::ListValue* unsupported_entries) {
   std::set<std::string> enabled_entries;
   GetSanitizedEnabledFlags(flags_storage, &enabled_entries);
 
   int current_platform = GetCurrentPlatform();
 
-  for (size_t i = 0; i < g_num_entries; ++i) {
-    const FeatureEntry& entry = g_entries[i];
+  for (size_t i = 0; i < num_feature_entries; ++i) {
+    const FeatureEntry& entry = feature_entries[i];
     if (SkipConditionalFeatureEntry(entry))
       continue;
 
@@ -2471,6 +2492,15 @@ void GetFlagFeatureEntries(flags_ui::FlagsStorage* flags_storage,
     else
       unsupported_entries->Append(data);
   }
+}
+
+void GetFlagFeatureEntries(flags_ui::FlagsStorage* flags_storage,
+                           FlagAccess access,
+                           base::ListValue* supported_entries,
+                           base::ListValue* unsupported_entries) {
+  FlagsState::GetInstance()->GetFlagFeatureEntries(flags_storage, access,
+                                                   supported_entries,
+                                                   unsupported_entries);
 }
 
 bool IsRestartNeededToCommitChanges() {
@@ -2583,8 +2613,8 @@ void FlagsState::ConvertFlagsToSwitches(flags_ui::FlagsStorage* flags_storage,
                                              &enabled_entries);
 
   NameToSwitchAndValueMap name_to_switch_map;
-  for (size_t i = 0; i < g_num_entries; ++i) {
-    const FeatureEntry& e = g_entries[i];
+  for (size_t i = 0; i < num_feature_entries; ++i) {
+    const FeatureEntry& e = feature_entries[i];
     if (e.type == FeatureEntry::SINGLE_VALUE ||
         e.type == FeatureEntry::SINGLE_DISABLE_VALUE) {
       SetFlagToSwitchMapping(e.internal_name, e.command_line_switch,
@@ -2667,9 +2697,9 @@ void FlagsState::SetFeatureEntryEnabled(flags_ui::FlagsStorage* flags_storage,
   GetSanitizedEnabledFlags(flags_storage, &enabled_entries);
 
   const FeatureEntry* e = NULL;
-  for (size_t i = 0; i < g_num_entries; ++i) {
-    if (g_entries[i].internal_name == internal_name) {
-      e = g_entries + i;
+  for (size_t i = 0; i < num_feature_entries; ++i) {
+    if (feature_entries[i].internal_name == internal_name) {
+      e = feature_entries + i;
       break;
     }
   }
@@ -2720,9 +2750,19 @@ void FlagsState::ResetAllFlags(flags_ui::FlagsStorage* flags_storage) {
   flags_storage->SetFlags(no_entries);
 }
 
-void FlagsState::reset() {
+void FlagsState::Reset() {
   needs_restart_ = false;
   flags_switches_.clear();
+}
+
+void FlagsState::SetFeatureEntries(const FeatureEntry* entries, size_t count) {
+  feature_entries = entries;
+  num_feature_entries = count;
+}
+
+const FeatureEntry* FlagsState::GetFeatureEntries(size_t* count) {
+  *count = num_feature_entries;
+  return feature_entries;
 }
 
 }  // namespace
@@ -2736,22 +2776,19 @@ const char kMultiSeparator[] = "@";
 const base::HistogramBase::Sample kBadSwitchFormatHistogramId = 0;
 
 void ClearState() {
-  FlagsState::GetInstance()->reset();
+  FlagsState::GetInstance()->Reset();
 }
 
 void SetFeatureEntries(const FeatureEntry* entries, size_t count) {
   if (!entries) {
-    g_entries = kFeatureEntries;
-    g_num_entries = arraysize(kFeatureEntries);
-  } else {
-    g_entries = entries;
-    g_num_entries = count;
+    entries = kFeatureEntries;
+    count = arraysize(kFeatureEntries);
   }
+  FlagsState::GetInstance()->SetFeatureEntries(entries, count);
 }
 
 const FeatureEntry* GetFeatureEntries(size_t* count) {
-  *count = g_num_entries;
-  return g_entries;
+  return FlagsState::GetInstance()->GetFeatureEntries(count);
 }
 
 }  // namespace testing
