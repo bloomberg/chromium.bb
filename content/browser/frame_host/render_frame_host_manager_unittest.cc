@@ -2252,6 +2252,52 @@ TEST_F(RenderFrameHostManagerTestWithSiteIsolation,
             iframe->GetRenderFrameProxyHost(contents2->GetSiteInstance()));
 }
 
+// Ensure that we don't grant WebUI bindings to a pending RenderViewHost when
+// creating proxies for a non-WebUI subframe navigation.  This was possible due
+// to the InitRenderView call from CreateRenderFrameProxy.
+// See https://crbug.com/536145.
+TEST_F(RenderFrameHostManagerTestWithSiteIsolation,
+       DontGrantPendingWebUIToSubframe) {
+  set_should_create_webui(true);
+
+  // Make sure the initial process is live so that the pending WebUI navigation
+  // does not commit immediately.  Give the page a subframe as well.
+  const GURL kUrl1("http://foo.com");
+  RenderFrameHostImpl* main_rfh = contents()->GetMainFrame();
+  NavigateAndCommit(kUrl1);
+  EXPECT_TRUE(main_rfh->render_view_host()->IsRenderViewLive());
+  EXPECT_TRUE(main_rfh->IsRenderFrameLive());
+  main_rfh->OnCreateChildFrame(main_rfh->GetProcess()->GetNextRoutingID(),
+                               blink::WebTreeScopeType::Document, std::string(),
+                               blink::WebSandboxFlags::None);
+  RenderFrameHostManager* subframe_rfhm =
+      contents()->GetFrameTree()->root()->child_at(0)->render_manager();
+
+  // Start a pending WebUI navigation in the main frame and verify that the
+  // pending RVH has bindings.
+  const GURL kWebUIUrl("chrome://foo");
+  NavigationEntryImpl webui_entry(
+      nullptr /* instance */, -1 /* page_id */, kWebUIUrl, Referrer(),
+      base::string16() /* title */, ui::PAGE_TRANSITION_TYPED,
+      false /* is_renderer_init */);
+  RenderFrameHostManager* main_rfhm = contents()->GetRenderManagerForTesting();
+  RenderFrameHostImpl* webui_rfh = NavigateToEntry(main_rfhm, webui_entry);
+  EXPECT_EQ(webui_rfh, GetPendingFrameHost(main_rfhm));
+  EXPECT_TRUE(webui_rfh->render_view_host()->GetEnabledBindings() &
+              BINDINGS_POLICY_WEB_UI);
+
+  // Before it commits, do a cross-process navigation in a subframe.  This
+  // should not grant WebUI bindings to the subframe's RVH.
+  const GURL kSubframeUrl("http://bar.com");
+  NavigationEntryImpl subframe_entry(
+      nullptr /* instance */, -1 /* page_id */, kSubframeUrl, Referrer(),
+      base::string16() /* title */, ui::PAGE_TRANSITION_LINK,
+      false /* is_renderer_init */);
+  RenderFrameHostImpl* bar_rfh = NavigateToEntry(subframe_rfhm, subframe_entry);
+  EXPECT_FALSE(bar_rfh->render_view_host()->GetEnabledBindings() &
+               BINDINGS_POLICY_WEB_UI);
+}
+
 // Test that opener proxies are created properly with a cycle on the opener
 // chain.
 TEST_F(RenderFrameHostManagerTest, CreateOpenerProxiesWithCycleOnOpenerChain) {

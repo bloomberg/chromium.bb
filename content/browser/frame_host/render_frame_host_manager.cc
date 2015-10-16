@@ -2004,16 +2004,21 @@ bool RenderFrameHostManager::InitRenderView(
   if (render_view_host->IsRenderViewLive())
     return true;
 
-  // If the ongoing navigation is to a WebUI and the RenderView is not in a
-  // guest process, tell the RenderViewHost about any bindings it will need
-  // enabled.
+  // If |render_view_host| is not for a proxy and the navigation is to a WebUI,
+  // and if the RenderView is not in a guest process, tell |render_view_host|
+  // about any bindings it will need enabled.
+  // TODO(carlosk): Move WebUI to RenderFrameHost in https://crbug.com/508850.
   WebUIImpl* dest_web_ui = nullptr;
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableBrowserSideNavigation)) {
-    dest_web_ui =
-        should_reuse_web_ui_ ? web_ui_.get() : speculative_web_ui_.get();
-  } else {
-    dest_web_ui = pending_web_ui();
+  DCHECK_EQ(render_view_host->is_active(),
+            proxy_routing_id == MSG_ROUTING_NONE);
+  if (proxy_routing_id == MSG_ROUTING_NONE) {
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableBrowserSideNavigation)) {
+      dest_web_ui =
+          should_reuse_web_ui_ ? web_ui_.get() : speculative_web_ui_.get();
+    } else {
+      dest_web_ui = pending_web_ui();
+    }
   }
   if (dest_web_ui && !render_view_host->GetProcess()->IsForGuestsOnly()) {
     render_view_host->AllowBindings(dest_web_ui->GetBindings());
