@@ -782,6 +782,11 @@ public:
     bool shrinkObject(HeapObjectHeader*, size_t);
     void decreasePromptlyFreedSize(size_t size) { m_promptlyFreedSize -= size; }
 
+    bool isObjectAllocatedAtAllocationPoint(HeapObjectHeader* header)
+    {
+        return header->payloadEnd() == m_currentAllocationPoint;
+    }
+
 private:
     void allocatePage();
     Address lazySweepPages(size_t, size_t gcInfoIndex) override;
