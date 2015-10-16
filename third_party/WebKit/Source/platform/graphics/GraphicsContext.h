@@ -69,14 +69,15 @@ public:
         FullyDisabled = 1 // Do absolutely minimal work to remove the cost of the context from performance tests.
     };
 
-    explicit GraphicsContext(PaintController*, DisabledMode = NothingDisabled, SkMetaData* = 0);
+    explicit GraphicsContext(PaintController&, DisabledMode = NothingDisabled, SkMetaData* = 0);
 
     ~GraphicsContext();
 
     SkCanvas* canvas() { return m_canvas; }
     const SkCanvas* canvas() const { return m_canvas; }
 
-    PaintController* paintController() { return m_paintController; }
+    // TODO(pdr): Update this to return a reference.
+    PaintController* paintController() { return &m_paintController; }
 
     bool contextDisabled() const { return m_disabledState; }
 
@@ -343,8 +344,7 @@ private:
     // used when Slimming Paint is active.
     SkCanvas* m_originalCanvas;
 
-    // This being null indicates not to paint using the PaintController, and instead directly into the canvas.
-    PaintController* m_paintController;
+    PaintController& m_paintController;
 
     // Paint states stack. Enables local drawing state change with save()/restore() calls.
     // This state controls the appearance of drawn content.

@@ -41,7 +41,7 @@ void drawRect(GraphicsContext& context, LayoutView& layoutView, PaintPhase phase
 
 TEST_F(LayoutObjectDrawingRecorderTest, Nothing)
 {
-    GraphicsContext context(&rootPaintController());
+    GraphicsContext context(rootPaintController());
     LayoutRect bound = layoutView().viewRect();
     EXPECT_EQ((size_t)0, rootPaintController().displayItemList().size());
 
@@ -54,7 +54,7 @@ TEST_F(LayoutObjectDrawingRecorderTest, Nothing)
 
 TEST_F(LayoutObjectDrawingRecorderTest, Rect)
 {
-    GraphicsContext context(&rootPaintController());
+    GraphicsContext context(rootPaintController());
     LayoutRect bound = layoutView().viewRect();
     drawRect(context, layoutView(), PaintPhaseForeground, bound);
     rootPaintController().commitNewDisplayItems();
@@ -64,7 +64,7 @@ TEST_F(LayoutObjectDrawingRecorderTest, Rect)
 
 TEST_F(LayoutObjectDrawingRecorderTest, Cached)
 {
-    GraphicsContext context(&rootPaintController());
+    GraphicsContext context(rootPaintController());
     LayoutRect bound = layoutView().viewRect();
     drawNothing(context, layoutView(), PaintPhaseBlockBackground, bound);
     drawRect(context, layoutView(), PaintPhaseForeground, bound);
@@ -94,7 +94,7 @@ FloatRect drawAndGetCullRect(PaintController& controller, const LayoutObject& la
     controller.invalidateAll();
     {
         // Draw some things which will produce a non-null picture.
-        GraphicsContext context(&controller);
+        GraphicsContext context(controller);
         LayoutObjectDrawingRecorder recorder(
             context, layoutObject, DisplayItem::BoxDecorationBackground, bounds, LayoutPoint());
         context.drawRect(enclosedIntRect(FloatRect(bounds)));
@@ -123,7 +123,7 @@ TEST_F(LayoutObjectDrawingRecorderTest, PaintOffsetCache)
 {
     RuntimeEnabledFeatures::setSlimmingPaintOffsetCachingEnabled(true);
 
-    GraphicsContext context(&rootPaintController());
+    GraphicsContext context(rootPaintController());
     LayoutRect bounds = layoutView().viewRect();
     LayoutPoint paintOffset(1, 2);
 

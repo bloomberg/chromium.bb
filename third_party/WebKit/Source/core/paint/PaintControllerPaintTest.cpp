@@ -25,7 +25,7 @@ TEST_F(PaintControllerPaintTest, FullDocumentPaintingWithCaret)
     LayoutObject& divLayoutObject = *document().body()->firstChild()->layoutObject();
     InlineTextBox& textInlineBox = *toLayoutText(div.firstChild()->layoutObject())->firstTextBox();
 
-    GraphicsContext context(&rootPaintController());
+    GraphicsContext context(rootPaintController());
     PaintLayerPaintingInfo paintingInfo(&rootLayer, LayoutRect(0, 0, 800, 600), GlobalPaintNormalPhase, LayoutSize());
     PaintLayerPainter(rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
     rootPaintController().commitNewDisplayItems();
@@ -58,7 +58,7 @@ TEST_F(PaintControllerPaintTest, InlineRelayout)
     InlineTextBox& firstTextBox = *text.firstTextBox();
     DisplayItemClient firstTextBoxDisplayItemClient = firstTextBox.displayItemClient();
 
-    GraphicsContext context(&rootPaintController());
+    GraphicsContext context(rootPaintController());
     PaintLayerPaintingInfo paintingInfo(&rootLayer, LayoutRect(0, 0, 800, 600), GlobalPaintNormalPhase, LayoutSize());
     PaintLayerPainter(rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
     rootPaintController().commitNewDisplayItems();

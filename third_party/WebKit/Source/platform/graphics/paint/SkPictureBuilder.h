@@ -26,7 +26,7 @@ public:
             disabledMode = GraphicsContext::FullyDisabled;
 
         m_paintController = PaintController::create();
-        m_context = adoptPtr(new GraphicsContext(m_paintController.get(), disabledMode, metaData));
+        m_context = adoptPtr(new GraphicsContext(*m_paintController, disabledMode, metaData));
 
         if (containingContext) {
             m_context->setDeviceScaleFactor(containingContext->deviceScaleFactor());

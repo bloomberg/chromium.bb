@@ -107,7 +107,7 @@ TEST_F(ImageQualityControllerTest, MediumQualityFilterForUnscaledImage)
 
     RefPtr<TestImageLowQuality> testImage = adoptRef(new TestImageLowQuality);
     OwnPtr<PaintController> paintController = PaintController::create();
-    GraphicsContext context(paintController.get());
+    GraphicsContext context(*paintController);
     EXPECT_EQ(InterpolationMedium, controller()->chooseInterpolationQuality(&context, img, testImage.get(), testImage.get(), LayoutSize(1, 1)));
 }
 
@@ -135,7 +135,7 @@ TEST_F(ImageQualityControllerTest, LowQualityFilterForLiveResize)
 
     RefPtr<TestImageLowQuality> testImage = adoptRef(new TestImageLowQuality);
     OwnPtr<PaintController> paintController = PaintController::create();
-    GraphicsContext context(paintController.get());
+    GraphicsContext context(*paintController);
 
     // Start a resize
     document().frame()->view()->willStartLiveResize();
@@ -167,7 +167,7 @@ TEST_F(ImageQualityControllerTest, LowQualityFilterForResizingImage)
 
     RefPtr<TestImageLowQuality> testImage = adoptRef(new TestImageLowQuality);
     OwnPtr<PaintController> paintController = PaintController::create();
-    GraphicsContext context(paintController.get());
+    GraphicsContext context(*paintController);
 
     // Paint once. This will kick off a timer to see if we resize it during that timer's execution.
     EXPECT_EQ(InterpolationMedium, controller()->chooseInterpolationQuality(&context, img, testImage.get(), testImage.get(), LayoutSize(2, 2)));
@@ -192,7 +192,7 @@ TEST_F(ImageQualityControllerTest, DontKickTheAnimationTimerWhenPaintingAtTheSam
 
     RefPtr<TestImageLowQuality> testImage = adoptRef(new TestImageLowQuality);
     OwnPtr<PaintController> paintController = PaintController::create();
-    GraphicsContext context(paintController.get());
+    GraphicsContext context(*paintController);
 
     // Paint once. This will kick off a timer to see if we resize it during that timer's execution.
     EXPECT_EQ(InterpolationMedium, controller()->chooseInterpolationQuality(&context, img, testImage.get(), testImage.get(), LayoutSize(2, 2)));

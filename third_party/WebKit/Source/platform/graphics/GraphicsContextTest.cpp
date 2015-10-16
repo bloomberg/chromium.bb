@@ -70,7 +70,7 @@ TEST(GraphicsContextTest, pictureRecording)
     SkCanvas canvas(bitmap);
 
     OwnPtr<PaintController> paintController = PaintController::create();
-    GraphicsContext context(paintController.get());
+    GraphicsContext context(*paintController);
 
     Color opaque(1.0f, 0.0f, 0.0f, 1.0f);
     FloatRect bounds(0, 0, 100, 100);
@@ -103,7 +103,7 @@ TEST(GraphicsContextTest, UnboundedDrawsAreClipped)
     FloatRect bounds(0, 0, 100, 100);
 
     OwnPtr<PaintController> paintController = PaintController::create();
-    GraphicsContext context(paintController.get());
+    GraphicsContext context(*paintController);
     context.beginRecording(bounds);
 
     context.setShouldAntialias(false);

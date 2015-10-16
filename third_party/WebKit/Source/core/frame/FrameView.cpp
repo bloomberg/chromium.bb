@@ -2484,7 +2484,8 @@ void FrameView::synchronizedPaint(const LayoutRect* interestRect)
 
 void FrameView::synchronizedPaintRecursively(GraphicsLayer* graphicsLayer, const LayoutRect* interestRect)
 {
-    GraphicsContext context(graphicsLayer->paintController());
+    ASSERT(graphicsLayer->paintController());
+    GraphicsContext context(*graphicsLayer->paintController());
 
     // TODO(chrishtr): fix unit tests to not inject one-off interest rects.
     if (interestRect)

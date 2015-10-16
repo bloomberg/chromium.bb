@@ -103,7 +103,7 @@ void ContentLayerDelegate::paintContents(
     if (paintingControl == WebContentLayerClient::DisplayListPaintingDisabled
         || paintingControl == WebContentLayerClient::DisplayListConstructionDisabled)
         disabledMode = GraphicsContext::FullyDisabled;
-    GraphicsContext context(paintController, disabledMode);
+    GraphicsContext context(*paintController, disabledMode);
 
     m_painter->paint(context, clip);
 

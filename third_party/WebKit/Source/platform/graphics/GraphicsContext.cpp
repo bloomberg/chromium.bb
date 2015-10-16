@@ -50,7 +50,7 @@
 
 namespace blink {
 
-GraphicsContext::GraphicsContext(PaintController* paintController, DisabledMode disableContextOrPainting, SkMetaData* metaData)
+GraphicsContext::GraphicsContext(PaintController& paintController, DisabledMode disableContextOrPainting, SkMetaData* metaData)
     : m_canvas(nullptr)
     , m_originalCanvas(nullptr)
     , m_paintController(paintController)
@@ -66,9 +66,6 @@ GraphicsContext::GraphicsContext(PaintController* paintController, DisabledMode 
     , m_printing(false)
     , m_hasMetaData(!!metaData)
 {
-    // TODO(chrishtr): switch the type of the parameter to PaintController&.
-    ASSERT(paintController);
-
     if (metaData)
         m_metaData = *metaData;
 
@@ -734,7 +731,7 @@ void GraphicsContext::drawText(const Font& font, const TextRunPaintInfo& runInfo
         return;
 
     if (font.drawText(m_canvas, runInfo, point, m_deviceScaleFactor, paint))
-        m_paintController->setTextPainted();
+        m_paintController.setTextPainted();
 }
 
 template<typename DrawTextFunc>
@@ -762,7 +759,7 @@ void GraphicsContext::drawText(const Font& font, const TextRunPaintInfo& runInfo
 
     drawTextPasses([&font, &runInfo, &point, this](const SkPaint& paint) {
         if (font.drawText(m_canvas, runInfo, point, m_deviceScaleFactor, paint))
-            m_paintController->setTextPainted();
+            m_paintController.setTextPainted();
     });
 }
 
@@ -783,7 +780,7 @@ void GraphicsContext::drawBidiText(const Font& font, const TextRunPaintInfo& run
 
     drawTextPasses([&font, &runInfo, &point, customFontNotReadyAction, this](const SkPaint& paint) {
         if (font.drawBidiText(m_canvas, runInfo, point, customFontNotReadyAction, m_deviceScaleFactor, paint))
-            m_paintController->setTextPainted();
+            m_paintController.setTextPainted();
     });
 }
 

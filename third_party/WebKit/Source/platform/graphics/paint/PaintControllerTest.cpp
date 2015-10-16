@@ -105,7 +105,7 @@ void drawClippedRect(GraphicsContext& context, const TestDisplayItemClient& clie
 
 TEST_F(PaintControllerTest, NestedRecorders)
 {
-    GraphicsContext context(&paintController());
+    GraphicsContext context(paintController());
 
     TestDisplayItemClient client("client");
 
@@ -122,7 +122,7 @@ TEST_F(PaintControllerTest, UpdateBasic)
 {
     TestDisplayItemClient first("first");
     TestDisplayItemClient second("second");
-    GraphicsContext context(&paintController());
+    GraphicsContext context(paintController());
 
     drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 300, 300));
     drawRect(context, second, backgroundDrawingType, FloatRect(100, 100, 200, 200));
@@ -149,7 +149,7 @@ TEST_F(PaintControllerTest, UpdateSwapOrder)
     TestDisplayItemClient first("first");
     TestDisplayItemClient second("second");
     TestDisplayItemClient unaffected("unaffected");
-    GraphicsContext context(&paintController());
+    GraphicsContext context(paintController());
 
     drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 100, 100));
     drawRect(context, second, backgroundDrawingType, FloatRect(100, 100, 50, 200));
@@ -178,7 +178,7 @@ TEST_F(PaintControllerTest, UpdateNewItemInMiddle)
     TestDisplayItemClient first("first");
     TestDisplayItemClient second("second");
     TestDisplayItemClient third("third");
-    GraphicsContext context(&paintController());
+    GraphicsContext context(paintController());
 
     drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 100, 100));
     drawRect(context, second, backgroundDrawingType, FloatRect(100, 100, 50, 200));
@@ -204,7 +204,7 @@ TEST_F(PaintControllerTest, UpdateInvalidationWithPhases)
     TestDisplayItemClient first("first");
     TestDisplayItemClient second("second");
     TestDisplayItemClient third("third");
-    GraphicsContext context(&paintController());
+    GraphicsContext context(paintController());
 
     drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 100, 100));
     drawRect(context, second, backgroundDrawingType, FloatRect(100, 100, 50, 200));
@@ -244,7 +244,7 @@ TEST_F(PaintControllerTest, UpdateAddFirstOverlap)
 {
     TestDisplayItemClient first("first");
     TestDisplayItemClient second("second");
-    GraphicsContext context(&paintController());
+    GraphicsContext context(paintController());
 
     drawRect(context, second, backgroundDrawingType, FloatRect(200, 200, 50, 50));
     drawRect(context, second, foregroundDrawingType, FloatRect(200, 200, 50, 50));
@@ -282,7 +282,7 @@ TEST_F(PaintControllerTest, UpdateAddLastOverlap)
 {
     TestDisplayItemClient first("first");
     TestDisplayItemClient second("second");
-    GraphicsContext context(&paintController());
+    GraphicsContext context(paintController());
 
     drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 150, 150));
     drawRect(context, first, foregroundDrawingType, FloatRect(100, 100, 150, 150));
@@ -321,7 +321,7 @@ TEST_F(PaintControllerTest, UpdateClip)
 {
     TestDisplayItemClient first("first");
     TestDisplayItemClient second("second");
-    GraphicsContext context(&paintController());
+    GraphicsContext context(paintController());
 
     {
         ClipRecorder clipRecorder(context, first, clipType, LayoutRect(1, 1, 2, 2));
@@ -364,7 +364,7 @@ TEST_F(PaintControllerTest, CachedDisplayItems)
 {
     TestDisplayItemClient first("first");
     TestDisplayItemClient second("second");
-    GraphicsContext context(&paintController());
+    GraphicsContext context(paintController());
 
     drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 150, 150));
     drawRect(context, second, backgroundDrawingType, FloatRect(100, 100, 150, 150));
@@ -407,7 +407,7 @@ TEST_F(PaintControllerTest, ComplexUpdateSwapOrder)
     TestDisplayItemClient content1("content1");
     TestDisplayItemClient container2("container2");
     TestDisplayItemClient content2("content2");
-    GraphicsContext context(&paintController());
+    GraphicsContext context(paintController());
 
     drawRect(context, container1, backgroundDrawingType, FloatRect(100, 100, 100, 100));
     drawRect(context, content1, backgroundDrawingType, FloatRect(100, 100, 50, 200));
@@ -460,7 +460,7 @@ TEST_F(PaintControllerTest, CachedSubsequenceSwapOrder)
     TestDisplayItemClient content1("content1");
     TestDisplayItemClient container2("container2");
     TestDisplayItemClient content2("content2");
-    GraphicsContext context(&paintController());
+    GraphicsContext context(paintController());
 
     {
         SubsequenceRecorder r(context, container1, subsequenceType);
@@ -522,7 +522,7 @@ TEST_F(PaintControllerTest, CachedSubsequenceSwapOrder)
 TEST_F(PaintControllerTest, OutOfOrderNoCrash)
 {
     TestDisplayItemClient client("client");
-    GraphicsContext context(&paintController());
+    GraphicsContext context(paintController());
 
     const DisplayItem::Type type1 = DisplayItem::DrawingFirst;
     const DisplayItem::Type type2 = static_cast<DisplayItem::Type>(DisplayItem::DrawingFirst + 1);
@@ -552,7 +552,7 @@ TEST_F(PaintControllerTest, CachedNestedSubsequenceUpdate)
     TestDisplayItemClient content1("content1");
     TestDisplayItemClient container2("container2");
     TestDisplayItemClient content2("content2");
-    GraphicsContext context(&paintController());
+    GraphicsContext context(paintController());
 
     {
         SubsequenceRecorder r(context, container1, subsequenceType);
@@ -643,7 +643,7 @@ TEST_F(PaintControllerTest, Scope)
 {
     TestDisplayItemClient multicol("multicol");
     TestDisplayItemClient content("content");
-    GraphicsContext context(&paintController());
+    GraphicsContext context(paintController());
 
     FloatRect rect1(100, 100, 50, 50);
     FloatRect rect2(150, 100, 50, 50);
@@ -727,7 +727,7 @@ TEST_F(PaintControllerTest, OptimizeNoopPairs)
     TestDisplayItemClient second("second");
     TestDisplayItemClient third("third");
 
-    GraphicsContext context(&paintController());
+    GraphicsContext context(paintController());
     drawRect(context, first, backgroundDrawingType, FloatRect(0, 0, 100, 100));
     {
         ClipPathRecorder clipRecorder(context, second, Path());
@@ -780,7 +780,7 @@ TEST_F(PaintControllerTest, SmallPaintControllerHasOnePaintChunk)
     RuntimeEnabledFeatures::setSlimmingPaintV2Enabled(true);
     TestDisplayItemClient client("test client");
 
-    GraphicsContext context(&paintController());
+    GraphicsContext context(paintController());
     drawRect(context, client, backgroundDrawingType, FloatRect(0, 0, 100, 100));
 
     paintController().commitNewDisplayItems();

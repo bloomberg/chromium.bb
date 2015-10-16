@@ -31,7 +31,7 @@ TEST_F(TableCellPainterTest, TableCellBackgroundInterestRect)
     LayoutObject& cell1 = *document().getElementById("cell1")->layoutObject();
     LayoutObject& cell2 = *document().getElementById("cell2")->layoutObject();
 
-    GraphicsContext context(&rootPaintController());
+    GraphicsContext context(rootPaintController());
     PaintLayerPaintingInfo paintingInfo(&rootLayer, LayoutRect(0, 0, 200, 200), GlobalPaintNormalPhase, LayoutSize());
     PaintLayerPainter(rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
     rootPaintController().commitNewDisplayItems();

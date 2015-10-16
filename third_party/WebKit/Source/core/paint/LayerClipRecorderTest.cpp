@@ -60,7 +60,7 @@ void drawRectInClip(GraphicsContext& context, LayoutView& layoutView, PaintPhase
 
 TEST_F(LayerClipRecorderTest, Single)
 {
-    GraphicsContext context(&rootPaintController());
+    GraphicsContext context(rootPaintController());
     LayoutRect bound = layoutView().viewRect();
     EXPECT_EQ((size_t)0, rootPaintController().displayItemList().size());
 
@@ -74,7 +74,7 @@ TEST_F(LayerClipRecorderTest, Single)
 
 TEST_F(LayerClipRecorderTest, Empty)
 {
-    GraphicsContext context(&rootPaintController());
+    GraphicsContext context(rootPaintController());
     EXPECT_EQ((size_t)0, rootPaintController().displayItemList().size());
 
     drawEmptyClip(context, layoutView(), PaintPhaseForeground);
