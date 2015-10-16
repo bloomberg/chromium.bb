@@ -32,7 +32,7 @@ TAR_DIR = os.path.join(build_paths.NACL_DIR, 'toolchain', '.tars')
 
 PKG_VER = os.path.join(PKG_VER_DIR, 'package_version.py')
 
-EXTRACT_PACKAGES = ['nacl_x86_glibc']
+EXTRACT_PACKAGES = ['nacl_x86_glibc', 'nacl_arm_glibc']
 TOOLCHAIN_OUT = os.path.join(build_paths.OUT_DIR, 'sdk_tests', 'toolchain')
 
 # List of modules containing unittests. The goal is to keep the total

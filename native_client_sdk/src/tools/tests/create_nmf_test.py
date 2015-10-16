@@ -29,9 +29,12 @@ import getos
 from mock import patch, Mock
 
 TOOLCHAIN_OUT = os.path.join(build_paths.OUT_DIR, 'sdk_tests', 'toolchain')
-NACL_X86_GLIBC_TOOLCHAIN = os.path.join(TOOLCHAIN_OUT,
-                                        '%s_x86' % getos.GetPlatform(),
-                                        'nacl_x86_glibc')
+X86_GLIBC_TOOLCHAIN = os.path.join(TOOLCHAIN_OUT,
+                                   '%s_x86' % getos.GetPlatform(),
+                                   'nacl_x86_glibc')
+ARM_GLIBC_TOOLCHAIN = os.path.join(TOOLCHAIN_OUT,
+                                   '%s_x86' % getos.GetPlatform(),
+                                   'nacl_arm_glibc')
 
 PosixRelPath = create_nmf.PosixRelPath
 
@@ -47,9 +50,10 @@ def StripSo(name):
   libc.so.ad6acbfa => libc.so
   foo.bar.baz => foo.bar.baz
   """
-  stripped_name = '.'.join(name.split('.')[:-1])
-  if stripped_name.endswith('.so'):
-    return stripped_name
+  if '.' in name:
+    stripped_name, ext = name.rsplit('.', 1)
+    if stripped_name.endswith('.so') and len(ext) > 1:
+      return stripped_name
   return name
 
 
@@ -103,11 +107,19 @@ class TestNmfUtils(unittest.TestCase):
 
   def setUp(self):
     self.tempdir = None
-    self.toolchain = NACL_X86_GLIBC_TOOLCHAIN
-    self.objdump = os.path.join(self.toolchain, 'bin', 'i686-nacl-objdump')
+    self.objdump = os.path.join(X86_GLIBC_TOOLCHAIN, 'bin', 'i686-nacl-objdump')
     if os.name == 'nt':
       self.objdump += '.exe'
     self._Mktemp()
+
+    # Create dummy elf_loader_arm.nexe by duplicating an existing so.
+    # This nexe is normally build during SDK build but we want these tests
+    # to run standalone, and the contents of the ELF are not important for
+    # these tests.
+    arm_libdir = os.path.join(ARM_GLIBC_TOOLCHAIN, 'arm-nacl', 'lib')
+    shutil.copy(os.path.join(arm_libdir, 'ld-nacl-arm.so.1'),
+        os.path.join(arm_libdir, 'elf_loader_arm.nexe'))
+
 
   def _CreateTestNexe(self, name, arch):
     """Create an empty test .nexe file for use in create_nmf tests.
@@ -116,7 +128,12 @@ class TestNmfUtils(unittest.TestCase):
     checked in binaries depend on .so files that only exist in the
     certain SDK that build them.
     """
-    compiler = os.path.join(self.toolchain, 'bin', '%s-nacl-g++' % arch)
+    if arch == 'arm':
+      toolchain = ARM_GLIBC_TOOLCHAIN
+    else:
+      toolchain = X86_GLIBC_TOOLCHAIN
+
+    compiler = os.path.join(toolchain, 'bin', '%s-nacl-g++' % arch)
     if os.name == 'nt':
       compiler += '.exe'
       os.environ['CYGWIN'] = 'nodosfilewarning'
@@ -141,10 +158,11 @@ class TestNmfUtils(unittest.TestCase):
 
   def _CreateNmfUtils(self, nexes, **kwargs):
     if not kwargs.get('lib_path'):
-      # Use lib instead of lib64 (lib64 is a symlink to lib).
       kwargs['lib_path'] = [
-          os.path.join(self.toolchain, 'x86_64-nacl', 'lib'),
-          os.path.join(self.toolchain, 'x86_64-nacl', 'lib32')]
+          # Use lib instead of lib64 (lib64 is a symlink to lib).
+          os.path.join(X86_GLIBC_TOOLCHAIN, 'x86_64-nacl', 'lib'),
+          os.path.join(X86_GLIBC_TOOLCHAIN, 'x86_64-nacl', 'lib32'),
+          os.path.join(ARM_GLIBC_TOOLCHAIN, 'arm-nacl', 'lib')]
     return create_nmf.NmfUtils(nexes,
                                objdump=self.objdump,
                                **kwargs)
@@ -197,7 +215,7 @@ class TestNmfUtils(unittest.TestCase):
     """
     arch_path = arch_path or {}
     nexes = []
-    for arch in ('x86_64', 'x86_32'):
+    for arch in ('x86_64', 'x86_32', 'arm'):
       nexe_name = 'test_dynamic_%s.nexe' % arch
       rel_nexe = os.path.join(arch_path.get(arch, ''), nexe_name)
       arch_alt = 'i686' if arch == 'x86_32' else arch
@@ -285,7 +303,13 @@ class TestNmfUtils(unittest.TestCase):
         new_d[new_k] = new_v
       return new_d
 
-    self.assertEqual(StripSoCopyDict(manifest), expected)
+    strip_manifest = StripSoCopyDict(manifest)
+    self.assertEqual(strip_manifest['program'], expected['program'])
+    if 'files' in strip_manifest:
+      for key in strip_manifest['files']:
+        self.assertEqual(strip_manifest['files'][key], expected['files'][key])
+
+    self.assertEqual(strip_manifest, expected)
 
   def assertStagingEquals(self, expected):
     """Compare the contents of the temporary directory, to an expected
@@ -304,6 +328,7 @@ class TestNmfUtils(unittest.TestCase):
         all_files.append(path)
     self.assertEqual(set(expected), set(all_files))
 
+  arch_dir = {'x86_32': 'x86_32', 'x86_64': 'x86_64', 'arm': 'arm'}
 
   def testStatic(self):
     nmf, _ = self._CreateStatic()
@@ -318,8 +343,7 @@ class TestNmfUtils(unittest.TestCase):
     self.assertManifestEquals(nmf, expected_manifest)
 
   def testStaticWithPath(self):
-    arch_dir = {'x86_32': 'x86_32', 'x86_64': 'x86_64', 'arm': 'arm'}
-    nmf, _ = self._CreateStatic(arch_dir, nmf_root=self.tempdir)
+    nmf, _ = self._CreateStatic(self.arch_dir, nmf_root=self.tempdir)
     expected_manifest = {
       'files': {},
       'program': {
@@ -335,8 +359,7 @@ class TestNmfUtils(unittest.TestCase):
     # used to work. If there is no nmf_root given, all paths are relative to
     # the first nexe passed on the commandline. I believe the assumption
     # previously was that all .nexes would be in the same directory.
-    arch_dir = {'x86_32': 'x86_32', 'x86_64': 'x86_64', 'arm': 'arm'}
-    nmf, _ = self._CreateStatic(arch_dir)
+    nmf, _ = self._CreateStatic(self.arch_dir)
     expected_manifest = {
       'files': {},
       'program': {
@@ -366,14 +389,25 @@ class TestNmfUtils(unittest.TestCase):
         'main.nexe': {
           'x86-32': {'url': 'test_dynamic_x86_32.nexe'},
           'x86-64': {'url': 'test_dynamic_x86_64.nexe'},
+          'arm': {'url': 'test_dynamic_arm.nexe'},
+        },
+        'ld-nacl-arm.so.1': {
+          'arm': {'url': 'libarm/ld-nacl-arm.so.1'},
+        },
+        'libc.so.0.1': {
+          'arm': {'url': 'libarm/libc.so.0.1'}
         },
         'libc.so': {
           'x86-32': {'url': 'lib32/libc.so'},
           'x86-64': {'url': 'lib64/libc.so'},
         },
-        'libgcc_s.so': {
-          'x86-32': {'url': 'lib32/libgcc_s.so'},
-          'x86-64': {'url': 'lib64/libgcc_s.so'},
+        'libgcc_s.so.1': {
+          'arm': {'url': 'libarm/libgcc_s.so.1'},
+          'x86-32': {'url': 'lib32/libgcc_s.so.1'},
+          'x86-64': {'url': 'lib64/libgcc_s.so.1'},
+        },
+        'libpthread.so.0': {
+          'arm': { 'url': 'libarm/libpthread.so.0'}
         },
         'libpthread.so': {
           'x86-32': {'url': 'lib32/libpthread.so'},
@@ -381,6 +415,7 @@ class TestNmfUtils(unittest.TestCase):
         },
       },
       'program': {
+        'arm': {'url': 'libarm/elf_loader_arm.nexe'},
         'x86-32': {'url': 'lib32/runnable-ld.so'},
         'x86-64': {'url': 'lib64/runnable-ld.so'},
       }
@@ -389,34 +424,50 @@ class TestNmfUtils(unittest.TestCase):
     expected_staging = [os.path.basename(f) for f in nexes]
     expected_staging.extend([
       'lib32/libc.so',
-      'lib32/libgcc_s.so',
+      'lib32/libgcc_s.so.1',
       'lib32/libpthread.so',
       'lib32/runnable-ld.so',
       'lib64/libc.so',
-      'lib64/libgcc_s.so',
+      'lib64/libgcc_s.so.1',
       'lib64/libpthread.so',
-      'lib64/runnable-ld.so'])
+      'lib64/runnable-ld.so',
+      'libarm/elf_loader_arm.nexe',
+      'libarm/libpthread.so.0',
+      'libarm/ld-nacl-arm.so.1',
+      'libarm/libgcc_s.so.1',
+      'libarm/libc.so.0.1'
+    ])
 
     self.assertManifestEquals(nmf, expected_manifest)
     self.assertStagingEquals(expected_staging)
 
   def testDynamicWithPath(self):
-    arch_dir = {'x86_64': 'x86_64', 'x86_32': 'x86_32'}
-    nmf, nexes = self._CreateDynamicAndStageDeps(arch_dir,
+    nmf, nexes = self._CreateDynamicAndStageDeps(self.arch_dir,
                                                  nmf_root=self.tempdir)
     expected_manifest = {
       'files': {
         'main.nexe': {
+          'arm': {'url': 'arm/test_dynamic_arm.nexe'},
           'x86-32': {'url': 'x86_32/test_dynamic_x86_32.nexe'},
           'x86-64': {'url': 'x86_64/test_dynamic_x86_64.nexe'},
+        },
+        'libc.so.0.1': {
+          'arm': {'url': 'arm/libarm/libc.so.0.1'}
+        },
+        'ld-nacl-arm.so.1': {
+          'arm': {'url': 'arm/libarm/ld-nacl-arm.so.1'},
         },
         'libc.so': {
           'x86-32': {'url': 'x86_32/lib32/libc.so'},
           'x86-64': {'url': 'x86_64/lib64/libc.so'},
         },
-        'libgcc_s.so': {
-          'x86-32': {'url': 'x86_32/lib32/libgcc_s.so'},
-          'x86-64': {'url': 'x86_64/lib64/libgcc_s.so'},
+        'libgcc_s.so.1': {
+          'arm': {'url': 'arm/libarm/libgcc_s.so.1'},
+          'x86-32': {'url': 'x86_32/lib32/libgcc_s.so.1'},
+          'x86-64': {'url': 'x86_64/lib64/libgcc_s.so.1'},
+        },
+        'libpthread.so.0': {
+          'arm': { 'url': 'arm/libarm/libpthread.so.0'}
         },
         'libpthread.so': {
           'x86-32': {'url': 'x86_32/lib32/libpthread.so'},
@@ -424,6 +475,7 @@ class TestNmfUtils(unittest.TestCase):
         },
       },
       'program': {
+        'arm': {'url': 'arm/libarm/elf_loader_arm.nexe'},
         'x86-32': {'url': 'x86_32/lib32/runnable-ld.so'},
         'x86-64': {'url': 'x86_64/lib64/runnable-ld.so'},
       }
@@ -432,37 +484,53 @@ class TestNmfUtils(unittest.TestCase):
     expected_staging = [PosixRelPath(f, self.tempdir) for f in nexes]
     expected_staging.extend([
       'x86_32/lib32/libc.so',
-      'x86_32/lib32/libgcc_s.so',
+      'x86_32/lib32/libgcc_s.so.1',
       'x86_32/lib32/libpthread.so',
       'x86_32/lib32/runnable-ld.so',
       'x86_64/lib64/libc.so',
-      'x86_64/lib64/libgcc_s.so',
+      'x86_64/lib64/libgcc_s.so.1',
       'x86_64/lib64/libpthread.so',
-      'x86_64/lib64/runnable-ld.so'])
+      'x86_64/lib64/runnable-ld.so',
+      'arm/libarm/elf_loader_arm.nexe',
+      'arm/libarm/libpthread.so.0',
+      'arm/libarm/ld-nacl-arm.so.1',
+      'arm/libarm/libgcc_s.so.1',
+      'arm/libarm/libc.so.0.1'
+    ])
 
     self.assertManifestEquals(nmf, expected_manifest)
     self.assertStagingEquals(expected_staging)
 
   def testDynamicWithRelPath(self):
     """Test that when the nmf root is a relative path that things work."""
-    arch_dir = {'x86_64': 'x86_64', 'x86_32': 'x86_32'}
     old_path = os.getcwd()
     try:
       os.chdir(self.tempdir)
-      nmf, nexes = self._CreateDynamicAndStageDeps(arch_dir, nmf_root='')
+      nmf, nexes = self._CreateDynamicAndStageDeps(self.arch_dir, nmf_root='')
       expected_manifest = {
         'files': {
           'main.nexe': {
+            'arm': {'url': 'arm/test_dynamic_arm.nexe'},
             'x86-32': {'url': 'x86_32/test_dynamic_x86_32.nexe'},
             'x86-64': {'url': 'x86_64/test_dynamic_x86_64.nexe'},
+          },
+          'ld-nacl-arm.so.1': {
+            'arm': {'url': 'arm/libarm/ld-nacl-arm.so.1'},
+          },
+          'libc.so.0.1': {
+            'arm': {'url': 'arm/libarm/libc.so.0.1'}
           },
           'libc.so': {
             'x86-32': {'url': 'x86_32/lib32/libc.so'},
             'x86-64': {'url': 'x86_64/lib64/libc.so'},
           },
-          'libgcc_s.so': {
-            'x86-32': {'url': 'x86_32/lib32/libgcc_s.so'},
-            'x86-64': {'url': 'x86_64/lib64/libgcc_s.so'},
+          'libgcc_s.so.1': {
+            'arm': {'url': 'arm/libarm/libgcc_s.so.1'},
+            'x86-32': {'url': 'x86_32/lib32/libgcc_s.so.1'},
+            'x86-64': {'url': 'x86_64/lib64/libgcc_s.so.1'},
+          },
+          'libpthread.so.0': {
+            'arm': { 'url': 'arm/libarm/libpthread.so.0'}
           },
           'libpthread.so': {
             'x86-32': {'url': 'x86_32/lib32/libpthread.so'},
@@ -470,6 +538,7 @@ class TestNmfUtils(unittest.TestCase):
           },
         },
         'program': {
+          'arm': {'url': 'arm/libarm/elf_loader_arm.nexe'},
           'x86-32': {'url': 'x86_32/lib32/runnable-ld.so'},
           'x86-64': {'url': 'x86_64/lib64/runnable-ld.so'},
         }
@@ -478,13 +547,19 @@ class TestNmfUtils(unittest.TestCase):
       expected_staging = [PosixRelPath(f, self.tempdir) for f in nexes]
       expected_staging.extend([
         'x86_32/lib32/libc.so',
-        'x86_32/lib32/libgcc_s.so',
+        'x86_32/lib32/libgcc_s.so.1',
         'x86_32/lib32/libpthread.so',
         'x86_32/lib32/runnable-ld.so',
         'x86_64/lib64/libc.so',
-        'x86_64/lib64/libgcc_s.so',
+        'x86_64/lib64/libgcc_s.so.1',
         'x86_64/lib64/libpthread.so',
-        'x86_64/lib64/runnable-ld.so'])
+        'x86_64/lib64/runnable-ld.so',
+        'arm/libarm/elf_loader_arm.nexe',
+        'arm/libarm/libpthread.so.0',
+        'arm/libarm/ld-nacl-arm.so.1',
+        'arm/libarm/libgcc_s.so.1',
+        'arm/libarm/libc.so.0.1'
+      ])
 
       self.assertManifestEquals(nmf, expected_manifest)
       self.assertStagingEquals(expected_staging)
@@ -492,23 +567,33 @@ class TestNmfUtils(unittest.TestCase):
       os.chdir(old_path)
 
   def testDynamicWithPathNoArchPrefix(self):
-    arch_dir = {'x86_64': 'x86_64', 'x86_32': 'x86_32'}
-    nmf, nexes = self._CreateDynamicAndStageDeps(arch_dir,
+    nmf, nexes = self._CreateDynamicAndStageDeps(self.arch_dir,
                                                  nmf_root=self.tempdir,
                                                  no_arch_prefix=True)
     expected_manifest = {
       'files': {
         'main.nexe': {
+          'arm': {'url': 'arm/test_dynamic_arm.nexe'},
           'x86-32': {'url': 'x86_32/test_dynamic_x86_32.nexe'},
           'x86-64': {'url': 'x86_64/test_dynamic_x86_64.nexe'},
+        },
+        'ld-nacl-arm.so.1': {
+          'arm': {'url': 'arm/ld-nacl-arm.so.1'},
+        },
+        'libc.so.0.1': {
+          'arm': {'url': 'arm/libc.so.0.1'}
         },
         'libc.so': {
           'x86-32': {'url': 'x86_32/libc.so'},
           'x86-64': {'url': 'x86_64/libc.so'},
         },
-        'libgcc_s.so': {
-          'x86-32': {'url': 'x86_32/libgcc_s.so'},
-          'x86-64': {'url': 'x86_64/libgcc_s.so'},
+        'libgcc_s.so.1': {
+          'arm': {'url': 'arm/libgcc_s.so.1'},
+          'x86-32': {'url': 'x86_32/libgcc_s.so.1'},
+          'x86-64': {'url': 'x86_64/libgcc_s.so.1'},
+        },
+        'libpthread.so.0': {
+          'arm': { 'url': 'arm/libpthread.so.0'}
         },
         'libpthread.so': {
           'x86-32': {'url': 'x86_32/libpthread.so'},
@@ -516,6 +601,7 @@ class TestNmfUtils(unittest.TestCase):
         },
       },
       'program': {
+        'arm': {'url': 'arm/elf_loader_arm.nexe'},
         'x86-32': {'url': 'x86_32/runnable-ld.so'},
         'x86-64': {'url': 'x86_64/runnable-ld.so'},
       }
@@ -524,13 +610,19 @@ class TestNmfUtils(unittest.TestCase):
     expected_staging = [PosixRelPath(f, self.tempdir) for f in nexes]
     expected_staging.extend([
       'x86_32/libc.so',
-      'x86_32/libgcc_s.so',
+      'x86_32/libgcc_s.so.1',
       'x86_32/libpthread.so',
       'x86_32/runnable-ld.so',
       'x86_64/libc.so',
-      'x86_64/libgcc_s.so',
+      'x86_64/libgcc_s.so.1',
       'x86_64/libpthread.so',
-      'x86_64/runnable-ld.so'])
+      'x86_64/runnable-ld.so',
+      'arm/elf_loader_arm.nexe',
+      'arm/libpthread.so.0',
+      'arm/ld-nacl-arm.so.1',
+      'arm/libgcc_s.so.1',
+      'arm/libc.so.0.1'
+    ])
 
     self.assertManifestEquals(nmf, expected_manifest)
     self.assertStagingEquals(expected_staging)
@@ -540,16 +632,27 @@ class TestNmfUtils(unittest.TestCase):
     expected_manifest = {
       'files': {
         'main.nexe': {
+          'arm': {'url': 'test_dynamic_arm.nexe'},
           'x86-32': {'url': 'test_dynamic_x86_32.nexe'},
           'x86-64': {'url': 'test_dynamic_x86_64.nexe'},
+        },
+        'ld-nacl-arm.so.1': {
+          'arm': {'url': 'foo/libarm/ld-nacl-arm.so.1'},
+        },
+        'libc.so.0.1': {
+          'arm': {'url': 'foo/libarm/libc.so.0.1'}
         },
         'libc.so': {
           'x86-32': {'url': 'foo/lib32/libc.so'},
           'x86-64': {'url': 'foo/lib64/libc.so'},
         },
-        'libgcc_s.so': {
-          'x86-32': {'url': 'foo/lib32/libgcc_s.so'},
-          'x86-64': {'url': 'foo/lib64/libgcc_s.so'},
+        'libgcc_s.so.1': {
+          'arm': {'url': 'foo/libarm/libgcc_s.so.1'},
+          'x86-32': {'url': 'foo/lib32/libgcc_s.so.1'},
+          'x86-64': {'url': 'foo/lib64/libgcc_s.so.1'},
+        },
+        'libpthread.so.0': {
+          'arm': { 'url': 'foo/libarm/libpthread.so.0'}
         },
         'libpthread.so': {
           'x86-32': {'url': 'foo/lib32/libpthread.so'},
@@ -557,6 +660,7 @@ class TestNmfUtils(unittest.TestCase):
         },
       },
       'program': {
+        'arm': {'url': 'foo/libarm/elf_loader_arm.nexe'},
         'x86-32': {'url': 'foo/lib32/runnable-ld.so'},
         'x86-64': {'url': 'foo/lib64/runnable-ld.so'},
       }
@@ -565,13 +669,19 @@ class TestNmfUtils(unittest.TestCase):
     expected_staging = [PosixRelPath(f, self.tempdir) for f in nexes]
     expected_staging.extend([
       'foo/lib32/libc.so',
-      'foo/lib32/libgcc_s.so',
+      'foo/lib32/libgcc_s.so.1',
       'foo/lib32/libpthread.so',
       'foo/lib32/runnable-ld.so',
       'foo/lib64/libc.so',
-      'foo/lib64/libgcc_s.so',
+      'foo/lib64/libgcc_s.so.1',
       'foo/lib64/libpthread.so',
-      'foo/lib64/runnable-ld.so'])
+      'foo/lib64/runnable-ld.so',
+      'foo/libarm/elf_loader_arm.nexe',
+      'foo/libarm/libpthread.so.0',
+      'foo/libarm/ld-nacl-arm.so.1',
+      'foo/libarm/libgcc_s.so.1',
+      'foo/libarm/libc.so.0.1'
+    ])
 
     self.assertManifestEquals(nmf, expected_manifest)
     self.assertStagingEquals(expected_staging)

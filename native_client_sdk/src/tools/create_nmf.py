@@ -36,12 +36,11 @@ import quote
 ARCH_LOCATION = {
     'x86-32': 'lib32',
     'x86-64': 'lib64',
-    'arm': 'lib',
+    'arm': 'libarm',
 }
 
 
 # These constants are used within nmf files.
-RUNNABLE_LD = 'runnable-ld.so'  # Name of the dynamic loader
 MAIN_NEXE = 'main.nexe'  # Name of entry point for execution
 PROGRAM_KEY = 'program'  # Key of the program section in an nmf file
 URL_KEY = 'url'  # Key of the url field for a particular file in an nmf file
@@ -140,6 +139,11 @@ def ParseElfHeader(path):
 class Error(Exception):
   """Local Error class for this file."""
   pass
+
+
+def IsLoader(filename):
+  return (filename.endswith(get_shared_deps.LOADER_X86) or
+      filename.endswith(get_shared_deps.LOADER_ARM))
 
 
 class ArchFile(object):
@@ -295,7 +299,7 @@ class NmfUtils(object):
         prefix = arch_to_main_dir[arch_file.arch]
         url = os.path.basename(arch_file.path)
 
-      if arch_file.name.endswith('.nexe'):
+      if arch_file.name.endswith('.nexe') and not IsLoader(arch_file.name):
         prefix = posixpath.join(prefix, self.nexe_prefix)
       elif self.no_arch_prefix:
         prefix = posixpath.join(prefix, self.lib_prefix)
@@ -375,10 +379,10 @@ class NmfUtils(object):
 
     manifest_items = needed.items() + extra_files_kv
 
-    # Add in runnable-ld.so entries to the program section.
+    # Add dynamic loader to the program section.
     for need, archinfo in manifest_items:
-      urlinfo = { URL_KEY: archinfo.url }
-      if need.endswith(RUNNABLE_LD):
+      if IsLoader(need):
+        urlinfo = { URL_KEY: archinfo.url }
         manifest[PROGRAM_KEY][archinfo.arch] = urlinfo
 
     for need, archinfo in manifest_items:
@@ -386,7 +390,7 @@ class NmfUtils(object):
       name = archinfo.name
       arch = archinfo.arch
 
-      if need.endswith(RUNNABLE_LD):
+      if IsLoader(need):
         continue
 
       if need in self.main_files:
@@ -557,6 +561,7 @@ def GetDefaultLibPath(config):
     ]
   libpath = [os.path.normpath(p) for p in libpath]
   libpath = [os.path.join(sdk_root, p) for p in libpath]
+  libpath.append(os.path.join(sdk_root, 'tools'))
   return libpath
 
 

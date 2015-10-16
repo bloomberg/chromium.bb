@@ -27,7 +27,8 @@ SDK_DIR = os.path.dirname(os.path.dirname(SCRIPT_DIR))
 NeededMatcher = re.compile('^ *NEEDED *([^ ]+)\n$')
 FormatMatcher = re.compile('^(.+):\\s*file format (.+)\n$')
 
-RUNNABLE_LD = 'runnable-ld.so'  # Name of the dynamic loader
+LOADER_X86 = 'runnable-ld.so'  # Name of the dynamic loader
+LOADER_ARM = 'elf_loader_arm.nexe'  # Name of the ARM dynamic loader
 
 OBJDUMP_ARCH_MAP = {
     # Names returned by Linux's objdump:
@@ -89,8 +90,11 @@ def _GetNeededDynamic(main_files, objdump, lib_path):
   examined = set()
   all_files, unexamined = GleanFromObjdump(main_files, None, objdump, lib_path)
   for arch in all_files.itervalues():
-    if unexamined and arch != 'arm':
-      unexamined.add((RUNNABLE_LD, arch))
+    if unexamined:
+      if arch == 'arm':
+        unexamined.add((LOADER_ARM, arch))
+      else:
+        unexamined.add((LOADER_X86, arch))
 
   while unexamined:
     files_to_examine = {}
