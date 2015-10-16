@@ -3560,11 +3560,6 @@ bool Element::supportsStyleSharing() const
         return false;
     if (hasAnimations())
         return false;
-    // Turn off style sharing for elements that can gain layers for reasons outside of the style system.
-    // See comments in LayoutObject::setStyle().
-    // FIXME: Why does gaining a layer from outside the style system require disabling sharing?
-    if (isHTMLFrameElementBase(*this) || isHTMLPlugInElement(*this) || isHTMLCanvasElement(*this))
-        return false;
     if (Fullscreen::isActiveFullScreenElement(*this))
         return false;
     return true;
