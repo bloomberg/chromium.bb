@@ -954,7 +954,8 @@ ProfileIOData::ResourceContext::CreateClientCertStore() {
     return io_data_->client_cert_store_factory_.Run();
 #if defined(OS_CHROMEOS)
   return scoped_ptr<net::ClientCertStore>(new chromeos::ClientCertStoreChromeOS(
-      io_data_->certificate_provider_->Copy(),
+      io_data_->certificate_provider_ ? io_data_->certificate_provider_->Copy()
+                                      : nullptr,
       make_scoped_ptr(new chromeos::ClientCertFilterChromeOS(
           io_data_->use_system_key_slot(), io_data_->username_hash())),
       base::Bind(&CreateCryptoModuleBlockingPasswordDelegate,
