@@ -6,7 +6,7 @@ layer at (0,0) size 800x150
       LayoutBlockFlow {DIV} at (0,0) size 600x36
         LayoutText {#text} at (0,0) size 254x14
           text run at (0,0) width 254: "Table autosizing tests - narrow-percentage-width.html"
-        LayoutBR {BR} at (254,0) size 0x14
+        LayoutBR {BR} at (253,0) size 1x14
         LayoutText {#text} at (0,15) size 240x14
           text run at (0,15) width 240: "This test passes if none of the 6 cells are autosized."
       LayoutTable {TABLE} at (1,37) size 200x112 [border: none]

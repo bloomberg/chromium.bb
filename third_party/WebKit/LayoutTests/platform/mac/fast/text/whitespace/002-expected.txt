@@ -9,8 +9,8 @@ layer at (0,0) size 800x210
             text run at (0,1) width 528: "Ahem_font_required_for_this_test."
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (0,34) size 784x18
-        LayoutText {#text} at (0,0) size 648x18
-          text run at (0,0) width 648: "There should be three columns below, dark green, light green, and dark green, with no red anywhere."
+        LayoutText {#text} at (0,0) size 647x18
+          text run at (0,0) width 647: "There should be three columns below, dark green, light green, and dark green, with no red anywhere."
       LayoutTable {TABLE} at (0,68) size 66x126 [border: (3px solid #000000)]
         LayoutTableSection {TBODY} at (3,3) size 60x120
           LayoutTableRow {TR} at (0,0) size 60x120

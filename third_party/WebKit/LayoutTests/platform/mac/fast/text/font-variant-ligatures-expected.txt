@@ -8,8 +8,8 @@ layer at (0,0) size 800x600
           LayoutText {#text} at (0,3) size 67x36
             text run at (0,3) width 67: "file"
         LayoutBlockFlow {DIV} at (0,43) size 784x43
-          LayoutText {#text} at (0,3) size 67x36
-            text run at (0,3) width 67: "file"
+          LayoutText {#text} at (0,3) size 64x36
+            text run at (0,3) width 64: "file"
         LayoutBlockFlow {DIV} at (0,86) size 784x43
           LayoutText {#text} at (0,3) size 64x36
             text run at (0,3) width 64: "file"

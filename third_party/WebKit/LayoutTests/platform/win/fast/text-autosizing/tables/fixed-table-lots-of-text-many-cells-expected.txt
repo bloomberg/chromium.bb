@@ -6,7 +6,7 @@ layer at (0,0) size 800x138
       LayoutBlockFlow {DIV} at (0,0) size 600x36
         LayoutText {#text} at (0,0) size 296x14
           text run at (0,0) width 296: "Table autosizing tests - fixed-table-lots-of-text-many-cells.html"
-        LayoutBR {BR} at (296,0) size 0x14
+        LayoutBR {BR} at (295,0) size 1x14
         LayoutText {#text} at (0,15) size 246x14
           text run at (0,15) width 246: "This test passes if none of the 18 cells are autosized."
       LayoutTable {TABLE} at (1,37) size 798x100 [border: none]
