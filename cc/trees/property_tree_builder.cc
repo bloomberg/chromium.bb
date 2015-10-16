@@ -121,6 +121,7 @@ void AddClipNodeIfNeeded(const DataForRecursion<LayerType>& data_from_ancestor,
       // of its own, but clips from ancestor nodes don't need to be considered
       // when computing clip rects or visibility.
       has_unclipped_surface = true;
+      DCHECK(!parent->data.applies_local_clip);
     }
     // A surface with unclipped descendants cannot be clipped by its ancestor
     // clip at draw time since the unclipped descendants aren't affected by the
@@ -140,8 +141,7 @@ void AddClipNodeIfNeeded(const DataForRecursion<LayerType>& data_from_ancestor,
 
   bool applies_clip =
       AppliesClip(layer, data_from_ancestor, ancestor_clips_subtree);
-  bool parent_applies_clip =
-      !parent->data.resets_clip || parent->data.applies_local_clip;
+  bool parent_applies_clip = !parent->data.resets_clip;
 
   // When we have an unclipped surface, all ancestor clips no longer apply.
   // However, if our parent already clears ancestor clips and applies no clip of
@@ -176,28 +176,18 @@ void AddClipNodeIfNeeded(const DataForRecursion<LayerType>& data_from_ancestor,
     node.owner_id = layer->id();
 
     if (ancestor_clips_subtree || layer_clips_subtree) {
-      node.data.applies_local_clip = layer_clips_subtree;
-
       // Surfaces reset the rect used for layer clipping. At other nodes, layer
       // clipping state from ancestors must continue to get propagated.
       node.data.layer_clipping_uses_only_local_clip =
           layer->has_render_surface() || !ancestor_clips_subtree;
-
-      // A surface with unclipped descendants won't be clipped by ancestor clips
-      // at draw time (since it may need to expand to include its unclipped
-      // descendants), so we don't consider these ancestor clips when computing
-      // visible rects.
-      node.data.layer_visibility_uses_only_local_clip =
-          layer->has_render_surface() && layer->num_unclipped_descendants();
     } else {
       // Otherwise, we're either unclipped, or exist only in order to apply our
       // parent's clips in our space.
-      node.data.applies_local_clip = false;
       node.data.layer_clipping_uses_only_local_clip = false;
-      node.data.layer_visibility_uses_only_local_clip = false;
     }
 
-    node.data.resets_clip = has_unclipped_surface || !parent_applies_clip;
+    node.data.applies_local_clip = layer_clips_subtree;
+    node.data.resets_clip = has_unclipped_surface;
     node.data.target_is_clipped = data_for_children->target_is_clipped;
     node.data.layers_are_clipped = layers_are_clipped;
 

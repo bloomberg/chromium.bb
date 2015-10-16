@@ -82,8 +82,11 @@ void CalculateVisibleRects(const std::vector<LayerType*>& visible_layer_list,
       } else {
         clip_rect_in_target_space =
             gfx::ToEnclosingRect(clip_node->data.clip_in_target_space);
-        combined_clip_rect_in_target_space =
-            gfx::ToEnclosingRect(clip_node->data.combined_clip_in_target_space);
+        if (clip_node->data.target_is_clipped)
+          combined_clip_rect_in_target_space = gfx::ToEnclosingRect(
+              clip_node->data.combined_clip_in_target_space);
+        else
+          combined_clip_rect_in_target_space = clip_rect_in_target_space;
       }
 
       if (!clip_rect_in_target_space.IsEmpty()) {
@@ -415,10 +418,10 @@ void FindLayersThatNeedUpdates(
 void ComputeClips(ClipTree* clip_tree, const TransformTree& transform_tree) {
   if (!clip_tree->needs_update())
     return;
-  for (int i = 0; i < static_cast<int>(clip_tree->size()); ++i) {
+  for (int i = 1; i < static_cast<int>(clip_tree->size()); ++i) {
     ClipNode* clip_node = clip_tree->Node(i);
 
-    if (clip_node->id == 0) {
+    if (clip_node->id == 1) {
       clip_node->data.combined_clip_in_target_space = clip_node->data.clip;
       clip_node->data.clip_in_target_space = clip_node->data.clip;
       continue;
@@ -426,18 +429,6 @@ void ComputeClips(ClipTree* clip_tree, const TransformTree& transform_tree) {
     const TransformNode* transform_node =
         transform_tree.Node(clip_node->data.transform_id);
     ClipNode* parent_clip_node = clip_tree->parent(clip_node);
-
-    // Only nodes affected by ancestor clips will have their combined clip
-    // adjusted due to intersecting with an ancestor clip.
-    if (clip_node->data.resets_clip) {
-      if (clip_node->data.applies_local_clip) {
-        clip_node->data.clip_in_target_space = MathUtil::MapClippedRect(
-            transform_node->data.to_target, clip_node->data.clip);
-        clip_node->data.combined_clip_in_target_space =
-            clip_node->data.clip_in_target_space;
-      }
-      continue;
-    }
 
     gfx::Transform parent_to_current;
     const TransformNode* parent_transform_node =
@@ -473,6 +464,27 @@ void ComputeClips(ClipTree* clip_tree, const TransformTree& transform_tree) {
       parent_combined_clip_in_target_space = MathUtil::ProjectClippedRect(
           parent_to_current,
           parent_clip_node->data.combined_clip_in_target_space);
+    }
+
+    // Only nodes affected by ancestor clips will have their clip adjusted due
+    // to intersecting with an ancestor clip. But, we still need to propagate
+    // the combined clip to our children because if they are clipped, they may
+    // need to clip using our parent clip and if we don't propagate it here,
+    // it will be lost.
+    if (clip_node->data.resets_clip) {
+      if (clip_node->data.applies_local_clip) {
+        clip_node->data.clip_in_target_space = MathUtil::MapClippedRect(
+            transform_node->data.to_target, clip_node->data.clip);
+        clip_node->data.combined_clip_in_target_space =
+            gfx::IntersectRects(clip_node->data.clip_in_target_space,
+                                parent_combined_clip_in_target_space);
+      } else {
+        DCHECK(!clip_node->data.target_is_clipped);
+        DCHECK(!clip_node->data.layers_are_clipped);
+        clip_node->data.combined_clip_in_target_space =
+            parent_combined_clip_in_target_space;
+      }
+      continue;
     }
 
     bool use_only_parent_clip = !clip_node->data.applies_local_clip;
@@ -513,13 +525,8 @@ void ComputeClips(ClipTree* clip_tree, const TransformTree& transform_tree) {
         clip_node->data.clip_in_target_space = source_clip_in_target_space;
       }
 
-      if (clip_node->data.layer_visibility_uses_only_local_clip) {
-        clip_node->data.combined_clip_in_target_space =
-            source_clip_in_target_space;
-      } else {
-        clip_node->data.combined_clip_in_target_space = gfx::IntersectRects(
-            parent_combined_clip_in_target_space, source_clip_in_target_space);
-      }
+      clip_node->data.combined_clip_in_target_space = gfx::IntersectRects(
+          parent_combined_clip_in_target_space, source_clip_in_target_space);
     }
   }
   clip_tree->set_needs_update(false);

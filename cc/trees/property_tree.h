@@ -186,10 +186,6 @@ struct CC_EXPORT ClipNodeData {
   // nodes.
   bool layer_clipping_uses_only_local_clip : 1;
 
-  // When true, |combined_clip_in_target_space| does not include clips from
-  // ancestor nodes.
-  bool layer_visibility_uses_only_local_clip : 1;
-
   // True if target surface needs to be drawn with a clip applied.
   bool target_is_clipped : 1;
 

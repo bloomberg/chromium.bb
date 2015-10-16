@@ -104,7 +104,6 @@ ClipNodeData::ClipNodeData()
       target_id(-1),
       applies_local_clip(true),
       layer_clipping_uses_only_local_clip(false),
-      layer_visibility_uses_only_local_clip(false),
       target_is_clipped(false),
       layers_are_clipped(false),
       resets_clip(false) {}
