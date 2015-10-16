@@ -55,24 +55,25 @@ class ContextMenuBrowserTest : public InProcessBrowserTest {
  protected:
   scoped_ptr<TestRenderViewContextMenu> CreateContextMenuMediaTypeNone(
       const GURL& unfiltered_url,
-      const GURL& url,
-      const base::string16& link_text) {
-    return CreateContextMenu(unfiltered_url, url, link_text,
-                             blink::WebContextMenuData::MediaTypeNone);
+      const GURL& url) {
+    return CreateContextMenu(unfiltered_url, url, base::string16(),
+                             blink::WebContextMenuData::MediaTypeNone,
+                             ui::MENU_SOURCE_NONE);
   }
 
   scoped_ptr<TestRenderViewContextMenu> CreateContextMenuMediaTypeImage(
       const GURL& url) {
     return CreateContextMenu(GURL(), url, base::string16(),
-                             blink::WebContextMenuData::MediaTypeImage);
+                             blink::WebContextMenuData::MediaTypeImage,
+                             ui::MENU_SOURCE_NONE);
   }
 
- private:
   scoped_ptr<TestRenderViewContextMenu> CreateContextMenu(
       const GURL& unfiltered_url,
       const GURL& url,
       const base::string16& link_text,
-      blink::WebContextMenuData::MediaType media_type) {
+      blink::WebContextMenuData::MediaType media_type,
+      ui::MenuSourceType source_type) {
     content::ContextMenuParams params;
     params.media_type = media_type;
     params.unfiltered_link_url = unfiltered_url;
@@ -82,6 +83,7 @@ class ContextMenuBrowserTest : public InProcessBrowserTest {
     WebContents* web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
     params.page_url = web_contents->GetController().GetActiveEntry()->GetURL();
+    params.source_type = source_type;
 #if defined(OS_MACOSX)
     params.writing_direction_default = 0;
     params.writing_direction_left_to_right = 0;
@@ -97,28 +99,24 @@ class ContextMenuBrowserTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
                        OpenEntryPresentForNormalURLs) {
   scoped_ptr<TestRenderViewContextMenu> menu = CreateContextMenuMediaTypeNone(
-      GURL("http://www.google.com/"), GURL("http://www.google.com/"),
-      base::ASCIIToUTF16("Google"));
+      GURL("http://www.google.com/"), GURL("http://www.google.com/"));
 
   ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKNEWTAB));
   ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW));
   ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_COPYLINKLOCATION));
-  ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_COPYLINKTEXT));
 }
 
 IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
                        OpenEntryAbsentForFilteredURLs) {
-  scoped_ptr<TestRenderViewContextMenu> menu = CreateContextMenuMediaTypeNone(
-      GURL("chrome://history"), GURL(), base::ASCIIToUTF16("History"));
+  scoped_ptr<TestRenderViewContextMenu> menu =
+      CreateContextMenuMediaTypeNone(GURL("chrome://history"), GURL());
 
   ASSERT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKNEWTAB));
   ASSERT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW));
   ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_COPYLINKLOCATION));
-  ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_COPYLINKTEXT));
 }
 
-IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
-                       ContextMenuForCanvas) {
+IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, ContextMenuForCanvas) {
   content::ContextMenuParams params;
   params.media_type = blink::WebContextMenuData::MediaTypeCanvas;
 
@@ -129,6 +127,42 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
 
   ASSERT_TRUE(menu.IsItemPresent(IDC_CONTENT_CONTEXT_SAVEIMAGEAS));
   ASSERT_TRUE(menu.IsItemPresent(IDC_CONTENT_CONTEXT_COPYIMAGE));
+}
+
+IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, CopyLinkTextMouse) {
+  scoped_ptr<TestRenderViewContextMenu> menu = CreateContextMenu(
+      GURL("http://www.google.com/"), GURL("http://www.google.com/"),
+      base::ASCIIToUTF16("Google"), blink::WebContextMenuData::MediaTypeNone,
+      ui::MENU_SOURCE_MOUSE);
+
+  ASSERT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_COPYLINKTEXT));
+}
+
+IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, CopyLinkTextTouchNoText) {
+  scoped_ptr<TestRenderViewContextMenu> menu = CreateContextMenu(
+      GURL("http://www.google.com/"), GURL("http://www.google.com/"),
+      base::ASCIIToUTF16(""), blink::WebContextMenuData::MediaTypeNone,
+      ui::MENU_SOURCE_TOUCH);
+
+  ASSERT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_COPYLINKTEXT));
+}
+
+IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, CopyLinkTextTouchTextOnly) {
+  scoped_ptr<TestRenderViewContextMenu> menu = CreateContextMenu(
+      GURL("http://www.google.com/"), GURL("http://www.google.com/"),
+      base::ASCIIToUTF16("Google"), blink::WebContextMenuData::MediaTypeNone,
+      ui::MENU_SOURCE_TOUCH);
+
+  ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_COPYLINKTEXT));
+}
+
+IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, CopyLinkTextTouchTextImage) {
+  scoped_ptr<TestRenderViewContextMenu> menu = CreateContextMenu(
+      GURL("http://www.google.com/"), GURL("http://www.google.com/"),
+      base::ASCIIToUTF16("Google"), blink::WebContextMenuData::MediaTypeImage,
+      ui::MENU_SOURCE_TOUCH);
+
+  ASSERT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_COPYLINKTEXT));
 }
 
 // Opens a link in a new tab via a "real" context menu.

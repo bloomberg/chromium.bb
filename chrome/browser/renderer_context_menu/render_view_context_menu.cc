@@ -819,7 +819,9 @@ void RenderViewContextMenu::AppendLinkItems() {
           IDS_CONTENT_CONTEXT_COPYEMAILADDRESS :
           IDS_CONTENT_CONTEXT_COPYLINKLOCATION);
 
-  if (!params_.link_text.empty()) {
+  if (params_.source_type == ui::MENU_SOURCE_TOUCH &&
+      params_.media_type != WebContextMenuData::MediaTypeImage &&
+      !params_.link_text.empty()) {
     menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_COPYLINKTEXT,
                                     IDS_CONTENT_CONTEXT_COPYLINKTEXT);
   }
@@ -1224,7 +1226,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
       return params_.unfiltered_link_url.is_valid();
 
     case IDC_CONTENT_CONTEXT_COPYLINKTEXT:
-      return !params_.link_text.empty();
+      return true;
 
     case IDC_CONTENT_CONTEXT_SAVELINKAS: {
       PrefService* local_state = g_browser_process->local_state();
