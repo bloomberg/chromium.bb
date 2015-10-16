@@ -322,5 +322,10 @@ var ENTRIES = {
   zipArchive: new TestEntryInfo(
       EntryType.FILE, 'archive.zip', 'archive.zip',
       'application/x-zip', SharedOption.NONE, 'Jan 1, 2014, 1:00 AM',
-      'archive.zip', '533 bytes', 'Zip archive')
+      'archive.zip', '533 bytes', 'Zip archive'),
+
+  hiddenFile: new TestEntryInfo(
+    EntryType.FILE, 'text.txt', '.hiddenfile.txt',
+    'text/plain', SharedOption.NONE, 'Sep 30, 2014, 3:30 PM',
+    '.hiddenfile.txt', '51 bytes', 'Plain text')
 };

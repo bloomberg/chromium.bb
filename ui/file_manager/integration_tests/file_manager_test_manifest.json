@@ -20,6 +20,7 @@
       "file_manager/file_dialog.js",
       "file_manager/file_display.js",
       "file_manager/folder_shortcuts.js",
+      "file_manager/gear_menu.js",
       "file_manager/grid_view.js",
       "file_manager/keyboard_operations.js",
       "file_manager/open_audio_files.js",
