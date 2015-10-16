@@ -12,7 +12,7 @@ pre-built copy of Chromium (or Chrome) installed on your development computer.
 ## Obtain API keys
 
 Before you can compile the code, you must obtain an API key to allow it to
-access the federated Chromoting API.
+access the federated Chrome Remote Desktop API.
 
 1.  Join the chromium-dev list, which can be found at
     https://groups.google.com/a/chromium.org/forum/#!forum/chromium-dev. (This
@@ -20,30 +20,15 @@ access the federated Chromoting API.
 1.  Visit the Google APIs console at https://code.google.com/apis/console.
     1.  Use the `API Project` dropdown to create a new project with a name of
         your choice.
-    1.  On the `Services` page, click the button to activate the
-        `Chrome Remote Desktop API`, and accept the license agreements that
-        appear.
-    1.  On the `API Access` page, select the option to create an
-        `OAuth2 client ID`, and supply a product name of your choice.
-    1.  Choose the `Web application` type, then click more options.
-    1.  Replace the contents of `Authorized Redirect URLs` with:
-        `https://chromoting-oauth.talkgadget.google.com/talkgadget/oauth/chrome-remote-desktop/dev`
-    1.  Clear the `Authorized JavaScript Origins` field and click the button to
-        finish creating the client ID.
-1.  Create a file `~/.gyp/include.gypi` according to the following format:
-
-```
-{
-  'variables': {
-    'google_api_key': '<API key, listed under Simple API Access in the console>',
-    'google_default_client_id': '<Client ID, listed under Client ID for web applications>',
-    'google_default_client_secret': '<Client secret, listed under Client ID for web applications>',
-  },
-}
-```
-
-(NB: Replace the text in angled braces according the the instructions between
-them.)
+    1.  Click on `APIs & Auth > APIs`.
+    1.  Search for `Chrome Remote Desktop API`.
+    1.  Click on the `Chrome Remote Desktop API` search result.
+    1.  Click on `Enable API`.
+    1.  Click on `APIs & Auth > Credentials`.
+    1.  Click on `Add Credentials`.
+    1.  Choose `OAuth 2.0 client ID`.
+    1.  Choose `Chrome App`.
+    1.  Under application id, enter `ljacajndfccfgnfohlgkdphmbnpkjflk`.
 
 ## Obtain Chromium code
 
@@ -91,7 +76,7 @@ using the browser extension, you must also compile the latter from source.
 Otherwise, the package signing keys will not match and the Web app's OAuth2
 token will not be valid within the host process.)
 
-## Build and install the browser extension
+## Build and install the Chrome packaged app
 
 The Web app is the Chromoting system's main user interface, and allows you to
 connect to existing hosts as well as set up the host process on the machine
@@ -104,16 +89,15 @@ as an extension.
     angled braces.):
 
     ```shell
-    $ GOOGLE_API_KEY=<API key> GOOGLE_CLIENT_ID_REMOTING=<client ID> \
-    GOOGLE_CLIENT_SECRET_REMOTING=<client secret> \
+    $ GOOGLE_CLIENT_ID_REMOTING_IDENTITY_API=<client id> \
     ninja -C out/Release remoting_webapp
-    ````
+    ```
 
 1.  Install the extension into your Chromium (or Chrome) browser:
     1.  Visit the settings page [chrome://extensions].
     1.  If it is unchecked, tick the `Developer mode` box.
     1.  Click `Load unpacked extension...`, then navigate to
-        `out/Release/remoting/remoting.webapp/` within your code checkout.
+        `out/Release/remoting/remoting.webapp.v2/` within your code checkout.
     1.  Confirm the installation, open a new tab, and click the new app's
         Chromoting icon.
     1.  Complete the account authorization step, signing into your Google
