@@ -6,13 +6,6 @@
       description("Test Battery Status API callback in WebView");
       window.jsTestIsAsync = true;
 
-      function isInteger(value) {
-        if ((undefined === value) || (null === value)) {
-          return false;
-        }
-        return value % 1 == 0;
-      }
-
       var battery;
       function batteryStatusSuccess(batteryManager) {
         debug('batteryStatusSuccess invoked');
@@ -22,7 +15,7 @@
         shouldBeGreaterThanOrEqual('battery.level', '0');
         shouldBeLessThanOrEqual('battery.level', '1');
         // Check that level has at most 2 significant digits
-        shouldBeTrue('isInteger(battery.level * 100)');
+        shouldBeTrue('battery.level.toPrecision(2) === battery.level.toString()');
         shouldBeTrue('!battery.charging || battery.dischargingTime === Infinity');
         shouldBeTrue('battery.charging || battery.chargingTime === Infinity');
         finishJSTest();
