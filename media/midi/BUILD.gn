@@ -179,6 +179,7 @@ test("midi_unittests") {
   ]
 
   if (is_android) {
+    apk_deps = [ ":midi_java" ]
     isolate_file = "midi_unittests.isolate"
   }
 
