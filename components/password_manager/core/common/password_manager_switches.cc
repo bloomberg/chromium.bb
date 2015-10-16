@@ -23,10 +23,6 @@ const char kDisableDropSyncCredential[] = "disable-drop-sync-credential";
 // Disable both saving and filling for the sync signin form.
 const char kDisableManagerForSyncSignin[] = "disable-manager-for-sync-signin";
 
-// Disable the link in the password manager settings page that points to account
-// central.
-const char kDisablePasswordLink[] = "disable-password-link";
-
 // Disallow autofilling of the sync credential.
 const char kDisallowAutofillSyncCredential[] =
     "disallow-autofill-sync-credential";
@@ -61,10 +57,6 @@ const char kEnablePasswordChangeSupport[] = "enable-password-change-support";
 // Enable a context menu item in the password field that allows the user
 // to manually enforce saving of their password.
 const char kEnablePasswordForceSaving[] = "enable-password-force-saving";
-
-// Enable the link in the password manager settings page that points to account
-// central.
-const char kEnablePasswordLink[] = "enable-password-link";
 
 }  // namespace switches
 

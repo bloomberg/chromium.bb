@@ -21,8 +21,7 @@ PasswordsPrivateCanPasswordAccountBeManagedFunction::
 
 ExtensionFunction::ResponseAction
     PasswordsPrivateCanPasswordAccountBeManagedFunction::Run() {
-  scoped_ptr<base::FundamentalValue> visible(new base::FundamentalValue(
-      password_manager::ManageAccountLinkExperimentEnabled()));
+  scoped_ptr<base::FundamentalValue> visible(new base::FundamentalValue(true));
   return RespondNow(OneArgument(visible.Pass()));
 }
 

@@ -147,13 +147,6 @@ void PasswordManagerHandler::InitializeHandler() {
   password_manager_presenter_.Initialize();
 }
 
-void PasswordManagerHandler::InitializePage() {
-  base::FundamentalValue visible(
-      password_manager::ManageAccountLinkExperimentEnabled());
-  web_ui()->CallJavascriptFunction(
-      "PasswordManager.setManageAccountLinkVisibility", visible);
-}
-
 void PasswordManagerHandler::HandleRemoveSavedPassword(
     const base::ListValue* args) {
   std::string string_value = base::UTF16ToUTF8(ExtractStringValue(args));

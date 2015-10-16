@@ -25,7 +25,6 @@ class PasswordManagerHandler : public OptionsPageUIHandler,
   // OptionsPageUIHandler implementation.
   void GetLocalizedValues(base::DictionaryValue* localized_strings) override;
   void InitializeHandler() override;
-  void InitializePage() override;
   void RegisterMessages() override;
 
   // PasswordUIView implementation.

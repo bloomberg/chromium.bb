@@ -1104,13 +1104,6 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_ENABLE_PASSWORD_FORCE_SAVING_DESCRIPTION,
      kOsAll,
      SINGLE_VALUE_TYPE(password_manager::switches::kEnablePasswordForceSaving)},
-    {"enable-password-link",
-     IDS_FLAGS_PASSWORD_MANAGER_LINK_NAME,
-     IDS_FLAGS_PASSWORD_MANAGER_LINK_DESCRIPTION,
-     kOsAndroid | kOsDesktop,
-     ENABLE_DISABLE_VALUE_TYPE(
-         password_manager::switches::kEnablePasswordLink,
-         password_manager::switches::kDisablePasswordLink)},
     {"enable-affiliation-based-matching",
      IDS_FLAGS_ENABLE_AFFILIATION_BASED_MATCHING_NAME,
      IDS_FLAGS_ENABLE_AFFILIATION_BASED_MATCHING_DESCRIPTION,

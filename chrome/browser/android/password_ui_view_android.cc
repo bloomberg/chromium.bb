@@ -117,11 +117,6 @@ ScopedJavaLocalRef<jstring> GetAccountDashboardURL(
                                  chrome::kPasswordManagerAccountDashboardURL);
 }
 
-static jboolean ShouldDisplayManageAccountLink(JNIEnv* env,
-                                               const JavaParamRef<jclass>&) {
-  return password_manager::ManageAccountLinkExperimentEnabled();
-}
-
 static jboolean ShouldUseSmartLockBranding(JNIEnv* env,
                                            const JavaParamRef<jclass>&) {
   const ProfileSyncService* sync_service =
