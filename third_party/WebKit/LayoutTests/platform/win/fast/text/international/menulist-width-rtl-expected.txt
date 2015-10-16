@@ -1,0 +1,17 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x69
+  LayoutBlockFlow {HTML} at (0,0) size 800x69
+    LayoutBlockFlow {BODY} at (8,8) size 784x53
+      LayoutBlockFlow {DIV} at (0,0) size 784x18
+        LayoutText {#text} at (0,0) size 632x17
+          text run at (0,0) width 632: "The following line and the SELECT element should have same text, and no characters are lacking."
+      LayoutBlockFlow {DIV} at (0,18) size 784x16
+        LayoutText {#text} at (683,0) size 101x16
+          text run at (683,0) width 101 RTL: "\x{627}\x{644}\x{627}\x{642}\x{62A}\x{631}\x{627}\x{62D}\x{627}\x{62A} / \x{627}\x{644}\x{634}\x{643}\x{627}\x{648}\x{64A}"
+      LayoutBlockFlow (anonymous) at (0,34) size 784x19
+        LayoutMenuList {SELECT} at (664,0) size 120x19 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+          LayoutBlockFlow (anonymous) at (1,1) size 118x17
+            LayoutText (anonymous) at (19,1) size 95x15
+              text run at (19,1) width 95 RTL: "\x{627}\x{644}\x{627}\x{642}\x{62A}\x{631}\x{627}\x{62D}\x{627}\x{62A} / \x{627}\x{644}\x{634}\x{643}\x{627}\x{648}\x{64A}"
+        LayoutText {#text} at (0,0) size 0x0
