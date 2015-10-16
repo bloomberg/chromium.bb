@@ -1247,6 +1247,7 @@ interface Element
     getter shadowRoot
     getter tagName
     method animate
+    method attachShadow
     method closest
     method constructor
     method createShadowRoot

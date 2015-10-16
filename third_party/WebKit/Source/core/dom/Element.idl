@@ -70,7 +70,7 @@ enum NativeScrollBehavior { "disable-native-scroll", "perform-before-native-scro
     // Shadow DOM
     // http://w3c.github.io/webcomponents/spec/shadow/#extensions-to-element-interface
     [RaisesException, CallWith=ScriptState, MeasureAs=ElementCreateShadowRoot] ShadowRoot createShadowRoot();
-    [RuntimeEnabled=ShadowDOMV1, RaisesException, CallWith=ScriptState, MeasureAs=ElementCreateShadowRoot] ShadowRoot createShadowRoot(ShadowRootInit shadowRootInitDict);
+    [RuntimeEnabled=ShadowDOMV1, RaisesException, CallWith=ScriptState, MeasureAs=ElementAttachShadow] ShadowRoot attachShadow(ShadowRootInit shadowRootInitDict);
     NodeList getDestinationInsertionPoints();
     [PerWorldBindings, ImplementedAs=openShadowRoot] readonly attribute ShadowRoot? shadowRoot;
 

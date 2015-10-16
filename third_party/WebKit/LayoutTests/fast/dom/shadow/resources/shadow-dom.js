@@ -1,3 +1,4 @@
+// TODO(hayato): Have both createShadowRoot and attachShadow.
 function createShadowRoot()
 {
     var children = Array.prototype.slice.call(arguments);
@@ -41,7 +42,7 @@ function createDOM(tagName, attributes)
                 shadowRoot = window.internals.createUserAgentShadowRoot(element);
             } else {
                 if (child.parameter && Object.keys(child.parameter).length > 0)
-                    shadowRoot = element.createShadowRoot(child.parameter);
+                    shadowRoot = element.attachShadow(child.parameter);
                 else
                     shadowRoot = element.createShadowRoot();
             }

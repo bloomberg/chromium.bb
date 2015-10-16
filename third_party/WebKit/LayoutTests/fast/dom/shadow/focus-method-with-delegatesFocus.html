@@ -29,7 +29,7 @@ function registerShadow(templateId, tagName) {
     var proto = Object.create(HTMLElement.prototype);
     proto.createdCallback = function() {
         var delegatesFocus = this.hasAttribute('delegatesFocus');
-        this.createShadowRoot({'delegatesFocus': delegatesFocus}).appendChild(
+        this.attachShadow({'delegatesFocus': delegatesFocus}).appendChild(
             document.importNode(template.content, true));
     };
     document.registerElement(tagName, { prototype: proto });

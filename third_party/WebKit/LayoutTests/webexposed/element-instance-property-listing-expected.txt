@@ -28,6 +28,7 @@ namespace http://www.w3.org/1999/xhtml
     property addEventListener
     property animate
     property appendChild
+    property attachShadow
     property attributes
     property baseURI
     property blur
@@ -1115,6 +1116,7 @@ namespace http://www.w3.org/2000/svg
     property addEventListener
     property animate
     property appendChild
+    property attachShadow
     property attributes
     property baseURI
     property blur

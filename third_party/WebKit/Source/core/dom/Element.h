@@ -329,7 +329,7 @@ public:
     // shadow roots is prohibited in any combination and throws an exception. Multiple shadow roots
     // are allowed only when createShadowRoot() is used without any parameters from JavaScript.
     PassRefPtrWillBeRawPtr<ShadowRoot> createShadowRoot(const ScriptState*, ExceptionState&);
-    PassRefPtrWillBeRawPtr<ShadowRoot> createShadowRoot(const ScriptState*, const ShadowRootInit&, ExceptionState&);
+    PassRefPtrWillBeRawPtr<ShadowRoot> attachShadow(const ScriptState*, const ShadowRootInit&, ExceptionState&);
     PassRefPtrWillBeRawPtr<ShadowRoot> createShadowRootInternal(ShadowRootType, ExceptionState&);
 
     ShadowRoot* openShadowRoot() const;

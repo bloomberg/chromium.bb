@@ -10,7 +10,7 @@ function loaded()
     var template = document.querySelector("#tmpl");
     var root = document.querySelector("#host").createShadowRoot();
     root.appendChild(template.content.cloneNode(true));
-    var rootClosed = document.querySelector("#hostClosed").createShadowRoot({mode: 'closed'});
+    var rootClosed = document.querySelector("#hostClosed").attachShadow({mode: 'closed'});
     rootClosed.appendChild(template.content.cloneNode(true));
     runTest();
 }

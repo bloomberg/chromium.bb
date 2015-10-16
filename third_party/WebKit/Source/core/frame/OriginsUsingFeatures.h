@@ -34,6 +34,7 @@ public:
         GeolocationInsecureOrigin,
         GetUserMediaInsecureOrigin,
         GetUserMediaSecureOrigin,
+        ElementAttachShadow,
 
         NumberOfFeatures // This must be the last item.
     };

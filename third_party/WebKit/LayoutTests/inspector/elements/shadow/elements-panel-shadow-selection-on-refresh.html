@@ -115,7 +115,7 @@ Tests that elements panel preserves selected shadow DOM node on page refresh.
 <script>
 var root = document.getElementById("hostElement").createShadowRoot();
 root.innerHTML = "<input type='text'>";
-var closedRoot = document.getElementById("closedHostElement").createShadowRoot({mode: 'closed'});
+var closedRoot = document.getElementById("closedHostElement").attachShadow({mode: 'closed'});
 closedRoot.innerHTML = "<button></button>";
 </script>
 </body>

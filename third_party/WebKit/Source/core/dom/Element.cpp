@@ -1918,12 +1918,11 @@ PassRefPtrWillBeRawPtr<ShadowRoot> Element::createShadowRoot(const ScriptState* 
     return createShadowRootInternal(ShadowRootType::OpenByDefault, exceptionState);
 }
 
-PassRefPtrWillBeRawPtr<ShadowRoot> Element::createShadowRoot(const ScriptState* scriptState, const ShadowRootInit& shadowRootInitDict, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<ShadowRoot> Element::attachShadow(const ScriptState* scriptState, const ShadowRootInit& shadowRootInitDict, ExceptionState& exceptionState)
 {
     ASSERT(RuntimeEnabledFeatures::shadowDOMV1Enabled());
-    UseCounter::count(document(), UseCounter::ElementCreateShadowRootWithParameter);
 
-    OriginsUsingFeatures::countMainWorldOnly(scriptState, document(), OriginsUsingFeatures::Feature::ElementCreateShadowRoot);
+    OriginsUsingFeatures::countMainWorldOnly(scriptState, document(), OriginsUsingFeatures::Feature::ElementAttachShadow);
 
     if (shadowRootInitDict.hasMode() && shadowRoot()) {
         exceptionState.throwDOMException(InvalidStateError, "Shadow root cannot be created on a host which already hosts a shadow tree.");
@@ -1939,9 +1938,9 @@ PassRefPtrWillBeRawPtr<ShadowRoot> Element::createShadowRoot(const ScriptState* 
             exceptionState.throwDOMException(NotSupportedError, "Closed shadow root is not supported yet.");
             return nullptr;
         }
-        UseCounter::count(document(), UseCounter::ElementCreateShadowRootClosed);
+        UseCounter::count(document(), UseCounter::ElementAttachShadowClosed);
     } else if (type == ShadowRootType::Open) {
-        UseCounter::count(document(), UseCounter::ElementCreateShadowRootOpen);
+        UseCounter::count(document(), UseCounter::ElementAttachShadowOpen);
     }
 
     RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = createShadowRootInternal(type, exceptionState);

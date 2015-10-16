@@ -5,37 +5,32 @@ This tests multiple shadow roots creation with createShadowRoot and mode paramet
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-(1/1) For compatibility, no parameter createShadowRoot() can still create multiple shadow roots.
+createShadowRoot() can still create multiple shadow roots.
 PASS internals.shadowRootType(shadow1) is "OpenByDefaultShadowRoot"
 PASS internals.shadowRootType(shadow2) is "OpenByDefaultShadowRoot"
 PASS internals.youngestShadowRoot(div) is shadow2
 PASS shadow2.olderShadowRoot is shadow1
-(2/2) createShadowRoot({mode:"open"}) cannot create multiple shadow roots
+Other attempts to create multiple shadow roots should fail
 PASS internals.shadowRootType(shadow1) is "OpenByDefaultShadowRoot"
-PASS div.createShadowRoot({mode: "open"}) threw exception InvalidStateError: Failed to execute 'createShadowRoot' on 'Element': Shadow root cannot be created on a host which already hosts a shadow tree..
+PASS div.attachShadow({mode: "open"}) threw exception InvalidStateError: Failed to execute 'attachShadow' on 'Element': Shadow root cannot be created on a host which already hosts a shadow tree..
+PASS div.attachShadow({mode: "closed"}) threw exception InvalidStateError: Failed to execute 'attachShadow' on 'Element': Shadow root cannot be created on a host which already hosts a shadow tree..
 PASS internals.youngestShadowRoot(div) is shadow1
-(3/3) createShadowRoot() cannot create multiple shadow roots on shadow root with explicit open parameter.
 PASS internals.shadowRootType(shadow1) is "OpenShadowRoot"
 PASS div.createShadowRoot() threw exception InvalidStateError: Failed to execute 'createShadowRoot' on 'Element': Shadow root cannot be created on a host which already hosts this type of shadow tree..
+PASS div.attachShadow({mode: "open"}) threw exception InvalidStateError: Failed to execute 'attachShadow' on 'Element': Shadow root cannot be created on a host which already hosts a shadow tree..
+PASS div.attachShadow({mode: "closed"}) threw exception InvalidStateError: Failed to execute 'attachShadow' on 'Element': Shadow root cannot be created on a host which already hosts a shadow tree..
 PASS internals.youngestShadowRoot(div) is shadow1
-(4/4) closed shadow root cannot be created on any open shadow roots
-PASS internals.shadowRootType(shadow1) is "OpenByDefaultShadowRoot"
-PASS div.createShadowRoot({mode: "closed"}) threw exception InvalidStateError: Failed to execute 'createShadowRoot' on 'Element': Shadow root cannot be created on a host which already hosts a shadow tree..
-PASS internals.youngestShadowRoot(div) is shadow1
-PASS internals.shadowRootType(shadow1) is "OpenShadowRoot"
-PASS div.createShadowRoot({mode: "closed"}) threw exception InvalidStateError: Failed to execute 'createShadowRoot' on 'Element': Shadow root cannot be created on a host which already hosts a shadow tree..
-PASS internals.youngestShadowRoot(div) is shadow1
-(5/5) any shadow root cannot be created on closed shadow root
 PASS internals.shadowRootType(shadow1) is "ClosedShadowRoot"
 PASS div.createShadowRoot() threw exception InvalidStateError: Failed to execute 'createShadowRoot' on 'Element': Shadow root cannot be created on a host which already hosts this type of shadow tree..
-PASS div.createShadowRoot({mode: "open"}) threw exception InvalidStateError: Failed to execute 'createShadowRoot' on 'Element': Shadow root cannot be created on a host which already hosts a shadow tree..
-PASS div.createShadowRoot({mode: "closed"}) threw exception InvalidStateError: Failed to execute 'createShadowRoot' on 'Element': Shadow root cannot be created on a host which already hosts a shadow tree..
-(6/6) explicitly open/closed shadow root cannot be created on UA shadow root
+PASS div.attachShadow({mode: "open"}) threw exception InvalidStateError: Failed to execute 'attachShadow' on 'Element': Shadow root cannot be created on a host which already hosts a shadow tree..
+PASS div.attachShadow({mode: "closed"}) threw exception InvalidStateError: Failed to execute 'attachShadow' on 'Element': Shadow root cannot be created on a host which already hosts a shadow tree..
+PASS internals.youngestShadowRoot(div) is shadow1
+V1 shadow root cannot be created on UA shadow root
 PASS internals.shadowRootType(internals.shadowRoot(input)) is "UserAgentShadowRoot"
 PASS internals.youngestShadowRoot(input) is shadow1
 PASS internals.shadowRootType(shadow1) is "OpenByDefaultShadowRoot"
-PASS input.createShadowRoot({mode: "open"}) threw exception InvalidStateError: Failed to execute 'createShadowRoot' on 'Element': Shadow root cannot be created on a host which already hosts a shadow tree..
-PASS input.createShadowRoot({mode: "closed"}) threw exception InvalidStateError: Failed to execute 'createShadowRoot' on 'Element': Shadow root cannot be created on a host which already hosts a shadow tree..
+PASS input.attachShadow({mode: "open"}) threw exception InvalidStateError: Failed to execute 'attachShadow' on 'Element': Shadow root cannot be created on a host which already hosts a shadow tree..
+PASS input.attachShadow({mode: "closed"}) threw exception InvalidStateError: Failed to execute 'attachShadow' on 'Element': Shadow root cannot be created on a host which already hosts a shadow tree..
 PASS successfullyParsed is true
 
 TEST COMPLETE

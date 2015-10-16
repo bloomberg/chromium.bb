@@ -1,15 +1,15 @@
-Create open shadow root.
+Attach open shadow root.
 PASS [object ShadowRoot] is non-null.
-Create closed shadow root.
+Attach closed shadow root.
 PASS host2.createShadowRoot({mode: 'closed'}) is non-null.
 Create shadow root with empty parameter.
 PASS [object ShadowRoot] is non-null.
-Create shadow root whose mode is neither open nor closed.
-PASS host4.createShadowRoot({mode: 'illegal'}) threw exception TypeError: Failed to execute 'createShadowRoot' on 'Element': The provided value 'illegal' is not a valid enum value of type ShadowRootMode..
-Create open shadow root with shadow-dom.js utility.
+Attach shadow root whose mode is neither open nor closed.
+PASS host4.attachShadow({mode: 'illegal'}) threw exception TypeError: Failed to execute 'attachShadow' on 'Element': The provided value 'illegal' is not a valid enum value of type ShadowRootMode..
+Attach open shadow root with shadow-dom.js utility.
 PASS [object ShadowRoot] is non-null.
-Create shadow root on already shadowed host will raise InvalidStateError exception.
-PASS host1.createShadowRoot({mode: 'open'}) threw exception InvalidStateError: Failed to execute 'createShadowRoot' on 'Element': Shadow root cannot be created on a host which already hosts a shadow tree..
+Attach shadow root on already shadowed host will raise InvalidStateError exception.
+PASS host1.attachShadow({mode: 'open'}) threw exception InvalidStateError: Failed to execute 'attachShadow' on 'Element': Shadow root cannot be created on a host which already hosts a shadow tree..
 PASS successfullyParsed is true
 
 TEST COMPLETE
