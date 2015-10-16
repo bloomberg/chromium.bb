@@ -365,7 +365,7 @@ cmd_touch = touch $@
 
 quiet_cmd_copy = COPY $@
 # send stderr to /dev/null to ignore messages when linking directories.
-cmd_copy = ln -f "$<" "$@" 2>/dev/null || (rm -rf "$@" && cp -af "$<" "$@")
+cmd_copy = ln -f "$<" "$@" 2>/dev/null || (rm -rf "$@" && cp %(copy_archive_args)s "$<" "$@")
 
 %(link_commands)s
 """
@@ -2010,6 +2010,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
     srcdir_prefix = '$(srcdir)/'
 
   flock_command= 'flock'
+  copy_archive_arguments = '-af'
   header_params = {
       'default_target': default_target,
       'builddir': builddir_name,
@@ -2019,6 +2020,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
       'link_commands': LINK_COMMANDS_LINUX,
       'extra_commands': '',
       'srcdir': srcdir,
+      'copy_archive_args': copy_archive_arguments,
     }
   if flavor == 'mac':
     flock_command = './gyp-mac-tool flock'
@@ -2043,7 +2045,9 @@ def GenerateOutput(target_list, target_dicts, data, params):
         'flock': 'lockf',
     })
   elif flavor == 'aix':
+    copy_archive_arguments = '-pPRf'
     header_params.update({
+        'copy_archive_args': copy_archive_arguments,
         'link_commands': LINK_COMMANDS_AIX,
         'flock': './gyp-flock-tool flock',
         'flock_index': 2,
