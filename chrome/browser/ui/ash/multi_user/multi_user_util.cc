@@ -83,9 +83,11 @@ const std::string& GetCurrentUserId() {
 // Move the window to the current user's desktop.
 void MoveWindowToCurrentDesktop(aura::Window* window) {
 #if defined(OS_CHROMEOS)
-  chrome::MultiUserWindowManager::GetInstance()->ShowWindowForUser(
-      window,
-      GetCurrentUserId());
+  if (!chrome::MultiUserWindowManager::GetInstance()->IsWindowOnDesktopOfUser(
+          window, GetCurrentUserId())) {
+    chrome::MultiUserWindowManager::GetInstance()->ShowWindowForUser(
+      window, GetCurrentUserId());
+  }
 #endif
 }
 
