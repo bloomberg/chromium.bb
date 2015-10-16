@@ -113,6 +113,7 @@ void qcms_profile_release(qcms_profile *profile);
 qcms_bool qcms_profile_is_bogus(qcms_profile *profile);
 qcms_intent qcms_profile_get_rendering_intent(qcms_profile *profile);
 qcms_color_space qcms_profile_get_color_space(qcms_profile *profile);
+unsigned qcms_profile_get_version(qcms_profile *profile);
 
 qcms_bool qcms_profile_match(qcms_profile *p1, qcms_profile *p2);
 const char* qcms_profile_get_description(qcms_profile *profile);

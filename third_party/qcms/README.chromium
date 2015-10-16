@@ -109,8 +109,10 @@ The following changes have been made since qcms was imported:
    - https://code.google.com/p/chromium/issues/detail?id=506607
  - Expand QCMS tests. Add Munsell test for transform accuracy
    - https://code.google.com/p/chromium/issues/detail?id=532910
- - Compute RMS error from color error dE in the Munsell test 
+ - Compute RMS error from color error dE in the Munsell test
    - https://code.google.com/p/chromium/issues/detail?id=532910
+ - Store color profile version and add a version read API
+   - https://code.google.com/p/chromium/issues/detail?id=532258
 
 For the Chromium changes, since the import, in a patch format run:
   git diff b8456f38 src

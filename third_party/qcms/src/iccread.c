@@ -148,24 +148,29 @@ static void check_CMM_type_signature(struct mem_source *src)
 	//uint32_t CMM_type_signature = read_u32(src, 4);
 }
 
-static void check_profile_version(struct mem_source *src)
+static void read_profile_version(qcms_profile *profile, struct mem_source *src)
 {
-	/*
 	uint8_t major_revision = read_u8(src, 8 + 0);
 	uint8_t minor_revision = read_u8(src, 8 + 1);
-	*/
-	uint8_t reserved1      = read_u8(src, 8 + 2);
-	uint8_t reserved2      = read_u8(src, 8 + 3);
-	/* Checking the version doesn't buy us anything
-	if (major_revision != 0x4) {
-		if (major_revision > 0x2)
-			invalid_source(src, "Unsupported major revision");
-		if (minor_revision > 0x40)
-			invalid_source(src, "Unsupported minor revision");
-	}
-	*/
-	if (reserved1 != 0 || reserved2 != 0)
+	uint8_t reserved_byte1 = read_u8(src, 8 + 2);
+	uint8_t reserved_byte2 = read_u8(src, 8 + 3);
+
+	profile->icc_version = major_revision << 8 | minor_revision;
+
+	if (reserved_byte1 || reserved_byte2) {
 		invalid_source(src, "Invalid reserved bytes");
+		return;
+	}
+
+	if (major_revision == 2)
+		return; // ICC V2.X color profile
+	if (major_revision == 4 && qcms_supports_iccv4)
+		return; // ICC V4.X color profile
+
+	/* Checking the version doesn't buy us anything: permit any
+	   version without failure for now */
+	// invalid_source(src, "Unsupported ICC revision");
+	return;
 }
 
 #define INPUT_DEVICE_PROFILE   0x73636e72 // 'scnr'
@@ -1268,7 +1273,7 @@ qcms_profile* qcms_profile_from_memory(const void *mem, size_t size)
 		return NO_MEM_PROFILE;
 
 	check_CMM_type_signature(src);
-	check_profile_version(src);
+	read_profile_version(profile, src);
 	read_class_signature(profile, src);
 	read_rendering_intent(profile, src);
 	read_color_space(profile, src);
@@ -1384,6 +1389,11 @@ qcms_intent qcms_profile_get_rendering_intent(qcms_profile *profile)
 qcms_color_space qcms_profile_get_color_space(qcms_profile *profile)
 {
 	return profile->color_space;
+}
+
+unsigned qcms_profile_get_version(qcms_profile *profile)
+{
+	return profile->icc_version & 0xffff;
 }
 
 size_t qcms_profile_get_vcgt_channel_length(qcms_profile *profile)

@@ -1483,7 +1483,9 @@ void qcms_transform_data_type(qcms_transform *transform, void *src, void *dest, 
 	transform->transform_fn(transform, src, dest, length, type == QCMS_OUTPUT_BGRX ? output_bgrx : output_rgbx);
 }
 
-qcms_bool qcms_supports_iccv4;
+#define ENABLE_ICC_V4_PROFILE_SUPPORT false
+
+qcms_bool qcms_supports_iccv4 = ENABLE_ICC_V4_PROFILE_SUPPORT;
 
 void qcms_enable_iccv4()
 {
