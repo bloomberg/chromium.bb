@@ -48,31 +48,31 @@ layer at (0,0) size 785x2299 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (412,1) width 345: "This means that the lines of text within it should be separated"
           text run at (0,21) width 367: "by six pixels, three of which are part of the line-box of each line. "
           text run at (366,21) width 402: "Any images within the paragraph should increase the height of the line-"
-          text run at (0,223) width 266: "box so that they fit within the line box, such as "
-        LayoutImage {IMG} at (265.17,40) size 200x200
-        LayoutText {#text} at (465,223) size 28x17
-          text run at (465,223) width 28: " and "
-        LayoutImage {IMG} at (492.38,223) size 200x200
-        LayoutText {#text} at (692,223) size 769x218
-          text run at (692,223) width 8: ". "
-          text run at (699,223) width 39: "This is"
+          text run at (0,223) width 265: "box so that they fit within the line box, such as "
+        LayoutImage {IMG} at (264.41,40) size 200x200
+        LayoutText {#text} at (464,223) size 28x17
+          text run at (464,223) width 28: " and "
+        LayoutImage {IMG} at (491.61,223) size 200x200
+        LayoutText {#text} at (691,223) size 769x218
+          text run at (691,223) width 8: ". "
+          text run at (698,223) width 39: "This is"
           text run at (0,424) width 769: "additional text to make sure that there is enough room left below the image so that this line does not hit the image that is text-top aligned."
       LayoutBlockFlow {P} at (0,790) size 769x483
-        LayoutText {#text} at (0,1) size 759x199
+        LayoutText {#text} at (0,1) size 758x199
           text run at (0,1) width 413: "This paragraph should have a font size of 14px and a line height of 20px. "
           text run at (412,1) width 345: "This means that the lines of text within it should be separated"
           text run at (0,21) width 78: "by six pixels. "
-          text run at (77,21) width 682: "Any images within the paragraph should increase the height of the line-box so that they fit, including their padding (5px),"
+          text run at (77,21) width 681: "Any images within the paragraph should increase the height of the line-box so that they fit, including their padding (5px),"
           text run at (0,183) width 351: "border (10px) and margins (15px) within the line box, such as "
-        LayoutImage {IMG} at (365.70,55) size 130x130 [border: (10px solid #000000)]
+        LayoutImage {IMG} at (365.45,55) size 130x130 [border: (10px solid #000000)]
         LayoutText {#text} at (510,183) size 28x17
           text run at (510,183) width 28: " and "
-        LayoutImage {IMG} at (552.91,198) size 130x130 [border: (10px solid #000000)]
+        LayoutImage {IMG} at (552.66,198) size 130x130 [border: (10px solid #000000)]
         LayoutText {#text} at (697,183) size 769x257
           text run at (697,183) width 8: ". "
           text run at (704,183) width 39: "This is"
           text run at (0,344) width 769: "additional text to make sure that there is enough room left below the image so that this line does not hit the image that is text-top aligned."
-          text run at (0,364) width 735: "It is the outer edge of the margin that should be text-bottom and text-top aligned in this paragraph, so for the first image the bottom"
+          text run at (0,364) width 734: "It is the outer edge of the margin that should be text-bottom and text-top aligned in this paragraph, so for the first image the bottom"
           text run at (0,384) width 753: "border of the image should begin 15px above the bottom of the text, and for the second image the top border should begin 15px below"
           text run at (0,423) width 103: "the top of the text "
         LayoutImage {IMG} at (92.25,393) size 80x80 [border: (10px solid #000000)]
@@ -84,9 +84,9 @@ layer at (0,0) size 785x2299 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutTableSection {TBODY} at (1,1) size 767x994
           LayoutTableRow {TR} at (0,0) size 767x26
             LayoutTableCell {TD} at (0,0) size 767x26 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
-              LayoutInline {STRONG} at (0,0) size 163x18
-                LayoutText {#text} at (4,4) size 163x18
-                  text run at (4,4) width 163: "TABLE Testing Section"
+              LayoutInline {STRONG} at (0,0) size 161x18
+                LayoutText {#text} at (4,4) size 161x18
+                  text run at (4,4) width 161: "TABLE Testing Section"
           LayoutTableRow {TR} at (0,26) size 767x968
             LayoutTableCell {TD} at (0,497) size 12x26 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
               LayoutText {#text} at (4,4) size 4x18
@@ -98,10 +98,10 @@ layer at (0,0) size 785x2299 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   text run at (412,1) width 288: "This means that the lines of text within it should be"
                   text run at (0,21) width 423: "separated by six pixels, three of which are part of the line-box of each line. "
                   text run at (422,21) width 298: "Any images within the paragraph should increase the"
-                  text run at (0,223) width 366: "height of the line-box so that they fit within the line box, such as "
-                LayoutImage {IMG} at (365.09,40) size 200x200
-                LayoutText {#text} at (565,223) size 28x17
-                  text run at (565,223) width 28: " and "
+                  text run at (0,223) width 365: "height of the line-box so that they fit within the line box, such as "
+                LayoutImage {IMG} at (364.33,40) size 200x200
+                LayoutText {#text} at (564,223) size 28x17
+                  text run at (564,223) width 28: " and "
                 LayoutImage {IMG} at (0,243) size 200x200
                 LayoutText {#text} at (200,243) size 733x218
                   text run at (200,243) width 7: ". "
@@ -114,7 +114,7 @@ layer at (0,0) size 785x2299 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   text run at (0,21) width 135: "separated by six pixels. "
                   text run at (134,21) width 595: "Any images within the paragraph should increase the height of the line-box so that they fit, including their"
                   text run at (0,183) width 437: "padding (5px), border (10px) and margins (15px) within the line box, such as "
-                LayoutImage {IMG} at (451.63,55) size 130x130 [border: (10px solid #000000)]
+                LayoutImage {IMG} at (451.38,55) size 130x130 [border: (10px solid #000000)]
                 LayoutText {#text} at (596,183) size 28x17
                   text run at (596,183) width 28: " and "
                 LayoutImage {IMG} at (15,218) size 130x130 [border: (10px solid #000000)]
@@ -122,7 +122,7 @@ layer at (0,0) size 785x2299 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   text run at (160,203) width 7: ". "
                   text run at (167,203) width 580: "This is additional text to make sure that there is enough room left below the image so that this line does"
                   text run at (0,364) width 231: "not hit the image that is text-top aligned. "
-                  text run at (230,364) width 489: "It is the outer edge of the margin that should be text-bottom and text-top aligned in this"
+                  text run at (230,364) width 488: "It is the outer edge of the margin that should be text-bottom and text-top aligned in this"
                   text run at (0,384) width 735: "paragraph, so for the first image the bottom border of the image should begin 15px above the bottom of the text, and for the second"
                   text run at (0,423) width 367: "image the top border should begin 15px below the top of the text "
                 LayoutImage {IMG} at (356.64,393) size 80x80 [border: (10px solid #000000)]

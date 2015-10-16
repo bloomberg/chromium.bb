@@ -66,23 +66,23 @@ layer at (0,0) size 785x1257 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutText {#text} at (0,18) size 266x17
           text run at (0,18) width 266: "no matter where the lines might start, and"
         LayoutBR {BR} at (265,32) size 1x0
-        LayoutInline {EM} at (0,0) size 202x17
-          LayoutText {#text} at (0,36) size 202x17
-            text run at (0,36) width 202: "regardless of any other markup"
-        LayoutText {#text} at (201,36) size 149x17
-          text run at (201,36) width 149: " which may be present."
+        LayoutInline {EM} at (0,0) size 201x17
+          LayoutText {#text} at (0,36) size 201x17
+            text run at (0,36) width 201: "regardless of any other markup"
+        LayoutText {#text} at (200,36) size 149x17
+          text run at (200,36) width 149: " which may be present."
       LayoutBlockFlow {BLOCKQUOTE} at (40,653) size 689x54 [bgcolor=#00FFFF]
         LayoutText {#text} at (384,0) size 651x53
           text run at (384,0) width 229: "In the first half of the test page, this"
           text run at (0,18) width 651: "BLOCKQUOTE element should have a text indent equal to 50% of the BODY element's width, since"
-          text run at (0,36) width 515: "BLOCKQUOTE is a child of BODY; in the second half, it is a child of TABLE."
+          text run at (0,36) width 512: "BLOCKQUOTE is a child of BODY; in the second half, it is a child of TABLE."
       LayoutTable {TABLE} at (0,723) size 769x518 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 767x516
           LayoutTableRow {TR} at (0,0) size 767x26
             LayoutTableCell {TD} at (0,0) size 767x26 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
-              LayoutInline {STRONG} at (0,0) size 163x17
-                LayoutText {#text} at (4,4) size 163x17
-                  text run at (4,4) width 163: "TABLE Testing Section"
+              LayoutInline {STRONG} at (0,0) size 161x17
+                LayoutText {#text} at (4,4) size 161x17
+                  text run at (4,4) width 161: "TABLE Testing Section"
           LayoutTableRow {TR} at (0,26) size 767x490
             LayoutTableCell {TD} at (0,258) size 12x26 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
               LayoutText {#text} at (4,4) size 4x17
@@ -124,13 +124,13 @@ layer at (0,0) size 785x1257 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 LayoutText {#text} at (0,18) size 266x17
                   text run at (0,18) width 266: "no matter where the lines might start, and"
                 LayoutBR {BR} at (265,32) size 1x0
-                LayoutInline {EM} at (0,0) size 202x17
-                  LayoutText {#text} at (0,36) size 202x17
-                    text run at (0,36) width 202: "regardless of any other markup"
-                LayoutText {#text} at (201,36) size 149x17
-                  text run at (201,36) width 149: " which may be present."
+                LayoutInline {EM} at (0,0) size 201x17
+                  LayoutText {#text} at (0,36) size 201x17
+                    text run at (0,36) width 201: "regardless of any other markup"
+                LayoutText {#text} at (200,36) size 149x17
+                  text run at (200,36) width 149: " which may be present."
               LayoutBlockFlow {BLOCKQUOTE} at (44,416) size 667x54 [bgcolor=#00FFFF]
                 LayoutText {#text} at (373,0) size 651x53
                   text run at (373,0) width 229: "In the first half of the test page, this"
                   text run at (0,18) width 651: "BLOCKQUOTE element should have a text indent equal to 50% of the BODY element's width, since"
-                  text run at (0,36) width 515: "BLOCKQUOTE is a child of BODY; in the second half, it is a child of TABLE."
+                  text run at (0,36) width 512: "BLOCKQUOTE is a child of BODY; in the second half, it is a child of TABLE."

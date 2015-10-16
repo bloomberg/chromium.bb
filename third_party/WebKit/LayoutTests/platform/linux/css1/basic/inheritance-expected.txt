@@ -50,8 +50,8 @@ layer at (0,0) size 800x768 backgroundClip at (0,0) size 800x600 clip at (0,0) s
         LayoutInline {EM} at (0,0) size 117x19 [color=#800080]
           LayoutText {#text} at (215,0) size 117x19
             text run at (215,0) width 117: "emphasized words"
-        LayoutText {#text} at (332,0) size 151x19
-          text run at (332,0) width 151: ", which should be purple."
+        LayoutText {#text} at (331,0) size 152x19
+          text run at (331,0) width 152: ", which should be purple."
       LayoutBlockFlow {H3} at (0,305.88) size 784x23 [color=#0000FF]
         LayoutText {#text} at (0,0) size 288x22
           text run at (0,0) width 288: "This should be blue and underlined."
@@ -103,9 +103,9 @@ layer at (0,0) size 800x768 backgroundClip at (0,0) size 800x600 clip at (0,0) s
         LayoutTableSection {TBODY} at (1,1) size 590x294
           LayoutTableRow {TR} at (0,0) size 590x28
             LayoutTableCell {TD} at (0,0) size 590x28 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
-              LayoutInline {STRONG} at (0,0) size 159x19
-                LayoutText {#text} at (4,4) size 159x19
-                  text run at (4,4) width 159: "TABLE Testing Section"
+              LayoutInline {STRONG} at (0,0) size 157x19
+                LayoutText {#text} at (4,4) size 157x19
+                  text run at (4,4) width 157: "TABLE Testing Section"
           LayoutTableRow {TR} at (0,28) size 590x266
             LayoutTableCell {TD} at (0,147) size 12x28 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
               LayoutText {#text} at (4,4) size 4x19
@@ -138,8 +138,8 @@ layer at (0,0) size 800x768 backgroundClip at (0,0) size 800x600 clip at (0,0) s
                 LayoutInline {EM} at (0,0) size 117x19 [color=#800080]
                   LayoutText {#text} at (215,0) size 117x19
                     text run at (215,0) width 117: "emphasized words"
-                LayoutText {#text} at (332,0) size 151x19
-                  text run at (332,0) width 151: ", which should be purple."
+                LayoutText {#text} at (331,0) size 152x19
+                  text run at (331,0) width 152: ", which should be purple."
               LayoutBlockFlow {H3} at (4,128.16) size 570x23 [color=#0000FF]
                 LayoutText {#text} at (0,0) size 288x22
                   text run at (0,0) width 288: "This should be blue and underlined."

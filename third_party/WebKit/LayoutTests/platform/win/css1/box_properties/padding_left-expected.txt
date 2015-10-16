@@ -53,7 +53,7 @@ layer at (0,0) size 785x1015 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutListItem {LI} at (25,18) size 744x54 [bgcolor=#FFFFFF]
           LayoutListMarker (anonymous) at (-17,0) size 7x17: bullet
           LayoutText {#text} at (25,0) size 714x53
-            text run at (25,0) width 670: "Another list item might not be such a bad idea, either, considering that such things do need to be double-"
+            text run at (25,0) width 669: "Another list item might not be such a bad idea, either, considering that such things do need to be double-"
             text run at (25,18) width 61: "checked. "
             text run at (85,18) width 654: "This list item has its left padding also set to 25 pixels, which should combine with the list's padding to"
             text run at (25,36) width 168: "make 50 pixels of margin."
@@ -66,9 +66,9 @@ layer at (0,0) size 785x1015 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutTableSection {TBODY} at (1,1) size 767x436
           LayoutTableRow {TR} at (0,0) size 767x26
             LayoutTableCell {TD} at (0,0) size 767x26 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
-              LayoutInline {STRONG} at (0,0) size 163x17
-                LayoutText {#text} at (4,4) size 163x17
-                  text run at (4,4) width 163: "TABLE Testing Section"
+              LayoutInline {STRONG} at (0,0) size 161x17
+                LayoutText {#text} at (4,4) size 161x17
+                  text run at (4,4) width 161: "TABLE Testing Section"
           LayoutTableRow {TR} at (0,26) size 767x410
             LayoutTableCell {TD} at (0,218) size 12x26 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
               LayoutText {#text} at (4,4) size 4x17
@@ -106,8 +106,8 @@ layer at (0,0) size 785x1015 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                     text run at (0,18) width 27: "test."
                 LayoutListItem {LI} at (25,36) size 722x54 [bgcolor=#FFFFFF]
                   LayoutListMarker (anonymous) at (-17,0) size 7x17: bullet
-                  LayoutText {#text} at (25,0) size 670x53
-                    text run at (25,0) width 670: "Another list item might not be such a bad idea, either, considering that such things do need to be double-"
+                  LayoutText {#text} at (25,0) size 669x53
+                    text run at (25,0) width 669: "Another list item might not be such a bad idea, either, considering that such things do need to be double-"
                     text run at (25,18) width 61: "checked. "
                     text run at (85,18) width 582: "This list item has its left padding also set to 25 pixels, which should combine with the list's"
                     text run at (25,36) width 240: "padding to make 50 pixels of margin."

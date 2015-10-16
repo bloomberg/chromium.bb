@@ -43,8 +43,8 @@ layer at (0,0) size 785x849 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           LayoutBlockFlow {UL} at (0,20) size 729x60
             LayoutListItem {LI} at (40,0) size 689x20 [color=#808080]
               LayoutListMarker (anonymous) at (-18,0) size 7x19: white bullet
-              LayoutText {#text} at (0,0) size 178x19
-                text run at (0,0) width 178: "This list item should be gray..."
+              LayoutText {#text} at (0,0) size 177x19
+                text run at (0,0) width 177: "This list item should be gray..."
             LayoutListItem {LI} at (40,20) size 689x20 [color=#808080]
               LayoutListMarker (anonymous) at (-18,0) size 7x19: white bullet
               LayoutText {#text} at (0,0) size 108x19
@@ -83,9 +83,9 @@ layer at (0,0) size 785x849 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         LayoutTableSection {TBODY} at (1,1) size 672x304
           LayoutTableRow {TR} at (0,0) size 672x28
             LayoutTableCell {TD} at (0,0) size 672x28 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
-              LayoutInline {STRONG} at (0,0) size 159x19
-                LayoutText {#text} at (4,4) size 159x19
-                  text run at (4,4) width 159: "TABLE Testing Section"
+              LayoutInline {STRONG} at (0,0) size 157x19
+                LayoutText {#text} at (4,4) size 157x19
+                  text run at (4,4) width 157: "TABLE Testing Section"
           LayoutTableRow {TR} at (0,28) size 672x276
             LayoutTableCell {TD} at (0,152) size 12x28 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
               LayoutText {#text} at (4,4) size 4x19
@@ -104,8 +104,8 @@ layer at (0,0) size 785x849 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                   LayoutBlockFlow {UL} at (0,20) size 612x60
                     LayoutListItem {LI} at (40,0) size 572x20 [color=#808080]
                       LayoutListMarker (anonymous) at (-18,0) size 7x19: white bullet
-                      LayoutText {#text} at (0,0) size 178x19
-                        text run at (0,0) width 178: "This list item should be gray..."
+                      LayoutText {#text} at (0,0) size 177x19
+                        text run at (0,0) width 177: "This list item should be gray..."
                     LayoutListItem {LI} at (40,20) size 572x20 [color=#808080]
                       LayoutListMarker (anonymous) at (-18,0) size 7x19: white bullet
                       LayoutText {#text} at (0,0) size 108x19

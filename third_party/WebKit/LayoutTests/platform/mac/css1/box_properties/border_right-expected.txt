@@ -17,8 +17,8 @@ layer at (0,0) size 800x600
           text run at (0,45) width 0: " "
       LayoutBlockFlow {HR} at (0,107) size 784x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow {P} at (0,125) size 764x54 [bgcolor=#C0C0C0]
-        LayoutText {#text} at (0,0) size 721x36
-          text run at (0,0) width 721: "This paragraph has a background color of silver and a 20-pixel right margin, and it contains inline elements with"
+        LayoutText {#text} at (0,0) size 720x36
+          text run at (0,0) width 720: "This paragraph has a background color of silver and a 20-pixel right margin, and it contains inline elements with"
           text run at (0,18) width 66: "classes of "
         LayoutInline {SPAN} at (0,0) size 69x18 [border: none (10px double #800080) none]
           LayoutText {#text} at (65,18) size 59x18
@@ -30,23 +30,23 @@ layer at (0,0) size 800x600
             text run at (538,18) width 60: "class two"
         LayoutText {#text} at (598,18) size 738x36
           text run at (598,18) width 140: ", which should have a"
-          text run at (0,36) width 193: "thin solid purple right border. "
-          text run at (192,36) width 439: "The line-height of the parent element should not change on any line."
+          text run at (0,36) width 192: "thin solid purple right border. "
+          text run at (191,36) width 439: "The line-height of the parent element should not change on any line."
       LayoutTable {TABLE} at (0,195) size 784x90 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 782x88
           LayoutTableRow {TR} at (0,0) size 782x26
             LayoutTableCell {TD} at (0,0) size 782x26 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
-              LayoutInline {STRONG} at (0,0) size 163x18
-                LayoutText {#text} at (4,4) size 163x18
-                  text run at (4,4) width 163: "TABLE Testing Section"
+              LayoutInline {STRONG} at (0,0) size 161x18
+                LayoutText {#text} at (4,4) size 161x18
+                  text run at (4,4) width 161: "TABLE Testing Section"
           LayoutTableRow {TR} at (0,26) size 782x62
             LayoutTableCell {TD} at (0,44) size 12x26 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
               LayoutText {#text} at (4,4) size 4x18
                 text run at (4,4) width 4: " "
             LayoutTableCell {TD} at (12,26) size 770x62 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
               LayoutBlockFlow {P} at (4,4) size 742x54 [bgcolor=#C0C0C0]
-                LayoutText {#text} at (0,0) size 721x36
-                  text run at (0,0) width 721: "This paragraph has a background color of silver and a 20-pixel right margin, and it contains inline elements with"
+                LayoutText {#text} at (0,0) size 720x36
+                  text run at (0,0) width 720: "This paragraph has a background color of silver and a 20-pixel right margin, and it contains inline elements with"
                   text run at (0,18) width 66: "classes of "
                 LayoutInline {SPAN} at (0,0) size 69x18 [border: none (10px double #800080) none]
                   LayoutText {#text} at (65,18) size 59x18
@@ -58,5 +58,5 @@ layer at (0,0) size 800x600
                     text run at (538,18) width 60: "class two"
                 LayoutText {#text} at (598,18) size 738x36
                   text run at (598,18) width 140: ", which should have a"
-                  text run at (0,36) width 193: "thin solid purple right border. "
-                  text run at (192,36) width 439: "The line-height of the parent element should not change on any line."
+                  text run at (0,36) width 192: "thin solid purple right border. "
+                  text run at (191,36) width 439: "The line-height of the parent element should not change on any line."

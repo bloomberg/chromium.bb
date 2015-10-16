@@ -24,15 +24,15 @@ layer at (0,0) size 800x2652 backgroundClip at (0,0) size 800x600 clip at (0,0) 
           text run at (360,96) width 0: " "
       LayoutBlockFlow {HR} at (0,159) size 784x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow {P} at (0,177) size 784x36
-        LayoutText {#text} at (0,0) size 753x35
-          text run at (0,0) width 753: "NOTE: The following tests are separated by class-zero paragraphs, so as to prevent margin-collapsing as described in"
+        LayoutText {#text} at (0,0) size 752x35
+          text run at (0,0) width 752: "NOTE: The following tests are separated by class-zero paragraphs, so as to prevent margin-collapsing as described in"
           text run at (0,18) width 253: "section 4.1.1 of the CSS1 specification."
       LayoutBlockFlow {P} at (0,229) size 784x18 [bgcolor=#C0C0C0]
         LayoutText {#text} at (0,0) size 208x17
           text run at (0,0) width 208: "This element has a class of zero."
       LayoutBlockFlow {P} at (48,295) size 688x18 [bgcolor=#00FFFF]
-        LayoutText {#text} at (0,0) size 673x17
-          text run at (0,0) width 673: "This sentence should have an overall margin of half an inch, which will require extra text in order to test."
+        LayoutText {#text} at (0,0) size 672x17
+          text run at (0,0) width 672: "This sentence should have an overall margin of half an inch, which will require extra text in order to test."
       LayoutBlockFlow {P} at (0,361) size 784x18 [bgcolor=#C0C0C0]
         LayoutText {#text} at (0,0) size 208x17
           text run at (0,0) width 208: "This element has a class of zero."
@@ -43,8 +43,8 @@ layer at (0,0) size 800x2652 backgroundClip at (0,0) size 800x600 clip at (0,0) 
         LayoutText {#text} at (0,0) size 208x17
           text run at (0,0) width 208: "This element has a class of zero."
       LayoutBlockFlow {P} at (80,545) size 624x36 [bgcolor=#00FFFF]
-        LayoutText {#text} at (0,0) size 599x35
-          text run at (0,0) width 599: "This sentence should have an overall margin of 5 em, which will require extra text in order to"
+        LayoutText {#text} at (0,0) size 598x35
+          text run at (0,0) width 598: "This sentence should have an overall margin of 5 em, which will require extra text in order to"
           text run at (0,18) width 27: "test."
       LayoutBlockFlow {P} at (0,661) size 784x18 [bgcolor=#C0C0C0]
         LayoutText {#text} at (0,0) size 208x17
@@ -68,8 +68,8 @@ layer at (0,0) size 800x2652 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             text run at (0,0) width 269: "Therefore, it ought to have such a margin."
         LayoutListItem {LI} at (65,61) size 644x18
           LayoutListMarker (anonymous) at (-17,0) size 7x17: bullet
-          LayoutText {#text} at (0,0) size 556x17
-            text run at (0,0) width 556: "This list item has a margin of 25px, which should cause it to be offset in some fashion."
+          LayoutText {#text} at (0,0) size 555x17
+            text run at (0,0) width 555: "This list item has a margin of 25px, which should cause it to be offset in some fashion."
         LayoutListItem {LI} at (40,104) size 694x18
           LayoutListMarker (anonymous) at (-17,0) size 7x17: bullet
           LayoutText {#text} at (0,0) size 304x17
@@ -81,9 +81,9 @@ layer at (0,0) size 800x2652 backgroundClip at (0,0) size 800x600 clip at (0,0) 
         LayoutText {#text} at (0,0) size 789x53
           text run at (0,0) width 772: "This paragraph has an overall margin of -10px, which should make it wider than usual as well as shift it upward and pull"
           text run at (0,18) width 376: "subsequent text up toward it, and a light blue background. "
-          text run at (375,18) width 395: "In all other respects, however, the element should be normal. "
-          text run at (769,18) width 20: "No"
-          text run at (0,36) width 539: "styles have been applied to it besides the negative margin and the background color."
+          text run at (375,18) width 394: "In all other respects, however, the element should be normal. "
+          text run at (768,18) width 21: "No"
+          text run at (0,36) width 538: "styles have been applied to it besides the negative margin and the background color."
       LayoutBlockFlow {P} at (0,1367) size 784x18 [bgcolor=#C0C0C0]
         LayoutText {#text} at (0,0) size 208x17
           text run at (0,0) width 208: "This element has a class of zero."
@@ -91,17 +91,17 @@ layer at (0,0) size 800x2652 backgroundClip at (0,0) size 800x600 clip at (0,0) 
         LayoutTableSection {TBODY} at (1,1) size 782x1249
           LayoutTableRow {TR} at (0,0) size 782x26
             LayoutTableCell {TD} at (0,0) size 782x26 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
-              LayoutInline {STRONG} at (0,0) size 163x17
-                LayoutText {#text} at (4,4) size 163x17
-                  text run at (4,4) width 163: "TABLE Testing Section"
+              LayoutInline {STRONG} at (0,0) size 161x17
+                LayoutText {#text} at (4,4) size 161x17
+                  text run at (4,4) width 161: "TABLE Testing Section"
           LayoutTableRow {TR} at (0,26) size 782x1223
             LayoutTableCell {TD} at (0,624) size 12x26 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
               LayoutText {#text} at (4,4) size 4x17
                 text run at (4,4) width 4: " "
             LayoutTableCell {TD} at (12,26) size 770x1223 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
               LayoutBlockFlow {P} at (4,4) size 762x36
-                LayoutText {#text} at (0,0) size 753x35
-                  text run at (0,0) width 753: "NOTE: The following tests are separated by class-zero paragraphs, so as to prevent margin-collapsing as described in"
+                LayoutText {#text} at (0,0) size 752x35
+                  text run at (0,0) width 752: "NOTE: The following tests are separated by class-zero paragraphs, so as to prevent margin-collapsing as described in"
                   text run at (0,18) width 253: "section 4.1.1 of the CSS1 specification."
               LayoutBlockFlow {P} at (4,56) size 762x18 [bgcolor=#C0C0C0]
                 LayoutText {#text} at (0,0) size 208x17
@@ -120,8 +120,8 @@ layer at (0,0) size 800x2652 backgroundClip at (0,0) size 800x600 clip at (0,0) 
                 LayoutText {#text} at (0,0) size 208x17
                   text run at (0,0) width 208: "This element has a class of zero."
               LayoutBlockFlow {P} at (84,390) size 602x36 [bgcolor=#00FFFF]
-                LayoutText {#text} at (0,0) size 599x35
-                  text run at (0,0) width 599: "This sentence should have an overall margin of 5 em, which will require extra text in order to"
+                LayoutText {#text} at (0,0) size 598x35
+                  text run at (0,0) width 598: "This sentence should have an overall margin of 5 em, which will require extra text in order to"
                   text run at (0,18) width 27: "test."
               LayoutBlockFlow {P} at (4,506) size 762x18 [bgcolor=#C0C0C0]
                 LayoutText {#text} at (0,0) size 208x17
@@ -146,8 +146,8 @@ layer at (0,0) size 800x2652 backgroundClip at (0,0) size 800x600 clip at (0,0) 
                     text run at (0,0) width 269: "Therefore, it ought to have such a margin."
                 LayoutListItem {LI} at (65,61) size 622x18
                   LayoutListMarker (anonymous) at (-17,0) size 7x17: bullet
-                  LayoutText {#text} at (0,0) size 556x17
-                    text run at (0,0) width 556: "This list item has a margin of 25px, which should cause it to be offset in some fashion."
+                  LayoutText {#text} at (0,0) size 555x17
+                    text run at (0,0) width 555: "This list item has a margin of 25px, which should cause it to be offset in some fashion."
                 LayoutListItem {LI} at (40,104) size 672x18
                   LayoutListMarker (anonymous) at (-17,0) size 7x17: bullet
                   LayoutText {#text} at (0,0) size 304x17
@@ -159,8 +159,8 @@ layer at (0,0) size 800x2652 backgroundClip at (0,0) size 800x600 clip at (0,0) 
                 LayoutText {#text} at (0,0) size 772x53
                   text run at (0,0) width 772: "This paragraph has an overall margin of -10px, which should make it wider than usual as well as shift it upward and pull"
                   text run at (0,18) width 376: "subsequent text up toward it, and a light blue background. "
-                  text run at (375,18) width 391: "In all other respects, however, the element should be normal."
-                  text run at (0,36) width 563: "No styles have been applied to it besides the negative margin and the background color."
+                  text run at (375,18) width 390: "In all other respects, however, the element should be normal."
+                  text run at (0,36) width 561: "No styles have been applied to it besides the negative margin and the background color."
               LayoutBlockFlow {P} at (4,1201) size 762x18 [bgcolor=#C0C0C0]
                 LayoutText {#text} at (0,0) size 208x17
                   text run at (0,0) width 208: "This element has a class of zero."

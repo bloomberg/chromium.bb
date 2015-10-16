@@ -29,7 +29,7 @@ layer at (0,0) size 785x790 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           LayoutText {#text} at (231,6) size 763x147
             text run at (231,6) width 531: "very long span in it, and the span has a 10px red border separated from the span by 2pt,"
             text run at (0,38) width 133: "and a margin of 30pt. "
-            text run at (133,38) width 621: "The padding and border should be present on all sides of the span (although vertical lines should appear"
+            text run at (132,38) width 622: "The padding and border should be present on all sides of the span (although vertical lines should appear"
             text run at (0,70) width 421: "only at the beginning and the end of the whole span, not on each line). "
             text run at (421,70) width 342: "The padding, border, and margin should all be noticeable"
             text run at (0,102) width 223: "at the beginning and end of the span. "
@@ -47,7 +47,7 @@ layer at (0,0) size 785x790 backgroundClip at (0,0) size 785x600 clip at (0,0) s
             text run at (174,0) width 547: "very long span in it, and the span has a 12px red border separated from the span by 2pt of padding (the"
             text run at (0,16) width 752: "difference between the line-height and the font-size), which should overlap with the lines of text above and below the span, since the padding"
             text run at (0,32) width 237: "and border should not effect the line height. "
-            text run at (237,32) width 520: "The span's border should have vertical lines only at the beginning and end of the whole span, not"
+            text run at (236,32) width 521: "The span's border should have vertical lines only at the beginning and end of the whole span, not"
             text run at (0,48) width 67: "on each line."
         LayoutText {#text} at (81,48) size 405x15
           text run at (81,48) width 3: " "
@@ -56,9 +56,9 @@ layer at (0,0) size 785x790 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         LayoutTableSection {TBODY} at (1,1) size 767x308
           LayoutTableRow {TR} at (0,0) size 767x28
             LayoutTableCell {TD} at (0,0) size 767x28 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
-              LayoutInline {STRONG} at (0,0) size 159x19
-                LayoutText {#text} at (4,4) size 159x19
-                  text run at (4,4) width 159: "TABLE Testing Section"
+              LayoutInline {STRONG} at (0,0) size 157x19
+                LayoutText {#text} at (4,4) size 157x19
+                  text run at (4,4) width 157: "TABLE Testing Section"
           LayoutTableRow {TR} at (0,28) size 767x280
             LayoutTableCell {TD} at (0,154) size 12x28 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
               LayoutText {#text} at (4,4) size 4x19
@@ -71,15 +71,15 @@ layer at (0,0) size 785x790 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                   LayoutText {#text} at (231,6) size 744x147
                     text run at (231,6) width 503: "very long span in it, and the span has a 10px red border separated from the span by"
                     text run at (0,38) width 161: "2pt, and a margin of 30pt. "
-                    text run at (161,38) width 575: "The padding and border should be present on all sides of the span (although vertical lines should"
+                    text run at (160,38) width 576: "The padding and border should be present on all sides of the span (although vertical lines should"
                     text run at (0,70) width 467: "appear only at the beginning and the end of the whole span, not on each line). "
                     text run at (467,70) width 277: "The padding, border, and margin should all be"
                     text run at (0,102) width 288: "noticeable at the beginning and end of the span. "
                     text run at (288,102) width 421: "However, the line height should not be changed by any of them, so the"
                     text run at (0,134) width 480: "margin should be unnoticeable and the border should overlap text on other lines."
-                LayoutText {#text} at (532,134) size 708x51
-                  text run at (532,134) width 4: " "
-                  text run at (536,134) width 172: "The line spacing in the whole"
+                LayoutText {#text} at (531,134) size 708x51
+                  text run at (531,134) width 5: " "
+                  text run at (535,134) width 173: "The line spacing in the whole"
                   text run at (0,166) width 259: "paragraph should be 200% of the font size."
               LayoutBlockFlow {P} at (4,212) size 747x64
                 LayoutText {#text} at (0,0) size 160x15
@@ -89,7 +89,7 @@ layer at (0,0) size 785x790 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                     text run at (174,0) width 547: "very long span in it, and the span has a 12px red border separated from the span by 2pt of padding (the"
                     text run at (0,16) width 705: "difference between the line-height and the font-size), which should overlap with the lines of text above and below the span, since the"
                     text run at (0,32) width 284: "padding and border should not effect the line height. "
-                    text run at (284,32) width 432: "The span's border should have vertical lines only at the beginning and end of the"
+                    text run at (283,32) width 433: "The span's border should have vertical lines only at the beginning and end of the"
                     text run at (0,48) width 155: "whole span, not on each line."
                 LayoutText {#text} at (169,48) size 405x15
                   text run at (169,48) width 3: " "

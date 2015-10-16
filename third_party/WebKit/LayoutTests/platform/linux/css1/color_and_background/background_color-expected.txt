@@ -28,10 +28,10 @@ layer at (0,0) size 800x600
         LayoutInline {SPAN} at (0,0) size 72x19
           LayoutText {#text} at (620,0) size 72x19
             text run at (620,0) width 72: "background"
-        LayoutText {#text} at (692,0) size 779x59
+        LayoutText {#text} at (692,0) size 778x59
           text run at (692,0) width 8: ". "
           text run at (700,0) width 38: "This is"
-          text run at (0,20) width 779: "because the background color of the parent element (the paragraph) should \"shine through\" the SPANned word \"sentence,\" which"
+          text run at (0,20) width 778: "because the background color of the parent element (the paragraph) should \"shine through\" the SPANned word \"sentence,\" which"
           text run at (0,40) width 65: "was set to "
         LayoutInline {CODE} at (0,0) size 88x16
           LayoutText {#text} at (65,43) size 88x16
@@ -47,9 +47,9 @@ layer at (0,0) size 800x600
         LayoutTableSection {TBODY} at (1,1) size 782x204
           LayoutTableRow {TR} at (0,0) size 782x28
             LayoutTableCell {TD} at (0,0) size 782x28 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
-              LayoutInline {STRONG} at (0,0) size 159x19
-                LayoutText {#text} at (4,4) size 159x19
-                  text run at (4,4) width 159: "TABLE Testing Section"
+              LayoutInline {STRONG} at (0,0) size 157x19
+                LayoutText {#text} at (4,4) size 157x19
+                  text run at (4,4) width 157: "TABLE Testing Section"
           LayoutTableRow {TR} at (0,28) size 782x176
             LayoutTableCell {TD} at (0,102) size 12x28 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
               LayoutText {#text} at (4,4) size 4x19
@@ -67,10 +67,10 @@ layer at (0,0) size 800x600
                 LayoutInline {SPAN} at (0,0) size 72x19
                   LayoutText {#text} at (620,0) size 72x19
                     text run at (620,0) width 72: "background"
-                LayoutText {#text} at (692,0) size 740x59
+                LayoutText {#text} at (692,0) size 739x59
                   text run at (692,0) width 8: ". "
                   text run at (700,0) width 38: "This is"
-                  text run at (0,20) width 740: "because the background color of the parent element (the paragraph) should \"shine through\" the SPANned word \"sentence,\""
+                  text run at (0,20) width 739: "because the background color of the parent element (the paragraph) should \"shine through\" the SPANned word \"sentence,\""
                   text run at (0,40) width 104: "which was set to "
                 LayoutInline {CODE} at (0,0) size 88x16
                   LayoutText {#text} at (104,43) size 88x16

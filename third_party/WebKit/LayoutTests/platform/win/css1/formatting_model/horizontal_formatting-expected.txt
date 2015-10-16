@@ -8,8 +8,8 @@ layer at (0,0) size 800x726 backgroundClip at (0,0) size 800x600 clip at (0,0) s
           text run at (0,0) width 292: "This paragraph should be indented ten pixels."
       LayoutBlockFlow {DIV} at (10,34) size 774x18
         LayoutBlockFlow {P} at (10,0) size 764x18
-          LayoutText {#text} at (0,0) size 582x17
-            text run at (0,0) width 582: "This paragraph should be indented twenty pixels, since horizontal margins do not collapse."
+          LayoutText {#text} at (0,0) size 581x17
+            text run at (0,0) width 581: "This paragraph should be indented twenty pixels, since horizontal margins do not collapse."
       LayoutBlockFlow {P} at (0,68) size 392x108 [bgcolor=#808080]
         LayoutText {#text} at (0,0) size 381x107
           text run at (0,0) width 368: "This element has a width of 50%, and due to 'auto' values"
@@ -22,7 +22,7 @@ layer at (0,0) size 800x726 backgroundClip at (0,0) size 800x600 clip at (0,0) s
       LayoutBlockFlow {P} at (196,192) size 392x108 [bgcolor=#808080]
         LayoutText {#text} at (0,0) size 381x107
           text run at (0,0) width 368: "This element has a width of 50%, and due to 'auto' values"
-          text run at (0,18) width 378: "applied to the left and right margins, the element should be"
+          text run at (0,18) width 377: "applied to the left and right margins, the element should be"
           text run at (0,36) width 171: "centered within its parent. "
           text run at (170,36) width 167: "The gray rectangle should"
           text run at (0,54) width 351: "therefore appear in the middle of the viewport (e.g. the"

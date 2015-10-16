@@ -32,27 +32,27 @@ layer at (0,0) size 785x689 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           LayoutBlockFlow {UL} at (0,18) size 729x90
             LayoutListItem {LI} at (40,0) size 689x18
               LayoutListMarker (anonymous) at (-17,0) size 7x17: white bullet
-              LayoutInline {A} at (0,0) size 112x17 [color=#800080]
-                LayoutText {#text} at (0,0) size 112x17
-                  text run at (0,0) width 112: "W3C Web server"
+              LayoutInline {A} at (0,0) size 110x17 [color=#800080]
+                LayoutText {#text} at (0,0) size 110x17
+                  text run at (0,0) width 110: "W3C Web server"
               LayoutText {#text} at (0,0) size 0x0
             LayoutListItem {LI} at (40,18) size 689x18
               LayoutListMarker (anonymous) at (-17,0) size 7x17: white bullet
-              LayoutInline {A} at (0,0) size 113x17 [color=#800080]
-                LayoutText {#text} at (0,0) size 113x17
-                  text run at (0,0) width 113: "NIST Web server"
+              LayoutInline {A} at (0,0) size 112x17 [color=#800080]
+                LayoutText {#text} at (0,0) size 112x17
+                  text run at (0,0) width 112: "NIST Web server"
               LayoutText {#text} at (0,0) size 0x0
             LayoutListItem {LI} at (40,36) size 689x18
               LayoutListMarker (anonymous) at (-17,0) size 7x17: white bullet
-              LayoutInline {A} at (0,0) size 126x17 [color=#800080]
-                LayoutText {#text} at (0,0) size 126x17
-                  text run at (0,0) width 126: "CWRU Web server"
+              LayoutInline {A} at (0,0) size 124x17 [color=#800080]
+                LayoutText {#text} at (0,0) size 124x17
+                  text run at (0,0) width 124: "CWRU Web server"
               LayoutText {#text} at (0,0) size 0x0
             LayoutListItem {LI} at (40,54) size 689x18
               LayoutListMarker (anonymous) at (-17,0) size 7x17: white bullet
-              LayoutInline {A} at (0,0) size 48x17 [color=#800080]
-                LayoutText {#text} at (0,0) size 48x17
-                  text run at (0,0) width 48: "Yahoo!"
+              LayoutInline {A} at (0,0) size 47x17 [color=#800080]
+                LayoutText {#text} at (0,0) size 47x17
+                  text run at (0,0) width 47: "Yahoo!"
               LayoutText {#text} at (0,0) size 0x0
             LayoutListItem {LI} at (40,72) size 689x18
               LayoutListMarker (anonymous) at (-17,0) size 7x17: white bullet
@@ -69,9 +69,9 @@ layer at (0,0) size 785x689 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           LayoutBlockFlow {UL} at (0,18) size 729x18
             LayoutListItem {LI} at (40,0) size 689x18
               LayoutListMarker (anonymous) at (-17,0) size 7x17: white bullet
-              LayoutInline {A} at (0,0) size 126x17 [color=#006600]
-                LayoutText {#text} at (0,0) size 126x17
-                  text run at (0,0) width 126: "CWRU Web server"
+              LayoutInline {A} at (0,0) size 124x17 [color=#006600]
+                LayoutText {#text} at (0,0) size 124x17
+                  text run at (0,0) width 124: "CWRU Web server"
               LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (0,355) size 769x36
         LayoutText {#text} at (0,0) size 120x17
@@ -79,18 +79,18 @@ layer at (0,0) size 785x689 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         LayoutInline {A} at (0,0) size 45x17 [color=#008000]
           LayoutText {#text} at (119,0) size 45x17
             text run at (119,0) width 45: "anchor"
-        LayoutText {#text} at (163,0) size 741x35
-          text run at (163,0) width 382: "\" should be green, NOT purple, since it's part of an anchor. "
-          text run at (544,0) width 197: "It's a named anchor, and styles"
+        LayoutText {#text} at (163,0) size 739x35
+          text run at (163,0) width 381: "\" should be green, NOT purple, since it's part of an anchor. "
+          text run at (543,0) width 196: "It's a named anchor, and styles"
           text run at (0,18) width 356: "declared for the A tag are applied to them under CSS1. "
           text run at (355,18) width 330: "It also should NOT turn orange when clicked upon."
       LayoutTable {TABLE} at (0,407) size 769x266 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 767x264
           LayoutTableRow {TR} at (0,0) size 767x26
             LayoutTableCell {TD} at (0,0) size 767x26 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
-              LayoutInline {STRONG} at (0,0) size 163x17
-                LayoutText {#text} at (4,4) size 163x17
-                  text run at (4,4) width 163: "TABLE Testing Section"
+              LayoutInline {STRONG} at (0,0) size 161x17
+                LayoutText {#text} at (4,4) size 161x17
+                  text run at (4,4) width 161: "TABLE Testing Section"
           LayoutTableRow {TR} at (0,26) size 767x238
             LayoutTableCell {TD} at (0,132) size 12x26 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
               LayoutText {#text} at (4,4) size 4x17
@@ -108,27 +108,27 @@ layer at (0,0) size 785x689 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                   LayoutBlockFlow {UL} at (0,18) size 707x90
                     LayoutListItem {LI} at (40,0) size 667x18
                       LayoutListMarker (anonymous) at (-17,0) size 7x17: white bullet
-                      LayoutInline {A} at (0,0) size 112x17 [color=#800080]
-                        LayoutText {#text} at (0,0) size 112x17
-                          text run at (0,0) width 112: "W3C Web server"
+                      LayoutInline {A} at (0,0) size 110x17 [color=#800080]
+                        LayoutText {#text} at (0,0) size 110x17
+                          text run at (0,0) width 110: "W3C Web server"
                       LayoutText {#text} at (0,0) size 0x0
                     LayoutListItem {LI} at (40,18) size 667x18
                       LayoutListMarker (anonymous) at (-17,0) size 7x17: white bullet
-                      LayoutInline {A} at (0,0) size 113x17 [color=#800080]
-                        LayoutText {#text} at (0,0) size 113x17
-                          text run at (0,0) width 113: "NIST Web server"
+                      LayoutInline {A} at (0,0) size 112x17 [color=#800080]
+                        LayoutText {#text} at (0,0) size 112x17
+                          text run at (0,0) width 112: "NIST Web server"
                       LayoutText {#text} at (0,0) size 0x0
                     LayoutListItem {LI} at (40,36) size 667x18
                       LayoutListMarker (anonymous) at (-17,0) size 7x17: white bullet
-                      LayoutInline {A} at (0,0) size 126x17 [color=#800080]
-                        LayoutText {#text} at (0,0) size 126x17
-                          text run at (0,0) width 126: "CWRU Web server"
+                      LayoutInline {A} at (0,0) size 124x17 [color=#800080]
+                        LayoutText {#text} at (0,0) size 124x17
+                          text run at (0,0) width 124: "CWRU Web server"
                       LayoutText {#text} at (0,0) size 0x0
                     LayoutListItem {LI} at (40,54) size 667x18
                       LayoutListMarker (anonymous) at (-17,0) size 7x17: white bullet
-                      LayoutInline {A} at (0,0) size 48x17 [color=#800080]
-                        LayoutText {#text} at (0,0) size 48x17
-                          text run at (0,0) width 48: "Yahoo!"
+                      LayoutInline {A} at (0,0) size 47x17 [color=#800080]
+                        LayoutText {#text} at (0,0) size 47x17
+                          text run at (0,0) width 47: "Yahoo!"
                       LayoutText {#text} at (0,0) size 0x0
                     LayoutListItem {LI} at (40,72) size 667x18
                       LayoutListMarker (anonymous) at (-17,0) size 7x17: white bullet
@@ -145,9 +145,9 @@ layer at (0,0) size 785x689 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                   LayoutBlockFlow {UL} at (0,18) size 707x18
                     LayoutListItem {LI} at (40,0) size 667x18
                       LayoutListMarker (anonymous) at (-17,0) size 7x17: white bullet
-                      LayoutInline {A} at (0,0) size 126x17 [color=#006600]
-                        LayoutText {#text} at (0,0) size 126x17
-                          text run at (0,0) width 126: "CWRU Web server"
+                      LayoutInline {A} at (0,0) size 124x17 [color=#006600]
+                        LayoutText {#text} at (0,0) size 124x17
+                          text run at (0,0) width 124: "CWRU Web server"
                       LayoutText {#text} at (0,0) size 0x0
               LayoutBlockFlow {P} at (4,198) size 747x36
                 LayoutText {#text} at (0,0) size 120x17
@@ -155,8 +155,8 @@ layer at (0,0) size 785x689 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                 LayoutInline {A} at (0,0) size 45x17 [color=#008000]
                   LayoutText {#text} at (119,0) size 45x17
                     text run at (119,0) width 45: "anchor"
-                LayoutText {#text} at (163,0) size 741x35
-                  text run at (163,0) width 382: "\" should be green, NOT purple, since it's part of an anchor. "
-                  text run at (544,0) width 197: "It's a named anchor, and styles"
+                LayoutText {#text} at (163,0) size 739x35
+                  text run at (163,0) width 381: "\" should be green, NOT purple, since it's part of an anchor. "
+                  text run at (543,0) width 196: "It's a named anchor, and styles"
                   text run at (0,18) width 356: "declared for the A tag are applied to them under CSS1. "
                   text run at (355,18) width 330: "It also should NOT turn orange when clicked upon."

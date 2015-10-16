@@ -95,8 +95,8 @@ layer at (0,0) size 785x2811 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutInline {SPAN} at (0,0) size 53x18
           LayoutText {#text} at (532,3) size 53x18
             text run at (532,3) width 53: "medium"
-        LayoutText {#text} at (584,0) size 6x22
-          text run at (584,0) width 6: "."
+        LayoutText {#text} at (584,0) size 5x22
+          text run at (584,0) width 5: "."
       LayoutBlockFlow {P} at (0,646.70) size 769x56
         LayoutText {#text} at (0,0) size 766x28
           text run at (0,0) width 766: "This sentence should be rather large, but the last word in the sentence should be"
@@ -137,8 +137,8 @@ layer at (0,0) size 785x2811 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutText {#text} at (0,0) size 319x24
           text run at (0,0) width 319: "This sentence should be three ex tall."
       LayoutBlockFlow {P} at (0,1406.27) size 769x29
-        LayoutText {#text} at (0,0) size 472x29
-          text run at (0,0) width 472: "This sentence should be twenty-five pixels tall."
+        LayoutText {#text} at (0,0) size 471x29
+          text run at (0,0) width 471: "This sentence should be twenty-five pixels tall."
       LayoutBlockFlow {P} at (0,1467.27) size 769x37
         LayoutText {#text} at (0,0) size 549x37
           text run at (0,0) width 549: "This sentence should be twice normal size."
@@ -149,9 +149,9 @@ layer at (0,0) size 785x2811 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutTableSection {TBODY} at (1,1) size 767x1223
           LayoutTableRow {TR} at (0,0) size 767x26
             LayoutTableCell {TD} at (0,0) size 767x26 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
-              LayoutInline {STRONG} at (0,0) size 163x18
-                LayoutText {#text} at (4,4) size 163x18
-                  text run at (4,4) width 163: "TABLE Testing Section"
+              LayoutInline {STRONG} at (0,0) size 161x18
+                LayoutText {#text} at (4,4) size 161x18
+                  text run at (4,4) width 161: "TABLE Testing Section"
           LayoutTableRow {TR} at (0,26) size 767x1197
             LayoutTableCell {TD} at (0,611) size 12x26 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
               LayoutText {#text} at (4,4) size 4x18
@@ -204,11 +204,11 @@ layer at (0,0) size 785x2811 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 LayoutInline {SPAN} at (0,0) size 53x18
                   LayoutText {#text} at (532,3) size 53x18
                     text run at (532,3) width 53: "medium"
-                LayoutText {#text} at (584,0) size 6x22
-                  text run at (584,0) width 6: "."
+                LayoutText {#text} at (584,0) size 5x22
+                  text run at (584,0) width 5: "."
               LayoutBlockFlow {P} at (4,285.70) size 747x56
-                LayoutText {#text} at (0,0) size 738x56
-                  text run at (0,0) width 738: "This sentence should be rather large, but the last word in the sentence should"
+                LayoutText {#text} at (0,0) size 737x56
+                  text run at (0,0) width 737: "This sentence should be rather large, but the last word in the sentence should"
                   text run at (0,28) width 29: "be "
                 LayoutInline {SPAN} at (0,0) size 54x18
                   LayoutText {#text} at (28,36) size 54x18
@@ -216,8 +216,8 @@ layer at (0,0) size 785x2811 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 LayoutText {#text} at (81,28) size 7x28
                   text run at (81,28) width 7: "."
               LayoutBlockFlow {P} at (4,373.70) size 747x74
-                LayoutText {#text} at (0,0) size 707x74
-                  text run at (0,0) width 707: "This sentence should be very large, but the last word in"
+                LayoutText {#text} at (0,0) size 706x74
+                  text run at (0,0) width 706: "This sentence should be very large, but the last word in"
                   text run at (0,37) width 297: "the sentence should be "
                 LayoutInline {SPAN} at (0,0) size 54x18
                   LayoutText {#text} at (296,52) size 54x18
@@ -247,8 +247,8 @@ layer at (0,0) size 785x2811 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 LayoutText {#text} at (0,0) size 319x24
                   text run at (0,0) width 319: "This sentence should be three ex tall."
               LayoutBlockFlow {P} at (4,1045.27) size 747x29
-                LayoutText {#text} at (0,0) size 472x29
-                  text run at (0,0) width 472: "This sentence should be twenty-five pixels tall."
+                LayoutText {#text} at (0,0) size 471x29
+                  text run at (0,0) width 471: "This sentence should be twenty-five pixels tall."
               LayoutBlockFlow {P} at (4,1106.27) size 747x37
                 LayoutText {#text} at (0,0) size 549x37
                   text run at (0,0) width 549: "This sentence should be twice normal size."

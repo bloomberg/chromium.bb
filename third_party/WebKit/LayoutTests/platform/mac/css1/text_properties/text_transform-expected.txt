@@ -19,17 +19,17 @@ layer at (0,0) size 785x732 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           text run at (0,60) width 0: " "
       LayoutBlockFlow {HR} at (0,122) size 769x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow {P} at (0,140) size 769x36
-        LayoutText {#text} at (0,0) size 733x36
-          text run at (0,0) width 733: "This page tests the 'text-transform' property of CSS1. This paragraph has no text transformation and should appear"
+        LayoutText {#text} at (0,0) size 732x36
+          text run at (0,0) width 732: "This page tests the 'text-transform' property of CSS1. This paragraph has no text transformation and should appear"
           text run at (0,18) width 50: "normal."
       LayoutBlockFlow {P} at (0,192) size 769x54
-        LayoutText {#text} at (0,0) size 760x54
-          text run at (0,0) width 760: "This Paragraph Is Capitalized And The First Letter In Each Word Should Therefore Appear In Uppercase. Words That"
+        LayoutText {#text} at (0,0) size 758x54
+          text run at (0,0) width 758: "This Paragraph Is Capitalized And The First Letter In Each Word Should Therefore Appear In Uppercase. Words That"
           text run at (0,18) width 727: "Are In Uppercase In The Source (E.G. USA) Should Remain So. There Should Be A Capital Letter After A Non-"
           text run at (0,36) width 544: "Breaking Space (&Nbsp;). Both Those Characters Appear In The Previous Sentence."
       LayoutBlockFlow {P} at (0,262) size 769x36
-        LayoutText {#text} at (0,0) size 746x36
-          text run at (0,0) width 746: "Words with inline elements inside them should only capitalize the first letter of the word. Therefore, the last word in"
+        LayoutText {#text} at (0,0) size 743x36
+          text run at (0,0) width 743: "Words with inline elements inside them should only capitalize the first letter of the word. Therefore, the last word in"
           text run at (0,18) width 336: "this sentence should have one, and only one, capital "
         LayoutInline {SPAN} at (0,0) size 39x18
           LayoutText {#text} at (335,18) size 18x18
@@ -42,8 +42,8 @@ layer at (0,0) size 785x732 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         LayoutText {#text} at (373,18) size 5x18
           text run at (373,18) width 5: "."
       LayoutBlockFlow {P} at (0,314) size 769x54
-        LayoutText {#text} at (0,0) size 705x36
-          text run at (0,0) width 705: "THIS PARAGRAPH IS UPPERCASED AND SMALL CHARACTERS IN THE SOURCE (E.G. A AND \x{C5})"
+        LayoutText {#text} at (0,0) size 704x36
+          text run at (0,0) width 704: "THIS PARAGRAPH IS UPPERCASED AND SMALL CHARACTERS IN THE SOURCE (E.G. A AND \x{C5})"
           text run at (0,18) width 351: "SHOULD THEREFORE APPEAR IN UPPERCASE. "
           text run at (350,18) width 278: "IN THE LAST SENTENCE, HOWEVER, "
         LayoutInline {SPAN} at (0,0) size 753x36
@@ -59,26 +59,26 @@ layer at (0,0) size 785x732 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         LayoutTableSection {TBODY} at (1,1) size 767x296
           LayoutTableRow {TR} at (0,0) size 767x26
             LayoutTableCell {TD} at (0,0) size 767x26 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
-              LayoutInline {STRONG} at (0,0) size 163x18
-                LayoutText {#text} at (4,4) size 163x18
-                  text run at (4,4) width 163: "TABLE Testing Section"
+              LayoutInline {STRONG} at (0,0) size 161x18
+                LayoutText {#text} at (4,4) size 161x18
+                  text run at (4,4) width 161: "TABLE Testing Section"
           LayoutTableRow {TR} at (0,26) size 767x270
             LayoutTableCell {TD} at (0,148) size 12x26 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
               LayoutText {#text} at (4,4) size 4x18
                 text run at (4,4) width 4: " "
             LayoutTableCell {TD} at (12,26) size 755x270 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
               LayoutBlockFlow {P} at (4,4) size 747x36
-                LayoutText {#text} at (0,0) size 733x36
-                  text run at (0,0) width 733: "This page tests the 'text-transform' property of CSS1. This paragraph has no text transformation and should appear"
+                LayoutText {#text} at (0,0) size 732x36
+                  text run at (0,0) width 732: "This page tests the 'text-transform' property of CSS1. This paragraph has no text transformation and should appear"
                   text run at (0,18) width 50: "normal."
               LayoutBlockFlow {P} at (4,56) size 747x54
-                LayoutText {#text} at (0,0) size 727x54
-                  text run at (0,0) width 727: "This Paragraph Is Capitalized And The First Letter In Each Word Should Therefore Appear In Uppercase. Words"
+                LayoutText {#text} at (0,0) size 724x54
+                  text run at (0,0) width 724: "This Paragraph Is Capitalized And The First Letter In Each Word Should Therefore Appear In Uppercase. Words"
                   text run at (0,18) width 723: "That Are In Uppercase In The Source (E.G. USA) Should Remain So. There Should Be A Capital Letter After A"
                   text run at (0,36) width 577: "Non-Breaking Space (&Nbsp;). Both Those Characters Appear In The Previous Sentence."
               LayoutBlockFlow {P} at (4,126) size 747x36
-                LayoutText {#text} at (0,0) size 746x36
-                  text run at (0,0) width 746: "Words with inline elements inside them should only capitalize the first letter of the word. Therefore, the last word in"
+                LayoutText {#text} at (0,0) size 743x36
+                  text run at (0,0) width 743: "Words with inline elements inside them should only capitalize the first letter of the word. Therefore, the last word in"
                   text run at (0,18) width 336: "this sentence should have one, and only one, capital "
                 LayoutInline {SPAN} at (0,0) size 39x18
                   LayoutText {#text} at (335,18) size 18x18
@@ -91,8 +91,8 @@ layer at (0,0) size 785x732 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                 LayoutText {#text} at (373,18) size 5x18
                   text run at (373,18) width 5: "."
               LayoutBlockFlow {P} at (4,178) size 747x54
-                LayoutText {#text} at (0,0) size 705x36
-                  text run at (0,0) width 705: "THIS PARAGRAPH IS UPPERCASED AND SMALL CHARACTERS IN THE SOURCE (E.G. A AND \x{C5})"
+                LayoutText {#text} at (0,0) size 704x36
+                  text run at (0,0) width 704: "THIS PARAGRAPH IS UPPERCASED AND SMALL CHARACTERS IN THE SOURCE (E.G. A AND \x{C5})"
                   text run at (0,18) width 351: "SHOULD THEREFORE APPEAR IN UPPERCASE. "
                   text run at (350,18) width 278: "IN THE LAST SENTENCE, HOWEVER, "
                 LayoutInline {SPAN} at (0,0) size 710x36

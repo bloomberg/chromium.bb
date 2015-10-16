@@ -31,14 +31,14 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (541,18) size 745x35
           text run at (541,18) width 204: ", which should have a thin solid"
           text run at (0,36) width 120: "purple left border. "
-          text run at (119,36) width 439: "The line-height of the parent element should not change on any line."
+          text run at (119,36) width 438: "The line-height of the parent element should not change on any line."
       LayoutTable {TABLE} at (0,199) size 784x90 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 782x88
           LayoutTableRow {TR} at (0,0) size 782x26
             LayoutTableCell {TD} at (0,0) size 782x26 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
-              LayoutInline {STRONG} at (0,0) size 163x17
-                LayoutText {#text} at (4,4) size 163x17
-                  text run at (4,4) width 163: "TABLE Testing Section"
+              LayoutInline {STRONG} at (0,0) size 161x17
+                LayoutText {#text} at (4,4) size 161x17
+                  text run at (4,4) width 161: "TABLE Testing Section"
           LayoutTableRow {TR} at (0,26) size 782x62
             LayoutTableCell {TD} at (0,44) size 12x26 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
               LayoutText {#text} at (4,4) size 4x17
@@ -59,4 +59,4 @@ layer at (0,0) size 800x600
                 LayoutText {#text} at (589,18) size 729x35
                   text run at (589,18) width 140: ", which should have a"
                   text run at (0,36) width 184: "thin solid purple left border. "
-                  text run at (183,36) width 439: "The line-height of the parent element should not change on any line."
+                  text run at (183,36) width 438: "The line-height of the parent element should not change on any line."

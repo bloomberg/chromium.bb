@@ -4,8 +4,8 @@ layer at (0,0) size 800x256
   LayoutBlockFlow {HTML} at (0,0) size 800x256
     LayoutBlockFlow {BODY} at (8,16) size 784x232
       LayoutBlockFlow {P} at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 738x18
-          text run at (0,0) width 738: "Test passes if the blue box below is in the upper-left corner of the black box and there is no red visible on the page."
+        LayoutText {#text} at (0,0) size 736x18
+          text run at (0,0) width 736: "Test passes if the blue box below is in the upper-left corner of the black box and there is no red visible on the page."
 layer at (8,50) size 198x198
   LayoutBlockFlow (relative positioned) {DIV} at (0,34) size 198x198 [border: (3px solid #000000)]
 layer at (11,53) size 96x96

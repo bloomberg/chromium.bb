@@ -27,8 +27,8 @@ layer at (0,0) size 800x784 backgroundClip at (0,0) size 800x600 clip at (0,0) s
       LayoutBlockFlow {HR} at (0,188) size 784x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow (floating) {DIV} at (0,198) size 192x116.38 [color=#FFFFFF] [bgcolor=#008000]
         LayoutBlockFlow {H1} at (8,8) size 176x22
-          LayoutText {#text} at (0,0) size 84x21
-            text run at (0,0) width 84: "Top menu"
+          LayoutText {#text} at (0,0) size 82x21
+            text run at (0,0) width 82: "Top menu"
         LayoutBlockFlow {UL} at (24,33.19) size 155.20x72
           LayoutListItem {LI} at (0,0) size 155.20x18
             LayoutListMarker (anonymous) at (-17,0) size 7x17: bullet
@@ -69,8 +69,8 @@ layer at (0,0) size 800x784 backgroundClip at (0,0) size 800x600 clip at (0,0) s
               text run at (0,0) width 89: "0.5em margin"
       LayoutBlockFlow {DIV} at (224,198) size 528x221.88 [bgcolor=#FFFF00]
         LayoutBlockFlow {H1} at (8,29.44) size 512x37
-          LayoutText {#text} at (0,0) size 276x36
-            text run at (0,0) width 276: "The 'clear' property"
+          LayoutText {#text} at (0,0) size 275x36
+            text run at (0,0) width 275: "The 'clear' property"
         LayoutBlockFlow {P} at (8,87.88) size 512x90
           LayoutText {#text} at (0,0) size 512x89
             text run at (0,0) width 512: "This page has two floating \"menus\" on the side; one has a green background,"
@@ -87,9 +87,9 @@ layer at (0,0) size 800x784 backgroundClip at (0,0) size 800x600 clip at (0,0) s
         LayoutTableSection {TBODY} at (1,1) size 590x346
           LayoutTableRow {TR} at (0,0) size 590x26
             LayoutTableCell {TD} at (0,0) size 590x26 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
-              LayoutInline {STRONG} at (0,0) size 163x17
-                LayoutText {#text} at (4,4) size 163x17
-                  text run at (4,4) width 163: "TABLE Testing Section"
+              LayoutInline {STRONG} at (0,0) size 161x17
+                LayoutText {#text} at (4,4) size 161x17
+                  text run at (4,4) width 161: "TABLE Testing Section"
           LayoutTableRow {TR} at (0,26) size 590x320
             LayoutTableCell {TD} at (0,173) size 12x26 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
               LayoutText {#text} at (4,4) size 4x17
@@ -97,8 +97,8 @@ layer at (0,0) size 800x784 backgroundClip at (0,0) size 800x600 clip at (0,0) s
             LayoutTableCell {TD} at (12,26) size 578x319.88 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
               LayoutBlockFlow (floating) {DIV} at (4,4) size 192x116.38 [color=#FFFFFF] [bgcolor=#008000]
                 LayoutBlockFlow {H1} at (8,8) size 176x22
-                  LayoutText {#text} at (0,0) size 84x21
-                    text run at (0,0) width 84: "Top menu"
+                  LayoutText {#text} at (0,0) size 82x21
+                    text run at (0,0) width 82: "Top menu"
                 LayoutBlockFlow {UL} at (24,33.19) size 155.20x72
                   LayoutListItem {LI} at (0,0) size 155.20x18
                     LayoutListMarker (anonymous) at (-17,0) size 7x17: bullet
@@ -139,8 +139,8 @@ layer at (0,0) size 800x784 backgroundClip at (0,0) size 800x600 clip at (0,0) s
                       text run at (0,0) width 89: "0.5em margin"
               LayoutBlockFlow {DIV} at (228,4) size 314x311.88 [bgcolor=#FFFF00]
                 LayoutBlockFlow {H1} at (8,29.44) size 298x37
-                  LayoutText {#text} at (0,0) size 276x36
-                    text run at (0,0) width 276: "The 'clear' property"
+                  LayoutText {#text} at (0,0) size 275x36
+                    text run at (0,0) width 275: "The 'clear' property"
                 LayoutBlockFlow {P} at (8,87.88) size 298x162
                   LayoutText {#text} at (0,0) size 298x161
                     text run at (0,0) width 298: "This page has two floating \"menus\" on the"

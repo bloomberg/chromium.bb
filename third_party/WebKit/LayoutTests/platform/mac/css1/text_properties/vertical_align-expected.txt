@@ -45,29 +45,29 @@ layer at (0,0) size 785x4423 backgroundClip at (0,0) size 785x600 clip at (0,0) 
       LayoutBlockFlow {HR} at (0,317) size 769x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow {P} at (0,335) size 769x76
         LayoutImage {IMG} at (0,0) size 15x50
-        LayoutInline {SPAN} at (0,0) size 129x18
-          LayoutText {#text} at (15,40) size 129x18
-            text run at (15,40) width 129: "The first four words"
-        LayoutText {#text} at (143,36) size 766x40
-          text run at (143,36) width 292: " in this sentence should be subscript-aligned. "
-          text run at (434,36) width 332: "The font size of the superscripted text should not be"
+        LayoutInline {SPAN} at (0,0) size 128x18
+          LayoutText {#text} at (15,40) size 128x18
+            text run at (15,40) width 128: "The first four words"
+        LayoutText {#text} at (142,36) size 766x40
+          text run at (142,36) width 292: " in this sentence should be subscript-aligned. "
+          text run at (433,36) width 333: "The font size of the superscripted text should not be"
           text run at (0,58) width 262: "different from that of the parent element."
       LayoutBlockFlow {P} at (0,427) size 769x72
         LayoutImage {IMG} at (0,0) size 15x50
-        LayoutInline {SPAN} at (0,0) size 129x18
-          LayoutText {#text} at (15,30) size 129x18
-            text run at (15,30) width 129: "The first four words"
-        LayoutText {#text} at (143,36) size 766x36
-          text run at (143,36) width 304: " in this sentence should be superscript-aligned. "
-          text run at (446,36) width 320: "The font size of the subscripted text should not be"
+        LayoutInline {SPAN} at (0,0) size 128x18
+          LayoutText {#text} at (15,30) size 128x18
+            text run at (15,30) width 128: "The first four words"
+        LayoutText {#text} at (142,36) size 766x36
+          text run at (142,36) width 304: " in this sentence should be superscript-aligned. "
+          text run at (445,36) width 321: "The font size of the subscripted text should not be"
           text run at (0,54) width 262: "different from that of the parent element."
       LayoutBlockFlow {P} at (0,515) size 769x72
         LayoutImage {IMG} at (0,0) size 15x50
-        LayoutInline {SPAN} at (0,0) size 129x18
-          LayoutText {#text} at (15,0) size 129x18
-            text run at (15,0) width 129: "The first four words"
-        LayoutText {#text} at (143,36) size 729x36
-          text run at (143,36) width 586: " in this sentence should be top-aligned, which will align their tops with the top of the tallest"
+        LayoutInline {SPAN} at (0,0) size 128x18
+          LayoutText {#text} at (15,0) size 128x18
+            text run at (15,0) width 128: "The first four words"
+        LayoutText {#text} at (142,36) size 728x36
+          text run at (142,36) width 586: " in this sentence should be top-aligned, which will align their tops with the top of the tallest"
           text run at (0,54) width 328: "element in the line (probably the orange rectangle)."
       LayoutBlockFlow {P} at (0,603) size 769x132
         LayoutImage {IMG} at (0,0) size 15x50
@@ -75,11 +75,11 @@ layer at (0,0) size 785x4423 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (15,36) width 4: " "
         LayoutInline {SPAN} at (0,0) size 755x111
           LayoutText {#text} at (0,0) size 0x0
-          LayoutInline {SPAN} at (0,0) size 129x18
-            LayoutText {#text} at (19,21) size 129x18
-              text run at (19,21) width 129: "The first four words"
-          LayoutText {#text} at (147,21) size 755x111
-            text run at (147,21) width 558: " in this sentence should be text-top-aligned,"
+          LayoutInline {SPAN} at (0,0) size 128x18
+            LayoutText {#text} at (19,21) size 128x18
+              text run at (19,21) width 128: "The first four words"
+          LayoutText {#text} at (146,21) size 755x111
+            text run at (146,21) width 558: " in this sentence should be text-top-aligned,"
             text run at (0,58) width 755: "which should align their tops with the top of the tallest text"
             text run at (0,95) width 136: "in the line."
         LayoutText {#text} at (0,0) size 0x0
@@ -87,18 +87,18 @@ layer at (0,0) size 785x4423 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutImage {IMG} at (0,0) size 15x50
         LayoutText {#text} at (15,15) size 755x53
           text run at (15,15) width 740: " The image at the beginning of this sentence should be middle-aligned, which should align its middle with the point"
-          text run at (0,50) width 318: "defined as the text baseline plus half the x-height."
+          text run at (0,50) width 317: "defined as the text baseline plus half the x-height."
       LayoutBlockFlow {P} at (0,835) size 769x124
         LayoutImage {IMG} at (0,0) size 15x50
         LayoutText {#text} at (15,15) size 4x18
           text run at (15,15) width 4: " "
         LayoutInline {SPAN} at (0,0) size 733x124
           LayoutText {#text} at (0,0) size 0x0
-          LayoutInline {SPAN} at (0,0) size 129x18
-            LayoutText {#text} at (19,32) size 129x18
-              text run at (19,32) width 129: "The first four words"
-          LayoutText {#text} at (147,0) size 733x124
-            text run at (147,0) width 547: " in this sentence should be 12pt in size and"
+          LayoutInline {SPAN} at (0,0) size 128x18
+            LayoutText {#text} at (19,32) size 128x18
+              text run at (19,32) width 128: "The first four words"
+          LayoutText {#text} at (146,0) size 733x124
+            text run at (146,0) width 548: " in this sentence should be 12pt in size and"
             text run at (0,50) width 733: "bottom-aligned, which should align their bottom with the"
             text run at (0,87) width 518: "bottom of the lowest element in the line."
         LayoutText {#text} at (0,0) size 0x0
@@ -106,13 +106,13 @@ layer at (0,0) size 785x4423 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutImage {IMG} at (0,0) size 15x50
         LayoutText {#text} at (15,15) size 4x18
           text run at (15,15) width 4: " "
-        LayoutInline {SPAN} at (0,0) size 752x161
+        LayoutInline {SPAN} at (0,0) size 751x161
           LayoutText {#text} at (0,0) size 0x0
-          LayoutInline {SPAN} at (0,0) size 298x18
-            LayoutText {#text} at (19,19) size 298x18
-              text run at (19,19) width 298: "The first eight words (\"eight\" has a descender)"
-          LayoutText {#text} at (316,0) size 752x161
-            text run at (316,0) width 436: " in this sentence should be 12pt in"
+          LayoutInline {SPAN} at (0,0) size 297x18
+            LayoutText {#text} at (19,19) size 297x18
+              text run at (19,19) width 297: "The first eight words (\"eight\" has a descender)"
+          LayoutText {#text} at (315,0) size 751x161
+            text run at (315,0) width 436: " in this sentence should be 12pt in"
             text run at (0,50) width 693: "size and text-bottom-aligned, which should align their"
             text run at (0,87) width 671: "bottom with the bottom of the lowest text (including"
             text run at (0,124) width 295: "descenders) in the line."
@@ -123,25 +123,25 @@ layer at (0,0) size 785x4423 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (15,36) width 4: " "
         LayoutInline {SPAN} at (0,0) size 761x111
           LayoutText {#text} at (0,0) size 0x0
-          LayoutInline {SPAN} at (0,0) size 129x18
-            LayoutText {#text} at (19,36) size 129x18
-              text run at (19,36) width 129: "The first four words"
-          LayoutText {#text} at (147,21) size 761x111
-            text run at (147,21) width 547: " in this sentence should be 12pt in size and"
+          LayoutInline {SPAN} at (0,0) size 128x18
+            LayoutText {#text} at (19,36) size 128x18
+              text run at (19,36) width 128: "The first four words"
+          LayoutText {#text} at (146,21) size 761x111
+            text run at (146,21) width 548: " in this sentence should be 12pt in size and"
             text run at (0,58) width 761: "baseline-aligned, which should align their baseline with the"
             text run at (0,95) width 523: "baseline of the rest of the text in the line."
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (0,1300) size 769x72
         LayoutImage {IMG} at (0,0) size 15x50
-        LayoutInline {SPAN} at (0,0) size 97x14
-          LayoutText {#text} at (15,31) size 97x14
-            text run at (15,31) width 97: "The first four words"
-        LayoutText {#text} at (111,36) size 764x36
-          text run at (111,36) width 653: " in this sentence should have a font-size of 12px and a line-height of 16px; they are also 50%-aligned,"
+        LayoutInline {SPAN} at (0,0) size 96x14
+          LayoutText {#text} at (15,31) size 96x14
+            text run at (15,31) width 96: "The first four words"
+        LayoutText {#text} at (110,36) size 763x36
+          text run at (110,36) width 653: " in this sentence should have a font-size of 12px and a line-height of 16px; they are also 50%-aligned,"
           text run at (0,54) width 385: "which should raise them 8px relative to the natural baseline."
       LayoutBlockFlow {P} at (0,1388) size 769x36
-        LayoutText {#text} at (0,0) size 760x36
-          text run at (0,0) width 760: "In the following paragraph, all images should be aligned with the top of the 14-point text, which is identical to the first"
+        LayoutText {#text} at (0,0) size 759x36
+          text run at (0,0) width 759: "In the following paragraph, all images should be aligned with the top of the 14-point text, which is identical to the first"
           text run at (0,18) width 676: "section of text, whereas any size text should be aligned with the text baseline (which is the default value)."
       LayoutBlockFlow {P} at (0,1442.66) size 769x324
         LayoutText {#text} at (0,25) size 118x22
@@ -210,12 +210,12 @@ layer at (0,0) size 785x4423 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutImage {IMG} at (510.72,234) size 5x15
         LayoutText {#text} at (515,234) size 6x22
           text run at (515,234) width 6: " "
-        LayoutInline {BIG} at (0,0) size 160x24
-          LayoutText {#text} at (520,232) size 160x24
-            text run at (520,232) width 160: "the images appear."
-        LayoutText {#text} at (679,234) size 6x22
-          text run at (679,234) width 6: " "
-        LayoutImage {IMG} at (684.33,234) size 27x90
+        LayoutInline {BIG} at (0,0) size 159x24
+          LayoutText {#text} at (520,232) size 159x24
+            text run at (520,232) width 159: "the images appear."
+        LayoutText {#text} at (678,234) size 6x22
+          text run at (678,234) width 6: " "
+        LayoutImage {IMG} at (683.17,234) size 27x90
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (0,1785.31) size 769x36
         LayoutText {#text} at (0,0) size 765x36
@@ -283,18 +283,18 @@ layer at (0,0) size 785x4423 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutImage {IMG} at (296.22,178) size 5x15
         LayoutText {#text} at (301,175) size 5x18
           text run at (301,175) width 5: " "
-        LayoutInline {BIG} at (0,0) size 160x24
-          LayoutText {#text} at (305,170) size 160x24
-            text run at (305,170) width 160: "the images appear."
-        LayoutText {#text} at (464,175) size 5x18
-          text run at (464,175) width 5: " "
-        LayoutImage {IMG} at (468.52,140) size 27x90
+        LayoutInline {BIG} at (0,0) size 159x24
+          LayoutText {#text} at (305,170) size 159x24
+            text run at (305,170) width 159: "the images appear."
+        LayoutText {#text} at (463,175) size 5x18
+          text run at (463,175) width 5: " "
+        LayoutImage {IMG} at (467.36,140) size 27x90
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (0,2083.31) size 769x36
         LayoutText {#text} at (0,0) size 750x36
           text run at (0,0) width 750: "In the following paragraph, all elements should be aligned with the top of the tallest element on the line, whether that"
           text run at (0,18) width 178: "element is an image or not. "
-          text run at (177,18) width 565: "Each fragment of text has been SPANned appropriately in order to cause this to happen."
+          text run at (177,18) width 563: "Each fragment of text has been SPANned appropriately in order to cause this to happen."
       LayoutBlockFlow {P} at (0,2135.31) size 769x201
         LayoutInline {SPAN} at (0,0) size 97x18
           LayoutText {#text} at (0,0) size 97x18
@@ -372,18 +372,18 @@ layer at (0,0) size 785x4423 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutInline {BIG} at (0,0) size 753x89
           LayoutText {#text} at (663,46) size 753x89
             text run at (663,46) width 90: "whichever"
-            text run at (0,111) width 213: "line the elements appear."
-        LayoutText {#text} at (212,111) size 5x18
-          text run at (212,111) width 5: " "
-        LayoutImage {IMG} at (216.02,111) size 27x90
+            text run at (0,111) width 211: "line the elements appear."
+        LayoutText {#text} at (210,111) size 5x18
+          text run at (210,111) width 5: " "
+        LayoutImage {IMG} at (214.84,111) size 27x90
         LayoutText {#text} at (0,0) size 0x0
       LayoutTable {TABLE} at (0,2352.31) size 769x2055 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 767x2053
           LayoutTableRow {TR} at (0,0) size 767x26
             LayoutTableCell {TD} at (0,0) size 767x26 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
-              LayoutInline {STRONG} at (0,0) size 163x18
-                LayoutText {#text} at (4,4) size 163x18
-                  text run at (4,4) width 163: "TABLE Testing Section"
+              LayoutInline {STRONG} at (0,0) size 161x18
+                LayoutText {#text} at (4,4) size 161x18
+                  text run at (4,4) width 161: "TABLE Testing Section"
           LayoutTableRow {TR} at (0,26) size 767x2027
             LayoutTableCell {TD} at (0,1026) size 12x26 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
               LayoutText {#text} at (4,4) size 4x18
@@ -391,41 +391,41 @@ layer at (0,0) size 785x4423 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             LayoutTableCell {TD} at (12,26) size 755x2027.31 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
               LayoutBlockFlow {P} at (4,4) size 747x76
                 LayoutImage {IMG} at (0,0) size 15x50
-                LayoutInline {SPAN} at (0,0) size 129x18
-                  LayoutText {#text} at (15,40) size 129x18
-                    text run at (15,40) width 129: "The first four words"
-                LayoutText {#text} at (143,36) size 747x40
-                  text run at (143,36) width 292: " in this sentence should be subscript-aligned. "
-                  text run at (434,36) width 313: "The font size of the superscripted text should not"
+                LayoutInline {SPAN} at (0,0) size 128x18
+                  LayoutText {#text} at (15,40) size 128x18
+                    text run at (15,40) width 128: "The first four words"
+                LayoutText {#text} at (142,36) size 746x40
+                  text run at (142,36) width 292: " in this sentence should be subscript-aligned. "
+                  text run at (433,36) width 313: "The font size of the superscripted text should not"
                   text run at (0,58) width 281: "be different from that of the parent element."
               LayoutBlockFlow {P} at (4,96) size 747x72
                 LayoutImage {IMG} at (0,0) size 15x50
-                LayoutInline {SPAN} at (0,0) size 129x18
-                  LayoutText {#text} at (15,30) size 129x18
-                    text run at (15,30) width 129: "The first four words"
-                LayoutText {#text} at (143,36) size 747x36
-                  text run at (143,36) width 304: " in this sentence should be superscript-aligned. "
-                  text run at (446,36) width 301: "The font size of the subscripted text should not"
+                LayoutInline {SPAN} at (0,0) size 128x18
+                  LayoutText {#text} at (15,30) size 128x18
+                    text run at (15,30) width 128: "The first four words"
+                LayoutText {#text} at (142,36) size 746x36
+                  text run at (142,36) width 304: " in this sentence should be superscript-aligned. "
+                  text run at (445,36) width 301: "The font size of the subscripted text should not"
                   text run at (0,54) width 281: "be different from that of the parent element."
               LayoutBlockFlow {P} at (4,184) size 747x72
                 LayoutImage {IMG} at (0,0) size 15x50
-                LayoutInline {SPAN} at (0,0) size 129x18
-                  LayoutText {#text} at (15,0) size 129x18
-                    text run at (15,0) width 129: "The first four words"
-                LayoutText {#text} at (143,36) size 729x36
-                  text run at (143,36) width 586: " in this sentence should be top-aligned, which will align their tops with the top of the tallest"
+                LayoutInline {SPAN} at (0,0) size 128x18
+                  LayoutText {#text} at (15,0) size 128x18
+                    text run at (15,0) width 128: "The first four words"
+                LayoutText {#text} at (142,36) size 728x36
+                  text run at (142,36) width 586: " in this sentence should be top-aligned, which will align their tops with the top of the tallest"
                   text run at (0,54) width 328: "element in the line (probably the orange rectangle)."
               LayoutBlockFlow {P} at (4,272) size 747x132
                 LayoutImage {IMG} at (0,0) size 15x50
                 LayoutText {#text} at (15,36) size 4x18
                   text run at (15,36) width 4: " "
-                LayoutInline {SPAN} at (0,0) size 705x111
+                LayoutInline {SPAN} at (0,0) size 704x111
                   LayoutText {#text} at (0,0) size 0x0
-                  LayoutInline {SPAN} at (0,0) size 129x18
-                    LayoutText {#text} at (19,21) size 129x18
-                      text run at (19,21) width 129: "The first four words"
-                  LayoutText {#text} at (147,21) size 705x111
-                    text run at (147,21) width 558: " in this sentence should be text-top-aligned,"
+                  LayoutInline {SPAN} at (0,0) size 128x18
+                    LayoutText {#text} at (19,21) size 128x18
+                      text run at (19,21) width 128: "The first four words"
+                  LayoutText {#text} at (146,21) size 704x111
+                    text run at (146,21) width 558: " in this sentence should be text-top-aligned,"
                     text run at (0,58) width 699: "which should align their tops with the top of the tallest"
                     text run at (0,95) width 192: "text in the line."
                 LayoutText {#text} at (0,0) size 0x0
@@ -433,18 +433,18 @@ layer at (0,0) size 785x4423 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 LayoutImage {IMG} at (0,0) size 15x50
                 LayoutText {#text} at (15,15) size 718x53
                   text run at (15,15) width 703: " The image at the beginning of this sentence should be middle-aligned, which should align its middle with the"
-                  text run at (0,50) width 355: "point defined as the text baseline plus half the x-height."
+                  text run at (0,50) width 354: "point defined as the text baseline plus half the x-height."
               LayoutBlockFlow {P} at (4,504) size 747x124
                 LayoutImage {IMG} at (0,0) size 15x50
                 LayoutText {#text} at (15,15) size 4x18
                   text run at (15,15) width 4: " "
                 LayoutInline {SPAN} at (0,0) size 733x124
                   LayoutText {#text} at (0,0) size 0x0
-                  LayoutInline {SPAN} at (0,0) size 129x18
-                    LayoutText {#text} at (19,32) size 129x18
-                      text run at (19,32) width 129: "The first four words"
-                  LayoutText {#text} at (147,0) size 733x124
-                    text run at (147,0) width 547: " in this sentence should be 12pt in size and"
+                  LayoutInline {SPAN} at (0,0) size 128x18
+                    LayoutText {#text} at (19,32) size 128x18
+                      text run at (19,32) width 128: "The first four words"
+                  LayoutText {#text} at (146,0) size 733x124
+                    text run at (146,0) width 548: " in this sentence should be 12pt in size and"
                     text run at (0,50) width 733: "bottom-aligned, which should align their bottom with the"
                     text run at (0,87) width 518: "bottom of the lowest element in the line."
                 LayoutText {#text} at (0,0) size 0x0
@@ -454,11 +454,11 @@ layer at (0,0) size 785x4423 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   text run at (15,15) width 4: " "
                 LayoutInline {SPAN} at (0,0) size 726x161
                   LayoutText {#text} at (0,0) size 0x0
-                  LayoutInline {SPAN} at (0,0) size 298x18
-                    LayoutText {#text} at (19,19) size 298x18
-                      text run at (19,19) width 298: "The first eight words (\"eight\" has a descender)"
-                  LayoutText {#text} at (316,0) size 726x161
-                    text run at (316,0) width 403: " in this sentence should be 12pt"
+                  LayoutInline {SPAN} at (0,0) size 297x18
+                    LayoutText {#text} at (19,19) size 297x18
+                      text run at (19,19) width 297: "The first eight words (\"eight\" has a descender)"
+                  LayoutText {#text} at (315,0) size 726x161
+                    text run at (315,0) width 403: " in this sentence should be 12pt"
                     text run at (0,50) width 726: "in size and text-bottom-aligned, which should align their"
                     text run at (0,87) width 671: "bottom with the bottom of the lowest text (including"
                     text run at (0,124) width 295: "descenders) in the line."
@@ -469,26 +469,26 @@ layer at (0,0) size 785x4423 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   text run at (15,36) width 4: " "
                 LayoutInline {SPAN} at (0,0) size 714x111
                   LayoutText {#text} at (0,0) size 0x0
-                  LayoutInline {SPAN} at (0,0) size 129x18
-                    LayoutText {#text} at (19,36) size 129x18
-                      text run at (19,36) width 129: "The first four words"
-                  LayoutText {#text} at (147,21) size 714x111
-                    text run at (147,21) width 547: " in this sentence should be 12pt in size and"
+                  LayoutInline {SPAN} at (0,0) size 128x18
+                    LayoutText {#text} at (19,36) size 128x18
+                      text run at (19,36) width 128: "The first four words"
+                  LayoutText {#text} at (146,21) size 714x111
+                    text run at (146,21) width 548: " in this sentence should be 12pt in size and"
                     text run at (0,58) width 714: "baseline-aligned, which should align their baseline with"
                     text run at (0,95) width 570: "the baseline of the rest of the text in the line."
                 LayoutText {#text} at (0,0) size 0x0
               LayoutBlockFlow {P} at (4,969) size 747x72
                 LayoutImage {IMG} at (0,0) size 15x50
-                LayoutInline {SPAN} at (0,0) size 97x14
-                  LayoutText {#text} at (15,31) size 97x14
-                    text run at (15,31) width 97: "The first four words"
-                LayoutText {#text} at (111,36) size 713x36
-                  text run at (111,36) width 602: " in this sentence should have a font-size of 12px and a line-height of 16px; they are also 50%-"
+                LayoutInline {SPAN} at (0,0) size 96x14
+                  LayoutText {#text} at (15,31) size 96x14
+                    text run at (15,31) width 96: "The first four words"
+                LayoutText {#text} at (110,36) size 712x36
+                  text run at (110,36) width 602: " in this sentence should have a font-size of 12px and a line-height of 16px; they are also 50%-"
                   text run at (0,54) width 440: "aligned, which should raise them 8px relative to the natural baseline."
               LayoutBlockFlow {P} at (4,1057) size 747x36
                 LayoutText {#text} at (0,0) size 730x36
                   text run at (0,0) width 730: "In the following paragraph, all images should be aligned with the top of the 14-point text, which is identical to the"
-                  text run at (0,18) width 706: "first section of text, whereas any size text should be aligned with the text baseline (which is the default value)."
+                  text run at (0,18) width 705: "first section of text, whereas any size text should be aligned with the text baseline (which is the default value)."
               LayoutBlockFlow {P} at (4,1111.66) size 747x324
                 LayoutText {#text} at (0,25) size 118x22
                   text run at (0,25) width 118: "This paragraph "
@@ -554,12 +554,12 @@ layer at (0,0) size 785x4423 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 LayoutImage {IMG} at (510.72,234) size 5x15
                 LayoutText {#text} at (515,234) size 6x22
                   text run at (515,234) width 6: " "
-                LayoutInline {BIG} at (0,0) size 160x24
-                  LayoutText {#text} at (520,232) size 160x24
-                    text run at (520,232) width 160: "the images appear."
-                LayoutText {#text} at (679,234) size 6x22
-                  text run at (679,234) width 6: " "
-                LayoutImage {IMG} at (684.33,234) size 27x90
+                LayoutInline {BIG} at (0,0) size 159x24
+                  LayoutText {#text} at (520,232) size 159x24
+                    text run at (520,232) width 159: "the images appear."
+                LayoutText {#text} at (678,234) size 6x22
+                  text run at (678,234) width 6: " "
+                LayoutImage {IMG} at (683.17,234) size 27x90
                 LayoutText {#text} at (0,0) size 0x0
               LayoutBlockFlow {P} at (4,1454.31) size 747x36
                 LayoutText {#text} at (0,0) size 746x36
@@ -627,18 +627,18 @@ layer at (0,0) size 785x4423 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 LayoutImage {IMG} at (296.22,178) size 5x15
                 LayoutText {#text} at (301,175) size 5x18
                   text run at (301,175) width 5: " "
-                LayoutInline {BIG} at (0,0) size 160x24
-                  LayoutText {#text} at (305,170) size 160x24
-                    text run at (305,170) width 160: "the images appear."
-                LayoutText {#text} at (464,175) size 5x18
-                  text run at (464,175) width 5: " "
-                LayoutImage {IMG} at (468.52,140) size 27x90
+                LayoutInline {BIG} at (0,0) size 159x24
+                  LayoutText {#text} at (305,170) size 159x24
+                    text run at (305,170) width 159: "the images appear."
+                LayoutText {#text} at (463,175) size 5x18
+                  text run at (463,175) width 5: " "
+                LayoutImage {IMG} at (467.36,140) size 27x90
                 LayoutText {#text} at (0,0) size 0x0
               LayoutBlockFlow {P} at (4,1752.31) size 747x54
                 LayoutText {#text} at (0,0) size 723x54
                   text run at (0,0) width 723: "In the following paragraph, all elements should be aligned with the top of the tallest element on the line, whether"
                   text run at (0,18) width 206: "that element is an image or not. "
-                  text run at (205,18) width 510: "Each fragment of text has been SPANned appropriately in order to cause this to"
+                  text run at (205,18) width 509: "Each fragment of text has been SPANned appropriately in order to cause this to"
                   text run at (0,36) width 51: "happen."
               LayoutBlockFlow {P} at (4,1822.31) size 747x201
                 LayoutInline {SPAN} at (0,0) size 97x18
@@ -713,10 +713,10 @@ layer at (0,0) size 785x4423 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   text run at (650,46) width 5: " "
                 LayoutImage {IMG} at (654.53,46) size 5x15
                 LayoutText {#text} at (0,0) size 0x0
-                LayoutInline {BIG} at (0,0) size 307x24
-                  LayoutText {#text} at (0,111) size 307x24
-                    text run at (0,111) width 307: "whichever line the elements appear."
-                LayoutText {#text} at (306,111) size 5x18
-                  text run at (306,111) width 5: " "
-                LayoutImage {IMG} at (310.17,111) size 27x90
+                LayoutInline {BIG} at (0,0) size 305x24
+                  LayoutText {#text} at (0,111) size 305x24
+                    text run at (0,111) width 305: "whichever line the elements appear."
+                LayoutText {#text} at (305,111) size 4x18
+                  text run at (305,111) width 4: " "
+                LayoutImage {IMG} at (309,111) size 27x90
                 LayoutText {#text} at (0,0) size 0x0

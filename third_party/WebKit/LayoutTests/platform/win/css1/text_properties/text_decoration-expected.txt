@@ -34,9 +34,9 @@ layer at (0,0) size 785x1159 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutText {#text} at (0,0) size 344x17
           text run at (0,0) width 344: "This sentence should have stricken text (linethrough)."
       LayoutBlockFlow {P} at (0,295) size 769x18
-        LayoutText {#text} at (0,0) size 603x17
+        LayoutText {#text} at (0,0) size 602x17
           text run at (0,0) width 215: "This element should be blinking. "
-          text run at (214,0) width 389: "(It is not required, however, that UAs support this behavior.)"
+          text run at (214,0) width 388: "(It is not required, however, that UAs support this behavior.)"
       LayoutBlockFlow {P} at (0,329) size 769x36
         LayoutText {#text} at (0,0) size 520x17
           text run at (0,0) width 298: "The text in this element should be underlined. "
@@ -60,17 +60,17 @@ layer at (0,0) size 785x1159 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (0,0) width 741: "There should be nothing visible between this sentence and the one above (there is an empty paragraph element with"
           text run at (0,18) width 99: "class of seven)."
       LayoutBlockFlow {P} at (0,501) size 769x55
-        LayoutText {#text} at (0,0) size 648x17
-          text run at (0,0) width 648: "Text decorations only apply to the text of an element, so the image at the end of this sentence should "
+        LayoutText {#text} at (0,0) size 647x17
+          text run at (0,0) width 647: "Text decorations only apply to the text of an element, so the image at the end of this sentence should "
         LayoutInline {EM} at (0,0) size 21x17
-          LayoutText {#text} at (647,0) size 21x17
-            text run at (647,0) width 21: "not"
-        LayoutText {#text} at (667,0) size 93x17
-          text run at (667,0) width 93: " be overlined: "
+          LayoutText {#text} at (646,0) size 21x17
+            text run at (646,0) width 21: "not"
+        LayoutText {#text} at (666,0) size 93x17
+          text run at (666,0) width 93: " be overlined: "
         LayoutImage {IMG} at (0,18) size 15x15
-        LayoutText {#text} at (15,19) size 767x35
+        LayoutText {#text} at (15,19) size 766x35
           text run at (15,19) width 8: ". "
-          text run at (23,19) width 744: "The underline of the parent element should hold true beneath the image, however, since text-decoration 'spans' child"
+          text run at (23,19) width 743: "The underline of the parent element should hold true beneath the image, however, since text-decoration 'spans' child"
           text run at (0,37) width 61: "elements."
       LayoutBlockFlow {P} at (0,572) size 769x18 [color=#008000]
         LayoutText {#text} at (0,0) size 107x17
@@ -108,9 +108,9 @@ layer at (0,0) size 785x1159 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutTableSection {TBODY} at (1,1) size 767x483
           LayoutTableRow {TR} at (0,0) size 767x26
             LayoutTableCell {TD} at (0,0) size 767x26 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
-              LayoutInline {STRONG} at (0,0) size 163x17
-                LayoutText {#text} at (4,4) size 163x17
-                  text run at (4,4) width 163: "TABLE Testing Section"
+              LayoutInline {STRONG} at (0,0) size 161x17
+                LayoutText {#text} at (4,4) size 161x17
+                  text run at (4,4) width 161: "TABLE Testing Section"
           LayoutTableRow {TR} at (0,26) size 767x457
             LayoutTableCell {TD} at (0,241) size 12x26 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
               LayoutText {#text} at (4,4) size 4x17
@@ -126,9 +126,9 @@ layer at (0,0) size 785x1159 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 LayoutText {#text} at (0,0) size 344x17
                   text run at (0,0) width 344: "This sentence should have stricken text (linethrough)."
               LayoutBlockFlow {P} at (4,106) size 747x18
-                LayoutText {#text} at (0,0) size 603x17
+                LayoutText {#text} at (0,0) size 602x17
                   text run at (0,0) width 215: "This element should be blinking. "
-                  text run at (214,0) width 389: "(It is not required, however, that UAs support this behavior.)"
+                  text run at (214,0) width 388: "(It is not required, however, that UAs support this behavior.)"
               LayoutBlockFlow {P} at (4,140) size 747x36
                 LayoutText {#text} at (0,0) size 520x17
                   text run at (0,0) width 298: "The text in this element should be underlined. "
@@ -152,18 +152,18 @@ layer at (0,0) size 785x1159 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   text run at (0,0) width 741: "There should be nothing visible between this sentence and the one above (there is an empty paragraph element with"
                   text run at (0,18) width 99: "class of seven)."
               LayoutBlockFlow {P} at (4,312) size 747x55
-                LayoutText {#text} at (0,0) size 648x17
-                  text run at (0,0) width 648: "Text decorations only apply to the text of an element, so the image at the end of this sentence should "
+                LayoutText {#text} at (0,0) size 647x17
+                  text run at (0,0) width 647: "Text decorations only apply to the text of an element, so the image at the end of this sentence should "
                 LayoutInline {EM} at (0,0) size 21x17
-                  LayoutText {#text} at (647,0) size 21x17
-                    text run at (647,0) width 21: "not"
-                LayoutText {#text} at (667,0) size 687x36
-                  text run at (667,0) width 20: " be"
+                  LayoutText {#text} at (646,0) size 21x17
+                    text run at (646,0) width 21: "not"
+                LayoutText {#text} at (666,0) size 686x36
+                  text run at (666,0) width 20: " be"
                   text run at (0,19) width 69: "overlined: "
                 LayoutImage {IMG} at (68.86,18) size 15x15
-                LayoutText {#text} at (83,19) size 687x35
+                LayoutText {#text} at (83,19) size 686x35
                   text run at (83,19) width 9: ". "
-                  text run at (91,19) width 596: "The underline of the parent element should hold true beneath the image, however, since text-"
+                  text run at (91,19) width 595: "The underline of the parent element should hold true beneath the image, however, since text-"
                   text run at (0,37) width 214: "decoration 'spans' child elements."
               LayoutBlockFlow {P} at (4,383) size 747x18 [color=#008000]
                 LayoutText {#text} at (0,0) size 107x17

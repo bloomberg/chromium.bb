@@ -27,8 +27,8 @@ layer at (0,0) size 800x806 backgroundClip at (0,0) size 800x600 clip at (0,0) s
       LayoutBlockFlow {HR} at (0,190) size 784x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow (floating) {DIV} at (0,200) size 192x125.38 [color=#FFFFFF] [bgcolor=#008000]
         LayoutBlockFlow {H1} at (8,8) size 176x23
-          LayoutText {#text} at (0,0) size 82x22
-            text run at (0,0) width 82: "Top menu"
+          LayoutText {#text} at (0,0) size 81x22
+            text run at (0,0) width 81: "Top menu"
         LayoutBlockFlow {UL} at (24,34.19) size 155.20x80
           LayoutListItem {LI} at (0,0) size 155.20x20
             LayoutListMarker (anonymous) at (-18,0) size 7x19: bullet
@@ -87,9 +87,9 @@ layer at (0,0) size 800x806 backgroundClip at (0,0) size 800x600 clip at (0,0) s
         LayoutTableSection {TBODY} at (1,1) size 590x352
           LayoutTableRow {TR} at (0,0) size 590x28
             LayoutTableCell {TD} at (0,0) size 590x28 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
-              LayoutInline {STRONG} at (0,0) size 159x19
-                LayoutText {#text} at (4,4) size 159x19
-                  text run at (4,4) width 159: "TABLE Testing Section"
+              LayoutInline {STRONG} at (0,0) size 157x19
+                LayoutText {#text} at (4,4) size 157x19
+                  text run at (4,4) width 157: "TABLE Testing Section"
           LayoutTableRow {TR} at (0,28) size 590x324
             LayoutTableCell {TD} at (0,176) size 12x28 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
               LayoutText {#text} at (4,4) size 4x19
@@ -97,8 +97,8 @@ layer at (0,0) size 800x806 backgroundClip at (0,0) size 800x600 clip at (0,0) s
             LayoutTableCell {TD} at (12,28) size 578x323.88 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
               LayoutBlockFlow (floating) {DIV} at (4,4) size 192x125.38 [color=#FFFFFF] [bgcolor=#008000]
                 LayoutBlockFlow {H1} at (8,8) size 176x23
-                  LayoutText {#text} at (0,0) size 82x22
-                    text run at (0,0) width 82: "Top menu"
+                  LayoutText {#text} at (0,0) size 81x22
+                    text run at (0,0) width 81: "Top menu"
                 LayoutBlockFlow {UL} at (24,34.19) size 155.20x80
                   LayoutListItem {LI} at (0,0) size 155.20x20
                     LayoutListMarker (anonymous) at (-18,0) size 7x19: bullet

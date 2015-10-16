@@ -22,11 +22,11 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {P} at (0,163) size 784x18 [color=#000080]
         LayoutText {#text} at (0,0) size 570x17
           text run at (0,0) width 570: "This sentence should be normal for its section, except for the last word, which should be "
-        LayoutInline {EM} at (0,0) size 38x17 [color=#008000]
-          LayoutText {#text} at (569,0) size 38x17
-            text run at (569,0) width 38: "green"
-        LayoutText {#text} at (606,0) size 5x17
-          text run at (606,0) width 5: "."
+        LayoutInline {EM} at (0,0) size 37x17 [color=#008000]
+          LayoutText {#text} at (569,0) size 37x17
+            text run at (569,0) width 37: "green"
+        LayoutText {#text} at (605,0) size 5x17
+          text run at (605,0) width 5: "."
       LayoutBlockFlow {UL} at (0,197) size 784x36
         LayoutListItem {LI} at (40,0) size 744x36
           LayoutBlockFlow (anonymous) at (0,0) size 744x18
@@ -46,9 +46,9 @@ layer at (0,0) size 800x600
         LayoutTableSection {TBODY} at (1,1) size 728x154
           LayoutTableRow {TR} at (0,0) size 728x26
             LayoutTableCell {TD} at (0,0) size 728x26 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
-              LayoutInline {STRONG} at (0,0) size 163x17
-                LayoutText {#text} at (4,4) size 163x17
-                  text run at (4,4) width 163: "TABLE Testing Section"
+              LayoutInline {STRONG} at (0,0) size 161x17
+                LayoutText {#text} at (4,4) size 161x17
+                  text run at (4,4) width 161: "TABLE Testing Section"
           LayoutTableRow {TR} at (0,26) size 728x128
             LayoutTableCell {TD} at (0,77) size 12x26 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
               LayoutText {#text} at (4,4) size 4x17

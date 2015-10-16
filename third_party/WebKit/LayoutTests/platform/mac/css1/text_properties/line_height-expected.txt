@@ -89,26 +89,26 @@ layer at (0,0) size 785x2619 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           LayoutText {#text} at (0,5) size 618x14
             text run at (0,5) width 618: "This second part of the DIV should have a line-height of twice the font size, which should cause extra spacing between the lines."
       LayoutBlockFlow {P} at (0,1161) size 769x100
-        LayoutText {#text} at (0,18) size 761x64
-          text run at (0,18) width 605: "This paragraph should have a line-height of 50 pixels in the first section, which should cause extra spacing between the lines. "
-          text run at (604,18) width 157: "In the second section (within the"
+        LayoutText {#text} at (0,18) size 760x64
+          text run at (0,18) width 604: "This paragraph should have a line-height of 50 pixels in the first section, which should cause extra spacing between the lines. "
+          text run at (603,18) width 157: "In the second section (within the"
           text run at (0,68) width 186: "table) its line-height should be normal."
       LayoutBlockFlow {P} at (0,1273) size 769x14
         LayoutText {#text} at (0,0) size 517x14
           text run at (0,0) width 517: "This sentence should have a normal line-height, because negative values are not permitted for this property."
       LayoutBlockFlow {P} at (0,1299) size 769x150
-        LayoutInline {SPAN} at (0,0) size 760x89 [bgcolor=#C0C0C0]
-          LayoutText {#text} at (0,30) size 760x89
-            text run at (0,30) width 760: "This sentence should have a line-height of two centimeters, which should cause extra spacing between the lines. The text has a background color of silver, but"
-            text run at (0,105) width 694: "no padding or border. The background color has been set on an inline element and should therefore only cover the text, not the interline spacing."
+        LayoutInline {SPAN} at (0,0) size 759x89 [bgcolor=#C0C0C0]
+          LayoutText {#text} at (0,30) size 759x89
+            text run at (0,30) width 759: "This sentence should have a line-height of two centimeters, which should cause extra spacing between the lines. The text has a background color of silver, but"
+            text run at (0,105) width 693: "no padding or border. The background color has been set on an inline element and should therefore only cover the text, not the interline spacing."
         LayoutText {#text} at (0,0) size 0x0
       LayoutTable {TABLE} at (0,1461) size 769x1142 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 767x1140
           LayoutTableRow {TR} at (0,0) size 767x26
             LayoutTableCell {TD} at (0,0) size 767x26 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
-              LayoutInline {STRONG} at (0,0) size 163x18
-                LayoutText {#text} at (4,4) size 163x18
-                  text run at (4,4) width 163: "TABLE Testing Section"
+              LayoutInline {STRONG} at (0,0) size 161x18
+                LayoutText {#text} at (4,4) size 161x18
+                  text run at (4,4) width 161: "TABLE Testing Section"
           LayoutTableRow {TR} at (0,26) size 767x1114
             LayoutTableCell {TD} at (0,570) size 12x26 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
               LayoutText {#text} at (4,4) size 4x18
@@ -167,8 +167,8 @@ layer at (0,0) size 785x2619 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                     text run at (0,5) width 618: "This second part of the DIV should have a line-height of twice the font size, which should cause extra spacing between the lines."
               LayoutBlockFlow {P} at (4,894) size 747x28
                 LayoutText {#text} at (0,0) size 743x28
-                  text run at (0,0) width 605: "This paragraph should have a line-height of 50 pixels in the first section, which should cause extra spacing between the lines. "
-                  text run at (604,0) width 139: "In the second section (within"
+                  text run at (0,0) width 604: "This paragraph should have a line-height of 50 pixels in the first section, which should cause extra spacing between the lines. "
+                  text run at (603,0) width 140: "In the second section (within"
                   text run at (0,14) width 204: "the table) its line-height should be normal."
               LayoutBlockFlow {P} at (4,934) size 747x14
                 LayoutText {#text} at (0,0) size 517x14

@@ -65,13 +65,13 @@ layer at (0,0) size 785x2345 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (0,22) width 78: "by six pixels. "
           text run at (78,22) width 683: "Any images within the paragraph should increase the height of the line-box so that they fit, including their padding (5px),"
           text run at (0,184) width 357: "border (10px) and margins (15px) within the line box, such as "
-        LayoutImage {IMG} at (372,55) size 130x130 [border: (10px solid #000000)]
-        LayoutText {#text} at (517,184) size 28x16
-          text run at (517,184) width 28: " and "
-        LayoutImage {IMG} at (560,199) size 130x130 [border: (10px solid #000000)]
-        LayoutText {#text} at (705,184) size 768x256
-          text run at (705,184) width 8: ". "
-          text run at (713,184) width 38: "This is"
+        LayoutImage {IMG} at (371.73,55) size 130x130 [border: (10px solid #000000)]
+        LayoutText {#text} at (516,184) size 29x16
+          text run at (516,184) width 29: " and "
+        LayoutImage {IMG} at (559.73,199) size 130x130 [border: (10px solid #000000)]
+        LayoutText {#text} at (704,184) size 768x256
+          text run at (704,184) width 9: ". "
+          text run at (712,184) width 39: "This is"
           text run at (0,346) width 725: "additional text to make sure that there is enough room left below the image so that this line does not hit the image that is text-top"
           text run at (0,366) width 47: "aligned. "
           text run at (47,366) width 700: "It is the outer edge of the margin that should be text-bottom and text-top aligned in this paragraph, so for the first image the"
@@ -86,9 +86,9 @@ layer at (0,0) size 785x2345 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutTableSection {TBODY} at (1,1) size 767x998
           LayoutTableRow {TR} at (0,0) size 767x28
             LayoutTableCell {TD} at (0,0) size 767x28 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
-              LayoutInline {STRONG} at (0,0) size 159x19
-                LayoutText {#text} at (4,4) size 159x19
-                  text run at (4,4) width 159: "TABLE Testing Section"
+              LayoutInline {STRONG} at (0,0) size 157x19
+                LayoutText {#text} at (4,4) size 157x19
+                  text run at (4,4) width 157: "TABLE Testing Section"
           LayoutTableRow {TR} at (0,28) size 767x970
             LayoutTableCell {TD} at (0,499) size 12x28 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
               LayoutText {#text} at (4,4) size 4x19
@@ -116,9 +116,9 @@ layer at (0,0) size 785x2345 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   text run at (0,22) width 135: "separated by six pixels. "
                   text run at (135,22) width 596: "Any images within the paragraph should increase the height of the line-box so that they fit, including their"
                   text run at (0,184) width 444: "padding (5px), border (10px) and margins (15px) within the line box, such as "
-                LayoutImage {IMG} at (459,55) size 130x130 [border: (10px solid #000000)]
-                LayoutText {#text} at (604,184) size 28x16
-                  text run at (604,184) width 28: " and "
+                LayoutImage {IMG} at (458.73,55) size 130x130 [border: (10px solid #000000)]
+                LayoutText {#text} at (603,184) size 29x16
+                  text run at (603,184) width 29: " and "
                 LayoutImage {IMG} at (15,219) size 130x130 [border: (10px solid #000000)]
                 LayoutText {#text} at (160,204) size 729x236
                   text run at (160,204) width 8: ". "

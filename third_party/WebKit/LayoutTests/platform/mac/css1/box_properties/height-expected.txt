@@ -18,8 +18,8 @@ layer at (0,0) size 785x974 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         LayoutImage {IMG} at (0,0) size 50x50
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (0,168) size 769x18
-        LayoutText {#text} at (0,0) size 281x18
-          text run at (0,0) width 281: "The square above should be fifty pixels tall."
+        LayoutText {#text} at (0,0) size 280x18
+          text run at (0,0) width 280: "The square above should be fifty pixels tall."
       LayoutBlockFlow (anonymous) at (0,202) size 769x100
         LayoutImage {IMG} at (0,0) size 100x100
         LayoutText {#text} at (0,0) size 0x0
@@ -42,9 +42,9 @@ layer at (0,0) size 785x974 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         LayoutTableSection {TBODY} at (1,1) size 767x436
           LayoutTableRow {TR} at (0,0) size 767x26
             LayoutTableCell {TD} at (0,0) size 767x26 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
-              LayoutInline {STRONG} at (0,0) size 163x18
-                LayoutText {#text} at (4,4) size 163x18
-                  text run at (4,4) width 163: "TABLE Testing Section"
+              LayoutInline {STRONG} at (0,0) size 161x18
+                LayoutText {#text} at (4,4) size 161x18
+                  text run at (4,4) width 161: "TABLE Testing Section"
           LayoutTableRow {TR} at (0,26) size 767x410
             LayoutTableCell {TD} at (0,218) size 12x26 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
               LayoutText {#text} at (4,4) size 4x18
@@ -54,8 +54,8 @@ layer at (0,0) size 785x974 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                 LayoutImage {IMG} at (0,0) size 50x50
                 LayoutText {#text} at (0,0) size 0x0
               LayoutBlockFlow {P} at (4,70) size 747x18
-                LayoutText {#text} at (0,0) size 281x18
-                  text run at (0,0) width 281: "The square above should be fifty pixels tall."
+                LayoutText {#text} at (0,0) size 280x18
+                  text run at (0,0) width 280: "The square above should be fifty pixels tall."
               LayoutBlockFlow (anonymous) at (4,104) size 747x100
                 LayoutImage {IMG} at (0,0) size 100x100
                 LayoutText {#text} at (0,0) size 0x0

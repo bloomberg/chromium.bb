@@ -118,8 +118,8 @@ layer at (0,0) size 785x4053 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutText {#text} at (0,0) size 493x18
           text run at (0,0) width 493: "This paragraph should be green, because only the rotation should be ignored."
       LayoutBlockFlow {P} at (0,909) size 769x18 [color=#008000]
-        LayoutText {#text} at (0,0) size 636x18
-          text run at (0,0) width 636: "This paragraph should be green, since error-checking should be done before calculating specificity."
+        LayoutText {#text} at (0,0) size 634x18
+          text run at (0,0) width 634: "This paragraph should be green, since error-checking should be done before calculating specificity."
       LayoutBlockFlow {P} at (0,943) size 769x36
         LayoutText {#text} at (0,0) size 568x18
           text run at (0,0) width 568: "This paragraph should have a solid gray background (or a white grid), because in CSS1, "
@@ -130,11 +130,11 @@ layer at (0,0) size 785x4053 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (622,0) width 147: " is an invalid keyword,"
           text run at (0,18) width 530: "and in CSS2, it will cause the gray background (not the white grid) to be inherited."
       LayoutBlockFlow {P} at (0,995) size 769x18
-        LayoutText {#text} at (0,0) size 650x18
-          text run at (0,0) width 650: "This paragraph should be black, since in CSS1, the selector is invalid, and in CSS2, it does not apply."
+        LayoutText {#text} at (0,0) size 649x18
+          text run at (0,0) width 649: "This paragraph should be black, since in CSS1, the selector is invalid, and in CSS2, it does not apply."
       LayoutBlockFlow {P} at (0,1029) size 769x18
-        LayoutText {#text} at (0,0) size 650x18
-          text run at (0,0) width 650: "This paragraph should be black, since in CSS1, the selector is invalid, and in CSS2, it does not apply."
+        LayoutText {#text} at (0,0) size 649x18
+          text run at (0,0) width 649: "This paragraph should be black, since in CSS1, the selector is invalid, and in CSS2, it does not apply."
       LayoutBlockFlow {P} at (0,1063) size 769x18
         LayoutText {#text} at (0,0) size 532x18
           text run at (0,0) width 532: "This paragraph should have a white background, since keywords cannot be quoted."
@@ -147,18 +147,18 @@ layer at (0,0) size 785x4053 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutText {#text} at (3,3) size 754x36
           text run at (3,3) width 754: "This paragraph should have a medium-width border around it (the same as the previous and the next two paragraphs),"
           text run at (3,21) width 233: "because the border-width is invalid. "
-          text run at (235,21) width 445: "This should cause the user agent to use the default value of 'medium'."
+          text run at (235,21) width 444: "This should cause the user agent to use the default value of 'medium'."
       LayoutBlockFlow {P} at (0,1213) size 769x60 [border: (3px solid #000000)]
         LayoutText {#text} at (3,3) size 754x54
           text run at (3,3) width 754: "This paragraph should have a medium-width border around it (the same as the next and the previous two paragraphs),"
-          text run at (3,21) width 600: "because the border-width units are invalid, and therefore the border-width should be ignored. "
-          text run at (602,21) width 139: "This should cause the"
+          text run at (3,21) width 599: "because the border-width units are invalid, and therefore the border-width should be ignored. "
+          text run at (601,21) width 139: "This should cause the"
           text run at (3,39) width 302: "user agent to use the default value of 'medium'."
       LayoutBlockFlow {P} at (0,1289) size 769x60 [border: (3px solid #000000)]
         LayoutText {#text} at (3,3) size 758x54
           text run at (3,3) width 758: "This paragraph should have a medium-width border around it (the same as the previous three paragraphs), because the"
-          text run at (3,21) width 559: "border-width does not have any value to go with its pixel unit, and is therefore invalid. "
-          text run at (561,21) width 169: "This should cause the user"
+          text run at (3,21) width 558: "border-width does not have any value to go with its pixel unit, and is therefore invalid. "
+          text run at (560,21) width 170: "This should cause the user"
           text run at (3,39) width 271: "agent to use the default value of 'medium'."
       LayoutBlockFlow {P} at (0,1365) size 769x18
         LayoutText {#text} at (0,0) size 676x18
@@ -171,40 +171,40 @@ layer at (0,0) size 785x4053 backgroundClip at (0,0) size 785x600 clip at (0,0) 
       LayoutBlockFlow {OL} at (0,1451) size 769x18
         LayoutListItem {LI} at (40,0) size 729x18
           LayoutListMarker (anonymous) at (-20,0) size 16x18: "1"
-          LayoutText {#text} at (0,0) size 636x18
-            text run at (0,0) width 636: "This ordered list item should be black, because the declaration has an invalid pseudo-class selector."
+          LayoutText {#text} at (0,0) size 635x18
+            text run at (0,0) width 635: "This ordered list item should be black, because the declaration has an invalid pseudo-class selector."
       LayoutBlockFlow {P} at (0,1485) size 769x36
-        LayoutText {#text} at (0,0) size 766x36
-          text run at (0,0) width 766: "This paragraph should be black, because, in CSS1, :first-child is an invalid pseudo-class, and in CSS2, this paragraph is"
-          text run at (0,18) width 114: "not the first child."
+        LayoutText {#text} at (0,0) size 765x36
+          text run at (0,0) width 765: "This paragraph should be black, because, in CSS1, :first-child is an invalid pseudo-class, and in CSS2, this paragraph is"
+          text run at (0,18) width 113: "not the first child."
       LayoutBlockFlow {UL} at (0,1537) size 769x36
         LayoutListItem {LI} at (40,0) size 729x36
           LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
           LayoutText {#text} at (0,0) size 704x36
             text run at (0,0) width 704: "This unordered list item should be black, because, according to CSS1, the selector is invalid, and according to"
-            text run at (0,18) width 233: "CSS2, the selector should not apply."
+            text run at (0,18) width 232: "CSS2, the selector should not apply."
       LayoutBlockFlow {BLOCKQUOTE} at (40,1589) size 689x36
         LayoutText {#text} at (0,0) size 654x36
           text run at (0,0) width 654: "This blockquote should be black, because, according to CSS1, the selector is invalid, and according to"
-          text run at (0,18) width 233: "CSS2, the selector should not apply."
+          text run at (0,18) width 232: "CSS2, the selector should not apply."
       LayoutBlockFlow {P} at (0,1641) size 769x36
         LayoutInline {ACRONYM} at (0,0) size 761x36
           LayoutText {#text} at (0,0) size 761x36
             text run at (0,0) width 761: "This acronym should be black, because, according to CSS1, the selector is invalid, and according to CSS2, the selector"
-            text run at (0,18) width 111: "should not apply."
+            text run at (0,18) width 110: "should not apply."
       LayoutBlockFlow {ADDRESS} at (0,1693) size 769x36
-        LayoutText {#text} at (0,0) size 757x36
-          text run at (0,0) width 757: "This address should be black, because, according to CSS1, the selector is invalid, and according to CSS2, the selector"
-          text run at (0,18) width 111: "should not apply."
+        LayoutText {#text} at (0,0) size 756x36
+          text run at (0,0) width 756: "This address should be black, because, according to CSS1, the selector is invalid, and according to CSS2, the selector"
+          text run at (0,18) width 110: "should not apply."
       LayoutBlockFlow {P} at (0,1745) size 769x36
         LayoutInline {SPAN} at (0,0) size 734x36
           LayoutText {#text} at (0,0) size 734x36
             text run at (0,0) width 734: "This span should be black, because, according to CSS1, the selector is invalid, and according to CSS2, the selector"
-            text run at (0,18) width 111: "should not apply."
+            text run at (0,18) width 110: "should not apply."
       LayoutBlockFlow {P} at (0,1797) size 769x36
-        LayoutText {#text} at (0,0) size 756x36
+        LayoutText {#text} at (0,0) size 755x36
           text run at (0,0) width 680: "This paragraph should be black, because the style declaration that applies to it is within an invalid at-rule. "
-          text run at (679,0) width 77: "However, it"
+          text run at (679,0) width 76: "However, it"
           text run at (0,18) width 617: "is valid in CSS2, so if this is being viewed on a tty browser that supports CSS2, it should be red."
       LayoutBlockFlow {P} at (0,1849) size 769x18
         LayoutText {#text} at (0,0) size 676x18
@@ -232,9 +232,9 @@ layer at (0,0) size 785x4053 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutInline {CODE} at (0,0) size 32x15
           LayoutText {#text} at (23,38) size 32x15
             text run at (23,38) width 32: "font"
-        LayoutText {#text} at (54,36) size 734x36
-          text run at (54,36) width 185: " property, making it invalid. "
-          text run at (238,36) width 496: "Therefore, this paragraph's font should be the UA default, and match the next"
+        LayoutText {#text} at (54,36) size 733x36
+          text run at (54,36) width 184: " property, making it invalid. "
+          text run at (237,36) width 496: "Therefore, this paragraph's font should be the UA default, and match the next"
           text run at (0,54) width 72: "paragraph. "
           text run at (71,54) width 197: "If this is not the case, then the "
         LayoutInline {CODE} at (0,0) size 32x15
@@ -265,9 +265,9 @@ layer at (0,0) size 785x4053 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutInline {CODE} at (0,0) size 32x15
           LayoutText {#text} at (23,38) size 32x15
             text run at (23,38) width 32: "font"
-        LayoutText {#text} at (54,36) size 761x36
-          text run at (54,36) width 185: " property, making it invalid. "
-          text run at (238,36) width 523: "Therefore, this paragraph's font should be the UA default, and match the previous"
+        LayoutText {#text} at (54,36) size 760x36
+          text run at (54,36) width 184: " property, making it invalid. "
+          text run at (237,36) width 523: "Therefore, this paragraph's font should be the UA default, and match the previous"
           text run at (0,54) width 72: "paragraph. "
           text run at (71,54) width 197: "If this is not the case, then the "
         LayoutInline {CODE} at (0,0) size 32x15
@@ -284,9 +284,9 @@ layer at (0,0) size 785x4053 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             text run at (541,0) width 102: "emphasized text"
         LayoutText {#text} at (642,0) size 56x18
           text run at (642,0) width 56: " and the "
-        LayoutInline {STRONG} at (0,0) size 742x36
-          LayoutText {#text} at (697,0) size 742x36
-            text run at (697,0) width 45: "strong"
+        LayoutInline {STRONG} at (0,0) size 741x36
+          LayoutText {#text} at (697,0) size 741x36
+            text run at (697,0) width 44: "strong"
             text run at (0,18) width 26: "text"
         LayoutText {#text} at (25,18) size 736x36
           text run at (25,18) width 711: " within it should also be normal size, since the entire ruleset should be skipped (since in some future version of"
@@ -299,22 +299,22 @@ layer at (0,0) size 785x4053 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             text run at (473,0) width 23: "not"
         LayoutText {#text} at (495,0) size 759x36
           text run at (495,0) width 264: " a comment and therefore the selector for"
-          text run at (0,18) width 143: "P.nineteenb is invalid."
+          text run at (0,18) width 141: "P.nineteenb is invalid."
       LayoutBlockFlow {P} at (0,2181) size 769x18 [color=#0000FF]
-        LayoutText {#text} at (0,0) size 481x18
-          text run at (0,0) width 481: "This paragraph should be blue, because only the first declaration is invalid."
+        LayoutText {#text} at (0,0) size 480x18
+          text run at (0,0) width 480: "This paragraph should be blue, because only the first declaration is invalid."
       LayoutBlockFlow {P} at (0,2215) size 769x18 [color=#008000]
-        LayoutText {#text} at (0,0) size 489x18
-          text run at (0,0) width 489: "This paragraph should be green, because only the first declaration is invalid."
+        LayoutText {#text} at (0,0) size 488x18
+          text run at (0,0) width 488: "This paragraph should be green, because only the first declaration is invalid."
       LayoutBlockFlow {P} at (0,2249) size 769x18 [color=#800080]
-        LayoutText {#text} at (0,0) size 494x18
-          text run at (0,0) width 494: "This paragraph should be purple, because only the first declaration is invalid."
+        LayoutText {#text} at (0,0) size 493x18
+          text run at (0,0) width 493: "This paragraph should be purple, because only the first declaration is invalid."
       LayoutBlockFlow {P} at (0,2283) size 769x18 [color=#008000]
-        LayoutText {#text} at (0,0) size 489x18
-          text run at (0,0) width 489: "This paragraph should be green, because only the first declaration is invalid."
+        LayoutText {#text} at (0,0) size 488x18
+          text run at (0,0) width 488: "This paragraph should be green, because only the first declaration is invalid."
       LayoutBlockFlow {P} at (0,2317) size 769x18 [color=#008000]
-        LayoutText {#text} at (0,0) size 489x18
-          text run at (0,0) width 489: "This paragraph should be green, because only the first declaration is invalid."
+        LayoutText {#text} at (0,0) size 488x18
+          text run at (0,0) width 488: "This paragraph should be green, because only the first declaration is invalid."
       LayoutBlockFlow {P} at (0,2351) size 769x18
         LayoutText {#text} at (48,0) size 612x18
           text run at (48,0) width 494: "This paragraph should be indented half an inch, but it should not be maroon. "
@@ -327,9 +327,9 @@ layer at (0,0) size 785x4053 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutTableSection {TBODY} at (1,1) size 767x1598
           LayoutTableRow {TR} at (0,0) size 767x26
             LayoutTableCell {TD} at (0,0) size 767x26 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
-              LayoutInline {STRONG} at (0,0) size 163x18
-                LayoutText {#text} at (4,4) size 163x18
-                  text run at (4,4) width 163: "TABLE Testing Section"
+              LayoutInline {STRONG} at (0,0) size 161x18
+                LayoutText {#text} at (4,4) size 161x18
+                  text run at (4,4) width 161: "TABLE Testing Section"
           LayoutTableRow {TR} at (0,26) size 767x1572
             LayoutTableCell {TD} at (0,799) size 12x26 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
               LayoutText {#text} at (4,4) size 4x18
@@ -339,8 +339,8 @@ layer at (0,0) size 785x4053 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 LayoutText {#text} at (0,0) size 493x18
                   text run at (0,0) width 493: "This paragraph should be green, because only the rotation should be ignored."
               LayoutBlockFlow {P} at (4,38) size 747x18 [color=#008000]
-                LayoutText {#text} at (0,0) size 636x18
-                  text run at (0,0) width 636: "This paragraph should be green, since error-checking should be done before calculating specificity."
+                LayoutText {#text} at (0,0) size 634x18
+                  text run at (0,0) width 634: "This paragraph should be green, since error-checking should be done before calculating specificity."
               LayoutBlockFlow {P} at (4,72) size 747x36
                 LayoutText {#text} at (0,0) size 568x18
                   text run at (0,0) width 568: "This paragraph should have a solid gray background (or a white grid), because in CSS1, "
@@ -351,11 +351,11 @@ layer at (0,0) size 785x4053 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   text run at (622,0) width 83: " is an invalid"
                   text run at (0,18) width 594: "keyword, and in CSS2, it will cause the gray background (not the white grid) to be inherited."
               LayoutBlockFlow {P} at (4,124) size 747x18
-                LayoutText {#text} at (0,0) size 650x18
-                  text run at (0,0) width 650: "This paragraph should be black, since in CSS1, the selector is invalid, and in CSS2, it does not apply."
+                LayoutText {#text} at (0,0) size 649x18
+                  text run at (0,0) width 649: "This paragraph should be black, since in CSS1, the selector is invalid, and in CSS2, it does not apply."
               LayoutBlockFlow {P} at (4,158) size 747x18
-                LayoutText {#text} at (0,0) size 650x18
-                  text run at (0,0) width 650: "This paragraph should be black, since in CSS1, the selector is invalid, and in CSS2, it does not apply."
+                LayoutText {#text} at (0,0) size 649x18
+                  text run at (0,0) width 649: "This paragraph should be black, since in CSS1, the selector is invalid, and in CSS2, it does not apply."
               LayoutBlockFlow {P} at (4,192) size 747x18
                 LayoutText {#text} at (0,0) size 532x18
                   text run at (0,0) width 532: "This paragraph should have a white background, since keywords cannot be quoted."
@@ -371,10 +371,10 @@ layer at (0,0) size 785x4053 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   text run at (319,21) width 378: "This should cause the user agent to use the default value of"
                   text run at (3,39) width 63: "'medium'."
               LayoutBlockFlow {P} at (4,360) size 747x60 [border: (3px solid #000000)]
-                LayoutText {#text} at (3,3) size 712x54
+                LayoutText {#text} at (3,3) size 711x54
                   text run at (3,3) width 670: "This paragraph should have a medium-width border around it (the same as the next and the previous two"
                   text run at (3,21) width 683: "paragraphs), because the border-width units are invalid, and therefore the border-width should be ignored. "
-                  text run at (685,21) width 30: "This"
+                  text run at (685,21) width 29: "This"
                   text run at (3,39) width 411: "should cause the user agent to use the default value of 'medium'."
               LayoutBlockFlow {P} at (4,436) size 747x60 [border: (3px solid #000000)]
                 LayoutText {#text} at (3,3) size 734x54
@@ -393,40 +393,40 @@ layer at (0,0) size 785x4053 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               LayoutBlockFlow {OL} at (4,598) size 747x18
                 LayoutListItem {LI} at (40,0) size 707x18
                   LayoutListMarker (anonymous) at (-20,0) size 16x18: "1"
-                  LayoutText {#text} at (0,0) size 636x18
-                    text run at (0,0) width 636: "This ordered list item should be black, because the declaration has an invalid pseudo-class selector."
+                  LayoutText {#text} at (0,0) size 635x18
+                    text run at (0,0) width 635: "This ordered list item should be black, because the declaration has an invalid pseudo-class selector."
               LayoutBlockFlow {P} at (4,632) size 747x36
-                LayoutText {#text} at (0,0) size 684x36
-                  text run at (0,0) width 684: "This paragraph should be black, because, in CSS1, :first-child is an invalid pseudo-class, and in CSS2, this"
-                  text run at (0,18) width 197: "paragraph is not the first child."
+                LayoutText {#text} at (0,0) size 683x36
+                  text run at (0,0) width 683: "This paragraph should be black, because, in CSS1, :first-child is an invalid pseudo-class, and in CSS2, this"
+                  text run at (0,18) width 196: "paragraph is not the first child."
               LayoutBlockFlow {UL} at (4,684) size 747x36
                 LayoutListItem {LI} at (40,0) size 707x36
                   LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
                   LayoutText {#text} at (0,0) size 704x36
                     text run at (0,0) width 704: "This unordered list item should be black, because, according to CSS1, the selector is invalid, and according to"
-                    text run at (0,18) width 233: "CSS2, the selector should not apply."
+                    text run at (0,18) width 232: "CSS2, the selector should not apply."
               LayoutBlockFlow {BLOCKQUOTE} at (44,736) size 667x36
                 LayoutText {#text} at (0,0) size 654x36
                   text run at (0,0) width 654: "This blockquote should be black, because, according to CSS1, the selector is invalid, and according to"
-                  text run at (0,18) width 233: "CSS2, the selector should not apply."
+                  text run at (0,18) width 232: "CSS2, the selector should not apply."
               LayoutBlockFlow {P} at (4,788) size 747x36
                 LayoutInline {ACRONYM} at (0,0) size 707x36
                   LayoutText {#text} at (0,0) size 707x36
                     text run at (0,0) width 707: "This acronym should be black, because, according to CSS1, the selector is invalid, and according to CSS2, the"
-                    text run at (0,18) width 165: "selector should not apply."
+                    text run at (0,18) width 164: "selector should not apply."
               LayoutBlockFlow {ADDRESS} at (4,840) size 747x36
-                LayoutText {#text} at (0,0) size 703x36
-                  text run at (0,0) width 703: "This address should be black, because, according to CSS1, the selector is invalid, and according to CSS2, the"
-                  text run at (0,18) width 166: "selector should not apply."
+                LayoutText {#text} at (0,0) size 701x36
+                  text run at (0,0) width 701: "This address should be black, because, according to CSS1, the selector is invalid, and according to CSS2, the"
+                  text run at (0,18) width 165: "selector should not apply."
               LayoutBlockFlow {P} at (4,892) size 747x36
                 LayoutInline {SPAN} at (0,0) size 734x36
                   LayoutText {#text} at (0,0) size 734x36
                     text run at (0,0) width 734: "This span should be black, because, according to CSS1, the selector is invalid, and according to CSS2, the selector"
-                    text run at (0,18) width 111: "should not apply."
+                    text run at (0,18) width 110: "should not apply."
               LayoutBlockFlow {P} at (4,944) size 747x36
-                LayoutText {#text} at (0,0) size 743x36
+                LayoutText {#text} at (0,0) size 742x36
                   text run at (0,0) width 680: "This paragraph should be black, because the style declaration that applies to it is within an invalid at-rule. "
-                  text run at (679,0) width 64: "However,"
+                  text run at (679,0) width 63: "However,"
                   text run at (0,18) width 630: "it is valid in CSS2, so if this is being viewed on a tty browser that supports CSS2, it should be red."
               LayoutBlockFlow {P} at (4,996) size 747x18
                 LayoutText {#text} at (0,0) size 676x18
@@ -455,9 +455,9 @@ layer at (0,0) size 785x4053 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 LayoutInline {CODE} at (0,0) size 32x15
                   LayoutText {#text} at (105,38) size 32x15
                     text run at (105,38) width 32: "font"
-                LayoutText {#text} at (136,36) size 718x36
-                  text run at (136,36) width 185: " property, making it invalid. "
-                  text run at (320,36) width 398: "Therefore, this paragraph's font should be the UA default, and"
+                LayoutText {#text} at (136,36) size 717x36
+                  text run at (136,36) width 184: " property, making it invalid. "
+                  text run at (319,36) width 398: "Therefore, this paragraph's font should be the UA default, and"
                   text run at (0,54) width 171: "match the next paragraph. "
                   text run at (170,54) width 196: "If this is not the case, then the "
                 LayoutInline {CODE} at (0,0) size 32x15
@@ -489,9 +489,9 @@ layer at (0,0) size 785x4053 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 LayoutInline {CODE} at (0,0) size 32x15
                   LayoutText {#text} at (105,38) size 32x15
                     text run at (105,38) width 32: "font"
-                LayoutText {#text} at (136,36) size 718x36
-                  text run at (136,36) width 185: " property, making it invalid. "
-                  text run at (320,36) width 398: "Therefore, this paragraph's font should be the UA default, and"
+                LayoutText {#text} at (136,36) size 717x36
+                  text run at (136,36) width 184: " property, making it invalid. "
+                  text run at (319,36) width 398: "Therefore, this paragraph's font should be the UA default, and"
                   text run at (0,54) width 198: "match the previous paragraph. "
                   text run at (197,54) width 196: "If this is not the case, then the "
                 LayoutInline {CODE} at (0,0) size 32x15
@@ -508,9 +508,9 @@ layer at (0,0) size 785x4053 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                     text run at (541,0) width 102: "emphasized text"
                 LayoutText {#text} at (642,0) size 56x18
                   text run at (642,0) width 56: " and the "
-                LayoutInline {STRONG} at (0,0) size 742x36
-                  LayoutText {#text} at (697,0) size 742x36
-                    text run at (697,0) width 45: "strong"
+                LayoutInline {STRONG} at (0,0) size 741x36
+                  LayoutText {#text} at (697,0) size 741x36
+                    text run at (697,0) width 44: "strong"
                     text run at (0,18) width 26: "text"
                 LayoutText {#text} at (25,18) size 736x36
                   text run at (25,18) width 711: " within it should also be normal size, since the entire ruleset should be skipped (since in some future version of"
@@ -523,22 +523,22 @@ layer at (0,0) size 785x4053 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                     text run at (473,0) width 23: "not"
                 LayoutText {#text} at (495,0) size 737x36
                   text run at (495,0) width 242: " a comment and therefore the selector"
-                  text run at (0,18) width 165: "for P.nineteenb is invalid."
+                  text run at (0,18) width 164: "for P.nineteenb is invalid."
               LayoutBlockFlow {P} at (4,1328) size 747x18 [color=#0000FF]
-                LayoutText {#text} at (0,0) size 481x18
-                  text run at (0,0) width 481: "This paragraph should be blue, because only the first declaration is invalid."
+                LayoutText {#text} at (0,0) size 480x18
+                  text run at (0,0) width 480: "This paragraph should be blue, because only the first declaration is invalid."
               LayoutBlockFlow {P} at (4,1362) size 747x18 [color=#008000]
-                LayoutText {#text} at (0,0) size 489x18
-                  text run at (0,0) width 489: "This paragraph should be green, because only the first declaration is invalid."
+                LayoutText {#text} at (0,0) size 488x18
+                  text run at (0,0) width 488: "This paragraph should be green, because only the first declaration is invalid."
               LayoutBlockFlow {P} at (4,1396) size 747x18 [color=#800080]
-                LayoutText {#text} at (0,0) size 494x18
-                  text run at (0,0) width 494: "This paragraph should be purple, because only the first declaration is invalid."
+                LayoutText {#text} at (0,0) size 493x18
+                  text run at (0,0) width 493: "This paragraph should be purple, because only the first declaration is invalid."
               LayoutBlockFlow {P} at (4,1430) size 747x18 [color=#008000]
-                LayoutText {#text} at (0,0) size 489x18
-                  text run at (0,0) width 489: "This paragraph should be green, because only the first declaration is invalid."
+                LayoutText {#text} at (0,0) size 488x18
+                  text run at (0,0) width 488: "This paragraph should be green, because only the first declaration is invalid."
               LayoutBlockFlow {P} at (4,1464) size 747x18 [color=#008000]
-                LayoutText {#text} at (0,0) size 489x18
-                  text run at (0,0) width 489: "This paragraph should be green, because only the first declaration is invalid."
+                LayoutText {#text} at (0,0) size 488x18
+                  text run at (0,0) width 488: "This paragraph should be green, because only the first declaration is invalid."
               LayoutBlockFlow {P} at (4,1498) size 747x18
                 LayoutText {#text} at (48,0) size 612x18
                   text run at (48,0) width 494: "This paragraph should be indented half an inch, but it should not be maroon. "

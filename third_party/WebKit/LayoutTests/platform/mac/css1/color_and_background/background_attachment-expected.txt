@@ -18,29 +18,29 @@ layer at (0,0) size 800x1195 backgroundClip at (0,0) size 800x600 clip at (0,0) 
           text run at (0,18) width 204: "NOT scroll with the document. "
           text run at (203,18) width 563: "It should, instead, appear to be a fixed pattern past which the content scrolls, even when"
           text run at (0,36) width 199: "the end of the page is reached. "
-          text run at (198,36) width 575: "In addition, the default Test Suite background should NOT appear, as it's been overridden"
+          text run at (198,36) width 574: "In addition, the default Test Suite background should NOT appear, as it's been overridden"
           text run at (0,54) width 176: "by the styles shown above. "
           text run at (175,54) width 560: "I'll have to add a lot of extra text to the page in order to make all this something we can"
           text run at (0,72) width 100: "actually check. "
-          text run at (99,72) width 233: "Don't worry, I'll think of something."
+          text run at (99,72) width 231: "Don't worry, I'll think of something."
       LayoutBlockFlow {P} at (0,201) size 784x18
-        LayoutText {#text} at (0,0) size 519x18
-          text run at (0,0) width 426: "In fact, why not the relevant section from the CSS1 specification? "
-          text run at (425,0) width 94: "A capital idea."
+        LayoutText {#text} at (0,0) size 518x18
+          text run at (0,0) width 425: "In fact, why not the relevant section from the CSS1 specification? "
+          text run at (424,0) width 94: "A capital idea."
       LayoutBlockFlow {HR} at (0,235) size 784x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow {HR} at (0,245) size 784x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow {H4} at (0,268.27) size 784x18
-        LayoutInline {A} at (0,0) size 223x18
-          LayoutText {#text} at (0,0) size 223x18
-            text run at (0,0) width 223: "5.3.5    'background-attachment'"
+        LayoutInline {A} at (0,0) size 222x18
+          LayoutText {#text} at (0,0) size 222x18
+            text run at (0,0) width 222: "5.3.5    'background-attachment'"
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (0,307.53) size 784x90
-        LayoutInline {EM} at (0,0) size 43x18
-          LayoutText {#text} at (0,0) size 43x18
-            text run at (0,0) width 43: "Value:"
-        LayoutText {#text} at (42,0) size 85x18
-          text run at (42,0) width 85: " scroll | fixed"
-        LayoutBR {BR} at (126,14) size 1x0
+        LayoutInline {EM} at (0,0) size 41x18
+          LayoutText {#text} at (0,0) size 41x18
+            text run at (0,0) width 41: "Value:"
+        LayoutText {#text} at (40,0) size 84x18
+          text run at (40,0) width 84: " scroll | fixed"
+        LayoutBR {BR} at (123,14) size 1x0
         LayoutInline {EM} at (0,0) size 45x18
           LayoutText {#text} at (0,18) size 45x18
             text run at (0,18) width 45: "Initial:"
@@ -59,15 +59,15 @@ layer at (0,0) size 800x1195 backgroundClip at (0,0) size 800x600 clip at (0,0) 
         LayoutText {#text} at (63,54) size 21x18
           text run at (63,54) width 21: " no"
         LayoutBR {BR} at (83,68) size 1x0
-        LayoutInline {EM} at (0,0) size 124x18
-          LayoutText {#text} at (0,72) size 124x18
-            text run at (0,72) width 124: "Percentage values:"
-        LayoutText {#text} at (123,72) size 32x18
-          text run at (123,72) width 32: " N/A"
+        LayoutInline {EM} at (0,0) size 123x18
+          LayoutText {#text} at (0,72) size 123x18
+            text run at (0,72) width 123: "Percentage values:"
+        LayoutText {#text} at (122,72) size 33x18
+          text run at (122,72) width 33: " N/A"
         LayoutBR {BR} at (154,86) size 1x0
       LayoutBlockFlow {P} at (0,413.53) size 784x36
-        LayoutText {#text} at (0,0) size 783x36
-          text run at (0,0) width 783: "If a background image is specified, the value of 'background-attachment' determines if it is fixed with regard to the canvas"
+        LayoutText {#text} at (0,0) size 781x36
+          text run at (0,0) width 781: "If a background image is specified, the value of 'background-attachment' determines if it is fixed with regard to the canvas"
           text run at (0,18) width 237: "or if it scrolls along with the content."
       LayoutBlockFlow {PRE} at (0,465.53) size 784x75
         LayoutText {#text} at (0,0) size 289x75
@@ -82,54 +82,54 @@ layer at (0,0) size 800x1195 backgroundClip at (0,0) size 800x600 clip at (0,0) 
           text run at (0,60) width 24: "  }"
           text run at (23,60) width 1: " "
       LayoutBlockFlow {P} at (0,556.53) size 784x54
-        LayoutInline {EM} at (0,0) size 73x18
-          LayoutText {#text} at (0,0) size 73x18
-            text run at (0,0) width 73: "CSS1 core:"
-        LayoutText {#text} at (72,0) size 778x54
-          text run at (72,0) width 686: " UAs may treat 'fixed' as 'scroll'. However, it is recommended they interpret 'fixed' correctly, at least on the"
+        LayoutInline {EM} at (0,0) size 72x18
+          LayoutText {#text} at (0,0) size 72x18
+            text run at (0,0) width 72: "CSS1 core:"
+        LayoutText {#text} at (71,0) size 778x54
+          text run at (71,0) width 683: " UAs may treat 'fixed' as 'scroll'. However, it is recommended they interpret 'fixed' correctly, at least on the"
           text run at (0,18) width 778: "HTML and BODY elements, since there is no way for an author to provide an image only for those browsers that support"
-          text run at (0,36) width 43: "'fixed'."
+          text run at (0,36) width 42: "'fixed'."
       LayoutTable {TABLE} at (0,626.53) size 784x552 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 782x550
           LayoutTableRow {TR} at (0,0) size 782x26
             LayoutTableCell {TD} at (0,0) size 782x26 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
-              LayoutInline {STRONG} at (0,0) size 163x18
-                LayoutText {#text} at (4,4) size 163x18
-                  text run at (4,4) width 163: "TABLE Testing Section"
+              LayoutInline {STRONG} at (0,0) size 161x18
+                LayoutText {#text} at (4,4) size 161x18
+                  text run at (4,4) width 161: "TABLE Testing Section"
           LayoutTableRow {TR} at (0,26) size 782x524
             LayoutTableCell {TD} at (0,275) size 12x26 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
               LayoutText {#text} at (4,4) size 4x18
                 text run at (4,4) width 4: " "
             LayoutTableCell {TD} at (12,26) size 770x523.53 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
               LayoutBlockFlow {P} at (4,4) size 762x90
-                LayoutText {#text} at (0,0) size 761x90
+                LayoutText {#text} at (0,0) size 760x90
                   text run at (0,0) width 745: "This document should have a green grid-pattern line across the top of the page (or at least a tiled background) which"
                   text run at (0,18) width 237: "does NOT scroll with the document. "
-                  text run at (236,18) width 525: "It should, instead, appear to be a fixed pattern past which the content scrolls, even"
+                  text run at (236,18) width 524: "It should, instead, appear to be a fixed pattern past which the content scrolls, even"
                   text run at (0,36) width 237: "when the end of the page is reached. "
-                  text run at (236,36) width 503: "In addition, the default Test Suite background should NOT appear, as it's been"
+                  text run at (236,36) width 501: "In addition, the default Test Suite background should NOT appear, as it's been"
                   text run at (0,54) width 250: "overridden by the styles shown above. "
                   text run at (249,54) width 510: "I'll have to add a lot of extra text to the page in order to make all this something"
                   text run at (0,72) width 149: "we can actually check. "
-                  text run at (148,72) width 232: "Don't worry, I'll think of something."
+                  text run at (148,72) width 231: "Don't worry, I'll think of something."
               LayoutBlockFlow {P} at (4,110) size 762x18
-                LayoutText {#text} at (0,0) size 519x18
-                  text run at (0,0) width 426: "In fact, why not the relevant section from the CSS1 specification? "
-                  text run at (425,0) width 94: "A capital idea."
+                LayoutText {#text} at (0,0) size 518x18
+                  text run at (0,0) width 425: "In fact, why not the relevant section from the CSS1 specification? "
+                  text run at (424,0) width 94: "A capital idea."
               LayoutBlockFlow {HR} at (4,144) size 762x2 [border: (1px inset #EEEEEE)]
               LayoutBlockFlow {HR} at (4,154) size 762x2 [border: (1px inset #EEEEEE)]
               LayoutBlockFlow {H4} at (4,177.27) size 762x18
-                LayoutInline {A} at (0,0) size 223x18
-                  LayoutText {#text} at (0,0) size 223x18
-                    text run at (0,0) width 223: "5.3.5    'background-attachment'"
+                LayoutInline {A} at (0,0) size 222x18
+                  LayoutText {#text} at (0,0) size 222x18
+                    text run at (0,0) width 222: "5.3.5    'background-attachment'"
                 LayoutText {#text} at (0,0) size 0x0
               LayoutBlockFlow {P} at (4,216.53) size 762x90
-                LayoutInline {EM} at (0,0) size 43x18
-                  LayoutText {#text} at (0,0) size 43x18
-                    text run at (0,0) width 43: "Value:"
-                LayoutText {#text} at (42,0) size 85x18
-                  text run at (42,0) width 85: " scroll | fixed"
-                LayoutBR {BR} at (126,14) size 1x0
+                LayoutInline {EM} at (0,0) size 41x18
+                  LayoutText {#text} at (0,0) size 41x18
+                    text run at (0,0) width 41: "Value:"
+                LayoutText {#text} at (40,0) size 84x18
+                  text run at (40,0) width 84: " scroll | fixed"
+                LayoutBR {BR} at (123,14) size 1x0
                 LayoutInline {EM} at (0,0) size 45x18
                   LayoutText {#text} at (0,18) size 45x18
                     text run at (0,18) width 45: "Initial:"
@@ -148,15 +148,15 @@ layer at (0,0) size 800x1195 backgroundClip at (0,0) size 800x600 clip at (0,0) 
                 LayoutText {#text} at (63,54) size 21x18
                   text run at (63,54) width 21: " no"
                 LayoutBR {BR} at (83,68) size 1x0
-                LayoutInline {EM} at (0,0) size 124x18
-                  LayoutText {#text} at (0,72) size 124x18
-                    text run at (0,72) width 124: "Percentage values:"
-                LayoutText {#text} at (123,72) size 32x18
-                  text run at (123,72) width 32: " N/A"
+                LayoutInline {EM} at (0,0) size 123x18
+                  LayoutText {#text} at (0,72) size 123x18
+                    text run at (0,72) width 123: "Percentage values:"
+                LayoutText {#text} at (122,72) size 33x18
+                  text run at (122,72) width 33: " N/A"
                 LayoutBR {BR} at (154,86) size 1x0
               LayoutBlockFlow {P} at (4,322.53) size 762x36
-                LayoutText {#text} at (0,0) size 735x36
-                  text run at (0,0) width 735: "If a background image is specified, the value of 'background-attachment' determines if it is fixed with regard to the"
+                LayoutText {#text} at (0,0) size 734x36
+                  text run at (0,0) width 734: "If a background image is specified, the value of 'background-attachment' determines if it is fixed with regard to the"
                   text run at (0,18) width 284: "canvas or if it scrolls along with the content."
               LayoutBlockFlow {PRE} at (4,374.53) size 762x75
                 LayoutText {#text} at (0,0) size 289x75
@@ -171,10 +171,10 @@ layer at (0,0) size 800x1195 backgroundClip at (0,0) size 800x600 clip at (0,0) 
                   text run at (0,60) width 24: "  }"
                   text run at (23,60) width 1: " "
               LayoutBlockFlow {P} at (4,465.53) size 762x54
-                LayoutInline {EM} at (0,0) size 73x18
-                  LayoutText {#text} at (0,0) size 73x18
-                    text run at (0,0) width 73: "CSS1 core:"
-                LayoutText {#text} at (72,0) size 758x54
-                  text run at (72,0) width 686: " UAs may treat 'fixed' as 'scroll'. However, it is recommended they interpret 'fixed' correctly, at least on the"
+                LayoutInline {EM} at (0,0) size 72x18
+                  LayoutText {#text} at (0,0) size 72x18
+                    text run at (0,0) width 72: "CSS1 core:"
+                LayoutText {#text} at (71,0) size 754x54
+                  text run at (71,0) width 683: " UAs may treat 'fixed' as 'scroll'. However, it is recommended they interpret 'fixed' correctly, at least on the"
                   text run at (0,18) width 726: "HTML and BODY elements, since there is no way for an author to provide an image only for those browsers that"
-                  text run at (0,36) width 95: "support 'fixed'."
+                  text run at (0,36) width 94: "support 'fixed'."
