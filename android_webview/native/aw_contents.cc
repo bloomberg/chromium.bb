@@ -192,7 +192,10 @@ AwContents::AwContents(scoped_ptr<WebContents> web_contents)
               switches::kDisablePageVisibility)),
       web_contents_(web_contents.Pass()),
       renderer_manager_key_(GLViewRendererManager::GetInstance()->NullKey()) {
-  base::subtle::NoBarrier_AtomicIncrement(&g_instance_count, 1);
+  base::subtle::Atomic32 instance_count =
+      base::subtle::NoBarrier_AtomicIncrement(&g_instance_count, 1);
+  VLOG(2) << "AwContents::~AwContents " << this << " instance_count "
+          << instance_count;
   icon_helper_.reset(new IconHelper(web_contents_.get()));
   icon_helper_->SetListener(this);
   web_contents_->SetUserData(android_webview::kAwContentsUserDataKey,
@@ -292,14 +295,17 @@ AwContents::~AwContents() {
     find_helper_->SetListener(NULL);
   if (icon_helper_.get())
     icon_helper_->SetListener(NULL);
-  base::subtle::NoBarrier_AtomicIncrement(&g_instance_count, -1);
+  base::subtle::Atomic32 instance_count =
+      base::subtle::NoBarrier_AtomicIncrement(&g_instance_count, -1);
   // When the last WebView is destroyed free all discardable memory allocated by
   // Chromium, because the app process may continue to run for a long time
   // without ever using another WebView.
-  if (base::subtle::NoBarrier_Load(&g_instance_count) == 0) {
+  if (instance_count == 0) {
     base::MemoryPressureListener::NotifyMemoryPressure(
         base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL);
   }
+  VLOG(2) << "AwContents::~AwContents " << this << " instance_count "
+          << instance_count;
 }
 
 base::android::ScopedJavaLocalRef<jobject>

@@ -9,11 +9,14 @@ import android.content.ContextWrapper;
 import android.os.Build;
 import android.test.FlakyTest;
 import android.test.suitebuilder.annotation.LargeTest;
+import android.test.suitebuilder.annotation.SmallTest;
 
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
 import org.chromium.android_webview.AwContents;
+import org.chromium.base.Log;
 import org.chromium.base.annotations.SuppressFBWarnings;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.content.browser.test.util.Criteria;
@@ -28,6 +31,8 @@ import java.util.concurrent.Callable;
  */
 @MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT)
 public class AwContentsGarbageCollectionTest extends AwTestBase {
+    private static final String TAG = "AwGcTest";
+
     // The system retains a strong ref to the last focused view (in InputMethodManager)
     // so allow for 1 'leaked' instance.
     private static final int MAX_IDLE_INSTANCES = 1;
@@ -84,13 +89,13 @@ public class AwContentsGarbageCollectionTest extends AwTestBase {
         }
     }
 
-    /*
     @SmallTest
     @Feature({"AndroidWebView"})
-    Bug: https://crbug.com/544098
-    */
-    @FlakyTest
+    @CommandLineFlags.Add("v=2")
+    // Enabled to obtain debug logging. Feel free to disable after first failure.
+    // See https://crbug.com/544098
     public void testCreateAndGcOneTime() throws Throwable {
+        Log.d(TAG, "testCreateAndGcOneTime start");
         gcAndCheckAllAwContentsDestroyed();
 
         TestAwContentsClient client = new TestAwContentsClient();
@@ -99,10 +104,13 @@ public class AwContentsGarbageCollectionTest extends AwTestBase {
             containerViews[i] = createAwTestContainerViewOnMainSync(client);
             loadUrlAsync(containerViews[i].getAwContents(), "about:blank");
         }
+        Log.d(TAG, "testCreateAndGcOneTime create views done");
 
         containerViews = null;
         removeAllViews();
+        Log.d(TAG, "testCreateAndGcOneTime remove views done");
         gcAndCheckAllAwContentsDestroyed();
+        Log.d(TAG, "testCreateAndGcOneTime end");
     }
 
     /*
@@ -192,6 +200,7 @@ public class AwContentsGarbageCollectionTest extends AwTestBase {
     }
 
     private void gcAndCheckAllAwContentsDestroyed() throws InterruptedException {
+        Log.d(TAG, "Cause GC");
         Runtime.getRuntime().gc();
 
         Criteria criteria = new Criteria() {
@@ -201,7 +210,9 @@ public class AwContentsGarbageCollectionTest extends AwTestBase {
                     return runTestOnUiThreadAndGetResult(new Callable<Boolean>() {
                         @Override
                         public Boolean call() {
-                            return AwContents.getNativeInstanceCount() <= MAX_IDLE_INSTANCES;
+                            int count = AwContents.getNativeInstanceCount();
+                            Log.d(TAG, "NativeInstanceCount = " + count);
+                            return count <= MAX_IDLE_INSTANCES;
                         }
                     });
                 } catch (Exception e) {
@@ -219,6 +230,7 @@ public class AwContentsGarbageCollectionTest extends AwTestBase {
             if (CriteriaHelper.pollForCriteria(criteria, timeoutBetweenGcMs, CHECK_INTERVAL)) {
                 break;
             } else {
+                Log.d(TAG, "Cause GC");
                 Runtime.getRuntime().gc();
             }
         }
