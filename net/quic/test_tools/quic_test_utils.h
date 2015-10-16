@@ -772,6 +772,10 @@ void CreateServerSessionForTest(QuicServerId server_id,
                                 PacketSavingConnection** server_connection,
                                 TestQuicSpdyServerSession** server_session);
 
+// Helper to generate client side stream ids, generalizes
+// kClientDataStreamId1 etc. above.
+QuicStreamId QuicClientDataStreamId(int i);
+
 }  // namespace test
 }  // namespace net
 

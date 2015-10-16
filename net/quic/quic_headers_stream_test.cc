@@ -4,6 +4,7 @@
 
 #include "net/quic/quic_headers_stream.h"
 
+#include "base/test/histogram_tester.h"
 #include "net/quic/quic_utils.h"
 #include "net/quic/spdy_utils.h"
 #include "net/quic/test_tools/quic_connection_peer.h"
@@ -14,10 +15,14 @@
 #include "net/spdy/spdy_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using base::Bucket;
+using base::HistogramTester;
 using base::StringPiece;
 using std::ostream;
 using std::string;
 using std::vector;
+using testing::ElementsAre;
+using testing::InSequence;
 using testing::Invoke;
 using testing::StrictMock;
 using testing::WithArgs;
@@ -26,6 +31,9 @@ using testing::_;
 namespace net {
 namespace test {
 namespace {
+
+// TODO(ckrasic):  this workaround is due to absence of std::initializer_list
+const bool kFins[] = {false, true};
 
 class MockVisitor : public SpdyFramerVisitorInterface {
  public:
@@ -124,6 +132,7 @@ class QuicHeadersStreamTest : public ::testing::TestWithParam<TestParams> {
     EXPECT_EQ(version(), session_.connection()->version());
     EXPECT_TRUE(headers_stream_ != nullptr);
     VLOG(1) << GetParam();
+    connection_->AdvanceTime(QuicTime::Delta::FromMilliseconds(1));
   }
 
   QuicConsumedData SaveIov(const QuicIOVector& data) {
@@ -246,8 +255,7 @@ TEST_P(QuicHeadersStreamTest, EffectivePriority) {
 TEST_P(QuicHeadersStreamTest, WriteHeaders) {
   for (QuicStreamId stream_id = kClientDataStreamId1;
        stream_id < kClientDataStreamId3; stream_id += 2) {
-    for (int count = 0; count < 2; ++count) {
-      bool fin = (count == 0);
+    for (bool fin : kFins) {
       if (perspective() == Perspective::IS_SERVER) {
         WriteHeadersAndExpectSynReply(stream_id, fin);
       } else {
@@ -263,8 +271,7 @@ TEST_P(QuicHeadersStreamTest, WriteHeaders) {
 TEST_P(QuicHeadersStreamTest, ProcessRawData) {
   for (QuicStreamId stream_id = kClientDataStreamId1;
        stream_id < kClientDataStreamId3; stream_id += 2) {
-    for (int count = 0; count < 2; ++count) {
-      bool fin = (count == 0);
+    for (bool fin : kFins) {
       for (QuicPriority priority = 0; priority < 7; ++priority) {
         // Replace with "WriteHeadersAndSaveData"
         scoped_ptr<SpdySerializedFrame> frame;
@@ -296,6 +303,121 @@ TEST_P(QuicHeadersStreamTest, ProcessRawData) {
   }
 }
 
+TEST_P(QuicHeadersStreamTest, EmptyHeaderHOLBlockedTime) {
+// In the absence of surfacing HOL measurements externally, via UMA
+// or tcp connection stats, log messages are the only indication.
+// This test verifies that false positives are not generated when
+// headers arrive in order.
+#if 0
+  ScopedMockLog log(kDoNotCaptureLogsYet);
+  EXPECT_CALL(log, Log(_, _, _)).Times(0);
+  log.StartCapturingLogs();
+#endif
+  InSequence seq;
+  HistogramTester histogram_tester;
+  bool fin = true;
+  for (int stream_num = 0; stream_num < 10; stream_num++) {
+    QuicStreamId stream_id = QuicClientDataStreamId(stream_num);
+    // Replace with "WriteHeadersAndSaveData"
+    scoped_ptr<SpdySerializedFrame> frame;
+    if (perspective() == Perspective::IS_SERVER) {
+      SpdyHeadersIR headers_frame(stream_id);
+      headers_frame.set_header_block(headers_);
+      headers_frame.set_fin(fin);
+      headers_frame.set_has_priority(true);
+      frame.reset(framer_.SerializeFrame(headers_frame));
+      EXPECT_CALL(session_, OnStreamHeadersPriority(stream_id, 0));
+    } else {
+      SpdyHeadersIR headers_frame(stream_id);
+      headers_frame.set_header_block(headers_);
+      headers_frame.set_fin(fin);
+      frame.reset(framer_.SerializeFrame(headers_frame));
+    }
+    EXPECT_CALL(session_, OnStreamHeaders(stream_id, _));
+    EXPECT_CALL(session_,
+                OnStreamHeadersComplete(stream_id, fin, frame->size()));
+    stream_frame_.data = StringPiece(frame->data(), frame->size());
+    headers_stream_->OnStreamFrame(stream_frame_);
+    connection_->AdvanceTime(QuicTime::Delta::FromMilliseconds(1));
+    stream_frame_.offset += frame->size();
+  }
+  histogram_tester.ExpectTotalCount("Net.QuicSession.HeadersHOLBlockedTime", 0);
+}
+
+TEST_P(QuicHeadersStreamTest, NonEmptyHeaderHOLBlockedTime) {
+// In the absence of surfacing HOL measurements externally, via UMA
+// or tcp connection stats, log messages are the only indication.
+// This test verifies that HOL blocking log messages are correct
+// when there are out of order arrivals.
+#if 0
+  ScopedMockLog log(kDoNotCaptureLogsYet);
+#endif
+  HistogramTester histogram_tester;
+  QuicStreamId stream_id;
+  bool fin = true;
+  QuicStreamFrame stream_frames[10];
+  scoped_ptr<SpdySerializedFrame> frames[10];
+  // First create all the frames in order
+  {
+    InSequence seq;
+    for (int stream_num = 0; stream_num < 10; ++stream_num) {
+      stream_id = QuicClientDataStreamId(stream_num);
+      if (perspective() == Perspective::IS_SERVER) {
+        SpdyHeadersIR headers_frame(stream_id);
+        headers_frame.set_header_block(headers_);
+        headers_frame.set_fin(fin);
+        headers_frame.set_has_priority(true);
+        frames[stream_num].reset(framer_.SerializeFrame(headers_frame));
+        EXPECT_CALL(session_, OnStreamHeadersPriority(stream_id, 0)).Times(1);
+      } else {
+        SpdyHeadersIR headers_frame(stream_id);
+        headers_frame.set_header_block(headers_);
+        headers_frame.set_fin(fin);
+        frames[stream_num].reset(framer_.SerializeFrame(headers_frame));
+      }
+      stream_frames[stream_num] = stream_frame_;
+      stream_frames[stream_num].data =
+          StringPiece(frames[stream_num]->data(), frames[stream_num]->size());
+      DVLOG(1) << "make frame for stream " << stream_num << " offset "
+               << stream_frames[stream_num].offset;
+      stream_frame_.offset += frames[stream_num]->size();
+      EXPECT_CALL(session_, OnStreamHeaders(stream_id, _)).Times(1);
+      EXPECT_CALL(session_, OnStreamHeadersComplete(stream_id, fin, _))
+          .Times(1);
+    }
+  }
+#if 0
+  // Actually writing the frames in reverse order will trigger log messages.
+  {
+    InSequence seq;
+    for (int stream_num = 0; stream_num < 10; ++stream_num) {
+      stream_id = QuicClientDataStreamId(stream_num);
+      if (stream_num > 0) {
+        string expected_msg = StringPrintf(
+            "stream %d: Net.QuicSession.HeadersHOLBlockedTime %d",
+            stream_id, stream_num);
+#ifndef NDEBUG
+        EXPECT_CALL(log, Log(INFO, _, expected_msg));
+#endif
+      }
+    }
+  }
+  log.StartCapturingLogs();
+#endif
+  for (int stream_num = 9; stream_num >= 0; --stream_num) {
+    DVLOG(1) << "OnStreamFrame for stream " << stream_num << " offset "
+             << stream_frames[stream_num].offset;
+    headers_stream_->OnStreamFrame(stream_frames[stream_num]);
+    connection_->AdvanceTime(QuicTime::Delta::FromMilliseconds(1));
+  }
+  // We expect 1 sample each for delays from 1 to 9 ms (8 and 9 go
+  // into the same bucket).
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("Net.QuicSession.HeadersHOLBlockedTime"),
+      ElementsAre(Bucket(1, 1), Bucket(2, 1), Bucket(3, 1), Bucket(4, 1),
+                  Bucket(5, 1), Bucket(6, 1), Bucket(7, 1), Bucket(8, 2)));
+}
+
 TEST_P(QuicHeadersStreamTest, ProcessLargeRawData) {
   // We want to create a frame that is more than the SPDY Framer's max control
   // frame size, which is 16K, but less than the HPACK decoders max decode
@@ -305,8 +427,7 @@ TEST_P(QuicHeadersStreamTest, ProcessLargeRawData) {
   headers_["key2"] = string(1 << 13, '.');
   for (QuicStreamId stream_id = kClientDataStreamId1;
        stream_id < kClientDataStreamId3; stream_id += 2) {
-    for (int count = 0; count < 2; ++count) {
-      bool fin = (count == 0);
+    for (bool fin : kFins) {
       for (QuicPriority priority = 0; priority < 7; ++priority) {
         // Replace with "WriteHeadersAndSaveData"
         scoped_ptr<SpdySerializedFrame> frame;

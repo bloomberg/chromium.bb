@@ -831,5 +831,9 @@ void CreateServerSessionForTest(QuicServerId server_id,
   (*server_connection)->AdvanceTime(connection_start_time);
 }
 
+QuicStreamId QuicClientDataStreamId(int i) {
+  return kClientDataStreamId1 + 2 * i;
+}
+
 }  // namespace test
 }  // namespace net

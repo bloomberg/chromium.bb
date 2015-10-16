@@ -135,7 +135,7 @@ ReliableQuicStream::PendingData::~PendingData() {
 }
 
 ReliableQuicStream::ReliableQuicStream(QuicStreamId id, QuicSession* session)
-    : sequencer_(this),
+    : sequencer_(this, session->connection()->clock()),
       id_(id),
       session_(session),
       stream_bytes_read_(0),

@@ -85,3 +85,9 @@ bool FLAGS_allow_many_available_streams = true;
 // recvmmsg fills all of the passed in messages. Otherwise, it will return true
 // if recvmmsg read any messages.
 bool FLAGS_quic_read_packets_full_recvmmsg = true;
+
+// If true, QUIC will measure head of line (HOL) blocking due between
+// streams due to packet losses on the headers stream.  The
+// measurements will be surfaced via UMA histogram
+// Net.QuicSession.HeadersHOLBlockedTime.
+bool FLAGS_quic_measure_headers_hol_blocking_time = true;

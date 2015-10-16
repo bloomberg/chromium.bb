@@ -24456,6 +24456,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.QuicSession.HeadersHOLBlockedTime" units="Milliseconds">
+  <owner>ckrasic@chromium.org</owner>
+  <summary>
+    The elapsed time that headers are head of line blocked on others, presumably
+    due to lost headers stream packets.
+  </summary>
+</histogram>
+
 <histogram name="Net.QuicSession.HeadersStream.EarlyFramesReceived">
   <owner>rch@chromium.org</owner>
   <summary>

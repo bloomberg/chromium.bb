@@ -9,7 +9,9 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "net/quic/quic_clock.h"
 #include "net/quic/quic_frame_list.h"
+#include "net/quic/reliable_quic_stream.h"
 #include "net/quic/reliable_quic_stream.h"
 
 using std::min;
@@ -18,7 +20,8 @@ using std::string;
 
 namespace net {
 
-QuicStreamSequencer::QuicStreamSequencer(ReliableQuicStream* quic_stream)
+QuicStreamSequencer::QuicStreamSequencer(ReliableQuicStream* quic_stream,
+                                         const QuicClock* clock)
     : stream_(quic_stream),
       num_bytes_consumed_(0),
       close_offset_(numeric_limits<QuicStreamOffset>::max()),
@@ -26,7 +29,8 @@ QuicStreamSequencer::QuicStreamSequencer(ReliableQuicStream* quic_stream)
       num_bytes_buffered_(0),
       num_frames_received_(0),
       num_duplicate_frames_received_(0),
-      num_early_frames_received_(0) {}
+      num_early_frames_received_(0),
+      clock_(clock) {}
 
 QuicStreamSequencer::~QuicStreamSequencer() {}
 
@@ -48,8 +52,8 @@ void QuicStreamSequencer::OnStreamFrame(const QuicStreamFrame& frame) {
     }
   }
   size_t bytes_written;
-  QuicErrorCode result =
-      buffered_frames_.WriteAtOffset(byte_offset, frame.data, &bytes_written);
+  QuicErrorCode result = buffered_frames_.WriteAtOffset(
+      byte_offset, frame.data, clock_->ApproximateNow(), &bytes_written);
 
   if (result == QUIC_INVALID_STREAM_DATA) {
     stream_->CloseConnectionWithDetails(
@@ -109,6 +113,12 @@ bool QuicStreamSequencer::MaybeCloseStream() {
 int QuicStreamSequencer::GetReadableRegions(iovec* iov, size_t iov_len) const {
   DCHECK(!blocked_);
   return buffered_frames_.GetReadableRegions(iov, iov_len);
+}
+
+bool QuicStreamSequencer::GetReadableRegion(iovec* iov,
+                                            QuicTime* timestamp) const {
+  DCHECK(!blocked_);
+  return buffered_frames_.GetReadableRegion(iov, timestamp);
 }
 
 int QuicStreamSequencer::Readv(const struct iovec* iov, size_t iov_len) {

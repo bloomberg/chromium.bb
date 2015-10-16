@@ -75,6 +75,18 @@ class NET_EXPORT_PRIVATE QuicHeadersStream : public ReliableQuicStream {
   bool fin_;
   size_t frame_len_;
 
+  // Helper variable that caches the corresponding feature flag.
+  bool measure_headers_hol_blocking_time_;
+
+  // Timestamps used to measure HOL blocking, these are recorded by
+  // the sequencer approximate to the time of arrival off the wire.
+  // |cur_max_timestamp_| tracks the most recent arrival time of
+  // frames for current (at the headers stream level) processed
+  // stream's headers, and |prev_max_timestamp_| tracks the most
+  // recent arrival time of lower numbered streams.
+  QuicTime cur_max_timestamp_;
+  QuicTime prev_max_timestamp_;
+
   SpdyFramer spdy_framer_;
   scoped_ptr<SpdyFramerVisitor> spdy_framer_visitor_;
 

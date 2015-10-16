@@ -22,10 +22,13 @@ class NET_EXPORT_PRIVATE QuicFrameList {
  public:
   // A contiguous segment received by a QUIC stream.
   struct FrameData {
-    FrameData(QuicStreamOffset offset, string segment);
+    FrameData(QuicStreamOffset offset,
+              string segment,
+              const QuicTime timestamp);
 
     const QuicStreamOffset offset;
     string segment;
+    const QuicTime timestamp;
   };
 
   explicit QuicFrameList();
@@ -38,14 +41,16 @@ class NET_EXPORT_PRIVATE QuicFrameList {
   // Returns true if there is nothing to read in this buffer.
   bool Empty() const { return frame_list_.empty(); }
 
-  // Write the supplied data to this buffer. If the write was successful,
-  // return the number of bytes written in |bytes_written|.
-  // Return QUIC_INVALID_STREAM_DATA if |data| overlaps with existing data.
-  // No data will be written.
-  // Return QUIC_NO_ERROR, if |data| is duplicated with data written previously,
-  // and |bytes_written| = 0
+  // Write the supplied data to this buffer. |timestamp| is used for
+  // measuring head of line (HOL) blocking.  If the write was
+  // successful, return the number of bytes written in
+  // |bytes_written|.  Return QUIC_INVALID_STREAM_DATA if |data|
+  // overlaps with existing data.  No data will be written.  Return
+  // QUIC_NO_ERROR, if |data| is duplicated with data written
+  // previously, and |bytes_written| = 0
   QuicErrorCode WriteAtOffset(QuicStreamOffset offset,
                               StringPiece data,
+                              QuicTime timestamp,
                               size_t* bytes_written);
 
   // Read from this buffer into given iovec array, upto number of iov_len iovec
@@ -62,6 +67,12 @@ class NET_EXPORT_PRIVATE QuicFrameList {
   // regions than iov_size, the function only processes the first
   // iov_size of them.
   int GetReadableRegions(struct iovec* iov, int iov_len) const;
+
+  // Fills in one iovec with the next readable region.  |timestamp| is
+  // data arrived at the sequencer, and is used for measuring head of
+  // line blocking (HOL).  Returns false if there is no readable
+  // region available.
+  bool GetReadableRegion(iovec* iov, QuicTime* timestamp) const;
 
   // Called after GetReadableRegions() to accumulate total_bytes_read_ and free
   // up block when all data in it have been read out.

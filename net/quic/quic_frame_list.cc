@@ -8,8 +8,10 @@
 
 namespace net {
 
-QuicFrameList::FrameData::FrameData(QuicStreamOffset offset, string segment)
-    : offset(offset), segment(segment) {}
+QuicFrameList::FrameData::FrameData(QuicStreamOffset offset,
+                                    string segment,
+                                    const QuicTime timestamp)
+    : offset(offset), segment(segment), timestamp(timestamp) {}
 
 QuicFrameList::QuicFrameList() {}
 
@@ -19,6 +21,7 @@ QuicFrameList::~QuicFrameList() {
 
 QuicErrorCode QuicFrameList::WriteAtOffset(QuicStreamOffset offset,
                                            StringPiece data,
+                                           QuicTime timestamp,
                                            size_t* const bytes_written) {
   *bytes_written = 0;
   const size_t data_len = data.size();
@@ -33,7 +36,8 @@ QuicErrorCode QuicFrameList::WriteAtOffset(QuicStreamOffset offset,
 
   DVLOG(1) << "Buffering stream data at offset " << offset;
   // Inserting an empty string and then copying to avoid the extra copy.
-  insertion_point = frame_list_.insert(insertion_point, FrameData(offset, ""));
+  insertion_point =
+      frame_list_.insert(insertion_point, FrameData(offset, "", timestamp));
   data.CopyToString(&insertion_point->segment);
   *bytes_written = data_len;
   return QUIC_NO_ERROR;
@@ -124,6 +128,19 @@ int QuicFrameList::GetReadableRegions(struct iovec* iov, int iov_len) const {
   return index;
 }
 
+bool QuicFrameList::GetReadableRegion(iovec* iov, QuicTime* timestamp) const {
+  list<FrameData>::const_iterator it = frame_list_.begin();
+  if (it == frame_list_.end() || it->offset != total_bytes_read_) {
+    return false;
+  }
+  iov->iov_base = static_cast<void*>(const_cast<char*>(it->segment.data()));
+  iov->iov_len = it->segment.size();
+  if (timestamp) {
+    *timestamp = it->timestamp;
+  }
+  return true;
+}
+
 bool QuicFrameList::IncreaseTotalReadAndInvalidate(size_t bytes_used) {
   size_t end_offset = total_bytes_read_ + bytes_used;
   while (!frame_list_.empty() && end_offset != total_bytes_read_) {
@@ -143,8 +160,9 @@ bool QuicFrameList::IncreaseTotalReadAndInvalidate(size_t bytes_used) {
     size_t delta = end_offset - it->offset;
     total_bytes_read_ += delta;
     string new_data = it->segment.substr(delta);
+    const QuicTime timestamp = it->timestamp;
     frame_list_.erase(it);
-    frame_list_.push_front(FrameData(total_bytes_read_, new_data));
+    frame_list_.push_front(FrameData(total_bytes_read_, new_data, timestamp));
     break;
   }
   return true;
@@ -183,8 +201,9 @@ size_t QuicFrameList::ReadvAndInvalidate(const struct iovec* iov,
   }
   // Done copying.  If there is a partial frame, update it.
   if (frame_offset != 0) {
-    frame_list_.push_front(
-        FrameData(it->offset + frame_offset, it->segment.substr(frame_offset)));
+    frame_list_.push_front(FrameData(it->offset + frame_offset,
+                                     it->segment.substr(frame_offset),
+                                     it->timestamp));
     frame_list_.erase(it);
     total_bytes_read_ += frame_offset;
   }
