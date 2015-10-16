@@ -328,12 +328,6 @@ crbug.com/498539 [ Win7 ] inspector/elements/styles-4/styles-update-from-js.html
 
 crbug.com/248938 [ Win Debug ] virtual/threaded/animations/transition-and-animation-2.html [ Timeout ]
 
-crbug.com/542763 fast/forms/basic-selects.html [ NeedsRebaseline ]
-crbug.com/542763 fast/forms/checkbox/checkbox-appearance-basic.html [ NeedsRebaseline ]
-crbug.com/542763 fast/forms/color/input-appearance-color.html [ NeedsRebaseline ]
-crbug.com/542763 fast/forms/radio/radio-appearance-basic.html [ NeedsRebaseline ]
-crbug.com/542763 fast/forms/select/menulist-appearance-basic.html [ NeedsRebaseline ]
-
 crbug.com/487281 [ SnowLeopard Lion MountainLion Retina Mavericks ] fast/forms/menulist-narrow-width.html [ Failure ]
 
 crbug.com/441840 [ Mac XP ] cssom/ahem-ex-units.html [ Failure ]
@@ -350,6 +344,12 @@ crbug.com/470482 fast/cookies/local-file-can-set-cookies.html [ Skip ]
 crbug.com/264138 dom/xhtml/level3/core/nodecomparedocumentposition38.xhtml [ Failure ]
 
 crbug.com/503626 virtual/gpu/fast/canvas/canvas-filter-shadow.html [ Failure ]
+
+crbug.com/542763 fast/forms/basic-selects.html [ NeedsRebaseline ]
+crbug.com/542763 fast/forms/checkbox/checkbox-appearance-basic.html [ NeedsRebaseline ]
+crbug.com/542763 fast/forms/color/input-appearance-color.html [ NeedsRebaseline ]
+crbug.com/542763 fast/forms/radio/radio-appearance-basic.html [ NeedsRebaseline ]
+crbug.com/542763 fast/forms/select/menulist-appearance-basic.html [ NeedsRebaseline ]
 
 crbug.com/240374 compositing/overlap-blending/reflection-opacity-huge.html [ Failure ]
 crbug.com/240374 compositing/overlap-blending/children-opacity-huge.html [ Failure ]
