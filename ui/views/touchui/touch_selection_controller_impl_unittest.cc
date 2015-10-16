@@ -797,6 +797,25 @@ TEST_F(TouchSelectionControllerImplTest, MouseEventDeactivatesTouchSelection) {
   EXPECT_FALSE(GetSelectionController());
 }
 
+TEST_F(TouchSelectionControllerImplTest, MouseCaptureChangedEventIgnored) {
+  CreateTextfield();
+  EXPECT_FALSE(GetSelectionController());
+
+  ui::test::EventGenerator generator(
+      textfield_widget_->GetNativeView()->GetRootWindow());
+  RunPendingMessages();
+
+  // Start touch editing; then generate a mouse-capture-changed event and ensure
+  // it does not deactivate touch selection.
+  StartTouchEditing();
+  EXPECT_TRUE(GetSelectionController());
+  ui::MouseEvent capture_changed(ui::ET_MOUSE_CAPTURE_CHANGED, gfx::Point(5, 5),
+                                 gfx::Point(5, 5), base::TimeDelta(), 0, 0);
+  generator.Dispatch(&capture_changed);
+  RunPendingMessages();
+  EXPECT_TRUE(GetSelectionController());
+}
+
 TEST_F(TouchSelectionControllerImplTest, KeyEventDeactivatesTouchSelection) {
   CreateTextfield();
   EXPECT_FALSE(GetSelectionController());
