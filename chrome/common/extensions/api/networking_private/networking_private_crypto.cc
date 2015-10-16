@@ -116,10 +116,9 @@ bool EncryptByteString(const std::vector<uint8_t>& pub_key_der,
   crypto::EnsureOpenSSLInit();
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
 
-  const uint8_t* ptr = vector_as_array(&pub_key_der);
-  const uint8_t* end = ptr + pub_key_der.size();
-  crypto::ScopedRSA rsa(d2i_RSAPublicKey(NULL, &ptr, pub_key_der.size()));
-  if (!rsa || ptr != end || RSA_size(rsa.get()) == 0) {
+  crypto::ScopedRSA rsa(RSA_public_key_from_bytes(vector_as_array(&pub_key_der),
+                                                  pub_key_der.size()));
+  if (!rsa || RSA_size(rsa.get()) == 0) {
     LOG(ERROR) << "Failed to parse public key";
     return false;
   }

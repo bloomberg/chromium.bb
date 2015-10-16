@@ -115,13 +115,10 @@ VerificationResult VerifyDeviceCert(
   }
 
   // Initialize the ICA public key.
-  const uint8_t* ica_public_key_der_ptr =
-      reinterpret_cast<const uint8_t*>(ica_public_key_der.data());
-  const uint8_t* ica_public_key_der_end =
-      ica_public_key_der_ptr + ica_public_key_der.size();
-  crypto::ScopedRSA ica_public_key_rsa(d2i_RSAPublicKey(
-      NULL, &ica_public_key_der_ptr, ica_public_key_der.size()));
-  if (!ica_public_key_rsa || ica_public_key_der_ptr != ica_public_key_der_end) {
+  crypto::ScopedRSA ica_public_key_rsa(RSA_public_key_from_bytes(
+      reinterpret_cast<const uint8_t*>(ica_public_key_der.data()),
+      ica_public_key_der.size()));
+  if (!ica_public_key_rsa) {
     return VerificationResult("Failed to import trusted public key.",
                               VerificationResult::ERROR_INTERNAL);
   }
