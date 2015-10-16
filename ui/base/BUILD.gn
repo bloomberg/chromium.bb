@@ -409,7 +409,7 @@ component("base") {
     configs += [ "//build/config/linux:glib" ]
   }
 
-  if ((is_linux && !is_chromeos) || is_chromeos) {
+  if (is_linux) {
     if (!toolkit_views && !use_aura) {
       sources -= [
         "dragdrop/drag_utils.cc",

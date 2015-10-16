@@ -432,7 +432,7 @@
             '../../build/linux/system.gyp:glib',
           ],
         }],
-        ['desktop_linux == 1 or chromeos == 1', {
+        ['OS=="linux"', {
           'conditions': [
             ['toolkit_views==0 and use_aura==0', {
               # Note: because of gyp predence rules this has to be defined as
