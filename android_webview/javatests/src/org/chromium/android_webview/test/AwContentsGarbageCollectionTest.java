@@ -7,8 +7,8 @@ package org.chromium.android_webview.test;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.os.Build;
+import android.test.FlakyTest;
 import android.test.suitebuilder.annotation.LargeTest;
-import android.test.suitebuilder.annotation.SmallTest;
 
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
@@ -84,8 +84,12 @@ public class AwContentsGarbageCollectionTest extends AwTestBase {
         }
     }
 
+    /*
     @SmallTest
     @Feature({"AndroidWebView"})
+    Bug: https://crbug.com/544098
+    */
+    @FlakyTest
     public void testCreateAndGcOneTime() throws Throwable {
         gcAndCheckAllAwContentsDestroyed();
 
@@ -101,8 +105,12 @@ public class AwContentsGarbageCollectionTest extends AwTestBase {
         gcAndCheckAllAwContentsDestroyed();
     }
 
+    /*
     @SmallTest
     @Feature({"AndroidWebView"})
+    Bug: https://crbug.com/544098
+    */
+    @FlakyTest
     public void testReferenceFromClient() throws Throwable {
         gcAndCheckAllAwContentsDestroyed();
 
@@ -118,8 +126,12 @@ public class AwContentsGarbageCollectionTest extends AwTestBase {
         gcAndCheckAllAwContentsDestroyed();
     }
 
+    /*
     @SmallTest
     @Feature({"AndroidWebView"})
+    Bug: https://crbug.com/544098
+    */
+    @FlakyTest
     public void testReferenceFromContext() throws Throwable {
         gcAndCheckAllAwContentsDestroyed();
 
