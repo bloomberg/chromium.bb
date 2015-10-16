@@ -246,15 +246,15 @@ void Fullscreen::requestFullscreen(Element& element, RequestType requestType)
         Document* currentDoc = document();
 
         // 3. Let docs be all doc's ancestor browsing context's documents (if any) and doc.
-        Deque<Document*> docs;
+        WillBeHeapDeque<RawPtrWillBeMember<Document>> docs;
 
         do {
             docs.prepend(currentDoc);
-            currentDoc = currentDoc->ownerElement() ? &currentDoc->ownerElement()->document() : 0;
+            currentDoc = currentDoc->ownerElement() ? &currentDoc->ownerElement()->document() : nullptr;
         } while (currentDoc);
 
         // 4. For each document in docs, run these substeps:
-        Deque<Document*>::iterator current = docs.begin(), following = docs.begin();
+        WillBeHeapDeque<RawPtrWillBeMember<Document>>::iterator current = docs.begin(), following = docs.begin();
 
         do {
             ++following;
@@ -262,7 +262,7 @@ void Fullscreen::requestFullscreen(Element& element, RequestType requestType)
             // 1. Let following document be the document after document in docs, or null if there is no
             // such document.
             Document* currentDoc = *current;
-            Document* followingDoc = following != docs.end() ? *following : 0;
+            Document* followingDoc = following != docs.end() ? *following : nullptr;
 
             // 2. If following document is null, push context object on document's fullscreen element
             // stack, and queue a task to fire an event named fullscreenchange with its bubbles attribute
@@ -294,7 +294,7 @@ void Fullscreen::requestFullscreen(Element& element, RequestType requestType)
 
         // 7. Optionally, display a message indicating how the user can exit displaying the context object fullscreen.
         return;
-    } while (0);
+    } while (false);
 
     enqueueErrorEvent(element, requestType);
 }
