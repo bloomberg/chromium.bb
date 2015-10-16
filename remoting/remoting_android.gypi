@@ -136,6 +136,30 @@
           ],
         },  # end of target 'remoting_android_client_java'
         {
+          # TODO(lambroslambrou): Move some of this to third_party/cardboard-java/ in case it is
+          # useful to other clients. Also implement this for GN builds.
+          'target_name': 'remoting_cardboard_extract_native_lib',
+          'type': 'none',
+          'actions': [
+            {
+              'action_name': 'extract_cardboard_native_lib',
+              'inputs': [
+                '../third_party/cardboard-java/src/CardboardSample/libs/cardboard.jar',
+              ],
+              'outputs': [
+                '<(SHARED_LIB_DIR)/libvrtoolkit.so',
+              ],
+              'action': [
+                'python',
+                'tools/extract_android_native_lib.py',
+                '<(android_app_abi)',
+                '<@(_inputs)',
+                '<@(_outputs)',
+              ],
+            },
+          ],
+        },  # end of target 'remoting_cardboard_extract_native_lib'
+        {
           'target_name': 'remoting_apk',
           'type': 'none',
           'dependencies': [
@@ -153,6 +177,14 @@
             'native_lib_target': 'libremoting_client_jni',
           },
           'includes': [ '../build/java_apk.gypi' ],
+          'conditions': [
+            ['target_arch == "arm"', {
+              'dependencies': [ 'remoting_cardboard_extract_native_lib' ],
+              'variables': {
+                'extra_native_libs': [ '<(SHARED_LIB_DIR)/libvrtoolkit.so' ],
+              },
+            }],
+          ],
         },  # end of target 'remoting_apk'
         {
           'target_name': 'remoting_test_apk',
