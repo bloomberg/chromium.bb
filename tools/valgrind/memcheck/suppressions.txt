@@ -2438,7 +2438,7 @@
    fun:_ZN5blink4Heap19checkAndMarkPointerEPNS_7VisitorEPh
    fun:_ZN5blink11ThreadState10visitStackEPNS_7VisitorE
    ...
-   fun:_ZN5blink4Heap14collectGarbageENS_11ThreadState10StackState*
+   fun:_ZN5blink4Heap14collectGarbageENS_7BlinkGC10StackState*
 }
 {
    bug_342591
@@ -3277,7 +3277,7 @@
    fun:_ZN5blink13CallbackStack4Item4callEPNS_7VisitorE
    fun:_ZN5blink4Heap25popAndInvokeTraceCallbackEPNS_7VisitorE
    fun:_ZN5blink4Heap19processMarkingStackEPNS_7VisitorE
-   fun:_ZN5blink4Heap14collectGarbageENS_11ThreadState10StackStateENS1_6GCTypeENS0_8GCReasonE
+   fun:_ZN5blink4Heap14collectGarbageENS_7BlinkGC10StackStateENS1_6GCTypeENS0_8GCReasonE
    fun:_ZN5blink14V8GCController10gcEpilogueEN2v86GCTypeENS1_15GCCallbackFlagsE
    fun:_ZN2v88internal4Heap23CallGCEpilogueCallbacksENS_6GCTypeENS_15GCCallbackFlagsE
    fun:_ZN2v88internal4Heap24PerformGarbageCollectionENS0_16GarbageCollectorENS_15GCCallbackFlagsE
