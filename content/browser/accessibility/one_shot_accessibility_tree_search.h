@@ -37,7 +37,10 @@ class CONTENT_EXPORT OneShotAccessibilityTreeSearch {
 
   const int UNLIMITED_RESULTS = -1;
 
-  OneShotAccessibilityTreeSearch(BrowserAccessibilityManager* tree);
+  // The node passed in |scope| determines the scope of results returned -
+  // they will all be within the subtree of the *parent* of |scope| - in other
+  // words, siblings of |scope| and their descendants.
+  explicit OneShotAccessibilityTreeSearch(BrowserAccessibility* scope);
   virtual ~OneShotAccessibilityTreeSearch();
 
   //
@@ -47,6 +50,8 @@ class CONTENT_EXPORT OneShotAccessibilityTreeSearch {
   // Sets the node where the search starts. The first potential match will
   // be the one immediately following this one. This node will be used as
   // the first arguement to any predicates.
+  //
+  // If not specified, |scope| will be used.
   void SetStartNode(BrowserAccessibility* start_node);
 
   // Search forwards or backwards in an in-order traversal of the tree.
@@ -85,6 +90,7 @@ class CONTENT_EXPORT OneShotAccessibilityTreeSearch {
   bool Matches(BrowserAccessibility* node);
 
   BrowserAccessibilityManager* tree_;
+  BrowserAccessibility* scope_node_;
   BrowserAccessibility* start_node_;
   Direction direction_;
   int result_limit_;

@@ -89,12 +89,12 @@ void MAYBE_OneShotAccessibilityTreeSearchTest::SetUp() {
 }
 
 TEST_F(MAYBE_OneShotAccessibilityTreeSearchTest, GetAll) {
-  OneShotAccessibilityTreeSearch search(tree_.get());
+  OneShotAccessibilityTreeSearch search(tree_->GetRoot());
   ASSERT_EQ(6U, search.CountMatches());
 }
 
 TEST_F(MAYBE_OneShotAccessibilityTreeSearchTest, ForwardsWithStartNode) {
-  OneShotAccessibilityTreeSearch search(tree_.get());
+  OneShotAccessibilityTreeSearch search(tree_->GetRoot());
   search.SetStartNode(tree_->GetFromID(4));
   ASSERT_EQ(2U, search.CountMatches());
   EXPECT_EQ(5, search.GetMatchAtIndex(0)->GetId());
@@ -102,7 +102,7 @@ TEST_F(MAYBE_OneShotAccessibilityTreeSearchTest, ForwardsWithStartNode) {
 }
 
 TEST_F(MAYBE_OneShotAccessibilityTreeSearchTest, BackwardsWithStartNode) {
-  OneShotAccessibilityTreeSearch search(tree_.get());
+  OneShotAccessibilityTreeSearch search(tree_->GetRoot());
   search.SetStartNode(tree_->GetFromID(4));
   search.SetDirection(OneShotAccessibilityTreeSearch::BACKWARDS);
   ASSERT_EQ(3U, search.CountMatches());
@@ -111,20 +111,28 @@ TEST_F(MAYBE_OneShotAccessibilityTreeSearchTest, BackwardsWithStartNode) {
   EXPECT_EQ(1, search.GetMatchAtIndex(2)->GetId());
 }
 
+TEST_F(MAYBE_OneShotAccessibilityTreeSearchTest,
+       ForwardsWithStartNodeAndScope) {
+  OneShotAccessibilityTreeSearch search(tree_->GetFromID(4));
+  search.SetStartNode(tree_->GetFromID(5));
+  ASSERT_EQ(1U, search.CountMatches());
+  EXPECT_EQ(6, search.GetMatchAtIndex(0)->GetId());
+}
+
 TEST_F(MAYBE_OneShotAccessibilityTreeSearchTest, ResultLimitZero) {
-  OneShotAccessibilityTreeSearch search(tree_.get());
+  OneShotAccessibilityTreeSearch search(tree_->GetRoot());
   search.SetResultLimit(0);
   ASSERT_EQ(0U, search.CountMatches());
 }
 
 TEST_F(MAYBE_OneShotAccessibilityTreeSearchTest, ResultLimitFive) {
-  OneShotAccessibilityTreeSearch search(tree_.get());
+  OneShotAccessibilityTreeSearch search(tree_->GetRoot());
   search.SetResultLimit(5);
   ASSERT_EQ(5U, search.CountMatches());
 }
 
-TEST_F(MAYBE_OneShotAccessibilityTreeSearchTest, DescendantsOnly) {
-  OneShotAccessibilityTreeSearch search(tree_.get());
+TEST_F(MAYBE_OneShotAccessibilityTreeSearchTest, DescendantsOnlyOfRoot) {
+  OneShotAccessibilityTreeSearch search(tree_->GetRoot());
   search.SetStartNode(tree_->GetFromID(1));
   search.SetImmediateDescendantsOnly(true);
   ASSERT_EQ(3U, search.CountMatches());
@@ -133,8 +141,43 @@ TEST_F(MAYBE_OneShotAccessibilityTreeSearchTest, DescendantsOnly) {
   EXPECT_EQ(6, search.GetMatchAtIndex(2)->GetId());
 }
 
+TEST_F(MAYBE_OneShotAccessibilityTreeSearchTest, DescendantsOnlyOfNode) {
+  OneShotAccessibilityTreeSearch search(tree_->GetFromID(3));
+  search.SetImmediateDescendantsOnly(true);
+  ASSERT_EQ(2U, search.CountMatches());
+  EXPECT_EQ(4, search.GetMatchAtIndex(0)->GetId());
+  EXPECT_EQ(5, search.GetMatchAtIndex(1)->GetId());
+}
+
+TEST_F(MAYBE_OneShotAccessibilityTreeSearchTest,
+       DescendantsOnlyOfNodeWithStartNode) {
+  OneShotAccessibilityTreeSearch search(tree_->GetFromID(3));
+  search.SetStartNode(tree_->GetFromID(4));
+  search.SetImmediateDescendantsOnly(true);
+  ASSERT_EQ(1U, search.CountMatches());
+  EXPECT_EQ(5, search.GetMatchAtIndex(0)->GetId());
+}
+
+TEST_F(MAYBE_OneShotAccessibilityTreeSearchTest,
+       DescendantsOnlyOfNodeWithStartNode2) {
+  OneShotAccessibilityTreeSearch search(tree_->GetFromID(3));
+  search.SetStartNode(tree_->GetFromID(5));
+  search.SetImmediateDescendantsOnly(true);
+  ASSERT_EQ(0U, search.CountMatches());
+}
+
+TEST_F(MAYBE_OneShotAccessibilityTreeSearchTest,
+       DescendantsOnlyOfNodeWithStartNodeBackwards) {
+  OneShotAccessibilityTreeSearch search(tree_->GetFromID(3));
+  search.SetStartNode(tree_->GetFromID(5));
+  search.SetImmediateDescendantsOnly(true);
+  search.SetDirection(OneShotAccessibilityTreeSearch::BACKWARDS);
+  ASSERT_EQ(1U, search.CountMatches());
+  EXPECT_EQ(4, search.GetMatchAtIndex(0)->GetId());
+}
+
 TEST_F(MAYBE_OneShotAccessibilityTreeSearchTest, VisibleOnly) {
-  OneShotAccessibilityTreeSearch search(tree_.get());
+  OneShotAccessibilityTreeSearch search(tree_->GetRoot());
   search.SetVisibleOnly(true);
   ASSERT_EQ(5U, search.CountMatches());
   EXPECT_EQ(1, search.GetMatchAtIndex(0)->GetId());
@@ -145,14 +188,14 @@ TEST_F(MAYBE_OneShotAccessibilityTreeSearchTest, VisibleOnly) {
 }
 
 TEST_F(MAYBE_OneShotAccessibilityTreeSearchTest, CaseInsensitiveStringMatch) {
-  OneShotAccessibilityTreeSearch search(tree_.get());
+  OneShotAccessibilityTreeSearch search(tree_->GetRoot());
   search.SetSearchText("eCEptiCOn");
   ASSERT_EQ(1U, search.CountMatches());
   EXPECT_EQ(5, search.GetMatchAtIndex(0)->GetId());
 }
 
 TEST_F(MAYBE_OneShotAccessibilityTreeSearchTest, OnePredicate) {
-  OneShotAccessibilityTreeSearch search(tree_.get());
+  OneShotAccessibilityTreeSearch search(tree_->GetRoot());
   search.AddPredicate([](BrowserAccessibility* start,
                          BrowserAccessibility* current) {
     return current->GetRole() == ui::AX_ROLE_LIST_ITEM;
@@ -163,7 +206,7 @@ TEST_F(MAYBE_OneShotAccessibilityTreeSearchTest, OnePredicate) {
 }
 
 TEST_F(MAYBE_OneShotAccessibilityTreeSearchTest, TwoPredicates) {
-  OneShotAccessibilityTreeSearch search(tree_.get());
+  OneShotAccessibilityTreeSearch search(tree_->GetRoot());
   search.AddPredicate([](BrowserAccessibility* start,
                          BrowserAccessibility* current) {
     return (current->GetRole() == ui::AX_ROLE_LIST ||

@@ -1511,14 +1511,14 @@ bool InitializeAccessibilityTreeSearch(
     return [NSValue valueWithRect:nsrect];
   }
   if ([attribute isEqualToString:@"AXUIElementCountForSearchPredicate"]) {
-    OneShotAccessibilityTreeSearch search(browserAccessibility_->manager());
+    OneShotAccessibilityTreeSearch search(browserAccessibility_);
     if (InitializeAccessibilityTreeSearch(&search, parameter))
       return [NSNumber numberWithInt:search.CountMatches()];
     return nil;
   }
 
   if ([attribute isEqualToString:@"AXUIElementsForSearchPredicate"]) {
-    OneShotAccessibilityTreeSearch search(browserAccessibility_->manager());
+    OneShotAccessibilityTreeSearch search(browserAccessibility_);
     if (InitializeAccessibilityTreeSearch(&search, parameter)) {
       size_t count = search.CountMatches();
       NSMutableArray* result = [NSMutableArray arrayWithCapacity:count];

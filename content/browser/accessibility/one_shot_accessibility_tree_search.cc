@@ -29,9 +29,10 @@ void GetNodeStrings(BrowserAccessibility* node,
 }
 
 OneShotAccessibilityTreeSearch::OneShotAccessibilityTreeSearch(
-    BrowserAccessibilityManager* tree)
-    : tree_(tree),
-      start_node_(nullptr),
+    BrowserAccessibility* scope)
+    : tree_(scope->manager()),
+      scope_node_(scope),
+      start_node_(scope),
       direction_(OneShotAccessibilityTreeSearch::FORWARDS),
       result_limit_(UNLIMITED_RESULTS),
       immediate_descendants_only_(false),
@@ -45,7 +46,10 @@ OneShotAccessibilityTreeSearch::~OneShotAccessibilityTreeSearch() {
 void OneShotAccessibilityTreeSearch::SetStartNode(
     BrowserAccessibility* start_node) {
   DCHECK(!did_search_);
-  start_node_ = start_node;
+  if (!scope_node_->GetParent() ||
+      start_node->IsDescendantOf(scope_node_->GetParent())) {
+    start_node_ = start_node;
+  }
 }
 
 void OneShotAccessibilityTreeSearch::SetDirection(Direction direction) {
@@ -103,37 +107,62 @@ void OneShotAccessibilityTreeSearch::Search()
   } else {
     SearchByWalkingTree();
   }
+  did_search_ = true;
 }
 
 void OneShotAccessibilityTreeSearch::SearchByIteratingOverChildren() {
-  if (!start_node_)
+  // Iterate over the children of scope_node_.
+  // If start_node_ is specified, iterate over the first child past that
+  // node.
+
+  uint32 count = scope_node_->PlatformChildCount();
+  if (count == 0)
     return;
 
-  for (unsigned i = 0;
-       i < start_node_->PlatformChildCount() &&
-           (result_limit_ == UNLIMITED_RESULTS ||
-            static_cast<int>(matches_.size()) < result_limit_);
-       ++i) {
-    BrowserAccessibility* child = start_node_->PlatformGetChild(i);
-    if (Matches(child))
-      matches_.push_back(child);
+  // We only care about immediate children of scope_node_, so walk up
+  // start_node_ until we get to an immediate child. If it isn't a child,
+  // we ignore start_node_.
+  while (start_node_ && start_node_->GetParent() != scope_node_)
+    start_node_ = start_node_->GetParent();
+
+  uint32 index = (direction_ == FORWARDS ? 0 : count - 1);
+  if (start_node_) {
+    index = start_node_->GetIndexInParent();
+    if (direction_ == FORWARDS)
+      index++;
+    else
+      index--;
+  }
+
+  while (index < count &&
+         (result_limit_ == UNLIMITED_RESULTS ||
+          static_cast<int>(matches_.size()) < result_limit_)) {
+    BrowserAccessibility* node = scope_node_->PlatformGetChild(index);
+    if (Matches(node))
+      matches_.push_back(node);
+
+    if (direction_ == FORWARDS)
+      index++;
+    else
+      index--;
   }
 }
 
 void OneShotAccessibilityTreeSearch::SearchByWalkingTree() {
   BrowserAccessibility* node = nullptr;
-  if (start_node_) {
+  node = start_node_;
+  if (node != scope_node_) {
     if (direction_ == FORWARDS)
       node = tree_->NextInTreeOrder(start_node_);
     else
       node = tree_->PreviousInTreeOrder(start_node_);
-  } else {
-    start_node_ = tree_->GetRoot();
-    node = start_node_;
   }
 
-  while (node && (result_limit_ == UNLIMITED_RESULTS ||
-                  static_cast<int>(matches_.size()) < result_limit_)) {
+  BrowserAccessibility* stop_node = scope_node_->GetParent();
+  while (node &&
+         node != stop_node &&
+         (result_limit_ == UNLIMITED_RESULTS ||
+          static_cast<int>(matches_.size()) < result_limit_)) {
     if (Matches(node))
       matches_.push_back(node);
 
