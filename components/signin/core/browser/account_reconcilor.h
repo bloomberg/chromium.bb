@@ -22,6 +22,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/signin_client.h"
+#include "components/signin/core/browser/signin_header_helper.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -52,6 +53,12 @@ class AccountReconcilor : public KeyedService,
   // Pass the new status as an explicit parameter since disabling the flag
   // doesn't remove it from the CommandLine::ForCurrentProcess().
   void OnNewProfileManagementFlagChanged(bool new_flag_status);
+
+  // Signal that an X-Chrome-Manage-Accounts was received from GAIA. Pass the
+  // ServiceType specified by GAIA in the 204 response.
+  // Virtual for testing.
+  virtual void OnReceivedManageAccountsResponse(
+      signin::GAIAServiceType service_type);
 
   // KeyedService implementation.
   void Shutdown() override;

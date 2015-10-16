@@ -27,6 +27,7 @@ class WebState;
 class WebStatePolicyDecider;
 }
 
+class AccountReconcilor;
 class SigninClient;
 
 @class AccountConsistencyNavigationDelegate;
@@ -48,6 +49,7 @@ class AccountConsistencyService : public KeyedService,
 
   AccountConsistencyService(
       web::BrowserState* browser_state,
+      AccountReconcilor* account_reconcilor,
       scoped_refptr<content_settings::CookieSettings> cookie_settings,
       GaiaCookieManagerService* gaia_cookie_manager_service,
       SigninClient* signin_client,
@@ -137,6 +139,9 @@ class AccountConsistencyService : public KeyedService,
 
   // Browser state associated with the service, used to create WKWebViews.
   web::BrowserState* browser_state_;
+  // Service managing accounts reconciliation, notified of GAIA responses with
+  // the X-Chrome-Manage-Accounts header
+  AccountReconcilor* account_reconcilor_;
   // Cookie settings currently in use for |browser_state_|, used to check if
   // setting X-CHROME-CONNECTED cookies is valid.
   scoped_refptr<content_settings::CookieSettings> cookie_settings_;

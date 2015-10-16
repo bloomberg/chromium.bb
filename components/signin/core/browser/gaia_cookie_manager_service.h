@@ -169,6 +169,10 @@ class GaiaCookieManagerService : public KeyedService,
   // is sent GAIA and Observer::OnGaiaAccountsInCookieUpdated will be called.
   bool ListAccounts(std::vector<gaia::ListedAccount>* accounts);
 
+  // Triggers a ListAccounts fetch. This is public so that callers that know
+  // that a check which GAIA should be done can force it.
+  void TriggerListAccounts();
+
   // Add or remove observers of this helper.
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);

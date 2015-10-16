@@ -9,6 +9,7 @@
 #include "components/signin/ios/browser/account_consistency_service.h"
 #include "ios/chrome/browser/content_settings/cookie_settings_factory.h"
 #include "ios/chrome/browser/experimental_flags.h"
+#include "ios/chrome/browser/signin/account_reconcilor_factory.h"
 #include "ios/chrome/browser/signin/gaia_cookie_manager_service_factory.h"
 #include "ios/chrome/browser/signin/signin_client_factory.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
@@ -20,6 +21,7 @@ AccountConsistencyServiceFactory::AccountConsistencyServiceFactory()
     : BrowserStateKeyedServiceFactory(
           "AccountConsistencyService",
           BrowserStateDependencyManager::GetInstance()) {
+  DependsOn(ios::AccountReconcilorFactory::GetInstance());
   DependsOn(ios::CookieSettingsFactory::GetInstance());
   DependsOn(GaiaCookieManagerServiceFactory::GetInstance());
   DependsOn(SigninClientFactory::GetInstance());
@@ -56,15 +58,11 @@ AccountConsistencyServiceFactory::BuildServiceInstanceFor(
       ios::ChromeBrowserState::FromBrowserState(context);
   return make_scoped_ptr(new AccountConsistencyService(
       chrome_browser_state,
+      ios::AccountReconcilorFactory::GetForBrowserState(chrome_browser_state),
       ios::CookieSettingsFactory::GetForBrowserState(chrome_browser_state),
       GaiaCookieManagerServiceFactory::GetForBrowserState(chrome_browser_state),
       SigninClientFactory::GetForBrowserState(chrome_browser_state),
       ios::SigninManagerFactory::GetForBrowserState(chrome_browser_state)));
-}
-
-bool AccountConsistencyServiceFactory::ServiceIsCreatedWithBrowserState()
-    const {
-  return true;
 }
 
 }  // namespace ios

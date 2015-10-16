@@ -349,6 +349,13 @@ void AccountReconcilor::OnNewProfileManagementFlagChanged(
   }
 }
 
+void AccountReconcilor::OnReceivedManageAccountsResponse(
+    signin::GAIAServiceType service_type) {
+  if (service_type == signin::GAIA_SERVICE_TYPE_ADDSESSION) {
+    cookie_manager_service_->TriggerListAccounts();
+  }
+}
+
 void AccountReconcilor::FinishReconcile() {
   VLOG(1) << "AccountReconcilor::FinishReconcile";
   DCHECK(add_to_cookie_.empty());

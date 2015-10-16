@@ -14,6 +14,7 @@
 #include "base/time/time.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/signin/core/browser/account_reconcilor.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_header_helper.h"
 #include "ios/web/public/browser_state.h"
@@ -39,6 +40,7 @@ class AccountConsistencyHandler : public web::WebStatePolicyDecider {
  public:
   AccountConsistencyHandler(web::WebState* web_state,
                             AccountConsistencyService* service,
+                            AccountReconcilor* account_reconcilor,
                             id<ManageAccountsDelegate> delegate);
 
  private:
@@ -47,6 +49,7 @@ class AccountConsistencyHandler : public web::WebStatePolicyDecider {
   void WebStateDestroyed() override;
 
   AccountConsistencyService* account_consistency_service_;  // Weak.
+  AccountReconcilor* account_reconcilor_;                   // Weak.
   base::WeakNSProtocol<id<ManageAccountsDelegate>> delegate_;
 };
 }
@@ -54,9 +57,11 @@ class AccountConsistencyHandler : public web::WebStatePolicyDecider {
 AccountConsistencyHandler::AccountConsistencyHandler(
     web::WebState* web_state,
     AccountConsistencyService* service,
+    AccountReconcilor* account_reconcilor,
     id<ManageAccountsDelegate> delegate)
     : web::WebStatePolicyDecider(web_state),
       account_consistency_service_(service),
+      account_reconcilor_(account_reconcilor),
       delegate_(delegate) {}
 
 bool AccountConsistencyHandler::ShouldAllowResponse(NSURLResponse* response) {
@@ -86,6 +91,7 @@ bool AccountConsistencyHandler::ShouldAllowResponse(NSURLResponse* response) {
   signin::ManageAccountsParams params = signin::BuildManageAccountsParams(
       base::SysNSStringToUTF8(manage_accounts_header));
 
+  account_reconcilor_->OnReceivedManageAccountsResponse(params.service_type);
   switch (params.service_type) {
     case signin::GAIA_SERVICE_TYPE_INCOGNITO: {
       GURL continue_url = GURL(params.continue_url);
@@ -183,11 +189,13 @@ AccountConsistencyService::CookieRequest::CreateRemoveCookieRequest(
 
 AccountConsistencyService::AccountConsistencyService(
     web::BrowserState* browser_state,
+    AccountReconcilor* account_reconcilor,
     scoped_refptr<content_settings::CookieSettings> cookie_settings,
     GaiaCookieManagerService* gaia_cookie_manager_service,
     SigninClient* signin_client,
     SigninManager* signin_manager)
     : browser_state_(browser_state),
+      account_reconcilor_(account_reconcilor),
       cookie_settings_(cookie_settings),
       gaia_cookie_manager_service_(gaia_cookie_manager_service),
       signin_client_(signin_client),
@@ -215,8 +223,8 @@ void AccountConsistencyService::SetWebStateHandler(
     web::WebState* web_state,
     id<ManageAccountsDelegate> delegate) {
   DCHECK_EQ(0u, web_state_handlers_.count(web_state));
-  web_state_handlers_[web_state].reset(
-      new AccountConsistencyHandler(web_state, this, delegate));
+  web_state_handlers_[web_state].reset(new AccountConsistencyHandler(
+      web_state, this, account_reconcilor_, delegate));
 }
 
 void AccountConsistencyService::RemoveWebStateHandler(

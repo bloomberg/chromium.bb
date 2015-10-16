@@ -347,6 +347,11 @@ bool GaiaCookieManagerService::ListAccounts(
     return true;
   }
 
+  TriggerListAccounts();
+  return false;
+}
+
+void GaiaCookieManagerService::TriggerListAccounts() {
   if (requests_.empty()) {
     fetcher_retries_ = 0;
     requests_.push_back(GaiaCookieRequest::CreateListAccountsRequest());
@@ -359,7 +364,6 @@ bool GaiaCookieManagerService::ListAccounts(
                           }) == requests_.end()) {
     requests_.push_back(GaiaCookieRequest::CreateListAccountsRequest());
   }
-  return false;
 }
 
 void GaiaCookieManagerService::LogOutAllAccounts() {

@@ -50,6 +50,10 @@ void ProcessMirrorHeaderUIThread(int child_id,
 
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  AccountReconcilor* account_reconcilor =
+      AccountReconcilorFactory::GetForProfile(profile);
+  account_reconcilor->OnReceivedManageAccountsResponse(
+      manage_accounts_params.service_type);
 #if !defined(OS_ANDROID)
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
   if (browser) {
@@ -68,7 +72,7 @@ void ProcessMirrorHeaderUIThread(int child_id,
         bubble_mode = BrowserWindow::AVATAR_BUBBLE_MODE_ACCOUNT_MANAGEMENT;
     }
     signin_metrics::LogAccountReconcilorStateOnGaiaResponse(
-        AccountReconcilorFactory::GetForProfile(profile)->GetState());
+        account_reconcilor->GetState());
     browser->window()->ShowAvatarBubbleFromAvatarButton(bubble_mode,
                                                         manage_accounts_params);
   }
@@ -82,7 +86,7 @@ void ProcessMirrorHeaderUIThread(int child_id,
                                ui::PAGE_TRANSITION_AUTO_TOPLEVEL, false));
   } else {
     signin_metrics::LogAccountReconcilorStateOnGaiaResponse(
-        AccountReconcilorFactory::GetForProfile(profile)->GetState());
+        account_reconcilor->GetState());
     AccountManagementScreenHelper::OpenAccountManagementScreen(profile,
                                                                service_type);
   }
