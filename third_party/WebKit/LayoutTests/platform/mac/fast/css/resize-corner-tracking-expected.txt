@@ -5,17 +5,17 @@ layer at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {HR} at (0,0) size 784x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow {P} at (0,18) size 784x18
-        LayoutText {#text} at (0,0) size 55x18
-          text run at (0,0) width 55: "Test for "
+        LayoutText {#text} at (0,0) size 54x18
+          text run at (0,0) width 54: "Test for "
         LayoutInline {I} at (0,0) size 680x18
-          LayoutInline {A} at (0,0) size 354x18 [color=#0000EE]
-            LayoutText {#text} at (54,0) size 354x18
-              text run at (54,0) width 354: "http://bugzilla.opendarwin.org/show_bug.cgi?id=9547"
-          LayoutText {#text} at (407,0) size 327x18
-            text run at (407,0) width 5: " "
-            text run at (411,0) width 323: "Resize corner does not track the mouse accurately"
-        LayoutText {#text} at (733,0) size 5x18
-          text run at (733,0) width 5: "."
+          LayoutInline {A} at (0,0) size 353x18 [color=#0000EE]
+            LayoutText {#text} at (53,0) size 353x18
+              text run at (53,0) width 353: "http://bugzilla.opendarwin.org/show_bug.cgi?id=9547"
+          LayoutText {#text} at (405,0) size 328x18
+            text run at (405,0) width 5: " "
+            text run at (409,0) width 324: "Resize corner does not track the mouse accurately"
+        LayoutText {#text} at (732,0) size 5x18
+          text run at (732,0) width 5: "."
       LayoutBlockFlow {HR} at (0,52) size 784x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow (anonymous) at (0,187) size 784x357
         LayoutText {#text} at (169,107) size 4x18

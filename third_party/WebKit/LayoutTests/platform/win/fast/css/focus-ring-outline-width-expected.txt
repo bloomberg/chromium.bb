@@ -8,7 +8,7 @@ layer at (0,0) size 800x600
           text run at (0,0) width 750: "Assuming the port-specific theme draws focus rings, this test can be used to ensure that a focus ring is drawn with an"
           text run at (0,18) width 147: "outline width of 10 px."
       LayoutBlockFlow (anonymous) at (0,52) size 784x18
-        LayoutInline {A} at (0,0) size 28x17 [color=#0000EE]
-          LayoutText {#text} at (0,0) size 28x17
-            text run at (0,0) width 28: "Test"
+        LayoutInline {A} at (0,0) size 27x17 [color=#0000EE]
+          LayoutText {#text} at (0,0) size 27x17
+            text run at (0,0) width 27: "Test"
         LayoutText {#text} at (0,0) size 0x0

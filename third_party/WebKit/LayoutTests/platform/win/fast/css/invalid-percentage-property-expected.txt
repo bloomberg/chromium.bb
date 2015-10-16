@@ -4,19 +4,19 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x573.28
       LayoutBlockFlow {P} at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 55x17
-          text run at (0,0) width 55: "Test for "
+        LayoutText {#text} at (0,0) size 54x17
+          text run at (0,0) width 54: "Test for "
         LayoutInline {A} at (0,0) size 304x17 [color=#0000EE]
-          LayoutText {#text} at (54,0) size 304x17
-            text run at (54,0) width 304: "http://bugs.webkit.org/show_bug.cgi?id=15260"
-        LayoutText {#text} at (357,0) size 159x17
-          text run at (357,0) width 159: "Any styles defined after "
+          LayoutText {#text} at (53,0) size 304x17
+            text run at (53,0) width 304: "http://bugs.webkit.org/show_bug.cgi?id=15260"
+        LayoutText {#text} at (356,0) size 158x17
+          text run at (356,0) width 158: "Any styles defined after "
         LayoutInline {ELEMENT} at (0,0) size 207x17
-          LayoutText {#text} at (515,0) size 8x17
-            text run at (515,0) width 8: "{"
-          LayoutInline {PROPERTY} at (0,0) size 200x17
-            LayoutText {#text} at (522,0) size 200x17
-              text run at (522,0) width 200: ":%} style are ignored by Safari"
+          LayoutText {#text} at (513,0) size 9x17
+            text run at (513,0) width 9: "{"
+          LayoutInline {PROPERTY} at (0,0) size 199x17
+            LayoutText {#text} at (521,0) size 199x17
+              text run at (521,0) width 199: ":%} style are ignored by Safari"
       LayoutBlockFlow {H3} at (0,36.72) size 784x22 [color=#008000]
         LayoutText {#text} at (0,0) size 248x21
           text run at (0,0) width 248: "This text should show in green."

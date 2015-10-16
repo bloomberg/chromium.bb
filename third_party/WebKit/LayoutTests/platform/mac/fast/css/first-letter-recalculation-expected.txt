@@ -16,5 +16,5 @@ layer at (0,0) size 800x84
         LayoutInline {<pseudo:first-letter>} at (0,0) size 13x18
           LayoutTextFragment (anonymous) at (0,0) size 13x18
             text run at (0,0) width 13: "H"
-        LayoutTextFragment {#text} at (12,0) size 629x18
-          text run at (12,0) width 629: "ere the first letter should be bold and black, but with Safari build 416.13 it is blue. See bug #6170."
+        LayoutTextFragment {#text} at (12,0) size 628x18
+          text run at (12,0) width 628: "ere the first letter should be bold and black, but with Safari build 416.13 it is blue. See bug #6170."

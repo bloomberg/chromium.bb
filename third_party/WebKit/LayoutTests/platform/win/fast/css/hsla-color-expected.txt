@@ -7,17 +7,17 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (0,0) size 394x36
           text run at (0,0) width 394: "This should be red, alpha 0.5"
       LayoutBlockFlow {H1} at (0,58.44) size 784x37 [color=#FF00007F]
-        LayoutText {#text} at (0,0) size 456x36
-          text run at (0,0) width 456: "This should also be red, alpha 0.5"
+        LayoutText {#text} at (0,0) size 455x36
+          text run at (0,0) width 455: "This should also be red, alpha 0.5"
       LayoutBlockFlow {H1} at (0,116.88) size 784x37 [color=#00FF0000]
-        LayoutText {#text} at (0,0) size 425x36
-          text run at (0,0) width 425: "This should be green, alpha 0.0"
+        LayoutText {#text} at (0,0) size 424x36
+          text run at (0,0) width 424: "This should be green, alpha 0.0"
       LayoutBlockFlow {H1} at (0,175.31) size 784x37 [color=#00FF0000]
-        LayoutText {#text} at (0,0) size 486x36
-          text run at (0,0) width 486: "This should also be green, alpha 0.0"
+        LayoutText {#text} at (0,0) size 485x36
+          text run at (0,0) width 485: "This should also be green, alpha 0.0"
       LayoutBlockFlow {H1} at (0,233.75) size 784x37 [color=#00FF00]
-        LayoutText {#text} at (0,0) size 425x36
-          text run at (0,0) width 425: "This should be green, alpha 1.0"
+        LayoutText {#text} at (0,0) size 424x36
+          text run at (0,0) width 424: "This should be green, alpha 1.0"
       LayoutBlockFlow {H1} at (0,292.19) size 784x37 [color=#00FF00]
-        LayoutText {#text} at (0,0) size 486x36
-          text run at (0,0) width 486: "This should also be green, alpha 1.0"
+        LayoutText {#text} at (0,0) size 485x36
+          text run at (0,0) width 485: "This should also be green, alpha 1.0"

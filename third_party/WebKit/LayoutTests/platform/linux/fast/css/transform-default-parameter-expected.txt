@@ -4,8 +4,8 @@ layer at (0,0) size 800x116
   LayoutBlockFlow {HTML} at (0,0) size 800x115.88
     LayoutBlockFlow {BODY} at (8,21.44) size 784x78.44
       LayoutBlockFlow {H1} at (0,0) size 784x37
-        LayoutText {#text} at (0,0) size 488x36
-          text run at (0,0) width 488: "Testing default translate parameter"
+        LayoutText {#text} at (0,0) size 486x36
+          text run at (0,0) width 486: "Testing default translate parameter"
       LayoutBlockFlow {P} at (0,58.44) size 784x20
         LayoutText {#text} at (0,0) size 550x19
           text run at (0,0) width 550: "There should be blue and green boxes shown. If there is a red box visible, the test has failed"

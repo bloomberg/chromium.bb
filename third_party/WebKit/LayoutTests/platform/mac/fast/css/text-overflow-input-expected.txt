@@ -4,12 +4,12 @@ layer at (0,0) size 800x266
   LayoutBlockFlow {HTML} at (0,0) size 800x266
     LayoutBlockFlow {BODY} at (8,16) size 784x234
       LayoutBlockFlow {P} at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 316x18
-          text run at (0,0) width 316: "This test is a basic check for using text-overflow."
+        LayoutText {#text} at (0,0) size 314x18
+          text run at (0,0) width 314: "This test is a basic check for using text-overflow."
       LayoutBlockFlow {P} at (0,34) size 784x56
-        LayoutText {#text} at (0,0) size 490x18
-          text run at (0,0) width 490: "Apply \"text-overflow:clip\" to inputs. The following input should be clipped:"
-        LayoutBR {BR} at (489,0) size 1x18
+        LayoutText {#text} at (0,0) size 489x18
+          text run at (0,0) width 489: "Apply \"text-overflow:clip\" to inputs. The following input should be clipped:"
+        LayoutBR {BR} at (488,0) size 1x18
         LayoutTextControl {INPUT} at (0,18) size 131x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         LayoutText {#text} at (131,18) size 4x18
           text run at (131,18) width 4: " "
@@ -51,9 +51,9 @@ layer at (0,0) size 800x266
         LayoutTextControl {INPUT} at (544,37) size 131x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (0,106) size 784x56
-        LayoutText {#text} at (0,0) size 547x18
-          text run at (0,0) width 547: "Apply \"text-overflow:ellipsis\" to inputs. The following input should show an ellipsis:"
-        LayoutBR {BR} at (546,0) size 1x18
+        LayoutText {#text} at (0,0) size 546x18
+          text run at (0,0) width 546: "Apply \"text-overflow:ellipsis\" to inputs. The following input should show an ellipsis:"
+        LayoutBR {BR} at (545,0) size 1x18
         LayoutTextControl {INPUT} at (0,18) size 131x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         LayoutText {#text} at (131,18) size 4x18
           text run at (131,18) width 4: " "
@@ -95,9 +95,9 @@ layer at (0,0) size 800x266
         LayoutTextControl {INPUT} at (544,37) size 131x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (0,178) size 784x56
-        LayoutText {#text} at (0,0) size 238x18
-          text run at (0,0) width 238: "Dynamic style change text-overflow:"
-        LayoutBR {BR} at (237,0) size 1x18
+        LayoutText {#text} at (0,0) size 237x18
+          text run at (0,0) width 237: "Dynamic style change text-overflow:"
+        LayoutBR {BR} at (236,0) size 1x18
         LayoutText {#text} at (0,18) size 247x18
           text run at (0,18) width 247: "Clip to ellipsis (should show ellipsis): "
         LayoutTextControl {INPUT} at (246.23,18) size 131x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
@@ -118,120 +118,120 @@ layer at (0,0) size 800x266
         LayoutBR {BR} at (0,0) size 0x0
 layer at (11,71) size 125x13 scrollWidth 274
   LayoutBlockFlow {DIV} at (3,3) size 125x13 [color=#A9A9A9]
-    LayoutText {#text} at (0,0) size 275x13
-      text run at (0,0) width 275: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
+    LayoutText {#text} at (0,0) size 274x13
+      text run at (0,0) width 274: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
 layer at (11,71) size 125x13
   LayoutBlockFlow {DIV} at (3,3) size 125x13
 layer at (152,71) size 108x13 scrollWidth 274
   LayoutBlockFlow {DIV} at (9,3) size 108x13 [color=#A9A9A9]
-    LayoutText {#text} at (0,0) size 275x13
-      text run at (0,0) width 275: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
+    LayoutText {#text} at (0,0) size 274x13
+      text run at (0,0) width 274: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
 layer at (152,71) size 108x13
   LayoutBlockFlow {DIV} at (0,0) size 108x13
 layer at (283,71) size 125x13 scrollWidth 274
   LayoutBlockFlow {DIV} at (3,3) size 125x13
-    LayoutText {#text} at (0,0) size 275x13
-      text run at (0,0) width 275: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
+    LayoutText {#text} at (0,0) size 274x13
+      text run at (0,0) width 274: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
 layer at (424,71) size 108x13 scrollWidth 274
   LayoutBlockFlow {DIV} at (0,0) size 108x13
-    LayoutText {#text} at (0,0) size 275x13
-      text run at (0,0) width 275: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
+    LayoutText {#text} at (0,0) size 274x13
+      text run at (0,0) width 274: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
 layer at (555,71) size 125x13 scrollWidth 344
   LayoutBlockFlow {DIV} at (3,3) size 125x13
     LayoutText {#text} at (0,0) size 345x13
       text run at (0,0) width 345: "\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}"
-layer at (11,90) size 125x13 scrollX 149.00 scrollWidth 274
+layer at (11,90) size 125x13 scrollX 148.00 scrollWidth 274
   LayoutBlockFlow {DIV} at (3,3) size 125x13 [color=#A9A9A9]
-    LayoutText {#text} at (-149,0) size 275x13
-      text run at (-149,0) width 274: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
+    LayoutText {#text} at (-148,0) size 274x13
+      text run at (-148,0) width 273: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
 layer at (11,90) size 125x13
   LayoutBlockFlow {DIV} at (3,3) size 125x13
-layer at (152,90) size 108x13 scrollX 166.00 scrollWidth 274
+layer at (152,90) size 108x13 scrollX 165.00 scrollWidth 274
   LayoutBlockFlow {DIV} at (9,3) size 108x13 [color=#A9A9A9]
-    LayoutText {#text} at (-166,0) size 275x13
-      text run at (-166,0) width 274: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
+    LayoutText {#text} at (-165,0) size 274x13
+      text run at (-165,0) width 273: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
 layer at (152,90) size 108x13
   LayoutBlockFlow {DIV} at (0,0) size 108x13
-layer at (283,90) size 125x13 scrollX 149.00 scrollWidth 274
+layer at (283,90) size 125x13 scrollX 148.00 scrollWidth 274
   LayoutBlockFlow {DIV} at (3,3) size 125x13
-    LayoutText {#text} at (-149,0) size 275x13
-      text run at (-149,0) width 274: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
-layer at (424,90) size 108x13 scrollX 166.00 scrollWidth 274
+    LayoutText {#text} at (-148,0) size 274x13
+      text run at (-148,0) width 273: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
+layer at (424,90) size 108x13 scrollX 165.00 scrollWidth 274
   LayoutBlockFlow {DIV} at (0,0) size 108x13
-    LayoutText {#text} at (-166,0) size 275x13
-      text run at (-166,0) width 274: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
+    LayoutText {#text} at (-165,0) size 274x13
+      text run at (-165,0) width 273: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
 layer at (555,90) size 125x13 scrollX 219.00 scrollWidth 344
   LayoutBlockFlow {DIV} at (3,3) size 125x13
     LayoutText {#text} at (-219,0) size 345x13
       text run at (-219,0) width 344 RTL: "\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}"
 layer at (11,143) size 125x13 scrollWidth 274
   LayoutBlockFlow {DIV} at (3,3) size 125x13 [color=#A9A9A9]
-    LayoutText {#text} at (0,0) size 275x13
-      text run at (0,0) width 275: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
+    LayoutText {#text} at (0,0) size 274x13
+      text run at (0,0) width 274: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
 layer at (11,143) size 125x13
   LayoutBlockFlow {DIV} at (3,3) size 125x13
 layer at (152,143) size 108x13 scrollWidth 274
   LayoutBlockFlow {DIV} at (9,3) size 108x13 [color=#A9A9A9]
-    LayoutText {#text} at (0,0) size 275x13
-      text run at (0,0) width 275: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
+    LayoutText {#text} at (0,0) size 274x13
+      text run at (0,0) width 274: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
 layer at (152,143) size 108x13
   LayoutBlockFlow {DIV} at (0,0) size 108x13
 layer at (283,143) size 125x13 scrollWidth 274
   LayoutBlockFlow {DIV} at (3,3) size 125x13
-    LayoutText {#text} at (0,0) size 275x13
-      text run at (0,0) width 275: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
+    LayoutText {#text} at (0,0) size 274x13
+      text run at (0,0) width 274: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
 layer at (424,143) size 108x13 scrollWidth 274
   LayoutBlockFlow {DIV} at (0,0) size 108x13
-    LayoutText {#text} at (0,0) size 275x13
-      text run at (0,0) width 275: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
+    LayoutText {#text} at (0,0) size 274x13
+      text run at (0,0) width 274: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
 layer at (555,143) size 125x13 scrollWidth 344
   LayoutBlockFlow {DIV} at (3,3) size 125x13
     LayoutText {#text} at (0,0) size 345x13
       text run at (0,0) width 345: "\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}"
-layer at (11,162) size 125x13 scrollX 149.00 scrollWidth 274
+layer at (11,162) size 125x13 scrollX 148.00 scrollWidth 274
   LayoutBlockFlow {DIV} at (3,3) size 125x13 [color=#A9A9A9]
-    LayoutText {#text} at (-149,0) size 275x13
-      text run at (-149,0) width 274: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
+    LayoutText {#text} at (-148,0) size 274x13
+      text run at (-148,0) width 273: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
 layer at (11,162) size 125x13
   LayoutBlockFlow {DIV} at (3,3) size 125x13
-layer at (152,162) size 108x13 scrollX 166.00 scrollWidth 274
+layer at (152,162) size 108x13 scrollX 165.00 scrollWidth 274
   LayoutBlockFlow {DIV} at (9,3) size 108x13 [color=#A9A9A9]
-    LayoutText {#text} at (-166,0) size 275x13
-      text run at (-166,0) width 274: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
+    LayoutText {#text} at (-165,0) size 274x13
+      text run at (-165,0) width 273: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
 layer at (152,162) size 108x13
   LayoutBlockFlow {DIV} at (0,0) size 108x13
-layer at (283,162) size 125x13 scrollX 149.00 scrollWidth 274
+layer at (283,162) size 125x13 scrollX 148.00 scrollWidth 274
   LayoutBlockFlow {DIV} at (3,3) size 125x13
-    LayoutText {#text} at (-149,0) size 275x13
-      text run at (-149,0) width 274: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
-layer at (424,162) size 108x13 scrollX 166.00 scrollWidth 274
+    LayoutText {#text} at (-148,0) size 274x13
+      text run at (-148,0) width 273: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
+layer at (424,162) size 108x13 scrollX 165.00 scrollWidth 274
   LayoutBlockFlow {DIV} at (0,0) size 108x13
-    LayoutText {#text} at (-166,0) size 275x13
-      text run at (-166,0) width 274: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
+    LayoutText {#text} at (-165,0) size 274x13
+      text run at (-165,0) width 273: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
 layer at (555,162) size 125x13 scrollX 219.00 scrollWidth 344
   LayoutBlockFlow {DIV} at (3,3) size 125x13
     LayoutText {#text} at (-219,0) size 345x13
       text run at (-219,0) width 344 RTL: "\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}"
 layer at (257,215) size 125x13 scrollWidth 274
   LayoutBlockFlow {DIV} at (3,3) size 125x13 [color=#A9A9A9]
-    LayoutText {#text} at (0,0) size 275x13
-      text run at (0,0) width 275: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
+    LayoutText {#text} at (0,0) size 274x13
+      text run at (0,0) width 274: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
 layer at (257,215) size 125x13
   LayoutBlockFlow {DIV} at (3,3) size 125x13
 layer at (392,215) size 125x13 scrollWidth 274
   LayoutBlockFlow {DIV} at (3,3) size 125x13
-    LayoutText {#text} at (0,0) size 275x13
-      text run at (0,0) width 275: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
+    LayoutText {#text} at (0,0) size 274x13
+      text run at (0,0) width 274: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
 layer at (281,234) size 125x13 scrollWidth 274
   LayoutBlockFlow {DIV} at (3,3) size 125x13 [color=#A9A9A9]
-    LayoutText {#text} at (0,0) size 275x13
-      text run at (0,0) width 275: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
+    LayoutText {#text} at (0,0) size 274x13
+      text run at (0,0) width 274: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
 layer at (281,234) size 125x13
   LayoutBlockFlow {DIV} at (3,3) size 125x13
 layer at (416,234) size 125x13 scrollWidth 274
   LayoutBlockFlow {DIV} at (3,3) size 125x13
-    LayoutText {#text} at (0,0) size 275x13
-      text run at (0,0) width 275: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
+    LayoutText {#text} at (0,0) size 274x13
+      text run at (0,0) width 274: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
 layer at (261,72) size 11x11 transparent
   LayoutBlockFlow {DIV} at (114,1) size 11x11
 layer at (533,72) size 11x11 transparent

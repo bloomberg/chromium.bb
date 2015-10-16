@@ -16,12 +16,12 @@ layer at (0,0) size 800x427
       LayoutBlockFlow {H3} at (0,114.72) size 784x46 [color=#008000] [bgcolor=#FFFFFF]
         LayoutText {#text} at (0,0) size 761x45
           text run at (0,0) width 761: "Third sentence: this text should be green. The markup code is valid according to W3C HTML"
-          text run at (0,23) width 574: "validator but the CSS code is invalid according to W3C CSS validator."
+          text run at (0,23) width 573: "validator but the CSS code is invalid according to W3C CSS validator."
       LayoutBlockFlow {H4} at (0,181.98) size 784x60 [color=#FF0000] [bgcolor=#FFFFFF]
         LayoutText {#text} at (0,0) size 784x59
           text run at (0,0) width 760: "Fourth sentence: this text should be green according to CSS 1 (class name can not start with a dash in CSS 1) but it"
           text run at (0,20) width 784: "should be red according to CSS 2.1 and the markup code is valid according to W3C HTML validator and the CSS code"
-          text run at (0,40) width 333: "is perfectly valid according to W3C CSS validator."
+          text run at (0,40) width 332: "is perfectly valid according to W3C CSS validator."
       LayoutBlockFlow {H5} at (0,268.70) size 784x80 [color=#800080] [bgcolor=#FFFFFF]
         LayoutText {#text} at (0,0) size 780x79
           text run at (0,0) width 747: "Fifth sentence: this text should be green according to CSS 1 (class name can not start with a dash in CSS 1) but it"

@@ -5,17 +5,17 @@ layer at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {HR} at (0,0) size 784x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow {P} at (0,18) size 784x18
-        LayoutText {#text} at (0,0) size 55x17
-          text run at (0,0) width 55: "Test for "
-        LayoutInline {I} at (0,0) size 562x17
+        LayoutText {#text} at (0,0) size 54x17
+          text run at (0,0) width 54: "Test for "
+        LayoutInline {I} at (0,0) size 560x17
           LayoutInline {A} at (0,0) size 304x17 [color=#0000EE]
-            LayoutText {#text} at (54,0) size 304x17
-              text run at (54,0) width 304: "https://bugs.webkit.org/show_bug.cgi?id=9221"
-          LayoutText {#text} at (357,0) size 259x17
-            text run at (357,0) width 5: " "
-            text run at (361,0) width 255: "resize property doesn't work on iframes"
-        LayoutText {#text} at (615,0) size 5x17
-          text run at (615,0) width 5: "."
+            LayoutText {#text} at (53,0) size 304x17
+              text run at (53,0) width 304: "https://bugs.webkit.org/show_bug.cgi?id=9221"
+          LayoutText {#text} at (356,0) size 257x17
+            text run at (356,0) width 5: " "
+            text run at (360,0) width 253: "resize property doesn't work on iframes"
+        LayoutText {#text} at (612,0) size 5x17
+          text run at (612,0) width 5: "."
       LayoutBlockFlow {HR} at (0,52) size 784x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow (anonymous) at (0,62) size 784x230
         LayoutText {#text} at (0,0) size 0x0

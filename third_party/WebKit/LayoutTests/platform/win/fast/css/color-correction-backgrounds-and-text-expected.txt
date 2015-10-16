@@ -31,8 +31,8 @@ layer at (0,0) size 785x1072 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             text run at (0,3) width 117: "G"
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (0,804) size 769x36
-        LayoutText {#text} at (0,0) size 733x35
-          text run at (0,0) width 733: "This container has default color-correction specified, and the text has sRGB color correction specified. This text is"
+        LayoutText {#text} at (0,0) size 732x35
+          text run at (0,0) width 732: "This container has default color-correction specified, and the text has sRGB color correction specified. This text is"
           text run at (0,18) width 545: "visible even though both are green since the text is corrected and the container is not."
       LayoutBlockFlow {DIV} at (0,856) size 200x200 [bgcolor=#008000]
         LayoutInline {SPAN} at (0,0) size 117x166 [color=#008000]

@@ -4,13 +4,13 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 55x17
-          text run at (0,0) width 55: "Test for "
+        LayoutText {#text} at (0,0) size 54x17
+          text run at (0,0) width 54: "Test for "
         LayoutInline {A} at (0,0) size 300x17 [color=#0000EE]
-          LayoutText {#text} at (54,0) size 300x17
-            text run at (54,0) width 300: "http://bugs.webkit.org/show_bug.cgi?id=4104 "
-        LayoutText {#text} at (353,0) size 257x17
-          text run at (353,0) width 257: "first-letter not updating style with hover"
+          LayoutText {#text} at (53,0) size 300x17
+            text run at (53,0) width 300: "http://bugs.webkit.org/show_bug.cgi?id=4104 "
+        LayoutText {#text} at (352,0) size 256x17
+          text run at (352,0) width 256: "first-letter not updating style with hover"
       LayoutBlockFlow {P} at (0,34) size 784x18
         LayoutText {#text} at (0,0) size 397x17
           text run at (0,0) width 397: "The next line of text should turn green when we hover over it."

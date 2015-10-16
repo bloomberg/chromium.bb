@@ -10,19 +10,19 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {HR} at (0,26) size 784x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow {P} at (0,44) size 784x36
-        LayoutText {#text} at (0,0) size 55x17
-          text run at (0,0) width 55: "Test for "
-        LayoutInline {I} at (0,0) size 556x17
-          LayoutInline {A} at (0,0) size 354x17 [color=#0000EE]
-            LayoutText {#text} at (54,0) size 354x17
-              text run at (54,0) width 354: "http://bugzilla.opendarwin.org/show_bug.cgi?id=7218"
-          LayoutText {#text} at (407,0) size 203x17
-            text run at (407,0) width 203: " Text underlined on mouse over"
-        LayoutText {#text} at (609,0) size 102x17
-          text run at (609,0) width 102: ". This tests that "
+        LayoutText {#text} at (0,0) size 54x17
+          text run at (0,0) width 54: "Test for "
+        LayoutInline {I} at (0,0) size 554x17
+          LayoutInline {A} at (0,0) size 353x17 [color=#0000EE]
+            LayoutText {#text} at (53,0) size 353x17
+              text run at (53,0) width 353: "http://bugzilla.opendarwin.org/show_bug.cgi?id=7218"
+          LayoutText {#text} at (405,0) size 202x17
+            text run at (405,0) width 202: " Text underlined on mouse over"
+        LayoutText {#text} at (606,0) size 102x17
+          text run at (606,0) width 102: ". This tests that "
         LayoutInline {CODE} at (0,0) size 57x16
-          LayoutText {#text} at (710,2) size 57x16
-            text run at (710,2) width 57: "*:hover"
+          LayoutText {#text} at (707,2) size 57x16
+            text run at (707,2) width 57: "*:hover"
         LayoutText {#text} at (0,18) size 261x17
           text run at (0,18) width 261: "does not match anything in quirks mode."
 caret: position 1 of child 0 {#text} of child 1 {SPAN} of child 1 {DIV} of body

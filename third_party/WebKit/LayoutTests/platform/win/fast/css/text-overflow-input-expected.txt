@@ -4,8 +4,8 @@ layer at (0,0) size 800x372
   LayoutBlockFlow {HTML} at (0,0) size 800x372
     LayoutBlockFlow {BODY} at (8,16) size 784x340
       LayoutBlockFlow {P} at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 316x17
-          text run at (0,0) width 316: "This test is a basic check for using text-overflow."
+        LayoutText {#text} at (0,0) size 314x17
+          text run at (0,0) width 314: "This test is a basic check for using text-overflow."
       LayoutBlockFlow {P} at (0,34) size 784x106
         LayoutText {#text} at (0,0) size 490x17
           text run at (0,0) width 490: "Apply \"text-overflow:clip\" to inputs. The following input should be clipped:"

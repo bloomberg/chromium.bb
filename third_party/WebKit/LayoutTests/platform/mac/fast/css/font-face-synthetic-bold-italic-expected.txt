@@ -4,17 +4,17 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x576
       LayoutBlockFlow {P} at (0,0) size 784x36
-        LayoutText {#text} at (0,0) size 55x18
-          text run at (0,0) width 55: "Test for "
-        LayoutInline {I} at (0,0) size 761x36
+        LayoutText {#text} at (0,0) size 54x18
+          text run at (0,0) width 54: "Test for "
+        LayoutInline {I} at (0,0) size 759x36
           LayoutInline {A} at (0,0) size 312x18 [color=#0000EE]
-            LayoutText {#text} at (54,0) size 312x18
-              text run at (54,0) width 312: "https://bugs.webkit.org/show_bug.cgi?id=34147"
-          LayoutText {#text} at (365,0) size 761x36
-            text run at (365,0) width 396: " If @font-face does not provide an explicit italic/bold variant,"
+            LayoutText {#text} at (53,0) size 312x18
+              text run at (53,0) width 312: "https://bugs.webkit.org/show_bug.cgi?id=34147"
+          LayoutText {#text} at (364,0) size 759x36
+            text run at (364,0) width 395: " If @font-face does not provide an explicit italic/bold variant,"
             text run at (0,18) width 96: "regular is used"
-        LayoutText {#text} at (96,18) size 4x18
-          text run at (96,18) width 4: "."
+        LayoutText {#text} at (95,18) size 5x18
+          text run at (95,18) width 5: "."
       LayoutBlockFlow {P} at (0,52) size 784x18
         LayoutText {#text} at (0,0) size 93x18
           text run at (0,0) width 93: "Ahem regular:"

@@ -4,8 +4,8 @@ layer at (0,0) size 800x270
   LayoutBlockFlow {HTML} at (0,0) size 800x270
     LayoutBlockFlow {BODY} at (8,12) size 784x246
       LayoutBlockFlow {P} at (0,0) size 784x28
-        LayoutText {#text} at (0,0) size 775x28
-          text run at (0,0) width 775: "This test verifies that line height is determined solely by a box's primary font, not by its fallback fonts. The following two lines should have a solid, unbroken red"
+        LayoutText {#text} at (0,0) size 774x28
+          text run at (0,0) width 774: "This test verifies that line height is determined solely by a box's primary font, not by its fallback fonts. The following two lines should have a solid, unbroken red"
           text run at (0,14) width 81: "line below them:"
       LayoutBlockFlow {DIV} at (0,40) size 784x97
         LayoutBlockFlow {UL} at (0,0) size 567x97

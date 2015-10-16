@@ -4,12 +4,12 @@ layer at (0,0) size 800x266
   LayoutBlockFlow {HTML} at (0,0) size 800x266
     LayoutBlockFlow {BODY} at (8,16) size 784x234
       LayoutBlockFlow {P} at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 316x18
-          text run at (0,0) width 316: "This test is a basic check for using text-overflow."
+        LayoutText {#text} at (0,0) size 314x18
+          text run at (0,0) width 314: "This test is a basic check for using text-overflow."
       LayoutBlockFlow {P} at (0,34) size 784x56
-        LayoutText {#text} at (0,0) size 490x18
-          text run at (0,0) width 490: "Apply \"text-overflow:clip\" to inputs. The following input should be clipped:"
-        LayoutBR {BR} at (489,0) size 1x18
+        LayoutText {#text} at (0,0) size 489x18
+          text run at (0,0) width 489: "Apply \"text-overflow:clip\" to inputs. The following input should be clipped:"
+        LayoutBR {BR} at (488,0) size 1x18
         LayoutTextControl {INPUT} at (0,18) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         LayoutText {#text} at (123,18) size 4x18
           text run at (123,18) width 4: " "
@@ -51,9 +51,9 @@ layer at (0,0) size 800x266
         LayoutTextControl {INPUT} at (512,37) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (0,106) size 784x56
-        LayoutText {#text} at (0,0) size 547x18
-          text run at (0,0) width 547: "Apply \"text-overflow:ellipsis\" to inputs. The following input should show an ellipsis:"
-        LayoutBR {BR} at (546,0) size 1x18
+        LayoutText {#text} at (0,0) size 546x18
+          text run at (0,0) width 546: "Apply \"text-overflow:ellipsis\" to inputs. The following input should show an ellipsis:"
+        LayoutBR {BR} at (545,0) size 1x18
         LayoutTextControl {INPUT} at (0,18) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         LayoutText {#text} at (123,18) size 4x18
           text run at (123,18) width 4: " "
@@ -95,9 +95,9 @@ layer at (0,0) size 800x266
         LayoutTextControl {INPUT} at (512,37) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (0,178) size 784x56
-        LayoutText {#text} at (0,0) size 238x18
-          text run at (0,0) width 238: "Dynamic style change text-overflow:"
-        LayoutBR {BR} at (237,0) size 1x18
+        LayoutText {#text} at (0,0) size 237x18
+          text run at (0,0) width 237: "Dynamic style change text-overflow:"
+        LayoutBR {BR} at (236,0) size 1x18
         LayoutText {#text} at (0,18) size 247x18
           text run at (0,18) width 247: "Clip to ellipsis (should show ellipsis): "
         LayoutTextControl {INPUT} at (246.23,18) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]

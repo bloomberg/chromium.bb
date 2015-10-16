@@ -10,14 +10,14 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {HR} at (0,26) size 784x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow {P} at (0,44) size 784x36
-        LayoutText {#text} at (0,0) size 55x17
-          text run at (0,0) width 55: "Test for "
-        LayoutInline {I} at (0,0) size 753x35
-          LayoutInline {A} at (0,0) size 354x17 [color=#0000EE]
-            LayoutText {#text} at (54,0) size 354x17
-              text run at (54,0) width 354: "http://bugzilla.opendarwin.org/show_bug.cgi?id=7327"
-          LayoutText {#text} at (407,0) size 753x35
-            text run at (407,0) width 346: " REGRESSION (r12869): :hover subselector does not"
+        LayoutText {#text} at (0,0) size 54x17
+          text run at (0,0) width 54: "Test for "
+        LayoutInline {I} at (0,0) size 751x35
+          LayoutInline {A} at (0,0) size 353x17 [color=#0000EE]
+            LayoutText {#text} at (53,0) size 353x17
+              text run at (53,0) width 353: "http://bugzilla.opendarwin.org/show_bug.cgi?id=7327"
+          LayoutText {#text} at (405,0) size 751x35
+            text run at (405,0) width 346: " REGRESSION (r12869): :hover subselector does not"
             text run at (0,18) width 132: "work in quirks mode"
         LayoutText {#text} at (131,18) size 101x17
           text run at (131,18) width 101: ". This tests that "

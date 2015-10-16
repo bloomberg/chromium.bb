@@ -27,23 +27,23 @@ layer at (0,0) size 800x770 backgroundClip at (0,0) size 800x600 clip at (0,0) s
         LayoutText {#text} at (0,0) size 149x19
           text run at (0,0) width 149: "RTL link with ltr content:"
       LayoutBlockFlow (anonymous) at (0,390) size 784x20
-        LayoutText {#text} at (0,0) size 56x19
-          text run at (0,0) width 56: "LTR link:"
+        LayoutText {#text} at (0,0) size 55x19
+          text run at (0,0) width 55: "LTR link:"
       LayoutBlockFlow (anonymous) at (0,452) size 784x20
-        LayoutText {#text} at (0,0) size 31x19
-          text run at (0,0) width 31: "LTR:"
+        LayoutText {#text} at (0,0) size 30x19
+          text run at (0,0) width 30: "LTR:"
       LayoutBlockFlow (anonymous) at (0,514) size 784x20
-        LayoutText {#text} at (0,0) size 124x19
-          text run at (0,0) width 124: "LTR with rtl content:"
+        LayoutText {#text} at (0,0) size 123x19
+          text run at (0,0) width 123: "LTR with rtl content:"
       LayoutBlockFlow (anonymous) at (0,576) size 784x20
-        LayoutText {#text} at (0,0) size 167x19
-          text run at (0,0) width 167: "LTR with forced rtl content:"
+        LayoutText {#text} at (0,0) size 166x19
+          text run at (0,0) width 166: "LTR with forced rtl content:"
       LayoutBlockFlow (anonymous) at (0,638) size 784x20
-        LayoutText {#text} at (0,0) size 149x19
-          text run at (0,0) width 149: "LTR link with rtl content:"
+        LayoutText {#text} at (0,0) size 148x19
+          text run at (0,0) width 148: "LTR link with rtl content:"
       LayoutBlockFlow (anonymous) at (0,700) size 784x20
-        LayoutText {#text} at (0,0) size 192x19
-          text run at (0,0) width 192: "LTR link with forced rtl content:"
+        LayoutText {#text} at (0,0) size 191x19
+          text run at (0,0) width 191: "LTR link with forced rtl content:"
 layer at (8,108) size 182x22 clip at (9,109) size 180x20 scrollX 118.00 scrollWidth 298
   LayoutBlockFlow {DIV} at (0,100) size 182x22 [border: (1px solid #000000)]
     LayoutText {#text} at (-117,1) size 298x19

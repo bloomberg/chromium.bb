@@ -4,15 +4,15 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x36
-        LayoutText {#text} at (0,0) size 55x17
-          text run at (0,0) width 55: "Test for "
-        LayoutInline {I} at (0,0) size 780x35
+        LayoutText {#text} at (0,0) size 54x17
+          text run at (0,0) width 54: "Test for "
+        LayoutInline {I} at (0,0) size 776x35
           LayoutInline {A} at (0,0) size 312x17 [color=#0000EE]
-            LayoutText {#text} at (54,0) size 312x17
-              text run at (54,0) width 312: "https://bugs.webkit.org/show_bug.cgi?id=18818"
-          LayoutText {#text} at (365,0) size 780x35
-            text run at (365,0) width 5: " "
-            text run at (369,0) width 411: "REGRESSION (3.1.1-TOT): Character order (float:left ordered"
+            LayoutText {#text} at (53,0) size 312x17
+              text run at (53,0) width 312: "https://bugs.webkit.org/show_bug.cgi?id=18818"
+          LayoutText {#text} at (364,0) size 776x35
+            text run at (364,0) width 5: " "
+            text run at (368,0) width 408: "REGRESSION (3.1.1-TOT): Character order (float:left ordered"
             text run at (0,18) width 127: "after the first letter)"
         LayoutText {#text} at (126,18) size 5x17
           text run at (126,18) width 5: "."

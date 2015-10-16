@@ -4,46 +4,46 @@ layer at (0,0) size 800x740 backgroundClip at (0,0) size 800x600 clip at (0,0) s
   LayoutBlockFlow {HTML} at (0,0) size 800x740
     LayoutBlockFlow {BODY} at (8,8) size 784x712
       LayoutBlockFlow (anonymous) at (0,0) size 784x90
-        LayoutText {#text} at (0,0) size 573x18
-          text run at (0,0) width 573: "This tests checks that the text-overflow:ellipsis property is handled correctly for bidi text."
-        LayoutBR {BR} at (572,14) size 1x0
+        LayoutText {#text} at (0,0) size 572x18
+          text run at (0,0) width 572: "This tests checks that the text-overflow:ellipsis property is handled correctly for bidi text."
+        LayoutBR {BR} at (571,14) size 1x0
         LayoutBR {BR} at (0,18) size 0x18
         LayoutText {#text} at (0,36) size 760x18
           text run at (0,36) width 760: "Pass if the ellipsis do not overlap the text and the underlines for the links are placed under the text and not the ellipsis. "
         LayoutBR {BR} at (759,50) size 1x0
         LayoutBR {BR} at (0,54) size 0x18
-        LayoutText {#text} at (0,72) size 35x18
-          text run at (0,72) width 35: "RTL:"
+        LayoutText {#text} at (0,72) size 34x18
+          text run at (0,72) width 34: "RTL:"
       LayoutBlockFlow (anonymous) at (0,132) size 784x18
-        LayoutText {#text} at (0,0) size 96x18
-          text run at (0,0) width 96: "RTL Override:"
+        LayoutText {#text} at (0,0) size 95x18
+          text run at (0,0) width 95: "RTL Override:"
       LayoutBlockFlow (anonymous) at (0,192) size 784x18
-        LayoutText {#text} at (0,0) size 64x18
-          text run at (0,0) width 64: "RTL link:"
+        LayoutText {#text} at (0,0) size 63x18
+          text run at (0,0) width 63: "RTL link:"
       LayoutBlockFlow (anonymous) at (0,252) size 784x18
-        LayoutText {#text} at (0,0) size 137x18
-          text run at (0,0) width 137: "RTL with ltr content:"
+        LayoutText {#text} at (0,0) size 136x18
+          text run at (0,0) width 136: "RTL with ltr content:"
       LayoutBlockFlow (anonymous) at (0,312) size 784x18
-        LayoutText {#text} at (0,0) size 166x18
-          text run at (0,0) width 166: "RTL link with ltr content:"
+        LayoutText {#text} at (0,0) size 165x18
+          text run at (0,0) width 165: "RTL link with ltr content:"
       LayoutBlockFlow (anonymous) at (0,372) size 784x18
-        LayoutText {#text} at (0,0) size 64x18
-          text run at (0,0) width 64: "LTR link:"
+        LayoutText {#text} at (0,0) size 63x18
+          text run at (0,0) width 63: "LTR link:"
       LayoutBlockFlow (anonymous) at (0,432) size 784x18
-        LayoutText {#text} at (0,0) size 35x18
-          text run at (0,0) width 35: "LTR:"
+        LayoutText {#text} at (0,0) size 34x18
+          text run at (0,0) width 34: "LTR:"
       LayoutBlockFlow (anonymous) at (0,492) size 784x18
-        LayoutText {#text} at (0,0) size 137x18
-          text run at (0,0) width 137: "LTR with rtl content:"
+        LayoutText {#text} at (0,0) size 135x18
+          text run at (0,0) width 135: "LTR with rtl content:"
       LayoutBlockFlow (anonymous) at (0,552) size 784x18
-        LayoutText {#text} at (0,0) size 182x18
-          text run at (0,0) width 182: "LTR with forced rtl content:"
+        LayoutText {#text} at (0,0) size 180x18
+          text run at (0,0) width 180: "LTR with forced rtl content:"
       LayoutBlockFlow (anonymous) at (0,612) size 784x18
-        LayoutText {#text} at (0,0) size 166x18
-          text run at (0,0) width 166: "LTR link with rtl content:"
+        LayoutText {#text} at (0,0) size 164x18
+          text run at (0,0) width 164: "LTR link with rtl content:"
       LayoutBlockFlow (anonymous) at (0,672) size 784x18
-        LayoutText {#text} at (0,0) size 211x18
-          text run at (0,0) width 211: "LTR link with forced rtl content:"
+        LayoutText {#text} at (0,0) size 209x18
+          text run at (0,0) width 209: "LTR link with forced rtl content:"
 layer at (8,98) size 182x22 clip at (9,99) size 180x20 scrollX 191.00 scrollWidth 371
   LayoutBlockFlow {DIV} at (0,90) size 182x22 [border: (1px solid #000000)]
     LayoutText {#text} at (-190,2) size 372x18

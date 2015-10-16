@@ -4,17 +4,17 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x576
       LayoutBlockFlow {P} at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 55x18
-          text run at (0,0) width 55: "Test for "
-        LayoutInline {I} at (0,0) size 631x18
-          LayoutInline {A} at (0,0) size 306x18 [color=#0000EE]
-            LayoutText {#text} at (54,0) size 306x18
-              text run at (54,0) width 306: "http://bugs.webkit.org/show_bug.cgi?id=11930"
-          LayoutText {#text} at (359,0) size 326x18
-            text run at (359,0) width 5: " "
-            text run at (363,0) width 322: "Specifying border-radius makes the outline shrink"
-        LayoutText {#text} at (684,0) size 5x18
-          text run at (684,0) width 5: "."
+        LayoutText {#text} at (0,0) size 54x18
+          text run at (0,0) width 54: "Test for "
+        LayoutInline {I} at (0,0) size 628x18
+          LayoutInline {A} at (0,0) size 304x18 [color=#0000EE]
+            LayoutText {#text} at (53,0) size 304x18
+              text run at (53,0) width 304: "http://bugs.webkit.org/show_bug.cgi?id=11930"
+          LayoutText {#text} at (356,0) size 325x18
+            text run at (356,0) width 5: " "
+            text run at (360,0) width 321: "Specifying border-radius makes the outline shrink"
+        LayoutText {#text} at (680,0) size 5x18
+          text run at (680,0) width 5: "."
       LayoutBlockFlow {P} at (0,34) size 784x18
         LayoutText {#text} at (0,0) size 278x18
           text run at (0,0) width 278: "These two squares should be the same size:"

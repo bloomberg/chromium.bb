@@ -4,8 +4,8 @@ layer at (0,0) size 785x1301 backgroundClip at (0,0) size 785x600 clip at (0,0) 
   LayoutBlockFlow {HTML} at (0,0) size 785x1301.39
     LayoutBlockFlow {BODY} at (8,16) size 769x1277.39
       LayoutBlockFlow {P} at (0,0) size 769x20
-        LayoutText {#text} at (0,0) size 155x19
-          text run at (0,0) width 155: "div, span, nested div/span"
+        LayoutText {#text} at (0,0) size 154x19
+          text run at (0,0) width 154: "div, span, nested div/span"
       LayoutBlockFlow {P} at (0,36) size 769x20
         LayoutText {#text} at (0,0) size 58x19
           text run at (0,0) width 58: "Single div"
@@ -197,28 +197,28 @@ layer at (0,0) size 785x1301 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             LayoutTableCell {TD} at (2,26) size 38x22 [r=1 c=1 rs=1 cs=1]
               LayoutText {#text} at (13,1) size 24x19
                 text run at (13,1) width 24: "opq"
-      LayoutTable {DIV} at (1.39,1081.39) size 135x62 [border: (1px solid #000000)]
-        LayoutBlockFlow {DIV} at (0,0) size 135x20
-          LayoutText {#text} at (0,0) size 135x19
-            text run at (0,0) width 135: "AnonymousTableRow"
-        LayoutTableSection (anonymous) at (1,21) size 133x40
-          LayoutTableRow {DIV} at (0,0) size 133x20
-            LayoutTableCell {DIV} at (70,0) size 63x20 [r=0 c=0 rs=1 cs=1]
-              LayoutText {#text} at (41,0) size 22x19
-                text run at (41,0) width 22: "abc"
-            LayoutTableCell {DIV} at (0,0) size 70x20 [r=0 c=1 rs=1 cs=1]
-              LayoutText {#text} at (51,0) size 19x19
-                text run at (51,0) width 19: "def"
-          LayoutTableRow {DIV} at (0,20) size 133x20
-            LayoutTableCell {DIV} at (70,20) size 63x20 [r=1 c=0 rs=1 cs=1]
-              LayoutText {#text} at (49,0) size 14x19
-                text run at (49,0) width 14: "hij"
-            LayoutTableCell {DIV} at (0,20) size 70x20 [r=1 c=1 rs=1 cs=1]
-              LayoutText {#text} at (46,0) size 24x19
-                text run at (46,0) width 24: "opq"
+      LayoutTable {DIV} at (1.39,1081.39) size 133x62 [border: (1px solid #000000)]
+        LayoutBlockFlow {DIV} at (0,0) size 133x20
+          LayoutText {#text} at (0,0) size 134x19
+            text run at (0,0) width 133: "AnonymousTableRow"
+        LayoutTableSection (anonymous) at (1,21) size 131x40
+          LayoutTableRow {DIV} at (0,0) size 131x20
+            LayoutTableCell {DIV} at (69,0) size 62x20 [r=0 c=0 rs=1 cs=1]
+              LayoutText {#text} at (40,0) size 22x19
+                text run at (40,0) width 22: "abc"
+            LayoutTableCell {DIV} at (0,0) size 69x20 [r=0 c=1 rs=1 cs=1]
+              LayoutText {#text} at (50,0) size 19x19
+                text run at (50,0) width 19: "def"
+          LayoutTableRow {DIV} at (0,20) size 131x20
+            LayoutTableCell {DIV} at (69,20) size 62x20 [r=1 c=0 rs=1 cs=1]
+              LayoutText {#text} at (48,0) size 14x19
+                text run at (48,0) width 14: "hij"
+            LayoutTableCell {DIV} at (0,20) size 69x20 [r=1 c=1 rs=1 cs=1]
+              LayoutText {#text} at (45,0) size 24x19
+                text run at (45,0) width 24: "opq"
       LayoutBlockFlow {P} at (0,1159.39) size 769x20
-        LayoutText {#text} at (0,0) size 489x19
-          text run at (0,0) width 489: "Anonymous TABLE, TABLE_ROW, TABLE_ROW_GROUP, TABLE_CELL"
+        LayoutText {#text} at (0,0) size 481x19
+          text run at (0,0) width 481: "Anonymous TABLE, TABLE_ROW, TABLE_ROW_GROUP, TABLE_CELL"
       LayoutBlockFlow {DIV} at (0,1195.39) size 769x82 [border: (1px solid #000000)]
         LayoutTable (anonymous) at (1,1) size 24x80
           LayoutTableSection (anonymous) at (0,20) size 24x40

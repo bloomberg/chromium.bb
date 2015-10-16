@@ -3,16 +3,16 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
-      LayoutInline {SPAN} at (0,0) size 670x139
-        LayoutText {#text} at (0,1) size 670x139
-          text run at (0,1) width 670: "fin LYAWA (No kerning or"
+      LayoutInline {SPAN} at (0,0) size 646x139
+        LayoutText {#text} at (0,1) size 646x139
+          text run at (0,1) width 646: "fin LYAWA (No kerning or"
           text run at (0,72) width 227: "ligatures)"
       LayoutText {#text} at (227,111) size 4x19
         text run at (227,111) width 4: " "
       LayoutBR {BR} at (231,126) size 0x0
-      LayoutInline {SPAN} at (0,0) size 670x139
-        LayoutText {#text} at (0,143) size 670x139
-          text run at (0,143) width 670: "fin LYAWA (No kerning or"
+      LayoutInline {SPAN} at (0,0) size 646x139
+        LayoutText {#text} at (0,143) size 646x139
+          text run at (0,143) width 646: "fin LYAWA (No kerning or"
           text run at (0,214) width 227: "ligatures)"
       LayoutText {#text} at (227,253) size 4x19
         text run at (227,253) width 4: " "

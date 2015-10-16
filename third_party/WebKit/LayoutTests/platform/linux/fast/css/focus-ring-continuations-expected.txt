@@ -4,8 +4,8 @@ layer at (0,0) size 800x76
   LayoutBlockFlow {HTML} at (0,0) size 800x76
     LayoutBlockFlow {BODY} at (8,8) size 784x60
       LayoutBlockFlow (anonymous) at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 645x19
-          text run at (0,0) width 645: "Tests focus ring around an inline element containing block continuations. There should be a single focus ring."
+        LayoutText {#text} at (0,0) size 644x19
+          text run at (0,0) width 644: "Tests focus ring around an inline element containing block continuations. There should be a single focus ring."
       LayoutBlockFlow {DIV} at (0,20) size 200x40
         LayoutBlockFlow (anonymous) at (0,0) size 200x20
           LayoutInline {SPAN} at (0,0) size 94x19

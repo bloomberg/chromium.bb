@@ -4,11 +4,11 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {H3} at (0,0) size 784x22
-        LayoutText {#text} at (0,0) size 578x21
-          text run at (0,0) width 578: "Test case for First-line text-decoration style inherited from Parent Block"
+        LayoutText {#text} at (0,0) size 575x21
+          text run at (0,0) width 575: "Test case for First-line text-decoration style inherited from Parent Block"
       LayoutBlockFlow {P} at (0,40.72) size 784x18
-        LayoutText {#text} at (0,0) size 462x17
-          text run at (0,0) width 462: "The First line text and its text-decoration must be of the same color."
+        LayoutText {#text} at (0,0) size 461x17
+          text run at (0,0) width 461: "The First line text and its text-decoration must be of the same color."
       LayoutBlockFlow {DIV} at (0,74.72) size 784x100 [color=#FF0000]
         LayoutBlockFlow {P} at (0,0) size 784x66 [color=#008000]
           LayoutText {#text} at (0,10) size 626x27
@@ -40,9 +40,9 @@ layer at (0,0) size 800x600
           LayoutText {#text} at (0,10) size 721x27
             text run at (0,10) width 721: "Line-Through Line-Through Line-Through Line "
           LayoutBR {BR} at (720,32) size 1x0
-          LayoutText {#text} at (0,48) size 400x17
-            text run at (0,48) width 400: "Line-Through Line-Through Line-Through Line-Through"
-          LayoutBR {BR} at (399,62) size 1x0
+          LayoutText {#text} at (0,48) size 399x17
+            text run at (0,48) width 399: "Line-Through Line-Through Line-Through Line-Through"
+          LayoutBR {BR} at (398,62) size 1x0
         LayoutBlockFlow (anonymous) at (0,82) size 784x18
           LayoutText {#text} at (0,0) size 371x17
             text run at (0,0) width 371: "Line-Through Line-Through Line-Through Line-Through"

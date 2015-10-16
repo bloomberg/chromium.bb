@@ -4,8 +4,8 @@ layer at (0,0) size 785x876 backgroundClip at (0,0) size 785x600 clip at (0,0) s
   LayoutBlockFlow {HTML} at (0,0) size 785x876.47
     LayoutBlockFlow {BODY} at (8,8) size 769x848.47
       LayoutBlockFlow {P} at (0,0) size 769x18
-        LayoutText {#text} at (0,0) size 567x18
-          text run at (0,0) width 567: "This test checks that text with text-overflow:ellipsis follows 'text-align: center' correctly."
+        LayoutText {#text} at (0,0) size 566x18
+          text run at (0,0) width 566: "This test checks that text with text-overflow:ellipsis follows 'text-align: center' correctly."
       LayoutBlockFlow {P} at (0,34) size 769x18
         LayoutText {#text} at (0,0) size 394x18
           text run at (0,0) width 394: "The text in all boxes should have the text centered in the box."
@@ -19,52 +19,52 @@ layer at (0,0) size 785x876 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         LayoutText {#text} at (0,0) size 227x22
           text run at (0,0) width 227: "Containing replaced content"
       LayoutBlockFlow {H3} at (0,377.88) size 769x22
-        LayoutText {#text} at (0,0) size 389x22
-          text run at (0,0) width 389: "Containing replaced content blocking the ellipsis"
+        LayoutText {#text} at (0,0) size 388x22
+          text run at (0,0) width 388: "Containing replaced content blocking the ellipsis"
       LayoutBlockFlow {H3} at (0,469.59) size 769x22
-        LayoutText {#text} at (0,0) size 197x22
-          text run at (0,0) width 197: "Right-To-Left single line"
+        LayoutText {#text} at (0,0) size 195x22
+          text run at (0,0) width 195: "Right-To-Left single line"
       LayoutBlockFlow {H3} at (0,550.31) size 769x22
-        LayoutText {#text} at (0,0) size 196x22
-          text run at (0,0) width 196: "Right-To-Left Multi line"
+        LayoutText {#text} at (0,0) size 194x22
+          text run at (0,0) width 194: "Right-To-Left Multi line"
       LayoutBlockFlow {H3} at (0,685.03) size 769x22
-        LayoutText {#text} at (0,0) size 339x22
-          text run at (0,0) width 339: "Right-To-Left containing replaced content"
+        LayoutText {#text} at (0,0) size 337x22
+          text run at (0,0) width 337: "Right-To-Left containing replaced content"
       LayoutBlockFlow {H3} at (0,776.75) size 769x22
-        LayoutText {#text} at (0,0) size 500x22
-          text run at (0,0) width 500: "Right-To-Left containing replaced content blocking the ellipsis"
-layer at (8,119) size 310x20 clip at (9,120) size 308x18 scrollWidth 739
+        LayoutText {#text} at (0,0) size 498x22
+          text run at (0,0) width 498: "Right-To-Left containing replaced content blocking the ellipsis"
+layer at (8,119) size 310x20 clip at (9,120) size 308x18 scrollWidth 738
   LayoutBlockFlow {DIV} at (0,111.44) size 310x20 [border: (1px solid #000000)]
-    LayoutText {#text} at (1,1) size 739x18
-      text run at (1,1) width 739: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus vitae eros non libero faucibus sagittis sed ut eros."
-layer at (8,200) size 310x74 clip at (9,201) size 308x72 scrollWidth 739
+    LayoutText {#text} at (1,1) size 738x18
+      text run at (1,1) width 738: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus vitae eros non libero faucibus sagittis sed ut eros."
+layer at (8,200) size 310x74 clip at (9,201) size 308x72 scrollWidth 738
   LayoutBlockFlow {DIV} at (0,192.16) size 310x74 [border: (1px solid #000000)]
-    LayoutText {#text} at (1,1) size 739x18
-      text run at (1,1) width 739: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus vitae eros non libero faucibus sagittis sed ut eros."
+    LayoutText {#text} at (1,1) size 738x18
+      text run at (1,1) width 738: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus vitae eros non libero faucibus sagittis sed ut eros."
     LayoutBR {BR} at (0,0) size 0x0
-    LayoutText {#text} at (1,19) size 729x18
-      text run at (1,19) width 729: "orem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus vitae eros non libero faucibus sagittis sed ut eros."
+    LayoutText {#text} at (1,19) size 728x18
+      text run at (1,19) width 728: "orem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus vitae eros non libero faucibus sagittis sed ut eros."
     LayoutBR {BR} at (0,0) size 0x0
-    LayoutText {#text} at (1,37) size 721x18
-      text run at (1,37) width 721: "rem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus vitae eros non libero faucibus sagittis sed ut eros."
+    LayoutText {#text} at (1,37) size 720x18
+      text run at (1,37) width 720: "rem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus vitae eros non libero faucibus sagittis sed ut eros."
     LayoutBR {BR} at (0,0) size 0x0
-    LayoutText {#text} at (2,55) size 715x18
-      text run at (2,55) width 715: "em ipsum dolor sit amet, consectetur adipiscing elit. Vivamus vitae eros non libero faucibus sagittis sed ut eros."
+    LayoutText {#text} at (2,55) size 714x18
+      text run at (2,55) width 714: "em ipsum dolor sit amet, consectetur adipiscing elit. Vivamus vitae eros non libero faucibus sagittis sed ut eros."
     LayoutBR {BR} at (0,0) size 0x0
-layer at (8,335) size 310x31 clip at (9,336) size 308x29 scrollWidth 767
+layer at (8,335) size 310x31 clip at (9,336) size 308x29 scrollWidth 766
   LayoutBlockFlow {DIV} at (0,326.88) size 310x31 [border: (1px solid #000000)]
     LayoutText {#text} at (1,12) size 186x18
       text run at (1,12) width 186: "Lorem ipsum dolor sit amet, "
     LayoutImage {IMG} at (186.95,1) size 25x25
-    LayoutText {#text} at (211,12) size 557x18
-      text run at (211,12) width 557: " consectetur adipiscing elit. Vivamus vitae eros non libero faucibus sagittis sed ut eros."
-layer at (8,427) size 310x31 clip at (9,428) size 308x29 scrollWidth 763
+    LayoutText {#text} at (211,12) size 556x18
+      text run at (211,12) width 556: " consectetur adipiscing elit. Vivamus vitae eros non libero faucibus sagittis sed ut eros."
+layer at (8,427) size 310x31 clip at (9,428) size 308x29 scrollWidth 762
   LayoutBlockFlow {DIV} at (0,418.59) size 310x31 [border: (1px solid #000000)]
     LayoutText {#text} at (1,12) size 278x18
       text run at (1,12) width 278: "Lorem ipsum dolor sit amet, consectetur ad"
     LayoutImage {IMG} at (278.70,1) size 25x25
-    LayoutText {#text} at (303,12) size 461x18
-      text run at (303,12) width 461: "ipiscing elit. Vivamus vitae eros non libero faucibus sagittis sed ut eros."
+    LayoutText {#text} at (303,12) size 460x18
+      text run at (303,12) width 460: "ipiscing elit. Vivamus vitae eros non libero faucibus sagittis sed ut eros."
 layer at (8,518) size 310x20 clip at (9,519) size 308x18 scrollX 430.00 scrollWidth 739
   LayoutBlockFlow {DIV} at (0,510.31) size 310x20 [border: (1px solid #000000)]
     LayoutText {#text} at (-429,1) size 739x18
