@@ -74,8 +74,10 @@ TEST(ComponentInstallerTest, PepperFlashCheck) {
 
   JSONFileValueDeserializer deserializer(manifest);
   std::string error;
-  scoped_ptr<base::DictionaryValue> root(static_cast<base::DictionaryValue*>(
-      deserializer.Deserialize(NULL, &error)));
+
+  scoped_ptr<base::DictionaryValue> root =
+      base::DictionaryValue::From(deserializer.Deserialize(NULL, &error));
+
   ASSERT_TRUE(root);
   ASSERT_TRUE(root->IsType(base::Value::TYPE_DICTIONARY));
 

@@ -44,7 +44,8 @@ scoped_ptr<NativeMessagingHostManifest> NativeMessagingHostManifest::Load(
   DCHECK(error_message);
 
   JSONFileValueDeserializer deserializer(file_path);
-  scoped_ptr<base::Value> parsed(deserializer.Deserialize(NULL, error_message));
+  scoped_ptr<base::Value> parsed =
+      deserializer.Deserialize(NULL, error_message);
   if (!parsed) {
     return scoped_ptr<NativeMessagingHostManifest>();
   }

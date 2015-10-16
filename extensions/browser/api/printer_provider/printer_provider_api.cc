@@ -594,7 +594,7 @@ void PrinterProviderAPIImpl::DispatchPrintRequested(
   print_job.printer_id = internal_printer_id;
 
   JSONStringValueDeserializer deserializer(job.ticket_json);
-  scoped_ptr<base::Value> ticket_value(deserializer.Deserialize(NULL, NULL));
+  scoped_ptr<base::Value> ticket_value = deserializer.Deserialize(NULL, NULL);
   if (!ticket_value ||
       !api::printer_provider::PrintJob::Ticket::Populate(*ticket_value,
                                                          &print_job.ticket)) {

@@ -32,8 +32,8 @@ bool KioskOemManifestParser::Load(
   std::string error_msg;
   scoped_ptr<JSONFileValueDeserializer> deserializer(
      new JSONFileValueDeserializer(kiosk_oem_file));
-  scoped_ptr<base::Value> value(
-      deserializer->Deserialize(&error_code, &error_msg));
+  scoped_ptr<base::Value> value =
+      deserializer->Deserialize(&error_code, &error_msg);
   base::DictionaryValue* dict = NULL;
   if (error_code != JSONFileValueDeserializer::JSON_NO_ERROR ||
       !value.get() ||

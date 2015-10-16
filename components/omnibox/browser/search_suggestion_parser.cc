@@ -376,7 +376,7 @@ scoped_ptr<base::Value> SearchSuggestionParser::DeserializeJsonData(
     JSONStringValueDeserializer deserializer(json_data);
     deserializer.set_allow_trailing_comma(true);
     int error_code = 0;
-    scoped_ptr<base::Value> data(deserializer.Deserialize(&error_code, NULL));
+    scoped_ptr<base::Value> data = deserializer.Deserialize(&error_code, NULL);
     if (error_code == 0)
       return data.Pass();
   }

@@ -365,15 +365,13 @@ class MockProviderVisitor
     // We also parse the file into a dictionary to compare what we get back
     // from the provider.
     JSONStringValueDeserializer deserializer(json_data);
-    base::Value* json_value = deserializer.Deserialize(NULL, NULL);
+    scoped_ptr<base::Value> json_value = deserializer.Deserialize(NULL, NULL);
 
     if (!json_value || !json_value->IsType(base::Value::TYPE_DICTIONARY)) {
       NOTREACHED() << "Unable to deserialize json data";
       return -1;
     } else {
-      base::DictionaryValue* external_extensions =
-          static_cast<base::DictionaryValue*>(json_value);
-      prefs_.reset(external_extensions);
+      prefs_ = base::DictionaryValue::From(json_value.Pass());
     }
 
     // Reset our counter.

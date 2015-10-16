@@ -83,9 +83,8 @@ class ImageLoaderTest : public ExtensionsTest {
     std::string error;
     JSONFileValueDeserializer deserializer(
         extension_dir.AppendASCII("manifest.json"));
-    scoped_ptr<base::DictionaryValue> valid_value(
-        static_cast<base::DictionaryValue*>(
-            deserializer.Deserialize(&error_code, &error)));
+    scoped_ptr<base::DictionaryValue> valid_value = base::DictionaryValue::From(
+        deserializer.Deserialize(&error_code, &error));
     EXPECT_EQ(0, error_code) << error;
     if (error_code != 0)
       return NULL;

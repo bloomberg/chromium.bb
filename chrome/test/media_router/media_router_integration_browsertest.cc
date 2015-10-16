@@ -158,8 +158,8 @@ void MediaRouterIntegrationBrowserTest::SetTestData(
   JSONFileValueDeserializer deserializer(full_path);
   int error_code = 0;
   std::string error_message;
-  scoped_ptr<base::Value> value(
-      deserializer.Deserialize(&error_code, &error_message));
+  scoped_ptr<base::Value> value =
+      deserializer.Deserialize(&error_code, &error_message);
   CHECK(value.get()) << "Deserialize failed: " << error_message;
   std::string test_data_str;
   ASSERT_TRUE(base::JSONWriter::Write(*value, &test_data_str));

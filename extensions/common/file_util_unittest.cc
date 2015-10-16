@@ -44,7 +44,7 @@ scoped_refptr<Extension> LoadExtensionManifest(
     int extra_flags,
     std::string* error) {
   JSONStringValueDeserializer deserializer(manifest_value);
-  scoped_ptr<base::Value> result(deserializer.Deserialize(NULL, error));
+  scoped_ptr<base::Value> result = deserializer.Deserialize(NULL, error);
   if (!result.get())
     return NULL;
   CHECK_EQ(base::Value::TYPE_DICTIONARY, result->GetType());

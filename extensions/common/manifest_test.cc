@@ -29,7 +29,7 @@ base::DictionaryValue* LoadManifestFile(const base::FilePath& manifest_path,
 
   JSONFileValueDeserializer deserializer(manifest_path);
   base::DictionaryValue* manifest = static_cast<base::DictionaryValue*>(
-      deserializer.Deserialize(NULL, error));
+      deserializer.Deserialize(NULL, error).release());
 
   // Most unit tests don't need localization, and they'll fail if we try to
   // localize them, since their manifests don't have a default_locale key.

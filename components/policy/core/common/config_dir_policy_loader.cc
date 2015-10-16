@@ -143,8 +143,8 @@ void ConfigDirPolicyLoader::LoadFromPath(const base::FilePath& path,
     deserializer.set_allow_trailing_comma(true);
     int error_code = 0;
     std::string error_msg;
-    scoped_ptr<base::Value> value(
-        deserializer.Deserialize(&error_code, &error_msg));
+    scoped_ptr<base::Value> value =
+        deserializer.Deserialize(&error_code, &error_msg);
     if (!value.get()) {
       LOG(WARNING) << "Failed to read configuration file "
                    << config_file_iter->value() << ": " << error_msg;

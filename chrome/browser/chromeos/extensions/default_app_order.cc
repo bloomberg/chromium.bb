@@ -65,7 +65,7 @@ base::ListValue* ReadExternalOrdinalFile(const base::FilePath& path) {
 
   JSONFileValueDeserializer deserializer(path);
   std::string error_msg;
-  base::Value* value = deserializer.Deserialize(NULL, &error_msg);
+  base::Value* value = deserializer.Deserialize(NULL, &error_msg).release();
   if (!value) {
     LOG(WARNING) << "Unable to deserialize default app ordinals json data:"
         << error_msg << ", file=" << path.value();
@@ -77,6 +77,7 @@ base::ListValue* ReadExternalOrdinalFile(const base::FilePath& path) {
     return ordinal_list_value;
 
   LOG(WARNING) << "Expect a JSON list in file " << path.value();
+  // TODO(Olli Raula) possible memory leak http://crbug.com/543015
   return NULL;
 }
 

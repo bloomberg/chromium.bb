@@ -429,7 +429,7 @@ void ContextualSearchDelegate::DecodeSearchTermsFromJsonResponse(
   const std::string& proper_json =
       contains_xssi_escape ? response.substr(strlen(kXssiEscape)) : response;
   JSONStringValueDeserializer deserializer(proper_json);
-  scoped_ptr<base::Value> root(deserializer.Deserialize(NULL, NULL));
+  scoped_ptr<base::Value> root = deserializer.Deserialize(NULL, NULL);
 
   if (root.get() != NULL && root->IsType(base::Value::TYPE_DICTIONARY)) {
     base::DictionaryValue* dict =

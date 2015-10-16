@@ -503,8 +503,8 @@ void StatisticsProviderImpl::LoadRegionsFile(const base::FilePath& filename) {
   JSONFileValueDeserializer regions_file(filename);
   int regions_error_code = 0;
   std::string regions_error_message;
-  regional_data_.reset(
-      regions_file.Deserialize(&regions_error_code, &regions_error_message));
+  regional_data_ =
+      regions_file.Deserialize(&regions_error_code, &regions_error_message);
   if (!regional_data_.get()) {
     if (base::SysInfo::IsRunningOnChromeOS())
       LOG(ERROR) << "Failed to load regions file '" << filename.value()

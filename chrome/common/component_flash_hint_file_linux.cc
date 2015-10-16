@@ -156,8 +156,8 @@ bool VerifyAndReturnFlashLocation(base::FilePath* path,
   int error_code;
   std::string error_message;
   JSONStringValueDeserializer deserializer(json_string);
-  const scoped_ptr<base::Value> value(
-      deserializer.Deserialize(&error_code, &error_message));
+  const scoped_ptr<base::Value> value =
+      deserializer.Deserialize(&error_code, &error_message);
 
   if (!value) {
     LOG(ERROR)

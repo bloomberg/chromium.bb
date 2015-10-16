@@ -14,6 +14,9 @@
 #include "chromeos/network/onc/onc_signature.h"
 #include "chromeos/network/onc/onc_validator.h"
 
+// TODO Check why this file do not fail on default trybots
+// http://crbug.com/543919
+
 // Command line switches.
 const char kSwitchErrorOnUnknownField[] = "error-on-unknown-field";
 const char kSwitchErrorOnWrongRecommended[] = "error-on-wrong-recommended";
@@ -90,7 +93,8 @@ scoped_ptr<base::DictionaryValue> ReadDictionary(const std::string& filename) {
   base::DictionaryValue* dict = NULL;
 
   std::string json_error;
-  base::Value* value = deserializer.Deserialize(NULL, &json_error);
+  base::Value* value = deserializer.Deserialize(NULL, &json_error).release();
+  // TODO(Olli Raula) possible memory leak http://crbug.com/543015
   if (!value) {
     LOG(ERROR) << "Couldn't json-deserialize file '" << filename
                << "': " << json_error;

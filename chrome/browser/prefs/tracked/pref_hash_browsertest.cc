@@ -88,8 +88,8 @@ scoped_ptr<base::DictionaryValue> ReadPrefsDictionary(
   JSONFileValueDeserializer deserializer(pref_file);
   int error_code = JSONFileValueDeserializer::JSON_NO_ERROR;
   std::string error_str;
-  scoped_ptr<base::Value> prefs(
-      deserializer.Deserialize(&error_code, &error_str));
+  scoped_ptr<base::Value> prefs =
+      deserializer.Deserialize(&error_code, &error_str);
   if (!prefs || error_code != JSONFileValueDeserializer::JSON_NO_ERROR) {
     ADD_FAILURE() << "Error #" << error_code << ": " << error_str;
     return scoped_ptr<base::DictionaryValue>();

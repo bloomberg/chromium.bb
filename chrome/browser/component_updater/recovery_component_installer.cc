@@ -118,12 +118,7 @@ base::CommandLine GetRecoveryInstallCommandLine(
 scoped_ptr<base::DictionaryValue> ReadManifest(const base::FilePath& manifest) {
   JSONFileValueDeserializer deserializer(manifest);
   std::string error;
-  scoped_ptr<base::Value> root(deserializer.Deserialize(NULL, &error));
-  if (root.get() && root->IsType(base::Value::TYPE_DICTIONARY)) {
-    return scoped_ptr<base::DictionaryValue>(
-        static_cast<base::DictionaryValue*>(root.release()));
-  }
-  return scoped_ptr<base::DictionaryValue>();
+  return base::DictionaryValue::From(deserializer.Deserialize(NULL, &error));
 }
 
 void WaitForElevatedInstallToComplete(base::Process process) {

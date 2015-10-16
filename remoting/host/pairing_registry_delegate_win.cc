@@ -52,8 +52,8 @@ scoped_ptr<base::DictionaryValue> ReadValue(const base::win::RegKey& key,
   JSONStringValueDeserializer deserializer(value_json_utf8);
   int error_code;
   std::string error_message;
-  scoped_ptr<base::Value> value(deserializer.Deserialize(&error_code,
-                                                       &error_message));
+  scoped_ptr<base::Value> value =
+      deserializer.Deserialize(&error_code, &error_message);
   if (!value) {
     LOG(ERROR) << "Failed to parse '" << value_name << "': " << error_message
                << " (" << error_code << ").";

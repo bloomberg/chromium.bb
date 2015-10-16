@@ -74,12 +74,13 @@ class SimpleTestJob : public net::URLRequestTestJob {
 };
 
 // Yoinked from extension_manifest_unittest.cc.
+// TODO(Olli Raula) Make this return scoped_ptr
 base::DictionaryValue* LoadManifestFile(const base::FilePath path,
                                         std::string* error) {
   EXPECT_TRUE(base::PathExists(path));
   JSONFileValueDeserializer deserializer(path);
-  return static_cast<base::DictionaryValue*>(
-      deserializer.Deserialize(NULL, error));
+  return base::DictionaryValue::From(deserializer.Deserialize(NULL, error))
+      .release();
 }
 
 scoped_refptr<Extension> LoadExtension(const std::string& filename,

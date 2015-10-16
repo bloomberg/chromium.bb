@@ -49,8 +49,8 @@ scoped_ptr<base::ListValue> PairingRegistryDelegateLinux::LoadAll() {
     JSONFileValueDeserializer deserializer(pairing_file);
     int error_code;
     std::string error_message;
-    scoped_ptr<base::Value> pairing_json(
-        deserializer.Deserialize(&error_code, &error_message));
+    scoped_ptr<base::Value> pairing_json =
+        deserializer.Deserialize(&error_code, &error_message);
     if (!pairing_json) {
       LOG(WARNING) << "Failed to load '" << pairing_file.value() << "' ("
                    << error_code << ").";
@@ -88,8 +88,8 @@ PairingRegistry::Pairing PairingRegistryDelegateLinux::Load(
   JSONFileValueDeserializer deserializer(pairing_file);
   int error_code;
   std::string error_message;
-  scoped_ptr<base::Value> pairing(
-      deserializer.Deserialize(&error_code, &error_message));
+  scoped_ptr<base::Value> pairing =
+      deserializer.Deserialize(&error_code, &error_message);
   if (!pairing) {
     LOG(WARNING) << "Failed to load pairing information: " << error_message
                  << " (" << error_code << ").";

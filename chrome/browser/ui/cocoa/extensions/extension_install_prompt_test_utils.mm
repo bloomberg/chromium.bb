@@ -36,8 +36,8 @@ scoped_refptr<extensions::Extension> LoadInstallPromptExtension(
 
   std::string error;
   JSONFileValueDeserializer deserializer(path);
-  scoped_ptr<base::DictionaryValue> value(static_cast<base::DictionaryValue*>(
-      deserializer.Deserialize(NULL, &error)));
+  scoped_ptr<base::DictionaryValue> value =
+      base::DictionaryValue::From(deserializer.Deserialize(NULL, &error));
   if (!value.get()) {
     LOG(ERROR) << error;
     return extension;

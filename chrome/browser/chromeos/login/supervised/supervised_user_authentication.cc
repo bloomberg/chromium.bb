@@ -58,8 +58,8 @@ base::DictionaryValue* LoadPasswordData(base::FilePath profile_dir) {
       profile_dir.Append(kPasswordUpdateFile));
   std::string error_message;
   int error_code = JSONFileValueDeserializer::JSON_NO_ERROR;
-  scoped_ptr<base::Value> value(
-      deserializer.Deserialize(&error_code, &error_message));
+  scoped_ptr<base::Value> value =
+      deserializer.Deserialize(&error_code, &error_message);
   if (JSONFileValueDeserializer::JSON_NO_ERROR != error_code) {
     LOG(ERROR) << "Could not deserialize password data, error = " << error_code
                << " / " << error_message;

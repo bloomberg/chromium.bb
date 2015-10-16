@@ -36,10 +36,8 @@ const char kAllHostsPermission[] = "*://*/*";
 scoped_ptr<base::DictionaryValue> DeserializeJSONTestData(
     const base::FilePath& path,
     std::string *error) {
-  base::Value* value = nullptr;
   JSONFileValueDeserializer deserializer(path);
-  value = deserializer.Deserialize(nullptr, error);
-  return make_scoped_ptr(static_cast<base::DictionaryValue*>(value));
+  return base::DictionaryValue::From(deserializer.Deserialize(nullptr, error));
 }
 
 }  // namespace

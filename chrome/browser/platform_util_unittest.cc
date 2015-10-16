@@ -92,8 +92,8 @@ class PlatformUtilTestBase : public BrowserWithTestWindowTest {
         "    }"
         "}";
     JSONStringValueDeserializer json_string_deserializer(json_manifest);
-    scoped_ptr<base::Value> manifest(
-        json_string_deserializer.Deserialize(&error_code, &error));
+    scoped_ptr<base::Value> manifest =
+        json_string_deserializer.Deserialize(&error_code, &error);
     base::DictionaryValue* manifest_dictionary;
 
     manifest->GetAsDictionary(&manifest_dictionary);

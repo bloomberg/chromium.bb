@@ -31,7 +31,7 @@ scoped_refptr<Extension> LoadManifestUnchecked(const std::string& dir,
              .AppendASCII(test_file);
 
   JSONFileValueDeserializer deserializer(path);
-  scoped_ptr<base::Value> result(deserializer.Deserialize(NULL, error));
+  scoped_ptr<base::Value> result = deserializer.Deserialize(NULL, error);
   if (!result)
     return NULL;
   const base::DictionaryValue* dict;

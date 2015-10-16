@@ -118,7 +118,7 @@ scoped_ptr<JsonPrefStore::ReadResult> ReadPrefsFromDisk(
   scoped_ptr<JsonPrefStore::ReadResult> read_result(
       new JsonPrefStore::ReadResult);
   JSONFileValueDeserializer deserializer(path);
-  read_result->value.reset(deserializer.Deserialize(&error_code, &error_msg));
+  read_result->value = deserializer.Deserialize(&error_code, &error_msg);
   read_result->error =
       HandleReadErrors(read_result->value.get(), path, error_code, error_msg);
   read_result->no_dir = !base::PathExists(path.DirName());

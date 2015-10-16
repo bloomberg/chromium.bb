@@ -360,7 +360,7 @@ TEST_F(BookmarkCodecTest, CanDecodeModelWithoutMobileBookmarks) {
   ASSERT_TRUE(base::PathExists(test_file));
 
   JSONFileValueDeserializer deserializer(test_file);
-  scoped_ptr<base::Value> root(deserializer.Deserialize(NULL, NULL));
+  scoped_ptr<base::Value> root = deserializer.Deserialize(NULL, NULL);
 
   scoped_ptr<BookmarkModel> decoded_model(client_.CreateModel());
   BookmarkCodec decoder;
@@ -446,7 +446,7 @@ TEST_F(BookmarkCodecTest, CanDecodeMetaInfoAsString) {
   ASSERT_TRUE(base::PathExists(test_file));
 
   JSONFileValueDeserializer deserializer(test_file);
-  scoped_ptr<base::Value> root(deserializer.Deserialize(NULL, NULL));
+  scoped_ptr<base::Value> root = deserializer.Deserialize(NULL, NULL);
 
   scoped_ptr<BookmarkModel> model(client_.CreateModel());
   BookmarkCodec decoder;

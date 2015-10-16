@@ -39,7 +39,8 @@ base::DictionaryValue* LoadMessageFile(const base::FilePath& locale_path,
   base::FilePath file =
       locale_path.AppendASCII(locale).Append(extensions::kMessagesFilename);
   JSONFileValueDeserializer messages_deserializer(file);
-  base::Value* dictionary = messages_deserializer.Deserialize(NULL, error);
+  scoped_ptr<base::DictionaryValue> dictionary = base::DictionaryValue::From(
+      messages_deserializer.Deserialize(NULL, error));
   if (!dictionary) {
     if (error->empty()) {
       // JSONFileValueSerializer just returns NULL if file cannot be found. It
@@ -54,7 +55,7 @@ base::DictionaryValue* LoadMessageFile(const base::FilePath& locale_path,
     }
   }
 
-  return static_cast<base::DictionaryValue*>(dictionary);
+  return dictionary.release();
 }
 
 // Localizes manifest value of string type for a given key.

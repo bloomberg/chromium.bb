@@ -121,7 +121,7 @@ scoped_ptr<base::DictionaryValue> Unpacker::ReadManifest() {
 
   JSONFileValueDeserializer deserializer(manifest_path);
   std::string error;
-  scoped_ptr<base::Value> root(deserializer.Deserialize(NULL, &error));
+  scoped_ptr<base::Value> root = deserializer.Deserialize(NULL, &error);
   if (!root.get()) {
     SetError(error);
     return NULL;
@@ -253,8 +253,8 @@ bool Unpacker::AddDecodedImage(const base::FilePath& path) {
 bool Unpacker::ReadMessageCatalog(const base::FilePath& message_path) {
   std::string error;
   JSONFileValueDeserializer deserializer(message_path);
-  scoped_ptr<base::DictionaryValue> root = base::DictionaryValue::From(
-      make_scoped_ptr(deserializer.Deserialize(NULL, &error)));
+  scoped_ptr<base::DictionaryValue> root =
+      base::DictionaryValue::From(deserializer.Deserialize(NULL, &error));
   if (!root.get()) {
     base::string16 messages_file = message_path.LossyDisplayName();
     if (error.empty()) {

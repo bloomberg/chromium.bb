@@ -37,7 +37,8 @@ base::Value* LoadValue(const std::string& filename) {
 
   std::string error_message;
   JSONFileValueDeserializer deserializer(path);
-  base::Value* result = deserializer.Deserialize(NULL, &error_message);
+  base::Value* result =
+      deserializer.Deserialize(NULL, &error_message).release();
   if (!result)
     ADD_FAILURE() << "Could not parse JSON: " << error_message;
   return result;

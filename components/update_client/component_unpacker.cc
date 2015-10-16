@@ -63,7 +63,7 @@ scoped_ptr<base::DictionaryValue> ReadManifest(
     return scoped_ptr<base::DictionaryValue>();
   JSONFileValueDeserializer deserializer(manifest);
   std::string error;
-  scoped_ptr<base::Value> root(deserializer.Deserialize(NULL, &error));
+  scoped_ptr<base::Value> root = deserializer.Deserialize(NULL, &error);
   if (!root.get())
     return scoped_ptr<base::DictionaryValue>();
   if (!root->IsType(base::Value::TYPE_DICTIONARY))

@@ -21,7 +21,7 @@ const char kEc256PublicKeyKey[] = "ec_p256_public_key";
 int ExtractKeyPairIndexFromKey(const std::string& key,
                                const std::string& key_type) {
   JSONStringValueDeserializer deserializer(key);
-  scoped_ptr<base::Value> json_value(deserializer.Deserialize(NULL, NULL));
+  scoped_ptr<base::Value> json_value = deserializer.Deserialize(NULL, NULL);
   if (!json_value)
     return -1;
 

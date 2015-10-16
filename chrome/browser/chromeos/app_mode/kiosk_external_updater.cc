@@ -44,7 +44,9 @@ void ParseExternalUpdateManifest(
 
   JSONFileValueDeserializer deserializer(manifest);
   std::string error_msg;
-  base::Value* extensions = deserializer.Deserialize(NULL, &error_msg);
+  base::Value* extensions =
+      deserializer.Deserialize(NULL, &error_msg).release();
+  // TODO(Olli Raula) possible memory leak http://crbug.com/543015
   if (!extensions) {
     *error_code = KioskExternalUpdater::ERROR_INVALID_MANIFEST;
     return;

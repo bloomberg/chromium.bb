@@ -60,8 +60,8 @@ bool ReadTestNamesFromFile(const FilePath& path,
   JSONFileValueDeserializer deserializer(path);
   int error_code = 0;
   std::string error_message;
-  scoped_ptr<base::Value> value(
-      deserializer.Deserialize(&error_code, &error_message));
+  scoped_ptr<base::Value> value =
+      deserializer.Deserialize(&error_code, &error_message);
   if (!value.get())
     return false;
 

@@ -155,9 +155,8 @@ class BrowserThemePackTest : public ::testing::Test {
         extension_path.AppendASCII("manifest.json");
     std::string error;
     JSONFileValueDeserializer deserializer(manifest_path);
-    scoped_ptr<base::DictionaryValue> valid_value(
-        static_cast<base::DictionaryValue*>(
-            deserializer.Deserialize(NULL, &error)));
+    scoped_ptr<base::DictionaryValue> valid_value =
+        base::DictionaryValue::From(deserializer.Deserialize(NULL, &error));
     EXPECT_EQ("", error);
     ASSERT_TRUE(valid_value.get());
     scoped_refptr<Extension> extension(

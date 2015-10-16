@@ -541,8 +541,8 @@ void FirefoxImporter::GetSearchEnginesXMLDataFromJSON(
   base::FilePath search_metadata_json_file =
       source_path_.AppendASCII("search-metadata.json");
   JSONFileValueDeserializer metadata_deserializer(search_metadata_json_file);
-  scoped_ptr<base::Value> metadata_root(
-      metadata_deserializer.Deserialize(NULL, NULL));
+  scoped_ptr<base::Value> metadata_root =
+      metadata_deserializer.Deserialize(NULL, NULL);
   const base::DictionaryValue* search_metadata_root = NULL;
   if (metadata_root)
     metadata_root->GetAsDictionary(&search_metadata_root);
@@ -553,7 +553,7 @@ void FirefoxImporter::GetSearchEnginesXMLDataFromJSON(
     return;
 
   JSONFileValueDeserializer deserializer(search_json_file);
-  scoped_ptr<base::Value> root(deserializer.Deserialize(NULL, NULL));
+  scoped_ptr<base::Value> root = deserializer.Deserialize(NULL, NULL);
   const base::DictionaryValue* search_root = NULL;
   if (!root || !root->GetAsDictionary(&search_root))
     return;

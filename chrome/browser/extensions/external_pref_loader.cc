@@ -72,20 +72,24 @@ std::set<base::FilePath> GetPrefsCandidateFilesFromFolder(
 // occurs). An empty dictionary is returned in case of failure (e.g. invalid
 // path or json content).
 // Caller takes ownership of the returned dictionary.
+// TODO(Olli Raula) Make return scoped_ptr
 base::DictionaryValue* ExtractExtensionPrefs(
     base::ValueDeserializer* deserializer,
     const base::FilePath& path) {
   std::string error_msg;
-  base::Value* extensions = deserializer->Deserialize(NULL, &error_msg);
+  scoped_ptr<base::Value> extensions =
+      deserializer->Deserialize(NULL, &error_msg);
   if (!extensions) {
     LOG(WARNING) << "Unable to deserialize json data: " << error_msg
                  << " in file " << path.value() << ".";
     return new base::DictionaryValue;
   }
 
-  base::DictionaryValue* ext_dictionary = NULL;
-  if (extensions->GetAsDictionary(&ext_dictionary))
-    return ext_dictionary;
+  scoped_ptr<base::DictionaryValue> ext_dictionary =
+      base::DictionaryValue::From(extensions.Pass());
+  if (ext_dictionary) {
+    return ext_dictionary.release();
+  }
 
   LOG(WARNING) << "Expected a JSON dictionary in file "
                << path.value() << ".";

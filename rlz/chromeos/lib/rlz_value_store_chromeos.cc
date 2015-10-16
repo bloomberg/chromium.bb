@@ -212,8 +212,8 @@ void RlzValueStoreChromeOS::ReadStore() {
   int error_code = 0;
   std::string error_msg;
   JSONFileValueDeserializer deserializer(store_path_);
-  scoped_ptr<base::Value> value(
-      deserializer.Deserialize(&error_code, &error_msg));
+  scoped_ptr<base::Value> value =
+      deserializer.Deserialize(&error_code, &error_msg);
   switch (error_code) {
     case JSONFileValueDeserializer::JSON_NO_SUCH_FILE:
       read_only_ = false;

@@ -328,7 +328,7 @@ void CheckVersion(const base::FilePath& pnacl_path, std::string* version) {
       pnacl_path.AppendASCII("pnacl_public_pnacl_json");
   JSONFileValueDeserializer deserializer(pnacl_json_path);
   std::string error;
-  scoped_ptr<base::Value> root(deserializer.Deserialize(NULL, &error));
+  scoped_ptr<base::Value> root = deserializer.Deserialize(NULL, &error);
   if (!root || !root->IsType(base::Value::TYPE_DICTIONARY))
     return;
 

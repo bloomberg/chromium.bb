@@ -167,7 +167,7 @@ scoped_ptr<base::DictionaryValue> ComponentExtensionIMEManagerImpl::GetManifest(
     const std::string& manifest_string) {
   std::string error;
   JSONStringValueDeserializer deserializer(manifest_string);
-  scoped_ptr<base::Value> manifest(deserializer.Deserialize(NULL, &error));
+  scoped_ptr<base::Value> manifest = deserializer.Deserialize(NULL, &error);
   if (!manifest.get())
     LOG(ERROR) << "Failed at getting manifest";
 

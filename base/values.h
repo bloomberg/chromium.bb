@@ -531,7 +531,8 @@ class BASE_EXPORT ValueDeserializer {
   // error_code will be set with the underlying error.
   // If |error_message| is non-null, it will be filled in with a formatted
   // error message including the location of the error if appropriate.
-  virtual Value* Deserialize(int* error_code, std::string* error_str) = 0;
+  virtual scoped_ptr<Value> Deserialize(int* error_code,
+                                        std::string* error_str) = 0;
 };
 
 // Stream operator so Values can be used in assertion statements.  In order that

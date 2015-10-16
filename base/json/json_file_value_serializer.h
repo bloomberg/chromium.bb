@@ -58,8 +58,8 @@ class BASE_EXPORT JSONFileValueDeserializer : public base::ValueDeserializer {
   // If |error_message| is non-null, it will be filled in with a formatted
   // error message including the location of the error if appropriate.
   // The caller takes ownership of the returned value.
-  base::Value* Deserialize(int* error_code,
-                           std::string* error_message) override;
+  scoped_ptr<base::Value> Deserialize(int* error_code,
+                                      std::string* error_message) override;
 
   // This enum is designed to safely overlap with JSONReader::JsonParseError.
   enum JsonFileError {

@@ -93,8 +93,8 @@ TEST(JSONValueDeserializerTest, ReadProperJSONFromString) {
 
   int error_code = 0;
   std::string error_message;
-  scoped_ptr<Value> value(
-      str_deserializer.Deserialize(&error_code, &error_message));
+  scoped_ptr<Value> value =
+      str_deserializer.Deserialize(&error_code, &error_message);
   ASSERT_TRUE(value.get());
   ASSERT_EQ(0, error_code);
   ASSERT_TRUE(error_message.empty());
@@ -112,8 +112,8 @@ TEST(JSONValueDeserializerTest, ReadProperJSONFromStringPiece) {
 
   int error_code = 0;
   std::string error_message;
-  scoped_ptr<Value> value(
-      str_deserializer.Deserialize(&error_code, &error_message));
+  scoped_ptr<Value> value =
+      str_deserializer.Deserialize(&error_code, &error_message);
   ASSERT_TRUE(value.get());
   ASSERT_EQ(0, error_code);
   ASSERT_TRUE(error_message.empty());
@@ -129,14 +129,14 @@ TEST(JSONValueDeserializerTest, ReadJSONWithTrailingCommasFromString) {
 
   int error_code = 0;
   std::string error_message;
-  scoped_ptr<Value> value(
-      str_deserializer.Deserialize(&error_code, &error_message));
+  scoped_ptr<Value> value =
+      str_deserializer.Deserialize(&error_code, &error_message);
   ASSERT_FALSE(value.get());
   ASSERT_NE(0, error_code);
   ASSERT_FALSE(error_message.empty());
   // Now the flag is set and it must pass.
   str_deserializer.set_allow_trailing_comma(true);
-  value.reset(str_deserializer.Deserialize(&error_code, &error_message));
+  value = str_deserializer.Deserialize(&error_code, &error_message);
   ASSERT_TRUE(value.get());
   ASSERT_EQ(JSONReader::JSON_TRAILING_COMMA, error_code);
   // Verify if the same JSON is still there.
@@ -157,8 +157,8 @@ TEST(JSONValueDeserializerTest, ReadProperJSONFromFile) {
 
   int error_code = 0;
   std::string error_message;
-  scoped_ptr<Value> value(
-      file_deserializer.Deserialize(&error_code, &error_message));
+  scoped_ptr<Value> value =
+      file_deserializer.Deserialize(&error_code, &error_message);
   ASSERT_TRUE(value.get());
   ASSERT_EQ(0, error_code);
   ASSERT_TRUE(error_message.empty());
@@ -182,14 +182,14 @@ TEST(JSONValueDeserializerTest, ReadJSONWithCommasFromFile) {
   // This must fail without the proper flag.
   int error_code = 0;
   std::string error_message;
-  scoped_ptr<Value> value(
-      file_deserializer.Deserialize(&error_code, &error_message));
+  scoped_ptr<Value> value =
+      file_deserializer.Deserialize(&error_code, &error_message);
   ASSERT_FALSE(value.get());
   ASSERT_NE(0, error_code);
   ASSERT_FALSE(error_message.empty());
   // Now the flag is set and it must pass.
   file_deserializer.set_allow_trailing_comma(true);
-  value.reset(file_deserializer.Deserialize(&error_code, &error_message));
+  value = file_deserializer.Deserialize(&error_code, &error_message);
   ASSERT_TRUE(value.get());
   ASSERT_EQ(JSONReader::JSON_TRAILING_COMMA, error_code);
   // Verify if the same JSON is still there.
@@ -205,9 +205,9 @@ TEST(JSONValueDeserializerTest, AllowTrailingComma) {
   JSONStringValueDeserializer deserializer(kTestWithCommas);
   deserializer.set_allow_trailing_comma(true);
   JSONStringValueDeserializer deserializer_expected(kTestNoCommas);
-  root.reset(deserializer.Deserialize(NULL, NULL));
+  root = deserializer.Deserialize(NULL, NULL);
   ASSERT_TRUE(root.get());
-  root_expected.reset(deserializer_expected.Deserialize(NULL, NULL));
+  root_expected = deserializer_expected.Deserialize(NULL, NULL);
   ASSERT_TRUE(root_expected.get());
   ASSERT_TRUE(root->Equals(root_expected.get()));
 }
@@ -216,7 +216,7 @@ TEST(JSONValueSerializerTest, Roundtrip) {
   static const char kOriginalSerialization[] =
     "{\"bool\":true,\"double\":3.14,\"int\":42,\"list\":[1,2],\"null\":null}";
   JSONStringValueDeserializer deserializer(kOriginalSerialization);
-  scoped_ptr<Value> root(deserializer.Deserialize(NULL, NULL));
+  scoped_ptr<Value> root = deserializer.Deserialize(NULL, NULL);
   ASSERT_TRUE(root.get());
   ASSERT_TRUE(root->IsType(Value::TYPE_DICTIONARY));
 
@@ -326,7 +326,7 @@ TEST(JSONValueSerializerTest, UnicodeStrings) {
 
   // escaped ascii text -> json
   JSONStringValueDeserializer deserializer(kExpected);
-  scoped_ptr<Value> deserial_root(deserializer.Deserialize(NULL, NULL));
+  scoped_ptr<Value> deserial_root = deserializer.Deserialize(NULL, NULL);
   ASSERT_TRUE(deserial_root.get());
   DictionaryValue* dict_root =
       static_cast<DictionaryValue*>(deserial_root.get());
@@ -350,7 +350,7 @@ TEST(JSONValueSerializerTest, HexStrings) {
 
   // escaped ascii text -> json
   JSONStringValueDeserializer deserializer(kExpected);
-  scoped_ptr<Value> deserial_root(deserializer.Deserialize(NULL, NULL));
+  scoped_ptr<Value> deserial_root = deserializer.Deserialize(NULL, NULL);
   ASSERT_TRUE(deserial_root.get());
   DictionaryValue* dict_root =
       static_cast<DictionaryValue*>(deserial_root.get());
@@ -361,7 +361,7 @@ TEST(JSONValueSerializerTest, HexStrings) {
   // Test converting escaped regular chars
   static const char kEscapedChars[] = "{\"test\":\"\\u0067\\u006f\"}";
   JSONStringValueDeserializer deserializer2(kEscapedChars);
-  deserial_root.reset(deserializer2.Deserialize(NULL, NULL));
+  deserial_root = deserializer2.Deserialize(NULL, NULL);
   ASSERT_TRUE(deserial_root.get());
   dict_root = static_cast<DictionaryValue*>(deserial_root.get());
   ASSERT_TRUE(dict_root->GetString("test", &test_value));
@@ -413,7 +413,7 @@ TEST_F(JSONFileValueSerializerTest, Roundtrip) {
 
   JSONFileValueDeserializer deserializer(original_file_path);
   scoped_ptr<Value> root;
-  root.reset(deserializer.Deserialize(NULL, NULL));
+  root = deserializer.Deserialize(NULL, NULL);
 
   ASSERT_TRUE(root.get());
   ASSERT_TRUE(root->IsType(Value::TYPE_DICTIONARY));
@@ -461,7 +461,7 @@ TEST_F(JSONFileValueSerializerTest, RoundtripNested) {
 
   JSONFileValueDeserializer deserializer(original_file_path);
   scoped_ptr<Value> root;
-  root.reset(deserializer.Deserialize(NULL, NULL));
+  root = deserializer.Deserialize(NULL, NULL);
   ASSERT_TRUE(root.get());
 
   // Now try writing.
@@ -486,7 +486,7 @@ TEST_F(JSONFileValueSerializerTest, NoWhitespace) {
   ASSERT_TRUE(PathExists(source_file_path));
   JSONFileValueDeserializer deserializer(source_file_path);
   scoped_ptr<Value> root;
-  root.reset(deserializer.Deserialize(NULL, NULL));
+  root = deserializer.Deserialize(NULL, NULL);
   ASSERT_TRUE(root.get());
 }
 

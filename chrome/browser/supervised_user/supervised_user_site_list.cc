@@ -29,8 +29,8 @@ scoped_ptr<base::Value> ReadFileOnBlockingThread(const base::FilePath& path) {
   JSONFileValueDeserializer deserializer(path);
   int error_code;
   std::string error_msg;
-  scoped_ptr<base::Value> value(
-      deserializer.Deserialize(&error_code, &error_msg));
+  scoped_ptr<base::Value> value =
+      deserializer.Deserialize(&error_code, &error_msg);
   if (!value) {
     LOG(ERROR) << "Couldn't load site list " << path.value() << ": "
                << error_msg;

@@ -164,7 +164,7 @@ void ComponentLoader::LoadAll() {
 base::DictionaryValue* ComponentLoader::ParseManifest(
     const std::string& manifest_contents) const {
   JSONStringValueDeserializer deserializer(manifest_contents);
-  scoped_ptr<base::Value> manifest(deserializer.Deserialize(NULL, NULL));
+  scoped_ptr<base::Value> manifest = deserializer.Deserialize(NULL, NULL);
 
   if (!manifest.get() || !manifest->IsType(base::Value::TYPE_DICTIONARY)) {
     LOG(ERROR) << "Failed to parse extension manifest.";

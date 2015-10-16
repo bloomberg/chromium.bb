@@ -67,16 +67,16 @@ scoped_ptr<base::DictionaryValue> DictionaryDataStore::LoadOnBlockingPool() {
   int error_code = JSONFileValueDeserializer::JSON_NO_ERROR;
   std::string error_message;
   JSONFileValueDeserializer deserializer(data_file_);
-  base::Value* value = deserializer.Deserialize(&error_code, &error_message);
-  base::DictionaryValue* dict_value = NULL;
-  if (error_code != JSONFileValueDeserializer::JSON_NO_ERROR || !value ||
-      !value->GetAsDictionary(&dict_value) || !dict_value) {
+  scoped_ptr<base::DictionaryValue> dict_value = base::DictionaryValue::From(
+      deserializer.Deserialize(&error_code, &error_message));
+  if (error_code != JSONFileValueDeserializer::JSON_NO_ERROR || !dict_value) {
     return nullptr;
   }
 
-  base::DictionaryValue* return_dict = dict_value->DeepCopy();
-  cached_dict_.reset(dict_value);
-  return make_scoped_ptr(return_dict);
+  scoped_ptr<base::DictionaryValue> return_dict =
+      make_scoped_ptr(dict_value.get()->DeepCopy());
+  cached_dict_ = dict_value.Pass();
+  return return_dict;
 }
 
 bool DictionaryDataStore::SerializeData(std::string* data) {

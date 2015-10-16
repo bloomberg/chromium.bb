@@ -668,8 +668,8 @@ void StartPageService::OnURLFetchComplete(const net::URLFetcher* source) {
   JSONStringValueDeserializer deserializer(json_data_substr);
   deserializer.set_allow_trailing_comma(true);
   int error_code = 0;
-  scoped_ptr<base::Value> doodle_json(
-      deserializer.Deserialize(&error_code, nullptr));
+  scoped_ptr<base::Value> doodle_json =
+      deserializer.Deserialize(&error_code, nullptr);
 
   base::TimeDelta recheck_delay;
   if (error_code != 0) {
