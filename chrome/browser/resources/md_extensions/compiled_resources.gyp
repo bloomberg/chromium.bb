@@ -7,7 +7,7 @@
       'target_name': 'manager',
       'variables': {
         'depends': [
-          '../../../../ui/webui/resources/cr_elements/v1_0/cr_search_field/cr_search_field.js',
+          '../../../../ui/webui/resources/cr_elements/cr_search_field/cr_search_field.js',
           '../../../../ui/webui/resources/js/assert.js',
           '../../../../ui/webui/resources/js/cr.js',
         ],
