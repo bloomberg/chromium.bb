@@ -28,15 +28,14 @@ namespace content {
 
 // Helper class that provides the BackingStrategy with enough state
 // to do useful work.
-class AndroidVideoDecodeAcceleratorStateProvider {
+class AVDAStateProvider {
  public:
-  virtual ~AndroidVideoDecodeAcceleratorStateProvider() {}
+  virtual ~AVDAStateProvider() {}
 
   // Various handy getters.
   virtual const gfx::Size& GetSize() const = 0;
   virtual const base::ThreadChecker& ThreadChecker() const = 0;
-  virtual gpu::gles2::GLES2Decoder* GetGlDecoder() const = 0;
-  virtual media::VideoCodecBridge* GetMediaCodec() = 0;
+  virtual base::WeakPtr<gpu::gles2::GLES2Decoder> GetGlDecoder() const = 0;
 
   // Helper function to report an error condition and stop decoding.
   // This will post NotifyError(), and transition to the error state.

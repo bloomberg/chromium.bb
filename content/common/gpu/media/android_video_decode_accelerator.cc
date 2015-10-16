@@ -95,8 +95,6 @@ bool AndroidVideoDecodeAccelerator::Initialize(media::VideoCodecProfile profile,
   client_ = client;
   codec_ = VideoCodecProfileToVideoCodec(profile);
 
-  strategy_->SetStateProvider(this);
-
   bool profile_supported = codec_ == media::kCodecVP8;
 #if defined(ENABLE_MEDIA_PIPELINE_ON_ANDROID)
   profile_supported |=
@@ -127,6 +125,9 @@ bool AndroidVideoDecodeAccelerator::Initialize(media::VideoCodecProfile profile,
     LOG(ERROR) << "Failed to get gles2 decoder instance.";
     return false;
   }
+
+  strategy_->Initialize(this);
+
   surface_texture_ = strategy_->CreateSurfaceTexture();
 
   if (!ConfigureMediaCodec()) {
@@ -145,7 +146,8 @@ void AndroidVideoDecodeAccelerator::DoIOTask() {
   }
 
   QueueInput();
-  DequeueOutput();
+  while (DequeueOutput())
+    ;
 }
 
 void AndroidVideoDecodeAccelerator::QueueInput() {
@@ -157,8 +159,8 @@ void AndroidVideoDecodeAccelerator::QueueInput() {
     return;
 
   int input_buf_index = 0;
-  media::MediaCodecStatus status = media_codec_->DequeueInputBuffer(
-      NoWaitTimeOut(), &input_buf_index);
+  media::MediaCodecStatus status =
+      media_codec_->DequeueInputBuffer(NoWaitTimeOut(), &input_buf_index);
   if (status != media::MEDIA_CODEC_OK) {
     DCHECK(status == media::MEDIA_CODEC_DEQUEUE_INPUT_AGAIN_LATER ||
            status == media::MEDIA_CODEC_ERROR);
@@ -217,20 +219,21 @@ void AndroidVideoDecodeAccelerator::QueueInput() {
   bitstreams_notified_in_advance_.push_back(bitstream_buffer.id());
 }
 
-void AndroidVideoDecodeAccelerator::DequeueOutput() {
+bool AndroidVideoDecodeAccelerator::DequeueOutput() {
   DCHECK(thread_checker_.CalledOnValidThread());
   TRACE_EVENT0("media", "AVDA::DequeueOutput");
   if (picturebuffers_requested_ && output_picture_buffers_.empty())
-    return;
+    return false;
 
   if (!output_picture_buffers_.empty() && free_picture_ids_.empty()) {
     // Don't have any picture buffer to send. Need to wait more.
-    return;
+    return false;
   }
 
   bool eos = false;
   base::TimeDelta presentation_timestamp;
   int32 buf_index = 0;
+  bool should_try_again = false;
   do {
     size_t offset = 0;
     size_t size = 0;
@@ -245,7 +248,7 @@ void AndroidVideoDecodeAccelerator::DequeueOutput() {
     switch (status) {
       case media::MEDIA_CODEC_DEQUEUE_OUTPUT_AGAIN_LATER:
       case media::MEDIA_CODEC_ERROR:
-        return;
+        return false;
 
       case media::MEDIA_CODEC_OUTPUT_FORMAT_CHANGED: {
         int32 width, height;
@@ -266,9 +269,9 @@ void AndroidVideoDecodeAccelerator::DequeueOutput() {
           // b/7093648
           RETURN_ON_FAILURE(this, size_ == gfx::Size(width, height),
                             "Dynamic resolution change is not supported.",
-                            PLATFORM_FAILURE);
+                            PLATFORM_FAILURE, false);
         }
-        return;
+        return false;
       }
 
       case media::MEDIA_CODEC_OUTPUT_BUFFERS_CHANGED:
@@ -304,6 +307,9 @@ void AndroidVideoDecodeAccelerator::DequeueOutput() {
                                         ++it);
     SendCurrentSurfaceToClient(buf_index, bitstream_buffer_id);
 
+    // If we decoded a frame this time, then try for another.
+    should_try_again = true;
+
     // Removes ids former or equal than the id from decoder. Note that
     // |bitstreams_notified_in_advance_| does not mean bitstream ids in decoder
     // because of frame reordering issue. We just maintain this roughly and use
@@ -318,6 +324,8 @@ void AndroidVideoDecodeAccelerator::DequeueOutput() {
       }
     }
   }
+
+  return should_try_again;
 }
 
 void AndroidVideoDecodeAccelerator::SendCurrentSurfaceToClient(
@@ -396,6 +404,8 @@ void AndroidVideoDecodeAccelerator::AssignPictureBuffers(
     // about previously-dismissed IDs now.  See ReusePictureBuffer() comment
     // about "zombies" for why we maintain this set in the first place.
     dismissed_picture_ids_.erase(id);
+
+    strategy_->AssignOnePictureBuffer(buffers[i]);
   }
   TRACE_COUNTER1("media", "AVDA::FreePictureIds", free_picture_ids_.size());
 
@@ -418,6 +428,14 @@ void AndroidVideoDecodeAccelerator::ReusePictureBuffer(
     return;
 
   free_picture_ids_.push(picture_buffer_id);
+
+  OutputBufferMap::const_iterator i =
+      output_picture_buffers_.find(picture_buffer_id);
+  RETURN_ON_FAILURE(this, i != output_picture_buffers_.end(),
+                    "Can't find a PictureBuffer for " << picture_buffer_id,
+                    PLATFORM_FAILURE);
+  strategy_->ReuseOnePictureBuffer(i->second);
+
   TRACE_COUNTER1("media", "AVDA::FreePictureIds", free_picture_ids_.size());
 
   DoIOTask();
@@ -440,6 +458,7 @@ bool AndroidVideoDecodeAccelerator::ConfigureMediaCodec() {
   // when it's known from the bitstream.
   media_codec_.reset(media::VideoCodecBridge::CreateDecoder(
       codec_, false, gfx::Size(320, 240), surface.j_surface().obj(), NULL));
+  strategy_->CodecChanged(media_codec_.get(), output_picture_buffers_);
   if (!media_codec_)
     return false;
 
@@ -471,6 +490,7 @@ void AndroidVideoDecodeAccelerator::Reset() {
   for (OutputBufferMap::iterator it = output_picture_buffers_.begin();
        it != output_picture_buffers_.end();
        ++it) {
+    strategy_->DismissOnePictureBuffer(it->second);
     client_->DismissPictureBuffer(it->first);
     dismissed_picture_ids_.insert(it->first);
   }
@@ -499,12 +519,12 @@ void AndroidVideoDecodeAccelerator::Reset() {
 void AndroidVideoDecodeAccelerator::Destroy() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
+  strategy_->Cleanup(output_picture_buffers_);
   weak_this_factory_.InvalidateWeakPtrs();
   if (media_codec_) {
     io_timer_.Stop();
     media_codec_->Stop();
   }
-  strategy_->Cleanup();
   delete this;
 }
 
@@ -521,12 +541,9 @@ const base::ThreadChecker& AndroidVideoDecodeAccelerator::ThreadChecker()
   return thread_checker_;
 }
 
-gpu::gles2::GLES2Decoder* AndroidVideoDecodeAccelerator::GetGlDecoder() const {
-  return gl_decoder_.get();
-}
-
-media::VideoCodecBridge* AndroidVideoDecodeAccelerator::GetMediaCodec() {
-  return media_codec_.get();
+base::WeakPtr<gpu::gles2::GLES2Decoder>
+AndroidVideoDecodeAccelerator::GetGlDecoder() const {
+  return gl_decoder_;
 }
 
 void AndroidVideoDecodeAccelerator::PostError(

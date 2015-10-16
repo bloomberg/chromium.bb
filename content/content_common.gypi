@@ -797,9 +797,15 @@
       'sources': [
         'common/gpu/media/android_copying_backing_strategy.cc',
         'common/gpu/media/android_copying_backing_strategy.h',
+        'common/gpu/media/android_deferred_rendering_backing_strategy.cc',
+        'common/gpu/media/android_deferred_rendering_backing_strategy.h',
         'common/gpu/media/android_video_decode_accelerator.cc',
         'common/gpu/media/android_video_decode_accelerator.h',
+        'common/gpu/media/avda_codec_image.cc',
+        'common/gpu/media/avda_codec_image.h',
         'common/gpu/media/avda_return_on_failure.h',
+        'common/gpu/media/avda_shared_state.h',
+        'common/gpu/media/avda_state_provider.h',
       ],
     }],
     ['OS=="android" and enable_webrtc==1', {

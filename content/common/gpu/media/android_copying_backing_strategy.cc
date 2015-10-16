@@ -29,17 +29,17 @@ const static GLfloat kIdentityMatrix[16] = {1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f,
                                             0.0f, 0.0f, 0.0f, 1.0f};
 
 AndroidCopyingBackingStrategy::AndroidCopyingBackingStrategy()
-    : state_provider_(nullptr)
-    , surface_texture_id_(0) {}
+    : state_provider_(nullptr), surface_texture_id_(0), media_codec_(nullptr) {}
 
 AndroidCopyingBackingStrategy::~AndroidCopyingBackingStrategy() {}
 
-void AndroidCopyingBackingStrategy::SetStateProvider(
-    AndroidVideoDecodeAcceleratorStateProvider* state_provider) {
+void AndroidCopyingBackingStrategy::Initialize(
+    AVDAStateProvider* state_provider) {
   state_provider_ = state_provider;
 }
 
-void AndroidCopyingBackingStrategy::Cleanup() {
+void AndroidCopyingBackingStrategy::Cleanup(
+    const AndroidVideoDecodeAccelerator::OutputBufferMap&) {
   DCHECK(state_provider_->ThreadChecker().CalledOnValidThread());
   if (copier_)
     copier_->Destroy();
@@ -78,7 +78,7 @@ void AndroidCopyingBackingStrategy::UseCodecBufferForPictureBuffer(
     int32 codec_buf_index,
     const media::PictureBuffer& picture_buffer) {
   // Make sure that the decoder is available.
-  RETURN_ON_FAILURE(state_provider_, state_provider_->GetGlDecoder(),
+  RETURN_ON_FAILURE(state_provider_, state_provider_->GetGlDecoder().get(),
                     "Failed to get gles2 decoder instance.", ILLEGAL_STATE);
 
   // Render the codec buffer into |surface_texture_|, and switch it to be
@@ -101,8 +101,7 @@ void AndroidCopyingBackingStrategy::UseCodecBufferForPictureBuffer(
   // So, we live with these two extra copies per picture :(
   {
     TRACE_EVENT0("media", "AVDA::ReleaseOutputBuffer");
-    state_provider_->GetMediaCodec()->ReleaseOutputBuffer(codec_buf_index,
-                                                          true);
+    media_codec_->ReleaseOutputBuffer(codec_buf_index, true);
   }
 
   {
@@ -119,23 +118,29 @@ void AndroidCopyingBackingStrategy::UseCodecBufferForPictureBuffer(
   // needed because it takes 10s of milliseconds to initialize.
   if (!copier_) {
     copier_.reset(new gpu::CopyTextureCHROMIUMResourceManager());
-    copier_->Initialize(state_provider_->GetGlDecoder());
+    copier_->Initialize(state_provider_->GetGlDecoder().get());
   }
 
   // Here, we copy |surface_texture_id_| to the picture buffer instead of
   // setting new texture to |surface_texture_| by calling attachToGLContext()
   // because:
-  // 1. Once we call detachFrameGLContext(), it deletes the texture previous
+  // 1. Once we call detachFrameGLContext(), it deletes the texture previously
   //    attached.
   // 2. SurfaceTexture requires us to apply a transform matrix when we show
   //    the texture.
   // TODO(hkuang): get the StreamTexture transform matrix in GPU process
   // instead of using default matrix crbug.com/226218.
   copier_->DoCopyTextureWithTransform(
-      state_provider_->GetGlDecoder(), GL_TEXTURE_EXTERNAL_OES,
+      state_provider_->GetGlDecoder().get(), GL_TEXTURE_EXTERNAL_OES,
       surface_texture_id_, picture_buffer_texture_id,
       state_provider_->GetSize().width(), state_provider_->GetSize().height(),
       false, false, false, kIdentityMatrix);
+}
+
+void AndroidCopyingBackingStrategy::CodecChanged(
+    media::VideoCodecBridge* codec,
+    const AndroidVideoDecodeAccelerator::OutputBufferMap&) {
+  media_codec_ = codec;
 }
 
 }  // namespace content

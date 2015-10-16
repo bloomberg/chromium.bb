@@ -6,7 +6,6 @@
 #define CONTENT_COMMON_GPU_MEDIA_ANDROID_COPYING_BACKING_STRATEGY_H_
 
 #include "base/compiler_specific.h"
-#include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
 #include "content/common/gpu/media/android_video_decode_accelerator.h"
 
@@ -20,7 +19,7 @@ class PictureBuffer;
 
 namespace content {
 
-class AndroidVideoDecodeAcceleratorStateProvider;
+class AVDAStateProvider;
 
 // A BackingStrategy implementation that copies images to PictureBuffer
 // textures via gpu texture copy.
@@ -31,25 +30,30 @@ class CONTENT_EXPORT AndroidCopyingBackingStrategy
   ~AndroidCopyingBackingStrategy() override;
 
   // AndroidVideoDecodeAccelerator::BackingStrategy
-  void SetStateProvider(AndroidVideoDecodeAcceleratorStateProvider*) override;
-  void Cleanup() override;
+  void Initialize(AVDAStateProvider*) override;
+  void Cleanup(const AndroidVideoDecodeAccelerator::OutputBufferMap&) override;
   uint32 GetNumPictureBuffers() const override;
   uint32 GetTextureTarget() const override;
   scoped_refptr<gfx::SurfaceTexture> CreateSurfaceTexture() override;
   void UseCodecBufferForPictureBuffer(int32 codec_buffer_index,
                                       const media::PictureBuffer&) override;
+  void CodecChanged(
+      media::VideoCodecBridge*,
+      const AndroidVideoDecodeAccelerator::OutputBufferMap&) override;
 
  private:
   // Used for copy the texture from surface texture to picture buffers.
   scoped_ptr<gpu::CopyTextureCHROMIUMResourceManager> copier_;
 
-  AndroidVideoDecodeAcceleratorStateProvider* state_provider_;
+  AVDAStateProvider* state_provider_;
 
   // A container of texture. Used to set a texture to |media_codec_|.
   scoped_refptr<gfx::SurfaceTexture> surface_texture_;
 
   // The texture id which is set to |surface_texture_|.
   uint32 surface_texture_id_;
+
+  media::VideoCodecBridge* media_codec_;
 };
 
 }  // namespace content

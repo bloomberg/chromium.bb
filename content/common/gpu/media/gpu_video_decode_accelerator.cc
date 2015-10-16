@@ -47,6 +47,7 @@
 #include "media/ozone/media_ozone_platform.h"
 #elif defined(OS_ANDROID)
 #include "content/common/gpu/media/android_copying_backing_strategy.h"
+#include "content/common/gpu/media/android_deferred_rendering_backing_strategy.h"
 #include "content/common/gpu/media/android_video_decode_accelerator.h"
 #endif
 
@@ -383,7 +384,13 @@ GpuVideoDecodeAccelerator::CreateAndroidVDA() {
 #if defined(OS_ANDROID)
   decoder.reset(new AndroidVideoDecodeAccelerator(
       stub_->decoder()->AsWeakPtr(), make_context_current_,
-      make_scoped_ptr(new AndroidCopyingBackingStrategy())));
+      make_scoped_ptr(
+#if defined(ENABLE_MEDIA_PIPELINE_ON_ANDROID)
+          new AndroidDeferredRenderingBackingStrategy()
+#else
+          new AndroidCopyingBackingStrategy()
+#endif
+              )));
 #endif
   return decoder.Pass();
 }
