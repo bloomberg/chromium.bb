@@ -9,26 +9,7 @@
 #include "base/basictypes.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
-
-#define SHADER(src)                     \
-  "#ifdef GL_ES\n"                      \
-  "precision mediump float;\n"          \
-  "#define TexCoordPrecision mediump\n" \
-  "#else\n"                             \
-  "#define TexCoordPrecision\n"         \
-  "#endif\n" #src
-#define SHADER_2D(src)              \
-  "#define SamplerType sampler2D\n" \
-  "#define TextureLookup texture2D\n" SHADER(src)
-#define SHADER_RECTANGLE_ARB(src)     \
-  "#define SamplerType sampler2DRect\n" \
-  "#define TextureLookup texture2DRect\n" SHADER(src)
-#define SHADER_EXTERNAL_OES(src)                     \
-  "#extension GL_OES_EGL_image_external : require\n" \
-  "#define SamplerType samplerExternalOES\n"         \
-  "#define TextureLookup texture2D\n" SHADER(src)
-#define FRAGMENT_SHADERS(src) \
-  SHADER_2D(src), SHADER_RECTANGLE_ARB(src), SHADER_EXTERNAL_OES(src)
+#include "ui/gl/gl_implementation.h"
 
 namespace {
 
@@ -56,64 +37,6 @@ enum FragmentShaderId {
   NUM_FRAGMENT_SHADERS,
 };
 
-const char* vertex_shader_source[NUM_VERTEX_SHADERS] = {
-  // VERTEX_SHADER_COPY_TEXTURE
-  SHADER(
-    uniform vec2 u_vertex_translate;
-    uniform vec2 u_half_size;
-    attribute vec4 a_position;
-    varying TexCoordPrecision vec2 v_uv;
-    void main(void) {
-      gl_Position = a_position + vec4(u_vertex_translate, 0.0, 0.0);
-      v_uv = a_position.xy * vec2(u_half_size.s, u_half_size.t) +
-             vec2(u_half_size.s, u_half_size.t);
-    }),
-  // VERTEX_SHADER_COPY_TEXTURE_FLIP_Y
-  SHADER(
-    uniform vec2 u_vertex_translate;
-    uniform vec2 u_half_size;
-    attribute vec4 a_position;
-    varying TexCoordPrecision vec2 v_uv;
-    void main(void) {
-      gl_Position = a_position + vec4(u_vertex_translate, 0.0, 0.0);
-      v_uv = a_position.xy * vec2(u_half_size.s, -u_half_size.t) +
-             vec2(u_half_size.s, u_half_size.t);
-    }),
-};
-
-const char* fragment_shader_source[NUM_FRAGMENT_SHADERS] = {
-  // FRAGMENT_SHADER_COPY_TEXTURE_*
-  FRAGMENT_SHADERS(
-    uniform SamplerType u_sampler;
-    uniform mat4 u_tex_coord_transform;
-    varying TexCoordPrecision vec2 v_uv;
-    void main(void) {
-      TexCoordPrecision vec4 uv = u_tex_coord_transform * vec4(v_uv, 0, 1);
-      gl_FragColor = TextureLookup(u_sampler, uv.st);
-    }),
-  // FRAGMENT_SHADER_COPY_TEXTURE_PREMULTIPLY_ALPHA_*
-  FRAGMENT_SHADERS(
-    uniform SamplerType u_sampler;
-    uniform mat4 u_tex_coord_transform;
-    varying TexCoordPrecision vec2 v_uv;
-    void main(void) {
-      TexCoordPrecision vec4 uv = u_tex_coord_transform * vec4(v_uv, 0, 1);
-      gl_FragColor = TextureLookup(u_sampler, uv.st);
-      gl_FragColor.rgb *= gl_FragColor.a;
-    }),
-  // FRAGMENT_SHADER_COPY_TEXTURE_UNPREMULTIPLY_ALPHA_*
-  FRAGMENT_SHADERS(
-    uniform SamplerType u_sampler;
-    uniform mat4 u_tex_coord_transform;
-    varying TexCoordPrecision vec2 v_uv;
-    void main(void) {
-      TexCoordPrecision vec4 uv = u_tex_coord_transform * vec4(v_uv, 0, 1);
-      gl_FragColor = TextureLookup(u_sampler, uv.st);
-      if (gl_FragColor.a > 0.0)
-        gl_FragColor.rgb /= gl_FragColor.a;
-    }),
-};
-
 // Returns the correct vertex shader id to evaluate the copy operation for
 // the CHROMIUM_flipy setting.
 VertexShaderId GetVertexShaderId(bool flip_y) {
@@ -132,6 +55,9 @@ VertexShaderId GetVertexShaderId(bool flip_y) {
 FragmentShaderId GetFragmentShaderId(bool premultiply_alpha,
                                      bool unpremultiply_alpha,
                                      GLenum target) {
+  // Only one alpha mode at a time makes sense.
+  DCHECK(!premultiply_alpha || !unpremultiply_alpha);
+
   enum {
     SAMPLER_2D,
     SAMPLER_RECTANGLE_ARB,
@@ -179,6 +105,138 @@ FragmentShaderId GetFragmentShaderId(bool premultiply_alpha,
 
   NOTREACHED();
   return shader_ids[0][SAMPLER_2D];
+}
+
+const char* kShaderPrecisionPreamble = "\
+    #ifdef GL_ES\n\
+    precision mediump float;\n\
+    #define TexCoordPrecision mediump\n\
+    #else\n\
+    #define TexCoordPrecision\n\
+    #endif\n";
+
+std::string GetVertexShaderSource(bool flip_y) {
+  std::string source;
+
+  // Preamble for core and compatibility mode.
+  if (gfx::GetGLImplementation() ==
+          gfx::kGLImplementationDesktopGLCoreProfile) {
+    source += std::string("\
+        #version 150\n\
+        #define ATTRIBUTE in\n\
+        #define VARYING out\n");
+  } else {
+    source += std::string("\
+        #define ATTRIBUTE attribute\n\
+        #define VARYING varying\n");
+  }
+
+  // Preamble for texture precision.
+  source += std::string(kShaderPrecisionPreamble);
+
+  // Preamble to differentiate based on |flip_y|.
+  if (flip_y) {
+    source += std::string("#define SIGN -\n");
+  } else {
+    source += std::string("#define SIGN\n");
+  }
+
+  // Main shader source.
+  source += std::string("\
+      uniform vec2 u_vertex_translate;\n\
+      uniform vec2 u_half_size;\n\
+      ATTRIBUTE vec4 a_position;\n\
+      VARYING TexCoordPrecision vec2 v_uv;\n\
+      void main(void) {\n\
+        gl_Position = a_position + vec4(u_vertex_translate, 0.0, 0.0);\n\
+        v_uv = a_position.xy * vec2(u_half_size.s, SIGN u_half_size.t) +\n\
+               vec2(u_half_size.s, u_half_size.t);\n\
+      }\n");
+
+  return source;
+}
+
+std::string GetFragmentShaderSource(bool premultiply_alpha,
+                                    bool unpremultiply_alpha,
+                                    GLenum target) {
+  // Only one alpha mode at a time makes sense.
+  DCHECK(!premultiply_alpha || !unpremultiply_alpha);
+
+  std::string source;
+
+  // Preamble for core and compatibility mode.
+  if (gfx::GetGLImplementation() ==
+          gfx::kGLImplementationDesktopGLCoreProfile) {
+    source += std::string("\
+        #version 150\n\
+        out vec4 frag_color;\n\
+        #define VARYING in\n\
+        #define FRAGCOLOR frag_color\n\
+        #define TextureLookup texture\n");
+  } else {
+    switch (target) {
+      case GL_TEXTURE_2D:
+        source += std::string("#define TextureLookup texture2D\n");
+        break;
+      case GL_TEXTURE_RECTANGLE_ARB:
+        source += std::string("#define TextureLookup texture2DRect\n");
+        break;
+      case GL_TEXTURE_EXTERNAL_OES:
+        source += std::string(
+            "#extension GL_OES_EGL_image_external : require\n");
+        source += std::string("#define TextureLookup texture2D\n");
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
+    source += std::string("\
+        #define VARYING varying\n\
+        #define FRAGCOLOR gl_FragColor\n");
+  }
+
+  // Preamble for sampler type.
+  switch (target) {
+    case GL_TEXTURE_2D:
+      source += std::string("#define SamplerType sampler2D\n");
+      break;
+    case GL_TEXTURE_RECTANGLE_ARB:
+      source += std::string("#define SamplerType sampler2DRect\n");
+      break;
+    case GL_TEXTURE_EXTERNAL_OES:
+      source += std::string("#define SamplerType samplerExternalOES\n");
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+
+  // Preamble for texture precision.
+  source += std::string(kShaderPrecisionPreamble);
+
+  // Main shader source.
+  source += std::string("\
+      uniform SamplerType u_sampler;\n\
+      uniform mat4 u_tex_coord_transform;\n\
+      VARYING TexCoordPrecision vec2 v_uv;\n\
+      void main(void) {\n\
+        TexCoordPrecision vec4 uv = u_tex_coord_transform * vec4(v_uv, 0, 1);\n\
+        FRAGCOLOR = TextureLookup(u_sampler, uv.st);\n");
+
+  // Post-processing to premultiply or un-premultiply alpha.
+  if (premultiply_alpha) {
+    source += std::string("        FRAGCOLOR.rgb *= FRAGCOLOR.a;\n");
+  }
+  if (unpremultiply_alpha) {
+    source += std::string("\
+        if (FRAGCOLOR.a > 0.0)\n\
+          FRAGCOLOR.rgb /= FRAGCOLOR.a;\n");
+  }
+
+  // Main function end.
+  source += std::string("      }\n");
+
+  return source;
 }
 
 void CompileShader(GLuint shader, const char* shader_source) {
@@ -494,14 +552,16 @@ void CopyTextureCHROMIUMResourceManager::DoCopyTextureInternal(
     GLuint* vertex_shader = &vertex_shaders_[vertex_shader_id];
     if (!*vertex_shader) {
       *vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-      CompileShader(*vertex_shader, vertex_shader_source[vertex_shader_id]);
+      std::string source = GetVertexShaderSource(flip_y);
+      CompileShader(*vertex_shader, source.c_str());
     }
     glAttachShader(info->program, *vertex_shader);
     GLuint* fragment_shader = &fragment_shaders_[fragment_shader_id];
     if (!*fragment_shader) {
       *fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
-      CompileShader(*fragment_shader,
-                    fragment_shader_source[fragment_shader_id]);
+      std::string source = GetFragmentShaderSource(
+          premultiply_alpha, unpremultiply_alpha, source_target);
+      CompileShader(*fragment_shader, source.c_str());
     }
     glAttachShader(info->program, *fragment_shader);
     glBindAttribLocation(info->program, kVertexPositionAttrib, "a_position");
@@ -556,8 +616,12 @@ void CopyTextureCHROMIUMResourceManager::DoCopyTextureInternal(
       return;
     }
 #endif
-    decoder->ClearAllAttributes();
-    glEnableVertexAttribArray(kVertexPositionAttrib);
+
+    if (gfx::GetGLImplementation() !=
+        gfx::kGLImplementationDesktopGLCoreProfile) {
+      decoder->ClearAllAttributes();
+      glEnableVertexAttribArray(kVertexPositionAttrib);
+    }
 
     glBindBuffer(GL_ARRAY_BUFFER, buffer_id_);
     glVertexAttribPointer(kVertexPositionAttrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
