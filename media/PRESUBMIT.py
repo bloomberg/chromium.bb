@@ -164,6 +164,7 @@ def _CheckChange(input_api, output_api):
   results.extend(_CheckForUseOfWrongClock(input_api, output_api))
   results.extend(_CheckForMessageLoopProxy(input_api, output_api))
   results.extend(_CheckForHistogramOffByOne(input_api, output_api))
+  results += input_api.canned_checks.CheckPatchFormatted(input_api, output_api)
   return results
 
 
