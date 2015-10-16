@@ -913,7 +913,7 @@ crbug.com/478109 [ SnowLeopard ] fast/text/bidi-embedding-pop-and-push-same-2.ht
 
 crbug.com/521124 [ Win7 ] fast/text/international/vertical-text-glyph-test.html [ Pass Failure ]
 crbug.com/521124 [ Win7 ] fast/text/international/text-combine-image-test.html [ Pass Failure ]
-crbug.com/521124 [ Win7 Release ] fast/css/font-weight-1.html [ Pass Failure ]
+crbug.com/521124 [ Win7 ] fast/css/font-weight-1.html [ Pass Failure ]
 crbug.com/521124 [ Win7 Release ] fast/text/justify-ideograph-vertical.html [ Pass Failure ]
 crbug.com/521124 [ Win7 Release ] fast/writing-mode/english-lr-text.html [ Pass Failure ]
 crbug.com/521124 [ Win7 ] fast/text/orientation-sideways.html [ Pass Failure ]
