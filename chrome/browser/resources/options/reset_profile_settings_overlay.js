@@ -11,7 +11,8 @@ cr.define('options', function() {
   /**
    * ResetProfileSettingsOverlay class
    * Encapsulated handling of the 'Reset Profile Settings' overlay page.
-   * @class
+   * @constructor
+   * @extends {cr.ui.pageManager.Page}
    */
   function ResetProfileSettingsOverlay() {
     Page.call(this, 'resetProfileSettings',

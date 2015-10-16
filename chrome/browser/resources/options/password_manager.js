@@ -251,7 +251,6 @@ cr.define('options', function() {
 
   // Forward public APIs to private implementations on the singleton instance.
   cr.makePublic(PasswordManager, [
-    'setManageAccountLinkVisibility',
     'setSavedPasswordsList',
     'setPasswordExceptionsList',
     'showPassword'

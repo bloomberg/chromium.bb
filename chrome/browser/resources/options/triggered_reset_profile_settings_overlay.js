@@ -14,7 +14,7 @@ cr.define('options', function() {
    * Settings' overlay page. Identical to ResetProfileSettingsOverlay but in a
    * new class to get a new overlay url mapping. See
    * triggered_profile_resetter.h for when this will be used.
-   * @class
+   * @constructor
    * @extends {options.ResetProfileSettingsOverlay}
    */
   function TriggeredResetProfileSettingsOverlay() {
