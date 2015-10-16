@@ -33,29 +33,27 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (0,0) size 632x19
           text run at (0,0) width 458: "The first line should break after the letter u, so that the gray border does not "
           text run at (458,0) width 174: "extend beyond the cyan box."
-      LayoutBlockFlow {DIV} at (0,214) size 87x42 [border: (1px solid #00FFFF)]
-        LayoutInline {SPAN} at (0,0) size 64x39 [border: none (30px solid #C0C0C0) none]
-          LayoutText {#text} at (1,1) size 64x39
-            text run at (1,1) width 64: "Loremipsu"
-            text run at (1,21) width 11: "m"
+      LayoutBlockFlow {DIV} at (0,214) size 87x22 [border: (1px solid #00FFFF)]
+        LayoutInline {SPAN} at (0,0) size 105x19 [border: none (30px solid #C0C0C0) none]
+          LayoutText {#text} at (1,1) size 75x19
+            text run at (1,1) width 75: "Loremipsum"
         LayoutText {#text} at (0,0) size 0x0
-      LayoutBlockFlow {HR} at (0,264) size 784x2 [border: (1px inset #EEEEEE)]
-      LayoutBlockFlow {P} at (0,282) size 784x20
+      LayoutBlockFlow {HR} at (0,244) size 784x2 [border: (1px inset #EEEEEE)]
+      LayoutBlockFlow {P} at (0,262) size 784x20
         LayoutText {#text} at (0,0) size 584x19
           text run at (0,0) width 410: "The first line should break after the letter p, so that the text does not "
           text run at (410,0) width 174: "extend beyond the cyan box."
-      LayoutBlockFlow {DIV} at (0,318) size 87x42 [border: (1px solid #00FFFF)]
-        LayoutInline {SPAN} at (0,0) size 81x39 [border: none (30px solid #C0C0C0)]
-          LayoutText {#text} at (31,1) size 81x39
-            text run at (31,1) width 51: "Loremip"
-            text run at (1,21) width 24: "sum"
+      LayoutBlockFlow {DIV} at (0,298) size 87x22 [border: (1px solid #00FFFF)]
+        LayoutInline {SPAN} at (0,0) size 105x19 [border: none (30px solid #C0C0C0)]
+          LayoutText {#text} at (31,1) size 75x19
+            text run at (31,1) width 75: "Loremipsum"
         LayoutText {#text} at (0,0) size 0x0
-      LayoutBlockFlow {HR} at (0,368) size 784x2 [border: (1px inset #EEEEEE)]
-      LayoutBlockFlow {P} at (0,386) size 784x20
+      LayoutBlockFlow {HR} at (0,328) size 784x2 [border: (1px inset #EEEEEE)]
+      LayoutBlockFlow {P} at (0,346) size 784x20
         LayoutText {#text} at (0,0) size 239x19
           text run at (0,0) width 239: "\x{201C}Dolor\x{201D} should not break into two lines."
-layer at (8,430) size 37x22
-  LayoutBlockFlow (positioned) {DIV} at (8,430) size 37x22
+layer at (8,390) size 37x22
+  LayoutBlockFlow (positioned) {DIV} at (8,390) size 37x22
     LayoutBlockFlow {DIV} at (0,0) size 37x22 [border: (1px solid #00FFFF)]
       LayoutText {#text} at (1,1) size 35x19
         text run at (1,1) width 35: "Dolor"
