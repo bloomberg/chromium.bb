@@ -73,7 +73,7 @@ public:
         m_pendingUpdate.clear();
     }
     void maybeApplyPendingUpdate(Element*);
-    bool isEmpty() const { return m_animations.isEmpty() && m_transitions.isEmpty() && m_pendingUpdate.isEmpty(); }
+    bool isEmpty() const { return m_runningAnimations.isEmpty() && m_transitions.isEmpty() && m_pendingUpdate.isEmpty(); }
     void cancel();
 
     DECLARE_TRACE();
@@ -83,6 +83,8 @@ private:
     public:
         RunningAnimation(Animation* animation, CSSAnimationUpdate::NewAnimation newAnimation)
             : animation(animation)
+            , name(newAnimation.name)
+            , nameIndex(newAnimation.nameIndex)
             , specifiedTiming(newAnimation.timing)
             , styleRule(newAnimation.styleRule)
             , styleRuleVersion(newAnimation.styleRuleVersion)
@@ -91,6 +93,7 @@ private:
 
         void update(CSSAnimationUpdate::UpdatedAnimation update)
         {
+            ASSERT(update.animation == animation);
             styleRule = update.styleRule;
             styleRuleVersion = update.styleRuleVersion;
             specifiedTiming = update.specifiedTiming;
@@ -103,6 +106,8 @@ private:
         }
 
         Member<Animation> animation;
+        AtomicString name;
+        size_t nameIndex;
         Timing specifiedTiming;
         RefPtrWillBeMember<StyleRuleKeyframes> styleRule;
         unsigned styleRuleVersion;
@@ -121,8 +126,7 @@ private:
         const AnimatableValue* to;
     };
 
-    using AnimationMap = HeapHashMap<AtomicString, Member<RunningAnimation>>;
-    AnimationMap m_animations;
+    HeapVector<Member<RunningAnimation>> m_runningAnimations;
 
     using TransitionMap = HeapHashMap<CSSPropertyID, RunningTransition>;
     TransitionMap m_transitions;

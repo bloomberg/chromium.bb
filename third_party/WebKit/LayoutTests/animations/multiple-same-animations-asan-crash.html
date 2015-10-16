@@ -16,8 +16,6 @@ requestAnimationFrame(function() {
   // Force the next style recalc to be non-animation triggered.
   target.style.color = 'blue';
   requestAnimationFrame(function() {
-    // Clear the running animations to avoid hitting a debug assertion. (crbug.com/487092)
-    target.style.animation = 'none';
     asyncHandle.done();
   });
 });
