@@ -196,8 +196,9 @@ void MoveMouseAndPress(const gfx::Point& screen_pos,
                        ui_controls::MouseButton button,
                        int state,
                        const base::Closure& closure) {
-  ui_controls::SendMouseMove(screen_pos.x(), screen_pos.y());
-  ui_controls::SendMouseEventsNotifyWhenDone(button, state, closure);
+  ASSERT_TRUE(ui_controls::SendMouseMove(screen_pos.x(), screen_pos.y()));
+  ASSERT_TRUE(
+      ui_controls::SendMouseEventsNotifyWhenDone(button, state, closure));
 }
 
 // PageNavigator implementation that records the URL.
@@ -472,18 +473,19 @@ class BookmarkBarViewTest2 : public BookmarkBarViewEventTestBase {
     // to press the mouse on.
     gfx::Point mouse_loc;
     views::View::ConvertPointToScreen(bb_view_.get(), &mouse_loc);
-    ui_controls::SendMouseMoveNotifyWhenDone(0, 0,
-        CreateEventTask(this, &BookmarkBarViewTest2::Step3));
+    ASSERT_TRUE(ui_controls::SendMouseMoveNotifyWhenDone(
+        0, 0, CreateEventTask(this, &BookmarkBarViewTest2::Step3)));
   }
 
   void Step3() {
     // As the click is on the desktop the hook never sees the up, so we only
     // wait on the down. We still send the up though else the system thinks
     // the mouse is still down.
-    ui_controls::SendMouseEventsNotifyWhenDone(
+    ASSERT_TRUE(ui_controls::SendMouseEventsNotifyWhenDone(
         ui_controls::LEFT, ui_controls::DOWN,
-        CreateEventTask(this, &BookmarkBarViewTest2::Step4));
-    ui_controls::SendMouseEvents(ui_controls::LEFT, ui_controls::UP);
+        CreateEventTask(this, &BookmarkBarViewTest2::Step4)));
+    ASSERT_TRUE(
+        ui_controls::SendMouseEvents(ui_controls::LEFT, ui_controls::UP));
   }
 
   void Step4() {
@@ -708,8 +710,9 @@ class BookmarkBarViewTest5 : public BookmarkBarViewEventTestBase {
     views::View::ConvertPointToScreen(target_menu, &loc);
 
     // Start a drag.
-    ui_controls::SendMouseMoveNotifyWhenDone(loc.x() + 10, loc.y(),
-        CreateEventTask(this, &BookmarkBarViewTest5::Step4));
+    ASSERT_TRUE(ui_controls::SendMouseMoveNotifyWhenDone(
+        loc.x() + 10, loc.y(),
+        CreateEventTask(this, &BookmarkBarViewTest5::Step4)));
 
     // See comment above this method as to why we do this.
     ScheduleMouseMoveInBackground(loc.x(), loc.y());
@@ -721,11 +724,11 @@ class BookmarkBarViewTest5 : public BookmarkBarViewEventTestBase {
         bb_view_->GetMenu()->GetSubmenu()->GetMenuItemAt(1);
     gfx::Point loc(1, target_menu->height() - 2);
     views::View::ConvertPointToScreen(target_menu, &loc);
-    ui_controls::SendMouseMove(loc.x(), loc.y());
+    ASSERT_TRUE(ui_controls::SendMouseMove(loc.x(), loc.y()));
 
-    ui_controls::SendMouseEventsNotifyWhenDone(ui_controls::LEFT,
-        ui_controls::UP,
-        CreateEventTask(this, &BookmarkBarViewTest5::Step5));
+    ASSERT_TRUE(ui_controls::SendMouseEventsNotifyWhenDone(
+        ui_controls::LEFT, ui_controls::UP,
+        CreateEventTask(this, &BookmarkBarViewTest5::Step5)));
   }
 
   void Step5() {
@@ -825,12 +828,13 @@ class BookmarkBarViewTest7 : public BookmarkBarViewEventTestBase {
 #if defined(USE_AURA)
     // TODO: fix this. Aura requires an additional mouse event to trigger drag
     // and drop checking state.
-    ui_controls::SendMouseMoveNotifyWhenDone(loc.x() + 10, loc.y(),
-        base::Bind(&BookmarkBarViewTest7::Step3A, this));
+    ASSERT_TRUE(ui_controls::SendMouseMoveNotifyWhenDone(
+        loc.x() + 10, loc.y(),
+        base::Bind(&BookmarkBarViewTest7::Step3A, this)));
 #else
     // Start a drag.
-    ui_controls::SendMouseMoveNotifyWhenDone(loc.x() + 10, loc.y(),
-        base::Bind(&BookmarkBarViewTest7::Step4, this));
+    ASSERT_TRUE(ui_controls::SendMouseMoveNotifyWhenDone(
+        loc.x() + 10, loc.y(), base::Bind(&BookmarkBarViewTest7::Step4, this)));
 
     // See comment above this method as to why we do this.
     ScheduleMouseMoveInBackground(loc.x(), loc.y());
@@ -843,8 +847,8 @@ class BookmarkBarViewTest7 : public BookmarkBarViewEventTestBase {
     gfx::Point loc(other_button->width() / 2, other_button->height() / 2);
     views::View::ConvertPointToScreen(other_button, &loc);
 
-    ui_controls::SendMouseMoveNotifyWhenDone(loc.x(), loc.y(),
-        base::Bind(&BookmarkBarViewTest7::Step4, this));
+    ASSERT_TRUE(ui_controls::SendMouseMoveNotifyWhenDone(
+        loc.x(), loc.y(), base::Bind(&BookmarkBarViewTest7::Step4, this)));
   }
 
   void Step4() {
@@ -856,14 +860,14 @@ class BookmarkBarViewTest7 : public BookmarkBarViewEventTestBase {
         drop_menu->GetSubmenu()->GetMenuItemAt(0);
     gfx::Point loc(1, 1);
     views::View::ConvertPointToScreen(target_menu, &loc);
-    ui_controls::SendMouseMoveNotifyWhenDone(loc.x(), loc.y(),
-        CreateEventTask(this, &BookmarkBarViewTest7::Step5));
+    ASSERT_TRUE(ui_controls::SendMouseMoveNotifyWhenDone(
+        loc.x(), loc.y(), CreateEventTask(this, &BookmarkBarViewTest7::Step5)));
   }
 
   void Step5() {
-    ui_controls::SendMouseEventsNotifyWhenDone(
+    ASSERT_TRUE(ui_controls::SendMouseEventsNotifyWhenDone(
         ui_controls::LEFT, ui_controls::UP,
-        CreateEventTask(this, &BookmarkBarViewTest7::Step6));
+        CreateEventTask(this, &BookmarkBarViewTest7::Step6)));
   }
 
   void Step6() {
@@ -924,11 +928,12 @@ class BookmarkBarViewTest8 : public BookmarkBarViewEventTestBase {
 #if defined(USE_AURA)
     // TODO: fix this. Aura requires an additional mouse event to trigger drag
     // and drop checking state.
-    ui_controls::SendMouseMoveNotifyWhenDone(loc.x() + 10, loc.y(),
-        base::Bind(&BookmarkBarViewTest8::Step3A, this));
+    ASSERT_TRUE(ui_controls::SendMouseMoveNotifyWhenDone(
+        loc.x() + 10, loc.y(),
+        base::Bind(&BookmarkBarViewTest8::Step3A, this)));
 #else
-    ui_controls::SendMouseMoveNotifyWhenDone(loc.x() + 10, loc.y(),
-        base::Bind(&BookmarkBarViewTest8::Step4, this));
+    ASSERT_TRUE(ui_controls::SendMouseMoveNotifyWhenDone(
+        loc.x() + 10, loc.y(), base::Bind(&BookmarkBarViewTest8::Step4, this)));
     // See comment above this method as to why we do this.
     ScheduleMouseMoveInBackground(loc.x(), loc.y());
 #endif
@@ -940,8 +945,8 @@ class BookmarkBarViewTest8 : public BookmarkBarViewEventTestBase {
     gfx::Point loc(other_button->width() / 2, other_button->height() / 2);
     views::View::ConvertPointToScreen(other_button, &loc);
 
-    ui_controls::SendMouseMoveNotifyWhenDone(loc.x() + 10, loc.y(),
-        base::Bind(&BookmarkBarViewTest8::Step4, this));
+    ASSERT_TRUE(ui_controls::SendMouseMoveNotifyWhenDone(
+        loc.x() + 10, loc.y(), base::Bind(&BookmarkBarViewTest8::Step4, this)));
   }
 
   void Step4() {
@@ -953,8 +958,8 @@ class BookmarkBarViewTest8 : public BookmarkBarViewEventTestBase {
     views::LabelButton* button = GetBookmarkButton(0);
     gfx::Point loc(button->width() / 2, button->height() / 2);
     views::View::ConvertPointToScreen(button, &loc);
-    ui_controls::SendMouseMoveNotifyWhenDone(loc.x(), loc.y(),
-        base::Bind(&BookmarkBarViewTest8::Step5, this));
+    ASSERT_TRUE(ui_controls::SendMouseMoveNotifyWhenDone(
+        loc.x(), loc.y(), base::Bind(&BookmarkBarViewTest8::Step5, this)));
   }
 
   void Step5() {
@@ -1026,9 +1031,9 @@ class BookmarkBarViewTest9 : public BookmarkBarViewEventTestBase {
     views::View::ConvertPointToScreen(scroll_down_button, &loc);
 
     // On linux, the sending one location isn't enough.
-    ui_controls::SendMouseMove(loc.x() - 1 , loc.y() - 1);
-    ui_controls::SendMouseMoveNotifyWhenDone(
-        loc.x(), loc.y(), CreateEventTask(this, &BookmarkBarViewTest9::Step3));
+    ASSERT_TRUE(ui_controls::SendMouseMove(loc.x() - 1, loc.y() - 1));
+    ASSERT_TRUE(ui_controls::SendMouseMoveNotifyWhenDone(
+        loc.x(), loc.y(), CreateEventTask(this, &BookmarkBarViewTest9::Step3)));
   }
 
   void Step3() {
@@ -1086,9 +1091,9 @@ class BookmarkBarViewTest10 : public BookmarkBarViewEventTestBase {
     ASSERT_TRUE(menu->GetSubmenu()->IsShowing());
 
     // Send a down event, which should select the first item.
-    ui_controls::SendKeyPressNotifyWhenDone(
+    ASSERT_TRUE(ui_controls::SendKeyPressNotifyWhenDone(
         window_->GetNativeWindow(), ui::VKEY_DOWN, false, false, false, false,
-        CreateEventTask(this, &BookmarkBarViewTest10::Step3));
+        CreateEventTask(this, &BookmarkBarViewTest10::Step3)));
   }
 
   void Step3() {
@@ -1099,9 +1104,9 @@ class BookmarkBarViewTest10 : public BookmarkBarViewEventTestBase {
     ASSERT_TRUE(menu->GetSubmenu()->GetMenuItemAt(0)->IsSelected());
 
     // Send a key down event, which should select the next item.
-    ui_controls::SendKeyPressNotifyWhenDone(
+    ASSERT_TRUE(ui_controls::SendKeyPressNotifyWhenDone(
         window_->GetNativeWindow(), ui::VKEY_DOWN, false, false, false, false,
-        CreateEventTask(this, &BookmarkBarViewTest10::Step4));
+        CreateEventTask(this, &BookmarkBarViewTest10::Step4)));
   }
 
   void Step4() {
@@ -1112,9 +1117,9 @@ class BookmarkBarViewTest10 : public BookmarkBarViewEventTestBase {
     ASSERT_TRUE(menu->GetSubmenu()->GetMenuItemAt(1)->IsSelected());
 
     // Send a right arrow to force the menu to open.
-    ui_controls::SendKeyPressNotifyWhenDone(
+    ASSERT_TRUE(ui_controls::SendKeyPressNotifyWhenDone(
         window_->GetNativeWindow(), ui::VKEY_RIGHT, false, false, false, false,
-        CreateEventTask(this, &BookmarkBarViewTest10::Step5));
+        CreateEventTask(this, &BookmarkBarViewTest10::Step5)));
   }
 
   void Step5() {
@@ -1128,9 +1133,9 @@ class BookmarkBarViewTest10 : public BookmarkBarViewEventTestBase {
     ASSERT_TRUE(submenu->GetSubmenu()->IsShowing());
 
     // Send a left arrow to close the submenu.
-    ui_controls::SendKeyPressNotifyWhenDone(
+    ASSERT_TRUE(ui_controls::SendKeyPressNotifyWhenDone(
         window_->GetNativeWindow(), ui::VKEY_LEFT, false, false, false, false,
-        CreateEventTask(this, &BookmarkBarViewTest10::Step6));
+        CreateEventTask(this, &BookmarkBarViewTest10::Step6)));
   }
 
   void Step6() {
@@ -1143,9 +1148,9 @@ class BookmarkBarViewTest10 : public BookmarkBarViewEventTestBase {
     ASSERT_TRUE(!submenu->GetSubmenu() || !submenu->GetSubmenu()->IsShowing());
 
     // Send a down arrow to wrap back to f1a
-    ui_controls::SendKeyPressNotifyWhenDone(
+    ASSERT_TRUE(ui_controls::SendKeyPressNotifyWhenDone(
         window_->GetNativeWindow(), ui::VKEY_DOWN, false, false, false, false,
-        CreateEventTask(this, &BookmarkBarViewTest10::Step7));
+        CreateEventTask(this, &BookmarkBarViewTest10::Step7)));
   }
 
   void Step7() {
@@ -1156,9 +1161,9 @@ class BookmarkBarViewTest10 : public BookmarkBarViewEventTestBase {
     ASSERT_TRUE(menu->GetSubmenu()->GetMenuItemAt(0)->IsSelected());
 
     // Send enter, which should select the item.
-    ui_controls::SendKeyPressNotifyWhenDone(
+    ASSERT_TRUE(ui_controls::SendKeyPressNotifyWhenDone(
         window_->GetNativeWindow(), ui::VKEY_RETURN, false, false, false, false,
-        CreateEventTask(this, &BookmarkBarViewTest10::Step8));
+        CreateEventTask(this, &BookmarkBarViewTest10::Step8)));
   }
 
   void Step8() {
@@ -1217,9 +1222,9 @@ class BookmarkBarViewTest11 : public BookmarkBarViewEventTestBase {
 
   void Step3() {
     // Send escape so that the context menu hides.
-    ui_controls::SendKeyPressNotifyWhenDone(
+    ASSERT_TRUE(ui_controls::SendKeyPressNotifyWhenDone(
         window_->GetNativeWindow(), ui::VKEY_ESCAPE, false, false, false, false,
-        CreateEventTask(this, &BookmarkBarViewTest11::Step4));
+        CreateEventTask(this, &BookmarkBarViewTest11::Step4)));
   }
 
   void Step4() {
@@ -1235,10 +1240,10 @@ class BookmarkBarViewTest11 : public BookmarkBarViewEventTestBase {
     // Now click on empty space.
     gfx::Point mouse_loc;
     views::View::ConvertPointToScreen(bb_view_.get(), &mouse_loc);
-    ui_controls::SendMouseMove(mouse_loc.x(), mouse_loc.y());
-    ui_controls::SendMouseEventsNotifyWhenDone(
+    ASSERT_TRUE(ui_controls::SendMouseMove(mouse_loc.x(), mouse_loc.y()));
+    ASSERT_TRUE(ui_controls::SendMouseEventsNotifyWhenDone(
         ui_controls::LEFT, ui_controls::UP | ui_controls::DOWN,
-        CreateEventTask(this, &BookmarkBarViewTest11::Step5));
+        CreateEventTask(this, &BookmarkBarViewTest11::Step5)));
   }
 
   void Step5() {
@@ -1326,8 +1331,8 @@ class BookmarkBarViewTest12 : public BookmarkBarViewEventTestBase {
     // Press tab to give focus to the cancel button. Wait until the widget
     // receives the tab key.
     TabKeyWaiter tab_waiter(dialog);
-    ui_controls::SendKeyPress(
-        window_->GetNativeWindow(), ui::VKEY_TAB, false, false, false, false);
+    ASSERT_TRUE(ui_controls::SendKeyPress(
+        window_->GetNativeWindow(), ui::VKEY_TAB, false, false, false, false));
     tab_waiter.WaitForTab();
 
     // For some reason return isn't processed correctly unless we delay.
@@ -1340,13 +1345,9 @@ class BookmarkBarViewTest12 : public BookmarkBarViewEventTestBase {
   void Step5(views::Widget* dialog) {
     DialogCloseWaiter waiter(dialog);
     // And press enter so that the cancel button is selected.
-    ui_controls::SendKeyPressNotifyWhenDone(window_->GetNativeWindow(),
-                                            ui::VKEY_RETURN,
-                                            false,
-                                            false,
-                                            false,
-                                            false,
-                                            base::Closure());
+    ASSERT_TRUE(ui_controls::SendKeyPressNotifyWhenDone(
+        window_->GetNativeWindow(), ui::VKEY_RETURN, false, false, false, false,
+        base::Closure()));
     waiter.WaitForDialogClose();
     Done();
   }
@@ -1472,9 +1473,9 @@ class BookmarkBarViewTest14 : public BookmarkBarViewEventTestBase {
     ASSERT_TRUE(menu == NULL);
 
     // Send escape so that the context menu hides.
-    ui_controls::SendKeyPressNotifyWhenDone(
+    ASSERT_TRUE(ui_controls::SendKeyPressNotifyWhenDone(
         window_->GetNativeWindow(), ui::VKEY_ESCAPE, false, false, false, false,
-        CreateEventTask(this, &BookmarkBarViewTest14::Step3));
+        CreateEventTask(this, &BookmarkBarViewTest14::Step3)));
   }
 
   void Step3() {
@@ -1724,9 +1725,9 @@ class BookmarkBarViewTest18 : public BookmarkBarViewEventTestBase {
     views::LabelButton* button = GetBookmarkButton(0);
     gfx::Point button_center(button->width() / 2, button->height() / 2);
     views::View::ConvertPointToScreen(button, &button_center);
-    ui_controls::SendMouseMoveNotifyWhenDone(
+    ASSERT_TRUE(ui_controls::SendMouseMoveNotifyWhenDone(
         button_center.x(), button_center.y(),
-        CreateEventTask(this, &BookmarkBarViewTest18::Step3));
+        CreateEventTask(this, &BookmarkBarViewTest18::Step3)));
   }
 
   void Step3() {
@@ -1796,9 +1797,9 @@ class BookmarkBarViewTest19 : public BookmarkBarViewEventTestBase {
     views::LabelButton* button = bb_view_->other_bookmarks_button();
     gfx::Point button_center(button->width() / 2, button->height() / 2);
     views::View::ConvertPointToScreen(button, &button_center);
-    ui_controls::SendMouseMoveNotifyWhenDone(
+    ASSERT_TRUE(ui_controls::SendMouseMoveNotifyWhenDone(
         button_center.x() + 1, button_center.y() + 1,
-        CreateEventTask(this, &BookmarkBarViewTest19::Step4));
+        CreateEventTask(this, &BookmarkBarViewTest19::Step4)));
   }
 
   void Step4() {
@@ -2053,8 +2054,9 @@ class BookmarkBarViewTest22 : public BookmarkBarViewEventTestBase {
     views::View::ConvertPointToScreen(target_menu, &loc);
 
     // Start a drag.
-    ui_controls::SendMouseMoveNotifyWhenDone(loc.x() + 10, loc.y(),
-        CreateEventTask(this, &BookmarkBarViewTest22::Step4));
+    ASSERT_TRUE(ui_controls::SendMouseMoveNotifyWhenDone(
+        loc.x() + 10, loc.y(),
+        CreateEventTask(this, &BookmarkBarViewTest22::Step4)));
     ScheduleMouseMoveInBackground(loc.x(), loc.y());
   }
 
@@ -2063,9 +2065,9 @@ class BookmarkBarViewTest22 : public BookmarkBarViewEventTestBase {
     window_ = NULL;
 
 #if defined(OS_CHROMEOS)
-    ui_controls::SendMouseEventsNotifyWhenDone(
+    ASSERT_TRUE(ui_controls::SendMouseEventsNotifyWhenDone(
         ui_controls::LEFT, ui_controls::UP,
-        CreateEventTask(this, &BookmarkBarViewTest22::Done));
+        CreateEventTask(this, &BookmarkBarViewTest22::Done)));
 #else
     // There are no widgets to send the mouse release to.
     Done();
@@ -2107,10 +2109,10 @@ class BookmarkBarViewTest23 : public BookmarkBarViewEventTestBase {
     ASSERT_TRUE(menu->GetSubmenu()->IsShowing());
 
     // Navigate down to highlight the first menu item.
-    ui_controls::SendKeyPressNotifyWhenDone(
-        GetWidget()->GetNativeWindow(), ui::VKEY_DOWN,
-        false, false, false, false,  // No modifer keys
-        CreateEventTask(this, &BookmarkBarViewTest23::Step3));
+    ASSERT_TRUE(ui_controls::SendKeyPressNotifyWhenDone(
+        GetWidget()->GetNativeWindow(), ui::VKEY_DOWN, false, false, false,
+        false,  // No modifer keys
+        CreateEventTask(this, &BookmarkBarViewTest23::Step3)));
   }
 
   void Step3() {
@@ -2120,9 +2122,10 @@ class BookmarkBarViewTest23 : public BookmarkBarViewEventTestBase {
     ASSERT_TRUE(menu->GetSubmenu()->IsShowing());
 
     // Open the context menu via the keyboard.
-    ui_controls::SendKeyPress(
-        GetWidget()->GetNativeWindow(), ui::VKEY_APPS,
-        false, false, false, false);  // No modifer keys
+    ASSERT_TRUE(ui_controls::SendKeyPress(GetWidget()->GetNativeWindow(),
+                                          ui::VKEY_APPS, false, false, false,
+                                          false  // No modifer keys
+                                          ));
     // The BookmarkContextMenuNotificationObserver triggers Step4.
   }
 
@@ -2181,10 +2184,10 @@ class BookmarkBarViewTest24 : public BookmarkBarViewEventTestBase {
     ASSERT_TRUE(menu->GetSubmenu()->IsShowing());
 
     // Navigate down to highlight the first menu item.
-    ui_controls::SendKeyPressNotifyWhenDone(
-        GetWidget()->GetNativeWindow(), ui::VKEY_DOWN,
-        false, false, false, false,  // No modifer keys
-        CreateEventTask(this, &BookmarkBarViewTest24::Step3));
+    ASSERT_TRUE(ui_controls::SendKeyPressNotifyWhenDone(
+        GetWidget()->GetNativeWindow(), ui::VKEY_DOWN, false, false, false,
+        false,  // No modifer keys
+        CreateEventTask(this, &BookmarkBarViewTest24::Step3)));
   }
 
   void Step3() {
@@ -2194,9 +2197,10 @@ class BookmarkBarViewTest24 : public BookmarkBarViewEventTestBase {
     ASSERT_TRUE(menu->GetSubmenu()->IsShowing());
 
     // Open the context menu via the keyboard.
-    ui_controls::SendKeyPress(
-        GetWidget()->GetNativeWindow(), ui::VKEY_APPS,
-        false, false, false, false);  // No modifer keys
+    ASSERT_TRUE(ui_controls::SendKeyPress(GetWidget()->GetNativeWindow(),
+                                          ui::VKEY_APPS, false, false, false,
+                                          false  // No modifer keys
+                                          ));
     // The BookmarkContextMenuNotificationObserver triggers Step4.
   }
 
@@ -2208,9 +2212,9 @@ class BookmarkBarViewTest24 : public BookmarkBarViewEventTestBase {
     ASSERT_TRUE(menu->GetSubmenu()->IsShowing());
 
     // Send escape to close the context menu.
-    ui_controls::SendKeyPressNotifyWhenDone(
+    ASSERT_TRUE(ui_controls::SendKeyPressNotifyWhenDone(
         window_->GetNativeWindow(), ui::VKEY_ESCAPE, false, false, false, false,
-        CreateEventTask(this, &BookmarkBarViewTest24::Step5));
+        CreateEventTask(this, &BookmarkBarViewTest24::Step5)));
   }
 
   void Step5() {
@@ -2223,9 +2227,9 @@ class BookmarkBarViewTest24 : public BookmarkBarViewEventTestBase {
     ASSERT_TRUE(menu->GetSubmenu()->IsShowing());
 
     // Send escape to close the main menu.
-    ui_controls::SendKeyPressNotifyWhenDone(
+    ASSERT_TRUE(ui_controls::SendKeyPressNotifyWhenDone(
         window_->GetNativeWindow(), ui::VKEY_ESCAPE, false, false, false, false,
-        CreateEventTask(this, &BookmarkBarViewTest24::Done));
+        CreateEventTask(this, &BookmarkBarViewTest24::Done)));
   }
 
   BookmarkContextMenuNotificationObserver observer_;
