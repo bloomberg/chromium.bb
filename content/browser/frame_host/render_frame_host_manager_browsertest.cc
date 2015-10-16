@@ -20,6 +20,7 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/webui/web_ui_impl.h"
 #include "content/common/content_constants_internal.h"
+#include "content/common/input_messages.h"
 #include "content/common/site_isolation_policy.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -2113,6 +2114,53 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   back_nav_load_observer.Wait();
 
   ResourceDispatcherHost::Get()->SetDelegate(nullptr);
+}
+
+// Tests that InputMsg type IPCs are ignored by swapped out RenderViews. It
+// uses the SetFocus IPC, as RenderView has a CHECK to ensure that condition
+// never happens.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
+                       InputMsgToSwappedOutRVHIsIgnored) {
+  StartEmbeddedServer();
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("a.com", "/title1.html")));
+
+  // Open a popup to navigate cross-process.
+  Shell* new_shell =
+      OpenPopup(shell()->web_contents(), GURL(url::kAboutBlankURL), "foo");
+  EXPECT_EQ(shell()->web_contents()->GetSiteInstance(),
+            new_shell->web_contents()->GetSiteInstance());
+
+  // Keep a pointer to the RenderViewHost, which will be in swapped out
+  // state after navigating cross-process. This is how this test is causing
+  // a swapped out RenderView to receive InputMsg IPC message.
+  WebContentsImpl* new_web_contents =
+      static_cast<WebContentsImpl*>(new_shell->web_contents());
+  FrameTreeNode* new_root = new_web_contents->GetFrameTree()->root();
+  RenderViewHostImpl* rvh = new_web_contents->GetRenderViewHost();
+
+  // Navigate the popup to a different site, so the |rvh| is swapped out.
+  EXPECT_TRUE(NavigateToURL(
+      new_shell, embedded_test_server()->GetURL("b.com", "/title2.html")));
+  EXPECT_NE(shell()->web_contents()->GetSiteInstance(),
+            new_shell->web_contents()->GetSiteInstance());
+  EXPECT_EQ(rvh, new_root->render_manager()->GetSwappedOutRenderViewHost(
+                     shell()->web_contents()->GetSiteInstance()));
+
+  // Setup a process observer to ensure there is no crash and send the IPC
+  // message.
+  RenderProcessHostWatcher watcher(
+      rvh->GetProcess(), RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  rvh->Send(new InputMsg_SetFocus(rvh->GetRoutingID(), true));
+
+  // The test must wait for a process to exit, but if the IPC message is
+  // properly ignored, there will be no crash. Therefore, navigate the
+  // original window to the same site as the popup, which will just exit the
+  // process cleanly.
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("b.com", "/title3.html")));
+  watcher.Wait();
+  EXPECT_TRUE(watcher.did_exit_normally());
 }
 
 }  // namespace content

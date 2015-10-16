@@ -1276,6 +1276,11 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
   if (main_frame && main_frame->isWebLocalFrame())
     GetContentClient()->SetActiveURL(main_frame->document().url());
 
+  // Input IPC messages must not be processed if the RenderView is in
+  // swapped out state.
+  if (is_swapped_out_ && IPC_MESSAGE_ID_CLASS(message.type()) == InputMsgStart)
+    return false;
+
   base::ObserverListBase<RenderViewObserver>::Iterator it(&observers_);
   RenderViewObserver* observer;
   while ((observer = it.GetNext()) != NULL)
@@ -3066,6 +3071,9 @@ GURL RenderViewImpl::GetURLForGraphicsContext3D() {
 }
 
 void RenderViewImpl::OnSetFocus(bool enable) {
+  // This message must always be received when the main frame is a
+  // WebLocalFrame.
+  CHECK(webview()->mainFrame()->isWebLocalFrame());
   RenderWidget::OnSetFocus(enable);
 
 #if defined(ENABLE_PLUGINS)
