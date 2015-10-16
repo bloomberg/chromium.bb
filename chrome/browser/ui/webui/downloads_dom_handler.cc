@@ -63,9 +63,7 @@ namespace {
 
 // Maximum number of downloads to show. TODO(glen): Remove this and instead
 // stuff the downloads down the pipe slowly.
-size_t MaxNumberOfDownloads() {
-  return MdDownloadsEnabled() ? 50 : 150;
-}
+size_t kMaxNumberOfDownloads = 150;
 
 enum DownloadsDOMEvent {
   DOWNLOADS_DOM_EVENT_GET_DOWNLOADS = 0,
@@ -653,7 +651,7 @@ void DownloadsDOMHandler::SendCurrentDownloads() {
     query.AddFilter(DownloadQuery::FILTER_QUERY, *search_terms_);
   query.AddFilter(base::Bind(&IsDownloadDisplayable));
   query.AddSorter(DownloadQuery::SORT_START_TIME, DownloadQuery::DESCENDING);
-  query.Limit(MaxNumberOfDownloads());
+  query.Limit(kMaxNumberOfDownloads);
   query.Search(all_items.begin(), all_items.end(), &filtered_items);
 
   base::ListValue results_value;
