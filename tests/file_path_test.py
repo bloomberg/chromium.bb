@@ -24,10 +24,11 @@ from depot_tools import auto_stub
 from depot_tools import fix_encoding
 import test_utils
 from utils import file_path
+from utils import fs
 
 
 def write_content(filepath, content):
-  with open(filepath, 'wb') as f:
+  with fs.open(filepath, 'wb') as f:
     f.write(content)
 
 
@@ -39,7 +40,7 @@ class FilePathTest(auto_stub.TestCase):
   def tearDown(self):
     try:
       if self._tempdir:
-        for dirpath, dirnames, filenames in os.walk(
+        for dirpath, dirnames, filenames in fs.walk(
             self._tempdir, topdown=True):
           for filename in filenames:
             file_path.set_read_only(os.path.join(dirpath, filename), False)
@@ -57,7 +58,7 @@ class FilePathTest(auto_stub.TestCase):
 
   def assertFileMode(self, filepath, mode, umask=None):
     umask = test_utils.umask() if umask is None else umask
-    actual = os.stat(filepath).st_mode
+    actual = fs.stat(filepath).st_mode
     expected = mode & ~umask
     self.assertEqual(
         expected,
@@ -91,7 +92,7 @@ class FilePathTest(auto_stub.TestCase):
     # Confirms that a RO file in a RW directory can be deleted on non-Windows.
     dir_foo = os.path.join(self.tempdir, 'foo')
     file_bar = os.path.join(dir_foo, 'bar')
-    os.mkdir(dir_foo, 0777)
+    fs.mkdir(dir_foo, 0777)
     write_content(file_bar, 'bar')
     file_path.set_read_only(dir_foo, False)
     file_path.set_read_only(file_bar, True)
@@ -100,15 +101,15 @@ class FilePathTest(auto_stub.TestCase):
     if sys.platform == 'win32':
       # On Windows, a read-only file can't be deleted.
       with self.assertRaises(OSError):
-        os.remove(file_bar)
+        fs.remove(file_bar)
     else:
-      os.remove(file_bar)
+      fs.remove(file_bar)
 
   def test_delete_rd_wf(self):
     # Confirms that a Rw file in a RO directory can be deleted on Windows only.
     dir_foo = os.path.join(self.tempdir, 'foo')
     file_bar = os.path.join(dir_foo, 'bar')
-    os.mkdir(dir_foo, 0777)
+    fs.mkdir(dir_foo, 0777)
     write_content(file_bar, 'bar')
     file_path.set_read_only(dir_foo, True)
     file_path.set_read_only(file_bar, False)
@@ -122,16 +123,16 @@ class FilePathTest(auto_stub.TestCase):
       # As such, it is important to not try to set the read-only bit on
       # directories on Windows since it has no effect other than trigger
       # Windows Explorer to look for desktop.ini, which is unnecessary.
-      os.remove(file_bar)
+      fs.remove(file_bar)
     else:
       with self.assertRaises(OSError):
-        os.remove(file_bar)
+        fs.remove(file_bar)
 
   def test_delete_rd_rf(self):
     # Confirms that a RO file in a RO directory can't be deleted.
     dir_foo = os.path.join(self.tempdir, 'foo')
     file_bar = os.path.join(dir_foo, 'bar')
-    os.mkdir(dir_foo, 0777)
+    fs.mkdir(dir_foo, 0777)
     write_content(file_bar, 'bar')
     file_path.set_read_only(dir_foo, True)
     file_path.set_read_only(file_bar, True)
@@ -140,7 +141,7 @@ class FilePathTest(auto_stub.TestCase):
     with self.assertRaises(OSError):
       # It fails for different reason depending on the OS. See the test cases
       # above.
-      os.remove(file_bar)
+      fs.remove(file_bar)
 
   def test_hard_link_mode(self):
     # Creates a hard link, see if the file mode changed on the node or the
@@ -148,7 +149,7 @@ class FilePathTest(auto_stub.TestCase):
     dir_foo = os.path.join(self.tempdir, 'foo')
     file_bar = os.path.join(dir_foo, 'bar')
     file_link = os.path.join(dir_foo, 'link')
-    os.mkdir(dir_foo, 0777)
+    fs.mkdir(dir_foo, 0777)
     write_content(file_bar, 'bar')
     file_path.hardlink(file_bar, file_link)
     self.assertFileMode(file_bar, 0100666)
@@ -163,10 +164,10 @@ class FilePathTest(auto_stub.TestCase):
 
   def test_rmtree_unicode(self):
     subdir = os.path.join(self.tempdir, 'hi')
-    os.mkdir(subdir)
+    fs.mkdir(subdir)
     filepath = os.path.join(
         subdir, u'\u0627\u0644\u0635\u064A\u0646\u064A\u0629')
-    with open(filepath, 'wb') as f:
+    with fs.open(filepath, 'wb') as f:
       f.write('hi')
     # In particular, it fails when the input argument is a str.
     file_path.rmtree(str(subdir))
@@ -221,7 +222,7 @@ class FilePathTest(auto_stub.TestCase):
           'trace_input_test_this_dir_should_not_exist', 'really not', '')
       path = os.path.expanduser(os.path.join(u'~', non_existing))
       path = path.replace('/', os.path.sep)
-      self.assertFalse(os.path.exists(path))
+      self.assertFalse(fs.exists(path))
       lower = file_path.get_native_path_case(path.lower())
       upper = file_path.get_native_path_case(path.upper())
       # Make sure non-existing element is not modified:
@@ -251,7 +252,7 @@ class FilePathTest(auto_stub.TestCase):
             file_path.get_native_path_case(filepath + data_suffix))
         # Ensure the ADS weren't created as separate file. You love NTFS, don't
         # you?
-        self.assertEqual([basename], os.listdir(tempdir))
+        self.assertEqual([basename], fs.listdir(tempdir))
       finally:
         file_path.rmtree(tempdir)
 
@@ -263,12 +264,12 @@ class FilePathTest(auto_stub.TestCase):
 
       # Open a child process, so the file is locked.
       subdir = os.path.join(self.tempdir, 'to_be_deleted')
-      os.mkdir(subdir)
+      fs.mkdir(subdir)
       script = 'import time; open(\'a\', \'w\'); time.sleep(60)'
       proc = subprocess.Popen([sys.executable, '-c', script], cwd=subdir)
       try:
         # Wait until the file exist.
-        while not os.path.isfile(os.path.join(subdir, 'a')):
+        while not fs.isfile(os.path.join(subdir, 'a')):
           self.assertEqual(None, proc.poll())
         file_path.rmtree(subdir)
         self.assertEqual([2, 4, 2], sleeps)
