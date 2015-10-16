@@ -6,17 +6,13 @@
 #define CHROME_BROWSER_PASSWORD_MANAGER_MOCK_PASSWORD_STORE_SERVICE_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/password_manager/password_store_factory.h"
+#include "components/password_manager/core/browser/password_store_service.h"
 
 namespace content {
 class BrowserContext;
 }
 
-namespace password_manager {
-class PasswordStore;
-}
-
-class MockPasswordStoreService : public PasswordStoreService {
+class MockPasswordStoreService : public password_manager::PasswordStoreService {
  public:
   static scoped_ptr<KeyedService> Build(content::BrowserContext* profile);
 

@@ -83,6 +83,8 @@ source_set("browser") {
     "password_store_consumer.h",
     "password_store_default.cc",
     "password_store_default.h",
+    "password_store_service.cc",
+    "password_store_service.h",
     "password_store_sync.cc",
     "password_store_sync.h",
     "password_syncable_service.cc",

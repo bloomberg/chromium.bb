@@ -7,6 +7,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/password_manager/mock_password_store_service.h"
+#include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/ui/cocoa/passwords/manage_passwords_controller_test.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller_mock.h"

@@ -27,6 +27,7 @@
 #include "components/password_manager/core/browser/password_manager_constants.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_store_default.h"
+#include "components/password_manager/core/browser/password_store_service.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "content/public/browser/browser_thread.h"
@@ -122,22 +123,6 @@ void ActivateAffiliationBasedMatching(PasswordStore* password_store,
 
 }  // namespace
 
-
-PasswordStoreService::PasswordStoreService(
-    scoped_refptr<PasswordStore> password_store)
-    : password_store_(password_store) {}
-
-PasswordStoreService::~PasswordStoreService() {}
-
-scoped_refptr<PasswordStore> PasswordStoreService::GetPasswordStore() {
-  return password_store_;
-}
-
-void PasswordStoreService::Shutdown() {
-  if (password_store_.get())
-    password_store_->Shutdown();
-}
-
 // static
 scoped_refptr<PasswordStore> PasswordStoreFactory::GetForProfile(
     Profile* profile,
@@ -148,8 +133,9 @@ scoped_refptr<PasswordStore> PasswordStoreFactory::GetForProfile(
   }
 
   PasswordStoreFactory* factory = GetInstance();
-  PasswordStoreService* service = static_cast<PasswordStoreService*>(
-      factory->GetServiceForBrowserContext(profile, true));
+  password_manager::PasswordStoreService* service =
+      static_cast<password_manager::PasswordStoreService*>(
+          factory->GetServiceForBrowserContext(profile, true));
   if (!service)
     return nullptr;
   return service->GetPasswordStore();
@@ -357,7 +343,7 @@ KeyedService* PasswordStoreFactory::BuildServiceInstanceFor(
     return nullptr;
   }
 
-  return new PasswordStoreService(ps);
+  return new password_manager::PasswordStoreService(ps);
 }
 
 void PasswordStoreFactory::RegisterProfilePrefs(

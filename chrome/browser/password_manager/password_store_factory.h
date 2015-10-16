@@ -10,7 +10,6 @@
 #include "base/basictypes.h"
 #include "base/memory/singleton.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
-#include "components/keyed_service/core/keyed_service.h"
 #include "components/keyed_service/core/service_access_type.h"
 
 #if defined(USE_X11)
@@ -30,25 +29,6 @@ class PasswordStore;
 // certainly not unique globally, by design. Do not send them over the network.
 typedef int LocalProfileId;
 #endif
-
-// A wrapper of PasswordStore so we can use it as a profiled keyed service.
-class PasswordStoreService : public KeyedService {
- public:
-  // |password_store| needs to be not-NULL, and the constructor expects that
-  // Init() was already called successfully on it.
-  explicit PasswordStoreService(
-      scoped_refptr<password_manager::PasswordStore> password_store);
-  ~PasswordStoreService() override;
-
-  scoped_refptr<password_manager::PasswordStore> GetPasswordStore();
-
-  // KeyedService implementation.
-  void Shutdown() override;
-
- private:
-  scoped_refptr<password_manager::PasswordStore> password_store_;
-  DISALLOW_COPY_AND_ASSIGN(PasswordStoreService);
-};
 
 // Singleton that owns all PasswordStores and associates them with
 // Profiles.
