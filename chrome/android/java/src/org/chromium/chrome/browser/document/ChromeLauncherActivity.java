@@ -114,7 +114,7 @@ public class ChromeLauncherActivity extends Activity
 
     private IntentHandler mIntentHandler;
     private boolean mIsInMultiInstanceMode;
-    private boolean mIsFinishNeeded;
+    private boolean mIsFinishDelayed;
 
     private boolean mIsCustomTabIntent;
 
@@ -205,7 +205,7 @@ public class ChromeLauncherActivity extends Activity
 
         // Launch a DocumentActivity to handle the Intent.
         handleDocumentActivityIntent();
-        if (!mIsFinishNeeded) ApiCompatibilityUtils.finishAndRemoveTask(this);
+        if (!mIsFinishDelayed) ApiCompatibilityUtils.finishAndRemoveTask(this);
     }
 
     @Override
@@ -225,7 +225,7 @@ public class ChromeLauncherActivity extends Activity
                     finish();
                 } else if (FeatureUtilities.isDocumentMode(this)) {
                     handleDocumentActivityIntent();
-                    if (!mIsFinishNeeded) ApiCompatibilityUtils.finishAndRemoveTask(this);
+                    if (!mIsFinishDelayed) ApiCompatibilityUtils.finishAndRemoveTask(this);
                 } else {
                     launchTabbedMode();
                     finish();
@@ -302,7 +302,7 @@ public class ChromeLauncherActivity extends Activity
     private void handleDocumentActivityIntent() {
         if (getIntent() == null || mIntentHandler.shouldIgnoreIntent(this, getIntent())) {
             Log.e(TAG, "Ignoring intent: " + getIntent());
-            mIsFinishNeeded = true;
+            mIsFinishDelayed = false;
             return;
         }
 
@@ -376,7 +376,7 @@ public class ChromeLauncherActivity extends Activity
 
         // Launch the default page asynchronously because the homepage URL needs to be queried.
         // This is obviously not ideal, but we don't have a choice.
-        mIsFinishNeeded = mIsInMultiInstanceMode;
+        mIsFinishDelayed = mIsInMultiInstanceMode;
         PartnerBrowserCustomizations.setOnInitializeAsyncFinished(new Runnable() {
             @Override
             public void run() {
@@ -390,7 +390,7 @@ public class ChromeLauncherActivity extends Activity
                         mIsInMultiInstanceMode ? LAUNCH_MODE_FOREGROUND : LAUNCH_MODE_RETARGET);
                 launchDocumentInstance(ChromeLauncherActivity.this, false, asyncParams);
 
-                if (mIsFinishNeeded) finish();
+                if (mIsFinishDelayed) finish();
             }
         }, INITIAL_DOCUMENT_ACTIVITY_LAUNCH_TIMEOUT_MS);
     }
