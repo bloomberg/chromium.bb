@@ -137,7 +137,7 @@ LayoutRect SVGInlineTextBox::localSelectionRect(int startPosition, int endPositi
     if (startPosition >= endPosition)
         return LayoutRect();
 
-    const ComputedStyle& style = layoutObject().styleRef();
+    const ComputedStyle& style = lineLayoutItem().styleRef();
 
     AffineTransform fragmentTransform;
     FloatRect selectionRect;
@@ -255,20 +255,20 @@ bool SVGInlineTextBox::nodeAtPoint(HitTestResult& result, const HitTestLocation&
     // FIXME: integrate with InlineTextBox::nodeAtPoint better.
     ASSERT(!isLineBreak());
 
-    PointerEventsHitRules hitRules(PointerEventsHitRules::SVG_TEXT_HITTESTING, result.hitTestRequest(), layoutObject().style()->pointerEvents());
-    bool isVisible = layoutObject().style()->visibility() == VISIBLE;
+    PointerEventsHitRules hitRules(PointerEventsHitRules::SVG_TEXT_HITTESTING, result.hitTestRequest(), lineLayoutItem().style()->pointerEvents());
+    bool isVisible = lineLayoutItem().style()->visibility() == VISIBLE;
     if (isVisible || !hitRules.requireVisible) {
         if (hitRules.canHitBoundingBox
-            || (hitRules.canHitStroke && (layoutObject().style()->svgStyle().hasStroke() || !hitRules.requireStroke))
-            || (hitRules.canHitFill && (layoutObject().style()->svgStyle().hasFill() || !hitRules.requireFill))) {
+            || (hitRules.canHitStroke && (lineLayoutItem().style()->svgStyle().hasStroke() || !hitRules.requireStroke))
+            || (hitRules.canHitFill && (lineLayoutItem().style()->svgStyle().hasFill() || !hitRules.requireFill))) {
             LayoutPoint boxOrigin(x(), y());
             boxOrigin.moveBy(accumulatedOffset);
             LayoutRect rect(boxOrigin, size());
             // FIXME: both calls to rawValue() below is temporary and should be removed once the transition
             // to LayoutUnit-based types is complete (crbug.com/321237)
             if (locationInContainer.intersects(rect)) {
-                layoutObject().updateHitTestResult(result, locationInContainer.point() - toLayoutSize(accumulatedOffset));
-                if (!result.addNodeToListBasedTestResult(layoutObject().node(), locationInContainer, rect))
+                lineLayoutItem().updateHitTestResult(result, locationInContainer.point() - toLayoutSize(accumulatedOffset));
+                if (!result.addNodeToListBasedTestResult(lineLayoutItem().node(), locationInContainer, rect))
                     return true;
             }
         }
