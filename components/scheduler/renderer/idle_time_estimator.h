@@ -13,7 +13,7 @@
 
 namespace scheduler {
 
-// Estimates how much idle time there is available.
+// Estimates how much idle time there is available.  Ignores nested tasks.
 class SCHEDULER_EXPORT IdleTimeEstimator
     : public base::MessageLoop::TaskObserver {
  public:

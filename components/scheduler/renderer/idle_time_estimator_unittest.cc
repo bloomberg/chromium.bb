@@ -143,4 +143,22 @@ TEST_F(IdleTimeEstimatorTest, Estimation_MultipleTasks) {
             estimator_->GetExpectedIdleDuration(frame_length_));
 }
 
+TEST_F(IdleTimeEstimatorTest, IgnoresNestedTasks) {
+  SimulateFrameWithOneCompositorTask(5);
+  SimulateFrameWithOneCompositorTask(5);
+
+  base::PendingTask task(FROM_HERE, base::Closure());
+  estimator_->WillProcessTask(task);
+  SimulateFrameWithTwoCompositorTasks(4, 4);
+  SimulateFrameWithTwoCompositorTasks(4, 4);
+  SimulateFrameWithTwoCompositorTasks(4, 4);
+  SimulateFrameWithTwoCompositorTasks(4, 4);
+  estimator_->DidCommitFrameToCompositor();
+  estimator_->DidProcessTask(task);
+
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(11),
+            estimator_->GetExpectedIdleDuration(frame_length_));
+}
+
+
 }  // namespace scheduler
