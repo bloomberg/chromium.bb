@@ -1,28 +1,29 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_AURA_WINDOW_TREE_HOST_OZONE_H_
-#define UI_AURA_WINDOW_TREE_HOST_OZONE_H_
+#ifndef UI_AURA_WINDOW_TREE_HOST_PLATFORM_H_
+#define UI_AURA_WINDOW_TREE_HOST_PLATFORM_H_
 
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "ui/aura/aura_export.h"
 #include "ui/aura/window_tree_host.h"
-#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/native_widget_types.h"
+#include "ui/platform_window/platform_window.h"
 #include "ui/platform_window/platform_window_delegate.h"
-
-namespace ui {
-class PlatformWindow;
-}
 
 namespace aura {
 
-class AURA_EXPORT WindowTreeHostOzone : public WindowTreeHost,
-                                        public ui::PlatformWindowDelegate {
+// The unified WindowTreeHost implementation for platforms
+// that implement PlatformWindow.
+class AURA_EXPORT WindowTreeHostPlatform
+    : public WindowTreeHost,
+      public NON_EXPORTED_BASE(ui::PlatformWindowDelegate) {
  public:
-  explicit WindowTreeHostOzone(const gfx::Rect& bounds);
-  ~WindowTreeHostOzone() override;
+  explicit WindowTreeHostPlatform(const gfx::Rect& bounds);
+  ~WindowTreeHostPlatform() override;
 
- protected:
   // WindowTreeHost:
   ui::EventSource* GetEventSource() override;
   gfx::AcceleratedWidget GetAcceleratedWidget() override;
@@ -33,15 +34,16 @@ class AURA_EXPORT WindowTreeHostOzone : public WindowTreeHost,
   gfx::Point GetLocationOnNativeScreen() const override;
   void SetCapture() override;
   void ReleaseCapture() override;
-  void SetCursorNative(gfx::NativeCursor cursor_type) override;
+  void SetCursorNative(gfx::NativeCursor cursor) override;
   void MoveCursorToNative(const gfx::Point& location) override;
   void OnCursorVisibilityChangedNative(bool show) override;
 
-  ui::PlatformWindow* platform_window() { return platform_window_.get(); }
+ protected:
+  ui::PlatformWindow* platform_window() { return window_.get(); }
 
  private:
   // ui::PlatformWindowDelegate:
-  void OnBoundsChanged(const gfx::Rect&) override;
+  void OnBoundsChanged(const gfx::Rect& new_bounds) override;
   void OnDamageRect(const gfx::Rect& damaged_region) override;
   void DispatchEvent(ui::Event* event) override;
   void OnCloseRequest() override;
@@ -52,18 +54,15 @@ class AURA_EXPORT WindowTreeHostOzone : public WindowTreeHost,
                                     float device_pixel_ratio) override;
   void OnActivationChanged(bool active) override;
 
-  // Platform-specific part of this WindowTreeHost.
-  scoped_ptr<ui::PlatformWindow> platform_window_;
-
-  // The identifier used to create a compositing surface.
   gfx::AcceleratedWidget widget_;
-
-  // Current Aura cursor.
+  scoped_ptr<ui::PlatformWindow> window_;
   gfx::NativeCursor current_cursor_;
+  bool has_capture_;
+  gfx::Rect bounds_;
 
-  DISALLOW_COPY_AND_ASSIGN(WindowTreeHostOzone);
+  DISALLOW_COPY_AND_ASSIGN(WindowTreeHostPlatform);
 };
 
 }  // namespace aura
 
-#endif  // UI_AURA_WINDOW_TREE_HOST_OZONE_H_
+#endif  // UI_AURA_WINDOW_TREE_HOST_PLATFORM_H_

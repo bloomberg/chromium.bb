@@ -12,7 +12,7 @@
 #include "base/command_line.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_tree_host_ozone.h"
+#include "ui/aura/window_tree_host_platform.h"
 #include "ui/events/event_processor.h"
 #include "ui/events/null_event_targeter.h"
 #include "ui/gfx/geometry/insets.h"
@@ -25,7 +25,7 @@ namespace ash {
 namespace {
 
 class AshWindowTreeHostOzone : public AshWindowTreeHost,
-                               public aura::WindowTreeHostOzone {
+                               public aura::WindowTreeHostPlatform {
  public:
   explicit AshWindowTreeHostOzone(const gfx::Rect& initial_bounds);
   ~AshWindowTreeHostOzone() override;
@@ -61,7 +61,7 @@ class AshWindowTreeHostOzone : public AshWindowTreeHost,
 };
 
 AshWindowTreeHostOzone::AshWindowTreeHostOzone(const gfx::Rect& initial_bounds)
-    : aura::WindowTreeHostOzone(initial_bounds), transformer_helper_(this) {
+    : aura::WindowTreeHostPlatform(initial_bounds), transformer_helper_(this) {
   transformer_helper_.Init();
 }
 
@@ -127,7 +127,7 @@ void AshWindowTreeHostOzone::OnCursorVisibilityChangedNative(bool show) {
 }
 
 void AshWindowTreeHostOzone::SetBounds(const gfx::Rect& bounds) {
-  WindowTreeHostOzone::SetBounds(bounds);
+  WindowTreeHostPlatform::SetBounds(bounds);
   ConfineCursorToRootWindow();
 }
 

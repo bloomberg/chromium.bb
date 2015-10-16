@@ -41,7 +41,6 @@
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
 #include "ui/aura/remote_window_tree_host_win.h"
-#include "ui/aura/window_tree_host_win.h"
 #include "ui/platform_window/win/win_window.h"
 #include "win8/test/test_registrar_constants.h"
 #endif

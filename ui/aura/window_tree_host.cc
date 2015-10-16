@@ -49,17 +49,6 @@ WindowTreeHost::~WindowTreeHost() {
   }
 }
 
-#if defined(OS_ANDROID)
-// static
-WindowTreeHost* WindowTreeHost::Create(const gfx::Rect& bounds) {
-  // This is only hit for tests and ash, right now these aren't an issue so
-  // adding the CHECK.
-  // TODO(sky): decide if we want a factory.
-  CHECK(false);
-  return nullptr;
-}
-#endif
-
 // static
 WindowTreeHost* WindowTreeHost::GetForAcceleratedWidget(
     gfx::AcceleratedWidget widget) {

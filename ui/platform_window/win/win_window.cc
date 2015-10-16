@@ -107,7 +107,9 @@ void WinWindow::Minimize() {}
 
 void WinWindow::Restore() {}
 
-void WinWindow::SetCursor(PlatformCursor cursor) {}
+void WinWindow::SetCursor(PlatformCursor cursor) {
+  ::SetCursor(cursor);
+}
 
 void WinWindow::MoveCursorTo(const gfx::Point& location) {}
 

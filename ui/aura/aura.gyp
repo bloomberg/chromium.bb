@@ -108,10 +108,8 @@
         'window_tree_host_mac.h',
         'window_tree_host_mac.mm',
         'window_tree_host_observer.h',
-        'window_tree_host_ozone.cc',
-        'window_tree_host_ozone.h',
-        'window_tree_host_win.cc',
-        'window_tree_host_win.h',
+        'window_tree_host_platform.cc',
+        'window_tree_host_platform.h',
         'window_tree_host_x11.cc',
         'window_tree_host_x11.h',
       ],
@@ -140,6 +138,17 @@
           'dependencies': [
             '../ozone/ozone.gyp:ozone',
             '../ozone/ozone.gyp:ozone_base',
+          ],
+        }],
+        ['OS!="win" and OS!="android" and use_ozone==0', {
+          'sources!': [
+            'window_tree_host_platform.cc',
+            'window_tree_host_platform.h',
+          ],
+        }],
+        ['OS=="android"', {
+          'dependencies': [
+            '../platform_window/android/android_window.gyp:android_window',
           ],
         }],
       ],

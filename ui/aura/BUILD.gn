@@ -86,8 +86,8 @@ component("aura") {
     "window_tree_host_mac.h",
     "window_tree_host_mac.mm",
     "window_tree_host_observer.h",
-    "window_tree_host_win.cc",
-    "window_tree_host_win.h",
+    "window_tree_host_platform.cc",
+    "window_tree_host_platform.h",
     "window_tree_host_x11.cc",
     "window_tree_host_x11.h",
   ]
@@ -137,13 +137,22 @@ component("aura") {
     ]
   }
 
-  if (use_ozone) {
-    sources += [
-      "window_tree_host_ozone.cc",
-      "window_tree_host_ozone.h",
+  if (!is_win && !is_android && !use_ozone) {
+    sources -= [
+      "window_tree_host_platform.cc",
+      "window_tree_host_platform.h",
     ]
+  }
 
+  if (use_ozone) {
     deps += [ "//ui/ozone" ]
+  }
+
+  if (is_android) {
+    deps += [
+      "//ui/platform_window/android",
+      "//ui/platform_window/android:platform_window_java",
+    ]
   }
 }
 
@@ -315,5 +324,7 @@ test("aura_unittests") {
     deps += [ "//third_party/mesa" ]
   }
 
-  data_deps = [ "//third_party/mesa:osmesa" ]
+  data_deps = [
+    "//third_party/mesa:osmesa",
+  ]
 }
