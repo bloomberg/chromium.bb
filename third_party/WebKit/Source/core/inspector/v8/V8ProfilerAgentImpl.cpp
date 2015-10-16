@@ -122,7 +122,7 @@ public:
 
 PassOwnPtr<V8ProfilerAgent> V8ProfilerAgent::create(v8::Isolate* isolate)
 {
-    return adoptPtrWillBeNoop(new V8ProfilerAgentImpl(isolate));
+    return adoptPtr(new V8ProfilerAgentImpl(isolate));
 }
 
 V8ProfilerAgentImpl::V8ProfilerAgentImpl(v8::Isolate* isolate)
