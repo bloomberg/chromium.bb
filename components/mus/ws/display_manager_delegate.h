@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_MUS_WS_DISPLAY_MANAGER_DELEGATE_H_
 #define COMPONENTS_MUS_WS_DISPLAY_MANAGER_DELEGATE_H_
 
-#include "components/mus/public/interfaces/view_tree.mojom.h"
+#include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "components/mus/ws/ids.h"
 
 namespace cc {
@@ -32,8 +32,8 @@ class DisplayManagerDelegate {
 
   // Signals that the metrics of this display's viewport has changed.
   virtual void OnViewportMetricsChanged(
-      const mojo::ViewportMetrics& old_metrics,
-      const mojo::ViewportMetrics& new_metrics) = 0;
+      const mojom::ViewportMetrics& old_metrics,
+      const mojom::ViewportMetrics& new_metrics) = 0;
 
   virtual void OnTopLevelSurfaceChanged(cc::SurfaceId surface_id) = 0;
 

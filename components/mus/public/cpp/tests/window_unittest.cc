@@ -423,7 +423,7 @@ class OrderChangeObserver : public WindowObserver {
   struct Change {
     Window* window;
     Window* relative_window;
-    mojo::OrderDirection direction;
+    mojom::OrderDirection direction;
   };
   typedef std::vector<Change> Changes;
 
@@ -442,13 +442,13 @@ class OrderChangeObserver : public WindowObserver {
   // Overridden from WindowObserver:
   void OnWindowReordering(Window* window,
                           Window* relative_window,
-                          mojo::OrderDirection direction) override {
+                          mojom::OrderDirection direction) override {
     OnWindowReordered(window, relative_window, direction);
   }
 
   void OnWindowReordered(Window* window,
                          Window* relative_window,
-                         mojo::OrderDirection direction) override {
+                         mojom::OrderDirection direction) override {
     Change change;
     change.window = window;
     change.relative_window = relative_window;
@@ -488,11 +488,11 @@ TEST_F(WindowObserverTest, Order) {
     ASSERT_EQ(2U, changes.size());
     EXPECT_EQ(&w11, changes[0].window);
     EXPECT_EQ(&w13, changes[0].relative_window);
-    EXPECT_EQ(mojo::ORDER_DIRECTION_ABOVE, changes[0].direction);
+    EXPECT_EQ(mojom::ORDER_DIRECTION_ABOVE, changes[0].direction);
 
     EXPECT_EQ(&w11, changes[1].window);
     EXPECT_EQ(&w13, changes[1].relative_window);
-    EXPECT_EQ(mojo::ORDER_DIRECTION_ABOVE, changes[1].direction);
+    EXPECT_EQ(mojom::ORDER_DIRECTION_ABOVE, changes[1].direction);
   }
 
   {
@@ -508,11 +508,11 @@ TEST_F(WindowObserverTest, Order) {
     ASSERT_EQ(2U, changes.size());
     EXPECT_EQ(&w11, changes[0].window);
     EXPECT_EQ(&w12, changes[0].relative_window);
-    EXPECT_EQ(mojo::ORDER_DIRECTION_BELOW, changes[0].direction);
+    EXPECT_EQ(mojom::ORDER_DIRECTION_BELOW, changes[0].direction);
 
     EXPECT_EQ(&w11, changes[1].window);
     EXPECT_EQ(&w12, changes[1].relative_window);
-    EXPECT_EQ(mojo::ORDER_DIRECTION_BELOW, changes[1].direction);
+    EXPECT_EQ(mojom::ORDER_DIRECTION_BELOW, changes[1].direction);
   }
 
   {
@@ -520,7 +520,7 @@ TEST_F(WindowObserverTest, Order) {
 
     // Move w11 above w12.
     // Resulting order: w12. w11, w13
-    w11.Reorder(&w12, mojo::ORDER_DIRECTION_ABOVE);
+    w11.Reorder(&w12, mojom::ORDER_DIRECTION_ABOVE);
     EXPECT_EQ(&w12, w1.children().front());
     EXPECT_EQ(&w13, w1.children().back());
 
@@ -528,11 +528,11 @@ TEST_F(WindowObserverTest, Order) {
     ASSERT_EQ(2U, changes.size());
     EXPECT_EQ(&w11, changes[0].window);
     EXPECT_EQ(&w12, changes[0].relative_window);
-    EXPECT_EQ(mojo::ORDER_DIRECTION_ABOVE, changes[0].direction);
+    EXPECT_EQ(mojom::ORDER_DIRECTION_ABOVE, changes[0].direction);
 
     EXPECT_EQ(&w11, changes[1].window);
     EXPECT_EQ(&w12, changes[1].relative_window);
-    EXPECT_EQ(mojo::ORDER_DIRECTION_ABOVE, changes[1].direction);
+    EXPECT_EQ(mojom::ORDER_DIRECTION_ABOVE, changes[1].direction);
   }
 
   {
@@ -540,7 +540,7 @@ TEST_F(WindowObserverTest, Order) {
 
     // Move w11 below w12.
     // Resulting order: w11, w12, w13
-    w11.Reorder(&w12, mojo::ORDER_DIRECTION_BELOW);
+    w11.Reorder(&w12, mojom::ORDER_DIRECTION_BELOW);
     EXPECT_EQ(&w11, w1.children().front());
     EXPECT_EQ(&w13, w1.children().back());
 
@@ -548,11 +548,11 @@ TEST_F(WindowObserverTest, Order) {
     ASSERT_EQ(2U, changes.size());
     EXPECT_EQ(&w11, changes[0].window);
     EXPECT_EQ(&w12, changes[0].relative_window);
-    EXPECT_EQ(mojo::ORDER_DIRECTION_BELOW, changes[0].direction);
+    EXPECT_EQ(mojom::ORDER_DIRECTION_BELOW, changes[0].direction);
 
     EXPECT_EQ(&w11, changes[1].window);
     EXPECT_EQ(&w12, changes[1].relative_window);
-    EXPECT_EQ(mojo::ORDER_DIRECTION_BELOW, changes[1].direction);
+    EXPECT_EQ(mojom::ORDER_DIRECTION_BELOW, changes[1].direction);
   }
 }
 

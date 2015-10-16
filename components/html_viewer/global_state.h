@@ -80,7 +80,7 @@ class GlobalState {
     return &gpu_memory_buffer_manager_;
   }
 
-  const mojo::GpuInfo* GetGpuInfo();
+  const mus::mojom::GpuInfo* GetGpuInfo();
 
   MediaFactory* media_factory() { return media_factory_.get(); }
 
@@ -88,7 +88,7 @@ class GlobalState {
 
  private:
   // Callback for |gpu_service_|->GetGpuInfo().
-  void GetGpuInfoCallback(mojo::GpuInfoPtr gpu_info);
+  void GetGpuInfoCallback(mus::mojom::GpuInfoPtr gpu_info);
 
   // App for HTMLViewer, not the document's app.
   // WARNING: do not expose this. It's too easy to use the wrong one.
@@ -119,8 +119,8 @@ class GlobalState {
   base::Thread compositor_thread_;
   gles2::RasterThreadHelper raster_thread_helper_;
   mus::MojoGpuMemoryBufferManager gpu_memory_buffer_manager_;
-  mojo::GpuPtr gpu_service_;
-  mojo::GpuInfoPtr gpu_info_;
+  mus::mojom::GpuPtr gpu_service_;
+  mus::mojom::GpuInfoPtr gpu_info_;
   scoped_ptr<MediaFactory> media_factory_;
 
   BlinkSettings blink_settings_;

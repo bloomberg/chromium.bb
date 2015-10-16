@@ -20,7 +20,7 @@ class ServerView;
 class SurfacesState;
 
 // Server side representation of a ViewSurface.
-class ServerViewSurface : public mojo::Surface,
+class ServerViewSurface : public mojom::Surface,
                           public cc::SurfaceFactoryClient,
                           public mojo::CustomSurfaceConverter {
  public:
@@ -29,11 +29,11 @@ class ServerViewSurface : public mojo::Surface,
   ~ServerViewSurface() override;
 
   void Bind(mojo::InterfaceRequest<Surface> request,
-            mojo::SurfaceClientPtr client);
+            mojom::SurfaceClientPtr client);
 
-  // mojo::Surface:
+  // mojom::Surface:
   void SubmitCompositorFrame(
-      mojo::CompositorFramePtr frame,
+      mojom::CompositorFramePtr frame,
       const SubmitCompositorFrameCallback& callback) override;
 
   // Returns the set of views referenced by the last CompositorFrame submitted
@@ -45,16 +45,16 @@ class ServerViewSurface : public mojo::Surface,
   const cc::SurfaceId& id() const { return surface_id_; }
 
  private:
-  // Takes a mojo::CompositorFrame |input|, and converts it into a
+  // Takes a mojom::CompositorFrame |input|, and converts it into a
   // cc::CompositorFrame. Along the way, this conversion ensures that a
   // CompositorFrame of this view can only refer to views within its subtree.
   // Views referenced in |input| are stored in |referenced_view_ids_|.
   scoped_ptr<cc::CompositorFrame> ConvertCompositorFrame(
-      const mojo::CompositorFramePtr& input);
+      const mojom::CompositorFramePtr& input);
 
   // Overriden from CustomSurfaceConverter:
-  bool ConvertSurfaceDrawQuad(const mojo::QuadPtr& input,
-                              const mojo::CompositorFrameMetadataPtr& metadata,
+  bool ConvertSurfaceDrawQuad(const mojom::QuadPtr& input,
+                              const mojom::CompositorFrameMetadataPtr& metadata,
                               cc::SharedQuadState* sqs,
                               cc::RenderPass* render_pass) override;
 
@@ -75,7 +75,7 @@ class ServerViewSurface : public mojo::Surface,
   cc::SurfaceIdAllocator surface_id_allocator_;
   cc::SurfaceFactory surface_factory_;
 
-  mojo::SurfaceClientPtr client_;
+  mojom::SurfaceClientPtr client_;
   mojo::Binding<Surface> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(ServerViewSurface);

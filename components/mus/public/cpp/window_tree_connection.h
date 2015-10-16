@@ -8,7 +8,7 @@
 #include <string>
 
 #include "components/mus/public/cpp/types.h"
-#include "components/mus/public/interfaces/view_tree.mojom.h"
+#include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/interface_request.h"
 
 #if defined(OS_WIN)
@@ -41,7 +41,7 @@ class WindowTreeConnection {
   // the last root is destroyed or the connection to the service is broken.
   static WindowTreeConnection* Create(
       WindowTreeDelegate* delegate,
-      mojo::InterfaceRequest<mojo::ViewTreeClient> request,
+      mojo::InterfaceRequest<mojom::WindowTreeClient> request,
       CreateType create_type);
 
   // Returns the root of this connection.

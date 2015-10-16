@@ -10,7 +10,7 @@
 namespace mus {
 
 ClientConnection::ClientConnection(scoped_ptr<ViewTreeImpl> service,
-                                   mojo::ViewTreeClient* client)
+                                   mojom::WindowTreeClient* client)
     : service_(service.Pass()), client_(client) {}
 
 ClientConnection::~ClientConnection() {}
@@ -18,8 +18,8 @@ ClientConnection::~ClientConnection() {}
 DefaultClientConnection::DefaultClientConnection(
     scoped_ptr<ViewTreeImpl> service_impl,
     ConnectionManager* connection_manager,
-    mojo::InterfaceRequest<mojo::ViewTree> service_request,
-    mojo::ViewTreeClientPtr client)
+    mojo::InterfaceRequest<mojom::WindowTree> service_request,
+    mojom::WindowTreeClientPtr client)
     : ClientConnection(service_impl.Pass(), client.get()),
       connection_manager_(connection_manager),
       binding_(service(), service_request.Pass()),

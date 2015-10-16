@@ -18,13 +18,13 @@ GpuImpl::GpuImpl(mojo::InterfaceRequest<Gpu> request,
 GpuImpl::~GpuImpl() {}
 
 void GpuImpl::CreateOffscreenGLES2Context(
-    mojo::InterfaceRequest<mojo::CommandBuffer> request) {
+    mojo::InterfaceRequest<mojom::CommandBuffer> request) {
   new CommandBufferImpl(request.Pass(), state_,
                         make_scoped_ptr(new CommandBufferDriver(state_)));
 }
 
 void GpuImpl::GetGpuInfo(const GetGpuInfoCallback& callback) {
-  callback.Run(mojo::GpuInfo::From<gpu::GPUInfo>(state_->gpu_info()));
+  callback.Run(mojom::GpuInfo::From<gpu::GPUInfo>(state_->gpu_info()));
 }
 
 }  // namespace mus

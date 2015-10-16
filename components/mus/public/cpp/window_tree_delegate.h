@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "components/mus/public/interfaces/view_tree.mojom.h"
+#include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "mojo/application/public/interfaces/service_provider.mojom.h"
 #include "mojo/services/network/public/interfaces/url_loader.mojom.h"
 

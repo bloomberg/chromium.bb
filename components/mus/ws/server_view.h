@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "base/observer_list.h"
 #include "components/mus/public/interfaces/compositor_frame.mojom.h"
-#include "components/mus/public/interfaces/view_tree.mojom.h"
+#include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "components/mus/ws/ids.h"
 #include "components/mus/ws/server_view_surface.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
@@ -43,8 +43,8 @@ class ServerView {
 
   // Binds the provided |request| to |this| object. If an interface is already
   // bound to this ServerView then the old connection is closed first.
-  void Bind(mojo::InterfaceRequest<mojo::Surface> request,
-            mojo::SurfaceClientPtr client);
+  void Bind(mojo::InterfaceRequest<mojom::Surface> request,
+            mojom::SurfaceClientPtr client);
 
   const ViewId& id() const { return id_; }
 
@@ -52,7 +52,7 @@ class ServerView {
   void Remove(ServerView* child);
   void Reorder(ServerView* child,
                ServerView* relative,
-               mojo::OrderDirection direction);
+               mojom::OrderDirection direction);
 
   const gfx::Rect& bounds() const { return bounds_; }
   // Sets the bounds. If the size changes this implicitly resets the client

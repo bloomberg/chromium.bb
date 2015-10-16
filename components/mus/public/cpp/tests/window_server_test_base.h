@@ -7,8 +7,8 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "components/mus/public/cpp/window_tree_delegate.h"
-#include "components/mus/public/interfaces/view_tree.mojom.h"
-#include "components/mus/public/interfaces/view_tree_host.mojom.h"
+#include "components/mus/public/interfaces/window_tree.mojom.h"
+#include "components/mus/public/interfaces/window_tree_host.mojom.h"
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/application_test_base.h"
 #include "mojo/application/public/cpp/interface_factory.h"
@@ -23,7 +23,7 @@ class WindowServerTestBase
     : public mojo::test::ApplicationTestBase,
       public mojo::ApplicationDelegate,
       public WindowTreeDelegate,
-      public mojo::InterfaceFactory<mojo::ViewTreeClient> {
+      public mojo::InterfaceFactory<mojom::WindowTreeClient> {
  public:
   WindowServerTestBase();
   ~WindowServerTestBase() override;
@@ -64,16 +64,16 @@ class WindowServerTestBase
   void OnEmbed(Window* root) override;
   void OnConnectionLost(WindowTreeConnection* connection) override;
 
-  // InterfaceFactory<ViewTreeClient>:
+  // InterfaceFactory<WindowTreeClient>:
   void Create(mojo::ApplicationConnection* connection,
-              mojo::InterfaceRequest<mojo::ViewTreeClient> request) override;
+              mojo::InterfaceRequest<mojom::WindowTreeClient> request) override;
 
   // Used to receive the most recent view tree connection loaded by an embed
   // action.
   WindowTreeConnection* most_recent_connection_;
 
  private:
-  mojo::ViewTreeHostPtr host_;
+  mojom::WindowTreeHostPtr host_;
 
   // The View Manager connection held by the window manager (app running at the
   // root view).

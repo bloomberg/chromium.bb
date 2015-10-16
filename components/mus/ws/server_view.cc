@@ -46,8 +46,8 @@ void ServerView::RemoveObserver(ServerViewObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void ServerView::Bind(mojo::InterfaceRequest<mojo::Surface> request,
-                      mojo::SurfaceClientPtr client) {
+void ServerView::Bind(mojo::InterfaceRequest<mojom::Surface> request,
+                      mojom::SurfaceClientPtr client) {
   GetOrCreateSurface()->Bind(request.Pass(), client.Pass());
 }
 
@@ -59,7 +59,7 @@ void ServerView::Add(ServerView* child) {
   if (child->parent() == this) {
     if (children_.size() == 1)
       return;  // Already in the right position.
-    Reorder(child, children_.back(), mojo::ORDER_DIRECTION_ABOVE);
+    Reorder(child, children_.back(), mojom::ORDER_DIRECTION_ABOVE);
     return;
   }
 
@@ -91,17 +91,17 @@ void ServerView::Remove(ServerView* child) {
 
 void ServerView::Reorder(ServerView* child,
                          ServerView* relative,
-                         mojo::OrderDirection direction) {
+                         mojom::OrderDirection direction) {
   // We assume validation checks happened else where.
   DCHECK(child);
   DCHECK(child->parent() == this);
   DCHECK_GT(children_.size(), 1u);
   children_.erase(std::find(children_.begin(), children_.end(), child));
   Views::iterator i = std::find(children_.begin(), children_.end(), relative);
-  if (direction == mojo::ORDER_DIRECTION_ABOVE) {
+  if (direction == mojom::ORDER_DIRECTION_ABOVE) {
     DCHECK(i != children_.end());
     children_.insert(++i, child);
-  } else if (direction == mojo::ORDER_DIRECTION_BELOW) {
+  } else if (direction == mojom::ORDER_DIRECTION_BELOW) {
     DCHECK(i != children_.end());
     children_.insert(i, child);
   }
@@ -152,12 +152,12 @@ std::vector<ServerView*> ServerView::GetChildren() {
   return children_;
 }
 
-ServerView* ServerView::GetChildView(const ViewId& view_id) {
-  if (id_ == view_id)
+ServerView* ServerView::GetChildView(const ViewId& window_id) {
+  if (id_ == window_id)
     return this;
 
   for (ServerView* child : children_) {
-    ServerView* view = child->GetChildView(view_id);
+    ServerView* view = child->GetChildView(window_id);
     if (view)
       return view;
   }
@@ -259,7 +259,7 @@ void ServerView::BuildDebugInfo(const std::string& depth,
                                 std::string* result) const {
   *result += base::StringPrintf(
       "%sid=%d,%d visible=%s bounds=%d,%d %dx%d" PRIu64 "\n", depth.c_str(),
-      static_cast<int>(id_.connection_id), static_cast<int>(id_.view_id),
+      static_cast<int>(id_.connection_id), static_cast<int>(id_.window_id),
       visible_ ? "true" : "false", bounds_.x(), bounds_.y(), bounds_.width(),
       bounds_.height());
   for (const ServerView* child : children_)

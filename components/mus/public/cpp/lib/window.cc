@@ -88,7 +88,7 @@ class ScopedOrderChangedNotifier {
  public:
   ScopedOrderChangedNotifier(Window* window,
                              Window* relative_window,
-                             mojo::OrderDirection direction)
+                             mojom::OrderDirection direction)
       : window_(window),
         relative_window_(relative_window),
         direction_(direction) {
@@ -104,7 +104,7 @@ class ScopedOrderChangedNotifier {
  private:
   Window* window_;
   Window* relative_window_;
-  mojo::OrderDirection direction_;
+  mojom::OrderDirection direction_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(ScopedOrderChangedNotifier);
 };
@@ -113,7 +113,7 @@ class ScopedOrderChangedNotifier {
 bool ReorderImpl(Window::Children* children,
                  Window* window,
                  Window* relative,
-                 mojo::OrderDirection direction) {
+                 mojom::OrderDirection direction) {
   DCHECK(relative);
   DCHECK_NE(window, relative);
   DCHECK_EQ(window->parent(), relative->parent());
@@ -123,14 +123,14 @@ bool ReorderImpl(Window::Children* children,
   const size_t target_i =
       std::find(children->begin(), children->end(), relative) -
       children->begin();
-  if ((direction == mojo::ORDER_DIRECTION_ABOVE && child_i == target_i + 1) ||
-      (direction == mojo::ORDER_DIRECTION_BELOW && child_i + 1 == target_i)) {
+  if ((direction == mojom::ORDER_DIRECTION_ABOVE && child_i == target_i + 1) ||
+      (direction == mojom::ORDER_DIRECTION_BELOW && child_i + 1 == target_i)) {
     return false;
   }
 
   ScopedOrderChangedNotifier notifier(window, relative, direction);
 
-  const size_t dest_i = direction == mojo::ORDER_DIRECTION_ABOVE
+  const size_t dest_i = direction == mojom::ORDER_DIRECTION_ABOVE
                             ? (child_i < target_i ? target_i : target_i + 1)
                             : (child_i < target_i ? target_i - 1 : target_i);
   children->erase(children->begin() + child_i);
@@ -233,9 +233,9 @@ void Window::SetVisible(bool value) {
 }
 
 scoped_ptr<WindowSurface> Window::RequestSurface() {
-  mojo::SurfacePtr surface;
-  mojo::SurfaceClientPtr client;
-  mojo::InterfaceRequest<mojo::SurfaceClient> client_request =
+  mojom::SurfacePtr surface;
+  mojom::SurfaceClientPtr client;
+  mojo::InterfaceRequest<mojom::SurfaceClient> client_request =
       GetProxy(&client);
   static_cast<WindowTreeClientImpl*>(connection_)
       ->RequestSurface(id_, GetProxy(&surface), client.Pass());
@@ -329,16 +329,16 @@ void Window::RemoveChild(Window* child) {
 void Window::MoveToFront() {
   if (!parent_ || parent_->children_.back() == this)
     return;
-  Reorder(parent_->children_.back(), mojo::ORDER_DIRECTION_ABOVE);
+  Reorder(parent_->children_.back(), mojom::ORDER_DIRECTION_ABOVE);
 }
 
 void Window::MoveToBack() {
   if (!parent_ || parent_->children_.front() == this)
     return;
-  Reorder(parent_->children_.front(), mojo::ORDER_DIRECTION_BELOW);
+  Reorder(parent_->children_.front(), mojom::ORDER_DIRECTION_BELOW);
 }
 
-void Window::Reorder(Window* relative, mojo::OrderDirection direction) {
+void Window::Reorder(Window* relative, mojom::OrderDirection direction) {
   if (!LocalReorder(relative, direction))
     return;
   if (connection_) {
@@ -378,7 +378,7 @@ Window* Window::GetChildById(Id id) {
 void Window::SetTextInputState(mojo::TextInputStatePtr state) {
   if (connection_) {
     static_cast<WindowTreeClientImpl*>(connection_)
-        ->SetViewTextInputState(id_, state.Pass());
+        ->SetWindowTextInputState(id_, state.Pass());
   }
 }
 
@@ -400,12 +400,12 @@ bool Window::HasFocus() const {
   return connection_ && connection_->GetFocusedWindow() == this;
 }
 
-void Window::Embed(mojo::ViewTreeClientPtr client) {
-  Embed(client.Pass(), mojo::ViewTree::ACCESS_POLICY_DEFAULT,
+void Window::Embed(mus::mojom::WindowTreeClientPtr client) {
+  Embed(client.Pass(), mus::mojom::WindowTree::ACCESS_POLICY_DEFAULT,
         base::Bind(&EmptyEmbedCallback));
 }
 
-void Window::Embed(mojo::ViewTreeClientPtr client,
+void Window::Embed(mus::mojom::WindowTreeClientPtr client,
                    uint32_t policy_bitmask,
                    const EmbedCallback& callback) {
   if (PrepareForEmbed()) {
@@ -421,8 +421,8 @@ void Window::Embed(mojo::ViewTreeClientPtr client,
 
 namespace {
 
-mojo::ViewportMetricsPtr CreateEmptyViewportMetrics() {
-  mojo::ViewportMetricsPtr metrics = mojo::ViewportMetrics::New();
+mojom::ViewportMetricsPtr CreateEmptyViewportMetrics() {
+  mojom::ViewportMetricsPtr metrics = mojom::ViewportMetrics::New();
   metrics->size_in_pixels = mojo::Size::New();
   // TODO(vtl): The |.Pass()| below is only needed due to an MSVS bug; remove it
   // once that's fixed.
@@ -527,7 +527,7 @@ void Window::LocalRemoveChild(Window* child) {
   RemoveChildImpl(child, &children_);
 }
 
-bool Window::LocalReorder(Window* relative, mojo::OrderDirection direction) {
+bool Window::LocalReorder(Window* relative, mojom::OrderDirection direction) {
   return ReorderImpl(&parent_->children_, this, relative, direction);
 }
 
@@ -555,8 +555,9 @@ void Window::LocalSetClientArea(const mojo::Rect& new_client_area) {
                     OnWindowClientAreaChanged(this, old_client_area));
 }
 
-void Window::LocalSetViewportMetrics(const mojo::ViewportMetrics& old_metrics,
-                                     const mojo::ViewportMetrics& new_metrics) {
+void Window::LocalSetViewportMetrics(
+    const mojom::ViewportMetrics& old_metrics,
+    const mojom::ViewportMetrics& new_metrics) {
   // TODO(eseidel): We could check old_metrics against viewport_metrics_.
   viewport_metrics_ = new_metrics.Clone();
   FOR_EACH_OBSERVER(

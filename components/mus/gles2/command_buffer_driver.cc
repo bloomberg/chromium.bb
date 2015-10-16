@@ -44,16 +44,16 @@ CommandBufferDriver::~CommandBufferDriver() {
 }
 
 void CommandBufferDriver::Initialize(
-    mojo::InterfacePtrInfo<mojo::CommandBufferSyncClient> sync_client,
-    mojo::InterfacePtrInfo<mojo::CommandBufferLostContextObserver>
+    mojo::InterfacePtrInfo<mojom::CommandBufferSyncClient> sync_client,
+    mojo::InterfacePtrInfo<mojom::CommandBufferLostContextObserver>
         loss_observer,
     mojo::ScopedSharedBufferHandle shared_state,
     mojo::Array<int32_t> attribs) {
   sync_client_ = mojo::MakeProxy(sync_client.Pass());
   loss_observer_ = mojo::MakeProxy(loss_observer.Pass());
   bool success = DoInitialize(shared_state.Pass(), attribs.Pass());
-  mojo::GpuCapabilitiesPtr capabilities =
-      success ? mojo::GpuCapabilities::From(decoder_->GetCapabilities())
+  mojom::GpuCapabilitiesPtr capabilities =
+      success ? mojom::GpuCapabilities::From(decoder_->GetCapabilities())
               : nullptr;
   sync_client_->DidInitialize(success, capabilities.Pass());
 }
@@ -168,7 +168,7 @@ void CommandBufferDriver::Flush(int32_t put_offset) {
 void CommandBufferDriver::MakeProgress(int32_t last_get_offset) {
   // TODO(piman): handle out-of-order.
   sync_client_->DidMakeProgress(
-      mojo::CommandBufferState::From(command_buffer_->GetLastState()));
+      mojom::CommandBufferState::From(command_buffer_->GetLastState()));
 }
 
 void CommandBufferDriver::RegisterTransferBuffer(

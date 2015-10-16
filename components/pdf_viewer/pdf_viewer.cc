@@ -56,7 +56,7 @@ void LostContext(void*) {
 void OnGotContentHandlerID(uint32_t content_handler_id) {}
 
 // BitmapUploader is useful if you want to draw a bitmap or color in a View.
-class BitmapUploader : public mojo::SurfaceClient {
+class BitmapUploader : public mus::mojom::SurfaceClient {
  public:
   explicit BitmapUploader(mus::Window* view)
       : view_(view),
@@ -84,7 +84,7 @@ class BitmapUploader : public mojo::SurfaceClient {
                                 nullptr, base::Bind(&OnGotContentHandlerID));
     ConnectToService(gpu_service_provider.get(), &gpu_service_);
 
-    mojo::CommandBufferPtr gles2_client;
+    mus::mojom::CommandBufferPtr gles2_client;
     gpu_service_->CreateOffscreenGLES2Context(GetProxy(&gles2_client));
     gles2_context_ = MojoGLES2CreateContext(
         gles2_client.PassInterface().PassHandle().release().value(),
@@ -123,12 +123,12 @@ class BitmapUploader : public mojo::SurfaceClient {
  private:
   void Upload() {
     gfx::Rect bounds(view_->bounds().To<gfx::Rect>());
-    mojo::PassPtr pass = mojo::CreateDefaultPass(1, bounds);
-    mojo::CompositorFramePtr frame = mojo::CompositorFrame::New();
+    mus::mojom::PassPtr pass = mojo::CreateDefaultPass(1, bounds);
+    mus::mojom::CompositorFramePtr frame = mus::mojom::CompositorFrame::New();
 
     // TODO(rjkroege): Support device scale factor in PDF viewer
-    mojo::CompositorFrameMetadataPtr meta =
-        mojo::CompositorFrameMetadata::New();
+    mus::mojom::CompositorFrameMetadataPtr meta =
+        mus::mojom::CompositorFrameMetadata::New();
     meta->device_scale_factor = 1.0f;
     frame->metadata = meta.Pass();
 
@@ -159,15 +159,16 @@ class BitmapUploader : public mojo::SurfaceClient {
       glProduceTextureCHROMIUM(GL_TEXTURE_2D, mailbox);
       GLuint sync_point = glInsertSyncPointCHROMIUM();
 
-      mojo::TransferableResourcePtr resource =
-          mojo::TransferableResource::New();
+      mus::mojom::TransferableResourcePtr resource =
+          mus::mojom::TransferableResource::New();
       resource->id = next_resource_id_++;
       resource_to_texture_id_map_[resource->id] = texture_id;
-      resource->format = mojo::RESOURCE_FORMAT_RGBA_8888;
+      resource->format = mus::mojom::RESOURCE_FORMAT_RGBA_8888;
       resource->filter = GL_LINEAR;
       resource->size = bitmap_size.Clone();
-      mojo::MailboxHolderPtr mailbox_holder = mojo::MailboxHolder::New();
-      mailbox_holder->mailbox = mojo::Mailbox::New();
+      mus::mojom::MailboxHolderPtr mailbox_holder =
+          mus::mojom::MailboxHolder::New();
+      mailbox_holder->mailbox = mus::mojom::Mailbox::New();
       for (int i = 0; i < GL_MAILBOX_SIZE_CHROMIUM; ++i)
         mailbox_holder->mailbox->name.push_back(mailbox[i]);
       mailbox_holder->texture_target = GL_TEXTURE_2D;
@@ -176,8 +177,8 @@ class BitmapUploader : public mojo::SurfaceClient {
       resource->is_repeated = false;
       resource->is_software = false;
 
-      mojo::QuadPtr quad = mojo::Quad::New();
-      quad->material = mojo::MATERIAL_TEXTURE_CONTENT;
+      mus::mojom::QuadPtr quad = mus::mojom::Quad::New();
+      quad->material = mus::mojom::MATERIAL_TEXTURE_CONTENT;
 
       mojo::RectPtr rect = mojo::Rect::New();
       if (width_ <= bounds.width() && height_ <= bounds.height()) {
@@ -202,14 +203,15 @@ class BitmapUploader : public mojo::SurfaceClient {
       quad->needs_blending = true;
       quad->shared_quad_state_index = 0u;
 
-      mojo::TextureQuadStatePtr texture_state = mojo::TextureQuadState::New();
+      mus::mojom::TextureQuadStatePtr texture_state =
+          mus::mojom::TextureQuadState::New();
       texture_state->resource_id = resource->id;
       texture_state->premultiplied_alpha = true;
       texture_state->uv_top_left = mojo::PointF::New();
       texture_state->uv_bottom_right = mojo::PointF::New();
       texture_state->uv_bottom_right->x = 1.f;
       texture_state->uv_bottom_right->y = 1.f;
-      texture_state->background_color = mojo::Color::New();
+      texture_state->background_color = mus::mojom::Color::New();
       texture_state->background_color->rgba = g_transparent_color;
       for (int i = 0; i < 4; ++i)
         texture_state->vertex_opacity.push_back(1.f);
@@ -221,17 +223,17 @@ class BitmapUploader : public mojo::SurfaceClient {
     }
 
     if (color_ != g_transparent_color) {
-      mojo::QuadPtr quad = mojo::Quad::New();
-      quad->material = mojo::MATERIAL_SOLID_COLOR;
+      mus::mojom::QuadPtr quad = mus::mojom::Quad::New();
+      quad->material = mus::mojom::MATERIAL_SOLID_COLOR;
       quad->rect = mojo::Rect::From(bounds);
       quad->opaque_rect = mojo::Rect::New();
       quad->visible_rect = mojo::Rect::From(bounds);
       quad->needs_blending = true;
       quad->shared_quad_state_index = 0u;
 
-      mojo::SolidColorQuadStatePtr color_state =
-          mojo::SolidColorQuadState::New();
-      color_state->color = mojo::Color::New();
+      mus::mojom::SolidColorQuadStatePtr color_state =
+          mus::mojom::SolidColorQuadState::New();
+      color_state->color = mus::mojom::Color::New();
       color_state->color->rgba = color_;
       color_state->force_anti_aliasing_off = false;
 
@@ -275,11 +277,11 @@ class BitmapUploader : public mojo::SurfaceClient {
 
   // SurfaceClient implementation.
   void ReturnResources(
-      mojo::Array<mojo::ReturnedResourcePtr> resources) override {
+      mojo::Array<mus::mojom::ReturnedResourcePtr> resources) override {
     MojoGLES2MakeCurrent(gles2_context_);
     // TODO(jamesr): Recycle.
     for (size_t i = 0; i < resources.size(); ++i) {
-      mojo::ReturnedResourcePtr resource = resources[i].Pass();
+      mus::mojom::ReturnedResourcePtr resource = resources[i].Pass();
       DCHECK_EQ(1, resource->count);
       glWaitSyncPointCHROMIUM(resource->sync_point);
       uint32_t texture_id = resource_to_texture_id_map_[resource->id];
@@ -290,7 +292,7 @@ class BitmapUploader : public mojo::SurfaceClient {
   }
 
   mus::Window* view_;
-  mojo::GpuPtr gpu_service_;
+  mus::mojom::GpuPtr gpu_service_;
   scoped_ptr<mus::WindowSurface> surface_;
   MojoGLES2Context gles2_context_;
 
@@ -304,7 +306,7 @@ class BitmapUploader : public mojo::SurfaceClient {
   uint32_t id_namespace_;
   uint32_t local_id_;
   base::hash_map<uint32_t, uint32_t> resource_to_texture_id_map_;
-  mojo::Binding<mojo::SurfaceClient> returner_binding_;
+  mojo::Binding<mus::mojom::SurfaceClient> returner_binding_;
 
   DISALLOW_COPY_AND_ASSIGN(BitmapUploader);
 };
@@ -327,7 +329,7 @@ class EmbedderData {
 class PDFView : public mojo::ApplicationDelegate,
                 public mus::WindowTreeDelegate,
                 public mus::WindowObserver,
-                public mojo::InterfaceFactory<mojo::ViewTreeClient> {
+                public mojo::InterfaceFactory<mus::mojom::WindowTreeClient> {
  public:
   PDFView(mojo::InterfaceRequest<mojo::Application> request,
           mojo::URLResponsePtr response)
@@ -350,7 +352,7 @@ class PDFView : public mojo::ApplicationDelegate,
   // Overridden from ApplicationDelegate:
   bool ConfigureIncomingConnection(
       mojo::ApplicationConnection* connection) override {
-    connection->AddService<mojo::ViewTreeClient>(this);
+    connection->AddService<mus::mojom::WindowTreeClient>(this);
     return true;
   }
 
@@ -411,10 +413,10 @@ class PDFView : public mojo::ApplicationDelegate,
       app_.Quit();
   }
 
-  // Overridden from mojo::InterfaceFactory<mojo::ViewTreeClient>:
+  // Overridden from mojo::InterfaceFactory<mus::mojom::WindowTreeClient>:
   void Create(
       mojo::ApplicationConnection* connection,
-      mojo::InterfaceRequest<mojo::ViewTreeClient> request) override {
+      mojo::InterfaceRequest<mus::mojom::WindowTreeClient> request) override {
     mus::WindowTreeConnection::Create(
         this, request.Pass(),
         mus::WindowTreeConnection::CreateType::DONT_WAIT_FOR_EMBED);

@@ -285,7 +285,7 @@ class ViewAndFrame : public mus::WindowTreeDelegate {
 class FrameTest : public mojo::test::ApplicationTestBase,
                   public mojo::ApplicationDelegate,
                   public mus::WindowTreeDelegate,
-                  public mojo::InterfaceFactory<mojo::ViewTreeClient>,
+                  public mojo::InterfaceFactory<mus::mojom::WindowTreeClient>,
                   public mojo::InterfaceFactory<mojom::FrameClient> {
  public:
   FrameTest() : most_recent_connection_(nullptr), window_manager_(nullptr) {}
@@ -353,7 +353,7 @@ class FrameTest : public mojo::test::ApplicationTestBase,
   // ApplicationDelegate implementation.
   bool ConfigureIncomingConnection(
       mojo::ApplicationConnection* connection) override {
-    connection->AddService<mojo::ViewTreeClient>(this);
+    connection->AddService<mus::mojom::WindowTreeClient>(this);
     connection->AddService<mojom::FrameClient>(this);
     return true;
   }
@@ -380,8 +380,8 @@ class FrameTest : public mojo::test::ApplicationTestBase,
     scoped_ptr<FrameConnection> frame_connection =
         CreateFrameConnection(application_impl());
     mojom::FrameClient* frame_client = frame_connection->frame_client();
-    mojo::ViewTreeClientPtr view_tree_client =
-        frame_connection->GetViewTreeClient();
+    mus::mojom::WindowTreeClientPtr view_tree_client =
+        frame_connection->GetWindowTreeClient();
     mus::Window* frame_root_view = window_manager()->CreateWindow();
     window_manager()->GetRoot()->AddChild(frame_root_view);
     frame_tree_.reset(new FrameTree(
@@ -399,10 +399,10 @@ class FrameTest : public mojo::test::ApplicationTestBase,
     ApplicationTestBase::TearDown();
   }
 
-  // Overridden from mojo::InterfaceFactory<mojo::ViewTreeClient>:
+  // Overridden from mojo::InterfaceFactory<mus::mojom::WindowTreeClient>:
   void Create(
       mojo::ApplicationConnection* connection,
-      mojo::InterfaceRequest<mojo::ViewTreeClient> request) override {
+      mojo::InterfaceRequest<mus::mojom::WindowTreeClient> request) override {
     if (view_and_frame_) {
       mus::WindowTreeConnection::Create(
           view_and_frame_.get(), request.Pass(),
@@ -425,7 +425,7 @@ class FrameTest : public mojo::test::ApplicationTestBase,
   scoped_ptr<FrameTree> frame_tree_;
   scoped_ptr<ViewAndFrame> root_view_and_frame_;
 
-  mojo::ViewTreeHostPtr host_;
+  mus::mojom::WindowTreeHostPtr host_;
 
   // Used to receive the most recent view manager loaded by an embed action.
   WindowTreeConnection* most_recent_connection_;

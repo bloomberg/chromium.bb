@@ -219,8 +219,8 @@ void DocumentResourceWaiter::StopHighlightingFindResults() {
 
 void DocumentResourceWaiter::OnWindowViewportMetricsChanged(
     mus::Window* window,
-    const mojo::ViewportMetrics& old_metrics,
-    const mojo::ViewportMetrics& new_metrics) {
+    const mus::mojom::ViewportMetrics& old_metrics,
+    const mus::mojom::ViewportMetrics& new_metrics) {
   UpdateIsReady();
 }
 

@@ -16,25 +16,25 @@ const ConnectionSpecificId kInvalidConnectionId = 0;
 
 // Adds a bit of type safety to view ids.
 struct ViewId {
-  ViewId(ConnectionSpecificId connection_id, ConnectionSpecificId view_id)
-      : connection_id(connection_id), view_id(view_id) {}
-  ViewId() : connection_id(0), view_id(0) {}
+  ViewId(ConnectionSpecificId connection_id, ConnectionSpecificId window_id)
+      : connection_id(connection_id), window_id(window_id) {}
+  ViewId() : connection_id(0), window_id(0) {}
 
   bool operator==(const ViewId& other) const {
-    return other.connection_id == connection_id && other.view_id == view_id;
+    return other.connection_id == connection_id && other.window_id == window_id;
   }
 
   bool operator!=(const ViewId& other) const { return !(*this == other); }
 
   bool operator<(const ViewId& other) const {
     if (connection_id == other.connection_id)
-      return view_id < other.view_id;
+      return window_id < other.window_id;
 
     return connection_id < other.connection_id;
   }
 
   ConnectionSpecificId connection_id;
-  ConnectionSpecificId view_id;
+  ConnectionSpecificId window_id;
 };
 
 inline ViewId ViewIdFromTransportId(Id id) {
@@ -42,7 +42,7 @@ inline ViewId ViewIdFromTransportId(Id id) {
 }
 
 inline Id ViewIdToTransportId(const ViewId& id) {
-  return (id.connection_id << 16) | id.view_id;
+  return (id.connection_id << 16) | id.window_id;
 }
 
 // Returns a ViewId that is reserved to indicate no view. That is, no view will

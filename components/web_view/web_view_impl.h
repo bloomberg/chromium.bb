@@ -62,9 +62,8 @@ class WebViewImpl : public mojom::WebView,
 
   // Overridden from WebView:
   void LoadRequest(mojo::URLRequestPtr request) override;
-  void GetViewTreeClient(
-      mojo::InterfaceRequest<mojo::ViewTreeClient> view_tree_client)
-          override;
+  void GetWindowTreeClient(mojo::InterfaceRequest<mus::mojom::WindowTreeClient>
+                               window_tree_client) override;
   void Find(const mojo::String& search_text, bool forward_direction) override;
   void StopFinding() override;
   void GoBack() override;

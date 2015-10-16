@@ -6,7 +6,7 @@
 #define COMPONENTS_MUS_WS_CLIENT_CONNECTION_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "components/mus/public/interfaces/view_tree.mojom.h"
+#include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 
 namespace mus {
@@ -19,17 +19,17 @@ class ViewTreeImpl;
 class ClientConnection {
  public:
   ClientConnection(scoped_ptr<ViewTreeImpl> service,
-                   mojo::ViewTreeClient* client);
+                   mojom::WindowTreeClient* client);
   virtual ~ClientConnection();
 
   ViewTreeImpl* service() { return service_.get(); }
   const ViewTreeImpl* service() const { return service_.get(); }
 
-  mojo::ViewTreeClient* client() { return client_; }
+  mojom::WindowTreeClient* client() { return client_; }
 
  private:
   scoped_ptr<ViewTreeImpl> service_;
-  mojo::ViewTreeClient* client_;
+  mojom::WindowTreeClient* client_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientConnection);
 };
@@ -40,14 +40,14 @@ class DefaultClientConnection : public ClientConnection {
   DefaultClientConnection(
       scoped_ptr<ViewTreeImpl> service_impl,
       ConnectionManager* connection_manager,
-      mojo::InterfaceRequest<mojo::ViewTree> service_request,
-      mojo::ViewTreeClientPtr client);
+      mojo::InterfaceRequest<mojom::WindowTree> service_request,
+      mojom::WindowTreeClientPtr client);
   ~DefaultClientConnection() override;
 
  private:
   ConnectionManager* connection_manager_;
-  mojo::Binding<mojo::ViewTree> binding_;
-  mojo::ViewTreeClientPtr client_;
+  mojo::Binding<mojom::WindowTree> binding_;
+  mojom::WindowTreeClientPtr client_;
 
   DISALLOW_COPY_AND_ASSIGN(DefaultClientConnection);
 };

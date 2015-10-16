@@ -6,7 +6,7 @@
 #define COMPONENTS_MUS_WS_VIEW_TREE_HOST_CONNECTION_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "components/mus/public/interfaces/view_tree_host.mojom.h"
+#include "components/mus/public/interfaces/window_tree_host.mojom.h"
 #include "components/mus/ws/view_tree_host_delegate.h"
 #include "components/mus/ws/view_tree_host_impl.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
@@ -46,7 +46,7 @@ class ViewTreeHostConnection : public ViewTreeHostDelegate {
   // ViewTreeHostDelegate:
   void OnDisplayInitialized() override;
   void OnDisplayClosed() override;
-  ViewTreeImpl* GetViewTree() override;
+  ViewTreeImpl* GetWindowTree() override;
 
  private:
   scoped_ptr<ViewTreeHostImpl> host_;
@@ -60,10 +60,11 @@ class ViewTreeHostConnection : public ViewTreeHostDelegate {
 // Live implementation of ViewTreeHostConnection.
 class ViewTreeHostConnectionImpl : public ViewTreeHostConnection {
  public:
-  ViewTreeHostConnectionImpl(mojo::InterfaceRequest<mojo::ViewTreeHost> request,
-                             scoped_ptr<ViewTreeHostImpl> host_impl,
-                             mojo::ViewTreeClientPtr client,
-                             ConnectionManager* connection_manager);
+  ViewTreeHostConnectionImpl(
+      mojo::InterfaceRequest<mojom::WindowTreeHost> request,
+      scoped_ptr<ViewTreeHostImpl> host_impl,
+      mojom::WindowTreeClientPtr client,
+      ConnectionManager* connection_manager);
 
  private:
   ~ViewTreeHostConnectionImpl() override;
@@ -71,8 +72,8 @@ class ViewTreeHostConnectionImpl : public ViewTreeHostConnection {
   // ViewTreeHostDelegate:
   void OnDisplayInitialized() override;
 
-  mojo::Binding<mojo::ViewTreeHost> binding_;
-  mojo::ViewTreeClientPtr client_;
+  mojo::Binding<mojom::WindowTreeHost> binding_;
+  mojom::WindowTreeClientPtr client_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewTreeHostConnectionImpl);
 };

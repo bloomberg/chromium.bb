@@ -10,7 +10,8 @@ namespace mus {
 class ViewTreeImpl;
 
 // A ViewTreeHostDelegate interface is implemented by an object that
-// has the ViewTreeImpl that is associated with the ViewTreeHostImpl that holds
+// has the WindowTreeImpl that is associated with the ViewTreeHostImpl that
+// holds
 // a pointer to this object. Typically, a ViewTreeHostDelegate will also manage
 // the lifetime of the ViewTreeHostImpl and will delete the object when it gets
 // informed of when the Display of the root is closed.
@@ -23,8 +24,8 @@ class ViewTreeHostDelegate {
   // Called when the window associated with the root is closed.
   virtual void OnDisplayClosed() = 0;
 
-  // Returns the ViewTreeImpl associated with the delegate.
-  virtual ViewTreeImpl* GetViewTree() = 0;
+  // Returns the WindowTreeImpl associated with the delegate.
+  virtual ViewTreeImpl* GetWindowTree() = 0;
 
  protected:
   virtual ~ViewTreeHostDelegate() {}

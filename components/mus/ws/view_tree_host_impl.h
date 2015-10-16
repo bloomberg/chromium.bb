@@ -7,7 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "components/mus/public/cpp/types.h"
-#include "components/mus/public/interfaces/view_tree_host.mojom.h"
+#include "components/mus/public/interfaces/window_tree_host.mojom.h"
 #include "components/mus/ws/display_manager.h"
 #include "components/mus/ws/event_dispatcher.h"
 #include "components/mus/ws/focus_controller_delegate.h"
@@ -34,13 +34,13 @@ class ViewTreeImpl;
 // closes the associated window, then this object and related state will be
 // deleted.
 class ViewTreeHostImpl : public DisplayManagerDelegate,
-                         public mojo::ViewTreeHost,
+                         public mojom::WindowTreeHost,
                          public FocusControllerDelegate {
  public:
   // TODO(fsamuel): All these parameters are just plumbing for creating
   // DisplayManagers. We should probably just store these common parameters
   // in the DisplayManagerFactory and pass them along on DisplayManager::Create.
-  ViewTreeHostImpl(mojo::ViewTreeHostClientPtr client,
+  ViewTreeHostImpl(mojom::WindowTreeHostClientPtr client,
                    ConnectionManager* connection_manager,
                    mojo::ApplicationImpl* app_impl,
                    const scoped_refptr<GpuState>& gpu_state,
@@ -50,9 +50,9 @@ class ViewTreeHostImpl : public DisplayManagerDelegate,
   // Initializes state that depends on the existence of a ViewTreeHostImpl.
   void Init(ViewTreeHostDelegate* delegate);
 
-  ViewTreeImpl* GetViewTree();
+  ViewTreeImpl* GetWindowTree();
 
-  mojo::ViewTreeHostClient* client() const { return client_.get(); }
+  mojom::WindowTreeHostClient* client() const { return client_.get(); }
 
   cc::SurfaceId surface_id() const { return surface_id_; }
 
@@ -66,7 +66,7 @@ class ViewTreeHostImpl : public DisplayManagerDelegate,
                                  const gfx::Rect& bounds);
 
   // Returns the metrics for this viewport.
-  const mojo::ViewportMetrics& GetViewportMetrics() const;
+  const mojom::ViewportMetrics& GetViewportMetrics() const;
 
   ConnectionManager* connection_manager() { return connection_manager_; }
 
@@ -100,8 +100,8 @@ class ViewTreeHostImpl : public DisplayManagerDelegate,
   void OnEvent(mojo::EventPtr event) override;
   void OnDisplayClosed() override;
   void OnViewportMetricsChanged(
-      const mojo::ViewportMetrics& old_metrics,
-      const mojo::ViewportMetrics& new_metrics) override;
+      const mojom::ViewportMetrics& old_metrics,
+      const mojom::ViewportMetrics& new_metrics) override;
   void OnTopLevelSurfaceChanged(cc::SurfaceId surface_id) override;
 
   // FocusControllerDelegate:
@@ -110,7 +110,7 @@ class ViewTreeHostImpl : public DisplayManagerDelegate,
 
   ViewTreeHostDelegate* delegate_;
   ConnectionManager* const connection_manager_;
-  mojo::ViewTreeHostClientPtr client_;
+  mojom::WindowTreeHostClientPtr client_;
   EventDispatcher event_dispatcher_;
   scoped_ptr<ServerView> root_;
   scoped_ptr<DisplayManager> display_manager_;

@@ -27,7 +27,7 @@ class WindowManagerImpl : public mus::mojom::WindowManager,
 
  private:
   // mus::mojom::WindowManager:
-  void OpenWindow(mojo::ViewTreeClientPtr client) override;
+  void OpenWindow(mus::mojom::WindowTreeClientPtr client) override;
   void CenterWindow(mus::Id window_id,
                     mojo::SizePtr size,
                     const WindowManagerErrorCodeCallback& callback) override;

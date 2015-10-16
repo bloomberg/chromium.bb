@@ -8,7 +8,7 @@
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/mus/public/cpp/window_tree_delegate.h"
-#include "components/mus/public/interfaces/view_tree_host.mojom.h"
+#include "components/mus/public/interfaces/window_tree_host.mojom.h"
 #include "components/test_runner/test_info_extractor.h"
 #include "components/web_view/public/cpp/web_view.h"
 #include "components/web_view/public/interfaces/web_view.mojom.h"
@@ -18,10 +18,6 @@
 #include "mojo/common/weak_binding_set.h"
 
 class GURL;
-
-namespace mojo {
-class View;
-}
 
 namespace web_view {
 
@@ -69,7 +65,7 @@ class TestRunnerApplicationDelegate
               mojo::InterfaceRequest<LayoutTestRunner> request) override;
 
   mojo::ApplicationImpl* app_;
-  mojo::ViewTreeHostPtr host_;
+  mus::mojom::WindowTreeHostPtr host_;
 
   mus::Window* root_;
   mus::Window* content_;

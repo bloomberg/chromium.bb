@@ -64,7 +64,7 @@ class SurfaceBinding::PerConnectionState
   mus::WindowTreeConnection* connection_;
 
   // Set of state needed to create an OutputSurface.
-  mojo::GpuPtr gpu_;
+  mus::mojom::GpuPtr gpu_;
 
   DISALLOW_COPY_AND_ASSIGN(PerConnectionState);
 };
@@ -94,7 +94,7 @@ scoped_ptr<cc::OutputSurface>
 SurfaceBinding::PerConnectionState::CreateOutputSurface(mus::Window* window) {
   // TODO(sky): figure out lifetime here. Do I need to worry about the return
   // value outliving this?
-  mojo::CommandBufferPtr cb;
+  mus::mojom::CommandBufferPtr cb;
   gpu_->CreateOffscreenGLES2Context(GetProxy(&cb));
 
   scoped_refptr<cc::ContextProvider> context_provider(

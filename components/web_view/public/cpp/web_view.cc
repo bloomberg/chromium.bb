@@ -33,10 +33,11 @@ void WebView::Init(mojo::ApplicationImpl* app, mus::Window* window) {
   app->ConnectToService(request.Pass(), &factory);
   factory->CreateWebView(client.Pass(), GetProxy(&web_view_));
 
-  mojo::ViewTreeClientPtr view_tree_client;
-  web_view_->GetViewTreeClient(GetProxy(&view_tree_client));
+  mus::mojom::WindowTreeClientPtr view_tree_client;
+  web_view_->GetWindowTreeClient(GetProxy(&view_tree_client));
   window->Embed(view_tree_client.Pass(),
-                mojo::ViewTree::ACCESS_POLICY_EMBED_ROOT, base::Bind(&OnEmbed));
+                mus::mojom::WindowTree::ACCESS_POLICY_EMBED_ROOT,
+                base::Bind(&OnEmbed));
 }
 
 }  // namespace web_view

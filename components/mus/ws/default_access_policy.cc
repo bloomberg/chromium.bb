@@ -15,7 +15,7 @@ DefaultAccessPolicy::DefaultAccessPolicy(ConnectionSpecificId connection_id,
 
 DefaultAccessPolicy::~DefaultAccessPolicy() {}
 
-bool DefaultAccessPolicy::CanRemoveViewFromParent(
+bool DefaultAccessPolicy::CanRemoveWindowFromParent(
     const ServerView* view) const {
   if (!WasCreatedByThisConnection(view))
     return false;  // Can only unparent views we created.
@@ -24,26 +24,27 @@ bool DefaultAccessPolicy::CanRemoveViewFromParent(
          WasCreatedByThisConnection(view->parent());
 }
 
-bool DefaultAccessPolicy::CanAddView(const ServerView* parent,
-                                     const ServerView* child) const {
+bool DefaultAccessPolicy::CanAddWindow(const ServerView* parent,
+                                       const ServerView* child) const {
   return WasCreatedByThisConnection(child) &&
          (delegate_->IsRootForAccessPolicy(parent->id()) ||
           (WasCreatedByThisConnection(parent) &&
            !delegate_->IsViewRootOfAnotherConnectionForAccessPolicy(parent)));
 }
 
-bool DefaultAccessPolicy::CanReorderView(const ServerView* view,
-                                         const ServerView* relative_view,
-                                         mojo::OrderDirection direction) const {
+bool DefaultAccessPolicy::CanReorderWindow(
+    const ServerView* view,
+    const ServerView* relative_view,
+    mojom::OrderDirection direction) const {
   return WasCreatedByThisConnection(view) &&
          WasCreatedByThisConnection(relative_view);
 }
 
-bool DefaultAccessPolicy::CanDeleteView(const ServerView* view) const {
+bool DefaultAccessPolicy::CanDeleteWindow(const ServerView* view) const {
   return WasCreatedByThisConnection(view);
 }
 
-bool DefaultAccessPolicy::CanGetViewTree(const ServerView* view) const {
+bool DefaultAccessPolicy::CanGetWindowTree(const ServerView* view) const {
   return WasCreatedByThisConnection(view) ||
          delegate_->IsRootForAccessPolicy(view->id()) ||
          IsDescendantOfEmbedRoot(view);
@@ -59,7 +60,7 @@ bool DefaultAccessPolicy::CanDescendIntoViewForViewTree(
 
 bool DefaultAccessPolicy::CanEmbed(const ServerView* view,
                                    uint32_t policy_bitmask) const {
-  if (policy_bitmask != mojo::ViewTree::ACCESS_POLICY_DEFAULT)
+  if (policy_bitmask != mojom::WindowTree::ACCESS_POLICY_DEFAULT)
     return false;
   return WasCreatedByThisConnection(view) ||
          (delegate_->IsViewKnownForAccessPolicy(view) &&
@@ -83,15 +84,15 @@ bool DefaultAccessPolicy::CanSetWindowSurfaceId(const ServerView* view) const {
          delegate_->IsRootForAccessPolicy(view->id());
 }
 
-bool DefaultAccessPolicy::CanSetViewBounds(const ServerView* view) const {
+bool DefaultAccessPolicy::CanSetWindowBounds(const ServerView* view) const {
   return WasCreatedByThisConnection(view);
 }
 
-bool DefaultAccessPolicy::CanSetViewProperties(const ServerView* view) const {
+bool DefaultAccessPolicy::CanSetWindowProperties(const ServerView* view) const {
   return WasCreatedByThisConnection(view);
 }
 
-bool DefaultAccessPolicy::CanSetViewTextInputState(
+bool DefaultAccessPolicy::CanSetWindowTextInputState(
     const ServerView* view) const {
   return WasCreatedByThisConnection(view) ||
          delegate_->IsRootForAccessPolicy(view->id());

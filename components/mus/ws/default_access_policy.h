@@ -20,21 +20,21 @@ class DefaultAccessPolicy : public AccessPolicy {
   ~DefaultAccessPolicy() override;
 
   // AccessPolicy:
-  bool CanRemoveViewFromParent(const ServerView* view) const override;
-  bool CanAddView(const ServerView* parent,
-                  const ServerView* child) const override;
-  bool CanReorderView(const ServerView* view,
-                      const ServerView* relative_view,
-                      mojo::OrderDirection direction) const override;
-  bool CanDeleteView(const ServerView* view) const override;
-  bool CanGetViewTree(const ServerView* view) const override;
+  bool CanRemoveWindowFromParent(const ServerView* view) const override;
+  bool CanAddWindow(const ServerView* parent,
+                    const ServerView* child) const override;
+  bool CanReorderWindow(const ServerView* view,
+                        const ServerView* relative_view,
+                        mojom::OrderDirection direction) const override;
+  bool CanDeleteWindow(const ServerView* view) const override;
+  bool CanGetWindowTree(const ServerView* view) const override;
   bool CanDescendIntoViewForViewTree(const ServerView* view) const override;
   bool CanEmbed(const ServerView* view, uint32_t policy_bitmask) const override;
   bool CanChangeViewVisibility(const ServerView* view) const override;
   bool CanSetWindowSurfaceId(const ServerView* view) const override;
-  bool CanSetViewBounds(const ServerView* view) const override;
-  bool CanSetViewProperties(const ServerView* view) const override;
-  bool CanSetViewTextInputState(const ServerView* view) const override;
+  bool CanSetWindowBounds(const ServerView* view) const override;
+  bool CanSetWindowProperties(const ServerView* view) const override;
+  bool CanSetWindowTextInputState(const ServerView* view) const override;
   bool CanSetFocus(const ServerView* view) const override;
   bool CanSetClientArea(const ServerView* window) const override;
   bool ShouldNotifyOnHierarchyChange(

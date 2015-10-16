@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module mojo;
+module mus.mojom;
 
 import "components/mus/public/interfaces/gpu_capabilities.mojom";
 import "ui/mojo/geometry/geometry.mojom";
@@ -59,7 +59,7 @@ interface CommandBuffer {
   CreateImage(int32 id,
               handle memory_handle,
               int32 type,
-              Size size,
+              mojo.Size size,
               int32 format,
               int32 internal_format);
   DestroyImage(int32 id);

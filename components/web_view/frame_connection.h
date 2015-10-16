@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
-#include "components/mus/public/interfaces/view_tree.mojom.h"
+#include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "components/web_view/frame_tree_delegate.h"
 #include "components/web_view/frame_user_data.h"
 #include "components/web_view/public/interfaces/frame.mojom.h"
@@ -53,8 +53,8 @@ class FrameConnection : public FrameUserData {
     return application_connection_.get();
   }
 
-  // Asks the remote application for a ViewTreeClient.
-  mojo::ViewTreeClientPtr GetViewTreeClient();
+  // Asks the remote application for a WindowTreeClient.
+  mus::mojom::WindowTreeClientPtr GetWindowTreeClient();
 
   // Returns the id of the content handler app. Only available once the callback
   // has run.

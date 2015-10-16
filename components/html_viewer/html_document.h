@@ -55,7 +55,7 @@ class HTMLDocument
       public mojo::InterfaceFactory<web_view::mojom::FrameClient>,
       public mojo::InterfaceFactory<TestHTMLViewer>,
       public mojo::InterfaceFactory<devtools_service::DevToolsAgent>,
-      public mojo::InterfaceFactory<mojo::ViewTreeClient> {
+      public mojo::InterfaceFactory<mus::mojom::WindowTreeClient> {
  public:
   using DeleteCallback = base::Callback<void(HTMLDocument*)>;
 
@@ -136,9 +136,10 @@ class HTMLDocument
       mojo::ApplicationConnection* connection,
       mojo::InterfaceRequest<devtools_service::DevToolsAgent> request) override;
 
-  // mojo::InterfaceFactory<mus::ViewTreeClient>:
-  void Create(mojo::ApplicationConnection* connection,
-              mojo::InterfaceRequest<mojo::ViewTreeClient> request) override;
+  // mojo::InterfaceFactory<mus::WindowTreeClient>:
+  void Create(
+      mojo::ApplicationConnection* connection,
+      mojo::InterfaceRequest<mus::mojom::WindowTreeClient> request) override;
 
   scoped_ptr<mojo::AppRefCount> app_refcount_;
   mojo::ApplicationImpl* html_document_app_;

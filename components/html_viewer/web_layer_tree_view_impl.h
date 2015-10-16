@@ -43,7 +43,7 @@ class WebLayerTreeViewImpl : public blink::WebLayerTreeView,
       cc::TaskGraphRunner* task_graph_runner);
   ~WebLayerTreeViewImpl() override;
 
-  void Initialize(mojo::GpuPtr gpu_service,
+  void Initialize(mus::mojom::GpuPtr gpu_service,
                   mus::Window* window,
                   blink::WebWidget* widget);
 

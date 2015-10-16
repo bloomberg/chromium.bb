@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module mojo;
+module mus.mojom;
 
 import "components/mus/public/interfaces/surface_id.mojom";
 import "ui/mojo/geometry/geometry.mojom";
@@ -41,8 +41,8 @@ struct RenderPassQuadState {
 
   // If nonzero, resource id of mask to use when drawing this pass.
   uint32 mask_resource_id;
-  PointF mask_uv_scale;
-  Size mask_texture_size;
+  mojo.PointF mask_uv_scale;
+  mojo.Size mask_texture_size;
 
   // Post-processing filters, applied to the pixels in the render pass' texture.
   // TODO(jamesr): Support
@@ -52,7 +52,7 @@ struct RenderPassQuadState {
   // the render pass physical pixels. This scale is applied to the filter
   // parameters for pixel-moving filters. This scale should include
   // content-to-target-space scale, and device pixel ratio.
-  PointF filters_scale;
+  mojo.PointF filters_scale;
 
   // Post-processing filters, applied to the pixels showing through the
   // background of the render pass, from behind it.
@@ -66,14 +66,14 @@ struct SolidColorQuadState {
 };
 
 struct SurfaceQuadState {
-  SurfaceId surface;
+  mus.mojom.SurfaceId surface;
 };
 
 struct TextureQuadState {
   uint32 resource_id;
   bool premultiplied_alpha;
-  PointF uv_top_left;
-  PointF uv_bottom_right;
+  mojo.PointF uv_top_left;
+  mojo.PointF uv_bottom_right;
   Color background_color;
   array<float, 4> vertex_opacity;
   bool y_flipped;
@@ -81,8 +81,8 @@ struct TextureQuadState {
 };
 
 struct TileQuadState {
-  RectF tex_coord_rect;
-  Size texture_size;
+  mojo.RectF tex_coord_rect;
+  mojo.Size texture_size;
   bool swizzle_contents;
   uint32 resource_id;
   bool nearest_neighbor;
@@ -97,10 +97,10 @@ enum YUVColorSpace {
 };
 
 struct YUVVideoQuadState {
-  RectF ya_tex_coord_rect;
-  RectF uv_tex_coord_rect;
-  Size ya_tex_size;
-  Size uv_tex_size;
+  mojo.RectF ya_tex_coord_rect;
+  mojo.RectF uv_tex_coord_rect;
+  mojo.Size ya_tex_size;
+  mojo.Size uv_tex_size;
   uint32 y_plane_resource_id;
   uint32 u_plane_resource_id;
   uint32 v_plane_resource_id;
@@ -126,15 +126,15 @@ struct Quad {
 
   // This rect, after applying the quad_transform(), gives the geometry that
   // this quad should draw to. This rect lives in content space.
-  Rect rect;
+  mojo.Rect rect;
 
   // This specifies the region of the quad that is opaque. This rect lives in
   // content space.
-  Rect opaque_rect;
+  mojo.Rect opaque_rect;
 
   // Allows changing the rect that gets drawn to make it smaller. This value
   // should be clipped to |rect|. This rect lives in content space.
-  Rect visible_rect;
+  mojo.Rect visible_rect;
 
   // Allows changing the rect that gets drawn to make it smaller. This value
   // should be clipped to |rect|. This rect lives in content space.
@@ -198,18 +198,18 @@ enum SkXfermode {
 };
 
 struct SharedQuadState {
-  // Transforms quad rects into the target content space.
-  Transform quad_to_target_transform;
+  // mojo.Transforms quad rects into the target content space.
+  mojo.Transform quad_to_target_transform;
 
   // The size of the quads' originating layer in the space of the quad rects.
-  Size quad_layer_bounds;
+  mojo.Size quad_layer_bounds;
 
   // The size of the visible area in the quads' originating layer, in the space
   // of the quad rects.
-  Rect visible_quad_layer_rect;
+  mojo.Rect visible_quad_layer_rect;
 
   // This rect lives in the target content space.
-  Rect clip_rect;
+  mojo.Rect clip_rect;
 
   bool is_clipped;
   float opacity;
@@ -219,9 +219,9 @@ struct SharedQuadState {
 
 struct Pass {
   RenderPassId id;
-  Rect output_rect;
-  Rect damage_rect;
-  Transform transform_to_root_target;
+  mojo.Rect output_rect;
+  mojo.Rect damage_rect;
+  mojo.Transform transform_to_root_target;
   bool has_transparent_background;
   array<Quad> quads;
   array<SharedQuadState> shared_quad_states;

@@ -19,16 +19,16 @@ class AccessPolicy {
   virtual ~AccessPolicy() {}
 
   // Unless otherwise mentioned all arguments have been validated. That is the
-  // |view| arguments are non-null unless otherwise stated (eg CanSetView() is
+  // |view| arguments are non-null unless otherwise stated (eg CanSetWindow() is
   // allowed to take a NULL view).
-  virtual bool CanRemoveViewFromParent(const ServerView* view) const = 0;
-  virtual bool CanAddView(const ServerView* parent,
-                          const ServerView* child) const = 0;
-  virtual bool CanReorderView(const ServerView* view,
-                              const ServerView* relative_view,
-                              mojo::OrderDirection direction) const = 0;
-  virtual bool CanDeleteView(const ServerView* view) const = 0;
-  virtual bool CanGetViewTree(const ServerView* view) const = 0;
+  virtual bool CanRemoveWindowFromParent(const ServerView* view) const = 0;
+  virtual bool CanAddWindow(const ServerView* parent,
+                            const ServerView* child) const = 0;
+  virtual bool CanReorderWindow(const ServerView* view,
+                                const ServerView* relative_view,
+                                mojom::OrderDirection direction) const = 0;
+  virtual bool CanDeleteWindow(const ServerView* view) const = 0;
+  virtual bool CanGetWindowTree(const ServerView* view) const = 0;
   // Used when building a view tree (GetViewTree()) to decide if we should
   // descend into |view|.
   virtual bool CanDescendIntoViewForViewTree(const ServerView* view) const = 0;
@@ -36,9 +36,9 @@ class AccessPolicy {
                         uint32_t policy_bitmask) const = 0;
   virtual bool CanChangeViewVisibility(const ServerView* view) const = 0;
   virtual bool CanSetWindowSurfaceId(const ServerView* view) const = 0;
-  virtual bool CanSetViewBounds(const ServerView* view) const = 0;
-  virtual bool CanSetViewProperties(const ServerView* view) const = 0;
-  virtual bool CanSetViewTextInputState(const ServerView* view) const = 0;
+  virtual bool CanSetWindowBounds(const ServerView* view) const = 0;
+  virtual bool CanSetWindowProperties(const ServerView* view) const = 0;
+  virtual bool CanSetWindowTextInputState(const ServerView* view) const = 0;
   virtual bool CanSetFocus(const ServerView* view) const = 0;
   virtual bool CanSetClientArea(const ServerView* window) const = 0;
 

@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module mojo;
+module mus.mojom;
 
-import "components/mus/public/interfaces/view_tree.mojom";
+import "components/mus/public/interfaces/window_tree.mojom";
 import "ui/mojo/events/input_event_constants.mojom";
 import "ui/mojo/events/input_events.mojom";
 import "ui/mojo/events/input_key_codes.mojom";
 import "ui/mojo/geometry/geometry.mojom";
 
-// ViewTreeHost encapsulates a unique underlying platform window, with a tree
+// WindowTreeHost encapsulates a unique underlying platform window, with a tree
 // of views.
-interface ViewTreeHost {
+interface WindowTreeHost {
   // Sets the size of the platform window.
   SetSize(mojo.Size size);
 
@@ -20,7 +20,7 @@ interface ViewTreeHost {
   SetTitle(string title);
 
   // Add and remove accelerators. When accelerators are registered the
-  // ViewTreeHostClient receives the key event via OnAccelerator() rather than
+  // WindowTreeHostClient receives the key event via OnAccelerator() rather than
   // the focused view. The id is defined by the client and can be used to more
   // easily identify the accelerator's action.
   AddAccelerator(uint32 id,
@@ -29,13 +29,13 @@ interface ViewTreeHost {
   RemoveAccelerator(uint32 id);
 };
 
-interface ViewTreeHostClient {
+interface WindowTreeHostClient {
   // An accelerator registered via AddAccelerator() has been triggered.
   OnAccelerator(uint32 id, mojo.Event event);
 };
 
-interface ViewTreeHostFactory {
-  CreateWindowTreeHost(ViewTreeHost& view_tree_host,
-                       ViewTreeHostClient? host_client,
-                       ViewTreeClient tree_client);
+interface WindowTreeHostFactory {
+  CreateWindowTreeHost(WindowTreeHost& window_tree_host,
+                       WindowTreeHostClient? host_client,
+                       WindowTreeClient tree_client);
 };

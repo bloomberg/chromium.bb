@@ -8,7 +8,7 @@
 #include "components/mus/public/cpp/types.h"
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_tree_connection.h"
-#include "components/mus/public/interfaces/view_tree.mojom.h"
+#include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
 
 namespace mus {
@@ -17,10 +17,11 @@ class WindowTreeDelegate;
 
 // Manages the connection with the Window Server service.
 class WindowTreeClientImpl : public WindowTreeConnection,
-                             public mojo::ViewTreeClient {
+                             public mus::mojom::WindowTreeClient {
  public:
-  WindowTreeClientImpl(WindowTreeDelegate* delegate,
-                       mojo::InterfaceRequest<mojo::ViewTreeClient> request);
+  WindowTreeClientImpl(
+      WindowTreeDelegate* delegate,
+      mojo::InterfaceRequest<mus::mojom::WindowTreeClient> request);
   ~WindowTreeClientImpl() override;
 
   // Wait for OnEmbed(), returning when done.
@@ -42,7 +43,7 @@ class WindowTreeClientImpl : public WindowTreeConnection,
 
   void Reorder(Id window_id,
                Id relative_window_id,
-               mojo::OrderDirection direction);
+               mojom::OrderDirection direction);
 
   // Returns true if the specified window was created by this connection.
   bool OwnsWindow(Id id) const;
@@ -54,19 +55,19 @@ class WindowTreeClientImpl : public WindowTreeConnection,
   void SetProperty(Id window_id,
                    const std::string& name,
                    const std::vector<uint8_t>& data);
-  void SetViewTextInputState(Id window_id, mojo::TextInputStatePtr state);
+  void SetWindowTextInputState(Id window_id, mojo::TextInputStatePtr state);
   void SetImeVisibility(Id window_id,
                         bool visible,
                         mojo::TextInputStatePtr state);
 
   void Embed(Id window_id,
-             mojo::ViewTreeClientPtr client,
+             mus::mojom::WindowTreeClientPtr client,
              uint32_t policy_bitmask,
-             const mojo::ViewTree::EmbedCallback& callback);
+             const mus::mojom::WindowTree::EmbedCallback& callback);
 
   void RequestSurface(Id window_id,
-                      mojo::InterfaceRequest<mojo::Surface> surface,
-                      mojo::SurfaceClientPtr client);
+                      mojo::InterfaceRequest<mojom::Surface> surface,
+                      mojom::SurfaceClientPtr client);
 
   void set_change_acked_callback(const mojo::Callback<void(void)>& callback) {
     change_acked_callback_ = callback;
@@ -98,10 +99,10 @@ class WindowTreeClientImpl : public WindowTreeConnection,
   bool IsEmbedRoot() override;
   ConnectionSpecificId GetConnectionId() override;
 
-  // Overridden from ViewTreeClient:
+  // Overridden from WindowTreeClient:
   void OnEmbed(ConnectionSpecificId connection_id,
-               mojo::ViewDataPtr root,
-               mojo::ViewTreePtr tree,
+               mojom::WindowDataPtr root,
+               mojom::WindowTreePtr tree,
                Id focused_window_id,
                uint32_t access_policy) override;
   void OnEmbeddedAppDisconnected(Id window_id) override;
@@ -113,16 +114,16 @@ class WindowTreeClientImpl : public WindowTreeConnection,
                            mojo::RectPtr old_client_area,
                            mojo::RectPtr new_client_area) override;
   void OnWindowViewportMetricsChanged(
-      mojo::ViewportMetricsPtr old_metrics,
-      mojo::ViewportMetricsPtr new_metrics) override;
+      mojom::ViewportMetricsPtr old_metrics,
+      mojom::ViewportMetricsPtr new_metrics) override;
   void OnWindowHierarchyChanged(
       Id window_id,
       Id new_parent_id,
       Id old_parent_id,
-      mojo::Array<mojo::ViewDataPtr> windows) override;
+      mojo::Array<mojom::WindowDataPtr> windows) override;
   void OnWindowReordered(Id window_id,
                          Id relative_window_id,
-                         mojo::OrderDirection direction) override;
+                         mojom::OrderDirection direction) override;
   void OnWindowDeleted(Id window_id) override;
   void OnWindowVisibilityChanged(Id window_id, bool visible) override;
   void OnWindowDrawnStateChanged(Id window_id, bool drawn) override;
@@ -155,8 +156,8 @@ class WindowTreeClientImpl : public WindowTreeConnection,
   Window* focused_window_;
   Window* activated_window_;
 
-  mojo::Binding<ViewTreeClient> binding_;
-  mojo::ViewTreePtr tree_;
+  mojo::Binding<WindowTreeClient> binding_;
+  mus::mojom::WindowTreePtr tree_;
 
   bool is_embed_root_;
 

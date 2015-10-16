@@ -9,8 +9,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "components/mus/public/cpp/window_tree_delegate.h"
-#include "components/mus/public/interfaces/view_tree_host.mojom.h"
 #include "components/mus/public/interfaces/window_manager.mojom.h"
+#include "components/mus/public/interfaces/window_tree_host.mojom.h"
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/interface_factory_impl.h"
 
@@ -49,7 +49,7 @@ class WindowManagerApplication
   mus::Window* root_;
   int window_count_;
 
-  mojo::ViewTreeHostPtr host_;
+  mus::mojom::WindowTreeHostPtr host_;
   ScopedVector<mojo::InterfaceRequest<mus::mojom::WindowManager>> requests_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowManagerApplication);

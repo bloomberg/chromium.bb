@@ -57,13 +57,13 @@ WebLayerTreeViewImpl::WebLayerTreeViewImpl(
   DCHECK(layer_tree_host_);
 }
 
-void WebLayerTreeViewImpl::Initialize(mojo::GpuPtr gpu_service,
+void WebLayerTreeViewImpl::Initialize(mus::mojom::GpuPtr gpu_service,
                                       mus::Window* window,
                                       blink::WebWidget* widget) {
   window_ = window;
   widget_ = widget;
   if (gpu_service) {
-    mojo::CommandBufferPtr cb;
+    mus::mojom::CommandBufferPtr cb;
     gpu_service->CreateOffscreenGLES2Context(GetProxy(&cb));
     scoped_refptr<cc::ContextProvider> context_provider(
         new mus::ContextProvider(cb.PassInterface().PassHandle()));

@@ -36,7 +36,7 @@ void ViewTreeHostConnection::CloseConnection() {
   delete this;
 }
 
-ViewTreeImpl* ViewTreeHostConnection::GetViewTree() {
+ViewTreeImpl* ViewTreeHostConnection::GetWindowTree() {
   return tree_;
 }
 
@@ -47,9 +47,9 @@ void ViewTreeHostConnection::OnDisplayClosed() {
 }
 
 ViewTreeHostConnectionImpl::ViewTreeHostConnectionImpl(
-    mojo::InterfaceRequest<mojo::ViewTreeHost> request,
+    mojo::InterfaceRequest<mojom::WindowTreeHost> request,
     scoped_ptr<ViewTreeHostImpl> host_impl,
-    mojo::ViewTreeClientPtr client,
+    mojom::WindowTreeClientPtr client,
     ConnectionManager* manager)
     : ViewTreeHostConnection(host_impl.Pass(), manager),
       binding_(view_tree_host(), request.Pass()),
@@ -61,7 +61,7 @@ void ViewTreeHostConnectionImpl::OnDisplayInitialized() {
   connection_manager()->AddHost(this);
   set_view_tree(connection_manager()->EmbedAtView(
       kInvalidConnectionId, view_tree_host()->root_view()->id(),
-      mojo::ViewTree::ACCESS_POLICY_EMBED_ROOT, client_.Pass()));
+      mojom::WindowTree::ACCESS_POLICY_EMBED_ROOT, client_.Pass()));
 }
 
 }  // namespace mus

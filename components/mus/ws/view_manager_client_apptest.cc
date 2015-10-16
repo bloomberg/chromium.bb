@@ -131,7 +131,7 @@ class OrderChangeObserver : public WindowObserver {
   // Overridden from WindowObserver:
   void OnWindowReordered(Window* window,
                          Window* relative_window,
-                         mojo::OrderDirection direction) override {
+                         mojom::OrderDirection direction) override {
     DCHECK_EQ(window, window_);
     EXPECT_TRUE(WindowServerTestBase::QuitRunLoop());
   }
@@ -203,7 +203,7 @@ class WindowServerTest : public WindowServerTestBase {
   // a response is received, or a timeout. On success the new WindowServer is
   // returned.
   EmbedResult Embed(Window* window) {
-    return Embed(window, mojo::ViewTree::ACCESS_POLICY_DEFAULT);
+    return Embed(window, mus::mojom::WindowTree::ACCESS_POLICY_DEFAULT);
   }
 
   EmbedResult Embed(Window* window, uint32_t access_policy_bitmask) {
@@ -223,13 +223,14 @@ class WindowServerTest : public WindowServerTestBase {
   }
 
   // Establishes a connection to this application and asks for a
-  // ViewTreeClient.
-  mojo::ViewTreeClientPtr ConnectToApplicationAndGetWindowServerClient() {
+  // WindowTreeClient.
+  mus::mojom::WindowTreeClientPtr
+  ConnectToApplicationAndGetWindowServerClient() {
     mojo::URLRequestPtr request(mojo::URLRequest::New());
     request->url = mojo::String::From(application_impl()->url());
     scoped_ptr<mojo::ApplicationConnection> connection =
         application_impl()->ConnectToApplication(request.Pass());
-    mojo::ViewTreeClientPtr client;
+    mus::mojom::WindowTreeClientPtr client;
     connection->ConnectToService(&client);
     return client.Pass();
   }
@@ -822,7 +823,8 @@ TEST_F(WindowServerTest, EmbedRootSeesHierarchyChanged) {
   window_manager()->GetRoot()->AddChild(embed_window);
 
   WindowTreeConnection* vm2 =
-      Embed(embed_window, mojo::ViewTree::ACCESS_POLICY_EMBED_ROOT).connection;
+      Embed(embed_window, mus::mojom::WindowTree::ACCESS_POLICY_EMBED_ROOT)
+          .connection;
   Window* vm2_v1 = vm2->CreateWindow();
   vm2->GetRoot()->AddChild(vm2_v1);
 
@@ -840,7 +842,7 @@ TEST_F(WindowServerTest, EmbedFromEmbedRoot) {
 
   // Give the connection embedded at |embed_window| embed root powers.
   const EmbedResult result1 =
-      Embed(embed_window, mojo::ViewTree::ACCESS_POLICY_EMBED_ROOT);
+      Embed(embed_window, mus::mojom::WindowTree::ACCESS_POLICY_EMBED_ROOT);
   WindowTreeConnection* vm2 = result1.connection;
   EXPECT_EQ(result1.connection_id, vm2->GetConnectionId());
   Window* vm2_v1 = vm2->CreateWindow();

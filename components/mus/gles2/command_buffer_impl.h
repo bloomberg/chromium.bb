@@ -21,16 +21,16 @@ class GpuState;
 // so that we can insert sync points without blocking on the GL driver. It
 // forwards most method calls to the CommandBufferDriver, which runs on the
 // same thread as the native viewport.
-class CommandBufferImpl : public mojo::CommandBuffer {
+class CommandBufferImpl : public mojom::CommandBuffer {
  public:
   CommandBufferImpl(mojo::InterfaceRequest<CommandBuffer> request,
                     scoped_refptr<GpuState> gpu_state,
                     scoped_ptr<CommandBufferDriver> driver);
 
-  // mojo::CommandBuffer:
-  void Initialize(mojo::CommandBufferSyncClientPtr sync_client,
-                  mojo::CommandBufferSyncPointClientPtr sync_point_client,
-                  mojo::CommandBufferLostContextObserverPtr loss_observer,
+  // mojom::CommandBuffer:
+  void Initialize(mojom::CommandBufferSyncClientPtr sync_client,
+                  mojom::CommandBufferSyncPointClientPtr sync_point_client,
+                  mojom::CommandBufferLostContextObserverPtr loss_observer,
                   mojo::ScopedSharedBufferHandle shared_state,
                   mojo::Array<int32_t> attribs) override;
   void SetGetBuffer(int32_t buffer) override;
@@ -71,7 +71,7 @@ class CommandBufferImpl : public mojo::CommandBuffer {
   scoped_refptr<GpuState> gpu_state_;
   scoped_refptr<base::SingleThreadTaskRunner> driver_task_runner_;
   scoped_ptr<CommandBufferDriver> driver_;
-  mojo::CommandBufferSyncPointClientPtr sync_point_client_;
+  mojom::CommandBufferSyncPointClientPtr sync_point_client_;
   scoped_ptr<mojo::Binding<CommandBuffer>> binding_;
   CommandBufferImplObserver* observer_;
   base::WeakPtrFactory<CommandBufferImpl> weak_ptr_factory_;

@@ -17,8 +17,8 @@ namespace mojo {
 class CustomSurfaceConverter {
  public:
   virtual bool ConvertSurfaceDrawQuad(
-      const QuadPtr& input,
-      const CompositorFrameMetadataPtr& metadata,
+      const mus::mojom::QuadPtr& input,
+      const mus::mojom::CompositorFrameMetadataPtr& metadata,
       cc::SharedQuadState* sqs,
       cc::RenderPass* render_pass) = 0;
 

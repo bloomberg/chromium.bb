@@ -7,7 +7,7 @@
 #include "base/lazy_instance.h"
 #include "base/threading/thread_local.h"
 #include "components/mus/public/cpp/window_tree_connection.h"
-#include "components/mus/public/interfaces/view_tree.mojom.h"
+#include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
@@ -98,13 +98,13 @@ WindowManagerConnection* WindowManagerConnection::Get() {
 }
 
 mus::Window* WindowManagerConnection::CreateWindow() {
-  mojo::ViewTreeClientPtr view_tree_client;
-  mojo::InterfaceRequest<mojo::ViewTreeClient> view_tree_client_request =
-      GetProxy(&view_tree_client);
-  window_manager_->OpenWindow(view_tree_client.Pass());
+  mus::mojom::WindowTreeClientPtr window_tree_client;
+  mojo::InterfaceRequest<mus::mojom::WindowTreeClient>
+      window_tree_client_request = GetProxy(&window_tree_client);
+  window_manager_->OpenWindow(window_tree_client.Pass());
   mus::WindowTreeConnection* window_tree_connection =
       mus::WindowTreeConnection::Create(
-          this, view_tree_client_request.Pass(),
+          this, window_tree_client_request.Pass(),
           mus::WindowTreeConnection::CreateType::WAIT_FOR_EMBED);
   DCHECK(window_tree_connection->GetRoot());
   return window_tree_connection->GetRoot();

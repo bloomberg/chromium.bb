@@ -9,7 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "components/mus/public/cpp/window_observer.h"
 #include "components/mus/public/cpp/window_tree_delegate.h"
-#include "components/mus/public/interfaces/view_tree_host.mojom.h"
+#include "components/mus/public/interfaces/window_tree_host.mojom.h"
 #include "components/web_view/public/cpp/web_view.h"
 #include "components/web_view/public/interfaces/web_view.mojom.h"
 // TODO(beng): move this file somewhere common.
@@ -71,7 +71,7 @@ class PhoneBrowserApplicationDelegate
               mojo::InterfaceRequest<LaunchHandler> request) override;
 
   mojo::ApplicationImpl* app_;
-  mojo::ViewTreeHostPtr host_;
+  mus::mojom::WindowTreeHostPtr host_;
 
   mus::Window* root_;
   mus::Window* content_;

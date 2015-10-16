@@ -48,9 +48,9 @@ CommandBufferDelegate::~CommandBufferDelegate() {}
 void CommandBufferDelegate::ContextLost() {}
 
 class CommandBufferClientImpl::SyncClientImpl
-    : public mojo::CommandBufferSyncClient {
+    : public mus::mojom::CommandBufferSyncClient {
  public:
-  SyncClientImpl(mojo::CommandBufferSyncClientPtr* ptr,
+  SyncClientImpl(mus::mojom::CommandBufferSyncClientPtr* ptr,
                  const MojoAsyncWaiter* async_waiter)
       : initialized_successfully_(false), binding_(this, ptr, async_waiter) {}
 
@@ -60,9 +60,9 @@ class CommandBufferClientImpl::SyncClientImpl
     return initialized_successfully_;
   }
 
-  mojo::CommandBufferStatePtr WaitForProgress() {
+  mus::mojom::CommandBufferStatePtr WaitForProgress() {
     if (!binding_.WaitForIncomingMethodCall())
-      return mojo::CommandBufferStatePtr();
+      return mus::mojom::CommandBufferStatePtr();
     return command_buffer_state_.Pass();
   }
 
@@ -75,26 +75,26 @@ class CommandBufferClientImpl::SyncClientImpl
  private:
   // CommandBufferSyncClient methods:
   void DidInitialize(bool success,
-                     mojo::GpuCapabilitiesPtr capabilities) override {
+                     mus::mojom::GpuCapabilitiesPtr capabilities) override {
     initialized_successfully_ = success;
     capabilities_ = capabilities.Pass();
   }
-  void DidMakeProgress(mojo::CommandBufferStatePtr state) override {
+  void DidMakeProgress(mus::mojom::CommandBufferStatePtr state) override {
     command_buffer_state_ = state.Pass();
   }
 
   bool initialized_successfully_;
-  mojo::GpuCapabilitiesPtr capabilities_;
-  mojo::CommandBufferStatePtr command_buffer_state_;
-  mojo::Binding<mojo::CommandBufferSyncClient> binding_;
+  mus::mojom::GpuCapabilitiesPtr capabilities_;
+  mus::mojom::CommandBufferStatePtr command_buffer_state_;
+  mojo::Binding<mus::mojom::CommandBufferSyncClient> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncClientImpl);
 };
 
 class CommandBufferClientImpl::SyncPointClientImpl
-    : public mojo::CommandBufferSyncPointClient {
+    : public mus::mojom::CommandBufferSyncPointClient {
  public:
-  SyncPointClientImpl(mojo::CommandBufferSyncPointClientPtr* ptr,
+  SyncPointClientImpl(mus::mojom::CommandBufferSyncPointClientPtr* ptr,
                       const MojoAsyncWaiter* async_waiter)
       : sync_point_(0u), binding_(this, ptr, async_waiter) {}
 
@@ -113,7 +113,7 @@ class CommandBufferClientImpl::SyncPointClientImpl
 
   uint32_t sync_point_;
 
-  mojo::Binding<mojo::CommandBufferSyncPointClient> binding_;
+  mojo::Binding<mus::mojom::CommandBufferSyncPointClient> binding_;
 };
 
 CommandBufferClientImpl::CommandBufferClientImpl(
@@ -131,7 +131,7 @@ CommandBufferClientImpl::CommandBufferClientImpl(
       next_fence_sync_release_(1),
       flushed_fence_sync_release_(0),
       async_waiter_(async_waiter) {
-  command_buffer_.Bind(mojo::InterfacePtrInfo<mojo::CommandBuffer>(
+  command_buffer_.Bind(mojo::InterfacePtrInfo<mus::mojom::CommandBuffer>(
                            command_buffer_handle.Pass(), 0u),
                        async_waiter);
   command_buffer_.set_connection_error_handler(
@@ -153,14 +153,14 @@ bool CommandBufferClientImpl::Initialize() {
 
   shared_state()->Initialize();
 
-  mojo::CommandBufferSyncClientPtr sync_client;
+  mus::mojom::CommandBufferSyncClientPtr sync_client;
   sync_client_impl_.reset(new SyncClientImpl(&sync_client, async_waiter_));
 
-  mojo::CommandBufferSyncPointClientPtr sync_point_client;
+  mus::mojom::CommandBufferSyncPointClientPtr sync_point_client;
   sync_point_client_impl_.reset(
       new SyncPointClientImpl(&sync_point_client, async_waiter_));
 
-  mojo::CommandBufferLostContextObserverPtr observer_ptr;
+  mus::mojom::CommandBufferLostContextObserverPtr observer_ptr;
   observer_binding_.Bind(GetProxy(&observer_ptr), async_waiter_);
   command_buffer_->Initialize(sync_client.Pass(),
                               sync_point_client.Pass(),
@@ -379,7 +379,8 @@ void CommandBufferClientImpl::TryUpdateState() {
 void CommandBufferClientImpl::MakeProgressAndUpdateState() {
   command_buffer_->MakeProgress(last_state_.get_offset);
 
-  mojo::CommandBufferStatePtr state = sync_client_impl_->WaitForProgress();
+  mus::mojom::CommandBufferStatePtr state =
+      sync_client_impl_->WaitForProgress();
   if (!state) {
     VLOG(1) << "Channel encountered error while waiting for command buffer";
     // TODO(piman): is it ok for this to re-enter?

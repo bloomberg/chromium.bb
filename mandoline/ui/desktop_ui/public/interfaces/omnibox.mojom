@@ -4,12 +4,12 @@
 
 module mandoline;
 
-import "components/mus/public/interfaces/view_tree.mojom";
+import "components/mus/public/interfaces/window_tree.mojom";
 
 // TODO(beng): Could this be generalized as a "Chooser" with a specific type??
 
 // Interface implemented by an application providing a method for URL input.
 interface Omnibox {
-  GetViewTreeClient(mojo.ViewTreeClient& client);
+  GetWindowTreeClient(mus.mojom.WindowTreeClient& client);
   ShowForURL(string url);
 };

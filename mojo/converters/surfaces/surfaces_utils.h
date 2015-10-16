@@ -15,12 +15,15 @@ class Size;
 
 namespace mojo {
 
-MOJO_SURFACES_EXPORT SharedQuadStatePtr CreateDefaultSQS(const gfx::Size& size);
+MOJO_SURFACES_EXPORT mus::mojom::SharedQuadStatePtr CreateDefaultSQS(
+    const gfx::Size& size);
 
 // Constructs a pass with the given id, output_rect and damage_rect set to rect,
 // transform_to_root_target set to identity and has_transparent_background set
 // to false.
-MOJO_SURFACES_EXPORT PassPtr CreateDefaultPass(int id, const gfx::Rect& rect);
+MOJO_SURFACES_EXPORT mus::mojom::PassPtr CreateDefaultPass(
+    int id,
+    const gfx::Rect& rect);
 
 }  // namespace mojo
 

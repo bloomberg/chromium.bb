@@ -21,12 +21,10 @@
 using mojo::Array;
 using mojo::Callback;
 using mojo::InterfaceRequest;
-using mojo::OrderDirection;
 using mojo::Rect;
 using mojo::ServiceProvider;
 using mojo::ServiceProviderPtr;
 using mojo::String;
-using mojo::ViewDataPtr;
 
 namespace mus {
 
@@ -47,7 +45,8 @@ ViewTreeImpl::ViewTreeImpl(ConnectionManager* connection_manager,
     is_embed_root_ = true;
   } else {
     access_policy_.reset(new DefaultAccessPolicy(id_, this));
-    is_embed_root_ = (policy_bitmask & ViewTree::ACCESS_POLICY_EMBED_ROOT) != 0;
+    is_embed_root_ =
+        (policy_bitmask & WindowTree::ACCESS_POLICY_EMBED_ROOT) != 0;
   }
 }
 
@@ -55,7 +54,8 @@ ViewTreeImpl::~ViewTreeImpl() {
   DestroyViews();
 }
 
-void ViewTreeImpl::Init(mojo::ViewTreeClient* client, mojo::ViewTreePtr tree) {
+void ViewTreeImpl::Init(mojom::WindowTreeClient* client,
+                        mojom::WindowTreePtr tree) {
   DCHECK(!client_);
   client_ = client;
   std::vector<const ServerView*> to_send;
@@ -70,15 +70,15 @@ void ViewTreeImpl::Init(mojo::ViewTreeClient* client, mojo::ViewTreePtr tree) {
   const Id focused_view_transport_id(
       ViewIdToTransportId(focused_view ? focused_view->id() : ViewId()));
 
-  client->OnEmbed(id_, ViewToViewData(to_send.front()), tree.Pass(),
+  client->OnEmbed(id_, ViewToWindowData(to_send.front()), tree.Pass(),
                   focused_view_transport_id,
-                  is_embed_root_ ? ViewTree::ACCESS_POLICY_EMBED_ROOT
-                                 : ViewTree::ACCESS_POLICY_DEFAULT);
+                  is_embed_root_ ? WindowTree::ACCESS_POLICY_EMBED_ROOT
+                                 : WindowTree::ACCESS_POLICY_DEFAULT);
 }
 
 const ServerView* ViewTreeImpl::GetView(const ViewId& id) const {
   if (id_ == id.connection_id) {
-    ViewMap::const_iterator i = view_map_.find(id.view_id);
+    ViewMap::const_iterator i = view_map_.find(id.window_id);
     return i == view_map_.end() ? NULL : i->second;
   }
   return connection_manager_->GetView(id);
@@ -90,7 +90,7 @@ bool ViewTreeImpl::IsRoot(const ViewId& id) const {
 
 ViewTreeHostImpl* ViewTreeImpl::GetHost() {
   return root_.get()
-             ? connection_manager_->GetViewTreeHostByView(GetView(*root_))
+             ? connection_manager_->GetWindowTreeHostByView(GetView(*root_))
              : nullptr;
 }
 
@@ -101,7 +101,7 @@ void ViewTreeImpl::OnWillDestroyViewTreeImpl(ViewTreeImpl* connection) {
       connection->root_ ? connection->GetView(*connection->root_) : nullptr;
   if (connection_root &&
       ((connection_root->id().connection_id == id_ &&
-        view_map_.count(connection_root->id().view_id) > 0) ||
+        view_map_.count(connection_root->id().window_id) > 0) ||
        (is_embed_root_ && IsViewKnown(connection_root)))) {
     client()->OnEmbeddedAppDisconnected(
         ViewIdToTransportId(*connection->root_));
@@ -110,21 +110,22 @@ void ViewTreeImpl::OnWillDestroyViewTreeImpl(ViewTreeImpl* connection) {
     root_.reset();
 }
 
-mojo::ErrorCode ViewTreeImpl::CreateView(const ViewId& view_id) {
-  if (view_id.connection_id != id_)
-    return mojo::ERROR_CODE_ILLEGAL_ARGUMENT;
-  if (view_map_.find(view_id.view_id) != view_map_.end())
-    return mojo::ERROR_CODE_VALUE_IN_USE;
-  view_map_[view_id.view_id] = connection_manager_->CreateServerView(view_id);
-  known_views_.insert(ViewIdToTransportId(view_id));
-  return mojo::ERROR_CODE_NONE;
+mojom::ErrorCode ViewTreeImpl::NewWindow(const ViewId& window_id) {
+  if (window_id.connection_id != id_)
+    return mojom::ERROR_CODE_ILLEGAL_ARGUMENT;
+  if (view_map_.find(window_id.window_id) != view_map_.end())
+    return mojom::ERROR_CODE_VALUE_IN_USE;
+  view_map_[window_id.window_id] =
+      connection_manager_->CreateServerView(window_id);
+  known_views_.insert(ViewIdToTransportId(window_id));
+  return mojom::ERROR_CODE_NONE;
 }
 
-bool ViewTreeImpl::AddView(const ViewId& parent_id, const ViewId& child_id) {
+bool ViewTreeImpl::AddWindow(const ViewId& parent_id, const ViewId& child_id) {
   ServerView* parent = GetView(parent_id);
   ServerView* child = GetView(child_id);
   if (parent && child && child->parent() != parent &&
-      !child->Contains(parent) && access_policy_->CanAddView(parent, child)) {
+      !child->Contains(parent) && access_policy_->CanAddWindow(parent, child)) {
     ConnectionManager::ScopedChange change(this, connection_manager_, false);
     parent->Add(child);
     return true;
@@ -132,17 +133,17 @@ bool ViewTreeImpl::AddView(const ViewId& parent_id, const ViewId& child_id) {
   return false;
 }
 
-std::vector<const ServerView*> ViewTreeImpl::GetViewTree(
-    const ViewId& view_id) const {
-  const ServerView* view = GetView(view_id);
+std::vector<const ServerView*> ViewTreeImpl::GetWindowTree(
+    const ViewId& window_id) const {
+  const ServerView* view = GetView(window_id);
   std::vector<const ServerView*> views;
   if (view)
-    GetViewTreeImpl(view, &views);
+    GetWindowTreeImpl(view, &views);
   return views;
 }
 
-bool ViewTreeImpl::SetViewVisibility(const ViewId& view_id, bool visible) {
-  ServerView* view = GetView(view_id);
+bool ViewTreeImpl::SetWindowVisibility(const ViewId& window_id, bool visible) {
+  ServerView* view = GetView(window_id);
   if (!view || view->visible() == visible ||
       !access_policy_->CanChangeViewVisibility(view)) {
     return false;
@@ -152,27 +153,27 @@ bool ViewTreeImpl::SetViewVisibility(const ViewId& view_id, bool visible) {
   return true;
 }
 
-bool ViewTreeImpl::Embed(const ViewId& view_id,
-                         mojo::ViewTreeClientPtr client,
+bool ViewTreeImpl::Embed(const ViewId& window_id,
+                         mojom::WindowTreeClientPtr client,
                          uint32_t policy_bitmask,
                          ConnectionSpecificId* connection_id) {
   *connection_id = kInvalidConnectionId;
-  if (!client.get() || !CanEmbed(view_id, policy_bitmask))
+  if (!client.get() || !CanEmbed(window_id, policy_bitmask))
     return false;
-  PrepareForEmbed(view_id);
+  PrepareForEmbed(window_id);
   ViewTreeImpl* new_connection = connection_manager_->EmbedAtView(
-      id_, view_id, policy_bitmask, client.Pass());
+      id_, window_id, policy_bitmask, client.Pass());
   if (is_embed_root_)
     *connection_id = new_connection->id();
   return true;
 }
 
-void ViewTreeImpl::Embed(const ViewId& view_id, mojo::URLRequestPtr request) {
-  if (!CanEmbed(view_id, ViewTree::ACCESS_POLICY_DEFAULT))
+void ViewTreeImpl::Embed(const ViewId& window_id, mojo::URLRequestPtr request) {
+  if (!CanEmbed(window_id, WindowTree::ACCESS_POLICY_DEFAULT))
     return;
-  PrepareForEmbed(view_id);
+  PrepareForEmbed(window_id);
   connection_manager_->EmbedAtView(
-      id_, view_id, mojo::ViewTree::ACCESS_POLICY_DEFAULT, request.Pass());
+      id_, window_id, mojom::WindowTree::ACCESS_POLICY_DEFAULT, request.Pass());
 }
 
 void ViewTreeImpl::ProcessViewBoundsChanged(const ServerView* view,
@@ -198,8 +199,8 @@ void ViewTreeImpl::ProcessClientAreaChanged(const ServerView* window,
 }
 
 void ViewTreeImpl::ProcessViewportMetricsChanged(
-    const mojo::ViewportMetrics& old_metrics,
-    const mojo::ViewportMetrics& new_metrics,
+    const mojom::ViewportMetrics& old_metrics,
+    const mojom::ViewportMetrics& new_metrics,
     bool originated_change) {
   client()->OnWindowViewportMetricsChanged(old_metrics.Clone(),
                                            new_metrics.Clone());
@@ -263,13 +264,13 @@ void ViewTreeImpl::ProcessViewHierarchyChanged(const ServerView* view,
   const ViewId old_parent_id(old_parent ? old_parent->id() : ViewId());
   client()->OnWindowHierarchyChanged(
       ViewIdToTransportId(view->id()), ViewIdToTransportId(new_parent_id),
-      ViewIdToTransportId(old_parent_id), ViewsToViewDatas(to_send));
+      ViewIdToTransportId(old_parent_id), ViewsToWindowDatas(to_send));
   connection_manager_->OnConnectionMessagedClient(id_);
 }
 
 void ViewTreeImpl::ProcessViewReorder(const ServerView* view,
                                       const ServerView* relative_view,
-                                      OrderDirection direction,
+                                      mojom::OrderDirection direction,
                                       bool originated_change) {
   if (originated_change || !IsViewKnown(view) || !IsViewKnown(relative_view))
     return;
@@ -282,7 +283,7 @@ void ViewTreeImpl::ProcessViewReorder(const ServerView* view,
 void ViewTreeImpl::ProcessViewDeleted(const ViewId& view,
                                       bool originated_change) {
   if (view.connection_id == id_)
-    view_map_.erase(view.view_id);
+    view_map_.erase(view.window_id);
 
   const bool in_known = known_views_.erase(ViewIdToTransportId(view)) > 0;
 
@@ -334,16 +335,16 @@ bool ViewTreeImpl::IsViewKnown(const ServerView* view) const {
   return known_views_.count(ViewIdToTransportId(view->id())) > 0;
 }
 
-bool ViewTreeImpl::CanReorderView(const ServerView* view,
-                                  const ServerView* relative_view,
-                                  OrderDirection direction) const {
+bool ViewTreeImpl::CanReorderWindow(const ServerView* view,
+                                    const ServerView* relative_view,
+                                    mojom::OrderDirection direction) const {
   if (!view || !relative_view)
     return false;
 
   if (!view->parent() || view->parent() != relative_view->parent())
     return false;
 
-  if (!access_policy_->CanReorderView(view, relative_view, direction))
+  if (!access_policy_->CanReorderWindow(view, relative_view, direction))
     return false;
 
   std::vector<const ServerView*> children = view->parent()->GetChildren();
@@ -352,15 +353,15 @@ bool ViewTreeImpl::CanReorderView(const ServerView* view,
   const size_t target_i =
       std::find(children.begin(), children.end(), relative_view) -
       children.begin();
-  if ((direction == mojo::ORDER_DIRECTION_ABOVE && child_i == target_i + 1) ||
-      (direction == mojo::ORDER_DIRECTION_BELOW && child_i + 1 == target_i)) {
+  if ((direction == mojom::ORDER_DIRECTION_ABOVE && child_i == target_i + 1) ||
+      (direction == mojom::ORDER_DIRECTION_BELOW && child_i + 1 == target_i)) {
     return false;
   }
 
   return true;
 }
 
-bool ViewTreeImpl::DeleteViewImpl(ViewTreeImpl* source, ServerView* view) {
+bool ViewTreeImpl::DeleteWindowImpl(ViewTreeImpl* source, ServerView* view) {
   DCHECK(view);
   DCHECK_EQ(view->id().connection_id, id_);
   ConnectionManager::ScopedChange change(source, connection_manager_, true);
@@ -370,7 +371,7 @@ bool ViewTreeImpl::DeleteViewImpl(ViewTreeImpl* source, ServerView* view) {
 
 void ViewTreeImpl::GetUnknownViewsFrom(const ServerView* view,
                                        std::vector<const ServerView*>* views) {
-  if (IsViewKnown(view) || !access_policy_->CanGetViewTree(view))
+  if (IsViewKnown(view) || !access_policy_->CanGetWindowTree(view))
     return;
   views->push_back(view);
   known_views_.insert(ViewIdToTransportId(view->id()));
@@ -414,24 +415,24 @@ void ViewTreeImpl::RemoveRoot() {
     local_views[i]->parent()->Remove(local_views[i]);
 }
 
-Array<ViewDataPtr> ViewTreeImpl::ViewsToViewDatas(
+Array<mojom::WindowDataPtr> ViewTreeImpl::ViewsToWindowDatas(
     const std::vector<const ServerView*>& views) {
-  Array<ViewDataPtr> array(views.size());
+  Array<mojom::WindowDataPtr> array(views.size());
   for (size_t i = 0; i < views.size(); ++i)
-    array[i] = ViewToViewData(views[i]).Pass();
+    array[i] = ViewToWindowData(views[i]).Pass();
   return array.Pass();
 }
 
-ViewDataPtr ViewTreeImpl::ViewToViewData(const ServerView* view) {
+mojom::WindowDataPtr ViewTreeImpl::ViewToWindowData(const ServerView* view) {
   DCHECK(IsViewKnown(view));
   const ServerView* parent = view->parent();
   // If the parent isn't known, it means the parent is not visible to us (not
   // in roots), and should not be sent over.
   if (parent && !IsViewKnown(parent))
     parent = NULL;
-  ViewDataPtr view_data(mojo::ViewData::New());
+  mojom::WindowDataPtr view_data(mojom::WindowData::New());
   view_data->parent_id = ViewIdToTransportId(parent ? parent->id() : ViewId());
-  view_data->view_id = ViewIdToTransportId(view->id());
+  view_data->window_id = ViewIdToTransportId(view->id());
   view_data->bounds = Rect::From(view->bounds());
   view_data->properties =
       mojo::Map<String, Array<uint8_t>>::From(view->properties());
@@ -442,12 +443,12 @@ ViewDataPtr ViewTreeImpl::ViewToViewData(const ServerView* view) {
   return view_data.Pass();
 }
 
-void ViewTreeImpl::GetViewTreeImpl(
+void ViewTreeImpl::GetWindowTreeImpl(
     const ServerView* view,
     std::vector<const ServerView*>* views) const {
   DCHECK(view);
 
-  if (!access_policy_->CanGetViewTree(view))
+  if (!access_policy_->CanGetWindowTree(view))
     return;
 
   views->push_back(view);
@@ -457,7 +458,7 @@ void ViewTreeImpl::GetViewTreeImpl(
 
   std::vector<const ServerView*> children(view->GetChildren());
   for (size_t i = 0; i < children.size(); ++i)
-    GetViewTreeImpl(children[i], views);
+    GetWindowTreeImpl(children[i], views);
 }
 
 void ViewTreeImpl::NotifyDrawnStateChanged(const ServerView* view,
@@ -487,22 +488,22 @@ void ViewTreeImpl::DestroyViews() {
   }
 }
 
-bool ViewTreeImpl::CanEmbed(const ViewId& view_id,
+bool ViewTreeImpl::CanEmbed(const ViewId& window_id,
                             uint32_t policy_bitmask) const {
-  const ServerView* view = GetView(view_id);
+  const ServerView* view = GetView(window_id);
   return view && access_policy_->CanEmbed(view, policy_bitmask);
 }
 
-void ViewTreeImpl::PrepareForEmbed(const ViewId& view_id) {
-  const ServerView* view = GetView(view_id);
+void ViewTreeImpl::PrepareForEmbed(const ViewId& window_id) {
+  const ServerView* view = GetView(window_id);
   DCHECK(view);
 
   // Only allow a node to be the root for one connection.
   ViewTreeImpl* existing_owner =
-      connection_manager_->GetConnectionWithRoot(view_id);
+      connection_manager_->GetConnectionWithRoot(window_id);
 
   ConnectionManager::ScopedChange change(this, connection_manager_, true);
-  RemoveChildrenAsPartOfEmbed(view_id);
+  RemoveChildrenAsPartOfEmbed(window_id);
   if (existing_owner) {
     // Never message the originating connection.
     connection_manager_->OnConnectionMessagedClient(id_);
@@ -510,44 +511,46 @@ void ViewTreeImpl::PrepareForEmbed(const ViewId& view_id) {
   }
 }
 
-void ViewTreeImpl::RemoveChildrenAsPartOfEmbed(const ViewId& view_id) {
-  ServerView* view = GetView(view_id);
+void ViewTreeImpl::RemoveChildrenAsPartOfEmbed(const ViewId& window_id) {
+  ServerView* view = GetView(window_id);
   CHECK(view);
-  CHECK(view->id().connection_id == view_id.connection_id);
+  CHECK(view->id().connection_id == window_id.connection_id);
   std::vector<ServerView*> children = view->GetChildren();
   for (size_t i = 0; i < children.size(); ++i)
     view->Remove(children[i]);
 }
 
-void ViewTreeImpl::CreateView(Id transport_view_id,
-                              const Callback<void(mojo::ErrorCode)>& callback) {
-  callback.Run(CreateView(ViewIdFromTransportId(transport_view_id)));
+void ViewTreeImpl::NewWindow(Id transport_window_id,
+                             const Callback<void(mojom::ErrorCode)>& callback) {
+  callback.Run(NewWindow(ViewIdFromTransportId(transport_window_id)));
 }
 
-void ViewTreeImpl::DeleteView(Id transport_view_id,
-                              const Callback<void(bool)>& callback) {
-  ServerView* view = GetView(ViewIdFromTransportId(transport_view_id));
+void ViewTreeImpl::DeleteWindow(Id transport_window_id,
+                                const Callback<void(bool)>& callback) {
+  ServerView* view = GetView(ViewIdFromTransportId(transport_window_id));
   bool success = false;
-  if (view && access_policy_->CanDeleteView(view)) {
+  if (view && access_policy_->CanDeleteWindow(view)) {
     ViewTreeImpl* connection =
         connection_manager_->GetConnection(view->id().connection_id);
-    success = connection && connection->DeleteViewImpl(this, view);
+    success = connection && connection->DeleteWindowImpl(this, view);
   }
   callback.Run(success);
 }
 
-void ViewTreeImpl::AddView(Id parent_id,
-                           Id child_id,
-                           const Callback<void(bool)>& callback) {
-  callback.Run(AddView(ViewIdFromTransportId(parent_id),
-                       ViewIdFromTransportId(child_id)));
+void ViewTreeImpl::AddWindow(Id parent_id,
+                             Id child_id,
+                             const Callback<void(bool)>& callback) {
+  callback.Run(AddWindow(ViewIdFromTransportId(parent_id),
+                         ViewIdFromTransportId(child_id)));
 }
 
-void ViewTreeImpl::RemoveViewFromParent(Id view_id,
-                                        const Callback<void(bool)>& callback) {
+void ViewTreeImpl::RemoveWindowFromParent(
+    Id window_id,
+    const Callback<void(bool)>& callback) {
   bool success = false;
-  ServerView* view = GetView(ViewIdFromTransportId(view_id));
-  if (view && view->parent() && access_policy_->CanRemoveViewFromParent(view)) {
+  ServerView* view = GetView(ViewIdFromTransportId(window_id));
+  if (view && view->parent() &&
+      access_policy_->CanRemoveWindowFromParent(view)) {
     success = true;
     ConnectionManager::ScopedChange change(this, connection_manager_, false);
     view->parent()->Remove(view);
@@ -555,14 +558,15 @@ void ViewTreeImpl::RemoveViewFromParent(Id view_id,
   callback.Run(success);
 }
 
-void ViewTreeImpl::ReorderView(Id view_id,
-                               Id relative_view_id,
-                               OrderDirection direction,
-                               const Callback<void(bool)>& callback) {
+void ViewTreeImpl::ReorderWindow(Id window_id,
+                                 Id relative_window_id,
+                                 mojom::OrderDirection direction,
+                                 const Callback<void(bool)>& callback) {
   bool success = false;
-  ServerView* view = GetView(ViewIdFromTransportId(view_id));
-  ServerView* relative_view = GetView(ViewIdFromTransportId(relative_view_id));
-  if (CanReorderView(view, relative_view, direction)) {
+  ServerView* view = GetView(ViewIdFromTransportId(window_id));
+  ServerView* relative_view =
+      GetView(ViewIdFromTransportId(relative_window_id));
+  if (CanReorderWindow(view, relative_view, direction)) {
     success = true;
     ConnectionManager::ScopedChange change(this, connection_manager_, false);
     view->parent()->Reorder(view, relative_view, direction);
@@ -571,19 +575,19 @@ void ViewTreeImpl::ReorderView(Id view_id,
   callback.Run(success);
 }
 
-void ViewTreeImpl::GetViewTree(
-    Id view_id,
-    const Callback<void(Array<ViewDataPtr>)>& callback) {
+void ViewTreeImpl::GetWindowTree(
+    Id window_id,
+    const Callback<void(Array<mojom::WindowDataPtr>)>& callback) {
   std::vector<const ServerView*> views(
-      GetViewTree(ViewIdFromTransportId(view_id)));
-  callback.Run(ViewsToViewDatas(views));
+      GetWindowTree(ViewIdFromTransportId(window_id)));
+  callback.Run(ViewsToWindowDatas(views));
 }
 
-void ViewTreeImpl::SetViewBounds(Id view_id,
-                                 mojo::RectPtr bounds,
-                                 const Callback<void(bool)>& callback) {
-  ServerView* view = GetView(ViewIdFromTransportId(view_id));
-  const bool success = view && access_policy_->CanSetViewBounds(view);
+void ViewTreeImpl::SetWindowBounds(Id window_id,
+                                   mojo::RectPtr bounds,
+                                   const Callback<void(bool)>& callback) {
+  ServerView* view = GetView(ViewIdFromTransportId(window_id));
+  const bool success = view && access_policy_->CanSetWindowBounds(view);
   if (success) {
     ConnectionManager::ScopedChange change(this, connection_manager_, false);
     view->SetBounds(bounds.To<gfx::Rect>());
@@ -591,19 +595,20 @@ void ViewTreeImpl::SetViewBounds(Id view_id,
   callback.Run(success);
 }
 
-void ViewTreeImpl::SetViewVisibility(Id transport_view_id,
-                                     bool visible,
-                                     const Callback<void(bool)>& callback) {
+void ViewTreeImpl::SetWindowVisibility(Id transport_window_id,
+                                       bool visible,
+                                       const Callback<void(bool)>& callback) {
   callback.Run(
-      SetViewVisibility(ViewIdFromTransportId(transport_view_id), visible));
+      SetWindowVisibility(ViewIdFromTransportId(transport_window_id), visible));
 }
 
-void ViewTreeImpl::SetViewProperty(uint32_t view_id,
-                                   const mojo::String& name,
-                                   mojo::Array<uint8_t> value,
-                                   const mojo::Callback<void(bool)>& callback) {
-  ServerView* view = GetView(ViewIdFromTransportId(view_id));
-  const bool success = view && access_policy_->CanSetViewProperties(view);
+void ViewTreeImpl::SetWindowProperty(
+    uint32_t window_id,
+    const mojo::String& name,
+    mojo::Array<uint8_t> value,
+    const mojo::Callback<void(bool)>& callback) {
+  ServerView* view = GetView(ViewIdFromTransportId(window_id));
+  const bool success = view && access_policy_->CanSetWindowProperties(view);
   if (success) {
     ConnectionManager::ScopedChange change(this, connection_manager_, false);
 
@@ -617,29 +622,30 @@ void ViewTreeImpl::SetViewProperty(uint32_t view_id,
   callback.Run(success);
 }
 
-void ViewTreeImpl::RequestSurface(Id view_id,
-                                  mojo::InterfaceRequest<mojo::Surface> surface,
-                                  mojo::SurfaceClientPtr client) {
-  ServerView* view = GetView(ViewIdFromTransportId(view_id));
+void ViewTreeImpl::RequestSurface(
+    Id window_id,
+    mojo::InterfaceRequest<mojom::Surface> surface,
+    mojom::SurfaceClientPtr client) {
+  ServerView* view = GetView(ViewIdFromTransportId(window_id));
   const bool success = view && access_policy_->CanSetWindowSurfaceId(view);
   if (!success)
     return;
   view->Bind(surface.Pass(), client.Pass());
 }
 
-void ViewTreeImpl::SetViewTextInputState(uint32_t view_id,
-                                         mojo::TextInputStatePtr state) {
-  ServerView* view = GetView(ViewIdFromTransportId(view_id));
-  bool success = view && access_policy_->CanSetViewTextInputState(view);
+void ViewTreeImpl::SetWindowTextInputState(uint32_t window_id,
+                                           mojo::TextInputStatePtr state) {
+  ServerView* view = GetView(ViewIdFromTransportId(window_id));
+  bool success = view && access_policy_->CanSetWindowTextInputState(view);
   if (success)
     view->SetTextInputState(state.To<ui::TextInputState>());
 }
 
-void ViewTreeImpl::SetImeVisibility(Id transport_view_id,
+void ViewTreeImpl::SetImeVisibility(Id transport_window_id,
                                     bool visible,
                                     mojo::TextInputStatePtr state) {
-  ServerView* view = GetView(ViewIdFromTransportId(transport_view_id));
-  bool success = view && access_policy_->CanSetViewTextInputState(view);
+  ServerView* view = GetView(ViewIdFromTransportId(transport_window_id));
+  bool success = view && access_policy_->CanSetWindowTextInputState(view);
   if (success) {
     if (!state.is_null())
       view->SetTextInputState(state.To<ui::TextInputState>());
@@ -661,18 +667,18 @@ void ViewTreeImpl::SetClientArea(Id transport_window_id, mojo::RectPtr rect) {
     window->SetClientArea(rect.To<gfx::Rect>());
 }
 
-void ViewTreeImpl::Embed(Id transport_view_id,
-                         mojo::ViewTreeClientPtr client,
+void ViewTreeImpl::Embed(Id transport_window_id,
+                         mojom::WindowTreeClientPtr client,
                          uint32_t policy_bitmask,
                          const EmbedCallback& callback) {
   ConnectionSpecificId connection_id = kInvalidConnectionId;
-  const bool result = Embed(ViewIdFromTransportId(transport_view_id),
+  const bool result = Embed(ViewIdFromTransportId(transport_window_id),
                             client.Pass(), policy_bitmask, &connection_id);
   callback.Run(result, connection_id);
 }
 
-void ViewTreeImpl::SetFocus(uint32_t view_id) {
-  ServerView* view = GetView(ViewIdFromTransportId(view_id));
+void ViewTreeImpl::SetFocus(uint32_t window_id) {
+  ServerView* view = GetView(ViewIdFromTransportId(window_id));
   // TODO(beng): consider shifting non-policy drawn check logic to VTH's
   //             FocusController.
   if (view && view->IsDrawn() && access_policy_->CanSetFocus(view)) {

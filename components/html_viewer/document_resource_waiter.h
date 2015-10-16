@@ -97,8 +97,8 @@ class DocumentResourceWaiter : public web_view::mojom::FrameClient,
   // WindowObserver:
   void OnWindowViewportMetricsChanged(
       mus::Window* window,
-      const mojo::ViewportMetrics& old_metrics,
-      const mojo::ViewportMetrics& new_metrics) override;
+      const mus::mojom::ViewportMetrics& old_metrics,
+      const mus::mojom::ViewportMetrics& new_metrics) override;
   void OnWindowDestroyed(mus::Window* window) override;
 
   // HTMLFrameTreeManagerObserver:

@@ -11,7 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
-#include "components/mus/public/interfaces/view_tree.mojom.h"
+#include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "components/mus/surfaces/top_level_display_client.h"
 #include "components/mus/ws/display_manager_delegate.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/callback.h"
@@ -64,7 +64,7 @@ class DisplayManager {
 
   virtual void SetTitle(const base::string16& title) = 0;
 
-  virtual const mojo::ViewportMetrics& GetViewportMetrics() = 0;
+  virtual const mojom::ViewportMetrics& GetViewportMetrics() = 0;
 
   virtual void UpdateTextInputState(const ui::TextInputState& state) = 0;
   virtual void SetImeVisibility(bool visible) = 0;
@@ -95,7 +95,7 @@ class DefaultDisplayManager : public DisplayManager,
   void SchedulePaint(const ServerView* view, const gfx::Rect& bounds) override;
   void SetViewportSize(const gfx::Size& size) override;
   void SetTitle(const base::string16& title) override;
-  const mojo::ViewportMetrics& GetViewportMetrics() override;
+  const mojom::ViewportMetrics& GetViewportMetrics() override;
   void UpdateTextInputState(const ui::TextInputState& state) override;
   void SetImeVisibility(bool visible) override;
 
@@ -131,7 +131,7 @@ class DefaultDisplayManager : public DisplayManager,
   scoped_refptr<SurfacesState> surfaces_state_;
   DisplayManagerDelegate* delegate_;
 
-  mojo::ViewportMetrics metrics_;
+  mojom::ViewportMetrics metrics_;
   gfx::Rect dirty_rect_;
   base::Timer draw_timer_;
   bool frame_pending_;

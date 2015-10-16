@@ -51,8 +51,8 @@ class OmniboxImpl : public mus::WindowTreeDelegate,
                       const ui::KeyEvent& key_event) override;
 
   // Overridden from Omnibox:
-  void GetViewTreeClient(
-      mojo::InterfaceRequest<mojo::ViewTreeClient> request) override;
+  void GetWindowTreeClient(
+      mojo::InterfaceRequest<mus::mojom::WindowTreeClient> request) override;
   void ShowForURL(const mojo::String& url) override;
 
   void HideWindow();
@@ -189,8 +189,8 @@ bool OmniboxImpl::HandleKeyEvent(views::Textfield* sender,
 ////////////////////////////////////////////////////////////////////////////////
 // OmniboxImpl, Omnibox implementation:
 
-void OmniboxImpl::GetViewTreeClient(
-    mojo::InterfaceRequest<mojo::ViewTreeClient> request) {
+void OmniboxImpl::GetWindowTreeClient(
+    mojo::InterfaceRequest<mus::mojom::WindowTreeClient> request) {
   mus::WindowTreeConnection::Create(
       this, request.Pass(),
       mus::WindowTreeConnection::CreateType::DONT_WAIT_FOR_EMBED);

@@ -9,7 +9,7 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
-#include "components/mus/public/interfaces/view_tree.mojom.h"
+#include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "components/web_view/public/interfaces/frame.mojom.h"
 #include "mojo/services/network/public/interfaces/url_loader.mojom.h"
 #include "url/gurl.h"
@@ -31,7 +31,7 @@ class FrameTreeDelegate {
       base::Callback<void(uint32_t,
                           mojom::FrameClient*,
                           scoped_ptr<FrameUserData>,
-                          mojo::ViewTreeClientPtr)>;
+                          mus::mojom::WindowTreeClientPtr)>;
 
   // Called when a Frame creates a new child Frame. |frame_tree_client| is the
   // FrameClient for the new frame.
@@ -59,7 +59,7 @@ class FrameTreeDelegate {
   // Asks the client if navigation is allowed. If the navigation is allowed
   // |callback| should be called to continue the navigation. |callback|
   // may be called synchronously or asynchronously. In the callback
-  // mojo::ViewTreeClientPtr should only be set if an app other than
+  // mus::mojom::WindowTreeClientPtr should only be set if an app other than
   // frame->app_id() is used to render |request|.
   virtual void CanNavigateFrame(Frame* target,
                                 mojo::URLRequestPtr request,

@@ -6,7 +6,7 @@
 #define COMPONENTS_WEB_VIEW_FRAME_TREE_H_
 
 #include "base/time/time.h"
-#include "components/mus/public/interfaces/view_tree.mojom.h"
+#include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "components/web_view/frame.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/array.h"
 #include "url/gurl.h"
@@ -38,7 +38,7 @@ class FrameTree {
   // See Frame for details on app id's.
   FrameTree(uint32_t root_app_id,
             mus::Window* view,
-            mojo::ViewTreeClientPtr view_tree_client,
+            mus::mojom::WindowTreeClientPtr view_tree_client,
             FrameTreeDelegate* delegate,
             mojom::FrameClient* root_client,
             scoped_ptr<FrameUserData> user_data,

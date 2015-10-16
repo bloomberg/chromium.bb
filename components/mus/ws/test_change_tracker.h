@@ -10,7 +10,7 @@
 
 #include "base/basictypes.h"
 #include "components/mus/public/cpp/types.h"
-#include "components/mus/public/interfaces/view_tree.mojom.h"
+#include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/array.h"
 #include "ui/mojo/geometry/geometry.mojom.h"
 
@@ -34,7 +34,7 @@ enum ChangeType {
   CHANGE_TYPE_FOCUSED,
 };
 
-// TODO(sky): consider nuking and converting directly to ViewData.
+// TODO(sky): consider nuking and converting directly to WindowData.
 struct TestView {
   TestView();
   ~TestView();
@@ -46,7 +46,7 @@ struct TestView {
   std::string ToString2() const;
 
   Id parent_id;
-  Id view_id;
+  Id window_id;
   bool visible;
   bool drawn;
   std::map<std::string, std::vector<uint8_t>> properties;
@@ -61,14 +61,14 @@ struct Change {
   ChangeType type;
   ConnectionSpecificId connection_id;
   std::vector<TestView> views;
-  Id view_id;
-  Id view_id2;
-  Id view_id3;
+  Id window_id;
+  Id window_id2;
+  Id window_id3;
   mojo::Rect bounds;
   mojo::Rect bounds2;
   int32_t event_action;
   mojo::String embed_url;
-  mojo::OrderDirection direction;
+  mojom::OrderDirection direction;
   bool bool_value;
   std::string property_key;
   std::string property_value;
@@ -90,9 +90,9 @@ std::string SingleViewDescription(const std::vector<TestView>& views);
 // if change.size() != 1.
 std::string ChangeViewDescription(const std::vector<Change>& changes);
 
-// Converts ViewDatas to TestViews.
-void ViewDatasToTestViews(const mojo::Array<mojo::ViewDataPtr>& data,
-                          std::vector<TestView>* test_views);
+// Converts WindowDatas to TestViews.
+void WindowDatasToTestViews(const mojo::Array<mojom::WindowDataPtr>& data,
+                            std::vector<TestView>* test_views);
 
 // TestChangeTracker is used to record ViewTreeClient functions. It notifies
 // a delegate any time a change is added.
@@ -117,29 +117,29 @@ class TestChangeTracker {
 
   // Each of these functions generate a Change. There is one per
   // ViewTreeClient function.
-  void OnEmbed(ConnectionSpecificId connection_id, mojo::ViewDataPtr root);
-  void OnEmbeddedAppDisconnected(Id view_id);
+  void OnEmbed(ConnectionSpecificId connection_id, mojom::WindowDataPtr root);
+  void OnEmbeddedAppDisconnected(Id window_id);
   void OnUnembed();
-  void OnWindowBoundsChanged(Id view_id,
+  void OnWindowBoundsChanged(Id window_id,
                              mojo::RectPtr old_bounds,
                              mojo::RectPtr new_bounds);
-  void OnWindowViewportMetricsChanged(mojo::ViewportMetricsPtr old_bounds,
-                                      mojo::ViewportMetricsPtr new_bounds);
-  void OnWindowHierarchyChanged(Id view_id,
+  void OnWindowViewportMetricsChanged(mojom::ViewportMetricsPtr old_bounds,
+                                      mojom::ViewportMetricsPtr new_bounds);
+  void OnWindowHierarchyChanged(Id window_id,
                                 Id new_parent_id,
                                 Id old_parent_id,
-                                mojo::Array<mojo::ViewDataPtr> views);
-  void OnWindowReordered(Id view_id,
-                         Id relative_view_id,
-                         mojo::OrderDirection direction);
-  void OnWindowDeleted(Id view_id);
-  void OnWindowVisibilityChanged(Id view_id, bool visible);
-  void OnWindowDrawnStateChanged(Id view_id, bool drawn);
-  void OnWindowInputEvent(Id view_id, mojo::EventPtr event);
-  void OnWindowSharedPropertyChanged(Id view_id,
+                                mojo::Array<mojom::WindowDataPtr> views);
+  void OnWindowReordered(Id window_id,
+                         Id relative_window_id,
+                         mojom::OrderDirection direction);
+  void OnWindowDeleted(Id window_id);
+  void OnWindowVisibilityChanged(Id window_id, bool visible);
+  void OnWindowDrawnStateChanged(Id window_id, bool drawn);
+  void OnWindowInputEvent(Id window_id, mojo::EventPtr event);
+  void OnWindowSharedPropertyChanged(Id window_id,
                                      mojo::String name,
                                      mojo::Array<uint8_t> data);
-  void OnWindowFocused(Id view_id);
+  void OnWindowFocused(Id window_id);
   void DelegateEmbed(const mojo::String& url);
 
  private:

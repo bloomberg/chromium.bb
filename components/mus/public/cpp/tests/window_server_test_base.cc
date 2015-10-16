@@ -79,7 +79,7 @@ mojo::ApplicationDelegate* WindowServerTestBase::GetApplicationDelegate() {
 
 bool WindowServerTestBase::ConfigureIncomingConnection(
     mojo::ApplicationConnection* connection) {
-  connection->AddService<mojo::ViewTreeClient>(this);
+  connection->AddService<mojom::WindowTreeClient>(this);
   return true;
 }
 
@@ -94,7 +94,7 @@ void WindowServerTestBase::OnConnectionLost(WindowTreeConnection* connection) {
 
 void WindowServerTestBase::Create(
     mojo::ApplicationConnection* connection,
-    mojo::InterfaceRequest<mojo::ViewTreeClient> request) {
+    mojo::InterfaceRequest<mojom::WindowTreeClient> request) {
   WindowTreeConnection::Create(
       this, request.Pass(),
       WindowTreeConnection::CreateType::DONT_WAIT_FOR_EMBED);

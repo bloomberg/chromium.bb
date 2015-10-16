@@ -52,7 +52,7 @@ class ServerViewObserver {
 
   virtual void OnViewReordered(ServerView* view,
                                ServerView* relative,
-                               mojo::OrderDirection direction) {}
+                               mojom::OrderDirection direction) {}
 
   virtual void OnWillChangeViewVisibility(ServerView* view) {}
   virtual void OnViewVisibilityChanged(ServerView* view) {}

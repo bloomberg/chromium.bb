@@ -18,7 +18,7 @@ class Window;
 
 // A WindowSurface is wrapper to simplify submitting CompositorFrames to Views,
 // and receiving ReturnedResources.
-class WindowSurface : public mojo::SurfaceClient {
+class WindowSurface : public mojom::SurfaceClient {
  public:
   ~WindowSurface() override;
 
@@ -26,7 +26,7 @@ class WindowSurface : public mojo::SurfaceClient {
   // object.
   void BindToThread();
 
-  void SubmitCompositorFrame(mojo::CompositorFramePtr frame,
+  void SubmitCompositorFrame(mojom::CompositorFramePtr frame,
                              const mojo::Closure& callback);
 
   void set_client(WindowSurfaceClient* client) { client_ = client; }
@@ -34,18 +34,18 @@ class WindowSurface : public mojo::SurfaceClient {
  private:
   friend class Window;
 
-  WindowSurface(mojo::InterfacePtrInfo<mojo::Surface> surface_info,
-                mojo::InterfaceRequest<mojo::SurfaceClient> client_request);
+  WindowSurface(mojo::InterfacePtrInfo<mojom::Surface> surface_info,
+                mojo::InterfaceRequest<mojom::SurfaceClient> client_request);
 
   // SurfaceClient implementation:
   void ReturnResources(
-      mojo::Array<mojo::ReturnedResourcePtr> resources) override;
+      mojo::Array<mojom::ReturnedResourcePtr> resources) override;
 
   WindowSurfaceClient* client_;
-  mojo::InterfacePtrInfo<mojo::Surface> surface_info_;
-  mojo::InterfaceRequest<mojo::SurfaceClient> client_request_;
-  mojo::SurfacePtr surface_;
-  scoped_ptr<mojo::Binding<mojo::SurfaceClient>> client_binding_;
+  mojo::InterfacePtrInfo<mojom::Surface> surface_info_;
+  mojo::InterfaceRequest<mojom::SurfaceClient> client_request_;
+  mojom::SurfacePtr surface_;
+  scoped_ptr<mojo::Binding<mojom::SurfaceClient>> client_binding_;
   bool bound_to_thread_;
 };
 

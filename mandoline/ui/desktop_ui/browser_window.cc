@@ -68,7 +68,7 @@ class ProgressView : public views::View {
 // BrowserWindow, public:
 
 BrowserWindow::BrowserWindow(mojo::ApplicationImpl* app,
-                             mojo::ViewTreeHostFactory* host_factory,
+                             mus::mojom::WindowTreeHostFactory* host_factory,
                              BrowserManager* manager)
     : app_(app),
       host_client_binding_(this),
@@ -82,7 +82,7 @@ BrowserWindow::BrowserWindow(mojo::ApplicationImpl* app,
       find_active_(0),
       find_count_(0),
       web_view_(this) {
-  mojo::ViewTreeHostClientPtr host_client;
+  mus::mojom::WindowTreeHostClientPtr host_client;
   host_client_binding_.Bind(GetProxy(&host_client));
   mus::CreateWindowTreeHost(host_factory, host_client.Pass(), this, &host_);
 }
@@ -403,8 +403,8 @@ void BrowserWindow::Init(mus::Window* root) {
 }
 
 void BrowserWindow::EmbedOmnibox() {
-  mojo::ViewTreeClientPtr view_tree_client;
-  omnibox_->GetViewTreeClient(GetProxy(&view_tree_client));
+  mus::mojom::WindowTreeClientPtr view_tree_client;
+  omnibox_->GetWindowTreeClient(GetProxy(&view_tree_client));
   omnibox_view_->Embed(view_tree_client.Pass());
 
   // TODO(beng): This should be handled sufficiently by

@@ -10,11 +10,11 @@
 
 namespace mus {
 
-void CreateWindowTreeHost(mojo::ViewTreeHostFactory* factory,
-                          mojo::ViewTreeHostClientPtr host_client,
+void CreateWindowTreeHost(mojom::WindowTreeHostFactory* factory,
+                          mojom::WindowTreeHostClientPtr host_client,
                           WindowTreeDelegate* delegate,
-                          mojo::ViewTreeHostPtr* host) {
-  mojo::ViewTreeClientPtr tree_client;
+                          mojom::WindowTreeHostPtr* host) {
+  mojom::WindowTreeClientPtr tree_client;
   WindowTreeConnection::Create(
       delegate, GetProxy(&tree_client),
       WindowTreeConnection::CreateType::DONT_WAIT_FOR_EMBED);
@@ -24,13 +24,13 @@ void CreateWindowTreeHost(mojo::ViewTreeHostFactory* factory,
 
 void CreateSingleWindowTreeHost(mojo::ApplicationImpl* app,
                                 WindowTreeDelegate* delegate,
-                                mojo::ViewTreeHostPtr* host) {
-  mojo::ViewTreeHostFactoryPtr factory;
+                                mojom::WindowTreeHostPtr* host) {
+  mojom::WindowTreeHostFactoryPtr factory;
   mojo::URLRequestPtr request(mojo::URLRequest::New());
   request->url = "mojo:mus";
   app->ConnectToService(request.Pass(), &factory);
-  CreateWindowTreeHost(factory.get(), mojo::ViewTreeHostClientPtr(), delegate,
-                       host);
+  CreateWindowTreeHost(factory.get(), mojom::WindowTreeHostClientPtr(),
+                       delegate, host);
 }
 
 }  // namespace mus

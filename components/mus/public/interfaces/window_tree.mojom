@@ -1,0 +1,259 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module mus.mojom;
+
+import "components/mus/public/interfaces/compositor_frame.mojom";
+import "components/mus/public/interfaces/surface_id.mojom";
+import "components/mus/public/interfaces/mus_constants.mojom";
+import "mojo/application/public/interfaces/service_provider.mojom";
+import "network/public/interfaces/url_loader.mojom";
+import "ui/mojo/events/input_events.mojom";
+import "ui/mojo/ime/text_input_state.mojom";
+import "ui/mojo/geometry/geometry.mojom";
+
+struct ViewportMetrics {
+  mojo.Size size_in_pixels;
+  // A value of 0 indicates the real value is not yet available.
+  float device_pixel_ratio = 0.0;
+};
+
+struct WindowData {
+  uint32 parent_id;
+  uint32 window_id;
+  mojo.Rect bounds;
+  map<string, array<uint8>> properties;
+  // True if this window is visible. The window may not be drawn on screen (see
+  // drawn for specifics).
+  bool visible;
+  // True if this window is drawn on screen. A window is drawn if attached to
+  // the root and all ancestors (including this window) are visible.
+  bool drawn;
+  ViewportMetrics viewport_metrics;
+};
+
+enum ErrorCode {
+  NONE,
+  VALUE_IN_USE,
+  ILLEGAL_ARGUMENT,
+};
+
+// Windows are identified by a uint32. The upper 16 bits are the connection id,
+// and the lower 16 the id assigned by the client.
+//
+// The root window is identified with a connection id of 0, and value of 1.
+interface WindowTree {
+  enum AccessPolicy {
+    DEFAULT = 0,
+
+    // An embed root has the following abilities:
+    // . The app sees all the descendants of the window the app is ebmedded at,
+    //   even those from separate connections.
+    // . The app is able to Embed() in all the descendants of the window the app
+    //   is embedded at, even those from separate connections.
+    // Only connections originating from the WindowTreeHostFactory can grant
+    // this policy.
+    EMBED_ROOT = 1,
+  };
+
+  // Creates a new window with the specified id. It is up to the client to
+  // ensure the id is unique to the connection (the id need not be globally
+  // unique). Additionally the connection id (embedded in |window_id|) must
+  // match that of the connection.
+  // Errors:
+  //   ERROR_CODE_VALUE_IN_USE: a window already exists with the specified id.
+  //   ERROR_CODE_ILLEGAL_ARGUMENT: The connection part of |window_id| does not
+  //     match the connection id of the client.
+  //
+  // TODO(erg): Once we have default values in mojo, make this take a map of
+  // properties.
+  NewWindow(uint32 window_id) => (ErrorCode error_code);
+
+  // Deletes a window. This does not recurse. No hierarchy change notifications
+  // are sent as a result of this. Only the connection that created the window
+  // can delete it.
+  DeleteWindow(uint32 window_id) => (bool success);
+
+  // Sets the specified bounds of the specified window.
+  SetWindowBounds(uint32 window_id, mojo.Rect bounds) => (bool success);
+
+  // Sets the client area of the specified window. Areas outside the client
+  // area are treated specially.
+  SetClientArea(uint32 window_id, mojo.Rect rect);
+
+  // Sets the visibility of the specified window to |visible|. Connections are
+  // allowed to change the visibility of any window they have created, as well
+  // as any of their roots.
+  SetWindowVisibility(uint32 window_id, bool visible) => (bool success);
+
+  // Sets an individual named property. Setting an individual property to null
+  // deletes the property.
+  SetWindowProperty(uint32 window_id,
+                    string name,
+                    array<uint8>? value) => (bool success);
+
+  // Requests a Surface for a particular window.
+  RequestSurface(uint32 window_id, Surface& surface, SurfaceClient client);
+
+  // Reparents a window.
+  // This fails for any of the following reasons:
+  // . |parent| or |child| does not identify a valid window.
+  // . |child| is an ancestor of |parent|.
+  // . |child| is already a child of |parent|.
+  //
+  // This may result in a connection getting OnWindowDeleted(). See
+  // RemoveWindowFromParent for details.
+  AddWindow(uint32 parent, uint32 child) => (bool success);
+
+  // Removes a window from its current parent. This fails if the window is not
+  // valid or the window already has no parent.
+  //
+  // Removing a window from a parent may result in OnWindowDeleted() being sent
+  // to other connections. For example, connection A has windows 1 and 2, with 2
+  // a child of 1. Connection B has a root 1. If 2 is removed from 1 then B gets
+  // OnWindowDeleted(). This is done as window 2 is effectively no longer
+  // visible to connection B.
+  RemoveWindowFromParent(uint32 window_id) => (bool success);
+
+  // Reorders a window in its parent, relative to |relative_window_id| according
+  // to |direction|. Only the connection that created the window's parent can
+  // reorder its children.
+  ReorderWindow(uint32 window_id,
+                uint32 relative_window_id,
+                OrderDirection direction) => (bool success);
+
+  // Returns the windows comprising the tree starting at |window_id|.
+  // |window_id| is the first result in the return value, unless |window_id| is
+  // invalid, in which case an empty vector is returned. The windows are visited
+  // using a depth first search (pre-order).
+  GetWindowTree(uint32 window_id) => (array<WindowData> windows);
+
+  // A connection may grant access to another connection by way of Embed().
+  // Embed() results in the supplied WindowTreeClient being configured with a
+  // root window of |window_id|. The supplied WindowTreeClient may create child
+  // windows and do other various tree operations (including Embed()), but does
+  // not see nor have access to any of the windows above the embed point.
+  //
+  // The caller must have created |window_id|. If not the request fails and the
+  // response is false.
+  //
+  // When a connection embeds a WindowTreeClient the originating connection no
+  // longer has privileges to access or see any of the children of the window.
+  // If the window had existing children the children are removed. The one
+  // exception is the root connection and any connections with the policy
+  // ACCESS_POLICY_EMBED_ROOT.
+  //
+  // A window may only have one embedding in it at a time. Subsequent calls to
+  // Embed() for the same window result in the currently embedded
+  // WindowTreeClient being removed. The embedded app is told this by way of
+  // OnUnembed(), which is followed by OnWindowDeleted() (as the connection no
+  // longer has access to the window).
+  //
+  // The embedder can detect when the embedded app disconnects by way of
+  // OnEmbeddedAppDisconnected().
+  //
+  // The callback returns whether the embedding was successful, and if the
+  // embedding was successful and the originating connection is an embed root
+  // the resulting id of the new connection.
+  //
+  // policy_bitmask is a bitmask of the kAccessPolicy constants. See them for
+  // details.
+  Embed(uint32 window_id,
+        WindowTreeClient client,
+        uint32 policy_bitmask) => (bool success, uint16 connection_id);
+
+  SetFocus(uint32 window_id);
+
+  // Set text input state for the given window.
+  SetWindowTextInputState(uint32 window_id, mojo.TextInputState state);
+
+  // Set the input method editor UI (software keyboard, etc) visibility.
+  // If state is non-null, the specified window's text input state is updated.
+  // Otherwise the existing state is used.
+  SetImeVisibility(uint32 window_id, bool visible, mojo.TextInputState? state);
+};
+
+// Changes to windows are not sent to the connection that originated the
+// change. For example, if connection 1 changes the bounds of a window by
+// calling SetBounds(), connection 1 does not receive OnWindowBoundsChanged().
+interface WindowTreeClient {
+  // Invoked when the client application has been embedded at |root|.
+  // See Embed() on WindowTree for more details. |tree| will be a handle back to
+  // the window manager service, unless the connection is to the root connection
+  // in which case it will be null.
+  OnEmbed(uint16 connection_id,
+          WindowData root,
+          WindowTree? tree,
+          uint32 focused_window,
+          uint32 access_policy);
+
+  // Invoked when the application embedded at |window| is disconnected. In other
+  // words the embedded app closes the connection to the server. This is called
+  // on the connection that created |window| as well as any ancestors that have
+  // the embed root policy.
+  OnEmbeddedAppDisconnected(uint32 window);
+
+  // Sent when another connection is embedded in the Window this connection was
+  // previously embedded in. See Embed() for more information.
+  OnUnembed();
+
+  // Invoked when a window's bounds have changed.
+  OnWindowBoundsChanged(uint32 window,
+                        mojo.Rect old_bounds,
+                        mojo.Rect new_bounds);
+
+  OnClientAreaChanged(uint32 window_id,
+                      mojo.Rect old_client_area,
+                      mojo.Rect new_client_area);
+
+  // Invoked when the viewport metrics for the window have changed.
+  // Clients are expected to propagate this to the window tree.
+  OnWindowViewportMetricsChanged(ViewportMetrics old_metrics,
+                                 ViewportMetrics new_metrics);
+
+  // Invoked when a change is done to the hierarchy. A value of 0 is used to
+  // identify a null window. For example, if the old_parent is NULL, 0 is
+  // supplied.
+  // |windows| contains any windows that are that the client has not been told
+  // about. This is not sent for hierarchy changes of windows not known to this
+  // client or not attached to the tree.
+  OnWindowHierarchyChanged(uint32 window,
+                           uint32 new_parent,
+                           uint32 old_parent,
+                           array<WindowData> windows);
+
+  // Invoked when the order of windows within a parent changes.
+  OnWindowReordered(uint32 window_id,
+                    uint32 relative_window_id,
+                    OrderDirection direction);
+
+  // Invoked when a window is deleted.
+  OnWindowDeleted(uint32 window);
+
+  // Invoked when the visibility of the specified window changes.
+  OnWindowVisibilityChanged(uint32 window, bool visible);
+
+  // Invoked when a change to the visibility of |window| or one if it's
+  // ancestors is done such that the drawn state changes. This is only invoked
+  // for the top most window of a particular connection. For example, if you
+  // have the hierarchy: A -> B1 -> B2 (B2 is a child of B1 and B1 a child of
+  // A), B1/B2 are from connection 2 and A from connection 1 with all windows
+  // visible and drawn and the visiblity of A changes to false, then connection
+  // 2 is told the drawn state of B1 has changed (to false), but is not told
+  // anything about B2 as it's drawn state can be calculated from that of B1.
+  //
+  // NOTE: This is not invoked if OnWindowVisibilityChanged() is invoked.
+  OnWindowDrawnStateChanged(uint32 window, bool drawn);
+
+  // Invoked when a window property is changed. If this change is a removal,
+  // |new_data| is null.
+  OnWindowSharedPropertyChanged(uint32 window,
+                                string name,
+                                array<uint8>? new_data);
+
+  // Invoked when an event is targeted at the specified window.
+  OnWindowInputEvent(uint32 window, mojo.Event event) => ();
+
+  OnWindowFocused(uint32 focused_window_id);
+};

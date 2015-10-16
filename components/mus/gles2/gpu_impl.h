@@ -17,14 +17,14 @@
 
 namespace mus {
 
-class GpuImpl : public mojo::Gpu {
+class GpuImpl : public mojom::Gpu {
  public:
-  GpuImpl(mojo::InterfaceRequest<mojo::Gpu> request,
+  GpuImpl(mojo::InterfaceRequest<mojom::Gpu> request,
           const scoped_refptr<GpuState>& state);
   ~GpuImpl() override;
 
  private:
-  void CreateOffscreenGLES2Context(mojo::InterfaceRequest<mojo::CommandBuffer>
+  void CreateOffscreenGLES2Context(mojo::InterfaceRequest<mojom::CommandBuffer>
                                        command_buffer_request) override;
   void GetGpuInfo(const GetGpuInfoCallback& callback) override;
 

@@ -39,15 +39,15 @@ class WindowPrivate {
     window_->properties_ = data;
   }
 
-  void LocalSetViewportMetrics(const mojo::ViewportMetrics& old_metrics,
-                               const mojo::ViewportMetrics& new_metrics) {
+  void LocalSetViewportMetrics(const mojom::ViewportMetrics& old_metrics,
+                               const mojom::ViewportMetrics& new_metrics) {
     window_->LocalSetViewportMetrics(new_metrics, new_metrics);
   }
 
   void LocalDestroy() { window_->LocalDestroy(); }
   void LocalAddChild(Window* child) { window_->LocalAddChild(child); }
   void LocalRemoveChild(Window* child) { window_->LocalRemoveChild(child); }
-  void LocalReorder(Window* relative, mojo::OrderDirection direction) {
+  void LocalReorder(Window* relative, mojom::OrderDirection direction) {
     window_->LocalReorder(relative, direction);
   }
   void LocalSetBounds(const mojo::Rect& old_bounds,

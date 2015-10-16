@@ -86,7 +86,7 @@ TEST_F(AXProviderTest, HelloWorld) {
       application_impl()->ConnectToApplication(request.Pass());
 
   // Embed the html_viewer in a Window.
-  ViewTreeClientPtr tree_client;
+  mus::mojom::WindowTreeClientPtr tree_client;
   connection->ConnectToService(&tree_client);
   mus::Window* embed_window = window_manager()->CreateWindow();
   embed_window->Embed(tree_client.Pass());

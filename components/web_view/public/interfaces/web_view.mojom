@@ -4,7 +4,7 @@
 
 module web_view.mojom;
 
-import "components/mus/public/interfaces/view_tree.mojom";
+import "components/mus/public/interfaces/window_tree.mojom";
 import "network/public/interfaces/url_loader.mojom";
 
 enum ButtonState {
@@ -40,8 +40,8 @@ interface WebView {
   // Navigate the top level frame to |request|.
   LoadRequest(mojo.URLRequest request);
 
-  // Provide a ViewTreeClient for this specific WebView.
-  GetViewTreeClient(mojo.ViewTreeClient& view_tree_client);
+  // Provide a WindowTreeClient for this specific WebView.
+  GetWindowTreeClient(mus.mojom.WindowTreeClient& window_tree_client);
 
   // Finds a string in page.
   Find(string search_text, bool forward_direction);

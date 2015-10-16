@@ -41,13 +41,13 @@ void OutputSurface::SwapBuffers(cc::CompositorFrame* frame) {
   // destroyed then SubmitCompositorFrame's callback will never get called.
   // Thus, base::Unretained is safe here.
   surface_->SubmitCompositorFrame(
-      mojo::CompositorFrame::From(*frame),
+      mojom::CompositorFrame::From(*frame),
       base::Bind(&OutputSurface::SwapBuffersComplete, base::Unretained(this)));
 }
 
 void OutputSurface::OnResourcesReturned(
     mus::WindowSurface* surface,
-    mojo::Array<mojo::ReturnedResourcePtr> resources) {
+    mojo::Array<mojom::ReturnedResourcePtr> resources) {
   cc::CompositorFrameAck cfa;
   cfa.resources = resources.To<cc::ReturnedResourceArray>();
   ReclaimResources(&cfa);

@@ -17,7 +17,7 @@
 namespace mus {
 
 ViewTreeHostImpl::ViewTreeHostImpl(
-    mojo::ViewTreeHostClientPtr client,
+    mojom::WindowTreeHostClientPtr client,
     ConnectionManager* connection_manager,
     mojo::ApplicationImpl* app_impl,
     const scoped_refptr<GpuState>& gpu_state,
@@ -26,9 +26,8 @@ ViewTreeHostImpl::ViewTreeHostImpl(
       connection_manager_(connection_manager),
       client_(client.Pass()),
       event_dispatcher_(this),
-      display_manager_(DisplayManager::Create(app_impl,
-                                              gpu_state,
-                                              surfaces_state)),
+      display_manager_(
+          DisplayManager::Create(app_impl, gpu_state, surfaces_state)),
       focus_controller_(new FocusController(this)) {
   display_manager_->Init(this);
   if (client_) {
@@ -45,8 +44,8 @@ void ViewTreeHostImpl::Init(ViewTreeHostDelegate* delegate) {
     delegate_->OnDisplayInitialized();
 }
 
-ViewTreeImpl* ViewTreeHostImpl::GetViewTree() {
-  return delegate_ ? delegate_->GetViewTree() : nullptr;
+ViewTreeImpl* ViewTreeHostImpl::GetWindowTree() {
+  return delegate_ ? delegate_->GetWindowTree() : nullptr;
 }
 
 bool ViewTreeHostImpl::IsViewAttachedToRoot(const ServerView* view) const {
@@ -62,7 +61,7 @@ bool ViewTreeHostImpl::SchedulePaintIfInViewport(const ServerView* view,
   return false;
 }
 
-const mojo::ViewportMetrics& ViewTreeHostImpl::GetViewportMetrics() const {
+const mojom::ViewportMetrics& ViewTreeHostImpl::GetViewportMetrics() const {
   return display_manager_->GetViewportMetrics();
 }
 
@@ -157,8 +156,8 @@ void ViewTreeHostImpl::OnDisplayClosed() {
 }
 
 void ViewTreeHostImpl::OnViewportMetricsChanged(
-    const mojo::ViewportMetrics& old_metrics,
-    const mojo::ViewportMetrics& new_metrics) {
+    const mojom::ViewportMetrics& old_metrics,
+    const mojom::ViewportMetrics& new_metrics) {
   if (!root_) {
     root_.reset(connection_manager_->CreateServerView(
         RootViewId(connection_manager_->GetAndAdvanceNextHostId())));
@@ -228,7 +227,7 @@ void ViewTreeHostImpl::OnFocusChanged(ServerView* old_focused_view,
   }
 
   // Ensure that we always notify the root connection of a focus change.
-  ViewTreeImpl* root_tree = GetViewTree();
+  ViewTreeImpl* root_tree = GetWindowTree();
   if (root_tree != owning_connection_old &&
       root_tree != embedded_connection_old &&
       root_tree != owning_connection_new &&

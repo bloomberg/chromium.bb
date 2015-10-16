@@ -11,7 +11,7 @@ namespace web_view {
 
 FrameTree::FrameTree(uint32_t root_app_id,
                      mus::Window* view,
-                     mojo::ViewTreeClientPtr view_tree_client,
+                     mus::mojom::WindowTreeClientPtr view_tree_client,
                      FrameTreeDelegate* delegate,
                      mojom::FrameClient* root_client,
                      scoped_ptr<FrameUserData> user_data,

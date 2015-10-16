@@ -25,6 +25,7 @@
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "third_party/mojo_services/src/accessibility/public/interfaces/accessibility.mojom.h"
 
+using mus::mojom::WindowTreeClientPtr;
 using mus::WindowServerTestBase;
 using web_view::Frame;
 using web_view::FrameConnection;
@@ -226,7 +227,7 @@ class HTMLFrameTest : public WindowServerTestBase {
       return nullptr;
     FrameConnection* result = frame_connection.get();
     FrameClient* frame_client = frame_connection->frame_client();
-    ViewTreeClientPtr tree_client = frame_connection->GetViewTreeClient();
+    WindowTreeClientPtr tree_client = frame_connection->GetWindowTreeClient();
     frame_tree_.reset(new FrameTree(
         result->GetContentHandlerID(), view, tree_client.Pass(),
         frame_tree_delegate_.get(), frame_client, frame_connection.Pass(),

@@ -7,7 +7,7 @@
 
 #include "components/mus/public/cpp/window_tree_connection.h"
 #include "components/mus/public/cpp/window_tree_delegate.h"
-#include "components/mus/public/interfaces/view_tree_host.mojom.h"
+#include "components/mus/public/interfaces/window_tree_host.mojom.h"
 #include "components/web_view/public/cpp/web_view.h"
 #include "components/web_view/public/interfaces/web_view.mojom.h"
 #include "mandoline/ui/desktop_ui/find_bar_delegate.h"
@@ -22,7 +22,6 @@
 namespace mojo {
 class ApplicationConnection;
 class Shell;
-class View;
 }
 
 namespace mandoline {
@@ -33,7 +32,7 @@ class ProgressView;
 class ToolbarView;
 
 class BrowserWindow : public mus::WindowTreeDelegate,
-                      public mojo::ViewTreeHostClient,
+                      public mus::mojom::WindowTreeHostClient,
                       public web_view::mojom::WebViewClient,
                       public ViewEmbedder,
                       public mojo::InterfaceFactory<ViewEmbedder>,
@@ -41,7 +40,7 @@ class BrowserWindow : public mus::WindowTreeDelegate,
                       public FindBarDelegate {
  public:
   BrowserWindow(mojo::ApplicationImpl* app,
-                mojo::ViewTreeHostFactory* host_factory,
+                mus::mojom::WindowTreeHostFactory* host_factory,
                 BrowserManager* manager);
 
   void LoadURL(const GURL& url);
@@ -61,7 +60,7 @@ class BrowserWindow : public mus::WindowTreeDelegate,
   void OnEmbed(mus::Window* root) override;
   void OnConnectionLost(mus::WindowTreeConnection* connection) override;
 
-  // Overridden from ViewTreeHostClient:
+  // Overridden from WindowTreeHostClient:
   void OnAccelerator(uint32_t id, mojo::EventPtr event) override;
 
   // Overridden from web_view::mojom::WebViewClient:
@@ -98,8 +97,8 @@ class BrowserWindow : public mus::WindowTreeDelegate,
 
   mojo::ApplicationImpl* app_;
   scoped_ptr<views::AuraInit> aura_init_;
-  mojo::ViewTreeHostPtr host_;
-  mojo::Binding<ViewTreeHostClient> host_client_binding_;
+  mus::mojom::WindowTreeHostPtr host_;
+  mojo::Binding<WindowTreeHostClient> host_client_binding_;
   BrowserManager* manager_;
   ToolbarView* toolbar_view_;
   ProgressView* progress_bar_;

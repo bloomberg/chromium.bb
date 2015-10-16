@@ -14,59 +14,61 @@
 
 namespace mojo {
 
-class CommandBufferState;
-
 template <>
-struct TypeConverter<CommandBufferStatePtr, gpu::CommandBuffer::State> {
-  static CommandBufferStatePtr Convert(const gpu::CommandBuffer::State& input);
+struct TypeConverter<mus::mojom::CommandBufferStatePtr,
+                     gpu::CommandBuffer::State> {
+  static mus::mojom::CommandBufferStatePtr Convert(
+      const gpu::CommandBuffer::State& input);
 };
 
 template <>
-struct TypeConverter<gpu::CommandBuffer::State, CommandBufferStatePtr> {
-  static gpu::CommandBuffer::State Convert(const CommandBufferStatePtr& input);
+struct TypeConverter<gpu::CommandBuffer::State,
+                     mus::mojom::CommandBufferStatePtr> {
+  static gpu::CommandBuffer::State Convert(
+      const mus::mojom::CommandBufferStatePtr& input);
 };
 
 template <>
-struct TypeConverter<GpuShaderPrecisionPtr,
+struct TypeConverter<mus::mojom::GpuShaderPrecisionPtr,
                      gpu::Capabilities::ShaderPrecision> {
-  static GpuShaderPrecisionPtr Convert(
+  static mus::mojom::GpuShaderPrecisionPtr Convert(
       const gpu::Capabilities::ShaderPrecision& input);
 };
 
 template <>
 struct TypeConverter<gpu::Capabilities::ShaderPrecision,
-                     GpuShaderPrecisionPtr> {
+                     mus::mojom::GpuShaderPrecisionPtr> {
   static gpu::Capabilities::ShaderPrecision Convert(
-      const GpuShaderPrecisionPtr& input);
+      const mus::mojom::GpuShaderPrecisionPtr& input);
 };
 
 template <>
-struct TypeConverter<GpuPerStagePrecisionsPtr,
+struct TypeConverter<mus::mojom::GpuPerStagePrecisionsPtr,
                      gpu::Capabilities::PerStagePrecisions> {
-  static GpuPerStagePrecisionsPtr Convert(
+  static mus::mojom::GpuPerStagePrecisionsPtr Convert(
       const gpu::Capabilities::PerStagePrecisions& input);
 };
 
 template <>
 struct TypeConverter<gpu::Capabilities::PerStagePrecisions,
-                     GpuPerStagePrecisionsPtr> {
+                     mus::mojom::GpuPerStagePrecisionsPtr> {
   static gpu::Capabilities::PerStagePrecisions Convert(
-      const GpuPerStagePrecisionsPtr& input);
+      const mus::mojom::GpuPerStagePrecisionsPtr& input);
 };
 
 template <>
-struct TypeConverter<GpuCapabilitiesPtr, gpu::Capabilities> {
-  static GpuCapabilitiesPtr Convert(const gpu::Capabilities& input);
+struct TypeConverter<mus::mojom::GpuCapabilitiesPtr, gpu::Capabilities> {
+  static mus::mojom::GpuCapabilitiesPtr Convert(const gpu::Capabilities& input);
 };
 
 template <>
-struct TypeConverter<gpu::Capabilities, GpuCapabilitiesPtr> {
-  static gpu::Capabilities Convert(const GpuCapabilitiesPtr& input);
+struct TypeConverter<gpu::Capabilities, mus::mojom::GpuCapabilitiesPtr> {
+  static gpu::Capabilities Convert(const mus::mojom::GpuCapabilitiesPtr& input);
 };
 
 template <>
-struct TypeConverter<GpuInfoPtr, gpu::GPUInfo> {
-  static GpuInfoPtr Convert(const gpu::GPUInfo& input);
+struct TypeConverter<mus::mojom::GpuInfoPtr, gpu::GPUInfo> {
+  static mus::mojom::GpuInfoPtr Convert(const gpu::GPUInfo& input);
 };
 
 }  // namespace mojo

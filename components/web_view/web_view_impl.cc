@@ -84,8 +84,8 @@ void WebViewImpl::OnLoad(const GURL& pending_url) {
   scoped_ptr<PendingWebViewLoad> pending_load(pending_load_.Pass());
   scoped_ptr<FrameConnection> frame_connection(
       pending_load->frame_connection());
-  mojo::ViewTreeClientPtr view_tree_client =
-      frame_connection->GetViewTreeClient();
+  mus::mojom::WindowTreeClientPtr window_tree_client =
+      frame_connection->GetWindowTreeClient();
 
   Frame::ClientPropertyMap client_properties;
   if (devtools_agent_) {
@@ -98,7 +98,7 @@ void WebViewImpl::OnLoad(const GURL& pending_url) {
   mojom::FrameClient* frame_client = frame_connection->frame_client();
   const uint32_t content_handler_id = frame_connection->GetContentHandlerID();
   frame_tree_.reset(new FrameTree(content_handler_id, content_,
-                                  view_tree_client.Pass(), this, frame_client,
+                                  window_tree_client.Pass(), this, frame_client,
                                   frame_connection.Pass(), client_properties,
                                   pending_load->navigation_start_time()));
 }
@@ -117,10 +117,10 @@ void WebViewImpl::LoadRequest(mojo::URLRequestPtr request) {
   navigation_controller_.LoadURL(request.Pass());
 }
 
-void WebViewImpl::GetViewTreeClient(
-    mojo::InterfaceRequest<mojo::ViewTreeClient> view_tree_client) {
+void WebViewImpl::GetWindowTreeClient(
+    mojo::InterfaceRequest<mus::mojom::WindowTreeClient> window_tree_client) {
   mus::WindowTreeConnection::Create(
-      this, view_tree_client.Pass(),
+      this, window_tree_client.Pass(),
       mus::WindowTreeConnection::CreateType::DONT_WAIT_FOR_EMBED);
 }
 

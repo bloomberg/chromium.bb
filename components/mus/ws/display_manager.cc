@@ -186,7 +186,7 @@ void DefaultDisplayManager::SetTitle(const base::string16& title) {
   platform_window_->SetTitle(title);
 }
 
-const mojo::ViewportMetrics& DefaultDisplayManager::GetViewportMetrics() {
+const mojom::ViewportMetrics& DefaultDisplayManager::GetViewportMetrics() {
   return metrics_;
 }
 
@@ -240,7 +240,7 @@ void DefaultDisplayManager::UpdateMetrics(const gfx::Size& size,
   if (metrics_.size_in_pixels.To<gfx::Size>() == size &&
       metrics_.device_pixel_ratio == device_pixel_ratio)
     return;
-  mojo::ViewportMetrics old_metrics;
+  mojom::ViewportMetrics old_metrics;
   old_metrics.size_in_pixels = metrics_.size_in_pixels.Clone();
   old_metrics.device_pixel_ratio = metrics_.device_pixel_ratio;
 

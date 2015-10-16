@@ -8,7 +8,7 @@
 #include "base/message_loop/message_loop.h"
 #include "components/mus/public/cpp/types.h"
 #include "components/mus/public/cpp/util.h"
-#include "components/mus/public/interfaces/view_tree.mojom.h"
+#include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "components/mus/surfaces/surfaces_state.h"
 #include "components/mus/ws/client_connection.h"
 #include "components/mus/ws/connection_manager.h"
@@ -26,32 +26,32 @@
 #include "ui/gfx/geometry/rect.h"
 
 using mojo::Array;
-using mojo::ERROR_CODE_NONE;
 using mojo::InterfaceRequest;
 using mojo::ServiceProvider;
 using mojo::ServiceProviderPtr;
 using mojo::String;
-using mojo::ViewDataPtr;
+using mus::mojom::ERROR_CODE_NONE;
+using mus::mojom::WindowDataPtr;
 
 namespace mus {
 namespace {
 
 // -----------------------------------------------------------------------------
 
-// ViewTreeClient implementation that logs all calls to a TestChangeTracker.
+// WindowTreeClient implementation that logs all calls to a TestChangeTracker.
 // TODO(sky): refactor so both this and ViewTreeAppTest share code.
-class TestViewTreeClient : public mojo::ViewTreeClient {
+class TestWindowTreeClient : public mus::mojom::WindowTreeClient {
  public:
-  TestViewTreeClient() {}
-  ~TestViewTreeClient() override {}
+  TestWindowTreeClient() {}
+  ~TestWindowTreeClient() override {}
 
   TestChangeTracker* tracker() { return &tracker_; }
 
  private:
-  // ViewTreeClient:
+  // WindowTreeClient:
   void OnEmbed(uint16_t connection_id,
-               ViewDataPtr root,
-               mojo::ViewTreePtr tree,
+               WindowDataPtr root,
+               mus::mojom::WindowTreePtr tree,
                Id focused_view_id,
                uint32_t access_policy) override {
     // TODO(sky): add test coverage of |focused_view_id|.
@@ -71,21 +71,21 @@ class TestViewTreeClient : public mojo::ViewTreeClient {
                            mojo::RectPtr new_client_area) override {
   }
   void OnWindowViewportMetricsChanged(
-      mojo::ViewportMetricsPtr old_metrics,
-      mojo::ViewportMetricsPtr new_metrics) override {
+      mojom::ViewportMetricsPtr old_metrics,
+      mojom::ViewportMetricsPtr new_metrics) override {
     tracker_.OnWindowViewportMetricsChanged(old_metrics.Pass(),
                                             new_metrics.Pass());
   }
   void OnWindowHierarchyChanged(uint32_t view,
                                 uint32_t new_parent,
                                 uint32_t old_parent,
-                                Array<ViewDataPtr> views) override {
+                                Array<WindowDataPtr> views) override {
     tracker_.OnWindowHierarchyChanged(view, new_parent, old_parent,
                                       views.Pass());
   }
   void OnWindowReordered(uint32_t view_id,
                          uint32_t relative_view_id,
-                         mojo::OrderDirection direction) override {
+                         mojom::OrderDirection direction) override {
     tracker_.OnWindowReordered(view_id, relative_view_id, direction);
   }
   void OnWindowDeleted(uint32_t view) override {
@@ -113,23 +113,23 @@ class TestViewTreeClient : public mojo::ViewTreeClient {
 
   TestChangeTracker tracker_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestViewTreeClient);
+  DISALLOW_COPY_AND_ASSIGN(TestWindowTreeClient);
 };
 
 // -----------------------------------------------------------------------------
 
-// ClientConnection implementation that vends TestViewTreeClient.
+// ClientConnection implementation that vends TestWindowTreeClient.
 class TestClientConnection : public ClientConnection {
  public:
   explicit TestClientConnection(scoped_ptr<ViewTreeImpl> service_impl)
       : ClientConnection(service_impl.Pass(), &client_) {}
 
-  TestViewTreeClient* client() { return &client_; }
+  TestWindowTreeClient* client() { return &client_; }
 
  private:
   ~TestClientConnection() override {}
 
-  TestViewTreeClient client_;
+  TestWindowTreeClient client_;
 
   DISALLOW_COPY_AND_ASSIGN(TestClientConnection);
 };
@@ -142,7 +142,7 @@ class TestConnectionManagerDelegate : public ConnectionManagerDelegate {
   TestConnectionManagerDelegate() : last_connection_(nullptr) {}
   ~TestConnectionManagerDelegate() override {}
 
-  TestViewTreeClient* last_client() {
+  TestWindowTreeClient* last_client() {
     return last_connection_ ? last_connection_->client() : nullptr;
   }
 
@@ -154,7 +154,7 @@ class TestConnectionManagerDelegate : public ConnectionManagerDelegate {
 
   ClientConnection* CreateClientConnectionForEmbedAtView(
       ConnectionManager* connection_manager,
-      mojo::InterfaceRequest<mojo::ViewTree> service_request,
+      mojo::InterfaceRequest<mus::mojom::WindowTree> service_request,
       ConnectionSpecificId creator_id,
       mojo::URLRequestPtr request,
       const ViewId& root_id,
@@ -166,11 +166,11 @@ class TestConnectionManagerDelegate : public ConnectionManagerDelegate {
   }
   ClientConnection* CreateClientConnectionForEmbedAtView(
       ConnectionManager* connection_manager,
-      mojo::InterfaceRequest<mojo::ViewTree> service_request,
+      mojo::InterfaceRequest<mus::mojom::WindowTree> service_request,
       ConnectionSpecificId creator_id,
       const ViewId& root_id,
       uint32_t policy_bitmask,
-      mojo::ViewTreeClientPtr client) override {
+      mus::mojom::WindowTreeClientPtr client) override {
     // Used by ConnectionManager::AddRoot.
     scoped_ptr<ViewTreeImpl> service(new ViewTreeImpl(
         connection_manager, creator_id, root_id, policy_bitmask));
@@ -193,12 +193,13 @@ class TestViewTreeHostConnection : public ViewTreeHostConnection {
   ~TestViewTreeHostConnection() override {}
 
  private:
-  // ViewTreeHostDelegate:
+  // WindowTreeHostDelegate:
   void OnDisplayInitialized() override {
     connection_manager()->AddHost(this);
     set_view_tree(connection_manager()->EmbedAtView(
         kInvalidConnectionId, view_tree_host()->root_view()->id(),
-        mojo::ViewTree::ACCESS_POLICY_EMBED_ROOT, mojo::ViewTreeClientPtr()));
+        mus::mojom::WindowTree::ACCESS_POLICY_EMBED_ROOT,
+        mus::mojom::WindowTreeClientPtr()));
   }
   DISALLOW_COPY_AND_ASSIGN(TestViewTreeHostConnection);
 };
@@ -215,23 +216,23 @@ class TestDisplayManager : public DisplayManager {
     // It is necessary to tell the delegate about the ViewportMetrics to make
     // sure that the ViewTreeHostConnection is correctly initialized (and a
     // root-view is created).
-    mojo::ViewportMetrics metrics;
+    mojom::ViewportMetrics metrics;
     metrics.size_in_pixels = mojo::Size::From(gfx::Size(400, 300));
     metrics.device_pixel_ratio = 1.f;
-    delegate->OnViewportMetricsChanged(mojo::ViewportMetrics(), metrics);
+    delegate->OnViewportMetricsChanged(mojom::ViewportMetrics(), metrics);
   }
   void SchedulePaint(const ServerView* view, const gfx::Rect& bounds) override {
   }
   void SetViewportSize(const gfx::Size& size) override {}
   void SetTitle(const base::string16& title) override {}
-  const mojo::ViewportMetrics& GetViewportMetrics() override {
+  const mojom::ViewportMetrics& GetViewportMetrics() override {
     return display_metrices_;
   }
   void UpdateTextInputState(const ui::TextInputState& state) override {}
   void SetImeVisibility(bool visible) override {}
 
  private:
-  mojo::ViewportMetrics display_metrices_;
+  mojom::ViewportMetrics display_metrices_;
 
   DISALLOW_COPY_AND_ASSIGN(TestDisplayManager);
 };
@@ -288,7 +289,7 @@ class ViewTreeTest : public testing::Test {
     return connection_manager_->GetConnection(1);
   }
 
-  TestViewTreeClient* last_view_tree_client() {
+  TestWindowTreeClient* last_window_tree_client() {
     return delegate_.last_client();
   }
 
@@ -298,7 +299,7 @@ class ViewTreeTest : public testing::Test {
 
   ConnectionManager* connection_manager() { return connection_manager_.get(); }
 
-  TestViewTreeClient* wm_client() { return wm_client_; }
+  TestWindowTreeClient* wm_client() { return wm_client_; }
 
   TestViewTreeHostConnection* host_connection() { return host_connection_; }
   DisplayManagerDelegate* display_manager_delegate() {
@@ -313,9 +314,8 @@ class ViewTreeTest : public testing::Test {
     connection_manager_.reset(
         new ConnectionManager(&delegate_, scoped_refptr<SurfacesState>()));
     ViewTreeHostImpl* host = new ViewTreeHostImpl(
-        mojo::ViewTreeHostClientPtr(), connection_manager_.get(),
-        nullptr, scoped_refptr<GpuState>(),
-        scoped_refptr<SurfacesState>());
+        mus::mojom::WindowTreeHostClientPtr(), connection_manager_.get(),
+        nullptr, scoped_refptr<GpuState>(), scoped_refptr<SurfacesState>());
     // TODO(fsamuel): This is way too magical. We need to find a better way to
     // manage lifetime.
     host_connection_ = new TestViewTreeHostConnection(
@@ -325,8 +325,8 @@ class ViewTreeTest : public testing::Test {
   }
 
  private:
-  // TestViewTreeClient that is used for the WM connection.
-  TestViewTreeClient* wm_client_;
+  // TestWindowTreeClient that is used for the WM connection.
+  TestWindowTreeClient* wm_client_;
   TestDisplayManagerFactory display_manager_factory_;
   TestConnectionManagerDelegate delegate_;
   TestViewTreeHostConnection* host_connection_;
@@ -339,10 +339,10 @@ class ViewTreeTest : public testing::Test {
 // Verifies focus correctly changes on pointer events.
 TEST_F(ViewTreeTest, FocusOnPointer) {
   const ViewId embed_view_id(wm_connection()->id(), 1);
-  EXPECT_EQ(ERROR_CODE_NONE, wm_connection()->CreateView(embed_view_id));
-  EXPECT_TRUE(wm_connection()->SetViewVisibility(embed_view_id, true));
+  EXPECT_EQ(ERROR_CODE_NONE, wm_connection()->NewWindow(embed_view_id));
+  EXPECT_TRUE(wm_connection()->SetWindowVisibility(embed_view_id, true));
   EXPECT_TRUE(
-      wm_connection()->AddView(*(wm_connection()->root()), embed_view_id));
+      wm_connection()->AddWindow(*(wm_connection()->root()), embed_view_id));
   host_connection()->view_tree_host()->root_view()->SetBounds(
       gfx::Rect(0, 0, 100, 100));
   mojo::URLRequestPtr request(mojo::URLRequest::New());
@@ -357,13 +357,13 @@ TEST_F(ViewTreeTest, FocusOnPointer) {
       ->SetBounds(gfx::Rect(0, 0, 50, 50));
 
   const ViewId child1(connection1->id(), 1);
-  EXPECT_EQ(ERROR_CODE_NONE, connection1->CreateView(child1));
-  EXPECT_TRUE(connection1->AddView(embed_view_id, child1));
+  EXPECT_EQ(ERROR_CODE_NONE, connection1->NewWindow(child1));
+  EXPECT_TRUE(connection1->AddWindow(embed_view_id, child1));
   ServerView* v1 = connection1->GetView(child1);
   v1->SetVisible(true);
   v1->SetBounds(gfx::Rect(20, 20, 20, 20));
 
-  TestViewTreeClient* connection1_client = last_view_tree_client();
+  TestWindowTreeClient* connection1_client = last_window_tree_client();
   connection1_client->tracker()->changes()->clear();
   wm_client()->tracker()->changes()->clear();
 
@@ -414,10 +414,10 @@ TEST_F(ViewTreeTest, FocusOnPointer) {
 
 TEST_F(ViewTreeTest, BasicInputEventTarget) {
   const ViewId embed_view_id(wm_connection()->id(), 1);
-  EXPECT_EQ(ERROR_CODE_NONE, wm_connection()->CreateView(embed_view_id));
-  EXPECT_TRUE(wm_connection()->SetViewVisibility(embed_view_id, true));
+  EXPECT_EQ(ERROR_CODE_NONE, wm_connection()->NewWindow(embed_view_id));
+  EXPECT_TRUE(wm_connection()->SetWindowVisibility(embed_view_id, true));
   EXPECT_TRUE(
-      wm_connection()->AddView(*(wm_connection()->root()), embed_view_id));
+      wm_connection()->AddWindow(*(wm_connection()->root()), embed_view_id));
   host_connection()->view_tree_host()->root_view()->SetBounds(
       gfx::Rect(0, 0, 100, 100));
   mojo::URLRequestPtr request(mojo::URLRequest::New());
@@ -432,13 +432,13 @@ TEST_F(ViewTreeTest, BasicInputEventTarget) {
       ->SetBounds(gfx::Rect(0, 0, 50, 50));
 
   const ViewId child1(connection1->id(), 1);
-  EXPECT_EQ(ERROR_CODE_NONE, connection1->CreateView(child1));
-  EXPECT_TRUE(connection1->AddView(embed_view_id, child1));
+  EXPECT_EQ(ERROR_CODE_NONE, connection1->NewWindow(child1));
+  EXPECT_TRUE(connection1->AddWindow(embed_view_id, child1));
   ServerView* v1 = connection1->GetView(child1);
   v1->SetVisible(true);
   v1->SetBounds(gfx::Rect(20, 20, 20, 20));
 
-  TestViewTreeClient* embed_connection = last_view_tree_client();
+  TestWindowTreeClient* embed_connection = last_window_tree_client();
   embed_connection->tracker()->changes()->clear();
   wm_client()->tracker()->changes()->clear();
 

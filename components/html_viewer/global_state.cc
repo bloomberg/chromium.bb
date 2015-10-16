@@ -175,13 +175,13 @@ void GlobalState::InitIfNecessary(const gfx::Size& screen_size_in_pixels,
 
 // TODO(rjkroege): These two functions probably do not interoperate correctly
 // with MUS.
-const mojo::GpuInfo* GlobalState::GetGpuInfo() {
+const mus::mojom::GpuInfo* GlobalState::GetGpuInfo() {
   if (gpu_service_)
     CHECK(gpu_service_.WaitForIncomingResponse()) <<"Get GPU info failed!";
   return gpu_info_.get();
 }
 
-void GlobalState::GetGpuInfoCallback(mojo::GpuInfoPtr gpu_info) {
+void GlobalState::GetGpuInfoCallback(mus::mojom::GpuInfoPtr gpu_info) {
   CHECK(gpu_info);
   gpu_info_ = gpu_info.Pass();
   gpu_service_.reset();

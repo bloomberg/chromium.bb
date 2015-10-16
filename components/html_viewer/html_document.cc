@@ -107,7 +107,7 @@ HTMLDocument::HTMLDocument(mojo::ApplicationImpl* html_document_app,
       factory_(factory) {
   connection->AddService<web_view::mojom::FrameClient>(this);
   connection->AddService<AxProvider>(this);
-  connection->AddService<mojo::ViewTreeClient>(this);
+  connection->AddService<mus::mojom::WindowTreeClient>(this);
   connection->AddService<devtools_service::DevToolsAgent>(this);
   if (IsTestInterfaceEnabled())
     connection->AddService<TestHTMLViewer>(this);
@@ -314,7 +314,7 @@ void HTMLDocument::Create(
 
 void HTMLDocument::Create(
     mojo::ApplicationConnection* connection,
-    mojo::InterfaceRequest<mojo::ViewTreeClient> request) {
+    mojo::InterfaceRequest<mus::mojom::WindowTreeClient> request) {
   DCHECK(!transferable_state_.window_tree_delegate_impl);
   transferable_state_.window_tree_delegate_impl.reset(
       new WindowTreeDelegateImpl(this));

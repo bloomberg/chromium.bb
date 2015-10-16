@@ -49,8 +49,8 @@ class CommandBufferDriver {
   void set_client(scoped_ptr<Client> client) { client_ = client.Pass(); }
 
   void Initialize(
-      mojo::InterfacePtrInfo<mojo::CommandBufferSyncClient> sync_client,
-      mojo::InterfacePtrInfo<mojo::CommandBufferLostContextObserver>
+      mojo::InterfacePtrInfo<mojom::CommandBufferSyncClient> sync_client,
+      mojo::InterfacePtrInfo<mojom::CommandBufferLostContextObserver>
           loss_observer,
       mojo::ScopedSharedBufferHandle shared_state,
       mojo::Array<int32_t> attribs);
@@ -86,8 +86,8 @@ class CommandBufferDriver {
   void DestroyDecoder();
 
   scoped_ptr<Client> client_;
-  mojo::CommandBufferSyncClientPtr sync_client_;
-  mojo::CommandBufferLostContextObserverPtr loss_observer_;
+  mojom::CommandBufferSyncClientPtr sync_client_;
+  mojom::CommandBufferLostContextObserverPtr loss_observer_;
   scoped_ptr<gpu::CommandBufferService> command_buffer_;
   scoped_ptr<gpu::gles2::GLES2Decoder> decoder_;
   scoped_ptr<gpu::GpuScheduler> scheduler_;

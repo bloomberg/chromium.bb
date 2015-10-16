@@ -6,6 +6,18 @@
 
 #include "components/mus/public/interfaces/command_buffer.mojom.h"
 
+using mus::mojom::CommandBufferPtr;
+using mus::mojom::CommandBufferState;
+using mus::mojom::CommandBufferStatePtr;
+using mus::mojom::GpuCapabilities;
+using mus::mojom::GpuCapabilitiesPtr;
+using mus::mojom::GpuInfo;
+using mus::mojom::GpuInfoPtr;
+using mus::mojom::GpuPerStagePrecisions;
+using mus::mojom::GpuPerStagePrecisionsPtr;
+using mus::mojom::GpuShaderPrecision;
+using mus::mojom::GpuShaderPrecisionPtr;
+
 namespace mojo {
 
 CommandBufferStatePtr

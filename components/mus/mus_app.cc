@@ -30,9 +30,9 @@
 
 using mojo::ApplicationConnection;
 using mojo::ApplicationImpl;
-using mojo::Gpu;
 using mojo::InterfaceRequest;
-using mojo::ViewTreeHostFactory;
+using mus::mojom::WindowTreeHostFactory;
+using mus::mojom::Gpu;
 
 namespace mus {
 
@@ -71,7 +71,7 @@ void MandolineUIServicesApp::Initialize(ApplicationImpl* app) {
 
 bool MandolineUIServicesApp::ConfigureIncomingConnection(
     ApplicationConnection* connection) {
-  connection->AddService<ViewTreeHostFactory>(this);
+  connection->AddService<WindowTreeHostFactory>(this);
   connection->AddService<Gpu>(this);
   return true;
 }
@@ -82,12 +82,12 @@ void MandolineUIServicesApp::OnNoMoreRootConnections() {
 
 ClientConnection* MandolineUIServicesApp::CreateClientConnectionForEmbedAtView(
     ConnectionManager* connection_manager,
-    mojo::InterfaceRequest<mojo::ViewTree> tree_request,
+    mojo::InterfaceRequest<mojom::WindowTree> tree_request,
     ConnectionSpecificId creator_id,
     mojo::URLRequestPtr request,
     const ViewId& root_id,
     uint32_t policy_bitmask) {
-  mojo::ViewTreeClientPtr client;
+  mojom::WindowTreeClientPtr client;
   app_impl_->ConnectToService(request.Pass(), &client);
 
   scoped_ptr<ViewTreeImpl> service(new ViewTreeImpl(
@@ -98,11 +98,11 @@ ClientConnection* MandolineUIServicesApp::CreateClientConnectionForEmbedAtView(
 
 ClientConnection* MandolineUIServicesApp::CreateClientConnectionForEmbedAtView(
     ConnectionManager* connection_manager,
-    mojo::InterfaceRequest<mojo::ViewTree> tree_request,
+    mojo::InterfaceRequest<mojom::WindowTree> tree_request,
     ConnectionSpecificId creator_id,
     const ViewId& root_id,
     uint32_t policy_bitmask,
-    mojo::ViewTreeClientPtr client) {
+    mojom::WindowTreeClientPtr client) {
   scoped_ptr<ViewTreeImpl> service(new ViewTreeImpl(
       connection_manager, creator_id, root_id, policy_bitmask));
   return new DefaultClientConnection(service.Pass(), connection_manager,
@@ -111,7 +111,7 @@ ClientConnection* MandolineUIServicesApp::CreateClientConnectionForEmbedAtView(
 
 void MandolineUIServicesApp::Create(
     ApplicationConnection* connection,
-    InterfaceRequest<ViewTreeHostFactory> request) {
+    InterfaceRequest<WindowTreeHostFactory> request) {
   factory_bindings_.AddBinding(this, request.Pass());
 }
 
@@ -123,9 +123,9 @@ void MandolineUIServicesApp::Create(mojo::ApplicationConnection* connection,
 }
 
 void MandolineUIServicesApp::CreateWindowTreeHost(
-    mojo::InterfaceRequest<mojo::ViewTreeHost> host,
-    mojo::ViewTreeHostClientPtr host_client,
-    mojo::ViewTreeClientPtr tree_client) {
+    mojo::InterfaceRequest<mojom::WindowTreeHost> host,
+    mojom::WindowTreeHostClientPtr host_client,
+    mojom::WindowTreeClientPtr tree_client) {
   DCHECK(connection_manager_.get());
 
   // TODO(fsamuel): We need to make sure that only the window manager can create

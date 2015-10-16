@@ -6,8 +6,8 @@
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_tree_connection.h"
 #include "components/mus/public/cpp/window_tree_delegate.h"
-#include "components/mus/public/interfaces/view_tree.mojom.h"
 #include "components/mus/public/interfaces/window_manager.mojom.h"
+#include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/application/public/cpp/application_test_base.h"
 
@@ -25,12 +25,12 @@ class WindowManagerAppTest : public mojo::test::ApplicationTestBase,
   }
 
   mus::Window* OpenWindow(mus::mojom::WindowManager* window_manager) {
-    mojo::ViewTreeClientPtr view_tree_client;
-    mojo::InterfaceRequest<mojo::ViewTreeClient> view_tree_client_request =
-        GetProxy(&view_tree_client);
-    window_manager->OpenWindow(view_tree_client.Pass());
+    mus::mojom::WindowTreeClientPtr window_tree_client;
+    mojo::InterfaceRequest<mus::mojom::WindowTreeClient>
+        window_tree_client_request = GetProxy(&window_tree_client);
+    window_manager->OpenWindow(window_tree_client.Pass());
     mus::WindowTreeConnection* connection = mus::WindowTreeConnection::Create(
-        this, view_tree_client_request.Pass(),
+        this, window_tree_client_request.Pass(),
         mus::WindowTreeConnection::CreateType::WAIT_FOR_EMBED);
     return connection->GetRoot();
   }

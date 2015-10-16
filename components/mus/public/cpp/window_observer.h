@@ -40,10 +40,10 @@ class WindowObserver {
 
   virtual void OnWindowReordering(Window* window,
                                   Window* relative_window,
-                                  mojo::OrderDirection direction) {}
+                                  mojom::OrderDirection direction) {}
   virtual void OnWindowReordered(Window* window,
                                  Window* relative_window,
-                                 mojo::OrderDirection direction) {}
+                                 mojom::OrderDirection direction) {}
 
   virtual void OnWindowDestroying(Window* window) {}
   virtual void OnWindowDestroyed(Window* window) {}
@@ -59,8 +59,8 @@ class WindowObserver {
 
   virtual void OnWindowViewportMetricsChanged(
       Window* window,
-      const mojo::ViewportMetrics& old_metrics,
-      const mojo::ViewportMetrics& new_metrics) {}
+      const mojom::ViewportMetrics& old_metrics,
+      const mojom::ViewportMetrics& new_metrics) {}
 
   virtual void OnWindowFocusChanged(Window* gained_focus, Window* lost_focus) {}
 

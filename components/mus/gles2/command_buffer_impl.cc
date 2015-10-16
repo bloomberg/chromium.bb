@@ -36,7 +36,7 @@ class CommandBufferImpl::CommandBufferDriverClientImpl
 };
 
 CommandBufferImpl::CommandBufferImpl(
-    mojo::InterfaceRequest<mojo::CommandBuffer> request,
+    mojo::InterfaceRequest<mus::mojom::CommandBuffer> request,
     scoped_refptr<GpuState> gpu_state,
     scoped_ptr<CommandBufferDriver> driver)
     : gpu_state_(gpu_state),
@@ -53,9 +53,9 @@ CommandBufferImpl::CommandBufferImpl(
 }
 
 void CommandBufferImpl::Initialize(
-    mojo::CommandBufferSyncClientPtr sync_client,
-    mojo::CommandBufferSyncPointClientPtr sync_point_client,
-    mojo::CommandBufferLostContextObserverPtr loss_observer,
+    mus::mojom::CommandBufferSyncClientPtr sync_client,
+    mus::mojom::CommandBufferSyncPointClientPtr sync_point_client,
+    mus::mojom::CommandBufferLostContextObserverPtr loss_observer,
     mojo::ScopedSharedBufferHandle shared_state,
     mojo::Array<int32_t> attribs) {
   sync_point_client_ = sync_point_client.Pass();
@@ -151,8 +151,9 @@ CommandBufferImpl::~CommandBufferImpl() {
 }
 
 void CommandBufferImpl::BindToRequest(
-    mojo::InterfaceRequest<mojo::CommandBuffer> request) {
-  binding_.reset(new mojo::Binding<mojo::CommandBuffer>(this, request.Pass()));
+    mojo::InterfaceRequest<mus::mojom::CommandBuffer> request) {
+  binding_.reset(
+      new mojo::Binding<mus::mojom::CommandBuffer>(this, request.Pass()));
   binding_->set_connection_error_handler([this]() { OnConnectionError(); });
 }
 

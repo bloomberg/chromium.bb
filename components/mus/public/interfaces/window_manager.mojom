@@ -4,7 +4,7 @@
 
 module mus.mojom;
 
-import "components/mus/public/interfaces/view_tree.mojom";
+import "components/mus/public/interfaces/window_tree.mojom";
 import "ui/mojo/geometry/geometry.mojom";
 
 enum WindowManagerErrorCode {
@@ -33,7 +33,7 @@ struct Display {
 // created by calls to OpenWindow() from the *same connection* to the window
 // manager. The callback indicates success or failure.
 interface WindowManager {
-  OpenWindow(mojo.ViewTreeClient client);
+  OpenWindow(WindowTreeClient client);
 
   // Resizes the corresponding window to |size| and centers it in the current
   // context.

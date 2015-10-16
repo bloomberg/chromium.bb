@@ -7,8 +7,8 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "components/mus/public/interfaces/view_tree.mojom.h"
-#include "components/mus/public/interfaces/view_tree_host.mojom.h"
+#include "components/mus/public/interfaces/window_tree.mojom.h"
+#include "components/mus/public/interfaces/window_tree_host.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 
 namespace mojo {
@@ -21,16 +21,16 @@ class WindowTreeDelegate;
 
 // Uses |factory| to create a new |host|, providing the supplied |host_client|
 // which may be null. |delegate| must not be null.
-void CreateWindowTreeHost(mojo::ViewTreeHostFactory* factory,
-                          mojo::ViewTreeHostClientPtr host_client,
+void CreateWindowTreeHost(mojom::WindowTreeHostFactory* factory,
+                          mojom::WindowTreeHostClientPtr host_client,
                           WindowTreeDelegate* delegate,
-                          mojo::ViewTreeHostPtr* host);
+                          mojom::WindowTreeHostPtr* host);
 
 // Creates a single host with no client by connecting to the view manager
 // application. Useful only for tests and trivial UIs.
 void CreateSingleWindowTreeHost(mojo::ApplicationImpl* app,
                                 WindowTreeDelegate* delegate,
-                                mojo::ViewTreeHostPtr* host);
+                                mojom::WindowTreeHostPtr* host);
 
 }  // namespace mus
 

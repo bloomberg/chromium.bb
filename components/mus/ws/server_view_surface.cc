@@ -40,7 +40,7 @@ ServerViewSurface::~ServerViewSurface() {
 }
 
 void ServerViewSurface::Bind(mojo::InterfaceRequest<Surface> request,
-                             mojo::SurfaceClientPtr client) {
+                             mojom::SurfaceClientPtr client) {
   if (binding_.is_bound()) {
     // Destroy frame surfaces submitted by the old client before replacing
     // client_, so those surfaces will be returned to the old client.
@@ -52,7 +52,7 @@ void ServerViewSurface::Bind(mojo::InterfaceRequest<Surface> request,
 }
 
 void ServerViewSurface::SubmitCompositorFrame(
-    mojo::CompositorFramePtr frame,
+    mojom::CompositorFramePtr frame,
     const SubmitCompositorFrameCallback& callback) {
   gfx::Size frame_size = frame->passes[0]->output_rect.To<gfx::Rect>().size();
   if (!surface_id_.is_null()) {
@@ -73,14 +73,14 @@ void ServerViewSurface::SubmitCompositorFrame(
 }
 
 scoped_ptr<cc::CompositorFrame> ServerViewSurface::ConvertCompositorFrame(
-    const mojo::CompositorFramePtr& input) {
+    const mojom::CompositorFramePtr& input) {
   referenced_view_ids_.clear();
   return ConvertToCompositorFrame(input, this);
 }
 
 bool ServerViewSurface::ConvertSurfaceDrawQuad(
-    const mojo::QuadPtr& input,
-    const mojo::CompositorFrameMetadataPtr& metadata,
+    const mojom::QuadPtr& input,
+    const mojom::CompositorFrameMetadataPtr& metadata,
     cc::SharedQuadState* sqs,
     cc::RenderPass* render_pass) {
   Id id = static_cast<Id>(
@@ -105,7 +105,7 @@ void ServerViewSurface::ReturnResources(
   if (!client_)
     return;
   client_->ReturnResources(
-      mojo::Array<mojo::ReturnedResourcePtr>::From(resources));
+      mojo::Array<mojom::ReturnedResourcePtr>::From(resources));
 }
 
 }  // namespace mus

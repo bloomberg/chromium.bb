@@ -13,7 +13,7 @@
 #include "components/mus/public/cpp/types.h"
 #include "components/mus/public/interfaces/mus_constants.mojom.h"
 #include "components/mus/public/interfaces/surface_id.mojom.h"
-#include "components/mus/public/interfaces/view_tree.mojom.h"
+#include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "mojo/application/public/interfaces/service_provider.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/array.h"
 #include "third_party/mojo/src/mojo/public/cpp/system/macros.h"
@@ -66,7 +66,9 @@ class Window {
   bool visible() const { return visible_; }
   void SetVisible(bool value);
 
-  const mojo::ViewportMetrics& viewport_metrics() { return *viewport_metrics_; }
+  const mojom::ViewportMetrics& viewport_metrics() {
+    return *viewport_metrics_;
+  }
 
   scoped_ptr<WindowSurface> RequestSurface();
 
@@ -124,7 +126,7 @@ class Window {
   void AddChild(Window* child);
   void RemoveChild(Window* child);
 
-  void Reorder(Window* relative, mojo::OrderDirection direction);
+  void Reorder(Window* relative, mojom::OrderDirection direction);
   void MoveToFront();
   void MoveToBack();
 
@@ -139,12 +141,12 @@ class Window {
   void SetFocus();
   bool HasFocus() const;
 
-  // Embedding. See view_tree.mojom for details.
-  void Embed(mojo::ViewTreeClientPtr client);
+  // Embedding. See window_tree.mojom for details.
+  void Embed(mus::mojom::WindowTreeClientPtr client);
 
   // NOTE: callback is run synchronously if Embed() is not allowed on this
   // Window.
-  void Embed(mojo::ViewTreeClientPtr client,
+  void Embed(mus::mojom::WindowTreeClientPtr client,
              uint32_t policy_bitmask,
              const EmbedCallback& callback);
 
@@ -172,12 +174,12 @@ class Window {
   void LocalAddChild(Window* child);
   void LocalRemoveChild(Window* child);
   // Returns true if the order actually changed.
-  bool LocalReorder(Window* relative, mojo::OrderDirection direction);
+  bool LocalReorder(Window* relative, mojom::OrderDirection direction);
   void LocalSetBounds(const mojo::Rect& old_bounds,
                       const mojo::Rect& new_bounds);
   void LocalSetClientArea(const mojo::Rect& new_client_area);
-  void LocalSetViewportMetrics(const mojo::ViewportMetrics& old_metrics,
-                               const mojo::ViewportMetrics& new_metrics);
+  void LocalSetViewportMetrics(const mojom::ViewportMetrics& old_metrics,
+                               const mojom::ViewportMetrics& new_metrics);
   void LocalSetDrawn(bool drawn);
   void LocalSetVisible(bool visible);
 
@@ -207,7 +209,7 @@ class Window {
   mojo::Rect bounds_;
   mojo::Rect client_area_;
 
-  mojo::ViewportMetricsPtr viewport_metrics_;
+  mojom::ViewportMetricsPtr viewport_metrics_;
 
   bool visible_;
 

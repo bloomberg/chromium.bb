@@ -19,28 +19,28 @@ WindowManagerAccessPolicy::WindowManagerAccessPolicy(
 
 WindowManagerAccessPolicy::~WindowManagerAccessPolicy() {}
 
-bool WindowManagerAccessPolicy::CanRemoveViewFromParent(
+bool WindowManagerAccessPolicy::CanRemoveWindowFromParent(
     const ServerView* view) const {
   return true;
 }
 
-bool WindowManagerAccessPolicy::CanAddView(const ServerView* parent,
-                                           const ServerView* child) const {
+bool WindowManagerAccessPolicy::CanAddWindow(const ServerView* parent,
+                                             const ServerView* child) const {
   return true;
 }
 
-bool WindowManagerAccessPolicy::CanReorderView(
+bool WindowManagerAccessPolicy::CanReorderWindow(
     const ServerView* view,
     const ServerView* relative_view,
-    mojo::OrderDirection direction) const {
+    mojom::OrderDirection direction) const {
   return true;
 }
 
-bool WindowManagerAccessPolicy::CanDeleteView(const ServerView* view) const {
+bool WindowManagerAccessPolicy::CanDeleteWindow(const ServerView* view) const {
   return view->id().connection_id == connection_id_;
 }
 
-bool WindowManagerAccessPolicy::CanGetViewTree(const ServerView* view) const {
+bool WindowManagerAccessPolicy::CanGetWindowTree(const ServerView* view) const {
   return true;
 }
 
@@ -69,16 +69,17 @@ bool WindowManagerAccessPolicy::CanSetWindowSurfaceId(
          (delegate_->IsRootForAccessPolicy(view->id()));
 }
 
-bool WindowManagerAccessPolicy::CanSetViewBounds(const ServerView* view) const {
-  return view->id().connection_id == connection_id_;
-}
-
-bool WindowManagerAccessPolicy::CanSetViewProperties(
+bool WindowManagerAccessPolicy::CanSetWindowBounds(
     const ServerView* view) const {
   return view->id().connection_id == connection_id_;
 }
 
-bool WindowManagerAccessPolicy::CanSetViewTextInputState(
+bool WindowManagerAccessPolicy::CanSetWindowProperties(
+    const ServerView* view) const {
+  return view->id().connection_id == connection_id_;
+}
+
+bool WindowManagerAccessPolicy::CanSetWindowTextInputState(
     const ServerView* view) const {
   return view->id().connection_id == connection_id_;
 }

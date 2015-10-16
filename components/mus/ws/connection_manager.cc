@@ -109,7 +109,7 @@ void ConnectionManager::OnHostConnectionClosed(
 
   // Get the ClientConnection by ViewTreeImpl ID.
   ConnectionMap::iterator service_connection_it =
-      connection_map_.find(it->first->GetViewTree()->id());
+      connection_map_.find(it->first->GetWindowTree()->id());
   DCHECK(service_connection_it != connection_map_.end());
 
   // Tear down the associated ViewTree connection.
@@ -129,7 +129,7 @@ void ConnectionManager::EmbedAtView(ConnectionSpecificId creator_id,
                                     const ViewId& view_id,
                                     uint32_t policy_bitmask,
                                     mojo::URLRequestPtr request) {
-  mojo::ViewTreePtr service_ptr;
+  mojom::WindowTreePtr service_ptr;
   ClientConnection* client_connection =
       delegate_->CreateClientConnectionForEmbedAtView(
           this, GetProxy(&service_ptr), creator_id, request.Pass(), view_id,
@@ -140,11 +140,12 @@ void ConnectionManager::EmbedAtView(ConnectionSpecificId creator_id,
   OnConnectionMessagedClient(client_connection->service()->id());
 }
 
-ViewTreeImpl* ConnectionManager::EmbedAtView(ConnectionSpecificId creator_id,
-                                             const ViewId& view_id,
-                                             uint32_t policy_bitmask,
-                                             mojo::ViewTreeClientPtr client) {
-  mojo::ViewTreePtr service_ptr;
+ViewTreeImpl* ConnectionManager::EmbedAtView(
+    ConnectionSpecificId creator_id,
+    const ViewId& view_id,
+    uint32_t policy_bitmask,
+    mojom::WindowTreeClientPtr client) {
+  mojom::WindowTreePtr service_ptr;
   ClientConnection* client_connection =
       delegate_->CreateClientConnectionForEmbedAtView(
           this, GetProxy(&service_ptr), creator_id, view_id, policy_bitmask,
@@ -198,16 +199,16 @@ bool ConnectionManager::DidConnectionMessageClient(
   return current_change_ && current_change_->DidMessageConnection(id);
 }
 
-mojo::ViewportMetricsPtr ConnectionManager::GetViewportMetricsForView(
+mojom::ViewportMetricsPtr ConnectionManager::GetViewportMetricsForView(
     const ServerView* view) {
-  ViewTreeHostImpl* host = GetViewTreeHostByView(view);
+  ViewTreeHostImpl* host = GetWindowTreeHostByView(view);
   if (host)
     return host->GetViewportMetrics().Clone();
 
   if (!host_connection_map_.empty())
     return host_connection_map_.begin()->first->GetViewportMetrics().Clone();
 
-  mojo::ViewportMetricsPtr metrics = mojo::ViewportMetrics::New();
+  mojom::ViewportMetricsPtr metrics = mojom::ViewportMetrics::New();
   metrics->size_in_pixels = mojo::Size::New();
   return metrics.Pass();
 }
@@ -221,13 +222,14 @@ const ViewTreeImpl* ConnectionManager::GetConnectionWithRoot(
   return nullptr;
 }
 
-ViewTreeHostImpl* ConnectionManager::GetViewTreeHostByView(
+ViewTreeHostImpl* ConnectionManager::GetWindowTreeHostByView(
     const ServerView* view) {
   return const_cast<ViewTreeHostImpl*>(
-      static_cast<const ConnectionManager*>(this)->GetViewTreeHostByView(view));
+      static_cast<const ConnectionManager*>(this)
+          ->GetWindowTreeHostByView(view));
 }
 
-const ViewTreeHostImpl* ConnectionManager::GetViewTreeHostByView(
+const ViewTreeHostImpl* ConnectionManager::GetWindowTreeHostByView(
     const ServerView* view) const {
   while (view && view->parent())
     view = view->parent();
@@ -294,7 +296,7 @@ void ConnectionManager::ProcessViewHierarchyChanged(
 void ConnectionManager::ProcessViewReorder(
     const ServerView* view,
     const ServerView* relative_view,
-    const mojo::OrderDirection direction) {
+    const mojom::OrderDirection direction) {
   for (auto& pair : connection_map_) {
     pair.second->service()->ProcessViewReorder(view, relative_view, direction,
                                                IsChangeSource(pair.first));
@@ -309,8 +311,8 @@ void ConnectionManager::ProcessViewDeleted(const ViewId& view) {
 }
 
 void ConnectionManager::ProcessViewportMetricsChanged(
-    const mojo::ViewportMetrics& old_metrics,
-    const mojo::ViewportMetrics& new_metrics) {
+    const mojom::ViewportMetrics& old_metrics,
+    const mojom::ViewportMetrics& new_metrics) {
   for (auto& pair : connection_map_) {
     pair.second->service()->ProcessViewportMetricsChanged(
         old_metrics, new_metrics, IsChangeSource(pair.first));
@@ -344,7 +346,7 @@ void ConnectionManager::OnScheduleViewPaint(const ServerView* view) {
 }
 
 const ServerView* ConnectionManager::GetRootView(const ServerView* view) const {
-  const ViewTreeHostImpl* host = GetViewTreeHostByView(view);
+  const ViewTreeHostImpl* host = GetWindowTreeHostByView(view);
   return host ? host->root_view() : nullptr;
 }
 
@@ -404,7 +406,7 @@ void ConnectionManager::OnWindowClientAreaChanged(
 
 void ConnectionManager::OnViewReordered(ServerView* view,
                                         ServerView* relative,
-                                        mojo::OrderDirection direction) {
+                                        mojom::OrderDirection direction) {
   if (!in_destructor_)
     SchedulePaint(view, gfx::Rect(view->bounds().size()));
 }
@@ -439,7 +441,7 @@ void ConnectionManager::OnViewSharedPropertyChanged(
 void ConnectionManager::OnViewTextInputStateChanged(
     ServerView* view,
     const ui::TextInputState& state) {
-  ViewTreeHostImpl* host = GetViewTreeHostByView(view);
+  ViewTreeHostImpl* host = GetWindowTreeHostByView(view);
   host->UpdateTextInputState(view, state);
 }
 

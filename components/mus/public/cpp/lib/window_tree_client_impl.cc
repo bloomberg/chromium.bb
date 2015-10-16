@@ -24,16 +24,16 @@ Id MakeTransportId(ConnectionSpecificId connection_id,
 // Helper called to construct a local window object from transport data.
 Window* AddWindowToConnection(WindowTreeClientImpl* client,
                               Window* parent,
-                              const mojo::ViewDataPtr& window_data) {
+                              const mojom::WindowDataPtr& window_data) {
   // We don't use the cto that takes a WindowTreeConnection here, since it will
   // call back to the service and attempt to create a new view.
   Window* window = WindowPrivate::LocalCreate();
   WindowPrivate private_window(window);
   private_window.set_connection(client);
-  private_window.set_id(window_data->view_id);
+  private_window.set_id(window_data->window_id);
   private_window.set_visible(window_data->visible);
   private_window.set_drawn(window_data->drawn);
-  private_window.LocalSetViewportMetrics(mojo::ViewportMetrics(),
+  private_window.LocalSetViewportMetrics(mojom::ViewportMetrics(),
                                          *window_data->viewport_metrics);
   private_window.set_properties(
       window_data->properties
@@ -46,7 +46,7 @@ Window* AddWindowToConnection(WindowTreeClientImpl* client,
 }
 
 Window* BuildWindowTree(WindowTreeClientImpl* client,
-                        const mojo::Array<mojo::ViewDataPtr>& windows,
+                        const mojo::Array<mojom::WindowDataPtr>& windows,
                         Window* initial_parent) {
   std::vector<Window*> parents;
   Window* root = NULL;
@@ -71,7 +71,7 @@ Window* BuildWindowTree(WindowTreeClientImpl* client,
 
 WindowTreeConnection* WindowTreeConnection::Create(
     WindowTreeDelegate* delegate,
-    mojo::InterfaceRequest<mojo::ViewTreeClient> request,
+    mojo::InterfaceRequest<mus::mojom::WindowTreeClient> request,
     CreateType create_type) {
   WindowTreeClientImpl* client =
       new WindowTreeClientImpl(delegate, request.Pass());
@@ -82,7 +82,7 @@ WindowTreeConnection* WindowTreeConnection::Create(
 
 WindowTreeClientImpl::WindowTreeClientImpl(
     WindowTreeDelegate* delegate,
-    mojo::InterfaceRequest<mojo::ViewTreeClient> request)
+    mojo::InterfaceRequest<mus::mojom::WindowTreeClient> request)
     : connection_id_(0),
       next_id_(1),
       delegate_(delegate),
@@ -127,25 +127,25 @@ void WindowTreeClientImpl::WaitForEmbed() {
 
 void WindowTreeClientImpl::DestroyWindow(Id window_id) {
   DCHECK(tree_);
-  tree_->DeleteView(window_id, ActionCompletedCallback());
+  tree_->DeleteWindow(window_id, ActionCompletedCallback());
 }
 
 void WindowTreeClientImpl::AddChild(Id child_id, Id parent_id) {
   DCHECK(tree_);
-  tree_->AddView(parent_id, child_id, ActionCompletedCallback());
+  tree_->AddWindow(parent_id, child_id, ActionCompletedCallback());
 }
 
 void WindowTreeClientImpl::RemoveChild(Id child_id, Id parent_id) {
   DCHECK(tree_);
-  tree_->RemoveViewFromParent(child_id, ActionCompletedCallback());
+  tree_->RemoveWindowFromParent(child_id, ActionCompletedCallback());
 }
 
 void WindowTreeClientImpl::Reorder(Id window_id,
                                    Id relative_window_id,
-                                   mojo::OrderDirection direction) {
+                                   mojom::OrderDirection direction) {
   DCHECK(tree_);
-  tree_->ReorderView(window_id, relative_window_id, direction,
-                     ActionCompletedCallback());
+  tree_->ReorderWindow(window_id, relative_window_id, direction,
+                       ActionCompletedCallback());
 }
 
 bool WindowTreeClientImpl::OwnsWindow(Id id) const {
@@ -154,7 +154,7 @@ bool WindowTreeClientImpl::OwnsWindow(Id id) const {
 
 void WindowTreeClientImpl::SetBounds(Id window_id, const mojo::Rect& bounds) {
   DCHECK(tree_);
-  tree_->SetViewBounds(window_id, bounds.Clone(), ActionCompletedCallback());
+  tree_->SetWindowBounds(window_id, bounds.Clone(), ActionCompletedCallback());
 }
 
 void WindowTreeClientImpl::SetClientArea(Id window_id,
@@ -173,23 +173,23 @@ void WindowTreeClientImpl::SetFocus(Id window_id) {
 
 void WindowTreeClientImpl::SetVisible(Id window_id, bool visible) {
   DCHECK(tree_);
-  tree_->SetViewVisibility(window_id, visible, ActionCompletedCallback());
+  tree_->SetWindowVisibility(window_id, visible, ActionCompletedCallback());
 }
 
 void WindowTreeClientImpl::SetProperty(Id window_id,
                                        const std::string& name,
                                        const std::vector<uint8_t>& data) {
   DCHECK(tree_);
-  tree_->SetViewProperty(window_id, mojo::String(name),
-                         mojo::Array<uint8_t>::From(data),
-                         ActionCompletedCallback());
+  tree_->SetWindowProperty(window_id, mojo::String(name),
+                           mojo::Array<uint8_t>::From(data),
+                           ActionCompletedCallback());
 }
 
-void WindowTreeClientImpl::SetViewTextInputState(
+void WindowTreeClientImpl::SetWindowTextInputState(
     Id window_id,
     mojo::TextInputStatePtr state) {
   DCHECK(tree_);
-  tree_->SetViewTextInputState(window_id, state.Pass());
+  tree_->SetWindowTextInputState(window_id, state.Pass());
 }
 
 void WindowTreeClientImpl::SetImeVisibility(Id window_id,
@@ -201,17 +201,17 @@ void WindowTreeClientImpl::SetImeVisibility(Id window_id,
 
 void WindowTreeClientImpl::Embed(
     Id window_id,
-    mojo::ViewTreeClientPtr client,
+    mus::mojom::WindowTreeClientPtr client,
     uint32_t policy_bitmask,
-    const mojo::ViewTree::EmbedCallback& callback) {
+    const mus::mojom::WindowTree::EmbedCallback& callback) {
   DCHECK(tree_);
   tree_->Embed(window_id, client.Pass(), policy_bitmask, callback);
 }
 
 void WindowTreeClientImpl::RequestSurface(
     Id window_id,
-    mojo::InterfaceRequest<mojo::Surface> surface,
-    mojo::SurfaceClientPtr client) {
+    mojo::InterfaceRequest<mojom::Surface> surface,
+    mojom::SurfaceClientPtr client) {
   DCHECK(tree_);
   tree_->RequestSurface(window_id, surface.Pass(), client.Pass());
 }
@@ -245,8 +245,8 @@ void WindowTreeClientImpl::OnRootDestroyed(Window* root) {
 Id WindowTreeClientImpl::CreateWindowOnServer() {
   DCHECK(tree_);
   const Id window_id = MakeTransportId(connection_id_, next_id_++);
-  tree_->CreateView(window_id, [this](mojo::ErrorCode code) {
-    OnActionCompleted(code == mojo::ERROR_CODE_NONE);
+  tree_->NewWindow(window_id, [this](mojom::ErrorCode code) {
+    OnActionCompleted(code == mojom::ERROR_CODE_NONE);
   });
   return window_id;
 }
@@ -279,11 +279,11 @@ ConnectionSpecificId WindowTreeClientImpl::GetConnectionId() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// WindowTreeClientImpl, ViewTreeClient implementation:
+// WindowTreeClientImpl, WindowTreeClient implementation:
 
 void WindowTreeClientImpl::OnEmbed(ConnectionSpecificId connection_id,
-                                   mojo::ViewDataPtr root_data,
-                                   mojo::ViewTreePtr tree,
+                                   mojom::WindowDataPtr root_data,
+                                   mus::mojom::WindowTreePtr tree,
                                    Id focused_window_id,
                                    uint32 access_policy) {
   if (tree) {
@@ -293,7 +293,7 @@ void WindowTreeClientImpl::OnEmbed(ConnectionSpecificId connection_id,
   }
   connection_id_ = connection_id;
   is_embed_root_ =
-      (access_policy & mojo::ViewTree::ACCESS_POLICY_EMBED_ROOT) != 0;
+      (access_policy & mus::mojom::WindowTree::ACCESS_POLICY_EMBED_ROOT) != 0;
 
   DCHECK(!root_);
   root_ = AddWindowToConnection(this, nullptr, root_data);
@@ -335,8 +335,8 @@ void WindowTreeClientImpl::OnClientAreaChanged(uint32_t window_id,
 namespace {
 
 void SetViewportMetricsOnDecendants(Window* root,
-                                    const mojo::ViewportMetrics& old_metrics,
-                                    const mojo::ViewportMetrics& new_metrics) {
+                                    const mojom::ViewportMetrics& old_metrics,
+                                    const mojom::ViewportMetrics& new_metrics) {
   WindowPrivate(root).LocalSetViewportMetrics(old_metrics, new_metrics);
   const Window::Children& children = root->children();
   for (size_t i = 0; i < children.size(); ++i)
@@ -345,8 +345,8 @@ void SetViewportMetricsOnDecendants(Window* root,
 }
 
 void WindowTreeClientImpl::OnWindowViewportMetricsChanged(
-    mojo::ViewportMetricsPtr old_metrics,
-    mojo::ViewportMetricsPtr new_metrics) {
+    mojom::ViewportMetricsPtr old_metrics,
+    mojom::ViewportMetricsPtr new_metrics) {
   Window* window = GetRoot();
   if (window)
     SetViewportMetricsOnDecendants(window, *old_metrics, *new_metrics);
@@ -356,7 +356,7 @@ void WindowTreeClientImpl::OnWindowHierarchyChanged(
     Id window_id,
     Id new_parent_id,
     Id old_parent_id,
-    mojo::Array<mojo::ViewDataPtr> windows) {
+    mojo::Array<mojom::WindowDataPtr> windows) {
   Window* initial_parent =
       windows.size() ? GetWindowById(windows[0]->parent_id) : NULL;
 
@@ -381,7 +381,7 @@ void WindowTreeClientImpl::OnWindowHierarchyChanged(
 
 void WindowTreeClientImpl::OnWindowReordered(Id window_id,
                                              Id relative_window_id,
-                                             mojo::OrderDirection direction) {
+                                             mojom::OrderDirection direction) {
   Window* window = GetWindowById(window_id);
   Window* relative_window = GetWindowById(relative_window_id);
   if (window && relative_window)

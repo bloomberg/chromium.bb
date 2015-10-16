@@ -40,7 +40,7 @@ class WebGraphicsContext3DCommandBufferImpl
 
  private:
   WebGraphicsContext3DCommandBufferImpl(
-      mojo::InterfacePtrInfo<mojo::CommandBuffer> command_buffer_info,
+      mojo::InterfacePtrInfo<mus::mojom::CommandBuffer> command_buffer_info,
       const GURL& active_url,
       const blink::WebGraphicsContext3D::Attributes& attributes,
       blink::WebGraphicsContext3D* share_context);

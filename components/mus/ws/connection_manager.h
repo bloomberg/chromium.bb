@@ -11,8 +11,8 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/timer/timer.h"
-#include "components/mus/public/interfaces/view_tree.mojom.h"
-#include "components/mus/public/interfaces/view_tree_host.mojom.h"
+#include "components/mus/public/interfaces/window_tree.mojom.h"
+#include "components/mus/public/interfaces/window_tree_host.mojom.h"
 #include "components/mus/surfaces/surfaces_state.h"
 #include "components/mus/ws/focus_controller_delegate.h"
 #include "components/mus/ws/ids.h"
@@ -101,7 +101,7 @@ class ConnectionManager : public ServerViewDelegate, public ServerViewObserver {
   ViewTreeImpl* EmbedAtView(ConnectionSpecificId creator_id,
                             const ViewId& view_id,
                             uint32_t policy_bitmask,
-                            mojo::ViewTreeClientPtr client);
+                            mojom::WindowTreeClientPtr client);
 
   // Returns the connection by id.
   ViewTreeImpl* GetConnection(ConnectionSpecificId connection_id);
@@ -133,7 +133,7 @@ class ConnectionManager : public ServerViewDelegate, public ServerViewObserver {
   bool DidConnectionMessageClient(ConnectionSpecificId id) const;
 
   // Returns the metrics of the viewport where the provided |view| is displayed.
-  mojo::ViewportMetricsPtr GetViewportMetricsForView(const ServerView* view);
+  mojom::ViewportMetricsPtr GetViewportMetricsForView(const ServerView* view);
 
   // Returns the ViewTreeImpl that has |id| as a root.
   ViewTreeImpl* GetConnectionWithRoot(const ViewId& id) {
@@ -142,8 +142,8 @@ class ConnectionManager : public ServerViewDelegate, public ServerViewObserver {
   }
   const ViewTreeImpl* GetConnectionWithRoot(const ViewId& id) const;
 
-  ViewTreeHostImpl* GetViewTreeHostByView(const ServerView* view);
-  const ViewTreeHostImpl* GetViewTreeHostByView(const ServerView* view) const;
+  ViewTreeHostImpl* GetWindowTreeHostByView(const ServerView* view);
+  const ViewTreeHostImpl* GetWindowTreeHostByView(const ServerView* view) const;
 
   // Returns the first ancestor of |service| that is marked as an embed root.
   ViewTreeImpl* GetEmbedRoot(ViewTreeImpl* service);
@@ -160,8 +160,8 @@ class ConnectionManager : public ServerViewDelegate, public ServerViewObserver {
   void ProcessClientAreaChanged(const ServerView* window,
                                 const gfx::Rect& old_client_area,
                                 const gfx::Rect& new_client_area);
-  void ProcessViewportMetricsChanged(const mojo::ViewportMetrics& old_metrics,
-                                     const mojo::ViewportMetrics& new_metrics);
+  void ProcessViewportMetricsChanged(const mojom::ViewportMetrics& old_metrics,
+                                     const mojom::ViewportMetrics& new_metrics);
   void ProcessWillChangeViewHierarchy(const ServerView* view,
                                       const ServerView* new_parent,
                                       const ServerView* old_parent);
@@ -170,7 +170,7 @@ class ConnectionManager : public ServerViewDelegate, public ServerViewObserver {
                                    const ServerView* old_parent);
   void ProcessViewReorder(const ServerView* view,
                           const ServerView* relative_view,
-                          const mojo::OrderDirection direction);
+                          const mojom::OrderDirection direction);
   void ProcessViewDeleted(const ViewId& view);
 
  private:
@@ -218,7 +218,7 @@ class ConnectionManager : public ServerViewDelegate, public ServerViewObserver {
                                  const gfx::Rect& new_client_area) override;
   void OnViewReordered(ServerView* view,
                        ServerView* relative,
-                       mojo::OrderDirection direction) override;
+                       mojom::OrderDirection direction) override;
   void OnWillChangeViewVisibility(ServerView* view) override;
   void OnViewSharedPropertyChanged(
       ServerView* view,

@@ -95,7 +95,7 @@ Frame::~Frame() {
 }
 
 void Frame::Init(Frame* parent,
-                 mojo::ViewTreeClientPtr view_tree_client,
+                 mus::mojom::WindowTreeClientPtr window_tree_client,
                  mojo::InterfaceRequest<mojom::Frame> frame_request,
                  base::TimeTicks navigation_start_time) {
   {
@@ -110,7 +110,7 @@ void Frame::Init(Frame* parent,
   const ClientType client_type = frame_request.is_pending()
                                      ? ClientType::NEW_CHILD_FRAME
                                      : ClientType::EXISTING_FRAME_NEW_APP;
-  InitClient(client_type, nullptr, view_tree_client.Pass(),
+  InitClient(client_type, nullptr, window_tree_client.Pass(),
              frame_request.Pass(), navigation_start_time);
 
   tree_->delegate_->DidCreateFrame(this);
@@ -190,21 +190,22 @@ void Frame::StopHighlightingFindResults() {
 
 void Frame::InitClient(ClientType client_type,
                        scoped_ptr<FrameUserDataAndBinding> data_and_binding,
-                       mojo::ViewTreeClientPtr view_tree_client,
+                       mus::mojom::WindowTreeClientPtr window_tree_client,
                        mojo::InterfaceRequest<mojom::Frame> frame_request,
                        base::TimeTicks navigation_start_time) {
   if (client_type == ClientType::EXISTING_FRAME_NEW_APP &&
-      view_tree_client.get()) {
+      window_tree_client.get()) {
     embedded_connection_id_ = kInvalidConnectionId;
     embed_weak_ptr_factory_.InvalidateWeakPtrs();
     view_->Embed(
-        view_tree_client.Pass(), mojo::ViewTree::ACCESS_POLICY_DEFAULT,
+        window_tree_client.Pass(),
+        mus::mojom::WindowTree::ACCESS_POLICY_DEFAULT,
         base::Bind(&Frame::OnEmbedAck, embed_weak_ptr_factory_.GetWeakPtr()));
   }
 
   if (client_type == ClientType::NEW_CHILD_FRAME) {
     // Don't install an error handler. We allow for the target to only
-    // implement ViewTreeClient.
+    // implement WindowTreeClient.
     // This frame (and client) was created by an existing FrameClient. There
     // is no need to send it OnConnect().
     frame_binding_.reset(
@@ -224,7 +225,7 @@ void Frame::InitClient(ClientType client_type,
 
     mojom::FramePtr frame_ptr;
     // Don't install an error handler. We allow for the target to only
-    // implement ViewTreeClient.
+    // implement WindowTreeClient.
     frame_binding_.reset(
         new mojo::Binding<mojom::Frame>(this, GetProxy(&frame_ptr).Pass()));
     frame_client_->OnConnect(
@@ -250,13 +251,13 @@ void Frame::OnConnectAck(scoped_ptr<FrameUserDataAndBinding> data_and_binding) {
 
 void Frame::ChangeClient(mojom::FrameClient* frame_client,
                          scoped_ptr<FrameUserData> user_data,
-                         mojo::ViewTreeClientPtr view_tree_client,
+                         mus::mojom::WindowTreeClientPtr window_tree_client,
                          uint32_t app_id,
                          base::TimeTicks navigation_start_time) {
   while (!children_.empty())
     delete children_[0];
 
-  ClientType client_type = view_tree_client.get() == nullptr
+  ClientType client_type = window_tree_client.get() == nullptr
                                ? ClientType::EXISTING_FRAME_SAME_APP
                                : ClientType::EXISTING_FRAME_NEW_APP;
   scoped_ptr<FrameUserDataAndBinding> data_and_binding;
@@ -276,7 +277,7 @@ void Frame::ChangeClient(mojom::FrameClient* frame_client,
   frame_binding_.reset();
   app_id_ = app_id;
 
-  InitClient(client_type, data_and_binding.Pass(), view_tree_client.Pass(),
+  InitClient(client_type, data_and_binding.Pass(), window_tree_client.Pass(),
              nullptr, navigation_start_time);
 }
 
@@ -287,16 +288,17 @@ void Frame::OnEmbedAck(bool success, mus::ConnectionSpecificId connection_id) {
     frame_binding_->ResumeIncomingMethodCallProcessing();
 }
 
-void Frame::OnWillNavigateAck(mojom::FrameClient* frame_client,
-                              scoped_ptr<FrameUserData> user_data,
-                              mojo::ViewTreeClientPtr view_tree_client,
-                              uint32 app_id,
-                              base::TimeTicks navigation_start_time) {
+void Frame::OnWillNavigateAck(
+    mojom::FrameClient* frame_client,
+    scoped_ptr<FrameUserData> user_data,
+    mus::mojom::WindowTreeClientPtr window_tree_client,
+    uint32 app_id,
+    base::TimeTicks navigation_start_time) {
   DCHECK(waiting_for_on_will_navigate_ack_);
   DVLOG(2) << "Frame::OnWillNavigateAck id=" << id_;
   waiting_for_on_will_navigate_ack_ = false;
-  ChangeClient(frame_client, user_data.Pass(), view_tree_client.Pass(), app_id,
-               navigation_start_time);
+  ChangeClient(frame_client, user_data.Pass(), window_tree_client.Pass(),
+               app_id, navigation_start_time);
   if (pending_navigate_.get())
     StartNavigate(pending_navigate_.Pass());
 }
@@ -367,30 +369,32 @@ void Frame::StartNavigate(mojo::URLRequestPtr request) {
                                        requested_url, navigation_start_time));
 }
 
-void Frame::OnCanNavigateFrame(const GURL& url,
-                               base::TimeTicks navigation_start_time,
-                               uint32_t app_id,
-                               mojom::FrameClient* frame_client,
-                               scoped_ptr<FrameUserData> user_data,
-                               mojo::ViewTreeClientPtr view_tree_client) {
+void Frame::OnCanNavigateFrame(
+    const GURL& url,
+    base::TimeTicks navigation_start_time,
+    uint32_t app_id,
+    mojom::FrameClient* frame_client,
+    scoped_ptr<FrameUserData> user_data,
+    mus::mojom::WindowTreeClientPtr window_tree_client) {
   DVLOG(2) << "Frame::OnCanNavigateFrame id=" << id_
            << " equal=" << (AreAppIdsEqual(app_id, app_id_) ? "true" : "false");
   if (AreAppIdsEqual(app_id, app_id_)) {
     // The app currently rendering the frame will continue rendering it. In this
-    // case we do not use the ViewTreeClient (because the app has a View already
+    // case we do not use the WindowTreeClient (because the app has a View
+    // already
     // and ends up reusing it).
-    DCHECK(!view_tree_client.get());
-    ChangeClient(frame_client, user_data.Pass(), view_tree_client.Pass(),
+    DCHECK(!window_tree_client.get());
+    ChangeClient(frame_client, user_data.Pass(), window_tree_client.Pass(),
                  app_id, navigation_start_time);
   } else {
     waiting_for_on_will_navigate_ack_ = true;
-    DCHECK(view_tree_client.get());
+    DCHECK(window_tree_client.get());
     // TODO(sky): url isn't correct here, it should be a security origin.
     frame_client_->OnWillNavigate(
         url.spec(),
         base::Bind(&Frame::OnWillNavigateAck, base::Unretained(this),
                    frame_client, base::Passed(&user_data),
-                   base::Passed(&view_tree_client), app_id,
+                   base::Passed(&window_tree_client), app_id,
                    navigation_start_time));
   }
 }

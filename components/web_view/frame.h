@@ -47,7 +47,7 @@ enum class ViewOwnership {
 // (|app_id|). This id is used when servicing a request to navigate the frame.
 // When navigating, if the id of the new app matches that of the existing app,
 // then it is expected that the new FrameClient will take over rendering to the
-// existing view. Because of this a new ViewTreeClient is not obtained and
+// existing view. Because of this a new WindowTreeClient is not obtained and
 // Embed() is not invoked on the View. The FrameClient can detect this case by
 // the argument |reuse_existing_view| supplied to OnConnect(). Typically the id
 // is that of content handler id, but this is left up to the FrameTreeDelegate
@@ -68,7 +68,7 @@ class Frame : public mus::WindowObserver, public mojom::Frame {
   ~Frame() override;
 
   void Init(Frame* parent,
-            mojo::ViewTreeClientPtr view_tree_client,
+            mus::mojom::WindowTreeClientPtr window_tree_client,
             mojo::InterfaceRequest<mojom::Frame> frame_request,
             base::TimeTicks navigation_start_time);
 
@@ -159,7 +159,7 @@ class Frame : public mus::WindowObserver, public mojom::Frame {
   // (and assume the frame is being torn down) before the OnConnect().
   void InitClient(ClientType client_type,
                   scoped_ptr<FrameUserDataAndBinding> data_and_binding,
-                  mojo::ViewTreeClientPtr view_tree_client,
+                  mus::mojom::WindowTreeClientPtr window_tree_client,
                   mojo::InterfaceRequest<mojom::Frame> frame_request,
                   base::TimeTicks navigation_start_time);
 
@@ -175,7 +175,7 @@ class Frame : public mus::WindowObserver, public mojom::Frame {
   // Callback from Frame::OnWillNavigate(). Completes navigation.
   void OnWillNavigateAck(mojom::FrameClient* frame_client,
                          scoped_ptr<FrameUserData> user_data,
-                         mojo::ViewTreeClientPtr view_tree_client,
+                         mus::mojom::WindowTreeClientPtr window_tree_client,
                          uint32 app_id,
                          base::TimeTicks navigation_start_time);
 
@@ -183,7 +183,7 @@ class Frame : public mus::WindowObserver, public mojom::Frame {
   // supplied arguments.
   void ChangeClient(mojom::FrameClient* frame_client,
                     scoped_ptr<FrameUserData> user_data,
-                    mojo::ViewTreeClientPtr view_tree_client,
+                    mus::mojom::WindowTreeClientPtr window_tree_client,
                     uint32 app_id,
                     base::TimeTicks navigation_start_time);
 
@@ -205,7 +205,7 @@ class Frame : public mus::WindowObserver, public mojom::Frame {
                           uint32_t app_id,
                           mojom::FrameClient* frame_client,
                           scoped_ptr<FrameUserData> user_data,
-                          mojo::ViewTreeClientPtr view_tree_client);
+                          mus::mojom::WindowTreeClientPtr window_tree_client);
 
   // Notifies the client and all descendants as appropriate.
   void NotifyAdded(const Frame* source,
@@ -257,7 +257,7 @@ class Frame : public mus::WindowObserver, public mojom::Frame {
   mus::ConnectionSpecificId embedded_connection_id_;
   // ID for the frame, which is the same as that of the view.
   const uint32_t id_;
-  // ID of the app providing the FrameClient and ViewTreeClient.
+  // ID of the app providing the FrameClient and WindowTreeClient.
   uint32_t app_id_;
   Frame* parent_;
   ViewOwnership view_ownership_;

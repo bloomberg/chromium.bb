@@ -13,7 +13,7 @@ class WindowSurfaceClient {
  public:
   virtual void OnResourcesReturned(
       WindowSurface* surface,
-      mojo::Array<mojo::ReturnedResourcePtr> resources) = 0;
+      mojo::Array<mojom::ReturnedResourcePtr> resources) = 0;
 
  protected:
   ~WindowSurfaceClient() {}

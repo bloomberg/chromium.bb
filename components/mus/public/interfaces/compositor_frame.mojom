@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module mojo;
+module mus.mojom;
 
 import "ui/mojo/geometry/geometry.mojom";
 import "components/mus/public/interfaces/quads.mojom";
@@ -47,7 +47,7 @@ struct TransferableResource {
   uint32 id;
   ResourceFormat format;
   uint32 filter;
-  Size size;
+  mojo.Size size;
   MailboxHolder mailbox_holder;
   bool is_repeated;
   bool is_software;

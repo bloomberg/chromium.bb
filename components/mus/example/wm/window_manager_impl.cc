@@ -28,7 +28,7 @@ WindowManagerImpl::WindowManagerImpl(
 
 WindowManagerImpl::~WindowManagerImpl() {}
 
-void WindowManagerImpl::OpenWindow(mojo::ViewTreeClientPtr client) {
+void WindowManagerImpl::OpenWindow(mus::mojom::WindowTreeClientPtr client) {
   mus::Window* root = state_->root();
   DCHECK(root);
   mus::Id container_window_id =
