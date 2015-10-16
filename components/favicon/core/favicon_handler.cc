@@ -377,22 +377,23 @@ void FaviconHandler::OnUpdateFaviconURL(
 
   // TODO(davemoore) Should clear on empty url. Currently we ignore it.
   // This appears to be what FF does as well.
-  if (current_candidate())
-    ProcessCurrentUrl();
+  if (current_candidate() && got_favicon_from_history_)
+    OnGotInitialHistoryDataAndIconURLCandidates();
 }
 
-void FaviconHandler::ProcessCurrentUrl() {
-  DCHECK(!image_urls_.empty());
-
-  if (!favicon_expired_or_incomplete_ && got_favicon_from_history_ &&
-      HasValidResult(history_results_) &&
+void FaviconHandler::OnGotInitialHistoryDataAndIconURLCandidates() {
+  if (!favicon_expired_or_incomplete_ && HasValidResult(history_results_) &&
       DoUrlsAndIconsMatch(*current_candidate(), history_results_)) {
+    // The data from history is valid and not expired. The icon URL of the
+    // history data matches one of the page's icon URLs. We are done. No
+    // additional downloads or history requests are needed.
+    // TODO: Store all of the icon URLs associated with a page in history so
+    // that we can check whether the page's icon URLs match the page's icon URLs
+    // at the time that the favicon data was stored to the history database.
     return;
   }
 
-  if (got_favicon_from_history_)
-    DownloadFaviconOrAskFaviconService(current_candidate()->icon_url,
-                                       current_candidate()->icon_type);
+  DownloadCurrentCandidateOrAskFaviconService();
 }
 
 void FaviconHandler::OnDidDownloadFavicon(
@@ -453,7 +454,7 @@ void FaviconHandler::OnDidDownloadFavicon(
   if (request_next_icon && current_candidate_index_ + 1 < image_urls_.size()) {
     // Process the next candidate.
     ++current_candidate_index_;
-    ProcessCurrentUrl();
+    DownloadCurrentCandidateOrAskFaviconService();
   } else {
     // We have either found the ideal candidate or run out of candidates.
     if (best_favicon_candidate_.icon_type != favicon_base::INVALID_ICON) {
@@ -584,32 +585,18 @@ void FaviconHandler::OnFaviconDataForInitialURLFromFaviconService(
       favicon_expired_or_incomplete_ = true;
     }
   }
-  if (has_results && !favicon_expired_or_incomplete_) {
-    if (current_candidate() &&
-        !DoUrlsAndIconsMatch(*current_candidate(), favicon_bitmap_results)) {
-      // Mapping in the database is wrong. DownloadFavIconOrAskHistory will
-      // update the mapping for this url and download the favicon if we don't
-      // already have it.
-      DownloadFaviconOrAskFaviconService(current_candidate()->icon_url,
-                                         current_candidate()->icon_type);
-    }
-  } else if (current_candidate()) {
-    // We know the official url for the favicon, but either don't have the
-    // favicon or it's expired. Continue on to DownloadFaviconOrAskHistory to
-    // either download or check history again.
-    DownloadFaviconOrAskFaviconService(current_candidate()->icon_url,
-                                       current_candidate()->icon_type);
-  }
-  // else we haven't got the icon url. When we get it we'll ask the
-  // renderer to download the icon.
 
   if (has_valid_result && (handler_type_ != FAVICON || download_largest_icon_))
     NotifyFaviconAvailable(favicon_bitmap_results);
+
+  if (current_candidate())
+    OnGotInitialHistoryDataAndIconURLCandidates();
 }
 
-void FaviconHandler::DownloadFaviconOrAskFaviconService(
-    const GURL& icon_url,
-    favicon_base::IconType icon_type) {
+void FaviconHandler::DownloadCurrentCandidateOrAskFaviconService() {
+  GURL icon_url = current_candidate()->icon_url;
+  favicon_base::IconType icon_type = current_candidate()->icon_type;
+
   if (favicon_expired_or_incomplete_) {
     // We have the mapping, but the favicon is out of date. Download it now.
     ScheduleDownload(icon_url, icon_type);

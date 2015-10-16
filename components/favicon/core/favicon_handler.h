@@ -97,9 +97,9 @@ class FaviconHandler {
   void OnUpdateFaviconURL(const GURL& page_url,
                           const std::vector<favicon::FaviconURL>& candidates);
 
-  // Processes the current image_urls_ entry, requesting the image from the
-  // history / download service.
-  void ProcessCurrentUrl();
+  // Called when the history request for favicon data mapped to |url_| has
+  // completed and the renderer has told us the icon URLs used by |url_|
+  void OnGotInitialHistoryDataAndIconURLCandidates();
 
   // Message handler for ImageHostMsg_DidDownloadImage. Called when the image
   // at |image_url| has been downloaded.
@@ -195,11 +195,11 @@ class FaviconHandler {
   void OnFaviconDataForInitialURLFromFaviconService(const std::vector<
       favicon_base::FaviconRawBitmapResult>& favicon_bitmap_results);
 
-  // If the favicon has expired, asks the renderer to download the favicon.
-  // Otherwise asks history to update the mapping between page url and icon
-  // url with a callback to OnFaviconData when done.
-  void DownloadFaviconOrAskFaviconService(const GURL& icon_url,
-                                          favicon_base::IconType icon_type);
+  // If the favicon currently mapped to |url_| has expired, downloads the
+  // current candidate favicon from the renderer. Otherwise requests data for
+  // the current favicon from history. If data is requested from history,
+  // OnFaviconData() is called with the history data once it has been retrieved.
+  void DownloadCurrentCandidateOrAskFaviconService();
 
   // See description above class for details.
   void OnFaviconData(const std::vector<favicon_base::FaviconRawBitmapResult>&
