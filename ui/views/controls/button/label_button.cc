@@ -336,6 +336,11 @@ const char* LabelButton::GetClassName() const {
   return kViewClassName;
 }
 
+void LabelButton::EnableCanvasFlippingForRTLUI(bool flip) {
+  CustomButton::EnableCanvasFlippingForRTLUI(flip);
+  image_->EnableCanvasFlippingForRTLUI(flip);
+}
+
 scoped_ptr<LabelButtonBorder> LabelButton::CreateDefaultBorder() const {
   return PlatformStyle::CreateLabelButtonBorder(style());
 }

@@ -96,6 +96,7 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   int GetHeightForWidth(int w) const override;
   void Layout() override;
   const char* GetClassName() const override;
+  void EnableCanvasFlippingForRTLUI(bool flip) override;
 
  protected:
   ImageView* image() const { return image_; }

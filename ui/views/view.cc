@@ -838,6 +838,12 @@ const ui::NativeTheme* View::GetNativeTheme() const {
   return widget ? widget->GetNativeTheme() : ui::NativeTheme::instance();
 }
 
+// RTL painting ----------------------------------------------------------------
+
+void View::EnableCanvasFlippingForRTLUI(bool enable) {
+  flip_canvas_on_paint_for_rtl_ui_ = enable;
+}
+
 // Input -----------------------------------------------------------------------
 
 View* View::GetEventHandlerForPoint(const gfx::Point& point) {
