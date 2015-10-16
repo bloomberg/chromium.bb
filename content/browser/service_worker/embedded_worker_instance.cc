@@ -149,6 +149,9 @@ void EmbeddedWorkerInstance::Start(int64 service_worker_version_id,
     return;
   }
   DCHECK(status_ == STOPPED);
+  // TODO(horo): If we will see crashes here, we have to find the root cause of
+  // the invalid version ID. Otherwise change CHECK to DCHECK.
+  CHECK_NE(service_worker_version_id, kInvalidServiceWorkerVersionId);
   start_timing_ = base::TimeTicks::Now();
   status_ = STARTING;
   starting_phase_ = ALLOCATING_PROCESS;
