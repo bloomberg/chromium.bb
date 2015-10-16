@@ -170,8 +170,7 @@ ServiceWorkerDevToolsManager::FindExistingWorkerAgentHost(
     const ServiceWorkerIdentifier& service_worker_id) {
   AgentHostMap::iterator it = workers_.begin();
   for (; it != workers_.end(); ++it) {
-    if (static_cast<ServiceWorkerDevToolsAgentHost*>(
-            it->second)->Matches(service_worker_id))
+    if (it->second->Matches(service_worker_id))
       break;
   }
   return it;
