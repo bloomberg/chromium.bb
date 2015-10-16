@@ -85,6 +85,11 @@
             "group_name": "Enabled"
         }
     ],
+    "EnableMediaThreadForMediaPlayback": [
+        {
+            "group_name": "Enabled"
+        }
+    ],
     "EnhancedBookmarks": [
         {
             "group_name": "EnableEnhancedBookmarks",
