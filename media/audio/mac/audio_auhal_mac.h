@@ -23,6 +23,7 @@
 #include "base/cancelable_callback.h"
 #include "base/compiler_specific.h"
 #include "base/synchronization/lock.h"
+#include "base/threading/thread_checker.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_parameters.h"
 
@@ -36,18 +37,22 @@ class AudioPullFifo;
 // It is useful for low-latency output.
 //
 // Overview of operation:
-// 1) An object of AUHALStream is created by the AudioManager
-// factory: audio_man->MakeAudioStream().
-// 2) Next some thread will call Open(), at that point the underlying
-// AUHAL Audio Unit is created and configured to use the |device|.
-// 3) Then some thread will call Start(source).
-// Then the AUHAL is started which creates its own thread which
-// periodically will call the source for more data as buffers are being
-// consumed.
-// 4) At some point some thread will call Stop(), which we handle by directly
-// stopping the default output Audio Unit.
-// 6) The same thread that called stop will call Close() where we cleanup
-// and notify the audio manager, which likely will destroy this object.
+// 1) An object of AUHALStream is created by the AudioManager factory on the
+//    object's main thread via audio_man->MakeAudioStream().  Calls to the
+//    control routines (Open/Close/Start/Stop), must be made on this thread.
+// 2) Next Open() will be called. At that point the underlying AUHAL Audio Unit
+//    is created and configured to use the |device|.
+// 3) Then Start(source) is called and the device is started which creates its
+//    own thread (or uses an existing background thread) on which the AUHAL's
+//    callback will periodically ask for more data as buffers are being
+//    consumed.
+//    Note that all AUHAL instances receive callbacks on that very same
+//    thread, so avoid any contention in the callback as to not cause delays for
+//    other instances.
+// 4) At some point Stop() will be called, which we handle by stopping the
+//    output Audio Unit.
+// 6) Lastly, Close() will be called where we cleanup and notify the audio
+//    manager, which will delete the object.
 
 class AUHALStream : public AudioOutputStream {
  public:
@@ -101,6 +106,9 @@ class AUHALStream : public AudioOutputStream {
   // Creates the AUHAL, sets its stream format, buffer-size, etc.
   bool ConfigureAUHAL();
 
+  // Uninitializes audio_unit_ if needed.
+  void CloseAudioUnit();
+
   // Creates the input and output busses.
   void CreateIOBusses();
 
@@ -144,7 +152,7 @@ class AUHALStream : public AudioOutputStream {
   // Fixed playout hardware latency in frames.
   double hardware_latency_frames_;
 
-  // The flag used to stop the streaming.
+  // This flag will be set to false while we're actively receiving callbacks.
   bool stopped_;
 
   // Container for retrieving data from AudioSourceCallback::OnMoreData().
@@ -159,6 +167,10 @@ class AUHALStream : public AudioOutputStream {
 
   // Used to defer Start() to workaround http://crbug.com/160920.
   base::CancelableClosure deferred_start_cb_;
+
+  // Used to make sure control functions (Start(), Stop() etc) are called on the
+  // right thread.
+  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(AUHALStream);
 };

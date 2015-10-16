@@ -50,7 +50,7 @@ AUHALStream::AUHALStream(
       audio_unit_(0),
       volume_(1),
       hardware_latency_frames_(0),
-      stopped_(false),
+      stopped_(true),
       current_hardware_pending_bytes_(0) {
   // We must have a manager.
   DCHECK(manager_);
@@ -63,9 +63,15 @@ AUHALStream::AUHALStream(
 }
 
 AUHALStream::~AUHALStream() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  CHECK(!audio_unit_);
 }
 
 bool AUHALStream::Open() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(!output_bus_.get());
+  DCHECK(!audio_unit_);
+
   // Get the total number of output channels that the
   // hardware supports.
   int device_output_channels;
@@ -103,24 +109,23 @@ bool AUHALStream::Open() {
 }
 
 void AUHALStream::Close() {
-  if (audio_unit_) {
-    OSStatus result = AudioUnitUninitialize(audio_unit_);
-    OSSTATUS_DLOG_IF(ERROR, result != noErr, result)
-        << "AudioUnitUninitialize() failed.";
-    result = AudioComponentInstanceDispose(audio_unit_);
-    OSSTATUS_DLOG_IF(ERROR, result != noErr, result)
-        << "AudioComponentInstanceDispose() failed.";
-  }
-
+  DCHECK(thread_checker_.CalledOnValidThread());
+  CloseAudioUnit();
   // Inform the audio manager that we have been closed. This will cause our
   // destruction.
   manager_->ReleaseOutputStream(this);
 }
 
 void AUHALStream::Start(AudioSourceCallback* callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(callback);
   if (!audio_unit_) {
     DLOG(ERROR) << "Open() has not been called successfully";
+    return;
+  }
+
+  if (!stopped_) {
+    CHECK_EQ(source_, callback);
     return;
   }
 
@@ -153,6 +158,7 @@ void AUHALStream::Start(AudioSourceCallback* callback) {
 }
 
 void AUHALStream::Stop() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   deferred_start_cb_.Cancel();
   if (stopped_)
     return;
@@ -355,6 +361,7 @@ bool AUHALStream::SetStreamFormat(
 }
 
 bool AUHALStream::ConfigureAUHAL() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (device_ == kAudioObjectUnknown || output_channels_ == 0)
     return false;
 
@@ -387,8 +394,10 @@ bool AUHALStream::ConfigureAUHAL() {
       0,
       &enable_IO,
       sizeof(enable_IO));
-  if (result != noErr)
+  if (result != noErr) {
+    CloseAudioUnit();
     return false;
+  }
 
   // Set the device to be used with the AUHAL AudioUnit.
   result = AudioUnitSetProperty(
@@ -398,8 +407,10 @@ bool AUHALStream::ConfigureAUHAL() {
       0,
       &device_,
       sizeof(AudioDeviceID));
-  if (result != noErr)
+  if (result != noErr) {
+    CloseAudioUnit();
     return false;
+  }
 
   // Set stream formats.
   // See Apple's tech note for details on the peculiar way that
@@ -411,12 +422,15 @@ bool AUHALStream::ConfigureAUHAL() {
                        output_channels_,
                        kAudioUnitScope_Input,
                        0)) {
+    CloseAudioUnit();
     return false;
   }
 
   if (!manager_->MaybeChangeBufferSize(
-          device_, audio_unit_, 0, number_of_frames_))
+          device_, audio_unit_, 0, number_of_frames_)) {
+    CloseAudioUnit();
     return false;
+  }
 
   // Setup callback.
   AURenderCallbackStruct callback;
@@ -429,16 +443,33 @@ bool AUHALStream::ConfigureAUHAL() {
       0,
       &callback,
       sizeof(callback));
-  if (result != noErr)
+  if (result != noErr) {
+    CloseAudioUnit();
     return false;
+  }
 
   result = AudioUnitInitialize(audio_unit_);
   if (result != noErr) {
     OSSTATUS_DLOG(ERROR, result) << "AudioUnitInitialize() failed.";
+    CloseAudioUnit();
     return false;
   }
 
   return true;
+}
+
+void AUHALStream::CloseAudioUnit() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (!audio_unit_)
+    return;
+
+  OSStatus result = AudioUnitUninitialize(audio_unit_);
+  OSSTATUS_DLOG_IF(ERROR, result != noErr, result)
+      << "AudioUnitUninitialize() failed.";
+  result = AudioComponentInstanceDispose(audio_unit_);
+  OSSTATUS_DLOG_IF(ERROR, result != noErr, result)
+      << "AudioComponentInstanceDispose() failed.";
+  audio_unit_ = 0;
 }
 
 }  // namespace media
