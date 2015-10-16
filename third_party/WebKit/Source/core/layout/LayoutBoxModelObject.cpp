@@ -407,7 +407,13 @@ void LayoutBoxModelObject::invalidateDisplayItemClientOnBacking(const DisplayIte
         if (GraphicsLayer* squashingLayer = layer()->groupedMapping()->squashingLayer())
             squashingLayer->invalidateDisplayItemClient(displayItemClient, invalidationReason, enclosingIntRect(previousPaintInvalidationRect), enclosingIntRect(newPaintInvalidationRect));
     } else if (CompositedLayerMapping* compositedLayerMapping = layer()->compositedLayerMapping()) {
-        compositedLayerMapping->invalidateDisplayItemClient(displayItemClient, invalidationReason, previousPaintInvalidationRect, newPaintInvalidationRect);
+        if (this->displayItemClient() != displayItemClient.displayItemClient() && isBox() && toLayoutBox(this)->usesCompositedScrolling()) {
+            // This paint invalidation container is using composited scrolling, and we are invalidating a scrolling content,
+            // so we should invalidate on the scrolling contents layer only.
+            compositedLayerMapping->invalidateDisplayItemClientOnScrollingContentsLayer(displayItemClient, invalidationReason, previousPaintInvalidationRect, newPaintInvalidationRect);
+        } else {
+            compositedLayerMapping->invalidateDisplayItemClient(displayItemClient, invalidationReason, previousPaintInvalidationRect, newPaintInvalidationRect);
+        }
     }
 }
 

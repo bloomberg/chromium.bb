@@ -124,6 +124,7 @@ public:
     void setContentsNeedDisplayInRect(const LayoutRect&, PaintInvalidationReason);
 
     void invalidateDisplayItemClient(const DisplayItemClientWrapper&, PaintInvalidationReason, const LayoutRect& previousPaintInvalidationRect, const LayoutRect& newPaintInvalidationRect);
+    void invalidateDisplayItemClientOnScrollingContentsLayer(const DisplayItemClientWrapper&, PaintInvalidationReason, const LayoutRect& previousPaintInvalidationRect, const LayoutRect& newPaintInvalidationRect);
 
     // Notification from the layoutObject that its content changed.
     void contentChanged(ContentChangeType);
