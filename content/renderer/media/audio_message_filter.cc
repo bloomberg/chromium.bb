@@ -38,8 +38,6 @@ class AudioMessageFilter::AudioOutputIPCImpl
   void PauseStream() override;
   void CloseStream() override;
   void SetVolume(double volume) override;
-  void SwitchOutputDevice(const std::string& device_id,
-                          const url::Origin& security_origin) override;
 
  private:
   const scoped_refptr<AudioMessageFilter> filter_;
@@ -137,14 +135,6 @@ void AudioMessageFilter::AudioOutputIPCImpl::SetVolume(double volume) {
   filter_->Send(new AudioHostMsg_SetVolume(stream_id_, volume));
 }
 
-void AudioMessageFilter::AudioOutputIPCImpl::SwitchOutputDevice(
-    const std::string& device_id,
-    const url::Origin& security_origin) {
-  DCHECK(stream_created_);
-  filter_->Send(new AudioHostMsg_SwitchOutputDevice(
-      stream_id_, render_frame_id_, device_id, url::Origin(security_origin)));
-}
-
 void AudioMessageFilter::Send(IPC::Message* message) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   if (!sender_) {
@@ -161,8 +151,6 @@ bool AudioMessageFilter::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(AudioMsg_NotifyDeviceAuthorized, OnDeviceAuthorized)
     IPC_MESSAGE_HANDLER(AudioMsg_NotifyStreamCreated, OnStreamCreated)
     IPC_MESSAGE_HANDLER(AudioMsg_NotifyStreamStateChanged, OnStreamStateChanged)
-    IPC_MESSAGE_HANDLER(AudioMsg_NotifyOutputDeviceSwitched,
-                        OnOutputDeviceSwitched)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -243,19 +231,6 @@ void AudioMessageFilter::OnStreamStateChanged(
     return;
   }
   delegate->OnStateChanged(state);
-}
-
-void AudioMessageFilter::OnOutputDeviceSwitched(
-    int stream_id,
-    media::OutputDeviceStatus result) {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
-  media::AudioOutputIPCDelegate* delegate = delegates_.Lookup(stream_id);
-  if (!delegate) {
-    DLOG(WARNING) << "Got OnOutputDeviceSwitched() event for a nonexistent or"
-                  << " removed audio renderer.  State: " << result;
-    return;
-  }
-  delegate->OnOutputDeviceSwitched(result);
 }
 
 }  // namespace content

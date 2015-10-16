@@ -52,9 +52,6 @@ class MEDIA_EXPORT AudioOutputIPCDelegate {
                                base::SyncSocket::Handle socket_handle,
                                int length) = 0;
 
-  // Called when an attempt to switch the output device has been completed
-  virtual void OnOutputDeviceSwitched(OutputDeviceStatus result) = 0;
-
   // Called when the AudioOutputIPC object is going away and/or when the IPC
   // channel has been closed and no more ipc requests can be made.
   // Implementations should delete their owned AudioOutputIPC instance
@@ -115,10 +112,6 @@ class MEDIA_EXPORT AudioOutputIPC {
 
   // Sets the volume of the audio stream.
   virtual void SetVolume(double volume) = 0;
-
-  // Switches the output device of the audio stream.
-  virtual void SwitchOutputDevice(const std::string& device_id,
-                                  const url::Origin& security_origin) = 0;
 };
 
 }  // namespace media

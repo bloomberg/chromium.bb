@@ -30,12 +30,10 @@
 //       <- OnStreamCreated <- AudioMsg_NotifyStreamCreated <-
 //       ---> PlayOnIOThread -----------> PlayStream -------->
 //
-// Optionally Play() / Pause() / SwitchOutputDevice() sequences may occur:
+// Optionally Play() / Pause() sequences may occur:
 // Play -> PlayOnIOThread --------------> PlayStream --------->
 // Pause -> PauseOnIOThread ------------> PauseStream -------->
-// SwitchOutputDevice -> SwitchOutputDeviceOnIOThread -> SwitchOutputDevice ->
-//         <- OnOutputDeviceSwitched <- AudioMsg_NotifyOutputDeviceSwitched <-
-// (note that Play() / Pause() / SwitchOutptuDevice() sequences before
+// (note that Play() / Pause() sequences before
 // OnStreamCreated are deferred until OnStreamCreated, with the last valid
 // state being used)
 //
@@ -109,9 +107,6 @@ class MEDIA_EXPORT AudioOutputDevice
   OutputDevice* GetOutputDevice() override;
 
   // OutputDevice implementation
-  void SwitchOutputDevice(const std::string& device_id,
-                          const url::Origin& security_origin,
-                          const SwitchOutputDeviceCB& callback) override;
   AudioParameters GetOutputParameters() override;
   OutputDeviceStatus GetDeviceStatus() override;
 
@@ -123,7 +118,6 @@ class MEDIA_EXPORT AudioOutputDevice
   void OnStreamCreated(base::SharedMemoryHandle handle,
                        base::SyncSocket::Handle socket_handle,
                        int length) override;
-  void OnOutputDeviceSwitched(OutputDeviceStatus result) override;
   void OnIPCClosed() override;
 
  protected:
@@ -144,6 +138,11 @@ class MEDIA_EXPORT AudioOutputDevice
     PLAYING,  // Playing back.  Can Pause()/Stop().
   };
 
+  // Unsupported OutputDevice implementation
+  void SwitchOutputDevice(const std::string& device_id,
+                          const url::Origin& security_origin,
+                          const SwitchOutputDeviceCB& callback) override;
+
   // Methods called on IO thread ----------------------------------------------
   // The following methods are tasks posted on the IO thread that need to
   // be executed on that thread.  They use AudioOutputIPC to send IPC messages
@@ -154,18 +153,10 @@ class MEDIA_EXPORT AudioOutputDevice
   void PauseOnIOThread();
   void ShutDownOnIOThread();
   void SetVolumeOnIOThread(double volume);
-  void SwitchOutputDeviceOnIOThread(const std::string& device_id,
-                                    const url::Origin& security_origin,
-                                    const SwitchOutputDeviceCB& callback);
 
   // base::MessageLoop::DestructionObserver implementation for the IO loop.
   // If the IO loop dies before we do, we shut down the audio thread from here.
   void WillDestroyCurrentMessageLoop() override;
-
-  void SetCurrentSwitchRequest(const SwitchOutputDeviceCB& callback,
-                               const std::string& device_id,
-                               const url::Origin& security_origin);
-  void SetDeviceStatus(OutputDeviceStatus status);
 
   AudioParameters audio_parameters_;
 
@@ -191,8 +182,8 @@ class MEDIA_EXPORT AudioOutputDevice
   int session_id_;
 
   // ID of hardware output device to be used (provided session_id_ is zero)
-  std::string device_id_;
-  url::Origin security_origin_;
+  const std::string device_id_;
+  const url::Origin security_origin_;
 
   // Our audio thread callback class.  See source file for details.
   class AudioThreadCallback;
@@ -210,11 +201,6 @@ class MEDIA_EXPORT AudioOutputDevice
   // TODO(scherkus): Replace this by changing AudioRendererSink to either accept
   // the callback via Start(). See http://crbug.com/151051 for details.
   bool stopping_hack_;
-
-  SwitchOutputDeviceCB current_switch_callback_;
-  std::string current_switch_device_id_;
-  url::Origin current_switch_security_origin_;
-  bool switch_output_device_on_start_;
 
   base::WaitableEvent did_receive_auth_;
   media::AudioParameters output_params_;

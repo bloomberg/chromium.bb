@@ -165,12 +165,6 @@ class CONTENT_EXPORT AudioRendererHost : public BrowserMessageFilter {
   // Set the volume of the audio stream referenced by |stream_id|.
   void OnSetVolume(int stream_id, double volume);
 
-  // Set the output device of the audio stream referenced by |stream_id|.
-  void OnSwitchOutputDevice(int stream_id,
-                            int render_frame_id,
-                            const std::string& device_id,
-                            const url::Origin& gurl_security_origin);
-
   // Helper methods.
 
   // Proceed with device authorization after checking permissions.
@@ -198,31 +192,6 @@ class CONTENT_EXPORT AudioRendererHost : public BrowserMessageFilter {
 
   // Send playing/paused status to the renderer.
   void DoNotifyStreamStateChanged(int stream_id, bool is_playing);
-
-  // Proceed with output device switching after checking permissions.
-  void OnSwitchDeviceAuthorized(int stream_id,
-                                const std::string& device_id,
-                                const GURL& security_origin,
-                                bool have_access);
-
-  // Proceed with output device switching after getting the name of the current
-  // device from the audio controller.
-  void OnSwitchDeviceCurrentName(const std::string& device_id,
-                                 const GURL& security_origin,
-                                 int stream_id,
-                                 const std::string& current_device_unique_id);
-
-  // Proceed with output device switching after translating the ID of the new
-  // device and checking that output parameters are compatible with the current
-  // device.
-  void OnSwitchDeviceIDTranslatedAndParamsChecked(
-      int stream_id,
-      bool success,
-      const AudioOutputDeviceInfo& device_info);
-
-  // Finish handling the output device switch request, after the device has
-  // been switched.
-  void OnDeviceSwitched(int stream_id);
 
   RenderProcessHost::AudioOutputControllerList DoGetOutputControllers() const;
 
@@ -260,23 +229,6 @@ class CONTENT_EXPORT AudioRendererHost : public BrowserMessageFilter {
                          const GURL& gurl_security_origin,
                          const OutputDeviceInfoCB& callback,
                          const AudioOutputDeviceEnumeration& device_infos);
-
-  // Translate the hashed |device_id| to a unique device ID and compare
-  // output parameters for both devices.
-  // |callback| is invoked with the following arguments:
-  //    bool: true if |device_id| was found and its parameters match the
-  //    parmeters of the current device.
-  //    AudioOutputDeviceInfo: info for |device_id| if it was found, or dummy
-  //    info with empty unique ID and name otherwise.
-  // TODO(guidou): Remove this method once all clients select the output device
-  // in the initial creation/authorization process instead of by issuing
-  // switch output device IPCs . http://crbug.com/531468
-  void TranslateDeviceIDAndCheckParams(
-      const std::string& device_id,
-      const GURL& gurl_security_origin,
-      const std::string& current_device_unique_id,
-      const OutputDeviceInfoCB& callback,
-      const AudioOutputDeviceEnumeration& device_infos);
 
   // Helper method to check if the authorization procedure for stream
   // |stream_id| has started.

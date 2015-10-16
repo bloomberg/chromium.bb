@@ -66,14 +66,6 @@ class MockAudioOutputIPC : public AudioOutputIPC {
   MOCK_METHOD0(PauseStream, void());
   MOCK_METHOD0(CloseStream, void());
   MOCK_METHOD1(SetVolume, void(double volume));
-  MOCK_METHOD2(SwitchOutputDevice,
-               void(const std::string& device_id,
-                    const url::Origin& security_origin));
-};
-
-class MockSwitchOutputDeviceCallback {
- public:
-  MOCK_METHOD1(Callback, void(OutputDeviceStatus result));
 };
 
 ACTION_P2(SendPendingBytes, socket, pending_bytes) {
@@ -101,7 +93,6 @@ class AudioOutputDeviceTest
   void ExpectRenderCallback();
   void WaitUntilRenderCallback();
   void StopAudioDevice();
-  void SwitchOutputDevice();
   void SetDevice(const std::string& device_id);
 
  protected:
@@ -113,12 +104,10 @@ class AudioOutputDeviceTest
   StrictMock<MockRenderCallback> callback_;
   MockAudioOutputIPC* audio_output_ipc_;  // owned by audio_device_
   scoped_refptr<AudioOutputDevice> audio_device_;
-  MockSwitchOutputDeviceCallback switch_output_device_callback_;
   OutputDeviceStatus device_status_;
 
  private:
   int CalculateMemorySize();
-  void SwitchOutputDeviceCallback(OutputDeviceStatus result);
 
   SharedMemory shared_memory_;
   CancelableSyncSocket browser_socket_;
@@ -247,22 +236,6 @@ void AudioOutputDeviceTest::StopAudioDevice() {
   io_loop_.RunUntilIdle();
 }
 
-void AudioOutputDeviceTest::SwitchOutputDevice() {
-  // Switch the output device and check that the IPC message is sent
-  EXPECT_CALL(*audio_output_ipc_, SwitchOutputDevice(kNonDefaultDeviceId, _));
-  audio_device_->SwitchOutputDevice(
-      kNonDefaultDeviceId, url::Origin(),
-      base::Bind(&MockSwitchOutputDeviceCallback::Callback,
-                 base::Unretained(&switch_output_device_callback_)));
-  io_loop_.RunUntilIdle();
-
-  // Simulate the reception of a successful response from the browser
-  EXPECT_CALL(switch_output_device_callback_,
-              Callback(OUTPUT_DEVICE_STATUS_OK));
-  audio_device_->OnOutputDeviceSwitched(OUTPUT_DEVICE_STATUS_OK);
-  io_loop_.RunUntilIdle();
-}
-
 TEST_P(AudioOutputDeviceTest, Initialize) {
   // Tests that the object can be constructed, initialized and destructed
   // without having ever been started.
@@ -304,13 +277,6 @@ TEST_P(AudioOutputDeviceTest, CreateStream) {
   ExpectRenderCallback();
   CreateStream();
   WaitUntilRenderCallback();
-  StopAudioDevice();
-}
-
-// Switch the output device
-TEST_P(AudioOutputDeviceTest, SwitchOutputDevice) {
-  StartAudioDevice();
-  SwitchOutputDevice();
   StopAudioDevice();
 }
 

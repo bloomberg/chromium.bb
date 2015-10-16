@@ -90,12 +90,6 @@ IPC_MESSAGE_CONTROL2(AudioInputMsg_NotifyStreamVolume,
                      int /* stream id */,
                      double /* volume */)
 
-// Notification message sent from AudioRendererHost to renderer for state
-// update after the renderer has requested a SwitchOutputDevice.
-IPC_MESSAGE_CONTROL2(AudioMsg_NotifyOutputDeviceSwitched,
-                     int /* stream id */,
-                     media::OutputDeviceStatus /* result */)
-
 // Messages sent from the renderer to the browser.
 
 // Message sent to the browser to request the use of an audio output
@@ -153,10 +147,3 @@ IPC_MESSAGE_CONTROL2(AudioHostMsg_SetVolume,
 IPC_MESSAGE_CONTROL2(AudioInputHostMsg_SetVolume,
                      int /* stream_id */,
                      double /* volume */)
-
-// Switch the output device of the stream specified by stream_id.
-IPC_MESSAGE_CONTROL4(AudioHostMsg_SwitchOutputDevice,
-                     int /* stream_id */,
-                     int /* render_frame_id */,
-                     std::string /* device_id */,
-                     url::Origin /* security_origin */)

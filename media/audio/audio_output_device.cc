@@ -53,7 +53,6 @@ AudioOutputDevice::AudioOutputDevice(
       device_id_(device_id),
       security_origin_(security_origin),
       stopping_hack_(false),
-      switch_output_device_on_start_(false),
       did_receive_auth_(true, false),
       device_status_(OUTPUT_DEVICE_STATUS_ERROR_INTERNAL) {
   CHECK(ipc_);
@@ -81,14 +80,6 @@ AudioOutputDevice::~AudioOutputDevice() {
   // The current design requires that the user calls Stop() before deleting
   // this class.
   DCHECK(audio_thread_.IsStopped());
-
-  // The following makes it possible for |current_switch_callback_| to release
-  // its bound parameters in the correct thread instead of implicitly releasing
-  // them in the thread where this destructor runs.
-  if (!current_switch_callback_.is_null()) {
-    base::ResetAndReturn(&current_switch_callback_)
-        .Run(OUTPUT_DEVICE_STATUS_ERROR_INTERNAL);
-  }
 }
 
 void AudioOutputDevice::RequestDeviceAuthorization() {
@@ -146,9 +137,7 @@ void AudioOutputDevice::SwitchOutputDevice(
     const std::string& device_id,
     const url::Origin& security_origin,
     const SwitchOutputDeviceCB& callback) {
-  task_runner()->PostTask(
-      FROM_HERE, base::Bind(&AudioOutputDevice::SwitchOutputDeviceOnIOThread,
-                            this, device_id, security_origin, callback));
+  NOTREACHED();
 }
 
 AudioParameters AudioOutputDevice::GetOutputParameters() {
@@ -263,29 +252,6 @@ void AudioOutputDevice::SetVolumeOnIOThread(double volume) {
     ipc_->SetVolume(volume);
 }
 
-void AudioOutputDevice::SwitchOutputDeviceOnIOThread(
-    const std::string& device_id,
-    const url::Origin& security_origin,
-    const SwitchOutputDeviceCB& callback) {
-  DCHECK(task_runner()->BelongsToCurrentThread());
-
-  // Do not allow concurrent SwitchOutputDevice requests
-  if (!current_switch_callback_.is_null()) {
-    callback.Run(OUTPUT_DEVICE_STATUS_ERROR_INTERNAL);
-    return;
-  }
-
-  current_switch_callback_ = callback;
-  current_switch_device_id_ = device_id;
-  current_switch_security_origin_ = security_origin;
-  if (state_ >= CREATING_STREAM) {
-    ipc_->SwitchOutputDevice(current_switch_device_id_,
-                             current_switch_security_origin_);
-  } else {
-    switch_output_device_on_start_ = true;
-  }
-}
-
 void AudioOutputDevice::OnStateChanged(AudioOutputIPCDelegateState state) {
   DCHECK(task_runner()->BelongsToCurrentThread());
 
@@ -396,22 +362,6 @@ void AudioOutputDevice::OnStreamCreated(
     if (play_on_start_)
       PlayOnIOThread();
   }
-
-  if (switch_output_device_on_start_) {
-    ipc_->SwitchOutputDevice(current_switch_device_id_,
-                             current_switch_security_origin_);
-  }
-}
-
-void AudioOutputDevice::OnOutputDeviceSwitched(OutputDeviceStatus result) {
-  DCHECK(task_runner()->BelongsToCurrentThread());
-  if (result == OUTPUT_DEVICE_STATUS_OK) {
-    session_id_ = 0;  // Output device is no longer attached to an input device
-    device_id_ = current_switch_device_id_;
-    security_origin_ = current_switch_security_origin_;
-  }
-  DCHECK(!current_switch_callback_.is_null());
-  base::ResetAndReturn(&current_switch_callback_).Run(result);
 }
 
 void AudioOutputDevice::OnIPCClosed() {
