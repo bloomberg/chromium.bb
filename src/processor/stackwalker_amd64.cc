@@ -147,6 +147,23 @@ StackFrameAMD64* StackwalkerAMD64::GetCallerByCFIFrameInfo(
   return frame.release();
 }
 
+bool StackwalkerAMD64::IsEndOfStack(uint64_t caller_rip, uint64_t caller_rsp,
+                                    uint64_t callee_rsp) {
+  // Treat an instruction address of 0 as end-of-stack.
+  if (caller_rip == 0) {
+    return true;
+  }
+
+  // If the new stack pointer is at a lower address than the old, then
+  // that's clearly incorrect. Treat this as end-of-stack to enforce
+  // progress and avoid infinite loops.
+  if (caller_rsp < callee_rsp) {
+    return true;
+  }
+
+  return false;
+}
+
 StackFrameAMD64* StackwalkerAMD64::GetCallerByFramePointerRecovery(
     const vector<StackFrame*>& frames) {
   StackFrameAMD64* last_frame = static_cast<StackFrameAMD64*>(frames.back());
@@ -175,8 +192,11 @@ StackFrameAMD64* StackwalkerAMD64::GetCallerByFramePointerRecovery(
     uint64_t caller_rsp = last_rbp + 16;
 
     // Simple sanity check that the stack is growing downwards as expected.
-    if (caller_rbp < last_rbp || caller_rsp < last_rsp)
+    if (IsEndOfStack(caller_rip, caller_rsp, last_rsp) ||
+        caller_rbp < last_rbp) {
+      // Reached end-of-stack or stack is not growing downwards.
       return NULL;
+    }
 
     StackFrameAMD64* frame = new StackFrameAMD64();
     frame->trust = StackFrame::FRAME_TRUST_FP;
@@ -284,15 +304,11 @@ StackFrame* StackwalkerAMD64::GetCallerFrame(const CallStack* stack,
     new_frame->context.rbp = static_cast<uint32_t>(new_frame->context.rbp);
   }
 
-  // Treat an instruction address of 0 as end-of-stack.
-  if (new_frame->context.rip == 0)
+  if (IsEndOfStack(new_frame->context.rip, new_frame->context.rsp,
+                   last_frame->context.rsp)) {
+    // Reached end-of-stack.
     return NULL;
-
-  // If the new stack pointer is at a lower address than the old, then
-  // that's clearly incorrect. Treat this as end-of-stack to enforce
-  // progress and avoid infinite loops.
-  if (new_frame->context.rsp <= last_frame->context.rsp)
-    return NULL;
+  }
 
   // new_frame->context.rip is the return address, which is the instruction
   // after the CALL that caused us to arrive at the callee. Set

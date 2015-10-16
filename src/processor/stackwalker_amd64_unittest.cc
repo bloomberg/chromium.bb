@@ -370,6 +370,138 @@ TEST_F(GetCallerFrame, ScanWithFunctionSymbols) {
   EXPECT_EQ(0x50000000b0000100ULL, frame1->function_base);
 }
 
+// StackwalkerAMD64::GetCallerByFramePointerRecovery should never return an
+// instruction pointer of 0 because IP of 0 is an end of stack marker and the
+// stack walk may be terminated prematurely.  Instead it should return NULL
+// so that the stack walking code can proceed to stack scanning.
+TEST_F(GetCallerFrame, GetCallerByFramePointerRecovery) {
+  MockCodeModule user32_dll(0x00007ff9cb8a0000ULL, 0x14E000, "user32.dll",
+                            "version1");
+  SetModuleSymbols(&user32_dll,  // user32.dll
+                   "PUBLIC fa60 0 DispatchMessageWorker\n"
+                   "PUBLIC fee0 0 UserCallWinProcCheckWow\n"
+                   "PUBLIC 1cdb0 0 _fnHkINLPMSG\n"
+                   "STACK CFI INIT fa60 340 .cfa: $rsp .ra: .cfa 8 - ^\n"
+                   "STACK CFI fa60 .cfa: $rsp 128 +\n"
+                   "STACK CFI INIT fee0 49f .cfa: $rsp .ra: .cfa 8 - ^\n"
+                   "STACK CFI fee0 .cfa: $rsp 240 +\n"
+                   "STACK CFI INIT 1cdb0 9f .cfa: $rsp .ra: .cfa 8 - ^\n"
+                   "STACK CFI 1cdb0 .cfa: $rsp 80 +\n");
+
+  // Create some modules with some stock debugging information.
+  MockCodeModules local_modules;
+  local_modules.Add(&user32_dll);
+
+  Label frame0_rsp;
+  Label frame0_rbp;
+  Label frame1_rsp;
+  Label frame2_rsp;
+
+  stack_section.start() = 0x00000099abf0f238ULL;
+  stack_section
+    .Mark(&frame0_rsp)
+    .D64(0x00007ff9cb8b00dcULL)
+    .Mark(&frame1_rsp)
+    .D64(0x0000000000000000ULL)
+    .D64(0x0000000000000001ULL)
+    .D64(0x00000099abf0f308ULL)
+    .D64(0x00007ff9cb8bce3aULL)  // Stack residue from execution of
+                                 // user32!_fnHkINLPMSG+0x8a
+    .D64(0x000000000000c2e0ULL)
+    .D64(0x00000099abf0f328ULL)
+    .D64(0x0000000100000001ULL)
+    .D64(0x0000000000000000ULL)
+    .D64(0x0000000000000000ULL)
+    .D64(0x0000000000000000ULL)
+    .D64(0x0000000000000000ULL)
+    .D64(0x0000000000000000ULL)
+    .D64(0x0000000000000000ULL)
+    .D64(0x00007ff9ccad53e4ULL)
+    .D64(0x0000000000000048ULL)
+    .D64(0x0000000000000001ULL)
+    .D64(0x00000099abf0f5e0ULL)
+    .D64(0x00000099b61f7388ULL)
+    .D64(0x0000000000000030ULL)
+    .D64(0xffffff66540f0a1fULL)
+    .D64(0xffffff6649e08c77ULL)
+    .D64(0x00007ff9cb8affb4ULL)  // Return address in
+                                 // user32!UserCallWinProcCheckWow+0xd4
+    .D64(0x0000000000000000ULL)
+    .D64(0x00000099abf0f368ULL)
+    .D64(0x0000000000000000ULL)
+    .D64(0x0000000000000000ULL)
+    .D64(0x0000000000000000ULL)
+    .D64(0x00000099a8150fd8ULL)
+    .D64(0x00000099abf0f3e8ULL)
+    .D64(0x00007ff9cb8afc07ULL)  // Return address in
+                                 // user32!DispatchMessageWorker+0x1a7
+    .Mark(&frame2_rsp)
+    .Append(256, 0)
+    .Mark(&frame0_rbp)           // The following are expected by
+                                 // GetCallerByFramePointerRecovery.
+    .D64(0xfffffffffffffffeULL)  // %caller_rbp = *(%callee_rbp)
+    .D64(0x0000000000000000ULL)  // %caller_rip = *(%callee_rbp + 8)
+    .D64(0x00000099a3e31040ULL)  // %caller_rsp = *(%callee_rbp + 16)
+    .Append(256, 0);
+
+  RegionFromSection();
+  raw_context.rip = 0x00000099a8150fd8ULL;  // IP in context frame is guarbage
+  raw_context.rsp = frame0_rsp.Value();
+  raw_context.rbp = frame0_rbp.Value();
+
+  StackFrameSymbolizer frame_symbolizer(&supplier, &resolver);
+  StackwalkerAMD64 walker(&system_info, &raw_context, &stack_region,
+                          &local_modules, &frame_symbolizer);
+  vector<const CodeModule*> modules_without_symbols;
+  vector<const CodeModule*> modules_with_corrupt_symbols;
+  ASSERT_TRUE(walker.Walk(&call_stack, &modules_without_symbols,
+                          &modules_with_corrupt_symbols));
+  ASSERT_EQ(0U, modules_without_symbols.size());
+  ASSERT_EQ(0U, modules_with_corrupt_symbols.size());
+  frames = call_stack.frames();
+
+  ASSERT_EQ(3U, frames->size());
+
+  {  // To avoid reusing locals by mistake
+    StackFrameAMD64 *frame = static_cast<StackFrameAMD64 *>(frames->at(0));
+    EXPECT_EQ(StackFrame::FRAME_TRUST_CONTEXT, frame->trust);
+    ASSERT_EQ(StackFrameAMD64::CONTEXT_VALID_ALL, frame->context_validity);
+    EXPECT_EQ("", frame->function_name);
+    EXPECT_EQ(0x00000099a8150fd8ULL, frame->instruction);
+    EXPECT_EQ(0x00000099a8150fd8ULL, frame->context.rip);
+    EXPECT_EQ(frame0_rsp.Value(), frame->context.rsp);
+    EXPECT_EQ(frame0_rbp.Value(), frame->context.rbp);
+  }
+
+  {  // To avoid reusing locals by mistake
+    StackFrameAMD64 *frame = static_cast<StackFrameAMD64 *>(frames->at(1));
+    EXPECT_EQ(StackFrame::FRAME_TRUST_SCAN, frame->trust);
+    ASSERT_EQ((StackFrameAMD64::CONTEXT_VALID_RIP |
+               StackFrameAMD64::CONTEXT_VALID_RSP |
+               StackFrameAMD64::CONTEXT_VALID_RBP),
+              frame->context_validity);
+    EXPECT_EQ("UserCallWinProcCheckWow", frame->function_name);
+    EXPECT_EQ(140710838468828ULL, frame->instruction + 1);
+    EXPECT_EQ(140710838468828ULL, frame->context.rip);
+    EXPECT_EQ(frame1_rsp.Value(), frame->context.rsp);
+    EXPECT_EQ(&user32_dll, frame->module);
+  }
+
+  {  // To avoid reusing locals by mistake
+    StackFrameAMD64 *frame = static_cast<StackFrameAMD64 *>(frames->at(2));
+    EXPECT_EQ(StackFrame::FRAME_TRUST_CFI, frame->trust);
+    ASSERT_EQ((StackFrameAMD64::CONTEXT_VALID_RIP |
+               StackFrameAMD64::CONTEXT_VALID_RSP |
+               StackFrameAMD64::CONTEXT_VALID_RBP),
+              frame->context_validity);
+    EXPECT_EQ("DispatchMessageWorker", frame->function_name);
+    EXPECT_EQ(140710838467591ULL, frame->instruction + 1);
+    EXPECT_EQ(140710838467591ULL, frame->context.rip);
+    EXPECT_EQ(frame2_rsp.Value(), frame->context.rsp);
+    EXPECT_EQ(&user32_dll, frame->module);
+  }
+}
+
 // Test that set_max_frames_scanned prevents using stack scanning
 // to find caller frames.
 TEST_F(GetCallerFrame, ScanningNotAllowed) {
