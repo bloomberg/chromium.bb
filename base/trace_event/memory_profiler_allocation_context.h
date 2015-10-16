@@ -88,6 +88,51 @@ struct BASE_EXPORT AllocationContext {
   std::pair<const char*, const char*> fields[2];
 };
 
+// A data structure that allows grouping a set of backtraces in a space-
+// efficient manner by creating a call tree and writing it as a set of (node,
+// parent) pairs. The tree nodes reference both parent and children. The parent
+// is referenced by index into |frames_|. The children are referenced via a map
+// of |StackFrame|s to index into |frames_|. So there is a trie for bottum-up
+// lookup of a backtrace for deduplication, and a tree for compact storage in
+// the trace log.
+class BASE_EXPORT StackFrameDeduplicator {
+ public:
+  // A node in the call tree.
+  struct FrameNode {
+    FrameNode(StackFrame frame, int parent_frame_index);
+    ~FrameNode();
+
+    StackFrame frame;
+
+    // The index of the parent stack frame in |frames_|, or -1 if there is no
+    // parent frame (when it is at the bottom of the call stack).
+    int parent_frame_index;
+
+    // Indices into |frames_| of frames called from the current frame.
+    std::map<StackFrame, int> children;
+  };
+
+  using ConstIterator = std::vector<FrameNode>::const_iterator;
+
+  StackFrameDeduplicator();
+  ~StackFrameDeduplicator();
+
+  // Inserts a backtrace and returns the index of its leaf node in the range
+  // defined by |begin| and |end|. I.e. if this returns |n|, the node is
+  // |begin() + n|. Returns -1 if the backtrace is empty.
+  int Insert(const AllocationContext::Backtrace& bt);
+
+  // Iterators over the frame nodes in the call tree.
+  ConstIterator begin() const { return frames_.begin(); }
+  ConstIterator end() const { return frames_.end(); }
+
+ private:
+  std::map<StackFrame, int> roots_;
+  std::vector<FrameNode> frames_;
+
+  DISALLOW_COPY_AND_ASSIGN(StackFrameDeduplicator);
+};
+
 // The allocation context tracker keeps track of thread-local context for heap
 // profiling. It includes a pseudo stack of trace events, and it might contain
 // arbitrary (key, value) context. On every allocation the tracker provides a

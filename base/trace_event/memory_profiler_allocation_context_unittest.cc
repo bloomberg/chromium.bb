@@ -17,6 +17,12 @@ const char kEclair[] = "Eclair";
 const char kFroyo[] = "Froyo";
 const char kGingerbread[] = "Gingerbread";
 
+const char kBrowserMain[] = "BrowserMain";
+const char kRendererMain[] = "RendererMain";
+const char kCreateWidget[] = "CreateWidget";
+const char kInitialize[] = "Initialize";
+const char kMalloc[] = "malloc";
+
 // Returns a pointer past the end of the fixed-size array |array| of |T| of
 // length |N|, identical to C++11 |std::end|.
 template <typename T, int N>
@@ -66,6 +72,8 @@ class AllocationContextTest : public testing::Test {
     TraceLog::GetInstance()->SetDisabled();
   }
 };
+
+class StackFrameDeduplicatorTest : public testing::Test {};
 
 // Check that |TRACE_EVENT| macros push and pop to the pseudo stack correctly.
 // Also check that |GetContextSnapshot| fills the backtrace with null pointers
@@ -220,6 +228,107 @@ TEST_F(AllocationContextTest, BacktraceTakesTop) {
     ASSERT_EQ(kCupcake, ctx.backtrace.frames[0]);
     ASSERT_EQ(kFroyo, ctx.backtrace.frames[11]);
   }
+}
+
+TEST_F(StackFrameDeduplicatorTest, SingleBacktrace) {
+  AllocationContext::Backtrace bt = {
+      {kBrowserMain, kCreateWidget, kMalloc, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
+
+  // The call tree should look like this (index in brackets).
+  //
+  // BrowserMain [0]
+  // + CreateWidget [1]
+  //   + malloc [2]
+
+  StackFrameDeduplicator dedup;
+  ASSERT_EQ(2, dedup.Insert(bt));
+
+  auto iter = dedup.begin();
+  ASSERT_EQ(kBrowserMain, (iter + 0)->frame);
+  ASSERT_EQ(-1, (iter + 0)->parent_frame_index);
+
+  ASSERT_EQ(kCreateWidget, (iter + 1)->frame);
+  ASSERT_EQ(0, (iter + 1)->parent_frame_index);
+
+  ASSERT_EQ(kMalloc, (iter + 2)->frame);
+  ASSERT_EQ(1, (iter + 2)->parent_frame_index);
+
+  ASSERT_EQ(iter + 3, dedup.end());
+}
+
+// Test that there can be different call trees (there can be multiple bottom
+// frames). Also verify that frames with the same name but a different caller
+// are represented as distinct nodes.
+TEST_F(StackFrameDeduplicatorTest, MultipleRoots) {
+  AllocationContext::Backtrace bt0 = {
+      {kBrowserMain, kCreateWidget, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
+  AllocationContext::Backtrace bt1 = {
+      {kRendererMain, kCreateWidget, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
+
+  // The call tree should look like this (index in brackets).
+  //
+  // BrowserMain [0]
+  // + CreateWidget [1]
+  // RendererMain [2]
+  // + CreateWidget [3]
+  //
+  // Note that there will be two instances of Donut, with different parents.
+
+  StackFrameDeduplicator dedup;
+  ASSERT_EQ(1, dedup.Insert(bt0));
+  ASSERT_EQ(3, dedup.Insert(bt1));
+
+  auto iter = dedup.begin();
+  ASSERT_EQ(kBrowserMain, (iter + 0)->frame);
+  ASSERT_EQ(-1, (iter + 0)->parent_frame_index);
+
+  ASSERT_EQ(kCreateWidget, (iter + 1)->frame);
+  ASSERT_EQ(0, (iter + 1)->parent_frame_index);
+
+  ASSERT_EQ(kRendererMain, (iter + 2)->frame);
+  ASSERT_EQ(-1, (iter + 2)->parent_frame_index);
+
+  ASSERT_EQ(kCreateWidget, (iter + 3)->frame);
+  ASSERT_EQ(2, (iter + 3)->parent_frame_index);
+
+  ASSERT_EQ(iter + 4, dedup.end());
+}
+
+TEST_F(StackFrameDeduplicatorTest, Deduplication) {
+  AllocationContext::Backtrace bt0 = {
+      {kBrowserMain, kCreateWidget, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
+  AllocationContext::Backtrace bt1 = {
+      {kBrowserMain, kInitialize, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
+
+  // The call tree should look like this (index in brackets).
+  //
+  // BrowserMain [0]
+  // + CreateWidget [1]
+  // + Initialize [2]
+  //
+  // Note that Cupcake will be re-used.
+
+  StackFrameDeduplicator dedup;
+  ASSERT_EQ(1, dedup.Insert(bt0));
+  ASSERT_EQ(2, dedup.Insert(bt1));
+
+  auto iter = dedup.begin();
+  ASSERT_EQ(kBrowserMain, (iter + 0)->frame);
+  ASSERT_EQ(-1, (iter + 0)->parent_frame_index);
+
+  ASSERT_EQ(kCreateWidget, (iter + 1)->frame);
+  ASSERT_EQ(0, (iter + 1)->parent_frame_index);
+
+  ASSERT_EQ(kInitialize, (iter + 2)->frame);
+  ASSERT_EQ(0, (iter + 2)->parent_frame_index);
+
+  ASSERT_EQ(iter + 3, dedup.end());
+
+  // Inserting the same backtrace again should return the index of the existing
+  // node.
+  ASSERT_EQ(1, dedup.Insert(bt0));
+  ASSERT_EQ(2, dedup.Insert(bt1));
+  ASSERT_EQ(dedup.begin() + 3, dedup.end());
 }
 
 }  // namespace trace_event

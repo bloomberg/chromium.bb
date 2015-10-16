@@ -38,6 +38,49 @@ AllocationContextTracker* AllocationContextTracker::GetThreadLocalTracker() {
   return tracker;
 }
 
+StackFrameDeduplicator::FrameNode::FrameNode(StackFrame frame,
+                                             int parent_frame_index)
+    : frame(frame), parent_frame_index(parent_frame_index) {}
+StackFrameDeduplicator::FrameNode::~FrameNode() {}
+
+StackFrameDeduplicator::StackFrameDeduplicator() {}
+StackFrameDeduplicator::~StackFrameDeduplicator() {}
+
+int StackFrameDeduplicator::Insert(const AllocationContext::Backtrace& bt) {
+  int frame_index = -1;
+  std::map<StackFrame, int>* nodes = &roots_;
+
+  for (size_t i = 0; i < arraysize(bt.frames); i++) {
+    if (!bt.frames[i])
+      break;
+
+    auto node = nodes->find(bt.frames[i]);
+    if (node == nodes->end()) {
+      // There is no tree node for this frame yet, create it. The parent node
+      // is the node associated with the previous frame.
+      FrameNode frame_node(bt.frames[i], frame_index);
+
+      // The new frame node will be appended, so its index is the current size
+      // of the vector.
+      frame_index = static_cast<int>(frames_.size());
+
+      // Add the node to the trie so it will be found next time.
+      nodes->insert(std::make_pair(bt.frames[i], frame_index));
+
+      // Append the node after modifying |children|, because the vector might
+      // need to resize, and this invalidates the |children| pointer.
+      frames_.push_back(frame_node);
+    } else {
+      // A tree node for this frame exists. Look for the next one.
+      frame_index = node->second;
+    }
+
+    nodes = &frames_[frame_index].children;
+  }
+
+  return frame_index;
+}
+
 AllocationContextTracker::AllocationContextTracker() {}
 AllocationContextTracker::~AllocationContextTracker() {}
 
