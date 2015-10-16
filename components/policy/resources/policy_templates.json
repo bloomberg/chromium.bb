@@ -1766,7 +1766,7 @@
     {
       'name': 'HTTPAuthentication',
       'type': 'group',
-      'caption': '''Policies for HTTP Authentication''',
+      'caption': '''Policies for HTTP authentication''',
       'desc': '''Policies related to integrated HTTP authentication.''',
       'policies': [
         {
@@ -1782,7 +1782,7 @@
           'id': 26,
           'caption': '''Supported authentication schemes''',
           'tags': [],
-          'desc': '''Specifies which HTTP Authentication schemes are supported by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+          'desc': '''Specifies which HTTP authentication schemes are supported by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
           Possible values are 'basic', 'digest', 'ntlm' and 'negotiate'. Separate multiple values with commas.
 
@@ -1877,7 +1877,7 @@
           'id': 31,
           'caption': '''GSSAPI library name''',
           'tags': [],
-          'desc': '''Specifies which GSSAPI library to use for HTTP Authentication. You can set either just a library name, or a full path.
+          'desc': '''Specifies which GSSAPI library to use for HTTP authentication. You can set either just a library name, or a full path.
 
           If no setting is provided, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will fall back to using a default library name.''',
         },
@@ -1892,11 +1892,11 @@
           },
           'example_value': 'com.example.spnego',
           'id': 305,
-          'caption': '''Account Type for Negotiate Authentication''',
+          'caption': '''Account type for HTTP Negotiate authentication''',
           'tags': [],
-          'desc': '''Specifies the account type of the accounts provided by the Android authentication app that supports HTTP Negotiate authentication (e.g. Kerberos authentication). This information should be available from the supplier of the Authentication app. For more details see https://goo.gl/hajyfN.
+          'desc': '''Specifies the account type of the accounts provided by the Android authentication app that supports HTTP Negotiate authentication (e.g. Kerberos authentication). This information should be available from the supplier of the authentication app. For more details see https://goo.gl/hajyfN.
 
-          If no setting is provided then Negotiate Authentication will be disabled on Android.''',
+          If no setting is provided, HTTP Negotiate authentication is disabled on Android.''',
         },
         {
           'name': 'AllowCrossOriginAuthPrompt',
