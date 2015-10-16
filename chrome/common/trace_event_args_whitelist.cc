@@ -10,9 +10,11 @@
 
 namespace {
 
-const char* const kEventArgsWhitelist[][2] = {{"toplevel", "*"},
-                                              {"__metadata", "thread_name"},
-                                              {NULL, NULL}};
+const char* const kEventArgsWhitelist[][2] = {
+    {"__metadata", "thread_name"},
+    {"ipc", "ChannelProxy::Context::OnDispatchMessage"},
+    {"toplevel", "*"},
+    {NULL, NULL}};
 
 }  // namespace
 
