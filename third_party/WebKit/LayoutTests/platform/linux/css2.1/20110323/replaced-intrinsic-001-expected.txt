@@ -3,8 +3,8 @@ layer at (0,0) size 800x600
 layer at (8,8) size 150x235 layerType: background only
 layer at (6,86) size 154x154
   LayoutBlockFlow (positioned) zI: -1 {P} at (6,86) size 154x154 [bgcolor=#FF0000] [border: (2px solid #00FF00)]
-    LayoutText zI: -1 {#text} at (2,2) size 93x59
-      text run at (2,2) width 93: "FAIL (absolute"
+    LayoutText zI: -1 {#text} at (2,2) size 92x59
+      text run at (2,2) width 92: "FAIL (absolute"
       text run at (2,22) width 87: "positioning not"
       text run at (2,42) width 66: "supported)"
 layer at (8,8) size 150x235 layerType: foreground only

@@ -11,5 +11,5 @@ layer at (0,0) size 800x139
               text run at (0,18) width 84: "and spill out "
               text run at (83,18) width 175: "onto the blue area below it."
         LayoutBlockFlow {P} at (3,3) size 778x24
-          LayoutText {#text} at (0,4) size 264x18
-            text run at (0,4) width 264: "You should see a teal box to the right. \x{21E8}"
+          LayoutText {#text} at (0,4) size 262x18
+            text run at (0,4) width 262: "You should see a teal box to the right. \x{21E8}"

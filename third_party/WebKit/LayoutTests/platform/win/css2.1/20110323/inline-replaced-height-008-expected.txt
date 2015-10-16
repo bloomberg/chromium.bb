@@ -6,21 +6,21 @@ layer at (0,0) size 800x198
       LayoutBlockFlow {P} at (0,0) size 784x36
         LayoutText {#text} at (0,0) size 108x17
           text run at (0,0) width 108: "There should be "
-        LayoutInline {STRONG} at (0,0) size 146x17
-          LayoutText {#text} at (107,0) size 146x17
-            text run at (107,0) width 146: "5 filled green squares"
-        LayoutText {#text} at (252,0) size 189x17
-          text run at (252,0) width 189: " with the same width and the "
-        LayoutInline {STRONG} at (0,0) size 82x17
-          LayoutText {#text} at (440,0) size 82x17
-            text run at (440,0) width 82: "same height"
+        LayoutInline {STRONG} at (0,0) size 145x17
+          LayoutText {#text} at (107,0) size 145x17
+            text run at (107,0) width 145: "5 filled green squares"
+        LayoutText {#text} at (251,0) size 189x17
+          text run at (251,0) width 189: " with the same width and the "
+        LayoutInline {STRONG} at (0,0) size 83x17
+          LayoutText {#text} at (439,0) size 83x17
+            text run at (439,0) width 83: "same height"
         LayoutText {#text} at (521,0) size 241x17
           text run at (521,0) width 241: ". The 5 filled green squares should be"
         LayoutInline {STRONG} at (0,0) size 59x17
           LayoutText {#text} at (0,18) size 59x17
             text run at (0,18) width 59: "identical"
-        LayoutText {#text} at (58,18) size 456x17
-          text run at (58,18) width 456: " to each other. This should still remain true even after a window resize."
+        LayoutText {#text} at (58,18) size 455x17
+          text run at (58,18) width 455: " to each other. This should still remain true even after a window resize."
       LayoutBlockFlow {DIV} at (0,52) size 784x122
         LayoutImage {IMG} at (0,0) size 117.59x118
         LayoutText {#text} at (117,104) size 5x17

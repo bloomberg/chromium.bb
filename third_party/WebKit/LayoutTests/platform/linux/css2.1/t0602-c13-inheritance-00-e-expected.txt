@@ -15,19 +15,19 @@ layer at (0,0) size 800x160
         LayoutText {#text} at (146,0) size 96x19
           text run at (146,0) width 96: " white on green."
       LayoutBlockFlow {P} at (0,72) size 784x20 [color=#FFFFFF]
-        LayoutInline {EM} at (0,0) size 36x19 [color=#008000]
-          LayoutText {#text} at (0,0) size 36x19
-            text run at (0,0) width 36: "PASS"
-        LayoutText {#text} at (36,0) size 4x19
-          text run at (36,0) width 4: " "
+        LayoutInline {EM} at (0,0) size 34x19 [color=#008000]
+          LayoutText {#text} at (0,0) size 34x19
+            text run at (0,0) width 34: "PASS"
+        LayoutText {#text} at (33,0) size 5x19
+          text run at (33,0) width 5: " "
         LayoutInline {STRONG} at (0,0) size 36x19
-          LayoutText {#text} at (40,0) size 36x19
-            text run at (40,0) width 36: "FAIL"
+          LayoutText {#text} at (37,0) size 36x19
+            text run at (37,0) width 36: "FAIL"
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (0,108) size 784x20
-        LayoutText {#text} at (0,0) size 42x19
-          text run at (0,0) width 42: "PASS "
-        LayoutInline {DFN} at (0,0) size 34x19 [color=#FFFFFF]
-          LayoutText {#text} at (42,0) size 34x19
-            text run at (42,0) width 34: "FAIL"
+        LayoutText {#text} at (0,0) size 41x19
+          text run at (0,0) width 41: "PASS "
+        LayoutInline {DFN} at (0,0) size 33x19 [color=#FFFFFF]
+          LayoutText {#text} at (40,0) size 33x19
+            text run at (40,0) width 33: "FAIL"
         LayoutText {#text} at (0,0) size 0x0

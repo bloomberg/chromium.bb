@@ -4,17 +4,17 @@ layer at (0,0) size 800x192
   LayoutBlockFlow {HTML} at (0,0) size 800x192.31
     LayoutBlockFlow {BODY} at (8,16) size 784x160.31
       LayoutBlockFlow {P} at (0,0) size 784x18 [color=#000080]
-        LayoutText {#text} at (0,0) size 265x17
-          text run at (0,0) width 265: "The word \"fail\" should not appear below."
+        LayoutText {#text} at (0,0) size 264x17
+          text run at (0,0) width 264: "The word \"fail\" should not appear below."
       LayoutBlockFlow {DIV} at (16,34) size 240x126.31 [color=#FFFFFF] [bgcolor=#FFFFFF]
-        LayoutBlockFlow (floating) {P} at (0,0) size 42.98x18.31 [color=#000080]
+        LayoutBlockFlow (floating) {P} at (0,0) size 42.19x18.31 [color=#000080]
           LayoutText {#text} at (0,0) size 43x17
             text run at (0,0) width 43: "TEST:"
         LayoutBlockFlow (floating) {P} at (0.02,18) size 239.98x18.31 [color=#00FFFF] [bgcolor=#008080]
-          LayoutText {#text} at (100,0) size 40x17
-            text run at (100,0) width 40: "PASS"
+          LayoutText {#text} at (101,0) size 38x17
+            text run at (101,0) width 38: "PASS"
         LayoutText {#text} at (42,0) size 224x125
-          text run at (42,0) width 175: "fail fail fail fail fail fail fail"
+          text run at (42,0) width 174: "fail fail fail fail fail fail fail"
           text run at (0,36) width 76: "fail fail fail "
           text run at (75,36) width 149: "fail fail fail fail fail fail"
           text run at (0,54) width 102: "fail fail fail fail "

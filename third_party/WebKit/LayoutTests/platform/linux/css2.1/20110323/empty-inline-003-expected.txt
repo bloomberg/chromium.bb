@@ -9,8 +9,8 @@ layer at (0,0) size 800x140 layerType: foreground only
   LayoutBlockFlow {HTML} at (0,0) size 800x140
     LayoutBlockFlow {BODY} at (8,16) size 784x116
       LayoutBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 582x19
-          text run at (0,0) width 582: "Test passes if there is a wide bright green rectangle below with one \"X\" in it and if there is no red."
+        LayoutText {#text} at (0,0) size 581x19
+          text run at (0,0) width 581: "Test passes if there is a wide bright green rectangle below with one \"X\" in it and if there is no red."
 layer at (8,52) size 784x80
   LayoutBlockFlow (relative positioned) {DIV} at (0,36) size 784x80
     LayoutBlockFlow {DIV} at (0,0) size 784x80 [bgcolor=#00FF00]

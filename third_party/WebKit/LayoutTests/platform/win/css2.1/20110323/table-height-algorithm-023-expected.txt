@@ -4,20 +4,20 @@ layer at (0,0) size 800x158
   LayoutBlockFlow {HTML} at (0,0) size 800x158
     LayoutBlockFlow {BODY} at (8,16) size 784x134
       LayoutBlockFlow {P} at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 398x17
-          text run at (0,0) width 398: "Test passes if the bottom of the \"Filler Text\" below is aligned."
-      LayoutTable {TABLE} at (0,34) size 350x100
-        LayoutTableSection {TBODY} at (0,0) size 350x100
-          LayoutTableRow {TR} at (0,2) size 350x96
+        LayoutText {#text} at (0,0) size 396x17
+          text run at (0,0) width 396: "Test passes if the bottom of the \"Filler Text\" below is aligned."
+      LayoutTable {TABLE} at (0,34) size 346x100
+        LayoutTableSection {TBODY} at (0,0) size 346x100
+          LayoutTableRow {TR} at (0,2) size 346x96
             LayoutTableCell {TD} at (2,27) size 54x18 [r=0 c=0 rs=1 cs=1]
               LayoutBlockFlow {DIV} at (1,1) size 52x16
                 LayoutText {#text} at (0,0) size 52x15
                   text run at (0,0) width 52: "Filler Text"
-            LayoutTableCell {TD} at (58,15) size 116x33 [r=0 c=1 rs=1 cs=1]
-              LayoutBlockFlow {DIV} at (1,1) size 114x31
-                LayoutText {#text} at (0,0) size 114x30
-                  text run at (0,0) width 114: "Filler Text"
-            LayoutTableCell {TD} at (176,2) size 172x49 [r=0 c=2 rs=1 cs=1]
-              LayoutBlockFlow {DIV} at (1,1) size 170x47
-                LayoutText {#text} at (0,1) size 170x45
-                  text run at (0,1) width 170: "Filler Text"
+            LayoutTableCell {TD} at (58,15) size 114x33 [r=0 c=1 rs=1 cs=1]
+              LayoutBlockFlow {DIV} at (1,1) size 112x31
+                LayoutText {#text} at (0,0) size 112x30
+                  text run at (0,0) width 112: "Filler Text"
+            LayoutTableCell {TD} at (174,2) size 170x49 [r=0 c=2 rs=1 cs=1]
+              LayoutBlockFlow {DIV} at (1,1) size 168x47
+                LayoutText {#text} at (0,1) size 168x45
+                  text run at (0,1) width 168: "Filler Text"

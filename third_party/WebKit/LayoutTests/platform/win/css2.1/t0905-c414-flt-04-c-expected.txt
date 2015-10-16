@@ -42,8 +42,8 @@ layer at (0,0) size 800x362
           LayoutText {#text} at (70,7) size 49x17
             text run at (70,7) width 49: "B 10 \x{21E8}"
         LayoutBlockFlow (floating) {P} at (4,214) size 126x34 [color=#FFFFFF] [bgcolor=#000080] [border: (3px solid #0000FF)]
-          LayoutText {#text} at (7,7) size 50x17
-            text run at (7,7) width 50: "\x{21E6} A 11"
+          LayoutText {#text} at (7,7) size 49x17
+            text run at (7,7) width 49: "\x{21E6} A 11"
         LayoutBlockFlow (floating) {P} at (190,214) size 126x34 [color=#FFFFFF] [bgcolor=#000080] [border: (3px solid #0000FF)]
           LayoutText {#text} at (70,7) size 49x17
             text run at (70,7) width 49: "B 12 \x{21E8}"

@@ -66,11 +66,11 @@ layer at (0,0) size 800x434
         LayoutText {#text} at (0,0) size 535x19
           text run at (0,0) width 447: "This sentence should have a long blue underline including between the two "
           text run at (447,0) width 88: "arrows here\x{2192}"
-        LayoutInline {SPAN} at (0,0) size 156x19 [color=#FFFFFF]
-          LayoutText {#text} at (535,0) size 156x19
-            text run at (535,0) width 156: " FAIL FAIL FAIL FAIL "
-        LayoutText {#text} at (691,0) size 72x19
-          text run at (691,0) width 72: "\x{2190}and here."
+        LayoutInline {SPAN} at (0,0) size 152x19 [color=#FFFFFF]
+          LayoutText {#text} at (535,0) size 152x19
+            text run at (535,0) width 152: " FAIL FAIL FAIL FAIL "
+        LayoutText {#text} at (686,0) size 73x19
+          text run at (686,0) width 73: "\x{2190}and here."
       LayoutBlockFlow {P} at (0,382) size 784x20 [color=#000080]
         LayoutText {#text} at (0,0) size 325x19
           text run at (0,0) width 325: "There should be a long blue underline between here\x{2192}"

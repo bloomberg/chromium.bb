@@ -7,6 +7,6 @@ layer at (0,0) size 800x61
         LayoutBlockFlow (floating) {P} at (0,0) size 392x53
           LayoutText {#text} at (0,0) size 348x51
             text run at (0,0) width 348: "There should be a green square to the right,"
-            text run at (0,28) width 310: "roughly in the middle, horizontally. \x{21E8}"
+            text run at (0,28) width 309: "roughly in the middle, horizontally. \x{21E8}"
         LayoutImage {IMG} at (392,0) size 15x15 [color=#FF0000]
         LayoutText {#text} at (0,0) size 0x0

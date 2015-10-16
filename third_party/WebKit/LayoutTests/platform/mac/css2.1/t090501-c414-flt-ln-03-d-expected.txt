@@ -4,12 +4,12 @@ layer at (0,0) size 800x464
   LayoutBlockFlow {HTML} at (0,0) size 800x464
     LayoutBlockFlow {BODY} at (8,16) size 784x432
       LayoutBlockFlow {P} at (0,0) size 784x54 [color=#000080]
-        LayoutText {#text} at (0,0) size 776x54
+        LayoutText {#text} at (0,0) size 775x54
           text run at (0,0) width 416: "The big coloured boxes should be level with the top of the small "
           text run at (415,0) width 337: "coloured boxes of the same color (unless there is not"
           text run at (0,18) width 89: "enough room "
-          text run at (88,18) width 410: "for the big box to fit on the small box's line after the small box, "
-          text run at (497,18) width 279: "in which case the big box should be as high"
+          text run at (88,18) width 409: "for the big box to fit on the small box's line after the small box, "
+          text run at (496,18) width 279: "in which case the big box should be as high"
           text run at (0,36) width 141: "as possible below the "
           text run at (140,36) width 73: "small box)."
       LayoutBlockFlow {DIV} at (16,70) size 752x362 [color=#C0C0C0] [border: (5px solid #800080)]

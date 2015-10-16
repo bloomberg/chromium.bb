@@ -16,9 +16,9 @@ layer at (0,0) size 800x154
             LayoutText {#text} at (8,8) size 144x37
               text run at (8,8) width 118: "\x{21E8} This blue block"
               text run at (8,28) width 144: "should be on the right."
-          LayoutText {#text} at (184,8) size 536x71
-            text run at (184,8) width 326: "Teal rectangle. Teal rectangle. Teal rectangle. Teal"
-            text run at (184,26) width 265: "rectangle. Teal rectangle. Teal rectangle. "
-            text run at (448,26) width 96: "Teal rectangle."
-            text run at (184,44) width 326: "Teal rectangle. Teal rectangle. Teal rectangle. Teal"
-            text run at (8,62) width 162: "rectangle. Teal rectangle."
+          LayoutText {#text} at (184,8) size 533x71
+            text run at (184,8) width 322: "Teal rectangle. Teal rectangle. Teal rectangle. Teal"
+            text run at (184,26) width 263: "rectangle. Teal rectangle. Teal rectangle. "
+            text run at (446,26) width 95: "Teal rectangle."
+            text run at (184,44) width 322: "Teal rectangle. Teal rectangle. Teal rectangle. Teal"
+            text run at (8,62) width 161: "rectangle. Teal rectangle."

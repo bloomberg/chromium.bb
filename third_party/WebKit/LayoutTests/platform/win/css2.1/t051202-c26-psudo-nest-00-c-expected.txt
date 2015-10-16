@@ -42,7 +42,7 @@ layer at (0,0) size 800x454
           LayoutText {#text} at (471,183) size 26x17
             text run at (471,183) width 26: "teal"
         LayoutText {#text} at (496,183) size 778x53
-          text run at (496,183) width 282: ". If this precise combination does not occur,"
+          text run at (496,183) width 281: ". If this precise combination does not occur,"
           text run at (0,201) width 421: "then the user agent has failed this test. Remember that in order to "
           text run at (420,201) width 358: "ensure a complete test, the paragraph must be displayed"
           text run at (0,219) width 57: "on more "
@@ -56,13 +56,13 @@ layer at (0,0) size 800x454
         LayoutInline {STRONG} at (0,0) size 111x17
           LayoutText {#text} at (130,15) size 111x17
             text run at (130,15) width 111: "two characters"
-        LayoutText {#text} at (240,15) size 452x17
-          text run at (240,15) width 121: " in this paragraph "
-          text run at (360,15) width 332: "(a double-quote mark and a capital 'T') should be "
+        LayoutText {#text} at (240,15) size 450x17
+          text run at (240,15) width 120: " in this paragraph "
+          text run at (359,15) width 331: "(a double-quote mark and a capital 'T') should be "
         LayoutInline {STRONG} at (0,0) size 89x17
-          LayoutText {#text} at (691,15) size 89x17
-            text run at (691,15) width 45: "200% "
-            text run at (735,15) width 45: "bigger"
+          LayoutText {#text} at (689,15) size 89x17
+            text run at (689,15) width 45: "200% "
+            text run at (733,15) width 45: "bigger"
         LayoutText {#text} at (0,37) size 223x17
           text run at (0,37) width 223: "than the rest of the paragraph, and "
         LayoutInline {STRONG} at (0,0) size 34x17
@@ -109,29 +109,29 @@ layer at (0,0) size 800x454
         LayoutInline {STRONG} at (0,0) size 26x17
           LayoutText {#text} at (674,0) size 26x17
             text run at (674,0) width 26: "teal"
-        LayoutText {#text} at (699,0) size 771x53
+        LayoutText {#text} at (699,0) size 770x53
           text run at (699,0) width 24: ". If "
           text run at (722,0) width 24: "this"
-          text run at (0,18) width 385: "precise combination does not occur, then the user agent has "
-          text run at (384,18) width 387: "failed this test. Remember that in order to ensure a complete"
+          text run at (0,18) width 384: "precise combination does not occur, then the user agent has "
+          text run at (383,18) width 387: "failed this test. Remember that in order to ensure a complete"
           text run at (0,36) width 31: "test, "
           text run at (30,36) width 416: "the paragraph must be displayed on more than one line. (TEST3)"
       LayoutBlockFlow {DIV} at (0,412) size 784x18
-        LayoutText {#text} at (0,0) size 170x17
-          text run at (0,0) width 170: "You should see the words "
+        LayoutText {#text} at (0,0) size 168x17
+          text run at (0,0) width 168: "You should see the words "
+        LayoutInline {STRONG} at (0,0) size 68x17
+          LayoutText {#text} at (167,0) size 68x17
+            text run at (167,0) width 68: "\"TEST1\""
+        LayoutText {#text} at (234,0) size 9x17
+          text run at (234,0) width 9: ", "
+        LayoutInline {STRONG} at (0,0) size 68x17
+          LayoutText {#text} at (242,0) size 68x17
+            text run at (242,0) width 68: "\"TEST2\""
+        LayoutText {#text} at (309,0) size 36x17
+          text run at (309,0) width 36: ", and "
         LayoutInline {STRONG} at (0,0) size 67x17
-          LayoutText {#text} at (169,0) size 67x17
-            text run at (169,0) width 67: "\"TEST1\""
-        LayoutText {#text} at (235,0) size 9x17
-          text run at (235,0) width 9: ", "
-        LayoutInline {STRONG} at (0,0) size 68x17
-          LayoutText {#text} at (243,0) size 68x17
-            text run at (243,0) width 68: "\"TEST2\""
-        LayoutText {#text} at (310,0) size 36x17
-          text run at (310,0) width 36: ", and "
-        LayoutInline {STRONG} at (0,0) size 68x17
-          LayoutText {#text} at (345,0) size 68x17
-            text run at (345,0) width 68: "\"TEST3\""
-        LayoutText {#text} at (412,0) size 241x17
-          text run at (412,0) width 88: " at the end of "
-          text run at (499,0) width 154: "three paragraphs above."
+          LayoutText {#text} at (344,0) size 67x17
+            text run at (344,0) width 67: "\"TEST3\""
+        LayoutText {#text} at (410,0) size 241x17
+          text run at (410,0) width 89: " at the end of "
+          text run at (498,0) width 153: "three paragraphs above."

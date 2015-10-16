@@ -4,8 +4,8 @@ layer at (0,0) size 800x150
   LayoutBlockFlow {HTML} at (0,0) size 800x150
     LayoutBlockFlow {BODY} at (8,16) size 784x124 [color=#000080]
       LayoutBlockFlow {P} at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 257x18
-          text run at (0,0) width 257: "The five bars below should be identical."
+        LayoutText {#text} at (0,0) size 256x18
+          text run at (0,0) width 256: "The five bars below should be identical."
       LayoutBlockFlow {DIV} at (0,34) size 106x90 [color=#0000FF]
         LayoutBlockFlow {P} at (0,0) size 106x10 [bgcolor=#000080]
           LayoutText {#text} at (48,0) size 10x10

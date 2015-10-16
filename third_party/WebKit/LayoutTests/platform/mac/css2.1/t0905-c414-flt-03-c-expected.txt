@@ -4,9 +4,9 @@ layer at (0,0) size 800x298
   LayoutBlockFlow {HTML} at (0,0) size 800x298
     LayoutBlockFlow {BODY} at (8,16) size 784x36
       LayoutBlockFlow {P} at (0,0) size 784x36 [color=#000080]
-        LayoutText {#text} at (0,0) size 764x36
+        LayoutText {#text} at (0,0) size 763x36
           text run at (0,0) width 395: "The blue boxes below should be in numeric order and form a "
-          text run at (394,0) width 370: "backwards \"D\". (Boxes labelled \"A\" should be in the first"
+          text run at (394,0) width 369: "backwards \"D\". (Boxes labelled \"A\" should be in the first"
           text run at (0,18) width 57: "column; "
           text run at (56,18) width 409: "boxes labelled \"B\" should be in the second; arrows indicate the "
           text run at (464,18) width 123: "correct alignment.)"

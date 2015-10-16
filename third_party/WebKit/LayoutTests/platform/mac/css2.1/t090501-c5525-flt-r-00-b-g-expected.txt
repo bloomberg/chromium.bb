@@ -5,11 +5,11 @@ layer at (0,0) size 800x290
     LayoutBlockFlow {BODY} at (8,16) size 784x258
       LayoutBlockFlow {P} at (0,0) size 784x258 [color=#000080]
         LayoutImage (floating) {IMG} at (734,0) size 50x50
-        LayoutText {#text} at (0,4) size 343x18
-          text run at (0,4) width 343: "This text should flow around the box on the right. \x{21E8} "
+        LayoutText {#text} at (0,4) size 342x18
+          text run at (0,4) width 342: "This text should flow around the box on the right. \x{21E8} "
         LayoutInline {SPAN} at (0,0) size 777x254 [color=#C0C0C0]
-          LayoutText {#text} at (342,4) size 777x254
-            text run at (342,4) width 373: "dummy text dummy text dummy text dummy text dummy"
+          LayoutText {#text} at (341,4) size 777x254
+            text run at (341,4) width 373: "dummy text dummy text dummy text dummy text dummy"
             text run at (0,24) width 81: "text dummy "
             text run at (80,24) width 487: "text dummy text dummy text dummy text dummy text dummy text dummy "
             text run at (566,24) width 158: "text dummy text dummy"

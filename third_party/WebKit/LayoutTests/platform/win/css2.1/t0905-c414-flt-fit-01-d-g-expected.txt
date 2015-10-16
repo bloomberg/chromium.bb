@@ -4,8 +4,8 @@ layer at (0,0) size 800x275
   LayoutBlockFlow {HTML} at (0,0) size 800x275
     LayoutBlockFlow {BODY} at (8,16) size 784x249
       LayoutBlockFlow {P} at (0,0) size 784x23 [color=#000080]
-        LayoutText {#text} at (0,3) size 780x17
-          text run at (0,3) width 780: "There should be a complete unbroken drawing of a yin-yang (\x{262F}) symbol below, slightly on the left (\x{21E6}) inside a blue box."
+        LayoutText {#text} at (0,3) size 779x17
+          text run at (0,3) width 779: "There should be a complete unbroken drawing of a yin-yang (\x{262F}) symbol below, slightly on the left (\x{21E6}) inside a blue box."
       LayoutBlockFlow {DIV} at (10,39) size 260x210 [border: (5px solid #0000FF)]
         LayoutBlockFlow (floating) {P} at (5,5) size 100x100 [color=#000080]
           LayoutImage {IMG} at (0,0) size 100x100

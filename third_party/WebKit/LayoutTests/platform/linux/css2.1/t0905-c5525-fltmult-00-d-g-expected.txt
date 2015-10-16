@@ -9,8 +9,8 @@ layer at (0,0) size 800x234
           text run at (369,0) width 249: "matching cross section of the four blocks."
       LayoutBlockFlow (floating) {DIV} at (0,46) size 140x132 [bgcolor=#FFFF00] [border: (20px solid #000000)]
         LayoutBlockFlow {P} at (40,56) size 60x20
-          LayoutText {#text} at (8,0) size 44x19
-            text run at (8,0) width 44: "Yellow"
+          LayoutText {#text} at (9,0) size 42x19
+            text run at (9,0) width 42: "Yellow"
       LayoutBlockFlow (floating) {DIV} at (160,46) size 140x132 [color=#FFFFFF] [bgcolor=#0000FF] [border: (20px solid #000000)]
         LayoutBlockFlow {P} at (40,56) size 60x20
           LayoutText {#text} at (16,0) size 28x19

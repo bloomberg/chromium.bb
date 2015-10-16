@@ -4,13 +4,13 @@ layer at (0,0) size 800x176
   LayoutBlockFlow {HTML} at (0,0) size 800x176
     LayoutBlockFlow {BODY} at (8,16) size 784x152
       LayoutBlockFlow {P} at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 679x17
-          text run at (0,0) width 679: "Test passes if the left square below has \"Filler Text\" directly above it and the square on the right does not."
+        LayoutText {#text} at (0,0) size 676x17
+          text run at (0,0) width 676: "Test passes if the left square below has \"Filler Text\" directly above it and the square on the right does not."
       LayoutBlockFlow {DIV} at (0,34) size 784x118
         LayoutTable {SPAN} at (0,0) size 100x118
           LayoutBlockFlow {SPAN} at (0,0) size 100x18
-            LayoutText {#text} at (0,0) size 68x17
-              text run at (0,0) width 68: "Filler Text"
+            LayoutText {#text} at (0,0) size 67x17
+              text run at (0,0) width 67: "Filler Text"
           LayoutTableSection (anonymous) at (0,18) size 100x100
             LayoutTableRow {SPAN} at (0,0) size 100x50
               LayoutTableCell {SPAN} at (0,0) size 50x0 [bgcolor=#000000] [r=0 c=0 rs=1 cs=1]
