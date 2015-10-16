@@ -88,7 +88,7 @@ public class TabTest extends ChromeActivityTestCaseBase<ChromeActivity> {
         });
 
         assertTrue(mTab.needsReload());
-        assertFalse(mTab.isHidden());
+        assertTrue(mTab.isHidden());
         assertFalse(mTab.isShowingSadTab());
 
         ApplicationTestUtils.launchChrome(getInstrumentation().getTargetContext());
