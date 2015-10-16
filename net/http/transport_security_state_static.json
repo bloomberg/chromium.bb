@@ -248,6 +248,7 @@
     { "name": "gvt3.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
     { "name": "withyoutube.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
     { "name": "withgoogle.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
+    { "name": "g4w.co", "include_subdomains": true, "mode": "force-https", "pins": "google" },
 
     { "name": "webfilings.appspot.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
     { "name": "webfilings-mirror-hrd.appspot.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
@@ -4126,6 +4127,7 @@
     "DROPBOXSTATIC_COM",
     "DROPBOXUSERCONTENT_COM",
     "WITHYOUTUBE_COM",
-    "WITHGOOGLE_COM"
+    "WITHGOOGLE_COM",
+    "G4W_CO"
   ]
 }
