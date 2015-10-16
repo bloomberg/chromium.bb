@@ -8,8 +8,22 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/views/widget/native_widget_private.h"
 
+namespace aura {
+namespace client {
+class DefaultCaptureClient;
+}
+}
+
+namespace mojo {
+class Shell;
+}
+
 namespace mus {
 class Window;
+}
+
+namespace wm {
+class FocusController;
 }
 
 namespace views {
@@ -17,7 +31,8 @@ class WindowTreeHostMojo;
 
 class NativeWidgetMus : public internal::NativeWidgetPrivate {
  public:
-  explicit NativeWidgetMus(internal::NativeWidgetDelegate* delegate);
+  NativeWidgetMus(internal::NativeWidgetDelegate* delegate,
+                  mojo::Shell* shell);
   ~NativeWidgetMus() override;
 
  private:
@@ -113,6 +128,8 @@ class NativeWidgetMus : public internal::NativeWidgetPrivate {
 
   scoped_ptr<WindowTreeHostMojo> window_tree_host_;
 
+  scoped_ptr<wm::FocusController> focus_client_;
+  scoped_ptr<aura::client::DefaultCaptureClient> capture_client_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetMus);
 };

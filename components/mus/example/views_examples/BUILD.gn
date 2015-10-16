@@ -21,6 +21,7 @@ mojo_native_application("views_examples") {
     "//mojo/application/public/cpp",
     "//mojo/application/public/cpp:sources",
     "//mojo/converters/geometry",
+    "//mojo/converters/network",
     "//skia",
     "//third_party/mojo/src/mojo/public/cpp/bindings",
     "//ui/gfx",

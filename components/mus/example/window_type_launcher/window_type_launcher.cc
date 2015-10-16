@@ -8,6 +8,7 @@
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
+#include "mojo/converters/network/network_type_converters.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/compositor/layer.h"
@@ -345,7 +346,7 @@ class WindowTypeLauncherView : public views::WidgetDelegateView,
 
 }  // namespace
 
-WindowTypeLauncher::WindowTypeLauncher() : app_(nullptr) {}
+WindowTypeLauncher::WindowTypeLauncher() {}
 WindowTypeLauncher::~WindowTypeLauncher() {}
 
 bool WindowTypeLauncher::ConfigureIncomingConnection(
@@ -354,10 +355,10 @@ bool WindowTypeLauncher::ConfigureIncomingConnection(
 }
 
 void WindowTypeLauncher::Initialize(mojo::ApplicationImpl* app) {
-  app_ = app;
-
-  wm_connection_.reset(
-      new views::WindowManagerConnection("mojo:example_wm", app));
+  mus::mojom::WindowManagerPtr window_manager;
+  app->ConnectToService(mojo::URLRequest::From(std::string("mojo:example_wm")),
+                        &window_manager);
+  views::WindowManagerConnection::Create(window_manager.Pass(), app);
 
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);

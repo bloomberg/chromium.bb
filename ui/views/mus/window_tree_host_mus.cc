@@ -14,6 +14,7 @@
 #include "ui/events/event_constants.h"
 #include "ui/views/mus/input_method_mus.h"
 #include "ui/views/mus/surface_context_factory.h"
+#include "ui/views/mus/window_manager_connection.h"
 
 namespace views {
 
@@ -22,6 +23,9 @@ namespace views {
 
 WindowTreeHostMojo::WindowTreeHostMojo(mojo::Shell* shell, mus::Window* window)
     : window_(window), bounds_(window->bounds().To<gfx::Rect>()) {
+  if (!window_)
+    window_ = WindowManagerConnection::Get()->CreateWindow();
+
   window_->AddObserver(this);
 
   context_factory_.reset(new SurfaceContextFactory(shell, window_));

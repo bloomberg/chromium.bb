@@ -8,7 +8,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "components/mus/public/cpp/window_tree_delegate.h"
 #include "components/mus/public/interfaces/window_manager.mojom.h"
-#include "ui/views/mus/aura_init.h"
 #include "ui/views/views_delegate.h"
 
 namespace mojo {
@@ -23,12 +22,16 @@ class AuraInit;
 class WindowManagerConnection : public ViewsDelegate,
                                 public mus::WindowTreeDelegate {
  public:
-  explicit WindowManagerConnection(const std::string& window_manager_url,
-                                   mojo::ApplicationImpl* app);
-  ~WindowManagerConnection() override;
+  static void Create(mus::mojom::WindowManagerPtr window_manager,
+                     mojo::ApplicationImpl* app);
+  static WindowManagerConnection* Get();
 
- private:
   mus::Window* CreateWindow();
+
+private:
+  WindowManagerConnection(mus::mojom::WindowManagerPtr window_manager,
+                          mojo::ApplicationImpl* app);
+  ~WindowManagerConnection() override;
 
   // ViewsDelegate:
   NativeWidget* CreateNativeWidget(
@@ -45,8 +48,8 @@ class WindowManagerConnection : public ViewsDelegate,
 #endif
 
   mojo::ApplicationImpl* app_;
-  scoped_ptr<AuraInit> aura_init_;
   mus::mojom::WindowManagerPtr window_manager_;
+  scoped_ptr<AuraInit> aura_init_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowManagerConnection);
 };

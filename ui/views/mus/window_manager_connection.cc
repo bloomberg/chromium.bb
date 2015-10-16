@@ -4,6 +4,8 @@
 
 #include "ui/views/mus/window_manager_connection.h"
 
+#include "base/lazy_instance.h"
+#include "base/threading/thread_local.h"
 #include "components/mus/public/cpp/window_tree_connection.h"
 #include "components/mus/public/interfaces/view_tree.mojom.h"
 #include "mojo/application/public/cpp/application_connection.h"
@@ -13,6 +15,7 @@
 #include "ui/gfx/display.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/views/mus/aura_init.h"
 #include "ui/views/mus/native_widget_view_manager.h"
 
 namespace mojo {
@@ -56,8 +59,14 @@ struct TypeConverter<gfx::Display, mus::mojom::DisplayPtr> {
 
 namespace {
 
+using WindowManagerConnectionPtr =
+    base::ThreadLocalPointer<views::WindowManagerConnection>;
+
+// Env is thread local so that aura may be used on multiple threads.
+base::LazyInstance<WindowManagerConnectionPtr>::Leaky lazy_tls_ptr =
+    LAZY_INSTANCE_INITIALIZER;
+
 std::vector<gfx::Display> GetDisplaysFromWindowManager(
-    mojo::ApplicationImpl* app,
     mus::mojom::WindowManagerPtr* window_manager) {
   std::vector<gfx::Display> displays;
   (*window_manager)->GetDisplays(
@@ -67,22 +76,26 @@ std::vector<gfx::Display> GetDisplaysFromWindowManager(
   CHECK(window_manager->WaitForIncomingResponse());
   return displays;
 }
+
 }
 
 namespace views {
 
-WindowManagerConnection::WindowManagerConnection(
-    const std::string& window_manager_url,
-    mojo::ApplicationImpl* app)
-    : app_(app) {
-  app_->ConnectToService(mojo::URLRequest::From(window_manager_url),
-                         &window_manager_);
-  aura_init_.reset(new AuraInit(
-      app, "example_resources.pak",
-      GetDisplaysFromWindowManager(app, &window_manager_)));
+// static
+void WindowManagerConnection::Create(
+    mus::mojom::WindowManagerPtr window_manager,
+    mojo::ApplicationImpl* app) {
+  DCHECK(!lazy_tls_ptr.Pointer()->Get());
+  lazy_tls_ptr.Pointer()->Set(
+      new WindowManagerConnection(window_manager.Pass(), app));
 }
 
-WindowManagerConnection::~WindowManagerConnection() {}
+// static
+WindowManagerConnection* WindowManagerConnection::Get() {
+  WindowManagerConnection* connection = lazy_tls_ptr.Pointer()->Get();
+  DCHECK(connection);
+  return connection;
+}
 
 mus::Window* WindowManagerConnection::CreateWindow() {
   mojo::ViewTreeClientPtr view_tree_client;
@@ -96,6 +109,17 @@ mus::Window* WindowManagerConnection::CreateWindow() {
   DCHECK(window_tree_connection->GetRoot());
   return window_tree_connection->GetRoot();
 }
+
+WindowManagerConnection::WindowManagerConnection(
+    mus::mojom::WindowManagerPtr window_manager,
+    mojo::ApplicationImpl* app)
+    : app_(app), window_manager_(window_manager.Pass()) {
+  aura_init_.reset(new AuraInit(
+      app, "views_mus_resources.pak",
+      GetDisplaysFromWindowManager(&window_manager_)));
+}
+
+WindowManagerConnection::~WindowManagerConnection() {}
 
 NativeWidget* WindowManagerConnection::CreateNativeWidget(
     internal::NativeWidgetDelegate* delegate) {

@@ -8,11 +8,6 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "mojo/application/public/cpp/application_delegate.h"
-#include "mojo/application/public/cpp/interface_factory_impl.h"
-
-namespace views {
-class WindowManagerConnection;
-}
 
 class WindowTypeLauncher : public mojo::ApplicationDelegate {
  public:
@@ -23,11 +18,7 @@ class WindowTypeLauncher : public mojo::ApplicationDelegate {
   // ApplicationDelegate:
   void Initialize(mojo::ApplicationImpl* app) override;
   bool ConfigureIncomingConnection(
-    mojo::ApplicationConnection* connection) override;
-
-  mojo::ApplicationImpl* app_;
-
-  scoped_ptr<views::WindowManagerConnection> wm_connection_;
+      mojo::ApplicationConnection* connection) override;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTypeLauncher);
 };

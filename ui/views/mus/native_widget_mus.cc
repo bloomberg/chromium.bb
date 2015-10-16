@@ -5,23 +5,55 @@
 #include "ui/views/mus/native_widget_mus.h"
 
 #include "components/mus/public/cpp/window.h"
+#include "ui/aura/client/default_capture_client.h"
+#include "ui/aura/window.h"
 #include "ui/views/mus/window_tree_host_mus.h"
+#include "ui/wm/core/base_focus_rules.h"
+#include "ui/wm/core/capture_controller.h"
+#include "ui/wm/core/focus_controller.h"
 
 namespace views {
+namespace {
+
+// TODO: figure out what this should be.
+class FocusRulesImpl : public wm::BaseFocusRules {
+ public:
+  FocusRulesImpl() {}
+  ~FocusRulesImpl() override {}
+
+  bool SupportsChildActivation(aura::Window* window) const override {
+    return true;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FocusRulesImpl);
+};
+
+}  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetMus, public:
 
-NativeWidgetMus::NativeWidgetMus(internal::NativeWidgetDelegate* delegate)
+NativeWidgetMus::NativeWidgetMus(internal::NativeWidgetDelegate* delegate,
+                                 mojo::Shell* shell)
     : window_(nullptr),
-      native_widget_delegate_(delegate) {}
+      native_widget_delegate_(delegate),
+      window_tree_host_(new WindowTreeHostMojo(shell, nullptr)) {
+  window_tree_host_->InitHost();
+}
 NativeWidgetMus::~NativeWidgetMus() {}
 
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetMus, internal::NativeWidgetPrivate implementation:
 
 void NativeWidgetMus::InitNativeWidget(const Widget::InitParams& params) {
-  NOTIMPLEMENTED();
+  focus_client_.reset(new wm::FocusController(new FocusRulesImpl));
+
+  aura::client::SetFocusClient(GetNativeWindow(), focus_client_.get());
+  aura::client::SetActivationClient(GetNativeWindow(), focus_client_.get());
+  window_tree_host_->window()->AddPreTargetHandler(focus_client_.get());
+  capture_client_.reset(
+      new aura::client::DefaultCaptureClient(GetNativeWindow()));
 }
 
 NonClientFrameView* NativeWidgetMus::CreateNonClientFrameView() {
@@ -44,7 +76,6 @@ void NativeWidgetMus::FrameTypeChanged() {
 }
 
 Widget* NativeWidgetMus::GetWidget() {
-  NOTIMPLEMENTED();
   return native_widget_delegate_->AsWidget();
 }
 
@@ -54,13 +85,11 @@ const Widget* NativeWidgetMus::GetWidget() const {
 }
 
 gfx::NativeView NativeWidgetMus::GetNativeView() const {
-  NOTIMPLEMENTED();
-  return nullptr;
+  return window_tree_host_->window();
 }
 
 gfx::NativeWindow NativeWidgetMus::GetNativeWindow() const {
-  NOTIMPLEMENTED();
-  return nullptr;
+  return window_tree_host_->window();
 }
 
 Widget* NativeWidgetMus::GetTopLevelWidget() {
@@ -68,13 +97,11 @@ Widget* NativeWidgetMus::GetTopLevelWidget() {
 }
 
 const ui::Compositor* NativeWidgetMus::GetCompositor() const {
-  NOTIMPLEMENTED();
-  return nullptr;
+  return window_tree_host_->window()->layer()->GetCompositor();
 }
 
 const ui::Layer* NativeWidgetMus::GetLayer() const {
-  NOTIMPLEMENTED();
-  return nullptr;
+  return window_tree_host_->window()->layer();
 }
 
 void NativeWidgetMus::ReorderNativeViews() {
@@ -85,12 +112,13 @@ void NativeWidgetMus::ViewRemoved(View* view) {
   NOTIMPLEMENTED();
 }
 
-void NativeWidgetMus::SetNativeWindowProperty(const char* name,
-                                                      void* value) {
+void NativeWidgetMus::SetNativeWindowProperty(const char* name, void* value) {
+  // TODO(beng): push properties to mus::Window.
   NOTIMPLEMENTED();
 }
 
 void* NativeWidgetMus::GetNativeWindowProperty(const char* name) const {
+  // TODO(beng): pull properties to mus::Window.
   NOTIMPLEMENTED();
   return nullptr;
 }
@@ -101,24 +129,23 @@ TooltipManager* NativeWidgetMus::GetTooltipManager() const {
 }
 
 void NativeWidgetMus::SetCapture() {
-  NOTIMPLEMENTED();
+  window_tree_host_->window()->SetCapture();
 }
 
 void NativeWidgetMus::ReleaseCapture() {
-  NOTIMPLEMENTED();
+  window_tree_host_->window()->ReleaseCapture();
 }
 
 bool NativeWidgetMus::HasCapture() const {
-  NOTIMPLEMENTED();
-  return false;
+  return window_tree_host_->window()->HasCapture();
 }
 
 ui::InputMethod* NativeWidgetMus::GetInputMethod() {
-  NOTIMPLEMENTED();
-  return nullptr;
+  return window_tree_host_->GetInputMethod();
 }
 
 void NativeWidgetMus::CenterWindow(const gfx::Size& size) {
+  // TODO(beng): clear user-placed property and set preferred size property.
   NOTIMPLEMENTED();
 }
 
@@ -129,6 +156,7 @@ void NativeWidgetMus::GetWindowPlacement(
 }
 
 bool NativeWidgetMus::SetWindowTitle(const base::string16& title) {
+  // TODO(beng): push title to window manager.
   NOTIMPLEMENTED();
   return false;
 }
