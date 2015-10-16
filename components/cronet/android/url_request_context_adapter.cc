@@ -139,6 +139,14 @@ void URLRequestContextAdapter::InitRequestContextOnNetworkThread() {
   DCHECK(config_);
   // TODO(mmenke):  Add method to have the builder enable SPDY.
   net::URLRequestContextBuilder context_builder;
+
+  // TODO(mef): Remove this work around for crbug.com/543366 once it is fixed.
+  net::URLRequestContextBuilder::HttpNetworkSessionParams
+      custom_http_network_session_params;
+  custom_http_network_session_params.use_alternative_services = false;
+  context_builder.set_http_network_session_params(
+      custom_http_network_session_params);
+
   context_builder.set_network_delegate(
       make_scoped_ptr(new BasicNetworkDelegate()));
   context_builder.set_proxy_config_service(proxy_config_service_.Pass());
