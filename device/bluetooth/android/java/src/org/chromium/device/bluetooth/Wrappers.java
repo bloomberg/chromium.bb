@@ -28,6 +28,7 @@ import org.chromium.base.annotations.JNINamespace;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Wrapper classes around android.bluetooth.* classes that provide an
@@ -332,6 +333,10 @@ class Wrappers {
 
         public int getInstanceId() {
             return mService.getInstanceId();
+        }
+
+        public UUID getUuid() {
+            return mService.getUuid();
         }
     }
 }

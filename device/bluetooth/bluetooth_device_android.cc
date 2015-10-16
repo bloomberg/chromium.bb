@@ -226,11 +226,12 @@ void BluetoothDeviceAndroid::OnConnectionStateChange(JNIEnv* env,
 void BluetoothDeviceAndroid::CreateGattRemoteService(
     JNIEnv* env,
     jobject caller,
-    int32_t instanceId,
+    const jstring& instanceId,
     jobject bluetooth_gatt_service_wrapper  // Java Type:
                                             // BluetoothGattServiceWrapper
     ) {
-  std::string instanceIdString = base::StringPrintf("%d", instanceId);
+  std::string instanceIdString =
+      base::android::ConvertJavaStringToUTF8(env, instanceId);
 
   if (gatt_services_.contains(instanceIdString))
     return;

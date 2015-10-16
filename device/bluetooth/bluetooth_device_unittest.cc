@@ -436,10 +436,13 @@ TEST_F(BluetoothTest, SimulateGattServicesDiscovered) {
   SimulateGattConnection(device);
   EXPECT_EQ(1, gatt_discovery_attempts_);
 
-  // TODO(scheib): Add more control over how many services are created and
-  // their properties. http://crbug.com/541400
-  SimulateGattServicesDiscovered(device);
-  EXPECT_EQ(2u, device->GetGattServices().size());
+  std::vector<std::string> services;
+  services.push_back("00000000-0000-1000-8000-00805f9b34fb");
+  // 2 duplicate UUIDs creating 2 instances.
+  services.push_back("00000001-0000-1000-8000-00805f9b34fb");
+  services.push_back("00000001-0000-1000-8000-00805f9b34fb");
+  SimulateGattServicesDiscovered(device, services);
+  EXPECT_EQ(3u, device->GetGattServices().size());
 }
 #endif  // defined(OS_ANDROID)
 

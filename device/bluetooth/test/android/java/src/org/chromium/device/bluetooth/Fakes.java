@@ -17,7 +17,9 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Fake implementations of android.bluetooth.* classes for testing.
@@ -212,15 +214,20 @@ class Fakes {
         // Create a call to onServicesDiscovered on the |chrome_device| using parameter
         // |status|.
         @CalledByNative("FakeBluetoothDevice")
-        private static void servicesDiscovered(ChromeBluetoothDevice chromeDevice, int status) {
+        private static void servicesDiscovered(
+                ChromeBluetoothDevice chromeDevice, int status, String uuidsSpaceDelimited) {
             FakeBluetoothDevice fakeDevice = (FakeBluetoothDevice) chromeDevice.mDevice;
 
-            // TODO(scheib): Add more control over how many services are created and
-            // their properties. http://crbug.com/541400
             if (status == android.bluetooth.BluetoothGatt.GATT_SUCCESS) {
                 fakeDevice.mGatt.mServices.clear();
-                fakeDevice.mGatt.mServices.add(new FakeBluetoothGattService(0));
-                fakeDevice.mGatt.mServices.add(new FakeBluetoothGattService(1));
+                HashMap<String, Integer> uuidsToInstanceIdMap = new HashMap<String, Integer>();
+                for (String uuid : uuidsSpaceDelimited.split(" ")) {
+                    Integer previousId = uuidsToInstanceIdMap.get(uuid);
+                    int instanceId = (previousId == null) ? 0 : previousId + 1;
+                    uuidsToInstanceIdMap.put(uuid, instanceId);
+                    fakeDevice.mGatt.mServices.add(
+                            new FakeBluetoothGattService(UUID.fromString(uuid), instanceId));
+                }
             }
 
             fakeDevice.mGattCallback.onServicesDiscovered(status);
@@ -297,15 +304,22 @@ class Fakes {
      */
     static class FakeBluetoothGattService extends Wrappers.BluetoothGattServiceWrapper {
         final int mInstanceId;
+        final UUID mUuid;
 
-        public FakeBluetoothGattService(int instanceId) {
+        public FakeBluetoothGattService(UUID uuid, int instanceId) {
             super(null);
+            mUuid = uuid;
             mInstanceId = instanceId;
         }
 
         @Override
         public int getInstanceId() {
             return mInstanceId;
+        }
+
+        @Override
+        public UUID getUuid() {
+            return mUuid;
         }
     }
 

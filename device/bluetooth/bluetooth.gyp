@@ -256,6 +256,7 @@
           'sources': [
             'android/java/src/org/chromium/device/bluetooth/ChromeBluetoothAdapter.java',
             'android/java/src/org/chromium/device/bluetooth/ChromeBluetoothDevice.java',
+            'android/java/src/org/chromium/device/bluetooth/ChromeBluetoothRemoteGattService.java',
             'android/java/src/org/chromium/device/bluetooth/Wrappers.java',
           ],
           'variables': {

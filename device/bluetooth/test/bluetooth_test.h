@@ -84,10 +84,12 @@ class BluetoothTestBase : public testing::Test {
   // Simulates GattConnection disconnecting.
   virtual void SimulateGattDisconnection(BluetoothDevice* device) {}
 
-  // Simulates success of discovering services. Two services are created.
-  // TODO(scheib): Add more control over how many services are created and
-  // their properties. http://crbug.com/541400
-  virtual void SimulateGattServicesDiscovered(BluetoothDevice* device) {}
+  // Simulates success of discovering services. |uuids| is used to create a
+  // service for each UUID string. Multiple UUIDs with the same value produce
+  // multiple service instances.
+  virtual void SimulateGattServicesDiscovered(
+      BluetoothDevice* device,
+      const std::vector<std::string>& uuids) {}
 
   // Simulates failure to discover services.
   virtual void SimulateGattServicesDiscoveryError(BluetoothDevice* device) {}
