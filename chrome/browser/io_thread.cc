@@ -12,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/debug/leak_tracker.h"
+#include "base/environment.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
 #include "base/prefs/pref_registry_simple.h"
@@ -80,6 +81,7 @@
 #include "net/quic/crypto/crypto_protocol.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_utils.h"
+#include "net/socket/ssl_client_socket.h"
 #include "net/socket/tcp_client_socket.h"
 #include "net/spdy/spdy_session.h"
 #include "net/ssl/channel_id_service.h"
@@ -159,6 +161,25 @@ void ObserveKeychainEvents() {
   net::CertDatabase::GetInstance()->SetMessageLoopForKeychainEvents();
 }
 #endif
+
+// Gets file path into ssl_keylog_file from command line argument or
+// environment variable. Command line argument has priority when
+// both specified.
+std::string GetSSLKeyLogFile(const base::CommandLine& command_line) {
+  if (command_line.HasSwitch(switches::kSSLKeyLogFile)) {
+    std::string file =
+      command_line.GetSwitchValueASCII(switches::kSSLKeyLogFile);
+    if (!file.empty()) {
+      return file;
+    }
+
+    LOG(WARNING) << "ssl-key-log-file argument missing";
+  }
+  scoped_ptr<base::Environment> env(base::Environment::Create());
+  std::string file;
+  env->GetVar("SSLKEYLOGFILE", &file);
+  return file;
+}
 
 // Used for the "system" URLRequestContext.
 class SystemURLRequestContext : public net::URLRequestContext {
@@ -553,6 +574,12 @@ void IOThread::Init() {
           "466432 IOThread::InitAsync::CommandLineForCurrentProcess"));
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
+
+  // Export ssl keys if log file specified.
+  std::string ssl_keylog_file = GetSSLKeyLogFile(command_line);
+  if (!ssl_keylog_file.empty()) {
+      net::SSLClientSocket::SetSSLKeyLogFile(ssl_keylog_file);
+  }
 
   DCHECK(!globals_);
   globals_ = new Globals;

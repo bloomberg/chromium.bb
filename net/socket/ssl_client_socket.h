@@ -114,6 +114,10 @@ class NET_EXPORT SSLClientSocket : public SSLSocket {
 
   static const char* NextProtoStatusToString(const NextProtoStatus status);
 
+  // Export SSL key material to be logged to the specified file if platform
+  // uses OpenSSL. Must be called before SSLClientSockets are created.
+  static void SetSSLKeyLogFile(const std::string& ssl_keylog_file);
+
   // Returns true if |error| is OK or |load_flags| ignores certificate errors
   // and |error| is a certificate error.
   static bool IgnoreCertError(int error, int load_flags);

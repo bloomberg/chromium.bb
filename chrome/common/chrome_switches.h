@@ -264,6 +264,7 @@ extern const char kSilentDebuggerExtensionAPI[];
 extern const char kSilentLaunch[];
 extern const char kShowAppList[];
 extern const char kShowSavedCopy[];
+extern const char kSSLKeyLogFile[];
 extern const char kEnableShowSavedCopyPrimary[];
 extern const char kEnableShowSavedCopySecondary[];
 extern const char kDisableShowSavedCopy[];

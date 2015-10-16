@@ -54,6 +54,9 @@ class SSLClientSocketOpenSSL : public SSLClientSocket {
     return ssl_session_cache_shard_;
   }
 
+  // Export ssl key log files if env variable is not set.
+  static void SetSSLKeyLogFile(const std::string& ssl_keylog_file);
+
   // SSLClientSocket implementation.
   void GetSSLCertRequestInfo(SSLCertRequestInfo* cert_request_info) override;
   NextProtoStatus GetNextProto(std::string* proto) const override;

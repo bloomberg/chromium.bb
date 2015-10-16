@@ -971,6 +971,12 @@ const char kShowAppList[]                   = "show-app-list";
 // refers to button placement (for experiment).
 const char kShowSavedCopy[]                 = "show-saved-copy";
 
+// Causes SSL key material to be logged to the specified file for debugging
+// purposes. See
+// https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS/Key_Log_Format
+// for the format.
+const char kSSLKeyLogFile[]               = "ssl-key-log-file";
+
 // Values for the kShowSavedCopy flag.
 const char kEnableShowSavedCopyPrimary[]    = "primary";
 const char kEnableShowSavedCopySecondary[]  = "secondary";

@@ -15,6 +15,10 @@
 #include "net/ssl/ssl_config_service.h"
 #include "net/ssl/ssl_connection_status_flags.h"
 
+#if defined(USE_OPENSSL)
+#include "net/socket/ssl_client_socket_openssl.h"
+#endif
+
 namespace net {
 
 SSLClientSocket::SSLClientSocket()
@@ -76,6 +80,15 @@ const char* SSLClientSocket::NextProtoStatusToString(
       return "no-overlap";
   }
   return NULL;
+}
+
+// static
+void SSLClientSocket::SetSSLKeyLogFile(const std::string& ssl_keylog_file) {
+#if defined(USE_OPENSSL)
+  SSLClientSocketOpenSSL::SetSSLKeyLogFile(ssl_keylog_file);
+#else
+  NOTIMPLEMENTED();
+#endif
 }
 
 bool SSLClientSocket::WasNpnNegotiated() const {

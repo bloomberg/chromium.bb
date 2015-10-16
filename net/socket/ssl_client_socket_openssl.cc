@@ -16,7 +16,6 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/environment.h"
 #include "base/lazy_instance.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram_macros.h"
@@ -245,20 +244,6 @@ class SSLClientSocketOpenSSL::SSLContext {
     SSL_CTX_set_session_cache_mode(
         ssl_ctx_.get(), SSL_SESS_CACHE_CLIENT | SSL_SESS_CACHE_NO_INTERNAL);
     SSL_CTX_sess_set_new_cb(ssl_ctx_.get(), NewSessionCallback);
-
-    scoped_ptr<base::Environment> env(base::Environment::Create());
-    std::string ssl_keylog_file;
-    if (env->GetVar("SSLKEYLOGFILE", &ssl_keylog_file) &&
-        !ssl_keylog_file.empty()) {
-      crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
-      BIO* bio = BIO_new_file(ssl_keylog_file.c_str(), "a");
-      if (!bio) {
-        LOG(ERROR) << "Failed to open " << ssl_keylog_file;
-        ERR_print_errors_cb(&LogErrorCallback, NULL);
-      } else {
-        SSL_CTX_set_keylog_bio(ssl_ctx_.get(), bio);
-      }
-    }
   }
 
   static int ClientCertRequestCallback(SSL* ssl, void* arg) {
@@ -470,6 +455,18 @@ SSLClientSocketOpenSSL::SSLClientSocketOpenSSL(
 
 SSLClientSocketOpenSSL::~SSLClientSocketOpenSSL() {
   Disconnect();
+}
+
+void SSLClientSocketOpenSSL::SetSSLKeyLogFile(
+    const std::string& ssl_keylog_file) {
+  crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
+  BIO* bio = BIO_new_file(ssl_keylog_file.c_str(), "a");
+  if (!bio) {
+    LOG(ERROR) << "Failed to open " << ssl_keylog_file;
+    ERR_print_errors_cb(&LogErrorCallback, NULL);
+  } else {
+    SSL_CTX_set_keylog_bio(SSLContext::GetInstance()->ssl_ctx(), bio);
+  }
 }
 
 void SSLClientSocketOpenSSL::GetSSLCertRequestInfo(
