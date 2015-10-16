@@ -8,6 +8,96 @@ cr.define('print_preview', function() {
   /**
    * A data store that stores destinations and dispatches events when the data
    * store changes.
+   * @param {!Array<!print_preview.Destination.Origin>} origins Match
+   *     destinations from these origins.
+   * @param {RegExp} idRegExp Match destination's id.
+   * @param {RegExp} displayNameRegExp Match destination's displayName.
+   * @param {boolean} skipVirtualDestinations Whether to ignore virtual
+   *     destinations, for example, Save as PDF.
+   * @constructor
+   */
+  function DestinationMatch(
+      origins, idRegExp, displayNameRegExp, skipVirtualDestinations) {
+
+    /** @private {!Array<!print_preview.Destination.Origin>} */
+    this.origins_ = origins;
+
+    /** @private {RegExp} */
+    this.idRegExp_ = idRegExp;
+
+    /** @private {RegExp} */
+    this.displayNameRegExp_ = displayNameRegExp;
+
+    /** @private {boolean} */
+    this.skipVirtualDestinations_ = skipVirtualDestinations;
+  };
+
+  DestinationMatch.prototype = {
+
+    /**
+     * @param {!print_preview.Destination.Origin} origin Origin to match.
+     * @return {boolean} Whether the origin is one of the {@code origins_}.
+     */
+    matchOrigin: function(origin) {
+      return arrayContains(this.origins_, origin);
+    },
+
+    /**
+     * @param {string} id Id of the destination.
+     * @param {string} origin Origin of the destination.
+     * @return {boolean} Whether destination is the same as initial.
+     */
+    matchIdAndOrigin: function(id, origin) {
+      return this.matchOrigin(origin) &&
+             this.idRegExp_ &&
+             this.idRegExp_.test(id);
+    },
+
+    /**
+     * @param {!print_preview.Destination} destination Destination to match.
+     * @return {boolean} Whether {@code destination} matches the last user
+     *     selected one.
+     */
+    match: function(destination) {
+      if (!this.matchOrigin(destination.origin)) {
+        return false;
+      }
+      if (this.idRegExp_ && !this.idRegExp_.test(destination.id)) {
+        return false;
+      }
+      if (this.displayNameRegExp_ &&
+          !this.displayNameRegExp_.test(destination.displayName)) {
+        return false;
+      }
+      if (this.skipVirtualDestinations_ &&
+          this.isVirtualDestination_(destination)) {
+        return false;
+      }
+      return true;
+    },
+
+    /**
+     * @param {!print_preview.Destination} destination Destination to check.
+     * @return {boolean} Whether {@code destination} is virtual, in terms of
+     *     destination selection.
+     * @private
+     */
+    isVirtualDestination_: function(destination) {
+      if (destination.origin == print_preview.Destination.Origin.LOCAL) {
+        return arrayContains(
+            [print_preview.Destination.GooglePromotedId.SAVE_AS_PDF],
+            destination.id);
+      }
+      return arrayContains(
+          [print_preview.Destination.GooglePromotedId.DOCS,
+           print_preview.Destination.GooglePromotedId.FEDEX],
+          destination.id);
+    }
+  };
+
+  /**
+   * A data store that stores destinations and dispatches events when the data
+   * store changes.
    * @param {!print_preview.NativeLayer} nativeLayer Used to fetch local print
    *     destinations.
    * @param {!print_preview.UserInfo} userInfo User information repository.
@@ -69,11 +159,11 @@ cr.define('print_preview', function() {
 
     /**
      * Whether the destination store will auto select the destination that
-     * matches the last used destination stored in appState_.
-     * @type {boolean}
+     * matches this set of parameters.
+     * @type {print_preview.DestinationMatch}
      * @private
      */
-    this.isInAutoSelectMode_ = false;
+    this.autoSelectMatchingDestination_ = null;
 
     /**
      * Event tracker used to track event listeners of the destination store.
@@ -89,6 +179,13 @@ cr.define('print_preview', function() {
      * @private
      */
     this.pdfPrinterEnabled_ = false;
+
+    /**
+     * ID of the system default destination.
+     * @type {?string}
+     * @private
+     */
+    this.systemDefaultDestinationId_ = null;
 
     /**
      * Used to fetch cloud-based print destinations.
@@ -320,86 +417,284 @@ cr.define('print_preview', function() {
      * print_preview.AppState has been initialized.
      * @param {boolean} isInAppKioskMode Whether the print preview is in App
      *     Kiosk mode.
+     * @param {?string} systemDefaultDestinationId ID of the system default
+     *     destination.
+     * @param {?string} serializedDefaultDestinationSelectionRulesStr Serialized
+     *     default destination selection rules.
      */
-    init: function(isInAppKioskMode) {
+    init: function(
+        isInAppKioskMode,
+        systemDefaultDestinationId,
+        serializedDefaultDestinationSelectionRulesStr) {
       this.pdfPrinterEnabled_ = !isInAppKioskMode;
-      this.isInAutoSelectMode_ = true;
+      this.systemDefaultDestinationId_ = systemDefaultDestinationId;
       this.createLocalPdfPrintDestination_();
+
       if (!this.appState_.selectedDestinationId ||
           !this.appState_.selectedDestinationOrigin) {
-        this.selectDefaultDestination_();
-      } else {
-        var key = this.getDestinationKey_(
-            this.appState_.selectedDestinationOrigin,
-            this.appState_.selectedDestinationId,
-            this.appState_.selectedDestinationAccount || '');
-        var candidate = this.destinationMap_[key];
-        if (candidate != null) {
-          this.selectDestination(candidate);
-        } else if (this.appState_.selectedDestinationOrigin ==
-                   print_preview.Destination.Origin.LOCAL) {
-          this.nativeLayer_.startGetLocalDestinationCapabilities(
-              this.appState_.selectedDestinationId);
-        } else if (this.cloudPrintInterface_ &&
-                   (this.appState_.selectedDestinationOrigin ==
-                        print_preview.Destination.Origin.COOKIES ||
-                    this.appState_.selectedDestinationOrigin ==
-                        print_preview.Destination.Origin.DEVICE)) {
-          this.cloudPrintInterface_.printer(
-              this.appState_.selectedDestinationId,
-              this.appState_.selectedDestinationOrigin,
-              this.appState_.selectedDestinationAccount || '');
-        } else if (this.appState_.selectedDestinationOrigin ==
-                   print_preview.Destination.Origin.PRIVET) {
-          // TODO(noamsml): Resolve a specific printer instead of listing all
-          // privet printers in this case.
-          this.nativeLayer_.startGetPrivetDestinations();
-
-          var destinationName = this.appState_.selectedDestinationName || '';
-
-          // Create a fake selectedDestination_ that is not actually in the
-          // destination store. When the real destination is created, this
-          // destination will be overwritten.
-          this.selectedDestination_ = new print_preview.Destination(
-              this.appState_.selectedDestinationId,
-              print_preview.Destination.Type.LOCAL,
-              print_preview.Destination.Origin.PRIVET,
-              destinationName,
-              false /*isRecent*/,
-              print_preview.Destination.ConnectionStatus.ONLINE);
-          this.selectedDestination_.capabilities =
-              this.appState_.selectedDestinationCapabilities;
-
-          cr.dispatchSimpleEvent(
-            this,
-            DestinationStore.EventType.CACHED_SELECTED_DESTINATION_INFO_READY);
-        } else if (this.appState_.selectedDestinationOrigin ==
-                   print_preview.Destination.Origin.EXTENSION) {
-          // TODO(tbarzic): Add support for requesting a single extension's
-          // printer list.
-          this.startLoadExtensionDestinations();
-
-          this.selectedDestination_ =
-              print_preview.ExtensionDestinationParser.parse({
-                extensionId: this.appState_.selectedDestinationExtensionId,
-                extensionName: this.appState_.selectedDestinationExtensionName,
-                id: this.appState_.selectedDestinationId,
-                name: this.appState_.selectedDestinationName || ''
-              });
-
-          if (this.appState_.selectedDestinationCapabilities) {
-            this.selectedDestination_.capabilities =
-                this.appState_.selectedDestinationCapabilities;
-
-            cr.dispatchSimpleEvent(
-                this,
-                DestinationStore.EventType
-                    .CACHED_SELECTED_DESTINATION_INFO_READY);
-          }
-        } else {
-          this.selectDefaultDestination_();
+        var destinationMatch = this.convertToDestinationMatch_(
+            serializedDefaultDestinationSelectionRulesStr);
+        if (destinationMatch) {
+          this.fetchMatchingDestination_(destinationMatch);
+          return;
         }
       }
+
+      if (!this.systemDefaultDestinationId_ &&
+          !(this.appState_.selectedDestinationId &&
+            this.appState_.selectedDestinationOrigin)) {
+        this.selectPdfDestination_();
+        return;
+      }
+
+      var origin = print_preview.Destination.Origin.LOCAL;
+      var id = this.systemDefaultDestinationId_;
+      var account = '';
+      var name = '';
+      var capabilities = null;
+      var extensionId = '';
+      var extensionName = '';
+      if (this.appState_.selectedDestinationId &&
+          this.appState_.selectedDestinationOrigin) {
+        origin = this.appState_.selectedDestinationOrigin;
+        id = this.appState_.selectedDestinationId;
+        account = this.appState_.selectedDestinationAccount || '';
+        name = this.appState_.selectedDestinationName || '';
+        capabilities = this.appState_.selectedDestinationCapabilities;
+        extensionId = this.appState_.selectedDestinationExtensionId || '';
+        extensionName = this.appState_.selectedDestinationExtensionName || '';
+      }
+      var candidate =
+          this.destinationMap_[this.getDestinationKey_(origin, id, account)];
+      if (candidate != null) {
+        this.selectDestination(candidate);
+        return;
+      }
+
+      if (this.fetchPreselectedDestination_(
+              origin,
+              id,
+              account,
+              name,
+              capabilities,
+              extensionId,
+              extensionName)) {
+        return;
+      }
+
+      this.selectPdfDestination_();
+    },
+
+    /**
+     * Attempts to fetch capabilities of the destination identified by the
+     * provided origin, id and account.
+     * @param {!print_preview.Destination.Origin} origin Destination origin.
+     * @param {string} id Destination id.
+     * @param {string} account User account destination is registered for.
+     * @param {string} name Destination display name.
+     * @param {?print_preview.Cdd} capabilities Destination capabilities.
+     * @param {string} extensionId Extension ID associated with this
+     *     destination.
+     * @param {string} extensionName Extension name associated with this
+     *     destination.
+     * @private
+     */
+    fetchPreselectedDestination_: function(
+        origin, id, account, name, capabilities, extensionId, extensionName) {
+      this.autoSelectMatchingDestination_ =
+          this.createExactDestinationMatch_(origin, id);
+
+      if (origin == print_preview.Destination.Origin.LOCAL) {
+        this.nativeLayer_.startGetLocalDestinationCapabilities(id);
+        return true;
+      }
+
+      if (this.cloudPrintInterface_ &&
+          (origin == print_preview.Destination.Origin.COOKIES ||
+           origin == print_preview.Destination.Origin.DEVICE)) {
+        this.cloudPrintInterface_.printer(id, origin, account);
+        return true;
+      }
+
+      if (origin == print_preview.Destination.Origin.PRIVET) {
+        // TODO(noamsml): Resolve a specific printer instead of listing all
+        // privet printers in this case.
+        this.nativeLayer_.startGetPrivetDestinations();
+
+        // Create a fake selectedDestination_ that is not actually in the
+        // destination store. When the real destination is created, this
+        // destination will be overwritten.
+        this.selectedDestination_ = new print_preview.Destination(
+            id,
+            print_preview.Destination.Type.LOCAL,
+            print_preview.Destination.Origin.PRIVET,
+            name,
+            false /*isRecent*/,
+            print_preview.Destination.ConnectionStatus.ONLINE);
+        this.selectedDestination_.capabilities = capabilities;
+
+        cr.dispatchSimpleEvent(
+          this,
+          DestinationStore.EventType.CACHED_SELECTED_DESTINATION_INFO_READY);
+        return true;
+      }
+
+      if (origin == print_preview.Destination.Origin.EXTENSION) {
+        // TODO(tbarzic): Add support for requesting a single extension's
+        // printer list.
+        this.startLoadExtensionDestinations();
+
+        this.selectedDestination_ =
+            print_preview.ExtensionDestinationParser.parse({
+              extensionId: extensionId,
+              extensionName: extensionName,
+              id: id,
+              name: name
+            });
+
+        if (capabilities) {
+          this.selectedDestination_.capabilities = capabilities;
+
+          cr.dispatchSimpleEvent(
+              this,
+              DestinationStore.EventType
+                  .CACHED_SELECTED_DESTINATION_INFO_READY);
+        }
+        return true;
+      }
+
+      return false;
+    },
+
+    /**
+     * Attempts to find a destination matching the provided rules.
+     * @param {!print_preview.DestinationMatch} destinationMatch Rules to match.
+     * @private
+     */
+    fetchMatchingDestination_: function(destinationMatch) {
+      this.autoSelectMatchingDestination_ = destinationMatch;
+
+      if (destinationMatch.matchOrigin(
+            print_preview.Destination.Origin.LOCAL)) {
+        this.startLoadLocalDestinations();
+      }
+      if (destinationMatch.matchOrigin(
+            print_preview.Destination.Origin.PRIVET)) {
+        this.startLoadPrivetDestinations();
+      }
+      if (destinationMatch.matchOrigin(
+            print_preview.Destination.Origin.EXTENSION)) {
+        this.startLoadExtensionDestinations();
+      }
+      if (destinationMatch.matchOrigin(
+            print_preview.Destination.Origin.COOKIES) ||
+          destinationMatch.matchOrigin(
+            print_preview.Destination.Origin.DEVICE) ||
+          destinationMatch.matchOrigin(
+            print_preview.Destination.Origin.PROFILE)) {
+        this.startLoadCloudDestinations();
+      }
+    },
+
+    /**
+     * @param {?string} serializedDefaultDestinationSelectionRulesStr Serialized
+     *     default destination selection rules.
+     * @return {!print_preview.DestinationMatch} Creates rules matching
+     *     previously selected destination.
+     * @private
+     */
+    convertToDestinationMatch_: function(
+        serializedDefaultDestinationSelectionRulesStr) {
+      var matchRules = null;
+      try {
+        if (serializedDefaultDestinationSelectionRulesStr) {
+          matchRules =
+              JSON.parse(serializedDefaultDestinationSelectionRulesStr);
+        }
+      } catch(e) {
+        console.error(
+            'Failed to parse defaultDestinationSelectionRules: ' + e);
+      }
+      if (!matchRules)
+        return;
+
+      var isLocal = !matchRules.kind || matchRules.kind == 'local';
+      var isCloud = !matchRules.kind || matchRules.kind == 'cloud';
+      if (!isLocal && !isCloud) {
+        console.error('Unsupported type: "' + matchRules.kind + '"');
+        return null;
+      }
+
+      var origins = [];
+      if (isLocal) {
+        origins.push(print_preview.Destination.Origin.LOCAL);
+        origins.push(print_preview.Destination.Origin.PRIVET);
+        origins.push(print_preview.Destination.Origin.EXTENSION);
+      }
+      if (isCloud) {
+        origins.push(print_preview.Destination.Origin.COOKIES);
+        origins.push(print_preview.Destination.Origin.DEVICE);
+        origins.push(print_preview.Destination.Origin.PROFILE);
+      }
+
+      var idRegExp = null;
+      try {
+        if (matchRules.idPattern) {
+          idRegExp = new RegExp(matchRules.idPattern || '.*');
+        }
+      } catch (e) {
+        console.error('Failed to parse regexp for "id": ' + e);
+      }
+
+      var displayNameRegExp = null;
+      try {
+        if (matchRules.namePattern) {
+          displayNameRegExp = new RegExp(matchRules.namePattern || '.*');
+        }
+      } catch (e) {
+        console.error('Failed to parse regexp for "name": ' + e);
+      }
+
+      return new DestinationMatch(
+          origins,
+          idRegExp,
+          displayNameRegExp,
+          true /*skipVirtualDestinations*/);
+    },
+
+    /**
+     * @return {print_preview.DestinationMatch} Creates rules matching
+     *     previously selected destination.
+     * @private
+     */
+    convertPreselectedToDestinationMatch_: function() {
+      if (this.appState_.selectedDestinationId &&
+          this.appState_.selectedDestinationOrigin) {
+        return this.createExactDestinationMatch_(
+            this.appState_.selectedDestinationOrigin,
+            this.appState_.selectedDestinationId);
+      }
+      if (this.systemDefaultDestinationId_) {
+        return this.createExactDestinationMatch_(
+            print_preview.Destination.Origin.LOCAL,
+            this.systemDefaultDestinationId_);
+      }
+      return null;
+    },
+
+    /**
+     * @param {!print_preview.Destination.Origin} origin Destination origin.
+     * @param {string} id Destination id.
+     * @return {!print_preview.DestinationMatch} Creates rules matching
+     *     provided destination.
+     * @private
+     */
+    createExactDestinationMatch_: function(origin, id) {
+      return new DestinationMatch(
+          [origin],
+          new RegExp('^' + id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$'),
+          null /*displayNameRegExp*/,
+          false /*skipVirtualDestinations*/);
     },
 
     /**
@@ -448,7 +743,7 @@ cr.define('print_preview', function() {
      * @param {print_preview.Destination} destination Destination to select.
      */
     selectDestination: function(destination) {
-      this.isInAutoSelectMode_ = false;
+      this.autoSelectMatchingDestination_ = null;
       // When auto select expires, DESTINATION_SELECT event has to be dispatched
       // anyway (see isAutoSelectDestinationInProgress() logic).
       if (this.autoSelectTimeout_) {
@@ -534,13 +829,39 @@ cr.define('print_preview', function() {
      * Selects 'Save to PDF' destination (since it always exists).
      * @private
      */
-    selectDefaultDestination_: function() {
+    selectPdfDestination_: function() {
       var saveToPdfKey = this.getDestinationKey_(
           print_preview.Destination.Origin.LOCAL,
           print_preview.Destination.GooglePromotedId.SAVE_AS_PDF,
           '');
       this.selectDestination(
           this.destinationMap_[saveToPdfKey] || this.destinations_[0] || null);
+    },
+
+    /**
+     * Attempts to select system default destination with a fallback to
+     * 'Save to PDF' destination.
+     * @private
+     */
+    selectDefaultDestination_: function() {
+      if (this.systemDefaultDestinationId_) {
+        if (this.autoSelectMatchingDestination_ &&
+            !this.autoSelectMatchingDestination_.matchIdAndOrigin(
+                this.systemDefaultDestinationId_,
+                print_preview.Destination.Origin.LOCAL)) {
+          if (this.fetchPreselectedDestination_(
+                print_preview.Destination.Origin.LOCAL,
+                this.systemDefaultDestinationId_,
+                '' /*account*/,
+                '' /*name*/,
+                null /*capabilities*/,
+                '' /*extensionId*/,
+                '' /*extensionName*/)) {
+            return;
+          }
+        }
+      }
+      this.selectPdfDestination_();
     },
 
     /** Initiates loading of local print destinations. */
@@ -711,20 +1032,21 @@ cr.define('print_preview', function() {
 
     /**
      * Dispatches DESTINATIONS_INSERTED event. In auto select mode, tries to
-     * update selected destination to match {@code appState_} settings.
+     * update selected destination to match
+     * {@code autoSelectMatchingDestination_}.
      * @param {print_preview.Destination=} opt_destination The only destination
      *     that was changed or skipped if possibly more than one destination was
-     *     changed. Used as a hint to limit destination search scope in
-     *     {@code isInAutoSelectMode_).
+     *     changed. Used as a hint to limit destination search scope against
+     *     {@code autoSelectMatchingDestination_).
      */
     destinationsInserted_: function(opt_destination) {
       cr.dispatchSimpleEvent(
           this, DestinationStore.EventType.DESTINATIONS_INSERTED);
-      if (this.isInAutoSelectMode_) {
+      if (this.autoSelectMatchingDestination_) {
         var destinationsToSearch =
             opt_destination && [opt_destination] || this.destinations_;
         destinationsToSearch.some(function(destination) {
-          if (this.matchPersistedDestination_(destination)) {
+          if (this.autoSelectMatchingDestination_.match(destination)) {
             this.selectDestination(destination);
             return true;
           }
@@ -783,8 +1105,13 @@ cr.define('print_preview', function() {
           this, DestinationStore.EventType.DESTINATION_SEARCH_DONE);
       // Clear initially selected (cached) extension destination if it hasn't
       // been found among reported extension destinations.
-      if (this.isInAutoSelectMode_ && this.selectedDestination_.isExtension)
+      if (this.autoSelectMatchingDestination_ &&
+          this.autoSelectMatchingDestination_.matchOrigin(
+              print_preview.Destination.Origin.EXTENSION) &&
+          this.selectedDestination_ &&
+          this.selectedDestination_.isExtension) {
         this.selectDefaultDestination_();
+      }
     },
 
     /**
@@ -968,9 +1295,9 @@ cr.define('print_preview', function() {
     onGetCapabilitiesFail_: function(event) {
       console.error('Failed to get print capabilities for printer ' +
                     event.destinationId);
-      if (this.isInAutoSelectMode_ &&
-          this.sameAsPersistedDestination_(event.destinationId,
-                                           event.destinationOrigin)) {
+      if (this.autoSelectMatchingDestination_ &&
+          this.autoSelectMatchingDestination_.matchIdAndOrigin(
+              event.destinationId, event.destinationOrigin)) {
         this.selectDefaultDestination_();
       }
     },
@@ -1015,9 +1342,9 @@ cr.define('print_preview', function() {
      * @private
      */
     onCloudPrintPrinterFailed_: function(event) {
-      if (this.isInAutoSelectMode_ &&
-          this.sameAsPersistedDestination_(event.destinationId,
-                                           event.destinationOrigin)) {
+      if (this.autoSelectMatchingDestination_ &&
+          this.autoSelectMatchingDestination_.matchIdAndOrigin(
+              event.destinationId, event.destinationOrigin)) {
         console.error(
             'Failed to fetch last used printer caps: ' + event.destinationId);
         this.selectDefaultDestination_();
@@ -1112,7 +1439,8 @@ cr.define('print_preview', function() {
      */
     onDestinationsReload_: function() {
       this.reset_();
-      this.isInAutoSelectMode_ = true;
+      this.autoSelectMatchingDestination_ =
+          this.convertPreselectedToDestinationMatch_();
       this.createLocalPdfPrintDestination_();
       this.startLoadAllDestinations();
     },
@@ -1138,30 +1466,6 @@ cr.define('print_preview', function() {
     getKey_: function(destination) {
       return this.getDestinationKey_(
           destination.origin, destination.id, destination.account);
-    },
-
-    /**
-     * @param {!print_preview.Destination} destination Destination to match.
-     * @return {boolean} Whether {@code destination} matches the last user
-     *     selected one.
-     * @private
-     */
-    matchPersistedDestination_: function(destination) {
-      return !this.appState_.selectedDestinationId ||
-             !this.appState_.selectedDestinationOrigin ||
-             this.sameAsPersistedDestination_(
-                 destination.id, destination.origin);
-    },
-
-    /**
-     * @param {?string} id Id of the destination.
-     * @param {?string} origin Oring of the destination.
-     * @return {boolean} Whether destination is the same as initial.
-     * @private
-     */
-    sameAsPersistedDestination_: function(id, origin) {
-      return id == this.appState_.selectedDestinationId &&
-             origin == this.appState_.selectedDestinationOrigin;
     }
   };
 

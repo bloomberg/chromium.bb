@@ -149,10 +149,8 @@ cr.define('print_preview', function() {
      * layer.
      * @param {?string} serializedAppStateStr Serialized string representation
      *     of the app state.
-     * @param {?string} systemDefaultDestinationId ID of the system default
-     *     destination.
      */
-    init: function(serializedAppStateStr, systemDefaultDestinationId) {
+    init: function(serializedAppStateStr) {
       if (serializedAppStateStr) {
         try {
           var state = JSON.parse(serializedAppStateStr);
@@ -166,17 +164,6 @@ cr.define('print_preview', function() {
       } else {
         // Set some state defaults.
         this.state_[AppState.Field.IS_GCP_PROMO_DISMISSED] = false;
-      }
-      // Default to system destination, if no destination was selected.
-      if (!this.state_[AppState.Field.SELECTED_DESTINATION_ID] ||
-          !this.state_[AppState.Field.SELECTED_DESTINATION_ORIGIN]) {
-        if (systemDefaultDestinationId) {
-          this.state_[AppState.Field.SELECTED_DESTINATION_ID] =
-              systemDefaultDestinationId;
-          this.state_[AppState.Field.SELECTED_DESTINATION_ORIGIN] =
-              print_preview.Destination.Origin.LOCAL;
-          this.state_[AppState.Field.SELECTED_DESTINATION_ACCOUNT] = '';
-        }
       }
     },
 

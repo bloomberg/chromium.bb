@@ -358,6 +358,8 @@ void ProfileImpl::RegisterProfilePrefs(
   registry->RegisterBooleanPref(prefs::kPrintingEnabled, true);
 #endif
   registry->RegisterBooleanPref(prefs::kPrintPreviewDisabled, false);
+  registry->RegisterStringPref(
+      prefs::kPrintPreviewDefaultDestinationSelectionRules, std::string());
   registry->RegisterBooleanPref(prefs::kForceEphemeralProfiles, false);
 
   // Initialize the cache prefs.

@@ -1618,6 +1618,16 @@
     ]
   },
 
+  "DefaultPrinterSelection": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "test_policy": {
+      "DefaultPrinterSelection": "{ 'kind': 'local', 'namePattern': '.*' }"
+    },
+    "pref_mappings": [
+      { "pref": "printing.default_destination_selection_rules" }
+    ]
+  },
+
   "BackgroundModeEnabled": {
     "os": ["win", "linux"],
     "can_be_recommended": true,

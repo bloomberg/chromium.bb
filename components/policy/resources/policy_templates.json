@@ -134,7 +134,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 307
+#   For your editing convenience: highest ID currently used: 308
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -4338,6 +4338,52 @@
       When this setting is enabled, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will open the system print dialog instead of the built-in print preview when a user requests a page to be printed.
 
       If this policy is not set or is set to false, print commands trigger the print preview screen.''',
+    },
+    {
+      'name': 'DefaultPrinterSelection',
+      'type': 'string',
+      'schema': { 'type': 'string' },
+      'supported_on': ['chrome.*:48-', 'chrome_os:48-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': '{ "kind": "cloud", "idPattern": ".*public", "namePattern": ".*Color" }',
+      'id': 308,
+      'caption': '''Default printer selection rules''',
+      'tags': [],
+      'desc': '''Overrides <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> default printer selection rules.
+
+      This policy determines the rules for selecting the default printer in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> which happens the first time the print function is used with a profile.
+
+      When this policy is set, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will attempt to find a printer matching all of the specified attributes, and select it as default printer. The first printer found matching the policy is selected, in case of non-unique match any matching printer can be selected, depending on the order printers are discovered.
+
+      If this policy is not set or matching printer is not found within the timeout, the printer defaults to built-in PDF printer or no printer selected, when PDF printer is not available.
+
+      The value is parsed as JSON object, conforming to the following schema:
+      {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "description": "Whether to limit the search of the matching printer to a specific set of printers.",
+            "type": {
+              "enum": [ "local", "cloud" ]
+            }
+          },
+          "idPattern": {
+            "description": "Regular expression to match printer id.",
+            "type": "string"
+          },
+          "namePattern": {
+            "description": "Regular expression to match printer display name.",
+            "type": "string"
+          }
+        }
+      }
+
+      Printers connected to Google Cloud Print are considered "cloud", the rest of the printers are classified as "local".
+      Omitting a field means all values match, for example, not specifying connectivity will cause Print Preview to initiate the discovery of all kinds of printers, local and cloud.
+      Regular expression patterns must follow the JavaScript RegExp syntax and matches are case sensistive.''',
     },
     {
       'name': 'DisableSSLRecordSplitting',

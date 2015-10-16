@@ -56948,6 +56948,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="305" label="Android Negotiate authenticator account type"/>
   <int value="306" label="Send system logs to the management server"/>
   <int value="307" label="Enable Unified Desktop by Default"/>
+  <int value="308" label="Print Preview default printer selection policy"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations" type="int">

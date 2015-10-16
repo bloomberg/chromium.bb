@@ -169,6 +169,9 @@ const char kHidePrintWithSystemDialogLink[] = "hidePrintWithSystemDialogLink";
 #endif
 // Name of a dictionary field holding the state of selection for document.
 const char kDocumentHasSelection[] = "documentHasSelection";
+// Dictionary field holding the default destination selection rules.
+const char kDefaultDestinationSelectionRules[] =
+    "defaultDestinationSelectionRules";
 
 // Id of the predefined PDF printer.
 const char kLocalPdfPrinterId[] = "Save as PDF";
@@ -1256,9 +1259,10 @@ void PrintPreviewHandler::SendInitialSettings(
                               print_preview_ui()->source_has_selection());
   initial_settings.SetBoolean(printing::kSettingShouldPrintSelectionOnly,
                               print_preview_ui()->print_selection_only());
+  PrefService* prefs = Profile::FromBrowserContext(
+      preview_web_contents()->GetBrowserContext())->GetPrefs();
   printing::StickySettings* sticky_settings = GetStickySettings();
-  sticky_settings->RestoreFromPrefs(Profile::FromBrowserContext(
-      preview_web_contents()->GetBrowserContext())->GetPrefs());
+  sticky_settings->RestoreFromPrefs(prefs);
   if (sticky_settings->printer_app_state()) {
     initial_settings.SetString(kAppState,
                                *sticky_settings->printer_app_state());
@@ -1276,6 +1280,12 @@ void PrintPreviewHandler::SendInitialSettings(
   bool is_ash = (chrome::GetActiveDesktop() == chrome::HOST_DESKTOP_TYPE_ASH);
   initial_settings.SetBoolean(kHidePrintWithSystemDialogLink, is_ash);
 #endif
+  if (prefs) {
+    const std::string rules_str =
+        prefs->GetString(prefs::kPrintPreviewDefaultDestinationSelectionRules);
+    if (!rules_str.empty())
+      initial_settings.SetString(kDefaultDestinationSelectionRules, rules_str);
+  }
 
   if (print_preview_ui()->source_is_modifiable())
     GetNumberFormatAndMeasurementSystem(&initial_settings);

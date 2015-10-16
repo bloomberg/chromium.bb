@@ -70,6 +70,7 @@ PrintPreviewWebUITest.prototype = {
         startGetInitialSettings: function() {},
         startGetLocalDestinations: function() {},
         startGetPrivetDestinations: function() {},
+        startGetExtensionDestinations: function() {},
         startGetLocalDestinationCapabilities: function(destinationId) {}
       };
       var oldNativeLayerEventType = print_preview.NativeLayer.EventType;
@@ -180,7 +181,7 @@ PrintPreviewWebUITest.prototype = {
       false /*selectionOnly*/,
       'FooDevice' /*systemDefaultDestinationId*/,
       null /*serializedAppStateStr*/,
-      false /*documentHasSelection*/);
+      null /*serializedDefaultDestinationSelectionRulesStr*/);
     this.localDestinationInfos_ = [
       { printerName: 'FooName', deviceName: 'FooDevice' },
       { printerName: 'BarName', deviceName: 'BarDevice' }
@@ -334,6 +335,20 @@ TEST_F('PrintPreviewWebUITest', 'TestPrintPreviewRestoreLocalDestination',
       '{"version":2,"selectedDestinationId":"ID",' +
       '"selectedDestinationOrigin":"local"}';
   this.setInitialSettings();
+
+  testDone();
+});
+
+TEST_F('PrintPreviewWebUITest',
+    'TestPrintPreviewDefaultDestinationSelectionRules', function() {
+  // It also makes sure these rules do override system default destination.
+  this.initialSettings_.serializedDefaultDestinationSelectionRulesStr_ =
+      '{"namePattern":".*Bar.*"}';
+  this.setInitialSettings();
+  this.setLocalDestinations();
+
+  assertEquals(
+      'BarDevice', printPreview.destinationStore_.selectedDestination.id);
 
   testDone();
 });

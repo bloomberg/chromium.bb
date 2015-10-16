@@ -1094,6 +1094,11 @@ const char kPrintingEnabled[] = "printing.enabled";
 // Boolean controlling whether print preview is disabled.
 const char kPrintPreviewDisabled[] = "printing.print_preview_disabled";
 
+// A pref holding the value of the policy used to control default destination
+// selection in the Print Preview. See DefaultPrinterSelection policy.
+const char kPrintPreviewDefaultDestinationSelectionRules[] =
+    "printing.default_destination_selection_rules";
+
 // An integer pref specifying the fallback behavior for sites outside of content
 // packs. One of:
 // 0: Allow (does nothing)

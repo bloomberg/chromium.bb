@@ -634,9 +634,7 @@ cr.define('print_preview', function() {
       this.isInAppKioskMode_ = settings.isInAppKioskMode;
 
       // The following components must be initialized in this order.
-      this.appState_.init(
-          settings.serializedAppStateStr,
-          settings.systemDefaultDestinationId);
+      this.appState_.init(settings.serializedAppStateStr);
       this.documentInfo_.init(
           settings.isDocumentModifiable,
           settings.documentTitle,
@@ -646,7 +644,10 @@ cr.define('print_preview', function() {
           settings.decimalDelimeter,
           settings.unitType,
           settings.selectionOnly);
-      this.destinationStore_.init(settings.isInAppKioskMode);
+      this.destinationStore_.init(
+          settings.isInAppKioskMode,
+          settings.systemDefaultDestinationId,
+          settings.serializedDefaultDestinationSelectionRulesStr);
       this.appState_.setInitialized();
 
       $('document-title').innerText = settings.documentTitle;
