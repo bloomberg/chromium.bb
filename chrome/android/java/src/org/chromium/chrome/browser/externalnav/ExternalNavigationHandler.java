@@ -336,6 +336,10 @@ public class ExternalNavigationHandler {
                 if (currentUri != null && previousUri != null
                         && TextUtils.equals(currentUri.getHost(), previousUri.getHost())) {
 
+                    if (isFormSubmit && !isRedirectFromFormSubmit) {
+                        return OverrideUrlLoadingResult.NO_OVERRIDE;
+                    }
+
                     Intent previousIntent;
                     try {
                         previousIntent = Intent.parseUri(

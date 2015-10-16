@@ -935,6 +935,20 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
     }
 
     @SmallTest
+    public void testFormSubmitSameDomain() {
+        check(CALENDAR_URL,
+                KEEP_URL,
+                false, /* incognito */
+                PageTransition.FORM_SUBMIT,
+                NO_REDIRECT,
+                true,
+                false,
+                null,
+                OverrideUrlLoadingResult.NO_OVERRIDE,
+                IGNORE);
+    }
+
+    @SmallTest
     public void testBackgroundTabNavigation() {
         check("http://youtube.com/",
                 null, /* referrer */
