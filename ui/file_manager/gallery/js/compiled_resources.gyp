@@ -61,6 +61,7 @@
           '../../../../third_party/polymer/v1_0/components-chromium/paper-input/paper-input-behavior-extracted.js',
           '../../../../third_party/polymer/v1_0/components-chromium/paper-input/paper-input-container-extracted.js',
           '../../../../third_party/polymer/v1_0/components-chromium/paper-input/paper-input-extracted.js',
+          '../../../../third_party/polymer/v1_0/components-chromium/paper-ripple/paper-ripple-extracted.js',
           '../../../webui/resources/js/util.js',
           '../../../webui/resources/js/event_tracker.js',
           '../../../webui/resources/js/load_time_data.js',
