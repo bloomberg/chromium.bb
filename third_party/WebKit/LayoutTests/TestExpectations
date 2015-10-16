@@ -2078,8 +2078,9 @@ crbug.com/535478 [ Win ] virtual/threaded/inspector/tracing/decode-resize.html [
 
 crbug.com/524646 [ Yosemite ] fast/dom/shadow/shadowdom-for-button.html [ Failure ]
 
-crbug.com/538717 [ Win ] http/tests/permissions/chromium/test-request-multiple-window.html [ Failure Pass ]
-crbug.com/538717 [ Win ] http/tests/permissions/chromium/test-request-multiple-worker.html [ Failure Pass ]
+crbug.com/538717 [ Win Mac Linux ] http/tests/permissions/chromium/test-request-multiple-window.html [ Failure Pass Timeout ]
+crbug.com/538717 [ Win Mac Linux ] http/tests/permissions/chromium/test-request-multiple-worker.html [ Failure Pass Timeout ]
+crbug.com/538717 [ Win Mac Linux ] http/tests/permissions/chromium/test-request-multiple-sharedworker.html [ Failure Pass Timeout ]
 
 crbug.com/499780 fast/css/font_property_normal.html [ NeedsRebaseline ]
 
