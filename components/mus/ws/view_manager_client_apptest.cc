@@ -13,6 +13,8 @@
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/application/public/cpp/application_test_base.h"
+#include "mojo/converters/geometry/geometry_type_converters.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/mojo/geometry/geometry_util.h"
 
 namespace mus {
@@ -44,6 +46,33 @@ class BoundsChangeObserver : public WindowObserver {
 // timeout.
 bool WaitForBoundsToChange(Window* window) {
   BoundsChangeObserver observer(window);
+  return WindowServerTestBase::DoRunLoopWithTimeout();
+}
+
+class ClientAreaChangeObserver : public WindowObserver {
+ public:
+  explicit ClientAreaChangeObserver(Window* window) : window_(window) {
+    window_->AddObserver(this);
+  }
+  ~ClientAreaChangeObserver() override { window_->RemoveObserver(this); }
+
+ private:
+  // Overridden from WindowObserver:
+  void OnWindowClientAreaChanged(Window* window,
+                                 const mojo::Rect& old_client_area) override {
+    DCHECK_EQ(window, window_);
+    EXPECT_TRUE(WindowServerTestBase::QuitRunLoop());
+  }
+
+  Window* window_;
+
+  MOJO_DISALLOW_COPY_AND_ASSIGN(ClientAreaChangeObserver);
+};
+
+// Wait until the bounds of the supplied window change; returns false on
+// timeout.
+bool WaitForClientAreaToChange(Window* window) {
+  ClientAreaChangeObserver observer(window);
   return WindowServerTestBase::DoRunLoopWithTimeout();
 }
 
@@ -839,6 +868,28 @@ TEST_F(WindowServerTest, EmbedFromEmbedRoot) {
   const EmbedResult result4 = Embed(vm3_v1_in_vm2);
   ASSERT_TRUE(result4.connection);
   EXPECT_EQ(result4.connection_id, result4.connection->GetConnectionId());
+}
+
+TEST_F(WindowServerTest, ClientAreaChanged) {
+  Window* embed_window = window_manager()->CreateWindow();
+  window_manager()->GetRoot()->AddChild(embed_window);
+
+  WindowTreeConnection* embedded_connection = Embed(embed_window).connection;
+
+  // Verify change from embedded makes it to parent.
+  embedded_connection->GetRoot()->SetClientArea(
+      *mojo::Rect::From(gfx::Rect(1, 2, 3, 4)));
+  ASSERT_TRUE(WaitForClientAreaToChange(embed_window));
+  EXPECT_TRUE(gfx::Rect(1, 2, 3, 4) ==
+              embed_window->client_area().To<gfx::Rect>());
+
+  // Verify bounds change results in resetting client area in embedded.
+  embed_window->SetBounds(*mojo::Rect::From(gfx::Rect(21, 22, 23, 24)));
+  WaitForBoundsToChange(embedded_connection->GetRoot());
+  EXPECT_TRUE(gfx::Rect(21, 22, 23, 24) ==
+              embedded_connection->GetRoot()->bounds().To<gfx::Rect>());
+  EXPECT_TRUE(gfx::Rect(0, 0, 23, 24) ==
+              embedded_connection->GetRoot()->client_area().To<gfx::Rect>());
 }
 
 }  // namespace mus

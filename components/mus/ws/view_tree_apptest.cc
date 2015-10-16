@@ -327,6 +327,9 @@ class TestViewTreeClientImpl : public mojo::ViewTreeClient,
     tracker()->OnWindowBoundsChanged(view_id, old_bounds.Pass(),
                                      new_bounds.Pass());
   }
+  void OnClientAreaChanged(uint32_t window_id,
+                           mojo::RectPtr old_client_area,
+                           mojo::RectPtr new_client_area) override {}
   void OnWindowViewportMetricsChanged(ViewportMetricsPtr old_metrics,
                                       ViewportMetricsPtr new_metrics) override {
     // Don't track the metrics as they are available at an indeterministic time

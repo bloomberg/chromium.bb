@@ -261,6 +261,16 @@ void ConnectionManager::ProcessViewBoundsChanged(const ServerView* view,
   }
 }
 
+void ConnectionManager::ProcessClientAreaChanged(
+    const ServerView* window,
+    const gfx::Rect& old_client_area,
+    const gfx::Rect& new_client_area) {
+  for (auto& pair : connection_map_) {
+    pair.second->service()->ProcessClientAreaChanged(
+        window, old_client_area, new_client_area, IsChangeSource(pair.first));
+  }
+}
+
 void ConnectionManager::ProcessWillChangeViewHierarchy(
     const ServerView* view,
     const ServerView* new_parent,
@@ -380,6 +390,16 @@ void ConnectionManager::OnViewBoundsChanged(ServerView* view,
   // TODO(sky): optimize this.
   SchedulePaint(view->parent(), old_bounds);
   SchedulePaint(view->parent(), new_bounds);
+}
+
+void ConnectionManager::OnWindowClientAreaChanged(
+    ServerView* window,
+    const gfx::Rect& old_client_area,
+    const gfx::Rect& new_client_area) {
+  if (in_destructor_)
+    return;
+
+  ProcessClientAreaChanged(window, old_client_area, new_client_area);
 }
 
 void ConnectionManager::OnViewReordered(ServerView* view,

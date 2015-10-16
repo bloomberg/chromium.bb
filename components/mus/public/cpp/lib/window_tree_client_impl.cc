@@ -157,6 +157,12 @@ void WindowTreeClientImpl::SetBounds(Id window_id, const mojo::Rect& bounds) {
   tree_->SetViewBounds(window_id, bounds.Clone(), ActionCompletedCallback());
 }
 
+void WindowTreeClientImpl::SetClientArea(Id window_id,
+                                         const mojo::Rect& client_area) {
+  DCHECK(tree_);
+  tree_->SetClientArea(window_id, client_area.Clone());
+}
+
 void WindowTreeClientImpl::SetFocus(Id window_id) {
   // In order for us to get here we had to have exposed a window, which implies
   // we
@@ -316,6 +322,14 @@ void WindowTreeClientImpl::OnWindowBoundsChanged(Id window_id,
                                                  mojo::RectPtr new_bounds) {
   Window* window = GetWindowById(window_id);
   WindowPrivate(window).LocalSetBounds(*old_bounds, *new_bounds);
+}
+
+void WindowTreeClientImpl::OnClientAreaChanged(uint32_t window_id,
+                                               mojo::RectPtr old_client_area,
+                                               mojo::RectPtr new_client_area) {
+  Window* window = GetWindowById(window_id);
+  if (window)
+    WindowPrivate(window).LocalSetClientArea(*new_client_area);
 }
 
 namespace {

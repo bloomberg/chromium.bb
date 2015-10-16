@@ -90,6 +90,10 @@ class ViewTreeImpl : public mojo::ViewTree, public AccessPolicyDelegate {
                                 const gfx::Rect& old_bounds,
                                 const gfx::Rect& new_bounds,
                                 bool originated_change);
+  void ProcessClientAreaChanged(const ServerView* window,
+                                const gfx::Rect& old_client_area,
+                                const gfx::Rect& new_client_area,
+                                bool originated_change);
   void ProcessViewportMetricsChanged(const mojo::ViewportMetrics& old_metrics,
                                      const mojo::ViewportMetrics& new_metrics,
                                      bool originated_change);
@@ -210,6 +214,7 @@ class ViewTreeImpl : public mojo::ViewTree, public AccessPolicyDelegate {
   void SetImeVisibility(Id transport_view_id,
                         bool visible,
                         mojo::TextInputStatePtr state) override;
+  void SetClientArea(Id transport_window_id, mojo::RectPtr rect) override;
 
   // AccessPolicyDelegate:
   bool IsRootForAccessPolicy(const ViewId& id) const override;

@@ -48,6 +48,7 @@ class WindowTreeClientImpl : public WindowTreeConnection,
   bool OwnsWindow(Id id) const;
 
   void SetBounds(Id window_id, const mojo::Rect& bounds);
+  void SetClientArea(Id window_id, const mojo::Rect& client_area);
   void SetFocus(Id window_id);
   void SetVisible(Id window_id, bool visible);
   void SetProperty(Id window_id,
@@ -108,6 +109,9 @@ class WindowTreeClientImpl : public WindowTreeConnection,
   void OnWindowBoundsChanged(Id window_id,
                              mojo::RectPtr old_bounds,
                              mojo::RectPtr new_bounds) override;
+  void OnClientAreaChanged(uint32_t window_id,
+                           mojo::RectPtr old_client_area,
+                           mojo::RectPtr new_client_area) override;
   void OnWindowViewportMetricsChanged(
       mojo::ViewportMetricsPtr old_metrics,
       mojo::ViewportMetricsPtr new_metrics) override;

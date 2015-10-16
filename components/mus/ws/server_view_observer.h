@@ -46,6 +46,10 @@ class ServerViewObserver {
                                    const gfx::Rect& old_bounds,
                                    const gfx::Rect& new_bounds) {}
 
+  virtual void OnWindowClientAreaChanged(ServerView* window,
+                                         const gfx::Rect& old_client_area,
+                                         const gfx::Rect& new_client_area) {}
+
   virtual void OnViewReordered(ServerView* view,
                                ServerView* relative,
                                mojo::OrderDirection direction) {}

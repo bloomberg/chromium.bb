@@ -113,10 +113,26 @@ void ServerView::SetBounds(const gfx::Rect& bounds) {
   if (bounds_ == bounds)
     return;
 
+  // |client_area_| is relative to the bounds. If the size of bounds change
+  // we have to reset the client area. We assume any size change is quicky
+  // followed by a client area change.
+  if (bounds_.size() != bounds.size())
+    client_area_ = gfx::Rect(bounds.size());
+
   const gfx::Rect old_bounds = bounds_;
   bounds_ = bounds;
   FOR_EACH_OBSERVER(ServerViewObserver, observers_,
                     OnViewBoundsChanged(this, old_bounds, bounds));
+}
+
+void ServerView::SetClientArea(const gfx::Rect& bounds) {
+  if (client_area_ == bounds)
+    return;
+
+  const gfx::Rect old_client_area = client_area_;
+  client_area_ = bounds;
+  FOR_EACH_OBSERVER(ServerViewObserver, observers_,
+                    OnWindowClientAreaChanged(this, old_client_area, bounds));
 }
 
 const ServerView* ServerView::GetRoot() const {

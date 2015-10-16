@@ -59,6 +59,9 @@ class Window {
   const mojo::Rect& bounds() const { return bounds_; }
   void SetBounds(const mojo::Rect& bounds);
 
+  const mojo::Rect& client_area() const { return client_area_; }
+  void SetClientArea(const mojo::Rect& client_area);
+
   // Visibility (also see IsDrawn()). When created windows are hidden.
   bool visible() const { return visible_; }
   void SetVisible(bool value);
@@ -172,6 +175,7 @@ class Window {
   bool LocalReorder(Window* relative, mojo::OrderDirection direction);
   void LocalSetBounds(const mojo::Rect& old_bounds,
                       const mojo::Rect& new_bounds);
+  void LocalSetClientArea(const mojo::Rect& new_client_area);
   void LocalSetViewportMetrics(const mojo::ViewportMetrics& old_metrics,
                                const mojo::ViewportMetrics& new_metrics);
   void LocalSetDrawn(bool drawn);
@@ -201,6 +205,8 @@ class Window {
   base::ObserverList<WindowObserver> observers_;
 
   mojo::Rect bounds_;
+  mojo::Rect client_area_;
+
   mojo::ViewportMetricsPtr viewport_metrics_;
 
   bool visible_;

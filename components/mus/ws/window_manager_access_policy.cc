@@ -87,6 +87,12 @@ bool WindowManagerAccessPolicy::CanSetFocus(const ServerView* view) const {
   return true;
 }
 
+bool WindowManagerAccessPolicy::CanSetClientArea(
+    const ServerView* window) const {
+  return window->id().connection_id == connection_id_ ||
+         delegate_->IsRootForAccessPolicy(window->id());
+}
+
 bool WindowManagerAccessPolicy::ShouldNotifyOnHierarchyChange(
     const ServerView* view,
     const ServerView** new_parent,

@@ -54,6 +54,8 @@ class WindowObserver {
   virtual void OnWindowBoundsChanged(Window* window,
                                      const mojo::Rect& old_bounds,
                                      const mojo::Rect& new_bounds) {}
+  virtual void OnWindowClientAreaChanged(Window* window,
+                                         const mojo::Rect& old_client_area) {}
 
   virtual void OnWindowViewportMetricsChanged(
       Window* window,

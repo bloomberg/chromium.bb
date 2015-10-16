@@ -162,6 +162,8 @@ mojo_native_application("apptests") {
     "//components/mus/public/interfaces",
     "//mojo/application/public/cpp:sources",
     "//mojo/application/public/cpp:test_support",
+    "//mojo/converters/geometry",
+    "//ui/gfx/geometry",
     "//ui/mojo/geometry:interfaces",
     "//ui/mojo/geometry:util",
   ]

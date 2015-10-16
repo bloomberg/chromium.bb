@@ -157,6 +157,9 @@ class ConnectionManager : public ServerViewDelegate, public ServerViewObserver {
   void ProcessViewBoundsChanged(const ServerView* view,
                                 const gfx::Rect& old_bounds,
                                 const gfx::Rect& new_bounds);
+  void ProcessClientAreaChanged(const ServerView* window,
+                                const gfx::Rect& old_client_area,
+                                const gfx::Rect& new_client_area);
   void ProcessViewportMetricsChanged(const mojo::ViewportMetrics& old_metrics,
                                      const mojo::ViewportMetrics& new_metrics);
   void ProcessWillChangeViewHierarchy(const ServerView* view,
@@ -210,6 +213,9 @@ class ConnectionManager : public ServerViewDelegate, public ServerViewObserver {
   void OnViewBoundsChanged(ServerView* view,
                            const gfx::Rect& old_bounds,
                            const gfx::Rect& new_bounds) override;
+  void OnWindowClientAreaChanged(ServerView* window,
+                                 const gfx::Rect& old_client_area,
+                                 const gfx::Rect& new_client_area) override;
   void OnViewReordered(ServerView* view,
                        ServerView* relative,
                        mojo::OrderDirection direction) override;

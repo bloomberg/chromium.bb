@@ -186,6 +186,17 @@ void ViewTreeImpl::ProcessViewBoundsChanged(const ServerView* view,
                                   Rect::From(new_bounds));
 }
 
+void ViewTreeImpl::ProcessClientAreaChanged(const ServerView* window,
+                                            const gfx::Rect& old_client_area,
+                                            const gfx::Rect& new_client_area,
+                                            bool originated_change) {
+  if (originated_change || !IsViewKnown(window))
+    return;
+  client()->OnClientAreaChanged(ViewIdToTransportId(window->id()),
+                                Rect::From(old_client_area),
+                                Rect::From(new_client_area));
+}
+
 void ViewTreeImpl::ProcessViewportMetricsChanged(
     const mojo::ViewportMetrics& old_metrics,
     const mojo::ViewportMetrics& new_metrics,
@@ -637,6 +648,17 @@ void ViewTreeImpl::SetImeVisibility(Id transport_view_id,
     if (host)
       host->SetImeVisibility(view, visible);
   }
+}
+
+void ViewTreeImpl::SetClientArea(Id transport_window_id, mojo::RectPtr rect) {
+  ServerView* window = GetView(ViewIdFromTransportId(transport_window_id));
+  if (!window || !access_policy_->CanSetClientArea(window))
+    return;
+
+  if (rect.is_null())
+    window->SetClientArea(gfx::Rect(window->bounds().size()));
+  else
+    window->SetClientArea(rect.To<gfx::Rect>());
 }
 
 void ViewTreeImpl::Embed(Id transport_view_id,

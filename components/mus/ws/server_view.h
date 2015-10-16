@@ -55,7 +55,12 @@ class ServerView {
                mojo::OrderDirection direction);
 
   const gfx::Rect& bounds() const { return bounds_; }
+  // Sets the bounds. If the size changes this implicitly resets the client
+  // area to fill the whole bounds.
   void SetBounds(const gfx::Rect& bounds);
+
+  const gfx::Rect& client_area() const { return client_area_; }
+  void SetClientArea(const gfx::Rect& bounds);
 
   const ServerView* parent() const { return parent_; }
   ServerView* parent() { return parent_; }
@@ -125,6 +130,7 @@ class ServerView {
   Views children_;
   bool visible_;
   gfx::Rect bounds_;
+  gfx::Rect client_area_;
   scoped_ptr<ServerViewSurface> surface_;
   float opacity_;
   gfx::Transform transform_;

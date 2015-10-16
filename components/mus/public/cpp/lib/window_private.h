@@ -54,6 +54,9 @@ class WindowPrivate {
                       const mojo::Rect& new_bounds) {
     window_->LocalSetBounds(old_bounds, new_bounds);
   }
+  void LocalSetClientArea(const mojo::Rect& new_client_area) {
+    window_->LocalSetClientArea(new_client_area);
+  }
   void LocalSetDrawn(bool drawn) { window_->LocalSetDrawn(drawn); }
   void LocalSetVisible(bool visible) { window_->LocalSetVisible(visible); }
 

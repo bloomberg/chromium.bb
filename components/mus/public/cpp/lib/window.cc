@@ -169,6 +169,10 @@ bool OwnsWindow(WindowTreeConnection* connection, Window* window) {
              ->OwnsWindow(window->id());
 }
 
+bool IsConnectionRoot(Window* window) {
+  return window->connection() && window->connection()->GetRoot() == window;
+}
+
 void EmptyEmbedCallback(bool result, ConnectionSpecificId connection_id) {}
 
 }  // namespace
@@ -206,6 +210,17 @@ void Window::SetBounds(const mojo::Rect& bounds) {
   if (connection_)
     static_cast<WindowTreeClientImpl*>(connection_)->SetBounds(id_, bounds);
   LocalSetBounds(bounds_, bounds);
+}
+
+void Window::SetClientArea(const mojo::Rect& client_area) {
+  if (!OwnsWindow(connection_, this) && !IsConnectionRoot(this))
+    return;
+
+  if (connection_) {
+    static_cast<WindowTreeClientImpl*>(connection_)
+        ->SetClientArea(id_, client_area);
+  }
+  LocalSetClientArea(client_area);
 }
 
 void Window::SetVisible(bool value) {
@@ -523,7 +538,21 @@ void Window::LocalSetBounds(const mojo::Rect& old_bounds,
   DCHECK(old_bounds.width == bounds_.width);
   DCHECK(old_bounds.height == bounds_.height);
   ScopedSetBoundsNotifier notifier(this, old_bounds, new_bounds);
+  if (bounds_.width != new_bounds.width ||
+      bounds_.height != new_bounds.height) {
+    client_area_.x = 0;
+    client_area_.y = 0;
+    client_area_.width = new_bounds.width;
+    client_area_.height = new_bounds.height;
+  }
   bounds_ = new_bounds;
+}
+
+void Window::LocalSetClientArea(const mojo::Rect& new_client_area) {
+  const mojo::Rect old_client_area = client_area_;
+  client_area_ = new_client_area;
+  FOR_EACH_OBSERVER(WindowObserver, observers_,
+                    OnWindowClientAreaChanged(this, old_client_area));
 }
 
 void Window::LocalSetViewportMetrics(const mojo::ViewportMetrics& old_metrics,

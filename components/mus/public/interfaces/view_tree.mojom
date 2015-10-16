@@ -78,6 +78,10 @@ interface ViewTree {
   // Sets the specified bounds of the specified view.
   SetViewBounds(uint32 view_id, mojo.Rect bounds) => (bool success);
 
+  // Sets the client area of the specified window. Areas outside the client
+  // area are treated specially.
+  SetClientArea(uint32 window_id, Rect rect);
+
   // Sets the visibility of the specified view to |visible|. Connections are
   // allowed to change the visibility of any view they have created, as well as
   // any of their roots.
@@ -199,6 +203,10 @@ interface ViewTreeClient {
   OnWindowBoundsChanged(uint32 view,
                       mojo.Rect old_bounds,
                       mojo.Rect new_bounds);
+
+  OnClientAreaChanged(uint32 window_id,
+                      mojo.Rect old_client_area,
+                      mojo.Rect new_client_area);
 
   // Invoked when the viewport metrics for the view have changed.
   // Clients are expected to propagate this to the view tree.

@@ -66,6 +66,10 @@ class TestViewTreeClient : public mojo::ViewTreeClient {
                              mojo::RectPtr new_bounds) override {
     tracker_.OnWindowBoundsChanged(view, old_bounds.Pass(), new_bounds.Pass());
   }
+  void OnClientAreaChanged(uint32_t window_id,
+                           mojo::RectPtr old_client_area,
+                           mojo::RectPtr new_client_area) override {
+  }
   void OnWindowViewportMetricsChanged(
       mojo::ViewportMetricsPtr old_metrics,
       mojo::ViewportMetricsPtr new_metrics) override {

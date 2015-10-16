@@ -102,6 +102,11 @@ bool DefaultAccessPolicy::CanSetFocus(const ServerView* view) const {
          delegate_->IsRootForAccessPolicy(view->id());
 }
 
+bool DefaultAccessPolicy::CanSetClientArea(const ServerView* window) const {
+  return WasCreatedByThisConnection(window) ||
+         delegate_->IsRootForAccessPolicy(window->id());
+}
+
 bool DefaultAccessPolicy::ShouldNotifyOnHierarchyChange(
     const ServerView* view,
     const ServerView** new_parent,
