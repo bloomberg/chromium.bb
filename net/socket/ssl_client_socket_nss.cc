@@ -2905,6 +2905,10 @@ int SSLClientSocketNSS::InitializeSSLPeerName() {
   if (ssl_config_.enable_deprecated_cipher_suites)
     peer_id += "deprecated";
 
+  peer_id += "/";
+  if (ssl_config_.channel_id_enabled)
+    peer_id += "channelid";
+
   SECStatus rv = SSL_SetSockPeerID(nss_fd_, const_cast<char*>(peer_id.c_str()));
   if (rv != SECSuccess)
     LogFailedNSSFunction(net_log_, "SSL_SetSockPeerID", peer_id.c_str());

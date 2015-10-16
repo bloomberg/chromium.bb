@@ -2053,6 +2053,10 @@ std::string SSLClientSocketOpenSSL::GetSessionCacheKey() const {
   if (ssl_config_.enable_deprecated_cipher_suites)
     result.append("deprecated");
 
+  result.append("/");
+  if (ssl_config_.channel_id_enabled)
+    result.append("channelid");
+
   return result;
 }
 

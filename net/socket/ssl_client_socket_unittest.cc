@@ -713,21 +713,6 @@ class SSLClientSocketTest : public PlatformTest {
     return true;
   }
 
-  // Sets up a TCP connection to a HTTPS server. To actually do the SSL
-  // handshake, follow up with call to CreateAndConnectSSLClientSocket() below.
-  bool ConnectToTestServer(const SpawnedTestServer::SSLOptions& ssl_options) {
-    if (!StartTestServer(ssl_options))
-      return false;
-
-    transport_.reset(new TCPClientSocket(addr_, &log_, NetLog::Source()));
-    int rv = callback_.GetResult(transport_->Connect(callback_.callback()));
-    if (rv != OK) {
-      LOG(ERROR) << "Could not connect to SpawnedTestServer";
-      return false;
-    }
-    return true;
-  }
-
   scoped_ptr<SSLClientSocket> CreateSSLClientSocket(
       scoped_ptr<StreamSocket> transport_socket,
       const HostPortPair& host_and_port,
@@ -740,20 +725,24 @@ class SSLClientSocketTest : public PlatformTest {
 
   // Create an SSLClientSocket object and use it to connect to a test
   // server, then wait for connection results. This must be called after
-  // a successful ConnectToTestServer() call.
+  // a successful StartTestServer() call.
   // |ssl_config| the SSL configuration to use.
   // |result| will retrieve the ::Connect() result value.
-  // Returns true on success, false otherwise. Success means that the socket
+  // Returns true on success, false otherwise. Success means that the SSL socket
   // could be created and its Connect() was called, not that the connection
   // itself was a success.
   bool CreateAndConnectSSLClientSocket(SSLConfig& ssl_config, int* result) {
-    sock_ = CreateSSLClientSocket(
-        transport_.Pass(), test_server_->host_port_pair(), ssl_config);
-
-    if (sock_->IsConnected()) {
-      LOG(ERROR) << "SSL Socket prematurely connected";
+    scoped_ptr<StreamSocket> transport(
+        new TCPClientSocket(addr_, &log_, NetLog::Source()));
+    int rv = callback_.GetResult(transport->Connect(callback_.callback()));
+    if (rv != OK) {
+      LOG(ERROR) << "Could not connect to SpawnedTestServer";
       return false;
     }
+
+    sock_ = CreateSSLClientSocket(transport.Pass(),
+                                  test_server_->host_port_pair(), ssl_config);
+    EXPECT_FALSE(sock_->IsConnected());
 
     *result = callback_.GetResult(sock_->Connect(callback_.callback()));
     return true;
@@ -767,7 +756,6 @@ class SSLClientSocketTest : public PlatformTest {
   TestNetLog log_;
 
  private:
-  scoped_ptr<StreamSocket> transport_;
   scoped_ptr<SpawnedTestServer> test_server_;
   TestCompletionCallback callback_;
   AddressList addr_;
@@ -1085,7 +1073,7 @@ TEST_F(SSLClientSocketTest, ConnectMismatched) {
 TEST_F(SSLClientSocketTest, ConnectBadValidity) {
   SpawnedTestServer::SSLOptions ssl_options(
       SpawnedTestServer::SSLOptions::CERT_BAD_VALIDITY);
-  ASSERT_TRUE(ConnectToTestServer(ssl_options));
+  ASSERT_TRUE(StartTestServer(ssl_options));
   SSLConfig ssl_config;
   int rv;
   ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
@@ -3379,7 +3367,7 @@ TEST_F(SSLClientSocketFalseStartTest, NoSessionResumptionBadFinished) {
 TEST_F(SSLClientSocketChannelIDTest, SendChannelID) {
   SpawnedTestServer::SSLOptions ssl_options;
 
-  ASSERT_TRUE(ConnectToTestServer(ssl_options));
+  ASSERT_TRUE(StartTestServer(ssl_options));
 
   EnableChannelID();
   SSLConfig ssl_config;
@@ -3403,7 +3391,7 @@ TEST_F(SSLClientSocketChannelIDTest, SendChannelID) {
 TEST_F(SSLClientSocketChannelIDTest, FailingChannelID) {
   SpawnedTestServer::SSLOptions ssl_options;
 
-  ASSERT_TRUE(ConnectToTestServer(ssl_options));
+  ASSERT_TRUE(StartTestServer(ssl_options));
 
   EnableFailingChannelID();
   SSLConfig ssl_config;
@@ -3425,7 +3413,7 @@ TEST_F(SSLClientSocketChannelIDTest, FailingChannelID) {
 TEST_F(SSLClientSocketChannelIDTest, FailingChannelIDAsync) {
   SpawnedTestServer::SSLOptions ssl_options;
 
-  ASSERT_TRUE(ConnectToTestServer(ssl_options));
+  ASSERT_TRUE(StartTestServer(ssl_options));
 
   EnableAsyncFailingChannelID();
   SSLConfig ssl_config;
@@ -3438,11 +3426,37 @@ TEST_F(SSLClientSocketChannelIDTest, FailingChannelIDAsync) {
   EXPECT_FALSE(sock_->IsConnected());
 }
 
+// Tests that session caches are sharded by whether Channel ID is enabled.
+TEST_F(SSLClientSocketChannelIDTest, ChannelIDShardSessionCache) {
+  SpawnedTestServer::SSLOptions ssl_options;
+  ASSERT_TRUE(StartTestServer(ssl_options));
+
+  EnableChannelID();
+
+  // Connect without Channel ID.
+  SSLConfig ssl_config;
+  ssl_config.channel_id_enabled = false;
+  int rv;
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
+  SSLInfo ssl_info;
+  EXPECT_TRUE(sock_->GetSSLInfo(&ssl_info));
+  EXPECT_EQ(SSLInfo::HANDSHAKE_FULL, ssl_info.handshake_type);
+  EXPECT_FALSE(ssl_info.channel_id_sent);
+
+  // Enable Channel ID and connect again. This needs a full handshake to assert
+  // Channel ID.
+  ssl_config.channel_id_enabled = true;
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
+  EXPECT_TRUE(sock_->GetSSLInfo(&ssl_info));
+  EXPECT_EQ(SSLInfo::HANDSHAKE_FULL, ssl_info.handshake_type);
+  EXPECT_TRUE(ssl_info.channel_id_sent);
+}
+
 TEST_F(SSLClientSocketTest, NPN) {
   SpawnedTestServer::SSLOptions server_options;
   server_options.npn_protocols.push_back(std::string("spdy/3.1"));
   server_options.npn_protocols.push_back(std::string("h2"));
-  ASSERT_TRUE(ConnectToTestServer(server_options));
+  ASSERT_TRUE(StartTestServer(server_options));
 
   SSLConfig client_config;
   client_config.next_protos.push_back(kProtoHTTP2);
@@ -3462,7 +3476,7 @@ TEST_F(SSLClientSocketTest, NPN) {
 TEST_F(SSLClientSocketTest, NPNNoOverlap) {
   SpawnedTestServer::SSLOptions server_options;
   server_options.npn_protocols.push_back(std::string("http/1.1"));
-  ASSERT_TRUE(ConnectToTestServer(server_options));
+  ASSERT_TRUE(StartTestServer(server_options));
 
   SSLConfig client_config;
   client_config.next_protos.push_back(kProtoSPDY31);
@@ -3483,7 +3497,7 @@ TEST_F(SSLClientSocketTest, NPNServerPreference) {
   SpawnedTestServer::SSLOptions server_options;
   server_options.npn_protocols.push_back(std::string("spdy/3.1"));
   server_options.npn_protocols.push_back(std::string("h2"));
-  ASSERT_TRUE(ConnectToTestServer(server_options));
+  ASSERT_TRUE(StartTestServer(server_options));
 
   SSLConfig client_config;
   client_config.next_protos.push_back(kProtoHTTP2);
@@ -3501,7 +3515,7 @@ TEST_F(SSLClientSocketTest, NPNServerPreference) {
 TEST_F(SSLClientSocketTest, NPNClientDisabled) {
   SpawnedTestServer::SSLOptions server_options;
   server_options.npn_protocols.push_back(std::string("http/1.1"));
-  ASSERT_TRUE(ConnectToTestServer(server_options));
+  ASSERT_TRUE(StartTestServer(server_options));
 
   SSLConfig client_config;
 
@@ -3516,7 +3530,7 @@ TEST_F(SSLClientSocketTest, NPNClientDisabled) {
 
 TEST_F(SSLClientSocketTest, NPNServerDisabled) {
   SpawnedTestServer::SSLOptions server_options;
-  ASSERT_TRUE(ConnectToTestServer(server_options));
+  ASSERT_TRUE(StartTestServer(server_options));
 
   SSLConfig client_config;
   client_config.next_protos.push_back(kProtoHTTP11);
