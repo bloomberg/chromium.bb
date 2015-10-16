@@ -153,6 +153,8 @@ ScrollCustomizationCallbacks& scrollCustomizationCallbacks()
 using namespace HTMLNames;
 using namespace XMLNames;
 
+enum class ClassStringContent { Empty, WhiteSpaceOnly, HasClasses };
+
 PassRefPtrWillBeRawPtr<Element> Element::create(const QualifiedName& tagName, Document* document)
 {
     return adoptRefWillBeNoop(new Element(tagName, document, CreateElement));
@@ -1229,7 +1231,7 @@ inline void Element::attributeChangedFromParserOrByCloning(const QualifiedName& 
 }
 
 template <typename CharacterType>
-static inline bool classStringHasClassName(const CharacterType* characters, unsigned length)
+static inline ClassStringContent classStringHasClassName(const CharacterType* characters, unsigned length)
 {
     ASSERT(length > 0);
 
@@ -1240,15 +1242,20 @@ static inline bool classStringHasClassName(const CharacterType* characters, unsi
         ++i;
     } while (i < length);
 
-    return i < length;
+    if (i == length && length == 1)
+        return ClassStringContent::Empty;
+    if (i == length && length > 1)
+        return ClassStringContent::WhiteSpaceOnly;
+
+    return ClassStringContent::HasClasses;
 }
 
-static inline bool classStringHasClassName(const AtomicString& newClassString)
+static inline ClassStringContent classStringHasClassName(const AtomicString& newClassString)
 {
     unsigned length = newClassString.length();
 
     if (!length)
-        return false;
+        return ClassStringContent::Empty;
 
     if (newClassString.is8Bit())
         return classStringHasClassName(newClassString.characters8(), length);
@@ -1261,8 +1268,9 @@ void Element::classAttributeChanged(const AtomicString& newClassString)
     bool testShouldInvalidateStyle = inActiveDocument() && styleResolver && styleChangeType() < SubtreeStyleChange;
 
     ASSERT(elementData());
-    if (classStringHasClassName(newClassString)) {
-        const bool shouldFoldCase = document().inQuirksMode();
+    ClassStringContent classStringContentType = classStringHasClassName(newClassString);
+    const bool shouldFoldCase = document().inQuirksMode();
+    if (classStringContentType == ClassStringContent::HasClasses) {
         const SpaceSplitString oldClasses = elementData()->classNames();
         elementData()->setClass(newClassString, shouldFoldCase);
         const SpaceSplitString& newClasses = elementData()->classNames();
@@ -1272,7 +1280,10 @@ void Element::classAttributeChanged(const AtomicString& newClassString)
         const SpaceSplitString& oldClasses = elementData()->classNames();
         if (testShouldInvalidateStyle)
             document().styleEngine().classChangedForElement(oldClasses, *this);
-        elementData()->clearClass();
+        if (classStringContentType == ClassStringContent::WhiteSpaceOnly)
+            elementData()->setClass(newClassString, shouldFoldCase);
+        else
+            elementData()->clearClass();
     }
 
     if (hasRareData())
@@ -1297,7 +1308,7 @@ bool Element::shouldInvalidateDistributionWhenAttributeChanged(ElementShadow* el
 
     if (name == HTMLNames::classAttr) {
         const AtomicString& newClassString = newValue;
-        if (classStringHasClassName(newClassString)) {
+        if (classStringHasClassName(newClassString) == ClassStringContent::HasClasses) {
             const SpaceSplitString& oldClasses = elementData()->classNames();
             const SpaceSplitString newClasses(newClassString, document().inQuirksMode() ? SpaceSplitString::ShouldFoldCase : SpaceSplitString::ShouldNotFoldCase);
             if (featureSet.checkSelectorsForClassChange(oldClasses, newClasses))
