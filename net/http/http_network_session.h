@@ -84,7 +84,9 @@ class NET_EXPORT HttpNetworkSession
     uint16 testing_fixed_https_port;
     bool enable_tcp_fast_open_for_ssl;
 
+    // Compress SPDY headers.
     bool enable_spdy_compression;
+    // Use SPDY ping frames to test for connection health after idle.
     bool enable_spdy_ping_based_connection_checking;
     NextProto spdy_default_protocol;
     // The protocols supported by NPN (next protocol negotiation) during the
@@ -96,40 +98,77 @@ class NET_EXPORT HttpNetworkSession
     size_t spdy_session_max_recv_window_size;
     size_t spdy_stream_max_recv_window_size;
     size_t spdy_initial_max_concurrent_streams;
+    // Source of time for SPDY connections.
     SpdySessionPool::TimeFunc time_func;
+    // This SPDY proxy is allowed to push resources from origins that are
+    // different from those of their associated streams.
     std::string trusted_spdy_proxy;
     // URLs to exclude from forced SPDY.
     std::set<HostPortPair> forced_spdy_exclusions;
+    // Process Alt-Svc headers.
     bool use_alternative_services;
+    // Only honor alternative service entries which have a higher probability
+    // than this value.
     double alternative_service_probability_threshold;
 
+    // Enables QUIC support.
     bool enable_quic;
+    // Enables insecure QUIC (http:// URLs) support, if enable_quic is true.
     bool enable_insecure_quic;
+    // Enables QUIC for proxies.
     bool enable_quic_for_proxies;
+    // Instruct QUIC to use consistent ephemeral ports when talking to
+    // the same server.
     bool enable_quic_port_selection;
+    // Disables QUIC's 0-RTT behavior.
     bool quic_always_require_handshake_confirmation;
+    // Disables QUIC connection pooling.
     bool quic_disable_connection_pooling;
+    // If not zero, the task to load QUIC server configs from the disk cache
+    // will timeout after this value multiplied by the smoothed RTT for the
+    // server.
     float quic_load_server_info_timeout_srtt_multiplier;
+    // Causes QUIC to race reading the server config from disk with
+    // sending an inchoate CHLO.
     bool quic_enable_connection_racing;
+    // Use non-blocking IO for UDP sockets.
     bool quic_enable_non_blocking_io;
+    // Disables using the disk cache to store QUIC server configs.
     bool quic_disable_disk_cache;
+    // Prefer AES-GCM to ChaCha20 even if no hardware support is present.
     bool quic_prefer_aes;
+    // Specifies the maximum number of connections with high packet loss in
+    // a row after which QUIC will be disabled.
     int quic_max_number_of_lossy_connections;
+    // Specifies packet loss rate in fraction after which a connection is
+    // closed and is considered as a lossy connection.
     float quic_packet_loss_threshold;
+    // Size in bytes of the QUIC DUP socket receive buffer.
     int quic_socket_receive_buffer_size;
+    // Delay starting a TCP connection when QUIC believes it can speak
+    // 0-RTT to a server.
     bool quic_delay_tcp_race;
+    // Store server configs in HttpServerProperties, instead of the disk cache.
     bool quic_store_server_configs_in_properties;
+    // If not empty, QUIC will be used for all connections to this origin.
     HostPortPair origin_to_force_quic_on;
-    QuicClock* quic_clock;  // Will be owned by QuicStreamFactory.
+    // Source of time for QUIC connections. Will be owned by QuicStreamFactory.
+    QuicClock* quic_clock;
+    // Source of entropy for QUIC connections.
     QuicRandom* quic_random;
+    // Limit on the size of QUIC packets.
     size_t quic_max_packet_length;
+    // User agent description to send in the QUIC handshake.
     std::string quic_user_agent_id;
     bool enable_user_alternate_protocol_ports;
+    // Optional factory to use for creating QuicCryptoClientStreams.
     QuicCryptoClientStreamFactory* quic_crypto_client_stream_factory;
+    // Versions of QUIC which may be used.
     QuicVersionVector quic_supported_versions;
     int quic_max_recent_disabled_reasons;
     int quic_threshold_public_resets_post_handshake;
     int quic_threshold_timeouts_streams_open;
+    // Set of QUIC tags to send in the handshakes connection options.
     QuicTagVector quic_connection_options;
     ProxyDelegate* proxy_delegate;
   };
