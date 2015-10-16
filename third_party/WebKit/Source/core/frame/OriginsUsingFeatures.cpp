@@ -141,6 +141,8 @@ void OriginsUsingFeatures::Value::recordOriginToRappor(const String& origin)
 {
     if (get(Feature::ElementCreateShadowRoot))
         Platform::current()->recordRappor("WebComponents.ElementCreateShadowRoot", origin);
+    if (get(Feature::ElementAttachShadow))
+        Platform::current()->recordRappor("WebComponents.ElementAttachShadow", origin);
     if (get(Feature::DocumentRegisterElement))
         Platform::current()->recordRappor("WebComponents.DocumentRegisterElement", origin);
     if (get(Feature::EventPath))
