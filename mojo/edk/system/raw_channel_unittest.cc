@@ -58,6 +58,7 @@ bool CheckMessageData(const void* bytes, uint32_t num_bytes) {
 
 void InitOnIOThread(RawChannel* raw_channel, RawChannel::Delegate* delegate) {
   raw_channel->Init(delegate);
+  raw_channel->EnsureLazyInitialized();
 }
 
 bool WriteTestMessageToHandle(const PlatformHandle& handle,
@@ -366,7 +367,7 @@ class ReadCountdownRawChannelDelegate : public RawChannel::Delegate {
 
 TEST_F(RawChannelTest, WriteMessageAndOnReadMessage) {
   static const size_t kNumWriterThreads = 10;
-  static const size_t kNumWriteMessagesPerThread = 4000;
+  static const size_t kNumWriteMessagesPerThread = 400;
 
   WriteOnlyRawChannelDelegate writer_delegate;
   RawChannel* writer_rc = RawChannel::Create(handles[0].Pass());

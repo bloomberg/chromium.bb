@@ -16,6 +16,7 @@
 #include "base/synchronization/lock.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/windows_version.h"
+#include "mojo/edk/embedder/embedder_internal.h"
 #include "mojo/edk/embedder/platform_handle.h"
 #include "mojo/edk/system/transport_data.h"
 #include "mojo/public/cpp/system/macros.h"
@@ -91,6 +92,21 @@ class RawChannelWin final : public RawChannel {
     DCHECK(!io_handler_);
   }
 
+  PlatformHandle GetHandle() {
+    // We need to acquire write_lock() and not read_lock() to avoid deadlocks.
+    // The reason is that we acquire read_lock() when calling the delegate,
+    // which in turn is a Dispatcher that has acquired its lock(). But it could
+    // already be in its lock() and calling IsOtherEndOf (i.e. this method).
+    base::AutoLock locker(write_lock());
+    if (handle_.is_valid())
+      return handle_.get();
+
+    if (!io_handler_)
+      return PlatformHandle();
+
+    return PlatformHandle(io_handler_->handle());
+  }
+
  private:
   // RawChannelIOHandler receives OS notifications for I/O completion. Currently
   // this object is only used on the IO thread, other than ReleaseHandle. But
@@ -117,7 +133,6 @@ class RawChannelWin final : public RawChannel {
           write_wait_object_(NULL),
           read_event_signalled_(false),
           write_event_signalled_(false),
-          message_loop_for_io_(base::MessageLoop::current()->task_runner()),
           weak_ptr_factory_(this) {
       memset(&read_context_.overlapped, 0, sizeof(read_context_.overlapped));
       memset(&write_context_.overlapped, 0, sizeof(write_context_.overlapped));
@@ -145,20 +160,20 @@ class RawChannelWin final : public RawChannel {
     // The following methods are only called by the owner on the I/O thread.
     bool pending_read() const {
       DCHECK(owner_);
-      DCHECK_EQ(base::MessageLoop::current(), owner_->message_loop_for_io());
+      DCHECK(internal::g_io_thread_task_runner->RunsTasksOnCurrentThread());
       return pending_read_;
     }
 
     base::MessageLoopForIO::IOContext* read_context() {
       DCHECK(owner_);
-      DCHECK_EQ(base::MessageLoop::current(), owner_->message_loop_for_io());
+      DCHECK(internal::g_io_thread_task_runner->RunsTasksOnCurrentThread());
       return &read_context_;
     }
 
     // Instructs the object to wait for an OnObjectSignaled notification.
     void OnPendingReadStarted() {
       DCHECK(owner_);
-      DCHECK_EQ(base::MessageLoop::current(), owner_->message_loop_for_io());
+      DCHECK(internal::g_io_thread_task_runner->RunsTasksOnCurrentThread());
       DCHECK(!pending_read_);
       pending_read_ = true;
       read_event_signalled_ = false;
@@ -195,7 +210,7 @@ class RawChannelWin final : public RawChannel {
     void DetachFromOwnerNoLock(scoped_ptr<ReadBuffer> read_buffer,
                                scoped_ptr<WriteBuffer> write_buffer) {
       DCHECK(owner_);
-      DCHECK_EQ(base::MessageLoop::current(), owner_->message_loop_for_io());
+      DCHECK(internal::g_io_thread_task_runner->RunsTasksOnCurrentThread());
       owner_->read_lock().AssertAcquired();
       owner_->write_lock().AssertAcquired();
 
@@ -304,8 +319,7 @@ class RawChannelWin final : public RawChannel {
     // Must be called on the I/O thread. It may be called before or after
     // detaching from the owner.
     void OnReadCompleted(DWORD bytes_read, DWORD error) {
-      DCHECK(!owner_ ||
-             base::MessageLoop::current() == owner_->message_loop_for_io());
+      DCHECK(internal::g_io_thread_task_runner->RunsTasksOnCurrentThread());
       DCHECK(suppress_self_destruct_);
       if (!owner_) {
         pending_read_ = false;
@@ -344,8 +358,7 @@ class RawChannelWin final : public RawChannel {
     // Must be called on the I/O thread. It may be called before or after
     // detaching from the owner.
     void OnWriteCompleted(DWORD bytes_written, DWORD error) {
-      DCHECK(!owner_ ||
-             base::MessageLoop::current() == owner_->message_loop_for_io());
+      DCHECK(internal::g_io_thread_task_runner->RunsTasksOnCurrentThread());
       DCHECK(suppress_self_destruct_);
 
       if (!owner_) {
@@ -383,8 +396,7 @@ class RawChannelWin final : public RawChannel {
     }
 
     void OnObjectSignaled(HANDLE object) {
-      DCHECK(!owner_ ||
-             base::MessageLoop::current() == owner_->message_loop_for_io());
+      DCHECK(internal::g_io_thread_task_runner->RunsTasksOnCurrentThread());
       // Since this is called on the IO thread, no locks needed for owner_.
       bool handle_is_valid = false;
       if (owner_)
@@ -428,7 +440,7 @@ class RawChannelWin final : public RawChannel {
       // that that is always a pointer to a valid RawChannelIOHandler.
       RawChannelIOHandler* that = static_cast<RawChannelIOHandler*>(param);
       that->read_event_signalled_ = true;
-      that->message_loop_for_io_->PostTask(
+      internal::g_io_thread_task_runner->PostTask(
           FROM_HERE,
           base::Bind(&RawChannelIOHandler::OnObjectSignaled,
                      that->this_weakptr_, that->read_event_.Get()));
@@ -440,7 +452,7 @@ class RawChannelWin final : public RawChannel {
       // that that is always a pointer to a valid RawChannelIOHandler.
       RawChannelIOHandler* that = static_cast<RawChannelIOHandler*>(param);
       that->write_event_signalled_ = true;
-      that->message_loop_for_io_->PostTask(
+      internal::g_io_thread_task_runner->PostTask(
           FROM_HERE,
           base::Bind(&RawChannelIOHandler::OnObjectSignaled,
                      that->this_weakptr_, that->write_event_.Get()));
@@ -480,7 +492,6 @@ class RawChannelWin final : public RawChannel {
     bool write_event_signalled_;
 
     // These are used by the callbacks for the wait event watchers.
-    scoped_refptr<base::SingleThreadTaskRunner> message_loop_for_io_;
     base::WeakPtr<RawChannelIOHandler> this_weakptr_;
     base::WeakPtrFactory<RawChannelIOHandler> weak_ptr_factory_;
 
@@ -505,18 +516,12 @@ class RawChannelWin final : public RawChannel {
                                       serialized_write_buffer);
   }
 
-  PlatformHandle HandleForDebuggingNoLock() override {
-    if (handle_.is_valid())
-      return handle_.get();
-
-    if (!io_handler_)
-      return PlatformHandle();
-
-    return PlatformHandle(io_handler_->handle());
+  bool IsHandleValid() override {
+    return GetHandle().is_valid();
   }
 
   IOResult Read(size_t* bytes_read) override  {
-    DCHECK_EQ(base::MessageLoop::current(), message_loop_for_io());
+    DCHECK(internal::g_io_thread_task_runner->RunsTasksOnCurrentThread());
 
     char* buffer = nullptr;
     size_t bytes_to_read = 0;
@@ -553,7 +558,7 @@ class RawChannelWin final : public RawChannel {
     if (!io_handler_)
       return IO_PENDING;  // OnInit could have earlied out.
 
-    DCHECK_EQ(base::MessageLoop::current(), message_loop_for_io());
+    DCHECK(internal::g_io_thread_task_runner->RunsTasksOnCurrentThread());
     DCHECK(io_handler_);
     DCHECK(!io_handler_->pending_read());
 
@@ -679,7 +684,7 @@ class RawChannelWin final : public RawChannel {
   }
 
   void OnInit() override {
-    DCHECK_EQ(base::MessageLoop::current(), message_loop_for_io());
+    DCHECK(internal::g_io_thread_task_runner->RunsTasksOnCurrentThread());
 
     if (!handle_.is_valid()) {
       LOG(ERROR) << "Note: RawChannelWin " << this
@@ -694,10 +699,7 @@ class RawChannelWin final : public RawChannel {
 
   void OnShutdownNoLock(scoped_ptr<ReadBuffer> read_buffer,
                         scoped_ptr<WriteBuffer> write_buffer) override {
-    // happens on shutdown if didn't call init when doing createduplicate
-    if (message_loop_for_io()) {
-      DCHECK_EQ(base::MessageLoop::current(), message_loop_for_io());
-    }
+    DCHECK(internal::g_io_thread_task_runner->RunsTasksOnCurrentThread());
 
     if (!io_handler_) {
       // This is hit when creating a duplicate dispatcher since we don't call
@@ -748,8 +750,8 @@ size_t RawChannel::GetSerializedPlatformHandleSize() {
 
 bool RawChannel::IsOtherEndOf(RawChannel* other) {
   DCHECK_NE(other, this);
-  PlatformHandle this_handle = HandleForDebuggingNoLock();
-  PlatformHandle other_handle = other->HandleForDebuggingNoLock();
+  PlatformHandle this_handle = static_cast<RawChannelWin*>(this)->GetHandle();
+  PlatformHandle other_handle = static_cast<RawChannelWin*>(other)->GetHandle();
 
   if (g_vista_or_higher_functions.Get().is_vista_or_higher()) {
     WCHAR data1[_MAX_PATH + sizeof(FILE_NAME_INFO)];

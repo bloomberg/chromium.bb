@@ -150,6 +150,8 @@ MojoResult DataPipeConsumerDispatcher::ReadDataImplNoLock(
     uint32_t* num_bytes,
     MojoReadDataFlags flags) {
   lock().AssertAcquired();
+  if (channel_)
+    channel_->EnsureLazyInitialized();
   if (in_two_phase_read_)
     return MOJO_RESULT_BUSY;
 
@@ -206,6 +208,8 @@ MojoResult DataPipeConsumerDispatcher::BeginReadDataImplNoLock(
     uint32_t* buffer_num_bytes,
     MojoReadDataFlags flags) {
   lock().AssertAcquired();
+  if (channel_)
+    channel_->EnsureLazyInitialized();
   if (in_two_phase_read_)
     return MOJO_RESULT_BUSY;
 
@@ -287,6 +291,8 @@ MojoResult DataPipeConsumerDispatcher::AddAwakableImplNoLock(
     uint32_t context,
     HandleSignalsState* signals_state) {
   lock().AssertAcquired();
+  if (channel_)
+    channel_->EnsureLazyInitialized();
   HandleSignalsState state = GetHandleSignalsStateImplNoLock();
   if (state.satisfies(signals)) {
     if (signals_state)
@@ -455,16 +461,14 @@ void DataPipeConsumerDispatcher::OnError(Error error) {
     // Although RawChannel still has a pointer to this object until Shutdown is
     // called, that is safe since this class always does a PostTask to the IO
     // thread to self destruct.
-    if (!channel_)
-      return;
-
-    awakable_list_.AwakeForStateChange(GetHandleSignalsStateImplNoLock());
+    if (channel_) {
+      awakable_list_.AwakeForStateChange(GetHandleSignalsStateImplNoLock());
+      base::MessageLoop::current()->PostTask(
+          FROM_HERE,
+          base::Bind(&RawChannel::Shutdown, base::Unretained(channel_)));
+      channel_ = nullptr;
+    }
     started_transport_.Release();
-
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&RawChannel::Shutdown, base::Unretained(channel_)));
-    channel_ = nullptr;
   } else {
     // We must be waiting to call ReleaseHandle. It will call Shutdown.
   }

@@ -17,10 +17,6 @@
 #include "mojo/edk/system/system_impl_export.h"
 #include "mojo/public/cpp/system/macros.h"
 
-namespace base {
-class MessageLoopForIO;
-}
-
 namespace mojo {
 namespace edk {
 
@@ -92,7 +88,14 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
   // *not* take ownership of |delegate|. Both the I/O thread and |delegate| must
   // remain alive until |Shutdown()| is called (unless this fails); |delegate|
   // will no longer be used after |Shutdown()|.
+  // NOTE: for performance reasons, this doesn't connect to the raw pipe until
+  // either WriteMessage or EnsureLazyInitialized are called. If the delegate
+  // cares about reading data from the pipe or getting OnError notifications,
+  // they must call EnsureLazyInitialized at such point.
   void Init(Delegate* delegate);
+
+  // This can be called on any thread. It's safe to call multiple times.
+  void EnsureLazyInitialized();
 
   // This must be called (on the I/O thread) before this object is destroyed.
   void Shutdown();
@@ -246,7 +249,6 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
                             size_t additional_platform_handles_written,
                             std::vector<char>* buffer);
 
-  base::MessageLoopForIO* message_loop_for_io() { return message_loop_for_io_; }
   base::Lock& write_lock() { return write_lock_; }
   base::Lock& read_lock() { return read_lock_; }
 
@@ -275,7 +277,8 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
   virtual bool OnReadMessageForRawChannel(
       const MessageInTransit::View& message_view);
 
-  virtual PlatformHandle HandleForDebuggingNoLock() = 0;
+  // Returns true iff the pipe handle is valid.
+  virtual bool IsHandleValid() = 0;
 
   // Implementation must write any pending messages synchronously.
   // TODO(jam): change to return shared memory with pending serialized msgs.
@@ -382,9 +385,11 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
   // Acquires read_lock_ and calls OnReadCompletedNoLock.
   void CallOnReadCompleted(IOResult io_result, size_t bytes_read);
 
-  // Set in |Init()| and never changed (hence usable on any thread without
-  // locking):
-  base::MessageLoopForIO* message_loop_for_io_;
+  // Used with PostTask to acquire both locks and call LazyInitialize.
+  void LockAndCallLazyInitialize();
+
+  // Connects to the OS pipe.
+  void LazyInitialize();
 
 
 
@@ -417,6 +422,9 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
   // True iff a PostTask has been called to set an error. Can be written under
   // either read or write lock. It's read with both acquired.
   bool pending_error_;
+
+  // True iff we connected to the underying pipe.
+  bool initialized_;
 
   // This is used for posting tasks from write threads to the I/O thread. It
   // must only be accessed under |write_lock_|. The weak pointers it produces

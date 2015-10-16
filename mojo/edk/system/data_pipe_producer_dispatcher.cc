@@ -229,6 +229,8 @@ MojoResult DataPipeProducerDispatcher::AddAwakableImplNoLock(
     uint32_t context,
     HandleSignalsState* signals_state) {
   lock().AssertAcquired();
+  if (channel_)
+    channel_->EnsureLazyInitialized();
   HandleSignalsState state = GetHandleSignalsStateImplNoLock();
   if (state.satisfies(signals)) {
     if (signals_state)
@@ -335,15 +337,13 @@ void DataPipeProducerDispatcher::OnError(Error error) {
     // Although RawChannel still has a pointer to this object until Shutdown is
     // called, that is safe since this class always does a PostTask to the IO
     // thread to self destruct.
-    if (!channel_)
-      return;
-
-    awakable_list_.AwakeForStateChange(GetHandleSignalsStateImplNoLock());
-
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&RawChannel::Shutdown, base::Unretained(channel_)));
-    channel_ = nullptr;
+    if (channel_) {
+      awakable_list_.AwakeForStateChange(GetHandleSignalsStateImplNoLock());
+      base::MessageLoop::current()->PostTask(
+          FROM_HERE,
+          base::Bind(&RawChannel::Shutdown, base::Unretained(channel_)));
+      channel_ = nullptr;
+    }
     started_transport_.Release();
   } else {
     // We must be waiting to call ReleaseHandle. It will call Shutdown.
