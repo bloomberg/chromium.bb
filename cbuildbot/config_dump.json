@@ -5104,7 +5104,8 @@
             "cyan-cheets"
         ],
         "important": false,
-        "manifest": "official.xml"
+        "manifest": "official.xml",
+        "vm_tests": []
     },
     "cyan-cheets-chromium-pfq": {
         "_template": "chromium-pfq",
@@ -5120,7 +5121,8 @@
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
-        ]
+        ],
+        "vm_tests": []
     },
     "cyan-cheets-compile-only-pre-cq": {
         "_template": "compile-only-pre-cq",
@@ -5143,7 +5145,8 @@
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
-        ]
+        ],
+        "vm_tests": []
     },
     "cyan-cheets-no-vmtest-pre-cq": {
         "_template": "no-vmtest-pre-cq",
@@ -5173,7 +5176,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "cyan-cheets-payloads": {
         "_template": "payloads",
@@ -5192,13 +5196,15 @@
         "overlays": "both",
         "useflags": [
             "chrome_internal"
-        ]
+        ],
+        "vm_tests": []
     },
     "cyan-cheets-release": {
         "_template": "release",
         "boards": [
             "cyan-cheets"
-        ]
+        ],
+        "vm_tests": []
     },
     "cyan-cheets-release-afdo": {
         "_template": "release-afdo-generate",
@@ -5212,7 +5218,8 @@
                     "cyan-cheets"
                 ],
                 "grouped": true,
-                "name": "cyan-cheets-release-afdo-generate"
+                "name": "cyan-cheets-release-afdo-generate",
+                "vm_tests": []
             },
             {
                 "_template": "release-afdo-use",
@@ -5220,28 +5227,33 @@
                     "cyan-cheets"
                 ],
                 "grouped": true,
-                "name": "cyan-cheets-release-afdo-use"
+                "name": "cyan-cheets-release-afdo-use",
+                "vm_tests": []
             }
-        ]
+        ],
+        "vm_tests": []
     },
     "cyan-cheets-release-afdo-generate": {
         "_template": "release-afdo-generate",
         "boards": [
             "cyan-cheets"
-        ]
+        ],
+        "vm_tests": []
     },
     "cyan-cheets-release-afdo-use": {
         "_template": "release-afdo-use",
         "boards": [
             "cyan-cheets"
-        ]
+        ],
+        "vm_tests": []
     },
     "cyan-cheets-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
         "boards": [
             "cyan-cheets"
         ],
-        "manifest": "official.xml"
+        "manifest": "official.xml",
+        "vm_tests": []
     },
     "cyan-cheets-tot-chromium-pfq-informational": {
         "_template": "chromium-pfq-informational",
@@ -5250,7 +5262,8 @@
         ],
         "useflags": [
             "-chrome_internal"
-        ]
+        ],
+        "vm_tests": []
     },
     "cyan-chrome-pfq": {
         "_template": "chrome-pfq",

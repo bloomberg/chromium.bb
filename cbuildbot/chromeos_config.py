@@ -557,7 +557,9 @@ _upload_gce_images_boards = frozenset([
     'lakitu_next',
 ])
 
-_no_vmtest_boards = _arm_boards | _brillo_boards
+_no_vmtest_boards = _arm_boards | _brillo_boards | frozenset((
+    'cyan-cheets',
+))
 
 
 # This is a list of configs that should be included on the main waterfall, but
