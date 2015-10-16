@@ -33,54 +33,7 @@
 
 namespace WTF {
 
-template<int initialCapacity>
-struct InitialCapacityTestHashTraits : public UnsignedWithZeroKeyHashTraits<int> {
-    static const int minimumTableSize = initialCapacity;
-};
-
 namespace {
-
-template<unsigned size>
-void testInitialCapacity()
-{
-    const unsigned initialCapacity = HashTableCapacityForSize<size>::value;
-    HashSet<int, DefaultHash<int>::Hash, InitialCapacityTestHashTraits<initialCapacity>> testSet;
-
-    // Initial capacity is zero.
-    EXPECT_EQ(0UL, testSet.capacity());
-
-    // Adding items up to size should never change the capacity.
-    for (size_t i = 0; i < size; ++i) {
-        testSet.add(i);
-        EXPECT_EQ(initialCapacity, testSet.capacity());
-    }
-
-    // Adding items up to less than half the capacity should not change the capacity.
-    unsigned capacityLimit = initialCapacity / 2 - 1;
-    for (size_t i = size; i < capacityLimit; ++i) {
-        testSet.add(i);
-        EXPECT_EQ(initialCapacity, testSet.capacity());
-    }
-
-    // Adding one more item increases the capacity.
-    testSet.add(initialCapacity);
-    EXPECT_GT(testSet.capacity(), initialCapacity);
-}
-
-template<unsigned size> void generateTestCapacityUpToSize();
-template<> void generateTestCapacityUpToSize<0>()
-{
-}
-template<unsigned size> void generateTestCapacityUpToSize()
-{
-    generateTestCapacityUpToSize<size - 1>();
-    testInitialCapacity<size>();
-}
-
-TEST(HashSetTest, InitialCapacity)
-{
-    generateTestCapacityUpToSize<128>();
-}
 
 template<unsigned size> void testReserveCapacity();
 template<> void testReserveCapacity<0>() {}
