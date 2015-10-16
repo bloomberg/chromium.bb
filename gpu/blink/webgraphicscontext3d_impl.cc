@@ -467,6 +467,11 @@ DELEGATE_TO_GL_2(getIntegerv, GetIntegerv, WGC3Denum, WGC3Dint*)
 
 DELEGATE_TO_GL_2(getInteger64v, GetInteger64v, WGC3Denum, WGC3Dint64*)
 
+DELEGATE_TO_GL_3(getIntegeri_v, GetIntegeri_v, WGC3Denum, WGC3Duint, WGC3Dint*)
+
+DELEGATE_TO_GL_3(getInteger64i_v, GetInteger64i_v,
+                 WGC3Denum, WGC3Duint, WGC3Dint64*)
+
 DELEGATE_TO_GL_3(getProgramiv, GetProgramiv, WebGLId, WGC3Denum, WGC3Dint*)
 
 blink::WebString WebGraphicsContext3DImpl::getProgramInfoLog(

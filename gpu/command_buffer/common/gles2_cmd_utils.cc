@@ -221,6 +221,14 @@ int GLES2Util::GLGetNumValuesReturned(int id) const {
       return 1;
     case GL_UNIFORM_BUFFER_BINDING:
       return 1;
+    case GL_TRANSFORM_FEEDBACK_BUFFER_SIZE:
+      return 1;
+    case GL_TRANSFORM_FEEDBACK_BUFFER_START:
+      return 1;
+    case GL_UNIFORM_BUFFER_SIZE:
+      return 1;
+    case GL_UNIFORM_BUFFER_START:
+      return 1;
 
     // -- glGetBooleanv, glGetFloatv, glGetIntergerv with
     //    GL_CHROMIUM_framebuffer_multisample
