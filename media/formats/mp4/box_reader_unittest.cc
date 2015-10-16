@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "media/base/mock_media_log.h"
+#include "media/formats/mp4/box_definitions.h"
 #include "media/formats/mp4/box_reader.h"
 #include "media/formats/mp4/rcheck.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -99,7 +100,7 @@ class BoxReaderTest : public testing::Test {
     EXPECT_FALSE(err);
     EXPECT_TRUE(reader);
     EXPECT_EQ(fourCC, reader->type());
-    EXPECT_EQ(reader->size(), size);
+    EXPECT_EQ(reader->size(), static_cast<uint64>(size));
   }
 
   scoped_refptr<StrictMock<MockMediaLog>> media_log_;
@@ -241,6 +242,91 @@ TEST_F(BoxReaderTest, SkippingUuid) {
   };
 
   TestTopLevelBox(kData, sizeof(kData), FOURCC_UUID);
+}
+
+TEST_F(BoxReaderTest, NestedBoxWithHugeSize) {
+  // This data is not a valid 'emsg' box. It is just used as a top-level box
+  // as ReadTopLevelBox() has a restricted set of boxes it allows. |kData|
+  // contains all the bytes as specified by the 'emsg' header size.
+  // The nested box ('junk') has a large size that was chosen to catch
+  // integer overflows. The nested box should not specify more than the
+  // number of remaining bytes in the enclosing box.
+  static const uint8 kData[] = {
+      0x00, 0x00, 0x00, 0x24, 'e',  'm',  's',  'g',   // outer box
+      0x7f, 0xff, 0xff, 0xff, 'j',  'u',  'n',  'k',   // nested box
+      0x00, 0x01, 0x00, 0xff, 0xff, 0x00, 0x3b, 0x03,  // random data for rest
+      0x00, 0x01, 0x00, 0x03, 0x00, 0x03, 0x00, 0x04, 0x05, 0x06, 0x07, 0x08};
+
+  bool err;
+  scoped_ptr<BoxReader> reader(
+      BoxReader::ReadTopLevelBox(kData, sizeof(kData), media_log_, &err));
+
+  EXPECT_FALSE(err);
+  EXPECT_TRUE(reader);
+  EXPECT_EQ(FOURCC_EMSG, reader->type());
+  EXPECT_FALSE(reader->ScanChildren());
+}
+
+TEST_F(BoxReaderTest, ScanChildrenWithInvalidChild) {
+  // This data is not a valid 'emsg' box. It is just used as a top-level box
+  // as ReadTopLevelBox() has a restricted set of boxes it allows.
+  // The nested 'elst' box is used as it includes a count of EditListEntry's.
+  // The sample specifies a large number of EditListEntry's, but only 1 is
+  // actually included in the box. This test verifies that the code checks
+  // properly that the buffer contains the specified number of EditListEntry's
+  // (does not cause an int32 overflow when checking that the bytes are
+  // available, and does not read past the end of the buffer).
+  static const uint8 kData[] = {
+      0x00, 0x00, 0x00, 0x2c, 'e',  'm',  's',  'g',  // outer box
+      0x00, 0x00, 0x00, 0x24, 'e',  'l',  's',  't',  // nested box
+      0x01, 0x00, 0x00, 0x00,                         // version = 1, flags = 0
+      0xff, 0xff, 0xff, 0xff,  // count = max, but only 1 actually included
+      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+
+  bool err;
+  scoped_ptr<BoxReader> reader(
+      BoxReader::ReadTopLevelBox(kData, sizeof(kData), media_log_, &err));
+
+  EXPECT_FALSE(err);
+  EXPECT_TRUE(reader);
+  EXPECT_EQ(FOURCC_EMSG, reader->type());
+  EXPECT_TRUE(reader->ScanChildren());
+
+  // 'elst' specifies lots of EditListEntry's but only includes 1. Thus
+  // parsing it should fail.
+  EditList child;
+  EXPECT_FALSE(reader->ReadChild(&child));
+}
+
+TEST_F(BoxReaderTest, ReadAllChildrenWithInvalidChild) {
+  // This data is not a valid 'emsg' box. It is just used as a top-level box
+  // as ReadTopLevelBox() has a restricted set of boxes it allows.
+  // The nested 'trun' box is used as it includes a count of the number
+  // of samples. The data specifies a large number of samples, but only 1
+  // is actually included in the box. Verifying that the large count does not
+  // cause an int32 overflow which would allow parsing of TrackFragmentRun
+  // to read past the end of the buffer.
+  static const uint8 kData[] = {
+      0x00, 0x00, 0x00, 0x28, 'e',  'm',  's',  'g',  // outer box
+      0x00, 0x00, 0x00, 0x20, 't',  'r',  'u',  'n',  // nested box
+      0x00, 0x00, 0x0f, 0x00,  // version = 0, flags = samples present
+      0xff, 0xff, 0xff, 0xff,  // count = max, but only 1 actually included
+      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+
+  bool err;
+  scoped_ptr<BoxReader> reader(
+      BoxReader::ReadTopLevelBox(kData, sizeof(kData), media_log_, &err));
+
+  EXPECT_FALSE(err);
+  EXPECT_TRUE(reader);
+  EXPECT_EQ(FOURCC_EMSG, reader->type());
+
+  // Reading the child should fail since the number of samples specified
+  // doesn't match what is in the box.
+  std::vector<TrackFragmentRun> children;
+  EXPECT_FALSE(reader->ReadAllChildrenAndCheckFourCC(&children));
 }
 
 }  // namespace mp4

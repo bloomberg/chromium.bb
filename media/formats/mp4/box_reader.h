@@ -10,6 +10,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/numerics/safe_conversions.h"
 #include "media/base/media_export.h"
 #include "media/base/media_log.h"
 #include "media/formats/mp4/fourccs.h"
@@ -31,13 +32,17 @@ struct MEDIA_EXPORT Box {
 
 class MEDIA_EXPORT BufferReader {
  public:
-  BufferReader(const uint8* buf, const int size)
-      : buf_(buf), size_(size), pos_(0) {
+  BufferReader(const uint8* buf, const int size) : buf_(buf), pos_(0) {
     CHECK(buf);
-    CHECK_GE(size, 0);
+    size_ = base::checked_cast<uint64>(size);
   }
 
-  bool HasBytes(int count) { return (pos() + count <= size()); }
+  bool HasBytes(uint64 count) {
+    // As the size of a box is implementation limited to 2^31, fail if
+    // attempting to check for too many bytes.
+    return (pos_ <= size_ && count < static_cast<uint64>(kint32max) &&
+            size_ - pos_ >= count);
+  }
 
   // Read a value from the stream, perfoming endian correction, and advance the
   // stream pointer.
@@ -51,7 +56,7 @@ class MEDIA_EXPORT BufferReader {
 
   bool ReadFourCC(FourCC* v) WARN_UNUSED_RESULT;
 
-  bool ReadVec(std::vector<uint8>* t, int count) WARN_UNUSED_RESULT;
+  bool ReadVec(std::vector<uint8>* t, uint64 count) WARN_UNUSED_RESULT;
 
   // These variants read a 4-byte integer of the corresponding signedness and
   // store it in the 8-byte return type.
@@ -59,16 +64,21 @@ class MEDIA_EXPORT BufferReader {
   bool Read4sInto8s(int64* v) WARN_UNUSED_RESULT;
 
   // Advance the stream by this many bytes.
-  bool SkipBytes(int nbytes) WARN_UNUSED_RESULT;
+  bool SkipBytes(uint64 nbytes) WARN_UNUSED_RESULT;
 
   const uint8* data() const { return buf_; }
-  int size() const { return size_; }
-  int pos() const { return pos_; }
+
+  // This returns the size of the box as specified in the box header. Initially
+  // it is the buffer size until the header is read. Note that the size
+  // specified in the box header may be different than the number of bytes
+  // actually provided.
+  uint64 size() const { return size_; }
+  uint64 pos() const { return pos_; }
 
  protected:
   const uint8* buf_;
-  int size_;
-  int pos_;
+  uint64 size_;
+  uint64 pos_;
 
   template<typename T> bool Read(T* t) WARN_UNUSED_RESULT;
 };

@@ -46,7 +46,7 @@ bool BufferReader::ReadFourCC(FourCC* v) {
   return Read4(reinterpret_cast<uint32*>(v));
 }
 
-bool BufferReader::ReadVec(std::vector<uint8>* vec, int count) {
+bool BufferReader::ReadVec(std::vector<uint8>* vec, uint64 count) {
   RCHECK(HasBytes(count));
   vec->clear();
   vec->insert(vec->end(), buf_ + pos_, buf_ + pos_ + count);
@@ -54,7 +54,7 @@ bool BufferReader::ReadVec(std::vector<uint8>* vec, int count) {
   return true;
 }
 
-bool BufferReader::SkipBytes(int bytes) {
+bool BufferReader::SkipBytes(uint64 bytes) {
   RCHECK(HasBytes(bytes));
   pos_ += bytes;
   return true;
@@ -111,7 +111,7 @@ BoxReader* BoxReader::ReadTopLevelBox(const uint8* buf,
     return NULL;
   }
 
-  if (reader->size() <= buf_size)
+  if (reader->size() <= static_cast<uint64>(buf_size))
     return reader.release();
 
   return NULL;
@@ -176,7 +176,7 @@ bool BoxReader::ScanChildren() {
   scanned_ = true;
 
   bool err = false;
-  while (pos() < size()) {
+  while (pos_ < size_) {
     BoxReader child(&buf_[pos_], size_ - pos_, media_log_, is_EOS_);
     if (!child.ReadHeader(&err)) break;
 
@@ -185,7 +185,7 @@ bool BoxReader::ScanChildren() {
   }
 
   DCHECK(!err);
-  return !err && pos() == size();
+  return !err && pos_ == size_;
 }
 
 bool BoxReader::HasChild(Box* child) {
@@ -260,7 +260,7 @@ bool BoxReader::ReadHeader(bool* err) {
 
   // Make sure the buffer contains at least the expected number of bytes.
   // Since the data may be appended in pieces, this can only be checked if EOS.
-  if (is_EOS_ && size > static_cast<uint64>(size_)) {
+  if (is_EOS_ && size > size_) {
     *err = true;
     return false;
   }
