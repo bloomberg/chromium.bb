@@ -16,4 +16,30 @@ var CrPolicyPrefBehavior = {
     return pref.policyEnforcement ==
            chrome.settingsPrivate.PolicyEnforcement.ENFORCED;
   },
+
+  /**
+   * @param {chrome.settingsPrivate.PolicySource} source
+   * @param {chrome.settingsPrivate.PolicyEnforcement} enforcement
+   * @return {CrPolicyIndicatorType} The indicator type based on |source| and
+   *     |enforcement|.
+   */
+  getIndicatorType: function(source, enforcement) {
+    if (enforcement == chrome.settingsPrivate.PolicyEnforcement.RECOMMENDED)
+      return CrPolicyIndicatorType.RECOMMENDED;
+    if (enforcement == chrome.settingsPrivate.PolicyEnforcement.ENFORCED) {
+      switch (source) {
+        case chrome.settingsPrivate.PolicySource.PRIMARY_USER:
+          return CrPolicyIndicatorType.PRIMARY_USER;
+        case chrome.settingsPrivate.PolicySource.OWNER:
+          return CrPolicyIndicatorType.OWNER;
+        case chrome.settingsPrivate.PolicySource.USER_POLICY:
+          return CrPolicyIndicatorType.USER_POLICY;
+        case chrome.settingsPrivate.PolicySource.DEVICE_POLICY:
+          return CrPolicyIndicatorType.DEVICE_POLICY;
+        case chrome.settingsPrivate.PolicySource.EXTENSION:
+          return CrPolicyIndicatorType.EXTENSION;
+      }
+    }
+    return CrPolicyIndicatorType.NONE;
+  },
 };

@@ -39,7 +39,7 @@ Polymer({
     // In a CrOS multi-user session, the primary user controls the UI language.
     if (this.isSecondaryUser_()) {
       var indicator = this.$.policyIndicator;
-      indicator.indicatorType = CrPolicyIndicator.Type.PRIMARY_USER;
+      indicator.indicatorType = CrPolicyIndicatorType.PRIMARY_USER;
       indicator.controllingUser = loadTimeData.getString('primaryUserEmail');
     }
 

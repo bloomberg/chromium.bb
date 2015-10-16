@@ -23,7 +23,7 @@
       'target_name': 'language_detail_page',
       'variables': {
         'depends': [
-          '../../../../../ui/webui/resources/cr_elements/v1_0/policy/cr_policy_pref_indicator.js',
+          '../../../../../ui/webui/resources/cr_elements/v1_0/policy/compiled_resources.gyp:cr_policy_indicator_behavior',
           '../../../../../ui/webui/resources/js/chromeos/compiled_resources.gyp:ui_account_tweaks',
           '../../../../../ui/webui/resources/js/compiled_resources.gyp:load_time_data',
           '../prefs/compiled_resources.gyp:prefs',
