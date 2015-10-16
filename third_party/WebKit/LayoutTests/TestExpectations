@@ -1135,12 +1135,6 @@ crbug.com/509025 [ Yosemite ] virtual/rootlayerscrolls/scrollbars/rtl/overflow-s
 crbug.com/509025 [ Yosemite ] virtual/rootlayerscrolls/scrollbars/scrollbars-on-positioned-content.html [ Failure ]
 crbug.com/509025 [ Yosemite ] virtual/rootlayerscrolls/scrollbars/short-scrollbar.html [ Failure ]
 
-crbug.com/472084 editing/execCommand/5136770.html [ NeedsRebaseline ]
-crbug.com/472084 editing/execCommand/5190926.html [ NeedsRebaseline ]
-crbug.com/472084 editing/execCommand/indent-selection.html [ NeedsRebaseline ]
-crbug.com/472084 fast/backgrounds/selection-background-color-of-list-style.html [ NeedsRebaseline ]
-crbug.com/472084 fast/lists/markers-in-selection.html [ NeedsRebaseline ]
-
 crbug.com/443596 media/sources-fallback-codecs.html [ Pass Failure ]
 
 crbug.com/464736 http/tests/xmlhttprequest/ontimeout-event-override-after-failure.html [ Pass Failure ]
