@@ -14,9 +14,6 @@
             [50, 160, 200, 50],
             [50, 50, 200, 50]
           ],
-          "paintInvalidationClients": [
-            "LayoutBlockFlow (positioned) DIV id='block'"
-          ],
           "children": [
             {
               "bounds": [285, 385],

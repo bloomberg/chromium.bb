@@ -13,9 +13,6 @@
           "repaintRects": [
             [0, 0, 185, 200]
           ],
-          "paintInvalidationClients": [
-            "LayoutBlockFlow DIV id='indicator'"
-          ],
           "children": [
             {
               "bounds": [185, 185],

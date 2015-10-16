@@ -7,25 +7,28 @@
       "drawsContent": true,
       "children": [
         {
-          "position": [8, 8],
-          "bounds": [500, 500],
+          "position": [300, 300],
+          "bounds": [200, 200],
           "drawsContent": true,
           "repaintRects": [
-            [-2001, -2000, 5001, 5000]
+            [0, 50, 100, 100]
+          ],
+          "paintInvalidationClients": [
+            "LayoutBlockFlow DIV id='target'"
           ],
           "children": [
             {
-              "bounds": [485, 485],
+              "bounds": [185, 200],
               "children": [
                 {
-                  "bounds": [5000, 5000],
+                  "bounds": [185, 4900],
                   "shouldFlattenTransform": false,
                   "drawsContent": true,
                   "repaintRects": [
-                    [-1, 0, 5001, 5000]
+                    [0, 2400, 100, 100]
                   ],
                   "paintInvalidationClients": [
-                    "LayoutBlockFlow DIV id='content'"
+                    "LayoutBlockFlow DIV id='target'"
                   ]
                 }
               ]
@@ -33,23 +36,11 @@
             {
               "children": [
                 {
-                  "position": [0, 485],
-                  "bounds": [485, 15],
+                  "position": [185, 0],
+                  "bounds": [15, 200],
                   "repaintRects": [
-                    [0, 0, 485, 15]
+                    [0, 0, 15, 200]
                   ]
-                },
-                {
-                  "position": [485, 0],
-                  "bounds": [15, 485],
-                  "repaintRects": [
-                    [0, 0, 15, 485]
-                  ]
-                },
-                {
-                  "position": [485, 485],
-                  "bounds": [15, 15],
-                  "drawsContent": true
                 }
               ]
             }

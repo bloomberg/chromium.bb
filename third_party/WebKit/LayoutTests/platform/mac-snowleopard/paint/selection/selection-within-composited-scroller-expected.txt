@@ -20,10 +20,7 @@
             [0, 160, 23, 18]
           ],
           "paintInvalidationClients": [
-            "LayoutBlockFlow DIV id='scroller'",
-            "LayoutBlockFlow DIV id='target'",
-            "LayoutText #text",
-            "InlineTextBox 'test'"
+            "LayoutBlockFlow DIV id='scroller'"
           ],
           "children": [
             {
