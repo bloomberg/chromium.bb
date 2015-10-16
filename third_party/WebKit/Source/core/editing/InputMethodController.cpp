@@ -120,14 +120,59 @@ void InputMethodController::selectComposition() const
 
 bool InputMethodController::confirmComposition()
 {
-    if (!hasComposition())
-        return false;
     return confirmComposition(plainText(compositionEphemeralRange()));
+}
+
+static void dispatchCompositionEndEvent(LocalFrame& frame, const String& text)
+{
+    // We should send this event before sending a TextEvent as written in
+    // Section 6.2.2 and 6.2.3 of the DOM Event specification.
+    Element* target = frame.document()->focusedElement();
+    if (!target)
+        return;
+
+    RefPtrWillBeRawPtr<CompositionEvent> event =
+        CompositionEvent::create(EventTypeNames::compositionend, frame.domWindow(), text);
+    target->dispatchEvent(event);
 }
 
 bool InputMethodController::confirmComposition(const String& text)
 {
-    return finishComposition(text, ConfirmComposition);
+    if (!hasComposition())
+        return false;
+
+    Editor::RevealSelectionScope revealSelectionScope(&editor());
+
+    // If the composition was set from existing text and didn't change, then
+    // there's nothing to do here (and we should avoid doing anything as that
+    // may clobber multi-node styled text).
+    if (!m_isDirty && plainText(compositionEphemeralRange()) == text) {
+        clear();
+        return true;
+    }
+
+    // Select the text that will be deleted or replaced.
+    selectComposition();
+
+    if (frame().selection().isNone())
+        return false;
+
+    dispatchCompositionEndEvent(frame(), text);
+
+    if (!frame().document())
+        return false;
+
+    // If text is empty, then delete the old composition here. If text is
+    // non-empty, InsertTextCommand::input will delete the old composition with
+    // an optimized replace operation.
+    if (text.isEmpty())
+        TypingCommand::deleteSelection(*frame().document(), 0);
+
+    clear();
+
+    insertTextForConfirmedComposition(text);
+
+    return true;
 }
 
 bool InputMethodController::confirmCompositionOrInsertText(const String& text, ConfirmCompositionBehavior confirmBehavior)
@@ -153,7 +198,21 @@ bool InputMethodController::confirmCompositionOrInsertText(const String& text, C
 
 void InputMethodController::cancelComposition()
 {
-    finishComposition(emptyString(), CancelComposition);
+    if (!hasComposition())
+        return;
+
+    Editor::RevealSelectionScope revealSelectionScope(&editor());
+
+    if (frame().selection().isNone())
+        return;
+
+    dispatchCompositionEndEvent(frame(), emptyString());
+    clear();
+    insertTextForConfirmedComposition(emptyString());
+
+    // An open typing command that disagrees about current selection would cause
+    // issues with typing later on.
+    TypingCommand::closeTyping(m_frame);
 }
 
 void InputMethodController::cancelCompositionIfSelectionIsInvalid()
@@ -171,54 +230,6 @@ void InputMethodController::cancelCompositionIfSelectionIsInvalid()
 
     cancelComposition();
     frame().chromeClient().didCancelCompositionOnSelectionChange();
-}
-
-bool InputMethodController::finishComposition(const String& text, FinishCompositionMode mode)
-{
-    if (!hasComposition())
-        return false;
-
-    ASSERT(mode == ConfirmComposition || mode == CancelComposition);
-
-    Editor::RevealSelectionScope revealSelectionScope(&editor());
-
-    bool dirty = m_isDirty || plainText(compositionEphemeralRange()) != text;
-
-    if (mode == CancelComposition) {
-        ASSERT(text == emptyString());
-    } else if (dirty) {
-        selectComposition();
-    }
-
-    if (frame().selection().isNone())
-        return false;
-
-    // Dispatch a compositionend event to the focused node.
-    // We should send this event before sending a TextEvent as written in Section 6.2.2 and 6.2.3 of
-    // the DOM Event specification.
-    if (Element* target = frame().document()->focusedElement()) {
-        RefPtrWillBeRawPtr<CompositionEvent> event = CompositionEvent::create(EventTypeNames::compositionend, frame().domWindow(), text);
-        target->dispatchEvent(event);
-    }
-
-    // If text is empty, then delete the old composition here. If text is non-empty, InsertTextCommand::input
-    // will delete the old composition with an optimized replace operation.
-    if (text.isEmpty() && mode != CancelComposition && dirty) {
-        ASSERT(frame().document());
-        TypingCommand::deleteSelection(*frame().document(), 0);
-    }
-
-    clear();
-
-    if (dirty)
-        insertTextForConfirmedComposition(text);
-
-    if (mode == CancelComposition) {
-        // An open typing command that disagrees about current selection would cause issues with typing later on.
-        TypingCommand::closeTyping(m_frame);
-    }
-
-    return true;
 }
 
 void InputMethodController::setComposition(const String& text, const Vector<CompositionUnderline>& underlines, unsigned selectionStart, unsigned selectionEnd)

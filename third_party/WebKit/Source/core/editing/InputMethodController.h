@@ -110,9 +110,6 @@ private:
 
     bool insertTextForConfirmedComposition(const String& text);
     void selectComposition() const;
-    enum FinishCompositionMode { ConfirmComposition, CancelComposition };
-    // Returns true if composition exists.
-    bool finishComposition(const String&, FinishCompositionMode);
     bool setSelectionOffsets(const PlainTextRange&);
 };
 
