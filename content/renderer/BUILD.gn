@@ -28,9 +28,8 @@ source_set("renderer") {
     "//base/allocator",
     "//cc",
     "//cc/blink",
-    "//components/scheduler:scheduler",
     "//components/url_formatter",
-    "//components/webusb",
+    "//components/scheduler:scheduler",
     "//content:resources",
     "//content/common:mojo_bindings",
     "//content/public/child:child_sources",
@@ -104,8 +103,6 @@ source_set("renderer") {
       "//third_party/android_tools:cpu_features",
       "//third_party/libphonenumber",
     ]
-
-    deps -= [ "//components/webusb" ]
   } else {
     sources -= [
       "java/gin_java_bridge_dispatcher.cc",

@@ -9,7 +9,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/move.h"
 #include "base/strings/utf_string_conversions.h"
-#include "content/child/mojo/type_converters.h"
 #include "content/child/scoped_web_callbacks.h"
 #include "content/public/common/service_registry.h"
 #include "content/renderer/usb/type_converters.h"
@@ -65,24 +64,6 @@ void OnGetDevicesComplete(
   scoped_callbacks.PassCallbacks()->onSuccess(blink::adoptWebPtr(devices));
 }
 
-void OnRequestDevicesComplete(
-    ScopedWebCallbacks<blink::WebUSBClientRequestDeviceCallbacks> callbacks,
-    device::usb::DeviceManager* device_manager,
-    device::usb::DeviceInfoPtr result) {
-  auto scoped_callbacks = callbacks.PassCallbacks();
-  if (result) {
-    device::usb::DevicePtr device;
-    device_manager->GetDevice(result->guid, mojo::GetProxy(&device));
-    blink::WebUSBDevice* web_usb_device = new WebUSBDeviceImpl(
-        device.Pass(), mojo::ConvertTo<blink::WebUSBDeviceInfo>(result));
-
-    scoped_callbacks->onSuccess(blink::adoptWebPtr(web_usb_device));
-  } else {
-    scoped_callbacks->onSuccess(
-        blink::adoptWebPtr<blink::WebUSBDevice>(nullptr));
-  }
-}
-
 }  // namespace
 
 WebUSBClientImpl::WebUSBClientImpl(content::ServiceRegistry* service_registry)
@@ -102,20 +83,9 @@ void WebUSBClientImpl::getDevices(
 void WebUSBClientImpl::requestDevice(
     const blink::WebUSBDeviceRequestOptions& options,
     blink::WebUSBClientRequestDeviceCallbacks* callbacks) {
-  if (!webusb_permission_bubble_) {
-    service_registry_->ConnectToRemoteService(
-        mojo::GetProxy(&webusb_permission_bubble_));
-  }
-
-  auto scoped_callbacks = MakeScopedUSBCallbacks(callbacks);
-
-  mojo::Array<device::usb::DeviceFilterPtr> device_filters =
-      mojo::Array<device::usb::DeviceFilterPtr>::From(options.filters);
-
-  webusb_permission_bubble_->GetPermission(
-      device_filters.Pass(),
-      base::Bind(&OnRequestDevicesComplete, base::Passed(&scoped_callbacks),
-                 base::Unretained(device_manager_.get())));
+  callbacks->onError(blink::WebUSBError(blink::WebUSBError::Error::Service,
+                                        base::UTF8ToUTF16("Not implemented.")));
+  delete callbacks;
 }
 
 void WebUSBClientImpl::setObserver(Observer* observer) {
