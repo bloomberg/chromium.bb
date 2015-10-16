@@ -7,9 +7,7 @@
 
 namespace {
 const base::TimeDelta kPinBasedMaxConnectionTimeInSeconds =
-    base::TimeDelta::FromSeconds(4);
-const int kPinBasedMaxAuthenticationTimeMs = 2000;
-const int kMaxTimeToConnectMs = 2000;
+    base::TimeDelta::FromSeconds(5);
 }
 
 namespace remoting {
@@ -27,17 +25,6 @@ TEST_F(ChromotingTestFixture, TestMeasurePinBasedAuthentication) {
       protocol::ConnectionToHost::State::INITIALIZING,
       protocol::ConnectionToHost::State::CLOSED).is_max());
 
-  int authentication_time = connection_time_observer_->GetStateTransitionTime(
-      protocol::ConnectionToHost::State::INITIALIZING,
-      protocol::ConnectionToHost::State::AUTHENTICATED).InMilliseconds();
-  EXPECT_LE(authentication_time, kPinBasedMaxAuthenticationTimeMs);
-
-  int authenticated_to_connected_time =
-      connection_time_observer_->GetStateTransitionTime(
-          protocol::ConnectionToHost::State::AUTHENTICATED,
-          protocol::ConnectionToHost::State::CONNECTED).InMilliseconds();
-  EXPECT_LE(authenticated_to_connected_time, kMaxTimeToConnectMs);
-
   connection_time_observer_->DisplayConnectionStats();
 }
 
@@ -53,17 +40,6 @@ TEST_F(ChromotingTestFixture, TestMeasureReconnectPerformance) {
       protocol::ConnectionToHost::State::INITIALIZING,
       protocol::ConnectionToHost::State::CLOSED).is_max());
 
-  int authentication_time = connection_time_observer_->GetStateTransitionTime(
-      protocol::ConnectionToHost::State::INITIALIZING,
-      protocol::ConnectionToHost::State::AUTHENTICATED).InMilliseconds();
-  EXPECT_LE(authentication_time, kPinBasedMaxAuthenticationTimeMs);
-
-  int authenticated_to_connected_time =
-      connection_time_observer_->GetStateTransitionTime(
-          protocol::ConnectionToHost::State::AUTHENTICATED,
-          protocol::ConnectionToHost::State::CONNECTED).InMilliseconds();
-  EXPECT_LE(authenticated_to_connected_time, kMaxTimeToConnectMs);
-
   // Begin reconnection to same host.
   connected = ConnectToHost(kPinBasedMaxConnectionTimeInSeconds);
   EXPECT_TRUE(connected);
@@ -72,17 +48,6 @@ TEST_F(ChromotingTestFixture, TestMeasureReconnectPerformance) {
   EXPECT_FALSE(connection_time_observer_->GetStateTransitionTime(
       protocol::ConnectionToHost::State::INITIALIZING,
       protocol::ConnectionToHost::State::CLOSED).is_max());
-
-  authentication_time = connection_time_observer_->GetStateTransitionTime(
-      protocol::ConnectionToHost::State::INITIALIZING,
-      protocol::ConnectionToHost::State::AUTHENTICATED).InMilliseconds();
-  EXPECT_LE(authentication_time, kPinBasedMaxAuthenticationTimeMs);
-
-  authenticated_to_connected_time =
-      connection_time_observer_->GetStateTransitionTime(
-          protocol::ConnectionToHost::State::AUTHENTICATED,
-          protocol::ConnectionToHost::State::CONNECTED).InMilliseconds();
-  EXPECT_LE(authenticated_to_connected_time, kMaxTimeToConnectMs);
 
   connection_time_observer_->DisplayConnectionStats();
 }
