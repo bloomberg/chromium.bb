@@ -34,6 +34,7 @@ using ::testing::_;
 using ::testing::AnyNumber;
 using ::testing::Return;
 
+namespace chromeos {
 namespace {
 
 const char kGaiaId[] = "12345";
@@ -43,48 +44,45 @@ const char kPassword[] = "password";
 class LoginUserTest : public InProcessBrowserTest {
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitchASCII(
-        chromeos::switches::kLoginUser, "TestUser@gmail.com");
-    command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile,
-                                    "hash");
+    command_line->AppendSwitchASCII(switches::kLoginUser, "TestUser@gmail.com");
+    command_line->AppendSwitchASCII(switches::kLoginProfile, "hash");
   }
 };
 
 class LoginGuestTest : public InProcessBrowserTest {
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(chromeos::switches::kGuestSession);
+    command_line->AppendSwitch(switches::kGuestSession);
     command_line->AppendSwitch(::switches::kIncognito);
-    command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile,
-                                    "hash");
-    command_line->AppendSwitchASCII(chromeos::switches::kLoginUser,
-                                    chromeos::login::kGuestUserName);
+    command_line->AppendSwitchASCII(switches::kLoginProfile, "hash");
+    command_line->AppendSwitchASCII(switches::kLoginUser,
+                                    login::kGuestUserName);
   }
 };
 
 class LoginCursorTest : public InProcessBrowserTest {
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(chromeos::switches::kLoginManager);
+    command_line->AppendSwitch(switches::kLoginManager);
   }
 };
 
 class LoginSigninTest : public InProcessBrowserTest {
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(chromeos::switches::kLoginManager);
-    command_line->AppendSwitch(chromeos::switches::kForceLoginManagerInTests);
+    command_line->AppendSwitch(switches::kLoginManager);
+    command_line->AppendSwitch(switches::kForceLoginManagerInTests);
   }
 
   void SetUpOnMainThread() override {
-    chromeos::LoginDisplayHostImpl::DisableRestrictiveProxyCheckForTest();
+    LoginDisplayHostImpl::DisableRestrictiveProxyCheckForTest();
 
     ASSERT_TRUE(tracing::BeginTracingWithWatch(
         "ui", "ui", "ShowLoginWebUI", 1));
   }
 };
 
-class LoginTest : public chromeos::LoginManagerTest {
+class LoginTest : public LoginManagerTest {
  public:
   LoginTest() : LoginManagerTest(true) {}
   ~LoginTest() override {}
@@ -156,15 +154,15 @@ class LoginTest : public chromeos::LoginManagerTest {
 
   void PrepareOfflineLogin() {
     bool show_user;
-    ASSERT_TRUE(chromeos::CrosSettings::Get()->GetBoolean(
-        chromeos::kAccountsPrefShowUserNamesOnSignIn, &show_user));
+    ASSERT_TRUE(CrosSettings::Get()->GetBoolean(
+        kAccountsPrefShowUserNamesOnSignIn, &show_user));
     ASSERT_FALSE(show_user);
 
     StartGaiaAuthOffline();
 
-    chromeos::UserContext user_context(kTestUser);
+    UserContext user_context(kTestUser);
     user_context.SetGaiaID(kGaiaId);
-    user_context.SetKey(chromeos::Key(kPassword));
+    user_context.SetKey(Key(kPassword));
     SetExpectedCredentials(user_context);
   }
 };
@@ -177,6 +175,8 @@ void TestSystemTrayIsVisible() {
   EXPECT_TRUE(tray->visible());
   EXPECT_TRUE(primary_win->bounds().Contains(tray->GetBoundsInScreen()));
 }
+
+}  // namespace
 
 // After a chrome crash, the session manager will restart chrome with
 // the -login-user flag indicating that the user is already logged in.
@@ -218,7 +218,7 @@ IN_PROC_BROWSER_TEST_F(LoginGuestTest, CursorShown) {
 // Verifies the cursor is hidden at startup on login screen.
 IN_PROC_BROWSER_TEST_F(LoginCursorTest, CursorHidden) {
   // Login screen needs to be shown explicitly when running test.
-  chromeos::ShowLoginWizard(chromeos::WizardController::kLoginScreenName);
+  ShowLoginWizard(WizardController::kLoginScreenName);
 
   // Cursor should be hidden at startup
   EXPECT_FALSE(ash::Shell::GetInstance()->cursor_manager()->IsCursorVisible());
@@ -228,7 +228,7 @@ IN_PROC_BROWSER_TEST_F(LoginCursorTest, CursorHidden) {
   EXPECT_TRUE(ash::Shell::GetInstance()->cursor_manager()->IsCursorVisible());
 
   base::MessageLoop::current()->DeleteSoon(
-      FROM_HERE, chromeos::LoginDisplayHostImpl::default_host());
+      FROM_HERE, LoginDisplayHostImpl::default_host());
 
   TestSystemTrayIsVisible();
 }
@@ -244,9 +244,8 @@ IN_PROC_BROWSER_TEST_F(LoginSigninTest, WebUIVisible) {
 
 IN_PROC_BROWSER_TEST_F(LoginTest, PRE_GaiaAuthOffline) {
   RegisterUser(kTestUser);
-  chromeos::StartupUtils::MarkOobeCompleted();
-  chromeos::CrosSettings::Get()->SetBoolean(
-      chromeos::kAccountsPrefShowUserNamesOnSignIn, false);
+  StartupUtils::MarkOobeCompleted();
+  CrosSettings::Get()->SetBoolean(kAccountsPrefShowUserNamesOnSignIn, false);
 }
 
 IN_PROC_BROWSER_TEST_F(LoginTest, GaiaAuthOffline) {
@@ -260,4 +259,4 @@ IN_PROC_BROWSER_TEST_F(LoginTest, GaiaAuthOffline) {
   TestSystemTrayIsVisible();
 }
 
-}  // namespace
+}  // namespace chromeos
