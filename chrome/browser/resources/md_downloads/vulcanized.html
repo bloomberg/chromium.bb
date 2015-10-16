@@ -412,8 +412,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 
 
-
-
 <style is="custom-style">
 
   :root {
@@ -2090,41 +2088,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <g id="zoom-out"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14zM7 9h5v1H7z"></path></g>
 </defs></svg>
 </iron-iconset-svg>
-<dom-module id="paper-material" assetpath="chrome://resources/polymer/v1_0/paper-material/">
-  <style>
-    :host {
-      display: block;
-      position: relative;
-    }
-
-    :host([animated]) {
-      @apply(--shadow-transition);
-    }
-
-    :host([elevation="1"]) {
-      @apply(--shadow-elevation-2dp);
-    }
-
-    :host([elevation="2"]) {
-      @apply(--shadow-elevation-4dp);
-    }
-
-    :host([elevation="3"]) {
-      @apply(--shadow-elevation-6dp);
-    }
-
-    :host([elevation="4"]) {
-      @apply(--shadow-elevation-8dp);
-    }
-
-    :host([elevation="5"]) {
-      @apply(--shadow-elevation-16dp);
-    }
-  </style>
-  <template>
-    <content></content>
-  </template>
-</dom-module>
 <dom-module id="paper-ripple" assetpath="chrome://resources/polymer/v1_0/paper-ripple/">
 
   
@@ -2197,6 +2160,41 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     
     <div id="background"></div>
     <div id="waves"></div>
+  </template>
+</dom-module>
+<dom-module id="paper-material" assetpath="chrome://resources/polymer/v1_0/paper-material/">
+  <style>
+    :host {
+      display: block;
+      position: relative;
+    }
+
+    :host([animated]) {
+      @apply(--shadow-transition);
+    }
+
+    :host([elevation="1"]) {
+      @apply(--shadow-elevation-2dp);
+    }
+
+    :host([elevation="2"]) {
+      @apply(--shadow-elevation-4dp);
+    }
+
+    :host([elevation="3"]) {
+      @apply(--shadow-elevation-6dp);
+    }
+
+    :host([elevation="4"]) {
+      @apply(--shadow-elevation-8dp);
+    }
+
+    :host([elevation="5"]) {
+      @apply(--shadow-elevation-16dp);
+    }
+  </style>
+  <template>
+    <content></content>
   </template>
 </dom-module>
 <dom-module id="paper-button" assetpath="chrome://resources/polymer/v1_0/paper-button/">
@@ -2420,6 +2418,20 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   </template>
 </dom-module>
 
+<dom-module id="inky-text-button" assetpath="chrome://downloads/">
+  <template><content></content></template>
+  <style>
+    :host {
+      -webkit-user-select: none;
+      cursor: pointer;
+      display: inline-block;
+      outline: none;
+      position: relative;
+      text-align: center;
+    }
+  </style>
+</dom-module>
+
 <dom-module id="downloads-item" assetpath="chrome://downloads/">
   <template>
     <template is="dom-if" if="[[!hideDate]]">
@@ -2480,7 +2492,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       </div>
 
       <div id="remove-wrapper" class="icon-wrapper">
-        <paper-icon-button id="remove" icon="clear" i18n-values="title:controlRemoveFromList" style$="[[computeRemoveStyle_(isDangerous_, showCancel_)]]" on-tap="onRemoveTap_"></paper-icon-button>
+        <inky-text-button id="remove" i18n-values="title:controlRemoveFromList" style$="[[computeRemoveStyle_(isDangerous_, showCancel_)]]" on-tap="onRemoveTap_">✕</inky-text-button>
       </div>
 
       <div id="incognito" i18n-values="title:inIncognito" hidden="[[!data.otr]]"></div>
@@ -2724,13 +2736,10 @@ paper-button {
 }
 
 #remove {
-  --iron-icon-height: 16px;
-  --iron-icon-width: 16px;
-  --layout-inline: {
-    /* HACK(dbeam): we probably shouldn't be overriding Polymer like this. */
-  };
   color: #969696;
+  font-size: 16px;
   height: 16px;
+  line-height: 17px;  /* TODO(dbeam): why is this necesssary? */
   padding: 8px;
   width: 16px;
 }

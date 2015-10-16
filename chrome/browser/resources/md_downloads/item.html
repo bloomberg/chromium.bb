@@ -4,10 +4,25 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-behaviors/paper-inky-focus-behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-progress/paper-progress.html">
 <link rel="import" href="chrome://downloads/action_service.html">
 <link rel="import" href="chrome://downloads/constants.html">
+
+<dom-module id="inky-text-button">
+  <template><content></content></template>
+  <style>
+    :host {
+      -webkit-user-select: none;
+      cursor: pointer;
+      display: inline-block;
+      outline: none;
+      position: relative;
+      text-align: center;
+    }
+  </style>
+</dom-module>
 
 <dom-module id="downloads-item">
   <template>
@@ -90,10 +105,9 @@
       </div>
 
       <div id="remove-wrapper" class="icon-wrapper">
-        <paper-icon-button id="remove" icon="clear"
-            i18n-values="title:controlRemoveFromList"
+        <inky-text-button id="remove" i18n-values="title:controlRemoveFromList"
             style$="[[computeRemoveStyle_(isDangerous_, showCancel_)]]"
-            on-tap="onRemoveTap_"></paper-icon-button>
+            on-tap="onRemoveTap_">&#x2715;</inky-text-button>
       </div>
 
       <div id="incognito" i18n-values="title:inIncognito"
