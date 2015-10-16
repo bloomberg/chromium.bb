@@ -3,8 +3,8 @@
 <script>
 description('This tests multiple shadow roots creation with createShadowRoot and mode parameter.');
 
-function shouldBeOpenByDefaultShadowRoot(root) {
-    shouldBeEqualToString('internals.shadowRootType(' + root + ')', 'OpenByDefaultShadowRoot');
+function shouldBeV0ShadowRoot(root) {
+    shouldBeEqualToString('internals.shadowRootType(' + root + ')', 'V0ShadowRoot');
 }
 
 function shouldBeOpenShadowRoot(root) {
@@ -27,9 +27,9 @@ debug('createShadowRoot() can still create multiple shadow roots.');
 
 var div = document.createElement('div');
 var shadow1 = div.createShadowRoot();
-shouldBeOpenByDefaultShadowRoot('shadow1');
+shouldBeV0ShadowRoot('shadow1');
 var shadow2 = div.createShadowRoot();
-shouldBeOpenByDefaultShadowRoot('shadow2');
+shouldBeV0ShadowRoot('shadow2');
 youngestShadowRootShouldBe('div', 'shadow2');
 shouldBe('shadow2.olderShadowRoot', 'shadow1');
 
@@ -37,7 +37,7 @@ debug('Other attempts to create multiple shadow roots should fail');
 
 div = document.createElement('div');
 shadow1 = div.createShadowRoot();
-shouldBeOpenByDefaultShadowRoot('shadow1');
+shouldBeV0ShadowRoot('shadow1');
 shouldThrow('div.attachShadow({mode: "open"})');
 shouldThrow('div.attachShadow({mode: "closed"})');
 youngestShadowRootShouldBe('div', 'shadow1');
@@ -64,7 +64,7 @@ var input = document.createElement('input');
 shouldBeUserAgentShadowRoot('internals.shadowRoot(input)');
 shadow1 = input.createShadowRoot();
 youngestShadowRootShouldBe('input', 'shadow1');
-shouldBeOpenByDefaultShadowRoot('shadow1');
+shouldBeV0ShadowRoot('shadow1');
 
 input = document.createElement('input');
 shouldThrow('input.attachShadow({mode: "open"})');

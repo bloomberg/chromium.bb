@@ -46,7 +46,7 @@ class StyleSheetList;
 
 enum class ShadowRootType {
     UserAgent,
-    OpenByDefault,
+    V0,
     Open,
     Closed
 };
@@ -78,7 +78,7 @@ public:
     ShadowRoot* youngerShadowRoot() const { return prev(); }
 
     ShadowRoot* olderShadowRootForBindings() const;
-    bool isOpen() const { return type() == ShadowRootType::OpenByDefault || type() == ShadowRootType::Open; }
+    bool isOpen() const { return type() == ShadowRootType::V0 || type() == ShadowRootType::Open; }
 
     bool isYoungest() const { return !youngerShadowRoot(); }
     bool isOldest() const { return !olderShadowRoot(); }

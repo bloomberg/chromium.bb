@@ -188,7 +188,7 @@ TEST_F(TextFinderTest, FindTextNotFound)
 TEST_F(TextFinderTest, FindTextInShadowDOM)
 {
     document().body()->setInnerHTML("<b>FOO</b><i>foo</i>", ASSERT_NO_EXCEPTION);
-    RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = document().body()->createShadowRootInternal(ShadowRootType::OpenByDefault, ASSERT_NO_EXCEPTION);
+    RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = document().body()->createShadowRootInternal(ShadowRootType::V0, ASSERT_NO_EXCEPTION);
     shadowRoot->setInnerHTML("<content select=\"i\"></content><u>Foo</u><content></content>", ASSERT_NO_EXCEPTION);
     Node* textInBElement = document().body()->firstChild()->firstChild();
     Node* textInIElement = document().body()->lastChild()->firstChild();

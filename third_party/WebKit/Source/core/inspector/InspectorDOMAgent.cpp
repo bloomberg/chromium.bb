@@ -1481,7 +1481,7 @@ static TypeBuilder::DOM::ShadowRootType::Enum shadowRootType(ShadowRoot* shadowR
     switch (shadowRoot->type()) {
     case ShadowRootType::UserAgent:
         return TypeBuilder::DOM::ShadowRootType::User_agent;
-    case ShadowRootType::OpenByDefault:
+    case ShadowRootType::V0:
     case ShadowRootType::Open:
         return TypeBuilder::DOM::ShadowRootType::Open;
     case ShadowRootType::Closed:

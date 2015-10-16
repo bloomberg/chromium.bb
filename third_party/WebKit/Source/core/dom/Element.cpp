@@ -1915,7 +1915,7 @@ PassRefPtrWillBeRawPtr<ShadowRoot> Element::createShadowRoot(const ScriptState* 
         exceptionState.throwDOMException(InvalidStateError, "Shadow root cannot be created on a host which already hosts this type of shadow tree.");
         return nullptr;
     }
-    return createShadowRootInternal(ShadowRootType::OpenByDefault, exceptionState);
+    return createShadowRootInternal(ShadowRootType::V0, exceptionState);
 }
 
 PassRefPtrWillBeRawPtr<ShadowRoot> Element::attachShadow(const ScriptState* scriptState, const ShadowRootInit& shadowRootInitDict, ExceptionState& exceptionState)
@@ -1929,7 +1929,7 @@ PassRefPtrWillBeRawPtr<ShadowRoot> Element::attachShadow(const ScriptState* scri
         return nullptr;
     }
 
-    ShadowRootType type = ShadowRootType::OpenByDefault;
+    ShadowRootType type = ShadowRootType::V0;
     if (shadowRootInitDict.hasMode())
         type = shadowRootInitDict.mode() == "open" ? ShadowRootType::Open : ShadowRootType::Closed;
 
@@ -1982,7 +1982,7 @@ ShadowRoot* Element::openShadowRoot() const
     ShadowRoot* root = shadowRoot();
     if (!root)
         return nullptr;
-    return root->type() == ShadowRootType::OpenByDefault || root->type() == ShadowRootType::Open ? root : nullptr;
+    return root->type() == ShadowRootType::V0 || root->type() == ShadowRootType::Open ? root : nullptr;
 }
 
 ShadowRoot* Element::closedShadowRoot() const

@@ -691,8 +691,8 @@ String Internals::shadowRootType(const Node* root, ExceptionState& exceptionStat
     switch (toShadowRoot(root)->type()) {
     case ShadowRootType::UserAgent:
         return String("UserAgentShadowRoot");
-    case ShadowRootType::OpenByDefault:
-        return String("OpenByDefaultShadowRoot");
+    case ShadowRootType::V0:
+        return String("V0ShadowRoot");
     case ShadowRootType::Open:
         return String("OpenShadowRoot");
     case ShadowRootType::Closed:

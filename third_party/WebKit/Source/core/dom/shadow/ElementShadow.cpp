@@ -148,7 +148,7 @@ ShadowRoot& ElementShadow::addShadowRoot(Element& shadowHost, ShadowRootType typ
     EventDispatchForbiddenScope assertNoEventDispatch;
     ScriptForbiddenScope forbidScript;
 
-    if (type == ShadowRootType::OpenByDefault) {
+    if (type == ShadowRootType::V0) {
         if (!youngestShadowRoot()) {
             shadowHost.willAddFirstAuthorShadowRoot();
         } else if (youngestShadowRoot()->type() == ShadowRootType::UserAgent) {
