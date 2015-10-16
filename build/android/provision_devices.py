@@ -137,16 +137,16 @@ def CheckExternalStorage(device):
   """
   try:
     with device_temp_file.DeviceTempFile(
-        device.adb, suffix='.sh', dir=device.GetExternalStoragePath()):
-      pass
+        device.adb, suffix='.sh', dir=device.GetExternalStoragePath()) as f:
+      device.WriteFile(f.name, 'test')
   except device_errors.CommandFailedError:
     logging.info('External storage not writable. Remounting / as RW')
     device.RunShellCommand(['mount', '-o', 'remount,rw', '/'],
                            check_return=True, as_root=True)
     device.EnableRoot()
     with device_temp_file.DeviceTempFile(
-        device.adb, suffix='.sh', dir=device.GetExternalStoragePath()):
-      pass
+        device.adb, suffix='.sh', dir=device.GetExternalStoragePath()) as f:
+      device.WriteFile(f.name, 'test')
 
 def WipeChromeData(device, options):
   """Wipes chrome specific data from device
