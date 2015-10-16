@@ -353,7 +353,8 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(UserCloudPolicyManagerChromeOSTest);
 };
 
-TEST_F(UserCloudPolicyManagerChromeOSTest, BlockingFirstFetch) {
+// Test disabled. See crbug.com/534733.
+TEST_F(UserCloudPolicyManagerChromeOSTest, DISABLED_BlockingFirstFetch) {
   // Tests the initialization of a manager whose Profile is waiting for the
   // initial fetch, when the policy cache is empty.
   ASSERT_NO_FATAL_FAILURE(CreateManager(true, 1000));
@@ -376,7 +377,8 @@ TEST_F(UserCloudPolicyManagerChromeOSTest, BlockingFirstFetch) {
                          DM_STATUS_SUCCESS, register_blob_));
 }
 
-TEST_F(UserCloudPolicyManagerChromeOSTest, BlockingRefreshFetch) {
+// Test disabled. See crbug.com/534733.
+TEST_F(UserCloudPolicyManagerChromeOSTest, DISABLED_BlockingRefreshFetch) {
   // Tests the initialization of a manager whose Profile is waiting for the
   // initial fetch, when a previously cached policy and DMToken already exist.
   ASSERT_NO_FATAL_FAILURE(CreateManager(true, 1000));
@@ -388,7 +390,8 @@ TEST_F(UserCloudPolicyManagerChromeOSTest, BlockingRefreshFetch) {
                          base::Unretained(store_)));
 }
 
-TEST_F(UserCloudPolicyManagerChromeOSTest, BlockingFetchStoreError) {
+// Test disabled. See crbug.com/534733.
+TEST_F(UserCloudPolicyManagerChromeOSTest, DISABLED_BlockingFetchStoreError) {
   // Tests the initialization of a manager whose Profile is waiting for the
   // initial fetch, when the initial store load fails.
   ASSERT_NO_FATAL_FAILURE(CreateManager(true, 1000));
@@ -411,7 +414,8 @@ TEST_F(UserCloudPolicyManagerChromeOSTest, BlockingFetchStoreError) {
                          DM_STATUS_SUCCESS, register_blob_));
 }
 
-TEST_F(UserCloudPolicyManagerChromeOSTest, BlockingFetchOAuthError) {
+// Test disabled. See crbug.com/534733.
+TEST_F(UserCloudPolicyManagerChromeOSTest, DISABLED_BlockingFetchOAuthError) {
   // Tests the initialization of a manager whose Profile is waiting for the
   // initial fetch, when the OAuth2 token fetch fails.
   ASSERT_NO_FATAL_FAILURE(CreateManager(true, 1000));
@@ -440,7 +444,9 @@ TEST_F(UserCloudPolicyManagerChromeOSTest, BlockingFetchOAuthError) {
   Mock::VerifyAndClearExpectations(&observer_);
 }
 
-TEST_F(UserCloudPolicyManagerChromeOSTest, BlockingFetchRegisterError) {
+// Test disabled. See crbug.com/534733.
+TEST_F(UserCloudPolicyManagerChromeOSTest,
+       DISABLED_BlockingFetchRegisterError) {
   // Tests the initialization of a manager whose Profile is waiting for the
   // initial fetch, when the device management registration fails.
   ASSERT_NO_FATAL_FAILURE(CreateManager(true, 1000));
@@ -466,7 +472,9 @@ TEST_F(UserCloudPolicyManagerChromeOSTest, BlockingFetchRegisterError) {
   Mock::VerifyAndClearExpectations(&observer_);
 }
 
-TEST_F(UserCloudPolicyManagerChromeOSTest, BlockingFetchPolicyFetchError) {
+// Test disabled. See crbug.com/534733.
+TEST_F(UserCloudPolicyManagerChromeOSTest,
+       DISABLED_BlockingFetchPolicyFetchError) {
   // Tests the initialization of a manager whose Profile is waiting for the
   // initial fetch, when the policy fetch request fails.
   ASSERT_NO_FATAL_FAILURE(CreateManager(true, 1000));
@@ -507,7 +515,8 @@ TEST_F(UserCloudPolicyManagerChromeOSTest, BlockingFetchPolicyFetchError) {
   EXPECT_TRUE(PolicyBundle().Equals(manager_->policies()));
 }
 
-TEST_F(UserCloudPolicyManagerChromeOSTest, BlockingFetchTimeout) {
+// Test disabled. See crbug.com/534733.
+TEST_F(UserCloudPolicyManagerChromeOSTest, DISABLED_BlockingFetchTimeout) {
   // The blocking fetch should be abandoned after the timeout.
   ASSERT_NO_FATAL_FAILURE(CreateManager(true, 0));
 
@@ -526,8 +535,8 @@ TEST_F(UserCloudPolicyManagerChromeOSTest, BlockingFetchTimeout) {
   EXPECT_TRUE(PolicyBundle().Equals(manager_->policies()));
 }
 
-
-TEST_F(UserCloudPolicyManagerChromeOSTest, NonBlockingFirstFetch) {
+// Test disabled. See crbug.com/534733.
+TEST_F(UserCloudPolicyManagerChromeOSTest, DISABLED_NonBlockingFirstFetch) {
   // Tests the first policy fetch request by a Profile that isn't managed.
   ASSERT_NO_FATAL_FAILURE(CreateManager(false, 1000));
 
@@ -572,7 +581,8 @@ TEST_F(UserCloudPolicyManagerChromeOSTest, NonBlockingFirstFetch) {
       base::Bind(&base::TestSimpleTaskRunner::RunUntilIdle, task_runner_));
 }
 
-TEST_F(UserCloudPolicyManagerChromeOSTest, NonBlockingRefreshFetch) {
+// Test disabled. See crbug.com/534733.
+TEST_F(UserCloudPolicyManagerChromeOSTest, DISABLED_NonBlockingRefreshFetch) {
   // Tests a non-blocking initial policy fetch for a Profile that already has
   // a cached DMToken.
   ASSERT_NO_FATAL_FAILURE(CreateManager(false, 1000));
