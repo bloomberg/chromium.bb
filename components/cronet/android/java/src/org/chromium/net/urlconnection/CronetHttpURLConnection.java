@@ -8,11 +8,10 @@ import android.util.Pair;
 
 import org.chromium.base.Log;
 import org.chromium.net.CronetEngine;
-import org.chromium.net.ExtendedResponseInfo;
-import org.chromium.net.ResponseInfo;
 import org.chromium.net.UrlRequest;
 import org.chromium.net.UrlRequestException;
 import org.chromium.net.UrlRequestListener;
+import org.chromium.net.UrlResponseInfo;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -44,7 +43,7 @@ public class CronetHttpURLConnection extends HttpURLConnection {
 
     private CronetInputStream mInputStream;
     private CronetOutputStream mOutputStream;
-    private ResponseInfo mResponseInfo;
+    private UrlResponseInfo mResponseInfo;
     private UrlRequestException mException;
     private boolean mOnRedirectCalled = false;
     private boolean mHasResponse = false;
@@ -142,11 +141,11 @@ public class CronetHttpURLConnection extends HttpURLConnection {
      */
     @Override
     public final String getHeaderFieldKey(int pos) {
-        Pair<String, String> header = getHeaderFieldPair(pos);
+        Map.Entry<String, String> header = getHeaderFieldEntry(pos);
         if (header == null) {
             return null;
         }
-        return header.first;
+        return header.getKey();
     }
 
     /**
@@ -155,11 +154,11 @@ public class CronetHttpURLConnection extends HttpURLConnection {
      */
     @Override
     public final String getHeaderField(int pos) {
-        Pair<String, String> header = getHeaderFieldPair(pos);
+        Map.Entry<String, String> header = getHeaderFieldEntry(pos);
         if (header == null) {
             return null;
         }
-        return header.second;
+        return header.getValue();
     }
 
     /**
@@ -423,22 +422,22 @@ public class CronetHttpURLConnection extends HttpURLConnection {
         }
 
         @Override
-        public void onResponseStarted(UrlRequest request, ResponseInfo info) {
+        public void onResponseStarted(UrlRequest request, UrlResponseInfo info) {
             mResponseInfo = info;
             // Quits the message loop since we have the headers now.
             mMessageLoop.quit();
         }
 
         @Override
-        public void onReadCompleted(UrlRequest request, ResponseInfo info,
-                ByteBuffer byteBuffer) {
+        public void onReadCompleted(
+                UrlRequest request, UrlResponseInfo info, ByteBuffer byteBuffer) {
             mResponseInfo = info;
             mMessageLoop.quit();
         }
 
         @Override
-        public void onReceivedRedirect(UrlRequest request, ResponseInfo info,
-                String newLocationUrl) {
+        public void onReceivedRedirect(
+                UrlRequest request, UrlResponseInfo info, String newLocationUrl) {
             mOnRedirectCalled = true;
             if (instanceFollowRedirects) {
                 try {
@@ -455,14 +454,14 @@ public class CronetHttpURLConnection extends HttpURLConnection {
         }
 
         @Override
-        public void onSucceeded(UrlRequest request, ExtendedResponseInfo info) {
-            mResponseInfo = info.getResponseInfo();
+        public void onSucceeded(UrlRequest request, UrlResponseInfo info) {
+            mResponseInfo = info;
             setResponseDataCompleted();
         }
 
         @Override
-        public void onFailed(UrlRequest request, ResponseInfo info,
-                UrlRequestException exception) {
+        public void onFailed(
+                UrlRequest request, UrlResponseInfo info, UrlRequestException exception) {
             if (exception == null) {
                 throw new IllegalStateException(
                         "Exception cannot be null in onFailed.");
@@ -523,14 +522,13 @@ public class CronetHttpURLConnection extends HttpURLConnection {
     /**
      * Helper method to return the response header field at position pos.
      */
-    private Pair<String, String> getHeaderFieldPair(int pos) {
+    private Map.Entry<String, String> getHeaderFieldEntry(int pos) {
         try {
             getResponse();
         } catch (IOException e) {
             return null;
         }
-        List<Pair<String, String>> headers =
-                mResponseInfo.getAllHeadersAsList();
+        List<Map.Entry<String, String>> headers = mResponseInfo.getAllHeadersAsList();
         if (pos >= headers.size()) {
             return null;
         }

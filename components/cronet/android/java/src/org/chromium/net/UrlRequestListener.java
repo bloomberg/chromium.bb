@@ -33,7 +33,7 @@ public abstract class UrlRequestListener {
      * @param newLocationUrl Location where request is redirected.
      */
     public abstract void onReceivedRedirect(
-            UrlRequest request, ResponseInfo info, String newLocationUrl);
+            UrlRequest request, UrlResponseInfo info, String newLocationUrl);
 
     /**
      * Called when the final set of headers, after all redirects, is received.
@@ -48,7 +48,7 @@ public abstract class UrlRequestListener {
      * @param request Request that started to get response.
      * @param info Response information.
      */
-    public abstract void onResponseStarted(UrlRequest request, ResponseInfo info);
+    public abstract void onResponseStarted(UrlRequest request, UrlResponseInfo info);
 
     /**
      * Called whenever part of the response body has been read. Only part of
@@ -69,7 +69,7 @@ public abstract class UrlRequestListener {
      *     buffer's limit is not changed.
      */
     public abstract void onReadCompleted(
-            UrlRequest request, ResponseInfo info, ByteBuffer byteBuffer);
+            UrlRequest request, UrlResponseInfo info, ByteBuffer byteBuffer);
 
     /**
      * Called when request is completed successfully, no callbacks will be
@@ -78,7 +78,7 @@ public abstract class UrlRequestListener {
      * @param request Request that succeeded.
      * @param info Response information.
      */
-    public abstract void onSucceeded(UrlRequest request, ExtendedResponseInfo info);
+    public abstract void onSucceeded(UrlRequest request, UrlResponseInfo info);
 
     /**
      * Called if request failed for any reason after start(). Once
@@ -86,8 +86,9 @@ public abstract class UrlRequestListener {
      * provides information about error.
      *
      * @param request Request that failed.
-     * @param info Response information.
+     * @param info Response information. May be {@code null} if no response was received.
      * @param error information about error.
      */
-    public abstract void onFailed(UrlRequest request, ResponseInfo info, UrlRequestException error);
+    public abstract void onFailed(
+            UrlRequest request, UrlResponseInfo info, UrlRequestException error);
 }

@@ -14,7 +14,7 @@ events during the lifetime of a request. For example:
     class MyListener extends UrlRequestListener {
         @Override
         public void onReceivedRedirect(UrlRequest request,
-                ResponseInfo responseInfo, String newLocationUrl) {
+                UrlResponseInfo responseInfo, String newLocationUrl) {
             if (followRedirect) {
                 // Let's tell Cronet to follow the redirect!
                 mRequest.followRedirect();
@@ -26,7 +26,7 @@ events during the lifetime of a request. For example:
 
         @Override
         public void onResponseStarted(UrlRequest request,
-                ResponseInfo responseInfo) {
+                UrlResponseInfo responseInfo) {
              // Now we have response headers!
              int httpStatusCode = responseInfo.getHttpStatusCode();
              if (httpStatusCode == 200) {
@@ -42,7 +42,7 @@ events during the lifetime of a request. For example:
 
         @Override
         public void onReadCompleted(UrlRequest request,
-                ResponseInfo responseInfo, ByteBuffer byteBuffer) {
+                UrlResponseInfo responseInfo, ByteBuffer byteBuffer) {
              // Response body is available.
              doSomethingWithResponseData(byteBuffer);
              // Let's tell Cronet to continue reading the response body or
@@ -52,13 +52,13 @@ events during the lifetime of a request. For example:
 
         @Override
         public void onSucceeded(UrlRequest request,
-                ExtendedResponseInfo extendedResponseInfo) {
+                UrlResponseInfo responseInfo) {
              // Request has completed successfully!
         }
 
         @Override
         public void onFailed(UrlRequest request,
-                ResponseInfo responseInfo, UrlRequestException error) {
+                UrlResponseInfo responseInfo, UrlRequestException error) {
              // Request has failed. responseInfo might be null.
              Log.e("MyListener", "Request failed. " + error.getMessage());
              // Maybe handle error here. Typical errors include hostname

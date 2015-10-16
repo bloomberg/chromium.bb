@@ -91,8 +91,7 @@ public class QuicTest extends CronetTestBase {
         assertEquals("quic/1+spdy/3", listener.mResponseInfo.getNegotiatedProtocol());
         // The total received bytes should be larger than the content length, to account for
         // headers.
-        assertTrue(
-                listener.mExtendedResponseInfo.getTotalReceivedBytes() > expectedContent.length());
+        assertTrue(listener.mResponseInfo.getReceivedBytesCount() > expectedContent.length());
 
         // This test takes a long time, since the update will only be scheduled
         // after kUpdatePrefsDelayMs in http_server_properties_manager.cc.
@@ -128,8 +127,7 @@ public class QuicTest extends CronetTestBase {
         assertEquals("quic/1+spdy/3", listener2.mResponseInfo.getNegotiatedProtocol());
         // The total received bytes should be larger than the content length, to account for
         // headers.
-        assertTrue(
-                listener2.mExtendedResponseInfo.getTotalReceivedBytes() > expectedContent.length());
+        assertTrue(listener2.mResponseInfo.getReceivedBytesCount() > expectedContent.length());
     }
 
     // Returns whether a file contains a particular string.

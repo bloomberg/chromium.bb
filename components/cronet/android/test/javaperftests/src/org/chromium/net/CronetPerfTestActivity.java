@@ -390,31 +390,32 @@ public class CronetPerfTestActivity extends Activity {
                 }
 
                 @Override
-                public void onResponseStarted(UrlRequest request, ResponseInfo info) {
+                public void onResponseStarted(UrlRequest request, UrlResponseInfo info) {
                     mBuffer.clear();
                     request.readNew(mBuffer);
                 }
 
                 @Override
                 public void onReceivedRedirect(
-                        UrlRequest request, ResponseInfo info, String newLocationUrl) {
+                        UrlRequest request, UrlResponseInfo info, String newLocationUrl) {
                     request.followRedirect();
                 }
 
                 @Override
                 public void onReadCompleted(
-                        UrlRequest request, ResponseInfo info, ByteBuffer byteBuffer) {
+                        UrlRequest request, UrlResponseInfo info, ByteBuffer byteBuffer) {
                     mBuffer.clear();
                     request.readNew(mBuffer);
                 }
 
                 @Override
-                public void onSucceeded(UrlRequest request, ExtendedResponseInfo info) {
+                public void onSucceeded(UrlRequest request, UrlResponseInfo info) {
                     mCompletionCallback.run();
                 }
 
                 @Override
-                public void onFailed(UrlRequest request, ResponseInfo info, UrlRequestException e) {
+                public void onFailed(
+                        UrlRequest request, UrlResponseInfo info, UrlRequestException e) {
                     System.out.println("Async request failed with " + e);
                     mFailed = true;
                 }

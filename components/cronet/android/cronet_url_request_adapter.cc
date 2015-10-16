@@ -269,7 +269,7 @@ void CronetURLRequestAdapter::OnReceivedRedirect(
   cronet::Java_CronetUrlRequest_onReceivedRedirect(
       env, owner_.obj(),
       ConvertUTF8ToJavaString(env, redirect_info.new_url.spec()).obj(),
-      redirect_info.status_code);
+      redirect_info.status_code, request->GetTotalReceivedBytes());
   *defer_redirect = true;
 }
 
@@ -283,7 +283,8 @@ void CronetURLRequestAdapter::OnSSLCertificateError(
   JNIEnv* env = base::android::AttachCurrentThread();
   cronet::Java_CronetUrlRequest_onError(
       env, owner_.obj(), net_error,
-      ConvertUTF8ToJavaString(env, net::ErrorToString(net_error)).obj());
+      ConvertUTF8ToJavaString(env, net::ErrorToString(net_error)).obj(),
+      request->GetTotalReceivedBytes());
 }
 
 void CronetURLRequestAdapter::OnResponseStarted(net::URLRequest* request) {
@@ -304,7 +305,7 @@ void CronetURLRequestAdapter::OnReadCompleted(net::URLRequest* request,
     JNIEnv* env = base::android::AttachCurrentThread();
     cronet::Java_CronetUrlRequest_onReadCompleted(
         env, owner_.obj(), read_buffer_->byte_buffer(), bytes_read,
-        read_buffer_->initial_position());
+        read_buffer_->initial_position(), request->GetTotalReceivedBytes());
     // Free the read buffer. This lets the Java ByteBuffer be freed, if the
     // embedder releases it, too.
     read_buffer_ = nullptr;
@@ -380,7 +381,8 @@ bool CronetURLRequestAdapter::MaybeReportError(net::URLRequest* request) const {
   JNIEnv* env = base::android::AttachCurrentThread();
   cronet::Java_CronetUrlRequest_onError(
       env, owner_.obj(), net_error,
-      ConvertUTF8ToJavaString(env, net::ErrorToString(net_error)).obj());
+      ConvertUTF8ToJavaString(env, net::ErrorToString(net_error)).obj(),
+      request->GetTotalReceivedBytes());
   return true;
 }
 

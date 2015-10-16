@@ -24,11 +24,9 @@ import java.util.concurrent.ThreadFactory;
  * Allows to cancel, block request or throw an exception from an arbitrary step.
  */
 class TestUrlRequestListener extends UrlRequestListener {
-    public ArrayList<ResponseInfo> mRedirectResponseInfoList =
-            new ArrayList<ResponseInfo>();
+    public ArrayList<UrlResponseInfo> mRedirectResponseInfoList = new ArrayList<UrlResponseInfo>();
     public ArrayList<String> mRedirectUrlList = new ArrayList<String>();
-    public ResponseInfo mResponseInfo;
-    public ExtendedResponseInfo mExtendedResponseInfo;
+    public UrlResponseInfo mResponseInfo;
     public UrlRequestException mError;
 
     public ResponseStep mResponseStep = ResponseStep.NOTHING;
@@ -120,9 +118,8 @@ class TestUrlRequestListener extends UrlRequestListener {
     }
 
     @Override
-    public void onReceivedRedirect(UrlRequest request,
-            ResponseInfo info,
-            String newLocationUrl) {
+    public void onReceivedRedirect(
+            UrlRequest request, UrlResponseInfo info, String newLocationUrl) {
         assertEquals(mExecutorThread, Thread.currentThread());
         assertFalse(request.isDone());
         assertTrue(mResponseStep == ResponseStep.NOTHING
@@ -140,7 +137,7 @@ class TestUrlRequestListener extends UrlRequestListener {
     }
 
     @Override
-    public void onResponseStarted(UrlRequest request, ResponseInfo info) {
+    public void onResponseStarted(UrlRequest request, UrlResponseInfo info) {
         assertEquals(mExecutorThread, Thread.currentThread());
         assertFalse(request.isDone());
         assertTrue(mResponseStep == ResponseStep.NOTHING
@@ -156,9 +153,7 @@ class TestUrlRequestListener extends UrlRequestListener {
     }
 
     @Override
-    public void onReadCompleted(UrlRequest request,
-            ResponseInfo info,
-            ByteBuffer byteBuffer) {
+    public void onReadCompleted(UrlRequest request, UrlResponseInfo info, ByteBuffer byteBuffer) {
         assertEquals(mExecutorThread, Thread.currentThread());
         assertFalse(request.isDone());
         assertTrue(mResponseStep == ResponseStep.ON_RESPONSE_STARTED
@@ -194,7 +189,7 @@ class TestUrlRequestListener extends UrlRequestListener {
     }
 
     @Override
-    public void onSucceeded(UrlRequest request, ExtendedResponseInfo info) {
+    public void onSucceeded(UrlRequest request, UrlResponseInfo info) {
         assertEquals(mExecutorThread, Thread.currentThread());
         assertTrue(request.isDone());
         assertTrue(mResponseStep == ResponseStep.ON_RESPONSE_STARTED
@@ -202,15 +197,13 @@ class TestUrlRequestListener extends UrlRequestListener {
         assertNull(mError);
 
         mResponseStep = ResponseStep.ON_SUCCEEDED;
-        mExtendedResponseInfo = info;
+        mResponseInfo = info;
         openDone();
         maybeThrowCancelOrPause(request);
     }
 
     @Override
-    public void onFailed(UrlRequest request,
-            ResponseInfo info,
-            UrlRequestException error) {
+    public void onFailed(UrlRequest request, UrlResponseInfo info, UrlRequestException error) {
         assertEquals(mExecutorThread, Thread.currentThread());
         assertTrue(request.isDone());
         // Shouldn't happen after success.

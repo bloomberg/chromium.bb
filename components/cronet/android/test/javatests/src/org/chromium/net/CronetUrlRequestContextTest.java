@@ -68,15 +68,13 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
      */
     class ShutdownTestUrlRequestListener extends TestUrlRequestListener {
         @Override
-        public void onSucceeded(UrlRequest request, ExtendedResponseInfo info) {
+        public void onSucceeded(UrlRequest request, UrlResponseInfo info) {
             super.onSucceeded(request, info);
             mActivity.mCronetEngine.shutdown();
         }
 
         @Override
-        public void onFailed(UrlRequest request,
-                ResponseInfo info,
-                UrlRequestException error) {
+        public void onFailed(UrlRequest request, UrlResponseInfo info, UrlRequestException error) {
             super.onFailed(request, info, error);
             mActivity.mCronetEngine.shutdown();
         }

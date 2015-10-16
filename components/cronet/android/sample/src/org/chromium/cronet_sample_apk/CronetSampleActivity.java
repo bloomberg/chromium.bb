@@ -16,13 +16,12 @@ import android.widget.TextView;
 
 import org.chromium.base.Log;
 import org.chromium.net.CronetEngine;
-import org.chromium.net.ExtendedResponseInfo;
-import org.chromium.net.ResponseInfo;
 import org.chromium.net.UploadDataProvider;
 import org.chromium.net.UploadDataSink;
 import org.chromium.net.UrlRequest;
 import org.chromium.net.UrlRequestException;
 import org.chromium.net.UrlRequestListener;
+import org.chromium.net.UrlResponseInfo;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -52,13 +51,13 @@ public class CronetSampleActivity extends Activity {
 
         @Override
         public void onReceivedRedirect(
-                UrlRequest request, ResponseInfo info, String newLocationUrl) {
+                UrlRequest request, UrlResponseInfo info, String newLocationUrl) {
             Log.i(TAG, "****** onReceivedRedirect ******");
             request.followRedirect();
         }
 
         @Override
-        public void onResponseStarted(UrlRequest request, ResponseInfo info) {
+        public void onResponseStarted(UrlRequest request, UrlResponseInfo info) {
             Log.i(TAG, "****** Response Started ******");
             Log.i(TAG, "*** Headers Are *** " + info.getAllHeaders());
 
@@ -66,7 +65,8 @@ public class CronetSampleActivity extends Activity {
         }
 
         @Override
-        public void onReadCompleted(UrlRequest request, ResponseInfo info, ByteBuffer byteBuffer) {
+        public void onReadCompleted(
+                UrlRequest request, UrlResponseInfo info, ByteBuffer byteBuffer) {
             Log.i(TAG, "****** onReadCompleted ******" + byteBuffer);
 
             try {
@@ -79,14 +79,13 @@ public class CronetSampleActivity extends Activity {
         }
 
         @Override
-        public void onSucceeded(UrlRequest request, ExtendedResponseInfo info) {
-            ResponseInfo responseInfo = info.getResponseInfo();
-            mHttpStatusCode = responseInfo.getHttpStatusCode();
+        public void onSucceeded(UrlRequest request, UrlResponseInfo info) {
+            mHttpStatusCode = info.getHttpStatusCode();
             Log.i(TAG, "****** Request Completed, status code is " + mHttpStatusCode
-                            + ", total received bytes is " + info.getTotalReceivedBytes());
+                            + ", total received bytes is " + info.getReceivedBytesCount());
 
             final String receivedData = mBytesReceived.toString();
-            final String url = responseInfo.getUrl();
+            final String url = info.getUrl();
             final String text = "Completed " + url + " (" + mHttpStatusCode + ")";
             CronetSampleActivity.this.runOnUiThread(new Runnable() {
                 public void run() {
@@ -99,7 +98,7 @@ public class CronetSampleActivity extends Activity {
         }
 
         @Override
-        public void onFailed(UrlRequest request, ResponseInfo info, UrlRequestException error) {
+        public void onFailed(UrlRequest request, UrlResponseInfo info, UrlRequestException error) {
             Log.i(TAG, "****** onFailed, error is: " + error.getMessage());
 
             final String url = mUrl;
