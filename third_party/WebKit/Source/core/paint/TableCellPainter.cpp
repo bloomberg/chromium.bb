@@ -102,7 +102,7 @@ void TableCellPainter::paintCollapsedBorders(const PaintInfo& paintInfo, const L
         paintRect.width() + leftWidth / 2 + (rightWidth + 1) / 2,
         paintRect.height() + topWidth / 2 + (bottomWidth + 1) / 2);
 
-    if (!borderRect.intersects(paintInfo.rect))
+    if (!paintInfo.intersectsCullRect(borderRect))
         return;
 
     GraphicsContext* graphicsContext = paintInfo.context;

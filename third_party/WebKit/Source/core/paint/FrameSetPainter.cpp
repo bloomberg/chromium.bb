@@ -29,7 +29,7 @@ static Color borderFillColor()
 
 void FrameSetPainter::paintColumnBorder(const PaintInfo& paintInfo, const IntRect& borderRect)
 {
-    if (!paintInfo.rect.intersects(borderRect))
+    if (!paintInfo.intersectsCullRect(borderRect))
         return;
 
     // FIXME: We should do something clever when borders from distinct framesets meet at a join.

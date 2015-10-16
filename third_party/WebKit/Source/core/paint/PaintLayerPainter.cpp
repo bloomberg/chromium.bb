@@ -570,7 +570,7 @@ void PaintLayerPainter::paintFragmentWithPhase(PaintPhase phase, const PaintLaye
         clipRecorder.emplace(*context, *m_paintLayer.layoutObject(), clipType, clipRect, &paintingInfo, fragment.paginationOffset, paintFlags, clippingRule);
     }
 
-    PaintInfo paintInfo(context, pixelSnappedIntRect(clipRect.rect()), phase, paintingInfo.globalPaintFlags(), paintFlags, paintingRootForLayoutObject, paintingInfo.rootLayer->layoutObject());
+    LayoutRect newCullRect(clipRect.rect());
     Optional<ScrollRecorder> scrollRecorder;
     LayoutPoint paintOffset = toPoint(fragment.layerBounds.location() - m_paintLayer.layoutBoxLocation());
     if (!paintingInfo.scrollOffsetAccumulation.isZero()) {
@@ -579,9 +579,13 @@ void PaintLayerPainter::paintFragmentWithPhase(PaintPhase phase, const PaintLaye
         // for this layer seperately, with the scroll offset accumulated from the root layer to the parent of this
         // layer, to get the same result as ScrollRecorder in BlockPainter.
         paintOffset += paintingInfo.scrollOffsetAccumulation;
-        paintInfo.rect.move(paintingInfo.scrollOffsetAccumulation);
-        scrollRecorder.emplace(*paintInfo.context, *m_paintLayer.layoutObject(), paintInfo.phase, paintingInfo.scrollOffsetAccumulation);
+
+        newCullRect.move(paintingInfo.scrollOffsetAccumulation);
+        scrollRecorder.emplace(*context, *m_paintLayer.layoutObject(), phase, paintingInfo.scrollOffsetAccumulation);
     }
+    PaintInfo paintInfo(context, pixelSnappedIntRect(newCullRect), phase, paintingInfo.globalPaintFlags(), paintFlags,
+        paintingRootForLayoutObject, paintingInfo.rootLayer->layoutObject());
+
     m_paintLayer.layoutObject()->paint(paintInfo, paintOffset);
 }
 

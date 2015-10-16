@@ -128,14 +128,7 @@ bool LayoutReplaced::shouldPaint(const PaintInfo& paintInfo, const LayoutPoint& 
     paintRect.unite(localSelectionRect());
     paintRect.moveBy(paintOffset + location());
 
-    // Early exit if the element touches the edges.
-    LayoutUnit top = paintRect.y();
-    LayoutUnit bottom = paintRect.maxY();
-
-    if (paintRect.x() >= paintInfo.rect.maxX() || paintRect.maxX() <= paintInfo.rect.x())
-        return false;
-
-    if (top >= paintInfo.rect.maxY() || bottom <= paintInfo.rect.y())
+    if (!paintInfo.intersectsCullRect(paintRect))
         return false;
 
     return true;

@@ -28,6 +28,7 @@
 
 // TODO(jchaffraix): Once we unify PaintBehavior and PaintLayerFlags, we should move
 // PaintLayerFlags to PaintPhase and rename it. Thus removing the need for this #include.
+#include "core/CoreExport.h"
 #include "core/paint/PaintLayerPaintingInfo.h"
 #include "core/paint/PaintPhase.h"
 #include "platform/geometry/IntRect.h"
@@ -46,11 +47,12 @@ namespace blink {
 class LayoutInline;
 class LayoutBoxModelObject;
 class LayoutObject;
+class PaintInvalidationState;
 
-struct PaintInfo {
+struct CORE_EXPORT PaintInfo {
     ALLOW_ONLY_INLINE_ALLOCATION();
     PaintInfo(GraphicsContext* newContext, const IntRect& newRect, PaintPhase newPhase, GlobalPaintFlags globalPaintFlags, PaintLayerFlags paintFlags,
-        LayoutObject* newPaintingRoot = 0, const LayoutBoxModelObject* newPaintContainer = 0)
+        LayoutObject* newPaintingRoot = nullptr, const LayoutBoxModelObject* newPaintContainer = nullptr)
         : context(newContext)
         , rect(newRect)
         , phase(newPhase)
@@ -62,22 +64,9 @@ struct PaintInfo {
     {
     }
 
-    void updatePaintingRootForChildren(const LayoutObject* layoutObject)
-    {
-        if (!paintingRoot)
-            return;
+    void updatePaintingRootForChildren(const LayoutObject*);
 
-        // If we're the painting root, kids draw normally, and see root of 0.
-        if (paintingRoot == layoutObject) {
-            paintingRoot = 0;
-            return;
-        }
-    }
-
-    bool shouldPaintWithinRoot(const LayoutObject* layoutObject) const
-    {
-        return !paintingRoot || paintingRoot == layoutObject;
-    }
+    bool shouldPaintWithinRoot(const LayoutObject*) const;
 
     bool isRenderingClipPathAsMaskImage() const { return m_paintFlags & PaintLayerPaintingRenderingClipPathAsMask; }
 
@@ -94,16 +83,12 @@ struct PaintInfo {
 
     PaintLayerFlags paintFlags() const { return m_paintFlags; }
 
-    bool intersectsCullRect(const AffineTransform& transform, const FloatRect& boundingBox) const
-    {
-        return transform.mapRect(boundingBox).intersects(rect);
-    }
+    bool intersectsCullRect(const AffineTransform&, const FloatRect& boundingBox) const;
 
-    void updateCullRectForSVGTransform(const AffineTransform& localToParentTransform)
-    {
-        if (rect != LayoutRect::infiniteIntRect())
-            rect = localToParentTransform.inverse().mapRect(rect);
-    }
+    void updateCullRectForSVGTransform(const AffineTransform& localToParentTransform);
+
+    bool intersectsCullRect(const IntRect&) const;
+    bool intersectsCullRect(const LayoutRect&) const;
 
     // FIXME: Introduce setters/getters at some point. Requires a lot of changes throughout layout/.
     GraphicsContext* context;

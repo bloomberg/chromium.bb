@@ -28,7 +28,7 @@ void InlineFlowBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& 
     m_inlineFlowBox.flipForWritingMode(overflowRect);
     overflowRect.moveBy(paintOffset);
 
-    if (!paintInfo.rect.intersects(pixelSnappedIntRect(overflowRect)))
+    if (!paintInfo.intersectsCullRect(overflowRect))
         return;
 
     if (paintInfo.phase == PaintPhaseMask) {

@@ -237,7 +237,7 @@ bool BlockPainter::intersectsPaintRect(const PaintInfo& paintInfo, const LayoutP
     }
     m_layoutBlock.flipForWritingMode(overflowRect);
     overflowRect.moveBy(paintOffset + m_layoutBlock.location());
-    return (overflowRect.intersects(LayoutRect(paintInfo.rect)));
+    return paintInfo.intersectsCullRect(overflowRect);
 }
 
 void BlockPainter::paintContents(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
