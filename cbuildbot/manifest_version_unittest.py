@@ -6,6 +6,7 @@
 
 from __future__ import print_function
 
+import datetime
 import os
 import tempfile
 
@@ -379,3 +380,139 @@ class BuildSpecsManagerTest(cros_test_lib.MockTempDirTestCase):
     statuses = self._GetBuildersStatus(['build1', 'build2'], status_runs)
     self.assertTrue(statuses['build1'].Failed())
     self.assertTrue(statuses['build2'].Passed())
+
+
+class SlaveStatusTest(cros_test_lib.TestCase):
+  """Test methods testing methods in SalveStatus class."""
+
+  def testGetMissing(self):
+    """Tests GetMissing returns the missing builders."""
+    status = {'build1': constants.BUILDER_STATUS_FAILED,
+              'build2': constants.BUILDER_STATUS_INFLIGHT}
+    builders_array = ['build1', 'build2', 'missing_builder']
+    slaveStatus = manifest_version.SlaveStatus(status, datetime.datetime.now(),
+                                               builders_array, set())
+
+    self.assertEqual(slaveStatus.GetMissing(), ['missing_builder'])
+
+  def testGetMissingNone(self):
+    """Tests GetMissing returns nothing when all builders are accounted for."""
+    status = {'build1': constants.BUILDER_STATUS_FAILED,
+              'build2': constants.BUILDER_STATUS_INFLIGHT}
+    builders_array = ['build1', 'build2']
+    slaveStatus = manifest_version.SlaveStatus(status, datetime.datetime.now(),
+                                               builders_array, set())
+
+    self.assertEqual(slaveStatus.GetMissing(), [])
+
+  def testGetCompleted(self):
+    """Tests GetCompleted returns the right builders that have completed."""
+    status = {'passed': constants.BUILDER_STATUS_PASSED,
+              'failed': constants.BUILDER_STATUS_FAILED,
+              'aborted': constants.BUILDER_STATUS_ABORTED,
+              'skipped': constants.BUILDER_STATUS_SKIPPED,
+              'forgiven': constants.BUILDER_STATUS_FORGIVEN,
+              'inflight': constants.BUILDER_STATUS_INFLIGHT,
+              'missing': constants.BUILDER_STATUS_MISSING,
+              'planned': constants.BUILDER_STATUS_PLANNED}
+    builders_array = ['passed', 'failed', 'aborted', 'skipped', 'forgiven',
+                      'inflight', 'missing', 'planning']
+    previous_completed = set(['passed'])
+    expected_completed = set(['passed', 'failed', 'aborted', 'skipped',
+                              'forgiven'])
+    slaveStatus = manifest_version.SlaveStatus(status,
+                                               datetime.datetime.now(),
+                                               builders_array,
+                                               previous_completed)
+
+    self.assertEqual(sorted(slaveStatus.GetCompleted()),
+                     sorted(['passed', 'failed', 'aborted', 'skipped',
+                             'forgiven']))
+    self.assertEqual(slaveStatus.previous_completed, expected_completed)
+
+  def testCompleted(self):
+    """Tests Completed returns proper bool."""
+    statusNotCompleted = {'build1': constants.BUILDER_STATUS_FAILED,
+                          'build2': constants.BUILDER_STATUS_INFLIGHT}
+    statusCompleted = {'build1': constants.BUILDER_STATUS_FAILED,
+                       'build2': constants.BUILDER_STATUS_PASSED}
+    builders_array = ['build1', 'build2']
+    slaveStatusNotCompleted = manifest_version.SlaveStatus(
+        statusNotCompleted, datetime.datetime.now(), builders_array, set())
+    slaveStatusCompleted = manifest_version.SlaveStatus(
+        statusCompleted, datetime.datetime.now(), builders_array, set())
+
+    self.assertFalse(slaveStatusNotCompleted.Completed())
+    self.assertTrue(slaveStatusCompleted.Completed())
+
+  def testShouldFailForBuilderStartTimeoutTrue(self):
+    """Tests that ShouldFailForBuilderStartTimeout says fail when it should."""
+    status = {'build1': constants.BUILDER_STATUS_FAILED}
+    start_time = datetime.datetime.now()
+    builders_array = ['build1', 'build2']
+    slaveStatus = manifest_version.SlaveStatus(status, start_time,
+                                               builders_array, set())
+    check_time = start_time + datetime.timedelta(
+        minutes=slaveStatus.BUILDER_START_TIMEOUT + 1)
+
+    self.assertTrue(slaveStatus.ShouldFailForBuilderStartTimeout(check_time))
+
+  def testShouldFailForBuilderStartTimeoutFalseTooEarly(self):
+    """Tests that ShouldFailForBuilderStartTimeout doesn't fail.
+
+    Make sure that we don't fail if there are missing builders but we're
+    checking before the timeout and the other builders have completed.
+    """
+    status = {'build1': constants.BUILDER_STATUS_FAILED}
+    start_time = datetime.datetime.now()
+    builders_array = ['build1', 'build2']
+    slaveStatus = manifest_version.SlaveStatus(status, start_time,
+                                               builders_array, set())
+
+    self.assertFalse(slaveStatus.ShouldFailForBuilderStartTimeout(start_time))
+
+  def testShouldFailForBuilderStartTimeoutFalseNotCompleted(self):
+    """Tests that ShouldFailForBuilderStartTimeout doesn't fail.
+
+    Make sure that we don't fail if there are missing builders and we're
+    checking after the timeout but the other builders haven't completed.
+    """
+    status = {'build1': constants.BUILDER_STATUS_INFLIGHT}
+    start_time = datetime.datetime.now()
+    builders_array = ['build1', 'build2']
+    slaveStatus = manifest_version.SlaveStatus(status, start_time,
+                                               builders_array, set())
+    check_time = start_time + datetime.timedelta(
+        minutes=slaveStatus.BUILDER_START_TIMEOUT + 1)
+
+    self.assertFalse(slaveStatus.ShouldFailForBuilderStartTimeout(check_time))
+
+  def testShouldWaitAllBuildersCompleted(self):
+    """Tests that ShouldWait says no waiting because all builders finished."""
+    status = {'build1': constants.BUILDER_STATUS_FAILED,
+              'build2': constants.BUILDER_STATUS_PASSED}
+    builders_array = ['build1', 'build2']
+    slaveStatus = manifest_version.SlaveStatus(status, datetime.datetime.now(),
+                                               builders_array, set())
+
+    self.assertFalse(slaveStatus.ShouldWait())
+
+  def testShouldWaitMissingBuilder(self):
+    """Tests that ShouldWait says no waiting because a builder is missing."""
+    status = {'build1': constants.BUILDER_STATUS_FAILED}
+    builders_array = ['build1', 'build2']
+    start_time = datetime.datetime.now() - datetime.timedelta(hours=1)
+    slaveStatus = manifest_version.SlaveStatus(status, start_time,
+                                               builders_array, set())
+
+    self.assertFalse(slaveStatus.ShouldWait())
+
+  def testShouldWaitBuildersStillBuilding(self):
+    """Tests that ShouldWait says to wait because builders still building."""
+    status = {'build1': constants.BUILDER_STATUS_INFLIGHT,
+              'build2': constants.BUILDER_STATUS_FAILED}
+    builders_array = ['build1', 'build2']
+    slaveStatus = manifest_version.SlaveStatus(status, datetime.datetime.now(),
+                                               builders_array, set())
+
+    self.assertTrue(slaveStatus.ShouldWait())
