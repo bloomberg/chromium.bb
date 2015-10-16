@@ -9,9 +9,9 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.sync.FakeProfileSyncService;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
@@ -42,15 +42,13 @@ public class PassphraseActivityTest extends NativeLibraryTestBase {
         // Clear ProfileSyncService in case it was mocked.
         ProfileSyncService.overrideForTests(null);
         super.tearDown();
+        SigninTestUtil.get().resetSigninState();
     }
 
     /**
      * This is a regression test for http://crbug.com/469890.
-     * @SmallTest
-     * Constantly fails on M: http://crbug.com/517590
-     * Does not clean up its test accounts: http//crbug.com/542962
      */
-    @DisabledTest
+    @SmallTest
     @Feature({"Sync"})
     public void testCallbackAfterBackgrounded() throws Exception {
         getInstrumentation().waitForIdleSync();

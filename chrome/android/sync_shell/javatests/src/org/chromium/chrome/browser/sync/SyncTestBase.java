@@ -105,6 +105,7 @@ public class SyncTestBase extends ChromeActivityTestCaseBase<ChromeActivity> {
                 FakeServerHelper.deleteFakeServer();
             }
         });
+        SigninTestUtil.get().resetSigninState();
 
         super.tearDown();
     }
