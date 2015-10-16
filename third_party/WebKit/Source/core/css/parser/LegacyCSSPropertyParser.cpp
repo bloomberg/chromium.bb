@@ -1084,30 +1084,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
         break;
     // End of CSS3 properties
 
-    // Apple specific properties.  These will never be standardized and are purely to
-    // support custom WebKit-based Apple applications.
-    case CSSPropertyWebkitLineClamp:
-        // When specifying number of lines, don't allow 0 as a valid value
-        // When specifying either type of unit, require non-negative integers
-        validPrimitive = (!id && !isCalculation(value) && validUnit(value, FInteger | FPercent | FNonNeg) && (value->unit() == CSSPrimitiveValue::UnitType::Percentage || value->fValue));
-        break;
-
-    case CSSPropertyWebkitFontSizeDelta: // <length>
-        validPrimitive = validUnit(value, FLength | FUnitlessQuirk);
-        break;
-
-    case CSSPropertyWebkitHyphenateCharacter:
-    case CSSPropertyWebkitLocale:
-        if (id == CSSValueAuto) {
-            validPrimitive = true;
-        } else if (value->m_unit == CSSParserValue::String) {
-            parsedValue = createPrimitiveStringValue(value);
-            m_valueList->next();
-        }
-        break;
-
-    // End Apple-specific properties
-
     case CSSPropertyWebkitAppRegion:
         if (id >= CSSValueDrag && id <= CSSValueNoDrag)
             validPrimitive = true;
@@ -1299,6 +1275,10 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyWebkitLogicalHeight:
     case CSSPropertyClip:
     case CSSPropertyTouchAction:
+    case CSSPropertyWebkitLineClamp:
+    case CSSPropertyWebkitFontSizeDelta:
+    case CSSPropertyWebkitHyphenateCharacter:
+    case CSSPropertyWebkitLocale:
         validPrimitive = false;
         break;
 

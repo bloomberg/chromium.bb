@@ -875,6 +875,24 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeTouchAction(CSSParserTokenRange& 
     return list.release();
 }
 
+static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeLineClamp(CSSParserTokenRange& range, CSSParserMode cssParserMode)
+{
+    if (range.peek().type() != PercentageToken && range.peek().type() != NumberToken)
+        return nullptr;
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> clampValue = consumePercent(range, ValueRangeNonNegative);
+    if (clampValue)
+        return clampValue;
+    // When specifying number of lines, don't allow 0 as a valid value.
+    return consumeInteger(range, cssParserMode, 1);
+}
+
+static PassRefPtrWillBeRawPtr<CSSValue> consumeLocale(CSSParserTokenRange& range)
+{
+    if (range.peek().id() == CSSValueAuto)
+        return consumeIdent(range);
+    return consumeString(range);
+}
+
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSPropertyID propId)
 {
     m_range.consumeWhitespace();
@@ -938,6 +956,13 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
         return consumeClip(m_range, m_context.mode());
     case CSSPropertyTouchAction:
         return consumeTouchAction(m_range);
+    case CSSPropertyWebkitLineClamp:
+        return consumeLineClamp(m_range, m_context.mode());
+    case CSSPropertyWebkitFontSizeDelta:
+        return consumeLength(m_range, m_context.mode(), ValueRangeAll, UnitlessQuirk::Allow);
+    case CSSPropertyWebkitHyphenateCharacter:
+    case CSSPropertyWebkitLocale:
+        return consumeLocale(m_range);
     default:
         return nullptr;
     }
