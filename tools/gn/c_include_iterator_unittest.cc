@@ -132,3 +132,26 @@ TEST(CIncludeIterator, TolerateNonIncludes) {
   }
   EXPECT_FALSE(iter.GetNextIncludeString(&contents, &range));
 }
+
+// Tests that comments of the form
+//    /*
+//     *
+//     */
+// are not counted toward the non-include line count.
+TEST(CIncludeIterator, CStyleComments) {
+  std::string buffer("/*");
+  for (size_t i = 0; i < 1000; i++)
+    buffer.append(" *\n");
+  buffer.append(" */\n\n");
+  buffer.append("#include \"foo/bar.h\"\n");
+
+  InputFile file(SourceFile("//foo.cc"));
+  file.SetContents(buffer);
+
+  base::StringPiece contents;
+  LocationRange range;
+
+  CIncludeIterator iter(&file);
+  EXPECT_TRUE(iter.GetNextIncludeString(&contents, &range));
+  EXPECT_EQ("foo/bar.h", contents);
+}

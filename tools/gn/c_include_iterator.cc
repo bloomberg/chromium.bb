@@ -48,6 +48,8 @@ base::StringPiece TrimLeadingWhitespace(const base::StringPiece& str) {
 bool ShouldCountTowardNonIncludeLines(const base::StringPiece& line) {
   if (StartsWith(line, "//"))
     return false;  // Don't count comments.
+  if (StartsWith(line, "/*") || StartsWith(line, " *"))
+    return false;  // C-style comment blocks with stars along the left side.
   if (StartsWith(line, "#"))
     return false;  // Don't count preprocessor.
   if (base::ContainsOnlyChars(line, base::kWhitespaceASCII))
