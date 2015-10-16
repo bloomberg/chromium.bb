@@ -163,6 +163,6 @@ define('stash_client', [
   return {
     registerClient: registerClient,
     retrieve: retrieve,
-    saveStashForTesting, saveStashForTesting,
+    saveStashForTesting: saveStashForTesting,
   };
 });
