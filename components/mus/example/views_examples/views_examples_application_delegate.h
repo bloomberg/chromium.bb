@@ -10,7 +10,9 @@
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/interface_factory_impl.h"
 
-class MUSViewsInit;
+namespace views {
+  class WindowManagerConnection;
+}
 
 class ViewsExamplesApplicationDelegate : public mojo::ApplicationDelegate {
  public:
@@ -25,7 +27,7 @@ class ViewsExamplesApplicationDelegate : public mojo::ApplicationDelegate {
 
   mojo::ApplicationImpl* app_;
 
-  scoped_ptr<MUSViewsInit> mus_views_init_;
+  scoped_ptr<views::WindowManagerConnection> wm_connection_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewsExamplesApplicationDelegate);
 };

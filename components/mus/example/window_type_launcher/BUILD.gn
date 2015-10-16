@@ -19,7 +19,6 @@ mojo_native_application("window_type_launcher") {
 
   deps = [
     "//base",
-    "//components/mus/example/common",
     "//mojo/application/public/cpp",
     "//mojo/application/public/cpp:sources",
     "//mojo/converters/geometry",
@@ -30,9 +29,10 @@ mojo_native_application("window_type_launcher") {
     "//ui/gfx/geometry",
     "//ui/mojo/events:interfaces",
     "//ui/views",
+    "//ui/views/mus",
   ]
 
-  resources = [ "$root_out_dir/example_resources.pak" ]
+  resources = [ "$root_out_dir/views_mus_resources.pak" ]
 
   data_deps = [
     "//components/mus",

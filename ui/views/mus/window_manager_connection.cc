@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/mus/example/common/mus_views_init.h"
+#include "ui/views/mus/window_manager_connection.h"
 
 #include "components/mus/public/cpp/window_tree_connection.h"
 #include "components/mus/public/interfaces/view_tree.mojom.h"
@@ -69,19 +69,22 @@ std::vector<gfx::Display> GetDisplaysFromWindowManager(
 }
 }
 
-MUSViewsInit::MUSViewsInit(mojo::ApplicationImpl* app)
+namespace views {
+
+WindowManagerConnection::WindowManagerConnection(
+    const std::string& window_manager_url,
+    mojo::ApplicationImpl* app)
     : app_(app) {
-  mojo::URLRequestPtr request(mojo::URLRequest::New());
-  request->url = "mojo:example_wm";
-  app_->ConnectToService(request.Pass(), &window_manager_);
-  aura_init_.reset(new views::AuraInit(
+  app_->ConnectToService(mojo::URLRequest::From(window_manager_url),
+                         &window_manager_);
+  aura_init_.reset(new AuraInit(
       app, "example_resources.pak",
       GetDisplaysFromWindowManager(app, &window_manager_)));
 }
 
-MUSViewsInit::~MUSViewsInit() {}
+WindowManagerConnection::~WindowManagerConnection() {}
 
-mus::Window* MUSViewsInit::CreateWindow() {
+mus::Window* WindowManagerConnection::CreateWindow() {
   mojo::ViewTreeClientPtr view_tree_client;
   mojo::InterfaceRequest<mojo::ViewTreeClient> view_tree_client_request =
       GetProxy(&view_tree_client);
@@ -94,26 +97,26 @@ mus::Window* MUSViewsInit::CreateWindow() {
   return window_tree_connection->GetRoot();
 }
 
-views::NativeWidget* MUSViewsInit::CreateNativeWidget(
-    views::internal::NativeWidgetDelegate* delegate) {
-  views::NativeWidgetViewManager* native_widget =
-      new views::NativeWidgetViewManager(delegate, app_->shell(),
-                                         CreateWindow());
+NativeWidget* WindowManagerConnection::CreateNativeWidget(
+    internal::NativeWidgetDelegate* delegate) {
+  NativeWidgetViewManager* native_widget =
+      new NativeWidgetViewManager(delegate, app_->shell(), CreateWindow());
   native_widget->set_window_manager(window_manager_.get());
   return native_widget;
 }
 
-void MUSViewsInit::OnBeforeWidgetInit(
-    views::Widget::InitParams* params,
-    views::internal::NativeWidgetDelegate* delegate) {}
+void WindowManagerConnection::OnBeforeWidgetInit(
+    Widget::InitParams* params,
+    internal::NativeWidgetDelegate* delegate) {}
 
-void MUSViewsInit::OnEmbed(mus::Window* root) {
-}
-
-void MUSViewsInit::OnConnectionLost(mus::WindowTreeConnection* connection) {}
+void WindowManagerConnection::OnEmbed(mus::Window* root) {}
+void WindowManagerConnection::OnConnectionLost(
+    mus::WindowTreeConnection* connection) {}
 
 #if defined(OS_WIN)
-HICON MUSViewsInit::GetSmallWindowIcon() const {
+HICON WindowManagerConnection::GetSmallWindowIcon() const {
   return nullptr;
 }
 #endif
+
+}  // namespace views

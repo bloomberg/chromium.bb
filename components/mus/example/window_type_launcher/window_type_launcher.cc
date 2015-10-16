@@ -5,7 +5,6 @@
 #include "components/mus/example/window_type_launcher/window_type_launcher.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "components/mus/example/common/mus_views_init.h"
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
@@ -20,6 +19,7 @@
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/layout/grid_layout.h"
+#include "ui/views/mus/window_manager_connection.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -356,7 +356,8 @@ bool WindowTypeLauncher::ConfigureIncomingConnection(
 void WindowTypeLauncher::Initialize(mojo::ApplicationImpl* app) {
   app_ = app;
 
-  mus_views_init_.reset(new MUSViewsInit(app));
+  wm_connection_.reset(
+      new views::WindowManagerConnection("mojo:example_wm", app));
 
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
