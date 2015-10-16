@@ -50,8 +50,8 @@ AuthorizationRef GetAuthorizationRightsWithPrompt(
   const char* icon_path_c = [icon_path fileSystemRepresentation];
   size_t icon_path_length = icon_path_c ? strlen(icon_path_c) : 0;
 
-  // The OS will append " Type an administrator's name and password to allow
-  // <CFBundleDisplayName> to make changes."
+  // The OS will dispay |prompt| along with a sentence asking the user to type
+  // the "password to allow this."
   NSString* prompt_ns = base::mac::CFToNSCast(prompt);
   const char* prompt_c = [prompt_ns UTF8String];
   size_t prompt_length = prompt_c ? strlen(prompt_c) : 0;

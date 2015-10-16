@@ -10,7 +10,6 @@
 
 #include "base/basictypes.h"
 #include "base/mac/authorization_util.h"
-#include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_authorizationref.h"
 #include "chrome/grit/chromium_strings.h"
@@ -19,12 +18,14 @@
 namespace password_manager_util_mac {
 
 bool AuthenticateUser() {
-  NSString* identifier = [base::mac::MainBundle() bundleIdentifier];
-  AuthorizationString name =
-      [[identifier stringByAppendingString:@".show-passwords"] UTF8String];
-  AuthorizationItem right_items[] = {
-    {name, 0, NULL, 0}
-  };
+  // Use the system-defined "system.login.screensaver" access right rather than
+  // creating our own. The screensaver does exactly the same check we need --
+  // verifying whether the legitimate session user is present. If we needed to
+  // create a separate access right, we would have to define it with the
+  // AuthorizationDB, using the flag
+  // kAuthorizationRuleAuthenticateAsSessionUser, to ensure that the session
+  // user password, as opposed to an admin's password, is required.
+  AuthorizationItem right_items[] = {{"system.login.screensaver", 0, NULL, 0}};
   AuthorizationRights rights = {arraysize(right_items), right_items};
 
   NSString* prompt =
