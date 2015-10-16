@@ -1491,6 +1491,7 @@ void WebGL2RenderingContextBase::endQuery(GLenum target)
     case GL_ANY_SAMPLES_PASSED_CONSERVATIVE:
         {
             if (m_currentBooleanOcclusionQuery && m_currentBooleanOcclusionQuery->getTarget() == target) {
+                m_currentBooleanOcclusionQuery->resetCachedResult();
                 m_currentBooleanOcclusionQuery = nullptr;
             } else {
                 synthesizeGLError(GL_INVALID_OPERATION, "endQuery", "target query is not active");
@@ -1501,6 +1502,7 @@ void WebGL2RenderingContextBase::endQuery(GLenum target)
     case GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN:
         {
             if (m_currentTransformFeedbackPrimitivesWrittenQuery) {
+                m_currentTransformFeedbackPrimitivesWrittenQuery->resetCachedResult();
                 m_currentTransformFeedbackPrimitivesWrittenQuery = nullptr;
             } else {
                 synthesizeGLError(GL_INVALID_OPERATION, "endQuery", "target query is not active");
@@ -1546,18 +1548,22 @@ ScriptValue WebGL2RenderingContextBase::getQueryParameter(ScriptState* scriptSta
     if (isContextLost() || !validateWebGLObject("getQueryParameter", query))
         return ScriptValue::createNull(scriptState);
 
+    // Query is non-null at this point.
+    if (query == m_currentBooleanOcclusionQuery || query == m_currentTransformFeedbackPrimitivesWrittenQuery) {
+        synthesizeGLError(GL_INVALID_OPERATION, "getQueryParameter", "query is currently active");
+        return ScriptValue::createNull(scriptState);
+    }
+
     switch (pname) {
     case GL_QUERY_RESULT:
         {
-            GLuint value;
-            webContext()->getQueryObjectuivEXT(objectOrZero(query), pname, &value);
-            return WebGLAny(scriptState, value);
+            query->updateCachedResult(webContext());
+            return WebGLAny(scriptState, query->getQueryResult());
         }
     case GL_QUERY_RESULT_AVAILABLE:
         {
-            GLuint value;
-            webContext()->getQueryObjectuivEXT(objectOrZero(query), pname, &value);
-            return WebGLAny(scriptState, value == GL_TRUE);
+            query->updateCachedResult(webContext());
+            return WebGLAny(scriptState, query->isQueryResultAvailable());
         }
     default:
         synthesizeGLError(GL_INVALID_ENUM, "getQueryParameter", "invalid parameter name");
