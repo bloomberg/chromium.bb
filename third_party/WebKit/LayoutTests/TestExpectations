@@ -44,16 +44,16 @@ crbug.com/502531 fast/borders/border-antialiasing.html [ Failure ]
 crbug.com/538697 [ Win7 Debug ] virtual/threaded/printing/webgl-oversized-printing.html [ Crash ]
 crbug.com/538697 [ Win7 Debug ] printing/webgl-oversized-printing.html [ Crash ]
 
-crbug.com/404597 fast/text/basic/015.html [ NeedsRebaseline ]
 crbug.com/404597 fast/text/font-variant-ligatures.html [ NeedsRebaseline ]
 crbug.com/404597 fast/text/font-weight-600.html [ NeedsRebaseline ]
-crbug.com/404597 [ Win Linux Android Lion Mavericks MountainLion Retina SnowLeopard ] fast/text/justify-ideograph-simple.html [ NeedsRebaseline ]
 crbug.com/404597 fast/text/whitespace/002.html [ NeedsRebaseline ]
 crbug.com/404597 fast/text-autosizing/tables/css-table-lots-of-text-many-cells.html [ NeedsRebaseline ]
 crbug.com/404597 fast/text-autosizing/tables/fixed-table-lots-of-text-many-cells.html [ NeedsRebaseline ]
 crbug.com/404597 fast/text-autosizing/tables/lots-of-text-many-cells.html [ NeedsRebaseline ]
 crbug.com/404597 fast/text-autosizing/tables/narrow-percentage-width.html [ NeedsRebaseline ]
 crbug.com/404597 fast/text-autosizing/tables/narrow-specified-width.html [ NeedsRebaseline ]
+crbug.com/404597 fast/text/basic/015.html [ NeedsRebaseline ]
+crbug.com/404597 [ Win Linux Android Lion Mavericks MountainLion Retina SnowLeopard ] fast/text/justify-ideograph-simple.html [ NeedsRebaseline ]
 
 # Ref-tests that fail due to character based shaping/fallback.
 crbug.com/404597 fast/text/international/inline-plaintext-is-isolated.html [ Failure ]
