@@ -27,7 +27,7 @@ class CHROMEOS_EXPORT FakePowerManagerClient : public PowerManagerClient {
   FakePowerManagerClient();
   ~FakePowerManagerClient() override;
 
-  power_manager::PowerManagementPolicy& policy() { return policy_; }
+  const power_manager::PowerManagementPolicy& policy() { return policy_; }
   const power_manager::PowerSupplyProperties& props() const { return props_; }
   int num_request_restart_calls() const { return num_request_restart_calls_; }
   int num_request_shutdown_calls() const { return num_request_shutdown_calls_; }
