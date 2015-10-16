@@ -29,7 +29,7 @@ class WebContents;
 }
 
 namespace internals {
-GURL GetResetSettingsURL();
+GURL GetTriggeredResetSettingsURL();
 GURL GetWelcomePageURL();
 }  // namespace internals
 

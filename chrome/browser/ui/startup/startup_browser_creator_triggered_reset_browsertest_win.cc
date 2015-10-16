@@ -121,7 +121,8 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTriggeredResetTest,
   std::vector<GURL> expected_urls(urls);
   if (base::win::GetVersion() >= base::win::VERSION_WIN10)
     expected_urls.insert(expected_urls.begin(), internals::GetWelcomePageURL());
-  expected_urls.insert(expected_urls.begin(), internals::GetResetSettingsURL());
+  expected_urls.insert(expected_urls.begin(),
+                       internals::GetTriggeredResetSettingsURL());
 
   TabStripModel* tab_strip = new_browser->tab_strip_model();
   ASSERT_EQ(static_cast<int>(expected_urls.size()), tab_strip->count());

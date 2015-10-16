@@ -23,6 +23,12 @@
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_ui.h"
+#include "ui/base/l10n/l10n_util.h"
+
+#if defined(OS_WIN)
+#include "chrome/browser/profile_resetter/triggered_profile_resetter.h"
+#include "chrome/browser/profile_resetter/triggered_profile_resetter_factory.h"
+#endif  // defined(OS_WIN)
 
 namespace options {
 
@@ -77,6 +83,41 @@ void ResetProfileSettingsHandler::GetLocalizedValues(
   localized_strings->SetString(
       "resetProfileSettingsLearnMoreUrl",
       chrome::kResetProfileSettingsLearnMoreURL);
+
+  // Set up the localized strings for the triggered profile reset overlay.
+  // The reset tool name can currently only have a custom value on Windows.
+  base::string16 reset_tool_name;
+#if defined(OS_WIN)
+  Profile* profile = Profile::FromWebUI(web_ui());
+  TriggeredProfileResetter* triggered_profile_resetter =
+      TriggeredProfileResetterFactory::GetForBrowserContext(profile);
+  // TriggeredProfileResetter instance will be nullptr for incognito profiles.
+  if (triggered_profile_resetter)
+    reset_tool_name = triggered_profile_resetter->GetResetToolName();
+#endif
+
+  if (reset_tool_name.empty()) {
+    reset_tool_name = l10n_util::GetStringUTF16(
+        IDS_TRIGGERED_RESET_PROFILE_SETTINGS_DEFAULT_TOOL_NAME);
+  }
+  localized_strings->SetString(
+      "triggeredResetProfileSettingsOverlay",
+      l10n_util::GetStringFUTF16(IDS_TRIGGERED_RESET_PROFILE_SETTINGS_TITLE,
+                                 reset_tool_name));
+  // Set the title manually since RegisterTitle() wants an id.
+  base::string16 title_string(l10n_util::GetStringFUTF16(
+      IDS_TRIGGERED_RESET_PROFILE_SETTINGS_TITLE, reset_tool_name));
+  localized_strings->SetString("triggeredResetProfileSettingsOverlay",
+                               title_string);
+  localized_strings->SetString(
+      "triggeredResetProfileSettingsOverlayTabTitle",
+      l10n_util::GetStringFUTF16(IDS_OPTIONS_TAB_TITLE,
+                                 l10n_util::GetStringUTF16(IDS_SETTINGS_TITLE),
+                                 title_string));
+  localized_strings->SetString(
+      "triggeredResetProfileSettingsExplanation",
+      l10n_util::GetStringFUTF16(
+          IDS_TRIGGERED_RESET_PROFILE_SETTINGS_EXPLANATION, reset_tool_name));
 }
 
 void ResetProfileSettingsHandler::RegisterMessages() {

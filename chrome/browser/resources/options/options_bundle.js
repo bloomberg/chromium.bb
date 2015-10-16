@@ -117,6 +117,9 @@ var CertificateImportErrorOverlay = options.CertificateImportErrorOverlay;
 <include src="supervised_user_list_data.js">
 <include src="../help/help_page.js">
 <include src="sync_setup_overlay.js">
+<if expr="is_win">
+<include src="triggered_reset_profile_settings_overlay.js">
+</if>
 <include src="../uber/uber_page_manager_observer.js">
 <include src="../uber/uber_utils.js">
 <include src="options.js">

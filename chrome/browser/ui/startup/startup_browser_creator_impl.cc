@@ -261,8 +261,9 @@ const Extension* GetPlatformApp(Profile* profile,
 
 namespace internals {
 
-GURL GetResetSettingsURL() {
-  return GURL(chrome::GetSettingsUrl(chrome::kResetProfileSettingsSubPage));
+GURL GetTriggeredResetSettingsURL() {
+  return GURL(
+      chrome::GetSettingsUrl(chrome::kTriggeredResetProfileSettingsSubPage));
 }
 
 GURL GetWelcomePageURL() {
@@ -913,7 +914,8 @@ void StartupBrowserCreatorImpl::AddSpecialURLs(
   // If this Profile is marked for a reset prompt, ensure the reset
   // settings dialog appears.
   if (CheckAndClearProfileResetTrigger())
-    url_list->insert(url_list->begin(), internals::GetResetSettingsURL());
+    url_list->insert(url_list->begin(),
+                     internals::GetTriggeredResetSettingsURL());
 }
 
 // For first-run, the type will be FIRST_RUN_LAST for all systems except for
