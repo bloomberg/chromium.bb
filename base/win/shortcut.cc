@@ -5,18 +5,13 @@
 #include "base/win/shortcut.h"
 
 #include <shellapi.h>
-#include <shldisp.h>
 #include <shlobj.h>
 #include <propkey.h>
 
 #include "base/files/file_util.h"
-#include "base/strings/string_util.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/win/scoped_bstr.h"
 #include "base/win/scoped_comptr.h"
-#include "base/win/scoped_handle.h"
 #include "base/win/scoped_propvariant.h"
-#include "base/win/scoped_variant.h"
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 
@@ -24,92 +19,6 @@ namespace base {
 namespace win {
 
 namespace {
-
-// String resource IDs in shell32.dll.
-const uint32_t kPinToTaskbarID = 5386;      // Win7+
-const uint32_t kUnpinFromTaskbarID = 5387;  // Win7+
-const uint32_t kPinToStartID = 51201;       // Win8+
-const uint32_t kUnpinFromStartID = 51394;   // Win10+
-
-// Traits for a GenericScopedHandle that will free a module on closure.
-struct ModuleTraits {
-  typedef HMODULE Handle;
-  static Handle NullHandle() { return nullptr; }
-  static bool IsHandleValid(Handle module) { return !!module; }
-  static bool CloseHandle(Handle module) { return !!::FreeLibrary(module); }
-
- private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(ModuleTraits);
-};
-
-// An object that will free a module when it goes out of scope.
-using ScopedLibrary = GenericScopedHandle<ModuleTraits, DummyVerifierTraits>;
-
-// Returns the shell resource string identified by |resource_id|, or an empty
-// string on error.
-string16 LoadShellResourceString(uint32_t resource_id) {
-  ScopedLibrary shell32(::LoadLibrary(L"shell32.dll"));
-  if (!shell32.IsValid())
-    return string16();
-
-  const wchar_t* resource_ptr = nullptr;
-  int length = ::LoadStringW(shell32.Get(), resource_id,
-                             reinterpret_cast<wchar_t*>(&resource_ptr), 0);
-  if (!length || !resource_ptr)
-    return string16();
-  return string16(resource_ptr, length);
-}
-
-// Uses the shell to perform the verb identified by |resource_id| on |path|.
-bool DoVerbOnFile(uint32_t resource_id, const FilePath& path) {
-  string16 verb_name(LoadShellResourceString(resource_id));
-  if (verb_name.empty())
-    return false;
-
-  ScopedComPtr<IShellDispatch> shell_dispatch;
-  HRESULT hresult =
-      shell_dispatch.CreateInstance(CLSID_Shell, nullptr, CLSCTX_INPROC_SERVER);
-  if (FAILED(hresult) || !shell_dispatch.get())
-    return false;
-
-  ScopedComPtr<Folder> folder;
-  hresult = shell_dispatch->NameSpace(
-      ScopedVariant(path.DirName().value().c_str()), folder.Receive());
-  if (FAILED(hresult) || !folder.get())
-    return false;
-
-  ScopedComPtr<FolderItem> item;
-  hresult = folder->ParseName(ScopedBstr(path.BaseName().value().c_str()),
-                              item.Receive());
-  if (FAILED(hresult) || !item.get())
-    return false;
-
-  ScopedComPtr<FolderItemVerbs> verbs;
-  hresult = item->Verbs(verbs.Receive());
-  if (FAILED(hresult) || !verbs.get())
-    return false;
-
-  long verb_count = 0;
-  hresult = verbs->get_Count(&verb_count);
-  if (FAILED(hresult))
-    return false;
-
-  for (long i = 0; i < verb_count; ++i) {
-    ScopedComPtr<FolderItemVerb> verb;
-    hresult = verbs->Item(ScopedVariant(i, VT_I4), verb.Receive());
-    if (FAILED(hresult) || !verb.get())
-      continue;
-    ScopedBstr name;
-    hresult = verb->get_Name(name.Receive());
-    if (FAILED(hresult))
-      continue;
-    if (StringPiece16(name, name.Length()) == verb_name) {
-      hresult = verb->DoIt();
-      return SUCCEEDED(hresult);
-    }
-  }
-  return false;
-}
 
 // Initializes |i_shell_link| and |i_persist_file| (releasing them first if they
 // are already initialized).
@@ -405,49 +314,32 @@ bool ResolveShortcut(const FilePath& shortcut_path,
   return true;
 }
 
+bool CanPinShortcutToTaskbar() {
+  // "Pin to taskbar" appeared in Windows 7 and stopped being supported in
+  // Windows 10.
+  return GetVersion() >= VERSION_WIN7 && GetVersion() < VERSION_WIN10;
+}
+
 bool PinShortcutToTaskbar(const FilePath& shortcut) {
   base::ThreadRestrictions::AssertIOAllowed();
+  DCHECK(CanPinShortcutToTaskbar());
 
-  // "Pin to taskbar" is only supported after Win7.
-  if (GetVersion() < VERSION_WIN7)
-    return false;
-
-  return DoVerbOnFile(kPinToTaskbarID, shortcut);
+  intptr_t result = reinterpret_cast<intptr_t>(ShellExecute(
+      NULL, L"taskbarpin", shortcut.value().c_str(), NULL, NULL, 0));
+  return result > 32;
 }
 
 bool UnpinShortcutFromTaskbar(const FilePath& shortcut) {
   base::ThreadRestrictions::AssertIOAllowed();
 
-  // "Unpin from taskbar" is only supported after Win7.
+  // "Unpin from taskbar" is only supported after Win7. It is possible to remove
+  // a shortcut pinned by a user on Windows 10+.
   if (GetVersion() < VERSION_WIN7)
     return false;
 
-  return DoVerbOnFile(kUnpinFromTaskbarID, shortcut);
-}
-
-bool PinShortcutToStart(const FilePath& shortcut) {
-  base::ThreadRestrictions::AssertIOAllowed();
-
-  // While "Pin to Start" is supported as of Win8, it was never used by Chrome
-  // in Win8. The behaviour on Win8 is different (new shortcut every time
-  // instead of a single pin associated with its app id) and the Start Menu
-  // shortcut itself is visible on the Start Screen whereas it is not on Win10.
-  // For simplicity's sake and per greater necessity on Win10, it is only
-  // supported in Chrome on Win10+.
-  if (GetVersion() < VERSION_WIN10)
-    return false;
-
-  return DoVerbOnFile(kPinToStartID, shortcut);
-}
-
-bool UnpinShortcutFromStart(const FilePath& shortcut) {
-  base::ThreadRestrictions::AssertIOAllowed();
-
-  // "Unpin from Start Menu" is only supported after Win10.
-  if (GetVersion() < VERSION_WIN10)
-    return false;
-
-  return DoVerbOnFile(kUnpinFromStartID, shortcut);
+  intptr_t result = reinterpret_cast<intptr_t>(ShellExecute(
+      NULL, L"taskbarunpin", shortcut.value().c_str(), NULL, NULL, 0));
+  return result > 32;
 }
 
 }  // namespace win

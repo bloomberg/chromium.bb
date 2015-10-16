@@ -68,9 +68,6 @@ extern const char kDoNotCreateQuickLaunchShortcut[];
 // Boolean. Prevent creation of the Taskbar (since Windows 7) shortcut on
 // install (and later on Active Setup for each user on a system-level install).
 extern const char kDoNotCreateTaskbarShortcut[];
-// Boolean. Prevent pinning Chrome to the Start Menu (since Windows 10) on
-// install (and later on Active Setup for each user on a system-level install).
-extern const char kDoNotCreateStartPin[];
 // Boolean. Do not launch Chrome after first install. Cmd line override present.
 extern const char kDoNotLaunchChrome[];
 // Boolean. Do not register with Google Update to have Chrome launched after

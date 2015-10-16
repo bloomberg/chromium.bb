@@ -175,7 +175,7 @@ void CreateAppListShortcuts(
       web_app::internals::GetShortcutPaths(creation_locations);
 
   bool pin_to_taskbar = creation_locations.in_quick_launch_bar &&
-                        (base::win::GetVersion() >= base::win::VERSION_WIN7);
+                        base::win::CanPinShortcutToTaskbar();
 
   // Create a shortcut in the |user_data_dir| for taskbar pinning.
   if (pin_to_taskbar)

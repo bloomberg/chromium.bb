@@ -163,13 +163,6 @@ class ShellUtil {
       pin_to_taskbar = pin_to_taskbar_in;
     }
 
-    // Sets whether to pin this shortcut to the Win10+ start menu after creating
-    // it (ignored if the shortcut is only being updated).
-    // Note: This property doesn't have a mask in |options|.
-    void set_pin_to_start(bool pin_to_start_in) {
-      pin_to_start = pin_to_start_in;
-    }
-
     bool has_target() const {
       return (options & PROPERTIES_TARGET) != 0;
     }
@@ -211,7 +204,6 @@ class ShellUtil {
     base::string16 shortcut_name;
     bool dual_mode;
     bool pin_to_taskbar;
-    bool pin_to_start;
     // Bitfield made of IndividualProperties. Properties set in |options| will
     // be used to create/update the shortcut, others will be ignored on update
     // and possibly replaced by default values on create (see individual

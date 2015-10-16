@@ -30,7 +30,6 @@ namespace master_preferences {
   const char kDoNotCreateQuickLaunchShortcut[] =
       "do_not_create_quick_launch_shortcut";
   const char kDoNotCreateTaskbarShortcut[] = "do_not_create_taskbar_shortcut";
-  const char kDoNotCreateStartPin[] = "do_not_create_start_pin";
   const char kDoNotLaunchChrome[] = "do_not_launch_chrome";
   const char kDoNotRegisterForUpdateLaunch[] =
       "do_not_register_for_update_launch";

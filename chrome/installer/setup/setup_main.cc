@@ -985,14 +985,12 @@ installer::InstallStatus RegisterDevChrome(
   if (base::PathExists(chrome_exe)) {
     Product chrome(chrome_dist);
 
-    // Create the Start menu shortcut and pin it to the Win7+ taskbar and Win10+
-    // start menu.
+    // Create the Start menu shortcut and pin it to the Win7+ taskbar.
     ShellUtil::ShortcutProperties shortcut_properties(ShellUtil::CURRENT_USER);
     chrome.AddDefaultShortcutProperties(chrome_exe, &shortcut_properties);
     if (InstallUtil::ShouldInstallMetroProperties())
       shortcut_properties.set_dual_mode(true);
     shortcut_properties.set_pin_to_taskbar(true);
-    shortcut_properties.set_pin_to_start(true);
     ShellUtil::CreateOrUpdateShortcut(
         ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_DIR, chrome_dist,
         shortcut_properties, ShellUtil::SHELL_SHORTCUT_CREATE_ALWAYS);

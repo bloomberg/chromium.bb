@@ -452,7 +452,7 @@ bool CreatePlatformShortcuts(
       GetShortcutPaths(creation_locations);
 
   bool pin_to_taskbar = creation_locations.in_quick_launch_bar &&
-                        (base::win::GetVersion() >= base::win::VERSION_WIN7);
+                        base::win::CanPinShortcutToTaskbar();
 
   // Create/update the shortcut in the web app path for the "Pin To Taskbar"
   // option in Win7. We use the web app path shortcut because we will overwrite
@@ -506,7 +506,7 @@ void UpdatePlatformShortcuts(
     // If the shortcut was pinned to the taskbar,
     // GetShortcutLocationsAndDeleteShortcuts will have deleted it. In that
     // case, re-pin it.
-    if (was_pinned_to_taskbar) {
+    if (was_pinned_to_taskbar && base::win::CanPinShortcutToTaskbar()) {
       base::FilePath file_name = GetSanitizedFileName(shortcut_info->title);
       // Use the web app path shortcut for pinning to avoid having unique
       // numbers in the application name.
@@ -569,8 +569,7 @@ std::vector<base::FilePath> GetShortcutPaths(
       creation_locations.on_desktop,
       ShellUtil::SHORTCUT_LOCATION_DESKTOP
     }, {
-      creation_locations.applications_menu_location ==
-          APP_MENU_LOCATION_ROOT,
+      creation_locations.applications_menu_location == APP_MENU_LOCATION_ROOT,
       ShellUtil::SHORTCUT_LOCATION_START_MENU_ROOT
     }, {
       creation_locations.applications_menu_location ==
@@ -584,7 +583,7 @@ std::vector<base::FilePath> GetShortcutPaths(
       // For Win7+, |in_quick_launch_bar| indicates that we are pinning to
       // taskbar. This needs to be handled by callers.
       creation_locations.in_quick_launch_bar &&
-          base::win::GetVersion() < base::win::VERSION_WIN7,
+          base::win::CanPinShortcutToTaskbar(),
       ShellUtil::SHORTCUT_LOCATION_QUICK_LAUNCH
     }
   };

@@ -1643,7 +1643,6 @@ ShellUtil::ShortcutProperties::ShortcutProperties(ShellChange level_in)
       icon_index(0),
       dual_mode(false),
       pin_to_taskbar(false),
-      pin_to_start(false),
       options(0U) {}
 
 ShellUtil::ShortcutProperties::~ShortcutProperties() {
@@ -1815,19 +1814,11 @@ bool ShellUtil::CreateOrUpdateShortcut(
         *chosen_path, shortcut_properties, shortcut_operation);
   }
 
-  if (success && shortcut_operation == base::win::SHORTCUT_CREATE_ALWAYS) {
-    if (properties.pin_to_taskbar &&
-        base::win::GetVersion() >= base::win::VERSION_WIN7) {
-      bool pinned = base::win::PinShortcutToTaskbar(*chosen_path);
-      LOG_IF(ERROR, !pinned) << "Failed to pin to taskbar "
-                             << chosen_path->value();
-    }
-    if (properties.pin_to_start &&
-        base::win::GetVersion() >= base::win::VERSION_WIN10) {
-      bool pinned = base::win::PinShortcutToStart(*chosen_path);
-      LOG_IF(ERROR, !pinned) << "Failed to pin to start "
-                             << chosen_path->value();
-    }
+  if (success && shortcut_operation == base::win::SHORTCUT_CREATE_ALWAYS &&
+      properties.pin_to_taskbar && base::win::CanPinShortcutToTaskbar()) {
+    bool pinned = base::win::PinShortcutToTaskbar(*chosen_path);
+    LOG_IF(ERROR, !pinned) << "Failed to pin to taskbar "
+                           << chosen_path->value();
   }
 
   return success;

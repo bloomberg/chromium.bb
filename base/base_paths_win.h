@@ -43,7 +43,7 @@ enum {
                           // on all user's Desktop).
   DIR_USER_QUICK_LAUNCH,  // Directory for the quick launch shortcuts.
   DIR_TASKBAR_PINS,       // Directory for the shortcuts pinned to taskbar
-                          // (Win7+) via base::win::PinShortcutToTaskbar().
+                          // (Win7-8) via base::win::PinShortcutToTaskbar().
   DIR_WINDOWS_FONTS,      // Usually C:\Windows\Fonts.
 
   PATH_WIN_END
