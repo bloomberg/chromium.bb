@@ -12,7 +12,7 @@
  *     I18nBehavior,
  *   ],
  *
- * @group Chrome Settings Elements
+ * @group Chrome UI Behavior
  */
 
 var I18nBehavior = {
