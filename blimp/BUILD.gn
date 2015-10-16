@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//testing/test.gni")
+
 # Metatarget for all of Blimp's feature code.
 group("blimp") {
   deps = [
@@ -18,15 +20,30 @@ group("blimp") {
   }
 }
 
+# Builds all Blimp test code (unit tests, APKs).
 group("blimp_tests") {
   testonly = true
 
   deps = [
-    ":blimp",
-    "//blimp/net:blimp_net_tests",
+    ":blimp_unittests",
   ]
 
   if (is_android) {
     deps += [ "//blimp/client:blimp_test_apk" ]
   }
+}
+
+test("blimp_unittests") {
+  deps = [
+    "//blimp/net:unit_tests",
+  ]
+}
+
+# TODO(GYP): Delete this after we've converted everything to GN.
+# The _run targets exist only for compatibility w/ GYP.
+group("blimp_unittests_run") {
+  testonly = true
+  deps = [
+    ":blimp_unittests",
+  ]
 }

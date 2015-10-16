@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//testing/test.gni")
-
 component("blimp_net") {
   sources = [
     "blimp_client_session.cc",
@@ -23,7 +21,9 @@ component("blimp_net") {
   ]
 }
 
-test("blimp_net_tests") {
+source_set("unit_tests") {
+  testonly = true
+
   sources = [
     "blimp_message_dispatcher_unittest.cc",
   ]
@@ -37,14 +37,5 @@ test("blimp_net_tests") {
     "//net:test_support",
     "//testing/gmock",
     "//testing/gtest",
-  ]
-}
-
-# TODO(GYP): Delete this after we've converted everything to GN.
-# # The _run targets exist only for compatibility w/ GYP.
-group("blimp_net_tests_run") {
-  testonly = true
-  deps = [
-    ":blimp_net_tests",
   ]
 }

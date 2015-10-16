@@ -68,8 +68,8 @@
     "label": "//base:base_unittests",
     "type": "console_test_launcher",
   },
-  "blimp_net_tests": {
-    "label": "//blimp/net:blimp_net_tests",
+  "blimp_unittests": {
+    "label": "//blimp:blimp_unittests",
     "type": "console_test_launcher",
   },
   "blink_heap_unittests": {
