@@ -19,26 +19,28 @@
 
 namespace nacl_io {
 
-SocketNode::SocketNode(Filesystem* filesystem)
+SocketNode::SocketNode(int type, Filesystem* filesystem)
     : StreamNode(filesystem),
       socket_resource_(0),
       local_addr_(0),
       remote_addr_(0),
       socket_flags_(0),
       last_errno_(0),
-      keep_alive_(false) {
+      keep_alive_(false),
+      so_type_(type) {
   memset(&linger_, 0, sizeof(linger_));
   SetType(S_IFSOCK);
 }
 
-SocketNode::SocketNode(Filesystem* filesystem, PP_Resource socket)
+SocketNode::SocketNode(int type, Filesystem* filesystem, PP_Resource socket)
     : StreamNode(filesystem),
       socket_resource_(socket),
       local_addr_(0),
       remote_addr_(0),
       socket_flags_(0),
       last_errno_(0),
-      keep_alive_(false) {
+      keep_alive_(false),
+      so_type_(type) {
   memset(&linger_, 0, sizeof(linger_));
   SetType(S_IFSOCK);
   filesystem_->ppapi()->AddRefResource(socket_resource_);
@@ -247,6 +249,10 @@ Error SocketNode::GetSockOpt(int lvl,
       value = 1;
       value_ptr = &value;
       value_len = sizeof(value);
+      break;
+    case SO_TYPE:
+      value_ptr = &so_type_;
+      value_len = sizeof(so_type_);
       break;
     case SO_LINGER:
       value_ptr = &linger_;

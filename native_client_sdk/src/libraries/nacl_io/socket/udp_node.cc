@@ -163,7 +163,7 @@ class UdpRecvWork : public UdpWork {
 };
 
 UdpNode::UdpNode(Filesystem* filesystem)
-    : SocketNode(filesystem),
+    : SocketNode(SOCK_DGRAM, filesystem),
       emitter_(new UdpEventEmitter(kDefaultFifoSize, kDefaultFifoSize)) {
   emitter_->AttachStream(this);
 }

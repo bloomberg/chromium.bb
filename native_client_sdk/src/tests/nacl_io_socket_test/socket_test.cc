@@ -405,6 +405,8 @@ TEST_F(SocketTestTCP, TCPConnectFails) {
 TEST_F(SocketTest, Getsockopt) {
   sock1_ = ki_socket(AF_INET, SOCK_STREAM, 0);
   EXPECT_GT(sock1_, -1);
+  sock2_ = ki_socket(AF_INET, SOCK_DGRAM, 0);
+  EXPECT_GT(sock1_, -1);
   int socket_error = 99;
   socklen_t len = sizeof(socket_error);
 
@@ -414,6 +416,20 @@ TEST_F(SocketTest, Getsockopt) {
                              &socket_error, &len));
   ASSERT_EQ(0, socket_error);
   ASSERT_EQ(sizeof(socket_error), len);
+
+  // Check SO_TYPE for TCP sockets
+  int socket_type = 0;
+  len = sizeof(socket_type);
+  ASSERT_EQ(0, ki_getsockopt(sock1_, SOL_SOCKET, SO_TYPE, &socket_type, &len));
+  ASSERT_EQ(SOCK_STREAM, socket_type);
+  ASSERT_EQ(sizeof(socket_type), len);
+
+  // Check SO_TYPE for UDP sockets
+  socket_type = 0;
+  len = sizeof(socket_type);
+  ASSERT_EQ(0, ki_getsockopt(sock2_, SOL_SOCKET, SO_TYPE, &socket_type, &len));
+  ASSERT_EQ(SOCK_DGRAM, socket_type);
+  ASSERT_EQ(sizeof(socket_type), len);
 
   // Test for an invalid option (-1)
   ASSERT_EQ(-1, ki_getsockopt(sock1_, SOL_SOCKET, -1, &socket_error, &len));

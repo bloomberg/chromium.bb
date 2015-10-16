@@ -30,8 +30,8 @@ typedef sdk_util::ScopedRef<SocketNode> ScopedSocketNode;
 
 class SocketNode : public StreamNode {
  public:
-  explicit SocketNode(Filesystem* filesystem);
-  SocketNode(Filesystem* filesystem, PP_Resource socket);
+  SocketNode(int type, Filesystem* filesystem);
+  SocketNode(int type, Filesystem* filesystem, PP_Resource socket);
 
  protected:
   virtual void Destroy();
@@ -169,6 +169,7 @@ class SocketNode : public StreamNode {
   uint32_t socket_flags_;
   int last_errno_;
   bool keep_alive_;
+  int so_type_;
   struct linger linger_;
 
   friend class KernelProxy;

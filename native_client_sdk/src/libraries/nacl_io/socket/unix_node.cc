@@ -15,13 +15,14 @@
 namespace nacl_io {
 
 UnixNode::UnixNode(Filesystem* filesystem)
-    : SocketNode(filesystem),
+    : SocketNode(SOCK_STREAM, filesystem),
       emitter_(UnixEventEmitter::MakeUnixEventEmitter(65536)) {
   emitter_->AttachStream(this);
 }
 
 UnixNode::UnixNode(Filesystem* filesystem, const UnixNode& peer)
-    : SocketNode(filesystem), emitter_(peer.emitter_->GetPeerEmitter()) {
+    : SocketNode(SOCK_STREAM, filesystem),
+      emitter_(peer.emitter_->GetPeerEmitter()) {
   emitter_->AttachStream(this);
 }
 

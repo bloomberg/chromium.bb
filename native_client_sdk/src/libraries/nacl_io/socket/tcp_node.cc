@@ -276,14 +276,14 @@ class TCPConnectWork : public StreamFs::Work {
 };
 
 TcpNode::TcpNode(Filesystem* filesystem)
-    : SocketNode(filesystem),
+    : SocketNode(SOCK_STREAM, filesystem),
       emitter_(new TcpEventEmitter(kDefaultFifoSize, kDefaultFifoSize)),
       tcp_nodelay_(false) {
   emitter_->AttachStream(this);
 }
 
 TcpNode::TcpNode(Filesystem* filesystem, PP_Resource socket)
-    : SocketNode(filesystem, socket),
+    : SocketNode(SOCK_STREAM, filesystem, socket),
       emitter_(new TcpEventEmitter(kDefaultFifoSize, kDefaultFifoSize)),
       tcp_nodelay_(false) {
   emitter_->AttachStream(this);
