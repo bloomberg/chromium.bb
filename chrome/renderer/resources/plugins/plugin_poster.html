@@ -34,8 +34,9 @@
 }
 
 #plugin-icon {
-  display: block;
   opacity: 0.8;
+  max-height: 100%;
+  max-width: 100%;
 }
 
 #plugin-icon:hover {
@@ -52,10 +53,14 @@
 #inner-container {
   align-items: center;
   display: flex;
+  height: 100%;
   justify-content: center;
   left: 0px;
+  max-height: 100%;
+  max-width: 100%;
   position: absolute;
   top: 0px;
+  width: 100%;
   z-index: 2;
 }
 </style>
@@ -68,11 +73,7 @@
     <div id="shielding"></div>
     <div id="inner-container"
          i18n-values=".style.width:visibleWidth;.style.height:visibleHeight">
-      <div id="inner">
-        <img id="plugin-icon" src="plugin_power_saver_play.png"
-             i18n-values=".style.maxWidth:visibleWidth;
-                          .style.maxHeight:visibleHeight" />
-      </div>
+      <img id="plugin-icon" src="plugin_power_saver_play.png" />
     </div>
   </div>
   <script>
@@ -84,10 +85,12 @@
       plugin.load();
     };
 
-    window.setPosterMargin = function(marginLeft, marginTop) {
+    window.resizePoster = function(marginLeft, marginTop, width, height) {
       var container = document.getElementById('inner-container');
       container.style.marginLeft = marginLeft;
       container.style.marginTop = marginTop;
+      container.style.width = width;
+      container.style.height = height;
     };
   </script>
 </body>

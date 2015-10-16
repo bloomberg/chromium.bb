@@ -185,7 +185,7 @@ v8::Local<v8::Object> LoadablePluginPlaceholder::GetV8ScriptableObject(
 void LoadablePluginPlaceholder::OnUnobscuredRectUpdate(
     const gfx::Rect& unobscured_rect) {
   DCHECK(content::RenderThread::Get());
-  if (!power_saver_enabled_ || !premade_throttler_ || !finished_loading_)
+  if (!power_saver_enabled_ || !finished_loading_)
     return;
 
   unobscured_rect_ = unobscured_rect;
@@ -329,18 +329,24 @@ void LoadablePluginPlaceholder::RecheckSizeAndMaybeUnthrottle() {
 
   float zoom_factor = plugin()->container()->pageZoomFactor();
 
-  // Adjust padding using clip coordinates to center play button for plugins
-  // that have their top or left portions obscured.
+  // Adjust poster container padding and dimensions to center play button for
+  // plugins and plugin posters that have their top or left portions obscured.
   if (is_blocked_for_power_saver_poster_) {
     int x = roundf(unobscured_rect_.x() / zoom_factor);
     int y = roundf(unobscured_rect_.y() / zoom_factor);
-    std::string script =
-        base::StringPrintf("window.setPosterMargin('%dpx', '%dpx')", x, y);
+    int width = roundf(unobscured_rect_.width() / zoom_factor);
+    int height = roundf(unobscured_rect_.height() / zoom_factor);
+    std::string script = base::StringPrintf(
+        "window.resizePoster('%dpx', '%dpx', '%dpx', '%dpx')", x, y, width,
+        height);
     plugin()->web_view()->mainFrame()->executeScript(
         blink::WebScriptSource(base::UTF8ToUTF16(script)));
   }
 
-  if (PluginInstanceThrottler::IsLargeContent(
+  // Only unthrottle on size increase for plugins without poster.
+  // TODO(tommycli): Address this unfairness to plugins that specify a poster.
+  if (premade_throttler_ &&
+      PluginInstanceThrottler::IsLargeContent(
           roundf(unobscured_rect_.width() / zoom_factor),
           roundf(unobscured_rect_.height() / zoom_factor))) {
     MarkPluginEssential(
