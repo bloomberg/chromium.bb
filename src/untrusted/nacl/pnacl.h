@@ -15,8 +15,10 @@ extern "C" {
 enum PnaclTargetArchitecture {
   PnaclTargetArchitectureInvalid = 0,
   PnaclTargetArchitectureX86_32,
+  PnaclTargetArchitectureX86_32_NonSFI,
   PnaclTargetArchitectureX86_64,
   PnaclTargetArchitectureARM_32,
+  PnaclTargetArchitectureARM_32_NonSFI,
   PnaclTargetArchitectureARM_32_Thumb,
   PnaclTargetArchitectureMips_32
 };
@@ -27,6 +29,19 @@ enum PnaclTargetArchitecture {
 # define NACL_GET_ARCH_FUNC static inline
 #endif
 
+#if defined(__native_client_nonsfi__)
+#if defined(__i386__)
+NACL_GET_ARCH_FUNC int __nacl_get_arch(void) {
+  return PnaclTargetArchitectureX86_32_NonSFI;
+}
+#elif defined(__arm__)
+NACL_GET_ARCH_FUNC int __nacl_get_arch(void) {
+  return PnaclTargetArchitectureARM_32_NonSFI;
+}
+#else
+# error "Unknown architecture for __nacl_get_arch()"
+#endif
+#else /* __native_client_nonsfi__ */
 #if defined(__i386__)
 NACL_GET_ARCH_FUNC int __nacl_get_arch(void) {
   return PnaclTargetArchitectureX86_32;
@@ -52,6 +67,7 @@ int __nacl_get_arch(void);
 #else
 # error "Unknown architecture for __nacl_get_arch()"
 #endif
+#endif /* __native_client_nonsfi__ */
 
 #undef NACL_GET_ARCH_FUNC
 
