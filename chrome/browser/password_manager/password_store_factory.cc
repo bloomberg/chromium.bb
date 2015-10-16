@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/prefs/pref_service.h"
+#include "base/rand_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
@@ -212,10 +213,9 @@ LocalProfileId PasswordStoreFactory::GetLocalProfileId(
     // that it would be repeated twice on a single machine. It is still possible
     // for that to occur though, so the potential results of it actually
     // happening should be considered when using this value.
-    static const LocalProfileId kLocalProfileIdMask =
-        static_cast<LocalProfileId>((1 << 24) - 1);
+    static const int kLocalProfileIdMask = (1 << 24) - 1;
     do {
-      id = rand() & kLocalProfileIdMask;
+      id = base::RandInt(0, kLocalProfileIdMask);
       // TODO(mdm): scan other profiles to make sure they are not using this id?
     } while (id == kInvalidLocalProfileId);
     prefs->SetInteger(password_manager::prefs::kLocalProfileId, id);

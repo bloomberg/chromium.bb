@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_STORE_FACTORY_H_
 #define CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_STORE_FACTORY_H_
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/memory/singleton.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
