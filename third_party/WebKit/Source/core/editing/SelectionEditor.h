@@ -85,7 +85,7 @@ private:
 
     LocalFrame* frame() const;
 
-    void adjustVisibleSelectionInCompsoedTree();
+    void adjustVisibleSelectionInComposedTree();
     void adjustVisibleSelectionInDOMTree();
 
     TextDirection directionOfEnclosingBlock();

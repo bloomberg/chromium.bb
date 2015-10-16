@@ -83,7 +83,7 @@ const VisibleSelectionInComposedTree& SelectionEditor::visibleSelection<EditingI
 void SelectionEditor::setVisibleSelection(const VisibleSelection& newSelection)
 {
     m_selection = newSelection;
-    adjustVisibleSelectionInCompsoedTree();
+    adjustVisibleSelectionInComposedTree();
 }
 
 void SelectionEditor::setVisibleSelection(const VisibleSelectionInComposedTree& newSelection)
@@ -93,7 +93,7 @@ void SelectionEditor::setVisibleSelection(const VisibleSelectionInComposedTree& 
 }
 
 // Updates |m_selectionInComposedTree| to match with |m_selection|.
-void SelectionEditor::adjustVisibleSelectionInCompsoedTree()
+void SelectionEditor::adjustVisibleSelectionInComposedTree()
 {
     if (m_selection.isNone()) {
         m_selectionInComposedTree = VisibleSelectionInComposedTree();
@@ -163,7 +163,7 @@ void SelectionEditor::setIsDirectional(bool isDirectional)
 void SelectionEditor::setWithoutValidation(const Position& start, const Position& end)
 {
     m_selection.setWithoutValidation(start, end);
-    adjustVisibleSelectionInCompsoedTree();
+    adjustVisibleSelectionInComposedTree();
 }
 
 TextDirection SelectionEditor::directionOfEnclosingBlock()
