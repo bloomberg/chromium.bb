@@ -436,45 +436,13 @@ class ProtocolHandlerRegistryTest : public testing::Test {
   ProtocolHandler test_protocol_handler_;
 };
 
-// ProtocolHandlerRegistryTest tests are flaky on Linux & ChromeOS.
-// http://crbug.com/133023
-#if defined(OS_LINUX)
-#define MAYBE_AcceptProtocolHandlerHandlesProtocol \
-    DISABLED_AcceptProtocolHandlerHandlesProtocol
-#define MAYBE_DeniedProtocolIsntHandledUntilAccepted \
-    DISABLED_DeniedProtocolIsntHandledUntilAccepted
-#define MAYBE_TestStartsAsDefault DISABLED_TestStartsAsDefault
-#define MAYBE_TestRemoveHandlerRemovesDefault \
-    DISABLED_TestRemoveHandlerRemovesDefault
-#define MAYBE_TestClearDefaultGetsPropagatedToIO \
-    DISABLED_TestClearDefaultGetsPropagatedToIO
-#define MAYBE_TestIsHandledProtocolWorksOnIOThread \
-    DISABLED_TestIsHandledProtocolWorksOnIOThread
-#define MAYBE_TestInstallDefaultHandler \
-    DISABLED_TestInstallDefaultHandler
-#else
-#define MAYBE_AcceptProtocolHandlerHandlesProtocol \
-    AcceptProtocolHandlerHandlesProtocol
-#define MAYBE_DeniedProtocolIsntHandledUntilAccepted \
-    DeniedProtocolIsntHandledUntilAccepted
-#define MAYBE_TestStartsAsDefault TestStartsAsDefault
-#define MAYBE_TestRemoveHandlerRemovesDefault TestRemoveHandlerRemovesDefault
-#define MAYBE_TestClearDefaultGetsPropagatedToIO \
-    TestClearDefaultGetsPropagatedToIO
-#define MAYBE_TestIsHandledProtocolWorksOnIOThread \
-    TestIsHandledProtocolWorksOnIOThread
-#define MAYBE_TestInstallDefaultHandler TestInstallDefaultHandler
-#endif  // defined(OS_LINUX)
-
-TEST_F(ProtocolHandlerRegistryTest,
-       MAYBE_AcceptProtocolHandlerHandlesProtocol) {
+TEST_F(ProtocolHandlerRegistryTest, AcceptProtocolHandlerHandlesProtocol) {
   ASSERT_FALSE(registry()->IsHandledProtocol("test"));
   registry()->OnAcceptRegisterProtocolHandler(test_protocol_handler());
   ASSERT_TRUE(registry()->IsHandledProtocol("test"));
 }
 
-TEST_F(ProtocolHandlerRegistryTest,
-       MAYBE_DeniedProtocolIsntHandledUntilAccepted) {
+TEST_F(ProtocolHandlerRegistryTest, DeniedProtocolIsntHandledUntilAccepted) {
   registry()->OnDenyRegisterProtocolHandler(test_protocol_handler());
   ASSERT_FALSE(registry()->IsHandledProtocol("test"));
   registry()->OnAcceptRegisterProtocolHandler(test_protocol_handler());
@@ -554,7 +522,7 @@ TEST_F(ProtocolHandlerRegistryTest, RemovingHandlerMeansItCanBeAddedAgain) {
   ASSERT_TRUE(registry()->CanSchemeBeOverridden("test"));
 }
 
-TEST_F(ProtocolHandlerRegistryTest, MAYBE_TestStartsAsDefault) {
+TEST_F(ProtocolHandlerRegistryTest, TestStartsAsDefault) {
   registry()->OnAcceptRegisterProtocolHandler(test_protocol_handler());
   ASSERT_TRUE(registry()->IsDefault(test_protocol_handler()));
 }
@@ -682,7 +650,7 @@ TEST_F(ProtocolHandlerRegistryTest, TestSilentlyRegisterHandler) {
   ASSERT_TRUE(registry()->HasIgnoredEquivalent(ph4));
 }
 
-TEST_F(ProtocolHandlerRegistryTest, MAYBE_TestRemoveHandlerRemovesDefault) {
+TEST_F(ProtocolHandlerRegistryTest, TestRemoveHandlerRemovesDefault) {
   ProtocolHandler ph1 = CreateProtocolHandler("test", "test1");
   ProtocolHandler ph2 = CreateProtocolHandler("test", "test2");
   ProtocolHandler ph3 = CreateProtocolHandler("test", "test3");
@@ -802,7 +770,7 @@ TEST_F(ProtocolHandlerRegistryTest, TestOSRegistration) {
 
 #if defined(OS_LINUX)
 // TODO(benwells): When Linux support is more reliable and
-// http://crbut.com/88255 is fixed this test will pass.
+// http://crbug.com/88255 is fixed this test will pass.
 #define MAYBE_TestOSRegistrationFailure DISABLED_TestOSRegistrationFailure
 #else
 #define MAYBE_TestOSRegistrationFailure TestOSRegistrationFailure
@@ -841,7 +809,7 @@ TEST_F(ProtocolHandlerRegistryTest, TestMaybeCreateTaskWorksFromIOThread) {
 }
 
 TEST_F(ProtocolHandlerRegistryTest,
-       MAYBE_TestIsHandledProtocolWorksOnIOThread) {
+       TestIsHandledProtocolWorksOnIOThread) {
   std::string scheme("mailto");
   ProtocolHandler ph1 = CreateProtocolHandler(scheme, "test1");
   registry()->OnAcceptRegisterProtocolHandler(ph1);
@@ -887,7 +855,7 @@ TEST_F(ProtocolHandlerRegistryTest, TestRemovingDefaultDoesntChangeHandlers) {
   ASSERT_EQ(ph1, handlers[1]);
 }
 
-TEST_F(ProtocolHandlerRegistryTest, MAYBE_TestClearDefaultGetsPropagatedToIO) {
+TEST_F(ProtocolHandlerRegistryTest, TestClearDefaultGetsPropagatedToIO) {
   std::string scheme("mailto");
   ProtocolHandler ph1 = CreateProtocolHandler(scheme, "test1");
   registry()->OnAcceptRegisterProtocolHandler(ph1);
@@ -970,7 +938,7 @@ TEST_F(ProtocolHandlerRegistryTest, TestIsSameOrigin) {
       ph3.IsSameOrigin(ph2));
 }
 
-TEST_F(ProtocolHandlerRegistryTest, MAYBE_TestInstallDefaultHandler) {
+TEST_F(ProtocolHandlerRegistryTest, TestInstallDefaultHandler) {
   RecreateRegistry(false);
   registry()->AddPredefinedHandler(
       CreateProtocolHandler("test", GURL("http://test.com/%s")));
