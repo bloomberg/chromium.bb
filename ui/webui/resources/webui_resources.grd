@@ -16,9 +16,12 @@ without changes to the corresponding grd file. -->
       <include name="IDR_WEBUI_I18N_TEMPLATE_JS" file="js/i18n_template.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_WEBUI_JSTEMPLATE_JS" file="js/jstemplate_compiled.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_WEBUI_ANALYTICS_JS" file="js/analytics.js" flattenhtml="true" type="BINDATA" />
-      <!-- Roboto Font -->
-      <include name="IDR_WEBUI_ROBOTO_ROBOTO_REGULAR_LATIN_WOFF2" file="roboto/roboto-regular-latin.woff2" type="BINDATA" />
-      <include name="IDR_WEBUI_ROBOTO_ROBOTO_MEDIUM_LATIN_WOFF2" file="roboto/roboto-medium-latin.woff2" type="BINDATA" />
+      <!-- Roboto Font. Roboto-Regular is already available on Android, and
+        Roboto-Medium is not used on Android. -->
+      <if expr="not android">
+        <include name="IDR_WEBUI_ROBOTO_ROBOTO_REGULAR_WOFF2" file="roboto/roboto-regular.woff2" type="BINDATA" />
+        <include name="IDR_WEBUI_ROBOTO_ROBOTO_MEDIUM_WOFF2" file="roboto/roboto-medium.woff2" type="BINDATA" />
+      </if>
 
       <!-- Component apps common image resources - 1x -->
       <!-- White button -->
