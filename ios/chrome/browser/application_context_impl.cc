@@ -80,7 +80,7 @@ void ApplicationContextImpl::OnAppEnterForeground() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   PrefService* local_state = GetLocalState();
-  local_state->SetBoolean(prefs::kLastSessionExitedCleanly, true);
+  local_state->SetBoolean(prefs::kLastSessionExitedCleanly, false);
 
   // Tell the metrics service that the application resumes.
   metrics::MetricsService* metrics_service = GetMetricsService();
