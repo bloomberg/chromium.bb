@@ -4,7 +4,7 @@
 
 #include "ui/views/mus/native_widget_view_manager.h"
 
-#include "components/mus/public/cpp/view.h"
+#include "components/mus/public/cpp/window.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/converters/input_events/input_events_type_converters.h"
 #include "ui/aura/client/default_capture_client.h"
@@ -34,44 +34,45 @@ class FocusRulesImpl : public wm::BaseFocusRules {
   DISALLOW_COPY_AND_ASSIGN(FocusRulesImpl);
 };
 
-class NativeWidgetViewObserver : public mus::ViewObserver {
+class NativeWidgetWindowObserver : public mus::WindowObserver {
  public:
-  NativeWidgetViewObserver(NativeWidgetViewManager* view_manager)
+  NativeWidgetWindowObserver(NativeWidgetViewManager* view_manager)
       : view_manager_(view_manager) {
-    view_manager_->view_->AddObserver(this);
+    view_manager_->window_->AddObserver(this);
   }
 
-  ~NativeWidgetViewObserver() override {
-    if (view_manager_->view_)
-      view_manager_->view_->RemoveObserver(this);
+  ~NativeWidgetWindowObserver() override {
+    if (view_manager_->window_)
+      view_manager_->window_->RemoveObserver(this);
   }
 
  private:
-  // ViewObserver:
-  void OnViewDestroyed(mus::View* view) override {
-    DCHECK_EQ(view, view_manager_->view_);
+  // WindowObserver:
+  void OnWindowDestroyed(mus::Window* view) override {
+    DCHECK_EQ(view, view_manager_->window_);
     view->RemoveObserver(this);
-    view_manager_->view_ = nullptr;
+    view_manager_->window_ = nullptr;
     // TODO(sky): WindowTreeHostMojo assumes the View outlives it.
-    // NativeWidgetViewObserver needs to deal, likely by deleting this.
+    // NativeWidgetWindowObserver needs to deal, likely by deleting this.
   }
 
-  void OnViewBoundsChanged(mus::View* view,
-                           const mojo::Rect& old_bounds,
-                           const mojo::Rect& new_bounds) override {
+  void OnWindowBoundsChanged(mus::Window* view,
+                             const mojo::Rect& old_bounds,
+                             const mojo::Rect& new_bounds) override {
     gfx::Rect view_rect = view->bounds().To<gfx::Rect>();
     view_manager_->SetBounds(gfx::Rect(view_rect.size()));
   }
 
-  void OnViewFocusChanged(mus::View* gained_focus,
-                          mus::View* lost_focus) override {
-    if (gained_focus == view_manager_->view_)
+  void OnWindowFocusChanged(mus::Window* gained_focus,
+                            mus::Window* lost_focus) override {
+    if (gained_focus == view_manager_->window_)
       view_manager_->window_tree_host_->GetInputMethod()->OnFocus();
-    else if (lost_focus == view_manager_->view_)
+    else if (lost_focus == view_manager_->window_)
       view_manager_->window_tree_host_->GetInputMethod()->OnBlur();
   }
 
-  void OnViewInputEvent(mus::View* view, const mojo::EventPtr& event) override {
+  void OnWindowInputEvent(mus::Window* view,
+                          const mojo::EventPtr& event) override {
     scoped_ptr<ui::Event> ui_event(event.To<scoped_ptr<ui::Event>>());
     if (!ui_event)
       return;
@@ -86,7 +87,7 @@ class NativeWidgetViewObserver : public mus::ViewObserver {
 
   NativeWidgetViewManager* const view_manager_;
 
-  DISALLOW_COPY_AND_ASSIGN(NativeWidgetViewObserver);
+  DISALLOW_COPY_AND_ASSIGN(NativeWidgetWindowObserver);
 };
 
 }  // namespace
@@ -94,9 +95,9 @@ class NativeWidgetViewObserver : public mus::ViewObserver {
 NativeWidgetViewManager::NativeWidgetViewManager(
     views::internal::NativeWidgetDelegate* delegate,
     mojo::Shell* shell,
-    mus::View* view)
-    : NativeWidgetAura(delegate), view_(view) {
-  window_tree_host_.reset(new WindowTreeHostMojo(shell, view_));
+    mus::Window* window)
+    : NativeWidgetAura(delegate), window_(window) {
+  window_tree_host_.reset(new WindowTreeHostMojo(shell, window_));
   window_tree_host_->InitHost();
 
   focus_client_.reset(new wm::FocusController(new FocusRulesImpl));
@@ -110,7 +111,7 @@ NativeWidgetViewManager::NativeWidgetViewManager(
   capture_client_.reset(
       new aura::client::DefaultCaptureClient(window_tree_host_->window()));
 
-  view_observer_.reset(new NativeWidgetViewObserver(this));
+  window_observer_.reset(new NativeWidgetWindowObserver(this));
 }
 
 NativeWidgetViewManager::~NativeWidgetViewManager() {}
@@ -124,7 +125,7 @@ void NativeWidgetViewManager::InitNativeWidget(
 
 void NativeWidgetViewManager::OnWindowVisibilityChanged(aura::Window* window,
                                                         bool visible) {
-  view_->SetVisible(visible);
+  window_->SetVisible(visible);
   // NOTE: We could also update aura::Window's visibility when the View's
   // visibility changes, but this code isn't going to be around for very long so
   // I'm not bothering.

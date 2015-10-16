@@ -11,10 +11,10 @@
 #include "base/run_loop.h"
 #include "base/test/test_timeouts.h"
 #include "base/time/time.h"
-#include "components/mus/public/cpp/view_observer.h"
-#include "components/mus/public/cpp/view_tree_connection.h"
-#include "components/mus/public/cpp/view_tree_delegate.h"
-#include "components/mus/public/cpp/view_tree_host_factory.h"
+#include "components/mus/public/cpp/window_observer.h"
+#include "components/mus/public/cpp/window_tree_connection.h"
+#include "components/mus/public/cpp/window_tree_delegate.h"
+#include "components/mus/public/cpp/window_tree_host_factory.h"
 #include "components/web_view/frame.h"
 #include "components/web_view/frame_connection.h"
 #include "components/web_view/frame_tree.h"
@@ -27,8 +27,8 @@
 #include "mojo/application/public/cpp/application_test_base.h"
 #include "mojo/application/public/cpp/service_provider_impl.h"
 
-using mus::View;
-using mus::ViewTreeConnection;
+using mus::Window;
+using mus::WindowTreeConnection;
 
 namespace web_view {
 
@@ -132,7 +132,7 @@ class TestFrameClient : public mojom::FrameClient {
   // mojom::FrameClient:
   void OnConnect(mojom::FramePtr frame,
                  uint32_t change_id,
-                 uint32_t view_id,
+                 uint32_t window_id,
                  mojom::ViewConnectType view_connect_type,
                  mojo::Array<mojom::FrameDataPtr> frames,
                  int64_t navigation_start_time_ticks,
@@ -216,7 +216,7 @@ class FrameTest;
 // a single FrameClient. In other words this maintains the data structures
 // needed to represent a client side frame. To obtain one use
 // FrameTest::WaitForViewAndFrame().
-class ViewAndFrame : public mus::ViewTreeDelegate {
+class ViewAndFrame : public mus::WindowTreeDelegate {
  public:
   ~ViewAndFrame() override {
     if (view_)
@@ -224,7 +224,7 @@ class ViewAndFrame : public mus::ViewTreeDelegate {
   }
 
   // The View associated with the frame.
-  mus::View* view() { return view_; }
+  mus::Window* view() { return view_; }
   TestFrameClient* test_frame_client() { return &test_frame_tree_client_; }
   mojom::Frame* server_frame() {
     return test_frame_tree_client_.server_frame();
@@ -236,7 +236,7 @@ class ViewAndFrame : public mus::ViewTreeDelegate {
   ViewAndFrame()
       : view_(nullptr), frame_client_binding_(&test_frame_tree_client_) {}
 
-  void set_view(View* view) { view_ = view; }
+  void set_view(Window* view) { view_ = view; }
 
   // Runs a message loop until the view and frame data have been received.
   void WaitForViewAndFrame() { run_loop_.Run(); }
@@ -265,16 +265,16 @@ class ViewAndFrame : public mus::ViewTreeDelegate {
       run_loop_.Quit();
   }
 
-  // Overridden from ViewTreeDelegate:
-  void OnEmbed(View* root) override {
+  // Overridden from WindowTreeDelegate:
+  void OnEmbed(Window* root) override {
     view_ = root;
     QuitRunLoopIfNecessary();
   }
-  void OnConnectionLost(ViewTreeConnection* connection) override {
+  void OnConnectionLost(WindowTreeConnection* connection) override {
     view_ = nullptr;
   }
 
-  mus::View* view_;
+  mus::Window* view_;
   base::RunLoop run_loop_;
   TestFrameClient test_frame_tree_client_;
   mojo::Binding<mojom::FrameClient> frame_client_binding_;
@@ -284,18 +284,18 @@ class ViewAndFrame : public mus::ViewTreeDelegate {
 
 class FrameTest : public mojo::test::ApplicationTestBase,
                   public mojo::ApplicationDelegate,
-                  public mus::ViewTreeDelegate,
+                  public mus::WindowTreeDelegate,
                   public mojo::InterfaceFactory<mojo::ViewTreeClient>,
                   public mojo::InterfaceFactory<mojom::FrameClient> {
  public:
   FrameTest() : most_recent_connection_(nullptr), window_manager_(nullptr) {}
 
-  ViewTreeConnection* most_recent_connection() {
+  WindowTreeConnection* most_recent_connection() {
     return most_recent_connection_;
   }
 
  protected:
-  ViewTreeConnection* window_manager() { return window_manager_; }
+  WindowTreeConnection* window_manager() { return window_manager_; }
   TestFrameTreeDelegate* frame_tree_delegate() {
     return frame_tree_delegate_.get();
   }
@@ -320,7 +320,8 @@ class FrameTest : public mojo::test::ApplicationTestBase,
 
   // Creates a new shared frame as a child of |parent|.
   scoped_ptr<ViewAndFrame> CreateChildViewAndFrame(ViewAndFrame* parent) {
-    mus::View* child_frame_view = parent->view()->connection()->CreateView();
+    mus::Window* child_frame_view =
+        parent->view()->connection()->CreateWindow();
     parent->view()->AddChild(child_frame_view);
 
     scoped_ptr<ViewAndFrame> view_and_frame(new ViewAndFrame);
@@ -357,18 +358,18 @@ class FrameTest : public mojo::test::ApplicationTestBase,
     return true;
   }
 
-  // Overridden from ViewTreeDelegate:
-  void OnEmbed(View* root) override {
+  // Overridden from WindowTreeDelegate:
+  void OnEmbed(Window* root) override {
     most_recent_connection_ = root->connection();
     QuitRunLoop();
   }
-  void OnConnectionLost(ViewTreeConnection* connection) override {}
+  void OnConnectionLost(WindowTreeConnection* connection) override {}
 
   // Overridden from testing::Test:
   void SetUp() override {
     ApplicationTestBase::SetUp();
 
-    mus::CreateSingleViewTreeHost(application_impl(), this, &host_);
+    mus::CreateSingleWindowTreeHost(application_impl(), this, &host_);
 
     ASSERT_TRUE(DoRunLoopWithTimeout());
     std::swap(window_manager_, most_recent_connection_);
@@ -381,7 +382,7 @@ class FrameTest : public mojo::test::ApplicationTestBase,
     mojom::FrameClient* frame_client = frame_connection->frame_client();
     mojo::ViewTreeClientPtr view_tree_client =
         frame_connection->GetViewTreeClient();
-    mus::View* frame_root_view = window_manager()->CreateView();
+    mus::Window* frame_root_view = window_manager()->CreateWindow();
     window_manager()->GetRoot()->AddChild(frame_root_view);
     frame_tree_.reset(new FrameTree(
         0u, frame_root_view, view_tree_client.Pass(),
@@ -403,13 +404,13 @@ class FrameTest : public mojo::test::ApplicationTestBase,
       mojo::ApplicationConnection* connection,
       mojo::InterfaceRequest<mojo::ViewTreeClient> request) override {
     if (view_and_frame_) {
-      mus::ViewTreeConnection::Create(
+      mus::WindowTreeConnection::Create(
           view_and_frame_.get(), request.Pass(),
-          mus::ViewTreeConnection::CreateType::DONT_WAIT_FOR_EMBED);
+          mus::WindowTreeConnection::CreateType::DONT_WAIT_FOR_EMBED);
     } else {
-      mus::ViewTreeConnection::Create(
+      mus::WindowTreeConnection::Create(
           this, request.Pass(),
-          mus::ViewTreeConnection::CreateType::DONT_WAIT_FOR_EMBED);
+          mus::WindowTreeConnection::CreateType::DONT_WAIT_FOR_EMBED);
     }
   }
 
@@ -427,10 +428,10 @@ class FrameTest : public mojo::test::ApplicationTestBase,
   mojo::ViewTreeHostPtr host_;
 
   // Used to receive the most recent view manager loaded by an embed action.
-  ViewTreeConnection* most_recent_connection_;
+  WindowTreeConnection* most_recent_connection_;
   // The View Manager connection held by the window manager (app running at the
   // root view).
-  ViewTreeConnection* window_manager_;
+  WindowTreeConnection* window_manager_;
 
   scoped_ptr<ViewAndFrame> view_and_frame_;
 
@@ -478,7 +479,7 @@ TEST_F(FrameTest, OnViewEmbeddedInFrameDisconnected) {
   scoped_ptr<ViewAndFrame> navigated_child_view_and_frame =
       NavigateFrame(child_view_and_frame.get()).Pass();
 
-  // Delete the ViewTreeConnection for the child, which should trigger
+  // Delete the WindowTreeConnection for the child, which should trigger
   // notification.
   delete navigated_child_view_and_frame->view()->connection();
   ASSERT_EQ(1u, frame_tree()->root()->children().size());

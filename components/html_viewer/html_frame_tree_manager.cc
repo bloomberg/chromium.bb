@@ -16,7 +16,7 @@
 #include "components/html_viewer/html_frame.h"
 #include "components/html_viewer/html_frame_delegate.h"
 #include "components/html_viewer/html_frame_tree_manager_observer.h"
-#include "components/mus/public/cpp/view_tree_connection.h"
+#include "components/mus/public/cpp/window_tree_connection.h"
 #include "components/web_view/web_view_switches.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebRemoteFrame.h"
@@ -69,7 +69,7 @@ HTMLFrameTreeManager::TreeMap* HTMLFrameTreeManager::instances_ = nullptr;
 // static
 HTMLFrame* HTMLFrameTreeManager::CreateFrameAndAttachToTree(
     GlobalState* global_state,
-    mus::View* view,
+    mus::Window* window,
     scoped_ptr<DocumentResourceWaiter> resource_waiter,
     HTMLFrameDelegate* delegate) {
   if (!instances_)
@@ -79,11 +79,11 @@ HTMLFrame* HTMLFrameTreeManager::CreateFrameAndAttachToTree(
   web_view::mojom::FramePtr server_frame;
   mojo::Array<web_view::mojom::FrameDataPtr> frame_data;
   uint32_t change_id;
-  uint32_t view_id;
+  uint32_t window_id;
   web_view::mojom::ViewConnectType view_connect_type;
   web_view::mojom::FrameClient::OnConnectCallback on_connect_callback;
   resource_waiter->Release(&frame_client_request, &server_frame, &frame_data,
-                           &change_id, &view_id, &view_connect_type,
+                           &change_id, &window_id, &view_connect_type,
                            &on_connect_callback);
   resource_waiter.reset();
 
@@ -98,7 +98,7 @@ HTMLFrame* HTMLFrameTreeManager::CreateFrameAndAttachToTree(
            << " frame_tree=" << frame_tree << " use_existing="
            << (view_connect_type ==
                web_view::mojom::VIEW_CONNECT_TYPE_USE_EXISTING)
-           << " frame_id=" << view_id;
+           << " frame_id=" << window_id;
   if (view_connect_type == web_view::mojom::VIEW_CONNECT_TYPE_USE_EXISTING &&
       !frame_tree) {
     DVLOG(1) << "was told to use existing view but do not have frame tree";
@@ -107,11 +107,11 @@ HTMLFrame* HTMLFrameTreeManager::CreateFrameAndAttachToTree(
 
   if (!frame_tree) {
     frame_tree = new HTMLFrameTreeManager(global_state);
-    frame_tree->Init(delegate, view, frame_data, change_id);
+    frame_tree->Init(delegate, window, frame_data, change_id);
     (*instances_)[frame_data[0]->frame_id] = frame_tree;
   } else if (view_connect_type ==
              web_view::mojom::VIEW_CONNECT_TYPE_USE_EXISTING) {
-    HTMLFrame* existing_frame = frame_tree->root_->FindFrame(view_id);
+    HTMLFrame* existing_frame = frame_tree->root_->FindFrame(window_id);
     if (!existing_frame) {
       DVLOG(1) << "was told to use existing view but could not find view";
       return nullptr;
@@ -123,14 +123,14 @@ HTMLFrame* HTMLFrameTreeManager::CreateFrameAndAttachToTree(
     existing_frame->SwapDelegate(delegate);
   } else {
     // We're going to share a frame tree. We should know about the frame.
-    CHECK(view->id() != frame_data[0]->frame_id);
-    HTMLFrame* existing_frame = frame_tree->root_->FindFrame(view->id());
+    CHECK(window->id() != frame_data[0]->frame_id);
+    HTMLFrame* existing_frame = frame_tree->root_->FindFrame(window->id());
     if (existing_frame) {
       CHECK(!existing_frame->IsLocal());
       size_t frame_data_index = 0u;
-      CHECK(FindFrameDataIndex(frame_data, view->id(), &frame_data_index));
+      CHECK(FindFrameDataIndex(frame_data, window->id(), &frame_data_index));
       const web_view::mojom::FrameDataPtr& data = frame_data[frame_data_index];
-      existing_frame->SwapToLocal(delegate, view, data->client_properties);
+      existing_frame->SwapToLocal(delegate, window, data->client_properties);
     } else {
       // If we can't find the frame and the change_id of the incoming
       // tree is before the change id we've processed, then we removed the
@@ -139,7 +139,7 @@ HTMLFrame* HTMLFrameTreeManager::CreateFrameAndAttachToTree(
         return nullptr;
 
       // We removed the frame but it hasn't been acked yet.
-      if (frame_tree->pending_remove_ids_.count(view->id()))
+      if (frame_tree->pending_remove_ids_.count(window->id()))
         return nullptr;
 
       // We don't know about the frame, but should. Something is wrong.
@@ -148,7 +148,7 @@ HTMLFrame* HTMLFrameTreeManager::CreateFrameAndAttachToTree(
     }
   }
 
-  HTMLFrame* frame = frame_tree->root_->FindFrame(view_id);
+  HTMLFrame* frame = frame_tree->root_->FindFrame(window_id);
   DCHECK(frame);
   frame->Bind(server_frame.Pass(), frame_client_request.Pass());
   return frame;
@@ -219,12 +219,13 @@ HTMLFrameTreeManager::~HTMLFrameTreeManager() {
 
 void HTMLFrameTreeManager::Init(
     HTMLFrameDelegate* delegate,
-    mus::View* local_view,
+    mus::Window* local_window,
     const mojo::Array<web_view::mojom::FrameDataPtr>& frame_data,
     uint32_t change_id) {
   change_id_ = change_id;
-  root_ = BuildFrameTree(delegate, frame_data, local_view->id(), local_view);
-  local_frame_ = root_->FindFrame(local_view->id());
+  root_ =
+      BuildFrameTree(delegate, frame_data, local_window->id(), local_window);
+  local_frame_ = root_->FindFrame(local_window->id());
   CHECK(local_frame_);
   local_frame_->UpdateFocus();
 }
@@ -233,7 +234,7 @@ HTMLFrame* HTMLFrameTreeManager::BuildFrameTree(
     HTMLFrameDelegate* delegate,
     const mojo::Array<web_view::mojom::FrameDataPtr>& frame_data,
     uint32_t local_frame_id,
-    mus::View* local_view) {
+    mus::Window* local_window) {
   std::vector<HTMLFrame*> parents;
   HTMLFrame* root = nullptr;
   HTMLFrame* last_frame = nullptr;
@@ -246,7 +247,7 @@ HTMLFrame* HTMLFrameTreeManager::BuildFrameTree(
     }
     HTMLFrame::CreateParams params(this,
                                    !parents.empty() ? parents.back() : nullptr,
-                                   frame_data[i]->frame_id, local_view,
+                                   frame_data[i]->frame_id, local_window,
                                    frame_data[i]->client_properties, nullptr);
     if (frame_data[i]->frame_id == local_frame_id)
       params.delegate = delegate;
@@ -347,7 +348,7 @@ void HTMLFrameTreeManager::ProcessOnFrameRemoved(HTMLFrame* source,
     return;
   }
 
-  // Requests to remove local frames are followed by the View being destroyed.
+  // Requests to remove local frames are followed by the Window being destroyed.
   // We handle destruction there.
   if (frame->IsLocal())
     return;

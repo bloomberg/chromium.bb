@@ -12,7 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "components/mus/public/cpp/types.h"
-#include "components/mus/public/cpp/view_observer.h"
+#include "components/mus/public/cpp/window_observer.h"
 #include "components/web_view/public/interfaces/frame.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 
@@ -52,13 +52,13 @@ enum class ViewOwnership {
 // the argument |reuse_existing_view| supplied to OnConnect(). Typically the id
 // is that of content handler id, but this is left up to the FrameTreeDelegate
 // to decide.
-class Frame : public mus::ViewObserver, public mojom::Frame {
+class Frame : public mus::WindowObserver, public mojom::Frame {
  public:
   using ClientPropertyMap = std::map<std::string, std::vector<uint8_t>>;
   using FindCallback = mojo::Callback<void(bool)>;
 
   Frame(FrameTree* tree,
-        mus::View* view,
+        mus::Window* view,
         uint32_t frame_id,
         uint32_t app_id,
         ViewOwnership view_ownership,
@@ -76,15 +76,15 @@ class Frame : public mus::ViewObserver, public mojom::Frame {
   // Frame that is associated with |view|. For example, if |view|
   // has a Frame associated with it, then that is returned. Otherwise
   // this checks view->parent() and so on.
-  static Frame* FindFirstFrameAncestor(mus::View* view);
+  static Frame* FindFirstFrameAncestor(mus::Window* view);
 
   FrameTree* tree() { return tree_; }
 
   Frame* parent() { return parent_; }
   const Frame* parent() const { return parent_; }
 
-  mus::View* view() { return view_; }
-  const mus::View* view() const { return view_; }
+  mus::Window* view() { return view_; }
+  const mus::Window* view() const { return view_; }
 
   uint32_t id() const { return id_; }
 
@@ -187,7 +187,7 @@ class Frame : public mus::ViewObserver, public mojom::Frame {
                     uint32 app_id,
                     base::TimeTicks navigation_start_time);
 
-  void SetView(mus::View* view);
+  void SetView(mus::Window* view);
 
   // Adds this to |frames| and recurses through the children calling the
   // same function.
@@ -220,10 +220,10 @@ class Frame : public mus::ViewObserver, public mojom::Frame {
   void NotifyFrameLoadingStateChanged(const Frame* frame, bool loading);
   void NotifyDispatchFrameLoadEvent(const Frame* frame);
 
-  // mus::ViewObserver:
+  // mus::WindowObserver:
   void OnTreeChanged(const TreeChangeParams& params) override;
-  void OnViewDestroying(mus::View* view) override;
-  void OnViewEmbeddedAppDisconnected(mus::View* view) override;
+  void OnWindowDestroying(mus::Window* view) override;
+  void OnWindowEmbeddedAppDisconnected(mus::Window* view) override;
 
   // mojom::Frame:
   void PostMessageEventToFrame(uint32_t target_frame_id,
@@ -251,7 +251,7 @@ class Frame : public mus::ViewObserver, public mojom::Frame {
 
   FrameTree* const tree_;
   // WARNING: this may be null. See class description for details.
-  mus::View* view_;
+  mus::Window* view_;
   // The connection id returned from ViewManager::Embed(). Frames created by
   // way of OnCreatedFrame() inherit the id from the parent.
   mus::ConnectionSpecificId embedded_connection_id_;

@@ -5,9 +5,9 @@
 #include "mandoline/ui/phone_ui/phone_browser_application_delegate.h"
 
 #include "base/command_line.h"
-#include "components/mus/public/cpp/view.h"
-#include "components/mus/public/cpp/view_tree_connection.h"
-#include "components/mus/public/cpp/view_tree_host_factory.h"
+#include "components/mus/public/cpp/window.h"
+#include "components/mus/public/cpp/window_tree_connection.h"
+#include "components/mus/public/cpp/window_tree_host_factory.h"
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
@@ -47,7 +47,7 @@ void PhoneBrowserApplicationDelegate::Initialize(mojo::ApplicationImpl* app) {
       break;
     }
   }
-  mus::CreateSingleViewTreeHost(app_, this, &host_);
+  mus::CreateSingleWindowTreeHost(app_, this, &host_);
 }
 
 bool PhoneBrowserApplicationDelegate::ConfigureIncomingConnection(
@@ -66,12 +66,12 @@ void PhoneBrowserApplicationDelegate::LaunchURL(const mojo::String& url) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// PhoneBrowserApplicationDelegate, mus::ViewTreeDelegate implementation:
+// PhoneBrowserApplicationDelegate, mus::WindowTreeDelegate implementation:
 
-void PhoneBrowserApplicationDelegate::OnEmbed(mus::View* root) {
+void PhoneBrowserApplicationDelegate::OnEmbed(mus::Window* root) {
   CHECK(!root_);
   root_ = root;
-  content_ = root->connection()->CreateView();
+  content_ = root->connection()->CreateWindow();
   root->AddChild(content_);
   content_->SetBounds(root->bounds());
   content_->SetVisible(true);
@@ -83,13 +83,13 @@ void PhoneBrowserApplicationDelegate::OnEmbed(mus::View* root) {
 }
 
 void PhoneBrowserApplicationDelegate::OnConnectionLost(
-    mus::ViewTreeConnection* connection) {}
+    mus::WindowTreeConnection* connection) {}
 
 ////////////////////////////////////////////////////////////////////////////////
-// PhoneBrowserApplicationDelegate, mus::ViewObserver implementation:
+// PhoneBrowserApplicationDelegate, mus::WindowObserver implementation:
 
-void PhoneBrowserApplicationDelegate::OnViewBoundsChanged(
-    mus::View* view,
+void PhoneBrowserApplicationDelegate::OnWindowBoundsChanged(
+    mus::Window* view,
     const mojo::Rect& old_bounds,
     const mojo::Rect& new_bounds) {
   CHECK_EQ(view, root_);

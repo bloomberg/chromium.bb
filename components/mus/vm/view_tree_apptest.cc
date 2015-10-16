@@ -316,55 +316,55 @@ class TestViewTreeClientImpl : public mojo::ViewTreeClient,
     tracker()->OnEmbeddedAppDisconnected(view_id);
   }
   void OnUnembed() override { tracker()->OnUnembed(); }
-  void OnViewBoundsChanged(Id view_id,
-                           RectPtr old_bounds,
-                           RectPtr new_bounds) override {
+  void OnWindowBoundsChanged(Id view_id,
+                             RectPtr old_bounds,
+                             RectPtr new_bounds) override {
     // The bounds of the root may change during startup on Android at random
     // times. As this doesn't matter, and shouldn't impact test exepctations,
     // it is ignored.
     if (view_id == root_view_id_)
       return;
-    tracker()->OnViewBoundsChanged(view_id, old_bounds.Pass(),
-                                   new_bounds.Pass());
+    tracker()->OnWindowBoundsChanged(view_id, old_bounds.Pass(),
+                                     new_bounds.Pass());
   }
-  void OnViewViewportMetricsChanged(ViewportMetricsPtr old_metrics,
-                                    ViewportMetricsPtr new_metrics) override {
+  void OnWindowViewportMetricsChanged(ViewportMetricsPtr old_metrics,
+                                      ViewportMetricsPtr new_metrics) override {
     // Don't track the metrics as they are available at an indeterministic time
     // on Android.
   }
-  void OnViewHierarchyChanged(Id view,
-                              Id new_parent,
-                              Id old_parent,
-                              Array<ViewDataPtr> views) override {
-    tracker()->OnViewHierarchyChanged(view, new_parent, old_parent,
-                                      views.Pass());
+  void OnWindowHierarchyChanged(Id view,
+                                Id new_parent,
+                                Id old_parent,
+                                Array<ViewDataPtr> views) override {
+    tracker()->OnWindowHierarchyChanged(view, new_parent, old_parent,
+                                        views.Pass());
   }
-  void OnViewReordered(Id view_id,
-                       Id relative_view_id,
-                       OrderDirection direction) override {
-    tracker()->OnViewReordered(view_id, relative_view_id, direction);
+  void OnWindowReordered(Id view_id,
+                         Id relative_view_id,
+                         OrderDirection direction) override {
+    tracker()->OnWindowReordered(view_id, relative_view_id, direction);
   }
-  void OnViewDeleted(Id view) override { tracker()->OnViewDeleted(view); }
-  void OnViewVisibilityChanged(uint32_t view, bool visible) override {
-    tracker()->OnViewVisibilityChanged(view, visible);
+  void OnWindowDeleted(Id view) override { tracker()->OnWindowDeleted(view); }
+  void OnWindowVisibilityChanged(uint32_t view, bool visible) override {
+    tracker()->OnWindowVisibilityChanged(view, visible);
   }
-  void OnViewDrawnStateChanged(uint32_t view, bool drawn) override {
-    tracker()->OnViewDrawnStateChanged(view, drawn);
+  void OnWindowDrawnStateChanged(uint32_t view, bool drawn) override {
+    tracker()->OnWindowDrawnStateChanged(view, drawn);
   }
-  void OnViewInputEvent(Id view_id,
-                        EventPtr event,
-                        const Callback<void()>& callback) override {
+  void OnWindowInputEvent(Id view_id,
+                          EventPtr event,
+                          const Callback<void()>& callback) override {
     // Don't log input events as none of the tests care about them and they
     // may come in at random points.
     callback.Run();
   }
-  void OnViewSharedPropertyChanged(uint32_t view,
-                                   const String& name,
-                                   Array<uint8_t> new_data) override {
-    tracker_.OnViewSharedPropertyChanged(view, name, new_data.Pass());
+  void OnWindowSharedPropertyChanged(uint32_t view,
+                                     const String& name,
+                                     Array<uint8_t> new_data) override {
+    tracker_.OnWindowSharedPropertyChanged(view, name, new_data.Pass());
   }
   // TODO(sky): add testing coverage.
-  void OnViewFocused(uint32_t focused_view_id) override {}
+  void OnWindowFocused(uint32_t focused_view_id) override {}
 
   TestChangeTracker tracker_;
 
@@ -534,8 +534,9 @@ class ViewTreeAppTest : public mojo::test::ApplicationTestBase,
     vm_client1_.reset(new TestViewTreeClientImpl(application_impl()));
     vm_client1_->Bind(GetProxy(&tree_client_ptr));
 
-    factory->CreateViewTreeHost(GetProxy(&host_), mojo::ViewTreeHostClientPtr(),
-                                tree_client_ptr.Pass());
+    factory->CreateWindowTreeHost(GetProxy(&host_),
+                                  mojo::ViewTreeHostClientPtr(),
+                                  tree_client_ptr.Pass());
 
     // Next we should get an embed call on the "window manager" client.
     vm_client1_->WaitForIncomingMethodCall();

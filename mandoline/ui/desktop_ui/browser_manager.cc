@@ -5,8 +5,8 @@
 #include "mandoline/ui/desktop_ui/browser_manager.h"
 
 #include "base/command_line.h"
-#include "components/mus/public/cpp/view.h"
-#include "components/mus/public/cpp/view_observer.h"
+#include "components/mus/public/cpp/window.h"
+#include "components/mus/public/cpp/window_observer.h"
 #include "mandoline/ui/desktop_ui/browser_window.h"
 
 namespace mandoline {

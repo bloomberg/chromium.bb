@@ -31,7 +31,7 @@ class DefaultAccessPolicy : public AccessPolicy {
   bool CanDescendIntoViewForViewTree(const ServerView* view) const override;
   bool CanEmbed(const ServerView* view, uint32_t policy_bitmask) const override;
   bool CanChangeViewVisibility(const ServerView* view) const override;
-  bool CanSetViewSurfaceId(const ServerView* view) const override;
+  bool CanSetWindowSurfaceId(const ServerView* view) const override;
   bool CanSetViewBounds(const ServerView* view) const override;
   bool CanSetViewProperties(const ServerView* view) const override;
   bool CanSetViewTextInputState(const ServerView* view) const override;

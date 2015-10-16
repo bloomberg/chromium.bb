@@ -75,9 +75,9 @@ class MandolineUIServicesApp
               mojo::InterfaceRequest<mojo::Gpu> request) override;
 
   // mojo::ViewTreeHostFactory implementation.
-  void CreateViewTreeHost(mojo::InterfaceRequest<mojo::ViewTreeHost> host,
-                          mojo::ViewTreeHostClientPtr host_client,
-                          mojo::ViewTreeClientPtr tree_client) override;
+  void CreateWindowTreeHost(mojo::InterfaceRequest<mojo::ViewTreeHost> host,
+                            mojo::ViewTreeHostClientPtr host_client,
+                            mojo::ViewTreeClientPtr tree_client) override;
 
   mojo::WeakBindingSet<mojo::ViewTreeHostFactory> factory_bindings_;
   mojo::ApplicationImpl* app_impl_;

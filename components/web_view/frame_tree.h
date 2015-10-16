@@ -37,7 +37,7 @@ class FrameTree {
   // |root_app_id| is a unique identifier of the app providing |root_client|.
   // See Frame for details on app id's.
   FrameTree(uint32_t root_app_id,
-            mus::View* view,
+            mus::Window* view,
             mojo::ViewTreeClientPtr view_tree_client,
             FrameTreeDelegate* delegate,
             mojom::FrameClient* root_client,
@@ -74,7 +74,7 @@ class FrameTree {
                              const mojo::String& name,
                              const mojo::Array<uint8_t>& value);
 
-  mus::View* view_;
+  mus::Window* view_;
 
   FrameTreeDelegate* delegate_;
 

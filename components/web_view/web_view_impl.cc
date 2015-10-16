@@ -9,9 +9,9 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "components/devtools_service/public/cpp/switches.h"
-#include "components/mus/public/cpp/scoped_view_ptr.h"
-#include "components/mus/public/cpp/view.h"
-#include "components/mus/public/cpp/view_tree_connection.h"
+#include "components/mus/public/cpp/scoped_window_ptr.h"
+#include "components/mus/public/cpp/window.h"
+#include "components/mus/public/cpp/window_tree_connection.h"
 #include "components/web_view/client_initiated_frame_connection.h"
 #include "components/web_view/frame.h"
 #include "components/web_view/frame_connection.h"
@@ -59,7 +59,7 @@ WebViewImpl::~WebViewImpl() {
     content_->RemoveObserver(this);
   if (root_) {
     root_->RemoveObserver(this);
-    mus::ScopedViewPtr::DeleteViewOrViewManager(root_);
+    mus::ScopedWindowPtr::DeleteWindowOrWindowManager(root_);
   }
 }
 
@@ -74,7 +74,7 @@ void WebViewImpl::OnLoad(const GURL& pending_url) {
 
   client_->TopLevelNavigationStarted(pending_url.spec());
 
-  content_ = root_->connection()->CreateView();
+  content_ = root_->connection()->CreateWindow();
   content_->SetBounds(*mojo::Rect::From(
       gfx::Rect(0, 0, root_->bounds().width, root_->bounds().height)));
   root_->AddChild(content_);
@@ -119,9 +119,9 @@ void WebViewImpl::LoadRequest(mojo::URLRequestPtr request) {
 
 void WebViewImpl::GetViewTreeClient(
     mojo::InterfaceRequest<mojo::ViewTreeClient> view_tree_client) {
-  mus::ViewTreeConnection::Create(
+  mus::WindowTreeConnection::Create(
       this, view_tree_client.Pass(),
-      mus::ViewTreeConnection::CreateType::DONT_WAIT_FOR_EMBED);
+      mus::WindowTreeConnection::CreateType::DONT_WAIT_FOR_EMBED);
 }
 
 void WebViewImpl::Find(const mojo::String& search_text,
@@ -146,9 +146,9 @@ void WebViewImpl::GoForward() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// WebViewImpl, mus::ViewTreeDelegate implementation:
+// WebViewImpl, mus::WindowTreeDelegate implementation:
 
-void WebViewImpl::OnEmbed(mus::View* root) {
+void WebViewImpl::OnEmbed(mus::Window* root) {
   // We must have been granted embed root priviledges, otherwise we can't
   // Embed() in any descendants.
   DCHECK(root->connection()->IsEmbedRoot());
@@ -159,16 +159,16 @@ void WebViewImpl::OnEmbed(mus::View* root) {
     OnLoad(pending_load_->pending_url());
 }
 
-void WebViewImpl::OnConnectionLost(mus::ViewTreeConnection* connection) {
+void WebViewImpl::OnConnectionLost(mus::WindowTreeConnection* connection) {
   root_ = nullptr;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // WebViewImpl, mus::ViewObserver implementation:
 
-void WebViewImpl::OnViewBoundsChanged(mus::View* view,
-                                      const mojo::Rect& old_bounds,
-                                      const mojo::Rect& new_bounds) {
+void WebViewImpl::OnWindowBoundsChanged(mus::Window* view,
+                                        const mojo::Rect& old_bounds,
+                                        const mojo::Rect& new_bounds) {
   if (view != content_) {
     mojo::Rect rect;
     rect.width = new_bounds.width;
@@ -178,7 +178,7 @@ void WebViewImpl::OnViewBoundsChanged(mus::View* view,
   }
 }
 
-void WebViewImpl::OnViewDestroyed(mus::View* view) {
+void WebViewImpl::OnWindowDestroyed(mus::Window* view) {
   // |FrameTree| cannot outlive the content view.
   if (view == content_) {
     frame_tree_.reset();

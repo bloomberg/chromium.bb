@@ -5,8 +5,8 @@
 #ifndef MANDOLINE_UI_DESKTOP_UI_BROWSER_WINDOW_H_
 #define MANDOLINE_UI_DESKTOP_UI_BROWSER_WINDOW_H_
 
-#include "components/mus/public/cpp/view_tree_connection.h"
-#include "components/mus/public/cpp/view_tree_delegate.h"
+#include "components/mus/public/cpp/window_tree_connection.h"
+#include "components/mus/public/cpp/window_tree_delegate.h"
 #include "components/mus/public/interfaces/view_tree_host.mojom.h"
 #include "components/web_view/public/cpp/web_view.h"
 #include "components/web_view/public/interfaces/web_view.mojom.h"
@@ -32,7 +32,7 @@ class FindBarView;
 class ProgressView;
 class ToolbarView;
 
-class BrowserWindow : public mus::ViewTreeDelegate,
+class BrowserWindow : public mus::WindowTreeDelegate,
                       public mojo::ViewTreeHostClient,
                       public web_view::mojom::WebViewClient,
                       public ViewEmbedder,
@@ -57,9 +57,9 @@ class BrowserWindow : public mus::ViewTreeDelegate,
 
   float DIPSToPixels(float value) const;
 
-  // Overridden from mus::ViewTreeDelegate:
-  void OnEmbed(mus::View* root) override;
-  void OnConnectionLost(mus::ViewTreeConnection* connection) override;
+  // Overridden from mus::WindowTreeDelegate:
+  void OnEmbed(mus::Window* root) override;
+  void OnConnectionLost(mus::WindowTreeConnection* connection) override;
 
   // Overridden from ViewTreeHostClient:
   void OnAccelerator(uint32_t id, mojo::EventPtr event) override;
@@ -93,7 +93,7 @@ class BrowserWindow : public mus::ViewTreeDelegate,
   void OnDoFind(const std::string& find, bool forward) override;
   void OnHideFindBar() override;
 
-  void Init(mus::View* root);
+  void Init(mus::Window* root);
   void EmbedOmnibox();
 
   mojo::ApplicationImpl* app_;
@@ -104,9 +104,9 @@ class BrowserWindow : public mus::ViewTreeDelegate,
   ToolbarView* toolbar_view_;
   ProgressView* progress_bar_;
   FindBarView* find_bar_view_;
-  mus::View* root_;
-  mus::View* content_;
-  mus::View* omnibox_view_;
+  mus::Window* root_;
+  mus::Window* content_;
+  mus::Window* omnibox_view_;
 
   mojo::WeakBindingSet<ViewEmbedder> view_embedder_bindings_;
 

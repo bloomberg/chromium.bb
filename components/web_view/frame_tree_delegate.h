@@ -86,7 +86,7 @@ class FrameTreeDelegate {
   // . The app is still alive, but is shutting down.
   // Frame does nothing in response to this, but the delegate may wish to take
   // action.
-  virtual void OnViewEmbeddedInFrameDisconnected(Frame* frame);
+  virtual void OnWindowEmbeddedInFrameDisconnected(Frame* frame);
 
   // Reports the current find state back to our owner.
   virtual void OnFindInFrameCountUpdated(int32_t request_id,

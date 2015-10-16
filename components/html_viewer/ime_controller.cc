@@ -6,14 +6,14 @@
 
 #include "components/html_viewer/blink_input_events_type_converters.h"
 #include "components/html_viewer/blink_text_input_type_converters.h"
-#include "components/mus/public/cpp/view.h"
+#include "components/mus/public/cpp/window.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "third_party/WebKit/public/web/WebWidget.h"
 
 namespace html_viewer {
 
-ImeController::ImeController(mus::View* view, blink::WebWidget* widget)
-    : view_(view), widget_(widget) {}
+ImeController::ImeController(mus::Window* window, blink::WebWidget* widget)
+    : window_(window), widget_(widget) {}
 
 ImeController::~ImeController() {}
 
@@ -65,9 +65,9 @@ void ImeController::UpdateTextInputState(bool show_ime) {
     state->composition_start = new_info.compositionStart;
     state->composition_end = new_info.compositionEnd;
     if (show_ime)
-      view_->SetImeVisibility(true, state.Pass());
+      window_->SetImeVisibility(true, state.Pass());
     else
-      view_->SetTextInputState(state.Pass());
+      window_->SetTextInputState(state.Pass());
   }
 }
 

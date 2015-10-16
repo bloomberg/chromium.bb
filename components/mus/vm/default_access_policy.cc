@@ -73,9 +73,10 @@ bool DefaultAccessPolicy::CanChangeViewVisibility(
          delegate_->IsRootForAccessPolicy(view->id());
 }
 
-bool DefaultAccessPolicy::CanSetViewSurfaceId(const ServerView* view) const {
+bool DefaultAccessPolicy::CanSetWindowSurfaceId(const ServerView* view) const {
   // Once a view embeds another app, the embedder app is no longer able to
-  // call SetViewSurfaceId() - this ability is transferred to the embedded app.
+  // call SetWindowSurfaceId() - this ability is transferred to the embedded
+  // app.
   if (delegate_->IsViewRootOfAnotherConnectionForAccessPolicy(view))
     return false;
   return WasCreatedByThisConnection(view) ||

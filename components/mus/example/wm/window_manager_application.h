@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
-#include "components/mus/public/cpp/view_tree_delegate.h"
+#include "components/mus/public/cpp/window_tree_delegate.h"
 #include "components/mus/public/interfaces/view_tree_host.mojom.h"
 #include "components/mus/public/interfaces/window_manager.mojom.h"
 #include "mojo/application/public/cpp/application_delegate.h"
@@ -16,13 +16,13 @@
 
 class WindowManagerApplication
     : public mojo::ApplicationDelegate,
-      public mus::ViewTreeDelegate,
+      public mus::WindowTreeDelegate,
       public mojo::InterfaceFactory<mus::mojom::WindowManager> {
  public:
   WindowManagerApplication();
   ~WindowManagerApplication() override;
 
-  mus::View* root() { return root_;  }
+  mus::Window* root() { return root_; }
 
   int window_count() { return window_count_; }
   void IncrementWindowCount() { ++window_count_; }
@@ -34,8 +34,8 @@ class WindowManagerApplication
       mojo::ApplicationConnection* connection) override;
 
   // ViewTreeDelegate:
-  void OnEmbed(mus::View* root) override;
-  void OnConnectionLost(mus::ViewTreeConnection* connection) override;
+  void OnEmbed(mus::Window* root) override;
+  void OnConnectionLost(mus::WindowTreeConnection* connection) override;
 
   // InterfaceFactory<mus::mojom::WindowManager>:
   void Create(
@@ -46,7 +46,7 @@ class WindowManagerApplication
   void CreateContainers();
 
   // nullptr until the Mus connection is established via OnEmbed().
-  mus::View* root_;
+  mus::Window* root_;
   int window_count_;
 
   mojo::ViewTreeHostPtr host_;

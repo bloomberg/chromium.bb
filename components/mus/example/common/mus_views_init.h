@@ -6,7 +6,7 @@
 #define COMPONENTS_MUS_EXAMPLE_COMMON_MUS_VIEWS_INIT_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "components/mus/public/cpp/view_tree_delegate.h"
+#include "components/mus/public/cpp/window_tree_delegate.h"
 #include "ui/views/mus/aura_init.h"
 #include "ui/views/views_delegate.h"
 
@@ -19,13 +19,14 @@ class AuraInit;
 }
 
 // Does the necessary setup to use mus, views and the example wm.
-class MUSViewsInit : public views::ViewsDelegate, public mus::ViewTreeDelegate {
+class MUSViewsInit : public views::ViewsDelegate,
+                     public mus::WindowTreeDelegate {
  public:
   explicit MUSViewsInit(mojo::ApplicationImpl* app);
   ~MUSViewsInit() override;
 
  private:
-  mus::View* CreateWindow();
+  mus::Window* CreateWindow();
 
   // views::ViewsDelegate:
   views::NativeWidget* CreateNativeWidget(
@@ -34,9 +35,9 @@ class MUSViewsInit : public views::ViewsDelegate, public mus::ViewTreeDelegate {
       views::Widget::InitParams* params,
       views::internal::NativeWidgetDelegate* delegate) override;
 
-  // mus::ViewTreeDelegate:
-  void OnEmbed(mus::View* root) override;
-  void OnConnectionLost(mus::ViewTreeConnection* connection) override;
+  // mus::WindowTreeDelegate:
+  void OnEmbed(mus::Window* root) override;
+  void OnConnectionLost(mus::WindowTreeConnection* connection) override;
 #if defined(OS_WIN)
   HICON GetSmallWindowIcon() const override;
 #endif

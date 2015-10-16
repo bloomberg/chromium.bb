@@ -34,9 +34,9 @@
 #include "components/html_viewer/web_layer_tree_view_impl.h"
 #include "components/html_viewer/web_storage_namespace_impl.h"
 #include "components/html_viewer/web_url_loader_impl.h"
-#include "components/mus/public/cpp/scoped_view_ptr.h"
-#include "components/mus/public/cpp/view.h"
-#include "components/mus/public/cpp/view_tree_connection.h"
+#include "components/mus/public/cpp/scoped_window_ptr.h"
+#include "components/mus/public/cpp/window.h"
+#include "components/mus/public/cpp/window_tree_connection.h"
 #include "components/mus/vm/ids.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/application/public/cpp/connect.h"
@@ -74,7 +74,6 @@ using mojo::AxProvider;
 using mojo::Rect;
 using mojo::ServiceProviderPtr;
 using mojo::URLResponsePtr;
-using mus::View;
 using web_view::mojom::HTMLMessageEvent;
 using web_view::mojom::HTMLMessageEventPtr;
 
@@ -121,7 +120,7 @@ void RequireCallback(cc::SurfaceId surface_id,
 HTMLFrame::HTMLFrame(CreateParams* params)
     : frame_tree_manager_(params->manager),
       parent_(params->parent),
-      view_(nullptr),
+      window_(nullptr),
       id_(params->id),
       web_frame_(nullptr),
       delegate_(params->delegate),
@@ -130,8 +129,8 @@ HTMLFrame::HTMLFrame(CreateParams* params)
   if (parent_)
     parent_->children_.push_back(this);
 
-  if (params->view && params->view->id() == id_)
-    SetView(params->view);
+  if (params->window && params->window->id() == id_)
+    SetWindow(params->window);
 
   SetReplicatedFrameStateFromClientProperties(params->properties, &state_);
 
@@ -151,14 +150,14 @@ HTMLFrame::HTMLFrame(CreateParams* params)
 
     // The resize and setDeviceScaleFactor() needs to be after setting the main
     // frame.
-    const gfx::Size size_in_pixels(params->view->bounds().width,
-                                   params->view->bounds().height);
+    const gfx::Size size_in_pixels(params->window->bounds().width,
+                                   params->window->bounds().height);
     const gfx::Size size_in_dips = gfx::ConvertSizeToDIP(
-        params->view->viewport_metrics().device_pixel_ratio, size_in_pixels);
+        params->window->viewport_metrics().device_pixel_ratio, size_in_pixels);
     web_view()->resize(size_in_dips);
     web_frame_ = local_web_frame;
     web_view()->setDeviceScaleFactor(global_state()->device_pixel_ratio());
-    if (id_ != params->view->id()) {
+    if (id_ != params->window->id()) {
       blink::WebRemoteFrame* remote_web_frame =
           blink::WebRemoteFrame::create(state_.tree_scope, this);
       local_web_frame->swap(remote_web_frame);
@@ -182,8 +181,8 @@ HTMLFrame::HTMLFrame(CreateParams* params)
       startup_performance_data_collector_ =
           StatsCollectionController::Install(web_frame_, GetApp());
     }
-  } else if (!params->is_local_create_child && params->view &&
-             id_ == params->view->id()) {
+  } else if (!params->is_local_create_child && params->window &&
+             id_ == params->window->id()) {
     // Frame represents the local frame, and it isn't the root of the tree.
     HTMLFrame* previous_sibling = GetPreviousSibling(this);
     blink::WebFrame* previous_web_frame =
@@ -301,9 +300,9 @@ HTMLFrame::~HTMLFrame() {
   if (delegate_)
     delegate_->OnFrameDestroyed();
 
-  if (view_) {
-    view_->RemoveObserver(this);
-    mus::ScopedViewPtr::DeleteViewOrViewManager(view_);
+  if (window_) {
+    window_->RemoveObserver(this);
+    mus::ScopedWindowPtr::DeleteWindowOrWindowManager(window_);
   }
 }
 
@@ -324,10 +323,10 @@ blink::WebFrame* HTMLFrame::createChildFrame(
     blink::WebSandboxFlags sandbox_flags) {
   DCHECK(IsLocal());  // Can't create children of remote frames.
   DCHECK_EQ(parent, web_frame_);
-  DCHECK(view_);  // If we're local we have to have a view.
+  DCHECK(window_);  // If we're local we have to have a view.
   // Create the view that will house the frame now. We embed once we know the
   // url (see decidePolicyForNavigation()).
-  mus::View* child_view = view_->connection()->CreateView();
+  mus::Window* child_view = window_->connection()->CreateWindow();
   ReplicatedFrameState child_state;
   child_state.name = frame_name;
   child_state.tree_scope = scope;
@@ -337,7 +336,7 @@ blink::WebFrame* HTMLFrame::createChildFrame(
   ClientPropertiesFromReplicatedFrameState(child_state, &client_properties);
 
   child_view->SetVisible(true);
-  view_->AddChild(child_view);
+  window_->AddChild(child_view);
 
   HTMLFrame::CreateParams params(frame_tree_manager_, this, child_view->id(),
                                  child_view, client_properties, nullptr);
@@ -345,7 +344,7 @@ blink::WebFrame* HTMLFrame::createChildFrame(
   HTMLFrame* child_frame = GetFirstAncestorWithDelegate()
                                ->delegate_->GetHTMLFactory()
                                ->CreateHTMLFrame(&params);
-  child_frame->owned_view_.reset(new mus::ScopedViewPtr(child_view));
+  child_frame->owned_window_.reset(new mus::ScopedWindowPtr(child_view));
 
   web_view::mojom::FrameClientPtr client_ptr;
   child_frame->frame_client_binding_.reset(
@@ -581,19 +580,19 @@ web_view::mojom::Frame* HTMLFrame::GetServerFrame() {
   return frame_tree_manager_->local_frame_->server_.get();
 }
 
-void HTMLFrame::SetView(mus::View* view) {
-  if (view_)
-    view_->RemoveObserver(this);
-  view_ = view;
-  if (view_)
-    view_->AddObserver(this);
+void HTMLFrame::SetWindow(mus::Window* window) {
+  if (window_)
+    window_->RemoveObserver(this);
+  window_ = window;
+  if (window_)
+    window_->AddObserver(this);
 }
 
 void HTMLFrame::CreateRootWebWidget() {
   DCHECK(!html_widget_);
-  if (view_) {
+  if (window_) {
     HTMLWidgetRootLocal::CreateParams create_params(GetApp(), global_state(),
-                                                    view_);
+                                                    window_);
     html_widget_.reset(
         delegate_->GetHTMLFactory()->CreateHTMLWidgetRootLocal(&create_params));
   } else {
@@ -605,14 +604,14 @@ void HTMLFrame::CreateLocalRootWebWidget(blink::WebLocalFrame* local_frame) {
   DCHECK(!html_widget_);
   DCHECK(IsLocal());
   html_widget_.reset(
-      new HTMLWidgetLocalRoot(GetApp(), global_state(), view_, local_frame));
+      new HTMLWidgetLocalRoot(GetApp(), global_state(), window_, local_frame));
 }
 
 void HTMLFrame::UpdateFocus() {
   blink::WebWidget* web_widget = GetWebWidget();
-  if (!web_widget || !view_)
+  if (!web_widget || !window_)
     return;
-  const bool is_focused = view_ && view_->HasFocus();
+  const bool is_focused = window_ && window_->HasFocus();
   web_widget->setFocus(is_focused);
   if (web_widget->isWebView())
     static_cast<blink::WebView*>(web_widget)->setIsActive(is_focused);
@@ -632,15 +631,15 @@ void HTMLFrame::SwapToRemote() {
   // swap() ends up calling us back and we then close the frame, which deletes
   // it.
   web_frame_->swap(remote_frame);
-  if (owned_view_) {
+  if (owned_window_) {
     surface_layer_ =
           cc::SurfaceLayer::Create(cc_blink::WebLayerImpl::LayerSettings(),
                                    base::Bind(&SatisfyCallback),
                                    base::Bind(&RequireCallback));
     surface_layer_->SetSurfaceId(
-        cc::SurfaceId(owned_view_->view()->id()),
+        cc::SurfaceId(owned_window_->window()->id()),
         global_state()->device_pixel_ratio(),
-        owned_view_->view()->bounds().To<gfx::Rect>().size());
+        owned_window_->window()->bounds().To<gfx::Rect>().size());
 
     web_layer_.reset(new cc_blink::WebLayerImpl(surface_layer_));
   }
@@ -655,7 +654,7 @@ void HTMLFrame::SwapToRemote() {
   pending_navigation_ = false;
 
   web_frame_ = remote_frame;
-  SetView(nullptr);
+  SetWindow(nullptr);
   server_.reset();
   frame_client_binding_.reset();
   if (delegate)
@@ -664,14 +663,14 @@ void HTMLFrame::SwapToRemote() {
 
 void HTMLFrame::SwapToLocal(
     HTMLFrameDelegate* delegate,
-    mus::View* view,
+    mus::Window* window,
     const mojo::Map<mojo::String, mojo::Array<uint8_t>>& properties) {
   DVLOG(2) << "HTMLFrame::SwapToLocal this=" << this << " id=" << id_;
   CHECK(!IsLocal());
   // It doesn't make sense for the root to swap to local.
   CHECK(parent_);
   delegate_ = delegate;
-  SetView(view);
+  SetWindow(window);
   SetReplicatedFrameStateFromClientProperties(properties, &state_);
   blink::WebLocalFrame* local_web_frame =
       blink::WebLocalFrame::create(state_.tree_scope, this);
@@ -737,22 +736,23 @@ void HTMLFrame::FrameDetachedImpl(blink::WebFrame* web_frame) {
   delete this;
 }
 
-void HTMLFrame::OnViewBoundsChanged(View* view,
-                                    const Rect& old_bounds,
-                                    const Rect& new_bounds) {
-  DCHECK_EQ(view, view_);
+void HTMLFrame::OnWindowBoundsChanged(mus::Window* window,
+                                      const Rect& old_bounds,
+                                      const Rect& new_bounds) {
+  DCHECK_EQ(window, window_);
   if (html_widget_)
-    html_widget_->OnViewBoundsChanged(view);
+    html_widget_->OnWindowBoundsChanged(window);
 }
 
-void HTMLFrame::OnViewDestroyed(View* view) {
-  DCHECK_EQ(view, view_);
-  view_->RemoveObserver(this);
-  view_ = nullptr;
+void HTMLFrame::OnWindowDestroyed(mus::Window* window) {
+  DCHECK_EQ(window, window_);
+  window_->RemoveObserver(this);
+  window_ = nullptr;
   Close();
 }
 
-void HTMLFrame::OnViewInputEvent(View* view, const mojo::EventPtr& event) {
+void HTMLFrame::OnWindowInputEvent(mus::Window* window,
+                                   const mojo::EventPtr& event) {
   if (event->pointer_data && event->pointer_data->location) {
     // Blink expects coordintes to be in DIPs.
     event->pointer_data->location->x /= global_state()->device_pixel_ratio();
@@ -787,15 +787,15 @@ void HTMLFrame::OnViewInputEvent(View* view, const mojo::EventPtr& event) {
     web_widget->handleInputEvent(*web_event);
 }
 
-void HTMLFrame::OnViewFocusChanged(mus::View* gained_focus,
-                                   mus::View* lost_focus) {
+void HTMLFrame::OnWindowFocusChanged(mus::Window* gained_focus,
+                                     mus::Window* lost_focus) {
   UpdateFocus();
 }
 
 void HTMLFrame::OnConnect(web_view::mojom::FramePtr frame,
                           uint32_t change_id,
-                          uint32_t view_id,
-                          web_view::mojom::ViewConnectType view_connect_type,
+                          uint32_t window_id,
+                          web_view::mojom::ViewConnectType window_connect_type,
                           mojo::Array<web_view::mojom::FrameDataPtr> frame_data,
                           int64_t navigation_start_time_ticks,
                           const OnConnectCallback& callback) {
@@ -993,7 +993,7 @@ void HTMLFrame::initializeChildFrame(const blink::WebRect& frame_rect,
   const gfx::Rect rect_in_pixels(gfx::ConvertRectToPixel(
       global_state()->device_pixel_ratio(), rect_in_dip));
   const mojo::RectPtr mojo_rect_in_pixels(mojo::Rect::From(rect_in_pixels));
-  view_->SetBounds(*mojo_rect_in_pixels);
+  window_->SetBounds(*mojo_rect_in_pixels);
 }
 
 void HTMLFrame::navigate(const blink::WebURLRequest& request,
@@ -1012,7 +1012,7 @@ void HTMLFrame::reload(bool ignore_cache, bool is_client_redirect) {
 
 void HTMLFrame::frameRectsChanged(const blink::WebRect& frame_rect) {
   // Only the owner of view can update its size.
-  if (!owned_view_)
+  if (!owned_window_)
     return;
 
   const gfx::Rect rect_in_dip(frame_rect.x, frame_rect.y, frame_rect.width,
@@ -1020,15 +1020,15 @@ void HTMLFrame::frameRectsChanged(const blink::WebRect& frame_rect) {
   const gfx::Rect rect_in_pixels(gfx::ConvertRectToPixel(
       global_state()->device_pixel_ratio(), rect_in_dip));
   const mojo::RectPtr mojo_rect_in_pixels(mojo::Rect::From(rect_in_pixels));
-  owned_view_->view()->SetBounds(*mojo_rect_in_pixels);
+  owned_window_->window()->SetBounds(*mojo_rect_in_pixels);
 
   if (!surface_layer_)
     return;
 
   surface_layer_->SetSurfaceId(
-      cc::SurfaceId(owned_view_->view()->id()),
+      cc::SurfaceId(owned_window_->window()->id()),
       global_state()->device_pixel_ratio(),
-      owned_view_->view()->bounds().To<gfx::Rect>().size());
+      owned_window_->window()->bounds().To<gfx::Rect>().size());
 }
 
 }  // namespace mojo

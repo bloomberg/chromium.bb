@@ -111,9 +111,9 @@ void ViewTreeHostImpl::DispatchInputEventToView(ServerView* target,
       connection_manager_->GetConnectionWithRoot(target->id());
   if (!connection)
     connection = connection_manager_->GetConnection(target->id().connection_id);
-  connection->client()->OnViewInputEvent(ViewIdToTransportId(target->id()),
-                                         event.Pass(),
-                                         base::Bind(&base::DoNothing));
+  connection->client()->OnWindowInputEvent(ViewIdToTransportId(target->id()),
+                                           event.Pass(),
+                                           base::Bind(&base::DoNothing));
 }
 
 void ViewTreeHostImpl::SetSize(mojo::SizePtr size) {

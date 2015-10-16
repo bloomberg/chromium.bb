@@ -8,7 +8,7 @@ namespace web_view {
 
 void FrameTreeDelegate::DidCreateFrame(Frame* frame) {}
 void FrameTreeDelegate::DidDestroyFrame(Frame* frame) {}
-void FrameTreeDelegate::OnViewEmbeddedInFrameDisconnected(Frame* frame) {}
+void FrameTreeDelegate::OnWindowEmbeddedInFrameDisconnected(Frame* frame) {}
 void FrameTreeDelegate::OnFindInFrameCountUpdated(int32_t request_id,
                                                   Frame* frame,
                                                   int32_t count,

@@ -15,7 +15,7 @@ class ApplicationImpl;
 }
 
 namespace mus {
-class View;
+class Window;
 }
 
 namespace web_view {
@@ -25,7 +25,7 @@ class WebView {
   explicit WebView(mojom::WebViewClient* client);
   ~WebView();
 
-  void Init(mojo::ApplicationImpl* app, mus::View* view);
+  void Init(mojo::ApplicationImpl* app, mus::Window* window);
 
   mojom::WebView* web_view() { return web_view_.get(); }
 

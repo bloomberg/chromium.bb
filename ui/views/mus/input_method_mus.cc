@@ -4,7 +4,7 @@
 
 #include "ui/views/mus/input_method_mus.h"
 
-#include "components/mus/public/cpp/view.h"
+#include "components/mus/public/cpp/window.h"
 #include "mojo/converters/ime/ime_type_converters.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/events/event.h"
@@ -16,8 +16,8 @@ namespace views {
 // InputMethodMUS, public:
 
 InputMethodMUS::InputMethodMUS(ui::internal::InputMethodDelegate* delegate,
-                               mus::View* view)
-    : view_(view) {
+                               mus::Window* window)
+    : window_(window) {
   SetDelegate(delegate);
 }
 
@@ -96,9 +96,9 @@ void InputMethodMUS::UpdateTextInputType() {
   mojo::TextInputStatePtr state = mojo::TextInputState::New();
   state->type = mojo::ConvertTo<mojo::TextInputType>(type);
   if (type != ui::TEXT_INPUT_TYPE_NONE)
-    view_->SetImeVisibility(true, state.Pass());
+    window_->SetImeVisibility(true, state.Pass());
   else
-    view_->SetTextInputState(state.Pass());
+    window_->SetTextInputState(state.Pass());
 }
 
 }  // namespace mandoline

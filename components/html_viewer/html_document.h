@@ -15,7 +15,7 @@
 #include "components/html_viewer/ax_provider_impl.h"
 #include "components/html_viewer/html_frame_delegate.h"
 #include "components/html_viewer/public/interfaces/test_html_viewer.mojom.h"
-#include "components/mus/public/cpp/view_tree_delegate.h"
+#include "components/mus/public/cpp/window_tree_delegate.h"
 #include "components/web_view/public/interfaces/frame.mojom.h"
 #include "mojo/application/public/cpp/app_lifetime_helper.h"
 #include "mojo/application/public/cpp/interface_factory.h"
@@ -28,8 +28,8 @@ class SingleThreadTaskRunner;
 }
 
 namespace mus {
-class View;
-class ViewTreeConnection;
+class Window;
+class WindowTreeConnection;
 }
 
 namespace html_viewer {
@@ -40,7 +40,7 @@ class GlobalState;
 class HTMLFactory;
 class HTMLFrame;
 class TestHTMLViewerImpl;
-class ViewTreeDelegateImpl;
+class WindowTreeDelegateImpl;
 class WebLayerTreeViewImpl;
 
 // A view for a single HTML document.
@@ -49,7 +49,7 @@ class WebLayerTreeViewImpl;
 // . When the View the HTMLDocument is embedded in is destroyed.
 // . Explicitly by way of Destroy().
 class HTMLDocument
-    : public mus::ViewTreeDelegate,
+    : public mus::WindowTreeDelegate,
       public HTMLFrameDelegate,
       public mojo::InterfaceFactory<mojo::AxProvider>,
       public mojo::InterfaceFactory<web_view::mojom::FrameClient>,
@@ -95,9 +95,9 @@ class HTMLDocument
     // Takes the state from |other|.
     void Move(TransferableState* other);
 
-    bool owns_view_tree_connection;
-    mus::View* root;
-    scoped_ptr<ViewTreeDelegateImpl> view_tree_delegate_impl;
+    bool owns_window_tree_connection;
+    mus::Window* root;
+    scoped_ptr<WindowTreeDelegateImpl> window_tree_delegate_impl;
   };
 
   ~HTMLDocument() override;
@@ -106,9 +106,9 @@ class HTMLDocument
 
   BeforeLoadCache* GetBeforeLoadCache();
 
-  // ViewTreeDelegate:
-  void OnEmbed(mus::View* root) override;
-  void OnConnectionLost(mus::ViewTreeConnection* connection) override;
+  // WindowTreeDelegate:
+  void OnEmbed(mus::Window* root) override;
+  void OnConnectionLost(mus::WindowTreeConnection* connection) override;
 
   // HTMLFrameDelegate:
   mojo::ApplicationImpl* GetApp() override;

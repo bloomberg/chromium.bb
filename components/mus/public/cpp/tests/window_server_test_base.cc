@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/mus/public/cpp/tests/view_manager_test_base.h"
+#include "components/mus/public/cpp/tests/window_server_test_base.h"
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/test_timeouts.h"
-#include "components/mus/public/cpp/view.h"
-#include "components/mus/public/cpp/view_tree_connection.h"
-#include "components/mus/public/cpp/view_tree_host_factory.h"
+#include "components/mus/public/cpp/window.h"
+#include "components/mus/public/cpp/window_tree_connection.h"
+#include "components/mus/public/cpp/window_tree_host_factory.h"
 #include "mojo/application/public/cpp/application_impl.h"
 
 namespace mus {
@@ -26,15 +26,15 @@ void TimeoutRunLoop(const base::Closure& timeout_task, bool* timeout) {
 
 }  // namespace
 
-ViewManagerTestBase::ViewManagerTestBase()
+WindowServerTestBase::WindowServerTestBase()
     : most_recent_connection_(nullptr),
       window_manager_(nullptr),
-      view_tree_connection_destroyed_(false) {}
+      window_tree_connection_destroyed_(false) {}
 
-ViewManagerTestBase::~ViewManagerTestBase() {}
+WindowServerTestBase::~WindowServerTestBase() {}
 
 // static
-bool ViewManagerTestBase::DoRunLoopWithTimeout() {
+bool WindowServerTestBase::DoRunLoopWithTimeout() {
   if (current_run_loop != nullptr)
     return false;
 
@@ -51,7 +51,7 @@ bool ViewManagerTestBase::DoRunLoopWithTimeout() {
 }
 
 // static
-bool ViewManagerTestBase::QuitRunLoop() {
+bool WindowServerTestBase::QuitRunLoop() {
   if (!current_run_loop)
     return false;
 
@@ -60,44 +60,44 @@ bool ViewManagerTestBase::QuitRunLoop() {
   return true;
 }
 
-void ViewManagerTestBase::SetUp() {
+void WindowServerTestBase::SetUp() {
   ApplicationTestBase::SetUp();
 
-  CreateSingleViewTreeHost(application_impl(), this, &host_);
+  CreateSingleWindowTreeHost(application_impl(), this, &host_);
 
   ASSERT_TRUE(DoRunLoopWithTimeout());  // RunLoop should be quit by OnEmbed().
   std::swap(window_manager_, most_recent_connection_);
 }
 
-void ViewManagerTestBase::TearDown() {
+void WindowServerTestBase::TearDown() {
   ApplicationTestBase::TearDown();
 }
 
-mojo::ApplicationDelegate* ViewManagerTestBase::GetApplicationDelegate() {
+mojo::ApplicationDelegate* WindowServerTestBase::GetApplicationDelegate() {
   return this;
 }
 
-bool ViewManagerTestBase::ConfigureIncomingConnection(
+bool WindowServerTestBase::ConfigureIncomingConnection(
     mojo::ApplicationConnection* connection) {
   connection->AddService<mojo::ViewTreeClient>(this);
   return true;
 }
 
-void ViewManagerTestBase::OnEmbed(View* root) {
+void WindowServerTestBase::OnEmbed(Window* root) {
   most_recent_connection_ = root->connection();
   EXPECT_TRUE(QuitRunLoop());
 }
 
-void ViewManagerTestBase::OnConnectionLost(ViewTreeConnection* connection) {
-  view_tree_connection_destroyed_ = true;
+void WindowServerTestBase::OnConnectionLost(WindowTreeConnection* connection) {
+  window_tree_connection_destroyed_ = true;
 }
 
-void ViewManagerTestBase::Create(
+void WindowServerTestBase::Create(
     mojo::ApplicationConnection* connection,
     mojo::InterfaceRequest<mojo::ViewTreeClient> request) {
-  ViewTreeConnection::Create(
+  WindowTreeConnection::Create(
       this, request.Pass(),
-      ViewTreeConnection::CreateType::DONT_WAIT_FOR_EMBED);
+      WindowTreeConnection::CreateType::DONT_WAIT_FOR_EMBED);
 }
 
 }  // namespace mus

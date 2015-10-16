@@ -7,7 +7,7 @@
 
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
-#include "components/mus/public/cpp/view_tree_delegate.h"
+#include "components/mus/public/cpp/window_tree_delegate.h"
 #include "components/mus/public/interfaces/view_tree_host.mojom.h"
 #include "components/test_runner/test_info_extractor.h"
 #include "components/web_view/public/cpp/web_view.h"
@@ -27,7 +27,7 @@ namespace web_view {
 
 class TestRunnerApplicationDelegate
     : public mojo::ApplicationDelegate,
-      public mus::ViewTreeDelegate,
+      public mus::WindowTreeDelegate,
       public mojom::WebViewClient,
       public LayoutTestRunner,
       public mojo::InterfaceFactory<LayoutTestRunner> {
@@ -44,9 +44,9 @@ class TestRunnerApplicationDelegate
   bool ConfigureIncomingConnection(
       mojo::ApplicationConnection* connection) override;
 
-  // mus::ViewTreeDelegate:
-  void OnEmbed(mus::View* root) override;
-  void OnConnectionLost(mus::ViewTreeConnection* connection) override;
+  // mus::WindowTreeDelegate:
+  void OnEmbed(mus::Window* root) override;
+  void OnConnectionLost(mus::WindowTreeConnection* connection) override;
 
   // mojom::WebViewClient:
   void TopLevelNavigateRequest(mojo::URLRequestPtr request) override;
@@ -71,8 +71,8 @@ class TestRunnerApplicationDelegate
   mojo::ApplicationImpl* app_;
   mojo::ViewTreeHostPtr host_;
 
-  mus::View* root_;
-  mus::View* content_;
+  mus::Window* root_;
+  mus::Window* content_;
   scoped_ptr<WebView> web_view_;
 
   scoped_ptr<test_runner::TestInfoExtractor> test_extractor_;

@@ -15,10 +15,10 @@
 #include "base/path_service.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
-#include "components/mus/public/cpp/scoped_view_ptr.h"
-#include "components/mus/public/cpp/view.h"
-#include "components/mus/public/cpp/view_tree_connection.h"
-#include "components/mus/public/cpp/view_tree_host_factory.h"
+#include "components/mus/public/cpp/scoped_window_ptr.h"
+#include "components/mus/public/cpp/window.h"
+#include "components/mus/public/cpp/window_tree_connection.h"
+#include "components/mus/public/cpp/window_tree_host_factory.h"
 #include "components/test_runner/blink_test_platform_support.h"
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/application_impl.h"
@@ -40,7 +40,7 @@ TestRunnerApplicationDelegate::TestRunnerApplicationDelegate()
 
 TestRunnerApplicationDelegate::~TestRunnerApplicationDelegate() {
   if (root_)
-    mus::ScopedViewPtr::DeleteViewOrViewManager(root_);
+    mus::ScopedWindowPtr::DeleteWindowOrWindowManager(root_);
 }
 
 void TestRunnerApplicationDelegate::LaunchURL(const GURL& test_url) {
@@ -55,7 +55,7 @@ void TestRunnerApplicationDelegate::LaunchURL(const GURL& test_url) {
 
 void TestRunnerApplicationDelegate::Terminate() {
   if (root_)
-    mus::ScopedViewPtr::DeleteViewOrViewManager(root_);
+    mus::ScopedWindowPtr::DeleteWindowOrWindowManager(root_);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -66,7 +66,7 @@ void TestRunnerApplicationDelegate::Initialize(mojo::ApplicationImpl* app) {
     NOTREACHED() << "Test environment could not be properly set up for blink.";
   }
   app_ = app;
-  mus::CreateSingleViewTreeHost(app_, this, &host_);
+  mus::CreateSingleWindowTreeHost(app_, this, &host_);
 }
 
 bool TestRunnerApplicationDelegate::ConfigureIncomingConnection(
@@ -78,7 +78,7 @@ bool TestRunnerApplicationDelegate::ConfigureIncomingConnection(
 ////////////////////////////////////////////////////////////////////////////////
 // mus::ViewTreeDelegate implementation:
 
-void TestRunnerApplicationDelegate::OnEmbed(mus::View* root) {
+void TestRunnerApplicationDelegate::OnEmbed(mus::Window* root) {
   root_ = root;
 
   // If this is a sys-check, then terminate in the next cycle.
@@ -94,7 +94,7 @@ void TestRunnerApplicationDelegate::OnEmbed(mus::View* root) {
   const gfx::Size kViewportSize(800, 600);
   host_->SetSize(mojo::Size::From(kViewportSize));
 
-  content_ = root_->connection()->CreateView();
+  content_ = root_->connection()->CreateWindow();
   root_->AddChild(content_);
   content_->SetBounds(*mojo::Rect::From(gfx::Rect(kViewportSize)));
   content_->SetVisible(true);
@@ -111,7 +111,7 @@ void TestRunnerApplicationDelegate::OnEmbed(mus::View* root) {
 }
 
 void TestRunnerApplicationDelegate::OnConnectionLost(
-    mus::ViewTreeConnection* connection) {
+    mus::WindowTreeConnection* connection) {
   root_ = nullptr;
   app_->Quit();
 }

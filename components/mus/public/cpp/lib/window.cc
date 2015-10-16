@@ -2,121 +2,124 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/mus/public/cpp/view.h"
+#include "components/mus/public/cpp/window.h"
 
 #include <set>
 #include <string>
 
 #include "base/bind.h"
-#include "components/mus/public/cpp/lib/view_private.h"
-#include "components/mus/public/cpp/lib/view_tree_client_impl.h"
-#include "components/mus/public/cpp/view_observer.h"
-#include "components/mus/public/cpp/view_surface.h"
-#include "components/mus/public/cpp/view_tracker.h"
+#include "components/mus/public/cpp/lib/window_private.h"
+#include "components/mus/public/cpp/lib/window_tree_client_impl.h"
+#include "components/mus/public/cpp/window_observer.h"
+#include "components/mus/public/cpp/window_surface.h"
+#include "components/mus/public/cpp/window_tracker.h"
 #include "mojo/application/public/cpp/service_provider_impl.h"
 
 namespace mus {
 
 namespace {
 
-void NotifyViewTreeChangeAtReceiver(
-    View* receiver,
-    const ViewObserver::TreeChangeParams& params,
+void NotifyWindowTreeChangeAtReceiver(
+    Window* receiver,
+    const WindowObserver::TreeChangeParams& params,
     bool change_applied) {
-  ViewObserver::TreeChangeParams local_params = params;
+  WindowObserver::TreeChangeParams local_params = params;
   local_params.receiver = receiver;
   if (change_applied) {
-    FOR_EACH_OBSERVER(ViewObserver, *ViewPrivate(receiver).observers(),
+    FOR_EACH_OBSERVER(WindowObserver, *WindowPrivate(receiver).observers(),
                       OnTreeChanged(local_params));
   } else {
-    FOR_EACH_OBSERVER(ViewObserver, *ViewPrivate(receiver).observers(),
+    FOR_EACH_OBSERVER(WindowObserver, *WindowPrivate(receiver).observers(),
                       OnTreeChanging(local_params));
   }
 }
 
-void NotifyViewTreeChangeUp(View* start_at,
-                            const ViewObserver::TreeChangeParams& params,
-                            bool change_applied) {
-  for (View* current = start_at; current; current = current->parent())
-    NotifyViewTreeChangeAtReceiver(current, params, change_applied);
-}
-
-void NotifyViewTreeChangeDown(View* start_at,
-                              const ViewObserver::TreeChangeParams& params,
+void NotifyWindowTreeChangeUp(Window* start_at,
+                              const WindowObserver::TreeChangeParams& params,
                               bool change_applied) {
-  NotifyViewTreeChangeAtReceiver(start_at, params, change_applied);
-  View::Children::const_iterator it = start_at->children().begin();
-  for (; it != start_at->children().end(); ++it)
-    NotifyViewTreeChangeDown(*it, params, change_applied);
+  for (Window* current = start_at; current; current = current->parent())
+    NotifyWindowTreeChangeAtReceiver(current, params, change_applied);
 }
 
-void NotifyViewTreeChange(const ViewObserver::TreeChangeParams& params,
-                          bool change_applied) {
-  NotifyViewTreeChangeDown(params.target, params, change_applied);
+void NotifyWindowTreeChangeDown(Window* start_at,
+                                const WindowObserver::TreeChangeParams& params,
+                                bool change_applied) {
+  NotifyWindowTreeChangeAtReceiver(start_at, params, change_applied);
+  Window::Children::const_iterator it = start_at->children().begin();
+  for (; it != start_at->children().end(); ++it)
+    NotifyWindowTreeChangeDown(*it, params, change_applied);
+}
+
+void NotifyWindowTreeChange(const WindowObserver::TreeChangeParams& params,
+                            bool change_applied) {
+  NotifyWindowTreeChangeDown(params.target, params, change_applied);
   if (params.old_parent)
-    NotifyViewTreeChangeUp(params.old_parent, params, change_applied);
+    NotifyWindowTreeChangeUp(params.old_parent, params, change_applied);
   if (params.new_parent)
-    NotifyViewTreeChangeUp(params.new_parent, params, change_applied);
+    NotifyWindowTreeChangeUp(params.new_parent, params, change_applied);
 }
 
 class ScopedTreeNotifier {
  public:
-  ScopedTreeNotifier(View* target, View* old_parent, View* new_parent) {
+  ScopedTreeNotifier(Window* target, Window* old_parent, Window* new_parent) {
     params_.target = target;
     params_.old_parent = old_parent;
     params_.new_parent = new_parent;
-    NotifyViewTreeChange(params_, false);
+    NotifyWindowTreeChange(params_, false);
   }
-  ~ScopedTreeNotifier() { NotifyViewTreeChange(params_, true); }
+  ~ScopedTreeNotifier() { NotifyWindowTreeChange(params_, true); }
 
  private:
-  ViewObserver::TreeChangeParams params_;
+  WindowObserver::TreeChangeParams params_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(ScopedTreeNotifier);
 };
 
-void RemoveChildImpl(View* child, View::Children* children) {
-  View::Children::iterator it =
+void RemoveChildImpl(Window* child, Window::Children* children) {
+  Window::Children::iterator it =
       std::find(children->begin(), children->end(), child);
   if (it != children->end()) {
     children->erase(it);
-    ViewPrivate(child).ClearParent();
+    WindowPrivate(child).ClearParent();
   }
 }
 
 class ScopedOrderChangedNotifier {
  public:
-  ScopedOrderChangedNotifier(View* view,
-                             View* relative_view,
+  ScopedOrderChangedNotifier(Window* window,
+                             Window* relative_window,
                              mojo::OrderDirection direction)
-      : view_(view), relative_view_(relative_view), direction_(direction) {
-    FOR_EACH_OBSERVER(ViewObserver, *ViewPrivate(view_).observers(),
-                      OnViewReordering(view_, relative_view_, direction_));
+      : window_(window),
+        relative_window_(relative_window),
+        direction_(direction) {
+    FOR_EACH_OBSERVER(
+        WindowObserver, *WindowPrivate(window_).observers(),
+        OnWindowReordering(window_, relative_window_, direction_));
   }
   ~ScopedOrderChangedNotifier() {
-    FOR_EACH_OBSERVER(ViewObserver, *ViewPrivate(view_).observers(),
-                      OnViewReordered(view_, relative_view_, direction_));
+    FOR_EACH_OBSERVER(WindowObserver, *WindowPrivate(window_).observers(),
+                      OnWindowReordered(window_, relative_window_, direction_));
   }
 
  private:
-  View* view_;
-  View* relative_view_;
+  Window* window_;
+  Window* relative_window_;
   mojo::OrderDirection direction_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(ScopedOrderChangedNotifier);
 };
 
 // Returns true if the order actually changed.
-bool ReorderImpl(View::Children* children,
-                 View* view,
-                 View* relative,
+bool ReorderImpl(Window::Children* children,
+                 Window* window,
+                 Window* relative,
                  mojo::OrderDirection direction) {
   DCHECK(relative);
-  DCHECK_NE(view, relative);
-  DCHECK_EQ(view->parent(), relative->parent());
+  DCHECK_NE(window, relative);
+  DCHECK_EQ(window->parent(), relative->parent());
 
   const size_t child_i =
-      std::find(children->begin(), children->end(), view) - children->begin();
+      std::find(children->begin(), children->end(), window) - children->begin();
   const size_t target_i =
       std::find(children->begin(), children->end(), relative) -
       children->begin();
@@ -125,43 +128,45 @@ bool ReorderImpl(View::Children* children,
     return false;
   }
 
-  ScopedOrderChangedNotifier notifier(view, relative, direction);
+  ScopedOrderChangedNotifier notifier(window, relative, direction);
 
   const size_t dest_i = direction == mojo::ORDER_DIRECTION_ABOVE
                             ? (child_i < target_i ? target_i : target_i + 1)
                             : (child_i < target_i ? target_i - 1 : target_i);
   children->erase(children->begin() + child_i);
-  children->insert(children->begin() + dest_i, view);
+  children->insert(children->begin() + dest_i, window);
 
   return true;
 }
 
 class ScopedSetBoundsNotifier {
  public:
-  ScopedSetBoundsNotifier(View* view,
+  ScopedSetBoundsNotifier(Window* window,
                           const mojo::Rect& old_bounds,
                           const mojo::Rect& new_bounds)
-      : view_(view), old_bounds_(old_bounds), new_bounds_(new_bounds) {
-    FOR_EACH_OBSERVER(ViewObserver, *ViewPrivate(view_).observers(),
-                      OnViewBoundsChanging(view_, old_bounds_, new_bounds_));
+      : window_(window), old_bounds_(old_bounds), new_bounds_(new_bounds) {
+    FOR_EACH_OBSERVER(
+        WindowObserver, *WindowPrivate(window_).observers(),
+        OnWindowBoundsChanging(window_, old_bounds_, new_bounds_));
   }
   ~ScopedSetBoundsNotifier() {
-    FOR_EACH_OBSERVER(ViewObserver, *ViewPrivate(view_).observers(),
-                      OnViewBoundsChanged(view_, old_bounds_, new_bounds_));
+    FOR_EACH_OBSERVER(WindowObserver, *WindowPrivate(window_).observers(),
+                      OnWindowBoundsChanged(window_, old_bounds_, new_bounds_));
   }
 
  private:
-  View* view_;
+  Window* window_;
   const mojo::Rect old_bounds_;
   const mojo::Rect new_bounds_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(ScopedSetBoundsNotifier);
 };
 
-// Some operations are only permitted in the connection that created the view.
-bool OwnsView(ViewTreeConnection* connection, View* view) {
+// Some operations are only permitted in the connection that created the window.
+bool OwnsWindow(WindowTreeConnection* connection, Window* window) {
   return !connection ||
-         static_cast<ViewTreeClientImpl*>(connection)->OwnsView(view->id());
+         static_cast<WindowTreeClientImpl*>(connection)
+             ->OwnsWindow(window->id());
 }
 
 void EmptyEmbedCallback(bool result, ConnectionSpecificId connection_id) {}
@@ -169,18 +174,18 @@ void EmptyEmbedCallback(bool result, ConnectionSpecificId connection_id) {}
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
-// View, public:
+// Window, public:
 
-void View::Destroy() {
-  if (!OwnsView(connection_, this))
+void Window::Destroy() {
+  if (!OwnsWindow(connection_, this))
     return;
 
   if (connection_)
-    static_cast<ViewTreeClientImpl*>(connection_)->DestroyView(id_);
+    static_cast<WindowTreeClientImpl*>(connection_)->DestroyWindow(id_);
   while (!children_.empty()) {
-    View* child = children_.front();
-    if (!OwnsView(connection_, child)) {
-      ViewPrivate(child).ClearParent();
+    Window* child = children_.front();
+    if (!OwnsWindow(connection_, child)) {
+      WindowPrivate(child).ClearParent();
       children_.erase(children_.begin());
     } else {
       child->Destroy();
@@ -191,40 +196,40 @@ void View::Destroy() {
   LocalDestroy();
 }
 
-void View::SetBounds(const mojo::Rect& bounds) {
-  if (!OwnsView(connection_, this))
+void Window::SetBounds(const mojo::Rect& bounds) {
+  if (!OwnsWindow(connection_, this))
     return;
 
   if (bounds_.Equals(bounds))
     return;
 
   if (connection_)
-    static_cast<ViewTreeClientImpl*>(connection_)->SetBounds(id_, bounds);
+    static_cast<WindowTreeClientImpl*>(connection_)->SetBounds(id_, bounds);
   LocalSetBounds(bounds_, bounds);
 }
 
-void View::SetVisible(bool value) {
+void Window::SetVisible(bool value) {
   if (visible_ == value)
     return;
 
   if (connection_)
-    static_cast<ViewTreeClientImpl*>(connection_)->SetVisible(id_, value);
+    static_cast<WindowTreeClientImpl*>(connection_)->SetVisible(id_, value);
   LocalSetVisible(value);
 }
 
-scoped_ptr<ViewSurface> View::RequestSurface() {
+scoped_ptr<WindowSurface> Window::RequestSurface() {
   mojo::SurfacePtr surface;
   mojo::SurfaceClientPtr client;
   mojo::InterfaceRequest<mojo::SurfaceClient> client_request =
       GetProxy(&client);
-  static_cast<ViewTreeClientImpl*>(connection_)
+  static_cast<WindowTreeClientImpl*>(connection_)
       ->RequestSurface(id_, GetProxy(&surface), client.Pass());
   return make_scoped_ptr(
-      new ViewSurface(surface.PassInterface(), client_request.Pass()));
+      new WindowSurface(surface.PassInterface(), client_request.Pass()));
 }
 
-void View::SetSharedProperty(const std::string& name,
-                             const std::vector<uint8_t>* value) {
+void Window::SetSharedProperty(const std::string& name,
+                               const std::vector<uint8_t>* value) {
   std::vector<uint8_t> old_value;
   std::vector<uint8_t>* old_value_ptr = nullptr;
   auto it = properties_.find(name);
@@ -254,141 +259,142 @@ void View::SetSharedProperty(const std::string& name,
       if (value->size())
         memcpy(&transport_value.front(), &(value->front()), value->size());
     }
-    static_cast<ViewTreeClientImpl*>(connection_)
+    static_cast<WindowTreeClientImpl*>(connection_)
         ->SetProperty(id_, name, transport_value.Pass());
   }
 
   FOR_EACH_OBSERVER(
-      ViewObserver, observers_,
-      OnViewSharedPropertyChanged(this, name, old_value_ptr, value));
+      WindowObserver, observers_,
+      OnWindowSharedPropertyChanged(this, name, old_value_ptr, value));
 }
 
-bool View::IsDrawn() const {
+bool Window::IsDrawn() const {
   if (!visible_)
     return false;
   return parent_ ? parent_->IsDrawn() : drawn_;
 }
 
-void View::AddObserver(ViewObserver* observer) {
+void Window::AddObserver(WindowObserver* observer) {
   observers_.AddObserver(observer);
 }
 
-void View::RemoveObserver(ViewObserver* observer) {
+void Window::RemoveObserver(WindowObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-const View* View::GetRoot() const {
-  const View* root = this;
-  for (const View* parent = this; parent; parent = parent->parent())
+const Window* Window::GetRoot() const {
+  const Window* root = this;
+  for (const Window* parent = this; parent; parent = parent->parent())
     root = parent;
   return root;
 }
 
-void View::AddChild(View* child) {
+void Window::AddChild(Window* child) {
   // TODO(beng): not necessarily valid to all connections, but possibly to the
   //             embeddee in an embedder-embeddee relationship.
   if (connection_)
     CHECK_EQ(child->connection(), connection_);
   LocalAddChild(child);
   if (connection_)
-    static_cast<ViewTreeClientImpl*>(connection_)->AddChild(child->id(), id_);
+    static_cast<WindowTreeClientImpl*>(connection_)->AddChild(child->id(), id_);
 }
 
-void View::RemoveChild(View* child) {
+void Window::RemoveChild(Window* child) {
   // TODO(beng): not necessarily valid to all connections, but possibly to the
   //             embeddee in an embedder-embeddee relationship.
   if (connection_)
     CHECK_EQ(child->connection(), connection_);
   LocalRemoveChild(child);
   if (connection_) {
-    static_cast<ViewTreeClientImpl*>(connection_)
+    static_cast<WindowTreeClientImpl*>(connection_)
         ->RemoveChild(child->id(), id_);
   }
 }
 
-void View::MoveToFront() {
+void Window::MoveToFront() {
   if (!parent_ || parent_->children_.back() == this)
     return;
   Reorder(parent_->children_.back(), mojo::ORDER_DIRECTION_ABOVE);
 }
 
-void View::MoveToBack() {
+void Window::MoveToBack() {
   if (!parent_ || parent_->children_.front() == this)
     return;
   Reorder(parent_->children_.front(), mojo::ORDER_DIRECTION_BELOW);
 }
 
-void View::Reorder(View* relative, mojo::OrderDirection direction) {
+void Window::Reorder(Window* relative, mojo::OrderDirection direction) {
   if (!LocalReorder(relative, direction))
     return;
   if (connection_) {
-    static_cast<ViewTreeClientImpl*>(connection_)
+    static_cast<WindowTreeClientImpl*>(connection_)
         ->Reorder(id_, relative->id(), direction);
   }
 }
 
-bool View::Contains(View* child) const {
+bool Window::Contains(Window* child) const {
   if (!child)
     return false;
   if (child == this)
     return true;
   if (connection_)
     CHECK_EQ(child->connection(), connection_);
-  for (View* p = child->parent(); p; p = p->parent()) {
+  for (Window* p = child->parent(); p; p = p->parent()) {
     if (p == this)
       return true;
   }
   return false;
 }
 
-View* View::GetChildById(Id id) {
+Window* Window::GetChildById(Id id) {
   if (id == id_)
     return this;
-  // TODO(beng): this could be improved depending on how we decide to own views.
+  // TODO(beng): this could be improved depending on how we decide to own
+  // windows.
   Children::const_iterator it = children_.begin();
   for (; it != children_.end(); ++it) {
-    View* view = (*it)->GetChildById(id);
-    if (view)
-      return view;
+    Window* window = (*it)->GetChildById(id);
+    if (window)
+      return window;
   }
   return NULL;
 }
 
-void View::SetTextInputState(mojo::TextInputStatePtr state) {
+void Window::SetTextInputState(mojo::TextInputStatePtr state) {
   if (connection_) {
-    static_cast<ViewTreeClientImpl*>(connection_)
+    static_cast<WindowTreeClientImpl*>(connection_)
         ->SetViewTextInputState(id_, state.Pass());
   }
 }
 
-void View::SetImeVisibility(bool visible, mojo::TextInputStatePtr state) {
-  // SetImeVisibility() shouldn't be used if the view is not editable.
+void Window::SetImeVisibility(bool visible, mojo::TextInputStatePtr state) {
+  // SetImeVisibility() shouldn't be used if the window is not editable.
   DCHECK(state.is_null() || state->type != mojo::TEXT_INPUT_TYPE_NONE);
   if (connection_) {
-    static_cast<ViewTreeClientImpl*>(connection_)
+    static_cast<WindowTreeClientImpl*>(connection_)
         ->SetImeVisibility(id_, visible, state.Pass());
   }
 }
 
-void View::SetFocus() {
+void Window::SetFocus() {
   if (connection_)
-    static_cast<ViewTreeClientImpl*>(connection_)->SetFocus(id_);
+    static_cast<WindowTreeClientImpl*>(connection_)->SetFocus(id_);
 }
 
-bool View::HasFocus() const {
-  return connection_ && connection_->GetFocusedView() == this;
+bool Window::HasFocus() const {
+  return connection_ && connection_->GetFocusedWindow() == this;
 }
 
-void View::Embed(mojo::ViewTreeClientPtr client) {
+void Window::Embed(mojo::ViewTreeClientPtr client) {
   Embed(client.Pass(), mojo::ViewTree::ACCESS_POLICY_DEFAULT,
         base::Bind(&EmptyEmbedCallback));
 }
 
-void View::Embed(mojo::ViewTreeClientPtr client,
-                 uint32_t policy_bitmask,
-                 const EmbedCallback& callback) {
+void Window::Embed(mojo::ViewTreeClientPtr client,
+                   uint32_t policy_bitmask,
+                   const EmbedCallback& callback) {
   if (PrepareForEmbed()) {
-    static_cast<ViewTreeClientImpl*>(connection_)
+    static_cast<WindowTreeClientImpl*>(connection_)
         ->Embed(id_, client.Pass(), policy_bitmask, callback);
   } else {
     callback.Run(false, 0);
@@ -396,7 +402,7 @@ void View::Embed(mojo::ViewTreeClientPtr client,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// View, protected:
+// Window, protected:
 
 namespace {
 
@@ -410,7 +416,7 @@ mojo::ViewportMetricsPtr CreateEmptyViewportMetrics() {
 
 }  // namespace
 
-View::View()
+Window::Window()
     : connection_(NULL),
       id_(static_cast<Id>(-1)),
       parent_(NULL),
@@ -418,23 +424,23 @@ View::View()
       visible_(true),
       drawn_(false) {}
 
-View::~View() {
-  FOR_EACH_OBSERVER(ViewObserver, observers_, OnViewDestroying(this));
+Window::~Window() {
+  FOR_EACH_OBSERVER(WindowObserver, observers_, OnWindowDestroying(this));
   if (parent_)
     parent_->LocalRemoveChild(this);
 
   // We may still have children. This can happen if the embedder destroys the
   // root while we're still alive.
   while (!children_.empty()) {
-    View* child = children_.front();
+    Window* child = children_.front();
     LocalRemoveChild(child);
     DCHECK(children_.empty() || children_.front() != child);
   }
 
   // TODO(beng): It'd be better to do this via a destruction observer in the
-  //             ViewTreeClientImpl.
+  //             WindowTreeClientImpl.
   if (connection_)
-    static_cast<ViewTreeClientImpl*>(connection_)->RemoveView(id_);
+    static_cast<WindowTreeClientImpl*>(connection_)->RemoveWindow(id_);
 
   // Clear properties.
   for (auto& pair : prop_map_) {
@@ -443,16 +449,16 @@ View::~View() {
   }
   prop_map_.clear();
 
-  FOR_EACH_OBSERVER(ViewObserver, observers_, OnViewDestroyed(this));
+  FOR_EACH_OBSERVER(WindowObserver, observers_, OnWindowDestroyed(this));
 
   if (connection_ && connection_->GetRoot() == this)
-    static_cast<ViewTreeClientImpl*>(connection_)->OnRootDestroyed(this);
+    static_cast<WindowTreeClientImpl*>(connection_)->OnRootDestroyed(this);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // View, private:
 
-View::View(ViewTreeConnection* connection, Id id)
+Window::Window(WindowTreeConnection* connection, Id id)
     : connection_(connection),
       id_(id),
       parent_(nullptr),
@@ -460,11 +466,11 @@ View::View(ViewTreeConnection* connection, Id id)
       visible_(false),
       drawn_(false) {}
 
-int64 View::SetLocalPropertyInternal(const void* key,
-                                     const char* name,
-                                     PropertyDeallocator deallocator,
-                                     int64 value,
-                                     int64 default_value) {
+int64 Window::SetLocalPropertyInternal(const void* key,
+                                       const char* name,
+                                       PropertyDeallocator deallocator,
+                                       int64 value,
+                                       int64 default_value) {
   int64 old = GetLocalPropertyInternal(key, default_value);
   if (value == default_value) {
     prop_map_.erase(key);
@@ -475,24 +481,24 @@ int64 View::SetLocalPropertyInternal(const void* key,
     prop_value.deallocator = deallocator;
     prop_map_[key] = prop_value;
   }
-  FOR_EACH_OBSERVER(ViewObserver, observers_,
-                    OnViewLocalPropertyChanged(this, key, old));
+  FOR_EACH_OBSERVER(WindowObserver, observers_,
+                    OnWindowLocalPropertyChanged(this, key, old));
   return old;
 }
 
-int64 View::GetLocalPropertyInternal(const void* key,
-                                     int64 default_value) const {
+int64 Window::GetLocalPropertyInternal(const void* key,
+                                       int64 default_value) const {
   std::map<const void*, Value>::const_iterator iter = prop_map_.find(key);
   if (iter == prop_map_.end())
     return default_value;
   return iter->second.value;
 }
 
-void View::LocalDestroy() {
+void Window::LocalDestroy() {
   delete this;
 }
 
-void View::LocalAddChild(View* child) {
+void Window::LocalAddChild(Window* child) {
   ScopedTreeNotifier notifier(child, child->parent(), this);
   if (child->parent())
     RemoveChildImpl(child, &child->parent_->children_);
@@ -500,18 +506,18 @@ void View::LocalAddChild(View* child) {
   child->parent_ = this;
 }
 
-void View::LocalRemoveChild(View* child) {
+void Window::LocalRemoveChild(Window* child) {
   DCHECK_EQ(this, child->parent());
   ScopedTreeNotifier notifier(child, this, NULL);
   RemoveChildImpl(child, &children_);
 }
 
-bool View::LocalReorder(View* relative, mojo::OrderDirection direction) {
+bool Window::LocalReorder(Window* relative, mojo::OrderDirection direction) {
   return ReorderImpl(&parent_->children_, this, relative, direction);
 }
 
-void View::LocalSetBounds(const mojo::Rect& old_bounds,
-                          const mojo::Rect& new_bounds) {
+void Window::LocalSetBounds(const mojo::Rect& old_bounds,
+                            const mojo::Rect& new_bounds) {
   DCHECK(old_bounds.x == bounds_.x);
   DCHECK(old_bounds.y == bounds_.y);
   DCHECK(old_bounds.width == bounds_.width);
@@ -520,16 +526,16 @@ void View::LocalSetBounds(const mojo::Rect& old_bounds,
   bounds_ = new_bounds;
 }
 
-void View::LocalSetViewportMetrics(const mojo::ViewportMetrics& old_metrics,
-                                   const mojo::ViewportMetrics& new_metrics) {
+void Window::LocalSetViewportMetrics(const mojo::ViewportMetrics& old_metrics,
+                                     const mojo::ViewportMetrics& new_metrics) {
   // TODO(eseidel): We could check old_metrics against viewport_metrics_.
   viewport_metrics_ = new_metrics.Clone();
   FOR_EACH_OBSERVER(
-      ViewObserver, observers_,
-      OnViewViewportMetricsChanged(this, old_metrics, new_metrics));
+      WindowObserver, observers_,
+      OnWindowViewportMetricsChanged(this, old_metrics, new_metrics));
 }
 
-void View::LocalSetDrawn(bool value) {
+void Window::LocalSetDrawn(bool value) {
   if (drawn_ == value)
     return;
 
@@ -539,49 +545,51 @@ void View::LocalSetDrawn(bool value) {
     drawn_ = value;
     return;
   }
-  FOR_EACH_OBSERVER(ViewObserver, observers_, OnViewDrawnChanging(this));
+  FOR_EACH_OBSERVER(WindowObserver, observers_, OnWindowDrawnChanging(this));
   drawn_ = value;
-  FOR_EACH_OBSERVER(ViewObserver, observers_, OnViewDrawnChanged(this));
+  FOR_EACH_OBSERVER(WindowObserver, observers_, OnWindowDrawnChanged(this));
 }
 
-void View::LocalSetVisible(bool visible) {
+void Window::LocalSetVisible(bool visible) {
   if (visible_ == visible)
     return;
 
-  FOR_EACH_OBSERVER(ViewObserver, observers_, OnViewVisibilityChanging(this));
+  FOR_EACH_OBSERVER(WindowObserver, observers_,
+                    OnWindowVisibilityChanging(this));
   visible_ = visible;
-  NotifyViewVisibilityChanged(this);
+  NotifyWindowVisibilityChanged(this);
 }
 
-void View::NotifyViewVisibilityChanged(View* target) {
-  if (!NotifyViewVisibilityChangedDown(target)) {
+void Window::NotifyWindowVisibilityChanged(Window* target) {
+  if (!NotifyWindowVisibilityChangedDown(target)) {
     return;  // |this| has been deleted.
   }
-  NotifyViewVisibilityChangedUp(target);
+  NotifyWindowVisibilityChangedUp(target);
 }
 
-bool View::NotifyViewVisibilityChangedAtReceiver(View* target) {
-  // |this| may be deleted during a call to OnViewVisibilityChanged() on one
+bool Window::NotifyWindowVisibilityChangedAtReceiver(Window* target) {
+  // |this| may be deleted during a call to OnWindowVisibilityChanged() on one
   // of the observers. We create an local observer for that. In that case we
   // exit without further access to any members.
-  ViewTracker tracker;
+  WindowTracker tracker;
   tracker.Add(this);
-  FOR_EACH_OBSERVER(ViewObserver, observers_, OnViewVisibilityChanged(target));
+  FOR_EACH_OBSERVER(WindowObserver, observers_,
+                    OnWindowVisibilityChanged(target));
   return tracker.Contains(this);
 }
 
-bool View::NotifyViewVisibilityChangedDown(View* target) {
-  if (!NotifyViewVisibilityChangedAtReceiver(target))
+bool Window::NotifyWindowVisibilityChangedDown(Window* target) {
+  if (!NotifyWindowVisibilityChangedAtReceiver(target))
     return false;  // |this| was deleted.
-  std::set<const View*> child_already_processed;
+  std::set<const Window*> child_already_processed;
   bool child_destroyed = false;
   do {
     child_destroyed = false;
-    for (View::Children::const_iterator it = children_.begin();
+    for (Window::Children::const_iterator it = children_.begin();
          it != children_.end(); ++it) {
       if (!child_already_processed.insert(*it).second)
         continue;
-      if (!(*it)->NotifyViewVisibilityChangedDown(target)) {
+      if (!(*it)->NotifyWindowVisibilityChangedDown(target)) {
         // |*it| was deleted, |it| is invalid and |children_| has changed.  We
         // exit the current for-loop and enter a new one.
         child_destroyed = true;
@@ -592,18 +600,18 @@ bool View::NotifyViewVisibilityChangedDown(View* target) {
   return true;
 }
 
-void View::NotifyViewVisibilityChangedUp(View* target) {
+void Window::NotifyWindowVisibilityChangedUp(Window* target) {
   // Start with the parent as we already notified |this|
-  // in NotifyViewVisibilityChangedDown.
-  for (View* view = parent(); view; view = view->parent()) {
-    bool ret = view->NotifyViewVisibilityChangedAtReceiver(target);
+  // in NotifyWindowVisibilityChangedDown.
+  for (Window* window = parent(); window; window = window->parent()) {
+    bool ret = window->NotifyWindowVisibilityChangedAtReceiver(target);
     DCHECK(ret);
   }
 }
 
-bool View::PrepareForEmbed() {
-  if (!OwnsView(connection_, this) &&
-      !static_cast<ViewTreeClientImpl*>(connection_)->is_embed_root()) {
+bool Window::PrepareForEmbed() {
+  if (!OwnsWindow(connection_, this) &&
+      !static_cast<WindowTreeClientImpl*>(connection_)->is_embed_root()) {
     return false;
   }
 

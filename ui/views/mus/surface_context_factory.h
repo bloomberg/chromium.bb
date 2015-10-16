@@ -15,14 +15,14 @@ class Shell;
 }
 
 namespace mus {
-class View;
+class Window;
 }
 
 namespace views {
 
 class SurfaceContextFactory : public ui::ContextFactory {
  public:
-  SurfaceContextFactory(mojo::Shell* shell, mus::View* view);
+  SurfaceContextFactory(mojo::Shell* shell, mus::Window* window);
   ~SurfaceContextFactory() override;
 
  private:

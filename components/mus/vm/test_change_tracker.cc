@@ -187,9 +187,9 @@ void TestChangeTracker::OnEmbeddedAppDisconnected(Id view_id) {
   AddChange(change);
 }
 
-void TestChangeTracker::OnViewBoundsChanged(Id view_id,
-                                            mojo::RectPtr old_bounds,
-                                            mojo::RectPtr new_bounds) {
+void TestChangeTracker::OnWindowBoundsChanged(Id view_id,
+                                              mojo::RectPtr old_bounds,
+                                              mojo::RectPtr new_bounds) {
   Change change;
   change.type = CHANGE_TYPE_NODE_BOUNDS_CHANGED;
   change.view_id = view_id;
@@ -210,7 +210,7 @@ void TestChangeTracker::OnUnembed() {
   AddChange(change);
 }
 
-void TestChangeTracker::OnViewViewportMetricsChanged(
+void TestChangeTracker::OnWindowViewportMetricsChanged(
     mojo::ViewportMetricsPtr old_metrics,
     mojo::ViewportMetricsPtr new_metrics) {
   Change change;
@@ -219,10 +219,10 @@ void TestChangeTracker::OnViewViewportMetricsChanged(
   AddChange(change);
 }
 
-void TestChangeTracker::OnViewHierarchyChanged(Id view_id,
-                                               Id new_parent_id,
-                                               Id old_parent_id,
-                                               Array<ViewDataPtr> views) {
+void TestChangeTracker::OnWindowHierarchyChanged(Id view_id,
+                                                 Id new_parent_id,
+                                                 Id old_parent_id,
+                                                 Array<ViewDataPtr> views) {
   Change change;
   change.type = CHANGE_TYPE_NODE_HIERARCHY_CHANGED;
   change.view_id = view_id;
@@ -232,9 +232,9 @@ void TestChangeTracker::OnViewHierarchyChanged(Id view_id,
   AddChange(change);
 }
 
-void TestChangeTracker::OnViewReordered(Id view_id,
-                                        Id relative_view_id,
-                                        mojo::OrderDirection direction) {
+void TestChangeTracker::OnWindowReordered(Id view_id,
+                                          Id relative_view_id,
+                                          mojo::OrderDirection direction) {
   Change change;
   change.type = CHANGE_TYPE_NODE_REORDERED;
   change.view_id = view_id;
@@ -243,14 +243,14 @@ void TestChangeTracker::OnViewReordered(Id view_id,
   AddChange(change);
 }
 
-void TestChangeTracker::OnViewDeleted(Id view_id) {
+void TestChangeTracker::OnWindowDeleted(Id view_id) {
   Change change;
   change.type = CHANGE_TYPE_NODE_DELETED;
   change.view_id = view_id;
   AddChange(change);
 }
 
-void TestChangeTracker::OnViewVisibilityChanged(Id view_id, bool visible) {
+void TestChangeTracker::OnWindowVisibilityChanged(Id view_id, bool visible) {
   Change change;
   change.type = CHANGE_TYPE_NODE_VISIBILITY_CHANGED;
   change.view_id = view_id;
@@ -258,7 +258,7 @@ void TestChangeTracker::OnViewVisibilityChanged(Id view_id, bool visible) {
   AddChange(change);
 }
 
-void TestChangeTracker::OnViewDrawnStateChanged(Id view_id, bool drawn) {
+void TestChangeTracker::OnWindowDrawnStateChanged(Id view_id, bool drawn) {
   Change change;
   change.type = CHANGE_TYPE_NODE_DRAWN_STATE_CHANGED;
   change.view_id = view_id;
@@ -266,7 +266,7 @@ void TestChangeTracker::OnViewDrawnStateChanged(Id view_id, bool drawn) {
   AddChange(change);
 }
 
-void TestChangeTracker::OnViewInputEvent(Id view_id, mojo::EventPtr event) {
+void TestChangeTracker::OnWindowInputEvent(Id view_id, mojo::EventPtr event) {
   Change change;
   change.type = CHANGE_TYPE_INPUT_EVENT;
   change.view_id = view_id;
@@ -274,9 +274,9 @@ void TestChangeTracker::OnViewInputEvent(Id view_id, mojo::EventPtr event) {
   AddChange(change);
 }
 
-void TestChangeTracker::OnViewSharedPropertyChanged(Id view_id,
-                                                    String name,
-                                                    Array<uint8_t> data) {
+void TestChangeTracker::OnWindowSharedPropertyChanged(Id view_id,
+                                                      String name,
+                                                      Array<uint8_t> data) {
   Change change;
   change.type = CHANGE_TYPE_PROPERTY_CHANGED;
   change.view_id = view_id;
@@ -288,7 +288,7 @@ void TestChangeTracker::OnViewSharedPropertyChanged(Id view_id,
   AddChange(change);
 }
 
-void TestChangeTracker::OnViewFocused(Id view_id) {
+void TestChangeTracker::OnWindowFocused(Id view_id) {
   Change change;
   change.type = CHANGE_TYPE_FOCUSED;
   change.view_id = view_id;

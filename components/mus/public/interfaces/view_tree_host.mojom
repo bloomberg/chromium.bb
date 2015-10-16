@@ -35,7 +35,7 @@ interface ViewTreeHostClient {
 };
 
 interface ViewTreeHostFactory {
-  CreateViewTreeHost(ViewTreeHost& view_tree_host,
-                     ViewTreeHostClient? host_client,
-                     ViewTreeClient tree_client);
+  CreateWindowTreeHost(ViewTreeHost& view_tree_host,
+                       ViewTreeHostClient? host_client,
+                       ViewTreeClient tree_client);
 };

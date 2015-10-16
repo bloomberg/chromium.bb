@@ -17,22 +17,22 @@ class Shell;
 }
 
 namespace mus {
-class View;
+class Window;
 }
 
 namespace views {
 
 // SurfaceBinding is responsible for managing the connections necessary to
-// bind a View to the surfaces service.
+// bind a Window to the surfaces service.
 // Internally SurfaceBinding manages one connection (and related structures) per
 // ViewTreeConnection. That is, all Views from a particular ViewTreeConnection
 // share the same connection.
 class SurfaceBinding {
  public:
-  SurfaceBinding(mojo::Shell* shell, mus::View* view);
+  SurfaceBinding(mojo::Shell* shell, mus::Window* window);
   ~SurfaceBinding();
 
-  // Creates an OutputSurface that renders to the View supplied to the
+  // Creates an OutputSurface that renders to the Window supplied to the
   // constructor.
   scoped_ptr<cc::OutputSurface> CreateOutputSurface();
 
@@ -40,7 +40,7 @@ class SurfaceBinding {
   class PerConnectionState;
 
   mojo::Shell* shell_;
-  mus::View* view_;
+  mus::Window* window_;
   scoped_refptr<PerConnectionState> state_;
 
   DISALLOW_COPY_AND_ASSIGN(SurfaceBinding);

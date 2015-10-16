@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/mus/public/cpp/view_observer.h"
+#include "components/mus/public/cpp/window_observer.h"
 
 namespace mus {
 
 ////////////////////////////////////////////////////////////////////////////////
-// ViewObserver, public:
+// WindowObserver, public:
 
-ViewObserver::TreeChangeParams::TreeChangeParams()
+WindowObserver::TreeChangeParams::TreeChangeParams()
     : target(nullptr),
       old_parent(nullptr),
       new_parent(nullptr),

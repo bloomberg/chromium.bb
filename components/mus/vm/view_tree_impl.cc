@@ -181,16 +181,17 @@ void ViewTreeImpl::ProcessViewBoundsChanged(const ServerView* view,
                                             bool originated_change) {
   if (originated_change || !IsViewKnown(view))
     return;
-  client()->OnViewBoundsChanged(ViewIdToTransportId(view->id()),
-                                Rect::From(old_bounds), Rect::From(new_bounds));
+  client()->OnWindowBoundsChanged(ViewIdToTransportId(view->id()),
+                                  Rect::From(old_bounds),
+                                  Rect::From(new_bounds));
 }
 
 void ViewTreeImpl::ProcessViewportMetricsChanged(
     const mojo::ViewportMetrics& old_metrics,
     const mojo::ViewportMetrics& new_metrics,
     bool originated_change) {
-  client()->OnViewViewportMetricsChanged(old_metrics.Clone(),
-                                         new_metrics.Clone());
+  client()->OnWindowViewportMetricsChanged(old_metrics.Clone(),
+                                           new_metrics.Clone());
 }
 
 void ViewTreeImpl::ProcessWillChangeViewHierarchy(const ServerView* view,
@@ -220,8 +221,8 @@ void ViewTreeImpl::ProcessViewPropertyChanged(
   if (new_data)
     data = Array<uint8_t>::From(*new_data);
 
-  client()->OnViewSharedPropertyChanged(ViewIdToTransportId(view->id()),
-                                        String(name), data.Pass());
+  client()->OnWindowSharedPropertyChanged(ViewIdToTransportId(view->id()),
+                                          String(name), data.Pass());
 }
 
 void ViewTreeImpl::ProcessViewHierarchyChanged(const ServerView* view,
@@ -249,7 +250,7 @@ void ViewTreeImpl::ProcessViewHierarchyChanged(const ServerView* view,
     GetUnknownViewsFrom(view, &to_send);
   const ViewId new_parent_id(new_parent ? new_parent->id() : ViewId());
   const ViewId old_parent_id(old_parent ? old_parent->id() : ViewId());
-  client()->OnViewHierarchyChanged(
+  client()->OnWindowHierarchyChanged(
       ViewIdToTransportId(view->id()), ViewIdToTransportId(new_parent_id),
       ViewIdToTransportId(old_parent_id), ViewsToViewDatas(to_send));
   connection_manager_->OnConnectionMessagedClient(id_);
@@ -262,9 +263,9 @@ void ViewTreeImpl::ProcessViewReorder(const ServerView* view,
   if (originated_change || !IsViewKnown(view) || !IsViewKnown(relative_view))
     return;
 
-  client()->OnViewReordered(ViewIdToTransportId(view->id()),
-                            ViewIdToTransportId(relative_view->id()),
-                            direction);
+  client()->OnWindowReordered(ViewIdToTransportId(view->id()),
+                              ViewIdToTransportId(relative_view->id()),
+                              direction);
 }
 
 void ViewTreeImpl::ProcessViewDeleted(const ViewId& view,
@@ -281,7 +282,7 @@ void ViewTreeImpl::ProcessViewDeleted(const ViewId& view,
     return;
 
   if (in_known) {
-    client()->OnViewDeleted(ViewIdToTransportId(view));
+    client()->OnWindowDeleted(ViewIdToTransportId(view));
     connection_manager_->OnConnectionMessagedClient(id_);
   }
 }
@@ -292,8 +293,8 @@ void ViewTreeImpl::ProcessWillChangeViewVisibility(const ServerView* view,
     return;
 
   if (IsViewKnown(view)) {
-    client()->OnViewVisibilityChanged(ViewIdToTransportId(view->id()),
-                                      !view->visible());
+    client()->OnWindowVisibilityChanged(ViewIdToTransportId(view->id()),
+                                        !view->visible());
     return;
   }
 
@@ -314,8 +315,8 @@ void ViewTreeImpl::ProcessFocusChanged(const ServerView* old_focused_view,
   const ServerView* view =
       new_focused_view ? access_policy_->GetViewForFocusChange(new_focused_view)
                        : nullptr;
-  client()->OnViewFocused(view ? ViewIdToTransportId(view->id())
-                               : ViewIdToTransportId(ViewId()));
+  client()->OnWindowFocused(view ? ViewIdToTransportId(view->id())
+                                 : ViewIdToTransportId(ViewId()));
 }
 
 bool ViewTreeImpl::IsViewKnown(const ServerView* view) const {
@@ -391,7 +392,7 @@ void ViewTreeImpl::RemoveRoot() {
     return;
 
   client()->OnUnembed();
-  client()->OnViewDeleted(ViewIdToTransportId(root_id));
+  client()->OnWindowDeleted(ViewIdToTransportId(root_id));
   connection_manager_->OnConnectionMessagedClient(id_);
 
   // This connection no longer knows about the view. Unparent any views that
@@ -458,8 +459,8 @@ void ViewTreeImpl::NotifyDrawnStateChanged(const ServerView* view,
   const ServerView* root = GetView(*root_);
   DCHECK(root);
   if (view->Contains(root) && (new_drawn_value != root->IsDrawn())) {
-    client()->OnViewDrawnStateChanged(ViewIdToTransportId(root->id()),
-                                      new_drawn_value);
+    client()->OnWindowDrawnStateChanged(ViewIdToTransportId(root->id()),
+                                        new_drawn_value);
   }
 }
 
@@ -609,7 +610,7 @@ void ViewTreeImpl::RequestSurface(Id view_id,
                                   mojo::InterfaceRequest<mojo::Surface> surface,
                                   mojo::SurfaceClientPtr client) {
   ServerView* view = GetView(ViewIdFromTransportId(view_id));
-  const bool success = view && access_policy_->CanSetViewSurfaceId(view);
+  const bool success = view && access_policy_->CanSetWindowSurfaceId(view);
   if (!success)
     return;
   view->Bind(surface.Pass(), client.Pass());

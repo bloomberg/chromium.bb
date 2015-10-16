@@ -4,7 +4,7 @@
 
 #include "ui/views/mus/window_tree_host_mus.h"
 
-#include "components/mus/public/cpp/view_tree_connection.h"
+#include "components/mus/public/cpp/window_tree_connection.h"
 #include "mojo/application/public/interfaces/shell.mojom.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "ui/aura/env.h"
@@ -20,11 +20,11 @@ namespace views {
 ////////////////////////////////////////////////////////////////////////////////
 // WindowTreeHostMojo, public:
 
-WindowTreeHostMojo::WindowTreeHostMojo(mojo::Shell* shell, mus::View* view)
-    : view_(view), bounds_(view->bounds().To<gfx::Rect>()) {
-  view_->AddObserver(this);
+WindowTreeHostMojo::WindowTreeHostMojo(mojo::Shell* shell, mus::Window* window)
+    : window_(window), bounds_(window->bounds().To<gfx::Rect>()) {
+  window_->AddObserver(this);
 
-  context_factory_.reset(new SurfaceContextFactory(shell, view_));
+  context_factory_.reset(new SurfaceContextFactory(shell, window_));
   // WindowTreeHost creates the compositor using the ContextFactory from
   // aura::Env. Install |context_factory_| there so that |context_factory_| is
   // picked up.
@@ -36,12 +36,12 @@ WindowTreeHostMojo::WindowTreeHostMojo(mojo::Shell* shell, mus::View* view)
   aura::Env::GetInstance()->set_context_factory(default_context_factory);
   DCHECK_EQ(context_factory_.get(), compositor()->context_factory());
 
-  input_method_.reset(new InputMethodMUS(this, view_));
+  input_method_.reset(new InputMethodMUS(this, window_));
   SetSharedInputMethod(input_method_.get());
 }
 
 WindowTreeHostMojo::~WindowTreeHostMojo() {
-  view_->RemoveObserver(this);
+  window_->RemoveObserver(this);
   DestroyCompositor();
   DestroyDispatcher();
 }
@@ -98,9 +98,9 @@ void WindowTreeHostMojo::OnCursorVisibilityChangedNative(bool show) {
 ////////////////////////////////////////////////////////////////////////////////
 // WindowTreeHostMojo, ViewObserver implementation:
 
-void WindowTreeHostMojo::OnViewBoundsChanged(mus::View* view,
-                                             const mojo::Rect& old_bounds,
-                                             const mojo::Rect& new_bounds) {
+void WindowTreeHostMojo::OnWindowBoundsChanged(mus::Window* window,
+                                               const mojo::Rect& old_bounds,
+                                               const mojo::Rect& new_bounds) {
   gfx::Rect old_bounds2 = old_bounds.To<gfx::Rect>();
   gfx::Rect new_bounds2 = new_bounds.To<gfx::Rect>();
   bounds_ = new_bounds2;

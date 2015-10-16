@@ -122,7 +122,7 @@ void MandolineUIServicesApp::Create(mojo::ApplicationConnection* connection,
   new GpuImpl(request.Pass(), gpu_state_);
 }
 
-void MandolineUIServicesApp::CreateViewTreeHost(
+void MandolineUIServicesApp::CreateWindowTreeHost(
     mojo::InterfaceRequest<mojo::ViewTreeHost> host,
     mojo::ViewTreeHostClientPtr host_client,
     mojo::ViewTreeClientPtr tree_client) {

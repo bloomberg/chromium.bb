@@ -6,7 +6,7 @@
 #define UI_VIEWS_MUS_WINDOW_TREE_HOST_MUS_H_
 
 #include "base/macros.h"
-#include "components/mus/public/cpp/view_observer.h"
+#include "components/mus/public/cpp/window_observer.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/events/event_source.h"
 #include "ui/gfx/geometry/rect.h"
@@ -27,9 +27,9 @@ class InputMethodMUS;
 class SurfaceContextFactory;
 
 class WindowTreeHostMojo : public aura::WindowTreeHost,
-                           public mus::ViewObserver {
+                           public mus::WindowObserver {
  public:
-  WindowTreeHostMojo(mojo::Shell* shell, mus::View* view);
+  WindowTreeHostMojo(mojo::Shell* shell, mus::Window* window);
   ~WindowTreeHostMojo() override;
 
   const gfx::Rect& bounds() const { return bounds_; }
@@ -53,12 +53,12 @@ class WindowTreeHostMojo : public aura::WindowTreeHost,
   void MoveCursorToNative(const gfx::Point& location) override;
   void OnCursorVisibilityChangedNative(bool show) override;
 
-  // mus::ViewObserver:
-  void OnViewBoundsChanged(mus::View* view,
-                           const mojo::Rect& old_bounds,
-                           const mojo::Rect& new_bounds) override;
+  // mus::WindowObserver:
+  void OnWindowBoundsChanged(mus::Window* window,
+                             const mojo::Rect& old_bounds,
+                             const mojo::Rect& new_bounds) override;
 
-  mus::View* view_;
+  mus::Window* window_;
 
   gfx::Rect bounds_;
 

@@ -7,7 +7,7 @@
 #include "base/i18n/icu_util.h"
 #include "base/lazy_instance.h"
 #include "base/path_service.h"
-#include "components/mus/public/cpp/view.h"
+#include "components/mus/public/cpp/window.h"
 #include "components/resource_provider/public/cpp/resource_loader.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
@@ -31,13 +31,13 @@ std::set<std::string> GetResourcePaths(const std::string& resource_file) {
   return paths;
 }
 
-std::vector<gfx::Display> GetDisplaysFromView(mus::View* view) {
+std::vector<gfx::Display> GetDisplaysFromWindow(mus::Window* window) {
   static int64 synthesized_display_id = 2000;
   gfx::Display display;
   display.set_id(synthesized_display_id++);
   display.SetScaleAndBounds(
-      view->viewport_metrics().device_pixel_ratio,
-      gfx::Rect(view->viewport_metrics().size_in_pixels.To<gfx::Size>()));
+      window->viewport_metrics().device_pixel_ratio,
+      gfx::Rect(window->viewport_metrics().size_in_pixels.To<gfx::Size>()));
   std::vector<gfx::Display> displays;
   displays.push_back(display);
   return displays;
@@ -47,8 +47,8 @@ std::vector<gfx::Display> GetDisplaysFromView(mus::View* view) {
 
 AuraInit::AuraInit(mojo::ApplicationImpl* app,
                    const std::string& resource_file,
-                   mus::View* view)
-    : AuraInit(app, resource_file, GetDisplaysFromView(view)) {}
+                   mus::Window* window)
+    : AuraInit(app, resource_file, GetDisplaysFromWindow(window)) {}
 
 AuraInit::AuraInit(mojo::ApplicationImpl* app,
                    const std::string& resource_file,

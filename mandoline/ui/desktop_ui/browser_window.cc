@@ -8,8 +8,8 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "components/mus/public/cpp/scoped_view_ptr.h"
-#include "components/mus/public/cpp/view_tree_host_factory.h"
+#include "components/mus/public/cpp/scoped_window_ptr.h"
+#include "components/mus/public/cpp/window_tree_host_factory.h"
 #include "mandoline/ui/desktop_ui/browser_commands.h"
 #include "mandoline/ui/desktop_ui/browser_manager.h"
 #include "mandoline/ui/desktop_ui/find_bar_view.h"
@@ -84,7 +84,7 @@ BrowserWindow::BrowserWindow(mojo::ApplicationImpl* app,
       web_view_(this) {
   mojo::ViewTreeHostClientPtr host_client;
   host_client_binding_.Bind(GetProxy(&host_client));
-  mus::CreateViewTreeHost(host_factory, host_client.Pass(), this, &host_);
+  mus::CreateWindowTreeHost(host_factory, host_client.Pass(), this, &host_);
 }
 
 void BrowserWindow::LoadURL(const GURL& url) {
@@ -107,7 +107,7 @@ void BrowserWindow::LoadURL(const GURL& url) {
 
 void BrowserWindow::Close() {
   if (root_)
-    mus::ScopedViewPtr::DeleteViewOrViewManager(root_);
+    mus::ScopedWindowPtr::DeleteWindowOrWindowManager(root_);
   else
     delete this;
 }
@@ -154,7 +154,7 @@ float BrowserWindow::DIPSToPixels(float value) const {
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserWindow, mus::ViewTreeDelegate implementation:
 
-void BrowserWindow::OnEmbed(mus::View* root) {
+void BrowserWindow::OnEmbed(mus::Window* root) {
   // BrowserWindow does not support being embedded more than once.
   CHECK(!root_);
 
@@ -165,7 +165,7 @@ void BrowserWindow::OnEmbed(mus::View* root) {
 
   host_->SetTitle("Mandoline");
 
-  content_ = root_->connection()->CreateView();
+  content_ = root_->connection()->CreateWindow();
   Init(root_);
 
   host_->SetSize(mojo::Size::From(gfx::Size(1280, 800)));
@@ -211,7 +211,7 @@ void BrowserWindow::OnEmbed(mus::View* root) {
   }
 }
 
-void BrowserWindow::OnConnectionLost(mus::ViewTreeConnection* connection) {
+void BrowserWindow::OnConnectionLost(mus::WindowTreeConnection* connection) {
   root_ = nullptr;
   delete this;
 }
@@ -369,13 +369,13 @@ void BrowserWindow::OnHideFindBar() {
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserWindow, private:
 
-void BrowserWindow::Init(mus::View* root) {
+void BrowserWindow::Init(mus::Window* root) {
   DCHECK_GT(root->viewport_metrics().device_pixel_ratio, 0);
   if (!aura_init_)
     aura_init_.reset(new views::AuraInit(app_, "mandoline_ui.pak", root));
 
   root_ = root;
-  omnibox_view_ = root_->connection()->CreateView();
+  omnibox_view_ = root_->connection()->CreateWindow();
   root_->AddChild(omnibox_view_);
 
   views::WidgetDelegateView* widget_delegate = new views::WidgetDelegateView;

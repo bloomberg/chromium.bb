@@ -35,7 +35,7 @@ class AccessPolicy {
   virtual bool CanEmbed(const ServerView* view,
                         uint32_t policy_bitmask) const = 0;
   virtual bool CanChangeViewVisibility(const ServerView* view) const = 0;
-  virtual bool CanSetViewSurfaceId(const ServerView* view) const = 0;
+  virtual bool CanSetWindowSurfaceId(const ServerView* view) const = 0;
   virtual bool CanSetViewBounds(const ServerView* view) const = 0;
   virtual bool CanSetViewProperties(const ServerView* view) const = 0;
   virtual bool CanSetViewTextInputState(const ServerView* view) const = 0;

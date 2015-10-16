@@ -8,9 +8,9 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/test_timeouts.h"
 #include "base/time/time.h"
-#include "components/mus/public/cpp/tests/view_manager_test_base.h"
-#include "components/mus/public/cpp/view.h"
-#include "components/mus/public/cpp/view_tree_connection.h"
+#include "components/mus/public/cpp/tests/window_server_test_base.h"
+#include "components/mus/public/cpp/window.h"
+#include "components/mus/public/cpp/window_tree_connection.h"
 #include "components/web_view/public/interfaces/frame.mojom.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/application/public/cpp/application_test_base.h"
@@ -68,7 +68,7 @@ class TestFrame : public web_view::mojom::Frame {
 
 }  // namespace
 
-using AXProviderTest = mus::ViewManagerTestBase;
+using AXProviderTest = mus::WindowServerTestBase;
 
 TEST_F(AXProviderTest, HelloWorld) {
   // Start a test server for net/data/test.html access.
@@ -85,11 +85,11 @@ TEST_F(AXProviderTest, HelloWorld) {
   scoped_ptr<ApplicationConnection> connection =
       application_impl()->ConnectToApplication(request.Pass());
 
-  // Embed the html_viewer in a View.
+  // Embed the html_viewer in a Window.
   ViewTreeClientPtr tree_client;
   connection->ConnectToService(&tree_client);
-  mus::View* embed_view = window_manager()->CreateView();
-  embed_view->Embed(tree_client.Pass());
+  mus::Window* embed_window = window_manager()->CreateWindow();
+  embed_window->Embed(tree_client.Pass());
 
   TestFrame frame;
   web_view::mojom::FramePtr frame_ptr;
@@ -98,13 +98,13 @@ TEST_F(AXProviderTest, HelloWorld) {
 
   mojo::Array<web_view::mojom::FrameDataPtr> array(1u);
   array[0] = web_view::mojom::FrameData::New().Pass();
-  array[0]->frame_id = embed_view->id();
+  array[0]->frame_id = embed_window->id();
   array[0]->parent_id = 0u;
 
   web_view::mojom::FrameClientPtr frame_client;
   connection->ConnectToService(&frame_client);
   frame_client->OnConnect(
-      frame_ptr.Pass(), 1u, embed_view->id(),
+      frame_ptr.Pass(), 1u, embed_window->id(),
       web_view::mojom::VIEW_CONNECT_TYPE_USE_NEW, array.Pass(),
       base::TimeTicks::Now().ToInternalValue(), base::Closure());
 

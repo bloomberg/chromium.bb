@@ -7,11 +7,11 @@
 #include "base/containers/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/mus/public/cpp/types.h"
-#include "components/mus/public/cpp/view.h"
-#include "components/mus/public/cpp/view_observer.h"
-#include "components/mus/public/cpp/view_surface.h"
-#include "components/mus/public/cpp/view_tree_connection.h"
-#include "components/mus/public/cpp/view_tree_delegate.h"
+#include "components/mus/public/cpp/window.h"
+#include "components/mus/public/cpp/window_observer.h"
+#include "components/mus/public/cpp/window_surface.h"
+#include "components/mus/public/cpp/window_tree_connection.h"
+#include "components/mus/public/cpp/window_tree_delegate.h"
 #include "components/mus/public/interfaces/compositor_frame.mojom.h"
 #include "components/mus/public/interfaces/gpu.mojom.h"
 #include "components/mus/public/interfaces/surface_id.mojom.h"
@@ -58,7 +58,7 @@ void OnGotContentHandlerID(uint32_t content_handler_id) {}
 // BitmapUploader is useful if you want to draw a bitmap or color in a View.
 class BitmapUploader : public mojo::SurfaceClient {
  public:
-  explicit BitmapUploader(mus::View* view)
+  explicit BitmapUploader(mus::Window* view)
       : view_(view),
         color_(g_transparent_color),
         width_(0),
@@ -289,9 +289,9 @@ class BitmapUploader : public mojo::SurfaceClient {
     }
   }
 
-  mus::View* view_;
+  mus::Window* view_;
   mojo::GpuPtr gpu_service_;
-  scoped_ptr<mus::ViewSurface> surface_;
+  scoped_ptr<mus::WindowSurface> surface_;
   MojoGLES2Context gles2_context_;
 
   mojo::Size size_;
@@ -311,7 +311,7 @@ class BitmapUploader : public mojo::SurfaceClient {
 
 class EmbedderData {
  public:
-  EmbedderData(mojo::Shell* shell, mus::View* root) : bitmap_uploader_(root) {
+  EmbedderData(mojo::Shell* shell, mus::Window* root) : bitmap_uploader_(root) {
     bitmap_uploader_.Init(shell);
     bitmap_uploader_.SetColor(g_background_color);
   }
@@ -325,8 +325,8 @@ class EmbedderData {
 };
 
 class PDFView : public mojo::ApplicationDelegate,
-                public mus::ViewTreeDelegate,
-                public mus::ViewObserver,
+                public mus::WindowTreeDelegate,
+                public mus::WindowObserver,
                 public mojo::InterfaceFactory<mojo::ViewTreeClient> {
  public:
   PDFView(mojo::InterfaceRequest<mojo::Application> request,
@@ -354,8 +354,8 @@ class PDFView : public mojo::ApplicationDelegate,
     return true;
   }
 
-  // Overridden from ViewTreeDelegate:
-  void OnEmbed(mus::View* root) override {
+  // Overridden from WindowTreeDelegate:
+  void OnEmbed(mus::Window* root) override {
     DCHECK(embedder_for_roots_.find(root) == embedder_for_roots_.end());
     root->AddObserver(this);
     EmbedderData* embedder_data = new EmbedderData(app_.shell(), root);
@@ -363,17 +363,18 @@ class PDFView : public mojo::ApplicationDelegate,
     DrawBitmap(embedder_data);
   }
 
-  void OnConnectionLost(mus::ViewTreeConnection* connection) override {}
+  void OnConnectionLost(mus::WindowTreeConnection* connection) override {}
 
-  // Overridden from ViewObserver:
-  void OnViewBoundsChanged(mus::View* view,
-                           const mojo::Rect& old_bounds,
-                           const mojo::Rect& new_bounds) override {
+  // Overridden from WindowObserver:
+  void OnWindowBoundsChanged(mus::Window* view,
+                             const mojo::Rect& old_bounds,
+                             const mojo::Rect& new_bounds) override {
     DCHECK(embedder_for_roots_.find(view) != embedder_for_roots_.end());
     DrawBitmap(embedder_for_roots_[view]);
   }
 
-  void OnViewInputEvent(mus::View* view, const mojo::EventPtr& event) override {
+  void OnWindowInputEvent(mus::Window* view,
+                          const mojo::EventPtr& event) override {
     DCHECK(embedder_for_roots_.find(view) != embedder_for_roots_.end());
     if (event->key_data &&
         (event->action != mojo::EVENT_TYPE_KEY_PRESSED ||
@@ -400,7 +401,7 @@ class PDFView : public mojo::ApplicationDelegate,
     }
   }
 
-  void OnViewDestroyed(mus::View* view) override {
+  void OnWindowDestroyed(mus::Window* view) override {
     DCHECK(embedder_for_roots_.find(view) != embedder_for_roots_.end());
     const auto& it = embedder_for_roots_.find(view);
     DCHECK(it != embedder_for_roots_.end());
@@ -414,9 +415,9 @@ class PDFView : public mojo::ApplicationDelegate,
   void Create(
       mojo::ApplicationConnection* connection,
       mojo::InterfaceRequest<mojo::ViewTreeClient> request) override {
-    mus::ViewTreeConnection::Create(
+    mus::WindowTreeConnection::Create(
         this, request.Pass(),
-        mus::ViewTreeConnection::CreateType::DONT_WAIT_FOR_EMBED);
+        mus::WindowTreeConnection::CreateType::DONT_WAIT_FOR_EMBED);
   }
 
   void DrawBitmap(EmbedderData* embedder_data) {
@@ -465,7 +466,7 @@ class PDFView : public mojo::ApplicationDelegate,
   int current_page_;
   int page_count_;
   FPDF_DOCUMENT doc_;
-  std::map<mus::View*, EmbedderData*> embedder_for_roots_;
+  std::map<mus::Window*, EmbedderData*> embedder_for_roots_;
 
   DISALLOW_COPY_AND_ASSIGN(PDFView);
 };

@@ -98,7 +98,7 @@ void TestFrameTreeDelegate::DidDestroyFrame(Frame* frame) {
   }
 }
 
-void TestFrameTreeDelegate::OnViewEmbeddedInFrameDisconnected(Frame* frame) {
+void TestFrameTreeDelegate::OnWindowEmbeddedInFrameDisconnected(Frame* frame) {
   if (waiting_for_frame_disconnected_ == frame) {
     waiting_for_frame_disconnected_ = nullptr;
     run_loop_->Quit();

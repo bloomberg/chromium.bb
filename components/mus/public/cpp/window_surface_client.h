@@ -7,16 +7,16 @@
 
 namespace mus {
 
-class ViewSurface;
+class WindowSurface;
 
-class ViewSurfaceClient {
+class WindowSurfaceClient {
  public:
   virtual void OnResourcesReturned(
-      ViewSurface* surface,
+      WindowSurface* surface,
       mojo::Array<mojo::ReturnedResourcePtr> resources) = 0;
 
  protected:
-  ~ViewSurfaceClient() {}
+  ~WindowSurfaceClient() {}
 };
 
 }  // namespace mus

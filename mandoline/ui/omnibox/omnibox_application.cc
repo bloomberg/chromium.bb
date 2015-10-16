@@ -6,9 +6,9 @@
 
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/mus/public/cpp/view.h"
-#include "components/mus/public/cpp/view_tree_connection.h"
-#include "components/mus/public/cpp/view_tree_delegate.h"
+#include "components/mus/public/cpp/window.h"
+#include "components/mus/public/cpp/window_tree_connection.h"
+#include "components/mus/public/cpp/window_tree_delegate.h"
 #include "components/url_formatter/url_fixer.h"
 #include "mandoline/ui/desktop_ui/public/interfaces/view_embedder.mojom.h"
 #include "mojo/application/public/cpp/application_impl.h"
@@ -27,7 +27,7 @@ namespace mandoline {
 ////////////////////////////////////////////////////////////////////////////////
 // OmniboxImpl
 
-class OmniboxImpl : public mus::ViewTreeDelegate,
+class OmniboxImpl : public mus::WindowTreeDelegate,
                     public views::LayoutManager,
                     public views::TextfieldController,
                     public Omnibox {
@@ -38,9 +38,9 @@ class OmniboxImpl : public mus::ViewTreeDelegate,
   ~OmniboxImpl() override;
 
  private:
-  // Overridden from mus::ViewTreeDelegate:
-  void OnEmbed(mus::View* root) override;
-  void OnConnectionLost(mus::ViewTreeConnection* connection) override;
+  // Overridden from mus::WindowTreeDelegate:
+  void OnEmbed(mus::Window* root) override;
+  void OnConnectionLost(mus::WindowTreeConnection* connection) override;
 
   // Overridden from views::LayoutManager:
   gfx::Size GetPreferredSize(const views::View* view) const override;
@@ -60,7 +60,7 @@ class OmniboxImpl : public mus::ViewTreeDelegate,
 
   scoped_ptr<views::AuraInit> aura_init_;
   mojo::ApplicationImpl* app_;
-  mus::View* root_;
+  mus::Window* root_;
   mojo::String url_;
   views::Textfield* edit_;
   mojo::Binding<Omnibox> binding_;
@@ -111,9 +111,9 @@ OmniboxImpl::OmniboxImpl(mojo::ApplicationImpl* app,
 OmniboxImpl::~OmniboxImpl() {}
 
 ////////////////////////////////////////////////////////////////////////////////
-// OmniboxImpl, mus::ViewTreeDelegate implementation:
+// OmniboxImpl, mus::WindowTreeDelegate implementation:
 
-void OmniboxImpl::OnEmbed(mus::View* root) {
+void OmniboxImpl::OnEmbed(mus::Window* root) {
   root_ = root;
 
   if (!aura_init_.get()) {
@@ -149,7 +149,7 @@ void OmniboxImpl::OnEmbed(mus::View* root) {
   ShowWindow();
 }
 
-void OmniboxImpl::OnConnectionLost(mus::ViewTreeConnection* connection) {
+void OmniboxImpl::OnConnectionLost(mus::WindowTreeConnection* connection) {
   root_ = nullptr;
 }
 
@@ -191,9 +191,9 @@ bool OmniboxImpl::HandleKeyEvent(views::Textfield* sender,
 
 void OmniboxImpl::GetViewTreeClient(
     mojo::InterfaceRequest<mojo::ViewTreeClient> request) {
-  mus::ViewTreeConnection::Create(
+  mus::WindowTreeConnection::Create(
       this, request.Pass(),
-      mus::ViewTreeConnection::CreateType::DONT_WAIT_FOR_EMBED);
+      mus::WindowTreeConnection::CreateType::DONT_WAIT_FOR_EMBED);
 }
 
 void OmniboxImpl::ShowForURL(const mojo::String& url) {

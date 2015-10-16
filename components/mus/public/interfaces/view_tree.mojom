@@ -98,17 +98,17 @@ interface ViewTree {
   // . |child| is an ancestor of |parent|.
   // . |child| is already a child of |parent|.
   //
-  // This may result in a connection getting OnViewDeleted(). See
+  // This may result in a connection getting OnWindowDeleted(). See
   // RemoveViewFromParent for details.
   AddView(uint32 parent, uint32 child) => (bool success);
 
   // Removes a view from its current parent. This fails if the view is not
   // valid or the view already has no parent.
   //
-  // Removing a view from a parent may result in OnViewDeleted() being sent to
+  // Removing a view from a parent may result in OnWindowDeleted() being sent to
   // other connections. For example, connection A has views 1 and 2, with 2 a
   // child of 1. Connection B has a root 1. If 2 is removed from 1 then B gets
-  // OnViewDeleted(). This is done as view 2 is effectively no longer visible to
+  // OnWindowDeleted(). This is done as view 2 is effectively no longer visible to
   // connection B.
   RemoveViewFromParent(uint32 view_id) => (bool success);
 
@@ -144,7 +144,7 @@ interface ViewTree {
   // A view may only have one embedding in it at a time. Subsequent calls to
   // Embed() for the same view result in the currently embedded
   // ViewTreeClient being removed. The embedded app is told this by way of
-  // OnUnembed(), which is followed by OnViewDeleted() (as the connection no
+  // OnUnembed(), which is followed by OnWindowDeleted() (as the connection no
   // longer has access to the view).
   //
   // The embedder can detect when the embedded app disconnects by way of
@@ -173,7 +173,7 @@ interface ViewTree {
 
 // Changes to views are not sent to the connection that originated the
 // change. For example, if connection 1 changes the bounds of a view by calling
-// SetBounds(), connection 1 does not receive OnViewBoundsChanged().
+// SetBounds(), connection 1 does not receive OnWindowBoundsChanged().
 interface ViewTreeClient {
   // Invoked when the client application has been embedded at |root|.
   // See Embed() on ViewTree for more details. |tree| will be a handle back to
@@ -196,13 +196,13 @@ interface ViewTreeClient {
   OnUnembed();
 
   // Invoked when a view's bounds have changed.
-  OnViewBoundsChanged(uint32 view,
+  OnWindowBoundsChanged(uint32 view,
                       mojo.Rect old_bounds,
                       mojo.Rect new_bounds);
 
   // Invoked when the viewport metrics for the view have changed.
   // Clients are expected to propagate this to the view tree.
-  OnViewViewportMetricsChanged(mojo.ViewportMetrics old_metrics,
+  OnWindowViewportMetricsChanged(mojo.ViewportMetrics old_metrics,
                                mojo.ViewportMetrics new_metrics);
 
   // Invoked when a change is done to the hierarchy. A value of 0 is used to
@@ -211,21 +211,21 @@ interface ViewTreeClient {
   // |views| contains any views that are that the client has not been told
   // about. This is not sent for hierarchy changes of views not known to this
   // client or not attached to the tree.
-  OnViewHierarchyChanged(uint32 view,
+  OnWindowHierarchyChanged(uint32 view,
                          uint32 new_parent,
                          uint32 old_parent,
                          array<ViewData> views);
 
   // Invoked when the order of views within a parent changes.
-  OnViewReordered(uint32 view_id,
+  OnWindowReordered(uint32 view_id,
                   uint32 relative_view_id,
                   OrderDirection direction);
 
   // Invoked when a view is deleted.
-  OnViewDeleted(uint32 view);
+  OnWindowDeleted(uint32 view);
 
   // Invoked when the visibility of the specified view changes.
-  OnViewVisibilityChanged(uint32 view, bool visible);
+  OnWindowVisibilityChanged(uint32 view, bool visible);
 
   // Invoked when a change to the visibility of |view| or one if it's ancestors
   // is done such that the drawn state changes. This is only invoked for the
@@ -236,15 +236,15 @@ interface ViewTreeClient {
   // the drawn state of B1 has changed (to false), but is not told anything
   // about B2 as it's drawn state can be calculated from that of B1.
   //
-  // NOTE: This is not invoked if OnViewVisibilityChanged() is invoked.
-  OnViewDrawnStateChanged(uint32 view, bool drawn);
+  // NOTE: This is not invoked if OnWindowVisibilityChanged() is invoked.
+  OnWindowDrawnStateChanged(uint32 view, bool drawn);
 
   // Invoked when a view property is changed. If this change is a removal,
   // |new_data| is null.
-  OnViewSharedPropertyChanged(uint32 view, string name, array<uint8>? new_data);
+  OnWindowSharedPropertyChanged(uint32 view, string name, array<uint8>? new_data);
 
   // Invoked when an event is targeted at the specified view.
-  OnViewInputEvent(uint32 view, mojo.Event event) => ();
+  OnWindowInputEvent(uint32 view, mojo.Event event) => ();
 
-  OnViewFocused(uint32 focused_view_id);
+  OnWindowFocused(uint32 focused_view_id);
 };

@@ -7,7 +7,7 @@
 #include "components/html_viewer/global_state.h"
 #include "components/html_viewer/html_document.h"
 #include "components/html_viewer/html_frame_tree_manager.h"
-#include "components/mus/public/cpp/view.h"
+#include "components/mus/public/cpp/window.h"
 
 using web_view::mojom::ViewConnectType;
 
@@ -21,7 +21,7 @@ DocumentResourceWaiter::DocumentResourceWaiter(GlobalState* global_state,
       response_(response.Pass()),
       root_(nullptr),
       change_id_(0u),
-      view_id_(0u),
+      window_id_(0u),
       view_connect_type_(web_view::mojom::VIEW_CONNECT_TYPE_USE_NEW),
       frame_client_binding_(this),
       is_ready_(false),
@@ -40,7 +40,7 @@ void DocumentResourceWaiter::Release(
     web_view::mojom::FramePtr* frame,
     mojo::Array<web_view::mojom::FrameDataPtr>* frame_data,
     uint32_t* change_id,
-    uint32_t* view_id,
+    uint32_t* window_id,
     ViewConnectType* view_connect_type,
     OnConnectCallback* on_connect_callback) {
   DCHECK(is_ready_);
@@ -48,7 +48,7 @@ void DocumentResourceWaiter::Release(
   *frame = frame_.Pass();
   *frame_data = frame_data_.Pass();
   *change_id = change_id_;
-  *view_id = view_id_;
+  *window_id = window_id_;
   *view_connect_type = view_connect_type_;
   *on_connect_callback = on_connect_callback_;
 }
@@ -57,7 +57,7 @@ mojo::URLResponsePtr DocumentResourceWaiter::ReleaseURLResponse() {
   return response_.Pass();
 }
 
-void DocumentResourceWaiter::SetRoot(mus::View* root) {
+void DocumentResourceWaiter::SetRoot(mus::Window* root) {
   DCHECK(!root_);
   root_ = root;
   root_->AddObserver(this);
@@ -123,14 +123,14 @@ void DocumentResourceWaiter::UpdateIsReady() {
 void DocumentResourceWaiter::OnConnect(
     web_view::mojom::FramePtr frame,
     uint32_t change_id,
-    uint32_t view_id,
+    uint32_t window_id,
     ViewConnectType view_connect_type,
     mojo::Array<web_view::mojom::FrameDataPtr> frame_data,
     int64_t navigation_start_time_ticks,
     const OnConnectCallback& callback) {
   DCHECK(frame_data_.is_null());
   change_id_ = change_id;
-  view_id_ = view_id;
+  window_id_ = window_id;
   view_connect_type_ = view_connect_type;
   frame_ = frame.Pass();
   frame_data_ = frame_data.Pass();
@@ -217,14 +217,14 @@ void DocumentResourceWaiter::StopHighlightingFindResults() {
   NOTREACHED();
 }
 
-void DocumentResourceWaiter::OnViewViewportMetricsChanged(
-    mus::View* view,
+void DocumentResourceWaiter::OnWindowViewportMetricsChanged(
+    mus::Window* window,
     const mojo::ViewportMetrics& old_metrics,
     const mojo::ViewportMetrics& new_metrics) {
   UpdateIsReady();
 }
 
-void DocumentResourceWaiter::OnViewDestroyed(mus::View* view) {
+void DocumentResourceWaiter::OnWindowDestroyed(mus::Window* window) {
   root_->RemoveObserver(this);
   root_ = nullptr;
 }

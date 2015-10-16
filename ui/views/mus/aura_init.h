@@ -24,7 +24,7 @@ class ApplicationImpl;
 }
 
 namespace mus {
-class View;
+class Window;
 }
 
 namespace views {
@@ -34,10 +34,10 @@ namespace views {
 class AuraInit {
  public:
   // This constructor builds the set of Displays from the ViewportMetrics of
-  // |view|.
+  // |window|.
   AuraInit(mojo::ApplicationImpl* app,
            const std::string& resource_file,
-           mus::View* view);
+           mus::Window* window);
   AuraInit(mojo::ApplicationImpl* app,
            const std::string& resource_file,
            const std::vector<gfx::Display>& displays);

@@ -22,34 +22,35 @@
 namespace mus {
 
 class ServiceProviderImpl;
-class View;
-class ViewObserver;
-class ViewSurface;
-class ViewTreeConnection;
+class WindowObserver;
+class WindowSurface;
+class WindowTreeConnection;
 
-// Defined in view_property.h (which we do not include)
+// Defined in window_property.h (which we do not include)
 template <typename T>
-struct ViewProperty;
+struct WindowProperty;
 
-// Views are owned by the ViewTreeConnection. See ViewTreeDelegate for details
+// Windows are owned by the WindowTreeConnection. See WindowTreeDelegate for
+// details
 // on ownership.
 //
-// TODO(beng): Right now, you'll have to implement a ViewObserver to track
+// TODO(beng): Right now, you'll have to implement a WindowObserver to track
 //             destruction and NULL any pointers you have.
 //             Investigate some kind of smart pointer or weak pointer for these.
-class View {
+class Window {
  public:
-  using Children = std::vector<View*>;
+  using Children = std::vector<Window*>;
   using SharedProperties = std::map<std::string, std::vector<uint8_t>>;
   using EmbedCallback = base::Callback<void(bool, ConnectionSpecificId)>;
 
-  // Destroys this view and all its children. Destruction is allowed for views
-  // that were created by this connection. For views from other connections
+  // Destroys this window and all its children. Destruction is allowed for
+  // windows
+  // that were created by this connection. For windows from other connections
   // (such as the root) Destroy() does nothing. If the destruction is allowed
-  // observers are notified and the View is immediately deleted.
+  // observers are notified and the Window is immediately deleted.
   void Destroy();
 
-  ViewTreeConnection* connection() { return connection_; }
+  WindowTreeConnection* connection() { return connection_; }
 
   // Configuration.
   Id id() const { return id_; }
@@ -58,16 +59,16 @@ class View {
   const mojo::Rect& bounds() const { return bounds_; }
   void SetBounds(const mojo::Rect& bounds);
 
-  // Visibility (also see IsDrawn()). When created views are hidden.
+  // Visibility (also see IsDrawn()). When created windows are hidden.
   bool visible() const { return visible_; }
   void SetVisible(bool value);
 
   const mojo::ViewportMetrics& viewport_metrics() { return *viewport_metrics_; }
 
-  scoped_ptr<ViewSurface> RequestSurface();
+  scoped_ptr<WindowSurface> RequestSurface();
 
   // Returns the set of string to bag of byte properties. These properties are
-  // shared with the view manager.
+  // shared with the window manager.
   const SharedProperties& shared_properties() const { return properties_; }
   // Sets a property. If |data| is null, this property is deleted.
   void SetSharedProperty(const std::string& name,
@@ -75,11 +76,11 @@ class View {
 
   // Sets the |value| of the given window |property|. Setting to the default
   // value (e.g., NULL) removes the property. The caller is responsible for the
-  // lifetime of any object set as a property on the View.
+  // lifetime of any object set as a property on the Window.
   //
-  // These properties are not visible to the view manager.
+  // These properties are not visible to the window manager.
   template <typename T>
-  void SetLocalProperty(const ViewProperty<T>* property, T value);
+  void SetLocalProperty(const WindowProperty<T>* property, T value);
 
   // Returns the value of the given window |property|.  Returns the
   // property-specific default value if the property was not previously set.
@@ -87,7 +88,7 @@ class View {
   // These properties are only visible in the current process and are not
   // shared with other mojo services.
   template <typename T>
-  T GetLocalProperty(const ViewProperty<T>* property) const;
+  T GetLocalProperty(const WindowProperty<T>* property) const;
 
   // Sets the |property| to its default value. Useful for avoiding a cast when
   // setting to NULL.
@@ -95,38 +96,38 @@ class View {
   // These properties are only visible in the current process and are not
   // shared with other mojo services.
   template <typename T>
-  void ClearLocalProperty(const ViewProperty<T>* property);
+  void ClearLocalProperty(const WindowProperty<T>* property);
 
-  // Type of a function to delete a property that this view owns.
+  // Type of a function to delete a property that this window owns.
   typedef void (*PropertyDeallocator)(int64_t value);
 
-  // A View is drawn if the View and all its ancestors are visible and the
-  // View is attached to the root.
+  // A Window is drawn if the Window and all its ancestors are visible and the
+  // Window is attached to the root.
   bool IsDrawn() const;
 
   // Observation.
-  void AddObserver(ViewObserver* observer);
-  void RemoveObserver(ViewObserver* observer);
+  void AddObserver(WindowObserver* observer);
+  void RemoveObserver(WindowObserver* observer);
 
   // Tree.
-  View* parent() { return parent_; }
-  const View* parent() const { return parent_; }
+  Window* parent() { return parent_; }
+  const Window* parent() const { return parent_; }
   const Children& children() const { return children_; }
-  View* GetRoot() {
-    return const_cast<View*>(const_cast<const View*>(this)->GetRoot());
+  Window* GetRoot() {
+    return const_cast<Window*>(const_cast<const Window*>(this)->GetRoot());
   }
-  const View* GetRoot() const;
+  const Window* GetRoot() const;
 
-  void AddChild(View* child);
-  void RemoveChild(View* child);
+  void AddChild(Window* child);
+  void RemoveChild(Window* child);
 
-  void Reorder(View* relative, mojo::OrderDirection direction);
+  void Reorder(Window* relative, mojo::OrderDirection direction);
   void MoveToFront();
   void MoveToBack();
 
-  bool Contains(View* child) const;
+  bool Contains(Window* child) const;
 
-  View* GetChildById(Id id);
+  Window* GetChildById(Id id);
 
   void SetTextInputState(mojo::TextInputStatePtr state);
   void SetImeVisibility(bool visible, mojo::TextInputStatePtr state);
@@ -139,21 +140,21 @@ class View {
   void Embed(mojo::ViewTreeClientPtr client);
 
   // NOTE: callback is run synchronously if Embed() is not allowed on this
-  // View.
+  // Window.
   void Embed(mojo::ViewTreeClientPtr client,
              uint32_t policy_bitmask,
              const EmbedCallback& callback);
 
  protected:
   // This class is subclassed only by test classes that provide a public ctor.
-  View();
-  ~View();
+  Window();
+  ~Window();
 
  private:
-  friend class ViewPrivate;
-  friend class ViewTreeClientImpl;
+  friend class WindowPrivate;
+  friend class WindowTreeClientImpl;
 
-  View(ViewTreeConnection* connection, Id id);
+  Window(WindowTreeConnection* connection, Id id);
 
   // Called by the public {Set,Get,Clear}Property functions.
   int64_t SetLocalPropertyInternal(const void* key,
@@ -165,10 +166,10 @@ class View {
                                    int64_t default_value) const;
 
   void LocalDestroy();
-  void LocalAddChild(View* child);
-  void LocalRemoveChild(View* child);
+  void LocalAddChild(Window* child);
+  void LocalRemoveChild(Window* child);
   // Returns true if the order actually changed.
-  bool LocalReorder(View* relative, mojo::OrderDirection direction);
+  bool LocalReorder(Window* relative, mojo::OrderDirection direction);
   void LocalSetBounds(const mojo::Rect& old_bounds,
                       const mojo::Rect& new_bounds);
   void LocalSetViewportMetrics(const mojo::ViewportMetrics& old_metrics,
@@ -176,28 +177,28 @@ class View {
   void LocalSetDrawn(bool drawn);
   void LocalSetVisible(bool visible);
 
-  // Methods implementing visibility change notifications. See ViewObserver
+  // Methods implementing visibility change notifications. See WindowObserver
   // for more details.
-  void NotifyViewVisibilityChanged(View* target);
+  void NotifyWindowVisibilityChanged(Window* target);
   // Notifies this view's observers. Returns false if |this| was deleted during
   // the call (by an observer), otherwise true.
-  bool NotifyViewVisibilityChangedAtReceiver(View* target);
+  bool NotifyWindowVisibilityChangedAtReceiver(Window* target);
   // Notifies this view and its child hierarchy. Returns false if |this| was
   // deleted during the call (by an observer), otherwise true.
-  bool NotifyViewVisibilityChangedDown(View* target);
+  bool NotifyWindowVisibilityChangedDown(Window* target);
   // Notifies this view and its parent hierarchy.
-  void NotifyViewVisibilityChangedUp(View* target);
+  void NotifyWindowVisibilityChangedUp(Window* target);
 
   // Returns true if embed is allowed for this node. If embedding is allowed all
   // the children are removed.
   bool PrepareForEmbed();
 
-  ViewTreeConnection* connection_;
+  WindowTreeConnection* connection_;
   Id id_;
-  View* parent_;
+  Window* parent_;
   Children children_;
 
-  base::ObserverList<ViewObserver> observers_;
+  base::ObserverList<WindowObserver> observers_;
 
   mojo::Rect bounds_;
   mojo::ViewportMetricsPtr viewport_metrics_;
@@ -221,7 +222,7 @@ class View {
 
   std::map<const void*, Value> prop_map_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(View);
+  MOJO_DISALLOW_COPY_AND_ASSIGN(Window);
 };
 
 }  // namespace mus

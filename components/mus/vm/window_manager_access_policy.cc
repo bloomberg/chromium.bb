@@ -61,7 +61,7 @@ bool WindowManagerAccessPolicy::CanChangeViewVisibility(
          (view->GetRoot() == view);
 }
 
-bool WindowManagerAccessPolicy::CanSetViewSurfaceId(
+bool WindowManagerAccessPolicy::CanSetWindowSurfaceId(
     const ServerView* view) const {
   if (delegate_->IsViewRootOfAnotherConnectionForAccessPolicy(view))
     return false;

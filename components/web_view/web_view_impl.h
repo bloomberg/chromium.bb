@@ -10,8 +10,8 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "components/mus/public/cpp/view_observer.h"
-#include "components/mus/public/cpp/view_tree_delegate.h"
+#include "components/mus/public/cpp/window_observer.h"
+#include "components/mus/public/cpp/window_tree_delegate.h"
 #include "components/web_view/find_controller.h"
 #include "components/web_view/find_controller_delegate.h"
 #include "components/web_view/frame_devtools_agent_delegate.h"
@@ -39,8 +39,8 @@ class HTMLMessageEvent;
 }
 
 class WebViewImpl : public mojom::WebView,
-                    public mus::ViewTreeDelegate,
-                    public mus::ViewObserver,
+                    public mus::WindowTreeDelegate,
+                    public mus::WindowObserver,
                     public FrameTreeDelegate,
                     public FrameDevToolsAgentDelegate,
                     public NavigationControllerDelegate,
@@ -70,15 +70,15 @@ class WebViewImpl : public mojom::WebView,
   void GoBack() override;
   void GoForward() override;
 
-  // Overridden from mus::ViewTreeDelegate:
-  void OnEmbed(mus::View* root) override;
-  void OnConnectionLost(mus::ViewTreeConnection* connection) override;
+  // Overridden from mus::WindowTreeDelegate:
+  void OnEmbed(mus::Window* root) override;
+  void OnConnectionLost(mus::WindowTreeConnection* connection) override;
 
-  // Overridden from mus::ViewObserver:
-  void OnViewBoundsChanged(mus::View* view,
-                           const mojo::Rect& old_bounds,
-                           const mojo::Rect& new_bounds) override;
-  void OnViewDestroyed(mus::View* view) override;
+  // Overridden from mus::WindowObserver:
+  void OnWindowBoundsChanged(mus::Window* view,
+                             const mojo::Rect& old_bounds,
+                             const mojo::Rect& new_bounds) override;
+  void OnWindowDestroyed(mus::Window* view) override;
 
   // Overridden from FrameTreeDelegate:
   scoped_ptr<FrameUserData> CreateUserDataForNewFrame(
@@ -118,8 +118,8 @@ class WebViewImpl : public mojom::WebView,
   mojo::ApplicationImpl* app_;
   mojom::WebViewClientPtr client_;
   mojo::StrongBinding<WebView> binding_;
-  mus::View* root_;
-  mus::View* content_;
+  mus::Window* root_;
+  mus::Window* content_;
   scoped_ptr<FrameTree> frame_tree_;
 
   // When LoadRequest() is called a PendingWebViewLoad is created to wait for

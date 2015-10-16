@@ -16,8 +16,8 @@
 #include "cc/resources/shared_bitmap_manager.h"
 #include "components/mus/public/cpp/context_provider.h"
 #include "components/mus/public/cpp/output_surface.h"
-#include "components/mus/public/cpp/view.h"
-#include "components/mus/public/cpp/view_tree_connection.h"
+#include "components/mus/public/cpp/window.h"
+#include "components/mus/public/cpp/window_tree_connection.h"
 #include "components/mus/public/interfaces/gpu.mojom.h"
 #include "mojo/application/public/cpp/connect.h"
 #include "mojo/application/public/interfaces/shell.mojom.h"
@@ -42,26 +42,26 @@ class SurfaceBinding::PerConnectionState
     : public base::RefCounted<PerConnectionState> {
  public:
   static PerConnectionState* Get(mojo::Shell* shell,
-                                 mus::ViewTreeConnection* connection);
+                                 mus::WindowTreeConnection* connection);
 
-  scoped_ptr<cc::OutputSurface> CreateOutputSurface(mus::View* view);
+  scoped_ptr<cc::OutputSurface> CreateOutputSurface(mus::Window* window);
 
  private:
-  typedef std::map<mus::ViewTreeConnection*, PerConnectionState*>
+  typedef std::map<mus::WindowTreeConnection*, PerConnectionState*>
       ConnectionToStateMap;
 
   friend class base::RefCounted<PerConnectionState>;
 
-  PerConnectionState(mojo::Shell* shell, mus::ViewTreeConnection* connection);
+  PerConnectionState(mojo::Shell* shell, mus::WindowTreeConnection* connection);
   ~PerConnectionState();
 
   void Init();
 
   static base::LazyInstance<
-      base::ThreadLocalPointer<ConnectionToStateMap>>::Leaky view_states;
+      base::ThreadLocalPointer<ConnectionToStateMap>>::Leaky window_states;
 
   mojo::Shell* shell_;
-  mus::ViewTreeConnection* connection_;
+  mus::WindowTreeConnection* connection_;
 
   // Set of state needed to create an OutputSurface.
   mojo::GpuPtr gpu_;
@@ -72,26 +72,26 @@ class SurfaceBinding::PerConnectionState
 // static
 base::LazyInstance<base::ThreadLocalPointer<
     SurfaceBinding::PerConnectionState::ConnectionToStateMap>>::Leaky
-    SurfaceBinding::PerConnectionState::view_states;
+    SurfaceBinding::PerConnectionState::window_states;
 
 // static
 SurfaceBinding::PerConnectionState* SurfaceBinding::PerConnectionState::Get(
     mojo::Shell* shell,
-    mus::ViewTreeConnection* connection) {
-  ConnectionToStateMap* view_map = view_states.Pointer()->Get();
-  if (!view_map) {
-    view_map = new ConnectionToStateMap;
-    view_states.Pointer()->Set(view_map);
+    mus::WindowTreeConnection* connection) {
+  ConnectionToStateMap* window_map = window_states.Pointer()->Get();
+  if (!window_map) {
+    window_map = new ConnectionToStateMap;
+    window_states.Pointer()->Set(window_map);
   }
-  if (!(*view_map)[connection]) {
-    (*view_map)[connection] = new PerConnectionState(shell, connection);
-    (*view_map)[connection]->Init();
+  if (!(*window_map)[connection]) {
+    (*window_map)[connection] = new PerConnectionState(shell, connection);
+    (*window_map)[connection]->Init();
   }
-  return (*view_map)[connection];
+  return (*window_map)[connection];
 }
 
 scoped_ptr<cc::OutputSurface>
-SurfaceBinding::PerConnectionState::CreateOutputSurface(mus::View* view) {
+SurfaceBinding::PerConnectionState::CreateOutputSurface(mus::Window* window) {
   // TODO(sky): figure out lifetime here. Do I need to worry about the return
   // value outliving this?
   mojo::CommandBufferPtr cb;
@@ -100,22 +100,22 @@ SurfaceBinding::PerConnectionState::CreateOutputSurface(mus::View* view) {
   scoped_refptr<cc::ContextProvider> context_provider(
       new mus::ContextProvider(cb.PassInterface().PassHandle()));
   return make_scoped_ptr(
-      new mus::OutputSurface(context_provider, view->RequestSurface()));
+      new mus::OutputSurface(context_provider, window->RequestSurface()));
 }
 
 SurfaceBinding::PerConnectionState::PerConnectionState(
     mojo::Shell* shell,
-    mus::ViewTreeConnection* connection)
+    mus::WindowTreeConnection* connection)
     : shell_(shell), connection_(connection) {}
 
 SurfaceBinding::PerConnectionState::~PerConnectionState() {
-  ConnectionToStateMap* view_map = view_states.Pointer()->Get();
-  DCHECK(view_map);
-  DCHECK_EQ(this, (*view_map)[connection_]);
-  view_map->erase(connection_);
-  if (view_map->empty()) {
-    delete view_map;
-    view_states.Pointer()->Set(nullptr);
+  ConnectionToStateMap* window_map = window_states.Pointer()->Get();
+  DCHECK(window_map);
+  DCHECK_EQ(this, (*window_map)[connection_]);
+  window_map->erase(connection_);
+  if (window_map->empty()) {
+    delete window_map;
+    window_states.Pointer()->Set(nullptr);
   }
 }
 
@@ -131,13 +131,14 @@ void SurfaceBinding::PerConnectionState::Init() {
 
 // SurfaceBinding --------------------------------------------------------------
 
-SurfaceBinding::SurfaceBinding(mojo::Shell* shell, mus::View* view)
-    : view_(view), state_(PerConnectionState::Get(shell, view->connection())) {}
+SurfaceBinding::SurfaceBinding(mojo::Shell* shell, mus::Window* window)
+    : window_(window),
+      state_(PerConnectionState::Get(shell, window->connection())) {}
 
 SurfaceBinding::~SurfaceBinding() {}
 
 scoped_ptr<cc::OutputSurface> SurfaceBinding::CreateOutputSurface() {
-  return state_->CreateOutputSurface(view_);
+  return state_->CreateOutputSurface(window_);
 }
 
 }  // namespace views

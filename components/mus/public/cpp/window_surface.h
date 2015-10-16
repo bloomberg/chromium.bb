@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_MUS_PUBLIC_CPP_VIEW_SURFACE_H_
-#define COMPONENTS_MUS_PUBLIC_CPP_VIEW_SURFACE_H_
+#ifndef COMPONENTS_MUS_PUBLIC_CPP_WINDOW_SURFACE_H_
+#define COMPONENTS_MUS_PUBLIC_CPP_WINDOW_SURFACE_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
@@ -13,14 +13,14 @@
 
 namespace mus {
 
-class ViewSurfaceClient;
-class View;
+class WindowSurfaceClient;
+class Window;
 
-// A ViewSurface is wrapper to simplify submitting CompositorFrames to Views,
+// A WindowSurface is wrapper to simplify submitting CompositorFrames to Views,
 // and receiving ReturnedResources.
-class ViewSurface : public mojo::SurfaceClient {
+class WindowSurface : public mojo::SurfaceClient {
  public:
-  ~ViewSurface() override;
+  ~WindowSurface() override;
 
   // Called to indicate that the current thread has assumed control of this
   // object.
@@ -29,19 +29,19 @@ class ViewSurface : public mojo::SurfaceClient {
   void SubmitCompositorFrame(mojo::CompositorFramePtr frame,
                              const mojo::Closure& callback);
 
-  void set_client(ViewSurfaceClient* client) { client_ = client; }
+  void set_client(WindowSurfaceClient* client) { client_ = client; }
 
  private:
-  friend class View;
+  friend class Window;
 
-  ViewSurface(mojo::InterfacePtrInfo<mojo::Surface> surface_info,
-              mojo::InterfaceRequest<mojo::SurfaceClient> client_request);
+  WindowSurface(mojo::InterfacePtrInfo<mojo::Surface> surface_info,
+                mojo::InterfaceRequest<mojo::SurfaceClient> client_request);
 
   // SurfaceClient implementation:
   void ReturnResources(
       mojo::Array<mojo::ReturnedResourcePtr> resources) override;
 
-  ViewSurfaceClient* client_;
+  WindowSurfaceClient* client_;
   mojo::InterfacePtrInfo<mojo::Surface> surface_info_;
   mojo::InterfaceRequest<mojo::SurfaceClient> client_request_;
   mojo::SurfacePtr surface_;
@@ -51,4 +51,4 @@ class ViewSurface : public mojo::SurfaceClient {
 
 }  // namespace mus
 
-#endif  // COMPONENTS_MUS_PUBLIC_CPP_VIEW_SURFACE_H_
+#endif  // COMPONENTS_MUS_PUBLIC_CPP_WINDOW_SURFACE_H_

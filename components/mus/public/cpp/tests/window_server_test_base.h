@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_MUS_PUBLIC_CPP_TESTS_VIEW_MANAGER_TEST_BASE_H_
-#define COMPONENTS_MUS_PUBLIC_CPP_TESTS_VIEW_MANAGER_TEST_BASE_H_
+#ifndef COMPONENTS_MUS_PUBLIC_CPP_TESTS_WINDOW_SERVER_TEST_BASE_H_
+#define COMPONENTS_MUS_PUBLIC_CPP_TESTS_WINDOW_SERVER_TEST_BASE_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "components/mus/public/cpp/view_tree_delegate.h"
+#include "components/mus/public/cpp/window_tree_delegate.h"
 #include "components/mus/public/interfaces/view_tree.mojom.h"
 #include "components/mus/public/interfaces/view_tree_host.mojom.h"
 #include "mojo/application/public/cpp/application_delegate.h"
@@ -15,22 +15,22 @@
 
 namespace mus {
 
-// ViewManagerTestBase is a base class for use with app tests that use
-// ViewManager. SetUp() connects to the ViewManager and blocks until OnEmbed()
-// has been invoked. window_manager() can be used to access the ViewManager
+// WindowServerTestBase is a base class for use with app tests that use
+// WindowServer. SetUp() connects to the WindowServer and blocks until OnEmbed()
+// has been invoked. window_manager() can be used to access the WindowServer
 // established as part of SetUp().
-class ViewManagerTestBase
+class WindowServerTestBase
     : public mojo::test::ApplicationTestBase,
       public mojo::ApplicationDelegate,
-      public ViewTreeDelegate,
+      public WindowTreeDelegate,
       public mojo::InterfaceFactory<mojo::ViewTreeClient> {
  public:
-  ViewManagerTestBase();
-  ~ViewManagerTestBase() override;
+  WindowServerTestBase();
+  ~WindowServerTestBase() override;
 
-  // True if ViewTreeDelegate::OnConnectionLost() was called.
-  bool view_tree_connection_destroyed() const {
-    return view_tree_connection_destroyed_;
+  // True if WindowTreeDelegate::OnConnectionLost() was called.
+  bool window_tree_connection_destroyed() const {
+    return window_tree_connection_destroyed_;
   }
 
   // Runs the MessageLoop until QuitRunLoop() is called, or a timeout occurs.
@@ -42,10 +42,10 @@ class ViewManagerTestBase
   // success, false if a RunLoop isn't running.
   static bool QuitRunLoop() WARN_UNUSED_RESULT;
 
-  ViewTreeConnection* window_manager() { return window_manager_; }
+  WindowTreeConnection* window_manager() { return window_manager_; }
 
  protected:
-  ViewTreeConnection* most_recent_connection() {
+  WindowTreeConnection* most_recent_connection() {
     return most_recent_connection_;
   }
 
@@ -60,9 +60,9 @@ class ViewManagerTestBase
   bool ConfigureIncomingConnection(
       mojo::ApplicationConnection* connection) override;
 
-  // ViewTreeDelegate:
-  void OnEmbed(View* root) override;
-  void OnConnectionLost(ViewTreeConnection* connection) override;
+  // WindowTreeDelegate:
+  void OnEmbed(Window* root) override;
+  void OnConnectionLost(WindowTreeConnection* connection) override;
 
   // InterfaceFactory<ViewTreeClient>:
   void Create(mojo::ApplicationConnection* connection,
@@ -70,20 +70,20 @@ class ViewManagerTestBase
 
   // Used to receive the most recent view tree connection loaded by an embed
   // action.
-  ViewTreeConnection* most_recent_connection_;
+  WindowTreeConnection* most_recent_connection_;
 
  private:
   mojo::ViewTreeHostPtr host_;
 
   // The View Manager connection held by the window manager (app running at the
   // root view).
-  ViewTreeConnection* window_manager_;
+  WindowTreeConnection* window_manager_;
 
-  bool view_tree_connection_destroyed_;
+  bool window_tree_connection_destroyed_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(ViewManagerTestBase);
+  MOJO_DISALLOW_COPY_AND_ASSIGN(WindowServerTestBase);
 };
 
 }  // namespace mus
 
-#endif  // COMPONENTS_MUS_PUBLIC_CPP_TESTS_VIEW_MANAGER_TEST_BASE_H_
+#endif  // COMPONENTS_MUS_PUBLIC_CPP_TESTS_WINDOW_SERVER_TEST_BASE_H_

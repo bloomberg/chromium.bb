@@ -18,7 +18,7 @@ class Shell;
 }
 
 namespace mus {
-class View;
+class Window;
 }
 
 namespace ui {
@@ -34,7 +34,7 @@ class FocusController;
 namespace views {
 
 namespace {
-class NativeWidgetViewObserver;
+class NativeWidgetWindowObserver;
 }
 
 class WindowTreeHostMojo;
@@ -43,22 +43,22 @@ class NativeWidgetViewManager : public views::NativeWidgetAura {
  public:
   NativeWidgetViewManager(views::internal::NativeWidgetDelegate* delegate,
                           mojo::Shell* shell,
-                          mus::View* view);
+                          mus::Window* window);
   ~NativeWidgetViewManager() override;
 
  private:
-  friend class NativeWidgetViewObserver;
+  friend class NativeWidgetWindowObserver;
 
   // Overridden from internal::NativeWidgetAura:
   void InitNativeWidget(const views::Widget::InitParams& in_params) override;
   void OnWindowVisibilityChanged(aura::Window* window, bool visible) override;
 
   scoped_ptr<WindowTreeHostMojo> window_tree_host_;
-  scoped_ptr<NativeWidgetViewObserver> view_observer_;
+  scoped_ptr<NativeWidgetWindowObserver> window_observer_;
 
   scoped_ptr<wm::FocusController> focus_client_;
 
-  mus::View* view_;
+  mus::Window* window_;
 
   scoped_ptr<aura::client::DefaultCaptureClient> capture_client_;
 

@@ -80,7 +80,7 @@ HTMLFrame* LayoutTestContentHandlerImpl::CreateHTMLFrame(
     HTMLFrame::CreateParams* params) {
   // The test harness isn't correctly set-up for iframes yet. So return a normal
   // HTMLFrame for iframes.
-  if (params->parent || !params->view || params->view->id() != params->id)
+  if (params->parent || !params->window || params->window->id() != params->id)
     return new HTMLFrame(params);
 
   using ProxyType =

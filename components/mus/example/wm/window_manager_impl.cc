@@ -7,13 +7,13 @@
 #include "components/mus/example/wm/container.h"
 #include "components/mus/example/wm/window_manager_application.h"
 #include "components/mus/public/cpp/types.h"
-#include "components/mus/public/cpp/view.h"
-#include "components/mus/public/cpp/view_tree_connection.h"
+#include "components/mus/public/cpp/window.h"
+#include "components/mus/public/cpp/window_tree_connection.h"
 
 namespace {
 
-mus::Id GetViewIdForContainer(mus::ViewTreeConnection* connection,
-                              Container container) {
+mus::Id GetWindowIdForContainer(mus::WindowTreeConnection* connection,
+                                Container container) {
   return connection->GetConnectionId() << 16 | static_cast<uint16>(container);
 }
 
@@ -29,29 +29,29 @@ WindowManagerImpl::WindowManagerImpl(
 WindowManagerImpl::~WindowManagerImpl() {}
 
 void WindowManagerImpl::OpenWindow(mojo::ViewTreeClientPtr client) {
-  mus::View* root = state_->root();
+  mus::Window* root = state_->root();
   DCHECK(root);
-  mus::Id container_view_id = GetViewIdForContainer(root->connection(),
-                                                    Container::USER_WINDOWS);
-  mus::View* container_view = root->GetChildById(container_view_id);
+  mus::Id container_window_id =
+      GetWindowIdForContainer(root->connection(), Container::USER_WINDOWS);
+  mus::Window* container_window = root->GetChildById(container_window_id);
 
   const int width = (root->bounds().width - 240);
   const int height = (root->bounds().height - 240);
 
-  mus::View* child_view = root->connection()->CreateView();
+  mus::Window* child_window = root->connection()->CreateWindow();
   mojo::Rect bounds;
   bounds.x = 40 + (state_->window_count() % 4) * 40;
   bounds.y = 40 + (state_->window_count() % 4) * 40;
   bounds.width = width;
   bounds.height = height;
-  child_view->SetBounds(bounds);
-  container_view->AddChild(child_view);
-  child_view->Embed(client.Pass());
+  child_window->SetBounds(bounds);
+  container_window->AddChild(child_window);
+  child_window->Embed(client.Pass());
 
   state_->IncrementWindowCount();
 }
 
-void WindowManagerImpl::CenterWindow(uint32_t view_id, mojo::SizePtr size) {
+void WindowManagerImpl::CenterWindow(uint32_t window_id, mojo::SizePtr size) {
   // TODO(beng):
 }
 

@@ -7,9 +7,9 @@
 #include "components/mus/example/wm/container.h"
 #include "components/mus/example/wm/window_manager_impl.h"
 #include "components/mus/public/cpp/util.h"
-#include "components/mus/public/cpp/view.h"
-#include "components/mus/public/cpp/view_tree_connection.h"
-#include "components/mus/public/cpp/view_tree_host_factory.h"
+#include "components/mus/public/cpp/window.h"
+#include "components/mus/public/cpp/window_tree_connection.h"
+#include "components/mus/public/cpp/window_tree_host_factory.h"
 #include "mojo/application/public/cpp/application_connection.h"
 
 WindowManagerApplication::WindowManagerApplication()
@@ -17,7 +17,7 @@ WindowManagerApplication::WindowManagerApplication()
 WindowManagerApplication::~WindowManagerApplication() {}
 
 void WindowManagerApplication::Initialize(mojo::ApplicationImpl* app) {
-  mus::CreateSingleViewTreeHost(app, this, &host_);
+  mus::CreateSingleWindowTreeHost(app, this, &host_);
 }
 
 bool WindowManagerApplication::ConfigureIncomingConnection(
@@ -26,7 +26,7 @@ bool WindowManagerApplication::ConfigureIncomingConnection(
   return true;
 }
 
-void WindowManagerApplication::OnEmbed(mus::View* root) {
+void WindowManagerApplication::OnEmbed(mus::Window* root) {
   root_ = root;
   CreateContainers();
 
@@ -35,7 +35,7 @@ void WindowManagerApplication::OnEmbed(mus::View* root) {
 }
 
 void WindowManagerApplication::OnConnectionLost(
-    mus::ViewTreeConnection* connection) {
+    mus::WindowTreeConnection* connection) {
   // TODO(sky): shutdown.
   NOTIMPLEMENTED();
 }
@@ -54,12 +54,12 @@ void WindowManagerApplication::Create(
 void WindowManagerApplication::CreateContainers() {
   for (uint16 container = static_cast<uint16>(Container::ALL_USER_BACKGROUND);
        container < static_cast<uint16>(Container::COUNT); ++container) {
-    mus::View* view = root_->connection()->CreateView();
-    DCHECK_EQ(mus::LoWord(view->id()), container)
-        << "Containers must be created before other views!";
-    view->SetBounds(root_->bounds());
-    view->SetVisible(true);
-    root_->AddChild(view);
+    mus::Window* window = root_->connection()->CreateWindow();
+    DCHECK_EQ(mus::LoWord(window->id()), container)
+        << "Containers must be created before other windows!";
+    window->SetBounds(root_->bounds());
+    window->SetVisible(true);
+    root_->AddChild(window);
   }
 }
 

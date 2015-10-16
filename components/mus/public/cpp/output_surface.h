@@ -8,16 +8,16 @@
 #include "base/macros.h"
 #include "cc/output/output_surface.h"
 #include "cc/surfaces/surface_id.h"
-#include "components/mus/public/cpp/view_surface.h"
-#include "components/mus/public/cpp/view_surface_client.h"
+#include "components/mus/public/cpp/window_surface.h"
+#include "components/mus/public/cpp/window_surface_client.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 
 namespace mus {
 
-class OutputSurface : public cc::OutputSurface, public ViewSurfaceClient {
+class OutputSurface : public cc::OutputSurface, public WindowSurfaceClient {
  public:
   OutputSurface(const scoped_refptr<cc::ContextProvider>& context_provider,
-                scoped_ptr<ViewSurface> surface);
+                scoped_ptr<WindowSurface> surface);
   ~OutputSurface() override;
 
   // cc::OutputSurface implementation.
@@ -26,14 +26,14 @@ class OutputSurface : public cc::OutputSurface, public ViewSurfaceClient {
   void DetachFromClient() override;
 
  private:
-  // ViewSurfaceClient implementation:
+  // WindowSurfaceClient implementation:
   void OnResourcesReturned(
-      ViewSurface* surface,
+      WindowSurface* surface,
       mojo::Array<mojo::ReturnedResourcePtr> resources) override;
 
   void SwapBuffersComplete();
 
-  scoped_ptr<ViewSurface> surface_;
+  scoped_ptr<WindowSurface> surface_;
 
   DISALLOW_COPY_AND_ASSIGN(OutputSurface);
 };

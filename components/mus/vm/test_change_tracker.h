@@ -120,26 +120,26 @@ class TestChangeTracker {
   void OnEmbed(ConnectionSpecificId connection_id, mojo::ViewDataPtr root);
   void OnEmbeddedAppDisconnected(Id view_id);
   void OnUnembed();
-  void OnViewBoundsChanged(Id view_id,
-                           mojo::RectPtr old_bounds,
-                           mojo::RectPtr new_bounds);
-  void OnViewViewportMetricsChanged(mojo::ViewportMetricsPtr old_bounds,
-                                    mojo::ViewportMetricsPtr new_bounds);
-  void OnViewHierarchyChanged(Id view_id,
-                              Id new_parent_id,
-                              Id old_parent_id,
-                              mojo::Array<mojo::ViewDataPtr> views);
-  void OnViewReordered(Id view_id,
-                       Id relative_view_id,
-                       mojo::OrderDirection direction);
-  void OnViewDeleted(Id view_id);
-  void OnViewVisibilityChanged(Id view_id, bool visible);
-  void OnViewDrawnStateChanged(Id view_id, bool drawn);
-  void OnViewInputEvent(Id view_id, mojo::EventPtr event);
-  void OnViewSharedPropertyChanged(Id view_id,
-                                   mojo::String name,
-                                   mojo::Array<uint8_t> data);
-  void OnViewFocused(Id view_id);
+  void OnWindowBoundsChanged(Id view_id,
+                             mojo::RectPtr old_bounds,
+                             mojo::RectPtr new_bounds);
+  void OnWindowViewportMetricsChanged(mojo::ViewportMetricsPtr old_bounds,
+                                      mojo::ViewportMetricsPtr new_bounds);
+  void OnWindowHierarchyChanged(Id view_id,
+                                Id new_parent_id,
+                                Id old_parent_id,
+                                mojo::Array<mojo::ViewDataPtr> views);
+  void OnWindowReordered(Id view_id,
+                         Id relative_view_id,
+                         mojo::OrderDirection direction);
+  void OnWindowDeleted(Id view_id);
+  void OnWindowVisibilityChanged(Id view_id, bool visible);
+  void OnWindowDrawnStateChanged(Id view_id, bool drawn);
+  void OnWindowInputEvent(Id view_id, mojo::EventPtr event);
+  void OnWindowSharedPropertyChanged(Id view_id,
+                                     mojo::String name,
+                                     mojo::Array<uint8_t> data);
+  void OnWindowFocused(Id view_id);
   void DelegateEmbed(const mojo::String& url);
 
  private:

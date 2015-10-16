@@ -4,7 +4,7 @@
 
 #include "components/mus/example/common/mus_views_init.h"
 
-#include "components/mus/public/cpp/view_tree_connection.h"
+#include "components/mus/public/cpp/window_tree_connection.h"
 #include "components/mus/public/interfaces/view_tree.mojom.h"
 #include "components/mus/public/interfaces/window_manager.mojom.h"
 #include "mojo/application/public/cpp/application_connection.h"
@@ -80,7 +80,7 @@ MUSViewsInit::MUSViewsInit(mojo::ApplicationImpl* app)
 
 MUSViewsInit::~MUSViewsInit() {}
 
-mus::View* MUSViewsInit::CreateWindow() {
+mus::Window* MUSViewsInit::CreateWindow() {
   mus::mojom::WindowManagerPtr wm;
   mojo::URLRequestPtr request(mojo::URLRequest::New());
   request->url = "mojo:example_wm";
@@ -89,10 +89,10 @@ mus::View* MUSViewsInit::CreateWindow() {
   mojo::InterfaceRequest<mojo::ViewTreeClient> view_tree_client_request =
       GetProxy(&view_tree_client);
   wm->OpenWindow(view_tree_client.Pass());
-  mus::ViewTreeConnection* view_tree_connection =
-      mus::ViewTreeConnection::Create(
+  mus::WindowTreeConnection* view_tree_connection =
+      mus::WindowTreeConnection::Create(
           this, view_tree_client_request.Pass(),
-          mus::ViewTreeConnection::CreateType::WAIT_FOR_EMBED);
+          mus::WindowTreeConnection::CreateType::WAIT_FOR_EMBED);
   DCHECK(view_tree_connection->GetRoot());
   return view_tree_connection->GetRoot();
 }
@@ -107,10 +107,10 @@ void MUSViewsInit::OnBeforeWidgetInit(
     views::Widget::InitParams* params,
     views::internal::NativeWidgetDelegate* delegate) {}
 
-void MUSViewsInit::OnEmbed(mus::View* root) {
+void MUSViewsInit::OnEmbed(mus::Window* root) {
 }
 
-void MUSViewsInit::OnConnectionLost(mus::ViewTreeConnection* connection) {}
+void MUSViewsInit::OnConnectionLost(mus::WindowTreeConnection* connection) {}
 
 #if defined(OS_WIN)
 HICON MUSViewsInit::GetSmallWindowIcon() const {

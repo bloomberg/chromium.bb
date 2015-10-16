@@ -19,7 +19,7 @@ class WebView;
 }
 
 namespace mus {
-class View;
+class Window;
 }
 
 namespace html_viewer {
@@ -34,7 +34,7 @@ class HTMLFrameTreeManagerObserver;
 // document. Some of the frames may be remote. HTMLFrameTreeManager updates its
 // state in response to changes from the server Frame, as well as changes
 // from the underlying frames. The frame tree has at least one local frame
-// that is backed by a mus::View.
+// that is backed by a mus::Window.
 class HTMLFrameTreeManager {
  public:
   // Returns a new HTMLFrame or null if a HTMLFrame does not need to be created.
@@ -42,7 +42,7 @@ class HTMLFrameTreeManager {
   // Close() when done.
   static HTMLFrame* CreateFrameAndAttachToTree(
       GlobalState* global_state,
-      mus::View* view,
+      mus::Window* window,
       scoped_ptr<DocumentResourceWaiter> resource_waiter,
       HTMLFrameDelegate* delegate);
 
@@ -71,7 +71,7 @@ class HTMLFrameTreeManager {
   ~HTMLFrameTreeManager();
 
   void Init(HTMLFrameDelegate* delegate,
-            mus::View* local_view,
+            mus::Window* local_window,
             const mojo::Array<web_view::mojom::FrameDataPtr>& frame_data,
             uint32_t change_id);
 
@@ -80,7 +80,7 @@ class HTMLFrameTreeManager {
       HTMLFrameDelegate* delegate,
       const mojo::Array<web_view::mojom::FrameDataPtr>& frame_data,
       uint32_t local_frame_id,
-      mus::View* local_view);
+      mus::Window* local_window);
 
   // Returns this HTMLFrameTreeManager from |instances_|.
   void RemoveFromInstances();

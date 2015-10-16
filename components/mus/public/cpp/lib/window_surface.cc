@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/mus/public/cpp/view_surface.h"
+#include "components/mus/public/cpp/window_surface.h"
 
-#include "components/mus/public/cpp/view_surface_client.h"
+#include "components/mus/public/cpp/window_surface_client.h"
 #include "mojo/converters/surfaces/surfaces_type_converters.h"
 
 namespace mus {
 
-ViewSurface::~ViewSurface() {}
+WindowSurface::~WindowSurface() {}
 
-void ViewSurface::BindToThread() {
+void WindowSurface::BindToThread() {
   DCHECK(!bound_to_thread_);
   bound_to_thread_ = true;
   surface_.Bind(surface_info_.Pass());
@@ -19,15 +19,15 @@ void ViewSurface::BindToThread() {
       new mojo::Binding<mojo::SurfaceClient>(this, client_request_.Pass()));
 }
 
-void ViewSurface::SubmitCompositorFrame(mojo::CompositorFramePtr frame,
-                                        const mojo::Closure& callback) {
+void WindowSurface::SubmitCompositorFrame(mojo::CompositorFramePtr frame,
+                                          const mojo::Closure& callback) {
   DCHECK(bound_to_thread_);
   if (!surface_)
     return;
   surface_->SubmitCompositorFrame(frame.Pass(), callback);
 }
 
-ViewSurface::ViewSurface(
+WindowSurface::WindowSurface(
     mojo::InterfacePtrInfo<mojo::Surface> surface_info,
     mojo::InterfaceRequest<mojo::SurfaceClient> client_request)
     : client_(nullptr),
@@ -35,7 +35,7 @@ ViewSurface::ViewSurface(
       client_request_(client_request.Pass()),
       bound_to_thread_(false) {}
 
-void ViewSurface::ReturnResources(
+void WindowSurface::ReturnResources(
     mojo::Array<mojo::ReturnedResourcePtr> resources) {
   if (!client_)
     return;

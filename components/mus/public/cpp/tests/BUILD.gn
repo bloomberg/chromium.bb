@@ -9,8 +9,8 @@ source_set("test_support") {
   testonly = true
 
   sources = [
-    "view_manager_test_base.cc",
-    "view_manager_test_base.h",
+    "window_server_test_base.cc",
+    "window_server_test_base.h",
   ]
 
   deps = [
@@ -26,9 +26,9 @@ source_set("test_support") {
 test("mojo_view_manager_lib_unittests") {
   sources = [
     "run_all_unittests.cc",
-    "view_manager_test_suite.cc",
-    "view_manager_test_suite.h",
-    "view_unittest.cc",
+    "window_server_test_suite.cc",
+    "window_server_test_suite.h",
+    "window_unittest.cc",
   ]
 
   deps = [

@@ -19,8 +19,8 @@
 #include "components/html_viewer/html_frame_tree_manager.h"
 #include "components/html_viewer/test_html_viewer_impl.h"
 #include "components/html_viewer/web_url_loader_impl.h"
-#include "components/mus/public/cpp/view.h"
-#include "components/mus/public/cpp/view_tree_connection.h"
+#include "components/mus/public/cpp/window.h"
+#include "components/mus/public/cpp/window_tree_connection.h"
 #include "components/mus/vm/ids.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/application/public/cpp/connect.h"
@@ -32,7 +32,7 @@
 #include "ui/gfx/geometry/size.h"
 
 using mojo::AxProvider;
-using mus::View;
+using mus::Window;
 
 namespace html_viewer {
 namespace {
@@ -46,28 +46,28 @@ bool IsTestInterfaceEnabled() {
 
 }  // namespace
 
-// A ViewTreeDelegate implementation that delegates to a (swappable) delegate.
+// A WindowTreeDelegate implementation that delegates to a (swappable) delegate.
 // This is used when one HTMLDocument takes over for another delegate
 // (OnSwap()).
-class ViewTreeDelegateImpl : public mus::ViewTreeDelegate {
+class WindowTreeDelegateImpl : public mus::WindowTreeDelegate {
  public:
-  explicit ViewTreeDelegateImpl(mus::ViewTreeDelegate* delegate)
+  explicit WindowTreeDelegateImpl(mus::WindowTreeDelegate* delegate)
       : delegate_(delegate) {}
-  ~ViewTreeDelegateImpl() override {}
+  ~WindowTreeDelegateImpl() override {}
 
-  void set_delegate(mus::ViewTreeDelegate* delegate) { delegate_ = delegate; }
+  void set_delegate(mus::WindowTreeDelegate* delegate) { delegate_ = delegate; }
 
  private:
-  // ViewTreeDelegate:
-  void OnEmbed(mus::View* root) override { delegate_->OnEmbed(root); }
+  // WindowTreeDelegate:
+  void OnEmbed(mus::Window* root) override { delegate_->OnEmbed(root); }
   void OnUnembed() override { delegate_->OnUnembed(); }
-  void OnConnectionLost(mus::ViewTreeConnection* connection) override {
+  void OnConnectionLost(mus::WindowTreeConnection* connection) override {
     delegate_->OnConnectionLost(connection);
   }
 
-  mus::ViewTreeDelegate* delegate_;
+  mus::WindowTreeDelegate* delegate_;
 
-  DISALLOW_COPY_AND_ASSIGN(ViewTreeDelegateImpl);
+  DISALLOW_COPY_AND_ASSIGN(WindowTreeDelegateImpl);
 };
 
 HTMLDocument::BeforeLoadCache::BeforeLoadCache() {}
@@ -78,17 +78,17 @@ HTMLDocument::BeforeLoadCache::~BeforeLoadCache() {
 }
 
 HTMLDocument::TransferableState::TransferableState()
-    : owns_view_tree_connection(false), root(nullptr) {}
+    : owns_window_tree_connection(false), root(nullptr) {}
 
 HTMLDocument::TransferableState::~TransferableState() {}
 
 void HTMLDocument::TransferableState::Move(TransferableState* other) {
-  owns_view_tree_connection = other->owns_view_tree_connection;
+  owns_window_tree_connection = other->owns_window_tree_connection;
   root = other->root;
-  view_tree_delegate_impl = other->view_tree_delegate_impl.Pass();
+  window_tree_delegate_impl = other->window_tree_delegate_impl.Pass();
 
   other->root = nullptr;
-  other->owns_view_tree_connection = false;
+  other->owns_window_tree_connection = false;
 }
 
 HTMLDocument::HTMLDocument(mojo::ApplicationImpl* html_document_app,
@@ -118,7 +118,7 @@ HTMLDocument::HTMLDocument(mojo::ApplicationImpl* html_document_app,
 
 void HTMLDocument::Destroy() {
   if (resource_waiter_) {
-    mus::View* root = resource_waiter_->root();
+    mus::Window* root = resource_waiter_->root();
     if (root) {
       resource_waiter_.reset();
       delete root->connection();
@@ -131,7 +131,7 @@ void HTMLDocument::Destroy() {
     frame_->Close();
   } else if (transferable_state_.root) {
     // This triggers deleting us.
-    if (transferable_state_.owns_view_tree_connection)
+    if (transferable_state_.owns_window_tree_connection)
       delete transferable_state_.root->connection();
     else
       delete this;
@@ -150,7 +150,7 @@ void HTMLDocument::Load() {
   DCHECK(resource_waiter_ && resource_waiter_->is_ready());
 
   // Note: |view| is null if we're taking over for an existing frame.
-  mus::View* view = resource_waiter_->root();
+  mus::Window* view = resource_waiter_->root();
   if (view) {
     global_state_->InitIfNecessary(
         view->viewport_metrics().size_in_pixels.To<gfx::Size>(),
@@ -198,12 +198,12 @@ HTMLDocument::BeforeLoadCache* HTMLDocument::GetBeforeLoadCache() {
   return before_load_cache_.get();
 }
 
-void HTMLDocument::OnEmbed(View* root) {
+void HTMLDocument::OnEmbed(Window* root) {
   transferable_state_.root = root;
   resource_waiter_->SetRoot(root);
 }
 
-void HTMLDocument::OnConnectionLost(mus::ViewTreeConnection* connection) {
+void HTMLDocument::OnConnectionLost(mus::WindowTreeConnection* connection) {
   delete this;
 }
 
@@ -241,27 +241,27 @@ void HTMLDocument::OnFrameSwappedToRemote() {
 
 void HTMLDocument::OnSwap(HTMLFrame* frame, HTMLFrameDelegate* old_delegate) {
   DCHECK(frame->IsLocal());
-  DCHECK(frame->view());
+  DCHECK(frame->window());
   DCHECK(!frame_);
   DCHECK(!transferable_state_.root);
   if (!old_delegate) {
     // We're taking over a child of a local root that isn't associated with a
     // delegate. In this case the frame's view is not the root of the
-    // ViewTreeConnection.
-    transferable_state_.owns_view_tree_connection = false;
-    transferable_state_.root = frame->view();
+    // WindowTreeConnection.
+    transferable_state_.owns_window_tree_connection = false;
+    transferable_state_.root = frame->window();
   } else {
     HTMLDocument* old_document = static_cast<HTMLDocument*>(old_delegate);
     transferable_state_.Move(&old_document->transferable_state_);
-    if (transferable_state_.view_tree_delegate_impl)
-      transferable_state_.view_tree_delegate_impl->set_delegate(this);
+    if (transferable_state_.window_tree_delegate_impl)
+      transferable_state_.window_tree_delegate_impl->set_delegate(this);
     old_document->frame_ = nullptr;
     old_document->Destroy();
   }
 }
 
 void HTMLDocument::OnFrameDestroyed() {
-  if (!transferable_state_.owns_view_tree_connection)
+  if (!transferable_state_.owns_window_tree_connection)
     delete this;
 }
 
@@ -315,13 +315,13 @@ void HTMLDocument::Create(
 void HTMLDocument::Create(
     mojo::ApplicationConnection* connection,
     mojo::InterfaceRequest<mojo::ViewTreeClient> request) {
-  DCHECK(!transferable_state_.view_tree_delegate_impl);
-  transferable_state_.view_tree_delegate_impl.reset(
-      new ViewTreeDelegateImpl(this));
-  transferable_state_.owns_view_tree_connection = true;
-  mus::ViewTreeConnection::Create(
-      transferable_state_.view_tree_delegate_impl.get(), request.Pass(),
-      mus::ViewTreeConnection::CreateType::DONT_WAIT_FOR_EMBED);
+  DCHECK(!transferable_state_.window_tree_delegate_impl);
+  transferable_state_.window_tree_delegate_impl.reset(
+      new WindowTreeDelegateImpl(this));
+  transferable_state_.owns_window_tree_connection = true;
+  mus::WindowTreeConnection::Create(
+      transferable_state_.window_tree_delegate_impl.get(), request.Pass(),
+      mus::WindowTreeConnection::CreateType::DONT_WAIT_FOR_EMBED);
 }
 
 }  // namespace html_viewer

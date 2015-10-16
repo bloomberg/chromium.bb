@@ -12,7 +12,7 @@
 #include "cc/trees/layer_tree_host.h"
 #include "components/mus/public/cpp/context_provider.h"
 #include "components/mus/public/cpp/output_surface.h"
-#include "components/mus/public/cpp/view.h"
+#include "components/mus/public/cpp/window.h"
 #include "mojo/converters/surfaces/surfaces_type_converters.h"
 #include "third_party/WebKit/public/web/WebWidget.h"
 #include "ui/gfx/buffer_types.h"
@@ -23,8 +23,8 @@ WebLayerTreeViewImpl::WebLayerTreeViewImpl(
     scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     cc::TaskGraphRunner* task_graph_runner)
-    : widget_(NULL),
-      view_(NULL),
+    : widget_(nullptr),
+      window_(nullptr),
       main_thread_compositor_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       weak_factory_(this) {
   main_thread_bound_weak_ptr_ = weak_factory_.GetWeakPtr();
@@ -58,9 +58,9 @@ WebLayerTreeViewImpl::WebLayerTreeViewImpl(
 }
 
 void WebLayerTreeViewImpl::Initialize(mojo::GpuPtr gpu_service,
-                                      mus::View* view,
+                                      mus::Window* window,
                                       blink::WebWidget* widget) {
-  view_ = view;
+  window_ = window;
   widget_ = widget;
   if (gpu_service) {
     mojo::CommandBufferPtr cb;
@@ -68,9 +68,9 @@ void WebLayerTreeViewImpl::Initialize(mojo::GpuPtr gpu_service,
     scoped_refptr<cc::ContextProvider> context_provider(
         new mus::ContextProvider(cb.PassInterface().PassHandle()));
     output_surface_.reset(
-        new mus::OutputSurface(context_provider, view_->RequestSurface()));
+        new mus::OutputSurface(context_provider, window_->RequestSurface()));
   }
-  layer_tree_host_->SetVisible(view_->visible());
+  layer_tree_host_->SetVisible(window_->visible());
 }
 
 WebLayerTreeViewImpl::~WebLayerTreeViewImpl() {
@@ -196,8 +196,9 @@ void WebLayerTreeViewImpl::registerViewportLayers(
       // viewports.
       overscrollElasticityLayer
           ? static_cast<const cc_blink::WebLayerImpl*>(
-                overscrollElasticityLayer)->layer()
-          : NULL,
+                overscrollElasticityLayer)
+                ->layer()
+          : nullptr,
       static_cast<const cc_blink::WebLayerImpl*>(pageScaleLayer)->layer(),
       static_cast<const cc_blink::WebLayerImpl*>(innerViewportScrollLayer)
           ->layer(),
@@ -206,7 +207,7 @@ void WebLayerTreeViewImpl::registerViewportLayers(
       outerViewportScrollLayer
           ? static_cast<const cc_blink::WebLayerImpl*>(outerViewportScrollLayer)
                 ->layer()
-          : NULL);
+          : nullptr);
 }
 
 void WebLayerTreeViewImpl::clearViewportLayers() {

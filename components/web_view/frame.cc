@@ -10,8 +10,8 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/stl_util.h"
-#include "components/mus/public/cpp/view.h"
-#include "components/mus/public/cpp/view_property.h"
+#include "components/mus/public/cpp/window.h"
+#include "components/mus/public/cpp/window_property.h"
 #include "components/web_view/frame_tree.h"
 #include "components/web_view/frame_tree_delegate.h"
 #include "components/web_view/frame_user_data.h"
@@ -20,14 +20,14 @@
 #include "mojo/common/url_type_converters.h"
 #include "url/gurl.h"
 
-using mus::View;
+using mus::Window;
 
-DECLARE_VIEW_PROPERTY_TYPE(web_view::Frame*);
+DECLARE_WINDOW_PROPERTY_TYPE(web_view::Frame*);
 
 namespace web_view {
 
 // Used to find the Frame associated with a View.
-DEFINE_LOCAL_VIEW_PROPERTY_KEY(Frame*, kFrame, nullptr);
+DEFINE_LOCAL_WINDOW_PROPERTY_KEY(Frame*, kFrame, nullptr);
 
 namespace {
 
@@ -52,7 +52,7 @@ struct Frame::FrameUserDataAndBinding {
 };
 
 Frame::Frame(FrameTree* tree,
-             View* view,
+             Window* view,
              uint32_t frame_id,
              uint32_t app_id,
              ViewOwnership view_ownership,
@@ -120,7 +120,7 @@ void Frame::Init(Frame* parent,
 }
 
 // static
-Frame* Frame::FindFirstFrameAncestor(View* view) {
+Frame* Frame::FindFirstFrameAncestor(Window* view) {
   while (view && !view->GetLocalProperty(kFrame))
     view = view->parent();
   return view ? view->GetLocalProperty(kFrame) : nullptr;
@@ -301,7 +301,7 @@ void Frame::OnWillNavigateAck(mojom::FrameClient* frame_client,
     StartNavigate(pending_navigate_.Pass());
 }
 
-void Frame::SetView(mus::View* view) {
+void Frame::SetView(mus::Window* view) {
   DCHECK(!view_);
   DCHECK_EQ(id_, view->id());
   view_ = view;
@@ -442,7 +442,7 @@ void Frame::OnTreeChanged(const TreeChangeParams& params) {
   }
 }
 
-void Frame::OnViewDestroying(mus::View* view) {
+void Frame::OnWindowDestroying(mus::Window* view) {
   if (parent_)
     parent_->Remove(this);
 
@@ -459,15 +459,16 @@ void Frame::OnViewDestroying(mus::View* view) {
   delete this;
 }
 
-void Frame::OnViewEmbeddedAppDisconnected(mus::View* view) {
-  // See FrameTreeDelegate::OnViewEmbeddedAppDisconnected() for details of when
+void Frame::OnWindowEmbeddedAppDisconnected(mus::Window* view) {
+  // See FrameTreeDelegate::OnWindowEmbeddedAppDisconnected() for details of
+  // when
   // this happens.
   //
   // Currently we have no way to distinguish between the cases that lead to this
   // being called, so we assume we can continue on. Continuing on is important
   // for html as it's entirely possible for a page to create a frame, navigate
   // to a bogus url and expect the frame to still exist.
-  tree_->delegate_->OnViewEmbeddedInFrameDisconnected(this);
+  tree_->delegate_->OnWindowEmbeddedInFrameDisconnected(this);
 }
 
 void Frame::PostMessageEventToFrame(uint32_t target_frame_id,

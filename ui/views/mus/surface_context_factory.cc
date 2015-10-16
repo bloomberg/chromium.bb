@@ -7,7 +7,7 @@
 #include "cc/output/output_surface.h"
 #include "cc/resources/shared_bitmap_manager.h"
 #include "cc/surfaces/surface_id_allocator.h"
-#include "components/mus/public/cpp/view.h"
+#include "components/mus/public/cpp/window.h"
 #include "mojo/application/public/interfaces/shell.mojom.h"
 #include "ui/compositor/reflector.h"
 #include "ui/gl/gl_bindings.h"
@@ -26,8 +26,8 @@ class FakeReflector : public ui::Reflector {
 }
 
 SurfaceContextFactory::SurfaceContextFactory(mojo::Shell* shell,
-                                             mus::View* view)
-    : surface_binding_(shell, view), next_surface_id_namespace_(1u) {}
+                                             mus::Window* window)
+    : surface_binding_(shell, window), next_surface_id_namespace_(1u) {}
 
 SurfaceContextFactory::~SurfaceContextFactory() {}
 

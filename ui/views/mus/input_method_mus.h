@@ -8,14 +8,15 @@
 #define UI_VIEWS_MUS_INPUT_METHOD_MUS_H_
 
 namespace mus {
-class View;
+class Window;
 }  // namespace mojo
 
 namespace views {
 
 class InputMethodMUS : public ui::InputMethodBase {
  public:
-  InputMethodMUS(ui::internal::InputMethodDelegate* delegate, mus::View* view);
+  InputMethodMUS(ui::internal::InputMethodDelegate* delegate,
+                 mus::Window* window);
   ~InputMethodMUS() override;
 
  private:
@@ -38,8 +39,8 @@ class InputMethodMUS : public ui::InputMethodBase {
 
   void UpdateTextInputType();
 
-  // The toplevel view which is not owned by this class.
-  mus::View* view_;
+  // The toplevel window which is not owned by this class.
+  mus::Window* window_;
 
   DISALLOW_COPY_AND_ASSIGN(InputMethodMUS);
 };

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_MUS_PUBLIC_CPP_VIEW_TREE_DELEGATE_H_
-#define COMPONENTS_MUS_PUBLIC_CPP_VIEW_TREE_DELEGATE_H_
+#ifndef COMPONENTS_MUS_PUBLIC_CPP_WINDOW_TREE_DELEGATE_H_
+#define COMPONENTS_MUS_PUBLIC_CPP_WINDOW_TREE_DELEGATE_H_
 
 #include <string>
 
@@ -13,23 +13,24 @@
 
 namespace mus {
 
-class View;
-class ViewTreeConnection;
+class Window;
+class WindowTreeConnection;
 
 // Interface implemented by an application using the view manager.
 //
-// Each call to OnEmbed() results in a new ViewTreeConnection and new root View.
-// ViewTreeConnection is deleted by any of the following:
+// Each call to OnEmbed() results in a new WindowTreeConnection and new root
+// View.
+// WindowTreeConnection is deleted by any of the following:
 // . If the root of the connection is destroyed. This happens if the owner
 //   of the root Embed()s another app in root, or the owner explicitly deletes
 //   root.
 // . The connection to the view manager is lost.
 // . Explicitly by way of calling delete.
 //
-// When the ViewTreeConnection is deleted all views are deleted (and observers
+// When the WindowTreeConnection is deleted all views are deleted (and observers
 // notified). This is followed by notifying the delegate by way of
 // OnConnectionLost().
-class ViewTreeDelegate {
+class WindowTreeDelegate {
  public:
   // Called when the application implementing this interface is embedded at
   // |root|.
@@ -43,21 +44,21 @@ class ViewTreeDelegate {
   // the pipes connecting |services| and |exposed_services| to the embedder and
   // any services obtained from them are not broken and will continue to be
   // valid.
-  virtual void OnEmbed(View* root) = 0;
+  virtual void OnEmbed(Window* root) = 0;
 
   // Sent when another app is embedded in the same View as this connection.
   // Subsequently the root View and this object are destroyed (observers are
   // notified appropriately).
   virtual void OnUnembed();
 
-  // Called from the destructor of ViewTreeConnection after all the Views have
+  // Called from the destructor of WindowTreeConnection after all the Views have
   // been destroyed. |connection| is no longer valid after this call.
-  virtual void OnConnectionLost(ViewTreeConnection* connection) = 0;
+  virtual void OnConnectionLost(WindowTreeConnection* connection) = 0;
 
  protected:
-  virtual ~ViewTreeDelegate() {}
+  virtual ~WindowTreeDelegate() {}
 };
 
 }  // namespace mus
 
-#endif  // COMPONENTS_MUS_PUBLIC_CPP_VIEW_TREE_DELEGATE_H_
+#endif  // COMPONENTS_MUS_PUBLIC_CPP_WINDOW_TREE_DELEGATE_H_

@@ -61,47 +61,50 @@ class TestViewTreeClient : public mojo::ViewTreeClient {
     tracker_.OnEmbeddedAppDisconnected(view);
   }
   void OnUnembed() override { tracker_.OnUnembed(); }
-  void OnViewBoundsChanged(uint32_t view,
-                           mojo::RectPtr old_bounds,
-                           mojo::RectPtr new_bounds) override {
-    tracker_.OnViewBoundsChanged(view, old_bounds.Pass(), new_bounds.Pass());
+  void OnWindowBoundsChanged(uint32_t view,
+                             mojo::RectPtr old_bounds,
+                             mojo::RectPtr new_bounds) override {
+    tracker_.OnWindowBoundsChanged(view, old_bounds.Pass(), new_bounds.Pass());
   }
-  void OnViewViewportMetricsChanged(
+  void OnWindowViewportMetricsChanged(
       mojo::ViewportMetricsPtr old_metrics,
       mojo::ViewportMetricsPtr new_metrics) override {
-    tracker_.OnViewViewportMetricsChanged(old_metrics.Pass(),
-                                          new_metrics.Pass());
+    tracker_.OnWindowViewportMetricsChanged(old_metrics.Pass(),
+                                            new_metrics.Pass());
   }
-  void OnViewHierarchyChanged(uint32_t view,
-                              uint32_t new_parent,
-                              uint32_t old_parent,
-                              Array<ViewDataPtr> views) override {
-    tracker_.OnViewHierarchyChanged(view, new_parent, old_parent, views.Pass());
+  void OnWindowHierarchyChanged(uint32_t view,
+                                uint32_t new_parent,
+                                uint32_t old_parent,
+                                Array<ViewDataPtr> views) override {
+    tracker_.OnWindowHierarchyChanged(view, new_parent, old_parent,
+                                      views.Pass());
   }
-  void OnViewReordered(uint32_t view_id,
-                       uint32_t relative_view_id,
-                       mojo::OrderDirection direction) override {
-    tracker_.OnViewReordered(view_id, relative_view_id, direction);
+  void OnWindowReordered(uint32_t view_id,
+                         uint32_t relative_view_id,
+                         mojo::OrderDirection direction) override {
+    tracker_.OnWindowReordered(view_id, relative_view_id, direction);
   }
-  void OnViewDeleted(uint32_t view) override { tracker_.OnViewDeleted(view); }
-  void OnViewVisibilityChanged(uint32_t view, bool visible) override {
-    tracker_.OnViewVisibilityChanged(view, visible);
+  void OnWindowDeleted(uint32_t view) override {
+    tracker_.OnWindowDeleted(view);
   }
-  void OnViewDrawnStateChanged(uint32_t view, bool drawn) override {
-    tracker_.OnViewDrawnStateChanged(view, drawn);
+  void OnWindowVisibilityChanged(uint32_t view, bool visible) override {
+    tracker_.OnWindowVisibilityChanged(view, visible);
   }
-  void OnViewSharedPropertyChanged(uint32_t view,
-                                   const String& name,
-                                   Array<uint8_t> new_data) override {
-    tracker_.OnViewSharedPropertyChanged(view, name, new_data.Pass());
+  void OnWindowDrawnStateChanged(uint32_t view, bool drawn) override {
+    tracker_.OnWindowDrawnStateChanged(view, drawn);
   }
-  void OnViewInputEvent(uint32_t view,
-                        mojo::EventPtr event,
-                        const mojo::Callback<void()>& callback) override {
-    tracker_.OnViewInputEvent(view, event.Pass());
+  void OnWindowSharedPropertyChanged(uint32_t view,
+                                     const String& name,
+                                     Array<uint8_t> new_data) override {
+    tracker_.OnWindowSharedPropertyChanged(view, name, new_data.Pass());
   }
-  void OnViewFocused(uint32_t focused_view_id) override {
-    tracker_.OnViewFocused(focused_view_id);
+  void OnWindowInputEvent(uint32_t view,
+                          mojo::EventPtr event,
+                          const mojo::Callback<void()>& callback) override {
+    tracker_.OnWindowInputEvent(view, event.Pass());
+  }
+  void OnWindowFocused(uint32_t focused_view_id) override {
+    tracker_.OnWindowFocused(focused_view_id);
   }
 
   TestChangeTracker tracker_;

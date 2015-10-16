@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/mus/public/cpp/tests/view_manager_test_suite.h"
+#include "components/mus/public/cpp/tests/window_server_test_suite.h"
 
 #include "base/i18n/icu_util.h"
 
@@ -12,12 +12,12 @@
 
 namespace mus {
 
-ViewManagerTestSuite::ViewManagerTestSuite(int argc, char** argv)
+WindowServerTestSuite::WindowServerTestSuite(int argc, char** argv)
     : TestSuite(argc, argv) {}
 
-ViewManagerTestSuite::~ViewManagerTestSuite() {}
+WindowServerTestSuite::~WindowServerTestSuite() {}
 
-void ViewManagerTestSuite::Initialize() {
+void WindowServerTestSuite::Initialize() {
 #if defined(USE_X11)
   // Each test ends up creating a new thread for the native viewport service.
   // In other words we'll use X on different threads, so tell it that.

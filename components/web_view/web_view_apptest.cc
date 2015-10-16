@@ -10,10 +10,10 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "components/mus/public/cpp/scoped_view_ptr.h"
-#include "components/mus/public/cpp/tests/view_manager_test_base.h"
-#include "components/mus/public/cpp/view.h"
-#include "components/mus/public/cpp/view_tree_connection.h"
+#include "components/mus/public/cpp/scoped_window_ptr.h"
+#include "components/mus/public/cpp/tests/window_server_test_base.h"
+#include "components/mus/public/cpp/window.h"
+#include "components/mus/public/cpp/window_tree_connection.h"
 #include "mojo/util/filename_util.h"
 #include "url/gurl.h"
 
@@ -40,7 +40,7 @@ GURL GetTestFileURL(const std::string& file) {
 }
 }
 
-class WebViewTest : public mus::ViewManagerTestBase,
+class WebViewTest : public mus::WindowServerTestBase,
                     public mojom::WebViewClient {
  public:
   WebViewTest()
@@ -94,25 +94,26 @@ class WebViewTest : public mus::ViewManagerTestBase,
 
   // Overridden from ApplicationDelegate:
   void Initialize(mojo::ApplicationImpl* app) override {
-    ViewManagerTestBase::Initialize(app);
+    WindowServerTestBase::Initialize(app);
     app_ = app;
   }
 
   // Overridden from ViewTreeDelegate:
-  void OnEmbed(mus::View* root) override {
-    content_ = root->connection()->CreateView();
+  void OnEmbed(mus::Window* root) override {
+    content_ = root->connection()->CreateWindow();
     content_->SetBounds(root->bounds());
     root->AddChild(content_);
     content_->SetVisible(true);
 
     web_view_.Init(app_, content_);
 
-    ViewManagerTestBase::OnEmbed(root);
+    WindowServerTestBase::OnEmbed(root);
   }
 
   void TearDown() override {
-    mus::ScopedViewPtr::DeleteViewOrViewManager(window_manager()->GetRoot());
-    ViewManagerTestBase::TearDown();
+    mus::ScopedWindowPtr::DeleteWindowOrWindowManager(
+        window_manager()->GetRoot());
+    WindowServerTestBase::TearDown();
   }
 
   // Overridden from web_view::mojom::WebViewClient:
@@ -148,7 +149,7 @@ class WebViewTest : public mus::ViewManagerTestBase,
 
   mojo::ApplicationImpl* app_;
 
-  mus::View* content_;
+  mus::Window* content_;
 
   web_view::WebView web_view_;
 
