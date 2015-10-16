@@ -7,7 +7,7 @@ layer at (0,0) size 800x594
         LayoutText {#text} at (0,0) size 470x37
           text run at (0,0) width 470: "Small fonts in HTML5/inline SVG"
       LayoutBlockFlow (anonymous) at (0,58.44) size 784x506
-        LayoutSVGRoot {svg} at (8,79) size 502x507
+        LayoutSVGRoot {svg} at (8,79) size 502x503
           LayoutSVGContainer {g} at (159,267) size 94x21 [transform={m=((400.00,0.00)(0.00,400.00)) t=(0.00,0.00)}]
             LayoutSVGText {text} at (0,0) size 1x1 contains 1 chunk(s)
               LayoutSVGInlineText {#text} at (0,0) size 1x1
