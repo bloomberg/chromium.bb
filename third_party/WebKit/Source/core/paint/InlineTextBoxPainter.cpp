@@ -488,7 +488,9 @@ void InlineTextBoxPainter::paintSelection(GraphicsContext* context, const Layout
 
     FloatPoint localOrigin(boxRect.x().toFloat(), (boxRect.y() - deltaY).toFloat());
     LayoutRect selectionRect = LayoutRect(font.selectionRectForText(textRun, localOrigin, selHeight, sPos, ePos));
-    if (m_inlineTextBox.hasWrappedSelectionNewline())
+    if (m_inlineTextBox.hasWrappedSelectionNewline()
+        // For line breaks, just painting a selection where the line break itself is rendered is sufficient.
+        && !m_inlineTextBox.isLineBreak())
         expandToIncludeNewlineForSelection(selectionRect);
 
     context->fillRect(FloatRect(selectionRect), c);

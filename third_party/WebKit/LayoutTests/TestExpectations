@@ -758,7 +758,6 @@ crbug.com/357427 http/tests/workers/terminate-during-sync-operation-file.html [ 
 crbug.com/357427 http/tests/workers/terminate-during-sync-operation-filesystem.html [ Crash Pass Slow Timeout ]
 
 crbug.com/356957 [ Win Mac Debug ] editing/spelling/spellcheck-editable-on-focus.html [ Timeout ]
-crbug.com/539693 [ XP Win10 ] editing/selection/doubleclick-crash.html [ Failure ]
 
 crbug.com/365400 [ Mac ] compositing/images/direct-pdf-image.html [ Failure ]
 
@@ -1503,6 +1502,33 @@ crbug.com/404597 css3/selectors3/html/css3-modsel-14e.html [ NeedsRebaseline ]
 crbug.com/404597 css3/selectors3/xhtml/css3-modsel-14c.xml [ NeedsRebaseline ]
 crbug.com/404597 css3/selectors3/xml/css3-modsel-14e.xml [ NeedsRebaseline ]
 crbug.com/404597 css2.1/t0402-c71-fwd-parsing-02-f.html [ NeedsRebaseline ]
+
+crbug.com/543309 editing/execCommand/4916541.html [ NeedsRebaseline ]
+crbug.com/543309 editing/execCommand/remove-list-from-range-selection.html [ NeedsRebaseline ]
+crbug.com/543309 editing/selection/3690703-2.html [ NeedsRebaseline ]
+crbug.com/543309 editing/selection/3690703.html [ NeedsRebaseline ]
+crbug.com/543309 editing/selection/3690719.html [ NeedsRebaseline ]
+crbug.com/543309 editing/selection/extend-by-character-002.html [ NeedsRebaseline ]
+crbug.com/543309 editing/selection/image-before-linebreak.html [ NeedsRebaseline ]
+crbug.com/543309 editing/selection/paragraph-granularity.html [ NeedsRebaseline ]
+crbug.com/543309 editing/selection/replaced-boundaries-3.html [ NeedsRebaseline ]
+crbug.com/543309 editing/selection/select-all-002.html [ NeedsRebaseline ]
+crbug.com/543309 editing/selection/selection-actions.html [ NeedsRebaseline ]
+crbug.com/543309 editing/selection/selection-button-text.html [ NeedsRebaseline ]
+crbug.com/543309 editing/selection/vertical-lr-ltr-extend-line-backward-br.html [ NeedsRebaseline ]
+crbug.com/543309 editing/selection/vertical-lr-ltr-extend-line-forward-br.html [ NeedsRebaseline ]
+crbug.com/543309 editing/selection/vertical-rl-ltr-extend-line-backward-br.html [ NeedsRebaseline ]
+crbug.com/543309 editing/selection/vertical-rl-ltr-extend-line-forward-br.html [ NeedsRebaseline ]
+crbug.com/543309 editing/selection/word-granularity.html [ NeedsRebaseline ]
+crbug.com/543309 fast/text/selection-hard-linebreak.html [ NeedsRebaseline ]
+crbug.com/543309 fast/text/whitespace/pre-wrap-overflow-selection.html [ NeedsRebaseline ]
+crbug.com/543309 fast/writing-mode/vertical-lr-replaced-selection.html [ NeedsRebaseline ]
+crbug.com/543309 virtual/spv2/paint/invalidation/spv2/selection-change-in-iframe-with-relative-parent.html [ NeedsRebaseline ]
+crbug.com/543309 paint/selection/text-selection-newline-br.html [ NeedsRebaseline ]
+crbug.com/543309 virtual/spv2/paint/selection/text-selection-newline-br.html [ NeedsRebaseline ]
+crbug.com/543309 fast/writing-mode/horizontal-bt-replaced-selection.html [ NeedsRebaseline ]
+# The below is failing on XP and Win10 only. See crbug.com/539693
+crbug.com/543309 editing/selection/doubleclick-crash.html [ NeedsManualRebaseline ]
 
 crbug.com/419993 [ Debug ] fast/css/giant-stylesheet-crash.html [ Pass Slow ]
 
