@@ -1610,12 +1610,7 @@ crbug.com/538717 [ Win Mac Linux ] http/tests/permissions/chromium/test-request-
 crbug.com/538717 [ Win Mac Linux ] http/tests/permissions/chromium/test-request-multiple-worker.html [ Failure Pass Timeout ]
 crbug.com/538717 [ Win Mac Linux ] http/tests/permissions/chromium/test-request-multiple-sharedworker.html [ Failure Pass Timeout ]
 
-crbug.com/499780 fast/css/font_property_normal.html [ NeedsRebaseline ]
-
-crbug.com/541357 [ XP ] svg/text/text-selection-align-06-b.svg [ NeedsRebaseline ]
-crbug.com/541357 [ XP ] svg/W3C-SVG-1.1/text-align-06-b.svg [ NeedsRebaseline ]
 crbug.com/521730 [ XP ] svg/batik/text/verticalText.svg [ NeedsRebaseline ]
-crbug.com/541357 [ XP ] svg/batik/text/verticalTextOnPath.svg [ NeedsRebaseline ]
 
 crbug.com/522389 [ Linux Mac Win ] fast/block/float/overhanging-tall-block.html  [ NeedsRebaseline ]
 crbug.com/522389 [ Mac ] fast/forms/HTMLOptionElement_label05.html  [ NeedsRebaseline ]
@@ -1643,6 +1638,12 @@ crbug.com/522389 [ SnowLeopard Lion MountainLion Retina Mavericks ] fast/text/dr
 crbug.com/522389 [ Linux Mac Win ] compositing/overflow/nested-render-surfaces-with-rotation.html [ NeedsRebaseline ]
 crbug.com/522389 [ Linux Mac Win ] fast/overflow/overflow-update-transform.html [ NeedsRebaseline ]
 crbug.com/522389 [ Linux Mac Win ] virtual/prefer_compositing_to_lcd_text/compositing/overflow/nested-render-surfaces-with-rotation.html [ NeedsRebaseline ]
+
+crbug.com/499780 fast/css/font_property_normal.html [ NeedsRebaseline ]
+
+crbug.com/541357 [ XP ] svg/text/text-selection-align-06-b.svg [ NeedsRebaseline ]
+crbug.com/541357 [ XP ] svg/W3C-SVG-1.1/text-align-06-b.svg [ NeedsRebaseline ]
+crbug.com/541357 [ XP ] svg/batik/text/verticalTextOnPath.svg [ NeedsRebaseline ]
 
 crbug.com/541601 svg/overflow/overflow-on-outermost-svg-element-in-xhtml-defaults.xhtml [ Failure ]
 
