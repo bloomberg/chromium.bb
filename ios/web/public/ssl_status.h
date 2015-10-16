@@ -5,6 +5,8 @@
 #ifndef IOS_WEB_PUBLIC_SSL_STATUS_H_
 #define IOS_WEB_PUBLIC_SSL_STATUS_H_
 
+#include <string>
+
 #include "ios/web/public/security_style.h"
 #include "net/cert/cert_status_flags.h"
 
@@ -33,6 +35,7 @@ struct SSLStatus {
            cert_status == status.cert_status &&
            security_bits == status.security_bits &&
            content_status == status.content_status;
+           // |cert_status_host| is not used for comparison intentionally.
   }
 
   web::SecurityStyle security_style;
@@ -42,6 +45,11 @@ struct SSLStatus {
   int connection_status;
   // A combination of the ContentStatusFlags above.
   int content_status;
+  // Host which was used for |cert_status| calculation. It is not an actual part
+  // of SSL status, hence it's not taken into account in |Equals| method.
+  // Used to check if |cert_status| is still valid or needs to be recalculated
+  // (e.g. after redirect).
+  std::string cert_status_host;
 };
 
 }  // namespace web

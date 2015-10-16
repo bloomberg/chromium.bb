@@ -9,6 +9,7 @@
 #include "base/test/ios/wait_util.h"
 #include "ios/web/public/web_thread.h"
 #include "ios/web/test/web_test.h"
+#import "ios/web/web_state/wk_web_view_security_util.h"
 #include "net/base/test_data_directory.h"
 #include "net/cert/mock_cert_verifier.h"
 #include "net/cert/x509_certificate.h"
@@ -41,11 +42,27 @@ class CRWCertVerificationControllerTest : public web::WebTest {
         initWithBrowserState:browser_state]);
     cert_ =
         net::ImportCertFromFile(net::GetTestCertsDirectory(), kCertFileName);
+    ASSERT_TRUE(cert_);
+
+    NSArray* chain = GetChain(cert_);
+    valid_trust_ = web::CreateServerTrustFromChain(chain, kHostName);
+    web::EnsureFutureTrustEvaluationSucceeds(valid_trust_.get());
+    invalid_trust_ = web::CreateServerTrustFromChain(chain, kHostName);
   }
 
   void TearDown() override {
     [controller_ shutDown];
     web::WebTest::TearDown();
+  }
+
+  // Returns NSArray of SecCertificateRef objects for the given |cert|.
+  NSArray* GetChain(const scoped_refptr<net::X509Certificate>& cert) const {
+    NSMutableArray* result = [NSMutableArray
+        arrayWithObject:static_cast<id>(cert->os_cert_handle())];
+    for (SecCertificateRef intermediate : cert->GetIntermediateCertificates()) {
+      [result addObject:static_cast<id>(intermediate)];
+    }
+    return result;
   }
 
   // Synchronously returns result of decidePolicyForCert:host:completionHandler:
@@ -68,17 +85,39 @@ class CRWCertVerificationControllerTest : public web::WebTest {
     }, base::MessageLoop::current(), base::TimeDelta());
   }
 
+  // Synchronously returns result of
+  // querySSLStatusForTrust:host:completionHandler: call.
+  void QueryStatus(const base::ScopedCFTypeRef<SecTrustRef>& trust,
+                   NSString* host,
+                   SecurityStyle* style,
+                   net::CertStatus* status) {
+    __block bool completion_handler_called = false;
+    [controller_ querySSLStatusForTrust:trust
+                                   host:host
+                      completionHandler:^(SecurityStyle callback_style,
+                                          net::CertStatus callback_status) {
+                        *style = callback_style;
+                        *status = callback_status;
+                        completion_handler_called = true;
+                      }];
+    base::test::ios::WaitUntilCondition(^{
+      return completion_handler_called;
+    }, base::MessageLoop::current(), base::TimeDelta());
+  }
+
   scoped_refptr<net::X509Certificate> cert_;
+  base::ScopedCFTypeRef<SecTrustRef> valid_trust_;
+  base::ScopedCFTypeRef<SecTrustRef> invalid_trust_;
   net::MockCertVerifier cert_verifier_;
   base::scoped_nsobject<CRWCertVerificationController> controller_;
 };
 
 // Tests cert policy with a valid cert.
-TEST_F(CRWCertVerificationControllerTest, ValidCert) {
+TEST_F(CRWCertVerificationControllerTest, PolicyForValidCert) {
   net::CertVerifyResult verify_result;
   verify_result.cert_status = net::CERT_STATUS_NO_REVOCATION_MECHANISM;
   verify_result.verified_cert = cert_;
-  cert_verifier_.AddResultForCertAndHost(cert_.get(), [kHostName UTF8String],
+  cert_verifier_.AddResultForCertAndHost(cert_.get(), kHostName.UTF8String,
                                          verify_result, net::OK);
   web::CertAcceptPolicy policy = CERT_ACCEPT_POLICY_NON_RECOVERABLE_ERROR;
   net::CertStatus status;
@@ -88,7 +127,7 @@ TEST_F(CRWCertVerificationControllerTest, ValidCert) {
 }
 
 // Tests cert policy with an invalid cert.
-TEST_F(CRWCertVerificationControllerTest, InvalidCert) {
+TEST_F(CRWCertVerificationControllerTest, PolicyForInvalidCert) {
   web::CertAcceptPolicy policy = CERT_ACCEPT_POLICY_NON_RECOVERABLE_ERROR;
   net::CertStatus status;
   DecidePolicy(cert_, kHostName, &policy, &status);
@@ -96,7 +135,7 @@ TEST_F(CRWCertVerificationControllerTest, InvalidCert) {
 }
 
 // Tests cert policy with null cert.
-TEST_F(CRWCertVerificationControllerTest, NullCert) {
+TEST_F(CRWCertVerificationControllerTest, PolicyForNullCert) {
   web::CertAcceptPolicy policy = CERT_ACCEPT_POLICY_NON_RECOVERABLE_ERROR;
   net::CertStatus status;
   DecidePolicy(nullptr, kHostName, &policy, &status);
@@ -104,11 +143,54 @@ TEST_F(CRWCertVerificationControllerTest, NullCert) {
 }
 
 // Tests cert policy with null cert and null host.
-TEST_F(CRWCertVerificationControllerTest, NullHost) {
+TEST_F(CRWCertVerificationControllerTest, PolicyForNullHost) {
   web::CertAcceptPolicy policy = CERT_ACCEPT_POLICY_NON_RECOVERABLE_ERROR;
   net::CertStatus status;
   DecidePolicy(cert_, nil, &policy, &status);
   EXPECT_EQ(CERT_ACCEPT_POLICY_NON_RECOVERABLE_ERROR, policy);
+}
+
+// Tests SSL status with valid trust.
+TEST_F(CRWCertVerificationControllerTest, SSLStatusForValidTrust) {
+  SecurityStyle style = SECURITY_STYLE_UNKNOWN;
+  net::CertStatus status = net::CERT_STATUS_ALL_ERRORS;
+
+  QueryStatus(valid_trust_, kHostName, &style, &status);
+  EXPECT_EQ(SECURITY_STYLE_AUTHENTICATED, style);
+  EXPECT_FALSE(status);
+}
+
+// Tests SSL status with invalid host.
+TEST_F(CRWCertVerificationControllerTest, SSLStatusForInvalidHost) {
+  net::CertVerifyResult result;
+  result.cert_status = net::CERT_STATUS_COMMON_NAME_INVALID;
+  result.verified_cert = cert_;
+  cert_verifier_.AddResultForCertAndHost(cert_.get(), kHostName.UTF8String,
+                                         result,
+                                         net::ERR_CERT_COMMON_NAME_INVALID);
+
+  SecurityStyle style = SECURITY_STYLE_UNKNOWN;
+  net::CertStatus status = net::CERT_STATUS_ALL_ERRORS;
+
+  QueryStatus(invalid_trust_, kHostName, &style, &status);
+  EXPECT_EQ(SECURITY_STYLE_AUTHENTICATION_BROKEN, style);
+  EXPECT_EQ(status, net::CERT_STATUS_COMMON_NAME_INVALID);
+}
+
+// Tests SSL status with expired cert.
+TEST_F(CRWCertVerificationControllerTest, SSLStatusForExpiredTrust) {
+  net::CertVerifyResult result;
+  result.cert_status = net::CERT_STATUS_DATE_INVALID;
+  result.verified_cert = cert_;
+  cert_verifier_.AddResultForCertAndHost(cert_.get(), kHostName.UTF8String,
+                                         result, net::ERR_CERT_DATE_INVALID);
+
+  SecurityStyle style = SECURITY_STYLE_UNKNOWN;
+  net::CertStatus status = net::CERT_STATUS_ALL_ERRORS;
+
+  QueryStatus(invalid_trust_, kHostName, &style, &status);
+  EXPECT_EQ(SECURITY_STYLE_AUTHENTICATION_BROKEN, style);
+  EXPECT_EQ(net::CERT_STATUS_DATE_INVALID, status);
 }
 
 }  // namespace web

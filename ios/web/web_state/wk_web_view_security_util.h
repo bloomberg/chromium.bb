@@ -6,8 +6,11 @@
 #define IOS_WEB_WEB_STATE_WK_WEB_VIEW_SECURITY_UTIL_H_
 
 #import <Foundation/Foundation.h>
+#include <Security/Security.h>
 
+#include "base/mac/scoped_cftyperef.h"
 #include "base/memory/ref_counted.h"
+#include "ios/web/public/security_style.h"
 
 namespace net {
 class SSLInfo;
@@ -27,6 +30,11 @@ scoped_refptr<net::X509Certificate> CreateCertFromChain(NSArray* certs);
 // Returns null if trust is null or does not have any certs.
 scoped_refptr<net::X509Certificate> CreateCertFromTrust(SecTrustRef trust);
 
+// Creates server trust object from an array of SecCertificateRef objects.
+// Returns null if |certs| is null or empty.
+base::ScopedCFTypeRef<SecTrustRef> CreateServerTrustFromChain(NSArray* certs,
+                                                              NSString* host);
+
 // Makes SecTrustEvaluate call to return kSecTrustResultProceed.
 // Should be called only if the user expilitely agreed to proceed with |trust|
 // or trust represents a valid certificate chain.
@@ -40,6 +48,9 @@ BOOL IsWKWebViewSSLCertError(NSError* error);
 // |web::IsWKWebViewSSLCertError| function.
 void GetSSLInfoFromWKWebViewSSLCertError(NSError* error,
                                          net::SSLInfo* ssl_info);
+
+// Maps SecTrustResultType value to web::SecurityStyle.
+SecurityStyle GetSecurityStyleFromTrustResult(SecTrustResultType result);
 
 }  // namespace web
 

@@ -11,6 +11,7 @@
 #include "base/json/json_reader.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/values.h"
 #import "ios/net/http_response_headers_util.h"
@@ -247,6 +248,21 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 
 // Clears all activity indicator tasks for this web controller.
 - (void)clearActivityIndicatorTasks;
+
+// Updates |security_style| and |cert_status| for the NavigationItem with ID
+// |navigationItemID|, if URL and certificate chain still match |host| and
+// |certChain|.
+- (void)updateSSLStatusForNavigationItemWithID:(int)navigationItemID
+                                     certChain:(NSArray*)chain
+                                          host:(NSString*)host
+                             withSecurityStyle:(web::SecurityStyle)style
+                                    certStatus:(net::CertStatus)certStatus;
+
+// Asynchronously obtains SSL status from given |certChain| and |host| and
+// updates current navigation item. Before scheduling update changes SSLStatus'
+// cert_status and security_style to default.
+- (void)scheduleSSLStatusUpdateUsingCertChain:(NSArray*)chain
+                                         host:(NSString*)host;
 
 #if !defined(ENABLE_CHROME_NET_STACK_FOR_WKWEBVIEW)
 // Updates SSL status for the current navigation item based on the information
@@ -867,47 +883,133 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
       clearNetworkTasksForGroup:[self activityIndicatorGroupID]];
 }
 
+- (void)updateSSLStatusForNavigationItemWithID:(int)navigationItemID
+                                     certChain:(NSArray*)chain
+                                          host:(NSString*)host
+                             withSecurityStyle:(web::SecurityStyle)style
+                                    certStatus:(net::CertStatus)certStatus {
+  web::NavigationManager* navigationManager =
+      self.webStateImpl->GetNavigationManager();
+
+  // The searched item almost always be the last one, so walk backward rather
+  // than forward.
+  for (int i = navigationManager->GetEntryCount() - 1; 0 <= i; i--) {
+    web::NavigationItem* item = navigationManager->GetItemAtIndex(i);
+    if (item->GetUniqueID() != navigationItemID)
+      continue;
+
+    // NavigationItem's UniqueID is preserved even after redirects, so
+    // checking that cert and URL match is necessary.
+    scoped_refptr<net::X509Certificate> cert(web::CreateCertFromChain(chain));
+    int certID =
+        web::CertStore::GetInstance()->StoreCert(cert.get(), self.certGroupID);
+    std::string GURLHost = base::SysNSStringToUTF8(host);
+    web::SSLStatus& SSLStatus = item->GetSSL();
+    if (SSLStatus.cert_id == certID && item->GetURL().host() == GURLHost) {
+      web::SSLStatus previousSSLStatus = item->GetSSL();
+      SSLStatus.cert_status = certStatus;
+      SSLStatus.security_style = style;
+      if (navigationManager->GetCurrentEntryIndex() == i &&
+          !previousSSLStatus.Equals(SSLStatus)) {
+        [self didUpdateSSLStatusForCurrentNavigationItem];
+      }
+    }
+    return;
+  }
+}
+
+- (void)scheduleSSLStatusUpdateUsingCertChain:(NSArray*)chain
+                                         host:(NSString*)host {
+  // Use Navigation Item's unique ID to locate requested item after
+  // obtaining cert status asynchronously.
+  int itemID = self.webStateImpl->GetNavigationManager()
+                   ->GetLastCommittedItem()
+                   ->GetUniqueID();
+
+  base::WeakNSObject<CRWWKWebViewWebController> weakSelf(self);
+  void (^SSLStatusResponse)(web::SecurityStyle, net::CertStatus) =
+      ^(web::SecurityStyle style, net::CertStatus certStatus) {
+        base::scoped_nsobject<CRWWKWebViewWebController> strongSelf(
+            [weakSelf retain]);
+        if (!strongSelf || [strongSelf isBeingDestroyed]) {
+          return;
+        }
+        [strongSelf updateSSLStatusForNavigationItemWithID:itemID
+                                                 certChain:chain
+                                                      host:host
+                                         withSecurityStyle:style
+                                                certStatus:certStatus];
+      };
+
+  [_certVerificationController
+      querySSLStatusForTrust:web::CreateServerTrustFromChain(chain, host)
+                        host:host
+           completionHandler:SSLStatusResponse];
+}
+
 #if !defined(ENABLE_CHROME_NET_STACK_FOR_WKWEBVIEW)
+
 - (void)updateSSLStatusForCurrentNavigationItem {
   if ([self isBeingDestroyed])
     return;
 
-  DCHECK(self.webStateImpl);
   web::NavigationItem* item =
       self.webStateImpl->GetNavigationManagerImpl().GetLastCommittedItem();
   if (!item)
     return;
 
   web::SSLStatus previousSSLStatus = item->GetSSL();
-  web::SSLStatus& SSLStatus = item->GetSSL();
-  if (item->GetURL().SchemeIsCryptographic()) {
-    // TODO(eugenebut): Do not set security style to authenticated once
-    // proceeding with bad ssl cert is implemented.
-    SSLStatus.security_style = web::SECURITY_STYLE_AUTHENTICATED;
-    SSLStatus.content_status = [_wkWebView hasOnlySecureContent]
-                                   ? web::SSLStatus::NORMAL_CONTENT
-                                   : web::SSLStatus::DISPLAYED_INSECURE_CONTENT;
 
-    if (base::ios::IsRunningOnIOS9OrLater()) {
-      scoped_refptr<net::X509Certificate> cert(web::CreateCertFromChain(
-          [_wkWebView performSelector:@selector(certificateChain)]));
-      if (cert) {
-        SSLStatus.cert_id = web::CertStore::GetInstance()->StoreCert(
-            cert.get(), self.certGroupID);
-      } else {
-        SSLStatus.security_style = web::SECURITY_STYLE_UNAUTHENTICATED;
-        SSLStatus.cert_id = 0;
+  // Starting from iOS9 WKWebView blocks active mixed content, so if
+  // |hasOnlySecureContent| returns NO it means passive content.
+  item->GetSSL().content_status =
+      [_wkWebView hasOnlySecureContent]
+          ? web::SSLStatus::NORMAL_CONTENT
+          : web::SSLStatus::DISPLAYED_INSECURE_CONTENT;
+
+  // Try updating SSLStatus for current NavigationItem asynchronously.
+  scoped_refptr<net::X509Certificate> cert;
+  if (item->GetURL().SchemeIsCryptographic()) {
+    NSArray* chain = [_wkWebView certificateChain];
+    cert = web::CreateCertFromChain(chain);
+    if (cert) {
+      int oldCertID = item->GetSSL().cert_id;
+      std::string oldHost = item->GetSSL().cert_status_host;
+      item->GetSSL().cert_id = web::CertStore::GetInstance()->StoreCert(
+          cert.get(), self.certGroupID);
+      item->GetSSL().cert_status_host = _documentURL.host();
+      // Only recompute the SSLStatus information if the certificate or host has
+      // since changed. Host can be changed in case of redirect.
+      if (oldCertID != item->GetSSL().cert_id ||
+          oldHost != item->GetSSL().cert_status_host) {
+        // Real SSL status is unknown, reset cert status and security style.
+        // They will be asynchronously updated in
+        // |scheduleSSLStatusUpdateUsingCertChain|.
+        item->GetSSL().cert_status = net::CertStatus();
+        item->GetSSL().security_style = web::SECURITY_STYLE_UNKNOWN;
+
+        NSString* host = base::SysUTF8ToNSString(_documentURL.host());
+        [self scheduleSSLStatusUpdateUsingCertChain:chain host:host];
       }
     }
-  } else {
-    SSLStatus.security_style = web::SECURITY_STYLE_UNAUTHENTICATED;
-    SSLStatus.cert_id = 0;
   }
 
-  if (!previousSSLStatus.Equals(SSLStatus)) {
+  if (!cert) {
+    item->GetSSL().cert_id = 0;
+    if (!item->GetURL().SchemeIsCryptographic()) {
+      // HTTP or other non-secure connection.
+      item->GetSSL().security_style = web::SECURITY_STYLE_UNAUTHENTICATED;
+    } else {
+      // HTTPS, no certificate (this use-case has not been observed).
+      item->GetSSL().security_style = web::SECURITY_STYLE_UNKNOWN;
+    }
+  }
+
+  if (!previousSSLStatus.Equals(item->GetSSL())) {
     [self didUpdateSSLStatusForCurrentNavigationItem];
   }
 }
+
 #endif  // !defined(ENABLE_CHROME_NET_STACK_FOR_WKWEBVIEW)
 
 - (void)registerLoadRequest:(const GURL&)url {
@@ -926,6 +1028,7 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 
 - (void)URLDidChangeWithoutDocumentChange:(const GURL&)newURL {
   DCHECK(newURL == net::GURLWithNSURL([_wkWebView URL]));
+  DCHECK_EQ(_documentURL.host(), newURL.host());
   _documentURL = newURL;
   // If called during window.history.pushState or window.history.replaceState
   // JavaScript evaluation, only update the document URL. This callback does not
@@ -1347,6 +1450,14 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 #if !defined(ENABLE_CHROME_NET_STACK_FOR_WKWEBVIEW)
   [self updateSSLStatusForCurrentNavigationItem];
 #endif
+
+  // Report cases where SSL cert is missing for a secure connection.
+  if (_documentURL.SchemeIsCryptographic()) {
+    scoped_refptr<net::X509Certificate> cert =
+        web::CreateCertFromChain([_wkWebView certificateChain]);
+    UMA_HISTOGRAM_BOOLEAN("WebController.WKWebViewHasCertForSecureConnection",
+                          cert);
+  }
 }
 
 - (void)webView:(WKWebView *)webView
@@ -1380,6 +1491,7 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 
   SecTrustRef trust = challenge.protectionSpace.serverTrust;
   scoped_refptr<net::X509Certificate> cert = web::CreateCertFromTrust(trust);
+  // TODO(eugenebut): pass SecTrustRef instead of cert.
   [_certVerificationController
       decidePolicyForCert:cert
                      host:challenge.protectionSpace.host

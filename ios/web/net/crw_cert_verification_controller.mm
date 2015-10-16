@@ -9,9 +9,11 @@
 #import "base/memory/ref_counted.h"
 #import "base/memory/scoped_ptr.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/threading/worker_pool.h"
 #include "ios/web/net/cert_verifier_block_adapter.h"
 #include "ios/web/public/browser_state.h"
 #include "ios/web/public/web_thread.h"
+#import "ios/web/web_state/wk_web_view_security_util.h"
 #include "net/cert/cert_verify_result.h"
 #include "net/ssl/ssl_config_service.h"
 #include "net/url_request/url_request_context.h"
@@ -73,12 +75,20 @@ class BlockHolder : public base::RefCountedThreadSafe<BlockHolder<T>> {
 // Creates _certVerifier object on IO thread.
 - (void)createCertVerifier;
 
-// Verifies the given |cert| for the given |host| and calls |completionHandler|
-// on completion. |completionHandler| cannot be null and will be called
-// synchronously or asynchronously on IO thread.
+// Verifies the given |cert| for the given |host| using |net::CertVerifier| and
+// calls |completionHandler| on completion. This method can be called on any
+// thread. |completionHandler| cannot be null and will be called asynchronously
+// on IO thread.
 - (void)verifyCert:(const scoped_refptr<net::X509Certificate>&)cert
               forHost:(NSString*)host
     completionHandler:(void (^)(net::CertVerifyResult, int))completionHandler;
+
+// Verifies the given |trust| using SecTrustRef API. |completionHandler| cannot
+// be null and will be either called asynchronously on Worker thread or
+// synchronously on current thread if the worker task can't start (in this
+// case |dispatched| argument will be NO).
+- (void)verifyTrust:(base::ScopedCFTypeRef<SecTrustRef>)trust
+    completionHandler:(void (^)(SecTrustResultType, BOOL dispatched))handler;
 
 @end
 
@@ -112,16 +122,16 @@ class BlockHolder : public base::RefCountedThreadSafe<BlockHolder<T>> {
 
 - (void)decidePolicyForCert:(const scoped_refptr<net::X509Certificate>&)cert
                        host:(NSString*)host
-          completionHandler:(web::PolicyDecisionHandler)handler {
+          completionHandler:(web::PolicyDecisionHandler)completionHandler {
   DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
   // completionHandler of |verifyCert:forHost:completionHandler:| is called on
   // IO thread and then bounces back to UI thread. As a result all objects
   // captured by completionHandler may be released on either UI or IO thread.
-  // Since |handler| can potentially capture multiple thread unsafe objects
-  // (like Web Controller) |handler| itself should never be released on
-  // background thread and |BlockHolder| ensures that.
+  // Since |completionHandler| can potentially capture multiple thread unsafe
+  // objects (like Web Controller) |completionHandler| itself should never be
+  // released on background thread and |BlockHolder| ensures that.
   __block scoped_refptr<BlockHolder<web::PolicyDecisionHandler>> handlerHolder(
-      new BlockHolder<web::PolicyDecisionHandler>(handler));
+      new BlockHolder<web::PolicyDecisionHandler>(completionHandler));
   [self verifyCert:cert
                 forHost:host
       completionHandler:^(net::CertVerifyResult result, int error) {
@@ -138,6 +148,55 @@ class BlockHolder : public base::RefCountedThreadSafe<BlockHolder<T>> {
         dispatch_async(dispatch_get_main_queue(), ^{
           handlerHolder->call(policy, result.cert_status);
         });
+      }];
+}
+
+- (void)querySSLStatusForTrust:(base::ScopedCFTypeRef<SecTrustRef>)trust
+                          host:(NSString*)host
+             completionHandler:(web::StatusQueryHandler)completionHandler {
+  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+
+  // The completion handlers of |verifyCert:forHost:completionHandler:| and
+  // |verifyTrust:completionHandler:| will be deallocated on background thread.
+  // |completionHandler| itself should never be released on background thread
+  // and |BlockHolder| ensures that.
+  __block scoped_refptr<BlockHolder<web::StatusQueryHandler>> handlerHolder(
+      new BlockHolder<web::StatusQueryHandler>(completionHandler));
+  [self verifyTrust:trust
+      completionHandler:^(SecTrustResultType trustResult, BOOL dispatched) {
+        if (!dispatched) {
+          // CertVerification task did not start.
+          dispatch_async(dispatch_get_main_queue(), ^{
+            handlerHolder->call(web::SECURITY_STYLE_UNKNOWN, net::CertStatus());
+          });
+          return;
+        }
+
+        web::SecurityStyle securityStyle =
+            web::GetSecurityStyleFromTrustResult(trustResult);
+        if (securityStyle == web::SECURITY_STYLE_AUTHENTICATED) {
+          // SecTrust API considers this cert as valid.
+          dispatch_async(dispatch_get_main_queue(), ^{
+            handlerHolder->call(securityStyle, net::CertStatus());
+          });
+          return;
+        }
+
+        // Retrieve the net::CertStatus for invalid certificates to determine
+        // the rejection reason, it is possible that rejection reason could not
+        // be determined and |cert_status| will be empty.
+        // TODO(eugenebut): Add UMA for CertVerifier and SecTrust verification
+        // mismatch (crbug.com/535699).
+        scoped_refptr<net::X509Certificate> cert(
+            web::CreateCertFromTrust(trust));
+        [self verifyCert:cert
+                      forHost:host
+            completionHandler:^(net::CertVerifyResult certVerifierResult, int) {
+              dispatch_async(dispatch_get_main_queue(), ^{
+                handlerHolder->call(securityStyle,
+                                    certVerifierResult.cert_status);
+              });
+            }];
       }];
 }
 
@@ -195,6 +254,24 @@ class BlockHolder : public base::RefCountedThreadSafe<BlockHolder<T>> {
         // OCSP response is not provided by iOS API.
         _certVerifier->Verify(params, completionHandler);
       }));
+}
+
+- (void)verifyTrust:(base::ScopedCFTypeRef<SecTrustRef>)trust
+    completionHandler:(void (^)(SecTrustResultType, BOOL))completionHandler {
+  DCHECK(completionHandler);
+  // SecTrustEvaluate performs trust evaluation synchronously, possibly making
+  // network requests. The UI thread should not be blocked by that operation.
+  bool dispatched = base::WorkerPool::PostTask(FROM_HERE, base::BindBlock(^{
+    SecTrustResultType trustResult = kSecTrustResultInvalid;
+    if (SecTrustEvaluate(trust.get(), &trustResult) != errSecSuccess) {
+      trustResult = kSecTrustResultInvalid;
+    }
+    completionHandler(trustResult, YES);
+  }), false /* task_is_slow */);
+
+  if (!dispatched) {
+    completionHandler(kSecTrustResultInvalid, NO);
+  }
 }
 
 @end

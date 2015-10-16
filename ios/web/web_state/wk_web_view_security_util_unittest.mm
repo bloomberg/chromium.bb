@@ -16,12 +16,15 @@
 #include "net/cert/x509_util.h"
 #include "net/ssl/ssl_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 
 namespace web {
 namespace {
 // Subject for testing self-signed certificate.
 const char kTestSubject[] = "self-signed";
+// Hostname for testing SecTrustRef objects.
+NSString* const kTestHost = @"www.example.com";
 
 // Returns an autoreleased certificate chain for testing. Chain will contain a
 // single self-signed cert with |subject| as a subject.
@@ -106,6 +109,46 @@ TEST_F(WKWebViewSecurityUtilTest, CreationCertFromTrust) {
 // Tests CreateCertFromTrust with nil trust.
 TEST_F(WKWebViewSecurityUtilTest, CreationCertFromNilTrust) {
   EXPECT_FALSE(CreateCertFromTrust(nil));
+}
+
+// Tests CreateServerTrustFromChain with valid input.
+TEST_F(WKWebViewSecurityUtilTest, CreationServerTrust) {
+  // Create server trust.
+  NSArray* chain = MakeTestCertChain(kTestSubject);
+  base::ScopedCFTypeRef<SecTrustRef> server_trust(
+      CreateServerTrustFromChain(chain, kTestHost));
+  EXPECT_TRUE(server_trust);
+
+  // Verify chain.
+  EXPECT_EQ(static_cast<CFIndex>(chain.count),
+            SecTrustGetCertificateCount(server_trust));
+  [chain enumerateObjectsUsingBlock:^(id expected_cert, NSUInteger i, BOOL*) {
+    id actual_cert = static_cast<id>(SecTrustGetCertificateAtIndex(
+        server_trust.get(), static_cast<CFIndex>(i)));
+    EXPECT_EQ(expected_cert, actual_cert);
+  }];
+
+  // Verify policies.
+  CFArrayRef policies = nullptr;
+  EXPECT_EQ(errSecSuccess, SecTrustCopyPolicies(server_trust.get(), &policies));
+  EXPECT_EQ(1, CFArrayGetCount(policies));
+  SecPolicyRef policy = (SecPolicyRef)CFArrayGetValueAtIndex(policies, 0);
+  base::ScopedCFTypeRef<CFDictionaryRef> properties(
+      SecPolicyCopyProperties(policy));
+  NSString* name = static_cast<NSString*>(
+      CFDictionaryGetValue(properties.get(), kSecPolicyName));
+  EXPECT_NSEQ(kTestHost, name);
+  CFRelease(policies);
+}
+
+// Tests CreateServerTrustFromChain with nil chain.
+TEST_F(WKWebViewSecurityUtilTest, CreationServerTrustFromNilChain) {
+  EXPECT_FALSE(CreateServerTrustFromChain(nil, kTestHost));
+}
+
+// Tests CreateServerTrustFromChain with empty chain.
+TEST_F(WKWebViewSecurityUtilTest, CreationServerTrustFromEmptyChain) {
+  EXPECT_FALSE(CreateServerTrustFromChain(@[], kTestHost));
 }
 
 // Tests that IsWKWebViewSSLCertError returns YES for NSError with
@@ -206,6 +249,33 @@ TEST_F(WKWebViewSecurityUtilTest, SSLInfoFromErrorWithCert) {
   EXPECT_TRUE(info.is_valid());
   EXPECT_EQ(net::CERT_STATUS_INVALID, info.cert_status);
   EXPECT_TRUE(info.cert->subject().GetDisplayName() == kTestSubject);
+}
+
+// Tests GetSecurityStyleFromTrustResult with bad SecTrustResultType result.
+TEST_F(WKWebViewSecurityUtilTest, GetSecurityStyleFromBadResult) {
+  EXPECT_EQ(SECURITY_STYLE_AUTHENTICATION_BROKEN,
+            GetSecurityStyleFromTrustResult(kSecTrustResultDeny));
+  EXPECT_EQ(
+      SECURITY_STYLE_AUTHENTICATION_BROKEN,
+      GetSecurityStyleFromTrustResult(kSecTrustResultRecoverableTrustFailure));
+  EXPECT_EQ(SECURITY_STYLE_AUTHENTICATION_BROKEN,
+            GetSecurityStyleFromTrustResult(kSecTrustResultFatalTrustFailure));
+  EXPECT_EQ(SECURITY_STYLE_AUTHENTICATION_BROKEN,
+            GetSecurityStyleFromTrustResult(kSecTrustResultOtherError));
+}
+
+// Tests GetSecurityStyleFromTrustResult with good SecTrustResultType result.
+TEST_F(WKWebViewSecurityUtilTest, GetSecurityStyleFromGoodResult) {
+  EXPECT_EQ(SECURITY_STYLE_AUTHENTICATED,
+            GetSecurityStyleFromTrustResult(kSecTrustResultProceed));
+  EXPECT_EQ(SECURITY_STYLE_AUTHENTICATED,
+            GetSecurityStyleFromTrustResult(kSecTrustResultUnspecified));
+}
+
+// Tests GetSecurityStyleFromTrustResult with invalid SecTrustResultType result.
+TEST_F(WKWebViewSecurityUtilTest, GetSecurityStyleFromInvalidResult) {
+  EXPECT_EQ(SECURITY_STYLE_UNKNOWN,
+            GetSecurityStyleFromTrustResult(kSecTrustResultInvalid));
 }
 
 }  // namespace web

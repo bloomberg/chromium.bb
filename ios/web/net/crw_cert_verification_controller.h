@@ -7,7 +7,9 @@
 
 #import <Foundation/Foundation.h>
 
+#include "base/mac/scoped_cftyperef.h"
 #import "base/memory/ref_counted.h"
+#include "ios/web/public/security_style.h"
 #include "net/cert/cert_status_flags.h"
 
 namespace net {
@@ -32,6 +34,8 @@ typedef NS_ENUM(NSInteger, CertAcceptPolicy) {
 
 // Completion handler called by decidePolicyForCert:host:completionHandler:.
 typedef void (^PolicyDecisionHandler)(web::CertAcceptPolicy, net::CertStatus);
+// Completion handler called by querySSLStatusForTrust:host:completionHandler:.
+typedef void (^StatusQueryHandler)(web::SecurityStyle, net::CertStatus);
 
 }  // namespace web
 
@@ -49,14 +53,25 @@ typedef void (^PolicyDecisionHandler)(web::CertAcceptPolicy, net::CertStatus);
 
 // TODO(eugenebut): add API for:
 // - accepting bad SSL cert using CertPolicyCache
-// - querying SSL cert status for Navigation Item
 
 // Decides the policy for the given |cert| for the given |host| and calls
-// |completionHandler| on completion. |completionHandler| cannot be null and
-// will be called synchronously or asynchronously on UI thread.
+// |completionHandler| on completion. |host| should be in ASCII compatible form
+// (e.g. for "http://名がドメイン.com", it should be "xn--v8jxj3d1dzdz08w.com").
+// |completionHandler| cannot be null and will be called asynchronously on the
+// UI thread.
 - (void)decidePolicyForCert:(const scoped_refptr<net::X509Certificate>&)cert
                        host:(NSString*)host
-          completionHandler:(web::PolicyDecisionHandler)handler;
+          completionHandler:(web::PolicyDecisionHandler)completionHandler;
+
+// Asynchronously provides web::SecurityStyle and net::CertStatus for the given
+// |serverTrust| and |host|. |host| should be in ASCII compatible form.
+// Note: The web::SecurityStyle determines whether the certificate is trusted.
+// It is possible for an untrusted certificate to return a net::CertStatus with
+// no errors if the cause could not be determined. Callers must handle this case
+// gracefully.
+- (void)querySSLStatusForTrust:(base::ScopedCFTypeRef<SecTrustRef>)serverTrust
+                          host:(NSString*)host
+             completionHandler:(web::StatusQueryHandler)completionHandler;
 
 // Cancels all pending verification requests. Completion handlers will not be
 // called after |shutDown| call. Must always be called before object's

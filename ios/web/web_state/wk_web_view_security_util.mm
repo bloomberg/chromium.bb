@@ -73,6 +73,22 @@ scoped_refptr<net::X509Certificate> CreateCertFromTrust(SecTrustRef trust) {
       SecTrustGetCertificateAtIndex(trust, 0), intermediates);
 }
 
+base::ScopedCFTypeRef<SecTrustRef> CreateServerTrustFromChain(NSArray* certs,
+                                                              NSString* host) {
+  base::ScopedCFTypeRef<SecTrustRef> scoped_result;
+  if (certs.count == 0)
+    return scoped_result;
+
+  base::ScopedCFTypeRef<SecPolicyRef> policy(
+      SecPolicyCreateSSL(TRUE, static_cast<CFStringRef>(host)));
+  SecTrustRef ref_result = nullptr;
+  if (SecTrustCreateWithCertificates(certs, policy, &ref_result) ==
+      errSecSuccess) {
+    scoped_result.reset(ref_result);
+  }
+  return scoped_result;
+}
+
 void EnsureFutureTrustEvaluationSucceeds(SecTrustRef trust) {
   base::ScopedCFTypeRef<CFDataRef> exceptions(SecTrustCopyExceptions(trust));
   SecTrustSetExceptions(trust, exceptions);
@@ -106,6 +122,23 @@ void GetSSLInfoFromWKWebViewSSLCertError(NSError* error,
   ssl_info->cert_status = GetCertStatusFromNSErrorCode(error.code);
   ssl_info->cert = web::CreateCertFromChain(
       error.userInfo[web::kNSErrorPeerCertificateChainKey]);
+}
+
+SecurityStyle GetSecurityStyleFromTrustResult(SecTrustResultType result) {
+  switch (result) {
+    case kSecTrustResultInvalid:
+      return SECURITY_STYLE_UNKNOWN;
+    case kSecTrustResultProceed:
+    case kSecTrustResultUnspecified:
+      return SECURITY_STYLE_AUTHENTICATED;
+    case kSecTrustResultDeny:
+    case kSecTrustResultRecoverableTrustFailure:
+    case kSecTrustResultFatalTrustFailure:
+    case kSecTrustResultOtherError:
+      return SECURITY_STYLE_AUTHENTICATION_BROKEN;
+  }
+  NOTREACHED();
+  return SECURITY_STYLE_UNKNOWN;
 }
 
 }  // namespace web
