@@ -54,7 +54,7 @@ source_set("mojo_runner_lib") {
     deps += [
       ":jni_headers",
       "//components/mus",
-      "//components/mus/vm:lib",
+      "//components/mus/ws:lib",
       "//mojo/shell",
       "//ui/gl",
       "//ui/platform_window/android",
@@ -302,7 +302,7 @@ if (is_android) {
       ":bootstrap",
       ":bootstrap_java",
       "//components/clipboard:apptests",
-      "//components/mus/vm:apptests",
+      "//components/mus/ws:apptests",
       "//components/resource_provider:apptests",
       "//mojo/services/network:apptests",
     ]

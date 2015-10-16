@@ -21,7 +21,7 @@
 #include "components/html_viewer/web_url_loader_impl.h"
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_tree_connection.h"
-#include "components/mus/vm/ids.h"
+#include "components/mus/ws/ids.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/application/public/cpp/connect.h"
 #include "mojo/application/public/interfaces/shell.mojom.h"

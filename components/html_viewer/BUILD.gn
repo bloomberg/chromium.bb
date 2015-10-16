@@ -215,7 +215,7 @@ source_set("lib") {
 
   data_deps = [
     "//components/clipboard",
-    "//components/mus/vm:lib",
+    "//components/mus/ws:lib",
     "//mojo/services/network:network",
     "//mojo/services/tracing",
   ]

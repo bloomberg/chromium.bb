@@ -11,7 +11,7 @@
 #include "components/mus/public/interfaces/gpu.mojom.h"
 #include "components/mus/public/interfaces/view_tree.mojom.h"
 #include "components/mus/public/interfaces/view_tree_host.mojom.h"
-#include "components/mus/vm/connection_manager_delegate.h"
+#include "components/mus/ws/connection_manager_delegate.h"
 #include "mojo/application/public/cpp/app_lifetime_helper.h"
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/interface_factory.h"

@@ -52,7 +52,7 @@ source_set("lib") {
     "//components/mus/public/cpp:common",
     "//components/mus/public/interfaces",
     "//components/mus/surfaces",
-    "//components/mus/vm:lib",
+    "//components/mus/ws:lib",
     "//mojo/application/public/cpp",
     "//mojo/common:common_base",
     "//mojo/common:tracing_impl",
