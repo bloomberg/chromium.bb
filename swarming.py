@@ -5,7 +5,7 @@
 
 """Client tool to trigger tasks or retrieve results from a Swarming server."""
 
-__version__ = '0.8.2'
+__version__ = '0.8.3'
 
 import collections
 import datetime
@@ -15,6 +15,7 @@ import optparse
 import os
 import subprocess
 import sys
+import tempfile
 import threading
 import time
 import urllib
@@ -1301,17 +1302,33 @@ def CMDreproduce(parser, args):
 
   properties = request['properties']
   env = None
-  if properties['env']:
+  if properties.get('env'):
     env = os.environ.copy()
     logging.info('env: %r', properties['env'])
     env.update(
         (i['key'].encode('utf-8'), i['value'].encode('utf-8'))
         for i in properties['env'])
 
+  if properties.get('inputs_ref'):
+    # Create the tree.
+    with isolateserver.get_storage(
+          properties['inputs_ref']['isolatedserver'],
+          properties['inputs_ref']['namespace']) as storage:
+      bundle = isolateserver.fetch_isolated(
+          properties['inputs_ref']['isolated'],
+          storage,
+          isolateserver.MemoryCache(file_mode_mask=0700),
+          workdir,
+          False)
+      command = bundle.command
+      if bundle.relative_cwd:
+        workdir = os.path.join(workdir, bundle.relative_cwd)
+  else:
+    command = properties['command']
   try:
-    return subprocess.call(properties['command'], env=env, cwd=workdir)
+    return subprocess.call(command, env=env, cwd=workdir)
   except OSError as e:
-    print >> sys.stderr, 'Failed to run: %s' % ' '.join(properties['command'])
+    print >> sys.stderr, 'Failed to run: %s' % ' '.join(command)
     print >> sys.stderr, str(e)
     return 1
 
