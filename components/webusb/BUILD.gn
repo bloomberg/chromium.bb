@@ -11,6 +11,7 @@ source_set("webusb") {
 
   deps = [
     "//base",
+    "//components/webusb/public/interfaces",
     "//device/core",
     "//device/usb",
   ]

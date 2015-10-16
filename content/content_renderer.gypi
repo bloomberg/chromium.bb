@@ -8,6 +8,7 @@
     '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
     '../cc/cc.gyp:cc',
     '../cc/blink/cc_blink.gyp:cc_blink',
+    '../components/components.gyp:webusb',
     '../components/scheduler/scheduler.gyp:scheduler',
     '../components/url_formatter/url_formatter.gyp:url_formatter',
     '../device/battery/battery.gyp:device_battery',
@@ -797,6 +798,7 @@
         '../third_party/libphonenumber/libphonenumber.gyp:libphonenumber',
       ],
       'dependencies!': [
+        '../components/components.gyp:webusb',
         '../device/battery/battery.gyp:device_battery',
       ],
     }, {
