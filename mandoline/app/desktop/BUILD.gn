@@ -10,7 +10,7 @@ group("desktop") {
 
 executable("mandoline") {
   sources = [
-    "../core_services_initialization.cc",
+    "../register_local_aliases.cc",
     "launcher_process.cc",
     "launcher_process.h",
     "main.cc",
@@ -24,6 +24,7 @@ executable("mandoline") {
     "//mojo/environment:chromium",
     "//mojo/package_manager",
     "//mojo/runner:lib",
+    "//mojo/runner:register_local_aliases_fwd",
   ]
 
   data_deps = [

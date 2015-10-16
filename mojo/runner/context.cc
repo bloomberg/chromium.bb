@@ -30,6 +30,7 @@
 #include "mojo/package_manager/package_manager_impl.h"
 #include "mojo/runner/in_process_native_runner.h"
 #include "mojo/runner/out_of_process_native_runner.h"
+#include "mojo/runner/register_local_aliases.h"
 #include "mojo/runner/switches.h"
 #include "mojo/services/tracing/public/cpp/switches.h"
 #include "mojo/services/tracing/public/interfaces/tracing.mojom.h"
@@ -198,6 +199,8 @@ bool Context::Init() {
   package_manager_ = new package_manager::PackageManagerImpl(
       shell_file_root_, task_runners_->blocking_pool());
   InitContentHandlers(package_manager_, command_line);
+
+  RegisterLocalAliases(package_manager_);
 
   scoped_ptr<shell::NativeRunnerFactory> runner_factory;
   if (command_line.HasSwitch(switches::kEnableMultiprocess))

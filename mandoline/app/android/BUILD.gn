@@ -27,11 +27,12 @@ executable("mandoline_runner") {
     "//mojo/package_manager",
     "//mojo/runner:lib",
     "//mojo/runner:mojo_runner_lib",
+    "//mojo/runner:register_local_aliases_fwd",
     "//mojo/shell",
   ]
 
   sources = [
-    "../core_services_initialization.cc",
+    "../register_local_aliases.cc",
     "mandoline_activity.cc",
     "mandoline_context_init.cc",
   ]

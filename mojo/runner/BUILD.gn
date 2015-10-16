@@ -24,6 +24,12 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
+source_set("register_local_aliases_fwd") {
+  sources = [
+    "register_local_aliases.h",
+  ]
+}
+
 source_set("mojo_runner_lib") {
   sources = []
 
@@ -41,6 +47,8 @@ source_set("mojo_runner_lib") {
       "desktop/launcher_process.cc",
       "desktop/launcher_process.h",
       "desktop/main.cc",
+      "register_local_aliases.cc",
+      "register_local_aliases.h",
     ]
     deps += [ "//components/tracing:startup_tracing" ]
   } else {
@@ -71,6 +79,13 @@ executable("mojo_runner") {
   if (is_android) {
     sources = [
       "android/context_init.cc",
+      "register_local_aliases.cc",
+    ]
+
+    deps += [
+      ":lib",
+      ":register_local_aliases_fwd",
+      "//third_party/mojo/src/mojo/edk/system",
     ]
 
     # On android, the executable is also the native library used by the apk.
@@ -425,6 +440,8 @@ test("mojo_runner_unittests") {
     "data_pipe_peek_unittest.cc",
     "in_process_native_runner_unittest.cc",
     "native_runner_unittest.cc",
+    "register_local_aliases.cc",
+    "register_local_aliases.h",
     "shell_test_base.cc",
     "shell_test_base.h",
     "shell_test_base_android.cc",

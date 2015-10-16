@@ -13,6 +13,7 @@ executable("test_runner") {
     "launcher.cc",
     "launcher.h",
     "main.cc",
+    "register_local_aliases.cc",
   ]
 
   deps = [
@@ -21,6 +22,7 @@ executable("test_runner") {
     "//mojo/common",
     "//mojo/environment:chromium",
     "//mojo/runner:lib",
+    "//mojo/runner:register_local_aliases_fwd",
     "//url",
   ]
 

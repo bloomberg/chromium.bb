@@ -18,7 +18,6 @@
 #include "base/trace_event/trace_event.h"
 #include "components/tracing/trace_config_file.h"
 #include "components/tracing/tracing_switches.h"
-#include "mandoline/app/core_services_initialization.h"
 #include "mandoline/app/desktop/launcher_process.h"
 #include "mojo/runner/context.h"
 #include "mojo/runner/switches.h"
@@ -108,7 +107,6 @@ int LauncherProcessMain(int argc, char** argv) {
     if (!shell_context.Init()) {
       return 0;
     }
-    InitCoreServicesForContext(&shell_context);
     if (g_tracing) {
       message_loop.PostDelayedTask(FROM_HERE,
                                    base::Bind(StopTracingAndFlushToDisk),
