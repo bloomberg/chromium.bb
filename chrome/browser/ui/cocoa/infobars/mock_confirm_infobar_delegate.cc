@@ -22,7 +22,7 @@ MockConfirmInfoBarDelegate::MockConfirmInfoBarDelegate(Owner* owner)
 
 MockConfirmInfoBarDelegate::~MockConfirmInfoBarDelegate() {
   if (owner_)
-    owner_->OnInfoBarDelegateClosed();
+    owner_->OnInfoBarDelegateClosed(this);
 }
 
 int MockConfirmInfoBarDelegate::GetIconId() const {

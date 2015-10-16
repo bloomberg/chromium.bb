@@ -130,10 +130,10 @@ class ConfirmInfoBarControllerTest : public CocoaProfileTest,
   bool closed_delegate_link_clicked_;
 
  private:
-  void OnInfoBarDelegateClosed() override {
-    closed_delegate_ok_clicked_ = delegate()->ok_clicked();
-    closed_delegate_cancel_clicked_ = delegate()->cancel_clicked();
-    closed_delegate_link_clicked_ = delegate()->link_clicked();
+  void OnInfoBarDelegateClosed(MockConfirmInfoBarDelegate* delegate) override {
+    closed_delegate_ok_clicked_ = delegate->ok_clicked();
+    closed_delegate_cancel_clicked_ = delegate->cancel_clicked();
+    closed_delegate_link_clicked_ = delegate->link_clicked();
     delegate_closed_ = true;
     controller_.reset();
   }

@@ -12,10 +12,11 @@
 
 class MockConfirmInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  // Called when |this| is about to be destroyed.
+  // Called when the dtor of |this| has been entered.
   class Owner {
    public:
-    virtual void OnInfoBarDelegateClosed() = 0;
+    virtual void OnInfoBarDelegateClosed(
+        MockConfirmInfoBarDelegate* delegate) = 0;
 
    protected:
     virtual ~Owner() {}
