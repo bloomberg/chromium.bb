@@ -5388,7 +5388,6 @@
       ],
       'target_defaults': {
         'xcode_settings' : {
-          'CLANG_CXX_LANGUAGE_STANDARD': 'c++11',
           'ENABLE_BITCODE': 'NO',
           'CLANG_CXX_LIBRARY': 'libc++',  # -stdlib=libc++
 
