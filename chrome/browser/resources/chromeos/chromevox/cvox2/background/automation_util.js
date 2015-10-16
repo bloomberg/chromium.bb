@@ -32,6 +32,7 @@ AutomationUtil.Dir = {
 goog.scope(function() {
 var AutomationNode = chrome.automation.AutomationNode;
 var Dir = AutomationUtil.Dir;
+var RoleType = chrome.automation.RoleType;
 
 /**
  * Find a node in subtree of |cur| satisfying |pred| using pre-order traversal.
@@ -95,7 +96,7 @@ AutomationUtil.findNextSubtree = function(cur, dir) {
     if (!AutomationUtil.isInSameTree(cur, cur.parent))
       return null;
     cur = cur.parent;
-    if (AutomationUtil.isTraversalRoot_(cur))
+    if (AutomationUtil.isTraversalRoot(cur))
       return null;
   }
 };
@@ -252,7 +253,7 @@ AutomationUtil.isInSameTree = function(a, b) {
 
   // Given two non-desktop roots, consider them in the "same" tree.
   return a.root === b.root ||
-      (a.root.role == b.root.role && a.root.role == 'rootWebArea');
+      (a.root.role == b.root.role && a.root.role == RoleType.rootWebArea);
 };
 
 /**
@@ -260,15 +261,16 @@ AutomationUtil.isInSameTree = function(a, b) {
  * traversals up the ancestry chain.
  * @param {AutomationNode} node
  * @return {boolean}
- * @private
  */
-AutomationUtil.isTraversalRoot_ = function(node) {
+AutomationUtil.isTraversalRoot = function(node) {
   switch (node.role) {
-    case 'dialog':
-    case 'window':
+    case RoleType.dialog:
+    case RoleType.window:
       return true;
-    case 'toolbar':
-      return node.root.role == 'desktop';
+    case RoleType.toolbar:
+      return node.root.role == RoleType.desktop;
+    case RoleType.rootWebArea:
+      return node.parent.root.role == RoleType.desktop;
     default:
       return false;
   }

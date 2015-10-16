@@ -1048,8 +1048,7 @@ Output.prototype = {
   range_: function(range, prevRange, type, rangeBuff) {
     if (!prevRange)
       prevRange = cursors.Range.fromNode(range.start.node.root);
-
-    var cursor = range.start;
+    var cursor = cursors.Cursor.fromNode(range.start.node);
     var prevNode = prevRange.start.node;
 
     var formatNodeAndAncestors = function(node, prevNode) {
@@ -1179,8 +1178,8 @@ Output.prototype = {
     this.ancestry_(
         range.start.node, prevNode, type, buff,
         {stay: true, name: true, value: true});
-    var startIndex = range.start.getIndex();
-    var endIndex = range.end.getIndex();
+    var startIndex = range.start.index;
+    var endIndex = range.end.index;
     if (startIndex === endIndex)
       endIndex++;
     this.append_(

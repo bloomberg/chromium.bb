@@ -64,10 +64,9 @@ var Unit = cursors.Unit;
  * Represents a position within the automation tree.
  * @constructor
  * @param {!AutomationNode} node
- * @param {number} index A 0-based index into either this cursor's name or value
- * attribute. Relies on the fact that a node has either a name or a value but
- * not both. An index of |cursors.NODE_INDEX| means the node as a whole is
- * pointed to and covers the case where the accessible text is empty.
+ * @param {number} index A 0-based index into this cursor node's primary
+ * accessible name. An index of |cursors.NODE_INDEX| means the node as a whole
+ * is pointed to and covers the case where the accessible text is empty.
  */
 cursors.Cursor = function(node, index) {
   /** @type {!AutomationNode} @private */
@@ -93,7 +92,7 @@ cursors.Cursor.prototype = {
    */
   equals: function(rhs) {
     return this.node_ === rhs.node &&
-        this.index_ === rhs.getIndex();
+        this.index_ === rhs.index;
   },
 
   /**
@@ -106,7 +105,7 @@ cursors.Cursor.prototype = {
   /**
    * @return {number}
    */
-  getIndex: function() {
+  get index() {
     return this.index_;
   },
 
@@ -255,6 +254,51 @@ cursors.Cursor.prototype = {
 };
 
 /**
+ * A cursors.Cursor that wraps from beginning to end and vice versa when moved.
+ * @constructor
+ * @param {!AutomationNode} node
+ * @param {number} index A 0-based index into this cursor node's primary
+ * accessible name. An index of |cursors.NODE_INDEX| means the node as a whole
+ * is pointed to and covers the case where the accessible text is empty.
+ * @extends {cursors.Cursor}
+ */
+cursors.WrappingCursor = function(node, index) {
+  cursors.Cursor.call(this, node, index);
+};
+
+
+/**
+ * Convenience method to construct a Cursor from a node.
+ * @param {!AutomationNode} node
+ * @return {!cursors.WrappingCursor}
+ */
+cursors.WrappingCursor.fromNode = function(node) {
+  return new cursors.WrappingCursor(node, cursors.NODE_INDEX);
+};
+
+cursors.WrappingCursor.prototype = {
+  __proto__: cursors.Cursor.prototype,
+
+  /** @override */
+  move: function(unit, movement, dir) {
+    var result = cursors.Cursor.prototype.move.call(this, unit, movement, dir);
+    if (movement == Movement.DIRECTIONAL && result.equals(this)) {
+      var pred = unit == Unit.DOM_NODE ?
+          AutomationPredicate.leafDomNode : AutomationPredicate.leaf;
+      var root = this.node;
+      while (!AutomationUtil.isTraversalRoot(root) && root.parent)
+        root = root.parent;
+      var wrappedNode = AutomationUtil.findNodePre(root, dir, pred);
+      if (wrappedNode) {
+        cvox.ChromeVox.earcons.playEarcon(cvox.Earcon.WRAP);
+        return new cursors.WrappingCursor(wrappedNode, cursors.NODE_INDEX);
+      }
+    }
+    return new cursors.WrappingCursor(result.node, result.index);
+  }
+};
+
+/**
  * Represents a range in the automation tree. There is no visible selection on
  * the page caused by usage of this object.
  * It is assumed that the caller provides |start| and |end| in document order.
@@ -275,7 +319,7 @@ cursors.Range = function(start, end) {
  * @return {!cursors.Range}
  */
 cursors.Range.fromNode = function(node) {
-  var cursor = cursors.Cursor.fromNode(node);
+  var cursor = cursors.WrappingCursor.fromNode(node);
   return new cursors.Range(cursor, cursor);
 };
 
@@ -356,8 +400,8 @@ cursors.Range.prototype = {
    */
   isSubNode: function() {
     return this.start.node === this.end.node &&
-        this.start.getIndex() > -1 &&
-        this.end.getIndex() > -1;
+        this.start.index > -1 &&
+        this.end.index > -1;
   },
 
   /**
