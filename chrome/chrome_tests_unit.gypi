@@ -2832,6 +2832,7 @@
         'app/delay_load_hook_unittest_win.cc',
         'app/delay_load_hook_win.cc',
         'app/delay_load_hook_win.h',
+        'app/resources/resources_unittest.cc',
         'app/signature_validator_win.cc',
         'app/signature_validator_win.h',
         'app/signature_validator_win_unittest.cc',
