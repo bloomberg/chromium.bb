@@ -233,6 +233,11 @@ class WebRtcLoggingHandlerHost : public content::BrowserMessageFilter {
 
   bool ReleaseRtpDumps(WebRtcLogPaths* log_paths);
 
+  void FireGenericDoneCallback(
+      const WebRtcLoggingHandlerHost::GenericDoneCallback& callback,
+      bool success,
+      const std::string& error_message);
+
   scoped_ptr<WebRtcLogBuffer> log_buffer_;
 
   // The profile associated with our renderer process.

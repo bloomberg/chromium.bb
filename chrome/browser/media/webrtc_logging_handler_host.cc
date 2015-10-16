@@ -104,26 +104,6 @@ void FormatMetaDataAsLogMessage(
   message->resize(message->size() - 1);
 }
 
-void FireGenericDoneCallback(
-    const WebRtcLoggingHandlerHost::GenericDoneCallback& callback,
-    bool success,
-    const std::string& error_message) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(!callback.is_null());
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(callback, success, error_message));
-}
-
-void FireAndResetGenericDoneCallback(
-    WebRtcLoggingHandlerHost::GenericDoneCallback* callback,
-    bool success,
-    const std::string& error_message) {
-  FireGenericDoneCallback(*callback, success, error_message);
-  callback->Reset();
-}
-
 }  // namespace
 
 WebRtcLogBuffer::WebRtcLogBuffer()
@@ -202,7 +182,7 @@ void WebRtcLoggingHandlerHost::StartLogging(
   DCHECK(!callback.is_null());
 
   if (logging_state_ != CLOSED) {
-    FireGenericDoneCallback(callback, false, "A log is already open");
+    FireGenericDoneCallback(callback, false, "A log is already open.");
     return;
   }
 
@@ -217,7 +197,7 @@ void WebRtcLoggingHandlerHost::StopLogging(
   DCHECK(!callback.is_null());
 
   if (logging_state_ != STARTED) {
-    FireGenericDoneCallback(callback, false, "Logging not started");
+    FireGenericDoneCallback(callback, false, "Logging not started.");
     return;
   }
 
@@ -498,7 +478,8 @@ void WebRtcLoggingHandlerHost::OnLoggingStoppedInRenderer() {
   }
   logging_started_time_ = base::Time();
   logging_state_ = STOPPED;
-  FireAndResetGenericDoneCallback(&stop_callback_, true, "");
+  FireGenericDoneCallback(stop_callback_, true, "");
+  stop_callback_.Reset();
 }
 
 void WebRtcLoggingHandlerHost::StartLoggingIfAllowed(
@@ -769,4 +750,48 @@ bool WebRtcLoggingHandlerHost::ReleaseRtpDumps(WebRtcLogPaths* log_paths) {
   stop_rtp_dump_callback_.Reset();
 
   return true;
+}
+
+void WebRtcLoggingHandlerHost::FireGenericDoneCallback(
+    const WebRtcLoggingHandlerHost::GenericDoneCallback& callback,
+    bool success,
+    const std::string& error_message) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(!callback.is_null());
+
+  if (error_message.empty()) {
+    DCHECK(success);
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(callback, success, error_message));
+    return;
+  }
+
+  DCHECK(!success);
+
+  // Add current logging state to error message.
+  std::string error_message_with_state(error_message);
+  switch (logging_state_) {
+  case CLOSED:
+    error_message_with_state += " State=closed.";
+    break;
+  case STARTING:
+    error_message_with_state += " State=starting.";
+    break;
+  case STARTED:
+    error_message_with_state += " State=started.";
+    break;
+  case STOPPING:
+    error_message_with_state += " State=stopping.";
+    break;
+  case STOPPED:
+    error_message_with_state += " State=stopped.";
+    break;
+  }
+
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(callback, success, error_message_with_state));
 }
