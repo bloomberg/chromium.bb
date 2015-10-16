@@ -56,8 +56,9 @@ class CompilerTest(unittest.TestCase):
                                                closure_args=args)
     return found_errors, stderr, out_file, out_map
 
-  def _runCheckerTestExpectError(self, source_code, expected_error):
-    _, stderr, out_file, out_map = self._runChecker(source_code)
+  def _runCheckerTestExpectError(self, source_code, expected_error,
+                                 closure_args=None):
+    _, stderr, out_file, out_map = self._runChecker(source_code, closure_args)
 
     self.assertTrue(expected_error in stderr,
         msg="Expected chunk: \n%s\n\nOutput:\n%s\n" % (
@@ -341,6 +342,31 @@ testScript();
     self._runCheckerTestExpectError(self._CR_DEFINE_DEFINITION +
         "cr.exportPath();",
         "ERROR - cr.exportPath() should have at least 1 argument: path name")
+
+  def testMissingReturnAssertNotReached(self):
+    template = self._ASSERT_DEFINITION + """
+/** @enum {number} */
+var Enum = {FOO: 1, BAR: 2};
+
+/**
+ * @param {Enum} e
+ * @return {number}
+ */
+function enumToVal(e) {
+  switch (e) {
+    case Enum.FOO:
+      return 1;
+    case Enum.BAR:
+      return 2;
+  }
+  %s
+}
+"""
+    args = ['warning_level=VERBOSE']
+    self._runCheckerTestExpectError(template % '', 'Missing return',
+                                    closure_args=args)
+    self._runCheckerTestExpectSuccess(template % 'assertNotReached();',
+                                      closure_args=args)
 
 
 if __name__ == "__main__":

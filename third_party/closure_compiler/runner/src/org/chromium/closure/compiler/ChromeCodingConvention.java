@@ -67,4 +67,21 @@ public class ChromeCodingConvention extends CodingConventions.Proxy {
       new AssertInstanceofSpec("cr.ui.decorate")
     );
   }
+
+  // TODO(dbeam): combine this with ClosureCodingConvention?
+  @Override
+  public boolean isFunctionCallThatAlwaysThrows(Node n) {
+    if (n.isExprResult()) {
+      if (!n.getFirstChild().isCall()) {
+        return false;
+      }
+    } else if (!n.isCall()) {
+      return false;
+    }
+    if (n.isExprResult()) {
+      n = n.getFirstChild();
+    }
+    // n is a call
+    return n.getFirstChild().matchesQualifiedName("assertNotReached");
+  }
 }
