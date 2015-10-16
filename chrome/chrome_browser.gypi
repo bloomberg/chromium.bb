@@ -2411,7 +2411,7 @@
       'browser/rlz/chrome_rlz_tracker_delegate.h',
     ],
     # "Safe Browsing Basic" files used for safe browsing in full mode
-    # (safe_browsing=1), mobile (=2), and mobile-extended (=3).
+    # (safe_browsing=1) and mobile (=2)
     'chrome_browser_safe_browsing_basic_sources': [
       'browser/renderer_host/data_reduction_proxy_resource_throttle_android.cc',
       'browser/renderer_host/data_reduction_proxy_resource_throttle_android.h',
@@ -2434,9 +2434,9 @@
       'browser/safe_browsing/ui_manager.cc',
       'browser/safe_browsing/ui_manager.h',
     ],
-    # "Safe Browsing Extended Mobile" files in addition to the "basic" ones
-    # to use for mobile_extended mode. This has some in common with "full."
-    'chrome_browser_safe_browsing_mobile_extended_sources': [
+    # "Safe Browsing Mobile" files in addition to the "basic" ones
+    # to use for mobile mode. This has some in common with "full."
+    'chrome_browser_safe_browsing_mobile_sources': [
       'browser/renderer_host/safe_browsing_resource_throttle.cc',
       'browser/renderer_host/safe_browsing_resource_throttle.h',
       'browser/safe_browsing/database_manager.h',
@@ -2448,7 +2448,7 @@
       'browser/safe_browsing/safe_browsing_api_handler_util.h',
     ],
     # "Safe Browsing Full" files in addition to the "basic" ones to use for
-    # full safe browsing. This has some in common with "mobile_extended."
+    # full safe browsing. This has some in common with "mobile."
     'chrome_browser_safe_browsing_full_sources': [
       'browser/download/download_completion_blocker.cc',
       'browser/download/download_completion_blocker.h',
@@ -3494,8 +3494,8 @@
                 }],
               ],
             }],
-            ['safe_browsing == 3', {
-              'sources': [ '<@(chrome_browser_safe_browsing_mobile_extended_sources)' ],
+            ['safe_browsing == 2', {
+              'sources': [ '<@(chrome_browser_safe_browsing_mobile_sources)' ],
               'dependencies': [
                 'safe_browsing_proto',
               ],

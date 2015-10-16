@@ -416,11 +416,9 @@
       'configuration_policy%': 1,
 
       # Variable safe_browsing is used to control the build time configuration
-      # for safe browsing feature. Safe browsing can be compiled in 4 different
-      # levels: 0 disables it, 1 enables it fully, and 2 enables only UI and
-      # reporting features for use with Data Saver on Mobile, and 3 enables
-      # extended mobile protection via an external API.  When 3 is fully
-      # deployed, it will replace 2.
+      # for safe browsing feature. Safe browsing can be compiled in 3 different
+      # levels: 0 disables it, 1 enables it fully, and 2 enables mobile
+      # protection via an external API.
       'safe_browsing%': 1,
 
       # Web speech is enabled by default. Set to 0 to disable.
@@ -1849,7 +1847,7 @@
 
         'proprietary_codecs%': '<(proprietary_codecs)',
 
-        'safe_browsing%': 3,
+        'safe_browsing%': 2,
 
         'enable_web_speech%': 0,
         'java_bridge%': 1,
@@ -3057,7 +3055,6 @@
         'defines': ['ENABLE_WEBVR'],
       }],
 
-      # SAFE_BROWSING_SERVICE - browser manages a safe-browsing service.
       # SAFE_BROWSING_DB_LOCAL - service manages a local database.
       # SAFE_BROWSING_DB_REMOTE - service talks via API to a database
       # SAFE_BROWSING_CSD - enable client-side phishing detection.
@@ -3067,22 +3064,11 @@
           'FULL_SAFE_BROWSING',
           'SAFE_BROWSING_CSD',
           'SAFE_BROWSING_DB_LOCAL',
-          'SAFE_BROWSING_SERVICE',
         ],
       }],
       ['safe_browsing==2', {
         'defines': [
-          # TODO(nparker): Remove existing uses of MOBILE_SAFE_BROWSING
-          'MOBILE_SAFE_BROWSING',
-          'SAFE_BROWSING_SERVICE',
-        ],
-      }],
-      ['safe_browsing==3', {
-        'defines': [
-          # TODO(nparker): Remove existing uses of MOBILE_SAFE_BROWSING
-          'MOBILE_SAFE_BROWSING',
           'SAFE_BROWSING_DB_REMOTE',
-          'SAFE_BROWSING_SERVICE',
         ],
       }],
     ],  # conditions for 'target_defaults'

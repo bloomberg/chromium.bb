@@ -259,14 +259,8 @@ config("feature_flags") {
     defines += [ "FULL_SAFE_BROWSING" ]
     defines += [ "SAFE_BROWSING_CSD" ]
     defines += [ "SAFE_BROWSING_DB_LOCAL" ]
-    defines += [ "SAFE_BROWSING_SERVICE" ]
   } else if (safe_browsing_mode == 2) {
-    defines += [ "MOBILE_SAFE_BROWSING" ]
-    defines += [ "SAFE_BROWSING_SERVICE" ]
-  } else if (safe_browsing_mode == 3) {
-    defines += [ "MOBILE_SAFE_BROWSING" ]
     defines += [ "SAFE_BROWSING_DB_REMOTE" ]
-    defines += [ "SAFE_BROWSING_SERVICE" ]
   }
   if (is_official_build) {
     defines += [ "OFFICIAL_BUILD" ]

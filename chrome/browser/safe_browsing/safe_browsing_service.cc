@@ -251,12 +251,8 @@ void SafeBrowsingService::Initialize() {
   }
 #endif  // defined(SAFE_BROWSING_CSD)
 
-// TODO(nparker): Adding SAFE_BROWSING_SERVICE_DOWNLOAD to control this might
-// allow removing FULL_SAFE_BROWSING above.
-#if !defined(OS_ANDROID)
   download_service_.reset(new safe_browsing::DownloadProtectionService(
       this, url_request_context_getter_.get()));
-#endif
 
   if (safe_browsing::IncidentReportingService::IsEnabled()) {
     incident_service_.reset(new safe_browsing::IncidentReportingService(

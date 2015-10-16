@@ -17,15 +17,9 @@
 #include "net/base/escape.h"
 
 SafeBrowsingProtocolConfig::SafeBrowsingProtocolConfig()
-    : disable_auto_update(false)
-#if defined(OS_ANDROID)
-    , disable_connection_check(false)
-#endif
-{
-}
+    : disable_auto_update(false) {}
 
-SafeBrowsingProtocolConfig::~SafeBrowsingProtocolConfig() {
-}
+SafeBrowsingProtocolConfig::~SafeBrowsingProtocolConfig() {}
 
 // static
 std::string SafeBrowsingProtocolManagerHelper::Version() {

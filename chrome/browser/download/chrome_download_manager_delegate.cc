@@ -191,13 +191,11 @@ ChromeDownloadManagerDelegate::~ChromeDownloadManagerDelegate() {
 void ChromeDownloadManagerDelegate::SetDownloadManager(DownloadManager* dm) {
   download_manager_ = dm;
 
-#if defined(FULL_SAFE_BROWSING) || defined(MOBILE_SAFE_BROWSING)
   SafeBrowsingService* sb_service = g_browser_process->safe_browsing_service();
   if (sb_service && !profile_->IsOffTheRecord()) {
     // Include this download manager in the set monitored by safe browsing.
     sb_service->AddDownloadManager(dm);
   }
-#endif
 }
 
 void ChromeDownloadManagerDelegate::Shutdown() {

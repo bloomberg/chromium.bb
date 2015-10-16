@@ -273,9 +273,6 @@ LocalSafeBrowsingDatabaseManager::LocalSafeBrowsingDatabaseManager(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(sb_service_.get() != NULL);
 
-  // Android only supports a subset of FULL_SAFE_BROWSING.
-  // TODO(shess): This shouldn't be OS-driven <http://crbug.com/394379>
-#if !defined(OS_ANDROID)
   base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
   enable_download_protection_ =
       !cmdline->HasSwitch(switches::kSbDisableDownloadProtection);
@@ -298,7 +295,6 @@ LocalSafeBrowsingDatabaseManager::LocalSafeBrowsingDatabaseManager(
   // The client-side IP blacklist feature is tightly integrated with client-side
   // phishing protection for now.
   enable_ip_blacklist_ = enable_csd_whitelist_;
-#endif
 }
 
 LocalSafeBrowsingDatabaseManager::~LocalSafeBrowsingDatabaseManager() {

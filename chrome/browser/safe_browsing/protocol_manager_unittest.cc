@@ -37,13 +37,8 @@ const char kAppVer[] = "1.0";
 const char kAdditionalQuery[] = "additional_query";
 const char kUrlSuffix[] = "&ext=0";
 
-#if defined(OS_ANDROID)
-const char kDefaultPhishList[] = "goog-mobilephish-shavar";
-const char kDefaultMalwareList[] = "goog-mobilemalware-shavar";
-#else
 const char kDefaultPhishList[] = "goog-phish-shavar";
 const char kDefaultMalwareList[] = "goog-malware-shavar";
-#endif
 
 // Add-prefix chunk with single prefix.
 const char kRawChunkPayload1[] = {
@@ -91,9 +86,6 @@ class SafeBrowsingProtocolManagerTest : public testing::Test {
     config.backup_http_error_url_prefix = kBackupHttpUrlPrefix;
     config.backup_network_error_url_prefix = kBackupNetworkUrlPrefix;
     config.version = kAppVer;
-#if defined(OS_ANDROID)
-    config.disable_connection_check = true;
-#endif
     return scoped_ptr<SafeBrowsingProtocolManager>(
         SafeBrowsingProtocolManager::Create(delegate, NULL, config));
   }

@@ -386,12 +386,10 @@ void ProfileImplIOData::Handle::LazyInitialize() const {
       prefs::kRestoreOnStartup, pref_service);
   io_data_->session_startup_pref()->MoveToThread(
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
-#if defined(SAFE_BROWSING_SERVICE)
   io_data_->safe_browsing_enabled()->Init(prefs::kSafeBrowsingEnabled,
       pref_service);
   io_data_->safe_browsing_enabled()->MoveToThread(
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
-#endif
   io_data_->InitializeOnUIThread(profile_);
 }
 

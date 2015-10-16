@@ -1801,9 +1801,9 @@ if (!is_android) {
               ".",
               "//chrome")
       deps += [ ":test_proto" ]
-    } else if (safe_browsing_mode == 3) {
+    } else if (safe_browsing_mode == 2) {
       sources += rebase_path(
-              chrome_tests_unit_gypi_values.chrome_unit_tests_mobile_extended_safe_browsing_sources + chrome_tests_unit_gypi_values.chrome_unit_tests_shared_safe_browsing_sources,
+              chrome_tests_unit_gypi_values.chrome_unit_tests_mobile_safe_browsing_sources + chrome_tests_unit_gypi_values.chrome_unit_tests_shared_safe_browsing_sources,
               ".",
               "//chrome")
     }

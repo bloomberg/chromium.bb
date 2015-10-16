@@ -956,15 +956,15 @@
       'browser/notifications/notification_permission_context_unittest.cc',
       'browser/notifications/platform_notification_service_unittest.cc',
     ],
-     # Used by Full Safe Browsing (safe_browsing==1) and Mobile Extended Safe
-     # Browsing (==3) modes.
+     # Used by Full Safe Browsing (safe_browsing==1) and Mobile Safe
+     # Browsing (==2) modes.
     'chrome_unit_tests_shared_safe_browsing_sources': [
       'browser/safe_browsing/malware_details_unittest.cc',
       'browser/safe_browsing/ping_manager_unittest.cc',
       'browser/safe_browsing/safe_browsing_blocking_page_unittest.cc',
       'browser/safe_browsing/ui_manager_unittest.cc',
      ],
-    'chrome_unit_tests_mobile_extended_safe_browsing_sources': [
+    'chrome_unit_tests_mobile_safe_browsing_sources': [
       'browser/safe_browsing/safe_browsing_api_handler_unittest.cc',
      ],
     'chrome_unit_tests_full_safe_browsing_sources': [
@@ -2429,8 +2429,8 @@
             'ipc_protobuf_message_test_proto',
           ],
         }],
-        ['safe_browsing==3', {
-          'sources': [ '<@(chrome_unit_tests_mobile_extended_safe_browsing_sources)',
+        ['safe_browsing==2', {
+          'sources': [ '<@(chrome_unit_tests_mobile_safe_browsing_sources)',
                        '<@(chrome_unit_tests_shared_safe_browsing_sources)',
                      ],
         }],

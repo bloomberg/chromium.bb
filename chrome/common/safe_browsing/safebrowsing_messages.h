@@ -10,10 +10,6 @@
 #include "ipc/ipc_message_macros.h"
 #include "url/gurl.h"
 
-#if !defined(SAFE_BROWSING_SERVICE)
-#error "Safe browsing should be enabled"
-#endif
-
 #define IPC_MESSAGE_START SafeBrowsingMsgStart
 
 // A node is essentially a frame.

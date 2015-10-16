@@ -103,9 +103,10 @@ static_library("renderer") {
                     ".",
                     "..")
     if (safe_browsing_mode == 1) {
-      sources += rebase_path(gypi_values.chrome_renderer_safe_browsing_sources,
-                             ".",
-                             "..")
+      sources +=
+          rebase_path(gypi_values.chrome_renderer_full_safe_browsing_sources,
+                      ".",
+                      "..")
       deps += [
         "//chrome/common/safe_browsing:proto",
         "//third_party/smhasher:murmurhash3",

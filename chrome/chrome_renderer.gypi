@@ -185,7 +185,7 @@
       'renderer/safe_browsing/malware_dom_details.h',
     ],
     # For safe_browsing==1 only.
-    'chrome_renderer_safe_browsing_sources': [
+    'chrome_renderer_full_safe_browsing_sources': [
       'renderer/safe_browsing/feature_extractor_clock.cc',
       'renderer/safe_browsing/feature_extractor_clock.h',
       'renderer/safe_browsing/features.cc',
@@ -309,7 +309,7 @@
         }],
         ['safe_browsing==1', {
           'sources': [
-            '<@(chrome_renderer_safe_browsing_sources)',
+            '<@(chrome_renderer_full_safe_browsing_sources)',
           ],
           'dependencies': [
             'safe_browsing_proto',

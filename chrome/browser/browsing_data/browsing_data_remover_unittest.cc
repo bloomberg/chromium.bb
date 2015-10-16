@@ -339,7 +339,6 @@ class RemoveCookieTester {
   DISALLOW_COPY_AND_ASSIGN(RemoveCookieTester);
 };
 
-#if defined(SAFE_BROWSING_SERVICE)
 class RemoveSafeBrowsingCookieTester : public RemoveCookieTester {
  public:
   RemoveSafeBrowsingCookieTester()
@@ -370,7 +369,6 @@ class RemoveSafeBrowsingCookieTester : public RemoveCookieTester {
 
   DISALLOW_COPY_AND_ASSIGN(RemoveSafeBrowsingCookieTester);
 };
-#endif
 
 class RemoveChannelIDTester : public net::SSLConfigService::Observer {
  public:
@@ -1070,7 +1068,6 @@ TEST_F(BrowsingDataRemoverTest, RemoveCookieLastHour) {
   EXPECT_EQ(removal_data.remove_begin, GetBeginTime());
 }
 
-#if defined(SAFE_BROWSING_SERVICE)
 TEST_F(BrowsingDataRemoverTest, RemoveSafeBrowsingCookieForever) {
   RemoveSafeBrowsingCookieTester tester;
 
@@ -1100,7 +1097,6 @@ TEST_F(BrowsingDataRemoverTest, RemoveSafeBrowsingCookieLastHour) {
   // browsing cookies.
   EXPECT_TRUE(tester.ContainsCookie());
 }
-#endif
 
 TEST_F(BrowsingDataRemoverTest, RemoveChannelIDForever) {
   RemoveChannelIDTester tester(GetProfile());

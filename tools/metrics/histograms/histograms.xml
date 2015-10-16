@@ -38186,6 +38186,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="SafeBrowsing.EnabledSettingChanged" enum="BooleanEnabled">
   <owner>feng@chromium.org</owner>
+  <obsolete>
+    Not in the code anymore (10/2015).
+  </obsolete>
   <summary>
     Records the user action that enables/disables safe browsing feature in the
     Settings page on Android.
@@ -39237,7 +39240,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="SB2.UpdateSizeBackground" units="bytes">
-  <owner>feng@chromium.org</owner>
+  <owner>nparker@chromium.org</owner>
+  <obsolete>
+    Was used for an experiment in late 2014.
+  </obsolete>
   <summary>
     The size of all the chunk URLs in an update response when Chrome is in the
     background.
@@ -39245,7 +39251,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="SB2.UpdateSizeForeground" units="bytes">
-  <owner>feng@chromium.org</owner>
+  <owner>nparker@chromium.org</owner>
+  <obsolete>
+    Was used for an experiment in late 2014.
+  </obsolete>
   <summary>
     The size of all the chunk URLs in an update response when Chrome is in the
     foreground.

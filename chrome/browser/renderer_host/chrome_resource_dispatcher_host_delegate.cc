@@ -485,10 +485,10 @@ void ChromeResourceDispatcherHostDelegate::AppendStandardResourceThrottles(
   // Insert either safe browsing or data reduction proxy throttle at the front
   // of the list, so one of them gets to decide if the resource is safe.
   content::ResourceThrottle* first_throttle = NULL;
-#if defined(OS_ANDROID) && defined(SAFE_BROWSING_SERVICE)
+#if defined(OS_ANDROID)
   first_throttle = DataReductionProxyResourceThrottle::MaybeCreate(
       request, resource_context, resource_type, safe_browsing_.get());
-#endif  // defined(OS_ANDROID) && defined(SAFE_BROWSING_SERVICE)
+#endif  // defined(OS_ANDROID)
 
 #if defined(SAFE_BROWSING_DB_LOCAL) || defined(SAFE_BROWSING_DB_REMOTE)
   if (!first_throttle && io_data->safe_browsing_enabled()->GetValue()) {
