@@ -300,27 +300,39 @@ def map_and_run(
         logging.warning(
             'Deliberately leaking %s for later examination', run_dir)
       else:
-        if fs.isdir(run_dir) and not file_path.rmtree(run_dir):
-          # On Windows rmtree(run_dir) call above has a synchronization effect:
-          # it finishes only when all task child processes terminate (since a
-          # running process locks *.exe file). Examine out_dir only after that
-          # call completes (since child processes may write to out_dir too and
-          # we need to wait for them to finish).
-          print >> sys.stderr, (
-              'Failed to delete the run directory, forcibly failing\n'
-              'the task because of it. No zombie process can outlive a\n'
-              'successful task run and still be marked as successful.\n'
-              'Fix your stuff.')
-          if result['exit_code'] == 0:
-            result['exit_code'] = 1
-        if fs.isdir(tmp_dir) and not file_path.rmtree(tmp_dir):
-          print >> sys.stderr, (
-              'Failed to delete the temporary directory, forcibly failing\n'
-              'the task because of it. No zombie process can outlive a\n'
-              'successful task run and still be marked as successful.\n'
-              'Fix your stuff.')
-          if result['exit_code'] == 0:
-            result['exit_code'] = 1
+        # On Windows rmtree(run_dir) call above has a synchronization effect: it
+        # finishes only when all task child processes terminate (since a running
+        # process locks *.exe file). Examine out_dir only after that call
+        # completes (since child processes may write to out_dir too and we need
+        # to wait for them to finish).
+        if fs.isdir(run_dir):
+          try:
+            success = file_path.rmtree(run_dir)
+          except OSError as e:
+            logging.error('Failure with %s', e)
+            success = False
+          if not success:
+            print >> sys.stderr, (
+                'Failed to delete the run directory, forcibly failing\n'
+                'the task because of it. No zombie process can outlive a\n'
+                'successful task run and still be marked as successful.\n'
+                'Fix your stuff.')
+            if result['exit_code'] == 0:
+              result['exit_code'] = 1
+        if fs.isdir(tmp_dir):
+          try:
+            success = file_path.rmtree(tmp_dir)
+          except OSError as e:
+            logging.error('Failure with %s', e)
+            success = False
+          if not success:
+            print >> sys.stderr, (
+                'Failed to delete the temporary directory, forcibly failing\n'
+                'the task because of it. No zombie process can outlive a\n'
+                'successful task run and still be marked as successful.\n'
+                'Fix your stuff.')
+            if result['exit_code'] == 0:
+              result['exit_code'] = 1
 
       # This deletes out_dir if leak_temp_dir is not set.
       result['outputs_ref'], success = delete_and_upload(
