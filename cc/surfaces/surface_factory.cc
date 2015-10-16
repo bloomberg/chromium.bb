@@ -8,7 +8,6 @@
 #include "cc/output/compositor_frame.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/surfaces/surface.h"
-#include "cc/surfaces/surface_factory_client.h"
 #include "cc/surfaces/surface_manager.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -74,11 +73,6 @@ void SurfaceFactory::RequestCopyOfSurface(
   DCHECK(it->second->factory().get() == this);
   it->second->RequestCopyOfOutput(copy_request.Pass());
   manager_->SurfaceModified(surface_id);
-}
-
-void SurfaceFactory::WillDrawSurface(SurfaceId id,
-                                     const gfx::Rect& damage_rect) {
-  client_->WillDrawSurface(id, damage_rect);
 }
 
 void SurfaceFactory::ReceiveFromChild(
