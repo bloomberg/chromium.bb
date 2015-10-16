@@ -14,15 +14,6 @@ config("leveldatabase_config") {
   ]
 }
 
-config("leveldb_db_bench_warnings") {
-  if (is_clang) {
-    # TrimSpaces in db_bench.cc is unused on non-linux.
-    # TODO(thakis): Remove this once that's fixed upstream,
-    # https://github.com/google/leveldb/pull/310
-    cflags = [ "-Wno-unused-function" ]
-  }
-}
-
 static_library("leveldatabase") {
   sources = [
     "env_chromium.cc",
@@ -222,8 +213,6 @@ if (!is_android) {
     ]
     configs -= [ "//build/config/compiler:chromium_code" ]
     configs += [ "//build/config/compiler:no_chromium_code" ]
-    # Needs to be after no_chromium_code to have an effect:
-    configs += [ ":leveldb_db_bench_warnings" ]
     deps = [
       ":leveldb_testutil",
     ]
