@@ -66,7 +66,7 @@ static const char kQuicAlternateProtocolHttpsHeader[] =
 static const char kQuicAlternativeServiceHttpHeader[] =
     "Alt-Svc: quic=\":80\"\r\n\r\n";
 static const char kQuicAlternativeService50pctHttpHeader[] =
-    "Alt-Svc: quic=\":80\";p=.5\r\n\r\n";
+    "Alt-Svc: quic=\":80\";p=\".5\"\r\n\r\n";
 static const char kQuicAlternativeServiceDifferentPortHttpHeader[] =
     "Alt-Svc: quic=\":137\"\r\n\r\n";
 static const char kQuicAlternativeServiceHttpsHeader[] =

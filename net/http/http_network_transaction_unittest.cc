@@ -9586,7 +9586,7 @@ TEST_P(HttpNetworkTransactionTest, HonorMultipleAlternativeServiceHeader) {
       MockRead("HTTP/1.1 200 OK\r\n"),
       MockRead("Alt-Svc: "),
       MockRead(GetAlternateProtocolFromParam()),
-      MockRead("=\"www.example.com:443\";p=1.0,"),
+      MockRead("=\"www.example.com:443\";p=\"1.0\","),
       MockRead("quic=\":1234\"\r\n\r\n"),
       MockRead("hello world"),
       MockRead(SYNCHRONOUS, OK),

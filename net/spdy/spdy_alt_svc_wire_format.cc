@@ -147,7 +147,11 @@ bool SpdyAltSvcWireFormat::ParseHeaderFieldValue(
           return false;
         }
       } else if (parameter_name.compare("p") == 0) {
-        if (!ParseProbability(parameter_value_begin, c, &probability)) {
+        // Probability value is enclosed in quotation marks.
+        if (*parameter_value_begin != '"' || *(c - 1) != '"') {
+          return false;
+        }
+        if (!ParseProbability(parameter_value_begin + 1, c - 1, &probability)) {
           return false;
         }
       }
@@ -220,7 +224,7 @@ std::string SpdyAltSvcWireFormat::SerializeHeaderFieldValue(
       base::StringAppendF(&value, "; ma=%d", altsvc.max_age);
     }
     if (altsvc.probability != 1.0) {
-      base::StringAppendF(&value, "; p=%.2f", altsvc.probability);
+      base::StringAppendF(&value, "; p=\"%.2f\"", altsvc.probability);
     }
   }
   return value;
