@@ -641,6 +641,7 @@ RenderViewImpl::RenderViewImpl(CompositorDependencies* compositor_deps,
 #if defined(OS_ANDROID)
       top_controls_constraints_(TOP_CONTROLS_STATE_BOTH),
 #endif
+      has_focus_(false),
       has_scrolled_focused_editable_node_into_rect_(false),
       main_render_frame_(nullptr),
       speech_recognition_dispatcher_(NULL),
@@ -3074,6 +3075,8 @@ void RenderViewImpl::OnSetFocus(bool enable) {
   // This message must always be received when the main frame is a
   // WebLocalFrame.
   CHECK(webview()->mainFrame()->isWebLocalFrame());
+
+  has_focus_ = enable;
   RenderWidget::OnSetFocus(enable);
 
 #if defined(ENABLE_PLUGINS)

@@ -543,7 +543,7 @@ PepperPluginInstanceImpl::PepperPluginInstanceImpl(
     view_data_.is_page_visible = !render_frame_->GetRenderWidget()->is_hidden();
 
     // Set the initial focus.
-    SetContentAreaFocus(render_frame_->GetRenderWidget()->has_focus());
+    SetContentAreaFocus(render_frame_->render_view()->has_focus());
 
     if (!module_->IsProxied()) {
       PepperBrowserConnection* browser_connection =

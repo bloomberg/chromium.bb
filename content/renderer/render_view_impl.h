@@ -232,6 +232,9 @@ class CONTENT_EXPORT RenderViewImpl
   // as that is only for changes that aren't initiated by the client.
   void SetZoomLevel(double zoom_level);
 
+  // Indicates whether this page has been focused by the browser.
+  bool has_focus() const { return has_focus_; }
+
   // Plugin-related functions --------------------------------------------------
 
 #if defined(ENABLE_PLUGINS)
@@ -872,6 +875,9 @@ class CONTENT_EXPORT RenderViewImpl
   // current value only without altering the constraints.
   TopControlsState top_controls_constraints_;
 #endif
+
+  // Indicates whether this page has been focused/unfocused by the browser.
+  bool has_focus_;
 
   // View ----------------------------------------------------------------------
 

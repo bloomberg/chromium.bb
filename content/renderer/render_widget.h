@@ -124,7 +124,6 @@ class CONTENT_EXPORT RenderWidget
   CompositorDependencies* compositor_deps() const { return compositor_deps_; }
   blink::WebWidget* webwidget() const { return webwidget_; }
   gfx::Size size() const { return size_; }
-  bool has_focus() const { return has_focus_; }
   bool is_fullscreen_granted() const { return is_fullscreen_granted_; }
   blink::WebDisplayMode display_mode() const { return display_mode_; }
   bool is_hidden() const { return is_hidden_; }
@@ -649,9 +648,6 @@ class CONTENT_EXPORT RenderWidget
 
   // Indicates the display mode.
   blink::WebDisplayMode display_mode_;
-
-  // Indicates whether we have been focused/unfocused by the browser.
-  bool has_focus_;
 
   // Are we currently handling an input event?
   bool handling_input_event_;

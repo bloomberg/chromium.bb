@@ -495,7 +495,6 @@ RenderWidget::RenderWidget(CompositorDependencies* compositor_deps,
       compositor_never_visible_(never_visible),
       is_fullscreen_granted_(false),
       display_mode_(blink::WebDisplayModeUndefined),
-      has_focus_(false),
       handling_input_event_(false),
       handling_event_overscroll_(nullptr),
       handling_ime_event_(false),
@@ -1294,7 +1293,6 @@ void RenderWidget::OnMouseCaptureLost() {
 }
 
 void RenderWidget::OnSetFocus(bool enable) {
-  has_focus_ = enable;
   if (webwidget_)
     webwidget_->setFocus(enable);
 }
