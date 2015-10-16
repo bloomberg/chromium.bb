@@ -9,7 +9,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "net/base/elements_upload_data_stream.h"
 #include "net/base/test_completion_callback.h"
-#include "net/base/test_data_directory.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_data_stream.h"
 #include "net/cert/mock_cert_verifier.h"
@@ -22,10 +21,8 @@
 #include "net/http/http_transaction_test_util.h"
 #include "net/http/transport_security_state.h"
 #include "net/proxy/proxy_service.h"
-#include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/ssl/ssl_config_service_defaults.h"
-#include "net/test/cert_test_util.h"
 #include "net/tools/quic/quic_in_memory_cache.h"
 #include "net/tools/quic/quic_server.h"
 #include "net/tools/quic/test_tools/quic_in_memory_cache_peer.h"
@@ -84,7 +81,7 @@ class QuicEndToEndTest : public PlatformTest {
             HttpAuthHandlerFactory::CreateDefault(&host_resolver_)),
         strike_register_no_startup_period_(false) {
     request_.method = "GET";
-    request_.url = GURL("https://test.example.com/");
+    request_.url = GURL("http://www.google.com/");
     request_.load_flags = 0;
 
     params_.enable_quic = true;
@@ -97,25 +94,13 @@ class QuicEndToEndTest : public PlatformTest {
     params_.ssl_config_service = ssl_config_service_.get();
     params_.http_auth_handler_factory = auth_handler_factory_.get();
     params_.http_server_properties = http_server_properties.GetWeakPtr();
-
-    net::CertVerifyResult verify_result;
-    verify_result.verified_cert = ImportCertFromFile(
-        GetTestCertsDirectory(), "quic_test.example.com.crt");
-    cert_verifier_.AddResultForCertAndHost(verify_result.verified_cert.get(),
-                                           "test.example.com", verify_result,
-                                           OK);
-    verify_result.verified_cert = ImportCertFromFile(
-        GetTestCertsDirectory(), "quic_test_ecc.example.com.crt");
-    cert_verifier_.AddResultForCertAndHost(verify_result.verified_cert.get(),
-                                           "test.example.com", verify_result,
-                                           OK);
   }
 
-  // Creates a mock host resolver in which test.example.com
+  // Creates a mock host resolver in which www.google.com
   // resolves to localhost.
   static MockHostResolver* CreateResolverImpl() {
     MockHostResolver* resolver = new MockHostResolver();
-    resolver->rules()->AddRule("test.example.com", "127.0.0.1");
+    resolver->rules()->AddRule("www.google.com", "127.0.0.1");
     return resolver;
   }
 
@@ -123,16 +108,16 @@ class QuicEndToEndTest : public PlatformTest {
     QuicInMemoryCachePeer::ResetForTests();
     StartServer();
 
-    // Use a mapped host resolver so that request for test.example.com (port 80)
+    // Use a mapped host resolver so that request for www.google.com (port 80)
     // reach the server running on localhost.
-    std::string map_rule = "MAP test.example.com test.example.com:" +
-                           base::IntToString(server_thread_->GetPort());
+    std::string map_rule = "MAP www.google.com www.google.com:" +
+        base::IntToString(server_thread_->GetPort());
     EXPECT_TRUE(host_resolver_.AddRuleFromString(map_rule));
 
     // To simplify the test, and avoid the race with the HTTP request, we force
     // QUIC for these requests.
     params_.origin_to_force_quic_on =
-        HostPortPair::FromString("test.example.com:443");
+        HostPortPair::FromString("www.google.com:80");
 
     transaction_factory_.reset(new TestTransactionFactory(params_));
   }
@@ -151,14 +136,10 @@ class QuicEndToEndTest : public PlatformTest {
         kInitialStreamFlowControlWindowForTest);
     server_config_.SetInitialSessionFlowControlWindowToSend(
         kInitialSessionFlowControlWindowForTest);
-
-    QuicServer* server =
-        new QuicServer(server_config_, QuicSupportedVersions());
-    server_thread_.reset(new ServerThread(server, /*is_secure=*/true,
-                                          server_address_,
-                                          strike_register_no_startup_period_));
-    server->SetProofSource(CryptoTestUtils::ProofSourceForTesting());
-
+    server_thread_.reset(new ServerThread(
+        new QuicServer(server_config_, QuicSupportedVersions()),
+        /*is_secure=*/true, server_address_,
+        strike_register_no_startup_period_));
     server_thread_->Initialize();
     server_address_ = IPEndPoint(server_address_.address(),
                                  server_thread_->GetPort());
@@ -184,7 +165,7 @@ class QuicEndToEndTest : public PlatformTest {
                   StringPiece response_detail,
                   StringPiece body) {
     QuicInMemoryCache::GetInstance()->AddSimpleResponse(
-        "test.example.com", path, response_code, response_detail, body);
+        "www.google.com", path, response_code, response_detail, body);
   }
 
   // Populates |request_body_| with |length_| ASCII bytes.
@@ -206,7 +187,7 @@ class QuicEndToEndTest : public PlatformTest {
     upload_data_stream_.reset(
         new ElementsUploadDataStream(element_readers.Pass(), 0));
     request_.method = "POST";
-    request_.url = GURL("https://test.example.com/");
+    request_.url = GURL("http://www.google.com/");
     request_.upload_data_stream = upload_data_stream_.get();
     ASSERT_EQ(OK, request_.upload_data_stream->Init(CompletionCallback()));
   }
@@ -216,7 +197,7 @@ class QuicEndToEndTest : public PlatformTest {
                      const std::string& status_line,
                      const std::string& body) {
     ASSERT_TRUE(consumer.is_done());
-    ASSERT_EQ(OK, consumer.error());
+    EXPECT_EQ(OK, consumer.error());
     EXPECT_EQ(status_line,
               consumer.response_info()->headers->GetStatusLine());
     EXPECT_EQ(body, consumer.content());

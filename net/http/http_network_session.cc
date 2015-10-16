@@ -118,7 +118,7 @@ HttpNetworkSession::Params::Params()
       quic_threshold_public_resets_post_handshake(0),
       quic_threshold_timeouts_streams_open(0),
       proxy_delegate(NULL) {
-  quic_supported_versions.push_back(QUIC_VERSION_27);
+  quic_supported_versions.push_back(QUIC_VERSION_25);
 }
 
 HttpNetworkSession::Params::~Params() {}
