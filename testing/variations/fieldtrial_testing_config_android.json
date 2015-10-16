@@ -136,6 +136,14 @@
             "group_name": "Enabled"
         }
     ],
+    "LowPriorityIFrames": [
+        {
+            "group_name": "Enabled",
+            "params": {
+                "lowPriorityIframes": "true"
+            }
+        }
+    ],
     "NetworkQualityEstimator": [
         {
             "group_name": "Enabled",
