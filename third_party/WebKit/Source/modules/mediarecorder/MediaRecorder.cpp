@@ -93,6 +93,7 @@ void MediaRecorder::start(ExceptionState& exceptionState)
     m_state = State::Recording;
 
     m_recorderHandler->start();
+    scheduleDispatchEvent(Event::create(EventTypeNames::start));
 }
 
 void MediaRecorder::start(int timeSlice, ExceptionState& exceptionState)
