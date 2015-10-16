@@ -27,7 +27,11 @@ scoped_ptr<CopyOutputRequest> CopyOutputRequest::CreateRelayRequest(
   return relay.Pass();
 }
 
-CopyOutputRequest::CopyOutputRequest() {}
+CopyOutputRequest::CopyOutputRequest()
+    : source_(nullptr),
+      force_bitmap_result_(false),
+      has_area_(false),
+      has_texture_mailbox_(false) {}
 
 CopyOutputRequest::CopyOutputRequest(
     bool force_bitmap_result,
