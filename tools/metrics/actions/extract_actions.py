@@ -191,8 +191,8 @@ def AddWebKitEditorActions(actions):
     if match:  # Plain call to RecordAction
       actions.add(match.group(1))
 
-def AddClosedSourceActions(actions):
-  """Add actions that are in code which is not checked out by default
+def AddPDFPluginActions(actions):
+  """Add actions that are sent by the PDF plugin.
 
   Arguments
     actions: set of actions to add to.
@@ -740,9 +740,9 @@ def UpdateXml(original_xml):
   AddAutomaticResetBannerActions(actions)
   AddBookmarkManagerActions(actions)
   AddChromeOSActions(actions)
-  AddClosedSourceActions(actions)
   AddExtensionActions(actions)
   AddHistoryPageActions(actions)
+  AddPDFPluginActions(actions)
 
   return PrettyPrint(actions, actions_dict, comment_nodes)
 

@@ -156,6 +156,14 @@ namespace {
 
 static const char kPPPPdfInterface[] = PPP_PDF_INTERFACE_1;
 
+// Used for UMA. Do not delete entries, and keep in sync with histograms.xml.
+enum PDFFeatures {
+  LOADED_DOCUMENT = 0,
+  HAS_TITLE = 1,
+  HAS_BOOKMARKS = 2,
+  FEATURES_COUNT
+};
+
 PP_Var GetLinkAtPosition(PP_Instance instance, PP_Point point) {
   pp::Var var;
   void* object = pp::Instance::GetPerInstanceObject(instance, kPPPPdfInterface);
@@ -1101,6 +1109,8 @@ void OutOfProcessInstance::DocumentLoadComplete(int page_count) {
   DCHECK(document_load_state_ == LOAD_STATE_LOADING);
   document_load_state_ = LOAD_STATE_COMPLETE;
   UserMetricsRecordAction("PDF.LoadSuccess");
+  uma_.HistogramEnumeration("PDF.DocumentFeature", LOADED_DOCUMENT,
+                            FEATURES_COUNT);
 
   // Note: If we are in print preview mode the scroll location is retained
   // across document loads so we don't want to scroll again and override it.
@@ -1112,10 +1122,17 @@ void OutOfProcessInstance::DocumentLoadComplete(int page_count) {
   pp::VarDictionary metadata_message;
   metadata_message.Set(pp::Var(kType), pp::Var(kJSMetadataType));
   std::string title = engine_->GetMetadata("Title");
-  if (!base::TrimWhitespace(base::UTF8ToUTF16(title), base::TRIM_ALL).empty())
+  if (!base::TrimWhitespace(base::UTF8ToUTF16(title), base::TRIM_ALL).empty()) {
     metadata_message.Set(pp::Var(kJSTitle), pp::Var(title));
+    uma_.HistogramEnumeration("PDF.DocumentFeature", HAS_TITLE, FEATURES_COUNT);
+  }
 
-  metadata_message.Set(pp::Var(kJSBookmarks), engine_->GetBookmarks());
+  pp::VarArray bookmarks = engine_->GetBookmarks();
+  metadata_message.Set(pp::Var(kJSBookmarks), bookmarks);
+  if (bookmarks.GetLength() > 0) {
+    uma_.HistogramEnumeration("PDF.DocumentFeature", HAS_BOOKMARKS,
+                              FEATURES_COUNT);
+  }
   PostMessage(metadata_message);
 
   pp::VarDictionary progress_message;

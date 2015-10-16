@@ -30916,6 +30916,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PDF.DocumentFeature" enum="PDFFeatures">
+  <owner>tsergeant@chromium.org</owner>
+  <summary>
+    Tracks which features are used by documents opened in the PDF viewer, logged
+    when the document finishes loading.
+  </summary>
+</histogram>
+
 <histogram name="Pepper.InterfaceUsed" enum="PepperInterface">
   <owner>mackinlay@google.com</owner>
   <owner>teravest@chromium.org</owner>
@@ -68202,6 +68210,12 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1" label="Read failed"/>
   <int value="2" label="Duplcate tags"/>
   <int value="3" label="Server failed"/>
+</enum>
+
+<enum name="PDFFeatures" type="int">
+  <int value="0" label="Loaded Document"/>
+  <int value="1" label="Has Title"/>
+  <int value="2" label="Has Bookmarks"/>
 </enum>
 
 <enum name="PeerConnectionCounters" type="int">
