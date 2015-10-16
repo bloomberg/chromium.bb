@@ -39,6 +39,28 @@ def BuildWithFlags(name, source, link_flags, c_flags=[], cppdefines=[]):
   prog = prog_env.ComponentProgram(name, obj)
   return prog
 
+def LoaderTest(name, depends_on=None, **kwargs):
+  out_name = 'elf_loader_%s_test.out' % name
+  run_name = 'run_elf_loader_%s_test' % name
+  node = env.CommandSelLdrTestNacl(out_name,
+                                   loader_nexe,
+                                   sel_ldr_flags=['-a'],
+                                   **kwargs)
+  if depends_on is not None:
+    env.Depends(node, depends_on)
+  env.AddNodeToTestSuite(node, ['small_tests', 'sel_ldr_tests'], run_name)
+
+# For each test foo we run it in two variants: foo, where mmap works;
+# and foo_dyncode, where mmap refuses to work for the code segment.
+# This tests the fallback path using dyncode_create, replicating the
+# situation in the browser for a nexe not in a "blessed" location.
+def LoaderTests(name, depends_on=None, **kwargs):
+  LoaderTest(name, depends_on, **kwargs)
+  LoaderTest(name + '_dyncode', depends_on,
+             osenv=['NACL_FAULT_INJECTION=' +
+                    'MMAP_FORCE_DESCRIPTOR_SAFETY_CHECK_FAIL=GF@'],
+             **kwargs)
+
 # These are arbitrary, but should be different from each, and positive.
 dyn_exit_status = 17
 pie_exit_status = 23
@@ -49,14 +71,7 @@ interp_nexe = BuildWithFlags('interp', 'interp.c',
                              ['-nostdlib', '-shared'],
                              ['-fPIC', '-fno-asynchronous-unwind-tables'],
                              [['TEST_EXIT', str(dyn_exit_status)]])
-node = env.CommandSelLdrTestNacl('elf_loader_dyn_test.out',
-                                 loader_nexe,
-                                 sel_ldr_flags=['-a'],
-                                 args=[interp_nexe],
-                                 exit_status=dyn_exit_status)
-env.AddNodeToTestSuite(node,
-                       ['small_tests', 'sel_ldr_tests'],
-                       'run_elf_loader_dyn_test')
+LoaderTests('dyn', args=[interp_nexe], exit_status=dyn_exit_status)
 
 # nacl-clang fails to grok -pie. See:
 #       https://code.google.com/p/nativeclient/issues/detail?id=4148
@@ -69,14 +84,7 @@ if not env.Bit('nacl_clang'):
                              '-Wl,-dynamic-linker=%s' % interp_nexe.abspath],
                             ['-fPIE', '-fno-asynchronous-unwind-tables'],
                             [['TEST_EXIT', str(pie_exit_status)]])
-  node = env.CommandSelLdrTestNacl('elf_loader_pie_test.out',
-                                   loader_nexe,
-                                   sel_ldr_flags=['-a'],
-                                   args=[pie_nexe],
-                                   exit_status=pie_exit_status)
-  env.AddNodeToTestSuite(node,
-                         ['small_tests', 'sel_ldr_tests'],
-                         'run_elf_loader_pie_test')
+  LoaderTests('pie', args=[pie_nexe], exit_status=pie_exit_status)
 
 # elf_loader itself loads at the canonical "main nexe" address of 0x20000.
 # This address just needs to be high enough above that to leave space for
@@ -86,23 +94,16 @@ text_start = '-Ttext-segment=0x100000'
 # Build a normal executable both with and without a PT_INTERP.
 def EchoTest(name, interpreter=None, loader_args=[]):
   nexe_name = 'echo_' + name
-  test_name = 'elf_loader_' + nexe_name + '_test'
   cppdefines = []
   if interpreter is not None:
     cppdefines.append(['INTERPRETER', interpreter])
   nexe = BuildWithFlags(nexe_name, 'echo.c',
                         ['-Wl,' + text_start],
                         cppdefines=cppdefines)
-  node = env.CommandSelLdrTestNacl(test_name + '.out',
-                                   loader_nexe,
-                                   sel_ldr_flags=['-a'],
-                                   args=loader_args + [nexe] + echo_args,
-                                   stdout_golden=golden_file)
-  if interpreter is not None:
-    env.Depends(node, interp_nexe)
-  env.AddNodeToTestSuite(node,
-                         ['small_tests', 'sel_ldr_tests'],
-                         'run_' + test_name)
+  LoaderTests(nexe_name,
+              depends_on=interp_nexe if interpreter is not None else None,
+              args=loader_args + [nexe] + echo_args,
+              stdout_golden=golden_file)
 
 EchoTest('plain')
 
@@ -128,10 +129,4 @@ onlycode_env.Append(LINKFLAGS=[
     '-Wl,--section-start=.text=0x100000',
     ])
 nexe = onlycode_env.ComponentProgram('onlycode', onlycode_text_obj)
-node = env.CommandSelLdrTestNacl('elf_loader_onlycode_test.out',
-                                 loader_nexe,
-                                 sel_ldr_flags=['-a'],
-                                 args=[nexe])
-env.AddNodeToTestSuite(node,
-                       ['small_tests', 'sel_ldr_tests'],
-                       'run_elf_loader_onlycode_test')
+LoaderTests('onlycode', args=[nexe])

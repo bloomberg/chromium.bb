@@ -594,7 +594,8 @@ int32_t NaClSysMmapIntern(struct NaClApp        *nap,
             usraddr, length);
     if (!NACL_FI("MMAP_BYPASS_DESCRIPTOR_SAFETY_CHECK",
                  NaClDescIsSafeForMmap(ndp),
-                 1)) {
+                 1) ||
+        NACL_FI("MMAP_FORCE_DESCRIPTOR_SAFETY_CHECK_FAIL", 0, 1)) {
       NaClLog(4, "NaClSysMmap: descriptor not blessed\n");
       map_result = -NACL_ABI_EINVAL;
       goto cleanup;

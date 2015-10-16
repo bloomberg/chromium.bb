@@ -39,6 +39,7 @@ static const char kInterpPrefixFlag[] = "--interp-prefix";
 
 static struct nacl_irt_resource_open resource_open;
 static struct nacl_irt_code_data_alloc code_data_alloc;
+static struct nacl_irt_dyncode dyncode;
 
 static int open_program(const char *filename) {
   int fd;
@@ -83,6 +84,36 @@ static uintptr_t my_mmap(const char *file,
                segment_type, segnum, address, size, prot, flags, fd, pos);
   void *result = mmap((void *) address, size, prot, flags, fd, pos);
   if (result == MAP_FAILED) {
+    /*
+     * The service runtime will refuse to mmap a code segment from a file
+     * descriptor that is not "blessed", e.g. if it comes from the web
+     * cache rather than an installed Chrome extension.  In that case, we
+     * have to read the data into a temporary buffer and then install it
+     * using the dyncode_create interface.
+     */
+    if (errno == EINVAL && (prot & PROT_EXEC) && (flags & MAP_FIXED)) {
+      DEBUG_PRINTF("XXX mmap %s %u failed, falling back to dyncode_create\n",
+                   segment_type, segnum);
+      void *data = mmap(NULL, size, PROT_READ | PROT_WRITE,
+                        MAP_ANON | MAP_PRIVATE, -1, 0);
+      if (data == MAP_FAILED) {
+        fprintf(stderr,
+                "%s: Failed to allocate buffer for %s %u (mmap: %s)\n",
+                file, segment_type, segnum, strerror(errno));
+        exit(1);
+      }
+      uintptr_t last_pos = -1;
+      my_pread(file, "Failed to read code segment data", fd,
+               data, size, pos, &last_pos);
+      int error = dyncode.dyncode_create((void *) address, data, size);
+      munmap(data, size);
+      if (error) {
+        fprintf(stderr, "%s: Failed to map %s %u (dyncode_create: %s)\n",
+                file, segment_type, segnum, strerror(errno));
+        exit(1);
+      }
+      return address;
+    }
     fprintf(stderr, "%s: Failed to map %s %u (mmap: %s)\n",
             file, segment_type, segnum, strerror(errno));
     exit(1);
@@ -446,6 +477,12 @@ static void chainload(const char *program, const char *interp_prefix,
       sizeof(code_data_alloc)) {
     fprintf(stderr, "Failed to find necessary IRT interface %s!\n",
             NACL_IRT_CODE_DATA_ALLOC_v0_1);
+    exit(1);
+  }
+  if (nacl_interface_query(NACL_IRT_DYNCODE_v0_1, &dyncode,
+                           sizeof(dyncode)) != sizeof(dyncode)) {
+    fprintf(stderr, "Failed to find necessary IRT interface %s!\n",
+            NACL_IRT_DYNCODE_v0_1);
     exit(1);
   }
 
