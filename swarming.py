@@ -56,6 +56,7 @@ def isolated_to_hash(arg, algo):
   or a hash (False).
   """
   if arg.endswith('.isolated'):
+    arg = unicode(os.path.abspath(arg))
     file_hash = isolated_format.hash_file(arg, algo)
     if not file_hash:
       on_error.report('Archival failure %s' % arg)
