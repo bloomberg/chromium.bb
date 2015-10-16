@@ -23,6 +23,7 @@ source_set("unit_tests") {
 
   deps = [
     ":upload_list",
+    "//base",
     "//testing/gtest",
   ]
 }

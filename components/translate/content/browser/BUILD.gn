@@ -4,7 +4,7 @@
 
 import("//build/config/features.gni")
 
-static_library("browser") {
+source_set("browser") {
   sources = [
     "browser_cld_data_provider.cc",
     "browser_cld_data_provider.h",
@@ -20,7 +20,12 @@ static_library("browser") {
 
   deps = [
     "//base",
+    "//components/translate/content/common",
     "//components/translate/core/browser",
+    "//components/translate/core/common",
     "//content/public/browser",
+    "//content/public/common",
+    "//ipc",
+    "//net",
   ]
 }

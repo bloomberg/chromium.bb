@@ -37,11 +37,29 @@ source_set("browser") {
     "translate_url_util.h",
   ]
 
+  deps = [
+    "//base",
+    "//base:i18n",
+    "//base:prefs",
+    "//components/data_use_measurement/core",
+    "//components/language_usage_metrics",
+    "//components/pref_registry",
+    "//components/resources:components_resources",
+    "//components/strings",
+    "//components/translate/core/common",
+    "//google_apis",
+    "//net",
+    "//third_party/icu",
+    "//ui/base",
+    "//url",
+  ]
+
   if (!use_aura) {
     sources += [
       "translate_infobar_delegate.cc",
       "translate_infobar_delegate.h",
     ]
+    deps += [ "//components/infobars/core" ]
   }
 
   if (is_mac) {
@@ -50,19 +68,6 @@ source_set("browser") {
       "options_menu_model.h",
     ]
   }
-
-  deps = [
-    "//base",
-    "//components/data_use_measurement/core",
-    "//components/language_usage_metrics",
-    "//components/resources:components_resources",
-    "//components/strings",
-    "//components/translate/core/common",
-    "//net",
-    "//third_party/icu",
-    "//ui/base",
-    "//url",
-  ]
 }
 
 source_set("unit_tests") {
@@ -76,6 +81,11 @@ source_set("unit_tests") {
   ]
   deps = [
     ":browser",
+    "//base",
+    "//base:prefs",
+    "//components/pref_registry:test_support",
+    "//components/translate/core/common",
+    "//net:test_support",
     "//testing/gtest",
   ]
 }

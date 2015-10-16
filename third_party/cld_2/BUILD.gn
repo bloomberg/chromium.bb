@@ -84,11 +84,11 @@ source_set("cld_2") {
 }
 
 source_set("cld2_platform_impl") {
-  deps = []
+  public_deps = []
   if (cld2_platform_support == "static") {
-    deps += [ ":cld2_static" ]
+    public_deps += [ ":cld2_static" ]
   } else if (cld2_platform_support == "dynamic") {
-    deps += [ ":cld2_dynamic" ]
+    public_deps += [ ":cld2_dynamic" ]
   }
 }
 
@@ -109,7 +109,7 @@ static_library("cld2_static") {
     "src/public",
   ]
 
-  deps = [
+  public_deps = [
     ":cld_2",
     ":cld2_data",
   ]

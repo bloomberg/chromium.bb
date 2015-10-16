@@ -11,7 +11,9 @@ source_set("unit_tests") {
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
   deps = [
+    "//base",
     "//components/visitedlink/browser",
+    "//components/visitedlink/common",
     "//components/visitedlink/renderer",
     "//content/test:test_support",
     "//testing/gtest",

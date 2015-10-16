@@ -32,6 +32,9 @@ source_set("unit_tests") {
   ]
   deps = [
     ":language_detection",
+    "//base",
+    "//components/translate/core/common",
     "//testing/gtest",
+    "//url",
   ]
 }

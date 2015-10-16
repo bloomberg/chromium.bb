@@ -33,6 +33,8 @@ source_set("unit_tests") {
   ]
   deps = [
     ":common",
+    "//base",
     "//testing/gtest",
+    "//url",
   ]
 }
