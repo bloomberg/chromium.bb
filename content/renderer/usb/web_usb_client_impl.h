@@ -6,6 +6,7 @@
 #define CONTENT_RENDERER_USB_WEB_USB_CLIENT_IMPL_H_
 
 #include "base/macros.h"
+#include "components/webusb/public/interfaces/webusb_permission_bubble.mojom.h"
 #include "device/devices_app/usb/public/interfaces/device_manager.mojom.h"
 #include "third_party/WebKit/public/platform/modules/webusb/WebUSBClient.h"
 
@@ -32,6 +33,7 @@ class WebUSBClientImpl : public blink::WebUSBClient {
 
   ServiceRegistry* const service_registry_;
   device::usb::DeviceManagerPtr device_manager_;
+  webusb::WebUsbPermissionBubblePtr webusb_permission_bubble_;
   Observer* observer_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(WebUSBClientImpl);

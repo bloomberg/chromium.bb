@@ -11,6 +11,7 @@ static_library("webusb") {
 
   deps = [
     "//base",
+    "//components/webusb/public/interfaces",
     "//device/core",
     "//device/usb",
   ]
