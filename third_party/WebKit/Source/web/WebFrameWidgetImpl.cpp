@@ -1036,20 +1036,13 @@ void WebFrameWidgetImpl::setRootGraphicsLayer(GraphicsLayer* layer)
 
     setIsAcceleratedCompositingActive(layer);
 
-    if (m_layerTreeView) {
-        if (m_rootLayer) {
-            m_layerTreeView->setRootLayer(*m_rootLayer);
-            // We register viewport layers here since there may not be a layer
-            // tree view prior to this point.
-            GraphicsLayer* rootScrollLayer = compositor()->scrollLayer();
-            ASSERT(rootScrollLayer);
-            WebLayer* pageScaleLayer = rootScrollLayer->parent() ? rootScrollLayer->parent()->platformLayer() : nullptr;
-            m_layerTreeView->registerViewportLayers(nullptr, pageScaleLayer, rootScrollLayer->platformLayer(), nullptr);
-        } else {
-            m_layerTreeView->clearRootLayer();
-            m_layerTreeView->clearViewportLayers();
-        }
-    }
+    if (!m_layerTreeView)
+        return;
+
+    if (m_rootLayer)
+        m_layerTreeView->setRootLayer(*m_rootLayer);
+    else
+        m_layerTreeView->clearRootLayer();
 }
 
 void WebFrameWidgetImpl::attachCompositorAnimationTimeline(WebCompositorAnimationTimeline* compositorTimeline)
