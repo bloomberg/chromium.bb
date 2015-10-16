@@ -26,7 +26,7 @@
 <div id="console"></div>
 
 <script>
-description("Verifies that dragging mouse in/out of an element doesn't fire redundant mouseenter or mouseleave events (crbug.com/470258)");
+description("Verifies that dragging mouse in/out of an element doesn't fire redundant mouseenter or mouseleave events (crbug.com/356090 & crbug.com/470258)");
 
 var wasInside = {};
 
@@ -48,31 +48,47 @@ function init() {
       wasInside[id] = false;
     });
 
-    targetDiv.addEventListener("mousedown", function(event) {
-      debug(id + " received mousedown");
-    });
-
-    targetDiv.addEventListener("mouseup", function(event) {
-      debug(id + " received mouseup");
+    ["mouseover", "mouseout", "mousedown", "mouseup"].forEach(function(eventName) {
+      targetDiv.addEventListener(eventName, function(event) {
+        if (event.eventPhase == Event.AT_TARGET)
+          debug(id + " received " + eventName);
+      });
     });
   });
 }
 
 init();
 if (window.eventSender) {
-  eventSender.mouseMoveTo(1, 150);
+  var y = 150;
 
-  eventSender.mouseMoveTo(110, 150);
+  debug("--- drag across inner ---");
+  eventSender.mouseMoveTo(1, y);
+  eventSender.mouseMoveTo(110, y);
   eventSender.mouseDown();
+  eventSender.mouseMoveTo(140, y);
+  eventSender.mouseMoveTo(150, y);
+  eventSender.mouseMoveTo(160, y);
+  eventSender.mouseMoveTo(190, y);
+  eventSender.mouseUp();
+  eventSender.mouseMoveTo(201, y);
 
-  eventSender.mouseMoveTo(140, 150);
-  eventSender.mouseMoveTo(150, 150);
-  eventSender.mouseMoveTo(160, 150);
+  debug("");
 
-  eventSender.mouseMoveTo(190, 150);
+  debug("--- drag into inner ---");
+  eventSender.mouseMoveTo(190, y);
+  eventSender.mouseDown();
+  eventSender.mouseMoveTo(150, y);
   eventSender.mouseUp();
 
-  eventSender.mouseMoveTo(201, 150);
+  debug("");
+
+  debug("--- drag out of inner ---");
+  eventSender.mouseDown();
+  eventSender.mouseMoveTo(110, y);
+  eventSender.mouseUp();
+
+  debug("");
+
 } else {
   debug("This test requires eventSender");
 }

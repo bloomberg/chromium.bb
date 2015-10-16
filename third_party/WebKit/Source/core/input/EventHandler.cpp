@@ -1270,8 +1270,16 @@ bool EventHandler::handleMouseReleaseEvent(const PlatformMouseEvent& mouseEvent)
         // Both m_clickNode and mev.innerNode() don't need to be updated
         // because commonAncestor() will exit early if their documents are different.
         m_clickNode->updateDistribution();
-        if (Node* clickTargetNode = mev.innerNode()->commonAncestor(*m_clickNode, parentForClickEvent))
-            swallowClickEvent = !dispatchMouseEvent(EventTypeNames::click, clickTargetNode, m_clickCount, mouseEvent);
+        if (Node* clickTargetNode = mev.innerNode()->commonAncestor(
+            *m_clickNode, parentForClickEvent)) {
+
+            // Dispatch mouseup directly w/o calling updateMouseEventTargetNode
+            // because the mouseup dispatch above has already updated it
+            // correctly. Moreover, clickTargetNode is different from
+            // mev.innerNode at drag-release.
+            clickTargetNode->dispatchMouseEvent(mouseEvent,
+                EventTypeNames::click, m_clickCount);
+        }
     }
 
     if (m_resizeScrollableArea) {
