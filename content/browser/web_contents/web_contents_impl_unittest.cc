@@ -2693,7 +2693,7 @@ TEST_F(WebContentsImplTest, CapturerPreventsHiding) {
   contents()->UpdatePreferredSize(original_preferred_size);
 
   TestRenderWidgetHostView* view = static_cast<TestRenderWidgetHostView*>(
-      contents()->GetMainFrame()->GetRenderViewHost()->GetView());
+      contents()->GetMainFrame()->GetRenderViewHost()->GetWidget()->GetView());
 
   // With no capturers, setting and un-setting occlusion should change the
   // view's occlusion state.
@@ -2720,7 +2720,7 @@ TEST_F(WebContentsImplTest, CapturerPreventsOcclusion) {
   contents()->UpdatePreferredSize(original_preferred_size);
 
   TestRenderWidgetHostView* view = static_cast<TestRenderWidgetHostView*>(
-      contents()->GetMainFrame()->GetRenderViewHost()->GetView());
+      contents()->GetMainFrame()->GetRenderViewHost()->GetWidget()->GetView());
 
   // With no capturers, setting and un-setting occlusion should change the
   // view's occlusion state.

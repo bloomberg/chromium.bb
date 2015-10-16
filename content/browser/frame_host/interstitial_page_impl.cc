@@ -288,8 +288,8 @@ void InterstitialPageImpl::Hide() {
 
   // If the focus was on the interstitial, let's keep it to the page.
   // (Note that in unit-tests the RVH may not have a view).
-  if (render_view_host_->GetView() &&
-      render_view_host_->GetView()->HasFocus() &&
+  if (render_view_host_->GetWidget()->GetView() &&
+      render_view_host_->GetWidget()->GetView()->HasFocus() &&
       controller_->delegate()->GetRenderViewHost()->GetWidget()->GetView()) {
     controller_->delegate()
         ->GetRenderViewHost()
@@ -350,10 +350,8 @@ void InterstitialPageImpl::Observe(
       if (action_taken_ == NO_ACTION) {
         // The RenderViewHost is being destroyed (as part of the tab being
         // closed); make sure we clear the blocked requests.
-        RenderViewHost* rvh = static_cast<RenderViewHost*>(
-            static_cast<RenderViewHostImpl*>(
-                RenderWidgetHostImpl::From(
-                    Source<RenderWidgetHost>(source).ptr())));
+        RenderViewHost* rvh =
+            RenderViewHost::From(Source<RenderWidgetHost>(source).ptr());
         DCHECK(rvh->GetProcess()->GetID() == original_child_id_ &&
                rvh->GetRoutingID() == original_rvh_id_);
         TakeActionOnResourceDispatcher(CANCEL);
@@ -513,7 +511,7 @@ void InterstitialPageImpl::DidNavigate(
 
   // The RenderViewHost has loaded its contents, we can show it now.
   if (!controller_->delegate()->IsHidden())
-    render_view_host_->GetView()->Show();
+    render_view_host_->GetWidget()->GetView()->Show();
   controller_->delegate()->AttachInterstitialPage(this);
 
   RenderWidgetHostView* rwh_view =
@@ -609,8 +607,8 @@ WebContentsView* InterstitialPageImpl::CreateWebContentsView() {
   WebContentsView* wcv =
       static_cast<WebContentsImpl*>(web_contents())->GetView();
   RenderWidgetHostViewBase* view =
-      wcv->CreateViewForWidget(render_view_host_, false);
-  render_view_host_->SetView(view);
+      wcv->CreateViewForWidget(render_view_host_->GetWidget(), false);
+  RenderWidgetHostImpl::From(render_view_host_->GetWidget())->SetView(view);
   render_view_host_->AllowBindings(BINDINGS_POLICY_DOM_AUTOMATION);
 
   int32 max_page_id = web_contents()->
@@ -720,8 +718,8 @@ void InterstitialPageImpl::SetSize(const gfx::Size& size) {
 #if !defined(OS_MACOSX)
   // When a tab is closed, we might be resized after our view was NULLed
   // (typically if there was an info-bar).
-  if (render_view_host_->GetView())
-    render_view_host_->GetView()->SetSize(size);
+  if (render_view_host_->GetWidget()->GetView())
+    render_view_host_->GetWidget()->GetView()->SetSize(size);
 #else
   // TODO(port): Does Mac need to SetSize?
   NOTIMPLEMENTED();
@@ -732,7 +730,7 @@ void InterstitialPageImpl::Focus() {
   // Focus the native window.
   if (!enabled())
     return;
-  render_view_host_->GetView()->Focus();
+  render_view_host_->GetWidget()->GetView()->Focus();
 }
 
 void InterstitialPageImpl::FocusThroughTabTraversal(bool reverse) {
@@ -742,7 +740,7 @@ void InterstitialPageImpl::FocusThroughTabTraversal(bool reverse) {
 }
 
 RenderWidgetHostView* InterstitialPageImpl::GetView() {
-  return render_view_host_->GetView();
+  return render_view_host_->GetWidget()->GetView();
 }
 
 RenderFrameHost* InterstitialPageImpl::GetMainFrame() const {

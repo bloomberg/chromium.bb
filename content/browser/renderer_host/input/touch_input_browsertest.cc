@@ -153,8 +153,8 @@ class TouchInputBrowserTest : public ContentBrowserTest {
 
     WebContentsImpl* web_contents =
         static_cast<WebContentsImpl*>(shell()->web_contents());
-    RenderWidgetHostImpl* host =
-        RenderWidgetHostImpl::From(web_contents->GetRenderViewHost());
+    RenderWidgetHostImpl* host = RenderWidgetHostImpl::From(
+        web_contents->GetRenderViewHost()->GetWidget());
     host->GetView()->SetSize(gfx::Size(400, 400));
 
     // The page is loaded in the renderer, wait for a new frame to arrive.

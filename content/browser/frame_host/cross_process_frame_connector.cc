@@ -180,7 +180,7 @@ void CrossProcessFrameConnector::OnForwardInputEvent(
   RenderWidgetHostImpl* parent_widget =
       manager->ForInnerDelegate()
           ? manager->GetOuterRenderWidgetHostForKeyboardInput()
-          : frame_proxy_in_parent_renderer_->GetRenderViewHost();
+          : frame_proxy_in_parent_renderer_->GetRenderViewHost()->GetWidget();
 
   if (blink::WebInputEvent::isKeyboardEventType(event->type)) {
     if (!parent_widget->GetLastKeyboardEvent())

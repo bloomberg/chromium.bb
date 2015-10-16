@@ -236,10 +236,11 @@ bool BrowserPluginGuest::OnMessageReceivedFromEmbedder(
   RenderWidgetHostViewGuest* rwhv = static_cast<RenderWidgetHostViewGuest*>(
       web_contents()->GetRenderWidgetHostView());
   // Until the guest is attached, it should not be handling input events.
-  if (attached() && rwhv && rwhv->OnMessageReceivedFromEmbedder(
+  if (attached() && rwhv &&
+      rwhv->OnMessageReceivedFromEmbedder(
           message,
-          static_cast<RenderViewHostImpl*>(
-              embedder_web_contents()->GetRenderViewHost()))) {
+          RenderWidgetHostImpl::From(
+              embedder_web_contents()->GetRenderViewHost()->GetWidget()))) {
     return true;
   }
 
@@ -332,8 +333,8 @@ void BrowserPluginGuest::InitInternal(
   DCHECK(GetWebContents()->GetRenderViewHost());
 
   // Initialize the device scale factor by calling |NotifyScreenInfoChanged|.
-  auto render_widget_host =
-      RenderWidgetHostImpl::From(GetWebContents()->GetRenderViewHost());
+  auto render_widget_host = RenderWidgetHostImpl::From(
+      GetWebContents()->GetRenderViewHost()->GetWidget());
   render_widget_host->NotifyScreenInfoChanged();
 
   // TODO(chrishtr): this code is wrong. The navigate_on_drag_drop field will
@@ -948,10 +949,10 @@ void BrowserPluginGuest::OnUpdateGeometry(int browser_plugin_instance_id,
   // The plugin has moved within the embedder without resizing or the
   // embedder/container's view rect changing.
   guest_window_rect_ = view_rect;
-  RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
-      GetWebContents()->GetRenderViewHost());
-  if (rvh)
-    rvh->SendScreenRects();
+  RenderWidgetHostImpl* rwh = RenderWidgetHostImpl::From(
+      GetWebContents()->GetRenderViewHost()->GetWidget());
+  if (rwh)
+    rwh->SendScreenRects();
 }
 
 void BrowserPluginGuest::OnHasTouchEventHandlers(bool accept) {

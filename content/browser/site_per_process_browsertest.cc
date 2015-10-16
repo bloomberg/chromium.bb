@@ -430,7 +430,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CrossSiteIframe) {
   EXPECT_EQ(proxy_to_parent, child->render_manager()->GetProxyToParent());
   EXPECT_TRUE(proxy_to_parent->cross_process_frame_connector());
   EXPECT_NE(
-      child->current_frame_host()->render_view_host()->GetView(),
+      child->current_frame_host()->render_view_host()->GetWidget()->GetView(),
       proxy_to_parent->cross_process_frame_connector()->get_view_for_testing());
   EXPECT_TRUE(child->current_frame_host()->GetRenderWidgetHost());
 

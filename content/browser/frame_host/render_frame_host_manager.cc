@@ -313,7 +313,8 @@ RenderFrameHostManager::GetOuterRenderWidgetHostForKeyboardInput() {
           delegate_->GetOuterDelegateFrameTreeNodeID());
   return outer_contents_frame_tree_node->parent()
       ->current_frame_host()
-      ->render_view_host();
+      ->render_view_host()
+      ->GetWidget();
 }
 
 RenderFrameProxyHost* RenderFrameHostManager::GetProxyToParent() {
@@ -432,8 +433,9 @@ RenderFrameHostImpl* RenderFrameHostManager::Navigate(
       // need to set the visibility of the new View to the correct value here
       // after reload.
       if (dest_render_frame_host->GetView() &&
-          dest_render_frame_host->render_view_host()->is_hidden() !=
-              delegate_->IsHidden()) {
+          dest_render_frame_host->render_view_host()
+                  ->GetWidget()
+                  ->is_hidden() != delegate_->IsHidden()) {
         if (delegate_->IsHidden()) {
           dest_render_frame_host->GetView()->Hide();
         } else {
@@ -1834,7 +1836,7 @@ scoped_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrame(
 
       // If we are reusing the RenderViewHost and it doesn't already have a
       // RenderWidgetHostView, we need to create one if this is the main frame.
-      if (!swapped_out && !render_view_host->GetView())
+      if (!swapped_out && !render_view_host->GetWidget()->GetView())
         delegate_->CreateRenderWidgetHostViewForRenderManager(render_view_host);
     } else {
       DCHECK(render_view_host->IsRenderViewLive());
@@ -1849,8 +1851,8 @@ scoped_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrame(
         // Only the RenderViewHost for the top-level RenderFrameHost has a
         // RenderWidgetHostView; RenderWidgetHosts for out-of-process iframes
         // will be created later and hidden.
-        if (render_view_host->GetView())
-          render_view_host->GetView()->Hide();
+        if (render_view_host->GetWidget()->GetView())
+          render_view_host->GetWidget()->GetView()->Hide();
       }
       // RenderViewHost for |instance| might exist prior to calling
       // CreateRenderFrame. In such a case, InitRenderView will not create the
@@ -2204,8 +2206,10 @@ void RenderFrameHostManager::CommitPending() {
   // For top-level frames, also hide the old RenderViewHost's view.
   // TODO(creis): As long as show/hide are on RVH, we don't want to hide on
   // subframe navigations or we will interfere with the top-level frame.
-  if (is_main_frame && old_render_frame_host->render_view_host()->GetView())
-    old_render_frame_host->render_view_host()->GetView()->Hide();
+  if (is_main_frame &&
+      old_render_frame_host->render_view_host()->GetWidget()->GetView()) {
+    old_render_frame_host->render_view_host()->GetWidget()->GetView()->Hide();
+  }
 
   // Make sure the size is up to date.  (Fix for bug 1079768.)
   delegate_->UpdateRenderViewSizeForRenderManager();

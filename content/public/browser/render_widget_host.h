@@ -250,16 +250,6 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Sender {
   virtual void GetWebScreenInfo(blink::WebScreenInfo* result) = 0;
   // Get the color profile corresponding to this render widget.
   virtual bool GetScreenColorProfile(std::vector<char>* color_profile) = 0;
-
- protected:
-  friend class RenderWidgetHostImpl;
-
-  // Retrieves the implementation class.  Intended only for code
-  // within content/.  This method is necessary because
-  // RenderWidgetHost is the root of a diamond inheritance pattern, so
-  // subclasses inherit it virtually, which removes our ability to
-  // static_cast to the subclass.
-  virtual RenderWidgetHostImpl* AsRenderWidgetHostImpl() = 0;
 };
 
 }  // namespace content

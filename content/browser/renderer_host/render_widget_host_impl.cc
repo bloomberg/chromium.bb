@@ -308,7 +308,7 @@ RenderWidgetHostImpl::GetAllRenderWidgetHosts() {
 
 // static
 RenderWidgetHostImpl* RenderWidgetHostImpl::From(RenderWidgetHost* rwh) {
-  return rwh->AsRenderWidgetHostImpl();
+  return static_cast<RenderWidgetHostImpl*>(rwh);
 }
 
 void RenderWidgetHostImpl::SetView(RenderWidgetHostViewBase* view) {
@@ -338,10 +338,6 @@ int RenderWidgetHostImpl::GetRoutingID() const {
 
 RenderWidgetHostView* RenderWidgetHostImpl::GetView() const {
   return view_;
-}
-
-RenderWidgetHostImpl* RenderWidgetHostImpl::AsRenderWidgetHostImpl() {
-  return this;
 }
 
 gfx::NativeViewId RenderWidgetHostImpl::GetNativeViewId() const {

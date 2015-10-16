@@ -7,6 +7,7 @@
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_mac.h"
+#include "content/public/browser/render_widget_host.h"
 
 namespace content {
 
@@ -18,7 +19,8 @@ BrowserPluginPopupMenuHelper::BrowserPluginPopupMenuHelper(
 
 RenderWidgetHostViewMac*
     BrowserPluginPopupMenuHelper::GetRenderWidgetHostView() const {
-  return static_cast<RenderWidgetHostViewMac*>(embedder_rvh_->GetView());
+  return static_cast<RenderWidgetHostViewMac*>(
+      embedder_rvh_->GetWidget()->GetView());
 }
 
 }  // namespace content

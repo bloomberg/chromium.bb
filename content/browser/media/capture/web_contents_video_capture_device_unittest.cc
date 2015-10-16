@@ -262,8 +262,8 @@ class CaptureTestRenderViewHost : public TestRenderViewHost {
         controller_(controller) {
     // Override the default view installed by TestRenderViewHost; we need
     // our special subclass which has mocked-out tab capture support.
-    RenderWidgetHostView* old_view = GetView();
-    SetView(new CaptureTestView(this, controller));
+    RenderWidgetHostView* old_view = GetWidget()->GetView();
+    GetWidget()->SetView(new CaptureTestView(GetWidget(), controller));
     delete old_view;
   }
 

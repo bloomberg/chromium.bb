@@ -1198,7 +1198,7 @@ void WebContentsImpl::WasShown() {
   // one to make sure it's up to date.
   RenderViewHostImpl* rvh = GetRenderViewHost();
   if (rvh)
-    rvh->ResizeRectChanged(GetRootWindowResizerRect());
+    rvh->GetWidget()->ResizeRectChanged(GetRootWindowResizerRect());
 
   // Restore power save blocker if there are active video players running.
   if (!active_video_players_.empty() && !video_power_save_blocker_)
@@ -1407,7 +1407,7 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
   // corresponding RenderView and main RenderFrame have already been created.
   // Ensure observers are notified about this.
   if (params.renderer_initiated_creation) {
-    GetRenderViewHost()->set_renderer_initialized(true);
+    GetRenderViewHost()->GetWidget()->set_renderer_initialized(true);
     RenderViewCreated(GetRenderViewHost());
     GetRenderManager()->current_frame_host()->SetRenderFrameCreated(true);
   }
@@ -1778,7 +1778,8 @@ void WebContentsImpl::CreateNewWindow(
 
       // TODO(brettw): It seems bogus that we have to call this function on the
       // newly created object and give it one of its own member variables.
-      new_view->CreateViewForWidget(new_contents->GetRenderViewHost(), false);
+      new_view->CreateViewForWidget(
+          new_contents->GetRenderViewHost()->GetWidget(), false);
     }
     // Save the created window associated with the route so we can show it
     // later.
@@ -1971,7 +1972,7 @@ WebContentsImpl* WebContentsImpl::GetCreatedWindow(int route_id) {
     return new_contents;
 
   if (!new_contents->GetRenderProcessHost()->HasConnection() ||
-      !new_contents->GetRenderViewHost()->GetView())
+      !new_contents->GetRenderViewHost()->GetWidget()->GetView())
     return NULL;
 
   return new_contents;
@@ -2635,7 +2636,8 @@ bool WebContentsImpl::GotResponseToLockMouseRequest(bool allowed) {
     return GetBrowserPluginGuest()->LockMouse(allowed);
 
   return GetRenderViewHost()
-             ? GetRenderViewHost()->GotResponseToLockMouseRequest(allowed)
+             ? GetRenderViewHost()->GetWidget()->GotResponseToLockMouseRequest(
+                   allowed)
              : false;
 }
 
@@ -2757,7 +2759,7 @@ void WebContentsImpl::HasManifest(const HasManifestCallback& callback) {
 
 void WebContentsImpl::ExitFullscreen() {
   // Clean up related state and initiate the fullscreen exit.
-  GetRenderViewHost()->RejectMouseLockOrUnlockIfNecessary();
+  GetRenderViewHost()->GetWidget()->RejectMouseLockOrUnlockIfNecessary();
   ExitFullscreenMode();
 }
 

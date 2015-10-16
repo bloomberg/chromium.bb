@@ -218,7 +218,8 @@ class RenderWidgetHostViewMacTest : public RenderViewHostImplTestHarness {
     RecycleAndWait();
 
     // See comment in SetUp().
-    test_rvh()->SetView(static_cast<RenderWidgetHostViewBase*>(old_rwhv_));
+    test_rvh()->GetWidget()->SetView(
+        static_cast<RenderWidgetHostViewBase*>(old_rwhv_));
 
     ImageTransportFactory::Terminate();
     RenderViewHostImplTestHarness::TearDown();
@@ -231,7 +232,7 @@ class RenderWidgetHostViewMacTest : public RenderViewHostImplTestHarness {
   }
 
   void DestroyHostViewRetainCocoaView() {
-    test_rvh()->SetView(nullptr);
+    test_rvh()->GetWidget()->SetView(nullptr);
     rwhv_mac_->Destroy();
   }
 

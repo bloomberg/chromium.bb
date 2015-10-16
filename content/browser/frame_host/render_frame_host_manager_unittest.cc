@@ -721,7 +721,7 @@ TEST_F(RenderFrameHostManagerTest, WhiteListSwapCompositorFrame) {
   TestRenderFrameHost* swapped_out_rfh = CreateSwappedOutRenderFrameHost();
   TestRenderWidgetHostView* swapped_out_rwhv =
       static_cast<TestRenderWidgetHostView*>(
-          swapped_out_rfh->GetRenderViewHost()->GetView());
+          swapped_out_rfh->GetRenderViewHost()->GetWidget()->GetView());
   EXPECT_FALSE(swapped_out_rwhv->did_swap_compositor_frame());
 
   MockRenderProcessHost* process_host = swapped_out_rfh->GetProcess();
@@ -1818,8 +1818,9 @@ TEST_F(RenderFrameHostManagerTest, NavigateWithEarlyClose) {
   EXPECT_EQ(host2, GetPendingFrameHost(manager));
 
   // 3) Close the tab. -------------------------
-  notifications.ListenFor(NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
-                          Source<RenderWidgetHost>(host2->render_view_host()));
+  notifications.ListenFor(
+      NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
+      Source<RenderWidgetHost>(host2->render_view_host()->GetWidget()));
   manager->OnBeforeUnloadACK(false, true, base::TimeTicks());
 
   EXPECT_TRUE(

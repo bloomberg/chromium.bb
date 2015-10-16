@@ -177,8 +177,7 @@ RenderViewHost* RenderViewHost::FromID(int render_process_id,
 
 // static
 RenderViewHost* RenderViewHost::From(RenderWidgetHost* rwh) {
-  DCHECK(rwh->IsRenderView());
-  return static_cast<RenderViewHostImpl*>(RenderWidgetHostImpl::From(rwh));
+  return RenderViewHostImpl::From(rwh);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -192,6 +191,12 @@ RenderViewHostImpl* RenderViewHostImpl::FromID(int render_process_id,
   if (!widget || !widget->IsRenderView())
     return NULL;
   return static_cast<RenderViewHostImpl*>(RenderWidgetHostImpl::From(widget));
+}
+
+// static
+RenderViewHostImpl* RenderViewHostImpl::From(RenderWidgetHost* rwh) {
+  DCHECK(rwh->IsRenderView());
+  return static_cast<RenderViewHostImpl*>(RenderWidgetHostImpl::From(rwh));
 }
 
 RenderViewHostImpl::RenderViewHostImpl(
@@ -738,9 +743,9 @@ bool RenderViewHostImpl::Send(IPC::Message* msg) {
   return RenderWidgetHostImpl::Send(msg);
 }
 
-RenderWidgetHost* RenderViewHostImpl::GetWidget() const {
-  return const_cast<RenderWidgetHost*>(
-      static_cast<const RenderWidgetHost*>(this));
+RenderWidgetHostImpl* RenderViewHostImpl::GetWidget() const {
+  return const_cast<RenderWidgetHostImpl*>(
+      static_cast<const RenderWidgetHostImpl*>(this));
 }
 
 RenderProcessHost* RenderViewHostImpl::GetProcess() const {

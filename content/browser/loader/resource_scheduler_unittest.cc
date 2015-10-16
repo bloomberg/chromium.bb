@@ -2218,10 +2218,10 @@ TEST_F(ResourceSchedulerTest, GetVisualSignalFromRenderViewHost) {
   // Check initial visibility is set correctly.
   EXPECT_EQ(scheduler->IsClientVisibleForTesting(rvh1->GetProcess()->GetID(),
                                                  rvh1->GetRoutingID()),
-            !rvh1->is_hidden());
+            !rvh1->GetWidget()->is_hidden());
   EXPECT_EQ(scheduler->IsClientVisibleForTesting(rvh2->GetProcess()->GetID(),
                                                  rvh1->GetRoutingID()),
-            !rvh2->is_hidden());
+            !rvh2->GetWidget()->is_hidden());
 
   // 1 visible, 1 hidden
   rvh1->WasShown(ui::LatencyInfo());

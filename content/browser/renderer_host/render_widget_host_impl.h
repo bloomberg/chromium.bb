@@ -469,8 +469,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   }
 
  protected:
-  RenderWidgetHostImpl* AsRenderWidgetHostImpl() override;
-
   // Called when we receive a notification indicating that the renderer
   // process has gone. This will reset our state so that our state will be
   // consistent if a new renderer is created.

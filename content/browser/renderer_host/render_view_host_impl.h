@@ -93,13 +93,15 @@ struct FrameReplicationState;
 //
 // For context, please see https://crbug.com/467770 and
 // http://www.chromium.org/developers/design-documents/site-isolation.
-class CONTENT_EXPORT RenderViewHostImpl
-    : public RenderViewHost,
-      public RenderWidgetHostImpl,
-      public RenderProcessHostObserver {
+class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
+                                          RenderWidgetHostImpl,
+                                          public RenderProcessHostObserver {
  public:
   // Convenience function, just like RenderViewHost::FromID.
   static RenderViewHostImpl* FromID(int render_process_id, int render_view_id);
+
+  // Convenience function, just like RenderViewHost::From.
+  static RenderViewHostImpl* From(RenderWidgetHost* rwh);
 
   // |routing_id| must be a valid route id.  |swapped_out| indicates
   // whether the view should initially be swapped out (e.g., for an opener
@@ -123,7 +125,7 @@ class CONTENT_EXPORT RenderViewHostImpl
 
   // RenderViewHost implementation.
   bool Send(IPC::Message* msg) override;
-  RenderWidgetHost* GetWidget() const override;
+  RenderWidgetHostImpl* GetWidget() const override;
   RenderProcessHost* GetProcess() const override;
   int GetRoutingID() const override;
   RenderFrameHost* GetMainFrame() override;
