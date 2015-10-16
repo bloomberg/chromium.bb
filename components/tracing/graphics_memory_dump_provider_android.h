@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/containers/hash_tables.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/singleton.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "components/tracing/tracing_export.h"
@@ -29,6 +30,7 @@ class TRACING_EXPORT GraphicsMemoryDumpProvider
                     base::trace_event::ProcessMemoryDump* pmd) override;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(GraphicsMemoryDumpProviderTest, ParseResponse);
   friend struct base::DefaultSingletonTraits<GraphicsMemoryDumpProvider>;
 
   void ParseResponseAndAddToDump(const char* buf,
