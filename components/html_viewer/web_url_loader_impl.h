@@ -69,11 +69,6 @@ class WebURLLoaderImpl : public blink::WebURLLoader {
   mojo::ScopedDataPipeConsumerHandle response_body_stream_;
   mojo::common::HandleWatcher handle_watcher_;
 
-  // Please see the comments in ReadMore() for why we need these two members.
-  // -1 if Content-Length is not specified.
-  int64 expected_content_length_;
-  size_t current_length_;
-
   base::WeakPtrFactory<WebURLLoaderImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebURLLoaderImpl);

@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "components/html_viewer/blink_url_request_type_converters.h"
@@ -51,33 +50,18 @@ blink::WebURLResponse ToWebURLResponse(const URLResponsePtr& url_response) {
   result.setTextEncodingName(blink::WebString::fromUTF8(url_response->charset));
   result.setHTTPVersion(StatusLineToHTTPVersion(url_response->status_line));
   result.setHTTPStatusCode(url_response->status_code);
+  result.setExpectedContentLength(-1);  // Not available.
 
   // TODO(darin): Initialize timing properly.
   blink::WebURLLoadTiming timing;
   timing.initialize();
   result.setLoadTiming(timing);
 
-  int64 expected_content_length = -1;
-
   for (size_t i = 0; i < url_response->headers.size(); ++i) {
     result.setHTTPHeaderField(
         blink::WebString::fromUTF8(url_response->headers[i]->name),
         blink::WebString::fromUTF8(url_response->headers[i]->value));
-
-    if (expected_content_length == -1 &&
-        base::CompareCaseInsensitiveASCII(
-            url_response->headers[i]->name.To<std::string>(),
-            "content-length") == 0) {
-      if (!base::StringToInt64(
-              url_response->headers[i]->value.To<std::string>(),
-              &expected_content_length)) {
-        // base::StringToInt64() may modify it even when returning false.
-        expected_content_length = -1;
-      }
-    }
   }
-
-  result.setExpectedContentLength(expected_content_length);
 
   return result;
 }
@@ -95,8 +79,6 @@ WebURLLoaderImpl::WebURLLoaderImpl(mojo::URLLoaderFactory* url_loader_factory,
     : client_(NULL),
       web_blob_registry_(web_blob_registry),
       referrer_policy_(blink::WebReferrerPolicyDefault),
-      expected_content_length_(-1),
-      current_length_(0),
       weak_factory_(this) {
   url_loader_factory->CreateURLLoader(GetProxy(&url_loader_));
 }
@@ -193,17 +175,13 @@ void WebURLLoaderImpl::OnReceivedResponse(const blink::WebURLRequest& request,
                                           URLResponsePtr url_response) {
   url_ = GURL(url_response->url);
 
-  expected_content_length_ = -1;
-  current_length_ = 0;
-
   if (url_response->error) {
     OnReceivedError(url_response.Pass());
   } else if (url_response->redirect_url) {
     OnReceivedRedirect(request, url_response.Pass());
   } else {
     base::WeakPtr<WebURLLoaderImpl> self(weak_factory_.GetWeakPtr());
-    blink::WebURLResponse response = ToWebURLResponse(url_response);
-    client_->didReceiveResponse(this, response);
+    client_->didReceiveResponse(this, ToWebURLResponse(url_response));
 
     // We may have been deleted during didReceiveResponse.
     if (!self)
@@ -211,7 +189,6 @@ void WebURLLoaderImpl::OnReceivedResponse(const blink::WebURLRequest& request,
 
     // Start streaming data
     response_body_stream_ = url_response->body.Pass();
-    expected_content_length_ = response.expectedContentLength();
     ReadMore();
   }
 }
@@ -307,22 +284,8 @@ void WebURLLoaderImpl::ReadMore() {
     if (!self)
       return;
     EndReadDataRaw(response_body_stream_.get(), buf_size);
-    current_length_ += buf_size;
-
-    if (expected_content_length_ >= 0 &&
-        current_length_ >= static_cast<size_t>(expected_content_length_)) {
-      // TODO(yzshen, sky): crbug.com/537858 After receiving all the contents in
-      // the data pipe, waiting on the handle expects to return
-      // MOJO_RESULT_FAILED_PRECONDITION. However, sometimes the wait fails to
-      // complete for some reason. Therefore, as a workaround, we assume the
-      // load has completed as soon as we reach the expected content length.
-      rv = MOJO_RESULT_FAILED_PRECONDITION;
-    } else {
-      rv = MOJO_RESULT_SHOULD_WAIT;
-    }
-  }
-
-  if (rv == MOJO_RESULT_SHOULD_WAIT) {
+    WaitToReadMore();
+  } else if (rv == MOJO_RESULT_SHOULD_WAIT) {
     WaitToReadMore();
   } else if (rv == MOJO_RESULT_FAILED_PRECONDITION) {
     // We reached end-of-file.
