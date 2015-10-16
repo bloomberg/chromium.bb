@@ -1517,6 +1517,29 @@ def _CheckSingletonInHeaders(input_api, output_api):
   return []
 
 
+def _CheckBaseMacrosInHeaders(input_api, output_api):
+  """Check for base/macros.h if DISALLOW_* macro is used."""
+
+  disallows = ('DISALLOW_ASSIGN', 'DISALLOW_COPY', 'DISALLOW_EVIL')
+  macros = '#include "base/macros.h"'
+  basictypes = '#include "base/basictypes.h"'
+
+  files = []
+  for f in input_api.AffectedSourceFiles(None):
+    if not f.LocalPath().endswith('.h'):
+      continue
+    for line_num, line in f.ChangedContents():
+      if any(d in line for d in disallows):
+        contents = input_api.ReadFile(f)
+        if not (macros in contents or basictypes in contents):
+          files.append(f)
+          break
+
+  msg = ('The following files appear to be using DISALLOW_* macros.\n'
+         'Please #include "base/macros.h" in them.')
+  return [output_api.PresubmitError(msg, files)] if files else []
+
+
 _DEPRECATED_CSS = [
   # Values
   ( "-webkit-box", "flex" ),
@@ -1646,6 +1669,7 @@ def _CommonChecks(input_api, output_api):
   results.extend(_CheckForCopyrightedCode(input_api, output_api))
   results.extend(_CheckForWindowsLineEndings(input_api, output_api))
   results.extend(_CheckSingletonInHeaders(input_api, output_api))
+  results.extend(_CheckBaseMacrosInHeaders(input_api, output_api))
 
   if any('PRESUBMIT.py' == f.LocalPath() for f in input_api.AffectedFiles()):
     results.extend(input_api.canned_checks.RunUnitTestsInDirectory(
