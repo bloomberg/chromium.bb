@@ -2,17 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/task_management/providers/web_contents/web_contents_tags_manager.h"
 #include "chrome/browser/task_management/task_management_browsertest_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/favicon/content/content_favicon_driver.h"
+#include "components/favicon/core/favicon_driver.h"
+#include "components/favicon/core/favicon_driver_observer.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/page_transition_types.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/codec/png_codec.h"
+#include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_unittest_util.h"
+#include "ui/resources/grit/ui_resources.h"
 
 namespace task_management {
 
@@ -53,6 +63,46 @@ const TestPageData kTestPages[] = {
 
 const size_t kTestPagesLength = arraysize(kTestPages);
 
+// Blocks till the current page uses a specific icon URL.
+class FaviconWaiter : public favicon::FaviconDriverObserver {
+ public:
+  explicit FaviconWaiter(favicon::ContentFaviconDriver* driver)
+      : driver_(driver) {
+    driver_->AddObserver(this);
+  }
+
+  void WaitForFaviconWithURL(const GURL& url) {
+    if (driver_->GetActiveFaviconURL() == url) {
+      driver_->RemoveObserver(this);
+      return;
+    }
+
+    target_favicon_url_ = url;
+    base::RunLoop run_loop;
+    quit_closure_ = run_loop.QuitClosure();
+    run_loop.Run();
+  }
+
+ private:
+  void OnFaviconAvailable(const gfx::Image& image) override {}
+
+  void OnFaviconUpdated(favicon::FaviconDriver* driver,
+                        bool icon_url_changed) override {
+    if (driver_->GetActiveFaviconURL() == target_favicon_url_) {
+      driver_->RemoveObserver(this);
+
+      if (!quit_closure_.is_null())
+        quit_closure_.Run();
+    }
+  }
+
+  favicon::ContentFaviconDriver* driver_;
+  GURL target_favicon_url_;
+  base::Closure quit_closure_;
+
+  DISALLOW_COPY_AND_ASSIGN(FaviconWaiter);
+};
+
 }  // namespace
 
 // Defines a browser test class for testing the task manager tracking of tab
@@ -85,9 +135,17 @@ class TabContentsTagTest : public InProcessBrowserTest {
     base::string16 title = base::UTF8ToUTF16(page_data.title);
     if (title.empty()) {
       GURL url = GetUrlOfFile(page_data.page_file);
-      title = base::UTF8ToUTF16(url.host() + ":" + url.port() + url.path());
+      return GetDefaultTitleForUrl(url);
     }
     return l10n_util::GetStringFUTF16(page_data.expected_prefix_message, title);
+  }
+
+  // Returns the expected title for |url| if |url| does not specify a custom
+  // title (e.g. via the <title> tag).
+  base::string16 GetDefaultTitleForUrl(const GURL& url) const {
+    base::string16 title =
+        base::UTF8ToUTF16(url.host() + ":" + url.port() + url.path());
+    return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_TAB_PREFIX, title);
   }
 
   base::string16 GetAboutBlankExpectedTitle() const {
@@ -101,11 +159,11 @@ class TabContentsTagTest : public InProcessBrowserTest {
     return WebContentsTagsManager::GetInstance()->tracked_tags();
   }
 
- private:
   GURL GetUrlOfFile(const char* test_page_file) const {
     return embedded_test_server()->GetURL(test_page_file);
   }
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(TabContentsTagTest);
 };
 
@@ -195,6 +253,54 @@ IN_PROC_BROWSER_TEST_F(TabContentsTagTest, PostExistingTaskProviding) {
       GetTestPageExpectedTitle(kTestPages[kTestPagesLength - 1]);
   for (auto& task : task_manager.tasks())
     EXPECT_NE(closed_tab_title, task->title());
+}
+
+// Test that the default favicon is shown in the task manager after navigating
+// from a page with a favicon to a page without a favicon. crbug.com/528924
+IN_PROC_BROWSER_TEST_F(TabContentsTagTest, NavigateToPageNoFavicon) {
+  // We start with the "about:blank" tab.
+  MockWebContentsTaskManager task_manager;
+  task_manager.StartObserving();
+  ASSERT_EQ(1, tabs_count());
+  ASSERT_EQ(1U, tracked_tags().size());
+
+  // Navigate to a page with a favicon.
+  GURL favicon_page_url = GetUrlOfFile("/favicon/page_with_favicon.html");
+  ui_test_utils::NavigateToURL(browser(), favicon_page_url);
+  Task* task = task_manager.tasks().back();
+  ASSERT_EQ(GetDefaultTitleForUrl(favicon_page_url), task->title());
+
+  // Wait for the browser to download the favicon.
+  favicon::ContentFaviconDriver* favicon_driver =
+      favicon::ContentFaviconDriver::FromWebContents(
+          browser()->tab_strip_model()->GetActiveWebContents());
+  FaviconWaiter waiter(favicon_driver);
+  waiter.WaitForFaviconWithURL(GetUrlOfFile("/favicon/icon.png"));
+
+  // Check that the task manager uses the specified favicon for the page.
+  base::FilePath test_dir;
+  PathService::Get(chrome::DIR_TEST_DATA, &test_dir);
+  std::string favicon_string;
+  base::ReadFileToString(
+      test_dir.AppendASCII("favicon").AppendASCII("icon.png"), &favicon_string);
+  SkBitmap favicon_bitmap;
+  gfx::PNGCodec::Decode(
+      reinterpret_cast<const unsigned char*>(favicon_string.data()),
+      favicon_string.length(), &favicon_bitmap);
+  ASSERT_TRUE(
+      gfx::test::AreBitmapsEqual(favicon_bitmap, *task->icon().bitmap()));
+
+  // Navigate to a page without a favicon.
+  GURL no_favicon_page_url = GetUrlOfFile("/title1.html");
+  ui_test_utils::NavigateToURL(browser(), no_favicon_page_url);
+  ASSERT_EQ(GetDefaultTitleForUrl(no_favicon_page_url), task->title());
+
+  // Check that the task manager uses the default favicon for the page.
+  gfx::Image default_favicon_image =
+      ResourceBundle::GetSharedInstance().GetNativeImageNamed(
+          IDR_DEFAULT_FAVICON);
+  EXPECT_TRUE(gfx::test::AreImagesEqual(default_favicon_image,
+                                        gfx::Image(task->icon())));
 }
 
 }  // namespace task_management

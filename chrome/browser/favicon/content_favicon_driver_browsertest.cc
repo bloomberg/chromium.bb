@@ -205,7 +205,7 @@ class ContentFaviconDriverTest : public InProcessBrowserTest,
 IN_PROC_BROWSER_TEST_F(ContentFaviconDriverTest, ReloadIgnoringCache) {
   ASSERT_TRUE(test_server()->Start());
   GURL url = test_server()->GetURL("files/favicon/page_with_favicon.html");
-  GURL icon_url = test_server()->GetURL("files/favicon/icon.ico");
+  GURL icon_url = test_server()->GetURL("files/favicon/icon.png");
 
   scoped_ptr<TestResourceDispatcherHostDelegate> delegate(
       new TestResourceDispatcherHostDelegate(icon_url));

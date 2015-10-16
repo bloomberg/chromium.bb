@@ -158,9 +158,6 @@ void WebContentsEntry::RenderProcessGone(base::TerminationStatus status) {
 void WebContentsEntry::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
-  // Note: Listening to WebContentsObserver::TitleWasSet() only is not enough in
-  // some cases when the the webpage doesn't have a title. That's why we update
-  // the title here as well.
   auto itr = tasks_by_frames_.find(web_contents()->GetMainFrame());
   if (itr == tasks_by_frames_.end()) {
     // TODO(afakhry): Validate whether this actually happens in practice.
@@ -168,7 +165,16 @@ void WebContentsEntry::DidNavigateMainFrame(
     return;
   }
 
+  // Listening to WebContentsObserver::TitleWasSet() only is not enough in
+  // some cases when the the webpage doesn't have a title. That's why we update
+  // the title here as well.
   itr->second->UpdateTitle();
+
+  // Call RendererTask::UpdateFavicon() to set the current favicon to the
+  // default favicon. If the page has a non-default favicon,
+  // RendererTask::OnFaviconUpdated() will update the current favicon once
+  // FaviconDriver figures out the correct favicon for the page.
+  itr->second->UpdateFavicon();
 }
 
 void WebContentsEntry::TitleWasSet(content::NavigationEntry* entry,
