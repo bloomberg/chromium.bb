@@ -98,15 +98,15 @@ bool Process::IsProcessBackgrounded() const {
 
 #if defined(OS_CHROMEOS)
   if (cgroups.Get().enabled) {
+    // Used to allow reading the process priority from proc on thread launch.
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
     std::string proc;
     if (base::ReadFileToString(
-            base::FilePath(StringPrintf(kProcPath, process_)),
-            &proc)) {
-      std::vector<std::string> proc_parts = base::SplitString(
+            base::FilePath(StringPrintf(kProcPath, process_)), &proc)) {
+      std::vector<StringPiece> proc_parts = base::SplitStringPiece(
           proc, ":", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
       DCHECK_EQ(proc_parts.size(), 3u);
-      bool ret = proc_parts[2] == std::string(kBackground);
-      return ret;
+      return proc_parts[2] == kBackground;
     } else {
       return false;
     }
