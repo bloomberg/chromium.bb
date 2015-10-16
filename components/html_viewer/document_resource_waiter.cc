@@ -88,12 +88,12 @@ void DocumentResourceWaiter::UpdateIsReady() {
   }
 
   // The first portion of ready is when we have received OnConnect()
-  // (|frame_data_| is valid) and we have a view with valid metrics. The view
-  // is not necessary is ViewConnectType is USE_EXISTING, which means the
+  // (|frame_data_| is valid) and we have a window with valid metrics. The
+  // window is not necessary is ViewConnectType is USE_EXISTING, which means the
   // application is not asked for a ViewTreeClient. The metrics are necessary
-  // to initialize ResourceBundle. If USE_EXISTING is true, it means a View has
-  // already been provided to another HTMLDocument and there is no need to wait
-  // for metrics.
+  // to initialize ResourceBundle. If USE_EXISTING is true, it means a Window
+  // has already been provided to another HTMLDocument and there is no need to
+  // wait for metrics.
   bool is_ready =
       (!frame_data_.is_null() &&
        ((view_connect_type_ ==
@@ -102,9 +102,9 @@ void DocumentResourceWaiter::UpdateIsReady() {
   if (is_ready) {
     HTMLFrameTreeManager* frame_tree =
         HTMLFrameTreeManager::FindFrameTreeWithRoot(frame_data_[0]->frame_id);
-    // Once we've received OnConnect() and the view (if necessary), we determine
-    // which HTMLFrameTreeManager the new frame ends up in. If there is an
-    // existing HTMLFrameTreeManager then we must wait for the change_id
+    // Once we've received OnConnect() and the window (if necessary), we
+    // determine which HTMLFrameTreeManager the new frame ends up in. If there
+    // is an existing HTMLFrameTreeManager then we must wait for the change_id
     // supplied to OnConnect() to be <= that of the HTMLFrameTreeManager's
     // change_id. If we did not wait for the change id to be <= then the
     // structure of the tree is not in the expected state and it's possible the

@@ -101,7 +101,7 @@ HTMLFrame* HTMLFrameTreeManager::CreateFrameAndAttachToTree(
            << " frame_id=" << window_id;
   if (view_connect_type == web_view::mojom::VIEW_CONNECT_TYPE_USE_EXISTING &&
       !frame_tree) {
-    DVLOG(1) << "was told to use existing view but do not have frame tree";
+    DVLOG(1) << "was told to use existing window but do not have frame tree";
     return nullptr;
   }
 
@@ -113,11 +113,11 @@ HTMLFrame* HTMLFrameTreeManager::CreateFrameAndAttachToTree(
              web_view::mojom::VIEW_CONNECT_TYPE_USE_EXISTING) {
     HTMLFrame* existing_frame = frame_tree->root_->FindFrame(window_id);
     if (!existing_frame) {
-      DVLOG(1) << "was told to use existing view but could not find view";
+      DVLOG(1) << "was told to use existing window but could not find window";
       return nullptr;
     }
     if (!existing_frame->IsLocal()) {
-      DVLOG(1) << "was told to use existing view, but frame is remote";
+      DVLOG(1) << "was told to use existing window, but frame is remote";
       return nullptr;
     }
     existing_frame->SwapDelegate(delegate);

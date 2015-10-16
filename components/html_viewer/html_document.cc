@@ -149,12 +149,12 @@ HTMLDocument::~HTMLDocument() {
 void HTMLDocument::Load() {
   DCHECK(resource_waiter_ && resource_waiter_->is_ready());
 
-  // Note: |view| is null if we're taking over for an existing frame.
-  mus::Window* view = resource_waiter_->root();
-  if (view) {
+  // Note: |window| is null if we're taking over for an existing frame.
+  mus::Window* window = resource_waiter_->root();
+  if (window) {
     global_state_->InitIfNecessary(
-        view->viewport_metrics().size_in_pixels.To<gfx::Size>(),
-        view->viewport_metrics().device_pixel_ratio);
+        window->viewport_metrics().size_in_pixels.To<gfx::Size>(),
+        window->viewport_metrics().device_pixel_ratio);
   }
 
   scoped_ptr<WebURLRequestExtraData> extra_data(new WebURLRequestExtraData);
@@ -164,7 +164,7 @@ void HTMLDocument::Load() {
   base::TimeTicks navigation_start_time =
       resource_waiter_->navigation_start_time();
   frame_ = HTMLFrameTreeManager::CreateFrameAndAttachToTree(
-      global_state_, view, resource_waiter_.Pass(), this);
+      global_state_, window, resource_waiter_.Pass(), this);
 
   // If the frame wasn't created we can destroy ourself.
   if (!frame_) {
@@ -246,7 +246,7 @@ void HTMLDocument::OnSwap(HTMLFrame* frame, HTMLFrameDelegate* old_delegate) {
   DCHECK(!transferable_state_.root);
   if (!old_delegate) {
     // We're taking over a child of a local root that isn't associated with a
-    // delegate. In this case the frame's view is not the root of the
+    // delegate. In this case the frame's window is not the root of the
     // WindowTreeConnection.
     transferable_state_.owns_window_tree_connection = false;
     transferable_state_.root = frame->window();

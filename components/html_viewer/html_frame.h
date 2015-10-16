@@ -55,7 +55,7 @@ class WebLayerTreeViewImpl;
 // Frame is used to represent a single frame in the frame tree of a page. The
 // frame is either local or remote. Each Frame is associated with a single
 // HTMLFrameTreeManager and can not be moved to another HTMLFrameTreeManager.
-// Local frames have a mus::View, remote frames do not.
+// Local frames have a mus::Window, remote frames do not.
 //
 // HTMLFrame serves as the FrameClient. It implements it by forwarding the
 // calls to HTMLFrameTreeManager so that HTMLFrameTreeManager can update the
@@ -131,7 +131,7 @@ class HTMLFrame : public blink::WebFrameClient,
   blink::WebView* web_view();
   blink::WebWidget* GetWebWidget();
 
-  // The mus::View this frame renders to. This is non-null for the local frame
+  // The mus::Window this frame renders to. This is non-null for the local frame
   // the frame tree was created with as well as non-null for any frames created
   // locally.
   mus::Window* window() { return window_; }
@@ -322,11 +322,11 @@ class HTMLFrame : public blink::WebFrameClient,
 
   HTMLFrameTreeManager* frame_tree_manager_;
   HTMLFrame* parent_;
-  // |view_| is non-null for local frames or remote frames that were once
+  // |window_| is non-null for local frames or remote frames that were once
   // local.
   mus::Window* window_;
-  // The id for this frame. If there is a view, this is the same id as the
-  // view has.
+  // The id for this frame. If there is a window, this is the same id as the
+  // window has.
   const uint32_t id_;
   std::vector<HTMLFrame*> children_;
   blink::WebFrame* web_frame_;
@@ -344,14 +344,14 @@ class HTMLFrame : public blink::WebFrameClient,
   ReplicatedFrameState state_;
 
   // If this frame is the result of creating a local frame
-  // (createChildFrame()), then |owned_window_| is the View initially created
+  // (createChildFrame()), then |owned_window_| is the Window initially created
   // for the frame. While the frame is local |owned_window_| is the same as
-  // |view_|. If this frame becomes remote |view_| is set to null and
-  // |owned_window_| remains as the View initially created for the frame.
+  // |window_|. If this frame becomes remote |window_| is set to null and
+  // |owned_window_| remains as the Window initially created for the frame.
   //
-  // This is done to ensure the View isn't prematurely deleted (it must exist
-  // as long as the frame is valid). If the View was deleted as soon as the
-  // frame was swapped to remote then the process rendering to the view would
+  // This is done to ensure the Window isn't prematurely deleted (it must exist
+  // as long as the frame is valid). If the Window was deleted as soon as the
+  // frame was swapped to remote then the process rendering to the window would
   // be severed.
   scoped_ptr<mus::ScopedWindowPtr> owned_window_;
 

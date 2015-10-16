@@ -323,10 +323,10 @@ blink::WebFrame* HTMLFrame::createChildFrame(
     blink::WebSandboxFlags sandbox_flags) {
   DCHECK(IsLocal());  // Can't create children of remote frames.
   DCHECK_EQ(parent, web_frame_);
-  DCHECK(window_);  // If we're local we have to have a view.
-  // Create the view that will house the frame now. We embed once we know the
+  DCHECK(window_);  // If we're local we have to have a window.
+  // Create the window that will house the frame now. We embed once we know the
   // url (see decidePolicyForNavigation()).
-  mus::Window* child_view = window_->connection()->CreateWindow();
+  mus::Window* child_window = window_->connection()->CreateWindow();
   ReplicatedFrameState child_state;
   child_state.name = frame_name;
   child_state.tree_scope = scope;
@@ -335,23 +335,23 @@ blink::WebFrame* HTMLFrame::createChildFrame(
   client_properties.mark_non_null();
   ClientPropertiesFromReplicatedFrameState(child_state, &client_properties);
 
-  child_view->SetVisible(true);
-  window_->AddChild(child_view);
+  child_window->SetVisible(true);
+  window_->AddChild(child_window);
 
-  HTMLFrame::CreateParams params(frame_tree_manager_, this, child_view->id(),
-                                 child_view, client_properties, nullptr);
+  HTMLFrame::CreateParams params(frame_tree_manager_, this, child_window->id(),
+                                 child_window, client_properties, nullptr);
   params.is_local_create_child = true;
   HTMLFrame* child_frame = GetFirstAncestorWithDelegate()
                                ->delegate_->GetHTMLFactory()
                                ->CreateHTMLFrame(&params);
-  child_frame->owned_window_.reset(new mus::ScopedWindowPtr(child_view));
+  child_frame->owned_window_.reset(new mus::ScopedWindowPtr(child_window));
 
   web_view::mojom::FrameClientPtr client_ptr;
   child_frame->frame_client_binding_.reset(
       new mojo::Binding<web_view::mojom::FrameClient>(
           child_frame, mojo::GetProxy(&client_ptr)));
   server_->OnCreatedFrame(GetProxy(&(child_frame->server_)), client_ptr.Pass(),
-                          child_view->id(), client_properties.Pass());
+                          child_window->id(), client_properties.Pass());
   return child_frame->web_frame_;
 }
 
@@ -1011,7 +1011,7 @@ void HTMLFrame::reload(bool ignore_cache, bool is_client_redirect) {
 }
 
 void HTMLFrame::frameRectsChanged(const blink::WebRect& frame_rect) {
-  // Only the owner of view can update its size.
+  // Only the owner of window can update its size.
   if (!owned_window_)
     return;
 

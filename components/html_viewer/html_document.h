@@ -43,10 +43,10 @@ class TestHTMLViewerImpl;
 class WindowTreeDelegateImpl;
 class WebLayerTreeViewImpl;
 
-// A view for a single HTML document.
+// A window for a single HTML document.
 //
 // HTMLDocument is deleted in one of two ways:
-// . When the View the HTMLDocument is embedded in is destroyed.
+// . When the Window the HTMLDocument is embedded in is destroyed.
 // . Explicitly by way of Destroy().
 class HTMLDocument
     : public mus::WindowTreeDelegate,
