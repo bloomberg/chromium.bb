@@ -259,7 +259,7 @@ class SummarizedResultsTest(unittest.TestCase):
         self.assertTrue('time' not in summary['tests']['failures']['expected']['leak.html'])
 
     def test_timeout_then_unexpected_pass(self):
-        test_name = 'failures/expected/image.html'
+        test_name = 'failures/expected/text.html'
         expectations = test_expectations.TestExpectations(self.port, [test_name])
         initial_results = test_run_results.TestRunResults(expectations, 1)
         initial_results.add(get_result(test_name, test_expectations.TIMEOUT, run_time=1), False, False)
@@ -272,9 +272,9 @@ class SummarizedResultsTest(unittest.TestCase):
         summary = test_run_results.summarize_results(
             self.port, expectations, initial_results, all_retry_results,
             enabled_pixel_tests_in_retry=True)
-        self.assertTrue('is_unexpected' not in summary['tests']['failures']['expected']['image.html'])
-        self.assertEquals(summary['tests']['failures']['expected']['image.html']['expected'], 'IMAGE')
-        self.assertEquals(summary['tests']['failures']['expected']['image.html']['actual'], 'TIMEOUT LEAK PASS PASS')
+        self.assertTrue('is_unexpected' in summary['tests']['failures']['expected']['text.html'])
+        self.assertEquals(summary['tests']['failures']['expected']['text.html']['expected'], 'FAIL')
+        self.assertEquals(summary['tests']['failures']['expected']['text.html']['actual'], 'TIMEOUT LEAK PASS PASS')
         self.assertEquals(summary['num_passes'], 1)
         self.assertEquals(summary['num_regressions'], 0)
         self.assertEquals(summary['num_flaky'], 0)

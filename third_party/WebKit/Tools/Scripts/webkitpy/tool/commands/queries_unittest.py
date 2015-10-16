@@ -53,44 +53,44 @@ class PrintExpectationsTest(unittest.TestCase):
         self.assertMultiLineEqual(stdout, expected_stdout)
 
     def test_basic(self):
-        self.run_test(['failures/expected/text.html', 'failures/expected/image.html'],
+        self.run_test(['failures/expected/text.html', 'failures/expected/timeout.html'],
                       ('// For test-win-xp\n'
-                       'failures/expected/image.html [ ImageOnlyFailure ]\n'
-                       'failures/expected/text.html [ Failure ]\n'))
+                       'failures/expected/text.html [ Failure ]\n'
+                       'failures/expected/timeout.html [ Timeout ]\n'))
 
     def test_multiple(self):
-        self.run_test(['failures/expected/text.html', 'failures/expected/image.html'],
+        self.run_test(['failures/expected/text.html', 'failures/expected/timeout.html'],
                       ('// For test-win-win7\n'
-                       'failures/expected/image.html [ ImageOnlyFailure ]\n'
                        'failures/expected/text.html [ Failure ]\n'
+                       'failures/expected/timeout.html [ Timeout ]\n'
                        '\n'
                        '// For test-win-xp\n'
-                       'failures/expected/image.html [ ImageOnlyFailure ]\n'
-                       'failures/expected/text.html [ Failure ]\n'),
+                       'failures/expected/text.html [ Failure ]\n'
+                       'failures/expected/timeout.html [ Timeout ]\n'),
                        platform='test-win-*')
 
     def test_full(self):
-        self.run_test(['failures/expected/text.html', 'failures/expected/image.html'],
+        self.run_test(['failures/expected/text.html', 'failures/expected/timeout.html'],
                       ('// For test-win-xp\n'
-                       'Bug(test) failures/expected/image.html [ ImageOnlyFailure ]\n'
-                       'Bug(test) failures/expected/text.html [ Failure ]\n'),
+                       'Bug(test) failures/expected/text.html [ Failure ]\n'
+                       'Bug(test) failures/expected/timeout.html [ Timeout ]\n'),
                       full=True)
 
     def test_exclude(self):
-        self.run_test(['failures/expected/text.html', 'failures/expected/image.html'],
+        self.run_test(['failures/expected/text.html', 'failures/expected/crash.html'],
                       ('// For test-win-xp\n'
                        'failures/expected/text.html [ Failure ]\n'),
-                      exclude_keyword=['image'])
+                      exclude_keyword=['crash'])
 
     def test_include(self):
-        self.run_test(['failures/expected/text.html', 'failures/expected/image.html'],
+        self.run_test(['failures/expected/text.html', 'failures/expected/crash.html'],
                       ('// For test-win-xp\n'
-                       'failures/expected/image.html\n'),
-                      include_keyword=['image'])
+                       'failures/expected/crash.html\n'),
+                      include_keyword=['crash'])
 
     def test_csv(self):
         self.run_test(['failures/expected/text.html', 'failures/expected/image.html'],
-                      ('test-win-xp,failures/expected/image.html,Bug(test),,IMAGE\n'
+                      ('test-win-xp,failures/expected/image.html,Bug(test),,FAIL\n'
                        'test-win-xp,failures/expected/text.html,Bug(test),,FAIL\n'),
                       csv=True)
 

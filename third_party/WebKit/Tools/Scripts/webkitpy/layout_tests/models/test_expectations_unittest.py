@@ -194,7 +194,7 @@ expectations:2 A reftest cannot be marked as NeedsRebaseline/NeedsManualRebaseli
             'disabled-test.html-disabled',
             self.parse_exp("Bug(user) [ FOO ] failures/expected/text.html [ Failure ]\n"
                            "Bug(user) non-existent-test.html [ Failure ]\n"
-                           "Bug(user) disabled-test.html-disabled [ ImageOnlyFailure ]\n"
+                           "Bug(user) disabled-test.html-disabled [ Failure ]\n"
                            "Bug(user) [ Release ] test-to-rebaseline.html [ NeedsRebaseline ]", is_lint_mode=True)
             self.assertFalse(True, "ParseError wasn't raised")
         except ParseError, e:
@@ -226,8 +226,8 @@ expectations:2 A reftest cannot be marked as NeedsRebaseline/NeedsManualRebaseli
 
     def test_overrides(self):
         self.parse_exp("Bug(exp) failures/expected/text.html [ Failure ]",
-                       "Bug(override) failures/expected/text.html [ ImageOnlyFailure ]")
-        self.assert_exp_list('failures/expected/text.html', [FAIL, IMAGE])
+                       "Bug(override) failures/expected/text.html [ Timeout ]")
+        self.assert_exp_list('failures/expected/text.html', [FAIL, TIMEOUT])
 
     def test_overrides__directory(self):
         self.parse_exp("Bug(exp) failures/expected/text.html [ Failure ]",
@@ -237,7 +237,7 @@ expectations:2 A reftest cannot be marked as NeedsRebaseline/NeedsManualRebaseli
 
     def test_overrides__duplicate(self):
         self.assert_bad_expectations("Bug(exp) failures/expected/text.html [ Failure ]",
-                                     "Bug(override) failures/expected/text.html [ ImageOnlyFailure ]\n"
+                                     "Bug(override) failures/expected/text.html [ Timeout ]\n"
                                      "Bug(override) failures/expected/text.html [ Crash ]\n")
 
     def test_pixel_tests_flag(self):
@@ -266,7 +266,7 @@ expectations:2 A reftest cannot be marked as NeedsRebaseline/NeedsManualRebaseli
 
         self.parse_exp("""
 Bug(test) failures/expected/crash.html [ Crash ]
-Bug(test) failures/expected/image.html [ ImageOnlyFailure ]
+Bug(test) failures/expected/image.html [ Failure ]
 Bug(test) failures/expected/text.html [ Failure ]
 Bug(test) failures/expected/timeout.html [ Timeout ]
 """)
@@ -277,8 +277,8 @@ Bug(test) failures/expected/timeout.html [ Timeout ]
 
     def test_more_specific_override_resets_skip(self):
         self.parse_exp("Bug(x) failures/expected [ Skip ]\n"
-                       "Bug(x) failures/expected/text.html [ ImageOnlyFailure ]\n")
-        self.assert_exp('failures/expected/text.html', IMAGE)
+                       "Bug(x) failures/expected/text.html [ Failure ]\n")
+        self.assert_exp('failures/expected/text.html', FAIL)
         self.assertFalse(self._port._filesystem.join(self._port.layout_tests_dir(),
                                                      'failures/expected/text.html') in
                          self._exp.get_tests_with_result_type(SKIP))
@@ -289,11 +289,11 @@ Bug(test) failures/expected/timeout.html [ Timeout ]
         test_name2 = 'passes/text.html'
 
         expectations_dict = OrderedDict()
-        expectations_dict['expectations'] = "Bug(x) %s [ ImageOnlyFailure ]\nBug(x) %s [ Slow ]\n" % (test_name1, test_name2)
+        expectations_dict['expectations'] = "Bug(x) %s [ Failure ]\nBug(x) %s [ Slow ]\n" % (test_name1, test_name2)
         self._port.expectations_dict = lambda: expectations_dict
 
         expectations = TestExpectations(self._port, self.get_basic_tests())
-        self.assertEqual(expectations.get_expectations(test_name1), set([IMAGE]))
+        self.assertEqual(expectations.get_expectations(test_name1), set([FAIL]))
         self.assertEqual(expectations.get_expectations(test_name2), set([SLOW]))
 
         def bot_expectations():
@@ -302,7 +302,7 @@ Bug(test) failures/expected/timeout.html [ Timeout ]
         self._port._options.ignore_flaky_tests = 'unexpected'
 
         expectations = TestExpectations(self._port, self.get_basic_tests())
-        self.assertEqual(expectations.get_expectations(test_name1), set([PASS, IMAGE, TIMEOUT]))
+        self.assertEqual(expectations.get_expectations(test_name1), set([PASS, FAIL, TIMEOUT]))
         self.assertEqual(expectations.get_expectations(test_name2), set([CRASH, SLOW]))
 
 class SkippedTests(Base):
@@ -407,7 +407,7 @@ class ExpectationSyntaxTests(Base):
 
     def test_wontfix(self):
         self.assert_tokenize_exp('foo.html [ WontFix ]', specifiers=[], expectations=['WONTFIX', 'SKIP'])
-        self.assert_tokenize_exp('foo.html [ WontFix ImageOnlyFailure ]', specifiers=[], expectations=['WONTFIX', 'SKIP'],
+        self.assert_tokenize_exp('foo.html [ WontFix Failure ]', specifiers=[], expectations=['WONTFIX', 'SKIP'],
             warnings=['A test marked Skip or WontFix must not have other expectations.'])
 
     def test_blank_line(self):
@@ -463,12 +463,12 @@ class SemanticTests(Base):
     def test_duplicates(self):
         self.assertRaises(ParseError, self.parse_exp, """
 Bug(exp) failures/expected/text.html [ Failure ]
-Bug(exp) failures/expected/text.html [ ImageOnlyFailure ]""", is_lint_mode=True)
+Bug(exp) failures/expected/text.html [ Timeout ]""", is_lint_mode=True)
 
         self.assertRaises(ParseError, self.parse_exp,
             self.get_basic_expectations(), overrides="""
 Bug(override) failures/expected/text.html [ Failure ]
-Bug(override) failures/expected/text.html [ ImageOnlyFailure ]""", is_lint_mode=True)
+Bug(override) failures/expected/text.html [ Timeout ]""", is_lint_mode=True)
 
     def test_duplicate_with_line_before_preceding_line(self):
         self.assert_bad_expectations("""Bug(exp) [ Debug ] failures/expected/text.html [ Failure ]
@@ -814,9 +814,9 @@ class TestExpectationSerializationTests(unittest.TestCase):
         expectation_line.parsed_expectations = set([IMAGE])
         self.assertEqual(expectation_line.to_string(self._converter), None)
         expectation_line.matching_configurations = set([TestConfiguration('xp', 'x86', 'release')])
-        self.assertEqual(expectation_line.to_string(self._converter), 'Bug(x) [ XP Release ] test/name/for/realz.html [ ImageOnlyFailure ]')
+        self.assertEqual(expectation_line.to_string(self._converter), 'Bug(x) [ XP Release ] test/name/for/realz.html [ Failure ]')
         expectation_line.matching_configurations = set([TestConfiguration('xp', 'x86', 'release'), TestConfiguration('xp', 'x86', 'debug')])
-        self.assertEqual(expectation_line.to_string(self._converter), 'Bug(x) [ XP ] test/name/for/realz.html [ ImageOnlyFailure ]')
+        self.assertEqual(expectation_line.to_string(self._converter), 'Bug(x) [ XP ] test/name/for/realz.html [ Failure ]')
 
     def test_serialize_parsed_expectations(self):
         expectation_line = TestExpectationLine()
@@ -894,9 +894,9 @@ class TestExpectationSerializationTests(unittest.TestCase):
         add_line(set([TestConfiguration('xp', 'x86', 'release')]), True)
         add_line(set([TestConfiguration('xp', 'x86', 'release'), TestConfiguration('xp', 'x86', 'debug')]), False)
         serialized = TestExpectations.list_to_string(lines, self._converter)
-        self.assertEqual(serialized, "Bug(x) [ XP Release ] Yay [ ImageOnlyFailure ]\nBug(x) [ XP ] Yay [ ImageOnlyFailure ]")
+        self.assertEqual(serialized, "Bug(x) [ XP Release ] Yay [ Failure ]\nBug(x) [ XP ] Yay [ Failure ]")
         serialized = TestExpectations.list_to_string(lines, self._converter, reconstitute_only_these=reconstitute_only_these)
-        self.assertEqual(serialized, "Bug(x) [ XP Release ] Yay [ ImageOnlyFailure ]\nNay")
+        self.assertEqual(serialized, "Bug(x) [ XP Release ] Yay [ Failure ]\nNay")
 
     def disabled_test_string_whitespace_stripping(self):
         # FIXME: Re-enable this test once we rework the code to no longer support the old syntax.

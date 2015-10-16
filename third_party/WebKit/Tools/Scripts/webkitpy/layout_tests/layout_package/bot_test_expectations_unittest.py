@@ -177,7 +177,7 @@ class BotTestExpectationsTest(unittest.TestCase):
                     'fail.html': {'results': [[4, 'F']]},
                     'f_p.html': {'results': [[1, 'F'], [2, 'P']]},
                     'crash.html': {'results': [[2, 'F'], [1, 'C']], 'expected': 'WONTFIX'},
-                    'image.html': {'results': [[2, 'F'], [1, 'I']], 'expected': 'CRASH FAIL'},
+                    'image.html': {'results': [[2, 'F'], [1, 'I']], 'expected': 'CRASH TEXT'},
                     'i_f.html': {'results': [[1, 'F'], [5, 'I']], 'expected': 'PASS'},
                     'all.html': self._results_from_string('FPFPCNCNTXTXIZIZOCOCYKYK'),
                 }
@@ -190,7 +190,7 @@ class BotTestExpectationsTest(unittest.TestCase):
             'foo/fail.html': sorted(["TEXT", "PASS"]),
             'foo/f_p.html': sorted(["TEXT", "PASS"]),
             'foo/crash.html': sorted(["WONTFIX", "CRASH", "TEXT"]),
-            'foo/image.html': sorted(["CRASH", "FAIL", "IMAGE"]),
+            'foo/image.html': sorted(["CRASH", "TEXT", "IMAGE"]),
             'foo/i_f.html': sorted(["PASS", "IMAGE", "TEXT"]),
             'foo/all.html': sorted(["TEXT", "PASS", "IMAGE+TEXT", "TIMEOUT", "CRASH", "IMAGE", "MISSING", "LEAK"]),
         })

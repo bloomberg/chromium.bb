@@ -229,7 +229,6 @@ class TestExpectationParser(object):
         'Crash': 'CRASH',
         'Leak': 'LEAK',
         'Failure': 'FAIL',
-        'ImageOnlyFailure': 'IMAGE',
         MISSING_KEYWORD: 'MISSING',
         'Pass': 'PASS',
         'Rebaseline': 'REBASELINE',
@@ -242,7 +241,7 @@ class TestExpectationParser(object):
     }
 
     _inverted_expectation_tokens = dict([(value, name) for name, value in _expectation_tokens.iteritems()] +
-                                        [('TEXT', 'Failure'), ('IMAGE+TEXT', 'Failure'), ('AUDIO', 'Failure')])
+                                        [('TEXT', 'Failure'), ('IMAGE', 'Failure'), ('IMAGE+TEXT', 'Failure'), ('AUDIO', 'Failure')])
 
     # FIXME: Seems like these should be classmethods on TestExpectationLine instead of TestExpectationParser.
     @classmethod
@@ -884,7 +883,7 @@ class TestExpectations(object):
             return True
         if result in (PASS, TEXT, IMAGE, IMAGE_PLUS_TEXT, AUDIO, MISSING) and (NEEDS_REBASELINE in expected_results or NEEDS_MANUAL_REBASELINE in expected_results):
             return True
-        if result in (TEXT, IMAGE_PLUS_TEXT, AUDIO) and (FAIL in expected_results):
+        if result in (TEXT, IMAGE, IMAGE_PLUS_TEXT, AUDIO) and (FAIL in expected_results):
             return True
         if result == MISSING and test_needs_rebaselining:
             return True
