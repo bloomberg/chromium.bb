@@ -104,6 +104,7 @@ TEST(PackedEVCertsWhitelistTest, UncompressesWhitelistCorrectly) {
   std::vector<uint64_t> res;
   ASSERT_TRUE(PackedEVCertsWhitelist::UncompressEVWhitelist(
       GetAllWhitelistData(), &res));
+  ASSERT_TRUE(res.size() == res.capacity());
 
   // Ensure first hash is found
   EXPECT_TRUE(std::find(res.begin(), res.end(), HashToUint64(GetFirstHash())) !=

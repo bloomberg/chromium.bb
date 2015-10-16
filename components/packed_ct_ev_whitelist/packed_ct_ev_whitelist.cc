@@ -58,6 +58,10 @@ bool PackedEVCertsWhitelist::UncompressEVWhitelist(
   internal::BitStreamReader reader(base::StringPiece(
       compressed_whitelist.data(), compressed_whitelist.size()));
   std::vector<uint64_t> result;
+  // Reserve exactly the right amount of memory to avoid reallocs. The size
+  // changes very rarely and if it does change the code will still be correct,
+  // just slightly less efficient.
+  result.reserve(110610);
 
   VLOG(1) << "Uncompressing EV whitelist of size "
           << compressed_whitelist.size();
@@ -94,6 +98,18 @@ bool PackedEVCertsWhitelist::UncompressEVWhitelist(
 
     result.push_back(curr_hash);
   }
+
+  // If there is excess capacity then trim it.
+  if (result.size() < result.capacity()) {
+    std::vector<uint64_t> temp(result.size());
+    memcpy(&temp[0], &result[0], result.size() * sizeof(result[0]));
+
+    // Swap the right-sized vector with the over-sized vector.
+    result.swap(temp);
+  }
+
+  // Make sure our size trimming code worked.
+  DCHECK(result.size() == result.capacity());
 
   uncompressed_list->swap(result);
   return true;
