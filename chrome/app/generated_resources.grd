@@ -5328,6 +5328,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_FLAGS_ENABLE_ACCESSIBILITY_TAB_SWITCHER_DESCRIPTION" desc="Description of the flag to enable the accessibility tab switcher.">
           Enable the accessibility tab switcher for Android.
         </message>
+        <message name="IDS_FLAGS_ENABLE_PHYSICAL_WEB_NAME" desc="Name of the flag to enable the physical web feature.">
+          Enable the Physical Web.
+        </message>
+        <message name="IDS_FLAGS_ENABLE_PHYSICAL_WEB_DESCRIPTION" desc="Description of the flag to enable the physical web feature.">
+          Enable scanning for URLs from Physical Web objects.
+        </message>
       </if>
       <message name="IDS_TOUCH_EVENTS_NAME" desc="Title of the touch-events flag." >
         Enable touch events

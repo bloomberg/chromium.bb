@@ -87,11 +87,6 @@ public abstract class ChromeSwitches {
      */
     public static final String DISABLE_LOFI_SNACKBAR = "disable-lo-fi-snackbar";
 
-    /**
-     * Enable Physical Web feature.
-     */
-    public static final String ENABLE_PHYSICAL_WEB = "enable-physical-web";
-
     ///////////////////////////////////////////////////////////////////////////////////////////////
     // Native Switches
     ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -193,6 +188,12 @@ public abstract class ChromeSwitches {
      * Native switch - switches::kEnableHungRendererInfoBar
      */
     public static final String ENABLE_HUNG_RENDERER_INFOBAR = "enable-hung-renderer-infobar";
+
+    /**
+     * Enable Physical Web feature.
+     * Native switch - switches::kEnablePhysicalWeb
+     */
+    public static final String ENABLE_PHYSICAL_WEB = "enable-physical-web";
 
     // Prevent instantiation.
     private ChromeSwitches() {}

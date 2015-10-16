@@ -64348,6 +64348,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-1102212525" label="enable-tcp-fastopen"/>
   <int value="-1078093206" label="ash-debug-shortcuts"/>
   <int value="-1077752943" label="enable-password-generation"/>
+  <int value="-1075089382" label="enable-physical-web"/>
   <int value="-1062119671" label="enable-password-force-saving"/>
   <int value="-1056310158" label="disable-memory-pressure-chromeos"/>
   <int value="-1052782474" label="enable-cloud-devices"/>

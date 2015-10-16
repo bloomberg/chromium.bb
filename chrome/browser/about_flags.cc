@@ -1412,6 +1412,11 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_ENABLE_ACCESSIBILITY_TAB_SWITCHER_DESCRIPTION,
      kOsAndroid,
      SINGLE_VALUE_TYPE(switches::kEnableAccessibilityTabSwitcher)},
+    {"enable-physical-web",
+     IDS_FLAGS_ENABLE_PHYSICAL_WEB_NAME,
+     IDS_FLAGS_ENABLE_PHYSICAL_WEB_DESCRIPTION,
+     kOsAndroid,
+     SINGLE_VALUE_TYPE(switches::kEnablePhysicalWeb)},
 #endif
     {"enable-zero-copy",
      IDS_FLAGS_ENABLE_ZERO_COPY_NAME,
