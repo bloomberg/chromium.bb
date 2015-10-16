@@ -11,6 +11,7 @@
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/surfaces/surface_id.h"
 #include "cc/surfaces/surface_resource_holder.h"
@@ -54,6 +55,8 @@ class CC_SURFACES_EXPORT SurfaceFactory
                              const DrawCallback& callback);
   void RequestCopyOfSurface(SurfaceId surface_id,
                             scoped_ptr<CopyOutputRequest> copy_request);
+
+  void WillDrawSurface(SurfaceId id, const gfx::Rect& damage_rect);
 
   SurfaceFactoryClient* client() { return client_; }
 
