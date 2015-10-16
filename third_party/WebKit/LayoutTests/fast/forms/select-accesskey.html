@@ -1,4 +1,6 @@
-<select accesskey='a' onfocus='document.getElementById("res1").innerHTML="PASS 1";' onclick='document.getElementById("res2").innerHTML="PASS 2";'>
+<select accesskey='a'
+    onfocus='document.getElementById("res1").innerHTML="PASS 1";'
+    onclick='document.getElementById("res2").innerHTML="PASS 2";'>
 <option>blaa
 <option>jee
 </select>
@@ -14,14 +16,8 @@ click event:
 FAIL
 </div>
 <script>
-    if (window.eventSender) {
-        testRunner.dumpAsText();
-
-        var modifiers;
-        if (navigator.userAgent.search(/\bMac OS X\b/) != -1)
-            modifiers = ['ctrlKey', 'altKey'];
-        else
-            modifiers = ['altKey'];
-        eventSender.keyDown('a', modifiers);
-    }
+if (window.eventSender) {
+    testRunner.dumpAsText();
+    eventSender.keyDown('a', 'accessKey');
+}
 </script>

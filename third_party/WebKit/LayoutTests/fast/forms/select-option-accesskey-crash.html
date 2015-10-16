@@ -17,17 +17,11 @@ description('This test is to ensure that we do not crash when selecting an item 
 if (window.testRunner) {
     testRunner.dumpAsText();
 
-    var selectElement = document.getElementById("target");
+    var selectElement = document.getElementById('target');
     selectElement.focus();
     if (window.eventSender) {
-        var modifiers;
-        if (navigator.userAgent.search(/\bMac OS X\b/) != -1)
-            modifiers = ['ctrlKey', 'altKey'];
-        else
-            modifiers = ['altKey'];
-
-        eventSender.keyDown('x', modifiers);
-        testPassed("Did not crash");
+        eventSender.keyDown('x', 'accessKey');
+        testPassed('Did not crash');
     }
 }
 </script>

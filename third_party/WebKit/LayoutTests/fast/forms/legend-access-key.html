@@ -11,12 +11,7 @@ function test()
 {
     if (window.testRunner) {
         testRunner.dumpAsText();
-
-        if (navigator.userAgent.search(/\bMac OS X\b/) != -1)
-            modifiers = ["ctrlKey", "altKey"];
-        else
-            modifiers = "altKey";
-        eventSender.keyDown("f", modifiers);
+        eventSender.keyDown("f", "accessKey");
     }
 }
 </script>

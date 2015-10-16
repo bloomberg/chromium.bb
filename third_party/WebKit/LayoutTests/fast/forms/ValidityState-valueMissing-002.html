@@ -85,12 +85,7 @@
         select = document.getElementById("select-selecting-by-key-2");
         shouldBeTrue('valueMissingFor("select-selecting-by-key-2")');
         select.focus();
-        var modifiers;
-        if (navigator.userAgent.search(/\bMac OS X\b/) != -1)
-            modifiers = ['ctrlKey', 'altKey'];
-        else
-            modifiers = ['altKey'];
-        eventSender.keyDown("1", modifiers);
+        eventSender.keyDown("1", "accessKey");
         shouldBe('select.value', '"a"');
         shouldBeFalse('valueMissingFor("select-selecting-by-key-2")');
     } else {

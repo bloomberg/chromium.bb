@@ -7,10 +7,6 @@ function runTest()
     if (!window.testRunner)
         return;
 
-    var accessKeyModifiers = ["altKey"];
-    if (navigator.userAgent.search(/\bMac OS X\b/) != -1)
-        accessKeyModifiers = ["ctrlKey", "altKey"];
-
     testRunner.dumpEditingCallbacks();
     testRunner.dumpAsText();
 
@@ -22,7 +18,7 @@ function runTest()
 
     shouldBe("second.selectionStart", "11");
     shouldBe("second.selectionEnd", "18");
-    eventSender.keyDown("J", accessKeyModifiers);
+    eventSender.keyDown("J", "accessKey");
     shouldBe("second.selectionStart", "11");
     shouldBe("second.selectionEnd", "18");
 
@@ -51,7 +47,7 @@ function runTest()
 
     shouldBe("sixth.selectionStart", "12");
     shouldBe("sixth.selectionEnd", "19");
-    eventSender.keyDown("U", accessKeyModifiers);
+    eventSender.keyDown("U", "accessKey");
     shouldBe("sixth.selectionStart", "0");
     shouldBe("sixth.selectionEnd", "19");
 
@@ -71,7 +67,7 @@ function runTest()
 
     shouldBe("ninth.selectionStart", "12");
     shouldBe("ninth.selectionEnd", "19");
-    eventSender.keyDown("I", accessKeyModifiers);
+    eventSender.keyDown("I", "accessKey");
     shouldBe("ninth.selectionStart", "0");
     shouldBe("ninth.selectionEnd", "19");
 

@@ -9,11 +9,7 @@ function log(message)
 }
 function pressKey(key)
 {
-    if (navigator.userAgent.search(/\bMac OS X\b/) != -1)
-        modifiers = ["ctrlKey", "altKey"];
-    else
-        modifiers = ["altKey"];
-    eventSender.keyDown(key, modifiers);
+    eventSender.keyDown(key, "accessKey");
 }
 function test()
 {
