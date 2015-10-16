@@ -82,6 +82,7 @@ source_set("browser") {
     "//components/metrics",
     "//components/os_crypt",
     "//components/webdata/common",
+    "//components/signin/core/account_id",
   ]
 
   if (is_chromeos) {

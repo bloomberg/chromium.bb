@@ -21,6 +21,18 @@
       ],
     },
     {
+      # GN version: //components/signin/core/account_id
+      'target_name': 'signin_core_account_id',
+      'type': 'static_library',
+      'include_dirs': [
+        '..',
+      ],
+      'sources': [
+        'signin/core/account_id/account_id.cc',
+        'signin/core/account_id/account_id.h',
+      ],
+    },
+    {
       # GN version: //components/signin/core/browser
       'target_name': 'signin_core_browser',
       'type': 'static_library',
@@ -43,6 +55,7 @@
         'metrics',
         'os_crypt',
         'signin_core_common',
+        'signin_core_account_id',
         'webdata_common',
       ],
       'include_dirs': [
