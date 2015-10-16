@@ -705,11 +705,6 @@ bool nodeIsUserSelectAll(const Node* node)
 
 }
 
-bool nodeIsUserSelectNone(Node* node)
-{
-    return node && node->layoutObject() && !node->layoutObject()->isSelectable();
-}
-
 template <typename Strategy>
 TextDirection directionOfEnclosingBlockAlgorithm(const PositionTemplate<Strategy>& position)
 {

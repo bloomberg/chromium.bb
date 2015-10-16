@@ -267,7 +267,7 @@ void SelectionController::updateSelectionForMouseDragAlgorithm(const HitTestResu
 template <typename Strategy>
 bool SelectionController::updateSelectionForMouseDownDispatchingSelectStart(Node* targetNode, const VisibleSelectionTemplate<Strategy>& selection, TextGranularity granularity)
 {
-    if (nodeIsUserSelectNone(targetNode))
+    if (targetNode && targetNode->layoutObject() && !targetNode->layoutObject()->isSelectable())
         return false;
 
     if (!dispatchSelectStart(targetNode))

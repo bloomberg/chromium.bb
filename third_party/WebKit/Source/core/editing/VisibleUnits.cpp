@@ -2668,11 +2668,14 @@ static bool isVisuallyEquivalentCandidateAlgorithm(const PositionTemplate<Strate
         // still need to support legacy positions.
         if (position.isAfterAnchor())
             return false;
-        return !position.computeEditingOffset() && !nodeIsUserSelectNone(Strategy::parent(*anchorNode));
+        if (position.computeEditingOffset())
+            return false;
+        const Node* parent = Strategy::parent(*anchorNode);
+        return parent->layoutObject() && parent->layoutObject()->isSelectable();
     }
 
     if (layoutObject->isText())
-        return !nodeIsUserSelectNone(anchorNode) && inRenderedText(position);
+        return layoutObject->isSelectable() && inRenderedText(position);
 
     if (layoutObject->isSVG()) {
         // We don't consider SVG elements are contenteditable except for
@@ -2681,22 +2684,29 @@ static bool isVisuallyEquivalentCandidateAlgorithm(const PositionTemplate<Strate
         return false;
     }
 
-    if (isRenderedHTMLTableElement(anchorNode) || Strategy::editingIgnoresContent(anchorNode))
-        return (position.atFirstEditingPositionForNode() || position.atLastEditingPositionForNode()) && !nodeIsUserSelectNone(Strategy::parent(*anchorNode));
+    if (isRenderedHTMLTableElement(anchorNode) || Strategy::editingIgnoresContent(anchorNode)) {
+        if (!position.atFirstEditingPositionForNode() && !position.atLastEditingPositionForNode())
+            return false;
+        const Node* parent = Strategy::parent(*anchorNode);
+        return parent->layoutObject() && parent->layoutObject()->isSelectable();
+    }
 
     if (isHTMLHtmlElement(*anchorNode))
+        return false;
+
+    if (!layoutObject->isSelectable())
         return false;
 
     if (layoutObject->isLayoutBlockFlow() || layoutObject->isFlexibleBox() || layoutObject->isLayoutGrid()) {
         if (toLayoutBlock(layoutObject)->logicalHeight() || isHTMLBodyElement(*anchorNode)) {
             if (!hasRenderedNonAnonymousDescendantsWithHeight(layoutObject))
-                return position.atFirstEditingPositionForNode() && !nodeIsUserSelectNone(anchorNode);
-            return anchorNode->hasEditableStyle() && !nodeIsUserSelectNone(anchorNode) && atEditingBoundary(position);
+                return position.atFirstEditingPositionForNode();
+            return anchorNode->hasEditableStyle() && atEditingBoundary(position);
         }
     } else {
         LocalFrame* frame = anchorNode->document().frame();
         bool caretBrowsing = frame->settings() && frame->settings()->caretBrowsingEnabled();
-        return (caretBrowsing || anchorNode->hasEditableStyle()) && !nodeIsUserSelectNone(anchorNode) && atEditingBoundary(position);
+        return (caretBrowsing || anchorNode->hasEditableStyle()) && atEditingBoundary(position);
     }
 
     return false;

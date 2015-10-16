@@ -35,6 +35,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/html/FormAssociatedElement.h"
 #include "core/input/EventHandler.h"
+#include "core/layout/LayoutObject.h"
 
 namespace blink {
 
@@ -162,7 +163,7 @@ void HTMLLabelElement::defaultEventHandler(Event* evt)
             if (LocalFrame* frame = document().frame()) {
                 // Check if there is a selection and click is not on the
                 // selection.
-                if (!nodeIsUserSelectNone(this) && frame->selection().isRange() && !frame->eventHandler().selectionController().mouseDownWasSingleClickInSelection())
+                if (layoutObject() && layoutObject()->isSelectable() && frame->selection().isRange() && !frame->eventHandler().selectionController().mouseDownWasSingleClickInSelection())
                     isLabelTextSelected = true;
                 // If selection is there and is single click i.e. text is
                 // selected by dragging over label text, then return.

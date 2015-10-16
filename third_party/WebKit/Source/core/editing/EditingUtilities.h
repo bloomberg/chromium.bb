@@ -150,7 +150,6 @@ bool areIdenticalElements(const Node*, const Node*);
 bool isNonTableCellHTMLBlockElement(const Node*);
 bool isBlockFlowElement(const Node&);
 bool nodeIsUserSelectAll(const Node*);
-bool nodeIsUserSelectNone(Node*);
 CORE_EXPORT TextDirection directionOfEnclosingBlock(const Position&);
 CORE_EXPORT TextDirection directionOfEnclosingBlock(const PositionInComposedTree&);
 CORE_EXPORT TextDirection primaryDirectionOf(const Node&);
