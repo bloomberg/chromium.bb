@@ -2340,9 +2340,6 @@ crbug.com/535478 [ Win ] virtual/threaded/inspector/tracing/decode-resize.html [
 
 crbug.com/524646 [ Yosemite ] fast/dom/shadow/shadowdom-for-button.html [ Failure ]
 
-crbug.com/502267 fast/css/image-orientation/image-orientation-from-image-composited-dynamic.html [ NeedsRebaseline ]
-crbug.com/502267 fast/css/image-orientation/image-orientation-default.html [ NeedsRebaseline ]
-
 crbug.com/538717 [ Win ] http/tests/permissions/chromium/test-request-multiple-window.html [ Failure Pass ]
 crbug.com/538717 [ Win ] http/tests/permissions/chromium/test-request-multiple-worker.html [ Failure Pass ]
 
