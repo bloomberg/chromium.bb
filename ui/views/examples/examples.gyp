@@ -190,7 +190,7 @@
           },
           'dependencies': [
             '../../../sandbox/sandbox.gyp:sandbox',
-            '../../../content/content.gyp:content_startup_helper_win',
+            '../../../content/content.gyp:sandbox_helper_win',
           ],
         }],
         ['OS=="win" and component!="shared_library" and win_use_allocator_shim==1', {

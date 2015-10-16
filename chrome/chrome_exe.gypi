@@ -56,7 +56,7 @@
       'sources': [
         # Note that due to InitializeSandboxInfo, this must be directly linked
         # into chrome.exe, not into a dependent.
-        '<(DEPTH)/content/app/startup_helper_win.cc',
+        '<(DEPTH)/content/app/sandbox_helper_win.cc',
         '<(DEPTH)/content/public/common/content_switches.cc',
         'app/chrome_exe_load_config_win.cc',
         'app/chrome_exe_main_aura.cc',
@@ -531,7 +531,7 @@
               'type': 'executable',
               'product_name': 'nacl64',
               'sources': [
-                '../content/app/startup_helper_win.cc',
+                '../content/app/sandbox_helper_win.cc',
                 '../content/common/sandbox_init_win.cc',
                 '../content/common/sandbox_win.cc',
                 '../content/public/common/content_switches.cc',

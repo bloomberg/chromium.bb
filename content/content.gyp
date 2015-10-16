@@ -31,20 +31,18 @@
     ['OS == "win"', {
       'targets': [
         {
-          # GN: //content:content_startup_helper_win
-          'target_name': 'content_startup_helper_win',
+          # GN: //content:sandbox_helper_win
+          'target_name': 'sandbox_helper_win',
           'type': 'static_library',
           'include_dirs': [
             '..',
           ],
           'dependencies': [
-            '../base/base.gyp:base',
-            '../base/base.gyp:base_i18n',
             '../sandbox/sandbox.gyp:sandbox',
           ],
           'sources': [
-            'app/startup_helper_win.cc',
-            'public/app/startup_helper_win.h',
+            'app/sandbox_helper_win.cc',
+            'public/app/sandbox_helper_win.h',
           ],
         }
       ],

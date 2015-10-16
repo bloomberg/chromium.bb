@@ -6,6 +6,8 @@
 
 #include <stdlib.h>
 
+#include <string>
+
 #include "base/allocator/allocator_extension.h"
 #include "base/at_exit.h"
 #include "base/command_line.h"
@@ -36,7 +38,6 @@
 #include "content/gpu/in_process_gpu_thread.h"
 #include "content/public/app/content_main.h"
 #include "content/public/app/content_main_delegate.h"
-#include "content/public/app/startup_helper_win.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_constants.h"
@@ -75,8 +76,8 @@
 #include <malloc.h>
 #include <cstring>
 
-#include "base/strings/string_number_conversions.h"
 #include "base/trace_event/trace_event_etw_export_win.h"
+#include "base/win/process_startup_helper.h"
 #include "ui/base/win/atl_module.h"
 #include "ui/gfx/win/dpi.h"
 #elif defined(OS_MACOSX)
@@ -98,7 +99,6 @@
 #include "content/public/common/content_descriptors.h"
 
 #if !defined(OS_MACOSX)
-#include "content/public/common/content_descriptors.h"
 #include "content/public/common/zygote_fork_delegate_linux.h"
 #endif
 #if !defined(OS_MACOSX) && !defined(OS_ANDROID)
@@ -157,8 +157,8 @@ void SetupSignalHandlers() {
   // Sanitise our signal handling state. Signals that were ignored by our
   // parent will also be ignored by us. We also inherit our parent's sigmask.
   sigset_t empty_signal_set;
-  CHECK(0 == sigemptyset(&empty_signal_set));
-  CHECK(0 == sigprocmask(SIG_SETMASK, &empty_signal_set, NULL));
+  CHECK_EQ(0, sigemptyset(&empty_signal_set));
+  CHECK_EQ(0, sigprocmask(SIG_SETMASK, &empty_signal_set, NULL));
 
   struct sigaction sigact;
   memset(&sigact, 0, sizeof(sigact));
@@ -167,11 +167,11 @@ void SetupSignalHandlers() {
       {SIGHUP, SIGINT, SIGQUIT, SIGILL, SIGABRT, SIGFPE, SIGSEGV,
        SIGALRM, SIGTERM, SIGCHLD, SIGBUS, SIGTRAP};  // SIGPIPE is set below.
   for (unsigned i = 0; i < arraysize(signals_to_reset); i++) {
-    CHECK(0 == sigaction(signals_to_reset[i], &sigact, NULL));
+    CHECK_EQ(0, sigaction(signals_to_reset[i], &sigact, NULL));
   }
 
   // Always ignore SIGPIPE.  We check the return value of write().
-  CHECK(signal(SIGPIPE, SIG_IGN) != SIG_ERR);
+  CHECK_NE(SIG_ERR, signal(SIGPIPE, SIG_IGN));
 }
 
 #endif  // OS_POSIX && !OS_IOS
@@ -443,7 +443,7 @@ class ContentMainRunnerImpl : public ContentMainRunner {
 
     base::EnableTerminationOnOutOfMemory();
 #if defined(OS_WIN)
-    RegisterInvalidParamHandler();
+    base::win::RegisterInvalidParamHandler();
     ui::win::CreateATLModuleIfNeeded();
 
     sandbox_info_ = *params.sandbox_info;
@@ -567,7 +567,7 @@ class ContentMainRunnerImpl : public ContentMainRunner {
 #if !defined(OS_IOS)
     SetProcessTitleFromCommandLine(argv);
 #endif
-#endif // !OS_ANDROID
+#endif  // !OS_ANDROID
 
     int exit_code = 0;
     if (delegate_ && delegate_->BasicStartupComplete(&exit_code))
@@ -639,7 +639,7 @@ class ContentMainRunnerImpl : public ContentMainRunner {
     // Other OSes have to wait till we get here in order for all the memory
     // management setup to be completed.
     TRACE_EVENT0("startup,benchmark", "ContentMainRunnerImpl::Initialize");
-#endif // !OS_ANDROID
+#endif  // !OS_ANDROID
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
     // We need to allocate the IO Ports before the Sandbox is initialized or
@@ -669,7 +669,7 @@ class ContentMainRunnerImpl : public ContentMainRunner {
       }
     }
 #elif defined(OS_WIN)
-    SetupCRT(command_line);
+    base::win::SetupCRT(command_line);
 #endif
 
 #if defined(OS_POSIX)

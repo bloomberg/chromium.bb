@@ -86,16 +86,14 @@ source_set("export") {
 # In the GYP build, this file is listed in several targets. In GN just have
 # those targets depend on this one. This can be depended on for any
 # platform for simplicity, and is a no-op on non-Windows.
-source_set("startup_helper_win") {
+source_set("sandbox_helper_win") {
   if (is_win) {
     sources = [
-      "app/startup_helper_win.cc",
-      "public/app/startup_helper_win.h",
+      "app/sandbox_helper_win.cc",
+      "public/app/sandbox_helper_win.h",
     ]
 
     deps = [
-      "//base",
-      "//base:i18n",
       "//sandbox",
     ]
   }

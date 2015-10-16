@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/nacl/loader/nacl_helper_win_64.h"
+
+#include <string>
+
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
@@ -11,11 +15,12 @@
 #include "base/process/memory.h"
 #include "base/strings/string_util.h"
 #include "base/timer/hi_res_timer_manager.h"
+#include "base/win/process_startup_helper.h"
 #include "components/nacl/broker/nacl_broker_listener.h"
 #include "components/nacl/common/nacl_switches.h"
 #include "components/nacl/loader/nacl_listener.h"
 #include "components/nacl/loader/nacl_main_platform_delegate.h"
-#include "content/public/app/startup_helper_win.h"
+#include "content/public/app/sandbox_helper_win.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/sandbox_init.h"
@@ -57,8 +62,8 @@ int NaClWin64Main() {
   // Copy what ContentMain() does.
   base::EnableTerminationOnHeapCorruption();
   base::EnableTerminationOnOutOfMemory();
-  content::RegisterInvalidParamHandler();
-  content::SetupCRT(command_line);
+  base::win::RegisterInvalidParamHandler();
+  base::win::SetupCRT(command_line);
   // Route stdio to parent console (if any) or create one.
   if (command_line.HasSwitch(switches::kEnableLogging))
     base::RouteStdioToConsole(true);

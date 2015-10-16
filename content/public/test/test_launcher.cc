@@ -5,6 +5,7 @@
 #include "content/public/test/test_launcher.h"
 
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -28,7 +29,6 @@
 #include "base/time/time.h"
 #include "content/public/app/content_main.h"
 #include "content/public/app/content_main_delegate.h"
-#include "content/public/app/startup_helper_win.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/sandbox_init.h"
 #include "content/public/test/browser_test.h"
@@ -38,6 +38,7 @@
 #if defined(OS_WIN)
 #include "base/base_switches.h"
 #include "content/common/sandbox_win.h"
+#include "content/public/app/sandbox_helper_win.h"
 #include "sandbox/win/src/sandbox_factory.h"
 #include "sandbox/win/src/sandbox_types.h"
 #elif defined(OS_MACOSX)

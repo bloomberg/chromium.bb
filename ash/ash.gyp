@@ -1300,7 +1300,7 @@
       'conditions': [
         ['OS=="win"', {
           'dependencies': [
-            '../content/content.gyp:content_startup_helper_win',
+            '../content/content.gyp:sandbox_helper_win',
           ],
         }],
       ],

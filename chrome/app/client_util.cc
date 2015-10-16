@@ -42,7 +42,7 @@
 #include "components/crash/content/app/breakpad_win.h"
 #include "components/crash/content/app/crash_reporter_client.h"
 #include "components/metrics/client_info.h"
-#include "content/public/app/startup_helper_win.h"
+#include "content/public/app/sandbox_helper_win.h"
 #include "content/public/common/content_switches.h"
 #include "sandbox/win/src/sandbox.h"
 
@@ -319,7 +319,7 @@ void ChromeDllLoader::OnBeforeLaunch(const std::string& process_type,
                 g_chrome_crash_client.Get().GetIsPerUserInstall(
                     base::FilePath(exe_path));
             if (g_chrome_crash_client.Get().GetShouldDumpLargerDumps(
-                    is_per_user_install)){
+                    is_per_user_install)) {
               minidump_type = kasko::api::LARGER_DUMP_TYPE;
             }
           }

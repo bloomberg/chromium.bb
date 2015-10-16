@@ -21,6 +21,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
+#include "base/process/memory.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -28,6 +29,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/version.h"
+#include "base/win/process_startup_helper.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_com_initializer.h"
 #include "base/win/scoped_comptr.h"
@@ -1757,6 +1759,12 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
 
   scoped_ptr<google_breakpad::ExceptionHandler> breakpad(
       InitializeCrashReporting(system_install));
+
+  // Make sure the process exits cleanly on unexpected errors.
+  base::EnableTerminationOnHeapCorruption();
+  base::EnableTerminationOnOutOfMemory();
+  base::win::RegisterInvalidParamHandler();
+  base::win::SetupCRT(cmd_line);
 
   InstallationState original_state;
   original_state.Initialize();

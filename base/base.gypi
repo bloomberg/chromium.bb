@@ -726,6 +726,8 @@
           'win/metro.h',
           'win/object_watcher.cc',
           'win/object_watcher.h',
+          'win/process_startup_helper.cc',
+          'win/process_startup_helper.h',
           'win/registry.cc',
           'win/registry.h',
           'win/resource_util.cc',

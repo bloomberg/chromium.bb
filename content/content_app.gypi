@@ -59,7 +59,7 @@
     }],
     ['OS=="win"', {
       'dependencies': [
-        'content_startup_helper_win',
+        'content.gyp:sandbox_helper_win',
       ],
     }],
     ['OS=="ios"', {

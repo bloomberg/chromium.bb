@@ -136,7 +136,7 @@ source_set("test_support") {
 
     if (is_win) {
       deps += [
-        "//content:startup_helper_win",
+        "//content:sandbox_helper_win",
         "//third_party/iaccessible2",
       ]
     }
@@ -579,7 +579,9 @@ test("content_unittests") {
     ]
   }
 
-  data_deps = [ "//third_party/mesa:osmesa" ]
+  data_deps = [
+    "//third_party/mesa:osmesa",
+  ]
 
   if (!is_win) {
     sources += [ "../browser/file_descriptor_info_impl_unittest.cc" ]

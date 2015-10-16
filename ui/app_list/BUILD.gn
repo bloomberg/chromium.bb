@@ -260,7 +260,7 @@ if (is_linux && !is_chromeos) {
 
         deps += [
           "//sandbox",
-          "//content:content_startup_helper_win",
+          "//content:sandbox_helper_win",
         ]
       }
     }
@@ -314,7 +314,9 @@ test("app_list_unittests") {
     "//ui/resources:ui_test_pak",
   ]
 
-  data_deps = [ "//third_party/mesa:osmesa" ]
+  data_deps = [
+    "//third_party/mesa:osmesa",
+  ]
 
   if (toolkit_views) {
     sources += [

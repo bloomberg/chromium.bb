@@ -6,7 +6,7 @@
 #include "extensions/shell/app/shell_main_delegate.h"
 
 #if defined(OS_WIN)
-#include "content/public/app/startup_helper_win.h"
+#include "content/public/app/sandbox_helper_win.h"
 #include "sandbox/win/src/sandbox_types.h"
 #endif
 

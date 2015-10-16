@@ -954,7 +954,7 @@
         ['OS == "win"', {
           'dependencies': [
             '../sandbox/sandbox.gyp:sandbox',
-            'content.gyp:content_startup_helper_win',
+            'content.gyp:sandbox_helper_win',
           ],
         }],
         ['enable_webrtc==1', {

@@ -162,7 +162,7 @@ executable("views_examples_with_content_exe") {
     "//base",
     "//build/config/sanitizers:deps",
     "//content",
-    "//content:startup_helper_win",
+    "//content:sandbox_helper_win",
     "//ui/views_content_client",
   ]
 

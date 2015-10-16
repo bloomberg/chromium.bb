@@ -31,7 +31,7 @@ content_app_deps = [
   # picking the allocator.
   "//base/allocator",
   "//content:export",
-  "//content:startup_helper_win",
+  "//content:sandbox_helper_win",
   "//content/public/common:common_sources",
   "//content/public/common:mojo_bindings",
   "//crypto",

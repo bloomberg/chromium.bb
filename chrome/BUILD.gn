@@ -148,7 +148,7 @@ if (!is_android) {
         "//components/browser_watcher:browser_watcher_client",
         "//components/crash/content/app",
         "//components/crash/core/common",
-        "//content:startup_helper_win",
+        "//content:sandbox_helper_win",
         "//crypto",
         "//sandbox",
         "//ui/gfx",
