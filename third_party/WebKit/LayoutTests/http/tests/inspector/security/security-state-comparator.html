@@ -1,0 +1,48 @@
+<html>
+<head>
+<script src="../inspector-test.js"></script>
+<script>
+var initialize_SecurityTest = function()
+{
+    InspectorTest.preloadPanel("security");
+}
+
+function test()
+{
+    var ordering = [
+        SecurityAgent.SecurityState.Unknown,
+        SecurityAgent.SecurityState.Info,
+        SecurityAgent.SecurityState.Insecure,
+        SecurityAgent.SecurityState.Neutral,
+        SecurityAgent.SecurityState.Warning,
+        SecurityAgent.SecurityState.Secure
+    ];
+
+    InspectorTest.assertEquals(ordering.length, Object.keys(SecurityAgent.SecurityState).length);
+
+    for (var i = 0; i < ordering.length; i++) {
+        InspectorTest.assertEquals(WebInspector.SecurityModel.SecurityStateComparator(ordering[i], ordering[i]), 0, "Security state comparison failed when checking that \"" + ordering[i] + "\" == \"" + ordering[i] + "\"");
+    }
+
+    for (var i = 0; i < ordering.length; i++) {
+        var j;
+
+        for (j = 0; j < i; j++) {
+            InspectorTest.addResult("Sign of SecurityStateComparator(\"" + ordering[i] + "\",\"" + ordering[j] + "\"): " + Math.sign(WebInspector.SecurityModel.SecurityStateComparator(ordering[i], ordering[j])) + " (expected: 1)");
+        }
+
+        InspectorTest.addResult("Sign of SecurityStateComparator(\"" + ordering[i] + "\",\"" + ordering[j] + "\"): " + Math.sign(WebInspector.SecurityModel.SecurityStateComparator(ordering[i], ordering[j])) + " (expected: 0)");
+
+        for (j = i + 1; j < ordering.length; j++) {
+            InspectorTest.addResult("Sign of SecurityStateComparator(\"" + ordering[i] + "\",\"" + ordering[j] + "\"): " + Math.sign(WebInspector.SecurityModel.SecurityStateComparator(ordering[i], ordering[j])) + " (expected: -1)");
+        }
+    }
+
+    InspectorTest.completeTest();
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests that SecurityStateComparator correctly compares the severity of security states.</p>
+</body>
+</html>
