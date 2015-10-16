@@ -565,6 +565,46 @@ void BrowserPluginGuest::EmbedderSystemDragEnded() {
   EndSystemDragIfApplicable();
 }
 
+// TODO(wjmaclean): Replace this approach with ones based on std::function
+// as in https://codereview.chromium.org/1404353004/ once all Chrome platforms
+// support this. https://crbug.com/544212
+IPC::Message* BrowserPluginGuest::UpdateInstanceIdIfNecessary(
+    IPC::Message* msg) const {
+  DCHECK(msg);
+
+  int msg_browser_plugin_instance_id = browser_plugin::kInstanceIDNone;
+  base::PickleIterator iter(*msg);
+  if (!iter.ReadInt(&msg_browser_plugin_instance_id) ||
+      msg_browser_plugin_instance_id != browser_plugin::kInstanceIDNone) {
+    return msg;
+  }
+
+  // This method may be called with no browser_plugin_instance_id in tests.
+  if (!browser_plugin_instance_id())
+    return msg;
+
+  scoped_ptr<IPC::Message> new_msg(
+      new IPC::Message(msg->routing_id(), msg->type(), msg->priority()));
+  new_msg->WriteInt(browser_plugin_instance_id());
+
+  // Copy remaining payload from original message.
+  // TODO(wjmaclean): it would be nice if IPC::PickleIterator had a method
+  // like 'RemainingBytes()' so that we don't have to include implementation-
+  // specific details like sizeof() in the next line.
+  DCHECK(msg->payload_size() > sizeof(int));
+  size_t remaining_bytes = msg->payload_size() - sizeof(int);
+  const char* data = nullptr;
+  bool read_success = iter.ReadBytes(&data, remaining_bytes);
+  CHECK(read_success)
+      << "Unexpected failure reading remaining IPC::Message payload.";
+  bool write_success = new_msg->WriteBytes(data, remaining_bytes);
+  CHECK(write_success)
+      << "Unexpected failure writing remaining IPC::Message payload.";
+
+  delete msg;
+  return new_msg.release();
+}
+
 void BrowserPluginGuest::SendQueuedMessages() {
   if (!attached())
     return;
@@ -572,7 +612,8 @@ void BrowserPluginGuest::SendQueuedMessages() {
   while (!pending_messages_.empty()) {
     linked_ptr<IPC::Message> message_ptr = pending_messages_.front();
     pending_messages_.pop_front();
-    SendMessageToEmbedder(message_ptr.release());
+    SendMessageToEmbedder(
+        UpdateInstanceIdIfNecessary(message_ptr.release()));
   }
 }
 

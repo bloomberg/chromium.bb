@@ -386,6 +386,12 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
   void OnWillAttachComplete(WebContentsImpl* embedder_web_contents,
                             const BrowserPluginHostMsg_Attach_Params& params);
 
+  // Returns identical message with current browser_plugin_instance_id() if
+  // the input was created with browser_plugin::kInstanceIdNone, else it returns
+  // the input message unmodified. If no current browser_plugin_instance_id()
+  // is set, or anything goes wrong, the input message is returned.
+  IPC::Message* UpdateInstanceIdIfNecessary(IPC::Message* msg) const;
+
   // Forwards all messages from the |pending_messages_| queue to the embedder.
   void SendQueuedMessages();
 
