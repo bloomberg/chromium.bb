@@ -133,94 +133,91 @@ component("ipc") {
   }
 }
 
-# TODO(GYP): crbug.com/360936. Get this to build and run on Android.
-if (!is_android) {
-  group("ipc_tests_run") {
-    testonly = true
-    deps = [
-      ":ipc_tests",
-    ]
+group("ipc_tests_run") {
+  testonly = true
+  deps = [
+    ":ipc_tests",
+  ]
+}
+
+test("ipc_tests") {
+  sources = [
+    "attachment_broker_mac_unittest.cc",
+    "attachment_broker_privileged_mac_unittest.cc",
+    "attachment_broker_privileged_win_unittest.cc",
+    "attachment_broker_unprivileged_win_unittest.cc",
+    "ipc_channel_posix_unittest.cc",
+    "ipc_channel_proxy_unittest.cc",
+    "ipc_channel_reader_unittest.cc",
+    "ipc_channel_unittest.cc",
+    "ipc_fuzzing_tests.cc",
+    "ipc_message_attachment_set_posix_unittest.cc",
+    "ipc_message_unittest.cc",
+    "ipc_message_utils_unittest.cc",
+    "ipc_send_fds_test.cc",
+    "ipc_sync_channel_unittest.cc",
+    "ipc_sync_message_unittest.cc",
+    "ipc_sync_message_unittest.h",
+    "ipc_test_message_generator.cc",
+    "ipc_test_message_generator.h",
+    "ipc_test_messages.h",
+    "sync_socket_unittest.cc",
+    "unix_domain_socket_util_unittest.cc",
+  ]
+
+  if (is_win || is_ios) {
+    sources -= [ "unix_domain_socket_util_unittest.cc" ]
   }
 
-  test("ipc_tests") {
-    sources = [
-      "attachment_broker_mac_unittest.cc",
-      "attachment_broker_privileged_mac_unittest.cc",
-      "attachment_broker_privileged_win_unittest.cc",
-      "attachment_broker_unprivileged_win_unittest.cc",
-      "ipc_channel_posix_unittest.cc",
-      "ipc_channel_proxy_unittest.cc",
-      "ipc_channel_reader_unittest.cc",
-      "ipc_channel_unittest.cc",
-      "ipc_fuzzing_tests.cc",
-      "ipc_message_attachment_set_posix_unittest.cc",
-      "ipc_message_unittest.cc",
-      "ipc_message_utils_unittest.cc",
-      "ipc_send_fds_test.cc",
-      "ipc_sync_channel_unittest.cc",
-      "ipc_sync_message_unittest.cc",
-      "ipc_sync_message_unittest.h",
-      "ipc_test_message_generator.cc",
-      "ipc_test_message_generator.h",
-      "ipc_test_messages.h",
-      "sync_socket_unittest.cc",
-      "unix_domain_socket_util_unittest.cc",
-    ]
+  # TODO(brettw) hook up Android testing.
+  #if (is_android && gtest_target_type == "shared_library") {
+  #  deps += "/testing/android/native_test.gyp:native_testNative_code"
+  #}
 
-    if (is_win || is_ios) {
-      sources -= [ "unix_domain_socket_util_unittest.cc" ]
-    }
+  # TODO(brettw) hook up tcmalloc to this target.
+  #if (is_posix && !is_mac && !is_android) {
+  #  if (use_allocator!="none") {
+  #    deps += "/base/allocator"
+  #  }
+  #}
 
-    # TODO(brettw) hook up Android testing.
-    #if (is_android && gtest_target_type == "shared_library") {
-    #  deps += "/testing/android/native_test.gyp:native_testNative_code"
-    #}
+  deps = [
+    ":ipc",
+    ":test_support",
+    "//base",
+    "//base:i18n",
+    "//base/test:run_all_unittests",
+    "//base/test:test_support",
+    "//crypto",
+    "//testing/gtest",
+  ]
+}
 
-    # TODO(brettw) hook up tcmalloc to this target.
-    #if (is_posix && !is_mac && !is_android) {
-    #  if (use_allocator!="none") {
-    #    deps += "/base/allocator"
-    #  }
-    #}
+test("ipc_perftests") {
+  sources = [
+    "ipc_perftests.cc",
+  ]
 
-    deps = [
-      ":ipc",
-      ":test_support",
-      "//base",
-      "//base:i18n",
-      "//base/test:run_all_unittests",
-      "//base/test:test_support",
-      "//crypto",
-      "//testing/gtest",
-    ]
-  }
+  # TODO(brettw) hook up Android testing.
+  #if (is_android && gtest_target_type == "shared_library") {
+  #  deps += "/testing/android/native_test.gyp:native_testNative_code"
+  #}
 
-  test("ipc_perftests") {
-    sources = [
-      "ipc_perftests.cc",
-    ]
-
-    # TODO(brettw) hook up Android testing.
-    #if (is_android && gtest_target_type == "shared_library") {
-    #  deps += "/testing/android/native_test.gyp:native_testNative_code"
-    #}
-
-    # TODO(brettw) hook up tcmalloc to this target.
-    #if (is_posix && !is_mac && !is_android) {
-    #  if (use_allocator!="none") {
-    #    deps += "//base/allocator"
-    #  }
-    #}
-    deps = [
-      ":ipc",
-      ":test_support",
-      "//base",
-      "//base:i18n",
-      "//base/test:test_support",
-      "//base/test:test_support_perf",
-      "//testing/gtest",
-    ]
-  }
+  # TODO(brettw) hook up tcmalloc to this target.
+  #if (is_posix && !is_mac && !is_android) {
+  #  if (use_allocator!="none") {
+  #    deps += "//base/allocator"
+  #  }
+  #}
+  deps = [
+    ":ipc",
+    ":test_support",
+    "//base",
+    "//base:i18n",
+    "//base/test:test_support",
+    "//base/test:test_support_perf",
+    "//testing/gtest",
+  ]
 }
 
 source_set("test_support") {
