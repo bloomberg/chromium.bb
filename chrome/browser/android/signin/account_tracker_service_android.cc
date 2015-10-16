@@ -7,18 +7,16 @@
 #include "base/android/jni_array.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
-#include "components/signin/core/browser/account_info.h"
+#include "components/signin/core/browser/account_tracker_service.h"
 #include "jni/AccountTrackerService_jni.h"
 
-AccountTrackerServiceAndroid::AccountTrackerServiceAndroid(JNIEnv* env,
-                                                           jobject obj) {
-  java_account_tracker_service_.Reset(env, obj);
-}
+namespace signin {
+namespace android {
 
-void AccountTrackerServiceAndroid::SeedAccountsInfo(JNIEnv* env,
-                                                    jobject obj,
-                                                    jobjectArray gaiaIds,
-                                                    jobjectArray accountNames) {
+void SeedAccountsInfo(JNIEnv* env,
+                      const JavaParamRef<jclass>& jcaller,
+                      const JavaParamRef<jobjectArray>& gaiaIds,
+                      const JavaParamRef<jobjectArray>& accountNames) {
   std::vector<std::string> gaia_ids;
   std::vector<std::string> account_names;
   base::android::AppendJavaStringArrayToStringVector(env, gaiaIds, &gaia_ids);
@@ -32,18 +30,14 @@ void AccountTrackerServiceAndroid::SeedAccountsInfo(JNIEnv* env,
   AccountTrackerService* account_tracker_service_ =
       AccountTrackerServiceFactory::GetForProfile(profile);
 
-  for (unsigned int i = 0; i < gaia_ids.size(); i++) {
+  for (size_t i = 0; i < gaia_ids.size(); i++) {
     account_tracker_service_->SeedAccountInfo(gaia_ids[i], account_names[i]);
   }
 }
 
-static jlong Init(JNIEnv* env, const JavaParamRef<jobject>& obj) {
-  AccountTrackerServiceAndroid* account_tracker_service_android =
-      new AccountTrackerServiceAndroid(env, obj);
-  return reinterpret_cast<intptr_t>(account_tracker_service_android);
-}
-
-// static
-bool AccountTrackerServiceAndroid::Register(JNIEnv* env) {
+bool RegisterAccountTrackerService(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
+
+}  // namespace android
+}  // namespace signin

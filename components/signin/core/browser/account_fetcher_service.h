@@ -6,7 +6,6 @@
 #define COMPONENTS_SIGNIN_CORE_BROWSER_ACCOUNT_FETCHER_SERVICE_H_
 
 #include <list>
-#include <map>
 
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/threading/non_thread_safe.h"

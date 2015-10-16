@@ -179,7 +179,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"AccessibilityUtils", AccessibilityUtil::Register},
     {"AccountChooserDialogAndroid", RegisterAccountChooserDialogAndroid},
     {"AccountManagementScreenHelper", AccountManagementScreenHelper::Register},
-    {"AccountTrackerService", AccountTrackerServiceAndroid::Register},
+    {"AccountTrackerService", signin::android::RegisterAccountTrackerService},
     {"AddToHomescreenDialogHelper",
      AddToHomescreenDialogHelper::RegisterAddToHomescreenDialogHelper},
     {"AfterStartupTaskUtils", RegisterAfterStartupTaskUtilsJNI},
