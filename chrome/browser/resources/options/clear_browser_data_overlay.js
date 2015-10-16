@@ -165,6 +165,7 @@ cr.define('options', function() {
 
       $('clear-browser-data-old-learn-more-link').hidden = simple;
       $('clear-browser-data-footer-learn-more-link').hidden = !simple;
+      $('flash-storage-settings').hidden = simple;
     },
 
     /**
