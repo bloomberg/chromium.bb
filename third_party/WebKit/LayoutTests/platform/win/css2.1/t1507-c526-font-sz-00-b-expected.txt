@@ -10,8 +10,8 @@ layer at (0,0) size 800x323
         LayoutText {#text} at (0,0) size 218x17
           text run at (0,0) width 218: "This sentence should be the same."
       LayoutBlockFlow {P} at (10,56) size 764x22 [color=#000080]
-        LayoutText {#text} at (0,0) size 336x21
-          text run at (0,0) width 336: "This sentence should be larger than normal."
+        LayoutText {#text} at (0,0) size 335x21
+          text run at (0,0) width 335: "This sentence should be larger than normal."
       LayoutBlockFlow {P} at (10,88) size 764x16 [color=#000080]
         LayoutText {#text} at (0,0) size 240x15
           text run at (0,0) width 240: "This sentence should be smaller than normal."
@@ -39,21 +39,21 @@ layer at (0,0) size 800x323
       LayoutBlockFlow {P} at (10,198) size 764x21 [color=#000080]
         LayoutText {#text} at (0,0) size 222x20
           text run at (0,0) width 222: "This sentence should be large. "
-        LayoutInline {SPAN} at (0,0) size 259x17
-          LayoutText {#text} at (221,2) size 259x17
-            text run at (221,2) width 259: "This sentence should be back to normal."
+        LayoutInline {SPAN} at (0,0) size 258x17
+          LayoutText {#text} at (221,2) size 258x17
+            text run at (221,2) width 258: "This sentence should be back to normal."
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (10,229) size 764x27 [color=#000080]
         LayoutText {#text} at (0,0) size 358x26
           text run at (0,0) width 358: "This sentence should be rather large. "
-        LayoutInline {SPAN} at (0,0) size 259x17
-          LayoutText {#text} at (357,7) size 259x17
-            text run at (357,7) width 259: "This sentence should be back to normal."
+        LayoutInline {SPAN} at (0,0) size 258x17
+          LayoutText {#text} at (357,7) size 258x17
+            text run at (357,7) width 258: "This sentence should be back to normal."
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (10,266) size 764x37 [color=#000080]
-        LayoutText {#text} at (0,0) size 460x36
-          text run at (0,0) width 460: "This sentence should be very large. "
-        LayoutInline {SPAN} at (0,0) size 258x17
-          LayoutText {#text} at (459,15) size 258x17
-            text run at (459,15) width 258: "This sentence should be back to normal."
+        LayoutText {#text} at (0,0) size 459x36
+          text run at (0,0) width 459: "This sentence should be very large. "
+        LayoutInline {SPAN} at (0,0) size 259x17
+          LayoutText {#text} at (458,15) size 259x17
+            text run at (458,15) width 259: "This sentence should be back to normal."
         LayoutText {#text} at (0,0) size 0x0

@@ -71,30 +71,30 @@ layer at (0,0) size 800x100
           LayoutInline {<pseudo:before>} at (0,0) size 36x19
             LayoutCounter (anonymous) at (400,0) size 36x19
               text run at (400,0) width 36: "01.11"
-        LayoutText {#text} at (436,0) size 4x19
-          text run at (436,0) width 4: " "
-        LayoutInline {SPAN} at (0,0) size 36x19
-          LayoutInline {<pseudo:before>} at (0,0) size 36x19
-            LayoutCounter (anonymous) at (440,0) size 36x19
-              text run at (440,0) width 36: "01.12"
-        LayoutText {#text} at (476,0) size 4x19
-          text run at (476,0) width 4: " "
-        LayoutInline {SPAN} at (0,0) size 36x19
-          LayoutInline {<pseudo:before>} at (0,0) size 36x19
-            LayoutCounter (anonymous) at (480,0) size 36x19
-              text run at (480,0) width 36: "01.99"
-        LayoutText {#text} at (516,0) size 4x19
-          text run at (516,0) width 4: " "
-        LayoutInline {SPAN} at (0,0) size 44x19
-          LayoutInline {<pseudo:before>} at (0,0) size 44x19
-            LayoutCounter (anonymous) at (520,0) size 44x19
-              text run at (520,0) width 44: "01.100"
-        LayoutText {#text} at (564,0) size 4x19
-          text run at (564,0) width 4: " "
-        LayoutInline {SPAN} at (0,0) size 44x19
-          LayoutInline {<pseudo:before>} at (0,0) size 44x19
-            LayoutCounter (anonymous) at (568,0) size 44x19
-              text run at (568,0) width 44: "01.101"
+        LayoutText {#text} at (435,0) size 5x19
+          text run at (435,0) width 5: " "
+        LayoutInline {SPAN} at (0,0) size 37x19
+          LayoutInline {<pseudo:before>} at (0,0) size 37x19
+            LayoutCounter (anonymous) at (439,0) size 37x19
+              text run at (439,0) width 37: "01.12"
+        LayoutText {#text} at (475,0) size 5x19
+          text run at (475,0) width 5: " "
+        LayoutInline {SPAN} at (0,0) size 37x19
+          LayoutInline {<pseudo:before>} at (0,0) size 37x19
+            LayoutCounter (anonymous) at (479,0) size 37x19
+              text run at (479,0) width 37: "01.99"
+        LayoutText {#text} at (515,0) size 5x19
+          text run at (515,0) width 5: " "
+        LayoutInline {SPAN} at (0,0) size 45x19
+          LayoutInline {<pseudo:before>} at (0,0) size 45x19
+            LayoutCounter (anonymous) at (519,0) size 45x19
+              text run at (519,0) width 45: "01.100"
+        LayoutText {#text} at (563,0) size 5x19
+          text run at (563,0) width 5: " "
+        LayoutInline {SPAN} at (0,0) size 45x19
+          LayoutInline {<pseudo:before>} at (0,0) size 45x19
+            LayoutCounter (anonymous) at (567,0) size 45x19
+              text run at (567,0) width 45: "01.101"
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {DIV} at (0,56) size 784x20
         LayoutText {#text} at (0,0) size 612x19
@@ -109,7 +109,7 @@ layer at (0,0) size 800x100
           text run at (320,0) width 40: "01.09 "
           text run at (360,0) width 40: "01.10 "
           text run at (400,0) width 40: "01.11 "
-          text run at (440,0) width 40: "01.12 "
-          text run at (480,0) width 40: "01.99 "
-          text run at (520,0) width 48: "01.100 "
-          text run at (568,0) width 44: "01.101"
+          text run at (439,0) width 41: "01.12 "
+          text run at (479,0) width 41: "01.99 "
+          text run at (519,0) width 49: "01.100 "
+          text run at (567,0) width 45: "01.101"

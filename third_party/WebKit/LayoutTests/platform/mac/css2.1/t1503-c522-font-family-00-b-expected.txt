@@ -14,11 +14,11 @@ layer at (0,0) size 800x287
           LayoutText {#text} at (0,0) size 314x18
             text run at (0,0) width 314: "This sentence should be in a sans-serif font."
         LayoutBlockFlow {P} at (0,54) size 784x25 [color=#000080]
-          LayoutText {#text} at (0,0) size 269x25
-            text run at (0,0) width 269: "This sentence should be in a cursive font."
+          LayoutText {#text} at (0,0) size 266x25
+            text run at (0,0) width 266: "This sentence should be in a cursive font."
         LayoutBlockFlow {P} at (0,79) size 784x25 [color=#000080]
-          LayoutText {#text} at (0,0) size 298x25
-            text run at (0,0) width 298: "This sentence should be in a fantasy font."
+          LayoutText {#text} at (0,0) size 296x25
+            text run at (0,0) width 296: "This sentence should be in a fantasy font."
         LayoutBlockFlow {P} at (0,104) size 784x15 [color=#000080]
           LayoutText {#text} at (0,0) size 344x15
             text run at (0,0) width 344: "This sentence should be in a monospace font."
@@ -39,11 +39,11 @@ layer at (0,0) size 800x287
           LayoutText {#text} at (0,0) size 314x18
             text run at (0,0) width 314: "This sentence should be in a sans-serif font."
         LayoutBlockFlow {P} at (0,51) size 784x25 [color=#000080]
-          LayoutText {#text} at (0,0) size 269x25
-            text run at (0,0) width 269: "This sentence should be in a cursive font."
+          LayoutText {#text} at (0,0) size 266x25
+            text run at (0,0) width 266: "This sentence should be in a cursive font."
         LayoutBlockFlow {P} at (0,76) size 784x25 [color=#000080]
-          LayoutText {#text} at (0,0) size 298x25
-            text run at (0,0) width 298: "This sentence should be in a fantasy font."
+          LayoutText {#text} at (0,0) size 296x25
+            text run at (0,0) width 296: "This sentence should be in a fantasy font."
         LayoutBlockFlow {P} at (0,101) size 784x15 [color=#000080]
           LayoutText {#text} at (0,0) size 344x15
             text run at (0,0) width 344: "This sentence should be in a monospace font."

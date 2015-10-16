@@ -7,8 +7,8 @@ layer at (0,0) size 800x416
         LayoutText {#text} at (0,0) size 278x19
           text run at (0,0) width 278: "This paragraph should have green background"
       LayoutBlockFlow {address} at (0,36) size 784x20
-        LayoutText {#text} at (0,0) size 337x19
-          text run at (0,0) width 337: "But this address is here only to fill space in the dom.."
+        LayoutText {#text} at (0,0) size 336x19
+          text run at (0,0) width 336: "But this address is here only to fill space in the dom.."
       LayoutBlockFlow {p} at (0,72) size 784x20
         LayoutText {#text} at (0,0) size 148x19
           text run at (0,0) width 148: "So does this paragraph !"

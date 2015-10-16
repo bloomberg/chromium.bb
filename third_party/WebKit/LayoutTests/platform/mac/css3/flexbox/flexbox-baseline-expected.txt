@@ -61,14 +61,14 @@ layer at (0,0) size 800x494
         text run at (0,12) width 188: "should align with the middle "
       LayoutFlexibleBox {DIV} at (187.09,5) size 40x40 [bgcolor=#D3D3D3]
         LayoutBlockFlow {DIV} at (0,0) size 40x21 [border: none (1px solid #000000) none]
-      LayoutText {#text} at (227,12) size 127x18
-        text run at (227,12) width 127: " of the grey flexbox"
+      LayoutText {#text} at (227,12) size 126x18
+        text run at (227,12) width 126: " of the grey flexbox"
     LayoutBlockFlow {DIV} at (0,289) size 800x39
       LayoutText {#text} at (0,21) size 188x18
         text run at (0,21) width 188: "should align with the bottom "
       LayoutFlexibleBox {DIV} at (187.98,5) size 30x30 [bgcolor=#D3D3D3]
-      LayoutText {#text} at (217,21) size 128x18
-        text run at (217,21) width 128: " of the grey flexbox"
+      LayoutText {#text} at (217,21) size 127x18
+        text run at (217,21) width 127: " of the grey flexbox"
     LayoutBlockFlow {DIV} at (0,328) size 800x41
       LayoutText {#text} at (0,5) size 73x18
         text run at (0,5) width 73: "before text "
@@ -99,14 +99,14 @@ layer at (0,0) size 800x494
       LayoutFlexibleBox {DIV} at (187.09,5) size 40x40 [bgcolor=#D3D3D3]
         LayoutBlockFlow {DIV} at (0,0) size 40x20.50 [border: none (1px solid #000000) none]
         LayoutBlockFlow {DIV} at (0,20.50) size 40x19.50
-      LayoutText {#text} at (227,11) size 127x18
-        text run at (227,11) width 127: " of the grey flexbox"
+      LayoutText {#text} at (227,11) size 126x18
+        text run at (227,11) width 126: " of the grey flexbox"
     LayoutBlockFlow {DIV} at (0,455) size 800x39
       LayoutText {#text} at (0,21) size 188x18
         text run at (0,21) width 188: "should align with the bottom "
       LayoutFlexibleBox {DIV} at (187.98,5) size 30x30 [bgcolor=#D3D3D3]
-      LayoutText {#text} at (217,21) size 128x18
-        text run at (217,21) width 128: " of the grey flexbox"
+      LayoutText {#text} at (217,21) size 127x18
+        text run at (217,21) width 127: " of the grey flexbox"
 layer at (400,0) size 360x417
   LayoutBlockFlow (positioned) {DIV} at (400,0) size 360x417
     LayoutBlockFlow {DIV} at (0,0) size 360x53

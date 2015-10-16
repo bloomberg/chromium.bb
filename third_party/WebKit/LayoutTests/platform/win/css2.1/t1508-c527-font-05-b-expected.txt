@@ -4,8 +4,8 @@ layer at (0,0) size 800x414
   LayoutBlockFlow {HTML} at (0,0) size 800x414
     LayoutBlockFlow {BODY} at (8,18) size 784x378 [color=#000080]
       LayoutBlockFlow {P} at (0,0) size 784x378
-        LayoutText {#text} at (0,17) size 749x74
-          text run at (0,17) width 749: "This text should be 18px sans-serif, in small-caps, italicized, and very light. There should be a"
+        LayoutText {#text} at (0,17) size 747x74
+          text run at (0,17) width 747: "This text should be 18px sans-serif, in small-caps, italicized, and very light. There should be a"
           text run at (0,71) width 228: "36px gap between each line. "
         LayoutInline {SPAN} at (0,0) size 775x290 [color=#C0C0C0]
           LayoutText {#text} at (227,71) size 775x290

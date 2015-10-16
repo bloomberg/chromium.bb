@@ -5,14 +5,14 @@ layer at (0,0) size 800x468
     LayoutBlockFlow {BODY} at (8,18) size 784x432
       LayoutBlockFlow {P} at (0,0) size 784x432
         LayoutInline {SPAN} at (0,0) size 775x398 [color=#FFFFFF] [bgcolor=#000080]
-          LayoutText {#text} at (0,17) size 749x74
-            text run at (0,17) width 486: "This text should be 18px sans-serif, in small-caps, italicized, "
-            text run at (485,17) width 264: "and very light. There should be a"
+          LayoutText {#text} at (0,17) size 747x74
+            text run at (0,17) width 485: "This text should be 18px sans-serif, in small-caps, italicized, "
+            text run at (484,17) width 263: "and very light. There should be a"
             text run at (0,71) width 253: "36px gap betwen each line. The "
-            text run at (252,71) width 453: "text should have a blue background, the gap should not. "
+            text run at (252,71) width 452: "text should have a blue background, the gap should not. "
           LayoutInline {SPAN} at (0,0) size 775x344 [color=#0000FF]
-            LayoutText {#text} at (704,71) size 775x344
-              text run at (704,71) width 48: "dummy"
+            LayoutText {#text} at (703,71) size 775x344
+              text run at (703,71) width 48: "dummy"
               text run at (0,125) width 455: "text dummy text dummy text dummy text dummy text dummy "
               text run at (455,125) width 307: "text dummy text dummy text dummy text"
               text run at (0,179) width 234: "dummy text dummy text dummy "

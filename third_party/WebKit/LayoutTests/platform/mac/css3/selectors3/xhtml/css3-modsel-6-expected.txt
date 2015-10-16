@@ -8,7 +8,7 @@ layer at (0,0) size 800x34
           LayoutText {#text} at (0,0) size 107x18
             text run at (0,0) width 107: "This line should "
         LayoutText {#text} at (0,0) size 0x0
-        LayoutInline {span} at (0,0) size 168x18
-          LayoutText {#text} at (106,0) size 168x18
-            text run at (106,0) width 168: "have a green background."
+        LayoutInline {span} at (0,0) size 167x18
+          LayoutText {#text} at (106,0) size 167x18
+            text run at (106,0) width 167: "have a green background."
         LayoutText {#text} at (0,0) size 0x0

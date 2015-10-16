@@ -13,12 +13,12 @@ layer at (0,0) size 800x404
         LayoutText {#text} at (284,0) size 216x17
           text run at (284,0) width 216: "This sentence should be centered."
       LayoutBlockFlow {P} at (0,102) size 784x270 [color=#000080]
-        LayoutText {#text} at (0,0) size 518x17
+        LayoutText {#text} at (0,0) size 519x17
           text run at (0,0) width 410: "This paragraph should be justified (the right and left margins "
-          text run at (409,0) width 109: "should line up). "
+          text run at (409,0) width 110: "should line up). "
         LayoutInline {SPAN} at (0,0) size 784x251 [color=#C0C0C0]
-          LayoutText {#text} at (517,0) size 784x251
-            text run at (517,0) width 267: "This is just lovely dummy text. Dummy"
+          LayoutText {#text} at (518,0) size 784x251
+            text run at (518,0) width 266: "This is just lovely dummy text. Dummy"
             text run at (0,18) width 89: "text. Dummy "
             text run at (88,18) width 529: "text. This is just lovely dummy text. This is just lovely dummy text. Dummy text. "
             text run at (616,18) width 168: "This is just lovely dummy"

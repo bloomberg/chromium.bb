@@ -12,11 +12,11 @@ layer at (0,0) size 800x96
           LayoutInline {SPAN} at (0,0) size 12x17 [color=#000080]
             LayoutText {#text} at (0,0) size 12x17
               text run at (0,0) width 12: "1."
-          LayoutText {#text} at (12,0) size 32x17
-            text run at (12,0) width 32: " Test"
+          LayoutText {#text} at (12,0) size 31x17
+            text run at (12,0) width 31: " Test"
       LayoutBlockFlow {OL} at (80,53.59) size 160x18 [color=#000080] [bgcolor=#000080]
         LayoutListItem {LI} at (0,0) size 160x18
           LayoutListMarker (anonymous) at (0,0) size 16x17: "1"
-          LayoutInline {SPAN} at (0,0) size 28x17 [color=#FFFFFF]
-            LayoutText {#text} at (16,0) size 28x17
-              text run at (16,0) width 28: "Test"
+          LayoutInline {SPAN} at (0,0) size 27x17 [color=#FFFFFF]
+            LayoutText {#text} at (16,0) size 27x17
+              text run at (16,0) width 27: "Test"

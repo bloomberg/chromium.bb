@@ -4,15 +4,15 @@ layer at (0,0) size 800x252
   LayoutBlockFlow {HTML} at (0,0) size 800x252
     LayoutBlockFlow {BODY} at (8,8) size 784x236
       LayoutBlockFlow (anonymous) at (0,0) size 784x36
-        LayoutText {#text} at (0,0) size 778x35
-          text run at (0,0) width 410: "Test for empty buttons, which inherit from LayoutFlexibleBox. "
-          text run at (409,0) width 369: "Empty <input> buttons should not collapse, which makes"
+        LayoutText {#text} at (0,0) size 777x35
+          text run at (0,0) width 409: "Test for empty buttons, which inherit from LayoutFlexibleBox. "
+          text run at (408,0) width 369: "Empty <input> buttons should not collapse, which makes"
           text run at (0,18) width 498: "them different from most flex boxes. Empty <button>s should collapse. Note "
-        LayoutInline {A} at (0,0) size 77x17 [color=#0000EE]
-          LayoutText {#text} at (497,18) size 77x17
-            text run at (497,18) width 77: "bug 110654"
-        LayoutText {#text} at (573,18) size 5x17
-          text run at (573,18) width 5: "."
+        LayoutInline {A} at (0,0) size 76x17 [color=#0000EE]
+          LayoutText {#text} at (497,18) size 76x17
+            text run at (497,18) width 76: "bug 110654"
+        LayoutText {#text} at (572,18) size 5x17
+          text run at (572,18) width 5: "."
       LayoutBlockFlow {HR} at (0,44) size 784x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow (anonymous) at (0,54) size 784x59
         LayoutText {#text} at (0,0) size 81x17
@@ -24,8 +24,8 @@ layer at (0,0) size 800x252
         LayoutBR {BR} at (16,41) size 0x17
       LayoutBlockFlow {HR} at (0,121) size 784x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow (anonymous) at (0,131) size 784x105
-        LayoutText {#text} at (0,0) size 745x35
-          text run at (0,0) width 745: "Empty <button> and <input type=button> with overflow: scroll;. The presence of the scrollbar should not shrink the"
+        LayoutText {#text} at (0,0) size 744x35
+          text run at (0,0) width 744: "Empty <button> and <input type=button> with overflow: scroll;. The presence of the scrollbar should not shrink the"
           text run at (0,18) width 45: "button."
         LayoutBR {BR} at (44,18) size 1x17
         LayoutBR {BR} at (31,36) size 0x17

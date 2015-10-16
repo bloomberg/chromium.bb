@@ -7,8 +7,8 @@ layer at (0,0) size 800x384
         LayoutText {#text} at (0,0) size 225x17
           text run at (0,0) width 225: "This paragraph should be unstyled."
       LayoutBlockFlow {ADDRESS} at (0,34) size 784x18
-        LayoutText {#text} at (0,0) size 209x17
-          text run at (0,0) width 209: "This address should be unstyled."
+        LayoutText {#text} at (0,0) size 208x17
+          text run at (0,0) width 208: "This address should be unstyled."
       LayoutBlockFlow {P} at (0,68) size 784x18 [bgcolor=#00FF00]
         LayoutText {#text} at (0,0) size 301x17
           text run at (0,0) width 301: "This paragraph should have green background."

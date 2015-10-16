@@ -5,8 +5,8 @@ layer at (0,0) size 800x144
     LayoutBlockFlow {body} at (8,8) size 784x120
       LayoutBlockFlow {div} at (0,0) size 784x120
         LayoutBlockFlow {address} at (0,0) size 784x18 [bgcolor=#00FF00]
-          LayoutText {#text} at (0,0) size 296x18
-            text run at (0,0) width 296: "This address should have a green background"
+          LayoutText {#text} at (0,0) size 294x18
+            text run at (0,0) width 294: "This address should have a green background"
         LayoutBlockFlow {s} at (0,34) size 784x18 [bgcolor=#00FF00]
           LayoutText {#text} at (0,0) size 308x18
             text run at (0,0) width 308: "This paragraph should have a green background"

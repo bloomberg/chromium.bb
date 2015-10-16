@@ -16,7 +16,7 @@ layer at (0,0) size 785x2041 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutText {#text} at (0,0) size 749x39
           text run at (0,0) width 374: "Scroll this document. A line of blue should remain stuck at the "
           text run at (374,0) width 375: "top of the viewport the whole time, and there should be no red"
-          text run at (0,20) width 172: "below, just a block of green."
+          text run at (0,20) width 171: "below, just a block of green."
       LayoutBlockFlow {DIV} at (30,164) size 165x75 [color=#008000] [bgcolor=#008000]
         LayoutText {#text} at (0,0) size 165x75
           text run at (0,0) width 165: "          X"

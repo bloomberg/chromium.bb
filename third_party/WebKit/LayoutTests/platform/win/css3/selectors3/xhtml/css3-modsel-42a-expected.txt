@@ -4,9 +4,9 @@ layer at (0,0) size 800x68
   LayoutBlockFlow {html} at (0,0) size 800x68
     LayoutBlockFlow {body} at (8,16) size 784x36
       LayoutBlockFlow {p} at (0,0) size 784x36
-        LayoutText {#text} at (0,0) size 624x17
-          text run at (0,0) width 624: "You should see after this paragraph the words GENERATED CONTENT over green background"
-        LayoutInline {<pseudo:after>} at (0,0) size 720x35 [bgcolor=#00FF00]
-          LayoutTextFragment (anonymous) at (623,0) size 720x35
-            text run at (623,0) width 97: "GENERATED"
+        LayoutText {#text} at (0,0) size 621x17
+          text run at (0,0) width 621: "You should see after this paragraph the words GENERATED CONTENT over green background"
+        LayoutInline {<pseudo:after>} at (0,0) size 715x35 [bgcolor=#00FF00]
+          LayoutTextFragment (anonymous) at (620,0) size 715x35
+            text run at (620,0) width 95: "GENERATED"
             text run at (0,18) width 75: "CONTENT"

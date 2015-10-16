@@ -14,6 +14,6 @@ layer at (0,0) size 800x86
             text run at (0,0) width 439: "This list item should have a green background. because its ID is \"t2\""
         LayoutListItem {LI} at (40,36) size 744x18 [bgcolor=#00FF00]
           LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
-          LayoutInline {SPAN} at (0,0) size 598x18
-            LayoutText {#text} at (0,0) size 598x18
-              text run at (0,0) width 598: "This list item should have a green background. because the inner SPAN does not match \"#t4\""
+          LayoutInline {SPAN} at (0,0) size 597x18
+            LayoutText {#text} at (0,0) size 597x18
+              text run at (0,0) width 597: "This list item should have a green background. because the inner SPAN does not match \"#t4\""

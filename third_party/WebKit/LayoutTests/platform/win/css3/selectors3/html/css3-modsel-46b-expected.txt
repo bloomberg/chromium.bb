@@ -14,8 +14,8 @@ layer at (0,0) size 800x186
           LayoutText {#text} at (0,0) size 323x17
             text run at (0,0) width 323: "And this one should also have a green background"
         LayoutBlockFlow {ADDRESS} at (0,102) size 784x18
-          LayoutText {#text} at (0,0) size 438x17
-            text run at (0,0) width 438: "This address is only here to fill some space between two paragraphs"
+          LayoutText {#text} at (0,0) size 437x17
+            text run at (0,0) width 437: "This address is only here to fill some space between two paragraphs"
         LayoutBlockFlow {P} at (0,136) size 784x18 [bgcolor=#00FF00]
           LayoutText {#text} at (0,0) size 308x17
             text run at (0,0) width 308: "This paragraph should have a green background"

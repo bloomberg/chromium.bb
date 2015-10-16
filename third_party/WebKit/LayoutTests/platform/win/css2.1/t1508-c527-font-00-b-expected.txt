@@ -4,11 +4,11 @@ layer at (0,0) size 800x106
   LayoutBlockFlow {HTML} at (0,0) size 800x106
     LayoutBlockFlow {BODY} at (8,13) size 784x80 [color=#000080]
       LayoutBlockFlow {P} at (0,0) size 784x80
-        LayoutText {#text} at (0,0) size 612x16
-          text run at (0,0) width 612: "This text should be 13px Helvetica in small-caps and italicized. There should be a small gap between each line. "
-        LayoutInline {SPAN} at (0,0) size 777x80 [color=#C0C0C0]
-          LayoutText {#text} at (612,0) size 777x80
-            text run at (612,0) width 165: "dummy text dummy text dummy"
+        LayoutText {#text} at (0,0) size 611x16
+          text run at (0,0) width 611: "This text should be 13px Helvetica in small-caps and italicized. There should be a small gap between each line. "
+        LayoutInline {SPAN} at (0,0) size 776x80 [color=#C0C0C0]
+          LayoutText {#text} at (610,0) size 776x80
+            text run at (610,0) width 166: "dummy text dummy text dummy"
             text run at (0,16) width 195: "text dummy text dummy text dummy "
             text run at (195,16) width 390: "text dummy text dummy text dummy text dummy text dummy text dummy "
             text run at (585,16) width 191: "text dummy text dummy text dummy"

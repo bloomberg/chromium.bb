@@ -103,15 +103,15 @@ layer at (0,0) size 800x100
                 text run at (421,0) width 11: "A"
               LayoutCounter (anonymous) at (432,0) size 28x19
                 text run at (432,0) width 28: "2.11"
-              LayoutTextFragment (anonymous) at (460,0) size 6x19
-                text run at (460,0) width 6: "-"
-          LayoutInline {<pseudo:after>} at (0,0) size 25x19
-            LayoutTextFragment (anonymous) at (466,0) size 11x19
-              text run at (466,0) width 11: "A"
-            LayoutCounter (anonymous) at (477,0) size 8x19
-              text run at (477,0) width 8: "3"
-            LayoutTextFragment (anonymous) at (485,0) size 6x19
-              text run at (485,0) width 6: "-"
+              LayoutTextFragment (anonymous) at (459,0) size 7x19
+                text run at (459,0) width 7: "-"
+          LayoutInline {<pseudo:after>} at (0,0) size 26x19
+            LayoutTextFragment (anonymous) at (465,0) size 12x19
+              text run at (465,0) width 12: "A"
+            LayoutCounter (anonymous) at (476,0) size 9x19
+              text run at (476,0) width 9: "3"
+            LayoutTextFragment (anonymous) at (484,0) size 7x19
+              text run at (484,0) width 7: "-"
       LayoutBlockFlow {DIV} at (0,56) size 784x20
         LayoutText {#text} at (0,0) size 491x19
           text run at (0,0) width 491: "B1-B2-B2.1-B2.2-A2.3-B2.4-A2.5-A2.6-B2.7-B2.8-A2.9-A2.10-A2.11-A3-"
