@@ -596,7 +596,7 @@ void HTMLFrame::CreateRootWebWidget() {
     html_widget_.reset(
         delegate_->GetHTMLFactory()->CreateHTMLWidgetRootLocal(&create_params));
   } else {
-    html_widget_.reset(new HTMLWidgetRootRemote);
+    html_widget_.reset(new HTMLWidgetRootRemote(global_state()));
   }
 }
 

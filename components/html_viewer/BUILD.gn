@@ -66,6 +66,8 @@ source_set("lib") {
     "blink_platform_impl.cc",
     "blink_platform_impl.h",
     "blink_resource_constants.h",
+    "blink_settings.cc",
+    "blink_settings.h",
     "blink_text_input_type_converters.cc",
     "blink_text_input_type_converters.h",
     "blink_url_request_type_converters.cc",
