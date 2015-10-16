@@ -231,7 +231,16 @@ StickyKeysOverlay::StickyKeysOverlay()
   overlay_widget_->GetNativeView()->SetName("StickyKeysOverlay");
 }
 
-StickyKeysOverlay::~StickyKeysOverlay() {}
+StickyKeysOverlay::~StickyKeysOverlay() {
+  // Remove ourself from the animator to avoid being re-entrantly called in
+  // |overlay_widget_|'s destructor.
+  ui::Layer* layer = overlay_widget_->GetLayer();
+  if (layer) {
+    ui::LayerAnimator* animator = layer->GetAnimator();
+    if (animator)
+      animator->RemoveObserver(this);
+  }
+}
 
 void StickyKeysOverlay::Show(bool visible) {
   if (is_visible_ == visible)
