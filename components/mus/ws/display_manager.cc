@@ -132,8 +132,8 @@ DefaultDisplayManager::DefaultDisplayManager(
       frame_pending_(false),
       weak_factory_(this) {
   metrics_.size_in_pixels = mojo::Size::New();
-  metrics_.size_in_pixels->width = 800;
-  metrics_.size_in_pixels->height = 600;
+  metrics_.size_in_pixels->width = 1024;
+  metrics_.size_in_pixels->height = 768;
 }
 
 void DefaultDisplayManager::Init(DisplayManagerDelegate* delegate) {

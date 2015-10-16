@@ -7,6 +7,11 @@ module mus.mojom;
 import "components/mus/public/interfaces/view_tree.mojom";
 import "ui/mojo/geometry/geometry.mojom";
 
+enum WindowManagerErrorCode {
+  SUCCESS,
+  ERROR_ACCESS_DENIED
+};
+
 enum Rotation {
   VALUE_0,
   VALUE_90,
@@ -24,15 +29,19 @@ struct Display {
 
 // Represents a core interface that should be implemented by any window manager
 // built on top of Mus.
-// For security reasons, methods that take view_ids can only pass view ids
+// For security reasons, methods that take window_ids can only pass window ids
 // created by calls to OpenWindow() from the *same connection* to the window
-// manager.
+// manager. The callback indicates success or failure.
 interface WindowManager {
   OpenWindow(mojo.ViewTreeClient client);
 
-  // Resizes the corresponding view to |size| and centers it in the current
+  // Resizes the corresponding window to |size| and centers it in the current
   // context.
-  CenterWindow(uint32 view_id, mojo.Size size);
+  CenterWindow(uint32 window_id, mojo.Size size) =>
+      (WindowManagerErrorCode result);
+
+  SetBounds(uint32 window_id, mojo.Rect bounds) =>
+      (WindowManagerErrorCode result);
 
   GetDisplays() => (array<Display> displays);
 };

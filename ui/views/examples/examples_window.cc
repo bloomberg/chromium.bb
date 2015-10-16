@@ -186,6 +186,7 @@ class ExamplesWindowContents : public WidgetDelegateView,
     if (operation_ == QUIT_ON_CLOSE)
       base::MessageLoopForUI::current()->QuitWhenIdle();
   }
+  gfx::Size GetPreferredSize() const override { return gfx::Size(800, 300); }
 
   // ComboboxListener:
   void OnPerformAction(Combobox* combobox) override {
@@ -223,7 +224,6 @@ void ShowExamplesWindow(Operation operation,
     Widget::InitParams params;
     params.delegate = new ExamplesWindowContents(operation, examples.Pass());
     params.context = window_context;
-    params.bounds = gfx::Rect(0, 0, 850, 300);
     widget->Init(params);
     widget->Show();
   }

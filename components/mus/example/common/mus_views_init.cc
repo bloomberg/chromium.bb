@@ -6,7 +6,6 @@
 
 #include "components/mus/public/cpp/window_tree_connection.h"
 #include "components/mus/public/interfaces/view_tree.mojom.h"
-#include "components/mus/public/interfaces/window_manager.mojom.h"
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
@@ -58,49 +57,50 @@ struct TypeConverter<gfx::Display, mus::mojom::DisplayPtr> {
 namespace {
 
 std::vector<gfx::Display> GetDisplaysFromWindowManager(
-    mojo::ApplicationImpl* app) {
-  mus::mojom::WindowManagerPtr window_manager;
-  app->ConnectToService(mojo::URLRequest::From(std::string("mojo:example_wm")),
-                        &window_manager);
+    mojo::ApplicationImpl* app,
+    mus::mojom::WindowManagerPtr* window_manager) {
   std::vector<gfx::Display> displays;
-  window_manager->GetDisplays(
+  (*window_manager)->GetDisplays(
       [&displays](mojo::Array<mus::mojom::DisplayPtr> mojom_displays) {
         displays = mojom_displays.To<std::vector<gfx::Display>>();
       });
-  CHECK(window_manager.WaitForIncomingResponse());
+  CHECK(window_manager->WaitForIncomingResponse());
   return displays;
 }
 }
 
 MUSViewsInit::MUSViewsInit(mojo::ApplicationImpl* app)
-    : app_(app),
-      aura_init_(app,
-                 "example_resources.pak",
-                 GetDisplaysFromWindowManager(app)) {}
+    : app_(app) {
+  mojo::URLRequestPtr request(mojo::URLRequest::New());
+  request->url = "mojo:example_wm";
+  app_->ConnectToService(request.Pass(), &window_manager_);
+  aura_init_.reset(new views::AuraInit(
+      app, "example_resources.pak",
+      GetDisplaysFromWindowManager(app, &window_manager_)));
+}
 
 MUSViewsInit::~MUSViewsInit() {}
 
 mus::Window* MUSViewsInit::CreateWindow() {
-  mus::mojom::WindowManagerPtr wm;
-  mojo::URLRequestPtr request(mojo::URLRequest::New());
-  request->url = "mojo:example_wm";
-  app_->ConnectToService(request.Pass(), &wm);
   mojo::ViewTreeClientPtr view_tree_client;
   mojo::InterfaceRequest<mojo::ViewTreeClient> view_tree_client_request =
       GetProxy(&view_tree_client);
-  wm->OpenWindow(view_tree_client.Pass());
-  mus::WindowTreeConnection* view_tree_connection =
+  window_manager_->OpenWindow(view_tree_client.Pass());
+  mus::WindowTreeConnection* window_tree_connection =
       mus::WindowTreeConnection::Create(
           this, view_tree_client_request.Pass(),
           mus::WindowTreeConnection::CreateType::WAIT_FOR_EMBED);
-  DCHECK(view_tree_connection->GetRoot());
-  return view_tree_connection->GetRoot();
+  DCHECK(window_tree_connection->GetRoot());
+  return window_tree_connection->GetRoot();
 }
 
 views::NativeWidget* MUSViewsInit::CreateNativeWidget(
     views::internal::NativeWidgetDelegate* delegate) {
-  return new views::NativeWidgetViewManager(delegate, app_->shell(),
-                                            CreateWindow());
+  views::NativeWidgetViewManager* native_widget =
+      new views::NativeWidgetViewManager(delegate, app_->shell(),
+                                         CreateWindow());
+  native_widget->set_window_manager(window_manager_.get());
+  return native_widget;
 }
 
 void MUSViewsInit::OnBeforeWidgetInit(

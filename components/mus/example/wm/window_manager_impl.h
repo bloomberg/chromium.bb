@@ -5,13 +5,21 @@
 #ifndef COMPONENTS_MUS_EXAMPLE_WM_WINDOW_MANAGER_IMPL_H_
 #define COMPONENTS_MUS_EXAMPLE_WM_WINDOW_MANAGER_IMPL_H_
 
+#include <set>
+
 #include "base/macros.h"
+#include "components/mus/public/cpp/types.h"
+#include "components/mus/public/cpp/window_observer.h"
 #include "components/mus/public/interfaces/window_manager.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
 
 class WindowManagerApplication;
 
-class WindowManagerImpl : public mus::mojom::WindowManager {
+using WindowManagerErrorCodeCallback =
+    const mojo::Callback<void(mus::mojom::WindowManagerErrorCode)>;
+
+class WindowManagerImpl : public mus::mojom::WindowManager,
+                          public mus::WindowObserver {
  public:
    WindowManagerImpl(WindowManagerApplication* state,
                      mojo::InterfaceRequest<mus::mojom::WindowManager> request);
@@ -20,11 +28,20 @@ class WindowManagerImpl : public mus::mojom::WindowManager {
  private:
   // mus::mojom::WindowManager:
   void OpenWindow(mojo::ViewTreeClientPtr client) override;
-  void CenterWindow(uint32_t window_id, mojo::SizePtr size) override;
+  void CenterWindow(mus::Id window_id,
+                    mojo::SizePtr size,
+                    const WindowManagerErrorCodeCallback& callback) override;
+  void SetBounds(mus::Id window_id,
+                 mojo::RectPtr bounds,
+                 const WindowManagerErrorCodeCallback& callback) override;
   void GetDisplays(const GetDisplaysCallback& callback) override;
+
+  // mus::WindowObserver:
+  void OnWindowDestroyed(mus::Window* window) override;
 
   WindowManagerApplication* state_;
   mojo::StrongBinding<mus::mojom::WindowManager> binding_;
+  std::set<mus::Id> windows_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowManagerImpl);
 };

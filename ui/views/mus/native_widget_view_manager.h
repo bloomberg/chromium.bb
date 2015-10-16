@@ -19,6 +19,9 @@ class Shell;
 
 namespace mus {
 class Window;
+namespace mojom {
+class WindowManager;
+}
 }
 
 namespace ui {
@@ -46,12 +49,20 @@ class NativeWidgetViewManager : public views::NativeWidgetAura {
                           mus::Window* window);
   ~NativeWidgetViewManager() override;
 
+  // TODO(beng): move to ctor.
+  void set_window_manager(mus::mojom::WindowManager* window_manager) {
+    window_manager_ = window_manager;
+  }
+
  private:
   friend class NativeWidgetWindowObserver;
 
   // Overridden from internal::NativeWidgetAura:
   void InitNativeWidget(const views::Widget::InitParams& in_params) override;
   void OnWindowVisibilityChanged(aura::Window* window, bool visible) override;
+  void CenterWindow(const gfx::Size& size) override;
+  void SetBounds(const gfx::Rect& bounds) override;
+  void SetSize(const gfx::Size& size) override;
 
   scoped_ptr<WindowTreeHostMojo> window_tree_host_;
   scoped_ptr<NativeWidgetWindowObserver> window_observer_;
@@ -61,6 +72,8 @@ class NativeWidgetViewManager : public views::NativeWidgetAura {
   mus::Window* window_;
 
   scoped_ptr<aura::client::DefaultCaptureClient> capture_client_;
+
+  mus::mojom::WindowManager* window_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetViewManager);
 };

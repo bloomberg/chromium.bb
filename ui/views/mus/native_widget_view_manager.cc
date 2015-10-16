@@ -5,9 +5,11 @@
 #include "ui/views/mus/native_widget_view_manager.h"
 
 #include "components/mus/public/cpp/window.h"
+#include "components/mus/public/interfaces/window_manager.mojom.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/converters/input_events/input_events_type_converters.h"
 #include "ui/aura/client/default_capture_client.h"
+#include "ui/aura/layout_manager.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/ime/input_method_delegate.h"
@@ -56,13 +58,6 @@ class NativeWidgetWindowObserver : public mus::WindowObserver {
     // NativeWidgetWindowObserver needs to deal, likely by deleting this.
   }
 
-  void OnWindowBoundsChanged(mus::Window* view,
-                             const mojo::Rect& old_bounds,
-                             const mojo::Rect& new_bounds) override {
-    gfx::Rect view_rect = view->bounds().To<gfx::Rect>();
-    view_manager_->SetBounds(gfx::Rect(view_rect.size()));
-  }
-
   void OnWindowFocusChanged(mus::Window* gained_focus,
                             mus::Window* lost_focus) override {
     if (gained_focus == view_manager_->window_)
@@ -90,13 +85,38 @@ class NativeWidgetWindowObserver : public mus::WindowObserver {
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetWindowObserver);
 };
 
+class WindowTreeHostWindowLayoutManager : public aura::LayoutManager {
+ public:
+  WindowTreeHostWindowLayoutManager(aura::Window* outer, aura::Window* inner)
+      : outer_(outer), inner_(inner) {}
+  ~WindowTreeHostWindowLayoutManager() override {}
+
+ private:
+  // aura::LayoutManager:
+  void OnWindowResized() override { inner_->SetBounds(outer_->bounds()); }
+  void OnWindowAddedToLayout(aura::Window* child) override {}
+  void OnWillRemoveWindowFromLayout(aura::Window* child) override {}
+  void OnWindowRemovedFromLayout(aura::Window* child) override {}
+  void OnChildWindowVisibilityChanged(aura::Window* child,
+                                      bool visible) override {}
+  void SetChildBounds(aura::Window* child,
+                      const gfx::Rect& requested_bounds) override {
+    SetChildBoundsDirect(child, requested_bounds);
+  }
+
+  aura::Window* outer_;
+  aura::Window* inner_;
+
+  DISALLOW_COPY_AND_ASSIGN(WindowTreeHostWindowLayoutManager);
+};
+
 }  // namespace
 
 NativeWidgetViewManager::NativeWidgetViewManager(
     views::internal::NativeWidgetDelegate* delegate,
     mojo::Shell* shell,
     mus::Window* window)
-    : NativeWidgetAura(delegate), window_(window) {
+    : NativeWidgetAura(delegate), window_(window), window_manager_(nullptr) {
   window_tree_host_.reset(new WindowTreeHostMojo(shell, window_));
   window_tree_host_->InitHost();
 
@@ -107,6 +127,9 @@ NativeWidgetViewManager::NativeWidgetViewManager(
   aura::client::SetActivationClient(window_tree_host_->window(),
                                     focus_client_.get());
   window_tree_host_->window()->AddPreTargetHandler(focus_client_.get());
+  window_tree_host_->window()->SetLayoutManager(
+      new WindowTreeHostWindowLayoutManager(window_tree_host_->window(),
+                                            GetNativeWindow()));
 
   capture_client_.reset(
       new aura::client::DefaultCaptureClient(window_tree_host_->window()));
@@ -129,6 +152,36 @@ void NativeWidgetViewManager::OnWindowVisibilityChanged(aura::Window* window,
   // NOTE: We could also update aura::Window's visibility when the View's
   // visibility changes, but this code isn't going to be around for very long so
   // I'm not bothering.
+}
+
+namespace {
+void WindowManagerCallback(mus::mojom::WindowManagerErrorCode error_code) {}
+}  // namespace
+
+void NativeWidgetViewManager::CenterWindow(const gfx::Size& size) {
+  if (!window_manager_)
+    return;
+  window_manager_->CenterWindow(window_->id(), mojo::Size::From(size),
+                                base::Bind(&WindowManagerCallback));
+}
+
+void NativeWidgetViewManager::SetBounds(const gfx::Rect& bounds) {
+  if (!window_manager_)
+    return;
+  window_manager_->SetBounds(window_->id(), mojo::Rect::From(bounds),
+                             base::Bind(&WindowManagerCallback));
+}
+
+void NativeWidgetViewManager::SetSize(const gfx::Size& size) {
+  if (!window_manager_)
+    return;
+  mojo::RectPtr bounds(mojo::Rect::New());
+  bounds->x = window_->bounds().x;
+  bounds->y = window_->bounds().y;
+  bounds->width = size.width();
+  bounds->height = size.height();
+  window_manager_->SetBounds(window_->id(), bounds.Pass(),
+                             base::Bind(&WindowManagerCallback));
 }
 
 }  // namespace views

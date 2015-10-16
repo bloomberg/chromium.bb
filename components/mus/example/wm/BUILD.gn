@@ -6,10 +6,15 @@ import("//build/config/ui.gni")
 import("//mojo/public/mojo_application.gni")
 import("//third_party/mojo/src/mojo/public/tools/bindings/mojom.gni")
 
-mojo_native_application("wm") {
-  output_name = "example_wm"
+group("wm") {
   testonly = true
+  deps = [
+    ":example_wm",
+    ":apptests",
+  ]
+}
 
+mojo_native_application("example_wm") {
   sources = [
     "container.h",
     "main.cc",
@@ -29,5 +34,30 @@ mojo_native_application("wm") {
 
   data_deps = [
     "//components/mus",
+  ]
+}
+
+mojo_native_application("apptests") {
+  output_name = "mus_example_wm_apptests"
+  testonly = true
+
+  sources = [
+    "window_manager_apptest.cc",
+  ]
+
+  deps = [
+    "//base",
+    "//base/test:test_config",
+    "//components/mus/public/cpp",
+    "//components/mus/public/cpp/tests:test_support",
+    "//components/mus/public/interfaces",
+    "//mojo/application/public/cpp:sources",
+    "//mojo/application/public/cpp:test_support",
+    "//ui/mojo/geometry:interfaces",
+    "//ui/mojo/geometry:util",
+  ]
+
+  data_deps = [
+    ":example_wm",
   ]
 }

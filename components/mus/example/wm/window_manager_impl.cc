@@ -39,6 +39,7 @@ void WindowManagerImpl::OpenWindow(mojo::ViewTreeClientPtr client) {
   const int height = (root->bounds().height - 240);
 
   mus::Window* child_window = root->connection()->CreateWindow();
+  windows_.insert(child_window->id());
   mojo::Rect bounds;
   bounds.x = 40 + (state_->window_count() % 4) * 40;
   bounds.y = 40 + (state_->window_count() % 4) * 40;
@@ -51,8 +52,44 @@ void WindowManagerImpl::OpenWindow(mojo::ViewTreeClientPtr client) {
   state_->IncrementWindowCount();
 }
 
-void WindowManagerImpl::CenterWindow(uint32_t window_id, mojo::SizePtr size) {
-  // TODO(beng):
+void WindowManagerImpl::CenterWindow(
+    mus::Id window_id,
+    mojo::SizePtr size,
+    const WindowManagerErrorCodeCallback& callback) {
+  auto it = std::find(windows_.begin(), windows_.end(), window_id);
+  if (it == windows_.end()) {
+    callback.Run(mus::mojom::WINDOW_MANAGER_ERROR_CODE_ERROR_ACCESS_DENIED);
+    return;
+  }
+
+  mus::Window* root = state_->root();
+  mus::Id container_window_id =
+      GetWindowIdForContainer(root->connection(), Container::USER_WINDOWS);
+  mus::Window* container = root->GetChildById(container_window_id);
+  mojo::Rect rect;
+  rect.x = (container->bounds().width - size->width) / 2;
+  rect.y = (container->bounds().height - size->height) / 2;
+  rect.width = size->width;
+  rect.height = size->height;
+  mus::Window* window = root->GetChildById(window_id);
+  DCHECK(window->parent() == container);
+  window->SetBounds(rect);
+  callback.Run(mus::mojom::WINDOW_MANAGER_ERROR_CODE_SUCCESS);
+}
+
+void WindowManagerImpl::SetBounds(
+    mus::Id window_id,
+    mojo::RectPtr bounds,
+    const WindowManagerErrorCodeCallback& callback) {
+  auto it = std::find(windows_.begin(), windows_.end(), window_id);
+  if (it == windows_.end()) {
+    callback.Run(mus::mojom::WINDOW_MANAGER_ERROR_CODE_ERROR_ACCESS_DENIED);
+    return;
+  }
+
+  mus::Window* window = state_->root()->GetChildById(window_id);
+  window->SetBounds(*bounds);
+  callback.Run(mus::mojom::WINDOW_MANAGER_ERROR_CODE_SUCCESS);
 }
 
 void WindowManagerImpl::GetDisplays(const GetDisplaysCallback& callback) {
@@ -67,4 +104,10 @@ void WindowManagerImpl::GetDisplays(const GetDisplaysCallback& callback) {
   displays[0]->device_pixel_ratio =
       state_->root()->viewport_metrics().device_pixel_ratio;
   callback.Run(displays.Pass());
+}
+
+void WindowManagerImpl::OnWindowDestroyed(mus::Window* window) {
+  auto it = std::find(windows_.begin(), windows_.end(), window->id());
+  DCHECK(it != windows_.end());
+  windows_.erase(it);
 }

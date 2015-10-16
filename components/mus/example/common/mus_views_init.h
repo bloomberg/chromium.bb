@@ -7,6 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "components/mus/public/cpp/window_tree_delegate.h"
+#include "components/mus/public/interfaces/window_manager.mojom.h"
 #include "ui/views/mus/aura_init.h"
 #include "ui/views/views_delegate.h"
 
@@ -43,8 +44,8 @@ class MUSViewsInit : public views::ViewsDelegate,
 #endif
 
   mojo::ApplicationImpl* app_;
-
-  views::AuraInit aura_init_;
+  scoped_ptr<views::AuraInit> aura_init_;
+  mus::mojom::WindowManagerPtr window_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(MUSViewsInit);
 };
