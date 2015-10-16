@@ -128,9 +128,6 @@ def StepRunSelLdrTests(pepperdir, sanitizer):
 
       for toolchain in ('clang-newlib', 'glibc', 'pnacl'):
         for arch in archs:
-          # TODO(sbc): Remove this once we get elf_loader.nexe added to the SDK
-          if toolchain == 'glibc' and arch == 'arm':
-            continue
           for config in configs:
             RunTest(location, toolchain, config, arch)
 

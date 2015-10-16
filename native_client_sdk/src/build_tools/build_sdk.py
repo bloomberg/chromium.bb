@@ -395,6 +395,9 @@ def GypNinjaInstall(pepperdir, toolchains):
     ['irt_core_newlib_x32.nexe', 'irt_core_x86_32.nexe'],
     ['irt_core_newlib_x64.nexe', 'irt_core_x86_64.nexe'],
   ]
+  arm_files = [
+    ['elf_loader_newlib_arm.nexe', 'elf_loader_arm.nexe'],
+  ]
 
   tools_files_64 = []
 
@@ -429,19 +432,18 @@ def GypNinjaInstall(pepperdir, toolchains):
       pair[0] += '.exe'
       pair[1] += '.exe'
 
-  InstallFiles(GetNinjaOutDir('x64'), tools_dir, tools_files_64)
-  InstallFiles(GetNinjaOutDir('ia32'), tools_dir, tools_files_32)
-
   # Add ARM binaries
   if platform == 'linux' and not options.no_arm_trusted:
-    arm_files = [
+    arm_files += [
       ['irt_core_newlib_arm.nexe', 'irt_core_arm.nexe'],
-      ['elf_loader_newlib_arm.nexe', 'elf_loader_arm.nexe'],
       ['nacl_helper_bootstrap', 'nacl_helper_bootstrap_arm'],
       ['nonsfi_loader_newlib_arm_nonsfi.nexe', 'nonsfi_loader_arm'],
       ['sel_ldr', 'sel_ldr_arm']
     ]
-    InstallFiles(GetNinjaOutDir('arm'), tools_dir, arm_files)
+
+  InstallFiles(GetNinjaOutDir('x64'), tools_dir, tools_files_64)
+  InstallFiles(GetNinjaOutDir('ia32'), tools_dir, tools_files_32)
+  InstallFiles(GetNinjaOutDir('arm'), tools_dir, arm_files)
 
   for tc in toolchains:
     if tc in ('host', 'clang-newlib'):

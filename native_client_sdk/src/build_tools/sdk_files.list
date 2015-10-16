@@ -455,7 +455,7 @@ tools/create_html.py
 tools/create_nmf.py
 tools/decode_dump.py
 [linux,mac]tools/dump_syms
-[linux]tools/elf_loader_arm.nexe
+tools/elf_loader_arm.nexe
 tools/fix_deps.py
 tools/fix_manifest.py
 tools/genhttpfs.py
