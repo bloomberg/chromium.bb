@@ -14,11 +14,15 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/version_info/version_info.h"
+#include "components/version_ui/version_ui_constants.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/common/user_agent.h"
 #include "grit/browser_resources.h"
+#include "grit/components_chromium_strings.h"
+#include "grit/components_google_chrome_strings.h"
+#include "grit/components_resources.h"
 #include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "v8/include/v8.h"
@@ -45,57 +49,66 @@ WebUIDataSource* CreateVersionUIDataSource() {
       WebUIDataSource::Create(chrome::kChromeUIVersionHost);
 
   // Localized and data strings.
-  html_source->AddLocalizedString("title", IDS_ABOUT_VERSION_TITLE);
-  html_source->AddLocalizedString("application_label", IDS_PRODUCT_NAME);
-  html_source->AddString("version", version_info::GetVersionNumber());
-  html_source->AddString("version_modifier", chrome::GetChannelString());
-  html_source->AddLocalizedString("os_name", IDS_ABOUT_VERSION_OS);
-  html_source->AddLocalizedString("platform", IDS_PLATFORM_LABEL);
-  html_source->AddString("os_type", version_info::GetOSType());
-  html_source->AddString("blink_version", content::GetWebKitVersion());
-  html_source->AddString("js_engine", "V8");
-  html_source->AddString("js_version", v8::V8::GetVersion());
+  html_source->AddLocalizedString(version_ui::kTitle, IDS_VERSION_UI_TITLE);
+  html_source->AddLocalizedString(version_ui::kApplicationLabel,
+                                  IDS_PRODUCT_NAME);
+  html_source->AddString(version_ui::kVersion,
+                         version_info::GetVersionNumber());
+  html_source->AddString(version_ui::kVersionModifier,
+                         chrome::GetChannelString());
+  html_source->AddLocalizedString(version_ui::kOSName, IDS_VERSION_UI_OS);
+  html_source->AddLocalizedString(version_ui::kPlatform, IDS_PLATFORM_LABEL);
+  html_source->AddString(version_ui::kOSType, version_info::GetOSType());
+  html_source->AddString(version_ui::kBlinkVersion,
+                         content::GetWebKitVersion());
+  html_source->AddString(version_ui::kJSEngine, "V8");
+  html_source->AddString(version_ui::kJSVersion, v8::V8::GetVersion());
 
 #if defined(OS_ANDROID)
-  html_source->AddString("os_version", AndroidAboutAppInfo::GetOsInfo());
-  html_source->AddLocalizedString("build_id_name",
-                                  IDS_ABOUT_VERSION_BUILD_ID);
-  html_source->AddString("build_id", CHROME_BUILD_ID);
+  html_source->AddString(version_ui::kOSVersion,
+                         AndroidAboutAppInfo::GetOsInfo());
+  html_source->AddLocalizedString(version_ui::kBuildIDName,
+                                  IDS_VERSION_UI_BUILD_ID);
+  html_source->AddString(version_ui::kBuildID, CHROME_BUILD_ID);
 #else
-  html_source->AddString("os_version", std::string());
-  html_source->AddString("flash_plugin", "Flash");
+  html_source->AddString(version_ui::kOSVersion, std::string());
+  html_source->AddString(version_ui::kFlashPlugin, "Flash");
   // Note that the Flash version is retrieve asynchronously and returned in
   // VersionHandler::OnGotPlugins. The area is initially blank.
-  html_source->AddString("flash_version", std::string());
+  html_source->AddString(version_ui::kFlashVersion, std::string());
 #endif  // defined(OS_ANDROID)
 
-  html_source->AddLocalizedString("company", IDS_ABOUT_VERSION_COMPANY_NAME);
+  html_source->AddLocalizedString(version_ui::kCompany,
+                                  IDS_ABOUT_VERSION_COMPANY_NAME);
   base::Time::Exploded exploded_time;
   base::Time::Now().LocalExplode(&exploded_time);
   html_source->AddString(
-      "copyright",
+      version_ui::kCopyright,
       l10n_util::GetStringFUTF16(IDS_ABOUT_VERSION_COPYRIGHT,
                                  base::IntToString16(exploded_time.year)));
-  html_source->AddLocalizedString("revision", IDS_ABOUT_VERSION_REVISION);
-  html_source->AddString("cl", version_info::GetLastChange());
-  html_source->AddLocalizedString("official",
+  html_source->AddLocalizedString(version_ui::kRevision,
+                                  IDS_VERSION_UI_REVISION);
+  html_source->AddString(version_ui::kCL, version_info::GetLastChange());
+  html_source->AddLocalizedString(version_ui::kOfficial,
                                   version_info::IsOfficialBuild()
-                                      ? IDS_ABOUT_VERSION_OFFICIAL
-                                      : IDS_ABOUT_VERSION_UNOFFICIAL);
+                                      ? IDS_VERSION_UI_OFFICIAL
+                                      : IDS_VERSION_UI_UNOFFICIAL);
 #if defined(ARCH_CPU_64_BITS)
-  html_source->AddLocalizedString("version_bitsize", IDS_ABOUT_VERSION_64BIT);
+  html_source->AddLocalizedString(version_ui::kVersionBitSize,
+                                  IDS_VERSION_UI_64BIT);
 #else
-  html_source->AddLocalizedString("version_bitsize", IDS_ABOUT_VERSION_32BIT);
+  html_source->AddLocalizedString(version_ui::kVersionBitSize,
+                                  IDS_VERSION_UI_32BIT);
 #endif
-  html_source->AddLocalizedString("user_agent_name",
-                                  IDS_ABOUT_VERSION_USER_AGENT);
-  html_source->AddString("useragent", GetUserAgent());
-  html_source->AddLocalizedString("command_line_name",
-                                  IDS_ABOUT_VERSION_COMMAND_LINE);
+  html_source->AddLocalizedString(version_ui::kUserAgentName,
+                                  IDS_VERSION_UI_USER_AGENT);
+  html_source->AddString(version_ui::kUserAgent, GetUserAgent());
+  html_source->AddLocalizedString(version_ui::kCommandLineName,
+                                  IDS_VERSION_UI_COMMAND_LINE);
 
 #if defined(OS_WIN)
   html_source->AddString(
-      "command_line",
+      version_ui::kCommandLine,
       base::CommandLine::ForCurrentProcess()->GetCommandLineString());
 #elif defined(OS_POSIX)
   std::string command_line;
@@ -105,22 +118,22 @@ WebUIDataSource* CreateVersionUIDataSource() {
     command_line += " " + *iter;
   // TODO(viettrungluu): |command_line| could really have any encoding, whereas
   // below we assumes it's UTF-8.
-  html_source->AddString("command_line", command_line);
+  html_source->AddString(version_ui::kCommandLine, command_line);
 #endif
 
   // Note that the executable path and profile path are retrieved asynchronously
   // and returned in VersionHandler::OnGotFilePaths. The area is initially
   // blank.
-  html_source->AddLocalizedString("executable_path_name",
-                                  IDS_ABOUT_VERSION_EXECUTABLE_PATH);
-  html_source->AddString("executable_path", std::string());
+  html_source->AddLocalizedString(version_ui::kExecutablePathName,
+                                  IDS_VERSION_UI_EXECUTABLE_PATH);
+  html_source->AddString(version_ui::kExecutablePath, std::string());
 
-  html_source->AddLocalizedString("profile_path_name",
-                                  IDS_ABOUT_VERSION_PROFILE_PATH);
-  html_source->AddString("profile_path", std::string());
+  html_source->AddLocalizedString(version_ui::kProfilePathName,
+                                  IDS_VERSION_UI_PROFILE_PATH);
+  html_source->AddString(version_ui::kProfilePath, std::string());
 
-  html_source->AddLocalizedString("variations_name",
-                                  IDS_ABOUT_VERSION_VARIATIONS);
+  html_source->AddLocalizedString(version_ui::kVariationsName,
+                                  IDS_VERSION_UI_VARIATIONS);
 
 #if defined(OS_WIN)
 #if defined(__clang__)
@@ -131,9 +144,10 @@ WebUIDataSource* CreateVersionUIDataSource() {
 #endif
 
   html_source->SetJsonPath("strings.js");
-  html_source->AddResourcePath("version.js", IDR_ABOUT_VERSION_JS);
-  html_source->AddResourcePath("about_version.css", IDR_ABOUT_VERSION_CSS);
-  html_source->SetDefaultResource(IDR_ABOUT_VERSION_HTML);
+  html_source->AddResourcePath(version_ui::kVersionJS, IDR_VERSION_UI_JS);
+  html_source->AddResourcePath(version_ui::kAboutVersionCSS,
+                               IDR_VERSION_UI_CSS);
+  html_source->SetDefaultResource(IDR_VERSION_UI_HTML);
   return html_source;
 }
 

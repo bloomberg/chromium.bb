@@ -24,6 +24,7 @@
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_registry.h"
+#include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using feedback::FeedbackData;
@@ -255,7 +256,7 @@ scoped_ptr<base::ListValue> GetReadableFeedbackForSnapshot(
           l10n_util::GetStringUTF16(IDS_RESET_PROFILE_SETTINGS_LOCALE),
           g_browser_process->GetApplicationLocale());
   AddPair(list.get(),
-          l10n_util::GetStringUTF16(IDS_ABOUT_VERSION_USER_AGENT),
+          l10n_util::GetStringUTF16(IDS_VERSION_UI_USER_AGENT),
           GetUserAgent());
   std::string version = version_info::GetVersionNumber();
   version += chrome::GetChannelString();

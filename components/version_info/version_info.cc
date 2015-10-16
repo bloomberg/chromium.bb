@@ -85,7 +85,7 @@ std::string GetVersionStringWithModifier(const std::string& modifier) {
   current_version += GetVersionNumber();
 #if !defined(GOOGLE_CHROME_BUILD)
   current_version += " (";
-  current_version += l10n_util::GetStringUTF8(IDS_ABOUT_VERSION_UNOFFICIAL);
+  current_version += l10n_util::GetStringUTF8(IDS_VERSION_UI_UNOFFICIAL);
   current_version += " ";
   current_version += GetLastChange();
   current_version += " ";

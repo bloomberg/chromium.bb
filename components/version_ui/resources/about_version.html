@@ -9,13 +9,20 @@ about:version template page
     <meta charset="utf-8">
     <title i18n-content="title"></title>
     <link rel="stylesheet" href="chrome://resources/css/text_defaults.css">
-<if expr="is_android">
+<if expr="is_android or is_ios">
     <meta name="viewport" content="width=device-width">
 </if>
     <link rel="stylesheet" href="chrome://version/about_version.css">
-<if expr="is_android">
-    <link rel="stylesheet" href="about_version_android.css">
+<if expr="is_android or is_ios">
+    <link rel="stylesheet" href="about_version_mobile.css">
 </if>
+
+<if expr="is_ios">
+    <!-- TODO(jyquinn): Remove this once CRWWebUIPageBuilder can inject it.
+         See http://crbug.com/487000 -->
+    <script src="chrome://resources/js/ios/web_ui.js"></script>
+</if>
+
     <script src="chrome://resources/js/cr.js"></script>
     <script src="chrome://resources/js/load_time_data.js"></script>
     <script src="chrome://resources/js/parse_html_subset.js"></script>
@@ -65,6 +72,7 @@ about:version template page
           </td>
 </if>
         </tr>
+<if expr="not is_ios">
         <tr><td class="label">Blink</td>
           <td class="version" id="blink_version" i18n-content="blink_version"></td>
         </tr>
@@ -74,7 +82,8 @@ about:version template page
             <span i18n-content="js_version"></span>
           </td>
         </tr>
-<if expr="not is_android">
+</if>
+<if expr="not is_android and not is_ios">
         <tr><td class="label" i18n-content="flash_plugin"></td>
           <td class="version" id="flash_version" i18n-content="flash_version"></td>
         </tr>
@@ -85,12 +94,14 @@ about:version template page
         <tr><td class="label" i18n-content="command_line_name"></td>
           <td class="version" id="command_line" i18n-content="command_line"></td>
         </tr>
+<if expr="not is_ios">
         <tr><td class="label" i18n-content="executable_path_name"></td>
           <td class="version" id="executable_path" i18n-content="executable_path"></td>
         </tr>
         <tr><td class="label" i18n-content="profile_path_name"></td>
           <td class="version" id="profile_path" i18n-content="profile_path"></td>
         </tr>
+</if>
         <tr id="variations-section">
           <td class="label" i18n-content="variations_name"></td>
           <td class="version" id="variations-list"></td>

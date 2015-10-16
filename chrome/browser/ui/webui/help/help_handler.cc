@@ -38,6 +38,8 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/user_agent.h"
+#include "grit/components_chromium_strings.h"
+#include "grit/components_google_chrome_strings.h"
 #include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "v8/include/v8.h"
@@ -216,71 +218,71 @@ void HelpHandler::GetLocalizedValues(base::DictionaryValue* localized_strings) {
   };
 
   static L10nResources resources[] = {
-    { "aboutTitle", IDS_ABOUT_TITLE },
+    {"aboutTitle", IDS_ABOUT_TITLE},
 #if defined(OS_CHROMEOS)
-    { "aboutProductTitle", IDS_PRODUCT_OS_NAME },
+    {"aboutProductTitle", IDS_PRODUCT_OS_NAME},
 #else
-    { "aboutProductTitle", IDS_PRODUCT_NAME },
+    {"aboutProductTitle", IDS_PRODUCT_NAME},
 #endif
-    { "aboutProductDescription", IDS_ABOUT_PRODUCT_DESCRIPTION },
-    { "relaunch", IDS_RELAUNCH_BUTTON },
+    {"aboutProductDescription", IDS_ABOUT_PRODUCT_DESCRIPTION},
+    {"relaunch", IDS_RELAUNCH_BUTTON},
 #if defined(OS_CHROMEOS)
-    { "relaunchAndPowerwash", IDS_RELAUNCH_AND_POWERWASH_BUTTON },
+    {"relaunchAndPowerwash", IDS_RELAUNCH_AND_POWERWASH_BUTTON},
 #endif
-    { "productName", IDS_PRODUCT_NAME },
-    { "updateCheckStarted", IDS_UPGRADE_CHECK_STARTED },
-    { "upToDate", IDS_UPGRADE_UP_TO_DATE },
-    { "updating", IDS_UPGRADE_UPDATING },
+    {"productName", IDS_PRODUCT_NAME},
+    {"updateCheckStarted", IDS_UPGRADE_CHECK_STARTED},
+    {"upToDate", IDS_UPGRADE_UP_TO_DATE},
+    {"updating", IDS_UPGRADE_UPDATING},
 #if defined(OS_CHROMEOS)
-    { "updateButton", IDS_UPGRADE_BUTTON },
-    { "updatingChannelSwitch", IDS_UPGRADE_UPDATING_CHANNEL_SWITCH },
+    {"updateButton", IDS_UPGRADE_BUTTON},
+    {"updatingChannelSwitch", IDS_UPGRADE_UPDATING_CHANNEL_SWITCH},
 #endif
-    { "updateAlmostDone", IDS_UPGRADE_SUCCESSFUL_RELAUNCH },
+    {"updateAlmostDone", IDS_UPGRADE_SUCCESSFUL_RELAUNCH},
 #if defined(OS_CHROMEOS)
-    { "successfulChannelSwitch", IDS_UPGRADE_SUCCESSFUL_CHANNEL_SWITCH },
+    {"successfulChannelSwitch", IDS_UPGRADE_SUCCESSFUL_CHANNEL_SWITCH},
 #endif
-    { "getHelpWithChrome", IDS_GET_HELP_USING_CHROME },
-    { "reportAnIssue", IDS_REPORT_AN_ISSUE },
+    {"getHelpWithChrome", IDS_GET_HELP_USING_CHROME},
+    {"reportAnIssue", IDS_REPORT_AN_ISSUE},
 #if defined(OS_CHROMEOS)
-    { "platform", IDS_PLATFORM_LABEL },
-    { "firmware", IDS_ABOUT_PAGE_FIRMWARE },
-    { "showMoreInfo", IDS_SHOW_MORE_INFO },
-    { "hideMoreInfo", IDS_HIDE_MORE_INFO },
-    { "channel", IDS_ABOUT_PAGE_CHANNEL },
-    { "stable", IDS_ABOUT_PAGE_CHANNEL_STABLE },
-    { "beta", IDS_ABOUT_PAGE_CHANNEL_BETA },
-    { "dev", IDS_ABOUT_PAGE_CHANNEL_DEVELOPMENT },
-    { "channel-changed", IDS_ABOUT_PAGE_CHANNEL_CHANGED },
-    { "currentChannelStable", IDS_ABOUT_PAGE_CURRENT_CHANNEL_STABLE },
-    { "currentChannelBeta", IDS_ABOUT_PAGE_CURRENT_CHANNEL_BETA },
-    { "currentChannelDev", IDS_ABOUT_PAGE_CURRENT_CHANNEL_DEV },
-    { "currentChannel", IDS_ABOUT_PAGE_CURRENT_CHANNEL },
-    { "channelChangeButton", IDS_ABOUT_PAGE_CHANNEL_CHANGE_BUTTON },
-    { "channelChangeDisallowedMessage",
-      IDS_ABOUT_PAGE_CHANNEL_CHANGE_DISALLOWED_MESSAGE },
-    { "channelChangePageTitle", IDS_ABOUT_PAGE_CHANNEL_CHANGE_PAGE_TITLE },
-    { "channelChangePagePowerwashTitle",
-      IDS_ABOUT_PAGE_CHANNEL_CHANGE_PAGE_POWERWASH_TITLE },
-    { "channelChangePagePowerwashMessage",
-      IDS_ABOUT_PAGE_CHANNEL_CHANGE_PAGE_POWERWASH_MESSAGE },
-    { "channelChangePageDelayedChangeTitle",
-      IDS_ABOUT_PAGE_CHANNEL_CHANGE_PAGE_DELAYED_CHANGE_TITLE },
-    { "channelChangePageUnstableTitle",
-      IDS_ABOUT_PAGE_CHANNEL_CHANGE_PAGE_UNSTABLE_TITLE },
-    { "channelChangePagePowerwashButton",
-      IDS_ABOUT_PAGE_CHANNEL_CHANGE_PAGE_POWERWASH_BUTTON },
-    { "channelChangePageChangeButton",
-      IDS_ABOUT_PAGE_CHANNEL_CHANGE_PAGE_CHANGE_BUTTON },
-    { "channelChangePageCancelButton",
-      IDS_ABOUT_PAGE_CHANNEL_CHANGE_PAGE_CANCEL_BUTTON },
-    { "webkit", IDS_WEBKIT },
-    { "userAgent", IDS_ABOUT_VERSION_USER_AGENT },
-    { "commandLine", IDS_ABOUT_VERSION_COMMAND_LINE },
-    { "buildDate", IDS_ABOUT_VERSION_BUILD_DATE },
+    {"platform", IDS_PLATFORM_LABEL},
+    {"firmware", IDS_ABOUT_PAGE_FIRMWARE},
+    {"showMoreInfo", IDS_SHOW_MORE_INFO},
+    {"hideMoreInfo", IDS_HIDE_MORE_INFO},
+    {"channel", IDS_ABOUT_PAGE_CHANNEL},
+    {"stable", IDS_ABOUT_PAGE_CHANNEL_STABLE},
+    {"beta", IDS_ABOUT_PAGE_CHANNEL_BETA},
+    {"dev", IDS_ABOUT_PAGE_CHANNEL_DEVELOPMENT},
+    {"channel-changed", IDS_ABOUT_PAGE_CHANNEL_CHANGED},
+    {"currentChannelStable", IDS_ABOUT_PAGE_CURRENT_CHANNEL_STABLE},
+    {"currentChannelBeta", IDS_ABOUT_PAGE_CURRENT_CHANNEL_BETA},
+    {"currentChannelDev", IDS_ABOUT_PAGE_CURRENT_CHANNEL_DEV},
+    {"currentChannel", IDS_ABOUT_PAGE_CURRENT_CHANNEL},
+    {"channelChangeButton", IDS_ABOUT_PAGE_CHANNEL_CHANGE_BUTTON},
+    {"channelChangeDisallowedMessage",
+     IDS_ABOUT_PAGE_CHANNEL_CHANGE_DISALLOWED_MESSAGE},
+    {"channelChangePageTitle", IDS_ABOUT_PAGE_CHANNEL_CHANGE_PAGE_TITLE},
+    {"channelChangePagePowerwashTitle",
+     IDS_ABOUT_PAGE_CHANNEL_CHANGE_PAGE_POWERWASH_TITLE},
+    {"channelChangePagePowerwashMessage",
+     IDS_ABOUT_PAGE_CHANNEL_CHANGE_PAGE_POWERWASH_MESSAGE},
+    {"channelChangePageDelayedChangeTitle",
+     IDS_ABOUT_PAGE_CHANNEL_CHANGE_PAGE_DELAYED_CHANGE_TITLE},
+    {"channelChangePageUnstableTitle",
+     IDS_ABOUT_PAGE_CHANNEL_CHANGE_PAGE_UNSTABLE_TITLE},
+    {"channelChangePagePowerwashButton",
+     IDS_ABOUT_PAGE_CHANNEL_CHANGE_PAGE_POWERWASH_BUTTON},
+    {"channelChangePageChangeButton",
+     IDS_ABOUT_PAGE_CHANNEL_CHANGE_PAGE_CHANGE_BUTTON},
+    {"channelChangePageCancelButton",
+     IDS_ABOUT_PAGE_CHANNEL_CHANGE_PAGE_CANCEL_BUTTON},
+    {"webkit", IDS_WEBKIT},
+    {"userAgent", IDS_VERSION_UI_USER_AGENT},
+    {"commandLine", IDS_VERSION_UI_COMMAND_LINE},
+    {"buildDate", IDS_VERSION_UI_BUILD_DATE},
 #endif
 #if defined(OS_MACOSX)
-    { "promote", IDS_ABOUT_CHROME_PROMOTE_UPDATER },
-    { "learnMore", IDS_LEARN_MORE },
+    {"promote", IDS_ABOUT_CHROME_PROMOTE_UPDATER},
+    {"learnMore", IDS_LEARN_MORE},
 #endif
   };
 
@@ -311,8 +313,7 @@ void HelpHandler::GetLocalizedValues(base::DictionaryValue* localized_strings) {
                                   base::IntToString16(exploded_time.year)));
 
   base::string16 license = l10n_util::GetStringFUTF16(
-      IDS_ABOUT_VERSION_LICENSE,
-      base::ASCIIToUTF16(chrome::kChromiumProjectURL),
+      IDS_VERSION_UI_LICENSE, base::ASCIIToUTF16(chrome::kChromiumProjectURL),
       base::ASCIIToUTF16(chrome::kChromeUICreditsURL));
   localized_strings->SetString("productLicense", license);
 

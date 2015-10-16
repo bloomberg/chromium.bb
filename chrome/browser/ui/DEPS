@@ -6,5 +6,6 @@ include_rules = [
   "+components/page_load_metrics/browser",
   "+components/toolbar",
   "+components/url_formatter",
+  "+components/version_ui",
   "-chrome/browser/ui/views",
 ]

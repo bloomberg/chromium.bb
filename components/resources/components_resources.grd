@@ -20,6 +20,7 @@
       <part file="security_interstitials_resources.grdp" />
       <part file="sync_driver_resources.grdp" />
       <part file="translate_resources.grdp" />
+      <part file="version_ui_resources.grdp" />
     </includes>
   </release>
 </grit>

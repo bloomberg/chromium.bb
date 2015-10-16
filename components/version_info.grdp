@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<grit-part>
-
-  <message name="IDS_ABOUT_VERSION_UNOFFICIAL" desc="unofficial build on the about:version page">
-    Developer Build
-  </message>
-
-</grit-part>

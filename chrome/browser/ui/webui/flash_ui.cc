@@ -40,6 +40,7 @@
 #include "content/public/common/webplugininfo.h"
 #include "gpu/config/gpu_info.h"
 #include "grit/browser_resources.h"
+#include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_WIN)
@@ -262,7 +263,7 @@ void FlashDOMHandler::MaybeRespondToPage() {
   if (os->architecture() == base::win::OSInfo::X64_ARCHITECTURE)
     os_label += " 64 bit";
 #endif
-  AddPair(list, l10n_util::GetStringUTF16(IDS_ABOUT_VERSION_OS), os_label);
+  AddPair(list, l10n_util::GetStringUTF16(IDS_VERSION_UI_OS), os_label);
 
   // Obtain the version of the Flash plugins.
   std::vector<content::WebPluginInfo> info_array;

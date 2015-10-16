@@ -2773,6 +2773,7 @@
         '../components/components.gyp:toolbar',
         '../components/components.gyp:ui_zoom',
         '../components/components.gyp:update_client',
+        '../components/components.gyp:version_ui',
         '../components/components_resources.gyp:components_resources',
         '../components/components_strings.gyp:components_strings',
         '../components/url_formatter/url_formatter.gyp:url_formatter',

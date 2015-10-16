@@ -63,6 +63,7 @@ source_set("ui") {
     "//components/strings",
     "//components/toolbar",
     "//components/update_client",
+    "//components/version_ui",
     "//content/public/common",
     "//crypto",
     "//skia",

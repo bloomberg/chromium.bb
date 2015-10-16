@@ -42,6 +42,7 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "grit/browser_resources.h"
+#include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "v8/include/v8.h"
 
@@ -247,7 +248,7 @@ class VoiceSearchDomHandler : public WebUIMessageHandler {
     if (os->architecture() == base::win::OSInfo::X64_ARCHITECTURE)
       os_label += " 64 bit";
 #endif
-    AddPair(list, l10n_util::GetStringUTF8(IDS_ABOUT_VERSION_OS), os_label);
+    AddPair(list, l10n_util::GetStringUTF8(IDS_VERSION_UI_OS), os_label);
 
     AddLineBreak(list);
   }

@@ -36,6 +36,7 @@
 #include "content/public/browser/web_ui_message_handler.h"
 #include "content/public/common/webplugininfo.h"
 #include "grit/browser_resources.h"
+#include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_WIN)
@@ -204,8 +205,7 @@ void NaClDomHandler::AddOperatingSystemInfo(base::ListValue* list) {
   if (os->architecture() == base::win::OSInfo::X64_ARCHITECTURE)
     os_label += " 64 bit";
 #endif
-  AddPair(list,
-          l10n_util::GetStringUTF16(IDS_ABOUT_VERSION_OS),
+  AddPair(list, l10n_util::GetStringUTF16(IDS_VERSION_UI_OS),
           ASCIIToUTF16(os_label));
   AddLineBreak(list);
 }
