@@ -37,5 +37,5 @@ layer at (0,0) size 800x291
           LayoutText {#text} at (0,6) size 51x15
             text run at (0,6) width 51: "This text."
       LayoutBlockFlow {p} at (0,241) size 800x18
-        LayoutText {#text} at (0,0) size 585x18
-          text run at (0,0) width 585: "...and anything else between the top of the first paragraph and the bottom of this paragraph."
+        LayoutText {#text} at (0,0) size 584x18
+          text run at (0,0) width 584: "...and anything else between the top of the first paragraph and the bottom of this paragraph."

@@ -30,8 +30,8 @@ layer at (0,0) size 800x504
     LayoutBlockFlow {ol} at (0,140) size 800x108
       LayoutListItem {li} at (40,0) size 760x18 [bgcolor=#00FF00]
         LayoutListMarker (anonymous) at (-20,0) size 16x18: "1"
-        LayoutText {#text} at (0,0) size 326x18
-          text run at (0,0) width 326: "This first list item should have a green background"
+        LayoutText {#text} at (0,0) size 325x18
+          text run at (0,0) width 325: "This first list item should have a green background"
       LayoutListItem {li} at (40,18) size 760x18
         LayoutListMarker (anonymous) at (-20,0) size 16x18: "2"
         LayoutText {#text} at (0,0) size 104x18
@@ -46,8 +46,8 @@ layer at (0,0) size 800x504
           text run at (0,0) width 99: "Fourth list item"
       LayoutListItem {li} at (40,72) size 760x18 [bgcolor=#00FF00]
         LayoutListMarker (anonymous) at (-20,0) size 16x18: "5"
-        LayoutText {#text} at (0,0) size 328x18
-          text run at (0,0) width 328: "This fifth list item should have a green background"
+        LayoutText {#text} at (0,0) size 327x18
+          text run at (0,0) width 327: "This fifth list item should have a green background"
       LayoutListItem {li} at (40,90) size 760x18
         LayoutListMarker (anonymous) at (-20,0) size 16x18: "6"
         LayoutText {#text} at (0,0) size 90x18

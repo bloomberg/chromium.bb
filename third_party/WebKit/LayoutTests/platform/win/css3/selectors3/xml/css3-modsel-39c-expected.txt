@@ -9,7 +9,7 @@ layer at (0,0) size 800x267
             text run at (0,0) width 20: "T"
         LayoutTextFragment (anonymous) at (0,0) size 0x0
       LayoutText {#text} at (19,15) size 792x219
-        text run at (19,15) width 747: "his very long paragraph should have a big green first letter T. Dummy text. Dummy text. Dummy text. Dummy text."
+        text run at (19,15) width 745: "his very long paragraph should have a big green first letter T. Dummy text. Dummy text. Dummy text. Dummy text."
         text run at (0,37) width 792: "Dummy text. Dummy text. Dummy text. Dummy text. Dummy text. Dummy text. Dummy text. Dummy text. Dummy text."
         text run at (0,55) width 792: "Dummy text. Dummy text. Dummy text. Dummy text. Dummy text. Dummy text. Dummy text. Dummy text. Dummy text."
         text run at (0,73) width 792: "Dummy text. Dummy text. Dummy text. Dummy text. Dummy text. Dummy text. Dummy text. Dummy text. Dummy text."

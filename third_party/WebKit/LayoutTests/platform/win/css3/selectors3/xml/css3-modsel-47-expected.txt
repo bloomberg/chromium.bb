@@ -9,8 +9,8 @@ layer at (0,0) size 800x186
             text run at (0,0) width 376: "The text in this paragraph should have a green background"
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {address} at (16,34) size 768x18 [bgcolor=#00FF00]
-        LayoutText {#text} at (0,0) size 296x17
-          text run at (0,0) width 296: "This address should have a green background"
+        LayoutText {#text} at (0,0) size 294x17
+          text run at (0,0) width 294: "This address should have a green background"
       LayoutBlockFlow {q} at (16,68) size 768x18 [bgcolor=#00FF00]
         LayoutText {#text} at (0,0) size 441x17
           text run at (0,0) width 441: "This element in another namespace should have a green background."

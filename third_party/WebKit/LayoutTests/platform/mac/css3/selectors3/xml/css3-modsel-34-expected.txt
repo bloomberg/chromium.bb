@@ -7,11 +7,11 @@ layer at (0,0) size 800x120
         LayoutText {#text} at (0,0) size 192x18
           text run at (0,0) width 192: "This div contains 3 addresses:"
       LayoutBlockFlow {address} at (16,18) size 784x18 [bgcolor=#00FF00]
-        LayoutText {#text} at (0,0) size 336x18
-          text run at (0,0) width 336: "A first address that should have a green background"
+        LayoutText {#text} at (0,0) size 334x18
+          text run at (0,0) width 334: "A first address that should have a green background"
       LayoutBlockFlow {address} at (16,52) size 784x18
-        LayoutText {#text} at (0,0) size 275x18
-          text run at (0,0) width 275: "A second address with normal background"
+        LayoutText {#text} at (0,0) size 274x18
+          text run at (0,0) width 274: "A second address with normal background"
       LayoutBlockFlow {address} at (16,86) size 784x18
-        LayoutText {#text} at (0,0) size 261x18
-          text run at (0,0) width 261: "A third address with normal background"
+        LayoutText {#text} at (0,0) size 260x18
+          text run at (0,0) width 260: "A third address with normal background"
