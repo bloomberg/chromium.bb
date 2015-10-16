@@ -60,7 +60,6 @@ public:
     void updateGeometry();
 
     // WebContentLayerClient implementation.
-    void paintContents(WebCanvas*, const WebRect& clipRect, WebContentLayerClient::PaintingControlSetting) override;
     void paintContents(WebDisplayItemList*, const WebRect& clipRect, WebContentLayerClient::PaintingControlSetting) override;
 
     // WebCompositorAnimationDelegate implementation.

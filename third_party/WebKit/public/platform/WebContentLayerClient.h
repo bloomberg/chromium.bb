@@ -26,7 +26,6 @@
 #ifndef WebContentLayerClient_h
 #define WebContentLayerClient_h
 
-#include "WebCanvas.h"
 #include "WebCommon.h"
 
 namespace blink {
@@ -42,13 +41,6 @@ public:
         DisplayListCachingDisabled,
         DisplayListPaintingDisabled
     };
-
-    // Paints the content area for the layer, typically dirty rects submitted
-    // through WebContentLayer::setNeedsDisplay, submitting drawing commands
-    // through the WebCanvas.
-    // The canvas is already clipped to the |clip| rect.
-    // The |PaintingControlSetting| enum controls painting to isolate different components in performance tests.
-    virtual void paintContents(WebCanvas*, const WebRect& clip, PaintingControlSetting = PaintDefaultBehavior) = 0;
 
     // Paints the content area for the layer, typically dirty rects submitted
     // through WebContentLayer::setNeedsDisplayInRect, submitting drawing commands

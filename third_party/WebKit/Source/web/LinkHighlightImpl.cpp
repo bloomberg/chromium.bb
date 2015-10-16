@@ -257,18 +257,6 @@ bool LinkHighlightImpl::computeHighlightLayerPathAndPosition(const LayoutBoxMode
     return pathHasChanged;
 }
 
-void LinkHighlightImpl::paintContents(WebCanvas* canvas, const WebRect&, WebContentLayerClient::PaintingControlSetting paintingControl)
-{
-    if (!m_node || !m_node->layoutObject())
-        return;
-
-    SkPaint paint;
-    paint.setStyle(SkPaint::kFill_Style);
-    paint.setFlags(SkPaint::kAntiAlias_Flag);
-    paint.setColor(m_node->layoutObject()->style()->tapHighlightColor().rgb());
-    canvas->drawPath(m_path.skPath(), paint);
-}
-
 void LinkHighlightImpl::paintContents(WebDisplayItemList* webDisplayItemList, const WebRect& webClipRect, WebContentLayerClient::PaintingControlSetting paintingControl)
 {
     if (!m_node || !m_node->layoutObject())
@@ -277,7 +265,13 @@ void LinkHighlightImpl::paintContents(WebDisplayItemList* webDisplayItemList, co
     SkPictureRecorder recorder;
     SkCanvas* canvas = recorder.beginRecording(webClipRect.width, webClipRect.height);
     canvas->translate(-webClipRect.x, -webClipRect.y);
-    paintContents(canvas, webClipRect, paintingControl);
+
+    SkPaint paint;
+    paint.setStyle(SkPaint::kFill_Style);
+    paint.setFlags(SkPaint::kAntiAlias_Flag);
+    paint.setColor(m_node->layoutObject()->style()->tapHighlightColor().rgb());
+    canvas->drawPath(m_path.skPath(), paint);
+
     RefPtr<const SkPicture> picture = adoptRef(recorder.endRecording());
     webDisplayItemList->appendDrawingItem(picture.get());
 }

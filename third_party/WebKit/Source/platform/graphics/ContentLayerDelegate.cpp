@@ -66,16 +66,6 @@ PassRefPtr<TracedValue> toTracedValue(const WebRect& clip)
 }
 
 void ContentLayerDelegate::paintContents(
-    SkCanvas* canvas, const WebRect& clip,
-    WebContentLayerClient::PaintingControlSetting paintingControl)
-{
-    TRACE_EVENT1("blink,benchmark", "ContentLayerDelegate::paintContents", "clip_rect", toTracedValue(clip));
-
-    // TODO(pdr): Remove this function.
-    ASSERT_NOT_REACHED();
-}
-
-void ContentLayerDelegate::paintContents(
     WebDisplayItemList* webDisplayItemList, const WebRect& clip,
     WebContentLayerClient::PaintingControlSetting paintingControl)
 {
