@@ -89,7 +89,6 @@ IN_PROC_BROWSER_TEST_F(WebviewLoginTest, AllowGuest) {
 
 // Create new account option should be available only if the settings allow it.
 IN_PROC_BROWSER_TEST_F(WebviewLoginTest, AllowNewUser) {
-  DisableRestrictiveProxyCheck();
   WaitForGaiaPageLoad();
 
   std::string frame_url = "$('gaia-signin').gaiaAuthHost_.reloadUrl_";
