@@ -356,12 +356,6 @@ crbug.com/264138 dom/xhtml/level3/core/nodecomparedocumentposition38.xhtml [ Fai
 
 crbug.com/503626 virtual/gpu/fast/canvas/canvas-filter-shadow.html [ Failure ]
 
-crbug.com/542763 fast/forms/basic-selects.html [ NeedsRebaseline ]
-crbug.com/542763 fast/forms/checkbox/checkbox-appearance-basic.html [ NeedsRebaseline ]
-crbug.com/542763 fast/forms/color/input-appearance-color.html [ NeedsRebaseline ]
-crbug.com/542763 fast/forms/radio/radio-appearance-basic.html [ NeedsRebaseline ]
-crbug.com/542763 fast/forms/select/menulist-appearance-basic.html [ NeedsRebaseline ]
-
 crbug.com/240374 compositing/overlap-blending/reflection-opacity-huge.html [ Failure ]
 crbug.com/240374 compositing/overlap-blending/children-opacity-huge.html [ Failure ]
 crbug.com/240374 compositing/overlap-blending/children-opacity-no-overlap.html [ Failure ]
