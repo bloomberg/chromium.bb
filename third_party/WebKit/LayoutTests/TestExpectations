@@ -1610,8 +1610,6 @@ crbug.com/538717 [ Win Mac Linux ] http/tests/permissions/chromium/test-request-
 crbug.com/538717 [ Win Mac Linux ] http/tests/permissions/chromium/test-request-multiple-worker.html [ Failure Pass Timeout ]
 crbug.com/538717 [ Win Mac Linux ] http/tests/permissions/chromium/test-request-multiple-sharedworker.html [ Failure Pass Timeout ]
 
-crbug.com/521730 [ XP ] svg/batik/text/verticalText.svg [ NeedsRebaseline ]
-
 crbug.com/522389 [ Linux Mac Win ] fast/block/float/overhanging-tall-block.html  [ NeedsRebaseline ]
 crbug.com/522389 [ Mac ] fast/forms/HTMLOptionElement_label05.html  [ NeedsRebaseline ]
 crbug.com/522389 [ Mac ] fast/forms/form-element-geometry.html  [ NeedsRebaseline ]
