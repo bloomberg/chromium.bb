@@ -1,3 +1,7 @@
+# Copyright 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
 # LibFuzzer is a LLVM tool for coverage-guided fuzz testing.
 # See http://www.chromium.org/developers/testing/libfuzzer
 #
@@ -26,5 +30,15 @@ static_library("libfuzzer_main") {
   include_dirs = [
     "//buildtools/third_party/libc++/trunk/include",
     "//buildtools/third_party/libc++abi/trunk/include",
+  ]
+}
+
+test("url_parse_fuzzer") {
+  sources = [
+    "url_parse_fuzzer.cc",
+  ]
+  deps = [
+    ":libfuzzer_main",
+    "//url:url",
   ]
 }
