@@ -20,7 +20,6 @@ public class AccountFirstRunFragment extends FirstRunPage {
     // Per-page parameters:
     public static final String FORCE_SIGNIN_ACCOUNT_TO = "ForceSigninAccountTo";
     public static final String PRESELECT_BUT_ALLOW_TO_CHANGE = "PreselectButAllowToChange";
-    public static final String FORCE_SIGNIN_AND_DISABLE_NO_THANKS = "ForceSigninAndDisableNoThanks";
     public static final String IS_CHILD_ACCOUNT = "IsChildAccount";
 
     private AccountFirstRunView mView;
@@ -77,9 +76,6 @@ public class AccountFirstRunFragment extends FirstRunPage {
 
         mView.init(getPageDelegate().getProfileDataCache());
 
-        if (getProperties().getBoolean(FORCE_SIGNIN_AND_DISABLE_NO_THANKS)) {
-            mView.setCanCancel(false);
-        }
         mView.setIsChildAccount(getProperties().getBoolean(IS_CHILD_ACCOUNT));
 
         String forcedAccountName =

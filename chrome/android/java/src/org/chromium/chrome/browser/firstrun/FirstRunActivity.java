@@ -49,7 +49,6 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
     public static final String USE_FRE_FLOW_SEQUENCER = "UseFreFlowSequencer";
 
     public static final String SHOW_WELCOME_PAGE = "ShowWelcome";
-    public static final String SKIP_WELCOME_PAGE_IF_ACCEPTED_TOS = "SkipWelcomePageIfAcceptedToS";
     public static final String SHOW_SIGNIN_PAGE = "ShowSignIn";
 
     // Outcoming results:
@@ -146,10 +145,7 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
 
                 mFreProperties = freProperties;
                 mShowWelcomePage = mFreProperties.getBoolean(SHOW_WELCOME_PAGE);
-                if (mShowWelcomePage
-                        && mFreProperties.getBoolean(SKIP_WELCOME_PAGE_IF_ACCEPTED_TOS)) {
-                    mShowWelcomePage = !sGlue.didAcceptTermsOfService(getApplicationContext());
-                }
+
                 createPageSequence();
 
                 if (TextUtils.isEmpty(mResultSignInAccountName)) {
@@ -366,7 +362,6 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
             }
         }
     }
-
 
     /**
      * Transitions to a given page.

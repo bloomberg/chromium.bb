@@ -118,7 +118,6 @@ public final class FirstRunSignInProcessor {
 
     /**
      * Opens Sync settings as requested in the FRE sign-in dialog.
-     * @param accountName The account to show the sync settings for.
      */
     private static void openSyncSettings(Activity activity) {
         String accountName = ChromeSigninController.get(activity).getSignedInAccountName();
