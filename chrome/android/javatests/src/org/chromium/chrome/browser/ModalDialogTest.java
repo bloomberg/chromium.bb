@@ -268,8 +268,7 @@ public class ModalDialogTest extends ChromeActivityTestCaseBase<ChromeActivity> 
      * to accept the dialog. Verifies that the dialog is dismissed when the tab
      * is closed.
      */
-    // @MediumTest
-    @DisabledTest // crbug/533425
+    @MediumTest
     @Feature({"Browser", "Main"})
     public void testDialogDismissedAfterClosingTab() throws InterruptedException {
         executeJavaScriptAndWaitForDialog("alert('Android')");

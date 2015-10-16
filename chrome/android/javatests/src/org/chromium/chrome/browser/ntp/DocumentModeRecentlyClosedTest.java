@@ -6,11 +6,10 @@ package org.chromium.chrome.browser.ntp;
 
 import android.app.Activity;
 import android.os.Build;
-// import android.test.suitebuilder.annotation.MediumTest;
+import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.document.DocumentActivity;
@@ -81,8 +80,7 @@ public class DocumentModeRecentlyClosedTest extends DocumentModeTestBase {
      * recently closed.  This test relies on mocking out the ActivityDelegate because we have no
      * obvious way to simulate a user closing a Tab while Chrome is closed.
      */
-    // @MediumTest
-    @DisabledTest // crbug/533425
+    @MediumTest
     public void testMissingTasksBecomeRecentlyClosed() throws Exception {
         // Set up the DocumentTabModel so that it finds a task in Android's Recents that it doesn't
         // know about, which results in adding the Tab to the DocumentTabModel.
@@ -136,8 +134,7 @@ public class DocumentModeRecentlyClosedTest extends DocumentModeTestBase {
     }
 
     /** Test that the "Recently closed" list is updated properly via the TabModel. */
-    // @MediumTest
-    @DisabledTest // crbug/533425
+    @MediumTest
     public void testUpdateRecentlyClosedAfterTabModelClose() throws Exception {
         int[] tabIds = launchThreeTabs();
 
@@ -209,8 +206,7 @@ public class DocumentModeRecentlyClosedTest extends DocumentModeTestBase {
     /**
      * Test that the "Recently closed" list is updated when Chrome is alive but backgrounded.
      */
-    // @MediumTest
-    @DisabledTest // crbug/533425
+    @MediumTest
     public void testUpdateRecentlyClosedWhenChromeInBackground() throws Exception {
         int[] tabIds = launchThreeTabs();
 
