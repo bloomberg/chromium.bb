@@ -1014,10 +1014,6 @@ void ServiceWorkerVersion::RemoveControllee(
   FOR_EACH_OBSERVER(Listener, listeners_, OnNoControllees(this));
 }
 
-bool ServiceWorkerVersion::HasWindowClients() {
-  return !GetWindowClientsInternal(false /* include_uncontrolled */).empty();
-}
-
 void ServiceWorkerVersion::AddStreamingURLRequestJob(
     const ServiceWorkerURLRequestJob* request_job) {
   DCHECK(streaming_url_request_jobs_.find(request_job) ==
@@ -1920,8 +1916,18 @@ void ServiceWorkerVersion::GetWindowClients(
     const ServiceWorkerClientQueryOptions& options) {
   DCHECK(options.client_type == blink::WebServiceWorkerClientTypeWindow ||
          options.client_type == blink::WebServiceWorkerClientTypeAll);
-  const std::vector<base::Tuple<int, int, std::string>>& clients_info =
-      GetWindowClientsInternal(options.include_uncontrolled);
+
+  std::vector<base::Tuple<int, int, std::string>> clients_info;
+  if (!options.include_uncontrolled) {
+    for (auto& controllee : controllee_map_)
+      AddWindowClient(controllee.second, &clients_info);
+  } else {
+    for (auto it =
+             context_->GetClientProviderHostIterator(script_url_.GetOrigin());
+         !it->IsAtEnd(); it->Advance()) {
+      AddWindowClient(it->GetProviderHost(), &clients_info);
+    }
+  }
 
   if (clients_info.empty()) {
     DidGetWindowClients(request_id, options,
@@ -1934,22 +1940,6 @@ void ServiceWorkerVersion::GetWindowClients(
       base::Bind(&OnGetWindowClientsFromUI, clients_info, script_url_,
                  base::Bind(&ServiceWorkerVersion::DidGetWindowClients,
                             weak_factory_.GetWeakPtr(), request_id, options)));
-}
-
-const std::vector<base::Tuple<int, int, std::string>>
-ServiceWorkerVersion::GetWindowClientsInternal(bool include_uncontrolled) {
-  std::vector<base::Tuple<int, int, std::string>> clients_info;
-  if (!include_uncontrolled) {
-    for (auto& controllee : controllee_map_)
-      AddWindowClient(controllee.second, &clients_info);
-  } else {
-    for (auto it =
-             context_->GetClientProviderHostIterator(script_url_.GetOrigin());
-         !it->IsAtEnd(); it->Advance()) {
-      AddWindowClient(it->GetProviderHost(), &clients_info);
-    }
-  }
-  return clients_info;
 }
 
 void ServiceWorkerVersion::DidGetWindowClients(

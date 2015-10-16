@@ -57,6 +57,12 @@ bool IsSameOriginClientProviderHost(const GURL& origin,
          host->document_url().GetOrigin() == origin;
 }
 
+bool IsSameOriginWindowProviderHost(const GURL& origin,
+                                    ServiceWorkerProviderHost* host) {
+  return host->client_type() == blink::WebServiceWorkerClientTypeWindow &&
+         host->document_url().GetOrigin() == origin;
+}
+
 class ClearAllServiceWorkersHelper
     : public base::RefCounted<ClearAllServiceWorkersHelper> {
  public:
@@ -278,6 +284,13 @@ scoped_ptr<ServiceWorkerContextCore::ProviderHostIterator>
 ServiceWorkerContextCore::GetClientProviderHostIterator(const GURL& origin) {
   return make_scoped_ptr(new ProviderHostIterator(
       providers_.get(), base::Bind(IsSameOriginClientProviderHost, origin)));
+}
+
+bool ServiceWorkerContextCore::HasWindowProviderHost(const GURL& origin) const {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  ProviderHostIterator provider_host_iterator(
+      providers_.get(), base::Bind(IsSameOriginWindowProviderHost, origin));
+  return !provider_host_iterator.IsAtEnd();
 }
 
 void ServiceWorkerContextCore::RegisterProviderHostByClientID(

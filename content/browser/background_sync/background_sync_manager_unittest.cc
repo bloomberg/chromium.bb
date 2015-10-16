@@ -35,6 +35,8 @@ const char kPattern2[] = "https://example.com/b";
 const char kScript1[] = "https://example.com/a/script.js";
 const char kScript2[] = "https://example.com/b/script.js";
 const int kRenderProcessId = 99;
+const int kProviderId1 = 1;
+const int kProviderId2 = 2;
 
 void RegisterServiceWorkerCallback(bool* called,
                                    int64* store_registration_id,
@@ -278,16 +280,21 @@ class BackgroundSyncManagerTest : public testing::Test {
     EXPECT_TRUE(called_2);
 
     // Register window clients for the service workers
-    host_1_.reset(new ServiceWorkerProviderHost(
-        34 /* dummy render proces id */, MSG_ROUTING_NONE /* render_frame_id */,
-        1 /* dummy provider id */, SERVICE_WORKER_PROVIDER_FOR_WINDOW,
-        helper_->context()->AsWeakPtr(), nullptr));
-    host_1_->SetDocumentUrl(GURL(kPattern1));
-    host_2_.reset(new ServiceWorkerProviderHost(
-        34 /* dummy render proces id */, MSG_ROUTING_NONE /* render_frame_id */,
-        1 /* dummy provider id */, SERVICE_WORKER_PROVIDER_FOR_WINDOW,
-        helper_->context()->AsWeakPtr(), nullptr));
-    host_2_->SetDocumentUrl(GURL(kPattern2));
+    ServiceWorkerProviderHost* host_1 = new ServiceWorkerProviderHost(
+        kRenderProcessId, MSG_ROUTING_NONE /* render_frame_id */, kProviderId1,
+        SERVICE_WORKER_PROVIDER_FOR_WINDOW, helper_->context()->AsWeakPtr(),
+        nullptr);
+    host_1->SetDocumentUrl(GURL(kPattern1));
+
+    ServiceWorkerProviderHost* host_2 = new ServiceWorkerProviderHost(
+        kRenderProcessId /* dummy render proces id */,
+        MSG_ROUTING_NONE /* render_frame_id */, kProviderId2,
+        SERVICE_WORKER_PROVIDER_FOR_WINDOW, helper_->context()->AsWeakPtr(),
+        nullptr);
+    host_2->SetDocumentUrl(GURL(kPattern2));
+
+    helper_->context()->AddProviderHost(make_scoped_ptr(host_1));
+    helper_->context()->AddProviderHost(make_scoped_ptr(host_2));
 
     // Hang onto the registrations as they need to be "live" when
     // calling BackgroundSyncManager::Register.
@@ -301,14 +308,10 @@ class BackgroundSyncManagerTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(sw_registration_1_);
     EXPECT_TRUE(sw_registration_2_);
-
-    sw_registration_1_->active_version()->AddControllee(host_1_.get());
-    sw_registration_2_->active_version()->AddControllee(host_2_.get());
   }
 
   void RemoveWindowClients() {
-    sw_registration_1_->active_version()->RemoveControllee(host_1_.get());
-    sw_registration_2_->active_version()->RemoveControllee(host_2_.get());
+    helper_->context()->RemoveAllProviderHostsForProcess(kRenderProcessId);
   }
 
   void SetNetwork(net::NetworkChangeNotifier::ConnectionType connection_type) {
@@ -396,6 +399,7 @@ class BackgroundSyncManagerTest : public testing::Test {
 
   void DeleteBackgroundSyncManager() {
     ClearRegistrationHandles();
+    RemoveWindowClients();
     background_sync_manager_.reset();
     test_background_sync_manager_ = nullptr;
   }
@@ -543,6 +547,12 @@ class BackgroundSyncManagerTest : public testing::Test {
     EXPECT_FALSE(sync_fired_callback_.is_null());
   }
 
+  void DeleteServiceWorkerAndStartOver() {
+    helper_->context()->ScheduleDeleteAndStartOver();
+    RemoveWindowClients();
+    base::RunLoop().RunUntilIdle();
+  }
+
   int MaxTagLength() const { return BackgroundSyncManager::kMaxTagLength; }
 
   TestBrowserThreadBundle browser_thread_bundle_;
@@ -553,8 +563,6 @@ class BackgroundSyncManagerTest : public testing::Test {
   scoped_ptr<BackgroundSyncManager> background_sync_manager_;
   TestBackgroundSyncManager* test_background_sync_manager_;
 
-  scoped_ptr<ServiceWorkerProviderHost> host_1_;
-  scoped_ptr<ServiceWorkerProviderHost> host_2_;
   int64 sw_registration_id_1_;
   int64 sw_registration_id_2_;
   scoped_refptr<ServiceWorkerRegistration> sw_registration_1_;
@@ -900,8 +908,7 @@ TEST_F(BackgroundSyncManagerTest,
 
 TEST_F(BackgroundSyncManagerTest, DeleteAndStartOverServiceWorkerContext) {
   EXPECT_TRUE(Register(sync_options_1_));
-  helper_->context()->ScheduleDeleteAndStartOver();
-  base::RunLoop().RunUntilIdle();
+  DeleteServiceWorkerAndStartOver();
   EXPECT_FALSE(GetRegistration(sync_options_1_));
 }
 
@@ -930,8 +937,7 @@ TEST_F(BackgroundSyncManagerTest, DisabledManagerWorksAfterDeleteAndStartOver) {
   // The manager is now disabled and not accepting new requests until browser
   // restart or notification that the storage has been wiped.
   test_background_sync_manager_->set_corrupt_backend(false);
-  helper_->context()->ScheduleDeleteAndStartOver();
-  base::RunLoop().RunUntilIdle();
+  DeleteServiceWorkerAndStartOver();
 
   RegisterServiceWorkers();
 
@@ -1662,19 +1668,30 @@ TEST_F(BackgroundSyncManagerTest, KillManagerMidSync) {
   EXPECT_EQ(2, sync_events_called_);
 }
 
-TEST_F(BackgroundSyncManagerTest, RegisterFailsWithoutWindow) {
+TEST_F(BackgroundSyncManagerTest, RegisterWithClientWindowForWrongOrigin) {
   RemoveWindowClients();
+  ServiceWorkerProviderHost* host = new ServiceWorkerProviderHost(
+      kRenderProcessId, MSG_ROUTING_NONE /* render_frame_id */, kProviderId1,
+      SERVICE_WORKER_PROVIDER_FOR_WINDOW, helper_->context()->AsWeakPtr(),
+      nullptr);
+  host->SetDocumentUrl(GURL("http://example.com:9999"));
+  helper_->context()->AddProviderHost(make_scoped_ptr(host));
   EXPECT_FALSE(Register(sync_options_1_));
+  EXPECT_TRUE(RegisterFromDocumentWithServiceWorkerId(sw_registration_id_1_,
+                                                      sync_options_1_));
 }
 
-TEST_F(BackgroundSyncManagerTest, RegisterExistingFailsWithoutWindow) {
+TEST_F(BackgroundSyncManagerTest, RegisterWithNoClientWindows) {
+  RemoveWindowClients();
+  EXPECT_FALSE(Register(sync_options_1_));
+  EXPECT_TRUE(RegisterFromDocumentWithServiceWorkerId(sw_registration_id_1_,
+                                                      sync_options_1_));
+}
+
+TEST_F(BackgroundSyncManagerTest, RegisterExistingWithNoClientWindows) {
   EXPECT_TRUE(Register(sync_options_1_));
   RemoveWindowClients();
   EXPECT_FALSE(Register(sync_options_1_));
-}
-
-TEST_F(BackgroundSyncManagerTest, RegisterSucceedsFromUncontrolledWindow) {
-  RemoveWindowClients();
   EXPECT_TRUE(RegisterFromDocumentWithServiceWorkerId(sw_registration_id_1_,
                                                       sync_options_1_));
 }
@@ -1699,8 +1716,7 @@ TEST_F(BackgroundSyncManagerTest, FieldTrialDisablesManager) {
   // If the service worker is wiped and the manager is restarted, the manager
   // should disable itself on init.
   test_background_sync_manager_->set_corrupt_backend(false);
-  helper_->context()->ScheduleDeleteAndStartOver();
-  base::RunLoop().RunUntilIdle();
+  DeleteServiceWorkerAndStartOver();
 
   RegisterServiceWorkers();
 

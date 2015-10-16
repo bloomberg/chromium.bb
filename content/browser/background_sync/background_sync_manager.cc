@@ -403,7 +403,8 @@ void BackgroundSyncManager::RegisterImpl(
   }
 
   if (requested_from_service_worker &&
-      !sw_registration->active_version()->HasWindowClients()) {
+      !service_worker_context_->HasWindowProviderHost(
+          sw_registration->pattern().GetOrigin())) {
     PostErrorResponse(BACKGROUND_SYNC_STATUS_NOT_ALLOWED, callback);
     return;
   }

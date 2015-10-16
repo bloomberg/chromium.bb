@@ -159,6 +159,10 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   scoped_ptr<ProviderHostIterator> GetClientProviderHostIterator(
       const GURL& origin);
 
+  // Returns true if there is a ProviderHost for |origin| of type
+  // SERVICE_WORKER_PROVIDER_FOR_WINDOW.
+  bool HasWindowProviderHost(const GURL& origin) const;
+
   // Maintains a map from Client UUID to ProviderHost.
   // (Note: instead of maintaining 2 maps we might be able to uniformly use
   // UUID instead of process_id+provider_id elsewhere. For now I'm leaving

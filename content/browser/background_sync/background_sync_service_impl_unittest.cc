@@ -27,6 +27,7 @@ namespace {
 const char kServiceWorkerPattern[] = "https://example.com/a";
 const char kServiceWorkerScript[] = "https://example.com/a/script.js";
 const int kRenderProcessId = 99;
+const int kProviderId = 1;
 
 // Callbacks from SetUp methods
 
@@ -166,24 +167,25 @@ class BackgroundSyncServiceImplTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(called);
 
-    // Register window client for the service worker
-    provider_host_.reset(new ServiceWorkerProviderHost(
-        34 /* dummy render proces id */, MSG_ROUTING_NONE /* render_frame_id */,
-        1 /* dummy provider id */, SERVICE_WORKER_PROVIDER_FOR_WINDOW,
-        embedded_worker_helper_->context()->AsWeakPtr(), nullptr));
-    provider_host_->SetDocumentUrl(GURL(kServiceWorkerPattern));
-
     embedded_worker_helper_->context_wrapper()->FindRegistrationForId(
         sw_registration_id_, GURL(kServiceWorkerPattern).GetOrigin(),
         base::Bind(FindServiceWorkerRegistrationCallback, &sw_registration_));
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(sw_registration_);
 
-    sw_registration_->active_version()->AddControllee(provider_host_.get());
+    // Register window client for the service worker
+    ServiceWorkerProviderHost* provider_host = new ServiceWorkerProviderHost(
+        kRenderProcessId, MSG_ROUTING_NONE /* render_frame_id */, kProviderId,
+        SERVICE_WORKER_PROVIDER_FOR_WINDOW,
+        embedded_worker_helper_->context()->AsWeakPtr(), nullptr);
+    provider_host->SetDocumentUrl(GURL(kServiceWorkerPattern));
+    embedded_worker_helper_->context()->AddProviderHost(
+        make_scoped_ptr(provider_host));
   }
 
   void RemoveWindowClient() {
-    sw_registration_->active_version()->RemoveControllee(provider_host_.get());
+    embedded_worker_helper_->context()->RemoveAllProviderHostsForProcess(
+        kRenderProcessId);
   }
 
   void CreateBackgroundSyncServiceImpl() {
@@ -254,7 +256,6 @@ class BackgroundSyncServiceImplTest : public testing::Test {
   scoped_ptr<EmbeddedWorkerTestHelper> embedded_worker_helper_;
   scoped_ptr<base::PowerMonitor> power_monitor_;
   scoped_refptr<BackgroundSyncContextImpl> background_sync_context_;
-  scoped_ptr<ServiceWorkerProviderHost> provider_host_;
   int64 sw_registration_id_;
   scoped_refptr<ServiceWorkerRegistration> sw_registration_;
   BackgroundSyncServicePtr service_ptr_;
@@ -277,7 +278,18 @@ TEST_F(BackgroundSyncServiceImplTest, Register) {
   EXPECT_EQ("", reg->tag);
 }
 
-TEST_F(BackgroundSyncServiceImplTest, RegisterWithoutWindow) {
+TEST_F(BackgroundSyncServiceImplTest, RegisterFromServiceWorkerWithWindow) {
+  bool called = false;
+  BackgroundSyncError error;
+  SyncRegistrationPtr reg;
+  RegisterOneShot(
+      default_sync_registration_.Clone(),
+      base::Bind(&ErrorAndRegistrationCallback, &called, &error, &reg));
+  EXPECT_TRUE(called);
+  EXPECT_EQ(BackgroundSyncError::BACKGROUND_SYNC_ERROR_NONE, error);
+}
+
+TEST_F(BackgroundSyncServiceImplTest, RegisterFromServiceWorkerWithoutWindow) {
   bool called = false;
   BackgroundSyncError error;
   SyncRegistrationPtr reg;
@@ -289,7 +301,7 @@ TEST_F(BackgroundSyncServiceImplTest, RegisterWithoutWindow) {
   EXPECT_EQ(BackgroundSyncError::BACKGROUND_SYNC_ERROR_NOT_ALLOWED, error);
 }
 
-TEST_F(BackgroundSyncServiceImplTest, RegisterFromControlledClient) {
+TEST_F(BackgroundSyncServiceImplTest, RegisterFromDocumentWithWindow) {
   bool called = false;
   BackgroundSyncError error;
   SyncRegistrationPtr reg;
@@ -301,7 +313,7 @@ TEST_F(BackgroundSyncServiceImplTest, RegisterFromControlledClient) {
   EXPECT_EQ("", reg->tag);
 }
 
-TEST_F(BackgroundSyncServiceImplTest, RegisterFromUncontrolledClient) {
+TEST_F(BackgroundSyncServiceImplTest, RegisterFromDocumentWithoutWindow) {
   bool called = false;
   BackgroundSyncError error;
   SyncRegistrationPtr reg;

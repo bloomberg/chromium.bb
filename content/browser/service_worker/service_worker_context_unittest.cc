@@ -525,6 +525,31 @@ TEST_F(ServiceWorkerContextTest, RegisterDuplicateScript) {
   EXPECT_EQ(old_registration_id, notifications_[1].registration_id);
 }
 
+TEST_F(ServiceWorkerContextTest, HasWindowProviderHost) {
+  const int kRenderProcessId = 1;
+  const GURL kOrigin = GURL("http://www.example.com/");
+  const GURL kOriginOther = GURL("https://www.example.com/");
+  int provider_id = 1;
+
+  ServiceWorkerProviderHost* host_window(new ServiceWorkerProviderHost(
+      kRenderProcessId, MSG_ROUTING_NONE, provider_id++,
+      SERVICE_WORKER_PROVIDER_FOR_WINDOW, context()->AsWeakPtr(), nullptr));
+  host_window->SetDocumentUrl(kOrigin);
+
+  // Host2 (provider_id=2): process_id=2, origin2.
+  ServiceWorkerProviderHost* host_worker(new ServiceWorkerProviderHost(
+      kRenderProcessId, MSG_ROUTING_NONE, provider_id++,
+      SERVICE_WORKER_PROVIDER_FOR_WORKER, context()->AsWeakPtr(), nullptr));
+  host_worker->SetDocumentUrl(kOrigin);
+
+  EXPECT_FALSE(context()->HasWindowProviderHost(kOrigin));
+  context()->AddProviderHost(make_scoped_ptr(host_worker));
+  EXPECT_FALSE(context()->HasWindowProviderHost(kOrigin));
+  context()->AddProviderHost(make_scoped_ptr(host_window));
+  EXPECT_TRUE(context()->HasWindowProviderHost(kOrigin));
+  EXPECT_FALSE(context()->HasWindowProviderHost(kOriginOther));
+}
+
 TEST_F(ServiceWorkerContextTest, ProviderHostIterator) {
   const int kRenderProcessId1 = 1;
   const int kRenderProcessId2 = 2;

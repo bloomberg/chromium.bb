@@ -276,10 +276,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // Returns if it has controllee.
   bool HasControllee() const { return !controllee_map_.empty(); }
 
-  // Returns whether the service worker has active window clients under its
-  // control.
-  bool HasWindowClients();
-
   // Adds and removes |request_job| as a dependent job not to stop the
   // ServiceWorker while |request_job| is reading the stream of the fetch event
   // response from the ServiceWorker.
@@ -505,8 +501,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   void GetWindowClients(int request_id,
                         const ServiceWorkerClientQueryOptions& options);
-  const std::vector<base::Tuple<int, int, std::string>>
-  GetWindowClientsInternal(bool include_uncontolled);
   void DidGetWindowClients(int request_id,
                            const ServiceWorkerClientQueryOptions& options,
                            scoped_ptr<ServiceWorkerClients> clients);

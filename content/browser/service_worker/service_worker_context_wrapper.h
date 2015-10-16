@@ -107,6 +107,8 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   std::vector<ServiceWorkerRegistrationInfo> GetAllLiveRegistrationInfo();
   std::vector<ServiceWorkerVersionInfo> GetAllLiveVersionInfo();
 
+  bool HasWindowProviderHost(const GURL& origin) const;
+
   // Returns the registration whose scope longest matches |document_url|.
   // Returns ERROR_NOT_FOUND if it is not found.
   void FindRegistrationForDocument(const GURL& document_url,
