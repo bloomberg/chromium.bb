@@ -1,8 +1,6 @@
 {
   "Android GN": {
     "additional_compile_targets": [
-      "blimp",
-      "blimp_tests",
       "chrome_public_apk",
       "chrome_public_test_apk",
       "content_shell_apk",
@@ -76,7 +74,6 @@
   },
   "Android GN (dbg)": {
     "additional_compile_targets": [
-      "blimp",
       "blimp_tests",
       "chrome_public_apk",
       "chrome_public_test_apk",
@@ -659,8 +656,6 @@
   },
   "Linux Tests": {
     "additional_compile_targets": [
-      "blimp",
-      "blimp_tests",
       "mandoline:all"
     ],
     "gtest_tests": [
@@ -1056,8 +1051,6 @@
   },
   "Linux Tests (dbg)(1)": {
     "additional_compile_targets": [
-      "blimp",
-      "blimp_tests",
       "mandoline:all"
     ],
     "gtest_tests": [
@@ -1090,6 +1083,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "base_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "blimp_unittests"
       },
       {
         "swarming": {
