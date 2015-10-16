@@ -11,6 +11,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_info.h"
+#include "base/trace_event/trace_event.h"
 
 #if defined(OS_WIN)
 #include <winternl.h>
@@ -162,18 +163,33 @@ bool GetHardFaultCountForCurrentProcess(uint32_t* hard_fault_count,
 // ".ColdStart" or ".WarmStart", as appropriate.
 // |value_expr| is an expression evaluating to the value to be recorded. This
 // will be evaluated exactly once and cached, so side effects are not an issue.
-#define UMA_HISTOGRAM_BY_STARTUP_TEMPERATURE(type, basename, value_expr) {  \
-      const auto kValue = value_expr;                                       \
-      /* Always record to the base histogram. */                            \
-      type(basename, kValue);                                               \
-      /* Record to the cold/warm suffixed histogram as appropriate. */      \
-      if (g_startup_temperature == COLD_STARTUP_TEMPERATURE) {              \
-        type(basename ".ColdStartup", kValue);                              \
-      } else if (g_startup_temperature == WARM_STARTUP_TEMPERATURE) {       \
-        type(basename ".WarmStartup", kValue);                              \
-      }                                                                     \
-    }
+#define UMA_HISTOGRAM_WITH_STARTUP_TEMPERATURE(type, basename, value_expr) \
+  {                                                                        \
+    const auto kValue = value_expr;                                        \
+    /* Always record to the base histogram. */                             \
+    type(basename, kValue);                                                \
+    /* Record to the cold/warm suffixed histogram as appropriate. */       \
+    if (g_startup_temperature == COLD_STARTUP_TEMPERATURE) {               \
+      type(basename ".ColdStartup", kValue);                               \
+    } else if (g_startup_temperature == WARM_STARTUP_TEMPERATURE) {        \
+      type(basename ".WarmStartup", kValue);                               \
+    }                                                                      \
+  }
 
+#define UMA_HISTOGRAM_AND_TRACE_WITH_STARTUP_TEMPERATURE(type, basename,       \
+                                                         begin_time, end_time) \
+  {                                                                            \
+    UMA_HISTOGRAM_WITH_STARTUP_TEMPERATURE(type, basename,                     \
+                                           end_time - begin_time)              \
+    TRACE_EVENT_ASYNC_BEGIN_WITH_TIMESTAMP1(                                   \
+        "startup", basename, 0,                                                \
+        StartupTimeToTraceTicks(begin_time).ToInternalValue(), "Temperature",  \
+        g_startup_temperature);                                                \
+    TRACE_EVENT_ASYNC_END_WITH_TIMESTAMP1(                                     \
+        "startup", basename, 0,                                                \
+        StartupTimeToTraceTicks(end_time).ToInternalValue(), "Temperature",    \
+        g_startup_temperature);                                                \
+  }
 
 // On Windows, records the number of hard-faults that have occurred in the
 // current chrome.exe process since it was started. This is a nop on other
@@ -227,6 +243,24 @@ void RecordHardFaultHistogram(bool is_first_run) {
   UMA_HISTOGRAM_ENUMERATION(
       "Startup.Temperature", g_startup_temperature, STARTUP_TEMPERATURE_MAX);
 #endif  // defined(OS_WIN)
+}
+
+// Converts a base::Time value to a base::TraceTicks value. The conversion isn't
+// exact, but is within the time delta taken to synchronously resolve
+// base::Time::Now() and base::TraceTicks::Now() which in practice is pretty
+// much instant compared to multi-seconds startup timings.
+// TODO(gab): Find a precise way to do this (http://crbug.com/544131).
+base::TraceTicks StartupTimeToTraceTicks(const base::Time& time) {
+  // First get a base which represents the same point in time in both units.
+  // The wall clock time it takes to gather both of these is the precision of
+  // this method.
+  static const base::Time time_base = base::Time::Now();
+  static const base::TraceTicks trace_ticks_base = base::TraceTicks::Now();
+
+  // Then use the TimeDelta common ground between the two units to make the
+  // conversion.
+  const base::TimeDelta delta_since_base = time_base - time;
+  return trace_ticks_base - delta_since_base;
 }
 
 // Record time of main entry so it can be read from Telemetry performance tests.
@@ -307,10 +341,9 @@ void RecordBrowserMainMessageLoopStart(const base::Time& time,
 
   const base::Time& process_creation_time = g_process_creation_time.Get();
   if (!is_first_run && !process_creation_time.is_null()) {
-    UMA_HISTOGRAM_BY_STARTUP_TEMPERATURE(
-        UMA_HISTOGRAM_LONG_TIMES_100,
-        "Startup.BrowserMessageLoopStartTime",
-        time - process_creation_time);
+    UMA_HISTOGRAM_AND_TRACE_WITH_STARTUP_TEMPERATURE(
+        UMA_HISTOGRAM_LONG_TIMES_100, "Startup.BrowserMessageLoopStartTime",
+        process_creation_time, time);
   }
 
   // Bail if uptime < 7 minutes, to filter out cases where Chrome may have been
@@ -327,17 +360,16 @@ void RecordBrowserMainMessageLoopStart(const base::Time& time,
   // * Only measure launches that occur 7 minutes after boot to try to avoid
   //   cases where Chrome is auto-started and IO is heavily loaded.
   const base::Time dll_main_time = MainEntryPointTime();
-  base::TimeDelta startup_time_from_main_entry = time - dll_main_time;
   if (is_first_run) {
-    UMA_HISTOGRAM_BY_STARTUP_TEMPERATURE(
+    UMA_HISTOGRAM_AND_TRACE_WITH_STARTUP_TEMPERATURE(
         UMA_HISTOGRAM_LONG_TIMES,
         "Startup.BrowserMessageLoopStartTimeFromMainEntry.FirstRun",
-        startup_time_from_main_entry);
+        dll_main_time, time);
   } else {
-    UMA_HISTOGRAM_BY_STARTUP_TEMPERATURE(
+    UMA_HISTOGRAM_AND_TRACE_WITH_STARTUP_TEMPERATURE(
         UMA_HISTOGRAM_LONG_TIMES,
-        "Startup.BrowserMessageLoopStartTimeFromMainEntry",
-        startup_time_from_main_entry);
+        "Startup.BrowserMessageLoopStartTimeFromMainEntry", dll_main_time,
+        time);
   }
 
   // Record timings between process creation, the main() in the executable being
@@ -346,17 +378,18 @@ void RecordBrowserMainMessageLoopStart(const base::Time& time,
     const base::Time exe_main_time = ExeMainEntryPointTime();
     if (!exe_main_time.is_null()) {
       // Process create to chrome.exe:main().
-      UMA_HISTOGRAM_BY_STARTUP_TEMPERATURE(
+      UMA_HISTOGRAM_AND_TRACE_WITH_STARTUP_TEMPERATURE(
           UMA_HISTOGRAM_LONG_TIMES, "Startup.LoadTime.ProcessCreateToExeMain",
-          exe_main_time - process_creation_time);
+          process_creation_time, exe_main_time);
 
       // chrome.exe:main() to chrome.dll:main().
-      UMA_HISTOGRAM_BY_STARTUP_TEMPERATURE(
+      UMA_HISTOGRAM_AND_TRACE_WITH_STARTUP_TEMPERATURE(
           UMA_HISTOGRAM_LONG_TIMES, "Startup.LoadTime.ExeMainToDllMain",
-          dll_main_time - exe_main_time);
+          exe_main_time, dll_main_time);
 
-      // Process create to chrome.dll:main().
-      UMA_HISTOGRAM_BY_STARTUP_TEMPERATURE(
+      // Process create to chrome.dll:main(). Reported as a histogram only as
+      // the other two events above are sufficient for tracing purposes.
+      UMA_HISTOGRAM_WITH_STARTUP_TEMPERATURE(
           UMA_HISTOGRAM_LONG_TIMES, "Startup.LoadTime.ProcessCreateToDllMain",
           dll_main_time - process_creation_time);
     }
@@ -371,9 +404,9 @@ void RecordBrowserWindowDisplay(const base::Time& time) {
   if (WasNonBrowserUIDisplayed() || g_process_creation_time.Get().is_null())
     return;
 
-  UMA_HISTOGRAM_BY_STARTUP_TEMPERATURE(
+  UMA_HISTOGRAM_AND_TRACE_WITH_STARTUP_TEMPERATURE(
       UMA_HISTOGRAM_LONG_TIMES, "Startup.BrowserWindowDisplay",
-      time - g_process_creation_time.Get());
+      g_process_creation_time.Get(), time);
 }
 
 void RecordBrowserOpenTabsDelta(const base::TimeDelta& delta) {
@@ -382,8 +415,8 @@ void RecordBrowserOpenTabsDelta(const base::TimeDelta& delta) {
     return;
   is_first_call = false;
 
-  UMA_HISTOGRAM_BY_STARTUP_TEMPERATURE(
-      UMA_HISTOGRAM_LONG_TIMES_100, "Startup.BrowserOpenTabs", delta);
+  UMA_HISTOGRAM_WITH_STARTUP_TEMPERATURE(UMA_HISTOGRAM_LONG_TIMES_100,
+                                         "Startup.BrowserOpenTabs", delta);
 }
 
 void RecordFirstWebContentsMainFrameLoad(const base::Time& time) {
@@ -394,9 +427,9 @@ void RecordFirstWebContentsMainFrameLoad(const base::Time& time) {
   if (WasNonBrowserUIDisplayed() || g_process_creation_time.Get().is_null())
     return;
 
-  UMA_HISTOGRAM_BY_STARTUP_TEMPERATURE(
+  UMA_HISTOGRAM_AND_TRACE_WITH_STARTUP_TEMPERATURE(
       UMA_HISTOGRAM_LONG_TIMES_100, "Startup.FirstWebContents.MainFrameLoad",
-      time - g_process_creation_time.Get());
+      g_process_creation_time.Get(), time);
 }
 
 void RecordFirstWebContentsNonEmptyPaint(const base::Time& time) {
@@ -407,9 +440,9 @@ void RecordFirstWebContentsNonEmptyPaint(const base::Time& time) {
   if (WasNonBrowserUIDisplayed() || g_process_creation_time.Get().is_null())
     return;
 
-  UMA_HISTOGRAM_BY_STARTUP_TEMPERATURE(
+  UMA_HISTOGRAM_AND_TRACE_WITH_STARTUP_TEMPERATURE(
       UMA_HISTOGRAM_LONG_TIMES_100, "Startup.FirstWebContents.NonEmptyPaint",
-      time - g_process_creation_time.Get());
+      g_process_creation_time.Get(), time);
 }
 
 base::Time MainEntryPointTime() {
