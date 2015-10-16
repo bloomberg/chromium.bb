@@ -1333,7 +1333,7 @@ void HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocato
         // cases). However, it shouldn't cause any issue.
         Allocator::registerWeakMembers(visitor, this, m_table, WeakProcessingHashTableHelper<Traits::weakHandlingFlag, Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::process);
     }
-    if (ShouldBeTraced<Traits>::value) {
+    if (NeedsTracingTrait<Traits>::value) {
         if (Traits::weakHandlingFlag == WeakHandlingInCollections) {
             // If we have both strong and weak pointers in the collection then
             // we queue up the collection for fixed point iteration a la

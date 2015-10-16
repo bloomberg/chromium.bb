@@ -339,13 +339,13 @@ public:
         // If the vector backing is garbage-collected and needs tracing or
         // finalizing, we clear out the unused slots so that the visitor or the
         // finalizer does not cause a problem when visiting the unused slots.
-        VectorUnusedSlotClearer<Allocator::isGarbageCollected && (VectorTraits<T>::needsDestruction || ShouldBeTraced<VectorTraits<T>>::value), T>::clear(from, to);
+        VectorUnusedSlotClearer<Allocator::isGarbageCollected && (VectorTraits<T>::needsDestruction || NeedsTracingTrait<VectorTraits<T>>::value), T>::clear(from, to);
     }
 
     void checkUnusedSlots(const T* from, const T* to)
     {
 #if ENABLE(ASSERT) && !defined(ANNOTATE_CONTIGUOUS_CONTAINER)
-        VectorUnusedSlotClearer<Allocator::isGarbageCollected && (VectorTraits<T>::needsDestruction || ShouldBeTraced<VectorTraits<T>>::value), T>::checkCleared(from, to);
+        VectorUnusedSlotClearer<Allocator::isGarbageCollected && (VectorTraits<T>::needsDestruction || NeedsTracingTrait<VectorTraits<T>>::value), T>::checkCleared(from, to);
 #endif
     }
 
@@ -1330,7 +1330,7 @@ void Vector<T, inlineCapacity, Allocator>::trace(VisitorDispatcher visitor)
     }
     const T* bufferBegin = buffer();
     const T* bufferEnd = buffer() + size();
-    if (ShouldBeTraced<VectorTraits<T>>::value) {
+    if (NeedsTracingTrait<VectorTraits<T>>::value) {
         for (const T* bufferEntry = bufferBegin; bufferEntry != bufferEnd; bufferEntry++)
             Allocator::template trace<VisitorDispatcher, T, VectorTraits<T>>(visitor, *const_cast<T*>(bufferEntry));
         checkUnusedSlots(buffer() + size(), buffer() + capacity());

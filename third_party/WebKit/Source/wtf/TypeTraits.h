@@ -337,7 +337,7 @@ public:
 // Convenience template wrapping the NeedsTracingLazily template in
 // Collection Traits. It helps make the code more readable.
 template <typename Traits>
-class ShouldBeTraced {
+class NeedsTracingTrait {
 public:
     static const bool value = Traits::template NeedsTracingLazily<>::value;
 };

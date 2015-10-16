@@ -116,7 +116,7 @@ public:
     template<typename VisitorDispatcher, typename T, typename Traits>
     static void trace(VisitorDispatcher visitor, T& t)
     {
-        TraceCollectionIfEnabled<WTF::ShouldBeTraced<Traits>::value, Traits::weakHandlingFlag, WTF::WeakPointersActWeak, T, Traits>::trace(visitor, t);
+        TraceCollectionIfEnabled<WTF::NeedsTracingTrait<Traits>::value, Traits::weakHandlingFlag, WTF::WeakPointersActWeak, T, Traits>::trace(visitor, t);
     }
 
     template<typename VisitorDispatcher>
@@ -190,7 +190,7 @@ static void traceListHashSetValue(VisitorDispatcher visitor, Value& value)
     // (there's an assert elsewhere), but we have to specify some value for the
     // strongify template argument, so we specify WTF::WeakPointersActWeak,
     // arbitrarily.
-    TraceCollectionIfEnabled<WTF::ShouldBeTraced<WTF::HashTraits<Value>>::value, WTF::NoWeakHandlingInCollections, WTF::WeakPointersActWeak, Value, WTF::HashTraits<Value>>::trace(visitor, value);
+    TraceCollectionIfEnabled<WTF::NeedsTracingTrait<WTF::HashTraits<Value>>::value, WTF::NoWeakHandlingInCollections, WTF::WeakPointersActWeak, Value, WTF::HashTraits<Value>>::trace(visitor, value);
 }
 
 // The inline capacity is just a dummy template argument to match the off-heap

@@ -276,7 +276,7 @@ struct KeyValuePairHashTraits : GenericHashTraits<KeyValuePair<typename KeyTrait
 
     template <typename U = void>
     struct NeedsTracingLazily {
-        static const bool value = ShouldBeTraced<KeyTraits>::value || ShouldBeTraced<ValueTraits>::value;
+        static const bool value = NeedsTracingTrait<KeyTraits>::value || NeedsTracingTrait<ValueTraits>::value;
     };
     static const WeakHandlingFlag weakHandlingFlag = (KeyTraits::weakHandlingFlag == WeakHandlingInCollections || ValueTraits::weakHandlingFlag == WeakHandlingInCollections) ? WeakHandlingInCollections : NoWeakHandlingInCollections;
 

@@ -2415,8 +2415,8 @@ public:
     }
 };
 
-struct ShouldBeTraced {
-    explicit ShouldBeTraced(IntWrapper* wrapper) : m_wrapper(wrapper) { }
+struct NeedsTracingTrait {
+    explicit NeedsTracingTrait(IntWrapper* wrapper) : m_wrapper(wrapper) { }
     DEFINE_INLINE_TRACE() { visitor->trace(m_wrapper); }
     Member<IntWrapper> m_wrapper;
 };

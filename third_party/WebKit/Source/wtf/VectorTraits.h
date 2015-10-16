@@ -99,7 +99,7 @@ struct VectorTraits<std::pair<First, Second>> {
     static const bool canClearUnusedSlotsWithMemset = FirstTraits::canClearUnusedSlotsWithMemset && SecondTraits::canClearUnusedSlotsWithMemset;
     template <typename U = void>
         struct NeedsTracingLazily {
-        static const bool value = ShouldBeTraced<FirstTraits>::value || ShouldBeTraced<SecondTraits>::value;
+        static const bool value = NeedsTracingTrait<FirstTraits>::value || NeedsTracingTrait<SecondTraits>::value;
     };
     static const WeakHandlingFlag weakHandlingFlag = NoWeakHandlingInCollections; // We don't support weak handling in vectors.
 };

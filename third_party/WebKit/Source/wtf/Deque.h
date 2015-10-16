@@ -547,7 +547,7 @@ void Deque<T, inlineCapacity, Allocator>::trace(VisitorDispatcher visitor)
     ASSERT(Allocator::isGarbageCollected); // Garbage collector must be enabled.
     const T* bufferBegin = m_buffer.buffer();
     const T* end = bufferBegin + m_end;
-    if (ShouldBeTraced<VectorTraits<T>>::value) {
+    if (NeedsTracingTrait<VectorTraits<T>>::value) {
         if (m_start <= m_end) {
             for (const T* bufferEntry = bufferBegin + m_start; bufferEntry != end; bufferEntry++)
                 Allocator::template trace<VisitorDispatcher, T, VectorTraits<T>>(visitor, *const_cast<T*>(bufferEntry));
