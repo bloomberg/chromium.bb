@@ -142,15 +142,6 @@ MediaControls.prototype.createButton = function(
   var button = this.createControl(className, opt_parent);
   button.classList.add('media-button');
 
-  var stateTypes = Object.keys(MediaControls.ButtonStateType);
-  for (var state = 0; state != opt_numStates; state++) {
-    var stateClass = MediaControls.ButtonStateType[stateTypes[state]];
-    this.createControl('normal ' + stateClass, button);
-    this.createControl('hover ' + stateClass, button);
-    this.createControl('active ' + stateClass, button);
-  }
-  this.createControl('disabled', button);
-
   button.setAttribute('state', MediaControls.ButtonStateType.DEFAULT);
 
   if (opt_handler)
@@ -1278,11 +1269,6 @@ VideoControls.prototype.updateStyle = function() {
   // We assume that the video controls element fills the parent container.
   // This is easier than adding margins to this.container_.clientWidth.
   var width = this.container_.parentNode.clientWidth;
-
-  // Set the margin to 5px for width >= 400, 0px for width < 160,
-  // interpolate linearly in between.
-  this.container_.style.margin =
-      Math.ceil((Math.max(160, Math.min(width, 400)) - 160) / 48) + 'px';
 
   var hideBelow = function(selector, limit) {
     this.container_.querySelector(selector).style.display =

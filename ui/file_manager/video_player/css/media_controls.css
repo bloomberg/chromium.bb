@@ -2,37 +2,27 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
+/* Common styles for media buttons. */
+
 .media-button {
-  height: 28px;
-  margin: 0 5px;
+  background-position: center;
+  background-repeat: no-repeat;
+  height: 32px;
   position: relative;
-  width: 26px;
+  width: 32px;
 }
 
-.media-button > div {
-  background: center center;
-  height: 100%;
-  opacity: 0;
-  pointer-events: none;
-  position: absolute;
-  transition: opacity 100ms linear;
-  width: 100%;
+.media-button:hover {
+  background-color: rgba(153, 153, 153, 0.2);
 }
 
-.media-button[state='default']:not(.disabled):not(:hover):not(:active) >
-    .default.normal,
-.media-button[state='default']:not(.disabled):hover > .default.hover,
-.media-button[state='default']:not(.disabled):active > .default.active,
-.media-button[state='playing']:not(.disabled):not(:hover):not(:active) >
-    .playing.normal,
-.media-button[state='playing']:not(.disabled):hover > .playing.hover,
-.media-button[state='playing']:not(.disabled):active > .playing.active,
-.media-button[state='ended']:not(.disabled):not(:hover):not(:active) >
-    .ended.normal,
-.media-button[state='ended']:not(.disabled):hover > .ended.hover,
-.media-button[state='ended']:not(.disabled):active > .ended.active,
-.media-button.disabled > .disabled {
-  opacity: 1;
+.media-button:active {
+  background-color: rgba(153, 153, 153, 0.4);
+}
+
+.media-button.disabled {
+  background-color: transparent;
+  opacity: 0.26;
 }
 
 /* Custom sliders for progress and volume. */
@@ -66,10 +56,10 @@
   border-bottom-style: solid;
   border-top-style: solid;
   border-width: 1px;
-  bottom: 11px;
+  bottom: 14px;
   pointer-events: none;  /* Mouse events pass through to the standard input. */
   position: absolute;
-  top: 11px;
+  top: 14px;
 }
 
 .custom-slider > .bar > .filled,
@@ -112,14 +102,14 @@
 
 .custom-slider > .bar,
 .custom-slider > .bar > .cap.right {
-  background-color: rgba(0, 0, 0, 0.5);
-  border-color: #808080;
+  background-color: #dadada;
+  border-color: #dadada;
 }
 
 .custom-slider > .bar > .filled,
 .custom-slider > .bar > .cap.left {
-  background-image: linear-gradient(#c3c3c3, #d9d9d9);
-  border-color: #d9d9d9;
+  background-color: #4285f4;
+  border-color: #4285f4;
 }
 
 .custom-slider.disabled  > .bar > .filled,
@@ -188,64 +178,16 @@
 
 /* Play/pause button. */
 
-.media-button.play > .default.normal {
+.media-button.play {
   background-image: -webkit-image-set(
     url(../images/media/media_play.png) 1x,
     url(../images/media/2x/media_play.png) 2x);
 }
 
-.media-button.play > .default.hover {
-  background-image: -webkit-image-set(
-    url(../images/media/media_play_hover.png) 1x,
-    url(../images/media/2x/media_play_hover.png) 2x);
-}
-
-.media-button.play > .default.active {
-  background-image: -webkit-image-set(
-    url(../images/media/media_play_down.png) 1x,
-    url(../images/media/2x/media_play_down.png) 2x);
-}
-
-.media-button.play > .playing.normal {
+.media-button.play[state='playing'] {
   background-image: -webkit-image-set(
     url(../images/media/media_pause.png) 1x,
     url(../images/media/2x/media_pause.png) 2x);
-}
-
-.media-button.play > .playing.hover {
-  background-image: -webkit-image-set(
-    url(../images/media/media_pause_hover.png) 1x,
-    url(../images/media/2x/media_pause_hover.png) 2x);
-}
-
-.media-button.play > .playing.active {
-  background-image: -webkit-image-set(
-    url(../images/media/media_pause_down.png) 1x,
-    url(../images/media/2x/media_pause_down.png) 2x);
-}
-
-.media-button.play > .ended.normal {
-  background-image: -webkit-image-set(
-    url(../images/media/media_loop.png) 1x,
-    url(../images/media/2x/media_loop.png) 2x);
-}
-
-.media-button.play > .ended.hover {
-  background-image: -webkit-image-set(
-    url(../images/media/media_loop_hover.png) 1x,
-    url(../images/media/2x/media_loop_hover.png) 2x);
-}
-
-.media-button.play > .ended.active {
-  background-image: -webkit-image-set(
-    url(../images/media/media_loop_down.png) 1x,
-    url(../images/media/2x/media_loop_down.png) 2x);
-}
-
-.media-button.play > .disabled {
-  background-image: -webkit-image-set(
-    url(../images/media/media_play_disabled.png) 1x,
-    url(../images/media/2x/media_play_disabled.png) 2x);
 }
 
 /* Time controls: a slider and a text time display. */
@@ -257,6 +199,7 @@
   -webkit-box-pack: center;
   display: -webkit-box;
   height: 100%;
+  margin: 0 8px;
 }
 
 .custom-slider.progress {
@@ -318,7 +261,7 @@
   -webkit-box-align: center;
   -webkit-box-orient: horizontal;
   -webkit-box-pack: end;
-  color: white;
+  color: rgb(51, 51, 51);
   display: -webkit-box;
   height: 100%;
   position: absolute;
@@ -334,94 +277,21 @@
   -webkit-box-pack: center;
   display: -webkit-box;
   height: 100%;
+  margin: 0 8px;
 }
 
 /* Sound button */
 
 .media-button.sound {
-  width: 31px;
+  background-image: -webkit-image-set(
+    url(../images/media/media_volume.png) 1x,
+    url(../images/media/2x/media_volume.png) 2x);
 }
 
-.media-button.sound[level='0'] > .normal {
+.media-button.sound[level='0'] {
   background-image: -webkit-image-set(
-    url(../images/media/media_sound_disabled.png) 1x,
-    url(../images/media/2x/media_sound_disabled.png) 2x);
-}
-
-.media-button.sound[level='0'] > .hover {
-  background-image: -webkit-image-set(
-    url(../images/media/media_sound_disabled_hover.png) 1x,
-    url(../images/media/2x/media_sound_disabled_hover.png) 2x);
-}
-
-.media-button.sound[level='0'] > .active {
-  background-image: -webkit-image-set(
-    url(../images/media/media_sound_disabled_down.png) 1x,
-    url(../images/media/2x/media_sound_disabled_down.png) 2x);
-}
-
-
-.media-button.sound[level='1'] > .normal {
-  background-image: -webkit-image-set(
-    url(../images/media/media_sound_level1.png) 1x,
-    url(../images/media/2x/media_sound_level1.png) 2x);
-}
-
-.media-button.sound[level='1'] > .hover {
-  background-image: -webkit-image-set(
-    url(../images/media/media_sound_level1_hover.png) 1x,
-    url(../images/media/2x/media_sound_level1_hover.png) 2x);
-}
-
-.media-button.sound[level='1'] > .active {
-  background-image: -webkit-image-set(
-    url(../images/media/media_sound_level1_down.png) 1x,
-    url(../images/media/2x/media_sound_level1_down.png) 2x);
-}
-
-
-.media-button.sound[level='2'] > .normal {
-  background-image: -webkit-image-set(
-    url(../images/media/media_sound_level2.png) 1x,
-    url(../images/media/2x/media_sound_level2.png) 2x);
-}
-
-.media-button.sound[level='2'] > .hover {
-  background-image: -webkit-image-set(
-    url(../images/media/media_sound_level2_hover.png) 1x,
-    url(../images/media/2x/media_sound_level2_hover.png) 2x);
-}
-
-.media-button.sound[level='2'] > .active {
-  background-image: -webkit-image-set(
-    url(../images/media/media_sound_level2_down.png) 1x,
-    url(../images/media/2x/media_sound_level2_down.png) 2x);
-}
-
-
-.media-button.sound[level='3'] > .normal {
-  background-image: -webkit-image-set(
-    url(../images/media/media_sound_full.png) 1x,
-    url(../images/media/2x/media_sound_full.png) 2x);
-}
-
-.media-button.sound[level='3'] > .hover {
-  background-image: -webkit-image-set(
-    url(../images/media/media_sound_full_hover.png) 1x,
-    url(../images/media/2x/media_sound_full_hover.png) 2x);
-}
-
-.media-button.sound[level='3'] > .active {
-  background-image: -webkit-image-set(
-    url(../images/media/media_sound_full_down.png) 1x,
-    url(../images/media/2x/media_sound_full_down.png) 2x);
-}
-
-
-.media-button.sound > .disabled {
-  background-image: -webkit-image-set(
-    url(../images/media/media_sound_full_disabled.png) 1x,
-    url(../images/media/2x/media_sound_full_disabled.png) 2x);
+    url(../images/media/media_volume_mute.png) 1x,
+    url(../images/media/2x/media_volume_mute.png) 2x);
 }
 
 /* Volume slider. */
@@ -466,54 +336,20 @@
   -webkit-box-align: center;
   -webkit-box-orient: horizontal;
   -webkit-box-pack: center;
-  background: #202020;
-  border-radius: 5px;
+  background: rgb(250, 250, 250);
   display: -webkit-box;
-  font-size: 15px;
-  height: 30px;
-  opacity: 0.8;
+  font-size: 13px;
+  height: 32px;
+  padding: 8px;
   pointer-events: auto;
 }
 
 /* Cast button. */
 
-.media-button.cast > .default.normal {
+.media-button.cast {
   background-image: -webkit-image-set(
     url(../images/media/media_chromecast.png) 1x,
     url(../images/media/2x/media_chromecast.png) 2x);
-}
-
-.media-button.cast > .default.hover {
-  background-image: -webkit-image-set(
-    url(../images/media/media_chromecast_hover.png) 1x,
-    url(../images/media/2x/media_chromecast_hover.png) 2x);
-}
-
-.media-button.cast > .default.active {
-  background-image: -webkit-image-set(
-    url(../images/media/media_chromecast_down.png) 1x,
-    url(../images/media/2x/media_chromecast_down.png) 2x);
-}
-
-#video-player[casting] .media-button.cast > .default.normal {
-  background-image: -webkit-image-set(
-    url(../images/media/media_chromecast_casting.png) 1x,
-    url(../images/media/2x/media_chromecast_casting.png) 2x);
-}
-
-#video-player[casting] .media-button.cast > .default.hover {
-  background-image: -webkit-image-set(
-    url(../images/media/media_chromecast_casting_hover.png) 1x,
-    url(../images/media/2x/media_chromecast_casting_hover.png) 2x);
-}
-
-#video-player[casting] .media-button.cast > .default.active {
-  background-image: -webkit-image-set(
-    url(../images/media/media_chromecast_casting_down.png) 1x,
-    url(../images/media/2x/media_chromecast_casting_down.png) 2x);
-}
-
-.media-button.cast {
   display: none;
 }
 
@@ -521,32 +357,19 @@
   display: block;
 }
 
+#video-player[casting] .media-button.cast {
+  background-image: -webkit-image-set(
+    url(../images/media/media_chromecast_casting.png) 1x,
+    url(../images/media/2x/media_chromecast_casting.png) 2x);
+}
 
 /* Fullscreen button. */
 /* There is no final decision whether we need a separate icon when toggled. */
 
-.media-button.fullscreen > .normal {
+.media-button.fullscreen {
   background-image: -webkit-image-set(
     url(../images/media/media_fullscreen.png) 1x,
     url(../images/media/2x/media_fullscreen.png) 2x);
-}
-
-.media-button.fullscreen > .hover {
-  background-image: -webkit-image-set(
-    url(../images/media/media_fullscreen_hover.png) 1x,
-    url(../images/media/2x/media_fullscreen_hover.png) 2x);
-}
-
-.media-button.fullscreen > .active {
-  background-image: -webkit-image-set(
-    url(../images/media/media_fullscreen_down.png) 1x,
-    url(../images/media/2x/media_fullscreen_down.png) 2x);
-}
-
-.media-button.fullscreen > .disabled {
-  background-image: -webkit-image-set(
-    url(../images/media/media_fullscreen_disabled.png) 1x,
-    url(../images/media/2x/media_fullscreen_disabled.png) 2x);
 }
 
 .playback-state-icon {
@@ -628,13 +451,13 @@
 .playback-state-icon[state='play'] {
   -webkit-animation: blowup 500ms;
   background-image: -webkit-image-set(
-    url(../images/media/media_play.png) 1x,
-    url(../images/media/2x/media_play.png) 2x);
+    url(../images/media/media_play_light.png) 1x,
+    url(../images/media/2x/media_play_light.png) 2x);
 }
 
 .playback-state-icon[state='pause'] {
   -webkit-animation: blowup 500ms;
   background-image: -webkit-image-set(
-    url(../images/media/media_pause.png) 1x,
-    url(../images/media/2x/media_pause.png) 2x);
+    url(../images/media/media_pause_light.png) 1x,
+    url(../images/media/2x/media_pause_light.png) 2x);
 }
