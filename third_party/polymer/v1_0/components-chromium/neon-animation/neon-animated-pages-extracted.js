@@ -74,6 +74,7 @@
           this._squelchNextFinishEvent = true;
           this.cancelAnimation();
           this._completeSelectedChanged();
+          this._squelchNextFinishEvent = false;
         }
 
         // configure the animation.

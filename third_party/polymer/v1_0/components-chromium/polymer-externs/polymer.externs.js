@@ -41,6 +41,15 @@ PolymerElement.prototype.isAttached;
 PolymerElement.prototype.root;
 
 /**
+ * The root node for the element.
+ * Only exists if running under Shady Dom.
+ * You usually want to use `this.root`.
+ *
+ * @type {?Node|undefined}
+ */
+PolymerElement.prototype.shadyRoot;
+
+/**
  * Returns the first node in this element’s local DOM that matches selector.
  * @param {string} selector
  */
@@ -249,7 +258,7 @@ PolymerElement.prototype.unshift = function(path, var_args) {};
  * Fire an event.
  *
  * @param {string} type An event name.
- * @param {Object=} detail
+ * @param {*=} detail
  * @param {{
  *   bubbles: (boolean|undefined),
  *   cancelable: (boolean|undefined),
@@ -792,6 +801,57 @@ TemplatizerNode.prototype._templateInstance;
 
 
 /**
+ * @see https://github.com/Polymer/polymer/blob/master/src/lib/template/dom-repeat.html
+ * @extends {PolymerElement}
+ * @constructor
+ */
+var DomRepeatElement = function() {};
+
+
+/**
+ * Forces the element to render its content. Normally rendering is
+ * asynchronous to a provoking change. This is done for efficiency so
+ * that multiple changes trigger only a single render. The render method
+ * should be called if, for example, template rendering is required to
+ * validate application state.
+ */
+DomRepeatElement.prototype.render = function() {};
+
+
+/**
+ * Returns the item associated with a given element stamped by
+ * this `dom-repeat`.
+ *
+ * @param {!HTMLElement} el Element for which to return the item.
+ * @return {*} Item associated with the element.
+ */
+DomRepeatElement.prototype.itemForElement = function(el) {};
+
+
+/**
+ * Returns the `Polymer.Collection` key associated with a given
+ * element stamped by this `dom-repeat`.
+ *
+ * @param {!HTMLElement} el Element for which to return the key.
+ * @return {*} Key associated with the element.
+ */
+DomRepeatElement.prototype.keyForElement = function(el) {};
+
+
+/**
+ * Returns the inst index for a given element stamped by this `dom-repeat`.
+ * If `sort` is provided, the index will reflect the sorted order (rather
+ * than the original array order).
+ *
+ * @param {!HTMLElement} el Element for which to return the index.
+ * @return {*} Row index associated with the element (note this may
+ *   not correspond to the array index if a user `sort` is applied).
+ */
+DomRepeatElement.prototype.indexForElement = function(el) {};
+
+
+
+/**
  * @see https://github.com/Polymer/polymer/blob/master/src/lib/template/array-selector.html
  * @extends {PolymerElement}
  * @constructor
@@ -902,7 +962,7 @@ var PolymerSpliceChange;
 /**
  * The interface that iconsets should obey. Iconsets are registered by setting
  * their name in the IronMeta 'iconset' db, and a value of type Polymer.Iconset.
- * 
+ *
  * Used by iron-icon but needs to live here since iron-icon, iron-iconset, etc don't
  * depend on each other at all and talk only through iron-meta.
  *

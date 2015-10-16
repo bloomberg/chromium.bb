@@ -103,20 +103,20 @@ after the list became visible again. e.g.
       :host {
         display: block;
       }
-  
+
       :host(.has-scroller) {
         overflow: auto;
       }
-  
+
       :host(:not(.has-scroller)) {
         position: relative;
       }
-  
+
       #items {
         @apply(--iron-list-items-container);
         position: relative;
       }
-  
+
       #items > ::content > * {
         width: 100%;
         box-sizing: border-box;

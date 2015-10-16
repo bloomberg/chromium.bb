@@ -377,9 +377,9 @@
         },
 
         /**
-         * If true, the ripple will not generate a ripple effect 
+         * If true, the ripple will not generate a ripple effect
          * via pointer interaction.
-         * Calling ripple's imperative api like `simulatedRipple` will 
+         * Calling ripple's imperative api like `simulatedRipple` will
          * still generate the ripple effect.
          */
         noink: {
@@ -451,10 +451,10 @@
         }, 1);
       },
 
-      /** 
-       * Provokes a ripple down effect via a UI event, 
+      /**
+       * Provokes a ripple down effect via a UI event,
        * respecting the `noink` property.
-       * @param {Event=} event 
+       * @param {Event=} event
        */
       uiDownAction: function(event) {
         if (!this.noink) {
@@ -462,10 +462,10 @@
         }
       },
 
-      /** 
-       * Provokes a ripple down effect via a UI event, 
+      /**
+       * Provokes a ripple down effect via a UI event,
        * *not* respecting the `noink` property.
-       * @param {Event=} event 
+       * @param {Event=} event
        */
       downAction: function(event) {
         if (this.holdDown && this.ripples.length > 0) {
@@ -481,10 +481,10 @@
         }
       },
 
-      /** 
-       * Provokes a ripple up effect via a UI event, 
+      /**
+       * Provokes a ripple up effect via a UI event,
        * respecting the `noink` property.
-       * @param {Event=} event 
+       * @param {Event=} event
        */
       uiUpAction: function(event) {
         if (!this.noink) {
@@ -492,10 +492,10 @@
         }
       },
 
-      /** 
-       * Provokes a ripple up effect via a UI event, 
+      /**
+       * Provokes a ripple up effect via a UI event,
        * *not* respecting the `noink` property.
-       * @param {Event=} event 
+       * @param {Event=} event
        */
       upAction: function(event) {
         if (this.holdDown) {

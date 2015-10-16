@@ -48,8 +48,10 @@
     },
 
     /**
-     * In addition to `IronButtonState` behavior, when space key goes down, 
+     * In addition to `IronButtonState` behavior, when space key goes down,
      * create a ripple down effect.
+     *
+     * @param {!KeyboardEvent} event .
      */
     _spaceKeyDownHandler: function(event) {
       Polymer.IronButtonStateImpl._spaceKeyDownHandler.call(this, event);
@@ -59,8 +61,10 @@
     },
 
     /**
-     * In addition to `IronButtonState` behavior, when space key goes up, 
+     * In addition to `IronButtonState` behavior, when space key goes up,
      * create a ripple up effect.
+     *
+     * @param {!KeyboardEvent} event .
      */
     _spaceKeyUpHandler: function(event) {
       Polymer.IronButtonStateImpl._spaceKeyUpHandler.call(this, event);

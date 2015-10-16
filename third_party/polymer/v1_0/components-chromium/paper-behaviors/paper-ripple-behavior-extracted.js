@@ -1,11 +1,11 @@
-/** 
-   * `Polymer.PaperRippleBehavior` dynamically implements a ripple 
+/**
+   * `Polymer.PaperRippleBehavior` dynamically implements a ripple
    * when the element has focus via pointer or keyboard.
    *
    * NOTE: This behavior is intended to be used in conjunction with and after
    * `Polymer.IronButtonState` and `Polymer.IronControlState`.
    *
-   * @polymerBehavior Polymer.PaperRippleBehavior 
+   * @polymerBehavior Polymer.PaperRippleBehavior
    */
   Polymer.PaperRippleBehavior = {
 
@@ -17,11 +17,18 @@
       noink: {
         type: Boolean,
         observer: '_noinkChanged'
+      },
+
+      /**
+       * @type {Element|undefined}
+       */
+      _rippleContainer: {
+        type: Object,
       }
     },
 
     /**
-     * Ensures a `<paper-ripple>` element is available when the element is 
+     * Ensures a `<paper-ripple>` element is available when the element is
      * focused.
      */
     _buttonStateChanged: function() {
@@ -30,7 +37,7 @@
       }
     },
 
-    /** 
+    /**
      * In addition to the functionality provided in `IronButtonState`, ensures
      * a ripple effect is created when the element is in a `pressed` state.
      */
@@ -42,7 +49,7 @@
     },
 
     /**
-     * Ensures this element contains a ripple effect. For startup efficiency 
+     * Ensures this element contains a ripple effect. For startup efficiency
      * the ripple effect is dynamically on demand when needed.
      * @param {!Event=} opt_triggeringEvent (optional) event that triggered the
      * ripple.
@@ -55,11 +62,13 @@
         if (rippleContainer) {
           Polymer.dom(rippleContainer).appendChild(this._ripple);
         }
-        var domContainer = rippleContainer === this.shadyRoot ? this : 
+        var domContainer = rippleContainer === this.shadyRoot ? this :
           rippleContainer;
-        if (opt_triggeringEvent &&
-            domContainer.contains(opt_triggeringEvent.target)) {
-          this._ripple.uiDownAction(opt_triggeringEvent);
+        if (opt_triggeringEvent) {
+          var target = opt_triggeringEvent.target;
+          if (domContainer.contains(/** @type {Node} */(target))) {
+            this._ripple.uiDownAction(opt_triggeringEvent);
+          }
         }
       }
     },
@@ -67,7 +76,7 @@
     /**
      * Returns the `<paper-ripple>` element used by this element to create
      * ripple effects. The element's ripple is created on demand, when
-     * necessary, and calling this method will force the 
+     * necessary, and calling this method will force the
      * ripple to be created.
      */
     getRipple: function() {
@@ -86,10 +95,11 @@
     /**
      * Create the element's ripple effect via creating a `<paper-ripple>`.
      * Override this method to customize the ripple element.
-     * @return {element} Returns a `<paper-ripple>` element.
+     * @return {!PaperRippleElement} Returns a `<paper-ripple>` element.
      */
     _createRipple: function() {
-      return document.createElement('paper-ripple');
+      return /** @type {!PaperRippleElement} */ (
+          document.createElement('paper-ripple'));
     },
 
     _noinkChanged: function(noink) {

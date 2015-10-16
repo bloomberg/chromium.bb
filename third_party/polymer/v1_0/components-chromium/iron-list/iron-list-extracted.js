@@ -30,8 +30,7 @@
 
       /**
        * The name of the variable to add to the binding scope with the index
-       * for the row.  If `sort` is provided, the index will reflect the
-       * sorted order (rather than the original array order).
+       * for the row.
        */
       indexAs: {
         type: String,
@@ -244,8 +243,7 @@
      * The largest n-th value for an item such that it can be rendered in `_physicalStart`.
      */
     get _maxVirtualStart() {
-      return this._virtualCount < this._physicalCount ?
-          this._virtualCount : this._virtualCount - this._physicalCount;
+      return Math.max(0, this._virtualCount - this._physicalCount);
     },
 
     /**
@@ -298,7 +296,7 @@
     },
 
     /**
-     * Gets the first visible item in the viewport.
+     * Gets the index of the first visible item in the viewport.
      *
      * @type {number}
      */
@@ -576,7 +574,7 @@
       [].push.apply(this._physicalSizes, emptyArray);
 
       this._physicalCount = prevPhysicalCount + delta;
- 
+
       return true;
     },
 
@@ -757,7 +755,7 @@
     /**
      * Executes a provided function per every physical index in `itemSet`
      * `itemSet` default value is equivalent to the entire set of physical indexes.
-     * 
+     *
      * @param {!function(number, number)} fn
      * @param {!Array<number>=} itemSet
      */
@@ -899,7 +897,7 @@
 
     /**
      * Sets the scroll height, that's the height of the content,
-     * 
+     *
      * @param {boolean=} forceUpdate If true, updates the height no matter what.
      */
     _updateScrollerSize: function(forceUpdate) {
