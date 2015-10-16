@@ -64,20 +64,6 @@ public:
         EXPECT_CALL(*this, cancelWake());
     }
 
-    void expectNextFrameAction()
-    {
-        ::testing::Sequence sequence;
-        EXPECT_CALL(*this, cancelWake()).InSequence(sequence);
-        EXPECT_CALL(*this, serviceOnNextFrame()).InSequence(sequence);
-    }
-
-    void expectDelayedAction(double when)
-    {
-        ::testing::Sequence sequence;
-        EXPECT_CALL(*this, cancelWake()).InSequence(sequence);
-        EXPECT_CALL(*this, wakeAfter(when)).InSequence(sequence);
-    }
-
     DEFINE_INLINE_TRACE()
     {
         AnimationTimeline::PlatformTiming::trace(visitor);
@@ -366,16 +352,16 @@ TEST_F(AnimationAnimationTimelineTest, DelayBeforeAnimationStart)
     timeline->play(keyframeEffect);
 
     // TODO: Put the animation startTime in the future when we add the capability to change animation startTime
-    platformTiming->expectDelayedAction(timing.startDelay - minimumDelay());
+    EXPECT_CALL(*platformTiming, wakeAfter(timing.startDelay - minimumDelay()));
     updateClockAndService(0);
 
-    platformTiming->expectDelayedAction(timing.startDelay - minimumDelay() - 1.5);
+    EXPECT_CALL(*platformTiming, wakeAfter(timing.startDelay - minimumDelay() - 1.5));
     updateClockAndService(1.5);
 
     EXPECT_CALL(*platformTiming, serviceOnNextFrame());
     wake();
 
-    platformTiming->expectNextFrameAction();
+    EXPECT_CALL(*platformTiming, serviceOnNextFrame());
     updateClockAndService(4.98);
 }
 

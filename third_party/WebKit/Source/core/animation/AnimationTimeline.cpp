@@ -132,8 +132,6 @@ void AnimationTimeline::serviceAnimations(TimingUpdateReason reason)
 
     m_lastCurrentTimeInternal = currentTimeInternal();
 
-    m_timing->cancelWake();
-
     HeapVector<Member<Animation>> animations;
     animations.reserveInitialCapacity(m_animationsNeedingUpdate.size());
     for (Animation* animation : m_animationsNeedingUpdate)
