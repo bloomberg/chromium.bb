@@ -84,10 +84,10 @@ function DoTextureUploadBenchmark(gl, dimension) {
 
   var frame = 0;
   var delta = 10;
+  var pixels = new Uint8Array(dimension * dimension * 4);
 
   function update_texture() {
     requestAnimationFrame(update_texture);
-    var pixels = new Uint8Array(dimension * dimension * 4);
     if (((frame + delta) < 0) || (frame + delta) >= 256 * 3)
       delta *= -1;
     frame += delta;
