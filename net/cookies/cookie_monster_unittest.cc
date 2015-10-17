@@ -100,6 +100,7 @@ struct CookieMonsterTestTraits {
   static const bool filters_schemes = true;
   static const bool has_path_prefix_bug = false;
   static const int creation_time_granularity_in_ms = 0;
+  static const bool enforces_prefixes = true;
 };
 
 INSTANTIATE_TYPED_TEST_CASE_P(CookieMonster,
@@ -160,7 +161,7 @@ class CookieMonsterTest : public CookieStoreTest<CookieMonsterTestTraits> {
     ResultSavingCookieCallback<bool> callback;
     cm->SetCookieWithDetailsAsync(
         url, name, value, domain, path, expiration_time, secure, http_only,
-        first_party_only, priority,
+        first_party_only, false /* enforce prefixes */, priority,
         base::Bind(&ResultSavingCookieCallback<bool>::Run,
                    base::Unretained(&callback)));
     RunFor(kTimeout);
@@ -670,8 +671,8 @@ ACTION_P4(DeleteAllCreatedBetweenAction,
 ACTION_P3(SetCookieWithDetailsAction, cookie_monster, cc, callback) {
   cookie_monster->SetCookieWithDetailsAsync(
       cc.url, cc.name, cc.value, cc.domain, cc.path, cc.expiration_time,
-      cc.secure, cc.http_only, cc.first_party_only, cc.priority,
-      callback->AsCallback());
+      cc.secure, cc.http_only, cc.first_party_only,
+      false /* enforce prefixes */, cc.priority, callback->AsCallback());
 }
 
 ACTION_P2(GetAllCookiesAction, cookie_monster, callback) {
@@ -2475,7 +2476,7 @@ class MultiThreadedCookieMonsterTest : public CookieMonsterTest {
     CookiePriority priority = COOKIE_PRIORITY_DEFAULT;
     cm->SetCookieWithDetailsAsync(
         url, name, value, domain, path, expiration_time, secure, http_only,
-        first_party_only, priority,
+        first_party_only, false /* enforce prefixes */, priority,
         base::Bind(&ResultSavingCookieCallback<bool>::Run,
                    base::Unretained(callback)));
   }
@@ -2964,6 +2965,29 @@ TEST_F(CookieMonsterTest, CookieSourceHistogram) {
   histograms.ExpectBucketCount(
       cookie_source_histogram,
       CookieMonster::COOKIE_SOURCE_NONSECURE_COOKIE_NONCRYPTOGRAPHIC_SCHEME, 1);
+}
+
+TEST_F(CookieMonsterTest, SecureCookiePrefix) {
+  scoped_refptr<CookieMonster> cm(new CookieMonster(NULL, NULL));
+  // A $Secure- cookie must be Secure.
+  EXPECT_FALSE(SetCookie(cm.get(), https_www_google_.url(), "$Secure-A=B"));
+  EXPECT_FALSE(
+      SetCookie(cm.get(), https_www_google_.url(), "$Secure-A=B; httponly"));
+
+  // A typoed prefix does not have to be Secure.
+  EXPECT_TRUE(
+      SetCookie(cm.get(), https_www_google_.url(), "$secure-A=B; Secure"));
+  EXPECT_TRUE(SetCookie(cm.get(), https_www_google_.url(), "$secure-A=C;"));
+  EXPECT_TRUE(
+      SetCookie(cm.get(), https_www_google_.url(), "$SecureA=B; Secure"));
+  EXPECT_TRUE(SetCookie(cm.get(), https_www_google_.url(), "$SecureA=C;"));
+
+  EXPECT_TRUE(
+      SetCookie(cm.get(), https_www_google_.url(), "$Secure-A=B; Secure"));
+
+  // A $Secure- cookie can't be set on a non-secure origin.
+  EXPECT_FALSE(
+      SetCookie(cm.get(), http_www_google_.url(), "$Secure-A=B; Secure"));
 }
 
 class CookieMonsterNotificationTest : public CookieMonsterTest {
