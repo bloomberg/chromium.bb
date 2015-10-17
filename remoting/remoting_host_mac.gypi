@@ -226,6 +226,14 @@
         'INFOPLIST_FILE': 'host/mac/me2me_preference_pane-Info.plist',
         'INFOPLIST_PREPROCESS': 'YES',
         'INFOPLIST_PREPROCESSOR_DEFINITIONS': 'VERSION_FULL="<(version_full)" VERSION_SHORT="<(version_short)" BUNDLE_ID="<(bundle_id)"',
+
+        'conditions': [
+          ['component=="shared_library"', {
+            # TODO(thakis): Figure out why this is needed,
+            # http://crbug.com/544531
+            'CLANG_CXX_LIBRARY': 'libstdc++',  # -stdlib=libstdc++
+          }],
+        ],
       },
       'mac_bundle_resources': [
         'host/mac/me2me_preference_pane.xib',
