@@ -1307,8 +1307,9 @@ int ComputedStyle::computedLineHeight() const
 {
     const Length& lh = lineHeight();
 
-    // Negative value means the line height is not set. Use the font's built-in spacing.
-    if (lh.isNegative())
+    // Negative value means the line height is not set. Use the font's built-in
+    // spacing, if avalible.
+    if (lh.isNegative() && font().primaryFont())
         return fontMetrics().lineSpacing();
 
     if (lh.hasPercent())
