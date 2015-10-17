@@ -797,8 +797,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, MultiDownload) {
   DownloadItem* download1 = downloads[0];  // The only download.
 
   // Start the second download and wait until it's done.
-  base::FilePath file(FILE_PATH_LITERAL("download-test.lib"));
-  GURL url(net::URLRequestMockHTTPJob::GetMockUrl(file));
+  GURL url(net::URLRequestMockHTTPJob::GetMockUrl("download-test.lib"));
   // Download the file and wait.
   NavigateToURLAndWaitForDownload(shell(), url, DownloadItem::COMPLETE);
 
@@ -841,8 +840,6 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, MultiDownload) {
 // Content served with a MIME type of application/octet-stream should be
 // downloaded even when a plugin can be found that handles the file type.
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadOctetStream) {
-  const base::FilePath::CharType kTestFilePath[] =
-      FILE_PATH_LITERAL("octet-stream.abc");
   const char kTestPluginName[] = "TestPlugin";
   const char kTestMimeType[] = "application/x-test-mime-type";
   const char kTestFileType[] = "abc";
@@ -856,7 +853,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadOctetStream) {
 
   // The following is served with a Content-Type of application/octet-stream.
   GURL url(
-      net::URLRequestMockHTTPJob::GetMockUrl(base::FilePath(kTestFilePath)));
+      net::URLRequestMockHTTPJob::GetMockUrl("octet-stream.abc"));
   NavigateToURLAndWaitForDownload(shell(), url, DownloadItem::COMPLETE);
 }
 #endif
@@ -872,8 +869,8 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, CancelAtFinalRename) {
       scoped_ptr<DownloadFileFactory>(file_factory).Pass());
 
   // Create a download
-  base::FilePath file(FILE_PATH_LITERAL("download-test.lib"));
-  NavigateToURL(shell(), net::URLRequestMockHTTPJob::GetMockUrl(file));
+  NavigateToURL(shell(),
+                net::URLRequestMockHTTPJob::GetMockUrl("download-test.lib"));
 
   // Wait until the first (intermediate file) rename and execute the callback.
   file_factory->WaitForSomeCallback();
@@ -921,8 +918,8 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, CancelAtRelease) {
       scoped_ptr<DownloadFileFactory>(file_factory).Pass());
 
   // Create a download
-  base::FilePath file(FILE_PATH_LITERAL("download-test.lib"));
-  NavigateToURL(shell(), net::URLRequestMockHTTPJob::GetMockUrl(file));
+  NavigateToURL(shell(),
+                net::URLRequestMockHTTPJob::GetMockUrl("download-test.lib"));
 
   // Wait until the first (intermediate file) rename and execute the callback.
   file_factory->WaitForSomeCallback();
@@ -1031,8 +1028,8 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ShutdownAtRelease) {
       scoped_ptr<DownloadFileFactory>(file_factory).Pass());
 
   // Create a download
-  base::FilePath file(FILE_PATH_LITERAL("download-test.lib"));
-  NavigateToURL(shell(), net::URLRequestMockHTTPJob::GetMockUrl(file));
+  NavigateToURL(shell(),
+                net::URLRequestMockHTTPJob::GetMockUrl("download-test.lib"));
 
   // Wait until the first (intermediate file) rename and execute the callback.
   file_factory->WaitForSomeCallback();
@@ -1338,8 +1335,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeWithDeletedFile) {
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeWithFileInitError) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableDownloadResumption);
-  base::FilePath file(FILE_PATH_LITERAL("download-test.lib"));
-  GURL url(net::URLRequestMockHTTPJob::GetMockUrl(file));
+  GURL url(net::URLRequestMockHTTPJob::GetMockUrl("download-test.lib"));
 
   // Setup the error injector.
   scoped_refptr<TestFileErrorInjector> injector(
@@ -1389,8 +1385,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
                        ResumeWithFileIntermediateRenameError) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableDownloadResumption);
-  base::FilePath file(FILE_PATH_LITERAL("download-test.lib"));
-  GURL url(net::URLRequestMockHTTPJob::GetMockUrl(file));
+  GURL url(net::URLRequestMockHTTPJob::GetMockUrl("download-test.lib"));
 
   // Setup the error injector.
   scoped_refptr<TestFileErrorInjector> injector(
@@ -1441,8 +1436,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeWithFileFinalRenameError) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableDownloadResumption);
-  base::FilePath file(FILE_PATH_LITERAL("download-test.lib"));
-  GURL url(net::URLRequestMockHTTPJob::GetMockUrl(file));
+  GURL url(net::URLRequestMockHTTPJob::GetMockUrl("download-test.lib"));
 
   // Setup the error injector.
   scoped_refptr<TestFileErrorInjector> injector(
@@ -1556,8 +1550,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, RemoveDownload) {
   // removed.
   {
     // Start the second download and wait until it's done.
-    base::FilePath file2(FILE_PATH_LITERAL("download-test.lib"));
-    GURL url2(net::URLRequestMockHTTPJob::GetMockUrl(file2));
+    GURL url2(net::URLRequestMockHTTPJob::GetMockUrl("download-test.lib"));
     scoped_ptr<DownloadTestObserver> completion_observer(
         CreateWaiter(shell(), 1));
     DownloadItem* download(StartDownloadAndReturnItem(url2));

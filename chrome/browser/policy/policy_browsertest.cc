@@ -378,7 +378,7 @@ void DownloadAndVerifyFile(
   content::DownloadTestObserverTerminal observer(
       download_manager, 1,
       content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL);
-  GURL url(URLRequestMockHTTPJob::GetMockUrl(file));
+  GURL url(URLRequestMockHTTPJob::GetMockUrl(file.MaybeAsASCII()));
   base::FilePath downloaded = dir.Append(file);
   EXPECT_FALSE(base::PathExists(downloaded));
   ui_test_utils::NavigateToURL(browser, url);
@@ -1525,8 +1525,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, AlwaysAuthorizePlugins) {
   ASSERT_TRUE(infobar_service);
   EXPECT_EQ(0u, infobar_service->infobar_count());
 
-  base::FilePath path(FILE_PATH_LITERAL("plugin/quicktime.html"));
-  GURL url(URLRequestMockHTTPJob::GetMockUrl(path));
+  GURL url(URLRequestMockHTTPJob::GetMockUrl("plugin/quicktime.html"));
   ui_test_utils::NavigateToURL(browser(), url);
   // This should have triggered the dangerous plugin infobar.
   ASSERT_EQ(1u, infobar_service->infobar_count());
@@ -1735,7 +1734,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallBlacklistSharedModules) {
   base::FilePath update_xml_path = base::FilePath(kTestExtensionsDir)
                                        .AppendASCII("policy_shared_module")
                                        .AppendASCII("update.xml");
-  GURL update_xml_url(URLRequestMockHTTPJob::GetMockUrl(update_xml_path));
+  GURL update_xml_url(
+      URLRequestMockHTTPJob::GetMockUrl(update_xml_path.MaybeAsASCII()));
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kAppsGalleryUpdateURL, update_xml_url.spec());
   ui_test_utils::NavigateToURL(browser(), update_xml_url);
@@ -1829,7 +1829,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallForcelist) {
   // that includes "good_v1.crx".
   base::FilePath path =
       base::FilePath(kTestExtensionsDir).Append(kGoodV1CrxManifestName);
-  GURL url(URLRequestMockHTTPJob::GetMockUrl(path));
+  GURL url(URLRequestMockHTTPJob::GetMockUrl(path.MaybeAsASCII()));
 
   // Setting the forcelist extension should install "good_v1.crx".
   base::ListValue forcelist;
@@ -1941,7 +1941,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionRecommendedInstallationMode) {
 
   base::FilePath path =
       base::FilePath(kTestExtensionsDir).Append(kGoodV1CrxManifestName);
-  GURL url(URLRequestMockHTTPJob::GetMockUrl(path));
+  GURL url(URLRequestMockHTTPJob::GetMockUrl(path.MaybeAsASCII()));
 
   // Setting the forcelist extension should install "good_v1.crx".
   base::DictionaryValue dict_value;
@@ -2019,10 +2019,9 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, MAYBE_ExtensionInstallSources) {
   extensions::ScopedTestDialogAutoConfirm auto_confirm(
       extensions::ScopedTestDialogAutoConfirm::ACCEPT);
 
-  const GURL install_source_url(URLRequestMockHTTPJob::GetMockUrl(
-      base::FilePath(FILE_PATH_LITERAL("extensions/*"))));
-  const GURL referrer_url(URLRequestMockHTTPJob::GetMockUrl(
-      base::FilePath(FILE_PATH_LITERAL("policy/*"))));
+  const GURL install_source_url(
+      URLRequestMockHTTPJob::GetMockUrl("extensions/*"));
+  const GURL referrer_url(URLRequestMockHTTPJob::GetMockUrl("policy/*"));
 
   base::ScopedTempDir download_directory;
   ASSERT_TRUE(download_directory.CreateUniqueTempDir());
@@ -2030,8 +2029,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, MAYBE_ExtensionInstallSources) {
       DownloadPrefs::FromBrowserContext(browser()->profile());
   download_prefs->SetDownloadPath(download_directory.path());
 
-  const GURL download_page_url(URLRequestMockHTTPJob::GetMockUrl(base::FilePath(
-      FILE_PATH_LITERAL("policy/extension_install_sources_test.html"))));
+  const GURL download_page_url(URLRequestMockHTTPJob::GetMockUrl(
+      "policy/extension_install_sources_test.html"));
   ui_test_utils::NavigateToURL(browser(), download_page_url);
 
   // As long as the policy is not present, extensions are considered dangerous.
@@ -2217,7 +2216,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionMinimumVersionForceInstalled) {
   // Prepare the update URL for force installing.
   const base::FilePath path =
       base::FilePath(kTestExtensionsDir).Append(kGoodV1CrxManifestName);
-  const GURL url(URLRequestMockHTTPJob::GetMockUrl(path));
+  const GURL url(URLRequestMockHTTPJob::GetMockUrl(path.MaybeAsASCII()));
 
   // Set policy to force-install the extension, it should be installed and
   // enabled.
@@ -2587,12 +2586,10 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, URLBlacklistSubresources) {
   // Checks that an image with a blacklisted URL is loaded, but an iframe with a
   // blacklisted URL is not.
 
-  GURL main_url = URLRequestMockHTTPJob::GetMockUrl(
-      base::FilePath(FILE_PATH_LITERAL("policy/blacklist-subresources.html")));
-  GURL image_url = URLRequestMockHTTPJob::GetMockUrl(
-      base::FilePath(FILE_PATH_LITERAL("policy/pixel.png")));
-  GURL subframe_url = URLRequestMockHTTPJob::GetMockUrl(
-      base::FilePath(FILE_PATH_LITERAL("policy/blank.html")));
+  GURL main_url =
+      URLRequestMockHTTPJob::GetMockUrl("policy/blacklist-subresources.html");
+  GURL image_url = URLRequestMockHTTPJob::GetMockUrl("policy/pixel.png");
+  GURL subframe_url = URLRequestMockHTTPJob::GetMockUrl("policy/blank.html");
 
   // Set a blacklist containing the image and the iframe which are used by the
   // main document.

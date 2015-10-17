@@ -408,14 +408,9 @@ TEST_F(SavePackageTest, MAYBE_TestSuggestedSaveNames) {
   }
 }
 
-static const base::FilePath::CharType* kTestDir =
-    FILE_PATH_LITERAL("save_page");
-
 // GetUrlToBeSaved method should return correct url to be saved.
 TEST_F(SavePackageTest, TestGetUrlToBeSaved) {
-  base::FilePath file_name(FILE_PATH_LITERAL("a.htm"));
-  GURL url = net::URLRequestMockHTTPJob::GetMockUrl(
-      base::FilePath(kTestDir).Append(file_name));
+  GURL url = net::URLRequestMockHTTPJob::GetMockUrl("save_page/a.htm");
   NavigateAndCommit(url);
   EXPECT_EQ(url, GetUrlToBeSaved());
 }
@@ -425,13 +420,10 @@ TEST_F(SavePackageTest, TestGetUrlToBeSaved) {
 // Ex:GetUrlToBeSaved method should return http://www.google.com
 // when user types view-source:http://www.google.com
 TEST_F(SavePackageTest, TestGetUrlToBeSavedViewSource) {
-  base::FilePath file_name(FILE_PATH_LITERAL("a.htm"));
-  GURL mock_url = net::URLRequestMockHTTPJob::GetMockUrl(
-      base::FilePath(kTestDir).Append(file_name));
+  GURL mock_url = net::URLRequestMockHTTPJob::GetMockUrl("save_page/a.htm");
   GURL view_source_url =
       GURL(kViewSourceScheme + std::string(":") + mock_url.spec());
-  GURL actual_url = net::URLRequestMockHTTPJob::GetMockUrl(
-      base::FilePath(kTestDir).Append(file_name));
+  GURL actual_url = net::URLRequestMockHTTPJob::GetMockUrl("save_page/a.htm");
   NavigateAndCommit(view_source_url);
   EXPECT_EQ(actual_url, GetUrlToBeSaved());
   EXPECT_EQ(view_source_url, contents()->GetLastCommittedURL());

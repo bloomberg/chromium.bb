@@ -2191,8 +2191,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest,
   // a load stop notification before starting a new navigation.
   MultiNavigationObserver test_navigation_observer;
   browser()->OpenURL(content::OpenURLParams(
-      URLRequestMockHTTPJob::GetMockUrl(
-          base::FilePath(FILE_PATH_LITERAL("title2.html"))),
+      URLRequestMockHTTPJob::GetMockUrl("title2.html"),
       content::Referrer(),
       CURRENT_TAB,
       ui::PAGE_TRANSITION_TYPED, false));
@@ -2436,8 +2435,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, TwoBrokenTabs) {
   CaptivePortalObserver portal_observer(browser()->profile());
   ui_test_utils::NavigateToURLWithDisposition(
       browser(),
-      URLRequestMockHTTPJob::GetMockUrl(
-          base::FilePath(FILE_PATH_LITERAL("title2.html"))),
+      URLRequestMockHTTPJob::GetMockUrl("title2.html"),
       NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
 
@@ -2502,8 +2500,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, NavigateBrokenTab) {
   TabStripModel* tab_strip_model = browser()->tab_strip_model();
   tab_strip_model->ActivateTabAt(0, true);
   ui_test_utils::NavigateToURL(
-      browser(), URLRequestMockHTTPJob::GetMockUrl(
-                     base::FilePath(FILE_PATH_LITERAL("title2.html"))));
+      browser(), URLRequestMockHTTPJob::GetMockUrl("title2.html"));
   EXPECT_EQ(CaptivePortalTabReloader::STATE_NONE,
             GetStateOfTabReloaderAt(browser(), 0));
 
@@ -2549,8 +2546,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest,
                        NavigateLoadingTabToTimeoutThreeSites) {
   RunNavigateLoadingTabToTimeoutTest(
       browser(),
-      URLRequestMockHTTPJob::GetMockUrl(
-          base::FilePath(FILE_PATH_LITERAL("title.html"))),
+      URLRequestMockHTTPJob::GetMockUrl("title.html"),
       GURL(kMockHttpsUrl),
       GURL(kMockHttpsUrl2));
 }
@@ -2559,9 +2555,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest,
 IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, GoBack) {
   // Navigate to a working page.
   ui_test_utils::NavigateToURL(
-      browser(),
-      URLRequestMockHTTPJob::GetMockUrl(
-          base::FilePath(FILE_PATH_LITERAL("title2.html"))));
+      browser(), URLRequestMockHTTPJob::GetMockUrl("title2.html"));
 
   // Go to the error page.
   SlowLoadBehindCaptivePortal(browser(), true);
@@ -2593,8 +2587,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, GoBackToTimeout) {
 
   // Navigate to a working page.
   ui_test_utils::NavigateToURL(
-      browser(), URLRequestMockHTTPJob::GetMockUrl(
-                     base::FilePath(FILE_PATH_LITERAL("title2.html"))));
+      browser(), URLRequestMockHTTPJob::GetMockUrl("title2.html"));
   ASSERT_EQ(CaptivePortalTabReloader::STATE_NONE,
             GetStateOfTabReloaderAt(browser(), 0));
 

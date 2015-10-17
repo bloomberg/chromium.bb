@@ -117,8 +117,7 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, DownloadProhibited) {
 
 // Verify can modify database after deleting it.
 IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, Database) {
-  GURL url(net::URLRequestMockHTTPJob::GetMockUrl(
-      base::FilePath().AppendASCII("simple_database.html")));
+  GURL url(net::URLRequestMockHTTPJob::GetMockUrl("simple_database.html"));
   ui_test_utils::NavigateToURL(browser(), url);
 
   RunScriptAndCheckResult("createTable()", "done");

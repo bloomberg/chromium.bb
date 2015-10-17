@@ -204,9 +204,6 @@ class PrerenderResourceThrottleTest : public testing::Test {
 
 // Checks that deferred redirects are throttled and resumed correctly.
 TEST_F(PrerenderResourceThrottleTest, RedirectResume) {
-  const base::FilePath::CharType kRedirectPath[] =
-      FILE_PATH_LITERAL("prerender/image-deferred.png");
-
   test_contents()->Start();
   RunEvents();
 
@@ -214,7 +211,7 @@ TEST_F(PrerenderResourceThrottleTest, RedirectResume) {
   net::TestURLRequestContext url_request_context;
   DeferredRedirectDelegate delegate;
   scoped_ptr<net::URLRequest> request(url_request_context.CreateRequest(
-      net::URLRequestMockHTTPJob::GetMockUrl(base::FilePath(kRedirectPath)),
+      net::URLRequestMockHTTPJob::GetMockUrl("prerender/image-deferred.png"),
       net::DEFAULT_PRIORITY,
       &delegate));
   content::ResourceRequestInfo::AllocateForTesting(
@@ -250,9 +247,6 @@ TEST_F(PrerenderResourceThrottleTest, RedirectResume) {
 
 // Checks that redirects in main frame loads are not deferred.
 TEST_F(PrerenderResourceThrottleTest, RedirectMainFrame) {
-  const base::FilePath::CharType kRedirectPath[] =
-      FILE_PATH_LITERAL("prerender/image-deferred.png");
-
   test_contents()->Start();
   RunEvents();
 
@@ -260,7 +254,7 @@ TEST_F(PrerenderResourceThrottleTest, RedirectMainFrame) {
   net::TestURLRequestContext url_request_context;
   DeferredRedirectDelegate delegate;
   scoped_ptr<net::URLRequest> request(url_request_context.CreateRequest(
-      net::URLRequestMockHTTPJob::GetMockUrl(base::FilePath(kRedirectPath)),
+      net::URLRequestMockHTTPJob::GetMockUrl("prerender/image-deferred.png"),
       net::DEFAULT_PRIORITY,
       &delegate));
   content::ResourceRequestInfo::AllocateForTesting(
@@ -294,9 +288,6 @@ TEST_F(PrerenderResourceThrottleTest, RedirectMainFrame) {
 // Checks that attempting to defer a synchronous request aborts the
 // prerender.
 TEST_F(PrerenderResourceThrottleTest, RedirectSyncXHR) {
-  const base::FilePath::CharType kRedirectPath[] =
-      FILE_PATH_LITERAL("prerender/image-deferred.png");
-
   test_contents()->Start();
   RunEvents();
 
@@ -304,7 +295,7 @@ TEST_F(PrerenderResourceThrottleTest, RedirectSyncXHR) {
   net::TestURLRequestContext url_request_context;
   DeferredRedirectDelegate delegate;
   scoped_ptr<net::URLRequest> request(url_request_context.CreateRequest(
-      net::URLRequestMockHTTPJob::GetMockUrl(base::FilePath(kRedirectPath)),
+      net::URLRequestMockHTTPJob::GetMockUrl("prerender/image-deferred.png"),
       net::DEFAULT_PRIORITY,
       &delegate));
   content::ResourceRequestInfo::AllocateForTesting(

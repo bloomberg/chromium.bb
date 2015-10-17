@@ -330,11 +330,10 @@ class ErrorPageTest : public InProcessBrowserTest {
                                     switches::kEnableShowSavedCopyPrimary);
   }
 
-  // Navigates the active tab to a mock url created for the file at |file_path|.
-  void NavigateToFileURL(const base::FilePath::StringType& file_path) {
-    ui_test_utils::NavigateToURL(
-        browser(),
-        net::URLRequestMockHTTPJob::GetMockUrl(base::FilePath(file_path)));
+  // Navigates the active tab to a mock url created for the file at |path|.
+  void NavigateToFileURL(const std::string& path) {
+    ui_test_utils::NavigateToURL(browser(),
+                                 net::URLRequestMockHTTPJob::GetMockUrl(path));
   }
 
   // Navigates to the given URL and waits for |num_navigations| to occur, and
@@ -584,7 +583,7 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, DNSError_Basic) {
 // Test that a DNS error occuring in the main frame does not result in an
 // additional session history entry.
 IN_PROC_BROWSER_TEST_F(ErrorPageTest, DNSError_GoBack1) {
-  NavigateToFileURL(FILE_PATH_LITERAL("title2.html"));
+  NavigateToFileURL("title2.html");
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
        browser(), GetDnsErrorURL(), 2);
   ExpectDisplayingNavigationCorrections(browser(), net::ERR_NAME_NOT_RESOLVED);
@@ -595,14 +594,14 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, DNSError_GoBack1) {
 // Test that a DNS error occuring in the main frame does not result in an
 // additional session history entry.
 IN_PROC_BROWSER_TEST_F(ErrorPageTest, DNSError_GoBack2) {
-  NavigateToFileURL(FILE_PATH_LITERAL("title2.html"));
+  NavigateToFileURL("title2.html");
 
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
        browser(), GetDnsErrorURL(), 2);
   ExpectDisplayingNavigationCorrections(browser(), net::ERR_NAME_NOT_RESOLVED);
   EXPECT_EQ(1, link_doctor_interceptor()->num_requests());
 
-  NavigateToFileURL(FILE_PATH_LITERAL("title3.html"));
+  NavigateToFileURL("title3.html");
 
   GoBackAndWaitForNavigations(2);
   ExpectDisplayingNavigationCorrections(browser(), net::ERR_NAME_NOT_RESOLVED);
@@ -615,14 +614,14 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, DNSError_GoBack2) {
 // Test that a DNS error occuring in the main frame does not result in an
 // additional session history entry.
 IN_PROC_BROWSER_TEST_F(ErrorPageTest, DNSError_GoBack2AndForward) {
-  NavigateToFileURL(FILE_PATH_LITERAL("title2.html"));
+  NavigateToFileURL("title2.html");
 
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
        browser(), GetDnsErrorURL(), 2);
   ExpectDisplayingNavigationCorrections(browser(), net::ERR_NAME_NOT_RESOLVED);
   EXPECT_EQ(1, link_doctor_interceptor()->num_requests());
 
-  NavigateToFileURL(FILE_PATH_LITERAL("title3.html"));
+  NavigateToFileURL("title3.html");
 
   GoBackAndWaitForNavigations(2);
   ExpectDisplayingNavigationCorrections(browser(), net::ERR_NAME_NOT_RESOLVED);
@@ -638,14 +637,14 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, DNSError_GoBack2AndForward) {
 // Test that a DNS error occuring in the main frame does not result in an
 // additional session history entry.
 IN_PROC_BROWSER_TEST_F(ErrorPageTest, DNSError_GoBack2Forward2) {
-  NavigateToFileURL(FILE_PATH_LITERAL("title3.html"));
+  NavigateToFileURL("title3.html");
 
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
        browser(), GetDnsErrorURL(), 2);
   ExpectDisplayingNavigationCorrections(browser(), net::ERR_NAME_NOT_RESOLVED);
   EXPECT_EQ(1, link_doctor_interceptor()->num_requests());
 
-  NavigateToFileURL(FILE_PATH_LITERAL("title2.html"));
+  NavigateToFileURL("title2.html");
 
   GoBackAndWaitForNavigations(2);
   ExpectDisplayingNavigationCorrections(browser(), net::ERR_NAME_NOT_RESOLVED);
@@ -780,9 +779,7 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, DNSError_DoClickLink) {
 // navigation corrections.
 IN_PROC_BROWSER_TEST_F(ErrorPageTest, IFrameDNSError_Basic) {
   NavigateToURLAndWaitForTitle(
-      net::URLRequestMockHTTPJob::GetMockUrl(
-          base::FilePath(FILE_PATH_LITERAL("iframe_dns_error.html"))),
-      "Blah",
+      net::URLRequestMockHTTPJob::GetMockUrl("iframe_dns_error.html"), "Blah",
       1);
   // We expect to have two history entries, since we started off with navigation
   // to "about:blank" and then navigated to "iframe_dns_error.html".
@@ -801,8 +798,8 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, IFrameDNSError_Basic) {
 // Test that a DNS error occuring in an iframe does not result in an
 // additional session history entry.
 IN_PROC_BROWSER_TEST_F(ErrorPageTest, MAYBE_IFrameDNSError_GoBack) {
-  NavigateToFileURL(FILE_PATH_LITERAL("title2.html"));
-  NavigateToFileURL(FILE_PATH_LITERAL("iframe_dns_error.html"));
+  NavigateToFileURL("title2.html");
+  NavigateToFileURL("iframe_dns_error.html");
   GoBackAndWaitForTitle("Title Of Awesomeness", 1);
   EXPECT_EQ(0, link_doctor_interceptor()->num_requests());
 }
@@ -818,8 +815,8 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, MAYBE_IFrameDNSError_GoBack) {
 // Test that a DNS error occuring in an iframe does not result in an
 // additional session history entry.
 IN_PROC_BROWSER_TEST_F(ErrorPageTest, MAYBE_IFrameDNSError_GoBackAndForward) {
-  NavigateToFileURL(FILE_PATH_LITERAL("title2.html"));
-  NavigateToFileURL(FILE_PATH_LITERAL("iframe_dns_error.html"));
+  NavigateToFileURL("title2.html");
+  NavigateToFileURL("iframe_dns_error.html");
   GoBackAndWaitForTitle("Title Of Awesomeness", 1);
   GoForwardAndWaitForTitle("Blah", 1);
   EXPECT_EQ(0, link_doctor_interceptor()->num_requests());
@@ -836,7 +833,7 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, IFrameDNSError_JavaScript) {
       URLRequestFailedJob::GetMockHttpUrl(net::ERR_NAME_NOT_RESOLVED);
 
   // Load a regular web page, in which we will inject an iframe.
-  NavigateToFileURL(FILE_PATH_LITERAL("title2.html"));
+  NavigateToFileURL("title2.html");
 
   // We expect to have two history entries, since we started off with navigation
   // to "about:blank" and then navigated to "title2.html".
@@ -894,10 +891,7 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, IFrameDNSError_JavaScript) {
 // 404 page.
 IN_PROC_BROWSER_TEST_F(ErrorPageTest, Page404) {
   NavigateToURLAndWaitForTitle(
-      net::URLRequestMockHTTPJob::GetMockUrl(
-          base::FilePath(FILE_PATH_LITERAL("page404.html"))),
-      "SUCCESS",
-      1);
+      net::URLRequestMockHTTPJob::GetMockUrl("page404.html"), "SUCCESS", 1);
   EXPECT_EQ(0, link_doctor_interceptor()->num_requests());
 }
 

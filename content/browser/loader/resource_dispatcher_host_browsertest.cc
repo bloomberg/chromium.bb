@@ -57,11 +57,6 @@ class ResourceDispatcherHostBrowserTest : public ContentBrowserTest,
       got_downloads_ = !!manager->InProgressCount();
   }
 
-  GURL GetMockURL(const std::string& file) {
-    return net::URLRequestMockHTTPJob::GetMockUrl(
-        base::FilePath().AppendASCII(file));
-  }
-
   void CheckTitleTest(const GURL& url,
                       const std::string& expected_title) {
     base::string16 expected_title16(ASCIIToUTF16(expected_title));
@@ -123,26 +118,29 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest, DynamicTitle2) {
 
 IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
                        SniffHTMLWithNoContentType) {
-  CheckTitleTest(GetMockURL("content-sniffer-test0.html"),
-                 "Content Sniffer Test 0");
+  CheckTitleTest(
+      net::URLRequestMockHTTPJob::GetMockUrl("content-sniffer-test0.html"),
+      "Content Sniffer Test 0");
 }
 
 IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
                        RespectNoSniffDirective) {
-  CheckTitleTest(GetMockURL("nosniff-test.html"),
+  CheckTitleTest(net::URLRequestMockHTTPJob::GetMockUrl("nosniff-test.html"),
                  "mock.http/nosniff-test.html");
 }
 
 IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
                        DoNotSniffHTMLFromTextPlain) {
-  CheckTitleTest(GetMockURL("content-sniffer-test1.html"),
-                 "mock.http/content-sniffer-test1.html");
+  CheckTitleTest(
+      net::URLRequestMockHTTPJob::GetMockUrl("content-sniffer-test1.html"),
+      "mock.http/content-sniffer-test1.html");
 }
 
 IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
                        DoNotSniffHTMLFromImageGIF) {
-  CheckTitleTest(GetMockURL("content-sniffer-test2.html"),
-                 "mock.http/content-sniffer-test2.html");
+  CheckTitleTest(
+      net::URLRequestMockHTTPJob::GetMockUrl("content-sniffer-test2.html"),
+      "mock.http/content-sniffer-test2.html");
 }
 
 IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
@@ -150,20 +148,25 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
   // Make sure no downloads start.
   BrowserContext::GetDownloadManager(
       shell()->web_contents()->GetBrowserContext())->AddObserver(this);
-  CheckTitleTest(GetMockURL("content-sniffer-test3.html"),
-                 "Content Sniffer Test 3");
+  CheckTitleTest(
+      net::URLRequestMockHTTPJob::GetMockUrl("content-sniffer-test3.html"),
+      "Content Sniffer Test 3");
   EXPECT_EQ(1u, Shell::windows().size());
   ASSERT_FALSE(got_downloads());
 }
 
 IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
                        ContentDispositionEmpty) {
-  CheckTitleTest(GetMockURL("content-disposition-empty.html"), "success");
+  CheckTitleTest(
+      net::URLRequestMockHTTPJob::GetMockUrl("content-disposition-empty.html"),
+      "success");
 }
 
 IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
                        ContentDispositionInline) {
-  CheckTitleTest(GetMockURL("content-disposition-inline.html"), "success");
+  CheckTitleTest(
+      net::URLRequestMockHTTPJob::GetMockUrl("content-disposition-inline.html"),
+      "success");
 }
 
 // Test for bug #1091358.
@@ -237,8 +240,9 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
 
   // Navigate to a new cross-site page, to dispatch unload event and set the
   // cookie.
-  CheckTitleTest(GetMockURL("content-sniffer-test0.html"),
-                 "Content Sniffer Test 0");
+  CheckTitleTest(
+      net::URLRequestMockHTTPJob::GetMockUrl("content-sniffer-test0.html"),
+      "Content Sniffer Test 0");
 
   // Check that the cookie was set.
   EXPECT_EQ("onunloadCookie=foo", GetCookies(url));
@@ -328,8 +332,9 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
 
   // Navigate to a new cross-site page.  The browser should not wait around for
   // the old renderer's on{before}unload handlers to run.
-  CheckTitleTest(GetMockURL("content-sniffer-test0.html"),
-                 "Content Sniffer Test 0");
+  CheckTitleTest(
+      net::URLRequestMockHTTPJob::GetMockUrl("content-sniffer-test0.html"),
+      "Content Sniffer Test 0");
 }
 
 // Tests that cross-site navigations work when the new page does not go through
@@ -337,8 +342,9 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
 IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
                        CrossSiteNavigationNonBuffered) {
   // Start with an HTTP page.
-  CheckTitleTest(GetMockURL("content-sniffer-test0.html"),
-                 "Content Sniffer Test 0");
+  CheckTitleTest(
+      net::URLRequestMockHTTPJob::GetMockUrl("content-sniffer-test0.html"),
+      "Content Sniffer Test 0");
 
   // Now load a file:// page, which does not use the BufferedEventHandler.
   // Make sure that the page loads and displays a title, and doesn't get stuck.
@@ -428,7 +434,8 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
   //
   // If the redirect in #2 were not blocked, we'd also see a request
   // for http://mock.http:4000/title2.html, and the title would be different.
-  CheckTitleTest(GetMockURL("cross-origin-redirect-blocked.html"),
+  CheckTitleTest(net::URLRequestMockHTTPJob::GetMockUrl(
+                     "cross-origin-redirect-blocked.html"),
                  "Title Of More Awesomeness");
 }
 

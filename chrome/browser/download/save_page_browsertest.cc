@@ -301,15 +301,15 @@ class SavePageBrowserTest : public InProcessBrowserTest {
 
   GURL NavigateToMockURL(const std::string& prefix) {
     GURL url = URLRequestMockHTTPJob::GetMockUrl(
-        base::FilePath(kTestDir).AppendASCII(prefix + ".htm"));
+        "save_page/" + prefix + ".htm");
     ui_test_utils::NavigateToURL(browser(), url);
     return url;
   }
 
   // Returns full paths of destination file and directory.
   void GetDestinationPaths(const std::string& prefix,
-                base::FilePath* full_file_name,
-                base::FilePath* dir) {
+                           base::FilePath* full_file_name,
+                           base::FilePath* dir) {
     *full_file_name = save_dir_.path().AppendASCII(prefix + ".htm");
     *dir = save_dir_.path().AppendASCII(prefix + "_files");
   }
@@ -510,13 +510,11 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, MAYBE_SaveHTMLOnlyTabDestroy) {
 #define MAYBE_SaveViewSourceHTMLOnly SaveViewSourceHTMLOnly
 #endif
 IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, MAYBE_SaveViewSourceHTMLOnly) {
-  base::FilePath file_name(FILE_PATH_LITERAL("a.htm"));
-  GURL mock_url = URLRequestMockHTTPJob::GetMockUrl(
-      base::FilePath(kTestDir).Append(file_name));
+  GURL mock_url = URLRequestMockHTTPJob::GetMockUrl("save_page/a.htm");
   GURL view_source_url =
       GURL(content::kViewSourceScheme + std::string(":") + mock_url.spec());
   GURL actual_page_url = URLRequestMockHTTPJob::GetMockUrl(
-      base::FilePath(kTestDir).Append(file_name));
+      "save_page/a.htm");
   ui_test_utils::NavigateToURL(browser(), view_source_url);
 
   base::FilePath full_file_name, dir;
@@ -527,7 +525,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, MAYBE_SaveViewSourceHTMLOnly) {
   EXPECT_TRUE(base::PathExists(full_file_name));
   EXPECT_FALSE(base::PathExists(dir));
   EXPECT_TRUE(base::ContentsEqual(
-      test_dir_.Append(base::FilePath(kTestDir)).Append(file_name),
+      test_dir_.Append(base::FilePath(kTestDir)).AppendASCII("a.htm"),
       full_file_name));
 }
 
@@ -577,8 +575,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest,
       BrowserContext::GetDownloadManager(incognito->profile()));
 
   // Navigate, unblocking with new tab.
-  GURL url = URLRequestMockHTTPJob::GetMockUrl(
-      base::FilePath(kTestDir).AppendASCII("b.htm"));
+  GURL url = URLRequestMockHTTPJob::GetMockUrl("save_page/b.htm");
   NavigateToURLWithDisposition(incognito, url, NEW_FOREGROUND_TAB,
                                ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
 
@@ -684,7 +681,6 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, MAYBE_RemoveFromList) {
 // We probably don't care to handle this on Linux or Mac.
 #if defined(OS_WIN)
 IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, CleanFilenameFromPageTitle) {
-  const base::FilePath file_name(FILE_PATH_LITERAL("c.htm"));
   base::FilePath download_dir =
       DownloadPrefs::FromDownloadManager(GetDownloadManager())->
           DownloadPath();
@@ -693,8 +689,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, CleanFilenameFromPageTitle) {
   base::FilePath dir = download_dir.AppendASCII("test.exe_files");
 
   EXPECT_FALSE(base::PathExists(full_file_name));
-  GURL url = URLRequestMockHTTPJob::GetMockUrl(
-      base::FilePath(kTestDir).Append(file_name));
+  GURL url = URLRequestMockHTTPJob::GetMockUrl("save_page/c.htm");
   ui_test_utils::NavigateToURL(browser(), url);
 
   SavePackageFilePicker::SetShouldPromptUser(false);
@@ -780,8 +775,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SavePageBrowserTest_NonMHTML) {
 // Flaky: https://crbug.com/537530.
 IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, DISABLED_SaveDownloadableIFrame) {
   GURL url = URLRequestMockHTTPJob::GetMockUrl(
-      base::FilePath(FILE_PATH_LITERAL("downloads"))
-          .AppendASCII("iframe-src-is-a-download.htm"));
+      "downloads/iframe-src-is-a-download.htm");
   ui_test_utils::NavigateToURL(browser(), url);
 
   // Wait for and then dismiss the non-save-page-as-related download item

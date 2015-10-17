@@ -192,8 +192,7 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsTest,
                        PRE_AllowCookiesForASessionUsingExceptions) {
   // NOTE: don't use test_server here, since we need the port to be the same
   // across the restart.
-  GURL url = URLRequestMockHTTPJob::GetMockUrl(
-      base::FilePath(FILE_PATH_LITERAL("setcookie.html")));
+  GURL url = URLRequestMockHTTPJob::GetMockUrl("setcookie.html");
   content_settings::CookieSettings* settings =
       CookieSettingsFactory::GetForProfile(browser()->profile()).get();
   settings->SetDefaultCookieSetting(CONTENT_SETTING_BLOCK);
@@ -210,8 +209,7 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsTest,
 
 IN_PROC_BROWSER_TEST_F(ContentSettingsTest,
                        AllowCookiesForASessionUsingExceptions) {
-  GURL url = URLRequestMockHTTPJob::GetMockUrl(
-      base::FilePath(FILE_PATH_LITERAL("setcookie.html")));
+  GURL url = URLRequestMockHTTPJob::GetMockUrl("setcookie.html");
   ASSERT_TRUE(GetCookies(browser()->profile(), url).empty());
 }
 

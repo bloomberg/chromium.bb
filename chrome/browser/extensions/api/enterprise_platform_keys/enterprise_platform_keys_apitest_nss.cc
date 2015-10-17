@@ -293,8 +293,8 @@ class EnterprisePlatformKeysTest
     // manifest that includes the crx file of the test extension.
     base::FilePath update_manifest_path =
         base::FilePath(kTestExtensionDir).Append(kUpdateManifestFileName);
-    GURL update_manifest_url(
-        net::URLRequestMockHTTPJob::GetMockUrl(update_manifest_path));
+    GURL update_manifest_url(net::URLRequestMockHTTPJob::GetMockUrl(
+        update_manifest_path.MaybeAsASCII()));
 
     scoped_ptr<base::ListValue> forcelist(new base::ListValue);
     forcelist->AppendString(base::StringPrintf(
