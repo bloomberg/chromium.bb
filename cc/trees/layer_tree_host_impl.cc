@@ -1416,10 +1416,18 @@ void LayerTreeHostImpl::SetExternalDrawConstraints(
     }
   }
 
-  if (external_transform_ != transform || external_viewport_ != viewport ||
-      resourceless_software_draw_ != resourceless_software_draw ||
+  const bool transform_changed = external_transform_ != transform;
+  const bool viewport_changed = external_viewport_ != viewport;
+  const bool clip_changed = external_clip_ != clip;
+  const bool resourceless_software_draw_changed =
+      resourceless_software_draw_ != resourceless_software_draw;
+  const bool tile_priority_params_changed =
       viewport_rect_for_tile_priority_ !=
-          viewport_rect_for_tile_priority_in_view_space) {
+      viewport_rect_for_tile_priority_in_view_space;
+
+  // UpdateDrawProperties does not depend on clip.
+  if (transform_changed || viewport_changed ||
+      resourceless_software_draw_changed || tile_priority_params_changed) {
     active_tree_->set_needs_update_draw_properties();
   }
 
@@ -1429,6 +1437,16 @@ void LayerTreeHostImpl::SetExternalDrawConstraints(
   viewport_rect_for_tile_priority_ =
       viewport_rect_for_tile_priority_in_view_space;
   resourceless_software_draw_ = resourceless_software_draw;
+
+  // When not toggling resourceless software draw, need to set redraw for
+  // all changes to draw parameters. Damage will be set externally by Android
+  // WebView for resourceless software draw toggles, so ignored here.
+  const bool draw_params_changed = transform_changed || viewport_changed ||
+                                   clip_changed || tile_priority_params_changed;
+  if (!resourceless_software_draw_changed && draw_params_changed) {
+    SetFullRootLayerDamage();
+    SetNeedsRedraw();
+  }
 }
 
 void LayerTreeHostImpl::SetNeedsRedrawRect(const gfx::Rect& damage_rect) {
@@ -2797,13 +2815,16 @@ void LayerTreeHostImpl::RequestUpdateForSynchronousInputHandler() {
 
 void LayerTreeHostImpl::SetSynchronousInputHandlerRootScrollOffset(
     const gfx::ScrollOffset& root_offset) {
-  active_tree_->DistributeRootScrollOffset(root_offset);
+  bool changed = active_tree_->DistributeRootScrollOffset(root_offset);
+  if (!changed)
+    return;
+
   client_->SetNeedsCommitOnImplThread();
   // After applying the synchronous input handler's scroll offset, tell it what
   // we ended up with.
   UpdateRootLayerStateForSynchronousInputHandler();
-  // No need to SetNeedsRedraw, this is for WebView and every frame has redraw
-  // requested by the WebView embedder already.
+  SetFullRootLayerDamage();
+  SetNeedsRedraw();
 }
 
 void LayerTreeHostImpl::ClearCurrentlyScrollingLayer() {

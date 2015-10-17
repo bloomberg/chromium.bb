@@ -8177,6 +8177,74 @@ TEST_F(LayerTreeHostImplTest, ExternalTransformReflectedInNextDraw) {
       external_transform, layer->draw_properties().target_space_transform);
 }
 
+TEST_F(LayerTreeHostImplTest, ExternalTransformSetNeedsRedraw) {
+  SetupRootLayerImpl(LayerImpl::Create(host_impl_->active_tree(), 1));
+
+  const gfx::Size layer_size(100, 100);
+  const gfx::Transform external_transform;
+  const gfx::Rect external_viewport(layer_size);
+  const gfx::Rect external_clip1(layer_size);
+  const gfx::Rect external_clip2(50, 50);
+  bool resourceless_software_draw = false;
+
+  resourceless_software_draw = false;
+  host_impl_->SetExternalDrawConstraints(
+      external_transform, external_viewport, external_clip1, external_viewport,
+      external_transform, resourceless_software_draw);
+  {
+    // Clear any damage.
+    LayerTreeHostImpl::FrameData frame;
+    EXPECT_EQ(DRAW_SUCCESS, PrepareToDrawFrame(&frame));
+    host_impl_->DrawLayers(&frame);
+    host_impl_->DidDrawAllLayers(frame);
+    host_impl_->SwapBuffers(frame);
+  }
+
+  // Setting new constraints needs redraw.
+  did_request_redraw_ = false;
+  host_impl_->SetExternalDrawConstraints(
+      external_transform, external_viewport, external_clip2, external_viewport,
+      external_transform, resourceless_software_draw);
+  EXPECT_TRUE(did_request_redraw_);
+  {
+    LayerTreeHostImpl::FrameData frame;
+    EXPECT_EQ(DRAW_SUCCESS, PrepareToDrawFrame(&frame));
+    EXPECT_FALSE(frame.has_no_damage);
+    host_impl_->DrawLayers(&frame);
+    host_impl_->DidDrawAllLayers(frame);
+    host_impl_->SwapBuffers(frame);
+  }
+
+  // Resourceless software draw toggles do not need redraw. Damage is
+  // set externally by SynchronousCompositorOutputSurface in this case.
+
+  // Setting resourceless_software_draw do not need redraw.
+  did_request_redraw_ = false;
+  resourceless_software_draw = true;
+  host_impl_->SetExternalDrawConstraints(
+      external_transform, external_viewport, external_clip1, external_viewport,
+      external_transform, resourceless_software_draw);
+  EXPECT_FALSE(did_request_redraw_);
+  {
+    LayerTreeHostImpl::FrameData frame;
+    EXPECT_EQ(DRAW_SUCCESS, PrepareToDrawFrame(&frame));
+    EXPECT_TRUE(frame.has_no_damage);
+  }
+
+  // Unsetting resourceless_software_draw do not need redraw.
+  did_request_redraw_ = false;
+  resourceless_software_draw = false;
+  host_impl_->SetExternalDrawConstraints(
+      external_transform, external_viewport, external_clip2, external_viewport,
+      external_transform, resourceless_software_draw);
+  EXPECT_FALSE(did_request_redraw_);
+  {
+    LayerTreeHostImpl::FrameData frame;
+    EXPECT_EQ(DRAW_SUCCESS, PrepareToDrawFrame(&frame));
+    EXPECT_TRUE(frame.has_no_damage);
+  }
+}
+
 TEST_F(LayerTreeHostImplTest, ScrollAnimated) {
   SetupScrollAndContentsLayers(gfx::Size(100, 200));
   DrawFrame();

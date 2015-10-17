@@ -1075,10 +1075,10 @@ void LayerTreeImpl::AsValueInto(base::trace_event::TracedValue* state) const {
   state->EndArray();
 }
 
-void LayerTreeImpl::DistributeRootScrollOffset(
+bool LayerTreeImpl::DistributeRootScrollOffset(
     const gfx::ScrollOffset& root_offset) {
   if (!InnerViewportScrollLayer())
-    return;
+    return false;
 
   DCHECK(OuterViewportScrollLayer());
 
@@ -1092,7 +1092,7 @@ void LayerTreeImpl::DistributeRootScrollOffset(
   // It may be nothing has changed.
   DCHECK(inner_viewport_offset + outer_viewport_offset == TotalScrollOffset());
   if (inner_viewport_offset + outer_viewport_offset == root_offset)
-    return;
+    return false;
 
   gfx::ScrollOffset max_outer_viewport_scroll_offset =
       OuterViewportScrollLayer()->MaxScrollOffset();
@@ -1104,6 +1104,7 @@ void LayerTreeImpl::DistributeRootScrollOffset(
   OuterViewportScrollLayer()->SetCurrentScrollOffset(outer_viewport_offset);
   inner_viewport_offset = root_offset - outer_viewport_offset;
   InnerViewportScrollLayer()->SetCurrentScrollOffset(inner_viewport_offset);
+  return true;
 }
 
 void LayerTreeImpl::QueueSwapPromise(scoped_ptr<SwapPromise> swap_promise) {
