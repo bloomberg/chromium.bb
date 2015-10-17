@@ -203,16 +203,18 @@
                      # However, on ARM it needs a few (safe) things
                      # from libc.
                      '-static',
+                     # On x86-64, the default page size with some linkers
+                     # is 2M rather than the real Linux page size of 4K.
+                     # And on ARM, the default page size is 32K.  A larger
+                     # page size is incompatible with our custom linker
+                     # script's special layout.  NOTE: It's important that
+                     # this option come before --script!
+                     '-z', 'max-page-size=0x1000',
                      # Link with custom linker script for special
                      # layout.  The script uses the symbol RESERVE_TOP.
                      '--defsym', 'RESERVE_TOP=<(nacl_reserve_top)',
                      '--script=<(linker_script)',
                      '-o', '<@(_outputs)',
-                     # On x86-64, the default page size with some
-                     # linkers is 2M rather than the real Linux page
-                     # size of 4K.  A larger page size is incompatible
-                     # with our custom linker script's special layout.
-                     '-z', 'max-page-size=0x1000',
                      '--whole-archive', '<(bootstrap_lib)',
                      '--no-whole-archive',
                    ],
