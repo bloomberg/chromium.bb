@@ -15,9 +15,8 @@ BLOB_CATEGORY = 'Blob'
 TIMELINE_REQUIRED_CATEGORY = 'blink.console'
 
 
-@benchmark.Disabled  # http://crbug.com/510815
-#@benchmark.Disabled('reference',  # http://crbug.com/496155
-#                    'android')    # http://crbug.com/499325
+@benchmark.Disabled('reference',  # http://crbug.com/496155
+                    'android')    # http://crbug.com/499325
 class BlobStorage(perf_benchmark.PerfBenchmark):
   """Timeline based measurement benchmark for Blob Storage."""
 
@@ -30,6 +29,11 @@ class BlobStorage(perf_benchmark.PerfBenchmark):
 
     return timeline_based_measurement.Options(
         overhead_level=cat_filter)
+
+  # Necessary until crbug.com/544306 is finished.
+  def SetExtraBrowserOptions(self, options):
+    options.AppendExtraBrowserArgs(
+        ['--enable-experimental-web-platform-features'])
 
   @classmethod
   def Name(cls):

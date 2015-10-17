@@ -59,6 +59,9 @@ class BlobMassCreate(page_module.Page):
         action_runner.ExecuteJavaScript('readBlobsSerially();')
         action_runner.WaitForJavaScriptCondition(
             'doneReading === true || errors', 60)
+    # Clean up blobs. Make sure this flag is turned on:
+    # --enable-experimental-web-platform-features
+    action_runner.ExecuteJavaScript('garbageCollect();')
 
     errors = action_runner.EvaluateJavaScript('errors')
     if errors:

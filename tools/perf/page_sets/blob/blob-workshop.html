@@ -57,6 +57,11 @@ function createBlob(size) {
 }
 
 function garbageCollect() {
+  if (typeof(Blob.prototype.close) !== "undefined") {
+    for (var blob of blobs) {
+      blob.close();
+    }
+  }
   blobs = [];
   bytes = 0;
   updateStats();
