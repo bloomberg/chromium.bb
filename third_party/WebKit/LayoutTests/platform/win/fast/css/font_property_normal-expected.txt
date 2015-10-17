@@ -1,8 +1,8 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 800x597
-  LayoutBlockFlow {HTML} at (0,0) size 800x597
-    LayoutBlockFlow {BODY} at (8,16) size 784x565
+layer at (0,0) size 800x562
+  LayoutBlockFlow {HTML} at (0,0) size 800x562
+    LayoutBlockFlow {BODY} at (8,16) size 784x530
       LayoutBlockFlow {P} at (0,0) size 784x18
         LayoutText {#text} at (0,0) size 471x17
           text run at (0,0) width 471: "Fails indicate that the font property specification is invalid in strict mode."
@@ -12,27 +12,27 @@ layer at (0,0) size 800x597
       LayoutBlockFlow {P} at (0,119) size 784x37
         LayoutText {#text} at (0,0) size 294x36
           text run at (0,0) width 294: "24pt italic Arial = 24pt"
-      LayoutBlockFlow {P} at (0,188) size 784x37
-        LayoutText {#text} at (0,0) size 392x36
-          text run at (0,0) width 392: "24pt italic 'Arial' = 24pt Arial"
-      LayoutBlockFlow {P} at (0,257) size 784x18
+      LayoutBlockFlow {P} at (0,188) size 784x18
+        LayoutText {#text} at (0,0) size 190x17
+          text run at (0,0) width 190: "24pt italic 'Arial' = 24pt Arial"
+      LayoutBlockFlow {P} at (0,222) size 784x18
         LayoutText {#text} at (0,0) size 109x17
           text run at (0,0) width 109: "italic 24pt = fails"
-      LayoutBlockFlow {P} at (0,307) size 784x37
+      LayoutBlockFlow {P} at (0,272) size 784x37
         LayoutText {#text} at (0,0) size 455x36
           text run at (0,0) width 455: "italic 24pt Arial = 24pt Arial Italic"
-      LayoutBlockFlow {P} at (0,376) size 784x37
+      LayoutBlockFlow {P} at (0,341) size 784x37
         LayoutText {#text} at (0,0) size 467x36
           text run at (0,0) width 467: "italic 24pt 'Arial' = 24pt Arial Italic"
-      LayoutBlockFlow {P} at (0,445) size 784x18
+      LayoutBlockFlow {P} at (0,410) size 784x18
         LayoutText {#text} at (0,0) size 146x17
           text run at (0,0) width 146: "Arial 24pt italic = fails"
-      LayoutBlockFlow {P} at (0,479) size 784x18
+      LayoutBlockFlow {P} at (0,444) size 784x18
         LayoutText {#text} at (0,0) size 152x17
           text run at (0,0) width 152: "'Arial' 24pt italic = fails"
-      LayoutBlockFlow {P} at (0,513) size 784x18
+      LayoutBlockFlow {P} at (0,478) size 784x18
         LayoutText {#text} at (0,0) size 146x17
           text run at (0,0) width 146: "Arial italic 24pt = fails"
-      LayoutBlockFlow {P} at (0,547) size 784x18
+      LayoutBlockFlow {P} at (0,512) size 784x18
         LayoutText {#text} at (0,0) size 152x17
           text run at (0,0) width 152: "'Arial' italic 24pt = fails"
