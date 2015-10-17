@@ -259,7 +259,6 @@ void DataPipeProducerDispatcher::RemoveAwakableImplNoLock(
 void DataPipeProducerDispatcher::StartSerializeImplNoLock(
     size_t* max_size,
     size_t* max_platform_handles) {
-  DCHECK(HasOneRef());  // Only one ref => no need to take the lock.
   if (!serialized_)
     SerializeInternal();
 
@@ -272,8 +271,6 @@ bool DataPipeProducerDispatcher::EndSerializeAndCloseImplNoLock(
     void* destination,
     size_t* actual_size,
     PlatformHandleVector* platform_handles) {
-  DCHECK(HasOneRef());  // Only one ref => no need to take the lock.
-
   ScopedPlatformHandle shared_memory_handle;
   size_t shared_memory_size = serialized_write_buffer_.size();
   if (shared_memory_size) {

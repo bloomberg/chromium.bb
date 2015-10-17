@@ -230,7 +230,6 @@ MojoResult SharedBufferDispatcher::MapBufferImplNoLock(
 void SharedBufferDispatcher::StartSerializeImplNoLock(
     size_t* max_size,
     size_t* max_platform_handles) {
-  DCHECK(HasOneRef());  // Only one ref => no need to take the lock.
   *max_size = sizeof(SerializedSharedBufferDispatcher);
   *max_platform_handles = 1;
 }
@@ -239,7 +238,6 @@ bool SharedBufferDispatcher::EndSerializeAndCloseImplNoLock(
     void* destination,
     size_t* actual_size,
     PlatformHandleVector* platform_handles) {
-  DCHECK(HasOneRef());  // Only one ref => no need to take the lock.
   DCHECK(shared_buffer_);
 
   SerializedSharedBufferDispatcher* serialization =

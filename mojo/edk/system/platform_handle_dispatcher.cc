@@ -85,7 +85,6 @@ PlatformHandleDispatcher::CreateEquivalentDispatcherAndCloseImplNoLock() {
 void PlatformHandleDispatcher::StartSerializeImplNoLock(
     size_t* max_size,
     size_t* max_platform_handles) {
-  DCHECK(HasOneRef());  // Only one ref => no need to take the lock.
   *max_size = sizeof(SerializedPlatformHandleDispatcher);
   *max_platform_handles = 1;
 }
@@ -94,8 +93,6 @@ bool PlatformHandleDispatcher::EndSerializeAndCloseImplNoLock(
     void* destination,
     size_t* actual_size,
     PlatformHandleVector* platform_handles) {
-  DCHECK(HasOneRef());  // Only one ref => no need to take the lock.
-
   SerializedPlatformHandleDispatcher* serialization =
       static_cast<SerializedPlatformHandleDispatcher*>(destination);
   if (platform_handle_.is_valid()) {

@@ -404,7 +404,6 @@ void Dispatcher::RemoveAwakableImplNoLock(Awakable* /*awakable*/,
 
 void Dispatcher::StartSerializeImplNoLock(size_t* max_size,
                                           size_t* max_platform_handles) {
-  DCHECK(HasOneRef());  // Only one ref => no need to take the lock.
   DCHECK(!is_closed_);
   *max_size = 0;
   *max_platform_handles = 0;
@@ -414,7 +413,6 @@ bool Dispatcher::EndSerializeAndCloseImplNoLock(
     void* /*destination*/,
     size_t* /*actual_size*/,
     PlatformHandleVector* /*platform_handles*/) {
-  DCHECK(HasOneRef());  // Only one ref => no need to take the lock.
   DCHECK(is_closed_);
   // By default, serializing isn't supported, so just close.
   CloseImplNoLock();
