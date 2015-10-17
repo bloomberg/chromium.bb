@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "media/base/gmock_callback_support.h"
+#include "media/base/media_util.h"
 #include "media/base/mock_filters.h"
 #include "media/base/test_helpers.h"
 #include "media/filters/decoder_selector.h"
@@ -77,16 +78,16 @@ class AudioDecoderSelectorTest : public ::testing::Test {
   }
 
   void UseClearStream() {
-    AudioDecoderConfig clear_audio_config(
-        kCodecVorbis, kSampleFormatPlanarF32, CHANNEL_LAYOUT_STEREO, 44100,
-        NULL, 0, false);
+    AudioDecoderConfig clear_audio_config(kCodecVorbis, kSampleFormatPlanarF32,
+                                          CHANNEL_LAYOUT_STEREO, 44100,
+                                          EmptyExtraData(), false);
     demuxer_stream_->set_audio_decoder_config(clear_audio_config);
   }
 
   void UseEncryptedStream() {
     AudioDecoderConfig encrypted_audio_config(
         kCodecVorbis, kSampleFormatPlanarF32, CHANNEL_LAYOUT_STEREO, 44100,
-        NULL, 0, true);
+        EmptyExtraData(), true);
     demuxer_stream_->set_audio_decoder_config(encrypted_audio_config);
   }
 

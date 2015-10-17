@@ -35,8 +35,7 @@ class MEDIA_EXPORT VideoDecoderConfig {
                      const gfx::Size& coded_size,
                      const gfx::Rect& visible_rect,
                      const gfx::Size& natural_size,
-                     const uint8* extra_data,
-                     size_t extra_data_size,
+                     const std::vector<uint8_t>& extra_data,
                      bool is_encrypted);
 
   ~VideoDecoderConfig();
@@ -49,8 +48,7 @@ class MEDIA_EXPORT VideoDecoderConfig {
                   const gfx::Size& coded_size,
                   const gfx::Rect& visible_rect,
                   const gfx::Size& natural_size,
-                  const uint8* extra_data,
-                  size_t extra_data_size,
+                  const std::vector<uint8_t>& extra_data,
                   bool is_encrypted);
 
   // Returns true if this object has appropriate configuration values, false
@@ -91,8 +89,7 @@ class MEDIA_EXPORT VideoDecoderConfig {
 
   // Optional byte data required to initialize video decoders, such as H.264
   // AAVC data.
-  const uint8* extra_data() const;
-  size_t extra_data_size() const { return extra_data_.size(); }
+  const std::vector<uint8_t>& extra_data() const { return extra_data_; }
 
   // Whether the video stream is potentially encrypted.
   // Note that in a potentially encrypted video stream, individual buffers
@@ -110,7 +107,7 @@ class MEDIA_EXPORT VideoDecoderConfig {
   gfx::Rect visible_rect_;
   gfx::Size natural_size_;
 
-  std::vector<uint8> extra_data_;
+  std::vector<uint8_t> extra_data_;
 
   bool is_encrypted_;
 

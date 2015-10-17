@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <deque>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/format_macros.h"
@@ -16,6 +17,7 @@
 #include "media/base/audio_bus.h"
 #include "media/base/audio_hash.h"
 #include "media/base/decoder_buffer.h"
+#include "media/base/media_util.h"
 #include "media/base/test_data_util.h"
 #include "media/base/test_helpers.h"
 #include "media/base/timestamp_constants.h"
@@ -151,8 +153,8 @@ class AudioDecoderTest : public testing::TestWithParam<DecoderTestData> {
     ASSERT_TRUE(reader_->SeekForTesting(start_timestamp_));
 
     AudioDecoderConfig config;
-    AVCodecContextToAudioDecoderConfig(reader_->codec_context_for_testing(),
-                                       false, &config);
+    ASSERT_TRUE(AVCodecContextToAudioDecoderConfig(
+        reader_->codec_context_for_testing(), false, &config));
 
     EXPECT_EQ(GetParam().codec, config.codec());
     EXPECT_EQ(GetParam().samples_per_second, config.samples_per_second());
@@ -374,13 +376,15 @@ TEST_P(AudioDecoderTest, NoTimestamp) {
 
 TEST_P(OpusAudioDecoderBehavioralTest, InitializeWithNoCodecDelay) {
   ASSERT_EQ(GetParam().decoder_type, OPUS);
+  std::vector<uint8_t> extra_data(
+      kOpusExtraData,
+      kOpusExtraData + arraysize(kOpusExtraData));
   AudioDecoderConfig decoder_config;
   decoder_config.Initialize(kCodecOpus,
                             kSampleFormatF32,
                             CHANNEL_LAYOUT_STEREO,
                             48000,
-                            kOpusExtraData,
-                            arraysize(kOpusExtraData),
+                            extra_data,
                             false,
                             base::TimeDelta::FromMilliseconds(80),
                             0);
@@ -389,14 +393,16 @@ TEST_P(OpusAudioDecoderBehavioralTest, InitializeWithNoCodecDelay) {
 
 TEST_P(OpusAudioDecoderBehavioralTest, InitializeWithBadCodecDelay) {
   ASSERT_EQ(GetParam().decoder_type, OPUS);
+  std::vector<uint8_t> extra_data(
+      kOpusExtraData,
+      kOpusExtraData + arraysize(kOpusExtraData));
   AudioDecoderConfig decoder_config;
   decoder_config.Initialize(
       kCodecOpus,
       kSampleFormatF32,
       CHANNEL_LAYOUT_STEREO,
       48000,
-      kOpusExtraData,
-      arraysize(kOpusExtraData),
+      extra_data,
       false,
       base::TimeDelta::FromMilliseconds(80),
       // Use a different codec delay than in the extradata.
@@ -410,8 +416,7 @@ TEST_P(FFmpegAudioDecoderBehavioralTest, InitializeWithBadConfig) {
                                           CHANNEL_LAYOUT_STEREO,
                                           // Invalid sample rate of zero.
                                           0,
-                                          NULL,
-                                          0,
+                                          EmptyExtraData(),
                                           false);
   InitializeDecoderWithResult(decoder_config, false);
 }

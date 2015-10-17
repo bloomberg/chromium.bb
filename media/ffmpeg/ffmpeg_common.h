@@ -85,19 +85,26 @@ MEDIA_EXPORT base::TimeDelta ConvertFromTimeBase(const AVRational& time_base,
 MEDIA_EXPORT int64 ConvertToTimeBase(const AVRational& time_base,
                                      const base::TimeDelta& timestamp);
 
-void AVStreamToAudioDecoderConfig(const AVStream* stream,
-                                  AudioDecoderConfig* config);
+// Returns true if AVStream is successfully converted to a AudioDecoderConfig.
+// Returns false if conversion fails, in which case |config| is not modified.
+MEDIA_EXPORT bool AVStreamToAudioDecoderConfig(const AVStream* stream,
+                                               AudioDecoderConfig* config);
 void AudioDecoderConfigToAVCodecContext(
     const AudioDecoderConfig& config,
     AVCodecContext* codec_context);
 
-void AVStreamToVideoDecoderConfig(const AVStream* stream,
-                                  VideoDecoderConfig* config);
+// Returns true if AVStream is successfully converted to a VideoDecoderConfig.
+// Returns false if conversion fails, in which case |config| is not modified.
+MEDIA_EXPORT bool AVStreamToVideoDecoderConfig(const AVStream* stream,
+                                               VideoDecoderConfig* config);
 void VideoDecoderConfigToAVCodecContext(
     const VideoDecoderConfig& config,
     AVCodecContext* codec_context);
 
-MEDIA_EXPORT void AVCodecContextToAudioDecoderConfig(
+// Returns true if AVCodecContext is successfully converted to an
+// AudioDecoderConfig. Returns false if conversion fails, in which case |config|
+// is not modified.
+MEDIA_EXPORT bool AVCodecContextToAudioDecoderConfig(
     const AVCodecContext* codec_context,
     bool is_encrypted,
     AudioDecoderConfig* config);

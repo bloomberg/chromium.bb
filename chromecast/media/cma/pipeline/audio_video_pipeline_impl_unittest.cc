@@ -25,6 +25,7 @@
 #include "chromecast/media/cma/test/mock_frame_provider.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/decoder_buffer.h"
+#include "media/base/media_util.h"
 #include "media/base/video_decoder_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -80,13 +81,13 @@ void AudioVideoPipelineImplTest::Initialize(
       ::media::kSampleFormatS16,
       ::media::CHANNEL_LAYOUT_STEREO,
       44100,
-      NULL, 0, false);
+      ::media::EmptyExtraData(), false);
   std::vector<::media::VideoDecoderConfig> video_configs;
   video_configs.push_back(::media::VideoDecoderConfig(
       ::media::kCodecH264, ::media::H264PROFILE_MAIN,
       ::media::PIXEL_FORMAT_I420, ::media::COLOR_SPACE_UNSPECIFIED,
-      gfx::Size(640, 480), gfx::Rect(0, 0, 640, 480), gfx::Size(640, 480), NULL,
-      0, false));
+      gfx::Size(640, 480), gfx::Rect(0, 0, 640, 480), gfx::Size(640, 480),
+      ::media::EmptyExtraData(), false));
 
   // Frame generation on the producer side.
   std::vector<FrameGeneratorForTest::FrameSpec> frame_specs;

@@ -7,6 +7,7 @@
 #include "media/base/audio_decoder_config.h"
 #include "media/base/cdm_config.h"
 #include "media/base/decoder_buffer.h"
+#include "media/base/media_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
@@ -121,22 +122,23 @@ TEST(MediaTypeConvertersTest, ConvertDecoderBuffer_EncryptedBuffer) {
 // TODO(tim): Check other properties.
 
 TEST(MediaTypeConvertersTest, ConvertAudioDecoderConfig_Normal) {
-  const uint8 kExtraData[] = "config extra data";
-  const int kExtraDataSize = arraysize(kExtraData);
+  const uint8_t kExtraData[] = "config extra data";
+  const std::vector<uint8_t> kExtraDataVector(
+      &kExtraData[0], &kExtraData[0] + arraysize(kExtraData));
+
   AudioDecoderConfig config;
   config.Initialize(kCodecAAC, kSampleFormatU8, CHANNEL_LAYOUT_SURROUND, 48000,
-                    reinterpret_cast<const uint8*>(&kExtraData), kExtraDataSize,
-                    false, base::TimeDelta(), 0);
+                    kExtraDataVector, false, base::TimeDelta(), 0);
   interfaces::AudioDecoderConfigPtr ptr(
       interfaces::AudioDecoderConfig::From(config));
   AudioDecoderConfig result(ptr.To<AudioDecoderConfig>());
   EXPECT_TRUE(result.Matches(config));
 }
 
-TEST(MediaTypeConvertersTest, ConvertAudioDecoderConfig_NullExtraData) {
+TEST(MediaTypeConvertersTest, ConvertAudioDecoderConfig_EmptyExtraData) {
   AudioDecoderConfig config;
   config.Initialize(kCodecAAC, kSampleFormatU8, CHANNEL_LAYOUT_SURROUND, 48000,
-                    NULL, 0, false, base::TimeDelta(), 0);
+                    EmptyExtraData(), false, base::TimeDelta(), 0);
   interfaces::AudioDecoderConfigPtr ptr(
       interfaces::AudioDecoderConfig::From(config));
   AudioDecoderConfig result(ptr.To<AudioDecoderConfig>());
@@ -146,7 +148,7 @@ TEST(MediaTypeConvertersTest, ConvertAudioDecoderConfig_NullExtraData) {
 TEST(MediaTypeConvertersTest, ConvertAudioDecoderConfig_Encrypted) {
   AudioDecoderConfig config;
   config.Initialize(kCodecAAC, kSampleFormatU8, CHANNEL_LAYOUT_SURROUND, 48000,
-                    NULL, 0,
+                    EmptyExtraData(),
                     true,  // Is encrypted.
                     base::TimeDelta(), 0);
   interfaces::AudioDecoderConfigPtr ptr(

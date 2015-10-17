@@ -182,8 +182,8 @@ AudioConfig DecoderConfigAdapter::ToCastAudioConfig(
       ::media::ChannelLayoutToChannelCount(config.channel_layout()),
   audio_config.samples_per_second = config.samples_per_second();
   audio_config.extra_data =
-      (config.extra_data_size() > 0) ? config.extra_data() : nullptr;
-  audio_config.extra_data_size = config.extra_data_size();
+      (config.extra_data().empty()) ? nullptr : &config.extra_data()[0];
+  audio_config.extra_data_size = config.extra_data().size();
   audio_config.is_encrypted = config.is_encrypted();
   return audio_config;
 }
@@ -191,11 +191,16 @@ AudioConfig DecoderConfigAdapter::ToCastAudioConfig(
 // static
 ::media::AudioDecoderConfig DecoderConfigAdapter::ToMediaAudioDecoderConfig(
     const AudioConfig& config) {
+  std::vector<uint8_t> extra_data;
+  if (config.extra_data_size > 0)
+    extra_data.assign(config.extra_data,
+                      config.extra_data + config.extra_data_size);
+
   return ::media::AudioDecoderConfig(
       ToMediaAudioCodec(config.codec),
       ToMediaSampleFormat(config.sample_format),
       ToMediaChannelLayout(config.channel_number), config.samples_per_second,
-      config.extra_data, config.extra_data_size, config.is_encrypted);
+      extra_data, config.is_encrypted);
 }
 
 // static
@@ -210,9 +215,9 @@ VideoConfig DecoderConfigAdapter::ToCastVideoConfig(
   video_config.id = id;
   video_config.codec = ToVideoCodec(config.codec());
   video_config.profile = ToVideoProfile(config.profile());
-  video_config.extra_data = (config.extra_data_size() > 0) ?
-      config.extra_data() : nullptr;
-  video_config.extra_data_size = config.extra_data_size();
+  video_config.extra_data = (config.extra_data().empty()) ?
+      nullptr : &config.extra_data()[0];
+  video_config.extra_data_size = config.extra_data().size();
   video_config.is_encrypted = config.is_encrypted();
   return video_config;
 }

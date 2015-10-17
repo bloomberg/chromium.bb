@@ -55,22 +55,22 @@ class MEDIA_EXPORT AudioDecoderConfig {
   // appropriate values before using.
   AudioDecoderConfig();
 
-  // Constructs an initialized object. It is acceptable to pass in NULL for
-  // |extra_data|, otherwise the memory is copied.
-  AudioDecoderConfig(AudioCodec codec, SampleFormat sample_format,
-                     ChannelLayout channel_layout, int samples_per_second,
-                     const uint8* extra_data, size_t extra_data_size,
+  // Constructs an initialized object.
+  AudioDecoderConfig(AudioCodec codec,
+                     SampleFormat sample_format,
+                     ChannelLayout channel_layout,
+                     int samples_per_second,
+                     const std::vector<uint8_t>& extra_data,
                      bool is_encrypted);
 
   ~AudioDecoderConfig();
 
-  // Resets the internal state of this object.  |codec_delay| is in frames.
+  // Resets the internal state of this object. |codec_delay| is in frames.
   void Initialize(AudioCodec codec,
                   SampleFormat sample_format,
                   ChannelLayout channel_layout,
                   int samples_per_second,
-                  const uint8* extra_data,
-                  size_t extra_data_size,
+                  const std::vector<uint8>& extra_data,
                   bool is_encrypted,
                   base::TimeDelta seek_preroll,
                   int codec_delay);
@@ -101,10 +101,7 @@ class MEDIA_EXPORT AudioDecoderConfig {
 
   // Optional byte data required to initialize audio decoders such as Vorbis
   // codebooks.
-  const uint8* extra_data() const {
-    return extra_data_.empty() ? NULL : &extra_data_[0];
-  }
-  size_t extra_data_size() const { return extra_data_.size(); }
+  const std::vector<uint8_t>& extra_data() const { return extra_data_; }
 
   // Whether the audio stream is potentially encrypted.
   // Note that in a potentially encrypted audio stream, individual buffers
@@ -118,7 +115,7 @@ class MEDIA_EXPORT AudioDecoderConfig {
   ChannelLayout channel_layout_;
   int samples_per_second_;
   int bytes_per_frame_;
-  std::vector<uint8> extra_data_;
+  std::vector<uint8_t> extra_data_;
   bool is_encrypted_;
 
   // |seek_preroll_| is the duration of the data that the decoder must decode

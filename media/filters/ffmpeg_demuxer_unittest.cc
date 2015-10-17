@@ -296,8 +296,7 @@ TEST_F(FFmpegDemuxerTest, Initialize_Successful) {
   EXPECT_EQ(240, video_config.visible_rect().height());
   EXPECT_EQ(320, video_config.natural_size().width());
   EXPECT_EQ(240, video_config.natural_size().height());
-  EXPECT_FALSE(video_config.extra_data());
-  EXPECT_EQ(0u, video_config.extra_data_size());
+  EXPECT_TRUE(video_config.extra_data().empty());
 
   // Audio stream should be present.
   stream = demuxer_->GetStream(DemuxerStream::AUDIO);
@@ -310,8 +309,7 @@ TEST_F(FFmpegDemuxerTest, Initialize_Successful) {
   EXPECT_EQ(CHANNEL_LAYOUT_STEREO, audio_config.channel_layout());
   EXPECT_EQ(44100, audio_config.samples_per_second());
   EXPECT_EQ(kSampleFormatPlanarF32, audio_config.sample_format());
-  EXPECT_TRUE(audio_config.extra_data());
-  EXPECT_GT(audio_config.extra_data_size(), 0u);
+  EXPECT_FALSE(audio_config.extra_data().empty());
 
   // Unknown stream should never be present.
   EXPECT_FALSE(demuxer_->GetStream(DemuxerStream::UNKNOWN));
