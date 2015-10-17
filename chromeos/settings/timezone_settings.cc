@@ -22,6 +22,12 @@
 #include "base/threading/worker_pool.h"
 #include "chromeos/settings/timezone_settings_helper.h"
 
+namespace chromeos {
+namespace system {
+const char kUTCTimezoneName[] = "Etc/GMT";
+}
+}
+
 namespace {
 
 // The filepath to the timezone file that symlinks to the actual timezone file.
@@ -77,6 +83,7 @@ static const char* kTimeZones[] = {
     "America/Godthab",
     "Atlantic/South_Georgia",
     "Atlantic/Cape_Verde",
+    chromeos::system::kUTCTimezoneName,
     "Atlantic/Azores",
     "Atlantic/Reykjavik",
     "Atlantic/St_Helena",

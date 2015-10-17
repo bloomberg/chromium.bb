@@ -118,8 +118,16 @@ base::string16 GetTimezoneName(const icu::TimeZone& timezone) {
   // In the meantime, we use "LONG" name with "Exemplar City" to distinguish
   // multiple timezones with the same "LONG" name but with different
   // rules (e.g. US Mountain Time in Denver vs Phoenix).
+  icu::UnicodeString id;
   icu::UnicodeString name;
-  timezone.getDisplayName(dst_offset != 0, icu::TimeZone::LONG, name);
+  timezone.getID(id);
+  if (id == icu::UnicodeString(chromeos::system::kUTCTimezoneName)) {
+    name = icu::UnicodeString(
+        l10n_util::GetStringUTF8(IDS_OPTIONS_SETTINGS_TIMEZONE_DISPLAY_NAME_UTC)
+            .c_str());
+  } else {
+    timezone.getDisplayName(dst_offset != 0, icu::TimeZone::LONG, name);
+  }
   base::string16 result(l10n_util::GetStringFUTF16(
       IDS_OPTIONS_SETTINGS_TIMEZONE_DISPLAY_TEMPLATE,
       base::ASCIIToUTF16(offset_str),
