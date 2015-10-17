@@ -299,6 +299,9 @@ bool RenderViewHostImpl::CreateRenderView(
   DCHECK(GetProcess()->HasConnection());
   DCHECK(GetProcess()->GetBrowserContext());
 
+  CHECK(main_frame_routing_id_ != MSG_ROUTING_NONE ||
+        proxy_route_id != MSG_ROUTING_NONE);
+
   set_renderer_initialized(true);
 
   // Ensure the RenderView starts with a next_page_id larger than any existing
