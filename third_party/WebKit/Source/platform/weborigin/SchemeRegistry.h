@@ -114,6 +114,11 @@ public:
     static void removeURLSchemeRegisteredAsBypassingContentSecurityPolicy(const String& scheme);
     static bool schemeShouldBypassContentSecurityPolicy(const String& scheme, PolicyAreas = PolicyAreaAll);
 
+    // Schemes which bypass Secure Context checks defined in
+    // https://w3c.github.io/webappsec/specs/powerfulfeatures/#is-origin-trustworthy.
+    static void registerURLSchemeBypassingSecureContextCheck(const String& scheme);
+    static bool schemeShouldBypassSecureContextCheck(const String& scheme);
+
 private:
     static const URLSchemesSet& localSchemes();
 };

@@ -138,6 +138,11 @@ void WebSecurityPolicy::addOriginTrustworthyWhiteList(const WebSecurityOrigin& o
     SecurityPolicy::addOriginTrustworthyWhiteList(origin);
 }
 
+void WebSecurityPolicy::addSchemeToBypassSecureContextWhitelist(const WebString& scheme)
+{
+    SchemeRegistry::registerURLSchemeBypassingSecureContextCheck(scheme);
+}
+
 WebString WebSecurityPolicy::generateReferrerHeader(WebReferrerPolicy referrerPolicy, const WebURL& url, const WebString& referrer)
 {
     return SecurityPolicy::generateReferrer(static_cast<ReferrerPolicy>(referrerPolicy), url, referrer).referrer;

@@ -517,6 +517,13 @@ void ChromeContentRendererClient::RenderThreadStarted() {
     WebSecurityPolicy::addOriginTrustworthyWhiteList(
         WebSecurityOrigin::create(origin));
   }
+
+  std::set<std::string> schemes;
+  GetSchemesBypassingSecureContextCheckWhitelist(&schemes);
+  for (const std::string& scheme : schemes) {
+    WebSecurityPolicy::addSchemeToBypassSecureContextWhitelist(
+        WebString::fromUTF8(scheme));
+  }
 }
 
 void ChromeContentRendererClient::RenderFrameCreated(

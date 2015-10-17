@@ -113,6 +113,9 @@ public:
     // Support for whitelisting origins to treat them as trustworthy.
     BLINK_EXPORT static void addOriginTrustworthyWhiteList(const WebSecurityOrigin&);
 
+    // Support for whitelisting schemes as bypassing secure context checks.
+    BLINK_EXPORT static void addSchemeToBypassSecureContextWhitelist(const WebString&);
+
     // Returns the referrer modified according to the referrer policy for a
     // navigation to a given URL. If the referrer returned is empty, the
     // referrer header should be omitted.

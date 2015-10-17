@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/strings/string_split.h"
 #include "chrome/common/chrome_switches.h"
+#include "extensions/common/constants.h"
 
 void GetSecureOriginWhitelist(std::set<GURL>* origins) {
   // If kUnsafelyTreatInsecureOriginAsSecure option is given and
@@ -24,4 +25,9 @@ void GetSecureOriginWhitelist(std::set<GURL>* origins) {
              origins_str, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL))
       origins->insert(GURL(origin));
   }
+}
+
+void GetSchemesBypassingSecureContextCheckWhitelist(
+    std::set<std::string>* schemes) {
+  schemes->insert(extensions::kExtensionScheme);
 }
