@@ -25,7 +25,7 @@ Local
     innerFunctionLocalVar: 202
     this: Window
     x: 200
-Closure
+Closure (makeClosure)
     callback: innerTimeout2()
     makeClosureLocalVar: "local.2"
     n: 2
@@ -47,7 +47,7 @@ Scope variables sidebar pane:
 Local
     localInInnerTimeout1: "innerTimeout1"
     this: Window
-Closure
+Closure (timeout1)
     localInTimeout1: "timeout1"
 WindowGlobal
     <section collapsed>
@@ -59,7 +59,7 @@ Local
     innerFunctionLocalVar: 102
     this: Window
     x: 100
-Closure
+Closure (makeClosure)
     callback: innerTimeout1()
     makeClosureLocalVar: "local.1"
     n: 1

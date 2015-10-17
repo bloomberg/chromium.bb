@@ -60,6 +60,7 @@ public:
 
     v8::Local<v8::Value> scopeChain() const;
     int scopeType(int scopeIndex) const;
+    v8::Local<v8::String> scopeName(int scopeIndex) const;
     v8::Local<v8::Value> thisObject() const;
     String stepInPositions() const;
     bool isAtReturn() const;
