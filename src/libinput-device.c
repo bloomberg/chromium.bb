@@ -40,8 +40,6 @@
 #include "libinput-device.h"
 #include "shared/helpers.h"
 
-#define DEFAULT_AXIS_STEP_DISTANCE wl_fixed_from_int(10)
-
 void
 evdev_led_update(struct evdev_device *device, enum weston_led weston_leds)
 {
