@@ -649,7 +649,7 @@ void InspectorResourceAgent::delayedRemoveReplayXHR(XMLHttpRequest* xhr)
 
     m_replayXHRsToBeDeleted.add(xhr);
     m_replayXHRs.remove(xhr);
-    m_removeFinishedReplayXHRTimer.startOneShot(0, FROM_HERE);
+    m_removeFinishedReplayXHRTimer.startOneShot(0, BLINK_FROM_HERE);
 }
 
 void InspectorResourceAgent::didFailXHRLoading(ExecutionContext* context, XMLHttpRequest* xhr, ThreadableLoaderClient* client, const AtomicString& method, const String& url)

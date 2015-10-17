@@ -96,7 +96,7 @@ bool DOMWindowEventQueue::enqueueEvent(PassRefPtrWillBeRawPtr<Event> event)
     ASSERT_UNUSED(wasAdded, wasAdded); // It should not have already been in the list.
 
     if (!m_pendingEventTimer->isActive())
-        m_pendingEventTimer->startOneShot(0, FROM_HERE);
+        m_pendingEventTimer->startOneShot(0, BLINK_FROM_HERE);
 
     return true;
 }

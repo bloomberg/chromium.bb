@@ -25,9 +25,7 @@ private:
     const char* m_fileName;
 };
 
-#if INSIDE_BLINK
-#define FROM_HERE ::blink::WebTraceLocation(__FUNCTION__, __FILE__)
-#endif // INSIDE_BLINK
+#define BLINK_FROM_HERE ::blink::WebTraceLocation(__FUNCTION__, __FILE__)
 
 }
 

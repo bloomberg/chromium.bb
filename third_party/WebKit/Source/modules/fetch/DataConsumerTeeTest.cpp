@@ -60,7 +60,7 @@ public:
     {
         m_thread = adoptPtr(new Thread("src thread", Thread::WithExecutionContext));
         m_waitableEvent = adoptPtr(Platform::current()->createWaitableEvent());
-        m_thread->thread()->postTask(FROM_HERE, new Task(threadSafeBind(&TeeCreationThread<Handle>::runInternal, AllowCrossThreadAccess(this), src, AllowCrossThreadAccess(dest1), AllowCrossThreadAccess(dest2))));
+        m_thread->thread()->postTask(BLINK_FROM_HERE, new Task(threadSafeBind(&TeeCreationThread<Handle>::runInternal, AllowCrossThreadAccess(this), src, AllowCrossThreadAccess(dest1), AllowCrossThreadAccess(dest2))));
         m_waitableEvent->wait();
     }
 
@@ -215,7 +215,7 @@ TEST(DataConsumerTeeTest, StopSource)
 
     // We can pass a raw pointer because the subsequent |wait| calls ensure
     // t->thread() is alive.
-    t->thread()->thread()->postTask(FROM_HERE, new Task(threadSafeBind(postStop, AllowCrossThreadAccess(t->thread()))));
+    t->thread()->thread()->postTask(BLINK_FROM_HERE, new Task(threadSafeBind(postStop, AllowCrossThreadAccess(t->thread()))));
 
     OwnPtr<HandleReadResult> res1 = r1.wait();
     OwnPtr<HandleReadResult> res2 = r2.wait();

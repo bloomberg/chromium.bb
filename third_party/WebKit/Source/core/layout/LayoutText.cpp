@@ -82,7 +82,7 @@ public:
     {
         m_lastTypedCharacterOffset = lastTypedCharacterOffset;
         if (Settings* settings = m_layoutText->document().settings())
-            startOneShot(settings->passwordEchoDurationInSeconds(), FROM_HERE);
+            startOneShot(settings->passwordEchoDurationInSeconds(), BLINK_FROM_HERE);
     }
     void invalidate() { m_lastTypedCharacterOffset = -1; }
     unsigned lastTypedCharacterOffset() { return m_lastTypedCharacterOffset; }

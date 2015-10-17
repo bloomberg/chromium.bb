@@ -751,7 +751,7 @@ void AXObjectCacheImpl::postNotification(AXObject* object, AXNotification notifi
 
     m_notificationsToPost.append(std::make_pair(object, notification));
     if (!m_notificationPostTimer.isActive())
-        m_notificationPostTimer.startOneShot(0, FROM_HERE);
+        m_notificationPostTimer.startOneShot(0, BLINK_FROM_HERE);
 }
 
 bool AXObjectCacheImpl::isAriaOwned(const AXObject* child) const

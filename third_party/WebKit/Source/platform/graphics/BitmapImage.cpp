@@ -541,7 +541,7 @@ void BitmapImage::startAnimation(CatchUpAnimation catchUpIfNecessary)
     if (catchUpIfNecessary == DoNotCatchUp || time < m_desiredFrameStartTime) {
         // Haven't yet reached time for next frame to start; delay until then.
         m_frameTimer = adoptPtr(new Timer<BitmapImage>(this, &BitmapImage::advanceAnimation));
-        m_frameTimer->startOneShot(std::max(m_desiredFrameStartTime - time, 0.), FROM_HERE);
+        m_frameTimer->startOneShot(std::max(m_desiredFrameStartTime - time, 0.), BLINK_FROM_HERE);
     } else {
         // We've already reached or passed the time for the next frame to start.
         // See if we've also passed the time for frames after that to start, in

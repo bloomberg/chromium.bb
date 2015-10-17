@@ -355,7 +355,7 @@ private:
 TEST_F(TimerTest, StartOneShot_Zero)
 {
     Timer<TimerTest> timer(this, &TimerTest::countingTask);
-    timer.startOneShot(0, FROM_HERE);
+    timer.startOneShot(0, BLINK_FROM_HERE);
 
     ASSERT(hasOneTimerTask());
     EXPECT_FLOAT_EQ(0.0, nextTimerTaskDelaySecs());
@@ -367,7 +367,7 @@ TEST_F(TimerTest, StartOneShot_Zero)
 TEST_F(TimerTest, StartOneShot_ZeroAndCancel)
 {
     Timer<TimerTest> timer(this, &TimerTest::countingTask);
-    timer.startOneShot(0, FROM_HERE);
+    timer.startOneShot(0, BLINK_FROM_HERE);
 
     ASSERT(hasOneTimerTask());
     EXPECT_FLOAT_EQ(0.0, nextTimerTaskDelaySecs());
@@ -381,7 +381,7 @@ TEST_F(TimerTest, StartOneShot_ZeroAndCancel)
 TEST_F(TimerTest, StartOneShot_ZeroAndCancelThenRepost)
 {
     Timer<TimerTest> timer(this, &TimerTest::countingTask);
-    timer.startOneShot(0, FROM_HERE);
+    timer.startOneShot(0, BLINK_FROM_HERE);
 
     ASSERT(hasOneTimerTask());
     EXPECT_FLOAT_EQ(0.0, nextTimerTaskDelaySecs());
@@ -391,7 +391,7 @@ TEST_F(TimerTest, StartOneShot_ZeroAndCancelThenRepost)
     runUntilIdle();
     EXPECT_FALSE(m_runTimes.size());
 
-    timer.startOneShot(0, FROM_HERE);
+    timer.startOneShot(0, BLINK_FROM_HERE);
 
     ASSERT(hasOneTimerTask());
     EXPECT_FLOAT_EQ(0.0, nextTimerTaskDelaySecs());
@@ -403,7 +403,7 @@ TEST_F(TimerTest, StartOneShot_ZeroAndCancelThenRepost)
 TEST_F(TimerTest, StartOneShot_Zero_RepostingAfterRunning)
 {
     Timer<TimerTest> timer(this, &TimerTest::countingTask);
-    timer.startOneShot(0, FROM_HERE);
+    timer.startOneShot(0, BLINK_FROM_HERE);
 
     ASSERT(hasOneTimerTask());
     EXPECT_FLOAT_EQ(0.0, nextTimerTaskDelaySecs());
@@ -411,7 +411,7 @@ TEST_F(TimerTest, StartOneShot_Zero_RepostingAfterRunning)
     runUntilIdle();
     EXPECT_THAT(m_runTimes, ElementsAre(m_startTime));
 
-    timer.startOneShot(0, FROM_HERE);
+    timer.startOneShot(0, BLINK_FROM_HERE);
 
     ASSERT(hasOneTimerTask());
     EXPECT_FLOAT_EQ(0.0, nextTimerTaskDelaySecs());
@@ -423,7 +423,7 @@ TEST_F(TimerTest, StartOneShot_Zero_RepostingAfterRunning)
 TEST_F(TimerTest, StartOneShot_NonZero)
 {
     Timer<TimerTest> timer(this, &TimerTest::countingTask);
-    timer.startOneShot(10.0, FROM_HERE);
+    timer.startOneShot(10.0, BLINK_FROM_HERE);
 
     ASSERT(hasOneTimerTask());
     EXPECT_FLOAT_EQ(10.0, nextTimerTaskDelaySecs());
@@ -435,7 +435,7 @@ TEST_F(TimerTest, StartOneShot_NonZero)
 TEST_F(TimerTest, StartOneShot_NonZeroAndCancel)
 {
     Timer<TimerTest> timer(this, &TimerTest::countingTask);
-    timer.startOneShot(10, FROM_HERE);
+    timer.startOneShot(10, BLINK_FROM_HERE);
 
     ASSERT(hasOneTimerTask());
     EXPECT_FLOAT_EQ(10.0, nextTimerTaskDelaySecs());
@@ -449,7 +449,7 @@ TEST_F(TimerTest, StartOneShot_NonZeroAndCancel)
 TEST_F(TimerTest, StartOneShot_NonZeroAndCancelThenRepost)
 {
     Timer<TimerTest> timer(this, &TimerTest::countingTask);
-    timer.startOneShot(10, FROM_HERE);
+    timer.startOneShot(10, BLINK_FROM_HERE);
 
     ASSERT(hasOneTimerTask());
     EXPECT_FLOAT_EQ(10.0, nextTimerTaskDelaySecs());
@@ -460,7 +460,7 @@ TEST_F(TimerTest, StartOneShot_NonZeroAndCancelThenRepost)
     EXPECT_FALSE(m_runTimes.size());
 
     double secondPostTime = monotonicallyIncreasingTime();
-    timer.startOneShot(10, FROM_HERE);
+    timer.startOneShot(10, BLINK_FROM_HERE);
 
     ASSERT(hasOneTimerTask());
     EXPECT_FLOAT_EQ(10.0, nextTimerTaskDelaySecs());
@@ -472,7 +472,7 @@ TEST_F(TimerTest, StartOneShot_NonZeroAndCancelThenRepost)
 TEST_F(TimerTest, StartOneShot_NonZero_RepostingAfterRunning)
 {
     Timer<TimerTest> timer(this, &TimerTest::countingTask);
-    timer.startOneShot(10, FROM_HERE);
+    timer.startOneShot(10, BLINK_FROM_HERE);
 
     ASSERT(hasOneTimerTask());
     EXPECT_FLOAT_EQ(10.0, nextTimerTaskDelaySecs());
@@ -480,7 +480,7 @@ TEST_F(TimerTest, StartOneShot_NonZero_RepostingAfterRunning)
     runUntilIdle();
     EXPECT_THAT(m_runTimes, ElementsAre(m_startTime + 10.0));
 
-    timer.startOneShot(20, FROM_HERE);
+    timer.startOneShot(20, BLINK_FROM_HERE);
 
     ASSERT(hasOneTimerTask());
     EXPECT_FLOAT_EQ(20.0, nextTimerTaskDelaySecs());
@@ -492,8 +492,8 @@ TEST_F(TimerTest, StartOneShot_NonZero_RepostingAfterRunning)
 TEST_F(TimerTest, PostingTimerTwiceWithSameRunTimeDoesNothing)
 {
     Timer<TimerTest> timer(this, &TimerTest::countingTask);
-    timer.startOneShot(10, FROM_HERE);
-    timer.startOneShot(10, FROM_HERE);
+    timer.startOneShot(10, BLINK_FROM_HERE);
+    timer.startOneShot(10, BLINK_FROM_HERE);
 
     ASSERT(hasOneTimerTask());
     EXPECT_FLOAT_EQ(10.0, nextTimerTaskDelaySecs());
@@ -505,8 +505,8 @@ TEST_F(TimerTest, PostingTimerTwiceWithSameRunTimeDoesNothing)
 TEST_F(TimerTest, PostingTimerTwiceWithNewerRunTimeCancelsOriginalTask)
 {
     Timer<TimerTest> timer(this, &TimerTest::countingTask);
-    timer.startOneShot(10, FROM_HERE);
-    timer.startOneShot(0, FROM_HERE);
+    timer.startOneShot(10, BLINK_FROM_HERE);
+    timer.startOneShot(0, BLINK_FROM_HERE);
 
     runUntilIdle();
     EXPECT_THAT(m_runTimes, ElementsAre(m_startTime + 0.0));
@@ -515,8 +515,8 @@ TEST_F(TimerTest, PostingTimerTwiceWithNewerRunTimeCancelsOriginalTask)
 TEST_F(TimerTest, PostingTimerTwiceWithLaterRunTimeCancelsOriginalTask)
 {
     Timer<TimerTest> timer(this, &TimerTest::countingTask);
-    timer.startOneShot(0, FROM_HERE);
-    timer.startOneShot(10, FROM_HERE);
+    timer.startOneShot(0, BLINK_FROM_HERE);
+    timer.startOneShot(10, BLINK_FROM_HERE);
 
     runUntilIdle();
     EXPECT_THAT(m_runTimes, ElementsAre(m_startTime + 10.0));
@@ -525,7 +525,7 @@ TEST_F(TimerTest, PostingTimerTwiceWithLaterRunTimeCancelsOriginalTask)
 TEST_F(TimerTest, StartRepeatingTask)
 {
     Timer<TimerTest> timer(this, &TimerTest::countingTask);
-    timer.startRepeating(1.0, FROM_HERE);
+    timer.startRepeating(1.0, BLINK_FROM_HERE);
 
     ASSERT(hasOneTimerTask());
     EXPECT_FLOAT_EQ(1.0, nextTimerTaskDelaySecs());
@@ -538,7 +538,7 @@ TEST_F(TimerTest, StartRepeatingTask)
 TEST_F(TimerTest, StartRepeatingTask_ThenCancel)
 {
     Timer<TimerTest> timer(this, &TimerTest::countingTask);
-    timer.startRepeating(1.0, FROM_HERE);
+    timer.startRepeating(1.0, BLINK_FROM_HERE);
 
     ASSERT(hasOneTimerTask());
     EXPECT_FLOAT_EQ(1.0, nextTimerTaskDelaySecs());
@@ -555,7 +555,7 @@ TEST_F(TimerTest, StartRepeatingTask_ThenCancel)
 TEST_F(TimerTest, StartRepeatingTask_ThenPostOneShot)
 {
     Timer<TimerTest> timer(this, &TimerTest::countingTask);
-    timer.startRepeating(1.0, FROM_HERE);
+    timer.startRepeating(1.0, BLINK_FROM_HERE);
 
     ASSERT(hasOneTimerTask());
     EXPECT_FLOAT_EQ(1.0, nextTimerTaskDelaySecs());
@@ -563,7 +563,7 @@ TEST_F(TimerTest, StartRepeatingTask_ThenPostOneShot)
     runUntilIdleOrDeadlinePassed(m_startTime + 2.5);
     EXPECT_THAT(m_runTimes, ElementsAre(m_startTime + 1.0, m_startTime + 2.0));
 
-    timer.startOneShot(0, FROM_HERE);
+    timer.startOneShot(0, BLINK_FROM_HERE);
     runUntilIdle();
 
     EXPECT_THAT(m_runTimes, ElementsAre(m_startTime + 1.0, m_startTime + 2.0, m_startTime + 2.5));
@@ -579,7 +579,7 @@ TEST_F(TimerTest, IsActive_NeverPosted)
 TEST_F(TimerTest, IsActive_AfterPosting_OneShotZero)
 {
     Timer<TimerTest> timer(this, &TimerTest::countingTask);
-    timer.startOneShot(0, FROM_HERE);
+    timer.startOneShot(0, BLINK_FROM_HERE);
 
     EXPECT_TRUE(timer.isActive());
 }
@@ -587,7 +587,7 @@ TEST_F(TimerTest, IsActive_AfterPosting_OneShotZero)
 TEST_F(TimerTest, IsActive_AfterPosting_OneShotNonZero)
 {
     Timer<TimerTest> timer(this, &TimerTest::countingTask);
-    timer.startOneShot(10, FROM_HERE);
+    timer.startOneShot(10, BLINK_FROM_HERE);
 
     EXPECT_TRUE(timer.isActive());
 }
@@ -595,7 +595,7 @@ TEST_F(TimerTest, IsActive_AfterPosting_OneShotNonZero)
 TEST_F(TimerTest, IsActive_AfterPosting_Repeating)
 {
     Timer<TimerTest> timer(this, &TimerTest::countingTask);
-    timer.startRepeating(1.0, FROM_HERE);
+    timer.startRepeating(1.0, BLINK_FROM_HERE);
 
     EXPECT_TRUE(timer.isActive());
 }
@@ -603,7 +603,7 @@ TEST_F(TimerTest, IsActive_AfterPosting_Repeating)
 TEST_F(TimerTest, IsActive_AfterRunning_OneShotZero)
 {
     Timer<TimerTest> timer(this, &TimerTest::countingTask);
-    timer.startOneShot(0, FROM_HERE);
+    timer.startOneShot(0, BLINK_FROM_HERE);
 
     runUntilIdle();
     EXPECT_FALSE(timer.isActive());
@@ -612,7 +612,7 @@ TEST_F(TimerTest, IsActive_AfterRunning_OneShotZero)
 TEST_F(TimerTest, IsActive_AfterRunning_OneShotNonZero)
 {
     Timer<TimerTest> timer(this, &TimerTest::countingTask);
-    timer.startOneShot(10, FROM_HERE);
+    timer.startOneShot(10, BLINK_FROM_HERE);
 
     runUntilIdle();
     EXPECT_FALSE(timer.isActive());
@@ -621,7 +621,7 @@ TEST_F(TimerTest, IsActive_AfterRunning_OneShotNonZero)
 TEST_F(TimerTest, IsActive_AfterRunning_Repeating)
 {
     Timer<TimerTest> timer(this, &TimerTest::countingTask);
-    timer.startRepeating(1.0, FROM_HERE);
+    timer.startRepeating(1.0, BLINK_FROM_HERE);
 
     runUntilIdleOrDeadlinePassed(m_startTime + 10);
     EXPECT_TRUE(timer.isActive()); // It should run until cancelled.
@@ -630,7 +630,7 @@ TEST_F(TimerTest, IsActive_AfterRunning_Repeating)
 TEST_F(TimerTest, NextFireInterval_OneShotZero)
 {
     Timer<TimerTest> timer(this, &TimerTest::countingTask);
-    timer.startOneShot(0, FROM_HERE);
+    timer.startOneShot(0, BLINK_FROM_HERE);
 
     EXPECT_FLOAT_EQ(0.0, timer.nextFireInterval());
 }
@@ -638,7 +638,7 @@ TEST_F(TimerTest, NextFireInterval_OneShotZero)
 TEST_F(TimerTest, NextFireInterval_OneShotNonZero)
 {
     Timer<TimerTest> timer(this, &TimerTest::countingTask);
-    timer.startOneShot(10, FROM_HERE);
+    timer.startOneShot(10, BLINK_FROM_HERE);
 
     EXPECT_FLOAT_EQ(10.0, timer.nextFireInterval());
 }
@@ -646,7 +646,7 @@ TEST_F(TimerTest, NextFireInterval_OneShotNonZero)
 TEST_F(TimerTest, NextFireInterval_OneShotNonZero_AfterAFewSeconds)
 {
     Timer<TimerTest> timer(this, &TimerTest::countingTask);
-    timer.startOneShot(10, FROM_HERE);
+    timer.startOneShot(10, BLINK_FROM_HERE);
 
     advanceTimeBy(2.0);
     EXPECT_FLOAT_EQ(8.0, timer.nextFireInterval());
@@ -655,7 +655,7 @@ TEST_F(TimerTest, NextFireInterval_OneShotNonZero_AfterAFewSeconds)
 TEST_F(TimerTest, NextFireInterval_Repeating)
 {
     Timer<TimerTest> timer(this, &TimerTest::countingTask);
-    timer.startRepeating(20, FROM_HERE);
+    timer.startRepeating(20, BLINK_FROM_HERE);
 
     EXPECT_FLOAT_EQ(20.0, timer.nextFireInterval());
 }
@@ -670,7 +670,7 @@ TEST_F(TimerTest, RepeatInterval_NeverStarted)
 TEST_F(TimerTest, RepeatInterval_OneShotZero)
 {
     Timer<TimerTest> timer(this, &TimerTest::countingTask);
-    timer.startOneShot(0, FROM_HERE);
+    timer.startOneShot(0, BLINK_FROM_HERE);
 
     EXPECT_FLOAT_EQ(0.0, timer.repeatInterval());
 }
@@ -678,7 +678,7 @@ TEST_F(TimerTest, RepeatInterval_OneShotZero)
 TEST_F(TimerTest, RepeatInterval_OneShotNonZero)
 {
     Timer<TimerTest> timer(this, &TimerTest::countingTask);
-    timer.startOneShot(10, FROM_HERE);
+    timer.startOneShot(10, BLINK_FROM_HERE);
 
     EXPECT_FLOAT_EQ(0.0, timer.repeatInterval());
 }
@@ -686,7 +686,7 @@ TEST_F(TimerTest, RepeatInterval_OneShotNonZero)
 TEST_F(TimerTest, RepeatInterval_Repeating)
 {
     Timer<TimerTest> timer(this, &TimerTest::countingTask);
-    timer.startRepeating(20, FROM_HERE);
+    timer.startRepeating(20, BLINK_FROM_HERE);
 
     EXPECT_FLOAT_EQ(20.0, timer.repeatInterval());
 }
@@ -694,7 +694,7 @@ TEST_F(TimerTest, RepeatInterval_Repeating)
 TEST_F(TimerTest, AugmentRepeatInterval)
 {
     Timer<TimerTest> timer(this, &TimerTest::countingTask);
-    timer.startRepeating(10, FROM_HERE);
+    timer.startRepeating(10, BLINK_FROM_HERE);
     EXPECT_FLOAT_EQ(10.0, timer.repeatInterval());
     EXPECT_FLOAT_EQ(10.0, timer.nextFireInterval());
 
@@ -742,7 +742,7 @@ TEST_F(TimerTest, TimerAlignment_OneShotZero)
     MockTimerWithAlignment timer;
     timer.setAlignedFireTime(m_startTime + 1.0);
 
-    timer.start(0.0, 0.0, FROM_HERE);
+    timer.start(0.0, 0.0, BLINK_FROM_HERE);
 
     // The nextFireInterval gets overrriden.
     EXPECT_FLOAT_EQ(1.0, timer.nextFireInterval());
@@ -755,7 +755,7 @@ TEST_F(TimerTest, TimerAlignment_OneShotNonZero)
     MockTimerWithAlignment timer;
     timer.setAlignedFireTime(m_startTime + 1.0);
 
-    timer.start(0.5, 0.0, FROM_HERE);
+    timer.start(0.5, 0.0, BLINK_FROM_HERE);
 
     // The nextFireInterval gets overrriden.
     EXPECT_FLOAT_EQ(1.0, timer.nextFireInterval());
@@ -768,7 +768,7 @@ TEST_F(TimerTest, DidChangeAlignmentInterval)
     MockTimerWithAlignment timer;
     timer.setAlignedFireTime(m_startTime + 1.0);
 
-    timer.start(0.0, 0.0, FROM_HERE);
+    timer.start(0.0, 0.0, BLINK_FROM_HERE);
 
     EXPECT_FLOAT_EQ(1.0, timer.nextFireInterval());
     EXPECT_FLOAT_EQ(0.0, timer.nextUnalignedFireInterval());
@@ -785,7 +785,7 @@ TEST_F(TimerTest, DidChangeAlignmentInterval)
 TEST_F(TimerTest, RepeatingTimerDoesNotDrift)
 {
     Timer<TimerTest> timer(this, &TimerTest::recordNextFireTimeTask);
-    timer.startRepeating(2.0, FROM_HERE);
+    timer.startRepeating(2.0, BLINK_FROM_HERE);
 
     ASSERT(hasOneTimerTask());
     recordNextFireTimeTask(&timer); // Next scheduled task to run at m_startTime + 2.0

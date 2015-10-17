@@ -56,7 +56,7 @@ void SQLTransactionClient::didCommitWriteTransaction(Database* database)
     String databaseName = database->stringIdentifier();
     ExecutionContext* executionContext = database->databaseContext()->executionContext();
     if (!executionContext->isContextThread()) {
-        executionContext->postTask(FROM_HERE, createCrossThreadTask(&databaseModified, originIdentifier, databaseName));
+        executionContext->postTask(BLINK_FROM_HERE, createCrossThreadTask(&databaseModified, originIdentifier, databaseName));
     } else {
         databaseModified(originIdentifier, databaseName);
     }

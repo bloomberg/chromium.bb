@@ -217,7 +217,7 @@ void SpinButtonElement::startRepeatingTimer()
 {
     m_pressStartingState = m_upDownState;
     ScrollbarTheme* theme = ScrollbarTheme::theme();
-    m_repeatingTimer.start(theme->initialAutoscrollTimerDelay(), theme->autoscrollTimerDelay(), FROM_HERE);
+    m_repeatingTimer.start(theme->initialAutoscrollTimerDelay(), theme->autoscrollTimerDelay(), BLINK_FROM_HERE);
 }
 
 void SpinButtonElement::stopRepeatingTimer()

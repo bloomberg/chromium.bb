@@ -193,7 +193,7 @@ void WebEmbeddedWorkerImpl::postMessageToPageInspector(const String& message)
 
 void WebEmbeddedWorkerImpl::postTaskToLoader(PassOwnPtr<ExecutionContextTask> task)
 {
-    m_mainFrame->frame()->document()->postTask(FROM_HERE, task);
+    m_mainFrame->frame()->document()->postTask(BLINK_FROM_HERE, task);
 }
 
 bool WebEmbeddedWorkerImpl::postTaskToWorkerGlobalScope(PassOwnPtr<ExecutionContextTask> task)
@@ -201,7 +201,7 @@ bool WebEmbeddedWorkerImpl::postTaskToWorkerGlobalScope(PassOwnPtr<ExecutionCont
     if (m_askedToTerminate || !m_workerThread)
         return false;
 
-    m_workerThread->postTask(FROM_HERE, task);
+    m_workerThread->postTask(BLINK_FROM_HERE, task);
     return !m_workerThread->terminated();
 }
 

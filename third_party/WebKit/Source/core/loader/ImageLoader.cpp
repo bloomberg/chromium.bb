@@ -571,7 +571,7 @@ void ImageLoader::updatedHasPendingEvent()
             m_keepAlive = m_element;
     } else {
         ASSERT(!m_derefElementTimer.isActive());
-        m_derefElementTimer.startOneShot(0, FROM_HERE);
+        m_derefElementTimer.startOneShot(0, BLINK_FROM_HERE);
     }
 }
 

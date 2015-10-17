@@ -259,7 +259,7 @@ public:
             m_waitableEvent = adoptPtr(Platform::current()->createWaitableEvent());
             m_handle = handle;
 
-            postTaskToReadingThreadAndWait(FROM_HERE, new Task(threadSafeBind(&Self::obtainReader, this)));
+            postTaskToReadingThreadAndWait(BLINK_FROM_HERE, new Task(threadSafeBind(&Self::obtainReader, this)));
         }
 
     private:
@@ -270,8 +270,8 @@ public:
         }
         void didGetReadable() override
         {
-            postTaskToReadingThread(FROM_HERE, new Task(threadSafeBind(&Self::resetReader, this)));
-            postTaskToReadingThread(FROM_HERE, new Task(threadSafeBind(&Self::signalDone, this)));
+            postTaskToReadingThread(BLINK_FROM_HERE, new Task(threadSafeBind(&Self::resetReader, this)));
+            postTaskToReadingThread(BLINK_FROM_HERE, new Task(threadSafeBind(&Self::signalDone, this)));
         }
 
         OwnPtr<WebDataConsumerHandle> m_handle;
@@ -288,7 +288,7 @@ public:
             m_waitableEvent = adoptPtr(Platform::current()->createWaitableEvent());
             m_handle = handle;
 
-            postTaskToReadingThreadAndWait(FROM_HERE, new Task(threadSafeBind(&Self::obtainReader, this)));
+            postTaskToReadingThreadAndWait(BLINK_FROM_HERE, new Task(threadSafeBind(&Self::obtainReader, this)));
         }
 
     private:
@@ -297,7 +297,7 @@ public:
         {
             m_reader = m_handle->obtainReader(this);
             m_reader = nullptr;
-            postTaskToReadingThread(FROM_HERE, new Task(threadSafeBind(&Self::signalDone, this)));
+            postTaskToReadingThread(BLINK_FROM_HERE, new Task(threadSafeBind(&Self::signalDone, this)));
         }
         void didGetReadable() override
         {
@@ -502,7 +502,7 @@ public:
             , m_event(adoptPtr(Platform::current()->createWaitableEvent()))
             , m_isDone(false)
         {
-            m_thread->thread()->postTask(FROM_HERE, new Task(threadSafeBind(&HandleReaderRunner::start, AllowCrossThreadAccess(this), handle)));
+            m_thread->thread()->postTask(BLINK_FROM_HERE, new Task(threadSafeBind(&HandleReaderRunner::start, AllowCrossThreadAccess(this), handle)));
         }
         ~HandleReaderRunner()
         {

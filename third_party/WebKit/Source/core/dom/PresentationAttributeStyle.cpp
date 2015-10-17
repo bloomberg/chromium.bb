@@ -90,7 +90,7 @@ public:
         m_hitCount++;
 
         if (!m_cleanTimer.isActive())
-            m_cleanTimer.startOneShot(presentationAttributeCacheCleanTimeInSeconds, FROM_HERE);
+            m_cleanTimer.startOneShot(presentationAttributeCacheCleanTimeInSeconds, BLINK_FROM_HERE);
     }
 
 private:

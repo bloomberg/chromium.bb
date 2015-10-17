@@ -220,7 +220,7 @@ Database* DatabaseManager::openDatabase(ExecutionContext* context,
 
     if (database->isNew() && creationCallback) {
         WTF_LOG(StorageAPI, "Scheduling DatabaseCreationCallbackTask for database %p\n", database);
-        database->executionContext()->postTask(FROM_HERE, DatabaseCreationCallbackTask::create(database, creationCallback));
+        database->executionContext()->postTask(BLINK_FROM_HERE, DatabaseCreationCallbackTask::create(database, creationCallback));
     }
 
     ASSERT(database);

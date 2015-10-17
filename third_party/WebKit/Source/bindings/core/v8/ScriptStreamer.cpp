@@ -222,7 +222,7 @@ public:
 
         // Inform main thread to re-queue the data.
         m_loadingTaskRunner->postTask(
-            FROM_HERE, bind(&SourceStream::fetchDataFromResourceBuffer, this, 0));
+            BLINK_FROM_HERE, bind(&SourceStream::fetchDataFromResourceBuffer, this, 0));
     }
 
     void didFinishLoading()
@@ -425,7 +425,7 @@ void ScriptStreamer::streamingCompleteOnBackgroundThread()
 
     // notifyFinished might already be called, or it might be called in the
     // future (if the parsing finishes earlier because of a parse error).
-    m_loadingTaskRunner->postTask(FROM_HERE, threadSafeBind(&ScriptStreamer::streamingComplete, AllowCrossThreadAccess(this)));
+    m_loadingTaskRunner->postTask(BLINK_FROM_HERE, threadSafeBind(&ScriptStreamer::streamingComplete, AllowCrossThreadAccess(this)));
 
     // The task might delete ScriptStreamer, so it's not safe to do anything
     // after posting it. Note that there's no way to guarantee that this

@@ -57,7 +57,7 @@ namespace blink {
 static void invalidateFontCache()
 {
     if (!isMainThread()) {
-        Platform::current()->mainThread()->taskRunner()->postTask(FROM_HERE, bind(&invalidateFontCache));
+        Platform::current()->mainThread()->taskRunner()->postTask(BLINK_FROM_HERE, bind(&invalidateFontCache));
         return;
     }
     FontCache::fontCache()->invalidate();

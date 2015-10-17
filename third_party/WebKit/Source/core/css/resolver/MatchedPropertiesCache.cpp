@@ -89,7 +89,7 @@ void MatchedPropertiesCache::add(const ComputedStyle& style, const ComputedStyle
     if (++m_additionsSinceLastSweep >= maxAdditionsBetweenSweeps
         && !m_sweepTimer.isActive()) {
         static const unsigned sweepTimeInSeconds = 60;
-        m_sweepTimer.startOneShot(sweepTimeInSeconds, FROM_HERE);
+        m_sweepTimer.startOneShot(sweepTimeInSeconds, BLINK_FROM_HERE);
     }
 #endif
 

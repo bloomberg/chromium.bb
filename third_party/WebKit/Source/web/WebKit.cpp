@@ -156,7 +156,7 @@ static void cryptographicallyRandomValues(unsigned char* buffer, size_t length)
 
 static void callOnMainThreadFunction(WTF::MainThreadFunction function, void* context)
 {
-    Platform::current()->mainThread()->taskRunner()->postTask(FROM_HERE, new MainThreadTaskRunner(function, context));
+    Platform::current()->mainThread()->taskRunner()->postTask(BLINK_FROM_HERE, new MainThreadTaskRunner(function, context));
 }
 
 static void adjustAmountOfExternalAllocatedMemory(int size)

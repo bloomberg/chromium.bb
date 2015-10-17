@@ -107,7 +107,7 @@ void GeolocationClientMock::asyncUpdatePermission()
 {
     ASSERT(m_permissionState != PermissionStateUnset);
     if (!m_permissionTimer.isActive())
-        m_permissionTimer.startOneShot(0, FROM_HERE);
+        m_permissionTimer.startOneShot(0, BLINK_FROM_HERE);
 }
 
 void GeolocationClientMock::permissionTimerFired(Timer<GeolocationClientMock>* timer)
@@ -154,7 +154,7 @@ GeolocationPosition* GeolocationClientMock::lastPosition()
 void GeolocationClientMock::asyncUpdateController()
 {
     if (m_isActive && !m_controllerTimer.isActive())
-        m_controllerTimer.startOneShot(0, FROM_HERE);
+        m_controllerTimer.startOneShot(0, BLINK_FROM_HERE);
 }
 
 void GeolocationClientMock::controllerTimerFired(Timer<GeolocationClientMock>* timer)

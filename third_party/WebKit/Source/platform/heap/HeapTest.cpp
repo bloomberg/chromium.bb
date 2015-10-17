@@ -465,7 +465,7 @@ protected:
         Vector<OwnPtr<WebThread>, numberOfThreads> m_threads;
         for (int i = 0; i < numberOfThreads; i++) {
             m_threads.append(adoptPtr(Platform::current()->createThread("blink gc testing thread")));
-            m_threads.last()->taskRunner()->postTask(FROM_HERE, new Task(threadSafeBind(threadFunc, AllowCrossThreadAccess(tester))));
+            m_threads.last()->taskRunner()->postTask(BLINK_FROM_HERE, new Task(threadSafeBind(threadFunc, AllowCrossThreadAccess(tester))));
         }
         while (tester->m_threadsToFinish) {
             SafePointScope scope(BlinkGC::NoHeapPointersOnStack);
@@ -4636,7 +4636,7 @@ public:
     static void test()
     {
         OwnPtr<WebThread> sleepingThread = adoptPtr(Platform::current()->createThread("SleepingThread"));
-        sleepingThread->taskRunner()->postTask(FROM_HERE, new Task(threadSafeBind(sleeperMainFunc)));
+        sleepingThread->taskRunner()->postTask(BLINK_FROM_HERE, new Task(threadSafeBind(sleeperMainFunc)));
 
         // Wait for the sleeper to run.
         while (!s_sleeperRunning) {
@@ -5306,7 +5306,7 @@ public:
 
         MutexLocker locker(mainThreadMutex());
         OwnPtr<WebThread> workerThread = adoptPtr(Platform::current()->createThread("Test Worker Thread"));
-        workerThread->taskRunner()->postTask(FROM_HERE, new Task(threadSafeBind(workerThreadMain)));
+        workerThread->taskRunner()->postTask(BLINK_FROM_HERE, new Task(threadSafeBind(workerThreadMain)));
 
         // Wait for the worker thread to have done its initialization,
         // IE. the worker allocates an object and then throw aways any
@@ -5409,7 +5409,7 @@ public:
 
         MutexLocker locker(mainThreadMutex());
         OwnPtr<WebThread> workerThread = adoptPtr(Platform::current()->createThread("Test Worker Thread"));
-        workerThread->taskRunner()->postTask(FROM_HERE, new Task(threadSafeBind(workerThreadMain)));
+        workerThread->taskRunner()->postTask(BLINK_FROM_HERE, new Task(threadSafeBind(workerThreadMain)));
 
         // Wait for the worker thread initialization. The worker
         // allocates a weak collection where both collection and
@@ -5612,7 +5612,7 @@ public:
 
         MutexLocker locker(mainThreadMutex());
         OwnPtr<WebThread> workerThread = adoptPtr(Platform::current()->createThread("Test Worker Thread"));
-        workerThread->taskRunner()->postTask(FROM_HERE, new Task(threadSafeBind(workerThreadMain)));
+        workerThread->taskRunner()->postTask(BLINK_FROM_HERE, new Task(threadSafeBind(workerThreadMain)));
 
         // Park the main thread until the worker thread has initialized.
         parkMainThread();
@@ -5686,7 +5686,7 @@ public:
     {
         MutexLocker locker(mainThreadMutex());
         OwnPtr<WebThread> workerThread = adoptPtr(Platform::current()->createThread("Test Worker Thread"));
-        workerThread->taskRunner()->postTask(FROM_HERE, new Task(threadSafeBind(workerThreadMain)));
+        workerThread->taskRunner()->postTask(BLINK_FROM_HERE, new Task(threadSafeBind(workerThreadMain)));
 
         parkMainThread();
 
@@ -6404,7 +6404,7 @@ TEST(HeapTest, CrossThreadWeakPersistent)
     MutexLocker mainThreadMutexLocker(mainThreadMutex());
     OwnPtr<WebThread> workerThread = adoptPtr(Platform::current()->createThread("Test Worker Thread"));
     DestructorLockingObject* object = nullptr;
-    workerThread->taskRunner()->postTask(FROM_HERE, new Task(threadSafeBind(workerThreadMainForCrossThreadWeakPersistentTest, AllowCrossThreadAccessWrapper<DestructorLockingObject**>(&object))));
+    workerThread->taskRunner()->postTask(BLINK_FROM_HERE, new Task(threadSafeBind(workerThreadMainForCrossThreadWeakPersistentTest, AllowCrossThreadAccessWrapper<DestructorLockingObject**>(&object))));
     parkMainThread();
 
     // Step 3: Set up a CrossThreadWeakPersistent.

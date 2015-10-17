@@ -104,7 +104,7 @@ bool NavigatorVibration::vibrate(const VibrationPattern& pattern)
         return true;
     }
 
-    m_timerStart.startOneShot(0, FROM_HERE);
+    m_timerStart.startOneShot(0, BLINK_FROM_HERE);
     m_isVibrating = true;
     return true;
 }
@@ -126,7 +126,7 @@ void NavigatorVibration::timerStartFired(Timer<NavigatorVibration>* timer)
     if (m_pattern.size()) {
         m_isVibrating = true;
         Platform::current()->vibrate(m_pattern[0]);
-        m_timerStop.startOneShot(m_pattern[0] / 1000.0, FROM_HERE);
+        m_timerStop.startOneShot(m_pattern[0] / 1000.0, BLINK_FROM_HERE);
         m_pattern.remove(0);
     }
 }
@@ -139,7 +139,7 @@ void NavigatorVibration::timerStopFired(Timer<NavigatorVibration>* timer)
         m_isVibrating = false;
 
     if (m_pattern.size()) {
-        m_timerStart.startOneShot(m_pattern[0] / 1000.0, FROM_HERE);
+        m_timerStart.startOneShot(m_pattern[0] / 1000.0, BLINK_FROM_HERE);
         m_pattern.remove(0);
     }
 }

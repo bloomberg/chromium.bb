@@ -98,7 +98,7 @@ bool HTMLParserThread::isRunning()
 
 void HTMLParserThread::postTask(PassOwnPtr<Closure> closure)
 {
-    platformThread().taskRunner()->postTask(FROM_HERE, new Task(closure));
+    platformThread().taskRunner()->postTask(BLINK_FROM_HERE, new Task(closure));
 }
 
 } // namespace blink

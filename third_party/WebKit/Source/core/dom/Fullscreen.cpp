@@ -440,7 +440,7 @@ void Fullscreen::didEnterFullScreenForElement(Element* element)
     if (document()->frame())
         document()->frame()->eventHandler().scheduleHoverStateUpdate();
 
-    m_eventQueueTimer.startOneShot(0, FROM_HERE);
+    m_eventQueueTimer.startOneShot(0, BLINK_FROM_HERE);
 }
 
 void Fullscreen::didExitFullScreenForElement(Element*)
@@ -469,7 +469,7 @@ void Fullscreen::didExitFullScreenForElement(Element*)
     if (m_eventQueue.isEmpty())
         exitingDocument = &document()->topDocument();
     ASSERT(exitingDocument);
-    from(*exitingDocument).m_eventQueueTimer.startOneShot(0, FROM_HERE);
+    from(*exitingDocument).m_eventQueueTimer.startOneShot(0, BLINK_FROM_HERE);
 }
 
 void Fullscreen::didUpdateSize(Element& element)
@@ -507,7 +507,7 @@ void Fullscreen::enqueueErrorEvent(Element& element, RequestType requestType)
     else
         event = createEvent(EventTypeNames::webkitfullscreenerror, element);
     m_eventQueue.append(event);
-    m_eventQueueTimer.startOneShot(0, FROM_HERE);
+    m_eventQueueTimer.startOneShot(0, BLINK_FROM_HERE);
 }
 
 void Fullscreen::eventQueueTimerFired(Timer<Fullscreen>*)

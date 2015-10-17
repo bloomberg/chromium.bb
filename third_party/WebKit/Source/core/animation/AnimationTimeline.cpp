@@ -173,7 +173,7 @@ void AnimationTimeline::AnimationTimelineTiming::wakeAfter(double duration)
 {
     if (m_timer.isActive() && m_timer.nextFireInterval() < duration)
         return;
-    m_timer.startOneShot(duration, FROM_HERE);
+    m_timer.startOneShot(duration, BLINK_FROM_HERE);
 }
 
 void AnimationTimeline::AnimationTimelineTiming::cancelWake()

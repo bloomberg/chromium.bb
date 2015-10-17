@@ -59,7 +59,7 @@ public:
     void PostIdleTask(v8::IdleTask* task) override
     {
         ASSERT(RuntimeEnabledFeatures::v8IdleTasksEnabled());
-        m_scheduler->postIdleTask(FROM_HERE, new V8IdleTaskAdapter(task));
+        m_scheduler->postIdleTask(BLINK_FROM_HERE, new V8IdleTaskAdapter(task));
     }
 private:
     WebScheduler* m_scheduler;

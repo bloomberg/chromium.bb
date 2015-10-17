@@ -105,7 +105,7 @@ void WebHelperPluginImpl::destroy()
     // WebFrame, and destroying it would cause JavaScript triggered by frame detach to run,
     // which isn't allowed inside stopActiveDOMObjects(). Removing this causes one Chrome test
     // to fail with a timeout.
-    m_destructionTimer.startOneShot(0, FROM_HERE);
+    m_destructionTimer.startOneShot(0, BLINK_FROM_HERE);
 }
 
 WebPlugin* WebHelperPluginImpl::getPlugin()

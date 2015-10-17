@@ -447,7 +447,7 @@ ScriptPromise MediaKeySession::generateRequest(ScriptState* scriptState, const S
     //    actionTimerFired())
     m_pendingActions.append(PendingAction::CreatePendingGenerateRequest(result, initDataType, initDataBuffer.release()));
     ASSERT(!m_actionTimer.isActive());
-    m_actionTimer.startOneShot(0, FROM_HERE);
+    m_actionTimer.startOneShot(0, BLINK_FROM_HERE);
 
     // 10. Return promise.
     return promise;
@@ -501,7 +501,7 @@ ScriptPromise MediaKeySession::load(ScriptState* scriptState, const String& sess
     //    actionTimerFired())
     m_pendingActions.append(PendingAction::CreatePendingLoadRequest(result, sessionId));
     ASSERT(!m_actionTimer.isActive());
-    m_actionTimer.startOneShot(0, FROM_HERE);
+    m_actionTimer.startOneShot(0, BLINK_FROM_HERE);
 
     // 9. Return promise.
     return promise;
@@ -539,7 +539,7 @@ ScriptPromise MediaKeySession::update(ScriptState* scriptState, const DOMArrayPi
     //    actionTimerFired())
     m_pendingActions.append(PendingAction::CreatePendingUpdate(result, responseCopy.release()));
     if (!m_actionTimer.isActive())
-        m_actionTimer.startOneShot(0, FROM_HERE);
+        m_actionTimer.startOneShot(0, BLINK_FROM_HERE);
 
     // 6. Return promise.
     return promise;
@@ -572,7 +572,7 @@ ScriptPromise MediaKeySession::close(ScriptState* scriptState)
     //    actionTimerFired()).
     m_pendingActions.append(PendingAction::CreatePendingClose(result));
     if (!m_actionTimer.isActive())
-        m_actionTimer.startOneShot(0, FROM_HERE);
+        m_actionTimer.startOneShot(0, BLINK_FROM_HERE);
 
     // 5. Return promise.
     return promise;
@@ -615,7 +615,7 @@ ScriptPromise MediaKeySession::remove(ScriptState* scriptState)
     //    actionTimerFired()).
     m_pendingActions.append(PendingAction::CreatePendingRemove(result));
     if (!m_actionTimer.isActive())
-        m_actionTimer.startOneShot(0, FROM_HERE);
+        m_actionTimer.startOneShot(0, BLINK_FROM_HERE);
 
     // 6. Return promise.
     return promise;

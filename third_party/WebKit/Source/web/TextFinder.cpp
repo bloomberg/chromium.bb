@@ -97,7 +97,7 @@ private:
         , m_options(options)
         , m_reset(reset)
     {
-        m_timer.startOneShot(0.0, FROM_HERE);
+        m_timer.startOneShot(0.0, BLINK_FROM_HERE);
     }
 
     void doTimeout(Timer<DeferredScopeStringMatches>*)

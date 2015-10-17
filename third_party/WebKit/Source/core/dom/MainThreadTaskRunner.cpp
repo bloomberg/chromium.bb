@@ -119,7 +119,7 @@ void MainThreadTaskRunner::resume()
 {
     ASSERT(m_suspended);
     if (!m_pendingTasks.isEmpty())
-        m_pendingTasksTimer.startOneShot(0, FROM_HERE);
+        m_pendingTasksTimer.startOneShot(0, BLINK_FROM_HERE);
 
     m_suspended = false;
 }

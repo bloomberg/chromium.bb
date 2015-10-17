@@ -80,7 +80,7 @@ void LayoutProgress::animationTimerFired(Timer<LayoutProgress>*)
 {
     setShouldDoFullPaintInvalidation();
     if (!m_animationTimer.isActive() && m_animating)
-        m_animationTimer.startOneShot(m_animationRepeatInterval, FROM_HERE);
+        m_animationTimer.startOneShot(m_animationRepeatInterval, BLINK_FROM_HERE);
 }
 
 void LayoutProgress::updateAnimationState()
@@ -95,7 +95,7 @@ void LayoutProgress::updateAnimationState()
     m_animating = animating;
     if (m_animating) {
         m_animationStartTime = currentTime();
-        m_animationTimer.startOneShot(m_animationRepeatInterval, FROM_HERE);
+        m_animationTimer.startOneShot(m_animationRepeatInterval, BLINK_FROM_HERE);
     } else {
         m_animationTimer.stop();
     }

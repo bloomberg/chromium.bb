@@ -592,7 +592,7 @@ void MediaControls::hideMediaControlsTimerFired(Timer<MediaControls>*)
 
 void MediaControls::startHideMediaControlsTimer()
 {
-    m_hideMediaControlsTimer.startOneShot(timeWithoutMouseMovementBeforeHidingMediaControls, FROM_HERE);
+    m_hideMediaControlsTimer.startOneShot(timeWithoutMouseMovementBeforeHidingMediaControls, BLINK_FROM_HERE);
 }
 
 void MediaControls::stopHideMediaControlsTimer()
@@ -638,7 +638,7 @@ void MediaControls::notifyPanelWidthChanged(const LayoutUnit& newWidth)
         return;
     m_panelWidth = ceil(m_panelWidth / m_panel->layoutObject()->style()->effectiveZoom());
 
-    m_panelWidthChangedTimer.startOneShot(0, FROM_HERE);
+    m_panelWidthChangedTimer.startOneShot(0, BLINK_FROM_HERE);
 }
 
 void MediaControls::panelWidthChangedTimerFired(Timer<MediaControls>*)

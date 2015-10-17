@@ -599,14 +599,14 @@ void HTMLMediaElement::scheduleDelayedAction(DelayedActionType actionType)
         m_pendingActionFlags |= LoadTextTrackResource;
 
     if (!m_loadTimer.isActive())
-        m_loadTimer.startOneShot(0, FROM_HERE);
+        m_loadTimer.startOneShot(0, BLINK_FROM_HERE);
 }
 
 void HTMLMediaElement::scheduleNextSourceChild()
 {
     // Schedule the timer to try the next <source> element WITHOUT resetting state ala prepareForLoad.
     m_pendingActionFlags |= LoadMediaResource;
-    m_loadTimer.startOneShot(0, FROM_HERE);
+    m_loadTimer.startOneShot(0, BLINK_FROM_HERE);
 }
 
 void HTMLMediaElement::scheduleEvent(const AtomicString& eventName)
@@ -1086,7 +1086,7 @@ void HTMLMediaElement::deferLoad()
     changeNetworkStateFromLoadingToIdle();
     // 3. Queue a task to set the element's delaying-the-load-event
     // flag to false. This stops delaying the load event.
-    m_deferredLoadTimer.startOneShot(0, FROM_HERE);
+    m_deferredLoadTimer.startOneShot(0, BLINK_FROM_HERE);
     // 4. Wait for the task to be run.
     m_deferredLoadState = WaitingForStopDelayingLoadEventTask;
     // Continued in executeDeferredLoad().
@@ -1235,7 +1235,7 @@ void HTMLMediaElement::startProgressEventTimer()
 
     m_previousProgressTime = WTF::currentTime();
     // 350ms is not magic, it is in the spec!
-    m_progressEventTimer.startRepeating(0.350, FROM_HERE);
+    m_progressEventTimer.startRepeating(0.350, BLINK_FROM_HERE);
 }
 
 void HTMLMediaElement::waitForSourceChange()
@@ -2191,7 +2191,7 @@ void HTMLMediaElement::startPlaybackProgressTimer()
         return;
 
     m_previousProgressTime = WTF::currentTime();
-    m_playbackProgressTimer.startRepeating(maxTimeupdateEventFrequency, FROM_HERE);
+    m_playbackProgressTimer.startRepeating(maxTimeupdateEventFrequency, BLINK_FROM_HERE);
 }
 
 void HTMLMediaElement::playbackProgressTimerFired(Timer<HTMLMediaElement>*)
@@ -2275,7 +2275,7 @@ void HTMLMediaElement::audioTrackChanged()
     // FIXME: Add call on m_mediaSource to notify it of track changes once the SourceBuffer.audioTracks attribute is added.
 
     if (!m_audioTracksTimer.isActive())
-        m_audioTracksTimer.startOneShot(0, FROM_HERE);
+        m_audioTracksTimer.startOneShot(0, BLINK_FROM_HERE);
 }
 
 void HTMLMediaElement::audioTracksTimerFired(Timer<HTMLMediaElement>*)

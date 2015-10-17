@@ -45,7 +45,7 @@ public:
 
 void runPendingTasks()
 {
-    Platform::current()->currentThread()->taskRunner()->postTask(FROM_HERE, new QuitTask);
+    Platform::current()->currentThread()->taskRunner()->postTask(BLINK_FROM_HERE, new QuitTask);
     Platform::current()->unitTestSupport()->enterRunLoop();
 }
 

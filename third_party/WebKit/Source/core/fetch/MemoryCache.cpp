@@ -107,7 +107,7 @@ inline MemoryCache::MemoryCache()
 {
 #ifdef MEMORY_CACHE_STATS
     const double statsIntervalInSeconds = 15;
-    m_statsTimer.startRepeating(statsIntervalInSeconds, FROM_HERE);
+    m_statsTimer.startRepeating(statsIntervalInSeconds, BLINK_FROM_HERE);
 #endif
 }
 

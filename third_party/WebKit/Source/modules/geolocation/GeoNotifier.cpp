@@ -42,13 +42,13 @@ void GeoNotifier::setFatalError(PositionError* error)
     m_fatalError = error;
     // An existing timer may not have a zero timeout.
     m_timer.stop();
-    m_timer.startOneShot(0, FROM_HERE);
+    m_timer.startOneShot(0, BLINK_FROM_HERE);
 }
 
 void GeoNotifier::setUseCachedPosition()
 {
     m_useCachedPosition = true;
-    m_timer.startOneShot(0, FROM_HERE);
+    m_timer.startOneShot(0, BLINK_FROM_HERE);
 }
 
 void GeoNotifier::runSuccessCallback(Geoposition* position)
@@ -64,7 +64,7 @@ void GeoNotifier::runErrorCallback(PositionError* error)
 
 void GeoNotifier::startTimer()
 {
-    m_timer.startOneShot(m_options.timeout() / 1000.0, FROM_HERE);
+    m_timer.startOneShot(m_options.timeout() / 1000.0, BLINK_FROM_HERE);
 }
 
 void GeoNotifier::stopTimer()

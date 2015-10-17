@@ -244,7 +244,7 @@ void WorkerThread::start(PassOwnPtr<WorkerThreadStartupData> startupData)
         return;
 
     m_started = true;
-    backingThread().postTask(FROM_HERE, new Task(threadSafeBind(&WorkerThread::initialize, AllowCrossThreadAccess(this), startupData)));
+    backingThread().postTask(BLINK_FROM_HERE, new Task(threadSafeBind(&WorkerThread::initialize, AllowCrossThreadAccess(this), startupData)));
 }
 
 void WorkerThread::interruptAndDispatchInspectorCommands()
@@ -334,7 +334,7 @@ void WorkerThread::shutdown()
     workerGlobalScope()->dispose();
 
     backingThread().removeTaskObserver(m_microtaskRunner.get());
-    postTask(FROM_HERE, createSameThreadTask(&WorkerThread::performShutdownTask, this));
+    postTask(BLINK_FROM_HERE, createSameThreadTask(&WorkerThread::performShutdownTask, this));
 }
 
 void WorkerThread::performShutdownTask()
@@ -419,7 +419,7 @@ void WorkerThread::terminateInternal()
 
     InspectorInstrumentation::didKillAllExecutionContextTasks(m_workerGlobalScope.get());
     m_debuggerTaskQueue->kill();
-    backingThread().postTask(FROM_HERE, new Task(threadSafeBind(&WorkerThread::shutdown, AllowCrossThreadAccess(this))));
+    backingThread().postTask(BLINK_FROM_HERE, new Task(threadSafeBind(&WorkerThread::shutdown, AllowCrossThreadAccess(this))));
 }
 
 void WorkerThread::didStartRunLoop()

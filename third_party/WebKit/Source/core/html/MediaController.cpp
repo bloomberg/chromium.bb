@@ -151,7 +151,7 @@ double MediaController::currentTime() const
     if (std::isnan(m_position)) {
         // Some clocks may return times outside the range of [0..duration].
         m_position = std::max(0.0, std::min(duration(), m_clock->currentTime()));
-        m_clearPositionTimer.startOneShot(0, FROM_HERE);
+        m_clearPositionTimer.startOneShot(0, BLINK_FROM_HERE);
     }
 
     return m_position;
@@ -585,7 +585,7 @@ void MediaController::startTimeupdateTimer()
     if (m_timeupdateTimer.isActive())
         return;
 
-    m_timeupdateTimer.startRepeating(maxTimeupdateEventFrequency, FROM_HERE);
+    m_timeupdateTimer.startRepeating(maxTimeupdateEventFrequency, BLINK_FROM_HERE);
 }
 
 void MediaController::timeupdateTimerFired(Timer<MediaController>*)

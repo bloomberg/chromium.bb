@@ -58,7 +58,7 @@ void SuspendableScriptExecutor::run()
         executeAndDestroySelf();
         return;
     }
-    startOneShot(0, FROM_HERE);
+    startOneShot(0, BLINK_FROM_HERE);
     suspendIfNeeded();
 }
 

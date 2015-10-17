@@ -5128,7 +5128,7 @@ void WebGLRenderingContextBase::loseContextImpl(WebGLRenderingContextBase::LostC
 
     // Always defer the dispatch of the context lost event, to implement
     // the spec behavior of queueing a task.
-    m_dispatchContextLostEventTimer.startOneShot(0, FROM_HERE);
+    m_dispatchContextLostEventTimer.startOneShot(0, BLINK_FROM_HERE);
 }
 
 void WebGLRenderingContextBase::forceRestoreContext()
@@ -5145,7 +5145,7 @@ void WebGLRenderingContextBase::forceRestoreContext()
     }
 
     if (!m_restoreTimer.isActive())
-        m_restoreTimer.startOneShot(0, FROM_HERE);
+        m_restoreTimer.startOneShot(0, BLINK_FROM_HERE);
 }
 
 WebLayer* WebGLRenderingContextBase::platformLayer() const
@@ -6467,7 +6467,7 @@ void WebGLRenderingContextBase::dispatchContextLostEvent(Timer<WebGLRenderingCon
     m_restoreAllowed = event->defaultPrevented();
     if (m_restoreAllowed) {
         if (m_autoRecoveryMethod == Auto)
-            m_restoreTimer.startOneShot(0, FROM_HERE);
+            m_restoreTimer.startOneShot(0, BLINK_FROM_HERE);
     }
 }
 
@@ -6509,7 +6509,7 @@ void WebGLRenderingContextBase::maybeRestoreContext(Timer<WebGLRenderingContextB
     }
     if (!buffer) {
         if (m_contextLostMode == RealLostContext) {
-            m_restoreTimer.startOneShot(secondsBetweenRestoreAttempts, FROM_HERE);
+            m_restoreTimer.startOneShot(secondsBetweenRestoreAttempts, BLINK_FROM_HERE);
         } else {
             // This likely shouldn't happen but is the best way to report it to the WebGL app.
             synthesizeGLError(GL_INVALID_OPERATION, "", "error restoring context");

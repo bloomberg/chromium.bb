@@ -429,7 +429,7 @@ void NavigationScheduler::startTimer()
     WebScheduler* scheduler = Platform::current()->currentThread()->scheduler();
     scheduler->addPendingNavigation();
     scheduler->loadingTaskRunner()->postDelayedTask(
-        FROM_HERE, m_navigateTaskFactory->cancelAndCreate(), m_redirect->delay() * 1000.0);
+        BLINK_FROM_HERE, m_navigateTaskFactory->cancelAndCreate(), m_redirect->delay() * 1000.0);
 
     InspectorInstrumentation::frameScheduledNavigation(m_frame, m_redirect->delay());
 }

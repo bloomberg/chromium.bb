@@ -37,7 +37,7 @@ void PlatformEventController::startUpdating()
 
     if (hasLastData() && !m_timer.isActive()) {
         // Make sure to fire the data as soon as possible.
-        m_timer.startOneShot(0, FROM_HERE);
+        m_timer.startOneShot(0, BLINK_FROM_HERE);
     }
 
     registerWithDispatcher();

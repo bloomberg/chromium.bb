@@ -147,7 +147,7 @@ CompositorProxy::CompositorProxy(uint64_t elementId, uint32_t attributeFlags)
 {
     ASSERT(isControlThread());
     ASSERT(sanityCheckAttributeFlags(m_bitfieldsSupported));
-    Platform::current()->mainThread()->taskRunner()->postTask(FROM_HERE, threadSafeBind(&incrementProxyCountForElement, m_elementId));
+    Platform::current()->mainThread()->taskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&incrementProxyCountForElement, m_elementId));
 }
 
 CompositorProxy::~CompositorProxy()
@@ -252,7 +252,7 @@ void CompositorProxy::disconnect()
     if (isMainThread())
         decrementCountForElement(m_elementId);
     else
-        Platform::current()->mainThread()->taskRunner()->postTask(FROM_HERE, threadSafeBind(&decrementCountForElement, m_elementId));
+        Platform::current()->mainThread()->taskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&decrementCountForElement, m_elementId));
 }
 
 } // namespace blink

@@ -1007,7 +1007,7 @@ void FrameSelection::updateAppearance(ResetCaretBlinkOption option)
     // already blinking in the right location.
     if (shouldBlink && !m_caretBlinkTimer.isActive()) {
         if (double blinkInterval = LayoutTheme::theme().caretBlinkInterval())
-            m_caretBlinkTimer.startRepeating(blinkInterval, FROM_HERE);
+            m_caretBlinkTimer.startRepeating(blinkInterval, BLINK_FROM_HERE);
 
         m_shouldPaintCaret = true;
         willNeedCaretRectUpdate = true;

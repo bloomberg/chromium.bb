@@ -228,7 +228,7 @@ void ScriptRunner::postTaskIfOneIsNotAlreadyInFlight()
     if (m_executeScriptsTaskFactory->isPending())
         return;
 
-    Platform::current()->currentThread()->scheduler()->loadingTaskRunner()->postTask(FROM_HERE, m_executeScriptsTaskFactory->cancelAndCreate());
+    Platform::current()->currentThread()->scheduler()->loadingTaskRunner()->postTask(BLINK_FROM_HERE, m_executeScriptsTaskFactory->cancelAndCreate());
 }
 
 DEFINE_TRACE(ScriptRunner)

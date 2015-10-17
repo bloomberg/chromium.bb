@@ -197,7 +197,7 @@ void CanvasRenderingContext2D::loseContext(LostContextMode lostMode)
     if (m_contextLostMode == SyntheticLostContext) {
         canvas()->discardImageBuffer();
     }
-    m_dispatchContextLostEventTimer.startOneShot(0, FROM_HERE);
+    m_dispatchContextLostEventTimer.startOneShot(0, BLINK_FROM_HERE);
 }
 
 void CanvasRenderingContext2D::didSetSurfaceSize()
@@ -210,7 +210,7 @@ void CanvasRenderingContext2D::didSetSurfaceSize()
 
     if (canvas()->buffer()) {
         if (contextLostRestoredEventsEnabled()) {
-            m_dispatchContextRestoredEventTimer.startOneShot(0, FROM_HERE);
+            m_dispatchContextRestoredEventTimer.startOneShot(0, BLINK_FROM_HERE);
         } else {
             // legacy synchronous context restoration.
             reset();
@@ -240,7 +240,7 @@ void CanvasRenderingContext2D::dispatchContextLostEvent(Timer<CanvasRenderingCon
     // but rather due to a an eviction, which means image buffer exists.
     if (m_contextRestorable && m_contextLostMode == RealLostContext) {
         m_tryRestoreContextAttemptCount = 0;
-        m_tryRestoreContextEventTimer.startRepeating(TryRestoreContextInterval, FROM_HERE);
+        m_tryRestoreContextEventTimer.startRepeating(TryRestoreContextInterval, BLINK_FROM_HERE);
     }
 }
 

@@ -76,7 +76,7 @@ void HTMLImportTreeRoot::scheduleRecalcState()
     if (m_recalcTimer.isActive() || !m_document)
         return;
 #endif
-    m_recalcTimer.startOneShot(0, FROM_HERE);
+    m_recalcTimer.startOneShot(0, BLINK_FROM_HERE);
 }
 
 HTMLImportChild* HTMLImportTreeRoot::add(PassOwnPtrWillBeRawPtr<HTMLImportChild> child)

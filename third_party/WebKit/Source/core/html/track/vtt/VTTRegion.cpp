@@ -450,7 +450,7 @@ void VTTRegion::startTimer()
         return;
 
     double duration = isScrollingRegion() ? scrollTime : 0;
-    m_scrollTimer.startOneShot(duration, FROM_HERE);
+    m_scrollTimer.startOneShot(duration, BLINK_FROM_HERE);
 }
 
 void VTTRegion::stopTimer()

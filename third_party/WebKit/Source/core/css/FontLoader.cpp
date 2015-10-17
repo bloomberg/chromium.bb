@@ -60,7 +60,7 @@ void FontLoader::addFontToBeginLoading(FontResource* fontResource)
     m_fontsToBeginLoading.append(FontToLoad::create(fontResource, *m_document));
     fontResource->didScheduleLoad();
     if (!m_beginLoadingTimer.isActive())
-        m_beginLoadingTimer.startOneShot(0, FROM_HERE);
+        m_beginLoadingTimer.startOneShot(0, BLINK_FROM_HERE);
 }
 
 void FontLoader::beginLoadTimerFired(Timer<blink::FontLoader>*)

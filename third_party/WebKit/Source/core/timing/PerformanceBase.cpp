@@ -382,7 +382,7 @@ bool PerformanceBase::hasObserverFor(PerformanceEntry::EntryType filterType)
 void PerformanceBase::activateObserver(PerformanceObserver& observer)
 {
     if (m_activeObservers.isEmpty())
-        m_deliverObservationsTimer.startOneShot(0, FROM_HERE);
+        m_deliverObservationsTimer.startOneShot(0, BLINK_FROM_HERE);
 
     m_activeObservers.add(&observer);
 }

@@ -58,7 +58,7 @@ void V8GCForContextDispose::notifyIdle()
 {
     double maxTimeSinceLastContextDisposal = .2;
     if (!m_didDisposeContextForMainFrame && !m_pseudoIdleTimer.isActive() && m_lastContextDisposalTime + maxTimeSinceLastContextDisposal >= WTF::currentTime()) {
-        m_pseudoIdleTimer.startOneShot(0, FROM_HERE);
+        m_pseudoIdleTimer.startOneShot(0, BLINK_FROM_HERE);
     }
 }
 

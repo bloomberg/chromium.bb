@@ -110,7 +110,7 @@ void WebLeakDetectorImpl::collectGarbageAndGetDOMCounts(WebLocalFrame* frame)
     // so previous document is still held by the loader until the next event loop.
     // Complete all pending tasks before proceeding to gc.
     m_numberOfGCNeeded = 2;
-    m_delayedGCAndReportTimer.startOneShot(0, FROM_HERE);
+    m_delayedGCAndReportTimer.startOneShot(0, BLINK_FROM_HERE);
 }
 
 void WebLeakDetectorImpl::delayedGCAndReport(Timer<WebLeakDetectorImpl>*)
@@ -124,9 +124,9 @@ void WebLeakDetectorImpl::delayedGCAndReport(Timer<WebLeakDetectorImpl>*)
 
     // Inspect counters on the next event loop.
     if (--m_numberOfGCNeeded)
-        m_delayedGCAndReportTimer.startOneShot(0, FROM_HERE);
+        m_delayedGCAndReportTimer.startOneShot(0, BLINK_FROM_HERE);
     else
-        m_delayedReportTimer.startOneShot(0, FROM_HERE);
+        m_delayedReportTimer.startOneShot(0, BLINK_FROM_HERE);
 }
 
 void WebLeakDetectorImpl::delayedReport(Timer<WebLeakDetectorImpl>*)

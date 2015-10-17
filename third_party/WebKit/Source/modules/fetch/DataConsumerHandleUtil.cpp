@@ -140,7 +140,7 @@ NotifyOnReaderCreationHelper::NotifyOnReaderCreationHelper(WebDataConsumerHandle
         return;
     // Note we don't need thread safety here because this object is
     // bound to the current thread.
-    Platform::current()->currentThread()->taskRunner()->postTask(FROM_HERE, new Task(bind(&NotifyOnReaderCreationHelper::notify, m_factory.createWeakPtr(), client)));
+    Platform::current()->currentThread()->taskRunner()->postTask(BLINK_FROM_HERE, new Task(bind(&NotifyOnReaderCreationHelper::notify, m_factory.createWeakPtr(), client)));
 }
 
 void NotifyOnReaderCreationHelper::notify(WebDataConsumerHandle::Client* client)

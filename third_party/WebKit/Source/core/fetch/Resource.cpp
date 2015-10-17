@@ -641,7 +641,7 @@ void Resource::allClientsRemoved()
     if (m_type == MainResource || m_type == Raw)
         cancelTimerFired(&m_cancelTimer);
     else if (!m_cancelTimer.isActive())
-        m_cancelTimer.startOneShot(0, FROM_HERE);
+        m_cancelTimer.startOneShot(0, BLINK_FROM_HERE);
 
     unlock();
 }
@@ -900,7 +900,7 @@ Resource::ResourceCallback::ResourceCallback()
 void Resource::ResourceCallback::schedule(Resource* resource)
 {
     if (!m_callbackTaskFactory->isPending())
-        Platform::current()->currentThread()->scheduler()->loadingTaskRunner()->postTask(FROM_HERE, m_callbackTaskFactory->cancelAndCreate());
+        Platform::current()->currentThread()->scheduler()->loadingTaskRunner()->postTask(BLINK_FROM_HERE, m_callbackTaskFactory->cancelAndCreate());
     resource->assertAlive();
     m_resourcesWithPendingClients.add(resource);
 }

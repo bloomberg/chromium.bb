@@ -278,7 +278,7 @@ void AssociatedURLLoader::ClientAdapter::enableErrorNotifications()
     // If an error has already been received, start a timer to report it to the client
     // after AssociatedURLLoader::loadAsynchronously has returned to the caller.
     if (m_didFail)
-        m_errorTimer.startOneShot(0, FROM_HERE);
+        m_errorTimer.startOneShot(0, BLINK_FROM_HERE);
 }
 
 void AssociatedURLLoader::ClientAdapter::notifyError(Timer<ClientAdapter>* timer)

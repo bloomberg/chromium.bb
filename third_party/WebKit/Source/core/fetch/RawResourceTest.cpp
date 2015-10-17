@@ -114,7 +114,7 @@ public:
     {
         // First schedule an asynchronous task to remove the client.
         // We do not expect the client to be called.
-        m_removeClientTimer.startOneShot(0, FROM_HERE);
+        m_removeClientTimer.startOneShot(0, BLINK_FROM_HERE);
         resource->addClient(m_dummyClient);
     }
     void removeClient(Timer<AddingClient>* timer)

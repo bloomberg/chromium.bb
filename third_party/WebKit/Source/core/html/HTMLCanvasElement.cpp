@@ -565,9 +565,9 @@ void HTMLCanvasElement::encodeImageAsync(DOMUint8ClampedArray* imageData, IntSiz
     OwnPtr<Vector<char>> encodedImage(adoptPtr(new Vector<char>()));
 
     if (!ImageDataBuffer(imageSize, imageData->data()).encodeImage(mimeType, quality, encodedImage.get())) {
-        Platform::current()->mainThread()->taskRunner()->postTask(FROM_HERE, bind(&FileCallback::handleEvent, callback, nullptr));
+        Platform::current()->mainThread()->taskRunner()->postTask(BLINK_FROM_HERE, bind(&FileCallback::handleEvent, callback, nullptr));
     } else {
-        Platform::current()->mainThread()->taskRunner()->postTask(FROM_HERE, threadSafeBind(&HTMLCanvasElement::createBlobAndCall, encodedImage.release(), mimeType, AllowCrossThreadAccess(callback)));
+        Platform::current()->mainThread()->taskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&HTMLCanvasElement::createBlobAndCall, encodedImage.release(), mimeType, AllowCrossThreadAccess(callback)));
     }
 }
 
@@ -577,7 +577,7 @@ void HTMLCanvasElement::createBlobAndCall(PassOwnPtr<Vector<char>> encodedImage,
     OwnPtr<Vector<char>> enc(encodedImage);
 
     File* resultBlob = File::create(enc->data(), enc->size(), mimeType);
-    Platform::current()->mainThread()->taskRunner()->postTask(FROM_HERE, bind(&FileCallback::handleEvent, callback, resultBlob));
+    Platform::current()->mainThread()->taskRunner()->postTask(BLINK_FROM_HERE, bind(&FileCallback::handleEvent, callback, resultBlob));
 }
 
 void HTMLCanvasElement::toBlob(FileCallback* callback, const String& mimeType, const ScriptValue& qualityArgument, ExceptionState& exceptionState)
@@ -589,7 +589,7 @@ void HTMLCanvasElement::toBlob(FileCallback* callback, const String& mimeType, c
 
     if (!isPaintable()) {
         // If the canvas element's bitmap has no pixels
-        Platform::current()->mainThread()->taskRunner()->postTask(FROM_HERE, bind(&FileCallback::handleEvent, callback, nullptr));
+        Platform::current()->mainThread()->taskRunner()->postTask(BLINK_FROM_HERE, bind(&FileCallback::handleEvent, callback, nullptr));
         return;
     }
 
@@ -610,7 +610,7 @@ void HTMLCanvasElement::toBlob(FileCallback* callback, const String& mimeType, c
     // Add a ref to keep image data alive until completion of encoding
     RefPtr<DOMUint8ClampedArray> imageDataRef(imageData->data());
 
-    getToBlobThreadInstance()->taskRunner()->postTask(FROM_HERE, new Task(threadSafeBind(&HTMLCanvasElement::encodeImageAsync, AllowCrossThreadAccess(imageDataRef.release().leakRef()), imageData->size(), AllowCrossThreadAccess(callback), encodingMimeType, quality)));
+    getToBlobThreadInstance()->taskRunner()->postTask(BLINK_FROM_HERE, new Task(threadSafeBind(&HTMLCanvasElement::encodeImageAsync, AllowCrossThreadAccess(imageDataRef.release().leakRef()), imageData->size(), AllowCrossThreadAccess(callback), encodingMimeType, quality)));
 }
 
 SecurityOrigin* HTMLCanvasElement::securityOrigin() const

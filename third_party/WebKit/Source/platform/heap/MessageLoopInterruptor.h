@@ -46,7 +46,7 @@ public:
         // GCTask has an empty run() method. Its only purpose is to guarantee
         // that MessageLoop will have a task to process which will result
         // in PendingGCRunner::didProcessTask being executed.
-        m_taskRunner->postTask(FROM_HERE, new GCTask);
+        m_taskRunner->postTask(BLINK_FROM_HERE, new GCTask);
     }
 
 private:

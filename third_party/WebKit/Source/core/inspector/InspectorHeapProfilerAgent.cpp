@@ -231,7 +231,7 @@ void InspectorHeapProfilerAgent::HeapStatsUpdateTask::onTimer(Timer<HeapStatsUpd
 void InspectorHeapProfilerAgent::HeapStatsUpdateTask::startTimer()
 {
     ASSERT(!m_timer.isActive());
-    m_timer.startRepeating(0.05, FROM_HERE);
+    m_timer.startRepeating(0.05, BLINK_FROM_HERE);
 }
 
 DEFINE_TRACE(InspectorHeapProfilerAgent::HeapStatsUpdateTask)

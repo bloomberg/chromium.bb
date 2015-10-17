@@ -131,7 +131,7 @@ public:
     void checkWorkerCanExecuteScript(WorkerThread* worker)
     {
         OwnPtr<WebWaitableEvent> waitEvent = adoptPtr(Platform::current()->createWaitableEvent());
-        worker->backingThread().platformThread().taskRunner()->postTask(FROM_HERE, threadSafeBind(&CompositorWorkerManagerTest::executeScriptInWorker, AllowCrossThreadAccess(this),
+        worker->backingThread().platformThread().taskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&CompositorWorkerManagerTest::executeScriptInWorker, AllowCrossThreadAccess(this),
             AllowCrossThreadAccess(worker), AllowCrossThreadAccess(waitEvent.get())));
         waitEvent->wait();
     }
@@ -236,7 +236,7 @@ TEST_F(CompositorWorkerManagerTest, TerminateFirstAndCreateSecond)
 
     // Jump over to the worker's thread to verify that the Isolate is set up correctly and execute script.
     OwnPtr<WebWaitableEvent> checkEvent = adoptPtr(Platform::current()->createWaitableEvent());
-    secondThread->platformThread().taskRunner()->postTask(FROM_HERE, threadSafeBind(&checkCurrentIsolate, AllowCrossThreadAccess(compositorWorker->isolate()), AllowCrossThreadAccess(checkEvent.get())));
+    secondThread->platformThread().taskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&checkCurrentIsolate, AllowCrossThreadAccess(compositorWorker->isolate()), AllowCrossThreadAccess(checkEvent.get())));
     waitForWaitableEventAfterIteratingCurrentLoop(checkEvent.get());
     checkWorkerCanExecuteScript(compositorWorker.get());
 

@@ -63,7 +63,7 @@ void MediaStreamTrackSourcesRequestImpl::requestSucceeded(const WebVector<WebSou
 
     for (size_t i = 0; i < webSourceInfos.size(); ++i)
         m_sourceInfos.append(SourceInfo::create(webSourceInfos[i]));
-    m_executionContext->postTask(FROM_HERE, createCrossThreadTask(&MediaStreamTrackSourcesRequestImpl::performCallback, this));
+    m_executionContext->postTask(BLINK_FROM_HERE, createCrossThreadTask(&MediaStreamTrackSourcesRequestImpl::performCallback, this));
 }
 
 void MediaStreamTrackSourcesRequestImpl::performCallback()

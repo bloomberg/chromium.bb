@@ -262,7 +262,7 @@ void ResourceFetcher::requestLoadStarted(Resource* resource, const FetchRequest&
         populateResourceTiming(info.get(), resource, true);
         m_scheduledResourceTimingReports.append(info.release());
         if (!m_resourceTimingReportTimer.isActive())
-            m_resourceTimingReportTimer.startOneShot(0, FROM_HERE);
+            m_resourceTimingReportTimer.startOneShot(0, BLINK_FROM_HERE);
     }
 
     if (m_validatedURLs.size() >= kMaxValidatedURLsSize) {
@@ -773,7 +773,7 @@ void ResourceFetcher::didLoadResource()
 void ResourceFetcher::scheduleDocumentResourcesGC()
 {
     if (!m_garbageCollectDocumentResourcesTimer.isActive())
-        m_garbageCollectDocumentResourcesTimer.startOneShot(0, FROM_HERE);
+        m_garbageCollectDocumentResourcesTimer.startOneShot(0, BLINK_FROM_HERE);
 }
 
 // Garbage collecting m_documentResources is a workaround for the

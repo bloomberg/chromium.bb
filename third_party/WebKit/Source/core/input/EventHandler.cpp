@@ -2646,7 +2646,7 @@ GestureEventWithHitTestResults EventHandler::targetGestureEvent(const PlatformGe
 
     if (shouldKeepActiveForMinInterval) {
         m_lastDeferredTapElement = eventWithHitTestResults.hitTestResult().innerElement();
-        m_activeIntervalTimer.startOneShot(minimumActiveInterval - activeInterval, FROM_HERE);
+        m_activeIntervalTimer.startOneShot(minimumActiveInterval - activeInterval, BLINK_FROM_HERE);
     }
 
     return eventWithHitTestResults;
@@ -2873,7 +2873,7 @@ bool EventHandler::sendContextMenuEventForGesture(const GestureEventWithHitTestR
 void EventHandler::scheduleHoverStateUpdate()
 {
     if (!m_hoverTimer.isActive())
-        m_hoverTimer.startOneShot(0, FROM_HERE);
+        m_hoverTimer.startOneShot(0, BLINK_FROM_HERE);
 }
 
 void EventHandler::scheduleCursorUpdate()
@@ -2883,7 +2883,7 @@ void EventHandler::scheduleCursorUpdate()
     ASSERT(m_frame == m_frame->localFrameRoot());
 
     if (!m_cursorUpdateTimer.isActive())
-        m_cursorUpdateTimer.startOneShot(cursorUpdateInterval, FROM_HERE);
+        m_cursorUpdateTimer.startOneShot(cursorUpdateInterval, BLINK_FROM_HERE);
 }
 
 bool EventHandler::cursorUpdatePending()
@@ -2907,7 +2907,7 @@ void EventHandler::dispatchFakeMouseMoveEventSoon()
     // during a scroll. This avoids a potential source of scroll jank.
     if (m_fakeMouseMoveEventTimer.isActive())
         m_fakeMouseMoveEventTimer.stop();
-    m_fakeMouseMoveEventTimer.startOneShot(fakeMouseMoveInterval, FROM_HERE);
+    m_fakeMouseMoveEventTimer.startOneShot(fakeMouseMoveInterval, BLINK_FROM_HERE);
 }
 
 void EventHandler::dispatchFakeMouseMoveEventSoonInQuad(const FloatQuad& quad)

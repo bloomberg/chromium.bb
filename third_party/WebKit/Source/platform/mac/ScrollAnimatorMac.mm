@@ -320,7 +320,7 @@ public:
         m_startTime = WTF::currentTime();
         // Set the framerate of the animation. NSAnimation uses a default
         // framerate of 60 Hz, so use that here.
-        m_timer.startRepeating(1.0 / 60.0, FROM_HERE);
+        m_timer.startRepeating(1.0 / 60.0, BLINK_FROM_HERE);
     }
 
     void stop()
@@ -1122,7 +1122,7 @@ void ScrollAnimatorMac::updateScrollerStyle()
 
 void ScrollAnimatorMac::startScrollbarPaintTimer()
 {
-    m_initialScrollbarPaintTimer.startOneShot(0.1, FROM_HERE);
+    m_initialScrollbarPaintTimer.startOneShot(0.1, BLINK_FROM_HERE);
 }
 
 bool ScrollAnimatorMac::scrollbarPaintTimerIsActive() const
@@ -1150,7 +1150,7 @@ void ScrollAnimatorMac::sendContentAreaScrolledSoon(const FloatSize& delta)
     m_contentAreaScrolledTimerScrollDelta = delta;
 
     if (!m_sendContentAreaScrolledTimer.isActive())
-        m_sendContentAreaScrolledTimer.startOneShot(0, FROM_HERE);
+        m_sendContentAreaScrolledTimer.startOneShot(0, BLINK_FROM_HERE);
 }
 
 void ScrollAnimatorMac::sendContentAreaScrolledTimerFired(Timer<ScrollAnimatorMac>*)

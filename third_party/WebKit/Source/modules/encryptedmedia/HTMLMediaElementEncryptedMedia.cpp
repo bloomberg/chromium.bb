@@ -143,7 +143,7 @@ SetMediaKeysHandler::SetMediaKeysHandler(ScriptState* scriptState, HTMLMediaElem
     WTF_LOG(Media, "SetMediaKeysHandler::SetMediaKeysHandler");
 
     // 3. Run the remaining steps asynchronously.
-    m_timer.startOneShot(0, FROM_HERE);
+    m_timer.startOneShot(0, BLINK_FROM_HERE);
 }
 
 SetMediaKeysHandler::~SetMediaKeysHandler()

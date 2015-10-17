@@ -651,7 +651,7 @@ void InspectorOverlay::pageLayoutInvalidated(bool resized)
 {
     if (resized && m_drawViewSize) {
         m_resizeTimerActive = true;
-        m_timer.startOneShot(1, FROM_HERE);
+        m_timer.startOneShot(1, BLINK_FROM_HERE);
     }
     scheduleUpdate();
 }

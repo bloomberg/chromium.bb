@@ -69,7 +69,7 @@ private:
     public:
         explicit EmptyDataReader(WebDataConsumerHandle::Client* client) : m_factory(this)
         {
-            Platform::current()->currentThread()->taskRunner()->postTask(FROM_HERE, new Task(bind(&EmptyDataReader::notify, m_factory.createWeakPtr(), client)));
+            Platform::current()->currentThread()->taskRunner()->postTask(BLINK_FROM_HERE, new Task(bind(&EmptyDataReader::notify, m_factory.createWeakPtr(), client)));
         }
     private:
         Result read(void*, size_t, WebDataConsumerHandle::Flags, size_t *readSize) override
@@ -296,7 +296,7 @@ void DocumentThreadableLoader::overrideTimeout(unsigned long timeoutMilliseconds
         double elapsedTime = monotonicallyIncreasingTime() - m_requestStartedSeconds;
         double nextFire = timeoutMilliseconds / 1000.0;
         double resolvedTime = std::max(nextFire - elapsedTime, 0.0);
-        m_timeoutTimer.startOneShot(resolvedTime, FROM_HERE);
+        m_timeoutTimer.startOneShot(resolvedTime, BLINK_FROM_HERE);
     }
 }
 
@@ -775,7 +775,7 @@ void DocumentThreadableLoader::loadRequest(const ResourceRequest& request, Resou
             resourceLoaderOptions.dataBufferingPolicy = BufferData;
 
         if (m_options.timeoutMilliseconds > 0)
-            m_timeoutTimer.startOneShot(m_options.timeoutMilliseconds / 1000.0, FROM_HERE);
+            m_timeoutTimer.startOneShot(m_options.timeoutMilliseconds / 1000.0, BLINK_FROM_HERE);
 
         FetchRequest newRequest(request, m_options.initiator, resourceLoaderOptions);
         if (m_options.crossOriginRequestPolicy == AllowCrossOriginRequests)

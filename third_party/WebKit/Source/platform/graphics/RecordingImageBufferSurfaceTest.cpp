@@ -364,7 +364,7 @@ class TestWrapperTask_ ## TEST_METHOD : public WebTaskRunner::Task {            
 #define CALL_TEST_TASK_WRAPPER(TEST_METHOD)                                                               \
     {                                                                                                     \
         AutoInstallCurrentThreadPlatformMock ctpm;                                                        \
-        Platform::current()->currentThread()->taskRunner()->postTask(FROM_HERE, new TestWrapperTask_ ## TEST_METHOD(this)); \
+        Platform::current()->currentThread()->taskRunner()->postTask(BLINK_FROM_HERE, new TestWrapperTask_ ## TEST_METHOD(this)); \
         ctpm.enterRunLoop();                                      \
     }
 

@@ -90,7 +90,7 @@ void XMLHttpRequestProgressEventThrottle::dispatchProgressEvent(const AtomicStri
         m_deferred->set(lengthComputable, loaded, total);
     } else {
         m_target->dispatchEvent(XMLHttpRequestProgressEvent::create(type, lengthComputable, loaded, total));
-        startOneShot(minimumProgressEventDispatchingIntervalInSeconds, FROM_HERE);
+        startOneShot(minimumProgressEventDispatchingIntervalInSeconds, BLINK_FROM_HERE);
     }
 }
 
@@ -136,7 +136,7 @@ void XMLHttpRequestProgressEventThrottle::fired()
     dispatchDeferredEvent();
 
     // Watch if another "progress" ProgressEvent arrives in the next 50ms.
-    startOneShot(minimumProgressEventDispatchingIntervalInSeconds, FROM_HERE);
+    startOneShot(minimumProgressEventDispatchingIntervalInSeconds, BLINK_FROM_HERE);
 }
 
 void XMLHttpRequestProgressEventThrottle::suspend()
@@ -152,7 +152,7 @@ void XMLHttpRequestProgressEventThrottle::resume()
     // Do not dispatch events inline here, since ExecutionContext is iterating
     // over the list of active DOM objects to resume them, and any activated JS
     // event-handler could insert new active DOM objects to the list.
-    startOneShot(0, FROM_HERE);
+    startOneShot(0, BLINK_FROM_HERE);
 }
 
 DEFINE_TRACE(XMLHttpRequestProgressEventThrottle)

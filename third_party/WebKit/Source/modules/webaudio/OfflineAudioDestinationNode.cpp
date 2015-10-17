@@ -91,7 +91,7 @@ void OfflineAudioDestinationHandler::startRendering()
     if (!m_startedRendering) {
         m_startedRendering = true;
         m_renderThread = adoptPtr(Platform::current()->createThread("Offline Audio Renderer"));
-        m_renderThread->taskRunner()->postTask(FROM_HERE, new Task(threadSafeBind(&OfflineAudioDestinationHandler::offlineRender, PassRefPtr<OfflineAudioDestinationHandler>(this))));
+        m_renderThread->taskRunner()->postTask(BLINK_FROM_HERE, new Task(threadSafeBind(&OfflineAudioDestinationHandler::offlineRender, PassRefPtr<OfflineAudioDestinationHandler>(this))));
     }
 }
 
@@ -152,7 +152,7 @@ void OfflineAudioDestinationHandler::offlineRenderInternal()
 
     // Our work is done. Let the AbstractAudioContext know.
     if (context()->executionContext())
-        context()->executionContext()->postTask(FROM_HERE, createCrossThreadTask(&OfflineAudioDestinationHandler::notifyComplete, PassRefPtr<OfflineAudioDestinationHandler>(this)));
+        context()->executionContext()->postTask(BLINK_FROM_HERE, createCrossThreadTask(&OfflineAudioDestinationHandler::notifyComplete, PassRefPtr<OfflineAudioDestinationHandler>(this)));
 }
 
 void OfflineAudioDestinationHandler::notifyComplete()

@@ -52,7 +52,7 @@ void DeprecatedStorageInfo::queryUsageAndQuota(ExecutionContext* executionContex
     DeprecatedStorageQuota* storageQuota = getStorageQuota(storageType);
     if (!storageQuota) {
         // Unknown storage type is requested.
-        executionContext->postTask(FROM_HERE, StorageErrorCallback::CallbackTask::create(errorCallback, NotSupportedError));
+        executionContext->postTask(BLINK_FROM_HERE, StorageErrorCallback::CallbackTask::create(errorCallback, NotSupportedError));
         return;
     }
     storageQuota->queryUsageAndQuota(executionContext, successCallback, errorCallback);
@@ -64,7 +64,7 @@ void DeprecatedStorageInfo::requestQuota(ExecutionContext* executionContext, int
     DeprecatedStorageQuota* storageQuota = getStorageQuota(storageType);
     if (!storageQuota) {
         // Unknown storage type is requested.
-        executionContext->postTask(FROM_HERE, StorageErrorCallback::CallbackTask::create(errorCallback, NotSupportedError));
+        executionContext->postTask(BLINK_FROM_HERE, StorageErrorCallback::CallbackTask::create(errorCallback, NotSupportedError));
         return;
     }
     storageQuota->requestQuota(executionContext, newQuotaInBytes, successCallback, errorCallback);

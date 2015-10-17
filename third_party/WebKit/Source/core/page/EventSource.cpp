@@ -112,7 +112,7 @@ void EventSource::scheduleInitialConnect()
     ASSERT(m_state == CONNECTING);
     ASSERT(!m_requestInFlight);
 
-    m_connectTimer.startOneShot(0, FROM_HERE);
+    m_connectTimer.startOneShot(0, BLINK_FROM_HERE);
 }
 
 void EventSource::connect()
@@ -171,7 +171,7 @@ void EventSource::networkRequestEnded()
 void EventSource::scheduleReconnect()
 {
     m_state = CONNECTING;
-    m_connectTimer.startOneShot(m_reconnectDelay / 1000.0, FROM_HERE);
+    m_connectTimer.startOneShot(m_reconnectDelay / 1000.0, BLINK_FROM_HERE);
     dispatchEvent(Event::create(EventTypeNames::error));
 }
 

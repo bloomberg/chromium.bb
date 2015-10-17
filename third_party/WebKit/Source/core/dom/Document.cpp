@@ -1945,7 +1945,7 @@ void Document::setNeedsFocusedElementCheck()
 void Document::clearFocusedElementSoon()
 {
     if (!m_clearFocusedElementTimer.isActive())
-        m_clearFocusedElementTimer.startOneShot(0, FROM_HERE);
+        m_clearFocusedElementTimer.startOneShot(0, BLINK_FROM_HERE);
 }
 
 void Document::clearFocusedElementTimerFired(Timer<Document>*)
@@ -2999,7 +2999,7 @@ void Document::didRemoveAllPendingStylesheet()
 void Document::didLoadAllScriptBlockingResources()
 {
     Platform::current()->currentThread()->scheduler()->loadingTaskRunner()->postTask(
-        FROM_HERE, m_executeScriptsWaitingForResourcesTask->cancelAndCreate());
+        BLINK_FROM_HERE, m_executeScriptsWaitingForResourcesTask->cancelAndCreate());
 
     if (frame())
         frame()->loader().client()->didRemoveAllPendingStylesheet();
@@ -4605,7 +4605,7 @@ void Document::finishedParsing()
     // so that dynamically inserted content can also benefit from sharing optimizations.
     // Note that we don't refresh the timer on cache access since that could lead to huge caches being kept
     // alive indefinitely by something innocuous like JS setting .innerHTML repeatedly on a timer.
-    m_elementDataCacheClearTimer.startOneShot(10, FROM_HERE);
+    m_elementDataCacheClearTimer.startOneShot(10, BLINK_FROM_HERE);
 
     // Parser should have picked up all preloads by now
     m_fetcher->clearPreloads();
@@ -4874,7 +4874,7 @@ void Document::updateFocusAppearanceSoon(bool restorePreviousSelection)
 {
     m_updateFocusAppearanceRestoresSelection = restorePreviousSelection;
     if (!m_updateFocusAppearanceTimer.isActive())
-        m_updateFocusAppearanceTimer.startOneShot(0, FROM_HERE);
+        m_updateFocusAppearanceTimer.startOneShot(0, BLINK_FROM_HERE);
 }
 
 void Document::cancelFocusAppearanceUpdate()
@@ -4960,7 +4960,7 @@ void Document::reportBlockedScriptExecutionToInspector(const String& directiveTe
 void Document::addConsoleMessage(PassRefPtrWillBeRawPtr<ConsoleMessage> consoleMessage)
 {
     if (!isContextThread()) {
-        m_taskRunner->postTask(FROM_HERE, AddConsoleMessageTask::create(consoleMessage->source(), consoleMessage->level(), consoleMessage->message()));
+        m_taskRunner->postTask(BLINK_FROM_HERE, AddConsoleMessageTask::create(consoleMessage->source(), consoleMessage->level(), consoleMessage->message()));
         return;
     }
 
@@ -5109,7 +5109,7 @@ void Document::decrementLoadEventDelayCount()
 void Document::checkLoadEventSoon()
 {
     if (frame() && !m_loadEventDelayTimer.isActive())
-        m_loadEventDelayTimer.startOneShot(0, FROM_HERE);
+        m_loadEventDelayTimer.startOneShot(0, BLINK_FROM_HERE);
 }
 
 bool Document::isDelayingLoadEvent()
@@ -5139,7 +5139,7 @@ void Document::loadPluginsSoon()
 {
     // FIXME: Remove this timer once we don't need to compute layout to load plugins.
     if (!m_pluginLoadingTimer.isActive())
-        m_pluginLoadingTimer.startOneShot(0, FROM_HERE);
+        m_pluginLoadingTimer.startOneShot(0, BLINK_FROM_HERE);
 }
 
 void Document::pluginLoadingTimerFired(Timer<Document>*)
@@ -5473,7 +5473,7 @@ void Document::didAssociateFormControl(Element* element)
         return;
     m_associatedFormControls.add(element);
     if (!m_didAssociateFormControlsTimer.isActive())
-        m_didAssociateFormControlsTimer.startOneShot(0, FROM_HERE);
+        m_didAssociateFormControlsTimer.startOneShot(0, BLINK_FROM_HERE);
 }
 
 void Document::removeFormAssociation(Element* element)
@@ -5542,7 +5542,7 @@ void Document::setAutofocusElement(Element* element)
     m_hasAutofocused = true;
     ASSERT(!m_autofocusElement);
     m_autofocusElement = element;
-    m_taskRunner->postTask(FROM_HERE, AutofocusTask::create());
+    m_taskRunner->postTask(BLINK_FROM_HERE, AutofocusTask::create());
 }
 
 Element* Document::activeElement() const

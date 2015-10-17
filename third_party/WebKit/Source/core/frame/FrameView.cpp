@@ -873,7 +873,7 @@ void FrameView::scheduleOrPerformPostLayoutTasks()
         // defer widget updates and event dispatch until after we return. postLayoutTasks()
         // can make us need to update again, and we can get stuck in a nasty cycle unless
         // we call it through the timer here.
-        m_postLayoutTasksTimer.startOneShot(0, FROM_HERE);
+        m_postLayoutTasksTimer.startOneShot(0, BLINK_FROM_HERE);
         if (needsLayout())
             layout();
     }
@@ -1520,7 +1520,7 @@ void FrameView::scrollPositionChanged()
 
     if (m_didScrollTimer.isActive())
         m_didScrollTimer.stop();
-    m_didScrollTimer.startOneShot(resourcePriorityUpdateDelayAfterScroll, FROM_HERE);
+    m_didScrollTimer.startOneShot(resourcePriorityUpdateDelayAfterScroll, BLINK_FROM_HERE);
 
     if (AXObjectCache* cache = m_frame->document()->existingAXObjectCache())
         cache->handleScrollPositionChanged(this);
@@ -1915,7 +1915,7 @@ void FrameView::scheduleUpdateWidgetsIfNecessary()
     ASSERT(!isInPerformLayout());
     if (m_updateWidgetsTimer.isActive() || m_partUpdateSet.isEmpty())
         return;
-    m_updateWidgetsTimer.startOneShot(0, FROM_HERE);
+    m_updateWidgetsTimer.startOneShot(0, BLINK_FROM_HERE);
 }
 
 void FrameView::performPostLayoutTasks()

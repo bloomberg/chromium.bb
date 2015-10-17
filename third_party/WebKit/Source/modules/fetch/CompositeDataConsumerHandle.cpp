@@ -141,7 +141,7 @@ private:
             return;
         }
         ++m_token;
-        m_readerThread->taskRunner()->postTask(FROM_HERE, new Task(threadSafeBind(&Context::updateReader, this, m_token)));
+        m_readerThread->taskRunner()->postTask(BLINK_FROM_HERE, new Task(threadSafeBind(&Context::updateReader, this, m_token)));
     }
 
     OwnPtr<Reader> m_reader;
