@@ -50,12 +50,12 @@ layer at (12,12) size 117x13
   LayoutBlockFlow {DIV} at (3,3) size 117x13
 layer at (12,31) size 117x13
   LayoutBlockFlow {DIV} at (3,3) size 117x13
-layer at (9,209) size 48x45 clip at (10,210) size 35x43 scrollHeight 42
+layer at (9,209) size 48x45 clip at (10,210) size 35x43
   LayoutListBox {SELECT} at (1,201.44) size 47.80x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     LayoutBlockFlow {OPTION} at (1,1) size 34.80x14.19
       LayoutText {#text} at (2,0) size 31x13
         text run at (2,0) width 31: "select"
-layer at (9,253) size 48x45 clip at (10,254) size 35x43 scrollHeight 42
+layer at (9,253) size 48x45 clip at (10,254) size 35x43
   LayoutListBox {SELECT} at (1,245.44) size 47.80x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     LayoutBlockFlow {OPTION} at (1,1) size 34.80x14.19
       LayoutText {#text} at (2,0) size 31x13

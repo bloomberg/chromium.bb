@@ -244,7 +244,7 @@ layer at (16,244) size 67x13
   LayoutBlockFlow {DIV} at (3,3) size 67x13
     LayoutText {#text} at (0,0) size 49x13
       text run at (0,0) width 49: "text field"
-layer at (94,242) size 33x59 clip at (95,243) size 20x56 scrollHeight 70
+layer at (94,242) size 33x59 clip at (95,243) size 20x56 scrollHeight 71
   LayoutListBox {SELECT} at (2,2.25) size 33.09x58.75 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     LayoutBlockFlow {OPTION} at (1,1) size 20.09x14.19
       LayoutText {#text} at (2,0) size 17x13

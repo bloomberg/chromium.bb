@@ -7,7 +7,7 @@ layer at (8,10) size 769x418
   LayoutBlockFlow {DIV} at (0,0) size 769x418
 layer at (8,10) size 769x418 transparent
   LayoutBlockFlow {DIV} at (0,0) size 769x418
-layer at (8,120) size 308x308 clip at (12,124) size 285x285 scrollWidth 339 scrollHeight 447
+layer at (8,120) size 308x308 clip at (12,124) size 285x285 scrollWidth 339 scrollHeight 448
   LayoutBlockFlow {DIV} at (0,110) size 308x308 [border: (4px solid #000000)]
 layer at (12,134) size 285x418 backgroundClip at (22,91) size 285x285 clip at (22,91) size 285x285 transparent
   LayoutBlockFlow {DIV} at (4,14) size 285x418

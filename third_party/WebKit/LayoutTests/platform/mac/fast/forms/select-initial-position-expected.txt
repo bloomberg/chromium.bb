@@ -51,7 +51,7 @@ layer at (0,0) size 800x600
           LayoutText (anonymous) at (8,2) size 116x13
             text run at (8,2) width 116: "this should be selected"
       LayoutText {#text} at (0,0) size 0x0
-layer at (8,26) size 133x59 clip at (9,27) size 120x57 scrollY 99.00 scrollHeight 198
+layer at (8,26) size 133x59 clip at (9,27) size 120x57 scrollY 99.00 scrollHeight 199
   LayoutListBox {SELECT} at (0,18.25) size 132.55x58.75 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     LayoutBlockFlow {OPTION} at (1,1) size 119.55x14.19
       LayoutText {#text} at (2,0) size 17x13
@@ -95,7 +95,7 @@ layer at (8,26) size 133x59 clip at (9,27) size 120x57 scrollY 99.00 scrollHeigh
     LayoutBlockFlow {OPTION} at (1,185.44) size 119.55x14.19
       LayoutText {#text} at (2,0) size 17x13
         text run at (2,0) width 17: "opt"
-layer at (8,103) size 133x59 clip at (9,104) size 120x57 scrollY 99.00 scrollHeight 198
+layer at (8,103) size 133x59 clip at (9,104) size 120x57 scrollY 99.00 scrollHeight 199
   LayoutListBox {SELECT} at (0,95.25) size 132.55x58.75 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     LayoutBlockFlow {OPTION} at (1,1) size 119.55x14.19
       LayoutText {#text} at (2,0) size 17x13
@@ -139,7 +139,7 @@ layer at (8,103) size 133x59 clip at (9,104) size 120x57 scrollY 99.00 scrollHei
     LayoutBlockFlow {OPTION} at (1,185.44) size 119.55x14.19
       LayoutText {#text} at (2,0) size 17x13
         text run at (2,0) width 17: "opt"
-layer at (8,180) size 133x59 clip at (9,181) size 120x57 scrollY 43.00 scrollHeight 113
+layer at (8,180) size 133x59 clip at (9,181) size 120x57 scrollY 43.00 scrollHeight 114
   LayoutListBox {SELECT} at (0,172.25) size 132.55x58.75 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     LayoutBlockFlow {OPTION} at (1,1) size 119.55x14.19
       LayoutText {#text} at (2,0) size 17x13

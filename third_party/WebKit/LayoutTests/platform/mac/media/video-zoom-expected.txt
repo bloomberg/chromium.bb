@@ -24,10 +24,10 @@ layer at (12,464) size 488x368 backgroundClip at (0,0) size 785x600 clip at (0,0
 layer at (16,46) size 480x360
   LayoutFlexibleBox (relative positioned) {DIV} at (4,4) size 480x360
     LayoutBlockFlow {DIV} at (0,307.50) size 480x52.50
-layer at (16,46) size 480x308 scrollHeight 307
+layer at (16,46) size 480x308
   LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 480x307.50
 layer at (16,468) size 480x360 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
   LayoutFlexibleBox (relative positioned) {DIV} at (4,4) size 480x360
     LayoutBlockFlow {DIV} at (0,307.50) size 480x52.50
-layer at (16,468) size 480x308 backgroundClip at (16,468) size 480x132 clip at (16,468) size 480x132 scrollHeight 307
+layer at (16,468) size 480x308 backgroundClip at (16,468) size 480x132 clip at (16,468) size 480x132
   LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 480x307.50

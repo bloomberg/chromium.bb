@@ -38,12 +38,12 @@ layer at (0,0) size 800x600
             LayoutText (anonymous) at (8,2) size 49x13
               text run at (8,2) width 49: "Five Tabs"
         LayoutText {#text} at (0,0) size 0x0
-layer at (80,42) size 65x59 clip at (81,43) size 52x57 scrollHeight 56
+layer at (80,42) size 65x59 clip at (81,43) size 52x57
   LayoutListBox {SELECT} at (71.98,0.25) size 65.25x58.75 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     LayoutBlockFlow {OPTION} at (1,1) size 52.25x14.19
       LayoutText {#text} at (2,0) size 49x13
         text run at (2,0) width 49: "Five Tabs"
-layer at (93,119) size 66x59 clip at (94,120) size 53x57 scrollHeight 56
+layer at (93,119) size 66x59 clip at (94,120) size 53x57
   LayoutListBox {SELECT} at (85.31,77.25) size 65.25x58.75 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     LayoutBlockFlow {OPTION} at (1,1) size 52.25x14.19
       LayoutText {#text} at (2,0) size 49x13

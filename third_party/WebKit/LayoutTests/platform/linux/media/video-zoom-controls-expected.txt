@@ -11,7 +11,7 @@ layer at (57,85) size 240x180
 layer at (57,85) size 240x180
   LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 240x180
     LayoutBlockFlow {DIV} at (0,127.50) size 240x52.50
-layer at (57,85) size 240x128 scrollHeight 127
+layer at (57,85) size 240x128
   LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 240x127.50
 layer at (65,213) size 225x45 scrollWidth 329
   LayoutFlexibleBox (relative positioned) {DIV} at (7.50,0) size 225x45 [bgcolor=#141414CC]
@@ -35,7 +35,7 @@ layer at (57,310) size 240x180
 layer at (57,310) size 240x180
   LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 240x180
     LayoutBlockFlow {DIV} at (0,127.50) size 240x52.50
-layer at (57,310) size 240x128 scrollHeight 127
+layer at (57,310) size 240x128
   LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 240x127.50
 layer at (65,438) size 225x45 scrollWidth 329
   LayoutFlexibleBox (relative positioned) {DIV} at (7.50,0) size 225x45 [bgcolor=#141414CC]

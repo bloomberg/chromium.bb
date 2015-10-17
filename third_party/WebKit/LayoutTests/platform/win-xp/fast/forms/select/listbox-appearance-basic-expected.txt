@@ -146,7 +146,7 @@ layer at (12,253) size 38x70 clip at (13,254) size 21x68
     LayoutBlockFlow {OPTION} at (1,1) size 21x17
       LayoutText {#text} at (2,0) size 17x16
         text run at (2,0) width 17: "foo"
-layer at (12,370) size 43x83 clip at (13,371) size 26x81 scrollHeight 80
+layer at (12,370) size 43x83 clip at (13,371) size 26x81
   LayoutListBox {SELECT} at (4,362.25) size 43x82.75 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
     LayoutBlockFlow {OPTION} at (1,1) size 26x20.19
       LayoutText {#text} at (2,0) size 22x18
@@ -161,7 +161,7 @@ layer at (128,332) size 54x121 clip at (129,333) size 37x119
     LayoutBlockFlow {OPTION} at (1,1) size 37x29.80
       LayoutText {#text} at (2,0) size 33x27
         text run at (2,0) width 33: "foo"
-layer at (194,370) size 56x83 clip at (195,371) size 39x81 scrollHeight 80
+layer at (194,370) size 56x83 clip at (195,371) size 39x81
   LayoutListBox {SELECT} at (186,362.25) size 56x82.75 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
     LayoutBlockFlow {OPTION} at (1,1) size 39x20.19
       LayoutText {#text} at (2,0) size 22x18

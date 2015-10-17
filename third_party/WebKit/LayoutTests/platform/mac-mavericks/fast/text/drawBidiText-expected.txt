@@ -6,7 +6,7 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {P} at (0,0) size 784x18
         LayoutText {#text} at (0,0) size 285x18
           text run at (0,0) width 285: "This tests GraphicsContext::drawBidiText()."
-layer at (8,42) size 345x205 clip at (9,43) size 332x203 scrollHeight 210
+layer at (8,42) size 345x205 clip at (9,43) size 332x203 scrollHeight 211
   LayoutListBox {SELECT} at (0,34) size 344.80x205.34 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     LayoutBlockFlow {OPTION} at (1,1) size 331.80x22.59
       LayoutText {#text} at (2,0) size 225x21

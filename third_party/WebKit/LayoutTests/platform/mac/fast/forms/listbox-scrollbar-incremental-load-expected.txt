@@ -24,7 +24,7 @@ layer at (0,0) size 800x600
           text run at (154,18) width 89: "to reflect this."
       LayoutBlockFlow (anonymous) at (0,104) size 784x58
         LayoutText {#text} at (0,0) size 0x0
-layer at (8,112) size 48x59 clip at (9,113) size 35x57 scrollY 43.00 scrollHeight 99
+layer at (8,112) size 48x59 clip at (9,113) size 35x57 scrollY 43.00 scrollHeight 100
   LayoutListBox {SELECT} at (0,0.25) size 48.06x58.75 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     LayoutBlockFlow {OPTION} at (1,1) size 35.06x14.19
       LayoutText {#text} at (2,0) size 21x13

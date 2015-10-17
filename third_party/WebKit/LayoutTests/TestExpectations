@@ -984,33 +984,6 @@ crbug.com/510002 [ Win ] http/tests/cachestorage/worker/cache-put.html [ Pass Fa
 crbug.com/510002 [ Win ] http/tests/cachestorage/worker/cache-add.html [ Pass Failure Timeout ]
 crbug.com/510002 [ XP ] http/tests/cachestorage/serviceworker/cache-put.html [ Pass Timeout ]
 
-crbug.com/522389 [ Linux Mac Win ] fast/block/float/overhanging-tall-block.html  [ NeedsRebaseline ]
-crbug.com/522389 [ Mac ] fast/forms/HTMLOptionElement_label05.html  [ NeedsRebaseline ]
-crbug.com/522389 [ Mac ] fast/forms/form-element-geometry.html  [ NeedsRebaseline ]
-crbug.com/522389 [ Mac ] fast/forms/listbox-bidi-align.html  [ NeedsRebaseline ]
-crbug.com/522389 [ Mac ] fast/forms/listbox-scrollbar-incremental-load.html  [ NeedsRebaseline ]
-crbug.com/522389 [ Mac ] fast/forms/listbox-width-change.html  [ NeedsRebaseline ]
-crbug.com/522389 [ Mac ] fast/forms/option-strip-whitespace.html  [ NeedsRebaseline ]
-crbug.com/522389 [ Mac ] fast/forms/select-block-background.html  [ NeedsRebaseline ]
-crbug.com/522389 [ Mac ] fast/forms/select-change-popup-to-listbox.html  [ NeedsRebaseline ]
-crbug.com/522389 [ Mac ] fast/forms/select-initial-position.html  [ NeedsRebaseline ]
-crbug.com/522389 [ Mac ] fast/forms/select-listbox-multiple-no-focusring.html  [ NeedsRebaseline ]
-crbug.com/522389 [ Linux Mac Win ] fast/forms/select/listbox-appearance-basic.html  [ NeedsRebaseline ]
-crbug.com/522389 [ Mac ] fast/forms/select/optgroup-rendering.html  [ NeedsRebaseline ]
-crbug.com/522389 [ Linux Mac Win ] fast/overflow/007.html  [ NeedsRebaseline ]
-crbug.com/522389 [ Mac ] fast/replaced/replaced-breaking.html  [ NeedsRebaseline ]
-crbug.com/522389 [ Mac ] fast/spatial-navigation/snav-multiple-select-focusring.html  [ NeedsRebaseline ]
-crbug.com/522389 [ Linux Mac Win ] media/video-zoom-controls.html  [ NeedsRebaseline ]
-crbug.com/522389 [ Linux Mac Win ] media/video-zoom.html  [ NeedsRebaseline ]
-crbug.com/522389 [ Win ] fast/overflow/overflow-rtl.html  [ NeedsRebaseline ]
-crbug.com/522389 [ Win ] fast/forms/text/text-font-height-mismatch.html  [ NeedsRebaseline ]
-crbug.com/522389 [ SnowLeopard Lion MountainLion Retina Mavericks ] fast/forms/hidden-listbox.html [ NeedsRebaseline ]
-crbug.com/522389 [ SnowLeopard Lion MountainLion Retina Mavericks Win ] fast/text/updateNewFont.html [ NeedsRebaseline ]
-crbug.com/522389 [ SnowLeopard Lion MountainLion Retina Mavericks ] fast/text/drawBidiText.html [ NeedsRebaseline ]
-crbug.com/522389 [ Linux Mac Win ] compositing/overflow/nested-render-surfaces-with-rotation.html [ NeedsRebaseline ]
-crbug.com/522389 [ Linux Mac Win ] fast/overflow/overflow-update-transform.html [ NeedsRebaseline ]
-crbug.com/522389 [ Linux Mac Win ] virtual/prefer_compositing_to_lcd_text/compositing/overflow/nested-render-surfaces-with-rotation.html [ NeedsRebaseline ]
-
 
 # Yosemite-specific failures that still need triaging.
 # Form controls need rebaseline because of the default font change.
