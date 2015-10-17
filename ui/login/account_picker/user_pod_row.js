@@ -954,23 +954,6 @@ cr.define('login', function() {
     },
 
     /**
-     * Gets action box menu, remove user warning text div.
-     * @type {!HTMLInputElement}
-     */
-    get actionBoxRemoveUserWarningTextElement() {
-      return this.querySelector('.action-box-remove-user-warning-text');
-    },
-
-    /**
-     * Gets action box menu, remove legacy supervised user warning text div.
-     * @type {!HTMLInputElement}
-     */
-    get actionBoxRemoveLegacySupervisedUserWarningTextElement() {
-      return this.querySelector(
-          '.action-box-remove-legacy-supervised-user-warning-text');
-    },
-
-    /**
      * Gets action box menu, remove user command item div.
      * @type {!HTMLInputElement}
      */
@@ -1425,6 +1408,125 @@ cr.define('login', function() {
         this.actionBoxAreaElement.classList.add('menu-moved-up');
       }
       chrome.send('logRemoveUserWarningShown');
+
+      // Show extra statistics information for desktop users
+      var message;
+      if (this.user.isDesktopUser) {
+        this.classList.remove('has-errors');
+        var isSyncedUser = this.user.emailAddress !== "";
+        if (!this.user.isProfileLoaded) {
+          message = loadTimeData.getString(
+              isSyncedUser ? 'removeUserWarningTextSyncNoStats' :
+              'removeUserWarningTextNonSyncNoStats');
+          this.updateRemoveWarningDialogSetMessage_(this.user.profilePath,
+                                                    message);
+        } else {
+          message = loadTimeData.getString(
+              isSyncedUser ? 'removeUserWarningTextSyncCalculating' :
+              'removeUserWarningTextNonSyncCalculating');
+          substitute = loadTimeData.getString(
+              'removeUserWarningTextCalculating');
+          this.updateRemoveWarningDialogSetMessage_(this.user.profilePath,
+                                                    message, substitute);
+        }
+
+        // set a global handler for the callback
+        window.updateRemoveWarningDialog =
+            this.updateRemoveWarningDialog_.bind(this);
+        chrome.send('removeUserWarningLoadStats', [this.user.profilePath]);
+      }
+    },
+
+    /**
+     * Refresh the statistics in the remove user warning dialog.
+     * @param {string} profilePath The filepath of the URL (must be verified).
+     * @param {Object} profileStats Statistics associated with profileURL.
+     */
+    updateRemoveWarningDialog_: function(profilePath, profileStats) {
+      if (profilePath !== this.user.profilePath)
+        return;
+      // Converting profileStats into id attribute by an object.
+      var stats_id_map = {
+        'BrowsingHistory': 'action-box-remove-user-warning-history',
+        'Passwords': 'action-box-remove-user-warning-passwords',
+        'Bookmarks': 'action-box-remove-user-warning-bookmarks',
+        'Settings': 'action-box-remove-user-warning-settings',
+      }
+      // Load individual statistics
+      var num_stats_loaded = 0;
+      var total_count = 0;
+      var failed = false;
+      for (var key in profileStats) {
+        if (stats_id_map.hasOwnProperty(key)) {
+          if (profileStats[key].success) {
+            var count = profileStats[key].count;
+            this.querySelector("." + stats_id_map[key]).textContent = count;
+            total_count += count;
+          } else {
+            failed = true;
+            this.querySelector("." + stats_id_map[key]).textContent = '';
+          }
+          num_stats_loaded++;
+        }
+      }
+
+      // this.classList is used for selecting the appropriate dialog.
+      this.classList.toggle('has-errors', failed);
+      if (total_count > 0) {
+        this.classList.remove('has-no-stats');
+      }
+
+      // Write total number if all statistics are loaded.
+      if (num_stats_loaded === Object.keys(stats_id_map).length) {
+        if (total_count === 0) {
+          this.classList.add('has-no-stats');
+          var isSyncedUser = this.user.emailAddress !== "";
+          var message = loadTimeData.getString(
+              isSyncedUser ? 'removeUserWarningTextSyncNoStats' :
+              'removeUserWarningTextNonSyncNoStats');
+          this.updateRemoveWarningDialogSetMessage_(this.user.profilePath,
+                                                    message);
+        } else {
+          window.updateRemoveWarningDialogSetMessage =
+              this.updateRemoveWarningDialogSetMessage_.bind(this);
+          chrome.send('getRemoveWarningDialogMessage',[{
+              profilePath: this.user.profilePath,
+              isSyncedUser: this.user.emailAddress !== "",
+              hasErrors: failed,
+              totalCount: total_count
+          }]);
+        }
+      }
+    },
+
+    /**
+     * Refresh the message in the remove user warning dialog.
+     * @param {string} profilePath The filepath of the URL (must be verified).
+     * @param {string} message The message to be written.
+     * @param {number|string=} count The number or string to replace $1 in
+     * |message|. Can be omitted if $1 is not present in |message|.
+     */
+    updateRemoveWarningDialogSetMessage_: function(profilePath, message,
+                                                   count) {
+      if (profilePath !== this.user.profilePath)
+        return;
+      // Add localized messages where $1 will be replaced with
+      // <span class="total-count"></span>.
+      var element = this.querySelector('.action-box-remove-user-warning-text');
+      while (element.firstChild)
+        element.removeChild(element.firstChild);
+
+      messageParts = message.split('$1');
+      var numParts = messageParts.length;
+      for (var j = 0; j < numParts; j++) {
+        element.appendChild(document.createTextNode(messageParts[j]));
+        if (j < numParts - 1) {
+          var elementToAdd = document.createElement('span');
+          elementToAdd.classList.add('total-count');
+          elementToAdd.textContent = count;
+          element.appendChild(elementToAdd);
+        }
+      }
     },
 
     /**
@@ -1958,17 +2060,16 @@ cr.define('login', function() {
       var isLockedUser = this.user.needsSignin;
       var isLegacySupervisedUser = this.user.legacySupervisedUser;
       var isChildUser = this.user.childUser;
+      var isSyncedUser = this.user.emailAddress !== "";
+      var isProfileLoaded = this.user.isProfileLoaded;
       this.classList.toggle('locked', isLockedUser);
       this.classList.toggle('legacy-supervised', isLegacySupervisedUser);
       this.classList.toggle('child', isChildUser);
+      this.classList.toggle('synced', isSyncedUser);
+      this.classList.toggle('has-no-stats', !isProfileLoaded);
 
       if (this.isAuthTypeUserClick)
         this.passwordLabelElement.textContent = this.authValue;
-
-      this.actionBoxRemoveUserWarningTextElement.hidden =
-          isLegacySupervisedUser;
-      this.actionBoxRemoveLegacySupervisedUserWarningTextElement.hidden =
-          !isLegacySupervisedUser;
 
       this.passwordElement.setAttribute('aria-label', loadTimeData.getStringF(
         'passwordFieldAccessibleName', this.user_.emailAddress));

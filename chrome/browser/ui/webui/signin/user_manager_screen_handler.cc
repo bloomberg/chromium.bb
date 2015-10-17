@@ -71,6 +71,7 @@ const char kKeyIsDesktop[] = "isDesktopUser";
 const char kKeyAvatarUrl[] = "userImage";
 const char kKeyNeedsSignin[] = "needsSignin";
 const char kKeyHasLocalCreds[] = "hasLocalCreds";
+const char kKeyIsProfileLoaded[] = "isProfileLoaded";
 
 // JS API callback names.
 const char kJsApiUserManagerInitialize[] = "userManagerInitialize";
@@ -82,7 +83,10 @@ const char kJsApiUserManagerRemoveUser[] = "removeUser";
 const char kJsApiUserManagerAttemptUnlock[] = "attemptUnlock";
 const char kJsApiUserManagerLogRemoveUserWarningShown[] =
     "logRemoveUserWarningShown";
-
+const char kJsApiUserManagerRemoveUserWarningLoadStats[] =
+    "removeUserWarningLoadStats";
+const char kJsApiUserManagerGetRemoveWarningDialogMessage[] =
+    "getRemoveWarningDialogMessage";
 const size_t kAvatarIconSize = 180;
 const int kMaxOAuthRetries = 3;
 
@@ -560,6 +564,83 @@ void UserManagerScreenHandler::HandleHardlockUserPod(
   HideUserPodCustomIcon(email);
 }
 
+void UserManagerScreenHandler::HandleRemoveUserWarningLoadStats(
+    const base::ListValue* args) {
+  const base::Value* profile_path_value;
+
+  if (!args->Get(0, &profile_path_value))
+    return;
+
+  base::FilePath profile_path;
+
+  if (!base::GetValueAsFilePath(*profile_path_value, &profile_path))
+    return;
+
+  base::StringValue return_profile_path(profile_path.value());
+  Profile* profile = g_browser_process->profile_manager()->
+      GetProfileByPath(profile_path);
+
+  if (!profile)
+    return;
+
+  profiles::GetProfileStatistics(
+      profile,
+      base::Bind(
+          &UserManagerScreenHandler::RemoveUserDialogLoadStatsCallback,
+          weak_ptr_factory_.GetWeakPtr(), profile_path),
+      &tracker_);
+}
+
+void UserManagerScreenHandler::RemoveUserDialogLoadStatsCallback(
+    base::FilePath profile_path,
+    profiles::ProfileCategoryStats result) {
+  // Copy result into return_value.
+  base::StringValue return_profile_path(profile_path.value());
+  base::DictionaryValue return_value;
+  for (const auto& item : result) {
+    base::DictionaryValue* stat = new base::DictionaryValue();
+    stat->SetIntegerWithoutPathExpansion("count", item.count);
+    stat->SetBooleanWithoutPathExpansion("success", item.success);
+    return_value.SetWithoutPathExpansion(item.category, stat);
+  }
+  web_ui()->CallJavascriptFunction("updateRemoveWarningDialog",
+                                   return_profile_path, return_value);
+}
+
+void UserManagerScreenHandler::HandleGetRemoveWarningDialogMessage(
+    const base::ListValue* args) {
+  const base::DictionaryValue* arg;
+  if (!args->GetDictionary(0, &arg))
+    return;
+
+  std::string profile_path("");
+  bool is_synced_user = false;
+  bool has_errors = false;
+
+  if (!arg->GetString("profilePath", &profile_path) ||
+      !arg->GetBoolean("isSyncedUser", &is_synced_user) ||
+      !arg->GetBoolean("hasErrors", &has_errors))
+    return;
+
+  int total_count = 0;
+  if (!arg->GetInteger("totalCount", &total_count))
+    return;
+
+  int message_id = is_synced_user ?
+      (has_errors ? IDS_LOGIN_POD_USER_REMOVE_WARNING_SYNC_WITH_ERRORS :
+                    IDS_LOGIN_POD_USER_REMOVE_WARNING_SYNC) :
+      (has_errors ? IDS_LOGIN_POD_USER_REMOVE_WARNING_NONSYNC_WITH_ERRORS :
+                    IDS_LOGIN_POD_USER_REMOVE_WARNING_NONSYNC);
+
+  base::StringValue message = base::StringValue(
+      l10n_util::GetPluralStringFUTF16(message_id, total_count));
+
+  web_ui()->CallJavascriptFunction("updateRemoveWarningDialogSetMessage",
+                                   base::StringValue(profile_path),
+                                   message,
+                                   base::FundamentalValue(total_count));
+}
+
 void UserManagerScreenHandler::OnGetTokenInfoResponse(
     scoped_ptr<base::DictionaryValue> token_info) {
   // Password is unchanged so user just mistyped it.  Ask again.
@@ -604,6 +685,13 @@ void UserManagerScreenHandler::RegisterMessages() {
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(kJsApiUserManagerLogRemoveUserWarningShown,
       base::Bind(&HandleLogRemoveUserWarningShown));
+  web_ui()->RegisterMessageCallback(kJsApiUserManagerRemoveUserWarningLoadStats,
+      base::Bind(&UserManagerScreenHandler::HandleRemoveUserWarningLoadStats,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      kJsApiUserManagerGetRemoveWarningDialogMessage,
+      base::Bind(&UserManagerScreenHandler::HandleGetRemoveWarningDialogMessage,
+                 base::Unretained(this)));
 
   const content::WebUI::MessageCallback& kDoNothingCallback =
       base::Bind(&HandleAndDoNothing);
@@ -660,8 +748,28 @@ void UserManagerScreenHandler::GetLocalizedValues(
   // For AccountPickerScreen, the remove user warning overlay.
   localized_strings->SetString("removeUserWarningButtonTitle",
       l10n_util::GetStringUTF16(IDS_LOGIN_POD_USER_REMOVE_WARNING_BUTTON));
-  localized_strings->SetString("removeUserWarningText",
-      l10n_util::GetStringUTF16(IDS_LOGIN_POD_USER_REMOVE_WARNING));
+  localized_strings->SetString("removeUserWarningTextNonSyncNoStats",
+      l10n_util::GetStringUTF16(
+          IDS_LOGIN_POD_USER_REMOVE_WARNING_NONSYNC_NOSTATS));
+  localized_strings->SetString("removeUserWarningTextNonSyncCalculating",
+      l10n_util::GetStringUTF16(
+          IDS_LOGIN_POD_USER_REMOVE_WARNING_NONSYNC_CALCULATING));
+  localized_strings->SetString("removeUserWarningTextHistory",
+      l10n_util::GetStringUTF16(IDS_LOGIN_POD_USER_REMOVE_WARNING_HISTORY));
+  localized_strings->SetString("removeUserWarningTextPasswords",
+      l10n_util::GetStringUTF16(IDS_LOGIN_POD_USER_REMOVE_WARNING_PASSWORDS));
+  localized_strings->SetString("removeUserWarningTextBookmarks",
+      l10n_util::GetStringUTF16(IDS_LOGIN_POD_USER_REMOVE_WARNING_BOOKMARKS));
+  localized_strings->SetString("removeUserWarningTextSettings",
+      l10n_util::GetStringUTF16(IDS_LOGIN_POD_USER_REMOVE_WARNING_SETTINGS));
+  localized_strings->SetString("removeUserWarningTextCalculating",
+      l10n_util::GetStringUTF16(IDS_LOGIN_POD_USER_REMOVE_WARNING_CALCULATING));
+  localized_strings->SetString("removeUserWarningTextSyncNoStats",
+      l10n_util::GetStringUTF16(
+          IDS_LOGIN_POD_USER_REMOVE_WARNING_SYNC_NOSTATS));
+  localized_strings->SetString("removeUserWarningTextSyncCalculating",
+      l10n_util::GetStringUTF16(
+          IDS_LOGIN_POD_USER_REMOVE_WARNING_SYNC_CALCULATING));
   localized_strings->SetString("removeLegacySupervisedUserWarningText",
       l10n_util::GetStringFUTF16(
           IDS_LOGIN_POD_LEGACY_SUPERVISED_USER_REMOVE_WARNING,
@@ -768,6 +876,12 @@ void UserManagerScreenHandler::SendUserList() {
     profile_value->SetBoolean(kKeyIsDesktop, true);
     profile_value->SetString(
         kKeyAvatarUrl, GetAvatarImageAtIndex(i, info_cache));
+
+    // GetProfileByPath returns a pointer if the profile is fully loaded, NULL
+    // otherwise.
+    Profile* profile =
+        g_browser_process->profile_manager()->GetProfileByPath(profile_path);
+    profile_value->SetBoolean(kKeyIsProfileLoaded, profile != nullptr);
 
     users_list.Append(profile_value);
   }

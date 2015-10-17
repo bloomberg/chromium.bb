@@ -2402,6 +2402,8 @@
       'browser/profiles/profile_metrics_mac.mm',
       'browser/profiles/profile_shortcut_manager_win.cc',
       'browser/profiles/profile_shortcut_manager_win.h',
+      'browser/profiles/profile_statistics.cc',
+      'browser/profiles/profile_statistics.h',
       'browser/profiles/profiles_state.cc',
       'browser/profiles/profiles_state.h',
       'browser/profiles/storage_partition_descriptor.h',

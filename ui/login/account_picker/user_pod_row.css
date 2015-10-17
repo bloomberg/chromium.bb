@@ -547,13 +547,42 @@ html[dir=rtl] .action-box-area.active ~ .action-box-menu {
   padding: 20px;
 }
 
-.action-box-remove-user-warning-text,
-.action-box-remove-legacy-supervised-user-warning-text {
+.action-box-remove-user-warning > div,
+.action-box-remove-user-warning > table {
   padding-bottom: 20px;
+}
+
+.total-count {
+  font-weight: bold;
+}
+
+.action-box-remove-user-warning-table-nonsync {
+  border-spacing: 0;
+  width: 100%;
+}
+
+.action-box-remove-user-warning-table td {
+  padding: 0;
+}
+
+.action-box-remove-user-warning-table-numbers {
+  color: #757575;
+  text-align: end;
 }
 
 .action-box-remove-user-warning .remove-warning-button {
   width: 100%;
+}
+
+/* Hide dialog elements not in a correct category. Only combinations currently
+   in use are included here. */
+.pod.legacy-supervised .non-sync,
+.pod.legacy-supervised .action-box-remove-user-warning-text,
+.pod:not(.legacy-supervised)
+    .action-box-remove-legacy-supervised-user-warning-text,
+.pod.synced .non-sync,
+.pod.has-no-stats .has-stats {
+  display: none;
 }
 
 .user-type-bubble {

@@ -65,8 +65,36 @@
       <span class="action-box-menu-remove-command"/>
     </div>
     <div class="action-box-remove-user-warning" hidden>
-      <div class="action-box-remove-user-warning-text"
-          i18n-content="removeUserWarningText" hidden></div>
+      <div class="action-box-remove-user-warning-text"></div>
+      <table class="action-box-remove-user-warning-table-nonsync
+                    non-sync has-stats">
+        <tbody>
+          <tr>
+            <td i18n-content="removeUserWarningTextHistory"></td>
+            <td class="action-box-remove-user-warning-history
+                       action-box-remove-user-warning-table-numbers"
+                i18n-content="removeUserWarningTextCalculating"></td>
+          </tr>
+          <tr>
+            <td i18n-content="removeUserWarningTextPasswords"></td>
+            <td class="action-box-remove-user-warning-passwords
+                       action-box-remove-user-warning-table-numbers"
+                i18n-content="removeUserWarningTextCalculating"></td>
+          </tr>
+          <tr>
+            <td i18n-content="removeUserWarningTextBookmarks"></td>
+            <td class="action-box-remove-user-warning-bookmarks
+                       action-box-remove-user-warning-table-numbers"
+                i18n-content="removeUserWarningTextCalculating"></td>
+          </tr>
+          <tr>
+            <td i18n-content="removeUserWarningTextSettings"></td>
+            <td class="action-box-remove-user-warning-settings
+                       action-box-remove-user-warning-table-numbers"
+                i18n-content="removeUserWarningTextCalculating"></td>
+          </tr>
+        </tbody>
+      </table>
       <div class="action-box-remove-legacy-supervised-user-warning-text"
           i18n-content="removeLegacySupervisedUserWarningText"></div>
       <button class="remove-warning-button

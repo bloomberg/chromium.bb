@@ -421,8 +421,15 @@ void SigninScreenHandler::DeclareLocalizedValues(
                IDS_LOGIN_PUBLIC_ACCOUNT_ENTER_ACCESSIBLE_NAME);
   builder->Add("publicSessionSelectLanguage", IDS_LANGUAGE_SELECTION_SELECT);
   builder->Add("publicSessionSelectKeyboard", IDS_KEYBOARD_SELECTION_SELECT);
-  builder->Add("removeUserWarningText",
-               base::string16());
+  builder->Add("removeUserWarningTextNonSyncNoStats", base::string16());
+  builder->Add("removeUserWarningTextNonSyncCalculating", base::string16());
+  builder->Add("removeUserWarningTextHistory", base::string16());
+  builder->Add("removeUserWarningTextPasswords", base::string16());
+  builder->Add("removeUserWarningTextBookmarks", base::string16());
+  builder->Add("removeUserWarningTextSettings", base::string16());
+  builder->Add("removeUserWarningTextCalculating", base::string16());
+  builder->Add("removeUserWarningTextSyncNoStats", base::string16());
+  builder->Add("removeUserWarningTextSyncCalculating", base::string16());
   builder->AddF("removeLegacySupervisedUserWarningText",
                IDS_LOGIN_POD_LEGACY_SUPERVISED_USER_REMOVE_WARNING,
                base::UTF8ToUTF16(

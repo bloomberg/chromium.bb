@@ -13767,8 +13767,52 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
           All files and local data associated with the supervised user will be permanently deleted once this supervised user is removed. Visited websites and settings for this supervised user may still be visible by the manager at <ph name="MANAGEMENT_URL">$1<ex>www.example.com</ex></ph>.
         </message>
         <if expr="not chromeos">
-          <message name="IDS_LOGIN_POD_USER_REMOVE_WARNING" desc="Text shown as a warning when attempting to remove an user.">
-            Are you sure you want to delete this user and all the data associated with it from this computer? This cannot be undone!
+          <message name="IDS_LOGIN_POD_USER_REMOVE_WARNING_NONSYNC" desc="Main text shown as a warning when attempting to remove an user. This case is for non-synced profiles, with all statistics loaded correctly. The symbol $1 will be substituted with custom JS code, so it should not be replaced by a #.">
+            {NUM_ITEMS, plural,
+            =1 {This will permanently delete $1 item from this device.}
+            other {This will permanently delete $1 items from this device.}}
+          </message>
+          <message name="IDS_LOGIN_POD_USER_REMOVE_WARNING_NONSYNC_WITH_ERRORS" desc="Main text shown as a warning when attempting to remove an user. This case is for non-synced profiles, with some statistics failed to load. The symbol $1 will be substituted with custom JS code, so it should not be replaced by a #.">
+            {NUM_ITEMS, plural,
+            =1 {This will permanently delete at least $1 item from this device.}
+            other {This will permanently delete at least $1 items from this device.}}
+          </message>
+          <message name="IDS_LOGIN_POD_USER_REMOVE_WARNING_NONSYNC_NOSTATS" desc="Main text shown as a warning when attempting to remove an user. This case is for non-synced profiles with statistics unavailable. (Possible case: Chromium decided not to load the statistics of closed profiles.)">
+            This will permanently delete your browsing data from this device.
+          </message>
+          <message name="IDS_LOGIN_POD_USER_REMOVE_WARNING_NONSYNC_CALCULATING" desc="Main text shown as a warning when attempting to remove an user. This case is for non-synced profiles when the statistics is still loading. $1 is always replaced by localized version of the ellipsis (...).">
+            This will permanently delete <ph name="TOTAL_COUNT">$1<ex>...</ex></ph> items from this device.
+          </message>
+          <message name="IDS_LOGIN_POD_USER_REMOVE_WARNING_HISTORY" desc="The title of a statistic (browsing history) shown inside a table below the warning text when attempting to remove an user. A number is displayed next to it.">
+            Browsing History
+          </message>
+          <message name="IDS_LOGIN_POD_USER_REMOVE_WARNING_PASSWORDS" desc="The title of a statistic (passwords) shown inside a table below the warning text when attempting to remove an user. A number is displayed next to it.">
+            Passwords
+          </message>
+          <message name="IDS_LOGIN_POD_USER_REMOVE_WARNING_BOOKMARKS" desc="The title of a statistic (bookmarks) shown inside a table below the warning text when attempting to remove an user. A number is displayed next to it.">
+            Bookmarks
+          </message>
+          <message name="IDS_LOGIN_POD_USER_REMOVE_WARNING_SETTINGS" desc="The title of a statistic (settings) shown inside a table below the warning text when attempting to remove an user. A number is displayed next to it.">
+            Settings
+          </message>
+          <message name="IDS_LOGIN_POD_USER_REMOVE_WARNING_CALCULATING" desc="This is used in '...' of the warning message 'This will permanently delete ... items from the device.', which is shown when attempting to remove an user. Also shown next to the loading statistics below this warning. All occurences of '...' will be eventually replaced by numbers when the statistics are loaded.">
+            ...
+          </message>
+          <message name="IDS_LOGIN_POD_USER_REMOVE_WARNING_SYNC" desc="Main text shown as a warning when attempting to remove an user. This case is for synced profiles, with all statistics loaded correctly. The symbol $1 will be substituted with custom JS code, so it should not be replaced by a #.">
+            {NUM_ITEMS, plural,
+            =1 {This will permanently delete $1 item from this device but will not clear synced items from other devices.}
+            other {This will permanently delete $1 items from this device but will not clear synced items from other devices.}}
+          </message>
+          <message name="IDS_LOGIN_POD_USER_REMOVE_WARNING_SYNC_WITH_ERRORS" desc="Main text shown as a warning when attempting to remove an user. This case is for non-synced profiles, with some statistics failed to load. The symbol $1 will be substituted with custom JS code, so it should not be replaced by a #.">
+            {NUM_ITEMS, plural,
+            =1 {This will permanently delete at least $1 item from this device but will not clear synced items from other devices.}
+            other {This will permanently delete at least $1 items from this device but will not clear synced items from other devices.}}
+          </message>
+          <message name="IDS_LOGIN_POD_USER_REMOVE_WARNING_SYNC_NOSTATS" desc="Main text shown as a warning when attempting to remove an user. This case is for synced profiles with statistics unavailable. (Possible case: Chromium decided not to load the statistics of closed profiles.)">
+            This will permanently delete your browsing data from this device but will not clear synced items from other devices.
+          </message>
+          <message name="IDS_LOGIN_POD_USER_REMOVE_WARNING_SYNC_CALCULATING" desc="Main text shown as a warning when attempting to remove an user. This case is for synced profiles when the statistics is still loading. $1 is always replaced by localized version of the ellipsis (...).">
+            This will permanently delete at least <ph name="TOTAL_COUNT">$1<ex>...</ex></ph> items from this device but will not clear synced items from other devices.
           </message>
         </if>
 

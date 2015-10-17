@@ -12,8 +12,10 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_metrics.h"
+#include "chrome/browser/profiles/profile_statistics.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "components/proximity_auth/screenlock_bridge.h"
 #include "content/public/browser/notification_observer.h"
@@ -80,6 +82,13 @@ class UserManagerScreenHandler
   void HandleRemoveUser(const base::ListValue* args);
   void HandleAttemptUnlock(const base::ListValue* args);
   void HandleHardlockUserPod(const base::ListValue* args);
+  void HandleRemoveUserWarningLoadStats(const base::ListValue* args);
+  void HandleGetRemoveWarningDialogMessage(const base::ListValue* args);
+
+  // Callback function used by HandleRemoveUserWarningLoadStats
+  void RemoveUserDialogLoadStatsCallback(
+      base::FilePath profile_path,
+      profiles::ProfileCategoryStats result);
 
   // Handle GAIA auth results.
   void OnGetTokenInfoResponse(
@@ -126,6 +135,9 @@ class UserManagerScreenHandler
   UserAuthTypeMap user_auth_type_map_;
 
   content::NotificationRegistrar registrar_;
+
+  // The CancelableTaskTracker is currently used by GetProfileStatistics
+  base::CancelableTaskTracker tracker_;
 
   base::WeakPtrFactory<UserManagerScreenHandler> weak_ptr_factory_;
 
