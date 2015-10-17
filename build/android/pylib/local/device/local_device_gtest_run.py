@@ -237,11 +237,15 @@ class LocalDeviceGtestRun(local_device_test_run.LocalDeviceTestRun):
           for h, d in host_device_tuples]
       dev.PushChangedFiles(host_device_tuples)
 
+      tool = self.GetTool(dev)
+      tool.CopyFiles(dev)
+      tool.SetupEnvironment()
+
       self._servers[str(dev)] = []
       if self.TestPackage() in _SUITE_REQUIRES_TEST_SERVER_SPAWNER:
         self._servers[str(dev)].append(
             local_test_server_spawner.LocalTestServerSpawner(
-                ports.AllocateTestServerPort(), dev, self.GetTool(dev)))
+                ports.AllocateTestServerPort(), dev, tool))
 
       for s in self._servers[str(dev)]:
         s.SetUp()
@@ -315,5 +319,8 @@ class LocalDeviceGtestRun(local_device_test_run.LocalDeviceTestRun):
     def individual_device_tear_down(dev):
       for s in self._servers.get(str(dev), []):
         s.TearDown()
+
+      tool = self.GetTool(dev)
+      tool.CleanUpEnvironment()
 
     self._env.parallel_devices.pMap(individual_device_tear_down)
