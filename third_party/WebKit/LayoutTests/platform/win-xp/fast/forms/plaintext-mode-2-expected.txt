@@ -27,11 +27,11 @@ layer at (0,0) size 800x600
           text run at (347,0) width 188: "All richness should be stripped."
       LayoutBlockFlow {OL} at (0,58) size 784x40
         LayoutListItem {LI} at (40,0) size 744x20
-          LayoutListMarker (anonymous) at (-21,0) size 16x19: "1"
+          LayoutListMarker (anonymous) at (-16,0) size 16x19: "1"
           LayoutText {#text} at (0,0) size 313x19
             text run at (0,0) width 313: "Success: document.execCommand(\"Copy\") == true"
         LayoutListItem {LI} at (40,20) size 744x20
-          LayoutListMarker (anonymous) at (-21,0) size 16x19: "2"
+          LayoutListMarker (anonymous) at (-16,0) size 16x19: "2"
           LayoutText {#text} at (0,0) size 312x19
             text run at (0,0) width 312: "Success: document.execCommand(\"Paste\") == true"
 layer at (10,11) size 596x16

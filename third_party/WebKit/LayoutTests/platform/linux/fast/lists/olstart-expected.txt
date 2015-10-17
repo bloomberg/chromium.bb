@@ -8,11 +8,11 @@ layer at (0,0) size 785x830 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           text run at (0,0) width 120: "1. Basic inheritance:"
       LayoutBlockFlow {OL} at (0,36) size 769x40
         LayoutListItem {LI} at (40,0) size 729x20
-          LayoutListMarker (anonymous) at (-21,0) size 16x19: "3"
+          LayoutListMarker (anonymous) at (-16,0) size 16x19: "3"
           LayoutText {#text} at (0,0) size 73x19
             text run at (0,0) width 73: "Should be 3"
         LayoutListItem {LI} at (40,20) size 729x20
-          LayoutListMarker (anonymous) at (-21,0) size 16x19: "4"
+          LayoutListMarker (anonymous) at (-16,0) size 16x19: "4"
           LayoutText {#text} at (0,0) size 73x19
             text run at (0,0) width 73: "Should be 4"
       LayoutBlockFlow {HR} at (0,92) size 769x2 [border: (1px inset #EEEEEE)]
@@ -21,12 +21,12 @@ layer at (0,0) size 785x830 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           text run at (0,0) width 274: "2. Test that the inner start value gets inherited:"
       LayoutBlockFlow {OL} at (0,138) size 769x40
         LayoutListItem {LI} at (40,0) size 729x20
-          LayoutListMarker (anonymous) at (-21,0) size 16x19: "5"
+          LayoutListMarker (anonymous) at (-16,0) size 16x19: "5"
           LayoutText {#text} at (0,0) size 73x19
             text run at (0,0) width 73: "Should be 5"
         LayoutBlockFlow {OL} at (40,20) size 729x20
           LayoutListItem {LI} at (40,0) size 689x20
-            LayoutListMarker (anonymous) at (-21,0) size 16x19: "3"
+            LayoutListMarker (anonymous) at (-16,0) size 16x19: "3"
             LayoutText {#text} at (0,0) size 73x19
               text run at (0,0) width 73: "Should be 3"
       LayoutBlockFlow {HR} at (0,194) size 769x2 [border: (1px inset #EEEEEE)]
@@ -38,7 +38,7 @@ layer at (0,0) size 785x830 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           LayoutText {#text} at (0,0) size 27x19
             text run at (0,0) width 27: "Text"
         LayoutListItem {LI} at (40,36) size 729x20
-          LayoutListMarker (anonymous) at (-21,0) size 16x19: "3"
+          LayoutListMarker (anonymous) at (-16,0) size 16x19: "3"
           LayoutText {#text} at (0,0) size 73x19
             text run at (0,0) width 73: "Should be 3"
       LayoutBlockFlow {HR} at (0,312) size 769x2 [border: (1px inset #EEEEEE)]
@@ -50,7 +50,7 @@ layer at (0,0) size 785x830 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           LayoutInline {B} at (0,0) size 0x0
         LayoutBlockFlow (anonymous) at (40,0) size 729x20
           LayoutListItem {LI} at (0,0) size 729x20
-            LayoutListMarker (anonymous) at (-21,0) size 16x19: "3"
+            LayoutListMarker (anonymous) at (-16,0) size 16x19: "3"
             LayoutText {#text} at (0,0) size 147x19
               text run at (0,0) width 147: "Should be 3 (and bold)"
         LayoutBlockFlow (anonymous) at (40,20) size 729x0
@@ -65,18 +65,18 @@ layer at (0,0) size 785x830 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           LayoutInline {B} at (0,0) size 0x0
         LayoutBlockFlow (anonymous) at (40,0) size 729x20
           LayoutListItem {LI} at (0,0) size 729x20
-            LayoutListMarker (anonymous) at (-21,0) size 16x19: "3"
+            LayoutListMarker (anonymous) at (-16,0) size 16x19: "3"
             LayoutText {#text} at (0,0) size 147x19
               text run at (0,0) width 147: "Should be 3 (and bold)"
         LayoutBlockFlow (anonymous) at (40,20) size 729x0
           LayoutInline {B} at (0,0) size 0x0
           LayoutText {#text} at (0,0) size 0x0
         LayoutListItem {LI} at (40,20) size 729x20
-          LayoutListMarker (anonymous) at (-21,0) size 16x19: "4"
+          LayoutListMarker (anonymous) at (-16,0) size 16x19: "4"
           LayoutText {#text} at (0,0) size 73x19
             text run at (0,0) width 73: "Should be 4"
         LayoutListItem {LI} at (40,40) size 729x20
-          LayoutListMarker (anonymous) at (-21,0) size 16x19: "5"
+          LayoutListMarker (anonymous) at (-16,0) size 16x19: "5"
           LayoutText {#text} at (0,0) size 73x19
             text run at (0,0) width 73: "Should be 5"
       LayoutBlockFlow {HR} at (0,516) size 769x2 [border: (1px inset #EEEEEE)]
@@ -85,14 +85,14 @@ layer at (0,0) size 785x830 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           text run at (0,0) width 427: "6. Test for properly chaining from the previous li when current is nested"
       LayoutBlockFlow {OL} at (0,562) size 769x40
         LayoutListItem {LI} at (40,0) size 729x20
-          LayoutListMarker (anonymous) at (-21,0) size 16x19: "1"
+          LayoutListMarker (anonymous) at (-16,0) size 16x19: "1"
           LayoutText {#text} at (0,0) size 73x19
             text run at (0,0) width 73: "Should be 1"
         LayoutBlockFlow (anonymous) at (40,20) size 729x0
           LayoutInline {B} at (0,0) size 0x0
         LayoutBlockFlow (anonymous) at (40,20) size 729x20
           LayoutListItem {LI} at (0,0) size 729x20
-            LayoutListMarker (anonymous) at (-21,0) size 16x19: "2"
+            LayoutListMarker (anonymous) at (-16,0) size 16x19: "2"
             LayoutText {#text} at (0,0) size 147x19
               text run at (0,0) width 147: "Should be 2 (and bold)"
         LayoutBlockFlow (anonymous) at (40,40) size 729x0
@@ -107,7 +107,7 @@ layer at (0,0) size 785x830 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           LayoutInline {I} at (0,0) size 0x0
         LayoutBlockFlow (anonymous) at (40,0) size 729x20
           LayoutListItem {LI} at (0,0) size 729x20
-            LayoutListMarker (anonymous) at (-21,0) size 16x19: "2"
+            LayoutListMarker (anonymous) at (-16,0) size 16x19: "2"
             LayoutText {#text} at (0,0) size 149x19
               text run at (0,0) width 149: "Should be 2 (and italic)"
         LayoutBlockFlow (anonymous) at (40,20) size 729x0
@@ -116,7 +116,7 @@ layer at (0,0) size 785x830 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           LayoutInline {B} at (0,0) size 0x0
         LayoutBlockFlow (anonymous) at (40,20) size 729x20
           LayoutListItem {LI} at (0,0) size 729x20
-            LayoutListMarker (anonymous) at (-21,0) size 16x19: "3"
+            LayoutListMarker (anonymous) at (-16,0) size 16x19: "3"
             LayoutText {#text} at (0,0) size 147x19
               text run at (0,0) width 147: "Should be 3 (and bold)"
         LayoutBlockFlow (anonymous) at (40,40) size 729x0
@@ -129,10 +129,10 @@ layer at (0,0) size 785x830 backgroundClip at (0,0) size 785x600 clip at (0,0) s
       LayoutBlockFlow {OL} at (0,766) size 769x40
         LayoutBlockFlow {OL} at (40,0) size 729x20
           LayoutListItem {LI} at (40,0) size 689x20
-            LayoutListMarker (anonymous) at (-21,0) size 16x19: "2"
+            LayoutListMarker (anonymous) at (-16,0) size 16x19: "2"
             LayoutText {#text} at (0,0) size 73x19
               text run at (0,0) width 73: "Should be 2"
         LayoutListItem {LI} at (40,20) size 729x20
-          LayoutListMarker (anonymous) at (-21,0) size 16x19: "5"
+          LayoutListMarker (anonymous) at (-16,0) size 16x19: "5"
           LayoutText {#text} at (0,0) size 73x19
             text run at (0,0) width 73: "Should be 5"

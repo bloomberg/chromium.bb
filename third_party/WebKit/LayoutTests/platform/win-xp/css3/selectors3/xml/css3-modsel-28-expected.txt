@@ -29,27 +29,27 @@ layer at (0,0) size 800x530
           text run at (0,0) width 79: "Sixth list item"
     LayoutBlockFlow {ol} at (0,152) size 800x120
       LayoutListItem {li} at (40,0) size 760x20
-        LayoutListMarker (anonymous) at (-21,0) size 16x19: "1"
+        LayoutListMarker (anonymous) at (-16,0) size 16x19: "1"
         LayoutText {#text} at (0,0) size 76x19
           text run at (0,0) width 76: "First list item"
       LayoutListItem {li} at (40,20) size 760x20 [bgcolor=#00FF00]
-        LayoutListMarker (anonymous) at (-21,0) size 16x19: "2"
+        LayoutListMarker (anonymous) at (-16,0) size 16x19: "2"
         LayoutText {#text} at (0,0) size 320x19
           text run at (0,0) width 320: "This second list item should have a green background"
       LayoutListItem {li} at (40,40) size 760x20
-        LayoutListMarker (anonymous) at (-21,0) size 16x19: "3"
+        LayoutListMarker (anonymous) at (-16,0) size 16x19: "3"
         LayoutText {#text} at (0,0) size 81x19
           text run at (0,0) width 81: "Third list item"
       LayoutListItem {li} at (40,60) size 760x20 [bgcolor=#00FF00]
-        LayoutListMarker (anonymous) at (-21,0) size 16x19: "4"
+        LayoutListMarker (anonymous) at (-16,0) size 16x19: "4"
         LayoutText {#text} at (0,0) size 312x19
           text run at (0,0) width 312: "This fourth list item should have a green background"
       LayoutListItem {li} at (40,80) size 760x20
-        LayoutListMarker (anonymous) at (-21,0) size 16x19: "5"
+        LayoutListMarker (anonymous) at (-16,0) size 16x19: "5"
         LayoutText {#text} at (0,0) size 76x19
           text run at (0,0) width 76: "Fifth list item"
       LayoutListItem {li} at (40,100) size 760x20 [bgcolor=#00FF00]
-        LayoutListMarker (anonymous) at (-21,0) size 16x19: "6"
+        LayoutListMarker (anonymous) at (-16,0) size 16x19: "6"
         LayoutText {#text} at (0,0) size 304x19
           text run at (0,0) width 304: "This sixth list item should have a green background"
     LayoutBlockFlow {div} at (0,288) size 800x242

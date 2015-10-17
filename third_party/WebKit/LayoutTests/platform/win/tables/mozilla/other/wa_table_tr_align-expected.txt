@@ -66,7 +66,7 @@ layer at (0,0) size 785x1314 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {OL} at (0,309.88) size 769x210
         LayoutListItem {LI} at (40,0) size 729x18
-          LayoutListMarker (anonymous) at (-20,0) size 16x17: "1"
+          LayoutListMarker (anonymous) at (-16,0) size 16x17: "1"
           LayoutText {#text} at (0,0) size 511x17
             text run at (0,0) width 511: "Verify that the sample text displays as stated in each of the following test cases:"
         LayoutBlockFlow {P} at (40,34) size 729x70
@@ -94,7 +94,7 @@ layer at (0,0) size 785x1314 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                         text run at (7,7) width 597: "Tables displaying Header & Data \"LEFT|CENTER|RIGHT\" horizontal row alignment"
         LayoutBlockFlow {P} at (40,120) size 729x0
         LayoutListItem {LI} at (40,120) size 729x18
-          LayoutListMarker (anonymous) at (-20,0) size 16x17: "2"
+          LayoutListMarker (anonymous) at (-16,0) size 16x17: "2"
           LayoutText {#text} at (0,0) size 289x17
             text run at (0,0) width 289: "Verify that the table is maintained when you "
           LayoutInline {B} at (0,0) size 135x17
@@ -103,7 +103,7 @@ layer at (0,0) size 785x1314 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           LayoutText {#text} at (422,0) size 73x17
             text run at (422,0) width 73: " the screen."
         LayoutListItem {LI} at (40,138) size 729x18
-          LayoutListMarker (anonymous) at (-20,0) size 16x17: "3"
+          LayoutListMarker (anonymous) at (-16,0) size 16x17: "3"
           LayoutText {#text} at (0,0) size 289x17
             text run at (0,0) width 289: "Verify that the table is maintained when you "
           LayoutInline {B} at (0,0) size 127x17
@@ -112,7 +112,7 @@ layer at (0,0) size 785x1314 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           LayoutText {#text} at (414,0) size 73x17
             text run at (414,0) width 73: " the screen."
         LayoutListItem {LI} at (40,156) size 729x18
-          LayoutListMarker (anonymous) at (-20,0) size 16x17: "4"
+          LayoutListMarker (anonymous) at (-16,0) size 16x17: "4"
           LayoutText {#text} at (0,0) size 289x17
             text run at (0,0) width 289: "Verify that the table is maintained when you "
           LayoutInline {B} at (0,0) size 142x17
@@ -121,11 +121,11 @@ layer at (0,0) size 785x1314 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           LayoutText {#text} at (429,0) size 74x17
             text run at (429,0) width 74: " the screen."
         LayoutListItem {LI} at (40,174) size 729x18
-          LayoutListMarker (anonymous) at (-20,0) size 16x17: "5"
+          LayoutListMarker (anonymous) at (-16,0) size 16x17: "5"
           LayoutText {#text} at (0,0) size 418x17
             text run at (0,0) width 418: "Verify re-draw takes place correctly after maximizing the screen."
         LayoutListItem {LI} at (40,192) size 729x18
-          LayoutListMarker (anonymous) at (-20,0) size 16x17: "6"
+          LayoutListMarker (anonymous) at (-16,0) size 16x17: "6"
           LayoutText {#text} at (0,0) size 133x17
             text run at (0,0) width 133: "Verify reload works."
       LayoutBlockFlow {HR} at (0,535.88) size 769x2 [border: (1px inset #EEEEEE)]

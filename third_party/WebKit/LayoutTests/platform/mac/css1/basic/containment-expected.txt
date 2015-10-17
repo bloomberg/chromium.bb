@@ -84,15 +84,15 @@ layer at (0,0) size 785x961 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           text run at (0,0) width 510: "This sentence should be purple, and it doesn't have a terminating paragraph tag."
       LayoutBlockFlow {OL} at (0,405) size 769x54
         LayoutListItem {LI} at (40,0) size 729x18
-          LayoutListMarker (anonymous) at (-20,0) size 16x18: "1"
+          LayoutListMarker (anonymous) at (-16,0) size 16x18: "1"
           LayoutText {#text} at (0,0) size 204x18
             text run at (0,0) width 204: "This list should NOT be purple."
         LayoutListItem {LI} at (40,18) size 729x18
-          LayoutListMarker (anonymous) at (-20,0) size 16x18: "2"
+          LayoutListMarker (anonymous) at (-16,0) size 16x18: "2"
           LayoutText {#text} at (0,0) size 176x18
             text run at (0,0) width 176: "It should, instead, be black."
         LayoutListItem {LI} at (40,36) size 729x18
-          LayoutListMarker (anonymous) at (-20,0) size 16x18: "3"
+          LayoutListMarker (anonymous) at (-16,0) size 16x18: "3"
           LayoutText {#text} at (0,0) size 512x18
             text run at (0,0) width 512: "If it IS purple, then the browser hasn't correctly parsed the preceding paragraph."
       LayoutBlockFlow {P} at (0,475) size 769x36
@@ -180,15 +180,15 @@ layer at (0,0) size 785x961 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                   text run at (0,0) width 510: "This sentence should be purple, and it doesn't have a terminating paragraph tag."
               LayoutBlockFlow {OL} at (4,212) size 747x54
                 LayoutListItem {LI} at (40,0) size 707x18
-                  LayoutListMarker (anonymous) at (-20,0) size 16x18: "1"
+                  LayoutListMarker (anonymous) at (-16,0) size 16x18: "1"
                   LayoutText {#text} at (0,0) size 204x18
                     text run at (0,0) width 204: "This list should NOT be purple."
                 LayoutListItem {LI} at (40,18) size 707x18
-                  LayoutListMarker (anonymous) at (-20,0) size 16x18: "2"
+                  LayoutListMarker (anonymous) at (-16,0) size 16x18: "2"
                   LayoutText {#text} at (0,0) size 176x18
                     text run at (0,0) width 176: "It should, instead, be black."
                 LayoutListItem {LI} at (40,36) size 707x18
-                  LayoutListMarker (anonymous) at (-20,0) size 16x18: "3"
+                  LayoutListMarker (anonymous) at (-16,0) size 16x18: "3"
                   LayoutText {#text} at (0,0) size 512x18
                     text run at (0,0) width 512: "If it IS purple, then the browser hasn't correctly parsed the preceding paragraph."
               LayoutBlockFlow {P} at (4,282) size 747x36

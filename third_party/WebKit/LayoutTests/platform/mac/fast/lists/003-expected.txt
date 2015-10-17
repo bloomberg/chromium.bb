@@ -39,18 +39,18 @@ layer at (0,0) size 800x368
             text run at (261,18) width 5: "."
         LayoutBlockFlow {OL} at (0,138) size 470.39x198
           LayoutListItem {LI} at (40,0) size 430.39x36
-            LayoutListMarker (anonymous) at (-20,0) size 16x18: "1"
+            LayoutListMarker (anonymous) at (-16,0) size 16x18: "1"
             LayoutText {#text} at (0,0) size 406x36
               text run at (0,0) width 160: "New larger PowerBook. "
               text run at (159,0) width 247: "Still 1 GHz, but with a 17-inch screen."
               text run at (0,18) width 44: "$3299."
           LayoutListItem {LI} at (40,36) size 430.39x18
-            LayoutListMarker (anonymous) at (-20,0) size 16x18: "2"
+            LayoutListMarker (anonymous) at (-16,0) size 16x18: "2"
             LayoutText {#text} at (0,0) size 359x18
               text run at (0,0) width 315: "New smaller PowerBook, with a 12-inch screen. "
               text run at (314,0) width 45: "$1799."
           LayoutListItem {LI} at (40,54) size 430.39x54
-            LayoutListMarker (anonymous) at (-20,0) size 16x18: "3"
+            LayoutListMarker (anonymous) at (-16,0) size 16x18: "3"
             LayoutText {#text} at (0,0) size 95x18
               text run at (0,0) width 95: "New browser: "
             LayoutInline {A} at (0,0) size 39x18 [color=#0000EE]
@@ -78,13 +78,13 @@ layer at (0,0) size 800x368
               text run at (85,36) width 124: "Only runs on 10.2. "
               text run at (208,36) width 158: "Currently in public beta."
           LayoutListItem {LI} at (40,108) size 430.39x36
-            LayoutListMarker (anonymous) at (-20,0) size 16x18: "4"
+            LayoutListMarker (anonymous) at (-16,0) size 16x18: "4"
             LayoutText {#text} at (0,0) size 399x36
               text run at (0,0) width 243: "New presentation software: Keynote. "
               text run at (242,0) width 157: "The software Steve Jobs"
               text run at (0,18) width 32: "uses."
           LayoutListItem {LI} at (40,144) size 430.39x36
-            LayoutListMarker (anonymous) at (-20,0) size 16x18: "5"
+            LayoutListMarker (anonymous) at (-16,0) size 16x18: "5"
             LayoutText {#text} at (0,0) size 109x18
               text run at (0,0) width 109: "New versions of "
             LayoutInline {A} at (0,0) size 48x18 [color=#0000EE]
@@ -109,7 +109,7 @@ layer at (0,0) size 800x368
             LayoutText {#text} at (31,18) size 59x18
               text run at (31,18) width 59: ", for $49."
           LayoutListItem {LI} at (40,180) size 430.39x18
-            LayoutListMarker (anonymous) at (-20,0) size 16x18: "6"
+            LayoutListMarker (anonymous) at (-16,0) size 16x18: "6"
             LayoutInline {A} at (0,0) size 115x18 [color=#0000EE]
               LayoutText {#text} at (0,0) size 115x18
                 text run at (0,0) width 115: "Final Cut Express"

@@ -119,30 +119,30 @@ layer at (0,0) size 785x1844 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             text run at (48,10) width 69: "Third item"
       LayoutBlockFlow {OL} at (0,1236) size 185.59x134 [border: (1px solid #0000FF)]
         LayoutListItem {LI} at (41,1) size 143.59x38 [border: (5px solid #FFA500)]
-          LayoutListMarker (anonymous) at (-20,10) size 16x18: "1"
+          LayoutListMarker (anonymous) at (-16,10) size 16x18: "1"
           LayoutText {#text} at (10,10) size 62x18
             text run at (10,10) width 62: "First item"
         LayoutListItem {LI} at (41,39) size 143.59x56 [border: (5px solid #FFA500)]
-          LayoutListMarker (anonymous) at (-20,10) size 16x18: "2"
+          LayoutListMarker (anonymous) at (-16,10) size 16x18: "2"
           LayoutText {#text} at (10,10) size 107x36
             text run at (10,10) width 107: "Second and very"
             text run at (10,28) width 94: "very long item"
         LayoutListItem {LI} at (41,95) size 143.59x38 [border: (5px solid #FFA500)]
-          LayoutListMarker (anonymous) at (-20,10) size 16x18: "3"
+          LayoutListMarker (anonymous) at (-16,10) size 16x18: "3"
           LayoutText {#text} at (10,10) size 68x18
             text run at (10,10) width 68: "Third item"
       LayoutBlockFlow {OL} at (0,1386) size 185.59x134 [border: (1px solid #FF0000)]
         LayoutListItem {LI} at (1,1) size 143.59x38 [border: (5px solid #FFA500)]
-          LayoutListMarker (anonymous) at (147.59,10) size 16x18: "1"
+          LayoutListMarker (anonymous) at (143.59,10) size 16x18: "1"
           LayoutText {#text} at (71,10) size 63x18
             text run at (71,10) width 63: "First item"
         LayoutListItem {LI} at (1,39) size 143.59x56 [border: (5px solid #FFA500)]
-          LayoutListMarker (anonymous) at (147.59,10) size 16x18: "2"
+          LayoutListMarker (anonymous) at (143.59,10) size 16x18: "2"
           LayoutText {#text} at (26,10) size 108x36
             text run at (26,10) width 108: "Second and very"
             text run at (40,28) width 94: "very long item"
         LayoutListItem {LI} at (1,95) size 143.59x38 [border: (5px solid #FFA500)]
-          LayoutListMarker (anonymous) at (147.59,10) size 16x18: "3"
+          LayoutListMarker (anonymous) at (143.59,10) size 16x18: "3"
           LayoutText {#text} at (65,10) size 69x18
             text run at (65,10) width 69: "Third item"
       LayoutBlockFlow {OL} at (0,1536) size 185.59x134 [border: (1px solid #0000FF)]

@@ -81,162 +81,162 @@ layer at (0,0) size 800x1781 backgroundClip at (0,0) size 800x600 clip at (0,0) 
       LayoutBlockFlow {OL} at (0,1266.92) size 784x484
         LayoutListItem {LI} at (40,0) size 744x112
           LayoutBlockFlow (anonymous) at (0,0) size 744x16
-            LayoutListMarker (anonymous) at (-28,0) size 24x16: "A"
+            LayoutListMarker (anonymous) at (-24,0) size 24x16: "A"
             LayoutText {#text} at (0,0) size 120x16
               text run at (0,0) width 120: "Background Area"
           LayoutBlockFlow {OL} at (0,16) size 744x96
             LayoutListItem {LI} at (40,0) size 704x16
-              LayoutListMarker (anonymous) at (-28,0) size 24x16: "1"
+              LayoutListMarker (anonymous) at (-24,0) size 24x16: "1"
               LayoutInline {A} at (0,0) size 168x16 [color=#FFFF00]
                 LayoutText {#text} at (0,0) size 168x16
                   text run at (0,0) width 168: "Background on 'table'"
               LayoutText {#text} at (0,0) size 0x0
             LayoutListItem {LI} at (40,16) size 704x16
-              LayoutListMarker (anonymous) at (-28,0) size 24x16: "2"
+              LayoutListMarker (anonymous) at (-24,0) size 24x16: "2"
               LayoutInline {A} at (0,0) size 248x16 [color=#FFFF00]
                 LayoutText {#text} at (0,0) size 248x16
                   text run at (0,0) width 248: "Background on 'table-row-group'"
               LayoutText {#text} at (0,0) size 0x0
             LayoutListItem {LI} at (40,32) size 704x16
-              LayoutListMarker (anonymous) at (-28,0) size 24x16: "3"
+              LayoutListMarker (anonymous) at (-24,0) size 24x16: "3"
               LayoutInline {A} at (0,0) size 272x16 [color=#FFFF00]
                 LayoutText {#text} at (0,0) size 272x16
                   text run at (0,0) width 272: "Background on 'table-column-group'"
               LayoutText {#text} at (0,0) size 0x0
             LayoutListItem {LI} at (40,48) size 704x16
-              LayoutListMarker (anonymous) at (-28,0) size 24x16: "4"
+              LayoutListMarker (anonymous) at (-24,0) size 24x16: "4"
               LayoutInline {A} at (0,0) size 200x16 [color=#FFFF00]
                 LayoutText {#text} at (0,0) size 200x16
                   text run at (0,0) width 200: "Background on 'table-row'"
               LayoutText {#text} at (0,0) size 0x0
             LayoutListItem {LI} at (40,64) size 704x16
-              LayoutListMarker (anonymous) at (-28,0) size 24x16: "5"
+              LayoutListMarker (anonymous) at (-24,0) size 24x16: "5"
               LayoutInline {A} at (0,0) size 224x16 [color=#FFFF00]
                 LayoutText {#text} at (0,0) size 224x16
                   text run at (0,0) width 224: "Background on 'table-column'"
               LayoutText {#text} at (0,0) size 0x0
             LayoutListItem {LI} at (40,80) size 704x16
-              LayoutListMarker (anonymous) at (-28,0) size 24x16: "6"
+              LayoutListMarker (anonymous) at (-24,0) size 24x16: "6"
               LayoutInline {A} at (0,0) size 208x16 [color=#FFFF00]
                 LayoutText {#text} at (0,0) size 208x16
                   text run at (0,0) width 208: "Background on 'table-cell'"
               LayoutText {#text} at (0,0) size 0x0
         LayoutListItem {LI} at (40,112) size 744x112
           LayoutBlockFlow (anonymous) at (0,0) size 744x16
-            LayoutListMarker (anonymous) at (-28,0) size 24x16: "B"
+            LayoutListMarker (anonymous) at (-24,0) size 24x16: "B"
             LayoutText {#text} at (0,0) size 152x16
               text run at (0,0) width 152: "Background Position"
           LayoutBlockFlow {OL} at (0,16) size 744x96
             LayoutListItem {LI} at (40,0) size 704x16
-              LayoutListMarker (anonymous) at (-28,0) size 24x16: "1"
+              LayoutListMarker (anonymous) at (-24,0) size 24x16: "1"
               LayoutInline {A} at (0,0) size 168x16 [color=#FFFF00]
                 LayoutText {#text} at (0,0) size 168x16
                   text run at (0,0) width 168: "Background on 'table'"
               LayoutText {#text} at (0,0) size 0x0
             LayoutListItem {LI} at (40,16) size 704x16
-              LayoutListMarker (anonymous) at (-28,0) size 24x16: "2"
+              LayoutListMarker (anonymous) at (-24,0) size 24x16: "2"
               LayoutInline {A} at (0,0) size 248x16 [color=#FFFF00]
                 LayoutText {#text} at (0,0) size 248x16
                   text run at (0,0) width 248: "Background on 'table-row-group'"
               LayoutText {#text} at (0,0) size 0x0
             LayoutListItem {LI} at (40,32) size 704x16
-              LayoutListMarker (anonymous) at (-28,0) size 24x16: "3"
+              LayoutListMarker (anonymous) at (-24,0) size 24x16: "3"
               LayoutInline {A} at (0,0) size 272x16 [color=#FFFF00]
                 LayoutText {#text} at (0,0) size 272x16
                   text run at (0,0) width 272: "Background on 'table-column-group'"
               LayoutText {#text} at (0,0) size 0x0
             LayoutListItem {LI} at (40,48) size 704x16
-              LayoutListMarker (anonymous) at (-28,0) size 24x16: "4"
+              LayoutListMarker (anonymous) at (-24,0) size 24x16: "4"
               LayoutInline {A} at (0,0) size 200x16 [color=#FFFF00]
                 LayoutText {#text} at (0,0) size 200x16
                   text run at (0,0) width 200: "Background on 'table-row'"
               LayoutText {#text} at (0,0) size 0x0
             LayoutListItem {LI} at (40,64) size 704x16
-              LayoutListMarker (anonymous) at (-28,0) size 24x16: "5"
+              LayoutListMarker (anonymous) at (-24,0) size 24x16: "5"
               LayoutInline {A} at (0,0) size 224x16 [color=#FFFF00]
                 LayoutText {#text} at (0,0) size 224x16
                   text run at (0,0) width 224: "Background on 'table-column'"
               LayoutText {#text} at (0,0) size 0x0
             LayoutListItem {LI} at (40,80) size 704x16
-              LayoutListMarker (anonymous) at (-28,0) size 24x16: "6"
+              LayoutListMarker (anonymous) at (-24,0) size 24x16: "6"
               LayoutInline {A} at (0,0) size 208x16 [color=#FFFF00]
                 LayoutText {#text} at (0,0) size 208x16
                   text run at (0,0) width 208: "Background on 'table-cell'"
               LayoutText {#text} at (0,0) size 0x0
         LayoutListItem {LI} at (40,224) size 744x48
           LayoutBlockFlow (anonymous) at (0,0) size 744x16
-            LayoutListMarker (anonymous) at (-28,0) size 24x16: "C"
+            LayoutListMarker (anonymous) at (-24,0) size 24x16: "C"
             LayoutText {#text} at (0,0) size 136x16
               text run at (0,0) width 136: "Background Layers"
           LayoutBlockFlow {OL} at (0,16) size 744x32
             LayoutListItem {LI} at (40,0) size 704x16
-              LayoutListMarker (anonymous) at (-28,0) size 24x16: "1"
+              LayoutListMarker (anonymous) at (-24,0) size 24x16: "1"
               LayoutInline {A} at (0,0) size 136x16 [color=#FFFF00]
                 LayoutText {#text} at (0,0) size 136x16
                   text run at (0,0) width 136: "empty-cells: show"
               LayoutText {#text} at (0,0) size 0x0
             LayoutListItem {LI} at (40,16) size 704x16
-              LayoutListMarker (anonymous) at (-28,0) size 24x16: "2"
+              LayoutListMarker (anonymous) at (-24,0) size 24x16: "2"
               LayoutInline {A} at (0,0) size 136x16 [color=#FFFF00]
                 LayoutText {#text} at (0,0) size 136x16
                   text run at (0,0) width 136: "empty-cells: hide"
               LayoutText {#text} at (0,0) size 0x0
         LayoutListItem {LI} at (40,272) size 744x212
           LayoutBlockFlow (anonymous) at (0,0) size 744x16
-            LayoutListMarker (anonymous) at (-28,0) size 24x16: "D"
+            LayoutListMarker (anonymous) at (-24,0) size 24x16: "D"
             LayoutText {#text} at (0,0) size 184x16
               text run at (0,0) width 184: "Background with Borders"
           LayoutBlockFlow {OL} at (0,16) size 744x144
             LayoutListItem {LI} at (40,0) size 704x16
-              LayoutListMarker (anonymous) at (-28,0) size 24x16: "1"
+              LayoutListMarker (anonymous) at (-24,0) size 24x16: "1"
               LayoutInline {A} at (0,0) size 168x16 [color=#FFFF00]
                 LayoutText {#text} at (0,0) size 168x16
                   text run at (0,0) width 168: "Background on 'table'"
               LayoutText {#text} at (0,0) size 0x0
             LayoutListItem {LI} at (40,16) size 704x16
-              LayoutListMarker (anonymous) at (-28,0) size 24x16: "2"
+              LayoutListMarker (anonymous) at (-24,0) size 24x16: "2"
               LayoutInline {A} at (0,0) size 248x16 [color=#FFFF00]
                 LayoutText {#text} at (0,0) size 248x16
                   text run at (0,0) width 248: "Background on 'table-row-group'"
               LayoutText {#text} at (0,0) size 0x0
             LayoutListItem {LI} at (40,32) size 704x16
-              LayoutListMarker (anonymous) at (-28,0) size 24x16: "3"
+              LayoutListMarker (anonymous) at (-24,0) size 24x16: "3"
               LayoutInline {A} at (0,0) size 272x16 [color=#FFFF00]
                 LayoutText {#text} at (0,0) size 272x16
                   text run at (0,0) width 272: "Background on 'table-column-group'"
               LayoutText {#text} at (0,0) size 0x0
             LayoutListItem {LI} at (40,48) size 704x16
-              LayoutListMarker (anonymous) at (-28,0) size 24x16: "4"
+              LayoutListMarker (anonymous) at (-24,0) size 24x16: "4"
               LayoutInline {A} at (0,0) size 200x16 [color=#FFFF00]
                 LayoutText {#text} at (0,0) size 200x16
                   text run at (0,0) width 200: "Background on 'table-row'"
               LayoutText {#text} at (0,0) size 0x0
             LayoutListItem {LI} at (40,64) size 704x16
-              LayoutListMarker (anonymous) at (-28,0) size 24x16: "5"
+              LayoutListMarker (anonymous) at (-24,0) size 24x16: "5"
               LayoutInline {A} at (0,0) size 224x16 [color=#FFFF00]
                 LayoutText {#text} at (0,0) size 224x16
                   text run at (0,0) width 224: "Background on 'table-column'"
               LayoutText {#text} at (0,0) size 0x0
             LayoutListItem {LI} at (40,80) size 704x16
-              LayoutListMarker (anonymous) at (-28,0) size 24x16: "6"
+              LayoutListMarker (anonymous) at (-24,0) size 24x16: "6"
               LayoutInline {A} at (0,0) size 208x16 [color=#FFFF00]
                 LayoutText {#text} at (0,0) size 208x16
                   text run at (0,0) width 208: "Background on 'table-cell'"
               LayoutText {#text} at (0,0) size 0x0
             LayoutListItem {LI} at (40,96) size 704x48
               LayoutBlockFlow (anonymous) at (0,0) size 704x16
-                LayoutListMarker (anonymous) at (-28,0) size 24x16: "7"
+                LayoutListMarker (anonymous) at (-24,0) size 24x16: "7"
                 LayoutText {#text} at (0,0) size 104x16
                   text run at (0,0) width 104: "Special Tests"
               LayoutBlockFlow {OL} at (0,16) size 704x32
                 LayoutListItem {LI} at (40,0) size 664x16
-                  LayoutListMarker (anonymous) at (-28,0) size 24x16: "1"
+                  LayoutListMarker (anonymous) at (-24,0) size 24x16: "1"
                   LayoutInline {A} at (0,0) size 56x16 [color=#FFFF00]
                     LayoutText {#text} at (0,0) size 56x16
                       text run at (0,0) width 56: "Opacity"
                   LayoutText {#text} at (0,0) size 0x0
                 LayoutListItem {LI} at (40,16) size 664x16
-                  LayoutListMarker (anonymous) at (-28,0) size 24x16: "2"
+                  LayoutListMarker (anonymous) at (-24,0) size 24x16: "2"
                   LayoutInline {A} at (0,0) size 136x16 [color=#FFFF00]
                     LayoutText {#text} at (0,0) size 136x16
                       text run at (0,0) width 136: "Fixed Backgrounds"

@@ -27,7 +27,7 @@ layer at (0,0) size 785x2990 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           LayoutBlockFlow {DIV} at (16,16) size 583.19x24 [bgcolor=#990000]
             LayoutBlockFlow {DIV} at (0,0) size 583.19x24 [bgcolor=#009900]
           LayoutBlockFlow {PRE} at (16,53) size 583.19x80 [bgcolor=#FFFFFF]
-            LayoutListMarker (anonymous) at (-38,6.50) size 17x18: "1"
+            LayoutListMarker (anonymous) at (-33,6.50) size 17x18: "1"
             LayoutText {#text} at (6,9) size 281x65
               text run at (6,9) width 153: "div:first-of-type {"
               text run at (158,9) width 1: " "
@@ -44,7 +44,7 @@ layer at (0,0) size 785x2990 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             LayoutBlockFlow {DIV} at (0,0) size 583.19x24 [bgcolor=#009900]
             LayoutBlockFlow {DIV} at (0,24) size 583.19x0
           LayoutBlockFlow {PRE} at (16,53) size 583.19x96 [bgcolor=#FFFFFF]
-            LayoutListMarker (anonymous) at (-38,6.50) size 17x18: "2"
+            LayoutListMarker (anonymous) at (-33,6.50) size 17x18: "2"
             LayoutText {#text} at (6,9) size 281x81
               text run at (6,9) width 153: "div:first-of-type {"
               text run at (158,9) width 1: " "
@@ -63,7 +63,7 @@ layer at (0,0) size 785x2990 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             LayoutBlockFlow {BLOCKQUOTE} at (0,0) size 583.19x0 [bgcolor=#009900]
             LayoutBlockFlow {DIV} at (0,0) size 583.19x24 [bgcolor=#009900]
           LayoutBlockFlow {PRE} at (16,53) size 583.19x96 [bgcolor=#FFFFFF]
-            LayoutListMarker (anonymous) at (-38,6.50) size 17x18: "3"
+            LayoutListMarker (anonymous) at (-33,6.50) size 17x18: "3"
             LayoutText {#text} at (6,9) size 281x81
               text run at (6,9) width 153: "div:first-of-type {"
               text run at (158,9) width 1: " "
@@ -83,7 +83,7 @@ layer at (0,0) size 785x2990 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             LayoutBlockFlow {BLOCKQUOTE} at (0,0) size 583.19x24 [bgcolor=#009900]
               LayoutBlockFlow {DIV} at (0,0) size 583.19x24
           LayoutBlockFlow {PRE} at (16,53) size 583.19x128 [bgcolor=#FFFFFF]
-            LayoutListMarker (anonymous) at (-38,6.50) size 17x18: "4"
+            LayoutListMarker (anonymous) at (-33,6.50) size 17x18: "4"
             LayoutText {#text} at (6,9) size 305x113
               text run at (6,9) width 153: "div:first-of-type {"
               text run at (158,9) width 1: " "
@@ -106,7 +106,7 @@ layer at (0,0) size 785x2990 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             LayoutBlockFlow {DIV} at (0,0) size 583.19x24 [bgcolor=#009900]
               LayoutBlockFlow {DIV} at (0,0) size 583.19x24
           LayoutBlockFlow {PRE} at (16,53) size 583.19x112 [bgcolor=#FFFFFF]
-            LayoutListMarker (anonymous) at (-38,6.50) size 17x18: "5"
+            LayoutListMarker (anonymous) at (-33,6.50) size 17x18: "5"
             LayoutText {#text} at (6,9) size 305x97
               text run at (6,9) width 153: "div:first-of-type {"
               text run at (158,9) width 1: " "
@@ -128,7 +128,7 @@ layer at (0,0) size 785x2990 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               LayoutBlockFlow {DIV} at (0,0) size 583.19x0
             LayoutBlockFlow {DIV} at (0,0) size 583.19x24 [bgcolor=#009900]
           LayoutBlockFlow {PRE} at (16,53) size 583.19x128 [bgcolor=#FFFFFF]
-            LayoutListMarker (anonymous) at (-38,6.50) size 17x18: "6"
+            LayoutListMarker (anonymous) at (-33,6.50) size 17x18: "6"
             LayoutText {#text} at (6,9) size 281x113
               text run at (6,9) width 153: "div:first-of-type {"
               text run at (158,9) width 1: " "
@@ -151,7 +151,7 @@ layer at (0,0) size 785x2990 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             LayoutBlockFlow {DIV} at (0,0) size 583.19x0 [bgcolor=#990000]
             LayoutBlockFlow {DIV} at (0,0) size 583.19x24
           LayoutBlockFlow {PRE} at (16,53) size 583.19x96 [bgcolor=#FFFFFF]
-            LayoutListMarker (anonymous) at (-38,6.50) size 17x18: "7"
+            LayoutListMarker (anonymous) at (-33,6.50) size 17x18: "7"
             LayoutText {#text} at (6,9) size 281x81
               text run at (6,9) width 153: "div:first-of-type {"
               text run at (158,9) width 1: " "
@@ -170,7 +170,7 @@ layer at (0,0) size 785x2990 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             LayoutBlockFlow {DIV} at (0,0) size 583.19x0 [bgcolor=#990000]
             LayoutBlockFlow {DIV} at (0,0) size 583.19x24
           LayoutBlockFlow {PRE} at (16,53) size 583.19x96 [bgcolor=#FFFFFF]
-            LayoutListMarker (anonymous) at (-38,6.50) size 17x18: "8"
+            LayoutListMarker (anonymous) at (-33,6.50) size 17x18: "8"
             LayoutText {#text} at (6,9) size 281x81
               text run at (6,9) width 153: "div:first-of-type {"
               text run at (158,9) width 1: " "
@@ -189,7 +189,7 @@ layer at (0,0) size 785x2990 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             LayoutBlockFlow {DIV} at (0,0) size 583.19x24 [bgcolor=#009900]
             LayoutBlockFlow {DIV} at (0,24) size 583.19x0
           LayoutBlockFlow {PRE} at (16,53) size 583.19x128 [bgcolor=#FFFFFF]
-            LayoutListMarker (anonymous) at (-38,6.50) size 17x18: "9"
+            LayoutListMarker (anonymous) at (-33,6.50) size 17x18: "9"
             LayoutText {#text} at (6,9) size 521x113
               text run at (6,9) width 153: "div:first-of-type {"
               text run at (158,9) width 1: " "
@@ -211,7 +211,7 @@ layer at (0,0) size 785x2990 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             LayoutBlockFlow {DIV} at (0,0) size 583.19x0 [bgcolor=#990000]
             LayoutBlockFlow {DIV} at (0,0) size 583.19x24
           LayoutBlockFlow {PRE} at (16,53) size 583.19x128 [bgcolor=#FFFFFF]
-            LayoutListMarker (anonymous) at (-47,6.50) size 26x18: "10"
+            LayoutListMarker (anonymous) at (-42,6.50) size 26x18: "10"
             LayoutText {#text} at (6,9) size 521x113
               text run at (6,9) width 153: "div:first-of-type {"
               text run at (158,9) width 1: " "

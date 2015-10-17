@@ -30,27 +30,27 @@ layer at (0,0) size 800x554
             text run at (0,0) width 304: "This sixth list item should have a green background"
       LayoutBlockFlow {ol} at (0,136) size 784x120
         LayoutListItem {li} at (40,0) size 744x20 [bgcolor=#00FF00]
-          LayoutListMarker (anonymous) at (-21,0) size 16x19: "1"
+          LayoutListMarker (anonymous) at (-16,0) size 16x19: "1"
           LayoutText {#text} at (0,0) size 299x19
             text run at (0,0) width 299: "This first list item should have a green background"
         LayoutListItem {li} at (40,20) size 744x20
-          LayoutListMarker (anonymous) at (-21,0) size 16x19: "2"
+          LayoutListMarker (anonymous) at (-16,0) size 16x19: "2"
           LayoutText {#text} at (0,0) size 95x19
             text run at (0,0) width 95: "Second list item"
         LayoutListItem {li} at (40,40) size 744x20 [bgcolor=#00FF00]
-          LayoutListMarker (anonymous) at (-21,0) size 16x19: "3"
+          LayoutListMarker (anonymous) at (-16,0) size 16x19: "3"
           LayoutText {#text} at (0,0) size 304x19
             text run at (0,0) width 304: "This third list item should have a green background"
         LayoutListItem {li} at (40,60) size 744x20
-          LayoutListMarker (anonymous) at (-21,0) size 16x19: "4"
+          LayoutListMarker (anonymous) at (-16,0) size 16x19: "4"
           LayoutText {#text} at (0,0) size 89x19
             text run at (0,0) width 89: "Fourth list item"
         LayoutListItem {li} at (40,80) size 744x20 [bgcolor=#00FF00]
-          LayoutListMarker (anonymous) at (-21,0) size 16x19: "5"
+          LayoutListMarker (anonymous) at (-16,0) size 16x19: "5"
           LayoutText {#text} at (0,0) size 299x19
             text run at (0,0) width 299: "This fifth list item should have a green background"
         LayoutListItem {li} at (40,100) size 744x20
-          LayoutListMarker (anonymous) at (-21,0) size 16x19: "6"
+          LayoutListMarker (anonymous) at (-16,0) size 16x19: "6"
           LayoutText {#text} at (0,0) size 79x19
             text run at (0,0) width 79: "Sixth list item"
       LayoutBlockFlow {div} at (0,272) size 784x258

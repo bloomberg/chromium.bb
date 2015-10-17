@@ -6,7 +6,7 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {OL} at (0,0) size 40x584
         LayoutListItem {LI} at (0,40) size 40x544
           LayoutBlockFlow (anonymous) at (0,0) size 20x544
-            LayoutListMarker (anonymous) at (0,-21) size 19x16: "1"
+            LayoutListMarker (anonymous) at (0,-16) size 19x16: "1"
             LayoutInline {I} at (0,0) size 19x75
               LayoutInline {U} at (0,0) size 19x75
                 LayoutText {#text} at (0,0) size 19x75
@@ -14,6 +14,6 @@ layer at (0,0) size 800x600
             LayoutText {#text} at (0,0) size 0x0
           LayoutBlockFlow {OL} at (20,0) size 20x544
             LayoutListItem {LI} at (0,40) size 20x504
-              LayoutListMarker (anonymous) at (0,-21) size 19x16: "1"
+              LayoutListMarker (anonymous) at (0,-16) size 19x16: "1"
               LayoutText {#text} at (0,0) size 19x57
                 text run at (0,0) width 57: "Goodbye"

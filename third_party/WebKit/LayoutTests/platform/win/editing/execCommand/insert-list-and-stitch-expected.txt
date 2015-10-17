@@ -19,15 +19,15 @@ layer at (0,0) size 800x600
         LayoutBlockFlow {DIV} at (0,0) size 784x54
           LayoutBlockFlow {OL} at (0,0) size 784x54
             LayoutListItem {LI} at (40,0) size 744x18
-              LayoutListMarker (anonymous) at (-20,0) size 16x17: "1"
+              LayoutListMarker (anonymous) at (-16,0) size 16x17: "1"
               LayoutText {#text} at (0,0) size 22x17
                 text run at (0,0) width 22: "foo"
             LayoutListItem {LI} at (40,18) size 744x18
-              LayoutListMarker (anonymous) at (-20,0) size 16x17: "2"
+              LayoutListMarker (anonymous) at (-16,0) size 16x17: "2"
               LayoutText {#text} at (0,0) size 21x17
                 text run at (0,0) width 21: "bar"
             LayoutListItem {LI} at (40,36) size 744x18
-              LayoutListMarker (anonymous) at (-20,0) size 16x17: "3"
+              LayoutListMarker (anonymous) at (-16,0) size 16x17: "3"
               LayoutText {#text} at (0,0) size 23x17
                 text run at (0,0) width 23: "baz"
 caret: position 0 of child 0 {#text} of child 2 {LI} of child 0 {OL} of child 1 {DIV} of child 1 {DIV} of body

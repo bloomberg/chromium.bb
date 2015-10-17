@@ -30,27 +30,27 @@ layer at (0,0) size 800x496
             text run at (0,0) width 90: "Sixth list item"
       LayoutBlockFlow {ol} at (0,124) size 784x108
         LayoutListItem {li} at (40,0) size 744x18
-          LayoutListMarker (anonymous) at (-20,0) size 16x18: "1"
+          LayoutListMarker (anonymous) at (-16,0) size 16x18: "1"
           LayoutText {#text} at (0,0) size 86x18
             text run at (0,0) width 86: "First list item"
         LayoutListItem {li} at (40,18) size 744x18 [bgcolor=#00FF00]
-          LayoutListMarker (anonymous) at (-20,0) size 16x18: "2"
+          LayoutListMarker (anonymous) at (-16,0) size 16x18: "2"
           LayoutText {#text} at (0,0) size 344x18
             text run at (0,0) width 344: "This second list item should have a green background"
         LayoutListItem {li} at (40,36) size 744x18
-          LayoutListMarker (anonymous) at (-20,0) size 16x18: "3"
+          LayoutListMarker (anonymous) at (-16,0) size 16x18: "3"
           LayoutText {#text} at (0,0) size 92x18
             text run at (0,0) width 92: "Third list item"
         LayoutListItem {li} at (40,54) size 744x18 [bgcolor=#00FF00]
-          LayoutListMarker (anonymous) at (-20,0) size 16x18: "4"
+          LayoutListMarker (anonymous) at (-16,0) size 16x18: "4"
           LayoutText {#text} at (0,0) size 339x18
             text run at (0,0) width 339: "This fourth list item should have a green background"
         LayoutListItem {li} at (40,72) size 744x18
-          LayoutListMarker (anonymous) at (-20,0) size 16x18: "5"
+          LayoutListMarker (anonymous) at (-16,0) size 16x18: "5"
           LayoutText {#text} at (0,0) size 88x18
             text run at (0,0) width 88: "Fifth list item"
         LayoutListItem {li} at (40,90) size 744x18 [bgcolor=#00FF00]
-          LayoutListMarker (anonymous) at (-20,0) size 16x18: "6"
+          LayoutListMarker (anonymous) at (-16,0) size 16x18: "6"
           LayoutText {#text} at (0,0) size 331x18
             text run at (0,0) width 331: "This sixth list item should have a green background"
       LayoutBlockFlow {div} at (0,248) size 784x224

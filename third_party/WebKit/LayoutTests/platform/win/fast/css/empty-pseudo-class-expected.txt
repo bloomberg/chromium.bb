@@ -27,7 +27,7 @@ layer at (0,0) size 785x1640 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           LayoutBlockFlow {DIV} at (16,16) size 583.19x24 [bgcolor=#990000]
             LayoutBlockFlow {DIV} at (0,0) size 583.19x24 [bgcolor=#009900]
           LayoutBlockFlow {PRE} at (16,53) size 583.19x79 [bgcolor=#FFFFFF]
-            LayoutListMarker (anonymous) at (-37.78,6.50) size 17.78x17: "1"
+            LayoutListMarker (anonymous) at (-33.78,6.50) size 17.78x17: "1"
             LayoutText {#text} at (6,8) size 89x65
               text run at (6,8) width 65: ":empty {"
               text run at (70,8) width 1: " "
@@ -42,7 +42,7 @@ layer at (0,0) size 785x1640 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           LayoutBlockFlow {DIV} at (16,16) size 583.19x24 [bgcolor=#990000]
             LayoutBlockFlow {DIV} at (0,0) size 583.19x24 [bgcolor=#009900]
           LayoutBlockFlow {PRE} at (16,53) size 583.19x79 [bgcolor=#FFFFFF]
-            LayoutListMarker (anonymous) at (-37.78,6.50) size 17.78x17: "2"
+            LayoutListMarker (anonymous) at (-33.78,6.50) size 17.78x17: "2"
             LayoutText {#text} at (6,8) size 273x65
               text run at (6,8) width 65: ":empty {"
               text run at (70,8) width 1: " "
@@ -57,7 +57,7 @@ layer at (0,0) size 785x1640 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           LayoutBlockFlow {DIV} at (16,16) size 583.19x24 [bgcolor=#009900]
             LayoutBlockFlow {DIV} at (0,0) size 583.19x24
           LayoutBlockFlow {PRE} at (16,53) size 583.19x79 [bgcolor=#FFFFFF]
-            LayoutListMarker (anonymous) at (-37.78,6.50) size 17.78x17: "3"
+            LayoutListMarker (anonymous) at (-33.78,6.50) size 17.78x17: "3"
             LayoutText {#text} at (6,8) size 97x65
               text run at (6,8) width 65: ":empty {"
               text run at (70,8) width 1: " "
@@ -71,7 +71,7 @@ layer at (0,0) size 785x1640 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutListItem {LI} at (40,738) size 615.19x246 [bgcolor=#AAAAAA]
           LayoutBlockFlow {DIV} at (16,16) size 583.19x42 [bgcolor=#009900]
             LayoutBlockFlow {DIV} at (0,0) size 583.19x42
-              LayoutListMarker (anonymous) at (-37.78,12) size 17.78x17: "4"
+              LayoutListMarker (anonymous) at (-33.78,12) size 17.78x17: "4"
               LayoutText {#text} at (12,12) size 5x17
                 text run at (12,12) width 5: "."
           LayoutBlockFlow {PRE} at (16,71) size 583.19x109 [bgcolor=#FFFFFF]
@@ -94,7 +94,7 @@ layer at (0,0) size 785x1640 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             LayoutBlockFlow {DIV} at (0,0) size 583.19x24
               LayoutBlockFlow {BLOCKQUOTE} at (12,12) size 559.19x0 [bgcolor=#990000]
           LayoutBlockFlow {PRE} at (16,53) size 583.19x79 [bgcolor=#FFFFFF]
-            LayoutListMarker (anonymous) at (-37.78,6.50) size 17.78x17: "5"
+            LayoutListMarker (anonymous) at (-33.78,6.50) size 17.78x17: "5"
             LayoutText {#text} at (6,8) size 289x65
               text run at (6,8) width 65: ":empty {"
               text run at (70,8) width 1: " "
@@ -110,7 +110,7 @@ layer at (0,0) size 785x1640 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             LayoutBlockFlow {DIV} at (0,0) size 583.19x24
               LayoutBlockFlow {DIV} at (12,12) size 559.19x0 [bgcolor=#990000]
           LayoutBlockFlow {PRE} at (16,53) size 583.19x127 [bgcolor=#FFFFFF]
-            LayoutListMarker (anonymous) at (-37.78,6.50) size 17.78x17: "6"
+            LayoutListMarker (anonymous) at (-33.78,6.50) size 17.78x17: "6"
             LayoutText {#text} at (6,8) size 385x113
               text run at (6,8) width 65: ":empty {"
               text run at (70,8) width 1: " "

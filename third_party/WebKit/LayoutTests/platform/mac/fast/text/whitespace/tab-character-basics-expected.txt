@@ -14,15 +14,15 @@ layer at (0,0) size 800x502
           text run at (0,21) width 77: "X\x{9}XX\x{9}XXX"
       LayoutBlockFlow {OL} at (3,114) size 640x63
         LayoutListItem {LI} at (40,0) size 600x21
-          LayoutListMarker (anonymous) at (-33.80,0) size 28.80x20: "1"
+          LayoutListMarker (anonymous) at (-28.80,0) size 28.80x20: "1"
           LayoutText {#text} at (0,0) size 29x20
             text run at (0,0) width 29: "a\x{9}X"
         LayoutListItem {LI} at (40,21) size 600x21
-          LayoutListMarker (anonymous) at (-33.80,0) size 28.80x20: "2"
+          LayoutListMarker (anonymous) at (-28.80,0) size 28.80x20: "2"
           LayoutText {#text} at (0,0) size 39x20
             text run at (0,0) width 39: "bb\x{9}X"
         LayoutListItem {LI} at (40,42) size 600x21
-          LayoutListMarker (anonymous) at (-33.80,0) size 28.80x20: "3"
+          LayoutListMarker (anonymous) at (-28.80,0) size 28.80x20: "3"
           LayoutText {#text} at (0,0) size 48x20
             text run at (0,0) width 48: "ccc\x{9}X"
       LayoutBlockFlow {P} at (3,193) size 640x21 [color=#0000FF]
@@ -30,15 +30,15 @@ layer at (0,0) size 800x502
           text run at (0,0) width 481: "-- Following text and list are whitespace:PRE only"
       LayoutBlockFlow {OL} at (3,230) size 640x63
         LayoutListItem {LI} at (40,0) size 600x21
-          LayoutListMarker (anonymous) at (-33.80,0) size 28.80x20: "1"
+          LayoutListMarker (anonymous) at (-28.80,0) size 28.80x20: "1"
           LayoutText {#text} at (0,0) size 164x20
             text run at (0,0) width 164: "a\x{9}\x{9}X"
         LayoutListItem {LI} at (40,21) size 600x21
-          LayoutListMarker (anonymous) at (-33.80,0) size 28.80x20: "2"
+          LayoutListMarker (anonymous) at (-28.80,0) size 28.80x20: "2"
           LayoutText {#text} at (0,0) size 87x20
             text run at (0,0) width 87: "bb\x{9}X"
         LayoutListItem {LI} at (40,42) size 600x21
-          LayoutListMarker (anonymous) at (-33.80,0) size 28.80x20: "3"
+          LayoutListMarker (anonymous) at (-28.80,0) size 28.80x20: "3"
           LayoutText {#text} at (0,0) size 87x20
             text run at (0,0) width 87: "ccc\x{9}X"
       LayoutBlockFlow {P} at (3,309) size 640x63
