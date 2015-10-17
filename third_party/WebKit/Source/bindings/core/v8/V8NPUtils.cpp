@@ -128,44 +128,4 @@ NPIdentifier getStringIdentifier(v8::Local<v8::String> str)
     return _NPN_GetStringIdentifier(*utf8);
 }
 
-struct ExceptionHandlerInfo {
-    ExceptionHandlerInfo* previous;
-    ExceptionHandler handler;
-    void* data;
-};
-
-static ExceptionHandlerInfo* topHandler;
-
-void pushExceptionHandler(ExceptionHandler handler, void* data)
-{
-    ExceptionHandlerInfo* info = new ExceptionHandlerInfo;
-    info->previous = topHandler;
-    info->handler = handler;
-    info->data = data;
-    topHandler = info;
-}
-
-void popExceptionHandler()
-{
-    ASSERT(topHandler);
-    ExceptionHandlerInfo* doomed = topHandler;
-    topHandler = topHandler->previous;
-    delete doomed;
-}
-
-ExceptionCatcher::ExceptionCatcher()
-{
-    if (!topHandler)
-        m_tryCatch.SetVerbose(true);
-}
-
-ExceptionCatcher::~ExceptionCatcher()
-{
-    if (!m_tryCatch.HasCaught())
-        return;
-
-    if (topHandler)
-        topHandler->handler(topHandler->data, *v8::String::Utf8Value(m_tryCatch.Exception()));
-}
-
 } // namespace blink

@@ -32,22 +32,9 @@
 #define WebBindings_h
 
 #include "../platform/WebCommon.h"
-#include "../platform/WebString.h"
-#include "../platform/WebVector.h"
 #include <bindings/npruntime.h>
 
-namespace v8 {
-class Value;
-template <class T> class Local;
-}
-
 namespace blink {
-
-class WebArrayBuffer;
-class WebArrayBufferView;
-class WebElement;
-class WebNode;
-class WebRange;
 
 // A haphazard collection of functions for dealing with plugins.
 class WebBindings {
@@ -91,9 +78,6 @@ public:
     // NPN_IdentifierIsString
     BLINK_EXPORT static bool identifierIsString(NPIdentifier);
 
-    // NPN_InitializeVariantWithStringCopy (though sometimes prefixed with an underscore)
-    BLINK_EXPORT static void initializeVariantWithStringCopy(NPVariant*, const NPString*);
-
     // NPN_IntFromIdentifier
     BLINK_EXPORT static int32_t intFromIdentifier(NPIdentifier);
 
@@ -121,23 +105,6 @@ public:
     // NPN_SetProperty
     BLINK_EXPORT static bool setProperty(NPP, NPObject*, NPIdentifier, const NPVariant*);
 
-    // _NPN_RegisterObjectOwner
-    BLINK_EXPORT static void registerObjectOwner(NPP);
-
-    // _NPN_UnregisterObjectOwner
-    BLINK_EXPORT static void unregisterObjectOwner(NPP);
-
-    // Temporary dummy implementation of _NPN_GetObjectOwner.
-    BLINK_EXPORT static NPP getObjectOwner(NPObject*);
-
-    // _NPN_UnregisterObject
-    BLINK_EXPORT static void unregisterObject(NPObject*);
-
-    // Unlike unregisterObject, only drops the V8 wrapper object,
-    // not touching the NPObject itself, except for decrementing
-    // its references counter.
-    BLINK_EXPORT static void dropV8WrapperForObject(NPObject*);
-
     // NPN_UTF8FromIdentifier
     BLINK_EXPORT static NPUTF8* utf8FromIdentifier(NPIdentifier);
 
@@ -147,44 +114,6 @@ public:
     // structure.  If isString is true upon return, string will be set but number's value is
     // undefined.  If iString is false, the opposite is true.
     BLINK_EXPORT static void extractIdentifierData(const NPIdentifier&, const NPUTF8*& string, int32_t& number, bool& isString);
-
-    // DumpRenderTree support -------------------------------------------------
-
-    // Return true (success) if the given npobj is a range object.
-    // If so, return that range as a WebRange object.
-    BLINK_EXPORT static bool getRange(NPObject* range, WebRange*);
-
-    // Return true (success) if the given npobj is an ArrayBuffer object.
-    // If so, return it as a WebArrayBuffer object.
-    BLINK_EXPORT static bool getArrayBuffer(NPObject* arrayBuffer, WebArrayBuffer*);
-
-    // Return true (success) if the given npobj is an ArrayBufferView object.
-    // If so, return it as a WebArrayBufferView object.
-    BLINK_EXPORT static bool getArrayBufferView(NPObject* arrayBufferView, WebArrayBufferView*);
-
-    // Return true (success) if the given npobj is a node.
-    // If so, return that node as a WebNode object.
-    BLINK_EXPORT static bool getNode(NPObject* element, WebNode*);
-
-    // Return true (success) if the given npobj is an element.
-    // If so, return that element as a WebElement object.
-    BLINK_EXPORT static bool getElement(NPObject* element, WebElement*);
-
-    BLINK_EXPORT static NPObject* makeIntArray(const WebVector<int>&);
-    BLINK_EXPORT static NPObject* makeStringArray(const WebVector<WebString>&);
-
-    // Exceptions -------------------------------------------------------------
-
-    typedef void (ExceptionHandler)(void* data, const NPUTF8* message);
-
-    // The exception handler will be notified of any exceptions thrown while
-    // operating on a NPObject.
-    BLINK_EXPORT static void pushExceptionHandler(ExceptionHandler, void* data);
-    BLINK_EXPORT static void popExceptionHandler();
-
-    // Conversion utilities to/from V8 native objects and NPVariant wrappers.
-    BLINK_EXPORT static void toNPVariant(v8::Local<v8::Value>, NPObject* root, NPVariant* result);
-    BLINK_EXPORT static v8::Local<v8::Value> toV8Value(const NPVariant*);
 };
 
 } // namespace blink

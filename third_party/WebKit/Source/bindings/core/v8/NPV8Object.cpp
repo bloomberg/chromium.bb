@@ -255,7 +255,7 @@ bool _NPN_Invoke(NPP npp, NPObject* npObject, NPIdentifier methodName, const NPV
         return false;
 
     ScriptState::Scope scope(scriptState);
-    ExceptionCatcher exceptionCatcher;
+    v8::TryCatch tryCatch;
 
     v8::Local<v8::Object> v8Object = v8::Local<v8::Object>::New(isolate, v8NpObject->v8Object);
     v8::Local<v8::Value> functionObject;
@@ -308,7 +308,7 @@ bool _NPN_InvokeDefault(NPP npp, NPObject* npObject, const NPVariant* arguments,
         return false;
 
     ScriptState::Scope scope(scriptState);
-    ExceptionCatcher exceptionCatcher;
+    v8::TryCatch tryCatch;
 
     // Lookup the function object and call it.
     v8::Local<v8::Object> functionObject = v8::Local<v8::Object>::New(isolate, v8NpObject->v8Object);
@@ -359,7 +359,7 @@ bool _NPN_EvaluateHelper(NPP npp, bool popupsAllowed, NPObject* npObject, NPStri
         return false;
 
     ScriptState::Scope scope(scriptState);
-    ExceptionCatcher exceptionCatcher;
+    v8::TryCatch tryCatch;
 
     // FIXME: Is this branch still needed after switching to using UserGestureIndicator?
     String filename;
@@ -394,7 +394,7 @@ bool _NPN_GetProperty(NPP npp, NPObject* npObject, NPIdentifier propertyName, NP
             return false;
 
         ScriptState::Scope scope(scriptState);
-        ExceptionCatcher exceptionCatcher;
+        v8::TryCatch tryCatch;
 
         v8::Local<v8::Object> obj = v8::Local<v8::Object>::New(isolate, object->v8Object);
         v8::Local<v8::Value> v8result;
@@ -426,7 +426,7 @@ bool _NPN_SetProperty(NPP npp, NPObject* npObject, NPIdentifier propertyName, co
             return false;
 
         ScriptState::Scope scope(scriptState);
-        ExceptionCatcher exceptionCatcher;
+        v8::TryCatch tryCatch;
 
         v8::Local<v8::Object> obj = v8::Local<v8::Object>::New(isolate, object->v8Object);
         return v8CallBoolean(obj->Set(scriptState->context(), npIdentifierToV8Identifier(isolate, propertyName), convertNPVariantToV8Object(isolate, value, object->rootObject->frame()->script().windowScriptNPObject())));
@@ -452,7 +452,7 @@ bool _NPN_RemoveProperty(NPP npp, NPObject* npObject, NPIdentifier propertyName)
     if (!scriptState)
         return false;
     ScriptState::Scope scope(scriptState);
-    ExceptionCatcher exceptionCatcher;
+    v8::TryCatch tryCatch;
 
     v8::Local<v8::Object> obj = v8::Local<v8::Object>::New(isolate, object->v8Object);
     // FIXME: Verify that setting to undefined is right.
@@ -470,7 +470,7 @@ bool _NPN_HasProperty(NPP npp, NPObject* npObject, NPIdentifier propertyName)
         if (!scriptState)
             return false;
         ScriptState::Scope scope(scriptState);
-        ExceptionCatcher exceptionCatcher;
+        v8::TryCatch tryCatch;
 
         v8::Local<v8::Object> obj = v8::Local<v8::Object>::New(scriptState->isolate(), object->v8Object);
         return v8CallBoolean(obj->Has(scriptState->context(), npIdentifierToV8Identifier(scriptState->isolate(), propertyName)));
@@ -492,7 +492,7 @@ bool _NPN_HasMethod(NPP npp, NPObject* npObject, NPIdentifier methodName)
         if (!scriptState)
             return false;
         ScriptState::Scope scope(scriptState);
-        ExceptionCatcher exceptionCatcher;
+        v8::TryCatch tryCatch;
 
         v8::Local<v8::Object> obj = v8::Local<v8::Object>::New(isolate, object->v8Object);
         v8::Local<v8::Value> prop;
@@ -521,7 +521,7 @@ void _NPN_SetException(NPObject* npObject, const NPUTF8 *message)
         return;
 
     ScriptState::Scope scope(scriptState);
-    ExceptionCatcher exceptionCatcher;
+    v8::TryCatch tryCatch;
 
     V8ThrowException::throwGeneralError(isolate, message);
 }
@@ -536,7 +536,7 @@ bool _NPN_Enumerate(NPP npp, NPObject* npObject, NPIdentifier** identifier, uint
         if (!scriptState)
             return false;
         ScriptState::Scope scope(scriptState);
-        ExceptionCatcher exceptionCatcher;
+        v8::TryCatch tryCatch;
 
         v8::Local<v8::Object> obj = v8::Local<v8::Object>::New(scriptState->isolate(), object->v8Object);
 
@@ -592,7 +592,7 @@ bool _NPN_Construct(NPP npp, NPObject* npObject, const NPVariant* arguments, uin
         if (!scriptState)
             return false;
         ScriptState::Scope scope(scriptState);
-        ExceptionCatcher exceptionCatcher;
+        v8::TryCatch tryCatch;
 
         // Lookup the constructor function.
         v8::Local<v8::Object> ctorObj = v8::Local<v8::Object>::New(scriptState->isolate(), object->v8Object);

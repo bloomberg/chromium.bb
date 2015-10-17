@@ -47,23 +47,6 @@ CORE_EXPORT v8::Local<v8::Value> convertNPVariantToV8Object(v8::Isolate*, const 
 // Helper function to create an NPN String Identifier from a v8 string.
 NPIdentifier getStringIdentifier(v8::Local<v8::String>);
 
-// The ExceptionHandler will be notified of any exceptions thrown while
-// operating on a NPObject.
-typedef void (*ExceptionHandler)(void* data, const NPUTF8* message);
-CORE_EXPORT void pushExceptionHandler(ExceptionHandler, void* data);
-CORE_EXPORT void popExceptionHandler();
-
-// Upon destruction, an ExceptionCatcher will pass a caught exception to the
-// current ExceptionHandler.
-class ExceptionCatcher {
-    STACK_ALLOCATED();
-public:
-    ExceptionCatcher();
-    ~ExceptionCatcher();
-private:
-    v8::TryCatch m_tryCatch;
-};
-
 } // namespace blink
 
 #endif // V8NPUtils_h

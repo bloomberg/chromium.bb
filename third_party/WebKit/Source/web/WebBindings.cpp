@@ -32,23 +32,8 @@
 #include "public/web/WebBindings.h"
 
 #include "bindings/core/v8/NPV8Object.h"
-#include "bindings/core/v8/ScriptController.h"
-#include "bindings/core/v8/V8ArrayBuffer.h"
-#include "bindings/core/v8/V8ArrayBufferView.h"
-#include "bindings/core/v8/V8DOMWrapper.h"
-#include "bindings/core/v8/V8Element.h"
-#include "bindings/core/v8/V8NPObject.h"
-#include "bindings/core/v8/V8NPUtils.h"
-#include "bindings/core/v8/V8Range.h"
 #include "bindings/core/v8/npruntime_impl.h"
 #include "bindings/core/v8/npruntime_priv.h"
-#include "core/dom/Range.h"
-#include "core/frame/LocalDOMWindow.h"
-#include "core/frame/LocalFrame.h"
-#include "public/web/WebArrayBuffer.h"
-#include "public/web/WebArrayBufferView.h"
-#include "public/web/WebElement.h"
-#include "public/web/WebRange.h"
 
 namespace blink {
 
@@ -117,11 +102,6 @@ int32_t WebBindings::intFromIdentifier(NPIdentifier identifier)
     return _NPN_IntFromIdentifier(identifier);
 }
 
-void WebBindings::initializeVariantWithStringCopy(NPVariant* variant, const NPString* value)
-{
-    _NPN_InitializeVariantWithStringCopy(variant, value);
-}
-
 bool WebBindings::invoke(NPP npp, NPObject* object, NPIdentifier method, const NPVariant* args, uint32_t argCount, NPVariant* result)
 {
     return _NPN_Invoke(npp, object, method, args, argCount, result);
@@ -162,29 +142,6 @@ bool WebBindings::setProperty(NPP npp, NPObject* object, NPIdentifier identifier
     return _NPN_SetProperty(npp, object, identifier, value);
 }
 
-void WebBindings::registerObjectOwner(NPP)
-{
-}
-
-void WebBindings::unregisterObjectOwner(NPP)
-{
-}
-
-NPP WebBindings::getObjectOwner(NPObject*)
-{
-    return 0;
-}
-
-void WebBindings::unregisterObject(NPObject* object)
-{
-    _NPN_UnregisterObject(object);
-}
-
-void WebBindings::dropV8WrapperForObject(NPObject* object)
-{
-    forgetV8ObjectForNPObject(object);
-}
-
 NPUTF8* WebBindings::utf8FromIdentifier(NPIdentifier identifier)
 {
     return _NPN_UTF8FromIdentifier(identifier);
@@ -204,209 +161,6 @@ void WebBindings::extractIdentifierData(const NPIdentifier& identifier, const NP
         string = data->value.string;
     else
         number = data->value.number;
-}
-
-static bool getRangeImpl(NPObject* object, WebRange* webRange, v8::Isolate* isolate)
-{
-    if (!object)
-        return false;
-
-    V8NPObject* v8NPObject = npObjectToV8NPObject(object);
-    if (!v8NPObject)
-        return false;
-
-    v8::HandleScope handleScope(isolate);
-    v8::Local<v8::Object> v8Object = v8::Local<v8::Object>::New(isolate, v8NPObject->v8Object);
-    if (v8Object.IsEmpty())
-        return false;
-    if (!V8Range::wrapperTypeInfo.equals(toWrapperTypeInfo(v8Object)))
-        return false;
-
-    Range* native = V8Range::hasInstance(v8Object, isolate) ? V8Range::toImpl(v8Object) : 0;
-    if (!native)
-        return false;
-
-    *webRange = WebRange(native);
-    return true;
-}
-
-static bool getNodeImpl(NPObject* object, WebNode* webNode, v8::Isolate* isolate)
-{
-    if (!object)
-        return false;
-
-    V8NPObject* v8NPObject = npObjectToV8NPObject(object);
-    if (!v8NPObject)
-        return false;
-
-    v8::HandleScope handleScope(isolate);
-    v8::Local<v8::Object> v8Object = v8::Local<v8::Object>::New(isolate, v8NPObject->v8Object);
-    if (v8Object.IsEmpty())
-        return false;
-    Node* native = V8Node::hasInstance(v8Object, isolate) ? V8Node::toImpl(v8Object) : 0;
-    if (!native)
-        return false;
-
-    *webNode = WebNode(native);
-    return true;
-}
-
-static bool getElementImpl(NPObject* object, WebElement* webElement, v8::Isolate* isolate)
-{
-    if (!object)
-        return false;
-
-    V8NPObject* v8NPObject = npObjectToV8NPObject(object);
-    if (!v8NPObject)
-        return false;
-
-    v8::HandleScope handleScope(isolate);
-    v8::Local<v8::Object> v8Object = v8::Local<v8::Object>::New(isolate, v8NPObject->v8Object);
-    if (v8Object.IsEmpty())
-        return false;
-    Element* native = V8Element::hasInstance(v8Object, isolate) ? V8Element::toImpl(v8Object) : 0;
-    if (!native)
-        return false;
-
-    *webElement = WebElement(native);
-    return true;
-}
-
-static bool getArrayBufferImpl(NPObject* object, WebArrayBuffer* arrayBuffer, v8::Isolate* isolate)
-{
-    if (!object)
-        return false;
-
-    V8NPObject* v8NPObject = npObjectToV8NPObject(object);
-    if (!v8NPObject)
-        return false;
-
-    v8::HandleScope handleScope(isolate);
-    v8::Local<v8::Object> v8Object = v8::Local<v8::Object>::New(isolate, v8NPObject->v8Object);
-    if (v8Object.IsEmpty())
-        return false;
-    DOMArrayBuffer* impl = V8ArrayBuffer::hasInstance(v8Object, isolate) ? V8ArrayBuffer::toImpl(v8Object) : 0;
-    if (!impl)
-        return false;
-
-    *arrayBuffer = WebArrayBuffer(impl);
-    return true;
-}
-
-static bool getArrayBufferViewImpl(NPObject* object, WebArrayBufferView* arrayBufferView, v8::Isolate* isolate)
-{
-    if (!object)
-        return false;
-
-    V8NPObject* v8NPObject = npObjectToV8NPObject(object);
-    if (!v8NPObject)
-        return false;
-
-    v8::HandleScope handleScope(isolate);
-    v8::Local<v8::Object> v8Object = v8::Local<v8::Object>::New(isolate, v8NPObject->v8Object);
-    if (v8Object.IsEmpty())
-        return false;
-    DOMArrayBufferView* impl = V8ArrayBufferView::hasInstance(v8Object, isolate) ? V8ArrayBufferView::toImpl(v8Object) : 0;
-    if (!impl)
-        return false;
-
-    *arrayBufferView = WebArrayBufferView(impl);
-    return true;
-}
-
-static NPObject* makeIntArrayImpl(const WebVector<int>& data, v8::Isolate* isolate)
-{
-    v8::HandleScope handleScope(isolate);
-    v8::Local<v8::Array> result = v8::Array::New(isolate, data.size());
-    for (size_t i = 0; i < data.size(); ++i) {
-        if (!v8CallBoolean(result->Set(isolate->GetCurrentContext(), v8::Integer::New(isolate, i), v8::Number::New(isolate, data[i])))) {
-            result.Clear();
-            break;
-        }
-    }
-
-    LocalDOMWindow* window = currentDOMWindow(isolate);
-    return npCreateV8ScriptObject(isolate, 0, result, window);
-}
-
-static NPObject* makeStringArrayImpl(const WebVector<WebString>& data, v8::Isolate* isolate)
-{
-    v8::HandleScope handleScope(isolate);
-    v8::Local<v8::Array> result = v8::Array::New(isolate, data.size());
-    for (size_t i = 0; i < data.size(); ++i) {
-        if (!v8CallBoolean(result->Set(isolate->GetCurrentContext(), v8::Integer::New(isolate, i), v8String(isolate, data[i])))) {
-            result.Clear();
-            break;
-        }
-    }
-
-    LocalDOMWindow* window = currentDOMWindow(isolate);
-    return npCreateV8ScriptObject(isolate, 0, result, window);
-}
-
-bool WebBindings::getRange(NPObject* range, WebRange* webRange)
-{
-    return getRangeImpl(range, webRange, v8::Isolate::GetCurrent());
-}
-
-bool WebBindings::getArrayBuffer(NPObject* arrayBuffer, WebArrayBuffer* webArrayBuffer)
-{
-    return getArrayBufferImpl(arrayBuffer, webArrayBuffer, v8::Isolate::GetCurrent());
-}
-
-bool WebBindings::getArrayBufferView(NPObject* arrayBufferView, WebArrayBufferView* webArrayBufferView)
-{
-    return getArrayBufferViewImpl(arrayBufferView, webArrayBufferView, v8::Isolate::GetCurrent());
-}
-
-bool WebBindings::getNode(NPObject* node, WebNode* webNode)
-{
-    return getNodeImpl(node, webNode, v8::Isolate::GetCurrent());
-}
-
-bool WebBindings::getElement(NPObject* element, WebElement* webElement)
-{
-    return getElementImpl(element, webElement, v8::Isolate::GetCurrent());
-}
-
-NPObject* WebBindings::makeIntArray(const WebVector<int>& data)
-{
-    return makeIntArrayImpl(data, v8::Isolate::GetCurrent());
-}
-
-NPObject* WebBindings::makeStringArray(const WebVector<WebString>& data)
-{
-    return makeStringArrayImpl(data, v8::Isolate::GetCurrent());
-}
-
-void WebBindings::pushExceptionHandler(ExceptionHandler handler, void* data)
-{
-    blink::pushExceptionHandler(handler, data);
-}
-
-void WebBindings::popExceptionHandler()
-{
-    blink::popExceptionHandler();
-}
-
-void WebBindings::toNPVariant(v8::Local<v8::Value> object, NPObject* root, NPVariant* result)
-{
-    convertV8ObjectToNPVariant(v8::Isolate::GetCurrent(), object, root, result);
-}
-
-v8::Local<v8::Value> WebBindings::toV8Value(const NPVariant* variant)
-{
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    if (variant->type == NPVariantType_Object) {
-        NPObject* object = NPVARIANT_TO_OBJECT(*variant);
-        V8NPObject* v8Object = npObjectToV8NPObject(object);
-        if (!v8Object)
-            return v8::Undefined(isolate);
-        return convertNPVariantToV8Object(isolate, variant, v8Object->rootObject->frame()->script().windowScriptNPObject());
-    }
-    // Safe to pass 0 since we have checked the script object class to make sure the
-    // argument is a primitive v8 type.
-    return convertNPVariantToV8Object(isolate, variant, 0);
 }
 
 } // namespace blink

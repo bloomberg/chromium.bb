@@ -40,18 +40,8 @@ static void DestroyWebPluginAndDelegate(
   if (scriptable_object.get())
     scriptable_object->DeleteSoon();
 
-  if (delegate) {
-    // Save the object owner Id so we can unregister it as a valid owner
-    // after the instance has been destroyed.
-    NPP owner = delegate->GetPluginNPP();
-
-    // WebPlugin must outlive WebPluginDelegate.
+  if (delegate)
     delegate->PluginDestroyed();
-
-    // PluginDestroyed can call into script, so only unregister as an object
-    // owner after that has completed.
-    WebBindings::unregisterObjectOwner(owner);
-  }
 
   delete webplugin;
 }
@@ -194,9 +184,6 @@ void WebPluginDelegateStub::OnInit(const PluginMsg_Init_Params& params,
     webplugin_->set_delegate(delegate_);
     std::vector<std::string> arg_names = params.arg_names;
     std::vector<std::string> arg_values = params.arg_values;
-
-    // Register the plugin as a valid object owner.
-    WebBindings::registerObjectOwner(delegate_->GetPluginNPP());
 
     // Add an NPObject owner mapping for this instance, to support ownership
     // tracking in the renderer.
