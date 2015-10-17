@@ -388,7 +388,6 @@ void PaintController::commitNewDisplayItems(GraphicsLayer* graphicsLayer)
         checkNoRemainingCachedDisplayItems();
 #endif // ENABLE(ASSERT)
 
-
     // TODO(jbroman): When subsequence caching applies to SPv2, we'll need to
     // merge the paint chunks as well.
     m_currentPaintArtifact.displayItemList().swap(updatedList);

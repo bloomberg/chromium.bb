@@ -185,7 +185,7 @@ public:
     static_assert(TableCollapsedBorderBase >= TableCollapsedBorderUnalignedBase, "TableCollapsedBorder types overlap with other types");
     static_assert((TableCollapsedBorderBase & 0xf) == 0, "The lowest 4 bits of TableCollapsedBorderBase should be zero");
     // Bits or'ed onto TableCollapsedBorderBase to generate a real table collapsed border type.
-    enum TableCollspaedBorderSides {
+    enum TableCollapsedBorderSides {
         TableCollapsedBorderTop = 1 << 0,
         TableCollapsedBorderRight = 1 << 1,
         TableCollapsedBorderBottom = 1 << 2,

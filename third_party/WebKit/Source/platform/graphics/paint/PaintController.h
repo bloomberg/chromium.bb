@@ -105,7 +105,7 @@ public:
 
     // Must be called when a painting is finished. If passed, invalidations are recorded on the given
     // GraphicsLayer.
-    void commitNewDisplayItems(GraphicsLayer* = 0);
+    void commitNewDisplayItems(GraphicsLayer* = nullptr);
 
     // Returns the approximate memory usage, excluding memory likely to be
     // shared with the embedder after copying to WebPaintController.
