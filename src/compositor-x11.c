@@ -1701,7 +1701,8 @@ err_free:
 
 WL_EXPORT int
 backend_init(struct weston_compositor *compositor, int *argc, char *argv[],
-	     struct weston_config *config)
+	     struct weston_config *config,
+	     struct weston_backend_config *config_base)
 {
 	struct x11_backend *b;
 	int fullscreen = 0;

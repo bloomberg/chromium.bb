@@ -1269,7 +1269,8 @@ err_free_strings:
 
 WL_EXPORT int
 backend_init(struct weston_compositor *compositor, int *argc, char *argv[],
-	     struct weston_config *wconfig)
+	     struct weston_config *wconfig,
+	     struct weston_backend_config *config_base)
 {
 	struct rdp_backend *b;
 	struct rdp_backend_config config;

@@ -904,7 +904,8 @@ out_compositor:
 
 WL_EXPORT int
 backend_init(struct weston_compositor *compositor, int *argc, char *argv[],
-	     struct weston_config *config)
+	     struct weston_config *config,
+	     struct weston_backend_config *config_base)
 {
 	struct fbdev_backend *b;
 	/* TODO: Ideally, available frame buffers should be enumerated using

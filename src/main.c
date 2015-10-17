@@ -640,7 +640,8 @@ int main(int argc, char *argv[])
 	struct wl_event_loop *loop;
 	int (*backend_init)(struct weston_compositor *c,
 			    int *argc, char *argv[],
-			    struct weston_config *config);
+			    struct weston_config *config,
+			    struct weston_backend_config *config_base);
 	int i, fd;
 	char *backend = NULL;
 	char *shell = NULL;
@@ -739,7 +740,7 @@ int main(int argc, char *argv[])
 	if (weston_compositor_init_config(ec, config) < 0)
 		goto out;
 
-	if (backend_init(ec, &argc, argv, config) < 0) {
+	if (backend_init(ec, &argc, argv, config, NULL) < 0) {
 		weston_log("fatal: failed to create compositor backend\n");
 		goto out;
 	}

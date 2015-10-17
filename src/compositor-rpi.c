@@ -555,7 +555,8 @@ out_compositor:
 WL_EXPORT int
 backend_init(struct weston_compositor *compositor,
 	     int *argc, char *argv[],
-	     struct weston_config *config)
+	     struct weston_config *config,
+	     struct weston_backend_config *config_base)
 {
 	const char *transform = "normal";
 	struct rpi_backend *b;

@@ -2056,7 +2056,8 @@ wayland_backend_destroy(struct wayland_backend *b)
 
 WL_EXPORT int
 backend_init(struct weston_compositor *compositor, int *argc, char *argv[],
-	     struct weston_config *config)
+	     struct weston_config *config,
+	     struct weston_backend_config *config_base)
 {
 	struct wayland_backend *b;
 	struct wayland_output *output;
