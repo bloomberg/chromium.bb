@@ -199,13 +199,6 @@ void URLRequestContextFactory::InitializeSystemContextDependencies() {
 
   host_resolver_ = net::HostResolver::CreateDefaultResolver(NULL);
 
-  // TODO(lcwu): http://crbug.com/392352. For performance and security reasons,
-  // a persistent (on-disk) HttpServerProperties and ChannelIDService might be
-  // desirable in the future.
-  channel_id_service_.reset(
-      new net::ChannelIDService(new net::DefaultChannelIDStore(NULL),
-                                base::WorkerPool::GetTaskRunner(true)));
-
   cert_verifier_ = net::CertVerifier::CreateDefault();
 
   ssl_config_service_ = new net::SSLConfigServiceDefaults;
@@ -214,6 +207,9 @@ void URLRequestContextFactory::InitializeSystemContextDependencies() {
   http_auth_handler_factory_ =
       net::HttpAuthHandlerFactory::CreateDefault(host_resolver_.get());
 
+  // TODO(lcwu): http://crbug.com/392352. For performance reasons,
+  // a persistent (on-disk) HttpServerProperties might be desirable
+  // in the future.
   http_server_properties_.reset(new net::HttpServerPropertiesImpl);
 
   proxy_service_ = net::ProxyService::CreateUsingSystemProxyResolver(
