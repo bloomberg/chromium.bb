@@ -110,10 +110,6 @@ class CONTENT_EXPORT WebContentsDelegate {
   // Selects the specified contents, bringing its container to the front.
   virtual void ActivateContents(WebContents* contents) {}
 
-  // Deactivates the specified contents by deactivating its container and
-  // potentialy moving it to the back of the Z order.
-  virtual void DeactivateContents(WebContents* contents) {}
-
   // Notifies the delegate that this contents is starting or is done loading
   // some resource. The delegate should use this notification to represent
   // loading feedback. See WebContents::IsLoading()

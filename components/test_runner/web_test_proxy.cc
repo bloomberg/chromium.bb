@@ -1018,10 +1018,6 @@ void WebTestProxyBase::DidFocus() {
   delegate_->SetFocus(this, true);
 }
 
-void WebTestProxyBase::DidBlur() {
-  delegate_->SetFocus(this, false);
-}
-
 void WebTestProxyBase::SetToolTipText(const blink::WebString& text,
                                       blink::WebTextDirection direction) {
   test_interfaces_->GetTestRunner()->setToolTipText(text);

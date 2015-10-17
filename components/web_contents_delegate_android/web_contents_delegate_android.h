@@ -62,7 +62,6 @@ class WebContentsDelegateAndroid : public content::WebContentsDelegate {
                               content::InvalidateTypes changed_flags) override;
   void VisibleSSLStateChanged(const content::WebContents* source) override;
   void ActivateContents(content::WebContents* contents) override;
-  void DeactivateContents(content::WebContents* contents) override;
   void LoadingStateChanged(content::WebContents* source,
                            bool to_different_document) override;
   void LoadProgressChanged(content::WebContents* source,

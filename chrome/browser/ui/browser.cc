@@ -1526,10 +1526,6 @@ void Browser::ActivateContents(WebContents* contents) {
   window_->Activate();
 }
 
-void Browser::DeactivateContents(WebContents* contents) {
-  window_->Deactivate();
-}
-
 void Browser::LoadingStateChanged(WebContents* source,
     bool to_different_document) {
   window_->UpdateLoadingAnimations(tab_strip_model_->TabsAreLoading());

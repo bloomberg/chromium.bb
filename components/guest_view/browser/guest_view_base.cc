@@ -589,14 +589,6 @@ void GuestViewBase::ActivateContents(WebContents* web_contents) {
       embedder_web_contents());
 }
 
-void GuestViewBase::DeactivateContents(WebContents* web_contents) {
-  if (!attached() || !embedder_web_contents()->GetDelegate())
-    return;
-
-  embedder_web_contents()->GetDelegate()->DeactivateContents(
-      embedder_web_contents());
-}
-
 void GuestViewBase::ContentsMouseEvent(WebContents* source,
                                        const gfx::Point& location,
                                        bool motion) {

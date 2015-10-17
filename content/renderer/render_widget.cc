@@ -1530,9 +1530,6 @@ void RenderWidget::show(WebNavigationPolicy) {
 void RenderWidget::didFocus() {
 }
 
-void RenderWidget::didBlur() {
-}
-
 void RenderWidget::DoDeferredClose() {
   WillCloseLayerTreeView();
   Send(new ViewHostMsg_Close(routing_id_));

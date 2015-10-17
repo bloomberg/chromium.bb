@@ -59,7 +59,6 @@ class PanelHost : public content::WebContentsDelegate,
                       bool user_gesture,
                       bool* was_blocked) override;
   void ActivateContents(content::WebContents* contents) override;
-  void DeactivateContents(content::WebContents* contents) override;
   void LoadingStateChanged(content::WebContents* source,
                            bool to_different_document) override;
   void CloseContents(content::WebContents* source) override;

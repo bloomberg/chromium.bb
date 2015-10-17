@@ -1982,14 +1982,6 @@ void RenderViewImpl::didFocus() {
   }
 }
 
-void RenderViewImpl::didBlur() {
-  // TODO(jcivelli): see TODO above in didFocus().
-  if (WebUserGestureIndicator::isProcessingUserGesture() &&
-      !RenderThreadImpl::current()->layout_test_mode()) {
-    Send(new ViewHostMsg_Blur(routing_id_));
-  }
-}
-
 // We are supposed to get a single call to Show for a newly created RenderView
 // that was created via RenderViewImpl::CreateWebView.  So, we wait until this
 // point to dispatch the ShowView message.

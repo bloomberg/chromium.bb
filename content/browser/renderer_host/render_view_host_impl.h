@@ -346,7 +346,6 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
   bool IsFullscreenGranted() const override;
   blink::WebDisplayMode GetDisplayMode() const override;
   void OnFocus() override;
-  void OnBlur() override;
 
   // IPC message handlers.
   void OnShowView(int route_id,

@@ -150,7 +150,6 @@ class Shell : public WebContentsDelegate,
                            const base::string16& source_id) override;
   void RendererUnresponsive(WebContents* source) override;
   void ActivateContents(WebContents* contents) override;
-  void DeactivateContents(WebContents* contents) override;
   bool HandleContextMenu(const content::ContextMenuParams& params) override;
 
   static gfx::Size GetShellDefaultSize();

@@ -596,7 +596,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   void OnUpdateRect(const ViewHostMsg_UpdateRect_Params& params);
   void OnQueueSyntheticGesture(const SyntheticGesturePacket& gesture_packet);
   virtual void OnFocus();
-  virtual void OnBlur();
   void OnSetCursor(const WebCursor& cursor);
   void OnTextInputStateChanged(
       const ViewHostMsg_TextInputState_Params& params);

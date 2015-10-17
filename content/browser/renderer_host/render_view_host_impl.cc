@@ -1265,10 +1265,6 @@ void RenderViewHostImpl::OnFocus() {
   delegate_->Activate();
 }
 
-void RenderViewHostImpl::OnBlur() {
-  delegate_->Deactivate();
-}
-
 gfx::Rect RenderViewHostImpl::GetRootWindowResizerRect() const {
   return delegate_->GetRootWindowResizerRect();
 }

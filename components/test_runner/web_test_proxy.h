@@ -174,7 +174,6 @@ class TEST_RUNNER_EXPORT WebTestProxyBase {
   void RequestPointerUnlock();
   bool IsPointerLocked();
   void DidFocus();
-  void DidBlur();
   void SetToolTipText(const blink::WebString& text,
                       blink::WebTextDirection direction);
   void DidAddMessageToConsole(const blink::WebConsoleMessage& text,
@@ -357,10 +356,6 @@ class WebTestProxy : public Base, public WebTestProxyBase {
   virtual void didFocus() {
     WebTestProxyBase::DidFocus();
     Base::didFocus();
-  }
-  virtual void didBlur() {
-    WebTestProxyBase::DidBlur();
-    Base::didBlur();
   }
   virtual void setToolTipText(const blink::WebString& text,
                               blink::WebTextDirection hint) {

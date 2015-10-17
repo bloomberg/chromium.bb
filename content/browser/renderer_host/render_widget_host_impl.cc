@@ -454,7 +454,6 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
                                 OnSwapCompositorFrame(msg))
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateRect, OnUpdateRect)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Focus, OnFocus)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_Blur, OnBlur)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SetCursor, OnSetCursor)
     IPC_MESSAGE_HANDLER(ViewHostMsg_TextInputStateChanged,
                         OnTextInputStateChanged)
@@ -1683,11 +1682,6 @@ void RenderWidgetHostImpl::OnQueueSyntheticGesture(
 void RenderWidgetHostImpl::OnFocus() {
   // Only RenderViewHost can deal with that message.
   bad_message::ReceivedBadMessage(GetProcess(), bad_message::RWH_FOCUS);
-}
-
-void RenderWidgetHostImpl::OnBlur() {
-  // Only RenderViewHost can deal with that message.
-  bad_message::ReceivedBadMessage(GetProcess(), bad_message::RWH_BLUR);
 }
 
 void RenderWidgetHostImpl::OnSetCursor(const WebCursor& cursor) {

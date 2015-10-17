@@ -71,7 +71,6 @@ class CastWindowAndroid : public content::WebContentsDelegate,
                            int32 line_no,
                            const base::string16& source_id) override;
   void ActivateContents(content::WebContents* contents) override;
-  void DeactivateContents(content::WebContents* contents) override;
 
   // content::WebContentsObserver implementation:
   void RenderProcessGone(base::TerminationStatus status) override;

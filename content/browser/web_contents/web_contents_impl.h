@@ -478,7 +478,6 @@ class CONTENT_EXPORT WebContentsImpl
                         uint64 upload_position,
                         uint64 upload_size) override;
   void Activate() override;
-  void Deactivate() override;
   void LostCapture() override;
   void RunFileChooser(RenderViewHost* render_view_host,
                       const FileChooserParams& params) override;

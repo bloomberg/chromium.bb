@@ -150,11 +150,6 @@ void CastWindowAndroid::ActivateContents(content::WebContents* contents) {
   contents->GetRenderViewHost()->GetWidget()->Focus();
 }
 
-void CastWindowAndroid::DeactivateContents(content::WebContents* contents) {
-  DCHECK_EQ(contents, web_contents_.get());
-  contents->GetRenderViewHost()->GetWidget()->Blur();
-}
-
 void CastWindowAndroid::RenderProcessGone(base::TerminationStatus status) {
   LOG(ERROR) << "Render process gone: status=" << status;
   Destroy();

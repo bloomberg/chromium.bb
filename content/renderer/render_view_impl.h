@@ -322,7 +322,6 @@ class CONTENT_EXPORT RenderViewImpl
 
   // Most methods are handled by RenderWidget.
   void didFocus() override;
-  void didBlur() override;
   void show(blink::WebNavigationPolicy policy) override;
   bool requestPointerLock() override;
   void requestPointerUnlock() override;

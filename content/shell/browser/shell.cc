@@ -402,10 +402,6 @@ void Shell::ActivateContents(WebContents* contents) {
   contents->GetRenderViewHost()->GetWidget()->Focus();
 }
 
-void Shell::DeactivateContents(WebContents* contents) {
-  contents->GetRenderViewHost()->GetWidget()->Blur();
-}
-
 bool Shell::HandleContextMenu(const content::ContextMenuParams& params) {
   return PlatformHandleContextMenu(params);
 }

@@ -161,10 +161,9 @@ class CONTENT_EXPORT RenderViewHostDelegate {
                                 uint64 upload_position,
                                 uint64 upload_size) {}
 
-  // The page wants the hosting window to activate/deactivate itself (it
-  // called the JavaScript window.focus()/blur() method).
+  // The page wants the hosting window to activate itself (it called the
+  // JavaScript window.focus() method).
   virtual void Activate() {}
-  virtual void Deactivate() {}
 
   // Notification that the view has lost capture.
   virtual void LostCapture() {}

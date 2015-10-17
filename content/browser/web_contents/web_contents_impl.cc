@@ -1476,11 +1476,6 @@ void WebContentsImpl::Activate() {
     delegate_->ActivateContents(this);
 }
 
-void WebContentsImpl::Deactivate() {
-  if (delegate_)
-    delegate_->DeactivateContents(this);
-}
-
 void WebContentsImpl::LostCapture() {
   if (delegate_)
     delegate_->LostCapture();

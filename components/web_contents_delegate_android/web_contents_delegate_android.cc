@@ -169,11 +169,6 @@ void WebContentsDelegateAndroid::ActivateContents(WebContents* contents) {
   Java_WebContentsDelegateAndroid_activateContents(env, obj.obj());
 }
 
-void WebContentsDelegateAndroid::DeactivateContents(WebContents* contents) {
-  // On desktop the current window is deactivated here, bringing the next window
-  // to focus. Not implemented on Android.
-}
-
 void WebContentsDelegateAndroid::LoadingStateChanged(WebContents* source,
     bool to_different_document) {
   JNIEnv* env = AttachCurrentThread();
