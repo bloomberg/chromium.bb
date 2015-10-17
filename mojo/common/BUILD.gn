@@ -18,6 +18,8 @@ component("common_base") {
   sources = [
     "common_type_converters.cc",
     "common_type_converters.h",
+    "data_pipe_drainer.cc",
+    "data_pipe_drainer.h",
     "data_pipe_file_utils.cc",
     "data_pipe_utils.cc",
     "data_pipe_utils.h",
@@ -33,6 +35,7 @@ component("common_base") {
     "//base",
     "//base/third_party/dynamic_annotations",
     "//mojo/environment:chromium",
+    "//mojo/message_pump",
     "//third_party/mojo/src/mojo/public/c/system:for_component",
     "//third_party/mojo/src/mojo/public/cpp/bindings",
     "//third_party/mojo/src/mojo/public/cpp/environment",

@@ -3,6 +3,7 @@ include_rules = [
   "-mojo",
   "+mojo/application/public/cpp",
   "+mojo/common",
+  "+mojo/message_pump",
   "+third_party/mojo/src/mojo/public",
 ]
 
