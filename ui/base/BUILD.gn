@@ -810,7 +810,10 @@ test("ui_base_unittests") {
   }
 
   if (is_android) {
-    apk_deps = [ "//chrome:resources" ]
+    apk_deps = [
+      "//chrome:resources",
+      "//ui/android:ui_java",
+    ]
     isolate_file = "ui_base_unittests.isolate"
   }
 
