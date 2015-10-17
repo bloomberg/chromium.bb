@@ -94,6 +94,7 @@ private:
     LayoutRect selectionRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer) const override;
     bool canBeSelectionLeaf() const override { return true; }
 
+    LayoutUnit getWidthOfTextWithSuffix() const;
     void updateMargins();
     void updateContent();
 

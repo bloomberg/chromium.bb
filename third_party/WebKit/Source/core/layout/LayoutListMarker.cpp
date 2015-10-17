@@ -1121,6 +1121,20 @@ void LayoutListMarker::updateContent()
     }
 }
 
+LayoutUnit LayoutListMarker::getWidthOfTextWithSuffix() const
+{
+    if (m_text.isEmpty())
+        return 0;
+    const Font& font = style()->font();
+    LayoutUnit itemWidth = font.width(m_text);
+    // TODO(wkorman): Look into constructing a text run for both text and suffix
+    // and painting them together.
+    UChar suffix[2] = { listMarkerSuffix(style()->listStyleType(), m_listItem->value()), ' ' };
+    TextRun run = constructTextRun(font, suffix, 2, styleRef(), style()->direction());
+    LayoutUnit suffixSpaceWidth = font.width(run);
+    return itemWidth + suffixSpaceWidth;
+}
+
 void LayoutListMarker::computePreferredLogicalWidths()
 {
     ASSERT(preferredLogicalWidthsDirty());
@@ -1144,14 +1158,7 @@ void LayoutListMarker::computePreferredLogicalWidths()
         logicalWidth = (font.fontMetrics().ascent() * 2 / 3 + 1) / 2 + 2;
         break;
     case ListStyleCategory::Language:
-        if (m_text.isEmpty()) {
-            logicalWidth = 0;
-        } else {
-            LayoutUnit itemWidth = font.width(m_text);
-            UChar suffixSpace[2] = { listMarkerSuffix(style()->listStyleType(), m_listItem->value()), ' ' };
-            LayoutUnit suffixSpaceWidth = font.width(constructTextRun(font, suffixSpace, 2, styleRef(), style()->direction()));
-            logicalWidth = itemWidth + suffixSpaceWidth;
-        }
+        logicalWidth = getWidthOfTextWithSuffix();
         break;
     }
 
@@ -1190,13 +1197,13 @@ void LayoutListMarker::updateMargins()
             } else {
                 int offset = fontMetrics.ascent() * 2 / 3;
                 switch (listStyleCategory()) {
+                case ListStyleCategory::None:
+                    break;
                 case ListStyleCategory::Symbol:
                     marginStart = -offset - cMarkerPadding - 1;
                     break;
-                case ListStyleCategory::None:
-                    break;
                 default:
-                    marginStart = m_text.isEmpty() ? LayoutUnit() : -minPreferredLogicalWidth() - offset / 2;
+                    marginStart = m_text.isEmpty() ? LayoutUnit() : -minPreferredLogicalWidth();
                 }
             }
             marginEnd = -marginStart - minPreferredLogicalWidth();
@@ -1206,13 +1213,13 @@ void LayoutListMarker::updateMargins()
             } else {
                 int offset = fontMetrics.ascent() * 2 / 3;
                 switch (listStyleCategory()) {
+                case ListStyleCategory::None:
+                    break;
                 case ListStyleCategory::Symbol:
                     marginEnd = offset + cMarkerPadding + 1 - minPreferredLogicalWidth();
                     break;
-                case ListStyleCategory::None:
-                    break;
                 default:
-                    marginEnd = m_text.isEmpty() ? 0 : offset / 2;
+                    marginEnd = 0;
                 }
             }
             marginStart = -marginEnd - minPreferredLogicalWidth();
@@ -1328,16 +1335,11 @@ IntRect LayoutListMarker::getRelativeMarkerRect() const
         int ascent = fontMetrics.ascent();
         int bulletWidth = (ascent * 2 / 3 + 1) / 2;
         relativeRect = IntRect(1, 3 * (ascent - ascent * 2 / 3) / 2, bulletWidth, bulletWidth);
+        }
         break;
-    }
     case ListStyleCategory::Language:
-        if (m_text.isEmpty())
-            return IntRect();
-        const Font& font = style()->font();
-        int itemWidth = font.width(m_text);
-        UChar suffixSpace[2] = { listMarkerSuffix(style()->listStyleType(), m_listItem->value()), ' ' };
-        int suffixSpaceWidth = font.width(constructTextRun(font, suffixSpace, 2, styleRef(), style()->direction()));
-        relativeRect = IntRect(0, 0, itemWidth + suffixSpaceWidth, font.fontMetrics().height());
+        relativeRect = IntRect(0, 0, getWidthOfTextWithSuffix(), style()->font().fontMetrics().height());
+        break;
     }
 
     if (!style()->isHorizontalWritingMode()) {
