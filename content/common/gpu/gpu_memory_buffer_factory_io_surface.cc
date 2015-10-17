@@ -117,19 +117,25 @@ IOSurfaceRef GpuMemoryBufferFactoryIOSurface::CreateIOSurface(
   base::ScopedCFTypeRef<CFMutableArrayRef> planes(CFArrayCreateMutable(
       kCFAllocatorDefault, num_planes, &kCFTypeArrayCallBacks));
 
-  for (size_t plane = 0; plane < num_planes; ++plane) {
-    size_t factor = gfx::SubsamplingFactorForBufferFormat(format, plane);
+  // Don't specify plane information unless there are indeed multiple planes
+  // because DisplayLink drivers do not support this.
+  // http://crbug.com/527556
+  if (num_planes > 1) {
+    for (size_t plane = 0; plane < num_planes; ++plane) {
+      size_t factor = gfx::SubsamplingFactorForBufferFormat(format, plane);
 
-    base::ScopedCFTypeRef<CFMutableDictionaryRef> plane_info(
-        CFDictionaryCreateMutable(kCFAllocatorDefault, 0,
-                                  &kCFTypeDictionaryKeyCallBacks,
-                                  &kCFTypeDictionaryValueCallBacks));
-    AddIntegerValue(plane_info, kIOSurfacePlaneWidth, size.width() / factor);
-    AddIntegerValue(plane_info, kIOSurfacePlaneHeight, size.height() / factor);
-    AddIntegerValue(plane_info, kIOSurfacePlaneBytesPerElement,
-                    BytesPerElement(format, plane));
+      base::ScopedCFTypeRef<CFMutableDictionaryRef> plane_info(
+          CFDictionaryCreateMutable(kCFAllocatorDefault, 0,
+                                    &kCFTypeDictionaryKeyCallBacks,
+                                    &kCFTypeDictionaryValueCallBacks));
+      AddIntegerValue(plane_info, kIOSurfacePlaneWidth, size.width() / factor);
+      AddIntegerValue(plane_info, kIOSurfacePlaneHeight,
+                      size.height() / factor);
+      AddIntegerValue(plane_info, kIOSurfacePlaneBytesPerElement,
+                      BytesPerElement(format, plane));
 
-    CFArrayAppendValue(planes, plane_info);
+      CFArrayAppendValue(planes, plane_info);
+    }
   }
 
   base::ScopedCFTypeRef<CFMutableDictionaryRef> properties(
@@ -139,7 +145,12 @@ IOSurfaceRef GpuMemoryBufferFactoryIOSurface::CreateIOSurface(
   AddIntegerValue(properties, kIOSurfaceWidth, size.width());
   AddIntegerValue(properties, kIOSurfaceHeight, size.height());
   AddIntegerValue(properties, kIOSurfacePixelFormat, PixelFormat(format));
-  CFDictionaryAddValue(properties, kIOSurfacePlaneInfo, planes);
+  if (num_planes > 1) {
+    CFDictionaryAddValue(properties, kIOSurfacePlaneInfo, planes);
+  } else {
+    AddIntegerValue(properties, kIOSurfaceBytesPerElement,
+                    BytesPerElement(format, 0));
+  }
 
   return IOSurfaceCreate(properties);
 }
