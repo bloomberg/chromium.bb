@@ -7,6 +7,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "cc/base/cc_export.h"
+#include "cc/input/top_controls_state.h"
 
 namespace cc {
 
@@ -20,6 +21,9 @@ class CC_EXPORT ProxyImpl {
  public:
   // Callback for impl side commands received from the channel.
   virtual void SetThrottleFrameProductionOnImpl(bool throttle) = 0;
+  virtual void UpdateTopControlsStateOnImpl(TopControlsState constraints,
+                                            TopControlsState current,
+                                            bool animate) = 0;
 
   // TODO(khushalsagar): Rename as GetWeakPtr() once ThreadProxy is split.
   virtual base::WeakPtr<ProxyImpl> GetImplWeakPtr() = 0;

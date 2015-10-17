@@ -59,6 +59,9 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   bool MainFrameWillHappenForTesting() override;
   void SetChildrenNeedBeginFrames(bool children_need_begin_frames) override;
   void SetAuthoritativeVSyncInterval(const base::TimeDelta& interval) override;
+  void UpdateTopControlsState(TopControlsState constraints,
+                              TopControlsState current,
+                              bool animate) override;
 
   // SchedulerClient implementation
   void WillBeginImplFrame(const BeginFrameArgs& args) override;

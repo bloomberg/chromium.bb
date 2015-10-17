@@ -15,6 +15,7 @@
 #include "cc/debug/benchmark_instrumentation.h"
 #include "cc/debug/devtools_instrumentation.h"
 #include "cc/input/input_handler.h"
+#include "cc/input/top_controls_manager.h"
 #include "cc/output/context_provider.h"
 #include "cc/output/output_surface.h"
 #include "cc/output/swap_promise.h"
@@ -1225,6 +1226,21 @@ void ThreadProxy::DidCompletePageScaleAnimationOnImplThread() {
 void ThreadProxy::OnDrawForOutputSurface() {
   DCHECK(IsImplThread());
   impl().scheduler->OnDrawForOutputSurface();
+}
+
+void ThreadProxy::UpdateTopControlsState(TopControlsState constraints,
+                                         TopControlsState current,
+                                         bool animate) {
+  main().channel_main->UpdateTopControlsStateOnImpl(constraints, current,
+                                                    animate);
+}
+
+void ThreadProxy::UpdateTopControlsStateOnImpl(TopControlsState constraints,
+                                               TopControlsState current,
+                                               bool animate) {
+  DCHECK(IsImplThread());
+  impl().layer_tree_host_impl->top_controls_manager()->UpdateTopControlsState(
+      constraints, current, animate);
 }
 
 void ThreadProxy::PostFrameTimingEventsOnImplThread(

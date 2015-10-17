@@ -29,7 +29,6 @@
 #include "cc/debug/rendering_stats_instrumentation.h"
 #include "cc/input/layer_selection_bound.h"
 #include "cc/input/page_scale_animation.h"
-#include "cc/input/top_controls_manager.h"
 #include "cc/layers/heads_up_display_layer.h"
 #include "cc/layers/heads_up_display_layer_impl.h"
 #include "cc/layers/layer.h"
@@ -429,8 +428,6 @@ scoped_ptr<LayerTreeHostImpl> LayerTreeHost::CreateLayerTreeHostImpl(
   shared_bitmap_manager_ = NULL;
   gpu_memory_buffer_manager_ = NULL;
   task_graph_runner_ = NULL;
-  top_controls_manager_weak_ptr_ =
-      host_impl->top_controls_manager()->AsWeakPtr();
   input_handler_weak_ptr_ = host_impl->AsWeakPtr();
   return host_impl.Pass();
 }
@@ -877,13 +874,8 @@ void LayerTreeHost::UpdateTopControlsState(TopControlsState constraints,
                                            TopControlsState current,
                                            bool animate) {
   // Top controls are only used in threaded mode.
-  proxy_->ImplThreadTaskRunner()->PostTask(
-      FROM_HERE,
-      base::Bind(&TopControlsManager::UpdateTopControlsState,
-                 top_controls_manager_weak_ptr_,
-                 constraints,
-                 current,
-                 animate));
+  DCHECK(proxy_->HasImplThread());
+  proxy_->UpdateTopControlsState(constraints, current, animate);
 }
 
 void LayerTreeHost::AnimateLayers(base::TimeTicks monotonic_time) {

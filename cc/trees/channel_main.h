@@ -6,6 +6,7 @@
 #define CC_TREES_CHANNEL_MAIN_H_
 
 #include "cc/base/cc_export.h"
+#include "cc/input/top_controls_state.h"
 
 namespace cc {
 
@@ -23,6 +24,9 @@ class CC_EXPORT ChannelMain {
  public:
   // Interface for commands sent to the ProxyImpl
   virtual void SetThrottleFrameProductionOnImpl(bool throttle) = 0;
+  virtual void UpdateTopControlsStateOnImpl(TopControlsState constraints,
+                                            TopControlsState current,
+                                            bool animate) = 0;
 
   virtual ~ChannelMain() {}
 };

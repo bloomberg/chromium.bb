@@ -434,7 +434,6 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   scoped_refptr<HeadsUpDisplayLayer> hud_layer_;
 
   base::WeakPtr<InputHandler> input_handler_weak_ptr_;
-  base::WeakPtr<TopControlsManager> top_controls_manager_weak_ptr_;
 
   const LayerTreeSettings settings_;
   LayerTreeDebugState debug_state_;

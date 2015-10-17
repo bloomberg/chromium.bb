@@ -15,6 +15,7 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "cc/base/cc_export.h"
+#include "cc/input/top_controls_state.h"
 
 namespace base {
 namespace trace_event {
@@ -97,6 +98,10 @@ class CC_EXPORT Proxy {
 
   virtual void SetAuthoritativeVSyncInterval(
       const base::TimeDelta& interval) = 0;
+
+  virtual void UpdateTopControlsState(TopControlsState constraints,
+                                      TopControlsState current,
+                                      bool animate) = 0;
 
   // Testing hooks
   virtual bool MainFrameWillHappenForTesting() = 0;

@@ -33,6 +33,15 @@ void ThreadedChannel::SetThrottleFrameProductionOnImpl(bool throttle) {
                             proxy_impl_->GetImplWeakPtr(), throttle));
 }
 
+void ThreadedChannel::UpdateTopControlsStateOnImpl(TopControlsState constraints,
+                                                   TopControlsState current,
+                                                   bool animate) {
+  ImplThreadTaskRunner()->PostTask(
+      FROM_HERE,
+      base::Bind(&ProxyImpl::UpdateTopControlsStateOnImpl,
+                 proxy_impl_->GetImplWeakPtr(), constraints, current, animate));
+}
+
 void ThreadedChannel::DidCompleteSwapBuffers() {
   MainThreadTaskRunner()->PostTask(
       FROM_HERE, base::Bind(&ProxyMain::DidCompleteSwapBuffers,

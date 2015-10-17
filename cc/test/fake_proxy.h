@@ -46,6 +46,9 @@ class FakeProxy : public Proxy {
   void SetChildrenNeedBeginFrames(bool children_need_begin_frames) override {}
   void SetAuthoritativeVSyncInterval(const base::TimeDelta& interval) override {
   }
+  void UpdateTopControlsState(TopControlsState constraints,
+                              TopControlsState current,
+                              bool animate) override {}
 
   virtual RendererCapabilities& GetRendererCapabilities();
 

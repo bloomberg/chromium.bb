@@ -191,6 +191,9 @@ class CC_EXPORT ThreadProxy : public Proxy,
   void SetChildrenNeedBeginFrames(bool children_need_begin_frames) override;
   void SetAuthoritativeVSyncInterval(const base::TimeDelta& interval) override;
   void ReleaseOutputSurface() override;
+  void UpdateTopControlsState(TopControlsState constraints,
+                              TopControlsState current,
+                              bool animate) override;
 
   // LayerTreeHostImplClient implementation
   void UpdateRendererCapabilitiesOnImplThread() override;
@@ -253,6 +256,9 @@ class CC_EXPORT ThreadProxy : public Proxy,
   // ProxyImpl implementation
   base::WeakPtr<ProxyImpl> GetImplWeakPtr() override;
   void SetThrottleFrameProductionOnImpl(bool throttle) override;
+  void UpdateTopControlsStateOnImpl(TopControlsState constraints,
+                                    TopControlsState current,
+                                    bool animate) override;
 
  protected:
   ThreadProxy(

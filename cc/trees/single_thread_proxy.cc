@@ -880,6 +880,12 @@ void SingleThreadProxy::ScheduledActionInvalidateOutputSurface() {
   NOTREACHED();
 }
 
+void SingleThreadProxy::UpdateTopControlsState(TopControlsState constraints,
+                                               TopControlsState current,
+                                               bool animate) {
+  NOTREACHED() << "Top Controls are used only in threaded mode";
+}
+
 void SingleThreadProxy::DidFinishImplFrame() {
   layer_tree_host_impl_->DidFinishImplFrame();
 #if DCHECK_IS_ON()
