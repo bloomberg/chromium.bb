@@ -28,11 +28,11 @@ void SVGImagePainter::paint(const PaintInfo& paintInfo)
         return;
 
     FloatRect boundingBox = m_layoutSVGImage.paintInvalidationRectInLocalCoordinates();
-    if (!paintInfo.intersectsCullRect(m_layoutSVGImage.localToParentTransform(), boundingBox))
+    if (!paintInfo.cullRect().intersectsCullRect(m_layoutSVGImage.localToParentTransform(), boundingBox))
         return;
 
     PaintInfo paintInfoBeforeFiltering(paintInfo);
-    // Images cannot have children so do not call updateCullRectForSVGTransform.
+    // Images cannot have children so do not call updateCullRect.
     TransformRecorder transformRecorder(*paintInfoBeforeFiltering.context, m_layoutSVGImage, m_layoutSVGImage.localToParentTransform());
     {
         SVGPaintContext paintContext(m_layoutSVGImage, paintInfoBeforeFiltering);

@@ -716,11 +716,11 @@ void FrameSelection::invalidateCaretRect()
     m_previousCaretVisibility = caretVisibility();
 }
 
-void FrameSelection::paintCaret(GraphicsContext* context, const LayoutPoint& paintOffset, const LayoutRect& clipRect)
+void FrameSelection::paintCaret(GraphicsContext* context, const LayoutPoint& paintOffset)
 {
     if (selection().isCaret() && m_shouldPaintCaret) {
         updateCaretRect(PositionWithAffinity(selection().start(), selection().affinity()));
-        CaretBase::paintCaret(selection().start().anchorNode(), context, paintOffset, clipRect);
+        CaretBase::paintCaret(selection().start().anchorNode(), context, paintOffset);
     }
 }
 

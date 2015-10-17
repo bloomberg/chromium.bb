@@ -13,7 +13,11 @@
 #include "core/frame/FrameView.h"
 #include "core/html/HTMLBodyElement.h"
 #include "core/html/HTMLDocument.h"
+#include "core/layout/LayoutView.h"
+#include "core/paint/PaintInfo.h"
 #include "core/testing/DummyPageHolder.h"
+#include "platform/graphics/paint/DrawingRecorder.h"
+#include "platform/graphics/paint/PaintController.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
@@ -125,7 +129,10 @@ TEST_F(FrameSelectionTest, PaintCaretShouldNotLayout)
         frameRect.setHeight(frameRect.height() + 1);
         dummyPageHolder().frameView().setFrameRect(frameRect);
     }
-    selection().paintCaret(nullptr, LayoutPoint(), LayoutRect());
+    OwnPtr<PaintController> paintController = PaintController::create();
+    GraphicsContext context(*paintController);
+    DrawingRecorder drawingRecorder(context, *dummyPageHolder().frameView().layoutView(), DisplayItem::Caret, LayoutRect::infiniteIntRect());
+    selection().paintCaret(&context, LayoutPoint());
     EXPECT_EQ(startCount, layoutCount());
 }
 

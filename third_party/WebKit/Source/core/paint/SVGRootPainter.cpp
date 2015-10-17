@@ -55,7 +55,7 @@ void SVGRootPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintO
     // Transform from our paint container's coordinate system to our local coords.
     IntPoint adjustedPaintOffset = roundedIntPoint(paintOffset);
     AffineTransform paintOffsetToBorderBox = AffineTransform::translation(adjustedPaintOffset.x(), adjustedPaintOffset.y()) * m_layoutSVGRoot.localToBorderBoxTransform();
-    paintInfoBeforeFiltering.updateCullRectForSVGTransform(paintOffsetToBorderBox);
+    paintInfoBeforeFiltering.updateCullRect(paintOffsetToBorderBox);
     TransformRecorder transformRecorder(*paintInfoBeforeFiltering.context, m_layoutSVGRoot, paintOffsetToBorderBox);
 
     SVGPaintContext paintContext(m_layoutSVGRoot, paintInfoBeforeFiltering);

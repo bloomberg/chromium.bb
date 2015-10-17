@@ -30,6 +30,8 @@
 
 namespace blink {
 
+class CullRect;
+
 class DragCaretController final : public NoBaseWillBeGarbageCollectedFinalized<DragCaretController>, private CaretBase {
     WTF_MAKE_NONCOPYABLE(DragCaretController);
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(DragCaretController);
@@ -37,7 +39,7 @@ public:
     static PassOwnPtrWillBeRawPtr<DragCaretController> create();
 
     LayoutBlock* caretLayoutObject() const;
-    void paintDragCaret(LocalFrame*, GraphicsContext*, const LayoutPoint&, const LayoutRect& clipRect) const;
+    void paintDragCaret(LocalFrame*, GraphicsContext*, const LayoutPoint&) const;
 
     bool isContentEditable() const;
     bool isContentRichlyEditable() const;

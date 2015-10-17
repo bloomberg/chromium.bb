@@ -43,6 +43,7 @@
 namespace blink {
 
 class CharacterData;
+class CullRect;
 class LocalFrame;
 class GranularityStrategy;
 class GraphicsContext;
@@ -189,7 +190,7 @@ public:
     void setCaretRectNeedsUpdate();
     void scheduleVisualUpdate() const;
     void invalidateCaretRect();
-    void paintCaret(GraphicsContext*, const LayoutPoint&, const LayoutRect& clipRect);
+    void paintCaret(GraphicsContext*, const LayoutPoint&);
     bool ShouldPaintCaretForTesting() const { return m_shouldPaintCaret; }
 
     // Used to suspend caret blinking while the mouse is down.

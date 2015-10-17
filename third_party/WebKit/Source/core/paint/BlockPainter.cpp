@@ -74,7 +74,7 @@ void BlockPainter::paintOverflowControlsIfNeeded(const PaintInfo& paintInfo, con
 {
     PaintPhase phase = paintInfo.phase;
     if (m_layoutBlock.hasOverflowClip() && m_layoutBlock.style()->visibility() == VISIBLE && (phase == PaintPhaseBlockBackground || phase == PaintPhaseChildBlockBackground) && paintInfo.shouldPaintWithinRoot(&m_layoutBlock) && !paintInfo.paintRootBackgroundOnly()) {
-        ScrollableAreaPainter(*m_layoutBlock.layer()->scrollableArea()).paintOverflowControls(paintInfo.context, roundedIntPoint(paintOffset), paintInfo.rect, false /* paintingOverlayControls */);
+        ScrollableAreaPainter(*m_layoutBlock.layer()->scrollableArea()).paintOverflowControls(paintInfo.context, roundedIntPoint(paintOffset), paintInfo.cullRect().m_rect, false /* paintingOverlayControls */);
     }
 }
 
@@ -184,7 +184,9 @@ void BlockPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pa
             if (m_layoutBlock.layer()->scrollsOverflow() || !scrollOffset.isZero()) {
                 scrollRecorder.emplace(*paintInfo.context, m_layoutBlock, paintPhase, scrollOffset);
                 scrolledPaintInfo.emplace(paintInfo);
-                scrolledPaintInfo->rect.move(scrollOffset);
+                AffineTransform transform;
+                transform.translate(-scrollOffset.width(), -scrollOffset.height());
+                scrolledPaintInfo->updateCullRect(transform);
             }
         }
 
@@ -222,10 +224,10 @@ void BlockPainter::paintCarets(const PaintInfo& paintInfo, const LayoutPoint& pa
     LocalFrame* frame = m_layoutBlock.frame();
 
     if (m_layoutBlock.hasCursorCaret())
-        frame->selection().paintCaret(paintInfo.context, paintOffset, LayoutRect(paintInfo.rect));
+        frame->selection().paintCaret(paintInfo.context, paintOffset);
 
     if (m_layoutBlock.hasDragCaret())
-        frame->page()->dragCaretController().paintDragCaret(frame, paintInfo.context, paintOffset, LayoutRect(paintInfo.rect));
+        frame->page()->dragCaretController().paintDragCaret(frame, paintInfo.context, paintOffset);
 }
 
 bool BlockPainter::intersectsPaintRect(const PaintInfo& paintInfo, const LayoutPoint& paintOffset) const
@@ -237,7 +239,7 @@ bool BlockPainter::intersectsPaintRect(const PaintInfo& paintInfo, const LayoutP
     }
     m_layoutBlock.flipForWritingMode(overflowRect);
     overflowRect.moveBy(paintOffset + m_layoutBlock.location());
-    return paintInfo.intersectsCullRect(overflowRect);
+    return paintInfo.cullRect().intersectsCullRect(overflowRect);
 }
 
 void BlockPainter::paintContents(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)

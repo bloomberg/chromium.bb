@@ -128,7 +128,7 @@ bool LayoutReplaced::shouldPaint(const PaintInfo& paintInfo, const LayoutPoint& 
     paintRect.unite(localSelectionRect());
     paintRect.moveBy(paintOffset + location());
 
-    if (!paintInfo.intersectsCullRect(paintRect))
+    if (!paintInfo.cullRect().intersectsCullRect(paintRect))
         return false;
 
     return true;

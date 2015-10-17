@@ -28,7 +28,7 @@ void DetailsMarkerPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& 
     LayoutRect overflowRect(m_layoutDetailsMarker.visualOverflowRect());
     overflowRect.moveBy(boxOrigin);
 
-    if (!paintInfo.intersectsCullRect(overflowRect))
+    if (!paintInfo.cullRect().intersectsCullRect(overflowRect))
         return;
 
     LayoutObjectDrawingRecorder layoutDrawingRecorder(*paintInfo.context, m_layoutDetailsMarker, paintInfo.phase, overflowRect, paintOffset);

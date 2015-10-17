@@ -22,7 +22,7 @@ void SVGForeignObjectPainter::paint(const PaintInfo& paintInfo)
         return;
 
     PaintInfo paintInfoBeforeFiltering(paintInfo);
-    paintInfoBeforeFiltering.updateCullRectForSVGTransform(m_layoutSVGForeignObject.localTransform());
+    paintInfoBeforeFiltering.updateCullRect(m_layoutSVGForeignObject.localTransform());
     TransformRecorder transformRecorder(*paintInfoBeforeFiltering.context, m_layoutSVGForeignObject, m_layoutSVGForeignObject.localTransform());
 
     Optional<FloatClipRecorder> clipRecorder;

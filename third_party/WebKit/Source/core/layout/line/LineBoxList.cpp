@@ -147,7 +147,7 @@ void LineBoxList::dirtyLineBoxes()
         curr->dirtyLineBoxes();
 }
 
-bool LineBoxList::rangeIntersectsRect(LineLayoutBoxModel layoutObject, LayoutUnit logicalTop, LayoutUnit logicalBottom, const LayoutRect& rect, const LayoutPoint& offset) const
+bool LineBoxList::rangeIntersectsRect(LineLayoutBoxModel layoutObject, LayoutUnit logicalTop, LayoutUnit logicalBottom, const CullRect& cullRect, const LayoutPoint& offset) const
 {
     LineLayoutBox block;
     if (layoutObject.isBox())
@@ -161,18 +161,14 @@ bool LineBoxList::rangeIntersectsRect(LineLayoutBoxModel layoutObject, LayoutUni
 
     if (layoutObject.style()->isHorizontalWritingMode()) {
         physicalStart += offset.y();
-        if (physicalStart >= rect.maxY() || physicalStart + physicalExtent <= rect.y())
-            return false;
+        return cullRect.intersectsVerticalRange(physicalStart, physicalStart + physicalExtent);
     } else {
         physicalStart += offset.x();
-        if (physicalStart >= rect.maxX() || physicalStart + physicalExtent <= rect.x())
-            return false;
+        return cullRect.intersectsHorizontalRange(physicalStart, physicalStart + physicalExtent);
     }
-
-    return true;
 }
 
-bool LineBoxList::anyLineIntersectsRect(LineLayoutBoxModel layoutObject, const LayoutRect& rect, const LayoutPoint& offset) const
+bool LineBoxList::anyLineIntersectsRect(LineLayoutBoxModel layoutObject, const CullRect& cullRect, const LayoutPoint& offset) const
 {
     // We can check the first box and last box and avoid painting/hit testing if we don't
     // intersect.  This is a quick short-circuit that we can take to avoid walking any lines.
@@ -183,16 +179,16 @@ bool LineBoxList::anyLineIntersectsRect(LineLayoutBoxModel layoutObject, const L
     LayoutUnit firstLineTop = firstLineBox()->logicalTopVisualOverflow(firstRootBox.lineTop());
     LayoutUnit lastLineBottom = lastLineBox()->logicalBottomVisualOverflow(lastRootBox.lineBottom());
 
-    return rangeIntersectsRect(layoutObject, firstLineTop, lastLineBottom, rect, offset);
+    return rangeIntersectsRect(layoutObject, firstLineTop, lastLineBottom, cullRect, offset);
 }
 
-bool LineBoxList::lineIntersectsDirtyRect(LineLayoutBoxModel layoutObject, InlineFlowBox* box, const PaintInfo& paintInfo, const LayoutPoint& offset) const
+bool LineBoxList::lineIntersectsDirtyRect(LineLayoutBoxModel layoutObject, InlineFlowBox* box, const CullRect& cullRect, const LayoutPoint& offset) const
 {
     RootInlineBox& root = box->root();
     LayoutUnit logicalTop = std::min<LayoutUnit>(box->logicalTopVisualOverflow(root.lineTop()), root.selectionTop());
     LayoutUnit logicalBottom = box->logicalBottomVisualOverflow(root.lineBottom());
 
-    return rangeIntersectsRect(layoutObject, logicalTop, logicalBottom, LayoutRect(paintInfo.rect), offset);
+    return rangeIntersectsRect(layoutObject, logicalTop, logicalBottom, cullRect, offset);
 }
 
 bool LineBoxList::hitTest(LineLayoutBoxModel layoutObject, HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction hitTestAction) const
@@ -207,11 +203,12 @@ bool LineBoxList::hitTest(LineLayoutBoxModel layoutObject, HitTestResult& result
         return false;
 
     LayoutPoint point = locationInContainer.point();
-    LayoutRect rect(firstLineBox()->isHorizontal() ?
+
+    CullRect cullRect(firstLineBox()->isHorizontal() ?
         IntRect(point.x(), point.y() - locationInContainer.topPadding(), 1, locationInContainer.topPadding() + locationInContainer.bottomPadding() + 1) :
         IntRect(point.x() - locationInContainer.leftPadding(), point.y(), locationInContainer.rightPadding() + locationInContainer.leftPadding() + 1, 1));
 
-    if (!anyLineIntersectsRect(layoutObject, rect, accumulatedOffset))
+    if (!anyLineIntersectsRect(layoutObject, cullRect, accumulatedOffset))
         return false;
 
     // See if our root lines contain the point.  If so, then we hit test
@@ -219,7 +216,7 @@ bool LineBoxList::hitTest(LineLayoutBoxModel layoutObject, HitTestResult& result
     // based off positions of our first line box or our last line box.
     for (InlineFlowBox* curr = lastLineBox(); curr; curr = curr->prevLineBox()) {
         RootInlineBox& root = curr->root();
-        if (rangeIntersectsRect(layoutObject, curr->logicalTopVisualOverflow(root.lineTop()), curr->logicalBottomVisualOverflow(root.lineBottom()), rect, accumulatedOffset)) {
+        if (rangeIntersectsRect(layoutObject, curr->logicalTopVisualOverflow(root.lineTop()), curr->logicalBottomVisualOverflow(root.lineBottom()), cullRect, accumulatedOffset)) {
             bool inside = curr->nodeAtPoint(result, locationInContainer, accumulatedOffset, root.lineTop(), root.lineBottom());
             if (inside) {
                 layoutObject.updateHitTestResult(result, locationInContainer.point() - toLayoutSize(accumulatedOffset));

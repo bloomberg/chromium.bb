@@ -65,8 +65,9 @@ void InlineTextBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& 
     LayoutUnit logicalStart = logicalVisualOverflow.x() + (m_inlineTextBox.isHorizontal() ? paintOffset.x() : paintOffset.y());
     LayoutUnit logicalExtent = logicalVisualOverflow.width();
 
-    LayoutUnit paintEnd = m_inlineTextBox.isHorizontal() ? paintInfo.rect.maxX() : paintInfo.rect.maxY();
-    LayoutUnit paintStart = m_inlineTextBox.isHorizontal() ? paintInfo.rect.x() : paintInfo.rect.y();
+    IntRect cullRect = paintInfo.cullRect().m_rect;
+    LayoutUnit paintEnd = m_inlineTextBox.isHorizontal() ? cullRect.maxX() : cullRect.maxY();
+    LayoutUnit paintStart = m_inlineTextBox.isHorizontal() ? cullRect.x() : cullRect.y();
 
     // We round the y-axis to ensure consistent line heights.
     LayoutPoint adjustedPaintOffset = LayoutPoint(paintOffset.x(), paintOffset.y().round());

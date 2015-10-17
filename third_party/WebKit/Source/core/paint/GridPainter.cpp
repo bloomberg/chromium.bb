@@ -42,7 +42,7 @@ void GridPainter::paintChildren(const PaintInfo& paintInfo, const LayoutPoint& p
 {
     ASSERT(!m_layoutGrid.needsLayout());
 
-    LayoutRect localPaintInvalidationRect = LayoutRect(paintInfo.rect);
+    LayoutRect localPaintInvalidationRect = LayoutRect(paintInfo.cullRect().m_rect);
     localPaintInvalidationRect.moveBy(-paintOffset);
 
     GridSpan dirtiedColumns = dirtiedGridAreas(m_layoutGrid.columnPositions(), localPaintInvalidationRect.x(), localPaintInvalidationRect.maxX());

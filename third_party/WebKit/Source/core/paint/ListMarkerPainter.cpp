@@ -60,7 +60,7 @@ void ListMarkerPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& pai
     overflowRect.moveBy(boxOrigin);
 
     IntRect pixelSnappedOverflowRect = pixelSnappedIntRect(overflowRect);
-    if (!paintInfo.intersectsCullRect(overflowRect))
+    if (!paintInfo.cullRect().intersectsCullRect(overflowRect))
         return;
 
     LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_layoutListMarker, paintInfo.phase, pixelSnappedOverflowRect, paintOffset);

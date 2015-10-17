@@ -9,6 +9,7 @@
 
 namespace blink {
 
+class CullRect;
 class GraphicsContext;
 class IntPoint;
 class IntRect;
@@ -21,7 +22,7 @@ public:
     explicit ScrollableAreaPainter(PaintLayerScrollableArea& paintLayerScrollableArea) : m_scrollableArea(&paintLayerScrollableArea) { }
 
     void paintResizer(GraphicsContext*, const IntPoint& paintOffset, const IntRect& damageRect);
-    void paintOverflowControls(GraphicsContext*, const IntPoint& paintOffset, const IntRect& damageRect, bool paintingOverlayControls);
+    void paintOverflowControls(GraphicsContext*, const IntPoint& paintOffset, const CullRect&, bool paintingOverlayControls);
     void paintScrollCorner(GraphicsContext*, const IntPoint&, const IntRect& damageRect);
 
 private:

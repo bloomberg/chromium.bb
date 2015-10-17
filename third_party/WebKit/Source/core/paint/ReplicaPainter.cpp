@@ -28,7 +28,7 @@ void ReplicaPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintO
         // Turn around and paint the parent layer. Use temporary clipRects, so that the layer doesn't end up caching clip rects
         // computing using the wrong rootLayer
         PaintLayer* rootPaintingLayer = m_layoutReplica.layer()->parent();
-        PaintLayerPaintingInfo paintingInfo(rootPaintingLayer, LayoutRect(paintInfo.rect), GlobalPaintNormalPhase, LayoutSize(), 0);
+        PaintLayerPaintingInfo paintingInfo(rootPaintingLayer, LayoutRect(paintInfo.cullRect().m_rect), GlobalPaintNormalPhase, LayoutSize(), 0);
         PaintLayerFlags flags = PaintLayerHaveTransparency | PaintLayerAppliedTransform | PaintLayerUncachedClipRects | PaintLayerPaintingReflection;
         PaintLayerPainter(*m_layoutReplica.layer()->parent()).paintLayer(paintInfo.context, paintingInfo, flags);
     } else if (paintInfo.phase == PaintPhaseMask) {

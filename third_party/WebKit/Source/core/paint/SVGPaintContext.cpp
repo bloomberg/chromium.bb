@@ -48,7 +48,7 @@ SVGPaintContext::~SVGPaintContext()
         // This isn't strictly required (e.g., m_paintInfo.rect is not used
         // after this).
         m_paintInfo.context = m_originalPaintInfo->context;
-        m_paintInfo.rect = m_originalPaintInfo->rect;
+        m_paintInfo.m_cullRect.m_rect = m_originalPaintInfo->m_cullRect.m_rect;
     }
 
     if (m_masker) {
@@ -167,7 +167,7 @@ bool SVGPaintContext::applyFilterIfNecessary(SVGResources* resources)
         // Because we cache the filter contents and do not invalidate on paint
         // invalidation rect changes, we need to paint the entire filter region
         // so elements outside the initial paint (due to scrolling, etc) paint.
-        m_paintInfo.rect = LayoutRect::infiniteIntRect();
+        m_paintInfo.m_cullRect.m_rect = LayoutRect::infiniteIntRect();
     }
     return true;
 }

@@ -49,15 +49,43 @@ class LayoutBoxModelObject;
 class LayoutObject;
 class PaintInvalidationState;
 
+class CORE_EXPORT CullRect {
+public:
+    CullRect(const IntRect& rect) : m_rect(rect) { }
+    bool intersectsCullRect(const AffineTransform&, const FloatRect& boundingBox) const;
+    void updateCullRect(const AffineTransform& localToParentTransform);
+    bool intersectsCullRect(const IntRect&) const;
+    bool intersectsCullRect(const LayoutRect&) const;
+    bool intersectsHorizontalRange(LayoutUnit lo, LayoutUnit hi) const;
+    bool intersectsVerticalRange(LayoutUnit lo, LayoutUnit hi) const;
+
+private:
+    IntRect m_rect;
+
+    // TODO(chrishtr): temporary while we implement CullRect everywhere.
+    friend class BlockPainter;
+    friend class ReplicaPainter;
+    friend class GridPainter;
+    friend class InlineTextBoxPainter;
+    friend class PartPainter;
+    friend class ScrollableAreaPainter;
+    friend class SVGPaintContext;
+    friend class SVGShapePainter;
+    friend class TableSectionPainter;
+    friend class ThemePainterMac;
+    friend class SVGInlineTextBoxPainter;
+    friend class SVGRootInlineBoxPainter;
+};
+
 struct CORE_EXPORT PaintInfo {
     ALLOW_ONLY_INLINE_ALLOCATION();
-    PaintInfo(GraphicsContext* newContext, const IntRect& newRect, PaintPhase newPhase, GlobalPaintFlags globalPaintFlags, PaintLayerFlags paintFlags,
+    PaintInfo(GraphicsContext* newContext, const IntRect& cullRect, PaintPhase newPhase, GlobalPaintFlags globalPaintFlags, PaintLayerFlags paintFlags,
         LayoutObject* newPaintingRoot = nullptr, const LayoutBoxModelObject* newPaintContainer = nullptr)
         : context(newContext)
-        , rect(newRect)
         , phase(newPhase)
         , paintingRoot(newPaintingRoot)
         , paintInvalidationState(nullptr)
+        , m_cullRect(cullRect)
         , m_paintContainer(newPaintContainer)
         , m_paintFlags(paintFlags)
         , m_globalPaintFlags(globalPaintFlags)
@@ -83,26 +111,27 @@ struct CORE_EXPORT PaintInfo {
 
     PaintLayerFlags paintFlags() const { return m_paintFlags; }
 
-    bool intersectsCullRect(const AffineTransform&, const FloatRect& boundingBox) const;
+    const CullRect& cullRect() const { return m_cullRect; }
 
-    void updateCullRectForSVGTransform(const AffineTransform& localToParentTransform);
-
-    bool intersectsCullRect(const IntRect&) const;
-    bool intersectsCullRect(const LayoutRect&) const;
+    void updateCullRect(const AffineTransform& localToParentTransform);
 
     // FIXME: Introduce setters/getters at some point. Requires a lot of changes throughout layout/.
     GraphicsContext* context;
-    IntRect rect; // dirty rect used for culling non-intersecting layoutObjects
     PaintPhase phase;
     LayoutObject* paintingRoot; // used to draw just one element and its visual kids
     // TODO(wangxianzhu): Populate it.
     PaintInvalidationState* paintInvalidationState;
 
 private:
+    CullRect m_cullRect;
     const LayoutBoxModelObject* m_paintContainer; // the box model object that originates the current painting
 
     const PaintLayerFlags m_paintFlags;
     const GlobalPaintFlags m_globalPaintFlags;
+
+    // TODO(chrishtr): temporary while we implement CullRect everywhere.
+    friend class SVGPaintContext;
+    friend class SVGShapePainter;
 };
 
 } // namespace blink

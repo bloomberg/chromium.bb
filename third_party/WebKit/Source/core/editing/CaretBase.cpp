@@ -31,6 +31,7 @@
 #include "core/frame/Settings.h"
 #include "core/layout/LayoutBlock.h"
 #include "core/layout/LayoutView.h"
+#include "core/paint/PaintInfo.h"
 #include "platform/graphics/GraphicsContext.h"
 
 namespace blink {
@@ -173,7 +174,7 @@ void CaretBase::invalidateCaretRect(Node* node, bool caretRectChanged)
     }
 }
 
-void CaretBase::paintCaret(Node* node, GraphicsContext* context, const LayoutPoint& paintOffset, const LayoutRect& clipRect) const
+void CaretBase::paintCaret(Node* node, GraphicsContext* context, const LayoutPoint& paintOffset) const
 {
     if (m_caretVisibility == Hidden)
         return;
@@ -182,9 +183,6 @@ void CaretBase::paintCaret(Node* node, GraphicsContext* context, const LayoutPoi
     if (LayoutBlock* layoutObject = caretLayoutObject(node))
         layoutObject->flipForWritingMode(drawingRect);
     drawingRect.moveBy(roundedIntPoint(paintOffset));
-    LayoutRect caret = intersection(drawingRect, clipRect);
-    if (caret.isEmpty())
-        return;
 
     Color caretColor = Color::black;
 
@@ -197,7 +195,7 @@ void CaretBase::paintCaret(Node* node, GraphicsContext* context, const LayoutPoi
     if (element && element->layoutObject())
         caretColor = element->layoutObject()->resolveColor(CSSPropertyColor);
 
-    context->fillRect(FloatRect(caret), caretColor);
+    context->fillRect(FloatRect(drawingRect), caretColor);
 }
 
 } // namespace blink

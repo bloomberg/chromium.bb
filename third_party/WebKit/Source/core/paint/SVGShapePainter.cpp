@@ -49,11 +49,11 @@ void SVGShapePainter::paint(const PaintInfo& paintInfo)
         return;
 
     FloatRect boundingBox = m_layoutSVGShape.paintInvalidationRectInLocalCoordinates();
-    if (!paintInfo.intersectsCullRect(m_layoutSVGShape.localTransform(), boundingBox))
+    if (!paintInfo.cullRect().intersectsCullRect(m_layoutSVGShape.localTransform(), boundingBox))
         return;
 
     PaintInfo paintInfoBeforeFiltering(paintInfo);
-    // Shapes cannot have children so do not call updateCullRectForSVGTransform.
+    // Shapes cannot have children so do not call updateCullRect.
     TransformRecorder transformRecorder(*paintInfoBeforeFiltering.context, m_layoutSVGShape, m_layoutSVGShape.localTransform());
     {
         SVGPaintContext paintContext(m_layoutSVGShape, paintInfoBeforeFiltering);
@@ -203,7 +203,7 @@ void SVGShapePainter::paintMarkers(const PaintInfo& paintInfo, const FloatRect& 
             // It's expensive to track the transformed paint cull rect for each
             // marker so just disable culling. The shape paint call will already
             // be culled if it is outside the paint info cull rect.
-            markerPaintInfo.rect = LayoutRect::infiniteIntRect();
+            markerPaintInfo.m_cullRect.m_rect = LayoutRect::infiniteIntRect();
 
             paintMarker(markerPaintInfo, *marker, (*markerPositions)[i], strokeWidth);
             pictureBuilder.endRecording()->playback(paintInfo.context->canvas());

@@ -53,7 +53,7 @@ namespace blink {
 
 bool ThemePainterMac::paintTextField(const LayoutObject& o, const PaintInfo& paintInfo, const IntRect& r)
 {
-    LocalCurrentGraphicsContext localContext(paintInfo.context, &paintInfo.rect, r);
+    LocalCurrentGraphicsContext localContext(paintInfo.context, &paintInfo.cullRect().m_rect, r);
 
 #if __MAC_OS_X_VERSION_MIN_REQUIRED <= 1070
     bool useNSTextFieldCell = o.styleRef().hasAppearance()
@@ -87,7 +87,7 @@ bool ThemePainterMac::paintCapsLockIndicator(const LayoutObject&, const PaintInf
 {
     // This draws the caps lock indicator as it was done by
     // WKDrawCapsLockIndicator.
-    LocalCurrentGraphicsContext localContext(paintInfo.context, &paintInfo.rect, r);
+    LocalCurrentGraphicsContext localContext(paintInfo.context, &paintInfo.cullRect().m_rect, r);
     CGContextRef c = localContext.cgContext();
     CGMutablePathRef shape = CGPathCreateMutable();
 
@@ -146,7 +146,7 @@ bool ThemePainterMac::paintCapsLockIndicator(const LayoutObject&, const PaintInf
 
 bool ThemePainterMac::paintTextArea(const LayoutObject& o, const PaintInfo& paintInfo, const IntRect& r)
 {
-    LocalCurrentGraphicsContext localContext(paintInfo.context, &paintInfo.rect, r);
+    LocalCurrentGraphicsContext localContext(paintInfo.context, &paintInfo.cullRect().m_rect, r);
     _NSDrawCarbonThemeListBox(r, LayoutTheme::isEnabled(o) && !LayoutTheme::isReadOnlyControl(o), YES, YES);
     return false;
 }
@@ -167,7 +167,7 @@ bool ThemePainterMac::paintMenuList(const LayoutObject& o, const PaintInfo& pain
     if (r.width() >= m_layoutTheme.minimumMenuListSize(o.styleRef()))
         inflatedRect = ThemeMac::inflateRect(inflatedRect, size, m_layoutTheme.popupButtonMargins(), zoomLevel);
 
-    LocalCurrentGraphicsContext localContext(paintInfo.context, &paintInfo.rect, ThemeMac::inflateRectForFocusRing(inflatedRect));
+    LocalCurrentGraphicsContext localContext(paintInfo.context, &paintInfo.cullRect().m_rect, ThemeMac::inflateRectForFocusRing(inflatedRect));
 
     if (zoomLevel != 1.0f) {
         inflatedRect.setWidth(inflatedRect.width() / zoomLevel);
@@ -191,7 +191,7 @@ bool ThemePainterMac::paintMeter(const LayoutObject& layoutObject, const PaintIn
     if (!layoutObject.isMeter())
         return true;
 
-    LocalCurrentGraphicsContext localContext(paintInfo.context, &paintInfo.rect, rect);
+    LocalCurrentGraphicsContext localContext(paintInfo.context, &paintInfo.cullRect().m_rect, rect);
 
     NSLevelIndicatorCell* cell = m_layoutTheme.levelIndicatorFor(toLayoutMeter(layoutObject));
     GraphicsContextStateSaver stateSaver(*paintInfo.context);
@@ -462,7 +462,7 @@ static NSControlSize searchFieldControlSizeForFont(const ComputedStyle& style)
 
 bool ThemePainterMac::paintSearchField(const LayoutObject& o, const PaintInfo& paintInfo, const IntRect& r)
 {
-    LocalCurrentGraphicsContext localContext(paintInfo.context, &paintInfo.rect, r);
+    LocalCurrentGraphicsContext localContext(paintInfo.context, &paintInfo.cullRect().m_rect, r);
 
     NSSearchFieldCell* search = m_layoutTheme.search();
     m_layoutTheme.setSearchCellState(o, r);
@@ -578,7 +578,7 @@ bool ThemePainterMac::paintSearchFieldResultsDecoration(const LayoutObject& o, c
         paintInfo.context->translate(-unzoomedRect.x(), -unzoomedRect.y());
     }
 
-    LocalCurrentGraphicsContext localContext(paintInfo.context, &paintInfo.rect, r);
+    LocalCurrentGraphicsContext localContext(paintInfo.context, &paintInfo.cullRect().m_rect, r);
 
     NSSearchFieldCell* search = m_layoutTheme.search();
     m_layoutTheme.setSearchCellState(*input->layoutObject(), r);

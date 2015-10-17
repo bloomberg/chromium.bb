@@ -47,7 +47,7 @@ void LineBoxListPainter::paint(const LayoutBoxModelObject& layoutObject, const P
     if (!m_lineBoxList.firstLineBox())
         return;
 
-    if (!m_lineBoxList.anyLineIntersectsRect(LineLayoutBoxModel(const_cast<LayoutBoxModelObject*>(&layoutObject)), LayoutRect(paintInfo.rect), paintOffset))
+    if (!m_lineBoxList.anyLineIntersectsRect(LineLayoutBoxModel(const_cast<LayoutBoxModelObject*>(&layoutObject)), paintInfo.cullRect(), paintOffset))
         return;
 
     PaintInfo info(paintInfo);
@@ -56,7 +56,7 @@ void LineBoxListPainter::paint(const LayoutBoxModelObject& layoutObject, const P
     // them. Note that boxes can easily overlap, so we can't make any assumptions
     // based off positions of our first line box or our last line box.
     for (InlineFlowBox* curr = m_lineBoxList.firstLineBox(); curr; curr = curr->nextLineBox()) {
-        if (m_lineBoxList.lineIntersectsDirtyRect(LineLayoutBoxModel(const_cast<LayoutBoxModelObject*>(&layoutObject)), curr, info, paintOffset)) {
+        if (m_lineBoxList.lineIntersectsDirtyRect(LineLayoutBoxModel(const_cast<LayoutBoxModelObject*>(&layoutObject)), curr, info.cullRect(), paintOffset)) {
             RootInlineBox& root = curr->root();
             curr->paint(info, paintOffset, root.lineTop(), root.lineBottom());
         }

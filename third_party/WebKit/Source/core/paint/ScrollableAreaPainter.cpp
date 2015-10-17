@@ -8,6 +8,7 @@
 #include "core/layout/LayoutView.h"
 #include "core/page/Page.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
+#include "core/paint/PaintInfo.h"
 #include "core/paint/PaintLayer.h"
 #include "core/paint/PaintLayerScrollableArea.h"
 #include "core/paint/ScrollbarPainter.h"
@@ -84,7 +85,7 @@ void ScrollableAreaPainter::drawPlatformResizerImage(GraphicsContext* context, I
     context->drawImage(resizeCornerImage.get(), imageRect);
 }
 
-void ScrollableAreaPainter::paintOverflowControls(GraphicsContext* context, const IntPoint& paintOffset, const IntRect& damageRect, bool paintingOverlayControls)
+void ScrollableAreaPainter::paintOverflowControls(GraphicsContext* context, const IntPoint& paintOffset, const CullRect& cullRect, bool paintingOverlayControls)
 {
     // Don't do anything if we have no overflow.
     if (!scrollableArea().box().hasOverflowClip())
@@ -94,7 +95,7 @@ void ScrollableAreaPainter::paintOverflowControls(GraphicsContext* context, cons
     if (paintingOverlayControls)
         adjustedPaintOffset = scrollableArea().cachedOverlayScrollbarOffset();
 
-    IntRect localDamageRect = damageRect;
+    IntRect localDamageRect = cullRect.m_rect;
     localDamageRect.moveBy(-adjustedPaintOffset);
 
     // Overlay scrollbars paint in a second pass through the layer tree so that they will paint
@@ -141,10 +142,10 @@ void ScrollableAreaPainter::paintOverflowControls(GraphicsContext* context, cons
 
     // We fill our scroll corner with white if we have a scrollbar that doesn't run all the way up to the
     // edge of the box.
-    paintScrollCorner(context, adjustedPaintOffset, damageRect);
+    paintScrollCorner(context, adjustedPaintOffset, cullRect.m_rect);
 
     // Paint our resizer last, since it sits on top of the scroll corner.
-    paintResizer(context, adjustedPaintOffset, damageRect);
+    paintResizer(context, adjustedPaintOffset, cullRect.m_rect);
 }
 
 bool ScrollableAreaPainter::overflowControlsIntersectRect(const IntRect& localRect) const

@@ -65,7 +65,7 @@ void TableSectionPainter::paintCollapsedBorders(const PaintInfo& paintInfo, cons
     LayoutPoint adjustedPaintOffset = paintOffset + m_layoutTableSection.location();
     BoxClipper boxClipper(m_layoutTableSection, paintInfo, adjustedPaintOffset, ForceContentsClip);
 
-    LayoutRect localPaintInvalidationRect = LayoutRect(paintInfo.rect);
+    LayoutRect localPaintInvalidationRect = LayoutRect(paintInfo.cullRect().m_rect);
     localPaintInvalidationRect.moveBy(-adjustedPaintOffset);
 
     LayoutRect tableAlignedRect = m_layoutTableSection.logicalRectForWritingModeAndDirection(localPaintInvalidationRect);
@@ -94,7 +94,7 @@ void TableSectionPainter::paintCollapsedBorders(const PaintInfo& paintInfo, cons
 
 void TableSectionPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    LayoutRect localPaintInvalidationRect = LayoutRect(paintInfo.rect);
+    LayoutRect localPaintInvalidationRect = LayoutRect(paintInfo.cullRect().m_rect);
     localPaintInvalidationRect.moveBy(-paintOffset);
 
     LayoutRect tableAlignedRect = m_layoutTableSection.logicalRectForWritingModeAndDirection(localPaintInvalidationRect);

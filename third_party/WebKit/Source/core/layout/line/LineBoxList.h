@@ -36,6 +36,7 @@
 
 namespace blink {
 
+class CullRect;
 class HitTestLocation;
 class HitTestResult;
 class InlineFlowBox;
@@ -78,11 +79,11 @@ public:
     void dirtyLinesFromChangedChild(LineLayoutItem parent, LineLayoutItem child);
 
     bool hitTest(LineLayoutBoxModel, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) const;
-    bool anyLineIntersectsRect(LineLayoutBoxModel, const LayoutRect&, const LayoutPoint&) const;
-    bool lineIntersectsDirtyRect(LineLayoutBoxModel, InlineFlowBox*, const PaintInfo&, const LayoutPoint&) const;
-    bool rangeIntersectsRect(LineLayoutBoxModel, LayoutUnit logicalTop, LayoutUnit logicalBottom, const LayoutRect&, const LayoutPoint&) const;
+    bool anyLineIntersectsRect(LineLayoutBoxModel, const CullRect&, const LayoutPoint&) const;
+    bool lineIntersectsDirtyRect(LineLayoutBoxModel, InlineFlowBox*, const CullRect&, const LayoutPoint&) const;
 
 private:
+    bool rangeIntersectsRect(LineLayoutBoxModel, LayoutUnit logicalTop, LayoutUnit logicalBottom, const CullRect&, const LayoutPoint&) const;
 
     // For block flows, each box represents the root inline box for a line in the
     // paragraph.

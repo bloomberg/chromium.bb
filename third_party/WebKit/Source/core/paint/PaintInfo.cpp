@@ -24,25 +24,40 @@ bool PaintInfo::shouldPaintWithinRoot(const LayoutObject* layoutObject) const
     return !paintingRoot || paintingRoot == layoutObject;
 }
 
-bool PaintInfo::intersectsCullRect(const IntRect& rectArg) const
+bool CullRect::intersectsCullRect(const IntRect& boundingBox) const
 {
-    return rectArg.intersects(rect);
+    return boundingBox.intersects(m_rect);
 }
 
-bool PaintInfo::intersectsCullRect(const LayoutRect& rectArg) const
+bool CullRect::intersectsCullRect(const AffineTransform& transform, const FloatRect& boundingBox) const
 {
-    return rect.intersects(enclosingIntRect(rectArg));
+    return transform.mapRect(boundingBox).intersects(m_rect);
 }
 
-bool PaintInfo::intersectsCullRect(const AffineTransform& transform, const FloatRect& boundingBox) const
+bool CullRect::intersectsCullRect(const LayoutRect& rectArg) const
 {
-    return transform.mapRect(boundingBox).intersects(rect);
+    return m_rect.intersects(enclosingIntRect(rectArg));
 }
 
-void PaintInfo::updateCullRectForSVGTransform(const AffineTransform& localToParentTransform)
+bool CullRect::intersectsHorizontalRange(LayoutUnit lo, LayoutUnit hi) const
 {
-    if (rect != LayoutRect::infiniteIntRect())
-        rect = localToParentTransform.inverse().mapRect(rect);
+    return !(lo >= m_rect.maxX() || hi <= m_rect.x());
+}
+
+bool CullRect::intersectsVerticalRange(LayoutUnit lo, LayoutUnit hi) const
+{
+    return !(lo >= m_rect.maxY() || hi <= m_rect.y());
+}
+
+void PaintInfo::updateCullRect(const AffineTransform& localToParentTransform)
+{
+    m_cullRect.updateCullRect(localToParentTransform);
+}
+
+void CullRect::updateCullRect(const AffineTransform& localToParentTransform)
+{
+    if (m_rect != LayoutRect::infiniteIntRect())
+        m_rect = localToParentTransform.inverse().mapRect(m_rect);
 }
 
 } // namespace blink
