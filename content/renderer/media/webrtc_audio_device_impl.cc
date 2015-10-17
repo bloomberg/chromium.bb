@@ -433,6 +433,11 @@ bool WebRtcAudioDeviceImpl::SetAudioRenderer(WebRtcAudioRenderer* renderer) {
   if (!renderer->Initialize(this))
     return false;
 
+  // The new audio renderer will create a new audio renderer thread. Detach
+  // |audio_renderer_thread_checker_| from the old thread, if any, and let
+  // it attach later to the new thread.
+  audio_renderer_thread_checker_.DetachFromThread();
+
   // We acquire |lock_| again and assert our precondition, since we are
   // accessing the internal state again.
   base::AutoLock auto_lock(lock_);
