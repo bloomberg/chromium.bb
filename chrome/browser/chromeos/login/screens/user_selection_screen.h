@@ -47,7 +47,6 @@ class UserSelectionScreen
 
 
   virtual void Init(const user_manager::UserList& users, bool show_guest);
-  const user_manager::UserList& GetUsers() const;
   void OnUserImageChanged(const user_manager::User& user);
   void OnBeforeUserRemoved(const std::string& username);
   void OnUserRemoved(const std::string& username);

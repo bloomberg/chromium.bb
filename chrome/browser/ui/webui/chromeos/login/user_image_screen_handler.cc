@@ -112,8 +112,6 @@ void UserImageScreenHandler::DeclareLocalizedValues(
   builder->Add("photoDiscardAccessibleText",
                IDS_OPTIONS_PHOTO_DISCARD_ACCESSIBLE_TEXT);
   builder->Add("syncingPreferences", IDS_IMAGE_SCREEN_SYNCING_PREFERENCES);
-  builder->Add("syncingPreferencesNewGaia",
-               IDS_IMAGE_SCREEN_SYNCING_PREFERENCES_NEW_GAIA_FLOW);
 }
 
 void UserImageScreenHandler::RegisterMessages() {

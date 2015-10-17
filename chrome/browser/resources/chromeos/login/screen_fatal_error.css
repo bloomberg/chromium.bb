@@ -4,44 +4,15 @@
  */
 
 #fatal-error {
-  padding: 50px 17px 17px;
-  width: 722px;  /* Should be the same as #gaia-signin. */
+  height: 528px; /* Should be the same as #gaia-signin. */
+  width: 448px; /* Should be the same as #gaia-signin. */
 }
 
-/* Size is set explicitly to make <img> consume the space before the image is
-   loaded. This ensures correct screen's size calculation in
-   DisplayManager.updateScreenSize. */
-#fatal-error-message-container img {
-  height: 85px;
-  width: 112px;
-}
-
-#fatal-error-message-container {
-  text-align: center;
-  width: 100%;
-}
-
-#fatal-error-button-strip {
-  display: -webkit-box;
-}
-
-#fatal-error-button-strip-space-filler {
-  -webkit-box-flex: 1;
-}
-
-.new-gaia-flow #fatal-error {
-  height: 528px;
-  width: 448px;
-}
-
-.new-gaia-flow #fatal-error-message-container,
-.new-gaia-flow #fatal-error-button-strip,
-.fatal-error .new-gaia-flow #step-logo,
-#fatal-error-card {
+.fatal-error #step-logo {
   display: none;
 }
 
-.new-gaia-flow #fatal-error-card {
+#fatal-error-card {
   bottom: 0;
   display: block;
   left: 0;

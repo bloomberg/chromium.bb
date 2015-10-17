@@ -222,8 +222,7 @@ login.createScreen('ErrorMessageScreen', 'error-message', function() {
       cr.ui.Oobe.clearErrors();
       cr.ui.DropDown.show('offline-networks-list', false);
       $('login-header-bar').signinUIState = SIGNIN_UI_STATE.ERROR;
-      $('error-close-button').hidden =
-          !(Oobe.isNewGaiaFlow() && $('login-header-bar').allowCancel);
+      $('error-close-button').hidden = !$('login-header-bar').allowCancel;
     },
 
     /**

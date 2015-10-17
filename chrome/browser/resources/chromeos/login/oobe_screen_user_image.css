@@ -10,8 +10,9 @@
 }
 
 #user-image.loading {
-  min-height: 609px; /* Should be the same as #gaia-signin height. */
-  width: 722px; /* Should be the same as #gaia-signin width. */
+  height: 528px; /* Should be the same as #gaia-signin height. */
+  padding: 0 0 0;
+  width: 448px; /* Should be the same as #gaia-signin width. */
 }
 
 #user-image-screen-curtain {
@@ -96,22 +97,7 @@
   top: 14px;
 }
 
-.image-loading.user-image .new-gaia-flow #user-image {
-  height: 528px; /* Should be the same as #gaia-signin height. */
-  padding: 0 0 0;
-  width: 448px; /* Should be the same as #gaia-signin width. */
-}
-
-.new-gaia-flow #user-image.loading {
-  min-height: 528px; /* Should be the same as #gaia-signin height. */
-  width: 448px; /* Should be the same as #gaia-signin width. */
-}
-
-.new-gaia-flow #old-flow-throbber {
-  display: none;
-}
-
-.image-loading.user-image .new-gaia-flow #step-logo {
+.image-loading.user-image #step-logo {
   display: none;
 }
 
@@ -272,9 +258,5 @@ html[dir=rtl] #flip-photo {
 
 .camera.live:not(.online) .user-image-stream-area .spinner {
   display: block;
-}
-
-#user-images-loading {
-  color: #9c9c9c;
 }
 

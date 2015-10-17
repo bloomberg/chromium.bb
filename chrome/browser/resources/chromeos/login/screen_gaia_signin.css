@@ -4,61 +4,17 @@
  */
 
 #gaia-signin {
-  height: 609px; /* Should be the same as #user-image.loading min-heigth. */
-  padding: 70px 17px 69px;    /* Screen has no controls. */
-  width: 722px; /* Should be the same as #user-image.loading width. */
-}
-
-#gaia-signin:not(.full-width).no-right-panel {
-  width: 522px;
-}
-
-.new-gaia-flow #gaia-signin {
   height: 528px;
-  padding: 0 0 0;
   width: 448px;
 }
 
-.new-gaia-flow .throbber {
-  display: none;
-}
-
-#inner-container:not(.new-gaia-flow) throbber-notice {
-  display: none;
-}
-
 #gaia-signin.full-width {
-  padding: 75px 0 0;
-}
-
-.new-gaia-flow #gaia-signin.full-width {
-  padding-top: 47px;
+  padding: 47px 0 0;
   width: 562px;
 }
 
-#signin-right {
-  -webkit-margin-start: 30px;
-  margin-top: 80px;
-  top: 60px;
-  width: 200px;
-}
-
-#signin-right,
-#enterprise-info-container,
 #saml-info-container {
   font-size: 12px;
-}
-
-/*  For touch-optimized UI, make the links bigger. */
-@media (pointer:coarse) {
-  #signin-right {
-    font-size: 14px;
-  }
-}
-
-.new-gaia-flow #signin-right,
-.no-right-panel #signin-right {
-  display: none;
 }
 
 #close-button-item,
@@ -94,21 +50,16 @@ html[dir=rtl] #back-button-item {
 }
 
 .loading #close-button-item,
-.new-gaia-flow .full-width #close-button-item {
+.full-width #close-button-item {
   color: rgba(0, 0, 0, .54);
 }
 
-.new-gaia-flow .full-width #back-button-item {
+.full-width #back-button-item {
   display: none;
 }
 
 .loading.auth-completed #close-button-item {
   display: none;
-}
-
-.signin-text {
-  color: #666;
-  margin-top: 20px;
 }
 
 .signin-link {
@@ -126,83 +77,23 @@ html[dir=rtl] #back-button-item {
 #gaia-signin-form-container,
 #signin-frame {
   height: 100%;
-}
-
-.new-gaia-flow #gaia-signin-form-container {
   width: 100%;
 }
 
-.full-width #signin-frame,
-.full-width #gaia-signin-form-container {
-  width: 100%;
-}
-
-.signin-divider {
-  background: linear-gradient(
-                   to bottom,
-                   #e3e3e3,
-                   #cacaca 50%,
-                   #e3e3e3);
-  border: none;
-  width: 1px;
-}
-
-.gaia-signin .new-gaia-flow #step-logo,
-.gaia-signin .new-gaia-flow #gaia-signin-divider,
-.no-right-panel #gaia-signin-divider {
+.gaia-signin #step-logo {
   display: none;
 }
 
 #signin-frame {
-  background-color: transparent;
-  margin-left: -44px;
-  vertical-align: top;
-  width: 400px;
-}
-
-webview#signin-frame {
-  -webkit-transition: opacity 500ms ease-in;
   display: block;
-  margin-left: 0;
   opacity: 0;
   overflow: hidden;
-  padding: 0;
-  width: 448px;
+  transition: opacity 500ms ease-in;
 }
 
-webview#signin-frame.show {
-  -webkit-transition: opacity 500ms ease-out;
+#signin-frame.show {
   opacity: 1;
-}
-
-/* Simpler alignment if no right panel. */
-.no-right-panel #signin-frame {
-  margin-left: 0;
-}
-
-/* Position to be aligned with the login box in iframe  */
-#login-box {
-  height: 31px;
-  position: absolute;
-  top: 77px;
-  visibility: hidden;
-  z-index: -1;
-}
-
-#enterprise-info-container {
-  bottom: 10px;
-  left: 0;
-  position: absolute;
-  right: 0;
-  text-align: center;
-}
-
-.new-gaia-flow #enterprise-info-container {
-  display: none;
-}
-
-#enterprise-info-container #enterprise-info {
-  display: inline-block;
+  transition: opacity 500ms ease-out;
 }
 
 #gaia-signin .step-contents {
@@ -211,76 +102,41 @@ webview#signin-frame.show {
   height: 100%;
 }
 
-#createSupervisedUserSeparator {
-  background-color: rgba(128, 128, 128, 0.3);
-  height: 1px;
-  width: 200px;
-}
-
-#createSupervisedUserLogo {
-  font-weight: bold;
-  margin-top: 16px;
-}
-
-#createSupervisedUserLogo img {
-  vertical-align: text-bottom;
-}
-
-#createSupervisedUserLogo span {
-  vertical-align: -10%;
-}
-
-#createSupervisedUserLinkPlaceholder,
-#createSupervisedUserNoManagerText {
-  margin-top: 10px;
-}
-
 #saml-notice-container {
+  -webkit-margin-start: 19px;
   left: 0;
   position: absolute;
   right: 0;
   text-align: center;
-  top: 50px;
-}
-
-.new-gaia-flow  #saml-notice-container {
-  -webkit-margin-start: 19px;
   text-align: start;
   top: 15px;
 }
 
 #saml-notice-message {
-  margin: 0 auto;
-}
-
-.new-gaia-flow #saml-notice-message {
   color: rgb(106, 106, 106);
   font-size: 13px;
+  margin: 0 auto;
 }
 
 #gaia-whitelist-error {
   bottom: 0;
-  display: none;
+  display: block;
   left: 0;
   position: absolute;
   right: 0;
   top: 0;
-}
-
-.new-gaia-flow #gaia-whitelist-error {
-  display: block;
   visibility: hidden;
 }
 
-.new-gaia-flow .whitelist-error #gaia-whitelist-error {
+.whitelist-error #gaia-whitelist-error {
   visibility: visible;
 }
 
-.new-gaia-flow #gaia-signin.whitelist-error .step-contents {
+#gaia-signin.whitelist-error .step-contents {
   visibility: hidden;
 }
 
-.new-gaia-flow #gaia-signin.whitelist-error .step-loading {
+#gaia-signin.whitelist-error .step-loading {
   visibility: hidden;
 }
 

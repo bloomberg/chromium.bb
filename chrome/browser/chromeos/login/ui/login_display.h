@@ -58,9 +58,6 @@ class LoginDisplay {
     // Used when the lock screen is being displayed.
     virtual void Signout() = 0;
 
-    // Create new Google account.
-    virtual void CreateAccount() = 0;
-
     // Complete sign process with specified |user_context|.
     // Used for new users authenticated through an extension.
     virtual void CompleteLogin(const UserContext& user_context) = 0;

@@ -176,8 +176,7 @@ body:not(.oobe-display) #inner-container {
   width: 1100px;
 }
 
-body:not(.oobe-display) #progress-dots,
-#inner-container.new-gaia-flow + #progress-dots {
+body:not(.oobe-display) #progress-dots {
   display: none;
 }
 

@@ -372,8 +372,8 @@ class SamlTest : public OobeBaseTest {
 
   void SendConfirmPassword(const std::string& password_to_confirm) {
     std::string js =
-        "$('confirm-password-input').value='$Password';"
-        "$('confirm-password').onConfirmPassword_();";
+        "$('saml-confirm-password').$.passwordInput.value='$Password';"
+        "$('saml-confirm-password').$.inputForm.submit();";
     base::ReplaceSubstringsAfterOffset(
         &js, 0, "$Password", password_to_confirm);
     ASSERT_TRUE(content::ExecuteScript(GetLoginUI()->GetWebContents(), js));
@@ -629,13 +629,13 @@ IN_PROC_BROWSER_TEST_F(SamlTest, PasswordConfirmFlow) {
 
   // Lands on confirm password screen with no error message.
   OobeScreenWaiter(OobeDisplay::SCREEN_CONFIRM_PASSWORD).Wait();
-  JsExpect("!$('confirm-password').classList.contains('error')");
+  JsExpect("!$('saml-confirm-password').$.passwordInput.isInvalid");
 
   // Enter an unknown password for the first time should go back to confirm
   // password screen with error message.
   SendConfirmPassword("wrong_password");
   OobeScreenWaiter(OobeDisplay::SCREEN_CONFIRM_PASSWORD).Wait();
-  JsExpect("$('confirm-password').classList.contains('error')");
+  JsExpect("$('saml-confirm-password').$.passwordInput.isInvalid");
 
   // Enter an unknown password 2nd time should go back fatal error message.
   SendConfirmPassword("wrong_password");

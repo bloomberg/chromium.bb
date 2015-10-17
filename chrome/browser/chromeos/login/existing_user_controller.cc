@@ -84,10 +84,6 @@ namespace chromeos {
 
 namespace {
 
-// URL for account creation.
-const char kCreateAccountURL[] =
-    "https://accounts.google.com/NewAccount?service=mail";
-
 // Delay for transferring the auth cache to the system profile.
 const long int kAuthCacheTransferDelayMs = 2000;
 
@@ -321,14 +317,6 @@ ExistingUserController::~ExistingUserController() {
 void ExistingUserController::CancelPasswordChangedFlow() {
   login_performer_.reset(NULL);
   PerformLoginFinishedActions(true /* start public session timer */);
-}
-
-void ExistingUserController::CreateAccount() {
-  content::RecordAction(base::UserMetricsAction("Login.CreateAccount"));
-  guest_mode_url_ = google_util::AppendGoogleLocaleParam(
-      GURL(kCreateAccountURL), g_browser_process->GetApplicationLocale());
-  Login(UserContext(user_manager::USER_TYPE_GUEST, std::string()),
-        SigninSpecifics());
 }
 
 void ExistingUserController::CompleteLogin(const UserContext& user_context) {

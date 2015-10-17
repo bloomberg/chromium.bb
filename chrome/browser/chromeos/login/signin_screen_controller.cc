@@ -74,10 +74,6 @@ void SignInScreenController::SendUserList() {
   user_selection_screen_->HandleGetUsers();
 }
 
-const user_manager::UserList& SignInScreenController::GetUsers() {
-  return user_selection_screen_->GetUsers();
-}
-
 void SignInScreenController::CheckUserStatus(const std::string& user_id) {
   user_selection_screen_->CheckUserStatus(user_id);
 }

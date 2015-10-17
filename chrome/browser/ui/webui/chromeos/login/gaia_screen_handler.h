@@ -11,7 +11,6 @@
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/chromeos/login/screens/core_oobe_actor.h"
-#include "chrome/browser/extensions/signin/scoped_gaia_auth_extension.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
@@ -41,9 +40,6 @@ struct GaiaContext {
 
   // Whether Gaia should be loaded in offline mode.
   bool use_offline = false;
-
-  // True if user list is non-empty.
-  bool has_users = false;
 
   // Email of the current user.
   std::string email;
@@ -106,7 +102,6 @@ class GaiaScreenHandler : public BaseScreenHandler,
   // BaseScreenHandler implementation:
   void DeclareLocalizedValues(
       ::login::LocalizedValuesBuilder* builder) override;
-  void GetAdditionalParameters(base::DictionaryValue* dict) override;
   void Initialize() override;
 
   // WebUIMessageHandler implementation:
@@ -287,9 +282,6 @@ class GaiaScreenHandler : public BaseScreenHandler,
   // TODO (antrim@): GaiaScreenHandler shouldn't communicate with
   // signin_screen_handler directly.
   SigninScreenHandler* signin_screen_handler_ = nullptr;
-
-  // GAIA extension loader.
-  scoped_ptr<ScopedGaiaAuthExtension> auth_extension_;
 
   base::WeakPtrFactory<GaiaScreenHandler> weak_factory_;
 

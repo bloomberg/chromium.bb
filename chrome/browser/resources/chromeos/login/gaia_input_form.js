@@ -14,8 +14,12 @@ Polymer({
     buttonText: String
   },
 
-  onButtonClicked_: function() {
+  submit: function() {
     this.fire('submit');
+  },
+
+  onButtonClicked_: function() {
+    this.submit();
   },
 
   getInputs_: function() {

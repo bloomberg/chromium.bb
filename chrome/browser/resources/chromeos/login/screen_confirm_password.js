@@ -12,6 +12,8 @@ login.createScreen('ConfirmPasswordScreen', 'confirm-password', function() {
       'show'
     ],
 
+    confirmPasswordForm_: null,
+
     /**
      * Callback to run when the screen is dismissed.
      * @type {function(string)}
@@ -20,22 +22,14 @@ login.createScreen('ConfirmPasswordScreen', 'confirm-password', function() {
 
     /** @override */
     decorate: function() {
-      $('confirm-password-input').addEventListener(
-          'keydown', this.onPasswordFieldKeyDown_.bind(this));
-      $('confirm-password-confirm-button').addEventListener(
-          'click', this.onConfirmPassword_.bind(this));
-
-      $('saml-confirm-password').addEventListener('cancel', function(e) {
+      this.confirmPasswordForm_ = $('saml-confirm-password');
+      this.confirmPasswordForm_.addEventListener('cancel', function(e) {
           Oobe.showScreen({id: SCREEN_ACCOUNT_PICKER});
           Oobe.resetSigninUI(true);
       });
-      $('saml-confirm-password').addEventListener('passwordEnter', function(e) {
+      this.confirmPasswordForm_.addEventListener('passwordEnter', function(e) {
         this.callback_(e.detail.password);
       }.bind(this));
-    },
-
-    get defaultControl() {
-      return $('confirm-password-input');
     },
 
     /** @override */
@@ -46,29 +40,12 @@ login.createScreen('ConfirmPasswordScreen', 'confirm-password', function() {
 
     /** @override */
     onAfterShow: function(data) {
-      if (Oobe.isNewGaiaFlow())
-        $('saml-confirm-password').focus();
+      this.confirmPasswordForm_.focus();
     },
 
     /** @override */
     onBeforeHide: function() {
-      if (Oobe.isNewGaiaFlow())
-        $('saml-confirm-password').reset();
-    },
-
-    /**
-     * Handle 'keydown' event on password input field.
-     */
-    onPasswordFieldKeyDown_: function(e) {
-      if (e.keyIdentifier == 'Enter')
-        this.onConfirmPassword_();
-    },
-
-    /**
-     * Invoked when user clicks on the 'confirm' button.
-     */
-    onConfirmPassword_: function() {
-      this.callback_($('confirm-password-input').value);
+      this.confirmPasswordForm_.reset();
     },
 
     /**
@@ -80,18 +57,10 @@ login.createScreen('ConfirmPasswordScreen', 'confirm-password', function() {
      */
     show: function(email, attemptCount, callback) {
       this.callback_ = callback;
-      this.classList.toggle('error', attemptCount > 0);
-      if (Oobe.isNewGaiaFlow()) {
-        $('saml-confirm-password-contents').hidden = true;
-        var samlConfirmPassword = $('saml-confirm-password');
-        samlConfirmPassword.reset();
-        samlConfirmPassword.hidden = false;
-        samlConfirmPassword.email = email;
-        if (attemptCount > 0)
-          samlConfirmPassword.invalidate();
-      } else {
-       $('confirm-password-input').value = '';
-      }
+      this.confirmPasswordForm_.reset();
+      this.confirmPasswordForm_.email = email;
+      if (attemptCount > 0)
+        this.confirmPasswordForm_.invalidate();
       Oobe.showScreen({id: SCREEN_CONFIRM_PASSWORD});
       $('progress-dots').hidden = true;
     }

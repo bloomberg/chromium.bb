@@ -76,7 +76,6 @@ class ExistingUserController : public LoginDisplay::Delegate,
 
   // LoginDisplay::Delegate: implementation
   void CancelPasswordChangedFlow() override;
-  void CreateAccount() override;
   void CompleteLogin(const UserContext& user_context) override;
   base::string16 GetConnectedNetworkName() override;
   bool IsSigninInProgress() const override;

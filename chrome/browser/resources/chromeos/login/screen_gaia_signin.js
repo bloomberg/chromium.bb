@@ -15,8 +15,6 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
   // Maximum Gaia loading time in seconds.
   /** @const */ var MAX_GAIA_LOADING_TIME_SEC = 60;
 
-  /** @const */ var HELP_TOPIC_ENTERPRISE_REPORTING = 2535613;
-
   // The help topic regarding user not being in the whitelist.
   /** @const */ var HELP_CANT_ACCESS_ACCOUNT = 188036;
 
@@ -60,12 +58,6 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      * @private
      */
     isLocal_: false,
-
-    /**
-     * Whether new Gaia flow is active.
-     * @type {boolean}
-     */
-    isNewGaiaFlow: false,
 
     /**
      * Email of the user, which is logging in using offline mode.
@@ -136,30 +128,20 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      */
     mostRecentUserActivity_: Date.now(),
 
-    /**
-     * Whether we should show webview based signin.
-     * @type {boolean}
-     * @private
-     */
-    isWebviewSignin: false,
-
     /** @override */
     decorate: function() {
-      this.isWebviewSignin = loadTimeData.getValue('isWebviewSignin');
-      if (this.isWebviewSignin) {
-        // Replace iframe with webview.
-        var webview = this.ownerDocument.createElement('webview');
-        webview.id = 'signin-frame';
-        webview.name = 'signin-frame';
-        webview.hidden = true;
-        $('signin-frame').parentNode.replaceChild(webview, $('signin-frame'));
-        this.gaiaAuthHost_ = new cr.login.GaiaAuthHost(webview);
+      // Create webview.
+      // TODO(dzhioev): check if we can get rid of dynamic creation.
+      var webview = this.ownerDocument.createElement('webview');
+      webview.id = 'signin-frame';
+      webview.name = 'signin-frame';
+      webview.hidden = true;
+      $('gaia-signin-form-container').insertBefore(webview, $('offline-gaia'));
 
-        $('offline-gaia').addEventListener('authCompleted',
-            this.onAuthCompletedMessage_.bind(this));
-      } else {
-        this.gaiaAuthHost_ = new cr.login.GaiaAuthHost($('signin-frame'));
-      }
+      $('offline-gaia').addEventListener('authCompleted',
+          this.onAuthCompletedMessage_.bind(this));
+
+      this.gaiaAuthHost_ = new cr.login.GaiaAuthHost(webview);
       this.gaiaAuthHost_.addEventListener(
           'ready', this.onAuthReady_.bind(this));
       this.gaiaAuthHost_.addEventListener(
@@ -191,11 +173,6 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       this.gaiaAuthHost_.addEventListener(
           'identifierEntered', this.onIdentifierEnteredMessage_.bind(this));
 
-      $('enterprise-info-hint-link').addEventListener('click', function(e) {
-        chrome.send('launchHelpApp', [HELP_TOPIC_ENTERPRISE_REPORTING]);
-        e.preventDefault();
-      });
-
       $('back-button-item').addEventListener('click', function(e) {
         $('back-button-item').hidden = true;
         $('signin-frame').back();
@@ -214,8 +191,6 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       $('gaia-whitelist-error').addEventListener('linkclick', function() {
         chrome.send('launchHelpApp', [HELP_CANT_ACCESS_ACCOUNT]);
       });
-
-      this.updateLocalizedContent();
     },
 
     /**
@@ -240,10 +215,8 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      */
     set isLocal(value) {
       this.isLocal_ = value;
-      if (this.isNewGaiaFlow) {
-        $('signin-frame').hidden = this.isLocal_;
-        $('offline-gaia').hidden = !this.isLocal_;
-      }
+      $('signin-frame').hidden = this.isLocal_;
+      $('offline-gaia').hidden = !this.isLocal_;
       chrome.send('updateOfflineLogin', [value]);
     },
 
@@ -324,14 +297,11 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      */
     showLoadingUI_: function(show) {
       $('gaia-loading').hidden = !show;
-      if (this.isNewGaiaFlow && this.isLocal) {
+      if (this.isLocal) {
         $('offline-gaia').hidden = show;
       } else {
         $('signin-frame').hidden = show;
       }
-      $('signin-right').hidden = show;
-      $('enterprise-info-container').hidden = show;
-      $('gaia-signin-divider').hidden = show;
       this.classList.toggle('loading', show);
       $('signin-frame').classList.remove('show');
       if (!show)
@@ -422,6 +392,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      */
     onBeforeShow: function(data) {
       chrome.send('loginUIStateChanged', ['gaia-signin', true]);
+      $('progress-dots').hidden = true;
       $('login-header-bar').signinUIState =
           this.isEnrollingConsumerManagement_ ?
               SIGNIN_UI_STATE.CONSUMER_MANAGEMENT_ENROLLMENT :
@@ -442,7 +413,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
     },
 
     onAfterShow: function(data) {
-      if (!this.loading && this.isWebviewSignin) {
+      if (!this.loading) {
         if (this.isLocal)
           $('offline-gaia').focus();
         else
@@ -464,7 +435,6 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      * @private
      */
     loadAuthExtension: function(data) {
-      this.isNewGaiaFlow = data.useNewGaiaFlow;
       this.isLocal = data.isLocal;
       this.email = '';
 
@@ -481,22 +451,16 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
           params[name] = data[name];
       }
 
-      if (data.localizedStrings)
-        params.localizedStrings = data.localizedStrings;
+      if (data.enterpriseInfoMessage)
+        params.enterpriseInfoMessage = data.enterpriseInfoMessage;
 
-      if (this.isNewGaiaFlow) {
-        $('inner-container').classList.add('new-gaia-flow');
-        params.chromeType = data.chromeType;
-        params.isNewGaiaFlow = true;
-      }
+      params.chromeType = data.chromeType;
+      params.isNewGaiaFlow = true;
 
       if (data.gaiaEndpoint)
         params.gaiaPath = data.gaiaEndpoint;
 
-      $('login-header-bar').newGaiaFlow = this.isNewGaiaFlow;
-
-      // Screen size could have been changed because of 'new-gaia-flow' or
-      // 'full-width' classes.
+      // Screen size could have been changed because of 'full-width' classes.
       if (Oobe.getInstance().currentScreen === this)
         Oobe.getInstance().updateScreenSize(this);
 
@@ -512,7 +476,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
         this.loading = true;
         this.startLoadingTimer_();
 
-        if (this.isLocal && this.isNewGaiaFlow) {
+        if (this.isLocal) {
           this.loadOffline(params);
           this.onAuthReady_();
         } else {
@@ -532,37 +496,15 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      * @private
      */
     updateAuthExtension_: function(data) {
-      if (this.isNewGaiaFlow) {
-        $('login-header-bar').showCreateSupervisedButton =
-            data.supervisedUsersEnabled && data.supervisedUsersCanCreate;
-        $('login-header-bar').showGuestButton = data.guestSignin;
-      } else {
-        $('createAccount').hidden = !data.createAccount;
-        $('guestSignin').hidden = !data.guestSignin;
-        $('createSupervisedUserPane').hidden = !data.supervisedUsersEnabled;
-
-        $('createSupervisedUserLinkPlaceholder').hidden =
-            !data.supervisedUsersCanCreate;
-        $('createSupervisedUserNoManagerText').hidden =
-            data.supervisedUsersCanCreate;
-        $('createSupervisedUserNoManagerText').textContent =
-            data.supervisedUsersRestrictionReason;
-      }
-
-      var isEnrollingConsumerManagement = data.isEnrollingConsumerManagement;
-      $('consumerManagementEnrollment').hidden = !isEnrollingConsumerManagement;
+      $('login-header-bar').showCreateSupervisedButton =
+          data.supervisedUsersCanCreate;
+      $('login-header-bar').showGuestButton = data.guestSignin;
 
       this.isShowUsers_ = data.isShowUsers;
       this.updateCancelButtonState();
 
-      this.isEnrollingConsumerManagement_ = isEnrollingConsumerManagement;
+      this.isEnrollingConsumerManagement_ = data.isEnrollingConsumerManagement;
 
-      // Sign-in right panel is hidden if all of its items are hidden.
-      var noRightPanel = $('createAccount').hidden &&
-                         $('guestSignin').hidden &&
-                         $('createSupervisedUserPane').hidden &&
-                         $('consumerManagementEnrollment').hidden;
-      this.classList.toggle('no-right-panel', noRightPanel);
       this.classList.toggle('full-width', false);
       if (Oobe.getInstance().currentScreen === this)
         Oobe.getInstance().updateScreenSize(this);
@@ -576,8 +518,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       this.cancelAllowed_ = this.isLocal ||
                             (this.isShowUsers_ && $('pod-row').pods.length);
       $('login-header-bar').allowCancel = this.cancelAllowed_;
-      if (this.isNewGaiaFlow)
-        $('close-button-item').hidden = !this.cancelAllowed_;
+      $('close-button-item').hidden = !this.cancelAllowed_;
     },
 
     /**
@@ -604,15 +545,13 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
     onAuthFlowChange_: function(e) {
       var isSAML = this.isSAML();
 
-      this.classList.toggle('no-right-panel', isSAML);
       this.classList.toggle('full-width', isSAML);
       $('saml-notice-container').hidden = !isSAML;
 
       if (Oobe.getInstance().currentScreen === this) {
         Oobe.getInstance().updateScreenSize(this);
         $('login-header-bar').allowCancel = isSAML || this.cancelAllowed_;
-        if (this.isNewGaiaFlow)
-          $('close-button-item').hidden = !(isSAML || this.cancelAllowed_);
+        $('close-button-item').hidden = !(isSAML || this.cancelAllowed_);
       }
     },
 
@@ -622,14 +561,9 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      */
     onAuthReady_: function() {
       showViewProcessed_ = false;
-      if (this.isNewGaiaFlow)
-        this.startLoadAnimationGuardTimer_();
-
+      this.startLoadAnimationGuardTimer_();
       this.clearLoadingTimer_();
       this.loading = false;
-
-      if (!this.isNewGaiaFlow)
-        this.onLoginUIVisible_();
 
       // Warm up the user images screen.
       Oobe.getInstance().preloadScreen({id: SCREEN_USER_IMAGE_PICKER});
@@ -719,10 +653,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
             loadTimeData.getString('fatalErrorMessageVerificationFailed'),
             loadTimeData.getString('fatalErrorTryAgainButton'));
       }
-      if (this.isNewGaiaFlow) {
-        this.classList.toggle('no-right-panel', false);
-        this.classList.toggle('full-width', false);
-      }
+      this.classList.toggle('full-width', false);
     },
 
     /**
@@ -890,39 +821,6 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
     },
 
     /**
-     * Updates localized content of the screen that is not updated via template.
-     */
-    updateLocalizedContent: function() {
-      $('createAccount').innerHTML = loadTimeData.getStringF(
-          'createAccount',
-          '<a id="createAccountLink" class="signin-link" href="#">',
-          '</a>');
-      $('guestSignin').innerHTML = loadTimeData.getStringF(
-          'guestSignin',
-          '<a id="guestSigninLink" class="signin-link" href="#">',
-          '</a>');
-      $('createSupervisedUserLinkPlaceholder').innerHTML =
-          loadTimeData.getStringF(
-              'createSupervisedUser',
-              '<a id="createSupervisedUserLink" class="signin-link" href="#">',
-              '</a>');
-      $('consumerManagementEnrollment').innerHTML = loadTimeData.getString(
-          'consumerManagementEnrollmentSigninMessage');
-      $('createAccountLink').addEventListener('click', function(e) {
-        chrome.send('createAccount');
-        e.preventDefault();
-      });
-      $('guestSigninLink').addEventListener('click', function(e) {
-        chrome.send('launchIncognito');
-        e.preventDefault();
-      });
-      $('createSupervisedUserLink').addEventListener('click', function(e) {
-        chrome.send('showSupervisedUserCreationScreen');
-        e.preventDefault();
-      });
-    },
-
-    /**
      * Shows sign-in error bubble.
      * @param {number} loginAttempts Number of login attemps tried.
      * @param {HTMLElement} content Content to show in bubble.
@@ -935,16 +833,10 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
         // error itself.
         chrome.send('offlineLogin', [this.email]);
       } else if (!this.loading) {
-        // We want to show bubble near "Email" field, but we can't calculate
-        // it's position because it is located inside iframe. So we only
-        // can hardcode some constants.
-        /** @const */ var ERROR_BUBBLE_OFFSET = 84;
-        /** @const */ var ERROR_BUBBLE_PADDING = 0;
-        $('bubble').showContentForElement($('login-box'),
+        // TODO(dzhioev): investigate if this branch ever get hit.
+        $('bubble').showContentForElement($('gaia-signin-form-container'),
                                           cr.ui.Bubble.Attachment.LEFT,
-                                          error,
-                                          ERROR_BUBBLE_OFFSET,
-                                          ERROR_BUBBLE_PADDING);
+                                          error);
       } else {
         // Defer the bubble until the frame has been loaded.
         this.errorBubble_ = [loginAttempts, error];
@@ -1002,15 +894,14 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
     },
 
     /**
-     * Sets welcome and enterpriseinfo strings for offline gaia.
+     * Sets enterprise info strings for offline gaia.
      * Also sets callback and sends message whether we already have email and
      * should switch to the password screen with error.
      */
     loadOffline: function(params) {
       var offlineLogin = $('offline-gaia');
-      var strings = params.localizedStrings;
-      if ('stringEnterpriseInfo' in strings)
-        offlineLogin.enterpriseInfo = strings['stringEnterpriseInfo'];
+      if ('enterpriseInfoMessage' in params)
+        offlineLogin.enterpriseInfo = params['enterpriseInfoMessage'];
       if ('emailDomain' in params)
         offlineLogin.emailDomain = '@' + params['emailDomain'];
       offlineLogin.setEmail(params.email);

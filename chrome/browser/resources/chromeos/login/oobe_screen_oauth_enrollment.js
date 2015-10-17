@@ -179,7 +179,7 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
      */
     onBeforeShow: function(data) {
       $('login-header-bar').signinUIState = SIGNIN_UI_STATE.ENROLLMENT;
-      $('inner-container').classList.add('new-gaia-flow');
+      $('progress-dots').hidden = true;
       var gaiaParams = {};
       gaiaParams.gaiaUrl = data.gaiaUrl;
       gaiaParams.clientId = data.clientId;

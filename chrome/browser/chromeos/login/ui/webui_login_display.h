@@ -58,7 +58,6 @@ class WebUILoginDisplay : public LoginDisplay,
              const SigninSpecifics& specifics) override;
   bool IsSigninInProgress() const override;
   void Signout() override;
-  void CreateAccount() override;
   void CompleteLogin(const UserContext& user_context) override;
 
   void OnSigninScreenReady() override;
@@ -80,7 +79,6 @@ class WebUILoginDisplay : public LoginDisplay,
 
   void HandleGetUsers() override;
   void CheckUserStatus(const std::string& user_id) override;
-  const user_manager::UserList& GetUsers() const override;
   bool IsUserWhitelisted(const std::string& user_id) override;
 
   // ui::UserActivityDetector implementation:

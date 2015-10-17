@@ -42,9 +42,6 @@ class SignInScreenController : public user_manager::RemoveUserDelegate,
   // Query to send list of users to user selection screen.
   void SendUserList();
 
-  // Provide current list of users on user selection screen.
-  const user_manager::UserList& GetUsers();
-
   // Runs OAauth token validity check.
   void CheckUserStatus(const std::string& user_id);
 

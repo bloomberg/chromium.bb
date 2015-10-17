@@ -1502,29 +1502,11 @@ Press any key to continue exploring.
   <message name="IDS_LOGIN_PASSWORD_CHANGED_DIALOG_BOX_TITLE" desc="Title for the password changed dialog box">
     Sign in
   </message>
-  <message name="IDS_LOGIN_PASSWORD_CHANGED_TITLE" desc="Title of the dialog shown when password change has been detected">
-    Your password has changed
-  </message>
-  <message name="IDS_LOGIN_PASSWORD_CHANGED_DESC" desc="Detailed description of the password changed dialog">
-    Your Google Account password has changed since the last time you signed in on this computer.
-  </message>
-  <message name="IDS_LOGIN_PASSWORD_CHANGED_MORE_INFO" desc="Additional information on the password changed dialog">
-    Because <ph name="IDS_SHORT_PRODUCT_OS_NAME">$1<ex>Chrome OS</ex></ph> securely encrypts all your local data, you must enter the old password now to unlock that data.
-  </message>
   <message name="IDS_LOGIN_PASSWORD_CHANGED_OLD_PASSWORD_HINT" desc="Old password field hint on the password changed dialog.">
     Enter old password
   </message>
   <message name="IDS_LOGIN_PASSWORD_CHANGED_INCORRECT_OLD_PASSWORD" desc="Error that is shown when incorrect old password was supplied for user cryptohome migration.">
     Incorrect password
-  </message>
-  <message name="IDS_LOGIN_PASSWORD_CHANGED_CANT_REMEMBER" desc="Text of the link that lets user skip old password input on the password changed dialog">
-    Can't remember old password?
-  </message>
-  <message name="IDS_LOGIN_PASSWORD_CHANGED_BACK_BUTTON" desc="Text on the button that closes password changed dialog or navigates back through its states.">
-    Back
-  </message>
-  <message name="IDS_LOGIN_PASSWORD_CHANGED_PROCEED_ANYWAY" desc="Button to proceed without providing old password on the password changed dialog">
-    If you cannot remember your password, you may proceed but local data will be lost. Only synced settings and data will be retrieved.
   </message>
   <message name="IDS_LOGIN_PASSWORD_CHANGED_PROCEED_ANYWAY_BUTTON" desc="Button to proceed without providing old password on the password changed dialog.">
     Proceed anyway
@@ -1536,50 +1518,32 @@ Press any key to continue exploring.
     Migrate all Chrome OS data to the new password
 (requires previous password)
   </message>
-  <message name="IDS_LOGIN_NEWGAIA_PASSWORD_CHANGED_TITLE" desc="Title for the password changed dialog box">
+  <message name="IDS_LOGIN_PASSWORD_CHANGED_TITLE" desc="Title for the password changed dialog box">
     To unlock and restore your local data, please enter your old <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> password.
   </message>
-  <message name="IDS_LOGIN_NEWGAIA_PASSWORD_CHANGED_FORGOT_PASSWORD" desc="Text of the link that lets user skip old password input on the password changed dialog in the newgaia flow">
+  <message name="IDS_LOGIN_PASSWORD_CHANGED_FORGOT_PASSWORD" desc="Text of the link that lets user skip old password input on the password changed dialog in the GAIA flow">
     Forgot your old password?
   </message>
-  <message name="IDS_LOGIN_NEWGAIA_PASSWORD_CHANGED_PROCEED_ANYWAY" desc="Button to proceed without providing old password on the password changed dialog in the newgaia flow">
+  <message name="IDS_LOGIN_PASSWORD_CHANGED_PROCEED_ANYWAY" desc="Button to proceed without providing old password on the password changed dialog in the GAIA flow">
     You may proceed, but only your synced data and settings will be restored. All local data will be lost.
   </message>
-  <message name="IDS_LOGIN_NEWGAIA_PASSWORD_CHANGED_TRY_AGAIN" desc="Label for the retry button on the proceed anyway step in the newgaia password changed flow">
+  <message name="IDS_LOGIN_PASSWORD_CHANGED_TRY_AGAIN" desc="Label for the retry button on the proceed anyway step in the the GAIA password changed flow">
     Try again
   </message>
   <message name="IDS_LOGIN_PREVIOUS_PASSWORD" desc="Password field text on the password changed dialog">
     Previous password
   </message>
-  <message name="IDS_LOGIN_SAML_NOTICE" desc="Text message displayed above SAML portal to early indicate that the user is being redirected to another sign-in provider.">
-    The sign-in service below is hosted by <ph name="SAML_DOMAIN">$1<ex>saml.com</ex></ph>. Sign in to continue.
-  </message>
-  <message name="IDS_LOGIN_SAML_NOTICE_NEW_GAIA_FLOW" desc="Text message displayed above SAML portal to early indicate that the user is being redirected to another sign-in provider. This is the version of the string used in the new GAIA flow.">
+  <message name="IDS_LOGIN_SAML_NOTICE" desc="Text message displayed above SAML portal to early indicate that the user is being redirected to another sign-in provider. This is the version of the string used in the GAIA flow.">
     This sign-in service is hosted by <ph name="SAML_DOMAIN">$1<ex>saml.com</ex></ph>.
   </message>
   <message name="IDS_LOGIN_CONFIRM_PASSWORD_TITLE" desc="Title for the confirm password dialog.">
-    Complete sign-in
-  </message>
-  <message name="IDS_LOGIN_CONFIRM_PASSWORD_TITLE_NEW_GAIA_FLOW" desc="Title for the confirm password dialog.">
     Please re-enter your password to update your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> profile.
   </message>
   <message name="IDS_LOGIN_CONFIRM_PASSWORD_LABEL" desc="Label for the password field on the confirm password dialog.">
-    Please re-enter your password
-  </message>
-  <message name="IDS_LOGIN_CONFIRM_PASSWORD_LABEL_NEW_GAIA_FLOW" desc="Label for the password field on the confirm password dialog.">
     Confirm your password
   </message>
   <message name="IDS_LOGIN_CONFIRM_PASSWORD_INCORRECT_PASSWORD" desc="Error that is shown when incorrect password was supplied.">
     Incorrect password
-  </message>
-  <message name="IDS_LOGIN_CONFIRM_PASSWORD_CONFIRM_BUTTON" desc="Label for the confirm button on the confirm password dialog.">
-    Confirm
-  </message>
-  <message name="IDS_LOGIN_CONFIRM_PASSWORD_TEXT" desc="Text to explain to user why password needs to be typed again in the confirm password UI.">
-    Re-entering your password will allow you to sign in when you are offline.
-  </message>
-  <message name="IDS_LOGIN_CONFIRM_PASSWORD_ERROR_TEXT" desc="Error text to show when the password typed by the user could not be verified.">
-    Sorry, your password could not be verified. Please try again.
   </message>
   <message name="IDS_LOGIN_ACCOUNT_SETUP_CANCEL_DIALOG_TITLE" desc="Text to show in confirmation cancel dialog.">
     Cancel account setup?
@@ -1605,62 +1569,35 @@ Press any key to continue exploring.
   <message name="IDS_LOGIN_FATAL_ERROR_TRY_AGAIN_BUTTON" desc="Label for a button which starts sign-in from the beginning after fatal error.">
     Try again
   </message>
-  <message name="IDS_LOGIN_OFFLINE_EMAIL" desc="Email field text on the offline login screen. Note: should be the same as the one used on the Gaia sign-in page.">
-    Email
-  </message>
-  <message name="IDS_LOGIN_OFFLINE_PASSWORD" desc="Password field text on the offline login screen. Note: should be the same as the one used on the Gaia sign-in page.">
-    Password
-  </message>
-  <message name="IDS_LOGIN_OFFLINE_SIGNIN" desc="Sign-in text on the offline login screen. Note: should be the same as the one used on the Gaia sign-in page.">
-    Sign in
-  </message>
-  <message name="IDS_LOGIN_OFFLINE_EMPTY_EMAIL" desc="Alert message about empty email on the offline login screen. Note: should be the same as the one used on the Gaia sign-in page.">
-    Enter your email address.
-  </message>
-  <message name="IDS_LOGIN_OFFLINE_EMPTY_PASSWORD" desc="Alert message about empty password on the offline login screen.">
-    Enter your password.
-  </message>
-  <message name="IDS_LOGIN_OFFLINE_ERROR" desc="Error alert message on the offline login screen. Note: should be the same as the one used on the Gaia sign-in page.">
-    The username or password you entered is incorrect.
-  </message>
-  <message name="IDS_NEWGAIA_OFFLINE_WELCOME" desc="Message shown during newgaia flow in the beginning of the offline login.">
+  <message name="IDS_OFFLINE_LOGIN_WELCOME" desc="Message shown during the GAIA flow in the beginning of the offline login.">
     Sign in to your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
   </message>
-  <message name="IDS_NEWGAIA_OFFLINE_DEVICE_MANAGED_BY_NOTICE" desc="Text for notifications showing that this is managed device.">
+  <message name="IDS_OFFLINE_LOGIN_DEVICE_MANAGED_BY_NOTICE" desc="Text for notifications showing that this is managed device.">
     Managed by <ph name="DOMAIN">$1<ex>acmecorp.com</ex></ph>
   </message>
-  <message name="IDS_NEWGAIA_OFFLINE_EMAIL" desc="Email field text on the offline login screen. Note: should be the same as the one used on the Gaia sign-in page.">
+  <message name="IDS_OFFLINE_LOGIN_EMAIL" desc="Email field text on the offline login screen. Note: should be the same as the one used on the Gaia sign-in page.">
     Enter your email
   </message>
-  <message name="IDS_NEWGAIA_OFFLINE_PASSWORD" desc="Password field text on the offline login screen. Note: should be the same as the one used on the Gaia sign-in page.">
+  <message name="IDS_OFFLINE_LOGIN_PASSWORD" desc="Password field text on the offline login screen. Note: should be the same as the one used on the Gaia sign-in page.">
     Enter your password
   </message>
-  <message name="IDS_NEWGAIA_OFFLINE_INVALID_EMAIL" desc="Alert message about invalid email on the offline login screen. Note: should be the same as the one used on the Gaia sign-in page.">
+  <message name="IDS_OFFLINE_LOGIN_INVALID_EMAIL" desc="Alert message about invalid email on the offline login screen. Note: should be the same as the one used on the Gaia sign-in page.">
     Please enter a valid email address
   </message>
-  <message name="IDS_NEWGAIA_OFFLINE_INVALID_PASSWORD" desc="Alert message about mismatching email and password on the device">
+  <message name="IDS_OFFLINE_LOGIN_INVALID_PASSWORD" desc="Alert message about mismatching email and password on the device">
     The email and password you entered don't match
   </message>
-  <message name="IDS_NEWGAIA_OFFLINE_NEXT_BUTTON_TEXT" desc="Text shown on next button during offline signin flow dialog. Note: should be the same as the one used on the Gaia sign-in page.">
+  <message name="IDS_OFFLINE_LOGIN_NEXT_BUTTON_TEXT" desc="Text shown on next button during offline signin flow dialog. Note: should be the same as the one used on the Gaia sign-in page.">
     Next
   </message>
-  <message name="IDS_NEWGAIA_OFFLINE_FORGOT_PASSWORD_BUTTON_TEXT" desc="Text shown on forgot password button during offline signin flow. Note: should be the same as the one used on the Gaia sign-in page.">
+  <message name="IDS_OFFLINE_LOGIN_FORGOT_PASSWORD_BUTTON_TEXT" desc="Text shown on forgot password button during offline signin flow. Note: should be the same as the one used on the Gaia sign-in page.">
     Forgot password?
   </message>
-  <message name="IDS_NEWGAIA_OFFLINE_FORGOT_PASSWORD_DIALOG_TEXT" desc="Text shown on forgot password dialog during offline signin flow.">
+  <message name="IDS_OFFLINE_LOGIN_FORGOT_PASSWORD_DIALOG_TEXT" desc="Text shown on forgot password dialog during offline signin flow.">
     To recover your account information, go to: google.com/accounts/recovery
   </message>
-  <message name="IDS_NEWGAIA_OFFLINE_CLOSE_BUTTON_TEXT" desc="Text shown on forgot password dialog close button during offline signin flow.">
+  <message name="IDS_OFFLINE_LOGIN_CLOSE_BUTTON_TEXT" desc="Text shown on forgot password dialog close button during offline signin flow.">
     Close
-  </message>
-  <message name="IDS_CREATE_ACCOUNT_BUTTON">
-    Create a Google Account now
-  </message>
-  <message name="IDS_CANT_ACCESS_ACCOUNT_BUTTON">
-    Can't access your account?
-  </message>
-  <message name="IDS_BROWSE_WITHOUT_SIGNING_IN_BUTTON">
-    Skip sign-in and browse as Guest
   </message>
   <message name="IDS_WHITELIST_ERROR_TRY_AGAIN_BUTTON" desc="The text of the try again button on the whitelist error UI.">
     Try again
@@ -1668,26 +1605,8 @@ Press any key to continue exploring.
   <message name="IDS_WHITELIST_ERROR_LEARN_MORE_BUTTON" desc="The text of the learn more link on the whitelist error UI.">
     Learn more
   </message>
-  <message name="IDS_CREATE_ACCOUNT_HTML" desc="Text shown on side of Google sign-in UI.">
-    If you don't have a Google Account you can <ph name="LINK_START">$1<ex>&gt;a&lt;</ex></ph>create a Google Account<ph name="LINK_END">$2<ex>&gt;/a&lt;</ex></ph> now.
-  </message>
   <message name="IDS_BROWSE_WITHOUT_SIGNING_IN_HTML" desc="Text shown on side of Google sign-in UI.">
     You may also skip signing in and <ph name="LINK_START">$1<ex>&gt;a&lt;</ex></ph>browse as Guest<ph name="LINK_END">$2<ex>&gt;/a&lt;</ex></ph>.
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_FEATURE_NAME" desc="Title close to icon shown on side of Google sign-in UI to create a supervised user.">
-    Supervised user
-  </message>
-    <message name="IDS_CREATE_SUPERVISED_USER_HTML" desc="Text with actual link shown on side of Google sign-in UI to create a supervised user.">
-      <ph name="LINK_START">$1<ex>&gt;a&lt;</ex></ph>Create a supervised user<ph name="LINK_END">$2<ex>&gt;/a&lt;</ex></ph> for this device.
-    </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_NO_MANAGER_TEXT" desc="Text shown when supervised user can be created, but no users that can be manager exist.">
-    At least one account must exist on this device before creating a supervised user.
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_CREATION_RESTRICTED_TEXT" desc="Text shown when supervised user can be created, but owner of the device restricted supervised user creation or whitelist has been enabled for this device.">
-    Creation of supervised users is restricted by the owner of this device.
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_NO_MANAGER_EXCEPT_KIDS_TEXT" desc="Text shown when supervised user can be created, but no users except kids that can be manager exist.">
-    Sorry, you need to add at least one Google account to this device before you can create a supervised user. Google accounts for kids cannot be used to create a supervised user.
   </message>
   <message name="IDS_CREATE_SUPERVISED_INTRO_TEXT_TITLE" desc="Supervised user dialog, intro page, title">
     What is a supervised user?
@@ -2571,10 +2490,7 @@ Press any key to continue exploring.
   <message name="IDS_IMAGE_SCREEN_PROFILE_LOADING_PHOTO" desc="The title of the loading stub for Google profile image on image selection screen. Please keep in sync with IDS_OPTIONS_CHANGE_PICTURE_PROFILE_LOADING_PHOTO.">
     * Google Profile photo (loading)
   </message>
-  <message name="IDS_IMAGE_SCREEN_SYNCING_PREFERENCES" desc="The message displayed on the image screen while user preferences are syncing.">
-    Syncing your preferences
-  </message>
-  <message name="IDS_IMAGE_SCREEN_SYNCING_PREFERENCES_NEW_GAIA_FLOW" desc="The message displayed on the image screen of new Gaia flow while user preferences are syncing.">
+  <message name="IDS_IMAGE_SCREEN_SYNCING_PREFERENCES" desc="The message displayed on the image screen of the GAIA flow while user preferences are syncing.">
     Syncing your preferences...
   </message>
   <message name="IDS_OPTIONS_SETTINGS_INTERNET_TAB_WIMAX" desc="In settings Internet options, the title for the WiMAX tab.">
@@ -6234,9 +6150,6 @@ All users must sign out to continue.
   </message>
 
   <!-- About consumer management service -->
-  <message name="IDS_LOGIN_CONSUMER_MANAGEMENT_ENROLLMENT" desc="A message to show at the sign-in page when consumer management enrollment is in progress.">
-    The owner must sign in to complete enrollment with Google Device Manager.
-  </message>
   <message name="IDS_OPTIONS_DEVICE_CONTROL_SECTION_TITLE" desc="The title of the device control section in the settings page.">
     Device control
   </message>

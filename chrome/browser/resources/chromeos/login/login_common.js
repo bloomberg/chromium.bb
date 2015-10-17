@@ -379,13 +379,6 @@ cr.define('cr.ui', function() {
     Oobe.getInstance().setClientAreaSize(width, height);
   };
 
-  /**
-   * Checks whether the New Gaia flow is active.
-   */
-  Oobe.isNewGaiaFlow = function() {
-    return document.querySelector('.new-gaia-flow') != undefined;
-  };
-
   // Export
   return {
     Oobe: Oobe

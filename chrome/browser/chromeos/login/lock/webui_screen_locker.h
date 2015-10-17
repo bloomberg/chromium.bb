@@ -75,7 +75,6 @@ class WebUIScreenLocker : public WebUILoginView,
 
   // LoginDisplay::Delegate:
   void CancelPasswordChangedFlow() override;
-  void CreateAccount() override;
   void CompleteLogin(const UserContext& user_context) override;
   base::string16 GetConnectedNetworkName() override;
   bool IsSigninInProgress() const override;

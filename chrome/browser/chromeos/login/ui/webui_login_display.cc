@@ -76,10 +76,6 @@ void WebUILoginDisplay::HandleGetUsers() {
   SignInScreenController::Get()->SendUserList();
 }
 
-const user_manager::UserList& WebUILoginDisplay::GetUsers() const {
-  return SignInScreenController::Get()->GetUsers();
-}
-
 void WebUILoginDisplay::CheckUserStatus(const std::string& user_id) {
   SignInScreenController::Get()->CheckUserStatus(user_id);
 }
@@ -214,12 +210,6 @@ void WebUILoginDisplay::CancelUserAdding() {
     return;
   }
   UserAddingScreen::Get()->Cancel();
-}
-
-void WebUILoginDisplay::CreateAccount() {
-  DCHECK(delegate_);
-  if (delegate_)
-    delegate_->CreateAccount();
 }
 
 void WebUILoginDisplay::CompleteLogin(const UserContext& user_context) {

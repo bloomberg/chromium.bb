@@ -398,33 +398,19 @@ void SigninScreenHandler::DeclareLocalizedValues(
                IDS_MULTI_PROFILES_OWNER_PRIMARY_ONLY_MSG);
 
   // Strings used by password changed dialog.
-  builder->Add("passwordChangedDesc", IDS_LOGIN_PASSWORD_CHANGED_DESC);
-  builder->AddF("passwordChangedMoreInfo",
-                IDS_LOGIN_PASSWORD_CHANGED_MORE_INFO,
-                IDS_SHORT_PRODUCT_OS_NAME);
-
   builder->Add("oldPasswordHint", IDS_LOGIN_PASSWORD_CHANGED_OLD_PASSWORD_HINT);
   builder->Add("oldPasswordIncorrect",
                IDS_LOGIN_PASSWORD_CHANGED_INCORRECT_OLD_PASSWORD);
-  builder->Add("passwordChangedCantRemember",
-               IDS_LOGIN_PASSWORD_CHANGED_CANT_REMEMBER);
-  builder->Add("passwordChangedBackButton",
-               IDS_LOGIN_PASSWORD_CHANGED_BACK_BUTTON);
-  builder->Add("passwordChangedsOkButton", IDS_OK);
-  builder->Add("passwordChangedProceedAnyway",
-               IDS_LOGIN_PASSWORD_CHANGED_PROCEED_ANYWAY);
   builder->Add("proceedAnywayButton",
                IDS_LOGIN_PASSWORD_CHANGED_PROCEED_ANYWAY_BUTTON);
-  builder->Add("nextButtonText", IDS_NEWGAIA_OFFLINE_NEXT_BUTTON_TEXT);
+  builder->Add("nextButtonText", IDS_OFFLINE_LOGIN_NEXT_BUTTON_TEXT);
   builder->Add("forgotOldPasswordButtonText",
-               IDS_LOGIN_NEWGAIA_PASSWORD_CHANGED_FORGOT_PASSWORD);
-  builder->AddF("passwordChangedTitle",
-                IDS_LOGIN_NEWGAIA_PASSWORD_CHANGED_TITLE,
+               IDS_LOGIN_PASSWORD_CHANGED_FORGOT_PASSWORD);
+  builder->AddF("passwordChangedTitle", IDS_LOGIN_PASSWORD_CHANGED_TITLE,
                 ash::GetChromeOSDeviceName());
   builder->Add("passwordChangedProceedAnywayTitle",
-               IDS_LOGIN_NEWGAIA_PASSWORD_CHANGED_PROCEED_ANYWAY);
-  builder->Add("passwordChangedTryAgain",
-               IDS_LOGIN_NEWGAIA_PASSWORD_CHANGED_TRY_AGAIN);
+               IDS_LOGIN_PASSWORD_CHANGED_PROCEED_ANYWAY);
+  builder->Add("passwordChangedTryAgain", IDS_LOGIN_PASSWORD_CHANGED_TRY_AGAIN);
   builder->Add("publicAccountInfoFormat", IDS_LOGIN_PUBLIC_ACCOUNT_INFO_FORMAT);
   builder->Add("publicAccountReminder",
                IDS_LOGIN_PUBLIC_ACCOUNT_SIGNOUT_REMINDER);
@@ -443,25 +429,10 @@ void SigninScreenHandler::DeclareLocalizedValues(
                    chrome::kLegacySupervisedUserManagementDisplayURL));
   builder->Add("removeUserWarningButtonTitle",
                IDS_LOGIN_POD_USER_REMOVE_WARNING_BUTTON);
-
-  if (StartupUtils::IsWebviewSigninEnabled()) {
-    builder->Add("samlNotice", IDS_LOGIN_SAML_NOTICE_NEW_GAIA_FLOW);
-    builder->AddF("confirmPasswordTitle",
-                  IDS_LOGIN_CONFIRM_PASSWORD_TITLE_NEW_GAIA_FLOW,
-                  ash::GetChromeOSDeviceName());
-    builder->Add("confirmPasswordLabel",
-                 IDS_LOGIN_CONFIRM_PASSWORD_LABEL_NEW_GAIA_FLOW);
-  } else {
-    builder->Add("samlNotice", IDS_LOGIN_SAML_NOTICE);
-    builder->Add("confirmPasswordTitle", IDS_LOGIN_CONFIRM_PASSWORD_TITLE);
-    builder->Add("confirmPasswordLabel", IDS_LOGIN_CONFIRM_PASSWORD_LABEL);
-  }
-  builder->Add("confirmPasswordConfirmButton",
-               IDS_LOGIN_CONFIRM_PASSWORD_CONFIRM_BUTTON);
-  builder->Add("confirmPasswordText", IDS_LOGIN_CONFIRM_PASSWORD_TEXT);
-  builder->Add("confirmPasswordErrorText",
-               IDS_LOGIN_CONFIRM_PASSWORD_ERROR_TEXT);
-
+  builder->Add("samlNotice", IDS_LOGIN_SAML_NOTICE);
+  builder->AddF("confirmPasswordTitle", IDS_LOGIN_CONFIRM_PASSWORD_TITLE,
+                ash::GetChromeOSDeviceName());
+  builder->Add("confirmPasswordLabel", IDS_LOGIN_CONFIRM_PASSWORD_LABEL);
   builder->Add("confirmPasswordIncorrectPassword",
                IDS_LOGIN_CONFIRM_PASSWORD_INCORRECT_PASSWORD);
   builder->Add("accountSetupCancelDialogTitle",
@@ -496,7 +467,6 @@ void SigninScreenHandler::RegisterMessages() {
               &SigninScreenHandler::HandleToggleEnableDebuggingScreen);
   AddCallback("toggleKioskEnableScreen",
               &SigninScreenHandler::HandleToggleKioskEnableScreen);
-  AddCallback("createAccount", &SigninScreenHandler::HandleCreateAccount);
   AddCallback("accountPickerReady",
               &SigninScreenHandler::HandleAccountPickerReady);
   AddCallback("wallpaperReady", &SigninScreenHandler::HandleWallpaperReady);
@@ -888,9 +858,10 @@ void SigninScreenHandler::RefocusCurrentPod() {
   core_oobe_actor_->RefocusCurrentPod();
 }
 
-void SigninScreenHandler::OnUserRemoved(const std::string& username) {
+void SigninScreenHandler::OnUserRemoved(const std::string& username,
+                                        bool last_user_removed) {
   CallJS("login.AccountPickerScreen.removeUser", username);
-  if (delegate_->GetUsers().empty())
+  if (last_user_removed)
     OnShowAddUser();
 }
 
@@ -1171,11 +1142,6 @@ void SigninScreenHandler::HandleWallpaperReady() {
 void SigninScreenHandler::HandleSignOutUser() {
   if (delegate_)
     delegate_->Signout();
-}
-
-void SigninScreenHandler::HandleCreateAccount() {
-  if (delegate_)
-    delegate_->CreateAccount();
 }
 
 void SigninScreenHandler::HandleOpenProxySettings() {

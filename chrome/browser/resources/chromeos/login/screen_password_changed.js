@@ -12,151 +12,37 @@ login.createScreen('PasswordChangedScreen', 'password-changed', function() {
       'show'
     ],
 
+    gaiaPasswordChanged_: null,
+
     /** @override */
     decorate: function() {
-      $('old-password').addEventListener(
-        'keydown', function(e) {
-          $('password-changed').classList.remove('password-error');
-          if (e.keyIdentifier == 'Enter') {
-            $('password-changed').migrate();
-            e.stopPropagation();
-          }
-        });
-      $('old-password').addEventListener(
-        'keyup', function(e) {
-          if ($('password-changed').disabled)
-            return;
-          $('password-changed-ok-button').disabled = this.value.length == 0;
-        });
-      $('password-changed-cant-remember-link').addEventListener(
-        'click', function(e) {
-          if (this.classList.contains('disabled'))
-            return;
-          var screen = $('password-changed');
-          if (screen.classList.contains('migrate')) {
-            screen.classList.remove('migrate');
-            screen.classList.add('resync');
-            $('password-changed-proceed-button').focus();
-            $('password-changed').classList.remove('password-error');
-            $('old-password').value = '';
-            $('password-changed-ok-button').disabled = true;
-          }
-        });
+      this.gaiaPasswordChanged_ = $('gaia-password-changed');
+      this.gaiaPasswordChanged_.addEventListener('cancel',
+                                                 this.cancel.bind(this));
 
-      var gaiaPasswordChanged = $('gaia-password-changed');
-      gaiaPasswordChanged.addEventListener('cancel', function(e) {
-          chrome.send('cancelPasswordChangedFlow',
-              [$('gaia-password-changed').email]);
-          gaiaPasswordChanged.reset();
-        });
-
-      gaiaPasswordChanged.addEventListener('passwordEnter', function(e) {
+      this.gaiaPasswordChanged_.addEventListener('passwordEnter', function(e) {
+          $('login-header-bar').disabled = true;
           chrome.send('migrateUserData', [e.detail.password]);
-        });
+      });
 
-      gaiaPasswordChanged.addEventListener('proceedAnyway', function() {
+      this.gaiaPasswordChanged_.addEventListener('proceedAnyway', function() {
+          $('login-header-bar').disabled = true;
           chrome.send('resyncUserData');
-        });
-    },
-
-    /**
-     * Screen controls.
-     * @type {array} Array of Buttons.
-     */
-    get buttons() {
-      var buttons = [];
-
-      var backButton = this.ownerDocument.createElement('button');
-      backButton.id = 'password-changed-back-button';
-      backButton.textContent =
-          loadTimeData.getString('passwordChangedBackButton');
-      backButton.addEventListener('click', function(e) {
-        var screen = $('password-changed');
-        if (screen.classList.contains('migrate')) {
-          screen.cancel();
-        } else {
-          // Resync all data UI step.
-          screen.classList.remove('resync');
-          screen.classList.add('migrate');
-          $('old-password').focus();
-        }
-        e.stopPropagation();
       });
-      buttons.push(backButton);
-
-      var okButton = this.ownerDocument.createElement('button');
-      okButton.id = 'password-changed-ok-button';
-      okButton.textContent = loadTimeData.getString('passwordChangedsOkButton');
-      okButton.addEventListener('click', function(e) {
-        $('password-changed').migrate();
-        e.stopPropagation();
-      });
-      buttons.push(okButton);
-
-      var proceedAnywayButton = this.ownerDocument.createElement('button');
-      proceedAnywayButton.id = 'password-changed-proceed-button';
-      proceedAnywayButton.textContent =
-          loadTimeData.getString('proceedAnywayButton');
-      proceedAnywayButton.addEventListener('click', function(e) {
-        var screen = $('password-changed');
-        if (screen.classList.contains('resync'))
-          $('password-changed').resync();
-        e.stopPropagation();
-      });
-      buttons.push(proceedAnywayButton);
-
-      return buttons;
-    },
-
-    /**
-     * Returns a control which should receive an initial focus.
-     */
-    get defaultControl() {
-      return $('old-password');
-    },
-
-    /**
-     * True if the the screen is disabled (handles no user interaction).
-     * @type {boolean}
-     */
-    disabled_: false,
-    get disabled() {
-      return this.disabled_;
-    },
-    set disabled(value) {
-      this.disabled_ = value;
-      var controls = this.querySelectorAll('button,input');
-      for (var i = 0, control; control = controls[i]; ++i) {
-        control.disabled = value;
-      }
-      $('login-header-bar').disabled = value;
-      $('password-changed-cant-remember-link').classList[
-          value ? 'add' : 'remove']('disabled');
     },
 
     /**
      * Cancels password migration and drops the user back to the login screen.
      */
     cancel: function() {
-      this.disabled = true;
-      chrome.send('cancelPasswordChangedFlow', ['']);
-    },
-
-    /**
-     * Starts migration process using old password that user provided.
-     */
-    migrate: function() {
-      if (!$('old-password').value) {
-        $('old-password').focus();
-        return;
+      if (!this.gaiaPasswordChanged_.disabled) {
+        chrome.send('cancelPasswordChangedFlow',
+                    [this.gaiaPasswordChanged_.email]);
       }
-      this.disabled = true;
-      chrome.send('migrateUserData', [$('old-password').value]);
     },
 
     onAfterShow: function(data) {
-      if (Oobe.isNewGaiaFlow())
-        $('gaia-password-changed').focus();
+      this.gaiaPasswordChanged_.focus();
     },
 
     /**
@@ -167,43 +53,22 @@ login.createScreen('PasswordChangedScreen', 'password-changed', function() {
     },
 
     /**
-     * Starts migration process by removing old cryptohome and re-syncing data.
-     */
-    resync: function() {
-      this.disabled = true;
-      chrome.send('resyncUserData');
-    },
-
-    /**
      * Show password changed screen.
      * @param {boolean} showError Whether to show the incorrect password error.
      */
     show: function(showError, email) {
-      if (Oobe.isNewGaiaFlow()) {
-        $('password-changed-contents').hidden = true;
-        $('password-changed-controls').hidden = true;
-        var gaiaPasswordChanged = $('gaia-password-changed');
-        gaiaPasswordChanged.reset();
-        gaiaPasswordChanged.hidden = false;
-        if (showError)
-          gaiaPasswordChanged.invalidate();
-        if (email)
-          gaiaPasswordChanged.email = email;
-      } else {
-        var screen = $('password-changed');
-        screen.classList.toggle('password-error', showError);
-        screen.classList.add('migrate');
-        screen.classList.remove('resync');
-        $('old-password').value = '';
-        $('password-changed').disabled = false;
-      }
+      this.gaiaPasswordChanged_.reset();
+      if (showError)
+        this.gaiaPasswordChanged_.invalidate();
+      if (email)
+        this.gaiaPasswordChanged_.email = email;
+
       // We'll get here after the successful online authentication.
       // It assumes session is about to start so hides login screen controls.
       Oobe.getInstance().headerHidden = false;
       Oobe.showScreen({id: SCREEN_PASSWORD_CHANGED});
+      $('login-header-bar').disabled = false;
       $('login-header-bar').signinUIState = SIGNIN_UI_STATE.PASSWORD_CHANGED;
-      if (!Oobe.isNewGaiaFlow())
-        $('password-changed-ok-button').disabled = true;
     }
   };
 });

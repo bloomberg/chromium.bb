@@ -220,10 +220,6 @@ void WebUIScreenLocker::CancelPasswordChangedFlow()  {
   NOTREACHED();
 }
 
-void WebUIScreenLocker::CreateAccount() {
-  NOTREACHED();
-}
-
 void WebUIScreenLocker::CompleteLogin(const UserContext& user_context) {
   NOTREACHED();
 }

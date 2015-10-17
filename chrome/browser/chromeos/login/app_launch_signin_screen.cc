@@ -76,10 +76,6 @@ void AppLaunchSigninScreen::CancelUserAdding() {
   NOTREACHED();
 }
 
-void AppLaunchSigninScreen::CreateAccount() {
-  NOTREACHED();
-}
-
 void AppLaunchSigninScreen::CompleteLogin(const UserContext& user_context) {
   NOTREACHED();
 }

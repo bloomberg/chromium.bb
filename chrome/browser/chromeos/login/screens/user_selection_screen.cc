@@ -277,8 +277,7 @@ void UserSelectionScreen::OnBeforeUserRemoved(const std::string& username) {
 void UserSelectionScreen::OnUserRemoved(const std::string& username) {
   if (!handler_)
     return;
-
-  handler_->OnUserRemoved(username);
+  handler_->OnUserRemoved(username, users_.empty());
 }
 
 void UserSelectionScreen::OnUserImageChanged(const user_manager::User& user) {
@@ -286,10 +285,6 @@ void UserSelectionScreen::OnUserImageChanged(const user_manager::User& user) {
     return;
   handler_->OnUserImageChanged(user);
   // TODO(antrim) : updateUserImage(user.email())
-}
-
-const user_manager::UserList& UserSelectionScreen::GetUsers() const {
-  return users_;
 }
 
 void UserSelectionScreen::OnPasswordClearTimerExpired() {
@@ -346,11 +341,10 @@ const user_manager::UserList UserSelectionScreen::PrepareUserListForSending(
 
 void UserSelectionScreen::SendUserList() {
   base::ListValue users_list;
-  const user_manager::UserList& users = GetUsers();
 
   // TODO(nkostylev): Move to a separate method in UserManager.
   // http://crbug.com/230852
-  bool single_user = users.size() == 1;
+  bool single_user = users_.size() == 1;
   bool is_signin_to_add = LoginDisplayHostImpl::default_host() &&
                           user_manager::UserManager::Get()->IsUserLoggedIn();
   std::string owner;
@@ -361,7 +355,7 @@ void UserSelectionScreen::SendUserList() {
   bool is_enterprise_managed = connector->IsEnterpriseManaged();
 
   const user_manager::UserList users_to_send =
-      PrepareUserListForSending(users, owner, is_signin_to_add);
+      PrepareUserListForSending(users_, owner, is_signin_to_add);
 
   user_auth_type_map_.clear();
 
@@ -540,7 +534,7 @@ EasyUnlockService* UserSelectionScreen::GetEasyUnlockServiceForUser(
     return nullptr;
 
   const user_manager::User* unlock_user = nullptr;
-  for (const user_manager::User* user : GetUsers()) {
+  for (const user_manager::User* user : users_) {
     if (user->email() == user_id) {
       unlock_user = user;
       break;

@@ -1007,11 +1007,6 @@ cr.define('cr.ui.login', function() {
    */
   DisplayManager.setEnterpriseInfo = function(messageText, assetId) {
     $('offline-gaia').enterpriseInfo = messageText;
-    $('enterprise-info-message').textContent = messageText;
-    if (messageText) {
-      $('enterprise-info').hidden = false;
-    }
-
     $('asset-id').textContent = ((assetId == "") ? "" :
         loadTimeData.getStringF('assetIdLabel', assetId));
   };

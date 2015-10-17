@@ -48,11 +48,11 @@ class AppLaunchSigninScreen : public SigninScreenHandlerDelegate,
  private:
   void InitOwnerUserList();
   user_manager::UserManager* GetUserManager();
+  const user_manager::UserList& GetUsers() const;
 
   // SigninScreenHandlerDelegate implementation:
   void CancelPasswordChangedFlow() override;
   void CancelUserAdding() override;
-  void CreateAccount() override;
   void CompleteLogin(const UserContext& user_context) override;
   void Login(const UserContext& user_context,
              const SigninSpecifics& specifics) override;
@@ -70,7 +70,6 @@ class AppLaunchSigninScreen : public SigninScreenHandlerDelegate,
   void SetWebUIHandler(LoginDisplayWebUIHandler* webui_handler) override;
   virtual void ShowSigninScreenForCreds(const std::string& username,
                                         const std::string& password);
-  const user_manager::UserList& GetUsers() const override;
   bool IsShowGuest() const override;
   bool IsShowUsers() const override;
   bool IsSigninInProgress() const override;

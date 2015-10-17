@@ -5,7 +5,7 @@
 <title i18n-content="title"></title>
 <link rel="stylesheet" href="chrome://resources/css/text_defaults.css">
 <link rel="stylesheet" href="../ntp4/incognito_and_guest_tab.css">
-<link rel="stylesheet" href="login/enterprise_info.css">
+<link rel="stylesheet" href="guest_session_tab.css">
 <script>
 // Until themes can clear the cache, force-reload the theme stylesheet.
 document.write('<link id="incognitothemecss" rel="stylesheet" ' +
@@ -14,8 +14,7 @@ document.write('<link id="incognitothemecss" rel="stylesheet" ' +
 </script>
 </head>
 <body>
-<div id="enterprise-info" location="guest-tab"
-     i18n-values="visible:enterpriseInfoVisible;">
+<div id="enterprise-info" i18n-values="visible:enterpriseInfoVisible;">
   <img src="../../../../ui/webui/resources/images/business.svg">
   <span id="enterprise-info-message" i18n-content="enterpriseInfoMessage">
   </span>

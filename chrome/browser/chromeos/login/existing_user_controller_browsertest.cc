@@ -297,11 +297,6 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerUntrustedTest,
 }
 
 IN_PROC_BROWSER_TEST_F(ExistingUserControllerUntrustedTest,
-                       CreateAccountForbidden) {
-  existing_user_controller()->CreateAccount();
-}
-
-IN_PROC_BROWSER_TEST_F(ExistingUserControllerUntrustedTest,
                        GuestLoginForbidden) {
   existing_user_controller()->Login(
       UserContext(user_manager::USER_TYPE_GUEST, std::string()),
