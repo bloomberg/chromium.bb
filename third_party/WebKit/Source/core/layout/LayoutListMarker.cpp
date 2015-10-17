@@ -36,7 +36,7 @@
 
 namespace blink {
 
-const int cMarkerPadding = 7;
+const int cMarkerPaddingPx = 7;
 
 enum SequenceType { NumericSequence, AlphabeticSequence };
 
@@ -1034,10 +1034,13 @@ LayoutRect LayoutListMarker::localSelectionRect() const
     if (!box)
         return LayoutRect(LayoutPoint(), size());
     RootInlineBox& root = inlineBoxWrapper()->root();
-    LayoutUnit newLogicalTop = root.block().style()->isFlippedBlocksWritingMode() ? inlineBoxWrapper()->logicalBottom() - root.selectionBottom() : root.selectionTop() - inlineBoxWrapper()->logicalTop();
-    if (root.block().style()->isHorizontalWritingMode())
-        return LayoutRect(0, newLogicalTop, size().width(), root.selectionHeight());
-    return LayoutRect(newLogicalTop, 0, root.selectionHeight(), size().height());
+    const ComputedStyle* blockStyle = root.block().style();
+    LayoutUnit newLogicalTop = blockStyle->isFlippedBlocksWritingMode()
+        ? inlineBoxWrapper()->logicalBottom() - root.selectionBottom()
+        : root.selectionTop() - inlineBoxWrapper()->logicalTop();
+    return blockStyle->isHorizontalWritingMode()
+        ? LayoutRect(0, newLogicalTop, size().width(), root.selectionHeight())
+        : LayoutRect(newLogicalTop, 0, root.selectionHeight(), size().height());
 }
 
 void LayoutListMarker::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset) const
@@ -1179,7 +1182,7 @@ void LayoutListMarker::updateMargins()
 
     if (isInside()) {
         if (isImage()) {
-            marginEnd = cMarkerPadding;
+            marginEnd = cMarkerPaddingPx;
         } else {
             switch (listStyleCategory()) {
             case ListStyleCategory::Symbol:
@@ -1193,14 +1196,14 @@ void LayoutListMarker::updateMargins()
     } else {
         if (style()->isLeftToRightDirection()) {
             if (isImage()) {
-                marginStart = -minPreferredLogicalWidth() - cMarkerPadding;
+                marginStart = -minPreferredLogicalWidth() - cMarkerPaddingPx;
             } else {
                 int offset = fontMetrics.ascent() * 2 / 3;
                 switch (listStyleCategory()) {
                 case ListStyleCategory::None:
                     break;
                 case ListStyleCategory::Symbol:
-                    marginStart = -offset - cMarkerPadding - 1;
+                    marginStart = -offset - cMarkerPaddingPx - 1;
                     break;
                 default:
                     marginStart = m_text.isEmpty() ? LayoutUnit() : -minPreferredLogicalWidth();
@@ -1209,14 +1212,14 @@ void LayoutListMarker::updateMargins()
             marginEnd = -marginStart - minPreferredLogicalWidth();
         } else {
             if (isImage()) {
-                marginEnd = cMarkerPadding;
+                marginEnd = cMarkerPaddingPx;
             } else {
                 int offset = fontMetrics.ascent() * 2 / 3;
                 switch (listStyleCategory()) {
                 case ListStyleCategory::None:
                     break;
                 case ListStyleCategory::Symbol:
-                    marginEnd = offset + cMarkerPadding + 1 - minPreferredLogicalWidth();
+                    marginEnd = offset + cMarkerPaddingPx + 1 - minPreferredLogicalWidth();
                     break;
                 default:
                     marginEnd = 0;
