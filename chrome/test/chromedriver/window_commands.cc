@@ -212,8 +212,14 @@ Status ExecuteWindowCommand(
   if (status.IsError())
     return status;
 
-  if (web_view->GetJavaScriptDialogManager()->IsDialogOpen())
-    return Status(kUnexpectedAlertOpen);
+  if (web_view->GetJavaScriptDialogManager()->IsDialogOpen()) {
+    std::string alert_text;
+    status =
+        web_view->GetJavaScriptDialogManager()->GetDialogMessage(&alert_text);
+    if (status.IsError())
+      return status;
+    return Status(kUnexpectedAlertOpen, "{Alert text : " + alert_text + "}");
+  }
 
   Status nav_status(kOk);
   for (int attempt = 0; attempt < 3; attempt++) {

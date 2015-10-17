@@ -424,7 +424,14 @@ class ChromeDriverTest(ChromeDriverBaseTest):
                             'to locate element: {"method":"tag name",'
                             '"selector":"divine"}',
                             self._driver.FindElement,
-                            'tag name','divine')
+                            'tag name', 'divine')
+
+  def testUnexpectedAlertOpenExceptionMessage(self):
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
+    self._driver.ExecuteScript('window.alert("Hi");')
+    self.assertRaisesRegexp(chromedriver.UnexpectedAlertOpen,
+                            'unexpected alert open: {Alert text : Hi}',
+                            self._driver.FindElement, 'tag name', 'divine')
 
   def testFindElements(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))

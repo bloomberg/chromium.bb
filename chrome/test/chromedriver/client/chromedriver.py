@@ -35,6 +35,8 @@ class SessionNotCreatedException(ChromeDriverException):
   pass
 class NoSuchSession(ChromeDriverException):
   pass
+class UnexpectedAlertOpen(ChromeDriverException):
+  pass
 
 def _ExceptionForResponse(response):
   exception_class_map = {
@@ -48,6 +50,7 @@ def _ExceptionForResponse(response):
     19: XPathLookupError,
     23: NoSuchWindow,
     24: InvalidCookieDomain,
+    26: UnexpectedAlertOpen,
     28: ScriptTimeout,
     32: InvalidSelector,
     33: SessionNotCreatedException
