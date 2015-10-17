@@ -37,6 +37,8 @@
 
 static const char kInterpPrefixFlag[] = "--interp-prefix";
 
+static bool g_explicit_filename;
+
 static struct nacl_irt_resource_open resource_open;
 static struct nacl_irt_code_data_alloc code_data_alloc;
 static struct nacl_irt_dyncode dyncode;
@@ -45,6 +47,16 @@ static int open_program(const char *filename) {
   int fd;
   if (resource_open.open_resource == NULL)
     return open(filename, O_RDONLY);
+  if (!g_explicit_filename) {
+    /*
+     * When we're loading everything via a manifest file, the full pathname
+     * in the PT_INTERP is not really what we want.  Just its basename will
+     * actually appear as a key in the manifest file.
+     */
+    const char *lastslash = strrchr(filename, '/');
+    if (lastslash != NULL)
+      filename = lastslash + 1;
+  }
   int error = resource_open.open_resource(filename, &fd);
   if (error != 0) {
     errno = error;
@@ -577,6 +589,7 @@ int main(int argc, char **argv, char **envp) {
 
   if (argc > 1) {
     program = argv[1];
+    g_explicit_filename = true;
     --argc;
     ++argv;
   }
