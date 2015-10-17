@@ -453,8 +453,8 @@ unsigned short TreeScope::comparePosition(const TreeScope& otherScope) const
     if (otherScope == this)
         return Node::DOCUMENT_POSITION_EQUIVALENT;
 
-    Vector<const TreeScope*, 16> chain1;
-    Vector<const TreeScope*, 16> chain2;
+    WillBeHeapVector<RawPtrWillBeMember<const TreeScope>, 16> chain1;
+    WillBeHeapVector<RawPtrWillBeMember<const TreeScope>, 16> chain2;
     const TreeScope* current;
     for (current = this; current; current = current->parentTreeScope())
         chain1.append(current);
