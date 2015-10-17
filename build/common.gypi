@@ -5272,6 +5272,21 @@
             # specified or not.
             '-fno-strict-aliasing',  # See http://crbug.com/32204.
           ],
+          'conditions': [
+            ['component=="shared_library"', {
+              # In component builds, link to the system libc++. This requires
+              # OS X 10.7, but we currently pass -mmacosx-version-min=10.6.
+              # Xcode's clang complains about this, but our open-source bundled
+              # chromium clang doesn't.  This has the effect of making
+              # everything depend on libc++, which means component-build
+              # binaries won't run on 10.6 (no libc++ there), but for a
+              # developer-only configuration that's ok.
+              # (We don't want to raise the deployment target yet so that
+              # official and dev builds have the same deployment target.  This
+              # affects things like which functions are considered deprecated.)
+              'CLANG_CXX_LIBRARY': 'libc++',  # -stdlib=libc++
+            }],
+          ],
         },
         'target_conditions': [
           ['_type=="executable"', {
