@@ -457,8 +457,7 @@ TEST_F(BluetoothTest, DiscoverySession) {
   InitWithFakeAdapter();
   EXPECT_FALSE(adapter_->IsDiscovering());
 
-  adapter_->StartDiscoverySession(GetDiscoverySessionCallback(),
-                                  GetErrorCallback());
+  StartLowEnergyDiscoverySession();
   EXPECT_EQ(1, callback_count_);
   EXPECT_EQ(0, error_callback_count_);
   EXPECT_TRUE(adapter_->IsDiscovering());
@@ -485,12 +484,7 @@ TEST_F(BluetoothTest, DiscoverLowEnergyDevice) {
   TestBluetoothAdapterObserver observer(adapter_);
 
   // Start discovery and find a device.
-  scoped_ptr<BluetoothDiscoveryFilter> discovery_filter(
-      new BluetoothDiscoveryFilter(
-          BluetoothDiscoveryFilter::Transport::TRANSPORT_LE));
-  adapter_->StartDiscoverySessionWithFilter(discovery_filter.Pass(),
-                                            GetDiscoverySessionCallback(),
-                                            GetErrorCallback());
+  StartLowEnergyDiscoverySession();
   DiscoverLowEnergyDevice(1);
   EXPECT_EQ(1, observer.device_added_count());
   BluetoothDevice* device = adapter_->GetDevice(observer.last_device_address());
@@ -509,8 +503,7 @@ TEST_F(BluetoothTest, DiscoverLowEnergyDeviceTwice) {
   TestBluetoothAdapterObserver observer(adapter_);
 
   // Start discovery and find a device.
-  adapter_->StartDiscoverySession(GetDiscoverySessionCallback(),
-                                  GetErrorCallback());
+  StartLowEnergyDiscoverySession();
   DiscoverLowEnergyDevice(1);
   EXPECT_EQ(1, observer.device_added_count());
   BluetoothDevice* device = adapter_->GetDevice(observer.last_device_address());
@@ -536,8 +529,7 @@ TEST_F(BluetoothTest, DiscoverLowEnergyDeviceWithUpdatedUUIDs) {
   TestBluetoothAdapterObserver observer(adapter_);
 
   // Start discovery and find a device.
-  adapter_->StartDiscoverySession(GetDiscoverySessionCallback(),
-                                  GetErrorCallback());
+  StartLowEnergyDiscoverySession();
   BluetoothDevice* device = DiscoverLowEnergyDevice(1);
 
   // Check the initial UUIDs:
@@ -584,8 +576,7 @@ TEST_F(BluetoothTest, DiscoverMultipleLowEnergyDevices) {
   TestBluetoothAdapterObserver observer(adapter_);
 
   // Start discovery and find a device.
-  adapter_->StartDiscoverySession(GetDiscoverySessionCallback(),
-                                  GetErrorCallback());
+  StartLowEnergyDiscoverySession();
   DiscoverLowEnergyDevice(1);
   DiscoverLowEnergyDevice(4);
   EXPECT_EQ(2, observer.device_added_count());

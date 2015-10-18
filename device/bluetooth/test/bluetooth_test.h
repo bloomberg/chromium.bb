@@ -43,9 +43,9 @@ class BluetoothTestBase : public testing::Test {
   BluetoothTestBase();
   ~BluetoothTestBase() override;
 
-  // Calls adapter_->StartDiscoverySession with this fixture's callbacks, and
-  // then RunLoop().RunUntilIdle().
-  void StartDiscoverySession();
+  // Calls adapter_->StartDiscoverySessionWithFilter with Low Energy transport,
+  // and this fixture's callbacks. Then RunLoop().RunUntilIdle().
+  void StartLowEnergyDiscoverySession();
 
   // Check if Low Energy is available. On Mac, we require OS X >= 10.10.
   virtual bool PlatformSupportsLowEnergy() = 0;

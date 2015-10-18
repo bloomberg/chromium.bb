@@ -17,7 +17,7 @@ namespace device {
 #if defined(OS_ANDROID)
 TEST_F(BluetoothTest, GetUUIDAndGetIdentifier) {
   InitWithFakeAdapter();
-  StartDiscoverySession();
+  StartLowEnergyDiscoverySession();
   BluetoothDevice* device = DiscoverLowEnergyDevice(3);
   device->CreateGattConnection(GetGattConnectionCallback(),
                                GetConnectErrorCallback());

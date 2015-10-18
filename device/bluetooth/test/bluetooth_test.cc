@@ -30,9 +30,11 @@ BluetoothTestBase::BluetoothTestBase() : weak_factory_(this) {}
 BluetoothTestBase::~BluetoothTestBase() {
 }
 
-void BluetoothTestBase::StartDiscoverySession() {
-  adapter_->StartDiscoverySession(GetDiscoverySessionCallback(),
-                                  GetErrorCallback());
+void BluetoothTestBase::StartLowEnergyDiscoverySession() {
+  adapter_->StartDiscoverySessionWithFilter(
+      make_scoped_ptr(new BluetoothDiscoveryFilter(
+          BluetoothDiscoveryFilter::Transport::TRANSPORT_LE)),
+      GetDiscoverySessionCallback(), GetErrorCallback());
   base::RunLoop().RunUntilIdle();
 }
 

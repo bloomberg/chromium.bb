@@ -72,7 +72,7 @@ TEST_F(BluetoothTest, LowEnergyDeviceProperties) {
     return;
   }
   InitWithFakeAdapter();
-  StartDiscoverySession();
+  StartLowEnergyDiscoverySession();
   BluetoothDevice* device = DiscoverLowEnergyDevice(1);
   ASSERT_TRUE(device);
   EXPECT_EQ(0x1F00u, device->GetBluetoothClass());
@@ -97,7 +97,7 @@ TEST_F(BluetoothTest, LowEnergyDeviceNoUUIDs) {
     return;
   }
   InitWithFakeAdapter();
-  StartDiscoverySession();
+  StartLowEnergyDiscoverySession();
   BluetoothDevice* device = DiscoverLowEnergyDevice(3);
   ASSERT_TRUE(device);
   BluetoothDevice::UUIDList uuids = device->GetUUIDs();
@@ -116,7 +116,7 @@ TEST_F(BluetoothTest, LowEnergyDeviceNoUUIDs) {
 // Basic CreateGattConnection test.
 TEST_F(BluetoothTest, CreateGattConnection) {
   InitWithFakeAdapter();
-  StartDiscoverySession();
+  StartLowEnergyDiscoverySession();
   BluetoothDevice* device = DiscoverLowEnergyDevice(3);
 
   ResetEventCounts();
@@ -136,7 +136,7 @@ TEST_F(BluetoothTest, CreateGattConnection) {
 // functions even when some Disconnect and the BluetoothDevice is destroyed.
 TEST_F(BluetoothTest, BluetoothGattConnection) {
   InitWithFakeAdapter();
-  StartDiscoverySession();
+  StartLowEnergyDiscoverySession();
   BluetoothDevice* device = DiscoverLowEnergyDevice(3);
   std::string device_address = device->GetAddress();
 
@@ -197,7 +197,7 @@ TEST_F(BluetoothTest, BluetoothGattConnection) {
 TEST_F(BluetoothTest,
        BluetoothGattConnection_ConnectWithMultipleOSConnections) {
   InitWithFakeAdapter();
-  StartDiscoverySession();
+  StartLowEnergyDiscoverySession();
   BluetoothDevice* device = DiscoverLowEnergyDevice(3);
 
   // CreateGattConnection, & multiple connections from platform only invoke
@@ -225,7 +225,7 @@ TEST_F(BluetoothTest,
 // Calls CreateGattConnection after already connected.
 TEST_F(BluetoothTest, BluetoothGattConnection_AlreadyConnected) {
   InitWithFakeAdapter();
-  StartDiscoverySession();
+  StartLowEnergyDiscoverySession();
   BluetoothDevice* device = DiscoverLowEnergyDevice(3);
 
   // Be already connected:
@@ -250,7 +250,7 @@ TEST_F(BluetoothTest, BluetoothGattConnection_AlreadyConnected) {
 TEST_F(BluetoothTest,
        BluetoothGattConnection_NewConnectionLeavesPreviousDisconnected) {
   InitWithFakeAdapter();
-  StartDiscoverySession();
+  StartLowEnergyDiscoverySession();
   BluetoothDevice* device = DiscoverLowEnergyDevice(3);
 
   // Create connection:
@@ -278,7 +278,7 @@ TEST_F(BluetoothTest,
 // Deletes BluetoothGattConnection causing disconnection.
 TEST_F(BluetoothTest, BluetoothGattConnection_DisconnectWhenObjectsDestroyed) {
   InitWithFakeAdapter();
-  StartDiscoverySession();
+  StartLowEnergyDiscoverySession();
   BluetoothDevice* device = DiscoverLowEnergyDevice(3);
 
   // Create multiple connections and simulate connection complete:
@@ -299,7 +299,7 @@ TEST_F(BluetoothTest, BluetoothGattConnection_DisconnectWhenObjectsDestroyed) {
 // Starts process of disconnecting and then calls BluetoothGattConnection.
 TEST_F(BluetoothTest, BluetoothGattConnection_DisconnectInProgress) {
   InitWithFakeAdapter();
-  StartDiscoverySession();
+  StartLowEnergyDiscoverySession();
   BluetoothDevice* device = DiscoverLowEnergyDevice(3);
 
   // Create multiple connections and simulate connection complete:
@@ -340,7 +340,7 @@ TEST_F(BluetoothTest, BluetoothGattConnection_DisconnectInProgress) {
 // before it ever connects.
 TEST_F(BluetoothTest, BluetoothGattConnection_SimulateDisconnect) {
   InitWithFakeAdapter();
-  StartDiscoverySession();
+  StartLowEnergyDiscoverySession();
   BluetoothDevice* device = DiscoverLowEnergyDevice(3);
 
   ResetEventCounts();
@@ -360,7 +360,7 @@ TEST_F(BluetoothTest, BluetoothGattConnection_SimulateDisconnect) {
 // Calls CreateGattConnection & DisconnectGatt, then simulates connection.
 TEST_F(BluetoothTest, BluetoothGattConnection_DisconnectGatt_SimulateConnect) {
   InitWithFakeAdapter();
-  StartDiscoverySession();
+  StartLowEnergyDiscoverySession();
   BluetoothDevice* device = DiscoverLowEnergyDevice(3);
 
   ResetEventCounts();
@@ -385,7 +385,7 @@ TEST_F(BluetoothTest, BluetoothGattConnection_DisconnectGatt_SimulateConnect) {
 TEST_F(BluetoothTest,
        BluetoothGattConnection_DisconnectGatt_SimulateDisconnect) {
   InitWithFakeAdapter();
-  StartDiscoverySession();
+  StartLowEnergyDiscoverySession();
   BluetoothDevice* device = DiscoverLowEnergyDevice(3);
 
   ResetEventCounts();
@@ -408,7 +408,7 @@ TEST_F(BluetoothTest,
 // multiple errors should only invoke callbacks once.
 TEST_F(BluetoothTest, BluetoothGattConnection_ErrorAfterConnection) {
   InitWithFakeAdapter();
-  StartDiscoverySession();
+  StartLowEnergyDiscoverySession();
   BluetoothDevice* device = DiscoverLowEnergyDevice(3);
 
   ResetEventCounts();
@@ -428,7 +428,7 @@ TEST_F(BluetoothTest, BluetoothGattConnection_ErrorAfterConnection) {
 #if defined(OS_ANDROID)
 TEST_F(BluetoothTest, SimulateGattServicesDiscovered) {
   InitWithFakeAdapter();
-  StartDiscoverySession();
+  StartLowEnergyDiscoverySession();
   BluetoothDevice* device = DiscoverLowEnergyDevice(3);
   device->CreateGattConnection(GetGattConnectionCallback(),
                                GetConnectErrorCallback());
@@ -449,7 +449,7 @@ TEST_F(BluetoothTest, SimulateGattServicesDiscovered) {
 #if defined(OS_ANDROID)
 TEST_F(BluetoothTest, SimulateGattServicesDiscoveryError) {
   InitWithFakeAdapter();
-  StartDiscoverySession();
+  StartLowEnergyDiscoverySession();
   BluetoothDevice* device = DiscoverLowEnergyDevice(3);
   device->CreateGattConnection(GetGattConnectionCallback(),
                                GetConnectErrorCallback());
