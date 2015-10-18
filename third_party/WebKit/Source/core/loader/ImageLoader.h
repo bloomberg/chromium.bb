@@ -176,7 +176,7 @@ private:
     RefPtrWillBePersistent<Element> m_keepAlive;
 
     // Oilpan: the client references are weak, and managed as such via clearWeakMembers();
-    HashSet<ImageLoaderClient*> m_clients;
+    HashSet<RawPtrWillBeUntracedMember<ImageLoaderClient>> m_clients;
     Timer<ImageLoader> m_derefElementTimer;
     AtomicString m_failedLoadURL;
     WeakPtr<Task> m_pendingTask; // owned by Microtask

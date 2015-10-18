@@ -193,7 +193,7 @@ void ImageLoader::dispose()
 #if ENABLE(OILPAN)
 void ImageLoader::clearWeakMembers(Visitor* visitor)
 {
-    Vector<ImageLoaderClient*> deadClients;
+    Vector<UntracedMember<ImageLoaderClient>> deadClients;
     for (const auto& client : m_clients) {
         if (!Heap::isHeapObjectAlive(client)) {
             willRemoveClient(*client);
