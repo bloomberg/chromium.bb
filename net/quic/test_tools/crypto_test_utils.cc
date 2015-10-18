@@ -174,10 +174,11 @@ CryptoTestUtils::FakeClientOptions::FakeClientOptions()
 
 // static
 int CryptoTestUtils::HandshakeWithFakeServer(
+    MockHelper* helper,
     PacketSavingConnection* client_conn,
     QuicCryptoClientStream* client) {
   PacketSavingConnection* server_conn = new PacketSavingConnection(
-      Perspective::IS_SERVER, client_conn->supported_versions());
+      helper, Perspective::IS_SERVER, client_conn->supported_versions());
 
   QuicConfig config = DefaultQuicConfig();
   QuicCryptoServerConfig crypto_config(QuicCryptoServerConfig::TESTING,
@@ -201,12 +202,13 @@ int CryptoTestUtils::HandshakeWithFakeServer(
 
 // static
 int CryptoTestUtils::HandshakeWithFakeClient(
+    MockHelper* helper,
     PacketSavingConnection* server_conn,
     QuicCryptoServerStream* server,
     const QuicServerId& server_id,
     const FakeClientOptions& options) {
   PacketSavingConnection* client_conn =
-      new PacketSavingConnection(Perspective::IS_CLIENT);
+      new PacketSavingConnection(helper, Perspective::IS_CLIENT);
   // Advance the time, because timers do not like uninitialized times.
   client_conn->AdvanceTime(QuicTime::Delta::FromSeconds(1));
 

@@ -118,8 +118,9 @@ vector<TestParams> GetTestParams() {
 class QuicHeadersStreamTest : public ::testing::TestWithParam<TestParams> {
  public:
   QuicHeadersStreamTest()
-      : connection_(
-            new StrictMock<MockConnection>(perspective(), GetVersion())),
+      : connection_(new StrictMock<MockConnection>(&helper_,
+                                                   perspective(),
+                                                   GetVersion())),
         session_(connection_),
         headers_stream_(QuicSpdySessionPeer::GetHeadersStream(&session_)),
         body_("hello world"),
@@ -228,6 +229,7 @@ class QuicHeadersStreamTest : public ::testing::TestWithParam<TestParams> {
   static const bool kFrameComplete = true;
   static const bool kHasPriority = true;
 
+  MockHelper helper_;
   StrictMock<MockConnection>* connection_;
   StrictMock<MockQuicSpdySession> session_;
   QuicHeadersStream* headers_stream_;

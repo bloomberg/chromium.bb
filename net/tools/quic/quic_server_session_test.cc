@@ -27,6 +27,7 @@
 
 using __gnu_cxx::vector;
 using net::test::MockConnection;
+using net::test::MockHelper;
 using net::test::QuicConfigPeer;
 using net::test::QuicConnectionPeer;
 using net::test::QuicDataStreamPeer;
@@ -81,8 +82,8 @@ class QuicServerSessionTest : public ::testing::TestWithParam<QuicVersion> {
     config_.SetInitialSessionFlowControlWindowToSend(
         kInitialSessionFlowControlWindowForTest);
 
-    connection_ = new StrictMock<MockConnection>(Perspective::IS_SERVER,
-                                                 SupportedVersions(GetParam()));
+    connection_ = new StrictMock<MockConnection>(
+        &helper_, Perspective::IS_SERVER, SupportedVersions(GetParam()));
     session_.reset(
         new QuicServerSession(config_, connection_, &owner_, &crypto_config_));
     MockClock clock;
@@ -94,6 +95,7 @@ class QuicServerSessionTest : public ::testing::TestWithParam<QuicVersion> {
   }
 
   StrictMock<MockQuicServerSessionVisitor> owner_;
+  MockHelper helper_;
   StrictMock<MockConnection>* connection_;
   QuicConfig config_;
   QuicCryptoServerConfig crypto_config_;

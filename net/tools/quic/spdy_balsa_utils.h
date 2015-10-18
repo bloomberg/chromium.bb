@@ -19,24 +19,19 @@ namespace tools {
 class SpdyBalsaUtils {
  public:
   static std::string SerializeResponseHeaders(
-      const BalsaHeaders& response_headers,
-      QuicVersion quic_version);
+      const BalsaHeaders& response_headers);
 
   static SpdyHeaderBlock RequestHeadersToSpdyHeaders(
-      const BalsaHeaders& request_headers,
-      QuicVersion quic_version);
+      const BalsaHeaders& request_headers);
 
   static SpdyHeaderBlock ResponseHeadersToSpdyHeaders(
-      const BalsaHeaders& response_headers,
-      QuicVersion quic_version);
+      const BalsaHeaders& response_headers);
 
   static void SpdyHeadersToResponseHeaders(const SpdyHeaderBlock& block,
-                                           BalsaHeaders* headers,
-                                           QuicVersion quic_version);
+                                           BalsaHeaders* headers);
 
   static void SpdyHeadersToRequestHeaders(const SpdyHeaderBlock& block,
-                                          BalsaHeaders* headers,
-                                          QuicVersion quic_version);
+                                          BalsaHeaders* headers);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SpdyBalsaUtils);

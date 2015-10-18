@@ -125,7 +125,7 @@ bool QuicSpdyServerStream::ParseRequestHeaders(const char* data,
 }
 
 void QuicSpdyServerStream::SendResponse() {
-  if (!ContainsKey(request_headers_, GetHostKey()) ||
+  if (!ContainsKey(request_headers_, ":authority") ||
       !ContainsKey(request_headers_, ":path")) {
     SendErrorResponse();
     return;
@@ -134,7 +134,7 @@ void QuicSpdyServerStream::SendResponse() {
   // Find response in cache. If not found, send error response.
   const QuicInMemoryCache::Response* response =
       QuicInMemoryCache::GetInstance()->GetResponse(
-          request_headers_[GetHostKey()], request_headers_[":path"]);
+          request_headers_[":authority"], request_headers_[":path"]);
   if (response == nullptr) {
     SendErrorResponse();
     return;
@@ -152,25 +152,15 @@ void QuicSpdyServerStream::SendResponse() {
   }
 
   DVLOG(1) << "Sending response for stream " << id();
-  if (version() > QUIC_VERSION_24) {
-    SendHeadersAndBody(
-        SpdyUtils::ConvertSpdy3ResponseHeadersToSpdy4(response->headers()),
-        response->body());
-    return;
-  }
-
-  SendHeadersAndBody(response->headers(), response->body());
+  SendHeadersAndBody(
+      SpdyUtils::ConvertSpdy3ResponseHeadersToSpdy4(response->headers()),
+      response->body());
 }
 
 void QuicSpdyServerStream::SendErrorResponse() {
   DVLOG(1) << "Sending error response for stream " << id();
   SpdyHeaderBlock headers;
-  if (version() <= QUIC_VERSION_24) {
-    headers[":version"] = "HTTP/1.1";
-    headers[":status"] = "500 Server Error";
-  } else {
-    headers[":status"] = "500";
-  }
+  headers[":status"] = "500";
   headers["content-length"] = "3";
   SendHeadersAndBody(headers, "bad");
 }
@@ -188,11 +178,6 @@ void QuicSpdyServerStream::SendHeadersAndBody(
   if (!body.empty()) {
     WriteOrBufferData(body, true, nullptr);
   }
-}
-
-const string QuicSpdyServerStream::GetHostKey() {
-  // SPDY/4 uses ":authority" instead of ":host".
-  return version() > QUIC_VERSION_24 ? ":authority" : ":host";
 }
 
 }  // namespace tools

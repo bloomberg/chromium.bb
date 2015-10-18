@@ -290,9 +290,8 @@ void QuicClient::SendRequest(const BalsaHeaders& headers,
     return;
   }
   stream->set_visitor(this);
-  stream->SendRequest(
-      SpdyBalsaUtils::RequestHeadersToSpdyHeaders(headers, stream->version()),
-      body, fin);
+  stream->SendRequest(SpdyBalsaUtils::RequestHeadersToSpdyHeaders(headers),
+                      body, fin);
   if (FLAGS_enable_quic_stateless_reject_support) {
     // Record this in case we need to resend.
     auto new_headers = new BalsaHeaders;
@@ -399,7 +398,7 @@ void QuicClient::OnClose(QuicDataStream* stream) {
       static_cast<QuicSpdyClientStream*>(stream);
   BalsaHeaders headers;
   SpdyBalsaUtils::SpdyHeadersToResponseHeaders(client_stream->headers(),
-                                               &headers, stream->version());
+                                               &headers);
 
   if (response_listener_.get() != nullptr) {
     response_listener_->OnCompleteResponse(

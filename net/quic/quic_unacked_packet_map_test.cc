@@ -333,13 +333,6 @@ TEST_F(QuicUnackedPacketMapTest, RetransmitThreeTimes) {
   unacked_packets_.RemoveFromInFlight(5);
   QuicPacketNumber pending5[] = {7};
   VerifyInFlightPackets(pending5, arraysize(pending5));
-
-  // Now test ClearAllPreviousTransmissions, leaving one packet.
-  unacked_packets_.ClearAllPreviousRetransmissions();
-  QuicPacketNumber unacked5[] = {7};
-  VerifyUnackedPackets(unacked5, arraysize(unacked5));
-  QuicPacketNumber retransmittable5[] = {7};
-  VerifyRetransmittablePackets(retransmittable5, arraysize(retransmittable5));
 }
 
 TEST_F(QuicUnackedPacketMapTest, RetransmitFourTimes) {

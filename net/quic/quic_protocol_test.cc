@@ -22,7 +22,7 @@ TEST(QuicProtocolTest, AdjustErrorForVersion) {
   // following.
   //  EXPECT_EQ(QUIC_RST_ACKNOWLEDGEMENT, AdjustErrorForVersion(
   //      QUIC_RST_ACKNOWLEDGEMENT,
-  //      QUIC_VERSION_24));
+  //      QUIC_VERSION_28));
 }
 
 TEST(QuicProtocolTest, MakeQuicTag) {

@@ -189,7 +189,8 @@ class QuicSessionTestBase : public ::testing::TestWithParam<QuicVersion> {
  protected:
   explicit QuicSessionTestBase(Perspective perspective)
       : connection_(
-            new StrictMock<MockConnection>(perspective,
+            new StrictMock<MockConnection>(&helper_,
+                                           perspective,
                                            SupportedVersions(GetParam()))),
         session_(connection_) {
     session_.config()->SetInitialStreamFlowControlWindowToSend(
@@ -244,6 +245,7 @@ class QuicSessionTestBase : public ::testing::TestWithParam<QuicVersion> {
 
   QuicVersion version() const { return connection_->version(); }
 
+  MockHelper helper_;
   StrictMock<MockConnection>* connection_;
   TestSession session_;
   set<QuicStreamId> closed_streams_;

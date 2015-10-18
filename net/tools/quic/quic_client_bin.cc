@@ -270,8 +270,7 @@ int main(int argc, char *argv[]) {
 
   // Send the request.
   net::SpdyHeaderBlock header_block =
-      net::tools::SpdyBalsaUtils::RequestHeadersToSpdyHeaders(
-          headers, client.session()->connection()->version());
+      net::tools::SpdyBalsaUtils::RequestHeadersToSpdyHeaders(headers);
   client.SendRequestAndWaitForResponse(headers, FLAGS_body, /*fin=*/true);
 
   // Print request and response details.

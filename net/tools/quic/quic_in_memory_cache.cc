@@ -145,14 +145,8 @@ void QuicInMemoryCache::InitializeFromDirectory(const string& cache_directory) {
     if (path[path.length() - 1] == ',') {
       path.remove_suffix(1);
     }
-
     StringPiece body(file_contents.data() + headers_end,
                      file_contents.size() - headers_end);
-    // QUIC_VERSION_24 and below use SPDY/3 headers, which includes the
-    // status reason in :status, and "HTTP/1.1" in :version. Since this
-    // format is a strict superset of SPDY/4 headers, the cache uses this
-    // format to store response. Once SPDY/3 responses are no longer
-    // required, the cache can store SPDY/4 headers.
     SpdyHeaderBlock header_block;
     CreateSpdyHeadersFromHttpResponse(*response_headers, HTTP2, &header_block);
     AddResponse(host, path, header_block, body);

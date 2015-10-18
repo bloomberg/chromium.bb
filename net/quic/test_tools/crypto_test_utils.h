@@ -16,6 +16,7 @@
 #include "net/quic/crypto/crypto_framer.h"
 #include "net/quic/quic_framer.h"
 #include "net/quic/quic_protocol.h"
+#include "net/quic/test_tools/quic_test_utils.h"
 
 namespace net {
 
@@ -72,11 +73,13 @@ class CryptoTestUtils {
   };
 
   // returns: the number of client hellos that the client sent.
-  static int HandshakeWithFakeServer(PacketSavingConnection* client_conn,
+  static int HandshakeWithFakeServer(MockHelper* helper,
+                                     PacketSavingConnection* client_conn,
                                      QuicCryptoClientStream* client);
 
   // returns: the number of client hellos that the client sent.
-  static int HandshakeWithFakeClient(PacketSavingConnection* server_conn,
+  static int HandshakeWithFakeClient(MockHelper* helper,
+                                     PacketSavingConnection* server_conn,
                                      QuicCryptoServerStream* server,
                                      const QuicServerId& server_id,
                                      const FakeClientOptions& options);

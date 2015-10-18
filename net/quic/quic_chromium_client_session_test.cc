@@ -46,7 +46,8 @@ class QuicChromiumClientSessionTest
     : public ::testing::TestWithParam<QuicVersion> {
  protected:
   QuicChromiumClientSessionTest()
-      : connection_(new PacketSavingConnection(Perspective::IS_CLIENT,
+      : connection_(new PacketSavingConnection(&helper_,
+                                               Perspective::IS_CLIENT,
                                                SupportedVersions(GetParam()))),
         session_(connection_,
                  GetSocket().Pass(),
@@ -89,11 +90,12 @@ class QuicChromiumClientSessionTest
   void CompleteCryptoHandshake() {
     ASSERT_EQ(ERR_IO_PENDING,
               session_.CryptoConnect(false, callback_.callback()));
-    CryptoTestUtils::HandshakeWithFakeServer(connection_,
+    CryptoTestUtils::HandshakeWithFakeServer(&helper_, connection_,
                                              session_.GetCryptoStream());
     ASSERT_EQ(OK, callback_.WaitForResult());
   }
 
+  MockHelper helper_;
   PacketSavingConnection* connection_;
   TestNetLog net_log_;
   MockClientSocketFactory socket_factory_;

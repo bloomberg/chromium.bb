@@ -133,8 +133,7 @@ int QuicHttpStream::SendRequest(const HttpRequestHeaders& request_headers,
   QuicPriority priority = ConvertRequestPriorityToQuicPriority(priority_);
   stream_->set_priority(priority);
   // Store the serialized request headers.
-  CreateSpdyHeadersFromHttpRequest(*request_info_, request_headers,
-                                   GetSpdyVersion(),
+  CreateSpdyHeadersFromHttpRequest(*request_info_, request_headers, HTTP2,
                                    /*direct=*/true, &request_headers_);
 
   // Store the request body.
@@ -522,7 +521,7 @@ int QuicHttpStream::ProcessResponseHeaders(const SpdyHeaderBlock& headers) {
       NetLog::TYPE_QUIC_HTTP_STREAM_READ_RESPONSE_HEADERS,
       base::Bind(&SpdyHeaderBlockNetLogCallback, &headers));
 
-  if (!SpdyHeadersToHttpResponse(headers, GetSpdyVersion(), response_info_)) {
+  if (!SpdyHeadersToHttpResponse(headers, HTTP2, response_info_)) {
     DLOG(WARNING) << "Invalid headers";
     return ERR_QUIC_PROTOCOL_ERROR;
   }
@@ -550,10 +549,6 @@ int QuicHttpStream::ReadAvailableData(IOBuffer* buf, int buf_len) {
     ResetStream();
   }
   return rv;
-}
-
-SpdyMajorVersion QuicHttpStream::GetSpdyVersion() {
-  return SpdyUtils::GetSpdyVersionForQuicVersion(stream_->version());
 }
 
 void QuicHttpStream::ResetStream() {

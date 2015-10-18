@@ -342,7 +342,6 @@ enum QuicVersion {
   // Special case to indicate unknown/unsupported QUIC version.
   QUIC_VERSION_UNSUPPORTED = 0,
 
-  QUIC_VERSION_24 = 24,  // SPDY/4 header compression.
   QUIC_VERSION_25 = 25,  // SPDY/4 header keys, and removal of error_details
                          // from QuicRstStreamFrame
   QUIC_VERSION_26 = 26,  // In CHLO, send XLCT tag containing hash of leaf cert
@@ -358,8 +357,7 @@ enum QuicVersion {
 // IMPORTANT: if you are adding to this list, follow the instructions at
 // http://sites/quic/adding-and-removing-versions
 static const QuicVersion kSupportedQuicVersions[] = {
-    QUIC_VERSION_28, QUIC_VERSION_27, QUIC_VERSION_26, QUIC_VERSION_25,
-    QUIC_VERSION_24};
+    QUIC_VERSION_28, QUIC_VERSION_27, QUIC_VERSION_26, QUIC_VERSION_25};
 
 typedef std::vector<QuicVersion> QuicVersionVector;
 
@@ -914,8 +912,6 @@ struct NET_EXPORT_PRIVATE QuicRstStreamFrame {
 
   QuicStreamId stream_id;
   QuicRstStreamErrorCode error_code;
-  // Only used in versions <= QUIC_VERSION_24.
-  std::string error_details;
 
   // Used to update flow control windows. On termination of a stream, both
   // endpoints must inform the peer of the number of bytes they have sent on

@@ -547,32 +547,6 @@ TEST_F(QuicSentPacketManagerTest, MarkLostThenReviveAndDontRetransmitPacket) {
   VerifyRetransmittablePackets(nullptr, 0);
 }
 
-TEST_F(QuicSentPacketManagerTest, TruncatedAck) {
-  ValueRestore<bool> old_flag(&FLAGS_quic_disable_truncated_ack_handling,
-                              false);
-  SendDataPacket(1);
-  RetransmitAndSendPacket(1, 2);
-  RetransmitAndSendPacket(2, 3);
-  RetransmitAndSendPacket(3, 4);
-  RetransmitAndSendPacket(4, 5);
-
-  // Truncated ack with 4 NACKs, so the first packet is lost.
-  QuicAckFrame ack_frame;
-  ack_frame.largest_observed = 4;
-  ack_frame.missing_packets.Add(1, 5);
-  ack_frame.is_truncated = true;
-
-  QuicPacketNumber lost[] = {1};
-  ExpectAcksAndLosses(true, nullptr, 0, lost, arraysize(lost));
-  manager_.OnIncomingAck(ack_frame, clock_.Now());
-
-  // High water mark will be raised.
-  QuicPacketNumber unacked[] = {2, 3, 4, 5};
-  VerifyUnackedPackets(unacked, arraysize(unacked));
-  QuicPacketNumber retransmittable[] = {5};
-  VerifyRetransmittablePackets(retransmittable, arraysize(retransmittable));
-}
-
 TEST_F(QuicSentPacketManagerTest, AckPreviousTransmissionThenTruncatedAck) {
   SendDataPacket(1);
   RetransmitAndSendPacket(1, 2);

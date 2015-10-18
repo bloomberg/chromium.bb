@@ -20,6 +20,7 @@
 
 using base::StringPiece;
 using net::test::MockConnection;
+using net::test::MockHelper;
 using net::test::MockQuicSpdySession;
 using net::test::SupportedVersions;
 using net::test::kInitialSessionFlowControlWindowForTest;
@@ -55,7 +56,7 @@ class QuicSpdyServerStreamPeer : public QuicSpdyServerStream {
   }
 
   static void SendErrorResponse(QuicSpdyServerStream* stream) {
-    stream->SendResponse();
+    stream->SendErrorResponse();
   }
 
   static const string& body(QuicSpdyServerStream* stream) {
@@ -73,23 +74,23 @@ class QuicSpdyServerStreamPeer : public QuicSpdyServerStream {
 
 namespace {
 
-class QuicSpdyServerStreamTest : public ::testing::TestWithParam<QuicVersion> {
+class QuicSpdyServerStreamTest : public ::testing::Test {
  public:
   QuicSpdyServerStreamTest()
       : connection_(
-            new StrictMock<MockConnection>(Perspective::IS_SERVER,
-                                           SupportedVersions(GetParam()))),
+            new StrictMock<MockConnection>(&helper_, Perspective::IS_SERVER)),
         session_(connection_),
         body_("hello world") {
     SpdyHeaderBlock request_headers;
     request_headers[":host"] = "";
+    request_headers[":authority"] = "";
     request_headers[":path"] = "/";
     request_headers[":method"] = "POST";
     request_headers[":version"] = "HTTP/1.1";
     request_headers["content-length"] = "11";
 
-    headers_string_ = net::SpdyUtils::SerializeUncompressedHeaders(
-        request_headers, GetParam());
+    headers_string_ =
+        net::SpdyUtils::SerializeUncompressedHeaders(request_headers);
 
     // New streams rely on having the peer's flow control receive window
     // negotiated in the config.
@@ -122,6 +123,7 @@ class QuicSpdyServerStreamTest : public ::testing::TestWithParam<QuicVersion> {
   }
 
   SpdyHeaderBlock response_headers_;
+  MockHelper helper_;
   StrictMock<MockConnection>* connection_;
   StrictMock<MockQuicSpdySession> session_;
   scoped_ptr<QuicSpdyServerStreamPeer> stream_;
@@ -139,10 +141,7 @@ QuicConsumedData ConsumeAllData(
   return QuicConsumedData(data.total_length, fin);
 }
 
-INSTANTIATE_TEST_CASE_P(Tests, QuicSpdyServerStreamTest,
-                        ::testing::ValuesIn(QuicSupportedVersions()));
-
-TEST_P(QuicSpdyServerStreamTest, TestFraming) {
+TEST_F(QuicSpdyServerStreamTest, TestFraming) {
   EXPECT_CALL(session_, WritevData(_, _, _, _, _, _)).Times(AnyNumber()).
       WillRepeatedly(Invoke(ConsumeAllData));
   stream_->OnStreamHeaders(headers_string_);
@@ -155,7 +154,7 @@ TEST_P(QuicSpdyServerStreamTest, TestFraming) {
   EXPECT_EQ(body_, StreamBody());
 }
 
-TEST_P(QuicSpdyServerStreamTest, TestFramingOnePacket) {
+TEST_F(QuicSpdyServerStreamTest, TestFramingOnePacket) {
   EXPECT_CALL(session_, WritevData(_, _, _, _, _, _)).Times(AnyNumber()).
       WillRepeatedly(Invoke(ConsumeAllData));
 
@@ -169,7 +168,7 @@ TEST_P(QuicSpdyServerStreamTest, TestFramingOnePacket) {
   EXPECT_EQ(body_, StreamBody());
 }
 
-TEST_P(QuicSpdyServerStreamTest, TestFramingExtraData) {
+TEST_F(QuicSpdyServerStreamTest, TestFramingExtraData) {
   string large_body = "hello world!!!!!!";
 
   // We'll automatically write out an error (headers + body)
@@ -189,10 +188,10 @@ TEST_P(QuicSpdyServerStreamTest, TestFramingExtraData) {
   EXPECT_EQ("POST", StreamHeadersValue(":method"));
 }
 
-TEST_P(QuicSpdyServerStreamTest, TestSendResponse) {
+TEST_F(QuicSpdyServerStreamTest, TestSendResponse) {
   SpdyHeaderBlock* request_headers = stream_->mutable_headers();
   (*request_headers)[":path"] = "/foo";
-  (*request_headers)[":host"] = "";
+  (*request_headers)[":authority"] = "";
   (*request_headers)[":version"] = "HTTP/1.1";
   (*request_headers)[":method"] = "GET";
 
@@ -210,7 +209,7 @@ TEST_P(QuicSpdyServerStreamTest, TestSendResponse) {
   EXPECT_TRUE(stream_->write_side_closed());
 }
 
-TEST_P(QuicSpdyServerStreamTest, TestSendErrorResponse) {
+TEST_F(QuicSpdyServerStreamTest, TestSendErrorResponse) {
   response_headers_[":version"] = "HTTP/1.1";
   response_headers_[":status"] = "500 Server Error";
   response_headers_["content-length"] = "3";
@@ -225,13 +224,12 @@ TEST_P(QuicSpdyServerStreamTest, TestSendErrorResponse) {
   EXPECT_TRUE(stream_->write_side_closed());
 }
 
-TEST_P(QuicSpdyServerStreamTest, InvalidMultipleContentLength) {
+TEST_F(QuicSpdyServerStreamTest, InvalidMultipleContentLength) {
   SpdyHeaderBlock request_headers;
   // \000 is a way to write the null byte when followed by a literal digit.
   request_headers["content-length"] = StringPiece("11\00012", 5);
 
-  headers_string_ =
-      SpdyUtils::SerializeUncompressedHeaders(request_headers, GetParam());
+  headers_string_ = SpdyUtils::SerializeUncompressedHeaders(request_headers);
 
   EXPECT_CALL(session_, WritevData(_, _, _, _, _, _))
       .Times(AnyNumber())
@@ -244,13 +242,12 @@ TEST_P(QuicSpdyServerStreamTest, InvalidMultipleContentLength) {
   EXPECT_TRUE(stream_->write_side_closed());
 }
 
-TEST_P(QuicSpdyServerStreamTest, InvalidLeadingNullContentLength) {
+TEST_F(QuicSpdyServerStreamTest, InvalidLeadingNullContentLength) {
   SpdyHeaderBlock request_headers;
   // \000 is a way to write the null byte when followed by a literal digit.
   request_headers["content-length"] = StringPiece("\00012", 3);
 
-  headers_string_ =
-      SpdyUtils::SerializeUncompressedHeaders(request_headers, GetParam());
+  headers_string_ = SpdyUtils::SerializeUncompressedHeaders(request_headers);
 
   EXPECT_CALL(session_, WritevData(_, _, _, _, _, _))
       .Times(AnyNumber())
@@ -263,13 +260,12 @@ TEST_P(QuicSpdyServerStreamTest, InvalidLeadingNullContentLength) {
   EXPECT_TRUE(stream_->write_side_closed());
 }
 
-TEST_P(QuicSpdyServerStreamTest, ValidMultipleContentLength) {
+TEST_F(QuicSpdyServerStreamTest, ValidMultipleContentLength) {
   SpdyHeaderBlock request_headers;
   // \000 is a way to write the null byte when followed by a literal digit.
   request_headers["content-length"] = StringPiece("11\00011", 5);
 
-  headers_string_ =
-      SpdyUtils::SerializeUncompressedHeaders(request_headers, GetParam());
+  headers_string_ = SpdyUtils::SerializeUncompressedHeaders(request_headers);
 
   stream_->OnStreamHeaders(headers_string_);
   stream_->OnStreamHeadersComplete(false, headers_string_.size());
@@ -279,7 +275,7 @@ TEST_P(QuicSpdyServerStreamTest, ValidMultipleContentLength) {
   EXPECT_FALSE(stream_->write_side_closed());
 }
 
-TEST_P(QuicSpdyServerStreamTest, InvalidHeadersWithFin) {
+TEST_F(QuicSpdyServerStreamTest, InvalidHeadersWithFin) {
   char arr[] = {
     0x3a, 0x68, 0x6f, 0x73,  // :hos
     0x74, 0x00, 0x00, 0x00,  // t...

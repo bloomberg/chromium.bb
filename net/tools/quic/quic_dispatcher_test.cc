@@ -29,6 +29,7 @@ using base::StringPiece;
 using net::EpollServer;
 using net::test::ConstructEncryptedPacket;
 using net::test::MockConnection;
+using net::test::MockHelper;
 using net::test::ValueRestore;
 using net::test::TestWriterFactory;
 using std::string;
@@ -95,8 +96,9 @@ class TestDispatcher : public QuicDispatcher {
 class MockServerConnection : public MockConnection {
  public:
   MockServerConnection(QuicConnectionId connection_id,
+                       MockHelper* helper,
                        QuicDispatcher* dispatcher)
-      : MockConnection(connection_id, Perspective::IS_SERVER),
+      : MockConnection(connection_id, helper, Perspective::IS_SERVER),
         dispatcher_(dispatcher) {}
 
   void UnregisterOnConnectionClosed() {
@@ -112,10 +114,11 @@ QuicServerSession* CreateSession(QuicDispatcher* dispatcher,
                                  const QuicConfig& config,
                                  QuicConnectionId connection_id,
                                  const IPEndPoint& client_address,
+                                 MockHelper* helper,
                                  const QuicCryptoServerConfig* crypto_config,
                                  TestQuicSpdyServerSession** session) {
   MockServerConnection* connection =
-      new MockServerConnection(connection_id, dispatcher);
+      new MockServerConnection(connection_id, helper, dispatcher);
   *session = new TestQuicSpdyServerSession(config, connection, crypto_config);
   connection->set_visitor(*session);
   ON_CALL(*connection, SendConnectionClose(_)).WillByDefault(
@@ -197,6 +200,7 @@ class QuicDispatcherTest : public ::testing::Test {
 
   EpollServer eps_;
   QuicEpollConnectionHelper helper_;
+  MockHelper mock_helper_;
   QuicConfig config_;
   QuicCryptoServerConfig crypto_config_;
   IPEndPoint server_address_;
@@ -213,16 +217,16 @@ TEST_F(QuicDispatcherTest, ProcessPackets) {
 
   EXPECT_CALL(dispatcher_, CreateQuicSession(1, client_address))
       .WillOnce(testing::Return(CreateSession(&dispatcher_, config_, 1,
-                                              client_address, &crypto_config_,
-                                              &session1_)));
+                                              client_address, &mock_helper_,
+                                              &crypto_config_, &session1_)));
   ProcessPacket(client_address, 1, true, "foo");
   EXPECT_EQ(client_address, dispatcher_.current_client_address());
   EXPECT_EQ(server_address_, dispatcher_.current_server_address());
 
   EXPECT_CALL(dispatcher_, CreateQuicSession(2, client_address))
       .WillOnce(testing::Return(CreateSession(&dispatcher_, config_, 2,
-                                              client_address, &crypto_config_,
-                                              &session2_)));
+                                              client_address, &mock_helper_,
+                                              &crypto_config_, &session2_)));
   ProcessPacket(client_address, 2, true, "bar");
 
   EXPECT_CALL(*reinterpret_cast<MockConnection*>(session1_->connection()),
@@ -237,8 +241,8 @@ TEST_F(QuicDispatcherTest, Shutdown) {
 
   EXPECT_CALL(dispatcher_, CreateQuicSession(_, client_address))
       .WillOnce(testing::Return(CreateSession(&dispatcher_, config_, 1,
-                                              client_address, &crypto_config_,
-                                              &session1_)));
+                                              client_address, &mock_helper_,
+                                              &crypto_config_, &session1_)));
 
   ProcessPacket(client_address, 1, true, "foo");
 
@@ -255,9 +259,9 @@ TEST_F(QuicDispatcherTest, TimeWaitListManager) {
   IPEndPoint client_address(net::test::Loopback4(), 1);
   QuicConnectionId connection_id = 1;
   EXPECT_CALL(dispatcher_, CreateQuicSession(connection_id, client_address))
-      .WillOnce(testing::Return(CreateSession(&dispatcher_, config_,
-                                              connection_id, client_address,
-                                              &crypto_config_, &session1_)));
+      .WillOnce(testing::Return(
+          CreateSession(&dispatcher_, config_, connection_id, client_address,
+                        &mock_helper_, &crypto_config_, &session1_)));
   ProcessPacket(client_address, connection_id, true, "foo");
 
   // Close the connection by sending public reset packet.
@@ -408,7 +412,7 @@ class QuicDispatcherStatelessRejectTest
       QuicConnectionId connection_id,
       const IPEndPoint& client_address) {
     CreateSession(&dispatcher_, config_, connection_id, client_address,
-                  &crypto_config_, &session1_);
+                  &mock_helper_, &crypto_config_, &session1_);
 
     crypto_stream1_ = new MockQuicCryptoServerStream(crypto_config_, session1_);
     session1_->SetCryptoStream(crypto_stream1_);
@@ -445,8 +449,8 @@ TEST_F(QuicDispatcherTest, OKSeqNoPacketProcessed) {
 
   EXPECT_CALL(dispatcher_, CreateQuicSession(1, client_address))
       .WillOnce(testing::Return(CreateSession(&dispatcher_, config_, 1,
-                                              client_address, &crypto_config_,
-                                              &session1_)));
+                                              client_address, &mock_helper_,
+                                              &crypto_config_, &session1_)));
   // A packet whose packet number is the largest that is allowed to start a
   // connection.
   ProcessPacket(client_address, connection_id, true, "data",
@@ -585,14 +589,14 @@ class QuicDispatcherWriteBlockedListTest : public QuicDispatcherTest {
 
     EXPECT_CALL(dispatcher_, CreateQuicSession(_, client_address))
         .WillOnce(testing::Return(CreateSession(&dispatcher_, config_, 1,
-                                                client_address, &crypto_config_,
-                                                &session1_)));
+                                                client_address, &helper_,
+                                                &crypto_config_, &session1_)));
     ProcessPacket(client_address, 1, true, "foo");
 
     EXPECT_CALL(dispatcher_, CreateQuicSession(_, client_address))
         .WillOnce(testing::Return(CreateSession(&dispatcher_, config_, 2,
-                                                client_address, &crypto_config_,
-                                                &session2_)));
+                                                client_address, &helper_,
+                                                &crypto_config_, &session2_)));
     ProcessPacket(client_address, 2, true, "bar");
 
     blocked_list_ = QuicDispatcherPeer::GetWriteBlockedList(&dispatcher_);
@@ -614,6 +618,7 @@ class QuicDispatcherWriteBlockedListTest : public QuicDispatcherTest {
   }
 
  protected:
+  MockHelper helper_;
   BlockingWriter* writer_;
   QuicDispatcher::WriteBlockedList* blocked_list_;
 };

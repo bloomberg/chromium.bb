@@ -232,12 +232,6 @@ void QuicSentPacketManager::OnIncomingAck(const QuicAckFrame& ack_frame,
       clock_->WallNow(),
       rtt_stats_.smoothed_rtt());
 
-  // If we have received a truncated ack, then we need to clear out some
-  // previous transmissions to allow the peer to actually ACK new packets.
-  if (ack_frame.is_truncated && !FLAGS_quic_disable_truncated_ack_handling) {
-    unacked_packets_.ClearAllPreviousRetransmissions();
-  }
-
   // Anytime we are making forward progress and have a new RTT estimate, reset
   // the backoff counters.
   if (rtt_updated) {

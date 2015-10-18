@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
+#include "base/stl_util.h"
 #include "net/quic/crypto/aes_128_gcm_12_encrypter.h"
 #include "net/quic/crypto/crypto_framer.h"
 #include "net/quic/crypto/crypto_handshake.h"
@@ -96,13 +97,16 @@ class QuicCryptoServerStreamTest : public ::testing::TestWithParam<bool> {
     }
   }
 
+  ~QuicCryptoServerStreamTest() override { STLDeleteElements(&helpers_); }
+
   // Initializes the crypto server stream state for testing.  May be
   // called multiple times.
   void InitializeServer() {
     TestQuicSpdyServerSession* server_session = nullptr;
+    helpers_.push_back(new MockHelper);
     CreateServerSessionForTest(server_id_, QuicTime::Delta::FromSeconds(100000),
-                               &server_crypto_config_, &server_connection_,
-                               &server_session);
+                               helpers_.back(), &server_crypto_config_,
+                               &server_connection_, &server_session);
     CHECK(server_session);
     server_session_.reset(server_session);
     CryptoTestUtils::SetupCryptoServerConfigForTest(
@@ -122,10 +126,11 @@ class QuicCryptoServerStreamTest : public ::testing::TestWithParam<bool> {
   // testing.  May be called multiple times.
   void InitializeFakeClient(bool supports_stateless_rejects) {
     TestQuicSpdyClientSession* client_session = nullptr;
+    helpers_.push_back(new MockHelper);
     CreateClientSessionForTest(server_id_, supports_stateless_rejects,
                                QuicTime::Delta::FromSeconds(100000),
-                               &client_crypto_config_, &client_connection_,
-                               &client_session);
+                               helpers_.back(), &client_crypto_config_,
+                               &client_connection_, &client_session);
     CHECK(client_session);
     client_session_.reset(client_session);
     if (!client_options_.dont_verify_certs) {
@@ -156,7 +161,8 @@ class QuicCryptoServerStreamTest : public ::testing::TestWithParam<bool> {
     CHECK(server_connection_);
     CHECK(server_session_ != nullptr);
     return CryptoTestUtils::HandshakeWithFakeClient(
-        server_connection_, server_stream(), server_id_, client_options_);
+        helpers_.back(), server_connection_, server_stream(), server_id_,
+        client_options_);
   }
 
   // Performs a single round of handshake message-exchange between the
@@ -172,6 +178,10 @@ class QuicCryptoServerStreamTest : public ::testing::TestWithParam<bool> {
   }
 
  protected:
+  // Every connection gets its own MockHelper, tracked separately from the
+  // server and client state so their lifetimes persist through the whole test.
+  std::vector<MockHelper*> helpers_;
+
   // Server state
   PacketSavingConnection* server_connection_;
   scoped_ptr<TestQuicSpdyServerSession> server_session_;
@@ -236,8 +246,7 @@ TEST_P(QuicCryptoServerStreamTest, StatelessRejectAfterCHLO) {
   const QuicConnectionId server_designated_connection_id =
       client_state->GetNextServerDesignatedConnectionId();
   const QuicConnectionId expected_id =
-      reinterpret_cast<MockRandom*>(server_connection_->random_generator())
-          ->RandUint64();
+      server_connection_->random_generator()->RandUint64();
   EXPECT_EQ(expected_id, server_designated_connection_id);
   EXPECT_FALSE(client_state->has_server_designated_connection_id());
   ASSERT_TRUE(client_state->IsComplete(QuicWallTime::FromUNIXSeconds(0)));
@@ -265,8 +274,7 @@ TEST_P(QuicCryptoServerStreamTest, ConnectedAfterStatelessHandshake) {
   const QuicConnectionId server_designated_connection_id =
       client_state->GetNextServerDesignatedConnectionId();
   const QuicConnectionId expected_id =
-      reinterpret_cast<MockRandom*>(server_connection_->random_generator())
-          ->RandUint64();
+      server_connection_->random_generator()->RandUint64();
   EXPECT_EQ(expected_id, server_designated_connection_id);
   EXPECT_FALSE(client_state->has_server_designated_connection_id());
   ASSERT_TRUE(client_state->IsComplete(QuicWallTime::FromUNIXSeconds(0)));

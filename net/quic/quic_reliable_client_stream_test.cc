@@ -47,7 +47,8 @@ class QuicReliableClientStreamTest
     : public ::testing::TestWithParam<QuicVersion> {
  public:
   QuicReliableClientStreamTest()
-      : session_(new MockConnection(Perspective::IS_CLIENT,
+      : session_(new MockConnection(&helper_,
+                                    Perspective::IS_CLIENT,
                                     SupportedVersions(GetParam()))) {
     stream_ =
         new QuicReliableClientStream(kTestStreamId, &session_, BoundNetLog());
@@ -94,6 +95,7 @@ class QuicReliableClientStreamTest
   }
 
   testing::StrictMock<MockDelegate> delegate_;
+  MockHelper helper_;
   MockQuicSpdySession session_;
   QuicReliableClientStream* stream_;
   QuicCryptoClientConfig crypto_config_;
@@ -106,7 +108,7 @@ INSTANTIATE_TEST_CASE_P(Version, QuicReliableClientStreamTest,
 TEST_P(QuicReliableClientStreamTest, OnFinRead) {
   InitializeHeaders();
   std::string uncompressed_headers =
-      SpdyUtils::SerializeUncompressedHeaders(headers_, GetParam());
+      SpdyUtils::SerializeUncompressedHeaders(headers_);
   QuicStreamOffset offset = 0;
   stream_->OnStreamHeaders(uncompressed_headers);
   stream_->OnStreamHeadersComplete(false, uncompressed_headers.length());
@@ -131,7 +133,7 @@ TEST_P(QuicReliableClientStreamTest, OnDataAvailableBeforeHeaders) {
 TEST_P(QuicReliableClientStreamTest, OnDataAvailable) {
   InitializeHeaders();
   std::string uncompressed_headers =
-      SpdyUtils::SerializeUncompressedHeaders(headers_, GetParam());
+      SpdyUtils::SerializeUncompressedHeaders(headers_);
   stream_->OnStreamHeaders(uncompressed_headers);
   stream_->OnStreamHeadersComplete(false, uncompressed_headers.length());
 
@@ -168,7 +170,7 @@ TEST_P(QuicReliableClientStreamTest, ProcessHeadersWithError) {
 TEST_P(QuicReliableClientStreamTest, OnDataAvailableWithError) {
   InitializeHeaders();
   std::string uncompressed_headers =
-      SpdyUtils::SerializeUncompressedHeaders(headers_, GetParam());
+      SpdyUtils::SerializeUncompressedHeaders(headers_);
   stream_->OnStreamHeaders(uncompressed_headers);
   stream_->OnStreamHeadersComplete(false, uncompressed_headers.length());
 

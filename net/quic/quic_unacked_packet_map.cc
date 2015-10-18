@@ -78,7 +78,10 @@ void QuicUnackedPacketMap::RemoveObsoletePackets() {
     if (!IsPacketUseless(least_unacked_, unacked_packets_.front())) {
       break;
     }
-    PopLeastUnacked();
+    ack_notifier_manager_->OnPacketRemoved(least_unacked_);
+
+    unacked_packets_.pop_front();
+    ++least_unacked_;
   }
 }
 
@@ -139,41 +142,6 @@ void QuicUnackedPacketMap::TransferRetransmissionInfo(
   info->all_transmissions = transmission_info->all_transmissions;
   // Proactively remove obsolete packets so the least unacked can be raised.
   RemoveObsoletePackets();
-}
-
-void QuicUnackedPacketMap::ClearAllPreviousRetransmissions() {
-  while (!unacked_packets_.empty() && least_unacked_ < largest_observed_) {
-    // If this packet is in flight, or has retransmittable data, then there is
-    // no point in clearing out any further packets, because they would not
-    // affect the high water mark.
-    TransmissionInfo* info = &unacked_packets_.front();
-    if (info->in_flight || info->retransmittable_frames != nullptr) {
-      break;
-    }
-
-    if (info->all_transmissions != nullptr) {
-      if (info->all_transmissions->size() < 2) {
-        LOG(DFATAL) << "all_transmissions must be nullptr or have multiple "
-                    << "elements.  size:" << info->all_transmissions->size();
-        delete info->all_transmissions;
-        info->all_transmissions = nullptr;
-      } else {
-        LOG_IF(DFATAL, info->all_transmissions->front() != least_unacked_)
-            << "The first element of all transmissions should be least unacked:"
-            << least_unacked_ << " but is:" << info->all_transmissions->front();
-        info->all_transmissions->pop_front();
-        if (info->all_transmissions->size() == 1) {
-          // Set the newer transmission's 'all_transmissions' entry to nullptr.
-          QuicPacketNumber new_transmission = info->all_transmissions->front();
-          TransmissionInfo* new_info =
-              &unacked_packets_.at(new_transmission - least_unacked_);
-          delete new_info->all_transmissions;
-          new_info->all_transmissions = nullptr;
-        }
-      }
-    }
-    PopLeastUnacked();
-  }
 }
 
 bool QuicUnackedPacketMap::HasRetransmittableFrames(
@@ -353,6 +321,9 @@ size_t QuicUnackedPacketMap::GetNumUnackedPacketsDebugOnly() const {
 }
 
 bool QuicUnackedPacketMap::HasMultipleInFlightPackets() const {
+  if (bytes_in_flight_ > kDefaultTCPMSS) {
+    return true;
+  }
   size_t num_in_flight = 0;
   for (UnackedPacketMap::const_reverse_iterator it = unacked_packets_.rbegin();
        it != unacked_packets_.rend(); ++it) {
@@ -382,13 +353,6 @@ bool QuicUnackedPacketMap::HasUnackedRetransmittableFrames() const {
 
 QuicPacketNumber QuicUnackedPacketMap::GetLeastUnacked() const {
   return least_unacked_;
-}
-
-void QuicUnackedPacketMap::PopLeastUnacked() {
-  ack_notifier_manager_->OnPacketRemoved(least_unacked_);
-
-  unacked_packets_.pop_front();
-  ++least_unacked_;
 }
 
 }  // namespace net

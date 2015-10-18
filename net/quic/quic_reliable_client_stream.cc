@@ -149,7 +149,7 @@ void QuicReliableClientStream::NotifyDelegateOfHeadersComplete(
 
   size_t headers_len = decompressed_headers().length();
   SpdyHeaderBlock headers;
-  SpdyFramer framer(SpdyUtils::GetSpdyVersionForQuicVersion(version()));
+  SpdyFramer framer(HTTP2);
   size_t len = framer.ParseHeaderBlockInBuffer(decompressed_headers().data(),
                                                headers_len, &headers);
   MarkHeadersConsumed(headers_len);

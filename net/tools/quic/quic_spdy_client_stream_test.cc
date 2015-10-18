@@ -15,6 +15,7 @@
 
 using net::test::DefaultQuicConfig;
 using net::test::MockConnection;
+using net::test::MockHelper;
 using net::test::SupportedVersions;
 using net::test::kClientDataStreamId1;
 using net::test::kInitialSessionFlowControlWindowForTest;
@@ -29,12 +30,11 @@ namespace tools {
 namespace test {
 namespace {
 
-class QuicSpdyClientStreamTest : public TestWithParam<QuicVersion> {
+class QuicSpdyClientStreamTest : public ::testing::Test {
  public:
   QuicSpdyClientStreamTest()
       : connection_(
-            new StrictMock<MockConnection>(Perspective::IS_CLIENT,
-                                           SupportedVersions(GetParam()))),
+            new StrictMock<MockConnection>(&helper_, Perspective::IS_CLIENT)),
         session_(DefaultQuicConfig(),
                  connection_,
                  QuicServerId("example.com", 80, false, PRIVACY_MODE_DISABLED),
@@ -45,8 +45,8 @@ class QuicSpdyClientStreamTest : public TestWithParam<QuicVersion> {
     headers_.SetResponseFirstlineFromStringPieces("HTTP/1.1", "200", "Ok");
     headers_.ReplaceOrAppendHeader("content-length", "11");
 
-    headers_string_ = net::tools::SpdyBalsaUtils::SerializeResponseHeaders(
-        headers_, GetParam());
+    headers_string_ =
+        net::tools::SpdyBalsaUtils::SerializeResponseHeaders(headers_);
 
     // New streams rely on having the peer's flow control receive window
     // negotiated in the config.
@@ -57,6 +57,7 @@ class QuicSpdyClientStreamTest : public TestWithParam<QuicVersion> {
     stream_.reset(new QuicSpdyClientStream(kClientDataStreamId1, &session_));
   }
 
+  MockHelper helper_;
   StrictMock<MockConnection>* connection_;
   QuicCryptoClientConfig crypto_config_;
   QuicClientSession session_;
@@ -66,49 +67,34 @@ class QuicSpdyClientStreamTest : public TestWithParam<QuicVersion> {
   string body_;
 };
 
-INSTANTIATE_TEST_CASE_P(Tests, QuicSpdyClientStreamTest,
-                        ::testing::ValuesIn(QuicSupportedVersions()));
-
-TEST_P(QuicSpdyClientStreamTest, TestFraming) {
+TEST_F(QuicSpdyClientStreamTest, TestFraming) {
   stream_->OnStreamHeaders(headers_string_);
   stream_->OnStreamHeadersComplete(false, headers_string_.size());
   stream_->OnStreamFrame(
       QuicStreamFrame(stream_->id(), /*fin=*/false, /*offset=*/0, body_));
-  if (GetParam() > QUIC_VERSION_24) {
-    EXPECT_EQ("200", stream_->headers().find(":status")->second);
-  } else {
-    EXPECT_EQ("200 Ok", stream_->headers().find(":status")->second);
-  }
+  EXPECT_EQ("200", stream_->headers().find(":status")->second);
   EXPECT_EQ(200, stream_->response_code());
   EXPECT_EQ(body_, stream_->data());
 }
 
-TEST_P(QuicSpdyClientStreamTest, TestFramingOnePacket) {
+TEST_F(QuicSpdyClientStreamTest, TestFramingOnePacket) {
   stream_->OnStreamHeaders(headers_string_);
   stream_->OnStreamHeadersComplete(false, headers_string_.size());
   stream_->OnStreamFrame(
       QuicStreamFrame(stream_->id(), /*fin=*/false, /*offset=*/0, body_));
-  if (GetParam() > QUIC_VERSION_24) {
-    EXPECT_EQ("200", stream_->headers().find(":status")->second);
-  } else {
-    EXPECT_EQ("200 Ok", stream_->headers().find(":status")->second);
-  }
+  EXPECT_EQ("200", stream_->headers().find(":status")->second);
   EXPECT_EQ(200, stream_->response_code());
   EXPECT_EQ(body_, stream_->data());
 }
 
-TEST_P(QuicSpdyClientStreamTest, DISABLED_TestFramingExtraData) {
+TEST_F(QuicSpdyClientStreamTest, DISABLED_TestFramingExtraData) {
   string large_body = "hello world!!!!!!";
 
   stream_->OnStreamHeaders(headers_string_);
   stream_->OnStreamHeadersComplete(false, headers_string_.size());
   // The headers should parse successfully.
   EXPECT_EQ(QUIC_STREAM_NO_ERROR, stream_->stream_error());
-  if (GetParam() > QUIC_VERSION_24) {
-    EXPECT_EQ("200", stream_->headers().find(":status")->second);
-  } else {
-    EXPECT_EQ("200 Ok", stream_->headers().find(":status")->second);
-  }
+  EXPECT_EQ("200", stream_->headers().find(":status")->second);
   EXPECT_EQ(200, stream_->response_code());
 
   EXPECT_CALL(*connection_,
@@ -119,7 +105,7 @@ TEST_P(QuicSpdyClientStreamTest, DISABLED_TestFramingExtraData) {
   EXPECT_NE(QUIC_STREAM_NO_ERROR, stream_->stream_error());
 }
 
-TEST_P(QuicSpdyClientStreamTest, TestNoBidirectionalStreaming) {
+TEST_F(QuicSpdyClientStreamTest, TestNoBidirectionalStreaming) {
   QuicStreamFrame frame(kClientDataStreamId1, false, 3, StringPiece("asd"));
 
   EXPECT_FALSE(stream_->write_side_closed());

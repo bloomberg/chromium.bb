@@ -158,7 +158,6 @@ scoped_ptr<base::Value> NetLogQuicRstStreamFrameCallback(
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetInteger("stream_id", frame->stream_id);
   dict->SetInteger("quic_rst_stream_error", frame->error_code);
-  dict->SetString("details", frame->error_details);
   return dict.Pass();
 }
 

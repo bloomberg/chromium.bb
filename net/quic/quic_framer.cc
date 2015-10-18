@@ -1497,15 +1497,6 @@ bool QuicFramer::ProcessRstStreamFrame(QuicDataReader* reader,
   }
 
   frame->error_code = static_cast<QuicRstStreamErrorCode>(error_code);
-  if (quic_version_ <= QUIC_VERSION_24) {
-    StringPiece error_details;
-    if (!reader->ReadStringPiece16(&error_details)) {
-      set_detailed_error("Unable to read rst stream error details.");
-      return false;
-    }
-    frame->error_details = error_details.as_string();
-  }
-
   return true;
 }
 
@@ -1798,10 +1789,6 @@ size_t QuicFramer::ComputeFrameLength(
       // Ping has no payload.
       return kQuicFrameTypeSize;
     case RST_STREAM_FRAME:
-      if (quic_version_ <= QUIC_VERSION_24) {
-        return GetMinRstStreamFrameSize() +
-               frame.rst_stream_frame->error_details.size();
-      }
       return GetRstStreamFrameSize();
     case CONNECTION_CLOSE_FRAME:
       return GetMinConnectionCloseFrameSize() +
@@ -2186,11 +2173,6 @@ bool QuicFramer::AppendRstStreamFrame(const QuicRstStreamFrame& frame,
     return false;
   }
 
-  if (quic_version_ <= QUIC_VERSION_24) {
-    if (!writer->WriteStringPiece16(frame.error_details)) {
-      return false;
-    }
-  }
   return true;
 }
 

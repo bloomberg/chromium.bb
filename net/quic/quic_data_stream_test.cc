@@ -60,7 +60,7 @@ class TestStream : public QuicDataStream {
   string data_;
 };
 
-class QuicDataStreamTest : public ::testing::TestWithParam<QuicVersion> {
+class QuicDataStreamTest : public ::testing::Test {
  public:
   QuicDataStreamTest() {
     headers_[":host"] = "www.google.com";
@@ -94,7 +94,7 @@ class QuicDataStreamTest : public ::testing::TestWithParam<QuicVersion> {
 
   void Initialize(bool stream_should_process_data) {
     connection_ = new testing::StrictMock<MockConnection>(
-        Perspective::IS_SERVER, SupportedVersions(GetParam()));
+        &helper_, Perspective::IS_SERVER);
     session_.reset(new testing::StrictMock<MockQuicSpdySession>(connection_));
     stream_.reset(new TestStream(kClientDataStreamId1, session_.get(),
                                  stream_should_process_data));
@@ -105,6 +105,7 @@ class QuicDataStreamTest : public ::testing::TestWithParam<QuicVersion> {
   }
 
  protected:
+  MockHelper helper_;
   MockConnection* connection_;
   scoped_ptr<MockQuicSpdySession> session_;
   scoped_ptr<TestStream> stream_;
@@ -113,14 +114,10 @@ class QuicDataStreamTest : public ::testing::TestWithParam<QuicVersion> {
   QuicWriteBlockedList* write_blocked_list_;
 };
 
-INSTANTIATE_TEST_CASE_P(Tests, QuicDataStreamTest,
-                        ::testing::ValuesIn(QuicSupportedVersions()));
-
-TEST_P(QuicDataStreamTest, ProcessHeaders) {
+TEST_F(QuicDataStreamTest, ProcessHeaders) {
   Initialize(kShouldProcessData);
 
-  string headers =
-      SpdyUtils::SerializeUncompressedHeaders(headers_, GetParam());
+  string headers = SpdyUtils::SerializeUncompressedHeaders(headers_);
   stream_->OnStreamHeadersPriority(QuicUtils::HighestPriority());
   stream_->OnStreamHeaders(headers);
   EXPECT_EQ("", stream_->data());
@@ -132,11 +129,10 @@ TEST_P(QuicDataStreamTest, ProcessHeaders) {
   EXPECT_FALSE(stream_->IsDoneReading());
 }
 
-TEST_P(QuicDataStreamTest, ProcessHeadersWithFin) {
+TEST_F(QuicDataStreamTest, ProcessHeadersWithFin) {
   Initialize(kShouldProcessData);
 
-  string headers =
-      SpdyUtils::SerializeUncompressedHeaders(headers_, GetParam());
+  string headers = SpdyUtils::SerializeUncompressedHeaders(headers_);
   stream_->OnStreamHeadersPriority(QuicUtils::HighestPriority());
   stream_->OnStreamHeaders(headers);
   EXPECT_EQ("", stream_->data());
@@ -149,11 +145,10 @@ TEST_P(QuicDataStreamTest, ProcessHeadersWithFin) {
   EXPECT_TRUE(stream_->HasFinalReceivedByteOffset());
 }
 
-TEST_P(QuicDataStreamTest, MarkHeadersConsumed) {
+TEST_F(QuicDataStreamTest, MarkHeadersConsumed) {
   Initialize(kShouldProcessData);
 
-  string headers =
-      SpdyUtils::SerializeUncompressedHeaders(headers_, GetParam());
+  string headers = SpdyUtils::SerializeUncompressedHeaders(headers_);
   string body = "this is the body";
 
   stream_->OnStreamHeaders(headers);
@@ -168,11 +163,10 @@ TEST_P(QuicDataStreamTest, MarkHeadersConsumed) {
   EXPECT_EQ("", stream_->decompressed_headers());
 }
 
-TEST_P(QuicDataStreamTest, ProcessHeadersAndBody) {
+TEST_F(QuicDataStreamTest, ProcessHeadersAndBody) {
   Initialize(kShouldProcessData);
 
-  string headers =
-      SpdyUtils::SerializeUncompressedHeaders(headers_, GetParam());
+  string headers = SpdyUtils::SerializeUncompressedHeaders(headers_);
   string body = "this is the body";
 
   stream_->OnStreamHeaders(headers);
@@ -187,9 +181,8 @@ TEST_P(QuicDataStreamTest, ProcessHeadersAndBody) {
   EXPECT_EQ(body, stream_->data());
 }
 
-TEST_P(QuicDataStreamTest, ProcessHeadersAndBodyFragments) {
-  string headers =
-      SpdyUtils::SerializeUncompressedHeaders(headers_, GetParam());
+TEST_F(QuicDataStreamTest, ProcessHeadersAndBodyFragments) {
+  string headers = SpdyUtils::SerializeUncompressedHeaders(headers_);
   string body = "this is the body";
 
   for (size_t fragment_size = 1; fragment_size < body.size();
@@ -218,9 +211,8 @@ TEST_P(QuicDataStreamTest, ProcessHeadersAndBodyFragments) {
   }
 }
 
-TEST_P(QuicDataStreamTest, ProcessHeadersAndBodyFragmentsSplit) {
-  string headers =
-      SpdyUtils::SerializeUncompressedHeaders(headers_, GetParam());
+TEST_F(QuicDataStreamTest, ProcessHeadersAndBodyFragmentsSplit) {
+  string headers = SpdyUtils::SerializeUncompressedHeaders(headers_);
   string body = "this is the body";
 
   for (size_t split_point = 1; split_point < body.size() - 1; ++split_point) {
@@ -251,11 +243,10 @@ TEST_P(QuicDataStreamTest, ProcessHeadersAndBodyFragmentsSplit) {
   }
 }
 
-TEST_P(QuicDataStreamTest, ProcessHeadersAndBodyReadv) {
+TEST_F(QuicDataStreamTest, ProcessHeadersAndBodyReadv) {
   Initialize(!kShouldProcessData);
 
-  string headers =
-      SpdyUtils::SerializeUncompressedHeaders(headers_, GetParam());
+  string headers = SpdyUtils::SerializeUncompressedHeaders(headers_);
   string body = "this is the body";
 
   stream_->OnStreamHeaders(headers);
@@ -275,11 +266,10 @@ TEST_P(QuicDataStreamTest, ProcessHeadersAndBodyReadv) {
   EXPECT_EQ(body, string(buffer, bytes_read));
 }
 
-TEST_P(QuicDataStreamTest, ProcessHeadersAndBodyMarkConsumed) {
+TEST_F(QuicDataStreamTest, ProcessHeadersAndBodyMarkConsumed) {
   Initialize(!kShouldProcessData);
 
-  string headers =
-      SpdyUtils::SerializeUncompressedHeaders(headers_, GetParam());
+  string headers = SpdyUtils::SerializeUncompressedHeaders(headers_);
   string body = "this is the body";
 
   stream_->OnStreamHeaders(headers);
@@ -298,11 +288,10 @@ TEST_P(QuicDataStreamTest, ProcessHeadersAndBodyMarkConsumed) {
   EXPECT_EQ(body.length(), stream_->flow_controller()->bytes_consumed());
 }
 
-TEST_P(QuicDataStreamTest, ProcessHeadersAndBodyIncrementalReadv) {
+TEST_F(QuicDataStreamTest, ProcessHeadersAndBodyIncrementalReadv) {
   Initialize(!kShouldProcessData);
 
-  string headers =
-      SpdyUtils::SerializeUncompressedHeaders(headers_, GetParam());
+  string headers = SpdyUtils::SerializeUncompressedHeaders(headers_);
   string body = "this is the body";
   stream_->OnStreamHeaders(headers);
   stream_->OnStreamHeadersComplete(false, headers.size());
@@ -322,11 +311,10 @@ TEST_P(QuicDataStreamTest, ProcessHeadersAndBodyIncrementalReadv) {
   }
 }
 
-TEST_P(QuicDataStreamTest, ProcessHeadersUsingReadvWithMultipleIovecs) {
+TEST_F(QuicDataStreamTest, ProcessHeadersUsingReadvWithMultipleIovecs) {
   Initialize(!kShouldProcessData);
 
-  string headers =
-      SpdyUtils::SerializeUncompressedHeaders(headers_, GetParam());
+  string headers = SpdyUtils::SerializeUncompressedHeaders(headers_);
   string body = "this is the body";
   stream_->OnStreamHeaders(headers);
   stream_->OnStreamHeadersComplete(false, headers.size());
@@ -350,7 +338,7 @@ TEST_P(QuicDataStreamTest, ProcessHeadersUsingReadvWithMultipleIovecs) {
   }
 }
 
-TEST_P(QuicDataStreamTest, StreamFlowControlBlocked) {
+TEST_F(QuicDataStreamTest, StreamFlowControlBlocked) {
   // Tests that we send a BLOCKED frame to the peer when we attempt to write,
   // but are flow control blocked.
   Initialize(kShouldProcessData);
@@ -363,8 +351,7 @@ TEST_P(QuicDataStreamTest, StreamFlowControlBlocked) {
                          stream_->flow_controller()));
 
   // Try to send more data than the flow control limit allows.
-  string headers =
-      SpdyUtils::SerializeUncompressedHeaders(headers_, GetParam());
+  string headers = SpdyUtils::SerializeUncompressedHeaders(headers_);
   string body;
   const uint64 kOverflow = 15;
   GenerateBody(&body, kWindow + kOverflow);
@@ -383,7 +370,7 @@ TEST_P(QuicDataStreamTest, StreamFlowControlBlocked) {
             ReliableQuicStreamPeer::SizeOfQueuedData(stream_.get()));
 }
 
-TEST_P(QuicDataStreamTest, StreamFlowControlNoWindowUpdateIfNotConsumed) {
+TEST_F(QuicDataStreamTest, StreamFlowControlNoWindowUpdateIfNotConsumed) {
   // The flow control receive window decreases whenever we add new bytes to the
   // sequencer, whether they are consumed immediately or buffered. However we
   // only send WINDOW_UPDATE frames based on increasing number of bytes
@@ -405,8 +392,7 @@ TEST_P(QuicDataStreamTest, StreamFlowControlNoWindowUpdateIfNotConsumed) {
                          stream_->flow_controller()));
 
   // Stream receives enough data to fill a fraction of the receive window.
-  string headers =
-      SpdyUtils::SerializeUncompressedHeaders(headers_, GetParam());
+  string headers = SpdyUtils::SerializeUncompressedHeaders(headers_);
   string body;
   GenerateBody(&body, kWindow / 3);
   stream_->OnStreamHeaders(headers);
@@ -428,7 +414,7 @@ TEST_P(QuicDataStreamTest, StreamFlowControlNoWindowUpdateIfNotConsumed) {
       QuicFlowControllerPeer::ReceiveWindowSize(stream_->flow_controller()));
 }
 
-TEST_P(QuicDataStreamTest, StreamFlowControlWindowUpdate) {
+TEST_F(QuicDataStreamTest, StreamFlowControlWindowUpdate) {
   // Tests that on receipt of data, the stream updates its receive window offset
   // appropriately, and sends WINDOW_UPDATE frames when its receive window drops
   // too low.
@@ -444,8 +430,7 @@ TEST_P(QuicDataStreamTest, StreamFlowControlWindowUpdate) {
                          stream_->flow_controller()));
 
   // Stream receives enough data to fill a fraction of the receive window.
-  string headers =
-      SpdyUtils::SerializeUncompressedHeaders(headers_, GetParam());
+  string headers = SpdyUtils::SerializeUncompressedHeaders(headers_);
   string body;
   GenerateBody(&body, kWindow / 3);
   stream_->OnStreamHeaders(headers);
@@ -473,7 +458,7 @@ TEST_P(QuicDataStreamTest, StreamFlowControlWindowUpdate) {
                          stream_->flow_controller()));
 }
 
-TEST_P(QuicDataStreamTest, ConnectionFlowControlWindowUpdate) {
+TEST_F(QuicDataStreamTest, ConnectionFlowControlWindowUpdate) {
   // Tests that on receipt of data, the connection updates its receive window
   // offset appropriately, and sends WINDOW_UPDATE frames when its receive
   // window drops too low.
@@ -495,8 +480,7 @@ TEST_P(QuicDataStreamTest, ConnectionFlowControlWindowUpdate) {
                                               kWindow);
 
   // Supply headers to both streams so that they are happy to receive data.
-  string headers =
-      SpdyUtils::SerializeUncompressedHeaders(headers_, GetParam());
+  string headers = SpdyUtils::SerializeUncompressedHeaders(headers_);
   stream_->OnStreamHeaders(headers);
   stream_->OnStreamHeadersComplete(false, headers.size());
   stream_->MarkHeadersConsumed(headers.length());
@@ -527,7 +511,7 @@ TEST_P(QuicDataStreamTest, ConnectionFlowControlWindowUpdate) {
   stream_->OnStreamFrame(frame3);
 }
 
-TEST_P(QuicDataStreamTest, StreamFlowControlViolation) {
+TEST_F(QuicDataStreamTest, StreamFlowControlViolation) {
   // Tests that on if the peer sends too much data (i.e. violates the flow
   // control protocol), then we terminate the connection.
 
@@ -540,8 +524,7 @@ TEST_P(QuicDataStreamTest, StreamFlowControlViolation) {
   QuicFlowControllerPeer::SetReceiveWindowOffset(stream_->flow_controller(),
                                                  kWindow);
 
-  string headers =
-      SpdyUtils::SerializeUncompressedHeaders(headers_, GetParam());
+  string headers = SpdyUtils::SerializeUncompressedHeaders(headers_);
   stream_->OnStreamHeaders(headers);
   stream_->OnStreamHeadersComplete(false, headers.size());
 
@@ -554,7 +537,7 @@ TEST_P(QuicDataStreamTest, StreamFlowControlViolation) {
   stream_->OnStreamFrame(frame);
 }
 
-TEST_P(QuicDataStreamTest, ConnectionFlowControlViolation) {
+TEST_F(QuicDataStreamTest, ConnectionFlowControlViolation) {
   // Tests that on if the peer sends too much data (i.e. violates the flow
   // control protocol), at the connection level (rather than the stream level)
   // then we terminate the connection.
@@ -571,8 +554,7 @@ TEST_P(QuicDataStreamTest, ConnectionFlowControlViolation) {
   QuicFlowControllerPeer::SetReceiveWindowOffset(session_->flow_controller(),
                                                  kConnectionWindow);
 
-  string headers =
-      SpdyUtils::SerializeUncompressedHeaders(headers_, GetParam());
+  string headers = SpdyUtils::SerializeUncompressedHeaders(headers_);
   stream_->OnStreamHeaders(headers);
   stream_->OnStreamHeadersComplete(false, headers.size());
 
@@ -587,7 +569,7 @@ TEST_P(QuicDataStreamTest, ConnectionFlowControlViolation) {
   stream_->OnStreamFrame(frame);
 }
 
-TEST_P(QuicDataStreamTest, StreamFlowControlFinNotBlocked) {
+TEST_F(QuicDataStreamTest, StreamFlowControlFinNotBlocked) {
   // An attempt to write a FIN with no data should not be flow control blocked,
   // even if the send window is 0.
 

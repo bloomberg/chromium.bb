@@ -21,7 +21,6 @@ NET_EXPORT_PRIVATE extern bool FLAGS_enable_quic_stateless_reject_support;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_auto_tune_receive_window;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_limit_max_cwnd;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_require_handshake_confirmation;
-NET_EXPORT_PRIVATE extern bool FLAGS_quic_disable_truncated_ack_handling;
 NET_EXPORT_PRIVATE extern bool FLAGS_send_goaway_after_client_migration;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_close_connection_out_of_order_sending;
 NET_EXPORT_PRIVATE extern bool FLAGS_reset_cubic_epoch_when_app_limited;
@@ -30,5 +29,6 @@ NET_EXPORT_PRIVATE extern bool FLAGS_shift_quic_cubic_epoch_when_app_limited;
 NET_EXPORT_PRIVATE extern bool FLAGS_allow_many_available_streams;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_read_packets_full_recvmmsg;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_measure_headers_hol_blocking_time;
+NET_EXPORT_PRIVATE extern bool FLAGS_quic_stop_checking_for_mismatch_ids;
 
 #endif  // NET_QUIC_QUIC_FLAGS_H_

@@ -59,9 +59,6 @@ class QuicSpdyServerStream : public QuicDataStream {
   // for the body
   void SendErrorResponse();
 
-  // Returns the key for |request_headers_| which identifies the host.
-  const std::string GetHostKey();
-
   // The parsed headers received from the client.
   SpdyHeaderBlock request_headers_;
   int content_length_;

@@ -255,8 +255,8 @@ ssize_t QuicTestClient::GetOrCreateStreamAndSendRequest(
   ssize_t ret = 0;
 
   if (headers != nullptr) {
-    SpdyHeaderBlock spdy_headers = SpdyBalsaUtils::RequestHeadersToSpdyHeaders(
-        *headers, stream->version());
+    SpdyHeaderBlock spdy_headers =
+        SpdyBalsaUtils::RequestHeadersToSpdyHeaders(*headers);
     if (headers->HasHeader("transfer-encoding")) {
       // We have tests which rely on sending a non-standards-compliant
       // T-E header.
@@ -511,8 +511,7 @@ bool QuicTestClient::response_headers_complete() const {
 
 const BalsaHeaders* QuicTestClient::response_headers() const {
   if (stream_ != nullptr) {
-    SpdyBalsaUtils::SpdyHeadersToResponseHeaders(stream_->headers(), &headers_,
-                                                 stream_->version());
+    SpdyBalsaUtils::SpdyHeadersToResponseHeaders(stream_->headers(), &headers_);
     return &headers_;
   } else {
     return &headers_;
@@ -546,8 +545,7 @@ void QuicTestClient::OnClose(QuicDataStream* stream) {
   }
   response_complete_ = true;
   response_headers_complete_ = stream_->headers_decompressed();
-  SpdyBalsaUtils::SpdyHeadersToResponseHeaders(stream_->headers(), &headers_,
-                                               stream_->version());
+  SpdyBalsaUtils::SpdyHeadersToResponseHeaders(stream_->headers(), &headers_);
   stream_error_ = stream_->stream_error();
   bytes_read_ = stream_->stream_bytes_read() + stream_->header_bytes_read();
   bytes_written_ =

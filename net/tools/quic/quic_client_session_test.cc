@@ -20,6 +20,7 @@ using net::test::ConstructMisFramedEncryptedPacket;
 using net::test::CryptoTestUtils;
 using net::test::DefaultQuicConfig;
 using net::test::MockConnection;
+using net::test::MockHelper;
 using net::test::PacketSavingConnection;
 using net::test::QuicSpdySessionPeer;
 using net::test::SupportedVersions;
@@ -43,7 +44,8 @@ class ToolsQuicClientSessionTest
     : public ::testing::TestWithParam<QuicVersion> {
  protected:
   ToolsQuicClientSessionTest()
-      : connection_(new PacketSavingConnection(Perspective::IS_CLIENT,
+      : connection_(new PacketSavingConnection(&helper_,
+                                               Perspective::IS_CLIENT,
                                                SupportedVersions(GetParam()))) {
     session_.reset(new QuicClientSession(
         DefaultQuicConfig(), connection_,
@@ -56,13 +58,14 @@ class ToolsQuicClientSessionTest
 
   void CompleteCryptoHandshake() {
     session_->CryptoConnect();
-    CryptoTestUtils::HandshakeWithFakeServer(
-        connection_, session_->GetCryptoStream());
+    CryptoTestUtils::HandshakeWithFakeServer(&helper_, connection_,
+                                             session_->GetCryptoStream());
   }
 
+  QuicCryptoClientConfig crypto_config_;
+  MockHelper helper_;
   PacketSavingConnection* connection_;
   scoped_ptr<QuicClientSession> session_;
-  QuicCryptoClientConfig crypto_config_;
 };
 
 INSTANTIATE_TEST_CASE_P(Tests, ToolsQuicClientSessionTest,

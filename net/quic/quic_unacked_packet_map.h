@@ -79,10 +79,6 @@ class NET_EXPORT_PRIVATE QuicUnackedPacketMap {
   // been acked by the peer.  If there are no unacked packets, returns 0.
   QuicPacketNumber GetLeastUnacked() const;
 
-  // Clears all previous transmissions in order to make room in the ack frame
-  // for newly acked packets.
-  void ClearAllPreviousRetransmissions();
-
   typedef std::deque<TransmissionInfo> UnackedPacketMap;
 
   typedef UnackedPacketMap::const_iterator const_iterator;
@@ -152,9 +148,6 @@ class NET_EXPORT_PRIVATE QuicUnackedPacketMap {
   // Returns true if the packet no longer has a purpose in the map.
   bool IsPacketUseless(QuicPacketNumber packet_number,
                        const TransmissionInfo& info) const;
-
-  // Removes the packet with lowest packet number from the map.
-  void PopLeastUnacked();
 
   QuicPacketNumber largest_sent_packet_;
   QuicPacketNumber largest_observed_;

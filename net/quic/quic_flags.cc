@@ -54,10 +54,6 @@ bool FLAGS_quic_limit_max_cwnd = true;
 // TODO(rtenneti): Enable this flag after CryptoServerTest's are fixed.
 bool FLAGS_quic_require_handshake_confirmation = false;
 
-// Disables special treatment of truncated acks, since older retransmissions are
-// proactively discarded in QUIC.
-bool FLAGS_quic_disable_truncated_ack_handling = true;
-
 // If true, after a server silo receives a packet from a migrated QUIC
 // client, a GO_AWAY frame is sent to the client.
 bool FLAGS_send_goaway_after_client_migration = true;
@@ -91,3 +87,7 @@ bool FLAGS_quic_read_packets_full_recvmmsg = true;
 // measurements will be surfaced via UMA histogram
 // Net.QuicSession.HeadersHOLBlockedTime.
 bool FLAGS_quic_measure_headers_hol_blocking_time = true;
+
+// If true, skip a check for mismatched stream IDs inside
+// ReliableQuicStream::OnStreamFrame.
+bool FLAGS_quic_stop_checking_for_mismatch_ids = true;

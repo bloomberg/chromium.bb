@@ -172,13 +172,15 @@ void ReliableQuicStream::SetFromConfig() {
 }
 
 void ReliableQuicStream::OnStreamFrame(const QuicStreamFrame& frame) {
+  DCHECK_EQ(frame.stream_id, id_);
+
   if (read_side_closed_) {
     DVLOG(1) << ENDPOINT << "Ignoring frame " << frame.stream_id;
     // The subclass does not want read data:  blackhole the data.
     return;
   }
 
-  if (frame.stream_id != id_) {
+  if (!FLAGS_quic_stop_checking_for_mismatch_ids && frame.stream_id != id_) {
     session_->connection()->SendConnectionClose(QUIC_INTERNAL_ERROR);
     return;
   }

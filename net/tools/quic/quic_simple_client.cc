@@ -247,9 +247,7 @@ void QuicSimpleClient::SendRequest(const HttpRequestInfo& headers,
     return;
   }
   SpdyHeaderBlock header_block;
-  SpdyMajorVersion spdy_version =
-      SpdyUtils::GetSpdyVersionForQuicVersion(stream->version());
-  CreateSpdyHeadersFromHttpRequest(headers, headers.extra_headers, spdy_version,
+  CreateSpdyHeadersFromHttpRequest(headers, headers.extra_headers, net::HTTP2,
                                    true, &header_block);
   stream->set_visitor(this);
   stream->SendRequest(header_block, body, fin);
@@ -341,9 +339,7 @@ void QuicSimpleClient::OnClose(QuicDataStream* stream) {
   QuicSpdyClientStream* client_stream =
       static_cast<QuicSpdyClientStream*>(stream);
   HttpResponseInfo response;
-  SpdyMajorVersion spdy_version =
-      SpdyUtils::GetSpdyVersionForQuicVersion(client_stream->version());
-  SpdyHeadersToHttpResponse(client_stream->headers(), spdy_version, &response);
+  SpdyHeadersToHttpResponse(client_stream->headers(), net::HTTP2, &response);
   if (response_listener_.get() != nullptr) {
     response_listener_->OnCompleteResponse(
         stream->id(), *response.headers, client_stream->data());

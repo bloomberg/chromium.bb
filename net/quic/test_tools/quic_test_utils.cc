@@ -235,67 +235,72 @@ QuicPacketWriter* NiceMockPacketWriterFactory::Create(
   return new testing::NiceMock<MockPacketWriter>();
 }
 
-MockConnection::MockConnection(Perspective perspective)
-    : MockConnection(perspective,
-                     /* is_secure= */ false) {
-}
+MockConnection::MockConnection(MockHelper* helper, Perspective perspective)
+    : MockConnection(helper, perspective, /* is_secure= */ false) {}
 
-MockConnection::MockConnection(Perspective perspective, bool is_secure)
+MockConnection::MockConnection(MockHelper* helper,
+                               Perspective perspective,
+                               bool is_secure)
     : MockConnection(kTestConnectionId,
                      IPEndPoint(TestPeerIPAddress(), kTestPort),
+                     helper,
                      perspective,
                      is_secure,
-                     QuicSupportedVersions()) {
-}
+                     QuicSupportedVersions()) {}
 
-MockConnection::MockConnection(IPEndPoint address, Perspective perspective)
+MockConnection::MockConnection(IPEndPoint address,
+                               MockHelper* helper,
+                               Perspective perspective)
     : MockConnection(kTestConnectionId,
                      address,
+                     helper,
                      perspective,
                      /* is_secure= */ false,
-                     QuicSupportedVersions()) {
-}
+                     QuicSupportedVersions()) {}
 
 MockConnection::MockConnection(QuicConnectionId connection_id,
+                               MockHelper* helper,
                                Perspective perspective)
     : MockConnection(connection_id,
+                     helper,
                      perspective,
-                     /* is_secure= */ false) {
-}
+                     /* is_secure= */ false) {}
 
 MockConnection::MockConnection(QuicConnectionId connection_id,
+                               MockHelper* helper,
                                Perspective perspective,
                                bool is_secure)
     : MockConnection(connection_id,
                      IPEndPoint(TestPeerIPAddress(), kTestPort),
+                     helper,
                      perspective,
                      is_secure,
-                     QuicSupportedVersions()) {
-}
+                     QuicSupportedVersions()) {}
 
-MockConnection::MockConnection(Perspective perspective,
+MockConnection::MockConnection(MockHelper* helper,
+                               Perspective perspective,
                                const QuicVersionVector& supported_versions)
     : MockConnection(kTestConnectionId,
                      IPEndPoint(TestPeerIPAddress(), kTestPort),
+                     helper,
                      perspective,
                      /* is_secure= */ false,
-                     supported_versions) {
-}
+                     supported_versions) {}
 
 MockConnection::MockConnection(QuicConnectionId connection_id,
                                IPEndPoint address,
+                               MockHelper* helper,
                                Perspective perspective,
                                bool is_secure,
                                const QuicVersionVector& supported_versions)
     : QuicConnection(connection_id,
                      address,
-                     new testing::NiceMock<MockHelper>(),
+                     helper,
                      NiceMockPacketWriterFactory(),
                      /* owns_writer= */ true,
                      perspective,
                      is_secure,
-                     supported_versions),
-      helper_(helper()) {
+                     supported_versions) {
   ON_CALL(*this, OnError(_))
       .WillByDefault(
           Invoke(this, &PacketSavingConnection::QuicConnection_OnError));
@@ -308,15 +313,15 @@ void MockConnection::AdvanceTime(QuicTime::Delta delta) {
   static_cast<MockHelper*>(helper())->AdvanceTime(delta);
 }
 
-PacketSavingConnection::PacketSavingConnection(Perspective perspective)
-    : MockConnection(perspective) {
-}
+PacketSavingConnection::PacketSavingConnection(MockHelper* helper,
+                                               Perspective perspective)
+    : MockConnection(helper, perspective) {}
 
 PacketSavingConnection::PacketSavingConnection(
+    MockHelper* helper,
     Perspective perspective,
     const QuicVersionVector& supported_versions)
-    : MockConnection(perspective, supported_versions) {
-}
+    : MockConnection(helper, perspective, supported_versions) {}
 
 PacketSavingConnection::~PacketSavingConnection() {
   STLDeleteElements(&encrypted_packets_);
@@ -791,6 +796,7 @@ MockQuicConnectionDebugVisitor::~MockQuicConnectionDebugVisitor() {
 void CreateClientSessionForTest(QuicServerId server_id,
                                 bool supports_stateless_rejects,
                                 QuicTime::Delta connection_start_time,
+                                MockHelper* helper,
                                 QuicCryptoClientConfig* crypto_client_config,
                                 PacketSavingConnection** client_connection,
                                 TestQuicSpdyClientSession** client_session) {
@@ -804,7 +810,8 @@ void CreateClientSessionForTest(QuicServerId server_id,
   QuicConfig config = supports_stateless_rejects
                           ? DefaultQuicConfigStatelessRejects()
                           : DefaultQuicConfig();
-  *client_connection = new PacketSavingConnection(Perspective::IS_CLIENT);
+  *client_connection =
+      new PacketSavingConnection(helper, Perspective::IS_CLIENT);
   *client_session = new TestQuicSpdyClientSession(
       *client_connection, config, server_id, crypto_client_config);
   (*client_connection)->AdvanceTime(connection_start_time);
@@ -812,6 +819,7 @@ void CreateClientSessionForTest(QuicServerId server_id,
 
 void CreateServerSessionForTest(QuicServerId server_id,
                                 QuicTime::Delta connection_start_time,
+                                MockHelper* helper,
                                 QuicCryptoServerConfig* server_crypto_config,
                                 PacketSavingConnection** server_connection,
                                 TestQuicSpdyServerSession** server_session) {
@@ -822,7 +830,8 @@ void CreateServerSessionForTest(QuicServerId server_id,
       << "Connections must start at non-zero times, otherwise the "
       << "strike-register will be unhappy.";
 
-  *server_connection = new PacketSavingConnection(Perspective::IS_SERVER);
+  *server_connection =
+      new PacketSavingConnection(helper, Perspective::IS_SERVER);
   *server_session = new TestQuicSpdyServerSession(
       *server_connection, DefaultQuicConfig(), server_crypto_config);
 

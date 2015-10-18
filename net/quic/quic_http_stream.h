@@ -106,8 +106,6 @@ class NET_EXPORT_PRIVATE QuicHttpStream
 
   int ReadAvailableData(IOBuffer* buf, int buf_len);
 
-  SpdyMajorVersion GetSpdyVersion();
-
   void ResetStream();
 
   State next_state_;

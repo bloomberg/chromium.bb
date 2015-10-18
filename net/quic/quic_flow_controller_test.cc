@@ -27,7 +27,7 @@ class QuicFlowControllerTest : public ::testing::Test {
       : stream_id_(1234),
         send_window_(kInitialSessionFlowControlWindowForTest),
         receive_window_(kInitialSessionFlowControlWindowForTest),
-        connection_(Perspective::IS_CLIENT) {}
+        connection_(&helper_, Perspective::IS_CLIENT) {}
 
   void Initialize() {
     flow_controller_.reset(
@@ -40,6 +40,7 @@ class QuicFlowControllerTest : public ::testing::Test {
   QuicByteCount send_window_;
   QuicByteCount receive_window_;
   scoped_ptr<QuicFlowController> flow_controller_;
+  MockHelper helper_;
   MockConnection connection_;
 };
 
