@@ -22,7 +22,7 @@
 
 AdditiveAnimations status=experimental, depends_on=StackedCSSPropertyAnimations
 AppBanner status=stable
-AlwaysUseComplexText
+AlwaysUseComplexText status=experimental
 ApplicationCache status=stable
 AudioOutputDevices status=experimental
 AudioVideoTracks depends_on=Media, status=experimental
