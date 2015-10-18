@@ -483,7 +483,7 @@ MultiThreadedCertVerifier::RequestParams::RequestParams(
     const std::string& ocsp_response_arg,
     int flags_arg,
     const CertificateList& additional_trust_anchors)
-    : hostname(hostname_arg), flags(flags_arg) {
+    : hostname(hostname_arg), flags(flags_arg), start_time(base::Time::Now()) {
   hash_values.reserve(3 + additional_trust_anchors.size());
   SHA1HashValue ocsp_hash;
   base::SHA1HashBytes(
@@ -522,10 +522,34 @@ void MultiThreadedCertVerifier::SaveResultToCache(const RequestParams& key,
                                                   const CachedResult& result) {
   DCHECK(CalledOnValidThread());
 
-  base::Time now = base::Time::Now();
+  // When caching, this uses the time that validation started as the
+  // beginning of the validity, rather than the time that it ended (aka
+  // base::Time::Now()), to account for the fact that during validation,
+  // the clock may have changed.
+  //
+  // If the clock has changed significantly, then this result will ideally
+  // be evicted and the next time the certificate is encountered, it will
+  // be revalidated.
+  //
+  // Because of this, it's possible for situations to arise where the
+  // clock was correct at the start of validation, changed to an
+  // incorrect time during validation (such as too far in the past or
+  // future), and then was reset to the correct time. If this happens,
+  // it's likely that the result will not be a valid/correct result,
+  // but will still be used from the cache because the clock was reset
+  // to the correct time after the (bad) validation result completed.
+  //
+  // However, this solution optimizes for the case where the clock is
+  // bad at the start of validation, and subsequently is corrected. In
+  // that situation, the result is also incorrect, but because the clock
+  // was corrected after validation, if the cache validity period was
+  // computed at the end of validation, it would continue to serve an
+  // invalid result for kTTLSecs.
+  const base::Time start_time = key.start_time;
   cache_.Put(
-      key, result, CacheValidityPeriod(now),
-      CacheValidityPeriod(now, now + base::TimeDelta::FromSeconds(kTTLSecs)));
+      key, result, CacheValidityPeriod(start_time),
+      CacheValidityPeriod(start_time,
+                          start_time + base::TimeDelta::FromSeconds(kTTLSecs)));
 }
 
 scoped_ptr<CertVerifierJob> MultiThreadedCertVerifier::RemoveJob(

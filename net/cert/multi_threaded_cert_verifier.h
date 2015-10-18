@@ -97,6 +97,10 @@ class NET_EXPORT_PRIVATE MultiThreadedCertVerifier
     std::string hostname;
     int flags;
     std::vector<SHA1HashValue> hash_values;
+    // The time when verification started.
+    // Note: This uses base::Time, rather than base::TimeTicks, to
+    // account for system clock changes.
+    base::Time start_time;
   };
 
   // CachedResult contains the result of a certificate verification.
