@@ -73,20 +73,6 @@ body:not(.controls-visible) .dynamic {
   pointer-events: none;
 }
 
-#header {
-  -webkit-app-region: drag;
-  -webkit-box-pack: end;
-  display: -webkit-box;
-  height: 32px;
-  left: 0;
-  padding: 10px;
-  pointer-events: none;
-  position: absolute;
-  right: 0;
-  top: 0;
-  z-index: 100;
-}
-
 .buttons button,
 .buttons input {
   -webkit-app-region: no-drag;
@@ -235,18 +221,6 @@ body:not(.controls-visible) .dynamic {
   background-image: -webkit-image-set(
       url(../images/gallery_button_delete.png) 1x,
       url(../images/2x/gallery_button_delete.png) 2x);
-}
-
-.buttons #maximize-button {
-  background-image: -webkit-image-set(
-      url(../images/topbar_button_maximize.png) 1x,
-      url(../images/2x/topbar_button_maximize.png) 2x);
-}
-
-.buttons #close-button {
-  background-image: -webkit-image-set(
-      url(../images/topbar_button_close.png) 1x,
-      url(../images/2x/topbar_button_close.png) 2x);
 }
 
 #main-canvas-wrapper,
@@ -514,8 +488,7 @@ body.mirror #effects li canvas {
   background-position: 0 -32px;
 }
 
-body.controls-visible #toolbar,
-body.controls-visible #header {
+body.controls-visible #toolbar {
   opacity: 1;
 }
 
@@ -779,8 +752,7 @@ body.album #album {
     background: transparent;
   }
 
-  /* Hide the window's decoration and scroll bars. */
-  #header,
+  /* Hide the buttons and scroll bars. */
   .buttons,
   .scrollbar-track {
     display: none;
