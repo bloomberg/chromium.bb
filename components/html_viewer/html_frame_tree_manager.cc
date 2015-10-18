@@ -80,10 +80,10 @@ HTMLFrame* HTMLFrameTreeManager::CreateFrameAndAttachToTree(
   mojo::Array<web_view::mojom::FrameDataPtr> frame_data;
   uint32_t change_id;
   uint32_t window_id;
-  web_view::mojom::ViewConnectType view_connect_type;
+  web_view::mojom::WindowConnectType window_connect_type;
   web_view::mojom::FrameClient::OnConnectCallback on_connect_callback;
   resource_waiter->Release(&frame_client_request, &server_frame, &frame_data,
-                           &change_id, &window_id, &view_connect_type,
+                           &change_id, &window_id, &window_connect_type,
                            &on_connect_callback);
   resource_waiter.reset();
 
@@ -96,10 +96,11 @@ HTMLFrame* HTMLFrameTreeManager::CreateFrameAndAttachToTree(
 
   DVLOG(2) << "HTMLFrameTreeManager::CreateFrameAndAttachToTree "
            << " frame_tree=" << frame_tree << " use_existing="
-           << (view_connect_type ==
-               web_view::mojom::VIEW_CONNECT_TYPE_USE_EXISTING)
+           << (window_connect_type ==
+               web_view::mojom::WINDOW_CONNECT_TYPE_USE_EXISTING)
            << " frame_id=" << window_id;
-  if (view_connect_type == web_view::mojom::VIEW_CONNECT_TYPE_USE_EXISTING &&
+  if (window_connect_type ==
+          web_view::mojom::WINDOW_CONNECT_TYPE_USE_EXISTING &&
       !frame_tree) {
     DVLOG(1) << "was told to use existing window but do not have frame tree";
     return nullptr;
@@ -109,8 +110,8 @@ HTMLFrame* HTMLFrameTreeManager::CreateFrameAndAttachToTree(
     frame_tree = new HTMLFrameTreeManager(global_state);
     frame_tree->Init(delegate, window, frame_data, change_id);
     (*instances_)[frame_data[0]->frame_id] = frame_tree;
-  } else if (view_connect_type ==
-             web_view::mojom::VIEW_CONNECT_TYPE_USE_EXISTING) {
+  } else if (window_connect_type ==
+             web_view::mojom::WINDOW_CONNECT_TYPE_USE_EXISTING) {
     HTMLFrame* existing_frame = frame_tree->root_->FindFrame(window_id);
     if (!existing_frame) {
       DVLOG(1) << "was told to use existing window but could not find window";

@@ -792,13 +792,14 @@ void HTMLFrame::OnWindowFocusChanged(mus::Window* gained_focus,
   UpdateFocus();
 }
 
-void HTMLFrame::OnConnect(web_view::mojom::FramePtr frame,
-                          uint32_t change_id,
-                          uint32_t window_id,
-                          web_view::mojom::ViewConnectType window_connect_type,
-                          mojo::Array<web_view::mojom::FrameDataPtr> frame_data,
-                          int64_t navigation_start_time_ticks,
-                          const OnConnectCallback& callback) {
+void HTMLFrame::OnConnect(
+    web_view::mojom::FramePtr frame,
+    uint32_t change_id,
+    uint32_t window_id,
+    web_view::mojom::WindowConnectType window_connect_type,
+    mojo::Array<web_view::mojom::FrameDataPtr> frame_data,
+    int64_t navigation_start_time_ticks,
+    const OnConnectCallback& callback) {
   // This is called if this frame is created by way of OnCreatedFrame().
   callback.Run();
 }

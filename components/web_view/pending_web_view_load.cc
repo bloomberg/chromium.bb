@@ -31,7 +31,7 @@ void PendingWebViewLoad::OnGotContentHandlerID() {
   is_content_handler_id_valid_ = true;
   if (web_view_->root_)
     web_view_->OnLoad(pending_url_);
-  // The else case is handled by WebViewImpl when it gets the View (|root_|).
+  // The else case is handled by WebViewImpl when it gets the Window (|root_|).
 }
 
 }  // namespace web_view

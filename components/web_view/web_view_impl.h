@@ -74,10 +74,10 @@ class WebViewImpl : public mojom::WebView,
   void OnConnectionLost(mus::WindowTreeConnection* connection) override;
 
   // Overridden from mus::WindowObserver:
-  void OnWindowBoundsChanged(mus::Window* view,
+  void OnWindowBoundsChanged(mus::Window* window,
                              const mojo::Rect& old_bounds,
                              const mojo::Rect& new_bounds) override;
-  void OnWindowDestroyed(mus::Window* view) override;
+  void OnWindowDestroyed(mus::Window* window) override;
 
   // Overridden from FrameTreeDelegate:
   scoped_ptr<FrameUserData> CreateUserDataForNewFrame(

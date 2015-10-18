@@ -79,8 +79,8 @@ class FrameTreeDelegate {
   virtual void DidCreateFrame(Frame* frame);
   virtual void DidDestroyFrame(Frame* frame);
 
-  // Invoked when the View embedded in a Frame premuturely stops rendering
-  // to |frame|'s View. This could mean any of the following:
+  // Invoked when the Window embedded in a Frame premuturely stops rendering
+  // to |frame|'s Window. This could mean any of the following:
   // . The app crashed.
   // . There is no app that renders the url.
   // . The app is still alive, but is shutting down.

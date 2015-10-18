@@ -64,8 +64,8 @@ WebViewImpl::~WebViewImpl() {
 }
 
 void WebViewImpl::OnLoad(const GURL& pending_url) {
-  // Frames are uniqued based on the id of the associated View. By creating a
-  // new View each time through we ensure the renderers get a clean id, rather
+  // Frames are uniqued based on the id of the associated Window. By creating a
+  // new Window each time through we ensure the renderers get a clean id, rather
   // than one they may know about and try to incorrectly use.
   if (content_) {
     content_->Destroy();
@@ -164,12 +164,12 @@ void WebViewImpl::OnConnectionLost(mus::WindowTreeConnection* connection) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// WebViewImpl, mus::ViewObserver implementation:
+// WebViewImpl, mus::WindowObserver implementation:
 
-void WebViewImpl::OnWindowBoundsChanged(mus::Window* view,
+void WebViewImpl::OnWindowBoundsChanged(mus::Window* window,
                                         const mojo::Rect& old_bounds,
                                         const mojo::Rect& new_bounds) {
-  if (view != content_) {
+  if (window != content_) {
     mojo::Rect rect;
     rect.width = new_bounds.width;
     rect.height = new_bounds.height;
@@ -178,9 +178,9 @@ void WebViewImpl::OnWindowBoundsChanged(mus::Window* view,
   }
 }
 
-void WebViewImpl::OnWindowDestroyed(mus::Window* view) {
-  // |FrameTree| cannot outlive the content view.
-  if (view == content_) {
+void WebViewImpl::OnWindowDestroyed(mus::Window* window) {
+  // |FrameTree| cannot outlive the content window.
+  if (window == content_) {
     frame_tree_.reset();
     content_ = nullptr;
   }

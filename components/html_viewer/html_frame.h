@@ -277,7 +277,7 @@ class HTMLFrame : public blink::WebFrameClient,
   void OnConnect(web_view::mojom::FramePtr server,
                  uint32_t change_id,
                  uint32_t window_id,
-                 web_view::mojom::ViewConnectType view_connect_type,
+                 web_view::mojom::WindowConnectType window_connect_type,
                  mojo::Array<web_view::mojom::FrameDataPtr> frame_data,
                  int64_t navigation_start_time_ticks,
                  const OnConnectCallback& callback) override;

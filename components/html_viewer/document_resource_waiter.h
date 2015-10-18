@@ -38,7 +38,7 @@ class DocumentResourceWaiter : public web_view::mojom::FrameClient,
                mojo::Array<web_view::mojom::FrameDataPtr>* frame_data,
                uint32_t* window_id,
                uint32_t* change_id,
-               web_view::mojom::ViewConnectType* view_connect_type,
+               web_view::mojom::WindowConnectType* window_connect_type,
                OnConnectCallback* on_connect_callback);
 
   uint32_t change_id() const { return change_id_; }
@@ -65,7 +65,7 @@ class DocumentResourceWaiter : public web_view::mojom::FrameClient,
   void OnConnect(web_view::mojom::FramePtr frame,
                  uint32_t change_id,
                  uint32_t window_id,
-                 web_view::mojom::ViewConnectType view_connect_type,
+                 web_view::mojom::WindowConnectType window_connect_type,
                  mojo::Array<web_view::mojom::FrameDataPtr> frame_data,
                  int64_t navigation_start_time_ticks,
                  const OnConnectCallback& callback) override;
@@ -114,7 +114,7 @@ class DocumentResourceWaiter : public web_view::mojom::FrameClient,
   uint32_t change_id_;
   uint32_t window_id_;
   base::TimeTicks navigation_start_time_;
-  web_view::mojom::ViewConnectType view_connect_type_;
+  web_view::mojom::WindowConnectType window_connect_type_;
   OnConnectCallback on_connect_callback_;
 
   // Once we get OnConnect() we unbind |frame_client_binding_| and put it here.

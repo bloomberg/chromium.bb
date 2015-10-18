@@ -26,7 +26,7 @@ DECLARE_WINDOW_PROPERTY_TYPE(web_view::Frame*);
 
 namespace web_view {
 
-// Used to find the Frame associated with a View.
+// Used to find the Frame associated with a Window.
 DEFINE_LOCAL_WINDOW_PROPERTY_KEY(Frame*, kFrame, nullptr);
 
 namespace {
@@ -52,20 +52,20 @@ struct Frame::FrameUserDataAndBinding {
 };
 
 Frame::Frame(FrameTree* tree,
-             Window* view,
+             Window* window,
              uint32_t frame_id,
              uint32_t app_id,
-             ViewOwnership view_ownership,
+             WindowOwnership window_ownership,
              mojom::FrameClient* frame_client,
              scoped_ptr<FrameUserData> user_data,
              const ClientPropertyMap& client_properties)
     : tree_(tree),
-      view_(nullptr),
+      window_(nullptr),
       embedded_connection_id_(kInvalidConnectionId),
       id_(frame_id),
       app_id_(app_id),
       parent_(nullptr),
-      view_ownership_(view_ownership),
+      window_ownership_(window_ownership),
       user_data_(user_data.Pass()),
       frame_client_(frame_client),
       loading_(false),
@@ -74,22 +74,22 @@ Frame::Frame(FrameTree* tree,
       waiting_for_on_will_navigate_ack_(false),
       embed_weak_ptr_factory_(this),
       navigate_weak_ptr_factory_(this) {
-  if (view)
-    SetView(view);
+  if (window)
+    SetWindow(window);
 }
 
 Frame::~Frame() {
   DVLOG(2) << "~Frame id=" << id_ << " this=" << this;
-  if (view_)
-    view_->RemoveObserver(this);
+  if (window_)
+    window_->RemoveObserver(this);
   while (!children_.empty())
     delete children_[0];
   if (parent_)
     parent_->Remove(this);
-  if (view_) {
-    view_->ClearLocalProperty(kFrame);
-    if (view_ownership_ == ViewOwnership::OWNS_VIEW)
-      view_->Destroy();
+  if (window_) {
+    window_->ClearLocalProperty(kFrame);
+    if (window_ownership_ == WindowOwnership::OWNS_WINDOW)
+      window_->Destroy();
   }
   tree_->delegate_->DidDestroyFrame(this);
 }
@@ -120,10 +120,10 @@ void Frame::Init(Frame* parent,
 }
 
 // static
-Frame* Frame::FindFirstFrameAncestor(Window* view) {
-  while (view && !view->GetLocalProperty(kFrame))
-    view = view->parent();
-  return view ? view->GetLocalProperty(kFrame) : nullptr;
+Frame* Frame::FindFirstFrameAncestor(Window* window) {
+  while (window && !window->GetLocalProperty(kFrame))
+    window = window->parent();
+  return window ? window->GetLocalProperty(kFrame) : nullptr;
 }
 
 const Frame* Frame::FindFrame(uint32_t id) const {
@@ -197,7 +197,7 @@ void Frame::InitClient(ClientType client_type,
       window_tree_client.get()) {
     embedded_connection_id_ = kInvalidConnectionId;
     embed_weak_ptr_factory_.InvalidateWeakPtrs();
-    view_->Embed(
+    window_->Embed(
         window_tree_client.Pass(),
         mus::mojom::WindowTree::ACCESS_POLICY_DEFAULT,
         base::Bind(&Frame::OnEmbedAck, embed_weak_ptr_factory_.GetWeakPtr()));
@@ -211,7 +211,7 @@ void Frame::InitClient(ClientType client_type,
     frame_binding_.reset(
         new mojo::Binding<mojom::Frame>(this, frame_request.Pass()));
     frame_client_->OnConnect(
-        nullptr, tree_->change_id(), id_, mojom::VIEW_CONNECT_TYPE_USE_NEW,
+        nullptr, tree_->change_id(), id_, mojom::WINDOW_CONNECT_TYPE_USE_NEW,
         mojo::Array<mojom::FrameDataPtr>(),
         navigation_start_time.ToInternalValue(),
         base::Bind(&OnConnectAck, base::Passed(&data_and_binding)));
@@ -231,8 +231,8 @@ void Frame::InitClient(ClientType client_type,
     frame_client_->OnConnect(
         frame_ptr.Pass(), tree_->change_id(), id_,
         client_type == ClientType::EXISTING_FRAME_SAME_APP
-            ? mojom::VIEW_CONNECT_TYPE_USE_EXISTING
-            : mojom::VIEW_CONNECT_TYPE_USE_NEW,
+            ? mojom::WINDOW_CONNECT_TYPE_USE_EXISTING
+            : mojom::WINDOW_CONNECT_TYPE_USE_NEW,
         array.Pass(), navigation_start_time.ToInternalValue(),
         base::Bind(&OnConnectAck, base::Passed(&data_and_binding)));
     tree_->delegate_->DidStartNavigation(this);
@@ -303,12 +303,12 @@ void Frame::OnWillNavigateAck(
     StartNavigate(pending_navigate_.Pass());
 }
 
-void Frame::SetView(mus::Window* view) {
-  DCHECK(!view_);
-  DCHECK_EQ(id_, view->id());
-  view_ = view;
-  view_->SetLocalProperty(kFrame, this);
-  view_->AddObserver(this);
+void Frame::SetWindow(mus::Window* window) {
+  DCHECK(!window_);
+  DCHECK_EQ(id_, window->id());
+  window_ = window;
+  window_->SetLocalProperty(kFrame, this);
+  window_->AddObserver(this);
   if (pending_navigate_.get())
     StartNavigate(pending_navigate_.Pass());
 }
@@ -348,9 +348,9 @@ void Frame::StartNavigate(mojo::URLRequestPtr request) {
 
   pending_navigate_.reset();
 
-  // We need a View to navigate. When we get the View we'll complete the
+  // We need a Window to navigate. When we get the Window we'll complete the
   // navigation.
-  if (!view_) {
+  if (!window_) {
     pending_navigate_ = request.Pass();
     return;
   }
@@ -380,7 +380,7 @@ void Frame::OnCanNavigateFrame(
            << " equal=" << (AreAppIdsEqual(app_id, app_id_) ? "true" : "false");
   if (AreAppIdsEqual(app_id, app_id_)) {
     // The app currently rendering the frame will continue rendering it. In this
-    // case we do not use the WindowTreeClient (because the app has a View
+    // case we do not use the WindowTreeClient (because the app has a Window
     // already
     // and ends up reusing it).
     DCHECK(!window_tree_client.get());
@@ -441,29 +441,29 @@ void Frame::NotifyDispatchFrameLoadEvent(const Frame* frame) {
 void Frame::OnTreeChanged(const TreeChangeParams& params) {
   if (params.new_parent && this == tree_->root()) {
     Frame* child_frame = FindFrame(params.target->id());
-    if (child_frame && !child_frame->view_)
-      child_frame->SetView(params.target);
+    if (child_frame && !child_frame->window_)
+      child_frame->SetWindow(params.target);
   }
 }
 
-void Frame::OnWindowDestroying(mus::Window* view) {
+void Frame::OnWindowDestroying(mus::Window* window) {
   if (parent_)
     parent_->Remove(this);
 
-  // Reset |view_ownership_| so we don't attempt to delete |view_| in the
+  // Reset |window_ownership_| so we don't attempt to delete |window_| in the
   // destructor.
-  view_ownership_ = ViewOwnership::DOESNT_OWN_VIEW;
+  window_ownership_ = WindowOwnership::DOESNT_OWN_WINDOW;
 
   if (tree_->root() == this) {
-    view_->RemoveObserver(this);
-    view_ = nullptr;
+    window_->RemoveObserver(this);
+    window_ = nullptr;
     return;
   }
 
   delete this;
 }
 
-void Frame::OnWindowEmbeddedAppDisconnected(mus::Window* view) {
+void Frame::OnWindowEmbeddedAppDisconnected(mus::Window* window) {
   // See FrameTreeDelegate::OnWindowEmbeddedAppDisconnected() for details of
   // when
   // this happens.

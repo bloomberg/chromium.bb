@@ -105,7 +105,7 @@ TEST_F(AXProviderTest, HelloWorld) {
   connection->ConnectToService(&frame_client);
   frame_client->OnConnect(
       frame_ptr.Pass(), 1u, embed_window->id(),
-      web_view::mojom::VIEW_CONNECT_TYPE_USE_NEW, array.Pass(),
+      web_view::mojom::WINDOW_CONNECT_TYPE_USE_NEW, array.Pass(),
       base::TimeTicks::Now().ToInternalValue(), base::Closure());
 
   // Connect to the AxProvider of the HTML document and get the AxTree.

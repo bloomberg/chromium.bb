@@ -93,10 +93,10 @@ void FrameConnection::Init(mojo::ApplicationImpl* app,
   tracing_interfaces.push_back(tracing::StartupPerformanceDataCollector::Name_);
   filter->filter.insert("mojo:tracing", tracing_interfaces.Pass());
 
-  mojo::Array<mojo::String> view_manager_interfaces;
-  view_manager_interfaces.push_back(mus::mojom::Gpu::Name_);
-  view_manager_interfaces.push_back(mus::mojom::WindowTreeHostFactory::Name_);
-  filter->filter.insert("mojo:mus", view_manager_interfaces.Pass());
+  mojo::Array<mojo::String> window_manager_interfaces;
+  window_manager_interfaces.push_back(mus::mojom::Gpu::Name_);
+  window_manager_interfaces.push_back(mus::mojom::WindowTreeHostFactory::Name_);
+  filter->filter.insert("mojo:mus", window_manager_interfaces.Pass());
 
   mojo::Array<mojo::String> test_runner_interfaces;
   test_runner_interfaces.push_back(LayoutTestRunner::Name_);

@@ -199,7 +199,7 @@ class HTMLFrameTest : public WindowServerTestBase {
     if (HasFatalFailure())
       return nullptr;
 
-    return parent->FindFrame(parent->view()->children().back()->id());
+    return parent->FindFrame(parent->window()->children().back()->id());
   }
 
   std::string AddPortToString(const std::string& string) {

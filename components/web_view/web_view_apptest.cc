@@ -98,7 +98,7 @@ class WebViewTest : public mus::WindowServerTestBase,
     app_ = app;
   }
 
-  // Overridden from ViewTreeDelegate:
+  // Overridden from WindowTreeDelegate:
   void OnEmbed(mus::Window* root) override {
     content_ = root->connection()->NewWindow();
     content_->SetBounds(root->bounds());

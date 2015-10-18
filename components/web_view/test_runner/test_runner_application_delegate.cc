@@ -76,7 +76,7 @@ bool TestRunnerApplicationDelegate::ConfigureIncomingConnection(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// mus::ViewTreeDelegate implementation:
+// mus::WindowTreeDelegate implementation:
 
 void TestRunnerApplicationDelegate::OnEmbed(mus::Window* root) {
   root_ = root;

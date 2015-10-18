@@ -33,9 +33,9 @@ void WebView::Init(mojo::ApplicationImpl* app, mus::Window* window) {
   app->ConnectToService(request.Pass(), &factory);
   factory->CreateWebView(client.Pass(), GetProxy(&web_view_));
 
-  mus::mojom::WindowTreeClientPtr view_tree_client;
-  web_view_->GetWindowTreeClient(GetProxy(&view_tree_client));
-  window->Embed(view_tree_client.Pass(),
+  mus::mojom::WindowTreeClientPtr window_tree_client;
+  web_view_->GetWindowTreeClient(GetProxy(&window_tree_client));
+  window->Embed(window_tree_client.Pass(),
                 mus::mojom::WindowTree::ACCESS_POLICY_EMBED_ROOT,
                 base::Bind(&OnEmbed));
 }

@@ -26,19 +26,22 @@ class FrameClient;
 
 // FrameTree manages the set of Frames that comprise a single url. FrameTree
 // owns the root Frame and each Frame owns its children. Frames are
-// automatically deleted and removed from the tree if the corresponding view is
-// deleted. This happens if the creator of the view deletes it (say an iframe is
+// automatically deleted and removed from the tree if the corresponding window
+// is
+// deleted. This happens if the creator of the window deletes it (say an iframe
+// is
 // destroyed).
 class FrameTree {
  public:
-  // |view| is the view to do the initial embedding in. It is assumed |view|
+  // |window| is the window to do the initial embedding in. It is assumed
+  // |window|
   // outlives FrameTree.
   // |client_properties| is the client properties for the root frame.
   // |root_app_id| is a unique identifier of the app providing |root_client|.
   // See Frame for details on app id's.
   FrameTree(uint32_t root_app_id,
-            mus::Window* view,
-            mus::mojom::WindowTreeClientPtr view_tree_client,
+            mus::Window* window,
+            mus::mojom::WindowTreeClientPtr window_tree_client,
             FrameTreeDelegate* delegate,
             mojom::FrameClient* root_client,
             scoped_ptr<FrameUserData> user_data,
@@ -55,7 +58,7 @@ class FrameTree {
 
   // Creates a new Frame parented to |parent|. The Frame is considered shared in
   // that it is sharing the FrameClient/Frame of |parent|. There may or may not
-  // be a View identified by |frame_id| yet. See Frame for details.
+  // be a Window identified by |frame_id| yet. See Frame for details.
   Frame* CreateChildFrame(Frame* parent,
                           mojo::InterfaceRequest<mojom::Frame> frame_request,
                           mojom::FrameClientPtr client,
@@ -74,7 +77,7 @@ class FrameTree {
                              const mojo::String& name,
                              const mojo::Array<uint8_t>& value);
 
-  mus::Window* view_;
+  mus::Window* window_;
 
   FrameTreeDelegate* delegate_;
 

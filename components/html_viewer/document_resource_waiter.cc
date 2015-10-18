@@ -9,7 +9,7 @@
 #include "components/html_viewer/html_frame_tree_manager.h"
 #include "components/mus/public/cpp/window.h"
 
-using web_view::mojom::ViewConnectType;
+using web_view::mojom::WindowConnectType;
 
 namespace html_viewer {
 
@@ -22,7 +22,7 @@ DocumentResourceWaiter::DocumentResourceWaiter(GlobalState* global_state,
       root_(nullptr),
       change_id_(0u),
       window_id_(0u),
-      view_connect_type_(web_view::mojom::VIEW_CONNECT_TYPE_USE_NEW),
+      window_connect_type_(web_view::mojom::WINDOW_CONNECT_TYPE_USE_NEW),
       frame_client_binding_(this),
       is_ready_(false),
       waiting_for_change_id_(false),
@@ -41,7 +41,7 @@ void DocumentResourceWaiter::Release(
     mojo::Array<web_view::mojom::FrameDataPtr>* frame_data,
     uint32_t* change_id,
     uint32_t* window_id,
-    ViewConnectType* view_connect_type,
+    WindowConnectType* window_connect_type,
     OnConnectCallback* on_connect_callback) {
   DCHECK(is_ready_);
   *frame_client_request = frame_client_request_.Pass();
@@ -49,7 +49,7 @@ void DocumentResourceWaiter::Release(
   *frame_data = frame_data_.Pass();
   *change_id = change_id_;
   *window_id = window_id_;
-  *view_connect_type = view_connect_type_;
+  *window_connect_type = window_connect_type_;
   *on_connect_callback = on_connect_callback_;
 }
 
@@ -89,15 +89,16 @@ void DocumentResourceWaiter::UpdateIsReady() {
 
   // The first portion of ready is when we have received OnConnect()
   // (|frame_data_| is valid) and we have a window with valid metrics. The
-  // window is not necessary is ViewConnectType is USE_EXISTING, which means the
+  // window is not necessary is WindowConnectType is USE_EXISTING, which means
+  // the
   // application is not asked for a ViewTreeClient. The metrics are necessary
   // to initialize ResourceBundle. If USE_EXISTING is true, it means a Window
   // has already been provided to another HTMLDocument and there is no need to
   // wait for metrics.
   bool is_ready =
       (!frame_data_.is_null() &&
-       ((view_connect_type_ ==
-         web_view::mojom::VIEW_CONNECT_TYPE_USE_EXISTING) ||
+       ((window_connect_type_ ==
+         web_view::mojom::WINDOW_CONNECT_TYPE_USE_EXISTING) ||
         (root_ && root_->viewport_metrics().device_pixel_ratio != 0.0f)));
   if (is_ready) {
     HTMLFrameTreeManager* frame_tree =
@@ -124,14 +125,14 @@ void DocumentResourceWaiter::OnConnect(
     web_view::mojom::FramePtr frame,
     uint32_t change_id,
     uint32_t window_id,
-    ViewConnectType view_connect_type,
+    WindowConnectType window_connect_type,
     mojo::Array<web_view::mojom::FrameDataPtr> frame_data,
     int64_t navigation_start_time_ticks,
     const OnConnectCallback& callback) {
   DCHECK(frame_data_.is_null());
   change_id_ = change_id;
   window_id_ = window_id;
-  view_connect_type_ = view_connect_type;
+  window_connect_type_ = window_connect_type;
   frame_ = frame.Pass();
   frame_data_ = frame_data.Pass();
   navigation_start_time_ =

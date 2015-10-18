@@ -8,14 +8,14 @@ import "network/public/interfaces/url_loader.mojom";
 
 // This files defines the interfaces and structures used for frames.
 //
-// When a client in the frame tree is connected to by way of the ViewManager a
+// When a client in the frame tree is connected to by way of the WindowManager a
 // FrameClient is obtained (from the ServiceProvider interface request passed
-// in ViewManager::OnEmbed()). The FrameClient is told the frame tree (by way
+// in WindowManager::OnEmbed()). The FrameClient is told the frame tree (by way
 // of OnConnection()), which allows the client to use other frames in the tree
 // (assuming the client has the appropriate permissions).
 //
-// frame_ids are the same as views ids. This means that when a client creates
-// a new view to be part of the frame tree it immediately knows the id to use
+// frame_ids are the same as windows ids. This means that when a client creates
+// a new window to be part of the frame tree it immediately knows the id to use
 // for Frame calls.
 //
 // The server provides an id that may be used to identify the state of the
@@ -95,7 +95,7 @@ interface Frame {
   SetClientProperty(string name, array<uint8>? value);
 
   // Called when the client creates a new frame. |frame_id| corresponds to
-  // the id of the view hosting the frame, and |parent_id| the id of the
+  // the id of the window hosting the frame, and |parent_id| the id of the
   // parent. See FrameData::client_properties for details of
   // |client_properties|.
   //
@@ -129,27 +129,27 @@ interface Frame {
   OnFindInPageSelectionUpdated(int32 request_id, int32 active_match_ordinal);
 };
 
-enum ViewConnectType {
-  // Indicates the app is already a ViewTreeClient and the existing view should
-  // be used. In this case the app is not asked for a new ViewTreeClient.
+enum WindowConnectType {
+  // Indicates the app is already a WindowTreeClient and the existing window should
+  // be used. In this case the app is not asked for a new WindowTreeClient.
   USE_EXISTING,
 
-  // Indicates a new ViewTreeClient is obtained and the View provided to
+  // Indicates a new WindowTreeClient is obtained and the Window provided to
   // OnEmbed() should be used.
   USE_NEW
 };
 
 interface FrameClient {
   // Called once per client. |frame_data| gives the contents of the tree.
-  // |view_id| is the id of the view the FrameClient should render to. If a
-  // ViewTreeClient is asked for then |view_id| is the same id as that of the
-  // View supplied to ViewTreeClient::OnEmbed(). |navigation_start_time_ticks|
+  // |window_id| is the id of the window the FrameClient should render to. If a
+  // WindowTreeClient is asked for then |window_id| is the same id as that of the
+  // Window supplied to WindowTreeClient::OnEmbed(). |navigation_start_time_ticks|
   // is the time when the navigation resulting in this OnConnect() call was
   // started.
   OnConnect(Frame? frame,
             uint32 change_id,
-            uint32 view_id,
-            ViewConnectType view_connect_type,
+            uint32 window_id,
+            WindowConnectType window_connect_type,
             array<FrameData>? frame_data,
             int64 navigation_start_time_ticks) => ();
 

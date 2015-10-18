@@ -10,26 +10,27 @@
 namespace web_view {
 
 FrameTree::FrameTree(uint32_t root_app_id,
-                     mus::Window* view,
-                     mus::mojom::WindowTreeClientPtr view_tree_client,
+                     mus::Window* window,
+                     mus::mojom::WindowTreeClientPtr window_tree_client,
                      FrameTreeDelegate* delegate,
                      mojom::FrameClient* root_client,
                      scoped_ptr<FrameUserData> user_data,
                      const Frame::ClientPropertyMap& client_properties,
                      base::TimeTicks navigation_start_time)
-    : view_(view),
+    : window_(window),
       delegate_(delegate),
       root_(new Frame(this,
-                      view,
-                      view->id(),
+                      window,
+                      window->id(),
                       root_app_id,
-                      ViewOwnership::DOESNT_OWN_VIEW,
+                      WindowOwnership::DOESNT_OWN_WINDOW,
                       root_client,
                       user_data.Pass(),
                       client_properties)),
       progress_(0.f),
       change_id_(1u) {
-  root_->Init(nullptr, view_tree_client.Pass(), nullptr, navigation_start_time);
+  root_->Init(nullptr, window_tree_client.Pass(), nullptr,
+              navigation_start_time);
 }
 
 FrameTree::~FrameTree() {
@@ -49,12 +50,13 @@ Frame* FrameTree::CreateChildFrame(
   mojom::FrameClient* raw_client = client.get();
   scoped_ptr<FrameUserData> user_data =
       delegate_->CreateUserDataForNewFrame(client.Pass());
-  mus::Window* frame_view = root_->view()->GetChildById(frame_id);
-  // |frame_view| may be null if the View hasn't been created yet. If this is
-  // the case the View will be connected to the Frame in Frame::OnTreeChanged.
-  Frame* frame =
-      new Frame(this, frame_view, frame_id, app_id, ViewOwnership::OWNS_VIEW,
-                raw_client, user_data.Pass(), client_properties);
+  mus::Window* frame_window = root_->window()->GetChildById(frame_id);
+  // |frame_window| may be null if the Window hasn't been created yet. If this
+  // is the case the Window will be connected to the Frame in
+  // Frame::OnTreeChanged.
+  Frame* frame = new Frame(this, frame_window, frame_id, app_id,
+                           WindowOwnership::OWNS_WINDOW, raw_client,
+                           user_data.Pass(), client_properties);
   frame->Init(parent, nullptr, frame_request.Pass(), base::TimeTicks());
   return frame;
 }
