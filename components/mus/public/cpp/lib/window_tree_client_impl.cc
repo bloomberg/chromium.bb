@@ -264,7 +264,7 @@ Window* WindowTreeClientImpl::GetFocusedWindow() {
   return focused_window_;
 }
 
-Window* WindowTreeClientImpl::CreateWindow() {
+Window* WindowTreeClientImpl::NewWindow() {
   Window* window = new Window(this, CreateWindowOnServer());
   AddWindow(window);
   return window;

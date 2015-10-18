@@ -165,7 +165,7 @@ void BrowserWindow::OnEmbed(mus::Window* root) {
 
   host_->SetTitle("Mandoline");
 
-  content_ = root_->connection()->CreateWindow();
+  content_ = root_->connection()->NewWindow();
   Init(root_);
 
   host_->SetSize(mojo::Size::From(gfx::Size(1280, 800)));
@@ -375,7 +375,7 @@ void BrowserWindow::Init(mus::Window* root) {
     aura_init_.reset(new views::AuraInit(app_, "mandoline_ui.pak", root));
 
   root_ = root;
-  omnibox_view_ = root_->connection()->CreateWindow();
+  omnibox_view_ = root_->connection()->NewWindow();
   root_->AddChild(omnibox_view_);
 
   views::WidgetDelegateView* widget_delegate = new views::WidgetDelegateView;

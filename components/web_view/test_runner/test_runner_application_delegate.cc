@@ -94,7 +94,7 @@ void TestRunnerApplicationDelegate::OnEmbed(mus::Window* root) {
   const gfx::Size kViewportSize(800, 600);
   host_->SetSize(mojo::Size::From(kViewportSize));
 
-  content_ = root_->connection()->CreateWindow();
+  content_ = root_->connection()->NewWindow();
   root_->AddChild(content_);
   content_->SetBounds(*mojo::Rect::From(gfx::Rect(kViewportSize)));
   content_->SetVisible(true);

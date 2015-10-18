@@ -293,7 +293,7 @@ TEST_F(WindowServerTest, RootWindow) {
 }
 
 TEST_F(WindowServerTest, Embed) {
-  Window* window = window_manager()->CreateWindow();
+  Window* window = window_manager()->NewWindow();
   ASSERT_NE(nullptr, window);
   window->SetVisible(true);
   window_manager()->GetRoot()->AddChild(window);
@@ -310,11 +310,11 @@ TEST_F(WindowServerTest, Embed) {
 // Window manager has two windows, N1 and N11. Embeds A at N1. A should not see
 // N11.
 TEST_F(WindowServerTest, EmbeddedDoesntSeeChild) {
-  Window* window = window_manager()->CreateWindow();
+  Window* window = window_manager()->NewWindow();
   ASSERT_NE(nullptr, window);
   window->SetVisible(true);
   window_manager()->GetRoot()->AddChild(window);
-  Window* nested = window_manager()->CreateWindow();
+  Window* nested = window_manager()->NewWindow();
   ASSERT_NE(nullptr, nested);
   nested->SetVisible(true);
   window->AddChild(nested);
@@ -342,7 +342,7 @@ TEST_F(WindowServerTest, EmbeddedDoesntSeeChild) {
 // Verifies that bounds changes applied to a window hierarchy in one connection
 // are reflected to another.
 TEST_F(WindowServerTest, SetBounds) {
-  Window* window = window_manager()->CreateWindow();
+  Window* window = window_manager()->NewWindow();
   window->SetVisible(true);
   window_manager()->GetRoot()->AddChild(window);
   WindowTreeConnection* embedded = Embed(window).connection;
@@ -361,7 +361,7 @@ TEST_F(WindowServerTest, SetBounds) {
 // Verifies that bounds changes applied to a window owned by a different
 // connection are refused.
 TEST_F(WindowServerTest, SetBoundsSecurity) {
-  Window* window = window_manager()->CreateWindow();
+  Window* window = window_manager()->NewWindow();
   window->SetVisible(true);
   window_manager()->GetRoot()->AddChild(window);
   WindowTreeConnection* embedded = Embed(window).connection;
@@ -384,7 +384,7 @@ TEST_F(WindowServerTest, SetBoundsSecurity) {
 // Verifies that a window can only be destroyed by the connection that created
 // it.
 TEST_F(WindowServerTest, DestroySecurity) {
-  Window* window = window_manager()->CreateWindow();
+  Window* window = window_manager()->NewWindow();
   window->SetVisible(true);
   window_manager()->GetRoot()->AddChild(window);
   WindowTreeConnection* embedded = Embed(window).connection;
@@ -403,10 +403,10 @@ TEST_F(WindowServerTest, DestroySecurity) {
 }
 
 TEST_F(WindowServerTest, MultiRoots) {
-  Window* window1 = window_manager()->CreateWindow();
+  Window* window1 = window_manager()->NewWindow();
   window1->SetVisible(true);
   window_manager()->GetRoot()->AddChild(window1);
-  Window* window2 = window_manager()->CreateWindow();
+  Window* window2 = window_manager()->NewWindow();
   window2->SetVisible(true);
   window_manager()->GetRoot()->AddChild(window2);
   WindowTreeConnection* embedded1 = Embed(window1).connection;
@@ -419,17 +419,17 @@ TEST_F(WindowServerTest, MultiRoots) {
 // TODO(alhaad): Currently, the RunLoop gets stuck waiting for order change.
 // Debug and re-enable this.
 TEST_F(WindowServerTest, DISABLED_Reorder) {
-  Window* window1 = window_manager()->CreateWindow();
+  Window* window1 = window_manager()->NewWindow();
   window1->SetVisible(true);
   window_manager()->GetRoot()->AddChild(window1);
 
   WindowTreeConnection* embedded = Embed(window1).connection;
   ASSERT_NE(nullptr, embedded);
 
-  Window* window11 = embedded->CreateWindow();
+  Window* window11 = embedded->NewWindow();
   window11->SetVisible(true);
   embedded->GetRoot()->AddChild(window11);
-  Window* window12 = embedded->CreateWindow();
+  Window* window12 = embedded->NewWindow();
   window12->SetVisible(true);
   embedded->GetRoot()->AddChild(window12);
 
@@ -482,7 +482,7 @@ class VisibilityChangeObserver : public WindowObserver {
 }  // namespace
 
 TEST_F(WindowServerTest, Visible) {
-  Window* window1 = window_manager()->CreateWindow();
+  Window* window1 = window_manager()->NewWindow();
   window1->SetVisible(true);
   window_manager()->GetRoot()->AddChild(window1);
 
@@ -546,7 +546,7 @@ class DrawnChangeObserver : public WindowObserver {
 }  // namespace
 
 TEST_F(WindowServerTest, Drawn) {
-  Window* window1 = window_manager()->CreateWindow();
+  Window* window1 = window_manager()->NewWindow();
   window1->SetVisible(true);
   window_manager()->GetRoot()->AddChild(window1);
 
@@ -612,13 +612,13 @@ class FocusChangeObserver : public WindowObserver {
 }  // namespace
 
 TEST_F(WindowServerTest, Focus) {
-  Window* window1 = window_manager()->CreateWindow();
+  Window* window1 = window_manager()->NewWindow();
   window1->SetVisible(true);
   window_manager()->GetRoot()->AddChild(window1);
 
   WindowTreeConnection* embedded = Embed(window1).connection;
   ASSERT_NE(nullptr, embedded);
-  Window* window11 = embedded->CreateWindow();
+  Window* window11 = embedded->NewWindow();
   window11->SetVisible(true);
   embedded->GetRoot()->AddChild(window11);
 
@@ -693,7 +693,7 @@ class DestroyedChangedObserver : public WindowObserver {
 
 // Verifies deleting a WindowServer sends the right notifications.
 TEST_F(WindowServerTest, DeleteWindowServer) {
-  Window* window = window_manager()->CreateWindow();
+  Window* window = window_manager()->NewWindow();
   ASSERT_NE(nullptr, window);
   window->SetVisible(true);
   window_manager()->GetRoot()->AddChild(window);
@@ -709,13 +709,13 @@ TEST_F(WindowServerTest, DeleteWindowServer) {
 // Verifies two Embed()s in the same window trigger deletion of the first
 // WindowServer.
 TEST_F(WindowServerTest, DisconnectTriggersDelete) {
-  Window* window = window_manager()->CreateWindow();
+  Window* window = window_manager()->NewWindow();
   ASSERT_NE(nullptr, window);
   window->SetVisible(true);
   window_manager()->GetRoot()->AddChild(window);
   WindowTreeConnection* connection = Embed(window).connection;
   EXPECT_NE(connection, window_manager());
-  Window* embedded_window = connection->CreateWindow();
+  Window* embedded_window = connection->NewWindow();
   // Embed again, this should trigger disconnect and deletion of connection.
   bool got_destroy;
   DestroyedChangedObserver observer(this, embedded_window, &got_destroy);
@@ -748,8 +748,8 @@ class WindowRemovedFromParentObserver : public WindowObserver {
 };
 
 TEST_F(WindowServerTest, EmbedRemovesChildren) {
-  Window* window1 = window_manager()->CreateWindow();
-  Window* window2 = window_manager()->CreateWindow();
+  Window* window1 = window_manager()->NewWindow();
+  Window* window2 = window_manager()->NewWindow();
   window_manager()->GetRoot()->AddChild(window1);
   window1->AddChild(window2);
 
@@ -802,7 +802,7 @@ class DestroyObserver : public WindowObserver {
 // observers in the right order (OnWindowDestroyed() before
 // OnWindowManagerDestroyed()).
 TEST_F(WindowServerTest, WindowServerDestroyedAfterRootObserver) {
-  Window* embed_window = window_manager()->CreateWindow();
+  Window* embed_window = window_manager()->NewWindow();
   window_manager()->GetRoot()->AddChild(embed_window);
 
   WindowTreeConnection* embedded_connection = Embed(embed_window).connection;
@@ -819,17 +819,17 @@ TEST_F(WindowServerTest, WindowServerDestroyedAfterRootObserver) {
 // Verifies an embed root sees windows created beneath it from another
 // connection.
 TEST_F(WindowServerTest, EmbedRootSeesHierarchyChanged) {
-  Window* embed_window = window_manager()->CreateWindow();
+  Window* embed_window = window_manager()->NewWindow();
   window_manager()->GetRoot()->AddChild(embed_window);
 
   WindowTreeConnection* vm2 =
       Embed(embed_window, mus::mojom::WindowTree::ACCESS_POLICY_EMBED_ROOT)
           .connection;
-  Window* vm2_v1 = vm2->CreateWindow();
+  Window* vm2_v1 = vm2->NewWindow();
   vm2->GetRoot()->AddChild(vm2_v1);
 
   WindowTreeConnection* vm3 = Embed(vm2_v1).connection;
-  Window* vm3_v1 = vm3->CreateWindow();
+  Window* vm3_v1 = vm3->NewWindow();
   vm3->GetRoot()->AddChild(vm3_v1);
 
   // As |vm2| is an embed root it should get notified about |vm3_v1|.
@@ -837,7 +837,7 @@ TEST_F(WindowServerTest, EmbedRootSeesHierarchyChanged) {
 }
 
 TEST_F(WindowServerTest, EmbedFromEmbedRoot) {
-  Window* embed_window = window_manager()->CreateWindow();
+  Window* embed_window = window_manager()->NewWindow();
   window_manager()->GetRoot()->AddChild(embed_window);
 
   // Give the connection embedded at |embed_window| embed root powers.
@@ -845,13 +845,13 @@ TEST_F(WindowServerTest, EmbedFromEmbedRoot) {
       Embed(embed_window, mus::mojom::WindowTree::ACCESS_POLICY_EMBED_ROOT);
   WindowTreeConnection* vm2 = result1.connection;
   EXPECT_EQ(result1.connection_id, vm2->GetConnectionId());
-  Window* vm2_v1 = vm2->CreateWindow();
+  Window* vm2_v1 = vm2->NewWindow();
   vm2->GetRoot()->AddChild(vm2_v1);
 
   const EmbedResult result2 = Embed(vm2_v1);
   WindowTreeConnection* vm3 = result2.connection;
   EXPECT_EQ(result2.connection_id, vm3->GetConnectionId());
-  Window* vm3_v1 = vm3->CreateWindow();
+  Window* vm3_v1 = vm3->NewWindow();
   vm3->GetRoot()->AddChild(vm3_v1);
 
   // Embed from v3, the callback should not get the connection id as vm3 is not
@@ -873,7 +873,7 @@ TEST_F(WindowServerTest, EmbedFromEmbedRoot) {
 }
 
 TEST_F(WindowServerTest, ClientAreaChanged) {
-  Window* embed_window = window_manager()->CreateWindow();
+  Window* embed_window = window_manager()->NewWindow();
   window_manager()->GetRoot()->AddChild(embed_window);
 
   WindowTreeConnection* embedded_connection = Embed(embed_window).connection;

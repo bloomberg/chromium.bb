@@ -38,7 +38,7 @@ void WindowManagerImpl::OpenWindow(mus::mojom::WindowTreeClientPtr client) {
   const int width = (root->bounds().width - 240);
   const int height = (root->bounds().height - 240);
 
-  mus::Window* child_window = root->connection()->CreateWindow();
+  mus::Window* child_window = root->connection()->NewWindow();
   windows_.insert(child_window->id());
   mojo::Rect bounds;
   bounds.x = 40 + (state_->window_count() % 4) * 40;

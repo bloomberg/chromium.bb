@@ -11,13 +11,6 @@
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/interface_request.h"
 
-#if defined(OS_WIN)
-// Windows headers define a macro for CreateWindow.
-#if defined(CreateWindow)
-#undef CreateWindow
-#endif
-#endif
-
 namespace mus {
 
 class Window;
@@ -56,7 +49,7 @@ class WindowTreeConnection {
 
   // Creates and returns a new View (which is owned by the ViewManager). Views
   // are initially hidden, use SetVisible(true) to show.
-  virtual Window* CreateWindow() = 0;
+  virtual Window* NewWindow() = 0;
 
   // Returns true if ACCESS_POLICY_EMBED_ROOT was specified.
   virtual bool IsEmbedRoot() = 0;

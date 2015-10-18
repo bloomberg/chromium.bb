@@ -321,7 +321,7 @@ class FrameTest : public mojo::test::ApplicationTestBase,
   // Creates a new shared frame as a child of |parent|.
   scoped_ptr<ViewAndFrame> CreateChildViewAndFrame(ViewAndFrame* parent) {
     mus::Window* child_frame_view =
-        parent->view()->connection()->CreateWindow();
+        parent->view()->connection()->NewWindow();
     parent->view()->AddChild(child_frame_view);
 
     scoped_ptr<ViewAndFrame> view_and_frame(new ViewAndFrame);
@@ -382,7 +382,7 @@ class FrameTest : public mojo::test::ApplicationTestBase,
     mojom::FrameClient* frame_client = frame_connection->frame_client();
     mus::mojom::WindowTreeClientPtr view_tree_client =
         frame_connection->GetWindowTreeClient();
-    mus::Window* frame_root_view = window_manager()->CreateWindow();
+    mus::Window* frame_root_view = window_manager()->NewWindow();
     window_manager()->GetRoot()->AddChild(frame_root_view);
     frame_tree_.reset(new FrameTree(
         0u, frame_root_view, view_tree_client.Pass(),

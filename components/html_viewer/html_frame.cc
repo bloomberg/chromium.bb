@@ -326,7 +326,7 @@ blink::WebFrame* HTMLFrame::createChildFrame(
   DCHECK(window_);  // If we're local we have to have a window.
   // Create the window that will house the frame now. We embed once we know the
   // url (see decidePolicyForNavigation()).
-  mus::Window* child_window = window_->connection()->CreateWindow();
+  mus::Window* child_window = window_->connection()->NewWindow();
   ReplicatedFrameState child_state;
   child_state.name = frame_name;
   child_state.tree_scope = scope;

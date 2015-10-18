@@ -54,7 +54,7 @@ void WindowManagerApplication::Create(
 void WindowManagerApplication::CreateContainers() {
   for (uint16 container = static_cast<uint16>(Container::ALL_USER_BACKGROUND);
        container < static_cast<uint16>(Container::COUNT); ++container) {
-    mus::Window* window = root_->connection()->CreateWindow();
+    mus::Window* window = root_->connection()->NewWindow();
     DCHECK_EQ(mus::LoWord(window->id()), container)
         << "Containers must be created before other windows!";
     window->SetBounds(root_->bounds());

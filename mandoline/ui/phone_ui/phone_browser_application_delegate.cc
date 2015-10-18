@@ -71,7 +71,7 @@ void PhoneBrowserApplicationDelegate::LaunchURL(const mojo::String& url) {
 void PhoneBrowserApplicationDelegate::OnEmbed(mus::Window* root) {
   CHECK(!root_);
   root_ = root;
-  content_ = root->connection()->CreateWindow();
+  content_ = root->connection()->NewWindow();
   root->AddChild(content_);
   content_->SetBounds(root->bounds());
   content_->SetVisible(true);

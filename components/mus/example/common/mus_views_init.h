@@ -27,7 +27,7 @@ class MUSViewsInit : public views::ViewsDelegate,
   ~MUSViewsInit() override;
 
  private:
-  mus::Window* CreateWindow();
+  mus::Window* NewWindow();
 
   // views::ViewsDelegate:
   views::NativeWidget* CreateNativeWidget(

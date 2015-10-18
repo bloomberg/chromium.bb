@@ -95,7 +95,7 @@ class WindowTreeClientImpl : public WindowTreeConnection,
   Window* GetRoot() override;
   Window* GetWindowById(Id id) override;
   Window* GetFocusedWindow() override;
-  Window* CreateWindow() override;
+  Window* NewWindow() override;
   bool IsEmbedRoot() override;
   ConnectionSpecificId GetConnectionId() override;
 

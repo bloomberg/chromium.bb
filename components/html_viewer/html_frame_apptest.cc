@@ -169,7 +169,7 @@ class HTMLFrameTest : public WindowServerTestBase {
   // Creates the frame tree showing an empty page at the root and adds (via
   // script) a frame showing the same empty page.
   Frame* LoadEmptyPageAndCreateFrame() {
-    mus::Window* embed_window = window_manager()->CreateWindow();
+    mus::Window* embed_window = window_manager()->NewWindow();
     frame_tree_delegate_.reset(
         new TestFrameTreeDelegateImpl(application_impl()));
     FrameConnection* root_connection = InitFrameTree(
@@ -262,7 +262,7 @@ class HTMLFrameTest : public WindowServerTestBase {
 };
 
 TEST_F(HTMLFrameTest, PageWithSingleFrame) {
-  mus::Window* embed_window = window_manager()->CreateWindow();
+  mus::Window* embed_window = window_manager()->NewWindow();
 
   FrameConnection* root_connection = InitFrameTree(
       embed_window, "http://127.0.0.1:%u/files/page_with_single_frame.html");
@@ -287,7 +287,7 @@ TEST_F(HTMLFrameTest, PageWithSingleFrame) {
 // Creates two frames. The parent navigates the child frame by way of changing
 // the location of the child frame.
 TEST_F(HTMLFrameTest, ChangeLocationOfChildFrame) {
-  mus::Window* embed_window = window_manager()->CreateWindow();
+  mus::Window* embed_window = window_manager()->NewWindow();
 
   ASSERT_TRUE(InitFrameTree(
       embed_window, "http://127.0.0.1:%u/files/page_with_single_frame.html"));

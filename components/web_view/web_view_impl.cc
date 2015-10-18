@@ -74,7 +74,7 @@ void WebViewImpl::OnLoad(const GURL& pending_url) {
 
   client_->TopLevelNavigationStarted(pending_url.spec());
 
-  content_ = root_->connection()->CreateWindow();
+  content_ = root_->connection()->NewWindow();
   content_->SetBounds(*mojo::Rect::From(
       gfx::Rect(0, 0, root_->bounds().width, root_->bounds().height)));
   root_->AddChild(content_);
