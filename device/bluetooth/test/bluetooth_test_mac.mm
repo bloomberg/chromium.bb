@@ -40,13 +40,13 @@ CBPeripheral* CreateMockPeripheral(NSString* peripheral_identifier) {
 NSDictionary* CreateAdvertisementData(NSString* name, NSArray* uuids) {
   NSMutableDictionary* advertisement_data =
       [NSMutableDictionary dictionaryWithDictionary:@{
-        @"CBAdvertisementDataLocalNameKey" : name,
-        @"CBAdvertisementDataServiceDataKey" : [NSDictionary dictionary],
-        @"CBAdvertisementDataIsConnectable" : @(YES),
+        CBAdvertisementDataLocalNameKey : name,
+        CBAdvertisementDataServiceDataKey : [NSDictionary dictionary],
+        CBAdvertisementDataIsConnectable : @(YES),
       }];
   if (uuids)
     [advertisement_data setObject:uuids
-                           forKey:@"CBAdvertisementDataServiceUUIDsKey"];
+                           forKey:CBAdvertisementDataServiceUUIDsKey];
   return advertisement_data;
 }
 

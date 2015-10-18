@@ -77,8 +77,8 @@ class BluetoothAdapterMacTest : public testing::Test {
 
   NSDictionary* CreateAdvertisementData() {
     NSDictionary* advertisement_data = @{
-      @"CBAdvertisementDataIsConnectable" : @(YES),
-      @"CBAdvertisementDataServiceDataKey" : [NSDictionary dictionary],
+      CBAdvertisementDataIsConnectable : @(YES),
+      CBAdvertisementDataServiceDataKey : [NSDictionary dictionary],
     };
     [advertisement_data retain];
     return advertisement_data;
