@@ -132,9 +132,9 @@ class QuicSpdyServerStreamTest : public ::testing::Test {
 };
 
 QuicConsumedData ConsumeAllData(
-    QuicStreamId id,
+    QuicStreamId /*id*/,
     const QuicIOVector& data,
-    QuicStreamOffset offset,
+    QuicStreamOffset /*offset*/,
     bool fin,
     FecProtection /*fec_protection_*/,
     QuicAckListenerInterface* /*ack_notifier_delegate*/) {

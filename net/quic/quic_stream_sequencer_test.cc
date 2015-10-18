@@ -39,8 +39,7 @@ namespace test {
 class MockStream : public ReliableQuicStream {
  public:
   MockStream(QuicSession* session, QuicStreamId id)
-      : ReliableQuicStream(id, session) {
-  }
+      : ReliableQuicStream(id, session) {}
 
   MOCK_METHOD0(OnFinRead, void());
   MOCK_METHOD0(OnDataAvailable, void());
@@ -51,9 +50,7 @@ class MockStream : public ReliableQuicStream {
   QuicPriority EffectivePriority() const override {
     return QuicUtils::HighestPriority();
   }
-  virtual bool IsFlowControlEnabled() const {
-    return true;
-  }
+  virtual bool IsFlowControlEnabled() const { return true; }
 };
 
 namespace {
@@ -395,9 +392,7 @@ class QuicSequencerRandomTest : public QuicStreamSequencerTest {
     CreateFrames();
   }
 
-  int OneToN(int n) {
-    return base::RandInt(1, n);
-  }
+  int OneToN(int n) { return base::RandInt(1, n); }
 
   void ReadAvailableData() {
     // Read all available data

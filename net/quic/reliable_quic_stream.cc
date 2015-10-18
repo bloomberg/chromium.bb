@@ -233,7 +233,7 @@ void ReliableQuicStream::OnStreamReset(const QuicRstStreamFrame& frame) {
 }
 
 void ReliableQuicStream::OnConnectionClosed(QuicErrorCode error,
-                                            bool from_peer) {
+                                            bool /*from_peer*/) {
   if (read_side_closed_ && write_side_closed_) {
     return;
   }

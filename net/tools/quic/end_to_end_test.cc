@@ -220,7 +220,7 @@ class ClientDelegate : public PacketDroppingTestWriter::Delegate {
  public:
   explicit ClientDelegate(QuicClient* client) : client_(client) {}
   ~ClientDelegate() override {}
-  void OnPacketSent(WriteResult result) override {}
+  void OnPacketSent(WriteResult /*result*/) override {}
   void OnCanWrite() override {
     EpollEvent event(EPOLLOUT, false);
     client_->OnEvent(client_->fd(), &event);
@@ -438,7 +438,7 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
   // being discarded, based on connection stats.
   // Calls server_thread_ Pause() and Resume(), which may only be called once
   // per test.
-  void VerifyCleanConnection(bool had_packet_loss) {
+  void VerifyCleanConnection(bool /*had_packet_loss*/) {
     QuicConnectionStats client_stats =
         client_->client()->session()->connection()->GetStats();
     // TODO(ianswett): Re-enable this check once b/19572432 is fixed.

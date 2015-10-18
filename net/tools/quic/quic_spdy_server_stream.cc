@@ -62,8 +62,8 @@ void QuicSpdyServerStream::OnDataAvailable() {
     return;
   }
 
-  // If the sequencer is closed, then the all the body, including the fin,
-  // has been consumed.
+  // If the sequencer is closed, then all the body, including the fin, has been
+  // consumed.
   OnFinRead();
 
   if (write_side_closed() || fin_buffered()) {

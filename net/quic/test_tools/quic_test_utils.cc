@@ -141,8 +141,7 @@ MockFramerVisitor::MockFramerVisitor() {
       .WillByDefault(testing::Return(true));
 }
 
-MockFramerVisitor::~MockFramerVisitor() {
-}
+MockFramerVisitor::~MockFramerVisitor() {}
 
 bool NoOpFramerVisitor::OnProtocolVersionMismatch(QuicVersion version) {
   return false;
@@ -202,17 +201,13 @@ bool NoOpFramerVisitor::OnBlockedFrame(const QuicBlockedFrame& frame) {
   return true;
 }
 
-MockConnectionVisitor::MockConnectionVisitor() {
-}
+MockConnectionVisitor::MockConnectionVisitor() {}
 
-MockConnectionVisitor::~MockConnectionVisitor() {
-}
+MockConnectionVisitor::~MockConnectionVisitor() {}
 
-MockHelper::MockHelper() {
-}
+MockHelper::MockHelper() {}
 
-MockHelper::~MockHelper() {
-}
+MockHelper::~MockHelper() {}
 
 const QuicClock* MockHelper::GetClock() const {
   return &clock_;
@@ -306,8 +301,7 @@ MockConnection::MockConnection(QuicConnectionId connection_id,
           Invoke(this, &PacketSavingConnection::QuicConnection_OnError));
 }
 
-MockConnection::~MockConnection() {
-}
+MockConnection::~MockConnection() {}
 
 void MockConnection::AdvanceTime(QuicTime::Delta delta) {
   static_cast<MockHelper*>(helper())->AdvanceTime(delta);
@@ -349,8 +343,7 @@ MockQuicSpdySession::MockQuicSpdySession(QuicConnection* connection)
       .WillByDefault(testing::Return(QuicConsumedData(0, false)));
 }
 
-MockQuicSpdySession::~MockQuicSpdySession() {
-}
+MockQuicSpdySession::~MockQuicSpdySession() {}
 
 TestQuicSpdyServerSession::TestQuicSpdyServerSession(
     QuicConnection* connection,
@@ -361,8 +354,7 @@ TestQuicSpdyServerSession::TestQuicSpdyServerSession(
   Initialize();
 }
 
-TestQuicSpdyServerSession::~TestQuicSpdyServerSession() {
-}
+TestQuicSpdyServerSession::~TestQuicSpdyServerSession() {}
 
 QuicCryptoServerStream* TestQuicSpdyServerSession::GetCryptoStream() {
   return crypto_stream_.get();
@@ -380,8 +372,7 @@ TestQuicSpdyClientSession::TestQuicSpdyClientSession(
   Initialize();
 }
 
-TestQuicSpdyClientSession::~TestQuicSpdyClientSession() {
-}
+TestQuicSpdyClientSession::~TestQuicSpdyClientSession() {}
 
 QuicCryptoClientStream* TestQuicSpdyClientSession::GetCryptoStream() {
   return crypto_stream_.get();
@@ -392,32 +383,23 @@ MockPacketWriter::MockPacketWriter() {
       .WillByDefault(testing::Return(kMaxPacketSize));
 }
 
-MockPacketWriter::~MockPacketWriter() {
-}
+MockPacketWriter::~MockPacketWriter() {}
 
-MockSendAlgorithm::MockSendAlgorithm() {
-}
+MockSendAlgorithm::MockSendAlgorithm() {}
 
-MockSendAlgorithm::~MockSendAlgorithm() {
-}
+MockSendAlgorithm::~MockSendAlgorithm() {}
 
-MockLossAlgorithm::MockLossAlgorithm() {
-}
+MockLossAlgorithm::MockLossAlgorithm() {}
 
-MockLossAlgorithm::~MockLossAlgorithm() {
-}
+MockLossAlgorithm::~MockLossAlgorithm() {}
 
-MockAckNotifierDelegate::MockAckNotifierDelegate() {
-}
+MockAckNotifierDelegate::MockAckNotifierDelegate() {}
 
-MockAckNotifierDelegate::~MockAckNotifierDelegate() {
-}
+MockAckNotifierDelegate::~MockAckNotifierDelegate() {}
 
-MockNetworkChangeVisitor::MockNetworkChangeVisitor() {
-}
+MockNetworkChangeVisitor::MockNetworkChangeVisitor() {}
 
-MockNetworkChangeVisitor::~MockNetworkChangeVisitor() {
-}
+MockNetworkChangeVisitor::~MockNetworkChangeVisitor() {}
 
 namespace {
 
@@ -787,11 +769,9 @@ WriteResult TestWriterFactory::PerConnectionPacketWriter::WritePacket(
       buffer, buf_len, self_address, peer_address);
 }
 
-MockQuicConnectionDebugVisitor::MockQuicConnectionDebugVisitor() {
-}
+MockQuicConnectionDebugVisitor::MockQuicConnectionDebugVisitor() {}
 
-MockQuicConnectionDebugVisitor::~MockQuicConnectionDebugVisitor() {
-}
+MockQuicConnectionDebugVisitor::~MockQuicConnectionDebugVisitor() {}
 
 void CreateClientSessionForTest(QuicServerId server_id,
                                 bool supports_stateless_rejects,
