@@ -79,12 +79,6 @@ camera.Camera = function() {
   // Handle key presses to make the Camera app accessible via the keyboard.
   document.body.addEventListener('keydown', this.onKeyPressed_.bind(this));
 
-  // Handle window decoration buttons.
-  document.querySelector('#maximize-button').addEventListener('click',
-      this.onMaximizeClicked_.bind(this));
-  document.querySelector('#close-button').addEventListener('click',
-      this.onCloseClicked_.bind(this));
-
   // Handle window resize.
   window.addEventListener('resize', this.onWindowResize_.bind(this));
 
@@ -314,25 +308,6 @@ camera.Camera.prototype.onKeyPressed_ = function(event) {
   if (this.context_.hasError)
     return;
   this.currentView.onKeyPressed(event);
-};
-
-/**
- * Handles clicking on the toggle maximization button.
- * @private
- */
-camera.Camera.prototype.onMaximizeClicked_ = function() {
-  if (chrome.app.window.current().isMaximized())
-    chrome.app.window.current().restore();
-  else
-    chrome.app.window.current().maximize();
-};
-
-/**
- * Handles clicking on the close application button.
- * @private
- */
-camera.Camera.prototype.onCloseClicked_ = function() {
-  chrome.app.window.current().close();
 };
 
 /**

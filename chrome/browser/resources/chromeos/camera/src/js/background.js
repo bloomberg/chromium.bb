@@ -35,12 +35,21 @@ camera.bg.DEFAULT_WIDTH = 640;
 camera.bg.DEFAULT_HEIGHT = 360;
 
 /**
+ * Top bar color of the window.
+ * @type {string}
+ * @const
+ */
+camera.bg.TOPBAR_COLOR = "#1E2023";
+
+/**
  * Creates the window. Note, that only one window at once is supported.
  */
 camera.bg.create = function() {
   chrome.app.window.create('views/main.html', {
     id: 'main',
-    frame: 'none',
+    frame: {
+      color: camera.bg.TOPBAR_COLOR
+    },
     hidden: true,  // Will be shown from main.js once loaded.
     bounds: {
       width: camera.bg.DEFAULT_WIDTH,
