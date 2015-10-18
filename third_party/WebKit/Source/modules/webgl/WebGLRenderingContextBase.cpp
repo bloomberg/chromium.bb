@@ -864,6 +864,87 @@ static const FormatType kSupportedFormatTypesES3[] = {
     { GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8 },
 };
 
+bool isUnsignedIntegerFormat(GLenum internalformat)
+{
+    switch (internalformat) {
+    case GL_R8UI:
+    case GL_R16UI:
+    case GL_R32UI:
+    case GL_RG8UI:
+    case GL_RG16UI:
+    case GL_RG32UI:
+    case GL_RGB8UI:
+    case GL_RGB16UI:
+    case GL_RGB32UI:
+    case GL_RGBA8UI:
+    case GL_RGB10_A2UI:
+    case GL_RGBA16UI:
+    case GL_RGBA32UI:
+        return true;
+    default:
+        return false;
+    }
+}
+
+bool isSignedIntegerFormat(GLenum internalformat)
+{
+    switch (internalformat) {
+    case GL_R8I:
+    case GL_R16I:
+    case GL_R32I:
+    case GL_RG8I:
+    case GL_RG16I:
+    case GL_RG32I:
+    case GL_RGB8I:
+    case GL_RGB16I:
+    case GL_RGB32I:
+    case GL_RGBA8I:
+    case GL_RGBA16I:
+    case GL_RGBA32I:
+        return true;
+    default:
+        return false;
+    }
+}
+
+bool isIntegerFormat(GLenum internalformat)
+{
+    return (isUnsignedIntegerFormat(internalformat) || isSignedIntegerFormat(internalformat));
+}
+
+bool isFloatType(GLenum type)
+{
+    switch (type) {
+    case GL_FLOAT:
+    case GL_HALF_FLOAT:
+    case GL_HALF_FLOAT_OES:
+    case GL_UNSIGNED_INT_10F_11F_11F_REV:
+        return true;
+    default:
+        return false;
+    }
+}
+
+bool isSRGBFormat(GLenum internalformat)
+{
+    switch (internalformat) {
+    case GL_SRGB_EXT:
+    case GL_SRGB_ALPHA_EXT:
+    case GL_SRGB8:
+    case GL_SRGB8_ALPHA8:
+        return true;
+    default:
+        return false;
+    }
+}
+
+bool canUseTexImage2DCanvasByGPU(GLenum internalformat, GLenum type)
+{
+    if (isFloatType(type) || isIntegerFormat(internalformat) || isSRGBFormat(internalformat))
+        return false;
+    return true;
+}
+
 } // namespace anonymous
 
 WebGLRenderingContextBase::WebGLRenderingContextBase(HTMLCanvasElement* passedCanvas, PassOwnPtr<WebGraphicsContext3D> context, const WebGLContextAttributes& requestedAttributes)
@@ -4353,9 +4434,9 @@ void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLenum in
     WebGLTexture* texture = validateTextureBinding("texImage2D", target, true);
     ASSERT(texture);
 
-    // texImage2DCanvasByGPU relies on copyTextureCHROMIUM which doesn't support float type.
-    bool isFloatType = type == GL_FLOAT || type == GL_HALF_FLOAT || type == GL_HALF_FLOAT_OES;
-    if (!canvas->renderingContext() || !canvas->renderingContext()->isAccelerated() || isFloatType) {
+    // texImage2DCanvasByGPU relies on copyTextureCHROMIUM which doesn't support float/integer/sRGB internal format.
+    // FIXME: relax the constrains if copyTextureCHROMIUM is upgraded to handle more formats.
+    if (!canvas->renderingContext() || !canvas->renderingContext()->isAccelerated() || !canUseTexImage2DCanvasByGPU(internalformat, type)) {
         // 2D canvas has only FrontBuffer.
         texImage2DImpl(target, level, internalformat, format, type, canvas->copiedImage(FrontBuffer, PreferAcceleration).get(),
             WebGLImageConversion::HtmlDomCanvas, m_unpackFlipY, m_unpackPremultiplyAlpha);
@@ -4611,8 +4692,10 @@ void WebGLRenderingContextBase::texSubImage2D(GLenum target, GLint level, GLint 
     WebGLTexture* texture = validateTextureBinding("texSubImage2D", target, true);
     ASSERT(texture);
 
-    bool isFloatType = type == GL_FLOAT || type == GL_HALF_FLOAT || type == GL_HALF_FLOAT_OES;
-    if (!canvas->renderingContext() || !canvas->renderingContext()->isAccelerated() || isFloatType) {
+    GLenum internalformat = texture->getInternalFormat(target, level);
+    // texImage2DCanvasByGPU relies on copyTextureCHROMIUM which doesn't support float/integer/sRGB internal format.
+    // FIXME: relax the constrains if copyTextureCHROMIUM is upgraded to handle more formats.
+    if (!canvas->renderingContext() || !canvas->renderingContext()->isAccelerated() || !canUseTexImage2DCanvasByGPU(internalformat, type)) {
         // 2D canvas has only FrontBuffer.
         texSubImage2DImpl(target, level, xoffset, yoffset, format, type, canvas->copiedImage(FrontBuffer, PreferAcceleration).get(),
             WebGLImageConversion::HtmlDomCanvas, m_unpackFlipY, m_unpackPremultiplyAlpha);
