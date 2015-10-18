@@ -36,7 +36,7 @@ namespace blink {
 
 class QualifiedName;
 
-class CompactHTMLToken {
+class CORE_EXPORT CompactHTMLToken {
     ALLOW_ONLY_INLINE_ALLOCATION();
 public:
     struct Attribute {

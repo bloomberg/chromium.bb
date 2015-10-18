@@ -36,7 +36,7 @@
 
 namespace blink {
 
-class AtomicHTMLToken {
+class CORE_EXPORT AtomicHTMLToken {
     STACK_ALLOCATED();
     WTF_MAKE_NONCOPYABLE(AtomicHTMLToken);
 public:
@@ -240,7 +240,7 @@ inline void AtomicHTMLToken::initializeAttributes(const HTMLToken::AttributeList
         ASSERT(attribute.valueRange.start);
         ASSERT(attribute.valueRange.end);
 
-        AtomicString value(attribute.value);
+        AtomicString value(StringImpl::create8BitIfPossible(attribute.value));
         const QualifiedName& name = nameForAttribute(attribute);
         // FIXME: This is N^2 for the number of attributes.
         if (!findAttributeInVector(m_attributes, name))

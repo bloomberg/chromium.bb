@@ -36,7 +36,6 @@
 #include "core/xml/parser/MarkupTokenizerInlines.h"
 #include "platform/NotImplemented.h"
 #include "wtf/ASCIICType.h"
-#include "wtf/text/AtomicString.h"
 #include "wtf/text/Unicode.h"
 
 // Please don't use DEFINE_STATIC_LOCAL in this file. The HTMLTokenizer is used
@@ -46,23 +45,6 @@
 namespace blink {
 
 using namespace HTMLNames;
-
-// This has to go in a .cpp file, as the linker doesn't like it being included more than once.
-// We don't have an HTMLToken.cpp though, so this is the next best place.
-QualifiedName AtomicHTMLToken::nameForAttribute(const HTMLToken::Attribute& attribute) const
-{
-    return QualifiedName(nullAtom, AtomicString(attribute.name), nullAtom);
-}
-
-bool AtomicHTMLToken::usesName() const
-{
-    return m_type == HTMLToken::StartTag || m_type == HTMLToken::EndTag || m_type == HTMLToken::DOCTYPE;
-}
-
-bool AtomicHTMLToken::usesAttributes() const
-{
-    return m_type == HTMLToken::StartTag || m_type == HTMLToken::EndTag;
-}
 
 static inline UChar toLowerCase(UChar cc)
 {
