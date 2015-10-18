@@ -1,0 +1,38 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/console-test.js"></script>
+<script>
+var obj = {}
+Object.defineProperty(obj, 'foo', {enumerable: true, get: function() {return {a:1,b:2}; }});
+function logObject()
+{
+    console.log(obj);
+}
+
+function test()
+{
+    InspectorTest.evaluateInPage("logObject()", step2);
+    function step2()
+    {
+        InspectorTest.expandConsoleMessages(step3);
+    }
+    function step3()
+    {
+        InspectorTest.expandGettersInConsoleMessages(step4);
+    }
+    function step4()
+    {
+        InspectorTest.dumpConsoleMessages();
+        InspectorTest.completeTest();
+    }
+}
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that console logging dumps object values defined by getters and allows to expand it.
+</p>
+</body>
+</html>
