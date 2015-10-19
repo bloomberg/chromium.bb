@@ -125,9 +125,6 @@ void AddBorderShadow(UIView* view, CGFloat offset, UIColor* color) {
   CGPathRelease(outline);
 }
 
-// TODO(pkl): The implementation of this has some duplicated code with
-// AddBorderShadow and ToolsPopupView newPathForRect:withRadius:withArrow:.
-// There is an opportunity to refactor them into a common shadow library.
 void AddRoundedBorderShadow(UIView* view, CGFloat radius, UIColor* color) {
   CGRect rect = view.bounds;
   CGMutablePathRef path = CGPathCreateMutable();
