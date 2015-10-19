@@ -192,6 +192,7 @@ struct CC_EXPORT ClipNodeData {
   // True if layers with this clip tree node need to be drawn with a clip
   // applied.
   bool layers_are_clipped : 1;
+  bool layers_are_clipped_when_surfaces_disabled : 1;
 
   // Nodes that correspond to unclipped surfaces disregard ancestor clips.
   bool resets_clip : 1;
@@ -398,6 +399,7 @@ class CC_EXPORT PropertyTrees final {
   EffectTree effect_tree;
   ClipTree clip_tree;
   bool needs_rebuild;
+  bool non_root_surfaces_enabled;
   int sequence_number;
 };
 

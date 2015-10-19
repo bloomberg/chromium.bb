@@ -779,7 +779,8 @@ bool LayerTreeHost::DoUpdateLayers(Layer* root_layer) {
         root_layer, page_scale_layer, inner_viewport_scroll_layer_.get(),
         outer_viewport_scroll_layer_.get(), page_scale_factor_,
         device_scale_factor_, gfx::Rect(device_viewport_size_),
-        identity_transform, &property_trees_, &update_layer_list);
+        identity_transform, can_render_to_separate_surface, &property_trees_,
+        &update_layer_list);
   }
 
   for (const auto& layer : update_layer_list)

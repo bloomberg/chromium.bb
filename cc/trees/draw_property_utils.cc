@@ -23,21 +23,26 @@ namespace {
 template <typename LayerType>
 void CalculateVisibleRects(const std::vector<LayerType*>& visible_layer_list,
                            const ClipTree& clip_tree,
-                           const TransformTree& transform_tree) {
+                           const TransformTree& transform_tree,
+                           bool non_root_surfaces_enabled) {
   for (auto& layer : visible_layer_list) {
     gfx::Size layer_bounds = layer->bounds();
     const ClipNode* clip_node = clip_tree.Node(layer->clip_tree_index());
-    const bool is_unclipped =
-        clip_node->data.resets_clip && !clip_node->data.applies_local_clip;
+    const bool is_unclipped = clip_node->data.resets_clip &&
+                              !clip_node->data.applies_local_clip &&
+                              non_root_surfaces_enabled;
     // When both the layer and the target are unclipped, the entire layer
     // content rect is visible.
     const bool fully_visible = !clip_node->data.layers_are_clipped &&
-                               !clip_node->data.target_is_clipped;
+                               !clip_node->data.target_is_clipped &&
+                               non_root_surfaces_enabled;
     const TransformNode* transform_node =
         transform_tree.Node(layer->transform_tree_index());
     if (!is_unclipped && !fully_visible) {
       const TransformNode* target_node =
-          transform_tree.Node(transform_node->data.content_target_id);
+          non_root_surfaces_enabled
+              ? transform_tree.Node(transform_node->data.content_target_id)
+              : transform_tree.Node(0);
 
       // The clip node stores clip rect in its target space. If required,
       // this clip rect should be mapped to the current layer's target space.
@@ -45,7 +50,10 @@ void CalculateVisibleRects(const std::vector<LayerType*>& visible_layer_list,
       gfx::Rect combined_clip_rect_in_target_space;
       bool success = true;
 
-      if (clip_node->data.target_id != target_node->id) {
+      // When we only have a root surface, the clip node and the layer must
+      // necessarily have the same target (the root).
+      if (clip_node->data.target_id != target_node->id &&
+          non_root_surfaces_enabled) {
         // In this case, layer has a clip parent (or shares the target with an
         // ancestor layer that has clip parent) and the clip parent's target is
         // different from the layer's target. As the layer's target has
@@ -82,7 +90,7 @@ void CalculateVisibleRects(const std::vector<LayerType*>& visible_layer_list,
       } else {
         clip_rect_in_target_space =
             gfx::ToEnclosingRect(clip_node->data.clip_in_target_space);
-        if (clip_node->data.target_is_clipped)
+        if (clip_node->data.target_is_clipped || !non_root_surfaces_enabled)
           combined_clip_rect_in_target_space = gfx::ToEnclosingRect(
               clip_node->data.combined_clip_in_target_space);
         else
@@ -97,7 +105,9 @@ void CalculateVisibleRects(const std::vector<LayerType*>& visible_layer_list,
       }
 
       // The clip rect should be intersected with layer rect in target space.
-      gfx::Transform content_to_target = transform_node->data.to_target;
+      gfx::Transform content_to_target = non_root_surfaces_enabled
+                                             ? transform_node->data.to_target
+                                             : transform_node->data.to_screen;
 
       content_to_target.Translate(layer->offset_to_transform_parent().x(),
                                   layer->offset_to_transform_parent().y());
@@ -126,7 +136,9 @@ void CalculateVisibleRects(const std::vector<LayerType*>& visible_layer_list,
       gfx::Transform target_to_layer;
 
       if (transform_node->data.ancestors_are_invertible) {
-        target_to_layer = transform_node->data.from_target;
+        target_to_layer = non_root_surfaces_enabled
+                              ? transform_node->data.from_target
+                              : transform_node->data.from_screen;
         success = true;
       } else {
         success = transform_tree.ComputeTransformWithSourceSublayerScale(
@@ -415,7 +427,9 @@ void FindLayersThatNeedUpdates(
 
 }  // namespace
 
-void ComputeClips(ClipTree* clip_tree, const TransformTree& transform_tree) {
+void ComputeClips(ClipTree* clip_tree,
+                  const TransformTree& transform_tree,
+                  bool non_root_surfaces_enabled) {
   if (!clip_tree->needs_update())
     return;
   for (int i = 1; i < static_cast<int>(clip_tree->size()); ++i) {
@@ -447,7 +461,8 @@ void ComputeClips(ClipTree* clip_tree, const TransformTree& transform_tree) {
     // clip node's target space.
     gfx::RectF parent_combined_clip_in_target_space =
         parent_clip_node->data.combined_clip_in_target_space;
-    if (parent_clip_node->data.target_id != clip_node->data.target_id) {
+    if (parent_clip_node->data.target_id != clip_node->data.target_id &&
+        non_root_surfaces_enabled) {
       success &= transform_tree.ComputeTransformWithDestinationSublayerScale(
           parent_clip_node->data.target_id, clip_node->data.target_id,
           &parent_to_current);
@@ -471,7 +486,7 @@ void ComputeClips(ClipTree* clip_tree, const TransformTree& transform_tree) {
     // the combined clip to our children because if they are clipped, they may
     // need to clip using our parent clip and if we don't propagate it here,
     // it will be lost.
-    if (clip_node->data.resets_clip) {
+    if (clip_node->data.resets_clip && non_root_surfaces_enabled) {
       if (clip_node->data.applies_local_clip) {
         clip_node->data.clip_in_target_space = MathUtil::MapClippedRect(
             transform_node->data.to_target, clip_node->data.clip);
@@ -491,7 +506,10 @@ void ComputeClips(ClipTree* clip_tree, const TransformTree& transform_tree) {
     if (use_only_parent_clip) {
       clip_node->data.combined_clip_in_target_space =
           parent_combined_clip_in_target_space;
-      if (!clip_node->data.target_is_clipped) {
+      if (!non_root_surfaces_enabled) {
+        clip_node->data.clip_in_target_space =
+            parent_clip_node->data.clip_in_target_space;
+      } else if (!clip_node->data.target_is_clipped) {
         clip_node->data.clip_in_target_space =
             parent_combined_clip_in_target_space;
       } else {
@@ -503,7 +521,10 @@ void ComputeClips(ClipTree* clip_tree, const TransformTree& transform_tree) {
     } else {
       gfx::Transform source_to_target;
 
-      if (transform_node->data.content_target_id == clip_node->data.target_id) {
+      if (!non_root_surfaces_enabled) {
+        source_to_target = transform_node->data.to_screen;
+      } else if (transform_node->data.content_target_id ==
+                 clip_node->data.target_id) {
         source_to_target = transform_node->data.to_target;
       } else {
         success = transform_tree.ComputeTransformWithDestinationSublayerScale(
@@ -516,7 +537,15 @@ void ComputeClips(ClipTree* clip_tree, const TransformTree& transform_tree) {
       gfx::RectF source_clip_in_target_space =
           MathUtil::MapClippedRect(source_to_target, clip_node->data.clip);
 
-      if (!clip_node->data.layer_clipping_uses_only_local_clip) {
+      // With surfaces disabled, the only case where we use only the local clip
+      // for layer clipping is the case where no non-viewport ancestor node
+      // applies a local clip.
+      bool layer_clipping_uses_only_local_clip =
+          non_root_surfaces_enabled
+              ? clip_node->data.layer_clipping_uses_only_local_clip
+              : !parent_clip_node->data
+                     .layers_are_clipped_when_surfaces_disabled;
+      if (!layer_clipping_uses_only_local_clip) {
         gfx::RectF parent_clip_in_target_space = MathUtil::ProjectClippedRect(
             parent_to_current, parent_clip_node->data.clip_in_target_space);
         clip_node->data.clip_in_target_space = gfx::IntersectRects(
@@ -552,11 +581,18 @@ template <typename LayerType>
 void ComputeVisibleRectsUsingPropertyTreesInternal(
     LayerType* root_layer,
     PropertyTrees* property_trees,
+    bool can_render_to_separate_surface,
     typename LayerType::LayerListType* update_layer_list) {
+  if (property_trees->non_root_surfaces_enabled !=
+      can_render_to_separate_surface) {
+    property_trees->non_root_surfaces_enabled = can_render_to_separate_surface;
+    property_trees->transform_tree.set_needs_update(true);
+  }
   if (property_trees->transform_tree.needs_update())
     property_trees->clip_tree.set_needs_update(true);
   ComputeTransforms(&property_trees->transform_tree);
-  ComputeClips(&property_trees->clip_tree, property_trees->transform_tree);
+  ComputeClips(&property_trees->clip_tree, property_trees->transform_tree,
+               can_render_to_separate_surface);
   ComputeOpacities(&property_trees->effect_tree);
 
   const bool subtree_is_visible_from_ancestor = true;
@@ -564,9 +600,9 @@ void ComputeVisibleRectsUsingPropertyTreesInternal(
   FindLayersThatNeedUpdates(root_layer, property_trees->transform_tree,
                             subtree_is_visible_from_ancestor, update_layer_list,
                             &visible_layer_list);
-  CalculateVisibleRects<LayerType>(visible_layer_list,
-                                   property_trees->clip_tree,
-                                   property_trees->transform_tree);
+  CalculateVisibleRects<LayerType>(
+      visible_layer_list, property_trees->clip_tree,
+      property_trees->transform_tree, can_render_to_separate_surface);
 }
 
 void BuildPropertyTreesAndComputeVisibleRects(
@@ -578,6 +614,7 @@ void BuildPropertyTreesAndComputeVisibleRects(
     float device_scale_factor,
     const gfx::Rect& viewport,
     const gfx::Transform& device_transform,
+    bool can_render_to_separate_surface,
     PropertyTrees* property_trees,
     LayerList* update_layer_list) {
   PropertyTreeBuilder::BuildPropertyTrees(
@@ -585,6 +622,7 @@ void BuildPropertyTreesAndComputeVisibleRects(
       outer_viewport_scroll_layer, page_scale_factor, device_scale_factor,
       viewport, device_transform, property_trees);
   ComputeVisibleRectsUsingPropertyTrees(root_layer, property_trees,
+                                        can_render_to_separate_surface,
                                         update_layer_list);
 }
 
@@ -597,6 +635,7 @@ void BuildPropertyTreesAndComputeVisibleRects(
     float device_scale_factor,
     const gfx::Rect& viewport,
     const gfx::Transform& device_transform,
+    bool can_render_to_separate_surface,
     PropertyTrees* property_trees,
     LayerImplList* update_layer_list) {
   PropertyTreeBuilder::BuildPropertyTrees(
@@ -604,20 +643,25 @@ void BuildPropertyTreesAndComputeVisibleRects(
       outer_viewport_scroll_layer, page_scale_factor, device_scale_factor,
       viewport, device_transform, property_trees);
   ComputeVisibleRectsUsingPropertyTrees(root_layer, property_trees,
+                                        can_render_to_separate_surface,
                                         update_layer_list);
 }
 
 void ComputeVisibleRectsUsingPropertyTrees(Layer* root_layer,
                                            PropertyTrees* property_trees,
+                                           bool can_render_to_separate_surface,
                                            LayerList* update_layer_list) {
   ComputeVisibleRectsUsingPropertyTreesInternal(root_layer, property_trees,
+                                                can_render_to_separate_surface,
                                                 update_layer_list);
 }
 
 void ComputeVisibleRectsUsingPropertyTrees(LayerImpl* root_layer,
                                            PropertyTrees* property_trees,
+                                           bool can_render_to_separate_surface,
                                            LayerImplList* update_layer_list) {
   ComputeVisibleRectsUsingPropertyTreesInternal(root_layer, property_trees,
+                                                can_render_to_separate_surface,
                                                 update_layer_list);
 }
 
@@ -851,10 +895,15 @@ void ComputeLayerDrawPropertiesUsingPropertyTrees(
   const ClipNode* clip_node =
       property_trees->clip_tree.Node(layer->clip_tree_index());
 
-  draw_properties->target_space_transform =
-      DrawTransformFromPropertyTreesInternal(layer, transform_node);
   draw_properties->screen_space_transform =
       ScreenSpaceTransformFromPropertyTreesInternal(layer, transform_node);
+  if (property_trees->non_root_surfaces_enabled) {
+    draw_properties->target_space_transform =
+        DrawTransformFromPropertyTreesInternal(layer, transform_node);
+  } else {
+    draw_properties->target_space_transform =
+        draw_properties->screen_space_transform;
+  }
   draw_properties->screen_space_transform_is_animating =
       transform_node->data.to_screen_is_animated;
   if (layer->layer_tree_impl()
@@ -874,7 +923,12 @@ void ComputeLayerDrawPropertiesUsingPropertyTrees(
   draw_properties->can_use_lcd_text =
       LayerCanUseLcdText(layer, layers_always_allowed_lcd_text,
                          can_use_lcd_text, transform_node, effect_node);
-  draw_properties->is_clipped = clip_node->data.layers_are_clipped;
+  if (property_trees->non_root_surfaces_enabled) {
+    draw_properties->is_clipped = clip_node->data.layers_are_clipped;
+  } else {
+    draw_properties->is_clipped =
+        clip_node->data.layers_are_clipped_when_surfaces_disabled;
+  }
 
   gfx::Rect bounds_in_target_space = MathUtil::MapEnclosingClippedRect(
       draw_properties->target_space_transform, gfx::Rect(layer->bounds()));

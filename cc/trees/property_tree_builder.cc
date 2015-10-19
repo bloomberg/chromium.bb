@@ -139,6 +139,12 @@ void AddClipNodeIfNeeded(const DataForRecursion<LayerType>& data_from_ancestor,
   if (layer_clips_subtree)
     layers_are_clipped = true;
 
+  // Without surfaces, all non-viewport clips have to be applied using layer
+  // clipping.
+  bool layers_are_clipped_when_surfaces_disabled =
+      layer_clips_subtree ||
+      parent->data.layers_are_clipped_when_surfaces_disabled;
+
   bool applies_clip =
       AppliesClip(layer, data_from_ancestor, ancestor_clips_subtree);
   bool parent_applies_clip = !parent->data.resets_clip;
@@ -153,6 +159,8 @@ void AddClipNodeIfNeeded(const DataForRecursion<LayerType>& data_from_ancestor,
   if (!requires_node) {
     data_for_children->clip_tree_parent = parent_id;
     DCHECK_EQ(layers_are_clipped, parent->data.layers_are_clipped);
+    DCHECK_EQ(layers_are_clipped_when_surfaces_disabled,
+              parent->data.layers_are_clipped_when_surfaces_disabled);
   } else {
     LayerType* transform_parent = data_for_children->transform_tree_parent;
     if (layer->position_constraint().is_fixed_position() &&
@@ -190,6 +198,8 @@ void AddClipNodeIfNeeded(const DataForRecursion<LayerType>& data_from_ancestor,
     node.data.resets_clip = has_unclipped_surface;
     node.data.target_is_clipped = data_for_children->target_is_clipped;
     node.data.layers_are_clipped = layers_are_clipped;
+    node.data.layers_are_clipped_when_surfaces_disabled =
+        layers_are_clipped_when_surfaces_disabled;
 
     data_for_children->clip_tree_parent =
         data_for_children->clip_tree->Insert(node, parent_id);

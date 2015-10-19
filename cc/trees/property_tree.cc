@@ -106,6 +106,7 @@ ClipNodeData::ClipNodeData()
       layer_clipping_uses_only_local_clip(false),
       target_is_clipped(false),
       layers_are_clipped(false),
+      layers_are_clipped_when_surfaces_disabled(false),
       resets_clip(false) {}
 
 EffectNodeData::EffectNodeData()
@@ -624,7 +625,9 @@ gfx::RectF ClipTree::ViewportClip() {
   return Node(1)->data.clip;
 }
 
-PropertyTrees::PropertyTrees() : needs_rebuild(true), sequence_number(0) {
-}
+PropertyTrees::PropertyTrees()
+    : needs_rebuild(true),
+      non_root_surfaces_enabled(true),
+      sequence_number(0) {}
 
 }  // namespace cc

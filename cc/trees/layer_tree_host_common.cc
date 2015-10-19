@@ -2695,7 +2695,8 @@ void CalculateDrawPropertiesAndVerify(
             inputs->outer_viewport_scroll_layer, inputs->page_scale_factor,
             inputs->device_scale_factor,
             gfx::Rect(inputs->device_viewport_size), inputs->device_transform,
-            inputs->property_trees, &update_layer_list);
+            inputs->can_render_to_separate_surface, inputs->property_trees,
+            &update_layer_list);
 
         if (should_measure_property_tree_performance) {
           TRACE_EVENT_END0(
@@ -2718,7 +2719,8 @@ void CalculateDrawPropertiesAndVerify(
             inputs->page_scale_factor, inputs->device_scale_factor,
             inputs->device_transform);
         ComputeVisibleRectsUsingPropertyTrees(
-            inputs->root_layer, inputs->property_trees, &update_layer_list);
+            inputs->root_layer, inputs->property_trees,
+            inputs->can_render_to_separate_surface, &update_layer_list);
         break;
       }
     }
@@ -2762,7 +2764,7 @@ void LayerTreeHostCommon::CalculateDrawProperties(
       inputs->inner_viewport_scroll_layer, inputs->outer_viewport_scroll_layer,
       inputs->page_scale_factor, inputs->device_scale_factor,
       gfx::Rect(inputs->device_viewport_size), inputs->device_transform,
-      property_trees, &update_layer_list);
+      can_render_to_separate_surface, property_trees, &update_layer_list);
 }
 
 void LayerTreeHostCommon::CalculateDrawProperties(

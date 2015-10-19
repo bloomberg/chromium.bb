@@ -110,6 +110,9 @@ class LayerTreeHostCommonTestBase : public LayerTestCommon::LayerImplTest {
   void ExecuteCalculateDrawPropertiesWithPropertyTrees(Layer* layer);
   void ExecuteCalculateDrawPropertiesWithPropertyTrees(LayerImpl* layer);
 
+  void ExecuteCalculateDrawPropertiesWithoutSeparateSurfaces(
+      LayerImpl* root_layer);
+
   LayerImplList* render_surface_layer_list_impl() const {
     return render_surface_layer_list_impl_.get();
   }

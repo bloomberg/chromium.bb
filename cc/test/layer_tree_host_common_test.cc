@@ -103,6 +103,7 @@ void LayerTreeHostCommonTestBase::
       root_layer, page_scale_layer, inner_viewport_scroll_layer,
       outer_viewport_scroll_layer, page_scale_factor, device_scale_factor,
       gfx::Rect(device_viewport_size), identity_transform,
+      can_render_to_separate_surface,
       root_layer->layer_tree_host()->property_trees(), &update_layer_list_);
 }
 
@@ -112,6 +113,7 @@ void LayerTreeHostCommonTestBase::
   LayerTreeHostCommon::PreCalculateMetaInformationForTesting(root_layer);
 
   gfx::Transform identity_transform;
+  bool can_render_to_separate_surface = true;
   LayerImpl* page_scale_layer = nullptr;
   LayerImpl* inner_viewport_scroll_layer =
       root_layer->layer_tree_impl()->InnerViewportScrollLayer();
@@ -127,6 +129,7 @@ void LayerTreeHostCommonTestBase::
       root_layer, page_scale_layer, inner_viewport_scroll_layer,
       outer_viewport_scroll_layer, page_scale_factor, device_scale_factor,
       gfx::Rect(device_viewport_size), identity_transform,
+      can_render_to_separate_surface,
       root_layer->layer_tree_impl()->property_trees(), &update_layer_list);
 }
 
@@ -158,6 +161,27 @@ void LayerTreeHostCommonTestBase::ExecuteCalculateDrawProperties(
   inputs.can_use_lcd_text = can_use_lcd_text;
   inputs.layers_always_allowed_lcd_text = layers_always_allowed_lcd_text;
   inputs.can_adjust_raster_scales = true;
+
+  ++render_surface_layer_list_count_;
+  inputs.current_render_surface_layer_list_id =
+      render_surface_layer_list_count_;
+
+  LayerTreeHostCommon::CalculateDrawProperties(&inputs);
+}
+
+void LayerTreeHostCommonTestBase::
+    ExecuteCalculateDrawPropertiesWithoutSeparateSurfaces(
+        LayerImpl* root_layer) {
+  gfx::Transform identity_matrix;
+  gfx::Size device_viewport_size =
+      gfx::Size(root_layer->bounds().width(), root_layer->bounds().height());
+  render_surface_layer_list_impl_.reset(new LayerImplList);
+
+  DCHECK(!root_layer->bounds().IsEmpty());
+  LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
+      root_layer, device_viewport_size, render_surface_layer_list_impl_.get());
+  inputs.can_adjust_raster_scales = true;
+  inputs.can_render_to_separate_surface = false;
 
   ++render_surface_layer_list_count_;
   inputs.current_render_surface_layer_list_id =

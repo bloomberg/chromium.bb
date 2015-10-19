@@ -522,6 +522,61 @@ TEST_F(LayerTreeHostCommonTest, TransformsForSingleRenderSurface) {
       child->render_target()->render_surface()->screen_space_transform());
 }
 
+TEST_F(LayerTreeHostCommonTest, TransformsWhenCannotRenderToSeparateSurface) {
+  LayerImpl* root = root_layer();
+  LayerImpl* parent = AddChildToRoot<LayerImpl>();
+  LayerImpl* child = AddChild<LayerImpl>(parent);
+  LayerImpl* grand_child = AddChild<LayerImpl>(child);
+  grand_child->SetDrawsContent(true);
+
+  gfx::Transform identity_matrix;
+  SetLayerPropertiesForTesting(root, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(100, 100), true, false,
+                               true);
+
+  gfx::Transform parent_transform;
+  parent_transform.Translate(10.0, 10.0);
+
+  gfx::Transform child_transform;
+  child_transform.Rotate(45.0);
+
+  // child gets a render surface when surfaces are enabled.
+  SetLayerPropertiesForTesting(parent, parent_transform, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(10, 10), true, false,
+                               false);
+  SetLayerPropertiesForTesting(child, child_transform, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(10, 10), true, false,
+                               true);
+  SetLayerPropertiesForTesting(grand_child, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(2.0, 2.0), gfx::Size(20, 20), true,
+                               false, false);
+
+  gfx::Transform expected_grand_child_screen_space_transform;
+  expected_grand_child_screen_space_transform.Translate(10.0, 10.0);
+  expected_grand_child_screen_space_transform.Rotate(45.0);
+  expected_grand_child_screen_space_transform.Translate(2.0, 2.0);
+
+  // First compute draw properties with separate surfaces enabled.
+  ExecuteCalculateDrawProperties(root);
+
+  // The grand child's draw transform should be its offset wrt the child.
+  gfx::Transform expected_grand_child_draw_transform;
+  expected_grand_child_draw_transform.Translate(2.0, 2.0);
+  EXPECT_TRANSFORMATION_MATRIX_EQ(expected_grand_child_draw_transform,
+                                  grand_child->draw_transform());
+  EXPECT_TRANSFORMATION_MATRIX_EQ(expected_grand_child_screen_space_transform,
+                                  grand_child->screen_space_transform());
+
+  ExecuteCalculateDrawPropertiesWithoutSeparateSurfaces(root);
+
+  // With separate surfaces disabled, the grand child's draw transform should be
+  // the same as its screen space transform.
+  EXPECT_TRANSFORMATION_MATRIX_EQ(expected_grand_child_screen_space_transform,
+                                  grand_child->draw_transform());
+  EXPECT_TRANSFORMATION_MATRIX_EQ(expected_grand_child_screen_space_transform,
+                                  grand_child->screen_space_transform());
+}
+
 TEST_F(LayerTreeHostCommonTest, TransformsForReplica) {
   LayerImpl* root = root_layer();
   LayerImpl* parent = AddChildToRoot<LayerImpl>();
@@ -1232,6 +1287,83 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceForBlendMode) {
   EXPECT_EQ(SkXfermode::kSrcOver_Mode, child->draw_blend_mode());
 }
 
+TEST_F(LayerTreeHostCommonTest, DrawOpacityWhenCannotRenderToSeparateSurface) {
+  // Tests that when separate surfaces are disabled, a layer's draw opacity is
+  // the product of all ancestor layer opacties and the layer's own opacity.
+  // (Rendering will still be incorrect in situations where we really do need
+  // surfaces to apply opacity, such as when we have overlapping layers with an
+  // ancestor whose opacity is <1.)
+  LayerImpl* root = root_layer();
+  LayerImpl* parent = AddChild<LayerImpl>(root);
+  LayerImpl* child1 = AddChild<LayerImpl>(parent);
+  LayerImpl* child2 = AddChild<LayerImpl>(parent);
+  LayerImpl* grand_child = AddChild<LayerImpl>(child1);
+  LayerImpl* leaf_node1 = AddChild<LayerImpl>(grand_child);
+  LayerImpl* leaf_node2 = AddChild<LayerImpl>(child2);
+
+  root->SetDrawsContent(true);
+  parent->SetDrawsContent(true);
+  child1->SetDrawsContent(true);
+  child2->SetDrawsContent(true);
+  grand_child->SetDrawsContent(true);
+  leaf_node1->SetDrawsContent(true);
+  leaf_node2->SetDrawsContent(true);
+
+  const gfx::Transform identity_matrix;
+
+  // child1 and grand_child get render surfaces when surfaces are enabled.
+  SetLayerPropertiesForTesting(root, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(100, 100), true, false,
+                               true);
+  SetLayerPropertiesForTesting(parent, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(100, 100), true, false,
+                               false);
+  SetLayerPropertiesForTesting(child1, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(100, 100), true, false,
+                               true);
+  SetLayerPropertiesForTesting(child2, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(100, 100), true, false,
+                               false);
+  SetLayerPropertiesForTesting(grand_child, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(100, 100), true, false,
+                               true);
+  SetLayerPropertiesForTesting(leaf_node1, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(100, 100), true, false,
+                               false);
+  SetLayerPropertiesForTesting(leaf_node2, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(100, 100), true, false,
+                               false);
+
+  child1->SetOpacity(0.5f);
+  grand_child->SetOpacity(0.5f);
+  leaf_node1->SetOpacity(0.5f);
+  leaf_node2->SetOpacity(0.5f);
+
+  // With surfaces enabled, each layer's draw opacity is the product of layer
+  // opacities on the path from the layer to its render target, not including
+  // the opacity of the layer that owns the target surface (since that opacity
+  // is applied by the surface).
+  ExecuteCalculateDrawProperties(root);
+  EXPECT_EQ(1.f, root->draw_opacity());
+  EXPECT_EQ(1.f, parent->draw_opacity());
+  EXPECT_EQ(1.f, child1->draw_opacity());
+  EXPECT_EQ(1.f, child2->draw_opacity());
+  EXPECT_EQ(1.f, grand_child->draw_opacity());
+  EXPECT_EQ(0.5f, leaf_node1->draw_opacity());
+  EXPECT_EQ(0.5f, leaf_node2->draw_opacity());
+
+  // With surfaces disabled, each layer's draw opacity is the product of layer
+  // opacities on the path from the layer to the root.
+  ExecuteCalculateDrawPropertiesWithoutSeparateSurfaces(root);
+  EXPECT_EQ(1.f, root->draw_opacity());
+  EXPECT_EQ(1.f, parent->draw_opacity());
+  EXPECT_EQ(0.5f, child1->draw_opacity());
+  EXPECT_EQ(1.f, child2->draw_opacity());
+  EXPECT_EQ(0.25f, grand_child->draw_opacity());
+  EXPECT_EQ(0.125f, leaf_node1->draw_opacity());
+  EXPECT_EQ(0.5f, leaf_node2->draw_opacity());
+}
+
 TEST_F(LayerTreeHostCommonTest, ForceRenderSurface) {
   scoped_refptr<Layer> parent = Layer::Create(layer_settings());
   scoped_refptr<Layer> render_surface1 = Layer::Create(layer_settings());
@@ -1579,6 +1711,170 @@ TEST_F(LayerTreeHostCommonTest, IsClippedIsSetCorrectlyLayerImpl) {
   }
 }
 
+TEST_F(LayerTreeHostCommonTest, IsClippedWhenCannotRenderToSeparateSurface) {
+  // Tests that when separate surfaces are disabled, is_clipped is true exactly
+  // when a layer or its ancestor has a clip; in particular, if a layer
+  // is_clipped, so is its entire subtree (since there are no render surfaces
+  // that can reset is_clipped).
+  LayerImpl* root = root_layer();
+  LayerImpl* parent = AddChild<LayerImpl>(root);
+  LayerImpl* child1 = AddChild<LayerImpl>(parent);
+  LayerImpl* child2 = AddChild<LayerImpl>(parent);
+  LayerImpl* grand_child = AddChild<LayerImpl>(child1);
+  LayerImpl* leaf_node1 = AddChild<LayerImpl>(grand_child);
+  LayerImpl* leaf_node2 = AddChild<LayerImpl>(child2);
+
+  root->SetDrawsContent(true);
+  parent->SetDrawsContent(true);
+  child1->SetDrawsContent(true);
+  child2->SetDrawsContent(true);
+  grand_child->SetDrawsContent(true);
+  leaf_node1->SetDrawsContent(true);
+  leaf_node2->SetDrawsContent(true);
+
+  const gfx::Transform identity_matrix;
+
+  // child1 and grand_child get render surfaces when surfaces are enabled.
+  SetLayerPropertiesForTesting(root, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(100, 100), true, false,
+                               true);
+  SetLayerPropertiesForTesting(parent, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(100, 100), true, false,
+                               false);
+  SetLayerPropertiesForTesting(child1, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(100, 100), true, false,
+                               true);
+  SetLayerPropertiesForTesting(child2, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(100, 100), true, false,
+                               false);
+  SetLayerPropertiesForTesting(grand_child, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(100, 100), true, false,
+                               true);
+  SetLayerPropertiesForTesting(leaf_node1, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(100, 100), true, false,
+                               false);
+  SetLayerPropertiesForTesting(leaf_node2, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(100, 100), true, false,
+                               false);
+
+  // Case 1: Nothing is clipped. In this case, is_clipped is always false, with
+  // or without surfaces.
+  ExecuteCalculateDrawProperties(root);
+  EXPECT_FALSE(root->is_clipped());
+  EXPECT_FALSE(parent->is_clipped());
+  EXPECT_FALSE(child1->is_clipped());
+  EXPECT_FALSE(child2->is_clipped());
+  EXPECT_FALSE(grand_child->is_clipped());
+  EXPECT_FALSE(leaf_node1->is_clipped());
+  EXPECT_FALSE(leaf_node2->is_clipped());
+
+  ExecuteCalculateDrawPropertiesWithoutSeparateSurfaces(root);
+  EXPECT_FALSE(root->is_clipped());
+  EXPECT_FALSE(parent->is_clipped());
+  EXPECT_FALSE(child1->is_clipped());
+  EXPECT_FALSE(child2->is_clipped());
+  EXPECT_FALSE(grand_child->is_clipped());
+  EXPECT_FALSE(leaf_node1->is_clipped());
+  EXPECT_FALSE(leaf_node2->is_clipped());
+
+  // Case 2: The root is clipped. With surfaces, this only persists until the
+  // next render surface. Without surfaces, the entire tree is clipped.
+  root->SetMasksToBounds(true);
+  host_impl()->active_tree()->property_trees()->needs_rebuild = true;
+  ExecuteCalculateDrawProperties(root);
+  EXPECT_TRUE(root->is_clipped());
+  EXPECT_TRUE(parent->is_clipped());
+  EXPECT_FALSE(child1->is_clipped());
+  EXPECT_TRUE(child2->is_clipped());
+  EXPECT_FALSE(grand_child->is_clipped());
+  EXPECT_FALSE(leaf_node1->is_clipped());
+  EXPECT_TRUE(leaf_node2->is_clipped());
+
+  ExecuteCalculateDrawPropertiesWithoutSeparateSurfaces(root);
+  EXPECT_TRUE(root->is_clipped());
+  EXPECT_TRUE(parent->is_clipped());
+  EXPECT_TRUE(child1->is_clipped());
+  EXPECT_TRUE(child2->is_clipped());
+  EXPECT_TRUE(grand_child->is_clipped());
+  EXPECT_TRUE(leaf_node1->is_clipped());
+  EXPECT_TRUE(leaf_node2->is_clipped());
+
+  root->SetMasksToBounds(false);
+
+  // Case 3: The parent is clipped. Again, with surfaces, this only persists
+  // until the next render surface. Without surfaces, parent's entire subtree is
+  // clipped.
+  parent->SetMasksToBounds(true);
+  host_impl()->active_tree()->property_trees()->needs_rebuild = true;
+  ExecuteCalculateDrawProperties(root);
+  EXPECT_FALSE(root->is_clipped());
+  EXPECT_TRUE(parent->is_clipped());
+  EXPECT_FALSE(child1->is_clipped());
+  EXPECT_TRUE(child2->is_clipped());
+  EXPECT_FALSE(grand_child->is_clipped());
+  EXPECT_FALSE(leaf_node1->is_clipped());
+  EXPECT_TRUE(leaf_node2->is_clipped());
+
+  ExecuteCalculateDrawPropertiesWithoutSeparateSurfaces(root);
+  EXPECT_FALSE(root->is_clipped());
+  EXPECT_TRUE(parent->is_clipped());
+  EXPECT_TRUE(child1->is_clipped());
+  EXPECT_TRUE(child2->is_clipped());
+  EXPECT_TRUE(grand_child->is_clipped());
+  EXPECT_TRUE(leaf_node1->is_clipped());
+  EXPECT_TRUE(leaf_node2->is_clipped());
+
+  parent->SetMasksToBounds(false);
+
+  // Case 4: child1 is clipped. With surfaces, only child1 is_clipped, since it
+  // has no non-surface children. Without surfaces, child1's entire subtree is
+  // clipped.
+  child1->SetMasksToBounds(true);
+  host_impl()->active_tree()->property_trees()->needs_rebuild = true;
+  ExecuteCalculateDrawProperties(root);
+  EXPECT_FALSE(root->is_clipped());
+  EXPECT_FALSE(parent->is_clipped());
+  EXPECT_TRUE(child1->is_clipped());
+  EXPECT_FALSE(child2->is_clipped());
+  EXPECT_FALSE(grand_child->is_clipped());
+  EXPECT_FALSE(leaf_node1->is_clipped());
+  EXPECT_FALSE(leaf_node2->is_clipped());
+
+  ExecuteCalculateDrawPropertiesWithoutSeparateSurfaces(root);
+  EXPECT_FALSE(root->is_clipped());
+  EXPECT_FALSE(parent->is_clipped());
+  EXPECT_TRUE(child1->is_clipped());
+  EXPECT_FALSE(child2->is_clipped());
+  EXPECT_TRUE(grand_child->is_clipped());
+  EXPECT_TRUE(leaf_node1->is_clipped());
+  EXPECT_FALSE(leaf_node2->is_clipped());
+
+  child1->SetMasksToBounds(false);
+
+  // Case 5: Only the leaf nodes are clipped. The behavior with and without
+  // surfaces is the same.
+  leaf_node1->SetMasksToBounds(true);
+  leaf_node2->SetMasksToBounds(true);
+  host_impl()->active_tree()->property_trees()->needs_rebuild = true;
+  ExecuteCalculateDrawProperties(root);
+  EXPECT_FALSE(root->is_clipped());
+  EXPECT_FALSE(parent->is_clipped());
+  EXPECT_FALSE(child1->is_clipped());
+  EXPECT_FALSE(child2->is_clipped());
+  EXPECT_FALSE(grand_child->is_clipped());
+  EXPECT_TRUE(leaf_node1->is_clipped());
+  EXPECT_TRUE(leaf_node2->is_clipped());
+
+  ExecuteCalculateDrawPropertiesWithoutSeparateSurfaces(root);
+  EXPECT_FALSE(root->is_clipped());
+  EXPECT_FALSE(parent->is_clipped());
+  EXPECT_FALSE(child1->is_clipped());
+  EXPECT_FALSE(child2->is_clipped());
+  EXPECT_FALSE(grand_child->is_clipped());
+  EXPECT_TRUE(leaf_node1->is_clipped());
+  EXPECT_TRUE(leaf_node2->is_clipped());
+}
+
 TEST_F(LayerTreeHostCommonTest, DrawableContentRectForLayers) {
   // Verify that layers get the appropriate DrawableContentRect when their
   // parent masksToBounds is true.
@@ -1717,6 +2013,187 @@ TEST_F(LayerTreeHostCommonTest, ClipRectIsPropagatedCorrectlyToSurfaces) {
             grand_child2->render_surface()->clip_rect());
   EXPECT_EQ(gfx::Rect(0, 0, 20, 20),
             grand_child3->render_surface()->clip_rect());
+}
+
+TEST_F(LayerTreeHostCommonTest, ClipRectWhenCannotRenderToSeparateSurface) {
+  // Tests that when separate surfaces are disabled, a layer's clip_rect is the
+  // intersection of all ancestor clips in screen space; in particular, if a
+  // layer masks to bounds, it contributes to the clip_rect of all layers in its
+  // subtree (since there are no render surfaces that can reset the clip_rect).
+  LayerImpl* root = root_layer();
+  LayerImpl* parent = AddChild<LayerImpl>(root);
+  LayerImpl* child1 = AddChild<LayerImpl>(parent);
+  LayerImpl* child2 = AddChild<LayerImpl>(parent);
+  LayerImpl* grand_child = AddChild<LayerImpl>(child1);
+  LayerImpl* leaf_node1 = AddChild<LayerImpl>(grand_child);
+  LayerImpl* leaf_node2 = AddChild<LayerImpl>(child2);
+
+  root->SetDrawsContent(true);
+  parent->SetDrawsContent(true);
+  child1->SetDrawsContent(true);
+  child2->SetDrawsContent(true);
+  grand_child->SetDrawsContent(true);
+  leaf_node1->SetDrawsContent(true);
+  leaf_node2->SetDrawsContent(true);
+
+  const gfx::Transform identity_matrix;
+
+  // child1 and grand_child get render surfaces when surfaces are enabled.
+  SetLayerPropertiesForTesting(root, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(100, 100), true, false,
+                               true);
+  SetLayerPropertiesForTesting(parent, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(2.f, 2.f), gfx::Size(400, 400), true,
+                               false, false);
+  SetLayerPropertiesForTesting(child1, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(4.f, 4.f), gfx::Size(800, 800), true,
+                               false, true);
+  SetLayerPropertiesForTesting(child2, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(3.f, 3.f), gfx::Size(800, 800), true,
+                               false, false);
+  SetLayerPropertiesForTesting(grand_child, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(8.f, 8.f), gfx::Size(1500, 1500),
+                               true, false, true);
+  SetLayerPropertiesForTesting(leaf_node1, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(16.f, 16.f), gfx::Size(2000, 2000),
+                               true, false, false);
+  SetLayerPropertiesForTesting(leaf_node2, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(9.f, 9.f), gfx::Size(2000, 2000),
+                               true, false, false);
+
+  // Case 1: Nothing is clipped. In this case, each layer's clip rect is its
+  // bounds in target space. The only thing that changes when surfaces are
+  // disabled is that target space is always screen space.
+  ExecuteCalculateDrawProperties(root);
+  EXPECT_EQ(gfx::Rect(100, 100), root->clip_rect());
+  EXPECT_EQ(gfx::Rect(2, 2, 400, 400), parent->clip_rect());
+  EXPECT_EQ(gfx::Rect(800, 800), child1->clip_rect());
+  EXPECT_EQ(gfx::Rect(5, 5, 800, 800), child2->clip_rect());
+  EXPECT_EQ(gfx::Rect(1500, 1500), grand_child->clip_rect());
+  EXPECT_EQ(gfx::Rect(16, 16, 2000, 2000), leaf_node1->clip_rect());
+  EXPECT_EQ(gfx::Rect(14, 14, 2000, 2000), leaf_node2->clip_rect());
+
+  ExecuteCalculateDrawPropertiesWithoutSeparateSurfaces(root);
+  EXPECT_EQ(gfx::Rect(100, 100), root->clip_rect());
+  EXPECT_EQ(gfx::Rect(2, 2, 400, 400), parent->clip_rect());
+  EXPECT_EQ(gfx::Rect(6, 6, 800, 800), child1->clip_rect());
+  EXPECT_EQ(gfx::Rect(5, 5, 800, 800), child2->clip_rect());
+  EXPECT_EQ(gfx::Rect(14, 14, 1500, 1500), grand_child->clip_rect());
+  EXPECT_EQ(gfx::Rect(30, 30, 2000, 2000), leaf_node1->clip_rect());
+  EXPECT_EQ(gfx::Rect(14, 14, 2000, 2000), leaf_node2->clip_rect());
+
+  // Case 2: The root is clipped. In this case, layers that draw into the root
+  // render surface are clipped by the root's bounds.
+  root->SetMasksToBounds(true);
+  host_impl()->active_tree()->property_trees()->needs_rebuild = true;
+  ExecuteCalculateDrawProperties(root);
+  EXPECT_EQ(gfx::Rect(100, 100), root->clip_rect());
+  EXPECT_EQ(gfx::Rect(100, 100), parent->clip_rect());
+  EXPECT_EQ(gfx::Rect(800, 800), child1->clip_rect());
+  EXPECT_EQ(gfx::Rect(100, 100), child2->clip_rect());
+  EXPECT_EQ(gfx::Rect(1500, 1500), grand_child->clip_rect());
+  EXPECT_EQ(gfx::Rect(16, 16, 2000, 2000), leaf_node1->clip_rect());
+  EXPECT_EQ(gfx::Rect(100, 100), leaf_node2->clip_rect());
+
+  ExecuteCalculateDrawPropertiesWithoutSeparateSurfaces(root);
+  EXPECT_EQ(gfx::Rect(100, 100), root->clip_rect());
+  EXPECT_EQ(gfx::Rect(100, 100), parent->clip_rect());
+  EXPECT_EQ(gfx::Rect(100, 100), child1->clip_rect());
+  EXPECT_EQ(gfx::Rect(100, 100), child2->clip_rect());
+  EXPECT_EQ(gfx::Rect(100, 100), grand_child->clip_rect());
+  EXPECT_EQ(gfx::Rect(100, 100), leaf_node1->clip_rect());
+  EXPECT_EQ(gfx::Rect(100, 100), leaf_node2->clip_rect());
+
+  root->SetMasksToBounds(false);
+
+  // Case 3: The parent and child1 are clipped. When surfaces are enabled, the
+  // parent clip rect only contributes to the subtree rooted at child2, since
+  // the subtree rooted at child1 renders into a separate surface. Similarly,
+  // child1's clip rect doesn't contribute to its descendants, since its only
+  // child is a render surface. However, without surfaces, these clip rects
+  // contribute to all descendants.
+  parent->SetMasksToBounds(true);
+  child1->SetMasksToBounds(true);
+  host_impl()->active_tree()->property_trees()->needs_rebuild = true;
+  ExecuteCalculateDrawProperties(root);
+  EXPECT_EQ(gfx::Rect(100, 100), root->clip_rect());
+  EXPECT_EQ(gfx::Rect(2, 2, 400, 400), parent->clip_rect());
+  EXPECT_EQ(gfx::Rect(800, 800), child1->clip_rect());
+  EXPECT_EQ(gfx::Rect(2, 2, 400, 400), child2->clip_rect());
+  EXPECT_EQ(gfx::Rect(1500, 1500), grand_child->clip_rect());
+  EXPECT_EQ(gfx::Rect(16, 16, 2000, 2000), leaf_node1->clip_rect());
+  EXPECT_EQ(gfx::Rect(2, 2, 400, 400), leaf_node2->clip_rect());
+
+  ExecuteCalculateDrawPropertiesWithoutSeparateSurfaces(root);
+  EXPECT_EQ(gfx::Rect(100, 100), root->clip_rect());
+  EXPECT_EQ(gfx::Rect(2, 2, 400, 400), parent->clip_rect());
+  EXPECT_EQ(gfx::Rect(6, 6, 396, 396), child1->clip_rect());
+  EXPECT_EQ(gfx::Rect(2, 2, 400, 400), child2->clip_rect());
+  EXPECT_EQ(gfx::Rect(6, 6, 396, 396), grand_child->clip_rect());
+  EXPECT_EQ(gfx::Rect(6, 6, 396, 396), leaf_node1->clip_rect());
+  EXPECT_EQ(gfx::Rect(2, 2, 400, 400), leaf_node2->clip_rect());
+}
+
+TEST_F(LayerTreeHostCommonTest, SurfacesDisabledAndReEnabled) {
+  // Tests that draw properties are computed correctly when we disable and then
+  // re-enable separate surfaces.
+  LayerImpl* root = root_layer();
+  LayerImpl* parent = AddChild<LayerImpl>(root);
+  LayerImpl* child = AddChild<LayerImpl>(parent);
+  LayerImpl* grand_child = AddChild<LayerImpl>(child);
+  LayerImpl* leaf_node = AddChild<LayerImpl>(grand_child);
+
+  root->SetDrawsContent(true);
+  parent->SetDrawsContent(true);
+  child->SetDrawsContent(true);
+  grand_child->SetDrawsContent(true);
+  leaf_node->SetDrawsContent(true);
+
+  const gfx::Transform identity_matrix;
+
+  // child and grand_child get render surfaces when surfaces are enabled.
+  SetLayerPropertiesForTesting(root, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(100, 100), true, false,
+                               true);
+  SetLayerPropertiesForTesting(parent, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(2.f, 2.f), gfx::Size(400, 400), true,
+                               false, false);
+  SetLayerPropertiesForTesting(child, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(4.f, 4.f), gfx::Size(800, 800), true,
+                               false, true);
+  SetLayerPropertiesForTesting(grand_child, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(8.f, 8.f), gfx::Size(1500, 1500),
+                               true, false, true);
+  SetLayerPropertiesForTesting(leaf_node, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(16.f, 16.f), gfx::Size(2000, 2000),
+                               true, false, false);
+
+  parent->SetMasksToBounds(true);
+  child->SetMasksToBounds(true);
+
+  gfx::Transform expected_leaf_draw_transform_with_surfaces;
+  expected_leaf_draw_transform_with_surfaces.Translate(16.0, 16.0);
+
+  gfx::Transform expected_leaf_draw_transform_without_surfaces;
+  expected_leaf_draw_transform_without_surfaces.Translate(30.0, 30.0);
+
+  ExecuteCalculateDrawProperties(root);
+  EXPECT_EQ(gfx::Rect(16, 16, 2000, 2000), leaf_node->clip_rect());
+  EXPECT_EQ(gfx::Rect(16, 16, 2000, 2000), leaf_node->drawable_content_rect());
+  EXPECT_EQ(expected_leaf_draw_transform_with_surfaces,
+            leaf_node->draw_transform());
+
+  ExecuteCalculateDrawPropertiesWithoutSeparateSurfaces(root);
+  EXPECT_EQ(gfx::Rect(6, 6, 396, 396), leaf_node->clip_rect());
+  EXPECT_EQ(gfx::Rect(30, 30, 372, 372), leaf_node->drawable_content_rect());
+  EXPECT_EQ(expected_leaf_draw_transform_without_surfaces,
+            leaf_node->draw_transform());
+
+  ExecuteCalculateDrawProperties(root);
+  EXPECT_EQ(gfx::Rect(16, 16, 2000, 2000), leaf_node->clip_rect());
+  EXPECT_EQ(gfx::Rect(16, 16, 2000, 2000), leaf_node->drawable_content_rect());
+  EXPECT_EQ(expected_leaf_draw_transform_with_surfaces,
+            leaf_node->draw_transform());
 }
 
 TEST_F(LayerTreeHostCommonTest, AnimationsForRenderSurfaceHierarchy) {
@@ -2403,6 +2880,194 @@ TEST_F(LayerTreeHostCommonTest,
   EXPECT_EQ(gfx::Rect(5, 5, 50, 50), child1->drawable_content_rect());
   EXPECT_EQ(gfx::Rect(75, 75, 50, 50), child2->drawable_content_rect());
   EXPECT_EQ(gfx::Rect(125, 125, 50, 50), child3->drawable_content_rect());
+}
+
+TEST_F(LayerTreeHostCommonTest,
+       DrawableAndVisibleRectsWhenCannotRenderToSeparateSurface) {
+  LayerImpl* root = root_layer();
+  LayerImpl* parent = AddChild<LayerImpl>(root);
+  LayerImpl* child1 = AddChild<LayerImpl>(parent);
+  LayerImpl* child2 = AddChild<LayerImpl>(parent);
+  LayerImpl* grand_child1 = AddChild<LayerImpl>(child1);
+  LayerImpl* grand_child2 = AddChild<LayerImpl>(child2);
+  LayerImpl* leaf_node1 = AddChild<LayerImpl>(grand_child1);
+  LayerImpl* leaf_node2 = AddChild<LayerImpl>(grand_child2);
+
+  root->SetDrawsContent(true);
+  parent->SetDrawsContent(true);
+  child1->SetDrawsContent(true);
+  child2->SetDrawsContent(true);
+  grand_child1->SetDrawsContent(true);
+  grand_child2->SetDrawsContent(true);
+  leaf_node1->SetDrawsContent(true);
+  leaf_node2->SetDrawsContent(true);
+
+  const gfx::Transform identity_matrix;
+
+  // child1 and child2 get render surfaces when surfaces are enabled.
+  SetLayerPropertiesForTesting(root, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(100, 100), true, false,
+                               true);
+  SetLayerPropertiesForTesting(parent, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(2.f, 2.f), gfx::Size(400, 400), true,
+                               false, false);
+  SetLayerPropertiesForTesting(child1, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(4.f, 4.f), gfx::Size(800, 800), true,
+                               false, true);
+  SetLayerPropertiesForTesting(child2, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(3.f, 3.f), gfx::Size(800, 800), true,
+                               false, true);
+  SetLayerPropertiesForTesting(grand_child1, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(8.f, 8.f), gfx::Size(1500, 1500),
+                               true, false, false);
+  SetLayerPropertiesForTesting(grand_child2, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(7.f, 7.f), gfx::Size(1500, 1500),
+                               true, false, false);
+  SetLayerPropertiesForTesting(leaf_node1, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(16.f, 16.f), gfx::Size(2000, 2000),
+                               true, false, false);
+  SetLayerPropertiesForTesting(leaf_node2, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(9.f, 9.f), gfx::Size(2000, 2000),
+                               true, false, false);
+
+  // Case 1: No layers clip. Visible rects are clipped by the viewport, but the
+  // viewport clip doesn't apply to layers that draw into unclipped surfaces.
+  // Each layer's drawable content rect is its bounds in target space; the only
+  // thing that changes with surfaces disabled is that target space is always
+  // screen space.
+  ExecuteCalculateDrawProperties(root);
+  EXPECT_EQ(gfx::Rect(100, 100), root->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(0, 0, 98, 98), parent->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(800, 800), child1->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(800, 800), child2->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(1500, 1500), grand_child1->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(1500, 1500), grand_child2->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(2000, 2000), leaf_node1->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(2000, 2000), leaf_node2->visible_layer_rect());
+
+  EXPECT_EQ(gfx::Rect(100, 100), root->drawable_content_rect());
+  EXPECT_EQ(gfx::Rect(2, 2, 400, 400), parent->drawable_content_rect());
+  EXPECT_EQ(gfx::Rect(800, 800), child1->drawable_content_rect());
+  EXPECT_EQ(gfx::Rect(800, 800), child2->drawable_content_rect());
+  EXPECT_EQ(gfx::Rect(8, 8, 1500, 1500), grand_child1->drawable_content_rect());
+  EXPECT_EQ(gfx::Rect(7, 7, 1500, 1500), grand_child2->drawable_content_rect());
+  EXPECT_EQ(gfx::Rect(24, 24, 2000, 2000), leaf_node1->drawable_content_rect());
+  EXPECT_EQ(gfx::Rect(16, 16, 2000, 2000), leaf_node2->drawable_content_rect());
+
+  ExecuteCalculateDrawPropertiesWithoutSeparateSurfaces(root);
+  EXPECT_EQ(gfx::Rect(100, 100), root->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(98, 98), parent->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(94, 94), child1->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(95, 95), child2->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(86, 86), grand_child1->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(88, 88), grand_child2->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(70, 70), leaf_node1->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(79, 79), leaf_node2->visible_layer_rect());
+
+  EXPECT_EQ(gfx::Rect(100, 100), root->drawable_content_rect());
+  EXPECT_EQ(gfx::Rect(2, 2, 400, 400), parent->drawable_content_rect());
+  EXPECT_EQ(gfx::Rect(6, 6, 800, 800), child1->drawable_content_rect());
+  EXPECT_EQ(gfx::Rect(5, 5, 800, 800), child2->drawable_content_rect());
+  EXPECT_EQ(gfx::Rect(14, 14, 1500, 1500),
+            grand_child1->drawable_content_rect());
+  EXPECT_EQ(gfx::Rect(12, 12, 1500, 1500),
+            grand_child2->drawable_content_rect());
+  EXPECT_EQ(gfx::Rect(30, 30, 2000, 2000), leaf_node1->drawable_content_rect());
+  EXPECT_EQ(gfx::Rect(21, 21, 2000, 2000), leaf_node2->drawable_content_rect());
+
+  // Case 2: The parent clips. In this case, neither surface is unclipped, so
+  // all visible layer rects are clipped by the intersection of all ancestor
+  // clips, whether or not surfaces are disabled. However, drawable content
+  // rects are clipped only until the next render surface is reached, so
+  // descendants of parent have their drawable content rects clipped only when
+  // surfaces are disabled.
+  parent->SetMasksToBounds(true);
+  host_impl()->active_tree()->property_trees()->needs_rebuild = true;
+  ExecuteCalculateDrawProperties(root);
+  EXPECT_EQ(gfx::Rect(100, 100), root->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(98, 98), parent->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(94, 94), child1->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(95, 95), child2->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(86, 86), grand_child1->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(88, 88), grand_child2->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(70, 70), leaf_node1->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(79, 79), leaf_node2->visible_layer_rect());
+
+  EXPECT_EQ(gfx::Rect(100, 100), root->drawable_content_rect());
+  EXPECT_EQ(gfx::Rect(2, 2, 400, 400), parent->drawable_content_rect());
+  EXPECT_EQ(gfx::Rect(800, 800), child1->drawable_content_rect());
+  EXPECT_EQ(gfx::Rect(800, 800), child2->drawable_content_rect());
+  EXPECT_EQ(gfx::Rect(8, 8, 1500, 1500), grand_child1->drawable_content_rect());
+  EXPECT_EQ(gfx::Rect(7, 7, 1500, 1500), grand_child2->drawable_content_rect());
+  EXPECT_EQ(gfx::Rect(24, 24, 2000, 2000), leaf_node1->drawable_content_rect());
+  EXPECT_EQ(gfx::Rect(16, 16, 2000, 2000), leaf_node2->drawable_content_rect());
+
+  ExecuteCalculateDrawPropertiesWithoutSeparateSurfaces(root);
+  EXPECT_EQ(gfx::Rect(100, 100), root->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(98, 98), parent->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(94, 94), child1->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(95, 95), child2->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(86, 86), grand_child1->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(88, 88), grand_child2->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(70, 70), leaf_node1->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(79, 79), leaf_node2->visible_layer_rect());
+
+  EXPECT_EQ(gfx::Rect(100, 100), root->drawable_content_rect());
+  EXPECT_EQ(gfx::Rect(2, 2, 400, 400), parent->drawable_content_rect());
+  EXPECT_EQ(gfx::Rect(6, 6, 396, 396), child1->drawable_content_rect());
+  EXPECT_EQ(gfx::Rect(5, 5, 397, 397), child2->drawable_content_rect());
+  EXPECT_EQ(gfx::Rect(14, 14, 388, 388), grand_child1->drawable_content_rect());
+  EXPECT_EQ(gfx::Rect(12, 12, 390, 390), grand_child2->drawable_content_rect());
+  EXPECT_EQ(gfx::Rect(30, 30, 372, 372), leaf_node1->drawable_content_rect());
+  EXPECT_EQ(gfx::Rect(21, 21, 381, 381), leaf_node2->drawable_content_rect());
+
+  parent->SetMasksToBounds(false);
+
+  // Case 3: child1 and grand_child2 clip. In this case, descendants of these
+  // layers have their visible rects clipped by them; without surfaces, these
+  // rects are also clipped by the viewport. Similarly, descendants of these
+  // layers have their drawable content rects clipped by them.
+  child1->SetMasksToBounds(true);
+  grand_child2->SetMasksToBounds(true);
+  host_impl()->active_tree()->property_trees()->needs_rebuild = true;
+  ExecuteCalculateDrawProperties(root);
+  EXPECT_EQ(gfx::Rect(100, 100), root->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(98, 98), parent->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(800, 800), child1->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(800, 800), child2->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(792, 792), grand_child1->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(1500, 1500), grand_child2->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(776, 776), leaf_node1->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(1491, 1491), leaf_node2->visible_layer_rect());
+
+  EXPECT_EQ(gfx::Rect(100, 100), root->drawable_content_rect());
+  EXPECT_EQ(gfx::Rect(2, 2, 400, 400), parent->drawable_content_rect());
+  EXPECT_EQ(gfx::Rect(800, 800), child1->drawable_content_rect());
+  EXPECT_EQ(gfx::Rect(800, 800), child2->drawable_content_rect());
+  EXPECT_EQ(gfx::Rect(8, 8, 792, 792), grand_child1->drawable_content_rect());
+  EXPECT_EQ(gfx::Rect(7, 7, 1500, 1500), grand_child2->drawable_content_rect());
+  EXPECT_EQ(gfx::Rect(24, 24, 776, 776), leaf_node1->drawable_content_rect());
+  EXPECT_EQ(gfx::Rect(16, 16, 1491, 1491), leaf_node2->drawable_content_rect());
+
+  ExecuteCalculateDrawPropertiesWithoutSeparateSurfaces(root);
+  EXPECT_EQ(gfx::Rect(100, 100), root->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(98, 98), parent->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(94, 94), child1->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(95, 95), child2->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(86, 86), grand_child1->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(88, 88), grand_child2->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(70, 70), leaf_node1->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(79, 79), leaf_node2->visible_layer_rect());
+
+  EXPECT_EQ(gfx::Rect(100, 100), root->drawable_content_rect());
+  EXPECT_EQ(gfx::Rect(2, 2, 400, 400), parent->drawable_content_rect());
+  EXPECT_EQ(gfx::Rect(6, 6, 800, 800), child1->drawable_content_rect());
+  EXPECT_EQ(gfx::Rect(5, 5, 800, 800), child2->drawable_content_rect());
+  EXPECT_EQ(gfx::Rect(14, 14, 792, 792), grand_child1->drawable_content_rect());
+  EXPECT_EQ(gfx::Rect(12, 12, 1500, 1500),
+            grand_child2->drawable_content_rect());
+  EXPECT_EQ(gfx::Rect(30, 30, 776, 776), leaf_node1->drawable_content_rect());
+  EXPECT_EQ(gfx::Rect(21, 21, 1491, 1491), leaf_node2->drawable_content_rect());
 }
 
 TEST_F(LayerTreeHostCommonTest,
