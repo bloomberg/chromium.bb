@@ -170,7 +170,7 @@ private:
     RefPtrWillBeMember<CSSCalcValue> m_calcValue;
 };
 
-static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeInteger(CSSParserTokenRange& range, CSSParserMode cssParserMode, double minimumValue = -std::numeric_limits<double>::max())
+static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeInteger(CSSParserTokenRange& range, double minimumValue = -std::numeric_limits<double>::max())
 {
     const CSSParserToken& token = range.peek();
     if (token.type() == NumberToken) {
@@ -188,6 +188,11 @@ static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeInteger(CSSParserTokenRa
         return calcParser.consumeNumber();
     }
     return nullptr;
+}
+
+static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumePositiveInteger(CSSParserTokenRange& range)
+{
+    return consumeInteger(range, 1);
 }
 
 static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeNumber(CSSParserTokenRange& range, ValueRange valueRange)
@@ -596,7 +601,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeSpacing(CSSParserTokenRange& rang
 
 static PassRefPtrWillBeRawPtr<CSSValue> consumeTabSize(CSSParserTokenRange& range, CSSParserMode cssParserMode)
 {
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> parsedValue = consumeInteger(range, cssParserMode, 0);
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> parsedValue = consumeInteger(range, 0);
     if (parsedValue)
         return parsedValue;
     return consumeLength(range, cssParserMode, ValueRangeNonNegative);
@@ -655,7 +660,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeCounter(CSSParserTokenRange& rang
         if (!counterName)
             return nullptr;
         int i = defaultValue;
-        if (RefPtrWillBeRawPtr<CSSPrimitiveValue> counterValue = consumeInteger(range, cssParserMode))
+        if (RefPtrWillBeRawPtr<CSSPrimitiveValue> counterValue = consumeInteger(range))
             i = clampTo<int>(counterValue->getDoubleValue());
         list->append(CSSValuePair::create(counterName.release(),
             cssValuePool().createValue(i, CSSPrimitiveValue::UnitType::Number),
@@ -875,7 +880,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeTouchAction(CSSParserTokenRange& 
     return list.release();
 }
 
-static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeLineClamp(CSSParserTokenRange& range, CSSParserMode cssParserMode)
+static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeLineClamp(CSSParserTokenRange& range)
 {
     if (range.peek().type() != PercentageToken && range.peek().type() != NumberToken)
         return nullptr;
@@ -883,7 +888,7 @@ static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeLineClamp(CSSParserToken
     if (clampValue)
         return clampValue;
     // When specifying number of lines, don't allow 0 as a valid value.
-    return consumeInteger(range, cssParserMode, 1);
+    return consumeInteger(range, 1);
 }
 
 static PassRefPtrWillBeRawPtr<CSSValue> consumeLocale(CSSParserTokenRange& range)
@@ -891,6 +896,47 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeLocale(CSSParserTokenRange& range
     if (range.peek().id() == CSSValueAuto)
         return consumeIdent(range);
     return consumeString(range);
+}
+
+static PassRefPtrWillBeRawPtr<CSSValue> consumeColumnWidth(CSSParserTokenRange& range)
+{
+    if (range.peek().id() == CSSValueAuto)
+        return consumeIdent(range);
+    // Always parse lengths in strict mode here, since it would be ambiguous otherwise when used in
+    // the 'columns' shorthand property.
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> columnWidth = consumeLength(range, HTMLStandardMode, ValueRangeNonNegative);
+    if (!columnWidth || (!columnWidth->isCalculated() && columnWidth->getDoubleValue() == 0))
+        return nullptr;
+    return columnWidth.release();
+}
+
+static PassRefPtrWillBeRawPtr<CSSValue> consumeColumnCount(CSSParserTokenRange& range)
+{
+    if (range.peek().id() == CSSValueAuto)
+        return consumeIdent(range);
+    return consumePositiveInteger(range);
+}
+
+static PassRefPtrWillBeRawPtr<CSSValue> consumeColumnGap(CSSParserTokenRange& range, CSSParserMode cssParserMode)
+{
+    if (range.peek().id() == CSSValueNormal)
+        return consumeIdent(range);
+    return consumeLength(range, cssParserMode, ValueRangeNonNegative);
+}
+
+static PassRefPtrWillBeRawPtr<CSSValue> consumeColumnSpan(CSSParserTokenRange& range, CSSParserMode cssParserMode)
+{
+    CSSValueID id = range.peek().id();
+    if (id == CSSValueAll || id == CSSValueNone)
+        return consumeIdent(range);
+    if (range.peek().type() != NumberToken)
+        return nullptr;
+    if (RefPtrWillBeRawPtr<CSSPrimitiveValue> spanValue = consumeInteger(range)) {
+        // 1 (will be dropped in the unprefixed property).
+        if (spanValue->getIntValue() == 1)
+            return spanValue.release();
+    }
+    return nullptr;
 }
 
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSPropertyID propId)
@@ -957,12 +1003,20 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
     case CSSPropertyTouchAction:
         return consumeTouchAction(m_range);
     case CSSPropertyWebkitLineClamp:
-        return consumeLineClamp(m_range, m_context.mode());
+        return consumeLineClamp(m_range);
     case CSSPropertyWebkitFontSizeDelta:
         return consumeLength(m_range, m_context.mode(), ValueRangeAll, UnitlessQuirk::Allow);
     case CSSPropertyWebkitHyphenateCharacter:
     case CSSPropertyWebkitLocale:
         return consumeLocale(m_range);
+    case CSSPropertyWebkitColumnWidth:
+        return consumeColumnWidth(m_range);
+    case CSSPropertyWebkitColumnCount:
+        return consumeColumnCount(m_range);
+    case CSSPropertyWebkitColumnGap:
+        return consumeColumnGap(m_range, m_context.mode());
+    case CSSPropertyWebkitColumnSpan:
+        return consumeColumnSpan(m_range, m_context.mode());
     default:
         return nullptr;
     }
@@ -1297,6 +1351,37 @@ bool CSSPropertyParser::parseViewportDescriptor(CSSPropertyID propId, bool impor
     }
 }
 
+static void consumeColumnWidthOrCount(CSSParserTokenRange& range, CSSParserMode cssParserMode, RefPtrWillBeRawPtr<CSSValue> &columnWidth, RefPtrWillBeRawPtr<CSSValue> &columnCount)
+{
+    if (range.peek().id() == CSSValueAuto) {
+        consumeIdent(range);
+        return;
+    }
+    if (!columnWidth) {
+        if ((columnWidth = consumeColumnWidth(range)))
+            return;
+    }
+    if (!columnCount)
+        columnCount = consumeColumnCount(range);
+}
+
+bool CSSPropertyParser::consumeColumns(bool important)
+{
+    RefPtrWillBeRawPtr<CSSValue> columnWidth = nullptr;
+    RefPtrWillBeRawPtr<CSSValue> columnCount = nullptr;
+    consumeColumnWidthOrCount(m_range, m_context.mode(), columnWidth, columnCount);
+    consumeColumnWidthOrCount(m_range, m_context.mode(), columnWidth, columnCount);
+    if (!m_range.atEnd())
+        return false;
+    if (!columnWidth)
+        columnWidth = cssValuePool().createIdentifierValue(CSSValueAuto);
+    if (!columnCount)
+        columnCount = cssValuePool().createIdentifierValue(CSSValueAuto);
+    addProperty(CSSPropertyWebkitColumnWidth, columnWidth.release(), important);
+    addProperty(CSSPropertyWebkitColumnCount, columnCount.release(), important);
+    return true;
+}
+
 bool CSSPropertyParser::parseShorthand(CSSPropertyID propId, bool important)
 {
     m_range.consumeWhitespace();
@@ -1350,6 +1435,11 @@ bool CSSPropertyParser::parseShorthand(CSSPropertyID propId, bool important)
     }
     case CSSPropertyBorderSpacing:
         return consumeBorderSpacing(important);
+    case CSSPropertyWebkitColumns: {
+        // TODO(rwlbuis): investigate if this shorthand hack can be removed.
+        m_currentShorthand = oldShorthand;
+        return consumeColumns(important);
+    }
     default:
         m_currentShorthand = oldShorthand;
         return false;

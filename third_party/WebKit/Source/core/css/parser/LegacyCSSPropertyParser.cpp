@@ -1067,21 +1067,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
         ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
         return parseGridShorthand(important);
 
-    case CSSPropertyWebkitColumnCount:
-        parsedValue = parseColumnCount();
-        break;
-    case CSSPropertyWebkitColumnGap:         // normal | <length>
-        if (id == CSSValueNormal)
-            validPrimitive = true;
-        else
-            validPrimitive = validUnit(value, FLength | FNonNeg);
-        break;
-    case CSSPropertyWebkitColumnSpan: // none | all | 1 (will be dropped in the unprefixed property)
-        validPrimitive = id == CSSValueAll || id == CSSValueNone || (value->unit() == CSSPrimitiveValue::UnitType::Number && value->fValue == 1);
-        break;
-    case CSSPropertyWebkitColumnWidth:         // auto | <length>
-        parsedValue = parseColumnWidth();
-        break;
     // End of CSS3 properties
 
     case CSSPropertyWebkitAppRegion:
@@ -1162,8 +1147,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
         return parseShorthand(propId, flexFlowShorthand(), important);
     case CSSPropertyListStyle:
         return parseShorthand(propId, listStyleShorthand(), important);
-    case CSSPropertyWebkitColumns:
-        return parseColumnsShorthand(important);
     case CSSPropertyWebkitColumnRule:
         return parseShorthand(propId, webkitColumnRuleShorthand(), important);
     case CSSPropertyWebkitTextStroke:
@@ -1279,6 +1262,11 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyWebkitFontSizeDelta:
     case CSSPropertyWebkitHyphenateCharacter:
     case CSSPropertyWebkitLocale:
+    case CSSPropertyWebkitColumnWidth:
+    case CSSPropertyWebkitColumnCount:
+    case CSSPropertyWebkitColumns:
+    case CSSPropertyWebkitColumnGap:
+    case CSSPropertyWebkitColumnSpan:
         validPrimitive = false;
         break;
 
@@ -1618,65 +1606,6 @@ bool CSSPropertyParser::parseTransitionShorthand(bool important)
         addProperty(shorthand.properties()[i], values[i].release(), important);
     }
 
-    return true;
-}
-
-PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseColumnWidth()
-{
-    CSSParserValue* value = m_valueList->current();
-    // Always parse lengths in strict mode here, since it would be ambiguous otherwise when used in
-    // the 'columns' shorthand property.
-    if (value->id == CSSValueAuto || (validUnit(value, FLength | FNonNeg, HTMLStandardMode) && (m_parsedCalculation || value->fValue != 0))) {
-        RefPtrWillBeRawPtr<CSSValue> parsedValue = parseValidPrimitive(value->id, value);
-        m_valueList->next();
-        return parsedValue;
-    }
-    return nullptr;
-}
-
-PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseColumnCount()
-{
-    CSSParserValue* value = m_valueList->current();
-    if (value->id == CSSValueAuto || validUnit(value, FPositiveInteger)) {
-        RefPtrWillBeRawPtr<CSSValue> parsedValue = parseValidPrimitive(value->id, value);
-        m_valueList->next();
-        return parsedValue;
-    }
-    return nullptr;
-}
-
-bool CSSPropertyParser::parseColumnsShorthand(bool important)
-{
-    RefPtrWillBeRawPtr<CSSValue> columnWidth = nullptr;
-    RefPtrWillBeRawPtr<CSSValue> columnCount = nullptr;
-
-    for (unsigned propertiesParsed = 0; CSSParserValue* value = m_valueList->current(); propertiesParsed++) {
-        if (propertiesParsed >= 2)
-            return false; // Too many values for this shorthand. Invalid declaration.
-        if (value->id == CSSValueAuto) {
-            // Skip 'auto' as we will use it for initial value if no width/count was parsed.
-            m_valueList->next();
-        } else {
-            if (!columnWidth) {
-                if ((columnWidth = parseColumnWidth()))
-                    continue;
-            }
-            if (!columnCount) {
-                if ((columnCount = parseColumnCount()))
-                    continue;
-            }
-            // If we didn't find at least one match, this is an
-            // invalid shorthand and we have to ignore it.
-            return false;
-        }
-    }
-
-    if (!columnWidth)
-        columnWidth = cssValuePool().createIdentifierValue(CSSValueAuto);
-    addProperty(CSSPropertyWebkitColumnWidth, columnWidth, important);
-    if (!columnCount)
-        columnCount = cssValuePool().createIdentifierValue(CSSValueAuto);
-    addProperty(CSSPropertyWebkitColumnCount, columnCount, important);
     return true;
 }
 

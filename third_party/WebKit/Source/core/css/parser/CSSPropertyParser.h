@@ -158,9 +158,7 @@ private:
     bool parseAnimationShorthand(bool useLegacyParsing, bool important);
     bool parseTransitionShorthand(bool important);
 
-    PassRefPtrWillBeRawPtr<CSSValue> parseColumnWidth();
-    PassRefPtrWillBeRawPtr<CSSValue> parseColumnCount();
-    bool parseColumnsShorthand(bool important);
+    bool consumeColumns(bool important);
 
     PassRefPtrWillBeRawPtr<CSSValue> parseGridPosition();
     bool parseIntegerOrCustomIdentFromGridPosition(RefPtrWillBeRawPtr<CSSPrimitiveValue>& numericValue, RefPtrWillBeRawPtr<CSSCustomIdentValue>& gridLineName);
