@@ -6,6 +6,7 @@
 #include "base/callback.h"
 #include "base/containers/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
+#include "components/mus/public/cpp/scoped_window_ptr.h"
 #include "components/mus/public/cpp/types.h"
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_observer.h"
@@ -353,6 +354,8 @@ class PDFView : public mojo::ApplicationDelegate,
       roots.first->RemoveObserver(this);
       delete roots.second;
     }
+    for (auto& roots : embedder_for_roots_)
+      mus::ScopedWindowPtr::DeleteWindowOrWindowManager(roots.first);
   }
 
  private:
