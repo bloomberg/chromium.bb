@@ -125,6 +125,12 @@ void KeyboardEvdev::GetAutoRepeatRate(base::TimeDelta* delay,
   *interval = repeat_interval_;
 }
 
+bool KeyboardEvdev::SetCurrentLayoutByName(const std::string& layout_name) {
+  bool result = keyboard_layout_engine_->SetCurrentLayoutByName(layout_name);
+  RefreshModifiers();
+  return result;
+}
+
 void KeyboardEvdev::UpdateModifier(int modifier_flag, bool down) {
   if (modifier_flag == EF_NONE)
     return;
@@ -144,6 +150,28 @@ void KeyboardEvdev::UpdateModifier(int modifier_flag, bool down) {
     modifiers_->UpdateModifier(EVDEV_MODIFIER_MOD3, down);
   else
     modifiers_->UpdateModifier(modifier, down);
+}
+
+void KeyboardEvdev::RefreshModifiers() {
+  // Release all keyboard modifiers.
+  modifiers_->ResetKeyboardModifiers();
+  // Press modifiers for currently held keys.
+  for (int key = 0; key < KEY_CNT; ++key) {
+    if (!key_state_.test(key))
+      continue;
+    DomCode dom_code =
+        KeycodeConverter::NativeKeycodeToDomCode(EvdevCodeToNativeCode(key));
+    if (dom_code == DomCode::DOM_CODE_NONE)
+      continue;
+    DomKey dom_key;
+    KeyboardCode keycode;
+    if (!keyboard_layout_engine_->Lookup(dom_code, EF_NONE, &dom_key, &keycode))
+      continue;
+    int flag = ModifierDomKeyToEventFlag(dom_key);
+    if (flag == EF_NONE)
+      continue;
+    UpdateModifier(flag, true);
+  }
 }
 
 void KeyboardEvdev::UpdateKeyRepeat(unsigned int key,

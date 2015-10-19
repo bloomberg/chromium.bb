@@ -52,6 +52,7 @@ class OZONE_EXPORT InputController {
                                  const base::TimeDelta& interval) = 0;
   virtual void GetAutoRepeatRate(base::TimeDelta* delay,
                                  base::TimeDelta* interval) = 0;
+  virtual bool SetCurrentLayoutByName(const std::string& layout_name) = 0;
 
   // Touchpad settings.
   virtual void SetTouchpadSensitivity(int value) = 0;

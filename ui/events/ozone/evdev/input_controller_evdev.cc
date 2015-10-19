@@ -82,6 +82,11 @@ void InputControllerEvdev::GetAutoRepeatRate(base::TimeDelta* delay,
   keyboard_->GetAutoRepeatRate(delay, interval);
 }
 
+bool InputControllerEvdev::SetCurrentLayoutByName(
+    const std::string& layout_name) {
+  return keyboard_->SetCurrentLayoutByName(layout_name);
+}
+
 void InputControllerEvdev::SetInternalTouchpadEnabled(bool enabled) {
   input_device_settings_.enable_internal_touchpad = enabled;
   ScheduleUpdateDeviceSettings();

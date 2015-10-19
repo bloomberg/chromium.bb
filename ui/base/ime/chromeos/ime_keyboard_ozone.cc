@@ -3,9 +3,6 @@
 // found in the LICENSE file.
 
 #include "ui/base/ime/chromeos/ime_keyboard_ozone.h"
-#include "ui/events/ozone/layout/keyboard_layout_engine.h"
-#include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
-
 
 #include "ui/ozone/public/input_controller.h"
 #include "ui/ozone/public/ozone_platform.h"
@@ -24,9 +21,7 @@ ImeKeyboardOzone::~ImeKeyboardOzone() {
 bool ImeKeyboardOzone::SetCurrentKeyboardLayoutByName(
     const std::string& layout_name) {
   last_layout_ = layout_name;
-  ui::KeyboardLayoutEngine* keyboard_engine = ui::KeyboardLayoutEngineManager::
-      GetKeyboardLayoutEngine();
-  keyboard_engine->SetCurrentLayoutByName(layout_name);
+  input_controller_->SetCurrentLayoutByName(layout_name);
   return true;
 }
 

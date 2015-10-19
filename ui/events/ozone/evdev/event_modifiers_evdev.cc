@@ -82,6 +82,21 @@ void EventModifiersEvdev::UpdateFlags(unsigned int modifier) {
 
 int EventModifiersEvdev::GetModifierFlags() { return modifier_flags_; }
 
+void EventModifiersEvdev::ResetKeyboardModifiers() {
+  static const int kKeyboardModifiers[] = {
+    EVDEV_MODIFIER_SHIFT,
+    EVDEV_MODIFIER_CONTROL,
+    EVDEV_MODIFIER_ALT,
+    EVDEV_MODIFIER_COMMAND,
+    EVDEV_MODIFIER_ALTGR,
+    EVDEV_MODIFIER_MOD3
+  };
+  for (const int modifier : kKeyboardModifiers) {
+    modifiers_down_[modifier] = 0;
+    UpdateFlags(modifier);
+  }
+}
+
 // static
 int EventModifiersEvdev::GetEventFlagFromModifier(unsigned int modifier) {
   return kEventFlagFromModifiers[modifier];

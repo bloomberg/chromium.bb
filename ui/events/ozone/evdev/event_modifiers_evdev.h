@@ -59,6 +59,9 @@ class EVENTS_OZONE_EVDEV_EXPORT EventModifiersEvdev {
   // Return current flags to use for incoming events.
   int GetModifierFlags();
 
+  // Release modifier keys.
+  void ResetKeyboardModifiers();
+
   // Return the mask for the specified modifier.
   static int GetEventFlagFromModifier(unsigned int modifier);
 

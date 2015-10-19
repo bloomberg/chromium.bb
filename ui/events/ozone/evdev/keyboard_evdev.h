@@ -56,8 +56,12 @@ class EVENTS_OZONE_EVDEV_EXPORT KeyboardEvdev {
                          const base::TimeDelta& interval);
   void GetAutoRepeatRate(base::TimeDelta* delay, base::TimeDelta* interval);
 
+  // Handle keyboard layout changes.
+  bool SetCurrentLayoutByName(const std::string& layout_name);
+
  private:
   void UpdateModifier(int modifier_flag, bool down);
+  void RefreshModifiers();
   void UpdateCapsLockLed();
   void UpdateKeyRepeat(unsigned int key,
                        bool down,
