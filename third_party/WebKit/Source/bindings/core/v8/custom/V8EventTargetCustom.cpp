@@ -42,6 +42,10 @@ void V8EventTarget::addEventListenerMethodPrologueCustom(const v8::FunctionCallb
         UseCounter::countIfNotPrivateScript(info.GetIsolate(), callingExecutionContext(info.GetIsolate()),
             info.Length() == 0 ? UseCounter::AddEventListenerNoArguments : UseCounter::AddEventListenerOneArgument);
     }
+    if (info.Length() >= 3 && info[2]->IsObject()) {
+        UseCounter::countIfNotPrivateScript(info.GetIsolate(), callingExecutionContext(info.GetIsolate()),
+            UseCounter::AddEventListenerThirdArgumentIsObject);
+    }
 }
 
 void V8EventTarget::addEventListenerMethodEpilogueCustom(const v8::FunctionCallbackInfo<v8::Value>& info, EventTarget* impl)
@@ -55,6 +59,10 @@ void V8EventTarget::removeEventListenerMethodPrologueCustom(const v8::FunctionCa
     if (info.Length() < 2) {
         UseCounter::countIfNotPrivateScript(info.GetIsolate(), callingExecutionContext(info.GetIsolate()),
             info.Length() == 0 ? UseCounter::RemoveEventListenerNoArguments : UseCounter::RemoveEventListenerOneArgument);
+    }
+    if (info.Length() >= 3 && info[2]->IsObject()) {
+        UseCounter::countIfNotPrivateScript(info.GetIsolate(), callingExecutionContext(info.GetIsolate()),
+            UseCounter::RemoveEventListenerThirdArgumentIsObject);
     }
 }
 

@@ -60511,6 +60511,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="964" label="CredentialManagerRequireUserMediation"/>
   <int value="965" label="RequestAutocomplete"/>
   <int value="966" label="BlockableMixedContentInSubframeBlocked"/>
+  <int value="967" label="AddEventListenerThirdArgumentIsObject"/>
+  <int value="968" label="RemoveEventListenerThirdArgumentIsObject"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">

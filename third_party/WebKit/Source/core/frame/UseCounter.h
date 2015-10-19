@@ -844,6 +844,8 @@ public:
 
         RequestAutocomplete = 965,
         BlockableMixedContentInSubframeBlocked = 966,
+        AddEventListenerThirdArgumentIsObject = 967,
+        RemoveEventListenerThirdArgumentIsObject = 968,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
