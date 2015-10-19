@@ -2588,7 +2588,9 @@ INSTANTIATE_TEST_CASE_P(WebViewScrollBubbling,
                         WebViewGuestScrollTest,
                         ::testing::Bool());
 
-IN_PROC_BROWSER_TEST_P(WebViewGuestScrollTest, TestGuestWheelScrollsBubble) {
+// Flaky on all platforms, see http://crbug.com/544782.
+IN_PROC_BROWSER_TEST_P(WebViewGuestScrollTest,
+                       DISABLED_TestGuestWheelScrollsBubble) {
   LoadAppWithGuest("web_view/scrollable_embedder_and_guest");
 
   if (GetParam())
