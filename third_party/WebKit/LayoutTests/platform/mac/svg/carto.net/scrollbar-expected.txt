@@ -31,9 +31,9 @@ layer at (0,0) size 800x600
           LayoutSVGText {text} at (2251,148) size 81x19 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (0,0) size 81x18
               chunk 1 (middle anchor) text run 1 at (2251.39,162.60) startOffset 0 endOffset 11 width 80.02: "Crap Grisch"
-          LayoutSVGText {text} at (2379,135) size 68x19 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (0,0) size 67x18
-              chunk 1 (middle anchor) text run 1 at (2379.36,149.60) startOffset 0 endOffset 9 width 66.68: "Piz Tom\x{FC}l"
+          LayoutSVGText {text} at (2380,135) size 66x19 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (0,0) size 66x18
+              chunk 1 (middle anchor) text run 1 at (2380.19,149.60) startOffset 0 endOffset 9 width 65.02: "Piz Tom\x{FC}l"
           LayoutSVGText {text} at (1735,98) size 56x19 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (0,0) size 56x18
               chunk 1 (middle anchor) text run 1 at (1735.09,112.60) startOffset 0 endOffset 8 width 55.03: "Fruntalp"
@@ -55,9 +55,9 @@ layer at (0,0) size 800x600
         LayoutSVGRect {rect} at (759,207) size 14x14 [stroke={[type=SOLID] [color=#696969]}] [fill={[type=SOLID] [color=#D3D3D3]}] [x=950.50] [y=234.50] [width=15.00] [height=15.00]
         LayoutSVGPath {path} at (763,63) size 7x7 [fill={[type=SOLID] [color=#696969]}] [data="M 958 54.5 L 962.5 62.5 L 954.5 62.5 Z"]
         LayoutSVGPath {path} at (763,210) size 7x8 [fill={[type=SOLID] [color=#696969]}] [data="M 958 246.5 L 954.5 238.5 L 962.5 238.5 Z"]
-    LayoutSVGText {text} at (439,268) size 511x15 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (0,0) size 511x14
-        chunk 1 (end anchor) text run 1 at (439.56,280.00) startOffset 0 endOffset 89 width 510.44: "Panorama Zervreilastausee, Vals, Graub\x{FC}nden, Switzerland, taken 2006-02-04 (\x{A9} A. Neumann)"
+    LayoutSVGText {text} at (440,268) size 510x15 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (0,0) size 510x14
+        chunk 1 (end anchor) text run 1 at (440.45,280.00) startOffset 0 endOffset 89 width 509.55: "Panorama Zervreilastausee, Vals, Graub\x{FC}nden, Switzerland, taken 2006-02-04 (\x{A9} A. Neumann)"
     LayoutSVGViewportContainer {svg} at (40,300) size 760x300
       LayoutSVGContainer {g} at (40,300) size 760x300
         LayoutSVGImage {image} at (40,300) size 760x300
@@ -78,7 +78,7 @@ layer at (0,0) size 800x600
         LayoutSVGPath {path} at (762,454) size 6x5 [fill={[type=SOLID] [color=#696969]}] [data="M 955.5 548.5 L 953.5 542.5 L 959.5 542.5 Z"]
     LayoutSVGText {text} at (444,563) size 506x15 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (0,0) size 506x14
-        chunk 1 (end anchor) text run 1 at (444.25,575.00) startOffset 0 endOffset 94 width 505.75: "Panorama Chalchtrittli, Tierfed, Linthal, Glarus, Switzerland, taken 2005-09-03 (\x{A9} A. Neumann)"
+        chunk 1 (end anchor) text run 1 at (444.70,575.00) startOffset 0 endOffset 94 width 505.30: "Panorama Chalchtrittli, Tierfed, Linthal, Glarus, Switzerland, taken 2005-09-03 (\x{A9} A. Neumann)"
     LayoutSVGContainer {g} at (39,483) size 186x18
       LayoutSVGContainer {g} at (39,483) size 90x18
         LayoutSVGRect {rect} at (39,483) size 89x17 [fill={[type=SOLID] [color=#FFFFFF]}] [x=49.00] [y=579.00] [width=110.00] [height=20.00]

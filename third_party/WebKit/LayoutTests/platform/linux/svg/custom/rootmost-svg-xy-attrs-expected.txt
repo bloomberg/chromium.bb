@@ -4,8 +4,8 @@ layer at (0,0) size 800x310
   LayoutBlockFlow {html} at (0,0) size 800x309.88
     LayoutBlockFlow {body} at (8,21.44) size 784x280.44
       LayoutBlockFlow {h1} at (0,0) size 784x37
-        LayoutText {#text} at (0,0) size 749x36
-          text run at (0,0) width 749: "Test case for x/y attributes on root-most <svg> element"
+        LayoutText {#text} at (0,0) size 746x36
+          text run at (0,0) width 746: "Test case for x/y attributes on root-most <svg> element"
       LayoutBlockFlow {p} at (0,58.44) size 784x60
         LayoutText {#text} at (0,0) size 27x19
           text run at (0,0) width 27: "The "

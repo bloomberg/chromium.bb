@@ -2,12 +2,12 @@ layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (0,6) size 534x578
-    LayoutSVGText {text} at (110,6) size 112x17 contains 1 chunk(s)
+    LayoutSVGText {text} at (110,6) size 111x17 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (0,0) size 111x17
+        chunk 1 text run 1 at (110.00,20.00) startOffset 0 endOffset 19 width 110.60: "Visibility: visible"
+    LayoutSVGText {text} at (340,6) size 112x17 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (0,0) size 112x17
-        chunk 1 text run 1 at (110.00,20.00) startOffset 0 endOffset 19 width 111.56: "Visibility: visible"
-    LayoutSVGText {text} at (340,6) size 113x17 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (0,0) size 113x17
-        chunk 1 text run 1 at (340.00,20.00) startOffset 0 endOffset 18 width 112.45: "Visibility: hidden"
+        chunk 1 text run 1 at (340.00,20.00) startOffset 0 endOffset 18 width 111.48: "Visibility: hidden"
     LayoutSVGContainer {g} at (0,22) size 534x562
       LayoutSVGText {text} at (0,46) size 28x17 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 28x17

@@ -4,8 +4,8 @@ layer at (0,0) size 800x408
   LayoutBlockFlow {html} at (0,0) size 800x408
     LayoutBlockFlow {body} at (0,16) size 800x392
       LayoutBlockFlow {p} at (0,0) size 800x18
-        LayoutText {#text} at (0,0) size 456x18
-          text run at (0,0) width 456: "The first two texts should look identical, as there is no shadow applied."
+        LayoutText {#text} at (0,0) size 455x18
+          text run at (0,0) width 455: "The first two texts should look identical, as there is no shadow applied."
       LayoutBlockFlow (anonymous) at (0,34) size 800x154
         LayoutSVGRoot {svg} at (20,121) size 717x56
           LayoutSVGText {text} at (20,21) size 717x56 contains 1 chunk(s)
@@ -27,8 +27,8 @@ layer at (0,0) size 800x408
               chunk 1 text run 1 at (539.60,66.00) startOffset 0 endOffset 7 width 197.34: "shadows"
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {p} at (0,204) size 800x18
-        LayoutText {#text} at (0,0) size 568x18
-          text run at (0,0) width 568: "The next two texts have subtle differences, as the stroke/fill is painted seperated in SVG."
+        LayoutText {#text} at (0,0) size 567x18
+          text run at (0,0) width 567: "The next two texts have subtle differences, as the stroke/fill is painted seperated in SVG."
       LayoutBlockFlow (anonymous) at (0,238) size 800x154
         LayoutSVGRoot {svg} at (0,308) size 744x89
           LayoutSVGText {text} at (20,21) size 717x56 contains 1 chunk(s)

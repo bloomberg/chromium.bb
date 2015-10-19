@@ -3,14 +3,14 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x410
   LayoutBlockFlow {HTML} at (0,0) size 800x410
     LayoutBlockFlow {BODY} at (8,8) size 784x394
-      LayoutText {#text} at (0,0) size 458x17
-        text run at (0,0) width 458: "Test for crbug.com/56580: There should be 9 highlighted instances of \""
+      LayoutText {#text} at (0,0) size 457x17
+        text run at (0,0) width 457: "Test for crbug.com/56580: There should be 9 highlighted instances of \""
       LayoutInline {SPAN} at (0,0) size 46x17
-        LayoutText {#text} at (457,0) size 46x17
-          text run at (457,0) width 46: "findme"
-      LayoutText {#text} at (502,0) size 758x35
-        text run at (502,0) width 138: "\". The 6th higlighted "
-        text run at (639,0) width 119: "instance should be"
+        LayoutText {#text} at (456,0) size 46x17
+          text run at (456,0) width 46: "findme"
+      LayoutText {#text} at (501,0) size 757x35
+        text run at (501,0) width 138: "\". The 6th higlighted "
+        text run at (638,0) width 119: "instance should be"
         text run at (0,18) width 43: "active."
       LayoutBR {BR} at (42,18) size 1x17
       LayoutBR {BR} at (0,36) size 0x17
@@ -49,8 +49,8 @@ layer at (0,0) size 800x410
             chunk 1 text run 1 at (10.00,100.00) startOffset 0 endOffset 23 width 138.00: "Findme in a typewriter!"
         LayoutSVGContainer {g} at (28,222) size 202x72 [transform={m=((0.30,0.00)(0.00,0.30)) t=(0.00,120.00)}]
           LayoutSVGText {text} at (69,14) size 669x239 contains 1 chunk(s)
-            LayoutSVGTextPath {textPath} at (0,0) size 669x238
-              LayoutSVGInlineText {#text} at (0,0) size 669x238
+            LayoutSVGTextPath {textPath} at (0,0) size 668x238
+              LayoutSVGInlineText {#text} at (0,0) size 668x238
                 chunk 1 text run 1 at (109.48,190.53) startOffset 0 endOffset 1 width 26.67: "F"
                 chunk 1 text run 2 at (122.50,177.58) startOffset 1 endOffset 2 width 10.00: "i"
                 chunk 1 text run 3 at (135.53,164.80) startOffset 2 endOffset 3 width 26.67: "n"
@@ -74,15 +74,15 @@ layer at (0,0) size 800x410
                 chunk 1 text run 21 at (479.18,175.50) startOffset 20 endOffset 21 width 26.67: "d"
                 chunk 1 text run 22 at (495.84,189.32) startOffset 21 endOffset 22 width 16.67: " "
                 chunk 1 text run 23 at (513.09,202.37) startOffset 22 endOffset 23 width 26.67: "y"
-                chunk 1 text run 24 at (535.45,217.04) startOffset 23 endOffset 24 width 26.67: "o"
-                chunk 1 text run 25 at (559.16,229.30) startOffset 24 endOffset 25 width 26.67: "u"
-                chunk 1 text run 26 at (579.51,236.66) startOffset 25 endOffset 26 width 16.67: " "
-                chunk 1 text run 27 at (595.71,240.18) startOffset 26 endOffset 27 width 16.67: "f"
-                chunk 1 text run 28 at (608.98,241.37) startOffset 27 endOffset 28 width 10.00: "i"
-                chunk 1 text run 29 at (627.25,240.32) startOffset 28 endOffset 29 width 26.67: "n"
-                chunk 1 text run 30 at (652.86,233.10) startOffset 29 endOffset 30 width 26.67: "d"
-                chunk 1 text run 31 at (680.18,217.26) startOffset 30 endOffset 31 width 36.67: "m"
-                chunk 1 text run 32 at (703.93,196.12) startOffset 31 endOffset 32 width 26.67: "e"
-                chunk 1 text run 33 at (722.35,179.24) startOffset 32 endOffset 33 width 23.33: "?"
+                chunk 1 text run 24 at (535.29,216.95) startOffset 23 endOffset 24 width 26.29: "o"
+                chunk 1 text run 25 at (558.82,229.15) startOffset 24 endOffset 25 width 26.67: "u"
+                chunk 1 text run 26 at (579.15,236.56) startOffset 25 endOffset 26 width 16.67: " "
+                chunk 1 text run 27 at (595.34,240.13) startOffset 26 endOffset 27 width 16.67: "f"
+                chunk 1 text run 28 at (608.60,241.36) startOffset 27 endOffset 28 width 10.00: "i"
+                chunk 1 text run 29 at (626.88,240.37) startOffset 28 endOffset 29 width 26.67: "n"
+                chunk 1 text run 30 at (652.51,233.25) startOffset 29 endOffset 30 width 26.67: "d"
+                chunk 1 text run 31 at (679.87,217.49) startOffset 30 endOffset 31 width 36.67: "m"
+                chunk 1 text run 32 at (703.66,196.38) startOffset 31 endOffset 32 width 26.67: "e"
+                chunk 1 text run 33 at (722.06,179.49) startOffset 32 endOffset 33 width 23.33: "?"
             LayoutSVGInlineText {#text} at (0,0) size 0x0
       LayoutText {#text} at (0,0) size 0x0

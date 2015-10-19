@@ -4,8 +4,8 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x36
-        LayoutText {#text} at (0,0) size 775x36
-          text run at (0,0) width 775: "This tests to see if HTMLEmbedElement.getSVGDocument() and HTMLObjectElement.getSVGDocument() work. You"
+        LayoutText {#text} at (0,0) size 773x36
+          text run at (0,0) width 773: "This tests to see if HTMLEmbedElement.getSVGDocument() and HTMLObjectElement.getSVGDocument() work. You"
           text run at (0,18) width 304: "should see SUCCESS printed twice below this:"
       LayoutBlockFlow (anonymous) at (0,52) size 784x58
         LayoutBR {BR} at (85,20) size 0x0

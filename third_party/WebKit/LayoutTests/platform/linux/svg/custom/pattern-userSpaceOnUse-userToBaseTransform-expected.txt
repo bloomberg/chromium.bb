@@ -18,7 +18,7 @@ layer at (0,0) size 800x363
       LayoutSVGRoot {svg} at (214,48) size 202x302
         LayoutSVGText {text} at (5,265) size 77x19 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 77x19
-            chunk 1 text run 1 at (5.00,280.00) startOffset 0 endOffset 11 width 77.00: "+Transforms"
+            chunk 1 text run 1 at (5.00,280.00) startOffset 0 endOffset 11 width 76.44: "+Transforms"
         LayoutSVGContainer {g} at (215,149) size 100x100 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,100.00)}]
           LayoutSVGRect {rect} at (215,149) size 100x50 [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=0.00] [width=100.00] [height=50.00]
           LayoutSVGRect {rect} at (215,149) size 100x100 [fill={[type=PATTERN] [id="pattern"]}] [x=0.00] [y=0.00] [width=100.00] [height=100.00]

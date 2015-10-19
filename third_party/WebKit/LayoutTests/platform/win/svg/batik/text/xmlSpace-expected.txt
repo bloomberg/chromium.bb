@@ -2,9 +2,9 @@ layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 450x500
   LayoutSVGRoot {svg} at (10,26) size 435x353
-    LayoutSVGText {text} at (129,26) size 192x17 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (0,0) size 191x17
-        chunk 1 (middle anchor) text run 1 at (129.84,40.00) startOffset 0 endOffset 26 width 190.32: "Test of xml:space handling"
+    LayoutSVGText {text} at (130,26) size 190x17 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (0,0) size 189x17
+        chunk 1 (middle anchor) text run 1 at (130.73,40.00) startOffset 0 endOffset 26 width 188.55: "Test of xml:space handling"
     LayoutSVGContainer {g} at (10,57) size 435x322
       LayoutSVGText {text} at (10,57) size 34x22 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 34x22

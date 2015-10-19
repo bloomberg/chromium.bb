@@ -1,25 +1,25 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 450x500
-  LayoutSVGRoot {svg} at (0,0) size 449x498
+  LayoutSVGRoot {svg} at (0,0) size 450x498
     LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
     LayoutSVGText {text} at (173,15) size 104x18 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (0,0) size 103x18
         chunk 1 (middle anchor) text run 1 at (173.50,30.00) startOffset 0 endOffset 15 width 103.00: "Text Position 2"
-    LayoutSVGContainer {g} at (50,59) size 399x295
+    LayoutSVGContainer {g} at (50,59) size 400x295
       LayoutSVGText {text} at (50,59) size 52x27 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 52x27
           chunk 1 text run 1 at (50.00,80.00) startOffset 0 endOffset 5 width 52.00: "Batik"
       LayoutSVGText {text} at (50,90) size 103x13 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 103x13
           chunk 1 text run 1 at (50.00,100.00) startOffset 0 endOffset 21 width 103.00: "<text x=\"100\" y=\"80\">"
-      LayoutSVGText {text} at (240,59) size 132x27 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 132x27
-          chunk 1 text run 1 at (240.00,80.00) startOffset 0 endOffset 1 width 16.00: "B"
-          chunk 1 text run 2 at (276.00,80.00) startOffset 1 endOffset 2 width 11.00: "a"
-          chunk 1 text run 3 at (307.00,80.00) startOffset 2 endOffset 3 width 7.00: "t"
-          chunk 1 text run 4 at (334.00,80.00) startOffset 3 endOffset 4 width 6.00: "i"
-          chunk 1 text run 5 at (360.00,80.00) startOffset 4 endOffset 5 width 12.00: "k"
+      LayoutSVGText {text} at (240,59) size 232x27 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (0,0) size 232x27
+          chunk 1 text run 1 at (240.00,80.00) startOffset 0 endOffset 1 width 36.00: "B"
+          chunk 1 text run 2 at (296.00,80.00) startOffset 1 endOffset 2 width 31.00: "a"
+          chunk 1 text run 3 at (347.00,80.00) startOffset 2 endOffset 3 width 27.00: "t"
+          chunk 1 text run 4 at (394.00,80.00) startOffset 3 endOffset 4 width 26.00: "i"
+          chunk 1 text run 5 at (440.00,80.00) startOffset 4 endOffset 5 width 32.00: "k"
       LayoutSVGText {text} at (240,90) size 195x13 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 195x13
           chunk 1 text run 1 at (240.00,100.00) startOffset 0 endOffset 41 width 195.00: "<text x=\"240\" y=\"80\" letter-spacing=\"20\">"
@@ -50,14 +50,14 @@ layer at (0,0) size 450x500
       LayoutSVGText {text} at (50,210) size 111x13 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 111x13
           chunk 1 text run 1 at (50.00,220.00) startOffset 0 endOffset 22 width 111.00: "<tspan x=\"50\" y=\"200\">"
-      LayoutSVGText {text} at (240,179) size 132x27 contains 1 chunk(s)
-        LayoutSVGTSpan {tspan} at (0,0) size 132x27
-          LayoutSVGInlineText {#text} at (0,0) size 132x27
-            chunk 1 text run 1 at (240.00,200.00) startOffset 0 endOffset 1 width 16.00: "B"
-            chunk 1 text run 2 at (276.00,200.00) startOffset 1 endOffset 2 width 11.00: "a"
-            chunk 1 text run 3 at (307.00,200.00) startOffset 2 endOffset 3 width 7.00: "t"
-            chunk 1 text run 4 at (334.00,200.00) startOffset 3 endOffset 4 width 6.00: "i"
-            chunk 1 text run 5 at (360.00,200.00) startOffset 4 endOffset 5 width 12.00: "k"
+      LayoutSVGText {text} at (240,179) size 232x27 contains 1 chunk(s)
+        LayoutSVGTSpan {tspan} at (0,0) size 232x27
+          LayoutSVGInlineText {#text} at (0,0) size 232x27
+            chunk 1 text run 1 at (240.00,200.00) startOffset 0 endOffset 1 width 36.00: "B"
+            chunk 1 text run 2 at (296.00,200.00) startOffset 1 endOffset 2 width 31.00: "a"
+            chunk 1 text run 3 at (347.00,200.00) startOffset 2 endOffset 3 width 27.00: "t"
+            chunk 1 text run 4 at (394.00,200.00) startOffset 3 endOffset 4 width 26.00: "i"
+            chunk 1 text run 5 at (440.00,200.00) startOffset 4 endOffset 5 width 32.00: "k"
       LayoutSVGText {text} at (240,210) size 209x13 contains 1 chunk(s)
         LayoutSVGTSpan {tspan} at (0,0) size 209x13
           LayoutSVGInlineText {#text} at (0,0) size 209x13
@@ -98,14 +98,14 @@ layer at (0,0) size 450x500
         LayoutSVGTSpan {tspan} at (0,0) size 137x13
           LayoutSVGInlineText {#text} at (33,11) size 137x13
             chunk 1 text run 1 at (83.00,351.00) startOffset 0 endOffset 27 width 137.00: "dx=\"0 10 20 30 40\" y=\"320\">"
-      LayoutSVGText {text} at (240,299) size 132x27 contains 1 chunk(s)
-        LayoutSVGTSpan {tspan} at (0,0) size 132x27
-          LayoutSVGInlineText {#text} at (0,0) size 132x27
-            chunk 1 text run 1 at (240.00,320.00) startOffset 0 endOffset 1 width 16.00: "B"
-            chunk 1 text run 2 at (276.00,320.00) startOffset 1 endOffset 2 width 11.00: "a"
-            chunk 1 text run 3 at (307.00,320.00) startOffset 2 endOffset 3 width 7.00: "t"
-            chunk 1 text run 4 at (334.00,320.00) startOffset 3 endOffset 4 width 6.00: "i"
-            chunk 1 text run 5 at (360.00,320.00) startOffset 4 endOffset 5 width 12.00: "k"
+      LayoutSVGText {text} at (240,299) size 182x27 contains 1 chunk(s)
+        LayoutSVGTSpan {tspan} at (0,0) size 182x27
+          LayoutSVGInlineText {#text} at (0,0) size 182x27
+            chunk 1 text run 1 at (240.00,320.00) startOffset 0 endOffset 1 width 26.00: "B"
+            chunk 1 text run 2 at (286.00,320.00) startOffset 1 endOffset 2 width 21.00: "a"
+            chunk 1 text run 3 at (327.00,320.00) startOffset 2 endOffset 3 width 17.00: "t"
+            chunk 1 text run 4 at (364.00,320.00) startOffset 3 endOffset 4 width 16.00: "i"
+            chunk 1 text run 5 at (400.00,320.00) startOffset 4 endOffset 5 width 22.00: "k"
       LayoutSVGText {text} at (240,330) size 192x24 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 168x13
           chunk 1 text run 1 at (240.00,340.00) startOffset 0 endOffset 34 width 168.00: "<tspan x=\"240\" dx=\"0 10 10 10 10\" "

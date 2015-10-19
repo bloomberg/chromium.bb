@@ -4,9 +4,9 @@ layer at (0,0) size 800x526
   LayoutBlockFlow {html} at (0,0) size 800x526
     LayoutBlockFlow {body} at (8,8) size 784x502
       LayoutBlockFlow (anonymous) at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 609x19
+        LayoutText {#text} at (0,0) size 608x19
           text run at (0,0) width 229: "The two blocks should look identical. "
-          text run at (229,0) width 380: "One uses an SVG, and the other just uses a normal HTML div."
+          text run at (229,0) width 379: "One uses an SVG, and the other just uses a normal HTML div."
       LayoutBlockFlow {p} at (0,36) size 784x20
         LayoutText {#text} at (0,0) size 338x19
           text run at (0,0) width 338: "There should be a red, white and blue pattern below this"

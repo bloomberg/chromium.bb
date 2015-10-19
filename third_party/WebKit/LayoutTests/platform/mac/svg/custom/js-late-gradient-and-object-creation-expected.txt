@@ -6,14 +6,14 @@
       "contentsOpaque": true,
       "drawsContent": true,
       "repaintRects": [
-        [0, 246, 759, 134],
-        [0, 246, 759, 134],
+        [0, 246, 753, 134],
+        [0, 246, 753, 134],
         [0, 129, 596, 135],
         [0, 129, 596, 135],
-        [0, 14, 759, 366],
-        [0, 14, 759, 366],
-        [0, 14, 449, 131],
-        [0, 14, 449, 131]
+        [0, 14, 753, 366],
+        [0, 14, 753, 366],
+        [0, 14, 443, 131],
+        [0, 14, 443, 131]
       ],
       "paintInvalidationClients": [
         "LayoutSVGResourceLinearGradient linearGradient id='fillLinearGradient'",

@@ -16,5 +16,5 @@ layer at (0,0) size 800x600
       LayoutSVGPath {line} at (113,93) size 14x14 [transform={m=((0.71,0.71)(-0.71,0.71)) t=(0.00,0.00)}] [stroke={[type=RADIAL-GRADIENT] [id="gradient2"]}] [fill={[type=SOLID] [color=#000000]}] [x1=-9.00] [y1=0.00] [x2=9.00] [y2=0.00]
       LayoutSVGPath {line} at (113,93) size 14x14 [transform={m=((0.71,-0.71)(0.71,0.71)) t=(0.00,0.00)}] [stroke={[type=RADIAL-GRADIENT] [id="gradient2"]}] [fill={[type=SOLID] [color=#000000]}] [x1=-9.00] [y1=0.00] [x2=9.00] [y2=0.00]
     LayoutSVGText {text} at (12,135) size 256x19 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (0,0) size 256x19
-        chunk 1 (middle anchor) text run 1 at (12.00,150.00) startOffset 0 endOffset 43 width 256.00: "You should see a green line, and a red star"
+      LayoutSVGInlineText {#text} at (0,0) size 255x19
+        chunk 1 (middle anchor) text run 1 at (12.80,150.00) startOffset 0 endOffset 43 width 254.40: "You should see a green line, and a red star"

@@ -13,10 +13,10 @@ layer at (0,0) size 800x600
         chunk 1 text run 1 at (605.00,60.00) startOffset 0 endOffset 11 width 66.00: "Hit Stroke:"
     LayoutSVGText {text} at (110,5) size 95x19 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (0,0) size 95x19
-        chunk 1 text run 1 at (110.00,20.00) startOffset 0 endOffset 19 width 95.00: "Visibility: visible"
+        chunk 1 text run 1 at (110.00,20.00) startOffset 0 endOffset 19 width 94.04: "Visibility: visible"
     LayoutSVGText {text} at (340,5) size 98x19 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (0,0) size 98x19
-        chunk 1 text run 1 at (340.00,20.00) startOffset 0 endOffset 18 width 98.00: "Visibility: hidden"
+        chunk 1 text run 1 at (340.00,20.00) startOffset 0 endOffset 18 width 97.04: "Visibility: hidden"
     LayoutSVGContainer {g} at (0,20) size 730x576
       LayoutSVGRect {rect} at (680,20) size 50x50 [fill={[type=SOLID] [color=#FFA500]}] [x=680.00] [y=20.00] [width=50.00] [height=50.00]
       LayoutSVGText {text} at (685,25) size 25x19 contains 1 chunk(s)

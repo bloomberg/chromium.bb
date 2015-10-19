@@ -12,8 +12,8 @@ layer at (0,0) size 785x600
             text run at (0,0) width 560: "error on line 6 at column 7: Opening and ending tag mismatch: use line 0 and svg"
             text run at (560,0) width 0: " "
         LayoutBlockFlow {h3} at (18,96.16) size 701x23
-          LayoutText {#text} at (0,0) size 430x22
-            text run at (0,0) width 430: "Below is a rendering of the page up to the first error."
+          LayoutText {#text} at (0,0) size 428x22
+            text run at (0,0) width 428: "Below is a rendering of the page up to the first error."
       LayoutBlockFlow (anonymous) at (0,155.88) size 769x605
         LayoutSVGRoot {svg} at (8,186) size 43x20
           LayoutSVGText {text} at (0,15) size 43x19 contains 1 chunk(s)

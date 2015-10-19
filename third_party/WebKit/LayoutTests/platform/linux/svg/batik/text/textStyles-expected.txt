@@ -8,8 +8,8 @@ layer at (0,0) size 450x500
           chunk 1 (middle anchor) text run 1 at (-21.00,0.00) startOffset 0 endOffset 6 width 42.00: "sample"
     LayoutSVGContainer {g} at (31,36) size 383x392
       LayoutSVGText {text} at (136,36) size 178x17 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 178x17
-          chunk 1 (middle anchor) text run 1 at (136.00,50.00) startOffset 0 endOffset 26 width 178.00: "Text Font Faces and Styles"
+        LayoutSVGInlineText {#text} at (0,0) size 177x17
+          chunk 1 (middle anchor) text run 1 at (136.83,50.00) startOffset 0 endOffset 26 width 176.34: "Text Font Faces and Styles"
       LayoutSVGText {text} at (184,65) size 82x12 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 82x12
           chunk 1 (middle anchor) text run 1 at (184.00,75.00) startOffset 0 endOffset 19 width 82.00: "Standard Font Faces"
@@ -114,7 +114,7 @@ layer at (0,0) size 450x500
           chunk 1 (middle anchor) text run 1 at (181.00,310.00) startOffset 0 endOffset 19 width 88.00: "Named Font Families"
       LayoutSVGText {text} at (128,315) size 194x12 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 194x12
-          chunk 1 (middle anchor) text run 1 at (128.00,325.00) startOffset 0 endOffset 49 width 194.00: "(Not all typefaces are available on all systems.)"
+          chunk 1 (middle anchor) text run 1 at (128.19,325.00) startOffset 0 endOffset 49 width 193.63: "(Not all typefaces are available on all systems.)"
       LayoutSVGContainer {g} at (59,333) size 82x45 [transform={m=((1.00,0.00)(0.00,1.00)) t=(100.00,360.00)}]
         LayoutSVGContainer {use} at (59,333) size 82x34
           LayoutSVGText {text} at (-41,-27) size 82x34 contains 1 chunk(s)
@@ -122,15 +122,15 @@ layer at (0,0) size 450x500
               chunk 1 (middle anchor) text run 1 at (-41.00,0.00) startOffset 0 endOffset 6 width 82.00: "sample"
         LayoutSVGText {text} at (-15,3) size 30x15 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 30x15
-            chunk 1 (middle anchor) text run 1 at (-15.00,15.00) startOffset 0 endOffset 5 width 30.00: "Times"
+            chunk 1 (middle anchor) text run 1 at (-14.79,15.00) startOffset 0 endOffset 5 width 29.58: "Times"
       LayoutSVGContainer {g} at (170,330) size 110x48 [transform={m=((1.00,0.00)(0.00,1.00)) t=(225.00,360.00)}]
         LayoutSVGContainer {use} at (170,330) size 110x36
           LayoutSVGText {text} at (-55,-30) size 110x36 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (0,0) size 109x36
               chunk 1 (middle anchor) text run 1 at (-54.50,0.00) startOffset 0 endOffset 6 width 109.00: "sample"
-        LayoutSVGText {text} at (-20,3) size 40x15 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 39x15
-            chunk 1 (middle anchor) text run 1 at (-19.50,15.00) startOffset 0 endOffset 7 width 39.00: "Verdana"
+        LayoutSVGText {text} at (-19,3) size 38x15 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 38x15
+            chunk 1 (middle anchor) text run 1 at (-18.83,15.00) startOffset 0 endOffset 7 width 37.67: "Verdana"
       LayoutSVGContainer {g} at (302,332) size 96x46 [transform={m=((1.00,0.00)(0.00,1.00)) t=(350.00,360.00)}]
         LayoutSVGContainer {use} at (302,332) size 96x35
           LayoutSVGText {text} at (-48,-28) size 96x35 contains 1 chunk(s)
@@ -156,7 +156,7 @@ layer at (0,0) size 450x500
         LayoutSVGText {text}
         LayoutSVGText {text} at (-64,3) size 128x15 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 128x15
-            chunk 1 (middle anchor) text run 1 at (-64.00,15.00) startOffset 0 endOffset 25 width 128.00: "AvantGarde (line-through)"
+            chunk 1 (middle anchor) text run 1 at (-63.55,15.00) startOffset 0 endOffset 25 width 127.11: "AvantGarde (line-through)"
     LayoutSVGContainer {use} at (0,0) size 448x498
       LayoutSVGContainer {g} at (0,0) size 448x498
         LayoutSVGRect {rect} at (0,0) size 448x498 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=446.00] [height=496.00]

@@ -22,8 +22,8 @@ layer at (173,32) size 454x454
 layer at (173,47) size 454x188
   LayoutBlockFlow (positioned) {H1} at (0,15.11) size 453.53x188 [color=#DD9955]
     LayoutInline {SPAN} at (0,0) size 343x191
-      LayoutText {#text} at (62,-2) size 343x191
-        text run at (62,-2) width 329: "CSS ZEN"
+      LayoutText {#text} at (63,-2) size 343x191
+        text run at (63,-2) width 328: "CSS ZEN"
         text run at (55,92) width 343: "GARDEN"
 layer at (173,119) size 454x22
   LayoutBlockFlow (positioned) {H2} at (0,87.47) size 453.53x22 [color=#EEFF00]

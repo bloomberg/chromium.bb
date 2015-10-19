@@ -3,14 +3,14 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x410
   LayoutBlockFlow {HTML} at (0,0) size 800x410
     LayoutBlockFlow {BODY} at (8,8) size 784x394
-      LayoutText {#text} at (0,0) size 458x18
-        text run at (0,0) width 458: "Test for crbug.com/56580: There should be 9 highlighted instances of \""
-      LayoutInline {SPAN} at (0,0) size 46x18
-        LayoutText {#text} at (457,0) size 46x18
-          text run at (457,0) width 46: "findme"
-      LayoutText {#text} at (502,0) size 758x36
-        text run at (502,0) width 138: "\". The 6th higlighted "
-        text run at (639,0) width 119: "instance should be"
+      LayoutText {#text} at (0,0) size 457x18
+        text run at (0,0) width 457: "Test for crbug.com/56580: There should be 9 highlighted instances of \""
+      LayoutInline {SPAN} at (0,0) size 45x18
+        LayoutText {#text} at (456,0) size 45x18
+          text run at (456,0) width 45: "findme"
+      LayoutText {#text} at (500,0) size 756x36
+        text run at (500,0) width 138: "\". The 6th higlighted "
+        text run at (637,0) width 119: "instance should be"
         text run at (0,18) width 43: "active."
       LayoutBR {BR} at (42,18) size 1x18
       LayoutBR {BR} at (0,36) size 0x18
@@ -19,31 +19,31 @@ layer at (0,0) size 800x410
       LayoutInline {SPAN} at (0,0) size 46x18
         LayoutText {#text} at (90,54) size 46x18
           text run at (90,54) width 46: "findme"
-      LayoutText {#text} at (135,54) size 91x18
-        text run at (135,54) width 91: " lorum ipsum "
+      LayoutText {#text} at (135,54) size 90x18
+        text run at (135,54) width 90: " lorum ipsum "
+      LayoutInline {SPAN} at (0,0) size 45x18
+        LayoutText {#text} at (224,54) size 45x18
+          text run at (224,54) width 45: "findme"
       LayoutInline {SPAN} at (0,0) size 46x18
-        LayoutText {#text} at (225,54) size 46x18
-          text run at (225,54) width 46: "findme"
-      LayoutInline {SPAN} at (0,0) size 46x18
-        LayoutText {#text} at (270,54) size 46x18
-          text run at (270,54) width 46: "findme"
-      LayoutText {#text} at (315,54) size 48x18
-        text run at (315,54) width 48: " lorum."
-      LayoutBR {BR} at (362,54) size 1x18
+        LayoutText {#text} at (268,54) size 46x18
+          text run at (268,54) width 46: "findme"
+      LayoutText {#text} at (313,54) size 47x18
+        text run at (313,54) width 47: " lorum."
+      LayoutBR {BR} at (359,54) size 1x18
       LayoutText {#text} at (0,72) size 53x18
         text run at (0,72) width 53: "longtext"
-      LayoutInline {SPAN} at (0,0) size 46x18
-        LayoutText {#text} at (52,72) size 46x18
-          text run at (52,72) width 46: "findme"
-      LayoutText {#text} at (97,72) size 45x18
-        text run at (97,72) width 45: "noyou."
-      LayoutBR {BR} at (141,72) size 1x18
-      LayoutSVGRoot {svg} at (18,134) size 228x160
+      LayoutInline {SPAN} at (0,0) size 45x18
+        LayoutText {#text} at (52,72) size 45x18
+          text run at (52,72) width 45: "findme"
+      LayoutText {#text} at (96,72) size 45x18
+        text run at (96,72) width 45: "noyou."
+      LayoutBR {BR} at (140,72) size 1x18
+      LayoutSVGRoot {svg} at (18,134) size 227x160
         LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
           LayoutSVGPath {path} at (108,98) size 350x300 [fill={[type=SOLID] [color=#000000]}] [data="M 100 200 C 200 100 300 0 400 100 C 500 200 600 300 700 200 C 800 100 900 100 900 100"]
-        LayoutSVGText {text} at (10,36) size 228x18 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 228x18
-            chunk 1 text run 1 at (10.00,50.00) startOffset 0 endOffset 35 width 227.52: "Can you findme in this boring text?"
+        LayoutSVGText {text} at (10,36) size 227x18 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 227x18
+            chunk 1 text run 1 at (10.00,50.00) startOffset 0 endOffset 35 width 226.65: "Can you findme in this boring text?"
         LayoutSVGText {text} at (10,90) size 139x12 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 139x12
             chunk 1 text run 1 at (10.00,100.00) startOffset 0 endOffset 23 width 138.02: "Findme in a typewriter!"

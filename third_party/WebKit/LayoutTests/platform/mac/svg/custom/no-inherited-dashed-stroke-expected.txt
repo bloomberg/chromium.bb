@@ -4,9 +4,9 @@ layer at (0,0) size 800x164
   LayoutBlockFlow {html} at (0,0) size 800x164
     LayoutBlockFlow {body} at (8,8) size 784x148
       LayoutBlockFlow {div} at (0,0) size 784x44 [border: (4px dotted #000000)]
-        LayoutText {#text} at (4,4) size 440x18
-          text run at (4,4) width 440: "The SVG rect below this should have a solid red stroke and blue fill."
-        LayoutBR {br} at (443,4) size 1x18
+        LayoutText {#text} at (4,4) size 439x18
+          text run at (4,4) width 439: "The SVG rect below this should have a solid red stroke and blue fill."
+        LayoutBR {br} at (442,4) size 1x18
         LayoutText {#text} at (4,22) size 310x18
           text run at (4,22) width 310: "https://bugs.webkit.org/show_bug.cgi?id=25738"
       LayoutBlockFlow (anonymous) at (0,44) size 784x104

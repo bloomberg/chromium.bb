@@ -6,12 +6,12 @@ layer at (0,0) size 800x600
       LayoutSVGText {text} at (0,5) size 404x20 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 404x19
           chunk 1 text run 1 at (0.00,20.00) startOffset 0 endOffset 61 width 403.80: "This should show three markers on the path for start/mid/end."
-      LayoutSVGText {text} at (0,25) size 377x20 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 377x19
-          chunk 1 text run 1 at (0.00,40.00) startOffset 0 endOffset 55 width 376.20: "Start marker has no markerWidth/markerHeight specified."
+      LayoutSVGText {text} at (0,25) size 376x20 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (0,0) size 376x19
+          chunk 1 text run 1 at (0.00,40.00) startOffset 0 endOffset 55 width 375.56: "Start marker has no markerWidth/markerHeight specified."
       LayoutSVGText {text} at (0,45) size 279x20 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 279x19
-          chunk 1 text run 1 at (0.00,60.00) startOffset 0 endOffset 40 width 279.00: "Mid marker has no markerWidth specified."
+          chunk 1 text run 1 at (0.00,60.00) startOffset 0 endOffset 40 width 278.36: "Mid marker has no markerWidth specified."
       LayoutSVGText {text} at (0,65) size 282x20 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 282x19
           chunk 1 text run 1 at (0.00,80.00) startOffset 0 endOffset 41 width 281.40: "End marker has no markerHeight specified."
