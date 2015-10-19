@@ -1122,16 +1122,16 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
       <!-- Page menu. Android has separate strings for its menu -->
       <if expr="not is_android">
         <if expr="not use_titlecase">
-          <message name="IDS_NEW_TAB" desc="The text label of the New Tab menu item">
+          <message name="IDS_NEW_TAB" desc="The text label of a menu item for opening a new tab">
             New &amp;tab
           </message>
           <message name="IDS_SHOW_AS_TAB" desc="The text label for the Show As tab menu item">
             &amp;Show as tab
           </message>
-          <message name="IDS_NEW_WINDOW" desc="The text label of the New Window menu item">
+          <message name="IDS_NEW_WINDOW" desc="The text label of a menu item for opening a new window">
             &amp;New window
           </message>
-          <message name="IDS_NEW_INCOGNITO_WINDOW" desc="The text label of the New incognito window menu item">
+          <message name="IDS_NEW_INCOGNITO_WINDOW" desc="The text label of a menu item for opening a new incognito window">
             New &amp;incognito window
           </message>
           <message name="IDS_PIN_TO_START_SCREEN" desc="The text label of the Pin to start screen menu item">
@@ -1204,16 +1204,16 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
           </message>
         </if>
         <if expr="use_titlecase">
-          <message name="IDS_NEW_TAB" desc="In Title Case: The text label of the New Tab menu item">
+          <message name="IDS_NEW_TAB" desc="In Title Case: The text label of a menu item for opening a new tab">
             New &amp;Tab
           </message>
           <message name="IDS_SHOW_AS_TAB" desc="In Title Case: The text label for the Show As tab menu item">
             &amp;Show As Tab
           </message>
-          <message name="IDS_NEW_WINDOW" desc="In Title Case: The text label of the New Window menu item">
+          <message name="IDS_NEW_WINDOW" desc="In Title Case: The text label of a menu item for opening a new window">
             &amp;New Window
           </message>
-          <message name="IDS_NEW_INCOGNITO_WINDOW" desc="In Title Case: The text label of the New incognito window menu item">
+          <message name="IDS_NEW_INCOGNITO_WINDOW" desc="In Title Case: The text label of a menu item for opening a new incognito window">
             New &amp;Incognito Window
           </message>
           <message name="IDS_PIN_TO_START_SCREEN" desc="In Title Case: The text label of the Pin to start screen menu item">
@@ -11204,7 +11204,7 @@ I don't think this site should be blocked!
 
       <!-- New Tab -->
       <message name="IDS_NEW_TAB_TITLE"
-               desc="Title of the new tab page, this is only shown while loading, then the title comes from the page">
+               desc="Title of the new tab page, not to be confused with the action of opening a new tab.">
         New Tab
       </message>
 
