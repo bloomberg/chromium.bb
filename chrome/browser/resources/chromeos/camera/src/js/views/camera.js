@@ -564,27 +564,26 @@ camera.views.Camera.prototype.initialize = function(callback) {
     // Prepare effect previews.
     this.previewCanvasTexture_ = this.previewCanvas_.texture(
         this.previewInputCanvas_);
-    this.addEffect_(new camera.effects.Normal());
-    this.addEffect_(new camera.effects.Vintage());
-    this.addEffect_(new camera.effects.Cinema());
-    this.addEffect_(new camera.effects.TiltShift());
-    this.addEffect_(new camera.effects.Retro30());
-    this.addEffect_(new camera.effects.Retro50());
-    this.addEffect_(new camera.effects.Retro60());
-    this.addEffect_(new camera.effects.PhotoLab());
-    this.addEffect_(new camera.effects.BigHead());
-    this.addEffect_(new camera.effects.BigJaw());
-    this.addEffect_(new camera.effects.BigEyes());
-    this.addEffect_(new camera.effects.BunnyHead());
-    this.addEffect_(new camera.effects.Grayscale());
-    this.addEffect_(new camera.effects.Sepia());
-    this.addEffect_(new camera.effects.Colorize());
-    this.addEffect_(new camera.effects.Modern());
-    this.addEffect_(new camera.effects.Beauty());
-    this.addEffect_(new camera.effects.Newspaper());
-    this.addEffect_(new camera.effects.Funky());
-    this.addEffect_(new camera.effects.Ghost());
-    this.addEffect_(new camera.effects.Swirl());
+
+    // Add effects if they are available on the platform.
+    var extensions = document.createElement("canvas").getContext(
+        "webgl").getSupportedExtensions();
+
+    var effects = [camera.effects.Normal, camera.effects.Vintage,
+        camera.effects.Cinema, camera.effects.TiltShift,
+        camera.effects.Retro30, camera.effects.Retro50,
+        camera.effects.Retro60, camera.effects.PhotoLab,
+        camera.effects.BigHead, camera.effects.BigJaw,
+        camera.effects.BigEyes, camera.effects.BunnyHead,
+        camera.effects.Grayscale, camera.effects.Sepia,
+        camera.effects.Colorize, camera.effects.Modern,
+        camera.effects.Beauty, camera.effects.Newspaper,
+        camera.effects.Funky, camera.effects.Ghost,
+        camera.effects.Swirl];
+    for (var index = 0; index < effects.length; index++) {
+      if (effects[index].isAvailable(extensions))
+        this.addEffect_(new effects[index]());
+    }
 
     // Select the default effect and state of the timer toggle button.
     // TODO(mtomasz): Move to chrome.storage.local.sync, after implementing
