@@ -157,6 +157,8 @@ class ServiceWorkerContextClient
   void skipWaiting(
       blink::WebServiceWorkerSkipWaitingCallbacks* callbacks) override;
   void claim(blink::WebServiceWorkerClientsClaimCallbacks* callbacks) override;
+  void registerForeignFetchScopes(
+      const blink::WebVector<blink::WebURL>& sub_scopes) override;
 
   virtual void DispatchSyncEvent(const blink::WebSyncRegistration& registration,
                                  const SyncCallback& callback);

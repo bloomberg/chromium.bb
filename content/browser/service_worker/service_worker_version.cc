@@ -1258,6 +1258,8 @@ bool ServiceWorkerVersion::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_ClaimClients,
                         OnClaimClients)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_Pong, OnPongFromWorker)
+    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_RegisterForeignFetchScopes,
+                        OnRegisterForeignFetchScopes)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -1858,6 +1860,29 @@ void ServiceWorkerVersion::OnClaimClients(int request_id) {
 
 void ServiceWorkerVersion::OnPongFromWorker() {
   ping_controller_->OnPongReceived();
+}
+
+void ServiceWorkerVersion::OnRegisterForeignFetchScopes(
+    const std::vector<GURL>& sub_scopes) {
+  DCHECK(status() == INSTALLING || status() == REDUNDANT) << status();
+  // Renderer should have already verified all these urls are inside the
+  // worker's scope, but verify again here on the browser process side.
+  GURL origin = scope_.GetOrigin();
+  std::string scope_path = scope_.path();
+  for (const GURL& url : sub_scopes) {
+    if (!url.is_valid() || url.GetOrigin() != origin ||
+        !base::StartsWith(url.path(), scope_path,
+                          base::CompareCase::SENSITIVE)) {
+      DVLOG(1) << "Received unexpected invalid URL from renderer process.";
+      BrowserThread::PostTask(
+          BrowserThread::UI, FROM_HERE,
+          base::Bind(&KillEmbeddedWorkerProcess, embedded_worker_->process_id(),
+                     RESULT_CODE_KILLED_BAD_MESSAGE));
+      return;
+    }
+  }
+  foreign_fetch_scopes_.insert(foreign_fetch_scopes_.end(), sub_scopes.begin(),
+                               sub_scopes.end());
 }
 
 void ServiceWorkerVersion::DidEnsureLiveRegistrationForStartWorker(

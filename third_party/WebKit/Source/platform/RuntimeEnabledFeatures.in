@@ -70,6 +70,7 @@ ExperimentalContentSecurityPolicyFeatures status=experimental
 FastMobileScrolling
 FileAPIBlobClose status=experimental
 FileSystem status=stable
+ForeignFetch status=experimental
 FormDataNewMethods status=experimental
 FullscreenUnprefixed status=test
 FrameTimingSupport status=experimental

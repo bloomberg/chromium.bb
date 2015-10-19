@@ -12,6 +12,7 @@
 #include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/common/service_worker/service_worker_utils.h"
+#include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -31,12 +32,10 @@ namespace content {
 
 namespace {
 
-static const int kRenderProcessId = 1;
-
 class MessageReceiver : public EmbeddedWorkerTestHelper {
  public:
   MessageReceiver()
-      : EmbeddedWorkerTestHelper(base::FilePath(), kRenderProcessId),
+      : EmbeddedWorkerTestHelper(base::FilePath()),
         current_embedded_worker_id_(0) {}
   ~MessageReceiver() override {}
 
@@ -151,15 +150,14 @@ class ServiceWorkerVersionTest : public testing::Test {
   void SetUp() override {
     helper_ = GetMessageReceiver();
 
-    pattern_ = GURL("http://www.example.com/");
+    pattern_ = GURL("http://www.example.com/test/");
     registration_ = new ServiceWorkerRegistration(
         pattern_,
         1L,
         helper_->context()->AsWeakPtr());
     version_ = new ServiceWorkerVersion(
         registration_.get(),
-        GURL("http://www.example.com/service_worker.js"),
-        1L,
+        GURL("http://www.example.com/test/service_worker.js"), 1L,
         helper_->context()->AsWeakPtr());
     std::vector<ServiceWorkerDatabase::ResourceRecord> records;
     records.push_back(
@@ -178,7 +176,8 @@ class ServiceWorkerVersionTest : public testing::Test {
     ASSERT_EQ(SERVICE_WORKER_OK, status);
 
     // Simulate adding one process to the pattern.
-    helper_->SimulateAddProcessToPattern(pattern_, kRenderProcessId);
+    helper_->SimulateAddProcessToPattern(pattern_,
+                                         helper_->mock_render_process_id());
     ASSERT_TRUE(helper_->context()->process_manager()
         ->PatternHasProcessToRun(pattern_));
   }
@@ -866,6 +865,55 @@ TEST_F(ServiceWorkerStallInStoppingTest, DetachThenRestart) {
   EXPECT_EQ(SERVICE_WORKER_OK, status);
   EXPECT_EQ(SERVICE_WORKER_OK, start_status);
   EXPECT_EQ(ServiceWorkerVersion::RUNNING, version_->running_status());
+}
+
+TEST_F(ServiceWorkerVersionTest, RegisterForeignFetchScopes) {
+  version_->SetStatus(ServiceWorkerVersion::INSTALLING);
+  // Start a worker.
+  ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
+  version_->StartWorker(CreateReceiverOnCurrentThread(&status));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(SERVICE_WORKER_OK, status);
+  EXPECT_EQ(ServiceWorkerVersion::RUNNING, version_->running_status());
+  EXPECT_EQ(0, helper_->mock_render_process_host()->bad_msg_count());
+
+  // Invalid URL, should kill worker (but in tests will only increase bad
+  // message count).
+  version_->OnRegisterForeignFetchScopes(std::vector<GURL>(1, GURL()));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, helper_->mock_render_process_host()->bad_msg_count());
+  EXPECT_EQ(0u, version_->foreign_fetch_scopes_.size());
+
+  // URL outside the scope of the worker.
+  version_->OnRegisterForeignFetchScopes(
+      std::vector<GURL>(1, GURL("http://www.example.com/wrong")));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(2, helper_->mock_render_process_host()->bad_msg_count());
+  EXPECT_EQ(0u, version_->foreign_fetch_scopes_.size());
+
+  // URL on wrong origin.
+  version_->OnRegisterForeignFetchScopes(
+      std::vector<GURL>(1, GURL("http://example.com/test/")));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(3, helper_->mock_render_process_host()->bad_msg_count());
+  EXPECT_EQ(0u, version_->foreign_fetch_scopes_.size());
+
+  // Valid URL 1.
+  GURL valid_scope_1("http://www.example.com/test/subscope");
+  version_->OnRegisterForeignFetchScopes(std::vector<GURL>(1, valid_scope_1));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(3, helper_->mock_render_process_host()->bad_msg_count());
+  EXPECT_EQ(1u, version_->foreign_fetch_scopes_.size());
+  EXPECT_EQ(valid_scope_1, version_->foreign_fetch_scopes_[0]);
+
+  // Valid URL 2.
+  GURL valid_scope_2("http://www.example.com/test/subscope");
+  version_->OnRegisterForeignFetchScopes(std::vector<GURL>(1, valid_scope_2));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(3, helper_->mock_render_process_host()->bad_msg_count());
+  EXPECT_EQ(2u, version_->foreign_fetch_scopes_.size());
+  EXPECT_EQ(valid_scope_1, version_->foreign_fetch_scopes_[0]);
+  EXPECT_EQ(valid_scope_2, version_->foreign_fetch_scopes_[1]);
 }
 
 }  // namespace content

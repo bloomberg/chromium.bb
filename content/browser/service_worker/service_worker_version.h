@@ -356,6 +356,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTest, StayAliveAfterPush);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerStallInStoppingTest, DetachThenStart);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerStallInStoppingTest, DetachThenRestart);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTest,
+                           RegisterForeignFetchScopes);
 
   class Metrics;
   class PingController;
@@ -491,6 +493,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
                              const std::string& client_uuid,
                              const ServiceWorkerClientInfo& client);
 
+  void OnRegisterForeignFetchScopes(const std::vector<GURL>& sub_scopes);
+
   void DidEnsureLiveRegistrationForStartWorker(
       const StatusCallback& callback,
       ServiceWorkerStatusCode status,
@@ -571,6 +575,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   const int64 registration_id_;
   const GURL script_url_;
   const GURL scope_;
+  std::vector<GURL> foreign_fetch_scopes_;
 
   Status status_ = NEW;
   scoped_ptr<EmbeddedWorkerInstance> embedded_worker_;

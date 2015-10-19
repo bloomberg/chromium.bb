@@ -80,8 +80,8 @@ void SetupMojoOnUIThread(
     mojo::InterfaceRequest<mojo::ServiceProvider> services,
     mojo::InterfacePtrInfo<mojo::ServiceProvider> exposed_services) {
   RenderProcessHost* rph = RenderProcessHost::FromID(process_id);
-  // |rph| may be NULL in unit tests.
-  if (!rph)
+  // |rph| or its ServiceRegistry may be NULL in unit tests.
+  if (!rph || !rph->GetServiceRegistry())
     return;
   EmbeddedWorkerSetupPtr setup;
   rph->GetServiceRegistry()->ConnectToRemoteService(mojo::GetProxy(&setup));

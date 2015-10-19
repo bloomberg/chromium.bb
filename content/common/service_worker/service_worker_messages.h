@@ -290,6 +290,11 @@ IPC_MESSAGE_ROUTED1(ServiceWorkerHostMsg_SkipWaiting,
 IPC_MESSAGE_ROUTED1(ServiceWorkerHostMsg_ClaimClients,
                     int /* request_id */)
 
+// Informs the browser of new foreign fetch subscopes this worker wants to
+// handle. Should only be sent while an install event is being handled.
+IPC_MESSAGE_ROUTED1(ServiceWorkerHostMsg_RegisterForeignFetchScopes,
+                    std::vector<GURL> /* sub_scopes */)
+
 //---------------------------------------------------------------------------
 // Messages sent from the browser to the child process.
 //

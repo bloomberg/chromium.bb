@@ -18,9 +18,13 @@
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/common/service_worker/embedded_worker_messages.h"
 #include "content/common/service_worker/service_worker_messages.h"
+#include "content/public/test/mock_render_process_host.h"
+#include "content/public/test/test_browser_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
+
+namespace {
 
 class MockMessagePortMessageFilter : public MessagePortMessageFilter {
  public:
@@ -40,6 +44,8 @@ class MockMessagePortMessageFilter : public MessagePortMessageFilter {
   ScopedVector<IPC::Message> message_queue_;
 };
 
+}  // namespace
+
 EmbeddedWorkerTestHelper::EmbeddedWorkerTestHelper(
     const base::FilePath& user_data_directory,
     int mock_render_process_id)
@@ -57,6 +63,24 @@ EmbeddedWorkerTestHelper::EmbeddedWorkerTestHelper(
                          NULL);
   wrapper_->process_manager()->SetProcessIdForTest(mock_render_process_id);
   registry()->AddChildProcessSender(mock_render_process_id, this,
+                                    NewMessagePortMessageFilter());
+}
+
+EmbeddedWorkerTestHelper::EmbeddedWorkerTestHelper(
+    const base::FilePath& user_data_directory)
+    : browser_context_(new TestBrowserContext),
+      render_process_host_(new MockRenderProcessHost(browser_context_.get())),
+      wrapper_(new ServiceWorkerContextWrapper(nullptr)),
+      next_thread_id_(0),
+      mock_render_process_id_(render_process_host_->GetID()),
+      weak_factory_(this) {
+  scoped_ptr<MockServiceWorkerDatabaseTaskManager> database_task_manager(
+      new MockServiceWorkerDatabaseTaskManager(
+          base::ThreadTaskRunnerHandle::Get()));
+  wrapper_->InitInternal(user_data_directory, database_task_manager.Pass(),
+                         base::ThreadTaskRunnerHandle::Get(), nullptr, nullptr);
+  wrapper_->process_manager()->SetProcessIdForTest(mock_render_process_id_);
+  registry()->AddChildProcessSender(mock_render_process_id_, this,
                                     NewMessagePortMessageFilter());
 }
 

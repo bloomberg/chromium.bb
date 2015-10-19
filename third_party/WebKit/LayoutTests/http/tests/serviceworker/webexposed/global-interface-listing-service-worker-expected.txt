@@ -387,6 +387,9 @@ interface ImageData
     getter height
     getter width
     method constructor
+interface InstallEvent
+    method constructor
+    method registerForeignFetchScopes
 interface MessageChannel
     getter port1
     getter port2

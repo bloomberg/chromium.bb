@@ -69,6 +69,7 @@ public:
     void claim(WebServiceWorkerClientsClaimCallbacks*) override;
     void focus(const WebString& clientUUID, WebServiceWorkerClientCallbacks*) override;
     void navigate(const WebString& clientUUID, const WebURL&, WebServiceWorkerClientCallbacks*) override;
+    void registerForeignFetchScopes(const WebVector<WebURL>& subScopes) override;
 
     DEFINE_INLINE_VIRTUAL_TRACE() { ServiceWorkerGlobalScopeClient::trace(visitor); }
 

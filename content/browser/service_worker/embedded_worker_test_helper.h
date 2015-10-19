@@ -24,9 +24,11 @@ namespace content {
 class EmbeddedWorkerRegistry;
 class EmbeddedWorkerTestHelper;
 class MessagePortMessageFilter;
+class MockRenderProcessHost;
 class ServiceWorkerContextCore;
 class ServiceWorkerContextWrapper;
 struct ServiceWorkerFetchRequest;
+class TestBrowserContext;
 
 // In-Process EmbeddedWorker test helper.
 //
@@ -51,6 +53,10 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
   // the context makes storage stuff in memory.
   EmbeddedWorkerTestHelper(const base::FilePath& user_data_directory,
                            int mock_render_process_id);
+  // Use this constructor to have |EmbeddedWorkerTestHelper| create a
+  // |MockRenderProcessHost| for its render process, instead of just using
+  // a hardcoded (invalid) process id.
+  explicit EmbeddedWorkerTestHelper(const base::FilePath& user_data_directory);
   ~EmbeddedWorkerTestHelper() override;
 
   // Call this to simulate add/associate a process to a pattern.
@@ -73,6 +79,10 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
   void ShutdownContext();
 
   int mock_render_process_id() const { return mock_render_process_id_;}
+  // Mock render process. Only set if the one-parameter constructor was used.
+  MockRenderProcessHost* mock_render_process_host() {
+    return render_process_host_.get();
+  }
 
  protected:
   // Called when StartWorker, StopWorker and SendMessageToWorker message
@@ -129,6 +139,9 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
   void OnPushEventStub(int request_id, const std::string& data);
 
   MessagePortMessageFilter* NewMessagePortMessageFilter();
+
+  scoped_ptr<TestBrowserContext> browser_context_;
+  scoped_ptr<MockRenderProcessHost> render_process_host_;
 
   scoped_refptr<ServiceWorkerContextWrapper> wrapper_;
 

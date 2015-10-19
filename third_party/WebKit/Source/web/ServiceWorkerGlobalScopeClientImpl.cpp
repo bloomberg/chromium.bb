@@ -138,6 +138,11 @@ void ServiceWorkerGlobalScopeClientImpl::navigate(const WebString& clientUUID, c
     m_client.navigate(clientUUID, url, callback);
 }
 
+void ServiceWorkerGlobalScopeClientImpl::registerForeignFetchScopes(const WebVector<WebURL>& subScopes)
+{
+    m_client.registerForeignFetchScopes(subScopes);
+}
+
 ServiceWorkerGlobalScopeClientImpl::ServiceWorkerGlobalScopeClientImpl(WebServiceWorkerContextClient& client)
     : m_client(client)
 {

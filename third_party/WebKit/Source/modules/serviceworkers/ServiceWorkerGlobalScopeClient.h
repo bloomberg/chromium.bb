@@ -82,6 +82,7 @@ public:
     virtual void claim(WebServiceWorkerClientsClaimCallbacks*) = 0;
     virtual void focus(const WebString& clientUUID, WebServiceWorkerClientCallbacks*) = 0;
     virtual void navigate(const WebString& clientUUID, const WebURL&, WebServiceWorkerClientCallbacks*) = 0;
+    virtual void registerForeignFetchScopes(const WebVector<WebURL>& subScopes) = 0;
 
     static const char* supplementName();
     static ServiceWorkerGlobalScopeClient* from(ExecutionContext*);

@@ -649,6 +649,12 @@ void ServiceWorkerContextClient::claim(
   Send(new ServiceWorkerHostMsg_ClaimClients(GetRoutingID(), request_id));
 }
 
+void ServiceWorkerContextClient::registerForeignFetchScopes(
+    const blink::WebVector<blink::WebURL>& sub_scopes) {
+  Send(new ServiceWorkerHostMsg_RegisterForeignFetchScopes(
+      GetRoutingID(), std::vector<GURL>(sub_scopes.begin(), sub_scopes.end())));
+}
+
 void ServiceWorkerContextClient::DispatchSyncEvent(
     const blink::WebSyncRegistration& registration,
     const SyncCallback& callback) {
