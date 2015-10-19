@@ -84,7 +84,7 @@ public class ContextualSearchEventFilterTest extends InstrumentationTestCase
             // Check that the event offset is correct.
             if (!mShouldLockHorizontalMotionInSearchContentView) {
                 float propagatedEventY = mEventPropagatedToSearchContentView.getY();
-                float offsetY = mContextualSearchPanel.getSearchContentViewOffsetY() * mDpToPx;
+                float offsetY = mContextualSearchPanel.getContentY() * mDpToPx;
                 assertEquals(propagatedEventY - offsetY, e.getY());
             }
 

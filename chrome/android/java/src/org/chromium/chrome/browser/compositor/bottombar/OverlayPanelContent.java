@@ -21,7 +21,9 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
 
 /**
- * Controls the Contextual Search Panel.
+ * Content container for an OverlayPanel. This class is responsible for the management of the
+ * ContentViewCore displayed inside of a panel and exposes a simple API relevant to actions a
+ * panel has.
  */
 public class OverlayPanelContent {
 
@@ -313,7 +315,7 @@ public class OverlayPanelContent {
     /**
      * @return The Y scroll position.
      */
-    public float getContentViewVerticalScroll() {
+    public float getContentVerticalScroll() {
         return mContentViewCore != null
                 ? mContentViewCore.computeVerticalScrollOffset() : -1.f;
     }
@@ -369,7 +371,7 @@ public class OverlayPanelContent {
     /**
      * @return true if the ContentViewCore is visible on the page.
      */
-    public boolean isContentViewShowing() {
+    public boolean isContentShowing() {
         return mIsContentViewShowing;
     }
 

@@ -4,29 +4,27 @@
 
 package org.chromium.chrome.browser.contextualsearch;
 
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayContentDelegate;
-import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel.StateChangeReason;
+import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanelDelegate;
-import org.chromium.chrome.browser.customtabs.CustomTab;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.common.TopControlsState;
 
 /**
  * The delegate that provides global management functionality for Contextual Search.
  */
 public interface ContextualSearchManagementDelegate {
+
+    /**
+     * @return The ChromeActivity that associated with the manager.
+     */
+    ChromeActivity getChromeActivity();
+
     /**
      * @return Whether the Search Panel is showing.
      */
     boolean isShowingSearchPanel();
-
-    /**
-     * Sets the preference state to enabled or disabled.
-     *
-     * @param enabled Whether the preference should be set to enabled.
-     */
-    void setPreferenceState(boolean enabled);
 
     /**
      * @return Whether the Opt-out promo is available to be be shown in the panel.
@@ -53,13 +51,6 @@ public interface ContextualSearchManagementDelegate {
      * Promotes the current Content View Core in the Contextual Search Panel to its own Tab.
      */
     void promoteToTab();
-
-    /**
-     * Gets the Search Content View's vertical scroll position. If the Search Content View
-     * is not available it returns -1.
-     * @return The Search Content View scroll position.
-     */
-    float getSearchContentViewVerticalScroll();
 
     /**
      * Sets the delegate responsible for manipulating the ContextualSearchLayout.
@@ -95,22 +86,6 @@ public interface ContextualSearchManagementDelegate {
      * @param reason The reason the panel is closing.
      */
     void onCloseContextualSearch(StateChangeReason reason);
-
-    /**
-     * Gets the {@code ContentViewCore} associated with Contextual Search Panel.
-     * @return Contextual Search Panel's {@code ContentViewCore}.
-     */
-    ContentViewCore getSearchContentViewCore();
-
-    /**
-     * @return The resource id that contains how large the top controls are.
-     */
-    int getControlContainerHeightResource();
-
-    /**
-     * @return Whether the current activity contains a {@link CustomTab}.
-     */
-    boolean isCustomTab();
 
     /**
      * This is called on navigation of the contextual search pane This is called on navigation

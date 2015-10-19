@@ -13,9 +13,9 @@ import android.view.ViewGroup;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.PanelState;
+import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchOptOutPromo.ContextualSearchPromoHost;
-import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel.PanelState;
-import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel.StateChangeReason;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.privacy.ContextualSearchPreferenceFragment;
 import org.chromium.chrome.browser.util.MathUtils;
@@ -194,11 +194,6 @@ abstract class ContextualSearchPanelBase implements ContextualSearchPromoHost {
     protected final Context mContext;
 
     /**
-     * The {@link ContextualSearchPanelFeatures} for this panel.
-     */
-    protected ContextualSearchPanelFeatures mSearchPanelFeatures;
-
-    /**
      * The current state of the Contextual Search Panel.
      */
     private PanelState mPanelState = PanelState.UNDEFINED;
@@ -233,22 +228,10 @@ abstract class ContextualSearchPanelBase implements ContextualSearchPromoHost {
 
     /**
      * Animates the Contextual Search Panel to its closed state.
-     *
      * @param reason The reason for the change of panel state.
+     * @param animate If the panel should animate closed.
      */
     protected abstract void closePanel(StateChangeReason reason, boolean animate);
-
-    /**
-     * Sets Contextual Search's preference state.
-     *
-     * @param enabled Whether the preference should be enabled.
-     */
-    public abstract void setPreferenceState(boolean enabled);
-
-    /**
-     * @return Whether the Panel Promo is visible.
-     */
-    protected abstract boolean isPromoVisible();
 
     /**
      * Animates the acceptance of the Promo.
@@ -271,33 +254,33 @@ abstract class ContextualSearchPanelBase implements ContextualSearchPromoHost {
      */
     protected abstract void onClosed(StateChangeReason reason);
 
-    /**
-     * @return The height of the Peek Promo in the peeked state, in pixels.
-     */
-    protected abstract float getPeekPromoHeightPeekingPx();
-
-    /**
-     * @return The height of the Peek Promo, in pixels.
-     */
-    protected abstract float getPeekPromoHeight();
-
     // ============================================================================================
     // General methods from Contextual Search Manager
     // ============================================================================================
 
     /**
      * TODO(mdjones): This method should be removed from this class.
-     * @return True if the tab hosting the panel is a custom tab.
-     */
-    public abstract boolean isCustomTab();
-
-    /**
-     * TODO(mdjones): This method should be removed from this class.
      * @return The resource id that contains how large the top controls are.
      */
-    public abstract int getControlContainerHeightResource();
+    protected abstract int getControlContainerHeightResource();
 
+    // ============================================================================================
+    // Peeking promo methods
+    // ============================================================================================
 
+    /**
+     * @return The height of the Peek Promo in the peeked state, in pixels.
+     */
+    protected float getPeekPromoHeightPeekingPx() {
+        return 0;
+    }
+
+    /**
+     * @return The height of the Peek Promo, in pixels.
+     */
+    protected float getPeekPromoHeight() {
+        return 0;
+    }
 
     // ============================================================================================
     // Layout Integration
@@ -559,6 +542,14 @@ abstract class ContextualSearchPanelBase implements ContextualSearchPromoHost {
      */
     public boolean isMaximized() {
         return mIsMaximized;
+    }
+
+    /**
+     * Get if the panel supports an expanded state. This should be overridden in child classes.
+     * @return True if the panel supports an EXPANDED state.
+     */
+    protected boolean supportsExpandedState() {
+        return false;
     }
 
     // --------------------------------------------------------------------------------------------
@@ -848,7 +839,6 @@ abstract class ContextualSearchPanelBase implements ContextualSearchPromoHost {
      * Initializes the UI state.
      */
     protected void initializeUiState() {
-        mSearchPanelFeatures = new ContextualSearchPanelFeatures(isCustomTab());
         mIsShowing = false;
 
         // Static values.
@@ -1229,6 +1219,13 @@ abstract class ContextualSearchPanelBase implements ContextualSearchPromoHost {
     }
 
     /**
+     * @return Whether the Panel Promo is visible.
+     */
+    protected boolean isPromoVisible() {
+        return false;
+    }
+
+    /**
      * Updates the UI state for Opt Out Promo.
      *
      * @param percentage The visibility percentage of the Promo. A visibility of 0 means the
@@ -1375,6 +1372,12 @@ abstract class ContextualSearchPanelBase implements ContextualSearchPromoHost {
                         ContextualSearchPreferenceFragment.class.getName());
             }
         });
+    }
+
+    /**
+     * @param enabled Whether the preference should be enabled.
+     */
+    public void setPreferenceState(boolean enabled) {
     }
 
     @Override

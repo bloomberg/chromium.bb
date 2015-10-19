@@ -150,7 +150,6 @@ public class LayoutManagerDocument extends LayoutManager
 
         // Initialize Event Filters
         mStaticEdgeEventFilter.setTabModelSelector(selector);
-        mContextualSearchEventFilter.setManagementDelegate(contextualSearchDelegate);
 
         // Initialize Layouts
         mStaticLayout.setTabModelSelector(selector, content);

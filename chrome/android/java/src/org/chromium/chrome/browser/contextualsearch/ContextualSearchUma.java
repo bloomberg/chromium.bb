@@ -7,8 +7,8 @@ package org.chromium.chrome.browser.contextualsearch;
 import android.util.Pair;
 
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel.PanelState;
-import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel.StateChangeReason;
+import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.PanelState;
+import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 
 import java.util.Collections;

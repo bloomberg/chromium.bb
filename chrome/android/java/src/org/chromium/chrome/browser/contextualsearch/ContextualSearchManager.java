@@ -19,8 +19,8 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayContentDelegate;
-import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel.PanelState;
-import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel.StateChangeReason;
+import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.PanelState;
+import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanelDelegate;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchSelectionController.SelectionType;
 import org.chromium.chrome.browser.device.DeviceClassManager;
@@ -29,7 +29,6 @@ import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler.Overrid
 import org.chromium.chrome.browser.externalnav.ExternalNavigationParams;
 import org.chromium.chrome.browser.gsa.GSAContextDisplaySelection;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabRedirectHandler;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
@@ -101,7 +100,6 @@ public class ContextualSearchManager extends ContextualSearchObservable
     // TODO(donnd): consider changing this member's name to indicate "opened" instead of "seen".
     private boolean mWereSearchResultsSeen;
     private boolean mWereInfoBarsHidden;
-    private boolean mDidLoadAnyUrl;
     private boolean mDidPromoteSearchNavigation;
     private boolean mDidBasePageLoadJustStart;
     private boolean mWasActivatedByTap;
@@ -275,13 +273,11 @@ public class ContextualSearchManager extends ContextualSearchObservable
     @Override
     public void setContextualSearchPanelDelegate(ContextualSearchPanelDelegate delegate) {
         mSearchPanelDelegate = delegate;
-
-        mSearchPanelDelegate.setChromeActivity(mActivity);
     }
 
     @Override
-    public boolean isCustomTab() {
-        return mActivity.isCustomTab();
+    public ChromeActivity getChromeActivity() {
+        return mActivity;
     }
 
     /**
@@ -326,18 +322,8 @@ public class ContextualSearchManager extends ContextualSearchObservable
     }
 
     @Override
-    public void setPreferenceState(boolean enabled) {
-        PrefServiceBridge.getInstance().setContextualSearchState(enabled);
-    }
-
-    @Override
     public boolean isPromoAvailable() {
         return mPolicy.isPromoAvailable();
-    }
-
-    @Override
-    public int getControlContainerHeightResource() {
-        return mActivity.getControlContainerHeightResource();
     }
 
     /**
@@ -912,15 +898,6 @@ public class ContextualSearchManager extends ContextualSearchObservable
     // --------------------------------------------------------------------------------------------
 
     /**
-     * Gets the {@code ContentViewCore} associated with Contextual Search Panel.
-     * @return Contextual Search Panel's {@code ContentViewCore}.
-     */
-    @Override
-    public ContentViewCore getSearchContentViewCore() {
-        return mSearchPanelDelegate.getContentViewCore();
-    }
-
-    /**
      * Sets the {@code ContextualSearchContentViewDelegate} associated with the Content View.
      * @param delegate
      */
@@ -1005,7 +982,7 @@ public class ContextualSearchManager extends ContextualSearchObservable
      * @param url The URL we are navigating to.
      */
     public void onExternalNavigation(String url) {
-        mSearchPanelDelegate.updateTopControlState();
+        mSearchPanelDelegate.updateTopControlsState();
 
         if (!mDidPromoteSearchNavigation
                 && !BLACKLISTED_URL.equals(url)
@@ -1088,12 +1065,6 @@ public class ContextualSearchManager extends ContextualSearchObservable
         String url = entry != null
                 ? entry.getUrl() : searchContentViewCore.getWebContents().getUrl();
         return url;
-    }
-
-    @Override
-    public float getSearchContentViewVerticalScroll() {
-        return mSearchPanelDelegate.getContentViewCore() != null
-                ? mSearchPanelDelegate.getContentViewCore().computeVerticalScrollOffset() : -1.f;
     }
 
     @Override

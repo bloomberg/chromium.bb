@@ -9,7 +9,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayContentDelegate;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayContentProgressObserver;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelContent;
-import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.OverlayPanelContentFactory;
+import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelContentFactory;
 
 import java.net.MalformedURLException;
 import java.net.URL;

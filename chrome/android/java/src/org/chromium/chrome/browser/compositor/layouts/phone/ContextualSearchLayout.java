@@ -9,8 +9,8 @@ import android.graphics.Rect;
 import android.view.View;
 
 import org.chromium.chrome.browser.compositor.LayerTitleCache;
+import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel;
-import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel.StateChangeReason;
 import org.chromium.chrome.browser.compositor.layouts.ContextualSearchSupportedLayout;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.LayoutRenderHost;
@@ -61,7 +61,7 @@ public class ContextualSearchLayout extends ContextualSearchSupportedLayout {
 
     @Override
     public View getViewForInteraction() {
-        ContentViewCore content = mSearchPanel.getManagementDelegate().getSearchContentViewCore();
+        ContentViewCore content = mSearchPanel.getContentViewCore();
         if (content != null) return content.getContainerView();
         return super.getViewForInteraction();
     }

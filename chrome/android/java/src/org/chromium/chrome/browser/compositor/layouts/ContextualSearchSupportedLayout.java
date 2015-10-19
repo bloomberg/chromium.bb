@@ -82,8 +82,7 @@ public abstract class ContextualSearchSupportedLayout extends Layout {
         // TODO(dtrainor): If we move ContextualSearch to an overlay, pull the views from there
         // instead in Layout.java.
         if (mSearchPanel != null && mSearchPanel.getManagementDelegate() != null) {
-            ContentViewCore content =
-                    mSearchPanel.getManagementDelegate().getSearchContentViewCore();
+            ContentViewCore content = mSearchPanel.getContentViewCore();
             if (content != null) views.add(content.getContainerView());
         }
         super.getAllViews(views);
@@ -95,7 +94,7 @@ public abstract class ContextualSearchSupportedLayout extends Layout {
         // instead in Layout.java.
         if (mSearchPanel != null && mSearchPanel.getManagementDelegate() != null) {
             ContentViewCore content =
-                    mSearchPanel.getManagementDelegate().getSearchContentViewCore();
+                    mSearchPanel.getContentViewCore();
             if (content != null) contents.add(content);
         }
         super.getAllContentViewCores(contents);
@@ -152,7 +151,7 @@ public abstract class ContextualSearchSupportedLayout extends Layout {
         }
 
         ContentViewCore contentViewCore =
-                mSearchPanel.getManagementDelegate().getSearchContentViewCore();
+                mSearchPanel.getContentViewCore();
         mContextualSearchSceneLayer.update(contentViewCore, resourceManager);
     }
 }

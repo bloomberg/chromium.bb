@@ -69,7 +69,7 @@ public class ContextualSearchStaticEventFilter extends EventFilter {
         // be closed, if opened, when the keyboard shows up. Even so,
         // it would be nice fixing this problem in Chrome-Android.
         return mSearchPanel.isPeeking()
-                && mSearchPanel.isCoordinateInsideSearchBar(event.getX() * mPxToDp,
+                && mSearchPanel.isCoordinateInsideBar(event.getX() * mPxToDp,
                         mSearchPanel.getFullscreenY(event.getY()) * mPxToDp);
     }
 

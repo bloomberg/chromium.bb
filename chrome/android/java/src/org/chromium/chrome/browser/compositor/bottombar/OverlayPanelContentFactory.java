@@ -2,9 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.compositor.bottombar.contextualsearch;
-
-import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelContent;
+package org.chromium.chrome.browser.compositor.bottombar;
 
 /**
  * Interface used to generalize the creation of the OverlayPanelContent. This is so test cases

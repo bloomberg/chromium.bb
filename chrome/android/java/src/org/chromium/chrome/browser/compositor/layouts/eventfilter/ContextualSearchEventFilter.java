@@ -11,7 +11,6 @@ import android.view.ViewConfiguration;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel;
-import org.chromium.chrome.browser.contextualsearch.ContextualSearchManagementDelegate;
 
 import java.util.ArrayList;
 
@@ -50,11 +49,6 @@ public class ContextualSearchEventFilter extends GestureEventFilter {
      * The shared state of the UI.
      */
     private ContextualSearchPanel mSearchPanel;
-
-    /**
-     * The delegate to talk to ContextualSearchManager.
-     */
-    private ContextualSearchManagementDelegate mManagementDelegate;
 
     /**
      * The {@link GestureDetector} used to distinguish tap and scroll gestures.
@@ -158,21 +152,13 @@ public class ContextualSearchEventFilter extends GestureEventFilter {
     }
 
     /**
-     * Sets the {@code ContextualSearchManagementDelegate} associated with this Event Filter.
-     * @param delegate The {@code ContextualSearchManagementDelegate}.
-     */
-    public void setManagementDelegate(ContextualSearchManagementDelegate delegate) {
-        mManagementDelegate = delegate;
-    }
-
-    /**
      * Gets the Search Content View's vertical scroll position. If the Search Content View
      * is not available it returns -1.
      * @return The Search Content View scroll position.
      */
     @VisibleForTesting
     protected float getSearchContentViewVerticalScroll() {
-        return mManagementDelegate.getSearchContentViewVerticalScroll();
+        return mSearchPanel.getContentVerticalScroll();
     }
 
     @Override
@@ -181,7 +167,7 @@ public class ContextualSearchEventFilter extends GestureEventFilter {
 
         if (!mIsDeterminingEventTarget && action == MotionEvent.ACTION_DOWN) {
             mInitialEventY = e.getY();
-            if (mSearchPanel.isCoordinateInsideSearchContentView(
+            if (mSearchPanel.isCoordinateInsideContent(
                     e.getX() * mPxToDp, mInitialEventY * mPxToDp)) {
                 // If the DOWN event happened inside the Search Content View, we'll need
                 // to wait until the user has moved the finger beyond a certain threshold,
@@ -270,7 +256,7 @@ public class ContextualSearchEventFilter extends GestureEventFilter {
             mWasActionDownEventSynthetic = true;
             mSyntheticActionDownX = syntheticActionDownEvent.getX();
             mSyntheticActionDownY = syntheticActionDownEvent.getY()
-                    - mSearchPanel.getSearchContentViewOffsetY() / mPxToDp;
+                    - mSearchPanel.getContentY() / mPxToDp;
 
             propagateAndRecycleEvent(syntheticActionDownEvent, mEventTarget);
 
@@ -358,8 +344,8 @@ public class ContextualSearchEventFilter extends GestureEventFilter {
             isSyntheticEvent = true;
         }
 
-        final float contentViewOffsetXPx = mSearchPanel.getSearchContentViewOffsetX() / mPxToDp;
-        final float contentViewOffsetYPx = mSearchPanel.getSearchContentViewOffsetY() / mPxToDp;
+        final float contentViewOffsetXPx = mSearchPanel.getContentX() / mPxToDp;
+        final float contentViewOffsetYPx = mSearchPanel.getContentY() / mPxToDp;
 
         // Adjust the offset to be relative to the Search Contents View.
         event.offsetLocation(-contentViewOffsetXPx, -contentViewOffsetYPx);
@@ -406,7 +392,7 @@ public class ContextualSearchEventFilter extends GestureEventFilter {
      * @return Whether the event has been consumed.
      */
     private boolean handleSingleTapUp(MotionEvent e) {
-        setEventTarget(mSearchPanel.isCoordinateInsideSearchContentView(
+        setEventTarget(mSearchPanel.isCoordinateInsideContent(
                 e.getX() * mPxToDp, e.getY() * mPxToDp)
                 ? EventTarget.SEARCH_CONTENT_VIEW : EventTarget.SEARCH_PANEL);
 

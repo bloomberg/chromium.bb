@@ -10,6 +10,7 @@ import org.chromium.content.browser.ContentViewCore;
 
 /**
  * An base class for tracking events on the overlay panel.
+ * TODO(mdjones): Rename to OverlayPanelContentDelegate.
  */
 public class OverlayContentDelegate {
 

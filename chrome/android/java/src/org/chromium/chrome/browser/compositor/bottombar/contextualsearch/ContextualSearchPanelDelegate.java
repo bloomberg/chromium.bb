@@ -5,14 +5,15 @@
 package org.chromium.chrome.browser.compositor.bottombar.contextualsearch;
 
 import org.chromium.base.VisibleForTesting;
-import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel.PanelState;
-import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel.StateChangeReason;
+import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.PanelState;
+import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
+import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelContentFactory;
 import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation;
 import org.chromium.content.browser.ContentViewCore;
 
 /**
  * The delegate that that interfaces with the {@link ContextualSearchPanel}.
+ * TODO(mdjones): Remove this class and simply call public methods on the panel.
  */
 public interface ContextualSearchPanelDelegate {
     /**
@@ -160,11 +161,6 @@ public interface ContextualSearchPanelDelegate {
     void onSearchTermResolutionResponse(String searchTerm);
 
     /**
-     * @param activity The current active ChromeActivity.
-     */
-    void setChromeActivity(ChromeActivity activity);
-
-    /**
      * Load a URL in the panel ContentViewCore.
      * @param url The URL to load.
      */
@@ -183,7 +179,7 @@ public interface ContextualSearchPanelDelegate {
     /**
      * Sets the top control state based on the internals of the panel.
      */
-    void updateTopControlState();
+    void updateTopControlsState();
 
     /**
      * Notify the panel that the ContentViewCore was seen.
