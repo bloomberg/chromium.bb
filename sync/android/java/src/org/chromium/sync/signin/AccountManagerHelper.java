@@ -15,11 +15,11 @@ import android.accounts.OperationCanceledException;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Process;
 import android.util.Log;
 
-import org.chromium.base.BuildInfo;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.net.NetworkChangeNotifier;
@@ -264,7 +264,7 @@ public class AccountManagerHelper {
     }
 
     private boolean hasUseCredentialsPermission() {
-        return BuildInfo.isMncOrLater()
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
                 || mApplicationContext.checkPermission("android.permission.USE_CREDENTIALS",
                 Process.myPid(), Process.myUid()) == PackageManager.PERMISSION_GRANTED;
     }

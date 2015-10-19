@@ -28,7 +28,6 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.util.LongSparseArray;
 
-import org.chromium.base.BuildInfo;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
@@ -1364,7 +1363,7 @@ public class ChromeBrowserProvider extends ContentProvider {
                         | ExternalAuthUtils.FLAG_SHOULD_BE_SYSTEM);
         if (isSystemOrGoogleCaller) return true;
 
-        if (BuildInfo.isMncOrLater()) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             return getContext().checkCallingOrSelfPermission(
                     getReadWritePermissionNameForBookmarkFolders())
                     == PackageManager.PERMISSION_GRANTED;

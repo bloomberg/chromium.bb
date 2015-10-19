@@ -9,7 +9,6 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Build;
 
-import org.chromium.base.BuildInfo;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -66,10 +65,10 @@ class VideoCaptureFactory {
                 // and carry on pretending the system has no camera(s).  This optimization
                 // applies only to pre-M on Android because that is when runtime permissions
                 // were introduced.
-                if (!BuildInfo.isMncOrLater()
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M
                         && appContext.getPackageManager().checkPermission(
-                                Manifest.permission.CAMERA, appContext.getPackageName())
-                                        != PackageManager.PERMISSION_GRANTED) {
+                                   Manifest.permission.CAMERA, appContext.getPackageName())
+                                != PackageManager.PERMISSION_GRANTED) {
                     sNumberOfSystemCameras = 0;
                     Log.w(TAG, "Missing android.permission.CAMERA permission, "
                             + "no system camera available.");

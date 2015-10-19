@@ -7,13 +7,13 @@ package org.chromium.chrome.browser.omnibox.geo;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.text.SpannableString;
 import android.text.style.TypefaceSpan;
 import android.view.View;
 
-import org.chromium.base.BuildInfo;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.preferences.MainPreferences;
@@ -100,7 +100,7 @@ public class GeolocationSnackbarController implements SnackbarController {
     private static boolean neverShowSnackbar(Context context) {
         // Don't show the snackbar on pre-M devices because location permission was explicitly
         // granted at install time.
-        if (!BuildInfo.isMncOrLater()) return true;
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return true;
 
         // Don't show the snackbar if Chrome doesn't have location permission since X-Geo won't be
         // sent unless the user explicitly grants this permission.
