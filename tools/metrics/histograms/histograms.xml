@@ -60222,7 +60222,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="801" label="InputTypeFileSecureOrigin"/>
   <int value="802" label="InputTypeFileInsecureOrigin"/>
   <int value="803" label="V8HashChangeEvent_InitHashChangeEvent_Method"/>
-  <int value="804" label="ElementCreateShadowRootWithParameter"/>
+  <int value="804" label="ElementAttachShadow"/>
   <int value="805" label="V8KeyboardEvent_KeyIdentifier_AttributeGetter"/>
   <int value="806"
       label="V8SecurityPolicyViolationEvent_DocumentURI_AttributeGetter"/>
@@ -60330,8 +60330,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="904" label="ClientHintsMetaAcceptCH"/>
   <int value="905" label="HTMLElementDeprecatedWidth"/>
   <int value="906" label="ClientHintsContentDPR"/>
-  <int value="907" label="ElementCreateShadowRootOpen"/>
-  <int value="908" label="ElementCreateShadowRootClosed"/>
+  <int value="907" label="ElementAttachShadowOpen"/>
+  <int value="908" label="ElementAttachShadowClosed"/>
   <int value="909" label="AudioParamSetValueAtTime"/>
   <int value="910" label="AudioParamLinearRampToValueAtTime"/>
   <int value="911" label="AudioParamExponentialRampToValueAtTime"/>
