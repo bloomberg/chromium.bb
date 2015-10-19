@@ -15,7 +15,7 @@ namespace mus {
 
 class ClientConnection;
 class ConnectionManager;
-struct ViewId;
+struct WindowId;
 
 class ConnectionManagerDelegate {
  public:
@@ -23,18 +23,18 @@ class ConnectionManagerDelegate {
 
   // Creates a ClientConnection in response to Embed() calls on the
   // ConnectionManager.
-  virtual ClientConnection* CreateClientConnectionForEmbedAtView(
+  virtual ClientConnection* CreateClientConnectionForEmbedAtWindow(
       ConnectionManager* connection_manager,
       mojo::InterfaceRequest<mojom::WindowTree> tree_request,
       ConnectionSpecificId creator_id,
       mojo::URLRequestPtr request,
-      const ViewId& root_id,
+      const WindowId& root_id,
       uint32_t policy_bitmask) = 0;
-  virtual ClientConnection* CreateClientConnectionForEmbedAtView(
+  virtual ClientConnection* CreateClientConnectionForEmbedAtWindow(
       ConnectionManager* connection_manager,
       mojo::InterfaceRequest<mojom::WindowTree> tree_request,
       ConnectionSpecificId creator_id,
-      const ViewId& root_id,
+      const WindowId& root_id,
       uint32_t policy_bitmask,
       mojom::WindowTreeClientPtr client) = 0;
 

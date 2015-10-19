@@ -9,14 +9,14 @@
 
 namespace mus {
 
-// This class is a friend of a View and contains functions to mutate internal
-// state of View.
+// This class is a friend of a Window and contains functions to mutate internal
+// state of Window.
 class WindowPrivate {
  public:
-  explicit WindowPrivate(Window* view);
+  explicit WindowPrivate(Window* window);
   ~WindowPrivate();
 
-  // Creates and returns a new View. Caller owns the return value.
+  // Creates and returns a new Window. Caller owns the return value.
   static Window* LocalCreate();
 
   base::ObserverList<WindowObserver>* observers() {

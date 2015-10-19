@@ -20,32 +20,35 @@ class DefaultAccessPolicy : public AccessPolicy {
   ~DefaultAccessPolicy() override;
 
   // AccessPolicy:
-  bool CanRemoveWindowFromParent(const ServerView* view) const override;
-  bool CanAddWindow(const ServerView* parent,
-                    const ServerView* child) const override;
-  bool CanReorderWindow(const ServerView* view,
-                        const ServerView* relative_view,
+  bool CanRemoveWindowFromParent(const ServerWindow* window) const override;
+  bool CanAddWindow(const ServerWindow* parent,
+                    const ServerWindow* child) const override;
+  bool CanReorderWindow(const ServerWindow* window,
+                        const ServerWindow* relative_window,
                         mojom::OrderDirection direction) const override;
-  bool CanDeleteWindow(const ServerView* view) const override;
-  bool CanGetWindowTree(const ServerView* view) const override;
-  bool CanDescendIntoViewForViewTree(const ServerView* view) const override;
-  bool CanEmbed(const ServerView* view, uint32_t policy_bitmask) const override;
-  bool CanChangeViewVisibility(const ServerView* view) const override;
-  bool CanSetWindowSurfaceId(const ServerView* view) const override;
-  bool CanSetWindowBounds(const ServerView* view) const override;
-  bool CanSetWindowProperties(const ServerView* view) const override;
-  bool CanSetWindowTextInputState(const ServerView* view) const override;
-  bool CanSetFocus(const ServerView* view) const override;
-  bool CanSetClientArea(const ServerView* window) const override;
+  bool CanDeleteWindow(const ServerWindow* window) const override;
+  bool CanGetWindowTree(const ServerWindow* window) const override;
+  bool CanDescendIntoWindowForWindowTree(
+      const ServerWindow* window) const override;
+  bool CanEmbed(const ServerWindow* window,
+                uint32_t policy_bitmask) const override;
+  bool CanChangeWindowVisibility(const ServerWindow* window) const override;
+  bool CanSetWindowSurfaceId(const ServerWindow* window) const override;
+  bool CanSetWindowBounds(const ServerWindow* window) const override;
+  bool CanSetWindowProperties(const ServerWindow* window) const override;
+  bool CanSetWindowTextInputState(const ServerWindow* window) const override;
+  bool CanSetFocus(const ServerWindow* window) const override;
+  bool CanSetClientArea(const ServerWindow* window) const override;
   bool ShouldNotifyOnHierarchyChange(
-      const ServerView* view,
-      const ServerView** new_parent,
-      const ServerView** old_parent) const override;
-  const ServerView* GetViewForFocusChange(const ServerView* focused) override;
+      const ServerWindow* window,
+      const ServerWindow** new_parent,
+      const ServerWindow** old_parent) const override;
+  const ServerWindow* GetWindowForFocusChange(
+      const ServerWindow* focused) override;
 
  private:
-  bool WasCreatedByThisConnection(const ServerView* view) const;
-  bool IsDescendantOfEmbedRoot(const ServerView* view) const;
+  bool WasCreatedByThisConnection(const ServerWindow* window) const;
+  bool IsDescendantOfEmbedRoot(const ServerWindow* window) const;
 
   const ConnectionSpecificId connection_id_;
   AccessPolicyDelegate* delegate_;

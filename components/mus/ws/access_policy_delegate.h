@@ -12,24 +12,25 @@
 
 namespace mus {
 
-class ServerView;
+class ServerWindow;
 
 // Delegate used by the AccessPolicy implementations to get state.
 class AccessPolicyDelegate {
  public:
   // Returns true if |id| is the root of the connection.
-  virtual bool IsRootForAccessPolicy(const ViewId& id) const = 0;
+  virtual bool IsRootForAccessPolicy(const WindowId& id) const = 0;
 
-  // Returns true if |view| has been exposed to the client.
-  virtual bool IsViewKnownForAccessPolicy(const ServerView* view) const = 0;
+  // Returns true if |window| has been exposed to the client.
+  virtual bool IsWindowKnownForAccessPolicy(
+      const ServerWindow* window) const = 0;
 
-  // Returns true if Embed(view) has been invoked on |view|.
-  virtual bool IsViewRootOfAnotherConnectionForAccessPolicy(
-      const ServerView* view) const = 0;
+  // Returns true if Embed(window) has been invoked on |window|.
+  virtual bool IsWindowRootOfAnotherConnectionForAccessPolicy(
+      const ServerWindow* window) const = 0;
 
-  // Returns true if SetEmbedRoot() was invoked and |view| is a descendant of
+  // Returns true if SetEmbedRoot() was invoked and |window| is a descendant of
   // the root of the connection.
-  virtual bool IsDescendantOfEmbedRoot(const ServerView* view) = 0;
+  virtual bool IsDescendantOfEmbedRoot(const ServerWindow* window) = 0;
 
  protected:
   virtual ~AccessPolicyDelegate() {}

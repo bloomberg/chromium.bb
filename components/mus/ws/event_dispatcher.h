@@ -18,13 +18,13 @@ class Point;
 
 namespace mus {
 
-class ServerView;
-class ViewTreeHostImpl;
+class ServerWindow;
+class WindowTreeHostImpl;
 
 // Handles dispatching events to the right location as well as updating focus.
 class EventDispatcher {
  public:
-  explicit EventDispatcher(ViewTreeHostImpl* view_tree_host);
+  explicit EventDispatcher(WindowTreeHostImpl* window_tree_host);
   ~EventDispatcher();
 
   void AddAccelerator(uint32_t id,
@@ -56,21 +56,23 @@ class EventDispatcher {
   // processing can continue.
   bool FindAccelerator(const mojo::Event& event, uint32_t* accelerator_id);
 
-  // Returns the ServerView that should receive |event|. If |event| is a
+  // Returns the ServerWindow that should receive |event|. If |event| is a
   // pointer-type event, then this function also updates the event location to
   // make sure it is in the returned target's coordinate space.
-  ServerView* FindEventTarget(mojo::Event* event);
+  ServerWindow* FindEventTarget(mojo::Event* event);
 
-  // Finds the deepest visible view that contains the specified location, and
-  // updates |location| to be in the returned view's coordinate space.
-  ServerView* FindDeepestVisibleView(ServerView* view, gfx::Point* location);
+  // Finds the deepest visible window that contains the specified location, and
+  // updates |location| to be in the returned window's coordinate space.
+  ServerWindow* FindDeepestVisibleWindow(ServerWindow* window,
+                                         gfx::Point* location);
 
-  // Finds the deepest visible view for the specified location based on surface
-  // hit-testing. Updates |location| to be in the returned view's coordinate
+  // Finds the deepest visible window for the specified location based on
+  // surface
+  // hit-testing. Updates |location| to be in the returned window's coordinate
   // space.
-  ServerView* FindDeepestVisibleViewFromSurface(gfx::Point* location);
+  ServerWindow* FindDeepestVisibleWindowFromSurface(gfx::Point* location);
 
-  ViewTreeHostImpl* view_tree_host_;
+  WindowTreeHostImpl* window_tree_host_;
 
   using Entry = std::pair<uint32_t, Accelerator>;
   std::map<uint32_t, Accelerator> accelerators_;

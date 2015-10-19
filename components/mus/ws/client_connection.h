@@ -12,23 +12,23 @@
 namespace mus {
 
 class ConnectionManager;
-class ViewTreeImpl;
+class WindowTreeImpl;
 
 // ClientConnection encapsulates the state needed for a single client connected
-// to the view manager.
+// to the window manager.
 class ClientConnection {
  public:
-  ClientConnection(scoped_ptr<ViewTreeImpl> service,
+  ClientConnection(scoped_ptr<WindowTreeImpl> service,
                    mojom::WindowTreeClient* client);
   virtual ~ClientConnection();
 
-  ViewTreeImpl* service() { return service_.get(); }
-  const ViewTreeImpl* service() const { return service_.get(); }
+  WindowTreeImpl* service() { return service_.get(); }
+  const WindowTreeImpl* service() const { return service_.get(); }
 
   mojom::WindowTreeClient* client() { return client_; }
 
  private:
-  scoped_ptr<ViewTreeImpl> service_;
+  scoped_ptr<WindowTreeImpl> service_;
   mojom::WindowTreeClient* client_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientConnection);
@@ -38,7 +38,7 @@ class ClientConnection {
 class DefaultClientConnection : public ClientConnection {
  public:
   DefaultClientConnection(
-      scoped_ptr<ViewTreeImpl> service_impl,
+      scoped_ptr<WindowTreeImpl> service_impl,
       ConnectionManager* connection_manager,
       mojo::InterfaceRequest<mojom::WindowTree> service_request,
       mojom::WindowTreeClientPtr client);

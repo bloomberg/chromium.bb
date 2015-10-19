@@ -68,7 +68,7 @@
         "test": "resource_provider_unittests"
       },
       {
-        "test": "view_manager_unittests"
+        "test": "window_manager_unittests"
       }
     ]
   },
@@ -573,7 +573,7 @@
         "test": "url_unittests"
       },
       {
-        "test": "view_manager_unittests"
+        "test": "window_manager_unittests"
       },
       {
         "test": "views_unittests"
@@ -1000,10 +1000,10 @@
         "test": "url_unittests"
       },
       {
-        "test": "view_manager_unittests"
+        "test": "views_unittests"
       },
       {
-        "test": "views_unittests"
+        "test": "window_manager_unittests"
       },
       {
         "swarming": {

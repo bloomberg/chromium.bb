@@ -14,7 +14,7 @@ using mojo::String;
 
 namespace mus {
 
-std::string ViewIdToString(Id id) {
+std::string WindowIdToString(Id id) {
   return (id == 0) ? "null"
                    : base::StringPrintf("%d,%d", HiWord(id), LoWord(id));
 }
@@ -36,16 +36,16 @@ std::string ChangeToDescription1(const Change& change) {
       return "OnEmbed";
 
     case CHANGE_TYPE_EMBEDDED_APP_DISCONNECTED:
-      return base::StringPrintf("OnEmbeddedAppDisconnected view=%s",
-                                ViewIdToString(change.window_id).c_str());
+      return base::StringPrintf("OnEmbeddedAppDisconnected window=%s",
+                                WindowIdToString(change.window_id).c_str());
 
     case CHANGE_TYPE_UNEMBED:
       return "OnUnembed";
 
     case CHANGE_TYPE_NODE_BOUNDS_CHANGED:
       return base::StringPrintf(
-          "BoundsChanged view=%s old_bounds=%s new_bounds=%s",
-          ViewIdToString(change.window_id).c_str(),
+          "BoundsChanged window=%s old_bounds=%s new_bounds=%s",
+          WindowIdToString(change.window_id).c_str(),
           RectToString(change.bounds).c_str(),
           RectToString(change.bounds2).c_str());
 
@@ -55,39 +55,39 @@ std::string ChangeToDescription1(const Change& change) {
 
     case CHANGE_TYPE_NODE_HIERARCHY_CHANGED:
       return base::StringPrintf(
-          "HierarchyChanged view=%s new_parent=%s old_parent=%s",
-          ViewIdToString(change.window_id).c_str(),
-          ViewIdToString(change.window_id2).c_str(),
-          ViewIdToString(change.window_id3).c_str());
+          "HierarchyChanged window=%s new_parent=%s old_parent=%s",
+          WindowIdToString(change.window_id).c_str(),
+          WindowIdToString(change.window_id2).c_str(),
+          WindowIdToString(change.window_id3).c_str());
 
     case CHANGE_TYPE_NODE_REORDERED:
-      return base::StringPrintf("Reordered view=%s relative=%s direction=%s",
-                                ViewIdToString(change.window_id).c_str(),
-                                ViewIdToString(change.window_id2).c_str(),
+      return base::StringPrintf("Reordered window=%s relative=%s direction=%s",
+                                WindowIdToString(change.window_id).c_str(),
+                                WindowIdToString(change.window_id2).c_str(),
                                 DirectionToString(change.direction).c_str());
 
     case CHANGE_TYPE_NODE_DELETED:
-      return base::StringPrintf("ViewDeleted view=%s",
-                                ViewIdToString(change.window_id).c_str());
+      return base::StringPrintf("WindowDeleted window=%s",
+                                WindowIdToString(change.window_id).c_str());
 
     case CHANGE_TYPE_NODE_VISIBILITY_CHANGED:
-      return base::StringPrintf("VisibilityChanged view=%s visible=%s",
-                                ViewIdToString(change.window_id).c_str(),
+      return base::StringPrintf("VisibilityChanged window=%s visible=%s",
+                                WindowIdToString(change.window_id).c_str(),
                                 change.bool_value ? "true" : "false");
 
     case CHANGE_TYPE_NODE_DRAWN_STATE_CHANGED:
-      return base::StringPrintf("DrawnStateChanged view=%s drawn=%s",
-                                ViewIdToString(change.window_id).c_str(),
+      return base::StringPrintf("DrawnStateChanged window=%s drawn=%s",
+                                WindowIdToString(change.window_id).c_str(),
                                 change.bool_value ? "true" : "false");
 
     case CHANGE_TYPE_INPUT_EVENT:
-      return base::StringPrintf("InputEvent view=%s event_action=%d",
-                                ViewIdToString(change.window_id).c_str(),
+      return base::StringPrintf("InputEvent window=%s event_action=%d",
+                                WindowIdToString(change.window_id).c_str(),
                                 change.event_action);
 
     case CHANGE_TYPE_PROPERTY_CHANGED:
-      return base::StringPrintf("PropertyChanged view=%s key=%s value=%s",
-                                ViewIdToString(change.window_id).c_str(),
+      return base::StringPrintf("PropertyChanged window=%s key=%s value=%s",
+                                WindowIdToString(change.window_id).c_str(),
                                 change.property_key.c_str(),
                                 change.property_value.c_str());
 
@@ -97,7 +97,7 @@ std::string ChangeToDescription1(const Change& change) {
 
     case CHANGE_TYPE_FOCUSED:
       return base::StringPrintf("Focused id=%s",
-                                ViewIdToString(change.window_id).c_str());
+                                WindowIdToString(change.window_id).c_str());
   }
   return std::string();
 }
@@ -122,36 +122,36 @@ std::string SingleChangeToDescription(const std::vector<Change>& changes) {
   return result;
 }
 
-std::string SingleViewDescription(const std::vector<TestView>& views) {
-  if (views.size() != 1u)
+std::string SingleWindowDescription(const std::vector<TestWindow>& windows) {
+  if (windows.size() != 1u)
     return "more than one changes and expected only one";
-  return views[0].ToString();
+  return windows[0].ToString();
 }
 
-std::string ChangeViewDescription(const std::vector<Change>& changes) {
+std::string ChangeWindowDescription(const std::vector<Change>& changes) {
   if (changes.size() != 1)
     return std::string();
-  std::vector<std::string> view_strings(changes[0].views.size());
-  for (size_t i = 0; i < changes[0].views.size(); ++i)
-    view_strings[i] = "[" + changes[0].views[i].ToString() + "]";
-  return base::JoinString(view_strings, ",");
+  std::vector<std::string> window_strings(changes[0].windows.size());
+  for (size_t i = 0; i < changes[0].windows.size(); ++i)
+    window_strings[i] = "[" + changes[0].windows[i].ToString() + "]";
+  return base::JoinString(window_strings, ",");
 }
 
-TestView WindowDataToTestView(const mojom::WindowDataPtr& data) {
-  TestView view;
-  view.parent_id = data->parent_id;
-  view.window_id = data->window_id;
-  view.visible = data->visible;
-  view.drawn = data->drawn;
-  view.properties =
+TestWindow WindowDataToTestWindow(const mojom::WindowDataPtr& data) {
+  TestWindow window;
+  window.parent_id = data->parent_id;
+  window.window_id = data->window_id;
+  window.visible = data->visible;
+  window.drawn = data->drawn;
+  window.properties =
       data->properties.To<std::map<std::string, std::vector<uint8_t>>>();
-  return view;
+  return window;
 }
 
-void WindowDatasToTestViews(const Array<mojom::WindowDataPtr>& data,
-                            std::vector<TestView>* test_views) {
+void WindowDatasToTestWindows(const Array<mojom::WindowDataPtr>& data,
+                              std::vector<TestWindow>* test_windows) {
   for (size_t i = 0; i < data.size(); ++i)
-    test_views->push_back(WindowDataToTestView(data[i]));
+    test_windows->push_back(WindowDataToTestWindow(data[i]));
 }
 
 Change::Change()
@@ -175,7 +175,7 @@ void TestChangeTracker::OnEmbed(ConnectionSpecificId connection_id,
   Change change;
   change.type = CHANGE_TYPE_EMBED;
   change.connection_id = connection_id;
-  change.views.push_back(WindowDataToTestView(root));
+  change.windows.push_back(WindowDataToTestWindow(root));
   AddChange(change);
 }
 
@@ -222,13 +222,13 @@ void TestChangeTracker::OnWindowHierarchyChanged(
     Id window_id,
     Id new_parent_id,
     Id old_parent_id,
-    Array<mojom::WindowDataPtr> views) {
+    Array<mojom::WindowDataPtr> windows) {
   Change change;
   change.type = CHANGE_TYPE_NODE_HIERARCHY_CHANGED;
   change.window_id = window_id;
   change.window_id2 = new_parent_id;
   change.window_id3 = old_parent_id;
-  WindowDatasToTestViews(views, &change.views);
+  WindowDatasToTestWindows(windows, &change.windows);
   AddChange(change);
 }
 
@@ -308,20 +308,20 @@ void TestChangeTracker::AddChange(const Change& change) {
     delegate_->OnChangeAdded();
 }
 
-TestView::TestView() {}
+TestWindow::TestWindow() {}
 
-TestView::~TestView() {}
+TestWindow::~TestWindow() {}
 
-std::string TestView::ToString() const {
-  return base::StringPrintf("view=%s parent=%s",
-                            ViewIdToString(window_id).c_str(),
-                            ViewIdToString(parent_id).c_str());
+std::string TestWindow::ToString() const {
+  return base::StringPrintf("window=%s parent=%s",
+                            WindowIdToString(window_id).c_str(),
+                            WindowIdToString(parent_id).c_str());
 }
 
-std::string TestView::ToString2() const {
+std::string TestWindow::ToString2() const {
   return base::StringPrintf(
-      "view=%s parent=%s visible=%s drawn=%s",
-      ViewIdToString(window_id).c_str(), ViewIdToString(parent_id).c_str(),
+      "window=%s parent=%s visible=%s drawn=%s",
+      WindowIdToString(window_id).c_str(), WindowIdToString(parent_id).c_str(),
       visible ? "true" : "false", drawn ? "true" : "false");
 }
 

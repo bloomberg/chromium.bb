@@ -471,7 +471,7 @@ Window::~Window() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// View, private:
+// Window, private:
 
 Window::Window(WindowTreeConnection* connection, Id id)
     : connection_(connection),

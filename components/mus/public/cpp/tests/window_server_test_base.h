@@ -68,15 +68,15 @@ class WindowServerTestBase
   void Create(mojo::ApplicationConnection* connection,
               mojo::InterfaceRequest<mojom::WindowTreeClient> request) override;
 
-  // Used to receive the most recent view tree connection loaded by an embed
+  // Used to receive the most recent window tree connection loaded by an embed
   // action.
   WindowTreeConnection* most_recent_connection_;
 
  private:
   mojom::WindowTreeHostPtr host_;
 
-  // The View Manager connection held by the window manager (app running at the
-  // root view).
+  // The window server connection held by the window manager (app running at
+  // the root window).
   WindowTreeConnection* window_manager_;
 
   bool window_tree_connection_destroyed_;

@@ -5,7 +5,7 @@
 #include "components/mus/ws/default_access_policy.h"
 
 #include "components/mus/ws/access_policy_delegate.h"
-#include "components/mus/ws/server_view.h"
+#include "components/mus/ws/server_window.h"
 
 namespace mus {
 
@@ -16,103 +16,105 @@ DefaultAccessPolicy::DefaultAccessPolicy(ConnectionSpecificId connection_id,
 DefaultAccessPolicy::~DefaultAccessPolicy() {}
 
 bool DefaultAccessPolicy::CanRemoveWindowFromParent(
-    const ServerView* view) const {
-  if (!WasCreatedByThisConnection(view))
-    return false;  // Can only unparent views we created.
+    const ServerWindow* window) const {
+  if (!WasCreatedByThisConnection(window))
+    return false;  // Can only unparent windows we created.
 
-  return delegate_->IsRootForAccessPolicy(view->parent()->id()) ||
-         WasCreatedByThisConnection(view->parent());
+  return delegate_->IsRootForAccessPolicy(window->parent()->id()) ||
+         WasCreatedByThisConnection(window->parent());
 }
 
-bool DefaultAccessPolicy::CanAddWindow(const ServerView* parent,
-                                       const ServerView* child) const {
+bool DefaultAccessPolicy::CanAddWindow(const ServerWindow* parent,
+                                       const ServerWindow* child) const {
   return WasCreatedByThisConnection(child) &&
          (delegate_->IsRootForAccessPolicy(parent->id()) ||
           (WasCreatedByThisConnection(parent) &&
-           !delegate_->IsViewRootOfAnotherConnectionForAccessPolicy(parent)));
+           !delegate_->IsWindowRootOfAnotherConnectionForAccessPolicy(parent)));
 }
 
 bool DefaultAccessPolicy::CanReorderWindow(
-    const ServerView* view,
-    const ServerView* relative_view,
+    const ServerWindow* window,
+    const ServerWindow* relative_window,
     mojom::OrderDirection direction) const {
-  return WasCreatedByThisConnection(view) &&
-         WasCreatedByThisConnection(relative_view);
+  return WasCreatedByThisConnection(window) &&
+         WasCreatedByThisConnection(relative_window);
 }
 
-bool DefaultAccessPolicy::CanDeleteWindow(const ServerView* view) const {
-  return WasCreatedByThisConnection(view);
+bool DefaultAccessPolicy::CanDeleteWindow(const ServerWindow* window) const {
+  return WasCreatedByThisConnection(window);
 }
 
-bool DefaultAccessPolicy::CanGetWindowTree(const ServerView* view) const {
-  return WasCreatedByThisConnection(view) ||
-         delegate_->IsRootForAccessPolicy(view->id()) ||
-         IsDescendantOfEmbedRoot(view);
+bool DefaultAccessPolicy::CanGetWindowTree(const ServerWindow* window) const {
+  return WasCreatedByThisConnection(window) ||
+         delegate_->IsRootForAccessPolicy(window->id()) ||
+         IsDescendantOfEmbedRoot(window);
 }
 
-bool DefaultAccessPolicy::CanDescendIntoViewForViewTree(
-    const ServerView* view) const {
-  return (WasCreatedByThisConnection(view) &&
-          !delegate_->IsViewRootOfAnotherConnectionForAccessPolicy(view)) ||
-         delegate_->IsRootForAccessPolicy(view->id()) ||
-         delegate_->IsDescendantOfEmbedRoot(view);
+bool DefaultAccessPolicy::CanDescendIntoWindowForWindowTree(
+    const ServerWindow* window) const {
+  return (WasCreatedByThisConnection(window) &&
+          !delegate_->IsWindowRootOfAnotherConnectionForAccessPolicy(window)) ||
+         delegate_->IsRootForAccessPolicy(window->id()) ||
+         delegate_->IsDescendantOfEmbedRoot(window);
 }
 
-bool DefaultAccessPolicy::CanEmbed(const ServerView* view,
+bool DefaultAccessPolicy::CanEmbed(const ServerWindow* window,
                                    uint32_t policy_bitmask) const {
   if (policy_bitmask != mojom::WindowTree::ACCESS_POLICY_DEFAULT)
     return false;
-  return WasCreatedByThisConnection(view) ||
-         (delegate_->IsViewKnownForAccessPolicy(view) &&
-          IsDescendantOfEmbedRoot(view) &&
-          !delegate_->IsRootForAccessPolicy(view->id()));
+  return WasCreatedByThisConnection(window) ||
+         (delegate_->IsWindowKnownForAccessPolicy(window) &&
+          IsDescendantOfEmbedRoot(window) &&
+          !delegate_->IsRootForAccessPolicy(window->id()));
 }
 
-bool DefaultAccessPolicy::CanChangeViewVisibility(
-    const ServerView* view) const {
-  return WasCreatedByThisConnection(view) ||
-         delegate_->IsRootForAccessPolicy(view->id());
+bool DefaultAccessPolicy::CanChangeWindowVisibility(
+    const ServerWindow* window) const {
+  return WasCreatedByThisConnection(window) ||
+         delegate_->IsRootForAccessPolicy(window->id());
 }
 
-bool DefaultAccessPolicy::CanSetWindowSurfaceId(const ServerView* view) const {
-  // Once a view embeds another app, the embedder app is no longer able to
+bool DefaultAccessPolicy::CanSetWindowSurfaceId(
+    const ServerWindow* window) const {
+  // Once a window embeds another app, the embedder app is no longer able to
   // call SetWindowSurfaceId() - this ability is transferred to the embedded
   // app.
-  if (delegate_->IsViewRootOfAnotherConnectionForAccessPolicy(view))
+  if (delegate_->IsWindowRootOfAnotherConnectionForAccessPolicy(window))
     return false;
-  return WasCreatedByThisConnection(view) ||
-         delegate_->IsRootForAccessPolicy(view->id());
+  return WasCreatedByThisConnection(window) ||
+         delegate_->IsRootForAccessPolicy(window->id());
 }
 
-bool DefaultAccessPolicy::CanSetWindowBounds(const ServerView* view) const {
-  return WasCreatedByThisConnection(view);
+bool DefaultAccessPolicy::CanSetWindowBounds(const ServerWindow* window) const {
+  return WasCreatedByThisConnection(window);
 }
 
-bool DefaultAccessPolicy::CanSetWindowProperties(const ServerView* view) const {
-  return WasCreatedByThisConnection(view);
+bool DefaultAccessPolicy::CanSetWindowProperties(
+    const ServerWindow* window) const {
+  return WasCreatedByThisConnection(window);
 }
 
 bool DefaultAccessPolicy::CanSetWindowTextInputState(
-    const ServerView* view) const {
-  return WasCreatedByThisConnection(view) ||
-         delegate_->IsRootForAccessPolicy(view->id());
+    const ServerWindow* window) const {
+  return WasCreatedByThisConnection(window) ||
+         delegate_->IsRootForAccessPolicy(window->id());
 }
 
-bool DefaultAccessPolicy::CanSetFocus(const ServerView* view) const {
-  return WasCreatedByThisConnection(view) ||
-         delegate_->IsRootForAccessPolicy(view->id());
+bool DefaultAccessPolicy::CanSetFocus(const ServerWindow* window) const {
+  return WasCreatedByThisConnection(window) ||
+         delegate_->IsRootForAccessPolicy(window->id());
 }
 
-bool DefaultAccessPolicy::CanSetClientArea(const ServerView* window) const {
+bool DefaultAccessPolicy::CanSetClientArea(const ServerWindow* window) const {
   return WasCreatedByThisConnection(window) ||
          delegate_->IsRootForAccessPolicy(window->id());
 }
 
 bool DefaultAccessPolicy::ShouldNotifyOnHierarchyChange(
-    const ServerView* view,
-    const ServerView** new_parent,
-    const ServerView** old_parent) const {
-  if (!WasCreatedByThisConnection(view) && !IsDescendantOfEmbedRoot(view) &&
+    const ServerWindow* window,
+    const ServerWindow** new_parent,
+    const ServerWindow** old_parent) const {
+  if (!WasCreatedByThisConnection(window) && !IsDescendantOfEmbedRoot(window) &&
       (!*new_parent || !IsDescendantOfEmbedRoot(*new_parent)) &&
       (!*old_parent || !IsDescendantOfEmbedRoot(*old_parent))) {
     return false;
@@ -132,8 +134,8 @@ bool DefaultAccessPolicy::ShouldNotifyOnHierarchyChange(
   return true;
 }
 
-const ServerView* DefaultAccessPolicy::GetViewForFocusChange(
-    const ServerView* focused) {
+const ServerWindow* DefaultAccessPolicy::GetWindowForFocusChange(
+    const ServerWindow* focused) {
   if (WasCreatedByThisConnection(focused) ||
       delegate_->IsRootForAccessPolicy(focused->id()))
     return focused;
@@ -141,13 +143,13 @@ const ServerView* DefaultAccessPolicy::GetViewForFocusChange(
 }
 
 bool DefaultAccessPolicy::WasCreatedByThisConnection(
-    const ServerView* view) const {
-  return view->id().connection_id == connection_id_;
+    const ServerWindow* window) const {
+  return window->id().connection_id == connection_id_;
 }
 
 bool DefaultAccessPolicy::IsDescendantOfEmbedRoot(
-    const ServerView* view) const {
-  return delegate_->IsDescendantOfEmbedRoot(view);
+    const ServerWindow* window) const {
+  return delegate_->IsDescendantOfEmbedRoot(window);
 }
 
 }  // namespace mus

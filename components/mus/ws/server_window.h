@@ -2,17 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_MUS_WS_SERVER_VIEW_H_
-#define COMPONENTS_MUS_WS_SERVER_VIEW_H_
+#ifndef COMPONENTS_MUS_WS_SERVER_WINDOW_H_
+#define COMPONENTS_MUS_WS_SERVER_WINDOW_H_
 
 #include <vector>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/observer_list.h"
 #include "components/mus/public/interfaces/compositor_frame.mojom.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "components/mus/ws/ids.h"
-#include "components/mus/ws/server_view_surface.h"
+#include "components/mus/ws/server_window_surface.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/transform.h"
@@ -20,38 +21,40 @@
 
 namespace mus {
 
-class ServerViewDelegate;
-class ServerViewObserver;
+class ServerWindowDelegate;
+class ServerWindowObserver;
 
-// Server side representation of a view. Delegate is informed of interesting
+// Server side representation of a window. Delegate is informed of interesting
 // events.
 //
 // It is assumed that all functions that mutate the tree have validated the
 // mutation is possible before hand. For example, Reorder() assumes the supplied
-// view is a child and not already in position.
+// window is a child and not already in position.
 //
-// ServerViews do not own their children. If you delete a view that has children
-// the children are implicitly removed. Similarly if a view has a parent and the
-// view is deleted the deleted view is implicitly removed from the parent.
-class ServerView {
+// ServerWindows do not own their children. If you delete a window that has
+// children the children are implicitly removed. Similarly if a window has a
+// parent and the window is deleted the deleted window is implicitly removed
+// from
+// the parent.
+class ServerWindow {
  public:
-  ServerView(ServerViewDelegate* delegate, const ViewId& id);
-  ~ServerView();
+  ServerWindow(ServerWindowDelegate* delegate, const WindowId& id);
+  ~ServerWindow();
 
-  void AddObserver(ServerViewObserver* observer);
-  void RemoveObserver(ServerViewObserver* observer);
+  void AddObserver(ServerWindowObserver* observer);
+  void RemoveObserver(ServerWindowObserver* observer);
 
   // Binds the provided |request| to |this| object. If an interface is already
-  // bound to this ServerView then the old connection is closed first.
+  // bound to this ServerWindow then the old connection is closed first.
   void Bind(mojo::InterfaceRequest<mojom::Surface> request,
             mojom::SurfaceClientPtr client);
 
-  const ViewId& id() const { return id_; }
+  const WindowId& id() const { return id_; }
 
-  void Add(ServerView* child);
-  void Remove(ServerView* child);
-  void Reorder(ServerView* child,
-               ServerView* relative,
+  void Add(ServerWindow* child);
+  void Remove(ServerWindow* child);
+  void Reorder(ServerWindow* child,
+               ServerWindow* relative,
                mojom::OrderDirection direction);
 
   const gfx::Rect& bounds() const { return bounds_; }
@@ -62,24 +65,24 @@ class ServerView {
   const gfx::Rect& client_area() const { return client_area_; }
   void SetClientArea(const gfx::Rect& bounds);
 
-  const ServerView* parent() const { return parent_; }
-  ServerView* parent() { return parent_; }
+  const ServerWindow* parent() const { return parent_; }
+  ServerWindow* parent() { return parent_; }
 
-  const ServerView* GetRoot() const;
-  ServerView* GetRoot() {
-    return const_cast<ServerView*>(
-        const_cast<const ServerView*>(this)->GetRoot());
+  const ServerWindow* GetRoot() const;
+  ServerWindow* GetRoot() {
+    return const_cast<ServerWindow*>(
+        const_cast<const ServerWindow*>(this)->GetRoot());
   }
 
-  std::vector<const ServerView*> GetChildren() const;
-  std::vector<ServerView*> GetChildren();
+  std::vector<const ServerWindow*> GetChildren() const;
+  std::vector<ServerWindow*> GetChildren();
 
-  // Returns the ServerView object with the provided |id| if it lies in a
+  // Returns the ServerWindow object with the provided |id| if it lies in a
   // subtree of |this|.
-  ServerView* GetChildView(const ViewId& id);
+  ServerWindow* GetChildWindow(const WindowId& id);
 
-  // Returns true if this contains |view| or is |view|.
-  bool Contains(const ServerView* view) const;
+  // Returns true if this contains |window| or is |window|.
+  bool Contains(const ServerWindow* window) const;
 
   // Returns true if the window is visible. This does not consider visibility
   // of any ancestors.
@@ -102,16 +105,16 @@ class ServerView {
     return text_input_state_;
   }
 
-  // Returns true if this view is attached to a root and all ancestors are
+  // Returns true if this window is attached to a root and all ancestors are
   // visible.
   bool IsDrawn() const;
 
-  // Returns the surface associated with this view. If a surface has not
-  // yet been allocated for this view, then one is allocated upon invocation.
-  ServerViewSurface* GetOrCreateSurface();
-  ServerViewSurface* surface() { return surface_.get(); }
+  // Returns the surface associated with this window. If a surface has not
+  // yet been allocated for this window, then one is allocated upon invocation.
+  ServerWindowSurface* GetOrCreateSurface();
+  ServerWindowSurface* surface() { return surface_.get(); }
 
-  ServerViewDelegate* delegate() { return delegate_; }
+  ServerWindowDelegate* delegate() { return delegate_; }
 
 #if !defined(NDEBUG)
   std::string GetDebugWindowHierarchy() const;
@@ -119,30 +122,30 @@ class ServerView {
 #endif
 
  private:
-  typedef std::vector<ServerView*> Views;
+  typedef std::vector<ServerWindow*> Windows;
 
-  // Implementation of removing a view. Doesn't send any notification.
-  void RemoveImpl(ServerView* view);
+  // Implementation of removing a window. Doesn't send any notification.
+  void RemoveImpl(ServerWindow* window);
 
-  ServerViewDelegate* delegate_;
-  const ViewId id_;
-  ServerView* parent_;
-  Views children_;
+  ServerWindowDelegate* delegate_;
+  const WindowId id_;
+  ServerWindow* parent_;
+  Windows children_;
   bool visible_;
   gfx::Rect bounds_;
   gfx::Rect client_area_;
-  scoped_ptr<ServerViewSurface> surface_;
+  scoped_ptr<ServerWindowSurface> surface_;
   float opacity_;
   gfx::Transform transform_;
   ui::TextInputState text_input_state_;
 
   std::map<std::string, std::vector<uint8_t>> properties_;
 
-  base::ObserverList<ServerViewObserver> observers_;
+  base::ObserverList<ServerWindowObserver> observers_;
 
-  DISALLOW_COPY_AND_ASSIGN(ServerView);
+  DISALLOW_COPY_AND_ASSIGN(ServerWindow);
 };
 
 }  // namespace mus
 
-#endif  // COMPONENTS_MUS_WS_SERVER_VIEW_H_
+#endif  // COMPONENTS_MUS_WS_SERVER_WINDOW_H_

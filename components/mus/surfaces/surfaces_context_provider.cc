@@ -37,7 +37,7 @@ SurfacesContextProvider::SurfacesContextProvider(
 // This is called when we have an accelerated widget.
 bool SurfacesContextProvider::BindToCurrentThread() {
   // SurfacesContextProvider should always live on the same thread as the
-  // View Manager.
+  // Window Manager.
   DCHECK(CalledOnValidThread());
   if (!command_buffer_local_->Initialize())
     return false;

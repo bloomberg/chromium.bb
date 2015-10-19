@@ -26,7 +26,7 @@ void CreateWindowTreeHost(mojom::WindowTreeHostFactory* factory,
                           WindowTreeDelegate* delegate,
                           mojom::WindowTreeHostPtr* host);
 
-// Creates a single host with no client by connecting to the view manager
+// Creates a single host with no client by connecting to the window manager
 // application. Useful only for tests and trivial UIs.
 void CreateSingleWindowTreeHost(mojo::ApplicationImpl* app,
                                 WindowTreeDelegate* delegate,

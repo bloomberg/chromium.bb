@@ -5,8 +5,8 @@
 #include "components/mus/ws/focus_controller.h"
 
 #include "components/mus/ws/focus_controller_delegate.h"
-#include "components/mus/ws/server_view.h"
-#include "components/mus/ws/server_view_drawn_tracker.h"
+#include "components/mus/ws/server_window.h"
+#include "components/mus/ws/server_window_drawn_tracker.h"
 
 namespace mus {
 
@@ -15,37 +15,37 @@ FocusController::FocusController(FocusControllerDelegate* delegate)
 
 FocusController::~FocusController() {}
 
-void FocusController::SetFocusedView(ServerView* view) {
-  if (GetFocusedView() == view)
+void FocusController::SetFocusedWindow(ServerWindow* window) {
+  if (GetFocusedWindow() == window)
     return;
 
-  SetFocusedViewImpl(view, CHANGE_SOURCE_EXPLICIT);
+  SetFocusedWindowImpl(window, CHANGE_SOURCE_EXPLICIT);
 }
 
-ServerView* FocusController::GetFocusedView() {
-  return drawn_tracker_ ? drawn_tracker_->view() : nullptr;
+ServerWindow* FocusController::GetFocusedWindow() {
+  return drawn_tracker_ ? drawn_tracker_->window() : nullptr;
 }
 
-void FocusController::SetFocusedViewImpl(ServerView* view,
-                                         ChangeSource change_source) {
-  ServerView* old = GetFocusedView();
+void FocusController::SetFocusedWindowImpl(ServerWindow* window,
+                                           ChangeSource change_source) {
+  ServerWindow* old = GetFocusedWindow();
 
-  DCHECK(!view || view->IsDrawn());
+  DCHECK(!window || window->IsDrawn());
 
-  if (view)
-    drawn_tracker_.reset(new ServerViewDrawnTracker(view, this));
+  if (window)
+    drawn_tracker_.reset(new ServerWindowDrawnTracker(window, this));
   else
     drawn_tracker_.reset();
 
   if (change_source == CHANGE_SOURCE_DRAWN_STATE_CHANGED)
-    delegate_->OnFocusChanged(old, view);
+    delegate_->OnFocusChanged(old, window);
 }
 
-void FocusController::OnDrawnStateChanged(ServerView* ancestor,
-                                          ServerView* view,
+void FocusController::OnDrawnStateChanged(ServerWindow* ancestor,
+                                          ServerWindow* window,
                                           bool is_drawn) {
   DCHECK(!is_drawn);  // We only observe when drawn.
-  SetFocusedViewImpl(ancestor, CHANGE_SOURCE_DRAWN_STATE_CHANGED);
+  SetFocusedWindowImpl(ancestor, CHANGE_SOURCE_DRAWN_STATE_CHANGED);
 }
 
 }  // namespace mus

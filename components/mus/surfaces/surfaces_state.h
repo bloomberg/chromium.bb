@@ -18,9 +18,9 @@ class SurfaceManager;
 
 namespace mus {
 
-// The SurfacesState object is an object global to the View Manager app that
+// The SurfacesState object is an object global to the Window Manager app that
 // holds the SurfaceManager, SurfacesScheduler and allocates new Surfaces
-// namespaces. This object lives on the main thread of the View Manager.
+// namespaces. This object lives on the main thread of the Window Manager.
 // TODO(rjkroege, fsamuel): This object will need to change to support multiple
 // displays.
 class SurfacesState : public base::RefCounted<SurfacesState> {

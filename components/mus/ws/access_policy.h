@@ -10,49 +10,50 @@
 
 namespace mus {
 
-class ServerView;
+class ServerWindow;
 
-// AccessPolicy is used by ViewTreeImpl to determine what a connection is
+// AccessPolicy is used by WindowTreeImpl to determine what a connection is
 // allowed to do.
 class AccessPolicy {
  public:
   virtual ~AccessPolicy() {}
 
   // Unless otherwise mentioned all arguments have been validated. That is the
-  // |view| arguments are non-null unless otherwise stated (eg CanSetWindow() is
-  // allowed to take a NULL view).
-  virtual bool CanRemoveWindowFromParent(const ServerView* view) const = 0;
-  virtual bool CanAddWindow(const ServerView* parent,
-                            const ServerView* child) const = 0;
-  virtual bool CanReorderWindow(const ServerView* view,
-                                const ServerView* relative_view,
+  // |window| arguments are non-null unless otherwise stated (eg CanSetWindow()
+  // is allowed to take a NULL window).
+  virtual bool CanRemoveWindowFromParent(const ServerWindow* window) const = 0;
+  virtual bool CanAddWindow(const ServerWindow* parent,
+                            const ServerWindow* child) const = 0;
+  virtual bool CanReorderWindow(const ServerWindow* window,
+                                const ServerWindow* relative_window,
                                 mojom::OrderDirection direction) const = 0;
-  virtual bool CanDeleteWindow(const ServerView* view) const = 0;
-  virtual bool CanGetWindowTree(const ServerView* view) const = 0;
-  // Used when building a view tree (GetViewTree()) to decide if we should
-  // descend into |view|.
-  virtual bool CanDescendIntoViewForViewTree(const ServerView* view) const = 0;
-  virtual bool CanEmbed(const ServerView* view,
+  virtual bool CanDeleteWindow(const ServerWindow* window) const = 0;
+  virtual bool CanGetWindowTree(const ServerWindow* window) const = 0;
+  // Used when building a window tree (GetWindowTree()) to decide if we should
+  // descend into |window|.
+  virtual bool CanDescendIntoWindowForWindowTree(
+      const ServerWindow* window) const = 0;
+  virtual bool CanEmbed(const ServerWindow* window,
                         uint32_t policy_bitmask) const = 0;
-  virtual bool CanChangeViewVisibility(const ServerView* view) const = 0;
-  virtual bool CanSetWindowSurfaceId(const ServerView* view) const = 0;
-  virtual bool CanSetWindowBounds(const ServerView* view) const = 0;
-  virtual bool CanSetWindowProperties(const ServerView* view) const = 0;
-  virtual bool CanSetWindowTextInputState(const ServerView* view) const = 0;
-  virtual bool CanSetFocus(const ServerView* view) const = 0;
-  virtual bool CanSetClientArea(const ServerView* window) const = 0;
+  virtual bool CanChangeWindowVisibility(const ServerWindow* window) const = 0;
+  virtual bool CanSetWindowSurfaceId(const ServerWindow* window) const = 0;
+  virtual bool CanSetWindowBounds(const ServerWindow* window) const = 0;
+  virtual bool CanSetWindowProperties(const ServerWindow* window) const = 0;
+  virtual bool CanSetWindowTextInputState(const ServerWindow* window) const = 0;
+  virtual bool CanSetFocus(const ServerWindow* window) const = 0;
+  virtual bool CanSetClientArea(const ServerWindow* window) const = 0;
 
   // Returns whether the connection should notify on a hierarchy change.
   // |new_parent| and |old_parent| are initially set to the new and old parents
-  // but may be altered so that the client only sees a certain set of views.
+  // but may be altered so that the client only sees a certain set of windows.
   virtual bool ShouldNotifyOnHierarchyChange(
-      const ServerView* view,
-      const ServerView** new_parent,
-      const ServerView** old_parent) const = 0;
+      const ServerWindow* window,
+      const ServerWindow** new_parent,
+      const ServerWindow** old_parent) const = 0;
 
-  // Returns the view to supply to the client when focus changes to |focused|.
-  virtual const ServerView* GetViewForFocusChange(
-      const ServerView* focused) = 0;
+  // Returns the window to supply to the client when focus changes to |focused|.
+  virtual const ServerWindow* GetWindowForFocusChange(
+      const ServerWindow* focused) = 0;
 };
 
 }  // namespace mus

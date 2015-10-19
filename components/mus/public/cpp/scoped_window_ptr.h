@@ -9,11 +9,11 @@
 
 namespace mus {
 
-// Wraps a View, taking overship of the View. Also deals with View being
+// Wraps a Window, taking overship of the Window. Also deals with Window being
 // destroyed while ScopedWindowPtr still exists.
 class ScopedWindowPtr : public WindowObserver {
  public:
-  explicit ScopedWindowPtr(Window* view);
+  explicit ScopedWindowPtr(Window* window);
   ~ScopedWindowPtr() override;
 
   // Destroys |window|. If |window| is the root of the WindowManager than the

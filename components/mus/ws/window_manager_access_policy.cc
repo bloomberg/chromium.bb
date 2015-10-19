@@ -5,7 +5,7 @@
 #include "components/mus/ws/window_manager_access_policy.h"
 
 #include "components/mus/ws/access_policy_delegate.h"
-#include "components/mus/ws/server_view.h"
+#include "components/mus/ws/server_window.h"
 
 namespace mus {
 
@@ -20,97 +20,102 @@ WindowManagerAccessPolicy::WindowManagerAccessPolicy(
 WindowManagerAccessPolicy::~WindowManagerAccessPolicy() {}
 
 bool WindowManagerAccessPolicy::CanRemoveWindowFromParent(
-    const ServerView* view) const {
+    const ServerWindow* window) const {
   return true;
 }
 
-bool WindowManagerAccessPolicy::CanAddWindow(const ServerView* parent,
-                                             const ServerView* child) const {
+bool WindowManagerAccessPolicy::CanAddWindow(const ServerWindow* parent,
+                                             const ServerWindow* child) const {
   return true;
 }
 
 bool WindowManagerAccessPolicy::CanReorderWindow(
-    const ServerView* view,
-    const ServerView* relative_view,
+    const ServerWindow* window,
+    const ServerWindow* relative_window,
     mojom::OrderDirection direction) const {
   return true;
 }
 
-bool WindowManagerAccessPolicy::CanDeleteWindow(const ServerView* view) const {
-  return view->id().connection_id == connection_id_;
+bool WindowManagerAccessPolicy::CanDeleteWindow(
+    const ServerWindow* window) const {
+  return window->id().connection_id == connection_id_;
 }
 
-bool WindowManagerAccessPolicy::CanGetWindowTree(const ServerView* view) const {
+bool WindowManagerAccessPolicy::CanGetWindowTree(
+    const ServerWindow* window) const {
   return true;
 }
 
-bool WindowManagerAccessPolicy::CanDescendIntoViewForViewTree(
-    const ServerView* view) const {
+bool WindowManagerAccessPolicy::CanDescendIntoWindowForWindowTree(
+    const ServerWindow* window) const {
   return true;
 }
 
-bool WindowManagerAccessPolicy::CanEmbed(const ServerView* view,
+bool WindowManagerAccessPolicy::CanEmbed(const ServerWindow* window,
                                          uint32_t policy_bitmask) const {
-  return !delegate_->IsRootForAccessPolicy(view->id());
+  return !delegate_->IsRootForAccessPolicy(window->id());
 }
 
-bool WindowManagerAccessPolicy::CanChangeViewVisibility(
-    const ServerView* view) const {
+bool WindowManagerAccessPolicy::CanChangeWindowVisibility(
+    const ServerWindow* window) const {
   // The WindowManager can change the visibility of the root too.
-  return view->id().connection_id == connection_id_ ||
-         (view->GetRoot() == view);
+  return window->id().connection_id == connection_id_ ||
+         (window->GetRoot() == window);
 }
 
 bool WindowManagerAccessPolicy::CanSetWindowSurfaceId(
-    const ServerView* view) const {
-  if (delegate_->IsViewRootOfAnotherConnectionForAccessPolicy(view))
+    const ServerWindow* window) const {
+  if (delegate_->IsWindowRootOfAnotherConnectionForAccessPolicy(window))
     return false;
-  return view->id().connection_id == connection_id_ ||
-         (delegate_->IsRootForAccessPolicy(view->id()));
+  return window->id().connection_id == connection_id_ ||
+         (delegate_->IsRootForAccessPolicy(window->id()));
 }
 
 bool WindowManagerAccessPolicy::CanSetWindowBounds(
-    const ServerView* view) const {
-  return view->id().connection_id == connection_id_;
+    const ServerWindow* window) const {
+  return window->id().connection_id == connection_id_;
 }
 
 bool WindowManagerAccessPolicy::CanSetWindowProperties(
-    const ServerView* view) const {
-  return view->id().connection_id == connection_id_;
+    const ServerWindow* window) const {
+  return window->id().connection_id == connection_id_;
 }
 
 bool WindowManagerAccessPolicy::CanSetWindowTextInputState(
-    const ServerView* view) const {
-  return view->id().connection_id == connection_id_;
+    const ServerWindow* window) const {
+  return window->id().connection_id == connection_id_;
 }
 
-bool WindowManagerAccessPolicy::CanSetFocus(const ServerView* view) const {
+bool WindowManagerAccessPolicy::CanSetFocus(const ServerWindow* window) const {
   return true;
 }
 
 bool WindowManagerAccessPolicy::CanSetClientArea(
-    const ServerView* window) const {
+    const ServerWindow* window) const {
   return window->id().connection_id == connection_id_ ||
          delegate_->IsRootForAccessPolicy(window->id());
 }
 
 bool WindowManagerAccessPolicy::ShouldNotifyOnHierarchyChange(
-    const ServerView* view,
-    const ServerView** new_parent,
-    const ServerView** old_parent) const {
-  // Notify if we've already told the window manager about the view, or if we've
+    const ServerWindow* window,
+    const ServerWindow** new_parent,
+    const ServerWindow** old_parent) const {
+  // Notify if we've already told the window manager about the window, or if
+  // we've
   // already told the window manager about the parent. The later handles the
-  // case of a view that wasn't parented to the root getting added to the root.
-  return IsViewKnown(view) || (*new_parent && IsViewKnown(*new_parent));
+  // case of a window that wasn't parented to the root getting added to the
+  // root.
+  return IsWindowKnown(window) || (*new_parent && IsWindowKnown(*new_parent));
 }
 
-const ServerView* WindowManagerAccessPolicy::GetViewForFocusChange(
-    const ServerView* focused) {
+const ServerWindow* WindowManagerAccessPolicy::GetWindowForFocusChange(
+    const ServerWindow* focused) {
   return focused;
 }
 
-bool WindowManagerAccessPolicy::IsViewKnown(const ServerView* view) const {
-  return delegate_->IsViewKnownForAccessPolicy(view);
+bool WindowManagerAccessPolicy::IsWindowKnown(
+    const ServerWindow* window) const {
+  return delegate_->IsWindowKnownForAccessPolicy(window);
 }
 
 }  // namespace mus

@@ -21,7 +21,7 @@
 //    DEFINE_WINDOW_PROPERTY_KEY(MyType, kMyKey, MyDefault);
 //
 //    // Use this to define an exported property whose value is a heap
-//    // allocated object, and has to be owned and freed by the view.
+//    // allocated object, and has to be owned and freed by the window.
 //    DEFINE_OWNED_WINDOW_PROPERTY_KEY(gfx::Rect, kRestoreBoundsKey, nullptr);
 //
 //    // Use this to define a non exported property that is primitive,

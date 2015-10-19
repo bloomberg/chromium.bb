@@ -16,7 +16,7 @@ namespace mus {
 class Window;
 class WindowTreeDelegate;
 
-// Encapsulates a connection to a view tree. A unique connection is made
+// Encapsulates a connection to a window tree. A unique connection is made
 // every time an app is embedded.
 class WindowTreeConnection {
  public:
@@ -40,14 +40,14 @@ class WindowTreeConnection {
   // Returns the root of this connection.
   virtual Window* GetRoot() = 0;
 
-  // Returns a View known to this connection.
+  // Returns a Window known to this connection.
   virtual Window* GetWindowById(Id id) = 0;
 
-  // Returns the focused view; null if focus is not yet known or another app is
-  // focused.
+  // Returns the focused window; null if focus is not yet known or another app
+  // is focused.
   virtual Window* GetFocusedWindow() = 0;
 
-  // Creates and returns a new View (which is owned by the ViewManager). Views
+  // Creates and returns a new Window (which is owned by the ViewManager). Views
   // are initially hidden, use SetVisible(true) to show.
   virtual Window* NewWindow() = 0;
 

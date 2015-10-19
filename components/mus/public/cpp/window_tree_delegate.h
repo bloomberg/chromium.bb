@@ -16,19 +16,19 @@ namespace mus {
 class Window;
 class WindowTreeConnection;
 
-// Interface implemented by an application using the view manager.
+// Interface implemented by an application using the window manager.
 //
 // Each call to OnEmbed() results in a new WindowTreeConnection and new root
-// View.
+// Window.
 // WindowTreeConnection is deleted by any of the following:
 // . If the root of the connection is destroyed. This happens if the owner
 //   of the root Embed()s another app in root, or the owner explicitly deletes
 //   root.
-// . The connection to the view manager is lost.
+// . The connection to the window manager is lost.
 // . Explicitly by way of calling delete.
 //
-// When the WindowTreeConnection is deleted all views are deleted (and observers
-// notified). This is followed by notifying the delegate by way of
+// When the WindowTreeConnection is deleted all windows are deleted (and
+// observers notified). This is followed by notifying the delegate by way of
 // OnConnectionLost().
 class WindowTreeDelegate {
  public:
@@ -46,8 +46,8 @@ class WindowTreeDelegate {
   // valid.
   virtual void OnEmbed(Window* root) = 0;
 
-  // Sent when another app is embedded in the same View as this connection.
-  // Subsequently the root View and this object are destroyed (observers are
+  // Sent when another app is embedded in the same Window as this connection.
+  // Subsequently the root Window and this object are destroyed (observers are
   // notified appropriately).
   virtual void OnUnembed();
 

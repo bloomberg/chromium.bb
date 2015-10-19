@@ -26,26 +26,26 @@ source_set("lib") {
     "focus_controller.cc",
     "focus_controller.h",
     "focus_controller_delegate.h",
-    "server_view.cc",
-    "server_view.h",
-    "server_view_delegate.h",
-    "server_view_drawn_tracker.cc",
-    "server_view_drawn_tracker.h",
-    "server_view_drawn_tracker_observer.h",
-    "server_view_observer.h",
-    "server_view_surface.cc",
-    "server_view_surface.h",
-    "view_coordinate_conversions.cc",
-    "view_coordinate_conversions.h",
-    "view_tree_host_connection.cc",
-    "view_tree_host_connection.h",
-    "view_tree_host_delegate.h",
-    "view_tree_host_impl.cc",
-    "view_tree_host_impl.h",
-    "view_tree_impl.cc",
-    "view_tree_impl.h",
+    "server_window.cc",
+    "server_window.h",
+    "server_window_delegate.h",
+    "server_window_drawn_tracker.cc",
+    "server_window_drawn_tracker.h",
+    "server_window_drawn_tracker_observer.h",
+    "server_window_observer.h",
+    "server_window_surface.cc",
+    "server_window_surface.h",
+    "window_coordinate_conversions.cc",
+    "window_coordinate_conversions.h",
     "window_manager_access_policy.cc",
     "window_manager_access_policy.h",
+    "window_tree_host_connection.cc",
+    "window_tree_host_connection.h",
+    "window_tree_host_delegate.h",
+    "window_tree_host_impl.cc",
+    "window_tree_host_impl.h",
+    "window_tree_impl.cc",
+    "window_tree_impl.h",
   ]
 
   deps = [
@@ -100,19 +100,19 @@ group("tests") {
   testonly = true
   deps = [
     ":apptests",
-    ":view_manager_unittests",
+    ":window_manager_unittests",
     "//components/mus/public/cpp/tests:mojo_view_manager_lib_unittests",
   ]
 }
 
-test("view_manager_unittests") {
+test("window_manager_unittests") {
   sources = [
     "focus_controller_unittest.cc",
-    "server_view_drawn_tracker_unittest.cc",
-    "test_server_view_delegate.cc",
-    "test_server_view_delegate.h",
-    "view_coordinate_conversions_unittest.cc",
-    "view_tree_unittest.cc",
+    "server_window_drawn_tracker_unittest.cc",
+    "test_server_window_delegate.cc",
+    "test_server_window_delegate.h",
+    "window_coordinate_conversions_unittest.cc",
+    "window_tree_unittest.cc",
   ]
 
   deps = [
@@ -149,8 +149,8 @@ mojo_native_application("apptests") {
   testonly = true
 
   sources = [
-    "view_manager_client_apptest.cc",
-    "view_tree_apptest.cc",
+    "window_manager_client_apptest.cc",
+    "window_tree_apptest.cc",
   ]
 
   deps = [

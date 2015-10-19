@@ -6,25 +6,27 @@
 #define COMPONENTS_MUS_WS_FOCUS_CONTROLLER_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "components/mus/ws/server_view_drawn_tracker_observer.h"
+#include "components/mus/ws/server_window_drawn_tracker_observer.h"
 
 namespace mus {
 
 class FocusControllerDelegate;
-class ServerView;
-class ServerViewDrawnTracker;
+class ServerWindow;
+class ServerWindowDrawnTracker;
 
-// Tracks a focused view. Focus is moved to another view when the drawn state
-// of the focused view changes and the delegate is notified.
-class FocusController : public ServerViewDrawnTrackerObserver {
+// Tracks a focused window. Focus is moved to another window when the drawn
+// state
+// of the focused window changes and the delegate is notified.
+class FocusController : public ServerWindowDrawnTrackerObserver {
  public:
   explicit FocusController(FocusControllerDelegate* delegate);
   ~FocusController() override;
 
-  // Sets the focused view. Does nothing if |view| is currently focused. This
+  // Sets the focused window. Does nothing if |window| is currently focused.
+  // This
   // does not notify the delegate.
-  void SetFocusedView(ServerView* view);
-  ServerView* GetFocusedView();
+  void SetFocusedWindow(ServerWindow* window);
+  ServerWindow* GetFocusedWindow();
 
  private:
   // Describes the source of the change.
@@ -33,16 +35,16 @@ class FocusController : public ServerViewDrawnTrackerObserver {
     CHANGE_SOURCE_DRAWN_STATE_CHANGED,
   };
 
-  // Implementation of SetFocusedView().
-  void SetFocusedViewImpl(ServerView* view, ChangeSource change_source);
+  // Implementation of SetFocusedWindow().
+  void SetFocusedWindowImpl(ServerWindow* window, ChangeSource change_source);
 
-  // ServerViewDrawnTrackerObserver:
-  void OnDrawnStateChanged(ServerView* ancestor,
-                           ServerView* view,
+  // ServerWindowDrawnTrackerObserver:
+  void OnDrawnStateChanged(ServerWindow* ancestor,
+                           ServerWindow* window,
                            bool is_drawn) override;
 
   FocusControllerDelegate* delegate_;
-  scoped_ptr<ServerViewDrawnTracker> drawn_tracker_;
+  scoped_ptr<ServerWindowDrawnTracker> drawn_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(FocusController);
 };

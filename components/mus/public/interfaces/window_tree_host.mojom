@@ -11,7 +11,7 @@ import "ui/mojo/events/input_key_codes.mojom";
 import "ui/mojo/geometry/geometry.mojom";
 
 // WindowTreeHost encapsulates a unique underlying platform window, with a tree
-// of views.
+// of windows.
 interface WindowTreeHost {
   // Sets the size of the platform window.
   SetSize(mojo.Size size);
@@ -21,7 +21,7 @@ interface WindowTreeHost {
 
   // Add and remove accelerators. When accelerators are registered the
   // WindowTreeHostClient receives the key event via OnAccelerator() rather than
-  // the focused view. The id is defined by the client and can be used to more
+  // the focused window. The id is defined by the client and can be used to more
   // easily identify the accelerator's action.
   AddAccelerator(uint32 id,
                  mojo.KeyboardCode keyboard_code,

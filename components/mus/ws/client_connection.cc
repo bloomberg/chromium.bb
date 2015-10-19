@@ -5,18 +5,18 @@
 #include "components/mus/ws/client_connection.h"
 
 #include "components/mus/ws/connection_manager.h"
-#include "components/mus/ws/view_tree_impl.h"
+#include "components/mus/ws/window_tree_impl.h"
 
 namespace mus {
 
-ClientConnection::ClientConnection(scoped_ptr<ViewTreeImpl> service,
+ClientConnection::ClientConnection(scoped_ptr<WindowTreeImpl> service,
                                    mojom::WindowTreeClient* client)
     : service_(service.Pass()), client_(client) {}
 
 ClientConnection::~ClientConnection() {}
 
 DefaultClientConnection::DefaultClientConnection(
-    scoped_ptr<ViewTreeImpl> service_impl,
+    scoped_ptr<WindowTreeImpl> service_impl,
     ConnectionManager* connection_manager,
     mojo::InterfaceRequest<mojom::WindowTree> service_request,
     mojom::WindowTreeClientPtr client)

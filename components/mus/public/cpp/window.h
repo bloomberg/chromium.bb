@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_MUS_PUBLIC_CPP_VIEW_H_
-#define COMPONENTS_MUS_PUBLIC_CPP_VIEW_H_
+#ifndef COMPONENTS_MUS_PUBLIC_CPP_WINDOW_H_
+#define COMPONENTS_MUS_PUBLIC_CPP_WINDOW_H_
 
 #include <stdint.h>
 #include <vector>
@@ -186,13 +186,13 @@ class Window {
   // Methods implementing visibility change notifications. See WindowObserver
   // for more details.
   void NotifyWindowVisibilityChanged(Window* target);
-  // Notifies this view's observers. Returns false if |this| was deleted during
-  // the call (by an observer), otherwise true.
+  // Notifies this window's observers. Returns false if |this| was deleted
+  // during the call (by an observer), otherwise true.
   bool NotifyWindowVisibilityChangedAtReceiver(Window* target);
-  // Notifies this view and its child hierarchy. Returns false if |this| was
+  // Notifies this window and its child hierarchy. Returns false if |this| was
   // deleted during the call (by an observer), otherwise true.
   bool NotifyWindowVisibilityChangedDown(Window* target);
-  // Notifies this view and its parent hierarchy.
+  // Notifies this window and its parent hierarchy.
   void NotifyWindowVisibilityChangedUp(Window* target);
 
   // Returns true if embed is allowed for this node. If embedding is allowed all
@@ -216,7 +216,8 @@ class Window {
   SharedProperties properties_;
 
   // Drawn state is derived from the visible state and the parent's visible
-  // state. This field is only used if the view has no parent (eg it's a root).
+  // state. This field is only used if the window has no parent (eg it's a
+  // root).
   bool drawn_;
 
   // Value struct to keep the name and deallocator for this property.
@@ -235,4 +236,4 @@ class Window {
 
 }  // namespace mus
 
-#endif  // COMPONENTS_MUS_PUBLIC_CPP_VIEW_H_
+#endif  // COMPONENTS_MUS_PUBLIC_CPP_WINDOW_H_

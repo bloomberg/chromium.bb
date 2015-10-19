@@ -7,12 +7,12 @@
 
 namespace mus {
 
-class ServerView;
+class ServerWindow;
 
 class FocusControllerDelegate {
  public:
-  virtual void OnFocusChanged(ServerView* old_focused_view,
-                              ServerView* new_focused_view) = 0;
+  virtual void OnFocusChanged(ServerWindow* old_focused_window,
+                              ServerWindow* new_focused_window) = 0;
 
  protected:
   ~FocusControllerDelegate() {}

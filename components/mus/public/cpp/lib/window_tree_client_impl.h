@@ -74,7 +74,7 @@ class WindowTreeClientImpl : public WindowTreeConnection,
   }
   void ClearChangeAckedCallback() { change_acked_callback_.reset(); }
 
-  // Start/stop tracking views. While tracked, they can be retrieved via
+  // Start/stop tracking windows. While tracked, they can be retrieved via
   // WindowTreeConnection::GetWindowById.
   void AddWindow(Window* window);
   void RemoveWindow(Id window_id);

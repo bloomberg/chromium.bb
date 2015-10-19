@@ -26,7 +26,7 @@ Window* AddWindowToConnection(WindowTreeClientImpl* client,
                               Window* parent,
                               const mojom::WindowDataPtr& window_data) {
   // We don't use the cto that takes a WindowTreeConnection here, since it will
-  // call back to the service and attempt to create a new view.
+  // call back to the service and attempt to create a new window.
   Window* window = WindowPrivate::LocalCreate();
   WindowPrivate private_window(window);
   private_window.set_connection(client);
@@ -108,7 +108,7 @@ WindowTreeClientImpl::~WindowTreeClientImpl() {
     }
   }
 
-  // Delete the non-owned views last. In the typical case these are roots. The
+  // Delete the non-owned windows last. In the typical case these are roots. The
   // exception is the window manager and embed roots, which may know about
   // other random windows that it doesn't own.
   // NOTE: we manually delete as we're a friend.

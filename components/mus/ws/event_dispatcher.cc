@@ -7,17 +7,17 @@
 #include "cc/surfaces/surface_id.h"
 #include "components/mus/surfaces/surfaces_state.h"
 #include "components/mus/ws/connection_manager.h"
-#include "components/mus/ws/server_view.h"
-#include "components/mus/ws/server_view_delegate.h"
-#include "components/mus/ws/view_coordinate_conversions.h"
-#include "components/mus/ws/view_tree_host_impl.h"
+#include "components/mus/ws/server_window.h"
+#include "components/mus/ws/server_window_delegate.h"
+#include "components/mus/ws/window_coordinate_conversions.h"
+#include "components/mus/ws/window_tree_host_impl.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point_f.h"
 
 namespace mus {
 
-EventDispatcher::EventDispatcher(ViewTreeHostImpl* view_tree_host)
-    : view_tree_host_(view_tree_host) {}
+EventDispatcher::EventDispatcher(WindowTreeHostImpl* window_tree_host)
+    : window_tree_host_(window_tree_host) {}
 
 EventDispatcher::~EventDispatcher() {}
 
@@ -45,17 +45,17 @@ void EventDispatcher::OnEvent(mojo::EventPtr event) {
       !event->key_data->is_char) {
     uint32_t accelerator = 0u;
     if (FindAccelerator(*event, &accelerator)) {
-      view_tree_host_->OnAccelerator(accelerator, event.Pass());
+      window_tree_host_->OnAccelerator(accelerator, event.Pass());
       return;
     }
   }
 
-  ServerView* target = FindEventTarget(event.get());
+  ServerWindow* target = FindEventTarget(event.get());
   if (target) {
     // Update focus on pointer-down.
     if (event->action == mojo::EVENT_TYPE_POINTER_DOWN)
-      view_tree_host_->SetFocusedView(target);
-    view_tree_host_->DispatchInputEventToView(target, event.Pass());
+      window_tree_host_->SetFocusedWindow(target);
+    window_tree_host_->DispatchInputEventToWindow(target, event.Pass());
   }
 }
 
@@ -72,10 +72,10 @@ bool EventDispatcher::FindAccelerator(const mojo::Event& event,
   return false;
 }
 
-ServerView* EventDispatcher::FindEventTarget(mojo::Event* event) {
-  ServerView* focused_view = view_tree_host_->GetFocusedView();
+ServerWindow* EventDispatcher::FindEventTarget(mojo::Event* event) {
+  ServerWindow* focused_window = window_tree_host_->GetFocusedWindow();
   if (event->key_data)
-    return focused_view;
+    return focused_window;
 
   DCHECK(event->pointer_data || event->wheel_data) << "Unknown event type: "
                                                    << event->action;
@@ -88,19 +88,19 @@ ServerView* EventDispatcher::FindEventTarget(mojo::Event* event) {
   DCHECK(event_location);
   gfx::Point location(static_cast<int>(event_location->x),
                       static_cast<int>(event_location->y));
-  ServerView* target = focused_view;
-  ServerView* root = view_tree_host_->root_view();
+  ServerWindow* target = focused_window;
+  ServerWindow* root = window_tree_host_->root_window();
   if (event->action == mojo::EVENT_TYPE_POINTER_DOWN || !target ||
       !root->Contains(target)) {
-    target = FindDeepestVisibleViewFromSurface(&location);
+    target = FindDeepestVisibleWindowFromSurface(&location);
     // Surface-based hit-testing will not return a valid target if no
     // compositor-frame have been submitted (e.g. in unit-tests).
     if (!target)
-      target = FindDeepestVisibleView(root, &location);
+      target = FindDeepestVisibleWindow(root, &location);
     CHECK(target);
   } else {
     gfx::Point old_point = location;
-    location = ConvertPointBetweenViews(root, target, location);
+    location = ConvertPointBetweenWindows(root, target, location);
   }
 
   event_location->x = location.x();
@@ -108,9 +108,9 @@ ServerView* EventDispatcher::FindEventTarget(mojo::Event* event) {
   return target;
 }
 
-ServerView* EventDispatcher::FindDeepestVisibleView(ServerView* view,
-                                                    gfx::Point* location) {
-  for (ServerView* child : view->GetChildren()) {
+ServerWindow* EventDispatcher::FindDeepestVisibleWindow(ServerWindow* window,
+                                                        gfx::Point* location) {
+  for (ServerWindow* child : window->GetChildren()) {
     if (!child->visible())
       continue;
 
@@ -121,27 +121,28 @@ ServerView* EventDispatcher::FindDeepestVisibleView(ServerView* view,
         child_location.x() < child->bounds().width() &&
         child_location.y() < child->bounds().height()) {
       *location = child_location;
-      return FindDeepestVisibleView(child, location);
+      return FindDeepestVisibleWindow(child, location);
     }
   }
-  return view;
+  return window;
 }
 
-ServerView* EventDispatcher::FindDeepestVisibleViewFromSurface(
+ServerWindow* EventDispatcher::FindDeepestVisibleWindowFromSurface(
     gfx::Point* location) {
-  if (view_tree_host_->surface_id().is_null())
+  if (window_tree_host_->surface_id().is_null())
     return nullptr;
 
   gfx::Transform transform_to_target_surface;
   cc::SurfaceId target_surface =
-      view_tree_host_->root_view()->delegate()
+      window_tree_host_->root_window()
+          ->delegate()
           ->GetSurfacesState()
           ->hit_tester()
-          ->GetTargetSurfaceAtPoint(view_tree_host_->surface_id(), *location,
+          ->GetTargetSurfaceAtPoint(window_tree_host_->surface_id(), *location,
                                     &transform_to_target_surface);
-  ViewId id = ViewIdFromTransportId(
+  WindowId id = WindowIdFromTransportId(
       cc::SurfaceIdAllocator::NamespaceForId(target_surface));
-  ServerView* target = view_tree_host_->connection_manager()->GetView(id);
+  ServerWindow* target = window_tree_host_->connection_manager()->GetWindow(id);
   // TODO(fsamuel): This should be a DCHECK but currently we use stale
   // information to decide where to route input events. This should be fixed
   // once we implement a UI scheduler.

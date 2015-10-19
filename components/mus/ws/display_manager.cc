@@ -15,8 +15,8 @@
 #include "components/mus/public/interfaces/quads.mojom.h"
 #include "components/mus/surfaces/surfaces_state.h"
 #include "components/mus/ws/display_manager_factory.h"
-#include "components/mus/ws/server_view.h"
-#include "components/mus/ws/view_coordinate_conversions.h"
+#include "components/mus/ws/server_window.h"
+#include "components/mus/ws/window_coordinate_conversions.h"
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
@@ -46,47 +46,46 @@ using mojo::Size;
 namespace mus {
 namespace {
 
-// DrawViewTree recursively visits ServerViews, creating a SurfaceDrawQuad for
-// each that lacks one. A ServerView may hold a CompositorFrame that
-// references other ServerViews in SurfaceDrawQuads. We should not create new
-// SurfaceDrawQuads for these |referenced_view_ids|. Instead,
-// cc::SurfaceAggregator
-// will do the heavy lifting here by expanding those references to generate one
-// top-level display CompositorFrame.
-void DrawViewTree(cc::RenderPass* pass,
-                  ServerView* view,
-                  const gfx::Vector2d& parent_to_root_origin_offset,
-                  float opacity,
-                  std::set<ViewId>* referenced_view_ids) {
-  if (!view->visible())
+// DrawWindowTree recursively visits ServerWindows, creating a SurfaceDrawQuad
+// for each that lacks one. A ServerWindow may hold a CompositorFrame that
+// references other ServerWindows in SurfaceDrawQuads. We should not create new
+// SurfaceDrawQuads for these |referenced_window_ids|. Instead,
+// cc::SurfaceAggregator will do the heavy lifting here by expanding those
+// references to generate one top-level display CompositorFrame.
+void DrawWindowTree(cc::RenderPass* pass,
+                    ServerWindow* window,
+                    const gfx::Vector2d& parent_to_root_origin_offset,
+                    float opacity,
+                    std::set<WindowId>* referenced_window_ids) {
+  if (!window->visible())
     return;
 
-  ServerViewSurface* surface = view->surface();
+  ServerWindowSurface* surface = window->surface();
 
   if (surface) {
-    // Accumulate referenced views in each ServerView's CompositorFrame.
-    referenced_view_ids->insert(surface->referenced_view_ids().begin(),
-                                surface->referenced_view_ids().end());
+    // Accumulate referenced windows in each ServerWindow's CompositorFrame.
+    referenced_window_ids->insert(surface->referenced_window_ids().begin(),
+                                  surface->referenced_window_ids().end());
   }
 
   const gfx::Rect absolute_bounds =
-      view->bounds() + parent_to_root_origin_offset;
-  std::vector<ServerView*> children(view->GetChildren());
+      window->bounds() + parent_to_root_origin_offset;
+  std::vector<ServerWindow*> children(window->GetChildren());
   // TODO(rjkroege, fsamuel): Make sure we're handling alpha correctly.
-  const float combined_opacity = opacity * view->opacity();
+  const float combined_opacity = opacity * window->opacity();
   for (auto it = children.rbegin(); it != children.rend(); ++it) {
-    DrawViewTree(pass, *it, absolute_bounds.OffsetFromOrigin(),
-                 combined_opacity, referenced_view_ids);
+    DrawWindowTree(pass, *it, absolute_bounds.OffsetFromOrigin(),
+                   combined_opacity, referenced_window_ids);
   }
 
-  // If an ancestor has already referenced this view, then we do not need
+  // If an ancestor has already referenced this window, then we do not need
   // to create a SurfaceDrawQuad for it.
-  if (referenced_view_ids->count(view->id()) || !surface)
+  if (referenced_window_ids->count(window->id()) || !surface)
     return;
 
   gfx::Transform quad_to_target_transform;
   quad_to_target_transform.Translate(absolute_bounds.x(), absolute_bounds.y());
-  gfx::Rect bounds_at_origin(view->bounds().size());
+  gfx::Rect bounds_at_origin(window->bounds().size());
 
   cc::SharedQuadState* sqs = pass->CreateAndAppendSharedQuadState();
   // TODO(fsamuel): These clipping and visible rects are incorrect. They need
@@ -94,8 +93,8 @@ void DrawViewTree(cc::RenderPass* pass,
   sqs->SetAll(
       quad_to_target_transform, bounds_at_origin.size() /* layer_bounds */,
       bounds_at_origin /* visible_layer_bounds */,
-      bounds_at_origin /* clip_rect */, false /* is_clipped */, view->opacity(),
-      SkXfermode::kSrc_Mode, 0 /* sorting-context_id */);
+      bounds_at_origin /* clip_rect */, false /* is_clipped */,
+      window->opacity(), SkXfermode::kSrc_Mode, 0 /* sorting-context_id */);
 
   auto surface_quad = pass->CreateAndAppendDrawQuad<cc::SurfaceDrawQuad>();
   surface_quad->SetNew(sqs, bounds_at_origin /* rect */,
@@ -165,13 +164,13 @@ DefaultDisplayManager::~DefaultDisplayManager() {
   platform_window_.reset();
 }
 
-void DefaultDisplayManager::SchedulePaint(const ServerView* view,
+void DefaultDisplayManager::SchedulePaint(const ServerWindow* window,
                                           const gfx::Rect& bounds) {
-  DCHECK(view);
-  if (!view->IsDrawn())
+  DCHECK(window);
+  if (!window->IsDrawn())
     return;
   const gfx::Rect root_relative_rect =
-      ConvertRectBetweenViews(view, delegate_->GetRootView(), bounds);
+      ConvertRectBetweenWindows(window, delegate_->GetRootWindow(), bounds);
   if (root_relative_rect.IsEmpty())
     return;
   dirty_rect_.Union(root_relative_rect);
@@ -204,7 +203,7 @@ void DefaultDisplayManager::SetImeVisibility(bool visible) {
 }
 
 void DefaultDisplayManager::Draw() {
-  if (!delegate_->GetRootView()->visible())
+  if (!delegate_->GetRootWindow()->visible())
     return;
 
   // TODO(fsamuel): We should add a trace for generating a top level frame.
@@ -256,9 +255,9 @@ DefaultDisplayManager::GenerateCompositorFrame() {
   render_pass->damage_rect = dirty_rect_;
   render_pass->output_rect = gfx::Rect(metrics_.size_in_pixels.To<gfx::Size>());
 
-  std::set<ViewId> referenced_view_ids;
-  DrawViewTree(render_pass.get(), delegate_->GetRootView(), gfx::Vector2d(),
-               1.0f, &referenced_view_ids);
+  std::set<WindowId> referenced_window_ids;
+  DrawWindowTree(render_pass.get(), delegate_->GetRootWindow(), gfx::Vector2d(),
+                 1.0f, &referenced_window_ids);
 
   scoped_ptr<cc::DelegatedFrameData> frame_data(new cc::DelegatedFrameData);
   frame_data->device_scale_factor = metrics_.device_pixel_ratio;

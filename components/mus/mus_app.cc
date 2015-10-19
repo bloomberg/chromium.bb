@@ -10,9 +10,9 @@
 #include "components/mus/surfaces/surfaces_scheduler.h"
 #include "components/mus/ws/client_connection.h"
 #include "components/mus/ws/connection_manager.h"
-#include "components/mus/ws/view_tree_host_connection.h"
-#include "components/mus/ws/view_tree_host_impl.h"
-#include "components/mus/ws/view_tree_impl.h"
+#include "components/mus/ws/window_tree_host_connection.h"
+#include "components/mus/ws/window_tree_host_impl.h"
+#include "components/mus/ws/window_tree_impl.h"
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/application/public/cpp/application_runner.h"
@@ -80,30 +80,32 @@ void MandolineUIServicesApp::OnNoMoreRootConnections() {
   app_impl_->Quit();
 }
 
-ClientConnection* MandolineUIServicesApp::CreateClientConnectionForEmbedAtView(
+ClientConnection*
+MandolineUIServicesApp::CreateClientConnectionForEmbedAtWindow(
     ConnectionManager* connection_manager,
     mojo::InterfaceRequest<mojom::WindowTree> tree_request,
     ConnectionSpecificId creator_id,
     mojo::URLRequestPtr request,
-    const ViewId& root_id,
+    const WindowId& root_id,
     uint32_t policy_bitmask) {
   mojom::WindowTreeClientPtr client;
   app_impl_->ConnectToService(request.Pass(), &client);
 
-  scoped_ptr<ViewTreeImpl> service(new ViewTreeImpl(
+  scoped_ptr<WindowTreeImpl> service(new WindowTreeImpl(
       connection_manager, creator_id, root_id, policy_bitmask));
   return new DefaultClientConnection(service.Pass(), connection_manager,
                                      tree_request.Pass(), client.Pass());
 }
 
-ClientConnection* MandolineUIServicesApp::CreateClientConnectionForEmbedAtView(
+ClientConnection*
+MandolineUIServicesApp::CreateClientConnectionForEmbedAtWindow(
     ConnectionManager* connection_manager,
     mojo::InterfaceRequest<mojom::WindowTree> tree_request,
     ConnectionSpecificId creator_id,
-    const ViewId& root_id,
+    const WindowId& root_id,
     uint32_t policy_bitmask,
     mojom::WindowTreeClientPtr client) {
-  scoped_ptr<ViewTreeImpl> service(new ViewTreeImpl(
+  scoped_ptr<WindowTreeImpl> service(new WindowTreeImpl(
       connection_manager, creator_id, root_id, policy_bitmask));
   return new DefaultClientConnection(service.Pass(), connection_manager,
                                      tree_request.Pass(), client.Pass());
@@ -130,12 +132,12 @@ void MandolineUIServicesApp::CreateWindowTreeHost(
 
   // TODO(fsamuel): We need to make sure that only the window manager can create
   // new roots.
-  ViewTreeHostImpl* host_impl = new ViewTreeHostImpl(
-      host_client.Pass(), connection_manager_.get(), app_impl_,
-      gpu_state_, surfaces_state_);
+  WindowTreeHostImpl* host_impl =
+      new WindowTreeHostImpl(host_client.Pass(), connection_manager_.get(),
+                             app_impl_, gpu_state_, surfaces_state_);
 
-  // ViewTreeHostConnection manages its own lifetime.
-  host_impl->Init(new ViewTreeHostConnectionImpl(
+  // WindowTreeHostConnection manages its own lifetime.
+  host_impl->Init(new WindowTreeHostConnectionImpl(
       host.Pass(), make_scoped_ptr(host_impl), tree_client.Pass(),
       connection_manager_.get()));
 }

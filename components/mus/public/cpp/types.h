@@ -12,12 +12,12 @@
 
 namespace mus {
 
-// Used to identify views and change ids.
+// Used to identify windows and change ids.
 typedef uint32_t Id;
 
-// Used to identify a connection as well as a connection specific view id. For
-// example, the Id for a view consists of the ConnectionSpecificId of the
-// connection and the ConnectionSpecificId of the view.
+// Used to identify a connection as well as a connection specific window id. For
+// example, the Id for a window consists of the ConnectionSpecificId of the
+// connection and the ConnectionSpecificId of the window.
 typedef uint16_t ConnectionSpecificId;
 
 }  // namespace mus

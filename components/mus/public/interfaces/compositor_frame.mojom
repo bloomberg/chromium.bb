@@ -38,12 +38,12 @@ struct MailboxHolder {
 };
 
 // A TransferableResource is a graphics resource such as a texture or a bitmap
-// in shared memory (software mode) that is shared between the View Manager and
+// in shared memory (software mode) that is shared between the window server and
 // a client. This data structure is used to manage reuse of
-// the memory once it is no longer needed by the View Manager and GPU service.
+// the memory once it is no longer needed by the window server and GPU service.
 struct TransferableResource {
   // |id| is an integer that uniquely identifies this resource  in the client so
-  // that the View Manager can return this resource back to the client.
+  // that the window server can return this resource back to the client.
   uint32 id;
   ResourceFormat format;
   uint32 filter;

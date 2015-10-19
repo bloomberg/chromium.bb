@@ -14,15 +14,15 @@ struct SurfaceId;
 
 namespace mus {
 
-class ServerView;
+class ServerWindow;
 
 // A DisplayManagerDelegate an interface to be implemented by an object that
 // manages the lifetime of a DisplayManager, forwards events to the appropriate
-// views, and responses to changes in viewport size.
+// windows, and responses to changes in viewport size.
 class DisplayManagerDelegate {
  public:
-  // Returns the root view of this display.
-  virtual ServerView* GetRootView() = 0;
+  // Returns the root window of this display.
+  virtual ServerWindow* GetRootWindow() = 0;
 
   // Called when the window managed by the DisplayManager is closed.
   virtual void OnDisplayClosed() = 0;

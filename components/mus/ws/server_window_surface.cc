@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/mus/ws/server_view_surface.h"
+#include "components/mus/ws/server_window_surface.h"
 
 #include "cc/output/compositor_frame.h"
 #include "cc/quads/shared_quad_state.h"
 #include "cc/quads/surface_draw_quad.h"
 #include "components/mus/surfaces/surfaces_state.h"
-#include "components/mus/ws/server_view.h"
-#include "components/mus/ws/server_view_delegate.h"
+#include "components/mus/ws/server_window.h"
+#include "components/mus/ws/server_window_delegate.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/converters/surfaces/surfaces_type_converters.h"
 
@@ -23,24 +23,25 @@ void CallCallback(const mojo::Closure& callback, cc::SurfaceDrawStatus status) {
 
 }  // namespace
 
-ServerViewSurface::ServerViewSurface(ServerView* view)
-    : view_(view),
-      surface_id_allocator_(ViewIdToTransportId(view->id())),
-      surface_factory_(view_->delegate()->GetSurfacesState()->manager(), this),
+ServerWindowSurface::ServerWindowSurface(ServerWindow* window)
+    : window_(window),
+      surface_id_allocator_(WindowIdToTransportId(window->id())),
+      surface_factory_(window_->delegate()->GetSurfacesState()->manager(),
+                       this),
       binding_(this) {
   surface_id_ = surface_id_allocator_.GenerateId();
   surface_factory_.Create(surface_id_);
 }
 
-ServerViewSurface::~ServerViewSurface() {
+ServerWindowSurface::~ServerWindowSurface() {
   // SurfaceFactory's destructor will attempt to return resources which will
   // call back into here and access |client_| so we should destroy
   // |surface_factory_|'s resources early on.
   surface_factory_.DestroyAll();
 }
 
-void ServerViewSurface::Bind(mojo::InterfaceRequest<Surface> request,
-                             mojom::SurfaceClientPtr client) {
+void ServerWindowSurface::Bind(mojo::InterfaceRequest<Surface> request,
+                               mojom::SurfaceClientPtr client) {
   if (binding_.is_bound()) {
     // Destroy frame surfaces submitted by the old client before replacing
     // client_, so those surfaces will be returned to the old client.
@@ -51,7 +52,7 @@ void ServerViewSurface::Bind(mojo::InterfaceRequest<Surface> request,
   client_ = client.Pass();
 }
 
-void ServerViewSurface::SubmitCompositorFrame(
+void ServerWindowSurface::SubmitCompositorFrame(
     mojom::CompositorFramePtr frame,
     const SubmitCompositorFrameCallback& callback) {
   gfx::Size frame_size = frame->passes[0]->output_rect.To<gfx::Rect>().size();
@@ -67,40 +68,40 @@ void ServerViewSurface::SubmitCompositorFrame(
   surface_factory_.SubmitCompositorFrame(surface_id_,
                                          ConvertCompositorFrame(frame),
                                          base::Bind(&CallCallback, callback));
-  view_->delegate()->GetSurfacesState()->scheduler()->SetNeedsDraw();
-  view_->delegate()->OnScheduleViewPaint(view_);
+  window_->delegate()->GetSurfacesState()->scheduler()->SetNeedsDraw();
+  window_->delegate()->OnScheduleWindowPaint(window_);
   last_submitted_frame_size_ = frame_size;
 }
 
-scoped_ptr<cc::CompositorFrame> ServerViewSurface::ConvertCompositorFrame(
+scoped_ptr<cc::CompositorFrame> ServerWindowSurface::ConvertCompositorFrame(
     const mojom::CompositorFramePtr& input) {
-  referenced_view_ids_.clear();
+  referenced_window_ids_.clear();
   return ConvertToCompositorFrame(input, this);
 }
 
-bool ServerViewSurface::ConvertSurfaceDrawQuad(
+bool ServerWindowSurface::ConvertSurfaceDrawQuad(
     const mojom::QuadPtr& input,
     const mojom::CompositorFrameMetadataPtr& metadata,
     cc::SharedQuadState* sqs,
     cc::RenderPass* render_pass) {
   Id id = static_cast<Id>(
       input->surface_quad_state->surface.To<cc::SurfaceId>().id);
-  ViewId view_id = ViewIdFromTransportId(id);
-  ServerView* view = view_->GetChildView(view_id);
-  if (!view)
+  WindowId window_id = WindowIdFromTransportId(id);
+  ServerWindow* window = window_->GetChildWindow(window_id);
+  if (!window)
     return false;
 
-  referenced_view_ids_.insert(view_id);
+  referenced_window_ids_.insert(window_id);
   cc::SurfaceDrawQuad* surface_quad =
       render_pass->CreateAndAppendDrawQuad<cc::SurfaceDrawQuad>();
-  surface_quad->SetAll(sqs, input->rect.To<gfx::Rect>(),
-                       input->opaque_rect.To<gfx::Rect>(),
-                       input->visible_rect.To<gfx::Rect>(),
-                       input->needs_blending, view->GetOrCreateSurface()->id());
+  surface_quad->SetAll(
+      sqs, input->rect.To<gfx::Rect>(), input->opaque_rect.To<gfx::Rect>(),
+      input->visible_rect.To<gfx::Rect>(), input->needs_blending,
+      window->GetOrCreateSurface()->id());
   return true;
 }
 
-void ServerViewSurface::ReturnResources(
+void ServerWindowSurface::ReturnResources(
     const cc::ReturnedResourceArray& resources) {
   if (!client_)
     return;

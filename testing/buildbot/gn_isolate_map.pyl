@@ -423,8 +423,8 @@
     "label": "//url:url_unittests",
     "type": "console_test_launcher",
   },
-  "view_manager_unittests": {
-    "label": "//components/view_manager:view_manager_unittests",
+  "window_manager_unittests": {
+    "label": "//components/mus/ws:window_manager_unittests",
     "type": "unknown",
   },
   "views_unittests": {

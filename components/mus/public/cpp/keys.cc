@@ -7,6 +7,6 @@
 namespace mus {
 
 extern const char kViewManagerKeyWantsTouchEvents[] =
-    "view-manager-key-wants-touch-events";
+    "window-manager-key-wants-touch-events";
 
 }  // namespace mus

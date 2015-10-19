@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_MUS_PUBLIC_CPP_VIEW_SURFACE_CLIENT_H_
-#define COMPONENTS_MUS_PUBLIC_CPP_VIEW_SURFACE_CLIENT_H_
+#ifndef COMPONENTS_MUS_PUBLIC_CPP_WINDOW_SURFACE_CLIENT_H_
+#define COMPONENTS_MUS_PUBLIC_CPP_WINDOW_SURFACE_CLIENT_H_
 
 namespace mus {
 
@@ -21,4 +21,4 @@ class WindowSurfaceClient {
 
 }  // namespace mus
 
-#endif  // COMPONENTS_MUS_PUBLIC_CPP_VIEW_SURFACE_CLIENT_H_
+#endif  // COMPONENTS_MUS_PUBLIC_CPP_WINDOW_SURFACE_CLIENT_H_

@@ -35,9 +35,9 @@ enum ChangeType {
 };
 
 // TODO(sky): consider nuking and converting directly to WindowData.
-struct TestView {
-  TestView();
-  ~TestView();
+struct TestWindow {
+  TestWindow();
+  ~TestWindow();
 
   // Returns a string description of this.
   std::string ToString() const;
@@ -52,15 +52,15 @@ struct TestView {
   std::map<std::string, std::vector<uint8_t>> properties;
 };
 
-// Tracks a call to ViewTreeClient. See the individual functions for the fields
-// that are used.
+// Tracks a call to WindowTreeClient. See the individual functions for the
+// fields that are used.
 struct Change {
   Change();
   ~Change();
 
   ChangeType type;
   ConnectionSpecificId connection_id;
-  std::vector<TestView> views;
+  std::vector<TestWindow> windows;
   Id window_id;
   Id window_id2;
   Id window_id3;
@@ -82,24 +82,24 @@ std::vector<std::string> ChangesToDescription1(
 // Returns an empty string if |changes| has something other than one entry.
 std::string SingleChangeToDescription(const std::vector<Change>& changes);
 
-// Convenience for returning the description of the first item in |views|.
-// Returns an empty string if |views| has something other than one entry.
-std::string SingleViewDescription(const std::vector<TestView>& views);
+// Convenience for returning the description of the first item in |windows|.
+// Returns an empty string if |windows| has something other than one entry.
+std::string SingleWindowDescription(const std::vector<TestWindow>& windows);
 
-// Returns a string description of |changes[0].views|. Returns an empty string
+// Returns a string description of |changes[0].windows|. Returns an empty string
 // if change.size() != 1.
-std::string ChangeViewDescription(const std::vector<Change>& changes);
+std::string ChangeWindowDescription(const std::vector<Change>& changes);
 
-// Converts WindowDatas to TestViews.
-void WindowDatasToTestViews(const mojo::Array<mojom::WindowDataPtr>& data,
-                            std::vector<TestView>* test_views);
+// Converts WindowDatas to TestWindows.
+void WindowDatasToTestWindows(const mojo::Array<mojom::WindowDataPtr>& data,
+                              std::vector<TestWindow>* test_windows);
 
-// TestChangeTracker is used to record ViewTreeClient functions. It notifies
+// TestChangeTracker is used to record WindowTreeClient functions. It notifies
 // a delegate any time a change is added.
 class TestChangeTracker {
  public:
   // Used to notify the delegate when a change is added. A change corresponds to
-  // a single ViewTreeClient function.
+  // a single WindowTreeClient function.
   class Delegate {
    public:
     virtual void OnChangeAdded() = 0;
@@ -116,7 +116,7 @@ class TestChangeTracker {
   std::vector<Change>* changes() { return &changes_; }
 
   // Each of these functions generate a Change. There is one per
-  // ViewTreeClient function.
+  // WindowTreeClient function.
   void OnEmbed(ConnectionSpecificId connection_id, mojom::WindowDataPtr root);
   void OnEmbeddedAppDisconnected(Id window_id);
   void OnUnembed();
@@ -128,7 +128,7 @@ class TestChangeTracker {
   void OnWindowHierarchyChanged(Id window_id,
                                 Id new_parent_id,
                                 Id old_parent_id,
-                                mojo::Array<mojom::WindowDataPtr> views);
+                                mojo::Array<mojom::WindowDataPtr> windows);
   void OnWindowReordered(Id window_id,
                          Id relative_window_id,
                          mojom::OrderDirection direction);

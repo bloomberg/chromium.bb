@@ -40,11 +40,11 @@ namespace mus {
 
 class DisplayManagerFactory;
 class EventDispatcher;
-class ServerView;
+class ServerWindow;
 class SurfacesScheduler;
 class SurfacesState;
 
-// DisplayManager is used to connect the root ServerView to a display.
+// DisplayManager is used to connect the root ServerWindow to a display.
 class DisplayManager {
  public:
   virtual ~DisplayManager() {}
@@ -56,8 +56,8 @@ class DisplayManager {
 
   virtual void Init(DisplayManagerDelegate* delegate) = 0;
 
-  // Schedules a paint for the specified region in the coordinates of |view|.
-  virtual void SchedulePaint(const ServerView* view,
+  // Schedules a paint for the specified region in the coordinates of |window|.
+  virtual void SchedulePaint(const ServerWindow* window,
                              const gfx::Rect& bounds) = 0;
 
   virtual void SetViewportSize(const gfx::Size& size) = 0;
@@ -92,7 +92,8 @@ class DefaultDisplayManager : public DisplayManager,
 
   // DisplayManager:
   void Init(DisplayManagerDelegate* delegate) override;
-  void SchedulePaint(const ServerView* view, const gfx::Rect& bounds) override;
+  void SchedulePaint(const ServerWindow* window,
+                     const gfx::Rect& bounds) override;
   void SetViewportSize(const gfx::Size& size) override;
   void SetTitle(const base::string16& title) override;
   const mojom::ViewportMetrics& GetViewportMetrics() override;

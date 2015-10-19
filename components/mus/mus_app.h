@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_MUS_VIEW_MANAGER_APP_H_
-#define COMPONENTS_MUS_VIEW_MANAGER_APP_H_
+#ifndef COMPONENTS_MUS_MUS_APP_H_
+#define COMPONENTS_MUS_MUS_APP_H_
 
 #include <set>
 
@@ -50,18 +50,18 @@ class MandolineUIServicesApp
 
   // ConnectionManagerDelegate:
   void OnNoMoreRootConnections() override;
-  ClientConnection* CreateClientConnectionForEmbedAtView(
+  ClientConnection* CreateClientConnectionForEmbedAtWindow(
       ConnectionManager* connection_manager,
       mojo::InterfaceRequest<mojom::WindowTree> tree_request,
       ConnectionSpecificId creator_id,
       mojo::URLRequestPtr request,
-      const ViewId& root_id,
+      const WindowId& root_id,
       uint32_t policy_bitmask) override;
-  ClientConnection* CreateClientConnectionForEmbedAtView(
+  ClientConnection* CreateClientConnectionForEmbedAtWindow(
       ConnectionManager* connection_manager,
       mojo::InterfaceRequest<mojom::WindowTree> tree_request,
       ConnectionSpecificId creator_id,
-      const ViewId& root_id,
+      const WindowId& root_id,
       uint32_t policy_bitmask,
       mojom::WindowTreeClientPtr client) override;
 
@@ -94,4 +94,4 @@ class MandolineUIServicesApp
 
 }  // namespace mus
 
-#endif  // COMPONENTS_MUS_VIEW_MANAGER_APP_H_
+#endif  // COMPONENTS_MUS_MUS_APP_H_

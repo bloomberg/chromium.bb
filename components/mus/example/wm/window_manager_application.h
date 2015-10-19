@@ -33,7 +33,7 @@ class WindowManagerApplication
   bool ConfigureIncomingConnection(
       mojo::ApplicationConnection* connection) override;
 
-  // ViewTreeDelegate:
+  // WindowTreeDelegate:
   void OnEmbed(mus::Window* root) override;
   void OnConnectionLost(mus::WindowTreeConnection* connection) override;
 

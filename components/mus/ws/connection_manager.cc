@@ -8,10 +8,10 @@
 #include "base/stl_util.h"
 #include "components/mus/ws/client_connection.h"
 #include "components/mus/ws/connection_manager_delegate.h"
-#include "components/mus/ws/server_view.h"
-#include "components/mus/ws/view_coordinate_conversions.h"
-#include "components/mus/ws/view_tree_host_connection.h"
-#include "components/mus/ws/view_tree_impl.h"
+#include "components/mus/ws/server_window.h"
+#include "components/mus/ws/window_coordinate_conversions.h"
+#include "components/mus/ws/window_tree_host_connection.h"
+#include "components/mus/ws/window_tree_impl.h"
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/converters/input_events/input_events_type_converters.h"
@@ -21,12 +21,12 @@
 namespace mus {
 
 ConnectionManager::ScopedChange::ScopedChange(
-    ViewTreeImpl* connection,
+    WindowTreeImpl* connection,
     ConnectionManager* connection_manager,
-    bool is_delete_view)
+    bool is_delete_window)
     : connection_manager_(connection_manager),
       connection_id_(connection->id()),
-      is_delete_view_(is_delete_view) {
+      is_delete_window_(is_delete_window) {
   connection_manager_->PrepareForChange(this);
 }
 
@@ -59,15 +59,16 @@ ConnectionManager::~ConnectionManager() {
   DCHECK(connection_map_.empty());
 }
 
-void ConnectionManager::AddHost(ViewTreeHostConnection* host_connection) {
-  DCHECK_EQ(0u, host_connection_map_.count(host_connection->view_tree_host()));
-  host_connection_map_[host_connection->view_tree_host()] = host_connection;
+void ConnectionManager::AddHost(WindowTreeHostConnection* host_connection) {
+  DCHECK_EQ(0u,
+            host_connection_map_.count(host_connection->window_tree_host()));
+  host_connection_map_[host_connection->window_tree_host()] = host_connection;
 }
 
-ServerView* ConnectionManager::CreateServerView(const ViewId& id) {
-  ServerView* view = new ServerView(this, id);
-  view->AddObserver(this);
-  return view;
+ServerWindow* ConnectionManager::CreateServerWindow(const WindowId& id) {
+  ServerWindow* window = new ServerWindow(this, id);
+  window->AddObserver(this);
+  return window;
 }
 
 ConnectionSpecificId ConnectionManager::GetAndAdvanceNextConnectionId() {
@@ -84,12 +85,12 @@ uint16_t ConnectionManager::GetAndAdvanceNextHostId() {
 
 void ConnectionManager::OnConnectionError(ClientConnection* connection) {
   // This will be null if the root has been destroyed.
-  const ViewId* view_id = connection->service()->root();
-  ServerView* view =
-      view_id ? GetView(*connection->service()->root()) : nullptr;
-  // If the ViewTree root is a viewport root, then we'll wait until
+  const WindowId* window_id = connection->service()->root();
+  ServerWindow* window =
+      window_id ? GetWindow(*connection->service()->root()) : nullptr;
+  // If the WindowTree root is a viewport root, then we'll wait until
   // the root connection goes away to cleanup.
-  if (view && (GetRootView(view) == view))
+  if (window && (GetRootWindow(window) == window))
     return;
 
   scoped_ptr<ClientConnection> connection_owner(connection);
@@ -98,24 +99,24 @@ void ConnectionManager::OnConnectionError(ClientConnection* connection) {
 
   // Notify remaining connections so that they can cleanup.
   for (auto& pair : connection_map_) {
-    pair.second->service()->OnWillDestroyViewTreeImpl(connection->service());
+    pair.second->service()->OnWillDestroyWindowTreeImpl(connection->service());
   }
 }
 
 void ConnectionManager::OnHostConnectionClosed(
-    ViewTreeHostConnection* connection) {
-  auto it = host_connection_map_.find(connection->view_tree_host());
+    WindowTreeHostConnection* connection) {
+  auto it = host_connection_map_.find(connection->window_tree_host());
   DCHECK(it != host_connection_map_.end());
 
-  // Get the ClientConnection by ViewTreeImpl ID.
+  // Get the ClientConnection by WindowTreeImpl ID.
   ConnectionMap::iterator service_connection_it =
       connection_map_.find(it->first->GetWindowTree()->id());
   DCHECK(service_connection_it != connection_map_.end());
 
-  // Tear down the associated ViewTree connection.
+  // Tear down the associated WindowTree connection.
   // TODO(fsamuel): I don't think this is quite right, we should tear down all
   // connections within the root's viewport. We should probably employ an
-  // observer pattern to do this. Each ViewTreeImpl should track its
+  // observer pattern to do this. Each WindowTreeImpl should track its
   // parent's lifetime.
   host_connection_map_.erase(it);
   OnConnectionError(service_connection_it->second);
@@ -125,14 +126,14 @@ void ConnectionManager::OnHostConnectionClosed(
     delegate_->OnNoMoreRootConnections();
 }
 
-void ConnectionManager::EmbedAtView(ConnectionSpecificId creator_id,
-                                    const ViewId& view_id,
-                                    uint32_t policy_bitmask,
-                                    mojo::URLRequestPtr request) {
+void ConnectionManager::EmbedAtWindow(ConnectionSpecificId creator_id,
+                                      const WindowId& window_id,
+                                      uint32_t policy_bitmask,
+                                      mojo::URLRequestPtr request) {
   mojom::WindowTreePtr service_ptr;
   ClientConnection* client_connection =
-      delegate_->CreateClientConnectionForEmbedAtView(
-          this, GetProxy(&service_ptr), creator_id, request.Pass(), view_id,
+      delegate_->CreateClientConnectionForEmbedAtWindow(
+          this, GetProxy(&service_ptr), creator_id, request.Pass(), window_id,
           policy_bitmask);
   AddConnection(client_connection);
   client_connection->service()->Init(client_connection->client(),
@@ -140,15 +141,15 @@ void ConnectionManager::EmbedAtView(ConnectionSpecificId creator_id,
   OnConnectionMessagedClient(client_connection->service()->id());
 }
 
-ViewTreeImpl* ConnectionManager::EmbedAtView(
+WindowTreeImpl* ConnectionManager::EmbedAtWindow(
     ConnectionSpecificId creator_id,
-    const ViewId& view_id,
+    const WindowId& window_id,
     uint32_t policy_bitmask,
     mojom::WindowTreeClientPtr client) {
   mojom::WindowTreePtr service_ptr;
   ClientConnection* client_connection =
-      delegate_->CreateClientConnectionForEmbedAtView(
-          this, GetProxy(&service_ptr), creator_id, view_id, policy_bitmask,
+      delegate_->CreateClientConnectionForEmbedAtWindow(
+          this, GetProxy(&service_ptr), creator_id, window_id, policy_bitmask,
           client.Pass());
   AddConnection(client_connection);
   client_connection->service()->Init(client_connection->client(),
@@ -158,33 +159,34 @@ ViewTreeImpl* ConnectionManager::EmbedAtView(
   return client_connection->service();
 }
 
-ViewTreeImpl* ConnectionManager::GetConnection(
+WindowTreeImpl* ConnectionManager::GetConnection(
     ConnectionSpecificId connection_id) {
   ConnectionMap::iterator i = connection_map_.find(connection_id);
   return i == connection_map_.end() ? nullptr : i->second->service();
 }
 
-ServerView* ConnectionManager::GetView(const ViewId& id) {
+ServerWindow* ConnectionManager::GetWindow(const WindowId& id) {
   for (auto& pair : host_connection_map_) {
-    if (pair.first->root_view()->id() == id)
-      return pair.first->root_view();
+    if (pair.first->root_window()->id() == id)
+      return pair.first->root_window();
   }
-  ViewTreeImpl* service = GetConnection(id.connection_id);
-  return service ? service->GetView(id) : nullptr;
+  WindowTreeImpl* service = GetConnection(id.connection_id);
+  return service ? service->GetWindow(id) : nullptr;
 }
 
-bool ConnectionManager::IsViewAttachedToRoot(const ServerView* view) const {
+bool ConnectionManager::IsWindowAttachedToRoot(
+    const ServerWindow* window) const {
   for (auto& pair : host_connection_map_) {
-    if (pair.first->IsViewAttachedToRoot(view))
+    if (pair.first->IsWindowAttachedToRoot(window))
       return true;
   }
   return false;
 }
 
-void ConnectionManager::SchedulePaint(const ServerView* view,
+void ConnectionManager::SchedulePaint(const ServerWindow* window,
                                       const gfx::Rect& bounds) {
   for (auto& pair : host_connection_map_) {
-    if (pair.first->SchedulePaintIfInViewport(view, bounds))
+    if (pair.first->SchedulePaintIfInViewport(window, bounds))
       return;
   }
 }
@@ -199,9 +201,9 @@ bool ConnectionManager::DidConnectionMessageClient(
   return current_change_ && current_change_->DidMessageConnection(id);
 }
 
-mojom::ViewportMetricsPtr ConnectionManager::GetViewportMetricsForView(
-    const ServerView* view) {
-  ViewTreeHostImpl* host = GetWindowTreeHostByView(view);
+mojom::ViewportMetricsPtr ConnectionManager::GetViewportMetricsForWindow(
+    const ServerWindow* window) {
+  WindowTreeHostImpl* host = GetWindowTreeHostByWindow(window);
   if (host)
     return host->GetViewportMetrics().Clone();
 
@@ -213,8 +215,8 @@ mojom::ViewportMetricsPtr ConnectionManager::GetViewportMetricsForView(
   return metrics.Pass();
 }
 
-const ViewTreeImpl* ConnectionManager::GetConnectionWithRoot(
-    const ViewId& id) const {
+const WindowTreeImpl* ConnectionManager::GetConnectionWithRoot(
+    const WindowId& id) const {
   for (auto& pair : connection_map_) {
     if (pair.second->service()->IsRoot(id))
       return pair.second->service();
@@ -222,31 +224,31 @@ const ViewTreeImpl* ConnectionManager::GetConnectionWithRoot(
   return nullptr;
 }
 
-ViewTreeHostImpl* ConnectionManager::GetWindowTreeHostByView(
-    const ServerView* view) {
-  return const_cast<ViewTreeHostImpl*>(
+WindowTreeHostImpl* ConnectionManager::GetWindowTreeHostByWindow(
+    const ServerWindow* window) {
+  return const_cast<WindowTreeHostImpl*>(
       static_cast<const ConnectionManager*>(this)
-          ->GetWindowTreeHostByView(view));
+          ->GetWindowTreeHostByWindow(window));
 }
 
-const ViewTreeHostImpl* ConnectionManager::GetWindowTreeHostByView(
-    const ServerView* view) const {
-  while (view && view->parent())
-    view = view->parent();
+const WindowTreeHostImpl* ConnectionManager::GetWindowTreeHostByWindow(
+    const ServerWindow* window) const {
+  while (window && window->parent())
+    window = window->parent();
   for (auto& pair : host_connection_map_) {
-    if (view == pair.first->root_view())
+    if (window == pair.first->root_window())
       return pair.first;
   }
   return nullptr;
 }
 
-ViewTreeImpl* ConnectionManager::GetEmbedRoot(ViewTreeImpl* service) {
+WindowTreeImpl* ConnectionManager::GetEmbedRoot(WindowTreeImpl* service) {
   while (service) {
-    const ViewId* root_id = service->root();
+    const WindowId* root_id = service->root();
     if (!root_id || root_id->connection_id == service->id())
       return nullptr;
 
-    ViewTreeImpl* parent_service = GetConnection(root_id->connection_id);
+    WindowTreeImpl* parent_service = GetConnection(root_id->connection_id);
     service = parent_service;
     if (service && service->is_embed_root())
       return service;
@@ -254,17 +256,18 @@ ViewTreeImpl* ConnectionManager::GetEmbedRoot(ViewTreeImpl* service) {
   return nullptr;
 }
 
-void ConnectionManager::ProcessViewBoundsChanged(const ServerView* view,
-                                                 const gfx::Rect& old_bounds,
-                                                 const gfx::Rect& new_bounds) {
+void ConnectionManager::ProcessWindowBoundsChanged(
+    const ServerWindow* window,
+    const gfx::Rect& old_bounds,
+    const gfx::Rect& new_bounds) {
   for (auto& pair : connection_map_) {
-    pair.second->service()->ProcessViewBoundsChanged(
-        view, old_bounds, new_bounds, IsChangeSource(pair.first));
+    pair.second->service()->ProcessWindowBoundsChanged(
+        window, old_bounds, new_bounds, IsChangeSource(pair.first));
   }
 }
 
 void ConnectionManager::ProcessClientAreaChanged(
-    const ServerView* window,
+    const ServerWindow* window,
     const gfx::Rect& old_client_area,
     const gfx::Rect& new_client_area) {
   for (auto& pair : connection_map_) {
@@ -273,40 +276,40 @@ void ConnectionManager::ProcessClientAreaChanged(
   }
 }
 
-void ConnectionManager::ProcessWillChangeViewHierarchy(
-    const ServerView* view,
-    const ServerView* new_parent,
-    const ServerView* old_parent) {
+void ConnectionManager::ProcessWillChangeWindowHierarchy(
+    const ServerWindow* window,
+    const ServerWindow* new_parent,
+    const ServerWindow* old_parent) {
   for (auto& pair : connection_map_) {
-    pair.second->service()->ProcessWillChangeViewHierarchy(
-        view, new_parent, old_parent, IsChangeSource(pair.first));
+    pair.second->service()->ProcessWillChangeWindowHierarchy(
+        window, new_parent, old_parent, IsChangeSource(pair.first));
   }
 }
 
-void ConnectionManager::ProcessViewHierarchyChanged(
-    const ServerView* view,
-    const ServerView* new_parent,
-    const ServerView* old_parent) {
+void ConnectionManager::ProcessWindowHierarchyChanged(
+    const ServerWindow* window,
+    const ServerWindow* new_parent,
+    const ServerWindow* old_parent) {
   for (auto& pair : connection_map_) {
-    pair.second->service()->ProcessViewHierarchyChanged(
-        view, new_parent, old_parent, IsChangeSource(pair.first));
+    pair.second->service()->ProcessWindowHierarchyChanged(
+        window, new_parent, old_parent, IsChangeSource(pair.first));
   }
 }
 
-void ConnectionManager::ProcessViewReorder(
-    const ServerView* view,
-    const ServerView* relative_view,
+void ConnectionManager::ProcessWindowReorder(
+    const ServerWindow* window,
+    const ServerWindow* relative_window,
     const mojom::OrderDirection direction) {
   for (auto& pair : connection_map_) {
-    pair.second->service()->ProcessViewReorder(view, relative_view, direction,
-                                               IsChangeSource(pair.first));
+    pair.second->service()->ProcessWindowReorder(
+        window, relative_window, direction, IsChangeSource(pair.first));
   }
 }
 
-void ConnectionManager::ProcessViewDeleted(const ViewId& view) {
+void ConnectionManager::ProcessWindowDeleted(const WindowId& window) {
   for (auto& pair : connection_map_) {
-    pair.second->service()->ProcessViewDeleted(view,
-                                               IsChangeSource(pair.first));
+    pair.second->service()->ProcessWindowDeleted(window,
+                                                 IsChangeSource(pair.first));
   }
 }
 
@@ -340,37 +343,38 @@ SurfacesState* ConnectionManager::GetSurfacesState() {
   return surfaces_state_.get();
 }
 
-void ConnectionManager::OnScheduleViewPaint(const ServerView* view) {
+void ConnectionManager::OnScheduleWindowPaint(const ServerWindow* window) {
   if (!in_destructor_)
-    SchedulePaint(view, gfx::Rect(view->bounds().size()));
+    SchedulePaint(window, gfx::Rect(window->bounds().size()));
 }
 
-const ServerView* ConnectionManager::GetRootView(const ServerView* view) const {
-  const ViewTreeHostImpl* host = GetWindowTreeHostByView(view);
-  return host ? host->root_view() : nullptr;
+const ServerWindow* ConnectionManager::GetRootWindow(
+    const ServerWindow* window) const {
+  const WindowTreeHostImpl* host = GetWindowTreeHostByWindow(window);
+  return host ? host->root_window() : nullptr;
 }
 
-void ConnectionManager::OnViewDestroyed(ServerView* view) {
+void ConnectionManager::OnWindowDestroyed(ServerWindow* window) {
   if (!in_destructor_)
-    ProcessViewDeleted(view->id());
+    ProcessWindowDeleted(window->id());
 }
 
-void ConnectionManager::OnWillChangeViewHierarchy(ServerView* view,
-                                                  ServerView* new_parent,
-                                                  ServerView* old_parent) {
+void ConnectionManager::OnWillChangeWindowHierarchy(ServerWindow* window,
+                                                    ServerWindow* new_parent,
+                                                    ServerWindow* old_parent) {
   if (in_destructor_)
     return;
 
-  ProcessWillChangeViewHierarchy(view, new_parent, old_parent);
+  ProcessWillChangeWindowHierarchy(window, new_parent, old_parent);
 }
 
-void ConnectionManager::OnViewHierarchyChanged(ServerView* view,
-                                               ServerView* new_parent,
-                                               ServerView* old_parent) {
+void ConnectionManager::OnWindowHierarchyChanged(ServerWindow* window,
+                                                 ServerWindow* new_parent,
+                                                 ServerWindow* old_parent) {
   if (in_destructor_)
     return;
 
-  ProcessViewHierarchyChanged(view, new_parent, old_parent);
+  ProcessWindowHierarchyChanged(window, new_parent, old_parent);
 
   // TODO(beng): optimize.
   if (old_parent)
@@ -379,23 +383,23 @@ void ConnectionManager::OnViewHierarchyChanged(ServerView* view,
     SchedulePaint(new_parent, gfx::Rect(new_parent->bounds().size()));
 }
 
-void ConnectionManager::OnViewBoundsChanged(ServerView* view,
-                                            const gfx::Rect& old_bounds,
-                                            const gfx::Rect& new_bounds) {
+void ConnectionManager::OnWindowBoundsChanged(ServerWindow* window,
+                                              const gfx::Rect& old_bounds,
+                                              const gfx::Rect& new_bounds) {
   if (in_destructor_)
     return;
 
-  ProcessViewBoundsChanged(view, old_bounds, new_bounds);
-  if (!view->parent())
+  ProcessWindowBoundsChanged(window, old_bounds, new_bounds);
+  if (!window->parent())
     return;
 
   // TODO(sky): optimize this.
-  SchedulePaint(view->parent(), old_bounds);
-  SchedulePaint(view->parent(), new_bounds);
+  SchedulePaint(window->parent(), old_bounds);
+  SchedulePaint(window->parent(), new_bounds);
 }
 
 void ConnectionManager::OnWindowClientAreaChanged(
-    ServerView* window,
+    ServerWindow* window,
     const gfx::Rect& old_client_area,
     const gfx::Rect& new_client_area) {
   if (in_destructor_)
@@ -404,45 +408,46 @@ void ConnectionManager::OnWindowClientAreaChanged(
   ProcessClientAreaChanged(window, old_client_area, new_client_area);
 }
 
-void ConnectionManager::OnViewReordered(ServerView* view,
-                                        ServerView* relative,
-                                        mojom::OrderDirection direction) {
+void ConnectionManager::OnWindowReordered(ServerWindow* window,
+                                          ServerWindow* relative,
+                                          mojom::OrderDirection direction) {
   if (!in_destructor_)
-    SchedulePaint(view, gfx::Rect(view->bounds().size()));
+    SchedulePaint(window, gfx::Rect(window->bounds().size()));
 }
 
-void ConnectionManager::OnWillChangeViewVisibility(ServerView* view) {
+void ConnectionManager::OnWillChangeWindowVisibility(ServerWindow* window) {
   if (in_destructor_)
     return;
 
-  // Need to repaint if the view was drawn (which means it's in the process of
-  // hiding) or the view is transitioning to drawn.
-  if (view->parent() &&
-      (view->IsDrawn() || (!view->visible() && view->parent()->IsDrawn()))) {
-    SchedulePaint(view->parent(), view->bounds());
+  // Need to repaint if the window was drawn (which means it's in the process of
+  // hiding) or the window is transitioning to drawn.
+  if (window->parent() &&
+      (window->IsDrawn() ||
+       (!window->visible() && window->parent()->IsDrawn()))) {
+    SchedulePaint(window->parent(), window->bounds());
   }
 
   for (auto& pair : connection_map_) {
-    pair.second->service()->ProcessWillChangeViewVisibility(
-        view, IsChangeSource(pair.first));
+    pair.second->service()->ProcessWillChangeWindowVisibility(
+        window, IsChangeSource(pair.first));
   }
 }
 
-void ConnectionManager::OnViewSharedPropertyChanged(
-    ServerView* view,
+void ConnectionManager::OnWindowSharedPropertyChanged(
+    ServerWindow* window,
     const std::string& name,
     const std::vector<uint8_t>* new_data) {
   for (auto& pair : connection_map_) {
-    pair.second->service()->ProcessViewPropertyChanged(
-        view, name, new_data, IsChangeSource(pair.first));
+    pair.second->service()->ProcessWindowPropertyChanged(
+        window, name, new_data, IsChangeSource(pair.first));
   }
 }
 
-void ConnectionManager::OnViewTextInputStateChanged(
-    ServerView* view,
+void ConnectionManager::OnWindowTextInputStateChanged(
+    ServerWindow* window,
     const ui::TextInputState& state) {
-  ViewTreeHostImpl* host = GetWindowTreeHostByView(view);
-  host->UpdateTextInputState(view, state);
+  WindowTreeHostImpl* host = GetWindowTreeHostByWindow(window);
+  host->UpdateTextInputState(window, state);
 }
 
 }  // namespace mus
