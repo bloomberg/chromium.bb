@@ -165,6 +165,8 @@ Resource::Resource(const ResourceRequest& request, Type type)
 #ifdef ENABLE_RESOURCE_IS_DELETED_CHECK
     , m_deleted(false)
 #endif
+    , m_resourceToRevalidate(nullptr)
+    , m_proxyResource(nullptr)
 {
     ASSERT(m_type == unsigned(type)); // m_type is a bitfield, so this tests careless updates of the enum.
     InstanceCounters::incrementCounter(InstanceCounters::ResourceCounter);
@@ -185,6 +187,7 @@ Resource::Resource(const ResourceRequest& request, Type type)
 
 Resource::~Resource()
 {
+    ASSERT(!m_resourceToRevalidate); // Should be true because canDelete() checks this.
     ASSERT(canDelete());
     RELEASE_ASSERT(!memoryCache()->contains(this));
     RELEASE_ASSERT(!ResourceCallback::callbackHandler()->isScheduled(this));
@@ -203,6 +206,8 @@ void Resource::dispose()
 DEFINE_TRACE(Resource)
 {
     visitor->trace(m_loader);
+    visitor->trace(m_resourceToRevalidate);
+    visitor->trace(m_proxyResource);
 #if ENABLE(OILPAN)
     visitor->trace(m_cacheHandler);
 #endif
@@ -213,12 +218,12 @@ void Resource::load(ResourceFetcher* fetcher, const ResourceLoaderOptions& optio
     m_options = options;
     m_loading = true;
 
-    ResourceRequest request(m_revalidatingRequest.isNull() ? m_resourceRequest : m_revalidatingRequest);
     if (!accept().isEmpty())
-        request.setHTTPAccept(accept());
+        m_resourceRequest.setHTTPAccept(accept());
 
     // FIXME: It's unfortunate that the cache layer and below get to know anything about fragment identifiers.
     // We should look into removing the expectation of that knowledge from the platform network stacks.
+    ResourceRequest request(m_resourceRequest);
     if (!m_fragmentIdentifierForRequest.isNull()) {
         KURL url = request.url();
         url.setFragmentIdentifier(m_fragmentIdentifierForRequest);
@@ -227,7 +232,6 @@ void Resource::load(ResourceFetcher* fetcher, const ResourceLoaderOptions& optio
     }
     m_status = Pending;
     if (m_loader) {
-        ASSERT(m_revalidatingRequest.isNull());
         RELEASE_ASSERT(m_options.synchronousPolicy == RequestSynchronously);
         m_loader->changeToSynchronous();
         return;
@@ -249,7 +253,7 @@ void Resource::checkNotify()
 void Resource::appendData(const char* data, unsigned length)
 {
     TRACE_EVENT0("blink", "Resource::appendData");
-    ASSERT(m_revalidatingRequest.isNull());
+    ASSERT(!m_resourceToRevalidate);
     ASSERT(!errorOccurred());
     if (m_options.dataBufferingPolicy == DoNotBufferData)
         return;
@@ -262,7 +266,7 @@ void Resource::appendData(const char* data, unsigned length)
 
 void Resource::setResourceBuffer(PassRefPtr<SharedBuffer> resourceBuffer)
 {
-    ASSERT(m_revalidatingRequest.isNull());
+    ASSERT(!m_resourceToRevalidate);
     ASSERT(!errorOccurred());
     ASSERT(m_options.dataBufferingPolicy == BufferData);
     m_data = resourceBuffer;
@@ -276,21 +280,10 @@ void Resource::setDataBufferingPolicy(DataBufferingPolicy dataBufferingPolicy)
     setEncodedSize(0);
 }
 
-void Resource::markClientsFinished()
-{
-    while (!m_clients.isEmpty()) {
-        HashCountedSet<ResourceClient*>::iterator it = m_clients.begin();
-        for (int i = it->value; i; i--) {
-            m_finishedClients.add(it->key);
-            m_clients.remove(it);
-        }
-    }
-}
-
 void Resource::error(Resource::Status status)
 {
-    if (!m_revalidatingRequest.isNull())
-        m_revalidatingRequest = ResourceRequest();
+    if (m_resourceToRevalidate)
+        revalidationFailed();
 
     if (!m_error.isNull() && (m_error.isCancellation() || !isPreloaded()))
         memoryCache()->remove(this);
@@ -301,7 +294,6 @@ void Resource::error(Resource::Status status)
 
     setLoading(false);
     checkNotify();
-    markClientsFinished();
 }
 
 void Resource::finishOnePart()
@@ -312,10 +304,9 @@ void Resource::finishOnePart()
 
 void Resource::finish()
 {
-    ASSERT(m_revalidatingRequest.isNull());
+    ASSERT(!m_resourceToRevalidate);
     ASSERT(!errorOccurred());
     finishOnePart();
-    markClientsFinished();
     if (!errorOccurred())
         m_status = Cached;
 }
@@ -440,7 +431,7 @@ bool Resource::unlock()
     if (!m_data->isLocked())
         return true;
 
-    if (!memoryCache()->contains(this) || hasClients() || m_handleCount > 1 || !m_revalidatingRequest.isNull() || !m_loadFinishTime || !isSafeToUnlock())
+    if (!memoryCache()->contains(this) || hasClients() || m_handleCount > 1 || m_proxyResource || m_resourceToRevalidate || !m_loadFinishTime || !isSafeToUnlock())
         return false;
 
     m_data->unlock();
@@ -454,20 +445,18 @@ bool Resource::hasRightHandleCountApartFromCache(unsigned targetCount) const
 
 void Resource::responseReceived(const ResourceResponse& response, PassOwnPtr<WebDataConsumerHandle>)
 {
-    m_responseTimestamp = currentTime();
-
-    if (!m_revalidatingRequest.isNull()) {
-        if (response.httpStatusCode() == 304) {
-            revalidationSucceeded(response);
-            return;
-        }
-        revalidationFailed();
-    }
-
     setResponse(response);
+    m_responseTimestamp = currentTime();
     String encoding = response.textEncodingName();
     if (!encoding.isNull())
         setEncoding(encoding);
+
+    if (!m_resourceToRevalidate)
+        return;
+    if (response.httpStatusCode() == 304)
+        revalidationSucceeded(response);
+    else
+        revalidationFailed();
 }
 
 void Resource::setSerializedCachedMetadata(const char* data, size_t size)
@@ -476,7 +465,7 @@ void Resource::setSerializedCachedMetadata(const char* data, size_t size)
     // If this triggers, it indicates an efficiency problem which is most
     // likely unexpected in code designed to improve performance.
     ASSERT(!m_cachedMetadata);
-    ASSERT(m_revalidatingRequest.isNull());
+    ASSERT(!m_resourceToRevalidate);
 
     m_cachedMetadata = CachedMetadata::deserialize(data, size);
 }
@@ -517,7 +506,7 @@ void Resource::clearCachedMetadata(CachedMetadataHandler::CacheType cacheType)
 bool Resource::canDelete() const
 {
     return !hasClients() && !m_loader && !m_preloadCount && hasRightHandleCountApartFromCache(0)
-        && !m_protectorCount;
+        && !m_protectorCount && !m_resourceToRevalidate && !m_proxyResource;
 }
 
 bool Resource::hasOneHandle() const
@@ -537,15 +526,16 @@ void Resource::clearLoader()
     m_loader = nullptr;
 }
 
+void Resource::addClient(ResourceClient* client)
+{
+    if (addClientToSet(client))
+        didAddClient(client);
+}
+
 void Resource::didAddClient(ResourceClient* c)
 {
-    if (!isLoading() && !stillNeedsLoad()) {
+    if (!isLoading() && !stillNeedsLoad())
         c->notifyFinished(this);
-        if (m_clients.contains(c)) {
-            m_finishedClients.add(c);
-            m_clients.remove(c);
-        }
-    }
 }
 
 static bool shouldSendCachedDataSynchronouslyForType(Resource::Type type)
@@ -567,7 +557,7 @@ static bool shouldSendCachedDataSynchronouslyForType(Resource::Type type)
     return false;
 }
 
-void Resource::addClient(ResourceClient* client)
+bool Resource::addClientToSet(ResourceClient* client)
 {
     ASSERT(!isPurgeable());
 
@@ -582,34 +572,27 @@ void Resource::addClient(ResourceClient* client)
     if (!hasClients())
         memoryCache()->makeLive(this);
 
-    if (!m_revalidatingRequest.isNull()) {
-        m_clients.add(client);
-        return;
-    }
-
     // If we have existing data to send to the new client and the resource type supprts it, send it asynchronously.
-    if (!m_response.isNull() && !shouldSendCachedDataSynchronouslyForType(type()) && !m_needsSynchronousCacheHit) {
+    if (!m_response.isNull() && !m_proxyResource && !shouldSendCachedDataSynchronouslyForType(type()) && !m_needsSynchronousCacheHit) {
         m_clientsAwaitingCallback.add(client);
         ResourceCallback::callbackHandler()->schedule(this);
-        return;
+        return false;
     }
 
     m_clients.add(client);
-    didAddClient(client);
-    return;
+    return true;
 }
 
 void Resource::removeClient(ResourceClient* client)
 {
-    ASSERT(hasClient(client));
-    if (m_finishedClients.contains(client))
-        m_finishedClients.remove(client);
-    else if (m_clientsAwaitingCallback.contains(client))
+    if (m_clientsAwaitingCallback.contains(client)) {
+        ASSERT(!m_clients.contains(client));
         m_clientsAwaitingCallback.remove(client);
-    else
+    } else {
+        ASSERT(m_clients.contains(client));
         m_clients.remove(client);
-
-    didRemoveClient(client);
+        didRemoveClient(client);
+    }
 
     if (m_clientsAwaitingCallback.isEmpty())
         ResourceCallback::callbackHandler()->cancel(this);
@@ -734,11 +717,88 @@ void Resource::prune()
     unlock();
 }
 
+void Resource::setResourceToRevalidate(Resource* resource)
+{
+    ASSERT(resource);
+    ASSERT(!m_resourceToRevalidate);
+    ASSERT(resource != this);
+    ASSERT(m_handlesToRevalidate.isEmpty());
+    ASSERT(resource->type() == type());
 
-void Resource::revalidationSucceeded(const ResourceResponse& validatingResponse)
+    WTF_LOG(ResourceLoading, "Resource %p setResourceToRevalidate %p", this, resource);
+
+    // The following assert should be investigated whenever it occurs. Although it should never fire, it currently does in rare circumstances.
+    // https://bugs.webkit.org/show_bug.cgi?id=28604.
+    // So the code needs to be robust to this assert failing thus the "if (m_resourceToRevalidate->m_proxyResource == this)" in Resource::clearResourceToRevalidate.
+    ASSERT(!resource->m_proxyResource);
+
+    resource->m_proxyResource = this;
+    m_resourceToRevalidate = resource;
+}
+
+void Resource::clearResourceToRevalidate()
+{
+    ASSERT(m_resourceToRevalidate);
+    if (m_switchingClientsToRevalidatedResource)
+        return;
+
+    // A resource may start revalidation before this method has been called, so check that this resource is still the proxy resource before clearing it out.
+    if (m_resourceToRevalidate->m_proxyResource == this) {
+        m_resourceToRevalidate->m_proxyResource = nullptr;
+        m_resourceToRevalidate->deleteIfPossible();
+    }
+    m_handlesToRevalidate.clear();
+    m_resourceToRevalidate = nullptr;
+    deleteIfPossible();
+}
+
+void Resource::switchClientsToRevalidatedResource()
+{
+    ASSERT(m_resourceToRevalidate);
+    ASSERT(memoryCache()->contains(m_resourceToRevalidate));
+    ASSERT(!memoryCache()->contains(this));
+
+    WTF_LOG(ResourceLoading, "Resource %p switchClientsToRevalidatedResource %p", this, m_resourceToRevalidate.get());
+
+    m_resourceToRevalidate->m_identifier = m_identifier;
+
+    m_switchingClientsToRevalidatedResource = true;
+    for (ResourcePtrBase* handle : m_handlesToRevalidate) {
+        handle->m_resource = m_resourceToRevalidate;
+        m_resourceToRevalidate->registerHandle(handle);
+        --m_handleCount;
+    }
+    ASSERT(!m_handleCount);
+    m_handlesToRevalidate.clear();
+
+    Vector<ResourceClient*> clientsToMove;
+    for (const auto& clientHashEntry : m_clients) {
+        unsigned count = clientHashEntry.value;
+        while (count--)
+            clientsToMove.append(clientHashEntry.key);
+    }
+
+    unsigned moveCount = clientsToMove.size();
+    for (unsigned n = 0; n < moveCount; ++n)
+        removeClient(clientsToMove[n]);
+    ASSERT(m_clients.isEmpty());
+
+    for (unsigned n = 0; n < moveCount; ++n)
+        m_resourceToRevalidate->addClientToSet(clientsToMove[n]);
+    for (unsigned n = 0; n < moveCount; ++n) {
+        // Calling didAddClient may do anything, including trying to cancel revalidation.
+        // Assert that it didn't succeed.
+        ASSERT(m_resourceToRevalidate);
+        // Calling didAddClient for a client may end up removing another client. In that case it won't be in the set anymore.
+        if (m_resourceToRevalidate->m_clients.contains(clientsToMove[n]))
+            m_resourceToRevalidate->didAddClient(clientsToMove[n]);
+    }
+    m_switchingClientsToRevalidatedResource = false;
+}
+
+void Resource::updateResponseAfterRevalidation(const ResourceResponse& validatingResponse)
 {
     m_responseTimestamp = currentTime();
-    m_response.setResourceLoadTiming(validatingResponse.resourceLoadTiming());
 
     // RFC2616 10.3.5
     // Update cached headers from the 304 response
@@ -753,24 +813,42 @@ void Resource::revalidationSucceeded(const ResourceResponse& validatingResponse)
             continue;
         m_response.setHTTPHeaderField(header.key, header.value);
     }
+}
 
+void Resource::revalidationSucceeded(const ResourceResponse& response)
+{
+    ASSERT(m_resourceToRevalidate);
+    ASSERT(!memoryCache()->contains(m_resourceToRevalidate));
+    ASSERT(m_resourceToRevalidate->isLoaded());
+
+    // Calling evict() can potentially delete revalidatingResource, which we use
+    // below. This mustn't be the case since revalidation means it is loaded
+    // and so canDelete() is false.
+    ASSERT(!canDelete());
+
+    m_resourceToRevalidate->updateResponseAfterRevalidation(response);
+    memoryCache()->replace(m_resourceToRevalidate, this);
+
+    switchClientsToRevalidatedResource();
     assertAlive();
-    m_resourceRequest = m_revalidatingRequest;
-    m_revalidatingRequest = ResourceRequest();
+    // clearResourceToRevalidate deletes this.
+    clearResourceToRevalidate();
 }
 
 void Resource::revalidationFailed()
 {
-    m_resourceRequest = m_revalidatingRequest;
-    m_revalidatingRequest = ResourceRequest();
-    m_data.clear();
-    destroyDecodedDataForFailedRevalidation();
+    ASSERT(WTF::isMainThread());
+    WTF_LOG(ResourceLoading, "Revalidation failed for %p", this);
+    ASSERT(resourceToRevalidate());
+    clearResourceToRevalidate();
 }
 
 void Resource::registerHandle(ResourcePtrBase* h)
 {
     assertAlive();
     ++m_handleCount;
+    if (m_resourceToRevalidate)
+        m_handlesToRevalidate.add(h);
 }
 
 void Resource::unregisterHandle(ResourcePtrBase* h)
@@ -778,6 +856,9 @@ void Resource::unregisterHandle(ResourcePtrBase* h)
     assertAlive();
     ASSERT(m_handleCount > 0);
     --m_handleCount;
+
+    if (m_resourceToRevalidate)
+        m_handlesToRevalidate.remove(h);
 
     if (!m_handleCount) {
         if (deleteIfPossible())

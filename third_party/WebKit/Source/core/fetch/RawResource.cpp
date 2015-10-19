@@ -145,24 +145,13 @@ void RawResource::updateRequest(const ResourceRequest& request)
 void RawResource::responseReceived(const ResourceResponse& response, PassOwnPtr<WebDataConsumerHandle> handle)
 {
     InternalResourcePtr protect(this);
-
-    bool isSuccessfulRevalidation = isCacheValidator() && response.httpStatusCode() == 304;
     Resource::responseReceived(response, nullptr);
-
     ResourceClientWalker<RawResourceClient> w(m_clients);
     ASSERT(count() <= 1 || !handle);
     while (RawResourceClient* c = w.next()) {
         // |handle| is cleared when passed, but it's not a problem because
         // |handle| is null when there are two or more clients, as asserted.
         c->responseReceived(this, m_response, handle);
-    }
-
-    // If we successfully revalidated, we won't get appendData() calls.
-    // Forward the data to clients now instead.
-    if (isSuccessfulRevalidation) {
-        ResourceClientWalker<RawResourceClient> w(m_clients);
-        while (RawResourceClient* c = w.next())
-            c->dataReceived(this, m_data->data(), m_data->size());
     }
 }
 

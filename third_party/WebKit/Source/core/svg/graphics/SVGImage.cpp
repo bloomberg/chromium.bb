@@ -434,12 +434,6 @@ bool SVGImage::dataChanged(bool allDataReceived)
 
         DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<FrameLoaderClient>, dummyFrameLoaderClient, (EmptyFrameLoaderClient::create()));
 
-        if (m_page) {
-            toLocalFrame(m_page->mainFrame())->loader().load(FrameLoadRequest(0, blankURL(), SubstituteData(data(), AtomicString("image/svg+xml", AtomicString::ConstructFromLiteral),
-                AtomicString("UTF-8", AtomicString::ConstructFromLiteral), KURL(), ForceSynchronousLoad)));
-            return true;
-        }
-
         Page::PageClients pageClients;
         fillWithEmptyClients(pageClients);
         m_chromeClient = SVGImageChromeClient::create(this);

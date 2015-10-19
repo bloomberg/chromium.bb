@@ -376,7 +376,7 @@ ResourcePtr<Resource> ResourceFetcher::requestResource(FetchRequest& request, co
         resource = createResourceForLoading(request, request.charset(), factory);
         break;
     case Revalidate:
-        initializeRevalidation(request, resource.get());
+        resource = createResourceForRevalidation(request, resource.get(), factory);
         break;
     case Use:
         memoryCache()->updateForAccess(resource.get());
@@ -475,13 +475,13 @@ void ResourceFetcher::initializeResourceRequest(ResourceRequest& request, Resour
     context().addAdditionalRequestHeaders(request, (type == Resource::MainResource) ? FetchMainResource : FetchSubresource);
 }
 
-void ResourceFetcher::initializeRevalidation(const FetchRequest& request, Resource* resource)
+ResourcePtr<Resource> ResourceFetcher::createResourceForRevalidation(const FetchRequest& request, Resource* resource, const ResourceFactory& factory)
 {
     ASSERT(resource);
     ASSERT(memoryCache()->contains(resource));
     ASSERT(resource->isLoaded());
     ASSERT(resource->canUseCacheValidator());
-    ASSERT(!resource->isCacheValidator());
+    ASSERT(!resource->resourceToRevalidate());
     ASSERT(!context().isControlledByServiceWorker());
 
     ResourceRequest revalidatingRequest(resource->resourceRequest());
@@ -505,7 +505,15 @@ void ResourceFetcher::initializeRevalidation(const FetchRequest& request, Resour
         revalidatingRequest.setHTTPHeaderField("Resource-Freshness", AtomicString(String::format("max-age=%.0lf,stale-while-revalidate=%.0lf,age=%.0lf", resource->freshnessLifetime(), stalenessLifetime, resource->currentAge())));
     }
 
-    resource->setRevalidatingRequest(revalidatingRequest);
+    ResourcePtr<Resource> newResource = factory.create(revalidatingRequest, resource->encoding());
+    WTF_LOG(ResourceLoading, "Resource %p created to revalidate %p", newResource.get(), resource);
+
+    newResource->setResourceToRevalidate(resource);
+    newResource->setCacheIdentifier(resource->cacheIdentifier());
+
+    memoryCache()->remove(resource);
+    memoryCache()->add(newResource.get());
+    return newResource;
 }
 
 ResourcePtr<Resource> ResourceFetcher::createResourceForLoading(FetchRequest& request, const String& charset, const ResourceFactory& factory)
@@ -531,7 +539,7 @@ void ResourceFetcher::storeResourceTimingInitiatorInformation(Resource* resource
     OwnPtr<ResourceTimingInfo> info = ResourceTimingInfo::create(resource->options().initiatorInfo.name, monotonicallyIncreasingTime(), resource->type() == Resource::MainResource);
 
     if (resource->isCacheValidator()) {
-        const AtomicString& timingAllowOrigin = resource->response().httpHeaderField("Timing-Allow-Origin");
+        const AtomicString& timingAllowOrigin = resource->resourceToRevalidate()->response().httpHeaderField("Timing-Allow-Origin");
         if (!timingAllowOrigin.isEmpty())
             info->setOriginalTimingAllowOrigin(timingAllowOrigin);
     }

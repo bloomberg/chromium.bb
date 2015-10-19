@@ -155,7 +155,7 @@ private:
 
     explicit ResourceFetcher(FetchContext*);
 
-    void initializeRevalidation(const FetchRequest&, Resource*);
+    ResourcePtr<Resource> createResourceForRevalidation(const FetchRequest&, Resource*, const ResourceFactory&);
     ResourcePtr<Resource> createResourceForLoading(FetchRequest&, const String& charset, const ResourceFactory&);
     void storeResourceTimingInitiatorInformation(Resource*);
     bool scheduleArchiveLoad(Resource*, const ResourceRequest&);

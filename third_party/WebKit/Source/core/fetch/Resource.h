@@ -124,8 +124,6 @@ public:
     const ResourceRequest& resourceRequest() const { return m_resourceRequest; }
     const ResourceRequest& lastResourceRequest() const;
 
-    void setRevalidatingRequest(const ResourceRequest& request) { m_revalidatingRequest = request; }
-
     const KURL& url() const { return m_resourceRequest.url();}
     Type type() const { return static_cast<Type>(m_type); }
     const ResourceLoaderOptions& options() const { return m_options; }
@@ -136,7 +134,7 @@ public:
 
     void addClient(ResourceClient*);
     void removeClient(ResourceClient*);
-    bool hasClients() const { return !m_clients.isEmpty() || !m_clientsAwaitingCallback.isEmpty() || !m_finishedClients.isEmpty(); }
+    bool hasClients() const { return !m_clients.isEmpty() || !m_clientsAwaitingCallback.isEmpty(); }
     bool deleteIfPossible();
 
     enum PreloadResult {
@@ -236,7 +234,9 @@ public:
     bool canReuseRedirectChain();
     bool mustRevalidateDueToCacheHeaders();
     bool canUseCacheValidator();
-    bool isCacheValidator() const { return !m_revalidatingRequest.isNull(); }
+    bool isCacheValidator() const { return m_resourceToRevalidate; }
+    Resource* resourceToRevalidate() const { return m_resourceToRevalidate; }
+    void setResourceToRevalidate(Resource*);
     bool hasCacheControlNoStoreHeader();
     bool hasVaryHeader() const;
     virtual bool mustRefetchDueToIntegrityMetadata(const FetchRequest& request) const { return false; }
@@ -274,8 +274,6 @@ protected:
     virtual void checkNotify();
     virtual void finishOnePart();
 
-    virtual void destroyDecodedDataForFailedRevalidation() { }
-
     // Normal resource pointers will silently switch what Resource* they reference when we
     // successfully revalidated the resource. We need a way to guarantee that the Resource
     // that received the 304 response survives long enough to switch everything over to the
@@ -306,11 +304,13 @@ protected:
     void setDecodedSize(size_t);
     void didAccessDecodedData();
 
+    void clearResourceToRevalidate();
+    void updateResponseAfterRevalidation(const ResourceResponse& validatingResponse);
+
     void finishPendingClients();
 
     HashCountedSet<ResourceClient*> m_clients;
     HashCountedSet<ResourceClient*> m_clientsAwaitingCallback;
-    HashCountedSet<ResourceClient*> m_finishedClients;
 
     class ResourceCallback : public NoBaseWillBeGarbageCollectedFinalized<ResourceCallback> {
     public:
@@ -326,7 +326,7 @@ protected:
         WillBeHeapHashSet<RawPtrWillBeMember<Resource>> m_resourcesWithPendingClients;
     };
 
-    bool hasClient(ResourceClient* client) { return m_clients.contains(client) || m_clientsAwaitingCallback.contains(client) || m_finishedClients.contains(client); }
+    bool hasClient(ResourceClient* client) { return m_clients.contains(client) || m_clientsAwaitingCallback.contains(client); }
 
     struct RedirectPair {
         ALLOW_ONLY_INLINE_ALLOCATION();
@@ -345,10 +345,7 @@ protected:
     virtual bool isSafeToUnlock() const { return false; }
     virtual void destroyDecodedDataIfPossible() { }
 
-    void markClientsFinished();
-
     ResourceRequest m_resourceRequest;
-    ResourceRequest m_revalidatingRequest;
     AtomicString m_accept;
     PersistentWillBeMember<ResourceLoader> m_loader;
     ResourceLoaderOptions m_options;
@@ -361,6 +358,7 @@ protected:
 
 private:
     class CacheHandler;
+    bool addClientToSet(ResourceClient*);
     void cancelTimerFired(Timer<Resource>*);
 
     void switchClientsToRevalidatedResource();
@@ -411,6 +409,18 @@ private:
 #ifdef ENABLE_RESOURCE_IS_DELETED_CHECK
     bool m_deleted;
 #endif
+
+    // If this field is non-null we are using the resource as a proxy for checking whether an existing resource is still up to date
+    // using HTTP If-Modified-Since/If-None-Match headers. If the response is 304 all clients of this resource are moved
+    // to to be clients of m_resourceToRevalidate and the resource is deleted. If not, the field is zeroed and this
+    // resources becomes normal resource load.
+    RawPtrWillBeMember<Resource> m_resourceToRevalidate;
+
+    // If this field is non-null, the resource has a proxy for checking whether it is still up to date (see m_resourceToRevalidate).
+    RawPtrWillBeMember<Resource> m_proxyResource;
+
+    // These handles will need to be updated to point to the m_resourceToRevalidate in case we get 304 response.
+    HashSet<ResourcePtrBase*> m_handlesToRevalidate;
 
     // Ordered list of all redirects followed while fetching this resource.
     Vector<RedirectPair> m_redirectChain;

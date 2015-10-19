@@ -297,10 +297,6 @@ void ImageResource::notifyObservers(const IntRect* changeRect)
     ResourceClientWalker<ImageResourceClient> w(m_clients);
     while (ImageResourceClient* c = w.next())
         c->imageChanged(this, changeRect);
-
-    ResourceClientWalker<ImageResourceClient> w2(m_finishedClients);
-    while (ImageResourceClient* c = w2.next())
-        c->imageChanged(this, changeRect);
 }
 
 void ImageResource::clear()
@@ -400,15 +396,15 @@ void ImageResource::responseReceived(const ResourceResponse& response, PassOwnPt
 {
     if (loadingMultipartContent() && m_data)
         finishOnePart();
-    Resource::responseReceived(response, handle);
     if (RuntimeEnabledFeatures::clientHintsEnabled()) {
-        m_devicePixelRatioHeaderValue = m_response.httpHeaderField("content-dpr").toFloat(&m_hasDevicePixelRatioHeaderValue);
+        m_devicePixelRatioHeaderValue = response.httpHeaderField("content-dpr").toFloat(&m_hasDevicePixelRatioHeaderValue);
         if (!m_hasDevicePixelRatioHeaderValue || m_devicePixelRatioHeaderValue <= 0.0) {
             m_devicePixelRatioHeaderValue = 1.0;
             m_hasDevicePixelRatioHeaderValue = false;
         }
 
     }
+    Resource::responseReceived(response, handle);
 }
 
 void ImageResource::decodedSizeChanged(const blink::Image* image, int delta)
@@ -441,12 +437,6 @@ bool ImageResource::shouldPauseAnimation(const blink::Image* image)
             return false;
     }
 
-    ResourceClientWalker<ImageResourceClient> w2(m_finishedClients);
-    while (ImageResourceClient* c = w2.next()) {
-        if (c->willRenderImage(this))
-            return false;
-    }
-
     return true;
 }
 
@@ -465,12 +455,6 @@ void ImageResource::updateImageAnimationPolicy()
     ImageAnimationPolicy newPolicy = ImageAnimationPolicyAllowed;
     ResourceClientWalker<ImageResourceClient> w(m_clients);
     while (ImageResourceClient* c = w.next()) {
-        if (c->getImageAnimationPolicy(this, newPolicy))
-            break;
-    }
-
-    ResourceClientWalker<ImageResourceClient> w2(m_finishedClients);
-    while (ImageResourceClient* c = w2.next()) {
         if (c->getImageAnimationPolicy(this, newPolicy))
             break;
     }
