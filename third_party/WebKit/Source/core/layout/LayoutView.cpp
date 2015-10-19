@@ -87,6 +87,7 @@ bool LayoutView::hitTest(HitTestResult& result)
     // into a child document, it could trigger a layout on the parent document, which can destroy PaintLayer
     // that are higher up in the call stack, leading to crashes.
     // Note that Document::updateLayout calls its parent's updateLayout.
+    DocumentLifecycle::PreventThrottlingScope preventThrottling(document().lifecycle());
     frameView()->updateLifecycleToCompositingCleanPlusScrolling();
     return hitTestNoLifecycleUpdate(result);
 }

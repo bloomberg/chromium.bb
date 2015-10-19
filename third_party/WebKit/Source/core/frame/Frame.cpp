@@ -281,6 +281,13 @@ Settings* Frame::settings() const
     return nullptr;
 }
 
+void Frame::scheduleVisualUpdateUnlessThrottled()
+{
+    if (isLocalFrame() && toLocalFrame(this)->shouldThrottleRendering())
+        return;
+    page()->animator().scheduleVisualUpdate();
+}
+
 Frame::Frame(FrameClient* client, FrameHost* host, FrameOwner* owner)
     : m_treeNode(this)
     , m_host(host)

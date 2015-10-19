@@ -25,6 +25,10 @@ void ViewPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffs
     // LayoutViews should never be called to paint with an offset not on device pixels.
     ASSERT(LayoutPoint(IntPoint(paintOffset.x(), paintOffset.y())) == paintOffset);
 
+    const FrameView* frameView = m_layoutView.frameView();
+    if (frameView->shouldThrottleRendering())
+        return;
+
     m_layoutView.paintObject(paintInfo, paintOffset);
     BlockPainter(m_layoutView).paintOverflowControlsIfNeeded(paintInfo, paintOffset);
 }

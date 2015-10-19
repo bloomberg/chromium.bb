@@ -38,6 +38,10 @@ namespace blink {
 
 static DocumentLifecycle::DeprecatedTransition* s_deprecatedTransitionStack = 0;
 
+// TODO(skyostil): Come up with a better way to store cross-frame lifecycle
+// related data to avoid this being a global setting.
+static unsigned s_preventThrottlingCount = 0;
+
 DocumentLifecycle::Scope::Scope(DocumentLifecycle& lifecycle, State finalState)
     : m_lifecycle(lifecycle)
     , m_finalState(finalState)
@@ -60,6 +64,17 @@ DocumentLifecycle::DeprecatedTransition::DeprecatedTransition(State from, State 
 DocumentLifecycle::DeprecatedTransition::~DeprecatedTransition()
 {
     s_deprecatedTransitionStack = m_previous;
+}
+
+DocumentLifecycle::PreventThrottlingScope::PreventThrottlingScope(DocumentLifecycle& lifecycle)
+{
+    s_preventThrottlingCount++;
+}
+
+DocumentLifecycle::PreventThrottlingScope::~PreventThrottlingScope()
+{
+    ASSERT(s_preventThrottlingCount > 0);
+    s_preventThrottlingCount--;
 }
 
 DocumentLifecycle::DocumentLifecycle()
@@ -289,6 +304,11 @@ void DocumentLifecycle::ensureStateAtMost(State state)
     ASSERT_WITH_MESSAGE(canRewindTo(state),
         "Cannot rewind document lifecycle from %s to %s.", stateAsDebugString(m_state), stateAsDebugString(state));
     m_state = state;
+}
+
+bool DocumentLifecycle::throttlingAllowed() const
+{
+    return !s_preventThrottlingCount;
 }
 
 #if ENABLE(ASSERT)

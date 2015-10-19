@@ -1197,6 +1197,9 @@ void LayoutObject::invalidatePaintUsingContainer(const LayoutBoxModelObject& pai
     if (RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled())
         return;
 
+    if (paintInvalidationContainer.frameView()->shouldThrottleRendering())
+        return;
+
     ASSERT(gDisablePaintInvalidationStateAsserts || document().lifecycle().state() == DocumentLifecycle::InPaintInvalidation);
 
     if (dirtyRect.isEmpty())
@@ -3246,7 +3249,7 @@ void LayoutObject::setShouldDoFullPaintInvalidation(PaintInvalidationReason reas
 
     if (!isUpgradingDelayedFullToFull) {
         ASSERT(document().lifecycle().state() != DocumentLifecycle::InPaintInvalidation);
-        frame()->page()->animator().scheduleVisualUpdate(); // In case that this is called outside of FrameView::updateLayoutAndStyleForPainting().
+        frame()->scheduleVisualUpdateUnlessThrottled(); // In case that this is called outside of FrameView::updateLayoutAndStyleForPainting().
         markContainerChainForPaintInvalidation();
     }
 }
@@ -3257,7 +3260,7 @@ void LayoutObject::setMayNeedPaintInvalidation()
         return;
     m_bitfields.setMayNeedPaintInvalidation(true);
     markContainerChainForPaintInvalidation();
-    frame()->page()->animator().scheduleVisualUpdate(); // In case that this is called outside of FrameView::updateLayoutAndStyleForPainting().
+    frame()->scheduleVisualUpdateUnlessThrottled(); // In case that this is called outside of FrameView::updateLayoutAndStyleForPainting().
 }
 
 void LayoutObject::clearPaintInvalidationState(const PaintInvalidationState& paintInvalidationState)

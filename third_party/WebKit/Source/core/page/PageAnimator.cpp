@@ -44,7 +44,10 @@ void PageAnimator::serviceScriptedAnimations(double monotonicAnimationStartTime)
     }
 
     for (auto& document : documents) {
+        DocumentAnimations::updateAnimationTimingForAnimationFrame(*document, monotonicAnimationStartTime);
         if (document->view()) {
+            if (document->view()->shouldThrottleRendering())
+                continue;
             document->view()->scrollableArea()->serviceScrollAnimations(monotonicAnimationStartTime);
 
             if (const FrameView::ScrollableAreaSet* animatingScrollableAreas = document->view()->animatingScrollableAreas()) {
@@ -56,7 +59,7 @@ void PageAnimator::serviceScriptedAnimations(double monotonicAnimationStartTime)
                     scrollableArea->serviceScrollAnimations(monotonicAnimationStartTime);
             }
         }
-        DocumentAnimations::updateAnimationTimingForAnimationFrame(*document, monotonicAnimationStartTime);
+        // TODO(skyostil): These functions should not run for documents without views.
         SVGDocumentExtensions::serviceOnAnimationFrame(*document, monotonicAnimationStartTime);
         document->serviceScriptedAnimations(monotonicAnimationStartTime);
     }

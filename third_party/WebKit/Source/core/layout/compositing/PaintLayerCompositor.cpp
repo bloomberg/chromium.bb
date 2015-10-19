@@ -194,6 +194,10 @@ void updateDescendantDependentFlagsForEntireSubtree(PaintLayer& layer)
 
 void PaintLayerCompositor::updateIfNeededRecursive()
 {
+    FrameView* view = m_layoutView.frameView();
+    if (view->shouldThrottleRendering())
+        return;
+
     for (Frame* child = m_layoutView.frameView()->frame().tree().firstChild(); child; child = child->tree().nextSibling()) {
         if (!child->isLocalFrame())
             continue;
@@ -238,8 +242,12 @@ void PaintLayerCompositor::updateIfNeededRecursive()
     ASSERT(lifecycle().state() == DocumentLifecycle::CompositingClean);
     assertNoUnresolvedDirtyBits();
     for (Frame* child = m_layoutView.frameView()->frame().tree().firstChild(); child; child = child->tree().nextSibling()) {
-        if (child->isLocalFrame())
-            toLocalFrame(child)->contentLayoutObject()->compositor()->assertNoUnresolvedDirtyBits();
+        if (!child->isLocalFrame())
+            continue;
+        LocalFrame* localFrame = toLocalFrame(child);
+        if (localFrame->shouldThrottleRendering())
+            continue;
+        localFrame->contentLayoutObject()->compositor()->assertNoUnresolvedDirtyBits();
     }
 #endif
 }
@@ -608,7 +616,7 @@ bool PaintLayerCompositor::scrollingLayerDidChange(PaintLayer* layer)
 
 String PaintLayerCompositor::layerTreeAsText(LayerTreeFlags flags)
 {
-    ASSERT(lifecycle().state() >= DocumentLifecycle::PaintInvalidationClean);
+    ASSERT(lifecycle().state() >= DocumentLifecycle::PaintInvalidationClean || m_layoutView.frameView()->shouldThrottleRendering());
 
     if (!m_rootContentLayer)
         return String();
@@ -877,12 +885,15 @@ void PaintLayerCompositor::resetTrackedPaintInvalidationRects()
 void PaintLayerCompositor::setTracksPaintInvalidations(bool tracksPaintInvalidations)
 {
 #if ENABLE(ASSERT)
+    FrameView* view = m_layoutView.frameView();
     if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
         ASSERT(lifecycle().state() == DocumentLifecycle::CompositingForSlimmingPaintV2Clean
             // TODO(wangxianzhu): Remove this when we remove the old path for spv2.
-            || lifecycle().state() == DocumentLifecycle::PaintInvalidationClean);
+            || lifecycle().state() == DocumentLifecycle::PaintInvalidationClean
+            || view->shouldThrottleRendering());
     } else {
-        ASSERT(lifecycle().state() == DocumentLifecycle::PaintInvalidationClean);
+        ASSERT(lifecycle().state() == DocumentLifecycle::PaintInvalidationClean
+            || (view && view->shouldThrottleRendering()));
     }
 #endif
 

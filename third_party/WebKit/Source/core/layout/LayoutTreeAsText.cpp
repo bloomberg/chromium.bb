@@ -663,6 +663,9 @@ void LayoutTreeAsText::writeLayers(TextStream& ts, const PaintLayer* rootLayer, 
     layer->convertToLayerCoords(rootLayer, offsetFromRoot);
     bool shouldPaint = (behavior & LayoutAsTextShowAllLayers) ? true : layer->intersectsDamageRect(layerBounds, damageRect.rect(), offsetFromRoot);
 
+    if (layer->layoutObject()->isLayoutPart() && toLayoutPart(layer->layoutObject())->isThrottledFrameView())
+        shouldPaint = false;
+
     Vector<PaintLayerStackingNode*>* negList = layer->stackingNode()->negZOrderList();
     bool paintsBackgroundSeparately = negList && negList->size() > 0;
     if (shouldPaint && paintsBackgroundSeparately)

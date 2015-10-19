@@ -21,7 +21,7 @@ namespace blink {
 
 static void paintLayers(PaintLayer& layer, SimDisplayItemList& displayList)
 {
-    if (layer.compositingState() == PaintsIntoOwnBacking) {
+    if (layer.isAllowedToQueryCompositingState() && layer.compositingState() == PaintsIntoOwnBacking) {
         CompositedLayerMapping* mapping = layer.compositedLayerMapping();
         GraphicsLayer* graphicsLayer = mapping->mainGraphicsLayer();
         if (graphicsLayer->hasTrackedPaintInvalidations()) {
@@ -71,6 +71,7 @@ SimDisplayItemList SimCompositor::beginFrame()
     ASSERT(m_webViewImpl);
     ASSERT(!m_layerTreeView->deferCommits());
     ASSERT(m_layerTreeView->needsAnimate());
+    m_layerTreeView->clearNeedsAnimate();
 
     // Always advance the time as if the compositor was running at 60fps.
     m_lastFrameTimeMonotonic = monotonicallyIncreasingTime() + 0.016;
@@ -82,8 +83,6 @@ SimDisplayItemList SimCompositor::beginFrame()
 
     SimDisplayItemList displayList;
     paintFrames(*root, displayList);
-
-    m_layerTreeView->clearNeedsAnimate();
 
     return displayList;
 }

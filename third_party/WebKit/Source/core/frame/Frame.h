@@ -130,6 +130,8 @@ public:
 
     virtual WindowProxyManager* windowProxyManager() const = 0;
 
+    void scheduleVisualUpdateUnlessThrottled();
+
 protected:
     Frame(FrameClient*, FrameHost*, FrameOwner*);
 

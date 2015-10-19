@@ -54,6 +54,8 @@ public:
     bool isLayoutPart() const final { return true; }
     virtual void paintContents(const PaintInfo&, const LayoutPoint&) const;
 
+    bool isThrottledFrameView() const;
+
 protected:
     PaintLayerType layerTypeRequired() const override;
 

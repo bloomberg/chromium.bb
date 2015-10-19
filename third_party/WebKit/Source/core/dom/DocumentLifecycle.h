@@ -134,6 +134,14 @@ public:
         DocumentLifecycle& m_documentLifecycle;
     };
 
+    class PreventThrottlingScope {
+        STACK_ALLOCATED();
+        WTF_MAKE_NONCOPYABLE(PreventThrottlingScope);
+    public:
+        PreventThrottlingScope(DocumentLifecycle&);
+        ~PreventThrottlingScope();
+    };
+
     DocumentLifecycle();
     ~DocumentLifecycle();
 
@@ -156,6 +164,8 @@ public:
         ASSERT(m_detachCount > 0);
         m_detachCount--;
     }
+
+    bool throttlingAllowed() const;
 
 #if ENABLE(ASSERT)
     static const char* stateAsDebugString(const State);

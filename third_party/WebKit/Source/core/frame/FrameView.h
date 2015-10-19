@@ -26,6 +26,7 @@
 #define FrameView_h
 
 #include "core/CoreExport.h"
+#include "core/dom/DocumentLifecycle.h"
 #include "core/frame/FrameViewAutoSizeInfo.h"
 #include "core/frame/LayoutSubtreeRootList.h"
 #include "core/frame/RootFrameViewport.h"
@@ -52,6 +53,7 @@
 namespace blink {
 
 class AXObjectCache;
+class CancellableTaskFactory;
 class ComputedStyle;
 class DocumentLifecycle;
 class Cursor;
@@ -225,15 +227,17 @@ public:
     Color documentBackgroundColor() const;
 
     // Run all needed lifecycle stages. After calling this method, all frames will be in the lifecycle state PaintInvalidationClean.
+    // If lifecycle throttling is allowed (see DocumentLifecycle::PreventThrottlingScope), some frames may skip the lifecycle update
+    // (e.g., based on visibility) and will not end up being PaintInvalidationClean.
     // TODO(pdr): Update callers to pass in the interest rect.
     void updateAllLifecyclePhases(const LayoutRect* interestRect = nullptr);
 
     // Computes the style, layout and compositing lifecycle stages if needed. After calling this method, all frames wil lbe in a lifecycle
-    // state >= CompositingClean, and scrolling has been updated.
+    // state >= CompositingClean, and scrolling has been updated (unless throttling is allowed).
     void updateLifecycleToCompositingCleanPlusScrolling();
 
     // Computes only the style and layout lifecycle stages.
-    // After calling this method, all frames will be in a lifecycle state >= LayoutClean.
+    // After calling this method, all frames will be in a lifecycle state >= LayoutClean (unless throttling is allowed).
     void updateLifecycleToLayoutClean();
 
     bool invalidateViewportConstrainedObjects();
@@ -556,6 +560,14 @@ public:
     void setFrameTimingRequestsDirty(bool isDirty) { m_frameTimingRequestsDirty = isDirty; }
     bool frameTimingRequestsDirty() { return m_frameTimingRequestsDirty; }
 
+    // Returns true if this frame should not render or schedule visual updates.
+    bool shouldThrottleRendering() const;
+
+    // Returns true if this frame could potentially skip rendering and avoid
+    // scheduling visual updates.
+    bool canThrottleRendering() const;
+    bool isHiddenForThrottling() const { return m_hiddenForThrottling; }
+
 protected:
     // Scroll the content via the compositor.
     bool scrollContentsFastPath(const IntSize& scrollDelta);
@@ -718,6 +730,11 @@ private:
 
     template <typename Function> void forAllFrameViews(Function);
 
+    void setNeedsUpdateViewportIntersection();
+    void updateViewportIntersectionsForSubtree();
+    void updateViewportIntersectionIfNeeded();
+    void notifyIntersectionObservers();
+
     LayoutSize m_size;
 
     typedef HashSet<RefPtr<LayoutEmbeddedObject>> EmbeddedObjectSet;
@@ -752,6 +769,7 @@ private:
     unsigned m_nestedLayoutCount;
     Timer<FrameView> m_postLayoutTasksTimer;
     Timer<FrameView> m_updateWidgetsTimer;
+    OwnPtr<CancellableTaskFactory> m_intersectionObserverNotificationFactory;
 
     bool m_firstLayout;
     bool m_isTransparent;
@@ -799,6 +817,8 @@ private:
     float m_topControlsViewportAdjustment;
 
     bool m_needsUpdateWidgetPositions;
+    bool m_needsUpdateViewportIntersection;
+    bool m_needsUpdateViewportIntersectionInSubtree;
 
 #if ENABLE(ASSERT)
     // Verified when finalizing.
@@ -834,6 +854,17 @@ private:
     // TODO(bokan): crbug.com/484188. We should specialize FrameView for the
     // main frame.
     OwnPtrWillBeMember<ScrollableArea> m_viewportScrollableArea;
+
+    // This frame's bounds in the root frame's content coordinates, clipped
+    // recursively through every ancestor view.
+    IntRect m_viewportIntersection;
+    bool m_viewportIntersectionValid;
+
+    // The following members control rendering pipeline throttling for this
+    // frame. They are only updated in response to intersection observer
+    // notifications, i.e., not in the middle of the lifecycle.
+    bool m_hiddenForThrottling;
+    bool m_crossOriginForThrottling;
 };
 
 inline void FrameView::incrementVisuallyNonEmptyCharacterCount(unsigned count)

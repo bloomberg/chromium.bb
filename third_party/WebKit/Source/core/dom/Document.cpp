@@ -1531,7 +1531,8 @@ void Document::scheduleLayoutTreeUpdate()
     ASSERT(shouldScheduleLayoutTreeUpdate());
     ASSERT(needsLayoutTreeUpdate());
 
-    page()->animator().scheduleVisualUpdate();
+    if (!view()->shouldThrottleRendering())
+        page()->animator().scheduleVisualUpdate();
     m_lifecycle.ensureStateAtMost(DocumentLifecycle::VisualUpdatePending);
 
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ScheduleStyleRecalculation", TRACE_EVENT_SCOPE_THREAD, "data", InspectorRecalculateStylesEvent::data(frame()));
@@ -1721,6 +1722,9 @@ void Document::updateLayoutTree(StyleRecalcChange change)
     if (!view() || !isActive())
         return;
 
+    if (view()->shouldThrottleRendering())
+        return;
+
     if (change != Force && !needsLayoutTreeUpdate()) {
         ASSERT(lifecycle().state() != DocumentLifecycle::VisualUpdatePending);
         return;
@@ -1788,6 +1792,9 @@ void Document::updateLayoutTree(StyleRecalcChange change)
 
 void Document::updateStyle(StyleRecalcChange change)
 {
+    if (view()->shouldThrottleRendering())
+        return;
+
     TRACE_EVENT_BEGIN0("blink,blink_style", "Document::updateStyle");
     unsigned initialResolverAccessCount = styleEngine().resolverAccessCount();
 
@@ -1965,6 +1972,7 @@ void Document::clearFocusedElementTimerFired(Timer<Document>*)
 // to instead suspend JavaScript execution.
 void Document::updateLayoutIgnorePendingStylesheets(Document::RunPostLayoutTasks runPostLayoutTasks)
 {
+    DocumentLifecycle::PreventThrottlingScope preventThrottling(lifecycle());
     StyleEngine::IgnoringPendingStylesheet ignoring(styleEngine());
 
     if (styleEngine().hasPendingSheets()) {

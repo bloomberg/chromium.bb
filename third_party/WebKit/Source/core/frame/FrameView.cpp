@@ -93,9 +93,11 @@
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/GraphicsLayerDebugInfo.h"
 #include "platform/graphics/paint/PaintController.h"
+#include "platform/scheduler/CancellableTaskFactory.h"
 #include "platform/scroll/ScrollAnimator.h"
 #include "platform/text/TextStream.h"
 #include "public/platform/WebDisplayItemList.h"
+#include "public/platform/WebFrameScheduler.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/TemporaryChange.h"
@@ -119,6 +121,7 @@ FrameView::FrameView(LocalFrame* frame)
     , m_inSynchronousPostLayout(false)
     , m_postLayoutTasksTimer(this, &FrameView::postLayoutTimerFired)
     , m_updateWidgetsTimer(this, &FrameView::updateWidgetsTimerFired)
+    , m_intersectionObserverNotificationFactory(CancellableTaskFactory::create(this, &FrameView::notifyIntersectionObservers))
     , m_isTransparent(false)
     , m_baseBackgroundColor(Color::white)
     , m_mediaType(MediaTypeNames::screen)
@@ -130,6 +133,8 @@ FrameView::FrameView(LocalFrame* frame)
     , m_didScrollTimer(this, &FrameView::didScrollTimerFired)
     , m_topControlsViewportAdjustment(0)
     , m_needsUpdateWidgetPositions(false)
+    , m_needsUpdateViewportIntersection(true)
+    , m_needsUpdateViewportIntersectionInSubtree(true)
 #if ENABLE(ASSERT)
     , m_hasBeenDisposed(false)
 #endif
@@ -141,7 +146,9 @@ FrameView::FrameView(LocalFrame* frame)
     , m_scrollbarsSuppressed(false)
     , m_inUpdateScrollbars(false)
     , m_frameTimingRequestsDirty(true)
-
+    , m_viewportIntersectionValid(false)
+    , m_hiddenForThrottling(false)
+    , m_crossOriginForThrottling(false)
 {
     ASSERT(m_frame);
     init();
@@ -278,6 +285,7 @@ void FrameView::dispose()
 
     if (m_didScrollTimer.isActive())
         m_didScrollTimer.stop();
+    m_intersectionObserverNotificationFactory->cancel();
 
     // FIXME: Do we need to do something here for OOPI?
     HTMLFrameOwnerElement* ownerElement = m_frame->deprecatedLocalOwner();
@@ -888,7 +896,7 @@ void FrameView::layout()
 
     ScriptForbiddenScope forbidScript;
 
-    if (isInPerformLayout() || !m_frame->document()->isActive())
+    if (isInPerformLayout() || !m_frame->document()->isActive() || shouldThrottleRendering())
         return;
 
     TRACE_EVENT0("blink,benchmark", "FrameView::layout");
@@ -1072,6 +1080,9 @@ void FrameView::layout()
 // See http://crbug.com/306706
 void FrameView::invalidateTreeIfNeeded(PaintInvalidationState& paintInvalidationState)
 {
+    if (shouldThrottleRendering())
+        return;
+
     lifecycle().advanceTo(DocumentLifecycle::InPaintInvalidation);
 
     ASSERT(layoutView());
@@ -1282,6 +1293,8 @@ bool FrameView::shouldSetCursor() const
 void FrameView::scrollContentsIfNeededRecursive()
 {
     forAllFrameViews([](FrameView& frameView) {
+        if (frameView.shouldThrottleRendering())
+            return;
         frameView.scrollContentsIfNeeded();
     });
 }
@@ -1696,7 +1709,8 @@ void FrameView::scheduleRelayout()
         return;
     m_hasPendingLayout = true;
 
-    page()->animator().scheduleVisualUpdate(m_frame.get());
+    if (!shouldThrottleRendering())
+        page()->animator().scheduleVisualUpdate(m_frame.get());
     lifecycle().ensureStateAtMost(DocumentLifecycle::StyleClean);
 }
 
@@ -2410,8 +2424,10 @@ void FrameView::updateLifecyclePhasesInternal(LifeCycleUpdateOption phases, cons
     updateStyleAndLayoutIfNeededRecursive();
     ASSERT(lifecycle().state() >= DocumentLifecycle::LayoutClean);
 
-    if (phases == OnlyUpToLayoutClean)
+    if (phases == OnlyUpToLayoutClean) {
+        updateViewportIntersectionsForSubtree();
         return;
+    }
 
     if (LayoutView* view = layoutView()) {
         TRACE_EVENT1("devtools.timeline", "UpdateLayerTree", "data", InspectorUpdateLayerTreeEvent::data(m_frame.get()));
@@ -2449,6 +2465,8 @@ void FrameView::updateLifecyclePhasesInternal(LifeCycleUpdateOption phases, cons
                 || (RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled() && lifecycle().state() == DocumentLifecycle::PaintClean));
         }
     }
+
+    updateViewportIntersectionsForSubtree();
 }
 
 void FrameView::updatePaintProperties()
@@ -2534,6 +2552,9 @@ void FrameView::updateFrameTimingRequestsIfNeeded()
 
 void FrameView::updateStyleAndLayoutIfNeededRecursive()
 {
+    if (shouldThrottleRendering())
+        return;
+
     // We have to crawl our entire subtree looking for any FrameViews that need
     // layout and make sure they are up to date.
     // Mac actually tests for intersection with the dirty region and tries not to
@@ -2588,6 +2609,11 @@ void FrameView::updateStyleAndLayoutIfNeededRecursive()
 void FrameView::invalidateTreeIfNeededRecursive()
 {
     ASSERT(layoutView());
+
+    // We need to stop recursing here since a child frame view might not be throttled
+    // even though we are (e.g., it didn't compute its visibility yet).
+    if (shouldThrottleRendering())
+        return;
     TRACE_EVENT1("blink", "FrameView::invalidateTreeIfNeededRecursive", "root", layoutView()->debugName().ascii());
 
     Vector<LayoutObject*> pendingDelayedPaintInvalidations;
@@ -2906,6 +2932,7 @@ void FrameView::setParent(Widget* parentView)
         toFrameView(parent())->adjustScrollbarsAvoidingResizerCount(m_scrollbarsAvoidingResizer);
 
     updateScrollableAreaSet();
+    setNeedsUpdateViewportIntersection();
 }
 
 void FrameView::removeChild(Widget* child)
@@ -2963,6 +2990,7 @@ void FrameView::frameRectsChanged()
     if (layoutSizeFixedToFrameSize())
         setLayoutSizeInternal(frameRect().size());
 
+    setNeedsUpdateViewportIntersection();
     for (const auto& child : m_children)
         child->frameRectsChanged();
 }
@@ -3739,11 +3767,16 @@ void FrameView::paint(GraphicsContext* context, const IntRect& rect) const
 
 void FrameView::paint(GraphicsContext* context, const GlobalPaintFlags globalPaintFlags, const IntRect& rect) const
 {
+    // TODO(skyostil): Remove this early-out in favor of painting cached scrollbars.
+    if (shouldThrottleRendering())
+        return;
     FramePainter(*this).paint(context, globalPaintFlags, rect);
 }
 
 void FrameView::paintContents(GraphicsContext* context, const GlobalPaintFlags globalPaintFlags, const IntRect& damageRect) const
 {
+    if (shouldThrottleRendering())
+        return;
     FramePainter(*this).paintContents(context, globalPaintFlags, damageRect);
 }
 
@@ -3931,6 +3964,9 @@ void FrameView::collectFrameTimingRequests(GraphicsLayerFrameTimingRequests& gra
     LocalFrame* localFrame = toLocalFrame(frame);
     LayoutRect viewRect = localFrame->contentLayoutObject()->viewRect();
     const LayoutBoxModelObject* paintInvalidationContainer = localFrame->contentLayoutObject()->containerForPaintInvalidation();
+    // If the frame is being throttled, its compositing state may not be up to date.
+    if (!paintInvalidationContainer->enclosingLayer()->isAllowedToQueryCompositingState())
+        return;
     const GraphicsLayer* graphicsLayer = paintInvalidationContainer->enclosingLayer()->graphicsLayerBacking();
 
     if (!graphicsLayer)
@@ -3939,6 +3975,113 @@ void FrameView::collectFrameTimingRequests(GraphicsLayerFrameTimingRequests& gra
     PaintLayer::mapRectToPaintInvalidationBacking(localFrame->contentLayoutObject(), paintInvalidationContainer, viewRect);
 
     graphicsLayerTimingRequests.add(graphicsLayer, Vector<std::pair<int64_t, WebRect>>()).storedValue->value.append(std::make_pair(m_frame->frameID(), enclosingIntRect(viewRect)));
+}
+
+void FrameView::setNeedsUpdateViewportIntersection()
+{
+    m_needsUpdateViewportIntersection = true;
+    for (FrameView* parent = parentFrameView(); parent; parent = parent->parentFrameView())
+        parent->m_needsUpdateViewportIntersectionInSubtree = true;
+}
+
+void FrameView::updateViewportIntersectionIfNeeded()
+{
+    // TODO(skyostil): Replace this with a real intersection observer.
+    if (!m_needsUpdateViewportIntersection)
+        return;
+    m_needsUpdateViewportIntersection = false;
+    m_viewportIntersectionValid = true;
+
+    FrameView* parent = parentFrameView();
+    if (!parent) {
+        m_viewportIntersection = frameRect();
+        return;
+    }
+    ASSERT(!parent->m_needsUpdateViewportIntersection);
+
+    // If our parent is hidden, then we are too.
+    if (parent->m_viewportIntersection.isEmpty()) {
+        m_viewportIntersection = parent->m_viewportIntersection;
+        return;
+    }
+
+    // Transform our bounds into the root frame's content coordinate space,
+    // making sure we have valid layout data in our parent document. If our
+    // parent is throttled, we'll use possible stale layout information and
+    // rely on the fact that another lifecycle update will be scheduled once
+    // our parent becomes unthrottled.
+    ASSERT(parent->lifecycle().state() >= DocumentLifecycle::LayoutClean || parent->shouldThrottleRendering());
+    m_viewportIntersection = parent->contentsToRootFrame(frameRect());
+
+    // TODO(skyostil): Expand the viewport to make it less likely to see stale content while scrolling.
+    IntRect viewport = parent->m_viewportIntersection;
+    m_viewportIntersection.intersect(viewport);
+}
+
+void FrameView::updateViewportIntersectionsForSubtree()
+{
+    bool hadValidIntersection = m_viewportIntersectionValid;
+    bool hadEmptyIntersection = m_viewportIntersection.isEmpty();
+    updateViewportIntersectionIfNeeded();
+    bool shouldNotify = !hadValidIntersection || hadEmptyIntersection != m_viewportIntersection.isEmpty();
+    if (shouldNotify && !m_intersectionObserverNotificationFactory->isPending())
+        m_frame->frameScheduler()->timerTaskRunner()->postTask(BLINK_FROM_HERE, m_intersectionObserverNotificationFactory->cancelAndCreate());
+
+    if (!m_needsUpdateViewportIntersectionInSubtree)
+        return;
+    m_needsUpdateViewportIntersectionInSubtree = false;
+
+    for (Frame* child = m_frame->tree().firstChild(); child; child = child->tree().nextSibling()) {
+        if (!child->isLocalFrame())
+            continue;
+        if (FrameView* view = toLocalFrame(child)->view())
+            view->updateViewportIntersectionsForSubtree();
+    }
+}
+
+void FrameView::notifyIntersectionObservers()
+{
+    TRACE_EVENT0("blink", "FrameView::notifyIntersectionObservers");
+    ASSERT(!isInPerformLayout());
+    ASSERT(!m_frame->document()->inStyleRecalc());
+    bool wasThrottled = canThrottleRendering();
+
+    // Only offscreen frames can be throttled.
+    m_hiddenForThrottling = m_viewportIntersectionValid && m_viewportIntersection.isEmpty();
+
+    // We only throttle the rendering pipeline in cross-origin frames. This is
+    // to avoid a situation where an ancestor frame directly depends on the
+    // pipeline timing of a descendant and breaks as a result of throttling.
+    // The rationale is that cross-origin frames must already communicate with
+    // asynchronous messages, so they should be able to tolerate some delay in
+    // receiving replies from a throttled peer.
+    //
+    // Check if we can access our parent's security origin.
+    m_crossOriginForThrottling = false;
+    const SecurityOrigin* origin = frame().securityContext()->securityOrigin();
+    for (Frame* parentFrame = m_frame->tree().parent(); parentFrame; parentFrame = parentFrame->tree().parent()) {
+        const SecurityOrigin* parentOrigin = parentFrame->securityContext()->securityOrigin();
+        if (!origin->canAccess(parentOrigin)) {
+            m_crossOriginForThrottling = true;
+            break;
+        }
+    }
+
+    bool becameUnthrottled = wasThrottled && !canThrottleRendering();
+    if (becameUnthrottled)
+        page()->animator().scheduleVisualUpdate(m_frame.get());
+}
+
+bool FrameView::shouldThrottleRendering() const
+{
+    return canThrottleRendering() && lifecycle().throttlingAllowed();
+}
+
+bool FrameView::canThrottleRendering() const
+{
+    if (!RuntimeEnabledFeatures::renderingPipelineThrottlingEnabled())
+        return false;
+    return m_hiddenForThrottling && m_crossOriginForThrottling;
 }
 
 } // namespace blink

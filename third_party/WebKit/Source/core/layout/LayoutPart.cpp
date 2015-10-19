@@ -357,4 +357,12 @@ void LayoutPart::invalidatePaintOfSubtreesIfNeeded(PaintInvalidationState& paint
     LayoutReplaced::invalidatePaintOfSubtreesIfNeeded(paintInvalidationState);
 }
 
+bool LayoutPart::isThrottledFrameView() const
+{
+    if (!widget() || !widget()->isFrameView())
+        return false;
+    const FrameView* frameView = toFrameView(widget());
+    return frameView->shouldThrottleRendering();
+}
+
 }

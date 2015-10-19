@@ -841,6 +841,11 @@ String LocalFrame::localLayerTreeAsText(unsigned flags) const
     return contentLayoutObject()->compositor()->layerTreeAsText(static_cast<LayerTreeFlags>(flags));
 }
 
+bool LocalFrame::shouldThrottleRendering() const
+{
+    return view() && view()->shouldThrottleRendering();
+}
+
 inline LocalFrame::LocalFrame(FrameLoaderClient* client, FrameHost* host, FrameOwner* owner)
     : Frame(client, host, owner)
     , m_loader(this)

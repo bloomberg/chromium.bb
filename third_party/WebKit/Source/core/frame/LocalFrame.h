@@ -182,6 +182,8 @@ public:
     DisplayItemClient displayItemClient() const { return toDisplayItemClient(this); }
     String debugName() const { return "LocalFrame"; }
 
+    bool shouldThrottleRendering() const;
+
     // ========
 
     // Returns the frame scheduler, creating one if needed.
