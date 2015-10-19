@@ -20,6 +20,7 @@ SchedulerHelper::SchedulerHelper(
     : main_task_runner_(main_task_runner),
       task_queue_manager_(
           new TaskQueueManager(main_task_runner,
+                               tracing_category,
                                disabled_by_default_tracing_category,
                                disabled_by_default_verbose_tracing_category)),
       control_task_runner_(NewTaskQueue(

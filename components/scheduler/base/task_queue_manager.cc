@@ -23,6 +23,7 @@ namespace scheduler {
 
 TaskQueueManager::TaskQueueManager(
     scoped_refptr<NestableSingleThreadTaskRunner> main_task_runner,
+    const char* tracing_category,
     const char* disabled_by_default_tracing_category,
     const char* disabled_by_default_verbose_tracing_category)
     : main_task_runner_(main_task_runner),
@@ -30,6 +31,7 @@ TaskQueueManager::TaskQueueManager(
       pending_dowork_count_(0),
       work_batch_size_(1),
       time_source_(new base::DefaultTickClock),
+      tracing_category_(tracing_category),
       disabled_by_default_tracing_category_(
           disabled_by_default_tracing_category),
       disabled_by_default_verbose_tracing_category_(
@@ -62,7 +64,7 @@ TaskQueueManager::~TaskQueueManager() {
 
 scoped_refptr<internal::TaskQueueImpl> TaskQueueManager::NewTaskQueue(
     const TaskQueue::Spec& spec) {
-  TRACE_EVENT1(disabled_by_default_tracing_category_,
+  TRACE_EVENT1(tracing_category_,
                "TaskQueueManager::NewTaskQueue", "queue_name", spec.name);
   DCHECK(main_thread_checker_.CalledOnValidThread());
   scoped_refptr<internal::TaskQueueImpl> queue(
@@ -81,7 +83,7 @@ void TaskQueueManager::SetObserver(Observer* observer) {
 
 void TaskQueueManager::UnregisterTaskQueue(
     scoped_refptr<internal::TaskQueueImpl> task_queue) {
-  TRACE_EVENT1(disabled_by_default_tracing_category_,
+  TRACE_EVENT1(tracing_category_,
                "TaskQueueManager::UnregisterTaskQueue", "queue_name",
                task_queue->GetName());
   DCHECK(main_thread_checker_.CalledOnValidThread());
@@ -363,7 +365,7 @@ TaskQueueManager::ProcessTaskResult TaskQueueManager::ProcessTaskFromWorkQueue(
                       WillProcessTask(pending_task));
     queue->NotifyWillProcessTask(pending_task);
   }
-  TRACE_EVENT1(disabled_by_default_tracing_category_,
+  TRACE_EVENT1(tracing_category_,
                "TaskQueueManager::RunTask", "queue", queue->GetName());
   task_annotator_.RunTask("TaskQueueManager::PostTask", pending_task);
 

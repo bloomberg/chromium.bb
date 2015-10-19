@@ -34,7 +34,7 @@ class TaskQueueManagerPerfTest : public testing::Test {
     message_loop_.reset(new base::MessageLoop());
     manager_ = make_scoped_ptr(new TaskQueueManager(
         NestableTaskRunnerForTest::Create(message_loop_->task_runner()),
-        "fake.category", "fake.category.debug"));
+        "fake.category", "fake.category", "fake.category.debug"));
     for (size_t i = 0; i < num_queues; i++)
       queues_.push_back(manager_->NewTaskQueue(TaskQueue::Spec("test")));
   }

@@ -56,6 +56,7 @@ class SCHEDULER_EXPORT TaskQueueManager
   // application lifetime (statics or literals). They may not include " chars.
   TaskQueueManager(
       scoped_refptr<NestableSingleThreadTaskRunner> main_task_runner,
+      const char* tracing_category,
       const char* disabled_by_default_tracing_category,
       const char* disabled_by_default_verbose_tracing_category);
   ~TaskQueueManager() override;
@@ -246,6 +247,7 @@ class SCHEDULER_EXPORT TaskQueueManager
 
   base::ObserverList<base::MessageLoop::TaskObserver> task_observers_;
 
+  const char* tracing_category_;
   const char* disabled_by_default_tracing_category_;
   const char* disabled_by_default_verbose_tracing_category_;
 

@@ -43,7 +43,8 @@ class IdleTimeEstimatorTest : public testing::Test {
     main_task_runner_ =
         SchedulerTaskRunnerDelegateForTest::Create(mock_task_runner_);
     manager_ = make_scoped_ptr(new TaskQueueManager(
-        main_task_runner_, "test.scheduler", "test.scheduler.debug"));
+        main_task_runner_, "test.scheduler", "test.scheduler",
+        "test.scheduler.debug"));
     compositor_task_runner_ =
         manager_->NewTaskQueue(TaskQueue::Spec("compositor_tq"));
     estimator_.reset(new IdleTimeEstimatorForTest(compositor_task_runner_,

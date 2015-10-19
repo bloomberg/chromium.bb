@@ -54,7 +54,8 @@ class TaskQueueManagerTest : public testing::Test {
     main_task_runner_ =
         NestableTaskRunnerForTest::Create(test_task_runner_.get());
     manager_ = make_scoped_ptr(new TaskQueueManager(
-        main_task_runner_, "test.scheduler", "test.scheduler.debug"));
+        main_task_runner_, "test.scheduler", "test.scheduler",
+        "test.scheduler.debug"));
     manager_->SetTimeSourceForTesting(
         make_scoped_ptr(new TestTimeSource(now_src_.get())));
 
@@ -66,7 +67,7 @@ class TaskQueueManagerTest : public testing::Test {
     message_loop_.reset(new base::MessageLoop());
     manager_ = make_scoped_ptr(
         new TaskQueueManager(MessageLoopTaskRunner::Create(), "test.scheduler",
-                             "test.scheduler.debug"));
+                             "test.scheduler", "test.scheduler.debug"));
 
     for (size_t i = 0; i < num_queues; i++)
       runners_.push_back(manager_->NewTaskQueue(TaskQueue::Spec("test_queue")));
