@@ -199,7 +199,7 @@
       # Mac OS X 64-bit - http://crbug.com/128122.
       'sources': [
         '../third_party/jsoncpp/overrides/src/lib_json/json_value.cpp',
-        '../third_party/jsoncpp/source/src/lib_json/json_reader.cpp',
+        '../third_party/jsoncpp/overrides/src/lib_json/json_reader.cpp',
         '../third_party/jsoncpp/source/src/lib_json/json_writer.cpp',
         '../third_party/modp_b64/modp_b64.cc',
         'host/constants_mac.cc',
@@ -226,14 +226,6 @@
         'INFOPLIST_FILE': 'host/mac/me2me_preference_pane-Info.plist',
         'INFOPLIST_PREPROCESS': 'YES',
         'INFOPLIST_PREPROCESSOR_DEFINITIONS': 'VERSION_FULL="<(version_full)" VERSION_SHORT="<(version_short)" BUNDLE_ID="<(bundle_id)"',
-
-        'conditions': [
-          ['component=="shared_library"', {
-            # TODO(thakis): Figure out why this is needed,
-            # http://crbug.com/544531
-            'CLANG_CXX_LIBRARY': 'libstdc++',  # -stdlib=libstdc++
-          }],
-        ],
       },
       'mac_bundle_resources': [
         'host/mac/me2me_preference_pane.xib',
