@@ -776,7 +776,13 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest,
              NEEDS_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, NewWindow_WebRequest) {
+// Causes problems on windows: http://crbug.com/544037
+#if defined(OS_WIN)
+#define MAYBE_NewWindow_WebRequest DISABLED_NewWindow_WebRequest
+#else
+#define MAYBE_NewWindow_WebRequest NewWindow_WebRequest
+#endif
+IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, MAYBE_NewWindow_WebRequest) {
   TestHelper("testNewWindowWebRequest",
              "web_view/newwindow",
              NEEDS_TEST_SERVER);
@@ -916,7 +922,13 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, ExecuteCode) {
       "platform_apps/web_view/common", "execute_code")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, PopupPositioningBasic) {
+// Causes problems on windows: http://crbug.com/544037
+#if defined(OS_WIN)
+#define MAYBE_PopupPositioningBasic DISABLED_PopupPositioningBasic
+#else
+#define MAYBE_PopupPositioningBasic PopupPositioningBasic
+#endif
+IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, MAYBE_PopupPositioningBasic) {
   TestHelper("testBasic", "web_view/popup_positioning", NO_TEST_SERVER);
   ASSERT_TRUE(guest_web_contents());
   PopupTestHelper(gfx::Point());
@@ -926,7 +938,8 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, PopupPositioningBasic) {
 }
 
 // Flaky on ChromeOS: http://crbug.com/526886
-#if defined(OS_CHROMEOS)
+// Causes problems on windows: http://crbug.com/544037
+#if defined(OS_CHROMEOS) || defined(OS_WIN)
 #define MAYBE_PopupPositioningMoved DISABLED_PopupPositioningMoved
 #else
 #define MAYBE_PopupPositioningMoved PopupPositioningMoved
