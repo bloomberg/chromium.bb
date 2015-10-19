@@ -2848,6 +2848,11 @@ crbug.com/404597 fast/forms/select/menulist-appearance-basic.html [ NeedsRebasel
 crbug.com/404597 fast/forms/color/input-appearance-color.html [ NeedsRebaseline ]
 crbug.com/404597 fast/forms/basic-selects.html [ NeedsRebaseline ]
 crbug.com/404597 fast/writing-mode/vertical-lr-replaced-selection.html [ NeedsRebaseline ]
+crbug.com/404597 [ Win10 ] virtual/display_list_2d_canvas/fast/canvas/arc360.html [ Timeout NeedsRebaseline ]
+crbug.com/404597 [ Win10 ] tables/mozilla/bugs/bug2886-2.html [ NeedsRebaseline ]
+crbug.com/404597 [ Win10 ] virtual/display_list_2d_canvas/fast/canvas/alpha.html [ Timeout NeedsRebaseline ]
+crbug.com/404597 [ Win10 ] tables/mozilla_expected_failures/marvin/backgr_layers-show.html [ NeedsRebaseline ]
+crbug.com/404597 [ Win10 ] svg/as-object/nested-embedded-svg-size-changes.html [ Timeout NeedsRebaseline ]
 
 # Ref test needs updating due to new font metrics.
 crbug.com/404597 fast/css/text-overflow-ellipsis-button.html [ Pass Failure ]
@@ -3247,8 +3252,8 @@ crbug.com/385014 accessibility/canvas-fallback-content-2.html [ Failure ]
 crbug.com/364225 virtual/gpu/fast/canvas/canvas-composite-text-alpha.html [ Pass Slow Timeout ]
 
 crbug.com/440452 virtual/display_list_2d_canvas/fast/canvas/canvas-partial-invalidation-zoomed.html [ Pass Slow Timeout ]
-crbug.com/440452 [ Win10 ] virtual/display_list_2d_canvas/fast/canvas/alpha.html [ Pass Slow Timeout ]
-crbug.com/440452 [ Win10 ] virtual/display_list_2d_canvas/fast/canvas/arc360.html [ Pass Slow Timeout ]
+#crbug.com/440452 [ Win10 ] virtual/display_list_2d_canvas/fast/canvas/alpha.html [ Pass Slow Timeout ]
+#crbug.com/440452 [ Win10 ] virtual/display_list_2d_canvas/fast/canvas/arc360.html [ Pass Slow Timeout ]
 
 crbug.com/364614 [ Mac ] fast/scroll-behavior/overflow-scroll-animates.html [ Skip ]
 crbug.com/364614 [ Mac ] virtual/threaded/fast/scroll-behavior/overflow-scroll-animates.html [ Skip ]
@@ -3688,7 +3693,7 @@ crbug.com/521730 [ Win10 ] inspector/sources/debugger-step/debugger-step-out-doc
 crbug.com/521730 [ Win10 ] media/W3C/audio/error/error_onerror_called_on_bogus_source.html [ Pass Timeout ]
 crbug.com/521730 [ Win10 ] paint/inline/outline-offset.html [ Failure Timeout ]
 crbug.com/521730 [ Win10 ] svg/as-image/svg-object-intrinsic-size.html [ Missing Timeout ]
-crbug.com/521730 [ Win10 ] svg/as-object/nested-embedded-svg-size-changes.html [ Pass Timeout ]
+#crbug.com/521730 [ Win10 ] svg/as-object/nested-embedded-svg-size-changes.html [ Pass Timeout ]
 crbug.com/521730 [ Win10 ] svg/custom/rounded-rect-update-to-empty.html [ Pass Timeout ]
 # TODO(wangxianzhu): Restore this after manual rebaseline.
 # crbug.com/521730 [ Win10 ] transforms/2d/transform-borderbox.html [ Failure Timeout ]
