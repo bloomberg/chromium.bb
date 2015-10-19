@@ -5,12 +5,10 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/time/time.h"
 #include "chrome/browser/android/cookies/cookies_fetcher.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/content_switches.h"
 #include "jni/CookiesFetcher_jni.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_store.h"
@@ -156,16 +154,10 @@ void CookiesFetcher::RestoreToCookieJarInternal(
   net::CookieMonster* monster = store->GetCookieMonster();
   base::Callback<void(bool success)> cb;
 
-  // TODO(estark): Remove kEnableExperimentalWebPlatformFeatures check
-  // when we decide whether to ship cookie
-  // prefixes. https://crbug.com/541511
   monster->SetCookieWithDetailsAsync(
       cookie.Source(), cookie.Name(), cookie.Value(), cookie.Domain(),
       cookie.Path(), cookie.ExpiryDate(), cookie.IsSecure(),
-      cookie.IsHttpOnly(), cookie.IsFirstPartyOnly(),
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableExperimentalWebPlatformFeatures),
-      cookie.Priority(), cb);
+      cookie.IsHttpOnly(), cookie.IsFirstPartyOnly(), cookie.Priority(), cb);
 }
 
 // JNI functions

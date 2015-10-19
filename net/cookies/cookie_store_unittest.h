@@ -69,9 +69,6 @@ const char kValidCookieLine[] = "A=B; path=/";
 //   // Time to wait between two cookie insertions to ensure that cookies have
 //   // different creation times.
 //   static const int creation_time_granularity_in_ms;
-//
-//   // The cookie store enforces cookie prefixes.
-//   static const bool enforces_prefixes;
 // };
 
 template <class CookieStoreTestTraits>
@@ -158,8 +155,6 @@ class CookieStoreTest : public testing::Test {
     CookieOptions options;
     if (!CookieStoreTestTraits::supports_http_only)
       options.set_include_httponly();
-    if (CookieStoreTestTraits::enforces_prefixes)
-      options.set_enforce_prefixes();
     return SetCookieWithOptions(cs, url, cookie_line, options);
   }
 

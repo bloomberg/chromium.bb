@@ -35,11 +35,6 @@ class NET_EXPORT CookieOptions {
   void set_first_party_url(const GURL& url) { first_party_url_ = url; }
   GURL first_party_url() const { return first_party_url_; }
 
-  // TODO(estark): Remove once we decide whether to ship cookie
-  // prefixes. https://crbug.com/541511
-  void set_enforce_prefixes() { enforce_prefixes_ = true; }
-  bool enforce_prefixes() const { return enforce_prefixes_; }
-
   // |server_time| indicates what the server sending us the Cookie thought the
   // current time was when the cookie was produced.  This is used to adjust for
   // clock skew between server and host.
@@ -53,7 +48,6 @@ class NET_EXPORT CookieOptions {
   bool exclude_httponly_;
   bool include_first_party_only_;
   GURL first_party_url_;
-  bool enforce_prefixes_;
   base::Time server_time_;
 };
 

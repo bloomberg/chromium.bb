@@ -4,7 +4,6 @@
 
 #include "content/browser/frame_host/render_frame_message_filter.h"
 
-#include "base/command_line.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
@@ -15,7 +14,6 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_constants.h"
-#include "content/public/common/content_switches.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "net/cookies/cookie_store.h"
 #include "net/url_request/url_request_context.h"
@@ -344,10 +342,6 @@ void RenderFrameMessageFilter::OnSetCookie(int render_frame_id,
           url, first_party_for_cookies, cookie, resource_context_,
           render_process_id_, render_frame_id, &options)) {
     net::URLRequestContext* context = GetRequestContextForURL(url);
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableExperimentalWebPlatformFeatures)) {
-      options.set_enforce_prefixes();
-    }
     // Pass a null callback since we don't care about when the 'set' completes.
     context->cookie_store()->SetCookieWithOptionsAsync(
         url, cookie, options, net::CookieStore::SetCookiesCallback());

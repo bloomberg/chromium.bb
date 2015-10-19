@@ -331,13 +331,6 @@ void RunAsync(scoped_refptr<base::TaskRunner> proxy,
   proxy->PostTask(FROM_HERE, base::Bind(callback, cookie, removed));
 }
 
-bool CheckCookiePrefix(CanonicalCookie* cc, const CookieOptions& options) {
-  const char kSecurePrefix[] = "$Secure-";
-  if (cc->Name().find(kSecurePrefix) == 0)
-    return cc->IsSecure() && cc->Source().SchemeIsCryptographic();
-  return true;
-}
-
 }  // namespace
 
 CookieMonster::CookieMonster(PersistentCookieStore* store,
@@ -446,7 +439,6 @@ class CookieMonster::SetCookieWithDetailsTask : public CookieMonsterTask {
                            bool secure,
                            bool http_only,
                            bool first_party_only,
-                           bool enforce_prefixes,
                            CookiePriority priority,
                            const SetCookiesCallback& callback)
       : CookieMonsterTask(cookie_monster),
@@ -459,7 +451,6 @@ class CookieMonster::SetCookieWithDetailsTask : public CookieMonsterTask {
         secure_(secure),
         http_only_(http_only),
         first_party_only_(first_party_only),
-        enforce_prefixes_(enforce_prefixes),
         priority_(priority),
         callback_(callback) {}
 
@@ -479,7 +470,6 @@ class CookieMonster::SetCookieWithDetailsTask : public CookieMonsterTask {
   bool secure_;
   bool http_only_;
   bool first_party_only_;
-  bool enforce_prefixes_;
   CookiePriority priority_;
   SetCookiesCallback callback_;
 
@@ -489,7 +479,7 @@ class CookieMonster::SetCookieWithDetailsTask : public CookieMonsterTask {
 void CookieMonster::SetCookieWithDetailsTask::Run() {
   bool success = this->cookie_monster()->SetCookieWithDetails(
       url_, name_, value_, domain_, path_, expiration_time_, secure_,
-      http_only_, first_party_only_, enforce_prefixes_, priority_);
+      http_only_, first_party_only_, priority_);
   if (!callback_.is_null()) {
     this->InvokeCallback(base::Bind(&SetCookiesCallback::Run,
                                     base::Unretained(&callback_), success));
@@ -938,12 +928,11 @@ void CookieMonster::SetCookieWithDetailsAsync(
     bool secure,
     bool http_only,
     bool first_party_only,
-    bool enforce_prefixes,
     CookiePriority priority,
     const SetCookiesCallback& callback) {
   scoped_refptr<SetCookieWithDetailsTask> task = new SetCookieWithDetailsTask(
       this, url, name, value, domain, path, expiration_time, secure, http_only,
-      first_party_only, enforce_prefixes, priority, callback);
+      first_party_only, priority, callback);
   DoCookieTaskForURL(task, url);
 }
 
@@ -1123,7 +1112,6 @@ bool CookieMonster::SetCookieWithDetails(const GURL& url,
                                          bool secure,
                                          bool http_only,
                                          bool first_party_only,
-                                         bool enforce_prefixes,
                                          CookiePriority priority) {
   base::AutoLock autolock(lock_);
 
@@ -1144,8 +1132,6 @@ bool CookieMonster::SetCookieWithDetails(const GURL& url,
   CookieOptions options;
   options.set_include_httponly();
   options.set_include_first_party_only();
-  if (enforce_prefixes)
-    options.set_enforce_prefixes();
   return SetCanonicalCookie(&cc, creation_time, options);
 }
 
@@ -1901,12 +1887,6 @@ bool CookieMonster::SetCanonicalCookie(scoped_ptr<CanonicalCookie>* cc,
                                        const CookieOptions& options) {
   const std::string key(GetKey((*cc)->Domain()));
   bool already_expired = (*cc)->IsExpired(creation_time);
-
-  if (options.enforce_prefixes() && !CheckCookiePrefix(cc->get(), options)) {
-    VLOG(kVlogSetCookies) << "SetCookie() not storing cookie '" << (*cc)->Name()
-                          << "' that violates prefix rules.";
-    return false;
-  }
 
   if (DeleteAnyEquivalentCookie(key, **cc, options.exclude_httponly(),
                                 already_expired)) {

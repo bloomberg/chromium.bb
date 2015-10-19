@@ -11,7 +11,6 @@ namespace net {
 CookieOptions::CookieOptions()
     : exclude_httponly_(true),
       include_first_party_only_(false),
-      enforce_prefixes_(false),
       server_time_() {}
 
 }  // namespace net
