@@ -586,6 +586,9 @@
         'ui/gl/gl_.*egl.*|'\
         'ui/gl/gl_.*ozone.*'
     },
+    'page_load_metrics' : {
+      'filepath': 'components/page_load_metrics/'
+    },
     'panels': {
       'filepath': 'chrome/browser/ui/panels'\
                   '|chrome/browser/ui/cocoa/panels'\
@@ -1391,6 +1394,9 @@
                 'michaelpg+watch-options@chromium.org'],
     'overview_mode': ['tdanderson+overview@chromium.org'],
     'ozone': ['kalyan.kondapally@intel.com', 'ozone-reviews@chromium.org'],
+    'page_load_metrics' : ['csharrison+watch@chromium.org',
+    			   'bmcquade+watch@chromium.org',
+			   'kinuko+watch@chromium.org'],
     'panels': ['dimich@chromium.org', 'jennb@chromium.org',
                'dcheng@chromium.org', 'jianli@chromium.org'],
     'password_manager': ['mkwst+watchlist-passwords@chromium.org',
