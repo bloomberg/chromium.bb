@@ -35,7 +35,11 @@ class PushMessagingPermissionContext : public PermissionContextBase {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(PushMessagingPermissionContextTest,
+                           DecidePermission);
+  FRIEND_TEST_ALL_PREFIXES(PushMessagingPermissionContextTest,
                            DecidePushPermission);
+  FRIEND_TEST_ALL_PREFIXES(PushMessagingPermissionContextTest,
+                           InsecureOrigin);
 
   // Used to decide the permission for push, once the permission for
   // Notification has been granted/denied.

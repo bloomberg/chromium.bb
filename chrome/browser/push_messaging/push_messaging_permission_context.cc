@@ -14,6 +14,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/common/origin_util.h"
 
 const ContentSettingsType kPushSettingType =
     CONTENT_SETTINGS_TYPE_PUSH_MESSAGING;
@@ -35,8 +36,8 @@ ContentSetting PushMessagingPermissionContext::GetPermissionStatus(
     return CONTENT_SETTING_BLOCK;
 
   ContentSetting push_content_setting =
-      HostContentSettingsMapFactory::GetForProfile(profile_)->GetContentSetting(
-          requesting_origin, embedding_origin, kPushSettingType, std::string());
+      PermissionContextBase::GetPermissionStatus(requesting_origin,
+                                                 embedding_origin);
 
   NotificationPermissionContext* notification_context =
       NotificationPermissionContextFactory::GetForProfile(profile_);
@@ -78,6 +79,13 @@ void PushMessagingPermissionContext::DecidePermission(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 #if defined(ENABLE_NOTIFICATIONS)
   if (requesting_origin != embedding_origin) {
+    NotifyPermissionSet(id, requesting_origin, embedding_origin, callback,
+                        false /* persist */, CONTENT_SETTING_BLOCK);
+    return;
+  }
+
+  if (IsRestrictedToSecureOrigins() &&
+      !content::IsOriginSecure(requesting_origin)) {
     NotifyPermissionSet(id, requesting_origin, embedding_origin, callback,
                         false /* persist */, CONTENT_SETTING_BLOCK);
     return;
