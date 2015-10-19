@@ -24,6 +24,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/editing/FrameSelection.h"
+#include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLFrameOwnerElement.h"
@@ -198,6 +199,11 @@ bool LayoutView::shouldDoFullPaintInvalidationForNextLayout() const
     }
 
     return false;
+}
+
+bool LayoutView::doingFullPaintInvalidation() const
+{
+    return m_frameView->needsFullPaintInvalidation();
 }
 
 void LayoutView::layout()

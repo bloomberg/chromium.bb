@@ -31,6 +31,7 @@
 #include "core/frame/TopControls.h"
 
 #include "core/frame/FrameHost.h"
+#include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/layout/LayoutView.h"
 #include "core/page/Page.h"

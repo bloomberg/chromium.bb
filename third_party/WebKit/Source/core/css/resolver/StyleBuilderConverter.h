@@ -31,7 +31,6 @@
 #include "core/css/CSSValue.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/resolver/StyleResolverState.h"
-#include "core/layout/LayoutView.h"
 #include "core/style/QuotesData.h"
 #include "core/style/ShadowList.h"
 #include "core/style/StyleReflection.h"

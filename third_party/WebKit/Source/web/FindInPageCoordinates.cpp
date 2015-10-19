@@ -33,6 +33,7 @@
 
 #include "core/dom/Node.h"
 #include "core/dom/Range.h"
+#include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/layout/LayoutBlock.h"
 #include "core/layout/LayoutBox.h"

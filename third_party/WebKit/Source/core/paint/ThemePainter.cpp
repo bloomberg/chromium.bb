@@ -23,6 +23,7 @@
 #include "core/paint/ThemePainter.h"
 
 #include "core/InputTypeNames.h"
+#include "core/frame/FrameView.h"
 #include "core/html/HTMLDataListElement.h"
 #include "core/html/HTMLDataListOptionsCollection.h"
 #include "core/html/HTMLInputElement.h"

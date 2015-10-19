@@ -26,6 +26,7 @@
 
 #include "core/CSSValueKeywords.h"
 #include "core/HTMLNames.h"
+#include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "core/html/HTMLPlugInElement.h"

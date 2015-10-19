@@ -5,6 +5,7 @@
 #include "config.h"
 #include "core/paint/BackgroundImageGeometry.h"
 
+#include "core/frame/FrameView.h"
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutBoxModelObject.h"
 #include "core/layout/LayoutView.h"

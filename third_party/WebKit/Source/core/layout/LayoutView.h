@@ -24,7 +24,6 @@
 
 #include "core/CoreExport.h"
 #include "core/compositing/DisplayListCompositingBuilder.h"
-#include "core/frame/FrameView.h"
 #include "core/layout/HitTestCache.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutBlockFlow.h"
@@ -38,6 +37,7 @@
 
 namespace blink {
 
+class FrameView;
 class PaintLayerCompositor;
 class LayoutQuote;
 
@@ -136,7 +136,7 @@ public:
     LayoutRect overflowClipRect(const LayoutPoint& location, OverlayScrollbarSizeRelevancy = IgnoreOverlayScrollbarSize) const override;
 
     bool shouldDoFullPaintInvalidationForNextLayout() const;
-    bool doingFullPaintInvalidation() const { return m_frameView->needsFullPaintInvalidation(); }
+    bool doingFullPaintInvalidation() const;
 
     LayoutState* layoutState() const { return m_layoutState; }
 

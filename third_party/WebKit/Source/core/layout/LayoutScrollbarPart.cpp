@@ -26,6 +26,7 @@
 #include "config.h"
 #include "core/layout/LayoutScrollbarPart.h"
 
+#include "core/frame/FrameView.h"
 #include "core/frame/UseCounter.h"
 #include "core/layout/LayoutScrollbar.h"
 #include "core/layout/LayoutScrollbarTheme.h"

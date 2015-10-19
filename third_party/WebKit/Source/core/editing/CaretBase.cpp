@@ -28,6 +28,7 @@
 
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/VisibleUnits.h"
+#include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"
 #include "core/layout/LayoutBlock.h"
 #include "core/layout/LayoutView.h"

@@ -25,6 +25,7 @@
 #include "config.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 
+#include "core/frame/FrameView.h"
 #include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
