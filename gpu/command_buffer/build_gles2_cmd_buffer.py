@@ -8346,7 +8346,7 @@ class Argument(object):
     self.name = name
     self.optional = type.endswith("Optional*")
     if self.optional:
-      type = type[:-9] + "*"
+      type = type[:-len("Optional*")] + "*"
     self.type = type
 
     if type in self.cmd_type_map_:
@@ -8577,9 +8577,6 @@ class SizeArgument(Argument):
 
 class SizeNotNegativeArgument(SizeArgument):
   """class for GLsizeiNotNegative. It's NEVER allowed to be negative"""
-
-  def __init__(self, name, type, gl_type):
-    SizeArgument.__init__(self, name, gl_type)
 
   def GetInvalidArg(self, index):
     """overridden from SizeArgument."""
@@ -9654,44 +9651,50 @@ class BucketFunction(Function):
 
 
 def CreateArg(arg_string):
-  """Creates an Argument."""
-  arg_parts = arg_string.split()
-  if len(arg_parts) == 1 and arg_parts[0] == 'void':
+  """Convert string argument to an Argument class that represents it.
+
+  The parameter 'arg_string' can be a single argument to a GL function,
+  something like 'GLsizei width' or 'const GLenum* bufs'. Returns an instance of
+  the Argument class, or None if 'arg_string' is 'void'.
+  """
+  if arg_string == 'void':
     return None
+
+  arg_parts = arg_string.strip().split()
+  assert len(arg_parts) > 1
+  arg_name = arg_parts[-1]
+  arg_type = " ".join(arg_parts[0:-1])
+  t = arg_parts[0]  # only the first part of arg_type
+
   # Is this a pointer argument?
-  elif arg_string.find('*') >= 0:
-    return PointerArgument(
-        arg_parts[-1],
-        " ".join(arg_parts[0:-1]))
+  if arg_string.find('*') >= 0:
+    return PointerArgument(arg_name, arg_type)
   # Is this a resource argument? Must come after pointer check.
-  elif arg_parts[0].startswith('GLidBind'):
-    return ResourceIdBindArgument(arg_parts[-1], " ".join(arg_parts[0:-1]))
-  elif arg_parts[0].startswith('GLidZero'):
-    return ResourceIdZeroArgument(arg_parts[-1], " ".join(arg_parts[0:-1]))
-  elif arg_parts[0].startswith('GLid'):
-    return ResourceIdArgument(arg_parts[-1], " ".join(arg_parts[0:-1]))
-  elif arg_parts[0].startswith('GLenum') and len(arg_parts[0]) > 6:
-    return EnumArgument(arg_parts[-1], " ".join(arg_parts[0:-1]))
-  elif arg_parts[0].startswith('GLbitfield') and len(arg_parts[0]) > 10:
-    return BitFieldArgument(arg_parts[-1], " ".join(arg_parts[0:-1]))
-  elif arg_parts[0].startswith('GLboolean') and len(arg_parts[0]) > 9:
-    return ValidatedBoolArgument(arg_parts[-1], " ".join(arg_parts[0:-1]))
-  elif arg_parts[0].startswith('GLboolean'):
-    return BoolArgument(arg_parts[-1], " ".join(arg_parts[0:-1]))
-  elif arg_parts[0].startswith('GLintUniformLocation'):
-    return UniformLocationArgument(arg_parts[-1])
-  elif (arg_parts[0].startswith('GLint') and len(arg_parts[0]) > 5 and
-        not arg_parts[0].startswith('GLintptr')):
-    return IntArgument(arg_parts[-1], " ".join(arg_parts[0:-1]))
-  elif (arg_parts[0].startswith('GLsizeiNotNegative') or
-        arg_parts[0].startswith('GLintptrNotNegative')):
-    return SizeNotNegativeArgument(arg_parts[-1],
-                                   " ".join(arg_parts[0:-1]),
-                                   arg_parts[0][0:-11])
-  elif arg_parts[0].startswith('GLsize'):
-    return SizeArgument(arg_parts[-1], " ".join(arg_parts[0:-1]))
+  elif t.startswith('GLidBind'):
+    return ResourceIdBindArgument(arg_name, arg_type)
+  elif t.startswith('GLidZero'):
+    return ResourceIdZeroArgument(arg_name, arg_type)
+  elif t.startswith('GLid'):
+    return ResourceIdArgument(arg_name, arg_type)
+  elif t.startswith('GLenum') and t !='GLenum':
+    return EnumArgument(arg_name, arg_type)
+  elif t.startswith('GLbitfield') and t != 'GLbitfield':
+    return BitFieldArgument(arg_name, arg_type)
+  elif t.startswith('GLboolean') and t != 'GLboolean':
+    return ValidatedBoolArgument(arg_name, arg_type)
+  elif t.startswith('GLboolean'):
+    return BoolArgument(arg_name, arg_type)
+  elif t.startswith('GLintUniformLocation'):
+    return UniformLocationArgument(arg_name)
+  elif (t.startswith('GLint') and t != 'GLint' and
+        not t.startswith('GLintptr')):
+    return IntArgument(arg_name, arg_type)
+  elif t == 'GLsizeiNotNegative' or t == 'GLintptrNotNegative':
+    return SizeNotNegativeArgument(arg_name, t.replace('NotNegative', ''))
+  elif t.startswith('GLsize'):
+    return SizeArgument(arg_name, arg_type)
   else:
-    return Argument(arg_parts[-1], " ".join(arg_parts[0:-1]))
+    return Argument(arg_name, arg_type)
 
 
 class GLGenerator(object):
