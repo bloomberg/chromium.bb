@@ -10,6 +10,8 @@
 
 namespace mus {
 
+namespace ws {
+
 // Connection id is used to indicate no connection. That is, no WindowTreeImpl
 // ever gets this id.
 const ConnectionSpecificId kInvalidConnectionId = 0;
@@ -56,6 +58,8 @@ inline WindowId InvalidWindowId() {
 inline WindowId RootWindowId(uint16_t index) {
   return WindowId(kInvalidConnectionId, 2 + index);
 }
+
+}  // namespace ws
 
 }  // namespace mus
 

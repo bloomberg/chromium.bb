@@ -7,11 +7,13 @@
 
 namespace mus {
 
+namespace ws {
+
 TestServerWindowDelegate::TestServerWindowDelegate() : root_window_(nullptr) {}
 
 TestServerWindowDelegate::~TestServerWindowDelegate() {}
 
-SurfacesState* TestServerWindowDelegate::GetSurfacesState() {
+mus::SurfacesState* TestServerWindowDelegate::GetSurfacesState() {
   return nullptr;
 }
 
@@ -22,5 +24,7 @@ const ServerWindow* TestServerWindowDelegate::GetRootWindow(
     const ServerWindow* window) const {
   return root_window_;
 }
+
+}  // namespace ws
 
 }  // namespace mus

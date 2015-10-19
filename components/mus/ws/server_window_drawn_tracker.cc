@@ -9,6 +9,8 @@
 
 namespace mus {
 
+namespace ws {
+
 ServerWindowDrawnTracker::ServerWindowDrawnTracker(
     ServerWindow* window,
     ServerWindowDrawnTrackerObserver* observer)
@@ -69,5 +71,7 @@ void ServerWindowDrawnTracker::OnWindowVisibilityChanged(ServerWindow* window) {
   const bool is_drawn = window_->IsDrawn();
   SetDrawn(is_drawn ? nullptr : window->parent(), is_drawn);
 }
+
+}  // namespace ws
 
 }  // namespace mus

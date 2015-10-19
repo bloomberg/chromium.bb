@@ -13,6 +13,8 @@
 
 namespace mus {
 
+namespace ws {
+
 class ClientConnection;
 class ConnectionManager;
 struct WindowId;
@@ -41,6 +43,8 @@ class ConnectionManagerDelegate {
  protected:
   virtual ~ConnectionManagerDelegate() {}
 };
+
+}  // namespace ws
 
 }  // namespace mus
 

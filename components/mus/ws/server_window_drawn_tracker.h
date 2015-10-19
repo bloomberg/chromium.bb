@@ -12,6 +12,8 @@
 
 namespace mus {
 
+namespace ws {
+
 class ServerWindowDrawnTrackerObserver;
 
 // ServerWindowDrawnTracker notifies its observer any time the drawn state of
@@ -50,6 +52,8 @@ class ServerWindowDrawnTracker : public ServerWindowObserver {
 
   DISALLOW_COPY_AND_ASSIGN(ServerWindowDrawnTracker);
 };
+
+}  // namespace ws
 
 }  // namespace mus
 

@@ -24,6 +24,8 @@ class Rect;
 
 namespace mus {
 
+namespace ws {
+
 class AccessPolicy;
 class ConnectionManager;
 class ServerWindow;
@@ -244,7 +246,7 @@ class WindowTreeImpl : public mojom::WindowTree, public AccessPolicyDelegate {
 
   mojom::WindowTreeClient* client_;
 
-  scoped_ptr<mus::AccessPolicy> access_policy_;
+  scoped_ptr<mus::ws::AccessPolicy> access_policy_;
 
   // The windows created by this connection. This connection owns these objects.
   WindowMap window_map_;
@@ -261,6 +263,8 @@ class WindowTreeImpl : public mojom::WindowTree, public AccessPolicyDelegate {
 
   DISALLOW_COPY_AND_ASSIGN(WindowTreeImpl);
 };
+
+}  // namespace ws
 
 }  // namespace mus
 

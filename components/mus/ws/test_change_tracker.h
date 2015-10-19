@@ -16,6 +16,8 @@
 
 namespace mus {
 
+namespace ws {
+
 enum ChangeType {
   CHANGE_TYPE_EMBED,
   CHANGE_TYPE_EMBEDDED_APP_DISCONNECTED,
@@ -150,6 +152,8 @@ class TestChangeTracker {
 
   DISALLOW_COPY_AND_ASSIGN(TestChangeTracker);
 };
+
+}  // namespace ws
 
 }  // namespace mus
 

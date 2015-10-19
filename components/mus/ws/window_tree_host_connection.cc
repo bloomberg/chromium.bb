@@ -9,6 +9,8 @@
 
 namespace mus {
 
+namespace ws {
+
 WindowTreeHostConnection::WindowTreeHostConnection(
     scoped_ptr<WindowTreeHostImpl> host_impl,
     ConnectionManager* manager)
@@ -63,5 +65,7 @@ void WindowTreeHostConnectionImpl::OnDisplayInitialized() {
       kInvalidConnectionId, window_tree_host()->root_window()->id(),
       mojom::WindowTree::ACCESS_POLICY_EMBED_ROOT, client_.Pass()));
 }
+
+}  // namespace ws
 
 }  // namespace mus

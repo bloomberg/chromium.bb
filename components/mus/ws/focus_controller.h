@@ -10,6 +10,8 @@
 
 namespace mus {
 
+namespace ws {
+
 class FocusControllerDelegate;
 class ServerWindow;
 class ServerWindowDrawnTracker;
@@ -48,6 +50,8 @@ class FocusController : public ServerWindowDrawnTrackerObserver {
 
   DISALLOW_COPY_AND_ASSIGN(FocusController);
 };
+
+}  // namespace ws
 
 }  // namespace mus
 

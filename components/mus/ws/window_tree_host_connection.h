@@ -14,6 +14,8 @@
 
 namespace mus {
 
+namespace ws {
+
 class ConnectionManager;
 class WindowTreeImpl;
 
@@ -78,6 +80,8 @@ class WindowTreeHostConnectionImpl : public WindowTreeHostConnection {
 
   DISALLOW_COPY_AND_ASSIGN(WindowTreeHostConnectionImpl);
 };
+
+}  // namespace ws
 
 }  // namespace mus
 

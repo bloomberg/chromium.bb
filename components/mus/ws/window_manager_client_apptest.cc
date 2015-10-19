@@ -19,6 +19,8 @@
 
 namespace mus {
 
+namespace ws {
+
 namespace {
 
 class BoundsChangeObserver : public WindowObserver {
@@ -893,5 +895,7 @@ TEST_F(WindowServerTest, ClientAreaChanged) {
   EXPECT_TRUE(gfx::Rect(0, 0, 23, 24) ==
               embedded_connection->GetRoot()->client_area().To<gfx::Rect>());
 }
+
+}  // namespace ws
 
 }  // namespace mus

@@ -9,6 +9,8 @@
 
 namespace mus {
 
+namespace ws {
+
 ClientConnection::ClientConnection(scoped_ptr<WindowTreeImpl> service,
                                    mojom::WindowTreeClient* client)
     : service_(service.Pass()), client_(client) {}
@@ -29,5 +31,7 @@ DefaultClientConnection::DefaultClientConnection(
 }
 
 DefaultClientConnection::~DefaultClientConnection() {}
+
+}  // namespace ws
 
 }  // namespace mus

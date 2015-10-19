@@ -7,6 +7,8 @@
 
 namespace mus {
 
+namespace ws {
+
 class WindowTreeImpl;
 
 // A WindowTreeHostDelegate interface is implemented by an object that
@@ -30,6 +32,8 @@ class WindowTreeHostDelegate {
  protected:
   virtual ~WindowTreeHostDelegate() {}
 };
+
+}  // namespace ws
 
 }  // namespace mus
 

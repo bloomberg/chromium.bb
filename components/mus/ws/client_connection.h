@@ -11,6 +11,8 @@
 
 namespace mus {
 
+namespace ws {
+
 class ConnectionManager;
 class WindowTreeImpl;
 
@@ -51,6 +53,8 @@ class DefaultClientConnection : public ClientConnection {
 
   DISALLOW_COPY_AND_ASSIGN(DefaultClientConnection);
 };
+
+}  // namespace ws
 
 }  // namespace mus
 

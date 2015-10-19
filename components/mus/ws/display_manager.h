@@ -38,11 +38,13 @@ struct TextInputState;
 
 namespace mus {
 
+class SurfacesState;
+
+namespace ws {
+
 class DisplayManagerFactory;
 class EventDispatcher;
 class ServerWindow;
-class SurfacesScheduler;
-class SurfacesState;
 
 // DisplayManager is used to connect the root ServerWindow to a display.
 class DisplayManager {
@@ -145,6 +147,8 @@ class DefaultDisplayManager : public DisplayManager,
 
   DISALLOW_COPY_AND_ASSIGN(DefaultDisplayManager);
 };
+
+}  // namespace ws
 
 }  // namespace mus
 

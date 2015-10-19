@@ -8,11 +8,13 @@
 #include "components/mus/gles2/gpu_state.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/callback.h"
 
-namespace mus {
+namespace mojo {
 class ApplicationImpl;
-}  // namespace mus
+}
 
 namespace mus {
+
+namespace ws {
 
 class DisplayManager;
 
@@ -22,9 +24,11 @@ class DisplayManagerFactory {
  public:
   virtual DisplayManager* CreateDisplayManager(
       mojo::ApplicationImpl* app_impl,
-      const scoped_refptr<GpuState>& gpu_state,
-      const scoped_refptr<SurfacesState>& surfaces_state) = 0;
+      const scoped_refptr<mus::GpuState>& gpu_state,
+      const scoped_refptr<mus::SurfacesState>& surfaces_state) = 0;
 };
+
+}  // namespace ws
 
 }  // namespace mus
 

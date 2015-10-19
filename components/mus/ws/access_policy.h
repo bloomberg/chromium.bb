@@ -10,6 +10,8 @@
 
 namespace mus {
 
+namespace ws {
+
 class ServerWindow;
 
 // AccessPolicy is used by WindowTreeImpl to determine what a connection is
@@ -55,6 +57,8 @@ class AccessPolicy {
   virtual const ServerWindow* GetWindowForFocusChange(
       const ServerWindow* focused) = 0;
 };
+
+}  // namespace ws
 
 }  // namespace mus
 

@@ -28,6 +28,8 @@ using mojo::String;
 
 namespace mus {
 
+namespace ws {
+
 WindowTreeImpl::WindowTreeImpl(ConnectionManager* connection_manager,
                                ConnectionSpecificId creator_id,
                                const WindowId& root_id,
@@ -730,5 +732,7 @@ bool WindowTreeImpl::IsWindowRootOfAnotherConnectionForAccessPolicy(
 bool WindowTreeImpl::IsDescendantOfEmbedRoot(const ServerWindow* window) {
   return is_embed_root_ && root_ && GetWindow(*root_)->Contains(window);
 }
+
+}  // namespace ws
 
 }  // namespace mus

@@ -16,6 +16,8 @@
 
 namespace mus {
 
+namespace ws {
+
 class ConnectionManager;
 class FocusController;
 class WindowTreeHostDelegate;
@@ -115,6 +117,8 @@ class WindowTreeHostImpl : public DisplayManagerDelegate,
 
   DISALLOW_COPY_AND_ASSIGN(WindowTreeHostImpl);
 };
+
+}  // namespace ws
 
 }  // namespace mus
 

@@ -10,6 +10,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mus {
+
+namespace ws {
 namespace {
 
 class TestServerWindowDrawnTrackerObserver
@@ -136,5 +138,7 @@ TEST(ServerWindowDrawnTrackerTest, ChangeBecauseOfRemovingAncestorFromRoot) {
   EXPECT_EQ(nullptr, drawn_observer.ancestor());
   EXPECT_TRUE(drawn_observer.is_drawn());
 }
+
+}  // namespace ws
 
 }  // namespace mus

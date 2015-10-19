@@ -16,6 +16,8 @@
 
 namespace mus {
 
+namespace ws {
+
 WindowTreeHostImpl::WindowTreeHostImpl(
     mojom::WindowTreeHostClientPtr client,
     ConnectionManager* connection_manager,
@@ -240,5 +242,7 @@ void WindowTreeHostImpl::OnFocusChanged(ServerWindow* old_focused_window,
   UpdateTextInputState(new_focused_window,
                        new_focused_window->text_input_state());
 }
+
+}  // namespace ws
 
 }  // namespace mus

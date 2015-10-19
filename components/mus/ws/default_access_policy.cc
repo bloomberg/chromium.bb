@@ -9,6 +9,8 @@
 
 namespace mus {
 
+namespace ws {
+
 DefaultAccessPolicy::DefaultAccessPolicy(ConnectionSpecificId connection_id,
                                          AccessPolicyDelegate* delegate)
     : connection_id_(connection_id), delegate_(delegate) {}
@@ -151,5 +153,7 @@ bool DefaultAccessPolicy::IsDescendantOfEmbedRoot(
     const ServerWindow* window) const {
   return delegate_->IsDescendantOfEmbedRoot(window);
 }
+
+}  // namespace ws
 
 }  // namespace mus

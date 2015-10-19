@@ -66,7 +66,7 @@ void MandolineUIServicesApp::Initialize(ApplicationImpl* app) {
 
   if (!gpu_state_.get())
     gpu_state_ = new GpuState;
-  connection_manager_.reset(new ConnectionManager(this, surfaces_state_));
+  connection_manager_.reset(new ws::ConnectionManager(this, surfaces_state_));
 }
 
 bool MandolineUIServicesApp::ConfigureIncomingConnection(
@@ -80,35 +80,35 @@ void MandolineUIServicesApp::OnNoMoreRootConnections() {
   app_impl_->Quit();
 }
 
-ClientConnection*
+ws::ClientConnection*
 MandolineUIServicesApp::CreateClientConnectionForEmbedAtWindow(
-    ConnectionManager* connection_manager,
+    ws::ConnectionManager* connection_manager,
     mojo::InterfaceRequest<mojom::WindowTree> tree_request,
     ConnectionSpecificId creator_id,
     mojo::URLRequestPtr request,
-    const WindowId& root_id,
+    const ws::WindowId& root_id,
     uint32_t policy_bitmask) {
   mojom::WindowTreeClientPtr client;
   app_impl_->ConnectToService(request.Pass(), &client);
 
-  scoped_ptr<WindowTreeImpl> service(new WindowTreeImpl(
+  scoped_ptr<ws::WindowTreeImpl> service(new ws::WindowTreeImpl(
       connection_manager, creator_id, root_id, policy_bitmask));
-  return new DefaultClientConnection(service.Pass(), connection_manager,
-                                     tree_request.Pass(), client.Pass());
+  return new ws::DefaultClientConnection(service.Pass(), connection_manager,
+                                         tree_request.Pass(), client.Pass());
 }
 
-ClientConnection*
+ws::ClientConnection*
 MandolineUIServicesApp::CreateClientConnectionForEmbedAtWindow(
-    ConnectionManager* connection_manager,
+    ws::ConnectionManager* connection_manager,
     mojo::InterfaceRequest<mojom::WindowTree> tree_request,
     ConnectionSpecificId creator_id,
-    const WindowId& root_id,
+    const ws::WindowId& root_id,
     uint32_t policy_bitmask,
     mojom::WindowTreeClientPtr client) {
-  scoped_ptr<WindowTreeImpl> service(new WindowTreeImpl(
+  scoped_ptr<ws::WindowTreeImpl> service(new ws::WindowTreeImpl(
       connection_manager, creator_id, root_id, policy_bitmask));
-  return new DefaultClientConnection(service.Pass(), connection_manager,
-                                     tree_request.Pass(), client.Pass());
+  return new ws::DefaultClientConnection(service.Pass(), connection_manager,
+                                         tree_request.Pass(), client.Pass());
 }
 
 void MandolineUIServicesApp::Create(
@@ -132,12 +132,12 @@ void MandolineUIServicesApp::CreateWindowTreeHost(
 
   // TODO(fsamuel): We need to make sure that only the window manager can create
   // new roots.
-  WindowTreeHostImpl* host_impl =
-      new WindowTreeHostImpl(host_client.Pass(), connection_manager_.get(),
-                             app_impl_, gpu_state_, surfaces_state_);
+  ws::WindowTreeHostImpl* host_impl =
+      new ws::WindowTreeHostImpl(host_client.Pass(), connection_manager_.get(),
+                                 app_impl_, gpu_state_, surfaces_state_);
 
   // WindowTreeHostConnection manages its own lifetime.
-  host_impl->Init(new WindowTreeHostConnectionImpl(
+  host_impl->Init(new ws::WindowTreeHostConnectionImpl(
       host.Pass(), make_scoped_ptr(host_impl), tree_client.Pass(),
       connection_manager_.get()));
 }

@@ -14,6 +14,8 @@
 
 namespace mus {
 
+namespace ws {
+
 namespace {
 
 gfx::Vector2dF CalculateOffsetToAncestor(const ServerWindow* window,
@@ -66,5 +68,7 @@ gfx::Rect ConvertRectBetweenWindows(const ServerWindow* from,
   return gfx::Rect(top_left.x(), top_left.y(), bottom_right.x() - top_left.x(),
                    bottom_right.y() - top_left.y());
 }
+
+}  // namespace ws
 
 }  // namespace mus

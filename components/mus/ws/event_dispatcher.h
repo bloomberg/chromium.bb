@@ -18,6 +18,8 @@ class Point;
 
 namespace mus {
 
+namespace ws {
+
 class ServerWindow;
 class WindowTreeHostImpl;
 
@@ -79,6 +81,8 @@ class EventDispatcher {
 
   DISALLOW_COPY_AND_ASSIGN(EventDispatcher);
 };
+
+}  // namespace ws
 
 }  // namespace mus
 

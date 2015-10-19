@@ -10,6 +10,8 @@
 
 namespace mus {
 
+namespace ws {
+
 FocusController::FocusController(FocusControllerDelegate* delegate)
     : delegate_(delegate) {}
 
@@ -47,5 +49,7 @@ void FocusController::OnDrawnStateChanged(ServerWindow* ancestor,
   DCHECK(!is_drawn);  // We only observe when drawn.
   SetFocusedWindowImpl(ancestor, CHANGE_SOURCE_DRAWN_STATE_CHANGED);
 }
+
+}  // namespace ws
 
 }  // namespace mus

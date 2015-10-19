@@ -14,6 +14,8 @@ using mojo::String;
 
 namespace mus {
 
+namespace ws {
+
 std::string WindowIdToString(Id id) {
   return (id == 0) ? "null"
                    : base::StringPrintf("%d,%d", HiWord(id), LoWord(id));
@@ -324,5 +326,7 @@ std::string TestWindow::ToString2() const {
       WindowIdToString(window_id).c_str(), WindowIdToString(parent_id).c_str(),
       visible ? "true" : "false", drawn ? "true" : "false");
 }
+
+}  // namespace ws
 
 }  // namespace mus

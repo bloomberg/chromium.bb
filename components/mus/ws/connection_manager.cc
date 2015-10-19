@@ -20,6 +20,8 @@
 
 namespace mus {
 
+namespace ws {
+
 ConnectionManager::ScopedChange::ScopedChange(
     WindowTreeImpl* connection,
     ConnectionManager* connection_manager,
@@ -36,7 +38,7 @@ ConnectionManager::ScopedChange::~ScopedChange() {
 
 ConnectionManager::ConnectionManager(
     ConnectionManagerDelegate* delegate,
-    const scoped_refptr<SurfacesState>& surfaces_state)
+    const scoped_refptr<mus::SurfacesState>& surfaces_state)
     : delegate_(delegate),
       surfaces_state_(surfaces_state),
       next_connection_id_(1),
@@ -339,7 +341,7 @@ void ConnectionManager::AddConnection(ClientConnection* connection) {
   connection_map_[connection->service()->id()] = connection;
 }
 
-SurfacesState* ConnectionManager::GetSurfacesState() {
+mus::SurfacesState* ConnectionManager::GetSurfacesState() {
   return surfaces_state_.get();
 }
 
@@ -449,5 +451,7 @@ void ConnectionManager::OnWindowTextInputStateChanged(
   WindowTreeHostImpl* host = GetWindowTreeHostByWindow(window);
   host->UpdateTextInputState(window, state);
 }
+
+}  // namespace ws
 
 }  // namespace mus

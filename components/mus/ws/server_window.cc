@@ -13,6 +13,8 @@
 
 namespace mus {
 
+namespace ws {
+
 ServerWindow::ServerWindow(ServerWindowDelegate* delegate, const WindowId& id)
     : delegate_(delegate),
       id_(id),
@@ -273,5 +275,7 @@ void ServerWindow::RemoveImpl(ServerWindow* window) {
   window->parent_ = NULL;
   children_.erase(std::find(children_.begin(), children_.end(), window));
 }
+
+}  // namespace ws
 
 }  // namespace mus

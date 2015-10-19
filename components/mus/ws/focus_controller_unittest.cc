@@ -10,6 +10,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mus {
+
+namespace ws {
 namespace {
 
 class TestFocusControllerDelegate : public FocusControllerDelegate {
@@ -103,5 +105,7 @@ TEST(FocusControllerTest, Basic) {
   EXPECT_EQ(&child_child, focus_delegate.old_focused_window());
   focus_delegate.ClearAll();
 }
+
+}  // namespace ws
 
 }  // namespace mus

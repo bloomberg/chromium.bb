@@ -13,6 +13,8 @@ class Rect;
 
 namespace mus {
 
+namespace ws {
+
 class ServerWindow;
 
 // Converts |point| from the coordinates of |from| to the coordinates of |to|.
@@ -29,6 +31,8 @@ gfx::PointF ConvertPointFBetweenWindows(const ServerWindow* from,
 gfx::Rect ConvertRectBetweenWindows(const ServerWindow* from,
                                     const ServerWindow* to,
                                     const gfx::Rect& rect);
+
+}  // namespace ws
 
 }  // namespace mus
 

@@ -21,6 +21,8 @@
 
 namespace mus {
 
+namespace ws {
+
 class ServerWindowDelegate;
 class ServerWindowObserver;
 
@@ -145,6 +147,8 @@ class ServerWindow {
 
   DISALLOW_COPY_AND_ASSIGN(ServerWindow);
 };
+
+}  // namespace ws
 
 }  // namespace mus
 

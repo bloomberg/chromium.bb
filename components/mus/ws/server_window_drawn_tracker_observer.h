@@ -7,6 +7,8 @@
 
 namespace mus {
 
+namespace ws {
+
 class ServerWindow;
 
 class ServerWindowDrawnTrackerObserver {
@@ -23,6 +25,8 @@ class ServerWindowDrawnTrackerObserver {
  protected:
   virtual ~ServerWindowDrawnTrackerObserver() {}
 };
+
+}  // namespace ws
 
 }  // namespace mus
 

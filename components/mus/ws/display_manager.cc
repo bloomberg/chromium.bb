@@ -44,6 +44,8 @@ using mojo::Rect;
 using mojo::Size;
 
 namespace mus {
+
+namespace ws {
 namespace {
 
 // DrawWindowTree recursively visits ServerWindows, creating a SurfaceDrawQuad
@@ -356,5 +358,7 @@ void DefaultDisplayManager::OnAcceleratedWidgetDestroyed() {
 }
 
 void DefaultDisplayManager::OnActivationChanged(bool active) {}
+
+}  // namespace ws
 
 }  // namespace mus

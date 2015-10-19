@@ -15,6 +15,8 @@
 
 namespace mus {
 
+namespace ws {
+
 namespace {
 
 void CallCallback(const mojo::Closure& callback, cc::SurfaceDrawStatus status) {
@@ -108,5 +110,7 @@ void ServerWindowSurface::ReturnResources(
   client_->ReturnResources(
       mojo::Array<mojom::ReturnedResourcePtr>::From(resources));
 }
+
+}  // namespace ws
 
 }  // namespace mus

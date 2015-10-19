@@ -33,6 +33,8 @@ using mus::mojom::WindowTreeClient;
 
 namespace mus {
 
+namespace ws {
+
 namespace {
 
 // Creates an id used for transport from the specified parameters.
@@ -1718,5 +1720,7 @@ TEST_F(WindowTreeAppTest, CantEmbedFromConnectionRoot) {
 // WindowManagerTest.MultipleEmbedRootsBeforeWTHReady gets added to window
 // manager
 // tests.
+
+}  // namespace ws
 
 }  // namespace mus

@@ -7,6 +7,8 @@
 
 namespace mus {
 
+namespace ws {
+
 class ServerWindow;
 
 class FocusControllerDelegate {
@@ -17,6 +19,8 @@ class FocusControllerDelegate {
  protected:
   ~FocusControllerDelegate() {}
 };
+
+}  // namespace ws
 
 }  // namespace mus
 

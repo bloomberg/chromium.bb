@@ -10,6 +10,8 @@
 
 namespace mus {
 
+namespace ws {
+
 class AccessPolicyDelegate;
 
 class WindowManagerAccessPolicy : public AccessPolicy {
@@ -53,6 +55,8 @@ class WindowManagerAccessPolicy : public AccessPolicy {
 
   DISALLOW_COPY_AND_ASSIGN(WindowManagerAccessPolicy);
 };
+
+}  // namespace ws
 
 }  // namespace mus
 

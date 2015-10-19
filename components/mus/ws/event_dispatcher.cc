@@ -16,6 +16,8 @@
 
 namespace mus {
 
+namespace ws {
+
 EventDispatcher::EventDispatcher(WindowTreeHostImpl* window_tree_host)
     : window_tree_host_(window_tree_host) {}
 
@@ -152,5 +154,7 @@ ServerWindow* EventDispatcher::FindDeepestVisibleWindowFromSurface(
   }
   return nullptr;
 }
+
+}  // namespace ws
 
 }  // namespace mus

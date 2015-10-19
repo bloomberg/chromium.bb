@@ -12,6 +12,8 @@
 
 namespace mus {
 
+namespace ws {
+
 class ServerWindow;
 
 // Delegate used by the AccessPolicy implementations to get state.
@@ -35,6 +37,8 @@ class AccessPolicyDelegate {
  protected:
   virtual ~AccessPolicyDelegate() {}
 };
+
+}  // namespace ws
 
 }  // namespace mus
 

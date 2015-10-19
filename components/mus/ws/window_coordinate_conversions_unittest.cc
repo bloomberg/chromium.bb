@@ -13,6 +13,8 @@
 
 namespace mus {
 
+namespace ws {
+
 using WindowCoordinateConversionsTest = testing::Test;
 
 TEST_F(WindowCoordinateConversionsTest, ConvertRectBetweenWindows) {
@@ -54,5 +56,7 @@ TEST_F(WindowCoordinateConversionsTest, ConvertPointFBetweenWindows) {
     EXPECT_FLOAT_EQ(21.4f, result.y());
   }
 }
+
+}  // namespace ws
 
 }  // namespace mus

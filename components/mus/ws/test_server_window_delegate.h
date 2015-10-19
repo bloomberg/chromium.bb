@@ -10,6 +10,8 @@
 
 namespace mus {
 
+namespace ws {
+
 struct WindowId;
 
 class TestServerWindowDelegate : public ServerWindowDelegate {
@@ -21,7 +23,7 @@ class TestServerWindowDelegate : public ServerWindowDelegate {
 
  private:
   // ServerWindowDelegate:
-  SurfacesState* GetSurfacesState() override;
+  mus::SurfacesState* GetSurfacesState() override;
   void OnScheduleWindowPaint(const ServerWindow* window) override;
   const ServerWindow* GetRootWindow(const ServerWindow* window) const override;
 
@@ -29,6 +31,8 @@ class TestServerWindowDelegate : public ServerWindowDelegate {
 
   DISALLOW_COPY_AND_ASSIGN(TestServerWindowDelegate);
 };
+
+}  // namespace ws
 
 }  // namespace mus
 

@@ -34,6 +34,8 @@ using mus::mojom::ERROR_CODE_NONE;
 using mus::mojom::WindowDataPtr;
 
 namespace mus {
+
+namespace ws {
 namespace {
 
 // -----------------------------------------------------------------------------
@@ -245,7 +247,7 @@ class TestDisplayManagerFactory : public DisplayManagerFactory {
   DisplayManager* CreateDisplayManager(
       mojo::ApplicationImpl* app_impl,
       const scoped_refptr<GpuState>& gpu_state,
-      const scoped_refptr<SurfacesState>& surfaces_state) override {
+      const scoped_refptr<mus::SurfacesState>& surfaces_state) override {
     return new TestDisplayManager();
   }
 
@@ -315,7 +317,8 @@ class WindowTreeTest : public testing::Test {
         new ConnectionManager(&delegate_, scoped_refptr<SurfacesState>()));
     WindowTreeHostImpl* host = new WindowTreeHostImpl(
         mus::mojom::WindowTreeHostClientPtr(), connection_manager_.get(),
-        nullptr, scoped_refptr<GpuState>(), scoped_refptr<SurfacesState>());
+        nullptr, scoped_refptr<GpuState>(),
+        scoped_refptr<mus::SurfacesState>());
     // TODO(fsamuel): This is way too magical. We need to find a better way to
     // manage lifetime.
     host_connection_ = new TestWindowTreeHostConnection(
@@ -454,5 +457,7 @@ TEST_F(WindowTreeTest, BasicInputEventTarget) {
   EXPECT_EQ("InputEvent window=2,1 event_action=4",
             ChangesToDescription1(*embed_connection->tracker()->changes())[1]);
 }
+
+}  // namespace ws
 
 }  // namespace mus

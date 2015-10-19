@@ -9,6 +9,8 @@
 
 namespace mus {
 
+namespace ws {
+
 // TODO(sky): document why this differs from default for each case. Maybe want
 // to subclass DefaultAccessPolicy.
 
@@ -117,5 +119,7 @@ bool WindowManagerAccessPolicy::IsWindowKnown(
     const ServerWindow* window) const {
   return delegate_->IsWindowKnownForAccessPolicy(window);
 }
+
+}  // namespace ws
 
 }  // namespace mus

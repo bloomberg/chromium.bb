@@ -14,6 +14,8 @@ struct SurfaceId;
 
 namespace mus {
 
+namespace ws {
+
 class ServerWindow;
 
 // A DisplayManagerDelegate an interface to be implemented by an object that
@@ -40,6 +42,8 @@ class DisplayManagerDelegate {
  protected:
   virtual ~DisplayManagerDelegate() {}
 };
+
+}  // namespace ws
 
 }  // namespace mus
 

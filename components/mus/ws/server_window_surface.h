@@ -17,8 +17,11 @@
 
 namespace mus {
 
-class ServerWindow;
 class SurfacesState;
+
+namespace ws {
+
+class ServerWindow;
 
 // Server side representation of a WindowSurface.
 class ServerWindowSurface : public mojom::Surface,
@@ -82,6 +85,8 @@ class ServerWindowSurface : public mojom::Surface,
 
   DISALLOW_COPY_AND_ASSIGN(ServerWindowSurface);
 };
+
+}  // namespace ws
 
 }  // namespace mus
 

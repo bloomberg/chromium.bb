@@ -10,8 +10,11 @@
 
 namespace mus {
 
-class ServerWindow;
 class SurfacesState;
+
+namespace ws {
+
+class ServerWindow;
 struct WindowId;
 
 class ServerWindowDelegate {
@@ -28,6 +31,8 @@ class ServerWindowDelegate {
  protected:
   virtual ~ServerWindowDelegate() {}
 };
+
+}  // namespace ws
 
 }  // namespace mus
 

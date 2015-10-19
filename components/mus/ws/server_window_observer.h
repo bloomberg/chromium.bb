@@ -17,6 +17,8 @@ struct TextInputState;
 
 namespace mus {
 
+namespace ws {
+
 class ServerWindow;
 
 // TODO(sky): rename to OnDid and OnWill everywhere.
@@ -65,6 +67,8 @@ class ServerWindowObserver {
  protected:
   virtual ~ServerWindowObserver() {}
 };
+
+}  // namespace ws
 
 }  // namespace mus
 

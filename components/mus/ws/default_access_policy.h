@@ -10,6 +10,8 @@
 
 namespace mus {
 
+namespace ws {
+
 class AccessPolicyDelegate;
 
 // AccessPolicy for all connections, except the window manager.
@@ -55,6 +57,8 @@ class DefaultAccessPolicy : public AccessPolicy {
 
   DISALLOW_COPY_AND_ASSIGN(DefaultAccessPolicy);
 };
+
+}  // namespace ws
 
 }  // namespace mus
 

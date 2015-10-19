@@ -25,6 +25,8 @@
 
 namespace mus {
 
+namespace ws {
+
 class ClientConnection;
 class ConnectionManagerDelegate;
 class ServerWindow;
@@ -70,7 +72,7 @@ class ConnectionManager : public ServerWindowDelegate,
   };
 
   ConnectionManager(ConnectionManagerDelegate* delegate,
-                    const scoped_refptr<SurfacesState>& surfaces_state);
+                    const scoped_refptr<mus::SurfacesState>& surfaces_state);
   ~ConnectionManager() override;
 
   // Adds a WindowTreeHost.
@@ -202,7 +204,7 @@ class ConnectionManager : public ServerWindowDelegate,
   void AddConnection(ClientConnection* connection);
 
   // Overridden from ServerWindowDelegate:
-  SurfacesState* GetSurfacesState() override;
+  mus::SurfacesState* GetSurfacesState() override;
   void OnScheduleWindowPaint(const ServerWindow* window) override;
   const ServerWindow* GetRootWindow(const ServerWindow* window) const override;
 
@@ -234,7 +236,7 @@ class ConnectionManager : public ServerWindowDelegate,
   ConnectionManagerDelegate* delegate_;
 
   // State for rendering into a Surface.
-  scoped_refptr<SurfacesState> surfaces_state_;
+  scoped_refptr<mus::SurfacesState> surfaces_state_;
 
   // ID to use for next WindowTreeImpl.
   ConnectionSpecificId next_connection_id_;
@@ -256,6 +258,8 @@ class ConnectionManager : public ServerWindowDelegate,
 
   DISALLOW_COPY_AND_ASSIGN(ConnectionManager);
 };
+
+}  // namespace ws
 
 }  // namespace mus
 
