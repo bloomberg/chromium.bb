@@ -16,6 +16,13 @@
     'internal_ozone_platforms': [],
     'internal_ozone_platform_deps': [],
     'internal_ozone_platform_unittest_deps': [],
+
+    # This enables memory-mapped access to accelerated graphics buffers via
+    # the VGEM ("virtual GEM") driver. This is currently only available on
+    # Chrome OS kernels and affects code in the GBM ozone platform.
+    # TODO(dshwang): remove this flag when all gbm hardware supports vgem map.
+    # crbug.com/519587
+    'use_vgem_map%': 0,
   },
   'targets': [
     {
@@ -196,6 +203,19 @@
         '../gfx/gfx.gyp:gfx_geometry',
         '<@(external_ozone_platform_unittest_deps)',
         '<@(internal_ozone_platform_unittest_deps)',
+      ],
+    },
+    {
+      'target_name': 'vgem_map',
+      'type': 'none',
+      'conditions': [
+        ['use_vgem_map==1', {
+          'direct_dependent_settings': {
+            'defines': [
+              'USE_VGEM_MAP',
+            ],
+          },
+        }],
       ],
     },
   ],

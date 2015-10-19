@@ -45,6 +45,12 @@ platform_list_h_file = "$target_gen_dir/platform_list.h"
 platform_list_txt_file = "$target_gen_dir/platform_list.txt"
 constructor_list_cc_file = "$target_gen_dir/constructor_list.cc"
 
+config("vgem_map") {
+  if (use_vgem_map) {
+    defines = [ "USE_VGEM_MAP" ]
+  }
+}
+
 # GYP version: ui/ozone/ozone.gyp:ozone_base
 component("ozone_base") {
   sources = [

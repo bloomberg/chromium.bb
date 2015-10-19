@@ -8,10 +8,6 @@ import("//ui/ozone/ozone.gni")
 declare_args() {
   use_mesa_platform_null = false
   use_drm_atomic = false
-
-  # TODO(dshwang): remove this flag when all gbm hardware supports vgem map.
-  # crbug.com/519587
-  use_vgem_map = false
 }
 
 pkg_config("libdrm") {
@@ -143,7 +139,7 @@ source_set("gbm") {
   }
 
   if (use_vgem_map) {
-    defines += [ "USE_VGEM_MAP" ]
+    configs += [ "//ui/ozone:vgem_map" ]
 
     sources += [
       "gpu/client_native_pixmap_vgem.cc",

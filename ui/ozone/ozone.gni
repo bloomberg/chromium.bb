@@ -7,6 +7,13 @@ import("//build/config/chromecast_build.gni")
 declare_args() {
   # Select platforms automatically. Turn this off for manual control.
   ozone_auto_platforms = true
+
+  # This enables memory-mapped access to accelerated graphics buffers via the
+  # VGEM ("virtual GEM") driver. This is currently only available on Chrome OS
+  # kernels and affects code in the GBM ozone platform.
+  # TODO(dshwang): remove this flag when all gbm hardware supports vgem map.
+  # crbug.com/519587
+  use_vgem_map = false
 }
 
 declare_args() {
