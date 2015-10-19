@@ -4,6 +4,7 @@
 {
   'variables': {
     'trace_event_sources' : [
+      'trace_event/exported/trace_event_common.h',
       'trace_event/java_heap_dump_provider_android.cc',
       'trace_event/java_heap_dump_provider_android.h',
       'trace_event/memory_allocator_dump.cc',
@@ -40,7 +41,6 @@
       'trace_event/trace_event_android.cc',
       'trace_event/trace_event_argument.cc',
       'trace_event/trace_event_argument.h',
-      'trace_event/trace_event_common.h',
       'trace_event/trace_event_etw_export_win.cc',
       'trace_event/trace_event_etw_export_win.h',
       'trace_event/trace_event_impl.cc',
