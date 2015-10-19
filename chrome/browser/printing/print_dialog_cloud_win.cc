@@ -59,7 +59,7 @@ class PrintDataSetter : public content::WebContentsObserver {
   void DocumentLoadedInFrame(
       content::RenderFrameHost* render_frame_host) override {
     if (cloud_devices::IsCloudPrintURL(web_contents()->GetURL()))
-      render_frame_host->ExecuteJavaScript(print_function_);
+      return; // Disabled because of crbug.com/542821.
   }
 
   void WebContentsDestroyed() override { delete this; }
