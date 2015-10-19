@@ -317,7 +317,7 @@ bool FontFaceSet::remove(FontFace* fontFace, ExceptionState& exceptionState)
     return false;
 }
 
-bool FontFaceSet::has(FontFace* fontFace, ExceptionState& exceptionState) const
+bool FontFaceSet::hasForBinding(ScriptState*, FontFace* fontFace, ExceptionState& exceptionState) const
 {
     if (!inActiveDocumentContext())
         return false;
@@ -340,38 +340,7 @@ bool FontFaceSet::isCSSConnectedFontFace(FontFace* fontFace) const
     return cssConnectedFontFaceList().contains(fontFace);
 }
 
-void FontFaceSet::forEach(FontFaceSetForEachCallback* callback, const ScriptValue& thisArg) const
-{
-    forEachInternal(callback, &thisArg);
-}
-
-void FontFaceSet::forEach(FontFaceSetForEachCallback* callback) const
-{
-    forEachInternal(callback, 0);
-}
-
-void FontFaceSet::forEachInternal(FontFaceSetForEachCallback* callback, const ScriptValue* thisArg) const
-{
-    if (!inActiveDocumentContext())
-        return;
-    const WillBeHeapListHashSet<RefPtrWillBeMember<FontFace>>& cssConnectedFaces = cssConnectedFontFaceList();
-    WillBeHeapVector<RefPtrWillBeMember<FontFace>> fontFaces;
-    fontFaces.reserveInitialCapacity(cssConnectedFaces.size() + m_nonCSSConnectedFaces.size());
-    for (const auto& fontFace : cssConnectedFaces)
-        fontFaces.append(fontFace);
-    for (const auto& fontFace : m_nonCSSConnectedFaces)
-        fontFaces.append(fontFace);
-
-    for (size_t i = 0; i < fontFaces.size(); ++i) {
-        FontFace* face = fontFaces[i].get();
-        if (thisArg)
-            callback->handleItem(*thisArg, face, face, const_cast<FontFaceSet*>(this));
-        else
-            callback->handleItem(face, face, const_cast<FontFaceSet*>(this));
-    }
-}
-
-unsigned long FontFaceSet::size() const
+size_t FontFaceSet::size() const
 {
     if (!inActiveDocumentContext())
         return m_nonCSSConnectedFaces.size();
@@ -548,6 +517,31 @@ void FontFaceSet::didLayout(Document& document)
 {
     if (FontFaceSet* fonts = static_cast<FontFaceSet*>(SupplementType::from(document, supplementName())))
         fonts->didLayout();
+}
+
+FontFaceSetIterable::IterationSource* FontFaceSet::startIteration(ScriptState*, ExceptionState&)
+{
+    // Setlike should iterate each item in insertion order, and items should
+    // be keep on up to date. But since blink does not have a way to hook up CSS
+    // modification, take a snapshot here, and make it ordered as follows.
+    WillBeHeapVector<RefPtrWillBeMember<FontFace>> fontFaces;
+    if (inActiveDocumentContext()) {
+        const WillBeHeapListHashSet<RefPtrWillBeMember<FontFace>>& cssConnectedFaces = cssConnectedFontFaceList();
+        fontFaces.reserveInitialCapacity(cssConnectedFaces.size() + m_nonCSSConnectedFaces.size());
+        for (const auto& fontFace : cssConnectedFaces)
+            fontFaces.append(fontFace);
+        for (const auto& fontFace : m_nonCSSConnectedFaces)
+            fontFaces.append(fontFace);
+    }
+    return new IterationSource(fontFaces);
+}
+
+bool FontFaceSet::IterationSource::next(ScriptState*, RefPtrWillBeMember<FontFace>& key, RefPtrWillBeMember<FontFace>& value, ExceptionState&)
+{
+    if (m_fontFaces.size() <= m_index)
+        return false;
+    key = value = m_fontFaces[m_index++];
+    return true;
 }
 
 DEFINE_TRACE(FontFaceSet)

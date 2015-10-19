@@ -4,9 +4,38 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 
 PASS document.fonts.size is 3
+check forEach
+PASS callbackArgs[0] is an instance of FontFace
 PASS callbackArgs[0] === callbackArgs[1] is true
 PASS callbackArgs[2] === document.fonts is true
 PASS thisValue === thisArg is true
+PASS faces.length is 3
+PASS faces[0].family is "Font1"
+PASS faces[1].family is "Font2"
+PASS faces[2].family is "Font3"
+PASS document.fonts.has(faces[0]) is true
+PASS document.fonts.has(faces[1]) is true
+PASS document.fonts.has(faces[2]) is true
+check keys
+PASS faces.length is 3
+PASS faces[0].family is "Font1"
+PASS faces[1].family is "Font2"
+PASS faces[2].family is "Font3"
+PASS document.fonts.has(faces[0]) is true
+PASS document.fonts.has(faces[1]) is true
+PASS document.fonts.has(faces[2]) is true
+check values
+PASS faces.length is 3
+PASS faces[0].family is "Font1"
+PASS faces[1].family is "Font2"
+PASS faces[2].family is "Font3"
+PASS document.fonts.has(faces[0]) is true
+PASS document.fonts.has(faces[1]) is true
+PASS document.fonts.has(faces[2]) is true
+check entries
+PASS entry[0] === entry[1] is true
+PASS entry[0] === entry[1] is true
+PASS entry[0] === entry[1] is true
 PASS faces.length is 3
 PASS faces[0].family is "Font1"
 PASS faces[1].family is "Font2"

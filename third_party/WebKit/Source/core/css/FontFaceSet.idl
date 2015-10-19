@@ -39,10 +39,8 @@ enum FontFaceSetLoadStatus { "loading", "loaded" };
     SetWrapperReferenceFrom=document,
     NoInterfaceObject,
 ] interface FontFaceSet : EventTarget {
-    // TODO(ksakamoto): Make FontFaceSet Set-like. crbug.com/392075
-    // setlike<FontFace>;
-    void forEach(FontFaceSetForEachCallback callback, optional any thisArg);
-    [RaisesException] boolean has(FontFace fontFace);
+    // TODO(toyoshim): Drop 'readonly' to use setlike's add, delete, and clear.
+    readonly setlike<FontFace>;
     readonly attribute unsigned long size;
     // TODO(philipj): add() should return the FontFaceSet.
     [RaisesException] void add(FontFace fontFace);
