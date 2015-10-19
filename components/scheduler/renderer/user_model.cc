@@ -52,7 +52,8 @@ void UserModel::DidStartProcessingInputEvent(blink::WebInputEvent::Type type,
     // If there has been a previous gesture, record a UMA metric for the time
     // interval between then and now.
     if (!last_continuous_gesture_time_.is_null()) {
-      base::TimeDelta time_since_last_gesture = now - last_gesture_start_time_;
+      base::TimeDelta time_since_last_gesture =
+          now - last_continuous_gesture_time_;
       UMA_HISTOGRAM_MEDIUM_TIMES(
           "RendererScheduler.UserModel.TimeBetweenGestures",
           time_since_last_gesture);
