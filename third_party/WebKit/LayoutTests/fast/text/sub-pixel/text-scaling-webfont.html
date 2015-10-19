@@ -33,7 +33,12 @@
             var PANGRAM = 'My faxed joke won a pager in the cable TV quiz show.';
 
             jsTestIsAsync = true;
-            document.fonts.ready.then(testAndReport);
+            // Prevent flakyness by explicitly loading the web font before measuring
+            // the reference and test elements that are added to the page. Measuring
+            // too early leads to the elements being rendered and measured
+            // with "Times" before "Open Sans" is loaded, but Times on Windows is
+            // not sub-pixel scaled at lower font sizes, causing the test to fail.
+            document.fonts.load("12px Open Sans").then(testAndReport, notifyFail);
 
             function testAndReport() {
                 var results = runTest(document.getElementById('test'), PANGRAM);
@@ -49,6 +54,11 @@
                 } else {
                     testFailed('Size of text does not scale smoothly, reported widths highlighted in red do not match reference row.');
                 }
+                finishJSTest();
+            }
+
+            function notifyFail() {
+                testFailed("Unable to load web font.");
                 finishJSTest();
             }
         </script>
