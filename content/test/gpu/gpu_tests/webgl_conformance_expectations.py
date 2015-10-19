@@ -217,6 +217,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # NVIDIA
     self.Fail('conformance/textures/misc/default-texture.html',
         ['linux', ('nvidia', 0x104a)], bug=422152)
+    self.Flaky('conformance/extensions/angle-instanced-arrays.html',
+               ['linux', 'nvidia'], bug=544989)
     self.Flaky('conformance/extensions/oes-element-index-uint.html',
                ['linux', 'nvidia'], bug=524144)
     # AMD Radeon 5450
