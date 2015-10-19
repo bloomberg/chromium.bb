@@ -46,8 +46,8 @@ layer at (0,0) size 785x1707 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 text run at (0,2) width 115: "Your year of study*"
             LayoutMenuList {SELECT} at (325,82) size 180x18 [bgcolor=#F8F8F8]
               LayoutBlockFlow (anonymous) at (0,0) size 180x18
-                LayoutText (anonymous) at (8,2) size 118x13
-                  text run at (8,2) width 118: "Years you've been here"
+                LayoutText (anonymous) at (8,2) size 117x13
+                  text run at (8,2) width 117: "Years you've been here"
             LayoutBlockFlow (floating) {SPAN} at (0,106) size 325x20 [color=#333333]
               LayoutText {#text} at (0,2) size 157x16
                 text run at (0,2) width 157: "Shakespeare classes taken"
@@ -67,8 +67,8 @@ layer at (0,0) size 785x1707 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 text run at (0,22) width 42: "online?"
             LayoutMenuList {SELECT} at (325,202.33) size 180x18 [bgcolor=#F8F8F8]
               LayoutBlockFlow (anonymous) at (0,0) size 180x18
-                LayoutText (anonymous) at (8,2) size 101x13
-                  text run at (8,2) width 101: "Percentages of time"
+                LayoutText (anonymous) at (8,2) size 100x13
+                  text run at (8,2) width 100: "Percentages of time"
             LayoutBlockFlow (floating) {SPAN} at (0,222.33) size 325x20 [color=#333333]
               LayoutText {#text} at (0,2) size 308x36
                 text run at (0,2) width 308: "What is holding you back from doing more research"

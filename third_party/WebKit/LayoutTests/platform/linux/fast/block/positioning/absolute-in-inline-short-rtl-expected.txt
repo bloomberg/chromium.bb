@@ -11,11 +11,11 @@ layer at (0,0) size 800x600
             text run at (305,0) width 25: "blue"
         LayoutText {#text} at (330,0) size 113x19
           text run at (330,0) width 113: " border, to the left "
-        LayoutInline {SPAN} at (0,0) size 41x19 [color=#FFA500]
-          LayoutText {#text} at (443,0) size 41x19
-            text run at (443,0) width 41: "orange"
-        LayoutText {#text} at (484,0) size 49x19
-          text run at (484,0) width 49: " border."
+        LayoutInline {SPAN} at (0,0) size 42x19 [color=#FFA500]
+          LayoutText {#text} at (442,0) size 42x19
+            text run at (442,0) width 42: "orange"
+        LayoutText {#text} at (483,0) size 49x19
+          text run at (483,0) width 49: " border."
       LayoutBlockFlow {DIV} at (0,36) size 600x20
         LayoutText {#text} at (422,0) size 178x19
           text run at (422,0) width 178 RTL override: "ILorem ipsum dolor sit amet, "

@@ -4,10 +4,10 @@ layer at (0,0) size 800x446
   LayoutBlockFlow {HTML} at (0,0) size 800x446
     LayoutBlockFlow {BODY} at (8,16) size 784x18
       LayoutBlockFlow {P} at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 521x17
-          text run at (0,0) width 508: "The following two blocks should be identical, including overflow. (Force bidi: "
-          text run at (507,0) width 8 RTL: "\x{5D0}"
-          text run at (514,0) width 7: ")"
+        LayoutText {#text} at (0,0) size 519x17
+          text run at (0,0) width 506: "The following two blocks should be identical, including overflow. (Force bidi: "
+          text run at (505,0) width 9 RTL: "\x{5D0}"
+          text run at (513,0) width 6: ")"
       LayoutBlockFlow {DIV} at (0,34) size 784x0
         LayoutBlockFlow (floating) {P} at (16,16) size 179.67x166 [bgcolor=#FFFFCC] [border: (3px solid #000000)]
           LayoutInline {SPAN} at (0,0) size 151x37 [color=#000080] [border: (3px solid #000080) none (3px solid #000080)]
@@ -17,11 +17,11 @@ layer at (0,0) size 800x446
           LayoutInline {SPAN} at (0,0) size 39x37 [color=#000080] [border: (3px solid #000080) none]
             LayoutText {#text} at (11,74) size 20x17
               text run at (11,74) width 20: "fff "
-          LayoutText {#text} at (49,74) size 75x17
-            text run at (49,74) width 75: "ggg hhh iii "
-          LayoutInline {SPAN} at (0,0) size 33x37 [color=#FFA500] [border: (3px solid #FFA500) none (3px solid #FFA500)]
-            LayoutText {#text} at (142,74) size 14x17
-              text run at (142,74) width 14: "jjj"
+          LayoutText {#text} at (49,74) size 74x17
+            text run at (49,74) width 74: "ggg hhh iii "
+          LayoutInline {SPAN} at (0,0) size 34x37 [color=#FFA500] [border: (3px solid #FFA500) none (3px solid #FFA500)]
+            LayoutText {#text} at (141,74) size 15x17
+              text run at (141,74) width 15: "jjj"
           LayoutBR {BR} at (155,74) size 1x17
           LayoutInline {SPAN} at (0,0) size 158x37 [color=#FFA500] [border: (3px solid #FFA500) none]
             LayoutText {#text} at (11,122) size 139x17
@@ -38,13 +38,13 @@ layer at (0,0) size 800x446
             LayoutBR {BR} at (0,0) size 0x0
             LayoutText {#text} at (11,74) size 20x17
               text run at (11,74) width 20: "fff "
-          LayoutText {#text} at (49,74) size 75x17
+          LayoutText {#text} at (49,74) size 74x17
             text run at (49,74) width 29: "ggg "
             text run at (77,74) width 29: "hhh "
-            text run at (105,74) width 19: "iii "
+            text run at (105,74) width 18: "iii "
           LayoutInline {SPAN} at (0,0) size 162x85 [color=#FFA500] [border: (3px solid #FFA500)]
-            LayoutText {#text} at (142,74) size 18x17
-              text run at (142,74) width 18: "jjj "
+            LayoutText {#text} at (141,74) size 19x17
+              text run at (141,74) width 19: "jjj "
             LayoutBR {BR} at (0,0) size 0x0
             LayoutText {#text} at (11,122) size 143x17
               text run at (11,122) width 28: "kkk "

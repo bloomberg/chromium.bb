@@ -27,27 +27,27 @@ layer at (0,0) size 785x1736 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               LayoutText {#text} at (0,0) size 203x17
                 text run at (0,0) width 203: "PERSONAL INFORMATION"
             LayoutBlockFlow (floating) {SPAN} at (0,27) size 325x20 [color=#333333]
-              LayoutText {#text} at (0,1) size 68x18
-                text run at (0,1) width 68: "Your Name*"
+              LayoutText {#text} at (0,1) size 67x18
+                text run at (0,1) width 67: "Your Name*"
             LayoutTextControl {INPUT} at (325,27) size 184x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
             LayoutBlockFlow (floating) {SPAN} at (0,49) size 325x20 [color=#333333]
-              LayoutText {#text} at (0,1) size 121x18
-                text run at (0,1) width 121: "Your e-mail address*"
+              LayoutText {#text} at (0,1) size 120x18
+                text run at (0,1) width 120: "Your e-mail address*"
             LayoutTextControl {INPUT} at (325,49) size 184x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
             LayoutBlockFlow (floating) {SPAN} at (0,71) size 325x20 [color=#333333]
-              LayoutText {#text} at (0,1) size 128x18
-                text run at (0,1) width 128: "Your degree program*"
+              LayoutText {#text} at (0,1) size 127x18
+                text run at (0,1) width 127: "Your degree program*"
             LayoutMenuList {SELECT} at (325,71) size 180x20 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
               LayoutBlockFlow (anonymous) at (1,1) size 178x18
                 LayoutText (anonymous) at (4,1) size 95x16
                   text run at (4,1) width 95: "Program options"
             LayoutBlockFlow (floating) {SPAN} at (0,91) size 325x20 [color=#333333]
-              LayoutText {#text} at (0,1) size 111x18
-                text run at (0,1) width 111: "Your year of study*"
+              LayoutText {#text} at (0,1) size 110x18
+                text run at (0,1) width 110: "Your year of study*"
             LayoutMenuList {SELECT} at (325,91) size 180x20 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
               LayoutBlockFlow (anonymous) at (1,1) size 178x18
-                LayoutText (anonymous) at (4,1) size 134x16
-                  text run at (4,1) width 134: "Years you've been here"
+                LayoutText (anonymous) at (4,1) size 133x16
+                  text run at (4,1) width 133: "Years you've been here"
             LayoutBlockFlow (floating) {SPAN} at (0,111) size 325x20 [color=#333333]
               LayoutText {#text} at (0,1) size 156x18
                 text run at (0,1) width 156: "Shakespeare classes taken"
@@ -77,12 +77,12 @@ layer at (0,0) size 785x1736 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 LayoutText (anonymous) at (4,1) size 51x16
                   text run at (4,1) width 51: "Reasons"
             LayoutBlockFlow (floating) {SPAN} at (0,256.33) size 325x20 [color=#333333]
-              LayoutText {#text} at (0,1) size 222x18
-                text run at (0,1) width 222: "Your research is primarily focused on:"
+              LayoutText {#text} at (0,1) size 221x18
+                text run at (0,1) width 221: "Your research is primarily focused on:"
             LayoutBlockFlow {SPAN} at (325,256.33) size 180x21 [color=#333333]
               LayoutBlockFlow {INPUT} at (5,3) size 13x13 [color=#000000]
-              LayoutText {#text} at (21,2) size 33x18
-                text run at (21,2) width 33: "Texts"
+              LayoutText {#text} at (21,2) size 32x18
+                text run at (21,2) width 32: "Texts"
             LayoutBlockFlow {SPAN} at (325,277.33) size 180x21 [color=#333333]
               LayoutBlockFlow {INPUT} at (5,3) size 13x13 [color=#000000]
               LayoutText {#text} at (21,2) size 133x18
@@ -98,13 +98,13 @@ layer at (0,0) size 785x1736 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               LayoutText {#text} at (0,1) size 307x18
                 text run at (0,1) width 307: "Have you used UVic's Internet Shakespeare Editions?"
             LayoutBlockFlow {SPAN} at (325,371.33) size 180x21 [color=#333333]
-              LayoutText {#text} at (0,2) size 20x18
-                text run at (0,2) width 20: "Yes"
-              LayoutBlockFlow {INPUT} at (25,3) size 13x13 [color=#000000]
-              LayoutText {#text} at (41,2) size 19x18
-                text run at (41,2) width 4: " "
-                text run at (45,2) width 15: "No"
-              LayoutBlockFlow {INPUT} at (65,3) size 13x13 [color=#000000]
+              LayoutText {#text} at (0,2) size 19x18
+                text run at (0,2) width 19: "Yes"
+              LayoutBlockFlow {INPUT} at (23.59,3) size 13x13 [color=#000000]
+              LayoutText {#text} at (39,2) size 20x18
+                text run at (39,2) width 5: " "
+                text run at (43,2) width 16: "No"
+              LayoutBlockFlow {INPUT} at (63.59,3) size 13x13 [color=#000000]
               LayoutText {#text} at (0,0) size 0x0
             LayoutBlockFlow {P} at (0,405.66) size 560x20 [color=#333333]
               LayoutText {#text} at (0,1) size 382x18
@@ -132,7 +132,7 @@ layer at (0,0) size 785x1736 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             LayoutBlockFlow {P} at (0,665.31) size 560x60 [color=#333333]
               LayoutText {#text} at (0,1) size 555x58
                 text run at (0,1) width 453: "We are in the process of both making new material available and developing "
-                text run at (453,1) width 102: "new tools to view"
+                text run at (452,1) width 103: "new tools to view"
                 text run at (0,21) width 356: "and extrapolate information from Shakespeare's works. The "
                 text run at (356,21) width 159: "following images are visual"
                 text run at (0,41) width 346: "representations of some of the ideas being thrown around."
@@ -140,14 +140,14 @@ layer at (0,0) size 785x1736 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               LayoutText {#text} at (0,1) size 334x18
                 text run at (0,1) width 334: "Please review them carefully and provide feedback below"
             LayoutBlockFlow (floating) {SPAN} at (0,771.97) size 325x20 [color=#333333]
-              LayoutText {#text} at (0,1) size 146x18
-                text run at (0,1) width 146: "Your comments on Fig. 1"
+              LayoutText {#text} at (0,1) size 145x18
+                text run at (0,1) width 145: "Your comments on Fig. 1"
             LayoutBlockFlow (floating) {SPAN} at (0,902.97) size 325x20 [color=#333333]
-              LayoutText {#text} at (0,1) size 146x18
-                text run at (0,1) width 146: "Your comments on Fig. 2"
+              LayoutText {#text} at (0,1) size 145x18
+                text run at (0,1) width 145: "Your comments on Fig. 2"
             LayoutBlockFlow (floating) {SPAN} at (0,1033.97) size 325x20 [color=#333333]
-              LayoutText {#text} at (0,1) size 146x18
-                text run at (0,1) width 146: "Your comments on Fig. 3"
+              LayoutText {#text} at (0,1) size 145x18
+                text run at (0,1) width 145: "Your comments on Fig. 3"
             LayoutBlockFlow {H2} at (0,1184.97) size 560x17 [color=#333333]
               LayoutText {#text} at (0,0) size 141x17
                 text run at (0,0) width 141: "OTHER FEEDBACK"

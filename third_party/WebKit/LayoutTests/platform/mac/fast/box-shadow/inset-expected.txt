@@ -37,6 +37,6 @@ layer at (0,0) size 800x600
         LayoutInline {SPAN} at (0,0) size 590x309 [bgcolor=#FFFFE0] [border: (5px solid #008000)]
           LayoutText {#text} at (25,12) size 570x299
             text run at (25,12) width 570: "This sentence is too"
-            text run at (88,120) width 424: "long to fit on a"
+            text run at (90,120) width 420: "long to fit on a"
             text run at (132,228) width 316: "single line."
         LayoutText {#text} at (0,0) size 0x0

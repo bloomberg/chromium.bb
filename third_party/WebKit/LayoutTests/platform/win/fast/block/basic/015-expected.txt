@@ -4,16 +4,16 @@ layer at (0,0) size 800x424
   LayoutBlockFlow {HTML} at (0,0) size 800x423.88
     LayoutBlockFlow {BODY} at (8,21.44) size 784x386.44
       LayoutBlockFlow {H1} at (0,0) size 784x37
-        LayoutText {#text} at (0,0) size 455x36
-          text run at (0,0) width 455: "Minimum and Maximum Widths"
+        LayoutText {#text} at (0,0) size 454x36
+          text run at (0,0) width 454: "Minimum and Maximum Widths"
       LayoutBlockFlow {DIV} at (0,58.44) size 784x24 [border: (3px solid #800080)]
         LayoutText {#text} at (3,3) size 33x17
           text run at (3,3) width 33: "This "
         LayoutInline {CODE} at (0,0) size 25x16
           LayoutText {#text} at (35,5) size 25x16
             text run at (35,5) width 25: "div"
-        LayoutText {#text} at (59,3) size 418x17
-          text run at (59,3) width 418: " should have a medium solid purple border, as should all the rest."
+        LayoutText {#text} at (59,3) size 417x17
+          text run at (59,3) width 417: " should have a medium solid purple border, as should all the rest."
       LayoutBlockFlow {DIV} at (0,82.44) size 319.59x60 [border: (3px solid #800080)]
         LayoutText {#text} at (3,3) size 33x17
           text run at (3,3) width 33: "This "

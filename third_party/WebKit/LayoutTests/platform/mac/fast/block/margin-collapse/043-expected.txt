@@ -8,5 +8,5 @@ layer at (0,0) size 800x600
           LayoutText {#text} at (0,0) size 408x18
             text run at (0,0) width 408: "This div should be 2em tall with a 1em gap underneath the text."
       LayoutBlockFlow {DIV} at (0,35) size 784x18 [bgcolor=#008000]
-        LayoutText {#text} at (0,0) size 407x18
-          text run at (0,0) width 407: "I should also be green and flush with the other green div above."
+        LayoutText {#text} at (0,0) size 406x18
+          text run at (0,0) width 406: "I should also be green and flush with the other green div above."

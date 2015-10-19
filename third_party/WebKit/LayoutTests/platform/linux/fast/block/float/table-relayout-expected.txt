@@ -6,16 +6,16 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {P} at (0,0) size 784x40
         LayoutText {#text} at (0,0) size 164x19
           text run at (0,0) width 164: "This is a regression test for "
-        LayoutInline {I} at (0,0) size 740x39
+        LayoutInline {I} at (0,0) size 737x39
           LayoutInline {A} at (0,0) size 350x19 [color=#0000EE]
             LayoutText {#text} at (164,0) size 350x19
               text run at (164,0) width 350: "http://bugzilla.opendarwin.org/show_bug.cgi?id=7395"
-          LayoutText {#text} at (514,0) size 740x39
-            text run at (514,0) width 4: " "
-            text run at (518,0) width 222: "Table not properly re-flowed when"
-            text run at (0,20) width 208: "floated div removed from layout"
-        LayoutText {#text} at (208,20) size 4x19
-          text run at (208,20) width 4: "."
+          LayoutText {#text} at (513,0) size 737x39
+            text run at (513,0) width 5: " "
+            text run at (517,0) width 220: "Table not properly re-flowed when"
+            text run at (0,20) width 207: "floated div removed from layout"
+        LayoutText {#text} at (206,20) size 5x19
+          text run at (206,20) width 5: "."
       LayoutBlockFlow {P} at (0,56) size 784x20
         LayoutText {#text} at (0,0) size 250x19
           text run at (0,0) width 250: "The two boxes below should be identical."

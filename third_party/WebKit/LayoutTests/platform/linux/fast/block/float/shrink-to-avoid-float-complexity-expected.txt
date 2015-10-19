@@ -4,28 +4,28 @@ layer at (0,0) size 785x2107 backgroundClip at (0,0) size 785x600 clip at (0,0) 
   LayoutBlockFlow {HTML} at (0,0) size 785x2107.34
     LayoutBlockFlow {BODY} at (8,19.91) size 769x2071.44
       LayoutBlockFlow {H2} at (0,0) size 769x27
-        LayoutText {#text} at (0,0) size 147x26
-          text run at (0,0) width 147: "Test 1 (1 float)"
+        LayoutText {#text} at (0,0) size 145x26
+          text run at (0,0) width 145: "Test 1 (1 float)"
       LayoutBlockFlow {HR} at (48,294.91) size 673x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow {H2} at (0,344.91) size 769x27
-        LayoutText {#text} at (0,0) size 147x26
-          text run at (0,0) width 147: "Test 2 (1 float)"
+        LayoutText {#text} at (0,0) size 145x26
+          text run at (0,0) width 145: "Test 2 (1 float)"
       LayoutBlockFlow {HR} at (48,639.81) size 673x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow {H2} at (0,689.81) size 769x27
-        LayoutText {#text} at (0,0) size 147x26
-          text run at (0,0) width 147: "Test 3 (1 float)"
+        LayoutText {#text} at (0,0) size 145x26
+          text run at (0,0) width 145: "Test 3 (1 float)"
       LayoutBlockFlow {HR} at (48,984.72) size 673x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow {H2} at (0,1034.72) size 769x27
-        LayoutText {#text} at (0,0) size 156x26
-          text run at (0,0) width 156: "Test 4 (2 floats)"
+        LayoutText {#text} at (0,0) size 154x26
+          text run at (0,0) width 154: "Test 4 (2 floats)"
       LayoutBlockFlow {HR} at (48,1329.63) size 673x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow {H2} at (0,1379.63) size 769x27
-        LayoutText {#text} at (0,0) size 156x26
-          text run at (0,0) width 156: "Test 5 (2 floats)"
+        LayoutText {#text} at (0,0) size 154x26
+          text run at (0,0) width 154: "Test 5 (2 floats)"
       LayoutBlockFlow {HR} at (48,1674.53) size 673x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow {H2} at (0,1724.53) size 769x27
-        LayoutText {#text} at (0,0) size 156x26
-          text run at (0,0) width 156: "Test 6 (2 floats)"
+        LayoutText {#text} at (0,0) size 154x26
+          text run at (0,0) width 154: "Test 6 (2 floats)"
 layer at (8,67) size 769x200
   LayoutBlockFlow {DIV} at (0,46.91) size 769x200 [bgcolor=#C0C0C0]
     LayoutBlockFlow (floating) {DIV} at (0,0) size 200x200 [bgcolor=#FFFF00] [border: (4px solid #008000)]
@@ -53,7 +53,7 @@ layer at (208,67) size 469x180
     LayoutBR {BR} at (132,40) size 0x19
     LayoutText {#text} at (0,60) size 310x19
       text run at (0,60) width 310: "\x{2013} has a 100px left margin and a 100px right margin;"
-    LayoutBR {BR} at (310,60) size 0x19
+    LayoutBR {BR} at (309,60) size 1x19
     LayoutBR {BR} at (0,80) size 0x19
     LayoutText {#text} at (0,100) size 131x19
       text run at (0,100) width 131: "This orange rectangle:"
@@ -101,7 +101,7 @@ layer at (208,412) size 569x180
     LayoutBR {BR} at (52,40) size 0x19
     LayoutText {#text} at (0,60) size 156x19
       text run at (0,60) width 156: "\x{2013} has a 200px left margin;"
-    LayoutBR {BR} at (156,60) size 0x19
+    LayoutBR {BR} at (155,60) size 1x19
     LayoutBR {BR} at (0,80) size 0x19
     LayoutText {#text} at (0,100) size 131x19
       text run at (0,100) width 131: "This orange rectangle:"
@@ -151,7 +151,7 @@ layer at (308,757) size 369x180 backgroundClip at (0,0) size 0x0 clip at (0,0) s
     LayoutBR {BR} at (235,40) size 0x19
     LayoutText {#text} at (0,60) size 294x19
       text run at (0,60) width 294: "\x{2013} has a 0px left margin and a 100px right margin;"
-    LayoutBR {BR} at (294,60) size 0x19
+    LayoutBR {BR} at (293,60) size 1x19
     LayoutBR {BR} at (0,80) size 0x19
     LayoutText {#text} at (0,100) size 131x19
       text run at (0,100) width 131: "This orange rectangle:"
@@ -205,7 +205,7 @@ layer at (208,1102) size 369x180 backgroundClip at (0,0) size 0x0 clip at (0,0) 
     LayoutBR {BR} at (235,40) size 0x19
     LayoutText {#text} at (0,60) size 310x19
       text run at (0,60) width 310: "\x{2013} has a 100px left margin and a 100px right margin;"
-    LayoutBR {BR} at (310,60) size 0x19
+    LayoutBR {BR} at (309,60) size 1x19
     LayoutBR {BR} at (0,80) size 0x19
     LayoutText {#text} at (0,100) size 131x19
       text run at (0,100) width 131: "This orange rectangle:"
@@ -259,7 +259,7 @@ layer at (208,1446) size 369x180 backgroundClip at (0,0) size 0x0 clip at (0,0) 
     LayoutBR {BR} at (235,40) size 0x19
     LayoutText {#text} at (0,60) size 164x19
       text run at (0,60) width 164: "\x{2013} has a 200px right margin;"
-    LayoutBR {BR} at (164,60) size 0x19
+    LayoutBR {BR} at (163,60) size 1x19
     LayoutBR {BR} at (0,80) size 0x19
     LayoutText {#text} at (0,100) size 131x19
       text run at (0,100) width 131: "This orange rectangle:"
@@ -317,7 +317,7 @@ layer at (308,1791) size 169x300 backgroundClip at (0,0) size 0x0 clip at (0,0) 
     LayoutText {#text} at (0,100) size 162x39
       text run at (0,100) width 162: "\x{2013} has a 0px left margin and"
       text run at (0,120) width 112: "a 0px right margin;"
-    LayoutBR {BR} at (112,120) size 0x19
+    LayoutBR {BR} at (111,120) size 1x19
     LayoutBR {BR} at (0,140) size 0x19
     LayoutText {#text} at (0,160) size 131x19
       text run at (0,160) width 131: "This orange rectangle:"

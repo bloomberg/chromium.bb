@@ -10,5 +10,5 @@ layer at (-100,100) size 100x100 backgroundClip at (0,0) size 800x600 clip at (0
       text run at (0,0) width 95: "This box should"
       text run at (0,20) width 86: "be fixed to the"
       text run at (0,40) width 82: "top-left of the"
-      text run at (0,60) width 52: "window."
+      text run at (0,60) width 51: "window."
 scrolled to -100,100

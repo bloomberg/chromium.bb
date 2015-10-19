@@ -5,16 +5,16 @@ layer at (0,0) size 800x0
 layer at (8,8) size 784x54
   LayoutBlockFlow (positioned) {BODY} at (8,8) size 784x54
     LayoutBlockFlow {DIV} at (0,0) size 784x54
-      LayoutText {#text} at (0,0) size 131x17
-        text run at (0,0) width 131: "You should see two "
-      LayoutInline {I} at (0,0) size 114x17
-        LayoutText {#text} at (130,0) size 114x17
-          text run at (130,0) width 114: "vertically stacked"
-      LayoutText {#text} at (243,0) size 781x53
-        text run at (243,0) width 160: " green rectangles below. "
-        text run at (402,0) width 184: "Each one is 100 pixels wide "
-        text run at (585,0) width 119: "and 50 pixels tall. "
-        text run at (703,0) width 63: "If the two"
+      LayoutText {#text} at (0,0) size 130x17
+        text run at (0,0) width 130: "You should see two "
+      LayoutInline {I} at (0,0) size 113x17
+        LayoutText {#text} at (129,0) size 113x17
+          text run at (129,0) width 113: "vertically stacked"
+      LayoutText {#text} at (241,0) size 781x53
+        text run at (241,0) width 159: " green rectangles below. "
+        text run at (399,0) width 184: "Each one is 100 pixels wide "
+        text run at (582,0) width 119: "and 50 pixels tall. "
+        text run at (700,0) width 63: "If the two"
         text run at (0,18) width 396: "green rectangles are on the same line, then the test has failed. "
         text run at (395,18) width 269: "This is a test of section 10.3.7 in CSS2.1. "
         text run at (663,18) width 118: "In particular it is a"

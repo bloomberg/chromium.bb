@@ -54,12 +54,12 @@ layer at (0,0) size 800x433
           text run at (0,0) width 419: "This is a nonsensical document, but syntactically valid HTML 4.0. All 100%-"
           text run at (0,13) width 479: "conformant CSS1 agents should be able to render the document elements above this"
           text run at (0,26) width 290: "paragraph indistinguishably (to the pixel) from this "
-        LayoutInline {A} at (0,0) size 113x12 [color=#0000EE]
-          LayoutText {#text} at (290,26) size 113x12
-            text run at (290,26) width 113: "reference rendering,"
-        LayoutText {#text} at (403,26) size 475x51
-          text run at (403,26) width 4: " "
-          text run at (407,26) width 68: "(except font"
+        LayoutInline {A} at (0,0) size 114x12 [color=#0000EE]
+          LayoutText {#text} at (289,26) size 114x12
+            text run at (289,26) width 114: "reference rendering,"
+        LayoutText {#text} at (402,26) size 475x51
+          text run at (402,26) width 5: " "
+          text run at (406,26) width 69: "(except font"
           text run at (0,39) width 435: "rasterization and form widgets). All discrepancies should be traceable to CSS1"
           text run at (0,52) width 467: "implementation shortcomings. Once you have finished evaluating this test, you can"
           text run at (0,65) width 74: "return to the "

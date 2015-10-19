@@ -12,8 +12,8 @@ layer at (0,0) size 800x600
           text run at (0,36) width 320: "pixels of padding on the left side of the box stack."
 layer at (8,78) size 784x36
   LayoutBlockFlow (relative positioned) {DIV} at (0,70) size 784x36
-    LayoutText {#text} at (21,0) size 763x35
-      text run at (21,0) width 763: "The black box's top should be aligned with the end of the last line in this parargaph and its right side should begin right"
+    LayoutText {#text} at (22,0) size 762x35
+      text run at (22,0) width 762: "The black box's top should be aligned with the end of the last line in this parargaph and its right side should begin right"
       text run at (596,18) width 5 RTL: "."
       text run at (600,18) width 184: "after the end of this sentence"
     LayoutText {#text} at (0,0) size 0x0

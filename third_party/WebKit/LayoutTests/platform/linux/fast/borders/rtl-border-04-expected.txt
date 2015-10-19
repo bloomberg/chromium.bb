@@ -25,7 +25,7 @@ layer at (0,0) size 800x364
           LayoutInline {SPAN} at (0,0) size 771x85 [border: (1px solid #0000FF) (10px solid #FFA500) (1px solid #0000FF) (10px solid #008000)]
             LayoutText {#text} at (345,38) size 771x83
               text run at (345,38) width 382: "laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure"
-              text run at (1,70) width 148: "dolor in reprehenderit in "
+              text run at (1,70) width 149: "dolor in reprehenderit in "
               text run at (149,70) width 543: "voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat "
               text run at (692,70) width 80: "non proident,"
               text run at (58,102) width 475: "sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor "

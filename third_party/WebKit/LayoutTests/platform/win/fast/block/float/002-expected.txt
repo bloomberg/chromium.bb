@@ -4,17 +4,17 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow (floating) {IMG} at (643,10) size 121x84
-      LayoutInline {A} at (0,0) size 388x17 [color=#0000EE]
-        LayoutText {#text} at (0,0) size 388x17
-          text run at (0,0) width 388: "http://www.apple.com/pr/library/2003/jan/02ical_isync.html"
-      LayoutBR {BR} at (387,14) size 1x0
-      LayoutInline {A} at (0,0) size 176x17 [color=#0000EE]
-        LayoutText {#text} at (0,18) size 176x17
-          text run at (0,18) width 176: "http://www.apple.com/ical/"
-      LayoutBR {BR} at (175,32) size 1x0
-      LayoutInline {A} at (0,0) size 186x17 [color=#0000EE]
-        LayoutText {#text} at (0,36) size 186x17
-          text run at (0,36) width 186: "http://www.apple.com/isync/"
+      LayoutInline {A} at (0,0) size 386x17 [color=#0000EE]
+        LayoutText {#text} at (0,0) size 386x17
+          text run at (0,0) width 386: "http://www.apple.com/pr/library/2003/jan/02ical_isync.html"
+      LayoutBR {BR} at (386,14) size 0x0
+      LayoutInline {A} at (0,0) size 175x17 [color=#0000EE]
+        LayoutText {#text} at (0,18) size 175x17
+          text run at (0,18) width 175: "http://www.apple.com/ical/"
+      LayoutBR {BR} at (174,32) size 1x0
+      LayoutInline {A} at (0,0) size 185x17 [color=#0000EE]
+        LayoutText {#text} at (0,36) size 185x17
+          text run at (0,36) width 185: "http://www.apple.com/isync/"
 layer at (651,18) size 121x84 clip at (652,19) size 119x82
   LayoutBlockFlow {DIV} at (0,0) size 121x84 [border: (1px solid #C0C0C0)]
     LayoutImage (floating) {IMG} at (2,2) size 16x16

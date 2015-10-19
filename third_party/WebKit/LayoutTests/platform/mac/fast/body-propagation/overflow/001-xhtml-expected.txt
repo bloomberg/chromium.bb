@@ -10,14 +10,14 @@ layer at (0,0) size 785x178
           text run at (0,36) width 146: "viewport -- not for this"
           text run at (0,54) width 28: "box."
       LayoutBlockFlow {p} at (1,105) size 160x18 [color=#808080]
-        LayoutText {#text} at (0,0) size 111x18
-          text run at (0,0) width 111: "This is filler text."
+        LayoutText {#text} at (0,0) size 110x18
+          text run at (0,0) width 110: "This is filler text."
       LayoutBlockFlow {p} at (1,139) size 160x18 [color=#808080]
-        LayoutText {#text} at (0,0) size 111x18
-          text run at (0,0) width 111: "This is filler text."
+        LayoutText {#text} at (0,0) size 110x18
+          text run at (0,0) width 110: "This is filler text."
       LayoutBlockFlow {p} at (1,173) size 160x18 [color=#808080]
-        LayoutText {#text} at (0,0) size 111x18
-          text run at (0,0) width 111: "This is filler text."
+        LayoutText {#text} at (0,0) size 110x18
+          text run at (0,0) width 110: "This is filler text."
       LayoutBlockFlow {p} at (1,207) size 160x18 [color=#808080]
-        LayoutText {#text} at (0,0) size 111x18
-          text run at (0,0) width 111: "This is filler text."
+        LayoutText {#text} at (0,0) size 110x18
+          text run at (0,0) width 110: "This is filler text."

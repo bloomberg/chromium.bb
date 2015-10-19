@@ -42,7 +42,7 @@ layer at (8,8) size 16x2400 backgroundClip at (0,0) size 785x600 clip at (0,0) s
     LayoutBR {BR} at (16,195) size 0x0
     LayoutText {#text} at (0,200) size 16x19
       text run at (0,200) width 16: "11"
-    LayoutBR {BR} at (16,215) size 0x0
+    LayoutBR {BR} at (15,215) size 1x0
     LayoutText {#text} at (0,220) size 16x19
       text run at (0,220) width 16: "12"
     LayoutBR {BR} at (16,235) size 0x0
@@ -102,7 +102,7 @@ layer at (8,8) size 16x2400 backgroundClip at (0,0) size 785x600 clip at (0,0) s
     LayoutBR {BR} at (16,595) size 0x0
     LayoutText {#text} at (0,600) size 16x19
       text run at (0,600) width 16: "11"
-    LayoutBR {BR} at (16,615) size 0x0
+    LayoutBR {BR} at (15,615) size 1x0
     LayoutText {#text} at (0,620) size 16x19
       text run at (0,620) width 16: "12"
     LayoutBR {BR} at (16,635) size 0x0
@@ -162,7 +162,7 @@ layer at (8,8) size 16x2400 backgroundClip at (0,0) size 785x600 clip at (0,0) s
     LayoutBR {BR} at (16,995) size 0x0
     LayoutText {#text} at (0,1000) size 16x19
       text run at (0,1000) width 16: "11"
-    LayoutBR {BR} at (16,1015) size 0x0
+    LayoutBR {BR} at (15,1015) size 1x0
     LayoutText {#text} at (0,1020) size 16x19
       text run at (0,1020) width 16: "12"
     LayoutBR {BR} at (16,1035) size 0x0
@@ -222,7 +222,7 @@ layer at (8,8) size 16x2400 backgroundClip at (0,0) size 785x600 clip at (0,0) s
     LayoutBR {BR} at (16,1395) size 0x0
     LayoutText {#text} at (0,1400) size 16x19
       text run at (0,1400) width 16: "11"
-    LayoutBR {BR} at (16,1415) size 0x0
+    LayoutBR {BR} at (15,1415) size 1x0
     LayoutText {#text} at (0,1420) size 16x19
       text run at (0,1420) width 16: "12"
     LayoutBR {BR} at (16,1435) size 0x0
@@ -282,7 +282,7 @@ layer at (8,8) size 16x2400 backgroundClip at (0,0) size 785x600 clip at (0,0) s
     LayoutBR {BR} at (16,1795) size 0x0
     LayoutText {#text} at (0,1800) size 16x19
       text run at (0,1800) width 16: "11"
-    LayoutBR {BR} at (16,1815) size 0x0
+    LayoutBR {BR} at (15,1815) size 1x0
     LayoutText {#text} at (0,1820) size 16x19
       text run at (0,1820) width 16: "12"
     LayoutBR {BR} at (16,1835) size 0x0
@@ -342,7 +342,7 @@ layer at (8,8) size 16x2400 backgroundClip at (0,0) size 785x600 clip at (0,0) s
     LayoutBR {BR} at (16,2195) size 0x0
     LayoutText {#text} at (0,2200) size 16x19
       text run at (0,2200) width 16: "11"
-    LayoutBR {BR} at (16,2215) size 0x0
+    LayoutBR {BR} at (15,2215) size 1x0
     LayoutText {#text} at (0,2220) size 16x19
       text run at (0,2220) width 16: "12"
     LayoutBR {BR} at (16,2235) size 0x0

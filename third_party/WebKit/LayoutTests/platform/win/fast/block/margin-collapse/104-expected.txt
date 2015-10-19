@@ -5,9 +5,9 @@ layer at (0,0) size 800x585
     LayoutBlockFlow {BODY} at (8,8) size 784x569
       LayoutBlockFlow {DIV} at (0,0) size 784x108 [border: (2px solid #0000FF)]
         LayoutBlockFlow (anonymous) at (2,2) size 780x54
-          LayoutText {#text} at (0,0) size 758x35
-            text run at (0,0) width 591: "Resize the window. Red boxes below must not overflow the blue box (or window) from the "
-            text run at (590,0) width 168: "left side, though they may"
+          LayoutText {#text} at (0,0) size 757x35
+            text run at (0,0) width 590: "Resize the window. Red boxes below must not overflow the blue box (or window) from the "
+            text run at (589,0) width 168: "left side, though they may"
             text run at (0,18) width 132: "overflow from right."
           LayoutBR {BR} at (131,32) size 1x0
           LayoutBR {BR} at (0,36) size 0x17

@@ -6,12 +6,12 @@ layer at (0,0) size 800x222
       LayoutBlockFlow {P} at (0,0) size 784x54
         LayoutText {#text} at (0,0) size 260x17
           text run at (0,0) width 260: "This test checks for a regression against "
-        LayoutInline {I} at (0,0) size 739x35
-          LayoutInline {A} at (0,0) size 312x17 [color=#0000EE]
-            LayoutText {#text} at (259,0) size 312x17
-              text run at (259,0) width 312: "https://bugs.webkit.org/show_bug.cgi?id=24118"
-          LayoutText {#text} at (570,0) size 739x35
-            text run at (570,0) width 169: " RTL: Truncation behaves"
+        LayoutInline {I} at (0,0) size 736x35
+          LayoutInline {A} at (0,0) size 310x17 [color=#0000EE]
+            LayoutText {#text} at (259,0) size 310x17
+              text run at (259,0) width 310: "https://bugs.webkit.org/show_bug.cgi?id=24118"
+          LayoutText {#text} at (568,0) size 736x35
+            text run at (568,0) width 168: " RTL: Truncation behaves"
             text run at (0,18) width 187: "differently than IE/FF/Opera"
         LayoutText {#text} at (186,18) size 5x17
           text run at (186,18) width 5: "."
@@ -19,11 +19,11 @@ layer at (0,0) size 800x222
         LayoutText {#text} at (0,36) size 425x17
           text run at (0,36) width 425: "This test passes if the red block below is truncated on the left side."
       LayoutBlockFlow {DIV} at (-218,70) size 1002x128 [border: (1px solid #FF0000)]
-        LayoutText {#text} at (56,1) size 991x125
-          text run at (56,1) width 945: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc et nisl tellus. Vivamus aliquam elit non arcu scelerisque eget dapibus nunc vulputate."
-          text run at (21,19) width 980: "Maecenas scelerisque egestas purus, id bibendum magna venenatis vel. Vestibulum bibendum volutpat aliquam. Cum sociis natoque penatibus et magnis"
-          text run at (27,37) width 974: "dis parturient montes, nascetur ridiculus mus. Vestibulum eget risus sodales mi tristique dignissim et sed lectus. Cras convallis, nibh ut dapibus gravida,"
-          text run at (32,55) width 969: "enim mauris molestie elit, eget fringilla augue est nec est. Curabitur eu quam non purus sodales pulvinar. Donec ultrices dui eget dolor lobortis in porta"
+        LayoutText {#text} at (57,1) size 991x125
+          text run at (57,1) width 944: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc et nisl tellus. Vivamus aliquam elit non arcu scelerisque eget dapibus nunc vulputate."
+          text run at (23,19) width 978: "Maecenas scelerisque egestas purus, id bibendum magna venenatis vel. Vestibulum bibendum volutpat aliquam. Cum sociis natoque penatibus et magnis"
+          text run at (29,37) width 972: "dis parturient montes, nascetur ridiculus mus. Vestibulum eget risus sodales mi tristique dignissim et sed lectus. Cras convallis, nibh ut dapibus gravida,"
+          text run at (33,55) width 968: "enim mauris molestie elit, eget fringilla augue est nec est. Curabitur eu quam non purus sodales pulvinar. Donec ultrices dui eget dolor lobortis in porta"
           text run at (10,73) width 991: "quam rutrum. Nulla risus lacus, adipiscing quis ullamcorper vestibulum, condimentum sed lacus. Sed in nunc dolor, quis egestas turpis. Integer arcu tellus,"
           text run at (18,91) width 983: "posuere sit amet pellentesque a, molestie at mi. Nulla blandit, mi et euismod imperdiet, augue arcu ornare felis, nec viverra lacus ligula ut metus. Proin ut"
           text run at (425,109) width 5 RTL: "."

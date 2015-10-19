@@ -6,16 +6,16 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {P} at (0,0) size 784x36
         LayoutText {#text} at (0,0) size 218x17
           text run at (0,0) width 218: "This tests for a regression against "
-        LayoutInline {I} at (0,0) size 770x35
-          LayoutInline {A} at (0,0) size 355x17 [color=#0000EE]
-            LayoutText {#text} at (217,0) size 355x17
-              text run at (217,0) width 355: "http://bugzilla.opendarwin.org/show_bug.cgi?id=7095"
-          LayoutText {#text} at (571,0) size 770x35
-            text run at (571,0) width 5: " "
-            text run at (575,0) width 195: "Removing positioning from an"
-            text run at (0,18) width 224: "element does not relayout properly"
-        LayoutText {#text} at (223,18) size 5x17
-          text run at (223,18) width 5: "."
+        LayoutInline {I} at (0,0) size 769x35
+          LayoutInline {A} at (0,0) size 354x17 [color=#0000EE]
+            LayoutText {#text} at (217,0) size 354x17
+              text run at (217,0) width 354: "http://bugzilla.opendarwin.org/show_bug.cgi?id=7095"
+          LayoutText {#text} at (570,0) size 769x35
+            text run at (570,0) width 5: " "
+            text run at (574,0) width 195: "Removing positioning from an"
+            text run at (0,18) width 223: "element does not relayout properly"
+        LayoutText {#text} at (222,18) size 5x17
+          text run at (222,18) width 5: "."
       LayoutBlockFlow {P} at (0,52) size 784x18
         LayoutText {#text} at (0,0) size 380x17
           text run at (0,0) width 380: "The green square should be to the left of the yellow square."

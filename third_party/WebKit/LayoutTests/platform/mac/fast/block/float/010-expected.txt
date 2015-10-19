@@ -14,7 +14,7 @@ layer at (0,0) size 800x600
         text run at (492,18) width 76: "This should"
         text run at (492,36) width 84: "find a way to"
         text run at (492,54) width 80: "wrap among"
-        text run at (492,72) width 80: "all the floats"
+        text run at (492,72) width 79: "all the floats"
         text run at (160,100) width 214: "without overlapping any of them."
         text run at (160,118) width 211: "It should start just under the blue"
         text run at (160,136) width 192: "box and wrap to several lines."

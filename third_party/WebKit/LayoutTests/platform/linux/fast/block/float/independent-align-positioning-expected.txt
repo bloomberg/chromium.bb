@@ -16,7 +16,7 @@ layer at (0,0) size 800x152
         LayoutText {#text} at (0,0) size 567x99
           text run at (0,0) width 564: "The first element is floated to the right. The second element clears the right float and also floats"
           text run at (0,20) width 567: "right. The third element is floated to the left, but is forced below the bottom of the first element."
-          text run at (0,40) width 560: "Yet, somehow this paragraph comes at the end of the markup, and manages to rise to the top"
+          text run at (0,40) width 559: "Yet, somehow this paragraph comes at the end of the markup, and manages to rise to the top"
           text run at (207,60) width 282: "of the page. This behavior is present in Firefox,"
           text run at (207,80) width 112: "Safari and Opera. "
         LayoutInline {A} at (0,0) size 286x39 [color=#0000EE]

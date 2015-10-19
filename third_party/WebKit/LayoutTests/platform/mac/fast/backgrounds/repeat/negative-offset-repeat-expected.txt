@@ -4,15 +4,15 @@ layer at (0,0) size 800x548
   LayoutBlockFlow {HTML} at (0,0) size 800x548
     LayoutBlockFlow {BODY} at (8,16) size 784x470
       LayoutBlockFlow {P} at (0,0) size 784x36
-        LayoutText {#text} at (0,0) size 55x18
-          text run at (0,0) width 55: "Test for "
-        LayoutInline {I} at (0,0) size 734x36
-          LayoutInline {A} at (0,0) size 298x18 [color=#0000EE]
-            LayoutText {#text} at (54,0) size 298x18
-              text run at (54,0) width 298: "http://bugs.webkit.org/show_bug.cgi?id=5399"
-          LayoutText {#text} at (351,0) size 734x36
-            text run at (351,0) width 5: " "
-            text run at (355,0) width 379: "no-repeat on negatively positioned background images are"
+        LayoutText {#text} at (0,0) size 54x18
+          text run at (0,0) width 54: "Test for "
+        LayoutInline {I} at (0,0) size 730x36
+          LayoutInline {A} at (0,0) size 297x18 [color=#0000EE]
+            LayoutText {#text} at (53,0) size 297x18
+              text run at (53,0) width 297: "http://bugs.webkit.org/show_bug.cgi?id=5399"
+          LayoutText {#text} at (349,0) size 730x36
+            text run at (349,0) width 5: " "
+            text run at (353,0) width 377: "no-repeat on negatively positioned background images are"
             text run at (0,18) width 50: "ignored"
         LayoutText {#text} at (49,18) size 5x18
           text run at (49,18) width 5: "."

@@ -4,10 +4,10 @@ layer at (0,0) size 785x2372 backgroundClip at (0,0) size 785x600 clip at (0,0) 
   LayoutBlockFlow {HTML} at (0,0) size 785x2372
     LayoutBlockFlow {BODY} at (8,8) size 769x2356
       LayoutBlockFlow (anonymous) at (0,0) size 769x36
-        LayoutText {#text} at (0,0) size 755x35
-          text run at (0,0) width 548: "Test of objects that avoid floats to see what they do with percentage and auto widths. "
-          text run at (547,0) width 208: "This test is designed to illustrate"
-          text run at (0,18) width 483: "that we have removed the WinIE quirk and are behaving more like Firefox."
+        LayoutText {#text} at (0,0) size 754x35
+          text run at (0,0) width 547: "Test of objects that avoid floats to see what they do with percentage and auto widths. "
+          text run at (546,0) width 208: "This test is designed to illustrate"
+          text run at (0,18) width 482: "that we have removed the WinIE quirk and are behaving more like Firefox."
       LayoutBlockFlow {HR} at (0,44) size 769x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow (anonymous) at (0,54) size 769x18
         LayoutText {#text} at (0,0) size 518x17
@@ -98,14 +98,14 @@ layer at (0,0) size 785x2372 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           LayoutTableSection {TBODY} at (2,2) size 96x26
             LayoutTableRow {TR} at (0,2) size 96x22
               LayoutTableCell {TD} at (2,2) size 92x22 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-                LayoutText {#text} at (2,2) size 37x17
-                  text run at (2,2) width 37: "Table"
+                LayoutText {#text} at (2,2) size 36x17
+                  text run at (2,2) width 36: "Table"
         LayoutText {#text} at (0,0) size 0x0
         LayoutBR {BR} at (210,28) size 0x17
       LayoutBlockFlow (anonymous) at (0,668) size 769x36
-        LayoutText {#text} at (0,0) size 769x35
-          text run at (0,0) width 769: "The floating table with an auto width should be even with the select and shrinks to use the available line width. THIS IS"
-          text run at (0,18) width 161: "CURRENTLY BUGGY."
+        LayoutText {#text} at (0,0) size 768x35
+          text run at (0,0) width 768: "The floating table with an auto width should be even with the select and shrinks to use the available line width. THIS IS"
+          text run at (0,18) width 158: "CURRENTLY BUGGY."
       LayoutBlockFlow {P} at (0,720) size 220x124 [border: (10px solid #FF0000)]
         LayoutText {#text} at (10,10) size 60x17
           text run at (10,10) width 60: "Line One"
@@ -194,7 +194,7 @@ layer at (0,0) size 785x2372 backgroundClip at (0,0) size 785x600 clip at (0,0) 
       LayoutBlockFlow (anonymous) at (0,1460) size 769x36
         LayoutText {#text} at (0,0) size 743x35
           text run at (0,0) width 743: "The floating overflow section with an auto width should be even with the select and shrinks to use the available line"
-          text run at (0,18) width 264: "width. THIS IS CURRENTLY BUGGY."
+          text run at (0,18) width 260: "width. THIS IS CURRENTLY BUGGY."
       LayoutBlockFlow {DIV} at (0,1496) size 220x112 [border: (10px solid #FF0000)]
         LayoutText {#text} at (10,10) size 60x17
           text run at (10,10) width 60: "Line One"

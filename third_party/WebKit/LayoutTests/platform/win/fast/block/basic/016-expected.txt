@@ -4,8 +4,8 @@ layer at (0,0) size 785x7588 backgroundClip at (0,0) size 785x600 clip at (0,0) 
   LayoutBlockFlow {HTML} at (0,0) size 785x7588
     LayoutBlockFlow {BODY} at (8,8) size 769x7572
       LayoutBlockFlow (anonymous) at (0,0) size 769x18
-        LayoutText {#text} at (0,0) size 454x17
-          text run at (0,0) width 454: "This is a test of all the various HTML alignments using LTR direction."
+        LayoutText {#text} at (0,0) size 453x17
+          text run at (0,0) width 453: "This is a test of all the various HTML alignments using LTR direction."
       LayoutBlockFlow {DIV} at (0,18) size 769x226 [border: (4px solid #008000)]
         LayoutBlockFlow {DIV} at (6,6) size 757x26 [border: (2px solid #0000FF)]
           LayoutText {#text} at (4,4) size 190x17
@@ -287,8 +287,8 @@ layer at (0,0) size 785x7588 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 LayoutText {#text} at (1,1) size 185x17
                   text run at (1,1) width 185: "Center table (fixed margins)."
       LayoutBlockFlow {P} at (0,1930) size 769x18
-        LayoutText {#text} at (0,0) size 378x17
-          text run at (0,0) width 378: "This is a test using TABLE cells (all in the LTR direction)."
+        LayoutText {#text} at (0,0) size 375x17
+          text run at (0,0) width 375: "This is a test using TABLE cells (all in the LTR direction)."
       LayoutTable {TABLE} at (0,1964) size 769x232 [border: (2px solid #0000FF)]
         LayoutTableSection {TBODY} at (2,2) size 765x228
           LayoutTableRow {TR} at (0,2) size 765x224
@@ -587,9 +587,9 @@ layer at (0,0) size 785x7588 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                         text run at (1,1) width 185: "Center table (fixed margins)."
       LayoutBlockFlow {DIV} at (0,3836) size 769x3736
         LayoutBlockFlow (anonymous) at (2,2) size 765x18
-          LayoutText {#text} at (311,0) size 454x17
-            text run at (311,0) width 5 RTL: "."
-            text run at (315,0) width 450: "This is a test of all the various HTML alignments using RTL direction"
+          LayoutText {#text} at (312,0) size 453x17
+            text run at (312,0) width 5 RTL: "."
+            text run at (316,0) width 449: "This is a test of all the various HTML alignments using RTL direction"
         LayoutBlockFlow {DIV} at (2,20) size 765x226 [border: (4px solid #008000)]
           LayoutBlockFlow {DIV} at (6,6) size 753x26 [border: (2px solid #0000FF)]
             LayoutText {#text} at (559,4) size 190x17
@@ -887,9 +887,9 @@ layer at (0,0) size 785x7588 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                     text run at (206,1) width 10 RTL: ")."
                     text run at (215,1) width 176: "Center table (fixed margins"
         LayoutBlockFlow {P} at (2,1844) size 765x18
-          LayoutText {#text} at (387,0) size 378x17
-            text run at (387,0) width 10 RTL: ")."
-            text run at (396,0) width 369: "This is a test using TABLE cells (all in the RTL direction"
+          LayoutText {#text} at (389,0) size 376x17
+            text run at (389,0) width 10 RTL: ")."
+            text run at (398,0) width 367: "This is a test using TABLE cells (all in the RTL direction"
         LayoutTable {TABLE} at (2,1878) size 765x232 [border: (2px solid #0000FF)]
           LayoutTableSection {TBODY} at (2,2) size 761x228
             LayoutTableRow {TR} at (0,2) size 761x224

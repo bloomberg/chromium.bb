@@ -6,11 +6,11 @@ layer at (0,0) size 800x118
       LayoutBlockFlow {P} at (0,0) size 784x18
         LayoutText {#text} at (0,0) size 150x17
           text run at (0,0) width 150: "There should be a blue "
-        LayoutInline {EM} at (0,0) size 45x17
-          LayoutText {#text} at (149,0) size 45x17
-            text run at (149,0) width 45: "square"
-        LayoutText {#text} at (193,0) size 48x17
-          text run at (193,0) width 48: " below."
+        LayoutInline {EM} at (0,0) size 44x17
+          LayoutText {#text} at (149,0) size 44x17
+            text run at (149,0) width 44: "square"
+        LayoutText {#text} at (192,0) size 47x17
+          text run at (192,0) width 47: " below."
       LayoutBlockFlow {DIV} at (0,34) size 784x36
         LayoutBlockFlow {DIV} at (0,0) size 784x0
         LayoutBlockFlow (anonymous) at (0,0) size 784x18

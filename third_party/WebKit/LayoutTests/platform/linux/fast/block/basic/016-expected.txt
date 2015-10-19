@@ -4,8 +4,8 @@ layer at (0,0) size 785x8076 backgroundClip at (0,0) size 785x600 clip at (0,0) 
   LayoutBlockFlow {HTML} at (0,0) size 785x8076
     LayoutBlockFlow {BODY} at (8,8) size 769x8060
       LayoutBlockFlow (anonymous) at (0,0) size 769x20
-        LayoutText {#text} at (0,0) size 415x19
-          text run at (0,0) width 415: "This is a test of all the various HTML alignments using LTR direction."
+        LayoutText {#text} at (0,0) size 414x19
+          text run at (0,0) width 414: "This is a test of all the various HTML alignments using LTR direction."
       LayoutBlockFlow {DIV} at (0,20) size 769x242 [border: (4px solid #008000)]
         LayoutBlockFlow {DIV} at (6,6) size 757x28 [border: (2px solid #0000FF)]
           LayoutText {#text} at (4,4) size 173x19
@@ -285,8 +285,8 @@ layer at (0,0) size 785x8076 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 LayoutText {#text} at (1,1) size 171x19
                   text run at (1,1) width 171: "Center table (fixed margins)."
       LayoutBlockFlow {P} at (0,2028) size 769x20
-        LayoutText {#text} at (0,0) size 345x19
-          text run at (0,0) width 345: "This is a test using TABLE cells (all in the LTR direction)."
+        LayoutText {#text} at (0,0) size 343x19
+          text run at (0,0) width 343: "This is a test using TABLE cells (all in the LTR direction)."
       LayoutTable {TABLE} at (0,2064) size 769x248 [border: (2px solid #0000FF)]
         LayoutTableSection {TBODY} at (2,2) size 765x244
           LayoutTableRow {TR} at (0,2) size 765x240
@@ -586,7 +586,7 @@ layer at (0,0) size 785x8076 backgroundClip at (0,0) size 785x600 clip at (0,0) 
       LayoutBlockFlow {DIV} at (0,4064) size 769x3996
         LayoutBlockFlow (anonymous) at (2,2) size 765x20
           LayoutText {#text} at (350,0) size 415x19
-            text run at (350,0) width 4 RTL: "."
+            text run at (350,0) width 5 RTL: "."
             text run at (354,0) width 411: "This is a test of all the various HTML alignments using RTL direction"
         LayoutBlockFlow {DIV} at (2,22) size 765x242 [border: (4px solid #008000)]
           LayoutBlockFlow {DIV} at (6,6) size 753x28 [border: (2px solid #0000FF)]
@@ -623,7 +623,7 @@ layer at (0,0) size 785x8076 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               LayoutTableRow {TR} at (0,2) size 177x22
                 LayoutTableCell {TD} at (2,2) size 173x22 [r=0 c=0 rs=1 cs=1]
                   LayoutText {#text} at (1,1) size 171x19
-                    text run at (1,1) width 9 RTL: ")."
+                    text run at (1,1) width 10 RTL: ")."
                     text run at (10,1) width 162: "Center table (fixed margins"
         LayoutBlockFlow {DIV} at (2,264) size 765x242 [border: (4px solid #800080)]
           LayoutBlockFlow {DIV} at (351,6) size 408x28 [border: (2px solid #0000FF)]
@@ -660,7 +660,7 @@ layer at (0,0) size 785x8076 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               LayoutTableRow {TR} at (0,2) size 396x22
                 LayoutTableCell {TD} at (2,2) size 392x22 [r=0 c=0 rs=1 cs=1]
                   LayoutText {#text} at (220,1) size 171x19
-                    text run at (220,1) width 9 RTL: ")."
+                    text run at (220,1) width 10 RTL: ")."
                     text run at (229,1) width 162: "Center table (fixed margins"
         LayoutBlockFlow {DIV} at (2,506) size 765x242 [border: (4px solid #008000)]
           LayoutBlockFlow {DIV} at (6,6) size 753x28 [border: (2px solid #0000FF)]
@@ -697,7 +697,7 @@ layer at (0,0) size 785x8076 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               LayoutTableRow {TR} at (0,2) size 177x22
                 LayoutTableCell {TD} at (2,2) size 173x22 [r=0 c=0 rs=1 cs=1]
                   LayoutText {#text} at (1,1) size 171x19
-                    text run at (1,1) width 9 RTL: ")."
+                    text run at (1,1) width 10 RTL: ")."
                     text run at (10,1) width 162: "Center table (fixed margins"
         LayoutBlockFlow {DIV} at (2,748) size 765x242 [border: (4px solid #800080)]
           LayoutBlockFlow {DIV} at (6,6) size 408x28 [border: (2px solid #0000FF)]
@@ -734,7 +734,7 @@ layer at (0,0) size 785x8076 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               LayoutTableRow {TR} at (0,2) size 396x22
                 LayoutTableCell {TD} at (2,2) size 392x22 [r=0 c=0 rs=1 cs=1]
                   LayoutText {#text} at (220,1) size 171x19
-                    text run at (220,1) width 9 RTL: ")."
+                    text run at (220,1) width 10 RTL: ")."
                     text run at (229,1) width 162: "Center table (fixed margins"
         LayoutBlockFlow {DIV} at (2,990) size 765x242 [border: (4px solid #008000)]
           LayoutBlockFlow {DIV} at (6,6) size 753x28 [border: (2px solid #0000FF)]
@@ -771,7 +771,7 @@ layer at (0,0) size 785x8076 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               LayoutTableRow {TR} at (0,2) size 177x22
                 LayoutTableCell {TD} at (2,2) size 173x22 [r=0 c=0 rs=1 cs=1]
                   LayoutText {#text} at (1,1) size 171x19
-                    text run at (1,1) width 9 RTL: ")."
+                    text run at (1,1) width 10 RTL: ")."
                     text run at (10,1) width 162: "Center table (fixed margins"
         LayoutBlockFlow {DIV} at (2,1232) size 765x242 [border: (4px solid #800080)]
           LayoutBlockFlow {DIV} at (178.50,6) size 408x28 [border: (2px solid #0000FF)]
@@ -808,7 +808,7 @@ layer at (0,0) size 785x8076 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               LayoutTableRow {TR} at (0,2) size 396x22
                 LayoutTableCell {TD} at (2,2) size 392x22 [r=0 c=0 rs=1 cs=1]
                   LayoutText {#text} at (220,1) size 171x19
-                    text run at (220,1) width 9 RTL: ")."
+                    text run at (220,1) width 10 RTL: ")."
                     text run at (229,1) width 162: "Center table (fixed margins"
         LayoutBlockFlow {DIV} at (2,1474) size 765x242 [border: (4px solid #008000)]
           LayoutBlockFlow {DIV} at (6,6) size 753x28 [border: (2px solid #0000FF)]
@@ -845,7 +845,7 @@ layer at (0,0) size 785x8076 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               LayoutTableRow {TR} at (0,2) size 177x22
                 LayoutTableCell {TD} at (2,2) size 173x22 [r=0 c=0 rs=1 cs=1]
                   LayoutText {#text} at (1,1) size 171x19
-                    text run at (1,1) width 9 RTL: ")."
+                    text run at (1,1) width 10 RTL: ")."
                     text run at (10,1) width 162: "Center table (fixed margins"
         LayoutBlockFlow {DIV} at (2,1716) size 765x242 [border: (4px solid #800080)]
           LayoutBlockFlow {DIV} at (351,6) size 408x28 [border: (2px solid #0000FF)]
@@ -882,12 +882,12 @@ layer at (0,0) size 785x8076 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               LayoutTableRow {TR} at (0,2) size 396x22
                 LayoutTableCell {TD} at (2,2) size 392x22 [r=0 c=0 rs=1 cs=1]
                   LayoutText {#text} at (220,1) size 171x19
-                    text run at (220,1) width 9 RTL: ")."
+                    text run at (220,1) width 10 RTL: ")."
                     text run at (229,1) width 162: "Center table (fixed margins"
         LayoutBlockFlow {P} at (2,1974) size 765x20
-          LayoutText {#text} at (420,0) size 345x19
-            text run at (420,0) width 9 RTL: ")."
-            text run at (429,0) width 336: "This is a test using TABLE cells (all in the RTL direction"
+          LayoutText {#text} at (422,0) size 343x19
+            text run at (422,0) width 10 RTL: ")."
+            text run at (431,0) width 334: "This is a test using TABLE cells (all in the RTL direction"
         LayoutTable {TABLE} at (2,2010) size 765x248 [border: (2px solid #0000FF)]
           LayoutTableSection {TBODY} at (2,2) size 761x244
             LayoutTableRow {TR} at (0,2) size 761x240
@@ -926,7 +926,7 @@ layer at (0,0) size 785x8076 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                     LayoutTableRow {TR} at (0,2) size 177x22
                       LayoutTableCell {TD} at (2,2) size 173x22 [r=0 c=0 rs=1 cs=1]
                         LayoutText {#text} at (1,1) size 171x19
-                          text run at (1,1) width 9 RTL: ")."
+                          text run at (1,1) width 10 RTL: ")."
                           text run at (10,1) width 162: "Center table (fixed margins"
         LayoutTable {TABLE} at (2,2258) size 765x248 [border: (2px solid #0000FF)]
           LayoutTableSection {TBODY} at (2,2) size 761x244
@@ -966,7 +966,7 @@ layer at (0,0) size 785x8076 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                     LayoutTableRow {TR} at (0,2) size 396x22
                       LayoutTableCell {TD} at (2,2) size 392x22 [r=0 c=0 rs=1 cs=1]
                         LayoutText {#text} at (220,1) size 171x19
-                          text run at (220,1) width 9 RTL: ")."
+                          text run at (220,1) width 10 RTL: ")."
                           text run at (229,1) width 162: "Center table (fixed margins"
         LayoutTable {TABLE} at (2,2506) size 765x248 [border: (2px solid #0000FF)]
           LayoutTableSection {TBODY} at (2,2) size 761x244
@@ -1006,7 +1006,7 @@ layer at (0,0) size 785x8076 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                     LayoutTableRow {TR} at (0,2) size 177x22
                       LayoutTableCell {TD} at (2,2) size 173x22 [r=0 c=0 rs=1 cs=1]
                         LayoutText {#text} at (1,1) size 171x19
-                          text run at (1,1) width 9 RTL: ")."
+                          text run at (1,1) width 10 RTL: ")."
                           text run at (10,1) width 162: "Center table (fixed margins"
         LayoutTable {TABLE} at (2,2754) size 765x248 [border: (2px solid #0000FF)]
           LayoutTableSection {TBODY} at (2,2) size 761x244
@@ -1046,7 +1046,7 @@ layer at (0,0) size 785x8076 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                     LayoutTableRow {TR} at (0,2) size 396x22
                       LayoutTableCell {TD} at (2,2) size 392x22 [r=0 c=0 rs=1 cs=1]
                         LayoutText {#text} at (220,1) size 171x19
-                          text run at (220,1) width 9 RTL: ")."
+                          text run at (220,1) width 10 RTL: ")."
                           text run at (229,1) width 162: "Center table (fixed margins"
         LayoutTable {TABLE} at (2,3002) size 765x248 [border: (2px solid #0000FF)]
           LayoutTableSection {TBODY} at (2,2) size 761x244
@@ -1086,7 +1086,7 @@ layer at (0,0) size 785x8076 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                     LayoutTableRow {TR} at (0,2) size 177x22
                       LayoutTableCell {TD} at (2,2) size 173x22 [r=0 c=0 rs=1 cs=1]
                         LayoutText {#text} at (1,1) size 171x19
-                          text run at (1,1) width 9 RTL: ")."
+                          text run at (1,1) width 10 RTL: ")."
                           text run at (10,1) width 162: "Center table (fixed margins"
         LayoutTable {TABLE} at (2,3250) size 765x248 [border: (2px solid #0000FF)]
           LayoutTableSection {TBODY} at (2,2) size 761x244
@@ -1126,7 +1126,7 @@ layer at (0,0) size 785x8076 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                     LayoutTableRow {TR} at (0,2) size 396x22
                       LayoutTableCell {TD} at (2,2) size 392x22 [r=0 c=0 rs=1 cs=1]
                         LayoutText {#text} at (220,1) size 171x19
-                          text run at (220,1) width 9 RTL: ")."
+                          text run at (220,1) width 10 RTL: ")."
                           text run at (229,1) width 162: "Center table (fixed margins"
         LayoutTable {TABLE} at (2,3498) size 765x248 [border: (2px solid #0000FF)]
           LayoutTableSection {TBODY} at (2,2) size 761x244
@@ -1166,7 +1166,7 @@ layer at (0,0) size 785x8076 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                     LayoutTableRow {TR} at (0,2) size 177x22
                       LayoutTableCell {TD} at (2,2) size 173x22 [r=0 c=0 rs=1 cs=1]
                         LayoutText {#text} at (1,1) size 171x19
-                          text run at (1,1) width 9 RTL: ")."
+                          text run at (1,1) width 10 RTL: ")."
                           text run at (10,1) width 162: "Center table (fixed margins"
         LayoutTable {TABLE} at (2,3746) size 765x248 [border: (2px solid #0000FF)]
           LayoutTableSection {TBODY} at (2,2) size 761x244
@@ -1206,5 +1206,5 @@ layer at (0,0) size 785x8076 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                     LayoutTableRow {TR} at (0,2) size 396x22
                       LayoutTableCell {TD} at (2,2) size 392x22 [r=0 c=0 rs=1 cs=1]
                         LayoutText {#text} at (220,1) size 171x19
-                          text run at (220,1) width 9 RTL: ")."
+                          text run at (220,1) width 10 RTL: ")."
                           text run at (229,1) width 162: "Center table (fixed margins"

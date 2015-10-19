@@ -6,13 +6,13 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {P} at (0,0) size 784x36
         LayoutText {#text} at (0,0) size 120x17
           text run at (0,0) width 120: "Rendering test for "
-        LayoutInline {I} at (0,0) size 757x35
+        LayoutInline {I} at (0,0) size 756x35
           LayoutInline {A} at (0,0) size 306x17 [color=#0000EE]
             LayoutText {#text} at (119,0) size 306x17
               text run at (119,0) width 306: "http://bugs.webkit.org/show_bug.cgi?id=17107"
-          LayoutText {#text} at (424,0) size 757x35
+          LayoutText {#text} at (424,0) size 756x35
             text run at (424,0) width 5: " "
-            text run at (428,0) width 329: "REGRESSION(r29834): Article text on redhat.com"
+            text run at (428,0) width 328: "REGRESSION(r29834): Article text on redhat.com"
             text run at (0,18) width 274: "magazine site appears to be painting twice"
         LayoutText {#text} at (273,18) size 5x17
           text run at (273,18) width 5: "."

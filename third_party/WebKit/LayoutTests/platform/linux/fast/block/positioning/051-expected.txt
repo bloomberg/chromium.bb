@@ -85,8 +85,8 @@ layer at (0,0) size 785x5276 backgroundClip at (0,0) size 785x600 clip at (0,0) 
   LayoutBlockFlow {HTML} at (0,0) size 785x5275.88
     LayoutBlockFlow {BODY} at (8,21.44) size 769x5238.44
       LayoutBlockFlow {H1} at (0,0) size 769x37
-        LayoutText {#text} at (0,0) size 293x36
-          text run at (0,0) width 293: "Layered Presentation"
+        LayoutText {#text} at (0,0) size 292x36
+          text run at (0,0) width 292: "Layered Presentation"
       LayoutBlockFlow {P} at (0,58.44) size 769x20
         LayoutText {#text} at (0,0) size 704x19
           text run at (0,0) width 382: "Robert O'Callahan pointed out to me some mistakes in this test "

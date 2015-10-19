@@ -9,9 +9,9 @@ layer at (0,0) size 785x641 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         LayoutInline {A} at (0,0) size 749x73 [color=#0000EE]
           LayoutText {#text} at (541,0) size 749x73
             text run at (541,0) width 208: "additional tests"
-            text run at (0,37) width 255: "from Alan Gresley"
-        LayoutText {#text} at (254,37) size 11x36
-          text run at (254,37) width 11: ")"
+            text run at (0,37) width 253: "from Alan Gresley"
+        LayoutText {#text} at (253,37) size 11x36
+          text run at (253,37) width 11: ")"
       LayoutBlockFlow {H3} at (0,95.44) size 769x66
         LayoutText {#text} at (0,0) size 686x21
           text run at (0,0) width 686: "The orange stripe has 'overflow: auto', 'margin-left: 100px' and 'margin-right: 100px'"
@@ -19,8 +19,8 @@ layer at (0,0) size 785x641 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         LayoutText {#text} at (0,22) size 649x21
           text run at (0,22) width 649: "The lime stripes are floats with various width (topmost is 0, bottommost is 150px)"
         LayoutBR {BR} at (648,22) size 1x21
-        LayoutText {#text} at (0,44) size 394x21
-          text run at (0,44) width 394: "The wrapping container has a solid silver border."
+        LayoutText {#text} at (0,44) size 393x21
+          text run at (0,44) width 393: "The wrapping container has a solid silver border."
       LayoutBlockFlow {DIV} at (16,180.16) size 650x28 [border: (5px solid #C0C0C0)]
         LayoutBlockFlow (floating) {DIV} at (5,5) size 0x16 [bgcolor=#00FF00]
           LayoutText {#text} at (0,0) size 40x17
@@ -60,8 +60,8 @@ layer at (0,0) size 785x641 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         LayoutText {#text} at (0,22) size 649x21
           text run at (0,22) width 649: "The lime stripes are floats with various width (topmost is 0, bottommost is 150px)"
         LayoutBR {BR} at (648,22) size 1x21
-        LayoutText {#text} at (0,44) size 394x21
-          text run at (0,44) width 394: "The wrapping container has a solid silver border."
+        LayoutText {#text} at (0,44) size 393x21
+          text run at (0,44) width 393: "The wrapping container has a solid silver border."
 layer at (129,207) size 440x18
   LayoutBlockFlow {DIV} at (105,5) size 440x18 [bgcolor=#FFA500]
     LayoutText {#text} at (0,0) size 175x17

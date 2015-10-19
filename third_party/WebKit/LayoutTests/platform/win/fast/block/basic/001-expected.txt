@@ -5,12 +5,12 @@ layer at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {DIV} at (0,0) size 784x183.53 [border: (2px solid #FF0000)]
         LayoutBlockFlow (anonymous) at (2,2) size 780x18
-          LayoutInline {I} at (0,0) size 236x17
+          LayoutInline {I} at (0,0) size 235x17
             LayoutText {#text} at (0,0) size 96x17
               text run at (0,0) width 96: "Start of a line. "
-            LayoutInline {FONT} at (0,0) size 141x17 [color=#FF0000]
-              LayoutText {#text} at (95,0) size 141x17
-                text run at (95,0) width 141: "More red on this line:"
+            LayoutInline {FONT} at (0,0) size 140x17 [color=#FF0000]
+              LayoutText {#text} at (95,0) size 140x17
+                text run at (95,0) width 140: "More red on this line:"
         LayoutBlockFlow (anonymous) at (2,38.72) size 780x68.91 [color=#FF0000]
           LayoutBlockFlow {H3} at (0,0) size 780x22
             LayoutText {#text} at (0,0) size 205x21
@@ -19,15 +19,15 @@ layer at (0,0) size 800x600
             LayoutText {#text} at (0,0) size 194x26
               text run at (0,0) width 194: "And another block!"
         LayoutBlockFlow (anonymous) at (2,127.53) size 780x54
-          LayoutInline {I} at (0,0) size 300x35
-            LayoutInline {FONT} at (0,0) size 98x35 [color=#FF0000]
-              LayoutText {#text} at (0,0) size 98x17
-                text run at (0,0) width 98: "Now more text."
-              LayoutBR {BR} at (97,14) size 1x0
-              LayoutText {#text} at (0,18) size 68x17
-                text run at (0,18) width 68: "This is red"
-            LayoutText {#text} at (67,18) size 233x17
-              text run at (67,18) width 233: " but now only italic on the same line"
-          LayoutBR {BR} at (299,32) size 1x0
+          LayoutInline {I} at (0,0) size 299x35
+            LayoutInline {FONT} at (0,0) size 97x35 [color=#FF0000]
+              LayoutText {#text} at (0,0) size 97x17
+                text run at (0,0) width 97: "Now more text."
+              LayoutBR {BR} at (96,14) size 1x0
+              LayoutText {#text} at (0,18) size 67x17
+                text run at (0,18) width 67: "This is red"
+            LayoutText {#text} at (66,18) size 233x17
+              text run at (66,18) width 233: " but now only italic on the same line"
+          LayoutBR {BR} at (298,32) size 1x0
           LayoutText {#text} at (0,36) size 132x17
             text run at (0,36) width 132: "Plain line at the end."

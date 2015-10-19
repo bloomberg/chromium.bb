@@ -16,15 +16,15 @@ layer at (0,0) size 800x166
         LayoutText {#text} at (1,55) size 89x17
           text run at (1,55) width 89: "height:100px;"
       LayoutBlockFlow {DIV} at (0,0) size 394x38 [border: (1px solid #FF0000)]
-        LayoutText {#text} at (1,1) size 31x17
-          text run at (1,1) width 31: "TOP"
-        LayoutBR {BR} at (31,1) size 1x17
+        LayoutText {#text} at (1,1) size 30x17
+          text run at (1,1) width 30: "TOP"
+        LayoutBR {BR} at (30,1) size 1x17
         LayoutText {#text} at (1,19) size 75x17
           text run at (1,19) width 75: "width:50%;"
-      LayoutBlockFlow (floating) {DIV} at (0,102) size 113.11x56 [border: (1px solid #FF0000)]
-        LayoutText {#text} at (1,1) size 112x17
-          text run at (1,1) width 112: "BOTTOM-LEFT"
-        LayoutBR {BR} at (112,1) size 1x17
+      LayoutBlockFlow (floating) {DIV} at (0,102) size 112.81x56 [border: (1px solid #FF0000)]
+        LayoutText {#text} at (1,1) size 111x17
+          text run at (1,1) width 111: "BOTTOM-LEFT"
+        LayoutBR {BR} at (111,1) size 1x17
         LayoutText {#text} at (1,19) size 64x17
           text run at (1,19) width 64: "float: left;"
         LayoutBR {BR} at (64,19) size 1x17

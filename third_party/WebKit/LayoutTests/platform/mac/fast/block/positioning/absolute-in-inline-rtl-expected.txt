@@ -9,13 +9,13 @@ layer at (0,0) size 800x600
         LayoutInline {SPAN} at (0,0) size 28x18 [color=#0000FF]
           LayoutText {#text} at (330,0) size 28x18
             text run at (330,0) width 28: "blue"
-        LayoutText {#text} at (357,0) size 222x18
-          text run at (357,0) width 222: " border on the first line, to the left "
+        LayoutText {#text} at (357,0) size 221x18
+          text run at (357,0) width 221: " border on the first line, to the left "
         LayoutInline {SPAN} at (0,0) size 44x18 [color=#FFA500]
-          LayoutText {#text} at (578,0) size 44x18
-            text run at (578,0) width 44: "orange"
-        LayoutText {#text} at (621,0) size 157x18
-          text run at (621,0) width 157: " border on the third line."
+          LayoutText {#text} at (577,0) size 44x18
+            text run at (577,0) width 44: "orange"
+        LayoutText {#text} at (620,0) size 157x18
+          text run at (620,0) width 157: " border on the third line."
       LayoutBlockFlow {DIV} at (0,34) size 600x72
         LayoutText {#text} at (408,0) size 192x18
           text run at (408,0) width 192 RTL override: "ILorem ipsum dolor sit amet, "

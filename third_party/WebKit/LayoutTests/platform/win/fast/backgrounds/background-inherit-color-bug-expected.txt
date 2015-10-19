@@ -53,20 +53,20 @@ layer at (0,0) size 785x1132 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           LayoutText {#text} at (0,0) size 221x17
             text run at (0,0) width 221: "This DIV has a green background."
         LayoutBlockFlow {H1} at (61.52,43.44) size 500.14x156 [border: (4px solid #008000)]
-          LayoutText {#text} at (4,4) size 445x147
+          LayoutText {#text} at (4,4) size 444x147
             text run at (4,4) width 442: "This header should have a green"
-            text run at (4,41) width 415: "background (not pink) but the"
-            text run at (4,78) width 445: "inline style rule is ignored on the"
-            text run at (4,115) width 260: "Affected Browsers."
+            text run at (4,41) width 414: "background (not pink) but the"
+            text run at (4,78) width 444: "inline style rule is ignored on the"
+            text run at (4,115) width 259: "Affected Browsers."
         LayoutBlockFlow (anonymous) at (4,229.44) size 615.19x18
           LayoutText {#text} at (0,0) size 159x17
             text run at (0,0) width 159: "The DIV continues here."
         LayoutBlockFlow {H1} at (61.52,268.88) size 500.14x156 [border: (4px solid #008000)]
-          LayoutText {#text} at (4,4) size 448x147
+          LayoutText {#text} at (4,4) size 447x147
             text run at (4,4) width 442: "This header should have a green"
-            text run at (4,41) width 415: "background (not pink) but the"
-            text run at (4,78) width 448: "!important rule is ignored on the"
-            text run at (4,115) width 260: "Affected Browsers."
+            text run at (4,41) width 414: "background (not pink) but the"
+            text run at (4,78) width 447: "!important rule is ignored on the"
+            text run at (4,115) width 259: "Affected Browsers."
         LayoutBlockFlow (anonymous) at (4,454.88) size 615.19x18
           LayoutText {#text} at (0,0) size 159x17
             text run at (0,0) width 159: "The DIV continues here."

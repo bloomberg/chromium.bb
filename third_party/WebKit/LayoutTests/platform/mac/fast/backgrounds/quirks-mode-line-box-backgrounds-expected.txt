@@ -17,8 +17,8 @@ layer at (0,0) size 800x600
               text run at (0,15) width 79: "BAZBARFOO"
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow (anonymous) at (0,80) size 784x18
-        LayoutText {#text} at (0,0) size 421x18
-          text run at (0,0) width 421: "The background below should be 10x10 and snugly fit the image:"
+        LayoutText {#text} at (0,0) size 420x18
+          text run at (0,0) width 420: "The background below should be 10x10 and snugly fit the image:"
       LayoutBlockFlow {P} at (0,114) size 784x10
         LayoutInline {SPAN} at (0,0) size 10x46 [bgcolor=#FF0000]
           LayoutImage {IMG} at (0,0) size 10x10

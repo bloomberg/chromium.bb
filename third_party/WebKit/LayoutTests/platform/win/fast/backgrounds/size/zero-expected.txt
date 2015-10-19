@@ -4,19 +4,19 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 55x17
-          text run at (0,0) width 55: "Test for "
-        LayoutInline {I} at (0,0) size 533x17
-          LayoutInline {A} at (0,0) size 503x17 [color=#0000EE]
-            LayoutText {#text} at (54,0) size 503x17
-              text run at (54,0) width 503: "REGRESSION(r27173): Web Inspector freezes beneath Image::drawPattern()"
-          LayoutText {#text} at (556,0) size 31x17
-            text run at (556,0) width 31: " Bug"
-        LayoutText {#text} at (586,0) size 5x17
-          text run at (586,0) width 5: "."
+        LayoutText {#text} at (0,0) size 54x17
+          text run at (0,0) width 54: "Test for "
+        LayoutInline {I} at (0,0) size 531x17
+          LayoutInline {A} at (0,0) size 501x17 [color=#0000EE]
+            LayoutText {#text} at (53,0) size 501x17
+              text run at (53,0) width 501: "REGRESSION(r27173): Web Inspector freezes beneath Image::drawPattern()"
+          LayoutText {#text} at (553,0) size 31x17
+            text run at (553,0) width 31: " Bug"
+        LayoutText {#text} at (583,0) size 5x17
+          text run at (583,0) width 5: "."
       LayoutBlockFlow {P} at (0,34) size 784x36
-        LayoutText {#text} at (0,0) size 784x35
-          text run at (0,0) width 784: "There should be three empty squares with black borders and the last one should have blue background. WebKit should not"
+        LayoutText {#text} at (0,0) size 783x35
+          text run at (0,0) width 783: "There should be three empty squares with black borders and the last one should have blue background. WebKit should not"
           text run at (0,18) width 93: "hang or assert."
       LayoutBlockFlow {DIV} at (8,86) size 106x106 [border: (3px solid #000000)]
       LayoutBlockFlow {DIV} at (8,200) size 106x106 [border: (3px solid #000000)]

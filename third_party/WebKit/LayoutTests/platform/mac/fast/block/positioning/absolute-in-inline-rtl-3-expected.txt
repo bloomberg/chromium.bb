@@ -11,7 +11,7 @@ layer at (0,0) size 800x600
             text run at (650,0) width 29: "blue"
         LayoutText {#text} at (678,0) size 768x36
           text run at (678,0) width 90: " border on the"
-          text run at (0,18) width 58: "first line."
+          text run at (0,18) width 57: "first line."
       LayoutBlockFlow {DIV} at (0,52) size 600x72
         LayoutText {#text} at (408,0) size 192x18
           text run at (408,0) width 192 RTL override: "ILorem ipsum dolor sit amet, "

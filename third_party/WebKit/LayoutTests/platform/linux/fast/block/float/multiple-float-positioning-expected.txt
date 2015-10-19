@@ -5,7 +5,7 @@ layer at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {DIV} at (0,0) size 146x146 [border: (3px solid #008000)]
         LayoutText {#text} at (3,3) size 140x139
-          text run at (3,3) width 128: "Test float positioning."
+          text run at (3,3) width 127: "Test float positioning."
           text run at (3,23) width 125: "There should be four"
           text run at (3,43) width 89: "red boxes with"
           text run at (3,63) width 140: "numbers 1,2,3,4 below"

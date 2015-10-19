@@ -21,5 +21,5 @@ layer at (8,8) size 770x94
             LayoutText {#text} at (1,1) size 67x19
               text run at (1,1) width 67: "even more."
     LayoutBlockFlow {DIV} at (0,74) size 770x20 [color=#FFFFFF] [bgcolor=#008000]
-      LayoutText {#text} at (0,0) size 146x19
-        text run at (0,0) width 146: "Hello. Here I am below."
+      LayoutText {#text} at (0,0) size 145x19
+        text run at (0,0) width 145: "Hello. Here I am below."

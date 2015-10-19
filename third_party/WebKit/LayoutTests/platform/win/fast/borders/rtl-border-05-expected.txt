@@ -4,13 +4,13 @@ layer at (0,0) size 800x502
   LayoutBlockFlow {HTML} at (0,0) size 800x502
     LayoutBlockFlow {BODY} at (8,16) size 784x478
       LayoutBlockFlow {P} at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 747x17
-          text run at (0,0) width 747: "Test that when we have images sprinkled within a span, borders, paddings and margins are still calculated correctly ."
+        LayoutText {#text} at (0,0) size 746x17
+          text run at (0,0) width 746: "Test that when we have images sprinkled within a span, borders, paddings and margins are still calculated correctly ."
       LayoutBlockFlow {DIV} at (0,34) size 212x222 [border: (1px solid #000000)]
         LayoutBlockFlow {P} at (6,22) size 200x130
-          LayoutText {#text} at (0,7) size 175x50
+          LayoutText {#text} at (0,7) size 174x50
             text run at (0,7) width 152: "aaa bbb ccc ddd eee fff "
-            text run at (151,7) width 24 RTL: "\x{5DC}\x{5DE}\x{5D4}"
+            text run at (151,7) width 23 RTL: "\x{5DC}\x{5DE}\x{5D4}"
             text run at (0,40) width 58 RTL: "\x{5E2}\x{5E9}\x{5D9}\x{5EA}\x{5D9} \x{5D6}\x{5D0}\x{5EA}"
             text run at (57,40) width 5: " "
             text run at (61,40) width 17: "gg"
@@ -31,8 +31,8 @@ layer at (0,0) size 800x502
             LayoutBlockFlow {IMG} at (132.09,0) size 20x32
       LayoutBlockFlow {DIV} at (0,256) size 212x222 [border: (1px solid #000000)]
         LayoutBlockFlow {P} at (6,22) size 200x130
-          LayoutText {#text} at (25,7) size 190x50
-            text run at (25,7) width 28 RTL: " \x{5DC}\x{5DE}\x{5D4}"
+          LayoutText {#text} at (26,7) size 190x50
+            text run at (26,7) width 27 RTL: " \x{5DC}\x{5DE}\x{5D4}"
             text run at (52,7) width 148: "aaa bbb ccc ddd eee fff"
             text run at (10,40) width 17: "gg"
             text run at (138,40) width 62 RTL: "\x{5E2}\x{5E9}\x{5D9}\x{5EA}\x{5D9} \x{5D6}\x{5D0}\x{5EA} "

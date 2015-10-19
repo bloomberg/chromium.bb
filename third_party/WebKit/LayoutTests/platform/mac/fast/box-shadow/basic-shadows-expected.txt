@@ -72,17 +72,17 @@ layer at (0,0) size 785x671 backgroundClip at (0,0) size 785x600 clip at (0,0) s
               LayoutText {#text} at (11,11) size 27x18
                 text run at (11,11) width 27: "Cell"
       LayoutBlockFlow {P} at (0,546) size 769x36
-        LayoutText {#text} at (0,0) size 363x18
-          text run at (0,0) width 363: "The first line of this div should have a box-shadow on it."
-        LayoutBR {BR} at (362,14) size 1x0
+        LayoutText {#text} at (0,0) size 362x18
+          text run at (0,0) width 362: "The first line of this div should have a box-shadow on it."
+        LayoutBR {BR} at (361,14) size 1x0
         LayoutText {#text} at (0,18) size 180x18
           text run at (0,18) width 180: "This second line should not."
       LayoutBlockFlow {P} at (0,598) size 769x36
         LayoutBlockFlow (floating) {<pseudo:first-letter>} at (0,0) size 39.33x65 [bgcolor=#EEEEEE] [border: (1px solid #000000)]
           LayoutTextFragment (anonymous) at (5,5) size 30x55
             text run at (5,5) width 30: "T"
-        LayoutTextFragment {#text} at (43,0) size 499x18
-          text run at (43,0) width 499: "he first letter of this paragraph should have a border and a nice shadow effect."
-        LayoutBR {BR} at (541,14) size 1x0
+        LayoutTextFragment {#text} at (43,0) size 498x18
+          text run at (43,0) width 498: "he first letter of this paragraph should have a border and a nice shadow effect."
+        LayoutBR {BR} at (540,14) size 1x0
         LayoutText {#text} at (43,18) size 167x18
           text run at (43,18) width 167: "It should look pretty cool."

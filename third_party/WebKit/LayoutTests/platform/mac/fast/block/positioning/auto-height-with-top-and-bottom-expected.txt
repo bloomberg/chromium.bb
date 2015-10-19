@@ -17,5 +17,5 @@ layer at (10,64) size 400x60
       text run at (2,56) width 369: "ullamco laboris nisi ut aliquip ex ea commodo consequat."
       text run at (2,74) width 382: "Duis aute irure dolor in reprehenderit in voluptate velit esse"
       text run at (2,92) width 395: "cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat"
-      text run at (2,110) width 363: "cupidatat non proident, sunt in culpa qui officia deserunt"
+      text run at (2,110) width 362: "cupidatat non proident, sunt in culpa qui officia deserunt"
       text run at (2,128) width 174: "mollit anim id est laborum."

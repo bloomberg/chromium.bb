@@ -5,8 +5,8 @@ layer at (0,0) size 800x136
     LayoutBlockFlow {BODY} at (8,8) size 784x120
       LayoutBlockFlow {DIV} at (0,0) size 784x96 [border: (3px solid #FFFF00)]
         LayoutBlockFlow (anonymous) at (3,3) size 778x18
-          LayoutText {#text} at (0,0) size 48x17
-            text run at (0,0) width 48: "Yellow"
+          LayoutText {#text} at (0,0) size 46x17
+            text run at (0,0) width 46: "Yellow"
         LayoutBlockFlow {DIV} at (3,21) size 778x72 [border: (3px solid #0000FF)]
           LayoutBlockFlow (anonymous) at (3,3) size 772x18
             LayoutText {#text} at (0,0) size 31x17

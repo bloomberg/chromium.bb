@@ -9,13 +9,13 @@ layer at (0,0) size 800x600
         LayoutInline {SPAN} at (0,0) size 28x18 [color=#0000FF]
           LayoutText {#text} at (321,0) size 28x18
             text run at (321,0) width 28: "blue"
-        LayoutText {#text} at (348,0) size 231x18
-          text run at (348,0) width 231: " border on the first line, to the right "
+        LayoutText {#text} at (348,0) size 230x18
+          text run at (348,0) width 230: " border on the first line, to the right "
         LayoutInline {SPAN} at (0,0) size 44x18 [color=#FFA500]
-          LayoutText {#text} at (578,0) size 44x18
-            text run at (578,0) width 44: "orange"
-        LayoutText {#text} at (621,0) size 157x18
-          text run at (621,0) width 157: " border on the third line."
+          LayoutText {#text} at (577,0) size 44x18
+            text run at (577,0) width 44: "orange"
+        LayoutText {#text} at (620,0) size 157x18
+          text run at (620,0) width 157: " border on the third line."
       LayoutBlockFlow {DIV} at (0,34) size 600x72
         LayoutText {#text} at (0,0) size 192x18
           text run at (0,0) width 192: "ILorem ipsum dolor sit amet, "
@@ -24,8 +24,8 @@ layer at (0,0) size 800x600
           text run at (0,54) width 321: "aute irure dolor in reprehenderit in voluptate velit."
 layer at (8,42) size 576x56
   LayoutInline (relative positioned) {SPAN} at (0,0) size 576x56 [bgcolor=#008000] [border: (1px solid #808080) (20px solid #FFA500) (1px solid #808080) (20px solid #0000FF)]
-    LayoutText {#text} at (231,0) size 569x36
-      text run at (231,0) width 338: "con a pariatur. Excepteur sint occaecat cupidatat non"
+    LayoutText {#text} at (231,0) size 568x36
+      text run at (231,0) width 337: "con a pariatur. Excepteur sint occaecat cupidatat non"
       text run at (0,18) width 376: "proident, sunt in culp qui officia deserunt mollit animequs "
     LayoutText {#text} at (375,18) size 576x36
       text run at (375,18) width 201: "ILOREM ipsum dol sDuis aute"
