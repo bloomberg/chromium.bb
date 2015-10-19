@@ -156,7 +156,7 @@ bool DownloadStoredProperly(
   // This function may be called multiple times for a given test. Returning
   // false doesn't necessarily mean that the test has failed or will fail, it
   // might just mean that the test hasn't passed yet.
-  if (info.target_path != expected_path) {
+  if (!expected_path.empty() && info.target_path != expected_path) {
     DVLOG(20) << __FUNCTION__ << " " << info.target_path.value()
               << " != " << expected_path.value();
     return false;
@@ -773,16 +773,25 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SavePageBrowserTest_NonMHTML) {
 
 // Test that we don't crash when the page contains an iframe that
 // was handled as a download (http://crbug.com/42212).
-// Flaky: https://crbug.com/537530.
-IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, DISABLED_SaveDownloadableIFrame) {
+IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveDownloadableIFrame) {
   GURL url = URLRequestMockHTTPJob::GetMockUrl(
       "downloads/iframe-src-is-a-download.htm");
-  ui_test_utils::NavigateToURL(browser(), url);
 
   // Wait for and then dismiss the non-save-page-as-related download item
   // (the one associated with downloading of "thisdayinhistory.xls" file).
-  VerifySavePackageExpectations(browser(), url);
-  GetDownloadManager()->RemoveAllDownloads();
+  {
+    GURL download_url("http://mock.http/downloads/thisdayinhistory.xls");
+    DownloadPersistedObserver persisted(
+        browser()->profile(),
+        base::Bind(&DownloadStoredProperly, download_url, base::FilePath(), -1,
+                   history::DownloadState::COMPLETE));
+
+    ui_test_utils::NavigateToURL(browser(), url);
+
+    ASSERT_TRUE(VerifySavePackageExpectations(browser(), download_url));
+    persisted.WaitForPersisted();
+    GetDownloadManager()->RemoveAllDownloads();
+  }
 
   base::FilePath full_file_name, dir;
   SaveCurrentTab(url, content::SAVE_PAGE_TYPE_AS_COMPLETE_HTML,
