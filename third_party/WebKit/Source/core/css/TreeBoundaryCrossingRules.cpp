@@ -59,7 +59,7 @@ static bool shouldCheckScope(const Element& element, const Node& scopingNode, bo
     return scopingNode.treeScope().scopedStyleResolver()->hasDeepOrShadowSelector();
 }
 
-void TreeBoundaryCrossingRules::collectTreeBoundaryCrossingRules(Element* element, ElementRuleCollector& collector, bool includeEmptyRules)
+void TreeBoundaryCrossingRules::collectTreeBoundaryCrossingRules(Element* element, ElementRuleCollector& collector)
 {
     if (m_scopingNodes.isEmpty())
         return;
@@ -80,7 +80,7 @@ void TreeBoundaryCrossingRules::collectTreeBoundaryCrossingRules(Element* elemen
             continue;
 
         CascadeOrder cascadeOrder = isInnerTreeScope ? innerCascadeOrder : outerCascadeOrder;
-        scopingNode->treeScope().scopedStyleResolver()->collectMatchingTreeBoundaryCrossingRules(collector, includeEmptyRules, cascadeOrder);
+        scopingNode->treeScope().scopedStyleResolver()->collectMatchingTreeBoundaryCrossingRules(collector, cascadeOrder);
 
         ++innerCascadeOrder;
         --outerCascadeOrder;

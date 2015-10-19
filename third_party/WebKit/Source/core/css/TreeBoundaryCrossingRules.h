@@ -40,7 +40,7 @@ class TreeBoundaryCrossingRules final {
 public:
     void addScope(ContainerNode&);
     void removeScope(const ContainerNode&);
-    void collectTreeBoundaryCrossingRules(Element*, ElementRuleCollector&, bool includeEmptyRules);
+    void collectTreeBoundaryCrossingRules(Element*, ElementRuleCollector&);
 
     DECLARE_TRACE();
 

@@ -378,7 +378,7 @@ static inline ScopedStyleResolver* scopedResolverFor(const Element* element)
     return treeScope->scopedStyleResolver();
 }
 
-void StyleResolver::matchAuthorRules(Element* element, ElementRuleCollector& collector, bool includeEmptyRules)
+void StyleResolver::matchAuthorRules(Element* element, ElementRuleCollector& collector)
 {
     collector.clearMatchedRules();
 
@@ -388,14 +388,14 @@ void StyleResolver::matchAuthorRules(Element* element, ElementRuleCollector& col
 
     // Apply :host and :host-context rules from inner scopes.
     for (int j = resolversInShadowTree.size() - 1; j >= 0; --j)
-        resolversInShadowTree.at(j)->collectMatchingShadowHostRules(collector, includeEmptyRules, ++cascadeOrder);
+        resolversInShadowTree.at(j)->collectMatchingShadowHostRules(collector, ++cascadeOrder);
 
     // Apply normal rules from element scope.
     if (ScopedStyleResolver* resolver = scopedResolverFor(element))
-        resolver->collectMatchingAuthorRules(collector, includeEmptyRules, ++cascadeOrder);
+        resolver->collectMatchingAuthorRules(collector, ++cascadeOrder);
 
     // Apply /deep/ and ::shadow rules from outer scopes, and ::content from inner.
-    m_treeBoundaryCrossingRules.collectTreeBoundaryCrossingRules(element, collector, includeEmptyRules);
+    m_treeBoundaryCrossingRules.collectTreeBoundaryCrossingRules(element, collector);
     collector.sortAndTransferMatchedRules();
 }
 
@@ -449,7 +449,8 @@ void StyleResolver::matchAllRules(StyleResolverState& state, ElementRuleCollecto
         }
     }
 
-    matchAuthorRules(state.element(), collector, false);
+    collector.setIncludeEmptyRules(false);
+    matchAuthorRules(state.element(), collector);
 
     if (state.element()->isStyledElement()) {
         if (state.element()->inlineStyle()) {
@@ -738,7 +739,8 @@ bool StyleResolver::pseudoStyleForElementInternal(Element& element, const Pseudo
         collector.setPseudoStyleRequest(pseudoStyleRequest);
 
         matchUARules(collector);
-        matchAuthorRules(state.element(), collector, false);
+        collector.setIncludeEmptyRules(false);
+        matchAuthorRules(state.element(), collector);
         collector.finishAddingAuthorRulesForTreeScope();
 
         if (!collector.matchedResult().hasMatchedProperties())
@@ -889,7 +891,8 @@ void StyleResolver::collectPseudoRulesForElement(Element* element, ElementRuleCo
 
     if (rulesToInclude & AuthorCSSRules) {
         collector.setSameOriginOnly(!(rulesToInclude & CrossOriginCSSRules));
-        matchAuthorRules(element, collector, rulesToInclude & EmptyCSSRules);
+        collector.setIncludeEmptyRules(rulesToInclude & EmptyCSSRules);
+        matchAuthorRules(element, collector);
     }
 }
 

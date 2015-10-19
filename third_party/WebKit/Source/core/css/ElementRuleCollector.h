@@ -129,6 +129,8 @@ public:
     void addElementStyleProperties(const StylePropertySet*, bool isCacheable = true);
     void finishAddingUARules() { m_result.finishAddingUARules(); }
     void finishAddingAuthorRulesForTreeScope() { m_result.finishAddingAuthorRulesForTreeScope(); }
+    void setIncludeEmptyRules(bool include) { m_includeEmptyRules = include; }
+    bool includeEmptyRules() const { return m_includeEmptyRules; }
 
 private:
     template<typename RuleDataListType>
@@ -156,6 +158,7 @@ private:
     bool m_sameOriginOnly;
     bool m_matchingUARules;
     bool m_scopeContainsLastMatchedElement;
+    bool m_includeEmptyRules;
 
     WillBeHeapVector<MatchedRule, 32> m_matchedRules;
 

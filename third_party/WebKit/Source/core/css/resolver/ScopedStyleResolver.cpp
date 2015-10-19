@@ -144,34 +144,34 @@ void ScopedStyleResolver::addKeyframeStyle(PassRefPtrWillBeRawPtr<StyleRuleKeyfr
     }
 }
 
-void ScopedStyleResolver::collectMatchingAuthorRules(ElementRuleCollector& collector, bool includeEmptyRules, CascadeOrder cascadeOrder)
+void ScopedStyleResolver::collectMatchingAuthorRules(ElementRuleCollector& collector, CascadeOrder cascadeOrder)
 {
     ASSERT(!collector.scopeContainsLastMatchedElement());
     collector.setScopeContainsLastMatchedElement(true);
     for (size_t i = 0; i < m_authorStyleSheets.size(); ++i) {
         ASSERT(m_authorStyleSheets[i]->ownerNode());
-        MatchRequest matchRequest(&m_authorStyleSheets[i]->contents()->ruleSet(), includeEmptyRules, &m_scope->rootNode(), m_authorStyleSheets[i], i);
+        MatchRequest matchRequest(&m_authorStyleSheets[i]->contents()->ruleSet(), collector.includeEmptyRules(), &m_scope->rootNode(), m_authorStyleSheets[i], i);
         collector.collectMatchingRules(matchRequest, cascadeOrder);
     }
     collector.setScopeContainsLastMatchedElement(false);
 }
 
-void ScopedStyleResolver::collectMatchingShadowHostRules(ElementRuleCollector& collector, bool includeEmptyRules, CascadeOrder cascadeOrder)
+void ScopedStyleResolver::collectMatchingShadowHostRules(ElementRuleCollector& collector, CascadeOrder cascadeOrder)
 {
     ASSERT(!collector.scopeContainsLastMatchedElement());
     collector.setScopeContainsLastMatchedElement(true);
     for (size_t i = 0; i < m_authorStyleSheets.size(); ++i) {
         ASSERT(m_authorStyleSheets[i]->ownerNode());
-        MatchRequest matchRequest(&m_authorStyleSheets[i]->contents()->ruleSet(), includeEmptyRules, &m_scope->rootNode(), m_authorStyleSheets[i], i);
+        MatchRequest matchRequest(&m_authorStyleSheets[i]->contents()->ruleSet(), collector.includeEmptyRules(), &m_scope->rootNode(), m_authorStyleSheets[i], i);
         collector.collectMatchingShadowHostRules(matchRequest, cascadeOrder);
     }
     collector.setScopeContainsLastMatchedElement(false);
 }
 
-void ScopedStyleResolver::collectMatchingTreeBoundaryCrossingRules(ElementRuleCollector& collector, bool includeEmptyRules, CascadeOrder cascadeOrder)
+void ScopedStyleResolver::collectMatchingTreeBoundaryCrossingRules(ElementRuleCollector& collector, CascadeOrder cascadeOrder)
 {
     for (const auto& rules : *m_treeBoundaryCrossingRuleSet) {
-        MatchRequest request(rules->m_ruleSet.get(), includeEmptyRules, &treeScope().rootNode(), rules->m_parentStyleSheet, rules->m_parentIndex);
+        MatchRequest request(rules->m_ruleSet.get(), collector.includeEmptyRules(), &treeScope().rootNode(), rules->m_parentStyleSheet, rules->m_parentIndex);
         collector.collectMatchingRules(request, cascadeOrder, true);
     }
 }

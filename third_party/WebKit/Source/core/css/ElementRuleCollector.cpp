@@ -56,6 +56,7 @@ ElementRuleCollector::ElementRuleCollector(const ElementResolveContext& context,
     , m_sameOriginOnly(false)
     , m_matchingUARules(false)
     , m_scopeContainsLastMatchedElement(false)
+    , m_includeEmptyRules(false)
 { }
 
 ElementRuleCollector::~ElementRuleCollector()
