@@ -271,7 +271,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
       const cc::CompositorFrameMetadata& frame_metadata);
 
   void ShowInternal();
-  void HideInternal(bool hide_frontbuffer, bool stop_observing_root_window);
+  void HideInternal();
   void AttachLayers();
   void RemoveLayers();
 
@@ -334,6 +334,10 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   uint32 outstanding_vsync_requests_;
 
   bool is_showing_;
+
+  // Window-specific bits that affect widget visibility.
+  bool is_window_visible_;
+  bool is_window_activity_started_;
 
   // ContentViewCoreImpl is our interface to the view system.
   ContentViewCoreImpl* content_view_core_;

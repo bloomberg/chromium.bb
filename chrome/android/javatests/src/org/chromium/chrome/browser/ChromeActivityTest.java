@@ -65,10 +65,8 @@ public class ChromeActivityTest extends ChromeTabbedActivityTestBase {
                 getActivity().onStop();
             }
         });
-        // TODO(jdduke): Ensure the Tab's WebContents is hidden despite the
-        // Tab itself remaining visible. This prevents visual artifacts during
-        // activity transitions.
-        assertFalse(tabs[0].isHidden());
+        // Verify that both Tabs are hidden.
+        assertTrue(tabs[0].isHidden());
         assertTrue(tabs[1].isHidden());
 
         // Fake bringing the activity back to foreground.

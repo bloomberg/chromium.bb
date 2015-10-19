@@ -7,6 +7,7 @@ package org.chromium.chrome.browser;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ssl.ConnectionSecurityLevel;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
@@ -63,6 +64,13 @@ public class TabTest extends ChromeActivityTestCaseBase<ChromeActivity> {
         assertEquals("title does not update", newTitle, mTab.getTitle());
     }
 
+    /**
+     * Verifies a Tab's contents is restored when the Tab is foregrounded
+     * after its contents have been destroyed while backgrounded.
+     * Note that document mode is explicitly disabled, as the document activity
+     * may be fully recreated if its contents is killed while in the background.
+     */
+    @CommandLineFlags.Add(ChromeSwitches.DISABLE_DOCUMENT_MODE)
     @SmallTest
     @Feature({"Tab"})
     public void testTabRestoredIfKilledWhileActivityStopped() throws Exception {
@@ -88,7 +96,7 @@ public class TabTest extends ChromeActivityTestCaseBase<ChromeActivity> {
         });
 
         assertTrue(mTab.needsReload());
-        assertFalse(mTab.isHidden());
+        assertTrue(mTab.isHidden());
         assertFalse(mTab.isShowingSadTab());
 
         ApplicationTestUtils.launchChrome(getInstrumentation().getTargetContext());
