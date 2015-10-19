@@ -1184,7 +1184,7 @@ Signing in anyway will merge Chromium information like bookmarks, history, and o
       </message>
       <message name="IDS_SSL_NONOVERRIDABLE_MORE" desc="Body text for the explanation shown if user clicks on the Details button.">
         <ph name="SITE">$1<ex>google.com</ex></ph> normally uses encryption to protect your information. When Chromium tried to connect to <ph name="SITE">$1<ex>google.com</ex></ph> this time, the website sent back unusual
-and incorrect credentials. Either an attacker is trying to pretend to be <ph name="SITE">$1<ex>google.com</ex></ph>, or a Wi-Fi sign-in screen has interrupted the connection. Your information is still secure because Chromium stopped the connection before any data was exchanged.
+and incorrect credentials. This may happen when an attacker is trying to pretend to be <ph name="SITE">$1<ex>google.com</ex></ph>, or a Wi-Fi sign-in screen has interrupted the connection. Your information is still secure because Chromium stopped the connection before any data was exchanged.
       </message>
       <message name="IDS_SSL_NONOVERRIDABLE_INVALID" desc="A sentence to explain why the user can't proceed.">
       You cannot visit <ph name="SITE">$1<ex>google.com</ex></ph> right now because the website sent scrambled credentials that Chromium cannot process. Network errors and attacks are usually temporary, so this page will probably work later.
