@@ -22,13 +22,9 @@ class _GPUTimes(perf_benchmark.PerfBenchmark):
     cat_string = ','.join(TOPLEVEL_CATEGORIES)
     cat_filter = tracing_category_filter.TracingCategoryFilter(cat_string)
 
-    return timeline_based_measurement.Options(
-        overhead_level=cat_filter)
-
-  @classmethod
-  def ValueCanBeAddedPredicate(cls, value, _):
-    return (isinstance(value, gpu_timeline.GPUTimelineListOfValues) or
-            isinstance(value, gpu_timeline.GPUTimelineValue))
+    options = timeline_based_measurement.Options(overhead_level=cat_filter)
+    options.SetTimelineBasedMetrics([gpu_timeline.GPUTimelineMetric()])
+    return options
 
 @benchmark.Disabled  # http://crbug.com/453131, http://crbug.com/527543
 class GPUTimesKeyMobileSites(_GPUTimes):
