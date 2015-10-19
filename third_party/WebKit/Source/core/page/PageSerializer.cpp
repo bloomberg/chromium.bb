@@ -387,6 +387,8 @@ void PageSerializer::serializeFrame(LocalFrame* frame)
     }
 
     for (Frame* childFrame = frame->tree().firstChild(); childFrame; childFrame = childFrame->tree().nextSibling()) {
+        // TODO(lukasza): This causes incomplete MHTML for OOPIFs.
+        // (crbug.com/538766)
         if (childFrame->isLocalFrame())
             serializeFrame(toLocalFrame(childFrame));
     }

@@ -55,6 +55,7 @@ using content::DownloadItem;
 using content::DownloadManager;
 using content::WebContents;
 using net::URLRequestMockHTTPJob;
+using testing::ContainsRegex;
 using testing::HasSubstr;
 
 namespace {
@@ -791,6 +792,8 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, DISABLED_SaveDownloadableIFrame) {
   EXPECT_TRUE(base::PathExists(full_file_name));
 }
 
+// Test suite that allows testing --site-per-process against cross-site frames.
+// See http://dev.chromium.org/developers/design-documents/site-isolation.
 class SavePageSitePerProcessBrowserTest : public SavePageBrowserTest {
  public:
   SavePageSitePerProcessBrowserTest() {}
@@ -799,12 +802,8 @@ class SavePageSitePerProcessBrowserTest : public SavePageBrowserTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     SavePageBrowserTest::SetUpCommandLine(command_line);
 
-    // TODO(lukasza): Enable --site-per-process once crbug.com/526786 is fixed.
-    // (currently, when the line below is uncommented out, the test crashes
-    // under blink::WebLocalFrameImpl::fromFrameOwnerElement called from
-    // blink::WebPageSerializerImpl::openTagToString).
-    //
-    // content::IsolateAllSitesForTesting(command_line);
+    // Append --site-per-process flag.
+    content::IsolateAllSitesForTesting(command_line);
   }
 
   void SetUpOnMainThread() override {
@@ -819,15 +818,15 @@ class SavePageSitePerProcessBrowserTest : public SavePageBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(SavePageSitePerProcessBrowserTest);
 };
 
-// Test for crbug.com/526786.  Without OOPIFs fixes, the test will trigger
-// a crash in the renderer process.
-IN_PROC_BROWSER_TEST_F(SavePageSitePerProcessBrowserTest, SaveCrossSitePage) {
-  // TODO(lukasza): Remove this check once crbug.com/526786 is fixed.
-  if (content::AreAllSitesIsolatedForTesting()) {
-    LOG(WARNING) << "Skipping the test.";
-    return;  // Avoid failing on Site Isolation FYI bot.
-  }
-
+// Test for crbug.com/526786.
+//
+// Disabled because the test will crash until the bug is fixed (but note that
+// the crash only happens with --site-per-process flag).
+// Currently, the crash would happen under
+// blink::WebLocalFrameImpl::fromFrameOwnerElement called from
+// blink::WebPageSerializerImpl::openTagToString).
+IN_PROC_BROWSER_TEST_F(SavePageSitePerProcessBrowserTest,
+                       DISABLED_SaveAsCompleteHtml) {
   GURL url(embedded_test_server()->GetURL("a.com", "/save_page/iframes.htm"));
   ui_test_utils::NavigateToURL(browser(), url);
 
@@ -864,6 +863,67 @@ IN_PROC_BROWSER_TEST_F(SavePageSitePerProcessBrowserTest, SaveCrossSitePage) {
               HasSubstr("<iframe src=\"./iframes_files/b.html\"></iframe>"));
   EXPECT_THAT(main_contents,
               HasSubstr("<img src=\"./iframes_files/1.png\">"));
+
+  // Verification of html contents.
+  EXPECT_THAT(main_contents, HasSubstr("896fd88d-a77a-4f46-afd8-24db7d5af9c2"))
+      << "Verifing if content from iframes.htm is present";
+  std::string a_contents;
+  ASSERT_TRUE(base::ReadFileToString(dir.AppendASCII("a.html"), &a_contents));
+  EXPECT_THAT(a_contents, HasSubstr("1b8aae2b-e164-462f-bd5b-98aa366205f2"))
+      << "Verifing if content from a.htm is present";
+  std::string b_contents;
+  ASSERT_TRUE(base::ReadFileToString(dir.AppendASCII("b.html"), &b_contents));
+  EXPECT_THAT(b_contents, HasSubstr("3a35f7fa-96a9-4487-9f18-4470263907fa"))
+      << "Verifing if content from b.htm is present";
+}
+
+// Test for crbug.com/538766.
+// Disabled because the test will fail until the bug is fixed
+// (but note that the test only fails with --site-per-process flag).
+IN_PROC_BROWSER_TEST_F(SavePageSitePerProcessBrowserTest,
+                       DISABLED_SaveAsMHTML) {
+  GURL url(embedded_test_server()->GetURL("a.com", "/save_page/iframes.htm"));
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  base::FilePath full_file_name, dir;
+  SaveCurrentTab(url, content::SAVE_PAGE_TYPE_AS_MHTML, "iframes", -1, &dir,
+                 &full_file_name);
+  ASSERT_FALSE(HasFailure());
+
+  std::string mhtml;
+  ASSERT_TRUE(base::ReadFileToString(full_file_name, &mhtml));
+
+  // Verify content of main frame, subframes and some savable resources.
+  EXPECT_THAT(mhtml, HasSubstr("896fd88d-a77a-4f46-afd8-24db7d5af9c2"))
+      << "Verifing if content from iframes.htm is present";
+  EXPECT_THAT(mhtml, HasSubstr("1b8aae2b-e164-462f-bd5b-98aa366205f2"))
+      << "Verifing if content from a.htm is present";
+  EXPECT_THAT(mhtml, HasSubstr("3a35f7fa-96a9-4487-9f18-4470263907fa"))
+      << "Verifing if content from b.htm is present";
+  EXPECT_THAT(mhtml, HasSubstr("font-size: 20px;"))
+      << "Verifing if content from 1.css is present";
+
+  // Verify presence of URLs associated with main frame, subframes and some
+  // savable resources.
+  // (note that these are single-line regexes).
+  EXPECT_THAT(mhtml, ContainsRegex("Content-Location.*/save_page/iframes.htm"));
+  EXPECT_THAT(mhtml, ContainsRegex("Content-Location.*/save_page/a.htm"));
+  EXPECT_THAT(mhtml, ContainsRegex("Content-Location.*/save_page/b.htm"));
+  EXPECT_THAT(mhtml, ContainsRegex("Content-Location.*/save_page/1.css"));
+  EXPECT_THAT(mhtml, ContainsRegex("Content-Location.*/save_page/1.png"));
+
+  // Verify that 1.png appear in the output only once (despite being referred to
+  // twice - from iframes.htm and from b.htm).
+  int count = 0;
+  size_t pos = 0;
+  for (;;) {
+    pos = mhtml.find("Content-Type: image/png", pos);
+    if (pos == std::string::npos)
+      break;
+    count++;
+    pos++;
+  }
+  EXPECT_EQ(1, count) << "Verify number of image/png parts in the mhtml output";
 }
 
 }  // namespace
