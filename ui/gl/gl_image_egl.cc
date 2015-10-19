@@ -9,9 +9,8 @@
 
 namespace gfx {
 
-GLImageEGL::GLImageEGL(const gfx::Size& size)
-    : egl_image_(EGL_NO_IMAGE_KHR), size_(size) {
-}
+GLImageEGL::GLImageEGL(const Size& size)
+    : egl_image_(EGL_NO_IMAGE_KHR), size_(size) {}
 
 GLImageEGL::~GLImageEGL() {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -49,7 +48,9 @@ void GLImageEGL::Destroy(bool have_context) {
   }
 }
 
-gfx::Size GLImageEGL::GetSize() { return size_; }
+Size GLImageEGL::GetSize() {
+  return size_;
+}
 
 unsigned GLImageEGL::GetInternalFormat() { return GL_RGBA; }
 
@@ -61,13 +62,17 @@ bool GLImageEGL::BindTexImage(unsigned target) {
   return true;
 }
 
+bool GLImageEGL::CopyTexImage(unsigned target) {
+  return false;
+}
+
 bool GLImageEGL::CopyTexSubImage(unsigned target,
                                  const Point& offset,
                                  const Rect& rect) {
   return false;
 }
 
-bool GLImageEGL::ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
+bool GLImageEGL::ScheduleOverlayPlane(AcceleratedWidget widget,
                                       int z_order,
                                       OverlayTransform transform,
                                       const Rect& bounds_rect,

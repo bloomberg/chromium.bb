@@ -5,16 +5,18 @@
 #include "ui/gl/gl_image_shared_memory.h"
 
 #include "base/logging.h"
+#include "base/memory/shared_memory.h"
 #include "base/numerics/safe_math.h"
 #include "base/process/process_handle.h"
+#include "base/trace_event/memory_allocator_dump.h"
+#include "base/trace_event/memory_dump_manager.h"
+#include "base/trace_event/process_memory_dump.h"
 
 namespace gfx {
 namespace {
 
 // Returns true if the size is valid and false otherwise.
-bool SizeInBytes(const gfx::Size& size,
-                 gfx::BufferFormat format,
-                 size_t* size_in_bytes) {
+bool SizeInBytes(const Size& size, BufferFormat format, size_t* size_in_bytes) {
   if (size.IsEmpty())
     return false;
 
@@ -31,19 +33,17 @@ bool SizeInBytes(const gfx::Size& size,
 
 }  // namespace
 
-GLImageSharedMemory::GLImageSharedMemory(const gfx::Size& size,
+GLImageSharedMemory::GLImageSharedMemory(const Size& size,
                                          unsigned internalformat)
-    : GLImageMemory(size, internalformat) {
-}
+    : GLImageMemory(size, internalformat) {}
 
 GLImageSharedMemory::~GLImageSharedMemory() {
   DCHECK(!shared_memory_);
 }
 
-bool GLImageSharedMemory::Initialize(
-    const base::SharedMemoryHandle& handle,
-    gfx::GenericSharedMemoryId shared_memory_id,
-    gfx::BufferFormat format) {
+bool GLImageSharedMemory::Initialize(const base::SharedMemoryHandle& handle,
+                                     GenericSharedMemoryId shared_memory_id,
+                                     BufferFormat format) {
   size_t size_in_bytes;
   if (!SizeInBytes(GetSize(), format, &size_in_bytes))
     return false;
@@ -98,18 +98,15 @@ void GLImageSharedMemory::OnMemoryDump(
   // Dump under "/shared_memory", as the base class may also dump to
   // "/texture_memory".
   base::trace_event::MemoryAllocatorDump* dump =
-      pmd->CreateAllocatorDump(dump_name + "/private_memory");
+      pmd->CreateAllocatorDump(dump_name + "/shared_memory");
   dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
                   base::trace_event::MemoryAllocatorDump::kUnitsBytes,
                   static_cast<uint64_t>(size_in_bytes));
 
-  auto guid = gfx::GetGenericSharedMemoryGUIDForTracing(process_tracing_id,
-                                                        shared_memory_id_);
+  auto guid = GetGenericSharedMemoryGUIDForTracing(process_tracing_id,
+                                                   shared_memory_id_);
   pmd->CreateSharedGlobalAllocatorDump(guid);
   pmd->AddOwnershipEdge(dump->guid(), guid);
-
-  // Also dump the base class's texture memory.
-  GLImageMemory::OnMemoryDump(pmd, process_tracing_id, dump_name);
 }
 
 }  // namespace gfx

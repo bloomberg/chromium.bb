@@ -5,6 +5,7 @@
 #include "content/common/gpu/media/avda_codec_image.h"
 
 #include "content/common/gpu/media/avda_shared_state.h"
+#include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/context_state.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/texture_manager.h"
@@ -50,18 +51,12 @@ unsigned AVDACodecImage::GetInternalFormat() {
 }
 
 bool AVDACodecImage::BindTexImage(unsigned target) {
-  return true;
+  return false;
 }
 
 void AVDACodecImage::ReleaseTexImage(unsigned target) {}
 
-bool AVDACodecImage::CopyTexSubImage(unsigned target,
-                                     const gfx::Point& offset,
-                                     const gfx::Rect& rect) {
-  return false;
-}
-
-void AVDACodecImage::WillUseTexImage() {
+bool AVDACodecImage::CopyTexImage(unsigned target) {
   // Have we bound the SurfaceTexture's texture handle to the active
   // texture unit yet?
   bool bound_texture = false;
@@ -75,29 +70,38 @@ void AVDACodecImage::WillUseTexImage() {
   // Make sure that we have the right image in the front buffer.
   bound_texture |= UpdateSurfaceTexture();
 
-  // TODO(liberato): Handle the texture matrix properly.
-  // Either we can update the shader with it or we can move all of the logic
-  // to updateTexImage() to the right place in the cc to send it to the shader.
-  // For now, we just skip it.  crbug.com/530681
-
   // Sneakily bind the ST texture handle in the real GL context.
   // If we called UpdateTexImage() to update the ST front buffer, then we can
   // skip this.  Since one draw/frame is the common case, we optimize for it.
   if (!bound_texture)
     glBindTexture(GL_TEXTURE_EXTERNAL_OES,
                   shared_state_->surface_texture_service_id());
+
+  // TODO(liberato): Handle the texture matrix properly.
+  // Either we can update the shader with it or we can move all of the logic
+  // to updateTexImage() to the right place in the cc to send it to the shader.
+  // For now, we just skip it.  crbug.com/530681
+
+  gpu::gles2::TextureManager* texture_manager =
+      decoder_->GetContextGroup()->texture_manager();
+  gpu::gles2::Texture* texture =
+      texture_manager->GetTextureForServiceId(
+          shared_state_->surface_texture_service_id());
+  if (texture) {
+    // By setting image state to UNBOUND instead of COPIED we ensure that
+    // CopyTexImage() is called each time the surface texture is used for
+    // drawing.
+    texture->SetLevelImage(GL_TEXTURE_EXTERNAL_OES, 0, this,
+                           gpu::gles2::Texture::UNBOUND);
+  }
+
+  return true;
 }
 
-void AVDACodecImage::DidUseTexImage() {
-  // Unbind the ST's service_id in the real GL context in favor of whatever
-  // the decoder thinks is bound there.
-  const gpu::gles2::ContextState* state = decoder_->GetContextState();
-  const gpu::gles2::TextureUnit& active_unit =
-      state->texture_units[state->active_texture_unit];
-  glBindTexture(GL_TEXTURE_EXTERNAL_OES,
-                active_unit.bound_texture_external_oes.get()
-                    ? active_unit.bound_texture_external_oes->service_id()
-                    : 0);
+bool AVDACodecImage::CopyTexSubImage(unsigned target,
+                                     const gfx::Point& offset,
+                                     const gfx::Rect& rect) {
+  return false;
 }
 
 bool AVDACodecImage::ScheduleOverlayPlane(gfx::AcceleratedWidget widget,

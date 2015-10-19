@@ -5,7 +5,7 @@
 #ifndef UI_GL_GL_IMAGE_OZONE_NATIVE_PIXMAP_H_
 #define UI_GL_GL_IMAGE_OZONE_NATIVE_PIXMAP_H_
 
-#include "ui/gfx/gpu_memory_buffer.h"
+#include "ui/gfx/buffer_types.h"
 #include "ui/gl/gl_image_egl.h"
 #include "ui/ozone/public/native_pixmap.h"
 

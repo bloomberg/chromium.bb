@@ -36,13 +36,10 @@ class GLImageSync : public gfx::GLImage {
   unsigned GetInternalFormat() override;
   bool BindTexImage(unsigned target) override;
   void ReleaseTexImage(unsigned target) override;
+  bool CopyTexImage(unsigned target) override;
   bool CopyTexSubImage(unsigned target,
                        const gfx::Point& offset,
                        const gfx::Rect& rect) override;
-  void WillUseTexImage() override;
-  void WillModifyTexImage() override;
-  void DidModifyTexImage() override;
-  void DidUseTexImage() override;
   bool ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
                             int z_order,
                             gfx::OverlayTransform transform,
@@ -94,22 +91,16 @@ void GLImageSync::ReleaseTexImage(unsigned target) {
   NOTREACHED();
 }
 
-bool GLImageSync::CopyTexSubImage(unsigned target,
-                                  const gfx::Point& offset,
-                                  const gfx::Rect& rect) {
+bool GLImageSync::CopyTexImage(unsigned target) {
+  NOTREACHED();
   return false;
 }
 
-void GLImageSync::WillUseTexImage() {
-}
-
-void GLImageSync::DidUseTexImage() {
-}
-
-void GLImageSync::WillModifyTexImage() {
-}
-
-void GLImageSync::DidModifyTexImage() {
+bool GLImageSync::CopyTexSubImage(unsigned target,
+                                  const gfx::Point& offset,
+                                  const gfx::Rect& rect) {
+  NOTREACHED();
+  return false;
 }
 
 bool GLImageSync::ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
@@ -357,7 +348,7 @@ TextureDefinition::TextureDefinition(
         new GLImageSync(image_buffer_,
                         gfx::Size(first_face.level_infos[0].width,
                                   first_face.level_infos[0].height)));
-    texture->SetLevelImage(NULL, target_, 0, gl_image.get());
+    texture->SetLevelImage(target_, 0, gl_image.get(), Texture::BOUND);
   }
 
   const Texture::LevelInfo& level = first_face.level_infos[0];
@@ -406,12 +397,10 @@ void TextureDefinition::UpdateTextureInternal(Texture* texture) const {
 
   if (image_buffer_.get()) {
     texture->SetLevelImage(
-        NULL,
-        target_,
-        0,
-        new GLImageSync(
-            image_buffer_,
-            gfx::Size(level_info_.width, level_info_.height)));
+        target_, 0,
+        new GLImageSync(image_buffer_,
+                        gfx::Size(level_info_.width, level_info_.height)),
+        Texture::BOUND);
   }
 
   texture->target_ = target_;
@@ -437,7 +426,7 @@ void TextureDefinition::UpdateTexture(Texture* texture) const {
     if (bound_id == static_cast<GLint>(old_service_id)) {
       glBindTexture(target_, service_id);
     }
-    texture->SetLevelImage(NULL, target_, 0, NULL);
+    texture->SetLevelImage(target_, 0, NULL, Texture::UNBOUND);
   }
 
   UpdateTextureInternal(texture);
