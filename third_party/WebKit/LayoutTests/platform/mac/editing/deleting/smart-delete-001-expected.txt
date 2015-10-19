@@ -10,17 +10,17 @@ layer at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {DIV} at (0,0) size 784x212 [border: (2px solid #0000FF)]
         LayoutBlockFlow {DIV} at (14,14) size 756x56
-          LayoutText {#text} at (0,0) size 68x28
-            text run at (0,0) width 68: "Tests: "
+          LayoutText {#text} at (0,0) size 66x28
+            text run at (0,0) width 66: "Tests: "
           LayoutBR {BR} at (0,0) size 0x0
-          LayoutText {#text} at (0,28) size 492x28
-            text run at (0,28) width 492: "Smart delete when deleting the first word on a line."
+          LayoutText {#text} at (0,28) size 491x28
+            text run at (0,28) width 491: "Smart delete when deleting the first word on a line."
         LayoutBlockFlow {DIV} at (14,86) size 756x112
           LayoutText {#text} at (0,0) size 190x28
             text run at (0,0) width 190: "Expected Results: "
           LayoutBR {BR} at (189,22) size 1x0
-          LayoutText {#text} at (0,28) size 708x56
-            text run at (0,28) width 708: "The first word and the space following the first word should be deleted. It"
+          LayoutText {#text} at (0,28) size 706x56
+            text run at (0,28) width 706: "The first word and the space following the first word should be deleted. It"
             text run at (0,56) width 201: "should like this this: "
           LayoutBR {BR} at (200,78) size 1x0
           LayoutText {#text} at (0,84) size 70x28

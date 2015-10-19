@@ -16,9 +16,9 @@ layer at (0,0) size 800x600
             LayoutText {#text} at (0,0) size 36x28
               text run at (0,0) width 36: "one"
         LayoutBlockFlow {DIV} at (14,42) size 756x28
-          LayoutInline {B} at (0,0) size 54x28
-            LayoutText {#text} at (0,0) size 54x28
-              text run at (0,0) width 54: "three"
+          LayoutInline {B} at (0,0) size 53x28
+            LayoutText {#text} at (0,0) size 53x28
+              text run at (0,0) width 53: "three"
         LayoutBlockFlow {DIV} at (14,70) size 756x28
           LayoutInline {I} at (0,0) size 40x28
             LayoutText {#text} at (0,0) size 40x28

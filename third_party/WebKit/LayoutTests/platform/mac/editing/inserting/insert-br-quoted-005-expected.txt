@@ -18,12 +18,12 @@ layer at (0,0) size 800x600
           LayoutText {#text} at (0,0) size 190x28
             text run at (0,0) width 190: "Expected Results: "
           LayoutBR {BR} at (189,22) size 1x0
-          LayoutText {#text} at (0,28) size 376x18
-            text run at (0,28) width 376: "Two blockquotes, with an unquoted blank line in between."
-          LayoutBR {BR} at (375,42) size 1x0
-          LayoutText {#text} at (0,46) size 411x18
-            text run at (0,46) width 411: "The first blockquote contains two lines, the second one is blank."
-          LayoutBR {BR} at (410,60) size 1x0
+          LayoutText {#text} at (0,28) size 374x18
+            text run at (0,28) width 374: "Two blockquotes, with an unquoted blank line in between."
+          LayoutBR {BR} at (373,42) size 1x0
+          LayoutText {#text} at (0,46) size 410x18
+            text run at (0,46) width 410: "The first blockquote contains two lines, the second one is blank."
+          LayoutBR {BR} at (409,60) size 1x0
           LayoutText {#text} at (0,64) size 318x18
             text run at (0,64) width 318: "The second blockquote is a single non-blank line."
       LayoutBlockFlow {DIV} at (0,110) size 784x224 [border: (2px solid #FF0000)]

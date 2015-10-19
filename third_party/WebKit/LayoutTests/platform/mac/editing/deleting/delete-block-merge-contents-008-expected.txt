@@ -13,8 +13,8 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {DIV} at (0,0) size 784x112 [border: (2px solid #FF0000)]
         LayoutBlockFlow {DIV} at (14,14) size 756x84
           LayoutBlockFlow (anonymous) at (0,0) size 756x28
-            LayoutText {#text} at (0,0) size 84x28
-              text run at (0,0) width 84: "OneTwo"
+            LayoutText {#text} at (0,0) size 83x28
+              text run at (0,0) width 83: "OneTwo"
           LayoutBlockFlow {DIV} at (0,28) size 756x56
             LayoutBlockFlow {DIV} at (0,0) size 756x28
               LayoutBlockFlow {DIV} at (0,0) size 756x28

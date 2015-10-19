@@ -8,15 +8,15 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x36
-        LayoutText {#text} at (0,0) size 776x35
+        LayoutText {#text} at (0,0) size 774x35
           text run at (0,0) width 677: "This tests to see if deletion correctly prunes the containers of the paragraph being moved during a merge. "
-          text run at (676,0) width 100: "You should see"
+          text run at (676,0) width 98: "You should see"
           text run at (0,18) width 25: "'foo"
         LayoutInline {B} at (0,0) size 25x17
           LayoutText {#text} at (24,18) size 25x17
             text run at (24,18) width 25: "bar"
-        LayoutText {#text} at (48,18) size 51x17
-          text run at (48,18) width 51: "' below."
+        LayoutText {#text} at (48,18) size 50x17
+          text run at (48,18) width 50: "' below."
       LayoutBlockFlow {DIV} at (0,52) size 784x18
         LayoutBlockFlow {DIV} at (0,0) size 784x18
           LayoutText {#text} at (0,0) size 22x17

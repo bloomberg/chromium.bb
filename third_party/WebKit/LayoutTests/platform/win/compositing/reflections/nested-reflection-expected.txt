@@ -4,8 +4,8 @@ layer at (0,0) size 800x306
   LayoutBlockFlow {HTML} at (0,0) size 800x306
     LayoutBlockFlow {BODY} at (8,16) size 784x270
       LayoutBlockFlow {P} at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 389x17
-          text run at (0,0) width 389: "You should see the original and three copies of the blue box."
+        LayoutText {#text} at (0,0) size 387x17
+          text run at (0,0) width 387: "You should see the original and three copies of the blue box."
 layer at (28,54) size 122x232
   LayoutBlockFlow {DIV} at (20,38) size 122x232 [border: (1px solid #000000)]
 layer at (39,65) size 100x100

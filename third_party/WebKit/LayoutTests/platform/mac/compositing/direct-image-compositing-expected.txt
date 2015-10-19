@@ -7,15 +7,15 @@ layer at (0,0) size 785x750 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         LayoutText {#text} at (0,0) size 389x37
           text run at (0,0) width 389: "Image optimisation in layers"
       LayoutBlockFlow {P} at (0,58.44) size 769x54
-        LayoutText {#text} at (0,0) size 754x54
+        LayoutText {#text} at (0,0) size 752x54
           text run at (0,0) width 610: "This test exercises direct compositing of images with hardware acceleration. The visual results "
           text run at (609,0) width 36: "using"
-          text run at (0,18) width 686: "ACCELERATED_COMPOSITING and regular TOT should be identical. Running this test manually with "
-          text run at (685,18) width 69: "the correct"
+          text run at (0,18) width 684: "ACCELERATED_COMPOSITING and regular TOT should be identical. Running this test manually with "
+          text run at (683,18) width 69: "the correct"
           text run at (0,36) width 451: "debug options will show which elements are directly composited. See "
-        LayoutInline {A} at (0,0) size 311x18 [color=#0000EE]
-          LayoutText {#text} at (450,36) size 311x18
-            text run at (450,36) width 311: "https://bugs.webkit.org/show_bug.cgi?id=23361"
+        LayoutInline {A} at (0,0) size 310x18 [color=#0000EE]
+          LayoutText {#text} at (450,36) size 310x18
+            text run at (450,36) width 310: "https://bugs.webkit.org/show_bug.cgi?id=23361"
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow (floating) {DIV} at (0,128.44) size 260x200
         LayoutText {#text} at (150,0) size 108x72

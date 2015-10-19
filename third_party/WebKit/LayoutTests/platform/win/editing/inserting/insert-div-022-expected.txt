@@ -12,9 +12,9 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x568
       LayoutBlockFlow (anonymous) at (0,0) size 784x108
-        LayoutText {#text} at (0,0) size 759x80
-          text run at (0,0) width 753: "Test inserting paragraphs: should see \"foo\" in a blue box, then a blue box with"
-          text run at (752,0) width 7: " "
+        LayoutText {#text} at (0,0) size 757x80
+          text run at (0,0) width 751: "Test inserting paragraphs: should see \"foo\" in a blue box, then a blue box with"
+          text run at (750,0) width 7: " "
           text run at (0,27) width 747: "with two lines in it: First line a bold \"x\"; second line a non-bold \"bar\". Fix for"
           text run at (746,27) width 7: " "
           text run at (0,54) width 90: "this bug: "

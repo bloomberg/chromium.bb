@@ -12,7 +12,7 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (0,0) size 764x35
           text run at (0,0) width 322: "This tests for a bug in InsertLineBreakCommand. "
           text run at (321,0) width 443: "Only one line break should be inserted and the caret should end up at"
-          text run at (0,18) width 220: "the end of the bordered div below."
+          text run at (0,18) width 219: "the end of the bordered div below."
       LayoutBlockFlow {DIV} at (0,52) size 784x56 [border: (1px solid #000000)]
         LayoutText {#text} at (1,1) size 81x17
           text run at (1,1) width 81: "Hello world."

@@ -17,18 +17,18 @@ layer at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {DIV} at (0,0) size 784x212 [border: (2px solid #0000FF)]
         LayoutBlockFlow {DIV} at (14,14) size 756x112
-          LayoutText {#text} at (0,0) size 68x28
-            text run at (0,0) width 68: "Tests: "
+          LayoutText {#text} at (0,0) size 66x28
+            text run at (0,0) width 66: "Tests: "
           LayoutBR {BR} at (0,0) size 0x0
-          LayoutText {#text} at (0,28) size 716x56
-            text run at (0,28) width 716: "Inserting blocks for paragraphs should do a better job of finding a block to"
-            text run at (0,56) width 116: "insert after. "
-          LayoutInline {A} at (0,0) size 257x28 [color=#0000EE]
-            LayoutText {#text} at (115,56) size 257x28
-              text run at (115,56) width 257: "<rdar://problem/3996605>"
-          LayoutText {#text} at (371,56) size 727x56
-            text run at (371,56) width 356: " Insert paragraph command puts new"
-            text run at (0,84) width 548: "block in wrong place, creating difficult-to-handle HTML"
+          LayoutText {#text} at (0,28) size 714x56
+            text run at (0,28) width 714: "Inserting blocks for paragraphs should do a better job of finding a block to"
+            text run at (0,56) width 114: "insert after. "
+          LayoutInline {A} at (0,0) size 258x28 [color=#0000EE]
+            LayoutText {#text} at (113,56) size 258x28
+              text run at (113,56) width 258: "<rdar://problem/3996605>"
+          LayoutText {#text} at (370,56) size 726x56
+            text run at (370,56) width 356: " Insert paragraph command puts new"
+            text run at (0,84) width 546: "block in wrong place, creating difficult-to-handle HTML"
         LayoutBlockFlow {DIV} at (14,142) size 756x56
           LayoutText {#text} at (0,0) size 190x28
             text run at (0,0) width 190: "Expected Results: "

@@ -8,9 +8,9 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 595x18
-          text run at (0,0) width 369: "Tests for a bug in the paragraph separator insertion code. "
-          text run at (368,0) width 227: "Only one newline should be added."
+        LayoutText {#text} at (0,0) size 593x18
+          text run at (0,0) width 368: "Tests for a bug in the paragraph separator insertion code. "
+          text run at (367,0) width 226: "Only one newline should be added."
       LayoutBlockFlow {DIV} at (0,34) size 784x54
         LayoutBlockFlow (anonymous) at (0,0) size 784x18
           LayoutText {#text} at (0,0) size 22x18

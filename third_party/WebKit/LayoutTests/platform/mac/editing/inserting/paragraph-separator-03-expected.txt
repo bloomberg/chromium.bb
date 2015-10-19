@@ -10,7 +10,7 @@ layer at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x579
       LayoutBlockFlow {P} at (0,0) size 784x54
         LayoutText {#text} at (0,0) size 767x54
-          text run at (0,0) width 747: "Tests for a bug in the paragraph separator insertion code that would add an extra newline when inserting a paragraph"
+          text run at (0,0) width 746: "Tests for a bug in the paragraph separator insertion code that would add an extra newline when inserting a paragraph"
           text run at (0,18) width 427: "separator at the end of a paragraph in text that preserves newlines. "
           text run at (426,18) width 341: "Also, an extraneous space would be added after 'foo'."
           text run at (0,36) width 230: "Only one newline should be added. "

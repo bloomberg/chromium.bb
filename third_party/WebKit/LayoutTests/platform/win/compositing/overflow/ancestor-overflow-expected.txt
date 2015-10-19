@@ -4,8 +4,8 @@ layer at (0,0) size 800x430
   LayoutBlockFlow {HTML} at (0,0) size 800x430
     LayoutBlockFlow {BODY} at (8,16) size 784x406
       LayoutBlockFlow {P} at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 470x17
-          text run at (0,0) width 470: "Test overflow clipping of composited elements in various configurations."
+        LayoutText {#text} at (0,0) size 469x17
+          text run at (0,0) width 469: "Test overflow clipping of composited elements in various configurations."
       LayoutBlockFlow (anonymous) at (0,34) size 784x372
         LayoutText {#text} at (182,168) size 4x17
           text run at (182,168) width 4: " "

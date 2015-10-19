@@ -18,9 +18,9 @@ layer at (0,0) size 800x600
           LayoutText {#text} at (0,0) size 190x26
             text run at (0,0) width 190: "Expected Results: "
           LayoutBR {BR} at (189,21) size 1x0
-          LayoutText {#text} at (0,27) size 376x17
-            text run at (0,27) width 376: "Two blockquotes, with an unquoted blank line in between."
-          LayoutBR {BR} at (375,41) size 1x0
+          LayoutText {#text} at (0,27) size 374x17
+            text run at (0,27) width 374: "Two blockquotes, with an unquoted blank line in between."
+          LayoutBR {BR} at (373,41) size 1x0
           LayoutText {#text} at (0,45) size 411x17
             text run at (0,45) width 411: "The first blockquote contains two lines, the second one is blank."
           LayoutBR {BR} at (410,59) size 1x0

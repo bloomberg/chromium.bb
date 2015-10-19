@@ -12,6 +12,6 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (0,0) size 137x28
           text run at (0,0) width 137: "There is a tide"
       LayoutBlockFlow {DIV} at (0,28) size 600x28
-        LayoutText {#text} at (0,0) size 238x28
-          text run at (0,0) width 238: "Which taken at the flood"
+        LayoutText {#text} at (0,0) size 236x28
+          text run at (0,0) width 236: "Which taken at the flood"
 caret: position 0 of child 0 {#text} of child 3 {DIV} of body

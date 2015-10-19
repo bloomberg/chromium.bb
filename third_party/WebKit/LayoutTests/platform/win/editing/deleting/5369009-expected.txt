@@ -6,12 +6,12 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {P} at (0,0) size 784x36
         LayoutText {#text} at (0,0) size 782x35
           text run at (0,0) width 782: "This tests for a hang on delete where a style rule would cause style spans in content moved after the delete to be displayed"
-          text run at (0,18) width 206: "as blocks. You should see Hello"
+          text run at (0,18) width 204: "as blocks. You should see Hello"
         LayoutInline {B} at (0,0) size 45x17
-          LayoutText {#text} at (205,18) size 45x17
-            text run at (205,18) width 45: "World"
-        LayoutText {#text} at (249,18) size 48x17
-          text run at (249,18) width 48: " below."
+          LayoutText {#text} at (203,18) size 45x17
+            text run at (203,18) width 45: "World"
+        LayoutText {#text} at (247,18) size 47x17
+          text run at (247,18) width 47: " below."
       LayoutBlockFlow {DIV} at (0,52) size 784x18
         LayoutBlockFlow {DIV} at (0,0) size 784x18
           LayoutText {#text} at (0,0) size 36x17

@@ -7,7 +7,7 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (0,0) size 780x39
           text run at (0,0) width 555: "This tests for a bug where empty table rows well after the selection to delete were removed. "
           text run at (555,0) width 225: "There should be five rows in the table"
-          text run at (0,20) width 218: "below, before and after the deletion."
+          text run at (0,20) width 217: "below, before and after the deletion."
       LayoutBlockFlow {DIV} at (0,56) size 784x140
         LayoutTable {TABLE} at (0,0) size 107x140 [border: (1px outset #808080)]
           LayoutTableSection {TBODY} at (1,1) size 105x138

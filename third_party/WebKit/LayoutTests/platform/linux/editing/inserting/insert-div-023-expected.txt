@@ -25,9 +25,9 @@ layer at (0,0) size 785x685 backgroundClip at (0,0) size 785x600 clip at (0,0) s
   LayoutBlockFlow {HTML} at (0,0) size 785x685
     LayoutBlockFlow {BODY} at (8,8) size 769x653
       LayoutBlockFlow (anonymous) at (0,0) size 769x84
-        LayoutText {#text} at (0,0) size 750x55
-          text run at (0,0) width 744: "Test inserting paragraphs and managing typing style correctly: \"x\" under \"line"
-          text run at (744,0) width 6: " "
+        LayoutText {#text} at (0,0) size 749x55
+          text run at (0,0) width 743: "Test inserting paragraphs and managing typing style correctly: \"x\" under \"line"
+          text run at (742,0) width 7: " "
           text run at (0,28) width 338: "2\" should be bold. Fix for this bug: "
         LayoutInline {A} at (0,0) size 257x27 [color=#0000EE]
           LayoutText {#text} at (338,28) size 257x27

@@ -9,9 +9,9 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x36
-        LayoutText {#text} at (0,0) size 776x36
+        LayoutText {#text} at (0,0) size 775x36
           text run at (0,0) width 425: "This tests inserting a paragraph separator before a horizontal rule. "
-          text run at (424,0) width 352: "You should see 'foo', empty paragraph, horizontal rule,"
+          text run at (424,0) width 351: "You should see 'foo', empty paragraph, horizontal rule,"
           text run at (0,18) width 379: "'bar', and the caret should be just before the horizontal rule."
       LayoutBlockFlow {DIV} at (0,52) size 784x72
         LayoutBlockFlow (anonymous) at (0,0) size 784x36

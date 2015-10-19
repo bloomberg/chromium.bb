@@ -4,8 +4,8 @@ layer at (0,0) size 800x324
   LayoutBlockFlow {HTML} at (0,0) size 800x324
     LayoutBlockFlow {BODY} at (8,16) size 784x288
       LayoutBlockFlow {P} at (0,0) size 784x36
-        LayoutText {#text} at (0,0) size 778x36
-          text run at (0,0) width 778: "Test transform change on reflected elements, with compositing layers larger than render layers. Left and right side should"
+        LayoutText {#text} at (0,0) size 776x36
+          text run at (0,0) width 776: "Test transform change on reflected elements, with compositing layers larger than render layers. Left and right side should"
           text run at (0,18) width 103: "be symmetrical."
 layer at (28,72) size 122x232
   LayoutBlockFlow {DIV} at (20,56) size 122x232 [border: (1px solid #000000)]

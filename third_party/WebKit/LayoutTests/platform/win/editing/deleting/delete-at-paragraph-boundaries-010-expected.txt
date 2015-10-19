@@ -15,8 +15,8 @@ layer at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {DIV} at (0,0) size 784x314 [border: (2px solid #0000FF)]
         LayoutBlockFlow {DIV} at (14,14) size 756x108
-          LayoutText {#text} at (0,0) size 68x26
-            text run at (0,0) width 68: "Tests: "
+          LayoutText {#text} at (0,0) size 66x26
+            text run at (0,0) width 66: "Tests: "
           LayoutBR {BR} at (0,0) size 0x0
           LayoutText {#text} at (0,27) size 734x53
             text run at (0,27) width 734: "Deleting when a selection starts at the beginning of a text following a nested"

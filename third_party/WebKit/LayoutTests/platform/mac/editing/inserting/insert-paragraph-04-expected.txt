@@ -10,15 +10,15 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x54
-        LayoutText {#text} at (0,0) size 765x36
+        LayoutText {#text} at (0,0) size 763x36
           text run at (0,0) width 413: "This tests inserting a paragraph separator after a horizontal rule. "
-          text run at (412,0) width 353: "You should see 'foo', empty paragraph, horizontal rule,"
+          text run at (412,0) width 351: "You should see 'foo', empty paragraph, horizontal rule,"
           text run at (0,18) width 372: "'bar', and the caret should be just after the horizontal rule. "
         LayoutInline {B} at (0,0) size 776x36
           LayoutText {#text} at (371,18) size 776x36
             text run at (371,18) width 171: "This demonstrates 8345. "
             text run at (541,18) width 235: "The caret after a horizontal rule is"
-            text run at (0,36) width 436: "drawn in the same location as the caret before a horizontal rule."
+            text run at (0,36) width 435: "drawn in the same location as the caret before a horizontal rule."
       LayoutBlockFlow (anonymous) at (0,70) size 784x0
         LayoutInline {B} at (0,0) size 0x0
           LayoutText {#text} at (0,0) size 0x0

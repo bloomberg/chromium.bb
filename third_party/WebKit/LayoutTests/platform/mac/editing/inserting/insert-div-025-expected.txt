@@ -15,12 +15,12 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {DIV} at (0,0) size 784x84 [border: (2px solid #0000FF)]
         LayoutText {#text} at (14,14) size 750x56
           text run at (14,14) width 750: "Should see \"foo\" and \"bar\" each in a separate red box. Note that the \"foo\" text"
-          text run at (14,42) width 215: "is really \"foo \". There "
-        LayoutInline {B} at (0,0) size 51x28
-          LayoutText {#text} at (228,42) size 51x28
-            text run at (228,42) width 51: "must"
-        LayoutText {#text} at (278,42) size 315x28
-          text run at (278,42) width 315: " be a space at the end of the line."
+          text run at (14,42) width 214: "is really \"foo \". There "
+        LayoutInline {B} at (0,0) size 52x28
+          LayoutText {#text} at (227,42) size 52x28
+            text run at (227,42) width 52: "must"
+        LayoutText {#text} at (278,42) size 314x28
+          text run at (278,42) width 314: " be a space at the end of the line."
       LayoutBlockFlow {DIV} at (0,108) size 784x112
         LayoutBlockFlow {DIV} at (0,0) size 784x56 [border: (2px solid #FF0000)]
           LayoutText {#text} at (14,14) size 38x28

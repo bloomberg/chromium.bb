@@ -14,6 +14,6 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (14,14) size 40x28
           text run at (14,14) width 40: "One"
       LayoutBlockFlow {DIV} at (0,56) size 784x56 [border: (2px solid #FF0000)]
-        LayoutText {#text} at (14,14) size 44x28
-          text run at (14,14) width 44: "Two"
+        LayoutText {#text} at (14,14) size 43x28
+          text run at (14,14) width 43: "Two"
 caret: position 3 of child 0 {#text} of child 1 {DIV} of body

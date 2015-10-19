@@ -1,0 +1,45 @@
+Should be compositedShould not be composited
+Should be composited
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [8, 8],
+          "bounds": [262, 212],
+          "drawsContent": true,
+          "children": [
+            {
+              "shouldFlattenTransform": false,
+              "children": [
+                {
+                  "position": [6, 6],
+                  "bounds": [250, 50],
+                  "contentsOpaque": true,
+                  "drawsContent": true,
+                  "backgroundColor": "#C0C0C0"
+                },
+                {
+                  "position": [10, 21],
+                  "bounds": [101, 100],
+                  "drawsContent": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "position": [17, 230],
+          "bounds": [101, 100],
+          "drawsContent": true,
+          "backgroundColor": "#0000FF"
+        }
+      ]
+    }
+  ]
+}
+

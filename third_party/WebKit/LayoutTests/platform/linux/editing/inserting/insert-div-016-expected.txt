@@ -18,8 +18,8 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow (anonymous) at (0,0) size 784x28
-        LayoutText {#text} at (0,0) size 681x27
-          text run at (0,0) width 681: "Test inserting paragraphs: should see two empty red boxes below \"foo\""
+        LayoutText {#text} at (0,0) size 680x27
+          text run at (0,0) width 680: "Test inserting paragraphs: should see two empty red boxes below \"foo\""
       LayoutBlockFlow {DIV} at (0,28) size 784x12
       LayoutBlockFlow {DIV} at (0,40) size 784x56 [border: (2px solid #FF0000)]
         LayoutText {#text} at (14,14) size 33x27

@@ -4,9 +4,9 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x36
-        LayoutText {#text} at (0,0) size 752x36
+        LayoutText {#text} at (0,0) size 750x36
           text run at (0,0) width 630: "This tests to make sure that a br isn't inserted into a tab span during an InsertLineBreak operation. "
-          text run at (629,0) width 123: "You can test for its"
+          text run at (629,0) width 121: "You can test for its"
           text run at (0,18) width 440: "existence with the DOM inspector or you can look at the render tree."
       LayoutBlockFlow {DIV} at (0,52) size 784x36
         LayoutBlockFlow {DIV} at (0,0) size 784x36

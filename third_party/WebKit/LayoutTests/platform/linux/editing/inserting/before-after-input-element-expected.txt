@@ -16,8 +16,8 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (0,1) size 32x19
           text run at (0,1) width 32: "Hello"
         LayoutTextControl {INPUT} at (32,0) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-        LayoutText {#text} at (186,1) size 39x19
-          text run at (186,1) width 39: "World"
+        LayoutText {#text} at (186,1) size 38x19
+          text run at (186,1) width 38: "World"
 layer at (42,47) size 150x16
   LayoutBlockFlow {DIV} at (2,3) size 150x16
 caret: position 5 of child 2 {#text} of child 2 {DIV} of body

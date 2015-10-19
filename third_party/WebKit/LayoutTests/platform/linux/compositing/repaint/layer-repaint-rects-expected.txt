@@ -4,8 +4,8 @@ layer at (0,0) size 800x52
   LayoutBlockFlow {HTML} at (0,0) size 800x52
     LayoutBlockFlow {BODY} at (0,16) size 800x20
       LayoutBlockFlow {P} at (0,0) size 800x20
-        LayoutText {#text} at (0,0) size 628x19
-          text run at (0,0) width 628: "Tests repaint after a layer stops compositing. You should see no red below after the end of the transition."
+        LayoutText {#text} at (0,0) size 626x19
+          text run at (0,0) width 626: "Tests repaint after a layer stops compositing. You should see no red below after the end of the transition."
 layer at (0,100) size 402x232
   LayoutBlockFlow (positioned) {DIV} at (0,100) size 402x232 [border: (1px solid #000000)]
 layer at (1,111) size 200x100

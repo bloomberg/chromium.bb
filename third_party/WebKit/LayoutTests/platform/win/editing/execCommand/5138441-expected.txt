@@ -4,10 +4,10 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x54
-        LayoutText {#text} at (0,0) size 764x53
+        LayoutText {#text} at (0,0) size 763x53
           text run at (0,0) width 500: "This tests for a bug where indented text would appear quoted in GoogleDocs. "
           text run at (499,0) width 221: "Google docs uses blockquotes and"
-          text run at (0,18) width 764: "FormatBlock to implement a \"Quote Text\" feature, and style rules for blockquotes appeared on the blockquotes that we"
+          text run at (0,18) width 763: "FormatBlock to implement a \"Quote Text\" feature, and style rules for blockquotes appeared on the blockquotes that we"
           text run at (0,36) width 179: "use to implement indenting."
       LayoutBlockFlow {DIV} at (0,70) size 784x62
         LayoutBlockFlow {BLOCKQUOTE} at (40,0) size 744x18

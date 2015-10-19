@@ -43,7 +43,7 @@ layer at (8,28) size 784x202 clip at (9,29) size 767x185 scrollY 277.00 scrollHe
     LayoutBR {BR} at (17,201) size 0x19
     LayoutText {#text} at (1,221) size 16x19
       text run at (1,221) width 16: "11"
-    LayoutBR {BR} at (17,221) size 0x19
+    LayoutBR {BR} at (16,221) size 1x19
     LayoutText {#text} at (1,241) size 16x19
       text run at (1,241) width 16: "12"
     LayoutBR {BR} at (17,241) size 0x19

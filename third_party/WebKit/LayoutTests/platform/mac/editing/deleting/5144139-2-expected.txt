@@ -4,22 +4,22 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x36
-        LayoutText {#text} at (0,0) size 722x36
+        LayoutText {#text} at (0,0) size 718x36
           text run at (0,0) width 711: "This tests to see that deleting a selection that starts just before a table and ends inside the table does not insert a"
-          text run at (0,18) width 192: "placeholder br unnecessarily. "
-          text run at (191,18) width 258: "You should see two ToDos, one empty. "
-          text run at (448,18) width 274: "The caret should be just before the second."
+          text run at (0,18) width 190: "placeholder br unnecessarily. "
+          text run at (189,18) width 255: "You should see two ToDos, one empty. "
+          text run at (443,18) width 275: "The caret should be just before the second."
       LayoutBlockFlow {DIV} at (0,52) size 784x50
-        LayoutTable {TABLE} at (0,0) size 133x25
-          LayoutTableSection {TBODY} at (0,0) size 133x25
-            LayoutTableRow {TR} at (0,2) size 133x21
+        LayoutTable {TABLE} at (0,0) size 132x25
+          LayoutTableSection {TBODY} at (0,0) size 132x25
+            LayoutTableRow {TR} at (0,2) size 132x21
               LayoutTableCell {TD} at (2,2) size 18x21 [r=0 c=0 rs=1 cs=1]
                 LayoutText {#text} at (1,1) size 16x18
                   text run at (1,1) width 16: "\x{21D2}"
-              LayoutTableCell {TD} at (22,2) size 94x20 [r=0 c=1 rs=1 cs=1]
-                LayoutText {#text} at (1,1) size 92x18
-                  text run at (1,1) width 92: "ToDo Content"
-              LayoutTableCell {TD} at (118,2) size 13x21 [r=0 c=2 rs=1 cs=1]
+              LayoutTableCell {TD} at (22,2) size 93x20 [r=0 c=1 rs=1 cs=1]
+                LayoutText {#text} at (1,1) size 91x18
+                  text run at (1,1) width 91: "ToDo Content"
+              LayoutTableCell {TD} at (117,2) size 13x21 [r=0 c=2 rs=1 cs=1]
                 LayoutText {#text} at (1,2) size 11x18
                   text run at (1,2) width 11: "\x{21E3}"
         LayoutTable {TABLE} at (0,25) size 41x25

@@ -20,9 +20,9 @@ layer at (0,0) size 800x600
             LayoutText {#text} at (0,0) size 40x27
               text run at (0,0) width 40: "One"
           LayoutBlockFlow {DIV} at (0,28) size 756x56
-            LayoutText {#text} at (0,0) size 99x27
-              text run at (0,0) width 99: "TwoThree"
-            LayoutBR {BR} at (99,21) size 0x0
+            LayoutText {#text} at (0,0) size 98x27
+              text run at (0,0) width 98: "TwoThree"
+            LayoutBR {BR} at (97,21) size 1x0
             LayoutText {#text} at (0,28) size 45x27
               text run at (0,28) width 45: "Four"
           LayoutBlockFlow (anonymous) at (0,84) size 756x28

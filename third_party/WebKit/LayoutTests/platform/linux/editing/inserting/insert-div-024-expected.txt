@@ -32,9 +32,9 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x568
       LayoutBlockFlow (anonymous) at (0,0) size 784x112
-        LayoutText {#text} at (0,0) size 732x55
-          text run at (0,0) width 726: "Test inserting paragraphs and managing typing style correctly: Only \"line 1\""
-          text run at (726,0) width 6: " "
+        LayoutText {#text} at (0,0) size 731x55
+          text run at (0,0) width 725: "Test inserting paragraphs and managing typing style correctly: Only \"line 1\""
+          text run at (724,0) width 7: " "
           text run at (0,28) width 611: "should be bold. Other lines should be non-bold. Fix for this bug:"
           text run at (611,28) width 6: " "
         LayoutInline {A} at (0,0) size 257x27 [color=#0000EE]

@@ -4,8 +4,8 @@ layer at (0,0) size 785x838 backgroundClip at (0,0) size 785x600 clip at (0,0) s
   LayoutBlockFlow {HTML} at (0,0) size 785x838
     LayoutBlockFlow {BODY} at (8,8) size 769x822
       LayoutBlockFlow (anonymous) at (0,0) size 769x20
-        LayoutText {#text} at (0,0) size 78x19
-          text run at (0,0) width 78: "Text outside."
+        LayoutText {#text} at (0,0) size 77x19
+          text run at (0,0) width 77: "Text outside."
 layer at (8,28) size 702x802 backgroundClip at (8,28) size 702x572 clip at (9,29) size 685x571 scrollHeight 1154
   LayoutBlockFlow {DIV} at (0,20) size 702x802 [border: (1px solid #000000)]
     LayoutBlockFlow {P} at (1,17) size 685x132

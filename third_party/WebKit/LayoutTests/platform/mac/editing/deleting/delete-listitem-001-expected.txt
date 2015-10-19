@@ -28,6 +28,6 @@ layer at (0,0) size 800x600
             LayoutText {#text} at (0,0) size 40x28
               text run at (0,0) width 40: "four"
           LayoutListItem {LI} at (40,56) size 716x28
-            LayoutText {#text} at (0,0) size 38x28
-              text run at (0,0) width 38: "five"
+            LayoutText {#text} at (0,0) size 36x28
+              text run at (0,0) width 36: "five"
 caret: position 3 of child 0 {#text} of child 1 {LI} of child 1 {UL} of child 1 {DIV} of body

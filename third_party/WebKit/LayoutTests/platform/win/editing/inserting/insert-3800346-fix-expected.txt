@@ -23,11 +23,11 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {DIV} at (0,0) size 784x238 [border: (2px solid #FF0000)]
         LayoutBlockFlow {DIV} at (14,14) size 756x210
           LayoutBlockFlow (anonymous) at (0,0) size 756x27
-            LayoutText {#text} at (0,0) size 42x26
-              text run at (0,0) width 42: "Test"
+            LayoutText {#text} at (0,0) size 40x26
+              text run at (0,0) width 40: "Test"
           LayoutBlockFlow {BLOCKQUOTE} at (40,51) size 676x27
-            LayoutText {#text} at (0,0) size 42x26
-              text run at (0,0) width 42: "Test"
+            LayoutText {#text} at (0,0) size 40x26
+              text run at (0,0) width 40: "Test"
           LayoutBlockFlow (anonymous) at (0,102) size 756x108
             LayoutBR {BR} at (0,0) size 0x26
             LayoutBR {BR} at (0,27) size 0x26

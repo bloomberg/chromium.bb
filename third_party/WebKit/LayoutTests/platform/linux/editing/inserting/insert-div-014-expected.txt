@@ -14,8 +14,8 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow (anonymous) at (0,0) size 784x28
-        LayoutText {#text} at (0,0) size 628x27
-          text run at (0,0) width 628: "Test inserting paragraphs: should see empty blue box below \"bar\""
+        LayoutText {#text} at (0,0) size 627x27
+          text run at (0,0) width 627: "Test inserting paragraphs: should see empty blue box below \"bar\""
       LayoutBlockFlow {DIV} at (0,28) size 784x36
       LayoutBlockFlow {DIV} at (0,64) size 784x56 [border: (2px solid #FF0000)]
         LayoutText {#text} at (14,14) size 33x27

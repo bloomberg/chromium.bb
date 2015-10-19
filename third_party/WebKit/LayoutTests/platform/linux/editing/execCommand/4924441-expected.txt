@@ -4,9 +4,9 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x576
       LayoutBlockFlow {P} at (0,0) size 784x40
-        LayoutText {#text} at (0,0) size 782x39
+        LayoutText {#text} at (0,0) size 781x39
           text run at (0,0) width 589: "This tests for a bug where changing the list type of an indented list would create unwanted nesting. "
-          text run at (589,0) width 193: "You should see a single ordered"
+          text run at (589,0) width 192: "You should see a single ordered"
           text run at (0,20) width 156: "list item in an indented list."
       LayoutBlockFlow {DIV} at (0,56) size 784x20
         LayoutBlockFlow {UL} at (0,0) size 784x20

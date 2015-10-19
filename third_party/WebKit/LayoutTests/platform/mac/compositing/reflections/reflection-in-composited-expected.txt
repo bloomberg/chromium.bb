@@ -4,8 +4,8 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x576
       LayoutBlockFlow {P} at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 418x18
-          text run at (0,0) width 418: "Reflection should not be cropped by being in a composited layer."
+        LayoutText {#text} at (0,0) size 416x18
+          text run at (0,0) width 416: "Reflection should not be cropped by being in a composited layer."
       LayoutBlockFlow {P} at (0,290) size 784x18
         LayoutText {#text} at (0,0) size 245x18
           text run at (0,0) width 245: "This is the next paragraph in the page."
@@ -17,5 +17,5 @@ layer at (208,76) size 342x172
 layer at (349,117) size 260x70
   LayoutBlockFlow (positioned) {DIV} at (141,41) size 260x70 [bgcolor=#DDDDDD]
     LayoutBlockFlow {P} at (10,26) size 240x18
-      LayoutText {#text} at (0,0) size 229x18
-        text run at (0,0) width 229: "This is a positioned, reflected child."
+      LayoutText {#text} at (0,0) size 228x18
+        text run at (0,0) width 228: "This is a positioned, reflected child."

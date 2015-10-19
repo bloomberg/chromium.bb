@@ -10,8 +10,8 @@ layer at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {DIV} at (0,0) size 784x212 [border: (2px solid #0000FF)]
         LayoutBlockFlow {DIV} at (14,14) size 756x56
-          LayoutText {#text} at (0,0) size 68x28
-            text run at (0,0) width 68: "Tests: "
+          LayoutText {#text} at (0,0) size 66x28
+            text run at (0,0) width 66: "Tests: "
           LayoutBR {BR} at (0,0) size 0x0
           LayoutText {#text} at (0,28) size 635x28
             text run at (0,28) width 635: "Non-smart delete when deleting a word selected via the keyboard."
@@ -19,8 +19,8 @@ layer at (0,0) size 800x600
           LayoutText {#text} at (0,0) size 190x28
             text run at (0,0) width 190: "Expected Results: "
           LayoutBR {BR} at (189,22) size 1x0
-          LayoutText {#text} at (0,28) size 708x56
-            text run at (0,28) width 708: "The first word should be deleted. The space following it should remain. It"
+          LayoutText {#text} at (0,28) size 707x56
+            text run at (0,28) width 707: "The first word should be deleted. The space following it should remain. It"
             text run at (0,56) width 208: "should look like this: "
           LayoutBR {BR} at (208,78) size 0x0
           LayoutText {#text} at (0,84) size 96x28

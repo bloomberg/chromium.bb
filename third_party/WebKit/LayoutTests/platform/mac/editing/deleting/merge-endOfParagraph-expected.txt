@@ -20,8 +20,8 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (0,0) size 783x54
           text run at (0,0) width 321: "Fixing that bug exposed a problem with merging. "
           text run at (320,0) width 459: "If deletion empties out the block that contained the start of the selection"
-          text run at (0,18) width 499: "to delete, that block can collapse away and become impossible to merge into. "
-          text run at (498,18) width 285: "So we insert a placeholder to prop it open so"
+          text run at (0,18) width 498: "to delete, that block can collapse away and become impossible to merge into. "
+          text run at (497,18) width 286: "So we insert a placeholder to prop it open so"
           text run at (0,36) width 172: "that the merge can happen."
       LayoutBlockFlow {DIV} at (5,174) size 774x32 [border: (1px solid #000000)]
         LayoutBlockFlow {DIV} at (6,6) size 762x20 [border: (1px solid #FF0000)]

@@ -7,8 +7,8 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x576
       LayoutBlockFlow {DIV} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 359x19
-          text run at (0,0) width 359: "This test uses the execCommand to Outdent the text below."
+        LayoutText {#text} at (0,0) size 358x19
+          text run at (0,0) width 358: "This test uses the execCommand to Outdent the text below."
       LayoutBlockFlow (anonymous) at (0,20) size 784x20
         LayoutBR {BR} at (0,0) size 0x19
       LayoutBlockFlow {DIV} at (0,56) size 784x60
