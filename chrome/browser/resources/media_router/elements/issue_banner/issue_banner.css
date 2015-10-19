@@ -28,23 +28,6 @@
   width: 75px;
 }
 
-#close-button::shadow #icon {
-  height: 15px;
-  width: 15px;
-}
-
-#header-text {
-  -webkit-padding-start: 5px;
-  color: white;
-  flex-grow: 1;
-  font-size: 1.25em;
-  margin: 0;
-}
-
-#issue-header {
-  background-color: rgb(219, 68, 55);
-}
-
 .non-blocking {
   background-color: rgb(66, 66, 66);
   overflow: hidden;

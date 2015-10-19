@@ -163,15 +163,6 @@ cr.define('issue_banner', function() {
         MockInteractions.tap(banner.$['opt-button']);
       });
 
-      // Tests for 'close-button-click' event firing when the close button
-      // is clicked.
-      test('close button click', function(done) {
-        banner.addEventListener('close-button-click', function() {
-          done();
-        });
-        MockInteractions.tap(banner.$['close-button']);
-      });
-
       // Tests the issue text. While the UI will show only the blocking or
       // non-blocking interface, the issue's info will be set if specified.
       test('issue text', function() {

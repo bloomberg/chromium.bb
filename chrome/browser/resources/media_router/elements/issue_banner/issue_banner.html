@@ -1,20 +1,15 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-toolbar/paper-toolbar.html">
+<link rel="import" href="../media_router_header/media_router_header.html">
 <dom-module name="issue-banner">
   <link rel="import" type="css" href="../../media_router_common.css">
   <link rel="import" type="css" href="issue_banner.css">
   <template>
-    <paper-toolbar id="issue-header"
+    <media-router-header id="issue-header"
+        view="[[currentView_]]" heading-text="[[headerText_]]"
         hidden$="[[computeIsBlockingIssueHidden_(issue)]]">
-      <span id="header-text">[[headerText_]]</span>
-      <paper-icon-button icon="close" id="close-button"
-          on-click="onCloseButtonClick_">
-      </paper-icon-button>
-    </paper-toolbar>
+    </media-router-header>
     <div class$="[[computeIssueClass_(issue)]]">
       <div>
         <div hidden$="[[computeIsBlockingIssueHidden_(issue)]]">

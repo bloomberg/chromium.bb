@@ -11,24 +11,10 @@
   width: 100%;
 }
 
-#close-button {
-  -webkit-margin-start: auto;
-}
-
-#close-button::shadow #icon {
-  height: 15px;
-  width: 15px;
-}
-
 #custom-controller {
   display: inline-block;
   height: 160px;
   width: 100%;
-}
-
-#route-details-header {
-  background-color: rgb(33, 150, 243);
-  font-size: 1.25em;
 }
 
 #route-information {

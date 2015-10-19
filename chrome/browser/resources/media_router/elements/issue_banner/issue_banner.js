@@ -9,6 +9,16 @@ Polymer({
 
   properties: {
     /**
+     * The current view to be shown.
+     * @private {media_router.MediaRouterView}
+     */
+    currentView_: {
+      type: String,
+      readOnly: true,
+      value: media_router.MediaRouterView.ISSUE,
+    },
+
+    /**
      * The text shown in the default action button.
      * @private {string}
      */
@@ -23,6 +33,7 @@ Polymer({
      */
     headerText_: {
       type: String,
+      readOnly: true,
       value: loadTimeData.getString('issueHeader'),
     },
 
@@ -40,10 +51,11 @@ Polymer({
      * Maps an issue action type to the resource identifier of the text shown
      * in the action button.
      * This is a property of issue-banner because it is used in tests.
-     * @type {!Array<string>}
+     * @private {!Array<string>}
      */
     issueActionTypeToButtonTextResource_: {
       type: Array,
+      readOnly: true,
       value: function() {
         return ['dismissButton', 'learnMoreButton'];
       },
@@ -66,16 +78,6 @@ Polymer({
    */
   computeIsBlockingIssueHidden_: function(issue) {
     return !issue || !issue.isBlocking;
-  },
-
-  /**
-   * Returns true to hide the non-blocking issue UI, false to show it.
-   *
-   * @param {?media_router.Issue} issue
-   * @private
-   */
-  computeIsNonBlockingIssueHidden_: function(issue) {
-    return !issue || issue.isBlocking;
   },
 
   /**
@@ -131,15 +133,6 @@ Polymer({
    */
   onClickOptAction_: function(event) {
     this.fireIssueActionClick_(this.issue.secondaryActionType);
-  },
-
-  /**
-   * Handles a click on the close button by firing a close-button-click event.
-   *
-   * @private
-   */
-  onCloseButtonClick_: function() {
-    this.fire('close-button-click');
   },
 
   /**

@@ -1,0 +1,68 @@
+/* Copyright 2015 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+#arrow-drop-container {
+  flex-grow: 1;
+}
+
+#arrow-drop-icon::shadow #icon {
+  height: 20px;
+  width: 20px;
+}
+
+#back-button::shadow #icon {
+  height: 20px;
+  width: 20px;
+}
+
+#back-button-container {
+  -webkit-padding-end: 12px;
+}
+
+#close-button {
+  -webkit-margin-start: auto;
+}
+
+#close-button::shadow #icon {
+  height: 15px;
+  width: 15px;
+}
+
+#close-button-container {
+  -webkit-padding-end: 16px;
+  -webkit-padding-start: 24px;
+}
+
+#header-text {
+  -webkit-padding-end: 4px;
+  color: white;
+  font-size: 1.175em;
+  margin: 0;
+}
+
+paper-toolbar {
+  -webkit-padding-start: 8px;
+  height: 52px;
+}
+
+paper-toolbar::shadow .toolbar-tools {
+  padding: 0;
+}
+
+paper-toolbar.cast-mode-list {
+  background-color: rgb(0, 150, 136);
+}
+
+paper-toolbar.filter {
+  background-color: rgb(103, 58, 183);
+}
+
+paper-toolbar.issue {
+  background-color: rgb(219, 68, 55);
+}
+
+paper-toolbar.route-details,
+paper-toolbar.sink-list {
+  background-color: rgb(33, 150, 243);
+}

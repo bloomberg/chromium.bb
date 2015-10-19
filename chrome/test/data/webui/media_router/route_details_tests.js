@@ -90,24 +90,6 @@ cr.define('route_details', function() {
         setTimeout(done);
       });
 
-      // Tests for 'back-click' event firing when the 'back-to-devices'
-      // link is clicked.
-      test('back button click', function(done) {
-        details.addEventListener('back-click', function() {
-          done();
-        });
-        MockInteractions.tap(details.$['back-button']);
-      });
-
-      // Tests for 'close-button-click' event firing when the close button
-      // is clicked.
-      test('close button click', function(done) {
-        details.addEventListener('close-button-click', function() {
-          done();
-        });
-        MockInteractions.tap(details.$['close-button']);
-      });
-
       // Tests for 'close-route-click' event firing when the
       // 'close-route-button' button is clicked.
       test('close route button click', function(done) {
@@ -123,7 +105,6 @@ cr.define('route_details', function() {
         checkSpanText(loadTimeData.getString('stopCastingButton')
             .toUpperCase(), 'close-route-button');
         checkSpanText('', 'route-information');
-        checkElementTextWithId('', 'sink-name');
       });
 
       // Tests when |route| exists but |sink| is null.
@@ -158,14 +139,12 @@ cr.define('route_details', function() {
         details.sink = fakeSinkOne;
         assertEquals(fakeSinkOne, details.sink);
         assertEquals(null, details.route);
-        checkElementTextWithId(fakeSinkOne.name, 'sink-name');
         checkSpanText('', 'route-information');
 
         // Set |sink| to be a different sink. 'route-information' text should
         // be updated.
         details.sink = fakeSinkTwo;
         assertEquals(fakeSinkTwo, details.sink);
-        checkElementTextWithId(fakeSinkTwo.name, 'sink-name');
         checkSpanText('', 'route-information');
       });
 
@@ -175,7 +154,6 @@ cr.define('route_details', function() {
         details.sink = fakeSinkOne;
         assertEquals(fakeSinkOne, details.sink);
         assertEquals(fakeRouteOne, details.route);
-        checkElementTextWithId(fakeSinkOne.name, 'sink-name');
         checkSpanText(loadTimeData.getStringF('castingActivityStatus',
             fakeRouteOne.description), 'route-information');
       });

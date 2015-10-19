@@ -4,34 +4,22 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/communication-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/hardware-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-item.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-menu/paper-menu.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-toolbar/paper-toolbar.html">
 <link rel="import" href="../issue_banner/issue_banner.html">
+<link rel="import" href="../media_router_header/media_router_header.html">
 <link rel="import" href="../route_details/route_details.html">
 <dom-module id="media-router-container">
   <link rel="import" type="css" href="media_router_container.css">
   <template>
-    <paper-toolbar id="container-header"
-        class$="[[currentView_]]"
+    <media-router-header id="container-header"
+        class$="[[currentView_]]" view="[[currentView_]]"
+        heading-text="[[computeHeaderText_(currentView_, headerText)]]"
+        arrow-drop-icon-disabled="[[computeIsLaunching_(currentLaunchingSinkId_)]]"
+        tooltip="[[computeHeaderTooltip_(currentView_, headerTextTooltip)]]"
         hidden$="[[computeHeaderHidden_(currentView_, issue)]]">
-      <div id="header-text">
-        <span hidden$="[[computeSinkListViewHidden_(currentView_, issue)]]"
-            id="sink-list-header-text" title="[[headerTextTooltip]]"
-                >[[headerText]]</span>
-        <span hidden$="[[computeCastModeHidden_(currentView_)]]"
-            id="cast-mode-header-text">[[selectCastModeHeaderText_]]</span>
-      </div>
-      <paper-icon-button icon="[[computeArrowDropIcon_(currentView_)]]"
-          disabled$="[[computeIsLaunching_(currentLaunchingSinkId_)]]"
-          id="arrow-drop-icon" on-click="toggleCastModeHidden_">
-      </paper-icon-button>
-      <paper-icon-button icon="close" id="close-button"
-          on-click="onCloseButtonClick_">
-      </paper-icon-button>
-    </paper-toolbar>
+    </media-router-header>
     <issue-banner id="issue-banner" issue="[[issue]]"
         class$="[[computeIssueBannerClass_(issue)]]"
         hidden$="[[computeIssueBannerHidden_(currentView_, issue)]]">

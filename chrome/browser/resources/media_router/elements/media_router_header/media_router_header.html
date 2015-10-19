@@ -1,0 +1,31 @@
+<link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-toolbar/paper-toolbar.html">
+<dom-module name="media-router-header">
+  <link rel="import" type="css" href="../../media_router_common.css">
+  <link rel="import" type="css" href="media_router_header.css">
+  <template>
+    <paper-toolbar class$="[[view]]">
+      <div id="back-button-container">
+        <paper-icon-button id="back-button" icon="[[arrowDropIcon_]]"
+            on-click="onBackButtonClick_"
+            hidden$="[[computeBackButtonHidden_(view)]]">
+        </paper-icon-button>
+      </div>
+      <span id="header-text" title="[[tooltip]]">[[headingText]]</span>
+      <div id="arrow-drop-container">
+        <paper-icon-button icon="[[computeArrowDropIcon_(view)]]"
+            id="arrow-drop-icon" on-click="onArrowDropClick_"
+            disabled$="[[arrowDropIconDisabled]]"
+            hidden$="[[computeArrowDropIconHidden_(view)]]">
+        </paper-icon-button>
+      </div>
+      <div id="close-button-container">
+        <paper-icon-button icon="close" id="close-button"
+            on-click="onCloseButtonClick_">
+        </paper-icon-button>
+      </div>
+    </paper-toolbar>
+  </template>
+<script src="media_router_header.js"></script>
+</dom-module>

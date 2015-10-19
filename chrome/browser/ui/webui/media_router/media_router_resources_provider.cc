@@ -41,6 +41,15 @@ void AddPolymerElements(content::WebUIDataSource* html_source) {
       "elements/media_router_container/media_router_container.js",
       IDR_MEDIA_ROUTER_CONTAINER_JS);
   html_source->AddResourcePath(
+      "elements/media_router_header/media_router_header.css",
+      IDR_MEDIA_ROUTER_HEADER_CSS);
+  html_source->AddResourcePath(
+      "elements/media_router_header/media_router_header.html",
+      IDR_MEDIA_ROUTER_HEADER_HTML);
+  html_source->AddResourcePath(
+      "elements/media_router_header/media_router_header.js",
+      IDR_MEDIA_ROUTER_HEADER_JS);
+  html_source->AddResourcePath(
       "elements/route_details/route_details.css",
       IDR_ROUTE_DETAILS_CSS);
   html_source->AddResourcePath(

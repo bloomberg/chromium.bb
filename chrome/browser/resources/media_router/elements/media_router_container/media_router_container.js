@@ -9,26 +9,6 @@ Polymer({
 
   properties: {
     /**
-     * The possible states of media-router-container. Used to determine which
-     * components of media-router-container to show.
-     * This is a property of media-router-container because it is used in
-     * tests.
-     *
-     * @enum {string}
-     * @private
-     */
-    CONTAINER_VIEW_: {
-      type: Object,
-      readOnly: true,
-      value: {
-        CAST_MODE_LIST: 'cast-mode-list',
-        FILTER: 'filter',
-        ROUTE_DETAILS: 'route-details',
-        SINK_LIST: 'sink-list',
-      },
-    },
-
-    /**
      * The list of available sinks.
      * @type {!Array<!media_router.Sink>}
      */
@@ -68,7 +48,7 @@ Polymer({
 
     /**
      * The current view to be shown.
-     * @private {CONTAINER_VIEW_}
+     * @private {?media_router.MediaRouterView}
      */
     currentView_: {
       type: String,
@@ -81,12 +61,13 @@ Polymer({
      */
     deviceMissingText_: {
       type: String,
+      readOnly: true,
       value: loadTimeData.getString('deviceMissing'),
     },
 
     /**
      * The URL to open when the device missing link is clicked.
-     * @private {string}
+     * @type {string}
      */
     deviceMissingUrl: {
       type: String,
@@ -94,7 +75,7 @@ Polymer({
     },
 
     /**
-     * The header text.
+     * The header text for the sink list.
      * @type {string}
      */
     headerText: {
@@ -165,6 +146,7 @@ Polymer({
      */
     selectCastModeHeaderText_: {
       type: String,
+      readOnly: true,
       value: loadTimeData.getString('selectCastModeHeader'),
     },
 
@@ -182,6 +164,7 @@ Polymer({
      */
     shareYourScreenSubheadingText_: {
       type: String,
+      readOnly: true,
       value: loadTimeData.getString('shareYourScreenSubheading'),
     },
 
@@ -214,6 +197,7 @@ Polymer({
   },
 
   ready: function() {
+    this.addEventListener('arrow-drop-click', this.toggleCastModeHidden_);
     this.addEventListener('close-route-click', this.removeRoute);
     this.showSinkList_();
   },
@@ -238,22 +222,12 @@ Polymer({
   },
 
   /**
-   * @param {CONTAINER_VIEW_} view The current view.
-   * @return {string} The current arrow-drop-* icon to use.
-   * @private
-   */
-  computeArrowDropIcon_: function(view) {
-    return view == this.CONTAINER_VIEW_.CAST_MODE_LIST ?
-        'arrow-drop-up' : 'arrow-drop-down';
-  },
-
-  /**
-   * @param {CONTAINER_VIEW_} view The current view.
+   * @param {media_router.MediaRouterView} view The current view.
    * @return {boolean} Whether or not to hide the cast mode list.
    * @private
    */
   computeCastModeHidden_: function(view) {
-    return view != this.CONTAINER_VIEW_.CAST_MODE_LIST;
+    return view != media_router.MediaRouterView.CAST_MODE_LIST;
   },
 
   /**
@@ -291,15 +265,43 @@ Polymer({
   },
 
   /**
-   * @param {CONTAINER_VIEW_} view The current view.
+   * @param {media_router.MediaRouterView} view The current view.
    * @param {?media_router.Issue} issue The current issue.
    * @return {boolean} Whether or not to hide the header.
    * @private
    */
   computeHeaderHidden_: function(view, issue) {
-    return view == this.CONTAINER_VIEW_.ROUTE_DETAILS ||
-        (view == this.CONTAINER_VIEW_.SINK_LIST &&
+    return view == media_router.MediaRouterView.ROUTE_DETAILS ||
+        (view == media_router.MediaRouterView.SINK_LIST &&
          issue && issue.isBlocking);
+  },
+
+  /**
+   * @param {media_router.MediaRouterView} view The current view.
+   * @param {string} headerText The header text for the sink list.
+   * @return {string} The text for the header.
+   * @private
+   */
+  computeHeaderText_: function(view, headerText) {
+    switch (view) {
+      case media_router.MediaRouterView.SINK_LIST:
+        return this.headerText;
+      case media_router.MediaRouterView.CAST_MODE_LIST:
+        return this.selectCastModeHeaderText_;
+      default:
+        return '';
+    }
+  },
+
+  /**
+   * @param {media_router.MediaRouterView} view The current view.
+   * @param {string} headerTooltip The tooltip for the header for the sink
+   *     list.
+   * @return {string} The tooltip for the header.
+   * @private
+   */
+  computeHeaderTooltip_: function(view, headerTooltip) {
+    return view == media_router.MediaRouterView.SINK_LIST ? headerTooltip : '';
   },
 
   /**
@@ -321,13 +323,13 @@ Polymer({
   },
 
   /**
-   * @param {CONTAINER_VIEW_} view The current view.
+   * @param {media_router.MediaRouterView} view The current view.
    * @param {?media_router.Issue} issue The current issue.
    * @return {boolean} Whether or not to hide the issue banner.
    * @private
    */
   computeIssueBannerHidden_: function(view, issue) {
-    return !issue || view == this.CONTAINER_VIEW_.CAST_MODE_LIST;
+    return !issue || view == media_router.MediaRouterView.CAST_MODE_LIST;
   },
 
   /**
@@ -344,13 +346,13 @@ Polymer({
   },
 
   /**
-   * @param {CONTAINER_VIEW_} view The current view.
+   * @param {media_router.MediaRouterView} view The current view.
    * @param {?media_router.Issue} issue The current issue.
    * @return {boolean} Whether or not to hide the route details.
    * @private
    */
   computeRouteDetailsHidden_: function(view, issue) {
-    return view != this.CONTAINER_VIEW_.ROUTE_DETAILS ||
+    return view != media_router.MediaRouterView.ROUTE_DETAILS ||
         (issue && issue.isBlocking);
   },
 
@@ -449,13 +451,13 @@ Polymer({
   },
 
   /**
-   * @param {CONTAINER_VIEW_} view The current view.
+   * @param {media_router.MediaRouterView} view The current view.
    * @param {?media_router.Issue} issue The current issue.
    * @return {boolean} Whether or not to hide entire the sink list view.
    * @private
    */
   computeSinkListViewHidden_: function(view, issue) {
-    return view != this.CONTAINER_VIEW_.SINK_LIST ||
+    return view != media_router.MediaRouterView.SINK_LIST ||
         (issue && issue.isBlocking);
   },
 
@@ -530,15 +532,6 @@ Polymer({
 
     this.setSelectedCastMode_(clickedMode);
     this.showSinkList_();
-  },
-
-  /**
-   * Handles a click on the close button by firing a close-button-click event.
-   *
-   * @private
-   */
-  onCloseButtonClick_: function() {
-    this.fire('close-button-click');
   },
 
   /**
@@ -618,7 +611,7 @@ Polymer({
     // switch back to the SINK_PICKER view if the user is currently in the
     // ROUTE_DETAILS view.
     if (!this.currentRoute_ || !this.routeMap_[this.currentRoute_.id]) {
-      if (this.currentView_ == this.CONTAINER_VIEW_.ROUTE_DETAILS)
+      if (this.currentView_ == media_router.MediaRouterView.ROUTE_DETAILS)
         this.showSinkList_();
       else
         this.currentRoute_ = null;
@@ -681,7 +674,7 @@ Polymer({
    * @private
    */
   showCastModeList_: function() {
-    this.currentView_ = this.CONTAINER_VIEW_.CAST_MODE_LIST;
+    this.currentView_ = media_router.MediaRouterView.CAST_MODE_LIST;
   },
 
   /**
@@ -713,7 +706,7 @@ Polymer({
    */
   showRouteDetails_: function(route) {
     this.currentRoute_ = route;
-    this.currentView_ = this.CONTAINER_VIEW_.ROUTE_DETAILS;
+    this.currentView_ = media_router.MediaRouterView.ROUTE_DETAILS;
   },
 
   /**
@@ -722,7 +715,7 @@ Polymer({
    * @private
    */
   showSinkList_: function() {
-    this.currentView_ = this.CONTAINER_VIEW_.SINK_LIST;
+    this.currentView_ = media_router.MediaRouterView.SINK_LIST;
   },
 
   /**
@@ -731,7 +724,7 @@ Polymer({
    * @private
    */
   toggleCastModeHidden_: function() {
-    if (this.currentView_ == this.CONTAINER_VIEW_.CAST_MODE_LIST)
+    if (this.currentView_ == media_router.MediaRouterView.CAST_MODE_LIST)
       this.showSinkList_();
     else
       this.showCastModeList_();

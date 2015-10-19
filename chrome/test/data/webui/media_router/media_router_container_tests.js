@@ -53,22 +53,14 @@ cr.define('media_router_container', function() {
        * @const {!Array<string>}
        */
       var hiddenCheckElementIdList = [
-        'cast-mode-header-text',
         'cast-mode-list',
         'container-header',
         'device-missing',
         'issue-banner',
         'route-details',
         'sink-list',
-        'sink-list-header-text',
         'sink-list-view',
       ];
-
-      // Checks whether the current icon matches the icon used for the view.
-      var checkArrowDropIcon = function(view) {
-        assertEquals(container.computeArrowDropIcon_(view),
-            container.$['arrow-drop-icon'].icon);
-      };
 
       // Checks whether |view| matches the current view of |container|.
       var checkCurrentView = function(view) {
@@ -103,6 +95,11 @@ cr.define('media_router_container', function() {
       var checkElementTextWithId = function(expected, elementId) {
         checkElementText(expected, container.$[elementId]);
       };
+
+      // Checks whether |expected| and the |property| in |container| are equal.
+      var checkPropertyValue = function(expected, property) {
+        assertEquals(expected.trim(), container.property);
+      }
 
       // Import media_router_container.html before running suite.
       suiteSetup(function() {
@@ -167,15 +164,6 @@ cr.define('media_router_container', function() {
         setTimeout(done);
       });
 
-      // Tests for 'close-button-click' event firing when the close button
-      // is clicked.
-      test('close button click', function(done) {
-        container.addEventListener('close-button-click', function() {
-          done();
-        });
-        MockInteractions.tap(container.$['close-button']);
-      });
-
       // Tests for 'create-route' event firing when a sink with no associated
       // route is clicked.
       test('select sink without a route', function(done) {
@@ -209,9 +197,9 @@ cr.define('media_router_container', function() {
 
           // Start from the SINK_LIST view.
           container.showSinkList_();
-          checkCurrentView(container.CONTAINER_VIEW_.SINK_LIST);
+          checkCurrentView(media_router.MediaRouterView.SINK_LIST);
           MockInteractions.tap(sinkList[0]);
-          checkCurrentView(container.CONTAINER_VIEW_.ROUTE_DETAILS);
+          checkCurrentView(media_router.MediaRouterView.ROUTE_DETAILS);
           done();
         });
       });
@@ -221,17 +209,16 @@ cr.define('media_router_container', function() {
       test('select cast mode', function(done) {
         container.castModeList_ = fakeCastModeListWithNonDefaultModesOnly;
 
-        MockInteractions.tap(container.$['arrow-drop-icon']);
-        checkArrowDropIcon(container.CONTAINER_VIEW_.CAST_MODE_LIST);
-        checkCurrentView(container.CONTAINER_VIEW_.CAST_MODE_LIST);
+        MockInteractions.tap(container.$['container-header'].
+            $['arrow-drop-icon']);
+        checkCurrentView(media_router.MediaRouterView.CAST_MODE_LIST);
 
         setTimeout(function() {
           var castModeList =
               container.$['cast-mode-list'].querySelectorAll('paper-item');
 
           MockInteractions.tap(castModeList[2]);
-          checkArrowDropIcon(container.CONTAINER_VIEW_.SINK_LIST);
-          checkCurrentView(container.CONTAINER_VIEW_.SINK_LIST);
+          checkCurrentView(media_router.MediaRouterView.SINK_LIST);
           done();
         });
       });
@@ -239,36 +226,22 @@ cr.define('media_router_container', function() {
       // Tests that clicking on the drop down icon will toggle |container|
       // between SINK_LIST and CAST_MODE_LIST views.
       test('click drop down icon', function() {
-        checkCurrentView(container.CONTAINER_VIEW_.SINK_LIST);
+        checkCurrentView(media_router.MediaRouterView.SINK_LIST);
 
-        MockInteractions.tap(container.$['arrow-drop-icon']);
-        checkArrowDropIcon(container.CONTAINER_VIEW_.CAST_MODE_LIST);
-        checkCurrentView(container.CONTAINER_VIEW_.CAST_MODE_LIST);
+        MockInteractions.tap(container.$['container-header'].
+            $['arrow-drop-icon']);
+        checkCurrentView(media_router.MediaRouterView.CAST_MODE_LIST);
 
-        MockInteractions.tap(container.$['arrow-drop-icon']);
-        checkArrowDropIcon(container.CONTAINER_VIEW_.SINK_LIST);
-        checkCurrentView(container.CONTAINER_VIEW_.SINK_LIST);
-      });
-
-      // Tests the |computeArrowDropIcon_| function.
-      test('compute arrow drop icon', function() {
-        assertEquals('arrow-drop-up',
-            container.computeArrowDropIcon_(
-                container.CONTAINER_VIEW_.CAST_MODE_LIST));
-        assertEquals('arrow-drop-down',
-            container.computeArrowDropIcon_(
-                container.CONTAINER_VIEW_.ROUTE_DETAILS));
-        assertEquals('arrow-drop-down',
-            container.computeArrowDropIcon_(
-                container.CONTAINER_VIEW_.SINK_LIST));
+        MockInteractions.tap(container.$['container-header'].
+            $['arrow-drop-icon']);
+        checkCurrentView(media_router.MediaRouterView.SINK_LIST);
       });
 
       // Tests the header text. Choosing a cast mode updates the header text.
       test('header text with no default cast modes', function(done) {
-        checkElementTextWithId(loadTimeData.getString('selectCastModeHeader'),
-            'cast-mode-header-text');
-        checkElementTextWithId(fakeCastModeList[1].description,
-            'sink-list-header-text');
+        assertEquals(loadTimeData.getString('selectCastModeHeader'),
+            container.selectCastModeHeaderText_);
+        assertEquals(fakeCastModeList[1].description, container.headerText);
 
         container.castModeList_ = fakeCastModeListWithNonDefaultModesOnly;
         setTimeout(function() {
@@ -278,9 +251,9 @@ cr.define('media_router_container', function() {
               castModeList.length);
           for (var i = 0; i < castModeList.length; i++) {
             MockInteractions.tap(castModeList[i]);
-            checkElementTextWithId(
+            assertEquals(
                 fakeCastModeListWithNonDefaultModesOnly[i].description,
-                'sink-list-header-text');
+                container.headerText);
             checkElementText(
                 fakeCastModeListWithNonDefaultModesOnly[i].description,
                 castModeList[i]);
@@ -301,14 +274,15 @@ cr.define('media_router_container', function() {
 
           for (var i = 0; i < fakeCastModeList.length; i++) {
             MockInteractions.tap(castModeList[i]);
-            if (fakeCastModeList[i].type == media_router.CastModeType.DEFAULT) {
-              checkElementTextWithId(fakeCastModeList[i].description,
-                  'sink-list-header-text');
-              checkElementText(fakeCastModeList[i].host,
-                  castModeList[i]);
+            if (fakeCastModeList[i].type ==
+                media_router.CastModeType.DEFAULT) {
+              assertEquals(fakeCastModeList[i].description,
+                  container.headerText);
+
+              checkElementText(fakeCastModeList[i].host, castModeList[i]);
             } else {
-              checkElementTextWithId(fakeCastModeList[i].description,
-                  'sink-list-header-text');
+              assertEquals(fakeCastModeList[i].description,
+                  container.headerText);
               checkElementText(fakeCastModeList[i].description,
                   castModeList[i]);
             }
@@ -371,7 +345,7 @@ cr.define('media_router_container', function() {
         container.allSinks = fakeSinkList;
         container.routeList = fakeRouteList;
 
-        checkCurrentView(container.CONTAINER_VIEW_.ROUTE_DETAILS);
+        checkCurrentView(media_router.MediaRouterView.ROUTE_DETAILS);
       });
 
       // Tests the expected view when there are multiple local active routes
@@ -380,7 +354,7 @@ cr.define('media_router_container', function() {
         container.allSinks = fakeSinkList;
         container.routeList = fakeRouteListWithLocalRoutesOnly;
 
-        checkCurrentView(container.CONTAINER_VIEW_.SINK_LIST);
+        checkCurrentView(media_router.MediaRouterView.SINK_LIST);
       });
 
       // Tests the expected view when there are no local active routes and
@@ -389,7 +363,7 @@ cr.define('media_router_container', function() {
         container.allSinks = fakeSinkList;
         container.routeList = [];
 
-        checkCurrentView(container.CONTAINER_VIEW_.SINK_LIST);
+        checkCurrentView(media_router.MediaRouterView.SINK_LIST);
       });
 
       // Tests the expected view when there are no local active routes and
@@ -397,32 +371,30 @@ cr.define('media_router_container', function() {
       test('view after route is closed remotely', function() {
         container.allSinks = fakeSinkList;
         container.routeList = fakeRouteList;
-        checkCurrentView(container.CONTAINER_VIEW_.ROUTE_DETAILS);
+        checkCurrentView(media_router.MediaRouterView.ROUTE_DETAILS);
 
         container.routeList = [];
-        checkCurrentView(container.CONTAINER_VIEW_.SINK_LIST);
+        checkCurrentView(media_router.MediaRouterView.SINK_LIST);
       });
 
       // Tests for expected visible UI when the view is CAST_MODE_LIST.
       test('cast mode list state visibility', function() {
         container.showCastModeList_();
-        checkElementsVisibleWithId(['cast-mode-header-text',
-                                    'cast-mode-list',
+        checkElementsVisibleWithId(['cast-mode-list',
                                     'container-header',
                                     'device-missing',
                                     'sink-list']);
+
         // Set a non-blocking issue. The issue should stay hidden.
         container.issue = fakeNonBlockingIssue;
-        checkElementsVisibleWithId(['cast-mode-header-text',
-                                    'cast-mode-list',
+        checkElementsVisibleWithId(['cast-mode-list',
                                     'container-header',
                                     'device-missing',
                                     'sink-list']);
 
         // Set a blocking issue. The issue should stay hidden.
         container.issue = fakeBlockingIssue;
-        checkElementsVisibleWithId(['cast-mode-header-text',
-                                    'cast-mode-list',
+        checkElementsVisibleWithId(['cast-mode-list',
                                     'container-header',
                                     'device-missing',
                                     'sink-list']);
@@ -456,14 +428,12 @@ cr.define('media_router_container', function() {
         checkElementsVisibleWithId(['container-header',
                                     'device-missing',
                                     'sink-list',
-                                    'sink-list-header-text',
                                     'sink-list-view']);
 
         // Set an non-empty sink list.
         container.allSinks = fakeSinkList;
         checkElementsVisibleWithId(['container-header',
                                     'sink-list',
-                                    'sink-list-header-text',
                                     'sink-list-view']);
 
         // Set a non-blocking issue. The issue should be shown.
@@ -471,7 +441,6 @@ cr.define('media_router_container', function() {
         checkElementsVisibleWithId(['container-header',
                                     'issue-banner',
                                     'sink-list',
-                                    'sink-list-header-text',
                                     'sink-list-view']);
 
         // Set a blocking issue. The issue should be shown, and everything
@@ -509,10 +478,9 @@ cr.define('media_router_container', function() {
           // mode 1.
           // 'Sink 20' should be on the list because it contains the selected
           // cast mode. (sinkList[0] = newSinks[1])
-          // 'Sink 30' should be on the list because it has a route
+          // 'Sink 30' should be on the list because it has a route.
           // (sinkList[1] = newSinks[2])
           assertEquals(2, sinkList.length);
-
           checkElementText(newSinks[1].name, sinkList[0]);
 
           // |sinkList[1]| contains route title in addition to sink name.
@@ -531,8 +499,7 @@ cr.define('media_router_container', function() {
         var castModeList =
               container.$['cast-mode-list'].querySelectorAll('paper-item');
         MockInteractions.tap(castModeList[0]);
-        checkElementTextWithId(
-            fakeCastModeList[0].description, 'sink-list-header-text');
+        assertEquals(fakeCastModeList[0].description, container.headerText);
 
         setTimeout(function() {
           var sinkList =
@@ -542,13 +509,11 @@ cr.define('media_router_container', function() {
           // is compatible with cast mode 0.
           assertEquals(0, sinkList.length);
           MockInteractions.tap(castModeList[2]);
-          checkElementTextWithId(
-              fakeCastModeList[2].description, 'sink-list-header-text');
+          assertEquals(fakeCastModeList[2].description, container.headerText);
 
           setTimeout(function() {
             var sinkList =
                 container.$['sink-list'].querySelectorAll('paper-item');
-
             assertEquals(3, sinkList.length);
             done();
           });

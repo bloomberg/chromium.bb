@@ -6,11 +6,6 @@
   color: rgb(33, 150, 243);
 }
 
-#arrow-drop-icon::shadow #icon {
-  height: 20px;
-  width: 20px;
-}
-
 .cast-mode-icon,
 .sink-icon {
   -webkit-padding-end: 12px;
@@ -19,21 +14,9 @@
   width: 16px;
 }
 
-#close-button::shadow #icon {
-  height: 15px;
-  width: 15px;
-}
-
-#container-header {
-  background-color: rgb(33, 150, 243);
-}
-
-#container-header.cast-mode-list {
-  background-color: rgb(0, 150, 136);
-}
-
-#container-header.filter {
-  background-color: rgb(103, 58, 183);
+#cast-mode-list {
+  padding-bottom: 12px;
+  padding-top: 4px;
 }
 
 #device-missing {
@@ -47,13 +30,6 @@
 #device-missing a {
   color: rgba(33, 150, 243, 0.87);
   text-decoration: none;
-}
-
-#header-text {
-  -webkit-padding-start: 5px;
-  flex-grow: 1;
-  font-size: 1.25em;
-  margin: 0;
 }
 
 #issue-banner {

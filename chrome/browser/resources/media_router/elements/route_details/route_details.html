@@ -1,21 +1,13 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-toolbar/paper-toolbar.html">
+<link rel="import" href="../media_router_header/media_router_header.html">
 <dom-module id="route-details">
   <link rel="import" type="css" href="../../media_router_common.css">
   <link rel="import" type="css" href="route_details.css">
   <template>
-    <paper-toolbar id="route-details-header">
-      <paper-icon-button icon="[[arrowIcon_]]" id="back-button"
-          on-click="back_">
-      </paper-icon-button>
-      <span id="sink-name">[[sink.name]]</span>
-      <paper-icon-button icon="close" id="close-button"
-          on-click="onCloseButtonClick_">
-      </paper-icon-button>
-    </paper-toolbar>
+    <media-router-header id="route-details-header"
+        view="[[currentView_]]" heading-text="[[sink.name]]">
+    </media-router-header>
     <div id="route-information" hidden$="[[!isCustomControllerHidden_]]">
       <span>[[activityStatus_]]</span>
     </div>

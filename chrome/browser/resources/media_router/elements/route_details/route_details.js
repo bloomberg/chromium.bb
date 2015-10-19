@@ -18,13 +18,13 @@ Polymer({
     },
 
     /**
-     * The name of the icon used as the back button. This is set once, when
-     * the |this| is ready.
-     * @private {string}
+     * The current view to be shown.
+     * @private {media_router.MediaRouterView}
      */
-    arrowIcon_: {
+    currentView_: {
       type: String,
-      value: '',
+      readOnly: true,
+      value: media_router.MediaRouterView.ROUTE_DETAILS,
     },
 
     /**
@@ -52,6 +52,7 @@ Polymer({
      */
     stopCastingButtonText_: {
       type: String,
+      readOnly: true,
       value: loadTimeData.getString('stopCastingButton'),
     },
 
@@ -65,21 +66,6 @@ Polymer({
       type: Boolean,
       value: true,
     },
-  },
-
-  attached: function() {
-    // isRTL() only works after i18n_template.js runs to set <html dir>.
-    // Set the back button icon based on text direction.
-    this.arrowIcon_ = isRTL() ? 'arrow-forward' : 'arrow-back';
-  },
-
-  /**
-   * Fires a back-click event. This is called when the back link is clicked.
-   *
-   * @private
-   */
-  back_: function() {
-    this.fire('back-click');
   },
 
   /**
@@ -127,14 +113,5 @@ Polymer({
       // Load was unsuccessful; fall back to default view.
       that.isCustomControllerHidden_ = true;
     });
-  },
-
-  /**
-   * Handles a click on the close button by firing a close-button-click event.
-   *
-   * @private
-   */
-  onCloseButtonClick_: function() {
-    this.fire('close-button-click');
   },
 });

@@ -18,6 +18,19 @@ cr.define('media_router', function() {
   };
 
   /**
+   * The possible states of the Media Router dialog. Used to determine which
+   * components to show.
+   * @enum {string}
+   */
+  var MediaRouterView = {
+    CAST_MODE_LIST: 'cast-mode-list',
+    FILTER: 'filter',
+    ISSUE: 'issue',
+    ROUTE_DETAILS: 'route-details',
+    SINK_LIST: 'sink-list',
+  };
+
+  /**
    * This corresponds to the C++ MediaSink IconType.
    * @enum {mumber}
    */
@@ -176,6 +189,7 @@ cr.define('media_router', function() {
 
   return {
     CastModeType: CastModeType,
+    MediaRouterView: MediaRouterView,
     SinkIconType: SinkIconType,
     SinkStatus: SinkStatus,
     CastMode: CastMode,
