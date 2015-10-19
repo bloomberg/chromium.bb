@@ -314,6 +314,14 @@ GURL GetOriginalRequestURL(WebDataSource* ds) {
   return ds->originalRequest().url();
 }
 
+bool IsBrowserInitiated(NavigationParams* pending) {
+  // A navigation resulting from loading a javascript URL should not be treated
+  // as a browser initiated event.  Instead, we want it to look as if the page
+  // initiated any load resulting from JS execution.
+  return pending &&
+         !pending->common_params.url.SchemeIs(url::kJavaScriptScheme);
+}
+
 NOINLINE void CrashIntentionally() {
   // NOTE(shess): Crash directly rather than using NOTREACHED() so
   // that the signature is easier to triage in crash reports.
@@ -1952,11 +1960,9 @@ blink::WebPlugin* RenderFrameImpl::CreatePlugin(
   return NULL;
 }
 
-void RenderFrameImpl::LoadURLExternally(blink::WebLocalFrame* frame,
-                                        const blink::WebURLRequest& request,
+void RenderFrameImpl::LoadURLExternally(const blink::WebURLRequest& request,
                                         blink::WebNavigationPolicy policy) {
-  DCHECK(!frame_ || frame_ == frame);
-  loadURLExternally(frame, request, policy, WebString());
+  loadURLExternally(request, policy, WebString(), false);
 }
 
 void RenderFrameImpl::ExecuteJavaScript(const base::string16& javascript) {
@@ -2418,27 +2424,19 @@ void RenderFrameImpl::didAddMessageToConsole(
                                             source_name));
 }
 
-void RenderFrameImpl::loadURLExternally(
-    blink::WebLocalFrame* frame,
-    const blink::WebURLRequest& request,
-    blink::WebNavigationPolicy policy,
-    const blink::WebString& suggested_name) {
-  DCHECK(!frame_ || frame_ == frame);
-  Referrer referrer(RenderViewImpl::GetReferrerFromRequest(frame, request));
+void RenderFrameImpl::loadURLExternally(const blink::WebURLRequest& request,
+                                        blink::WebNavigationPolicy policy,
+                                        const blink::WebString& suggested_name,
+                                        bool should_replace_current_entry) {
+  Referrer referrer(RenderViewImpl::GetReferrerFromRequest(frame_, request));
   if (policy == blink::WebNavigationPolicyDownload) {
     render_view_->Send(new ViewHostMsg_DownloadUrl(render_view_->GetRoutingID(),
                                                    GetRoutingID(),
                                                    request.url(), referrer,
                                                    suggested_name));
   } else {
-    OpenURL(frame, request.url(), referrer, policy);
+    OpenURL(request.url(), referrer, policy, should_replace_current_entry);
   }
-}
-
-blink::WebNavigationPolicy RenderFrameImpl::decidePolicyForNavigation(
-    const NavigationPolicyInfo& info) {
-  DCHECK(!frame_ || frame_ == info.frame);
-  return DecidePolicyForNavigation(this, info);
 }
 
 blink::WebHistoryItem RenderFrameImpl::historyItemForNewChildFrame(
@@ -4252,23 +4250,38 @@ void RenderFrameImpl::OnFailedNavigation(
   LoadNavigationErrorPage(failed_request, error, replace);
 }
 
-WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
-    RenderFrame* render_frame,
+WebNavigationPolicy RenderFrameImpl::decidePolicyForNavigation(
     const NavigationPolicyInfo& info) {
+  // A content initiated navigation may have originated from a link-click,
+  // script, drag-n-drop operation, etc.
+  // info.extraData is only non-null if this is a redirect. Use the extraData
+  // initiation information for redirects, and check pending_navigation_params_
+  // otherwise.
+  bool is_content_initiated =
+      info.extraData
+          ? static_cast<DocumentState*>(info.extraData)
+                ->navigation_state()
+                ->IsContentInitiated()
+          : !IsBrowserInitiated(pending_navigation_params_.get());
+  bool is_redirect =
+      info.extraData ||
+      (pending_navigation_params_ &&
+       !pending_navigation_params_->request_params.redirects.empty());
+
 #ifdef OS_ANDROID
   // The handlenavigation API is deprecated and will be removed once
   // crbug.com/325351 is resolved.
   if (info.urlRequest.url() != GURL(kSwappedOutURL) &&
       GetContentClient()->renderer()->HandleNavigation(
-          render_frame, static_cast<DocumentState*>(info.extraData),
-          render_view_->opener_id_, info.frame, info.urlRequest,
-          info.navigationType, info.defaultPolicy, info.isRedirect)) {
+          this, is_content_initiated, render_view_->opener_id_, frame_,
+          info.urlRequest, info.navigationType, info.defaultPolicy,
+          is_redirect)) {
     return blink::WebNavigationPolicyIgnore;
   }
 #endif
 
-  Referrer referrer(RenderViewImpl::GetReferrerFromRequest(info.frame,
-                                                           info.urlRequest));
+  Referrer referrer(
+      RenderViewImpl::GetReferrerFromRequest(frame_, info.urlRequest));
 
   // TODO(nick): Is consulting |is_main_frame| here correct?
   if (SiteIsolationPolicy::IsSwappedOutStateForbidden() && !is_main_frame_) {
@@ -4284,9 +4297,9 @@ WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
         // browser, as long as they're for the top level frame.
         // TODO(creis): Ensure this supports targeted form submissions when
         // fixing http://crbug.com/101395.
-        if (info.frame->parent() == NULL) {
-          OpenURL(info.frame, info.urlRequest.url(), referrer,
-                  info.defaultPolicy);
+        if (frame_->parent() == NULL) {
+          OpenURL(info.urlRequest.url(), referrer, info.defaultPolicy,
+                  info.replacesCurrentHistoryItem);
           return blink::WebNavigationPolicyIgnore;  // Suppress the load here.
         }
 
@@ -4305,17 +4318,11 @@ WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
   // context and they're trying to navigate to a different context.
   const GURL& url = info.urlRequest.url();
 
-  // A content initiated navigation may have originated from a link-click,
-  // script, drag-n-drop operation, etc.
-  DocumentState* document_state = static_cast<DocumentState*>(info.extraData);
-  bool is_content_initiated =
-      document_state->navigation_state()->IsContentInitiated();
-
   // If the browser is interested, then give it a chance to look at the request.
-  if (is_content_initiated && IsTopLevelNavigation(info.frame) &&
+  if (is_content_initiated && IsTopLevelNavigation(frame_) &&
       render_view_->renderer_preferences_
           .browser_handles_all_top_level_requests) {
-    OpenURL(info.frame, url, referrer, info.defaultPolicy);
+    OpenURL(url, referrer, info.defaultPolicy, info.replacesCurrentHistoryItem);
     return blink::WebNavigationPolicyIgnore;  // Suppress the load here.
   }
 
@@ -4323,7 +4330,7 @@ WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
   // subsequent checks.  For a popup, the document's URL may become the opener
   // window's URL if the opener has called document.write().
   // See http://crbug.com/93517.
-  GURL old_url(info.frame->dataSource()->request().url());
+  GURL old_url(frame_->dataSource()->request().url());
 
   // Detect when we're crossing a permission-based boundary (e.g. into or out of
   // an extension or app origin, leaving a WebUI page, etc). We only care about
@@ -4338,7 +4345,7 @@ WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
   // browser process, and issue a special POST navigation in WebKit (via
   // FrameLoader::loadFrameRequest). See ResourceDispatcher and WebURLLoaderImpl
   // for examples of how to send the httpBody data.
-  if (!info.frame->parent() && is_content_initiated &&
+  if (!frame_->parent() && is_content_initiated &&
       !url.SchemeIs(url::kAboutScheme)) {
     bool send_referrer = false;
 
@@ -4354,18 +4361,17 @@ WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
     int cumulative_bindings = RenderProcess::current()->GetEnabledBindings();
     bool is_initial_navigation = render_view_->history_list_length_ == 0;
     bool should_fork = HasWebUIScheme(url) || HasWebUIScheme(old_url) ||
-        (cumulative_bindings & BINDINGS_POLICY_WEB_UI) ||
-        url.SchemeIs(kViewSourceScheme) ||
-        (info.frame->isViewSourceModeEnabled() &&
-            info.navigationType != blink::WebNavigationTypeReload);
+                       (cumulative_bindings & BINDINGS_POLICY_WEB_UI) ||
+                       url.SchemeIs(kViewSourceScheme) ||
+                       (frame_->isViewSourceModeEnabled() &&
+                        info.navigationType != blink::WebNavigationTypeReload);
 
     if (!should_fork && url.SchemeIs(url::kFileScheme)) {
       // Fork non-file to file opens.  Check the opener URL if this is the
       // initial navigation in a newly opened window.
       GURL source_url(old_url);
-      if (is_initial_navigation && source_url.is_empty() &&
-          info.frame->opener())
-        source_url = info.frame->opener()->top()->document().url();
+      if (is_initial_navigation && source_url.is_empty() && frame_->opener())
+        source_url = frame_->opener()->top()->document().url();
       DCHECK(!source_url.is_empty());
       should_fork = !source_url.SchemeIs(url::kFileScheme);
     }
@@ -4373,13 +4379,13 @@ WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
     if (!should_fork) {
       // Give the embedder a chance.
       should_fork = GetContentClient()->renderer()->ShouldFork(
-          info.frame, url, info.urlRequest.httpMethod().utf8(),
-          is_initial_navigation, info.isRedirect, &send_referrer);
+          frame_, url, info.urlRequest.httpMethod().utf8(),
+          is_initial_navigation, is_redirect, &send_referrer);
     }
 
     if (should_fork) {
-      OpenURL(info.frame, url, send_referrer ? referrer : Referrer(),
-              info.defaultPolicy);
+      OpenURL(url, send_referrer ? referrer : Referrer(), info.defaultPolicy,
+              info.replacesCurrentHistoryItem);
       return blink::WebNavigationPolicyIgnore;  // Suppress the load here.
     }
   }
@@ -4406,9 +4412,9 @@ WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
       render_view_->historyForwardListCount() < 1 &&
       // The parent page must have set the child's window.opener to null before
       // redirecting to the desired URL.
-      info.frame->opener() == NULL &&
+      frame_->opener() == NULL &&
       // Must be a top-level frame.
-      info.frame->parent() == NULL &&
+      frame_->parent() == NULL &&
       // Must not have issued the request from this page.
       is_content_initiated &&
       // Must be targeted at the current tab.
@@ -4418,7 +4424,8 @@ WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
 
   if (is_fork) {
     // Open the URL via the browser, not via WebKit.
-    OpenURL(info.frame, url, Referrer(), info.defaultPolicy);
+    OpenURL(url, Referrer(), info.defaultPolicy,
+            info.replacesCurrentHistoryItem);
     return blink::WebNavigationPolicyIgnore;
   }
 
@@ -4481,36 +4488,26 @@ void RenderFrameImpl::OnGetSerializedHtmlWithLocalLinks(
                                local_directory_path.AsUTF16Unsafe());
 }
 
-void RenderFrameImpl::OpenURL(WebFrame* frame,
-                              const GURL& url,
+void RenderFrameImpl::OpenURL(const GURL& url,
                               const Referrer& referrer,
-                              WebNavigationPolicy policy) {
-  DCHECK_EQ(frame_, frame);
-
+                              WebNavigationPolicy policy,
+                              bool should_replace_current_entry) {
   FrameHostMsg_OpenURL_Params params;
   params.url = url;
   params.referrer = referrer;
   params.disposition = RenderViewImpl::NavigationPolicyToDisposition(policy);
-  WebDataSource* ds = frame->provisionalDataSource();
-  if (ds) {
-    DocumentState* document_state = DocumentState::FromDataSource(ds);
-    NavigationStateImpl* navigation_state =
-        static_cast<NavigationStateImpl*>(document_state->navigation_state());
-    if (navigation_state->IsContentInitiated()) {
-      params.should_replace_current_entry =
-          ds->replacesCurrentHistoryItem() &&
-          render_view_->history_list_length_;
-    } else {
-      // This is necessary to preserve the should_replace_current_entry value on
-      // cross-process redirects, in the event it was set by a previous process.
-      //
-      // TODO(davidben): Avoid this awkward duplication of state. See comment on
-      // NavigationState::should_replace_current_entry().
-      params.should_replace_current_entry =
-          navigation_state->common_params().should_replace_current_entry;
-    }
+
+  if (IsBrowserInitiated(pending_navigation_params_.get())) {
+    // This is necessary to preserve the should_replace_current_entry value on
+    // cross-process redirects, in the event it was set by a previous process.
+    //
+    // TODO(davidben): Avoid this awkward duplication of state. See comment on
+    // NavigationState::should_replace_current_entry().
+    params.should_replace_current_entry =
+        pending_navigation_params_->common_params.should_replace_current_entry;
   } else {
-    params.should_replace_current_entry = false;
+    params.should_replace_current_entry =
+        should_replace_current_entry && render_view_->history_list_length_;
   }
   params.user_gesture = WebUserGestureIndicator::isProcessingUserGesture();
   if (GetContentClient()->renderer()->AllowPopup())
@@ -5059,11 +5056,7 @@ void RenderFrameImpl::PopulateDocumentStateFromPending(
 }
 
 NavigationState* RenderFrameImpl::CreateNavigationStateFromPending() {
-  // A navigation resulting from loading a javascript URL should not be treated
-  // as a browser initiated event.  Instead, we want it to look as if the page
-  // initiated any load resulting from JS execution.
-  if (!pending_navigation_params_->common_params.url.SchemeIs(
-          url::kJavaScriptScheme)) {
+  if (IsBrowserInitiated(pending_navigation_params_.get())) {
     return NavigationStateImpl::CreateBrowserInitiated(
         pending_navigation_params_->common_params,
         pending_navigation_params_->start_params,

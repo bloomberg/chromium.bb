@@ -182,7 +182,6 @@ DEFINE_TRACE(FrameLoader)
     visitor->trace(m_progressTracker);
     visitor->trace(m_documentLoader);
     visitor->trace(m_provisionalDocumentLoader);
-    visitor->trace(m_policyDocumentLoader);
     visitor->trace(m_currentItem);
     visitor->trace(m_provisionalItem);
     visitor->trace(m_deferredHistoryLoad);
@@ -210,8 +209,6 @@ void FrameLoader::setDefersLoading(bool defers)
         m_documentLoader->setDefersLoading(defers);
     if (m_provisionalDocumentLoader)
         m_provisionalDocumentLoader->setDefersLoading(defers);
-    if (m_policyDocumentLoader)
-        m_policyDocumentLoader->setDefersLoading(defers);
 
     if (Document* document = m_frame->document()) {
         if (defers)
@@ -897,7 +894,7 @@ void FrameLoader::load(const FrameLoadRequest& passedRequest, FrameLoadType fram
     NavigationPolicy policy = navigationPolicyForRequest(request);
     if (shouldOpenInNewWindow(targetFrame.get(), request, policy)) {
         if (policy == NavigationPolicyDownload) {
-            client()->loadURLExternally(request.resourceRequest(), NavigationPolicyDownload);
+            client()->loadURLExternally(request.resourceRequest(), NavigationPolicyDownload, String(), false);
         } else {
             request.resourceRequest().setFrameType(WebURLRequest::FrameTypeAuxiliary);
             createWindowForRequest(request, *m_frame, policy, request.shouldSendReferrer());
@@ -992,7 +989,6 @@ void FrameLoader::stopAllLoaders()
         m_documentLoader->stopLoading();
 
     detachDocumentLoader(m_provisionalDocumentLoader);
-    detachDocumentLoader(m_policyDocumentLoader);
 
     m_checkTimer.stop();
     m_frame->navigationScheduler().cancel();
@@ -1187,7 +1183,6 @@ void FrameLoader::detach()
 #endif
     detachDocumentLoader(m_documentLoader);
     detachDocumentLoader(m_provisionalDocumentLoader);
-    detachDocumentLoader(m_policyDocumentLoader);
 
     Frame* parent = m_frame->tree().parent();
     if (parent && parent->isLocalFrame())
@@ -1273,7 +1268,7 @@ void FrameLoader::processFragment(const KURL& url, LoadStartType loadStartType)
         toLocalFrame(boundaryFrame.get())->view()->setSafeToPropagateScrollToParent(true);
 }
 
-bool FrameLoader::shouldClose()
+bool FrameLoader::shouldClose(bool isReload)
 {
     Page* page = m_frame->page();
     if (!page || !page->chromeClient().canOpenBeforeUnloadConfirmPanel())
@@ -1297,7 +1292,7 @@ bool FrameLoader::shouldClose()
         for (i = 0; i < targetFrames.size(); i++) {
             if (!targetFrames[i]->tree().isDescendantOf(m_frame))
                 continue;
-            if (!targetFrames[i]->document()->dispatchBeforeUnloadEvent(page->chromeClient(), didAllowNavigation))
+            if (!targetFrames[i]->document()->dispatchBeforeUnloadEvent(page->chromeClient(), isReload, didAllowNavigation))
                 break;
         }
 
@@ -1307,10 +1302,47 @@ bool FrameLoader::shouldClose()
     return shouldClose;
 }
 
+bool FrameLoader::shouldContinueForNavigationPolicy(const ResourceRequest& request, const SubstituteData& substituteData,
+    DocumentLoader* loader, ContentSecurityPolicyDisposition shouldCheckMainWorldContentSecurityPolicy,
+    NavigationType type, NavigationPolicy policy, bool replacesCurrentHistoryItem)
+{
+    // Don't ask if we are loading an empty URL.
+    if (request.url().isEmpty() || substituteData.isValid())
+        return true;
+
+    // If we're loading content into a subframe, check against the parent's Content Security Policy
+    // and kill the load if that check fails, unless we should bypass the main world's CSP.
+    // FIXME: CSP checks are broken for OOPI. For now, this policy always allows frames with a remote parent...
+    if ((shouldCheckMainWorldContentSecurityPolicy == CheckContentSecurityPolicy) && (m_frame->deprecatedLocalOwner() && !m_frame->deprecatedLocalOwner()->document().contentSecurityPolicy()->allowChildFrameFromSource(request.url(), request.followedRedirect() ? ContentSecurityPolicy::DidRedirect : ContentSecurityPolicy::DidNotRedirect))) {
+        // Fire a load event, as timing attacks would otherwise reveal that the
+        // frame was blocked. This way, it looks like every other cross-origin
+        // page load.
+        m_frame->document()->enforceSandboxFlags(SandboxOrigin);
+        m_frame->owner()->dispatchLoad();
+        return false;
+    }
+
+    policy = client()->decidePolicyForNavigation(request, loader, type, policy, replacesCurrentHistoryItem);
+    if (policy == NavigationPolicyCurrentTab)
+        return true;
+    if (policy == NavigationPolicyIgnore)
+        return false;
+    if (policy == NavigationPolicyHandledByClient) {
+        // Mark the frame as loading since the embedder is handling the navigation.
+        m_progressTracker->progressStarted();
+        return false;
+    }
+    if (!LocalDOMWindow::allowPopUp(*m_frame) && !UserGestureIndicator::processingUserGesture())
+        return false;
+    client()->loadURLExternally(request, policy, String(), replacesCurrentHistoryItem);
+    return false;
+}
 
 void FrameLoader::startLoad(FrameLoadRequest& frameLoadRequest, FrameLoadType type, NavigationPolicy navigationPolicy)
 {
     ASSERT(client()->hasWebView());
+    // Lots of things in this function can detach the LocalFrame (stopAllLoaders, beforeunload handlers, etc.), so protect the frame.
+    RefPtrWillBeRawPtr<LocalFrame> protect(m_frame.get());
     if (m_frame->document()->pageDismissalEventBeingDispatched() != Document::NoDismissal)
         return;
 
@@ -1318,18 +1350,10 @@ void FrameLoader::startLoad(FrameLoadRequest& frameLoadRequest, FrameLoadType ty
     frameLoadRequest.resourceRequest().setRequestContext(determineRequestContextFromNavigationType(navigationType));
     frameLoadRequest.resourceRequest().setFrameType(m_frame->isMainFrame() ? WebURLRequest::FrameTypeTopLevel : WebURLRequest::FrameTypeNested);
     ResourceRequest& request = frameLoadRequest.resourceRequest();
-
-    m_policyDocumentLoader = client()->createDocumentLoader(m_frame, request, frameLoadRequest.substituteData().isValid() ? frameLoadRequest.substituteData() : defaultSubstituteDataForURL(request.url()));
-    m_policyDocumentLoader->setNavigationType(navigationType);
-    m_policyDocumentLoader->setReplacesCurrentHistoryItem(type == FrameLoadTypeReplaceCurrentItem);
-    m_policyDocumentLoader->setIsClientRedirect(frameLoadRequest.clientRedirect() == ClientRedirect);
-
-    // stopAllLoaders can detach the LocalFrame, so protect it.
-    RefPtrWillBeRawPtr<LocalFrame> protect(m_frame.get());
-    if ((!m_policyDocumentLoader->shouldContinueForNavigationPolicy(request, frameLoadRequest.shouldCheckMainWorldContentSecurityPolicy(), navigationPolicy) || !shouldClose()) && m_policyDocumentLoader) {
-        detachDocumentLoader(m_policyDocumentLoader);
+    if (!shouldContinueForNavigationPolicy(request, frameLoadRequest.substituteData(), nullptr, frameLoadRequest.shouldCheckMainWorldContentSecurityPolicy(), navigationType, navigationPolicy, type == FrameLoadTypeReplaceCurrentItem))
         return;
-    }
+    if (!shouldClose(navigationType == NavigationTypeReload))
+        return;
 
     // FIXME: This is an odd set of steps to shut down parsing and it's unclear why it works.
     // It's also unclear why other steps don't work.
@@ -1339,22 +1363,26 @@ void FrameLoader::startLoad(FrameLoadRequest& frameLoadRequest, FrameLoadType ty
     }
     m_frame->document()->setReadyState(Document::Complete);
 
+    // In certain circumstances on pages with multiple frames, stopAllLoaders() or firing readystatechanged
+    // might detach the current FrameLoader, in which case we should bail on this newly defunct load.
+    if (!m_frame->host())
+        return;
+
     if (m_provisionalDocumentLoader) {
         m_provisionalDocumentLoader->stopLoading();
         detachDocumentLoader(m_provisionalDocumentLoader);
     }
-    m_checkTimer.stop();
 
-    // <rdar://problem/6250856> - In certain circumstances on pages with multiple frames, stopAllLoaders()
-    // might detach the current FrameLoader, in which case we should bail on this newly defunct load.
-    if (!m_frame->page() || !m_policyDocumentLoader)
-        return;
+    m_provisionalDocumentLoader = client()->createDocumentLoader(m_frame, request, frameLoadRequest.substituteData().isValid() ? frameLoadRequest.substituteData() : defaultSubstituteDataForURL(request.url()));
+    m_provisionalDocumentLoader->setNavigationType(navigationType);
+    m_provisionalDocumentLoader->setReplacesCurrentHistoryItem(type == FrameLoadTypeReplaceCurrentItem);
+    m_provisionalDocumentLoader->setIsClientRedirect(frameLoadRequest.clientRedirect() == ClientRedirect);
 
     InspectorInstrumentation::didStartProvisionalLoad(m_frame);
 
     m_frame->navigationScheduler().cancel();
+    m_checkTimer.stop();
 
-    m_provisionalDocumentLoader = m_policyDocumentLoader.release();
     m_loadType = type;
 
     if (frameLoadRequest.form())

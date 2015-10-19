@@ -108,7 +108,6 @@ public:
     void notifyIfInitialDocumentAccessed();
 
     DocumentLoader* documentLoader() const { return m_documentLoader.get(); }
-    DocumentLoader* policyDocumentLoader() const { return m_policyDocumentLoader.get(); }
     DocumentLoader* provisionalDocumentLoader() const { return m_provisionalDocumentLoader.get(); }
 
     void receivedMainResourceError(DocumentLoader*, const ResourceError&);
@@ -173,7 +172,7 @@ public:
 
     bool allAncestorsAreComplete() const; // including this
 
-    bool shouldClose();
+    bool shouldClose(bool isReload = false);
     void dispatchUnloadEvent();
 
     bool allowPlugins(ReasonForCallingAllowPlugins);
@@ -184,6 +183,9 @@ public:
     void saveScrollState();
 
     void restoreScrollPositionAndViewState();
+
+    bool shouldContinueForNavigationPolicy(const ResourceRequest&, const SubstituteData&, DocumentLoader*, ContentSecurityPolicyDisposition,
+        NavigationType, NavigationPolicy, bool shouldReplaceCurrentEntry);
 
     DECLARE_TRACE();
 
@@ -232,7 +234,6 @@ private:
     // be consulted in particular as it makes sense to imply certain settings on the new loader.
     RefPtrWillBeMember<DocumentLoader> m_documentLoader;
     RefPtrWillBeMember<DocumentLoader> m_provisionalDocumentLoader;
-    RefPtrWillBeMember<DocumentLoader> m_policyDocumentLoader;
 
     RefPtrWillBeMember<HistoryItem> m_currentItem;
     RefPtrWillBeMember<HistoryItem> m_provisionalItem;

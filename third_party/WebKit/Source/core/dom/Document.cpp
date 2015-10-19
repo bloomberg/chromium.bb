@@ -2656,7 +2656,7 @@ void Document::implicitClose()
         accessSVGExtensions().startAnimations();
 }
 
-bool Document::dispatchBeforeUnloadEvent(ChromeClient& chromeClient, bool& didAllowNavigation)
+bool Document::dispatchBeforeUnloadEvent(ChromeClient& chromeClient, bool isReload, bool& didAllowNavigation)
 {
     if (!m_domWindow)
         return true;
@@ -2684,7 +2684,7 @@ bool Document::dispatchBeforeUnloadEvent(ChromeClient& chromeClient, bool& didAl
     }
 
     String text = beforeUnloadEvent->returnValue();
-    if (chromeClient.openBeforeUnloadConfirmPanel(text, m_frame)) {
+    if (chromeClient.openBeforeUnloadConfirmPanel(text, m_frame, isReload)) {
         didAllowNavigation = true;
         return true;
     }

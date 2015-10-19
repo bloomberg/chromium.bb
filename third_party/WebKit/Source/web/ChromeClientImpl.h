@@ -82,7 +82,7 @@ public:
         const String& message, unsigned lineNumber,
         const String& sourceID, const String& stackTrace) override;
     bool canOpenBeforeUnloadConfirmPanel() override;
-    bool openBeforeUnloadConfirmPanelDelegate(LocalFrame*, const String&) override;
+    bool openBeforeUnloadConfirmPanelDelegate(LocalFrame*, const String&, bool isReload) override;
     void closeWindowSoon() override;
     bool openJavaScriptAlertDelegate(LocalFrame*, const String&) override;
     bool openJavaScriptConfirmDelegate(LocalFrame*, const String&) override;

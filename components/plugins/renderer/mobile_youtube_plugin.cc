@@ -106,8 +106,8 @@ void MobileYouTubePlugin::OpenYoutubeUrlCallback() {
   WebURLRequest request;
   request.initialize();
   request.setURL(url);
-  render_frame()->LoadURLExternally(
-      GetFrame(), request, blink::WebNavigationPolicyNewForegroundTab);
+  render_frame()->LoadURLExternally(request,
+                                    blink::WebNavigationPolicyNewForegroundTab);
 }
 
 v8::Local<v8::Value> MobileYouTubePlugin::GetV8Handle(v8::Isolate* isolate) {

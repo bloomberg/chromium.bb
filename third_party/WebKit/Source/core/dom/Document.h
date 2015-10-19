@@ -490,7 +490,7 @@ public:
     // implicitClose() actually does the work of closing the input stream.
     void implicitClose();
 
-    bool dispatchBeforeUnloadEvent(ChromeClient&, bool&);
+    bool dispatchBeforeUnloadEvent(ChromeClient&, bool isReload, bool& didAllowNavigation);
     void dispatchUnloadEvents();
 
     enum PageDismissalType {

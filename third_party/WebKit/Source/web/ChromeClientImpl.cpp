@@ -403,17 +403,11 @@ bool ChromeClientImpl::canOpenBeforeUnloadConfirmPanel()
     return !!m_webView->client();
 }
 
-bool ChromeClientImpl::openBeforeUnloadConfirmPanelDelegate(LocalFrame* frame, const String& message)
+bool ChromeClientImpl::openBeforeUnloadConfirmPanelDelegate(LocalFrame* frame, const String& message, bool isReload)
 {
     notifyPopupOpeningObservers();
     WebLocalFrameImpl* webframe = WebLocalFrameImpl::fromFrame(frame);
-
-    WebDataSource* ds = webframe->provisionalDataSource();
-    bool isReload = ds && (ds->navigationType() == WebNavigationTypeReload);
-
-    if (webframe->client())
-        return webframe->client()->runModalBeforeUnloadDialog(isReload, message);
-    return false;
+    return webframe->client() && webframe->client()->runModalBeforeUnloadDialog(isReload, message);
 }
 
 void ChromeClientImpl::closeWindowSoon()

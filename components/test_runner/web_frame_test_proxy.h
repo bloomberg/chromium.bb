@@ -57,12 +57,14 @@ class WebFrameTestProxy : public Base {
     return mime_type.utf8().find(suffix.utf8()) != std::string::npos;
   }
 
-  virtual void loadURLExternally(blink::WebLocalFrame* frame,
-                                 const blink::WebURLRequest& request,
+  virtual void loadURLExternally(const blink::WebURLRequest& request,
                                  blink::WebNavigationPolicy policy,
-                                 const blink::WebString& suggested_name) {
-    base_proxy_->LoadURLExternally(frame, request, policy, suggested_name);
-    Base::loadURLExternally(frame, request, policy, suggested_name);
+                                 const blink::WebString& suggested_name,
+                                 bool replaces_current_history_item) {
+    base_proxy_->LoadURLExternally(request, policy, suggested_name,
+                                   replaces_current_history_item);
+    Base::loadURLExternally(request, policy, suggested_name,
+                            replaces_current_history_item);
   }
 
   virtual void didStartProvisionalLoad(blink::WebLocalFrame* frame,

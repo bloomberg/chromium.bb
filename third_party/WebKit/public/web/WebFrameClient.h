@@ -190,8 +190,7 @@ public:
     // Load commands -------------------------------------------------------
 
     // The client should handle the navigation externally.
-    virtual void loadURLExternally(
-        WebLocalFrame*, const WebURLRequest&, WebNavigationPolicy, const WebString& downloadName) { }
+    virtual void loadURLExternally(const WebURLRequest&, WebNavigationPolicy, const WebString& downloadName, bool shouldReplaceCurrentEntry) {}
 
     // Navigational queries ------------------------------------------------
 
@@ -199,7 +198,6 @@ public:
     // defaultPolicy should just be returned.
 
     struct NavigationPolicyInfo {
-        WebLocalFrame* frame;
         WebDataSource::ExtraData* extraData;
 
         // Note: if browser side navigations are enabled, the client may modify
@@ -210,26 +208,22 @@ public:
         WebURLRequest& urlRequest;
         WebNavigationType navigationType;
         WebNavigationPolicy defaultPolicy;
-        bool isRedirect;
+        bool replacesCurrentHistoryItem;
 
         NavigationPolicyInfo(WebURLRequest& urlRequest)
-            : frame(0)
-            , extraData(0)
+            : extraData(nullptr)
             , urlRequest(urlRequest)
             , navigationType(WebNavigationTypeOther)
             , defaultPolicy(WebNavigationPolicyIgnore)
-            , isRedirect(false) { }
+            , replacesCurrentHistoryItem(false)
+        {
+        }
     };
 
     virtual WebNavigationPolicy decidePolicyForNavigation(const NavigationPolicyInfo& info)
     {
-        return decidePolicyForNavigation(info.frame, info.extraData, info.urlRequest, info.navigationType, info.defaultPolicy, info.isRedirect);
+        return info.defaultPolicy;
     }
-
-    // DEPRECATED
-    virtual WebNavigationPolicy decidePolicyForNavigation(
-        WebLocalFrame*, WebDataSource::ExtraData*, const WebURLRequest&, WebNavigationType,
-        WebNavigationPolicy defaultPolicy, bool isRedirect) { return defaultPolicy; }
 
     // During a history navigation, we may choose to load new subframes from history as well.
     // This returns such a history item if appropriate.

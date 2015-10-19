@@ -1035,11 +1035,10 @@ bool WebTestProxyBase::IsChooserShown() {
   return 0 < chooser_count_;
 }
 
-void WebTestProxyBase::LoadURLExternally(
-    blink::WebLocalFrame* frame,
-    const blink::WebURLRequest& request,
-    blink::WebNavigationPolicy policy,
-    const blink::WebString& suggested_name) {
+void WebTestProxyBase::LoadURLExternally(const blink::WebURLRequest& request,
+                                         blink::WebNavigationPolicy policy,
+                                         const blink::WebString& suggested_name,
+                                         bool replaces_current_history_item) {
   if (test_interfaces_->GetTestRunner()->shouldWaitUntilExternalURLLoad()) {
     if (policy == blink::WebNavigationPolicyDownload) {
       delegate_->PrintMessage(

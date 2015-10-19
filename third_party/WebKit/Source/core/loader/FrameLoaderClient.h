@@ -97,7 +97,7 @@ public:
     virtual void dispatchDidFinishLoad() = 0;
     virtual void dispatchDidChangeThemeColor() = 0;
 
-    virtual NavigationPolicy decidePolicyForNavigation(const ResourceRequest&, DocumentLoader*, NavigationPolicy) = 0;
+    virtual NavigationPolicy decidePolicyForNavigation(const ResourceRequest&, DocumentLoader*, NavigationType, NavigationPolicy, bool shouldReplaceCurrentEntry) = 0;
     virtual bool hasPendingNavigation() = 0;
 
     virtual void dispatchWillSendSubmitEvent(HTMLFormElement*) = 0;
@@ -107,7 +107,7 @@ public:
     virtual void progressEstimateChanged(double progressEstimate) = 0;
     virtual void didStopLoading() = 0;
 
-    virtual void loadURLExternally(const ResourceRequest&, NavigationPolicy, const String& suggestedName = String()) = 0;
+    virtual void loadURLExternally(const ResourceRequest&, NavigationPolicy, const String& suggestedName, bool replacesCurrentHistoryItem) = 0;
 
     virtual bool navigateBackForward(int offset) const = 0;
 

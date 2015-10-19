@@ -544,7 +544,7 @@ static bool allowCreatingBackgroundTabs()
     return userPolicy == NavigationPolicyNewBackgroundTab;
 }
 
-NavigationPolicy FrameLoaderClientImpl::decidePolicyForNavigation(const ResourceRequest& request, DocumentLoader* loader, NavigationPolicy policy)
+NavigationPolicy FrameLoaderClientImpl::decidePolicyForNavigation(const ResourceRequest& request, DocumentLoader* loader, NavigationType type, NavigationPolicy policy, bool replacesCurrentHistoryItem)
 {
     if (!m_webFrame->client())
         return NavigationPolicyIgnore;
@@ -556,11 +556,10 @@ NavigationPolicy FrameLoaderClientImpl::decidePolicyForNavigation(const Resource
 
     WrappedResourceRequest wrappedResourceRequest(request);
     WebFrameClient::NavigationPolicyInfo navigationInfo(wrappedResourceRequest);
-    navigationInfo.frame = m_webFrame;
-    navigationInfo.extraData = ds->extraData();
-    navigationInfo.navigationType = ds->navigationType();
+    navigationInfo.navigationType = static_cast<WebNavigationType>(type);
     navigationInfo.defaultPolicy = static_cast<WebNavigationPolicy>(policy);
-    navigationInfo.isRedirect = ds->isRedirect();
+    navigationInfo.extraData = ds ? ds->extraData() : nullptr;
+    navigationInfo.replacesCurrentHistoryItem = replacesCurrentHistoryItem;
 
     WebNavigationPolicy webPolicy = m_webFrame->client()->decidePolicyForNavigation(navigationInfo);
     return static_cast<NavigationPolicy>(webPolicy);
@@ -604,15 +603,14 @@ void FrameLoaderClientImpl::didStopLoading()
         m_webFrame->client()->didStopLoading();
 }
 
-void FrameLoaderClientImpl::loadURLExternally(const ResourceRequest& request, NavigationPolicy policy, const String& suggestedName)
+void FrameLoaderClientImpl::loadURLExternally(const ResourceRequest& request, NavigationPolicy policy, const String& suggestedName, bool shouldReplaceCurrentEntry)
 {
-    if (m_webFrame->client()) {
-        ASSERT(m_webFrame->frame()->document());
-        Fullscreen::fullyExitFullscreen(*m_webFrame->frame()->document());
-        WrappedResourceRequest webreq(request);
-        m_webFrame->client()->loadURLExternally(
-            m_webFrame, webreq, static_cast<WebNavigationPolicy>(policy), suggestedName);
-    }
+    if (!m_webFrame->client())
+        return;
+    ASSERT(m_webFrame->frame()->document());
+    Fullscreen::fullyExitFullscreen(*m_webFrame->frame()->document());
+    m_webFrame->client()->loadURLExternally(
+        WrappedResourceRequest(request), static_cast<WebNavigationPolicy>(policy), suggestedName, shouldReplaceCurrentEntry);
 }
 
 bool FrameLoaderClientImpl::navigateBackForward(int offset) const

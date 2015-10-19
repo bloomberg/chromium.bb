@@ -101,7 +101,7 @@ bool ContentRendererClient::AllowPopup() {
 #ifdef OS_ANDROID
 bool ContentRendererClient::HandleNavigation(
     RenderFrame* render_frame,
-    DocumentState* document_state,
+    bool is_content_initiated,
     int opener_id,
     blink::WebFrame* frame,
     const blink::WebURLRequest& request,

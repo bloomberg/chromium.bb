@@ -350,8 +350,7 @@ class CONTENT_EXPORT RenderFrameImpl
       const WebPluginInfo& info,
       const blink::WebPluginParams& params,
       scoped_ptr<PluginInstanceThrottler> throttler) override;
-  void LoadURLExternally(blink::WebLocalFrame* frame,
-                         const blink::WebURLRequest& request,
+  void LoadURLExternally(const blink::WebURLRequest& request,
                          blink::WebNavigationPolicy policy) override;
   void ExecuteJavaScript(const base::string16& javascript) override;
   bool IsMainFrame() override;
@@ -421,11 +420,10 @@ class CONTENT_EXPORT RenderFrameImpl
                               const blink::WebString& source_name,
                               unsigned source_line,
                               const blink::WebString& stack_trace) override;
-  void loadURLExternally(blink::WebLocalFrame* frame,
-                         const blink::WebURLRequest& request,
+  void loadURLExternally(const blink::WebURLRequest& request,
                          blink::WebNavigationPolicy policy,
-                         const blink::WebString& suggested_name) override;
-  // The WebDataSource::ExtraData* is assumed to be a DocumentState* subclass.
+                         const blink::WebString& suggested_name,
+                         bool should_replace_current_entry) override;
   blink::WebNavigationPolicy decidePolicyForNavigation(
       const NavigationPolicyInfo& info) override;
   blink::WebHistoryItem historyItemForNewChildFrame(
@@ -740,14 +738,10 @@ class CONTENT_EXPORT RenderFrameImpl
       std::vector<base::FilePath> equivalent_local_paths,
       base::FilePath local_directory_path);
 
-  // Virtual since overridden by WebTestProxy for layout tests.
-  virtual blink::WebNavigationPolicy DecidePolicyForNavigation(
-      RenderFrame* render_frame,
-      const NavigationPolicyInfo& info);
-  void OpenURL(blink::WebFrame* frame,
-               const GURL& url,
+  void OpenURL(const GURL& url,
                const Referrer& referrer,
-               blink::WebNavigationPolicy policy);
+               blink::WebNavigationPolicy policy,
+               bool should_replace_current_entry);
 
   // Performs a navigation in the frame. This provides a unified function for
   // the current code path and the browser-side navigation path (in

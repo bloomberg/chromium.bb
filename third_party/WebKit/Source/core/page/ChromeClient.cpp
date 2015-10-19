@@ -98,10 +98,10 @@ bool openJavaScriptDialog(
     return result;
 }
 
-bool ChromeClient::openBeforeUnloadConfirmPanel(const String& message, LocalFrame* frame)
+bool ChromeClient::openBeforeUnloadConfirmPanel(const String& message, LocalFrame* frame, bool isReload)
 {
     ASSERT(frame);
-    return openJavaScriptDialog(this, &ChromeClient::openBeforeUnloadConfirmPanelDelegate, *frame, message, ChromeClient::HTMLDialog);
+    return openJavaScriptDialog(this, &ChromeClient::openBeforeUnloadConfirmPanelDelegate, *frame, message, ChromeClient::HTMLDialog, isReload);
 }
 
 bool ChromeClient::openJavaScriptAlert(LocalFrame* frame, const String& message)

@@ -317,40 +317,6 @@ bool DocumentLoader::isRedirectAfterPost(const ResourceRequest& newRequest, cons
     return false;
 }
 
-bool DocumentLoader::shouldContinueForNavigationPolicy(const ResourceRequest& request, ContentSecurityPolicyDisposition shouldCheckMainWorldContentSecurityPolicy, NavigationPolicy policy)
-{
-    // Don't ask if we are loading an empty URL.
-    if (request.url().isEmpty() || m_substituteData.isValid())
-        return true;
-
-    // If we're loading content into a subframe, check against the parent's Content Security Policy
-    // and kill the load if that check fails, unless we should bypass the main world's CSP.
-    // FIXME: CSP checks are broken for OOPI. For now, this policy always allows frames with a remote parent...
-    if ((shouldCheckMainWorldContentSecurityPolicy == CheckContentSecurityPolicy) && (m_frame->deprecatedLocalOwner() && !m_frame->deprecatedLocalOwner()->document().contentSecurityPolicy()->allowChildFrameFromSource(request.url(), request.followedRedirect() ? ContentSecurityPolicy::DidRedirect : ContentSecurityPolicy::DidNotRedirect))) {
-        // Fire a load event, as timing attacks would otherwise reveal that the
-        // frame was blocked. This way, it looks like every other cross-origin
-        // page load.
-        m_frame->document()->enforceSandboxFlags(SandboxOrigin);
-        m_frame->owner()->dispatchLoad();
-        return false;
-    }
-
-    policy = frameLoader()->client()->decidePolicyForNavigation(request, this, policy);
-    if (policy == NavigationPolicyCurrentTab)
-        return true;
-    if (policy == NavigationPolicyIgnore)
-        return false;
-    if (policy == NavigationPolicyHandledByClient) {
-        // Mark the frame as loading since the embedder is handling the navigation.
-        frameLoader()->progress().progressStarted();
-        return false;
-    }
-    if (!LocalDOMWindow::allowPopUp(*m_frame) && !UserGestureIndicator::processingUserGesture())
-        return false;
-    frameLoader()->client()->loadURLExternally(request, policy);
-    return false;
-}
-
 void DocumentLoader::redirectReceived(Resource* resource, ResourceRequest& request, const ResourceResponse& redirectResponse)
 {
     ASSERT_UNUSED(resource, resource == m_mainResource);
@@ -406,7 +372,7 @@ void DocumentLoader::willSendRequest(ResourceRequest& newRequest, const Resource
 
     appendRedirect(newRequest.url());
     frameLoader()->receivedMainResourceRedirect(m_request.url());
-    if (!shouldContinueForNavigationPolicy(newRequest, CheckContentSecurityPolicy))
+    if (!frameLoader()->shouldContinueForNavigationPolicy(newRequest, SubstituteData(), this, CheckContentSecurityPolicy, m_navigationType, NavigationPolicyCurrentTab, replacesCurrentHistoryItem()))
         cancelMainResourceLoad(ResourceError::cancelledError(m_request.url()));
 }
 

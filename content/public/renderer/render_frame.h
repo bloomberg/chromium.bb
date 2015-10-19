@@ -108,8 +108,7 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
       scoped_ptr<PluginInstanceThrottler> throttler) = 0;
 
   // The client should handle the navigation externally.
-  virtual void LoadURLExternally(blink::WebLocalFrame* frame,
-                                 const blink::WebURLRequest& request,
+  virtual void LoadURLExternally(const blink::WebURLRequest& request,
                                  blink::WebNavigationPolicy policy) = 0;
 
   // Execute a string of JavaScript in this frame's context.

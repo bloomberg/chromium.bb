@@ -38,7 +38,7 @@ class AwContentRendererClient : public content::ContentRendererClient {
   void AddKeySystems(std::vector<media::KeySystemInfo>* key_systems) override;
 
   bool HandleNavigation(content::RenderFrame* render_frame,
-                        content::DocumentState* document_state,
+                        bool is_content_initiated,
                         int opener_id,
                         blink::WebFrame* frame,
                         const blink::WebURLRequest& request,

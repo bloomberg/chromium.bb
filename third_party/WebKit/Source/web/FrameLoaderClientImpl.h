@@ -100,14 +100,14 @@ public:
     void dispatchDidFinishLoad() override;
 
     void dispatchDidChangeThemeColor() override;
-    NavigationPolicy decidePolicyForNavigation(const ResourceRequest&, DocumentLoader*, NavigationPolicy) override;
+    NavigationPolicy decidePolicyForNavigation(const ResourceRequest&, DocumentLoader*, NavigationType, NavigationPolicy, bool shouldReplaceCurrentEntry) override;
     bool hasPendingNavigation() override;
     void dispatchWillSendSubmitEvent(HTMLFormElement*) override;
     void dispatchWillSubmitForm(HTMLFormElement*) override;
     void didStartLoading(LoadStartType) override;
     void didStopLoading() override;
     void progressEstimateChanged(double progressEstimate) override;
-    void loadURLExternally(const ResourceRequest&, NavigationPolicy, const String& suggestedName = String()) override;
+    void loadURLExternally(const ResourceRequest&, NavigationPolicy, const String& suggestedName, bool shouldReplaceCurrentEntry) override;
     bool navigateBackForward(int offset) const override;
     void didAccessInitialDocument() override;
     void didDisplayInsecureContent() override;

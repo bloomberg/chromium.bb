@@ -1028,13 +1028,7 @@ void WebLocalFrameImpl::stopLoading()
 WebDataSource* WebLocalFrameImpl::provisionalDataSource() const
 {
     ASSERT(frame());
-
-    // We regard the policy document loader as still provisional.
-    DocumentLoader* documentLoader = frame()->loader().provisionalDocumentLoader();
-    if (!documentLoader)
-        documentLoader = frame()->loader().policyDocumentLoader();
-
-    return DataSourceForDocLoader(documentLoader);
+    return DataSourceForDocLoader(frame()->loader().provisionalDocumentLoader());
 }
 
 WebDataSource* WebLocalFrameImpl::dataSource() const

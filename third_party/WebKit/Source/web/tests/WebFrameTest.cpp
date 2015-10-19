@@ -3235,7 +3235,7 @@ class TestReloadDoesntRedirectWebFrameClient : public FrameTestHelpers::TestWebF
 public:
     WebNavigationPolicy decidePolicyForNavigation(const NavigationPolicyInfo& info) override
     {
-        EXPECT_FALSE(info.isRedirect);
+        EXPECT_FALSE(info.extraData);
         return WebNavigationPolicyCurrentTab;
     }
 };

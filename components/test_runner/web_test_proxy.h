@@ -179,10 +179,10 @@ class TEST_RUNNER_EXPORT WebTestProxyBase {
   void DidAddMessageToConsole(const blink::WebConsoleMessage& text,
                               const blink::WebString& source_name,
                               unsigned source_line);
-  void LoadURLExternally(blink::WebLocalFrame* frame,
-                         const blink::WebURLRequest& request,
+  void LoadURLExternally(const blink::WebURLRequest& request,
                          blink::WebNavigationPolicy policy,
-                         const blink::WebString& suggested_name);
+                         const blink::WebString& suggested_name,
+                         bool replaces_current_history_item);
   void DidStartProvisionalLoad(blink::WebLocalFrame*);
   void DidReceiveServerRedirectForProvisionalLoad(blink::WebLocalFrame* frame);
   bool DidFailProvisionalLoad(blink::WebLocalFrame* frame,
