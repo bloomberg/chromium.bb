@@ -98,7 +98,7 @@ ImageBitmap::ImageBitmap(ImageData* data, const IntRect& cropRect)
     , m_bitmapOffset(IntPoint())
 {
     IntRect srcRect = intersection(cropRect, IntRect(IntPoint(), data->size()));
-    OwnPtr<ImageBuffer> buffer = ImageBuffer::create(data->size(), Opaque, DoNotInitializeImagePixels);
+    OwnPtr<ImageBuffer> buffer = ImageBuffer::create(data->size(), NonOpaque, DoNotInitializeImagePixels);
     if (!buffer)
         return;
 
