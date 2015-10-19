@@ -7,6 +7,7 @@
 #include "third_party/mojo/src/mojo/public/c/system/main.h"
 
 MojoResult MojoMain(MojoHandle mojo_handle) {
-  mojo::ApplicationRunner runner(new media::MojoMediaApplication());
+  // Create MojoMediaApplication and enable logging.
+  mojo::ApplicationRunner runner(new media::MojoMediaApplication(true));
   return runner.Run(mojo_handle);
 }

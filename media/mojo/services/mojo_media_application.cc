@@ -14,12 +14,17 @@ namespace media {
 
 // static
 scoped_ptr<mojo::ApplicationDelegate> MojoMediaApplication::CreateApp() {
-  return scoped_ptr<mojo::ApplicationDelegate>(new MojoMediaApplication());
+  // In all existing use cases we don't need to initialize logging when using
+  // CreateApp() to create the application. We can pass |enable_logging| in
+  // CreateApp() if this isn't the case any more in the future.
+  return scoped_ptr<mojo::ApplicationDelegate>(new MojoMediaApplication(false));
 }
 
 // TODO(xhwang): Hook up MediaLog when possible.
-MojoMediaApplication::MojoMediaApplication()
-    : app_impl_(nullptr), media_log_(new MediaLog()) {}
+MojoMediaApplication::MojoMediaApplication(bool enable_logging)
+    : enable_logging_(enable_logging),
+      app_impl_(nullptr),
+      media_log_(new MediaLog()) {}
 
 MojoMediaApplication::~MojoMediaApplication() {
 }
@@ -27,11 +32,13 @@ MojoMediaApplication::~MojoMediaApplication() {
 void MojoMediaApplication::Initialize(mojo::ApplicationImpl* app) {
   app_impl_ = app;
 
-  logging::LoggingSettings settings;
-  settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
-  logging::InitLogging(settings);
-  // Display process ID, thread ID and timestamp in logs.
-  logging::SetLogItems(true, true, true, false);
+  if (enable_logging_) {
+    logging::LoggingSettings settings;
+    settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
+    logging::InitLogging(settings);
+    // Display process ID, thread ID and timestamp in logs.
+    logging::SetLogItems(true, true, true, false);
+  }
 }
 
 bool MojoMediaApplication::ConfigureIncomingConnection(
