@@ -995,11 +995,6 @@ int HttpStreamFactoryImpl::Job::DoInitConnectionComplete(int result) {
   }
 
   if (proxy_info_.is_quic() && using_quic_) {
-    if (result == ERR_QUIC_PROTOCOL_ERROR ||
-        result == ERR_QUIC_HANDSHAKE_FAILED || result == ERR_MSG_TOO_BIG) {
-      using_quic_ = false;
-      return ReconsiderProxyAfterError(result);
-    }
     // Mark QUIC proxy as bad if QUIC got disabled on the destination port.
     // Underlying QUIC layer would have closed the connection.
     HostPortPair destination = proxy_info_.proxy_server().host_port_pair();
@@ -1071,6 +1066,11 @@ int HttpStreamFactoryImpl::Job::DoInitConnectionComplete(int result) {
     // class.
     connection_.reset(connection_->release_pending_http_proxy_connection());
     return result;
+  }
+
+  if (proxy_info_.is_quic() && using_quic_ && result < 0) {
+    using_quic_ = false;
+    return ReconsiderProxyAfterError(result);
   }
 
   if (IsSpdyAlternative() && !using_spdy_) {

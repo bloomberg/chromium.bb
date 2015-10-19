@@ -615,7 +615,22 @@ TEST_P(HttpStreamFactoryTest, JobNotifiesProxy) {
 }
 
 TEST_P(HttpStreamFactoryTest, UnreachableQuicProxyMarkedAsBad) {
-  const int mock_error[] = {ERR_QUIC_PROTOCOL_ERROR, ERR_QUIC_HANDSHAKE_FAILED,
+  const int mock_error[] = {ERR_PROXY_CONNECTION_FAILED,
+                            ERR_NAME_NOT_RESOLVED,
+                            ERR_INTERNET_DISCONNECTED,
+                            ERR_ADDRESS_UNREACHABLE,
+                            ERR_CONNECTION_CLOSED,
+                            ERR_CONNECTION_TIMED_OUT,
+                            ERR_CONNECTION_RESET,
+                            ERR_CONNECTION_REFUSED,
+                            ERR_CONNECTION_ABORTED,
+                            ERR_TIMED_OUT,
+                            ERR_TUNNEL_CONNECTION_FAILED,
+                            ERR_SOCKS_CONNECTION_FAILED,
+                            ERR_PROXY_CERTIFICATE_INVALID,
+                            ERR_QUIC_PROTOCOL_ERROR,
+                            ERR_QUIC_HANDSHAKE_FAILED,
+                            ERR_SSL_PROTOCOL_ERROR,
                             ERR_MSG_TOO_BIG};
   for (size_t i = 0; i < arraysize(mock_error); ++i) {
     scoped_ptr<ProxyService> proxy_service;
