@@ -467,6 +467,7 @@ class ProfileSyncServiceAutofillTest
             profile_, ServiceAccessType::EXPLICIT_ACCESS),
         profile_->GetPrefs(),
         AccountTrackerServiceFactory::GetForProfile(profile_),
+        SigninManagerFactory::GetForProfile(profile_),
         profile_->IsOffTheRecord());
 
     web_data_service_->StartSyncableService();

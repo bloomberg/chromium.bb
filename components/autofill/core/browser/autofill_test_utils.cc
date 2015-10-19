@@ -39,9 +39,15 @@ scoped_ptr<PrefService> PrefServiceForTesting() {
       new user_prefs::PrefRegistrySyncable());
   AutofillManager::RegisterProfilePrefs(registry.get());
 
-  // PDM depends on this pref, which is normally registered in
+  // PDM depends on these prefs, which is normally registered in
   // SigninManagerFactory.
   registry->RegisterStringPref(::prefs::kGoogleServicesAccountId,
+                               std::string());
+  registry->RegisterStringPref(::prefs::kGoogleServicesUsername,
+                               std::string());
+  registry->RegisterStringPref(::prefs::kGoogleServicesUserAccountId,
+                               std::string());
+  registry->RegisterStringPref(::prefs::kGoogleServicesLastUsername,
                                std::string());
 
   // PDM depends on these prefs, which are normally registered in

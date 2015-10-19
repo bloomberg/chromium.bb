@@ -30,6 +30,7 @@
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/signin/core/browser/account_tracker_service.h"
+#include "components/signin/core/browser/fake_signin_manager.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/signin/core/common/signin_pref_names.h"
 #include "components/variations/entropy_provider.h"
@@ -108,6 +109,9 @@ class PersonalDataManagerTest : public testing::Test {
     signin_client_.reset(new TestSigninClient(prefs_.get()));
     account_tracker_.reset(new AccountTrackerService());
     account_tracker_->Initialize(signin_client_.get());
+    signin_manager_.reset(new FakeSigninManagerBase(signin_client_.get(),
+                                                    account_tracker_.get()));
+    signin_manager_->Initialize(prefs_.get());
 
     // Hacky: hold onto a pointer but pass ownership.
     autofill_table_ = new AutofillTable;
@@ -129,6 +133,9 @@ class PersonalDataManagerTest : public testing::Test {
   void TearDown() override {
     // Order of destruction is important as AutofillManager relies on
     // PersonalDataManager to be around when it gets destroyed.
+    signin_manager_->Shutdown();
+    signin_manager_.reset();
+
     account_tracker_->Shutdown();
     account_tracker_.reset();
     signin_client_.reset();
@@ -141,6 +148,7 @@ class PersonalDataManagerTest : public testing::Test {
         scoped_refptr<AutofillWebDataService>(autofill_database_service_),
         prefs_.get(),
         account_tracker_.get(),
+        signin_manager_.get(),
         is_incognito);
     personal_data_->AddObserver(&personal_data_observer_);
 
@@ -152,9 +160,8 @@ class PersonalDataManagerTest : public testing::Test {
 
   void EnableWalletCardImport() {
     prefs_->SetBoolean(prefs::kAutofillWalletSyncExperimentEnabled, true);
-    std::string account_id =
-        account_tracker_->SeedAccountInfo("12345", "syncuser@example.com");
-    prefs_->SetString(::prefs::kGoogleServicesAccountId, account_id);
+    signin_manager_->SetAuthenticatedAccountInfo("12345",
+                                                 "syncuser@example.com");
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableOfferStoreUnmaskedWalletCards);
   }
@@ -189,6 +196,7 @@ class PersonalDataManagerTest : public testing::Test {
   base::MessageLoopForUI message_loop_;
   scoped_ptr<PrefService> prefs_;
   scoped_ptr<AccountTrackerService> account_tracker_;
+  scoped_ptr<FakeSigninManagerBase> signin_manager_;
   scoped_ptr<TestSigninClient> signin_client_;
   scoped_refptr<AutofillWebDataService> autofill_database_service_;
   scoped_refptr<WebDatabaseService> web_database_;

@@ -19,6 +19,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_controller_impl.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_i18n_input.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_view.h"
@@ -42,6 +43,7 @@
 #include "components/autofill/core/common/form_data.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/signin/core/browser/account_tracker_service.h"
+#include "components/signin/core/browser/signin_manager.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/mock_render_process_host.h"
@@ -226,6 +228,7 @@ class TestAutofillDialogController
                            ServiceAccessType::EXPLICIT_ACCESS),
                        user_prefs::UserPrefs::Get(browser_context),
                        AccountTrackerServiceFactory::GetForProfile(profile),
+                       SigninManagerFactory::GetForProfile(profile),
                        browser_context->IsOffTheRecord());
   }
 

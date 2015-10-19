@@ -24,10 +24,11 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/webdata/common/web_data_service_consumer.h"
 
+class AccountTrackerService;
 class Browser;
 class PrefService;
 class RemoveAutofillTester;
-class AccountTrackerService;
+class SigninManagerBase;
 
 #if defined(OS_IOS)
 // TODO(sdefresne): Remove this. See http://crbug.com/513344.
@@ -66,6 +67,7 @@ class PersonalDataManager : public KeyedService,
   void Init(scoped_refptr<AutofillWebDataService> database,
             PrefService* pref_service,
             AccountTrackerService* account_tracker,
+            SigninManagerBase* signin_manager,
             bool is_off_the_record);
 
   // WebDataServiceConsumer:
@@ -297,6 +299,10 @@ class PersonalDataManager : public KeyedService,
     account_tracker_ = account_tracker;
   }
 
+  void set_signin_manager(SigninManagerBase* signin_manager) {
+    signin_manager_ = signin_manager;
+  }
+
   // The backing database that this PersonalDataManager uses.
   scoped_refptr<AutofillWebDataService> database_;
 
@@ -359,6 +365,9 @@ class PersonalDataManager : public KeyedService,
   // The AccountTrackerService that this instance uses. Must outlive this
   // instance.
   AccountTrackerService* account_tracker_;
+
+  // The signin manager that this instance uses. Must outlive this instance.
+  SigninManagerBase* signin_manager_;
 
   // Whether the user is currently operating in an off-the-record context.
   // Default value is false.

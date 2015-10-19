@@ -7,10 +7,12 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/signin/core/browser/account_tracker_service.h"
+#include "components/signin/core/browser/signin_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_ui.h"
@@ -24,7 +26,8 @@ class CountryComboboxModelTest : public testing::Test {
   CountryComboboxModelTest() {
     manager_.Init(
         NULL, profile_.GetPrefs(),
-        AccountTrackerServiceFactory::GetForProfile(&profile_), false);
+        AccountTrackerServiceFactory::GetForProfile(&profile_),
+        SigninManagerFactory::GetForProfile(&profile_), false);
     manager_.set_timezone_country_code("KR");
     model_.reset(new CountryComboboxModel());
     model_->SetCountries(manager_, base::Callback<bool(const std::string&)>());

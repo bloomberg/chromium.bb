@@ -27,6 +27,7 @@
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/signin/core/browser/account_tracker_service.h"
+#include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/common/signin_pref_names.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_data.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_formatter.h"
@@ -222,10 +223,12 @@ PersonalDataManager::PersonalDataManager(const std::string& app_locale)
 void PersonalDataManager::Init(scoped_refptr<AutofillWebDataService> database,
                                PrefService* pref_service,
                                AccountTrackerService* account_tracker,
+                               SigninManagerBase* signin_manager,
                                bool is_off_the_record) {
   database_ = database;
   SetPrefService(pref_service);
   account_tracker_ = account_tracker;
+  signin_manager_ = signin_manager;
   is_off_the_record_ = is_off_the_record;
 
   if (!is_off_the_record_)
@@ -283,8 +286,7 @@ void PersonalDataManager::OnWebDataServiceRequestDone(
                               &server_profiles_);
 
         if (!server_profiles_.empty()) {
-          std::string account_id =
-              pref_service_->GetString(::prefs::kGoogleServicesAccountId);
+          std::string account_id = signin_manager_->GetAuthenticatedAccountId();
           base::string16 email =
               base::UTF8ToUTF16(
                   account_tracker_->GetAccountInfo(account_id).email);
