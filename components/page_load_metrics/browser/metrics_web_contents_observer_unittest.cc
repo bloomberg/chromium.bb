@@ -22,31 +22,6 @@ const char kDefaultTestUrl[] = "https://google.com";
 const char kDefaultTestUrlAnchor[] = "https://google.com#samepage";
 const char kDefaultTestUrl2[] = "https://whatever.com";
 
-const char kHistogramNameFirstLayout[] =
-    "PageLoad.Timing2.NavigationToFirstLayout";
-const char kHistogramNameFirstTextPaint[] =
-    "PageLoad.Timing2.NavigationToFirstTextPaint";
-const char kHistogramNameDomContent[] =
-    "PageLoad.Timing2.NavigationToDOMContentLoadedEventFired";
-const char kHistogramNameLoad[] =
-    "PageLoad.Timing2.NavigationToLoadEventFired";
-
-const char kBGHistogramNameFirstLayout[] =
-    "PageLoad.Timing2.NavigationToFirstLayout.Background";
-const char kBGHistogramNameFirstTextPaint[] =
-    "PageLoad.Timing2.NavigationToFirstTextPaint.Background";
-const char kBGHistogramNameDomContent[] =
-    "PageLoad.Timing2.NavigationToDOMContentLoadedEventFired.Background";
-const char kBGHistogramNameLoad[] =
-    "PageLoad.Timing2.NavigationToLoadEventFired.Background";
-
-const char kProvisionalEvents[] = "PageLoad.Events.Provisional";
-const char kCommittedEvents[] = "PageLoad.Events.Committed";
-const char kBGProvisionalEvents[] = "PageLoad.Events.Provisional.Background";
-const char kBGCommittedEvents[] = "PageLoad.Events.Committed.Background";
-
-const char kErrorEvents[] = "PageLoad.Events.InternalError";
-
 }  //  namespace
 
 class MetricsWebContentsObserverTest
