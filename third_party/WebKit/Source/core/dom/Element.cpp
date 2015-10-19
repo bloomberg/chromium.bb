@@ -1985,7 +1985,7 @@ ShadowRoot* Element::shadowRoot() const
     ElementShadow* elementShadow = shadow();
     if (!elementShadow)
         return nullptr;
-    return elementShadow->youngestShadowRoot();
+    return &elementShadow->youngestShadowRoot();
 }
 
 ShadowRoot* Element::openShadowRoot() const

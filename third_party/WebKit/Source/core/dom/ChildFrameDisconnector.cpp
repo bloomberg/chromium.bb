@@ -68,7 +68,7 @@ void ChildFrameDisconnector::disconnectCollectedFrameOwners()
 
 void ChildFrameDisconnector::collectFrameOwners(ElementShadow& shadow)
 {
-    for (ShadowRoot* root = shadow.youngestShadowRoot(); root; root = root->olderShadowRoot())
+    for (ShadowRoot* root = &shadow.youngestShadowRoot(); root; root = root->olderShadowRoot())
         collectFrameOwners(*root);
 }
 
@@ -82,7 +82,7 @@ static unsigned checkConnectedSubframeCountIsConsistent(Node& node)
             count++;
 
         if (ElementShadow* shadow = toElement(node).shadow()) {
-            for (ShadowRoot* root = shadow->youngestShadowRoot(); root; root = root->olderShadowRoot())
+            for (ShadowRoot* root = &shadow->youngestShadowRoot(); root; root = root->olderShadowRoot())
                 count += checkConnectedSubframeCountIsConsistent(*root);
         }
     }

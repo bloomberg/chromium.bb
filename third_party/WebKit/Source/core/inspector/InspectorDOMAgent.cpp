@@ -913,11 +913,10 @@ static Node* nextNodeWithShadowDOMInMind(const Node& current, const Node* stayWi
         const Element& element = toElement(current);
         ElementShadow* elementShadow = element.shadow();
         if (elementShadow) {
-            ShadowRoot* shadowRoot = elementShadow->youngestShadowRoot();
-            if (shadowRoot) {
-                if (shadowRoot->type() != ShadowRootType::UserAgent || includeUserAgentShadowDOM)
-                    return shadowRoot;
-            }
+            ShadowRoot& shadowRoot = elementShadow->youngestShadowRoot();
+            if (shadowRoot.type() != ShadowRootType::UserAgent || includeUserAgentShadowDOM)
+                return &shadowRoot;
+
         }
     }
     if (current.hasChildren())
@@ -1538,7 +1537,7 @@ PassRefPtr<TypeBuilder::DOM::Node> InspectorDOMAgent::buildObjectForNode(Node* n
         ElementShadow* shadow = element->shadow();
         if (shadow) {
             RefPtr<TypeBuilder::Array<TypeBuilder::DOM::Node> > shadowRoots = TypeBuilder::Array<TypeBuilder::DOM::Node>::create();
-            for (ShadowRoot* root = shadow->youngestShadowRoot(); root; root = root->olderShadowRoot())
+            for (ShadowRoot* root = &shadow->youngestShadowRoot(); root; root = root->olderShadowRoot())
                 shadowRoots->addItem(buildObjectForNode(root, 0, nodesMap));
             value->setShadowRoots(shadowRoots);
             forcePushChildren = true;

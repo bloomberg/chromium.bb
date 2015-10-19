@@ -149,9 +149,9 @@ ShadowRoot& ElementShadow::addShadowRoot(Element& shadowHost, ShadowRootType typ
     ScriptForbiddenScope forbidScript;
 
     if (type == ShadowRootType::V0) {
-        if (!youngestShadowRoot()) {
+        if (m_shadowRoots.isEmpty()) {
             shadowHost.willAddFirstAuthorShadowRoot();
-        } else if (youngestShadowRoot()->type() == ShadowRootType::UserAgent) {
+        } else if (m_shadowRoots.head()->type() == ShadowRootType::UserAgent) {
             shadowHost.willAddFirstAuthorShadowRoot();
             UseCounter::countDeprecation(shadowHost.document(), UseCounter::ElementCreateShadowRootMultipleWithUserAgentShadowRoot);
         } else {
@@ -161,7 +161,7 @@ ShadowRoot& ElementShadow::addShadowRoot(Element& shadowHost, ShadowRootType typ
         shadowHost.willAddFirstAuthorShadowRoot();
     }
 
-    for (ShadowRoot* root = youngestShadowRoot(); root; root = root->olderShadowRoot())
+    for (ShadowRoot* root = m_shadowRoots.head(); root; root = root->olderShadowRoot())
         root->lazyReattachIfAttached();
 
     RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = ShadowRoot::create(shadowHost.document(), type);
@@ -203,7 +203,7 @@ void ElementShadow::attach(const Node::AttachContext& context)
     Node::AttachContext childrenContext(context);
     childrenContext.resolvedStyle = 0;
 
-    for (ShadowRoot* root = youngestShadowRoot(); root; root = root->olderShadowRoot()) {
+    for (ShadowRoot* root = &youngestShadowRoot(); root; root = root->olderShadowRoot()) {
         if (root->needsAttach())
             root->attach(childrenContext);
     }
@@ -214,7 +214,7 @@ void ElementShadow::detach(const Node::AttachContext& context)
     Node::AttachContext childrenContext(context);
     childrenContext.resolvedStyle = 0;
 
-    for (ShadowRoot* root = youngestShadowRoot(); root; root = root->olderShadowRoot())
+    for (ShadowRoot* root = &youngestShadowRoot(); root; root = root->olderShadowRoot())
         root->detach(childrenContext);
 }
 
@@ -229,8 +229,8 @@ void ElementShadow::setNeedsDistributionRecalc()
 
 bool ElementShadow::hasSameStyles(const ElementShadow* other) const
 {
-    ShadowRoot* root = youngestShadowRoot();
-    ShadowRoot* otherRoot = other->youngestShadowRoot();
+    ShadowRoot* root = &youngestShadowRoot();
+    ShadowRoot* otherRoot = &other->youngestShadowRoot();
     while (root || otherRoot) {
         if (!root || !otherRoot)
             return false;
@@ -280,7 +280,7 @@ void ElementShadow::distribute()
     WillBeHeapVector<RawPtrWillBeMember<HTMLShadowElement>, 32> shadowInsertionPoints;
     DistributionPool pool(*host());
 
-    for (ShadowRoot* root = youngestShadowRoot(); root; root = root->olderShadowRoot()) {
+    for (ShadowRoot* root = &youngestShadowRoot(); root; root = root->olderShadowRoot()) {
         HTMLShadowElement* shadowInsertionPoint = 0;
         const WillBeHeapVector<RefPtrWillBeMember<InsertionPoint>>& insertionPoints = root->descendantInsertionPoints();
         for (size_t i = 0; i < insertionPoints.size(); ++i) {
@@ -372,7 +372,7 @@ void ElementShadow::clearDistribution()
 {
     m_nodeToInsertionPoints.clear();
 
-    for (ShadowRoot* root = youngestShadowRoot(); root; root = root->olderShadowRoot())
+    for (ShadowRoot* root = &youngestShadowRoot(); root; root = root->olderShadowRoot())
         root->setShadowInsertionPointOfYoungerShadowRoot(nullptr);
 }
 

@@ -77,7 +77,7 @@ bool handleSelectionBoundary<EditingInComposedTreeStrategy>(const Node& node)
     ElementShadow* shadow = toElement(node).shadow();
     if (!shadow)
         return false;
-    return shadow->youngestShadowRoot()->type() == ShadowRootType::UserAgent;
+    return shadow->youngestShadowRoot().type() == ShadowRootType::UserAgent;
 }
 
 } // namespace

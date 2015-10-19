@@ -47,7 +47,7 @@ public:
     ~ElementShadow();
 
     Element* host() const;
-    ShadowRoot* youngestShadowRoot() const { return m_shadowRoots.head(); }
+    ShadowRoot& youngestShadowRoot() const { ASSERT(m_shadowRoots.head()); return *m_shadowRoots.head(); }
     ShadowRoot* oldestShadowRoot() const { return m_shadowRoots.tail(); }
     ElementShadow* containingShadow() const;
 
@@ -106,7 +106,7 @@ private:
 inline Element* ElementShadow::host() const
 {
     ASSERT(!m_shadowRoots.isEmpty());
-    return youngestShadowRoot()->host();
+    return youngestShadowRoot().host();
 }
 
 inline ShadowRoot* Node::youngestShadowRoot() const
@@ -119,7 +119,7 @@ inline ShadowRoot* Node::youngestShadowRoot() const
 inline ShadowRoot* Element::youngestShadowRoot() const
 {
     if (ElementShadow* shadow = this->shadow())
-        return shadow->youngestShadowRoot();
+        return &shadow->youngestShadowRoot();
     return 0;
 }
 

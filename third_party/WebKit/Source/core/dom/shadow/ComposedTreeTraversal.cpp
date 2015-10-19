@@ -41,7 +41,7 @@ static inline ElementShadow* shadowFor(const Node& node)
 Node* ComposedTreeTraversal::traverseChild(const Node& node, TraversalDirection direction)
 {
     ElementShadow* shadow = shadowFor(node);
-    return shadow ? traverseLightChildren(*shadow->youngestShadowRoot(), direction)
+    return shadow ? traverseLightChildren(shadow->youngestShadowRoot(), direction)
         : traverseLightChildren(node, direction);
 }
 

@@ -129,7 +129,7 @@ FocusNavigationScope FocusNavigationScope::ownedByNonFocusableFocusScopeOwner(El
 FocusNavigationScope FocusNavigationScope::ownedByShadowHost(const Element& element)
 {
     ASSERT(isShadowHost(element));
-    return FocusNavigationScope(element.shadow()->youngestShadowRoot());
+    return FocusNavigationScope(&element.shadow()->youngestShadowRoot());
 }
 
 FocusNavigationScope FocusNavigationScope::ownedByIFrame(const HTMLFrameOwnerElement& frame)
