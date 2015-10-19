@@ -98,16 +98,32 @@ void EnsureMethodsLoaded() {
     return;
   }
 
-  void* indicator_lib = dlopen("libappindicator.so", RTLD_LAZY);
-  if (!indicator_lib) {
+  void* indicator_lib = nullptr;
+
+  // These include guards might be unnecessary, but let's keep them as a
+  // precaution since using gtk2 and gtk3 symbols in the same process is
+  // explicitly unsupported.
+#if GTK_MAJOR_VERSION == 2
+  if (!indicator_lib)
+    indicator_lib = dlopen("libappindicator.so", RTLD_LAZY);
+
+  if (!indicator_lib)
     indicator_lib = dlopen("libappindicator.so.1", RTLD_LAZY);
-  }
-  if (!indicator_lib) {
+
+  if (!indicator_lib)
     indicator_lib = dlopen("libappindicator.so.0", RTLD_LAZY);
-  }
-  if (!indicator_lib) {
+#endif
+
+#if GTK_MAJOR_VERSION == 3
+  if (!indicator_lib)
+    indicator_lib = dlopen("libappindicator3.so", RTLD_LAZY);
+
+  if (!indicator_lib)
+    indicator_lib = dlopen("libappindicator3.so.1", RTLD_LAZY);
+#endif
+
+  if (!indicator_lib)
     return;
-  }
 
   g_opened = true;
 
