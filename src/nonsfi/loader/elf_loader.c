@@ -110,8 +110,7 @@ uintptr_t NaClLoadElfFile(int fd) {
   size_t span = last_load->p_vaddr + last_load->p_memsz;
 
   /* Reserve address space. */
-  void *mapping = mmap(NULL, span, PROT_NONE, MAP_ANONYMOUS | MAP_PRIVATE,
-                       -1, 0);
+  void *mapping = mmap(NULL, span, PROT_NONE, MAP_ANON | MAP_PRIVATE, -1, 0);
   if (mapping == MAP_FAILED) {
     NaClLog(LOG_FATAL, "Failed to reserve address space for executable\n");
   }
@@ -174,7 +173,7 @@ uintptr_t NaClLoadElfFile(int fd) {
       if (bss_map_start < segment_end) {
         void *map_addr = (void *) (load_bias + bss_map_start);
         map_result = mmap(map_addr, segment_end - bss_map_start,
-                          prot, MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED,
+                          prot, MAP_PRIVATE | MAP_ANON | MAP_FIXED,
                           -1, 0);
         if (map_result != map_addr) {
           NaClLog(LOG_FATAL, "Failed to map BSS for ELF segment\n");

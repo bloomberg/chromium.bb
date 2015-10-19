@@ -305,7 +305,7 @@ static int irt_sysconf(int name, int *value) {
        * mmap() we define here should round up requested sizes to
        * multiples of 64k.
        */
-      *value = getpagesize();
+      *value = sysconf(_SC_PAGESIZE);
       return 0;
     case NACL_ABI__SC_NPROCESSORS_ONLN: {
       int result = sysconf(_SC_NPROCESSORS_ONLN);
