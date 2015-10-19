@@ -354,6 +354,7 @@ _native_compiler_configs = [
   "//build/config/compiler:no_rtti",
   "//build/config/compiler:runtime_library",
   "//build/config/sanitizers:default_sanitizer_flags",
+  "//build/config/sanitizers:default_sanitizer_coverage_flags",
 ]
 if (is_win) {
   _native_compiler_configs += [

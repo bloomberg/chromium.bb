@@ -10,6 +10,9 @@
 import("//testing/test.gni")
 
 static_library("libfuzzer_main") {
+  # libfuzzer should be compiled without coverage (infinite loop in trace_cmp).
+  configs -= [ "//build/config/sanitizers:default_sanitizer_coverage_flags" ]
+
   sources = [
     "../../third_party/llvm/lib/Fuzzer/FuzzerCrossOver.cpp",
     "../../third_party/llvm/lib/Fuzzer/FuzzerDriver.cpp",
@@ -23,13 +26,6 @@ static_library("libfuzzer_main") {
     "../../third_party/llvm/lib/Fuzzer/FuzzerSanitizerOptions.cpp",
     "../../third_party/llvm/lib/Fuzzer/FuzzerTraceState.cpp",
     "../../third_party/llvm/lib/Fuzzer/FuzzerUtil.cpp",
-  ]
-
-  # libfuzzer should be compiled without sanitizers and coverage (doesn't work).
-  configs -= [ "//build/config/sanitizers:default_sanitizer_flags" ]
-  include_dirs = [
-    "//buildtools/third_party/libc++/trunk/include",
-    "//buildtools/third_party/libc++abi/trunk/include",
   ]
 }
 
