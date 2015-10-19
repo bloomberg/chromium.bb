@@ -1955,7 +1955,7 @@ bool CSSPropertyParser::isValidNumericValue(double value)
         && value <= std::numeric_limits<float>::max();
 }
 
-PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSPropertyParser::parseColor(const CSSParserValue* value, bool acceptQuirkyColors)
+PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseColor(const CSSParserValue* value, bool acceptQuirkyColors)
 {
     CSSValueID id = value->id;
     if (isColorKeyword(id)) {
@@ -4373,7 +4373,7 @@ PassRefPtrWillBeRawPtr<CSSValueList> CSSPropertyParser::parseShadow(CSSParserVal
 PassRefPtrWillBeRawPtr<CSSShadowValue> CSSPropertyParser::parseSingleShadow(CSSParserValueList* valueList, bool allowInset, bool allowSpread)
 {
     RefPtrWillBeRawPtr<CSSPrimitiveValue> style = nullptr;
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> color = nullptr;
+    RefPtrWillBeRawPtr<CSSValue> color = nullptr;
     WillBeHeapVector<RefPtrWillBeMember<CSSPrimitiveValue>, 4> lengths;
 
     CSSParserValue* val = valueList->current();
@@ -4417,7 +4417,7 @@ PassRefPtrWillBeRawPtr<CSSShadowValue> CSSPropertyParser::parseSingleShadow(CSSP
     }
 
     if (val) {
-        if (RefPtrWillBeRawPtr<CSSPrimitiveValue> colorValue = parseColor(val)) {
+        if (RefPtrWillBeRawPtr<CSSValue> colorValue = parseColor(val)) {
             if (color)
                 return nullptr;
             color = colorValue;
@@ -5109,7 +5109,7 @@ static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> parseDeprecatedGradientPoint(CS
 }
 
 // Used to parse colors for -webkit-gradient(...).
-PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSPropertyParser::parseDeprecatedGradientStopColor(const CSSParserValue* value)
+PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseDeprecatedGradientStopColor(const CSSParserValue* value)
 {
     // Disallow currentcolor.
     if (value->id == CSSValueCurrentcolor)

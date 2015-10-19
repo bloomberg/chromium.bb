@@ -29,6 +29,7 @@
 #include "core/CSSPropertyNames.h"
 #include "core/CSSValueKeywords.h"
 #include "core/CoreExport.h"
+#include "core/css/CSSColorValue.h"
 #include "core/css/CSSCustomIdentValue.h"
 #include "core/css/CSSInheritedValue.h"
 #include "core/css/CSSInitialValue.h"
@@ -52,7 +53,7 @@ public:
     PassRefPtrWillBeRawPtr<CSSUnsetValue> createUnsetValue() { return m_unsetValue; }
     PassRefPtrWillBeRawPtr<CSSPrimitiveValue> createIdentifierValue(CSSValueID identifier);
     PassRefPtrWillBeRawPtr<CSSCustomIdentValue> createIdentifierValue(CSSPropertyID identifier);
-    PassRefPtrWillBeRawPtr<CSSPrimitiveValue> createColorValue(unsigned rgbValue);
+    PassRefPtrWillBeRawPtr<CSSColorValue> createColorValue(RGBA32 rgbValue);
     PassRefPtrWillBeRawPtr<CSSPrimitiveValue> createValue(double value, CSSPrimitiveValue::UnitType);
     PassRefPtrWillBeRawPtr<CSSPrimitiveValue> createValue(const Length& value, const ComputedStyle&);
     PassRefPtrWillBeRawPtr<CSSPrimitiveValue> createValue(const Length& value, float zoom) { return CSSPrimitiveValue::create(value, zoom); }
@@ -70,11 +71,11 @@ private:
 
     WillBeHeapVector<RefPtrWillBeMember<CSSPrimitiveValue>, numCSSValueKeywords> m_identifierValueCache;
 
-    using ColorValueCache = WillBeHeapHashMap<unsigned, RefPtrWillBeMember<CSSPrimitiveValue>>;
+    using ColorValueCache = WillBeHeapHashMap<unsigned, RefPtrWillBeMember<CSSColorValue>>;
     ColorValueCache m_colorValueCache;
-    RefPtrWillBeMember<CSSPrimitiveValue> m_colorTransparent;
-    RefPtrWillBeMember<CSSPrimitiveValue> m_colorWhite;
-    RefPtrWillBeMember<CSSPrimitiveValue> m_colorBlack;
+    RefPtrWillBeMember<CSSColorValue> m_colorTransparent;
+    RefPtrWillBeMember<CSSColorValue> m_colorWhite;
+    RefPtrWillBeMember<CSSColorValue> m_colorBlack;
 
     static const int maximumCacheableIntegerValue = 255;
 

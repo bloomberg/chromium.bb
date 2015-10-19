@@ -5,6 +5,7 @@
 #include "config.h"
 #include "core/css/parser/CSSParser.h"
 
+#include "core/css/CSSColorValue.h"
 #include "core/css/CSSKeyframeRule.h"
 #include "core/css/StyleColor.h"
 #include "core/css/StylePropertySet.h"
@@ -126,14 +127,9 @@ bool CSSParser::parseColor(RGBA32& color, const String& string, bool strict)
     if (!value)
         value = parseSingleValue(CSSPropertyColor, string, strictCSSParserContext());
 
-    if (!value || !value->isPrimitiveValue())
+    if (!value || !value->isColorValue())
         return false;
-
-    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value.get());
-    if (!primitiveValue->isRGBColor())
-        return false;
-
-    color = primitiveValue->getRGBA32Value();
+    color = toCSSColorValue(*value).value();
     return true;
 }
 

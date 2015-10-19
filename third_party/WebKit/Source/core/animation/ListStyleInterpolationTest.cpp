@@ -7,6 +7,7 @@
 
 #include "core/animation/LengthStyleInterpolation.h"
 #include "core/animation/ShadowStyleInterpolation.h"
+#include "core/css/CSSColorValue.h"
 
 #include <gtest/gtest.h>
 
@@ -45,7 +46,7 @@ protected:
 
     static RefPtrWillBeRawPtr<CSSShadowValue> createShadowValue()
     {
-        RefPtrWillBeRawPtr<CSSPrimitiveValue> color = CSSPrimitiveValue::createColor(makeRGBA(112, 123, 175, 255));
+        RefPtrWillBeRawPtr<CSSColorValue> color = CSSColorValue::create(makeRGBA(112, 123, 175, 255));
         RefPtrWillBeRawPtr<CSSPrimitiveValue> x = CSSPrimitiveValue::create(10, CSSPrimitiveValue::UnitType::Pixels);
         RefPtrWillBeRawPtr<CSSPrimitiveValue> y = CSSPrimitiveValue::create(20, CSSPrimitiveValue::UnitType::Pixels);
         RefPtrWillBeRawPtr<CSSPrimitiveValue> blur = CSSPrimitiveValue::create(30, CSSPrimitiveValue::UnitType::Pixels);
@@ -68,7 +69,7 @@ protected:
             EXPECT_EQ(expectedShadow->y->getDoubleValue(), actualShadow->y->getDoubleValue());
             EXPECT_EQ(expectedShadow->blur->getDoubleValue(), actualShadow->blur->getDoubleValue());
             EXPECT_EQ(expectedShadow->spread->getDoubleValue(), actualShadow->spread->getDoubleValue());
-            EXPECT_EQ(expectedShadow->color->getRGBA32Value(), actualShadow->color->getRGBA32Value());
+            EXPECT_EQ(toCSSColorValue(*expectedShadow->color).value(), toCSSColorValue(*actualShadow->color).value());
 
             EXPECT_EQ(expectedShadow->style->getValueID(), actualShadow->style->getValueID());
         }

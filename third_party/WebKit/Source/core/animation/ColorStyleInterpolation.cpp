@@ -6,7 +6,6 @@
 #include "core/animation/ColorStyleInterpolation.h"
 
 #include "core/CSSValueKeywords.h"
-#include "core/css/CSSPrimitiveValue.h"
 #include "core/css/parser/CSSPropertyParser.h"
 #include "core/css/resolver/StyleBuilder.h"
 #include "core/layout/LayoutTheme.h"
@@ -19,15 +18,16 @@ namespace blink {
 
 bool ColorStyleInterpolation::canCreateFrom(const CSSValue& value)
 {
-    return value.isPrimitiveValue() && (toCSSPrimitiveValue(value).isValueID() || toCSSPrimitiveValue(value).isRGBColor());
+    return value.isColorValue() || (value.isPrimitiveValue() && toCSSPrimitiveValue(value).isValueID());
 }
 
 PassOwnPtr<InterpolableValue> ColorStyleInterpolation::colorToInterpolableValue(const CSSValue& value)
 {
-    ASSERT(value.isPrimitiveValue());
-    const CSSPrimitiveValue& primitive = toCSSPrimitiveValue(value);
     RGBA32 color;
-    if (primitive.isValueID()) {
+    if (value.isColorValue()) {
+        color = toCSSColorValue(value).value();
+    } else {
+        const CSSPrimitiveValue& primitive = toCSSPrimitiveValue(value);
         if (CSSPropertyParser::isSystemColor(primitive.getValueID())) {
             color = LayoutTheme::theme().systemColor(primitive.getValueID()).rgb();
         } else {
@@ -35,8 +35,6 @@ PassOwnPtr<InterpolableValue> ColorStyleInterpolation::colorToInterpolableValue(
             colorFromID.setNamedColor(getValueName(primitive.getValueID()));
             color = colorFromID.rgb();
         }
-    } else {
-        color = primitive.getRGBA32Value();
     }
 
     int alpha = alphaChannel(color);
@@ -50,14 +48,14 @@ PassOwnPtr<InterpolableValue> ColorStyleInterpolation::colorToInterpolableValue(
     return list->clone();
 }
 
-PassRefPtrWillBeRawPtr<CSSPrimitiveValue> ColorStyleInterpolation::interpolableValueToColor(const InterpolableValue& value)
+PassRefPtrWillBeRawPtr<CSSColorValue> ColorStyleInterpolation::interpolableValueToColor(const InterpolableValue& value)
 {
     ASSERT(value.isList());
     const InterpolableList* list = toInterpolableList(&value);
 
     double alpha = toInterpolableNumber(list->get(3))->value();
     if (!alpha)
-        return CSSPrimitiveValue::createColor(Color::transparent);
+        return CSSColorValue::create(Color::transparent);
 
     // Clamping is inside makeRGBA.
     unsigned rgba = makeRGBA(
@@ -66,7 +64,7 @@ PassRefPtrWillBeRawPtr<CSSPrimitiveValue> ColorStyleInterpolation::interpolableV
         round(toInterpolableNumber(list->get(2))->value() / alpha),
         round(alpha));
 
-    return CSSPrimitiveValue::createColor(rgba);
+    return CSSColorValue::create(rgba);
 }
 
 void ColorStyleInterpolation::apply(StyleResolverState& state) const

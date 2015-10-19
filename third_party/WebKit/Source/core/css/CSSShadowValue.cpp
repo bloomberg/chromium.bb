@@ -32,7 +32,7 @@ CSSShadowValue::CSSShadowValue(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> x,
     PassRefPtrWillBeRawPtr<CSSPrimitiveValue> blur,
     PassRefPtrWillBeRawPtr<CSSPrimitiveValue> spread,
     PassRefPtrWillBeRawPtr<CSSPrimitiveValue> style,
-    PassRefPtrWillBeRawPtr<CSSPrimitiveValue> color)
+    PassRefPtrWillBeRawPtr<CSSValue> color)
     : CSSValue(ShadowClass)
     , x(x)
     , y(y)

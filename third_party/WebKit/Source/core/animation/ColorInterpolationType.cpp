@@ -75,11 +75,11 @@ PassOwnPtr<InterpolableValue> ColorInterpolationType::createInterpolableColor(co
 
 PassOwnPtr<InterpolableValue> ColorInterpolationType::maybeCreateInterpolableColor(const CSSValue& value)
 {
+    if (value.isColorValue())
+        return createInterpolableColor(toCSSColorValue(value).value());
     if (!value.isPrimitiveValue())
         return nullptr;
     const CSSPrimitiveValue& primitive = toCSSPrimitiveValue(value);
-    if (primitive.isRGBColor())
-        return createInterpolableColor(primitive.getRGBA32Value());
     if (!primitive.isValueID())
         return nullptr;
     if (!CSSPropertyParser::isColorKeyword(primitive.getValueID()))

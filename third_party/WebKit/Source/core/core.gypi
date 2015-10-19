@@ -1031,6 +1031,7 @@
             'css/CSSCalculationValue.h',
             'css/CSSCanvasValue.cpp',
             'css/CSSCanvasValue.h',
+            'css/CSSColorValue.h',
             'css/CSSComputedStyleDeclaration.cpp',
             'css/CSSContentDistributionValue.cpp',
             'css/CSSContentDistributionValue.h',

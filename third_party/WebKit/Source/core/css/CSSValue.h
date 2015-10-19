@@ -72,6 +72,7 @@ public:
 
     bool isBorderImageSliceValue() const { return m_classType == BorderImageSliceClass; }
     bool isCanvasValue() const { return m_classType == CanvasClass; }
+    bool isColorValue() const { return m_classType == ColorClass; }
     bool isCounterValue() const { return m_classType == CounterClass; }
     bool isCursorImageValue() const { return m_classType == CursorImageClass; }
     bool isCrossfadeValue() const { return m_classType == CrossfadeClass; }
@@ -122,6 +123,7 @@ protected:
     static const size_t ClassTypeBits = 6;
     enum ClassType {
         PrimitiveClass,
+        ColorClass,
         CounterClass,
         QuadClass,
         CustomIdentClass,

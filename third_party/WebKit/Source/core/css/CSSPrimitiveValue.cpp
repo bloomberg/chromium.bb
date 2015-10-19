@@ -220,13 +220,6 @@ CSSPrimitiveValue::CSSPrimitiveValue(double num, UnitType type)
     m_value.num = num;
 }
 
-CSSPrimitiveValue::CSSPrimitiveValue(RGBA32 color)
-    : CSSValue(PrimitiveClass)
-{
-    init(UnitType::RGBColor);
-    m_value.rgbcolor = color;
-}
-
 CSSPrimitiveValue::CSSPrimitiveValue(const Length& length, float zoom)
     : CSSValue(PrimitiveClass)
 {
@@ -359,7 +352,6 @@ void CSSPrimitiveValue::cleanup()
     case UnitType::DotsPerInch:
     case UnitType::DotsPerCentimeter:
     case UnitType::Fraction:
-    case UnitType::RGBColor:
     case UnitType::Unknown:
     case UnitType::ValueID:
         break;
@@ -786,7 +778,6 @@ const char* CSSPrimitiveValue::unitTypeToString(UnitType type)
         return "vmax";
     case UnitType::Unknown:
     case UnitType::ValueID:
-    case UnitType::RGBColor:
     case UnitType::Calc:
     case UnitType::CalcPercentageWithNumber:
     case UnitType::CalcPercentageWithLength:
@@ -845,10 +836,6 @@ String CSSPrimitiveValue::customCSSText() const
     case UnitType::ValueID:
         text = valueName(m_value.valueID);
         break;
-    case UnitType::RGBColor: {
-        text = Color(m_value.rgbcolor).serializedAsCSSComponentValue();
-        break;
-    }
     case UnitType::Calc:
         text = m_value.calc->customCSSText();
         break;
@@ -902,8 +889,6 @@ bool CSSPrimitiveValue::equals(const CSSPrimitiveValue& other) const
         return m_value.num == other.m_value.num;
     case UnitType::ValueID:
         return m_value.valueID == other.m_value.valueID;
-    case UnitType::RGBColor:
-        return m_value.rgbcolor == other.m_value.rgbcolor;
     case UnitType::Calc:
         return m_value.calc && other.m_value.calc && m_value.calc->equals(*other.m_value.calc);
     case UnitType::Integer:

@@ -34,7 +34,7 @@
 
 namespace blink {
 
-class CSSPrimitiveValue;
+class CSSValue;
 
 class TextLinkColors {
     DISALLOW_ALLOCATION();
@@ -54,7 +54,7 @@ public:
     void resetLinkColor();
     void resetVisitedLinkColor();
     void resetActiveLinkColor();
-    Color colorFromPrimitiveValue(const CSSPrimitiveValue&, Color currentColor, bool forVisitedLink = false) const;
+    Color colorFromCSSValue(const CSSValue&, Color currentColor, bool forVisitedLink = false) const;
 private:
 
     Color m_textColor;

@@ -5,6 +5,7 @@
 #include "config.h"
 #include "core/animation/ShadowStyleInterpolation.h"
 
+#include "core/css/CSSColorValue.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSShadowValue.h"
 #include "core/css/CSSValue.h"
@@ -45,7 +46,7 @@ protected:
         EXPECT_EQ(yExpected, shadowValue.y->getDoubleValue());
         EXPECT_EQ(blurExpected, shadowValue.blur->getDoubleValue());
         EXPECT_EQ(spreadExpected, shadowValue.spread->getDoubleValue());
-        EXPECT_EQ(colorExpected, shadowValue.color->getRGBA32Value());
+        EXPECT_EQ(colorExpected, toCSSColorValue(*shadowValue.color).value());
 
         EXPECT_EQ(idExpected->getValueID(), shadowValue.style->getValueID());
 
@@ -59,7 +60,7 @@ protected:
 
 TEST_F(AnimationShadowStyleInterpolationTest, ZeroTest)
 {
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> color = CSSPrimitiveValue::createColor(makeRGBA(0, 0, 0, 0));
+    RefPtrWillBeRawPtr<CSSColorValue> color = CSSColorValue::create(makeRGBA(0, 0, 0, 0));
     RefPtrWillBeRawPtr<CSSPrimitiveValue> x = CSSPrimitiveValue::create(0, CSSPrimitiveValue::UnitType::Pixels);
     RefPtrWillBeRawPtr<CSSPrimitiveValue> y = CSSPrimitiveValue::create(0, CSSPrimitiveValue::UnitType::Pixels);
     RefPtrWillBeRawPtr<CSSPrimitiveValue> blur = CSSPrimitiveValue::create(0, CSSPrimitiveValue::UnitType::Pixels);
@@ -74,7 +75,7 @@ TEST_F(AnimationShadowStyleInterpolationTest, ZeroTest)
 
 TEST_F(AnimationShadowStyleInterpolationTest, MultipleValueNonPixelTest)
 {
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> color = CSSPrimitiveValue::createColor(makeRGBA(112, 123, 175, 255));
+    RefPtrWillBeRawPtr<CSSColorValue> color = CSSColorValue::create(makeRGBA(112, 123, 175, 255));
     RefPtrWillBeRawPtr<CSSPrimitiveValue> x = CSSPrimitiveValue::create(10, CSSPrimitiveValue::UnitType::Ems);
     RefPtrWillBeRawPtr<CSSPrimitiveValue> y = CSSPrimitiveValue::create(20, CSSPrimitiveValue::UnitType::Ems);
     RefPtrWillBeRawPtr<CSSPrimitiveValue> blur = CSSPrimitiveValue::create(30, CSSPrimitiveValue::UnitType::Ems);
@@ -89,7 +90,7 @@ TEST_F(AnimationShadowStyleInterpolationTest, MultipleValueNonPixelTest)
 
 TEST_F(AnimationShadowStyleInterpolationTest, InsetShadowTest)
 {
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> color = CSSPrimitiveValue::createColor(makeRGBA(54, 48, 214, 64));
+    RefPtrWillBeRawPtr<CSSColorValue> color = CSSColorValue::create(makeRGBA(54, 48, 214, 64));
     RefPtrWillBeRawPtr<CSSPrimitiveValue> x = CSSPrimitiveValue::create(10, CSSPrimitiveValue::UnitType::Pixels);
     RefPtrWillBeRawPtr<CSSPrimitiveValue> y = CSSPrimitiveValue::create(20, CSSPrimitiveValue::UnitType::Pixels);
     RefPtrWillBeRawPtr<CSSPrimitiveValue> blur = CSSPrimitiveValue::create(30, CSSPrimitiveValue::UnitType::Pixels);

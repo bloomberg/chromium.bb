@@ -151,7 +151,7 @@ void FilterOperationResolver::createFilterOperations(const CSSValue& inValue, co
             int blur = item->blur ? item->blur->computeLength<int>(conversionData) : 0;
             Color shadowColor = Color::black;
             if (item->color)
-                shadowColor = state.document().textLinkColors().colorFromPrimitiveValue(*item->color, state.style()->color());
+                shadowColor = state.document().textLinkColors().colorFromCSSValue(*item->color, state.style()->color());
 
             operations.operations().append(DropShadowFilterOperation::create(location, blur, shadowColor));
             break;

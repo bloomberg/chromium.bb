@@ -29,6 +29,7 @@
 
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/HTMLNames.h"
+#include "core/css/CSSColorValue.h"
 #include "core/css/CSSComputedStyleDeclaration.h"
 #include "core/css/CSSPropertyMetadata.h"
 #include "core/css/CSSRuleList.h"
@@ -396,12 +397,11 @@ EditingStyle::~EditingStyle()
 
 static RGBA32 cssValueToRGBA(CSSValue* colorValue)
 {
-    if (!colorValue || !colorValue->isPrimitiveValue())
+    if (!colorValue || (!colorValue->isColorValue() && !colorValue->isPrimitiveValue()))
         return Color::transparent;
 
-    CSSPrimitiveValue* primitiveColor = toCSSPrimitiveValue(colorValue);
-    if (primitiveColor->isRGBColor())
-        return primitiveColor->getRGBA32Value();
+    if (colorValue->isColorValue())
+        return toCSSColorValue(colorValue)->value();
 
     RGBA32 rgba = 0;
     // FIXME: Why ignore the return value?
@@ -1694,11 +1694,11 @@ bool isTransparentColorValue(CSSValue* cssValue)
 {
     if (!cssValue)
         return true;
+    if (cssValue->isColorValue())
+        return !alphaChannel(toCSSColorValue(cssValue)->value());
     if (!cssValue->isPrimitiveValue())
         return false;
     CSSPrimitiveValue* value = toCSSPrimitiveValue(cssValue);
-    if (value->isRGBColor())
-        return !alphaChannel(value->getRGBA32Value());
     return value->getValueID() == CSSValueTransparent;
 }
 

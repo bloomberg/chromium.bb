@@ -106,7 +106,7 @@ static PassRefPtrWillBeRawPtr<CSSValueList> createPositionListForLayer(CSSProper
     return positionList.release();
 }
 
-PassRefPtrWillBeRawPtr<CSSPrimitiveValue> ComputedStyleCSSValueMapping::currentColorOrValidColor(const ComputedStyle& style, const StyleColor& color)
+PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::currentColorOrValidColor(const ComputedStyle& style, const StyleColor& color)
 {
     // This function does NOT look at visited information, so that computed style doesn't expose that.
     return cssValuePool().createColorValue(color.resolve(style.color()).rgb());
@@ -1206,17 +1206,17 @@ static PassRefPtrWillBeRawPtr<CSSValue> adjustSVGPaintForCurrentColor(SVGPaintTy
         if (paintType == SVG_PAINTTYPE_URI_NONE)
             values->append(CSSPrimitiveValue::create(CSSValueNone));
         else if (paintType == SVG_PAINTTYPE_URI_CURRENTCOLOR)
-            values->append(CSSPrimitiveValue::createColor(currentColor.rgb()));
+            values->append(CSSColorValue::create(currentColor.rgb()));
         else if (paintType == SVG_PAINTTYPE_URI_RGBCOLOR)
-            values->append(CSSPrimitiveValue::createColor(color.rgb()));
+            values->append(CSSColorValue::create(color.rgb()));
         return values.release();
     }
     if (paintType == SVG_PAINTTYPE_NONE)
         return CSSPrimitiveValue::create(CSSValueNone);
     if (paintType == SVG_PAINTTYPE_CURRENTCOLOR)
-        return CSSPrimitiveValue::createColor(currentColor.rgb());
+        return CSSColorValue::create(currentColor.rgb());
 
-    return CSSPrimitiveValue::createColor(color.rgb());
+    return CSSColorValue::create(color.rgb());
 }
 
 static inline String serializeAsFragmentIdentifier(const AtomicString& resource)
@@ -1231,7 +1231,7 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::valueForShadowDat
     RefPtrWillBeRawPtr<CSSPrimitiveValue> blur = zoomAdjustedPixelValue(shadow.blur(), style);
     RefPtrWillBeRawPtr<CSSPrimitiveValue> spread = useSpread ? zoomAdjustedPixelValue(shadow.spread(), style) : PassRefPtrWillBeRawPtr<CSSPrimitiveValue>(nullptr);
     RefPtrWillBeRawPtr<CSSPrimitiveValue> shadowStyle = shadow.style() == Normal ? PassRefPtrWillBeRawPtr<CSSPrimitiveValue>(nullptr) : cssValuePool().createIdentifierValue(CSSValueInset);
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> color = currentColorOrValidColor(style, shadow.color());
+    RefPtrWillBeRawPtr<CSSValue> color = currentColorOrValidColor(style, shadow.color());
     return CSSShadowValue::create(x.release(), y.release(), blur.release(), spread.release(), shadowStyle.release(), color.release());
 }
 

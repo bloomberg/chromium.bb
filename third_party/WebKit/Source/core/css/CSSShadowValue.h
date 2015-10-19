@@ -38,7 +38,7 @@ public:
         PassRefPtrWillBeRawPtr<CSSPrimitiveValue> blur,
         PassRefPtrWillBeRawPtr<CSSPrimitiveValue> spread,
         PassRefPtrWillBeRawPtr<CSSPrimitiveValue> style,
-        PassRefPtrWillBeRawPtr<CSSPrimitiveValue> color)
+        PassRefPtrWillBeRawPtr<CSSValue> color)
     {
         return adoptRefWillBeNoop(new CSSShadowValue(x, y, blur, spread, style, color));
     }
@@ -52,7 +52,7 @@ public:
     RefPtrWillBeMember<CSSPrimitiveValue> blur;
     RefPtrWillBeMember<CSSPrimitiveValue> spread;
     RefPtrWillBeMember<CSSPrimitiveValue> style;
-    RefPtrWillBeMember<CSSPrimitiveValue> color;
+    RefPtrWillBeMember<CSSValue> color;
 
     DECLARE_TRACE_AFTER_DISPATCH();
 
@@ -62,7 +62,7 @@ private:
         PassRefPtrWillBeRawPtr<CSSPrimitiveValue> blur,
         PassRefPtrWillBeRawPtr<CSSPrimitiveValue> spread,
         PassRefPtrWillBeRawPtr<CSSPrimitiveValue> style,
-        PassRefPtrWillBeRawPtr<CSSPrimitiveValue> color);
+        PassRefPtrWillBeRawPtr<CSSValue> color);
 };
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSShadowValue, isShadowValue());

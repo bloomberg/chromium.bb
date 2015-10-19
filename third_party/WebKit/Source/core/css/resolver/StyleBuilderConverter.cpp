@@ -91,8 +91,7 @@ PassRefPtr<StyleReflection> StyleBuilderConverter::convertBoxReflect(StyleResolv
 
 Color StyleBuilderConverter::convertColor(StyleResolverState& state, const CSSValue& value, bool forVisitedLink)
 {
-    const CSSPrimitiveValue& primitiveValue = toCSSPrimitiveValue(value);
-    return state.document().textLinkColors().colorFromPrimitiveValue(primitiveValue, state.style()->color(), forVisitedLink);
+    return state.document().textLinkColors().colorFromCSSValue(value, state.style()->color(), forVisitedLink);
 }
 
 AtomicString StyleBuilderConverter::convertFragmentIdentifier(StyleResolverState& state, const CSSValue& value)
@@ -852,10 +851,9 @@ PassRefPtr<SVGDashArray> StyleBuilderConverter::convertStrokeDasharray(StyleReso
 
 StyleColor StyleBuilderConverter::convertStyleColor(StyleResolverState& state, const CSSValue& value, bool forVisitedLink)
 {
-    const CSSPrimitiveValue& primitiveValue = toCSSPrimitiveValue(value);
-    if (primitiveValue.getValueID() == CSSValueCurrentcolor)
+    if (value.isPrimitiveValue() && toCSSPrimitiveValue(value).getValueID() == CSSValueCurrentcolor)
         return StyleColor::currentColor();
-    return state.document().textLinkColors().colorFromPrimitiveValue(primitiveValue, Color(), forVisitedLink);
+    return state.document().textLinkColors().colorFromCSSValue(value, Color(), forVisitedLink);
 }
 
 float StyleBuilderConverter::convertTextStrokeWidth(StyleResolverState& state, const CSSValue& value)

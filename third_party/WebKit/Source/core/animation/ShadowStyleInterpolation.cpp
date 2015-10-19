@@ -7,6 +7,7 @@
 
 #include "core/animation/ColorStyleInterpolation.h"
 #include "core/animation/LengthStyleInterpolation.h"
+#include "core/css/CSSColorValue.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/CSSValuePool.h"
@@ -62,7 +63,7 @@ PassRefPtrWillBeRawPtr<CSSValue> ShadowStyleInterpolation::fromInterpolableValue
     RefPtrWillBeRawPtr<CSSPrimitiveValue> blur = LengthStyleInterpolation::fromInterpolableValue(*shadow->get(2), RangeNonNegative);
     RefPtrWillBeRawPtr<CSSPrimitiveValue> spread = LengthStyleInterpolation::fromInterpolableValue(*shadow->get(3), RangeAll);
 
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> color = ColorStyleInterpolation::interpolableValueToColor(*shadow->get(4));
+    RefPtrWillBeRawPtr<CSSColorValue> color = ColorStyleInterpolation::interpolableValueToColor(*shadow->get(4));
     RefPtrWillBeRawPtr<CSSPrimitiveValue> style = nonInterpolableData ? CSSPrimitiveValue::createIdentifier(CSSValueInset) : CSSPrimitiveValue::createIdentifier(CSSValueNone);
 
     RefPtrWillBeRawPtr<CSSShadowValue> result = CSSShadowValue::create(x, y, blur, spread, style, color);

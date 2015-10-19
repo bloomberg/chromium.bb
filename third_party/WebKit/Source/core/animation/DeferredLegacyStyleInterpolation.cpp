@@ -56,6 +56,8 @@ bool DeferredLegacyStyleInterpolation::interpolationRequiresStyleResolve(const C
         return interpolationRequiresStyleResolve(toCSSBasicShapePolygonValue(value));
     if (value.isBasicShapeInsetValue())
         return interpolationRequiresStyleResolve(toCSSBasicShapeInsetValue(value));
+    if (value.isColorValue())
+        return false;
     if (value.isStringValue() || value.isURIValue() || value.isCustomIdentValue())
         return false;
     if (value.isPrimitiveValue())
@@ -79,7 +81,7 @@ bool DeferredLegacyStyleInterpolation::interpolationRequiresStyleResolve(const C
 bool DeferredLegacyStyleInterpolation::interpolationRequiresStyleResolve(const CSSPrimitiveValue& primitiveValue)
 {
     // FIXME: consider other types.
-    if (primitiveValue.isNumber() || primitiveValue.isPercentage() || primitiveValue.isAngle() || primitiveValue.isRGBColor())
+    if (primitiveValue.isNumber() || primitiveValue.isPercentage() || primitiveValue.isAngle())
         return false;
 
     if (primitiveValue.isLength())

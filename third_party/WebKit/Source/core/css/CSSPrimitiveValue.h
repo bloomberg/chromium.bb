@@ -26,7 +26,6 @@
 #include "core/CSSValueKeywords.h"
 #include "core/CoreExport.h"
 #include "core/css/CSSValue.h"
-#include "platform/graphics/Color.h"
 #include "wtf/BitVector.h"
 #include "wtf/Forward.h"
 #include "wtf/MathExtras.h"
@@ -38,7 +37,6 @@ namespace blink {
 class CSSCalcValue;
 class CSSToLengthConversionData;
 class Length;
-class RGBColor;
 class ComputedStyle;
 
 // Dimension calculations are imprecise, often resulting in values of e.g.
@@ -86,7 +84,6 @@ public:
         Seconds,
         Hertz,
         Kilohertz,
-        RGBColor,
         ViewportWidth,
         ViewportHeight,
         ViewportMin,
@@ -176,7 +173,6 @@ public:
     bool isNumber() const { return typeWithCalcResolved() == UnitType::Number || typeWithCalcResolved() == UnitType::Integer; }
     bool isPercentage() const { return typeWithCalcResolved() == UnitType::Percentage; }
     bool isPx() const { return typeWithCalcResolved() == UnitType::Pixels; }
-    bool isRGBColor() const { return type() == UnitType::RGBColor; }
     bool isTime() const { return type() == UnitType::Seconds || type() == UnitType::Milliseconds; }
     bool isCalculated() const { return type() == UnitType::Calc; }
     bool isCalculatedPercentageWithNumber() const { return typeWithCalcResolved() == UnitType::CalcPercentageWithNumber; }
@@ -192,10 +188,6 @@ public:
     static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> createIdentifier(CSSValueID valueID)
     {
         return adoptRefWillBeNoop(new CSSPrimitiveValue(valueID));
-    }
-    static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> createColor(RGBA32 rgbValue)
-    {
-        return adoptRefWillBeNoop(new CSSPrimitiveValue(rgbValue));
     }
     static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> create(double value, UnitType type)
     {
@@ -230,8 +222,6 @@ public:
     int getIntValue() const { return getValue<int>(); }
     template<typename T> inline T getValue() const { return clampTo<T>(getDoubleValue()); }
 
-    RGBA32 getRGBA32Value() const { ASSERT(isRGBColor()); return m_value.rgbcolor; }
-
     CSSCalcValue* cssCalcValue() const { ASSERT(isCalculated()); return m_value.calc; }
 
     CSSValueID getValueID() const { return type() == UnitType::ValueID ? m_value.valueID : CSSValueInvalid; }
@@ -254,7 +244,6 @@ public:
 
 private:
     CSSPrimitiveValue(CSSValueID);
-    CSSPrimitiveValue(RGBA32 color);
     CSSPrimitiveValue(const Length&, float zoom);
     CSSPrimitiveValue(double, UnitType);
 
@@ -286,7 +275,6 @@ private:
     union {
         CSSValueID valueID;
         double num;
-        RGBA32 rgbcolor;
         // FIXME: oilpan: Should be a member, but no support for members in unions. Just trace the raw ptr for now.
         CSSCalcValue* calc;
     } m_value;

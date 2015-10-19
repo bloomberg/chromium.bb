@@ -28,6 +28,7 @@
 #include "config.h"
 #include "core/dom/TextLinkColors.h"
 
+#include "core/css/CSSColorValue.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/StyleColor.h"
 #include "core/layout/LayoutTheme.h"
@@ -58,12 +59,12 @@ void TextLinkColors::resetActiveLinkColor()
     m_activeLinkColor = Color(255, 0, 0);
 }
 
-Color TextLinkColors::colorFromPrimitiveValue(const CSSPrimitiveValue& value, Color currentColor, bool forVisitedLink) const
+Color TextLinkColors::colorFromCSSValue(const CSSValue& value, Color currentColor, bool forVisitedLink) const
 {
-    if (value.isRGBColor())
-        return Color(value.getRGBA32Value());
+    if (value.isColorValue())
+        return Color(toCSSColorValue(value).value());
 
-    CSSValueID valueID = value.getValueID();
+    CSSValueID valueID = toCSSPrimitiveValue(value).getValueID();
     switch (valueID) {
     case 0:
         return Color();

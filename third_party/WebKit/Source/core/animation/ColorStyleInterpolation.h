@@ -7,6 +7,7 @@
 
 #include "core/CoreExport.h"
 #include "core/animation/StyleInterpolation.h"
+#include "core/css/CSSColorValue.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "platform/graphics/Color.h"
 
@@ -34,7 +35,7 @@ private:
     }
 
     static PassOwnPtr<InterpolableValue> colorToInterpolableValue(const CSSValue&);
-    static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> interpolableValueToColor(const InterpolableValue&);
+    static PassRefPtrWillBeRawPtr<CSSColorValue> interpolableValueToColor(const InterpolableValue&);
 
     friend class AnimationColorStyleInterpolationTest;
     friend class ShadowStyleInterpolation;

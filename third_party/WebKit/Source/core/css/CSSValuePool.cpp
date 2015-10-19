@@ -43,9 +43,9 @@ CSSValuePool::CSSValuePool()
     , m_implicitInitialValue(CSSInitialValue::createImplicit())
     , m_explicitInitialValue(CSSInitialValue::createExplicit())
     , m_unsetValue(CSSUnsetValue::create())
-    , m_colorTransparent(CSSPrimitiveValue::createColor(Color::transparent))
-    , m_colorWhite(CSSPrimitiveValue::createColor(Color::white))
-    , m_colorBlack(CSSPrimitiveValue::createColor(Color::black))
+    , m_colorTransparent(CSSColorValue::create(Color::transparent))
+    , m_colorWhite(CSSColorValue::create(Color::white))
+    , m_colorBlack(CSSColorValue::create(Color::black))
 {
     m_identifierValueCache.resize(numCSSValueKeywords);
     m_pixelValueCache.resize(maximumCacheableIntegerValue + 1);
@@ -68,7 +68,7 @@ PassRefPtrWillBeRawPtr<CSSCustomIdentValue> CSSValuePool::createIdentifierValue(
     return CSSCustomIdentValue::create(ident);
 }
 
-PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSValuePool::createColorValue(unsigned rgbValue)
+PassRefPtrWillBeRawPtr<CSSColorValue> CSSValuePool::createColorValue(RGBA32 rgbValue)
 {
     // These are the empty and deleted values of the hash table.
     if (rgbValue == Color::transparent)
@@ -84,10 +84,10 @@ PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSValuePool::createColorValue(unsigne
     if (m_colorValueCache.size() > maximumColorCacheSize)
         m_colorValueCache.clear();
 
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> dummyValue = nullptr;
+    RefPtrWillBeRawPtr<CSSColorValue> dummyValue = nullptr;
     ColorValueCache::AddResult entry = m_colorValueCache.add(rgbValue, dummyValue);
     if (entry.isNewEntry)
-        entry.storedValue->value = CSSPrimitiveValue::createColor(rgbValue);
+        entry.storedValue->value = CSSColorValue::create(rgbValue);
     return entry.storedValue->value;
 }
 

@@ -5,6 +5,7 @@
 #include "config.h"
 #include "core/animation/ColorStyleInterpolation.h"
 
+#include "core/css/CSSColorValue.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/StylePropertySet.h"
 #include "platform/graphics/Color.h"
@@ -30,10 +31,10 @@ protected:
         return interpolableValueToColor(colorToInterpolableValue(*value).get());
     }
 
-    static void testPrimitiveValue(PassRefPtrWillBeRawPtr<CSSValue> value, RGBA32 rgbaValue)
+    static void testColorValue(PassRefPtrWillBeRawPtr<CSSValue> value, RGBA32 rgbaValue)
     {
-        EXPECT_TRUE(value->isPrimitiveValue());
-        EXPECT_EQ(toCSSPrimitiveValue(value.get())->getRGBA32Value(), rgbaValue);
+        EXPECT_TRUE(value->isColorValue());
+        EXPECT_EQ(toCSSColorValue(*value).value(), rgbaValue);
     }
 
     static InterpolableValue* interpolationValue(Interpolation& interpolation)
@@ -44,42 +45,42 @@ protected:
 
 TEST_F(AnimationColorStyleInterpolationTest, Color)
 {
-    RefPtrWillBeRawPtr<CSSValue> value = roundTrip(CSSPrimitiveValue::createColor(makeRGBA(54, 48, 214, 64)));
-    testPrimitiveValue(value, makeRGBA(54, 48, 214, 64));
+    RefPtrWillBeRawPtr<CSSValue> value = roundTrip(CSSColorValue::create(makeRGBA(54, 48, 214, 64)));
+    testColorValue(value, makeRGBA(54, 48, 214, 64));
 }
 
 TEST_F(AnimationColorStyleInterpolationTest, ClampedColor)
 {
-    RefPtrWillBeRawPtr<CSSValue> value = roundTrip(CSSPrimitiveValue::createColor(makeRGBA(-10, -10, -10, -10)));
-    testPrimitiveValue(value, makeRGBA(-10, -10, -10, -10));
+    RefPtrWillBeRawPtr<CSSValue> value = roundTrip(CSSColorValue::create(makeRGBA(-10, -10, -10, -10)));
+    testColorValue(value, makeRGBA(-10, -10, -10, -10));
 
-    value = roundTrip(CSSPrimitiveValue::createColor(makeRGBA(-260, -260, -260, -260)));
-    testPrimitiveValue(value, makeRGBA(-260, -260, -260, -260));
+    value = roundTrip(CSSColorValue::create(makeRGBA(-260, -260, -260, -260)));
+    testColorValue(value, makeRGBA(-260, -260, -260, -260));
 }
 
 TEST_F(AnimationColorStyleInterpolationTest, ZeroAlpha)
 {
-    RefPtrWillBeRawPtr<CSSValue> value = roundTrip(CSSPrimitiveValue::createColor(makeRGBA(54, 58, 214, 0)));
-    testPrimitiveValue(value, Color::transparent);
+    RefPtrWillBeRawPtr<CSSValue> value = roundTrip(CSSColorValue::create(makeRGBA(54, 58, 214, 0)));
+    testColorValue(value, Color::transparent);
 }
 
 TEST_F(AnimationColorStyleInterpolationTest, ValueIDColor)
 {
     RefPtrWillBeRawPtr<CSSValue> value = roundTrip(CSSPrimitiveValue::createIdentifier(CSSValueID::CSSValueBlue));
-    testPrimitiveValue(value, makeRGB(0, 0, 255));
+    testColorValue(value, makeRGB(0, 0, 255));
 }
 
 TEST_F(AnimationColorStyleInterpolationTest, Interpolation)
 {
     RefPtr<Interpolation> interpolation = ColorStyleInterpolation::create(
-        *CSSPrimitiveValue::createColor(makeRGBA(0, 0, 0, 255)),
-        *CSSPrimitiveValue::createColor(makeRGBA(255, 255, 255, 255)),
+        *CSSColorValue::create(makeRGBA(0, 0, 0, 255)),
+        *CSSColorValue::create(makeRGBA(255, 255, 255, 255)),
         CSSPropertyColor
     );
 
     interpolation->interpolate(0, 0.5);
     RefPtrWillBeRawPtr<CSSValue> value = interpolableValueToColor(interpolationValue(*interpolation));
 
-    testPrimitiveValue(value, makeRGBA(128, 128, 128, 255));
+    testColorValue(value, makeRGBA(128, 128, 128, 255));
 }
 }

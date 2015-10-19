@@ -154,9 +154,8 @@ void StyleBuilderFunctions::applyInheritCSSPropertyColor(StyleResolverState& sta
 
 void StyleBuilderFunctions::applyValueCSSPropertyColor(StyleResolverState& state, CSSValue* value)
 {
-    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
     // As per the spec, 'color: currentColor' is treated as 'color: inherit'
-    if (primitiveValue->getValueID() == CSSValueCurrentcolor) {
+    if (value->isPrimitiveValue() && toCSSPrimitiveValue(value)->getValueID() == CSSValueCurrentcolor) {
         applyInheritCSSPropertyColor(state);
         return;
     }

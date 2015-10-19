@@ -192,9 +192,9 @@ static void replaceColorHintsWithColorStops(Vector<GradientStop>& stops, const W
     }
 }
 
-static Color resolveStopColor(const CSSPrimitiveValue& stopColor, const LayoutObject& object)
+static Color resolveStopColor(const CSSValue& stopColor, const LayoutObject& object)
 {
-    return object.document().textLinkColors().colorFromPrimitiveValue(stopColor, object.resolveColor(CSSPropertyColor));
+    return object.document().textLinkColors().colorFromCSSValue(stopColor, object.resolveColor(CSSPropertyColor));
 }
 
 void CSSGradientValue::addDeprecatedStops(Gradient* gradient, const LayoutObject& object)
@@ -549,7 +549,7 @@ bool CSSGradientValue::isCacheable() const
     for (size_t i = 0; i < m_stops.size(); ++i) {
         const CSSGradientColorStop& stop = m_stops[i];
 
-        if (!stop.isHint() && stop.m_color->colorIsDerivedFromElement())
+        if (!stop.isHint() && stop.m_color->isPrimitiveValue() && toCSSPrimitiveValue(*stop.m_color).colorIsDerivedFromElement())
             return false;
 
         if (!stop.m_position)
