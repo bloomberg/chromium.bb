@@ -35,8 +35,9 @@ const char* kSystemLogUploadUrlTail = "/upload";
 // Note: do not add anything to this list without checking for PII in the file.
 const char* const kSystemLogFileNames[] = {
     "/var/log/bios_info.txt", "/var/log/chrome/chrome",
-    "/var/log/eventlog.txt",  "/var/log/messages",
-    "/var/log/net.log",       "/var/log/platform_info.txt",
+    "/var/log/eventlog.txt",  "/var/log/platform_info.txt",
+    "/var/log/messages",      "/var/log/messages.1",
+    "/var/log/net.log",       "/var/log/net.1.log",
     "/var/log/ui/ui.LATEST",  "/var/log/update_engine.log"};
 
 const char kEmailAddress[] =
