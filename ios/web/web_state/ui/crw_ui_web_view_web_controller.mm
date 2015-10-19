@@ -893,9 +893,7 @@ const size_t kMaxMessageQueueSize = 262144;
   // Messages are queued and processed asynchronously. However, user
   // may initiate JavaScript at arbitrary times (e.g. through Omnibox
   // "javascript:alert('foo')"). This delays processing of queued messages
-  // until JavaScript execution is completed.
-  // TODO(pkl): This should have a unit test or UI Automation test case.
-  // See crbug.com/228125
+  // until JavaScript execution is completed. See crbug/228125 for details.
   if (_inJavaScriptContext) {
     [self performSelector:@selector(respondToJSInvoke)
                withObject:nil
