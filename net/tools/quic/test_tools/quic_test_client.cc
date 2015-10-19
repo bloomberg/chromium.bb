@@ -191,6 +191,7 @@ QuicTestClient::~QuicTestClient() {
   if (stream_) {
     stream_->set_visitor(nullptr);
   }
+  client_->Disconnect();
 }
 
 void QuicTestClient::Initialize(bool secure) {
