@@ -432,7 +432,8 @@ void RTCVideoEncoder::Impl::BitstreamBufferReady(int32 bitstream_buffer_id,
   image->_encodedHeight = input_visible_size_.height();
   image->_timeStamp = rtp_timestamp;
   image->capture_time_ms_ = capture_time_ms;
-  image->_frameType = (key_frame ? webrtc::kKeyFrame : webrtc::kDeltaFrame);
+  image->_frameType =
+      (key_frame ? webrtc::kVideoFrameKey : webrtc::kVideoFrameDelta);
   image->_completeFrame = true;
 
   encoder_task_runner_->PostTask(
@@ -623,7 +624,7 @@ int32_t RTCVideoEncoder::InitEncode(const webrtc::VideoCodec* codec_settings,
 int32_t RTCVideoEncoder::Encode(
     const webrtc::VideoFrame& input_image,
     const webrtc::CodecSpecificInfo* codec_specific_info,
-    const std::vector<webrtc::VideoFrameType>* frame_types) {
+    const std::vector<webrtc::FrameType>* frame_types) {
   DVLOG(3) << "Encode()";
   if (!impl_.get()) {
     DVLOG(3) << "Encode(): returning impl_status_=" << impl_status_;
@@ -631,7 +632,7 @@ int32_t RTCVideoEncoder::Encode(
   }
 
   const bool want_key_frame = frame_types && frame_types->size() &&
-                        frame_types->front() == webrtc::kKeyFrame;
+                              frame_types->front() == webrtc::kVideoFrameKey;
   base::WaitableEvent encode_waiter(true, false);
   int32_t encode_retval = WEBRTC_VIDEO_CODEC_UNINITIALIZED;
   gpu_factories_->GetTaskRunner()->PostTask(

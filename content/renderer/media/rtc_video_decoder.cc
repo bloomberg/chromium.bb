@@ -193,7 +193,7 @@ int32_t RTCVideoDecoder::Decode(
 #endif
 
   bool need_to_reset_for_midstream_resize = false;
-  if (inputImage._frameType == webrtc::kKeyFrame) {
+  if (inputImage._frameType == webrtc::kVideoFrameKey) {
     gfx::Size new_frame_size(inputImage._encodedWidth,
                              inputImage._encodedHeight);
     DVLOG(2) << "Got key frame. size=" << new_frame_size.ToString();
