@@ -200,7 +200,6 @@ BPF_DEATH_TEST_C(NaClNonSfiSandboxTest,
   syscall(__NR_prctl, PR_SET_DUMPABLE, 1UL);
 }
 
-#if defined(OS_NACL_NONSFI)
 BPF_DEATH_TEST_C(NaClNonsfiSandboxTest,
                  socketpair_af_unix_disallowed,
                  DEATH_SEGV_MESSAGE(sandbox::GetErrorMessageContentForTests()),
@@ -208,26 +207,6 @@ BPF_DEATH_TEST_C(NaClNonsfiSandboxTest,
   int tmp_fds[2];
   socketpair(AF_UNIX, SOCK_STREAM, 0, tmp_fds);
 }
-#else
-BPF_TEST_C(NaClNonSfiSandboxTest,
-           socketcall_allowed,
-           nacl::nonsfi::NaClNonSfiBPFSandboxPolicy) {
-  base::ScopedFD fds[2];
-  struct msghdr msg = {};
-  struct iovec iov;
-  std::string payload("foo");
-  iov.iov_base = &payload[0];
-  iov.iov_len = payload.size();
-  msg.msg_iov = &iov;
-  msg.msg_iovlen = 1;
-  DoSocketpair(fds);
-  BPF_ASSERT_EQ(static_cast<int>(payload.size()),
-                HANDLE_EINTR(sendmsg(fds[1].get(), &msg, 0)));
-  BPF_ASSERT_EQ(static_cast<int>(payload.size()),
-                HANDLE_EINTR(recvmsg(fds[0].get(), &msg, 0)));
-  BPF_ASSERT_EQ(0, shutdown(fds[0].get(), SHUT_RDWR));
-}
-#endif
 
 // On arm and x86_64 the arguments to socketpair are passed in registers,
 // so they can be filtered by seccomp-bpf.  This filter cannot be applied
@@ -446,11 +425,7 @@ BPF_DEATH_TEST_C(NaClNonSfiSandboxTest,
 void DoFcntl(int fd, int cmd) {
   // fcntl in PNaCl toolchain returns an error without calling actual system
   // call for unknown |cmd|. So, instead, here we use syscall().
-#if defined(OS_NACL_NONSFI)
   syscall(__NR_fcntl64, fd, cmd);
-#else
-  fcntl(fd, cmd);
-#endif
 }
 
 BPF_DEATH_TEST_C(NaClNonSfiSandboxTest,
@@ -503,15 +478,11 @@ BPF_DEATH_TEST_C(NaClNonSfiSandboxTest,
 }
 
 void* DoMmap(int prot, int flags) {
-#if defined(OS_NACL_NONSFI)
   // When PROT_EXEC is set, PNaCl toolchain's mmap() system call wrapper uses
   // two system calls mmap2(2) and mprotect(2), so that we cannot test
   // sandbox with the wrapper. Instead, here we use syscall().
   return reinterpret_cast<void*>(
       syscall(__NR_mmap2, NULL, getpagesize(), prot, flags, -1, 0));
-#else
-  return mmap(NULL, getpagesize(), prot, flags, -1, 0);
-#endif
 }
 
 void* DoAllowedAnonymousMmap() {
@@ -595,14 +566,6 @@ BPF_TEST_C(NaClNonSfiSandboxTest,
   char* next_brk = static_cast<char*>(sbrk(0)) + getpagesize();
   // The kernel interface must return zero for brk.
   BPF_ASSERT_EQ(0, syscall(__NR_brk, next_brk));
-  // The libc wrapper translates it to ENOMEM.
-
-  // Note: PNaCl toolchain does not provide brk() system call wrapper.
-#if !defined(OS_NACL_NONSFI)
-  errno = 0;
-  BPF_ASSERT_EQ(-1, brk(next_brk));
-  BPF_ASSERT_EQ(ENOMEM, errno);
-#endif
 }
 
 // clockid restrictions are mostly tested in sandbox/ with the

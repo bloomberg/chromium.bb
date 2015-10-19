@@ -11,23 +11,17 @@
 #include "components/nacl/common/nacl_messages.h"
 #include "components/nacl/common/nacl_types.h"
 #include "components/nacl/loader/nacl_trusted_listener.h"
-#include "components/nacl/loader/nonsfi/irt_random.h"
 #include "components/nacl/loader/nonsfi/nonsfi_main.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_switches.h"
 #include "ipc/ipc_sync_channel.h"
+#include "native_client/src/public/nonsfi/irt_random.h"
 #include "ppapi/nacl_irt/irt_manifest.h"
 #include "ppapi/nacl_irt/plugin_startup.h"
 
-#if defined(OS_NACL_NONSFI)
-#include "native_client/src/public/nonsfi/irt_random.h"
-#else
-#include "components/nacl/loader/nonsfi/irt_random.h"
-#endif
-
-#if !defined(OS_LINUX) && !defined(OS_NACL_NONSFI)
-# error "non-SFI mode is supported only on linux."
+#if !defined(OS_NACL_NONSFI)
+#error "This file must be built for nacl_helper_nonsfi."
 #endif
 
 namespace nacl {
@@ -81,11 +75,7 @@ void NonSfiListener::OnAddPrefetchedResource(
 
 void NonSfiListener::OnStart(const nacl::NaClStartParams& params) {
   // Random number source initialization.
-#if defined(OS_NACL_NONSFI)
   nonsfi_set_urandom_fd(base::GetUrandomFD());
-#else
-  SetUrandomFd(base::GetUrandomFD());
-#endif
 
   // In Non-SFI mode, PPAPI proxy must be enabled.
   CHECK(params.enable_ipc_proxy);

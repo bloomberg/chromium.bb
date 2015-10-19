@@ -39,6 +39,7 @@ if (enable_nacl) {
       "//ppapi/proxy:ipc",
       "//ppapi/shared_impl",
       "//third_party/mojo/src/mojo/edk/embedder",
+
       # TODO(use_chrome_edk): so that EDK in third_party can choose the EDK in
       # src/mojo if the command line flag is specified. It has to since we can
       # only have one definition of the Mojo primitives.
@@ -46,7 +47,9 @@ if (enable_nacl) {
     ]
 
     if (enable_nacl_untrusted) {
-      data_deps = [ "//ppapi/native_client:irt" ]
+      data_deps = [
+        "//ppapi/native_client:irt",
+      ]
     }
     if (enable_pnacl) {
       data_deps +=
@@ -200,39 +203,6 @@ if (enable_nacl) {
 
     source_set("nacl_linux") {
       sources = [
-        "//ppapi/nacl_irt/irt_manifest.h",
-        "//ppapi/nacl_irt/manifest_service.cc",
-        "//ppapi/nacl_irt/manifest_service.h",
-        "//ppapi/nacl_irt/plugin_main.cc",
-        "//ppapi/nacl_irt/plugin_main.h",
-        "//ppapi/nacl_irt/plugin_startup.cc",
-        "//ppapi/nacl_irt/plugin_startup.h",
-        "//ppapi/nacl_irt/ppapi_dispatcher.cc",
-        "//ppapi/nacl_irt/ppapi_dispatcher.h",
-        "loader/nonsfi/abi_conversion.cc",
-        "loader/nonsfi/abi_conversion.h",
-        "loader/nonsfi/elf_loader.cc",
-        "loader/nonsfi/elf_loader.h",
-        "loader/nonsfi/irt_basic.cc",
-        "loader/nonsfi/irt_clock.cc",
-        "loader/nonsfi/irt_exception_handling.cc",
-        "loader/nonsfi/irt_fdio.cc",
-        "loader/nonsfi/irt_futex.cc",
-        "loader/nonsfi/irt_icache.cc",
-        "loader/nonsfi/irt_interfaces.cc",
-        "loader/nonsfi/irt_interfaces.h",
-        "loader/nonsfi/irt_memory.cc",
-        "loader/nonsfi/irt_ppapi.cc",
-        "loader/nonsfi/irt_random.cc",
-        "loader/nonsfi/irt_resource_open.cc",
-        "loader/nonsfi/irt_thread.cc",
-        "loader/nonsfi/irt_util.h",
-        "loader/nonsfi/nonsfi_listener.cc",
-        "loader/nonsfi/nonsfi_listener.h",
-        "loader/nonsfi/nonsfi_main.cc",
-        "loader/nonsfi/nonsfi_main.h",
-        "loader/nonsfi/nonsfi_sandbox.cc",
-        "loader/nonsfi/nonsfi_sandbox.h",
         "loader/sandbox_linux/nacl_bpf_sandbox_linux.cc",
         "loader/sandbox_linux/nacl_sandbox_linux.cc",
       ]
@@ -244,13 +214,9 @@ if (enable_nacl) {
         ":nacl_common",
         ":nacl_switches",
         "//base",
-        "//components/tracing",
         "//content/public/common",
         "//crypto",
         "//ipc",
-        "//ppapi/c",
-        "//ppapi/proxy",
-        "//ppapi/shared_impl",
         "//sandbox",
         "//sandbox/linux:sandbox_services_headers",
       ]

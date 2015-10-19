@@ -25,6 +25,10 @@
 #include "sandbox/linux/system_headers/linux_signal.h"
 #include "sandbox/linux/system_headers/linux_syscalls.h"
 
+#if !defined(OS_NACL_NONSFI)
+#error "nonsfi_sandbox.cc must be built for nacl_helper_nonsfi."
+#endif
+
 // Chrome OS Daisy (ARM) build environment and PNaCl toolchain do not define
 // MAP_STACK.
 #if !defined(MAP_STACK)
@@ -78,14 +82,11 @@ ResultExpr RestrictFcntlCommands() {
 
 ResultExpr RestrictClone() {
   // We allow clone only for new thread creation.
-  int clone_flags =
+  const int kCloneFlags =
       CLONE_VM | CLONE_FS | CLONE_FILES | CLONE_SIGHAND |
       CLONE_THREAD | CLONE_SYSVSEM | CLONE_SETTLS | CLONE_PARENT_SETTID;
-#if !defined(OS_NACL_NONSFI)
-  clone_flags |= CLONE_CHILD_CLEARTID;
-#endif
   const Arg<int> flags(0);
-  return If(flags == clone_flags, Allow()).Else(CrashSIGSYSClone());
+  return If(flags == kCloneFlags, Allow()).Else(CrashSIGSYSClone());
 }
 
 ResultExpr RestrictFutexOperation() {
@@ -116,13 +117,6 @@ ResultExpr RestrictSocketcall() {
   // We only allow socketpair, sendmsg, and recvmsg.
   const Arg<int> call(0);
   return If(
-#if !defined(OS_NACL_NONSFI)
-      // nacl_helper in Non-SFI mode still uses socketpair() internally
-      // via libevent.
-      // TODO(hidehiko): Remove this when the switching to nacl_helper_nonsfi
-      // is completed.
-      call == SYS_SOCKETPAIR ||
-#endif
       call == SYS_SHUTDOWN || call == SYS_SENDMSG || call == SYS_RECVMSG,
       Allow()).Else(CrashSIGSYS());
 }
@@ -159,15 +153,6 @@ ResultExpr RestrictTgkill(int policy_pid) {
             signum == LINUX_SIGUSR1,
             Allow()).Else(CrashSIGSYS());
 }
-
-#if !defined(OS_NACL_NONSFI) && (defined(__x86_64__) || defined(__arm__))
-ResultExpr RestrictSocketpair() {
-  // Only allow AF_UNIX, PF_UNIX. Crash if anything else is seen.
-  static_assert(AF_UNIX == PF_UNIX, "AF_UNIX must equal PF_UNIX.");
-  const Arg<int> domain(0);
-  return If(domain == AF_UNIX, Allow()).Else(CrashSIGSYS());
-}
-#endif
 
 bool IsGracefullyDenied(int sysno) {
   switch (sysno) {
@@ -318,14 +303,6 @@ ResultExpr NaClNonSfiBPFSandboxPolicy::EvaluateSyscall(int sysno) const {
     case __NR_sendmsg:
     case __NR_shutdown:
       return Allow();
-#if !defined(OS_NACL_NONSFI)
-    // nacl_helper in Non-SFI mode still uses socketpair() internally
-    // via libevent.
-    // TODO(hidehiko): Remove this when the switching to nacl_helper_nonsfi
-    // is completed.
-    case __NR_socketpair:
-      return RestrictSocketpair();
-#endif
 #endif
 
     case __NR_tgkill:
