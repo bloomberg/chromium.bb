@@ -797,6 +797,9 @@ bool AudioManagerMac::MaybeChangeBufferSize(AudioDeviceID device_id,
     }
   }
 
+  if (buffer_size == desired_buffer_size)
+    return true;
+
   buffer_size = desired_buffer_size;
   result = AudioUnitSetProperty(audio_unit,
                                 kAudioDevicePropertyBufferFrameSize,
