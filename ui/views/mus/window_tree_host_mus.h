@@ -27,12 +27,12 @@ class InputMethodMUS;
 class SurfaceContextFactory;
 
 class WindowTreeHostMojo : public aura::WindowTreeHost,
-                           public mus::WindowObserver {
- public:
+  public mus::WindowObserver {
+public:
   WindowTreeHostMojo(mojo::Shell* shell, mus::Window* window);
   ~WindowTreeHostMojo() override;
 
-  const gfx::Rect& bounds() const { return bounds_; }
+  mus::Window* mus_window() { return mus_window_; }
 
   ui::EventDispatchDetails SendEventToProcessor(ui::Event* event) {
     return ui::EventSource::SendEventToProcessor(event);
@@ -58,9 +58,7 @@ class WindowTreeHostMojo : public aura::WindowTreeHost,
                              const mojo::Rect& old_bounds,
                              const mojo::Rect& new_bounds) override;
 
-  mus::Window* window_;
-
-  gfx::Rect bounds_;
+  mus::Window* mus_window_;
 
   scoped_ptr<InputMethodMUS> input_method_;
 

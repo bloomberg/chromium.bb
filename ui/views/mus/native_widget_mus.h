@@ -6,12 +6,15 @@
 #define UI_VIEWS_MUS_NATIVE_WIDGET_MUS_H_
 
 #include "base/memory/scoped_ptr.h"
+#include "components/mus/public/interfaces/window_manager.mojom.h"
+#include "ui/aura/window_delegate.h"
 #include "ui/views/widget/native_widget_private.h"
 
 namespace aura {
 namespace client {
 class DefaultCaptureClient;
 }
+class Window;
 }
 
 namespace mojo {
@@ -29,11 +32,24 @@ class FocusController;
 namespace views {
 class WindowTreeHostMojo;
 
-class NativeWidgetMus : public internal::NativeWidgetPrivate {
+// An implementation of NativeWidget that binds to a mus::Window. Because Aura
+// is used extensively within Views code, this code uses aura and binds to the
+// mus::Window via a Mus-specific aura::WindowTreeHost impl. Because the root
+// aura::Window in a hierarchy is created without a delegate by the
+// aura::WindowTreeHost, we must create a child aura::Window in this class
+// (content_) and attach it to the root.
+class NativeWidgetMus : public internal::NativeWidgetPrivate,
+                        public aura::WindowDelegate {
  public:
   NativeWidgetMus(internal::NativeWidgetDelegate* delegate,
-                  mojo::Shell* shell);
+                  mojo::Shell* shell,
+                  mus::Window* window);
   ~NativeWidgetMus() override;
+
+  // TODO(beng): move to ctor.
+  void set_window_manager(mus::mojom::WindowManager* window_manager) {
+    window_manager_ = window_manager;
+  }
 
  private:
   // internal::NativeWidgetPrivate:
@@ -122,12 +138,35 @@ class NativeWidgetMus : public internal::NativeWidgetPrivate {
   void OnSizeConstraintsChanged() override;
   void RepostNativeEvent(gfx::NativeEvent native_event) override;
 
-  mus::Window* window_;
+  // Overridden from aura::WindowDelegate:
+  gfx::Size GetMinimumSize() const override;
+  gfx::Size GetMaximumSize() const override;
+  void OnBoundsChanged(const gfx::Rect& old_bounds,
+                       const gfx::Rect& new_bounds) override;
+  gfx::NativeCursor GetCursor(const gfx::Point& point) override;
+  int GetNonClientComponent(const gfx::Point& point) const override;
+  bool ShouldDescendIntoChildForEventHandling(
+      aura::Window* child,
+      const gfx::Point& location) override;
+  bool CanFocus() override;
+  void OnCaptureLost() override;
+  void OnPaint(const ui::PaintContext& context) override;
+  void OnDeviceScaleFactorChanged(float device_scale_factor) override;
+  void OnWindowDestroying(aura::Window* window) override;
+  void OnWindowDestroyed(aura::Window* window) override;
+  void OnWindowTargetVisibilityChanged(bool visible) override;
+  bool HasHitTestMask() const override;
+  void GetHitTestMask(gfx::Path* mask) const override;
+
+  mojo::Shell* shell_;
 
   internal::NativeWidgetDelegate* native_widget_delegate_;
 
-  scoped_ptr<WindowTreeHostMojo> window_tree_host_;
+  mus::mojom::WindowManager* window_manager_;
 
+  // Aura configuration.
+  scoped_ptr<WindowTreeHostMojo> window_tree_host_;
+  aura::Window* content_;
   scoped_ptr<wm::FocusController> focus_client_;
   scoped_ptr<aura::client::DefaultCaptureClient> capture_client_;
 

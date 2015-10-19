@@ -5,9 +5,14 @@
 #include "ui/views/mus/native_widget_mus.h"
 
 #include "components/mus/public/cpp/window.h"
+#include "components/mus/public/interfaces/window_manager.mojom.h"
+#include "mojo/converters/geometry/geometry_type_converters.h"
 #include "ui/aura/client/default_capture_client.h"
+#include "ui/aura/layout_manager.h"
 #include "ui/aura/window.h"
+#include "ui/native_theme/native_theme_aura.h"
 #include "ui/views/mus/window_tree_host_mus.h"
+#include "ui/views/widget/widget_delegate.h"
 #include "ui/wm/core/base_focus_rules.h"
 #include "ui/wm/core/capture_controller.h"
 #include "ui/wm/core/focus_controller.h"
@@ -29,31 +34,71 @@ class FocusRulesImpl : public wm::BaseFocusRules {
   DISALLOW_COPY_AND_ASSIGN(FocusRulesImpl);
 };
 
+class ContentWindowLayoutManager : public aura::LayoutManager {
+ public:
+   ContentWindowLayoutManager(aura::Window* outer, aura::Window* inner)
+      : outer_(outer), inner_(inner) {}
+   ~ContentWindowLayoutManager() override {}
+
+ private:
+  // aura::LayoutManager:
+  void OnWindowResized() override { inner_->SetBounds(outer_->bounds()); }
+  void OnWindowAddedToLayout(aura::Window* child) override {
+    OnWindowResized();
+  }
+  void OnWillRemoveWindowFromLayout(aura::Window* child) override {}
+  void OnWindowRemovedFromLayout(aura::Window* child) override {}
+  void OnChildWindowVisibilityChanged(aura::Window* child,
+                                      bool visible) override {}
+  void SetChildBounds(aura::Window* child,
+                      const gfx::Rect& requested_bounds) override {
+    SetChildBoundsDirect(child, requested_bounds);
+  }
+
+  aura::Window* outer_;
+  aura::Window* inner_;
+
+  DISALLOW_COPY_AND_ASSIGN(ContentWindowLayoutManager);
+};
+
+void WindowManagerCallback(mus::mojom::WindowManagerErrorCode error_code) {}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetMus, public:
 
 NativeWidgetMus::NativeWidgetMus(internal::NativeWidgetDelegate* delegate,
-                                 mojo::Shell* shell)
-    : window_(nullptr),
+                                 mojo::Shell* shell,
+                                 mus::Window* window)
+    : shell_(shell),
       native_widget_delegate_(delegate),
-      window_tree_host_(new WindowTreeHostMojo(shell, nullptr)) {
-  window_tree_host_->InitHost();
-}
+      content_(new aura::Window(this)) {}
 NativeWidgetMus::~NativeWidgetMus() {}
 
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetMus, internal::NativeWidgetPrivate implementation:
 
 void NativeWidgetMus::InitNativeWidget(const Widget::InitParams& params) {
+  window_tree_host_.reset(new WindowTreeHostMojo(shell_, nullptr));
+  window_tree_host_->InitHost();
+
   focus_client_.reset(new wm::FocusController(new FocusRulesImpl));
 
-  aura::client::SetFocusClient(GetNativeWindow(), focus_client_.get());
-  aura::client::SetActivationClient(GetNativeWindow(), focus_client_.get());
+  aura::client::SetFocusClient(window_tree_host_->window(),
+                               focus_client_.get());
+  aura::client::SetActivationClient(window_tree_host_->window(),
+                                    focus_client_.get());
   window_tree_host_->window()->AddPreTargetHandler(focus_client_.get());
+  window_tree_host_->window()->SetLayoutManager(
+      new ContentWindowLayoutManager(window_tree_host_->window(), content_));
   capture_client_.reset(
-      new aura::client::DefaultCaptureClient(GetNativeWindow()));
+      new aura::client::DefaultCaptureClient(window_tree_host_->window()));
+
+  content_->SetType(ui::wm::WINDOW_TYPE_NORMAL);
+  content_->Init(ui::LAYER_TEXTURED);
+  window_tree_host_->window()->AddChild(content_);
+  // TODO(beng): much else, see [Desktop]NativeWidgetAura.
 }
 
 NonClientFrameView* NativeWidgetMus::CreateNonClientFrameView() {
@@ -85,11 +130,11 @@ const Widget* NativeWidgetMus::GetWidget() const {
 }
 
 gfx::NativeView NativeWidgetMus::GetNativeView() const {
-  return window_tree_host_->window();
+  return content_;
 }
 
 gfx::NativeWindow NativeWidgetMus::GetNativeWindow() const {
-  return window_tree_host_->window();
+  return content_;
 }
 
 Widget* NativeWidgetMus::GetTopLevelWidget() {
@@ -146,7 +191,11 @@ ui::InputMethod* NativeWidgetMus::GetInputMethod() {
 
 void NativeWidgetMus::CenterWindow(const gfx::Size& size) {
   // TODO(beng): clear user-placed property and set preferred size property.
-  NOTIMPLEMENTED();
+  if (!window_manager_)
+    return;
+  window_manager_->CenterWindow(window_tree_host_->mus_window()->id(),
+                                mojo::Size::From(size),
+                                base::Bind(&WindowManagerCallback));
 }
 
 void NativeWidgetMus::GetWindowPlacement(
@@ -186,11 +235,23 @@ gfx::Rect NativeWidgetMus::GetRestoredBounds() const {
 }
 
 void NativeWidgetMus::SetBounds(const gfx::Rect& bounds) {
-  NOTIMPLEMENTED();
+  if (!window_manager_)
+    return;
+  window_manager_->SetBounds(window_tree_host_->mus_window()->id(),
+                             mojo::Rect::From(bounds),
+                             base::Bind(&WindowManagerCallback));
 }
 
 void NativeWidgetMus::SetSize(const gfx::Size& size) {
-  NOTIMPLEMENTED();
+  if (!window_manager_)
+    return;
+  mojo::RectPtr bounds(mojo::Rect::New());
+  bounds->x = window_tree_host_->mus_window()->bounds().x;
+  bounds->y = window_tree_host_->mus_window()->bounds().y;
+  bounds->width = size.width();
+  bounds->height = size.height();
+  window_manager_->SetBounds(window_tree_host_->mus_window()->id(),
+                             bounds.Pass(), base::Bind(&WindowManagerCallback));
 }
 
 void NativeWidgetMus::StackAbove(gfx::NativeView native_view) {
@@ -218,11 +279,12 @@ void NativeWidgetMus::CloseNow() {
 }
 
 void NativeWidgetMus::Show() {
-  NOTIMPLEMENTED();
+  ShowWithWindowState(ui::SHOW_STATE_NORMAL);
 }
 
 void NativeWidgetMus::Hide() {
-  NOTIMPLEMENTED();
+  window_tree_host_->Hide();
+  GetNativeWindow()->Hide();
 }
 
 void NativeWidgetMus::ShowMaximizedWithBounds(
@@ -231,7 +293,8 @@ void NativeWidgetMus::ShowMaximizedWithBounds(
 }
 
 void NativeWidgetMus::ShowWithWindowState(ui::WindowShowState state) {
-  NOTIMPLEMENTED();
+  window_tree_host_->Show();
+  GetNativeWindow()->Show();
 }
 
 bool NativeWidgetMus::IsVisible() const {
@@ -366,8 +429,7 @@ void NativeWidgetMus::SetVisibilityAnimationTransition(
 }
 
 ui::NativeTheme* NativeWidgetMus::GetNativeTheme() const {
-  NOTIMPLEMENTED();
-  return nullptr;
+  return ui::NativeThemeAura::instance();
 }
 
 void NativeWidgetMus::OnRootViewLayout() {
@@ -385,6 +447,82 @@ void NativeWidgetMus::OnSizeConstraintsChanged() {
 
 void NativeWidgetMus::RepostNativeEvent(gfx::NativeEvent native_event) {
   NOTIMPLEMENTED();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// NativeWidgetMus, aura::WindowDelegate implementation:
+
+gfx::Size NativeWidgetMus::GetMinimumSize() const {
+  return native_widget_delegate_->GetMinimumSize();
+}
+
+gfx::Size NativeWidgetMus::GetMaximumSize() const {
+  return native_widget_delegate_->GetMaximumSize();
+}
+
+void NativeWidgetMus::OnBoundsChanged(const gfx::Rect& old_bounds,
+                                      const gfx::Rect& new_bounds) {
+  // Assume that if the old bounds was completely empty a move happened. This
+  // handles the case of a maximize animation acquiring the layer (acquiring a
+  // layer results in clearing the bounds).
+  if (old_bounds.origin() != new_bounds.origin() ||
+      (old_bounds == gfx::Rect(0, 0, 0, 0) && !new_bounds.IsEmpty())) {
+    native_widget_delegate_->OnNativeWidgetMove();
+  }
+  if (old_bounds.size() != new_bounds.size())
+    native_widget_delegate_->OnNativeWidgetSizeChanged(new_bounds.size());
+}
+
+gfx::NativeCursor NativeWidgetMus::GetCursor(const gfx::Point& point) {
+  return gfx::NativeCursor();
+}
+
+int NativeWidgetMus::GetNonClientComponent(const gfx::Point& point) const {
+  return native_widget_delegate_->GetNonClientComponent(point);
+}
+
+bool NativeWidgetMus::ShouldDescendIntoChildForEventHandling(
+    aura::Window* child,
+    const gfx::Point& location) {
+  views::WidgetDelegate* widget_delegate = GetWidget()->widget_delegate();
+  return !widget_delegate ||
+      widget_delegate->ShouldDescendIntoChildForEventHandling(child, location);
+}
+
+bool NativeWidgetMus::CanFocus() {
+  return true;
+}
+
+void NativeWidgetMus::OnCaptureLost() {
+  native_widget_delegate_->OnMouseCaptureLost();
+}
+
+void NativeWidgetMus::OnPaint(const ui::PaintContext& context) {
+  native_widget_delegate_->OnNativeWidgetPaint(context);
+}
+
+void NativeWidgetMus::OnDeviceScaleFactorChanged(float device_scale_factor) {
+}
+
+void NativeWidgetMus::OnWindowDestroying(aura::Window* window) {
+  // Cleanup happens in OnHostClosed().
+}
+
+void NativeWidgetMus::OnWindowDestroyed(aura::Window* window) {
+  // Cleanup happens in OnHostClosed(). We own |content_window_| (indirectly by
+  // way of |dispatcher_|) so there should be no need to do any processing
+  // here.
+}
+
+void NativeWidgetMus::OnWindowTargetVisibilityChanged(bool visible) {
+}
+
+bool NativeWidgetMus::HasHitTestMask() const {
+  return native_widget_delegate_->HasHitTestMask();
+}
+
+void NativeWidgetMus::GetHitTestMask(gfx::Path* mask) const {
+  native_widget_delegate_->GetHitTestMask(mask);
 }
 
 }  // namespace views

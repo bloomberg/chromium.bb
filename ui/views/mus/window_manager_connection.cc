@@ -16,7 +16,7 @@
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/mus/aura_init.h"
-#include "ui/views/mus/native_widget_view_manager.h"
+#include "ui/views/mus/native_widget_mus.h"
 
 namespace mojo {
 
@@ -123,8 +123,8 @@ WindowManagerConnection::~WindowManagerConnection() {}
 
 NativeWidget* WindowManagerConnection::CreateNativeWidget(
     internal::NativeWidgetDelegate* delegate) {
-  NativeWidgetViewManager* native_widget =
-      new NativeWidgetViewManager(delegate, app_->shell(), CreateWindow());
+  NativeWidgetMus* native_widget =
+      new NativeWidgetMus(delegate, app_->shell(), CreateWindow());
   native_widget->set_window_manager(window_manager_.get());
   return native_widget;
 }
