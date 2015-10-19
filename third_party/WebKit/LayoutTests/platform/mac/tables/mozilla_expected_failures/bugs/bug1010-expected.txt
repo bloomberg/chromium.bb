@@ -26,9 +26,9 @@ layer at (0,0) size 800x600
                       text run at (219,0) width 22: "UL"
                 LayoutListItem {LI} at (40,54) size 624x18
                   LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
-                  LayoutInline {A} at (0,0) size 164x18 [color=#0000EE]
-                    LayoutText {#text} at (0,0) size 164x18
-                      text run at (0,0) width 164: "300 text input form fields"
+                  LayoutInline {A} at (0,0) size 163x18 [color=#0000EE]
+                    LayoutText {#text} at (0,0) size 163x18
+                      text run at (0,0) width 163: "300 text input form fields"
                 LayoutListItem {LI} at (40,72) size 624x18
                   LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
                   LayoutInline {A} at (0,0) size 152x18 [color=#0000EE]
@@ -69,15 +69,15 @@ layer at (0,0) size 800x600
                       text run at (276,0) width 36: "Meg)"
                 LayoutListItem {LI} at (40,198) size 624x18
                   LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
-                  LayoutInline {A} at (0,0) size 282x18 [color=#0000EE]
-                    LayoutText {#text} at (0,0) size 282x18
-                      text run at (0,0) width 282: "Another large HTML doc, with colored text"
+                  LayoutInline {A} at (0,0) size 281x18 [color=#0000EE]
+                    LayoutText {#text} at (0,0) size 281x18
+                      text run at (0,0) width 281: "Another large HTML doc, with colored text"
                 LayoutListItem {LI} at (40,216) size 624x18
                   LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
-                  LayoutInline {A} at (0,0) size 478x18 [color=#0000EE]
-                    LayoutText {#text} at (0,0) size 478x18
+                  LayoutInline {A} at (0,0) size 477x18 [color=#0000EE]
+                    LayoutText {#text} at (0,0) size 477x18
                       text run at (0,0) width 335: "A relatively large (150k) document with an average "
-                      text run at (334,0) width 144: "mix of HTML content"
+                      text run at (334,0) width 143: "mix of HTML content"
             LayoutTableCell {TD} at (672,54) size 53x22 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
               LayoutText {#text} at (2,2) size 34x18
                 text run at (2,2) width 34: "foo 1"

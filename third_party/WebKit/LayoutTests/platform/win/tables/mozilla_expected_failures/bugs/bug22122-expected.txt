@@ -5,8 +5,8 @@ layer at (0,0) size 785x878 backgroundClip at (0,0) size 785x600 clip at (0,0) s
     LayoutBlockFlow {BODY} at (8,8) size 769x861.75
       LayoutBlockFlow {HR} at (0,0) size 769x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow {H3} at (0,20.72) size 769x22
-        LayoutText {#text} at (0,0) size 60x21
-          text run at (0,0) width 60: "Table 1"
+        LayoutText {#text} at (0,0) size 59x21
+          text run at (0,0) width 59: "Table 1"
       LayoutBlockFlow {PRE} at (0,61.44) size 769x64
         LayoutText {#text} at (0,0) size 224x64
           text run at (0,0) width 224: "<TABLE width=\"500\" border=1>"
@@ -54,8 +54,8 @@ layer at (0,0) size 785x878 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                 text run at (2,2) width 36: "Cell I"
       LayoutBlockFlow {HR} at (0,222.44) size 769x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow {H3} at (0,243.16) size 769x22
-        LayoutText {#text} at (0,0) size 74x21
-          text run at (0,0) width 74: "Table 2.1"
+        LayoutText {#text} at (0,0) size 73x21
+          text run at (0,0) width 73: "Table 2.1"
       LayoutBlockFlow {PRE} at (0,283.88) size 769x64
         LayoutText {#text} at (0,0) size 224x64
           text run at (0,0) width 224: "<TABLE width=\"500\" border=1>"
@@ -102,8 +102,8 @@ layer at (0,0) size 785x878 backgroundClip at (0,0) size 785x600 clip at (0,0) s
               LayoutText {#text} at (2,2) size 36x17
                 text run at (2,2) width 36: "Cell I"
       LayoutBlockFlow {H3} at (0,455.59) size 769x22
-        LayoutText {#text} at (0,0) size 74x21
-          text run at (0,0) width 74: "Table 2.2"
+        LayoutText {#text} at (0,0) size 73x21
+          text run at (0,0) width 73: "Table 2.2"
       LayoutBlockFlow {PRE} at (0,496.31) size 769x64
         LayoutText {#text} at (0,0) size 224x64
           text run at (0,0) width 224: "<TABLE width=\"500\" border=1>"
@@ -150,8 +150,8 @@ layer at (0,0) size 785x878 backgroundClip at (0,0) size 785x600 clip at (0,0) s
               LayoutText {#text} at (2,2) size 36x17
                 text run at (2,2) width 36: "Cell I"
       LayoutBlockFlow {H3} at (0,668.03) size 769x22
-        LayoutText {#text} at (0,0) size 74x21
-          text run at (0,0) width 74: "Table 3.1"
+        LayoutText {#text} at (0,0) size 73x21
+          text run at (0,0) width 73: "Table 3.1"
       LayoutBlockFlow {PRE} at (0,708.75) size 769x64
         LayoutText {#text} at (0,0) size 224x64
           text run at (0,0) width 224: "<TABLE width=\"500\" border=1>"

@@ -3,9 +3,9 @@ layer at (0,0) size 800x600
 layer at (0,434) size 800x166
   LayoutBlockFlow {HTML} at (0,0) size 800x166
     LayoutBlockFlow {BODY} at (8,8) size 784x150
-      LayoutText {#text} at (0,0) size 391x41
-        text run at (0,0) width 391: "This is the first line of text."
-      LayoutBR {BR} at (390,0) size 1x41
+      LayoutText {#text} at (0,0) size 389x41
+        text run at (0,0) width 389: "This is the first line of text."
+      LayoutBR {BR} at (388,0) size 1x41
       LayoutImage {IMG} at (0,50) size 20x50 [bgcolor=#008000]
       LayoutText {#text} at (20,41) size 379x41
         text run at (20,41) width 379: " This is the second line of "

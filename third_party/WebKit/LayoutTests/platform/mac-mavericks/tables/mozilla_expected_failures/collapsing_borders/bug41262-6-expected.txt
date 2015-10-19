@@ -46,8 +46,8 @@ layer at (0,0) size 800x600
                 LayoutText {#text} at (2,1) size 28x18
                   text run at (2,1) width 28: "4am"
               LayoutTableCell {TD} at (67,0) size 40x20 [border: none none none (1px solid #808080)] [r=0 c=2 rs=1 cs=1]
-                LayoutText {#text} at (2,1) size 37x18
-                  text run at (2,1) width 37: "11pm"
+                LayoutText {#text} at (2,1) size 36x18
+                  text run at (2,1) width 36: "11pm"
         LayoutBlockFlow {P} at (0,98) size 784x36
           LayoutButton {BUTTON} at (268.19,0) size 75.72x18 [bgcolor=#C0C0C0] [border: none (2px outset #C0C0C0) none (2px outset #C0C0C0)]
             LayoutBlockFlow (anonymous) at (8,2) size 59.72x13

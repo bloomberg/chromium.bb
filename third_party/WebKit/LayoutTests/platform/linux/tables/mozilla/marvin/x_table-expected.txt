@@ -9,8 +9,8 @@ layer at (0,0) size 800x354
       LayoutBlockFlow {ol} at (0,36) size 784x120
         LayoutListItem {li} at (40,0) size 744x20
           LayoutListMarker (anonymous) at (-16,0) size 16x19: "1"
-          LayoutText {#text} at (0,0) size 113x19
-            text run at (0,0) width 113: "a caption 'TABLE'"
+          LayoutText {#text} at (0,0) size 112x19
+            text run at (0,0) width 112: "a caption 'TABLE'"
         LayoutListItem {li} at (40,20) size 744x20
           LayoutListMarker (anonymous) at (-16,0) size 16x19: "2"
           LayoutText {#text} at (0,0) size 60x19
@@ -36,8 +36,8 @@ layer at (0,0) size 800x354
         LayoutBR {br} at (0,20) size 0x19
       LayoutTable {table} at (0,212) size 179x118
         LayoutBlockFlow {caption} at (0,0) size 179x20
-          LayoutText {#text} at (65,0) size 49x19
-            text run at (65,0) width 49: "TABLE"
+          LayoutText {#text} at (66,0) size 47x19
+            text run at (66,0) width 47: "TABLE"
         LayoutTableCol {colgroup} at (0,0) size 0x0
           LayoutTableCol {col} at (0,0) size 0x0
         LayoutTableCol {colgroup} at (0,0) size 0x0

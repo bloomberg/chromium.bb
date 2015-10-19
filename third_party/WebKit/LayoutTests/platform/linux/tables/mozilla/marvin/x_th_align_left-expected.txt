@@ -11,8 +11,8 @@ layer at (0,0) size 800x274
           LayoutText {#text} at (0,0) size 74x19
             text run at (0,0) width 74: "Example 1."
         LayoutBR {br} at (74,0) size 0x19
-        LayoutText {#text} at (0,20) size 117x19
-          text run at (0,20) width 117: "Table width=100%"
+        LayoutText {#text} at (0,20) size 116x19
+          text run at (0,20) width 116: "Table width=100%"
       LayoutTable {table} at (0,92) size 784x30 [border: (1px outset #808080)]
         LayoutTableSection (anonymous) at (1,1) size 782x28
           LayoutTableRow {tr} at (0,2) size 782x24

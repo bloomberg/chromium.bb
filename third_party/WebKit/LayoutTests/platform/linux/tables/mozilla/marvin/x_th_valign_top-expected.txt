@@ -4,8 +4,8 @@ layer at (0,0) size 800x275
   LayoutBlockFlow {html} at (0,0) size 800x275
     LayoutBlockFlow {body} at (8,16) size 784x251
       LayoutBlockFlow {p} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 122x19
-          text run at (0,0) width 122: "TH VALIGN=TOP"
+        LayoutText {#text} at (0,0) size 120x19
+          text run at (0,0) width 120: "TH VALIGN=TOP"
       LayoutTable {table} at (0,36) size 680x215 [border: (1px outset #808080)]
         LayoutTableSection (anonymous) at (1,1) size 678x213
           LayoutTableRow {tr} at (0,2) size 678x209

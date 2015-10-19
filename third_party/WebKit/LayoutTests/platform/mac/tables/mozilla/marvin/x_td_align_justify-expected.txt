@@ -16,5 +16,5 @@ layer at (0,0) size 800x98
                 text run at (295,38) width 91: "should be left"
                 text run at (2,56) width 53: "aligned)"
             LayoutTableCell {td} at (392,29) size 388x22 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 232x18
-                text run at (2,2) width 232: "This cell text should be left justified"
+              LayoutText {#text} at (2,2) size 231x18
+                text run at (2,2) width 231: "This cell text should be left justified"

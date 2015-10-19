@@ -8,8 +8,8 @@ layer at (0,0) size 800x600
           text run at (0,0) width 780: "Colgroups are used to identify column groups. The table below has two distinct column groups; 'Airport Location' and 'Car Rental"
           text run at (0,20) width 673: "Information'. The first column group contains two columns and the second column group contains three columns."
       LayoutBlockFlow {P} at (0,56) size 784x20
-        LayoutText {#text} at (0,0) size 229x19
-          text run at (0,0) width 229: "Text in the cells should be left-aligned."
+        LayoutText {#text} at (0,0) size 228x19
+          text run at (0,0) width 228: "Text in the cells should be left-aligned."
       LayoutTable {TABLE} at (0,92) size 721x186 [border: (1px outset #808080)]
         LayoutTableCol {COLGROUP} at (0,0) size 0x0
         LayoutTableCol {COLGROUP} at (0,0) size 0x0
@@ -106,8 +106,8 @@ layer at (0,0) size 800x600
               LayoutText {#text} at (2,2) size 31x19
                 text run at (2,2) width 31: "USA"
             LayoutTableCell {TD} at (104,158) size 300x24 [border: (1px inset #808080)] [r=6 c=1 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 66x19
-                text run at (2,2) width 66: "New York"
+              LayoutText {#text} at (2,2) size 65x19
+                text run at (2,2) width 65: "New York"
             LayoutTableCell {TD} at (406,158) size 104x24 [border: (1px inset #808080)] [r=6 c=2 rs=1 cs=1]
               LayoutText {#text} at (2,2) size 20x19
                 text run at (2,2) width 20: "yes"

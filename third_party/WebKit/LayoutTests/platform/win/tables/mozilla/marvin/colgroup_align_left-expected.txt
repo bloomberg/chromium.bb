@@ -9,8 +9,8 @@ layer at (0,0) size 800x600
           text run at (0,18) width 741: "'Car Rental Information'. The first column group contains two columns and the second column group contains three"
           text run at (0,36) width 59: "columns."
       LayoutBlockFlow {P} at (0,70) size 784x18
-        LayoutText {#text} at (0,0) size 251x17
-          text run at (0,0) width 251: "Text in the cells should be left-aligned."
+        LayoutText {#text} at (0,0) size 250x17
+          text run at (0,0) width 250: "Text in the cells should be left-aligned."
       LayoutTable {TABLE} at (0,104) size 740x172 [border: (1px outset #808080)]
         LayoutTableCol {COLGROUP} at (0,0) size 0x0
         LayoutTableCol {COLGROUP} at (0,0) size 0x0
@@ -107,8 +107,8 @@ layer at (0,0) size 800x600
               LayoutText {#text} at (2,2) size 32x17
                 text run at (2,2) width 32: "USA"
             LayoutTableCell {TD} at (104,146) size 300x22 [border: (1px inset #808080)] [r=6 c=1 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 68x17
-                text run at (2,2) width 68: "New York"
+              LayoutText {#text} at (2,2) size 66x17
+                text run at (2,2) width 66: "New York"
             LayoutTableCell {TD} at (406,146) size 109x22 [border: (1px inset #808080)] [r=6 c=2 rs=1 cs=1]
               LayoutText {#text} at (2,2) size 22x17
                 text run at (2,2) width 22: "yes"

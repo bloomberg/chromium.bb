@@ -26,22 +26,6 @@
             [10, 131, 138, 12],
             [10, 75, 208, 19]
           ],
-          "paintInvalidationClients": [
-            "LayoutText #text",
-            "InlineTextBox 'findme'",
-            "LayoutText #text",
-            "InlineTextBox 'findme'",
-            "LayoutText #text",
-            "InlineTextBox 'findme'",
-            "LayoutText #text",
-            "InlineTextBox 'findme'",
-            "LayoutSVGInlineText #text",
-            "InlineTextBox 'Can you findme in this boring text?'",
-            "LayoutSVGInlineText #text",
-            "InlineTextBox 'Findme in a typewriter!'",
-            "LayoutSVGInlineText #text",
-            "InlineTextBox 'Findme on a path! Did you findme?'"
-          ],
           "children": [
             {
               "bounds": [785, 485],

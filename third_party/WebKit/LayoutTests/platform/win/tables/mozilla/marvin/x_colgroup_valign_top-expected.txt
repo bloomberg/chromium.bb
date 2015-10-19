@@ -4,8 +4,8 @@ layer at (0,0) size 800x272
   LayoutBlockFlow {html} at (0,0) size 800x272
     LayoutBlockFlow {body} at (8,16) size 784x248
       LayoutBlockFlow {p} at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 191x17
-          text run at (0,0) width 191: "COLGROUP VALIGN=TOP"
+        LayoutText {#text} at (0,0) size 189x17
+          text run at (0,0) width 189: "COLGROUP VALIGN=TOP"
       LayoutTable {table} at (0,34) size 668x214 [border: (1px outset #808080)]
         LayoutTableCol {colgroup} at (0,0) size 0x0
           LayoutTableCol {col} at (0,0) size 0x0

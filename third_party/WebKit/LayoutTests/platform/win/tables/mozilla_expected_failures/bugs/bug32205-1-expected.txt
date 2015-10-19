@@ -9,8 +9,8 @@ layer at (0,0) size 785x846 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         LayoutBR {BR} at (317,14) size 1x0
         LayoutText {#text} at (0,18) size 698x35
           text run at (0,18) width 698: "The inner table has a height of 100%, the outer table has a height set of 200px, on the <table>, <tr> and <td>"
-          text run at (0,36) width 82: "respectively."
-        LayoutBR {BR} at (81,50) size 1x0
+          text run at (0,36) width 81: "respectively."
+        LayoutBR {BR} at (80,50) size 1x0
         LayoutBR {BR} at (0,54) size 0x17
         LayoutText {#text} at (0,72) size 758x17
           text run at (0,72) width 758: "In all examples the inner table should completely fill the outer table. (with respect of the padding and border ofcourse)"

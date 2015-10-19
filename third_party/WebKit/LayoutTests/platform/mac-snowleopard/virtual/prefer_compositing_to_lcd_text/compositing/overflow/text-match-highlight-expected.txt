@@ -6,7 +6,7 @@
       "contentsOpaque": true,
       "drawsContent": true,
       "repaintRects": [
-        [282, 36, 46, 18]
+        [282, 36, 45, 18]
       ],
       "paintInvalidationClients": [
         "LayoutText #text",
@@ -18,13 +18,13 @@
           "bounds": [800, 500],
           "drawsContent": true,
           "repaintRects": [
-            [270, 0, 46, 18],
-            [225, 0, 46, 18],
+            [268, 0, 46, 18],
+            [224, 0, 45, 18],
             [90, 0, 46, 18],
-            [52, 18, 46, 18],
+            [52, 18, 45, 18],
             [20, 160, 200, 72],
             [10, 126, 139, 12],
-            [10, 72, 228, 18]
+            [10, 72, 227, 18]
           ],
           "children": [
             {
@@ -35,13 +35,13 @@
                   "shouldFlattenTransform": false,
                   "drawsContent": true,
                   "repaintRects": [
-                    [270, 0, 46, 18],
-                    [225, 0, 46, 18],
+                    [268, 0, 46, 18],
+                    [224, 0, 45, 18],
                     [90, 0, 46, 18],
-                    [52, 18, 46, 18],
+                    [52, 18, 45, 18],
                     [20, 160, 200, 72],
                     [10, 126, 139, 12],
-                    [10, 72, 228, 18]
+                    [10, 72, 227, 18]
                   ],
                   "paintInvalidationClients": [
                     "LayoutText #text",

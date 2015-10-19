@@ -25,46 +25,46 @@ layer at (0,0) size 800x600
             LayoutTableSection {TBODY} at (0,0) size 355x23
               LayoutTableRow {TR} at (0,0) size 355x23
                 LayoutTableCell {TD} at (0,0) size 355x23 [r=0 c=0 rs=1 cs=1]
-                  LayoutInline {FONT} at (0,0) size 347x15
+                  LayoutInline {FONT} at (0,0) size 346x15
                     LayoutInline {B} at (0,0) size 26x15
                       LayoutText {#text} at (4,4) size 26x15
                         text run at (4,4) width 26: "Web"
-                    LayoutText {#text} at (30,4) size 13x15
-                      text run at (30,4) width 13: "    "
+                    LayoutText {#text} at (29,4) size 14x15
+                      text run at (29,4) width 14: "    "
                     LayoutInline {A} at (0,0) size 38x15 [color=#0000CC]
-                      LayoutText {#text} at (43,4) size 38x15
-                        text run at (43,4) width 38: "Images"
-                    LayoutText {#text} at (80,4) size 14x15
-                      text run at (80,4) width 14: "    "
-                    LayoutInline {A} at (0,0) size 39x15 [color=#0000CC]
-                      LayoutText {#text} at (93,4) size 39x15
-                        text run at (93,4) width 39: "Groups"
+                      LayoutText {#text} at (42,4) size 38x15
+                        text run at (42,4) width 38: "Images"
+                    LayoutText {#text} at (79,4) size 14x15
+                      text run at (79,4) width 14: "    "
+                    LayoutInline {A} at (0,0) size 40x15 [color=#0000CC]
+                      LayoutText {#text} at (92,4) size 40x15
+                        text run at (92,4) width 40: "Groups"
                     LayoutText {#text} at (131,4) size 14x15
                       text run at (131,4) width 14: "    "
-                    LayoutInline {A} at (0,0) size 31x15 [color=#0000CC]
-                      LayoutText {#text} at (144,4) size 31x15
-                        text run at (144,4) width 31: "News"
-                    LayoutText {#text} at (174,4) size 14x15
-                      text run at (174,4) width 14: "    "
-                    LayoutInline {A} at (0,0) size 41x15 [color=#0000CC]
-                      LayoutText {#text} at (187,4) size 41x15
-                        text run at (187,4) width 41: "Froogle"
+                    LayoutInline {A} at (0,0) size 30x15 [color=#0000CC]
+                      LayoutText {#text} at (144,4) size 30x15
+                        text run at (144,4) width 30: "News"
+                    LayoutText {#text} at (173,4) size 14x15
+                      text run at (173,4) width 14: "    "
+                    LayoutInline {A} at (0,0) size 42x15 [color=#0000CC]
+                      LayoutText {#text} at (186,4) size 42x15
+                        text run at (186,4) width 42: "Froogle"
                     LayoutText {#text} at (227,4) size 14x15
                       text run at (227,4) width 14: "    "
-                    LayoutInline {A} at (0,0) size 31x15 [color=#0000CC]
-                      LayoutText {#text} at (240,4) size 31x15
-                        text run at (240,4) width 31: "Local"
+                    LayoutInline {A} at (0,0) size 30x15 [color=#0000CC]
+                      LayoutText {#text} at (240,4) size 30x15
+                        text run at (240,4) width 30: "Local"
                       LayoutInline {SUP} at (0,0) size 1x13
                     LayoutInline {A} at (0,0) size 30x15
                       LayoutInline {FONT} at (0,0) size 30x15 [color=#FF0000]
-                        LayoutText {#text} at (270,4) size 30x15
-                          text run at (270,4) width 30: "New!"
-                    LayoutText {#text} at (299,4) size 14x15
-                      text run at (299,4) width 14: "    "
+                        LayoutText {#text} at (269,4) size 30x15
+                          text run at (269,4) width 30: "New!"
+                    LayoutText {#text} at (298,4) size 14x15
+                      text run at (298,4) width 14: "    "
                     LayoutInline {B} at (0,0) size 39x15
                       LayoutInline {A} at (0,0) size 39x15 [color=#0000CC]
-                        LayoutText {#text} at (312,4) size 39x15
-                          text run at (312,4) width 39: "more \x{BB}"
+                        LayoutText {#text} at (311,4) size 39x15
+                          text run at (311,4) width 39: "more \x{BB}"
           LayoutTable {TABLE} at (94,25) size 596x39
             LayoutTableSection {TBODY} at (0,0) size 596x39
               LayoutTableRow {TR} at (0,0) size 596x39
@@ -98,9 +98,9 @@ layer at (0,0) size 800x600
                     LayoutBR {BR} at (51,23) size 1x0
                     LayoutText {#text} at (0,26) size 5x13
                       text run at (0,26) width 5: "  "
-                    LayoutInline {A} at (0,0) size 65x13 [color=#0000CC]
-                      LayoutText {#text} at (5,26) size 65x13
-                        text run at (5,26) width 65: "Language Tools"
+                    LayoutInline {A} at (0,0) size 64x13 [color=#0000CC]
+                      LayoutText {#text} at (5,26) size 64x13
+                        text run at (5,26) width 64: "Language Tools"
           LayoutBlockFlow (anonymous) at (2,64) size 780x33
             LayoutBR {BR} at (390,0) size 0x18
             LayoutInline {FONT} at (0,0) size 146x15

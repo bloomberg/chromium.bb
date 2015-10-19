@@ -4,8 +4,8 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x576
       LayoutBlockFlow (anonymous) at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 781x17
-          text run at (0,0) width 781: "This page shows a difference between IE and Netscape 6 rendering of tables / cells with heights expressed in percentages."
+        LayoutText {#text} at (0,0) size 780x17
+          text run at (0,0) width 780: "This page shows a difference between IE and Netscape 6 rendering of tables / cells with heights expressed in percentages."
       LayoutBlockFlow {P} at (0,34) size 784x36
         LayoutText {#text} at (0,0) size 750x35
           text run at (0,0) width 214: "The table A below has two cells. "
@@ -13,11 +13,11 @@ layer at (0,0) size 800x600
           text run at (618,0) width 132: "Cell A2 has a height"
           text run at (0,18) width 346: "attribute of 100%, and contains another table, table B."
       LayoutBlockFlow {P} at (0,86) size 784x54
-        LayoutText {#text} at (0,0) size 780x53
-          text run at (0,0) width 223: "Table B has two cells, B1 and B2. "
-          text run at (222,0) width 260: "B1 has a fixed pixel height of 30 pixels. "
-          text run at (481,0) width 167: "B2 has a height of 100%. "
-          text run at (647,0) width 133: "In IE, this causes B2"
+        LayoutText {#text} at (0,0) size 779x53
+          text run at (0,0) width 222: "Table B has two cells, B1 and B2. "
+          text run at (221,0) width 260: "B1 has a fixed pixel height of 30 pixels. "
+          text run at (480,0) width 167: "B2 has a height of 100%. "
+          text run at (646,0) width 133: "In IE, this causes B2"
           text run at (0,18) width 774: "to stretch to fill the entire height of cell A2, while in Netscape 6 / Gecko, it seems to have no impact on the height of cell"
           text run at (0,36) width 24: "A2."
       LayoutBlockFlow {P} at (0,156) size 784x208

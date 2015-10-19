@@ -8,14 +8,14 @@ layer at (0,0) size 800x600
           LayoutText {#text} at (0,0) size 344x18
             text run at (0,0) width 344: "In the yellow table the \"W\" is clipped on its left edge."
           LayoutBR {BR} at (343,14) size 1x0
-          LayoutText {#text} at (0,18) size 174x18
-            text run at (0,18) width 174: "The only difference is that:"
-          LayoutBR {BR} at (173,32) size 1x0
-          LayoutText {#text} at (0,36) size 251x18
-            text run at (0,36) width 251: "yellow table has CELLPADDING=\"0\""
-          LayoutBR {BR} at (250,50) size 1x0
-          LayoutText {#text} at (0,54) size 239x18
-            text run at (0,54) width 239: "grey table has CELLPADDING=\"1\"."
+          LayoutText {#text} at (0,18) size 173x18
+            text run at (0,18) width 173: "The only difference is that:"
+          LayoutBR {BR} at (172,32) size 1x0
+          LayoutText {#text} at (0,36) size 249x18
+            text run at (0,36) width 249: "yellow table has CELLPADDING=\"0\""
+          LayoutBR {BR} at (248,50) size 1x0
+          LayoutText {#text} at (0,54) size 238x18
+            text run at (0,54) width 238: "grey table has CELLPADDING=\"1\"."
         LayoutTable {TABLE} at (0,72) size 40x40 [bgcolor=#FFFF00]
           LayoutTableSection {TBODY} at (0,0) size 40x40
             LayoutTableRow {TR} at (0,2) size 40x36

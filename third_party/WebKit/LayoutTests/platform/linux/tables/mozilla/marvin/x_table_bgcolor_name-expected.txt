@@ -279,8 +279,8 @@ layer at (0,0) size 785x1736 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               LayoutText {#text} at (2,2) size 128x19
                 text run at (2,2) width 128: "table table table table"
       LayoutBlockFlow {p} at (0,1188) size 769x20
-        LayoutText {#text} at (0,0) size 263x19
-          text run at (0,0) width 263: "Yellow table with a white body background"
+        LayoutText {#text} at (0,0) size 262x19
+          text run at (0,0) width 262: "Yellow table with a white body background"
       LayoutTable {table} at (0,1224) size 406x56 [bgcolor=#FFFF00] [border: (1px outset #808080)]
         LayoutTableSection (anonymous) at (1,1) size 404x54
           LayoutTableRow {tr} at (0,2) size 404x24
@@ -354,8 +354,8 @@ layer at (0,0) size 785x1736 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               LayoutText {#text} at (2,2) size 128x19
                 text run at (2,2) width 128: "table table table table"
       LayoutBlockFlow {p} at (0,1512) size 769x20
-        LayoutText {#text} at (0,0) size 246x19
-          text run at (0,0) width 246: "Teal table with a white body background"
+        LayoutText {#text} at (0,0) size 245x19
+          text run at (0,0) width 245: "Teal table with a white body background"
       LayoutTable {table} at (0,1548) size 406x56 [bgcolor=#008080] [border: (1px outset #808080)]
         LayoutTableSection (anonymous) at (1,1) size 404x54
           LayoutTableRow {tr} at (0,2) size 404x24

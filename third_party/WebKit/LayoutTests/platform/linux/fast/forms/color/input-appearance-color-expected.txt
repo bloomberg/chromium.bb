@@ -9,7 +9,7 @@ layer at (0,0) size 800x600
       LayoutBlockFlow (anonymous) at (0,41.72) size 784x43
         LayoutText {#text} at (0,0) size 272x19
           text run at (0,0) width 272: "List color controls have different appearance."
-        LayoutBR {BR} at (272,15) size 0x0
+        LayoutBR {BR} at (271,15) size 1x0
         LayoutBlockFlow {INPUT} at (0,20) size 44x23 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
           LayoutFlexibleBox {DIV} at (3,2) size 38x19
             LayoutBlockFlow {DIV} at (2,4) size 34x11 [bgcolor=#000000] [border: (1px solid #777777)]
@@ -23,7 +23,7 @@ layer at (0,0) size 800x600
       LayoutBlockFlow (anonymous) at (0,145.16) size 784x43
         LayoutText {#text} at (0,0) size 549x19
           text run at (0,0) width 549: "List color controls have different sizes depending on font sizes. Normal color controls don't."
-        LayoutBR {BR} at (549,15) size 0x0
+        LayoutBR {BR} at (548,15) size 1x0
         LayoutBlockFlow {INPUT} at (0,20) size 44x23 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
           LayoutFlexibleBox {DIV} at (3,2) size 38x19
             LayoutBlockFlow {DIV} at (2,4) size 34x11 [bgcolor=#00FF00] [border: (1px solid #777777)]
@@ -54,8 +54,8 @@ layer at (0,0) size 800x600
             LayoutBlockFlow {DIV} at (8,4) size 50x11 [bgcolor=#00FF00] [border: (1px solid #000000)]
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {H3} at (0,206.88) size 784x23
-        LayoutText {#text} at (0,0) size 124x22
-          text run at (0,0) width 124: "Various Colors"
+        LayoutText {#text} at (0,0) size 123x22
+          text run at (0,0) width 123: "Various Colors"
       LayoutBlockFlow (anonymous) at (0,248.59) size 784x23
         LayoutBlockFlow {INPUT} at (0,0) size 44x23 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
           LayoutFlexibleBox {DIV} at (3,2) size 38x19

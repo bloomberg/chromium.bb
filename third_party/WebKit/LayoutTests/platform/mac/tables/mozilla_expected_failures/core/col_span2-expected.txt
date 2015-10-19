@@ -4,8 +4,8 @@ layer at (0,0) size 785x5451 backgroundClip at (0,0) size 785x600 clip at (0,0) 
   LayoutBlockFlow {HTML} at (0,0) size 785x5451
     LayoutBlockFlow {BODY} at (8,8) size 769x5435
       LayoutBlockFlow (anonymous) at (0,0) size 769x18
-        LayoutText {#text} at (0,0) size 531x18
-          text run at (0,0) width 531: "this fixes a bug - 5.0 allocates colspans from right to left - Nav4.6 goes left to right"
+        LayoutText {#text} at (0,0) size 530x18
+          text run at (0,0) width 530: "this fixes a bug - 5.0 allocates colspans from right to left - Nav4.6 goes left to right"
       LayoutTable {TABLE} at (0,18) size 272x76 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 270x74
           LayoutTableRow {TR} at (0,2) size 270x22
@@ -325,9 +325,9 @@ layer at (0,0) size 785x5451 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               LayoutText {#text} at (2,2) size 28x18
                 text run at (2,2) width 28: "auto"
       LayoutBlockFlow (anonymous) at (0,1236) size 769x18
-        LayoutText {#text} at (0,0) size 297x18
-          text run at (0,0) width 297: "fixed table - spanned cols based on fix widths "
-        LayoutBR {BR} at (296,14) size 1x0
+        LayoutText {#text} at (0,0) size 295x18
+          text run at (0,0) width 295: "fixed table - spanned cols based on fix widths "
+        LayoutBR {BR} at (294,14) size 1x0
       LayoutBlockFlow {HR} at (0,1262) size 402x2 [border: (1px inset #EEEEEE)]
       LayoutTable {TABLE} at (0,1272) size 534x61 [bgcolor=#FFA500] [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 532x59
@@ -565,9 +565,9 @@ layer at (0,0) size 785x5451 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 text run at (2,2) width 28: "auto"
       LayoutBlockFlow (anonymous) at (0,2213) size 769x36
         LayoutBR {BR} at (0,0) size 0x18
-        LayoutText {#text} at (0,18) size 161x18
-          text run at (0,18) width 161: "PERCENT COLSPANS "
-        LayoutBR {BR} at (160,32) size 1x0
+        LayoutText {#text} at (0,18) size 160x18
+          text run at (0,18) width 160: "PERCENT COLSPANS "
+        LayoutBR {BR} at (159,32) size 1x0
       LayoutTable {TABLE} at (0,2249) size 500x61 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 498x59
           LayoutTableRow {TR} at (0,5) size 498x22
@@ -963,8 +963,8 @@ layer at (0,0) size 785x5451 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 text run at (2,2) width 21: "bar"
       LayoutBlockFlow (anonymous) at (0,3953) size 769x36
         LayoutBR {BR} at (0,0) size 0x18
-        LayoutText {#text} at (0,18) size 511x18
-          text run at (0,18) width 511: "1st cell with colspan=3 fixed at 600, 1st 2 cells in 2nd row fixed at 100, 2nd not"
+        LayoutText {#text} at (0,18) size 509x18
+          text run at (0,18) width 509: "1st cell with colspan=3 fixed at 600, 1st 2 cells in 2nd row fixed at 100, 2nd not"
       LayoutTable {TABLE} at (0,3989) size 638x52 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 636x50
           LayoutTableRow {TR} at (0,2) size 636x22
@@ -1026,11 +1026,11 @@ layer at (0,0) size 785x5451 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 text run at (738,5) width 24: "edit"
           LayoutTableRow {TR} at (0,28) size 767x28
             LayoutTableCell {TD} at (0,28) size 460x28 [bgcolor=#DCDCDC] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=2]
-              LayoutText {#text} at (5,5) size 167x18
-                text run at (5,5) width 167: "Top Stories from Reuters "
+              LayoutText {#text} at (5,5) size 166x18
+                text run at (5,5) width 166: "Top Stories from Reuters "
             LayoutTableCell {TD} at (460,28) size 307x28 [bgcolor=#DCDCDC] [border: (1px inset #808080)] [r=1 c=2 rs=1 cs=1]
-              LayoutText {#text} at (194,5) size 108x18
-                text run at (194,5) width 108: "Jun 11 12:30pm "
+              LayoutText {#text} at (195,5) size 107x18
+                text run at (195,5) width 107: "Jun 11 12:30pm "
       LayoutBlockFlow (anonymous) at (0,4227) size 769x18
         LayoutBR {BR} at (0,0) size 0x18
       LayoutTable {TABLE} at (0,4245) size 200x34 [bgcolor=#FFFF00] [border: (1px outset #808080)]
@@ -1058,8 +1058,8 @@ layer at (0,0) size 785x5451 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               LayoutText {#text} at (2,2) size 28x18
                 text run at (2,2) width 28: "auto"
       LayoutBlockFlow (anonymous) at (0,4331) size 769x18
-        LayoutText {#text} at (0,0) size 469x18
-          text run at (0,0) width 469: "min colspan is based on min with no fix involved - IE uses max(min,des)"
+        LayoutText {#text} at (0,0) size 468x18
+          text run at (0,0) width 468: "min colspan is based on min with no fix involved - IE uses max(min,des)"
       LayoutTable {TABLE} at (0,4349) size 162x52 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 160x50
           LayoutTableRow {TR} at (0,2) size 160x22
@@ -1075,8 +1075,8 @@ layer at (0,0) size 785x5451 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 text run at (2,2) width 24: "xxx"
       LayoutBlockFlow (anonymous) at (0,4401) size 769x36
         LayoutBR {BR} at (0,0) size 0x18
-        LayoutText {#text} at (0,18) size 287x18
-          text run at (0,18) width 287: "adj min is based on min with no fix involved"
+        LayoutText {#text} at (0,18) size 286x18
+          text run at (0,18) width 286: "adj min is based on min with no fix involved"
       LayoutTable {TABLE} at (0,4437) size 218x70 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 216x68
           LayoutTableRow {TR} at (0,2) size 216x22
@@ -1093,8 +1093,8 @@ layer at (0,0) size 785x5451 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 text run at (2,2) width 144: "xxxxxxxxxxxxxxxxxx"
       LayoutBlockFlow (anonymous) at (0,4507) size 769x36
         LayoutBR {BR} at (0,0) size 0x18
-        LayoutText {#text} at (0,18) size 499x18
-          text run at (0,18) width 499: "adj min is based on max(min, fix) differs from Nav4.6 which differs from IE5"
+        LayoutText {#text} at (0,18) size 498x18
+          text run at (0,18) width 498: "adj min is based on max(min, fix) differs from Nav4.6 which differs from IE5"
       LayoutTable {TABLE} at (0,4543) size 195x52 [bgcolor=#00FF00] [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 193x50
           LayoutTableRow {TR} at (0,2) size 193x22
@@ -1231,9 +1231,9 @@ layer at (0,0) size 785x5451 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               LayoutText {#text} at (2,2) size 91x18
                 text run at (2,2) width 91: "auto auto auto"
       LayoutBlockFlow (anonymous) at (0,5191) size 769x18
-        LayoutText {#text} at (0,0) size 257x18
-          text run at (0,0) width 257: "fixed table looks more like IE than Nav "
-        LayoutBR {BR} at (256,14) size 1x0
+        LayoutText {#text} at (0,0) size 256x18
+          text run at (0,0) width 256: "fixed table looks more like IE than Nav "
+        LayoutBR {BR} at (255,14) size 1x0
       LayoutTable {TABLE} at (0,5209) size 150x226 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 148x224
           LayoutTableRow {TR} at (0,2) size 148x220

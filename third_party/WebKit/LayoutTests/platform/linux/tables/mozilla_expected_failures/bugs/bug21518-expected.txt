@@ -5,8 +5,8 @@ layer at (0,0) size 800x461
     LayoutBlockFlow {BODY} at (8,8) size 784x444.88
       LayoutBlockFlow {HR} at (0,0) size 784x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow {H3} at (0,20.72) size 784x23
-        LayoutText {#text} at (0,0) size 62x22
-          text run at (0,0) width 62: "Table 1"
+        LayoutText {#text} at (0,0) size 61x22
+          text run at (0,0) width 61: "Table 1"
       LayoutBlockFlow {PRE} at (0,62.44) size 784x64
         LayoutText {#text} at (0,0) size 224x64
           text run at (0,0) width 224: "<TABLE width=\"500\" border=1>"
@@ -54,8 +54,8 @@ layer at (0,0) size 800x461
                 text run at (2,2) width 33: "Cell I"
       LayoutBlockFlow {HR} at (0,229.44) size 784x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow {H3} at (0,250.16) size 784x23
-        LayoutText {#text} at (0,0) size 62x22
-          text run at (0,0) width 62: "Table 2"
+        LayoutText {#text} at (0,0) size 61x22
+          text run at (0,0) width 61: "Table 2"
       LayoutBlockFlow {PRE} at (0,291.88) size 784x48
         LayoutText {#text} at (0,0) size 224x48
           text run at (0,0) width 224: "<TABLE width=\"500\" border=1>"

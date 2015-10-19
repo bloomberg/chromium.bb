@@ -4,12 +4,12 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x54
-        LayoutText {#text} at (0,0) size 771x54
-          text run at (0,0) width 763: "This table contains an <applet> that will not load -- you can see the space get allocated and then reflow. Notice that the"
-          text run at (0,18) width 639: "final table is clipped on the right hand side -- try shrinking the window and notice how the clipping "
-          text run at (638,18) width 133: "increases. (I couldn't"
+        LayoutText {#text} at (0,0) size 770x54
+          text run at (0,0) width 761: "This table contains an <applet> that will not load -- you can see the space get allocated and then reflow. Notice that the"
+          text run at (0,18) width 638: "final table is clipped on the right hand side -- try shrinking the window and notice how the clipping "
+          text run at (637,18) width 133: "increases. (I couldn't"
           text run at (0,36) width 348: "really simplify this further without losing some of the "
-          text run at (347,36) width 116: "original 'flavour'.)"
+          text run at (347,36) width 115: "original 'flavour'.)"
       LayoutBlockFlow (anonymous) at (0,70) size 784x18
         LayoutBR {BR} at (0,0) size 0x18
       LayoutTable {TABLE} at (0,88) size 792x140 [border: (1px outset #808080)]
@@ -29,9 +29,9 @@ layer at (0,0) size 800x600
                                 LayoutText {#text} at (0,0) size 0x0
                               LayoutText {#text} at (0,0) size 0x0
                       LayoutBlockFlow {P} at (2,30) size 772x36
-                        LayoutText {#text} at (0,0) size 738x36
-                          text run at (0,0) width 430: "The Porto Elounda Mare is built on the sea front, on a 110,000 m2 "
-                          text run at (429,0) width 309: "plot of land with a 150 meter long private sandy"
+                        LayoutText {#text} at (0,0) size 737x36
+                          text run at (0,0) width 429: "The Porto Elounda Mare is built on the sea front, on a 110,000 m2 "
+                          text run at (428,0) width 309: "plot of land with a 150 meter long private sandy"
                           text run at (0,18) width 145: "beach. The view from "
                           text run at (144,18) width 389: "decorated with antique and contemporary furniture and rugs."
                   LayoutTableRow {TR} at (0,72) size 780x54
@@ -65,9 +65,9 @@ layer at (0,0) size 800x600
       LayoutBlockFlow (anonymous) at (0,228) size 784x18
         LayoutBR {BR} at (0,0) size 0x18
       LayoutBlockFlow {P} at (0,262) size 784x18
-        LayoutText {#text} at (0,0) size 547x18
+        LayoutText {#text} at (0,0) size 546x18
           text run at (0,0) width 425: "This table repeats the previous table, but removes the 'bad applet'. "
-          text run at (424,0) width 123: "Table lays out OK."
+          text run at (424,0) width 122: "Table lays out OK."
       LayoutBlockFlow (anonymous) at (0,296) size 784x18
         LayoutBR {BR} at (0,0) size 0x18
       LayoutTable {TABLE} at (0,314) size 792x158 [border: (1px outset #808080)]
@@ -85,9 +85,9 @@ layer at (0,0) size 800x600
                               LayoutText {#text} at (2,2) size 100x18
                                 text run at (2,2) width 100: "applet was here"
                       LayoutBlockFlow {P} at (2,48) size 772x36
-                        LayoutText {#text} at (0,0) size 738x36
-                          text run at (0,0) width 430: "The Porto Elounda Mare is built on the sea front, on a 110,000 m2 "
-                          text run at (429,0) width 309: "plot of land with a 150 meter long private sandy"
+                        LayoutText {#text} at (0,0) size 737x36
+                          text run at (0,0) width 429: "The Porto Elounda Mare is built on the sea front, on a 110,000 m2 "
+                          text run at (428,0) width 309: "plot of land with a 150 meter long private sandy"
                           text run at (0,18) width 145: "beach. The view from "
                           text run at (144,18) width 389: "decorated with antique and contemporary furniture and rugs."
                   LayoutTableRow {TR} at (0,90) size 780x54

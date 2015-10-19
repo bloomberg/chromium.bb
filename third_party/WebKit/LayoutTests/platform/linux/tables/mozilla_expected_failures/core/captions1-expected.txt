@@ -57,26 +57,26 @@ layer at (0,0) size 785x1136 backgroundClip at (0,0) size 785x600 clip at (0,0) 
       LayoutBlockFlow (anonymous) at (0,308) size 769x20
         LayoutText {#text} at (0,0) size 364x19
           text run at (0,0) width 364: "table 3 - caption gains content extending its max element size"
-      LayoutTable {TABLE} at (5,338) size 140x119 [border: (10px solid #008000)]
-        LayoutBlockFlow {CAPTION} at (10,72) size 130x47 [border: (3px solid #800080)]
-          LayoutText {#text} at (32,4) size 45x19
-            text run at (32,4) width 45: "caption"
-          LayoutBlockFlow {INPUT} at (81.50,6) size 13x13
+      LayoutTable {TABLE} at (5,338) size 139x119 [border: (10px solid #008000)]
+        LayoutBlockFlow {CAPTION} at (10,72) size 129x47 [border: (3px solid #800080)]
+          LayoutText {#text} at (32,4) size 44x19
+            text run at (32,4) width 44: "caption"
+          LayoutBlockFlow {INPUT} at (81,6) size 13x13
           LayoutText {#text} at (3,24) size 134x19
             text run at (3,24) width 134: "very_large_very_large"
-        LayoutTableSection {TBODY} at (10,10) size 120x50
-          LayoutTableRow {TR} at (0,2) size 120x22
-            LayoutTableCell {TD} at (2,2) size 57x22 [r=0 c=0 rs=1 cs=1]
+        LayoutTableSection {TBODY} at (10,10) size 119x50
+          LayoutTableRow {TR} at (0,2) size 119x22
+            LayoutTableCell {TD} at (2,2) size 56x22 [r=0 c=0 rs=1 cs=1]
               LayoutText {#text} at (1,1) size 29x19
                 text run at (1,1) width 29: "Data"
-            LayoutTableCell {TD} at (61,2) size 57x22 [r=0 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (60,2) size 57x22 [r=0 c=1 rs=1 cs=1]
               LayoutText {#text} at (1,1) size 29x19
                 text run at (1,1) width 29: "Data"
-          LayoutTableRow {TR} at (0,26) size 120x22
-            LayoutTableCell {TD} at (2,26) size 57x22 [r=1 c=0 rs=1 cs=1]
+          LayoutTableRow {TR} at (0,26) size 119x22
+            LayoutTableCell {TD} at (2,26) size 56x22 [r=1 c=0 rs=1 cs=1]
               LayoutText {#text} at (1,1) size 29x19
                 text run at (1,1) width 29: "Data"
-            LayoutTableCell {TD} at (61,26) size 57x22 [r=1 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (60,26) size 57x22 [r=1 c=1 rs=1 cs=1]
               LayoutText {#text} at (1,1) size 29x19
                 text run at (1,1) width 29: "Data"
       LayoutBlockFlow (anonymous) at (0,462) size 769x20

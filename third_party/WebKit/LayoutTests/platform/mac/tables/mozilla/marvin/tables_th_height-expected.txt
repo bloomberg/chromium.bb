@@ -7,13 +7,13 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (0,0) size 472x18
           text run at (0,0) width 472: "The TH tag uses the HEIGTH attribute. The TH has been set to 80 pixels."
         LayoutBR {BR} at (471,14) size 1x0
-      LayoutTable {TABLE} at (0,18) size 292x110 [border: (1px outset #808080)]
-        LayoutTableSection {TBODY} at (1,1) size 290x108
-          LayoutTableRow {TR} at (0,2) size 290x80
-            LayoutTableCell {TH} at (2,31) size 286x22 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-              LayoutText {#text} at (58,2) size 170x18
-                text run at (58,2) width 170: "Netscape Communicator"
-          LayoutTableRow {TR} at (0,84) size 290x22
-            LayoutTableCell {TD} at (2,84) size 286x22 [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 282x18
-                text run at (2,2) width 282: "Available on the Mac/PC/UNIX platforms !"
+      LayoutTable {TABLE} at (0,18) size 291x110 [border: (1px outset #808080)]
+        LayoutTableSection {TBODY} at (1,1) size 289x108
+          LayoutTableRow {TR} at (0,2) size 289x80
+            LayoutTableCell {TH} at (2,31) size 285x22 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+              LayoutText {#text} at (57,2) size 171x18
+                text run at (57,2) width 171: "Netscape Communicator"
+          LayoutTableRow {TR} at (0,84) size 289x22
+            LayoutTableCell {TD} at (2,84) size 285x22 [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
+              LayoutText {#text} at (2,2) size 281x18
+                text run at (2,2) width 281: "Available on the Mac/PC/UNIX platforms !"

@@ -6,7 +6,7 @@ layer at (0,0) size 800x600
       LayoutBlockFlow (anonymous) at (0,0) size 784x20
         LayoutText {#text} at (0,0) size 445x19
           text run at (0,0) width 445: "The table displayed is two rows by three columns with a two pixel border."
-        LayoutBR {BR} at (445,15) size 0x0
+        LayoutBR {BR} at (444,15) size 1x0
       LayoutTable {TABLE} at (0,20) size 213x58 [border: (2px outset #808080)]
         LayoutTableSection {TBODY} at (2,2) size 209x54
           LayoutTableRow {TR} at (0,2) size 209x24

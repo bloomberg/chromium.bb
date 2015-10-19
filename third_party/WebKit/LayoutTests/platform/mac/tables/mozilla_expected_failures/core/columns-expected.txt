@@ -74,8 +74,8 @@ layer at (0,0) size 785x940 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                 text run at (2,2) width 91: "auto auto auto"
       LayoutBlockFlow (anonymous) at (0,238) size 769x36
         LayoutBR {BR} at (0,0) size 0x18
-        LayoutText {#text} at (0,18) size 115x18
-          text run at (0,18) width 115: "fixed table cols=2"
+        LayoutText {#text} at (0,18) size 114x18
+          text run at (0,18) width 114: "fixed table cols=2"
       LayoutTable {TABLE} at (0,274) size 400x28 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 398x26
           LayoutTableRow {TR} at (0,2) size 398x22
@@ -106,8 +106,8 @@ layer at (0,0) size 785x940 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                 text run at (2,2) width 91: "auto auto auto"
       LayoutBlockFlow (anonymous) at (0,366) size 769x36
         LayoutBR {BR} at (0,0) size 0x18
-        LayoutText {#text} at (0,18) size 115x18
-          text run at (0,18) width 115: "fixed table cols=3"
+        LayoutText {#text} at (0,18) size 114x18
+          text run at (0,18) width 114: "fixed table cols=3"
       LayoutTable {TABLE} at (0,402) size 400x28 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 398x26
           LayoutTableRow {TR} at (0,2) size 398x22
@@ -138,8 +138,8 @@ layer at (0,0) size 785x940 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                 text run at (2,2) width 91: "auto auto auto"
       LayoutBlockFlow (anonymous) at (0,494) size 769x36
         LayoutBR {BR} at (0,0) size 0x18
-        LayoutText {#text} at (0,18) size 115x18
-          text run at (0,18) width 115: "fixed table cols=3"
+        LayoutText {#text} at (0,18) size 114x18
+          text run at (0,18) width 114: "fixed table cols=3"
       LayoutTable {TABLE} at (0,530) size 400x28 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 398x26
           LayoutTableRow {TR} at (0,2) size 398x22
@@ -170,8 +170,8 @@ layer at (0,0) size 785x940 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                 text run at (2,2) width 24: "200"
       LayoutBlockFlow (anonymous) at (0,622) size 769x36
         LayoutBR {BR} at (0,0) size 0x18
-        LayoutText {#text} at (0,18) size 115x18
-          text run at (0,18) width 115: "fixed table cols=2"
+        LayoutText {#text} at (0,18) size 114x18
+          text run at (0,18) width 114: "fixed table cols=2"
       LayoutTable {TABLE} at (0,658) size 400x28 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 398x26
           LayoutTableRow {TR} at (0,2) size 398x22

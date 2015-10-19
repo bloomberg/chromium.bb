@@ -14,14 +14,14 @@ layer at (0,0) size 785x1268 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 LayoutTableSection {TBODY} at (1,1) size 375x572
                   LayoutTableRow {TR} at (0,2) size 375x568
                     LayoutTableCell {TD} at (2,275) size 185x22 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-                      LayoutText {#text} at (2,2) size 137x18
-                        text run at (2,2) width 137: " Inner Table (yellow)"
+                      LayoutText {#text} at (2,2) size 136x18
+                        text run at (2,2) width 136: " Inner Table (yellow)"
                     LayoutTableCell {TD} at (189,275) size 184x22 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
                       LayoutText {#text} at (2,2) size 4x18
                         text run at (2,2) width 4: " "
             LayoutTableCell {TD} at (385,280) size 380x22 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 124x18
-                text run at (2,2) width 124: " Outer Table (grey)"
+              LayoutText {#text} at (2,2) size 123x18
+                text run at (2,2) width 123: " Outer Table (grey)"
       LayoutBlockFlow {P} at (0,634) size 769x18
         LayoutText {#text} at (0,0) size 351x18
           text run at (0,0) width 351: "50 percent height table inside 100 percent height table:"
@@ -33,11 +33,11 @@ layer at (0,0) size 785x1268 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 LayoutTableSection {TBODY} at (1,1) size 375x285
                   LayoutTableRow {TR} at (0,2) size 375x281
                     LayoutTableCell {TD} at (2,131) size 185x22 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-                      LayoutText {#text} at (2,2) size 137x18
-                        text run at (2,2) width 137: " Inner Table (yellow)"
+                      LayoutText {#text} at (2,2) size 136x18
+                        text run at (2,2) width 136: " Inner Table (yellow)"
                     LayoutTableCell {TD} at (189,131) size 184x22 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
                       LayoutText {#text} at (2,2) size 4x18
                         text run at (2,2) width 4: " "
             LayoutTableCell {TD} at (385,280) size 380x22 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 124x18
-                text run at (2,2) width 124: " Outer Table (grey)"
+              LayoutText {#text} at (2,2) size 123x18
+                text run at (2,2) width 123: " Outer Table (grey)"

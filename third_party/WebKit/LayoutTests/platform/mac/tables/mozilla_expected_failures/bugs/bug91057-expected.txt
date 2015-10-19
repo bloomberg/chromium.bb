@@ -1,11 +1,11 @@
-layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 1780
+layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 1778
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 785x1780 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
-  LayoutBlockFlow {HTML} at (0,0) size 785x1779.69 [border: (1px solid #000000)]
-    LayoutBlockFlow {BODY} at (9,9) size 767x1761.69 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+layer at (0,0) size 785x1778 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
+  LayoutBlockFlow {HTML} at (0,0) size 785x1777.91 [border: (1px solid #000000)]
+    LayoutBlockFlow {BODY} at (9,9) size 767x1759.91 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
       LayoutBlockFlow {H1} at (1,1) size 765x39 [border: (1px solid #000000)]
-        LayoutText {#text} at (1,1) size 288x37
-          text run at (1,1) width 288: "Caption Margin Test"
+        LayoutText {#text} at (1,1) size 286x37
+          text run at (1,1) width 286: "Caption Margin Test"
       LayoutBlockFlow {DIV} at (1,61.44) size 102x20 [border: (1px solid #008000)]
         LayoutText {#text} at (1,1) size 40x18
           text run at (1,1) width 40: "100px"
@@ -15,213 +15,213 @@ layer at (0,0) size 785x1780 backgroundClip at (0,0) size 785x600 clip at (0,0) 
       LayoutBlockFlow {H2} at (1,121.34) size 765x30 [border: (1px solid #000000)]
         LayoutText {#text} at (1,1) size 80x28
           text run at (1,1) width 80: "Control"
-      LayoutTable {TABLE} at (1,171.25) size 176x48 [border: (1px solid #000000)]
-        LayoutBlockFlow {CAPTION} at (0,0) size 176x20 [border: (1px solid #000000)]
-          LayoutText {#text} at (77,1) size 22x18
-            text run at (77,1) width 22: "TA"
-        LayoutTableSection {TBODY} at (1,21) size 174x26 [border: (1px solid #000000)]
-          LayoutTableRow {TR} at (0,2) size 174x22 [border: (1px solid #000000)]
-            LayoutTableCell {TD} at (2,2) size 84x22 [border: (1px solid #000000)] [r=0 c=0 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 80x18
-                text run at (2,2) width 80: "Table Cell 1"
-            LayoutTableCell {TD} at (88,2) size 84x22 [border: (1px solid #000000)] [r=0 c=1 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 80x18
-                text run at (2,2) width 80: "Table Cell 2"
-      LayoutTable {TABLE} at (1,219.25) size 342x48 [border: (1px solid #000000)]
-        LayoutBlockFlow {CAPTION} at (0,0) size 342x20 [border: (1px solid #000000)]
-          LayoutText {#text} at (160,1) size 22x18
-            text run at (160,1) width 22: "TB"
-        LayoutTableSection {TBODY} at (1,21) size 340x26 [border: (1px solid #000000)]
-          LayoutTableRow {TR} at (0,2) size 340x22 [border: (1px solid #000000)]
-            LayoutTableCell {TD} at (2,2) size 167x22 [border: (1px solid #000000)] [r=0 c=0 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 163x18
-                text run at (2,2) width 163: "Table Cell 1 Table Cell 1"
-            LayoutTableCell {TD} at (171,2) size 167x22 [border: (1px solid #000000)] [r=0 c=1 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 163x18
-                text run at (2,2) width 163: "Table Cell 2 Table Cell 2"
+      LayoutTable {TABLE} at (1,171.25) size 172x48 [border: (1px solid #000000)]
+        LayoutBlockFlow {CAPTION} at (0,0) size 172x20 [border: (1px solid #000000)]
+          LayoutText {#text} at (75,1) size 22x18
+            text run at (75,1) width 22: "TA"
+        LayoutTableSection {TBODY} at (1,21) size 170x26 [border: (1px solid #000000)]
+          LayoutTableRow {TR} at (0,2) size 170x22 [border: (1px solid #000000)]
+            LayoutTableCell {TD} at (2,2) size 82x22 [border: (1px solid #000000)] [r=0 c=0 rs=1 cs=1]
+              LayoutText {#text} at (2,2) size 78x18
+                text run at (2,2) width 78: "Table Cell 1"
+            LayoutTableCell {TD} at (86,2) size 82x22 [border: (1px solid #000000)] [r=0 c=1 rs=1 cs=1]
+              LayoutText {#text} at (2,2) size 78x18
+                text run at (2,2) width 78: "Table Cell 2"
+      LayoutTable {TABLE} at (1,219.25) size 336x48 [border: (1px solid #000000)]
+        LayoutBlockFlow {CAPTION} at (0,0) size 336x20 [border: (1px solid #000000)]
+          LayoutText {#text} at (157,1) size 22x18
+            text run at (157,1) width 22: "TB"
+        LayoutTableSection {TBODY} at (1,21) size 334x26 [border: (1px solid #000000)]
+          LayoutTableRow {TR} at (0,2) size 334x22 [border: (1px solid #000000)]
+            LayoutTableCell {TD} at (2,2) size 164x22 [border: (1px solid #000000)] [r=0 c=0 rs=1 cs=1]
+              LayoutText {#text} at (2,2) size 160x18
+                text run at (2,2) width 160: "Table Cell 1 Table Cell 1"
+            LayoutTableCell {TD} at (168,2) size 164x22 [border: (1px solid #000000)] [r=0 c=1 rs=1 cs=1]
+              LayoutText {#text} at (2,2) size 160x18
+                text run at (2,2) width 160: "Table Cell 2 Table Cell 2"
       LayoutBlockFlow {H2} at (1,287.16) size 765x30 [border: (1px solid #000000)]
-        LayoutText {#text} at (1,1) size 288x28
-          text run at (1,1) width 288: "Test 1 - \"margin-left: 50px\""
-      LayoutTable {TABLE} at (1,337.06) size 176x48 [border: (1px solid #000000)]
-        LayoutBlockFlow {CAPTION} at (50,0) size 126x20 [border: (1px solid #000000)]
-          LayoutText {#text} at (52,1) size 22x18
-            text run at (52,1) width 22: "TA"
-        LayoutTableSection {TBODY} at (1,21) size 174x26 [border: (1px solid #000000)]
-          LayoutTableRow {TR} at (0,2) size 174x22 [border: (1px solid #000000)]
-            LayoutTableCell {TD} at (2,2) size 84x22 [border: (1px solid #000000)] [r=0 c=0 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 80x18
-                text run at (2,2) width 80: "Table Cell 1"
-            LayoutTableCell {TD} at (88,2) size 84x22 [border: (1px solid #000000)] [r=0 c=1 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 80x18
-                text run at (2,2) width 80: "Table Cell 2"
-      LayoutTable {TABLE} at (1,385.06) size 342x48 [border: (1px solid #000000)]
-        LayoutBlockFlow {CAPTION} at (50,0) size 292x20 [border: (1px solid #000000)]
-          LayoutText {#text} at (135,1) size 22x18
-            text run at (135,1) width 22: "TB"
-        LayoutTableSection {TBODY} at (1,21) size 340x26 [border: (1px solid #000000)]
-          LayoutTableRow {TR} at (0,2) size 340x22 [border: (1px solid #000000)]
-            LayoutTableCell {TD} at (2,2) size 167x22 [border: (1px solid #000000)] [r=0 c=0 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 163x18
-                text run at (2,2) width 163: "Table Cell 1 Table Cell 1"
-            LayoutTableCell {TD} at (171,2) size 167x22 [border: (1px solid #000000)] [r=0 c=1 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 163x18
-                text run at (2,2) width 163: "Table Cell 2 Table Cell 2"
+        LayoutText {#text} at (1,1) size 286x28
+          text run at (1,1) width 286: "Test 1 - \"margin-left: 50px\""
+      LayoutTable {TABLE} at (1,337.06) size 172x48 [border: (1px solid #000000)]
+        LayoutBlockFlow {CAPTION} at (50,0) size 122x20 [border: (1px solid #000000)]
+          LayoutText {#text} at (50,1) size 22x18
+            text run at (50,1) width 22: "TA"
+        LayoutTableSection {TBODY} at (1,21) size 170x26 [border: (1px solid #000000)]
+          LayoutTableRow {TR} at (0,2) size 170x22 [border: (1px solid #000000)]
+            LayoutTableCell {TD} at (2,2) size 82x22 [border: (1px solid #000000)] [r=0 c=0 rs=1 cs=1]
+              LayoutText {#text} at (2,2) size 78x18
+                text run at (2,2) width 78: "Table Cell 1"
+            LayoutTableCell {TD} at (86,2) size 82x22 [border: (1px solid #000000)] [r=0 c=1 rs=1 cs=1]
+              LayoutText {#text} at (2,2) size 78x18
+                text run at (2,2) width 78: "Table Cell 2"
+      LayoutTable {TABLE} at (1,385.06) size 336x48 [border: (1px solid #000000)]
+        LayoutBlockFlow {CAPTION} at (50,0) size 286x20 [border: (1px solid #000000)]
+          LayoutText {#text} at (132,1) size 22x18
+            text run at (132,1) width 22: "TB"
+        LayoutTableSection {TBODY} at (1,21) size 334x26 [border: (1px solid #000000)]
+          LayoutTableRow {TR} at (0,2) size 334x22 [border: (1px solid #000000)]
+            LayoutTableCell {TD} at (2,2) size 164x22 [border: (1px solid #000000)] [r=0 c=0 rs=1 cs=1]
+              LayoutText {#text} at (2,2) size 160x18
+                text run at (2,2) width 160: "Table Cell 1 Table Cell 1"
+            LayoutTableCell {TD} at (168,2) size 164x22 [border: (1px solid #000000)] [r=0 c=1 rs=1 cs=1]
+              LayoutText {#text} at (2,2) size 160x18
+                text run at (2,2) width 160: "Table Cell 2 Table Cell 2"
       LayoutBlockFlow {H2} at (1,452.97) size 765x30 [border: (1px solid #000000)]
-        LayoutText {#text} at (1,1) size 306x28
-          text run at (1,1) width 306: "Test 2 - \"margin-right: 50px\""
-      LayoutTable {TABLE} at (1,502.88) size 176x48 [border: (1px solid #000000)]
-        LayoutBlockFlow {CAPTION} at (0,0) size 126x20 [border: (1px solid #000000)]
-          LayoutText {#text} at (52,1) size 22x18
-            text run at (52,1) width 22: "TA"
-        LayoutTableSection {TBODY} at (1,21) size 174x26 [border: (1px solid #000000)]
-          LayoutTableRow {TR} at (0,2) size 174x22 [border: (1px solid #000000)]
-            LayoutTableCell {TD} at (2,2) size 84x22 [border: (1px solid #000000)] [r=0 c=0 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 80x18
-                text run at (2,2) width 80: "Table Cell 1"
-            LayoutTableCell {TD} at (88,2) size 84x22 [border: (1px solid #000000)] [r=0 c=1 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 80x18
-                text run at (2,2) width 80: "Table Cell 2"
-      LayoutTable {TABLE} at (1,550.88) size 342x48 [border: (1px solid #000000)]
-        LayoutBlockFlow {CAPTION} at (0,0) size 292x20 [border: (1px solid #000000)]
-          LayoutText {#text} at (135,1) size 22x18
-            text run at (135,1) width 22: "TB"
-        LayoutTableSection {TBODY} at (1,21) size 340x26 [border: (1px solid #000000)]
-          LayoutTableRow {TR} at (0,2) size 340x22 [border: (1px solid #000000)]
-            LayoutTableCell {TD} at (2,2) size 167x22 [border: (1px solid #000000)] [r=0 c=0 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 163x18
-                text run at (2,2) width 163: "Table Cell 1 Table Cell 1"
-            LayoutTableCell {TD} at (171,2) size 167x22 [border: (1px solid #000000)] [r=0 c=1 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 163x18
-                text run at (2,2) width 163: "Table Cell 2 Table Cell 2"
+        LayoutText {#text} at (1,1) size 304x28
+          text run at (1,1) width 304: "Test 2 - \"margin-right: 50px\""
+      LayoutTable {TABLE} at (1,502.88) size 172x48 [border: (1px solid #000000)]
+        LayoutBlockFlow {CAPTION} at (0,0) size 122x20 [border: (1px solid #000000)]
+          LayoutText {#text} at (50,1) size 22x18
+            text run at (50,1) width 22: "TA"
+        LayoutTableSection {TBODY} at (1,21) size 170x26 [border: (1px solid #000000)]
+          LayoutTableRow {TR} at (0,2) size 170x22 [border: (1px solid #000000)]
+            LayoutTableCell {TD} at (2,2) size 82x22 [border: (1px solid #000000)] [r=0 c=0 rs=1 cs=1]
+              LayoutText {#text} at (2,2) size 78x18
+                text run at (2,2) width 78: "Table Cell 1"
+            LayoutTableCell {TD} at (86,2) size 82x22 [border: (1px solid #000000)] [r=0 c=1 rs=1 cs=1]
+              LayoutText {#text} at (2,2) size 78x18
+                text run at (2,2) width 78: "Table Cell 2"
+      LayoutTable {TABLE} at (1,550.88) size 336x48 [border: (1px solid #000000)]
+        LayoutBlockFlow {CAPTION} at (0,0) size 286x20 [border: (1px solid #000000)]
+          LayoutText {#text} at (132,1) size 22x18
+            text run at (132,1) width 22: "TB"
+        LayoutTableSection {TBODY} at (1,21) size 334x26 [border: (1px solid #000000)]
+          LayoutTableRow {TR} at (0,2) size 334x22 [border: (1px solid #000000)]
+            LayoutTableCell {TD} at (2,2) size 164x22 [border: (1px solid #000000)] [r=0 c=0 rs=1 cs=1]
+              LayoutText {#text} at (2,2) size 160x18
+                text run at (2,2) width 160: "Table Cell 1 Table Cell 1"
+            LayoutTableCell {TD} at (168,2) size 164x22 [border: (1px solid #000000)] [r=0 c=1 rs=1 cs=1]
+              LayoutText {#text} at (2,2) size 160x18
+                text run at (2,2) width 160: "Table Cell 2 Table Cell 2"
       LayoutBlockFlow {H2} at (1,618.78) size 765x30 [border: (1px solid #000000)]
-        LayoutText {#text} at (1,1) size 247x28
-          text run at (1,1) width 247: "Test 3 - \"margin: 50px\""
-      LayoutTable {TABLE} at (1,668.69) size 176x148 [border: (1px solid #000000)]
-        LayoutBlockFlow {CAPTION} at (50,50) size 76x20 [border: (1px solid #000000)]
-          LayoutText {#text} at (27,1) size 22x18
-            text run at (27,1) width 22: "TA"
-        LayoutTableSection {TBODY} at (1,121) size 174x26 [border: (1px solid #000000)]
-          LayoutTableRow {TR} at (0,2) size 174x22 [border: (1px solid #000000)]
-            LayoutTableCell {TD} at (2,2) size 84x22 [border: (1px solid #000000)] [r=0 c=0 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 80x18
-                text run at (2,2) width 80: "Table Cell 1"
-            LayoutTableCell {TD} at (88,2) size 84x22 [border: (1px solid #000000)] [r=0 c=1 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 80x18
-                text run at (2,2) width 80: "Table Cell 2"
-      LayoutTable {TABLE} at (1,816.69) size 342x148 [border: (1px solid #000000)]
-        LayoutBlockFlow {CAPTION} at (50,50) size 242x20 [border: (1px solid #000000)]
-          LayoutText {#text} at (110,1) size 22x18
-            text run at (110,1) width 22: "TB"
-        LayoutTableSection {TBODY} at (1,121) size 340x26 [border: (1px solid #000000)]
-          LayoutTableRow {TR} at (0,2) size 340x22 [border: (1px solid #000000)]
-            LayoutTableCell {TD} at (2,2) size 167x22 [border: (1px solid #000000)] [r=0 c=0 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 163x18
-                text run at (2,2) width 163: "Table Cell 1 Table Cell 1"
-            LayoutTableCell {TD} at (171,2) size 167x22 [border: (1px solid #000000)] [r=0 c=1 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 163x18
-                text run at (2,2) width 163: "Table Cell 2 Table Cell 2"
-      LayoutTable {TABLE} at (1,964.69) size 508x148 [border: (1px solid #000000)]
-        LayoutBlockFlow {CAPTION} at (50,50) size 408x20 [border: (1px solid #000000)]
-          LayoutText {#text} at (193,1) size 22x18
-            text run at (193,1) width 22: "TC"
-        LayoutTableSection {TBODY} at (1,121) size 506x26 [border: (1px solid #000000)]
-          LayoutTableRow {TR} at (0,2) size 506x22 [border: (1px solid #000000)]
-            LayoutTableCell {TD} at (2,2) size 250x22 [border: (1px solid #000000)] [r=0 c=0 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 246x18
-                text run at (2,2) width 246: "Table Cell 1 Table Cell 1 Table Cell 1"
-            LayoutTableCell {TD} at (254,2) size 250x22 [border: (1px solid #000000)] [r=0 c=1 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 246x18
-                text run at (2,2) width 246: "Table Cell 2 Table Cell 2 Table Cell 2"
+        LayoutText {#text} at (1,1) size 245x28
+          text run at (1,1) width 245: "Test 3 - \"margin: 50px\""
+      LayoutTable {TABLE} at (1,668.69) size 172x148 [border: (1px solid #000000)]
+        LayoutBlockFlow {CAPTION} at (50,50) size 72x20 [border: (1px solid #000000)]
+          LayoutText {#text} at (25,1) size 22x18
+            text run at (25,1) width 22: "TA"
+        LayoutTableSection {TBODY} at (1,121) size 170x26 [border: (1px solid #000000)]
+          LayoutTableRow {TR} at (0,2) size 170x22 [border: (1px solid #000000)]
+            LayoutTableCell {TD} at (2,2) size 82x22 [border: (1px solid #000000)] [r=0 c=0 rs=1 cs=1]
+              LayoutText {#text} at (2,2) size 78x18
+                text run at (2,2) width 78: "Table Cell 1"
+            LayoutTableCell {TD} at (86,2) size 82x22 [border: (1px solid #000000)] [r=0 c=1 rs=1 cs=1]
+              LayoutText {#text} at (2,2) size 78x18
+                text run at (2,2) width 78: "Table Cell 2"
+      LayoutTable {TABLE} at (1,816.69) size 336x148 [border: (1px solid #000000)]
+        LayoutBlockFlow {CAPTION} at (50,50) size 236x20 [border: (1px solid #000000)]
+          LayoutText {#text} at (107,1) size 22x18
+            text run at (107,1) width 22: "TB"
+        LayoutTableSection {TBODY} at (1,121) size 334x26 [border: (1px solid #000000)]
+          LayoutTableRow {TR} at (0,2) size 334x22 [border: (1px solid #000000)]
+            LayoutTableCell {TD} at (2,2) size 164x22 [border: (1px solid #000000)] [r=0 c=0 rs=1 cs=1]
+              LayoutText {#text} at (2,2) size 160x18
+                text run at (2,2) width 160: "Table Cell 1 Table Cell 1"
+            LayoutTableCell {TD} at (168,2) size 164x22 [border: (1px solid #000000)] [r=0 c=1 rs=1 cs=1]
+              LayoutText {#text} at (2,2) size 160x18
+                text run at (2,2) width 160: "Table Cell 2 Table Cell 2"
+      LayoutTable {TABLE} at (1,964.69) size 500x148 [border: (1px solid #000000)]
+        LayoutBlockFlow {CAPTION} at (50,50) size 400x20 [border: (1px solid #000000)]
+          LayoutText {#text} at (189,1) size 22x18
+            text run at (189,1) width 22: "TC"
+        LayoutTableSection {TBODY} at (1,121) size 498x26 [border: (1px solid #000000)]
+          LayoutTableRow {TR} at (0,2) size 498x22 [border: (1px solid #000000)]
+            LayoutTableCell {TD} at (2,2) size 246x22 [border: (1px solid #000000)] [r=0 c=0 rs=1 cs=1]
+              LayoutText {#text} at (2,2) size 242x18
+                text run at (2,2) width 242: "Table Cell 1 Table Cell 1 Table Cell 1"
+            LayoutTableCell {TD} at (250,2) size 246x22 [border: (1px solid #000000)] [r=0 c=1 rs=1 cs=1]
+              LayoutText {#text} at (2,2) size 242x18
+                text run at (2,2) width 242: "Table Cell 2 Table Cell 2 Table Cell 2"
       LayoutBlockFlow {H2} at (1,1132.59) size 765x30 [border: (1px solid #000000)]
-        LayoutText {#text} at (1,1) size 275x28
-          text run at (1,1) width 275: "Test 4 - \"margin-left: 5%\""
-      LayoutTable {TABLE} at (1,1182.50) size 176x48 [border: (1px solid #000000)]
-        LayoutBlockFlow {CAPTION} at (8.80,0) size 167.20x20 [border: (1px solid #000000)]
-          LayoutText {#text} at (72,1) size 23x18
-            text run at (72,1) width 23: "TA"
-        LayoutTableSection {TBODY} at (1,21) size 174x26 [border: (1px solid #000000)]
-          LayoutTableRow {TR} at (0,2) size 174x22 [border: (1px solid #000000)]
-            LayoutTableCell {TD} at (2,2) size 84x22 [border: (1px solid #000000)] [r=0 c=0 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 80x18
-                text run at (2,2) width 80: "Table Cell 1"
-            LayoutTableCell {TD} at (88,2) size 84x22 [border: (1px solid #000000)] [r=0 c=1 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 80x18
-                text run at (2,2) width 80: "Table Cell 2"
-      LayoutTable {TABLE} at (1,1230.50) size 342x48 [border: (1px solid #000000)]
-        LayoutBlockFlow {CAPTION} at (17.09,0) size 324.91x20 [border: (1px solid #000000)]
-          LayoutText {#text} at (152,1) size 21x18
-            text run at (152,1) width 21: "TB"
-        LayoutTableSection {TBODY} at (1,21) size 340x26 [border: (1px solid #000000)]
-          LayoutTableRow {TR} at (0,2) size 340x22 [border: (1px solid #000000)]
-            LayoutTableCell {TD} at (2,2) size 167x22 [border: (1px solid #000000)] [r=0 c=0 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 163x18
-                text run at (2,2) width 163: "Table Cell 1 Table Cell 1"
-            LayoutTableCell {TD} at (171,2) size 167x22 [border: (1px solid #000000)] [r=0 c=1 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 163x18
-                text run at (2,2) width 163: "Table Cell 2 Table Cell 2"
+        LayoutText {#text} at (1,1) size 273x28
+          text run at (1,1) width 273: "Test 4 - \"margin-left: 5%\""
+      LayoutTable {TABLE} at (1,1182.50) size 172x48 [border: (1px solid #000000)]
+        LayoutBlockFlow {CAPTION} at (8.59,0) size 163.41x20 [border: (1px solid #000000)]
+          LayoutText {#text} at (71,1) size 21x18
+            text run at (71,1) width 21: "TA"
+        LayoutTableSection {TBODY} at (1,21) size 170x26 [border: (1px solid #000000)]
+          LayoutTableRow {TR} at (0,2) size 170x22 [border: (1px solid #000000)]
+            LayoutTableCell {TD} at (2,2) size 82x22 [border: (1px solid #000000)] [r=0 c=0 rs=1 cs=1]
+              LayoutText {#text} at (2,2) size 78x18
+                text run at (2,2) width 78: "Table Cell 1"
+            LayoutTableCell {TD} at (86,2) size 82x22 [border: (1px solid #000000)] [r=0 c=1 rs=1 cs=1]
+              LayoutText {#text} at (2,2) size 78x18
+                text run at (2,2) width 78: "Table Cell 2"
+      LayoutTable {TABLE} at (1,1230.50) size 336x48 [border: (1px solid #000000)]
+        LayoutBlockFlow {CAPTION} at (16.80,0) size 319.20x20 [border: (1px solid #000000)]
+          LayoutText {#text} at (149,1) size 21x18
+            text run at (149,1) width 21: "TB"
+        LayoutTableSection {TBODY} at (1,21) size 334x26 [border: (1px solid #000000)]
+          LayoutTableRow {TR} at (0,2) size 334x22 [border: (1px solid #000000)]
+            LayoutTableCell {TD} at (2,2) size 164x22 [border: (1px solid #000000)] [r=0 c=0 rs=1 cs=1]
+              LayoutText {#text} at (2,2) size 160x18
+                text run at (2,2) width 160: "Table Cell 1 Table Cell 1"
+            LayoutTableCell {TD} at (168,2) size 164x22 [border: (1px solid #000000)] [r=0 c=1 rs=1 cs=1]
+              LayoutText {#text} at (2,2) size 160x18
+                text run at (2,2) width 160: "Table Cell 2 Table Cell 2"
       LayoutBlockFlow {H2} at (1,1298.41) size 765x30 [border: (1px solid #000000)]
-        LayoutText {#text} at (1,1) size 292x28
-          text run at (1,1) width 292: "Test 5 - \"margin-right: 5%\""
-      LayoutTable {TABLE} at (1,1348.31) size 176x48 [border: (1px solid #000000)]
-        LayoutBlockFlow {CAPTION} at (0,0) size 167.20x20 [border: (1px solid #000000)]
-          LayoutText {#text} at (72,1) size 23x18
-            text run at (72,1) width 23: "TA"
-        LayoutTableSection {TBODY} at (1,21) size 174x26 [border: (1px solid #000000)]
-          LayoutTableRow {TR} at (0,2) size 174x22 [border: (1px solid #000000)]
-            LayoutTableCell {TD} at (2,2) size 84x22 [border: (1px solid #000000)] [r=0 c=0 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 80x18
-                text run at (2,2) width 80: "Table Cell 1"
-            LayoutTableCell {TD} at (88,2) size 84x22 [border: (1px solid #000000)] [r=0 c=1 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 80x18
-                text run at (2,2) width 80: "Table Cell 2"
-      LayoutTable {TABLE} at (1,1396.31) size 342x48 [border: (1px solid #000000)]
-        LayoutBlockFlow {CAPTION} at (0,0) size 324.91x20 [border: (1px solid #000000)]
-          LayoutText {#text} at (152,1) size 21x18
-            text run at (152,1) width 21: "TB"
-        LayoutTableSection {TBODY} at (1,21) size 340x26 [border: (1px solid #000000)]
-          LayoutTableRow {TR} at (0,2) size 340x22 [border: (1px solid #000000)]
-            LayoutTableCell {TD} at (2,2) size 167x22 [border: (1px solid #000000)] [r=0 c=0 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 163x18
-                text run at (2,2) width 163: "Table Cell 1 Table Cell 1"
-            LayoutTableCell {TD} at (171,2) size 167x22 [border: (1px solid #000000)] [r=0 c=1 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 163x18
-                text run at (2,2) width 163: "Table Cell 2 Table Cell 2"
+        LayoutText {#text} at (1,1) size 290x28
+          text run at (1,1) width 290: "Test 5 - \"margin-right: 5%\""
+      LayoutTable {TABLE} at (1,1348.31) size 172x48 [border: (1px solid #000000)]
+        LayoutBlockFlow {CAPTION} at (0,0) size 163.41x20 [border: (1px solid #000000)]
+          LayoutText {#text} at (71,1) size 21x18
+            text run at (71,1) width 21: "TA"
+        LayoutTableSection {TBODY} at (1,21) size 170x26 [border: (1px solid #000000)]
+          LayoutTableRow {TR} at (0,2) size 170x22 [border: (1px solid #000000)]
+            LayoutTableCell {TD} at (2,2) size 82x22 [border: (1px solid #000000)] [r=0 c=0 rs=1 cs=1]
+              LayoutText {#text} at (2,2) size 78x18
+                text run at (2,2) width 78: "Table Cell 1"
+            LayoutTableCell {TD} at (86,2) size 82x22 [border: (1px solid #000000)] [r=0 c=1 rs=1 cs=1]
+              LayoutText {#text} at (2,2) size 78x18
+                text run at (2,2) width 78: "Table Cell 2"
+      LayoutTable {TABLE} at (1,1396.31) size 336x48 [border: (1px solid #000000)]
+        LayoutBlockFlow {CAPTION} at (0,0) size 319.20x20 [border: (1px solid #000000)]
+          LayoutText {#text} at (149,1) size 21x18
+            text run at (149,1) width 21: "TB"
+        LayoutTableSection {TBODY} at (1,21) size 334x26 [border: (1px solid #000000)]
+          LayoutTableRow {TR} at (0,2) size 334x22 [border: (1px solid #000000)]
+            LayoutTableCell {TD} at (2,2) size 164x22 [border: (1px solid #000000)] [r=0 c=0 rs=1 cs=1]
+              LayoutText {#text} at (2,2) size 160x18
+                text run at (2,2) width 160: "Table Cell 1 Table Cell 1"
+            LayoutTableCell {TD} at (168,2) size 164x22 [border: (1px solid #000000)] [r=0 c=1 rs=1 cs=1]
+              LayoutText {#text} at (2,2) size 160x18
+                text run at (2,2) width 160: "Table Cell 2 Table Cell 2"
       LayoutBlockFlow {H2} at (1,1464.22) size 765x30 [border: (1px solid #000000)]
-        LayoutText {#text} at (1,1) size 234x28
-          text run at (1,1) width 234: "Test 6 - \"margin: 5%\""
-      LayoutTable {TABLE} at (1,1514.13) size 176x65.59 [border: (1px solid #000000)]
-        LayoutBlockFlow {CAPTION} at (8.80,8.80) size 158.41x20 [border: (1px solid #000000)]
-          LayoutText {#text} at (68,1) size 22x18
-            text run at (68,1) width 22: "TA"
-        LayoutTableSection {TBODY} at (1,38.59) size 174x26 [border: (1px solid #000000)]
-          LayoutTableRow {TR} at (0,2) size 174x22 [border: (1px solid #000000)]
-            LayoutTableCell {TD} at (2,2) size 84x22 [border: (1px solid #000000)] [r=0 c=0 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 80x18
-                text run at (2,2) width 80: "Table Cell 1"
-            LayoutTableCell {TD} at (88,2) size 84x22 [border: (1px solid #000000)] [r=0 c=1 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 80x18
-                text run at (2,2) width 80: "Table Cell 2"
-      LayoutTable {TABLE} at (1,1579.72) size 342x82.19 [border: (1px solid #000000)]
-        LayoutBlockFlow {CAPTION} at (17.09,17.09) size 307.81x20 [border: (1px solid #000000)]
-          LayoutText {#text} at (143,1) size 22x18
-            text run at (143,1) width 22: "TB"
-        LayoutTableSection {TBODY} at (1,55.19) size 340x26 [border: (1px solid #000000)]
-          LayoutTableRow {TR} at (0,2) size 340x22 [border: (1px solid #000000)]
-            LayoutTableCell {TD} at (2,2) size 167x22 [border: (1px solid #000000)] [r=0 c=0 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 163x18
-                text run at (2,2) width 163: "Table Cell 1 Table Cell 1"
-            LayoutTableCell {TD} at (171,2) size 167x22 [border: (1px solid #000000)] [r=0 c=1 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 163x18
-                text run at (2,2) width 163: "Table Cell 2 Table Cell 2"
-      LayoutTable {TABLE} at (1,1661.91) size 508x98.78 [border: (1px solid #000000)]
-        LayoutBlockFlow {CAPTION} at (25.39,25.39) size 457.22x20 [border: (1px solid #000000)]
-          LayoutText {#text} at (218,1) size 21x18
-            text run at (218,1) width 21: "TB"
-        LayoutTableSection {TBODY} at (1,71.78) size 506x26 [border: (1px solid #000000)]
-          LayoutTableRow {TR} at (0,2) size 506x22 [border: (1px solid #000000)]
-            LayoutTableCell {TD} at (2,2) size 250x22 [border: (1px solid #000000)] [r=0 c=0 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 246x18
-                text run at (2,2) width 246: "Table Cell 1 Table Cell 1 Table Cell 1"
-            LayoutTableCell {TD} at (254,2) size 250x22 [border: (1px solid #000000)] [r=0 c=1 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 246x18
-                text run at (2,2) width 246: "Table Cell 2 Table Cell 2 Table Cell 2"
+        LayoutText {#text} at (1,1) size 232x28
+          text run at (1,1) width 232: "Test 6 - \"margin: 5%\""
+      LayoutTable {TABLE} at (1,1514.13) size 172x65.19 [border: (1px solid #000000)]
+        LayoutBlockFlow {CAPTION} at (8.59,8.59) size 154.81x20 [border: (1px solid #000000)]
+          LayoutText {#text} at (67,1) size 21x18
+            text run at (67,1) width 21: "TA"
+        LayoutTableSection {TBODY} at (1,38.19) size 170x26 [border: (1px solid #000000)]
+          LayoutTableRow {TR} at (0,2) size 170x22 [border: (1px solid #000000)]
+            LayoutTableCell {TD} at (2,2) size 82x22 [border: (1px solid #000000)] [r=0 c=0 rs=1 cs=1]
+              LayoutText {#text} at (2,2) size 78x18
+                text run at (2,2) width 78: "Table Cell 1"
+            LayoutTableCell {TD} at (86,2) size 82x22 [border: (1px solid #000000)] [r=0 c=1 rs=1 cs=1]
+              LayoutText {#text} at (2,2) size 78x18
+                text run at (2,2) width 78: "Table Cell 2"
+      LayoutTable {TABLE} at (1,1579.31) size 336x81.59 [border: (1px solid #000000)]
+        LayoutBlockFlow {CAPTION} at (16.80,16.80) size 302.41x20 [border: (1px solid #000000)]
+          LayoutText {#text} at (140,1) size 22x18
+            text run at (140,1) width 22: "TB"
+        LayoutTableSection {TBODY} at (1,54.59) size 334x26 [border: (1px solid #000000)]
+          LayoutTableRow {TR} at (0,2) size 334x22 [border: (1px solid #000000)]
+            LayoutTableCell {TD} at (2,2) size 164x22 [border: (1px solid #000000)] [r=0 c=0 rs=1 cs=1]
+              LayoutText {#text} at (2,2) size 160x18
+                text run at (2,2) width 160: "Table Cell 1 Table Cell 1"
+            LayoutTableCell {TD} at (168,2) size 164x22 [border: (1px solid #000000)] [r=0 c=1 rs=1 cs=1]
+              LayoutText {#text} at (2,2) size 160x18
+                text run at (2,2) width 160: "Table Cell 2 Table Cell 2"
+      LayoutTable {TABLE} at (1,1660.91) size 500x98 [border: (1px solid #000000)]
+        LayoutBlockFlow {CAPTION} at (25,25) size 450x20 [border: (1px solid #000000)]
+          LayoutText {#text} at (214,1) size 22x18
+            text run at (214,1) width 22: "TB"
+        LayoutTableSection {TBODY} at (1,71) size 498x26 [border: (1px solid #000000)]
+          LayoutTableRow {TR} at (0,2) size 498x22 [border: (1px solid #000000)]
+            LayoutTableCell {TD} at (2,2) size 246x22 [border: (1px solid #000000)] [r=0 c=0 rs=1 cs=1]
+              LayoutText {#text} at (2,2) size 242x18
+                text run at (2,2) width 242: "Table Cell 1 Table Cell 1 Table Cell 1"
+            LayoutTableCell {TD} at (250,2) size 246x22 [border: (1px solid #000000)] [r=0 c=1 rs=1 cs=1]
+              LayoutText {#text} at (2,2) size 242x18
+                text run at (2,2) width 242: "Table Cell 2 Table Cell 2 Table Cell 2"

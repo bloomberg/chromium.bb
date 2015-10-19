@@ -4,9 +4,9 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow (anonymous) at (0,0) size 784x40
-        LayoutText {#text} at (0,0) size 574x19
-          text run at (0,0) width 574: "This table uses a COLSPAN attribute in the TH tag. The COLSPAN attribute has a value of 6."
-        LayoutBR {BR} at (574,15) size 0x0
+        LayoutText {#text} at (0,0) size 572x19
+          text run at (0,0) width 572: "This table uses a COLSPAN attribute in the TH tag. The COLSPAN attribute has a value of 6."
+        LayoutBR {BR} at (571,15) size 1x0
         LayoutBR {BR} at (0,20) size 0x19
       LayoutTable {TABLE} at (0,40) size 335x56 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 333x54

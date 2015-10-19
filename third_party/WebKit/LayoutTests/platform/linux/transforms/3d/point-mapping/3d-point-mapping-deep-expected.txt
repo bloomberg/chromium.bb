@@ -22,37 +22,37 @@ layer at (227,227) size 300x300
 layer at (268,268) size 300x300
   LayoutBlockFlow {DIV} at (41,41) size 300x300 [border: (1px solid #000000)]
     LayoutBlockFlow {DIV} at (61,61) size 90x90 [bgcolor=#0000FF]
-layer at (30,650) size 337x160 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
-  LayoutBlockFlow (positioned) {DIV} at (30,650) size 337x160
-    LayoutInline {SPAN} at (0,0) size 289x19 [color=#008000]
-      LayoutText {#text} at (0,0) size 289x19
-        text run at (0,0) width 289: "PASS: event at (45, 45) hit box1 at offset (3, 3)"
-    LayoutBR {BR} at (289,15) size 0x0
-    LayoutInline {SPAN} at (0,0) size 289x19 [color=#008000]
-      LayoutText {#text} at (0,20) size 289x19
-        text run at (0,20) width 289: "PASS: event at (54, 44) hit box2 at offset (2, 2)"
-    LayoutBR {BR} at (289,35) size 0x0
-    LayoutInline {SPAN} at (0,0) size 297x19 [color=#008000]
-      LayoutText {#text} at (0,40) size 297x19
-        text run at (0,40) width 297: "PASS: event at (104, 93) hit box3 at offset (2, 2)"
-    LayoutBR {BR} at (297,55) size 0x0
-    LayoutInline {SPAN} at (0,0) size 305x19 [color=#008000]
-      LayoutText {#text} at (0,60) size 305x19
-        text run at (0,60) width 305: "PASS: event at (175, 137) hit box4 at offset (2, 2)"
-    LayoutBR {BR} at (305,75) size 0x0
-    LayoutInline {SPAN} at (0,0) size 321x19 [color=#008000]
-      LayoutText {#text} at (0,80) size 321x19
-        text run at (0,80) width 321: "PASS: event at (167, 528) hit box4 at offset (2, 296)"
-    LayoutBR {BR} at (321,95) size 0x0
-    LayoutInline {SPAN} at (0,0) size 305x19 [color=#008000]
-      LayoutText {#text} at (0,100) size 305x19
-        text run at (0,100) width 305: "PASS: event at (227, 197) hit box5 at offset (2, 2)"
-    LayoutBR {BR} at (305,115) size 0x0
-    LayoutInline {SPAN} at (0,0) size 337x19 [color=#008000]
-      LayoutText {#text} at (0,120) size 337x19
-        text run at (0,120) width 337: "PASS: event at (539, 569) hit box7 at offset (296, 296)"
-    LayoutBR {BR} at (337,135) size 0x0
-    LayoutInline {SPAN} at (0,0) size 321x19 [color=#008000]
-      LayoutText {#text} at (0,140) size 321x19
-        text run at (0,140) width 321: "PASS: event at (431, 441) hit box8 at offset (85, 85)"
-    LayoutBR {BR} at (321,155) size 0x0
+layer at (30,650) size 335x160 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
+  LayoutBlockFlow (positioned) {DIV} at (30,650) size 335.25x160
+    LayoutInline {SPAN} at (0,0) size 288x19 [color=#008000]
+      LayoutText {#text} at (0,0) size 288x19
+        text run at (0,0) width 288: "PASS: event at (45, 45) hit box1 at offset (3, 3)"
+    LayoutBR {BR} at (287,15) size 1x0
+    LayoutInline {SPAN} at (0,0) size 288x19 [color=#008000]
+      LayoutText {#text} at (0,20) size 288x19
+        text run at (0,20) width 288: "PASS: event at (54, 44) hit box2 at offset (2, 2)"
+    LayoutBR {BR} at (287,35) size 1x0
+    LayoutInline {SPAN} at (0,0) size 296x19 [color=#008000]
+      LayoutText {#text} at (0,40) size 296x19
+        text run at (0,40) width 296: "PASS: event at (104, 93) hit box3 at offset (2, 2)"
+    LayoutBR {BR} at (295,55) size 1x0
+    LayoutInline {SPAN} at (0,0) size 304x19 [color=#008000]
+      LayoutText {#text} at (0,60) size 304x19
+        text run at (0,60) width 304: "PASS: event at (175, 137) hit box4 at offset (2, 2)"
+    LayoutBR {BR} at (303,75) size 1x0
+    LayoutInline {SPAN} at (0,0) size 320x19 [color=#008000]
+      LayoutText {#text} at (0,80) size 320x19
+        text run at (0,80) width 320: "PASS: event at (167, 528) hit box4 at offset (2, 296)"
+    LayoutBR {BR} at (319,95) size 1x0
+    LayoutInline {SPAN} at (0,0) size 304x19 [color=#008000]
+      LayoutText {#text} at (0,100) size 304x19
+        text run at (0,100) width 304: "PASS: event at (227, 197) hit box5 at offset (2, 2)"
+    LayoutBR {BR} at (303,115) size 1x0
+    LayoutInline {SPAN} at (0,0) size 336x19 [color=#008000]
+      LayoutText {#text} at (0,120) size 336x19
+        text run at (0,120) width 336: "PASS: event at (539, 569) hit box7 at offset (296, 296)"
+    LayoutBR {BR} at (335,135) size 1x0
+    LayoutInline {SPAN} at (0,0) size 320x19 [color=#008000]
+      LayoutText {#text} at (0,140) size 320x19
+        text run at (0,140) width 320: "PASS: event at (431, 441) hit box8 at offset (85, 85)"
+    LayoutBR {BR} at (319,155) size 1x0

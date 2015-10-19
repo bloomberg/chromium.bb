@@ -4,8 +4,8 @@ layer at (0,0) size 785x1306 backgroundClip at (0,0) size 785x600 clip at (0,0) 
   LayoutBlockFlow {HTML} at (0,0) size 785x1306
     LayoutBlockFlow {BODY} at (8,8) size 769x1290
       LayoutBlockFlow (anonymous) at (0,0) size 769x18
-        LayoutText {#text} at (0,0) size 220x18
-          text run at (0,0) width 220: "fixed table - width on td overriden"
+        LayoutText {#text} at (0,0) size 219x18
+          text run at (0,0) width 219: "fixed table - width on td overriden"
       LayoutTable {TABLE} at (0,18) size 400x56 [border: (10px outset #808080)]
         LayoutTableSection {TBODY} at (10,10) size 380x36
           LayoutTableRow {TR} at (0,3) size 380x30
@@ -18,8 +18,8 @@ layer at (0,0) size 785x1306 backgroundClip at (0,0) size 785x600 clip at (0,0) 
       LayoutBlockFlow {HR} at (0,82) size 402x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow (anonymous) at (0,92) size 769x36
         LayoutBR {BR} at (0,0) size 0x18
-        LayoutText {#text} at (0,18) size 353x18
-          text run at (0,18) width 353: "fixed table - percent cell wins over fix cell (and in IE5)"
+        LayoutText {#text} at (0,18) size 351x18
+          text run at (0,18) width 351: "fixed table - percent cell wins over fix cell (and in IE5)"
       LayoutTable {TABLE} at (0,128) size 500x52 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 498x50
           LayoutTableRow {TR} at (0,2) size 498x22
@@ -38,8 +38,8 @@ layer at (0,0) size 785x1306 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 text run at (2,2) width 28: "auto"
       LayoutBlockFlow (anonymous) at (0,180) size 769x36
         LayoutBR {BR} at (0,0) size 0x18
-        LayoutText {#text} at (0,18) size 353x18
-          text run at (0,18) width 353: "fixed table - percent cell wins over fix cell (and in IE5)"
+        LayoutText {#text} at (0,18) size 351x18
+          text run at (0,18) width 351: "fixed table - percent cell wins over fix cell (and in IE5)"
       LayoutTable {TABLE} at (0,216) size 300x52 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 298x50
           LayoutTableRow {TR} at (0,2) size 298x22
@@ -58,8 +58,8 @@ layer at (0,0) size 785x1306 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 text run at (2,2) width 28: "auto"
       LayoutBlockFlow (anonymous) at (0,268) size 769x36
         LayoutBR {BR} at (0,0) size 0x18
-        LayoutText {#text} at (0,18) size 353x18
-          text run at (0,18) width 353: "fixed table - percent cell wins over fix cell (and in IE5)"
+        LayoutText {#text} at (0,18) size 351x18
+          text run at (0,18) width 351: "fixed table - percent cell wins over fix cell (and in IE5)"
       LayoutTable {TABLE} at (0,304) size 500x52 [border: (1px outset #808080)]
         LayoutTableCol {COLGROUP} at (0,0) size 0x0
           LayoutTableCol {COL} at (0,0) size 0x0
@@ -80,8 +80,8 @@ layer at (0,0) size 785x1306 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 text run at (2,2) width 28: "auto"
       LayoutBlockFlow (anonymous) at (0,356) size 769x36
         LayoutBR {BR} at (0,0) size 0x18
-        LayoutText {#text} at (0,18) size 353x18
-          text run at (0,18) width 353: "fixed table - percent cell wins over fix cell (and in IE5)"
+        LayoutText {#text} at (0,18) size 351x18
+          text run at (0,18) width 351: "fixed table - percent cell wins over fix cell (and in IE5)"
       LayoutTable {TABLE} at (0,392) size 500x52 [border: (1px outset #808080)]
         LayoutTableCol {COLGROUP} at (0,0) size 0x0
           LayoutTableCol {COL} at (0,0) size 0x0
@@ -102,8 +102,8 @@ layer at (0,0) size 785x1306 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 text run at (2,2) width 28: "auto"
       LayoutBlockFlow (anonymous) at (0,444) size 769x36
         LayoutBR {BR} at (0,0) size 0x18
-        LayoutText {#text} at (0,18) size 353x18
-          text run at (0,18) width 353: "fixed table - percent cell wins over fix cell (and in IE5)"
+        LayoutText {#text} at (0,18) size 351x18
+          text run at (0,18) width 351: "fixed table - percent cell wins over fix cell (and in IE5)"
       LayoutTable {TABLE} at (0,480) size 500x52 [border: (1px outset #808080)]
         LayoutTableCol {COLGROUP} at (0,0) size 0x0
           LayoutTableCol {COL} at (0,0) size 0x0
@@ -124,8 +124,8 @@ layer at (0,0) size 785x1306 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 text run at (2,2) width 28: "auto"
       LayoutBlockFlow (anonymous) at (0,532) size 769x36
         LayoutBR {BR} at (0,0) size 0x18
-        LayoutText {#text} at (0,18) size 353x18
-          text run at (0,18) width 353: "fixed table - percent cell wins over fix cell (and in IE5)"
+        LayoutText {#text} at (0,18) size 351x18
+          text run at (0,18) width 351: "fixed table - percent cell wins over fix cell (and in IE5)"
       LayoutTable {TABLE} at (0,568) size 500x52 [border: (1px outset #808080)]
         LayoutTableCol {COLGROUP} at (0,0) size 0x0
           LayoutTableCol {COL} at (0,0) size 0x0
@@ -146,8 +146,8 @@ layer at (0,0) size 785x1306 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 text run at (2,2) width 28: "auto"
       LayoutBlockFlow (anonymous) at (0,620) size 769x36
         LayoutBR {BR} at (0,0) size 0x18
-        LayoutText {#text} at (0,18) size 306x18
-          text run at (0,18) width 306: "fixed table - % wins over fixed even on colspan"
+        LayoutText {#text} at (0,18) size 304x18
+          text run at (0,18) width 304: "fixed table - % wins over fixed even on colspan"
       LayoutTable {TABLE} at (0,656) size 300x52 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 298x50
           LayoutTableRow {TR} at (0,2) size 298x22
@@ -166,8 +166,8 @@ layer at (0,0) size 785x1306 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 text run at (2,2) width 28: "auto"
       LayoutBlockFlow (anonymous) at (0,708) size 769x36
         LayoutBR {BR} at (0,0) size 0x18
-        LayoutText {#text} at (0,18) size 306x18
-          text run at (0,18) width 306: "fixed table - % wins over fixed even on colspan"
+        LayoutText {#text} at (0,18) size 304x18
+          text run at (0,18) width 304: "fixed table - % wins over fixed even on colspan"
       LayoutTable {TABLE} at (0,744) size 300x52 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 298x50
           LayoutTableRow {TR} at (0,2) size 298x22
@@ -206,8 +206,8 @@ layer at (0,0) size 785x1306 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 text run at (2,2) width 28: "auto"
       LayoutBlockFlow (anonymous) at (0,884) size 769x36
         LayoutBR {BR} at (0,0) size 0x18
-        LayoutText {#text} at (0,18) size 333x18
-          text run at (0,18) width 333: "auto table - percent colspan wins over fixed colspan"
+        LayoutText {#text} at (0,18) size 332x18
+          text run at (0,18) width 332: "auto table - percent colspan wins over fixed colspan"
       LayoutTable {TABLE} at (0,920) size 769x76 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 767x74
           LayoutTableRow {TR} at (0,2) size 767x22
@@ -236,8 +236,8 @@ layer at (0,0) size 785x1306 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 text run at (2,2) width 28: "auto"
       LayoutBlockFlow (anonymous) at (0,996) size 769x36
         LayoutBR {BR} at (0,0) size 0x18
-        LayoutText {#text} at (0,18) size 333x18
-          text run at (0,18) width 333: "auto table - percent colspan wins over fixed colspan"
+        LayoutText {#text} at (0,18) size 332x18
+          text run at (0,18) width 332: "auto table - percent colspan wins over fixed colspan"
       LayoutTable {TABLE} at (0,1032) size 769x76 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 767x74
           LayoutTableRow {TR} at (0,2) size 767x22
@@ -266,8 +266,8 @@ layer at (0,0) size 785x1306 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 text run at (2,2) width 28: "auto"
       LayoutBlockFlow (anonymous) at (0,1108) size 769x36
         LayoutBR {BR} at (0,0) size 0x18
-        LayoutText {#text} at (0,18) size 333x18
-          text run at (0,18) width 333: "auto table - percent colspan wins over fixed colspan"
+        LayoutText {#text} at (0,18) size 332x18
+          text run at (0,18) width 332: "auto table - percent colspan wins over fixed colspan"
       LayoutTable {TABLE} at (0,1144) size 769x76 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 767x74
           LayoutTableRow {TR} at (0,2) size 767x22
@@ -296,8 +296,8 @@ layer at (0,0) size 785x1306 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 text run at (2,2) width 28: "auto"
       LayoutBlockFlow (anonymous) at (0,1220) size 769x36
         LayoutBR {BR} at (0,0) size 0x18
-        LayoutText {#text} at (0,18) size 383x18
-          text run at (0,18) width 383: "percent cell/col percentage conflict goes to cell (and in IE5)"
+        LayoutText {#text} at (0,18) size 382x18
+          text run at (0,18) width 382: "percent cell/col percentage conflict goes to cell (and in IE5)"
       LayoutTable {TABLE} at (0,1256) size 500x34 [border: (1px outset #808080)]
         LayoutTableCol {COLGROUP} at (0,0) size 0x0
           LayoutTableCol {COL} at (0,0) size 0x0

@@ -44,11 +44,11 @@ layer at (0,0) size 800x600
             text run at (17,0) width 180: "Item with inside image marker"
       LayoutBlockFlow {OL} at (0,234) size 784x40
         LayoutListItem {LI} at (40,0) size 744x20
-          LayoutListMarker (anonymous) at (-21,0) size 16x19: "1"
+          LayoutListMarker (anonymous) at (-16,0) size 16x19: "1"
           LayoutText {#text} at (0,0) size 148x19
             text run at (0,0) width 148: "Item with outside ordinal"
         LayoutListItem {LI} at (40,20) size 744x20
-          LayoutListMarker (anonymous) at (-21,0) size 16x19: "2"
+          LayoutListMarker (anonymous) at (-16,0) size 16x19: "2"
           LayoutText {#text} at (0,0) size 97x19
             text run at (0,0) width 97: "and another one"
       LayoutBlockFlow {OL} at (0,290) size 784x40

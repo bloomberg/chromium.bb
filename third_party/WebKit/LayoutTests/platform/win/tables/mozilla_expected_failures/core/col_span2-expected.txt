@@ -565,9 +565,9 @@ layer at (0,0) size 785x5451 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 text run at (2,2) width 28: "auto"
       LayoutBlockFlow (anonymous) at (0,2213) size 769x36
         LayoutBR {BR} at (0,0) size 0x17
-        LayoutText {#text} at (0,18) size 161x17
-          text run at (0,18) width 161: "PERCENT COLSPANS "
-        LayoutBR {BR} at (160,32) size 1x0
+        LayoutText {#text} at (0,18) size 160x17
+          text run at (0,18) width 160: "PERCENT COLSPANS "
+        LayoutBR {BR} at (159,32) size 1x0
       LayoutTable {TABLE} at (0,2249) size 500x61 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 498x59
           LayoutTableRow {TR} at (0,5) size 498x22
@@ -1026,11 +1026,11 @@ layer at (0,0) size 785x5451 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 text run at (738,5) width 24: "edit"
           LayoutTableRow {TR} at (0,28) size 767x28
             LayoutTableCell {TD} at (0,28) size 460x28 [bgcolor=#DCDCDC] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=2]
-              LayoutText {#text} at (5,5) size 167x17
-                text run at (5,5) width 167: "Top Stories from Reuters "
+              LayoutText {#text} at (5,5) size 166x17
+                text run at (5,5) width 166: "Top Stories from Reuters "
             LayoutTableCell {TD} at (460,28) size 307x28 [bgcolor=#DCDCDC] [border: (1px inset #808080)] [r=1 c=2 rs=1 cs=1]
-              LayoutText {#text} at (194,5) size 108x17
-                text run at (194,5) width 108: "Jun 11 12:30pm "
+              LayoutText {#text} at (195,5) size 107x17
+                text run at (195,5) width 107: "Jun 11 12:30pm "
       LayoutBlockFlow (anonymous) at (0,4227) size 769x18
         LayoutBR {BR} at (0,0) size 0x17
       LayoutTable {TABLE} at (0,4245) size 200x34 [bgcolor=#FFFF00] [border: (1px outset #808080)]

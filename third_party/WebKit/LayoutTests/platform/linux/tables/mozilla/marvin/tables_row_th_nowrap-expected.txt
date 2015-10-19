@@ -6,9 +6,9 @@ layer at (0,0) size 800x600
       LayoutBlockFlow (anonymous) at (0,0) size 784x40
         LayoutText {#text} at (0,0) size 761x39
           text run at (0,0) width 691: "The table heading (The EggPlant Exchange) should not wrap when window is resized. However, the cell below the "
-          text run at (691,0) width 70: "heading will"
-          text run at (0,20) width 117: "wrap atuomatically."
-        LayoutBR {BR} at (117,35) size 0x0
+          text run at (690,0) width 71: "heading will"
+          text run at (0,20) width 116: "wrap atuomatically."
+        LayoutBR {BR} at (115,35) size 1x0
       LayoutTable {TABLE} at (0,40) size 237x56 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 235x54
           LayoutTableRow {TR} at (0,2) size 235x24

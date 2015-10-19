@@ -4,8 +4,8 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x60
-        LayoutText {#text} at (0,0) size 778x59
-          text run at (0,0) width 778: "This table contains an <applet> that will not load -- you can see the space get allocated and then reflow. Notice that the final table"
+        LayoutText {#text} at (0,0) size 777x59
+          text run at (0,0) width 777: "This table contains an <applet> that will not load -- you can see the space get allocated and then reflow. Notice that the final table"
           text run at (0,20) width 528: "is clipped on the right hand side -- try shrinking the window and notice how the clipping "
           text run at (528,20) width 233: "increases. (I couldn't really simplify this"
           text run at (0,40) width 203: "further without losing some of the "
@@ -31,7 +31,7 @@ layer at (0,0) size 800x600
                       LayoutBlockFlow {P} at (2,30) size 753x40
                         LayoutText {#text} at (0,0) size 738x39
                           text run at (0,0) width 407: "The Porto Elounda Mare is built on the sea front, on a 110,000 m2 "
-                          text run at (407,0) width 331: "plot of land with a 150 meter long private sandy beach."
+                          text run at (406,0) width 332: "plot of land with a 150 meter long private sandy beach."
                           text run at (0,20) width 91: "The view from "
                           text run at (91,20) width 363: "decorated with antique and contemporary furniture and rugs."
                   LayoutTableRow {TR} at (0,76) size 761x58
@@ -65,9 +65,9 @@ layer at (0,0) size 800x600
       LayoutBlockFlow (anonymous) at (0,244) size 784x20
         LayoutBR {BR} at (0,0) size 0x19
       LayoutBlockFlow {P} at (0,280) size 784x20
-        LayoutText {#text} at (0,0) size 518x19
+        LayoutText {#text} at (0,0) size 517x19
           text run at (0,0) width 402: "This table repeats the previous table, but removes the 'bad applet'. "
-          text run at (402,0) width 116: "Table lays out OK."
+          text run at (402,0) width 115: "Table lays out OK."
       LayoutBlockFlow (anonymous) at (0,316) size 784x20
         LayoutBR {BR} at (0,0) size 0x19
       LayoutTable {TABLE} at (0,336) size 773x168 [border: (1px outset #808080)]
@@ -87,7 +87,7 @@ layer at (0,0) size 800x600
                       LayoutBlockFlow {P} at (2,50) size 753x40
                         LayoutText {#text} at (0,0) size 738x39
                           text run at (0,0) width 407: "The Porto Elounda Mare is built on the sea front, on a 110,000 m2 "
-                          text run at (407,0) width 331: "plot of land with a 150 meter long private sandy beach."
+                          text run at (406,0) width 332: "plot of land with a 150 meter long private sandy beach."
                           text run at (0,20) width 91: "The view from "
                           text run at (91,20) width 363: "decorated with antique and contemporary furniture and rugs."
                   LayoutTableRow {TR} at (0,96) size 761x58

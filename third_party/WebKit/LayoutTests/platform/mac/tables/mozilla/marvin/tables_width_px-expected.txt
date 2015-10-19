@@ -4,9 +4,9 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow (anonymous) at (0,0) size 784x36
-        LayoutText {#text} at (0,0) size 776x36
-          text run at (0,0) width 606: "This test case shows how WIDTH can set the width of the table to a fixed size using PIXELS. "
-          text run at (605,0) width 171: "This first table has a width"
+        LayoutText {#text} at (0,0) size 774x36
+          text run at (0,0) width 605: "This test case shows how WIDTH can set the width of the table to a fixed size using PIXELS. "
+          text run at (604,0) width 170: "This first table has a width"
           text run at (0,18) width 88: "of 400 pixels."
       LayoutTable {TABLE} at (0,36) size 400x46
         LayoutTableSection {TBODY} at (0,0) size 400x46

@@ -31,8 +31,8 @@ layer at (0,0) size 785x2444 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 text run at (2,2) width 21: "bar"
       LayoutBlockFlow (anonymous) at (0,144) size 769x36
         LayoutBR {BR} at (0,0) size 0x18
-        LayoutText {#text} at (0,18) size 125x18
-          text run at (0,18) width 125: "table - color, image"
+        LayoutText {#text} at (0,18) size 124x18
+          text run at (0,18) width 124: "table - color, image"
       LayoutTable {TABLE} at (0,180) size 71x36 [bgcolor=#FFA500] [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 69x34
           LayoutTableRow {TR} at (0,6) size 69x22
@@ -70,8 +70,8 @@ layer at (0,0) size 785x2444 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 text run at (2,2) width 21: "bar"
       LayoutBlockFlow (anonymous) at (0,360) size 769x36
         LayoutBR {BR} at (0,0) size 0x18
-        LayoutText {#text} at (0,18) size 117x18
-          text run at (0,18) width 117: "cell - color, image"
+        LayoutText {#text} at (0,18) size 116x18
+          text run at (0,18) width 116: "cell - color, image"
       LayoutTable {TABLE} at (0,396) size 71x36 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 69x34
           LayoutTableRow {TR} at (0,6) size 69x22
@@ -202,8 +202,8 @@ layer at (0,0) size 785x2444 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 text run at (2,2) width 21: "bar"
       LayoutBlockFlow (anonymous) at (0,1064) size 769x36
         LayoutBR {BR} at (0,0) size 0x18
-        LayoutText {#text} at (0,18) size 148x18
-          text run at (0,18) width 148: "table - color, row color"
+        LayoutText {#text} at (0,18) size 147x18
+          text run at (0,18) width 147: "table - color, row color"
       LayoutTable {TABLE} at (0,1100) size 71x64 [bgcolor=#FFA500] [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 69x62
           LayoutTableRow {TR} at (0,6) size 69x22 [bgcolor=#FF0000]
@@ -392,8 +392,8 @@ layer at (0,0) size 785x2444 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 text run at (2,2) width 21: "bar"
       LayoutBlockFlow (anonymous) at (0,2052) size 769x36
         LayoutBR {BR} at (0,0) size 0x18
-        LayoutText {#text} at (0,18) size 239x18
-          text run at (0,18) width 239: "table - color, tbodies color, row color"
+        LayoutText {#text} at (0,18) size 237x18
+          text run at (0,18) width 237: "table - color, tbodies color, row color"
       LayoutTable {TABLE} at (0,2088) size 48x96 [bgcolor=#FFA500] [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (7,7) size 34x56 [bgcolor=#FF0000]
           LayoutTableRow {TR} at (0,4) size 34x22 [bgcolor=#FFFF00]

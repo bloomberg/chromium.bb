@@ -4,8 +4,8 @@ layer at (0,0) size 800x132
   LayoutBlockFlow {HTML} at (0,0) size 800x132
     LayoutBlockFlow {BODY} at (8,16) size 784x108
       LayoutBlockFlow {P} at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 568x18
-          text run at (0,0) width 568: "To PASS this test case the text of the button label should not be selected in the selection."
+        LayoutText {#text} at (0,0) size 566x18
+          text run at (0,0) width 566: "To PASS this test case the text of the button label should not be selected in the selection."
       LayoutBlockFlow {DIV} at (0,34) size 784x74
         LayoutBlockFlow (anonymous) at (0,0) size 784x37
           LayoutText {#text} at (0,0) size 50x18

@@ -159,8 +159,8 @@ layer at (0,0) size 785x2500 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 text run at (2,142) width 78: "bunch of text"
       LayoutBlockFlow (anonymous) at (0,1760) size 769x40
         LayoutBR {BR} at (0,0) size 0x19
-        LayoutText {#text} at (0,20) size 499x19
-          text run at (0,20) width 499: "Fixed width table with colspan=2 in 1st row, 2nd row containing 100px image, text"
+        LayoutText {#text} at (0,20) size 498x19
+          text run at (0,20) width 498: "Fixed width table with colspan=2 in 1st row, 2nd row containing 100px image, text"
       LayoutTable {TABLE} at (0,1800) size 500x136 [bgcolor=#FFA500] [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 498x134
           LayoutTableRow {TR} at (0,2) size 498x24
@@ -176,8 +176,8 @@ layer at (0,0) size 785x2500 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 text run at (2,22) width 30: "there"
       LayoutBlockFlow (anonymous) at (0,1936) size 769x40
         LayoutBR {BR} at (0,0) size 0x19
-        LayoutText {#text} at (0,20) size 495x19
-          text run at (0,20) width 495: "Auto width table with colspan=2 in 1st row, 2nd row containing 100px image, text"
+        LayoutText {#text} at (0,20) size 494x19
+          text run at (0,20) width 494: "Auto width table with colspan=2 in 1st row, 2nd row containing 100px image, text"
       LayoutTable {TABLE} at (0,1976) size 520x136 [bgcolor=#FFA500] [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 518x134
           LayoutTableRow {TR} at (0,2) size 518x24
@@ -192,8 +192,8 @@ layer at (0,0) size 785x2500 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 text run at (2,2) width 404: "there there there there there there there there there there there there"
       LayoutBlockFlow (anonymous) at (0,2112) size 769x40
         LayoutBR {BR} at (0,0) size 0x19
-        LayoutText {#text} at (0,20) size 540x19
-          text run at (0,20) width 540: "Fixed width table with colspan=2 in 1st row, 2nd row containing 100px image, 100px cell"
+        LayoutText {#text} at (0,20) size 539x19
+          text run at (0,20) width 539: "Fixed width table with colspan=2 in 1st row, 2nd row containing 100px image, 100px cell"
       LayoutTable {TABLE} at (0,2152) size 500x136 [bgcolor=#FFA500] [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 498x134
           LayoutTableRow {TR} at (0,2) size 498x24
@@ -211,8 +211,8 @@ layer at (0,0) size 785x2500 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 text run at (2,62) width 98: "there there there"
       LayoutBlockFlow (anonymous) at (0,2288) size 769x40
         LayoutBR {BR} at (0,0) size 0x19
-        LayoutText {#text} at (0,20) size 536x19
-          text run at (0,20) width 536: "Auto width table with colspan=2 in 1st row, 2nd row containing 100px image, 100px cell"
+        LayoutText {#text} at (0,20) size 535x19
+          text run at (0,20) width 535: "Auto width table with colspan=2 in 1st row, 2nd row containing 100px image, 100px cell"
       LayoutTable {TABLE} at (0,2328) size 358x136 [bgcolor=#FFA500] [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 356x134
           LayoutTableRow {TR} at (0,2) size 356x24

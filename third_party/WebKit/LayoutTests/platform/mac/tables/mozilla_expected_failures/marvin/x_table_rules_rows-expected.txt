@@ -4,9 +4,9 @@ layer at (0,0) size 800x143
   LayoutBlockFlow {html} at (0,0) size 800x143
     LayoutBlockFlow {body} at (8,16) size 784x119
       LayoutBlockFlow {p} at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 479x18
+        LayoutText {#text} at (0,0) size 478x18
           text run at (0,0) width 400: "There should be rules between all rows (and only rows) in the "
-          text run at (399,0) width 80: "table below."
+          text run at (399,0) width 79: "table below."
       LayoutTable {table} at (0,34) size 179x85 [border: none]
         LayoutTableCol {colgroup} at (0,0) size 0x0
           LayoutTableCol {col} at (0,0) size 0x0

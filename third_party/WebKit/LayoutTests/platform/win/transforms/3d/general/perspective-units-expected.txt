@@ -4,8 +4,8 @@ layer at (0,0) size 800x578
   LayoutBlockFlow {HTML} at (0,0) size 800x578
     LayoutBlockFlow {BODY} at (8,16) size 784x554
       LayoutBlockFlow {P} at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 515x17
-          text run at (0,0) width 515: "-webkit-perspective should take units. All four should look qualitatively similar."
+        LayoutText {#text} at (0,0) size 514x17
+          text run at (0,0) width 514: "-webkit-perspective should take units. All four should look qualitatively similar."
       LayoutBlockFlow (anonymous) at (0,34) size 784x520
         LayoutText {#text} at (242,158) size 4x17
           text run at (242,158) width 4: " "

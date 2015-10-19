@@ -4,9 +4,9 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x54
-        LayoutText {#text} at (0,0) size 755x53
+        LayoutText {#text} at (0,0) size 754x53
           text run at (0,0) width 699: "In this test, the TBODY section of the table contains numbers with decimals. The test uses the attribute/value"
-          text run at (0,18) width 755: "ALIGN=char without the additional CHAR attribute to specify a particular character. Therefore, ALIGN=char should"
+          text run at (0,18) width 754: "ALIGN=char without the additional CHAR attribute to specify a particular character. Therefore, ALIGN=char should"
           text run at (0,36) width 404: "cause the numbers to align to the default value (decimal point)."
       LayoutTable {TABLE} at (0,70) size 532x100 [border: (1px outset #808080)]
         LayoutTableSection {THEAD} at (1,1) size 530x26

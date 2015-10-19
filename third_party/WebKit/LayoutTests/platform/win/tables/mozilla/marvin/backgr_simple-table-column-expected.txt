@@ -61,8 +61,8 @@ layer at (0,0) size 785x1379 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           LayoutText {#text} at (0,0) size 0x0
       LayoutTable {TABLE} at (0,393.78) size 618x471 [color=#FFFFFF] [border: (1px dotted #FFFFFF)]
         LayoutBlockFlow {CAPTION} at (0,0) size 618x27
-          LayoutText {#text} at (142,0) size 334x27
-            text run at (142,0) width 334: "With 'border-collapse: separate'"
+          LayoutText {#text} at (141,0) size 336x27
+            text run at (141,0) width 336: "With 'border-collapse: separate'"
         LayoutTableCol {COLGROUP} at (0,0) size 0x0
           LayoutTableCol {COL} at (0,0) size 0x0 [bgcolor=#000000]
           LayoutTableCol {COL} at (0,0) size 0x0 [bgcolor=#000000]
@@ -120,8 +120,8 @@ layer at (0,0) size 785x1379 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 text run at (2,2) width 48: "TD L"
       LayoutTable {TABLE} at (0,864.78) size 578x437 [color=#FFFFFF] [border: (6px dotted #FFFFFF)]
         LayoutBlockFlow {CAPTION} at (0,0) size 578x27
-          LayoutText {#text} at (124,0) size 330x27
-            text run at (124,0) width 330: "With 'border-collapse: collapse'"
+          LayoutText {#text} at (123,0) size 332x27
+            text run at (123,0) width 332: "With 'border-collapse: collapse'"
         LayoutTableCol {COLGROUP} at (0,0) size 0x0
           LayoutTableCol {COL} at (0,0) size 0x0 [bgcolor=#000000]
           LayoutTableCol {COL} at (0,0) size 0x0 [bgcolor=#000000]

@@ -46,8 +46,8 @@ layer at (0,0) size 800x600
                 LayoutText {#text} at (2,1) size 28x17
                   text run at (2,1) width 28: "4am"
               LayoutTableCell {TD} at (66,0) size 40x20 [border: none none none (1px solid #808080)] [r=0 c=2 rs=1 cs=1]
-                LayoutText {#text} at (2,1) size 37x17
-                  text run at (2,1) width 37: "11pm"
+                LayoutText {#text} at (2,1) size 36x17
+                  text run at (2,1) width 36: "11pm"
         LayoutBlockFlow {P} at (0,96) size 784x44
           LayoutButton {BUTTON} at (263,0) size 79x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
             LayoutBlockFlow (anonymous) at (8,3) size 63x16
@@ -65,19 +65,19 @@ layer at (0,0) size 800x600
                 text run at (0,0) width 19: "All "
                 text run at (19,0) width 43: "borders"
           LayoutBR {BR} at (521,16) size 0x0
-          LayoutButton {BUTTON} at (227,22) size 107x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
+          LayoutButton {BUTTON} at (227.73,22) size 107x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
             LayoutBlockFlow (anonymous) at (8,3) size 91x16
               LayoutText {#text} at (0,0) size 91x16
                 text run at (0,0) width 48: "Column "
                 text run at (48,0) width 43: "borders"
-          LayoutButton {BUTTON} at (334,22) size 105x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
+          LayoutButton {BUTTON} at (334.73,22) size 105x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
             LayoutBlockFlow (anonymous) at (8,3) size 89x16
               LayoutText {#text} at (0,0) size 89x16
                 text run at (0,0) width 46: "Groups "
                 text run at (46,0) width 43: "borders"
-          LayoutButton {BUTTON} at (439,22) size 118x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
-            LayoutBlockFlow (anonymous) at (8,3) size 102x16
-              LayoutText {#text} at (0,0) size 102x16
-                text run at (0,0) width 35: "Table "
-                text run at (35,0) width 67: "row borders"
+          LayoutButton {BUTTON} at (439.73,22) size 116.53x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
+            LayoutBlockFlow (anonymous) at (8,3) size 100.53x16
+              LayoutText {#text} at (0,0) size 101x16
+                text run at (0,0) width 34: "Table "
+                text run at (33,0) width 68: "row borders"
           LayoutText {#text} at (0,0) size 0x0

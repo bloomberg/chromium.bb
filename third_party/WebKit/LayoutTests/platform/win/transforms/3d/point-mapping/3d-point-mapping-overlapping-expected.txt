@@ -8,24 +8,24 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {P} at (1,359) size 798x18
         LayoutText {#text} at (0,0) size 615x17
           text run at (0,0) width 615: "The green overlay is translated in Z by 100px, so should hit test in front relative to the blue box."
-layer at (30,400) size 351x72
-  LayoutBlockFlow (positioned) {DIV} at (30,400) size 351.05x72
-    LayoutInline {SPAN} at (0,0) size 328x17 [color=#008000]
-      LayoutText {#text} at (0,0) size 328x17
-        text run at (0,0) width 328: "PASS: event at (285, 50) hit box2 at offset (198, 2)"
-    LayoutBR {BR} at (327,14) size 1x0
-    LayoutInline {SPAN} at (0,0) size 328x17 [color=#008000]
-      LayoutText {#text} at (0,18) size 328x17
-        text run at (0,18) width 328: "PASS: event at (174, 108) hit box3 at offset (50, 2)"
-    LayoutBR {BR} at (327,32) size 1x0
-    LayoutInline {SPAN} at (0,0) size 336x17 [color=#008000]
-      LayoutText {#text} at (0,36) size 336x17
-        text run at (0,36) width 336: "PASS: event at (61, 50) hit overlay at offset (39, 28)"
-    LayoutBR {BR} at (335,50) size 1x0
-    LayoutInline {SPAN} at (0,0) size 352x17 [color=#008000]
-      LayoutText {#text} at (0,54) size 352x17
-        text run at (0,54) width 352: "PASS: event at (119, 108) hit overlay at offset (97, 86)"
-    LayoutBR {BR} at (351,68) size 1x0
+layer at (30,400) size 349x72
+  LayoutBlockFlow (positioned) {DIV} at (30,400) size 348.70x72
+    LayoutInline {SPAN} at (0,0) size 326x17 [color=#008000]
+      LayoutText {#text} at (0,0) size 326x17
+        text run at (0,0) width 326: "PASS: event at (285, 50) hit box2 at offset (198, 2)"
+    LayoutBR {BR} at (325,14) size 1x0
+    LayoutInline {SPAN} at (0,0) size 326x17 [color=#008000]
+      LayoutText {#text} at (0,18) size 326x17
+        text run at (0,18) width 326: "PASS: event at (174, 108) hit box3 at offset (50, 2)"
+    LayoutBR {BR} at (325,32) size 1x0
+    LayoutInline {SPAN} at (0,0) size 334x17 [color=#008000]
+      LayoutText {#text} at (0,36) size 334x17
+        text run at (0,36) width 334: "PASS: event at (61, 50) hit overlay at offset (39, 28)"
+    LayoutBR {BR} at (333,50) size 1x0
+    LayoutInline {SPAN} at (0,0) size 349x17 [color=#008000]
+      LayoutText {#text} at (0,54) size 349x17
+        text run at (0,54) width 349: "PASS: event at (119, 108) hit overlay at offset (97, 86)"
+    LayoutBR {BR} at (348,68) size 1x0
 layer at (21,21) size 302x302
   LayoutBlockFlow (relative positioned) {DIV} at (20,20) size 302x302 [border: (1px solid #000000)]
 layer at (42,42) size 260x260

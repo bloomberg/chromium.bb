@@ -4,8 +4,8 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x36
-        LayoutText {#text} at (0,0) size 782x36
-          text run at (0,0) width 782: "The TBODY element defines the table body within a table. In this test, the numbers contained in the TBODY cells should"
+        LayoutText {#text} at (0,0) size 781x36
+          text run at (0,0) width 781: "The TBODY element defines the table body within a table. In this test, the numbers contained in the TBODY cells should"
           text run at (0,18) width 172: "align on the decimal point."
       LayoutTable {TABLE} at (0,52) size 532x100 [border: (1px outset #808080)]
         LayoutTableSection {THEAD} at (1,1) size 530x26

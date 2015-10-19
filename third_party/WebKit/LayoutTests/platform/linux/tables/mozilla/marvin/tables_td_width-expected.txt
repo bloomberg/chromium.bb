@@ -11,8 +11,8 @@ layer at (0,0) size 800x600
         LayoutTableSection {TBODY} at (1,1) size 608x54
           LayoutTableRow {TR} at (0,2) size 608x24
             LayoutTableCell {TD} at (2,2) size 604x24 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 238x19
-                text run at (2,2) width 238: "Netscape Communicator Version 4.0.6"
+              LayoutText {#text} at (2,2) size 237x19
+                text run at (2,2) width 237: "Netscape Communicator Version 4.0.6"
           LayoutTableRow {TR} at (0,28) size 608x24
             LayoutTableCell {TD} at (2,28) size 604x24 [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
               LayoutText {#text} at (2,2) size 57x19
@@ -28,7 +28,7 @@ layer at (0,0) size 800x600
             LayoutTableCell {TD} at (2,2) size 204x44 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
               LayoutText {#text} at (2,2) size 151x39
                 text run at (2,2) width 151: "Netscape Communicator"
-                text run at (2,22) width 83: "Version 4.0.6"
+                text run at (2,22) width 82: "Version 4.0.6"
           LayoutTableRow {TR} at (0,48) size 208x24
             LayoutTableCell {TD} at (2,48) size 204x24 [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
               LayoutText {#text} at (2,2) size 57x19

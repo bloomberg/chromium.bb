@@ -4,8 +4,8 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow (anonymous) at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 197x19
-          text run at (0,0) width 197: "THEAD VALIGN=BASELINE"
+        LayoutText {#text} at (0,0) size 195x19
+          text run at (0,0) width 195: "THEAD VALIGN=BASELINE"
       LayoutTable {TABLE} at (0,20) size 784x272 [border: (1px outset #808080)]
         LayoutTableSection {THEAD} at (1,1) size 782x218
           LayoutTableRow {TR} at (0,2) size 782x214

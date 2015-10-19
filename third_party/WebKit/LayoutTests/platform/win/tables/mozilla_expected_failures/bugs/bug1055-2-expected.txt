@@ -4,11 +4,11 @@ layer at (0,0) size 785x908 backgroundClip at (0,0) size 785x600 clip at (0,0) s
   LayoutBlockFlow {HTML} at (0,0) size 785x908.38
     LayoutBlockFlow {BODY} at (8,8) size 769x884.38 [bgcolor=#FFFFFF]
       LayoutBlockFlow {H1} at (0,0) size 769x37
-        LayoutText {#text} at (0,0) size 360x36
-          text run at (0,0) width 360: "Tests de conformit\x{E9} CSS 2"
+        LayoutText {#text} at (0,0) size 357x36
+          text run at (0,0) width 357: "Tests de conformit\x{E9} CSS 2"
       LayoutBlockFlow {H3} at (0,58.44) size 769x22
-        LayoutText {#text} at (0,0) size 150x21
-          text run at (0,0) width 150: "Tableaux, test 13.8"
+        LayoutText {#text} at (0,0) size 148x21
+          text run at (0,0) width 148: "Tableaux, test 13.8"
       LayoutBlockFlow {H6} at (0,105.41) size 769x13
         LayoutText {#text} at (0,0) size 125x13
           text run at (0,0) width 125: "\x{A9} \x{C9}ditions Eyrolles 1998"

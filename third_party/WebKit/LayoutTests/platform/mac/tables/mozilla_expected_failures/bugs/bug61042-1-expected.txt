@@ -22,10 +22,10 @@ layer at (0,0) size 800x600
                           text run at (2,2) width 156: "This is some text. Cell 2"
                     LayoutTableRow {TR} at (0,26) size 615x58
                       LayoutTableCell {TD} at (2,26) size 611x58 [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=2]
-                        LayoutText {#text} at (2,2) size 581x54
-                          text run at (2,2) width 581: "This is some text. This is some text. This is some text. This is some text. This is some text."
-                          text run at (2,20) width 581: "This is some text. This is some text. This is some text. This is some text. This is some text."
-                          text run at (2,38) width 464: "This is some text. This is some text. This is some text. This is some text."
+                        LayoutText {#text} at (2,2) size 580x54
+                          text run at (2,2) width 580: "This is some text. This is some text. This is some text. This is some text. This is some text."
+                          text run at (2,20) width 580: "This is some text. This is some text. This is some text. This is some text. This is some text."
+                          text run at (2,38) width 463: "This is some text. This is some text. This is some text. This is some text."
                 LayoutBlockFlow (anonymous) at (2,108) size 617x18
                   LayoutText {#text} at (0,0) size 30x18
                     text run at (0,0) width 30: "after"

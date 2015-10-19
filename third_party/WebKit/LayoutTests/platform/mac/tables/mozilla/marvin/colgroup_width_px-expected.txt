@@ -106,8 +106,8 @@ layer at (0,0) size 800x600
               LayoutText {#text} at (2,2) size 32x18
                 text run at (2,2) width 32: "USA"
             LayoutTableCell {TD} at (192,164) size 369x22 [border: (1px inset #808080)] [r=6 c=1 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 68x18
-                text run at (2,2) width 68: "New York"
+              LayoutText {#text} at (2,2) size 66x18
+                text run at (2,2) width 66: "New York"
             LayoutTableCell {TD} at (563,164) size 71x22 [border: (1px inset #808080)] [r=6 c=2 rs=1 cs=1]
               LayoutText {#text} at (2,2) size 22x18
                 text run at (2,2) width 22: "yes"

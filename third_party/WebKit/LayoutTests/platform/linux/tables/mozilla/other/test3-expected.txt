@@ -4,8 +4,8 @@ layer at (0,0) size 785x910 backgroundClip at (0,0) size 785x600 clip at (0,0) s
   LayoutBlockFlow {HTML} at (0,0) size 785x909.78
     LayoutBlockFlow {BODY} at (8,8) size 769x885.78 [bgcolor=#FFFFFF]
       LayoutBlockFlow {H1} at (0,0) size 769x37
-        LayoutText {#text} at (0,0) size 335x36
-          text run at (0,0) width 335: "Example 3: Basic Tables"
+        LayoutText {#text} at (0,0) size 333x36
+          text run at (0,0) width 333: "Example 3: Basic Tables"
       LayoutBlockFlow {H2} at (0,58.44) size 769x27
         LayoutText {#text} at (0,0) size 361x26
           text run at (0,0) width 361: "Simple table, 75% width, border=1"
@@ -16,8 +16,8 @@ layer at (0,0) size 785x910 backgroundClip at (0,0) size 785x600 clip at (0,0) s
               LayoutText {#text} at (2,2) size 39x19
                 text run at (2,2) width 39: "cell bg"
             LayoutTableCell {TD} at (201,2) size 171x24 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 28x19
-                text run at (2,2) width 28: "Two"
+              LayoutText {#text} at (2,2) size 27x19
+                text run at (2,2) width 27: "Two"
             LayoutTableCell {TD} at (374,2) size 198x24 [border: (1px inset #808080)] [r=0 c=2 rs=1 cs=1]
               LayoutText {#text} at (2,2) size 35x19
                 text run at (2,2) width 35: "Three"

@@ -4,9 +4,9 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x36
-        LayoutText {#text} at (0,0) size 761x36
-          text run at (0,0) width 761: "The COL element specifies attributes for a table column. In this test case, the COL element is used in conjunction with"
-          text run at (0,18) width 126: "the SPAN attribute."
+        LayoutText {#text} at (0,0) size 784x36
+          text run at (0,0) width 784: "The COL element specifies attributes for a table column. In this test case, the COL element is used in conjunction with the"
+          text run at (0,18) width 101: "SPAN attribute."
       LayoutTable {TABLE} at (0,52) size 568x52 [border: (1px outset #808080)]
         LayoutTableCol {COLGROUP} at (0,0) size 0x0
           LayoutTableCol {COL} at (0,0) size 0x0

@@ -12,7 +12,7 @@ layer at (8,8) size 769x1421 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             LayoutBlockFlow {META} at (21,91) size 163x2 [border: (1px dotted #FFFFFF)]
             LayoutBlockFlow {TITLE} at (21,109) size 163x62 [border: (1px dotted #FFFFFF)]
               LayoutText {#text} at (1,1) size 133x59
-                text run at (1,1) width 126: "Evil Tests: Rendering"
+                text run at (1,1) width 125: "Evil Tests: Rendering"
                 text run at (1,21) width 133: "BODY and HEAD as"
                 text run at (1,41) width 132: "children of HTML - 2"
             LayoutBlockFlow {STYLE} at (21,187) size 163x322 [border: (1px dotted #FFFFFF)]
@@ -27,11 +27,11 @@ layer at (8,8) size 769x1421 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 text run at (1,101) width 69: "solid thick; "
                 text run at (70,101) width 85: "padding: 1em;"
                 text run at (1,121) width 93: "margin: 1em; } "
-                text run at (94,121) width 55: "HEAD >"
+                text run at (93,121) width 56: "HEAD >"
                 text run at (1,141) width 145: "*, BODY > * { display:"
                 text run at (1,161) width 158: "block; border: thin dotted;"
                 text run at (1,181) width 105: "margin: 1em 0; } "
-                text run at (106,181) width 12: "/*"
+                text run at (105,181) width 13: "/*"
                 text run at (1,201) width 85: "Formatting */ "
                 text run at (86,201) width 54: "HTML {"
                 text run at (1,221) width 154: "color: black; background:"
@@ -55,11 +55,11 @@ layer at (8,8) size 769x1421 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               LayoutText {#text} at (349,1) size 384x73
                 text run at (349,1) width 36: " as"
                 text run at (1,38) width 158: "children of "
-              LayoutInline {CODE} at (0,0) size 64x30
-                LayoutText {#text} at (159,45) size 64x30
-                  text run at (159,45) width 64: "HTML"
-              LayoutText {#text} at (223,38) size 43x36
-                text run at (223,38) width 43: " - 2"
+              LayoutInline {CODE} at (0,0) size 65x30
+                LayoutText {#text} at (158,45) size 65x30
+                  text run at (158,45) width 65: "HTML"
+              LayoutText {#text} at (222,38) size 44x36
+                text run at (222,38) width 44: " - 2"
             LayoutBlockFlow {P} at (21,161) size 490x42 [border: (1px dotted #FFFF00)]
               LayoutText {#text} at (1,1) size 364x19
                 text run at (1,1) width 364: "If you have any comments to make regarding this test, e-mail"
@@ -128,7 +128,7 @@ layer at (8,8) size 769x1421 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             LayoutBlockFlow {P} at (21,963) size 490x42 [border: (1px dotted #FFFF00)]
               LayoutText {#text} at (1,1) size 486x39
                 text run at (1,1) width 486: "There should also be some alternate stylesheets set up to allow you to display the"
-                text run at (1,21) width 292: "<META> content. This may help with diagnosis."
+                text run at (1,21) width 291: "<META> content. This may help with diagnosis."
             LayoutBlockFlow {H2} at (21,1029) size 490x29 [border: (1px dotted #FFFF00)]
               LayoutText {#text} at (1,1) size 153x26
                 text run at (1,1) width 153: "Submit Results"
@@ -154,11 +154,11 @@ layer at (8,8) size 769x1421 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 LayoutText {#text} at (0,0) size 0x0
             LayoutBlockFlow {HR} at (21,1194) size 490x2 [border: (1px dotted #FFFF00)]
             LayoutBlockFlow {P} at (21,1212) size 490x22 [border: (1px dotted #FFFF00)]
-              LayoutInline {A} at (0,0) size 153x19 [color=#0000EE]
-                LayoutText {#text} at (1,1) size 153x19
-                  text run at (1,1) width 153: "Up to the Evil Tests Page"
-              LayoutText {#text} at (154,1) size 4x19
-                text run at (154,1) width 4: "."
+              LayoutInline {A} at (0,0) size 152x19 [color=#0000EE]
+                LayoutText {#text} at (1,1) size 152x19
+                  text run at (1,1) width 152: "Up to the Evil Tests Page"
+              LayoutText {#text} at (152,1) size 5x19
+                text run at (152,1) width 5: "."
             LayoutBlockFlow {P} at (21,1250) size 490x22 [border: (1px dotted #FFFF00)]
               LayoutText {#text} at (1,1) size 162x19
                 text run at (1,1) width 162: "This page is maintained by "
