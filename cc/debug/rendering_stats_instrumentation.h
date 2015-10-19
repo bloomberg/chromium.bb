@@ -37,9 +37,6 @@ class CC_EXPORT RenderingStatsInstrumentation {
       record_rendering_stats_ = record_rendering_stats;
   }
 
-  base::TimeDelta StartRecording() const;
-  base::TimeDelta EndRecording(base::TimeDelta start_time) const;
-
   void IncrementFrameCount(int64 count);
   void AddVisibleContentArea(int64 area);
   void AddApproximatedVisibleContentArea(int64 area);
