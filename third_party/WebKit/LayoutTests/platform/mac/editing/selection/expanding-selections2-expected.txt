@@ -5,9 +5,9 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x36
-        LayoutText {#text} at (0,0) size 770x36
-          text run at (0,0) width 423: "This tests double clicking inside and at the end of an editable div. "
-          text run at (423,0) width 347: "The selection that is created should not extend outside"
+        LayoutText {#text} at (0,0) size 769x36
+          text run at (0,0) width 422: "This tests double clicking inside and at the end of an editable div. "
+          text run at (421,0) width 348: "The selection that is created should not extend outside"
           text run at (0,18) width 124: "the editable region."
       LayoutBlockFlow {DIV} at (0,52) size 784x18
         LayoutText {#text} at (0,0) size 186x18

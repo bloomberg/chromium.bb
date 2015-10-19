@@ -7,8 +7,8 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x36
-        LayoutText {#text} at (0,0) size 735x36
-          text run at (0,0) width 735: "This tests moving the caret backward through content of mixed editability. The caret should back to just before the"
+        LayoutText {#text} at (0,0) size 734x36
+          text run at (0,0) width 734: "This tests moving the caret backward through content of mixed editability. The caret should back to just before the"
           text run at (0,18) width 92: "outlined table."
       LayoutBlockFlow {DIV} at (0,52) size 784x64
         LayoutBlockFlow (anonymous) at (0,0) size 784x18

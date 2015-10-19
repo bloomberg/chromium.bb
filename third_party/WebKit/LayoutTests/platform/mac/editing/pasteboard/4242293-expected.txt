@@ -12,7 +12,7 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (0,0) size 717x36
           text run at (0,0) width 717: "This tests for a bug in createMarkup (markup for ancestors of the start of the selection wasn't being added to the"
           text run at (0,18) width 83: "pasteboard). "
-          text run at (82,18) width 344: "You should see the same thing in both regions below."
+          text run at (82,18) width 342: "You should see the same thing in both regions below."
       LayoutBlockFlow {P} at (0,52) size 784x18
         LayoutInline {B} at (0,0) size 445x18
           LayoutText {#text} at (0,0) size 445x18

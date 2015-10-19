@@ -12,7 +12,7 @@ layer at (0,0) size 800x600
           text run at (0,18) width 526: "the last character and the first character in the next paragraph) should be selected. "
           text run at (525,18) width 222: "Selection painting problems might"
           text run at (0,36) width 473: "prevent the paragraph break from appearing as selected even though it is. "
-          text run at (472,36) width 286: "To test manually, triple click inside the table"
+          text run at (472,36) width 284: "To test manually, triple click inside the table"
           text run at (0,54) width 275: "cell, after the last character, and hit delete. "
           text run at (274,54) width 294: "Afterward, the table should contain only 'bar'."
       LayoutBlockFlow {DIV} at (0,88) size 784x46

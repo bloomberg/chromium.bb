@@ -21,21 +21,21 @@ layer at (0,0) size 800x600
               LayoutInline {SPAN} at (0,0) size 4x19
                 LayoutText {#text} at (413,0) size 4x19
                   text run at (413,0) width 4: " "
-              LayoutText {#text} at (417,0) size 692x39
-                text run at (417,0) width 271: "WebElementImageKey is a key added to the"
-                text run at (688,0) width 4: " "
+              LayoutText {#text} at (417,0) size 691x39
+                text run at (417,0) width 270: "WebElementImageKey is a key added to the"
+                text run at (686,0) width 5: " "
                 text run at (0,20) width 370: "elementAtPoint dictionary and the key's value is an NSImage."
               LayoutInline {SPAN} at (0,0) size 4x19
                 LayoutText {#text} at (370,20) size 4x19
                   text run at (370,20) width 4: " "
-              LayoutText {#text} at (374,20) size 245x19
-                text run at (374,20) width 245: "Unfortunately we use CGImageRef now."
-              LayoutInline {SPAN} at (0,0) size 4x19
-                LayoutText {#text} at (619,20) size 4x19
-                  text run at (619,20) width 4: " "
-              LayoutText {#text} at (623,20) size 687x59
-                text run at (623,20) width 57: "What this"
-                text run at (680,20) width 4: " "
+              LayoutText {#text} at (374,20) size 244x19
+                text run at (374,20) width 244: "Unfortunately we use CGImageRef now."
+              LayoutInline {SPAN} at (0,0) size 5x19
+                LayoutText {#text} at (617,20) size 5x19
+                  text run at (617,20) width 5: " "
+              LayoutText {#text} at (621,20) size 687x59
+                text run at (621,20) width 58: "What this"
+                text run at (678,20) width 5: " "
                 text run at (0,40) width 683: "means is that as you move the mouse around a web page we are aggressively mallocing NSImages that then move"
                 text run at (683,40) width 4: " "
                 text run at (0,60) width 604: "into our image cache and stay around until the CGImageRef goes away (which could be a long time)."

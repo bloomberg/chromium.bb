@@ -14,8 +14,8 @@ layer at (0,0) size 800x600
       LayoutBlockFlow (anonymous) at (0,0) size 800x304
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (0,320) size 800x36
-        LayoutText {#text} at (0,0) size 775x35
-          text run at (0,0) width 775: "This test uses the eventSender to do drag and drop. To run it manually, drag the word selected in the above subframe and"
+        LayoutText {#text} at (0,0) size 773x35
+          text run at (0,0) width 773: "This test uses the eventSender to do drag and drop. To run it manually, drag the word selected in the above subframe and"
           text run at (0,18) width 116: "drop it after 'baz'. "
           text run at (115,18) width 217: "The result should be 'foo baz bar'."
 layer at (0,0) size 304x304

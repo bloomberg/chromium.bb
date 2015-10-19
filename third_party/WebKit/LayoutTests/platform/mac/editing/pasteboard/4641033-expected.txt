@@ -8,9 +8,9 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x36
-        LayoutText {#text} at (0,0) size 783x36
+        LayoutText {#text} at (0,0) size 781x36
           text run at (0,0) width 673: "This tests for a bug when creating markup for a selection that contained unrendered nodes with children. "
-          text run at (672,0) width 111: "You should see a"
+          text run at (672,0) width 109: "You should see a"
           text run at (0,18) width 253: "picture of abe followed by a select box."
       LayoutBlockFlow {DIV} at (0,52) size 784x108
         LayoutImage {IMG} at (0,0) size 76x103

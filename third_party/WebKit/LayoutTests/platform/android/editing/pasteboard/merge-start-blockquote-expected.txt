@@ -1,0 +1,20 @@
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x576
+      LayoutBlockFlow {P} at (0,0) size 784x20
+        LayoutText {#text} at (0,0) size 774x19
+          text run at (0,0) width 774: "This test makes sure that content inside a Mail blockquote in an incoming fragment isn't pulled out of the blockquote during paste."
+      LayoutBlockFlow {P} at (0,36) size 784x20
+        LayoutInline {B} at (0,0) size 551x19
+          LayoutText {#text} at (0,0) size 551x19
+            text run at (0,0) width 551: "You should see 'bar' inside a blockquote (it will have a blue border around it if it is)."
+      LayoutBlockFlow {DIV} at (0,72) size 784x22
+        LayoutBlockFlow {BLOCKQUOTE} at (40,0) size 704x22 [border: (1px solid #0000FF)]
+          LayoutText {#text} at (1,1) size 20x19
+            text run at (1,1) width 20: "bar"
+caret: position 3 of child 0 {#text} of child 0 {BLOCKQUOTE} of child 4 {DIV} of body

@@ -6,20 +6,20 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x54
-        LayoutText {#text} at (0,0) size 244x18
-          text run at (0,0) width 244: "There was a workaround added to fix "
+        LayoutText {#text} at (0,0) size 243x18
+          text run at (0,0) width 243: "There was a workaround added to fix "
         LayoutInline {A} at (0,0) size 153x18 [color=#0000EE]
-          LayoutText {#text} at (243,0) size 153x18
-            text run at (243,0) width 153: "rdar://problem/4033202"
-        LayoutText {#text} at (395,0) size 302x18
-          text run at (395,0) width 9: ". "
-          text run at (403,0) width 294: "A bug to remove the workaround was filed as"
+          LayoutText {#text} at (242,0) size 153x18
+            text run at (242,0) width 153: "rdar://problem/4033202"
+        LayoutText {#text} at (395,0) size 300x18
+          text run at (395,0) width 8: ". "
+          text run at (403,0) width 292: "A bug to remove the workaround was filed as"
         LayoutInline {A} at (0,0) size 153x18 [color=#0000EE]
           LayoutText {#text} at (0,18) size 153x18
             text run at (0,18) width 153: "rdar://problem/4040763"
-        LayoutText {#text} at (152,18) size 775x36
+        LayoutText {#text} at (152,18) size 773x36
           text run at (152,18) width 9: ". "
-          text run at (160,18) width 615: "The underlying problem with VisiblePositions was fixed, and so I removed the workaround and"
+          text run at (160,18) width 613: "The underlying problem with VisiblePositions was fixed, and so I removed the workaround and"
           text run at (0,36) width 140: "added this layout test."
       LayoutBlockFlow {DIV} at (0,70) size 784x56 [border: (1px solid #0000FF)]
         LayoutBlockFlow {P} at (1,1) size 782x18

@@ -1,37 +1,35 @@
 EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
 EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
-layer at (0,0) size 800x600 scrollWidth 820 scrollHeight 900
+layer at (0,0) size 800x600 scrollWidth 820 scrollHeight 852
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 800x900 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600
-  LayoutBlockFlow {HTML} at (0,0) size 800x900
-    LayoutBlockFlow {BODY} at (8,64) size 784x772
-      LayoutBlockFlow {DIV} at (64,0) size 748x772 [border: (50px solid #FF0000)]
-        LayoutBlockFlow {DIV} at (74,74) size 600x624
-          LayoutText {#text} at (0,11) size 598x602
+layer at (0,0) size 800x852 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600
+  LayoutBlockFlow {HTML} at (0,0) size 800x852
+    LayoutBlockFlow {BODY} at (8,64) size 784x724
+      LayoutBlockFlow {DIV} at (64,0) size 748x724 [border: (50px solid #FF0000)]
+        LayoutBlockFlow {DIV} at (74,74) size 600x576
+          LayoutText {#text} at (0,11) size 600x554
             text run at (0,11) width 550: "Four score and seven years ago our fathers brought forth,"
             text run at (549,11) width 7: " "
-            text run at (0,59) width 576: "upon this continent, a new nation, conceived in Liberty, and"
-            text run at (575,59) width 7: " "
+            text run at (0,59) width 575: "upon this continent, a new nation, conceived in Liberty, and"
+            text run at (574,59) width 7: " "
             text run at (0,107) width 562: "dedicated to the proposition that all men are created equal."
             text run at (561,107) width 7: " "
-            text run at (0,155) width 590: "Now we are engaged in a great civil war, testing whether that"
-            text run at (589,155) width 7: " "
+            text run at (0,155) width 589: "Now we are engaged in a great civil war, testing whether that"
+            text run at (588,155) width 7: " "
             text run at (0,203) width 553: "nation, or any nation, so conceived, and so dedicated, can"
             text run at (552,203) width 7: " "
-            text run at (0,251) width 556: "long endure. We are met here on a great battlefield of that"
-            text run at (555,251) width 7: " "
-            text run at (0,299) width 532: "war. We have come to dedicate a portion of it as a final"
-            text run at (531,299) width 7: " "
-            text run at (0,347) width 544: "resting place for those who here gave their lives that that"
-            text run at (543,347) width 7: " "
-            text run at (0,395) width 565: "nation might live. It is altogether fitting and proper that we"
-            text run at (564,395) width 7: " "
-            text run at (0,443) width 557: "should do this. Four score and seven years ago our fathers"
-            text run at (556,443) width 7: " "
-            text run at (0,491) width 592: "brought forth, upon this continent, a new nation, conceived in"
-            text run at (591,491) width 7: " "
-            text run at (0,539) width 546: "Liberty, and dedicated to the proposition that all men are"
-            text run at (545,539) width 7: " "
-            text run at (0,587) width 134: "created equal."
+            text run at (0,251) width 554: "long endure. We are met here on a great battlefield of that"
+            text run at (553,251) width 7: " "
+            text run at (0,299) width 600: "war. We have come to dedicate a portion of it as a final resting"
+            text run at (599,299) width 1: " "
+            text run at (0,347) width 539: "place for those who here gave their lives that that nation"
+            text run at (538,347) width 7: " "
+            text run at (0,395) width 599: "might live. It is altogether fitting and proper that we should do"
+            text run at (598,395) width 2: " "
+            text run at (0,443) width 596: "this. Four score and seven years ago our fathers brought forth,"
+            text run at (595,443) width 5: " "
+            text run at (0,491) width 575: "upon this continent, a new nation, conceived in Liberty, and"
+            text run at (574,491) width 7: " "
+            text run at (0,539) width 562: "dedicated to the proposition that all men are created equal."
 selection start: position 1 of child 0 {#text} of child 1 {DIV} of child 1 {DIV} of body
 selection end:   position 737 of child 0 {#text} of child 1 {DIV} of child 1 {DIV} of body

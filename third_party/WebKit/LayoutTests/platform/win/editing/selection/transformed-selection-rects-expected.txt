@@ -6,8 +6,8 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x572
       LayoutBlockFlow {P} at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 755x17
-          text run at (0,0) width 755: "Tests that selection rects take transforms into account. The red box should be the bounds of the transformed selection."
+        LayoutText {#text} at (0,0) size 754x17
+          text run at (0,0) width 754: "Tests that selection rects take transforms into account. The red box should be the bounds of the transformed selection."
 layer at (28,46) size 622x97
   LayoutBlockFlow {DIV} at (20,38) size 622x97 [border: (1px solid #000000)]
     LayoutBlockFlow {P} at (11,35) size 600x27

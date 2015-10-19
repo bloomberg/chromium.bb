@@ -16,8 +16,8 @@ layer at (0,0) size 800x600
           text run at (0,0) width 383: "This tests pasting a Mail blockquote at the start of a paragraph. "
           text run at (383,0) width 199: "Blockquoting should be stripped."
       LayoutBlockFlow {DIV} at (0,36) size 784x20
-        LayoutText {#text} at (0,0) size 116x19
-          text run at (0,0) width 116: "Blockquoted Textx"
+        LayoutText {#text} at (0,0) size 115x19
+          text run at (0,0) width 115: "Blockquoted Textx"
       LayoutBlockFlow {P} at (0,72) size 784x40
         LayoutText {#text} at (0,0) size 782x39
           text run at (0,0) width 276: "This tests pasting text into a Mail blockquote. "
@@ -30,6 +30,6 @@ layer at (0,0) size 800x600
               text run at (0,0) width 98: "Blockquotedfoo"
         LayoutBlockFlow {BLOCKQUOTE} at (40,36) size 704x20
           LayoutBlockFlow {DIV} at (0,0) size 704x20
-            LayoutText {#text} at (0,0) size 47x19
-              text run at (0,0) width 47: "barText"
+            LayoutText {#text} at (0,0) size 46x19
+              text run at (0,0) width 46: "barText"
 caret: position 3 of child 0 {#text} of child 0 {DIV} of child 1 {BLOCKQUOTE} of child 10 {DIV} of body

@@ -4,9 +4,9 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 556x18
-          text run at (0,0) width 252: "This tests for an infinite loop on Paste. "
-          text run at (251,0) width 305: "You should see 'Hello: ' and then an input field."
+        LayoutText {#text} at (0,0) size 553x18
+          text run at (0,0) width 251: "This tests for an infinite loop on Paste. "
+          text run at (250,0) width 303: "You should see 'Hello: ' and then an input field."
       LayoutBlockFlow {DIV} at (0,34) size 784x19
         LayoutText {#text} at (0,0) size 36x18
           text run at (0,0) width 36: "Hello"

@@ -8,9 +8,9 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x36
-        LayoutText {#text} at (0,0) size 767x36
-          text run at (0,0) width 767: "Tests that drag/drop after double-click does a smart drag. Specifically the end result should have a space: \"world hello\"."
-          text run at (0,18) width 464: "To test manually double click on the \"hello\" and drag it to after \"world\"."
+        LayoutText {#text} at (0,0) size 765x36
+          text run at (0,0) width 765: "Tests that drag/drop after double-click does a smart drag. Specifically the end result should have a space: \"world hello\"."
+          text run at (0,18) width 463: "To test manually double click on the \"hello\" and drag it to after \"world\"."
       LayoutBlockFlow {DIV} at (0,52) size 784x18
         LayoutText {#text} at (0,0) size 74x18
           text run at (0,0) width 74: "world hello"

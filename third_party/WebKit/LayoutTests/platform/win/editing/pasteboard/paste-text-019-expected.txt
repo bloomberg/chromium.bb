@@ -20,16 +20,16 @@ layer at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {DIV} at (0,0) size 784x281 [border: (2px solid #0000FF)]
         LayoutBlockFlow {DIV} at (14,14) size 756x81
-          LayoutText {#text} at (0,0) size 68x26
-            text run at (0,0) width 68: "Tests: "
+          LayoutText {#text} at (0,0) size 66x26
+            text run at (0,0) width 66: "Tests: "
           LayoutBR {BR} at (0,0) size 0x0
           LayoutText {#text} at (0,27) size 162x26
             text run at (0,27) width 162: "Fix for this bug: "
           LayoutInline {A} at (0,0) size 551x26 [color=#0000EE]
             LayoutText {#text} at (161,27) size 551x26
               text run at (161,27) width 551: "<http://bugzilla.opendarwin.org/show_bug.cgi?id=3429>"
-          LayoutText {#text} at (0,54) size 722x26
-            text run at (0,54) width 722: "Text transformed with text-transform does not copy with transform applied"
+          LayoutText {#text} at (0,54) size 721x26
+            text run at (0,54) width 721: "Text transformed with text-transform does not copy with transform applied"
         LayoutBlockFlow {DIV} at (14,111) size 756x156
           LayoutBlockFlow (anonymous) at (0,0) size 756x54
             LayoutText {#text} at (0,0) size 190x26

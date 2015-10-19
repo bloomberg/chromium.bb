@@ -17,10 +17,10 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {DIV} at (0,0) size 784x54
-        LayoutText {#text} at (0,0) size 783x53
+        LayoutText {#text} at (0,0) size 785x53
           text run at (0,0) width 783: "This test validates the fix for a bug that occurred when typing a blank at the end of a line when the character doesn't fix by"
-          text run at (0,18) width 762: "a fraction of a pixel. If the test runs correctly, you should see the word 'you' at the end of the line and the word 'have' at"
-          text run at (0,36) width 227: "the beginning of the following line."
+          text run at (0,18) width 785: "a fraction of a pixel. If the test runs correctly, you should see the word 'you' at the end of the line and the word 'have' at the"
+          text run at (0,36) width 204: "beginning of the following line."
       LayoutBlockFlow (anonymous) at (0,54) size 784x18
         LayoutBR {BR} at (0,0) size 0x17
       LayoutBlockFlow {DIV} at (0,72) size 871x100

@@ -19,7 +19,7 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {P} at (0,56) size 784x20
         LayoutText {#text} at (0,0) size 772x19
           text run at (0,0) width 522: "A smart paste is performed into a selection starting in one block and ending in another. "
-          text run at (522,0) width 250: "Spaces should surround the pasted word."
+          text run at (521,0) width 251: "Spaces should surround the pasted word."
       LayoutBlockFlow {DIV} at (0,92) size 784x20
         LayoutBlockFlow {DIV} at (0,0) size 784x20
           LayoutText {#text} at (0,0) size 52x19

@@ -4,13 +4,13 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {H3} at (0,0) size 784x23
-        LayoutText {#text} at (0,0) size 70x22
-          text run at (0,0) width 70: "Test for "
+        LayoutText {#text} at (0,0) size 69x22
+          text run at (0,0) width 69: "Test for "
         LayoutInline {A} at (0,0) size 153x22 [color=#0000EE]
-          LayoutText {#text} at (70,0) size 153x22
-            text run at (70,0) width 153: "WebKit bug 29968"
-        LayoutText {#text} at (223,0) size 559x22
-          text run at (223,0) width 559: ": Selecting text with text-overflow ellipsis should not show cut off text"
+          LayoutText {#text} at (68,0) size 153x22
+            text run at (68,0) width 153: "WebKit bug 29968"
+        LayoutText {#text} at (220,0) size 560x22
+          text run at (220,0) width 560: ": Selecting text with text-overflow ellipsis should not show cut off text"
 layer at (8,50) size 95x20 scrollWidth 115
   LayoutBlockFlow {DIV} at (0,41.72) size 95x20
     LayoutText {#text} at (0,0) size 115x19

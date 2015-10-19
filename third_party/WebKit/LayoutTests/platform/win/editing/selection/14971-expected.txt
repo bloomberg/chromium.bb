@@ -5,17 +5,17 @@ layer at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x36
         LayoutText {#text} at (0,0) size 773x35
-          text run at (0,0) width 614: "This tests to make sure that a drag-selecting through a -webkit-user-select:ignore region works. "
-          text run at (613,0) width 160: "The selection should end"
-          text run at (0,18) width 274: "somewhere inside the word 'World' below."
+          text run at (0,0) width 613: "This tests to make sure that a drag-selecting through a -webkit-user-select:ignore region works. "
+          text run at (612,0) width 161: "The selection should end"
+          text run at (0,18) width 271: "somewhere inside the word 'World' below."
       LayoutBlockFlow {DIV} at (0,52) size 784x18
         LayoutInline {SPAN} at (0,0) size 36x17
           LayoutText {#text} at (0,0) size 36x17
             text run at (0,0) width 36: "Hello"
         LayoutText {#text} at (35,0) size 5x17
           text run at (35,0) width 5: " "
-        LayoutInline {SPAN} at (0,0) size 42x17
-          LayoutText {#text} at (39,0) size 42x17
-            text run at (39,0) width 42: "World"
+        LayoutInline {SPAN} at (0,0) size 41x17
+          LayoutText {#text} at (39,0) size 41x17
+            text run at (39,0) width 41: "World"
 selection start: position 0 of child 0 {#text} of child 0 {SPAN} of child 2 {DIV} of body
 selection end:   position 2 of child 0 {#text} of child 2 {SPAN} of child 2 {DIV} of body

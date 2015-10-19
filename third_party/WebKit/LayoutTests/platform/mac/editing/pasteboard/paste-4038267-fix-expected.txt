@@ -12,16 +12,16 @@ layer at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {DIV} at (0,0) size 784x268 [border: (2px solid #0000FF)]
         LayoutBlockFlow {DIV} at (14,14) size 756x84
-          LayoutText {#text} at (0,0) size 68x28
-            text run at (0,0) width 68: "Tests: "
+          LayoutText {#text} at (0,0) size 66x28
+            text run at (0,0) width 66: "Tests: "
           LayoutBR {BR} at (0,0) size 0x0
-          LayoutText {#text} at (0,28) size 113x28
-            text run at (0,28) width 113: "Bug fix for "
+          LayoutText {#text} at (0,28) size 112x28
+            text run at (0,28) width 112: "Bug fix for "
           LayoutInline {A} at (0,0) size 257x28 [color=#0000EE]
-            LayoutText {#text} at (112,28) size 257x28
-              text run at (112,28) width 257: "<rdar://problem/4038267>"
-          LayoutText {#text} at (369,28) size 743x56
-            text run at (369,28) width 374: " REGRESSION (Mail): Crash copying"
+            LayoutText {#text} at (111,28) size 257x28
+              text run at (111,28) width 257: "<rdar://problem/4038267>"
+          LayoutText {#text} at (367,28) size 741x56
+            text run at (367,28) width 374: " REGRESSION (Mail): Crash copying"
             text run at (0,56) width 285: "and pasting end of paragraph."
         LayoutBlockFlow {DIV} at (14,114) size 756x140
           LayoutBlockFlow (anonymous) at (0,0) size 756x84

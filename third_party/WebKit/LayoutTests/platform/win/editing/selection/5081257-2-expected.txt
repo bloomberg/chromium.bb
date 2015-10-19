@@ -6,7 +6,7 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {P} at (0,0) size 784x36
         LayoutText {#text} at (0,0) size 784x35
           text run at (0,0) width 525: "This tests for setting the selection at a position inside a document in designMode. "
-          text run at (524,0) width 258: "You should see a caret at the start of the"
-          text run at (781,0) width 3: " "
-          text run at (0,18) width 36: "body."
+          text run at (524,0) width 256: "You should see a caret at the start of the"
+          text run at (779,0) width 5: " "
+          text run at (0,18) width 35: "body."
 caret: position 0 of child 0 {#text} of child 1 {P} of body

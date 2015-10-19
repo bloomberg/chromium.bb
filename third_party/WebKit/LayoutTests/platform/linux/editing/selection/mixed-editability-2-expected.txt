@@ -10,12 +10,12 @@ layer at (0,0) size 800x600
         LayoutInline {SPAN} at (0,0) size 31x19
           LayoutText {#text} at (52,0) size 31x19
             text run at (52,0) width 31: "Bold"
-        LayoutText {#text} at (83,0) size 69x19
-          text run at (83,0) width 69: "TextShould"
-        LayoutInline {SPAN} at (0,0) size 17x19
-          LayoutText {#text} at (152,0) size 17x19
-            text run at (152,0) width 17: "Be"
-        LayoutText {#text} at (169,0) size 52x19
-          text run at (169,0) width 52: "Selected"
+        LayoutText {#text} at (83,0) size 68x19
+          text run at (83,0) width 68: "TextShould"
+        LayoutInline {SPAN} at (0,0) size 18x19
+          LayoutText {#text} at (150,0) size 18x19
+            text run at (150,0) width 18: "Be"
+        LayoutText {#text} at (167,0) size 53x19
+          text run at (167,0) width 53: "Selected"
 selection start: position 0 of child 0 {#text} of child 1 {SPAN} of child 1 {DIV} of body
 selection end:   position 4 of child 0 {#text} of child 1 {SPAN} of child 1 {DIV} of body

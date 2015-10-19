@@ -9,8 +9,8 @@ layer at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {DIV} at (0,0) size 784x184 [border: (2px solid #0000FF)]
         LayoutBlockFlow {DIV} at (14,14) size 756x56
-          LayoutText {#text} at (0,0) size 68x28
-            text run at (0,0) width 68: "Tests: "
+          LayoutText {#text} at (0,0) size 66x28
+            text run at (0,0) width 66: "Tests: "
           LayoutBR {BR} at (0,0) size 0x0
           LayoutText {#text} at (0,28) size 220x28
             text run at (0,28) width 220: "ctrl-a, ctrl-k, and ctrl-y"
@@ -19,10 +19,10 @@ layer at (0,0) size 800x600
             text run at (0,0) width 190: "Expected Results: "
           LayoutBR {BR} at (189,22) size 1x0
           LayoutBR {BR} at (0,28) size 0x28
-          LayoutText {#text} at (0,56) size 220x28
-            text run at (0,56) width 220: "one two three four five"
+          LayoutText {#text} at (0,56) size 219x28
+            text run at (0,56) width 219: "one two three four five"
       LayoutBlockFlow {DIV} at (0,208) size 784x32
         LayoutBlockFlow {DIV} at (0,0) size 784x32 [border: (2px solid #FF0000)]
-          LayoutText {#text} at (2,2) size 220x28
-            text run at (2,2) width 220: "one five two three four"
+          LayoutText {#text} at (2,2) size 219x28
+            text run at (2,2) width 219: "one five two three four"
 caret: position 12 of child 0 {#text} of child 1 {DIV} of child 3 {DIV} of body

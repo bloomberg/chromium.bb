@@ -1,0 +1,55 @@
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {DIV} at (0,0) size 784x285 [border: (2px solid #0000FF)]
+        LayoutBlockFlow {DIV} at (14,14) size 756x83
+          LayoutText {#text} at (0,0) size 66x26
+            text run at (0,0) width 66: "Tests: "
+          LayoutBR {BR} at (0,0) size 0x0
+          LayoutText {#text} at (0,27) size 158x27
+            text run at (0,27) width 158: "Fix for this bug: "
+          LayoutInline {A} at (0,0) size 544x27 [color=#0000EE]
+            LayoutText {#text} at (158,27) size 544x27
+              text run at (158,27) width 544: "<http://bugzilla.opendarwin.org/show_bug.cgi?id=3429>"
+          LayoutText {#text} at (702,27) size 752x55
+            text run at (702,27) width 50: " Text"
+            text run at (0,55) width 671: "transformed with text-transform does not copy with transform applied"
+        LayoutBlockFlow {DIV} at (14,113) size 756x158
+          LayoutBlockFlow (anonymous) at (0,0) size 756x55
+            LayoutText {#text} at (0,0) size 189x26
+              text run at (0,0) width 189: "Expected Results: "
+            LayoutBR {BR} at (189,21) size 0x0
+            LayoutText {#text} at (0,27) size 198x27
+              text run at (0,27) width 198: "Should see the string"
+          LayoutBlockFlow {PRE} at (0,79) size 756x27
+            LayoutText {#text} at (0,0) size 210x27
+              text run at (0,0) width 210: "Foo Bar baz Bar"
+          LayoutBlockFlow (anonymous) at (0,130) size 756x28
+            LayoutText {#text} at (0,0) size 153x27
+              text run at (0,0) width 153: "(case sensitive)."
+      LayoutBlockFlow {DIV} at (0,309) size 784x32 [border: (2px solid #FF0000)]
+        LayoutInline {SPAN} at (0,0) size 152x27
+          LayoutInline {SPAN} at (0,0) size 78x27
+            LayoutText {#text} at (2,2) size 78x27
+              text run at (2,2) width 78: "Foo Bar"
+          LayoutText {#text} at (80,2) size 74x27
+            text run at (80,2) width 74: " bazBar"
+        LayoutText {#text} at (0,0) size 0x0
+caret: position 7 of child 1 {#text} of child 1 {SPAN} of child 3 {DIV} of body

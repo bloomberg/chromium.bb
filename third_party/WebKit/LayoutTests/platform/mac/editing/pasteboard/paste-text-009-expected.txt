@@ -99,6 +99,6 @@ layer at (0,0) size 800x600
           LayoutText {#text} at (0,0) size 18x28
             text run at (0,0) width 18: "U"
       LayoutBlockFlow {DIV} at (0,140) size 784x56 [border: (2px solid #FF0000)]
-        LayoutText {#text} at (14,14) size 380x28
-          text run at (14,14) width 380: "Upon such a full sea are we now afloat,"
+        LayoutText {#text} at (14,14) size 378x28
+          text run at (14,14) width 378: "Upon such a full sea are we now afloat,"
 caret: position 1 of child 0 {#text} of child 2 {DIV} of body

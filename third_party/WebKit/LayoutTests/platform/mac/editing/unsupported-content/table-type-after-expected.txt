@@ -22,8 +22,8 @@ layer at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {DIV} at (0,0) size 784x228 [border: (4px solid #0000FF)]
         LayoutBlockFlow {DIV} at (20,20) size 744x72
-          LayoutText {#text} at (0,0) size 68x28
-            text run at (0,0) width 68: "Tests: "
+          LayoutText {#text} at (0,0) size 66x28
+            text run at (0,0) width 66: "Tests: "
           LayoutBR {BR} at (0,0) size 0x0
           LayoutText {#text} at (0,28) size 656x22
             text run at (0,28) width 656: "Our ability to \"edit around\" content the HTML editing code does not yet handle very well. "
@@ -31,8 +31,8 @@ layer at (0,0) size 800x600
           LayoutInline {I} at (0,0) size 98x22
             LayoutText {#text} at (0,50) size 98x22
               text run at (0,50) width 98: "For this test: "
-          LayoutText {#text} at (97,50) size 176x22
-            text run at (97,50) width 176: "Test typing after a table."
+          LayoutText {#text} at (97,50) size 175x22
+            text run at (97,50) width 175: "Test typing after a table."
         LayoutBlockFlow (anonymous) at (20,92) size 744x22
           LayoutBR {BR} at (0,0) size 0x22
         LayoutBlockFlow {DIV} at (20,114) size 744x94
@@ -46,8 +46,8 @@ layer at (0,0) size 800x600
           LayoutInline {I} at (0,0) size 98x22
             LayoutText {#text} at (0,72) size 98x22
               text run at (0,72) width 98: "For this test: "
-          LayoutText {#text} at (97,72) size 432x22
-            text run at (97,72) width 432: "Typed text should appear after (on the line below) the table."
+          LayoutText {#text} at (97,72) size 431x22
+            text run at (97,72) width 431: "Typed text should appear after (on the line below) the table."
       LayoutBlockFlow {DIV} at (0,238) size 784x108 [border: (2px solid #008000)]
         LayoutTable {TABLE} at (2,2) size 46x76 [border: (1px outset #808080)]
           LayoutTableSection {TBODY} at (1,1) size 44x74

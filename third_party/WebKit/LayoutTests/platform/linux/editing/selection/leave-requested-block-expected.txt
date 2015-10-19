@@ -6,13 +6,13 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x576
       LayoutBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 121x19
-          text run at (0,0) width 121: "Test case for fix for "
-        LayoutInline {A} at (0,0) size 323x19 [color=#0000EE]
-          LayoutText {#text} at (121,0) size 323x19
-            text run at (121,0) width 323: "http://bugzilla.opendarwin.org/show_bug.cgi?id=5354"
-        LayoutText {#text} at (444,0) size 4x19
-          text run at (444,0) width 4: "."
+        LayoutText {#text} at (0,0) size 120x19
+          text run at (0,0) width 120: "Test case for fix for "
+        LayoutInline {A} at (0,0) size 324x19 [color=#0000EE]
+          LayoutText {#text} at (119,0) size 324x19
+            text run at (119,0) width 324: "http://bugzilla.opendarwin.org/show_bug.cgi?id=5354"
+        LayoutText {#text} at (442,0) size 5x19
+          text run at (442,0) width 5: "."
       LayoutBlockFlow {P} at (0,36) size 784x40
         LayoutText {#text} at (0,0) size 774x39
           text run at (0,0) width 774: "Changes were made to VisiblePosition's so that init() will not leave the block containing the requested position unless there are no"

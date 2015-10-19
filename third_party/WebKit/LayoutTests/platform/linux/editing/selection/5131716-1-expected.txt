@@ -12,16 +12,16 @@ layer at (0,0) size 800x600
         LayoutBlockFlow {DIV} at (26,26) size 732x20
           LayoutText {#text} at (0,0) size 96x19
             text run at (0,0) width 96: "Paragraph One."
-        LayoutTable {TABLE} at (26,46) size 90x30 [border: (1px solid #BBBBBB)]
-          LayoutTableSection {TBODY} at (1,1) size 88x28
-            LayoutTableRow {TR} at (0,2) size 88x24 [border: (1px solid #BBBBBB)]
+        LayoutTable {TABLE} at (26,46) size 89x30 [border: (1px solid #BBBBBB)]
+          LayoutTableSection {TBODY} at (1,1) size 87x28
+            LayoutTableRow {TR} at (0,2) size 87x24 [border: (1px solid #BBBBBB)]
               LayoutTableCell {TD} at (2,2) size 8x24 [border: (1px solid #BBBBBB)] [r=0 c=0 rs=1 cs=1]
                 LayoutText {#text} at (2,2) size 4x19
                   text run at (2,2) width 4: " "
-              LayoutTableCell {TD} at (12,2) size 74x24 [border: (1px solid #BBBBBB)] [r=0 c=1 rs=1 cs=1]
-                LayoutText {#text} at (2,2) size 70x19
-                  text run at (2,2) width 70: "ToDo One."
+              LayoutTableCell {TD} at (12,2) size 73x24 [border: (1px solid #BBBBBB)] [r=0 c=1 rs=1 cs=1]
+                LayoutText {#text} at (2,2) size 69x19
+                  text run at (2,2) width 69: "ToDo One."
         LayoutBlockFlow {DIV} at (26,76) size 732x20
-          LayoutText {#text} at (0,0) size 98x19
-            text run at (0,0) width 98: "Paragraph Two."
+          LayoutText {#text} at (0,0) size 97x19
+            text run at (0,0) width 97: "Paragraph Two."
 caret: position 0 of child 0 {#text} of child 1 {DIV} of child 3 {DIV} of body

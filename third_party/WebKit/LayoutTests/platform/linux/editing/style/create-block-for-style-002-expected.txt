@@ -11,7 +11,7 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (14,14) size 718x55
           text run at (14,14) width 712: "Should see \"bar\" centered in its own red box, with a left-aligned \"foo\" line"
           text run at (726,14) width 6: " "
-          text run at (14,42) width 401: "above and a left-aligned \"baz\" line below."
+          text run at (14,42) width 400: "above and a left-aligned \"baz\" line below."
       LayoutBlockFlow {DIV} at (0,108) size 784x112
         LayoutBlockFlow {DIV} at (0,0) size 784x112 [border: (2px solid #FF0000)]
           LayoutBlockFlow (anonymous) at (14,14) size 756x28

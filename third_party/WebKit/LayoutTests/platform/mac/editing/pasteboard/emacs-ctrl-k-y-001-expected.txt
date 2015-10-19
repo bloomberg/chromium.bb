@@ -8,11 +8,11 @@ layer at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {DIV} at (0,0) size 784x212 [border: (2px solid #0000FF)]
         LayoutBlockFlow {DIV} at (14,14) size 756x56
-          LayoutText {#text} at (0,0) size 68x28
-            text run at (0,0) width 68: "Tests: "
+          LayoutText {#text} at (0,0) size 66x28
+            text run at (0,0) width 66: "Tests: "
           LayoutBR {BR} at (0,0) size 0x0
-          LayoutText {#text} at (0,28) size 344x28
-            text run at (0,28) width 344: "Multiple ctrl-k presses then a ctrl-y."
+          LayoutText {#text} at (0,28) size 343x28
+            text run at (0,28) width 343: "Multiple ctrl-k presses then a ctrl-y."
         LayoutBlockFlow {DIV} at (14,86) size 756x112
           LayoutBlockFlow (anonymous) at (0,0) size 756x28
             LayoutText {#text} at (0,0) size 190x28
@@ -23,8 +23,8 @@ layer at (0,0) size 800x600
               LayoutText {#text} at (0,0) size 131x28
                 text run at (0,0) width 131: "one two three"
             LayoutBlockFlow {DIV} at (0,28) size 756x28
-              LayoutText {#text} at (0,0) size 118x28
-                text run at (0,0) width 118: "four five six"
+              LayoutText {#text} at (0,0) size 116x28
+                text run at (0,0) width 116: "four five six"
             LayoutBlockFlow {DIV} at (0,56) size 756x28
               LayoutText {#text} at (0,0) size 156x28
                 text run at (0,0) width 156: "seven eight nine"
@@ -34,8 +34,8 @@ layer at (0,0) size 800x600
             LayoutText {#text} at (0,0) size 131x28
               text run at (0,0) width 131: "one two three"
           LayoutBlockFlow {DIV} at (2,30) size 780x28
-            LayoutText {#text} at (0,0) size 118x28
-              text run at (0,0) width 118: "four five six"
+            LayoutText {#text} at (0,0) size 116x28
+              text run at (0,0) width 116: "four five six"
           LayoutBlockFlow {DIV} at (2,58) size 780x28
             LayoutText {#text} at (0,0) size 156x28
               text run at (0,0) width 156: "seven eight nine"

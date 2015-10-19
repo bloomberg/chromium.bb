@@ -7,24 +7,24 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {P} at (0,0) size 784x36
         LayoutText {#text} at (0,0) size 108x17
           text run at (0,0) width 108: "This is a test for "
-        LayoutInline {I} at (0,0) size 759x35
-          LayoutInline {A} at (0,0) size 354x17 [color=#0000EE]
-            LayoutText {#text} at (107,0) size 354x17
-              text run at (107,0) width 354: "http://bugzilla.opendarwin.org/show_bug.cgi?id=9978"
-          LayoutText {#text} at (460,0) size 759x35
-            text run at (460,0) width 5: " "
-            text run at (464,0) width 295: "REGRESSION (r12949-r12988): Clicking the"
-            text run at (0,18) width 424: "first letter on a line places the caret at the end of the previous line"
-        LayoutText {#text} at (423,18) size 5x17
-          text run at (423,18) width 5: "."
+        LayoutInline {I} at (0,0) size 758x35
+          LayoutInline {A} at (0,0) size 353x17 [color=#0000EE]
+            LayoutText {#text} at (107,0) size 353x17
+              text run at (107,0) width 353: "http://bugzilla.opendarwin.org/show_bug.cgi?id=9978"
+          LayoutText {#text} at (459,0) size 758x35
+            text run at (459,0) width 5: " "
+            text run at (463,0) width 295: "REGRESSION (r12949-r12988): Clicking the"
+            text run at (0,18) width 422: "first letter on a line places the caret at the end of the previous line"
+        LayoutText {#text} at (421,18) size 5x17
+          text run at (421,18) width 5: "."
       LayoutBlockFlow {P} at (0,52) size 784x18
-        LayoutText {#text} at (0,0) size 748x17
-          text run at (0,0) width 564: "To test interactively, click the left side of the W on the second line. The caret should be "
-          text run at (563,0) width 185: "move to the start of that line."
+        LayoutText {#text} at (0,0) size 746x17
+          text run at (0,0) width 562: "To test interactively, click the left side of the W on the second line. The caret should be "
+          text run at (561,0) width 185: "move to the start of that line."
       LayoutBlockFlow {HR} at (0,86) size 784x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow {DIV} at (0,96) size 250x110
-        LayoutText {#text} at (0,1) size 238x108
+        LayoutText {#text} at (0,1) size 234x108
           text run at (0,1) width 154: "Alice in"
           text run at (153,1) width 13: " "
-          text run at (0,56) width 238: "Wonderland"
+          text run at (0,56) width 234: "Wonderland"
 caret: position 10 of child 0 {#text} of child 7 {DIV} of body

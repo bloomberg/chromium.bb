@@ -4,27 +4,27 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x576
       LayoutBlockFlow {P} at (0,0) size 784x36
-        LayoutText {#text} at (0,0) size 55x18
-          text run at (0,0) width 55: "Test for "
-        LayoutInline {I} at (0,0) size 740x36
-          LayoutInline {A} at (0,0) size 306x18 [color=#0000EE]
-            LayoutText {#text} at (54,0) size 306x18
-              text run at (54,0) width 306: "http://bugs.webkit.org/show_bug.cgi?id=14911"
-          LayoutText {#text} at (359,0) size 740x36
-            text run at (359,0) width 5: " "
-            text run at (363,0) width 377: "REGRESSION: Clicking in pasted text doesn't position the"
-            text run at (0,18) width 156: "insertion point correctly"
-        LayoutText {#text} at (155,18) size 5x18
-          text run at (155,18) width 5: "."
+        LayoutText {#text} at (0,0) size 54x18
+          text run at (0,0) width 54: "Test for "
+        LayoutInline {I} at (0,0) size 737x36
+          LayoutInline {A} at (0,0) size 304x18 [color=#0000EE]
+            LayoutText {#text} at (53,0) size 304x18
+              text run at (53,0) width 304: "http://bugs.webkit.org/show_bug.cgi?id=14911"
+          LayoutText {#text} at (356,0) size 737x36
+            text run at (356,0) width 5: " "
+            text run at (360,0) width 377: "REGRESSION: Clicking in pasted text doesn't position the"
+            text run at (0,18) width 155: "insertion point correctly"
+        LayoutText {#text} at (154,18) size 5x18
+          text run at (154,18) width 5: "."
       LayoutBlockFlow {P} at (0,52) size 784x18
-        LayoutText {#text} at (0,0) size 570x18
-          text run at (0,0) width 539: "You should be able to select individual letters in \x{201C}ipsum\x{201D} by dragging in the yellow "
-          text run at (539,0) width 31: "area "
+        LayoutText {#text} at (0,0) size 569x18
+          text run at (0,0) width 538: "You should be able to select individual letters in \x{201C}ipsum\x{201D} by dragging in the yellow "
+          text run at (537,0) width 32: "area "
         LayoutInline {EM} at (0,0) size 39x18
-          LayoutText {#text} at (569,0) size 39x18
-            text run at (569,0) width 39: "above"
-        LayoutText {#text} at (607,0) size 41x18
-          text run at (607,0) width 41: " them."
+          LayoutText {#text} at (568,0) size 39x18
+            text run at (568,0) width 39: "above"
+        LayoutText {#text} at (606,0) size 41x18
+          text run at (606,0) width 41: " them."
       LayoutBlockFlow (floating) {DIV} at (0,86) size 85.78x80 [bgcolor=#FFFFAA]
         LayoutInline {SPAN} at (0,0) size 86x18 [bgcolor=#FFFFFF]
           LayoutText {#text} at (0,31) size 47x18

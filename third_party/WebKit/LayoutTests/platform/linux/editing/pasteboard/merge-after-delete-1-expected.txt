@@ -10,9 +10,9 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x60
-        LayoutText {#text} at (0,0) size 773x59
+        LayoutText {#text} at (0,0) size 772x59
           text run at (0,0) width 741: "When ReplaceSelectionCommand deletes the current selection, it should request that the deletion do a merge in some cases"
-          text run at (0,20) width 773: "(normally, though, it should ask that a merge not be done, because a merge will cause information about block nesting to be lost)."
+          text run at (0,20) width 772: "(normally, though, it should ask that a merge not be done, because a merge will cause information about block nesting to be lost)."
           text run at (0,40) width 350: "It wasn't requesting a merge in cases where it should have."
       LayoutBlockFlow {P} at (0,76) size 784x80
         LayoutText {#text} at (0,0) size 779x79

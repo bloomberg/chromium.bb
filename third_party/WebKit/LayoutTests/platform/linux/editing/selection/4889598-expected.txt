@@ -12,8 +12,8 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 740x19
-          text run at (0,0) width 740: "This tests for a bug moving down by a line from a line just above a ToDo, and moving up by a line from just below a ToDo."
+        LayoutText {#text} at (0,0) size 738x19
+          text run at (0,0) width 738: "This tests for a bug moving down by a line from a line just above a ToDo, and moving up by a line from just below a ToDo."
       LayoutBlockFlow {DIV} at (0,36) size 784x70
         LayoutBlockFlow {DIV} at (0,0) size 784x20
           LayoutText {#text} at (0,0) size 261x19

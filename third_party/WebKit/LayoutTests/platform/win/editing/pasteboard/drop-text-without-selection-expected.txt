@@ -9,16 +9,16 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {P} at (0,0) size 784x36
         LayoutText {#text} at (0,0) size 108x17
           text run at (0,0) width 108: "This is a test for "
-        LayoutInline {I} at (0,0) size 766x35
-          LayoutInline {A} at (0,0) size 354x17 [color=#0000EE]
-            LayoutText {#text} at (107,0) size 354x17
-              text run at (107,0) width 354: "http://bugzilla.opendarwin.org/show_bug.cgi?id=8394"
-          LayoutText {#text} at (460,0) size 766x35
-            text run at (460,0) width 5: " "
-            text run at (464,0) width 302: "Editable region does not accept dropped text if"
-            text run at (0,18) width 129: "there is no selection"
-        LayoutText {#text} at (128,18) size 5x17
-          text run at (128,18) width 5: "."
+        LayoutInline {I} at (0,0) size 764x35
+          LayoutInline {A} at (0,0) size 353x17 [color=#0000EE]
+            LayoutText {#text} at (107,0) size 353x17
+              text run at (107,0) width 353: "http://bugzilla.opendarwin.org/show_bug.cgi?id=8394"
+          LayoutText {#text} at (459,0) size 764x35
+            text run at (459,0) width 5: " "
+            text run at (463,0) width 301: "Editable region does not accept dropped text if"
+            text run at (0,18) width 128: "there is no selection"
+        LayoutText {#text} at (127,18) size 5x17
+          text run at (127,18) width 5: "."
       LayoutBlockFlow {P} at (0,52) size 784x18
         LayoutText {#text} at (0,0) size 668x17
           text run at (0,0) width 488: "The text field should accept drag-and-dropped text, such as the link, even if "

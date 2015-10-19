@@ -4,9 +4,9 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x36
-        LayoutText {#text} at (0,0) size 749x36
+        LayoutText {#text} at (0,0) size 748x36
           text run at (0,0) width 503: "This tests to see if dragging an image is a move drag by default (it should be). "
-          text run at (502,0) width 247: "You should only see one picture and it"
+          text run at (502,0) width 246: "You should only see one picture and it"
           text run at (0,18) width 251: "should be somewhere near the middle. "
         LayoutInline {B} at (0,0) size 499x18
           LayoutText {#text} at (250,18) size 499x18

@@ -12,17 +12,17 @@ layer at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {DIV} at (0,0) size 784x268 [border: (2px solid #0000FF)]
         LayoutBlockFlow {DIV} at (14,14) size 756x112
-          LayoutText {#text} at (0,0) size 68x28
-            text run at (0,0) width 68: "Tests: "
+          LayoutText {#text} at (0,0) size 66x28
+            text run at (0,0) width 66: "Tests: "
           LayoutBR {BR} at (0,0) size 0x0
           LayoutText {#text} at (0,28) size 747x56
             text run at (0,28) width 747: "Pasting styles we should not remove during the \"smoosh styles\" process. This"
-            text run at (0,56) width 151: "tests the fix for "
+            text run at (0,56) width 150: "tests the fix for "
           LayoutInline {A} at (0,0) size 257x28 [color=#0000EE]
-            LayoutText {#text} at (150,56) size 257x28
-              text run at (150,56) width 257: "<rdar://problem/3972665>"
-          LayoutText {#text} at (406,56) size 733x56
-            text run at (406,56) width 327: " 8A360: HTML message partially"
+            LayoutText {#text} at (149,56) size 257x28
+              text run at (149,56) width 257: "<rdar://problem/3972665>"
+          LayoutText {#text} at (405,56) size 731x56
+            text run at (405,56) width 326: " 8A360: HTML message partially"
             text run at (0,84) width 553: "truncated on left hand side, text-indent from Script Editor"
         LayoutBlockFlow {DIV} at (14,142) size 756x112
           LayoutText {#text} at (0,0) size 190x28

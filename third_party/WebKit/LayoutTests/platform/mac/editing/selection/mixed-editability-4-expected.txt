@@ -6,9 +6,9 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x36
-        LayoutText {#text} at (0,0) size 770x36
-          text run at (0,0) width 471: "This tests moving the caret forward through content of mixed editability. "
-          text run at (470,0) width 300: "The caret should move down one line from the"
+        LayoutText {#text} at (0,0) size 769x36
+          text run at (0,0) width 470: "This tests moving the caret forward through content of mixed editability. "
+          text run at (469,0) width 300: "The caret should move down one line from the"
           text run at (0,18) width 481: "editable piece to the editable piece that's embedded in a non-editable piece."
       LayoutBlockFlow {DIV} at (0,52) size 784x64
         LayoutBlockFlow (anonymous) at (0,0) size 784x18

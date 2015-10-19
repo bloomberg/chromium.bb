@@ -10,9 +10,9 @@ layer at (0,0) size 800x600
           LayoutInline {A} at (0,0) size 71x18 [color=#0000EE]
             LayoutText {#text} at (26,0) size 71x18
               text run at (26,0) width 71: "Bug 32123"
-          LayoutText {#text} at (96,0) size 322x18
+          LayoutText {#text} at (96,0) size 321x18
             text run at (96,0) width 9: ". "
-            text run at (104,0) width 314: "Hightlight for Selection should fit the target line."
+            text run at (104,0) width 313: "Hightlight for Selection should fit the target line."
         LayoutBlockFlow (anonymous) at (0,34) size 784x18
           LayoutInline {SPAN} at (0,0) size 8x18
             LayoutText {#text} at (0,0) size 8x18

@@ -21,18 +21,18 @@ layer at (0,0) size 800x600
               LayoutInline {SPAN} at (0,0) size 5x17
                 LayoutText {#text} at (448,0) size 5x17
                   text run at (448,0) width 5: " "
-              LayoutText {#text} at (452,0) size 702x35
-                text run at (452,0) width 246: "WebElementImageKey is a key added"
-                text run at (697,0) width 5: " "
+              LayoutText {#text} at (452,0) size 701x35
+                text run at (452,0) width 245: "WebElementImageKey is a key added"
+                text run at (696,0) width 5: " "
                 text run at (0,18) width 437: "to the elementAtPoint dictionary and the key's value is an NSImage."
               LayoutInline {SPAN} at (0,0) size 4x17
                 LayoutText {#text} at (437,18) size 4x17
                   text run at (437,18) width 4: " "
-              LayoutText {#text} at (441,18) size 263x17
-                text run at (441,18) width 263: "Unfortunately we use CGImageRef now."
-              LayoutInline {SPAN} at (0,0) size 1x17
-                LayoutText {#text} at (703,18) size 1x17
-                  text run at (703,18) width 1: " "
+              LayoutText {#text} at (441,18) size 262x17
+                text run at (441,18) width 262: "Unfortunately we use CGImageRef now."
+              LayoutInline {SPAN} at (0,0) size 2x17
+                LayoutText {#text} at (702,18) size 2x17
+                  text run at (702,18) width 2: " "
               LayoutText {#text} at (0,36) size 701x53
                 text run at (0,36) width 697: "What this means is that as you move the mouse around a web page we are aggressively mallocing NSImages"
                 text run at (696,36) width 5: " "

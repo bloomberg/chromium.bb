@@ -9,11 +9,11 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x576
       LayoutBlockFlow {P} at (0,0) size 784x36
-        LayoutInline {B} at (0,0) size 307x18
-          LayoutText {#text} at (0,0) size 307x18
-            text run at (0,0) width 307: "Make sure that your window is small enough"
-        LayoutText {#text} at (306,0) size 778x36
-          text run at (306,0) width 472: " so that 'don't select this line' and 'try to select just this line' appear on two"
+        LayoutInline {B} at (0,0) size 306x18
+          LayoutText {#text} at (0,0) size 306x18
+            text run at (0,0) width 306: "Make sure that your window is small enough"
+        LayoutText {#text} at (305,0) size 778x36
+          text run at (305,0) width 473: " so that 'don't select this line' and 'try to select just this line' appear on two"
           text run at (0,18) width 98: "different lines. "
           text run at (97,18) width 623: "The two phrases are actually in the same paragraph, there are just lots of spaces in between them."
       LayoutBlockFlow {P} at (0,52) size 784x36
@@ -24,7 +24,7 @@ layer at (0,0) size 800x600
             text run at (107,0) width 373: "REGRESSION: Selection includes spaces that it shouldn't"
         LayoutText {#text} at (479,0) size 768x36
           text run at (479,0) width 289: ". The test makes sure that a word that is right"
-          text run at (0,18) width 292: "after a line wrap can be selected successfully."
+          text run at (0,18) width 291: "after a line wrap can be selected successfully."
       LayoutBlockFlow {P} at (0,104) size 784x0
       LayoutBlockFlow {DIV} at (16,104) size 752x74 [border: (1px solid #000000)]
         LayoutText {#text} at (1,1) size 748x54

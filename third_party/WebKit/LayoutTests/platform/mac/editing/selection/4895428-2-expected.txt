@@ -4,10 +4,10 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x576
       LayoutBlockFlow {P} at (0,0) size 784x54
-        LayoutText {#text} at (0,0) size 744x54
-          text run at (0,0) width 744: "This tests to see if a mouse click inside an editable, focusable node focuses that node. Normally, we focus a node on"
+        LayoutText {#text} at (0,0) size 743x54
+          text run at (0,0) width 743: "This tests to see if a mouse click inside an editable, focusable node focuses that node. Normally, we focus a node on"
           text run at (0,18) width 738: "mouse down, but to make it easier to drag selections containing editable pieces we delay focus until mouse up. The"
-          text run at (0,36) width 536: "editable table cell should be focused and you should see a 'Success' message below."
+          text run at (0,36) width 535: "editable table cell should be focused and you should see a 'Success' message below."
       LayoutBlockFlow {DIV} at (0,70) size 784x28
         LayoutTable {TABLE} at (0,0) size 147x28 [border: (1px outset #808080)]
           LayoutTableSection {TBODY} at (1,1) size 145x26

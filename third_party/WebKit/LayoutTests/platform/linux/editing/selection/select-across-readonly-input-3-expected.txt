@@ -7,8 +7,8 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (0,0) size 779x19
           text run at (0,0) width 779: "This test ensures selection that crosses the shadow DOM boundary of a readonly input element cannot be made by a mouse drag."
       LayoutBlockFlow {P} at (0,36) size 784x40
-        LayoutText {#text} at (0,0) size 759x39
-          text run at (0,0) width 759: "To manually test, select text by a mouse drag starting in \"hello\" and ending in \"world\". Selection should not extend into the input"
+        LayoutText {#text} at (0,0) size 758x39
+          text run at (0,0) width 758: "To manually test, select text by a mouse drag starting in \"hello\" and ending in \"world\". Selection should not extend into the input"
           text run at (0,20) width 50: "element."
       LayoutBlockFlow {DIV} at (0,92) size 784x25
         LayoutInline {SPAN} at (0,0) size 28x19

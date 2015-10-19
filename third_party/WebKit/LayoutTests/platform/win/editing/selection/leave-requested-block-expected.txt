@@ -6,17 +6,17 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x576
       LayoutBlockFlow {P} at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 131x17
-          text run at (0,0) width 131: "Test case for fix for "
-        LayoutInline {A} at (0,0) size 350x17 [color=#0000EE]
-          LayoutText {#text} at (130,0) size 350x17
-            text run at (130,0) width 350: "http://bugzilla.opendarwin.org/show_bug.cgi?id=5354"
-        LayoutText {#text} at (479,0) size 5x17
-          text run at (479,0) width 5: "."
+        LayoutText {#text} at (0,0) size 130x17
+          text run at (0,0) width 130: "Test case for fix for "
+        LayoutInline {A} at (0,0) size 349x17 [color=#0000EE]
+          LayoutText {#text} at (129,0) size 349x17
+            text run at (129,0) width 349: "http://bugzilla.opendarwin.org/show_bug.cgi?id=5354"
+        LayoutText {#text} at (477,0) size 5x17
+          text run at (477,0) width 5: "."
       LayoutBlockFlow {P} at (0,34) size 784x36
-        LayoutText {#text} at (0,0) size 754x35
-          text run at (0,0) width 754: "Changes were made to VisiblePosition's so that init() will not leave the block containing the requested position unless"
-          text run at (0,18) width 273: "there are no VisiblePositions in that block."
+        LayoutText {#text} at (0,0) size 753x35
+          text run at (0,0) width 753: "Changes were made to VisiblePosition's so that init() will not leave the block containing the requested position unless"
+          text run at (0,18) width 272: "there are no VisiblePositions in that block."
       LayoutBlockFlow {P} at (0,86) size 784x0
       LayoutBlockFlow {DIV} at (0,86) size 784x54 [border: (2px solid #AAAAFF)]
         LayoutBlockFlow {P} at (2,18) size 780x18

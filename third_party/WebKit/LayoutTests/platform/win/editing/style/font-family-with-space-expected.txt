@@ -6,8 +6,8 @@ layer at (0,0) size 800x600
       LayoutInline {U} at (0,0) size 234x15
         LayoutText {#text} at (0,0) size 234x15
           text run at (0,0) width 234: "This text should be Times New Roman bold."
-      LayoutInline {U} at (0,0) size 234x15
-        LayoutText {#text} at (234,0) size 234x15
-          text run at (234,0) width 234: "This text should be Times New Roman bold."
+      LayoutInline {U} at (0,0) size 235x15
+        LayoutText {#text} at (233,0) size 235x15
+          text run at (233,0) width 235: "This text should be Times New Roman bold."
       LayoutText {#text} at (0,0) size 0x0
 caret: position 41 of child 0 {#text} of child 1 {U} of body

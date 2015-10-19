@@ -13,9 +13,9 @@ layer at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {DIV} at (0,0) size 784x378 [border: (2px solid #0000FF)]
         LayoutBlockFlow {DIV} at (14,14) size 756x111
-          LayoutText {#text} at (0,0) size 66x26
-            text run at (0,0) width 66: "Tests: "
-          LayoutBR {BR} at (66,21) size 0x0
+          LayoutText {#text} at (0,0) size 64x26
+            text run at (0,0) width 64: "Tests: "
+          LayoutBR {BR} at (63,21) size 1x0
           LayoutText {#text} at (0,27) size 604x27
             text run at (0,27) width 604: "A scenario I thought of based on my experiences with this bug:"
           LayoutInline {A} at (0,0) size 257x27 [color=#0000EE]

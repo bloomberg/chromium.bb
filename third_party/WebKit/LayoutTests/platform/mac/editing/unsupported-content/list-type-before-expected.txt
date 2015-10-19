@@ -12,8 +12,8 @@ layer at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {DIV} at (0,0) size 784x228 [border: (4px solid #0000FF)]
         LayoutBlockFlow {DIV} at (20,20) size 744x72
-          LayoutText {#text} at (0,0) size 68x28
-            text run at (0,0) width 68: "Tests: "
+          LayoutText {#text} at (0,0) size 66x28
+            text run at (0,0) width 66: "Tests: "
           LayoutBR {BR} at (0,0) size 0x0
           LayoutText {#text} at (0,28) size 656x22
             text run at (0,28) width 656: "Our ability to \"edit around\" content the HTML editing code does not yet handle very well. "
@@ -21,8 +21,8 @@ layer at (0,0) size 800x600
           LayoutInline {I} at (0,0) size 98x22
             LayoutText {#text} at (0,50) size 98x22
               text run at (0,50) width 98: "For this test: "
-          LayoutText {#text} at (97,50) size 225x22
-            text run at (97,50) width 225: "Test typing at the start of a list."
+          LayoutText {#text} at (97,50) size 224x22
+            text run at (97,50) width 224: "Test typing at the start of a list."
         LayoutBlockFlow (anonymous) at (20,92) size 744x22
           LayoutBR {BR} at (0,0) size 0x22
         LayoutBlockFlow {DIV} at (20,114) size 744x94
@@ -36,8 +36,8 @@ layer at (0,0) size 800x600
           LayoutInline {I} at (0,0) size 98x22
             LayoutText {#text} at (0,72) size 98x22
               text run at (0,72) width 98: "For this test: "
-          LayoutText {#text} at (97,72) size 410x22
-            text run at (97,72) width 410: "Typed text should appear at the start of the first list item."
+          LayoutText {#text} at (97,72) size 408x22
+            text run at (97,72) width 408: "Typed text should appear at the start of the first list item."
       LayoutBlockFlow {DIV} at (0,238) size 784x136 [border: (2px solid #008000)]
         LayoutBlockFlow {UL} at (2,26) size 780x84
           LayoutListItem {LI} at (40,0) size 740x28

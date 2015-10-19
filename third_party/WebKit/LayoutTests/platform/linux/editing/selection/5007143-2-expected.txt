@@ -7,7 +7,7 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (0,0) size 756x39
           text run at (0,0) width 756: "This tests for a bug when moving the caret forward by a line from a range selection with a horizontal position for vertical arrow"
           text run at (0,20) width 89: "navigation set. "
-          text run at (89,20) width 575: "To match TextEdit, the caret should be between the second and third 'x's in the forth paragraph."
+          text run at (89,20) width 573: "To match TextEdit, the caret should be between the second and third 'x's in the forth paragraph."
       LayoutBlockFlow {DIV} at (0,56) size 784x80
         LayoutText {#text} at (0,0) size 21x19
           text run at (0,0) width 21: "xxx"
