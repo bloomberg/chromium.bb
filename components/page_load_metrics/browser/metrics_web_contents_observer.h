@@ -25,35 +25,102 @@ class Message;
 
 namespace page_load_metrics {
 
-// If you add elements from this enum, make sure you update the enum
+// NOTE: Some of these histograms are separated into a separate histogram
+// specified by the ".Background" suffix. For these events, we put them into the
+// background histogram if the web contents was ever in the background from
+// navigation start to the event in question.
+
+// ProvisionalLoadEvents count all main frame navigations before they commit.
+// The events in this enum are all disjoint, and summing them yields the total
+// number of main frame provisional loads.
+//
+// If you add elements to this enum, make sure you update the enum
 // value in histograms.xml. Only add elements to the end to prevent
 // inconsistencies between versions.
-enum PageLoadEvent {
-  PAGE_LOAD_STARTED,
+enum ProvisionalLoadEvent {
+  // This case occurs when the NavigationHandle finishes and reports
+  // !HasCommitted(), but reports no net::Error. This should not occur
+  // pre-PlzNavigate, but afterwards it should represent the navigation stopped
+  // by the user before it was ready to commit.
+  PROVISIONAL_LOAD_STOPPED,
 
-  // A provisional load is a load before it commits, i.e. before it receives the
-  // first bytes of the response body or knows the encoding of the response
-  // body. A load failed before it was committed for any reason, e.g. from a
-  // user abort or a network timeout.
-  PAGE_LOAD_FAILED_BEFORE_COMMIT,
+  // An aborted provisional load has error net::ERR_ABORTED. Note that this can
+  // come from some non user-initiated errors, such as downloads, or 204
+  // responses. See crbug.com/542369.
+  PROVISIONAL_LOAD_ERR_ABORTED,
 
-  // A subset of PAGE_LOAD_FAILED_BEFORE_COMMIT, this counts the
-  // specific failures due to user aborts.
-  PAGE_LOAD_ABORTED_BEFORE_COMMIT,
+  // This event captures all the other ways a provisional load can fail.
+  PROVISIONAL_LOAD_ERR_FAILED_NON_ABORT,
 
-  // When a load is aborted anytime before the page's first layout, we increase
-  // these counts. This includes all failed provisional loads.
-  PAGE_LOAD_ABORTED_BEFORE_FIRST_LAYOUT,
-
-  // We increase this count if a page load successfully has a layout.
-  // Differentiate between loads that were backgrounded before first layout.
-  // Note that a load that is backgrounded, then foregrounded before first
-  // layout will still end up in the backgrounded bucket.
-  PAGE_LOAD_SUCCESSFUL_FIRST_LAYOUT_FOREGROUND,
-  PAGE_LOAD_SUCCESSFUL_FIRST_LAYOUT_BACKGROUND,
+  // Counts the number of successful commits.
+  PROVISIONAL_LOAD_COMMITTED,
 
   // Add values before this final count.
-  PAGE_LOAD_LAST_ENTRY
+  PROVISIONAL_LOAD_LAST_ENTRY
+};
+
+// CommittedLoadEvents are events that occur on committed loads that we track.
+// Note that we capture events only for committed loads that:
+//  - Are http/https.
+//  - Not same-page navigations.
+//  - Are not navigations to an error page.
+// We only know these things about a navigation post-commit.
+//
+// If you add elements to this enum, make sure you update the enum
+// value in histograms.xml. Only add elements to the end to prevent
+// inconsistencies between versions.
+enum CommittedLoadEvent {
+  // When a load that eventually commits started. Note we can't log this until
+  // commit time, but it represents when the actual page load started. Thus, we
+  // only separate this into .Background when a page load starts backgrounded.
+  COMMITTED_LOAD_STARTED,
+
+  // These two events are disjoint. Sum them to find the total number of
+  // committed loads that we end up tracking.
+  COMMITTED_LOAD_FAILED_BEFORE_FIRST_LAYOUT,
+  COMMITTED_LOAD_SUCCESSFUL_FIRST_LAYOUT,
+
+  // TODO(csharrison) once first paint metrics are in place, add new events.
+
+  // Add values before this final count.
+  COMMITTED_LOAD_LAST_ENTRY
+};
+
+// These errors are internal to the page_load_metrics subsystem and do not
+// reflect actual errors that occur during a page load.
+//
+// If you add elements to this enum, make sure you update the enum
+// value in histograms.xml. Only add elements to the end to prevent
+// inconsistencies between versions.
+enum InternalErrorLoadEvent {
+  // A timing IPC was sent from the renderer that did not line up with previous
+  // data we've received (i.e. navigation start is different or the timing
+  // struct is somehow invalid). This error can only occur once the IPC is
+  // vetted in other ways (see other errors).
+  ERR_BAD_TIMING_IPC,
+
+  // The following IPCs are not mutually exclusive.
+  //
+  // We received an IPC when we weren't tracking a committed load. This will
+  // often happen if we get an IPC from a bad URL scheme (that is, the renderer
+  // sent us an IPC from a navigation we don't care about).
+  ERR_IPC_WITH_NO_COMMITTED_LOAD,
+
+  // Received a notification from a frame that has been navigated away from.
+  ERR_IPC_FROM_WRONG_FRAME,
+
+  // We received an IPC even through the last committed url from the browser
+  // was not http/s. This can happen with the renderer sending IPCs for the
+  // new tab page. This will often come paired with
+  // ERR_IPC_WITH_NO_COMMITTED_LOAD.
+  ERR_IPC_FROM_BAD_URL_SCHEME,
+
+  // If we track a navigation, but the renderer sends us no IPCs. This could
+  // occur if the browser filters loads less aggressively than the renderer.
+  ERR_NO_IPCS_RECEIVED,
+
+  // Add values before this final count.
+  ERR_LAST_ENTRY
 };
 
 class PageLoadTracker {
@@ -62,10 +129,13 @@ class PageLoadTracker {
   ~PageLoadTracker();
   void Commit();
   void WebContentsHidden();
+  void WebContentsShown();
 
   // Returns true if the timing was successfully updated.
   bool UpdateTiming(const PageLoadTiming& timing);
-  void RecordEvent(PageLoadEvent event);
+  void RecordProvisionalEvent(ProvisionalLoadEvent event);
+  void RecordCommittedEvent(CommittedLoadEvent event, bool backgrounded);
+  bool HasBackgrounded();
 
  private:
   void RecordTimingHistograms();
@@ -74,8 +144,9 @@ class PageLoadTracker {
 
   // We record separate metrics for events that occur after a background,
   // because metrics like layout/paint are delayed artificially
-  // when they occur in the bacground.
+  // when they occur in the background.
   base::TimeTicks background_time_;
+  base::TimeTicks foreground_time_;
   bool started_in_foreground_;
 
   PageLoadTiming timing_;
@@ -110,8 +181,6 @@ class MetricsWebContentsObserver
   friend class MetricsWebContentsObserverTest;
 
   void OnTimingUpdated(content::RenderFrameHost*, const PageLoadTiming& timing);
-
-  bool IsRelevantNavigation(content::NavigationHandle* navigation_handle);
 
   // True if the web contents is currently in the foreground.
   bool in_foreground_;

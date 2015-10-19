@@ -30147,10 +30147,45 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="PageLoad.EventCounts" enum="PageLoadEvent">
   <owner>csharrison@chromium.org</owner>
   <owner>bmcquade@chromium.org</owner>
+  <obsolete>
+    deprecated in favor of PageLoad.Events.*
+  </obsolete>
   <summary>
     Captures counts of various page load events. These are enumerated in the
     enum page_load_metrics::PageLoadEvent, and include events like 'page load
     aborted before first layout'
+  </summary>
+</histogram>
+
+<histogram name="PageLoad.Events.Committed" enum="CommittedLoadEvent">
+  <owner>csharrison@chromium.org</owner>
+  <owner>bmcquade@chromium.org</owner>
+  <summary>
+    Captures counts of load events post-commit, on relevant page loads (i.e.
+    http/https, not same-page, not an error page). These events include aborts
+    before first layout and successful first layouts. Note that the event
+    'Committed load started' when segmented by background/foreground specifies
+    whether the eventually committed load started in the background or
+    foreground, not whether we backgrounded before the actual commit event. This
+    is because we don't have all the data to filter relevant page loads on
+    provisional loads.
+  </summary>
+</histogram>
+
+<histogram name="PageLoad.Events.InternalError" enum="InternalErrorLoadEvent">
+  <owner>csharrison@chromium.org</owner>
+  <owner>bmcquade@chromium.org</owner>
+  <summary>
+    Counts of various internal error conditions in the page_load_metrics system.
+  </summary>
+</histogram>
+
+<histogram name="PageLoad.Events.Provisional" enum="ProvisionalLoadEvent">
+  <owner>csharrison@chromium.org</owner>
+  <owner>bmcquade@chromium.org</owner>
+  <summary>
+    Captures counts of provisional load events. These include aborted, failed,
+    and successful (committed) provisional loads.
   </summary>
 </histogram>
 
@@ -30199,6 +30234,28 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     Measures the time from navigation timing's navigation start to the time the
     DOMContentLoaded event is fired, for main frame documents.
+  </summary>
+</histogram>
+
+<histogram name="PageLoad.Timing2.NavigationToFirstBackground"
+    units="milliseconds">
+  <owner>bmcquade@chromium.org</owner>
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    Measures the time from navigation timing's navigation start to the time the
+    user first backgrounds the tab. Only measures navigations that started in
+    the foreground.
+  </summary>
+</histogram>
+
+<histogram name="PageLoad.Timing2.NavigationToFirstForeground"
+    units="milliseconds">
+  <owner>bmcquade@chromium.org</owner>
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    Measures the time from navigation timing's navigation start to the time the
+    user first foregrounds an initially backgrounded tab. Only measures
+    navigations that started in the background.
   </summary>
 </histogram>
 
@@ -54490,6 +54547,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="505" label="505: HTTP Version Not Supported"/>
 </enum>
 
+<enum name="CommittedLoadEvent" type="int">
+  <int value="0" label="Committed load started"/>
+  <int value="1" label="Committed load failed before first layout"/>
+  <int value="2" label="Successful first layout"/>
+</enum>
+
 <enum name="CompositedScrolling" type="int">
   <int value="0" label="Is scrollable area"/>
   <int value="1" label="Needs to be stacking container"/>
@@ -63195,6 +63258,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="8" label="AVX2"/>
 </enum>
 
+<enum name="InternalErrorLoadEvent" type="int">
+  <summary>Internal Errors in the page_load_metrics system</summary>
+  <int value="0" label="Invalid timing IPC sent from renderer"/>
+  <int value="1" label="IPC received while not tracking a committed load"/>
+  <int value="2" label="IPC received from a frame we navigated away from"/>
+  <int value="3" label="IPC received from a bad URL scheme"/>
+  <int value="4" label="No IPCs received for this navigation"/>
+</enum>
+
 <enum name="InterruptReason" type="int">
   <int value="0" label="NONE"/>
   <int value="1" label="FILE_FAILED"/>
@@ -67460,6 +67532,9 @@ To add a new entry, add it with any value and run test to compute valid value.
 </enum>
 
 <enum name="PageLoadEvent" type="int">
+  <obsolete>
+    Deprecated in favor of {Committed|Provisional|InternalError}LoadEvent
+  </obsolete>
   <int value="0" label="Started main frame load"/>
   <int value="1" label="Failed load before commit"/>
   <int value="2" label="Aborted load before commit"/>
@@ -69573,6 +69648,22 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="3" label="SPDY 3.0"/>
   <int value="4" label="SPDY 3.1"/>
   <int value="5" label="SPDY 4.0"/>
+</enum>
+
+<enum name="ProvisionalLoadEvent" type="int">
+  <int value="0" label="Stopped no error">
+    This should represent the provisional load being stopped by the user, but
+    should not occur pre-PlzNavigate.
+  </int>
+  <int value="1" label="Load failed: ERR_ABORTED">
+    The provisional load failed with net::ERR_ABORTED. Note that ERR_ABORTED
+    includes downloads, 204s, and other non user-initiated abort conditions
+    (crbug.com/542369)
+  </int>
+  <int value="2" label="Load failed: not ERR_ABORTED">
+    The provisional load failed with an error other than net::ERR_ABORTED
+  </int>
+  <int value="3" label="Load successfully committed"/>
 </enum>
 
 <enum name="ProvisionalSaveFailure" type="int">
@@ -78484,8 +78575,24 @@ To add a new entry, add it with any value and run test to compute valid value.
 </histogram_suffixes>
 
 <histogram_suffixes name="PageLoadBackgrounded" separator=".">
+  <obsolete>
+    Deprecated in favor of PageLoadBackgrounded2.
+  </obsolete>
   <suffix name="BG"
       label="Event occurred at least partially in the background"/>
+  <affected-histogram
+      name="PageLoad.Timing2.NavigationToDOMContentLoadedEventFired"/>
+  <affected-histogram name="PageLoad.Timing2.NavigationToFirstLayout"/>
+  <affected-histogram name="PageLoad.Timing2.NavigationToFirstTextPaint"/>
+  <affected-histogram name="PageLoad.Timing2.NavigationToLoadEventFired"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="PageLoadBackgrounded2" separator=".">
+  <suffix name="Background"
+      label="The page was backgrounded at least once from navigation start to
+             this event."/>
+  <affected-histogram name="PageLoad.Events.Committed"/>
+  <affected-histogram name="PageLoad.Events.Provisional"/>
   <affected-histogram
       name="PageLoad.Timing2.NavigationToDOMContentLoadedEventFired"/>
   <affected-histogram name="PageLoad.Timing2.NavigationToFirstLayout"/>

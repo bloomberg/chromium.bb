@@ -25,6 +25,22 @@ namespace page_load_metrics {
 
 namespace {
 
+// The url we see from the renderer side is not always the same as what
+// we see from the browser side (e.g. chrome://newtab). We want to be
+// sure here that we aren't logging UMA for internal pages.
+bool IsRelevantNavigation(
+    content::NavigationHandle* navigation_handle,
+    const GURL& browser_url,
+    const std::string& mime_type) {
+  DCHECK(navigation_handle->HasCommitted());
+  return navigation_handle->IsInMainFrame() &&
+         !navigation_handle->IsSamePage() &&
+         !navigation_handle->IsErrorPage() &&
+         navigation_handle->GetURL().SchemeIsHTTPOrHTTPS() &&
+         browser_url.SchemeIsHTTPOrHTTPS() &&
+         (mime_type == "text/html" || mime_type == "application/xhtml+xml");
+}
+
 bool IsValidPageLoadTiming(const PageLoadTiming& timing) {
   if (timing.IsEmpty())
     return false;
@@ -56,6 +72,11 @@ base::Time WallTimeFromTimeTicks(base::TimeTicks time) {
       (time - base::TimeTicks::UnixEpoch()).InSecondsF());
 }
 
+void RecordInternalError(InternalErrorLoadEvent event) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "PageLoad.Events.InternalError", event, ERR_LAST_ENTRY);
+}
+
 }  // namespace
 
 #define PAGE_LOAD_HISTOGRAM(name, sample)                           \
@@ -64,47 +85,59 @@ base::Time WallTimeFromTimeTicks(base::TimeTicks time) {
                              base::TimeDelta::FromMinutes(10), 100)
 
 PageLoadTracker::PageLoadTracker(bool in_foreground)
-    : has_commit_(false), started_in_foreground_(in_foreground) {
-  RecordEvent(PAGE_LOAD_STARTED);
-}
+    : has_commit_(false), started_in_foreground_(in_foreground) {}
 
 PageLoadTracker::~PageLoadTracker() {
-  // Even a load that failed a provisional load should log
-  // that it aborted before first layout.
-  if (timing_.first_layout.is_zero())
-    RecordEvent(PAGE_LOAD_ABORTED_BEFORE_FIRST_LAYOUT);
-
   if (has_commit_)
     RecordTimingHistograms();
 }
 
 void PageLoadTracker::WebContentsHidden() {
   // Only log the first time we background in a given page load.
-  if (background_time_.is_null()) {
+  if (started_in_foreground_ && background_time_.is_null())
     background_time_ = base::TimeTicks::Now();
-  }
+}
+
+void PageLoadTracker::WebContentsShown() {
+  // Only log the first time we foreground in a given page load.
+  // Don't log foreground time if we started foregrounded.
+  if (!started_in_foreground_ && foreground_time_.is_null())
+    foreground_time_ = base::TimeTicks::Now();
 }
 
 void PageLoadTracker::Commit() {
   has_commit_ = true;
+  // We log the event that this load started. Because we don't know if a load is
+  // relevant or if it will commit before now, we have to log this event at
+  // commit time.
+  RecordCommittedEvent(COMMITTED_LOAD_STARTED, !started_in_foreground_);
 }
 
-bool PageLoadTracker::UpdateTiming(const PageLoadTiming& timing) {
+bool PageLoadTracker::UpdateTiming(const PageLoadTiming& new_timing) {
   // Throw away IPCs that are not relevant to the current navigation.
-  if (!timing_.navigation_start.is_null() &&
-      timing_.navigation_start != timing.navigation_start) {
-    // TODO(csharrison) uma log a counter here
-    return false;
-  }
-  if (IsValidPageLoadTiming(timing)) {
-    timing_ = timing;
+  // Two timing structures cannot refer to the same navigation if they indicate
+  // that a navigation started at different times, so a new timing struct with a
+  // different start time from an earlier struct is considered invalid.
+  bool valid_timing_descendent =
+      timing_.navigation_start.is_null() ||
+      timing_.navigation_start == new_timing.navigation_start;
+  if (IsValidPageLoadTiming(new_timing) && valid_timing_descendent) {
+    timing_ = new_timing;
     return true;
   }
   return false;
 }
 
+bool PageLoadTracker::HasBackgrounded() {
+  return !started_in_foreground_ || !background_time_.is_null();
+}
+
 void PageLoadTracker::RecordTimingHistograms() {
   DCHECK(has_commit_);
+  if (timing_.IsEmpty()) {
+    RecordInternalError(ERR_NO_IPCS_RECEIVED);
+    return;
+  }
   // This method is similar to how blink converts TimeTicks to epoch time.
   // There may be slight inaccuracies due to inter-process timestamps, but
   // this solution is the best we have right now.
@@ -122,7 +155,7 @@ void PageLoadTracker::RecordTimingHistograms() {
           timing_.dom_content_loaded_event_start);
     } else {
       PAGE_LOAD_HISTOGRAM(
-          "PageLoad.Timing2.NavigationToDOMContentLoadedEventFired.BG",
+          "PageLoad.Timing2.NavigationToDOMContentLoadedEventFired.Background",
           timing_.dom_content_loaded_event_start);
     }
   }
@@ -131,19 +164,23 @@ void PageLoadTracker::RecordTimingHistograms() {
       PAGE_LOAD_HISTOGRAM("PageLoad.Timing2.NavigationToLoadEventFired",
                           timing_.load_event_start);
     } else {
-      PAGE_LOAD_HISTOGRAM("PageLoad.Timing2.NavigationToLoadEventFired.BG",
-                          timing_.load_event_start);
+      PAGE_LOAD_HISTOGRAM(
+          "PageLoad.Timing2.NavigationToLoadEventFired.Background",
+          timing_.load_event_start);
     }
   }
-  if (!timing_.first_layout.is_zero()) {
+  if (timing_.first_layout.is_zero()) {
+    RecordCommittedEvent(COMMITTED_LOAD_FAILED_BEFORE_FIRST_LAYOUT,
+                         HasBackgrounded());
+  } else {
     if (timing_.first_layout < background_delta) {
       PAGE_LOAD_HISTOGRAM("PageLoad.Timing2.NavigationToFirstLayout",
                           timing_.first_layout);
-      RecordEvent(PAGE_LOAD_SUCCESSFUL_FIRST_LAYOUT_FOREGROUND);
+      RecordCommittedEvent(COMMITTED_LOAD_SUCCESSFUL_FIRST_LAYOUT, false);
     } else {
-      PAGE_LOAD_HISTOGRAM("PageLoad.Timing2.NavigationToFirstLayout.BG",
+      PAGE_LOAD_HISTOGRAM("PageLoad.Timing2.NavigationToFirstLayout.Background",
                           timing_.first_layout);
-      RecordEvent(PAGE_LOAD_SUCCESSFUL_FIRST_LAYOUT_BACKGROUND);
+      RecordCommittedEvent(COMMITTED_LOAD_SUCCESSFUL_FIRST_LAYOUT, true);
     }
   }
   if (!timing_.first_text_paint.is_zero()) {
@@ -151,15 +188,45 @@ void PageLoadTracker::RecordTimingHistograms() {
       PAGE_LOAD_HISTOGRAM("PageLoad.Timing2.NavigationToFirstTextPaint",
                           timing_.first_text_paint);
     } else {
-      PAGE_LOAD_HISTOGRAM("PageLoad.Timing2.NavigationToFirstTextPaint.BG",
-                          timing_.first_text_paint);
+      PAGE_LOAD_HISTOGRAM(
+          "PageLoad.Timing2.NavigationToFirstTextPaint.Background",
+          timing_.first_text_paint);
     }
+  }
+  // Log time to first foreground / time to first background. Log counts that we
+  // started a relevant page load in the foreground / background.
+  if (!background_time_.is_null()) {
+    PAGE_LOAD_HISTOGRAM("PageLoad.Timing2.NavigationToFirstBackground",
+                        background_delta);
+  } else if (!foreground_time_.is_null()) {
+    PAGE_LOAD_HISTOGRAM(
+        "PageLoad.Timing2.NavigationToFirstForeground",
+        WallTimeFromTimeTicks(foreground_time_) - timing_.navigation_start);
   }
 }
 
-void PageLoadTracker::RecordEvent(PageLoadEvent event) {
-  UMA_HISTOGRAM_ENUMERATION(
-      "PageLoad.EventCounts", event, PAGE_LOAD_LAST_ENTRY);
+void PageLoadTracker::RecordProvisionalEvent(ProvisionalLoadEvent event) {
+  if (HasBackgrounded()) {
+    UMA_HISTOGRAM_ENUMERATION("PageLoad.Events.Provisional.Background", event,
+                              PROVISIONAL_LOAD_LAST_ENTRY);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION("PageLoad.Events.Provisional", event,
+                              PROVISIONAL_LOAD_LAST_ENTRY);
+  }
+}
+
+// RecordCommittedEvent needs a backgrounded input because we need to special
+// case a few events that need either precise timing measurements, or different
+// logic than simply "Did I background before logging this event?"
+void PageLoadTracker::RecordCommittedEvent(CommittedLoadEvent event,
+                                           bool backgrounded) {
+  if (backgrounded) {
+    UMA_HISTOGRAM_ENUMERATION("PageLoad.Events.Committed.Background", event,
+                              COMMITTED_LOAD_LAST_ENTRY);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION("PageLoad.Events.Committed", event,
+                              COMMITTED_LOAD_LAST_ENTRY);
+  }
 }
 
 MetricsWebContentsObserver::MetricsWebContentsObserver(
@@ -203,13 +270,17 @@ void MetricsWebContentsObserver::DidFinishNavigation(
   DCHECK(finished_nav);
 
   // Handle a pre-commit error here. Navigations that result in an error page
-  // will be ignored.
+  // will be ignored. Note that downloads/204s will result in HasCommitted()
+  // returning false.
   if (!navigation_handle->HasCommitted()) {
-    finished_nav->RecordEvent(PAGE_LOAD_FAILED_BEFORE_COMMIT);
-    if (navigation_handle->GetNetErrorCode() == net::ERR_ABORTED)
-      finished_nav->RecordEvent(PAGE_LOAD_ABORTED_BEFORE_COMMIT);
+    net::Error error = navigation_handle->GetNetErrorCode();
+    finished_nav->RecordProvisionalEvent(
+        error == net::OK ? PROVISIONAL_LOAD_STOPPED
+        : error == net::ERR_ABORTED ? PROVISIONAL_LOAD_ERR_ABORTED
+        : PROVISIONAL_LOAD_ERR_FAILED_NON_ABORT);
     return;
   }
+  finished_nav->RecordProvisionalEvent(PROVISIONAL_LOAD_COMMITTED);
 
   // Don't treat a same-page nav as a new page load.
   if (navigation_handle->IsSamePage())
@@ -219,7 +290,11 @@ void MetricsWebContentsObserver::DidFinishNavigation(
   // navigation.
   committed_load_.reset();
 
-  if (!IsRelevantNavigation(navigation_handle))
+  const GURL& browser_url = web_contents()->GetLastCommittedURL();
+  const std::string& mime_type = web_contents()->GetContentsMimeType();
+  DCHECK(!browser_url.is_empty());
+  DCHECK(!mime_type.empty());
+  if (!IsRelevantNavigation(navigation_handle, browser_url, mime_type))
     return;
 
   committed_load_ = finished_nav.Pass();
@@ -228,6 +303,11 @@ void MetricsWebContentsObserver::DidFinishNavigation(
 
 void MetricsWebContentsObserver::WasShown() {
   in_foreground_ = true;
+  if (committed_load_)
+    committed_load_->WebContentsShown();
+  for (const auto& kv : provisional_loads_) {
+    kv.second->WebContentsShown();
+  }
 }
 
 void MetricsWebContentsObserver::WasHidden() {
@@ -250,34 +330,36 @@ void MetricsWebContentsObserver::RenderProcessGone(
 void MetricsWebContentsObserver::OnTimingUpdated(
     content::RenderFrameHost* render_frame_host,
     const PageLoadTiming& timing) {
-  if (!committed_load_)
-    return;
+  bool error = false;
+  if (!committed_load_) {
+    RecordInternalError(ERR_IPC_WITH_NO_COMMITTED_LOAD);
+    error = true;
+  }
 
   // We may receive notifications from frames that have been navigated away
   // from. We simply ignore them.
-  if (render_frame_host != web_contents()->GetMainFrame())
-    return;
+  if (render_frame_host != web_contents()->GetMainFrame()) {
+    RecordInternalError(ERR_IPC_FROM_WRONG_FRAME);
+    error = true;
+  }
 
   // For urls like chrome://newtab, the renderer and browser disagree,
   // so we have to double check that the renderer isn't sending data from a
   // bad url like https://www.google.com/_/chrome/newtab.
-  if (!web_contents()->GetLastCommittedURL().SchemeIsHTTPOrHTTPS())
+  if (!web_contents()->GetLastCommittedURL().SchemeIsHTTPOrHTTPS()) {
+    RecordInternalError(ERR_IPC_FROM_BAD_URL_SCHEME);
+    error = true;
+  }
+
+  if (error)
     return;
 
-  committed_load_->UpdateTiming(timing);
-}
-
-bool MetricsWebContentsObserver::IsRelevantNavigation(
-    content::NavigationHandle* navigation_handle) {
-  // The url we see from the renderer side is not always the same as what
-  // we see from the browser side (e.g. chrome://newtab). We want to be
-  // sure here that we aren't logging UMA for internal pages.
-  const GURL& browser_url = web_contents()->GetLastCommittedURL();
-  return navigation_handle->IsInMainFrame() &&
-         !navigation_handle->IsSamePage() &&
-         !navigation_handle->IsErrorPage() &&
-         navigation_handle->GetURL().SchemeIsHTTPOrHTTPS() &&
-         browser_url.SchemeIsHTTPOrHTTPS();
+  if (!committed_load_->UpdateTiming(timing)) {
+    // If the page load tracker cannot update its timing, something is wrong
+    // with the IPC (it's from another load, or it's invalid in some other way).
+    // We expect this to be a rare occurrence.
+    RecordInternalError(ERR_BAD_TIMING_IPC);
+  }
 }
 
 }  // namespace page_load_metrics
