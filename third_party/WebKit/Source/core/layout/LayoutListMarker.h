@@ -29,8 +29,6 @@ namespace blink {
 
 class LayoutListItem;
 
-String listMarkerText(EListStyleType, int value);
-
 // Used to layout the list item's marker.
 // The LayoutListMarker always has to be a child of a LayoutListItem.
 class LayoutListMarker final : public LayoutBox {
@@ -60,8 +58,6 @@ public:
     bool isImage() const override;
     const StyleImage* image() const { return m_image.get(); }
     const LayoutListItem* listItem() const { return m_listItem; }
-
-    static UChar listMarkerSuffix(EListStyleType, int value);
 
     void listItemStyleDidChange();
 

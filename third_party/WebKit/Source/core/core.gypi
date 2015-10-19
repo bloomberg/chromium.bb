@@ -692,6 +692,8 @@
             'layout/LayoutView.cpp',
             'layout/LayoutWordBreak.cpp',
             'layout/LayoutWordBreak.h',
+            'layout/ListMarkerText.h',
+            'layout/ListMarkerText.cpp',
             'layout/MultiColumnFragmentainerGroup.cpp',
             'layout/MultiColumnFragmentainerGroup.h',
             'layout/OverflowModel.h',

@@ -7,6 +7,7 @@
 
 #include "core/layout/LayoutListItem.h"
 #include "core/layout/LayoutListMarker.h"
+#include "core/layout/ListMarkerText.h"
 #include "core/layout/TextRunConstructor.h"
 #include "core/layout/api/SelectionState.h"
 #include "core/paint/BlockPainter.h"
@@ -137,7 +138,7 @@ void ListMarkerPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& pai
         textRun.setText(reversedText.toString());
     }
 
-    const UChar suffix = m_layoutListMarker.listMarkerSuffix(listStyle, m_layoutListMarker.listItem()->value());
+    const UChar suffix = ListMarkerText::suffix(listStyle, m_layoutListMarker.listItem()->value());
     UChar suffixStr[2] = { suffix, static_cast<UChar>(' ') };
     TextRun suffixRun = constructTextRun(font, suffixStr, 2, m_layoutListMarker.styleRef(), m_layoutListMarker.style()->direction());
     TextRunPaintInfo suffixRunInfo(suffixRun);
