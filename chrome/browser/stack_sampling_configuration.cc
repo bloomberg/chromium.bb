@@ -109,11 +109,6 @@ void StackSamplingConfiguration::RegisterSyntheticFieldTrial() const {
 // static
 StackSamplingConfiguration::ProfileConfiguration
 StackSamplingConfiguration::GenerateConfiguration() {
-  // Enable the profiler in the intended ultimate production configuration for
-  // development/waterfall builds.
-  if (chrome::GetChannel() == version_info::Channel::UNKNOWN)
-    return PROFILE_10HZ;
-
   struct Variation {
     ProfileConfiguration config;
     int weight;
@@ -121,9 +116,9 @@ StackSamplingConfiguration::GenerateConfiguration() {
 
   // Generate a configuration according to the associated weights.
   const Variation variations[] = {
-    { PROFILE_10HZ, 15},
-    { PROFILE_CONTROL, 15},
-    { PROFILE_DISABLED, 70}
+    { PROFILE_10HZ, 0},
+    { PROFILE_CONTROL, 0},
+    { PROFILE_DISABLED, 100}
   };
 
   int total_weight = 0;
