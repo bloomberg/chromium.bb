@@ -124,7 +124,7 @@ sign        \x0024        345-234             $                   DOLLAR SIGN
 math        \x0025        456-356             %                   PERCENT SIGN
 sign        \x0026        6-12346             &                   AMPERSAND
 math        \x002F        6-2                 /                   SOLIDUS
-sign        \x0040        56-16               @                   COMMERCIAL AT
+sign        \x0040        5                   @                   COMMERCIAL AT
 sign        \x005C        5-3                 \                   REVERSE SOLIDUS
 math        \x007B        5-123               {                   LEFT CURLY BRACKET
 math        \x007D        456-2               }                   RIGHT CURLY BRACKET
