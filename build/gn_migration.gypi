@@ -538,7 +538,6 @@
             '../google_apis/gcm/gcm.gyp:gcm_unit_tests_run',
             '../google_apis/google_apis.gyp:google_apis_unittests_run',
             '../gpu/gpu.gyp:gpu_unittests_run',
-            '../ipc/ipc.gyp:ipc_tests_run',
             '../media/blink/media_blink.gyp:media_blink_unittests_run',
             '../media/cast/cast.gyp:cast_unittests_run',
             '../media/media.gyp:media_unittests_run',
@@ -563,9 +562,7 @@
             '../ui/app_list/app_list.gyp:app_list_unittests_run',
             '../ui/compositor/compositor.gyp:compositor_unittests_run',
             '../ui/events/events.gyp:events_unittests_run',
-            '../ui/gl/gl_tests.gyp:gl_unittests_run',
             '../ui/message_center/message_center.gyp:message_center_unittests_run',
-            '../ui/touch_selection/ui_touch_selection.gyp:ui_touch_selection_unittests_run',
             '../url/url.gyp:url_unittests_run',
           ],
           'conditions': [
@@ -587,6 +584,13 @@
                 '../sandbox/sandbox.gyp:sbox_integration_tests',
                 '../sandbox/sandbox.gyp:sbox_unittests',
                 '../sandbox/sandbox.gyp:sbox_validation_tests',
+              ],
+            }],
+            ['OS!="android"', {
+              'dependencies': [
+                '../ipc/ipc.gyp:ipc_tests_run',
+                '../ui/gl/gl_tests.gyp:gl_unittests_run',
+                '../ui/touch_selection/ui_touch_selection.gyp:ui_touch_selection_unittests_run',
               ],
             }],
             ['use_ash==1', {
