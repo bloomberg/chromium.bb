@@ -51,7 +51,6 @@ _exact_matches = {
     "WebKit Linux 32": {"port_name": "linux-x86", "specifiers": ['Linux32', 'Release']},
     "WebKit Linux (dbg)": {"port_name": "linux-precise", "specifiers": ['Precise', 'Debug']},
     "WebKit Mac10.6": {"port_name": "mac-snowleopard", "specifiers": ['SnowLeopard', 'Release']},
-    "WebKit Mac10.6 (dbg)": {"port_name": "mac-snowleopard", "specifiers": ['SnowLeopard', 'Debug']},
     "WebKit Mac10.7": {"port_name": "mac-lion", "specifiers": ['Lion', 'Release']},
     "WebKit Mac10.7 (dbg)": {"port_name": "mac-lion", "specifiers": ['Lion', 'Debug']},
     "WebKit Mac10.8": {"port_name": "mac-mountainlion", "specifiers": ['MountainLion', 'Release']},
