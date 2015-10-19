@@ -17,6 +17,7 @@
 #include <string>
 #include "base/compiler_specific.h"
 #include "base/strings/stringprintf.h"
+#include "base/sys_info.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/trace_event/memory_allocator_dump.h"
 #include "base/trace_event/memory_dump_manager.h"
@@ -111,6 +112,17 @@ GLES2Implementation::GLES2Implementation(
       lose_context_when_out_of_memory_(lose_context_when_out_of_memory),
       support_client_side_arrays_(support_client_side_arrays),
       use_count_(0),
+      max_extra_transfer_buffer_size_(
+#if defined(OS_NACL)
+          0),
+#else
+          // Do not use more than 5% of extra shared memory, and do not
+          // use any extra for memory contrained devices (<=1GB).
+          base::SysInfo::AmountOfPhysicalMemory() > 1024 * 1024 * 1024
+              ? base::saturated_cast<uint32_t>(
+                    base::SysInfo::AmountOfPhysicalMemory() / 20)
+              : 0),
+#endif
       error_message_callback_(NULL),
       current_trace_stack_(0),
       gpu_control_(gpu_control),
@@ -2306,7 +2318,7 @@ void GLES2Implementation::TexImage2D(
     shm_id = transfer_alloc.shm_id();
     shm_offset = transfer_alloc.offset();
     buffer_pointer = transfer_alloc.address();
-  } else {
+  } else if (size < max_extra_transfer_buffer_size_) {
     mapped_alloc.Reset(size);
     if (mapped_alloc.valid()) {
       transfer_alloc.Discard();
@@ -2432,7 +2444,7 @@ void GLES2Implementation::TexImage3D(
     shm_id = transfer_alloc.shm_id();
     shm_offset = transfer_alloc.offset();
     buffer_pointer = transfer_alloc.address();
-  } else {
+  } else if (size < max_extra_transfer_buffer_size_) {
     mapped_alloc.Reset(size);
     if (mapped_alloc.valid()) {
       transfer_alloc.Discard();
