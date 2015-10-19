@@ -86,6 +86,10 @@ SRTGlobalError::SRTGlobalError(GlobalErrorService* global_error_service,
 }
 
 SRTGlobalError::~SRTGlobalError() {
+  if (!interacted_) {
+    BrowserThread::PostBlockingPoolTask(
+        FROM_HERE, base::Bind(&DeleteFilesFromBlockingPool, downloaded_path_));
+  }
 }
 
 bool SRTGlobalError::HasMenuItem() {
