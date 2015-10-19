@@ -12,11 +12,13 @@
       'target_name': 'cc',
       'type': '<(component)',
       'dependencies': [
+        'cc_proto',
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '<(DEPTH)/gpu/gpu.gyp:gpu',
         '<(DEPTH)/media/media.gyp:media',
         '<(DEPTH)/skia/skia.gyp:skia',
+        '<(DEPTH)/third_party/protobuf/protobuf.gyp:protobuf_lite',
         '<(DEPTH)/ui/events/events.gyp:events_base',
         '<(DEPTH)/ui/gfx/gfx.gyp:gfx',
         '<(DEPTH)/ui/gfx/gfx.gyp:gfx_geometry',
@@ -372,6 +374,8 @@
         'playback/raster_source_helper.h',
         'playback/transform_display_item.cc',
         'playback/transform_display_item.h',
+        'proto/gfx_conversions.cc',
+        'proto/gfx_conversions.h',
         'quads/content_draw_quad_base.cc',
         'quads/content_draw_quad_base.h',
         'quads/debug_border_draw_quad.cc',
@@ -570,6 +574,32 @@
           ],
         }],
       ],
+    },
+    {
+      # GN version: "//cc/proto"
+      'target_name': 'cc_proto',
+      'type': '<(component)',
+      'sources': [
+        'proto/point.proto',
+        'proto/pointf.proto',
+        'proto/rect.proto',
+        'proto/rectf.proto',
+        'proto/size.proto',
+        'proto/sizef.proto',
+        'proto/transform.proto',
+      ],
+      'defines': [
+        'CC_PROTO_IMPLEMENTATION=1',
+      ],
+      'variables': {
+        # Warn if clang creates exit destructors.
+        'enable_wexit_time_destructors': 1,
+        'proto_in_dir': 'proto',
+        'proto_out_dir': 'cc/proto',
+        'cc_generator_options': 'dllexport_decl=CC_PROTO_EXPORT:',
+        'cc_include': 'cc/proto/cc_proto_export.h',
+      },
+      'includes': [ '../build/protoc.gypi' ]
     },
     {
       # GN version: //cc/surfaces
