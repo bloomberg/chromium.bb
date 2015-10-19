@@ -51,7 +51,7 @@ class CONTENT_EXPORT RTCVideoDecoder
   // run on the message loop of |factories|.
   static scoped_ptr<RTCVideoDecoder> Create(
       webrtc::VideoCodecType type,
-      const scoped_refptr<media::GpuVideoAcceleratorFactories>& factories);
+      media::GpuVideoAcceleratorFactories* factories);
 
   // webrtc::VideoDecoder implementation.
   // Called on WebRTC DecodingThread.
@@ -103,9 +103,8 @@ class CONTENT_EXPORT RTCVideoDecoder
   FRIEND_TEST_ALL_PREFIXES(RTCVideoDecoderTest, IsBufferAfterReset);
   FRIEND_TEST_ALL_PREFIXES(RTCVideoDecoderTest, IsFirstBufferAfterReset);
 
-  RTCVideoDecoder(
-      webrtc::VideoCodecType type,
-      const scoped_refptr<media::GpuVideoAcceleratorFactories>& factories);
+  RTCVideoDecoder(webrtc::VideoCodecType type,
+                  media::GpuVideoAcceleratorFactories* factories);
 
   // Requests a buffer to be decoded by VDA.
   void RequestBufferDecode();
@@ -143,12 +142,11 @@ class CONTENT_EXPORT RTCVideoDecoder
   void ResetInternal();
 
   // Static method is to allow it to run even after RVD is deleted.
-  static void ReleaseMailbox(
-      base::WeakPtr<RTCVideoDecoder> decoder,
-      const scoped_refptr<media::GpuVideoAcceleratorFactories>& factories,
-      int64 picture_buffer_id,
-      uint32 texture_id,
-      uint32 release_sync_point);
+  static void ReleaseMailbox(base::WeakPtr<RTCVideoDecoder> decoder,
+                             media::GpuVideoAcceleratorFactories* factories,
+                             int64 picture_buffer_id,
+                             uint32 texture_id,
+                             uint32 release_sync_point);
   // Tells VDA that a picture buffer can be recycled.
   void ReusePictureBuffer(int64 picture_buffer_id);
 
@@ -210,7 +208,7 @@ class CONTENT_EXPORT RTCVideoDecoder
   // The size of the incoming video frames.
   gfx::Size frame_size_;
 
-  scoped_refptr<media::GpuVideoAcceleratorFactories> factories_;
+  media::GpuVideoAcceleratorFactories* factories_;
 
   // The texture target used for decoded pictures.
   uint32 decoder_texture_target_;

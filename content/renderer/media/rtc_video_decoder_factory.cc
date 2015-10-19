@@ -12,7 +12,7 @@
 namespace content {
 
 RTCVideoDecoderFactory::RTCVideoDecoderFactory(
-    const scoped_refptr<media::GpuVideoAcceleratorFactories>& gpu_factories)
+    media::GpuVideoAcceleratorFactories* gpu_factories)
     : gpu_factories_(gpu_factories) {
   DVLOG(2) << "RTCVideoDecoderFactory";
 }

@@ -17,7 +17,7 @@ class SingleThreadTaskRunner;
 namespace media {
 class GpuVideoAcceleratorFactories;
 
-// Interface to a pool of GpuMemoryBuffers/textues/images that can be used to
+// Interface to a pool of GpuMemoryBuffers/textures/images that can be used to
 // transform software VideoFrames to VideoFrames backed by native textures.
 // The resources used by the VideoFrame created by the pool will be
 // automatically put back into the pool once the frame is destroyed.
@@ -30,7 +30,7 @@ class MEDIA_EXPORT GpuMemoryBufferVideoFramePool {
   GpuMemoryBufferVideoFramePool(
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
       const scoped_refptr<base::TaskRunner>& worker_task_runner,
-      const scoped_refptr<GpuVideoAcceleratorFactories>& gpu_factories);
+      GpuVideoAcceleratorFactories* gpu_factories);
   virtual ~GpuMemoryBufferVideoFramePool();
 
   // Callback used by MaybeCreateHardwareFrame to deliver a new VideoFrame

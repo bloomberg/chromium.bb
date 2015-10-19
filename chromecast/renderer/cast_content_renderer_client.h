@@ -41,7 +41,7 @@ class CastContentRendererClient : public content::ContentRendererClient {
 #if !defined(OS_ANDROID)
   scoped_ptr<::media::RendererFactory> CreateMediaRendererFactory(
       content::RenderFrame* render_frame,
-      const scoped_refptr<::media::GpuVideoAcceleratorFactories>& gpu_factories,
+      ::media::GpuVideoAcceleratorFactories* gpu_factories,
       const scoped_refptr<::media::MediaLog>& media_log) override;
 #endif
   blink::WebPrescientNetworking* GetPrescientNetworking() override;

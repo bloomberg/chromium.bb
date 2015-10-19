@@ -39,8 +39,7 @@ class CmaRenderer : public ::media::Renderer {
  public:
   CmaRenderer(scoped_ptr<MediaPipelineProxy> media_pipeline,
               ::media::VideoRendererSink* video_renderer_sink,
-              const scoped_refptr<::media::GpuVideoAcceleratorFactories>&
-                  gpu_factories);
+              ::media::GpuVideoAcceleratorFactories* gpu_factories);
   ~CmaRenderer() override;
 
   // ::media::Renderer implementation:
@@ -131,7 +130,7 @@ class CmaRenderer : public ::media::Renderer {
   // Data members for helping the creation of the video hole frame.
   gfx::Size initial_natural_size_;
   bool initial_video_hole_created_;
-  scoped_refptr<::media::GpuVideoAcceleratorFactories> gpu_factories_;
+  ::media::GpuVideoAcceleratorFactories* gpu_factories_;
   scoped_ptr<HoleFrameFactory> hole_frame_factory_;
 
   // Lock protecting access to |time_interpolator_|.

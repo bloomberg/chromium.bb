@@ -27,7 +27,8 @@ class RTCVideoDecoderTest : public ::testing::Test,
                             webrtc::DecodedImageCallback {
  public:
   RTCVideoDecoderTest()
-      : mock_gpu_factories_(new media::MockGpuVideoAcceleratorFactories),
+      : mock_gpu_factories_(
+            new media::MockGpuVideoAcceleratorFactories(nullptr)),
         vda_thread_("vda_thread"),
         idle_waiter_(false, false) {
     memset(&codec_, 0, sizeof(codec_));
@@ -79,7 +80,7 @@ class RTCVideoDecoderTest : public ::testing::Test,
     DVLOG(2) << "CreateDecoder";
     codec_.codecType = codec_type;
     rtc_decoder_ =
-        RTCVideoDecoder::Create(codec_type, mock_gpu_factories_);
+        RTCVideoDecoder::Create(codec_type, mock_gpu_factories_.get());
   }
 
   void Initialize() {
@@ -106,7 +107,7 @@ class RTCVideoDecoderTest : public ::testing::Test,
   }
 
  protected:
-  scoped_refptr<media::MockGpuVideoAcceleratorFactories> mock_gpu_factories_;
+  scoped_ptr<media::MockGpuVideoAcceleratorFactories> mock_gpu_factories_;
   media::MockVideoDecodeAccelerator* mock_vda_;
   scoped_ptr<RTCVideoDecoder> rtc_decoder_;
   webrtc::VideoCodec codec_;
@@ -122,8 +123,8 @@ class RTCVideoDecoderTest : public ::testing::Test,
 
 TEST_F(RTCVideoDecoderTest, CreateReturnsNullOnUnsupportedCodec) {
   CreateDecoder(webrtc::kVideoCodecVP8);
-  scoped_ptr<RTCVideoDecoder> null_rtc_decoder(
-      RTCVideoDecoder::Create(webrtc::kVideoCodecI420, mock_gpu_factories_));
+  scoped_ptr<RTCVideoDecoder> null_rtc_decoder(RTCVideoDecoder::Create(
+      webrtc::kVideoCodecI420, mock_gpu_factories_.get()));
   EXPECT_EQ(NULL, null_rtc_decoder.get());
 }
 

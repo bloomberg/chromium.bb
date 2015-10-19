@@ -816,11 +816,11 @@ void RenderThreadImpl::Shutdown() {
 
   media_thread_.reset();
 
+  compositor_thread_.reset();
+
   // AudioMessageFilter may be accessed on |media_thread_|, so shutdown after.
   RemoveFilter(audio_message_filter_.get());
   audio_message_filter_ = NULL;
-
-  compositor_thread_.reset();
 
   raster_worker_pool_->Shutdown();
 
@@ -842,9 +842,10 @@ void RenderThreadImpl::Shutdown() {
 
   main_thread_compositor_task_runner_ = NULL;
 
+  gpu_factories_.reset();
+
   // Context providers must be released prior to destroying the GPU channel.
   shared_worker_context_provider_ = nullptr;
-  gpu_va_context_provider_ = nullptr;
   shared_main_thread_contexts_ = nullptr;
 
   if (gpu_channel_.get())
@@ -1320,9 +1321,11 @@ void RenderThreadImpl::PostponeIdleNotification() {
   idle_notifications_to_skip_ = 2;
 }
 
-scoped_refptr<media::GpuVideoAcceleratorFactories>
-RenderThreadImpl::GetGpuFactories() {
+media::GpuVideoAcceleratorFactories* RenderThreadImpl::GetGpuFactories() {
   DCHECK(IsMainThread());
+
+  if (gpu_factories_)
+    return gpu_factories_.get();
 
   const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
 
@@ -1336,34 +1339,12 @@ RenderThreadImpl::GetGpuFactories() {
   }
 #endif
 
-  scoped_refptr<GpuChannelHost> gpu_channel_host = GetGpuChannel();
-  scoped_refptr<media::GpuVideoAcceleratorFactories> gpu_factories;
   scoped_refptr<base::SingleThreadTaskRunner> media_task_runner =
       GetMediaThreadTaskRunner();
-  if (gpu_va_context_provider_.get() && !gpu_channel_host.get()) {
-    // The GPU channel was lost. It's possible that |gpu_va_context_provider_|
-    // has not been made aware of that, so always create a new one.
-    gpu_va_context_provider_ = nullptr;
-  }
-  if (!gpu_va_context_provider_.get() ||
-      gpu_va_context_provider_->DestroyedOnMainThread()) {
-    if (!gpu_channel_host.get()) {
-      gpu_channel_host = EstablishGpuChannelSync(
-          CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE);
-    }
-    blink::WebGraphicsContext3D::Attributes attributes;
-    bool lose_context_when_out_of_memory = false;
-    gpu_va_context_provider_ = ContextProviderCommandBuffer::Create(
-        make_scoped_ptr(
-            WebGraphicsContext3DCommandBufferImpl::CreateOffscreenContext(
-                gpu_channel_host.get(), attributes,
-                lose_context_when_out_of_memory,
-                GURL("chrome://gpu/RenderThreadImpl::GetGpuVDAContext3D"),
-                WebGraphicsContext3DCommandBufferImpl::SharedMemoryLimits(),
-                NULL)),
-        GPU_VIDEO_ACCELERATOR_CONTEXT);
-  }
-  if (gpu_va_context_provider_.get()) {
+  scoped_refptr<ContextProviderCommandBuffer> shared_context_provider =
+      SharedWorkerContextProvider();
+  scoped_refptr<GpuChannelHost> gpu_channel_host = GetGpuChannel();
+  if (shared_context_provider && gpu_channel_host) {
     const bool enable_video_accelerator =
         !cmd_line->HasSwitch(switches::kDisableAcceleratedVideoDecode);
     const bool enable_gpu_memory_buffer_video_frames =
@@ -1378,12 +1359,13 @@ RenderThreadImpl::GetGpuFactories() {
     const bool parsed_image_texture_target =
         base::StringToUint(image_texture_target_string, &image_texture_target);
     DCHECK(parsed_image_texture_target);
-    gpu_factories = RendererGpuVideoAcceleratorFactories::Create(
-        gpu_channel_host.get(), media_task_runner, gpu_va_context_provider_,
+    gpu_factories_ = RendererGpuVideoAcceleratorFactories::Create(
+        gpu_channel_host.get(), main_thread_compositor_task_runner_,
+        media_task_runner, shared_context_provider,
         enable_gpu_memory_buffer_video_frames, image_texture_target,
         enable_video_accelerator);
   }
-  return gpu_factories;
+  return gpu_factories_.get();
 }
 
 scoped_ptr<WebGraphicsContext3DCommandBufferImpl>

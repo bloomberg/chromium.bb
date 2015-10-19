@@ -39,8 +39,7 @@ class MediaStreamRendererFactory {
       const VideoFrameProvider::RepaintCB& repaint_cb,
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
       const scoped_refptr<base::TaskRunner>& worker_task_runner,
-      const scoped_refptr<media::GpuVideoAcceleratorFactories>&
-          gpu_factories) = 0;
+      media::GpuVideoAcceleratorFactories* gpu_factories) = 0;
 
   virtual scoped_refptr<MediaStreamAudioRenderer> GetAudioRenderer(
       const GURL& url,

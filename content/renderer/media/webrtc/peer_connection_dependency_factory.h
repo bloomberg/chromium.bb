@@ -185,7 +185,7 @@ class CONTENT_EXPORT PeerConnectionDependencyFactory
   void CreatePeerConnectionFactory();
 
   void InitializeSignalingThread(
-      const scoped_refptr<media::GpuVideoAcceleratorFactories>& gpu_factories,
+      media::GpuVideoAcceleratorFactories* gpu_factories,
       base::WaitableEvent* event);
 
   void InitializeWorkerThread(rtc::Thread** thread,

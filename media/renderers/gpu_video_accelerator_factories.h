@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -39,9 +40,18 @@ class VideoDecodeAccelerator;
 //   be retrieved as |GetMessageLoop()|.
 // * All calls to the Factories after construction must be made on its message
 //   loop.
-class MEDIA_EXPORT GpuVideoAcceleratorFactories
-    : public base::RefCountedThreadSafe<GpuVideoAcceleratorFactories> {
+class MEDIA_EXPORT GpuVideoAcceleratorFactories {
  public:
+  class ScopedGLContextLock {
+   public:
+    ScopedGLContextLock() {}
+    virtual gpu::gles2::GLES2Interface* ContextGL() = 0;
+    virtual ~ScopedGLContextLock(){};
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(ScopedGLContextLock);
+  };
+
   // Return whether GPU encoding/decoding is enabled.
   virtual bool IsGpuVideoAcceleratorEnabled() = 0;
   // Caller owns returned pointer, but should call Destroy() on it (instead of
@@ -75,7 +85,7 @@ class MEDIA_EXPORT GpuVideoAcceleratorFactories
   // video frames are enabled.
   virtual VideoPixelFormat VideoFrameOutputFormat() = 0;
 
-  virtual gpu::gles2::GLES2Interface* GetGLES2Interface() = 0;
+  virtual scoped_ptr<ScopedGLContextLock> GetGLContextLock() = 0;
 
   // Allocate & return a shared memory segment.
   virtual scoped_ptr<base::SharedMemory> CreateSharedMemory(size_t size) = 0;
@@ -92,7 +102,7 @@ class MEDIA_EXPORT GpuVideoAcceleratorFactories
       GetVideoEncodeAcceleratorSupportedProfiles() = 0;
 
  protected:
-  friend class base::RefCountedThreadSafe<GpuVideoAcceleratorFactories>;
+  friend class base::RefCounted<GpuVideoAcceleratorFactories>;
   virtual ~GpuVideoAcceleratorFactories() {}
 };
 

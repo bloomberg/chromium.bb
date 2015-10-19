@@ -69,7 +69,7 @@ class WebMediaPlayerMS
       const scoped_refptr<base::SingleThreadTaskRunner>& compositor_task_runner,
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
       const scoped_refptr<base::TaskRunner>& worker_task_runner,
-      const scoped_refptr<media::GpuVideoAcceleratorFactories>& gpu_factories);
+      media::GpuVideoAcceleratorFactories* gpu_factories);
 
   ~WebMediaPlayerMS() override;
 
@@ -178,7 +178,7 @@ class WebMediaPlayerMS
 
   const scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
   const scoped_refptr<base::TaskRunner> worker_task_runner_;
-  const scoped_refptr<media::GpuVideoAcceleratorFactories> gpu_factories_;
+  media::GpuVideoAcceleratorFactories* gpu_factories_;
 
   // Used for DCHECKs to ensure methods calls executed in the correct thread.
   base::ThreadChecker thread_checker_;

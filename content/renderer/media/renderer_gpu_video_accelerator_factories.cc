@@ -8,6 +8,7 @@
 #include <GLES2/gl2ext.h>
 
 #include "base/bind.h"
+#include "cc/output/context_provider.h"
 #include "content/child/child_gpu_memory_buffer_manager.h"
 #include "content/child/child_thread_impl.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
@@ -24,38 +25,34 @@
 namespace content {
 
 // static
-scoped_refptr<RendererGpuVideoAcceleratorFactories>
+scoped_ptr<RendererGpuVideoAcceleratorFactories>
 RendererGpuVideoAcceleratorFactories::Create(
     GpuChannelHost* gpu_channel_host,
+    const scoped_refptr<base::SingleThreadTaskRunner>& main_thread_task_runner,
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     const scoped_refptr<ContextProviderCommandBuffer>& context_provider,
     bool enable_gpu_memory_buffer_video_frames,
     unsigned image_texture_target,
     bool enable_video_accelerator) {
-  scoped_refptr<RendererGpuVideoAcceleratorFactories> factories =
-      new RendererGpuVideoAcceleratorFactories(
-          gpu_channel_host, task_runner, context_provider,
-          enable_gpu_memory_buffer_video_frames, image_texture_target,
-          enable_video_accelerator);
-  // Post task from outside constructor, since AddRef()/Release() is unsafe from
-  // within.
-  task_runner->PostTask(
-      FROM_HERE,
-      base::Bind(&RendererGpuVideoAcceleratorFactories::BindContext,
-                 factories));
-  return factories;
+  return make_scoped_ptr(new RendererGpuVideoAcceleratorFactories(
+      gpu_channel_host, main_thread_task_runner, task_runner, context_provider,
+      enable_gpu_memory_buffer_video_frames, image_texture_target,
+      enable_video_accelerator));
 }
 
 RendererGpuVideoAcceleratorFactories::RendererGpuVideoAcceleratorFactories(
     GpuChannelHost* gpu_channel_host,
+    const scoped_refptr<base::SingleThreadTaskRunner>& main_thread_task_runner,
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     const scoped_refptr<ContextProviderCommandBuffer>& context_provider,
     bool enable_gpu_memory_buffer_video_frames,
     unsigned image_texture_target,
     bool enable_video_accelerator)
-    : task_runner_(task_runner),
+    : main_thread_task_runner_(main_thread_task_runner),
+      task_runner_(task_runner),
       gpu_channel_host_(gpu_channel_host),
-      context_provider_(context_provider),
+      context_provider_refptr_(context_provider),
+      context_provider_(context_provider.get()),
       enable_gpu_memory_buffer_video_frames_(
           enable_gpu_memory_buffer_video_frames),
       image_texture_target_(image_texture_target),
@@ -68,37 +65,21 @@ RendererGpuVideoAcceleratorFactories::RendererGpuVideoAcceleratorFactories(
 
 RendererGpuVideoAcceleratorFactories::~RendererGpuVideoAcceleratorFactories() {}
 
-void RendererGpuVideoAcceleratorFactories::BindContext() {
+bool RendererGpuVideoAcceleratorFactories::CheckContextLost() {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  if (!context_provider_->BindToCurrentThread())
-    context_provider_ = NULL;
-}
-
-WebGraphicsContext3DCommandBufferImpl*
-RendererGpuVideoAcceleratorFactories::GetContext3d() {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  if (!context_provider_.get())
-    return NULL;
-  if (context_provider_->ContextGL()->GetGraphicsResetStatusKHR() !=
-      GL_NO_ERROR) {
-    context_provider_->VerifyContexts();
-    context_provider_ = NULL;
-    gl_helper_.reset(NULL);
-    return NULL;
+  if (context_provider_) {
+    cc::ContextProvider::ScopedContextLock lock(context_provider_);
+    if (lock.ContextGL()->GetGraphicsResetStatusKHR() != GL_NO_ERROR) {
+      context_provider_ = nullptr;
+      // Drop the reference on the main thread.
+      main_thread_task_runner_->PostTask(
+          FROM_HERE,
+          base::Bind(
+              &RendererGpuVideoAcceleratorFactories::ReleaseContextProvider,
+              base::Unretained(this)));
+    }
   }
-  return context_provider_->WebContext3D();
-}
-
-GLHelper* RendererGpuVideoAcceleratorFactories::GetGLHelper() {
-  if (!GetContext3d())
-    return NULL;
-
-  if (gl_helper_.get() == NULL) {
-    gl_helper_.reset(new GLHelper(GetContext3d()->GetImplementation(),
-                                  GetContext3d()->GetContextSupport()));
-  }
-
-  return gl_helper_.get();
+  return !context_provider_;
 }
 
 bool RendererGpuVideoAcceleratorFactories::IsGpuVideoAcceleratorEnabled() {
@@ -109,24 +90,18 @@ scoped_ptr<media::VideoDecodeAccelerator>
 RendererGpuVideoAcceleratorFactories::CreateVideoDecodeAccelerator() {
   DCHECK(video_accelerator_enabled_);
   DCHECK(task_runner_->BelongsToCurrentThread());
-
-  WebGraphicsContext3DCommandBufferImpl* context = GetContext3d();
-  if (context && context->GetCommandBufferProxy())
-    return context->GetCommandBufferProxy()->CreateVideoDecoder();
-
-  return nullptr;
+  if (CheckContextLost())
+    return nullptr;
+  return context_provider_->GetCommandBufferProxy()->CreateVideoDecoder();
 }
 
 scoped_ptr<media::VideoEncodeAccelerator>
 RendererGpuVideoAcceleratorFactories::CreateVideoEncodeAccelerator() {
   DCHECK(video_accelerator_enabled_);
   DCHECK(task_runner_->BelongsToCurrentThread());
-
-  WebGraphicsContext3DCommandBufferImpl* context = GetContext3d();
-  if (context && context->GetCommandBufferProxy())
-    return context->GetCommandBufferProxy()->CreateVideoEncoder();
-
-  return nullptr;
+  if (CheckContextLost())
+    return nullptr;
+  return context_provider_->GetCommandBufferProxy()->CreateVideoEncoder();
 }
 
 bool RendererGpuVideoAcceleratorFactories::CreateTextures(
@@ -138,11 +113,10 @@ bool RendererGpuVideoAcceleratorFactories::CreateTextures(
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(texture_target);
 
-  WebGraphicsContext3DCommandBufferImpl* context = GetContext3d();
-  if (!context)
+  if (CheckContextLost())
     return false;
-
-  gpu::gles2::GLES2Implementation* gles2 = context->GetImplementation();
+  cc::ContextProvider::ScopedContextLock lock(context_provider_);
+  gpu::gles2::GLES2Interface* gles2 = lock.ContextGL();
   texture_ids->resize(count);
   texture_mailboxes->resize(count);
   gles2->GenTextures(count, &texture_ids->at(0));
@@ -181,24 +155,22 @@ bool RendererGpuVideoAcceleratorFactories::CreateTextures(
 
 void RendererGpuVideoAcceleratorFactories::DeleteTexture(uint32 texture_id) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-
-  WebGraphicsContext3DCommandBufferImpl* context = GetContext3d();
-  if (!context)
+  if (CheckContextLost())
     return;
 
-  gpu::gles2::GLES2Implementation* gles2 = context->GetImplementation();
+  cc::ContextProvider::ScopedContextLock lock(context_provider_);
+  gpu::gles2::GLES2Interface* gles2 = lock.ContextGL();
   gles2->DeleteTextures(1, &texture_id);
   DCHECK_EQ(gles2->GetError(), static_cast<GLenum>(GL_NO_ERROR));
 }
 
 void RendererGpuVideoAcceleratorFactories::WaitSyncPoint(uint32 sync_point) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-
-  WebGraphicsContext3DCommandBufferImpl* context = GetContext3d();
-  if (!context)
+  if (CheckContextLost())
     return;
 
-  gpu::gles2::GLES2Implementation* gles2 = context->GetImplementation();
+  cc::ContextProvider::ScopedContextLock lock(context_provider_);
+  gpu::gles2::GLES2Interface* gles2 = lock.ContextGL();
   gles2->WaitSyncPointCHROMIUM(sync_point);
 
   // Callers expect the WaitSyncPoint to affect the next IPCs. Make sure to
@@ -211,7 +183,6 @@ RendererGpuVideoAcceleratorFactories::AllocateGpuMemoryBuffer(
     const gfx::Size& size,
     gfx::BufferFormat format,
     gfx::BufferUsage usage) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
   scoped_ptr<gfx::GpuMemoryBuffer> buffer =
       gpu_memory_buffer_manager_->AllocateGpuMemoryBuffer(size, format, usage);
   return buffer.Pass();
@@ -228,33 +199,39 @@ unsigned RendererGpuVideoAcceleratorFactories::ImageTextureTarget() {
 media::VideoPixelFormat
 RendererGpuVideoAcceleratorFactories::VideoFrameOutputFormat() {
   DCHECK(task_runner_->BelongsToCurrentThread());
-
-  WebGraphicsContext3DCommandBufferImpl* context = GetContext3d();
-  if (context) {
-    gpu::gles2::GLES2Implementation* gles2 = context->GetImplementation();
-    if (gles2->capabilities().image_ycbcr_422)
-      return media::PIXEL_FORMAT_UYVY;
-    if (gles2->capabilities().texture_rg)
-      return media::PIXEL_FORMAT_I420;
-  }
-
+  if (CheckContextLost())
+    return media::PIXEL_FORMAT_UNKNOWN;
+  cc::ContextProvider::ScopedContextLock lock(context_provider_);
+  auto capabilities = context_provider_->ContextCapabilities();
+  if (capabilities.gpu.image_ycbcr_422)
+    return media::PIXEL_FORMAT_UYVY;
+  if (capabilities.gpu.texture_rg)
+    return media::PIXEL_FORMAT_I420;
   return media::PIXEL_FORMAT_UNKNOWN;
 }
 
-gpu::gles2::GLES2Interface*
-RendererGpuVideoAcceleratorFactories::GetGLES2Interface() {
-  DCHECK(task_runner_->BelongsToCurrentThread());
+namespace {
+class ScopedGLContextLockImpl
+    : public media::GpuVideoAcceleratorFactories::ScopedGLContextLock {
+ public:
+  ScopedGLContextLockImpl(cc::ContextProvider* context_provider)
+      : lock_(context_provider) {}
+  gpu::gles2::GLES2Interface* ContextGL() override { return lock_.ContextGL(); }
 
-  WebGraphicsContext3DCommandBufferImpl* context = GetContext3d();
-  if (!context)
+ private:
+  cc::ContextProvider::ScopedContextLock lock_;
+};
+}  // namespace
+
+scoped_ptr<media::GpuVideoAcceleratorFactories::ScopedGLContextLock>
+RendererGpuVideoAcceleratorFactories::GetGLContextLock() {
+  if (CheckContextLost())
     return nullptr;
-  gpu::gles2::GLES2Implementation* gles2 = context->GetImplementation();
-  return gles2;
+  return make_scoped_ptr(new ScopedGLContextLockImpl(context_provider_));
 }
 
 scoped_ptr<base::SharedMemory>
 RendererGpuVideoAcceleratorFactories::CreateSharedMemory(size_t size) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
   scoped_ptr<base::SharedMemory> mem(
       ChildThreadImpl::AllocateSharedMemory(size, thread_safe_sender_.get()));
   if (mem && !mem->Map(size))
@@ -281,6 +258,11 @@ RendererGpuVideoAcceleratorFactories::
   return GpuVideoAcceleratorUtil::ConvertGpuToMediaEncodeProfiles(
       gpu_channel_host_->gpu_info()
           .video_encode_accelerator_supported_profiles);
+}
+
+void RendererGpuVideoAcceleratorFactories::ReleaseContextProvider() {
+  DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
+  context_provider_refptr_ = nullptr;
 }
 
 }  // namespace content

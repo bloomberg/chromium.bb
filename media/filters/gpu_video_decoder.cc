@@ -60,8 +60,7 @@ GpuVideoDecoder::BufferData::BufferData(
 
 GpuVideoDecoder::BufferData::~BufferData() {}
 
-GpuVideoDecoder::GpuVideoDecoder(
-    const scoped_refptr<GpuVideoAcceleratorFactories>& factories)
+GpuVideoDecoder::GpuVideoDecoder(GpuVideoAcceleratorFactories* factories)
     : needs_bitstream_conversion_(false),
       factories_(factories),
       state_(kNormal),
@@ -70,7 +69,7 @@ GpuVideoDecoder::GpuVideoDecoder(
       next_bitstream_buffer_id_(0),
       available_pictures_(0),
       weak_factory_(this) {
-  DCHECK(factories_.get());
+  DCHECK(factories_);
 }
 
 void GpuVideoDecoder::Reset(const base::Closure& closure)  {
@@ -443,7 +442,7 @@ void GpuVideoDecoder::DeliverFrame(
 // static
 void GpuVideoDecoder::ReleaseMailbox(
     base::WeakPtr<GpuVideoDecoder> decoder,
-    const scoped_refptr<media::GpuVideoAcceleratorFactories>& factories,
+    media::GpuVideoAcceleratorFactories* factories,
     int64 picture_buffer_id,
     uint32 texture_id,
     uint32 release_sync_point) {

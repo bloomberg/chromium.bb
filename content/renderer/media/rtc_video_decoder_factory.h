@@ -25,7 +25,7 @@ class CONTENT_EXPORT RTCVideoDecoderFactory
     : NON_EXPORTED_BASE(public cricket::WebRtcVideoDecoderFactory) {
  public:
   explicit RTCVideoDecoderFactory(
-      const scoped_refptr<media::GpuVideoAcceleratorFactories>& gpu_factories);
+      media::GpuVideoAcceleratorFactories* gpu_factories);
   ~RTCVideoDecoderFactory() override;
 
   // Runs on Chrome_libJingle_WorkerThread. The child thread is blocked while
@@ -38,7 +38,7 @@ class CONTENT_EXPORT RTCVideoDecoderFactory
   void DestroyVideoDecoder(webrtc::VideoDecoder* decoder) override;
 
  private:
-  const scoped_refptr<media::GpuVideoAcceleratorFactories> gpu_factories_;
+  media::GpuVideoAcceleratorFactories* gpu_factories_;
 
   DISALLOW_COPY_AND_ASSIGN(RTCVideoDecoderFactory);
 };

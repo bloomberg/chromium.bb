@@ -67,7 +67,9 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
 
 }  // unnamed namespace
 
-MockGpuVideoAcceleratorFactories::MockGpuVideoAcceleratorFactories() {}
+MockGpuVideoAcceleratorFactories::MockGpuVideoAcceleratorFactories(
+    gpu::gles2::GLES2Interface* gles2)
+    : gles2_(gles2) {}
 
 MockGpuVideoAcceleratorFactories::~MockGpuVideoAcceleratorFactories() {}
 
@@ -108,6 +110,27 @@ bool MockGpuVideoAcceleratorFactories::ShouldUseGpuMemoryBuffersForVideoFrames()
 
 unsigned MockGpuVideoAcceleratorFactories::ImageTextureTarget() {
   return GL_TEXTURE_2D;
+}
+
+namespace {
+class ScopedGLContextLockImpl
+    : public GpuVideoAcceleratorFactories::ScopedGLContextLock {
+ public:
+  ScopedGLContextLockImpl(MockGpuVideoAcceleratorFactories* gpu_factories)
+      : gpu_factories_(gpu_factories) {}
+  gpu::gles2::GLES2Interface* ContextGL() override {
+    return gpu_factories_->GetGLES2Interface();
+  }
+
+ private:
+  MockGpuVideoAcceleratorFactories* gpu_factories_;
+};
+}  // namespace
+
+scoped_ptr<GpuVideoAcceleratorFactories::ScopedGLContextLock>
+MockGpuVideoAcceleratorFactories::GetGLContextLock() {
+  DCHECK(gles2_);
+  return make_scoped_ptr(new ScopedGLContextLockImpl(this));
 }
 
 }  // namespace media

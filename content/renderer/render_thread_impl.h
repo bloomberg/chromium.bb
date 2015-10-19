@@ -108,6 +108,7 @@ class RasterWorkerPool;
 class RenderProcessObserver;
 class RendererBlinkPlatformImpl;
 class RendererDemuxerAndroid;
+class RendererGpuVideoAcceleratorFactories;
 class ResourceDispatchThrottler;
 class V8SamplingProfiler;
 class VideoCaptureImplManager;
@@ -332,7 +333,7 @@ class CONTENT_EXPORT RenderThreadImpl
   // not sent for at least one notification delay.
   void PostponeIdleNotification();
 
-  scoped_refptr<media::GpuVideoAcceleratorFactories> GetGpuFactories();
+  media::GpuVideoAcceleratorFactories* GetGpuFactories();
 
   scoped_refptr<cc_blink::ContextProviderWebContext>
   SharedMainThreadContextProvider();
@@ -574,6 +575,9 @@ class CONTENT_EXPORT RenderThreadImpl
   // May be null if overridden by ContentRendererClient.
   scoped_ptr<base::Thread> compositor_thread_;
 
+  // Utility class to provide GPU functionalities to media.
+  scoped_ptr<content::RendererGpuVideoAcceleratorFactories> gpu_factories_;
+
   // Thread for running multimedia operations (e.g., video decoding).
   scoped_ptr<base::Thread> media_thread_;
 
@@ -597,7 +601,6 @@ class CONTENT_EXPORT RenderThreadImpl
   base::ObserverList<RenderProcessObserver> observers_;
 
   scoped_refptr<ContextProviderCommandBuffer> shared_worker_context_provider_;
-  scoped_refptr<ContextProviderCommandBuffer> gpu_va_context_provider_;
 
   scoped_ptr<AudioRendererMixerManager> audio_renderer_mixer_manager_;
   scoped_ptr<media::AudioHardwareConfig> audio_hardware_config_;

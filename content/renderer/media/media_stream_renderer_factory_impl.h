@@ -20,8 +20,7 @@ class MediaStreamRendererFactoryImpl : public MediaStreamRendererFactory {
       const VideoFrameProvider::RepaintCB& repaint_cb,
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
       const scoped_refptr<base::TaskRunner>& worker_task_runner,
-      const scoped_refptr<media::GpuVideoAcceleratorFactories>& gpu_factories)
-      override;
+      media::GpuVideoAcceleratorFactories* gpu_factories) override;
 
   scoped_refptr<MediaStreamAudioRenderer> GetAudioRenderer(
       const GURL& url,

@@ -41,10 +41,9 @@ void MediaPipelineClientDummyCallback() {
 
 }  // namespace
 
-CmaRenderer::CmaRenderer(
-    scoped_ptr<MediaPipelineProxy> media_pipeline,
-    ::media::VideoRendererSink* video_renderer_sink,
-    const scoped_refptr<::media::GpuVideoAcceleratorFactories>& gpu_factories)
+CmaRenderer::CmaRenderer(scoped_ptr<MediaPipelineProxy> media_pipeline,
+                         ::media::VideoRendererSink* video_renderer_sink,
+                         ::media::GpuVideoAcceleratorFactories* gpu_factories)
     : media_task_runner_factory_(
           new BalancedMediaTaskRunnerFactory(kMaxDeltaFetcher)),
       media_pipeline_(media_pipeline.Pass()),

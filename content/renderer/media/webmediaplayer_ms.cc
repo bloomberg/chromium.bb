@@ -44,7 +44,7 @@ WebMediaPlayerMS::WebMediaPlayerMS(
     const scoped_refptr<base::SingleThreadTaskRunner>& compositor_task_runner,
     const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
     const scoped_refptr<base::TaskRunner>& worker_task_runner,
-    const scoped_refptr<media::GpuVideoAcceleratorFactories>& gpu_factories)
+    media::GpuVideoAcceleratorFactories* gpu_factories)
     : frame_(frame),
       network_state_(WebMediaPlayer::NetworkStateEmpty),
       ready_state_(WebMediaPlayer::ReadyStateHaveNothing),

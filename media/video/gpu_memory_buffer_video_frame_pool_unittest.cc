@@ -41,9 +41,18 @@ class GpuMemoryBufferVideoFramePoolTest : public ::testing::Test {
     gles2_.reset(new TestGLES2Interface);
     media_task_runner_ = make_scoped_refptr(new base::TestSimpleTaskRunner);
     copy_task_runner_ = make_scoped_refptr(new base::TestSimpleTaskRunner);
+    mock_gpu_factories_.reset(
+        new MockGpuVideoAcceleratorFactories(gles2_.get()));
+    gpu_memory_buffer_pool_.reset(new GpuMemoryBufferVideoFramePool(
+        media_task_runner_, copy_task_runner_.get(),
+        mock_gpu_factories_.get()));
   }
 
-  void TearDown() override { RunUntilIdle(); }
+  void TearDown() override {
+    gpu_memory_buffer_pool_.reset();
+    RunUntilIdle();
+    mock_gpu_factories_.reset();
+  }
 
   void RunUntilIdle() {
     media_task_runner_->RunUntilIdle();
@@ -76,6 +85,8 @@ class GpuMemoryBufferVideoFramePoolTest : public ::testing::Test {
   }
 
  protected:
+  scoped_ptr<MockGpuVideoAcceleratorFactories> mock_gpu_factories_;
+  scoped_ptr<GpuMemoryBufferVideoFramePool> gpu_memory_buffer_pool_;
   scoped_refptr<base::TestSimpleTaskRunner> media_task_runner_;
   scoped_refptr<base::TestSimpleTaskRunner> copy_task_runner_;
   scoped_ptr<TestGLES2Interface> gles2_;
@@ -87,28 +98,9 @@ void MaybeCreateHardwareFrameCallback(
   *video_frame_output = video_frame;
 }
 
-TEST_F(GpuMemoryBufferVideoFramePoolTest, NoGpuFactoryNoHardwareVideoFrame) {
-  scoped_refptr<VideoFrame> frame = CreateTestYUVVideoFrame(10);
-  scoped_ptr<GpuMemoryBufferVideoFramePool> gpu_memory_buffer_pool_ =
-      make_scoped_ptr(new GpuMemoryBufferVideoFramePool(
-          media_task_runner_, copy_task_runner_.get(), nullptr));
-
-  scoped_refptr<VideoFrame> frame2;
-  gpu_memory_buffer_pool_->MaybeCreateHardwareFrame(
-      frame, base::Bind(MaybeCreateHardwareFrameCallback, &frame2));
-  RunUntilIdle();
-  EXPECT_EQ(frame.get(), frame2.get());
-}
-
 TEST_F(GpuMemoryBufferVideoFramePoolTest, VideoFrameOutputFormatUnknown) {
   scoped_refptr<VideoFrame> software_frame = CreateTestYUVVideoFrame(10);
-  scoped_refptr<MockGpuVideoAcceleratorFactories> mock_gpu_factories(
-      new MockGpuVideoAcceleratorFactories);
-  scoped_ptr<GpuMemoryBufferVideoFramePool> gpu_memory_buffer_pool_ =
-      make_scoped_ptr(new GpuMemoryBufferVideoFramePool(
-          media_task_runner_, copy_task_runner_.get(), mock_gpu_factories));
-
-  mock_gpu_factories->SetVideoFrameOutputFormat(PIXEL_FORMAT_UNKNOWN);
+  mock_gpu_factories_->SetVideoFrameOutputFormat(PIXEL_FORMAT_UNKNOWN);
   scoped_refptr<VideoFrame> frame;
   gpu_memory_buffer_pool_->MaybeCreateHardwareFrame(
       software_frame, base::Bind(MaybeCreateHardwareFrameCallback, &frame));
@@ -119,15 +111,6 @@ TEST_F(GpuMemoryBufferVideoFramePoolTest, VideoFrameOutputFormatUnknown) {
 
 TEST_F(GpuMemoryBufferVideoFramePoolTest, CreateOneHardwareFrame) {
   scoped_refptr<VideoFrame> software_frame = CreateTestYUVVideoFrame(10);
-  scoped_refptr<MockGpuVideoAcceleratorFactories> mock_gpu_factories(
-      new MockGpuVideoAcceleratorFactories);
-  scoped_ptr<GpuMemoryBufferVideoFramePool> gpu_memory_buffer_pool_ =
-      make_scoped_ptr(new GpuMemoryBufferVideoFramePool(
-          media_task_runner_, copy_task_runner_.get(), mock_gpu_factories));
-
-  EXPECT_CALL(*mock_gpu_factories.get(), GetGLES2Interface())
-      .WillRepeatedly(testing::Return(gles2_.get()));
-
   scoped_refptr<VideoFrame> frame;
   gpu_memory_buffer_pool_->MaybeCreateHardwareFrame(
       software_frame, base::Bind(MaybeCreateHardwareFrameCallback, &frame));
@@ -140,15 +123,6 @@ TEST_F(GpuMemoryBufferVideoFramePoolTest, CreateOneHardwareFrame) {
 
 TEST_F(GpuMemoryBufferVideoFramePoolTest, ReuseFirstResource) {
   scoped_refptr<VideoFrame> software_frame = CreateTestYUVVideoFrame(10);
-  scoped_refptr<MockGpuVideoAcceleratorFactories> mock_gpu_factories(
-      new MockGpuVideoAcceleratorFactories);
-  scoped_ptr<GpuMemoryBufferVideoFramePool> gpu_memory_buffer_pool_ =
-      make_scoped_ptr(new GpuMemoryBufferVideoFramePool(
-          media_task_runner_, copy_task_runner_.get(), mock_gpu_factories));
-
-  EXPECT_CALL(*mock_gpu_factories.get(), GetGLES2Interface())
-      .WillRepeatedly(testing::Return(gles2_.get()));
-
   scoped_refptr<VideoFrame> frame;
   gpu_memory_buffer_pool_->MaybeCreateHardwareFrame(
       software_frame, base::Bind(MaybeCreateHardwareFrameCallback, &frame));
@@ -183,15 +157,6 @@ TEST_F(GpuMemoryBufferVideoFramePoolTest, ReuseFirstResource) {
 }
 
 TEST_F(GpuMemoryBufferVideoFramePoolTest, DropResourceWhenSizeIsDifferent) {
-  scoped_refptr<MockGpuVideoAcceleratorFactories> mock_gpu_factories(
-      new MockGpuVideoAcceleratorFactories);
-  scoped_ptr<GpuMemoryBufferVideoFramePool> gpu_memory_buffer_pool_ =
-      make_scoped_ptr(new GpuMemoryBufferVideoFramePool(
-          media_task_runner_, copy_task_runner_.get(), mock_gpu_factories));
-
-  EXPECT_CALL(*mock_gpu_factories.get(), GetGLES2Interface())
-      .WillRepeatedly(testing::Return(gles2_.get()));
-
   scoped_refptr<VideoFrame> frame;
   gpu_memory_buffer_pool_->MaybeCreateHardwareFrame(
       CreateTestYUVVideoFrame(10),
@@ -211,17 +176,8 @@ TEST_F(GpuMemoryBufferVideoFramePoolTest, DropResourceWhenSizeIsDifferent) {
 
 TEST_F(GpuMemoryBufferVideoFramePoolTest, CreateOneHardwareUYUVFrame) {
   scoped_refptr<VideoFrame> software_frame = CreateTestYUVVideoFrame(10);
-  scoped_refptr<MockGpuVideoAcceleratorFactories> mock_gpu_factories(
-      new MockGpuVideoAcceleratorFactories);
-  mock_gpu_factories->SetVideoFrameOutputFormat(PIXEL_FORMAT_UYVY);
-  scoped_ptr<GpuMemoryBufferVideoFramePool> gpu_memory_buffer_pool_ =
-      make_scoped_ptr(new GpuMemoryBufferVideoFramePool(
-          media_task_runner_, copy_task_runner_.get(), mock_gpu_factories));
-
-  EXPECT_CALL(*mock_gpu_factories.get(), GetGLES2Interface())
-      .WillRepeatedly(testing::Return(gles2_.get()));
-
   scoped_refptr<VideoFrame> frame;
+  mock_gpu_factories_->SetVideoFrameOutputFormat(PIXEL_FORMAT_UYVY);
   gpu_memory_buffer_pool_->MaybeCreateHardwareFrame(
       software_frame, base::Bind(MaybeCreateHardwareFrameCallback, &frame));
 
@@ -233,17 +189,8 @@ TEST_F(GpuMemoryBufferVideoFramePoolTest, CreateOneHardwareUYUVFrame) {
 
 TEST_F(GpuMemoryBufferVideoFramePoolTest, CreateOneHardwareNV12Frame) {
   scoped_refptr<VideoFrame> software_frame = CreateTestYUVVideoFrame(10);
-  scoped_refptr<MockGpuVideoAcceleratorFactories> mock_gpu_factories(
-      new MockGpuVideoAcceleratorFactories);
-  mock_gpu_factories->SetVideoFrameOutputFormat(PIXEL_FORMAT_NV12);
-  scoped_ptr<GpuMemoryBufferVideoFramePool> gpu_memory_buffer_pool_ =
-      make_scoped_ptr(new GpuMemoryBufferVideoFramePool(
-          media_task_runner_, copy_task_runner_.get(), mock_gpu_factories));
-
-  EXPECT_CALL(*mock_gpu_factories.get(), GetGLES2Interface())
-      .WillRepeatedly(testing::Return(gles2_.get()));
-
   scoped_refptr<VideoFrame> frame;
+  mock_gpu_factories_->SetVideoFrameOutputFormat(PIXEL_FORMAT_NV12);
   gpu_memory_buffer_pool_->MaybeCreateHardwareFrame(
       software_frame, base::Bind(MaybeCreateHardwareFrameCallback, &frame));
 
@@ -256,19 +203,10 @@ TEST_F(GpuMemoryBufferVideoFramePoolTest, CreateOneHardwareNV12Frame) {
 // AllocateGpuMemoryBuffer can return null (e.g: when the GPU process is down).
 // This test checks that in that case we don't crash and still create the
 // textures.
-TEST_F(GpuMemoryBufferVideoFramePoolTest, AllocateGpuMemoryBufferBFail) {
+TEST_F(GpuMemoryBufferVideoFramePoolTest, AllocateGpuMemoryBufferFail) {
   scoped_refptr<VideoFrame> software_frame = CreateTestYUVVideoFrame(10);
-  scoped_refptr<MockGpuVideoAcceleratorFactories> mock_gpu_factories(
-      new MockGpuVideoAcceleratorFactories);
-  mock_gpu_factories->SetFailToAllocateGpuMemoryBufferForTesting(true);
-  scoped_ptr<GpuMemoryBufferVideoFramePool> gpu_memory_buffer_pool_ =
-      make_scoped_ptr(new GpuMemoryBufferVideoFramePool(
-          media_task_runner_, copy_task_runner_.get(), mock_gpu_factories));
-
-  EXPECT_CALL(*mock_gpu_factories.get(), GetGLES2Interface())
-      .WillRepeatedly(testing::Return(gles2_.get()));
-
   scoped_refptr<VideoFrame> frame;
+  mock_gpu_factories_->SetFailToAllocateGpuMemoryBufferForTesting(true);
   gpu_memory_buffer_pool_->MaybeCreateHardwareFrame(
       software_frame, base::Bind(MaybeCreateHardwareFrameCallback, &frame));
 

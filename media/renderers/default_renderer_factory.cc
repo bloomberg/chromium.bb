@@ -33,12 +33,11 @@ namespace media {
 
 DefaultRendererFactory::DefaultRendererFactory(
     const scoped_refptr<MediaLog>& media_log,
-    const scoped_refptr<GpuVideoAcceleratorFactories>& gpu_factories,
+    GpuVideoAcceleratorFactories* gpu_factories,
     const AudioHardwareConfig& audio_hardware_config)
     : media_log_(media_log),
       gpu_factories_(gpu_factories),
-      audio_hardware_config_(audio_hardware_config) {
-}
+      audio_hardware_config_(audio_hardware_config) {}
 
 DefaultRendererFactory::~DefaultRendererFactory() {
 }
@@ -72,10 +71,10 @@ scoped_ptr<Renderer> DefaultRendererFactory::CreateRenderer(
   // |gpu_factories_| requires that its entry points be called on its
   // |GetTaskRunner()|.  Since |pipeline_| will own decoders created from the
   // factories, require that their message loops are identical.
-  DCHECK(!gpu_factories_.get() ||
+  DCHECK(!gpu_factories_ ||
          (gpu_factories_->GetTaskRunner() == media_task_runner.get()));
 
-  if (gpu_factories_.get())
+  if (gpu_factories_)
     video_decoders.push_back(new GpuVideoDecoder(gpu_factories_));
 
 #if !defined(MEDIA_DISABLE_LIBVPX)

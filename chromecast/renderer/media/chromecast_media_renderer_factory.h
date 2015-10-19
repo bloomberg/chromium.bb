@@ -22,7 +22,7 @@ namespace media {
 class ChromecastMediaRendererFactory : public ::media::RendererFactory {
  public:
   ChromecastMediaRendererFactory(
-      const scoped_refptr<::media::GpuVideoAcceleratorFactories>& gpu_factories,
+      ::media::GpuVideoAcceleratorFactories* gpu_factories,
       const scoped_refptr<::media::MediaLog>& media_log,
       int render_frame_id);
   ~ChromecastMediaRendererFactory() final;
@@ -36,7 +36,7 @@ class ChromecastMediaRendererFactory : public ::media::RendererFactory {
 
  private:
   int render_frame_id_;
-  scoped_refptr<::media::GpuVideoAcceleratorFactories> gpu_factories_;
+  ::media::GpuVideoAcceleratorFactories* gpu_factories_;
   scoped_refptr<::media::MediaLog> media_log_;
   scoped_ptr<::media::DefaultRendererFactory> default_renderer_factory_;
 

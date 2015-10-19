@@ -94,6 +94,7 @@ class ContextProvider : public base::RefCountedThreadSafe<ContextProvider> {
 
   // A method to be called from the main thread that should return true if
   // the context inside the provider is no longer valid.
+  // TODO(dcastagna): This is no longer needed and can be removed.
   virtual bool DestroyedOnMainThread() = 0;
 
   // Sets a callback to be called when the context is lost. This should be

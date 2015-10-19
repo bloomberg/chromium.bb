@@ -22,7 +22,7 @@ MediaStreamVideoRendererSink::MediaStreamVideoRendererSink(
     const RepaintCB& repaint_cb,
     const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
     const scoped_refptr<base::TaskRunner>& worker_task_runner,
-    const scoped_refptr<media::GpuVideoAcceleratorFactories>& gpu_factories)
+    media::GpuVideoAcceleratorFactories* gpu_factories)
     : error_cb_(error_cb),
       repaint_cb_(repaint_cb),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
@@ -84,8 +84,8 @@ void MediaStreamVideoRendererSink::Pause() {
 }
 
 void MediaStreamVideoRendererSink::SetGpuMemoryBufferVideoForTesting(
-    scoped_ptr<media::GpuMemoryBufferVideoFramePool> gpu_memory_buffer_pool) {
-  gpu_memory_buffer_pool_.swap(gpu_memory_buffer_pool);
+    media::GpuMemoryBufferVideoFramePool* gpu_memory_buffer_pool) {
+  gpu_memory_buffer_pool_.reset(gpu_memory_buffer_pool);
 }
 
 void MediaStreamVideoRendererSink::OnReadyStateChanged(

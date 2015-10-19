@@ -171,7 +171,7 @@ void ContentRendererClient::AddKeySystems(
 scoped_ptr<media::RendererFactory>
 ContentRendererClient::CreateMediaRendererFactory(
     RenderFrame* render_frame,
-    const scoped_refptr<media::GpuVideoAcceleratorFactories>& gpu_factories,
+    media::GpuVideoAcceleratorFactories* gpu_factories,
     const scoped_refptr<media::MediaLog>& media_log) {
   return nullptr;
 }

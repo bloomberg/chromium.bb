@@ -48,7 +48,7 @@ class CONTENT_EXPORT MediaStreamVideoRendererSink
       const RepaintCB& repaint_cb,
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
       const scoped_refptr<base::TaskRunner>& worker_task_runner,
-      const scoped_refptr<media::GpuVideoAcceleratorFactories>& gpu_factories);
+      media::GpuVideoAcceleratorFactories* gpu_factories);
 
   // VideoFrameProvider implementation. Called on the main thread.
   void Start() override;
@@ -56,7 +56,7 @@ class CONTENT_EXPORT MediaStreamVideoRendererSink
   void Play() override;
   void Pause() override;
   void SetGpuMemoryBufferVideoForTesting(
-      scoped_ptr<media::GpuMemoryBufferVideoFramePool> gpu_memory_buffer_pool);
+      media::GpuMemoryBufferVideoFramePool* gpu_memory_buffer_pool);
 
  protected:
   ~MediaStreamVideoRendererSink() override;

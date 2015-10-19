@@ -37,8 +37,7 @@ class MEDIA_EXPORT GpuVideoDecoder
     : public VideoDecoder,
       public VideoDecodeAccelerator::Client {
  public:
-  explicit GpuVideoDecoder(
-      const scoped_refptr<GpuVideoAcceleratorFactories>& factories);
+  explicit GpuVideoDecoder(GpuVideoAcceleratorFactories* factories);
 
   // VideoDecoder implementation.
   std::string GetDisplayName() const override;
@@ -101,12 +100,11 @@ class MEDIA_EXPORT GpuVideoDecoder
   void DeliverFrame(const scoped_refptr<VideoFrame>& frame);
 
   // Static method is to allow it to run even after GVD is deleted.
-  static void ReleaseMailbox(
-      base::WeakPtr<GpuVideoDecoder> decoder,
-      const scoped_refptr<media::GpuVideoAcceleratorFactories>& factories,
-      int64 picture_buffer_id,
-      uint32 texture_id,
-      uint32 release_sync_point);
+  static void ReleaseMailbox(base::WeakPtr<GpuVideoDecoder> decoder,
+                             media::GpuVideoAcceleratorFactories* factories,
+                             int64 picture_buffer_id,
+                             uint32 texture_id,
+                             uint32 release_sync_point);
   // Indicate the picture buffer can be reused by the decoder.
   void ReusePictureBuffer(int64 picture_buffer_id);
 
@@ -136,7 +134,7 @@ class MEDIA_EXPORT GpuVideoDecoder
 
   bool needs_bitstream_conversion_;
 
-  scoped_refptr<GpuVideoAcceleratorFactories> factories_;
+  GpuVideoAcceleratorFactories* factories_;
 
   // Populated during Initialize() (on success) and unchanged until an error
   // occurs.

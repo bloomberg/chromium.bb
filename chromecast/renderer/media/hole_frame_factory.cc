@@ -15,11 +15,13 @@ namespace chromecast {
 namespace media {
 
 HoleFrameFactory::HoleFrameFactory(
-    const scoped_refptr<::media::GpuVideoAcceleratorFactories>& gpu_factories)
+    ::media::GpuVideoAcceleratorFactories* gpu_factories)
     : gpu_factories_(gpu_factories), texture_(0), image_id_(0), sync_point_(0) {
   if (gpu_factories_) {
-    gpu::gles2::GLES2Interface* gl = gpu_factories_->GetGLES2Interface();
-    CHECK(gl);
+    scoped_ptr<::media::GpuVideoAcceleratorFactories::ScopedGLContextLock> lock(
+        gpu_factories_->GetGLContextLock());
+    CHECK(lock);
+    gpu::gles2::GLES2Interface* gl = lock->ContextGL();
 
     gl->GenTextures(1, &texture_);
     gl->BindTexture(GL_TEXTURE_2D, texture_);
@@ -36,7 +38,10 @@ HoleFrameFactory::HoleFrameFactory(
 
 HoleFrameFactory::~HoleFrameFactory() {
   if (texture_) {
-    gpu::gles2::GLES2Interface* gl = gpu_factories_->GetGLES2Interface();
+    scoped_ptr<::media::GpuVideoAcceleratorFactories::ScopedGLContextLock> lock(
+        gpu_factories_->GetGLContextLock());
+    CHECK(lock);
+    gpu::gles2::GLES2Interface* gl = lock->ContextGL();
     gl->BindTexture(GL_TEXTURE_2D, texture_);
     gl->ReleaseTexImage2DCHROMIUM(GL_TEXTURE_2D, image_id_);
     gl->DeleteTextures(1, &texture_);

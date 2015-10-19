@@ -42,12 +42,11 @@ class GpuMemoryBufferVideoFramePool::PoolImpl
   // null if a GL context is not available.
   PoolImpl(const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
            const scoped_refptr<base::TaskRunner>& worker_task_runner,
-           const scoped_refptr<GpuVideoAcceleratorFactories>& gpu_factories)
+           GpuVideoAcceleratorFactories* gpu_factories)
       : media_task_runner_(media_task_runner),
         worker_task_runner_(worker_task_runner),
         gpu_factories_(gpu_factories),
-        texture_target_(gpu_factories ? gpu_factories->ImageTextureTarget()
-                                      : GL_TEXTURE_2D),
+        texture_target_(gpu_factories->ImageTextureTarget()),
         output_format_(PIXEL_FORMAT_UNKNOWN) {
     DCHECK(media_task_runner_);
     DCHECK(worker_task_runner_);
@@ -133,9 +132,8 @@ class GpuMemoryBufferVideoFramePool::PoolImpl
 
   // Delete resources. This has to be called on the thread where |task_runner|
   // is current.
-  static void DeleteFrameResources(
-      const scoped_refptr<GpuVideoAcceleratorFactories>& gpu_factories,
-      FrameResources* frame_resources);
+  static void DeleteFrameResources(GpuVideoAcceleratorFactories* gpu_factories,
+                                   FrameResources* frame_resources);
 
   // Task runner associated to the GL context provided by |gpu_factories_|.
   scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
@@ -143,7 +141,7 @@ class GpuMemoryBufferVideoFramePool::PoolImpl
   scoped_refptr<base::TaskRunner> worker_task_runner_;
 
   // Interface to GPU related operations.
-  scoped_refptr<GpuVideoAcceleratorFactories> gpu_factories_;
+  GpuVideoAcceleratorFactories* gpu_factories_;
 
   // Pool of resources.
   std::list<FrameResources*> resources_pool_;
@@ -152,6 +150,7 @@ class GpuMemoryBufferVideoFramePool::PoolImpl
   // TODO(dcastagna): change the following type from VideoPixelFormat to
   // BufferFormat.
   VideoPixelFormat output_format_;
+
   DISALLOW_COPY_AND_ASSIGN(PoolImpl);
 };
 
@@ -319,11 +318,6 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::CreateHardwareFrame(
     const scoped_refptr<VideoFrame>& video_frame,
     const FrameReadyCB& frame_ready_cb) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
-  if (!gpu_factories_) {
-    frame_ready_cb.Run(video_frame);
-    return;
-  }
-
   // Lazily initialize output_format_ since VideoFrameOutputFormat() has to be
   // called on the media_thread while this object might be instantiated on any.
   if (output_format_ == PIXEL_FORMAT_UNKNOWN)
@@ -504,11 +498,13 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::
         const scoped_refptr<VideoFrame>& video_frame,
         FrameResources* frame_resources,
         const FrameReadyCB& frame_ready_cb) {
-  gpu::gles2::GLES2Interface* gles2 = gpu_factories_->GetGLES2Interface();
-  if (!gles2) {
+  scoped_ptr<GpuVideoAcceleratorFactories::ScopedGLContextLock> lock(
+      gpu_factories_->GetGLContextLock());
+  if (!lock) {
     frame_ready_cb.Run(video_frame);
     return;
   }
+  gpu::gles2::GLES2Interface* gles2 = lock->ContextGL();
 
   const size_t num_planes = VideoFrame::NumPlanes(output_format_);
   const size_t planes_per_copy = PlanesPerCopy(output_format_);
@@ -544,15 +540,18 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::
     mailbox_holders[i].sync_point = sync_point;
 
   scoped_refptr<VideoFrame> frame;
+
+  auto release_mailbox_callback =
+      base::Bind(&PoolImpl::MailboxHoldersReleased, this, frame_resources);
+
   // Create the VideoFrame backed by native textures.
   switch (output_format_) {
     case PIXEL_FORMAT_I420:
       frame = VideoFrame::WrapYUV420NativeTextures(
           mailbox_holders[VideoFrame::kYPlane],
           mailbox_holders[VideoFrame::kUPlane],
-          mailbox_holders[VideoFrame::kVPlane],
-          base::Bind(&PoolImpl::MailboxHoldersReleased, this, frame_resources),
-          size, gfx::Rect(size), video_frame->natural_size(),
+          mailbox_holders[VideoFrame::kVPlane], release_mailbox_callback, size,
+          gfx::Rect(size), video_frame->natural_size(),
           video_frame->timestamp());
       if (video_frame->metadata()->IsTrue(VideoFrameMetadata::ALLOW_OVERLAY))
         frame->metadata()->SetBoolean(VideoFrameMetadata::ALLOW_OVERLAY, true);
@@ -561,9 +560,8 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::
     case PIXEL_FORMAT_UYVY:
       frame = VideoFrame::WrapNativeTexture(
           output_format_, mailbox_holders[VideoFrame::kYPlane],
-          base::Bind(&PoolImpl::MailboxHoldersReleased, this, frame_resources),
-          size, gfx::Rect(size), video_frame->natural_size(),
-          video_frame->timestamp());
+          release_mailbox_callback, size, gfx::Rect(size),
+          video_frame->natural_size(), video_frame->timestamp());
       frame->metadata()->SetBoolean(VideoFrameMetadata::ALLOW_OVERLAY, true);
       break;
     default:
@@ -609,9 +607,12 @@ GpuMemoryBufferVideoFramePool::PoolImpl::GetOrCreateFrameResources(
   }
 
   // Create the resources.
-  gpu::gles2::GLES2Interface* gles2 = gpu_factories_->GetGLES2Interface();
-  if (!gles2)
+  scoped_ptr<GpuVideoAcceleratorFactories::ScopedGLContextLock> lock(
+      gpu_factories_->GetGLContextLock());
+  if (!lock)
     return nullptr;
+
+  gpu::gles2::GLES2Interface* gles2 = lock->ContextGL();
   gles2->ActiveTexture(GL_TEXTURE0);
   size_t num_planes = VideoFrame::NumPlanes(format);
   FrameResources* frame_resources = new FrameResources(size);
@@ -640,14 +641,17 @@ GpuMemoryBufferVideoFramePool::PoolImpl::GetOrCreateFrameResources(
 
 // static
 void GpuMemoryBufferVideoFramePool::PoolImpl::DeleteFrameResources(
-    const scoped_refptr<GpuVideoAcceleratorFactories>& gpu_factories,
+    GpuVideoAcceleratorFactories* gpu_factories,
     FrameResources* frame_resources) {
   // TODO(dcastagna): As soon as the context lost is dealt with in media,
   // make sure that we won't execute this callback (use a weak pointer to
   // the old context).
-  gpu::gles2::GLES2Interface* gles2 = gpu_factories->GetGLES2Interface();
-  if (!gles2)
+
+  scoped_ptr<GpuVideoAcceleratorFactories::ScopedGLContextLock> lock(
+      gpu_factories->GetGLContextLock());
+  if (!lock)
     return;
+  gpu::gles2::GLES2Interface* gles2 = lock->ContextGL();
 
   for (PlaneResource& plane_resource : frame_resources->plane_resources) {
     if (plane_resource.image_id)
@@ -667,10 +671,9 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::MailboxHoldersReleased(
       base::Bind(&PoolImpl::ReturnFrameResources, this, frame_resources));
 }
 
-// Put back the resoruces in the pool.
+// Put back the resources in the pool.
 void GpuMemoryBufferVideoFramePool::PoolImpl::ReturnFrameResources(
     FrameResources* frame_resources) {
-
   auto it = std::find(resources_pool_.begin(), resources_pool_.end(),
                       frame_resources);
   DCHECK(it != resources_pool_.end());
@@ -686,7 +689,7 @@ GpuMemoryBufferVideoFramePool::GpuMemoryBufferVideoFramePool() {}
 GpuMemoryBufferVideoFramePool::GpuMemoryBufferVideoFramePool(
     const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
     const scoped_refptr<base::TaskRunner>& worker_task_runner,
-    const scoped_refptr<GpuVideoAcceleratorFactories>& gpu_factories)
+    GpuVideoAcceleratorFactories* gpu_factories)
     : pool_impl_(
           new PoolImpl(media_task_runner, worker_task_runner, gpu_factories)) {
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(

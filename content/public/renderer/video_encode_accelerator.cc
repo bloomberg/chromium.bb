@@ -15,8 +15,8 @@ void CreateVideoEncodeAccelerator(
     const OnCreateVideoEncodeAcceleratorCallback& callback) {
   DCHECK(!callback.is_null());
 
-  scoped_refptr<media::GpuVideoAcceleratorFactories> gpu_factories =
-        RenderThreadImpl::current()->GetGpuFactories();
+  media::GpuVideoAcceleratorFactories* gpu_factories =
+      RenderThreadImpl::current()->GetGpuFactories();
   if (!gpu_factories || !gpu_factories->IsGpuVideoAcceleratorEnabled()) {
     callback.Run(NULL, scoped_ptr<media::VideoEncodeAccelerator>());
     return;
@@ -25,17 +25,16 @@ void CreateVideoEncodeAccelerator(
   scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner =
       gpu_factories->GetTaskRunner();
   base::PostTaskAndReplyWithResult(
-      encode_task_runner.get(),
-      FROM_HERE,
+      encode_task_runner.get(), FROM_HERE,
       base::Bind(
           &media::GpuVideoAcceleratorFactories::CreateVideoEncodeAccelerator,
-          gpu_factories),
+          base::Unretained(gpu_factories)),
       base::Bind(callback, encode_task_runner));
 }
 
 media::VideoEncodeAccelerator::SupportedProfiles
 GetSupportedVideoEncodeAcceleratorProfiles() {
-  scoped_refptr<media::GpuVideoAcceleratorFactories> gpu_factories =
+  media::GpuVideoAcceleratorFactories* gpu_factories =
       RenderThreadImpl::current()->GetGpuFactories();
   if (!gpu_factories || !gpu_factories->IsGpuVideoAcceleratorEnabled())
     return media::VideoEncodeAccelerator::SupportedProfiles();

@@ -128,10 +128,8 @@ class MediaStreamVideoRendererSinkAsyncAddFrameReadyTest
     : public MediaStreamVideoRendererSinkTest {
  public:
   MediaStreamVideoRendererSinkAsyncAddFrameReadyTest() {
-    scoped_ptr<media::GpuMemoryBufferVideoFramePool> gpu_memory_buffer_pool(
-        new media::MockGpuMemoryBufferVideoFramePool(&frame_ready_cbs_));
     media_stream_video_renderer_sink_->SetGpuMemoryBufferVideoForTesting(
-        gpu_memory_buffer_pool.Pass());
+        new media::MockGpuMemoryBufferVideoFramePool(&frame_ready_cbs_));
   }
 
  protected:

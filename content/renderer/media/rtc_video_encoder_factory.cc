@@ -42,7 +42,7 @@ void VEAToWebRTCCodecs(
 }  // anonymous namespace
 
 RTCVideoEncoderFactory::RTCVideoEncoderFactory(
-    const scoped_refptr<media::GpuVideoAcceleratorFactories>& gpu_factories)
+    media::GpuVideoAcceleratorFactories* gpu_factories)
     : gpu_factories_(gpu_factories) {
   const media::VideoEncodeAccelerator::SupportedProfiles& profiles =
       gpu_factories_->GetVideoEncodeAcceleratorSupportedProfiles();

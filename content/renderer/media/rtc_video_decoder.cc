@@ -69,9 +69,8 @@ RTCVideoDecoder::BufferData::BufferData() {}
 
 RTCVideoDecoder::BufferData::~BufferData() {}
 
-RTCVideoDecoder::RTCVideoDecoder(
-    webrtc::VideoCodecType type,
-    const scoped_refptr<media::GpuVideoAcceleratorFactories>& factories)
+RTCVideoDecoder::RTCVideoDecoder(webrtc::VideoCodecType type,
+                                 media::GpuVideoAcceleratorFactories* factories)
     : video_codec_type_(type),
       factories_(factories),
       decoder_texture_target_(0),
@@ -102,7 +101,7 @@ RTCVideoDecoder::~RTCVideoDecoder() {
 // static
 scoped_ptr<RTCVideoDecoder> RTCVideoDecoder::Create(
     webrtc::VideoCodecType type,
-    const scoped_refptr<media::GpuVideoAcceleratorFactories>& factories) {
+    media::GpuVideoAcceleratorFactories* factories) {
   scoped_ptr<RTCVideoDecoder> decoder;
   // Convert WebRTC codec type to media codec profile.
   media::VideoCodecProfile profile;
@@ -622,7 +621,7 @@ void RTCVideoDecoder::ResetInternal() {
 // static
 void RTCVideoDecoder::ReleaseMailbox(
     base::WeakPtr<RTCVideoDecoder> decoder,
-    const scoped_refptr<media::GpuVideoAcceleratorFactories>& factories,
+    media::GpuVideoAcceleratorFactories* factories,
     int64 picture_buffer_id,
     uint32 texture_id,
     uint32 release_sync_point) {

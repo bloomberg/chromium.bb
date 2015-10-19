@@ -18,13 +18,12 @@ namespace chromecast {
 namespace media {
 
 ChromecastMediaRendererFactory::ChromecastMediaRendererFactory(
-    const scoped_refptr<::media::GpuVideoAcceleratorFactories>& gpu_factories,
+    ::media::GpuVideoAcceleratorFactories* gpu_factories,
     const scoped_refptr<::media::MediaLog>& media_log,
     int render_frame_id)
     : render_frame_id_(render_frame_id),
       gpu_factories_(gpu_factories),
-      media_log_(media_log) {
-}
+      media_log_(media_log) {}
 
 ChromecastMediaRendererFactory::~ChromecastMediaRendererFactory() {
 }

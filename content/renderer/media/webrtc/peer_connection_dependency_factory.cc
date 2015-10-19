@@ -357,7 +357,7 @@ void PeerConnectionDependencyFactory::CreatePeerConnectionFactory() {
 }
 
 void PeerConnectionDependencyFactory::InitializeSignalingThread(
-    const scoped_refptr<media::GpuVideoAcceleratorFactories>& gpu_factories,
+    media::GpuVideoAcceleratorFactories* gpu_factories,
     base::WaitableEvent* event) {
   DCHECK(chrome_signaling_thread_.task_runner()->BelongsToCurrentThread());
   DCHECK(worker_thread_);

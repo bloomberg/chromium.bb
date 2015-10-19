@@ -30,7 +30,7 @@ VideoRendererImpl::VideoRendererImpl(
     VideoRendererSink* sink,
     ScopedVector<VideoDecoder> decoders,
     bool drop_frames,
-    const scoped_refptr<GpuVideoAcceleratorFactories>& gpu_factories,
+    GpuVideoAcceleratorFactories* gpu_factories,
     const scoped_refptr<MediaLog>& media_log)
     : task_runner_(media_task_runner),
       sink_(sink),

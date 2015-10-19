@@ -105,7 +105,7 @@ class RTCVideoEncoder::Impl
       public base::RefCountedThreadSafe<RTCVideoEncoder::Impl> {
  public:
   Impl(const base::WeakPtr<RTCVideoEncoder>& weak_encoder,
-       const scoped_refptr<media::GpuVideoAcceleratorFactories>& gpu_factories);
+       media::GpuVideoAcceleratorFactories* gpu_factories);
 
   // Create the VEA and call Initialize() on it.  Called once per instantiation,
   // and then the instance is bound forevermore to whichever thread made the
@@ -179,7 +179,7 @@ class RTCVideoEncoder::Impl
   const scoped_refptr<base::SingleThreadTaskRunner> encoder_task_runner_;
 
   // Factory for creating VEAs, shared memory buffers, etc.
-  const scoped_refptr<media::GpuVideoAcceleratorFactories> gpu_factories_;
+  media::GpuVideoAcceleratorFactories* gpu_factories_;
 
   // webrtc::VideoEncoder expects InitEncode() and Encode() to be synchronous.
   // Do this by waiting on the |async_waiter_| and returning the return value in
@@ -220,9 +220,8 @@ class RTCVideoEncoder::Impl
   DISALLOW_COPY_AND_ASSIGN(Impl);
 };
 
-RTCVideoEncoder::Impl::Impl(
-    const base::WeakPtr<RTCVideoEncoder>& weak_encoder,
-    const scoped_refptr<media::GpuVideoAcceleratorFactories>& gpu_factories)
+RTCVideoEncoder::Impl::Impl(const base::WeakPtr<RTCVideoEncoder>& weak_encoder,
+                            media::GpuVideoAcceleratorFactories* gpu_factories)
     : weak_encoder_(weak_encoder),
       encoder_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       gpu_factories_(gpu_factories),
@@ -572,7 +571,7 @@ void RTCVideoEncoder::Impl::SignalAsyncWaiter(int32_t retval) {
 
 RTCVideoEncoder::RTCVideoEncoder(
     webrtc::VideoCodecType type,
-    const scoped_refptr<media::GpuVideoAcceleratorFactories>& gpu_factories)
+    media::GpuVideoAcceleratorFactories* gpu_factories)
     : video_codec_type_(type),
       gpu_factories_(gpu_factories),
       encoded_image_callback_(NULL),
