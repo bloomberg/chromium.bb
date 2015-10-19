@@ -119,6 +119,7 @@ def member_context(dictionary, member):
         'is_object': unwrapped_idl_type.name == 'Object' or is_deprecated_dictionary,
         'is_required': member.is_required,
         'name': member.name,
+        'runtime_enabled_function': v8_utilities.runtime_enabled_function_name(member),  # [RuntimeEnabled]
         'setter_name': setter_name_for_dictionary_member(member),
         'null_setter_name': null_setter_name_for_dictionary_member(member),
         'v8_default_value': v8_default_value,

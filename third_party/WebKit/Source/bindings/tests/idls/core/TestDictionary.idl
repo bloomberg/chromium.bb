@@ -37,4 +37,5 @@ dictionary TestDictionary {
     EventTarget eventTargetMember;
     any anyMember = null;
     Dictionary dictionaryMember;
+    [RuntimeEnabled=runtimeFeature] boolean runtimeMember;
 };

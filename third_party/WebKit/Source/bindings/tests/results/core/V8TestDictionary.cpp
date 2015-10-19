@@ -363,6 +363,22 @@ void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
         }
     }
 
+    if (RuntimeEnabledFeatures::runtimeFeatureEnabled()) {
+        v8::Local<v8::Value> runtimeMemberValue;
+        if (!v8Object->Get(isolate->GetCurrentContext(), v8String(isolate, "runtimeMember")).ToLocal(&runtimeMemberValue)) {
+            exceptionState.rethrowV8Exception(block.Exception());
+            return;
+        }
+        if (runtimeMemberValue.IsEmpty() || runtimeMemberValue->IsUndefined()) {
+            // Do nothing.
+        } else {
+            bool runtimeMember = toBoolean(isolate, runtimeMemberValue, exceptionState);
+            if (exceptionState.hadException())
+                return;
+            impl.setRuntimeMember(runtimeMember);
+        }
+    }
+
     {
         v8::Local<v8::Value> stringArrayMemberValue;
         if (!v8Object->Get(isolate->GetCurrentContext(), v8String(isolate, "stringArrayMember")).ToLocal(&stringArrayMemberValue)) {
@@ -765,6 +781,11 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
             return false;
     } else {
         if (!v8CallBoolean(dictionary->CreateDataProperty(isolate->GetCurrentContext(), v8String(isolate, "restrictedDoubleMember"), v8::Number::New(isolate, 3.14))))
+            return false;
+    }
+
+    if (impl.hasRuntimeMember()) {
+        if (!v8CallBoolean(dictionary->CreateDataProperty(isolate->GetCurrentContext(), v8String(isolate, "runtimeMember"), v8Boolean(impl.runtimeMember(), isolate))))
             return false;
     }
 

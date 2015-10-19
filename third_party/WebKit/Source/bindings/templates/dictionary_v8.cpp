@@ -40,7 +40,11 @@ void {{v8_class}}::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, {{
     }
     {% endif %}
     {% for member in members %}
+    {% if member.runtime_enabled_function %}
+    if ({{member.runtime_enabled_function}}()) {
+    {% else %}
     {
+    {% endif %}
         v8::Local<v8::Value> {{member.name}}Value;
         if (!v8Object->Get(isolate->GetCurrentContext(), v8String(isolate, "{{member.name}}")).ToLocal(&{{member.name}}Value)) {
             exceptionState.rethrowV8Exception(block.Exception());
