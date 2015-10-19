@@ -160,7 +160,7 @@ class GtestTestInstance(test_instance.TestInstance):
 
     if not os.path.exists(self._exe_path):
       self._exe_path = None
-    if not apk_path and not self._exe_path:
+    if not self._apk_helper and not self._exe_path:
       error_func('Could not find apk or executable for %s' % self._suite)
 
     self._data_deps = []
