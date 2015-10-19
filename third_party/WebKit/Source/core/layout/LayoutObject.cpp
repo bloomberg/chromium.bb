@@ -1453,9 +1453,9 @@ void LayoutObject::invalidatePaintIfNeededForSynchronizedPainting(const PaintInf
     ASSERT(paintInfo.paintInvalidationState);
     ASSERT(paintInfo.paintContainer());
 
-    PaintController* paintController = paintInfo.context->paintController();
-    if (paintController->clientHasCheckedPaintInvalidation(displayItemClient())) {
-        ASSERT(paintController->clientCacheIsValid(displayItemClient())
+    PaintController& paintController = paintInfo.context->paintController();
+    if (paintController.clientHasCheckedPaintInvalidation(displayItemClient())) {
+        ASSERT(paintController.clientCacheIsValid(displayItemClient())
             == (invalidatePaintIfNeeded(*paintInfo.paintInvalidationState, *paintInfo.paintContainer()) == PaintInvalidationNone));
         return;
     }
@@ -1466,7 +1466,7 @@ void LayoutObject::invalidatePaintIfNeededForSynchronizedPainting(const PaintInf
     if (reason == PaintInvalidationDelayedFull)
         paintInfo.paintInvalidationState->pushDelayedPaintInvalidationTarget(*this);
 
-    paintController->setClientHasCheckedPaintInvalidation(displayItemClient());
+    paintController.setClientHasCheckedPaintInvalidation(displayItemClient());
 }
 
 PaintInvalidationReason LayoutObject::paintInvalidationReason(const LayoutBoxModelObject& paintInvalidationContainer,

@@ -62,15 +62,15 @@ public:
 #endif
 
 private:
-    static void updatePaintOffsetIfNeeded(PaintController* paintController, const LayoutObject& layoutObject, const LayoutPoint& paintOffset)
+    static void updatePaintOffsetIfNeeded(PaintController& paintController, const LayoutObject& layoutObject, const LayoutPoint& paintOffset)
     {
-        if (!RuntimeEnabledFeatures::slimmingPaintOffsetCachingEnabled() || paintController->skippingCache())
+        if (!RuntimeEnabledFeatures::slimmingPaintOffsetCachingEnabled() || paintController.skippingCache())
             return;
 
         if (layoutObject.paintOffsetChanged(paintOffset))
-            paintController->invalidatePaintOffset(layoutObject);
+            paintController.invalidatePaintOffset(layoutObject);
         else
-            ASSERT(!paintController->paintOffsetWasInvalidated(layoutObject.displayItemClient()) || !paintController->clientCacheIsValid(layoutObject.displayItemClient()));
+            ASSERT(!paintController.paintOffsetWasInvalidated(layoutObject.displayItemClient()) || !paintController.clientCacheIsValid(layoutObject.displayItemClient()));
 
         layoutObject.mutableForPainting().setPreviousPaintOffset(paintOffset);
     }

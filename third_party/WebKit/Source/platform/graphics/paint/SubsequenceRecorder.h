@@ -30,7 +30,7 @@ public:
     void setUncacheable();
 
 private:
-    PaintController* m_paintController;
+    PaintController& m_paintController;
     DisplayItemClientWrapper m_client;
     size_t m_beginSubsequenceIndex;
     DisplayItem::Type m_type;

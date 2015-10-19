@@ -28,8 +28,7 @@ LayerClipRecorder::LayerClipRecorder(GraphicsContext& graphicsContext, const Lay
         collectRoundedRectClips(*layoutObject.layer(), *localPaintingInfo, graphicsContext, fragmentOffset, paintFlags, rule, roundedRects);
     }
 
-    ASSERT(m_graphicsContext.paintController());
-    m_graphicsContext.paintController()->createAndAppend<ClipDisplayItem>(layoutObject, m_clipType, snappedClipRect, roundedRects);
+    m_graphicsContext.paintController().createAndAppend<ClipDisplayItem>(layoutObject, m_clipType, snappedClipRect, roundedRects);
 }
 
 static bool inContainingBlockChain(PaintLayer* startLayer, PaintLayer* endLayer)
@@ -73,8 +72,7 @@ void LayerClipRecorder::collectRoundedRectClips(PaintLayer& paintLayer, const Pa
 
 LayerClipRecorder::~LayerClipRecorder()
 {
-    ASSERT(m_graphicsContext.paintController());
-    m_graphicsContext.paintController()->endItem<EndClipDisplayItem>(m_layoutObject, DisplayItem::clipTypeToEndClipType(m_clipType));
+    m_graphicsContext.paintController().endItem<EndClipDisplayItem>(m_layoutObject, DisplayItem::clipTypeToEndClipType(m_clipType));
 }
 
 } // namespace blink

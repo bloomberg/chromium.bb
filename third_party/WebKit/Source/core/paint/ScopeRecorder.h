@@ -23,7 +23,7 @@ public:
     ~ScopeRecorder();
 
 private:
-    PaintController* m_paintController;
+    PaintController& m_paintController;
 };
 
 } // namespace blink

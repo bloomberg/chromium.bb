@@ -76,8 +76,7 @@ public:
     SkCanvas* canvas() { return m_canvas; }
     const SkCanvas* canvas() const { return m_canvas; }
 
-    // TODO(pdr): Update this to return a reference.
-    PaintController* paintController() { return &m_paintController; }
+    PaintController& paintController() { return m_paintController; }
 
     bool contextDisabled() const { return m_disabledState; }
 

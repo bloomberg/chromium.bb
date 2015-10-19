@@ -15,11 +15,11 @@ public:
     DisplayItemCacheSkipper(GraphicsContext& context)
         : m_context(context)
     {
-        context.paintController()->beginSkippingCache();
+        context.paintController().beginSkippingCache();
     }
     ~DisplayItemCacheSkipper()
     {
-        m_context.paintController()->endSkippingCache();
+        m_context.paintController().endSkippingCache();
     }
 
 private:

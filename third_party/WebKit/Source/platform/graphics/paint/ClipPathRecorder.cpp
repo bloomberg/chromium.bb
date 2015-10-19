@@ -15,14 +15,12 @@ ClipPathRecorder::ClipPathRecorder(GraphicsContext& context, const DisplayItemCl
     : m_context(context)
     , m_client(client)
 {
-    ASSERT(m_context.paintController());
-    m_context.paintController()->createAndAppend<BeginClipPathDisplayItem>(m_client, clipPath);
+    m_context.paintController().createAndAppend<BeginClipPathDisplayItem>(m_client, clipPath);
 }
 
 ClipPathRecorder::~ClipPathRecorder()
 {
-    ASSERT(m_context.paintController());
-    m_context.paintController()->endItem<EndClipPathDisplayItem>(m_client);
+    m_context.paintController().endItem<EndClipPathDisplayItem>(m_client);
 }
 
 } // namespace blink

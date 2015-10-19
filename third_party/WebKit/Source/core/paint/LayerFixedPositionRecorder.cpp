@@ -24,13 +24,13 @@ LayerFixedPositionRecorder::LayerFixedPositionRecorder(GraphicsContext& graphics
         return;
 
     if (m_isFixedPosition)
-        m_graphicsContext.paintController()->createAndAppend<BeginFixedPositionDisplayItem>(m_layoutObject);
+        m_graphicsContext.paintController().createAndAppend<BeginFixedPositionDisplayItem>(m_layoutObject);
 
     // TODO(trchen): Adding a pair of display items on every transformed
     // element can be expensive. Investigate whether we can optimize out some
     // of them if applicable.
     if (m_isFixedPositionContainer)
-        m_graphicsContext.paintController()->createAndAppend<BeginFixedPositionContainerDisplayItem>(m_layoutObject);
+        m_graphicsContext.paintController().createAndAppend<BeginFixedPositionContainerDisplayItem>(m_layoutObject);
 }
 
 LayerFixedPositionRecorder::~LayerFixedPositionRecorder()
@@ -38,11 +38,10 @@ LayerFixedPositionRecorder::~LayerFixedPositionRecorder()
     if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled())
         return;
 
-    ASSERT(m_graphicsContext.paintController());
     if (m_isFixedPositionContainer)
-        m_graphicsContext.paintController()->endItem<EndFixedPositionDisplayItem>(m_layoutObject);
+        m_graphicsContext.paintController().endItem<EndFixedPositionDisplayItem>(m_layoutObject);
     if (m_isFixedPosition)
-        m_graphicsContext.paintController()->endItem<EndFixedPositionDisplayItem>(m_layoutObject);
+        m_graphicsContext.paintController().endItem<EndFixedPositionDisplayItem>(m_layoutObject);
 }
 
 } // namespace blink

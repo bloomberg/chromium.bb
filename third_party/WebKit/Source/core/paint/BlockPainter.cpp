@@ -143,10 +143,10 @@ void BlockPainter::paintAsInlineBlock(const LayoutObject& layoutObject, const Pa
 
 void BlockPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    if (RuntimeEnabledFeatures::slimmingPaintOffsetCachingEnabled() && m_layoutBlock.childrenInline() && !paintInfo.context->paintController()->skippingCache()) {
+    if (RuntimeEnabledFeatures::slimmingPaintOffsetCachingEnabled() && m_layoutBlock.childrenInline() && !paintInfo.context->paintController().skippingCache()) {
         if (m_layoutBlock.paintOffsetChanged(paintOffset)) {
             LineBoxListPainter(m_layoutBlock.lineBoxes()).invalidateLineBoxPaintOffsets(paintInfo);
-            paintInfo.context->paintController()->invalidatePaintOffset(m_layoutBlock);
+            paintInfo.context->paintController().invalidatePaintOffset(m_layoutBlock);
         }
         // Set previousPaintOffset here in case that m_layoutBlock paints nothing and no
         // LayoutObjectDrawingRecorder updates its previousPaintOffset.

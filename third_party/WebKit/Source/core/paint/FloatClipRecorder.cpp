@@ -16,15 +16,13 @@ FloatClipRecorder::FloatClipRecorder(GraphicsContext& context, const DisplayItem
     , m_client(client)
     , m_clipType(DisplayItem::paintPhaseToFloatClipType(paintPhase))
 {
-    ASSERT(m_context.paintController());
-    m_context.paintController()->createAndAppend<FloatClipDisplayItem>(m_client, m_clipType, clipRect);
+    m_context.paintController().createAndAppend<FloatClipDisplayItem>(m_client, m_clipType, clipRect);
 }
 
 FloatClipRecorder::~FloatClipRecorder()
 {
     DisplayItem::Type endType = DisplayItem::floatClipTypeToEndFloatClipType(m_clipType);
-    ASSERT(m_context.paintController());
-    m_context.paintController()->endItem<EndFloatClipDisplayItem>(m_client, endType);
+    m_context.paintController().endItem<EndFloatClipDisplayItem>(m_client, endType);
 }
 
 } // namespace blink

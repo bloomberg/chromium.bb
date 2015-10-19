@@ -27,8 +27,7 @@ Transform3DRecorder::Transform3DRecorder(
     if (m_skipRecordingForIdentityTransform)
         return;
 
-    ASSERT(m_context.paintController());
-    m_context.paintController()->createAndAppend<BeginTransform3DDisplayItem>(m_client, m_type, transform, transformOrigin);
+    m_context.paintController().createAndAppend<BeginTransform3DDisplayItem>(m_client, m_type, transform, transformOrigin);
 }
 
 Transform3DRecorder::~Transform3DRecorder()
@@ -36,8 +35,7 @@ Transform3DRecorder::~Transform3DRecorder()
     if (m_skipRecordingForIdentityTransform)
         return;
 
-    ASSERT(m_context.paintController());
-    m_context.paintController()->endItem<EndTransform3DDisplayItem>(m_client, DisplayItem::transform3DTypeToEndTransform3DType(m_type));
+    m_context.paintController().endItem<EndTransform3DDisplayItem>(m_client, DisplayItem::transform3DTypeToEndTransform3DType(m_type));
 }
 
 } // namespace blink

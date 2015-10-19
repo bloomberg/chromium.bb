@@ -63,22 +63,22 @@ void LineBoxListPainter::paint(const LayoutBoxModelObject& layoutObject, const P
     }
 }
 
-static void invalidateLineBoxPaintOffsetsInternal(PaintController* paintController, InlineFlowBox* inlineBox)
+static void invalidateLineBoxPaintOffsetsInternal(PaintController& paintController, InlineFlowBox* inlineBox)
 {
-    paintController->invalidatePaintOffset(*inlineBox);
+    paintController.invalidatePaintOffset(*inlineBox);
     for (InlineBox* child = inlineBox->firstChild(); child; child = child->nextOnLine()) {
         if (!child->lineLayoutItem().isText() && child->boxModelObject().hasSelfPaintingLayer())
             continue;
         if (child->isInlineFlowBox())
             invalidateLineBoxPaintOffsetsInternal(paintController, toInlineFlowBox(child));
         else
-            paintController->invalidatePaintOffset(*child);
+            paintController.invalidatePaintOffset(*child);
     }
 }
 
 void LineBoxListPainter::invalidateLineBoxPaintOffsets(const PaintInfo& paintInfo) const
 {
-    PaintController* paintController = paintInfo.context->paintController();
+    PaintController& paintController = paintInfo.context->paintController();
     for (InlineFlowBox* curr = m_lineBoxList.firstLineBox(); curr; curr = curr->nextLineBox())
         invalidateLineBoxPaintOffsetsInternal(paintController, curr);
 }

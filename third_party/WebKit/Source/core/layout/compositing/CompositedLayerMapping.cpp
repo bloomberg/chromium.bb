@@ -2130,15 +2130,10 @@ void CompositedLayerMapping::doPaintTask(const GraphicsLayerPaintInfo& paintInfo
         // FIXME: Is it correct to clip to dirtyRect in slimming paint mode?
         // FIXME: Combine similar code here and LayerClipRecorder.
         dirtyRect.intersect(paintInfo.localClipRectForSquashedLayer);
-        {
-            ASSERT(context->paintController());
-            context->paintController()->createAndAppend<ClipDisplayItem>(*this, DisplayItem::ClipLayerOverflowControls, dirtyRect);
-        }
+        context->paintController().createAndAppend<ClipDisplayItem>(*this, DisplayItem::ClipLayerOverflowControls, dirtyRect);
+
         PaintLayerPainter(*paintInfo.paintLayer).paintLayer(context, paintingInfo, paintLayerFlags);
-        {
-            ASSERT(context->paintController());
-            context->paintController()->endItem<EndClipDisplayItem>(*this, DisplayItem::clipTypeToEndClipType(DisplayItem::ClipLayerOverflowControls));
-        }
+        context->paintController().endItem<EndClipDisplayItem>(*this, DisplayItem::clipTypeToEndClipType(DisplayItem::ClipLayerOverflowControls));
     }
 }
 
@@ -2191,7 +2186,7 @@ void CompositedLayerMapping::paintContentsIfNeeded(const GraphicsLayer* graphics
 
     // TODO(chrishtr): Also paint if the interest rect has changed sufficiently.
     if (!m_owningLayer.needsRepaint()) {
-        context.paintController()->createAndAppend<CachedDisplayItem>(*this, DisplayItem::CachedDisplayItemList);
+        context.paintController().createAndAppend<CachedDisplayItem>(*this, DisplayItem::CachedDisplayItemList);
         return;
     }
 

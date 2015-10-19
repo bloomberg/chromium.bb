@@ -14,13 +14,12 @@ namespace blink {
 ScopeRecorder::ScopeRecorder(GraphicsContext& context)
     : m_paintController(context.paintController())
 {
-    ASSERT(m_paintController);
-    m_paintController->beginScope();
+    m_paintController.beginScope();
 }
 
 ScopeRecorder::~ScopeRecorder()
 {
-    m_paintController->endScope();
+    m_paintController.endScope();
 }
 
 } // namespace blink

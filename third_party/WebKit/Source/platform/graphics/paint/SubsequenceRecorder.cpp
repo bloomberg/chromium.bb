@@ -18,15 +18,13 @@ bool SubsequenceRecorder::useCachedSubsequenceIfPossible(GraphicsContext& contex
     if (!RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled())
         return false;
 
-    ASSERT(context.paintController());
-
-    if (context.paintController()->displayItemConstructionIsDisabled())
+    if (context.paintController().displayItemConstructionIsDisabled())
         return false;
 
-    if (!context.paintController()->clientCacheIsValid(client.displayItemClient()))
+    if (!context.paintController().clientCacheIsValid(client.displayItemClient()))
         return false;
 
-    context.paintController()->createAndAppend<CachedDisplayItem>(client, DisplayItem::subsequenceTypeToCachedSubsequenceType(type));
+    context.paintController().createAndAppend<CachedDisplayItem>(client, DisplayItem::subsequenceTypeToCachedSubsequenceType(type));
 
 #if ENABLE(ASSERT)
     // When under-invalidation checking is enabled, we output CachedSubsequence display item
@@ -47,12 +45,11 @@ SubsequenceRecorder::SubsequenceRecorder(GraphicsContext& context, const Display
     if (!RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled())
         return;
 
-    ASSERT(m_paintController);
-    if (m_paintController->displayItemConstructionIsDisabled())
+    if (m_paintController.displayItemConstructionIsDisabled())
         return;
 
-    m_beginSubsequenceIndex = m_paintController->newDisplayItemList().size();
-    m_paintController->createAndAppend<BeginSubsequenceDisplayItem>(m_client, type);
+    m_beginSubsequenceIndex = m_paintController.newDisplayItemList().size();
+    m_paintController.createAndAppend<BeginSubsequenceDisplayItem>(m_client, type);
 }
 
 SubsequenceRecorder::~SubsequenceRecorder()
@@ -60,20 +57,20 @@ SubsequenceRecorder::~SubsequenceRecorder()
     if (!RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled())
         return;
 
-    if (m_paintController->displayItemConstructionIsDisabled())
+    if (m_paintController.displayItemConstructionIsDisabled())
         return;
 
-    if (m_paintController->lastDisplayItemIsNoopBegin()) {
-        ASSERT(m_beginSubsequenceIndex == m_paintController->newDisplayItemList().size() - 1);
+    if (m_paintController.lastDisplayItemIsNoopBegin()) {
+        ASSERT(m_beginSubsequenceIndex == m_paintController.newDisplayItemList().size() - 1);
         // Remove uncacheable no-op BeginSubsequence/EndSubsequence pairs.
         // Don't remove cacheable no-op pairs because we need to match them later with CachedSubsequences.
-        if (m_paintController->newDisplayItemList().last().skippedCache()) {
-            m_paintController->removeLastDisplayItem();
+        if (m_paintController.newDisplayItemList().last().skippedCache()) {
+            m_paintController.removeLastDisplayItem();
             return;
         }
     }
 
-    m_paintController->createAndAppend<EndSubsequenceDisplayItem>(m_client, DisplayItem::subsequenceTypeToEndSubsequenceType(m_type));
+    m_paintController.createAndAppend<EndSubsequenceDisplayItem>(m_client, DisplayItem::subsequenceTypeToEndSubsequenceType(m_type));
 }
 
 void SubsequenceRecorder::setUncacheable()
@@ -81,11 +78,11 @@ void SubsequenceRecorder::setUncacheable()
     if (!RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled())
         return;
 
-    if (m_paintController->displayItemConstructionIsDisabled())
+    if (m_paintController.displayItemConstructionIsDisabled())
         return;
 
-    ASSERT(m_paintController->newDisplayItemList()[m_beginSubsequenceIndex].isSubsequence());
-    m_paintController->newDisplayItemList()[m_beginSubsequenceIndex].setSkippedCache();
+    ASSERT(m_paintController.newDisplayItemList()[m_beginSubsequenceIndex].isSubsequence());
+    m_paintController.newDisplayItemList()[m_beginSubsequenceIndex].setSkippedCache();
 }
 
 } // namespace blink
