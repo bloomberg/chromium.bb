@@ -170,9 +170,6 @@ void GCMEncryptionProvider::DecryptMessageWithKey(
 
   DCHECK_EQ(KeyPair::ECDH_CURVE_25519, pair.type());
 
-  // TODO(peter): Support explicit keys for the decryption that don't rely
-  // on use of an HKDF.
-
   uint8_t shared_key[crypto::curve25519::kBytes];
 
   // Calculate the shared secret for the message.
