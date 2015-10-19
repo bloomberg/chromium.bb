@@ -20,6 +20,7 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_messages.h"
+#include "extensions/common/view_type.h"
 
 namespace extensions {
 
@@ -122,19 +123,25 @@ bool ExtensionWebContentsObserver::OnMessageReceived(
 }
 
 void ExtensionWebContentsObserver::PepperInstanceCreated() {
-  ProcessManager* const process_manager = ProcessManager::Get(browser_context_);
-  const Extension* const extension =
-      process_manager->GetExtensionForWebContents(web_contents());
-  if (extension)
-    process_manager->IncrementLazyKeepaliveCount(extension);
+  if (GetViewType(web_contents()) == VIEW_TYPE_EXTENSION_BACKGROUND_PAGE) {
+    ProcessManager* const process_manager =
+        ProcessManager::Get(browser_context_);
+    const Extension* const extension =
+        process_manager->GetExtensionForWebContents(web_contents());
+    if (extension)
+      process_manager->IncrementLazyKeepaliveCount(extension);
+  }
 }
 
 void ExtensionWebContentsObserver::PepperInstanceDeleted() {
-  ProcessManager* const process_manager = ProcessManager::Get(browser_context_);
-  const Extension* const extension =
-      process_manager->GetExtensionForWebContents(web_contents());
-  if (extension)
-    process_manager->DecrementLazyKeepaliveCount(extension);
+  if (GetViewType(web_contents()) == VIEW_TYPE_EXTENSION_BACKGROUND_PAGE) {
+    ProcessManager* const process_manager =
+        ProcessManager::Get(browser_context_);
+    const Extension* const extension =
+        process_manager->GetExtensionForWebContents(web_contents());
+    if (extension)
+      process_manager->DecrementLazyKeepaliveCount(extension);
+  }
 }
 
 std::string ExtensionWebContentsObserver::GetExtensionIdFromFrame(

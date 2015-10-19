@@ -310,7 +310,8 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, WaitForRequest) {
 // Tests that the lazy background page stays alive while a NaCl module exists in
 // its DOM.
 #if !defined(DISABLE_NACL) && !defined(DISABLE_NACL_BROWSERTESTS)
-IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, NaCl) {
+
+IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, NaClInBackgroundPage) {
   {
     base::FilePath extdir;
     ASSERT_TRUE(PathService::Get(chrome::DIR_GEN_TEST_DATA, &extdir));
@@ -335,6 +336,38 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, NaCl) {
   {
     LazyBackgroundObserver page_complete;
     BrowserActionTestUtil(browser()).Press(0);
+    page_complete.WaitUntilClosed();
+  }
+
+  // The Lazy Background Page has been shut down.
+  EXPECT_FALSE(IsBackgroundPageAlive(last_loaded_extension_id()));
+}
+
+// Tests that the lazy background page shuts down when all visible views with
+// NaCl modules are closed.
+IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, NaClInView) {
+  // The extension is loaded and should've opened a new tab to an extension
+  // page, and the Lazy Background Page stays alive.
+  {
+    base::FilePath extdir;
+    ASSERT_TRUE(PathService::Get(chrome::DIR_GEN_TEST_DATA, &extdir));
+    extdir = extdir.AppendASCII("ppapi/tests/extensions/popup/newlib");
+    ResultCatcher catcher;
+    const Extension* extension = LoadExtension(extdir);
+    ASSERT_TRUE(extension);
+    EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+    EXPECT_EQ(
+        extension->GetResourceURL("popup.html").spec(),
+        browser()->tab_strip_model()->GetActiveWebContents()->GetURL().spec());
+    EXPECT_TRUE(IsBackgroundPageAlive(last_loaded_extension_id()));
+  }
+
+  // Close the new tab.
+  {
+    LazyBackgroundObserver page_complete;
+    browser()->tab_strip_model()->CloseWebContentsAt(
+        browser()->tab_strip_model()->active_index(),
+        TabStripModel::CLOSE_NONE);
     page_complete.WaitUntilClosed();
   }
 

@@ -2260,6 +2260,7 @@
                 '../ppapi/tests/extensions/extensions.gyp:ppapi_tests_extensions_multicast_permissions',
                 '../ppapi/tests/extensions/extensions.gyp:ppapi_tests_extensions_no_socket_permissions',
                 '../ppapi/tests/extensions/extensions.gyp:ppapi_tests_extensions_packaged_app',
+                '../ppapi/tests/extensions/extensions.gyp:ppapi_tests_extensions_popup',
                 '../ppapi/tests/extensions/extensions.gyp:ppapi_tests_extensions_socket_permissions',
               ],
               'conditions': [

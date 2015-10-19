@@ -282,6 +282,27 @@
       ],
     },
     {
+      'target_name': 'ppapi_tests_extensions_popup',
+      'type': 'none',
+      'variables': {
+        'nexe_target': 'ppapi_tests_extensions_popup',
+        # Only newlib build is used in tests, no need to build others.
+        'build_newlib': 1,
+        'build_glibc': 0,
+        'build_pnacl_newlib': 0,
+        'nexe_destination_dir': 'test_data/ppapi/tests/extensions/popup',
+        'sources': [
+          'popup/module.cc',
+        ],
+        'test_files': [
+          'popup/background.js',
+          'popup/popup.html',
+          'popup/popup.js',
+          'popup/manifest.json',
+        ],
+      },
+    },
+    {
       'target_name': 'ppapi_tests_extensions_socket_permissions',
       'type': 'none',
       'variables': {
