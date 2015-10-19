@@ -60,7 +60,7 @@ public:
     virtual bool handleTouchEvent(LocalFrame& mainFrame, const WebTouchEvent&);
     virtual ~PageWidgetEventHandler() { }
 protected:
-    String inputTypeToName(WebInputEvent::Type);
+    const char* inputTypeToName(WebInputEvent::Type);
 };
 
 

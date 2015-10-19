@@ -1014,6 +1014,9 @@ bool WebViewImpl::handleKeyEvent(const WebKeyboardEvent& event)
     ASSERT((event.type == WebInputEvent::RawKeyDown)
         || (event.type == WebInputEvent::KeyDown)
         || (event.type == WebInputEvent::KeyUp));
+    TRACE_EVENT2("input", "WebViewImpl::handleKeyEvent",
+        "type", inputTypeToName(event.type),
+        "text", String(event.text).utf8());
 
     // Halt an in-progress fling on a key event.
     endActiveFlingAnimation();
@@ -1095,6 +1098,8 @@ bool WebViewImpl::handleKeyEvent(const WebKeyboardEvent& event)
 bool WebViewImpl::handleCharEvent(const WebKeyboardEvent& event)
 {
     ASSERT(event.type == WebInputEvent::Char);
+    TRACE_EVENT1("input", "WebViewImpl::handleCharEvent",
+        "text", String(event.text).utf8());
 
     // Please refer to the comments explaining the m_suppressNextKeypressEvent
     // member.  The m_suppressNextKeypressEvent is set if the KeyDown is
@@ -2031,7 +2036,7 @@ bool WebViewImpl::handleInputEvent(const WebInputEvent& inputEvent)
 
     page()->frameHost().visualViewport().startTrackingPinchStats();
 
-    TRACE_EVENT1("input", "WebViewImpl::handleInputEvent", "type", inputTypeToName(inputEvent.type).ascii());
+    TRACE_EVENT1("input", "WebViewImpl::handleInputEvent", "type", inputTypeToName(inputEvent.type));
     // If we've started a drag and drop operation, ignore input events until
     // we're done.
     if (m_doingDragAndDrop)

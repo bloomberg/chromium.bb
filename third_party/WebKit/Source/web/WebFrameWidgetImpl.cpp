@@ -324,7 +324,7 @@ const WebInputEvent* WebFrameWidgetImpl::m_currentInputEvent = nullptr;
 bool WebFrameWidgetImpl::handleInputEvent(const WebInputEvent& inputEvent)
 {
 
-    TRACE_EVENT1("input", "WebFrameWidgetImpl::handleInputEvent", "type", inputTypeToName(inputEvent.type).ascii());
+    TRACE_EVENT1("input", "WebFrameWidgetImpl::handleInputEvent", "type", inputTypeToName(inputEvent.type));
 
     // Report the event to be NOT processed by WebKit, so that the browser can handle it appropriately.
     if (m_ignoreInputEvents)

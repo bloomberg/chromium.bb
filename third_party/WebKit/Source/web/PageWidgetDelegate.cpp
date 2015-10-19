@@ -217,52 +217,46 @@ bool PageWidgetEventHandler::handleTouchEvent(LocalFrame& mainFrame, const WebTo
     return mainFrame.eventHandler().handleTouchEvent(PlatformTouchEventBuilder(mainFrame.view(), event));
 }
 
-// TODO(yoichio): Autogenerate the mapping, note the "mismatch" (GestureScrollBegin).
-String PageWidgetEventHandler::inputTypeToName(WebInputEvent::Type type)
+#define WEBINPUT_EVENT_CASE(type) case WebInputEvent::type: return #type;
+
+const char* PageWidgetEventHandler::inputTypeToName(WebInputEvent::Type type)
 {
     switch (type) {
-    case WebInputEvent::MouseDown:
-        return EventTypeNames::mousedown;
-    case WebInputEvent::MouseUp:
-        return EventTypeNames::mouseup;
-    case WebInputEvent::MouseMove:
-        return EventTypeNames::mousemove;
-    case WebInputEvent::MouseEnter:
-        return EventTypeNames::mouseenter;
-    case WebInputEvent::MouseLeave:
-        return EventTypeNames::mouseleave;
-    case WebInputEvent::ContextMenu:
-        return EventTypeNames::contextmenu;
-    case WebInputEvent::MouseWheel:
-        return EventTypeNames::mousewheel;
-    case WebInputEvent::KeyDown:
-        return EventTypeNames::keydown;
-    case WebInputEvent::KeyUp:
-        return EventTypeNames::keyup;
-    case WebInputEvent::GestureScrollBegin:
-        return EventTypeNames::gesturescrollstart;
-    case WebInputEvent::GestureScrollEnd:
-        return EventTypeNames::gesturescrollend;
-    case WebInputEvent::GestureScrollUpdate:
-        return EventTypeNames::gesturescrollupdate;
-    case WebInputEvent::GestureTapDown:
-        return EventTypeNames::gesturetapdown;
-    case WebInputEvent::GestureShowPress:
-        return EventTypeNames::gestureshowpress;
-    case WebInputEvent::GestureTap:
-        return EventTypeNames::gesturetap;
-    case WebInputEvent::GestureTapUnconfirmed:
-        return EventTypeNames::gesturetapunconfirmed;
-    case WebInputEvent::TouchStart:
-        return EventTypeNames::touchstart;
-    case WebInputEvent::TouchMove:
-        return EventTypeNames::touchmove;
-    case WebInputEvent::TouchEnd:
-        return EventTypeNames::touchend;
-    case WebInputEvent::TouchCancel:
-        return EventTypeNames::touchcancel;
+        WEBINPUT_EVENT_CASE(MouseDown)
+        WEBINPUT_EVENT_CASE(MouseUp)
+        WEBINPUT_EVENT_CASE(MouseMove)
+        WEBINPUT_EVENT_CASE(MouseEnter)
+        WEBINPUT_EVENT_CASE(MouseLeave)
+        WEBINPUT_EVENT_CASE(ContextMenu)
+        WEBINPUT_EVENT_CASE(MouseWheel)
+        WEBINPUT_EVENT_CASE(RawKeyDown)
+        WEBINPUT_EVENT_CASE(KeyDown)
+        WEBINPUT_EVENT_CASE(KeyUp)
+        WEBINPUT_EVENT_CASE(Char)
+        WEBINPUT_EVENT_CASE(GestureScrollBegin)
+        WEBINPUT_EVENT_CASE(GestureScrollEnd)
+        WEBINPUT_EVENT_CASE(GestureScrollUpdate)
+        WEBINPUT_EVENT_CASE(GestureFlingStart)
+        WEBINPUT_EVENT_CASE(GestureFlingCancel)
+        WEBINPUT_EVENT_CASE(GestureShowPress)
+        WEBINPUT_EVENT_CASE(GestureTap)
+        WEBINPUT_EVENT_CASE(GestureTapUnconfirmed)
+        WEBINPUT_EVENT_CASE(GestureTapDown)
+        WEBINPUT_EVENT_CASE(GestureTapCancel)
+        WEBINPUT_EVENT_CASE(GestureDoubleTap)
+        WEBINPUT_EVENT_CASE(GestureTwoFingerTap)
+        WEBINPUT_EVENT_CASE(GestureLongPress)
+        WEBINPUT_EVENT_CASE(GestureLongTap)
+        WEBINPUT_EVENT_CASE(GesturePinchBegin)
+        WEBINPUT_EVENT_CASE(GesturePinchEnd)
+        WEBINPUT_EVENT_CASE(GesturePinchUpdate)
+        WEBINPUT_EVENT_CASE(TouchStart)
+        WEBINPUT_EVENT_CASE(TouchMove)
+        WEBINPUT_EVENT_CASE(TouchEnd)
+        WEBINPUT_EVENT_CASE(TouchCancel)
     default:
-        return String("unknown");
+        ASSERT_NOT_REACHED();
+        return "";
     }
 }
 
