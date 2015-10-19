@@ -91,6 +91,9 @@ enum VariationsSeedStoreResult {
   VARIATIONS_SEED_STORE_FAILED_DELTA_READ_SEED,
   VARIATIONS_SEED_STORE_FAILED_DELTA_APPLY,
   VARIATIONS_SEED_STORE_FAILED_DELTA_STORE,
+  VARIATIONS_SEED_STORE_FAILED_UNGZIP,
+  VARIATIONS_SEED_STORE_FAILED_EMPTY_GZIP_CONTENTS,
+  VARIATIONS_SEED_STORE_FAILED_UNSUPPORTED_SEED_FORMAT,
   VARIATIONS_SEED_STORE_RESULT_ENUM_SIZE,
 };
 
@@ -194,14 +197,38 @@ bool VariationsSeedStore::StoreSeedData(
     const std::string& country_code,
     const base::Time& date_fetched,
     bool is_delta_compressed,
+    bool is_gzip_compressed,
     variations::VariationsSeed* parsed_seed) {
+  // If the data is gzip compressed, first uncompress it.
+  std::string ungzipped_data;
+  if (is_gzip_compressed) {
+    if (compression::GzipUncompress(data, &ungzipped_data)) {
+      if (ungzipped_data.empty()) {
+        RecordSeedStoreHistogram(
+            VARIATIONS_SEED_STORE_FAILED_EMPTY_GZIP_CONTENTS);
+        return false;
+      }
+
+      int size_reduction = ungzipped_data.length() - data.length();
+      UMA_HISTOGRAM_PERCENTAGE("Variations.StoreSeed.GzipSize.ReductionPercent",
+                               100 * size_reduction / ungzipped_data.length());
+      UMA_HISTOGRAM_COUNTS_1000("Variations.StoreSeed.GzipSize",
+                                data.length() / 1024);
+    } else {
+      RecordSeedStoreHistogram(VARIATIONS_SEED_STORE_FAILED_UNGZIP);
+      return false;
+    }
+  } else {
+    ungzipped_data = data;
+  }
+
   if (!is_delta_compressed) {
     const bool result =
-        StoreSeedDataNoDelta(data, base64_seed_signature, country_code,
-                             date_fetched, parsed_seed);
+        StoreSeedDataNoDelta(ungzipped_data, base64_seed_signature,
+                             country_code, date_fetched, parsed_seed);
     if (result) {
       UMA_HISTOGRAM_COUNTS_1000("Variations.StoreSeed.Size",
-                                data.length() / 1024);
+                                ungzipped_data.length() / 1024);
     }
     return result;
   }
@@ -216,7 +243,8 @@ bool VariationsSeedStore::StoreSeedData(
     RecordSeedStoreHistogram(VARIATIONS_SEED_STORE_FAILED_DELTA_READ_SEED);
     return false;
   }
-  if (!ApplyDeltaPatch(existing_seed_data, data, &updated_seed_data)) {
+  if (!ApplyDeltaPatch(existing_seed_data, ungzipped_data,
+                       &updated_seed_data)) {
     RecordSeedStoreHistogram(VARIATIONS_SEED_STORE_FAILED_DELTA_APPLY);
     return false;
   }
@@ -227,11 +255,11 @@ bool VariationsSeedStore::StoreSeedData(
   if (result) {
     // Note: |updated_seed_data.length()| is guaranteed to be non-zero, else
     // result would be false.
-    int size_reduction = updated_seed_data.length() - data.length();
+    int size_reduction = updated_seed_data.length() - ungzipped_data.length();
     UMA_HISTOGRAM_PERCENTAGE("Variations.StoreSeed.DeltaSize.ReductionPercent",
                              100 * size_reduction / updated_seed_data.length());
     UMA_HISTOGRAM_COUNTS_1000("Variations.StoreSeed.DeltaSize",
-                              data.length() / 1024);
+                              ungzipped_data.length() / 1024);
   } else {
     RecordSeedStoreHistogram(VARIATIONS_SEED_STORE_FAILED_DELTA_STORE);
   }
@@ -347,7 +375,7 @@ bool VariationsSeedStore::StoreSeedDataNoDelta(
     const base::Time& date_fetched,
     variations::VariationsSeed* parsed_seed) {
   if (seed_data.empty()) {
-    RecordSeedStoreHistogram(VARIATIONS_SEED_STORE_FAILED_EMPTY);
+    RecordSeedStoreHistogram(VARIATIONS_SEED_STORE_FAILED_EMPTY_GZIP_CONTENTS);
     return false;
   }
 
@@ -448,6 +476,11 @@ bool VariationsSeedStore::ApplyDeltaPatch(const std::string& existing_data,
     }
   }
   return true;
+}
+
+void VariationsSeedStore::ReportUnsupportedSeedFormatError() {
+  RecordSeedStoreHistogram(
+      VARIATIONS_SEED_STORE_FAILED_UNSUPPORTED_SEED_FORMAT);
 }
 
 }  // namespace variations

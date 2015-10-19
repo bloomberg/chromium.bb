@@ -83,9 +83,13 @@ class TestVariationsService : public VariationsService {
                           UIStringOverrider()),
         intercepts_fetch_(true),
         fetch_attempted_(false),
-        seed_stored_(false) {
+        seed_stored_(false),
+        delta_compressed_seed_(false),
+        gzip_compressed_seed_(false) {
     // Set this so StartRepeatedVariationsSeedFetch can be called in tests.
     SetCreateTrialsFromSeedCalledForTesting(true);
+    set_variations_server_url(
+        GetVariationsServerURL(local_state, std::string()));
   }
 
   ~TestVariationsService() override {}
@@ -97,6 +101,8 @@ class TestVariationsService : public VariationsService {
   bool fetch_attempted() const { return fetch_attempted_; }
   bool seed_stored() const { return seed_stored_; }
   const std::string& stored_country() const { return stored_country_; }
+  bool delta_compressed_seed() const { return delta_compressed_seed_; }
+  bool gzip_compressed_seed() const { return gzip_compressed_seed_; }
 
   void DoActualFetch() override {
     if (intercepts_fetch_) {
@@ -111,10 +117,13 @@ class TestVariationsService : public VariationsService {
                  const std::string& seed_signature,
                  const std::string& country_code,
                  const base::Time& date_fetched,
-                 bool is_delta_compressed) override {
+                 bool is_delta_compressed,
+                 bool is_gzip_compressed) override {
     seed_stored_ = true;
     stored_seed_data_ = seed_data;
     stored_country_ = country_code;
+    delta_compressed_seed_ = is_delta_compressed;
+    gzip_compressed_seed_ = is_gzip_compressed;
     return true;
   }
 
@@ -130,6 +139,8 @@ class TestVariationsService : public VariationsService {
   bool seed_stored_;
   std::string stored_seed_data_;
   std::string stored_country_;
+  bool delta_compressed_seed_;
+  bool gzip_compressed_seed_;
 
   DISALLOW_COPY_AND_ASSIGN(TestVariationsService);
 };
@@ -201,16 +212,28 @@ std::string SerializeSeed(const variations::VariationsSeed& seed) {
 }
 
 // Simulates a variations service response by setting a date header and the
+// specified HTTP |response_code| on |fetcher|. Sets additional header |header|
+// if it is not null.
+scoped_refptr<net::HttpResponseHeaders> SimulateServerResponseWithHeader(
+    int response_code,
+    net::TestURLFetcher* fetcher,
+    const std::string* header) {
+  EXPECT_TRUE(fetcher);
+  scoped_refptr<net::HttpResponseHeaders> headers(
+      new net::HttpResponseHeaders("date:Wed, 13 Feb 2013 00:25:24 GMT\0\0"));
+  if (header)
+    headers->AddHeader(*header);
+  fetcher->set_response_headers(headers);
+  fetcher->set_response_code(response_code);
+  return headers;
+}
+
+// Simulates a variations service response by setting a date header and the
 // specified HTTP |response_code| on |fetcher|.
 scoped_refptr<net::HttpResponseHeaders> SimulateServerResponse(
     int response_code,
     net::TestURLFetcher* fetcher) {
-  EXPECT_TRUE(fetcher);
-  scoped_refptr<net::HttpResponseHeaders> headers(
-      new net::HttpResponseHeaders("date:Wed, 13 Feb 2013 00:25:24 GMT\0\0"));
-  fetcher->set_response_headers(headers);
-  fetcher->set_response_code(response_code);
-  return headers;
+  return SimulateServerResponseWithHeader(response_code, fetcher, nullptr);
 }
 
 // Converts |list_value| to a string, to make it easier for debugging.
@@ -253,7 +276,7 @@ TEST_F(VariationsServiceTest, CreateTrialsFromSeed) {
 
   // Store a seed.
   service.StoreSeed(SerializeSeed(CreateTestSeed()), std::string(),
-                    std::string(), base::Time::Now(), false);
+                    std::string(), base::Time::Now(), false, false);
   prefs.SetInt64(prefs::kVariationsLastFetchTime,
                  base::Time::Now().ToInternalValue());
 
@@ -284,7 +307,7 @@ TEST_F(VariationsServiceTest, CreateTrialsFromSeedNoLastFetchTime) {
   // Store a seed. To simulate a first run, |prefs::kVariationsLastFetchTime|
   // is left empty.
   service.StoreSeed(SerializeSeed(CreateTestSeed()), std::string(),
-                    std::string(), base::Time::Now(), false);
+                    std::string(), base::Time::Now(), false, false);
   EXPECT_EQ(0, prefs.GetInt64(prefs::kVariationsLastFetchTime));
 
   // Check that field trials are created from the seed. Since the test study has
@@ -315,7 +338,7 @@ TEST_F(VariationsServiceTest, CreateTrialsFromOutdatedSeed) {
   const base::Time seed_date =
       base::Time::Now() - base::TimeDelta::FromDays(31);
   service.StoreSeed(SerializeSeed(CreateTestSeed()), std::string(),
-                    std::string(), seed_date, false);
+                    std::string(), seed_date, false, false);
   prefs.SetInt64(prefs::kVariationsLastFetchTime, seed_date.ToInternalValue());
 
   // Check that field trials are not created from the seed.
@@ -422,8 +445,6 @@ TEST_F(VariationsServiceTest, SeedStoredWhenOKStatus) {
   TestVariationsService service(
       make_scoped_ptr(new web_resource::TestRequestAllowedNotifier(&prefs)),
       &prefs);
-  service.variations_server_url_ =
-      service.GetVariationsServerURL(&prefs, std::string());
   service.set_intercepts_fetch(false);
 
   net::TestURLFetcherFactory factory;
@@ -450,12 +471,10 @@ TEST_F(VariationsServiceTest, SeedNotStoredWhenNonOKStatus) {
   TestingPrefServiceSimple prefs;
   VariationsService::RegisterPrefs(prefs.registry());
 
-  VariationsService service(
-      make_scoped_ptr(new TestVariationsServiceClient()),
+  TestVariationsService service(
       make_scoped_ptr(new web_resource::TestRequestAllowedNotifier(&prefs)),
-      &prefs, NULL, UIStringOverrider());
-  service.variations_server_url_ =
-      service.GetVariationsServerURL(&prefs, std::string());
+      &prefs);
+  service.set_intercepts_fetch(false);
   for (size_t i = 0; i < arraysize(non_ok_status_codes); ++i) {
     net::TestURLFetcherFactory factory;
     service.DoActualFetch();
@@ -469,6 +488,67 @@ TEST_F(VariationsServiceTest, SeedNotStoredWhenNonOKStatus) {
   }
 }
 
+TEST_F(VariationsServiceTest, RequestGzipCompressedSeed) {
+  TestingPrefServiceSimple prefs;
+  VariationsService::RegisterPrefs(prefs.registry());
+  net::TestURLFetcherFactory factory;
+
+  TestVariationsService service(
+      make_scoped_ptr(new web_resource::TestRequestAllowedNotifier(&prefs)),
+      &prefs);
+  service.set_intercepts_fetch(false);
+  service.DoActualFetch();
+
+  net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
+  net::HttpRequestHeaders headers;
+  fetcher->GetExtraRequestHeaders(&headers);
+  std::string field;
+  ASSERT_TRUE(headers.GetHeader("A-IM", &field));
+  EXPECT_EQ("gzip", field);
+}
+
+TEST_F(VariationsServiceTest, InstanceManipulations) {
+  struct  {
+    std::string im;
+    bool delta_compressed;
+    bool gzip_compressed;
+    bool seed_stored;
+  } cases[] = {
+    {"", false, false, true},
+    {"IM:gzip", false, true, true},
+    {"IM:x-bm", true, false, true},
+    {"IM:x-bm,gzip", true, true, true},
+    {"IM: x-bm, gzip", true, true, true},
+    {"IM:gzip,x-bm", false, false, false},
+    {"IM:deflate,x-bm,gzip", false, false, false},
+  };
+
+  TestingPrefServiceSimple prefs;
+  VariationsService::RegisterPrefs(prefs.registry());
+  std::string serialized_seed = SerializeSeed(CreateTestSeed());
+  net::TestURLFetcherFactory factory;
+
+  for (size_t i = 0; i < arraysize(cases); ++i) {
+    TestVariationsService service(
+        make_scoped_ptr(new web_resource::TestRequestAllowedNotifier(&prefs)),
+        &prefs);
+    service.set_intercepts_fetch(false);
+    service.DoActualFetch();
+    net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
+
+    if (cases[i].im.empty())
+      SimulateServerResponse(net::HTTP_OK, fetcher);
+    else
+      SimulateServerResponseWithHeader(net::HTTP_OK, fetcher, &cases[i].im);
+    fetcher->SetResponseString(serialized_seed);
+    service.OnURLFetchComplete(fetcher);
+
+    EXPECT_EQ(cases[i].seed_stored, service.seed_stored());
+    EXPECT_EQ(cases[i].delta_compressed, service.delta_compressed_seed());
+    EXPECT_EQ(cases[i].gzip_compressed, service.gzip_compressed_seed());
+  }
+}
+
 TEST_F(VariationsServiceTest, CountryHeader) {
   TestingPrefServiceSimple prefs;
   VariationsService::RegisterPrefs(prefs.registry());
@@ -476,8 +556,6 @@ TEST_F(VariationsServiceTest, CountryHeader) {
   TestVariationsService service(
       make_scoped_ptr(new web_resource::TestRequestAllowedNotifier(&prefs)),
       &prefs);
-  service.variations_server_url_ =
-      service.GetVariationsServerURL(&prefs, std::string());
   service.set_intercepts_fetch(false);
 
   net::TestURLFetcherFactory factory;

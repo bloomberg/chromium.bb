@@ -397,6 +397,7 @@ test("components_unittests") {
       "//components/upload_list:unit_tests",
       "//components/user_prefs/tracked:unit_tests",
       "//components/variations:unit_tests",
+      "//components/variations/service:unit_tests",
       "//components/wallpaper:unit_tests",
       "//components/web_resource:unit_tests",
       "//components/webcrypto:unit_tests",

@@ -34,7 +34,9 @@ class VariationsSeedStore {
 
   // Stores the given seed |data| (serialized protobuf) to local state, along
   // with a base64-encoded digital signature for seed and the date when it was
-  // fetched. If |is_delta_compressed| is true, treats |data| as being delta
+  // fetched. If |is_gzip_compressed| is true, treats |data| as being gzip
+  // compressed and decompresses it before any other processing.
+  // If |is_delta_compressed| is true, treats |data| as being delta
   // compressed and attempts to decode it first using the store's seed data.
   // The actual seed data will be base64 encoded for storage. If the string
   // is invalid, the existing prefs are untouched and false is returned.
@@ -46,11 +48,15 @@ class VariationsSeedStore {
                      const std::string& country_code,
                      const base::Time& date_fetched,
                      bool is_delta_compressed,
+                     bool is_gzip_compressed,
                      variations::VariationsSeed* parsed_seed);
 
   // Updates |kVariationsSeedDate| and logs when previous date was from a
   // different day.
   void UpdateSeedDateAndLogDayChange(const base::Time& server_date_fetched);
+
+  // Reports to UMA that the seed format specified by the server is unsupported.
+  void ReportUnsupportedSeedFormatError();
 
   // Returns the serial number of the last loaded or stored seed.
   const std::string& variations_serial_number() const {

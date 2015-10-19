@@ -24,7 +24,7 @@ class TestVariationsSeedStore : public VariationsSeedStore {
 
   bool StoreSeedForTesting(const std::string& seed_data) {
     return StoreSeedData(seed_data, std::string(), std::string(),
-                         base::Time::Now(), false, nullptr);
+                         base::Time::Now(), false, false, nullptr);
   }
 
   VariationsSeedStore::VerifySignatureResult VerifySeedSignature(
@@ -211,7 +211,7 @@ TEST(VariationsSeedStoreTest, StoreSeedData_ParsedSeed) {
   variations::VariationsSeed parsed_seed;
   EXPECT_TRUE(seed_store.StoreSeedData(serialized_seed, std::string(),
                                        std::string(), base::Time::Now(), false,
-                                       &parsed_seed));
+                                       false, &parsed_seed));
   EXPECT_EQ(serialized_seed, SerializeSeed(parsed_seed));
 }
 
@@ -225,7 +225,7 @@ TEST(VariationsSeedStoreTest, StoreSeedData_CountryCode) {
   seed.set_country_code("test_country");
   EXPECT_TRUE(seed_store.StoreSeedData(SerializeSeed(seed), std::string(),
                                        std::string(), base::Time::Now(), false,
-                                       nullptr));
+                                       false, nullptr));
   EXPECT_EQ("test_country", prefs.GetString(prefs::kVariationsCountry));
 
   // Test with a header value and no seed country.
@@ -233,7 +233,7 @@ TEST(VariationsSeedStoreTest, StoreSeedData_CountryCode) {
   seed.clear_country_code();
   EXPECT_TRUE(seed_store.StoreSeedData(SerializeSeed(seed), std::string(),
                                        "test_country2", base::Time::Now(),
-                                       false,  nullptr));
+                                       false, false,  nullptr));
   EXPECT_EQ("test_country2", prefs.GetString(prefs::kVariationsCountry));
 
   // Test with a seed country code and header value.
@@ -241,15 +241,47 @@ TEST(VariationsSeedStoreTest, StoreSeedData_CountryCode) {
   seed.set_country_code("test_country3");
   EXPECT_TRUE(seed_store.StoreSeedData(SerializeSeed(seed), std::string(),
                                        "test_country4", base::Time::Now(),
-                                       false, nullptr));
+                                       false, false, nullptr));
   EXPECT_EQ("test_country4", prefs.GetString(prefs::kVariationsCountry));
 
   // Test with no country code specified - which should preserve the old value.
   seed.clear_country_code();
   EXPECT_TRUE(seed_store.StoreSeedData(SerializeSeed(seed), std::string(),
                                        std::string(), base::Time::Now(), false,
-                                       nullptr));
+                                       false, nullptr));
   EXPECT_EQ("test_country4", prefs.GetString(prefs::kVariationsCountry));
+}
+
+TEST(VariationsSeedStoreTest, StoreSeedData_GzippedSeed) {
+  const variations::VariationsSeed seed = CreateTestSeed();
+  const std::string serialized_seed = SerializeSeed(seed);
+  std::string compressed_seed;
+  ASSERT_TRUE(compression::GzipCompress(serialized_seed, &compressed_seed));
+
+  TestingPrefServiceSimple prefs;
+  VariationsSeedStore::RegisterPrefs(prefs.registry());
+  TestVariationsSeedStore seed_store(&prefs);
+
+  variations::VariationsSeed parsed_seed;
+  EXPECT_TRUE(seed_store.StoreSeedData(compressed_seed, std::string(),
+                                       std::string(), base::Time::Now(), false,
+                                       true, &parsed_seed));
+  EXPECT_EQ(serialized_seed, SerializeSeed(parsed_seed));
+}
+
+TEST(VariationsSeedStoreTest, StoreSeedData_GzippedEmptySeed) {
+  std::string empty_seed;
+  std::string compressed_seed;
+  ASSERT_TRUE(compression::GzipCompress(empty_seed, &compressed_seed));
+
+  TestingPrefServiceSimple prefs;
+  VariationsSeedStore::RegisterPrefs(prefs.registry());
+  TestVariationsSeedStore seed_store(&prefs);
+
+  variations::VariationsSeed parsed_seed;
+  EXPECT_FALSE(seed_store.StoreSeedData(compressed_seed, std::string(),
+                                       std::string(), base::Time::Now(), false,
+                                       true, &parsed_seed));
 }
 
 TEST(VariationsSeedStoreTest, VerifySeedSignature) {

@@ -167,7 +167,8 @@ class VariationsService
                          const std::string& seed_signature,
                          const std::string& country_code,
                          const base::Time& date_fetched,
-                         bool is_delta_compressed);
+                         bool is_delta_compressed,
+                         bool is_gzip_compressed);
 
   // Creates the VariationsService with the given |local_state| prefs service
   // and |state_manager|. Does not take ownership of |state_manager|. Caller
@@ -180,11 +181,16 @@ class VariationsService
       metrics::MetricsStateManager* state_manager,
       const UIStringOverrider& ui_string_overrider);
 
+  // Sets the URL for querying the variations server. Used for testing.
+  void set_variations_server_url(const GURL& url) {
+    variations_server_url_ = url;
+  }
+
  private:
   FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, Observer);
   FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, SeedStoredWhenOKStatus);
   FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, SeedNotStoredWhenNonOKStatus);
-  FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, SeedDateUpdatedOn304Status);
+  FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, InstanceManipulations);
   FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest,
                            LoadPermanentConsistencyCountry);
   FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, CountryHeader);

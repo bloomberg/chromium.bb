@@ -10,6 +10,7 @@
 #include "base/metrics/sparse_histogram.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
+#include "base/strings/string_util.h"
 #include "base/sys_info.h"
 #include "base/task_runner_util.h"
 #include "base/timer/elapsed_timer.h"
@@ -212,6 +213,55 @@ std::string GetHeaderValue(const net::HttpResponseHeaders* headers,
   std::string value;
   headers->EnumerateHeader(NULL, name, &value);
   return value;
+}
+
+// Returns the list of values for |name| from |headers|. If the header in not
+// set, return an empty list.
+std::vector<std::string> GetHeaderValuesList(
+    const net::HttpResponseHeaders* headers,
+    const base::StringPiece& name) {
+  std::vector<std::string> values;
+  void* iter = NULL;
+  std::string value;
+  while (headers->EnumerateHeader(&iter, name, &value)) {
+    values.push_back(value);
+  }
+  return values;
+}
+
+// Looks for delta and gzip compression instance manipulation flags set by the
+// server in |headers|. Checks the order of flags and presence of unknown
+// instance manipulations. If successful, |is_delta_compressed| and
+// |is_gzip_compressed| contain compression flags and true is returned.
+bool GetInstanceManipulations(const net::HttpResponseHeaders* headers,
+                              bool* is_delta_compressed,
+                              bool* is_gzip_compressed) {
+  std::vector<std::string> ims = GetHeaderValuesList(headers, "IM");
+  const auto delta_im = std::find(ims.begin(), ims.end(), "x-bm");
+  const auto gzip_im = std::find(ims.begin(), ims.end(), "gzip");
+  *is_delta_compressed = delta_im != ims.end();
+  *is_gzip_compressed = gzip_im != ims.end();
+
+  // The IM field should not have anything but x-bm and gzip.
+  size_t im_count = (*is_delta_compressed ? 1 : 0) +
+      (*is_gzip_compressed ? 1 : 0);
+  if (im_count != ims.size()) {
+    DVLOG(1) << "Unrecognized instance manipulations in "
+             << base::JoinString(ims, ",")
+             << "; only x-bm and gzip are supported";
+    return false;
+  }
+
+  // The IM field defines order in which instance manipulations were applied.
+  // The client requests and supports gzip-compressed delta-compressed seeds,
+  // but not vice versa.
+  if (*is_delta_compressed && *is_gzip_compressed && delta_im > gzip_im) {
+    DVLOG(1) << "Unsupported instance manipulations order: "
+             << "requested x-bm,gzip but received gzip,x-bm";
+    return false;
+  }
+
+  return true;
 }
 
 }  // namespace
@@ -474,6 +524,7 @@ void VariationsService::DoActualFetch() {
                                       net::LOAD_DO_NOT_SAVE_COOKIES);
   pending_seed_request_->SetRequestContext(client_->GetURLRequestContext());
   pending_seed_request_->SetMaxRetriesOn5xx(kMaxRetrySeedFetch);
+  bool enable_deltas = false;
   if (!seed_store_.variations_serial_number().empty() &&
       !disable_deltas_for_next_request_) {
     // If the current seed includes a country code, deltas are not supported (as
@@ -484,12 +535,16 @@ void VariationsService::DoActualFetch() {
     // that have an old seed with a country code becomes miniscule.
     if (!seed_store_.seed_has_country_code()) {
       // Tell the server that delta-compressed seeds are supported.
-      pending_seed_request_->AddExtraRequestHeader("A-IM:x-bm");
+      enable_deltas = true;
     }
     // Get the seed only if its serial number doesn't match what we have.
     pending_seed_request_->AddExtraRequestHeader(
         "If-None-Match:" + seed_store_.variations_serial_number());
   }
+  // Tell the server that delta-compressed and gzipped seeds are supported.
+  const char* supported_im = enable_deltas ? "A-IM:x-bm,gzip" : "A-IM:gzip";
+  pending_seed_request_->AddExtraRequestHeader(supported_im);
+
   pending_seed_request_->Start();
 
   const base::TimeTicks now = base::TimeTicks::Now();
@@ -510,13 +565,14 @@ bool VariationsService::StoreSeed(const std::string& seed_data,
                                   const std::string& seed_signature,
                                   const std::string& country_code,
                                   const base::Time& date_fetched,
-                                  bool is_delta_compressed) {
+                                  bool is_delta_compressed,
+                                  bool is_gzip_compressed) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   scoped_ptr<variations::VariationsSeed> seed(new variations::VariationsSeed);
   if (!seed_store_.StoreSeedData(seed_data, seed_signature, country_code,
                                  date_fetched, is_delta_compressed,
-                                 seed.get())) {
+                                 is_gzip_compressed, seed.get())) {
     return false;
   }
   RecordLastFetchTime();
@@ -628,11 +684,21 @@ void VariationsService::OnURLFetchComplete(const net::URLFetcher* source) {
   DCHECK(success);
 
   net::HttpResponseHeaders* headers = request->GetResponseHeaders();
+  bool is_delta_compressed;
+  bool is_gzip_compressed;
+  if (!GetInstanceManipulations(headers, &is_delta_compressed,
+                                &is_gzip_compressed)) {
+    // The header does not specify supported instance manipulations, unable to
+    // process data. Details of errors were logged by GetInstanceManipulations.
+    seed_store_.ReportUnsupportedSeedFormatError();
+    return;
+  }
+
   const std::string signature = GetHeaderValue(headers, "X-Seed-Signature");
   const std::string country_code = GetHeaderValue(headers, "X-Country");
-  const bool is_delta_compressed = (GetHeaderValue(headers, "IM") == "x-bm");
   const bool store_success = StoreSeed(seed_data, signature, country_code,
-                                       response_date, is_delta_compressed);
+                                       response_date, is_delta_compressed,
+                                       is_gzip_compressed);
   if (!store_success && is_delta_compressed) {
     disable_deltas_for_next_request_ = true;
     request_scheduler_->ScheduleFetchShortly();

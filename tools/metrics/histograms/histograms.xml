@@ -49610,6 +49610,23 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Variations.StoreSeed.GzipSize" units="KiB">
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    Records the size of the gzip-compressed variations seed in KiB.
+  </summary>
+</histogram>
+
+<histogram name="Variations.StoreSeed.GzipSize.ReductionPercent" units="%">
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    Records the size of the gzip-compressed variations seed as a percentage of
+    the decoded seed size. Note that variations seed could be first
+    delta-compressed and then gzip-compressed. In this case we record
+    gzip-compressed seed size as a percentage of the delta-compressed seed size.
+  </summary>
+</histogram>
+
 <histogram name="Variations.StoreSeed.Size" units="KiB">
   <owner>asvitkine@chromium.org</owner>
   <summary>
@@ -74342,6 +74359,9 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="6" label="Failed - Delta: Read Seed"/>
   <int value="7" label="Failed - Delta: Apply"/>
   <int value="8" label="Failed - Delta: Store Seed"/>
+  <int value="9" label="Failed - Gzip Uncompress Error"/>
+  <int value="10" label="Failed - Empty Gzip Contents"/>
+  <int value="11" label="Failed - Unsupported Seed Format"/>
 </enum>
 
 <enum name="VaryType" type="int">
