@@ -30,6 +30,8 @@
     'dex_input_paths': [],
     'dex_generated_input_dirs': [],
     'proguard_enabled%': 'false',
+    # TODO(jbudorick): remove this once multidex is done.
+    'debug_build_proguard_enabled%': 'false',
     'proguard_enabled_input_path%': '',
     'dex_no_locals%': 0,
     'dex_additional_options': [],
@@ -51,6 +53,7 @@
     '--output-directory=<(PRODUCT_DIR)',
     '--configuration-name=<(CONFIGURATION_NAME)',
     '--proguard-enabled=>(proguard_enabled)',
+    '--debug-build-proguard-enabled=>(debug_build_proguard_enabled)',
     '--proguard-enabled-input-path=<(proguard_enabled_input_path)',
     '--no-locals=>(dex_no_locals)',
     '>@(dex_additional_options)',

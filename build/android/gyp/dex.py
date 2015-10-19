@@ -49,6 +49,8 @@ def _ParseArgs(args):
                     help='The build CONFIGURATION_NAME.')
   parser.add_option('--proguard-enabled',
                     help='"true" if proguard is enabled.')
+  parser.add_option('--debug-build-proguard-enabled',
+                    help='"true" if proguard is enabled for debug build.')
   parser.add_option('--proguard-enabled-input-path',
                     help=('Path to dex in Release mode when proguard '
                           'is enabled.'))
@@ -144,8 +146,10 @@ def _OnStaleMd5(changes, options, dex_cmd, paths):
 
 def main(args):
   options, paths = _ParseArgs(args)
-  if (options.proguard_enabled == 'true'
-      and options.configuration_name == 'Release'):
+  if ((options.proguard_enabled == 'true'
+          and options.configuration_name == 'Release')
+      or (options.debug_build_proguard_enabled == 'true'
+          and options.configuration_name == 'Debug')):
     paths = [options.proguard_enabled_input_path]
 
   if options.inputs:

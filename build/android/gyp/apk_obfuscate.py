@@ -35,6 +35,11 @@ def ParseArgs(argv):
 
   parser.add_option('--configuration-name',
                     help='Gyp configuration name (i.e. Debug, Release)')
+
+  parser.add_option('--debug-build-proguard-enabled', action='store_true',
+                    help='--proguard-enabled takes effect on release '
+                         'build, this flag enable the proguard on debug '
+                         'build.')
   parser.add_option('--proguard-enabled', action='store_true',
                     help='Set if proguard is enabled for this target.')
 
@@ -125,7 +130,9 @@ def main(argv):
     build_utils.MergeZips(
         options.test_jar_path, input_jars, dependency_class_filters)
 
-  if options.configuration_name == 'Release' and options.proguard_enabled:
+  if ((options.configuration_name == 'Release' and options.proguard_enabled) or
+     (options.configuration_name == 'Debug' and
+      options.debug_build_proguard_enabled)):
     DoProguard(options)
   else:
     output_files = [

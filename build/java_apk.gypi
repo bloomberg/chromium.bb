@@ -93,6 +93,7 @@
     # aapt generates this proguard.txt.
     'generated_proguard_file': '<(intermediate_dir)/proguard.txt',
     'proguard_enabled%': 'false',
+    'debug_build_proguard_enabled%': 'false',
     'proguard_flags_paths': ['<(generated_proguard_file)'],
     'jar_name': 'chromium_apk_<(_target_name).jar',
     'resource_dir%':'<(DEPTH)/build/android/ant/empty/res',
@@ -250,6 +251,11 @@
       ['proguard_enabled == "true"', {
         'variables': {
           'proguard_enabled': 'true',
+        }
+      }],
+      ['debug_build_proguard_enabled == "true"', {
+        'variables': {
+          'debug_build_proguard_enabled': 'true',
         }
       }],
     ],
@@ -1000,6 +1006,11 @@
               '--proguard-enabled',
             ],
           }],
+          ['debug_build_proguard_enabled == "true"', {
+            'additional_obfuscate_options': [
+              '--debug-build-proguard-enabled',
+            ],
+          }],
         ],
         'obfuscate_input_jars_paths': [
           '>@(input_jars_paths)',
@@ -1109,7 +1120,7 @@
             '>(tested_apk_dex_path).inputs',
           ],
         }],
-        ['proguard_enabled == "true"', {
+        ['proguard_enabled == "true" or debug_build_proguard_enabled == "true"', {
           'inputs': [ '<(obfuscate_stamp)' ]
         }, {
           'inputs': [ '<(emma_instr_stamp)' ]
