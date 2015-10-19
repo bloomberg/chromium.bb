@@ -405,6 +405,11 @@ public class WebappActivity extends FullScreenActivity {
     }
 
     @VisibleForTesting
+    boolean isSplashScreenVisibleForTest() {
+        return mSplashScreen != null;
+    }
+
+    @VisibleForTesting
     WebappUrlBar getUrlBarForTests() {
         return mUrlBar;
     }

@@ -206,7 +206,7 @@ public class TabModelSelectorTabObserverTest extends NativeLibraryTestBase {
 
         // Exists to expose the method to the test.
         @Override
-        protected ObserverList.RewindableIterator<TabObserver> getTabObservers() {
+        public ObserverList.RewindableIterator<TabObserver> getTabObservers() {
             return super.getTabObservers();
         }
     }
