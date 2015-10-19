@@ -73,7 +73,7 @@
     The extension "<ph name="EXTENSION_NAME">$1<ex>Nexus S</ex></ph>" can help connect to this network.
   </message>
   <message name="IDS_ASH_STATUS_TRAY_TURN_ON_WIFI" desc="The label used for the item to turn on Wi-Fi networks.">
-    Turn Wi-Fi on...
+    Turn Wi-Fi on
   </message>
   <message name="IDS_ASH_STATUS_TRAY_ENABLE_MOBILE" desc="The label used for the item to enable cellular networks.">
     Enable mobile data
