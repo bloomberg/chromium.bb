@@ -278,6 +278,16 @@
         <item name="externalRouteEnabledDrawable">@drawable/ic_cast_dark_chrome</item>
     </style>
 
+    <!-- Web Notifications -->
+    <style name="WebNotificationTitle"
+        parent="@style/TextAppearance.StatusBar.EventContent.Title"/>
+    <style name="WebNotificationBody"
+        parent="@style/TextAppearance.StatusBar.EventContent.Line2"/>
+    <style name="WebNotificationOrigin"
+        parent="@style/TextAppearance.StatusBar.EventContent.Info"/>
+    <style name="WebNotificationTime"
+        parent="@style/TextAppearance.StatusBar.EventContent.Time"/>
+
     <!-- First Run and Bookmark/recent-tabs dialogs -->
     <style name="DialogWhenLarge" parent="Theme.AppCompat.Light.DialogWhenLarge" >
         <item name="android:windowBackground">@drawable/bg_white_dialog</item>

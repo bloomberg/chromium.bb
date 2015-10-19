@@ -14,17 +14,18 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v4.app.NotificationCompat;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 import android.text.style.StyleSpan;
 import android.util.Log;
 
+import org.chromium.base.CommandLine;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.website.SingleCategoryPreferences;
@@ -418,10 +419,9 @@ public class NotificationUIManager {
         PendingIntent pendingSettingsIntent = PendingIntent.getActivity(mAppContext,
                 PENDING_INTENT_REQUEST_CODE, settingsIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
-        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(mAppContext)
-                .setContentTitle(title)
-                .setContentText(body)
-                .setStyle(new NotificationCompat.BigTextStyle().bigText(body))
+        NotificationBuilder notificationBuilder = createNotificationBuilder()
+                .setTitle(title)
+                .setBody(body)
                 .setLargeIcon(ensureNormalizedIcon(icon, origin))
                 .setSmallIcon(R.drawable.ic_chrome)
                 .setContentIntent(makePendingIntent(
@@ -431,7 +431,7 @@ public class NotificationUIManager {
                         NotificationConstants.ACTION_CLOSE_NOTIFICATION,
                         persistentNotificationId, origin, tag, -1 /* actionIndex */))
                 .setTicker(createTickerText(title, body))
-                .setSubText(origin);
+                .setOrigin(origin);
 
         for (int actionIndex = 0; actionIndex < actionTitles.length; actionIndex++) {
             notificationBuilder.addAction(
@@ -452,6 +452,13 @@ public class NotificationUIManager {
 
         String platformTag = makePlatformTag(persistentNotificationId, origin, tag);
         mNotificationManager.notify(platformTag, PLATFORM_ID, notificationBuilder.build());
+    }
+
+    private NotificationBuilder createNotificationBuilder() {
+        if (useCustomLayouts()) {
+            return new CustomNotificationBuilder(mAppContext);
+        }
+        return new StandardNotificationBuilder(mAppContext);
     }
 
     /**
@@ -508,6 +515,15 @@ public class NotificationUIManager {
         }
 
         return icon;
+    }
+
+    private static boolean useCustomLayouts() {
+        // TODO(mvanouwerkerk): Add Finch experiment for enabling / disabling the feature.
+        CommandLine commandLine = CommandLine.getInstance();
+        if (commandLine.hasSwitch(ChromeSwitches.DISABLE_WEB_NOTIFICATION_CUSTOM_LAYOUTS)) {
+            return false;
+        }
+        return commandLine.hasSwitch(ChromeSwitches.ENABLE_WEB_NOTIFICATION_CUSTOM_LAYOUTS);
     }
 
     /**

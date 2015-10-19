@@ -2119,6 +2119,14 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_PPAPI_WIN32K_LOCKDOWN_DESCRIPTION, kOsWin,
      MULTI_VALUE_TYPE(kPpapiWin32kLockdown)},
 #endif  // defined(OS_WIN)
+#if defined(ENABLE_NOTIFICATIONS) && defined(OS_ANDROID)
+    {"enable-web-notification-custom-layouts",
+     IDS_FLAGS_ENABLE_WEB_NOTIFICATION_CUSTOM_LAYOUTS_NAME,
+     IDS_FLAGS_ENABLE_WEB_NOTIFICATION_CUSTOM_LAYOUTS_DESCRIPTION,
+     kOsAndroid,
+     ENABLE_DISABLE_VALUE_TYPE(switches::kEnableWebNotificationCustomLayouts,
+                               switches::kDisableWebNotificationCustomLayouts)},
+#endif  // defined(ENABLE_NOTIFICATIONS) && defined(OS_ANDROID)
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.

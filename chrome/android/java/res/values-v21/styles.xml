@@ -61,6 +61,16 @@
         <item name="android:minHeight">5dp</item>
     </style>
 
+    <!-- Web Notifications -->
+    <style name="WebNotificationTitle"
+        parent="@android:style/TextAppearance.Material.Notification.Title"/>
+    <style name="WebNotificationBody"
+        parent="@android:style/TextAppearance.Material.Notification.Line2"/>
+    <style name="WebNotificationOrigin"
+        parent="@android:style/TextAppearance.Material.Notification.Info"/>
+    <style name="WebNotificationTime"
+        parent="@android:style/TextAppearance.Material.Notification.Time"/>
+
     <style name="IncognitoTheme" parent="MainTheme">
         <item name="android:colorPrimary">@color/incognito_primary_color</item>
     </style>

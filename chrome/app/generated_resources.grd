@@ -12560,6 +12560,12 @@ Some features may be unavailable.  Please check that the profile exists and you 
         <message name="IDS_NOTIFIER_WELCOME_BUTTON" desc="Notification body for when a new notifier service is introduced.">
           Turn off these notifications
         </message>
+        <message name="IDS_FLAGS_ENABLE_WEB_NOTIFICATION_CUSTOM_LAYOUTS_NAME" desc="Name of the flag to enable custom layouts for Web Notifications.">
+          Enable custom layouts for Web Notifications.
+        </message>
+        <message name="IDS_FLAGS_ENABLE_WEB_NOTIFICATION_CUSTOM_LAYOUTS_DESCRIPTION" desc="Description for the flag to enable custom layouts for Web Notifications.">
+          Enable custom layouts for Web Notifications. They will have subtle layout improvements that are otherwise not possible.
+        </message>
       </if>
 
       <!-- Mac AppleScript -->

@@ -64348,6 +64348,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-1184904651" label="enable-npapi"/>
   <int value="-1177802205" label="enable-hosted-app-quit-notification"/>
   <int value="-1172204005" label="enable-offline-auto-reload-visible-only"/>
+  <int value="-1160026273" label="enable-web-notification-custom-layouts"/>
   <int value="-1159563774" label="enable-accessibility-script-injection"/>
   <int value="-1137442543" label="enable-slimming-paint"/>
   <int value="-1136627751" label="ignore-autocomplete-off-autofill"/>
@@ -64355,6 +64356,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-1125133283" label="disable-threaded-scrolling"/>
   <int value="-1107762575" label="enable-data-reduction-proxy-config-client"/>
   <int value="-1102212525" label="enable-tcp-fastopen"/>
+  <int value="-1084055006" label="disable-web-notification-custom-layouts"/>
   <int value="-1078093206" label="ash-debug-shortcuts"/>
   <int value="-1077752943" label="enable-password-generation"/>
   <int value="-1075089382" label="enable-physical-web"/>

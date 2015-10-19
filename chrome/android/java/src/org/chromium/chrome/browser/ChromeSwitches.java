@@ -195,6 +195,20 @@ public abstract class ChromeSwitches {
      */
     public static final String ENABLE_PHYSICAL_WEB = "enable-physical-web";
 
+    /**
+     * Enables Web Notification custom layouts.
+     * Native switch - switches::kEnableWebNotificationCustomLayouts
+     */
+    public static final String ENABLE_WEB_NOTIFICATION_CUSTOM_LAYOUTS =
+            "enable-web-notification-custom-layouts";
+
+    /**
+     * Disables Web Notification custom layouts.
+     * Native switch - switches::kDisableWebNotificationCustomLayouts
+     */
+    public static final String DISABLE_WEB_NOTIFICATION_CUSTOM_LAYOUTS =
+            "disable-web-notification-custom-layouts";
+
     // Prevent instantiation.
     private ChromeSwitches() {}
 }

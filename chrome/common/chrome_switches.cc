@@ -345,6 +345,10 @@ const char kDisableSync[]                   = "disable-sync";
 // --disable-synctypes='Typed URLs, Bookmarks, Autofill Profiles'
 const char kDisableSyncTypes[]              = "disable-sync-types";
 
+// Disables Web Notification custom layouts.
+const char kDisableWebNotificationCustomLayouts[] =
+    "disable-web-notification-custom-layouts";
+
 // Disables the backend service for web resources.
 const char kDisableWebResources[]           = "disable-web-resources";
 
@@ -556,6 +560,10 @@ const char kEnableUserAlternateProtocolPorts[] =
 // Enables a new "web app" style frame for hosted apps (including bookmark
 // apps).
 const char kEnableWebAppFrame[] = "enable-web-app-frame";
+
+// Enables Web Notification custom layouts.
+const char kEnableWebNotificationCustomLayouts[] =
+    "enable-web-notification-custom-layouts";
 
 // Enables webusb notifications, which shows notifications when usb devices with
 // landing page are plugged in.
