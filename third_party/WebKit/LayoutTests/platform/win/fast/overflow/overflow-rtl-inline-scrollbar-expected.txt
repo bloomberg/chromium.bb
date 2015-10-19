@@ -7,15 +7,15 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (0,0) size 218x17
           text run at (0,0) width 218: "This tests for a regression against "
         LayoutInline {I} at (0,0) size 731x35
-          LayoutInline {A} at (0,0) size 355x17 [color=#0000EE]
-            LayoutText {#text} at (217,0) size 355x17
-              text run at (217,0) width 355: "http://bugzilla.opendarwin.org/show_bug.cgi?id=6618"
-          LayoutText {#text} at (571,0) size 731x35
-            text run at (571,0) width 5: " "
-            text run at (575,0) width 156: "Inline in RTL block with"
-            text run at (0,18) width 350: "overflow:auto and left border makes scroll bar appear"
-        LayoutText {#text} at (349,18) size 5x17
-          text run at (349,18) width 5: "."
+          LayoutInline {A} at (0,0) size 354x17 [color=#0000EE]
+            LayoutText {#text} at (217,0) size 354x17
+              text run at (217,0) width 354: "http://bugzilla.opendarwin.org/show_bug.cgi?id=6618"
+          LayoutText {#text} at (570,0) size 731x35
+            text run at (570,0) width 5: " "
+            text run at (574,0) width 157: "Inline in RTL block with"
+            text run at (0,18) width 349: "overflow:auto and left border makes scroll bar appear"
+        LayoutText {#text} at (348,18) size 5x17
+          text run at (348,18) width 5: "."
       LayoutBlockFlow {HR} at (0,52) size 784x2 [border: (1px inset #EEEEEE)]
 layer at (8,70) size 784x18 clip at (18,70) size 774x18
   LayoutBlockFlow {DIV} at (0,62) size 784x18 [border: none (10px solid #0000FF)]

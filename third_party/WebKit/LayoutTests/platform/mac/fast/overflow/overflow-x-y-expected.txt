@@ -4,8 +4,8 @@ layer at (0,0) size 785x600
   LayoutBlockFlow {HTML} at (0,0) size 785x600
     LayoutBlockFlow {BODY} at (8,8) size 769x584
       LayoutBlockFlow (anonymous) at (0,0) size 769x18
-        LayoutText {#text} at (0,0) size 318x18
-          text run at (0,0) width 318: "The body should always have a vertical scrollbar."
+        LayoutText {#text} at (0,0) size 317x18
+          text run at (0,0) width 317: "The body should always have a vertical scrollbar."
       LayoutBlockFlow (anonymous) at (0,218) size 769x51
         LayoutText {#text} at (141,33) size 4x18
           text run at (141,33) width 4: " "
@@ -75,10 +75,10 @@ layer at (8,126) size 300x100 clip at (8,126) size 300x85 scrollWidth 1208
 layer at (8,241) size 141x32 clip at (9,242) size 124x30
   LayoutTextControl {TEXTAREA} at (0,15) size 141x32 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     LayoutBlockFlow {DIV} at (3,3) size 120x13
-      LayoutText {#text} at (0,0) size 84x13
-        text run at (0,0) width 84: "Textarea y-scroll"
+      LayoutText {#text} at (0,0) size 82x13
+        text run at (0,0) width 82: "Textarea y-scroll"
 layer at (153,226) size 141x47 clip at (154,227) size 139x30
   LayoutTextControl {TEXTAREA} at (145,0) size 141x47 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     LayoutBlockFlow {DIV} at (3,3) size 135x13
-      LayoutText {#text} at (0,0) size 84x13
-        text run at (0,0) width 84: "Textarea x-scroll"
+      LayoutText {#text} at (0,0) size 82x13
+        text run at (0,0) width 82: "Textarea x-scroll"

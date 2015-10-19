@@ -10,19 +10,19 @@ layer at (0,0) size 800x600
         LayoutBR {BR} at (0,0) size 0x18
         LayoutBR {BR} at (0,18) size 0x18
       LayoutBlockFlow {P} at (0,86) size 784x28
-        LayoutText {#text} at (0,10) size 159x18
-          text run at (0,10) width 159: "<ruby> is defined in the "
+        LayoutText {#text} at (0,10) size 158x18
+          text run at (0,10) width 158: "<ruby> is defined in the "
         LayoutRuby (inline) {RUBY} at (0,0) size 112x18
-          LayoutRubyRun (anonymous) at (154.02,10) size 107.47x18
-            LayoutRubyText {RT} at (0,-10) size 107.47x10
+          LayoutRubyRun (anonymous) at (153.14,10) size 107.30x18
+            LayoutRubyText {RT} at (0,-10) size 107.30x10
               LayoutText {#text} at (0,0) size 108x10
                 text run at (0,0) width 108: "Hyper-text Markup Language"
-            LayoutRubyBase (anonymous) at (0,0) size 107.47x18
+            LayoutRubyBase (anonymous) at (0,0) size 107.30x18
               LayoutText {#text} at (31,0) size 46x18
                 text run at (31,0) width 46: "HTML"
-          LayoutRubyRun (anonymous) at (261.48,10) size 8x18
+          LayoutRubyRun (anonymous) at (260.44,10) size 8x18
             LayoutRubyBase (anonymous) at (0,0) size 8x18
               LayoutText {#text} at (0,0) size 8x18
                 text run at (0,0) width 8: "5"
-        LayoutText {#text} at (269,10) size 5x18
-          text run at (269,10) width 5: "."
+        LayoutText {#text} at (268,10) size 5x18
+          text run at (268,10) width 5: "."

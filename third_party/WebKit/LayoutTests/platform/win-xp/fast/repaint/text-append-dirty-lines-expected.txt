@@ -7,7 +7,7 @@
       "drawsContent": true,
       "repaintRects": [
         [8, 124, 784, 39],
-        [8, 44, 784, 119]
+        [8, 44, 783, 119]
       ],
       "paintInvalidationClients": [
         "InlineTextBox 'Quisque enim metus, luctus tincidunt, vestibulum eu, vestibulum eu, libero. Mauris sagittis aliquam nunc. Nullam pharetra molestie'",

@@ -4,8 +4,8 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x576
       LayoutBlockFlow {P} at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 463x17
-          text run at (0,0) width 463: "The following is a test for having a <rt> immediately following another."
+        LayoutText {#text} at (0,0) size 462x17
+          text run at (0,0) width 462: "The following is a test for having a <rt> immediately following another."
       LayoutBlockFlow (anonymous) at (0,34) size 784x36
         LayoutBR {BR} at (0,0) size 0x17
         LayoutBR {BR} at (0,18) size 0x17

@@ -4,21 +4,21 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x582
       LayoutBlockFlow {P} at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 55x17
-          text run at (0,0) width 55: "Test for "
-        LayoutInline {I} at (0,0) size 642x17
-          LayoutInline {A} at (0,0) size 157x17 [color=#0000EE]
-            LayoutText {#text} at (54,0) size 157x17
-              text run at (54,0) width 157: "rdar://problem/6059648"
-          LayoutText {#text} at (210,0) size 486x17
-            text run at (210,0) width 5: " "
-            text run at (214,0) width 482: "Some content not visible when the window is short at courtneyalbright.com"
-        LayoutText {#text} at (695,0) size 5x17
-          text run at (695,0) width 5: "."
+        LayoutText {#text} at (0,0) size 54x17
+          text run at (0,0) width 54: "Test for "
+        LayoutInline {I} at (0,0) size 641x17
+          LayoutInline {A} at (0,0) size 156x17 [color=#0000EE]
+            LayoutText {#text} at (53,0) size 156x17
+              text run at (53,0) width 156: "rdar://problem/6059648"
+          LayoutText {#text} at (208,0) size 486x17
+            text run at (208,0) width 5: " "
+            text run at (212,0) width 482: "Some content not visible when the window is short at courtneyalbright.com"
+        LayoutText {#text} at (693,0) size 5x17
+          text run at (693,0) width 5: "."
       LayoutBlockFlow {P} at (0,34) size 784x18
-        LayoutText {#text} at (0,0) size 651x17
+        LayoutText {#text} at (0,0) size 650x17
           text run at (0,0) width 479: "Each black box below should have a scroll bar allowing the blue square to "
-          text run at (478,0) width 173: "be scrolled fully into view."
+          text run at (478,0) width 172: "be scrolled fully into view."
 layer at (18,76) size 102x102 clip at (19,77) size 100x85 scrollWidth 125
   LayoutBlockFlow {DIV} at (10,68) size 102x102 [border: (1px solid #000000)]
 layer at (18,188) size 102x102 clip at (19,189) size 85x100 scrollHeight 125

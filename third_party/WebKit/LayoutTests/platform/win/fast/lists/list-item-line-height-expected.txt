@@ -15,9 +15,9 @@ layer at (0,0) size 800x600
           LayoutText {#text} at (0,0) size 0x0
         LayoutListItem {LI} at (40,30) size 744x30
           LayoutListMarker (anonymous) at (-17,10) size 10x10
-          LayoutInline {SPAN} at (0,0) size 30x17
-            LayoutText {#text} at (0,6) size 30x17
-              text run at (0,6) width 30: "Two"
+          LayoutInline {SPAN} at (0,0) size 29x17
+            LayoutText {#text} at (0,6) size 29x17
+              text run at (0,6) width 29: "Two"
           LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {UL} at (0,110) size 784x60
         LayoutListItem {LI} at (40,0) size 744x30

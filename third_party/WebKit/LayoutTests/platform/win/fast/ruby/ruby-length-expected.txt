@@ -3,8 +3,8 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
-      LayoutText {#text} at (0,0) size 766x35
-        text run at (0,0) width 766: "This is a initial test for simple ruby. There should be 2 ruby annotations on below line, one with a ruby text shorter than"
+      LayoutText {#text} at (0,0) size 765x35
+        text run at (0,0) width 765: "This is a initial test for simple ruby. There should be 2 ruby annotations on below line, one with a ruby text shorter than"
         text run at (0,18) width 60: "the base, "
         text run at (59,18) width 297: "and one with a ruby text longer than the base. "
       LayoutBR {BR} at (355,32) size 1x0

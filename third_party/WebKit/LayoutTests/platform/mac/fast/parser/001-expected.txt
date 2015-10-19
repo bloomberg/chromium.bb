@@ -9,8 +9,8 @@ layer at (0,0) size 800x600
             text run at (0,0) width 27: "One"
         LayoutBlockFlow {DIR} at (40,34) size 744x70
           LayoutBlockFlow (anonymous) at (40,0) size 704x18
-            LayoutText {#text} at (0,0) size 30x18
-              text run at (0,0) width 30: "Two"
+            LayoutText {#text} at (0,0) size 29x18
+              text run at (0,0) width 29: "Two"
           LayoutBlockFlow {DIR} at (40,34) size 704x36
             LayoutBlockFlow (anonymous) at (40,0) size 664x18
               LayoutText {#text} at (0,0) size 38x18

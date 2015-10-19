@@ -3,8 +3,8 @@ layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 952
 layer at (0,0) size 785x928 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
   LayoutBlockFlow {HTML} at (0,0) size 785x928
     LayoutBlockFlow {BODY} at (8,8) size 769x912
-      LayoutText {#text} at (0,0) size 467x17
-        text run at (0,0) width 467: "All of the replaced elements below should be clipped to a border-radius. "
+      LayoutText {#text} at (0,0) size 466x17
+        text run at (0,0) width 466: "All of the replaced elements below should be clipped to a border-radius. "
       LayoutBR {BR} at (0,0) size 0x0
       LayoutImage {IMG} at (0,18) size 100x100
       LayoutText {#text} at (100,104) size 4x17

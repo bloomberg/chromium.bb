@@ -9,9 +9,9 @@ layer at (0,0) size 800x390
         LayoutInline {I} at (0,0) size 21x19
           LayoutText {#text} at (193,0) size 21x19
             text run at (193,0) width 21: "not"
-        LayoutText {#text} at (214,0) size 773x39
+        LayoutText {#text} at (214,0) size 772x39
           text run at (214,0) width 202: " cut through the top left corner of "
-          text run at (416,0) width 357: "the blue border. It would cut through with our old behavior,"
+          text run at (416,0) width 356: "the blue border. It would cut through with our old behavior,"
           text run at (0,20) width 23: "but "
         LayoutInline {A} at (0,0) size 20x19 [color=#0000EE]
           LayoutText {#text} at (23,20) size 20x19

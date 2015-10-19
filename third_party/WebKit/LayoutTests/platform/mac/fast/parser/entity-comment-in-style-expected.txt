@@ -7,5 +7,5 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (0,0) size 558x18
           text run at (0,0) width 558: "--> */ h1 { background-color: red; } /* This comment should not be part of the style. */"
       LayoutBlockFlow {H1} at (0,39.44) size 784x37
-        LayoutText {#text} at (0,0) size 603x37
-          text run at (0,0) width 603: "This text should not have a red background."
+        LayoutText {#text} at (0,0) size 602x37
+          text run at (0,0) width 602: "This text should not have a red background."

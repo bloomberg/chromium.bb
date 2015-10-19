@@ -4,8 +4,8 @@ layer at (0,0) size 785x600
   LayoutBlockFlow {HTML} at (0,0) size 785x600
     LayoutBlockFlow {BODY} at (8,8) size 769x584
       LayoutBlockFlow (anonymous) at (0,0) size 769x18
-        LayoutText {#text} at (0,0) size 318x18
-          text run at (0,0) width 318: "The body should always have a vertical scrollbar."
+        LayoutText {#text} at (0,0) size 317x18
+          text run at (0,0) width 317: "The body should always have a vertical scrollbar."
       LayoutBlockFlow (anonymous) at (0,218) size 769x51
         LayoutText {#text} at (161,33) size 4x18
           text run at (161,33) width 4: " "

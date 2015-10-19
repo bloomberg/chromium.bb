@@ -7,15 +7,15 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (0,0) size 218x18
           text run at (0,0) width 218: "This tests for a regression against "
         LayoutInline {I} at (0,0) size 745x36
-          LayoutInline {A} at (0,0) size 355x18 [color=#0000EE]
-            LayoutText {#text} at (217,0) size 355x18
-              text run at (217,0) width 355: "http://bugzilla.opendarwin.org/show_bug.cgi?id=6673"
-          LayoutText {#text} at (571,0) size 745x36
-            text run at (571,0) width 5: " "
-            text run at (575,0) width 170: "Selection highlight doesn't"
-            text run at (0,18) width 416: "scroll along with an image contained in an overflow:scroll block"
-        LayoutText {#text} at (415,18) size 5x18
-          text run at (415,18) width 5: "."
+          LayoutInline {A} at (0,0) size 354x18 [color=#0000EE]
+            LayoutText {#text} at (217,0) size 354x18
+              text run at (217,0) width 354: "http://bugzilla.opendarwin.org/show_bug.cgi?id=6673"
+          LayoutText {#text} at (570,0) size 745x36
+            text run at (570,0) width 5: " "
+            text run at (574,0) width 171: "Selection highlight doesn't"
+            text run at (0,18) width 414: "scroll along with an image contained in an overflow:scroll block"
+        LayoutText {#text} at (413,18) size 5x18
+          text run at (413,18) width 5: "."
       LayoutBlockFlow {P} at (0,52) size 784x36
         LayoutText {#text} at (0,0) size 763x36
           text run at (0,0) width 421: "There should be one contiguous highlight from \x{201C}elit\x{201D} to \x{201C}Etiam\x{201D}, "

@@ -4,13 +4,13 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x576
       LayoutBlockFlow {DIV} at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 86x17
-          text run at (0,0) width 86: "Test case for "
+        LayoutText {#text} at (0,0) size 85x17
+          text run at (0,0) width 85: "Test case for "
         LayoutInline {A} at (0,0) size 64x17 [color=#0000EE]
-          LayoutText {#text} at (85,0) size 64x17
-            text run at (85,0) width 64: "Bug 7265"
-        LayoutText {#text} at (148,0) size 596x17
-          text run at (148,0) width 596: " REGRESSION: noscript, noframes, nolayer, noembed tags insert break inside paragraph tag"
+          LayoutText {#text} at (84,0) size 64x17
+            text run at (84,0) width 64: "Bug 7265"
+        LayoutText {#text} at (147,0) size 596x17
+          text run at (147,0) width 596: " REGRESSION: noscript, noframes, nolayer, noembed tags insert break inside paragraph tag"
       LayoutBlockFlow {P} at (0,34) size 784x18
         LayoutText {#text} at (0,0) size 328x17
           text run at (0,0) width 328: "This sentence contains noscript tags and should be "

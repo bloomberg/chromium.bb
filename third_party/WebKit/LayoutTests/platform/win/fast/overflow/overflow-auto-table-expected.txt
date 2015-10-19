@@ -7,7 +7,7 @@ layer at (0,0) size 800x162
         LayoutText {#text} at (0,0) size 763x53
           text run at (0,0) width 756: "This tests the interaction of overflow on some very wide text with auto table layout. The CSS 2.1 spec does not define"
           text run at (0,18) width 763: "how overflow interacts with intrinsic width, so we copy the IE behavior. Therefore the lines should come out very very"
-          text run at (0,36) width 244: "wide and scroll along with the border."
+          text run at (0,36) width 243: "wide and scroll along with the border."
       LayoutTable {TABLE} at (0,70) size 7610x68 [border: (1px solid #FF0000)]
         LayoutTableSection {TBODY} at (1,1) size 7608x66
           LayoutTableRow {TR} at (0,2) size 7608x62

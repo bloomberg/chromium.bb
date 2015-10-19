@@ -5,13 +5,13 @@ layer at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
 layer at (0,42) size 800x558 clip at (0,42) size 785x558 scrollY 282.00 scrollHeight 840
   LayoutBlockFlow (positioned) {DIV} at (0,42) size 800x558
-layer at (0,-240) size 572x840 backgroundClip at (0,42) size 785x558 clip at (0,42) size 785x558
-  LayoutBlockFlow (positioned) {DIV} at (0,0) size 572.31x840
-    LayoutBlockFlow (anonymous) at (0,0) size 572.31x18
-      LayoutText {#text} at (0,0) size 573x17
-        text run at (0,0) width 573: "This tests that we can scroll to reveal something in a nested positioned block in overflow."
-    LayoutBlockFlow {DIV} at (0,18) size 572.31x800
-    LayoutBlockFlow (anonymous) at (0,818) size 572.31x22
+layer at (0,-240) size 571x840 backgroundClip at (0,42) size 785x558 clip at (0,42) size 785x558
+  LayoutBlockFlow (positioned) {DIV} at (0,0) size 571.28x840
+    LayoutBlockFlow (anonymous) at (0,0) size 571.28x18
+      LayoutText {#text} at (0,0) size 572x17
+        text run at (0,0) width 572: "This tests that we can scroll to reveal something in a nested positioned block in overflow."
+    LayoutBlockFlow {DIV} at (0,18) size 571.28x800
+    LayoutBlockFlow (anonymous) at (0,818) size 571.28x22
       LayoutButton {INPUT} at (0,0) size 223x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
         LayoutBlockFlow (anonymous) at (8,3) size 207x16
           LayoutText {#text} at (0,0) size 207x16

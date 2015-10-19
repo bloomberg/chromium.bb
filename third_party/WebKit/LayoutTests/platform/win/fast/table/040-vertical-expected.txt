@@ -4,8 +4,8 @@ layer at (0,0) size 785x2350 backgroundClip at (0,0) size 785x600 clip at (0,0) 
   LayoutBlockFlow {HTML} at (0,0) size 785x2350.44
     LayoutBlockFlow {BODY} at (8,8) size 769x2334.44
       LayoutBlockFlow {H1} at (0,0) size 769x37
-        LayoutText {#text} at (0,0) size 613x36
-          text run at (0,0) width 613: "Fixed Columns, Auto Span, Minheight Table"
+        LayoutText {#text} at (0,0) size 610x36
+          text run at (0,0) width 610: "Fixed Columns, Auto Span, Minheight Table"
       LayoutTable {TABLE} at (0,58.44) size 40x100
         LayoutTableSection {TBODY} at (0,0) size 40x100
           LayoutTableRow {TR} at (0,0) size 20x100
@@ -21,8 +21,8 @@ layer at (0,0) size 785x2350 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutText {#text} at (0,18) size 135x17
           text run at (0,18) width 135: "Column One is: 33%"
         LayoutBR {BR} at (134,32) size 1x0
-        LayoutText {#text} at (0,36) size 138x17
-          text run at (0,36) width 138: "Column Two is: 67%"
+        LayoutText {#text} at (0,36) size 137x17
+          text run at (0,36) width 137: "Column Two is: 67%"
       LayoutBlockFlow {HR} at (0,244.44) size 769x2 [border: (1px inset #EEEEEE)]
       LayoutTable {TABLE} at (0,254.44) size 40x600
         LayoutTableSection {TBODY} at (0,0) size 40x600
@@ -39,8 +39,8 @@ layer at (0,0) size 785x2350 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutText {#text} at (0,18) size 135x17
           text run at (0,18) width 135: "Column One is: 33%"
         LayoutBR {BR} at (134,32) size 1x0
-        LayoutText {#text} at (0,36) size 138x17
-          text run at (0,36) width 138: "Column Two is: 67%"
+        LayoutText {#text} at (0,36) size 137x17
+          text run at (0,36) width 137: "Column Two is: 67%"
       LayoutBlockFlow {HR} at (0,940.44) size 769x2 [border: (1px inset #EEEEEE)]
       LayoutTable {TABLE} at (0,950.44) size 56x600
         LayoutTableSection {TBODY} at (0,0) size 56x600
@@ -63,8 +63,8 @@ layer at (0,0) size 785x2350 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutText {#text} at (0,18) size 135x17
           text run at (0,18) width 135: "Column One is: 33%"
         LayoutBR {BR} at (134,32) size 1x0
-        LayoutText {#text} at (0,36) size 138x17
-          text run at (0,36) width 138: "Column Two is: 67%"
+        LayoutText {#text} at (0,36) size 137x17
+          text run at (0,36) width 137: "Column Two is: 67%"
       LayoutBlockFlow {HR} at (0,1636.44) size 769x2 [border: (1px inset #EEEEEE)]
       LayoutTable {TABLE} at (0,1646.44) size 40x600
         LayoutTableSection {TBODY} at (0,0) size 40x600
@@ -83,6 +83,6 @@ layer at (0,0) size 785x2350 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutText {#text} at (0,18) size 135x17
           text run at (0,18) width 135: "Column One is: 33%"
         LayoutBR {BR} at (134,32) size 1x0
-        LayoutText {#text} at (0,36) size 138x17
-          text run at (0,36) width 138: "Column Two is: 67%"
+        LayoutText {#text} at (0,36) size 137x17
+          text run at (0,36) width 137: "Column Two is: 67%"
       LayoutBlockFlow {HR} at (0,2332.44) size 769x2 [border: (1px inset #EEEEEE)]

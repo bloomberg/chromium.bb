@@ -6,11 +6,11 @@
       "contentsOpaque": true,
       "drawsContent": true,
       "repaintRects": [
-        [8, 2197, 777, 106],
-        [8, 2197, 653, 106],
         [8, 2047, 777, 106],
         [8, 2047, 774, 106],
-        [8, 2000, 777, 350]
+        [7, 2197, 778, 106],
+        [7, 2197, 654, 106],
+        [7, 2000, 778, 350]
       ],
       "paintInvalidationClients": [
         "LayoutBlockFlow DIV id='container'",

@@ -4,24 +4,24 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x576
       LayoutBlockFlow {P} at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 55x17
-          text run at (0,0) width 55: "Test for "
-        LayoutInline {I} at (0,0) size 667x17
+        LayoutText {#text} at (0,0) size 54x17
+          text run at (0,0) width 54: "Test for "
+        LayoutInline {I} at (0,0) size 666x17
           LayoutInline {A} at (0,0) size 312x17 [color=#0000EE]
-            LayoutText {#text} at (54,0) size 312x17
-              text run at (54,0) width 312: "https://bugs.webkit.org/show_bug.cgi?id=19525"
-          LayoutText {#text} at (365,0) size 356x17
-            text run at (365,0) width 5: " "
-            text run at (369,0) width 352: "-webkit-box-reflect in hyperlink causes webkit to crash"
-        LayoutText {#text} at (720,0) size 5x17
-          text run at (720,0) width 5: "."
+            LayoutText {#text} at (53,0) size 312x17
+              text run at (53,0) width 312: "https://bugs.webkit.org/show_bug.cgi?id=19525"
+          LayoutText {#text} at (364,0) size 355x17
+            text run at (364,0) width 5: " "
+            text run at (368,0) width 351: "-webkit-box-reflect in hyperlink causes webkit to crash"
+        LayoutText {#text} at (718,0) size 5x17
+          text run at (718,0) width 5: "."
       LayoutBlockFlow {P} at (0,34) size 784x18
-        LayoutText {#text} at (0,0) size 182x17
-          text run at (0,0) width 182: "Because it is an inline flow, "
+        LayoutText {#text} at (0,0) size 181x17
+          text run at (0,0) width 181: "Because it is an inline flow, "
         LayoutInline {SPAN} at (0,0) size 58x17
-          LayoutText {#text} at (181,0) size 58x17
-            text run at (181,0) width 58: "this span"
-        LayoutText {#text} at (238,0) size 451x17
-          text run at (238,0) width 451: " should not have a reflection, and selecting it should not cause a crash."
+          LayoutText {#text} at (180,0) size 58x17
+            text run at (180,0) width 58: "this span"
+        LayoutText {#text} at (237,0) size 451x17
+          text run at (237,0) width 451: " should not have a reflection, and selecting it should not cause a crash."
 selection start: position 0 of child 0 {#text} of child 1 {SPAN} of child 2 {P} of body
 selection end:   position 9 of child 0 {#text} of child 1 {SPAN} of child 2 {P} of body

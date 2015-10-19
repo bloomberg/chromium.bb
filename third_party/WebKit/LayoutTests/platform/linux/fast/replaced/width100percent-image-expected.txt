@@ -6,7 +6,7 @@ layer at (0,0) size 800x600
       LayoutBlockFlow (anonymous) at (0,0) size 784x40
         LayoutText {#text} at (0,0) size 779x39
           text run at (0,0) width 676: "The following elements behave differently in different browsers. Our current behavior will cause them to overlap, "
-          text run at (676,0) width 103: "but we may need"
+          text run at (675,0) width 104: "but we may need"
           text run at (0,20) width 160: "to change this in the future."
       LayoutTable {TABLE} at (0,40) size 784x24
         LayoutTableSection {TBODY} at (0,0) size 784x24

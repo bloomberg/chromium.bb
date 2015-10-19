@@ -4,9 +4,9 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x576
       LayoutBlockFlow (anonymous) at (0,0) size 784x36
-        LayoutText {#text} at (0,0) size 233x18
-          text run at (0,0) width 233: "This is a initial test for simple ruby. "
-        LayoutBR {BR} at (232,14) size 1x0
+        LayoutText {#text} at (0,0) size 232x18
+          text run at (0,0) width 232: "This is a initial test for simple ruby. "
+        LayoutBR {BR} at (231,14) size 1x0
         LayoutBR {BR} at (0,18) size 0x18
       LayoutBlockFlow {P} at (0,52) size 784x28
         LayoutText {#text} at (0,10) size 164x18

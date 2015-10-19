@@ -4,18 +4,18 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x576
       LayoutBlockFlow {P} at (0,0) size 784x36
-        LayoutText {#text} at (0,0) size 55x18
-          text run at (0,0) width 55: "Test for "
-        LayoutInline {I} at (0,0) size 783x36
-          LayoutInline {A} at (0,0) size 306x18 [color=#0000EE]
-            LayoutText {#text} at (54,0) size 306x18
-              text run at (54,0) width 306: "http://bugs.webkit.org/show_bug.cgi?id=13157"
-          LayoutText {#text} at (359,0) size 783x36
-            text run at (359,0) width 5: " "
-            text run at (363,0) width 420: "List markers positioned incorrectly and don't repaint properly on"
-            text run at (0,18) width 116: "Oxford homepage"
-        LayoutText {#text} at (115,18) size 5x18
-          text run at (115,18) width 5: "."
+        LayoutText {#text} at (0,0) size 54x18
+          text run at (0,0) width 54: "Test for "
+        LayoutInline {I} at (0,0) size 779x36
+          LayoutInline {A} at (0,0) size 305x18 [color=#0000EE]
+            LayoutText {#text} at (53,0) size 305x18
+              text run at (53,0) width 305: "http://bugs.webkit.org/show_bug.cgi?id=13157"
+          LayoutText {#text} at (357,0) size 779x36
+            text run at (357,0) width 5: " "
+            text run at (361,0) width 418: "List markers positioned incorrectly and don't repaint properly on"
+            text run at (0,18) width 115: "Oxford homepage"
+        LayoutText {#text} at (114,18) size 5x18
+          text run at (114,18) width 5: "."
       LayoutBlockFlow {P} at (0,52) size 784x18
         LayoutText {#text} at (0,0) size 407x18
           text run at (0,0) width 407: "There should be a bullet next to each item on the following list:"
@@ -26,8 +26,8 @@ layer at (0,0) size 800x600
             text run at (0,0) width 162: "Prospectuses and courses"
         LayoutListItem {LI} at (40,18) size 744x18
           LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
-          LayoutText {#text} at (0,0) size 171x18
-            text run at (0,0) width 171: "Undergraduate admissions"
+          LayoutText {#text} at (0,0) size 170x18
+            text run at (0,0) width 170: "Undergraduate admissions"
         LayoutListItem {LI} at (40,36) size 744x18
           LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
           LayoutText {#text} at (0,0) size 134x18

@@ -84,8 +84,8 @@ layer at (0,0) size 785x1029 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutText {#text} at (0,0) size 739x19
           text run at (0,0) width 739: "- (relative objects and overflowHidden objects and absolute objects) inside (fixed/overflowHidden objects) will be clipped;"
       LayoutBlockFlow {P} at (0,693.27) size 769x40
-        LayoutText {#text} at (0,0) size 742x39
-          text run at (0,0) width 742: "Nice effect, but not what we want. Tested in Safari Version 2.0.4 (419.3), and WebKit Nightly Build Mon Nov 20 5:18:23"
+        LayoutText {#text} at (0,0) size 738x39
+          text run at (0,0) width 738: "Nice effect, but not what we want. Tested in Safari Version 2.0.4 (419.3), and WebKit Nightly Build Mon Nov 20 5:18:23"
           text run at (0,20) width 74: "GMT 2006."
 layer at (305,149) size 162x348
   LayoutBlockFlow (positioned) {DIV} at (305,85) size 162x348 [border: (1px solid #999999)]

@@ -4,8 +4,8 @@ layer at (0,0) size 800x899 backgroundClip at (0,0) size 800x600 clip at (0,0) s
   LayoutBlockFlow {HTML} at (0,0) size 800x898.88
     LayoutBlockFlow {BODY} at (8,21.44) size 784x869.44
       LayoutBlockFlow {H1} at (0,0) size 784x37
-        LayoutText {#text} at (0,0) size 292x37
-          text run at (0,0) width 292: "Table Border Models"
+        LayoutText {#text} at (0,0) size 289x37
+          text run at (0,0) width 289: "Table Border Models"
       LayoutBlockFlow {P} at (0,58.44) size 784x18
         LayoutText {#text} at (0,0) size 121x18
           text run at (0,0) width 121: "This tests tests the "

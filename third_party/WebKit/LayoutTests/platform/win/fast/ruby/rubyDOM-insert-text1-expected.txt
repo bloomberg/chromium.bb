@@ -15,48 +15,48 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {P} at (0,120) size 784x30
         LayoutText {#text} at (0,12) size 159x17
           text run at (0,12) width 159: "<ruby> is defined in the "
-        LayoutRuby (inline) {RUBY} at (0,0) size 116x17
-          LayoutRubyRun (anonymous) at (154.02,12) size 41x18
-            LayoutRubyText {RT} at (0,-12) size 41x12
-              LayoutText {#text} at (0,0) size 41x12
-                text run at (0,0) width 41: "Hyper-text"
-            LayoutRubyBase (anonymous) at (0,0) size 41x18
-              LayoutText {#text} at (10,0) size 22x17
-                text run at (10,0) width 22: "HT"
-          LayoutRubyRun (anonymous) at (195.02,12) size 70x18
+        LayoutRuby (inline) {RUBY} at (0,0) size 115x17
+          LayoutRubyRun (anonymous) at (154.02,12) size 40.83x18
+            LayoutRubyText {RT} at (0,-12) size 40.83x12
+              LayoutText {#text} at (0,0) size 42x12
+                text run at (0,0) width 42: "Hyper-text"
+            LayoutRubyBase (anonymous) at (0,0) size 40.83x18
+              LayoutText {#text} at (9,0) size 23x17
+                text run at (9,0) width 23: "HT"
+          LayoutRubyRun (anonymous) at (194.84,12) size 70x18
             LayoutRubyText {RT} at (0,-12) size 70x12
               LayoutText {#text} at (0,0) size 70x12
                 text run at (0,0) width 70: "Markup Language"
             LayoutRubyBase (anonymous) at (0,0) size 70x18
               LayoutText {#text} at (23,0) size 24x17
                 text run at (23,0) width 24: "ML"
-          LayoutRubyRun (anonymous) at (265.02,12) size 8x18
+          LayoutRubyRun (anonymous) at (264.84,12) size 8x18
             LayoutRubyBase (anonymous) at (0,0) size 8x18
               LayoutText {#text} at (0,0) size 8x17
                 text run at (0,0) width 8: "5"
-        LayoutText {#text} at (273,12) size 37x17
-          text run at (273,12) width 37: " spec."
+        LayoutText {#text} at (272,12) size 38x17
+          text run at (272,12) width 38: " spec."
       LayoutBlockFlow {P} at (0,166) size 784x30
         LayoutText {#text} at (0,12) size 159x17
           text run at (0,12) width 159: "<ruby> is defined in the "
-        LayoutRuby (inline) {RUBY} at (0,0) size 116x17
-          LayoutRubyRun (anonymous) at (154.02,12) size 41x18
-            LayoutRubyText {RT} at (0,-12) size 41x12
-              LayoutText {#text} at (0,0) size 41x12
-                text run at (0,0) width 41: "Hyper-text"
-            LayoutRubyBase (anonymous) at (0,0) size 41x18
-              LayoutText {#text} at (10,0) size 22x17
-                text run at (10,0) width 22: "HT"
-          LayoutRubyRun (anonymous) at (195.02,12) size 70x18
+        LayoutRuby (inline) {RUBY} at (0,0) size 115x17
+          LayoutRubyRun (anonymous) at (154.02,12) size 40.83x18
+            LayoutRubyText {RT} at (0,-12) size 40.83x12
+              LayoutText {#text} at (0,0) size 42x12
+                text run at (0,0) width 42: "Hyper-text"
+            LayoutRubyBase (anonymous) at (0,0) size 40.83x18
+              LayoutText {#text} at (9,0) size 23x17
+                text run at (9,0) width 23: "HT"
+          LayoutRubyRun (anonymous) at (194.84,12) size 70x18
             LayoutRubyText {RT} at (0,-12) size 70x12
               LayoutText {#text} at (0,0) size 70x12
                 text run at (0,0) width 70: "Markup Language"
             LayoutRubyBase (anonymous) at (0,0) size 70x18
               LayoutText {#text} at (23,0) size 24x17
                 text run at (23,0) width 24: "ML"
-          LayoutRubyRun (anonymous) at (265.02,12) size 8x18
+          LayoutRubyRun (anonymous) at (264.84,12) size 8x18
             LayoutRubyBase (anonymous) at (0,0) size 8x18
               LayoutText {#text} at (0,0) size 8x17
                 text run at (0,0) width 8: "5"
-        LayoutText {#text} at (273,12) size 37x17
-          text run at (273,12) width 37: " spec."
+        LayoutText {#text} at (272,12) size 38x17
+          text run at (272,12) width 38: " spec."

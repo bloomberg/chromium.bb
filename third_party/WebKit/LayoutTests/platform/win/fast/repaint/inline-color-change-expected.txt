@@ -6,8 +6,8 @@
       "contentsOpaque": true,
       "drawsContent": true,
       "repaintRects": [
-        [8, 68, 39, 17],
-        [8, 68, 39, 17]
+        [8, 68, 37, 17],
+        [8, 68, 37, 17]
       ],
       "paintInvalidationClients": [
         "LayoutInline SPAN id='target'",

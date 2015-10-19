@@ -4,17 +4,17 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 55x17
-          text run at (0,0) width 55: "Test for "
-        LayoutInline {I} at (0,0) size 665x17
-          LayoutInline {A} at (0,0) size 306x17 [color=#0000EE]
-            LayoutText {#text} at (54,0) size 306x17
-              text run at (54,0) width 306: "http://bugs.webkit.org/show_bug.cgi?id=13670"
-          LayoutText {#text} at (359,0) size 360x17
-            text run at (359,0) width 5: " "
-            text run at (363,0) width 356: "Table misrender when one of the TDs has width=100%"
-        LayoutText {#text} at (718,0) size 5x17
-          text run at (718,0) width 5: "."
+        LayoutText {#text} at (0,0) size 54x17
+          text run at (0,0) width 54: "Test for "
+        LayoutInline {I} at (0,0) size 662x17
+          LayoutInline {A} at (0,0) size 305x17 [color=#0000EE]
+            LayoutText {#text} at (53,0) size 305x17
+              text run at (53,0) width 305: "http://bugs.webkit.org/show_bug.cgi?id=13670"
+          LayoutText {#text} at (357,0) size 358x17
+            text run at (357,0) width 5: " "
+            text run at (361,0) width 354: "Table misrender when one of the TDs has width=100%"
+        LayoutText {#text} at (714,0) size 5x17
+          text run at (714,0) width 5: "."
       LayoutBlockFlow {P} at (0,34) size 784x18
         LayoutText {#text} at (0,0) size 568x17
           text run at (0,0) width 568: "There should be one green vertical line, 100px long and 2px thick, near the right margin."

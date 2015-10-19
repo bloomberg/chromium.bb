@@ -8,9 +8,9 @@ layer at (0,0) size 800x600
           LayoutText {#text} at (0,0) size 77x17
             text run at (0,0) width 77: "Hello world"
       LayoutBlockFlow {DIV} at (0,204) size 784x36
-        LayoutText {#text} at (76,0) size 688x35
+        LayoutText {#text} at (76,0) size 687x35
           text run at (76,0) width 294: "This text should not overlap the purple float? "
-          text run at (369,0) width 395: "Will this happen? I'm really not sure. This is a test of some of"
+          text run at (369,0) width 394: "Will this happen? I'm really not sure. This is a test of some of"
           text run at (76,18) width 476: "the strange behavior you will find when using overflow auto or scroll, etc."
 layer at (85,108) size 707x104 clip at (87,110) size 703x100 scrollHeight 400
   LayoutBlockFlow {DIV} at (76.88,100) size 707.13x104 [border: (2px solid #000000)]

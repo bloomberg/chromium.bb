@@ -6,8 +6,8 @@ layer at (0,0) size 800x292
       LayoutBlockFlow {UL} at (0,0) size 784x54 [color=#000080]
         LayoutListItem {LI} at (40,0) size 744x18
           LayoutListMarker (anonymous) at (-17,0) size 7x17: bullet
-          LayoutText {#text} at (0,0) size 340x17
-            text run at (0,0) width 340: "You should not see the background under the border."
+          LayoutText {#text} at (0,0) size 338x17
+            text run at (0,0) width 338: "You should not see the background under the border."
         LayoutListItem {LI} at (40,18) size 744x18
           LayoutListMarker (anonymous) at (-17,0) size 7x17: bullet
           LayoutText {#text} at (0,0) size 350x17
@@ -40,7 +40,7 @@ layer at (8,86) size 390x198 clip at (38,116) size 315x138 scrollHeight 360
       text run at (30,192) width 24: "  10"
       text run at (54,192) width 0: " "
       text run at (30,210) width 24: "  11"
-      text run at (54,210) width 0: " "
+      text run at (53,210) width 1: " "
       text run at (30,228) width 24: "  12"
       text run at (54,228) width 0: " "
       text run at (30,246) width 24: "  13"

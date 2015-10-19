@@ -9,7 +9,7 @@ layer at (0,0) size 800x600
 hidden layer at (8,26) size 50x70 clip at (8,26) size 35x55 scrollWidth 43 scrollHeight 108
   LayoutBlockFlow {DIV} at (0,18) size 50x70
     LayoutText {#text} at (0,0) size 43x108
-      text run at (0,0) width 28: "You"
+      text run at (0,0) width 26: "You"
       text run at (0,18) width 43: "should"
       text run at (0,36) width 21: "not"
       text run at (0,54) width 21: "see"

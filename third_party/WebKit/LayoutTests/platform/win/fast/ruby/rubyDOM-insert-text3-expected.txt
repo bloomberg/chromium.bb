@@ -15,40 +15,40 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {P} at (0,120) size 784x30
         LayoutText {#text} at (0,12) size 159x17
           text run at (0,12) width 159: "<ruby> is defined in the "
-        LayoutRuby (inline) {RUBY} at (0,0) size 118x17
-          LayoutRubyRun (anonymous) at (154.02,12) size 113x18
-            LayoutRubyText {RT} at (0,-12) size 113x12
+        LayoutRuby (inline) {RUBY} at (0,0) size 117x17
+          LayoutRubyRun (anonymous) at (154.02,12) size 112.83x18
+            LayoutRubyText {RT} at (0,-12) size 112.83x12
               LayoutText {#text} at (0,0) size 113x12
                 text run at (0,0) width 113: "Hyper-text Markup Language"
-            LayoutRubyBase (anonymous) at (0,0) size 113x18
-              LayoutText {#text} at (34,0) size 22x17
-                text run at (34,0) width 22: "HT"
+            LayoutRubyBase (anonymous) at (0,0) size 112.83x18
+              LayoutText {#text} at (33,0) size 23x17
+                text run at (33,0) width 23: "HT"
               LayoutInline {SPAN} at (0,0) size 25x17
                 LayoutText {#text} at (55,0) size 25x17
                   text run at (55,0) width 25: "ML"
-          LayoutRubyRun (anonymous) at (267.02,12) size 8x18
+          LayoutRubyRun (anonymous) at (266.84,12) size 8x18
             LayoutRubyBase (anonymous) at (0,0) size 8x18
               LayoutText {#text} at (0,0) size 8x17
                 text run at (0,0) width 8: "5"
-        LayoutText {#text} at (275,12) size 37x17
-          text run at (275,12) width 37: " spec."
+        LayoutText {#text} at (274,12) size 38x17
+          text run at (274,12) width 38: " spec."
       LayoutBlockFlow {P} at (0,166) size 784x30
         LayoutText {#text} at (0,12) size 159x17
           text run at (0,12) width 159: "<ruby> is defined in the "
-        LayoutRuby (inline) {RUBY} at (0,0) size 118x17
-          LayoutRubyRun (anonymous) at (154.02,12) size 113x18
-            LayoutRubyText {RT} at (0,-12) size 113x12
+        LayoutRuby (inline) {RUBY} at (0,0) size 117x17
+          LayoutRubyRun (anonymous) at (154.02,12) size 112.83x18
+            LayoutRubyText {RT} at (0,-12) size 112.83x12
               LayoutText {#text} at (0,0) size 113x12
                 text run at (0,0) width 113: "Hyper-text Markup Language"
-            LayoutRubyBase (anonymous) at (0,0) size 113x18
-              LayoutText {#text} at (34,0) size 22x17
-                text run at (34,0) width 22: "HT"
+            LayoutRubyBase (anonymous) at (0,0) size 112.83x18
+              LayoutText {#text} at (33,0) size 23x17
+                text run at (33,0) width 23: "HT"
               LayoutInline {SPAN} at (0,0) size 25x17
                 LayoutText {#text} at (55,0) size 25x17
                   text run at (55,0) width 25: "ML"
-          LayoutRubyRun (anonymous) at (267.02,12) size 8x18
+          LayoutRubyRun (anonymous) at (266.84,12) size 8x18
             LayoutRubyBase (anonymous) at (0,0) size 8x18
               LayoutText {#text} at (0,0) size 8x17
                 text run at (0,0) width 8: "5"
-        LayoutText {#text} at (275,12) size 37x17
-          text run at (275,12) width 37: " spec."
+        LayoutText {#text} at (274,12) size 38x17
+          text run at (274,12) width 38: " spec."

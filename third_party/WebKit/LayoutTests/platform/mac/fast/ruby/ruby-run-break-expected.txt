@@ -4,39 +4,39 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow (anonymous) at (0,0) size 784x72
-        LayoutText {#text} at (0,0) size 767x54
-          text run at (0,0) width 767: "This is a test for multiple ruby runs and line breaks. There is a div with a blue border and 10px padding. This contains a"
+        LayoutText {#text} at (0,0) size 784x54
+          text run at (0,0) width 766: "This is a test for multiple ruby runs and line breaks. There is a div with a blue border and 10px padding. This contains a"
           text run at (0,18) width 507: "single <ruby> markup in the text contained in the block, broken across 2 lines. "
-          text run at (506,18) width 252: "Part of it should be on the first line, the"
-          text run at (0,36) width 140: "rest on the other line. "
-        LayoutBR {BR} at (139,50) size 1x0
+          text run at (506,18) width 278: "Part of it should be on the first line, the rest"
+          text run at (0,36) width 113: "on the other line. "
+        LayoutBR {BR} at (112,50) size 1x0
         LayoutBR {BR} at (0,54) size 0x18
       LayoutBlockFlow {DIV} at (0,72) size 284x70 [border: (2px solid #0000FF)]
-        LayoutText {#text} at (12,12) size 159x18
-          text run at (12,12) width 159: "<ruby> is defined in the "
-        LayoutRuby (inline) {RUBY} at (0,0) size 257x46
-          LayoutRubyRun (anonymous) at (166.02,12) size 22.50x18
+        LayoutText {#text} at (12,12) size 158x18
+          text run at (12,12) width 158: "<ruby> is defined in the "
+        LayoutRuby (inline) {RUBY} at (0,0) size 256x46
+          LayoutRubyRun (anonymous) at (165.14,12) size 22.50x18
             LayoutRubyText {RT} at (0,-10) size 22.50x10
               LayoutText {#text} at (0,0) size 23x10
                 text run at (0,0) width 23: "Hyper"
             LayoutRubyBase (anonymous) at (0,0) size 22.50x18
               LayoutText {#text} at (5,0) size 13x18
                 text run at (5,0) width 13: "H"
-          LayoutRubyRun (anonymous) at (188.52,12) size 16.50x18
-            LayoutRubyText {RT} at (0,-10) size 16.50x10
+          LayoutRubyRun (anonymous) at (187.64,12) size 15.88x18
+            LayoutRubyText {RT} at (0,-10) size 15.88x10
               LayoutText {#text} at (0,0) size 17x10
                 text run at (0,0) width 17: "Text"
-            LayoutRubyBase (anonymous) at (0,0) size 16.50x18
+            LayoutRubyBase (anonymous) at (0,0) size 15.88x18
               LayoutText {#text} at (3,0) size 11x18
                 text run at (3,0) width 11: "T"
-          LayoutRubyRun (anonymous) at (205.02,12) size 28.50x18
+          LayoutRubyRun (anonymous) at (203.52,12) size 28.50x18
             LayoutRubyText {RT} at (0,-10) size 28.50x10
               LayoutText {#text} at (0,0) size 29x10
                 text run at (0,0) width 29: "Markup"
             LayoutRubyBase (anonymous) at (0,0) size 28.50x18
               LayoutText {#text} at (7,0) size 15x18
                 text run at (7,0) width 15: "M"
-          LayoutRubyRun (anonymous) at (233.52,12) size 35.48x18
+          LayoutRubyRun (anonymous) at (232.02,12) size 35.48x18
             LayoutRubyText {RT} at (0,-10) size 35.48x10
               LayoutText {#text} at (0,0) size 36x10
                 text run at (0,0) width 36: "Language"

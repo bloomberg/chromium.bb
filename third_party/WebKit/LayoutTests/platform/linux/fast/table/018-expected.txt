@@ -35,5 +35,5 @@ layer at (0,0) size 800x600
         LayoutInline {TT} at (0,0) size 88x16
           LayoutText {#text} at (277,3) size 88x16
             text run at (277,3) width 88: "hello world"
-        LayoutText {#text} at (365,0) size 225x19
-          text run at (365,0) width 225: ". Notice it is displayed correctly now."
+        LayoutText {#text} at (365,0) size 224x19
+          text run at (365,0) width 224: ". Notice it is displayed correctly now."

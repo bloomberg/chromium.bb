@@ -3,27 +3,26 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
-layer at (8,8) size 784x66
-  LayoutBlockFlow {DIV} at (0,0) size 784x66
-    LayoutMultiColumnSet (anonymous) at (0,0) size 784x66
-layer at (8,8) size 384x132
-  LayoutMultiColumnFlowThread (anonymous) at (0,0) size 384x132
-    LayoutText {#text} at (0,0) size 355x105
-      text run at (0,0) width 65: "Filler Text "
-      text run at (65,0) width 290: "Filler Text Filler Text Filler Text Filler Text Filler"
-      text run at (0,20) width 226: "Text Filler Text Filler Text Filler Text "
-      text run at (226,20) width 65: "Filler Text "
-      text run at (291,20) width 61: "Filler Text"
-      text run at (0,40) width 355: "Filler Text Filler Text Filler Text Filler Text Filler Text Filler"
-      text run at (0,66) width 96: "Text Filler Text "
-      text run at (96,66) width 65: "Filler Text "
-      text run at (161,66) width 191: "Filler Text Filler Text Filler Text"
-      text run at (0,86) width 321: "Filler Text Filler Text Filler Text Filler Text Filler Text"
+layer at (8,8) size 784x60
+  LayoutBlockFlow {DIV} at (0,0) size 784x60
+    LayoutMultiColumnSet (anonymous) at (0,0) size 784x60
+layer at (8,8) size 384x106
+  LayoutMultiColumnFlowThread (anonymous) at (0,0) size 384x106
+    LayoutText {#text} at (0,0) size 380x102
+      text run at (0,0) width 64: "Filler Text "
+      text run at (63,0) width 317: "Filler Text Filler Text Filler Text Filler Text Filler Text"
+      text run at (0,20) width 192: "Filler Text Filler Text Filler Text "
+      text run at (191,20) width 65: "Filler Text "
+      text run at (255,20) width 125: "Filler Text Filler Text"
+      text run at (0,40) width 380: "Filler Text Filler Text Filler Text Filler Text Filler Text Filler Text"
+      text run at (0,60) width 64: "Filler Text "
+      text run at (63,60) width 317: "Filler Text Filler Text Filler Text Filler Text Filler Text"
+      text run at (0,83) width 192: "Filler Text Filler Text Filler Text "
     LayoutText {#text} at (0,0) size 0x0
-layer at (10,116) size 154x22
-  LayoutTextControl (relative positioned) {INPUT} at (2,108) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-layer at (12,119) size 150x16
+layer at (202,90) size 154x22
+  LayoutTextControl (relative positioned) {INPUT} at (193.64,82) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+layer at (204,93) size 150x16
   LayoutBlockFlow {DIV} at (2,3) size 150x16
-    LayoutText {#text} at (0,0) size 42x16
-      text run at (0,0) width 42: "Testing"
+    LayoutText {#text} at (0,0) size 41x16
+      text run at (0,0) width 41: "Testing"
 caret: position 7 of child 0 {#text} of child 0 {DIV} of {#document-fragment} of child 1 {INPUT} of child 1 {DIV} of body

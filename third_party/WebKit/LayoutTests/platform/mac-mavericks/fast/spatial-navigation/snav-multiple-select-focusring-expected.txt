@@ -6,10 +6,10 @@ layer at (0,0) size 800x75
       LayoutText {#text} at (0,0) size 0x0
       LayoutText {#text} at (0,0) size 0x0
 layer at (8,8) size 376x59 clip at (9,9) size 363x57
-  LayoutListBox {SELECT} at (0,0.25) size 376.05x58.75 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
-    LayoutBlockFlow {OPTION} at (1,1) size 363.05x14.19 [color=#FFFFFF] [bgcolor=#3875D7]
-      LayoutText {#text} at (2,0) size 360x13
-        text run at (2,0) width 360: "make-the-item-long-enough-to-make-a-difference-in-pixel-test"
-    LayoutBlockFlow {OPTION} at (1,15.19) size 363.05x14.19
+  LayoutListBox {SELECT} at (0,0.25) size 375.70x58.75 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+    LayoutBlockFlow {OPTION} at (1,1) size 362.70x14.19 [color=#FFFFFF] [bgcolor=#3875D7]
+      LayoutText {#text} at (2,0) size 359x13
+        text run at (2,0) width 359: "make-the-item-long-enough-to-make-a-difference-in-pixel-test"
+    LayoutBlockFlow {OPTION} at (1,15.19) size 362.70x14.19
       LayoutText {#text} at (2,0) size 7x13
         text run at (2,0) width 7: "b"

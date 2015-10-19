@@ -8,21 +8,21 @@ layer at (8,8) size 784x59
     LayoutMultiColumnSet (anonymous) at (0,0) size 784x59
 layer at (8,8) size 384x118
   LayoutMultiColumnFlowThread (anonymous) at (0,0) size 384x118
-    LayoutText {#text} at (0,0) size 356x115
-      text run at (0,0) width 72: "Filler Text "
-      text run at (71,0) width 285: "Filler Text Filler Text Filler Text Filler Text"
-      text run at (0,18) width 288: "Filler Text Filler Text Filler Text Filler Text "
-      text run at (287,18) width 69: "Filler Text"
-      text run at (0,36) width 356: "Filler Text Filler Text Filler Text Filler Text Filler Text"
-      text run at (0,59) width 216: "Filler Text Filler Text Filler Text "
-      text run at (215,59) width 73: "Filler Text "
-      text run at (287,59) width 69: "Filler Text"
-      text run at (0,77) width 356: "Filler Text Filler Text Filler Text Filler Text Filler Text"
-      text run at (0,97) width 144: "Filler Text Filler Text "
+    LayoutText {#text} at (0,0) size 351x115
+      text run at (0,0) width 71: "Filler Text "
+      text run at (70,0) width 281: "Filler Text Filler Text Filler Text Filler Text"
+      text run at (0,18) width 284: "Filler Text Filler Text Filler Text Filler Text "
+      text run at (283,18) width 68: "Filler Text"
+      text run at (0,36) width 351: "Filler Text Filler Text Filler Text Filler Text Filler Text"
+      text run at (0,59) width 213: "Filler Text Filler Text Filler Text "
+      text run at (212,59) width 72: "Filler Text "
+      text run at (283,59) width 68: "Filler Text"
+      text run at (0,77) width 351: "Filler Text Filler Text Filler Text Filler Text Filler Text"
+      text run at (0,97) width 142: "Filler Text Filler Text "
     LayoutText {#text} at (0,0) size 0x0
-layer at (154,105) size 123x19
-  LayoutTextControl (relative positioned) {INPUT} at (145.97,97) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-layer at (157,108) size 117x13
+layer at (152,105) size 123x19
+  LayoutTextControl (relative positioned) {INPUT} at (143.73,97) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+layer at (155,108) size 117x13
   LayoutBlockFlow {DIV} at (3,3) size 117x13
     LayoutText {#text} at (0,0) size 40x13
       text run at (0,0) width 40: "Testing"

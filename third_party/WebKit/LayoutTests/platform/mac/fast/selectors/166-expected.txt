@@ -4,14 +4,14 @@ layer at (0,0) size 785x3324 backgroundClip at (0,0) size 785x600 clip at (0,0) 
   LayoutBlockFlow {HTML} at (0,0) size 785x3323.50
     LayoutBlockFlow {BODY} at (8,21.44) size 769x3286.06
       LayoutBlockFlow {H1} at (0,0) size 769x37
-        LayoutText {#text} at (0,0) size 251x37
-          text run at (0,0) width 251: "HTML Test Index"
+        LayoutText {#text} at (0,0) size 248x37
+          text run at (0,0) width 248: "HTML Test Index"
       LayoutBlockFlow {P} at (0,58.44) size 769x18
         LayoutText {#text} at (0,0) size 317x18
           text run at (0,0) width 317: "The HTML tests are available in several variants."
       LayoutBlockFlow {H2} at (0,96.34) size 769x28
-        LayoutText {#text} at (0,0) size 283x28
-          text run at (0,0) width 283: "Tests With Navigation Aids"
+        LayoutText {#text} at (0,0) size 280x28
+          text run at (0,0) width 280: "Tests With Navigation Aids"
       LayoutBlockFlow {P} at (0,144.25) size 769x36
         LayoutText {#text} at (0,0) size 733x36
           text run at (0,0) width 733: "Each category of test is available using several different harnesses. The name of the harness describes how the test"
@@ -272,8 +272,8 @@ layer at (0,0) size 785x3324 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             LayoutText {#text} at (274,18) size 84x18
               text run at (274,18) width 84: "TNG Format"
       LayoutBlockFlow {H2} at (0,396.16) size 769x28
-        LayoutText {#text} at (0,0) size 176x28
-          text run at (0,0) width 176: "Unadorned Tests"
+        LayoutText {#text} at (0,0) size 174x28
+          text run at (0,0) width 174: "Unadorned Tests"
       LayoutBlockFlow {UL} at (0,444.06) size 769x2808
         LayoutListItem {LI} at (40,0) size 729x18
           LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
@@ -284,11 +284,11 @@ layer at (0,0) size 785x3324 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             text run at (124,0) width 32: " (#1)"
         LayoutListItem {LI} at (40,18) size 729x18
           LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
-          LayoutInline {A} at (0,0) size 148x18 [color=#0000EE]
-            LayoutText {#text} at (0,0) size 148x18
-              text run at (0,0) width 148: "Type element selectors"
-          LayoutText {#text} at (147,0) size 32x18
-            text run at (147,0) width 32: " (#2)"
+          LayoutInline {A} at (0,0) size 147x18 [color=#0000EE]
+            LayoutText {#text} at (0,0) size 147x18
+              text run at (0,0) width 147: "Type element selectors"
+          LayoutText {#text} at (146,0) size 32x18
+            text run at (146,0) width 32: " (#2)"
         LayoutListItem {LI} at (40,36) size 729x18
           LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
           LayoutInline {A} at (0,0) size 169x18 [color=#0000EE]
@@ -350,8 +350,8 @@ layer at (0,0) size 785x3324 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           LayoutInline {A} at (0,0) size 304x18 [color=#0000EE]
             LayoutText {#text} at (0,0) size 304x18
               text run at (0,0) width 304: "Substring matching attribute selector (contains)"
-          LayoutText {#text} at (303,0) size 40x18
-            text run at (303,0) width 40: " (#11)"
+          LayoutText {#text} at (303,0) size 39x18
+            text run at (303,0) width 39: " (#11)"
         LayoutListItem {LI} at (40,198) size 729x18
           LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
           LayoutInline {A} at (0,0) size 144x18 [color=#0000EE]
@@ -427,15 +427,15 @@ layer at (0,0) size 785x3324 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           LayoutInline {A} at (0,0) size 127x18 [color=#0000EE]
             LayoutText {#text} at (0,0) size 127x18
               text run at (0,0) width 127: ":target pseudo-class"
-          LayoutText {#text} at (126,0) size 40x18
-            text run at (126,0) width 40: " (#21)"
+          LayoutText {#text} at (126,0) size 39x18
+            text run at (126,0) width 39: " (#21)"
         LayoutListItem {LI} at (40,396) size 729x18
           LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
           LayoutInline {A} at (0,0) size 127x18 [color=#0000EE]
             LayoutText {#text} at (0,0) size 127x18
               text run at (0,0) width 127: ":target pseudo-class"
-          LayoutText {#text} at (126,0) size 48x18
-            text run at (126,0) width 48: " (#21b)"
+          LayoutText {#text} at (126,0) size 47x18
+            text run at (126,0) width 47: " (#21b)"
         LayoutListItem {LI} at (40,414) size 729x18
           LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
           LayoutInline {A} at (0,0) size 127x18 [color=#0000EE]
@@ -522,11 +522,11 @@ layer at (0,0) size 785x3324 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             text run at (200,0) width 40: " (#31)"
         LayoutListItem {LI} at (40,630) size 729x18
           LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
-          LayoutInline {A} at (0,0) size 154x18 [color=#0000EE]
-            LayoutText {#text} at (0,0) size 154x18
-              text run at (0,0) width 154: ":first-child pseudo-class"
-          LayoutText {#text} at (153,0) size 39x18
-            text run at (153,0) width 39: " (#32)"
+          LayoutInline {A} at (0,0) size 153x18 [color=#0000EE]
+            LayoutText {#text} at (0,0) size 153x18
+              text run at (0,0) width 153: ":first-child pseudo-class"
+          LayoutText {#text} at (152,0) size 40x18
+            text run at (152,0) width 40: " (#32)"
         LayoutListItem {LI} at (40,648) size 729x18
           LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
           LayoutInline {A} at (0,0) size 150x18 [color=#0000EE]
@@ -536,11 +536,11 @@ layer at (0,0) size 785x3324 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             text run at (149,0) width 40: " (#33)"
         LayoutListItem {LI} at (40,666) size 729x18
           LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
-          LayoutInline {A} at (0,0) size 168x18 [color=#0000EE]
-            LayoutText {#text} at (0,0) size 168x18
-              text run at (0,0) width 168: ":first-of-type pseudo-class"
-          LayoutText {#text} at (167,0) size 40x18
-            text run at (167,0) width 40: " (#34)"
+          LayoutInline {A} at (0,0) size 167x18 [color=#0000EE]
+            LayoutText {#text} at (0,0) size 167x18
+              text run at (0,0) width 167: ":first-of-type pseudo-class"
+          LayoutText {#text} at (166,0) size 40x18
+            text run at (166,0) width 40: " (#34)"
         LayoutListItem {LI} at (40,684) size 729x18
           LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
           LayoutInline {A} at (0,0) size 164x18 [color=#0000EE]
@@ -564,39 +564,39 @@ layer at (0,0) size 785x3324 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             text run at (170,0) width 39: " (#37)"
         LayoutListItem {LI} at (40,738) size 729x18
           LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
-          LayoutInline {A} at (0,0) size 170x18 [color=#0000EE]
-            LayoutText {#text} at (0,0) size 170x18
-              text run at (0,0) width 170: "::first-line pseudo-element"
-          LayoutText {#text} at (169,0) size 39x18
-            text run at (169,0) width 39: " (#38)"
+          LayoutInline {A} at (0,0) size 169x18 [color=#0000EE]
+            LayoutText {#text} at (0,0) size 169x18
+              text run at (0,0) width 169: "::first-line pseudo-element"
+          LayoutText {#text} at (168,0) size 40x18
+            text run at (168,0) width 40: " (#38)"
         LayoutListItem {LI} at (40,756) size 729x18
           LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
-          LayoutInline {A} at (0,0) size 179x18 [color=#0000EE]
-            LayoutText {#text} at (0,0) size 179x18
-              text run at (0,0) width 179: "::first-letter pseudo-element"
-          LayoutText {#text} at (178,0) size 39x18
-            text run at (178,0) width 39: " (#39)"
+          LayoutInline {A} at (0,0) size 178x18 [color=#0000EE]
+            LayoutText {#text} at (0,0) size 178x18
+              text run at (0,0) width 178: "::first-letter pseudo-element"
+          LayoutText {#text} at (177,0) size 39x18
+            text run at (177,0) width 39: " (#39)"
         LayoutListItem {LI} at (40,774) size 729x18
           LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
-          LayoutInline {A} at (0,0) size 370x18 [color=#0000EE]
-            LayoutText {#text} at (0,0) size 370x18
-              text run at (0,0) width 370: "::first-letter pseudo-element with ::before pseudo-element"
-          LayoutText {#text} at (369,0) size 47x18
-            text run at (369,0) width 47: " (#39a)"
+          LayoutInline {A} at (0,0) size 369x18 [color=#0000EE]
+            LayoutText {#text} at (0,0) size 369x18
+              text run at (0,0) width 369: "::first-letter pseudo-element with ::before pseudo-element"
+          LayoutText {#text} at (368,0) size 47x18
+            text run at (368,0) width 47: " (#39a)"
         LayoutListItem {LI} at (40,792) size 729x18
           LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
-          LayoutInline {A} at (0,0) size 370x18 [color=#0000EE]
-            LayoutText {#text} at (0,0) size 370x18
-              text run at (0,0) width 370: "::first-letter pseudo-element with ::before pseudo-element"
-          LayoutText {#text} at (369,0) size 47x18
-            text run at (369,0) width 47: " (#39a)"
+          LayoutInline {A} at (0,0) size 369x18 [color=#0000EE]
+            LayoutText {#text} at (0,0) size 369x18
+              text run at (0,0) width 369: "::first-letter pseudo-element with ::before pseudo-element"
+          LayoutText {#text} at (368,0) size 47x18
+            text run at (368,0) width 47: " (#39a)"
         LayoutListItem {LI} at (40,810) size 729x18
           LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
-          LayoutInline {A} at (0,0) size 179x18 [color=#0000EE]
-            LayoutText {#text} at (0,0) size 179x18
-              text run at (0,0) width 179: "::first-letter pseudo-element"
-          LayoutText {#text} at (178,0) size 47x18
-            text run at (178,0) width 47: " (#39b)"
+          LayoutInline {A} at (0,0) size 178x18 [color=#0000EE]
+            LayoutText {#text} at (0,0) size 178x18
+              text run at (0,0) width 178: "::first-letter pseudo-element"
+          LayoutText {#text} at (177,0) size 47x18
+            text run at (177,0) width 47: " (#39b)"
         LayoutListItem {LI} at (40,828) size 729x18
           LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
           LayoutInline {A} at (0,0) size 172x18 [color=#0000EE]
@@ -697,25 +697,25 @@ layer at (0,0) size 785x3324 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             text run at (183,0) width 48: " (#46b)"
         LayoutListItem {LI} at (40,1080) size 729x18
           LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
-          LayoutInline {A} at (0,0) size 401x18 [color=#0000EE]
-            LayoutText {#text} at (0,0) size 401x18
-              text run at (0,0) width 401: "NEGATED substring matching attribute selector on beginning"
-          LayoutText {#text} at (400,0) size 40x18
-            text run at (400,0) width 40: " (#54)"
+          LayoutInline {A} at (0,0) size 400x18 [color=#0000EE]
+            LayoutText {#text} at (0,0) size 400x18
+              text run at (0,0) width 400: "NEGATED substring matching attribute selector on beginning"
+          LayoutText {#text} at (399,0) size 39x18
+            text run at (399,0) width 39: " (#54)"
         LayoutListItem {LI} at (40,1098) size 729x18
           LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
-          LayoutInline {A} at (0,0) size 360x18 [color=#0000EE]
-            LayoutText {#text} at (0,0) size 360x18
-              text run at (0,0) width 360: "NEGATED substring matching attribute selector on end"
-          LayoutText {#text} at (359,0) size 40x18
-            text run at (359,0) width 40: " (#55)"
+          LayoutInline {A} at (0,0) size 359x18 [color=#0000EE]
+            LayoutText {#text} at (0,0) size 359x18
+              text run at (0,0) width 359: "NEGATED substring matching attribute selector on end"
+          LayoutText {#text} at (358,0) size 39x18
+            text run at (358,0) width 39: " (#55)"
         LayoutListItem {LI} at (40,1116) size 729x18
           LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
-          LayoutInline {A} at (0,0) size 382x18 [color=#0000EE]
-            LayoutText {#text} at (0,0) size 382x18
-              text run at (0,0) width 382: "NEGATED substring matching attribute selector on middle"
-          LayoutText {#text} at (381,0) size 39x18
-            text run at (381,0) width 39: " (#56)"
+          LayoutInline {A} at (0,0) size 380x18 [color=#0000EE]
+            LayoutText {#text} at (0,0) size 380x18
+              text run at (0,0) width 380: "NEGATED substring matching attribute selector on middle"
+          LayoutText {#text} at (379,0) size 40x18
+            text run at (379,0) width 40: " (#56)"
         LayoutListItem {LI} at (40,1134) size 729x18
           LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
           LayoutInline {A} at (0,0) size 316x18 [color=#0000EE]
@@ -725,228 +725,228 @@ layer at (0,0) size 785x3324 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             text run at (315,0) width 40: " (#58)"
         LayoutListItem {LI} at (40,1152) size 729x18
           LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
-          LayoutInline {A} at (0,0) size 165x18 [color=#0000EE]
-            LayoutText {#text} at (0,0) size 165x18
-              text run at (0,0) width 165: "NEGATED class selector"
-          LayoutText {#text} at (164,0) size 40x18
-            text run at (164,0) width 40: " (#59)"
+          LayoutInline {A} at (0,0) size 163x18 [color=#0000EE]
+            LayoutText {#text} at (0,0) size 163x18
+              text run at (0,0) width 163: "NEGATED class selector"
+          LayoutText {#text} at (162,0) size 40x18
+            text run at (162,0) width 40: " (#59)"
         LayoutListItem {LI} at (40,1170) size 729x18
           LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
-          LayoutInline {A} at (0,0) size 151x18 [color=#0000EE]
-            LayoutText {#text} at (0,0) size 151x18
-              text run at (0,0) width 151: "NEGATED ID selector"
-          LayoutText {#text} at (150,0) size 39x18
-            text run at (150,0) width 39: " (#60)"
+          LayoutInline {A} at (0,0) size 149x18 [color=#0000EE]
+            LayoutText {#text} at (0,0) size 149x18
+              text run at (0,0) width 149: "NEGATED ID selector"
+          LayoutText {#text} at (148,0) size 40x18
+            text run at (148,0) width 40: " (#60)"
         LayoutListItem {LI} at (40,1188) size 729x18
           LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
-          LayoutInline {A} at (0,0) size 195x18 [color=#0000EE]
-            LayoutText {#text} at (0,0) size 195x18
-              text run at (0,0) width 195: "NEGATED :link pseudo-class"
-          LayoutText {#text} at (194,0) size 40x18
-            text run at (194,0) width 40: " (#61)"
+          LayoutInline {A} at (0,0) size 193x18 [color=#0000EE]
+            LayoutText {#text} at (0,0) size 193x18
+              text run at (0,0) width 193: "NEGATED :link pseudo-class"
+          LayoutText {#text} at (192,0) size 40x18
+            text run at (192,0) width 40: " (#61)"
         LayoutListItem {LI} at (40,1206) size 729x18
           LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
-          LayoutInline {A} at (0,0) size 213x18 [color=#0000EE]
-            LayoutText {#text} at (0,0) size 213x18
-              text run at (0,0) width 213: "NEGATED :visited pseudo-class"
-          LayoutText {#text} at (212,0) size 40x18
-            text run at (212,0) width 40: " (#62)"
+          LayoutInline {A} at (0,0) size 211x18 [color=#0000EE]
+            LayoutText {#text} at (0,0) size 211x18
+              text run at (0,0) width 211: "NEGATED :visited pseudo-class"
+          LayoutText {#text} at (210,0) size 40x18
+            text run at (210,0) width 40: " (#62)"
         LayoutListItem {LI} at (40,1224) size 729x18
-          LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
-          LayoutInline {A} at (0,0) size 207x18 [color=#0000EE]
-            LayoutText {#text} at (0,0) size 207x18
-              text run at (0,0) width 207: "NEGATED :hover pseudo-class"
-          LayoutText {#text} at (206,0) size 39x18
-            text run at (206,0) width 39: " (#63)"
-        LayoutListItem {LI} at (40,1242) size 729x18
-          LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
-          LayoutInline {A} at (0,0) size 208x18 [color=#0000EE]
-            LayoutText {#text} at (0,0) size 208x18
-              text run at (0,0) width 208: "NEGATED :active pseudo-class"
-          LayoutText {#text} at (207,0) size 40x18
-            text run at (207,0) width 40: " (#64)"
-        LayoutListItem {LI} at (40,1260) size 729x18
           LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
           LayoutInline {A} at (0,0) size 205x18 [color=#0000EE]
             LayoutText {#text} at (0,0) size 205x18
-              text run at (0,0) width 205: "NEGATED :focus pseudo-class"
+              text run at (0,0) width 205: "NEGATED :hover pseudo-class"
           LayoutText {#text} at (204,0) size 40x18
-            text run at (204,0) width 40: " (#65)"
+            text run at (204,0) width 40: " (#63)"
+        LayoutListItem {LI} at (40,1242) size 729x18
+          LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
+          LayoutInline {A} at (0,0) size 207x18 [color=#0000EE]
+            LayoutText {#text} at (0,0) size 207x18
+              text run at (0,0) width 207: "NEGATED :active pseudo-class"
+          LayoutText {#text} at (206,0) size 39x18
+            text run at (206,0) width 39: " (#64)"
+        LayoutListItem {LI} at (40,1260) size 729x18
+          LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
+          LayoutInline {A} at (0,0) size 203x18 [color=#0000EE]
+            LayoutText {#text} at (0,0) size 203x18
+              text run at (0,0) width 203: "NEGATED :focus pseudo-class"
+          LayoutText {#text} at (202,0) size 40x18
+            text run at (202,0) width 40: " (#65)"
         LayoutListItem {LI} at (40,1278) size 729x18
           LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
-          LayoutInline {A} at (0,0) size 207x18 [color=#0000EE]
-            LayoutText {#text} at (0,0) size 207x18
-              text run at (0,0) width 207: "NEGATED :target pseudo-class"
-          LayoutText {#text} at (206,0) size 39x18
-            text run at (206,0) width 39: " (#66)"
+          LayoutInline {A} at (0,0) size 205x18 [color=#0000EE]
+            LayoutText {#text} at (0,0) size 205x18
+              text run at (0,0) width 205: "NEGATED :target pseudo-class"
+          LayoutText {#text} at (204,0) size 39x18
+            text run at (204,0) width 39: " (#66)"
         LayoutListItem {LI} at (40,1296) size 729x18
           LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
-          LayoutInline {A} at (0,0) size 207x18 [color=#0000EE]
-            LayoutText {#text} at (0,0) size 207x18
-              text run at (0,0) width 207: "NEGATED :target pseudo-class"
-          LayoutText {#text} at (206,0) size 47x18
-            text run at (206,0) width 47: " (#66b)"
+          LayoutInline {A} at (0,0) size 205x18 [color=#0000EE]
+            LayoutText {#text} at (0,0) size 205x18
+              text run at (0,0) width 205: "NEGATED :target pseudo-class"
+          LayoutText {#text} at (204,0) size 47x18
+            text run at (204,0) width 47: " (#66b)"
         LayoutListItem {LI} at (40,1314) size 729x18
           LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
-          LayoutInline {A} at (0,0) size 208x18 [color=#0000EE]
-            LayoutText {#text} at (0,0) size 208x18
-              text run at (0,0) width 208: "NEGATED :lang() pseudo-class"
-          LayoutText {#text} at (207,0) size 40x18
-            text run at (207,0) width 40: " (#67)"
+          LayoutInline {A} at (0,0) size 207x18 [color=#0000EE]
+            LayoutText {#text} at (0,0) size 207x18
+              text run at (0,0) width 207: "NEGATED :lang() pseudo-class"
+          LayoutText {#text} at (206,0) size 39x18
+            text run at (206,0) width 39: " (#67)"
         LayoutListItem {LI} at (40,1332) size 729x18
           LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
-          LayoutInline {A} at (0,0) size 223x18 [color=#0000EE]
-            LayoutText {#text} at (0,0) size 223x18
-              text run at (0,0) width 223: "NEGATED :checked pseudo-class"
-          LayoutText {#text} at (222,0) size 39x18
-            text run at (222,0) width 39: " (#70)"
+          LayoutInline {A} at (0,0) size 221x18 [color=#0000EE]
+            LayoutText {#text} at (0,0) size 221x18
+              text run at (0,0) width 221: "NEGATED :checked pseudo-class"
+          LayoutText {#text} at (220,0) size 40x18
+            text run at (220,0) width 40: " (#70)"
         LayoutListItem {LI} at (40,1350) size 729x18
           LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
-          LayoutInline {A} at (0,0) size 196x18 [color=#0000EE]
-            LayoutText {#text} at (0,0) size 196x18
-              text run at (0,0) width 196: "NEGATED :root pseudo-class"
-          LayoutText {#text} at (195,0) size 40x18
-            text run at (195,0) width 40: " (#72)"
+          LayoutInline {A} at (0,0) size 194x18 [color=#0000EE]
+            LayoutText {#text} at (0,0) size 194x18
+              text run at (0,0) width 194: "NEGATED :root pseudo-class"
+          LayoutText {#text} at (193,0) size 40x18
+            text run at (193,0) width 40: " (#72)"
         LayoutListItem {LI} at (40,1368) size 729x18
           LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
-          LayoutInline {A} at (0,0) size 196x18 [color=#0000EE]
-            LayoutText {#text} at (0,0) size 196x18
-              text run at (0,0) width 196: "NEGATED :root pseudo-class"
-          LayoutText {#text} at (195,0) size 48x18
-            text run at (195,0) width 48: " (#72b)"
+          LayoutInline {A} at (0,0) size 194x18 [color=#0000EE]
+            LayoutText {#text} at (0,0) size 194x18
+              text run at (0,0) width 194: "NEGATED :root pseudo-class"
+          LayoutText {#text} at (193,0) size 48x18
+            text run at (193,0) width 48: " (#72b)"
         LayoutListItem {LI} at (40,1386) size 729x18
           LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
-          LayoutInline {A} at (0,0) size 239x18 [color=#0000EE]
-            LayoutText {#text} at (0,0) size 239x18
-              text run at (0,0) width 239: "NEGATED :nth-child() pseudo-class"
-          LayoutText {#text} at (238,0) size 39x18
-            text run at (238,0) width 39: " (#73)"
+          LayoutInline {A} at (0,0) size 237x18 [color=#0000EE]
+            LayoutText {#text} at (0,0) size 237x18
+              text run at (0,0) width 237: "NEGATED :nth-child() pseudo-class"
+          LayoutText {#text} at (236,0) size 40x18
+            text run at (236,0) width 40: " (#73)"
         LayoutListItem {LI} at (40,1404) size 729x18
           LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
-          LayoutInline {A} at (0,0) size 239x18 [color=#0000EE]
-            LayoutText {#text} at (0,0) size 239x18
-              text run at (0,0) width 239: "NEGATED :nth-child() pseudo-class"
-          LayoutText {#text} at (238,0) size 47x18
-            text run at (238,0) width 47: " (#73b)"
+          LayoutInline {A} at (0,0) size 237x18 [color=#0000EE]
+            LayoutText {#text} at (0,0) size 237x18
+              text run at (0,0) width 237: "NEGATED :nth-child() pseudo-class"
+          LayoutText {#text} at (236,0) size 48x18
+            text run at (236,0) width 48: " (#73b)"
         LayoutListItem {LI} at (40,1422) size 729x18
           LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
-          LayoutInline {A} at (0,0) size 266x18 [color=#0000EE]
-            LayoutText {#text} at (0,0) size 266x18
-              text run at (0,0) width 266: "NEGATED :nth-last-child() pseudo-class"
-          LayoutText {#text} at (265,0) size 40x18
-            text run at (265,0) width 40: " (#74)"
+          LayoutInline {A} at (0,0) size 264x18 [color=#0000EE]
+            LayoutText {#text} at (0,0) size 264x18
+              text run at (0,0) width 264: "NEGATED :nth-last-child() pseudo-class"
+          LayoutText {#text} at (263,0) size 40x18
+            text run at (263,0) width 40: " (#74)"
         LayoutListItem {LI} at (40,1440) size 729x18
           LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
-          LayoutInline {A} at (0,0) size 266x18 [color=#0000EE]
-            LayoutText {#text} at (0,0) size 266x18
-              text run at (0,0) width 266: "NEGATED :nth-last-child() pseudo-class"
-          LayoutText {#text} at (265,0) size 48x18
-            text run at (265,0) width 48: " (#74b)"
+          LayoutInline {A} at (0,0) size 264x18 [color=#0000EE]
+            LayoutText {#text} at (0,0) size 264x18
+              text run at (0,0) width 264: "NEGATED :nth-last-child() pseudo-class"
+          LayoutText {#text} at (263,0) size 48x18
+            text run at (263,0) width 48: " (#74b)"
         LayoutListItem {LI} at (40,1458) size 729x18
           LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
-          LayoutInline {A} at (0,0) size 253x18 [color=#0000EE]
-            LayoutText {#text} at (0,0) size 253x18
-              text run at (0,0) width 253: "NEGATED :nth-of-type() pseudo-class"
-          LayoutText {#text} at (252,0) size 40x18
-            text run at (252,0) width 40: " (#75)"
+          LayoutInline {A} at (0,0) size 251x18 [color=#0000EE]
+            LayoutText {#text} at (0,0) size 251x18
+              text run at (0,0) width 251: "NEGATED :nth-of-type() pseudo-class"
+          LayoutText {#text} at (250,0) size 40x18
+            text run at (250,0) width 40: " (#75)"
         LayoutListItem {LI} at (40,1476) size 729x18
           LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
-          LayoutInline {A} at (0,0) size 253x18 [color=#0000EE]
-            LayoutText {#text} at (0,0) size 253x18
-              text run at (0,0) width 253: "NEGATED :nth-of-type() pseudo-class"
-          LayoutText {#text} at (252,0) size 48x18
-            text run at (252,0) width 48: " (#75b)"
+          LayoutInline {A} at (0,0) size 251x18 [color=#0000EE]
+            LayoutText {#text} at (0,0) size 251x18
+              text run at (0,0) width 251: "NEGATED :nth-of-type() pseudo-class"
+          LayoutText {#text} at (250,0) size 48x18
+            text run at (250,0) width 48: " (#75b)"
         LayoutListItem {LI} at (40,1494) size 729x18
           LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
-          LayoutInline {A} at (0,0) size 280x18 [color=#0000EE]
-            LayoutText {#text} at (0,0) size 280x18
-              text run at (0,0) width 280: "NEGATED :nth-last-of-type() pseudo-class"
-          LayoutText {#text} at (279,0) size 40x18
-            text run at (279,0) width 40: " (#76)"
+          LayoutInline {A} at (0,0) size 279x18 [color=#0000EE]
+            LayoutText {#text} at (0,0) size 279x18
+              text run at (0,0) width 279: "NEGATED :nth-last-of-type() pseudo-class"
+          LayoutText {#text} at (278,0) size 39x18
+            text run at (278,0) width 39: " (#76)"
         LayoutListItem {LI} at (40,1512) size 729x18
           LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
-          LayoutInline {A} at (0,0) size 280x18 [color=#0000EE]
-            LayoutText {#text} at (0,0) size 280x18
-              text run at (0,0) width 280: "NEGATED :nth-last-of-type() pseudo-class"
-          LayoutText {#text} at (279,0) size 48x18
-            text run at (279,0) width 48: " (#76b)"
+          LayoutInline {A} at (0,0) size 279x18 [color=#0000EE]
+            LayoutText {#text} at (0,0) size 279x18
+              text run at (0,0) width 279: "NEGATED :nth-last-of-type() pseudo-class"
+          LayoutText {#text} at (278,0) size 47x18
+            text run at (278,0) width 47: " (#76b)"
         LayoutListItem {LI} at (40,1530) size 729x18
           LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
-          LayoutInline {A} at (0,0) size 233x18 [color=#0000EE]
-            LayoutText {#text} at (0,0) size 233x18
-              text run at (0,0) width 233: "NEGATED :first-child pseudo-class"
-          LayoutText {#text} at (232,0) size 40x18
-            text run at (232,0) width 40: " (#77)"
+          LayoutInline {A} at (0,0) size 231x18 [color=#0000EE]
+            LayoutText {#text} at (0,0) size 231x18
+              text run at (0,0) width 231: "NEGATED :first-child pseudo-class"
+          LayoutText {#text} at (230,0) size 39x18
+            text run at (230,0) width 39: " (#77)"
         LayoutListItem {LI} at (40,1548) size 729x18
           LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
-          LayoutInline {A} at (0,0) size 233x18 [color=#0000EE]
-            LayoutText {#text} at (0,0) size 233x18
-              text run at (0,0) width 233: "NEGATED :first-child pseudo-class"
-          LayoutText {#text} at (232,0) size 48x18
-            text run at (232,0) width 48: " (#77b)"
+          LayoutInline {A} at (0,0) size 231x18 [color=#0000EE]
+            LayoutText {#text} at (0,0) size 231x18
+              text run at (0,0) width 231: "NEGATED :first-child pseudo-class"
+          LayoutText {#text} at (230,0) size 47x18
+            text run at (230,0) width 47: " (#77b)"
         LayoutListItem {LI} at (40,1566) size 729x18
           LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
-          LayoutInline {A} at (0,0) size 230x18 [color=#0000EE]
-            LayoutText {#text} at (0,0) size 230x18
-              text run at (0,0) width 230: "NEGATED :last-child pseudo-class"
-          LayoutText {#text} at (229,0) size 39x18
-            text run at (229,0) width 39: " (#78)"
+          LayoutInline {A} at (0,0) size 228x18 [color=#0000EE]
+            LayoutText {#text} at (0,0) size 228x18
+              text run at (0,0) width 228: "NEGATED :last-child pseudo-class"
+          LayoutText {#text} at (227,0) size 40x18
+            text run at (227,0) width 40: " (#78)"
         LayoutListItem {LI} at (40,1584) size 729x18
           LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
-          LayoutInline {A} at (0,0) size 230x18 [color=#0000EE]
-            LayoutText {#text} at (0,0) size 230x18
-              text run at (0,0) width 230: "NEGATED :last-child pseudo-class"
-          LayoutText {#text} at (229,0) size 47x18
-            text run at (229,0) width 47: " (#78b)"
+          LayoutInline {A} at (0,0) size 228x18 [color=#0000EE]
+            LayoutText {#text} at (0,0) size 228x18
+              text run at (0,0) width 228: "NEGATED :last-child pseudo-class"
+          LayoutText {#text} at (227,0) size 48x18
+            text run at (227,0) width 48: " (#78b)"
         LayoutListItem {LI} at (40,1602) size 729x18
+          LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
+          LayoutInline {A} at (0,0) size 245x18 [color=#0000EE]
+            LayoutText {#text} at (0,0) size 245x18
+              text run at (0,0) width 245: "NEGATED :first-of-type pseudo-class"
+          LayoutText {#text} at (244,0) size 40x18
+            text run at (244,0) width 40: " (#79)"
+        LayoutListItem {LI} at (40,1620) size 729x18
+          LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
+          LayoutInline {A} at (0,0) size 242x18 [color=#0000EE]
+            LayoutText {#text} at (0,0) size 242x18
+              text run at (0,0) width 242: "NEGATED :last-of-type pseudo-class"
+          LayoutText {#text} at (241,0) size 40x18
+            text run at (241,0) width 40: " (#80)"
+        LayoutListItem {LI} at (40,1638) size 729x18
+          LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
+          LayoutInline {A} at (0,0) size 234x18 [color=#0000EE]
+            LayoutText {#text} at (0,0) size 234x18
+              text run at (0,0) width 234: "NEGATED :only-child pseudo-class"
+          LayoutText {#text} at (233,0) size 40x18
+            text run at (233,0) width 40: " (#81)"
+        LayoutListItem {LI} at (40,1656) size 729x18
+          LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
+          LayoutInline {A} at (0,0) size 234x18 [color=#0000EE]
+            LayoutText {#text} at (0,0) size 234x18
+              text run at (0,0) width 234: "NEGATED :only-child pseudo-class"
+          LayoutText {#text} at (233,0) size 48x18
+            text run at (233,0) width 48: " (#81b)"
+        LayoutListItem {LI} at (40,1674) size 729x18
           LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
           LayoutInline {A} at (0,0) size 248x18 [color=#0000EE]
             LayoutText {#text} at (0,0) size 248x18
-              text run at (0,0) width 248: "NEGATED :first-of-type pseudo-class"
-          LayoutText {#text} at (247,0) size 39x18
-            text run at (247,0) width 39: " (#79)"
-        LayoutListItem {LI} at (40,1620) size 729x18
-          LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
-          LayoutInline {A} at (0,0) size 244x18 [color=#0000EE]
-            LayoutText {#text} at (0,0) size 244x18
-              text run at (0,0) width 244: "NEGATED :last-of-type pseudo-class"
-          LayoutText {#text} at (243,0) size 40x18
-            text run at (243,0) width 40: " (#80)"
-        LayoutListItem {LI} at (40,1638) size 729x18
-          LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
-          LayoutInline {A} at (0,0) size 236x18 [color=#0000EE]
-            LayoutText {#text} at (0,0) size 236x18
-              text run at (0,0) width 236: "NEGATED :only-child pseudo-class"
-          LayoutText {#text} at (235,0) size 40x18
-            text run at (235,0) width 40: " (#81)"
-        LayoutListItem {LI} at (40,1656) size 729x18
-          LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
-          LayoutInline {A} at (0,0) size 236x18 [color=#0000EE]
-            LayoutText {#text} at (0,0) size 236x18
-              text run at (0,0) width 236: "NEGATED :only-child pseudo-class"
-          LayoutText {#text} at (235,0) size 48x18
-            text run at (235,0) width 48: " (#81b)"
-        LayoutListItem {LI} at (40,1674) size 729x18
-          LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
-          LayoutInline {A} at (0,0) size 250x18 [color=#0000EE]
-            LayoutText {#text} at (0,0) size 250x18
-              text run at (0,0) width 250: "NEGATED :only-of-type pseudo-class"
-          LayoutText {#text} at (249,0) size 40x18
-            text run at (249,0) width 40: " (#82)"
+              text run at (0,0) width 248: "NEGATED :only-of-type pseudo-class"
+          LayoutText {#text} at (247,0) size 40x18
+            text run at (247,0) width 40: " (#82)"
         LayoutListItem {LI} at (40,1692) size 729x18
           LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
-          LayoutInline {A} at (0,0) size 250x18 [color=#0000EE]
-            LayoutText {#text} at (0,0) size 250x18
-              text run at (0,0) width 250: "NEGATED :only-of-type pseudo-class"
-          LayoutText {#text} at (249,0) size 48x18
-            text run at (249,0) width 48: " (#82b)"
+          LayoutInline {A} at (0,0) size 248x18 [color=#0000EE]
+            LayoutText {#text} at (0,0) size 248x18
+              text run at (0,0) width 248: "NEGATED :only-of-type pseudo-class"
+          LayoutText {#text} at (247,0) size 48x18
+            text run at (247,0) width 48: " (#82b)"
         LayoutListItem {LI} at (40,1710) size 729x18
           LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
           LayoutInline {A} at (0,0) size 347x18 [color=#0000EE]
             LayoutText {#text} at (0,0) size 347x18
               text run at (0,0) width 347: "Negation pseudo-class cannot be an argument of itself"
-          LayoutText {#text} at (347,0) size 39x18
-            text run at (347,0) width 39: " (#83)"
+          LayoutText {#text} at (346,0) size 40x18
+            text run at (346,0) width 40: " (#83)"
         LayoutListItem {LI} at (40,1728) size 729x18
           LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
           LayoutInline {A} at (0,0) size 155x18 [color=#0000EE]
@@ -963,11 +963,11 @@ layer at (0,0) size 785x3324 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             text run at (154,0) width 47: " (#84b)"
         LayoutListItem {LI} at (40,1764) size 729x18
           LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
-          LayoutInline {A} at (0,0) size 234x18 [color=#0000EE]
-            LayoutText {#text} at (0,0) size 234x18
-              text run at (0,0) width 234: "NEGATED :contains() pseudo-class"
-          LayoutText {#text} at (233,0) size 40x18
-            text run at (233,0) width 40: " (#85)"
+          LayoutInline {A} at (0,0) size 232x18 [color=#0000EE]
+            LayoutText {#text} at (0,0) size 232x18
+              text run at (0,0) width 232: "NEGATED :contains() pseudo-class"
+          LayoutText {#text} at (231,0) size 40x18
+            text run at (231,0) width 40: " (#85)"
         LayoutListItem {LI} at (40,1782) size 729x18
           LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
           LayoutInline {A} at (0,0) size 453x18 [color=#0000EE]
@@ -1019,11 +1019,11 @@ layer at (0,0) size 785x3324 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             text run at (407,0) width 48: " (#90b)"
         LayoutListItem {LI} at (40,1908) size 729x18
           LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
-          LayoutInline {A} at (0,0) size 291x18 [color=#0000EE]
-            LayoutText {#text} at (0,0) size 291x18
-              text run at (0,0) width 291: "NEGATED :enabled:disabled pseudo-classes"
-          LayoutText {#text} at (290,0) size 48x18
-            text run at (290,0) width 48: " (#144)"
+          LayoutInline {A} at (0,0) size 289x18 [color=#0000EE]
+            LayoutText {#text} at (0,0) size 289x18
+              text run at (0,0) width 289: "NEGATED :enabled:disabled pseudo-classes"
+          LayoutText {#text} at (288,0) size 48x18
+            text run at (288,0) width 48: " (#144)"
         LayoutListItem {LI} at (40,1926) size 729x18
           LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
           LayoutInline {A} at (0,0) size 186x18 [color=#0000EE]
@@ -1187,32 +1187,32 @@ layer at (0,0) size 785x3324 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             text run at (143,0) width 47: " (#165)"
         LayoutListItem {LI} at (40,2340) size 729x18
           LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
-          LayoutInline {A} at (0,0) size 178x18 [color=#0000EE]
-            LayoutText {#text} at (0,0) size 178x18
-              text run at (0,0) width 178: ":first-letter with ::first-letter"
-          LayoutText {#text} at (177,0) size 48x18
-            text run at (177,0) width 48: " (#166)"
+          LayoutInline {A} at (0,0) size 176x18 [color=#0000EE]
+            LayoutText {#text} at (0,0) size 176x18
+              text run at (0,0) width 176: ":first-letter with ::first-letter"
+          LayoutText {#text} at (175,0) size 48x18
+            text run at (175,0) width 48: " (#166)"
         LayoutListItem {LI} at (40,2358) size 729x18
           LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
-          LayoutInline {A} at (0,0) size 178x18 [color=#0000EE]
-            LayoutText {#text} at (0,0) size 178x18
-              text run at (0,0) width 178: ":first-letter with ::first-letter"
-          LayoutText {#text} at (177,0) size 55x18
-            text run at (177,0) width 55: " (#166a)"
+          LayoutInline {A} at (0,0) size 176x18 [color=#0000EE]
+            LayoutText {#text} at (0,0) size 176x18
+              text run at (0,0) width 176: ":first-letter with ::first-letter"
+          LayoutText {#text} at (175,0) size 55x18
+            text run at (175,0) width 55: " (#166a)"
         LayoutListItem {LI} at (40,2376) size 729x18
           LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
-          LayoutInline {A} at (0,0) size 160x18 [color=#0000EE]
-            LayoutText {#text} at (0,0) size 160x18
-              text run at (0,0) width 160: ":first-line with ::first-line"
-          LayoutText {#text} at (159,0) size 48x18
-            text run at (159,0) width 48: " (#167)"
+          LayoutInline {A} at (0,0) size 159x18 [color=#0000EE]
+            LayoutText {#text} at (0,0) size 159x18
+              text run at (0,0) width 159: ":first-line with ::first-line"
+          LayoutText {#text} at (158,0) size 47x18
+            text run at (158,0) width 47: " (#167)"
         LayoutListItem {LI} at (40,2394) size 729x18
           LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
-          LayoutInline {A} at (0,0) size 160x18 [color=#0000EE]
-            LayoutText {#text} at (0,0) size 160x18
-              text run at (0,0) width 160: ":first-line with ::first-line"
-          LayoutText {#text} at (159,0) size 55x18
-            text run at (159,0) width 55: " (#167a)"
+          LayoutInline {A} at (0,0) size 159x18 [color=#0000EE]
+            LayoutText {#text} at (0,0) size 159x18
+              text run at (0,0) width 159: ":first-line with ::first-line"
+          LayoutText {#text} at (158,0) size 54x18
+            text run at (158,0) width 54: " (#167a)"
         LayoutListItem {LI} at (40,2412) size 729x18
           LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
           LayoutInline {A} at (0,0) size 132x18 [color=#0000EE]
@@ -1299,18 +1299,18 @@ layer at (0,0) size 785x3324 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             text run at (179,0) width 55: " (#175c)"
         LayoutListItem {LI} at (40,2628) size 729x18
           LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
-          LayoutInline {A} at (0,0) size 264x18 [color=#0000EE]
-            LayoutText {#text} at (0,0) size 264x18
-              text run at (0,0) width 264: "NEGATED Dynamic handling of :empty"
-          LayoutText {#text} at (263,0) size 40x18
-            text run at (263,0) width 40: " (#d1)"
+          LayoutInline {A} at (0,0) size 263x18 [color=#0000EE]
+            LayoutText {#text} at (0,0) size 263x18
+              text run at (0,0) width 263: "NEGATED Dynamic handling of :empty"
+          LayoutText {#text} at (262,0) size 39x18
+            text run at (262,0) width 39: " (#d1)"
         LayoutListItem {LI} at (40,2646) size 729x18
           LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
-          LayoutInline {A} at (0,0) size 264x18 [color=#0000EE]
-            LayoutText {#text} at (0,0) size 264x18
-              text run at (0,0) width 264: "NEGATED Dynamic handling of :empty"
-          LayoutText {#text} at (263,0) size 48x18
-            text run at (263,0) width 48: " (#d1b)"
+          LayoutInline {A} at (0,0) size 263x18 [color=#0000EE]
+            LayoutText {#text} at (0,0) size 263x18
+              text run at (0,0) width 263: "NEGATED Dynamic handling of :empty"
+          LayoutText {#text} at (262,0) size 47x18
+            text run at (262,0) width 47: " (#d1b)"
         LayoutListItem {LI} at (40,2664) size 729x18
           LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
           LayoutInline {A} at (0,0) size 220x18 [color=#0000EE]
@@ -1320,11 +1320,11 @@ layer at (0,0) size 785x3324 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             text run at (219,0) width 39: " (#d2)"
         LayoutListItem {LI} at (40,2682) size 729x18
           LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
-          LayoutInline {A} at (0,0) size 303x18 [color=#0000EE]
-            LayoutText {#text} at (0,0) size 303x18
-              text run at (0,0) width 303: "Dynamic updating of :first-child and :last-child"
-          LayoutText {#text} at (302,0) size 40x18
-            text run at (302,0) width 40: " (#d4)"
+          LayoutInline {A} at (0,0) size 302x18 [color=#0000EE]
+            LayoutText {#text} at (0,0) size 302x18
+              text run at (0,0) width 302: "Dynamic updating of :first-child and :last-child"
+          LayoutText {#text} at (301,0) size 40x18
+            text run at (301,0) width 40: " (#d4)"
         LayoutListItem {LI} at (40,2700) size 729x18
           LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
           LayoutInline {A} at (0,0) size 93x18 [color=#0000EE]
@@ -1341,11 +1341,11 @@ layer at (0,0) size 785x3324 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             text run at (180,0) width 47: " (#d5a)"
         LayoutListItem {LI} at (40,2736) size 729x18
           LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
-          LayoutInline {A} at (0,0) size 260x18 [color=#0000EE]
-            LayoutText {#text} at (0,0) size 260x18
-              text run at (0,0) width 260: "NEGATED :indeterminate and :checked"
-          LayoutText {#text} at (259,0) size 48x18
-            text run at (259,0) width 48: " (#d5b)"
+          LayoutInline {A} at (0,0) size 259x18 [color=#0000EE]
+            LayoutText {#text} at (0,0) size 259x18
+              text run at (0,0) width 259: "NEGATED :indeterminate and :checked"
+          LayoutText {#text} at (258,0) size 47x18
+            text run at (258,0) width 47: " (#d5b)"
         LayoutListItem {LI} at (40,2754) size 729x18
           LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
           LayoutInline {A} at (0,0) size 181x18 [color=#0000EE]
@@ -1362,11 +1362,11 @@ layer at (0,0) size 785x3324 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             text run at (185,0) width 48: " (#d5d)"
         LayoutListItem {LI} at (40,2790) size 729x18
           LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
-          LayoutInline {A} at (0,0) size 266x18 [color=#0000EE]
-            LayoutText {#text} at (0,0) size 266x18
-              text run at (0,0) width 266: "NEGATED :indeterminate with :checked"
-          LayoutText {#text} at (265,0) size 46x18
-            text run at (265,0) width 46: " (#d5e)"
+          LayoutInline {A} at (0,0) size 264x18 [color=#0000EE]
+            LayoutText {#text} at (0,0) size 264x18
+              text run at (0,0) width 264: "NEGATED :indeterminate with :checked"
+          LayoutText {#text} at (263,0) size 47x18
+            text run at (263,0) width 47: " (#d5e)"
       LayoutBlockFlow {P} at (0,3268.06) size 769x18
         LayoutText {#text} at (0,0) size 62x18
           text run at (0,0) width 62: "See also: "

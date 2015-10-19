@@ -4,13 +4,13 @@ layer at (0,0) size 800x186
   LayoutBlockFlow {HTML} at (0,0) size 800x185.88
     LayoutBlockFlow {BODY} at (8,8) size 784x169.88
       LayoutBlockFlow {P} at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 110x18
-          text run at (0,0) width 110: "Testcase for bug "
+        LayoutText {#text} at (0,0) size 109x18
+          text run at (0,0) width 109: "Testcase for bug "
         LayoutInline {A} at (0,0) size 33x18 [color=#0000EE]
-          LayoutText {#text} at (109,0) size 33x18
-            text run at (109,0) width 33: "4874"
-        LayoutText {#text} at (141,0) size 429x18
-          text run at (141,0) width 429: " - Table with absolute bottom positioning is positioned incorrectly."
+          LayoutText {#text} at (108,0) size 33x18
+            text run at (108,0) width 33: "4874"
+        LayoutText {#text} at (140,0) size 426x18
+          text run at (140,0) width 426: " - Table with absolute bottom positioning is positioned incorrectly."
       LayoutBlockFlow {H1} at (0,39.44) size 784x37
         LayoutText {#text} at (0,0) size 170x37
           text run at (0,0) width 170: "Look Down!"
@@ -22,7 +22,7 @@ layer at (0,0) size 800x186
           text run at (202,18) width 465: "be visible without scrolling (the window should not be scrollable at all). "
           text run at (666,18) width 103: "The three boxes"
           text run at (0,36) width 352: "should be aligned at the bottom with the bottom of the "
-          text run at (351,36) width 415: "window. The text \"Tall table\" should be vertically centered in its"
+          text run at (351,36) width 413: "window. The text \"Tall table\" should be vertically centered in its"
           text run at (0,54) width 32: "box, "
           text run at (32,54) width 487: "which should be 50px tall. The other two boxes should both be shorter than "
           text run at (518,54) width 207: "50px, and have the same height."
@@ -31,8 +31,8 @@ layer at (120,550) size 120x50
     LayoutTableSection {TBODY} at (1,1) size 118x48
       LayoutTableRow {TR} at (0,2) size 118x44
         LayoutTableCell {TD} at (2,14) size 114x20 [r=0 c=0 rs=1 cs=1]
-          LayoutText {#text} at (1,1) size 61x18
-            text run at (1,1) width 61: "Tall table"
+          LayoutText {#text} at (1,1) size 60x18
+            text run at (1,1) width 60: "Tall table"
 layer at (240,574) size 120x26
   LayoutTable (positioned) {TABLE} at (240,574) size 120x26 [border: (1px solid #FF0000)]
     LayoutTableSection {TBODY} at (1,1) size 118x24

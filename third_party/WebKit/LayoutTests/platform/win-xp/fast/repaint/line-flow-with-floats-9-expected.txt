@@ -6,7 +6,6 @@
       "contentsOpaque": true,
       "drawsContent": true,
       "repaintRects": [
-        [420, 240, 1, 139],
         [372, 243, 48, 49],
         [8, 80, 418, 519]
       ],
@@ -86,20 +85,7 @@
         "InlineTextBox 'wonder is, that there\u2018s any one left alive!\u2019'",
         "RootInlineBox",
         "LayoutBlockFlow P",
-        "LayoutBlockFlow (floating) SPAN id='yellowFloat'",
-        "LayoutText #text",
-        "InlineTextBox 'begin again, it was very provoking to find that the'",
-        "InlineTextBox 'hedgehog had\n'",
-        "InlineTextBox 'unrolled itself, and was in the act of crawling'",
-        "InlineTextBox 'away: besides all\n'",
-        "InlineTextBox 'this, there was generally a ridge or furrow'",
-        "InlineTextBox 'in the way wherever\n'",
-        "InlineTextBox 'she wanted to send the hedgehog to, and, as'",
-        "InlineTextBox 'the doubled-up\n'",
-        "InlineTextBox 'soldiers were always getting up and walking off to'",
-        "InlineTextBox 'other parts of\n'",
-        "InlineTextBox 'the ground, Alice soon came to the conclusion that it'",
-        "InlineTextBox 'was a very\n'"
+        "LayoutBlockFlow (floating) SPAN id='yellowFloat'"
       ]
     }
   ]

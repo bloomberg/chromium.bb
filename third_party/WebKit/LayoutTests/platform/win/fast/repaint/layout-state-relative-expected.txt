@@ -7,8 +7,8 @@
       "drawsContent": true,
       "repaintRects": [
         [8, 150, 784, 17],
-        [8, 150, 39, 17],
-        [8, 150, 36, 17]
+        [8, 150, 37, 17],
+        [8, 150, 35, 17]
       ],
       "paintInvalidationClients": [
         "InlineTextBox ''",

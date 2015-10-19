@@ -4,8 +4,8 @@ layer at (0,0) size 800x345
   LayoutBlockFlow {HTML} at (0,0) size 800x344.88
     LayoutBlockFlow {BODY} at (8,18.72) size 784x318.16
       LayoutBlockFlow {H3} at (0,0) size 784x23
-        LayoutText {#text} at (0,0) size 236x22
-          text run at (0,0) width 236: "ROWSPAN of 1024 - Works"
+        LayoutText {#text} at (0,0) size 234x22
+          text run at (0,0) width 234: "ROWSPAN of 1024 - Works"
       LayoutTable {TABLE} at (0,41.72) size 165x108 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 163x106
           LayoutTableRow {TR} at (0,2) size 163x24
@@ -55,8 +55,8 @@ layer at (0,0) size 800x345
               LayoutText {#text} at (2,2) size 40x19
                 text run at (2,2) width 40: "foobar"
       LayoutBlockFlow {H3} at (0,168.44) size 784x23
-        LayoutText {#text} at (0,0) size 295x22
-          text run at (0,0) width 295: "ROWSPAN of 1025 - Doesn't Work"
+        LayoutText {#text} at (0,0) size 293x22
+          text run at (0,0) width 293: "ROWSPAN of 1025 - Doesn't Work"
       LayoutTable {TABLE} at (0,210.16) size 165x108 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 163x106
           LayoutTableRow {TR} at (0,2) size 163x24

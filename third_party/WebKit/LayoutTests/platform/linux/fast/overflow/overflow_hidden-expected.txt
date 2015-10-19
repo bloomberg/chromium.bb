@@ -12,9 +12,9 @@ layer at (0,0) size 800x2155 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             text run at (0,0) width 62: "Click here"
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {H2} at (0,2055.91) size 784x27
-        LayoutText {#text} at (0,0) size 118x26
-          text run at (0,0) width 118: "Test Passed"
+        LayoutText {#text} at (0,0) size 116x26
+          text run at (0,0) width 116: "Test Passed"
       LayoutBlockFlow {P} at (0,2102.81) size 784x20
-        LayoutText {#text} at (0,0) size 478x19
-          text run at (0,0) width 478: "The test should have automatically scrolled down to show \"Test Passed\" above."
+        LayoutText {#text} at (0,0) size 477x19
+          text run at (0,0) width 477: "The test should have automatically scrolled down to show \"Test Passed\" above."
 scrolled to 0,1555

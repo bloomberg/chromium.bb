@@ -7,6 +7,6 @@ layer at (0,0) size 800x69
         LayoutInline {<pseudo:first-letter>} at (0,0) size 20x37 [bgcolor=#00FF00]
           LayoutTextFragment (anonymous) at (0,0) size 20x37
             text run at (0,0) width 20: "T"
-        LayoutTextFragment {#text} at (19,15) size 491x18
-          text run at (19,15) width 340: "his very long paragraph should have a big first letter "
-          text run at (358,15) width 152: "with green background."
+        LayoutTextFragment {#text} at (19,15) size 490x18
+          text run at (19,15) width 339: "his very long paragraph should have a big first letter "
+          text run at (357,15) width 152: "with green background."

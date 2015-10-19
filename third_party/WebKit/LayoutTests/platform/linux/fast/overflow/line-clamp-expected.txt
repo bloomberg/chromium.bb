@@ -79,14 +79,14 @@ layer at (326,69) size 102x61 clip at (327,70) size 100x59 scrollHeight 179
         text run at (67,40) width 8: "3"
         text run at (0,60) width 67: "lines on the"
         text run at (0,80) width 94: "latest version of"
-        text run at (0,100) width 57: "WebKit. "
-        text run at (57,100) width 32: "1 line"
+        text run at (0,100) width 56: "WebKit. "
+        text run at (55,100) width 33: "1 line"
         text run at (0,120) width 50: "on older"
         text run at (0,140) width 65: "versions of"
-        text run at (0,160) width 53: "WebKit."
-      LayoutInline {A} at (0,0) size 34x19 [color=#0000EE]
-        LayoutText {#text} at (53,160) size 34x19
-          text run at (53,160) width 34: "More"
+        text run at (0,160) width 52: "WebKit."
+      LayoutInline {A} at (0,0) size 35x19 [color=#0000EE]
+        LayoutText {#text} at (51,160) size 35x19
+          text run at (51,160) width 35: "More"
       LayoutText {#text} at (0,0) size 0x0
 layer at (432,89) size 102x41 clip at (433,90) size 100x39 scrollHeight 139
   LayoutDeprecatedFlexibleBox {DIV} at (424,81) size 102x41 [border: (1px solid #808080)]

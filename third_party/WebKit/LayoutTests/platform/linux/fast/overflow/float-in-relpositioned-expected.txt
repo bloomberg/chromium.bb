@@ -4,21 +4,21 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x582
       LayoutBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 51x19
-          text run at (0,0) width 51: "Test for "
+        LayoutText {#text} at (0,0) size 50x19
+          text run at (0,0) width 50: "Test for "
         LayoutInline {I} at (0,0) size 641x19
           LayoutInline {A} at (0,0) size 154x19 [color=#0000EE]
-            LayoutText {#text} at (51,0) size 154x19
-              text run at (51,0) width 154: "rdar://problem/6059648"
-          LayoutText {#text} at (205,0) size 487x19
-            text run at (205,0) width 4: " "
-            text run at (209,0) width 483: "Some content not visible when the window is short at courtneyalbright.com"
-        LayoutText {#text} at (692,0) size 4x19
-          text run at (692,0) width 4: "."
+            LayoutText {#text} at (49,0) size 154x19
+              text run at (49,0) width 154: "rdar://problem/6059648"
+          LayoutText {#text} at (202,0) size 488x19
+            text run at (202,0) width 5: " "
+            text run at (206,0) width 484: "Some content not visible when the window is short at courtneyalbright.com"
+        LayoutText {#text} at (689,0) size 5x19
+          text run at (689,0) width 5: "."
       LayoutBlockFlow {P} at (0,36) size 784x20
-        LayoutText {#text} at (0,0) size 605x19
+        LayoutText {#text} at (0,0) size 604x19
           text run at (0,0) width 449: "Each black box below should have a scroll bar allowing the blue square to "
-          text run at (449,0) width 156: "be scrolled fully into view."
+          text run at (449,0) width 155: "be scrolled fully into view."
 layer at (18,80) size 102x102 clip at (19,81) size 100x85 scrollWidth 125
   LayoutBlockFlow {DIV} at (10,72) size 102x102 [border: (1px solid #000000)]
 layer at (18,192) size 102x102 clip at (19,193) size 85x100 scrollHeight 125

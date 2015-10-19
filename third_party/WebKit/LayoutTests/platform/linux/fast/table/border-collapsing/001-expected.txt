@@ -19,9 +19,9 @@ layer at (0,0) size 800x430
                 LayoutText {#text} at (26,26) size 57x19
                   text run at (26,26) width 57: "Goodbye"
       LayoutBlockFlow {DIV} at (0,386) size 784x28 [border: (1px solid #008000)]
-        LayoutTable {TABLE} at (1,1) size 32x26 [border: (1px none #808080)]
-          LayoutTableSection {TBODY} at (1,1) size 30x24
-            LayoutTableRow {TR} at (0,0) size 30x24
-              LayoutTableCell {TD} at (0,0) size 30x24 [border: (1px solid #000000)] [r=0 c=0 rs=1 cs=1]
-                LayoutText {#text} at (2,2) size 26x19
-                  text run at (2,2) width 26: "Test"
+        LayoutTable {TABLE} at (1,1) size 31x26 [border: (1px none #808080)]
+          LayoutTableSection {TBODY} at (1,1) size 29x24
+            LayoutTableRow {TR} at (0,0) size 29x24
+              LayoutTableCell {TD} at (0,0) size 29x24 [border: (1px solid #000000)] [r=0 c=0 rs=1 cs=1]
+                LayoutText {#text} at (2,2) size 25x19
+                  text run at (2,2) width 25: "Test"

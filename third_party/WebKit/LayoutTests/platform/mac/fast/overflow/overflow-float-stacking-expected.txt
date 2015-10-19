@@ -3,15 +3,15 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
-      LayoutText {#text} at (0,0) size 696x18
-        text run at (0,0) width 696: "Make sure that floating overflow:auto/hidden/scroll blocks stack properly with other floats at the same level."
+      LayoutText {#text} at (0,0) size 693x18
+        text run at (0,0) width 693: "Make sure that floating overflow:auto/hidden/scroll blocks stack properly with other floats at the same level."
       LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow (floating) {DIV} at (250,18) size 300x300 [bgcolor=#FFFF00]
         LayoutText {#text} at (0,0) size 246x275
           text run at (0,0) width 204: "This block"
           text run at (0,55) width 246: "should be on"
           text run at (0,110) width 184: "top of the"
-          text run at (0,165) width 174: "overflow"
+          text run at (0,165) width 171: "overflow"
           text run at (0,220) width 119: "block."
 layer at (8,26) size 300x300 clip at (8,26) size 285x300 scrollHeight 846
   LayoutBlockFlow (floating) {DIV} at (0,18) size 300x300 [bgcolor=#00FF00]
