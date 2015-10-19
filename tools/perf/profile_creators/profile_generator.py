@@ -90,19 +90,25 @@ class ProfileGenerator(object):
       (e.g., crytohome on CrOS).
     """
     possible_browser = browser_finder.FindBrowser(options)
-    is_cros = possible_browser.browser_type.startswith('cros')
 
-    out_dir = None
-    if is_cros:
+    if possible_browser.browser_type.startswith('cros'):
       self.Create(options, None)
-    else:
-      # Decide profile output path.
-      out_dir = (options.browser_options.profile_dir or
-          os.path.abspath(os.path.join(
-              tempfile.gettempdir(), self._profile_name, self._profile_name)))
-      if not os.path.exists(out_dir):
-        self.Create(options, out_dir)
+      return None
 
+    # Use the given --profile-dir.
+    if options.browser_options.profile_dir:
+      return options.browser_options.profile_dir
+
+    out_dir = os.path.abspath(os.path.join(
+        tempfile.gettempdir(), self._profile_name, self._profile_name))
+
+    # Never reuse a generated profile, since it might be for a different version
+    # of Chrome.
+    if os.path.exists(out_dir):
+      assert os.path.isdir(out_dir)
+      shutil.rmtree(out_dir)
+
+    self.Create(options, out_dir)
     return out_dir
 
   def Create(self, options, out_dir):
