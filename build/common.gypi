@@ -436,8 +436,6 @@
           '-Wl,-z,noexecstack',
         ],
         'defines': [
-          '_DEFAULT_SOURCE=1',
-          '_BSD_SOURCE=1',
           '_POSIX_C_SOURCE=199506',
           '_XOPEN_SOURCE=600',
           '_GNU_SOURCE=1',

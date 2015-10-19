@@ -2806,9 +2806,7 @@ def MakeGenericLinuxEnv(platform=None):
 
   # Prepend so we can disable warnings via Append
   linux_env.Prepend(
-      CPPDEFINES = [['_DEFAULT_SOURCE', '1'],
-                    ['_BSD_SOURCE', '1'],
-                    ['_POSIX_C_SOURCE', '199506'],
+      CPPDEFINES = [['_POSIX_C_SOURCE', '199506'],
                     ['_XOPEN_SOURCE', '600'],
                     ['_GNU_SOURCE', '1'],
                     ['_LARGEFILE64_SOURCE', '1'],
@@ -3120,9 +3118,6 @@ nacl_env.Append(
         ['__STDC_FORMAT_MACROS', '1'],
         # _GNU_SOURCE ensures that strtof() gets declared.
         ['_GNU_SOURCE', 1],
-        # strdup, and other common stuff
-        ['_DEFAULT_SOURCE', '1'],
-        ['_BSD_SOURCE', '1'],
         ['_POSIX_C_SOURCE', '199506'],
         ['_XOPEN_SOURCE', '600'],
 
